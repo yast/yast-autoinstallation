@@ -4,15 +4,16 @@
 <![CDATA[
     <install>
 ...
-         <bootloader>
-             <write_bootloader config:type="boolean">true</write_bootloader>
+         <bootloader>             
              <location>mbr</location>
-             <linear  config:type="boolean">false</linear>
-             <lba_support  config:type="boolean">false</lba_support>
-             <activate  config:type="boolean">true</activate>
+             <loader_type>grub</loader_type>
+             <loader_device>/dev/hda</loader_device>
              <kernel_parameters>foo=bar bar=foo</kernel_parameters>
              <initrd_modules  config:type="list" >
-                 <module>+++some kernel module name+++</module>
+                 <module_entry>
+                     <module>aic7xxx</module>
+                     <module_args/>
+                 </module_entry>
              </initrd_modules>
          </bootloader>
 ...
