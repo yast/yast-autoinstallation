@@ -19,7 +19,6 @@
     import "Y2ModuleConfig";
     import "Label";
 
-
     integer current_step    = 0;    // Required by logStep()
 
     string resource = "";
@@ -37,6 +36,7 @@
 	current_step = current_step + 1;
 	UI::ChangeWidget( `id(`progress), `Value, current_step );
 	UI::ChangeWidget( `id(`log), `LastLine, step_descr + "\n" );
+        y2milestone("current step: %1", current_step);
 	return;
     };
 
@@ -49,6 +49,7 @@ Please wait while the system is being configured.
 
 
     integer max_steps = size(Y2ModuleConfig::ModuleMap) + 3;
+    y2milestone("max step: %1", max_steps);
     term contents = `VBox(
               `LogView(`id(`log), "", 10, 0 ),
 
@@ -61,7 +62,7 @@ Please wait while the system is being configured.
     Wizard::SetAbortButton(`abort, Label::AbortButton() );
 
     Wizard::SetContents(
-              // Dialog title for SuSEconfig dialog
+              // Dialog title for autoyast dialog
               _("Configuring System according to auto-install settings"),
               contents, help_text, false, false);
 
@@ -75,9 +76,13 @@ Please wait while the system is being configured.
 
     list<map> deps = [];
     if (haskey(Profile::Flat, "dependencies"))
+    {
 	deps = Profile::Flat["dependencies"]:[];
+    }
     else
+    {
 	deps = Y2ModuleConfig::Deps();
+    }
 
     y2milestone("Order: %1", maplist(map d, deps, ``(d["res"]:"")));
 
@@ -99,7 +104,7 @@ Please wait while the system is being configured.
 	    }
 	    y2milestone("current resource: %1", resource);
 
-	    // determine name of client, if not default name
+	    // determine name of client, if not use default name
 	    if (haskey(d,"X-SuSE-YaST-AutoClient"))
 		module_auto = d["X-SuSE-YaST-AutoClient"]:"none";
 	    else
@@ -131,7 +136,7 @@ Please wait while the system is being configured.
 			logStep( sformat (_("Not Configuring %1"), p));
 
 		    Call::Function(module_auto, ["Import", eval(result) ]);
-		    Call::Function(module_auto, ["Write", eval(result) ]);
+		    Call::Function(module_auto, ["Write"]);
 		}
 		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
 		{
@@ -141,7 +146,7 @@ Please wait while the system is being configured.
 		    else
 			logStep( sformat (_("Not Configuring %1"), p));
 		    Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
-		    Call::Function(module_auto, ["Write", eval(Profile::Flat[resource]:$[])  ]);
+		    Call::Function(module_auto, ["Write"]);
 		}
 		else
 		{
@@ -152,12 +157,21 @@ Please wait while the system is being configured.
 
 		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:[]));
 		    Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
-		    Call::Function(module_auto, ["Write",  eval(Profile::Flat[resource]:[]) ]);
+		    Call::Function(module_auto, ["Write"]);
 		}
-	    }
+            }
+            else
+            {
+                //logStep( sformat (_("Skipping %1"), p));
+                current_step = current_step + 1;
+                UI::ChangeWidget( `id(`progress), `Value, current_step );
+            }
 	}
-	else {
-	    logStep( sformat (_("Skipping %1"), p));
+	else
+        {
+	    //logStep( sformat (_("Skipping %1"), p));
+	    current_step = current_step + 1;
+	    UI::ChangeWidget( `id(`progress), `Value, current_step );
 	}
     });
 
@@ -165,10 +179,11 @@ Please wait while the system is being configured.
     AutoinstScripts::Write("post-scripts", false);
     AutoinstScripts::Write("init-scripts", false);
 
-	// Just in case, remove this file to avoid reconfiguring...
+    // Just in case, remove this file to avoid reconfiguring...
     SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
 
     logStep( _("Finishing Configuration") );
+
     sleep(100);
     return `next;
 }

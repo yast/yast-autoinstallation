@@ -38,7 +38,7 @@
      * @return: map
      */
     global define list ReadMenuEntries()
-	``{
+    {
 	Desktop::AgentPath = .autoyast2.desktop;
 
 	list<string> Values= [ "Name",
@@ -65,9 +65,7 @@
 	    if (values["X-SuSE-YaST-AutoInst"]:"" == "configure" || values["X-SuSE-YaST-AutoInst"]:"" == "all")
 	    {
 		string module_auto = "";
-		//
-		// determine name of client, if not default name
-		//
+		/* determine name of client, if not default name */
 		if (!haskey(values,"X-SuSE-YaST-AutoInstClient") || values["X-SuSE-YaST-AutoInstClient"]:"" == "")
 		{
 		    string client =  name + "_auto";
@@ -167,13 +165,9 @@
      */
     global define void Y2ModuleConfig () ``{
 
-	//
-	// Read module configuration data (desktop files)
-	//
-
+	/* Read module configuration data (desktop files) */
 	if (!Mode::initial)
 	{
-	    // y2debug("Modules: %1", ModuleMap);
 	    list MenuEntries = ReadMenuEntries();
 
 	    ModuleMap = MenuEntries[0]:$[];
@@ -184,11 +178,9 @@
 
 	}
 
-
 	if (Mode::config)
 	{
 	    // construct the tree menu
-	    // y2debug("Calling Construct Menu");
 	    ConstructMenu();
 	}
     }
@@ -200,7 +192,7 @@
      * @return string resource as defined in desktop file
      */
     global define string getResource( string default_resource)
-	``{
+    {
 	string ret = ModuleMap[default_resource, "X-SuSE-YaST-AutoInstResource"]:"";
 	if (ret == "")
 	    return default_resource;
@@ -212,8 +204,8 @@
      * getResourceData()
      * Get resource data
      */
-    global define any getResourceData( map resourceMap, string resource) ``{
-
+    global define any getResourceData( map resourceMap, string resource)
+    {
 	string tmp_resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
 	if (tmp_resource != "")
 	    resource = tmp_resource;

@@ -66,9 +66,9 @@ else if (func == "Reset") {
 else if (func == "Change") {
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("disk");
-    map exp1 = AutoinstStorage::Export();
+    list exp1 = AutoinstStorage::Export();
     ret = StorageDialog();
-    map exp2 = AutoinstStorage::Export();
+    list exp2 = AutoinstStorage::Export();
     if (exp1!=exp2)
         AutoinstStorage::SetModified();
     Wizard::CloseDialog();
