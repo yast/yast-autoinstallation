@@ -166,6 +166,7 @@
     global define boolean ProcessSpecialResources ()
 	``{
 	Report::Import(Profile::Flat["report"]:$[]);
+	X11 = Profile::Flat["x11"]:$[];
 	configureX11();
 	return true;
     }
@@ -178,7 +179,6 @@
     global define boolean configureX11 () ``{
 
 
-	map x11conf = Profile::Flat["x11"]:$[];
 	map runlevels = Profile::Flat["runlevels"]:$[];
 
 	if (Mode::initial && haskey(Profile::Flat,"x11"))
@@ -187,9 +187,9 @@
 	    // If runlevel is set, then it overrides x11 settings.
 	    // If no x11 conf is given and no runlevel  is set, then runlevel => 3.
 
-		if (haskey(x11conf, "start_x11"))
+		if (haskey(X11, "start_x11"))
 		{
-		    boolean start_xdm = Profile::Flat["x11", "start_x11"]:false;
+		    boolean start_xdm = X11["start_x11"]:false;
 		    if (start_xdm)
 		    {
 			if (runlevels["default"]:"" == "" )
@@ -213,9 +213,9 @@
 	else if (Mode::cont)
 	{
 	    // Check if X11 package is installed.
-	    boolean x11_installed = Pkg::IsProvided("XFree86");
-	    if (!x11_installed)
-		x11_installed = Pkg::IsSelected ("XFree86");
+		import "Require";
+	    boolean x11_installed = Require::IsPackageInstalledTarget("XFree86");
+		y2milestone("X11: %1, x11_installed: %2", X11, x11_installed );
 
 	    if ( size(X11) == 0 || !X11["configure_x11"]:false  || !x11_installed)
 	    {
