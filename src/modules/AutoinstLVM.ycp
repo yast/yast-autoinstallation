@@ -207,12 +207,10 @@
 
 	integer lvsize		= kmgt_str_to_byte(lvsize_str);
 
-
 	if (pesize == 0 )
 	{
 	    pesize = 1;
 	}
-
 
 	integer virtual_cyl_end = lvsize / pesize;
 	region = [0, virtual_cyl_end ];
@@ -296,19 +294,18 @@
     global define list ExistingPVs ( string vgname )
 	``{
 	map tm = $[];
-	y2milestone("Possible devices: %1", AutoinstStorage::configured_devices );
-	foreach(`k, `v, targetMap, ``{
-	    
+	
+	foreach(`k, `v, targetMap, ``{	    
 	    if (contains(AutoinstStorage::configured_devices, k))
+	    {
 		tm[k] = v;
-		}
-		);
-	y2milestone("Target Map of allowed devices: %1 (%2)", tm, targetMap);
+	    }
+	});
+	
 	
 	list all_possible_pvs = filter( `part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname ));
 	list possible_pvs = filter( `part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
-
-	y2milestone("Possible PVs: %1 (%2)",  all_possible_pvs,  possible_pvs);
+	
 	if (all_possible_pvs != possible_pvs)
 	    PVsNotConfigured = true;
 	
