@@ -25,7 +25,8 @@
 
 	if (d["X-SuSE-YaST-AutoInst"]:"" == "all" || d["X-SuSE-YaST-AutoInst"]:"" == "write")
 	{
-	    if (haskey(d,"X-SuSE-YaST-AutoInstResource"))
+	    if (haskey(d,"X-SuSE-YaST-AutoInstResource") &&
+                d["X-SuSE-YaST-AutoInstResource"]:"" != "")
 	    {
 		resource = d["X-SuSE-YaST-AutoInstResource"]:"unknown";
 	    }
