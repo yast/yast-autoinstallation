@@ -65,11 +65,35 @@ Please wait while the system is prepared for autoinstallation.</p>
     boolean ret = false;
     Progress::NextStep();
     Progress::Title(_("Processing Profiles and Rules"));
+    while (true)
+    {
+        boolean r = ProfileLocation::Process();
+        if (r)
+        {
+            break;
+        }
+        else {
+            string newURI = ProfileSourceDialog(AutoinstConfig::OriginalURI);
+            if ( newURI == "")
+            {
+                return `abort;
+            }
+            else
+            {
+                AutoinstConfig::ParseCmdLine(newURI);
+                AutoinstConfig::SetProtocolMessage();
+                continue;
+            }
+        }
+    }
+
+    /*
     if (!ProfileLocation::Process())
     {
 	y2error("Aborting...");
 	return `abort;
     }
+    */
 
     sleep(1000);
 
