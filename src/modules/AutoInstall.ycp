@@ -28,57 +28,32 @@
     global string var_dir = "/var/adm/autoinstall";
 
     // Cache directory
-    //
+    //    
     global string cache = var_dir + "/cache";
-
 
     // Temporary directory for storing profile before installation starts
     //
     global string tmpdir = SCR::Read( .target.tmpdir );
 
-
     // Temporary file name for retrieved system profile
     //
     global string xml_tmpfile = tmpdir + "/autoinst.xml";
-
 
     // Final location for retrieved system profile
     //
     global string xml_file = cache + "/installedSystem.xml";
 
-
     // Parsed data from XML control in YCP format
     //
     string parsedControlFile = cache + "/autoinst.ycp";
 
-
     // Direcotry for runtime operation data
     global string runtime_dir = "/var/lib/autoinstall";
 
-
-    // Directory for the pre/post and chroot scripts
-    //
-    global string scripts_dir = var_dir + "/scripts";
-
-
-
-    // Directory where log files of pre/post and chroot scripts are kept
-    //
-    global string logs_dir = var_dir + "/logs";
-
-
-
+ 
     // Directory where copmlete configuration files are kept.
     //
     global string files_dir = var_dir + "/files";
-
-
-
-
-    // Parsed data from system profile
-    //
-    global map Profile =  $[];
-
 
     // Auto-Configuration mode
     //
@@ -87,61 +62,26 @@
     // Parsed data to be used to set variables in other modules
     //////////////////////////////////////////////////////////////
 
-    // Show proposal and ask user for confirmation to go on with auto-installation
-    // Similar to interactive mode, without letting use change settings
-    // Interactive mode implies confirmation as well..
-    global boolean Confirm = true;
-
-    // If true, this mode shows the proposal and lets the user change
-    // settings
     global boolean interactive = true;
 
-    // FIXME: should be removed
-    global string Encryption = "des";
 
-    // Language
-    global string Language = "";
+    global map Profile = $[];
 
-    // Hard Reboot
-    global boolean Reboot = false;
 
-    // Dont Hard Reboot
-    global boolean ForceBoot = false;
-
-    // Show Reboot Message
-    global boolean RebootMsg = false;
-
-    // Keyboard
-    global string Keyboard = "";
-
-    // Timezone
-    global string Timezone = "";
-
-    // Mouse, if not autoprobed
-    global string Mouse = "";
-
-    // Hardware clock
-    global string Hwclock = "";
-
+    
     // Bootloader
     global map Bootloader = $[];
 
 
     global map X11 = $[];
 
-    // partitioning
-    global list Partitioning = [];
-    global list LVM = [];
-
-    global map targetMap = $[];
+    
 
 
     global list loadKernelModules = [];
     global list configureKernelModules = [];
 
-    global list RAID = [];
-
-    global list Fstab = [];
+ 
 
 
     // Modules
@@ -158,21 +98,10 @@
     // Local variables
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
     // Sysconfig variable already registered
+    // FIXME
     list registered_list = [];
 
-    // Two main configuration resources
-    map Install = $[];
-    map Configure = $[];
-
-
-    list SysconfigVars = [];
-
-    list forcedPackages = [];
-
-    boolean parsed = false;
 
     /**
      * Constructer
@@ -180,23 +109,23 @@
      */
     global define void AutoInstall()
 	``{
-	if (!Mode::config &&  ! ( Mode::cont && Restore() ))
+	if (!Mode::config &&  ! ( Mode::cont && Continue() ))
 	{
-	    if ( SCR::Read(.target.size, xml_tmpfile) != -1  && size ( Profile ) == 0)
+	    if ( SCR::Read(.target.size, xml_tmpfile) != -1  && size ( Profile::current ) == 0)
 	    {
 		// Profile is available and it has not been parsed yet.
-		ProcessProfile();
+		Profile::Read(  xml_tmpfile );
 	    }
 
 	}
 
-	if (Mode::cont && size ( Profile ) > 0)
+	if (Mode::cont && size ( Profile::current ) > 0)
 	{
 	    y2milestone("Enabling Auto-Installation mode");
 	    Mode::autoinst = true;
 	}
 
-	
+	// Read module configuration data (y2cc)
 	if (Mode::config || ( Mode::cont &&  Mode::autoinst))
 	{
 	    list MenuEntries = ReadMenuEntries();
@@ -205,43 +134,71 @@
 	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
 
+	
 	return;
     }
 
+
+
+    /**
+     * Read saved data in continue mode
+     */
+
+    
+    global define boolean Continue() ``{
+	
+	// First check if there are some other control files availabe
+	// i.e. for post-installation only
+	string autoconf_file = runtime_dir + "/autoconf/autoconf.xml";
+	
+	if ( SCR::Read(.target.size, autoconf_file) != -1 )
+	{
+	    y2milestone("XML Post installation data found: %1", autoconf_file );
+	    autoconf = true;
+	    Profile::Read(  autoconf_file  );
+	    boolean ret = Profile::Read(  xml_tmpfile );
+	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, cache));
+	    return (ret);
+	}
+	else
+	{
+	    Profile::ReadYCP ( parsedControlFile );
+	    if ( Profile::current == $[] )	// No saved data base.
+	    {
+		y2milestone( "No saved autoinstall data found" );
+		return (false);
+	    }
+	    else	// saved data  found
+	    {
+		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
+		y2milestone("Removing old data: %1", SCR::Execute(.target.remove, parsedControlFile));
+		Profile = Profile::current;
+		return (true);
+	    }
+	}
+	
+	
+    }
+
+    
     /**
      * Parse profile and set some values
      *
      */
     global define boolean ProcessProfile()
 	``{
-	any ret = nil;
-	if ( SCR::Read(.target.size, xml_tmpfile) > 0 )
-	{
-	     ret = XML::XMLToYCPFile( xml_tmpfile );
-	     if (ret == nil)
-	     {
-		 return false;
-	     }
-	     else
-	     {
-		 Profile = ret;
-	     }
-	}
-	// the install section
-	Install = Profile["install"]:$[];
+		
+	// FIXME    
+	Report::Set(Profile::Flat["report"]:$[]);
 
-	// and the configure section
-	Configure = Profile["configure"]:$[];
+	X11 = Profile::Flat["x11"]:$[];
 
-	Report::Set(GetMap(Install , "report", true));
-
-	X11 = Configure["x11"]:$[];
 	if (size(X11) == 0 || !X11["configure_x11"]:false)
 	{
 	    Mode::x11_setup_needed = false;
 	}
 
-	map Software = Install["software"]:$[];
+	map Software = Profile::Flat["software"]:$[];
 
 	postPackageList();
 
@@ -249,201 +206,6 @@
     }
 
 
-
-    /**
-     * Restore the the current data from a file that has been saved before.
-     * @param	-
-     * @return  true	- Data base file found. Restore successful.
-     *		false	- No data base file found.
-     * @see	save()
-     */
-
-    global define boolean Restore()
-	``{
-	// First check if there are some other control files availabe
-	// i.e. for post-installation only
-
-	string autoconf_file = runtime_dir + "/autoconf/autoconf.xml";
-	if ( SCR::Read(.target.size, autoconf_file) != -1 )
-	{
-	    y2milestone("XML Post installation data found: %1", autoconf_file );
-	    autoconf = true;
-	    xml_tmpfile = autoconf_file;
-	    boolean ret = ProcessProfile();
-	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, cache));
-	    return(ret);
-	}
-	else
-	{
-	    Profile = SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
-	    if ( Profile == $[] )	// No saved data base.
-	    {
-		y2milestone( "No saved Autoinstall data found" );
-		return false;
-	    }
-	    else	// saved database found
-	    {
-		y2milestone( "Found and read saved autoinst data : <%1>", Profile );
-		y2milestone("Removing old data: %1", SCR::Execute(.target.remove, parsedControlFile));
-		return (ProcessProfile());
-	    }
-	}
-
-    }	// Restore()
-
-
-    /**
-     * Save the current data into a file to be read after a reboot.
-     * @param	-
-     * @return  -
-     * @see	Restore()
-     */
-    global define void Save()
-	``{
-
-	// Write parsed data to the system for later processing
-	y2milestone("Saving control file in YCP format");
-	SCR::Write( .target.ycp, parsedControlFile, Profile );
-	return;
-    }
-
-
-
-    /**
-     * Configure general settings
-     * @param void
-     * @return void
-     */
-
-    global define void generalSettings () ``{
-	// Get default values as fallback
-	string default_keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "english-us" );
-
-	Keyboard = default_keyboard;
-	Language = Language::language;
-	Mouse = "probe";
-	Encryption = "des";
-
-
-	map general = GetMap(Install, "general", true);
-
-	foreach(`k,`v, general , ``{
-	    if (k == "language")
-	    {
-		y2milestone("Setting language to %1", v);
-		Language 	= v;
-	    }
-	    else if (k == "keyboard" && is(v, map))
-	    {
-		Keyboard = v["keymap"]:default_keyboard;
-	    }
-	    else if (k == "keyboard" && is(v, string)) // compat
-	    {
-		Keyboard = v;
-	    }
-	    else if (k == "clock" && is(v, map))
-	    {
-		Timezone = v["timezone"]:"";
-		string hwc = v["hwclock"]:"";
-		if (hwc != "")
-		{
-		    if (hwc == "localtime")
-			Hwclock = "--localtime";
-		    else
-			Hwclock = "-u";
-		}
-
-
-		if (size(v["ntp_servers"]:[])>0)
-		{
-		    string key = "XNTPD_INITIAL_NTPDATE";
-		    string val = mergestring(v["ntp_servers"]:[], " ");
-		    string file = "xntp";
-		    addSysconfigVar(file,  key, val, "xntp");
-		}
-
-	    }
-
-	    else if (k == "hwclock") // compat
-	    {
-		if (v == "localtime")
-		{
-		    Hwclock = "--localtime";
-		}
-		else if  (v == "GMT")
-		{
-		    Hwclock = "-u";
-		}
-	    }
-	    else if (k == "timezone") // compat
-	    {
-		Timezone 	= v;
-	    }
-	    else if (k == "mouse"  && is(v, map) )
-	    {
-		// if id is set, then just take it and ignore everything else
-		if (v["id"]:"" != "")
-		{
-		    Mouse = v["id"]:"";
-		}
-
-		// Otherwise, try to find the mouse id from the DB using data supplied by user,
-		// at least the device is needed.
-
-		else if (haskey(v,"device"))
-		{
-		    string device = v["device"]:"none";
-		    integer wheels = v["wheels"]:0;
-
-		    map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
-
-		    foreach(`f,`g, mice, ``{
-			map data = select(g,1,$[]);
-			if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
-			{
-			    Mouse =  f;
-			}
-		    });
-		}
-		else if (haskey(v, "probe"))
-		{
-
-		}
-	    }
-	    else if (k == "mouse" && is(v, string))
-	    {
-		Mouse = v;
-	    }
-	    else if (k == "mode")
-	    {
-		Confirm = v["confirm"]:true;
-		interactive = Confirm;
-
-		Reboot = v["reboot"]:false;
-		ForceBoot =  v["forceboot"]:false;
-		RebootMsg =  v["rebootmsg"]:false;
-
-		if (haskey(v, "interactive_boot"))
-		{
-		    string key = "PROMPT_FOR_CONFIRM";
-		    string val = (v["interactive_boot"]:false) ? "yes"  : "no";
-		    string file = "boot";
-		    addSysconfigVar(file,  key, val, "");
-		}
-	    }
-	    else if (k == "reboot")
-	    {
-		Reboot = v;
-	    }
-	    else if (k == "confirm")
-	    {
-		Confirm = v;
-	    }
-
-	});
-
-	return;
-    }
 
 
     /**
@@ -454,20 +216,25 @@
     global define bootloaderSettings()``{
 
 	Boot::manual_location = true;
-	Bootloader = GetMap(Install, "bootloader", true);
+	Bootloader = Profile::Flat["bootloader"]:$[];
 
 
-
-	if (issubstring(Bootloader["location"]:"mbr", "/dev/"))
+	map toimport = $[];
+	
+	if (!issubstring(Bootloader["location"]:"mbr", "/dev/"))
 	{
-	    Boot::device=Bootloader["location"]:"mbr";
-	    Boot::location="custom";
+	    toimport["location"] = Bootloader["location"]:"mbr";
 	}
 	else
 	{
-	    Boot::location = Bootloader["location"]:"mbr";
+	    toimport["loader_device"] = Bootloader["location"]:"mbr";	    
 	}
+	if (haskey(Bootloader, "loader_type"))
+	    toimport["loader_type"] = Bootloader["loader_type"]:"grub";
 
+	
+	/**
+	 * FIXEME
 	string parameters = Bootloader["kernel_parameters"]:"";
 
 	if ( size(parameters) > 0)
@@ -485,26 +252,11 @@
 	}
 
 	// Lilo settings
-
-	if (Boot::LoaderType == "lilo")
-	{
-	    import "BootLILO";
-	    BootLILO::Set(
-			  Bootloader["linear"]:false,
-			  Bootloader["activate"]:false,
-			  Bootloader["lba_support"]:false
-			  );
-	}
-	else if (Boot::LoaderType == "grub")
-	{
-	    import "BootGRUB";
-	    BootGRUB::Set(
-			  Bootloader["linear"]:false,
-			  Bootloader["activate"]:false,
-			  Bootloader["lba_support"]:false
-			  );
-	}
-
+	Boot::Set(
+		  Bootloader["linear"]:false,
+		  Bootloader["activate"]:false,
+		  Bootloader["lba_support"]:false
+		  );
 
 	// Add initrd modules
 	if (size(Bootloader["initrd_modules"]:[]) > 0)
@@ -516,6 +268,9 @@
 	}
 
 	Boot::Set();
+	*/
+
+	Bootloader::Import(toimport);
     }
 
     /**
@@ -523,7 +278,7 @@
      * @return list post packages
      */
     global define  list postPackageList() ``{
-	map Software = Install["software"]:$[];
+	map Software = Profile::Flat["software"]:$[];
 	list postPackages = Software["post-packages"]:[];
 
 	y2milestone("Post packages: %1",  postPackages);
@@ -535,7 +290,7 @@
      * @return list Packages
      */
     global define list packageList()``{
-	map Software = Install["software"]:$[];
+	map Software = Profile::Flat["software"]:$[];
 	list Packages = Software["packages"]:[];
 	return Packages;
     }
@@ -557,7 +312,7 @@
 	// Standard Packages
 	boolean retval = false;
 
-	map Software = Install["software"]:$[];
+	map Software = Profile::Flat["software"]:$[];
 	list addons = Software["addons"]:[];
 
 
@@ -604,10 +359,12 @@
 
     global define list calcExtraPackages () ``{
 
-	map Software = Install["software"]:$[];
+	map Software = Profile::Flat["software"]:$[];
 	Kernel = Software["kernel"]:"";
 	
 	// single selected packages
+	// FIXEME
+	list  forcedPackages = [];
 	list Packages = union(Software["packages"]:[], forcedPackages);
 	
 	if (Kernel!="") {
@@ -625,6 +382,8 @@
      * @param
      * @return void
      */
+
+    /*
     global define void Finalize()
 	``{
 
@@ -643,12 +402,15 @@
 
 	return;
     }
+    */
 
     /**
      * Write sysconfig variables
      * @param void
      * @return void
      */
+
+    /*
     global define void sysconfigSettings()
 	``{
 
@@ -668,273 +430,10 @@
 	return;
     }
 
-     /**
-     * Execute pre scripts
-     * @param type of script
-     * @return void
-     */
-
-    global define scriptSettings(string type)
-	``{
-
-	map allScripts = Configure["scripts"]:$[];
-	list scripts = allScripts[type]:[];
-
-	string tmpdirString = "";
-	string current_logdir = "";
-
-	if (type == "pre-scripts")
-	{
-	    tmpdirString = sformat("%1/%2", tmpdir, type);
-	    SCR::Execute (.target.mkdir, tmpdirString);
-
-	    current_logdir = sformat("%1/logs", tmpdirString);
-	    SCR::Execute (.target.mkdir,  current_logdir);
-	}
-	else if (type == "chroot-scripts")
-	{
-	    tmpdirString = sformat("%1%2", Installation::destdir,  scripts_dir);
-	    SCR::Execute (.target.mkdir, tmpdirString);
-
-	    current_logdir = sformat("%1%2", Installation::destdir, logs_dir);
-	    SCR::Execute (.target.mkdir,  current_logdir);
-	}
-	else
-	{
-	    current_logdir = logs_dir;
-	}
-
-
-	foreach( `s, scripts,
-		 ``{
-	    string scriptInterpreter=s["interpreter"]:"shell";
-	    string scriptName=s["filename"]:type;
-	    string scriptPath = "";
-
-	    if (type == "pre-scripts")
-	    {
-		scriptPath = sformat("%1/%2/%3", tmpdir, type, scriptName);
-		y2milestone("Writing pre script into %1", scriptPath);
-		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
-	    }
-	    else if (type == "chroot-scripts")
-	    {
-		scriptPath = sformat("%1%2/%3", Installation::destdir,  scripts_dir,  scriptName);
-		y2milestone("Writing chroot script into %1", scriptPath);
-		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
-	    }
-	    else
-	    {
-		scriptPath = sformat("%1/%2", scripts_dir, scriptName);
-		y2milestone("Writing  script into %1", scriptPath);
-		SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
-	    }
-
-	    // string message =  sformat(_("Executing user supplied script: %1"), scriptName);
-	    string executionString = "";
-	    if (scriptInterpreter == "shell")
-	    {
-		executionString = sformat("/bin/sh -x %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
-		SCR::Execute (.target.bash, executionString);
-	    }
-	    else if (scriptInterpreter == "perl")
-	    {
-		executionString = sformat("/usr/bin/perl %1  2&> %3/%4.log", scriptPath, current_logdir, scriptName);
-		SCR::Execute (.target.bash,executionString);
-	    }
-	    else
-	    {
-		y2error("Unknown interpreter: %1", scriptInterpreter);
-	    }
-	    y2milestone("Script Execution command: %1", executionString );
-	});
-
-	return;
-    }
-
-
-     /**
-     * Create partition plans
-     * @param void
-     * @return void
-     */
-
-    global define void partitionSettings()
-	``{
-	import "Partitions";
-	include "autoinstall/partitioning.ycp";
+    */
 
 
 
-	Partitioning = Install["partitioning"]:[];
-
-	map init_targetmap = Storage::GetTargetMap();
-	y2milestone("Inital Target map: %1", init_targetmap);
-
-	list drives = maplist( `k, `v, init_targetmap ,
-			      ``{
-				  return($["device":k, "size": lookup(v,"cyl_size",0)]);
-	});
-
-	y2milestone("Drives: %1", drives);
-
-	Storage::SetPartDisk(lookup(select(drives,0,$[]),"device", Boot::FindMbrDisk()));
-
-	// Set devices if missing
-	targetMap =  listmap (map drive, Partitioning, ``{
-	    boolean first_set = false;
-	    string device = "";
-	    if (!first_set && drive["device"]:"" == "")
-	    {
-		device = Storage::GetPartDisk();
-		first_set = true;
-		return([device,drive]);
-	    }
-	    else if (drive["device"]:"" != "")
-	    {
-		return([drive["device"]:"",drive]);
-	    }
-
-	});
-
-	y2milestone("New Auto-Install tagetMap: %1", targetMap);
-
-	// Initialize disks if needed
-	boolean init_done = false;
-	foreach (string device, map data, targetMap,
-		 ``{
-	    if (data["initialize"]:false)
-	    {
-		init_done = true;
-		integer zero_ret = InitDevice(device);
-		y2milestone("Initializing device:%1 --> %2", device, zero_ret);
-	    }
-	});
-
-	// Re-probe Targets
-	if (init_done)
-	{
-	    Storage::ReReadTargetMap();
-	}
-	if (size(targetMap) > 0) {
-	    foreach (string device, map data, targetMap,
-		     ``{
-		y2milestone("Creating partition plans for %1", device);
-		boolean ret = AutoPartition(device);
-	    });
-	}
-	else
-	{
-	    map firstDrive = drives[0]:$[];
-	    boolean ret = AutoPartition(firstDrive["device"]:"/dev/hda");
-	}
-
-
-	raidSettings();
-	if (size(RAID)!= 0)
-	    autoRAID();
-	lvmSettings();
-	if (size(LVM)!= 0)
-	    autoLVM();
-
-    }
-
-
-
-    /**
-     * Create LVM partition plans
-     * @param void
-     * @return void
-     */
-    global define void lvmSettings()
-	``{
-	LVM = Install["lvm"]:[];
-	return;
-    }
-
-    /**
-     * Create RAID partition plans
-     * @param void
-     * @return void
-     */
-    global define void raidSettings()
-	``{
-	RAID = Install["raid"]:[];
-	return;
-    }
-
-
-    /**
-     * Copy custom configuration files to system.
-     * @param void
-     * @return void
-     */
-    global define void CopyFiles()
-	``{
-
-	list Files = GetConfList(Configure, "files", true);
-
-	if (size(Files)==0)
-	{
-	    return;
-	}
-
-	integer counter = 0;
-	foreach(map file, Files,
-		``{
-	    if (file["file_contents"]:"" != "")
-	    {
-		string alternate_location = sformat("%1/%2", files_dir, counter);
-		y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );
-		SCR::Write (.target.string, file["file_path"]:alternate_location, file["file_contents"]:"");
-	    }
-	    counter = counter + 1;
-	});
-	return;
-    }
-
-    /**
-     * Write a single sysconfig value
-     * @param file filename to write to
-     * @param key of sysconfig variable
-     * @param value of sysconfig variable
-     * @return void
-     */
-    define void WriteSysconfigValue( string file,
-				       string   key,
-				       string value )
-	``{
-
-	list    path_list   = splitstring( "" + file, "/" );
-	string variable     = key;
-
-	string  path_string = ".etc.sysconfig." + mergestring( path_list, "." );
-	path    path_path   = topath( path_string );
-	string  path_slash  = mergestring(splitstring( path_string, "."), "/");
-
-	if ( regexpmatch( path_slash, ".*rc/config.*" ) )
-	{
-	    path_slash = regexpsub( path_slash, "(.*)rc/config(.*)",  "\\1rc.config\\2" );
-	}
-
-
-	if ( !contains(registered_list, path_path))
-	{
-	    y2debug("Registering %1", path_path);
-	    string tmp = SCR::Read(.target.tmpdir);	    
-	    tmp = tmp + "/_" + path_string + ".scr";
-
-	    string scrfile = path_string + "\n" + "`ag_ini( SysConfigFile(\"" + path_slash + "\"))\n";
-
-	    SCR::Write (.target.string, tmp, scrfile);
-	    SCR::RegisterAgent(path_path, tmp);
-	    registered_list = add( registered_list, path_path );
-	    y2debug("Registered: %1", registered_list );
-	}
-	any ret = SCR::Write( topath(path_string + "." + variable), value);
-	y2milestone("sysconfig ret: %1", ret);
-
-    };
 
 
     /**       
@@ -988,35 +487,52 @@
     }
 
 
-
+    global define boolean Save() ``{
+	return (Profile::SaveYCP( parsedControlFile ));
+    }
     
-    /**
-     * Add a single entry to the Sysconfig list of variables
-     * @param string file name / path
-     * @param string key
-     * @param string value
-     * @param string package name which uses this variable if installation of package has to be forced.
-     * @return void
-     */
-    global define void addSysconfigVar(string file, string key, string value, string package)
-	``{
 
-	SysconfigVars=add(SysconfigVars, $["sysconfig_path":file, "sysconfig_key":key, "sysconfig_value": value]);
-	if (package != "") {
-	    forcedPackages = add(forcedPackages, package);
-	}
-    }
 
     /**
-     * Save misc autoinstallation data
+     * Finish Auto-Installation by saving misc files
      */
-    global define void saveMiscData ()
+    global define void Finish ()
 	``{
-	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AutoInstall::scripts_dir);
-	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoInstall::logs_dir);
-
+	// Copy pre scripts to target system.
+	import "AIScripts";
+	AIScripts::Write("chroot-scripts");	
+	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AIScripts::scripts_dir);
+	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AIScripts::logs_dir);
+	
 	SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", xml_tmpfile ,  Installation::destdir ,  xml_file) );
+
+	return;
     }
 
+
+
+    global define map Linuxrc(map linuxrc) ``{
+	import "Bootloader";
+	import "AIgeneral";
+	if (AIgeneral::ForceBoot && Mode::hardBoot)
+	{
+	    linuxrc["Root"] = Bootloader::getRootDevice ();
+	}
+	if (AIgeneral::Reboot && !Mode::hardBoot)
+	{
+	    linuxrc["Root"] = "reboot";
+	    Mode::hardBoot = true;
+	}
+
+	if (AIgeneral::RebootMsg)
+	{
+	    linuxrc["RebootMsg"] = "1";
+	}
+	else
+	{
+	    linuxrc["RebootMsg"] = "0";
+	}
+	return linuxrc;
+    }
 }
 

@@ -25,6 +25,9 @@
     import "Report";
     import "Packages";
     import "SpaceCalculation";
+    import "AIStorage";
+    import "AIScripts";
+    import "AIgeneral";
 
     string help_text = UI(_("<P>
 Please wait while the system is prepared for autoinstallation.
@@ -33,8 +36,7 @@ Please wait while the system is prepared for autoinstallation.
     list progress_stages =
 	[
 	 _("Load and configure additional kernel modules"),
-	 _("Configure Language, Keyboard and Time zone "),
-	 _("Configure Mouse"),
+	 _("Configure general settings "),
 	 _("Execute pre-install user scripts"),
 	 _("Create partition plans"),
 	 _("Configure Bootloader"),
@@ -44,8 +46,7 @@ Please wait while the system is prepared for autoinstallation.
     list progress_descriptions =
 	[
 	 _("Loading and configuring additional kernel modules"),
-	 _("Configuring language, Keyboard and Time zone..."),
-	 _("Configuring Mouse..."),
+	 _("Configuring general settings..."),
 	 _("Executing pre-install user scripts..."),
 	 _("Creating partition plans..."),
 	 _("Configuring Software selections..."),
@@ -62,8 +63,11 @@ Please wait while the system is prepared for autoinstallation.
 
 
     Progress::NextStage();
+
+    // FIXME
     // Additional Kernel modules
     ///////////////////////////////////////////////////////////////////////
+    
     if (is(AutoInstall::loadKernelModules, list) && size(AutoInstall::loadKernelModules) > 0 )
     {
 	foreach(`m, AutoInstall::loadKernelModules, ``{
@@ -97,62 +101,30 @@ Please wait while the system is prepared for autoinstallation.
     }   
 
     
-
-    
-    //Keyboard
-    ///////////////////////////////////////////////////////////////////////
-    // Set it in Keyboard module.
+    // configure general settings
     Progress::NextStage();
-    
-    Progress::Title(_("Configuring Keyboard"));
 
-    map install = AutoInstall::Profile["install"]:$[];
-    map configure = AutoInstall::Profile["configure"]:$[];
-
+    AIgeneral::Import(Profile::Flat["general"]:$[]);
+    AIgeneral::Write();
     
-    
-    AutoInstall::generalSettings();
-    
-    string keyboard = AutoInstall::Keyboard;
-    y2milestone("Setting keyboard to: %1", keyboard);
-    
-    Keyboard::SetConsole( keyboard );
-    Keyboard::SetX11( keyboard );
- 
-
-    // Timezone
-    
-    Progress::Title(_("Configuring Timezone"));
-    if (AutoInstall::Timezone != "")
-    {
-	Timezone::Set(AutoInstall::Timezone);
-    }
-
-    // Hardware Clock
-    ////////////////////////////////////////////////////////////////////////
-    
-    Timezone::hwclock = AutoInstall::Hwclock;
-
-    // mouse
-    ////////////////////////////////////////////////////////////////////////
-    
-    Progress::NextStage();
-    if (AutoInstall::Mouse!="probe")
-    {
-	Mouse::Set(AutoInstall::Mouse);
-    }
 
     // Scripts
     ///////////////////////////////////////////////////////////////////////////
 
     Progress::NextStage();
-    AutoInstall::scriptSettings("pre-scripts");
+    
+    AIScripts::Import(Profile::Flat["scripts"]:$[]);
+    AIScripts::Write("pre-scripts");
 
     // Partitioning and Storage
     ////////////////////////////////////////////////////////////////////////
 
     Progress::NextStage();
-    AutoInstall::partitionSettings();
+    AIStorage::Import( [ Profile::Flat["partitioning"]:[],   Profile::Flat["lvm"]:[],  Profile::Flat["raid"]:[]]) ;
+    AIStorage::Write();
+
+
+    
 
     // Software
     //////////////////////////////////////////////////////////////////////////

@@ -59,6 +59,7 @@ Please wait while the system is being prepared for autoinstallation.</p>
 
     boolean ret = false;
     ProfileLocation::Process();
+    
     while (true)
     {	 
 	ret = AutoInstallRules::GetRules();
@@ -72,7 +73,6 @@ Please wait while the system is being prepared for autoinstallation.</p>
 		return `abort;
 	    else
 		continue;
-
 	}
     }
     sleep(1000);
@@ -90,41 +90,34 @@ Please wait while the system is being prepared for autoinstallation.</p>
 
     Progress::NextStage();
     
-    if (!AutoInstall::ProcessProfile()) {
+    if (! Profile::Read( AutoInstall::xml_tmpfile )) {
 	UI::ErrorPopup(_("Error while parsing the control file.
-Check the log files for more details. Fix the
+Please check the log files for more details or fix the
 control file and try again.
 "));
 	return `abort;
     }
 
-
+    y2milestone ("Autoinstall control file %1",  Profile::current );
+    
     boolean use_utf8 = true;		// utf8 is default
-
     if (!lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
     {
 	use_utf8 = false;		// fallback to ascii
     }
-
-    string language = AutoInstall::Profile["install","general","language"]:Language::language;    
+    string language = Profile::current["install","general","language"]:Language::language;    
     Language::Set(language);
     
-    // Set Console font
-    
+    // Set Console font    
     Console::SelectFont( language );
-
     Installation::encoding = (use_utf8) ? "UTF-8" : Console::encoding;
 
     // Set it in YaST2 
-
     UI::SetLanguage (language, Installation::encoding);
-    WFM::SetLanguage(language, "UTF-8");
-
-    y2milestone ("Autoinstall control file %1",  AutoInstall::Profile );
+    WFM::SetLanguage(language, "UTF-8");    
     
     sleep(1000);
     Progress::Finish();
- 
-    
+     
     return `next;
 }

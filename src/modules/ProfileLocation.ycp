@@ -165,7 +165,11 @@
 		is_directory = true;
 		directory = filepath;
 		SCR::Execute(.target.remove, localfile);
-	    }	    
+	    }
+	    else
+	    {
+		directory = dirname(filepath);
+	    }
 	}
 	else
 	{
@@ -178,6 +182,7 @@
 	y2milestone("directory: %1", directory);
 
 	y2milestone("Fetching Rules File");
+	
 	// Get rules file	
 	boolean ret = Get(scheme,
 			  host,
