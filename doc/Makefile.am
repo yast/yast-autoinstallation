@@ -9,9 +9,9 @@ SUBDIRS = autodocs images entities bin components examples
 htmldir = @docdir@
 xml_file = autoyast2.xml
 style_file = autoyast2.dsl
-xml_files =  	$(wildcard *.xml) 
+xml_files =  $(wildcard *.xml) 
 
-EXTRA_DIST = $(xml_files) $(style_file) dtdparse.tgz profile.dtd
+EXTRA_DIST = 
 
 CLEANFILES = *.dvi *.aux *.tex *.log *.bak *.out\
   .html.sum; rm -rf autoyast2 autoyast2.junk profile.dtd.xml elements \
@@ -45,15 +45,6 @@ html:  $(xml_files) examples components images
 		mkdir -p autoyast2/img; \
 		cp  img/*.png autoyast2/img; 
 
-publish: html
-		rm -rf $(HOME)/public_html/autoyast2;\
-		rm -rf $(HOME)/Export/autoinstall/autoyast2;\
-		cp -a autoyast2 $(HOME)/public_html/autoyast2; \
-		cp -a autoyast2 $(HOME)/Export/autoinstall/autoyast2; \
-		chmod -R a+r $(HOME)/public_html/autoyast2; \
-		chmod a+x `find $(HOME)/public_html/autoyast2 -type d`;\
-		chmod -R a+r $(HOME)/Export/autoinstall/autoyast2; \
-		chmod a+x `find $(HOME)/Export/autoinstall/autoyast2 -type d`;
 
 .PHONY: images examples.ent components.ent 
 
