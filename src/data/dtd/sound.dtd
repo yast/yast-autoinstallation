@@ -1,29 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT LOAD_ALSA_SEQ (#PCDATA)>
-<!ELEMENT Master (#PCDATA)>
-<!ATTLIST Master
+<!ELEMENT accepting (#PCDATA)>
+<!ATTLIST accepting
 	config:type CDATA #REQUIRED
 >
-<!-- <!ELEMENT alias (#PCDATA)> : redefined -->
 <!ELEMENT autoinstall (#PCDATA)>
 <!ATTLIST autoinstall
 	config:type CDATA #REQUIRED
 >
+<!ELEMENT bannerend (#PCDATA)>
+<!ELEMENT bannerstart (#PCDATA)>
+<!ELEMENT config (#PCDATA)>
+<!ELEMENT cups-state (#PCDATA)>
+<!ELEMENT cups_installation (#PCDATA)>
+<!ATTLIST cups_installation
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT database (#PCDATA)>
+<!ATTLIST database
+	config:type CDATA #IMPLIED
+>
+<!ELEMENT device_db (#PCDATA)>
+<!ELEMENT device_id (#PCDATA)>
+<!ATTLIST device_id
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT device_ieee (#PCDATA)>
+<!ELEMENT info (#PCDATA)>
+<!ELEMENT listentry (#PCDATA | listentry)*>
+<!ATTLIST listentry
+	config:type (boolean | integer | list) #IMPLIED
+>
+<!ELEMENT location (#PCDATA)>
+<!ELEMENT lprng-state (#PCDATA)>
 <!ELEMENT model (#PCDATA)>
-<!-- <!ELEMENT module (#PCDATA)> : redefined -->
-<!ELEMENT module_conf (alias, model, module, options, unique_key)>
-<!ELEMENT modules_conf (module_conf+)>
+<!ELEMENT modelset_required (#PCDATA)>
+<!ATTLIST modelset_required
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT module_conf (alias?, model?, module?, options?, unique_key?)>
+<!ELEMENT modules_conf (module_conf)>
 <!ATTLIST modules_conf
 	config:type CDATA #REQUIRED
 >
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT new (#PCDATA)>
+<!ATTLIST new
+	config:type CDATA #REQUIRED
+>
 <!-- <!ELEMENT options (snd_enable, snd_index)> -->
+<!ELEMENT ownppd (#PCDATA)>
+<!ELEMENT printcap (printcap_entry)>
+<!ATTLIST printcap
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT printcap_entry (accepting?, bannerend?, bannerstart?, comment?, config?, cups-state?, database?, device?, device_db?, device_id?, device_ieee?, info?, location?, lprng-state?, modelset_required?, name?, new?, ownppd?, state?, type?, unique_key?, unknown-state?, uri?, vendor?, vendor_db?, vendor_id?, vendor_ieee?)>
+<!ELEMENT printer (cups_installation?, database?, default?, printcap?, server_hostname?, spooler?)>
 <!ELEMENT rc_vars (LOAD_ALSA_SEQ)>
+<!ELEMENT server_hostname EMPTY>
 <!ELEMENT snd_enable (#PCDATA)>
 <!ELEMENT snd_index (#PCDATA)>
 <!ELEMENT sound (autoinstall, modules_conf, rc_vars, volume_settings)>
+<!ELEMENT spooler (#PCDATA)>
+<!ELEMENT state (#PCDATA)>
+<!ELEMENT type (#PCDATA)>
 <!ELEMENT unique_key (#PCDATA)>
-<!ELEMENT volume_entry (Master)>
-<!ELEMENT volume_settings (volume_entry+)>
+<!ELEMENT unknown-state (#PCDATA)>
+<!ELEMENT uri (#PCDATA)>
+<!ELEMENT vendor (#PCDATA)>
+<!ELEMENT vendor_db (#PCDATA)>
+<!ELEMENT vendor_id (#PCDATA)>
+<!ATTLIST vendor_id
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT vendor_ieee (#PCDATA)>
+<!ELEMENT volume_entry (listentry+)>
+<!ATTLIST volume_entry
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT volume_settings (volume_entry)>
 <!ATTLIST volume_settings
 	config:type CDATA #REQUIRED
 >

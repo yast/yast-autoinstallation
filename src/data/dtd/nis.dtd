@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT nis (nis_broadcast?, nis_broken_server?, nis_by_dhcp?, nis_domain, nis_local_only?, nis_options?, nis_other_domains?, nis_servers, start_autofs, start_nis)>
+<!ELEMENT nis (nis_broadcast?, nis_broken_server?, nis_by_dhcp?, nis_domain, nis_domain_by_dhcp?, nis_local_only?, nis_options?, nis_other_domains?, nis_servers, nis_servers_by_dhcp?, start_autofs, start_nis)>
 <!ELEMENT nis_broadcast (#PCDATA)>
 <!ATTLIST nis_broadcast
 	config:type CDATA #REQUIRED
 >
+
 <!ELEMENT nis_broken_server (#PCDATA)>
 <!ATTLIST nis_broken_server
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_servers_by_dhcp (#PCDATA)>
+<!ATTLIST nis_servers_by_dhcp
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_domain_by_dhcp (#PCDATA)>
+<!ATTLIST nis_domain_by_dhcp
 	config:type CDATA #REQUIRED
 >
 <!ELEMENT nis_domain (#PCDATA)>
