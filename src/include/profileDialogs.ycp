@@ -11,6 +11,8 @@
 
     textdomain "autoinst";
 
+    import "Popup";
+
     // Shows a dialog when 'control file' can't be found
 
     global define ProfileSourceDlg ()
@@ -72,10 +74,9 @@ on the command line.</p>"));
 	repeat {
 	    ret = UI::UserInput();
 
-
 	    if (ret == `abort)
 	    {
-		if (CallFunction(`inst_confirm_abort(`painless)))
+		if (Popup::ConfirmAbort(`painless))
 		    return `abort;
 		else
 		    continue;
@@ -147,5 +148,5 @@ on the command line.</p>"));
 
 
 
-    
+
 }
