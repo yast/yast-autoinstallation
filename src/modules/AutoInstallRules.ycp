@@ -258,7 +258,27 @@
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;		 
 			env[rule] = karch;
-		    }		    
+		    }
+		    else if ( rule == "disksize" )
+		    {
+			// [ $["device":"/dev/hda", "size":"100000"] ]
+			list disk = splitstring(match, " ");
+			
+			// ["/dev/hda", "1000"]
+
+			integer i = 0;
+			foreach(map dev, disksize, ``{
+			    string var1 = sformat("disksize_size%1", i );
+			    string var2 = sformat("disksize_device%1", i );
+			    shellseg(ismatch , var1 , disk[1]:"" , op, matchtype);
+			    ismatch = true;
+			    shellseg(ismatch, var2 , disk[0]:"" , op, "exact");
+			    env[var1] = dev["size"]:-1;
+			    env[var2] = dev["device"]:"";
+			    i = i + 1;
+			    op = "or";
+			});		
+		    }			    
 		    else if ( rule == "result" )
 		    {
 			if ( verifyrules() == 0 )
@@ -287,9 +307,9 @@
     
     define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
 	if (op == "and")
-	    op = "-a";
+	    op = " -a ";
 	else if (op == "or")
-	    op = "-o";
+	    op = " -o ";
 	
 	string tmpshell = "";
 	y2debug("Match type: %1", matchtype);

@@ -41,9 +41,9 @@ Please wait while the system is prepared for autoinstallation.
 	 _("Load and configure additional kernel modules"),
 	 _("Configure general settings "),
 	 _("Execute pre-install user scripts"),
-	 _("Create partition plans"),
-	 _("Configure Bootloader"),
-	 _("Configure Software selections")
+	 _("Create partition plans"),	
+	 _("Configure Software selections"),
+	 _("Configure Bootloader")
 	 ];
 
     list progress_descriptions =
@@ -119,6 +119,10 @@ Please wait while the system is prepared for autoinstallation.
     AIScripts::Import(Profile::Flat["scripts"]:$[]);
     AIScripts::Write("pre-scripts");
 
+
+    // Bootloader::Read();
+
+    
     // Partitioning and Storage
     ////////////////////////////////////////////////////////////////////////
 

@@ -12,6 +12,7 @@
     textdomain "autoinst";
 
     import "Summary";
+    import "Mode";
 
 
     
@@ -27,8 +28,14 @@
     global list forcedPackages = [];
 
 
-
-
+    global define void AIsoftware() ``{
+	if ( Mode::cont )
+	{
+	    import "Profile";
+	    Import(Profile::current["software"]:$[]);
+	}
+    }
+    
     /**
      * Import data
      * @param settings settings to be imported
