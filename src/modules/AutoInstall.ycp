@@ -18,7 +18,7 @@
     import "XML";
     import "X11Version";
     import "Language";
-
+    import "Bootloader";
 
     include "autoinstall/io.ycp";
 
@@ -67,21 +67,11 @@
 
     global map Profile = $[];
 
-
-    
-    // Bootloader
-    global map Bootloader = $[];
-
-
     global map X11 = $[];
 
     
-
-
     global list loadKernelModules = [];
     global list configureKernelModules = [];
-
- 
 
 
     // Modules
@@ -90,11 +80,7 @@
     global map ModuleMap = $[];
 
 
-    // Kernel
-    global string Kernel = "";
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
+     //////////////////////////////////////////////////////////////////////////////////////////////
     // Local variables
     /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -158,12 +144,16 @@
 	    Profile::Read(  autoconf_file  );
 	    boolean ret = Profile::Read(  xml_tmpfile );
 	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, cache));
+	    		
+	    Profile = Profile::current;		
+	    ProcessSpecialResources();
+	    
 	    return (ret);
 	}
 	else
 	{
-	    Profile::ReadYCP ( parsedControlFile );
-	    if ( Profile::current == $[] )	// No saved data base.
+	    boolean ret = Profile::ReadYCP ( parsedControlFile );
+	    if ( Profile::current == $[] || !ret )	// No saved data base.
 	    {
 		y2milestone( "No saved autoinstall data found" );
 		return (false);
@@ -171,8 +161,12 @@
 	    else	// saved data  found
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
-		y2milestone("Removing old data: %1", SCR::Execute(.target.remove, parsedControlFile));
+		SCR::Execute(.target.remove, parsedControlFile);
+		
 		Profile = Profile::current;
+		
+		ProcessSpecialResources();
+		
 		return (true);
 	    }
 	}
@@ -183,30 +177,21 @@
     
     /**
      * Parse profile and set some values
-     *
+     * @param true on success
      */
-    global define boolean ProcessProfile()
+    global define boolean ProcessSpecialResources ()
 	``{
-		
-	// FIXME    
+			
 	Report::Set(Profile::Flat["report"]:$[]);
-
 	X11 = Profile::Flat["x11"]:$[];
 
-	if (size(X11) == 0 || !X11["configure_x11"]:false)
+	if (size(X11) == 0 || !X11["configure_x11"]:false )
 	{
 	    Mode::x11_setup_needed = false;
 	}
-
-	map Software = Profile::Flat["software"]:$[];
-
-	postPackageList();
-
+	
 	return true;
     }
-
-
-
 
     /**
      * Configure bootloader settings
@@ -230,7 +215,9 @@
 	    toimport["loader_device"] = Bootloader["location"]:"mbr";	    
 	}
 	if (haskey(Bootloader, "loader_type"))
+	{
 	    toimport["loader_type"] = Bootloader["loader_type"]:"grub";
+	}
 
 	
 	/**
@@ -273,165 +260,8 @@
 	Bootloader::Import(toimport);
     }
 
-    /**
-     * Return post package list
-     * @return list post packages
-     */
-    global define  list postPackageList() ``{
-	map Software = Profile::Flat["software"]:$[];
-	list postPackages = Software["post-packages"]:[];
 
-	y2milestone("Post packages: %1",  postPackages);
-	return postPackages;
-    }
-
-    /**
-     * Parse package list
-     * @return list Packages
-     */
-    global define list packageList()``{
-	map Software = Profile::Flat["software"]:$[];
-	list Packages = Software["packages"]:[];
-	return Packages;
-    }
-
-
-    /**
-     * Configure software settings
-     * @param void
-     * @return boolean
-     */
-    global define boolean softwareSettings()
-	``{
-	boolean ok = true;
-	boolean ret = false;
-	// y2milestone("set Locale to %1", Language::language);
-	Pkg::SetLocale (Language::language);
-
-	Packages::Init(true);
-	// Standard Packages
-	boolean retval = false;
-
-	map Software = Profile::Flat["software"]:$[];
-	list addons = Software["addons"]:[];
-
-
-	string  base_selection = Software["base"]:"Minimal";
-	if (! Pkg::SetSelection( base_selection ))
-	{
-	    y2error("Error while setting base selection: %1", base_selection);
-	    Report::Error(sformat(_("Could not set base selection: %1"), s));
-	    return false;
-	}
-
-	foreach(`s, toset(addons),
-		``{
-	    if (!Pkg::SetSelection( s ))
-	    {
-		y2error("Error while setting-addon selection: %1", s);
-		Report::Warning(sformat(_("Could not set add-on selection %1"), s));
-	    }
-	});
-
-	// single selected packages
-
-	if (!Pkg::ActivateSelections()) {
-	    return false;
-	}
-
-
-	list extraPackages = calcExtraPackages ();
-	y2milestone("Packages selected in autoinstall mode: %1", extraPackages);
-	if (size(extraPackages) > 0 ) {
-	    Pkg::DoProvide(extraPackages);
-	}
-
-	Pkg::DoProvide (Packages::ComputeSystemPackageList());
-	Pkg::PkgSolve();
-
-
-	SpaceCalculation::ShowPartitionWarning();
-	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",  Pkg::GetSelections(`selected, "base"), Pkg::GetSelections(`selected, ""));
-
-	return (ok);
-    }
-
-
-    global define list calcExtraPackages () ``{
-
-	map Software = Profile::Flat["software"]:$[];
-	Kernel = Software["kernel"]:"";
-	
-	// single selected packages
-	// FIXEME
-	list  forcedPackages = [];
-	list Packages = union(Software["packages"]:[], forcedPackages);
-	
-	if (Kernel!="") {
-	    Packages=add(Packages,Kernel);
-	}
-
-	return Packages;
-
-    }
     
-
-
-    /**
-     * Finalize autoinst settings
-     * @param
-     * @return void
-     */
-
-    /*
-    global define void Finalize()
-	``{
-
-	sysconfigSettings();
-	if (X11Version::have_x11())
-	{
-	    if (  X11["default_wm"]:"" != "") {
-		SCR::Write (.sysconfig.windowmanager.DEFAULT_WM, X11["default_wm"]:"kde");
-		SCR::Write (.sysconfig.windowmanager, nil);
-	    }
-	    if (  X11["display_manager"]:"" != "") {
-		SCR::Write (.sysconfig.displaymanager.DISPLAYMANAGER, X11["display_manager"]:"kdm");
-		SCR::Write (.sysconfig.displaymanager, nil);
-	    }
-	}
-
-	return;
-    }
-    */
-
-    /**
-     * Write sysconfig variables
-     * @param void
-     * @return void
-     */
-
-    /*
-    global define void sysconfigSettings()
-	``{
-
-	list Sysconfig = GetConfList(Configure, "sysconfig", true);
-	list allSysconfig = union(Sysconfig, SysconfigVars);
-
-	if (size(allSysconfig)>0)
-	{
-	    foreach(map var , allSysconfig, ``{
-		WriteSysconfigValue( var["sysconfig_path"]:"dummy",
-				     var["sysconfig_key"]:"dummy",
-				     var["sysconfig_value"]:""
-				     );
-	    });
-
-	}
-	return;
-    }
-
-    */
-
 
 
 
@@ -487,7 +317,8 @@
     }
 
 
-    global define boolean Save() ``{
+    global define boolean Save()
+	``{
 	return (Profile::SaveYCP( parsedControlFile ));
     }
     
@@ -509,7 +340,11 @@
 	return;
     }
 
-
+    /**
+     * Linuxrc Settings
+     * @param: linuxrc map
+     * @return modified linuxrc map
+     */ 
 
     global define map Linuxrc(map linuxrc) ``{
 	import "Bootloader";

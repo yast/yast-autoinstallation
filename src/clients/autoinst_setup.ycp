@@ -21,13 +21,16 @@
     import "Console";
     import "Storage";
     import "Progress";
-    import "Boot";
+    import "Bootloader";
     import "Report";
     import "Packages";
     import "SpaceCalculation";
     import "AIStorage";
     import "AIScripts";
     import "AIgeneral";
+    import "AIsoftware";
+
+    
 
     string help_text = UI(_("<P>
 Please wait while the system is prepared for autoinstallation.
@@ -128,8 +131,9 @@ Please wait while the system is prepared for autoinstallation.
 
     // Software
     //////////////////////////////////////////////////////////////////////////
-    Progress::NextStage();
-    if (!AutoInstall::softwareSettings())
+    Progress::NextStage();    
+    AIsoftware::Import( Profile::Flat["software"]:$[]			
+    if (!AIsoftware::Write())
     {
 	Report::Error(_("Error while configuring software selections.
 Please try again!"));
