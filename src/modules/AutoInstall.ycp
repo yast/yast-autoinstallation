@@ -519,75 +519,56 @@
     global define void softwareSettings()
 	``{
 
+	boolean ret = false;
+	
 	Packages::Init(true);
-	// Standard Packages
 
+	
+	// Standard Packages
 	boolean retval = false;
 
 	map Software = Install["software"]:$[];
-	list Selections = Software["addons"]:[];
+	list addons = Software["addons"]:[];
 
-	if (Software["base"]:""!="")
+	if (Software["base"]:"" != "")
 	{
-	    Selections = add(Selections, Software["base"]:"");
+	    string  base_selection = Software["base"]:"Minimal";
+	    ret = Pkg::SetSelection( base_selection );
+	    y2milestone ( "Selecting %1 returns: %2", base_selection, ret );	     
 	}
 
-	list Packages = union(Software["packages"]:[], forcedPackages);
+	
+	
 	/*
 	if (Software["ignore_error_log"]:false)
 	{
 	    Report::YesNoErrors["packages"] = true;
-	}
-	
+	}	
 	*/
-	if (size(Selections) > 1)
-	{
-	    integer sel = 1;
-	    SCR::Execute(.package.selectSelInstall, select( Selections ,0,"" ),true );
-	    while (sel < size(current_sel) - 1) {
-		SCR::Execute(.package.selectSelInstall, select( Selections,sel,"" ),false );
-		sel = sel + 1;
-	    }
-	    SCR::Execute(.package.selectSelInstall, select( Selections,size(Selections)-1,"" ),false );
-	}
-	else if ( size(Selections) == 1)
-	{
-	    SCR::Execute(.package.selectSelInstall, select( Selections,0, "" ), true );
-	}
-	else if (size(Packages) == 0 && size(Selections) == 1)
-	{
-	    // forcing minimal selection
-	    SCR::Execute(.package.selectSelInstall, "Minimal", true );
-	}
+
+	
+	foreach(`s, addons, ``{	
+	    ret = Pkg::SetSelection( s );	    
+	});
 
 
-	if (size(Packages) > 0)
-	{
-	    SCR::Execute(.package.setInstallSelection, Packages, false);
-	}
-
+	// single selected packages
+	list Packages = union(Software["packages"]:[], forcedPackages);
+	
 
 	/**
 	 * get all packages to install
 	 *
 	 * Initialize server with the packages which have to be installed, but without resetting
 	 * single-selected packages.
-	 */
-
-	list package_list =  Packages::ComputeInstallList();
-
-	SCR::Execute(.package.setInstallSelection, package_list, true );
-	SCR::Execute(.package.setSourceInstallation, Packages::install_sources );
+	 */	
+	
+	// FIXME
+	Pkg::DoProvide( union(package_list, Packages));	
 
 	SpaceCalculation::ShowPartitionWarning();
 
-	y2milestone( "INSTALLING Software Selection: %1",  SCR::Read(.package.selInstallSet ));
-
-	// Compute all needed packages
-	// list package_list = Packages::ComputeInstallList();
-
-	// And set the list in the package agent.
-	SCR::Execute(.package.setInstallSelection, package_list, true );
+	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",  Pkg::GetSelections(`selected, "base"), Pkg::GetSelections(`selected, ""));
 
         return;
     }

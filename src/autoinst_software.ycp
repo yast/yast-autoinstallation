@@ -14,6 +14,7 @@
 
     import "AIPackages";
     import "Wizard";
+    import "Report";
     include "wizard/sequencer.ycp";
     include "ui/common_messages.ycp";
     include "autoinstall/dialogs.ycp";
@@ -72,34 +73,22 @@
 
 
     define packagesContent() ``{
-	list suse_pacs = maplist(string pac, AIPackages::pacs, ``{
+	list pacs = maplist(string pac, AIPackages::pacs, ``{
 	    return (`item(`id(pac), pac, _("SuSE Package")));
 	});
-	list custom_pacs = maplist(string pac, AIPackages::custom_pacs, ``{
-	    return (`item(`id(pac), pac, _("Custom Package")));
-	});
-	list pacs = union(suse_pacs, custom_pacs);
+		
 	term contents =
 	    `Top(
 		 `VBox(
-		       `Table(`id(`pacs), `opt(`notify,`immediate), `header(_("Packages"), _("Type")),
+		       `Table(`id(`pacs), `opt(`notify,`immediate), `header(_("Packages")),
 			      pacs
-			      ),
-		       `HBox(
-			     `RadioButtonGroup( `id(`pactype),
-						`HBox(
-						      `RadioButton(`id("custom"),`opt(`notify), _("Custom &Packages"), (pactype=="custom") ),
-						      `RadioButton(`id("suse"), `opt(`notify),_("D&istribution Packages"),(pactype=="suse") )
-						      )
-						)
-			     ),
+			      ),		     
 		       `HBox(
 			     `PushButton(`id(`add), AddButtonLabel()),
 			     `PushButton(`id(`delete), DeleteButtonLabel()),
 			     `PushButton(`id(`load), _("&Load"))
-			     ),
-		       `VSpacing(0.5),
-		       `Left(`TextEntry(`id(`location), _("Relative path of cu&stom packages"), AIPackages::custom_location))
+			     )
+		       
 		       )
 		 );
 	return contents;
@@ -111,19 +100,11 @@
      *
      */
     define customPackages() ``{
-	string caption = _("Single Package Configuration");
-	string pactype = "suse";
+	string caption = _("Single Package Configuration");	
 	string help = _("<p>Use this dialog to select single packages. The listing of single selected
 packages has two different views:  one with distribution packages and a second with external packages.
 </p>
-");
-
-	help = help + _("<p>Enter the location of the external packages
-to use. The path to the location of the external packages is relative to the <b>suse</b> directory
-on the CD-ROM or on the NFS Server if you have copied the CDs to your local system.</p>
-");
-
-	
+");	
 	help = help + _("<p>You can also load a list of packages from a text file using the <em>Load</em> button.
 The file must contain a list of packages with one package per line.</p>
 ");
@@ -132,18 +113,13 @@ The file must contain a list of packages with one package per line.</p>
 			    packagesContent(), help, true, true);
 	any ret = nil;
 	repeat {
-	    ret = UI::UserInput();
-	    AIPackages::custom_location = UI::QueryWidget(`id(`location), `Value);
-	    pactype = UI::QueryWidget(`id(`pactype), `CurrentButton);
+	    ret = UI::UserInput();	    
 	    if ( ret == `add)
 	    {
 		string pac = NewFileName(  _("Add Packages"), _("Packa&ges"));
 		if (pac!="")
-		{
-		    if (pactype == "suse")
-			AIPackages::pacs=add(AIPackages::pacs,pac);
-		    else
-			AIPackages::custom_pacs=add(AIPackages::custom_pacs,pac);
+		{		   
+		    AIPackages::pacs=add(AIPackages::pacs,pac);		 
 		}
 
 		Wizard::SetContents(caption,
@@ -155,10 +131,8 @@ The file must contain a list of packages with one package per line.</p>
 		 string selpac = UI::QueryWidget(`id(`pacs), `CurrentItem);
 		 if (is(selpac,string) && selpac !="")
 		 {
-		     if (contains(AIPackages::custom_pacs, selpac))
-			 AIPackages::custom_pacs=filter(`p, AIPackages::custom_pacs,``(p!=selpac));
-		     else if (contains(AIPackages::pacs, selpac))
-			 AIPackages::pacs=filter(`p,AIPackages::pacs,``(p!=selpac));
+		     if (contains(AIPackages::pacs, selpac))
+			 AIPackages::pacs=filter(`p , AIPackages::pacs,``(p!=selpac));
 		 }
 
 		 
@@ -166,6 +140,10 @@ The file must contain a list of packages with one package per line.</p>
 			    packagesContent(), help, true, true);
 		 continue;
 	    }
+	    else if ( ret == `load)
+	    {
+		Report::Error("Not ready yet");
+	    }	    
 
 	} until (ret == `back || ret ==`next || ret == `abort);
 	return ret;

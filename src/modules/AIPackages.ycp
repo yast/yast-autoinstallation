@@ -19,17 +19,14 @@
 
     global list Selections = [];
 
-    global string base = "";
-    global list addons = [];
-        
-    global string custom_location = "";
-    global string custom_kernel = "";
-
-    global list pacs = [];
-    global list custom_pacs = [];
-
+    global string base = "";    
     
-    global define void AIPackages()``{
+    global list addons = [];
+           
+    global list pacs = [];    
+    
+    global define void AIPackages()
+	``{
 	if (SCR::Read(.target.size, "/var/lib/autoinstall/selections/current")>0)
 	{
 	    y2milestone("Selection file found, reading...");
@@ -44,34 +41,49 @@
     }
 
 
-    global define boolean GetSelections() ``{
+    global define boolean GetSelections()
+	``{
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating package selections...")));
 	local_descr = Packages::CheckLocalDescription();
 	if (local_descr)
 	{	    
 	    Packages::Init(true);
-	    Selections = SCR::Read(.package.selGroups);	    
+	    Selections = maplist(`s, Pkg::GetSelections(`all) , ``{
+		any data = Pkg::SelectionData(s);
+		if (is(data , map)) {
+		    return ([s, data["summary"]:"", data["category"]:"base"]);
+		}
+		else
+		{
+		    return ([]);
+		}
+	    });
+
+	    
 	}
 	UI::CloseDialog();
 	return local_descr;
     }
 
-    global define boolean SaveSelections() ``{
+    global define boolean SaveSelections()
+	``{
 	boolean ret = SCR::Write(.target.ycp, "/var/lib/autoinstall/selections/current", Selections);
 	return ret;
     }
 
-    global define boolean ReadSelections() ``{
+    global define boolean ReadSelections()
+	``{
 	Selections = SCR::Read(.target.ycp, "/var/lib/autoinstall/selections/current");
-	return (size(Selections)>0);
+	return ( size(Selections)>0 );
     }
 
 
-    global define string getSelDescr(string sel) ``{
+    global define string getSelDescr(string sel)
+	``{
 	string result = "Custom Selection";
-	foreach(`s,Selections,``{
+	foreach(`s , Selections,``{
 	    if (select(s,0,"") == sel)
-		result = select(s,1,"");
+		result = select( s , 1 , "");
 	});
 	return result;
     }
@@ -86,10 +98,6 @@
 	base = settings["base"]:"";
 	addons =  settings["addons"]:[];
 	pacs = settings["packages"]:[];
-	map custom = settings["extra_packages"]:$[];
-	custom_location = custom["package_location"]:"";
-	custom_pacs = custom["packages"]:[];
-	custom_kernel = custom["kernel"]:"";
 	return;
     }
     
@@ -98,17 +106,11 @@
      * @return map
      */
     global define map Export()``{
-	map extra = $[
-		      "package_location": custom_location,
-		      "packages":	custom_pacs,
-		      "kernel":		custom_kernel
-		      
-	];
+
 	return ($[
 		  "base":base,
 		  "addons":addons,
-		  "packages": pacs,
-		  "extra_packages": extra
+		  "packages": pacs		  
 		]);
     }
 
@@ -145,13 +147,9 @@
 	} else {
 	    summary = Summary::AddLine(summary, Summary::NotConfigured());
 	}
-	summary = Summary::AddHeader(summary, _("Distribution packages"));
+	summary = Summary::AddHeader(summary, _("Selected Packages"));
 	summary = Summary::AddLine(summary, sformat("%1", size(pacs)));
-	summary = Summary::AddHeader(summary, _("Custom packages"));
-	summary = Summary::AddLine(summary, sformat("%1", size(custom_pacs)));
-	summary = Summary::AddHeader(summary, _("Location of custom packages"));
-	summary = Summary::AddLine(summary, (custom_location != "")? custom_location : Summary::NotConfigured());	
-	
+
 	return summary;
     }
 
