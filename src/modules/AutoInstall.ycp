@@ -192,7 +192,11 @@
 	Bootloader = Profile::Flat["bootloader"]:$[];
 
 	y2debug ("Importing settings %1", Bootloader);
-
+	if (Bootloader == $[] )
+	{
+	    Bootloader::Propose ();
+	    return true;
+	}
 
 	string parameters = Bootloader["kernel_parameters"]:"";
 	if ( size(parameters) > 0)

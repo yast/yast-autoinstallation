@@ -17,7 +17,8 @@
     import "Kernel";
     import "Mode";
     import "Profile";
-
+    include "ui/common_messages.ycp";    
+    include "autoinstall/profileDialogs.ycp";
 
     global string remote_rules_location = "rules/rules.xml";
     global string local_rules_location = "";
@@ -62,12 +63,17 @@
 
     global string xserver = "";
 
-    global boolean haspcmcia = false;
+    global string haspcmcia = "0";
 
     /////////////////////////////////////////////
     /////////////////////////////////////////////
 
+    global list NonLinuxPartitions = [];
 
+    global list LinuxPartitions = [];
+	
+
+    
     global map UserRules = $[];
 
     // Local
@@ -141,13 +147,13 @@
 	hostname = SCR::Read(.etc.install_inf.Hostname);
 	domain = SCR::Read(.etc.install_inf.Domain);
 	network = SCR::Read(.etc.install_inf.Network);
-	haspcmcia = (SCR::Read(.etc.install_inf.HasPCMCIA) == 0);
+	haspcmcia = SCR::Read(.etc.install_inf.HasPCMCIA);
 	xserver = SCR::Read(.etc.install_inf.XServer);
 
-	list others = Storage::GetForeignPrimary();
-	y2milestone ("Other primaries: %1", others);
-	list other_l = Storage::GetOtherLinuxPartitions();
-	y2milestone ("Other linux parts: %1", other_l);
+	NonLinuxPartitions = Storage::GetForeignPrimary();
+	y2milestone ("Other primaries: %1", NonLinuxPartitions);
+	LinuxPartitions = Storage::GetOtherLinuxPartitions();
+	y2milestone ("Other linux parts: %1",  LinuxPartitions);
 
 
 	return;
@@ -229,12 +235,18 @@
 			ismatch = true;
 			env[rule] = hostname;
 		    }
-		    else if ( rule == "custom1" ||  rule == "custom2" || rule == "custom3")
+		    else if ( rule == "hostaddress")
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = hostaddress;
+		    }
+		    else if ( rule == "custom1" ||  rule == "custom2" || rule == "custom3" ||  rule == "custom4" || rule == "custom5")
 		    {
 			string script = ruledef["script"]:"exit -1";
 			string tmpdir = SCR::Read( .target.tmpdir );
 			string scriptPath = sformat("%1/%2", tmpdir,  "rule_" + rule);
-			y2milestone("Writing pre script into %1", scriptPath);
+			y2milestone("Writing rule script into %1", scriptPath);
 			SCR::Write(.target.string, scriptPath, script);
 			
 			map out = SCR::Execute (.target.bash_output, "/bin/sh " + scriptPath, $[]);
@@ -256,6 +268,12 @@
 			ismatch = true;
 			env[rule] = network;
 		    }
+		    else if ( rule == "mac" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = mac;
+		    }		  	    
 		    else if ( rule == "xserver" )
 		    {
 			shellseg(ismatch, rule, match, op, matchtype);
@@ -274,12 +292,30 @@
 			ismatch = true;
 			env[rule] = totaldisk;
 		    }
+		    else if ( rule == "haspcmcia" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = haspcmcia;
+		    }
 		    else if ( rule == "karch" )
 		    {
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
 			env[rule] = karch;
 		    }
+		    else if ( rule == "hostid" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = hostid;
+		    }		    
+		    else if ( rule == "arch" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = arch;
+		    }		    
 		    else if ( rule == "disksize" )
 		    {
 			// [ $["device":"/dev/hda", "size":"100000"] ]
@@ -454,7 +490,8 @@
 	    string current_profile = local_rules_location + "/" + file;
 	    if (!skip)
 	    {
-		XML_cleanup(current_profile,  tmpdir + "/base_profile.xml");
+		if (!XML_cleanup(current_profile,  tmpdir + "/base_profile.xml"))
+		    y2error("Error reading XML file");
 		skip = true;
 	    }
 	    else
@@ -467,10 +504,11 @@
 
 		map xsltret = SCR::Execute(.target.bash_output, MergeCommand);
 		y2milestone("Merge result: %1", xsltret);
-		if (xsltret["exit"]:-1 != 0 )
+		if (xsltret["exit"]:-1 != 0 || xsltret["stderr"]:"" != "")
 		{
 		    y2error("Merge Failed");
-		    ok =  false;
+		    StdErrLog(xsltret["stderr"]:"");
+		    ok =  false;		   
 		}
 
 		XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
@@ -478,18 +516,27 @@
 	    }
 	});
 
+
 	SCR::Execute(.target.bash, "cp " +  tmpdir + "/base_profile.xml " + result_profile );
+
+	y2milestone("Ok=%1", ok);
 	return ok;
     }
 
-
+    
+    /**
+     * Process Rules
+     *
+     */
     global define boolean Process(  string result_profile  )
 	``{
 
 	boolean ok = true;
 	string tmpdir = SCR::Read( .target.tmpdir );
 	string prefinal = local_rules_location + "/prefinal_autoinst.xml" ;
-	Merge (  prefinal );
+	if (!Merge (  prefinal ) )
+	    return false;
+	
 	tomerge = [];
 
 
@@ -501,7 +548,7 @@ control file and try again.
 "));
 	    return false;
 	}
-
+	y2milestone("Checking classes...");
 	if ( haskey(Profile::Flat, "classes") )
 	{
 	    y2milestone("User defined classes available, processing....");
@@ -533,7 +580,7 @@ classes."));
 	{
 	    SCR::Execute(.target.bash, "cp " + prefinal + " "  + result_profile );
 	}
-
+	y2milestone("returns=%1", ok );
 	return ok;
 
     }
@@ -556,7 +603,7 @@ classes."));
 	}
 	tomerge = add(tomerge, mac );
 	tomerge = add(tomerge, "default" );
-	y2milestone("Created default rules:", tomerge);
+	y2milestone("Created default rules=%1", tomerge);
 	return;
     }
 
@@ -575,7 +622,7 @@ classes."));
     /**
      * Cleanup XML file from namespaces put by xslt
      */
-    global define XML_cleanup(string in, string out)
+    global define boolean XML_cleanup(string in, string out)
 	``{
 
 	map ycpin = XML::XMLToYCPFile(in);

@@ -25,6 +25,8 @@
 
     global map targetMap = $[];
 
+    list raid_to_init = [];
+
     
     /**
      * Dump the settings to a map, for autoinstallation use.
@@ -32,22 +34,21 @@
      */
     global define list Export()
 	``{
-	list clean_drives = maplist(`d, drives,
-				    ``{
-					list p = maplist(`part, d["partitions"]:[] ,
-							 ``{
+	list clean_drives = maplist(`d, drives, ``{
+	    list p = maplist(`part, d["partitions"]:[] ,
+			     ``{
 
-							     if (haskey(part, "fsid")) {
-								 part = remove(part, "fsid");
-							     }
-							     if (haskey(part, "used_fs")) {
-								 part = remove(part, "used_fs");
-							     }
-							     return part;
-							 });
-					d["partitions"] = p;
-					return d;
-				    });
+				 if (haskey(part, "fsid")) {
+				     part = remove(part, "fsid");
+				 }
+				 if (haskey(part, "used_fs")) {
+				     part = remove(part, "used_fs");
+				 }
+				 return part;
+			     });
+	    d["partitions"] = p;
+	    return d;
+	});
 
 	return clean_drives;
     }
@@ -99,9 +100,9 @@
     /**
      * Create partition plans
      * @param void
-     * @return void
+     * @return boolean
      */
-    global define void Write()
+    global define boolean Write()
 	``{
 	import "Storage";
 	import "Partitions";
@@ -113,12 +114,15 @@
 	map init_targetmap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", init_targetmap);
 	
-	list alldrives = maplist( `k, `v, init_targetmap ,
-			      ``{
-				  return($["device":k, "size": v["cyl_size"]:0 ]);
+	boolean md_avail = false;
+	
+	list alldrives = maplist( `k, `v, init_targetmap , ``{
+	    if (k == "/dev/md") md_avail = true;;				  
+	    return($["device":k, "size": v["cyl_size"]:0 ]);
 	});
 
-	y2milestone("Drives: %1, MBR disk: %2", alldrives , BootCommon::mbrDisk);
+	
+	y2milestone("Drives=%1", alldrives);
 
 	Storage::SetPartDisk(lookup(select(alldrives,0,$[]),"device", BootCommon::mbrDisk));
 
@@ -139,7 +143,13 @@
 
 	});
 
+	
+	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
+	{
+	    Storage::DestroyLvmOnAllDisks();
+	}
 
+	
 	y2milestone("New Auto-Install tagetMap: %1", targetMap);
 	if ( targetMap == $[] )
 	{
@@ -152,27 +162,51 @@ Make sure the control file has the correct syntax and values.
 
 	// Initialize disks if needed
 	boolean init_done = false;
+	
 	foreach (string device, map data, targetMap,
-		 ``{
+		 ``{	    
 	    if (data["initialize"]:false)
 	    {
 		    map thisDevice = init_targetmap[device]:$[];
+		    foreach (map p, thisDevice["partitions"]:[], ``{
+			if (p["raid_name"]:"" != "" )
+			    raid_to_init = add( raid_to_init, p["raid_name"]:"" );
+		    });
 		    thisDevice["partitions"] = [];
 		    init_targetmap[device] = thisDevice;
-		    Storage::SetTargetMap(init_targetmap);		    	
+		    Storage::SetTargetMap(init_targetmap);
+		    init_done = true;
 	    }		    
 	});
 
-	map afterinit_targetmap = Storage::GetTargetMap();
-	y2milestone("Target map after initialzing disk: %1", afterinit_targetmap);
+	if (size(raid) > 0  && md_avail)
+	{
+	    y2milestone("init raid: %1", raid_to_init);
+	    map tg =  Storage::GetTargetMap();
+	    map md = tg["/dev/md"]:$[];
+	    list mdlist = tg["/dev/md", "partitions"]:[];
+	    md["partitions"] = filter(map md_device, mdlist, ``((!contains(toset(raid_to_init), md_device["device"]:"") )));	    
+	    tg["/dev/md"] = md;
+	    Storage::SetTargetMap(tg);
+	}
+	if (init_done)
+	{
+	    map afterinit_targetmap = Storage::GetTargetMap();
+	    y2milestone("Target map after initialzing disk: %1", afterinit_targetmap);
+	}
 	
 	if ( size(targetMap) > 0)
 	{
+	    boolean ok = true;
 	    foreach (string device, map data, targetMap,
 		     ``{
 		y2milestone("Creating partition plans for %1", device);
 		boolean ret = AutoPartition(device);
+		if (!ret)
+		    ok = false;
 	    });
+	    if (!ok)
+		return false;
 	}
 
 
@@ -186,6 +220,7 @@ Make sure the control file has the correct syntax and values.
 	    autoLVM();
 	}
 
+	return true;
     }
 
 
@@ -195,12 +230,7 @@ Make sure the control file has the correct syntax and values.
      */
     global define void Initialize () ``{
 	import "Storage";
-	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
-	{
-	    Storage::DestroyLvmOnAllDisks();
-	}
 
-	
 	foreach (string device, map data, targetMap,
 		 ``{
 	    if (data["initialize"]:false)

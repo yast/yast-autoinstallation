@@ -110,4 +110,30 @@ on the command line.</p>"));
 	UI::CloseDialog();
 	return `next;
     }
+
+
+    
+    global define void StdErrLog( string stderr) ``{
+	UI::OpenDialog(
+		       `opt( `decorated ),
+		       `VBox(
+			     `VSpacing(0.5),
+			     `HSpacing(50),
+			     `HBox (
+				    `HSpacing(0.5),
+				    `LogView(`id(`log),  ErrorMsg()  , 10, 100 ),				    
+				    `HSpacing(0.5)
+				    ),
+			     `VSpacing(0.2),
+			     `PushButton( `id(`ok), `opt(`default), OKButtonLabel() ),
+			     `VSpacing(0.5)
+			     )
+		       );
+
+	UI::ChangeWidget(`id(`log),`Value, stderr);
+	UI::UserInput();
+	UI::CloseDialog();
+	
+    };
+    
 }
