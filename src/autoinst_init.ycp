@@ -147,7 +147,12 @@ Please wait while the system is being prepared for auto-installation.</p>"));
 
     Progress::NextStage();
     
-    AutoInstall::ProcessProfile();
+    if (!AutoInstall::ProcessProfile()) {
+	UI::ErrorPopup(_("Error while parsing the control file.
+Please check the log files for more details. Please fix the
+control file and try again."));
+	return `abort;
+    }
 
 
     boolean use_utf8 = true;		// utf8 is default

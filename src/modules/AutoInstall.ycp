@@ -137,7 +137,8 @@
     // Extra package to be added using inst_rpmcopy
     global list install_list = [];
 
-
+    // post install package to be added using inst_rpmcopy
+    global list post_install_list = [];
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Local variables
@@ -155,7 +156,8 @@
     list SysconfigVars = [];
 
     list forcedPackages = [];
-    
+
+    boolean parsed = false;
     /**
      * Constructer
      */
@@ -175,9 +177,7 @@
 	{
 	    if ( SCR::Read(.target.size,xml_tmpfile) != -1  && size(Profile) == 0)
 	    {
-		// Profile is available and it has not been parsed yet.			
-		y2milestone("Parsing file %1", xml_tmpfile);
-		Profile = SCR::Read(.xml, xml_tmpfile);
+		// Profile is available and it has not been parsed yet.									
 		ProcessProfile();
 	    }	    
 	    ParseCmdLine();
@@ -197,10 +197,21 @@
      *
      */
 
-    global define void ProcessProfile()
+    global define boolean ProcessProfile()
 	``{
-	if (SCR::Read(.target.size, xml_tmpfile)>0)
-	    Profile = XML::XMLToYCPFile( xml_tmpfile );
+	any ret = nil;
+	if ( SCR::Read(.target.size, xml_tmpfile)>0 )
+	{
+	     ret = XML::XMLToYCPFile( xml_tmpfile );
+	     if (ret == nil)
+	     {
+		 return false;
+	     }
+	     else
+	     {
+		 Profile = ret;
+	     }
+	}
 	// the install section
 	Install = Profile["install"]:$[];
 
@@ -210,7 +221,7 @@
 	Report::Set(GetMap(Install , "report", true));
 	Fstab = fstabSettings();
 	X11 = Configure["x11"]:$[];
-	return;
+	return true;
     }
 
 
@@ -501,20 +512,25 @@
 	// And set the list in the package agent.
 	SCR::Execute(.package.setInstallSelection, package_list, true );
 
-	// Extra Packages location and custom kernel
+	
 
+	
+	// Extra Packages location and custom kernel
 	map extra = Software["extra_packages"]:$[];
+	
 	// Kernel TODO :Check if packages are actually available
+	
 	string extra_location = extra["package_location"]:"external";
 	if (extra["kernel"]:"" != "")
 	{
 	    install_list = add(install_list,
-			       [extra_location + "/" + lookup(extra,"kernel","mykernel"), "Custom Kernel", 1, false]);
+			       [extra_location + "/" + extra["kernel"]:"mykernel", "Custom Kernel", 1, false]);
 	}
 
 
 	// Extra Packages TODO :Check if packages are actually available
 	list extra_packages = extra["packages"]:[];
+	list post_packages = extra["post-packages"]:[];
 	if (size(extra_packages) > 0)
 	{
 	    foreach(string p, extra_packages,
@@ -523,7 +539,17 @@
 		install_list=add(install_list, [extra_location + "/" + p, p, 1, false]);
 	    });
 	}
+	if (size(post_packages) > 0)
+	{
+	    foreach(string p, post_packages,
+		    ``{
+		y2milestone("Adding %1 to post package list", p);
+		post_install_list=add(post_install_list, [extra_location + "/" + p, p, 1, false]);
+	    });
+	}
+	
 	y2milestone("Additional non-SuSE packages: %1",  install_list);
+	y2milestone("Additional non-SuSE post packages: %1",  post_install_list);
 
 	Kernel = Software["kernel"]:"";
 	if (Kernel == "")
@@ -752,8 +778,7 @@
 	else	// saved database found
 	{
 	    y2milestone( "Found saved autoinst data : <%1>", Profile );
-	    ProcessProfile();
-	    return true;
+	    return (ProcessProfile());	    
 	}
     }	// Restore()
 
