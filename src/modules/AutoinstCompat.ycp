@@ -11,6 +11,7 @@
     module "AutoinstCompat";
     textdomain "autoinst";
 
+    import "AutoinstStorage";
 
 
     /**
@@ -209,21 +210,35 @@
 	    map raid_options = $[];
 	    
 	    raid_options["chunk_size"]			= r["chunk_size"]:"";
-	    raid_options["raid_type"]			= r["raid_type"]:"";
+	    raid_options["raid_type"]			= r["raid_type"]:"raid1";
 	    raid_options["parity_algorithm"]		= r["parity_algorithm"]:"";
 	    raid_options["persistent_superblock"] 	= r["persistent_superblock"]:false;
 
-
 	    integer nr = tointeger(substring(r["device_name"]:"/dev/md0", 7));
+
 	    
-	    return( $[ "filesystem"	: fs,		       
-		       "mount"  	: r["mount"]:"",
-		       "raid_options"	: raid_options,
-		       "format"		: r["format"]:false,
-		       "filesystem_id"  : r["filesystem_id"]:131,
-		       "partition_nr"	: nr
+	    
+	    map ret = $[			
+			 "raid_options"	: raid_options,
+			 "format"	: r["format"]:false,
+			 "partition_nr"	: nr
 		       		       
-		    ]);
+	    ];
+
+	    if (haskey(r, "mount"))
+	    {
+		ret["mount"] = r["mount"]:"";
+	    }
+	    if (haskey(r, "partition_id"))
+	    {
+		ret["partition_id"] = r["partition_id"]:131;
+	    }
+	    if (haskey(r, "filesystem"))
+	    {
+		ret["filesystem"] = fs;
+	    }
+
+	    return (ret);	    
 
 	});
 	raid["partitions"]	= partitions;

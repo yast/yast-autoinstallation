@@ -53,16 +53,18 @@
    <partitioning  config:type="list">
       <drive>
          <device>/dev/hda</device>
-         <partition>
-            <filesystem>ext2</filesystem>
-            <size>520Mb</size>
-            <mount>/</mount>
-         </partition>
-         <partition>
-            <filesystem>reiser</filesystem>
-            <size>1200Mb</size>
-            <mount>/data</mount>
-         </partition>
+         <partitions config:type="list">
+           <partition>
+              <filesystem>ext2</filesystem>
+              <size>520Mb</size>
+              <mount>/</mount>
+           </partition>
+           <partition>
+              <filesystem>reiser</filesystem>
+              <size>1200Mb</size>
+              <mount>/data</mount>
+           </partition>
+         </partitions>
       </drive>
    </partitioning>
  </install>
