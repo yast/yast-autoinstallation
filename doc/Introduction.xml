@@ -2,11 +2,13 @@
     <title>Introduction</title>
     
     <para>
-      &autoyast2; is the system for installing one ore more SuSE Linux systems
-      automatically and without user intervention. Using &autoyast2;, you can
-      create a configuration for a single system or a set of systems  to
-      control automated  installations. The <emphasis>control file</emphasis>
-      can be  provided to &yast2; during installation in different ways.
+      &autoyast2; is a system for installing one or more SuSE Linux systems
+      automatically and without user intervention. &autoyast2; installations
+      are performed using  a control file with installation and configuration
+      data. The control file can be created using the configuration insterface
+      of &autoyast2; and can be  provided to &yast2; during installation in
+      different ways.
+
     </para>  
 
     <sect1>
@@ -16,7 +18,7 @@
 	from <emphasis>SuSE Linux 8.0</emphasis> and will be available with
 	business products based on <emphasis>SLES 8</emphasis>.
       </para>
-      <para>Old products perior to SuSE Linux 8.0 and business products relying
+      <para>Old products perior to SuSE Linux 8.0 and business products based
 	on <emphasis>SLES 7</emphasis> have an auto-installation
 	system relying on <emphasis>YaST</emphasis>. A configuration management
 	system is provided by <emphasis>Alice</emphasis> for these products.
@@ -24,26 +26,53 @@
     </sect1>
     <sect1>
       <title>Motivation</title>
-      	&IntroductionLinuxJournal;
       <para>
-	If you have installed SuSE Linux recently, you will notice that the
-	installation system acts somehow in an automated way. The user is
-	requested to select the necessary information at the beginning of the
-	installation (Normally Language only) and &yast2; will generate a
-	propsal for the underlying system depending on different factors. In
-	most cases, and especially for new systems, such a proposal needs not
-	to be changed and can be used to install a usable system.
+	The <ulink url="http://www.linuxjournal.com/">Linux Journal</ulink>, in
+	an article in <ulink
+	  url="http://www.linuxjournal.com/categories.php?op=newindex&amp;catid=178">issue 78</ulink> writes:
       </para>
       <para>
-	The following steps are almost fully automated and the user is only
+	<quote>
+	  A standard Linux installation asks many questions about what to
+	  install, what hardware to configure, how to configure the network
+	  interface, etc. Answering these questions once is informative and maybe
+	  even fun. But imagine a system engineer who has to set up a new Linux
+	  network with a large number of machines. Now, the same issues need to
+	  be addressed and the same questions answered repeatedly. This makes the
+	  task very inefficient, not to mention a source of irritation and
+	  boredom. Hence, a need arises to automate this parameter and option
+	  selection.</quote>
+      </para>
+      <para>
+	<quote>The thought of simply copying the hard disks naturally crosses one's
+	  mind. This can be done quickly, and all the necessary functions and
+	  software will be copied without option selection. However, the fact is
+	  that simple copying of hard disks causes the individual computers to
+	  become too similar. This, in turn, creates an altogether new mission of
+	  having to reconfigure the individual settings on each PC. For example,
+	  IP addresses for each machine will have to be reset. If this is not
+	  done properly, strange and inexplicable behavior results.</quote>
+      </para>
+
+      <para>
+	Manual installation of SuSE Linux is semi-automated by default. The user is
+	requested to select the necessary information at the beginning of the
+	installation (Normally Language only) and &yast2;  generates a
+	proposal for the underlying system depending on different factors. In
+	most cases, and especially for new systems, such a proposal needs not
+	to be changed and can be used to install the system and provides a
+	usable installation.
+      </para>
+      <para>
+	The following steps after te proposal are  fully automated and the user is only
 	prompted at the end of the installation to provide more information
 	about the system.
       </para>
       <para>
-	&autoyast2; comes into action where user intervention is  required or
+	&autoyast2; can be used where no user intervention is  required or
 	where customization is required. Using  a control file, &yast2;
 	prepares the system for a custom installation and avoids any
-	interaction with the user, unless specified in the control file.
+	interaction with the user, unless specified in the file controling the installation.
       </para>
       <para>
 	&autoyast2; is not an automated GUI system. This means that in most
@@ -58,52 +87,58 @@
     <sect1>
       <title>Overview and Concept</title>
       <para>
-      Using AutoYaST2, multiple systems sharing the same environment and
-      hardware performing similar tasks can easily be installed in parallel. A
-      configuration  file (referred to as "control  file") is created using
-      existing configuration resources. The control file can be easily tailored for any
-      specific environment. 
-    </para>
-   
-    
-    <para>
-      Unlike autoinstallation systems available with older &company-suse;
-      releases, &autoyast2 is fully integrated and provides various options for
-      installing and configuring a system. The important advantage over older
-      systems and other autoinstall systems is the possibility to configure the
-      system by using existing modules and not by using custom scripts which
-      are normally executed at the end of the installation.
-    how </para>
+	Using &autoyast2;, multiple systems sharing the same environment and
+	similar but not necesserily  identical hardware performing similar
+	tasks 	can easily be installed in parallel and in a short time. A
+	configuration  file (referred to as "control  file") is created using
+	existing configuration resources. The control file can be easily
+	tailored for any specific environment. 
+      </para>
+      
+      
+      <para>
+	Unlike autoinstallation systems available with older &company-suse;
+	releases, &autoyast2 is fully integrated and provides various options for
+	installing and configuring a system. The main advantage over older
+	systems and other auto-installation systems is the possibility to configure a
+	computer  by using existing modules and avoiding using custom scripts which
+	are normally executed at the end of the installation.
+      </para>
 
       <para>
       The following chapters will guide you through the three steps of
       auto-installation:
     </para>
     <itemizedlist>
-      <listitem>
-	<para>Prepare: All relevant information about the target system is
-  collected and turned into the appropriate directives of the control
-  file. The control file is transferred onto the target system where
-  its directives will be parsed and transformed to &yast2; conforming
-	  data. </para>
-      </listitem>
-      <listitem>
-	<para>Install:  follows the instructions given in the  control file and
-	  installs a base system.
-	</para>
-      </listitem>
-      <listitem>
-	<para>
-	  Configure:  &yast2; and some user-defined post-install
-	  scripts accomplish the system configuration
-	</para>
-      </listitem>
-    </itemizedlist>
-
-    <figure id="process">
-      <title id="process.title">Auto-installation process</title>
-      <mediaobject>&autoyast-oview;</mediaobject>
-    </figure>
+	<listitem>
+	  <para>
+	    Preparation: All relevant information about the target system are
+	    collected and turned into the appropriate directives of the control
+	    file. The control file is transferred onto the target system where
+	    its directives will be parsed and transformed to &yast2; conforming
+	    data. </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Installation:  follows the instructions given in the  control file and
+	    installs the base system.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Configuration:  &yast2; in addition to user-defined post-install
+	    scripts complete the system configuration
+	  </para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	The complete and  detailed process is illustrated in the following figure.
+      </para>
+      
+      <figure id="process">
+	<title id="process.title">Auto-installation process</title>
+	<mediaobject>&autoyast-oview;</mediaobject>
+      </figure>
     </sect1>
 
 

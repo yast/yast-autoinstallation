@@ -4,30 +4,26 @@
 <![CDATA[
     <install>
 ...
-        <general>
+      <general>
           <language>de_DE</language>
           <keyboard>
-                <keymap>german</keymap>              
-            </keyboard>
-            <clock>
-                <timezone>US/Eastern</timezone>
-                <utc config:type="boolean">true</utc>
-                <ntp_servers config:type="list">
-                    <ntp_server>ntp.example.com</ntp_server>
-                </ntp_servers>
-            </clock>
-            <mouse>
-                <id>ps0</id>
-                <device>/dev/psaux</device>     
-            </mouse>
-            <mode>                
-                <upgrade config:type="boolean">false</upgrade>
-                <confirm config:type="boolean">false</confirm>
-                <interactive_boot config:type="boolean">false</interactive_boot>
-                <reboot  config:type="boolean">false</reboot>
-            </mode>
+              <keymap>german</keymap>              
+          </keyboard>
+          <clock>
+              <timezone>US/Eastern</timezone>
+              <hwclock>UTC</hwclock>              
+          </clock>
+          <mouse>
+              <id>ps0</id>
+              <device>/dev/psaux</device>     
+          </mouse>
+          <mode>                
+              <confirm config:type="boolean">true</confirm>
+              <forceboot config:type="boolean">false</forceboot>
+              <reboot config:type="boolean">false</reboot>
+          </mode>
 
-        </general>
+      </general>
 ...
     </install>
 

@@ -26,7 +26,7 @@ textdomain "autoinst";
 y2milestone("----------------------------------------");
 y2milestone("Files auto started");
 
-import "AutoinstFiles";
+import "AutoinstFile";
 import "Wizard";
 include "autoinstall/file_dialogs.ycp";
 
@@ -47,15 +47,15 @@ y2debug("param=%1", param);
 
 /* Import Data*/
 if(func == "Import") {
-    ret = AutoinstFiles::Import(param);
+    ret = AutoinstFile::Import(param);
 }
 /* Create a  summary*/
 else if(func == "Summary") {
-    ret = AutoinstFiles::Summary();
+    ret = AutoinstFile::Summary();
 }
 /* Reset configuration */
 else if (func == "Reset") {
-    AutoinstFiles::Import([]);
+    AutoinstFile::Import([]);
     ret = [];
 }
 /* Change configuration (run AutoSequence) */
@@ -66,11 +66,11 @@ else if (func == "Change") {
 }
 /* Return actual state */
 else if (func == "Result") {
-    ret = AutoinstFiles::Export();
+    ret = AutoinstFile::Export();
 }
 /* Write givven settings */
 else if (func == "Write") {            
-    ret = AutoinstFiles::Write();    
+    ret = AutoinstFile::Write();    
 }
 /* Unknown function */
 else {
