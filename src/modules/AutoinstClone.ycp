@@ -106,7 +106,7 @@
 	map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
 	StorageMap = Storage::GetFsysType(StorageMap);
-	y2milestone("Storagemap %1", StorageMap);
+	y2debug("Storagemap %1", StorageMap);
 	list<map> mounts = (list<map>) SCR::Read(.etc.fstab);
 
 	list drives = maplist(string k, map v, StorageMap, ``{
@@ -124,7 +124,7 @@
 		    list allwin = union(wintypes, Partitions::fsid_ntfstypes);
 		    if (contains(allwin, fsid))
 		    {
-			y2milestone("Windows partitions found: %1", fsid );
+			y2debug("Windows partitions found: %1", fsid );
 			winp = add(winp, pe["nr"]:0);
 			skipwin = true;
 		    }
@@ -144,7 +144,7 @@
 		{
 		    if (!skipwin)
 		    {
-			y2milestone("Adding partition to be used: %1",  pe["nr"]:0);
+			y2debug("Adding partition to be used: %1",  pe["nr"]:0);
 			usepartitions = add(usepartitions, pe["nr"]:0);
 		    }
 		    new_pe["partition_nr"] = pe["nr"]:0;
@@ -187,17 +187,16 @@
     }
 
 
-    
     /**
      * Return list of software packages of calling client
      * @return map map of installed software package
-     *  	"base" -> string (base selection)
+     *	"base" -> string (base selection)
      *		"addons" -> list<string> addon selections
      *		"packages" -> list<string> user selected packages
      */
     global define map<string, any > Software() ``{
 	boolean ret = Pkg::TargetInit("/", false);
-	
+
 	base = Pkg::GetSelections(`installed, "base");
 	list<string> addons =  Pkg::GetSelections(`installed, "addon");
 	list<string> inst = Pkg::GetPackages(`installed, true);
@@ -208,7 +207,7 @@
 	string tmproot = AutoinstConfig::tmpDir;
 	SCR::Execute(.target.mkdir, tmproot + "/rootclone");
 	Pkg::TargetInit( tmproot + "/rootclone", true);
-	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
+	y2debug("SourceStartCache: %1", Pkg::SourceStartCache(false));
 
 	Pkg::SourceStartManager(true);
 
@@ -228,7 +227,7 @@
 	list<string> packages = Pkg::FilterPackages(false, false, true, true);
 	Pkg::TargetFinish ();
 	// Remove kernel packages
-	list<string> userpackages =  filter(string pkg, packages, ``(! regexpmatch(pkg, "k_.*")));
+	list<string> userpackages =  filter(string pkg, packages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml"));
 
 	map<string, any > software = $[];
 	software["base"] = base[0]:"";
@@ -271,7 +270,7 @@
 	general["language"] = Language::language;
 
 	map keyboard = $[];
-	y2milestone("Current Keyboard: %1", Keyboard::default_kbd);
+	y2debug("Current Keyboard: %1", Keyboard::default_kbd);
 	keyboard["keymap"]  = Keyboard::current_kbd;
 
 	general["keyboard"] = keyboard;
@@ -282,13 +281,13 @@
 	{
 	    // Win partitions present ==> assume local time.
 	    hwclock = "--localtime";
-	    y2milestone("Assuming local time");
+	    y2debug("Assuming local time");
 	}
 	else
 	{
 	    // No Win partitions ==> assume UTC.
 	    hwclock = "-u";
-	    y2milestone("Assuming UTC");
+	    y2debug("Assuming UTC");
 	}
 	string hwc 	    = Misc::SysconfigRead(.sysconfig.clock.HWCLOCK, hwclock);
 	if (hwc == "--localtime")
@@ -342,7 +341,7 @@
 
 	     boolean readret = (boolean)Call::Function(auto , ["Read", $[] ]);
 	     map result = (map)Call::Function(auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-	     y2milestone("export result: %1", result);
+	     y2debug("export result: %1", result);
 	     integer i = 0;
 	     foreach( string res, splitstring(tomerge, ",") , ``{
 		 if ( MergeTypes[i]:"map" == "map")
@@ -385,7 +384,7 @@
 	 ``{
 	 list items = [];
 	 foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
-	     y2milestone("r: %1 => %2", def_resource, resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" );
+	     y2debug("r: %1 => %2", def_resource, resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" );
 	     boolean clonable = ( resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" == "true" );
 	     if (clonable)
 	     {
@@ -409,11 +408,11 @@
 
     /**
      * Build the profile
-     * @return map Profile
+     * @return void
      */
     global define void Process()
 	``{
-	y2milestone("Additional resources: %1 %2", base, additional);
+	y2debug("Additional resources: %1 %2", base, additional);
 	Profile::Reset();
 	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
 
@@ -421,7 +420,7 @@
 	    string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
             if (resource == "")
                 resource = def_resource;
-	    y2milestone("current resource: %1", resource);
+	    y2debug("current resource: %1", resource);
 	    if (contains(additional, resource))
 	    {
 		boolean ret = CommonClone(def_resource, resourceMap);
