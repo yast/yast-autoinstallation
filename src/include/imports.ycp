@@ -157,8 +157,10 @@ system might take some time, so please be patient while
 the configuration files are being read and converted.
 </p>");
 	Wizard::SetContents(_("Hosts in Alice Repository"),
-			    aliceHostList(), help, true, true);		
+			    aliceHostList(), help, true, true);
+	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
 	UI::ChangeWidget(`id(`next), `Enabled, false);
+	
 	any ret = "";
 	string host = "";
 	repeat
@@ -701,6 +703,7 @@ is the different package and package selection names used, those have to be adap
 		
 	Wizard::SetContents(title,
 			    contents, help , true, true);
+	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
 	string filename = "";
 	any ret = nil;
 	repeat
@@ -709,6 +712,7 @@ is the different package and package selection names used, those have to be adap
 		
 		filename = UI::QueryWidget(`id(`filename), `Value);
 		AIServer::ksOutput = UI::QueryWidget(`id(`rbg), `CurrentButton);
+		
 		if ( AIServer::ksOutput == `save && ret == `next)
 		{
 		    if ( UI::QueryWidget(`id(`result), `Value) != "" )
@@ -740,6 +744,7 @@ Importing foreign configuration files means that
 you need to go through the package and software configuration
 to make sure that the packages and selections are compatible with
 SuSE package names and package groups."));
+		    
 		}
 		else if (ret == `next && filename == "")
 		{
@@ -751,7 +756,8 @@ SuSE package names and package groups."));
 	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 
 	
-	if (ret == `next) {
+	if (ret == `next)
+	{
 	    if (AIServer::ksOutput == `hostname)
 	    {
 		AIConfig::currentFile = filename;
@@ -770,10 +776,13 @@ SuSE package names and package groups."));
     global define boolean readKS(string ks)``{
 
 	map ksConfig = SCR::Read(.kickstart, ks);
-	if (ksConfig == $[]) {
+	SCR::UnmountAgent(.kickstart);
+	if (ksConfig == $[])
+	{
 	    return $[];
 	}
 	y2milestone("Kickstart config raw: %1", ksConfig);
+	
 	return ksConfig;
 	
     }

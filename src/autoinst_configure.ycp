@@ -13,13 +13,12 @@
     textdomain "autoinst";
 
     import "AutoInstall";
-    
     import "Product";
     import "Progress";
-    
+
     include "autoinstall/misc_writes.ycp";
 
-    
+
     // Help text for last dialog of base installation
     string help_text = _("<p>
 Please wait while the system is being configured.
@@ -27,7 +26,7 @@ Please wait while the system is being configured.
 
     list progress_stages =
 	[
-			 _("Configure System"),			 			 
+			 _("Configure System"),
 			 _("Create User accounts and set root password"),
 			 _("Execute post-install user scripts")
 	];
@@ -50,7 +49,7 @@ Please wait while the system is being configured.
                         help_text );
 
 
-    SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
+    // SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
 
     Progress::NextStage();
     string resource = "";
@@ -59,54 +58,54 @@ Please wait while the system is being configured.
 
     map install = AutoInstall::Profile["install"]:$[];
     map configure = AutoInstall::Profile["configure"]:$[];
-        
+
     // Now we write additional data without a _write client, i.e. fstab
 
-    
+
     AutoInstall::CopyFiles();
-    
+
     y2milestone("Module map: %1", AutoInstall::ModuleMap);
     foreach(`p,`d, AutoInstall::ModuleMap,
 	    ``{
-	
+
 	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write")
-	{	    
+	{
 	    if (haskey(d,"AutoinstResource"))
-		resource = d["AutoinstResource"]:"unknown";	    
-	    else	    
+		resource = d["AutoinstResource"]:"unknown";
+	    else
 		resource = p;
 	    y2milestone("current resource: %1", resource);
-	    
+
 	    // determine name of client, if not default name
-	    if (haskey(d,"WriteClient"))	 
-		module_write = d["WriteClient"]:"none";	 
-	    else	 
+	    if (haskey(d,"WriteClient"))
+		module_write = d["WriteClient"]:"none";
+	    else
 		module_write = sformat("%1_write", p);
-	 
-	 
+
+
 	    y2milestone("Writing configuration for %1", d["Name"]:"");
 	    if (haskey(install, resource) || haskey(configure, resource) )
 	    {
 		if (d["AutoinstDataType"]:"map" == "map")
 		{
-		    if (d["AutoinstPath"]:"configure" == "install")		
-			result = WFM::CallModule(module_write, [eval(install[resource]:$[])]);		
-		    else				    
-			result = WFM::CallModule(module_write, [eval(configure[resource]:$[])]);	   	
+		    if (d["AutoinstPath"]:"configure" == "install")
+			result = WFM::CallModule(module_write, [eval(install[resource]:$[])]);
+		    else
+			result = WFM::CallModule(module_write, [eval(configure[resource]:$[])]);
 		}
 		else
 		{
-		    if (d["AutoinstPath"]:"configure" == "install")				    
-			result = WFM::CallModule(module_write, [install[resource]:[]]);		
-		    else				  
-			result = WFM::CallModule(module_write, [configure[resource]:[]]);		
+		    if (d["AutoinstPath"]:"configure" == "install")
+			result = WFM::CallModule(module_write, [install[resource]:[]]);
+		    else
+			result = WFM::CallModule(module_write, [configure[resource]:[]]);
 		}
 	    }
 	}
     });
-   
-  
-    Progress::NextStage(); 
+
+
+    Progress::NextStage();
     list users = configure["users"]:[];
     if (size(users)>0)
     {
@@ -118,17 +117,17 @@ Please wait while the system is being configured.
 	else if (UserDefs::encryption == `blowfish)
 	{
 	    Users::encryptionMethod = "blowfish";
-	}         
-	
+	}
+
         boolean set_root = false;
         foreach (map user, users, ``{
             if (user["username"]:"" == "root") {
                 set_root = true;
 		Users::rootPassword =  user["user_password"]:"";
-                if (!user["encrypted"]:false) {                                                
+                if (!user["encrypted"]:false) {
 		    cryptRootPassword();
                 }
-		
+
             }
         });
         // Root password and user account
@@ -147,7 +146,7 @@ You will not be able to login!
         }
     }
 
-    Progress::NextStage();        
+    Progress::NextStage();
 
 
     string output = "";
@@ -162,7 +161,7 @@ You will not be able to login!
 
     AutoInstall::scriptSettings("post-scripts");
 
-    
+
     Progress::Finish();
 
     return `next;
