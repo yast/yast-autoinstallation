@@ -75,7 +75,9 @@
 	any original_settings = AIConfig::getResourceData(resourceMap , resource);
 	
 	string module_auto = resourceMap["AutoClient"]:"none";
-	
+
+	// Import Data
+	Call::Function(module_auto, ["Import", AIConfig::getResourceData(resourceMap ,resource)]);
 	content_dialog( resource , resourceMap);
 	
 	any ret= nil;

@@ -150,63 +150,84 @@
       needed for the new behaviour. 
     </para>
     <example>
-      <title>nis_auto.ycp</title>
+      <title>XXpkgXX_auto.ycp (XXpkgXX = module name)</title>
       <programlisting>
 <![CDATA[
+/**
+ * @param function to execute
+ * @param map/list of XXpkgXX settings
+ * @return map edited settings, Summary or boolean on success depending on called function
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = WFM::CallFunction ("XXpkgXX_auto", [ "Summary", mm ]);
+ */
+
 {
-import "Nis";
-include "nis/ui.ycp";
 
-string func = WFM::Args(0);
-map param = WFM::Args(1);
+textdomain "XXpkgXX";
 
-/**
- * Create a summary
- * return string
- */
+y2milestone("----------------------------------------");
+y2milestone("XXPkgXX auto started");
+
+import "XXPkgXX";
+include "XXpkgXX/wizards.ycp";
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(Args()) > 0 && is(Args(0), string)) {
+    func = WFM::Args(0);
+    if(size(Args()) > 1 && is(Args(1), map))
+	param = WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+/* Create a  summary*/
 if(func == "Summary") {
-    Nis::Import(param);
-    return ( Nis::Summary());
+    XXPkgXX::Import(param);
+    ret = select(XXPkgXX::Summary(), 0, "");
 }
-/**
- * Reset configuration
- * return map or list
- */
+/* Reset configuration */
 else if (func == "Reset") {
-    Nis::Import($[]);
-    return ($[]);
+    XXPkgXX::Import($[]);
+    ret = $[];
 }
-/**
- * Change configuration
- * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
- */
+/* Change configuration (run AutoSequence) */
 else if (func == "Change") {
-    Nis::Import(param);
-    any res = AutoSequence();
-    return res;
+    XXPkgXX::Import(param);
+    ret = XXPkgXXAutoSequence();
 }
-/**
- * Return configuration data
- * return map or list
- */
+/* Return actual state */
 else if (func == "Result") {
-    return(Nis::Export());
+    ret = XXPkgXX::Export();
 }
-/**
- * Write configuration data
- * return boolean
- */
+/* Write givven settings */
 else if (func == "Write") {
-    Nis::write_only = true;
-    return(Nis::Write());
+    import "Progress";
+    XXPkgXX::write_only = true;
+    XXPkgXX::Import(param);
+    Progress::off();
+    ret = XXPkgXX::Write();
+    Progress::on();
+    return ret;
 }
-/* unknown function */
+/* Unknown function */
 else {
-    y2error("unknown function: %1", func);
-    return false;
+    y2error("Unknown function: %1", func);
+    ret = false;
 }
 
+y2debug("ret=%1", ret);
+y2milestone("XXPkgXX auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
 }
+
 
 
 
@@ -465,6 +486,84 @@ Textdomain = nis
       </itemizedlist>
      
     </section>    
+
+    <section>
+      <title>YaST2 Module Types</title>
+      <para>
+	YaST2 configuration modules and in relation with AutoYaST can be put
+	into three categories:	
+      </para>      
+      <orderedlist>
+	<listitem>
+	  <para>Simple modules which mormally only change sysconfig variable
+	    and have simple configuration data structure. (i.e. mail, nis,
+	    ldap, etc.)
+	  </para>
+	  <para>
+	    This category needs no special attention and is easy to integrate with
+	    the AutoYaST. 
+	</para>
+	</listitem>
+	<listitem>
+	  <para>Simple modules dealing with hardware configuration (i.e. network,
+	    sound, printer etc.)
+	  </para>
+	  <para>
+	    These modules need to be able to
+	    read and autodetect hardware data during installation if no hardware
+	    data is specified in the control file. The behaviour of this type of
+	    modules up to 8.1 was to import data and write it wihtout actually
+	    reading anything from the system.
+	  </para>
+	  <para>
+	    An additional step has to be added between the import and the
+	    write, where hardware data is read and imported into the module. In
+	    some case this is simply done by calling the Read function the module.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>Modules for management of complex configuration files
+	    (i.e. inetd, sysconfig, runlevel, users, bootloader)
+	  </para>
+	  <para>
+	    This class of modules is much more complex and requires adaptation
+	    and special attention. AutoYaST expects that only new and modified
+	    entries will be exported and not the whole configuration tree. For
+	    example when a user enables a service in inetd, only this service
+	    is exported. A user should be able to add new services which are
+	    not available in the default configuration file too.
+	  </para>
+	</listitem>
+      </orderedlist>           	
+    </section>
+    <section>
+      <title>Module behaviour</title>
+      <para>
+	In configuration mode for auto-installation, modules <emphasis>should
+	  not</emphasis>(configuration system is the machine where the control
+	file is being created):
+	<itemizedlist>
+	  <listitem>
+	    <para>Read any data from the configuration system</para>
+	  </listitem>
+	  <listitem>
+	    <para>Probe or detect hardware on the configuration system</para>
+	  </listitem>
+	  <listitem>
+	    <para>Change configuration data on the configuration system</para>
+	  </listitem>
+	  <listitem>
+	    <para>Offer a link to other modules (i.e. calling the NIS module
+	      from the users module)</para>
+	  </listitem>
+
+	  <listitem>
+	    <para>Check if a needed package is installed on the configuration system.</para>
+	  </listitem>
+	  
+	</itemizedlist>
+      </para>
+    </section>
   </section>
   </article>
 

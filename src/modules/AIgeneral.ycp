@@ -1,0 +1,112 @@
+/**
+ *
+ */
+
+{
+    module "AIgeneral";
+    textdomain "autoinst";
+
+    
+    import "Summary";    
+    import "Keyboard";        
+    import "Mouse";
+    import "Language";
+    import "Keyboard";    
+    import "Timezone";  
+
+
+
+    global map general = $[];
+
+    /**
+     * Summary of configuration
+     * @return string Formatted summary
+     */    
+    global define string Summary()``{
+
+	string language_name 		= "";
+	string keyboard_name 		= "";
+	string mouse_name 		= "";
+	map mouse 			= general["mouse"]:$[];
+	map keyboard 			= general["keyboard"]:$[];
+	map mode 			= general["mode"]:$[];
+	map clock 			= general["clock"]:$[];
+	string language 		= general["language"]:"";
+	
+	if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe")
+	{
+	    Mouse::Set(mouse["id"]:"");
+	    mouse_name = Mouse::MakeProposal(false, false);
+	}
+	else
+	{
+	    mouse_name = "probe";
+	}
+
+	if (language!="")
+	{
+	    Language::Set(language);
+	    language_name= Language::MakeProposal(false, false);
+	}
+	
+	if (keyboard != $[])
+	{
+	    Keyboard::SetLanguage(keyboard["keymap"]:"");
+	    keyboard_name = Keyboard::Name();
+	}
+
+	string hwclock = "";
+	if ( clock["hwclock"]:"" != "" )
+	{
+	    hwclock = (clock["hwclock"]:"" == "GMT") ?  _("GMT") : _("Local time");
+	}
+	
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Language"));
+	summary = Summary::AddLine(summary, (language_name != "") ?
+				   language_name : Summary::NotConfigured());
+	
+	summary = Summary::AddHeader(summary, _("Keyboard"));
+	summary = Summary::AddLine(summary, (keyboard_name != "") ?
+				   keyboard_name : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Time Zone"));
+	summary = Summary::AddLine(summary, (clock["timezone"]:"" != "") ?
+				   clock["timezone"]:"" : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Mouse"));
+	summary = Summary::AddLine(summary, (mouse_name != "") ?
+				   mouse_name : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Hardware clock"));
+	summary = Summary::AddLine(summary, ( hwclock == "" ) ? _("Default") : hwclock );
+
+	summary = Summary::AddHeader(summary, _("Reboot after installation"));
+	summary = Summary::AddLine(summary, (mode["reboot"]:false) ?
+				   _("Yes") : _("No"));
+
+	summary = Summary::AddHeader(summary, _("Confirm every step of the boot process?"));
+	summary = Summary::AddLine(summary, (mode["interactive_boot"]:false) ?
+				   _("Yes") : _("No"));
+	
+	summary = Summary::AddHeader(summary, _("Confirm installation?"));
+	summary = Summary::AddLine(summary, (mode["confirm"]:false) ?
+				   _("Yes") : _("No"));
+	
+	return summary;				   
+    }
+
+
+
+    global define boolean Import (map settings) ``{
+	general = settings;
+	return true;
+    }
+
+
+    global define boolean Export () ``{
+	return general;
+    }
+
+
+}

@@ -1,0 +1,437 @@
+/**
+ *
+ *
+ */
+{
+
+    module "AutoInstallRules";
+    textdomain "autoinst";
+
+
+    import "Arch";
+    import "Storage";
+    import "Mode";
+
+    global string hostname = "avicenna";
+
+    global string hostaddress = "";
+
+    global string network = "";
+
+    global string domainname = "";
+
+    global string arch = "";
+
+    global string karch = "";
+
+    global string model = "";
+
+    global string vendor = "";
+
+    global integer memsize = 0;
+
+    global list disksize = [];
+
+    global integer totaldisk = 0;
+
+    global string hostid = "";
+
+    global string mac = "";
+
+    global map installed = $[];
+
+
+
+    global map UserRules = $[];
+
+
+    // Local
+    string shell = "";
+    map env = $[];
+
+    list tomerge = [];
+
+    /**
+     * Constructor
+     *
+     */ 
+    global define void AutoInstallRules () ``{
+	ProbeKernelArch();
+	y2milestone("Rules: %1", ProbeRules());
+	
+	return;
+    }
+
+    /**
+     * Probe all system data to build  a set of rules
+     */
+    global define map ProbeRules () ``{
+
+	map rules = $[];
+
+
+	// Architecture
+	arch = Arch::architecture;	
+	rules["arch"] = arch;
+	rules["karch"] = karch;
+
+	// Memory
+	rules["memsize"] = memsize;
+
+	// Disk sizes
+	map storage =  Storage::GetTargetMap();
+	totaldisk = 0;
+	disksize = maplist( `k, `v, storage ,
+			    ``{
+				integer size_in_mb = v["cyl_size"]:0 * v["cyl_count"]:0 / ( 1024 * 1024 ) ;
+				totaldisk = totaldisk + size_in_mb;
+				return($["device":k, "size": size_in_mb]);
+			    });
+
+	rules["disksize"] = disksize ;	
+	rules["totaldisk"] = totaldisk ;
+
+	// MAC
+	mac = getMAC();
+	
+	rules["mac"] = mac;
+
+	// Network
+	if (Mode::initial)
+	    hostaddress  = SCR::Read(.etc.install_inf.IP);
+	else
+	    hostaddress  = "192.168.1.1"; // FIXME
+
+	rules["hostaddress"] = hostaddress;
+	
+	// Hostid (i.e. 0xa8c00101);
+	hostid = getHostid();
+
+	rules["hostid"] = hostid;
+
+	rules["hostname"] = "avicenna";
+	rules["domainname"] = "";
+	rules["network"] = "";
+	
+	return rules;	
+    }
+
+    /**
+     * Return MAC address of active device
+     */
+
+    global define string getMAC() ``{
+	string tmpmac = "";
+	list ifconfig = SCR::Read(.run.ifconfig);
+	string device = "";
+	if (Mode::initial)
+	{
+	    device  = SCR::Read (.etc.install_inf.Netdevice);
+	}
+	else
+	{
+	    // Fallback
+	    device = "eth0";
+	}
+	
+	foreach(`dev, ifconfig, ``{
+	    if (dev["name"]:"" == device)
+	    {
+		string link = dev["value", "link"]:"";
+		list linktok = splitstring(link, " ");
+		list clean = filter(`tok, linktok, ``(tok != ""));
+		y2milestone("mac line: %1", clean);
+		tmpmac = clean[3]:"";
+	    }
+
+	});
+	string cleanmac = deletechars(tolower(tmpmac), ":");
+	return cleanmac;
+    }
+
+
+    /**
+     * Return host id (hex ip )
+     */
+    
+    global define string getHostid () ``{
+	include "network/ip.ycp";
+	string hex = ip2hex(hostaddress);
+	return tolower(hex);
+    }
+
+
+    /**
+     * Probe for kernel architecture
+     *
+     * @return void
+     */
+
+    global define void ProbeKernelArch ()
+	``{
+	karch = "default";
+	integer memory = 0;
+	// check for > 4GB memory
+	list memories = SCR::Read(.probe.memory);
+	memory = memories[0,"resource","phys_mem",0,"range"]:0;
+	y2milestone ("Physical memory %1", memory);
+	
+	if (Arch::has_smp)
+	{	    
+	    karch = "smp";	 
+	}
+
+	if (Arch::i386)
+	{
+	    // get flags from WFM /proc/cpuinfo (for pae and tsc tests below)
+
+	    string cpuinfo_flags = SCR::Read(.proc.cpuinfo.value.0."flags");	// check only first processor
+	    list cpuflags = (size(cpuinfo_flags) > 0) ? splitstring(cpuinfo_flags, " ") : [];
+
+
+
+	    if (Arch::has_smp)
+	    {
+		// x86, SMP -> must check PAE
+		if (!contains (cpuflags, "pae"))
+		{
+
+		    karch = "nopaesmp";		
+		}
+	    }
+	    else if (memory > 0x100000000)		// > 4GB
+	    {
+		karch = "smp";		
+	    }
+	    else
+	    {
+		// non-smp
+
+		// read cpu specific information (for first cpu only)
+		map cpu = select (SCR::Read (.probe.cpu), 0, $[]);
+		integer cpu_family = cpu["family"]:0;
+		integer cpu_model = cpu["model"]:0;
+
+		if ((cpu["vendor"]:"" == "AuthenticAMD")
+		    && (cpu_family >= 6))
+		{
+		    karch = "athlon";
+		}
+		// special handling for cyrix, it pretends to be a pentium but isnt
+		//   so extra check for "tsc" flag
+		else if ((cpu_family < 5)	// not pentium
+			 || ((cpu_family == 5)
+			     && (!contains (cpuflags, "tsc"))))
+		{
+		    karch = "i386";
+		}
+	    }
+	}
+	else if (Arch::alpha
+		 && !Arch::has_smp)
+	{
+	    if (serial_console)
+	    {
+		karch =  "serial";
+	    }
+
+	    if (tga_controller_found)
+	    {
+		karch = "tga";
+	    }
+	}
+	else if (Arch::ppc)
+	{
+	    binary = "vmlinux";
+	    if (Arch::board_mac_new
+		|| Arch::board_mac_old)
+	    {
+		karch = "default";
+	    }
+
+	    if (Arch::board_mac_nubus)
+	    {
+		karch = "ppcnubus";
+	    }
+
+	    if (Arch::board_chrp)
+	    {
+		// XXX fixme
+		string chrp_cpu = "";
+		list cpuProbe = SCR::Read(.probe.cpu);
+		foreach (`cpuProbe, cpuProbe,
+			 ``{
+		    chrp_cpu = cpuProbe["model"]:"";
+		    chrp_cpu = tolower (chrp_cpu);
+		});
+
+		if (issubstring (chrp_cpu, "power3")
+		    && Arch::ppc32)
+		{
+		    karch = "power3";
+		}
+		else if (Arch::ppc64)
+		{
+		    karch = "ppc64";
+		}
+		else
+		{
+		    karch = "default";
+		}
+	    }
+	    else if (Arch::board_iseries)
+	    {
+		karch = "iseries64";
+	    }
+	    else if (Arch::board_prep)
+	    {
+		karch = "default";
+	    }
+	}
+	else if (Arch::sparc64)
+	{
+	    if (Arch::has_smp)
+	    {
+		karch = "smp";
+	    }
+	    else
+	    {
+		karch = "default";
+	    }
+	}
+	else if (Arch::ia64)
+	{
+	    list cpuProbe = SCR::Read (.probe.cpu);
+	    string model = cpuProbe[0,"model"]:"Itanium";
+	    if (issubstring(model, "Itanium 2"))
+	    {
+		if (Arch::has_smp)
+		    karch = "itanium2-smp";
+		else
+		    karch = "itanium2";
+	    }
+	}
+	else if (Arch::s390)
+	{
+	    karch = "default";
+	}
+	memsize = memory /  ( 1024 * 1024 );
+	
+	y2milestone("Kernel Architecture: %1", karch);
+	return;
+    }	// ProbeKernelArch ()
+
+
+    /**
+     * Read rules file
+     *
+     */
+
+    global define void Read() ``{
+	import "XML";
+	UserRules = XML::XMLToYCPFile( "/work/CDs/full-8.1-i386/rules/rules.xml" );
+	y2milestone("Rules: %1", UserRules);
+
+	list rulelist = UserRules["rules"]:[];
+
+	boolean ismatch = false;
+	boolean go_on = true;
+	foreach ( map ruleset, rulelist, ``{
+	    y2debug("Ruleset: %1", ruleset);
+	    if (go_on) {
+		foreach(string rule, map ruledef, ruleset, ``{
+		    y2debug("Rule: %1", rule);
+		    y2debug("Ruledef: %1", ruledef);
+		    string match = ruledef["match"]:"undefined";
+		
+		    if ( rule == "hostname")
+		    {
+			string op = ruledef["operator"]:"";
+			string matchtype = "exact";
+		   		    
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = hostname;
+
+		    }
+		    else if ( rule == "memsize" )
+		    {
+			string op = ruledef["operator"]:"and";
+			string matchtype = ruledef["match_type"]:"exact";
+		    
+
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;		 
+			env[rule] = memsize;
+		    }
+		    else if ( rule == "result" )
+		    {		    
+			if ( verifyrules() == 0 )
+			{
+			    tomerge = add(tomerge,  ruledef["profile"]:"");
+			}
+			shell = "";
+			go_on = ruledef["continue"]:false;
+		    }					
+		   
+		});
+	    }
+	});
+	y2milestone("Shell: %1", shell);
+	return;
+    }
+
+
+    /**
+     * Create shell command for rule verification
+     */
+    
+    define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
+	if (op == "and")
+	    op = "-a";
+	else if (op == "or")
+	    op = "-o";
+	
+	string tmpshell = "";
+	y2debug("Match type: %1", matchtype);
+	if (matchtype == "exact") 
+	    tmpshell = tmpshell + sformat("\"$%1\" = \"%2\" ", var,  val);
+	else if (matchtype == "greater")
+	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" ",  var,  val);
+	else if (matchtype == "lower")
+	    tmpshell = tmpshell + sformat("\"$%1\" -lt \"%2\" ",  var,  val);
+	else if (matchtype == "range")
+	{
+	    list range = splitstring(val, "-");
+	    y2debug("Range: %1", range);
+	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" -a \"$%1\" -lt \"%3\" ",  var,  range[0]:0,  range[1]:0);
+	}	    
+
+	if (match)
+	{
+	    shell = shell + sformat(" %1 %2", op, tmpshell);
+	}
+	else
+	{
+	    shell = tmpshell;
+	}
+
+    }
+
+    /**
+     * Verify rules using the shell
+     */
+    define verifyrules () ``{
+	string script = sformat("if [ %1 ]; then exit 0; else exit 1; fi", shell);
+	map ret = SCR::Execute (.target.bash_output, script, env);
+	y2debug("Bash return: %1", ret);
+	return ret["exit"]:-1;	
+    }
+
+    /**
+     * Return list of file to merge (Order matters)
+     */
+    global define list Files () ``{
+	return tomerge;
+    }
+}

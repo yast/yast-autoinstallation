@@ -79,10 +79,6 @@
     //
     global map Profile =  $[];
 
-    // Map with data from command line specifying profile location and protocol to use.
-    //
-    global map ProfileLocation = $[];
-
 
     // Auto-Configuration mode
     //
@@ -191,11 +187,7 @@
 		// Profile is available and it has not been parsed yet.
 		ProcessProfile();
 	    }
-	    // Just to be sure
-	    if (Mode::initial)
-	    {
-		ParseCmdLine();
-	    }
+
 	}
 
 	if (Mode::cont && size ( Profile ) > 0)
@@ -240,7 +232,7 @@
 	Configure = Profile["configure"]:$[];
 
 	Report::Set(GetMap(Install , "report", true));
-	Fstab = fstabSettings();
+
 	X11 = Configure["x11"]:$[];
 	if (size(X11) == 0 || !X11["configure_x11"]:false)
 	{
@@ -314,69 +306,6 @@
     }
 
 
-    /**
-     * Return location of profile from command line.
-     * @return map with protocol, server, path
-     * @example autoyast=http://www.server.com/profiles/
-     */
-    global define boolean ParseCmdLine ()
-	``{
-	include "transfer/url.ycp";
-	map result = $[];
-	string cmdLine = "";
-	any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
-
-	if (autoinstall != nil && is(autoinstall,string))
-	{
-	    cmdLine = autoinstall;
-	    if (cmdLine == "default")
-	    {
-		result["scheme"]= "default";
-		ProfileLocation = result;
-		return true;
-	    }
-	    else
-	    {
-		result = parse_url (cmdLine);
-	    }
-	}
-
-
-	if (result["scheme"]:"" == "")
-	{
-	    // Autoinstall mode was not activated from command line.
-	    // There must be a floppy with an 'autoinst.xml' in order
-	    // to be able to reach this point, so we set floppy with
-	    // autoinst.xml as the control file.
-
-	    result = add(result, "scheme", "floppy");
-	    result = add(result, "path","/autoinst.xml");
-	}
-	ProfileLocation = result;
-	return true;;
-    }
-
-
-    /**
-     * Parse and prepare fstab settings
-     * 	<pre>fstab["/dev/pts"] = $["spec":"devpts", "file":"/dev/pts", "vfstype":"devpts",
-     *  "mntops":"defaults", "freq":0, "passno":0];</pre>
-     * @return list fstab list to be used by write_fstab
-     */
-    global define list fstabSettings()``{
-	list fstab_raw = GetList(Configure, "fstab", true);
-	list fstab = maplist(`f, fstab_raw, ``{
-	    map entry = $[];
-	    entry["spec"] 	= f["fs_spec"]:"";
-	    entry["file"]	= f["fs_file"]:"";
-	    entry["vfstype"]	= f["fs_vfstype"]:"";
-	    entry["mntops"] 	= f["fs_mntops"]:"defaults";
-	    entry["freq"]	= f["fs_freq"]:0;
-	    entry["passno"]	= f["fs_passno"]:0;
-	    return (entry);
-	});
-	return fstab;
-    }
 
     /**
      * Configure general settings
