@@ -155,11 +155,7 @@ Warnings can be skipped in some places, but should not be ignored.</p>
         Wizard::CreateDialog();
         Wizard::SetDesktopIcon("report");
 	Wizard::HideAbortButton();
-        map exp1 = Report::Export();
 	ret = ReportingDialog();
-        map exp2 = Report::Export();
-        if (exp1!=exp2)
-            Report::SetModified();
 	Wizard::CloseDialog();
     }
     /**
@@ -171,6 +167,9 @@ Warnings can be skipped in some places, but should not be ignored.</p>
     }
     else if (func == "GetModified") {
 	ret = Report::GetModified();
+    }
+    else if (func == "SetModified") {
+        Report::SetModified();
     }
 
     /* unknown function */

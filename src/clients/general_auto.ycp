@@ -42,21 +42,18 @@
     else if (func == "Summary") {
 	ret =  AutoinstGeneral::Summary();
     }
-    /* create a  summary*/
     else if (func == "GetModified") {
 	ret =  AutoinstGeneral::GetModified();
+    }
+    else if (func == "SetModified") {
+	AutoinstGeneral::SetModified();
     }
     else if (func == "Reset") {
 	AutoinstGeneral::Import($[]);
 	ret = $[];
     }
     else if (func == "Change") {
-        any exp1 = AutoinstGeneral::Export();
 	ret = generalSequence();
-        any exp2 = AutoinstGeneral::Export();
-        y2debug("exp1: %1, exp2: %2", exp1, exp2);
-        if (exp1 != exp2 )
-            AutoinstGeneral::SetModified();
 	return ret;
     }
     else if (func == "Export") {

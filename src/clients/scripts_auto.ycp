@@ -54,14 +54,14 @@
     {
 	ret = AutoinstScripts::GetModified();
     }
+    else if (func == "SetModified")
+    {
+	AutoinstScripts::SetModified();
+    }
     else if (func == "Change") {
         Wizard::CreateDialog();
         Wizard::SetDesktopIcon("autoyast");
-        any exp1 = AutoinstScripts::Export();
 	ret = ScriptsDialog();
-        any exp2 = AutoinstScripts::Export();
-        if (exp1 != exp2)
-            AutoinstScripts::SetModified();
 	Wizard::CloseDialog();
     }
     else if (func == "Export")
