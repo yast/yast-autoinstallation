@@ -13,6 +13,32 @@
     import "Profile";
     include "autoinstall/helps.ycp";
 
+    define term GenericDialog( term button_box ) ``{
+        return `VBox( `id(`WizardDialog),
+                      `ReplacePoint( `id(`image ), `Empty() ),
+                      `HBox(
+                            `HWeight( 30, `ReplacePoint( `id(`helpSpace), `RichText(`id(`HelpText), ""))),
+                            `HSpacing(1),
+                            `HWeight( 70, `VBox(
+                                                `VSpacing(0.2),
+                                                `HBox(
+                                                      `ReplacePoint(`id(`rep_title_icon), `Empty() ),
+                                                      `Heading(`id(`title), `opt (`hstretch), _("YaST2\nInitializing ...")),
+                                                      `HStretch()
+                                                      ),
+                                                `VWeight( 1, // Layout trick: Lower layout priority with weight
+                                                         `HVCenter(
+                                                                   `ReplacePoint(`id(`contents), `Empty() )
+                                                                   )
+                                                         ),
+                                                `ReplacePoint(`id(`rep_button_box), button_box ),
+                                                `VSpacing(0.2)
+                                                )
+                                      ),
+                            `HSpacing(1)
+                            )
+                      );
+    };
 
     /**
      * Preferences Dialog
