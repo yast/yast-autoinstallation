@@ -10,12 +10,14 @@
 
     import "Label";
     import "Popup";
+    include "autoinstall/helps.ycp";
 
 
 
     /**
      * Show feedback message in a simple dialog.
      * @param msg message to show
+     * @return void
      **/
     define void showFeedback( string msg ) ``{
 	if ( AutoinstConfig::popup_open )
@@ -30,6 +32,7 @@
 
     /**
      * Close feedback dialog if it is open
+     * @return void
      **/
     define void clearFeedback() ``{
 	if ( AutoinstConfig::popup_open )
@@ -38,8 +41,7 @@
     };
 
 
-    /**
-	 * Preferences()
+    /**     
      * Preferences Dialog
      * @return symbol
      */
@@ -251,36 +253,20 @@ must begin with letter, and must be
 
 	return (ret == `ok)? f : "";
     }
+
     
     /**
      * Clone running system
-     *
+     * @return symbol
      */
     define symbol cloneSystem()``{
 	
 	import "AutoinstClone";
 	import "Profile";
-	string help = _("<p>This tool creates a reference profile by reading
-information from this system. Select the resources to read from this system
-in addition to the default resources, like partitioning and package selections.</p>
-");
-
-	help = help + _("<p>By default, referencing creates an exact copy of the
-configuration for all basic resources, such as partitioning, boot loader, and software. This, however,
-only works on the same hardware. If you check one of the basic resources, a general configuration is 
-created instead of the actual configuration of this system.  Other data is read
-from configuration files on the system.</p>
-");
-	help = help + _("<p><ul><li>Partitions will be created on the whole disk and sizes will be calculated automatically</li>");
-	help = help + _("<li>Default software selection will be installed</li>");
-	help = help + _("<li>Boot loader location and boot loader sections will be determined automatically</li></ul></p>");
-	help = help + _("<p>Examine any produced control file before using it
-to autoinstall a new system.</p>
-");
 
 	// title
 	string title = _("Create a Reference Control File");
-
+	list items = AutoinstClone::createClonableList();
 	term contents =
 	    `VBox(
 		  `MultiSelectionBox( `id(`baseres), _("Basic Resources (Check to Create  Settings):"),
@@ -292,26 +278,16 @@ to autoinstall a new system.</p>
 				      ),
 		  `VSpacing(1),
 		  `MultiSelectionBox( `id(`res), _("Select Additional Resources:"),
-				      [
-				       `item(`id("lan"), _("Network")),
-				       `item(`id("nis"),_("NIS")),
-				       `item(`id("nis_server"),_("NIS Server")),
-				       `item(`id("nfs_server"),_("NFS Exports")),
-				       `item(`id("nfs"),_("NFS Mounts")),
-				       `item(`id("sound"),_("Sound")),
-				       `item(`id("printer"),_("Printer")),
-				       `item(`id("mail"),_("Mail")),
-				       `item(`id("users"), _("Users")),
-				       `item(`id("firewall"), _("Firewall"))
-				       ]
+				      items
 				      )
 		  );
 
 	Wizard::SetContents(title,
-			    contents, help, true, true);
+			    contents, HELPS["clone"]:"", true, true);
 	Wizard::ReplaceAbortButton(`Empty());
 
-	UI::ChangeWidget(`id(`next), `Label, _("Crea&te"));
+	UI::ChangeWidget(`id(`next), `Label, Label::CreateButton());
+	
 	symbol ret = `none;
 	repeat
 	    {

@@ -52,7 +52,7 @@
     
     /**
      * Constructor
-     *
+     * @return void
      */
     global define void AutoinstLVM () ``{
 
@@ -78,7 +78,11 @@
 	return;
     }
 
-
+    /**
+     * Remove volume Group
+     * @param string volume group name
+     * @return void
+     */
     global define void RemoveVG (string vgname) ``{
 	map remove_vg = $[
 			  "use_module" : "lvm_ll",
@@ -92,7 +96,11 @@
 
 
 
-
+    /**
+     * Create volume Group
+     * @param string volume group name
+     * @return map new VG
+     */
     global define map CreateVG (string vgname) ``{
 
 	map create_vg = $[
@@ -116,7 +124,12 @@
 
 
 
-
+    /**
+     * Create physical volume
+     * @param string volume group name
+     * @param string device
+     * @return void
+     */
     global define void CreatePV (string vgname, string device) ``{
 
 	map create_pv = $[
@@ -130,7 +143,12 @@
 
     }
 
-
+   /**
+     * Remove logical volume
+     * @param string volume group name
+     * @param string logical volume
+     * @return void
+     */
     global define void RemoveLV (string vgname, string lvname) ``{
 	map remove_lv = $[
 			      "use_module" : "lvm_ll",
@@ -143,7 +161,12 @@
 	return;
     }
 
-
+    /**
+     * Remove physical volume
+     * @param string volume group name
+     * @param string device
+     * @return void
+     */
     global define void RemovePV (string vgname, string device) ``{
 	map remove_pv = $[
 			  "use_module"	: "lvm_ll",
@@ -155,7 +178,12 @@
 	return;
     }
 
-
+   /**
+     * Create logical volume
+     * @param string volume group name
+     * @param map logical volume
+     * @return void
+     */
     global define map CreateLV (string vgname, map lv) ``{
 
 	string lvsize_str	= lv["size"]:"";
@@ -213,6 +241,13 @@
 
     };
 
+
+   /**
+     * Resize  logical volume
+     * @param string volume group name
+     * @param map logical volume
+     * @return void
+     */    
     global define map ResizeLV (string vgname, map lv) ``{
 
 	string lvsize_str	= lv["size"]:"";
@@ -268,6 +303,13 @@
 		]);
 
     };
+
+    /**
+     * Keep logical volume
+     * @param string volume group name
+     * @param string logical volume
+     * @return void
+     */    
     global define map KeepLV (string vgname, map lv) ``{
 
 	string lvsize_str   = lv["size"]:"";
@@ -288,23 +330,26 @@
 		  "type"		: `lvm,
 		  "device"		: "/dev/" + vgname + "/" + lv_name
 		]);
-
     };
 
 
-
+   /**
+     * Set PE Size
+     * @param string pe size string
+     * @return void
+     */
     global define void SetPESIZE (string pesize_str) ``{
 	pesize	=  pesize_str_to_byte( pesize_str );
 	return;
 
     }
 
-
     /**
-     *	Return only those PVs on disks touched by the control file, dont add PVs of
-     *	unconfigured disks. FIXME
+     * Return only those PVs on disks touched by the control file, dont add PVs of
+     * unconfigured disks.
+     * @param string volume group name
+     * @return list existing PVs
      */
-
     global define list ExistingPVs ( string vgname )
 	``{
 	map tm = $[];
@@ -336,7 +381,11 @@
 
     }
 
-
+    /**
+     * Return list of deleted PVS
+     * @param string volume group name
+     * @return list<map> list of deleted PVs
+     */
     global define list<map> DeletedPVs ( string vgname )
 	``{
 	list<list<map> > ret = [];
@@ -356,13 +405,12 @@
 			       )
 		       );
 	});
-
 	return( flatten(ret) );
     }
 
     /**
      * Write LVM Configuration
-     *
+     * @return boolean true on success
      */
     global define boolean Write () ``{
 
@@ -394,6 +442,9 @@
 						  ``{
 						      return(pv["device"]:"");
 						  });
+
+		    list lv_on_raid = filter(string dev, del_pvs_dev, ``(issubstring(dev, "/dev/md")));
+		    
 		    if ( use == "all" && vgn == vgname )
 		    {
 			delete = true;
@@ -413,12 +464,10 @@ Delete old volume groups first or configure all devices containing
 physical volumes belonging to this group.
 "), vgname));
 			error = true;
-
 		    }
 
-
 		    // Delete old LVM
-		    if ( delete && !error)
+		    if ( delete && !error && size(lv_on_raid) == 0)
 		    {
 			map ExistingVG = ExistingLVM[vgdev]:$[];
 
@@ -449,9 +498,7 @@ physical volumes belonging to this group.
 		});
 	    }
 
-
 	    SetPESIZE( volume_group["pesize"]:"4M" );
-
 	    y2milestone("Existing PVs: %1",  new_pvs );
 	    map new_volume = $[];
 
@@ -484,19 +531,16 @@ physical volumes belonging to this group.
 		}
 		else if (lv["resize"]:false)
 		{
-
 		    return (ResizeLV( vgname, lv ));
 		}
 		else
 		{
-
 		    return (KeepLV( vgname, lv ));
 		}
 	    });
 
 	    new_volume["partitions"] = new_partitions;
 	    Volumes[device] = new_volume;
-
 	});
 
 

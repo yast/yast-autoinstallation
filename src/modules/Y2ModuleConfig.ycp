@@ -43,18 +43,21 @@
 	Desktop::AgentPath = .autoyast2.desktop;
 
 	list Values= [ "Name",
-		  "GenericName",
-		  "X-SuSE-YaST-AutoInst",
-		  "X-SuSE-YaST-AutoinstResource",
-		  "X-SuSE-YaST-AutoinstClient",
-		  "X-SuSE-YaST-Group",
-		  "X-SuSE-YaST-AutoinstPath",
-		  "X-SuSE-YaST-AutoinstMerge",
+		       "GenericName",
+		       "X-SuSE-YaST-AutoInst",
+		       "X-SuSE-YaST-AutoinstResource",
+		       "X-SuSE-YaST-AutoinstClient",
+		       "X-SuSE-YaST-Group",
+		       "X-SuSE-YaST-AutoinstPath",
+		       "X-SuSE-YaST-AutoinstMerge",
 		       "X-SuSE-YaST-AutoinstMergeTypes",
-		       "X-SuSE-YaST-AutoinstDataType"
+		       "X-SuSE-YaST-AutoinstDataType",
+		       "X-SuSE-YaST-AutoInstClonable"
 	];
 	Desktop::Read(Values);
 	map configurations = Desktop::Modules;
+
+	y2milestone("%1", configurations );
 	map groups = Desktop::Groups;
 
 	map confs = $[];
