@@ -19,7 +19,7 @@
     import "Report";
     import "Progress";
 
-    y2milestone("Profile=%1", Profile::Flat );
+    y2milestone("Profile=%1", Profile::current );
 
     define void Step (string s) {
         Progress::NextStep();
@@ -31,8 +31,8 @@
     string resource = "";
     string module_auto = "";
 
-    if (Profile::Flat["report"]:$[] != $[])
-        Report::Import(Profile::Flat["report"]:$[]);
+    if (Profile::current["report"]:$[] != $[])
+        Report::Import(Profile::current["report"]:$[]);
 
 
     string help_text = _("<p>
@@ -46,7 +46,7 @@ Please wait while the system is prepared for autoinstallation.</p>
     integer steps = size(filter(string p, map d, Y2ModuleConfig::ModuleMap, ``( 
 	(d["X-SuSE-YaST-AutoInst"]:"" == "all" || 
          d["X-SuSE-YaST-AutoInst"]:"" == "write") &&
-        haskey(Profile::Flat, d["X-SuSE-YaST-AutoInstResource"]:p)  )));
+        haskey(Profile::current, d["X-SuSE-YaST-AutoInstResource"]:p)  )));
 
 
     steps = steps + 3;
@@ -86,7 +86,7 @@ Please wait while the system is prepared for autoinstallation.</p>
 
 	    map result = $[];
 
-	    if (haskey(Profile::Flat , resource) )
+	    if (haskey(Profile::current , resource) )
 	    {
 		y2milestone("Importing configuration for %1", p);
 		string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
@@ -99,9 +99,9 @@ Please wait while the system is prepared for autoinstallation.</p>
 		    foreach( string res, splitstring(tomerge, ",") ,
 			     ``{
 			if ( MergeTypes[i]:"map" == "map")
-			    result[res] = Profile::Flat[res]:$[];
+			    result[res] = Profile::current[res]:$[];
 			else
-			    result[res] = Profile::Flat[res]:[];
+			    result[res] = Profile::current[res]:[];
 			i = i + 1;
 		    });
 		    y2milestone("Calling auto client with: %1", result);
@@ -115,21 +115,21 @@ Please wait while the system is prepared for autoinstallation.</p>
 		}
 		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
 		{
-		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:$[]));
-		    if (size(Profile::Flat[resource]:$[]) > 0 )
+		    y2milestone("Calling auto client with: %1",  eval(Profile::current[resource]:$[]));
+		    if (size(Profile::current[resource]:$[]) > 0 )
                     {
                         Step(p);
-		        Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
+		        Call::Function(module_auto, ["Import", eval(Profile::current[resource]:$[])   ]);
 	                map out = (map)Call::Function(module_auto, ["Packages" ]);
 	                packages = (list<string>) union(packages, out["install"]:[]);
                     }
 		}
 		else
 		{
-		    if (size(Profile::Flat[resource]:[]) > 0 )
+		    if (size(Profile::current[resource]:[]) > 0 )
                     {
                         Step(p);
-		        Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
+		        Call::Function(module_auto, ["Import",  eval(Profile::current[resource]:[]) ]);
 	                map out = (map)Call::Function(module_auto, ["Packages" ]);
 	                packages = (list<string>) union(packages, out["install"]:[]);
                     }
@@ -146,7 +146,7 @@ Please wait while the system is prepared for autoinstallation.</p>
     // Run early network scripts
     Progress::NextStep();
     Progress::Title(_("Running scripts..."));
-    AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
+    AutoinstScripts::Import(Profile::current["scripts"]:$[]);
     AutoinstScripts::Write("post-scripts", true);
 
 

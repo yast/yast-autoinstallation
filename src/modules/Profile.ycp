@@ -21,16 +21,7 @@
 
 
     // The Complete current Profile
-    global map current = $[];
-
-    // Flat control file with all resources on one level
-    global map<string, any > Flat = $[];
-
-    // the install portion of the XML configuration file
-    global map<string, any > Install = $[];
-
-    // the configure portion of the XML configuration file
-    global map<string, any > Configure = $[];
+    global map<string,any> current = $[];
 
     // defined in Y2ModuleConfig
     global map<string, map> ModuleMap = $[];
@@ -66,8 +57,7 @@
      * Detect Version
      * @return string
      */
-    define string DetectVersion()
-    {
+    define string DetectVersion() {
 	return "";
     }
 
@@ -76,8 +66,7 @@
      * @param map Profile Properties
      * @return void
      */
-    global define void ReadProperties (map properties)
-	``{
+    global define void ReadProperties (map properties) {
 	Version = properties["version"]:"";
 	Description = properties["description"]:"";
 
@@ -102,22 +91,24 @@
      * @param map profile
      * @return void
      */
-    global define void Import(map profile)
+    global define void Import(map<string, any> profile)
     {
 	y2milestone("importing profile");
 	current  = profile;
 
 	ReadProperties(current["properties"]:$[]);
 
+        // old style
+        if (haskey(profile, "configure") || haskey(profile, "install")) {
+	    map _configure = profile["configure"]:$[];
+	    map _install = profile["install"]:$[];
+	    current = (map<string, any>)union( _configure, _install );
+        }
 
-	Configure = profile["configure"]:$[];
-	Install = profile["install"]:$[];
-	Flat = (map<string, any>)union( Configure, Install );
-
-        if (!Flat["x11", "configure_x11"]:false)
+        if (!current["x11", "configure_x11"]:false)
             ProductControl::DisabledModules=add(ProductControl::DisabledModules, "x11");
 
-        y2milestone("Flat=%1", Flat );
+        y2milestone("Current Profile=%1", current );
 	return;
     }
 
@@ -129,12 +120,11 @@
     global define void Prepare()
     {
         if (!prepare)
-        {
             return;
-        }
-        Popup::ShowFeedback(_("Collecting configuration data..."), _("This may take a while"));
-        Install = $[];
-        Configure = $[];
+
+        Popup::ShowFeedback(_("Collecting configuration data..."), 
+                _("This may take a while"));
+
         list<string> e = [];
 
 	foreach(string p, map d, ModuleMap, {
@@ -176,25 +166,15 @@
                             if ( MergeTypes[i]:"map" == "map")
                             {
                                 map<string,any> rd = (map<string,any>)resource_data;
-                                Configure[res] = rd[res]:$[];
-                            }
-                            else
-                            {
+                                current[res] = rd[res]:$[];
+                            } else {
                                 map<string,any> rd =(map<string,any>)resource_data;
-                                Configure[res] = rd[res]:[];
+                                current[res] = rd[res]:[];
                             }
                             i = i + 1;
                         });
                     } else {
-
-                        if (d["X-SuSE-YaST-AutoInstPath"]:"" == "install")
-                        {
-                            Install[resource] = resource_data;
-                        }
-                        else
-                        {
-                            Configure[resource] = resource_data;
-                        }
+                            current[resource] = resource_data;
                     }
                 }
                 else if (s == 0 )
@@ -205,33 +185,16 @@
 	});
 
 
-	if (Install != $[])
-	{
-            foreach(string k, any v, current["install"]:$[], ``{
-                    if (!haskey(Install, k) && !contains(e, k ))
-                        Install[k] = v;
-                    });
-	    current["install"] = Install;
-	}
+        foreach(string k, any v, current, ``{
+                if (!haskey(current, k) && !contains(e, k ))
+                    current[k] = v;
+        });
 
-	if (Configure!=$[])
-	{
-            foreach(string k, any v, current["configure"]:$[], ``{
-                    if (!haskey(Configure, k) && !contains(e, k ))
-                        Configure[k] = v;
-                    });
-	    current["configure"] = Configure;
-	}
-
-
-	Flat = (map<string, any>)union( Configure, Install );
         Popup::ClearFeedback();
         prepare = false;
 	return;
 
     }
-
-
 
     /**
      * Reset profile to initial status
@@ -241,13 +204,8 @@
     {
 	y2milestone("Resetting profile contents");
 	current = $[];
-	Install = $[];
-	Configure = $[];
-	Flat = $[];
 	return;
     }
-
-
 
     /**
      * Save YCP data into XML
@@ -281,7 +239,7 @@
      */
     global define boolean ReadProfileStructure ( string parsedControlFile )
     {
-	current = (map) SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
+	current = (map<string,map>) SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
 	if (current == $[])
 	    return false;
 	else
@@ -393,63 +351,53 @@
 
     /**
      * General compatibility issues
-     * @param map install section
-     * @param map configure section
+     * @param current profile
      * @return map converted profile
      */
-    global define map<string, any> Compat(map Install, map Configure)
+    define map<string, any> Compat(map<string, any> _current)
     {
 	// scripts
-	if ( haskey(Configure, "pre-scripts") ||
-	    haskey(Configure, "post-scripts") ||
-	    haskey(Configure, "chroot-scripts")	    )
+	if ( haskey(_current, "pre-scripts") ||
+	    haskey(_current, "post-scripts") ||
+	    haskey(_current, "chroot-scripts")	    )
 	{
-	    list pre = Configure["pre-scripts"]:[];
-	    list post = Configure["post-scripts"]:[];
-	    list chroot = Configure["chroot-scripts"]:[];
+	    list pre = _current["pre-scripts"]:[];
+	    list post = _current["post-scripts"]:[];
+	    list chroot = _current["chroot-scripts"]:[];
 	    map scripts = $[
 			    "pre-scripts":pre,
 			    "post-scripts":post,
 			    "chroot-scripts":chroot
 	    ];
-	    Configure = remove(Configure, "pre-scripts");
-	    Configure = remove(Configure, "post-scripts");
-	    Configure = remove(Configure, "chroot-scripts");
+	    _current = remove(_current, "pre-scripts");
+	    _current = remove(_current, "post-scripts");
+	    _current = remove(_current, "chroot-scripts");
 
-	    Configure["scripts"] = scripts;
+	    _current["scripts"] = scripts;
 	}
 
 	// general
 	boolean old = false;
 
-	map<string, any> general_options	= Install["general"]:$[];
-	map security		= Configure["security"]:$[];
-	map report		= Install["report"]:$[];
-
+	map<string, any> general_options
+                                = _current["general"]:$[];
+	map security		= _current["security"]:$[];
+	map report		= _current["report"]:$[];
 
 	foreach(string k, any v, general_options , ``{
 	    if (k == "keyboard" && is(v, string))
-	    {
 		old = true;
-	    }
 	    else if (k == "mouse" && is(v, string))
-	    {
 		old = true;
-	    }
 	    else if (k == "encryption_method")
-	    {
 		old = true;
-	    }
 	    else if (k == "timezone" &&  is(v, string))
-	    {
 		old = true;
-	    }
 	});
 
 	map new_general = $[];
 
-	if (old)
-	{
+	if (old) {
 	    y2milestone("Old format, converting.....");
 	    new_general["language"]	= general_options["language"]:"";
 	    map keyboard = $[];
@@ -484,7 +432,7 @@
 		security["encryption"] = general_options["encryption_method"]:"";
 	    }
 
-	    map net = Configure["networking"]:$[];
+	    map net = _current["networking"]:$[];
 	    list<map<string, string> > ifaces = net["interfaces"]:[];
 
 	    list newifaces = maplist(map<string, string> iface , ifaces, ``{
@@ -496,35 +444,32 @@
 
 	    net["interfaces"] =  newifaces;
 
-	    Install["general"] = new_general;
-	    Install["report"] = report;
-	    Configure["security"] = security;
-	    Configure["networking"] = net;
+	    _current["general"] = new_general;
+	    _current["report"] = report;
+	    _current["security"] = security;
+	    _current["networking"] = net;
 	}
-	//
+
 	// RAID
-	//
-	list<map> old_raid = Install["raid"]:[];
+	list<map> old_raid = _current["raid"]:[];
 	if (size(old_raid) > 0 )
 	{
 	    map new_raid = convertRAID(old_raid);
-	    list d = Install["partitioning"]:[];
+	    list d = _current["partitioning"]:[];
 	    d =add (d, new_raid );
-	    Install["partitioning"] = d;
+	    _current["partitioning"] = d;
 	}
 
-	//
 	// LVM
-	//
-	list<map> old_lvm = Install["lvm"]:[];
+	list<map> old_lvm = _current["lvm"]:[];
 	if (size(old_lvm) > 0 )
 	{
 	    list<map> new_lvm = convertLVM(old_lvm);
-	    list<map> d = Install["partitioning"]:[];
+	    list<map> d = _current["partitioning"]:[];
 	    d = (list<map>) union (d, new_lvm );
-	    Install["partitioning"] = d;
+	    _current["partitioning"] = d;
 	}
-	return ((map<string, any>)union(Configure, Install));
+	return _current;
     }
 
 
@@ -533,8 +478,7 @@
      * @param  path to file
      * @return	boolean
      */
-    global define boolean ReadXML (string file)
-    {
+    global define boolean ReadXML (string file) {
 	y2debug("Reading %1", file);
 	current = XML::XMLToYCPFile(file);
 
@@ -543,7 +487,6 @@
 	    return (false);
 	}
 	Import (current);
-	Flat = Compat( Install, Configure);
 	return (true);
     }
 

@@ -105,7 +105,7 @@
     {
 	if ( Stage::cont () )
 	{
-	    Import(Profile::Flat["software"]:$[]);
+	    Import(Profile::current["software"]:$[]);
 	}
         return;
     }
@@ -151,7 +151,7 @@
         //
         // Update profile
         //
-        Profile::Flat["software"] = Export();
+        Profile::current["software"] = Export();
         return;
     }
 
@@ -163,7 +163,7 @@
     global define void RemoveModulePackages (list<string> module_packages)
     {
         PackageAI::toinstall = filter(string p, PackageAI::toinstall, ``(!contains(module_packages,p)));
-	Profile::Flat["software"] = Export();
+	Profile::current["software"] = Export();
 	return;
     }
 
@@ -245,8 +245,8 @@
 	    }
 	}
 
-	if (haskey(Profile::Flat, "inetd")) {
-		map conf = Profile::Flat["inetd"]:$[];
+	if (haskey(Profile::current, "inetd")) {
+		map conf = Profile::current["inetd"]:$[];
 		if (conf["netd_service"]:`none == `xinetd )
 			allpackages = (list<string>) union(allpackages,
                                 ["xinetd"]);
@@ -256,8 +256,8 @@
 
 	}
 
-	if (haskey(Profile::Flat, "nis")) {
-		map conf = Profile::Flat["nis"]:$[];
+	if (haskey(Profile::current, "nis")) {
+		map conf = Profile::current["nis"]:$[];
 		if (conf["start_nis"]:false)
 			allpackages = (list<string>) union(allpackages, ["yast2-nis-client","ypbind"]);
 
@@ -268,13 +268,13 @@
                 }
 	}
 
-        if (haskey(Profile::Flat, "security")) {
+        if (haskey(Profile::current, "security")) {
             allpackages = (list<string>) union(allpackages,
                     ["yast2-security"]);
         }
 
-	if (haskey(Profile::Flat, "ldap")) {
-		map ldapclient = Profile::Flat["ldap"]:$[];
+	if (haskey(Profile::current, "ldap")) {
+		map ldapclient = Profile::current["ldap"]:$[];
 		if (ldapclient["start_ldap"]:false)
 			allpackages = (list<string>) union(allpackages, ["pam_ldap","nss_ldap"]);
                 if (ldapclient["start_autofs"]:false)
@@ -284,16 +284,16 @@
                 }
 	}
 
-	if (haskey(Profile::Flat, "nfs_server"))
+	if (haskey(Profile::current, "nfs_server"))
 	{
-	    boolean start_nfsserver = Profile::Flat["nfs_server", "start_nfsserver"]:false;
+	    boolean start_nfsserver = Profile::current["nfs_server", "start_nfsserver"]:false;
 	    if (start_nfsserver)
 		allpackages = (list<string>) union(allpackages, ["yast2-nfs-server", "nfs-utils"]);
 	}
 
 
-	if (haskey(Profile::Flat, "mail")) {
-		map mail = Profile::Flat["mail"]:$[];
+	if (haskey(Profile::current, "mail")) {
+		map mail = Profile::current["mail"]:$[];
 		if (mail["mta"]:`other == `postfix)
 		{
 			allpackages = add(allpackages, "postfix");

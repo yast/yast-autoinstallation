@@ -73,8 +73,8 @@
     //
     // Set Mouse, timezone and other workflow variables
     //
-    AutoinstGeneral::Import(Profile::Flat["general"]:$[]);
-    y2milestone("general: %1", Profile::Flat["general"]:$[] );
+    AutoinstGeneral::Import(Profile::current["general"]:$[]);
+    y2milestone("general: %1", Profile::current["general"]:$[] );
     AutoinstGeneral::Write();
 
 
@@ -86,7 +86,7 @@
     Progress::NextStage();
 
     // Pre-Scripts
-    AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
+    AutoinstScripts::Import(Profile::current["scripts"]:$[]);
     AutoinstScripts::Write("pre-scripts", false);
 
     // Reread Profile in case it was modified in pre-script
@@ -115,8 +115,8 @@ control file and try again.
 
 
     Progress::NextStage();
-    AutoinstStorage::Import(Profile::Flat["partitioning"]:[]);
-    AutoinstStorage::ImportAdvanced(Profile::Flat["partitioning_advanced"]:$[]);
+    AutoinstStorage::Import(Profile::current["partitioning"]:[]);
+    AutoinstStorage::ImportAdvanced(Profile::current["partitioning_advanced"]:$[]);
 
     if (!AutoinstStorage::Write())
     {
@@ -144,7 +144,7 @@ Try again.
 	    return `abort;
 
     Progress::NextStage();
-    AutoinstSoftware::Import( Profile::Flat["software"]:$[] );
+    AutoinstSoftware::Import( Profile::current["software"]:$[] );
 
     if (!AutoinstSoftware::Write())
     {
@@ -163,7 +163,7 @@ Try again.
     Progress::NextStage();
 
     BootCommon::getLoaderType(true);
-    Bootloader::Import(AI2Export (Profile::Flat["bootloader"]:$[]));
+    Bootloader::Import(AI2Export (Profile::current["bootloader"]:$[]));
     BootCommon::DetectDisks ();
     y2debug ("autoyast: Proposing - fix");
     Bootloader::Propose ();
@@ -171,7 +171,7 @@ Try again.
 
 
     Progress::NextStage();
-    string rl = Profile::Flat["runlevel", "default"]:"";
+    string rl = Profile::current["runlevel", "default"]:"";
     y2milestone("autoyast - configured runlevel: %1", rl);
     if (rl!="")
     {

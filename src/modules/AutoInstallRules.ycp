@@ -754,10 +754,10 @@ control file and try again.
 	    return false;
 	}
 	y2milestone("Checking classes...");
-	if ( haskey(Profile::Flat, "classes") )
+	if ( haskey(Profile::current, "classes") )
 	{
 	    y2milestone("User defined classes available, processing....");
-	    list<map> classes = Profile::Flat["classes"]:[];
+	    list<map> classes = Profile::current["classes"]:[];
 	    foreach(map class, classes,
 		    ``{
 		tomerge = add(tomerge,  "classes/" + class["class_name"]:"none" + "/" + class["configuration"]:"none");

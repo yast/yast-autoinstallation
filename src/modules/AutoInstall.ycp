@@ -134,7 +134,7 @@
     {
         string tmpdir = (string)SCR::Read(.target.tmpdir);
         string hexfile = sformat("%1/%2", tmpdir, AutoInstallRules::hostid );
-        map pxe = Profile::Flat["pxe"]:$[];
+        map pxe = Profile::current["pxe"]:$[];
         string server = pxe["tftp-server"]:"";
         if (server!="" && pxe["pxe_localboot"]:false)
         {

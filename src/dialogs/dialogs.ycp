@@ -298,9 +298,12 @@ must begin with letter, and must be
 
         Kickstart::ksfile = (string)filename;
         Kickstart::Read();
+
         Progress::NextStage();
-        map ksay = Kickstart::KS2AY();
+        map<string, any> ksay = Kickstart::KS2AY();
         Progress::Finish();
+
+
         if (ksay == $[])
         {
             Report::Error(_("Error while loading Kickstart file. Verify the syntax of
