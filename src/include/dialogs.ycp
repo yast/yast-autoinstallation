@@ -263,21 +263,43 @@ must begin with letter, and must be
     global define cloneSystem()``{
 	
 
+	import "Profile";
 	
 	string help = _("<p>This tool will create a new profile by reading
 information from this system. Select the resources you want to read from this system
 in addition to the default resource like partitioning and package selections.</p>");
+
+	help = help + _("<p>By default, cloning will create an exact copy of the
+configuration for all basic resource like partitioning, bootloader and software. This however
+will work on the same hardware only. If you check one of the basic resources, the default
+settings will be used instead of the configuration of this system (Other data will be read
+from configuration files on the system):</p>");
+	help = help + _("<p><ul><li>partitions will be created on the whole disk and sizes will be calculated automatically</li>");
+	help = help + _("<li>Default software selection will be installed</li>");
+	help = help + _("<li>Bootloader location and bootloader sections will be determined automatically</li></ul></p>");
+	
 	help = help + _("<p>Please examine any produced control file before using it
 to autoinstall a new system.</p>");
-	
-	string title = _("Clone machine");
+
+	// caption
+	string title = _("Clone system");
 
 	term contents =
 	    `VBox(
-		  `MultiSelectionBox( `id(`res), "Select additional resources to clone:",
+		  		  
+		  `MultiSelectionBox( `id(`baseres), _("Basic resources (check to use default settings):"),
+				      [
+				       `item(`id("partitioning"), _("Partitioning")),
+				       `item(`id("bootloader"),_("Bootloader")),
+				       `item(`id("software"),_("Software"))		       
+				       ]
+				      ),
+		  `VSpacing(1),
+		  `MultiSelectionBox( `id(`res), _("Select additional resources to clone:"),
 				      [
 				       `item(`id("networking"), _("Network")),
-				       `item(`id("auth"),_("Authentication (NIS, LDAP, etc.)")),
+				       `item(`id("nis"),_("NIS")),
+				       `item(`id("nis_server"),_("NIS Server")),
 				       `item(`id("nfs_server"),_("NFS Exports")),
 				       `item(`id("nfs"),_("NFS mounts")),
 				       `item(`id("sound"),_("Sound")),
@@ -290,6 +312,7 @@ to autoinstall a new system.</p>");
 
 	Wizard::SetContents(title,
 			    contents, help, true, true);
+	
 	Wizard::ReplaceAbortButton(`Empty());
 
 	UI::ChangeWidget(`id(`next), `Label, _("Clo&ne"));
@@ -299,11 +322,13 @@ to autoinstall a new system.</p>");
 		ret = UI::UserInput();	
 		if (ret ==`next)
 		{
-		    list selected_items = UI::QueryWidget( `id(`res), `SelectedItems );
+		    AIClone::base = UI::QueryWidget( `id(`res), `SelectedItems );
+		    AIClone::additional = UI::QueryWidget( `id(`res), `SelectedItems );
 		    showFeedback( _("Collecting system data.
 Please wait....
 "));		 
-		    AIClone::exportProfile(selected_items);
+		    AIClone::Process();
+		    
 		    Profile::changed = true;
 		    clearFeedback();
 
