@@ -67,6 +67,18 @@
 		    ]);
     }
 
+
+    /**
+     * Add packages needed by modules, i.e. NIS, NFS etc.
+     * @param list of packages to add
+     * @return void
+     */
+    global define void AddModulePackages(list module_packages) ``{
+	
+	forcedpackages = toset(union(forcedPackages,  module_packages));
+	return;
+    }
+
     /**
      * Summary
      * @return Html formatted configuration summary

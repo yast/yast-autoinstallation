@@ -1,0 +1,548 @@
+
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"/usr/share/xml/db41xml/docbookx.dtd"[
+
+
+
+<!ENTITY % images SYSTEM "images.ent">
+%images;
+
+<!ENTITY % entities SYSTEM "entities/en.ent">
+%entities;
+
+<!-- Examples -->
+<!ENTITY % examples SYSTEM "examples.ent">
+%examples;
+
+<!-- components -->
+<!ENTITY % components SYSTEM "components.ent">
+%components;
+
+
+]>
+
+  <article>
+    <articleinfo>    
+      <title>SuSE Linux 8.1: New Bootloader and Partitioning Features</title>
+      <author>
+	<firstname>Anas</firstname>
+	<surname>Nashif</surname>
+      </author>    
+    </articleinfo>
+    <para>
+	These features apply on SuSE Linux 8.1.
+    </para>
+      <section id="CreateProfile.Bootloader">
+	<title>The Boot loader </title>
+	<para>
+	  If you do not want to install a boot loader, you have to specify this
+	  using the <emphasis>write_bootloader</emphasis> property (Boolean
+	  value). In this case make sure you create a boot disk or have
+	  another way to boot your system (such as a third-party boot loader). Note
+	  that the default setting is to write the bootloader
+	</para>
+	<para>
+	  If you choose to install a boot loader, you must  decide  where to to
+	  install it (the Master Boot Record or the first sector of
+	  the<filename> /boot</filename> partition). 
+	</para>
+	<para>
+		Too install the bootloader on the linux root partition, add the value <emphasis>root</emphasis>
+		 to the location property.
+	</para>
+	<para>
+	  You can pass  special parameters to the kernel to be used when the
+	  system boots, enter these parameters using the kernel parameters property. Additionally,
+	  you can choose whether you want to use
+	  <emphasis>linear</emphasis> mode and whether you want to force the use of <emphasis>lba32</emphasis> mode.
+	</para>
+	
+      <example>
+	<title>Bootloader configuration</title>
+	<screen>
+<![CDATA[
+    <install>
+...
+         <bootloader>
+             <write_bootloader config:type="boolean">true</write_bootloader>
+             <location>mbr</location>
+             <linear  config:type="boolean">false</linear>
+             <lba_support  config:type="boolean">false</lba_support>
+             <activate  config:type="boolean">true</activate>
+             <kernel_parameters>foo=bar bar=foo</kernel_parameters>
+             <initrd_modules  config:type="list" >
+                 <module>+++some kernel module name+++</module>
+             </initrd_modules>
+         </bootloader>
+...
+    </install>
+]]>
+	</screen>
+      </example>
+      </section>
+
+      <section id="CreateProfile.Partitioning">
+	<title>
+	  Partitioning
+	</title>
+
+	<section>
+	  <title>
+	    Automated Partitioning
+	  </title>
+
+	  <para>
+	    For the automated partitioning to be completed, only the sizes and mount points of
+	    partitions are required. All other data needed for successful partitioning
+	    can be calculated during installation if not provided in the control file.
+	  </para>
+	  <para>
+	    If no partitions are defined and the specified drive is also the drive where
+	    the root partition should reside, the following partitions are created
+	    automatically:
+	  </para>
+	  <itemizedlist>
+	    <listitem>
+	      <para>
+		<emphasis>/boot</emphasis>
+	      </para>
+	      <para>
+		Size of the <emphasis>/boot</emphasis> is determined by the
+		architecture of the target system.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>swap</emphasis>
+	      </para>
+	      <para>
+		Size of the <emphasis>swap</emphasis> partitions is determined by the
+		amount of memory available in the system.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>/</emphasis> (root partition)
+	      </para>
+	      <para>
+		Size of the <emphasis>/</emphasis> (root partition) is the space left
+		after creating <emphasis>swap</emphasis> and <emphasis>/boot</emphasis>.
+	      </para>
+	    </listitem>
+	  </itemizedlist>
+	
+	  <para>
+	    Depending on the initial status of the drive and how it was
+	    previously partitioned, it is possible to create the <emphasis>default</emphasis>
+	    partitioning in the following ways:
+	  </para>
+	  <itemizedlist>
+	    <listitem>
+	      <para>
+		<emphasis>Use free space</emphasis>
+	      </para>
+	      <para>
+		If the drive is already partitioned, it is possible to create the
+		new partitions on the available space of the hard drive. This
+		requires the availability of enough space for all selected
+		package in addition to swap.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>Reuse all available space</emphasis>
+	      </para>
+	      <para>
+		This option will lead to the deletion of all existing
+	      partitions (Linux and non-Linux partitions).
+
+	      </para>
+	    </listitem>
+<!-- 
+	    <listitem>
+	      <para>
+		<emphasis>Reuse all available linux partitions</emphasis>
+	      </para>
+	      <para>
+		This option will lead to the deletion of existing linux
+		partitions. All other partitions (i.e. Windows) will be kept.
+	      </para>
+	    </listitem>
+ FIXME -->
+	    <listitem>
+	      <para>
+		<emphasis>Reuse only specified partitions</emphasis>
+	      </para>
+	      <para>
+		This option will lead to the deletion of the specified partitions.
+		The selection of the partitions scheduled for deletion should be
+		started from the last available partition.
+	      </para>
+	    </listitem>
+	  </itemizedlist>
+	  <para>	
+	    In case of the presence of multiple drives in the target system, all
+	    drives  should be identified with their device
+	    names and the way the partitioning should be performed.
+	  </para>
+
+	  <para>
+	    Partition sizes can be given in Gigabytes, Megabytes or can be set to
+	    a flexible value using the keywords <emphasis>auto</emphasis> and
+	    <emphasis>max</emphasis>. <emphasis>max</emphasis> is used to fill a
+	    partition to the maximal available space on a
+	    drive (Which mean that the partition is the last one on the drive). 
+	    <emphasis>auto</emphasis> can be used to determine the size of
+	    a <emphasis>swap</emphasis> or <emphasis>boot</emphasis> partitions
+	    which depend on memory and the type of the system.
+	  </para>
+	  <para>A fixed size can be given as shown below:</para>
+	  <formalpara>
+	    <title>Size</title>
+	    <para>
+	      <emphasis>1gb</emphasis> will create a partition with 1 GB size.<emphasis> 1500mb</emphasis> will create
+	      a parition which is 1.5 GB big.
+	    </para>
+	  </formalpara>
+
+	<example>
+	  <title>Automated partitioning</title>
+	<para>
+	  The following is an example of a single drive system, which is not
+	  pre-partitioned and should be automatically partitioned according to
+	  the described pre-defined partition plan:
+	</para>
+	  <screen>
+<![CDATA[
+....
+<partitioning  config:type="list">
+     <drive>
+        <device>/dev/hda</device>       
+        <use>all</use>
+     </drive>
+</partitioning>
+.....
+]]>
+	  </screen>
+	</example>
+	<para>
+	  A more detailed example shows how existing partitions  and
+	  multiple drives are handled.
+	</para>
+	<example>
+	  <title>Detailed automated partitioning</title>
+	  <screen>
+<![CDATA[
+....
+<partitioning  config:type="list">
+     <drive>
+        <device>/dev/hda</device>        
+        <use>free</use>
+        <partitions config:type="list">
+           <partition>
+              <mount>/</mount>
+              <size>5gb</size>
+           </partition>
+           <partition>
+              <mount>swap</mount>
+              <size>1gb</size>
+           </partition>
+        </partitions>
+     </drive>
+     <drive>
+        <device>/dev/hdb</device>
+        <use>all</use>
+        <partitions config:type="list">
+           <partition>
+              <mount>/data1</mount>
+              <size>15gb</size>
+              <filesystem>reiser</filesystem>
+           </partition>
+           <partition>
+              <mount>/data2</mount>
+              <size>auto</size>
+              <filesystem>jfs</filesystem>
+           </partition>
+        </partitions>
+     </drive>
+</partitioning>
+.....
+]]>
+	  </screen>
+	</example>
+	
+	
+	</section>
+
+      <section>
+	<title>Advanced Partitioning features</title>
+
+	<section>
+	  <title>Creating Primary and Extended Partitions</title>
+	<para>
+	  By default, &autoyast2; will create an extended partition and will add all
+	  new partitions as logical devices. It is possible however to
+	  instruct &autoyast2; to create a certain partition as a primary
+	  partition or as extended partition. Additionally, it is possible to
+	  specify the size of  a partition using sectors rather than sizes in Mbytes.
+	</para>
+	<para>
+	  The properties <emphasis>partition_id</emphasis> and
+	  <emphasis>partition_type</emphasis> control such behaviour. To
+	  specify the size in sectors, the list resource
+	  <emphasis>region</emphasis> can be used:
+	</para>
+	
+	<example>
+	  <title>Advanced Automated partitioning</title>
+
+	  <screen>
+<![CDATA[
+....
+    <partitioning config:type="list">
+      <drive>
+        <device>/dev/hdc</device>
+        <partitions config:type="list">
+          <partition>
+            <partition_id config:type="integer">5</partition_id>
+            
+            <region config:type="list">
+              <region_entry config:type="integer">0</region_entry>
+              <region_entry config:type="integer">16858</region_entry>
+            </region>            
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">reiser</filesystem>
+            <mount>/</mount>
+            <partition_id config:type="integer">131</partition_id>           
+            <region config:type="list">
+              <region_entry config:type="integer">0</region_entry>
+              <region_entry config:type="integer">2081</region_entry>
+            </region>           
+          </partition>
+          <partition>
+            <mount>swap</mount>
+            <partition_id config:type="integer">130</partition_id>          
+            <region config:type="list">
+              <region_entry config:type="integer">2081</region_entry>
+              <region_entry config:type="integer">781</region_entry>
+            </region>
+            </partition>
+        </partitions>
+        <use>all</use>
+      </drive>
+</partitioning>
+.....
+]]>
+	  </screen>
+	</example>
+
+	
+	  <para>
+	    The last example is only usefull if you exactly know the
+	    boundaries of the partitions and it only makes sense  if you are creating
+	    an exact copy of  a system, for example when cloning.
+	  </para>
+	  
+	  <para>
+	    The following example lets you create an extended partition with a
+	    custom size
+	  </para>
+	  <example>
+	    <title>
+	      Creating custom extended partitions
+	    </title>
+	   
+	    
+	    <screen>
+<![CDATA[
+  <install>
+.....
+    <partitioning config:type="list">
+      <drive>
+        <device>/dev/hdc</device>
+        <partitions config:type="list">
+          <partition>
+            <filesystem config:type="symbol">ext2</filesystem>
+            <mount>/boot</mount>
+            <partition_id config:type="integer">131</partition_id>
+            <partition_nr config:type="integer">2</partition_nr>
+            <size>50mb</size>
+          </partition>
+          <partition>
+            <mount>swap</mount>
+            <partition_id config:type="integer">130</partition_id>
+            <partition_nr config:type="integer">3</partition_nr>
+            <size>100mb</size>
+          </partition>
+          <partition>
+            <partition_id config:type="integer">15</partition_id>
+            <partition_nr config:type="integer">4</partition_nr>
+            <size>3000mb</size>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">ext2</filesystem>
+            <mount>/</mount>
+            <partition_id config:type="integer">131</partition_id>
+            <partition_nr config:type="integer">5</partition_nr>
+            <size>1gb</size>
+          </partition>
+        </partitions>
+        <use>free</use>
+      </drive>
+    </partitioning>
+....
+  </install>
+
+]]>
+	    </screen>
+
+	  </example>
+
+
+
+      </section>
+	<section>
+	  <title>Keeping Specific Partitions</title>
+	  <para>
+	    In some cases you might choose to keep some partitions untouched
+	    and only format some target partitions, rather than creating them from
+	    scratch. This might be the case of Linux installations have to
+	    co-exist with another operating system or if certain partitions
+	    contain data that you wish to keep untouched.
+	  </para>
+	  <para>
+	    Such scenarios require certain knowledge about the target systems
+	    and hard drives. Depending on the scanrio, you might need to know
+	    the exact partition table ofthe target hard drive with partition
+	    id's, sizes and numbers. With such data you can tell AutoYaST to
+	    keep certain partitions, format others and create new partitions if 
+	    needed.
+	  </para>
+
+	  <para>
+	    The following example will keep partitions 1,2 and 5 and delete
+	    partition 6 to create two new partitions. All kep partitions will
+	    be only formatted.
+	  </para>
+	  <example>
+	    <title>
+	     Keeping partitions
+	    </title>
+	   
+	    
+	    <screen>
+<![CDATA[
+  <install>
+.....
+    <partitioning config:type="list">
+      <drive>
+        <device>/dev/hdc</device>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <mount>/</mount>
+            <partition_nr config:type="integer">1</partition_nr>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">false</format>
+            <partition_nr config:type="integer">2</partition_nr>
+            <mount>/space</mount>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <filesystem config:type="symbol">swap</filesystem>
+            <partition_nr config:type="integer">5</partition_nr>
+            <mount>swap</mount>
+          </partition>
+          <partition>
+            <format config:type="boolean">true</format>
+            <mount>/space2</mount>
+            <size>50mb</size>
+          </partition>
+          <partition>
+            <format config:type="boolean">true</format>
+            <mount>/space3</mount>
+            <size>max</size>
+          </partition>
+
+        </partitions>
+        <use>6</use>
+      </drive>
+
+    </partitioning>
+....
+  </install>
+
+]]>
+	    </screen>
+
+	  </example>
+	  <para>
+	    The last example requires exact knowledge about the existing partition
+	    table and about the partition numbers of those partitions that
+	    should be kept. In some cases however, such data might be not
+	    available, especially in a mixed hardware environemnt with
+	    different hard drive types and configurations. The following
+	    scenario is for a system with a non-linux OS with a designated
+	    area for a linux installation.     
+	  </para>
+	  <figure id="partitioning-keep1">
+	    <title id="partitioning-keep1.title" >Keeping partitions</title>
+	    <mediaobject>&partitioning-keep1;</mediaobject>
+	  </figure>
+
+	  <para>
+	    In this scenario and as shown in  figure <quote><link
+		linkend='partitioning-keep1' endterm="partitioning-keep1.title"/></quote> , &autoyast2; should not in any case create any new
+	    partitions,  instead  it should search for certain partition types on the system and use
+	    them according to the partitioning plan in the control file. No
+	    partition numbers are given in this case, only the mount points and
+	    the partition types (Additional configuration data can be provided,
+	    for example file system options, encryption and filesystem type)
+	  </para>
+	  <example>
+	    <title>
+	      Auto-detection of partitions to be kept.
+	    </title>
+	   
+	    
+	    <screen>
+<![CDATA[
+  <install>
+.....
+    <partitioning config:type="list">
+      <drive>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <mount>/</mount>
+            <partition_id config:type="integer">131</partition_id>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <filesystem config:type="symbol">swap</filesystem>
+            <partition_id config:type="integer">130</partition_id>
+            <mount>swap</mount>
+          </partition>
+        </partitions>
+      </drive>
+    </partitioning>
+.....
+  </install>
+
+]]>
+	    </screen>
+
+	  </example>	 
+	</section>	
+      </section>
+      </section>
+</article>

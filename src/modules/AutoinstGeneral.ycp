@@ -148,6 +148,8 @@
 	
 	return true;
     }
+
+
     
     global define boolean Export ()
 	``{
@@ -160,7 +162,7 @@
 	general["keyboard"] = Keyboard;
 	general["clock"] = Clock;
 	general["mouse"] = Mouse;
-    
+	general["mode"] = Mode;
 	return general;
     }
 
@@ -286,10 +288,31 @@
 	// mouse
 	////////////////////////////////////////////////////////////////////////
     	
-	if ( Mouse["id"]:"" != "probe" )
+	if ( Mouse["id"]:"" != "probe" && Mouse["id"]:"" != "")
 	{
 	    Mouse::Set(Mouse["id"]:"");
-	}	
+	}
+	
+
+	// Otherwise, try to find the mouse id from the DB using data supplied by user,
+	// at least the device is needed.
+
+	else if (haskey(Mouse,"device"))
+	{
+	    string device = Mouse["device"]:"none";
+	    integer wheels = Mouse["wheels"]:0;
+
+	    map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+
+	    foreach(`f,`g, mice, ``{
+		map data = select(g,1,$[]);
+		if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
+		{
+		    Mouse["id"] =  f;
+		}
+	    });
+	     Mouse::Set(Mouse["id"]:"");
+	}
     }
 
 }

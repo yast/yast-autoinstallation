@@ -1128,7 +1128,123 @@ cd /usr/local/CDs/8.1/suse
 	</para>
 	&example.files;
       </section>
-    &CreateProfileMisc;
+
+    <section id="CreateProfile.Hardware">
+      <title>
+	Miscellaneous hardware and system components
+      </title>
+	  
+	  <para>
+	    In addition to the core component configuration, like network
+	    authentication and security, AutoYaST2 offers a wide range of
+	    hardware and system configuration which is available by default on
+	    any system installed manually and in an interactive way. For
+	    example, it is possible to configure printers, sound devices, TV
+	    cards and any other hardware components which have a module within YaST2.
+	  </para>
+	  <para>
+	    Any new configuration options that will be added to &yast2; will be
+	    automatically available as an auto-installation resource.
+	  </para>
+ 
+      <section id="CreateProfile.Hardware.Printer">
+	<title>
+	  Printer
+	</title>
+
+	  <para>
+	    Although Printer configuration, like other configurations can be
+	    done manually, it is recommended to use the Configuration System to
+	    create such a configuration because of the complexity and the range
+	    of options offered by such modules.
+	  </para>
+	  <para>
+	    Using the configuration system will guarantee that the options
+	    provided are consistent. The following is an example of a
+	  configuration section which was
+	  created using the configuration system.
+	    </para>
+	  <example>
+	    <title>
+	      Printer configuration 
+	    </title>
+	    <screen>
+<![CDATA[
+ <configure>
+....
+    <printer>
+      <default>lp</default>
+      <printcap config:type="list">
+        <printcap_entry>
+          <cups-state>void</cups-state>
+          <ff config:type="boolean">true</ff>
+          <info></info>
+          <location></location>
+          <lprng-state>changed</lprng-state>
+          <name>lp</name>
+          <options>
+            <job-sheets>none,none</job-sheets>
+          </options>
+          <raw config:type="boolean">true</raw>
+          <type>yast2</type>
+          <uri>parallel:/dev/lp0</uri>
+        </printcap_entry>
+      </printcap>
+    </printer>
+....
+ </configure>
+]]>
+	    </screen>
+	  </example>
+      </section>
+
+      <section id="CreateProfile.Hardware.Sound">
+	<title>
+	  Sound devices
+	</title>
+	<para>
+	  An example of  sound configuration created using the configuration
+	  system is shown below.
+	</para>
+	<example>
+	  <title>
+	    Sound configuration
+	  </title>
+	  <screen>
+<![CDATA[
+ <configure>
+....
+    <sound>
+      <autoinstall config:type="boolean">true</autoinstall>
+      <modules_conf config:type="list">
+        <module_conf>
+          <alias>snd-card-0</alias>
+          <model>M5451, ALI</model>
+          <module>snd-ali5451</module>
+          <options>
+            <snd_enable>1</snd_enable>
+            <snd_index>0</snd_index>
+            <snd_pcm_channels>32</snd_pcm_channels>
+          </options>
+          <unique_key>uniq.virtual</unique_key>
+        </module_conf>
+      </modules_conf>
+      <volume_settings config:type="list">
+        <listentry>
+          <Master config:type="integer">75</Master>
+        </listentry>
+      </volume_settings>
+    </sound>
+
+....
+ </configure>
+]]>
+	  </screen>
+	</example>
+      </section>
+    </section>
+
+
   </chapter>
       <!--
        Local Variables:

@@ -202,8 +202,8 @@
 						   ),
 					    `menu( _("&Preferences"),
 						   [
-						    `item(`id(`menu_general), _("General")),
-						    `item(`id(`menu_reps), _("Reposi&tories")),
+						    //    `item(`id(`menu_general), _("General")),
+						    `item(`id(`menu_reps), _("Reposi&tories"))
 						    
 						    ]),
 					    `item(`id(`menu_exit), _("E&xit")      )
@@ -215,9 +215,9 @@
 					    `item(`id(`menu_source), _("So&urce")      )
 					    ]
 					   ),			      					  
-			      `MenuButton( _("&Classes and Rules "),
+			      `MenuButton( _("&Classes"),
 					   [
-					    `item(`id(`menu_rules), _("R&ules")      ),
+					    // `item(`id(`menu_rules), _("R&ules")      ),
 					    `item(`id(`menu_classes), _("Cla&sses")      ),
 					    `item(`id(`menu_merge), _("Me&rge Classes")      ),
 					    ]
@@ -446,6 +446,10 @@
 			{
 			    map ksConfig = readKS(filename);
 			    Profile::Import(ks2ay(ksConfig));
+			    Report::Message(_("Kickstart file was imported.
+Check the imported syntax and make sure the package selection and partitioning
+were imported correctly.
+"));
 			}
 			Wizard::CloseDialog();	
 		    }

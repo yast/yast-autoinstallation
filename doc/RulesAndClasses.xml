@@ -1,0 +1,66 @@
+
+<chapter>
+    <title>Rules and Classes</title>
+  <section>
+    <title>Rule based auto-installation</title>
+
+    <para>
+      After you decide how you want the systems at your site to be installed,
+      the most important step when preparing automated installations is to
+      create the essential files that are used during auto-installation: the
+      rules.xml file  and a profile for
+      each group of systems. The rules file is a xml based file that should contain 
+      rules for each group of systems (or single systems) that you want to
+      automatically install. A set of rules distinguish a group of systems based on
+      one or more system attributes, and at the end it links each group to a profile, which
+      is a XML based file that defines how the Linux software will be installed on
+      each system in the group. Both the rules file and the profiles must be
+      located in a user defined directory.
+    </para>
+    <para>
+      If more than one rule apply, the final profile for each group is generated
+      on the fly using a merge script. The merging process is based on the
+      order of the rules and later rules override configuration data in earlier rules.
+    </para>
+    <para>
+      It is also possible to perform a standard installation without any
+      rules. If the rules file is not found, system installation proceeds in the
+      classic way by just using the supplied profile or by searching for the
+      profile depending on the <emphasis>MAC</emphasis> or
+      <emphasis>IP</emphasis> addresses of 
+      the system.     
+    </para>
+<!--
+    <para>
+      In the previous scenario, you would create a rules file with two different
+      rules, one rule for the development and another rule for the sales
+      department. For each rule, you could use different system parameters to
+      distinguish the groups from one another: the development department has SMP
+      and SCI  based systems and the sales group has IDE based systems. Each rule
+      would also contain a link to an appropriate profile. For example, in the
+      rule for the development department, you would add a link to the profile, called
+      <filename>devel.xml</filename>, that you created for this department. And, in the rule
+      for the sales department, you would add a link to the profile, called
+      <filename>sales.xml</filename>, that you created for the sales department.
+    </para>
+-->
+
+  </section>
+  
+  <section>
+    <title>Classes</title>
+    
+  </section>
+
+  <section>
+    <title>Mixing Rules and Classes</title>
+    
+  </section>
+</chapter>
+
+      <!--
+       Local Variables:
+       mode: xml
+       sgml-parent-document: ("autoyast2.xml" "book" "chapter")
+       End:
+      -->

@@ -82,12 +82,17 @@
      *
      */
     global define void AutoInstallRules () ``{
+
+
 	local_rules_location = SCR::Read(.target.tmpdir) + "/rules";
 	SCR::Execute(.target.mkdir, local_rules_location);
 
 	local_rules_file = local_rules_location + "/rules.xml";
-
-	ProbeRules();
+	
+	if (Mode::initial)
+	{
+	    ProbeRules();
+	}
 
 	return;
     }
@@ -193,6 +198,8 @@
 
 
 
+
+    
 
     /**
      * Read rules file

@@ -71,6 +71,8 @@
 	string  partition_size	= lookup ( new_val , "size", "");
 	boolean format		= lookup ( new_val , "format", false);
 	
+	string partition_type	= new_val["partition_type"]:"";
+	
 	symbol last_option_fs	= lookup ( new_val , "filesystem", `ext2);
 	map fs_options      = lookup ( new_val , "fs_options" , $[]);
 
@@ -93,7 +95,7 @@ needs. All fields are required.</P>
 	    `VBox(
 		  `Top(
 		       `VBox(
-			     `TextEntry(`id(`partsize), _("&Size"), (partition_size!="auto" && partition_size!="max")?partition_size:""),
+			     `TextEntry(`id(`partsize), _("&Size"), (partition_size!="auto" && partition_size!="max") ? partition_size : "" ),
 			     `RadioButtonGroup(`id(`sizeopt),
 					       `VBox(
 						     `Left(
@@ -108,18 +110,22 @@ needs. All fields are required.</P>
 							   `RadioButton(`id(`max),
 									`opt(`notify),
 									_("Fill to &maximum allowable space"),
-									(partition_size == "max")
+									( partition_size == "max")
 									)
 							   ),
 						     `Left(
 							   `RadioButton(`id(`auto),
 									`opt(`notify),
 									_("Determine &automatically (only /boot and swap)"),
-									(partition_size == "auto")
+									( partition_size == "auto")
 									)
 							   )
 						     )
-					       )
+					       ),
+			     `VSpacing(0.5),
+			     `Left(
+				   `CheckBox(`id(`asprimary), _("Create as a primary partition"), ( (partition_type =="primary") ? true : false) )
+				   )
 
 			     )
 		       ),
@@ -322,7 +328,7 @@ needs. All fields are required.</P>
 		    }
 		    else
 		    {
-			Report::Warning(_("The partition ID must between 0x00 and 0xff."));
+			Report::Warning(_("The partition ID must be between 0x00 and 0xff."));
 			UI::SetFocus(`id(`fsid_point));
 			continue;
 		    }
@@ -334,11 +340,11 @@ needs. All fields are required.</P>
 
 		if (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max )
 		{
-		    return_value=add(return_value,"size","max");
+		    return_value= add(return_value,"size","max");
 		}
 		else if (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto )
 		{
-		    return_value=add(return_value,"size","auto");
+		    return_value = add (return_value,"size","auto");
 		}
 		else
 		{
@@ -349,10 +355,13 @@ needs. All fields are required.</P>
 		    }
 		    else
 		    {
-			return_value=add(return_value,"size",partitionSize);
+			return_value=add(return_value,"size", partitionSize);
 		    }
 		}
-
+		if (UI::QueryWidget(`id(`asprimary),  `Value))
+		{
+		    return_value= add(return_value, "partition_type" ,"primary");
+		}
 
 		// save mountpoint
 		if ( create && (! lookup( return_value, "format" , true )))
@@ -493,6 +502,7 @@ For more information, consult the documentation.
 				       })
 				       )
 			     ),
+		       `VSpacing(1),
 		       `RadioButtonGroup( `id(`bgroup2),
 					  `VBox(
 						`Left(`RadioButton(`id(`usefree),`opt(`notify),
@@ -512,16 +522,18 @@ For more information, consult the documentation.
 						      )
 						)
 					  ),
+		       
 		       `HBox(
 			     `HSpacing(1),
 			     `Left(
 				   `TextEntry(
 					      `id(`reuse_partitions),
-					      _("&Partition numbers (i.e., 3,4,5)"),
+					      _("&Partition numbers (i.e.  3,4,5)"),
 					      mergestring(partitions, ",")
 					      )
 				   )
 			     ),
+		       `VSpacing(1),
 		       `Left(`CheckBox(`id(`init), _("Initialize hard dri&ve"), init))
 		       )
 		 );
@@ -531,6 +543,7 @@ For more information, consult the documentation.
 	string help_text = _("Help");
 	Wizard::SetContents( title, contents, help, true , true );
 	Wizard::ReplaceAbortButton(`Empty());
+
 	
 	if (size(partitions)>0)
 	{
@@ -728,7 +741,7 @@ a preparation.
 			    StorageDialogContents() , help_text, true, true);
 
 	Wizard::ReplaceAbortButton(`Empty());
-
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 	repeat {
 	    any item = UI::QueryWidget(`id(`table), `CurrentItem);
 

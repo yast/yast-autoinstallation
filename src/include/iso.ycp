@@ -108,6 +108,26 @@
 	return error_msg;
     }
 
+
+    global define  getRpmPath(string pac, boolean full) ``{
+
+	string dataDir 	= ISO::productData["datadir"]:"./suse";
+	
+	list tok = splitstring( pac , " ");
+	string pacname = "";
+	if (full)
+	    pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
+	else
+	     pacname = tok[0]:"error" +  ".rpm";
+	
+	string location = tok[3]:"noarch" + "/" + pacname;
+	string localpath =  ISO::sourceDir + "/" + dataDir + "/" + location;
+
+	
+	return localpath;
+    };
+
+    
     /**
      * Check if selected packages are available
      */
@@ -128,25 +148,18 @@
 
 	list selPacs = Pkg::GetPackages (`selected , false);
 	list failed = [];
-	foreach(`pac, selPacs, ``{
+	foreach(string pac, selPacs, ``{
 
-	    list tok = splitstring( pac , " ");
-
-	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
-	    string location = tok[3]:"noarch" + "/" + pacname;
-
-	    string localpath =  ISO::sourceDir + "/" + dataDir + "/" + location;
-	    integer pacsize = SCR::Read(.target.size, localpath);
-
-	    if (pacsize == -1)
+	    integer pacsize = SCR::Read(.target.size, getRpmPath(pac, true));
+	    integer pacsize1 = SCR::Read(.target.size, getRpmPath(pac, false));
+	    if (pacsize == -1 && pacsize1 == -1)
 	    {
-		failed=add(failed, tok[0]:"Error");
+		failed = add (failed, tok[0]:"Error");
 	    }
-
-
-
 	});
+	
 	ISO::missing_packages = failed;
+	
 	if (size(failed) > 0 )
 	{
 	    error_msg = sformat(_("%1 packages not available."), size(failed));
@@ -561,9 +574,8 @@ Please wait while the directory structure for the new ISO file is created.
 	    string location = tok[3]:"noarch" + "/" + pacname;
 
 	    string localpath =  ISO::sourceDir + "/" + datadir + "/" + location;
-	    y2debug("local path: %1", localpath);
 	    integer pacsize = SCR::Read(.target.size, localpath);
-	    if (pacsize!=-1)
+	    if (pacsize != -1)
 	    {
 		Progress::Title(sformat(_("Copying %1"),  pacname));
 		Progress::NextStep();
@@ -575,7 +587,9 @@ Please wait while the directory structure for the new ISO file is created.
 		}
 
 		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, ISO::skeletonDir, datadir, location);
+		
 		y2debug("%1", cpCmd);
+		
 		any ret = SCR::Execute (.target.bash, cpCmd);
 	    }
 
