@@ -13,7 +13,7 @@ xml_files =  	$(wildcard *.xml)
 
 EXTRA_DIST = $(xml_files) $(style_file) dtdparse.tgz profile.dtd
 
-CLEANFILES = autoyast2.dvi autoyast2.aux autoyast2.tex autoyast2.log \
+CLEANFILES = *.dvi *.aux *.tex *.log *.bak *.out\
   .html.sum; rm -rf autoyast2 autoyast2.junk profile.dtd.xml elements \
   elements.xml elements.ent db2html.* profile autoyast2.ps*		\
   profile.dtd.xml examples.ent components.ent .ps.sum  autoyast2.out autoyast2.pdf \

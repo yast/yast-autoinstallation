@@ -9,26 +9,6 @@
 {
     textdomain "autoinst";
 
-    /**
-     * Translate messages
-     * @param string
-     * @return Translated string
-     */
-    global define string Translate (string text)
-	``{
-	// remove _(" and ")
-	if (regexpmatch (text, ".*_\\(.*\"(.*)\".*\\).*"))
-	{
-	    text = regexpsub (text, ".*_\\(.*\"(.*)\".*\\).*", "\\1");
-	    //Workaround for 7.3 Bug
-	    //text = regexpsub (text, "(.*)\".*\\).*", "\\1");
-	}
-	locale l = text;
-	list retl = splitstring((string)eval (l), "\n");
-	string ret = mergestring(retl, " ");
-	return (ret);
-    }
-
     
     /**
      * return basename

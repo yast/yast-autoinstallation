@@ -16,12 +16,13 @@
     import "Report";
     import "Partitions";
     import "FileSystems";
-         
-    include "partitioning/lvm_lib.ycp";
+
     include "partitioning/lvm_pv_lib.ycp";
+    include "partitioning/lvm_lib.ycp";
+    
     include "partitioning/lvm_lv_lib.ycp";
-    include "partitioning/lvm_ui_lib.ycp";     
-    include "partitioning/lvm_ui_dialogs.ycp";        
+    // include "partitioning/lvm_ui_lib.ycp";     
+    // include "partitioning/lvm_ui_dialogs.ycp";        
    
     
 
@@ -92,7 +93,7 @@
 
 
 
-    global define void CreateVG (string vgname) ``{
+    global define map CreateVG (string vgname) ``{
 
 	map create_vg = $[
 			  "use_module" : "lvm_ll",

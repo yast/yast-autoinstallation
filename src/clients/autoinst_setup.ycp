@@ -101,33 +101,36 @@ Please wait while the system is prepared for autoinstallation.
     */
     
     // configure general settings
-	if(UI::PollInput() == `abort)
-		if (Popup::ConfirmAbort (`painless))
-			return `abort;
+    
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
     Progress::NextStage();
 
+    //
+    // Set Mouse, timezone and other workflow variables
+    //
     AutoinstGeneral::Import(Profile::Flat["general"]:$[]);
     AutoinstGeneral::Write();
 
 
-
-	if(UI::PollInput() == `abort)
-		if (Popup::ConfirmAbort (`painless))
-			return `abort;
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
+    
     Progress::NextStage();
 
-    // Scripts
+    // Pre-Scripts
     AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
     AutoinstScripts::Write("pre-scripts", false);
-
 
     // Reread Profile in case it was modified in pre-script
     // User has to create the new profile in a pre-defined
     // location for easy processing in pre-script.
 
-    if (SCR::Read(.target.size, Profile::modified_profile) > 0 )
+    if (SCR::Read(.target.size, AutoinstConfig::modified_profile) > 0 )
     {
-	if (! Profile::Read( Profile::modified_profile ) || Profile::current == $[] )
+	if (! Profile::Read( AutoinstConfig::modified_profile ) || Profile::current == $[] )
 	{
 	    Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the
@@ -138,17 +141,23 @@ control file and try again.
 	// AutoInstall::ProcessSpecialResources();
     }
 
+    //
     // Partitioning and Storage
     ////////////////////////////////////////////////////////////////////////
 
-	if(UI::PollInput() == `abort)
-		if (Popup::ConfirmAbort (`painless))
-			return `abort;
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
+
+    
     Progress::NextStage();
     AutoinstStorage::Import(Profile::Flat["partitioning"]:[]) ;
 
     if (!AutoinstStorage::Write())
     {
+	Report::Error(_("Error while configuring partitions.
+Try again.
+"));	
 	y2error("Aborting...");
 	return `abort;
     }
@@ -156,11 +165,13 @@ control file and try again.
 
     // Software
 
-	if(UI::PollInput() == `abort)
-		if (Popup::ConfirmAbort (`painless))
-			return `abort;
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
+    
     Progress::NextStage();
     AutoinstSoftware::Import( Profile::Flat["software"]:$[] );
+    
     if (!AutoinstSoftware::Write())
     {
 	Report::Error(_("Error while configuring software selections.
@@ -172,13 +183,13 @@ Try again.
 
     // Bootloader
 
-	if(UI::PollInput() == `abort)
-		if (Popup::ConfirmAbort (`painless))
-			return `abort;
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
     Progress::NextStage();
+    
     BootCommon::getLoaderType(true);
-    AutoInstall::bootloaderSettings();
-
+    // FIXME: AutoInstall::bootloaderSettings();
 
     Progress::Finish();
 

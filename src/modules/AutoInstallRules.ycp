@@ -81,10 +81,9 @@
 
     global map UserRules = $[];
 
-    // Local
+    // Local Variables
     string shell = "";
     map env = $[];
-
     list tomerge = [];
 
 
@@ -185,20 +184,26 @@
      */
     global define void ProbeRules () ``{
 
+	//
 	// Architecture
+	//
+	
 	arch = Arch::architecture;
-
 	karch = Kernel::kernel_packages[0]:"k_deflt";
 
-
+	//
 	// Memory
+	//
+	
 	integer memory = 0;
 	list memories = (list)SCR::Read(.probe.memory);
 	memory = memories[0,"resource","phys_mem",0,"range"]:0;
 	memsize =  memory / ( 1024 * 1024);
 
-
+	//
 	// Disk sizes
+	//
+	
 	map storage =  Storage::GetTargetMap();
 	totaldisk = 0;
 	disksize = maplist( string k, map v, storage ,
@@ -207,7 +212,9 @@
 				totaldisk = totaldisk + size_in_mb;
 				return($["device":k, "size": size_in_mb]);
 			    });
+	//
 	// MAC
+	//
 	mac = getMAC();
 
 	//
@@ -245,7 +252,6 @@
 	
 	y2milestone ("Other linux parts: %1",  LinuxPartitions);
 
-
 	return;
     }
 
@@ -266,6 +272,7 @@
      */
 
     define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
+	
 	if (op == "and")
 	    op = " -a ";
 	else if (op == "or")

@@ -4,8 +4,16 @@
 # $Id$
 #
 
-config_DATA = autoyast.y2cc autoinst_modules.conf
+modconfigdir = /usr/share/autoinstall/modules
+modconfig_DATA = \
+	partitioning.desktop \
+	general.desktop \
+	report.desktop \
+	scripts.desktop \
+	software.desktop \
+	files.desktop
+
 desktop_DATA = autoyast.desktop
 
-EXTRA_DIST =  $(config_DATA) $(desktop_DATA)
+EXTRA_DIST =  $(desktop_DATA) $(modconfig_DATA)
 

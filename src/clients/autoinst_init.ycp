@@ -81,9 +81,13 @@ Please wait while the system is prepared for autoinstallation.</p>
     if(UI::PollInput() == `abort)
         if (Popup::ConfirmAbort (`painless))
             return `abort;
+    
     Progress::NextStage();
 
+    //
     // Set reporting behaviour to default, changed later if required
+    //
+    
     Report::LogMessages(true);
     Report::LogErrors(true);
     Report::LogWarnings(true);
@@ -91,6 +95,7 @@ Please wait while the system is prepared for autoinstallation.</p>
     if(UI::PollInput() == `abort)
         if (Popup::ConfirmAbort (`painless))
             return `abort;
+    
     Progress::NextStage();
 
     if (! Profile::Read( AutoinstConfig::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
@@ -101,10 +106,13 @@ control file and try again.
 "));
 	return `abort;
     }
+    
     y2milestone ("Autoinstall control file %1",  Profile::current );
 
+    //
     // Copy the control file for easy access by user to  a pre-defined
     // directory
+    //
 
     SCR::Execute(.target.bash, sformat("cp %1 %2/autoinst.xml",  AutoinstConfig::xml_tmpfile, Profile::profile_dir));
 
@@ -118,10 +126,13 @@ control file and try again.
     }
 
     string language = Profile::current["install","general","language"]:Language::language;
+
+    //
     // Set it in the Language module.
     //
     Language::Set( language );
 
+    //
     // Set Console font
     //
     Console::SelectFont( language );
@@ -129,6 +140,7 @@ control file and try again.
 
     Installation::encoding = (use_utf8) ? "UTF-8" : Console::encoding;
 
+    //
     // Set it in YaST2
     //
     UI::SetLanguage (language, Installation::encoding);
