@@ -15,7 +15,10 @@
     import "Label";
     import "AutoinstConfig";
     import "Summary";
+    import "URL";
+    import "Installation";
 
+    include "autoinstall/io.ycp";
 
     //
     // Pre scripts
@@ -102,20 +105,24 @@
 	list<map> expre =  maplist (map p, pre,  ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
-		      "source":p["source"]:""
+		      "source":p["source"]:"",
+                      "location":p["location"]:""
 		    ]);
 	});
 	list<map> expost =  maplist (map p, post, ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
-		      "source":p["source"]:""]
+		      "source":p["source"]:"",
+                      "location":p["location"]:""
+                      ]
 		    );
 	});
 	list<map> exchroot =  maplist (map p, chroot, ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
 		      "source":p["source"]:"",
-		      "chrooted":p["chrooted"]:false
+		      "chrooted":p["chrooted"]:false,
+                      "location":p["location"]:""
 		    ]);
 	});
 	map<string, list> result = $[];
@@ -324,7 +331,7 @@
 	}
 	else if (type == "chroot-scripts")
 	{
-		tmpdirString = sformat("%1%2", (chrooted) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir);
+	    tmpdirString = sformat("%1%2", (chrooted) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir);
 	    SCR::Execute (.target.mkdir, (chrooted) ? AutoinstConfig::scripts_dir : tmpdirString);
 
 	    current_logdir = sformat("%1%2", (chrooted) ? "" : AutoinstConfig::destdir, AutoinstConfig::logs_dir);
@@ -340,19 +347,41 @@
 		 ``{
 	    string scriptInterpreter	= s["interpreter"]:"shell";
 	    string scriptName = s["filename"]:type;
+            if (scriptName=="")
+            {
+                map t = URL::Parse(s["location"]:"");
+                scriptName=basename(t["path"]:"");
+            }
 	    string scriptPath = "";
 
 	    if (type == "pre-scripts")
 	    {
 		scriptPath = sformat("%1/%2/%3", AutoinstConfig::tmpDir, type, scriptName);
 		y2milestone("Writing pre script into %1", scriptPath);
-		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
+                if (s["location"]:""!="")
+                {
+                    y2debug("getting script: %1", s["location"]:"" );
+                    if (!GetURL(s["location"]:"", scriptPath ) )
+                    {
+                       y2error("script %1 could not be retrieved", s["location"]:"");
+                    }
+                } else {
+	            SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
+                }
 	    }
 	    else if (type == "chroot-scripts")
 	    {
 		scriptPath = sformat("%1%2/%3", (chrooted) ? "/" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
 		y2milestone("Writing chroot script into %1", scriptPath);
-		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
+                if (s["location"]:""!="")
+                {
+                    if (!GetURL(s["location"]:"", scriptPath ) )
+                    {
+                       y2error("script %1 could not be retrieved", s["location"]:"");
+                    }
+                } else {
+	            SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
+                }
 	    }
 	    else
 	    {
@@ -362,7 +391,15 @@
 
 		scriptPath = sformat("%1/%2", AutoinstConfig::scripts_dir, scriptName);
 		y2milestone("Writing  script into %1", scriptPath);
-		SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
+                if (s["location"]:""!="")
+                {
+                    if (!GetURL(s["location"]:"", scriptPath ) )
+                    {
+                       y2error("script %1 could not be retrieved", s["location"]:"");
+                    }
+                } else {
+	            SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
+                }
 	    }
 
 	    // string message =  sformat(_("Executing user supplied script: %1"), scriptName);

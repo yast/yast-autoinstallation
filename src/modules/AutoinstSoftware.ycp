@@ -24,8 +24,9 @@
     import "AutoinstConfig";
     import "ProductControl";
     import "AutoinstImage";
+    import "Storage";
 
-    import "Require";
+    import "PackageAI";
 
     global map Software = $[];
 
@@ -66,10 +67,10 @@
 	base = settings["base"]:"";
 	addons = settings["addons"]:[];
 	additional_locales = settings["additional_locales"]:[];
-	packages = (list<string>)union(settings["packages"]:[], Require::AddModulePackages) ;
+	packages = (list<string>)union(settings["packages"]:[], PackageAI::toinstall) ;
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
-	remove_packages = (list<string>)union ( settings["remove-packages"]:[], Require::RemoveModulePackages );
+	remove_packages = (list<string>)union ( settings["remove-packages"]:[], PackageAI::toremove );
 
 
         // Imaging
@@ -360,7 +361,11 @@ this message can be ignored."));
 
 	    Pkg::DoRemove(remove_packages);
 	}
-
+        list<string> pack = Storage::AddPackageList();
+        if( size(pack)>0 )
+        {
+            Pkg::DoProvide( pack );
+        }
 	//
 	// Solve dependencies
 	//

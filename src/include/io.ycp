@@ -51,6 +51,7 @@
 	toks["scheme"] = Scheme;
 	toks["host"]   = Host;
 	toks["path"]   = Path;
+        // string full_url_string = sformat("Retrieving %1", URL::Build(toks) );
 	if ( Scheme == "http" )
 	{
 	    import "HTTP";
@@ -209,6 +210,11 @@
 	    ok = false;
 	}
 	return ( ok );
+    }
+    boolean GetURL(string url, string target)  {
+        AutoinstConfig::urltok=URL::Parse(url);
+        map toks = AutoinstConfig::urltok;
+        return Get(toks["scheme"]:"", toks["host"]:"", toks["path"]:"", target);
     }
 
 }

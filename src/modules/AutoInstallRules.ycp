@@ -24,6 +24,7 @@
     import "Report";
     import "Popup";
     import "URL";
+    import "IP";
 
     include "autoinstall/io.ycp";
 
@@ -35,6 +36,8 @@
     // Pre-defined Rules
     /////////////////////////////////////////////
     /////////////////////////////////////////////
+    // All system attributes;
+    map ATTR = $[];
 
     global string hostname = "";
 
@@ -176,19 +179,16 @@
 
 
     /**
-     * getHostid()
      * Return host id (hex ip )
      * @return string host ID
      */
     global define string getHostid () ``{
-	import "IP";
 	string hex = IP::ToHex(hostaddress);
 	return hex;
     }
 
 
     /**
-     * ProbeRules()
      * Probe all system data to build  a set of rules
      * @return void
      */
@@ -231,6 +231,10 @@
 	    board_vendor = (string)(boardinfo["manufacturer"]:"");
 	}
 
+        ATTR["product"] = product;
+        ATTR["product_vendor"] = product_vendor;
+        ATTR["board"] = board;
+        ATTR["board_vendor"] = board_vendor;
 
 	//
 	// Architecture
@@ -238,6 +242,9 @@
 
 	arch = Arch::architecture;
 	karch = Kernel::kernel_packages[0]:"k_deflt";
+
+        ATTR["arch"] = arch;
+        ATTR["karch"] = karch;
 
 	//
 	// Memory
@@ -247,6 +254,7 @@
 	list memories = (list)SCR::Read(.probe.memory);
 	memory = memories[0,"resource","phys_mem",0,"range"]:0;
 	memsize =  memory / ( 1024 * 1024);
+        ATTR["memsize"] = memsize;
 
 	//
 	// Disk sizes
@@ -264,6 +272,7 @@
 	// MAC
 	//
 	mac = getMAC();
+        ATTR["mac"] = mac;
 
 	//
 	// Network
@@ -276,19 +285,26 @@
 	{
 	    hostaddress  = "192.168.1.1"; // FIXME
 	}
+        ATTR["hostaddress"] = hostaddress;
 
 	//
 	// Hostid (i.e. a8c00101);
 	//
 	hostid = getHostid();
 
+        ATTR["hostid"] = hostid;
 
 
 	hostname = (string)SCR::Read(.etc.install_inf.Hostname);
+        ATTR["hostname"] = hostname;
 	domain = (string)SCR::Read(.etc.install_inf.Domain);
+        ATTR["domain"] = domain;
 	network = (string)SCR::Read(.etc.install_inf.Network);
+        ATTR["network"] = network;
 	haspcmcia = (string)SCR::Read(.etc.install_inf.HasPCMCIA);
+        ATTR["haspcmcia"] = haspcmcia;
 	xserver = (string)SCR::Read(.etc.install_inf.XServer);
+        ATTR["xserver"] = xserver;
 
 	NonLinuxPartitions = Storage::GetForeignPrimary();
 	others = size(NonLinuxPartitions );
@@ -316,8 +332,13 @@
     }
 
     /**
-     * shellseg()
      * Create shell command for rule verification
+     * @param boolean
+     * @param string
+     * @param string
+     * @param string
+     * @param string
+     * @return void
      */
     define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
 
@@ -360,7 +381,6 @@
 
 
     /**
-     * verifyrules()
      * Verify rules using the shell
      * @return integer
      */
@@ -375,13 +395,35 @@
 	return ret["exit"]:-1;
     }
 
+    string SubVars(string file)
+    {
+        string var = "";
+        any first = findfirstof(file, "@");
+        any last = findlastof(file, "@");
+        if (first!= nil && last!=nil)
+        {
+            integer ffirst = (integer) first + 1;
+            integer llast = (integer) last;
+            if (first!=last)
+            {
+                var = substring(file,ffirst  , llast - ffirst );
+            }
+        }
+        if (var!="")
+        {
+            string val = ATTR[var]:"";
+            string new = regexpsub(file,"(.*)@.*@(.*)",sformat("\\1%1\\2", val));
+            if (new!="")
+                return new;
+        }
+        return file;
+
+    }
     /**
-     * Read()
      * Read rules file
      * @return void
      */
     global define void Read() ``{
-	import "XML";
 
 	UserRules = XML::XMLToYCPFile( AutoinstConfig::local_rules_file );
 
@@ -424,9 +466,9 @@
 		    {
 			string script = ruledef["script"]:"exit -1";
 			string tmpdir = AutoinstConfig::tmpDir;
-			
+
 			string scriptPath = sformat("%1/%2", tmpdir,  "rule_" + rule);
-			
+
 			y2milestone("Writing rule script into %1", scriptPath);
 			SCR::Write(.target.string, scriptPath, script);
 
@@ -532,8 +574,8 @@
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
 			env[rule] = product;
-		    }		    
-		    
+		    }
+
 		    else if ( rule == "disksize" )
 		    {
 			// [ $["device":"/dev/hda", "size":"100000"] ]
@@ -558,7 +600,9 @@
 		    {
 			if ( verifyrules() == 0 )
 			{
-			    tomerge = add(tomerge, ruledef["profile"]:"");
+                            string profile_name = ruledef["profile"]:"";
+                            profile_name = SubVars(profile_name);
+			    tomerge = add(tomerge, profile_name);
 			    go_on = ruledef["continue"]:false;
 			}
 			else
