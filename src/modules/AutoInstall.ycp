@@ -34,14 +34,14 @@
 	// i.e. for post-installation only
 	//
 
-	if ( SCR::Read(.target.size, autoconf_file) != -1 )
+	if ( SCR::Read(.target.size, AutoinstConfig::autoconf_file) != -1 )
 	{
-	    y2milestone("XML Post installation data found: %1", autoconf_file );
+	    y2milestone("XML Post installation data found: %1", AutoinstConfig::autoconf_file );
 	    autoconf = true;
-	    Profile::Read(   AutoinstConfig::autoconf_file  );
+	    Profile::ReadXML (   AutoinstConfig::autoconf_file  );
 	    
 	    boolean ret = Profile::ReadXML(  AutoinstConfig::xml_tmpfile );
-	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, AutoinstConfig::cache));
+	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", AutoinstConfig::autoconf_file, AutoinstConfig::cache));
 	   
 	    return (ret);
 	}
@@ -102,7 +102,7 @@
 
     global define boolean Save()
 	``{
-	return (Profile::SaveProfileStructure( parsedControlFile ));
+	return (Profile::SaveProfileStructure( AutoinstConfig::parsedControlFile ));
     }
 
 
