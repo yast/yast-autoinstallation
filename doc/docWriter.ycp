@@ -1,0 +1,130 @@
+/**
+ *
+ *
+ */
+
+{
+    import "XML";
+    import "Wizard";
+    include "wizard/sequencer.ycp";
+    include "ui/common_messages.ycp";
+
+
+    define Read(string purposeFile) ``{
+	map purpose = XML::XMLToYCPFile(purposeFile);
+	return purpose;
+    }
+
+
+
+    define Edit (string element) ``{
+	map this_element = el[element]:$[];
+	string desc = this_element["description"]:"";
+	
+	string caption = _("Edit element");
+	term con =
+	    `HBox(
+		  `HSpacing(1),
+		  `VBox(
+			`VSpacing(0.2),			
+			`Heading (caption),
+		
+			`Left (`TextEntry (`id (`element), _("Element name"), element)),
+
+			`VSpacing(0.2),
+			`Left (`MultiLineEdit (`id (`description), _("Description"), desc)),
+			`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+			      `PushButton(`id(`cancel), CancelButtonLabel())),
+			`VSpacing(0.2)
+			),
+		  `HSpacing(1)
+		  );
+	UI::OpenDialog (`opt(`decorated, `defaultsize), con);
+	// UI::SetFocus (`id (`newname));
+	any ret = nil;
+	while (true)
+	{
+	    ret = UI::UserInput ();
+	    if (ret == `cancel)
+	    {
+		break;
+	    }
+	    else if (ret == `ok)
+	    {
+	
+		break;
+	    }
+	}
+
+	UI::CloseDialog ();
+
+    }
+
+    
+    string basedir = "/bigdisk/work/devel/autoyast/source/autoinstallation/doc";
+    string purposeFile = basedir + "/purpose.xml";
+    string elementDir =  basedir + "/elements";
+
+    list elementfiles = maplist(`f, SCR::Read(.target.dir, elementDir) ,``{
+	return(select(splitstring(f,"."), 0 , ""));
+    });
+    
+
+    map el = Read( purposeFile );
+    // y2milestone("elements %1", el);
+    list cleanList = [];
+    list elements = maplist(`k, `v, el, ``{
+	string purpose = v["purpose"]:"";
+	list tmp_list = splitstring(purpose, "\n");
+	list tmp_list2 = filter(`x, splitstring(mergestring(tmp_list, " "), " "), ``(x!=""));
+	purpose = mergestring(tmp_list2, " ");
+	string status = (contains(elementfiles, k)) ? "X" : "?";
+	cleanList = add(cleanList, k);
+	return (`item(`id(k), status, k, purpose));	
+    });
+
+    list newElements = [];
+    foreach(`n, elementfiles , ``{
+	if (!contains(cleanList, n))
+	{
+	    newElements = add (newElements, `item(`id(n), "+" , n, ""));
+	}
+    });
+
+    list allElements = union(newElements, elements);
+    
+    term contents = `Top(
+			 `VBox(
+			       `Table(`id(`table), `opt(`notify,`immediate), `header(_("Status"), _("Element"), _("Purpose")),
+				      allElements
+				      ),			       
+			       `HBox(
+				     `PushButton(`id(`new), NewButtonLabel()),
+				     `PushButton(`id(`edit), EditButtonLabel()),
+				     `PushButton(`id(`delete), DeleteButtonLabel())
+				     )
+			       )
+			 );
+		     
+    Wizard::CreateDialog();
+    Wizard::SetContents(_("DTD Elements"),
+			contents, "", true, true);
+    any ret = nil;
+    repeat {
+	ret = UI::UserInput();
+	y2milestone("ret = %1", ret);
+	any sel_element = UI::QueryWidget(`id(`table), `CurrentItem);
+	if (ret == `edit)
+	{
+	    if (sel_element != nil && sel_element != "")
+	    {
+		Edit(sel_element);
+	    }
+	}
+    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+
+
+    UI::CloseDialog ();		    
+
+
+}

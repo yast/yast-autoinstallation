@@ -74,7 +74,7 @@
     <para>
       Depending on your experience, you can skip, log and show (with timeout)
       those messages. It is recommended to show all
-      <emphasis>messages</emphasis> with timeout. Warning can be skipped in
+      <emphasis>messages</emphasis> with timeout. Warnings can be skipped in
       some places but should not be ignored.
     </para>
     <para>
@@ -87,7 +87,7 @@
 	Critical system messages
       </title>
       <para>
-	Note that not all messages during installation are controlled by the
+	Note that <b>not</b> all messages during installation are controlled by the
 	<emphasis>report</emphasis> resource. Some critical messages concerning
 	package installation and partitioning will still show up ignoring your
 	settings in the <emphasis>report</emphasis> section.
@@ -222,7 +222,7 @@
 	<para>	
 	  In case of the presence of multiple drives in the target system, all
 	  drives  should be identified with their device
-	  names and additional information related to the above mentioned behavior.
+	  names and with additional information related to the above mentioned behavior.
 	</para>
 
 	<para>
@@ -230,7 +230,8 @@
 	  a flexible value using the keywords <emphasis>auto</emphasis> and
 	  <emphasis>max</emphasis>. <emphasis>max</emphasis> is used to fill a
 	  partition to the maximal available space on a
-	  drive (Which mean that the partition is the last one on the drive). <emphasis>auto</emphasis> can be used to determine the size of
+	  drive (Which mean that the partition is the last one on the drive). 
+	<emphasis>auto</emphasis> can be used to determine the size of
 	a <emphasis>swap</emphasis> or <emphasis>boot</emphasis> partitions
 	which depend on memory and the type of the system.
 	</para>
@@ -248,17 +249,18 @@
 	</title>
 	<para>
 	To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
-	  normal partitioning method described above. 
+	normal partitioning method described above. 
 	</para>
    	<example>
 	  <title>
 	    Create LVM Physical Volume
 	  </title>
 	<para>
-	  The following example show
-	  how to prepare for LVM in the <emphasis>partitioning</emphasis> resource:
-</para>
-	  <screen>
+	  The following example shows how to prepare for LVM in the
+	  <emphasis>partitioning</emphasis> 
+	  resource:
+	</para>
+	<screen>
 <![CDATA[
 ....
 <partitioning config:type="list">
@@ -267,34 +269,36 @@
          <use>all</use>
          <partitions config:type="list">
             <partition>
-               <size>auto</size>
+               <size>max</size>
                <lvm_group>system</lvm_group>
+               <partition_type>primary</partition_type>
             </partition>
          </partitions>
      </drive>
 </partitioning>
 .....
 ]]>
-	  </screen>
+	</screen>
 
-	</example>
-	<para>
-	  The last example will create a non-formatted partition on device
+      </example>
+      <para>
+	The last example will create a non-formatted partition on device
 	  <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
 	  with the volume group <emphasis>system</emphasis>. The partition
 	  created  will use all available space on this drive.
 	</para>
 	<para>
-	  The logical volumes should be defined in the <emphasis>lvm</emphasis>
-	  resource. Currently it is not possible to configure LVM using the configuration system, instead it is required to
-	  add the resource manually as shown in the  following example.
-	</para>
+	The logical volumes should be defined in the <emphasis>lvm</emphasis>
+	resource. Currently it is not possible to configure LVM using the
+	configuration system, instead it is required to
+	add the resource manually as shown in the  following example.
+      </para>
 
-	<example>
-	  <title>
-	    LVM Logical Volumes
-	  </title>
-	  <screen>
+      <example>
+	<title>
+	  LVM Logical Volumes
+	</title>
+	<screen>
 <![CDATA[
 ....
   <lvm config:type="list">
@@ -325,25 +329,125 @@
   </lvm>
 .....
 ]]>
-	  </screen>
-	</example>
-      </sect3>
-    </sect2>
+	</screen>
+      </example>
+    </sect3>
 
+    <sect3>
+      <title>Software RAID</title>
+      <para>
+	Using &autoyast;, you can create assemble  software RAID devices. The
+	supported RAID level are the following:
+      </para>
+      <itemizedlist>
+	<listitem>	  
+	  <para>
+	    <emphasis>RAID 0:</emphasis> This level increases your disk performace.
+	    There is <emphasis>NO</emphasis> redundancy in this mode. If one of the drives crashes, data recovery will not be possible.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>RAID 1:</emphasis>This mode has the best redundancy. It can be
+used with two or more disks. This mode maintains an exact copy of all data on all
+disks. As long as at least one disk is still working, no data is lost. The partitions
+used for this type of RAID should have approximately the same size.
+	  </para>
+	</listitem>
 
-    <sect2 id="CreateProfile.Software">
+	<listitem>
+	  <para>
+	    <emphasis>RAID 5:</emphasis> This mode combines management of a larger number
+of disks and still maintains some redundancy. This mode can be used on three disks or more.
+If one disk fails, all data is still intact. If two disks fail simultaneously,
+	    all data is lost.
+	  </para>	  
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>Multipath:</emphasis>This mode allow access to the same physical device
+	    over multiple controller for redundancy against a fault in a controller
+	    card. This mode can be used with at least two devices.
+	  </para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	As with LVM, you need to create the RAId partitions first and assign
+	the partitions to the RAID device you want to create and you need to
+	specify whether a partition or device should be configured in the RAID
+	or if it should configured as a Spare device.
+      </para>
+      <para>
+	The following example shows a simple RAID1 configuration:
+      </para>
+      <example>
+	<title>RAID1 configuration</title>
+	<screen>
+<![CDATA[
+....
+   <partitioning config:type="list">
+      <drive>
+        <device>/dev/hdc</device>
+        <partitions config:type="list">
+          <partition>
+            <filesystem_id config:type="integer">253</filesystem_id>
+            <format config:type="boolean">false</format>
+            <raid_name>/dev/md0</raid_name>
+            <size>4gb</size>            
+          </partition>
+
+          <!-- Here come the regular partitions, i.e. / and swap -->        
+
+        </partitions>
+        <use>all</use>
+      </drive>
+      <drive>
+        <device>/dev/sda</device>
+        <use>all</use>
+        <partitions config:type="list">
+          <partition>
+             <filesystem_id config:type="integer">253</filesystem_id>
+             <format config:type="boolean">false</format>
+             <raid_name>/dev/md0</raid_name>
+             <raid_type>raid</raid_type>
+             <size>4gb</size>
+          </partition>
+         </partitions>
+       </drive>
+   </partitioning>
+
+   <raid config:type="list">
+       <device>
+          <raid config:type="integer">md0</raid>
+          <parity_algorithm>left-asymmetric</parity_algorithm>
+          <persistent_superblock>true</persistent_superblock>
+          <raid_type>raid1</raid_type>
+          <filesystem_id config:type="integer">131</filesystem_id>
+          <chunk_size config:type="integer">4</chunk_size>
+       </device>
+    </raid>
+
+....
+]]>	  
+	</screen>
+      </example>
+    </sect3>
+  </sect2>
+  
+
+  <sect2 id="CreateProfile.Software">
+    <title>
+      Software
+    </title>
+
+    <sect3 id="Software.Selections">
       <title>
-	Software
+	Package Selections
       </title>
-
-      <sect3 id="Software.Selections">
-	<title>
-	  Package Selections
-	</title>
-	<para>	
-	  You can choose between two different types of package selections:
-	</para>
-	<itemizedlist>
+      <para>	
+	You can choose between two different types of package selections:
+      </para>
+      <itemizedlist>
 	  <listitem>
 	    <para>
 	      Use a pre-defined package base selection, i.e. default, development,
