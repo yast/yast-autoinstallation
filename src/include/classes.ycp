@@ -1,26 +1,26 @@
 /**
- * File: 	include/autoinstall/dialogs.ycp
- * Module:	AutoinstConfig
- * Summary:	This module handles the configuration for auto-installation
+ * File:	include/autoinstall/classes.ycp
+ * Module:	AutoInstallation
+ * Summary:	This file handles classes
  * Authors:	Anas Nashif <nashif@suse.de>
  *
  * $Id$
  */
 {
     textdomain "autoinst";
-    
-    
+
+
     /**
-     * Dialog Contents     
+     * Dialog Contents
      */
 
     global define class_dialog_contents ()
 	``{
-	
+
 	list classes = maplist(map class , AutoinstClass::Classes,
 			       ``{
 				   string pathtoClass = sformat("%1/%2", AutoinstConfig::classDir, class["name"]:("Unknown"));
-				   
+
 				   list files_in_class = SCR::Read(.target.dir, pathtoClass);
 				   return (`item(
 						 `id(class["name"]:"Unknown"),
@@ -30,19 +30,19 @@
 						 )
 					   );
 			       });
-	
-	
-	term contents =	 
+
+
+	term contents =
     `VBox(
 	  `VWeight(40, `Table( `id(`table), `opt (`notify, `immediate),
 			       `header(_("Class Name"), _("Order"), _("Configurations")),
-			       classes			 
+			       classes
 			       )
 		   ),
 	  `VSpacing(1),
 	  `VWeight(40,`RichText(`id(`description), _("Class Description"))),
 	  `VSpacing(1),
-	  `HBox(			
+	  `HBox(
 		`PushButton(`id(`new), _("Ne&w")),
 		`PushButton(`id(`edit), _("&Edit")),
 		`PushButton(`id(`delete), _("&Delete"))
@@ -51,35 +51,35 @@
 	return contents;
     }
 
-    
-    /** 
+
+    /**
      * Manage Classes
-     *      
-     */    
+     *
+     */
     global define symbol ManageClasses()
 	``{
-	
+
 	string title = _("Classes");
-	
+
 	string help = _("<p>Use this interface to define classes of control files. </p>
 ");
-	
+
 	help = help + _("<p>For example, you can define a class of configurations for
 a specific  department, group, or site in your company environment.</p>
 ");
-	
+
 	help = help + _("<p>The order (priority) defines the hierarchy of a class
 and when it is merged when creating a control file.
 </p>
 ");
 
-	  
-	Wizard::SetContents(title,	
+
+	Wizard::SetContents(title,
 			    class_dialog_contents() , help, true, true);
 	Wizard::ReplaceAbortButton(`Empty());
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 	Wizard::ReplaceAbortButton(`Empty());
-	any ret = nil;	
+	any ret = nil;
 	repeat
 	    {
 	    	if (size(AutoinstClass::Classes) == 0 )
@@ -87,23 +87,23 @@ and when it is merged when creating a control file.
 		    UI::ChangeWidget(`id(`edit), `Enabled, false);
 		    UI::ChangeWidget(`id(`delete),`Enabled, false);
 		}
-		
+
 		string class =  UI::QueryWidget(`id(`table), `CurrentItem);
-		map selected_class = select(filter(map c,  AutoinstClass::Classes,``(c["name"]:""  == class) ), 0, $[] );  
+		map selected_class = select(filter(map c,  AutoinstClass::Classes,``(c["name"]:""  == class) ), 0, $[] );
 		if ( class != nil )
 		{
 		    UI::ChangeWidget(`id(`description), `Value, selected_class["description"]:_("No Description"));
 		}
-	    
+
 		ret = UI::UserInput();
-	    
+
 		y2milestone("ret: %1, class: %2", ret, class);
-	  	    
-	
+
+
 		if (ret == `new)
 		{
 		    any defret = AddEditClasses(ret, "");
-		   
+
 		    Wizard::SetContents(title,
 					 class_dialog_contents(), help, true, true);
 		}
@@ -115,11 +115,11 @@ and when it is merged when creating a control file.
 to edit.
 "));
 			continue;
-		    }		     
+		    }
 		    any defret = AddEditClasses(ret, class);
 		    if (defret != `cancel)
 		    {
-			
+
 		    }
 		    Wizard::SetContents(title,
 					class_dialog_contents(), help, true, true);
@@ -133,26 +133,26 @@ to delete.
 			continue;
 		    }
 		    AutoinstClass::Classes = filter(map c,  AutoinstClass::Classes,``( lookup(c,"name","")!=class) );
-	
+
 		    Wizard::SetContents(title,
-					class_dialog_contents(), help, true, true);	
-	
+					class_dialog_contents(), help, true, true);
+
 		}
-		
-	
-	    
+
+
+
 	    } until (ret == `back || ret == `next );
 
 	if (ret == `next)
-	{	 
+	{
 	    AutoinstClass::Save();
 	}
 	return ret;
- 
+
     }
 
 
-    
+
     /**
      * Add or Edit a class
      * @param symbol mode
@@ -160,39 +160,39 @@ to delete.
      */
 
     global define AddEditClasses(symbol mode, string name)
-	``{	
+	``{
 	list classNames = maplist(map c,
 				  AutoinstClass::Classes,
 				  ``(lookup(c,"name",""))
 				  );
-	
+
 	map class = $[];
 	if (mode == `edit)
-	{	    
+	{
 	    class = select(filter(
 				  map c,
 				  AutoinstClass::Classes,
 				  ``(lookup(c,"name","")== name)),0,$[]);
 	}
-	
+
 	integer order =  tointeger(lookup(class,"order", sformat("%1", size(AutoinstClass::Classes) + 1)));
-	
-	UI::OpenDialog( `opt(`decorated),			
+
+	UI::OpenDialog( `opt(`decorated),
 			`HBox(
 			      `HSpacing(0.5),
 			      `VBox(
 				    `Heading( _("Edit or Create Classes")),
 				    `VSpacing(1),
-				    `HBox(				    
+				    `HBox(
 					  `TextEntry(`id(`name), _("Na&me"), lookup(class,"name","")),
 					  `IntField(`id(`order), _("Or&der:"), 1, 10, order)
 					  ),
 				    `MultiLineEdit(`id(`description), `opt(`hstretch),
-						   _("Descri&ption:"),	
+						   _("Descri&ption:"),
 						   lookup(class,"description","")),
 				    `VSpacing(1),
 				    `HBox(
-					  `PushButton(`id(`save), SaveButtonLabel()),			      
+					  `PushButton(`id(`save), SaveButtonLabel()),
 					  `PushButton(`id(`cancel), CancelButtonLabel())
 					  )
 				    ),
@@ -203,7 +203,7 @@ to delete.
 	{
 	    UI::ChangeWidget(`id(`name), `Enabled, false);
 	}
-	
+
 	repeat {
 	    ret = UI::UserInput();
 	    if (ret == `save )
@@ -214,7 +214,7 @@ to delete.
 		    continue;
 		}
 		if (mode !=`edit && contains(classNames, UI::QueryWidget(`id(`name),`Value)))
-		{		    
+		{
 		    UI::MessagePopup(_("That name is already used. Select another name."));
 		    continue;
 		}
@@ -244,15 +244,15 @@ to delete.
 						     else
 						     {
 							 return c;
-						     }				    
+						     }
 						 });
-		}   
-		
-	    } 
+		}
+
+	    }
 	} until (ret == `save || ret == `cancel);
 
 	UI::CloseDialog();
-	
+
 	return ret;
     }
 
@@ -265,36 +265,36 @@ to delete.
      */
 
     global define MergeDialog()
-	``{	
+	``{
 	string title = _("Merge Classes");
 	map profiles = $[];
 
 	term Combo = `VBox();
 	AutoinstClass::Files();
 	foreach(map prof, AutoinstClass::confs, ``{
-	    
+
 	    string class = prof["class"]:"Default";
 	    list ui_list = profiles[class]:[];
-	    
+
 	    if (size(ui_list)==0)
 	    {
 		ui_list=add(ui_list,`item(`id("none"),
 					  _("None"))
 			    );
 	    }
-	    
+
 	    ui_list=add(ui_list,`item(`id(prof["name"]:"Unknown"),
 				      prof["name"]:"Unknown")
 			);
-	    
+
 	    profiles[class] =  ui_list;
 	});
-		
+
 
 	if ( size(profiles) > 0 )
 	{
 	    foreach(`k,`v, profiles,``{
-		Combo = add(Combo,	 
+		Combo = add(Combo,
 			  `HBox(
 				`HWeight(50,(`Left(
 						   `ComboBox(`id(k),`opt(`hstretch,`autoShortcut),
@@ -312,9 +312,9 @@ to delete.
 	}
 	else
 	{
-	    Combo = `Left(`Label(`id(`emptyclasses), _("No control files defined")));	    
+	    Combo = `Left(`Label(`id(`emptyclasses), _("No control files defined")));
 	}
-	
+
 
 	term contents =
     `Top(
@@ -338,7 +338,7 @@ to delete.
 		     )
 	       )
 	 );
-		  
+
 
 	string help = _("<p>If you have defined and created <b>
 classes</b>, you will be able to merge them using this interface to create
@@ -350,28 +350,28 @@ creating the classes.</P>
 	help = help + _("<P>To merge the classes, an <b>XSLT</b>
 script is used.</P>
 ");
-	
-	Wizard::SetContents(title,	
+
+	Wizard::SetContents(title,
 			    contents, help , true, true);
 
 	Wizard::ReplaceAbortButton(`Empty());
 	list widgets = [ `merge, `empty, `current ];
-		
+
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 	UI::ChangeWidget(`id(`next), `Enabled, false);
-	
+
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
-	    symbol base = UI::QueryWidget(`id(`rbg), `CurrentButton);	    
+	    symbol base = UI::QueryWidget(`id(`rbg), `CurrentButton);
 	    integer n = 0;
 	    if (ret == `merge)
-	    {				
+	    {
 		list selected_profiles = [];
 		foreach (map prof, AutoinstClass::confs,``{
-		    
+
 		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
-		    
+
 		    if (selected != nil) {
 			if (selected != "none") {
 			    n = n +1;
@@ -384,22 +384,22 @@ script is used.</P>
 						]
 						);
 		    }
-		    
+
 		});
-		
+
 		if (n ==  0) {
 		    integer min = 1;
 		    if (base == `empty)
 			min = 2;
-		    
+
 		    UI::ErrorPopup(sformat(_("You have to select at least %1  configurations
 to be able to  perform a merge.
 "), min));
 		    continue;
 		}
-		
+
 		list sorted_profiles =  sort(`x,`y, filter(`c, toset(selected_profiles),``(c["profile"]:""!= "none")),
-					     ``(x["order"]:0<=y["order"]:0)					
+					     ``(x["order"]:0<=y["order"]:0)
 					     );
 		y2debug("Selected Profiles: %1", sorted_profiles);
 		if ( size(sorted_profiles)>0 )
@@ -408,7 +408,7 @@ to be able to  perform a merge.
 		    MergeAll(sorted_profiles, base);
 		}
 		UI::ChangeWidget(`id(`next), `Enabled, true);
-	    }	 
+	    }
 	} until  (ret == `next || ret == `back );
 
 	return ret;
@@ -416,7 +416,7 @@ to be able to  perform a merge.
 
 
     global define symbol classConfiguration() ``{
-	
+
 	string title = _("Class Configuration");
 	string help = _("<p>Choose one or more of the listed classes to which the current control
 file should belong.</p>
@@ -429,18 +429,18 @@ file should belong.</p>
 	foreach(map prof, AutoinstClass::confs, ``{
 	    string class = prof["class"]:"default";
 	    list ui_list = profiles[class]:[];
-	  
-	    	    
+
+
 	    if (size(ui_list)==0)
 	    {
 		ui_list=add(ui_list,`item(`id("none"),
 					  _("None"))
 			    );
 	    }
-	    
+
 	    ui_list=add(ui_list,`item(`id(prof["name"]:"Unknown"),
 				      prof["name"]:"Unknown"));
-			
+
 	    profiles[class] =  ui_list;
 	});
 
@@ -478,7 +478,7 @@ file should belong.</p>
 	Wizard::ReplaceAbortButton(`Empty());
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 
-	
+
 	any ret = nil;
 	symbol next = nil;
 	repeat {
@@ -525,20 +525,20 @@ file should belong.</p>
 	return ret;
     }
 
-    
+
 
     /**
      * The merge operation
-     */    
+     */
     global define boolean MergeAll(list selected_profiles, symbol base)
 	``{
-	
+
 	string tmpdir = SCR::Read( .target.tmpdir );
 	SCR::Execute(.target.mkdir, tmpdir);
 
 	if (base == `empty)
 	{
-	    XML::YCPToXMLFile(`profile, $[], tmpdir + "/base_profile.xml");	    
+	    XML::YCPToXMLFile(`profile, $[], tmpdir + "/base_profile.xml");
 	}
 	else if (base == `current)
 	{
@@ -548,11 +548,11 @@ file should belong.</p>
 	{
 	    return false;
 	}
-	
+
 	boolean error = false;
 	boolean skip = false;
 	foreach( map c, selected_profiles,
-		``{	  
+		``{
 	    map profile = select(filter(`cc, AutoinstClass::confs,
 					``( cc["name"]:"" == c["profile"]:"" )
 					),
@@ -560,7 +560,7 @@ file should belong.</p>
 				 $[]
 				 );
 	    if (base == `empty && !skip)
-	    {		
+	    {
 		SCR::Execute(.target.bash, "cp " + AutoinstConfig::classDir + "/" + profile["class"]:""  + "/" +  profile["name"]:"" +  "  " + tmpdir + "/base_profile.xml");
 		skip = true;
 	    }
@@ -572,7 +572,7 @@ file should belong.</p>
 		{
 		    base_text = "current control file";
 		}
-	
+
 		if (profile["name"]:"" != "" && !error)
 		{
 		    showFeedback(sformat("Merging %1 with %2....", profile["name"]:"", base_text));
@@ -582,7 +582,7 @@ file should belong.</p>
 			UI::ErrorPopup(sformat(_("Merge failed:\n %1"), xsltret["stderr"]:"error"));
 			error =  true;
 		    }
-		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");		    
+		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
 		}
 		else
 		{
@@ -591,7 +591,7 @@ file should belong.</p>
 	    }
 	});
 
-	
+
 	if (error)
 	{
 	    clearFeedback();
@@ -601,24 +601,24 @@ file should belong.</p>
 	// Backup file
 	SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml /var/lib/autoinstall/tmp/autoinst_result.xml" );
 
-	Profile::Read("/var/lib/autoinstall/tmp/autoinst_result.xml" );	
-	SCR::Execute(.target.remove, " /var/lib/autoinstall/tmp/autoinst_result.xml");	
+	Profile::Read("/var/lib/autoinstall/tmp/autoinst_result.xml" );
+	SCR::Execute(.target.remove, " /var/lib/autoinstall/tmp/autoinst_result.xml");
 	clearFeedback();
-	
+
 	return true;
     }
-    
+
 
     global define XML_cleanup(string in, string out)
 	``{
-	
-	map ycpin = XML::XMLToYCPFile(in);	
+
+	map ycpin = XML::XMLToYCPFile(in);
 	y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin);
 	return XML::YCPToXMLFile(`profile, ycpin, out);
     }
 
 
-    
+
     global define integer GetClassOrder(string name)``{
 	integer order = 0;
 	foreach(map class, AutoinstClass::Classes, ``{
@@ -629,7 +629,7 @@ file should belong.</p>
     }
 
 
-    
+
 
 
 

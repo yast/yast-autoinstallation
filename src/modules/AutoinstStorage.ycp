@@ -10,21 +10,21 @@
 
     module "AutoinstStorage";
     textdomain "autoinst";
-    
+
     import "Partitions";
     import "Mode";
     import "Summary";
     include "partitioning/partition_defines.ycp";
 
-    
+
     global list drives = [];
-    
+
     global list lvm = [];
-    
+
     global list raid = [];
 
     global map targetMap = $[];
-    
+
     /**
      * Dump the settings to a map, for autoinstallation use.
      * @return map
@@ -35,7 +35,7 @@
 				    ``{
 					list p = maplist(`part, d["partitions"]:[] ,
 							 ``{
-							     
+
 							     if (haskey(part, "fsid")) {
 								 part = remove(part, "fsid");
 							     }
@@ -47,7 +47,7 @@
 					d["partitions"] = p;
 					return d;
 				    });
-	
+
 	return clean_drives;
     }
 
@@ -75,17 +75,17 @@
     }
 
 
-    
+
     /**
      * Summary
      * @return  configuration summary dialog
-     */   
-   
+     */
+
     global define string Summary() ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Drives"));
 	summary = Summary::AddLine( summary, sformat(_("Total of %1 drives"), size(drives)));
-	summary = Summary::OpenList(summary);	
+	summary = Summary::OpenList(summary);
 	foreach(map drive, drives, ``{
 	    summary = Summary::AddListItem(summary, drive["device"]:_("No specific device configured") );
 	});
@@ -93,7 +93,7 @@
 	return summary;
     }
 
-    
+
 
     /**
      * Create partition plans
@@ -104,13 +104,13 @@
 	``{
 	import "Storage";
 	import "Partitions";
-	include "autoinstall/partitioning.ycp";	
+	include "autoinstall/partitioning.ycp";
 	import "Bootloader";
 	import "BootCommon";
 
 
-	
-	
+
+
 	if ( lvm[ 0, "destroy_old"]:false )
 	{
 	    Storage::DestroyLvmOnAllDisks();
@@ -145,7 +145,7 @@
 
 	});
 
-	
+
 	y2milestone("New Auto-Install tagetMap: %1", targetMap);
 	if ( targetMap == $[] )
 	{
@@ -153,7 +153,7 @@
 	    Report::Error(_("An error occurred while trying to create the partitioning plans.
 Make sure the control file has the correct syntax and values.
 "));
-	    return `abort;			  
+	    return `abort;
 	}
 
 	// Initialize disks if needed
