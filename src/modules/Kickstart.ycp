@@ -95,12 +95,13 @@
 		map display = $[];
 		list hsync = splitstring(ks_x["hsync"]:"", "-");
 		list vsync = splitstring(ks_x["vsync"]:"", "-");
-		display["min_hsync"] = (string) select(hsync,0,"");
-		display["min_vsync"] = (string) select(vsync,0,"");
-		display["max_hsync"] = (string) select(hsync,1,"");
-		display["max_vsync"] = (string) select(vsync,1,"");
-		monitor["monitor_vendor"] = (string) select(splitstring(ks_x["monitor"]:"", " "), 0 , "");
-		monitor["monitor_device"] = (string) select(splitstring(ks_x["monitor"]:"", " "), 1 , "");
+		display["min_hsync"] = (string) hsync[0]:"";
+		display["min_vsync"] = (string) vsync[0]:"";
+		display["max_hsync"] = (string) hsync[1]:"";
+		display["max_vsync"] = (string) vsync[1]:"";
+                list<string> m = splitstring(ks_x["monitor"]:"", " ");
+		monitor["monitor_vendor"] = (string) m[0]:"";
+		monitor["monitor_device"] = (string) m[1]:"";
 		monitor["display"] = display;
 
 	    }
@@ -311,7 +312,8 @@
 	    });
 
 	    map clearpart = ksConfig["clearpart"]:$[];
-	    string devicetok = (string)select(splitstring(drive["device"]:"","/"), 1, "");
+            list<string> d = splitstring(drive["device"]:"","/");
+	    string devicetok = d[1]:"";
 	    if (devicetok != "" && clearpart["drives"]:"" != "")
 	    {
 		if (issubstring(clearpart["drives"]:"", devicetok))
@@ -732,13 +734,13 @@
 
 	// Scripts
 	configure["scripts"]	= Scripts();
-	configure["networking"] = (map) select(Network(), 0 , $[]);
-	configure["nis"]	= (map) select(Authentication(), 0 , $[]);
-	configure["ldap"]	= (map) select(Authentication(), 1 , $[]);
-	configure["security"]	= (map) select(Authentication(), 2 , $[]);
+	configure["networking"] = (map) Network()[0]:$[];
+	configure["nis"]	= (map) Authentication()[0]:$[];
+	configure["ldap"]	= (map) Authentication()[1]:$[];
+	configure["security"]	= (map) Authentication()[2]:$[];
 	configure["users"]	=  Users ();
 
-	install["init"]	= (map) select(Network(), 1 , $[]);
+	install["init"]	= (map) Network()[1]:$[];
 	install["software"]	= Software();
 	install["partitioning"] = Partitioning();
 	install["raid"]	= Raid();

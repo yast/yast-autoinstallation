@@ -87,12 +87,12 @@
 	{   //Partition
 	    this_drive = select (filter (map d,
 			      partitioning,
-			      ``(d["device"]:"" == select(item_id,0,""))),
+			      ``(d["device"]:"" == item_id[0]:"")),
 		       0,
 		       $[]
 		       );
-	    new_val = (map<string, any>) select (this_drive["partitions"]:[], tointeger (select (item_id, 1, "")) - 1, $[]);
-	    drive = (string) select(item_id,0,"");
+	    new_val = (map<string, any>) select (this_drive["partitions"]:[], tointeger (item_id[1]:"") - 1, $[]);
+	    drive = (string) item_id[0]:"";
 	}
 	else
 	{
@@ -502,7 +502,7 @@ due to use of the \"max\" option.
 	    }
 	    else if (mode == `edit)
 	    {
-		partitions[tointeger(select(item_id,1,"")) - 1] = return_value;
+		partitions[tointeger(item_id[1]:"") - 1] = return_value;
 	    }
 	    this_drive["partitions"] = partitions;
 
@@ -825,7 +825,7 @@ due to use of the \"max\" option.
 		if (size(item_id) >1)
 		{ //Partition
 		    action = PartitionDialog(`edit, item);
-		    UI::ChangeWidget(`id(`table), `CurrentItem, select(item_id,0,""));
+		    UI::ChangeWidget(`id(`table), `CurrentItem, item_id[0]:"");
 		}
 		else
 		{
@@ -849,7 +849,7 @@ due to use of the \"max\" option.
 			       0,
 			       $[]
 			       );
-		    drive= (string)select(item_id,0,"");
+		    drive= (string)item_id[0]:"";
 		    list drive_partitions = this_drive["partitions"]:[];
 
 		    drive_partitions= remove(drive_partitions, tointeger(item_id[1]:"") - 1);

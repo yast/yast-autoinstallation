@@ -99,7 +99,7 @@
      */
     global define boolean SaneRegionLimits (list<integer> unused,  list<map> partitions) ``{
 
-        map lastPart = select(partitions, size(partitions) -1 , $[]);
+        map lastPart = partitions[size(partitions) -1]:$[];
         y2milestone("last partitions = %1", lastPart );
         list<integer> last_region = [  lastPart["region", 0 ]:0  , lastPart["region", 1]:0 ];
 
@@ -507,7 +507,7 @@
 
 	    if ( size(old) > 0 )
 	    {
-		map lastPart = (map) select(old, size(old) -1 , $[]);
+		map lastPart = (map) old[size(old) -1]:$[];
 		region = [  lastPart["region", 0 ]:0  , lastPart["region", 1]:0 ];
 	    }
 
