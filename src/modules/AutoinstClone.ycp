@@ -58,9 +58,9 @@
      * Set root password
      */
 
-    define root() ``{
-	list shadow = SCR::Read(.etc.shadow);
-	map rootacct = select(filter(map acct, shadow, ``(acct["username"]:"" == "root")), 0 , $[]);
+    define list root() ``{
+	list shadow = (list) SCR::Read(.etc.shadow);
+	map rootacct = (map) select(filter(map acct, shadow, ``(acct["username"]:"" == "root")), 0 , $[]);
 	list users = [];
 	map rootacct_mod = $[];
 	rootacct_mod["user_password"] = rootacct["password"]:"";
@@ -90,8 +90,8 @@
      * Convert units to size
      */
 
-    define units_to_size (list region) ``{
-	integer units = select(region,1,0);
+    define integer units_to_size (list region) ``{
+	integer units = (integer) select(region,1,0);
 	return (units * bytes_per_unit)  -  bytes_per_unit + 1;
     };
 
@@ -106,13 +106,13 @@
 	Mode::config = false;
 	import "Storage";
 	import "Partitions";
-	map StorageMap = eval(Storage::GetTargetMap());
+	map StorageMap = (map) eval(Storage::GetTargetMap());
 
 	StorageMap = Storage::GetFsysType(StorageMap);
 	y2milestone("Storagemap %1", StorageMap);
-	list mounts = SCR::Read(.etc.fstab);
+	list mounts = (list) SCR::Read(.etc.fstab);
 
-	list drives = maplist(`k,`v, StorageMap, ``{
+	list drives = maplist(string k, map v, StorageMap, ``{
 	    bytes_per_unit = v["cyl_size"]:1;
 	    list partitions = [];
 	    list winp = [];
@@ -201,7 +201,7 @@
 	y2debug("installed packages %1", allInstalledPackages);
 
 	map software = $[];
-	software["packages"] =  filter(`p, allInstalledPackages, ``(! regexpmatch(p, "k_.*")));
+	software["packages"] =  filter(string p, allInstalledPackages, ``(! regexpmatch(p, "k_.*")));
 	// software["base"] = "Minimal";
 
 	return software;
