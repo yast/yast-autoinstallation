@@ -428,6 +428,8 @@
 	Boot::manual_location = true;
 	Bootloader = GetMap(Install, "bootloader", true);
 
+	
+	
 	if (issubstring(Bootloader["location"]:"mbr", "/dev/"))
 	{
 	    Boot::device=Bootloader["location"]:"mbr";
@@ -435,7 +437,7 @@
 	}
 	else
 	{
-	    Boot::location=Bootloader["location"]:"mbr";
+	    Boot::location = Bootloader["location"]:"mbr";	  		
 	}
 	
 	string parameters = Bootloader["kernel_parameters"]:"";
@@ -514,9 +516,9 @@
     /**
      * Configure software settings
      * @param void
-     * @return void
+     * @return boolean
      */
-    global define void softwareSettings()
+    global define boolean softwareSettings()
 	``{
 
 	boolean ret = false;
@@ -547,8 +549,8 @@
 
 	SpaceCalculation::ShowPartitionWarning();
 	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",  Pkg::GetSelections(`selected, "base"), Pkg::GetSelections(`selected, ""));
-
-        return;
+	return (Pkg::ActivateSelections());
+        
     }
 
 
