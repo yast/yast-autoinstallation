@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-SUBDIRS = include modules data clients config
+SUBDIRS = include modules data clients config dialogs
 
 client_DATA = \
 	autoyast.ycp 
