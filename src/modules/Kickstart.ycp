@@ -726,30 +726,25 @@
      * Kickstart to AutoYaST main
      * @return map
      */
-    global define map KS2AY() ``{
+    global define map<string, any> KS2AY() ``{
 
-	map profile = $[];
-	map general = $[];
-	map install = $[];
-	map configure = $[];
+	map<string, any> profile = $[];
 
 	// Scripts
-	configure["scripts"]	= Scripts();
-	configure["networking"] = (map) Network()[0]:$[];
-	configure["nis"]	= (map) Authentication()[0]:$[];
-	configure["ldap"]	= (map) Authentication()[1]:$[];
-	configure["security"]	= (map) Authentication()[2]:$[];
-	configure["users"]	=  Users ();
+	profile["scripts"]	= Scripts();
+	profile["networking"] = (map) Network()[0]:$[];
+	profile["nis"]	= (map) Authentication()[0]:$[];
+	profile["ldap"]	= (map) Authentication()[1]:$[];
+	profile["security"]	= (map) Authentication()[2]:$[];
+	profile["users"]	=  Users ();
 
-	install["init"]	= (map) Network()[1]:$[];
-	install["software"]	= Software();
-	install["partitioning"] = Partitioning();
-	install["raid"]	= Raid();
-	install["bootloader"]	= Bootloader();
-	install["general"]	= General();
+	profile["init"]	= (map) Network()[1]:$[];
+	profile["software"]	= Software();
+	profile["partitioning"] = Partitioning();
+	profile["raid"]	= Raid();
+	profile["bootloader"]	= Bootloader();
+	profile["general"]	= General();
 
-        profile["install"]	= install;
-        profile["configure"]	= configure;
         Profile::changed	= true;
 
         y2debug("Profile : %1", profile);

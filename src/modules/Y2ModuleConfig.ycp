@@ -230,9 +230,9 @@
 	    integer i = 0;
 	    foreach ( string res, Merge, ``{
 		if ( MergeTypes[i]:"map" == "map")
-		    mergedResource[res] = eval(Profile::Flat[res]:$[]);
+		    mergedResource[res] = eval(Profile::current[res]:$[]);
 		else
-		    mergedResource[res] = eval(Profile::Flat[res]:[]);
+		    mergedResource[res] = eval(Profile::current[res]:[]);
 		i = i + 1;
 	    });
             if (mergedResource==$[])
@@ -244,17 +244,17 @@
 	{
 	    if (data_type == "map")
 	    {
-                if (Profile::Flat[resource]:$[] == $[])
+                if (Profile::current[resource]:$[] == $[])
                     return nil;
                 else
-		    return (eval(Profile::Flat[resource]:$[]));
+		    return (eval(Profile::current[resource]:$[]));
 	    }
 	    else
 	    {
-                if (Profile::Flat[resource]:[] == [] )
+                if (Profile::current[resource]:[] == [] )
                     return nil;
                 else
-		    return (eval(Profile::Flat[resource]:[]));
+		    return (eval(Profile::current[resource]:[]));
 	    }
 	}
 
