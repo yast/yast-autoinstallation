@@ -42,6 +42,9 @@ Group:		YaST2
 @BUILD@
 
 @INSTALL@
+for d in `ls RPM_BUILD_ROOT/use/share/autoinstall/modules/*.desktop`; do
+    %suse_update_desktop_file $d
+done
 
 # Class conf
 install -d -m 700 $RPM_BUILD_ROOT/etc/autoinstall
