@@ -485,33 +485,11 @@
 
 	});
 
-	if (!contains(base, "partitioning"))
-	{
-	    Profile::Flat["partitioning"] = Partitioning();
-	}
-	else
-	{
-	    Profile::Flat["partitioning"] = [$["use":"all"]];
-	}
-
-
-	if (!contains(base, "software"))
-	{
-	    Profile::Flat["software"] = Software();
-	}
-	else
-	{
-	    Profile::Flat["software"] = $["base":"default"];
-	}
-
-	if (!contains(base, "bootloader"))
-	{
-	    Profile::Flat["bootloader"] = Bootloader();
-	}
-
-	Profile::Flat["general"] = General();
+        Profile::Flat["partitioning"] = Partitioning();
+        Profile::Flat["software"] = Software();
+        Profile::Flat["bootloader"] = Bootloader();
+        Profile::Flat["general"] = General();
         Profile::Flat["report"] = Report::Export();
-	y2debug("b4 prepare: %1", Profile::Flat );
 	Profile::Prepare();
 	return;
     }

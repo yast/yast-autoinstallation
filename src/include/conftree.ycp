@@ -32,7 +32,6 @@
                 Profile::changed=false;
                 list pathComponents = splitstring(  (string)filename, "/");
                 string base = (string) select(pathComponents, size(pathComponents) -1, "default");
-                // UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), base));
             }
             else
             {
@@ -78,7 +77,7 @@
      */
     define void content_dialog( string resource, map resourceMap, string module_auto) ``{
 
-	string summary =  (string)Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
+	string summary =  (string) WFM::CallFunction( module_auto, ["Summary"]);
 	string caption = resourceMap["Name"]:"";
 	string buttonLabel = resourceMap["GenericName"]:"Configure";
 	term contents =
@@ -92,7 +91,6 @@
 			`PushButton(`id(`configure), _("Configur&e") )
 			)
 		  );
-	// caption of lan auto configuration
 	Wizard::SetContents(
 			    caption,
 			    contents, AutoinstConfig::MainHelp(), true, true);
@@ -102,6 +100,9 @@
     }
 
 
+    /**
+     * Reset Configuration
+     */
     any resetModule(string resource)
     {
         y2debug("resource: %1", resource);
@@ -109,9 +110,8 @@
 	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
 
         string profile_resource = Y2ModuleConfig::getResource(resource);
-        Profile::Flat[profile_resource]  = Call::Function(module_auto,
-                ["Reset",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-        y2debug("After Reset: %1", Profile::Flat );
+        WFM::CallFunction(module_auto, ["Reset"]);
+
         return `next;
     }
 
@@ -123,42 +123,20 @@
         map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
         resource = Y2ModuleConfig::getResource(resource);
         y2debug("resource: %1", resource);
+
 	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
         y2debug("module_auto: %1", module_auto );
-	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
-        any seq = Call::Function(module_auto, ["Change",
-                Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
 
+	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
+        any seq = WFM::CallFunction(module_auto, ["Change"]);
         y2debug("Change response: %1", seq);
         if (seq == `accept || seq == `next || seq == `finish)
         {
-            string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
-            string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
-            list MergeTypes = splitstring(tomergetypes, ",");
-            any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-            if (size(tomerge) > 0 )
+            boolean mod = (boolean)WFM::CallFunction(module_auto, ["GetModified"]);
+            if (mod)
             {
-                integer i = 0;
-                foreach( string res, (list<string>)splitstring(tomerge, ",") , ``{
-                        if ( MergeTypes[i]:"map" == "map")
-                        {
-                        Profile::Flat[res] = lookup( (map) result, "res", $[]);
-                        }
-                        else
-                        {
-                        Profile::Flat[res] = lookup( (map) result, res, [] );
-                        }
-                        i = i + 1;
-                        });
+                Profile::changed = true;
             }
-            else
-            {
-                Profile::Flat[resource]  =  result;
-            }
-        }
-        if ( original_settings != Y2ModuleConfig::getResourceData(resourceMap , resource) )
-        {
-            Profile::changed = true;
         }
         return (seq);
     }
@@ -172,20 +150,15 @@
      * Module configuration dialog
      * @return symbol
      */
-    define symbol module_contents(string resource) ``{
-        y2debug("resource: %1", resource);
-        //resource = Y2ModuleConfig::getResource(resource);
+    define symbol module_contents(string resource)
+    {
         map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
-        y2debug("resource Map: %1", resourceMap);
-
 	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
-	// Import Data
-	Call::Function(module_auto, ["Import", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
+
         // Show Summary
 	content_dialog( resource , resourceMap, module_auto);
 
-        any ret = `next;
-	return (symbol)ret;
+	return `next;
     }
 
 
@@ -198,12 +171,10 @@
     define void CreateTreeWidget(string current ) ``{
 
 	CreateTreeList(Y2ModuleConfig::MenuTreeData, current, "");
-	// y2milestone("menu options: %1", menu_options);
 	Wizard::HideNextButton();
 	Wizard::HideBackButton();
 	Wizard::HideAbortButton();
 
-	// UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), AutoinstConfig::currentFile));
 	return;
     }
 
@@ -314,6 +285,7 @@
                     source
                     );
 
+        Wizard::SetTitleIcon("autoyast");
         Wizard::SetContents(_("Source"),
                 sourceView , AutoinstConfig::MainHelp(), true , true);
         return;
@@ -428,7 +400,9 @@
             }
             else if (ret == "menu_open") // OPEN
             {
-                any filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Select a file to load."));
+                any filename = UI::AskForExistingFile( AutoinstConfig::Repository,
+                        "*",
+                        _("Select a file to load."));
                 if (filename != "" && filename != nil)
                 {
                     AutoinstConfig::currentFile = (string)filename;
@@ -437,6 +411,24 @@
 
                     string base = (string) select(pathComponents, size(pathComponents) -1, "default");
                     Profile::ReadXML((string)filename);
+                    Popup::ShowFeedback(_("Reading configuration data"), _("This may take a while"));
+                    foreach(string p, map d, Profile::ModuleMap, ``{
+                            //
+                            // Set resource name, if not using default value
+                            //
+                            string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
+                            if (resource == "")
+                            {
+                            resource = p;
+                            }
+                            y2debug("resource: %1", resource );
+                            string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+                            string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
+                            any resource_data = WFM::CallFunction(module_auto, ["Import",
+                                Y2ModuleConfig::getResourceData(d ,resource)]);
+                            });
+                    Popup::ClearFeedback();
+
                 }
                 if (UI::WidgetExists(`id(`class_source)))
                 {

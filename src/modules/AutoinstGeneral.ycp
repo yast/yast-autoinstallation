@@ -61,10 +61,29 @@
      */
     global define void AutoinstGeneral ()
     {
-	return;
+        return;
     }
 
+    /* default value of settings modified */
+    global boolean modified = false;
 
+
+    /**
+     * Function sets internal variable, which indicates, that any
+     * settings were modified, to "true"
+     */
+    global define void SetModified () {
+        y2milestone("SetModified");
+        modified = true;
+    }
+
+    /**
+     * Functions which returns if the settings were modified
+     * @return boolean  settings were modified
+     */
+    global define boolean GetModified () {
+        return modified;
+    }
 
     /**
      * Summary of configuration
@@ -72,7 +91,6 @@
      */
     global define string Summary()
     {
-
 	string language_name		= "";
 	string keyboard_name		= "";
 	string mouse_name		= "";
@@ -147,15 +165,14 @@
      * @return booelan
      */
     global define boolean Import (map settings)
-	``{
-	language =	settings["language"]:"";
-	keyboard =      settings["keyboard"]:$[];;
-	Clock	=	settings["clock"]:$[];
-	mouse =	        settings["mouse"]:$[];
-	mode  =	        settings["mode"]:$[];
-
-        y2milestone("mode: %1", mode);
-	return true;
+    {
+        SetModified ();
+        language =	settings["language"]:"";
+        keyboard =      settings["keyboard"]:$[];;
+        Clock	=	settings["clock"]:$[];
+        mouse =	        settings["mouse"]:$[];
+        mode  =	        settings["mode"]:$[];
+        return true;
     }
 
 
@@ -164,21 +181,20 @@
      * @return map
      */
     global define map Export ()
-	``{
+    {
+        map general = $[];
 
-	map general = $[];
+        general["language"] = language ;
+        if (haskey(keyboard, "keyboard_values") || Keyboard::ExpertSettingsChanged )
+        {
+            keyboard["keyboard_values"] = Keyboard::GetExpertValues();
+        }
 
-	general["language"] = language ;
-	if (haskey(keyboard, "keyboard_values") || Keyboard::ExpertSettingsChanged )
-	{
-	    keyboard["keyboard_values"] = Keyboard::GetExpertValues();
-	}
-
-	general["keyboard"] = keyboard;
-	general["clock"] = Clock;
-	general["mouse"] = mouse;
-	general["mode"] = mode;
-	return general;
+        general["keyboard"] = keyboard;
+        general["clock"] = Clock;
+        general["mouse"] = mouse;
+        general["mode"] = mode;
+        return general;
     }
 
 
