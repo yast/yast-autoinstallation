@@ -35,16 +35,17 @@
     ``{
 
 	// find the selected target in the map of all possible targets
+	
 	map driveMap =  Storage::GetTargetMap();
 
 	// description of the choosen target disk
-	map target = lookup (driveMap, target_is, $[]);
+	map target = driveMap[target_is]:$[];
 
 	// user visible name of target
-	string targetname = lookup (target, "name", "");
+	string targetname = target["name"]:"";
 
 	// The current list of partitions
-	list partitions = lookup (target, "partitions", []);
+	list partitions = target["partitions"]:[];
 
 	symbol partition_type = compute_partition_type (Boot::LoaderType);
 	integer max_partitions = compute_max_partitions (target, partition_type);
@@ -63,7 +64,7 @@
 	integer bytes_per_unit = 0;
 	integer disk_size = 0;
 	
-	integer 	fsid_boot      	= Partitions::fsid_native;
+	integer 	fsid_boot      	= Partitions::FsidBoot();
 	integer        	fsid_root       = Partitions::fsid_native;
 
 	// How much to allocate for swap
@@ -86,7 +87,6 @@
 	/**
 	 * prepare_partitions
 	 */
-
 	map part_data = $[];
 	boolean partitions_defined = false;
 	foreach(`dev, `v , AutoInstall::targetMap, 
@@ -256,9 +256,9 @@
 		all_partitions = add (all_partitions, extended_pentry);
 	    }
 
-	    y2debug ("all_partitions '%1'", all_partitions);
-	    y2debug ("selected_partitions '%1'", selected_partitions);
-	    y2debug ("old_partitions '%1'", old_partitions);
+	    y2milestone ("all_partitions '%1'", all_partitions);
+	    y2milestone ("selected_partitions '%1'", selected_partitions);
+	    y2milestone ("old_partitions '%1'", old_partitions);
 
 	    // Check selection for plausability
 	    boolean ok = false;
@@ -284,7 +284,7 @@ To install Linux, select more partitions to remove.");
 		}
 		else if (size_of_region (selected) < minimal_size)
 		{
-		    y2debug("selected: %1", selected);
+		    y2milestone("selected: %1", selected);
 		    // consistency check: a condition for the installation is not fullfilled
 		    // this condition is described within the reason
 		    reason = _("The selected partitions are not big
@@ -584,114 +584,115 @@ to contain a minimal installation.");
 
     global define map addPartition(map currentPartition) ``{
 		    
-	    string mount_point = currentPartition["mount"]:"";
-	    region = calcRegion(currentPartition, region);
+	string mount_point = currentPartition["mount"]:"";
+	
+	region = calcRegion(currentPartition, region);
 	    
-	    integer auto_fsid = currentPartition["partition_id"]:Partitions::fsid_native;
+	integer auto_fsid = currentPartition["partition_id"]:Partitions::fsid_native;
 
-	    // LVM
-	    string lvm_group = currentPartition["lvm_group"]:"";
+	// LVM
+	string lvm_group = currentPartition["lvm_group"]:"";
 	 
 
-	    // Raid
-	    string raid_name = currentPartition["raid_name"]:"";
+	// Raid
+	string raid_name = currentPartition["raid_name"]:"";
 	    
 	    
-	    // Partition Template
-	    map part =
+	// Partition Template
+	map part =
 	    $[
-	      "create":true,	      	    
-	      "format":currentPartition["format"]:true,
+	      "create":	true,	      	    
+	      "format":	currentPartition["format"]:true,
 	      "fs_options": currentPartition["fs_options"]:$[],	      	      
-	      "type": ptype,
-	      "fsid": auto_fsid,
-	      "nr":last_pnr,
-	      "region":region,
-	      "mount": mount_point,
+	      "type": 	ptype,
+	      "fsid": 	auto_fsid,
+	      "nr":	last_pnr,
+	      "region":	region,
+	      "mount": 	mount_point,
 	      "device": get_device_name(target_is, last_pnr)
 	    ];
 
-	    if (currentPartition["crypt_fs"]:false)
-	    {
-		part["crypt_fs"]  =   currentPartition["crypt_fs"]:false;
-		part["crypt_key"] =   Storage::AddCryptToClassified( currentPartition["crypt_key"]:"");
-	    }
+	if (currentPartition["crypt_fs"]:false)
+	{
+	    part["crypt_fs"]  =   currentPartition["crypt_fs"]:false;
+	    part["crypt_key"] =   Storage::AddCryptToClassified( currentPartition["crypt_key"]:"");
+	}
 	    
-	    if (haskey(currentPartition, "fstopt") && currentPartition["fstop"]:"" != "")
-	    {
-		part["fstopt"] 		= currentPartition["fstop"]:"";
-	    }
+	if (haskey(currentPartition, "fstopt") && currentPartition["fstop"]:"" != "")
+	{
+	    part["fstopt"] 		= currentPartition["fstop"]:"";
+	}
 	    
-	    if (haskey(currentPartition, "label") && currentPartition["label"]:"" != "")
-	    {
-		part["label"] 		= currentPartition["label"]:"";
-	    }
+	if (haskey(currentPartition, "label") && currentPartition["label"]:"" != "")
+	{
+	    part["label"] 		= currentPartition["label"]:"";
+	}
 
-	    if (haskey(currentPartition, "mountby"))
-	    {
-		part["mountby"] 	= currentPartition["mountby"]:`device;
-	    }
+	if (haskey(currentPartition, "mountby"))
+	{
+	    part["mountby"] 	= currentPartition["mountby"]:`device;
+	}
 	    
 	    
 
 	    
-	    if (mount_point == "swap" || StringFS2Symbol(p["filesystem"]:"") == `swap)
+	if (mount_point == "swap" || StringFS2Symbol(p["filesystem"]:"") == `swap)
+	{
+	    part["fsid"] =  Partitions::fsid_swap;
+	    part["mount"] = "swap";
+	}
+	else if (mount_point == "/boot")
+	{
+	    part["fsid"] =  fsid_boot;
+	    if (fsid_boot == Partitions::fsid_fat16)
 	    {
-		part["fsid"] =  Partitions::fsid_swap;
-		part["mount"] = "swap";
+		// for ia64, /boot is FAT16
+		boot_part["used_fs"]:`fat16;
 	    }
-	    else if (mount_point == "/boot")
-	    {
-		part["fsid"] =  fsid_boot;
-		if (fsid_boot == Partitions::fsid_fat16)
-		{
-                    // for ia64, /boot is FAT16
-		    boot_part["used_fs"]:`fat16;
-		}
-	    }
-	    else if (mount_point == "/")
-	    {
-		root_region=region;
-		part["used_fs"] =  StringFS2Symbol(currentPartition["filesystem"]:"reiser");
-	    }
-	    else if (lvm_group != "")
-	    {
-		Storage::SetLvmUse( true );
+	}
+	else if (mount_point == "/")
+	{
+	    root_region=region;
+	    part["used_fs"] =  StringFS2Symbol(currentPartition["filesystem"]:"reiser");
+	}
+	else if (lvm_group != "")
+	{
+	    Storage::SetLvmUse( true );
 		
-		part["used_fs"] 	=  `unknown;
-		part["fsid"]		=  Partitions::fsid_lvm;
-		part["format"] 		=  false;
-		part["lvm_group"] 	=  lvm_group;
-		part["mount"] 		=  "";
-		part["fstype"] 		=  "Linux LVM";
+	    part["used_fs"] 	=  `unknown;
+	    part["fsid"]		=  Partitions::fsid_lvm;
+	    part["format"] 		=  false;
+	    part["lvm_group"] 	=  lvm_group;
+	    part["mount"] 		=  "";
+	    part["fstype"] 		=  "Linux LVM";
 	
 	
 		
-	    }
-	    else if (raid_name != "")
-	    {
-		any nr = substring(raid_name, 7);			
+	}
+	else if (raid_name != "")
+	{
+	    any nr = substring(raid_name, 7);			
 	
-		part["used_fs"] 	= `unknown;
-		part["fsid"]		= Partitions::fsid_raid;
-		part["format"] 		= false;
-		part["raid_name"] 	= raid_name;
+	    part["used_fs"] 	= `unknown;
+	    part["fsid"]		= Partitions::fsid_raid;
+	    part["format"] 		= false;
+	    part["raid_name"] 	= raid_name;
 
-		part["mount"] 		= "";
-		part["fstype"] 		= "Linux RAID";
-		part["raid_type"]	= currentPartition["raid_type"]:"raid";
+	    part["mount"] 		= "";
+	    part["fstype"] 		= "Linux RAID";
+	    part["raid_type"]	= currentPartition["raid_type"]:"raid";
 		
-		// part["region"] 		= [0, raid_size_byte(Storage::GetTargetMap(), 
-	        //                                 part) / (1024 * 1024)];
-	    }
-	    else
-	    {
-		part["used_fs"] = StringFS2Symbol(  currentPartition["filesystem"]:"reiser");
-	    }
+	    // part["region"] 		= [0, raid_size_byte(Storage::GetTargetMap(), 
+	    //                                 part) / (1024 * 1024)];
+	}
+	else
+	{
+	    part["used_fs"] = StringFS2Symbol(  currentPartition["filesystem"]:"reiser");
+	}
 
 	    
 	    
-	    return part;
+	return part;
     }
 
 
@@ -703,102 +704,102 @@ to contain a minimal installation.");
 
 	
 	foreach (map group, AutoInstall::LVM,
-				 ``{
-				     string vg 			= group["lvm_name"]:"";				     
-				     integer pesize		= pesize_str_to_byte( lookup( group, "pesize", "4M" ));
+		 ``{
+	    string vg 			= group["lvm_name"]:"";				     
+	    integer pesize		= pesize_str_to_byte( lookup( group, "pesize", "4M" ));
 
 				     
-				     list existing_pvs  	= filter( `part, get_possible_pvs( tmap ),
-								  ``( lookup( part, "lvm_group", "") == vg ));
+	    list existing_pvs  	= filter( `part, get_possible_pvs( tmap ),
+					  ``( lookup( part, "lvm_group", "") == vg ));
 
-				     if (size(existing_pvs) > 0 )
-				     {
+	    if (size(existing_pvs) > 0 )
+	    {
 				     
-					 map new_create_vg = $[
-							       "use_module" : "lvm_ll",
-							       "type"       : "create_vg",
-							       "vgname"     : vg,
-							       "pesize"     : pesize,
-							       "devices"    : []
-					 ];
-					 modify_targets = addTargetModification( modify_targets, new_create_vg );
+		map new_create_vg = $[
+				      "use_module" : "lvm_ll",
+				      "type"       : "create_vg",
+				      "vgname"     : vg,
+				      "pesize"     : pesize,
+				      "devices"    : []
+		];
+		modify_targets = addTargetModification( modify_targets, new_create_vg );
 
 
-					 foreach(`pv, existing_pvs, ``{
-					     map new_create_pv = $[
-								   "use_module" : "lvm_ll",
-								   "type"       : "create_pv",
-								   "vgname"     : vg,
-								   "device"     : pv["device"]:""							       
-					     ];
-					     modify_targets = addTargetModification( modify_targets, new_create_pv );
-					 });
+		foreach(`pv, existing_pvs, ``{
+		    map new_create_pv = $[
+					  "use_module" : "lvm_ll",
+					  "type"       : "create_pv",
+					  "vgname"     : vg,
+					  "device"     : pv["device"]:""							       
+		    ];
+		    modify_targets = addTargetModification( modify_targets, new_create_pv );
+		});
 
-					 // LVs
+		// LVs
 				     
-					 list part = group["logical_volumes"]:[];
-					 list region 		= [0,0];
+		list part = group["logical_volumes"]:[];
+		list region 		= [0,0];
 				   
-					 map new_volume = $[
-							    "name"      : vg,
-							    "cyl_count" : 0,
-							    "cyl_size"  : pesize,
-							    "is_lvm_vg" : true,
-							    "partitions": []
-					 ];
-					 list new_partitions = maplist(map lv, part, ``{
+		map new_volume = $[
+				   "name"      : vg,
+				   "cyl_count" : 0,
+				   "cyl_size"  : pesize,
+				   "is_lvm_vg" : true,
+				   "partitions": []
+		];
+		list new_partitions = maplist(map lv, part, ``{
 
-					     integer lv_size = kmgt_str_to_byte(lv["lv_size"]:"");
-					     if (pesize == 0 )
-					     {
-						 pesize = 1;
-					     }
+		    integer lv_size = kmgt_str_to_byte(lv["lv_size"]:"");
+		    if (pesize == 0 )
+		    {
+			pesize = 1;
+		    }
 
-					     integer virtual_cyl_end   = lv_size / pesize;
-					     region = [0, virtual_cyl_end ];
+		    integer virtual_cyl_end   = lv_size / pesize;
+		    region = [0, virtual_cyl_end ];
 					 
-					     integer bytes_of_part = 0;
-					     integer cyl_size   = pesize;
-					     integer nb_cyl = select (region, 1, 0 );
+		    integer bytes_of_part = 0;
+		    integer cyl_size   = pesize;
+		    integer nb_cyl = select (region, 1, 0 );
 					 
-					     bytes_of_part =  ( nb_cyl ) * cyl_size;
+		    bytes_of_part =  ( nb_cyl ) * cyl_size;
 					
-					     map new_create_lv = $[
-								   "use_module" : "lvm_ll",
-								   "type"       : "create_lv",
-								   "name"       : lookup(lv, "lv_name", ""),
-								   "size"       : bytes_of_part,
-								   "vgname"     : vg,
-								   "stripes"    : 1,
-								   "order"	     : 3
-					     ];
-					     modify_targets = addTargetModification( modify_targets, new_create_lv );
+		    map new_create_lv = $[
+					  "use_module" : "lvm_ll",
+					  "type"       : "create_lv",
+					  "name"       : lookup(lv, "lv_name", ""),
+					  "size"       : bytes_of_part,
+					  "vgname"     : vg,
+					  "stripes"    : 1,
+					  "order"	     : 3
+		    ];
+		    modify_targets = addTargetModification( modify_targets, new_create_lv );
 					 
-					     return ($[
-						       "create"	: true,
-						       "fs_options" : $[] ,
-						       "use_module" : "lvm_ll",
-						       "fsid"   : 142,
-						       "fstype" : "LV",
-						       "nr"     : lookup(lv, "lv_name", ""),
-						       "ori_nr"	: lookup(lv, "lv_name", ""),
-						       "region" : [0, virtual_cyl_end ],
-						       "size_bytes":  bytes_of_part,
-						       "mount"  : lookup( lv, "lv_mount", ""),
-						       "used_fs": StringFS2Symbol(lookup(lv, "lv_fs","ext2")),
-						       "format" : lookup( lv, "lv_format" , true),
-						       "crypt_fs" : lookup( lv, "lv_crypt", false ),
-						       "crypt_key":"",
-						       "type"   :`lvm,
-						       "device" : "/dev/" + vg + "/" + lookup(lv, "lv_name", "")
-						     ]);
-					 });
+		    return ($[
+			      "create"	: true,
+			      "fs_options" : $[] ,
+			      "use_module" : "lvm_ll",
+			      "fsid"   : 142,
+			      "fstype" : "LV",
+			      "nr"     : lookup(lv, "lv_name", ""),
+			      "ori_nr"	: lookup(lv, "lv_name", ""),
+			      "region" : [0, virtual_cyl_end ],
+			      "size_bytes":  bytes_of_part,
+			      "mount"  : lookup( lv, "lv_mount", ""),
+			      "used_fs": StringFS2Symbol(lookup(lv, "lv_fs","ext2")),
+			      "format" : lookup( lv, "lv_format" , true),
+			      "crypt_fs" : lookup( lv, "lv_crypt", false ),
+			      "crypt_key":"",
+			      "type"   :`lvm,
+			      "device" : "/dev/" + vg + "/" + lookup(lv, "lv_name", "")
+			    ]);
+		});
 				     
-					 Storage::SetModifyTargets( modify_targets );
-					 new_volume = change(new_volume, "partitions", new_partitions);
-					 LvmVolumes = add(LvmVolumes, "/dev/" + vg, new_volume);
-				     }
-				 });
+		Storage::SetModifyTargets( modify_targets );
+		new_volume = change(new_volume, "partitions", new_partitions);
+		LvmVolumes = add(LvmVolumes, "/dev/" + vg, new_volume);
+	    }
+	});
 	
 	if (LvmVolumes!= $[])
 	{
@@ -863,7 +864,7 @@ to contain a minimal installation.");
 			   "cyl_size" : 1048576 * 2,                    // const 1MB
 			   "name" : "Linux Software RAID",
 			   "partitions" : RaidList
-			   ]
+			 ]
 	];
 	y2milestone("RaidMap: %1", RaidMap);
 	
@@ -884,10 +885,11 @@ to contain a minimal installation.");
 	``{
 	integer units = 0;
 	string psize = "";
-	if ((currentPartition["region"]:[]) == 0 )
+	if (size(currentPartition["region"]:[]) == 0 )
 	{	    
 	    psize = currentPartition["size"]:"";
 	}
+	
 	string mount_point = currentPartition["mount"]:"";
 	list autoRegion = currentPartition["region"]:[];
 	
