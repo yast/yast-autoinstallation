@@ -169,7 +169,8 @@ Make sure the control file has the correct syntax and values.
 drive %1 be initialized now?"), device);
 		boolean do_init = true;
 		if (AutoinstGeneral::Confirm) {
-		    if ( !UI::YesNoHeadlinePopup(title, msg)) {
+		    if ( !UI::YesNoHeadlinePopup(title, msg))
+		    {
 			y2warning("%1 was not initialzied", device);
 		    }
 		    else
@@ -184,9 +185,7 @@ drive %1 be initialized now?"), device);
 		    integer zero_ret = InitDevice(device);
 		    y2milestone("Initializing device: %1 --> %2", device, zero_ret);
 		}
-	    }
-	
-	    }
+	    }		    
 	});
 
 	// Re-probe Targets
