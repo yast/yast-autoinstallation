@@ -1,0 +1,61 @@
+/**
+ * File:    include/transfer/url.ycp
+ * Package: Transfer Protocols Package 
+ * Summary: Manipulate and Parse URLs
+ * Authors: Anas Nashif <nashif@suse.cz>
+ *
+ * $Id$
+ *
+ */
+{
+    /**
+     * Tokenise URL
+     * @param string URL
+     * @return map A Map with the tokens in thefollowing form:
+     * <pre>
+     *   $[
+     *	   "scheme"  : "http",
+     *     "host"    : "www.suse.com"
+     *     "path"    : /index.html",
+     *     "port"    : "80",
+     *     "user"    : "test",
+     *     "pass"    : "password",
+     *     "fragment": "fragment"
+     *    ]
+     * </pre>
+     */
+    global define map parse_url(string uri)
+	``{
+
+	map tokens = $[];
+    	list rawtokens = regexptokenize (uri, "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+
+    	
+		
+	/* no processing necessary on the scheme */
+	tokens["scheme"] = rawtokens[1]:"";
+		
+	/* the path to the resource */
+	tokens["path"] = rawtokens[4]:"";
+
+	/* the query part */
+	tokens["query"] = rawtokens[6]:"";
+
+	/* the fragment */
+	tokens["fragment"] = rawtokens[8]:"";
+
+	/* extract the username, pass, and port from the hostname */
+	/* extract username:pass@host:port from regex results */
+    	list userpass = regexptokenize (rawtokens[3]:"", "^(([^@:]+)(:([^@:]+))?@)?((\\[([^]]+)\\])|([^:@]+))(:([^:@]+))?");    	
+	tokens["user"] = userpass[1]:"";
+	tokens["pass"] = userpass[3]:"";
+	if (userpass[7]:"" == "")
+	    tokens["host"] =	userpass[6]:"";
+	else
+	    tokens["host"] = userpass[7]:"";
+	tokens["port"] = userpass[9]:"";
+	y2milestone("tokens: %1", tokens);	
+	return tokens;
+    }
+
+}
