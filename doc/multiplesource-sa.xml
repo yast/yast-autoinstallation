@@ -1,0 +1,769 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"/usr/share/xml/db41xml/docbookx.dtd"[]>
+
+  <article>
+  <articleinfo>    
+    <title>AutoYaST2: SLES Network Installation</title>
+    <author>
+      <firstname>Anas</firstname>
+      <surname>Nashif</surname>
+    </author>    
+  </articleinfo>
+  <para>
+    Creating NFS directory for UL/SLES from distribution CDs
+  </para>
+  
+  <section>
+    <title>Introduction</title>
+    <para>
+      UnitedLinux defines a core set of packages which implement the UnitedLinux runtime environment.
+      All tests, certifications, and applications are based on this set of packages
+      which should not be altered in any way. The ideal way to guarantee
+      unaltered data, is providing it on CD-ROM.
+    </para>
+    <para>
+      However, this makes including (vendor specific) extensions and bug-fixes on
+      the same media impossible. A separate media must be supplied for
+      installation.
+    </para>
+    <para>
+      The <emphasis>multiple source</emphasis> approach of YaST gives a solution as it allows
+      installation from several (package) sources. So a customer can start
+      installing from the original UnitedLinux CDs, proceed with a product CD,
+      and end with a patch CD containing the latest security patches.
+    </para>
+  </section>
+
+  <section>
+    <title>
+      The installer source
+    </title>
+    <para>
+      When starting the installation from a media (CD, DVD, NFS, ...), linuxrc looks
+      for a <filename>/boot/root</filename> file containing a complete
+      (cramfs based) root filesystem for YaST.
+    </para>
+
+    <para>
+      Usually, this file is on the boot CD, but other installation types are
+      also supported by linuxrc. The information, where the <filename>/boot/root</filename> file
+      came from, is passed to YaST and defines the installer source. 	
+    </para>
+    <para>	
+      YaST now looks at this installer source for a <filename>/yast/order</filename> file. If this
+      file exists, YaST goes into the <emphasis>multiple installation</emphasis> mode.
+    </para>
+    <para>
+      In this mode, the source description (information about the packages) is on
+      the installer source and the source data (the rpm packages itself) is
+      on separate media.
+    </para>
+    <para>
+      If the order file does not exist, YaST does not separate the source
+      description from the source data and both must reside on the same
+      media. (The latter is what happens if you boot the first UnitedLinux
+      CD.)
+    </para>
+
+    <section>
+      <title>File Structure on Installation CDs</title>
+      <para>
+	The following illustration shows the CD structure of the SLES CD.
+      </para>
+ 
+      <screen>
+.
+|-- boot
+|   `-- loader
+|-- docu
+|   `-- HOWTOs
+|-- media.1
+|-- suse
+|   |-- i586
+|   |-- noarch
+|   |-- nosrc
+|   |-- setup
+|   |   |-- descr
+|   |   `-- slide
+|   `-- src
+`-- yast
+    `-- ul
+        |-- UnitedLinux
+        `-- media.1
+
+      </screen>
+
+      <para>
+	The media and product description is splitted to a set of files,
+	separating the media preparation data from the contents (product) and
+	making it possible to combine several products on a single media.
+      </para>
+      <para>
+	At toplevel of a media, a directory <filename>/media.1/</filename> should exists.
+	If it does not exist, the presence of the correct media can not be
+	verified. This may be convenient for an on-line media which just
+	provides a set of packages.
+      </para>
+      <para>
+	In this case, no verfication takes place. The numeric extension depends
+	on the media number in case of splitted medias. The first media has .1,
+	the second .2, and so on.
+      </para>
+      <para>
+	This allows merging all medias of a splitted set into a single
+	directory. YaST always knows which media to expect and can thereby
+	directly access the correct media directory.
+      </para>
+      <section>
+	<title>Files inside boot/</title>
+	<para>
+	  the directory boot/ contains installation images and floppy images
+	  that can be used to create boot and installation floppies. The
+	  <filename>root</filename> files contains a complete
+	  (cramfs based) root filesystem for YaST. This file contains the
+	  actual installer. The <filename>root</filename> file is fetched by
+	  <command>linuxrc</command> from the installation source and is
+	  mounted in the installtion environment. <command>Linuxrc</command>
+	  starts the installer from within this file.
+	</para>
+	<para>
+	  The directory <filename>boot/loader</filename> contains the kernel
+	  and the initial ramdisk  used for installation. It also contains the
+	  isolinux files used for creating the CD.
+	</para>
+      </section>
+      <section>
+	<title>Files inside media.N/</title>
+	<para>
+	  Inside the media.N/ directory the files media and products must
+	  exist. Optionally, a file named patches may exist to denote a media
+	  with patches (e.g. for YaST online update).
+	</para>
+     
+	<itemizedlist>
+	  <listitem>
+	    <para>The /media.N/media file</para>
+	    <para>
+	      The media file contains the media identifier needed to determine
+	      correctness when using removable media.	
+	      In case of splitted media, it must be present on every media of the
+	      set.
+	    </para>
+	    <para>
+	      This should contain a key to quickly identify correctness of the inserted
+	      media. It is not shown to the user but should contain human-readable data
+	      for debugging purposes.	      
+	    </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>The products file</para>
+	    <para>
+	      The products file contains directory specifications for each product.
+	      In case of splitted media, it must be present of the first media of the set.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>The patches file</para>
+	    <para>
+	      The patches file contains a single directory specification for the root
+	      of the patches directory tree.	
+	      In case of splitted media, it must be present of the first media of the set.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>The info.txt file</para>
+	    <para>
+	      This file contains any licensing information that should be
+	      presented to the user when YaST is started. If not present, no
+	      license screen is shown. On the SLES CD, it contains the EULA.
+	    </para>
+	  </listitem>
+	</itemizedlist>
+       	
+ 
+	<para>	
+	  The identification data is stored inside the file on purpose. It could
+	  also be encoded in the file name (older SuSE media did it). But this
+	  requires a directory scan for file access and should be avoided.
+	</para>
+	<para>	By storing the vendor name in the file, the timestamp can be kept
+	  vendor specific. (It's the name of the vendor who created the media
+	  which might be different from a product vendor! It's just used as an
+	  additional key for media identification.)
+	</para>
+	<para>
+	  The media count is needed if the installation data is split up on
+	  multiple (identical) medias. The media file on the first media should
+	  contain the total count of medias.
+	</para>
+	<para>
+	  The media count is a numerical value (all characters are digits).
+	  It is an optional information on the other media.
+	</para>
+	<para>	
+	  A forth line may contain flags further describing the media. n order to
+	  distinguish the flags from the count line, the flags values start with
+	  a letter.
+	</para>
+	<para>
+	  All media of a media-set must have identical vendor and data
+	  information in the media file.
+	</para>
+
+	<example>
+	  <title>media directory</title>
+	  <screen>
+# ls -1 media.1
+info.txt
+media
+products
+	  
+# cat media.1/media
+SuSE Linux AG
+20021022191434
+1
+
+# cat media.1/products
+/ SuSE-Linux-SLES-i386 8
+ 
+	  </screen>
+	</example>
+
+      </section>    
+      <section>
+	<title>The contents files</title>
+	<para>
+	  This file resides inside the product directory as specified by the
+	  products file on the media. It contains all product-specfic data to
+	  describe and identify the contents of the product. If there was no
+	  products file, the product directory defaults to the root directory
+	  on the media.
+	  </para>
+	<para>
+	  The content file might be missing if the media does not contain a
+	  product (but just a set of packages).	  
+	</para>
+
+	<example>
+	  <title>The contents file</title>
+	  <para>
+	    <screen>
+# cat content
+PRODUCT SuSE SLES
+VERSION 8
+DISTPRODUCT SuSE-Linux-SLES-i386
+DISTVERSION 8.1-0
+BASEPRODUCT UnitedLinux
+BASEVERSION 1.0
+YOUTYPE business
+YOUPATH i386/update/SuSE-SLES/8
+YOUURL http://www.suse.de/cgi-bin/suseservers.cgi
+VENDOR SuSE Linux AG
+ARCH.i686 i686 i586 i486 i386 noarch
+ARCH.i586 i586 i486 i386 noarch
+ARCH.i486 i486 i386 noarch
+ARCH.i386 i386 noarch
+DEFAULTBASE i386
+REQUIRES distribution-release
+LINGUAS de en
+LABEL SuSE SLES Version 8
+LABEL.de SuSE SLES in der Version 8
+DESCRDIR suse/setup/descr
+DATADIR suse
+LANGUAGE en_US
+TIMEZONE America/Los_Angeles
+
+</screen>
+	  </para>
+	</example>
+      </section>
+   
+
+  </section>
+  
+  <section>
+    <title>
+      The order file
+    </title>
+    <para> 
+      The order file defines which sources are needed for installation and their priority for installation.
+      A typical example for an order file is given here:
+    </para>
+    <screen>
+# yast/order: priority of installation sources
+#
+# source-       product
+# description   path
+/yast/sles8     /sles8-i386/CD1
+/yast/ul        /unitedlinux-i386/CD1
+/               /
+    </screen>
+
+    <para> 
+      The order file is ASCII, line based, '#' at the beginning of a
+      line denote a comment line.
+    </para>    
+    <para> 
+      Each non-comment line should contain two (tab separated)
+      directory specifications. If the second one is omitted, it defaults to
+      "/".
+    </para>
+    <para> 
+      The first directory specifies the location of the description.
+      The second directory specifies the location of the product as defined here.
+      For CD/DVD bases products, this is usually "/". But for network installations,
+      or if several product are placed on a single CD, each product needs a
+      separate path.
+    </para>
+    <para>
+      You can even specify a full URL (e.g. "nfs://my-nfs-server.domain.org/product/CD1") in the second column. 
+      During installation, you can't switch the type of media. If your
+      installer source is CD, every other source must be CD based. If your
+      installer source is NFS, every other source is expected to be on the
+      same NFS server.
+    </para>
+    <para>
+      In the above example of the order file, note the last line being
+      "/". This means the last of the three installation sources is on the
+      same media as the installer.
+    </para>
+  </section>
+  <section>
+    <title>
+      The instorder file
+    </title>
+    <para>
+      As stated above, the <filename>/yast/order</filename> file lists the sources in priority
+      order. So a package from a source listed earlier in this file
+      overrides a package (of the same name) from a later source. This
+      technique is used to override the yast2-translation packages from
+      unitedlinux-i386 (where all help texts refer to UnitedLinux) with
+      yast2-translation packages from sles8-i386 (where all help texts
+      refer to SuSE Linux).
+    </para>
+    <para>
+      
+      But the <filename>/yast/order</filename> also defines the installation
+      order, which might not be wanted when the 'base' packages are on a
+      lower-priority source.
+    </para>
+    <para>
+      This is where <filename>/yast/instorder</filename> comes into play. This defines the installation
+      order by repeating the entries of the first column of <filename>/yast/order</filename> in
+      the right order.
+    </para>
+
+    
+
+    <para>
+      A typical example for an instorder file is given here:
+    </para>
+    <screen>
+# yast/instorder: order of installation sources
+#
+# install 'ul' before 'sles8'
+#
+/yast/ul
+/yast/sles8
+/
+    </screen>
+    </section>
+  </section>
+  <section>
+
+    <title>Setting it all up</title>
+
+    <para> 
+      Combining multiple sources requires that all sources comply to
+      the UnitedLinux media description standard.
+    </para>
+    <para>
+      In the source directory, copy all SLES and UL into seperate directories
+      (CDs can also be copied into one single directory, but to keep a clean
+      structure, CDs can be copied into seperate directories, i.e. using the
+      following scheme: UL/CD1, UL/CD2, UL/CD3 and SLES8.)
+    </para>    
+    <para>
+      Upon boot, Linuxrc requires the presence of the boot directory (which
+      contains the <filename>root</filename> file), the
+      <filename>media.N</filename> directory and the
+      <filename>content</filename> file. Having those files in the root of the
+      source will insure that linuxrc can start the YaST installer.
+    </para>
+    <para>Once YaST has started, it will search the root of source for
+      installation files using values from the <filename>content</filename>
+      file name. However, to detect if multiple sources are involved, YaST
+      first search for the
+      <filename>order</filename> and <filename>instorder</filename> in the
+      <filename>yast</filename> directory. The files in the  <filename>yast</filename> directory
+      will reroute YaST and direct it to search for the installation files and
+      media description in different locations than root of the source.
+    </para>
+    <para>
+      On the installer source create a <filename>yast/order</filename> as described above
+      and enter the location of the description data and
+      packages. Alternativly, you can copy the description data of all sources to separate
+      directories in the <filename>yast</filename> directory (This is the case
+      on the SLES CD which contains the description data for UL to support
+      multiple sources using CDs).
+    </para>
+    <para>
+      In the 'order' example above, the 'order' directory structure
+      looks as follows: 
+    </para>
+    <screen>
+yast/
+  instorder                     # instorder file 
+  order                         # order file
+  ul/                           # product 'ul', placing it below yast isn't really needed
+                                # but practical.
+    media.1/
+      media                     # media ID for first CD
+    content                     # content file, describing the paths
+    UnitedLinux/
+      setup/
+        descr/
+          *.sel
+          packages
+          packages.DU
+          packages.en
+          packages.de
+          ...
+          packages.pt
+  sles8/
+    media.1/
+      media
+    content
+    suse/
+      setup/
+        descr/
+          *.sel
+          packages
+          packages.DU
+          packages.en
+          packages.de
+          ...
+          packages.pt
+
+    </screen>
+    <para>
+      YaST now takes this description instead of the one from the
+      <emphasis>real</emphasis> media for the installation.      
+      So when asking for a specific media, this media must match the
+      <filename>media.1/media</filename>  file from the
+      <emphasis>order</emphasis> directory.
+      
+    </para>
+    <para>
+      All dependencies (package or selection) are fulfilled by looking at
+      all installation sources. If multiple sources provide a dependency,
+      the source listed first in the 'order' file wins. (The installation
+      order equals the installation priority currently). 
+    </para>
+ 
+  </section>
+  
+  <section>
+    <title>Example using SLES 8 and UnitedLinux 1.0 CDs</title>
+    
+    <para>
+      You should at least copy the first CD from both UnitedLinux and SLES8
+      sets, depending on what selection of software you want to install.      
+    </para>
+    <para>
+      On the NFS server, create a directory which will serve as the
+      installation source and make sure it is exported via NFS. This
+      directory will be used later to specify the installation source using
+      <command>linuxrc</command>.	  
+    </para>
+    <para>
+      The following script illustrates what directories need to be created
+      and where you should copy the data from the CDs. In this script, it
+      is assumed that you have ISO images. In most cases you will have
+      CDROMs instead. Do not use this script as provided. If you wish to
+      use it, please make sure you have changed the directory names to
+      something suitable to your environment.
+    </para>
+
+    <screen>
+#!/bin/sh
+
+instsource="/exports/sles8"
+#
+# Create CD directories
+#
+cd $instsource
+mkdir -p sles8-i386/CD1
+mkdir -p unitedlinux-i386/CD{1,2,3}
+
+#
+# Copy SLES CD
+#
+cd sles8-i386/CD1
+
+mount -oloop /iso/SLES-8-i386-CD1.iso /mnt
+cp -a /mnt/* .
+umount /mnt
+
+#
+# back to root of source
+#
+cd ../..
+
+#
+# Copy UL CDs
+#
+
+# 1
+cd unitedlinux-i386/CD1
+mount -oloop /iso/UnitedLinux-1.0-i386-CD1.iso /mnt
+cp -a /mnt/* .
+umount /mnt
+
+# 2
+cd ../CD2
+mount -oloop /iso/UnitedLinux-1.0-i386-CD2.iso /mnt
+cp -a /mnt/* .
+umount /mnt
+
+
+# 3
+cd ../CD3
+mount -oloop /iso/UnitedLinux-1.0-i386-CD3.iso /mnt
+cp -a /mnt/* .
+umount /mnt
+
+#
+# back to root of source
+#
+cd ../..
+
+#
+# Now we have to symlink some data to make this
+# a multiple source directory
+#
+
+# Then the boot directory with the installation image
+# 
+cp -a  sles8-i386/CD1/boot .
+
+
+# The content file and the media directory
+#
+cp -a  sles8-i386/CD1/content .
+cp -a  sles8-i386/CD1/media.1 .
+
+
+# We are almost done..
+# Now we'll adapt the order files.
+# Fields of the order files are TAB delimited
+
+mkdir -p yast
+
+printf "/sles8-i386/CD1\t/sles8-i386/CD1" >  yast/order
+printf "/unitedlinux-i386/CD1\t/unitedlinux-i386/CD1" >> yast/order
+
+printf "/unitedlinux-i386/CD1\t/unitedlinux-i386/CD1"  > yast/instorder
+printf "/sles8-i386/CD1\t/sles8-i386/CD1" >> yast/instorder
+
+#
+# End
+#  
+
+    </screen>        
+    <para>After you have gone through all steps, you will have a structure
+      similar to the one shown below.</para>
+    <screen>
+.
+|-- sles8-i386
+|   |-- boot
+|   |-- docu
+|   |-- media.1
+|   |-- suse
+|   `-- yast
+|-- unitedlinux-i386
+|   |-- CD1
+|   |-- CD2
+|   `-- CD3
+|-- boot -> sles8-i386/boot
+|-- media.1 -> sles8-i386/media.1
+`-- yast
+
+</screen>
+    <para>And the root of the source will have the following content:</para>
+<screen>
+
+# ls -1
+
+sles8-i386
+unitedlinux-i386
+boot
+content
+driverupdate
+media.1
+yast
+
+</screen>
+  </section>
+
+
+  <section>
+    <title>Network Installation with Service Packs</title>
+    <section>
+      <title>Installation using SP Kernel/Driverupdate</title>            
+      <para>
+	Other than containing  updated packages and fixed, service packs contain
+	new boot kernels and  installation image fixes which should be used during installation instead
+	of the original kernels. The installation kernel and the new installation
+	files are all contained in the images used to create the CD and are
+	located in the directory <filename>boot/loader</filename>.
+      </para>
+      <para>
+	If initialy  only the original packages from the released products are to
+	be installed, the steps described above can used with the following
+	changes:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    The target system has to be booted using the kernels from the
+	    service pack CDs, i.e. by booting using the SP CD directly or by
+	    using a network bootable image built using the files
+	    from <filename>boot/loader</filename> on the SP CD.</para>
+	</listitem>
+	<listitem>
+	  <para>
+	    On the source side, the file <filename>driverupdate</filename> must be
+	    provided in the root of the source. This file is needed by
+	    <command>linuxrc</command> to update the installation environment
+	    with the latest patches and fixes.
+	  </para>	
+	</listitem>     
+      </itemizedlist>
+      <para>
+	After installation is done, you can mount the first SP CD and execute
+	the update scripts available there to update the packages on the
+	system.
+      </para>
+    </section>
+    <section>
+      <title>Service Pack full network installation</title>
+      <note>
+	<para>
+	  Although this feature has been reported to be working by many, it
+	  is not officially supported and some issues might arise.
+	</para>
+	<para>
+	  Using this mothod without paying attention to details, wrong
+	  packages might get installed which  in all cases will not cause
+	  any harm, but the final installed system will have texts and instructions
+	  pointing to the wrong product.
+	</para>
+      </note>
+
+      
+      <para>Service Pack 3 contains packages from both UL and SLES, and hence
+	it has to be treated in a special way. To install SP3 packages during
+	initial setup, all SP3 CDs have to be copied into a directory in the
+	installation source. For example, you can create a directory named <emphasis>service-pack-3</emphasis>
+	with two subdirectories for both SP3 CDs. After the CDs have been
+	copied, the following structure should be available in the installation source:
+      </para>
+      <screen>
+.
+|-- sles8-i386
+|   |-- boot
+|   |-- docu
+|   |-- media.1
+|   |-- suse
+|   `-- yast
+|-- service-pack-3
+|   |-- CD1
+|   |-- CD2
+|-- unitedlinux-i386
+|   |-- CD1
+|   |-- CD2
+|   `-- CD3
+|-- boot -> sles8-i386/boot
+|-- media.1 -> sles8-i386/media.1
+`-- yast
+
+</screen>
+      <para>
+	To enable the service pack during installation, the
+	<filename>order</filename> and <filename>instorder</filename> files in
+	the the <filename>yast</filename> directory have to be changed.
+      </para>
+      <para>
+	The file <filename>instorder</filename> should additionally have a
+	pointer to the location of SP3, in this case:
+      </para>
+      <screen>
+/unitedlinux-i386/CD1    /unitedlinux-i386/CD1
+/sles8-i386/CD1   /sles8-i386/CD1
+/service-pack-3/CD1      /service-pack-3/CD1
+      </screen>
+      <para>
+	The file <filename>order</filename> will determine the priority for
+	the packages to be installed. The service pack should have the heighest
+	priority as it holds all updated packages. It also should appear before
+	the SLES source because it holds updated SLES packages.
+      </para>
+      <screen>
+/service-pack-3/CD1      /service-pack-3/CD1
+/sles8-i386/CD1   /sles8-i386/CD1
+/unitedlinux-i386/CD1    /unitedlinux-i386/CD1
+      </screen>
+    
+    </section>
+
+    <section>
+      <title>SP3 Autoinstallation directly from SP CD image</title>
+      <para>
+	Another alternative to adding SP3 as an additional source exisit. This
+	requires executing a script at the end of the installation which mounts
+	a remote file system containing the image of the SP3 CD and calling the
+	update scripts available on the SP CD or calling any other script to
+	update the packages.
+      </para>
+      <para>Such a script can be called in the post-install phase, and can
+	consist of the following steps:</para>
+      <itemizedlist>
+	<listitem>
+	  <para>Mount the remote file system</para>
+	</listitem>
+	<listitem>
+	  <para>Call one of the scripts available on the SP CD,
+	    i.e. <filename>install_update_rpms.sh</filename>
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>Schedule the system for reboot after the installation and
+	    update of the packages is done, i.e. with <command>at</command>.</para>
+	</listitem>
+      </itemizedlist>
+    </section>
+    <section>
+      <title>Known Issues</title>
+      <section>
+	<title>Product for Online Update</title>
+	<para>
+	  When installing using this method, the online update, YOU, will fail
+	  to report the right product. YOU reads the product data from the
+	  directory <filename>/var/adm/YaST/ProdDB</filename> and takes the
+	  last product description file available in the directory if multiple
+	  sources were used to install the system.	  
+	</para>
+	<para>
+	  If the system is being autoinstalled, the order of the product files
+	  can be changed using  a post-install script, otherwise they have to
+	  be changed manually.
+	</para>
+      </section>
+    </section>
+  </section>
+</article>
+
+
