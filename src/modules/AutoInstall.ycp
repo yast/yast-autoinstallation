@@ -171,7 +171,7 @@
 	Report::Import(Profile::Flat["report"]:$[]);
 	X11 = Profile::Flat["x11"]:$[];
 
-	if ( (size(X11) == 0 || !X11["configure_x11"]:false ) && Mode::cont)
+	if ( (size(X11) == 0 || !X11["configure_x11"]:false ) && Mode::cont && !Y2ModuleConfig::x11_installed)
 	{
 	    Mode::x11_setup_needed = false;
 	}

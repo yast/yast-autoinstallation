@@ -16,42 +16,16 @@
     import "AutoInstall";
     import "AutoinstScripts";
     import "Product";
-    import "Progress";
+    import "Wizard";
     import "Call";
     import "Y2ModuleConfig";
 
 
-    // Help text for last dialog of base installation
-    string help_text = _("<p>
-Please wait while the system is being configured.
-</p>");
-
-    list progress_stages =
-	[
-	 _("Configure System"),
-	 _("Execute post-install user scripts")
-	];
+	integer current_step    = 0;    // Required by logStep()
+	string log_destination = ">>/var/log/YaST2/y2log.autoyast";
 
 
-    list progress_descriptions =
-	[
-	 _("Configuring System..."),
-	 _("Executing post-install user scripts...")
-	];
 
-
-    Progress::New(
-		  _("Configuring System according to auto-install settings"),
-		  "",     // progress_title
-		  size( progress_stages ),	// progress bar length
-		  progress_stages,
-		  progress_descriptions,
-		  help_text );
-
-
-    SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
-
-    Progress::NextStage();
     string resource = "";
     string module_auto = "";
 
@@ -75,9 +49,53 @@ Please wait while the system is being configured.
 	}
     }
 
+    /**
+     * Display a step in the LogView widget and increment the progress bar.
+     * Uses global variable 'current_step'.
+     *
+     * @param step_descr description of the step.
+     */
+    define logStep( string step_descr ) ``{
+    current_step = current_step + 1;
+    UI::ChangeWidget( `id(`progress), `Value, current_step );
+    UI::ChangeWidget( `id(`log), `LastLine, step_descr + "\n" );
+    };
+
+
+
+    // Help text for last dialog of base installation
+    string help_text = _("<p>
+Please wait while the system is being configured.
+</p>");
+
+
+	integer max_steps = size(Y2ModuleConfig::ModuleMap) + 1;
+    term contents = `VBox(
+              `LogView(`id(`log), "", 10, 0 ),
+
+              // Progress bar that displays overall progress in this dialog
+              `ProgressBar(`id(`progress), _("Progress"), max_steps, 0 )
+              );
+    boolean back_ok = false;
+    boolean next_ok = false;
+    if (size (WFM::Args()) > 1)
+    {
+    back_ok = WFM::Args(0);
+    next_ok = WFM::Args(1);
+    }
+    Wizard::SetContents(
+              // Dialog title for SuSEconfig dialog
+              _("Configuring System according to auto-install settings"),
+              contents, help_text, back_ok, next_ok);
+    Wizard::DisableAbortButton();
+
+
 
     y2debug("Module map: %1", Y2ModuleConfig::ModuleMap);
     y2debug("Flat profile: %1", Profile::Flat);
+
+
+
     foreach(`p,`d, Y2ModuleConfig::ModuleMap,
 	    ``{
 
@@ -106,6 +124,7 @@ Please wait while the system is being configured.
 		string tomerge = d["AutoinstMerge"]:"";
 		string tomergetypes = d["AutoinstMergeTypes"]:"";
 		list MergeTypes = splitstring(tomergetypes, ",");
+
 		if (  size(tomerge) > 0 )
 		{
 		    integer i = 0;
@@ -118,30 +137,50 @@ Please wait while the system is being configured.
 			i = i + 1;
 		    });
 		    y2milestone("Calling auto client with: %1", result);
+			if (size(result) > 0 )
+		       logStep( sformat (_("Configuring %1"), p));
+			else
+		       logStep( sformat (_("Not configuring %1"), p));
+
 		    Call::Function(module_auto, ["Import", result ]);
 		    Call::Function(module_auto, ["Write", result ]);
 		}
 		else if (d["AutoinstDataType"]:"map" == "map")
 		{
 		    y2milestone("Calling auto client with: %1",  Profile::Flat[resource]:$[]);
+			if (size(Profile::Flat[resource]:$[]) > 0 )
+		       logStep( sformat (_("Configuring %1"), p));
+			else
+		       logStep( sformat (_("Not configuring %1"), p));
 		    Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
 		    Call::Function(module_auto, ["Write", Profile::Flat[resource]:$[]  ]);
 		}
 		else
 		{
+			if (size(Profile::Flat[resource]:[]) > 0 )
+		       logStep( sformat (_("Configuring %1"), p));
+			else
+		       logStep( sformat (_("Not configuring %1"), p));
+
 		    y2milestone("Calling auto client with: %1",  Profile::Flat[resource]:[]);
 		    Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
 		    Call::Function(module_auto, ["Write",  Profile::Flat[resource]:[] ]);
 		}
 	    }
 	}
+	else {
+		logStep( sformat (_("Skipping %1"), p));
+	}
     });
 
-    Progress::NextStage();
+    logStep( _("Executing Post-Scripts"));
     AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
     AutoinstScripts::Write("post-scripts");
 
-    Progress::Finish();
+	// Just in case, remove this file to avoid reconfiguring...
+    SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
 
+	logStep( _("Finishing Configuration") );
+	sleep(100);
     return `next;
 }

@@ -25,6 +25,9 @@
     global  list MenuTreeData =[];
 
 
+	global boolean x11_installed = false;
+
+
     /**
      * Constructor
      */
@@ -81,6 +84,9 @@
 		}
 		else if (type == "Y2Module")
 		{
+			if (name == "x11")
+				x11_installed = true;
+
 		    if (values["Autoinst"]:"" == "configure" || values["Autoinst"]:"" == "all")
 		    {
 			string module_auto = "";
