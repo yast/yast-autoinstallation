@@ -4,6 +4,8 @@
 
 module_DATA =		\
 	AutoInstall.ycp 	\
+	AutoInstallRules.ycp 	\
+	ProfileLocation.ycp 	\
 	Profile.ycp			\
 	ISO.ycp			\
 	AI*.ycp	

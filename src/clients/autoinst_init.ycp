@@ -15,6 +15,7 @@
 
     import "Installation";
     import "AutoInstall";
+    import "ProfileLocation";
     import "Progress";
     import "Report";
     import "Language";
@@ -29,7 +30,7 @@
 
 
     string help_text = UI(_("<p>
-Please wait while the system is prepared for autoinstallation.</p>
+Please wait while the system is being prepared for autoinstallation.</p>
 "));
     list progress_stages =
 	[
@@ -52,22 +53,19 @@ Please wait while the system is prepared for autoinstallation.</p>
 		  help_text );
 
     Progress::NextStage();
-    Progress::Title(ProtocolMessage(AutoInstall::ProfileLocation));
+    Progress::Title(ProfileLocation::message);
 
     boolean ret = false;
     while (true)
     {
-	map locationParams = AutoInstall::ProfileLocation;
-	string protocol =  locationParams["scheme"]:"default";
 
-	y2milestone("protocol: %1", protocol);
 	string profile_location =  AutoInstall::xml_tmpfile;
 
-	if (protocol == "tftp")  // TFTP
+	if (ProfileLocation::scheme == "tftp")  // TFTP
 	{
-	    ret = UseTFTP(locationParams, profile_location);
+	    ret = ProfileLocation::TFTP( profile_location);
 	}
-	else if (protocol == "file" )  // FILE or CDROM
+	else if (ProfileLocation::scheme == "file" )  // FILE or CDROM
 	{
 	    string file_path = sformat("%1/%2", Installation::sourcedir, locationParams["path"]:"");
 	    if (SCR::Read(.target.size, file_path)>0)
@@ -92,23 +90,23 @@ Please wait while the system is prepared for autoinstallation.</p>
 		ret = false;
 	    }
 	}
-	else if (protocol == "nfs")  // NFS
+	else if (ProfileLocation::scheme == "nfs")  // NFS
 	{
-	    ret = UseNFS(locationParams, profile_location);
+	    ret = ProfileLocation::NFS( profile_location);
 	}
-	else if (protocol == "http")  // HTTP
+	else if (ProfileLocation::scheme == "http")  // HTTP
 	{
-	    ret = UseHTTP(locationParams, profile_location);
+	    ret = ProfileLocation::HTTP( profile_location);
 	}
-	else if (protocol == "floppy") // FLOPPY
+	else if (ProfileLocation::scheme == "floppy") // FLOPPY
 	{
-	    ret = UseFLOPPY(locationParams, profile_location);
+	    ret = ProfileLocation::FLOPPY( profile_location);
 	}
-	else if (protocol == "device") // Device
+	else if (ProfileLocation::scheme == "device") // Device
 	{
-	    ret = fetchFromDevice (locationParams, profile_location);
+	    ret = ProfileLocation::DEVICE ( profile_location);
 	}
-	else if (protocol == "default") // DEFAULT
+	else if (ProfileLocation::scheme == "default") // DEFAULT
 	{
 	    if (SCR::Read(.target.size, "/autoinst.xml") >0)
 	    {
@@ -141,7 +139,7 @@ Please wait while the system is prepared for autoinstallation.</p>
 	}
 	else
 	{
-	    if (ProfileSourceDlg(AutoInstall::ProfileLocation) == `abort)
+	    if (ProfileSourceDlg() == `abort)
 		return `abort;
 	    else
 		continue;

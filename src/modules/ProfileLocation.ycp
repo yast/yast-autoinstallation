@@ -1,0 +1,523 @@
+/**
+ *
+ */
+{
+    module "ProfileLocation";
+    textdomain "autoinst";
+
+
+    import "AutoInstall";
+    import "AutoInstallRules";
+    import "StorageDevices";
+    import "Mode";
+    import "TFTP";
+    import "HTTP";
+
+    
+    global string message = "";
+   
+
+    // Data from command line
+    map urltok = $[];
+    
+    global string scheme = "";
+    global string filepath = "";
+    global string host = "";
+
+    string ip = "";
+    string mac = "";
+    /**
+     * Constructor
+     */
+    global define void ProfileLocation () ``{
+	// Just to be sure
+	if (Mode::initial)
+	{
+	    ParseCmdLine();
+
+	    scheme = urltok["scheme"]:default;
+	    host = urltok["host"]:"";
+	    filepath = urltok["filepath"]:"";
+
+	
+	    ip = AutoInstallRules::hostaddress;
+	    mac = AutoInstallRules::mac;
+	    ProtocolMessage();
+	}
+    }
+
+
+    /**
+     * Return location of profile from command line.
+     * @return map with protocol, server, path
+     * @example autoyast=http://www.server.com/profiles/
+     */
+    global define boolean ParseCmdLine ()
+	``{
+	include "transfer/url.ycp";
+	map result = $[];
+	string cmdLine = "";
+	any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
+
+	if (autoinstall != nil && is ( autoinstall , string ) )
+	{
+	    cmdLine = autoinstall;
+	    if (cmdLine == "default")
+	    {
+		result["scheme"]= "default";
+		urltok = result;
+		return true;
+	    }
+	    else
+	    {
+		result = parse_url (cmdLine);
+	    }
+	}
+
+
+	if (result["scheme"]:"" == "")
+	{
+	    // Autoinstall mode was not activated from command line.
+	    // There must be a floppy with an 'autoinst.xml' in order
+	    // to be able to reach this point, so we set floppy with
+	    // autoinst.xml as the control file.
+
+	    result = add(result, "scheme", "floppy");
+	    result = add(result, "path","/autoinst.xml");
+	}
+	urltok = result;
+	return true;;
+    }
+
+
+    
+    /**
+     * ProtocolMessag()
+     * @return message descriping location
+     */
+
+    global define void ProtocolMessage () ``{
+	string retrieving = _("Retrieving control file from");
+			
+
+	if (scheme == "floppy")
+	{
+	    message =  _("Retrieving control file from floppy.");
+	}
+	else if (scheme == "tftp")
+	{
+	    message =  sformat ( _("Retrieving control file from TFTP server: %1."),  host );
+	}
+	else if (scheme == "nfs")
+	{
+	    message =  sformat ( _("Retrieving control file from NFS server: %1."),  lookup(cmdLine, "host", "unknown") );
+	}
+	else if (scheme == "http")
+	{
+	    message =  sformat ( _("Retrieving control file from HTTP server: %1."),  lookup(cmdLine, "host", "unknown") );
+	}
+	else if (scheme == "file")
+	{
+	    message =  sformat ( _("Copying control file from file: %1."),  filepath);
+	}
+	else if (scheme == "device")
+	{
+	    message =  sformat ( _("Copying control file from device: /dev/%1."),  filepath );
+	}
+	else if (scheme == "default")
+	{
+	    message =   _("Copying control file from default file.");
+	}
+	else
+	{
+	    message =   _("Source unknown.");
+	}		
+    }
+      /**
+     * Retrieve the profile using TFTP
+     * @param localfile Location where the retrieved file should be copied
+     * @return true for success
+     * @example UseTFTP ( "/tmp/profile.xml")
+     */
+
+    global define boolean TFTP( string localfile)
+	``{
+
+	boolean ok = false;
+	string remote = "";
+	if (substring(filepath, size(filepath) -1) == "/")
+	{	       
+	    string tmp_hex_ip = ip2hex(ip);
+	    y2milestone("Trying to load: %1%2", filepath, tmp_hex_ip );
+	    remote = sformat("%1/%2",  filepath , tmp_hex_ip);
+
+	    if (TFTP::Get(host, remote, localfile))
+	    {
+		y2milestone("tftp success");
+		ok = true;
+	    }
+	    else
+	    {
+		while (size(tmp_hex_ip) != 1)
+		{
+		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size(tmp_hex_ip)-1);
+		    y2milestone("Trying to load: %1%2", filepath, tmp_hex_ip );
+
+		    remote = sformat("%1/%2",  filepath , tmp_hex_ip);
+		    if (TFTP::Get(host, remote, localfile ))
+		    {
+			y2milestone("tftp success");
+			ok = true;
+			break;
+		    }
+		}
+		if (!ok)
+		{
+		    
+		    y2warning("Trying to load: %1/%2", filepath, mac);
+
+		    tftpmap = change(tftpmap, "serverstr", host + ":" + filepath + mac);
+		    remote = sformat("%1/%2",  filepath, mac);
+		    if (!TFTP::Get(host, remote, localfile))
+		    {
+			y2error("Control file can't be found");
+		    }
+		    else
+		    {
+			y2milestone("tftp success");
+			ok = true;
+		    }
+		}
+		if (!ok)
+		{
+		    y2warning("Trying to load: %1default", filepath);
+
+		    tftpmap = change(tftpmap, "serverstr", host + ":" + filepath + "default");
+		    remote = sformat("%1/default",  filepath);
+		    if (!TFTP::Get(host, remote, localfile))
+		    {
+			y2error("Control file can't be found");
+		    }
+		    else
+		    {
+			y2milestone("tftp success");
+			ok = true;
+		    }
+		}
+	    }
+	}
+	else
+	{
+	    if (TFTP::Get(host,  filepath, localfile ))
+	    {
+		ok = true;
+	    }
+	    else
+	    {
+		y2error("Control file can't be found");
+	    }
+	}
+	return(ok);
+    }
+
+    /**
+     * Retrieve the profile using NFS
+     * @param localfile Location where the retrieved file should be copied
+     * @return true for success
+     * @example UseNFS ( "/tmp/profile.xml")
+     */
+
+    global define boolean NFS( string localfile)
+	``{
+
+	boolean ok = false;
+	list pathComp = splitstring(filepath, "/");
+
+	boolean is_directory = false;
+	string FileName = "";
+	string mount_dir = "";
+
+	if (select(pathComp, size(pathComp) -1, "none") == "")
+	{
+	    is_directory = true;
+	    mount_dir = filepath;
+	}
+	else
+	{
+	    FileName = select(pathComp, size(pathComp) -1,  "none");
+	    pathComp = remove(pathComp, size(pathComp) -1);
+	    mount_dir = mergestring(pathComp, "/");
+	}
+
+	y2milestone("filename: %1", FileName);
+	y2milestone("dir to mount: %1", mount_dir);
+
+
+	integer ret_from_shell =  SCR::Execute(.target.bash, "/bin/mount " + host + ":" + mount_dir +" /mnt -t nfs");
+	if (ret_from_shell != 0 )
+	{
+	    y2warning("Mount failed");
+	    return (ok);
+	}
+
+	if (is_directory)
+	{
+	    string tmp_hex_ip = ip2hex(ip);
+	    if (size(tmp_hex_ip)==0)
+	    {
+		return false;
+	    }
+	    y2warning("Trying to load: %1%2", filepath, tmp_hex_ip );
+	    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + tmp_hex_ip + " " + localfile) == 0)
+	    {
+		y2milestone("copy from nfs success");
+		ok = true;
+	    }
+	    else
+	    {
+		while (size(tmp_hex_ip) != 1)
+		{
+		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size( tmp_hex_ip) - 1 );
+		    y2warning("Trying to load: %1%2", filepath, tmp_hex_ip );
+		    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + tmp_hex_ip + " " + localfile) == 0)
+		    {
+			y2milestone("Autoinstall: nfs success");
+			ok = true;
+			break;
+		    }
+		}
+		if (!ok)
+		{		   
+		    y2warning("Trying to load: %1/%2", filepath, mac);
+		    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + mac + " " + localfile) == 0)
+		    {
+			y2milestone("Autoinstall: nfs success");
+			ok = true;
+
+		    }
+		    else
+		    {
+			y2error("Control file can't be found");
+		    }
+		}
+		if (!ok)
+		{
+		    y2warning("Trying to load: %1default", filepath);
+		    if (SCR::Execute (.target.bash, "/bin/cp /mnt/default " + localfile) == 0)
+		    {
+			y2milestone("Autoinstall: nfs success");
+			ok = true;
+
+		    }
+		    else
+		    {
+			y2error("Control file can't be found");
+		    }
+		}
+	    }
+
+	}
+	else
+	{
+	    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + FileName+ " " + localfile) == 0)
+	    {
+		ok = true;
+	    }
+	    else
+	    {
+		y2error("Control file can't be found");
+
+	    }
+	}
+
+	WFM::Execute(.local.bash, "/bin/umount /mnt");
+	return(ok);
+    }
+
+
+    /**
+     * Retrieve the profile from a floppy disk
+     * @param parameters Map with value of the autoyast keyword (command line)
+     * @param localfile Location where the retrieved file should be copied
+     * @return true for success
+     * @example UseFLOPPY ($[<cmdline>], "/tmp/profile.xml")
+     */
+
+    global define boolean FLOPPY( string localfile)
+	``{
+	boolean ok = false;
+	if (StorageDevices::FloppyReady())
+	{
+	    SCR::Execute(.target.mount, [StorageDevices::FloppyDevice, "/media/floppy"], "-t auto");
+
+	    if (SCR::Execute (.target.bash, "/bin/cp /media/floppy/" + filepath + " " + localfile) != 0)
+	    {
+		y2error("Control file can't be found");
+	    }
+	    else
+	    {
+		ok = true;
+	    }
+	    SCR::Execute(.target.umount, "/media/floppy");
+	}
+	return(ok);
+    }
+
+
+
+    /**
+     * Retrieve the profile from a www server
+     * @param localfile Location where the retrieved file should be copied
+     * @return true for success
+     * @example UseHTTP ( "/tmp/profile.xml")
+     */
+
+    global define boolean HTTP( string localfile)
+	``{
+
+	boolean ok = false;
+	y2milestone("Path to remote control file: %1", filepath);
+
+	boolean is_directory = false;
+	string FileName = basename(filepath);
+	string http_dir = "";
+
+	if (FileName == "")
+	{
+	    is_directory = true;
+	    http_dir = filepath;
+	}
+	else
+	{
+	    http_dir = filepath;
+	}
+
+	y2milestone("filename: %1", FileName);
+	y2milestone("http dir: %1", http_dir);
+
+	map res = $[];
+	if (is_directory)
+	{
+	    string tmp_hex_ip = ip2hex(ip);
+	    if (size(tmp_hex_ip)==0)
+	    {
+		return false;
+	    }
+	    y2milestone("Trying to load: %1%2", filepath, tmp_hex_ip );
+	    string full_url = sformat("http://%1/%2/%3", host,  http_dir, tmp_hex_ip );
+
+	    res = HTTP::Get(full_url, localfile);
+	    if (res["code"]:0 == 200)
+	    {
+		y2milestone("copy from http success");
+		ok = true;
+	    }
+	    else
+	    {
+		while (size(tmp_hex_ip) != 1)
+		{
+		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size(tmp_hex_ip)-1);
+		    y2warning("Trying to load: %1%2", filepath, tmp_hex_ip );
+
+		    string full_url = sformat("http://%1%2/%3", host ,  http_dir, tmp_hex_ip );
+		    res = HTTP::Get(full_url, localfile);
+		    if (res["code"]:0 == 200)
+		    {
+			y2milestone("Autoinstall: HTTP success");
+			ok = true;
+			break;
+		    }
+		}
+
+		if (!ok)
+		{
+		  
+		    y2warning("Trying to load: %1%2", filepath, mac);
+		    string full_url = sformat("http://%1%2/%3", host ,  http_dir , mac);
+		    res = HTTP::Get(full_url, localfile);
+		    if (res["code"]:0 == 200)
+		    {
+			y2milestone("Autoinstall: HTTP success");
+			ok = true;
+		    }
+		    else
+		    {
+			y2error("Control file can't be found");
+		    }
+		}
+		if (!ok)
+		{
+		    y2warning("Trying to load: %1default", filepath);
+		    string full_url = sformat("http://%1%2/default", host ,  http_dir );
+		    res = HTTP::Get(full_url, localfile);
+		    if (res["code"]:0 == 200)
+		    {
+			y2milestone("Autoinstall: HTTP success");
+			ok = true;
+		    }
+		    else
+		    {
+			y2error("Control file can't be found");
+		    }
+		}
+	    }
+
+	}
+	else
+	{
+	    string full_url = sformat("http://%1%2", host ,  http_dir );
+	    res = HTTP::Get(full_url, localfile);
+	    
+	    if (res["code"]:0 == 200)
+	    {
+		ok = true;
+	    }
+	    else
+	    {
+		y2error("Control file can't be found");
+	    }
+	}
+	return(ok);
+    }
+
+
+    /**
+     * Retrieve the profile from a harddisk/any device
+     * @param localfile Location where the retrieved file should be copied
+     * @return true for success
+     * @example fetchFromDevice ( "/tmp/profile.xml")
+     */
+
+    global define boolean DEVICE (string localfile)
+	``{
+	boolean ok = false;
+
+
+
+	if ( host != "" && filepath != "")
+	{
+	    SCR::Execute(.target.mount, [sformat("/dev/%1", host) , "/mnt"], "-t auto");
+
+	    if (SCR::Execute (.target.bash, "/bin/cp /mnt" +  filepath + " " + localfile) != 0)
+	    {
+		y2error("Control file can't be found");
+	    }
+	    else
+	    {
+		ok = true;
+	    }
+	    SCR::Execute(.target.umount, "/mnt");
+	}
+
+	return(ok);
+    }
+
+
+    define string basename (string filePath) ``{
+	list pathComponents = splitstring(filePath, "/");
+	return (select(pathComponents, size(pathComponents) -1, "default"));
+    }
+
+  
+
+}

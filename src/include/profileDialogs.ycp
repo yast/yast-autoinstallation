@@ -13,11 +13,12 @@
 
     // Shows a dialog when 'control file' can't be found
 
-    global define ProfileSourceDlg (map parameters)
+    global define ProfileSourceDlg ()
 	``{
+	import "ProfileLocation";
 	list supported_protocol = ["HTTP","NFS", "TFTP", "Floppy", "File", "Device"];
 	list protocols = maplist(`p, supported_protocol, ``{
-	    if (tolower(p) == parameters["scheme"]:"") {
+	    if (tolower(p) ==  ProfileLocation::scheme) {
 		return (`item(`id(tolower(p)), p , true));
 	    }
 	    else {
@@ -41,8 +42,8 @@ on the command line.</p>"));
 					    `VSpacing(1),
 					    `VStretch(),
 					    `Left(`ComboBox(`id(`protocol), `opt(`notify), _("&Protocol"), protocols )),
-					    `Left(`TextEntry(`id(`server), _("&Server or Device:"), parameters["host"]:"")),
-					    `Left(`TextEntry(`id(`Path), _("Pa&th:"), parameters["path"]:"")),
+					    `Left(`TextEntry(`id(`server), _("&Server or Device:"), ProfileLocation::host)),
+					    `Left(`TextEntry(`id(`Path), _("Pa&th:"), ProfileLocation::filepath)),
 					    `VSpacing(1),
 					    `VStretch(),
 					    `HBox(
@@ -57,7 +58,7 @@ on the command line.</p>"));
 	string server = "";
 	string Path = "";
 
-	if (parameters["scheme"]:"" == "file" || parameters["scheme"]:"" == "floppy" || parameters["scheme"]:"" == "cdrom")
+	if ( ProfileLocation::scheme == "file" || ProfileLocation::scheme  == "floppy" || ProfileLocation::scheme == "cdrom")
 	{
 	    UI::ChangeWidget(`id(`server), `Enabled, false);
 	    UI::SetFocus(`id(`Path));
@@ -90,11 +91,11 @@ on the command line.</p>"));
 		     )
 	    {
 		UI::ChangeWidget(`id(`server), `Enabled, true);
-		parameters["scheme"] = tolower(protocol);
+		ProfileLocation::scheme = tolower(protocol);
 	    }
 	    else if (protocol == "file" || protocol == "floppy")
 	    {
-		parameters["scheme"] = tolower(protocol);
+		ProfileLocation::scheme = tolower(protocol);
 		UI::ChangeWidget(`id(`server), `Enabled, false);
 	    }
 
@@ -103,11 +104,9 @@ on the command line.</p>"));
 	    Path = UI::QueryWidget(`id(`Path), `Value );
 	} until (ret == `retry  || ret == `abort);
 
-	parameters["host"]	= server;
-	parameters["path"] 	= Path;
-	AutoInstall::ProfileLocation = parameters;
+	ProfileLocation::host		= server;
+	ProfileLocation::filepath 	= Path;
 
-	y2milestone("location : %1", AutoInstall::ProfileLocation);
 	UI::CloseDialog();
 	return `next;
     }
