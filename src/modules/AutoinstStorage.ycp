@@ -22,10 +22,7 @@
     import "Bootloader";
     import "BootCommon";
 
-    include "partitioning/custom_part_dialogs.ycp";	
-    // include "partitioning/partition_defines.ycp";
-    include "autoinstall/partition_dialogs.ycp";
-
+ 
    
 
     // Partition plan as parsed from control file
@@ -74,7 +71,10 @@
 
     string target_is = "";
     list root_region = [];
-    
+
+    include "partitioning/custom_part_dialogs.ycp";	
+    // include "partitioning/partition_defines.ycp";
+    include "autoinstall/partition_dialogs.ycp";
     include "autoinstall/partitioning_routines.ycp";
     include "autoinstall/partitioning.ycp";
     
@@ -360,7 +360,7 @@ Make sure the control file has the correct syntax and values.
 			       )
 		       );
 	});
-	list output = flatten(ret);
+	list output = (list)flatten(ret);
 	return( output );
     }
 
