@@ -17,7 +17,9 @@
 
     include "ui/common_messages.ycp";
     include "autoinstall/general_dialogs.ycp";
-
+    include "ui/common_popups.ycp";    
+    include "wizard/sequencer.ycp";
+    
     any ret = nil;
     string func = "";
     map param = $[];
@@ -45,9 +47,7 @@
 	ret = $[];
     }
     else if (func == "Change") {
-	Wizard::CreateDialog();
-	ret = GeneralOptions();
-	Wizard::CloseDialog();
+	ret = generalSequence();
 	return ret;
     }
     else if (func == "Result") {

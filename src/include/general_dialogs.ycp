@@ -1,5 +1,5 @@
 /**
- * File:	include/autoinstall/general_settings.ycp
+ * File:	include/autoinstall/general_dialogs.ycp
  * Package:	Auto-installation
  * Summary:	General Settings
  * Author:	Anas Nashif <nashif@suse.de>
@@ -7,6 +7,214 @@
  * $Id$
  */
 {
+
+
+
+
+    global define symbol generalSequence () ``{
+
+
+	map dialogs = $[
+			"language"	: ``(LanguageDialog()),
+			"keyboard"	: ``(KeyboardDialog()),
+			"timezone"	: ``(TimezoneDialog()),
+			"mouse"		: ``(MouseDialog())
+	];
+
+	
+	map sequence = $[
+			 "ws_start" 	: "language",
+			 "language"	: $[
+					    `next	: "keyboard",
+					    `abort	: `abort
+			 ],
+			 "keyboard"	: $[
+					    `next	: "timezone",
+					    `abort	: `abort
+			 ],
+			 "timezone" 	: $[
+					    `next	: "mouse",
+					    `abort	: `abort
+			 ],
+			 "mouse" 	: $[
+					    `next	: `next,
+					    `abort	: `abort
+			  ]
+	];
+			 
+	// Translators: dialog caption
+	string caption = _("General Settings");
+	term contents = `Label (_("Initializing ..."));
+
+	Wizard::CreateDialog ();
+	Wizard::SetContents ( caption,
+			      contents,
+			      "",
+			      true,
+			      true);
+
+	
+	any ret = WizardSequencer (dialogs, sequence);
+
+	Wizard::CloseDialog ();
+	y2milestone(" generalSequence returns: %1", ret );
+	return ret;
+	
+    }
+
+
+
+
+   /**
+     * Language
+     *
+     */
+    global define LanguageDialog()
+	``{
+
+	string language = AIgeneral::Language;
+	
+	boolean use_utf8 = true;		// utf8 is default
+
+	if (!lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
+	{
+	    use_utf8 = false;		// fallback to ascii
+	}
+	
+	if (language=="")
+	{
+	    language = Language::language;
+	}
+	map languageselsort = mapmap(`lang_code, `lang_info, Language::Selection(),
+				     ``([lang_info[1]:"",	// ASCII value is the key
+					 [lang_info[use_utf8?0:1]:"", lang_code]
+					 ]));
+
+	term languagesel =
+	    `SelectionBox(`id(`language), "",
+			  maplist (`name, `codelist, languageselsort,
+				   ``(`item(`id(codelist[1]:""), codelist[0]:"",
+					    (language == codelist[1]:"")))));
+
+
+
+	term contents = `VBox(
+			   
+			      `HBox(
+				    `HWeight( 25, `HStretch() ),
+				    `HWeight( 50,
+					      `VBox (
+						     `Left( `Label ( _("Select your language:") ) ),
+						     languagesel
+						     )
+					      ),
+				    `HWeight( 25, `HStretch() )
+				    ),
+			      `VSpacing(2)
+			      );
+	string help_text =  _("<p>
+Choose the new <b>language</b> for your SuSE Linux system.
+</p>\n");
+
+
+	Wizard::SetContents( _("Language selection"), contents, help_text, true, true);
+	// Get the user input.
+	//
+
+	Wizard::ReplaceAbortButton(`Empty());
+	any ret = nil;
+
+	UI::SetFocus(`id(`language));
+
+	repeat
+	    {
+		ret = Wizard::UserInput();
+		if ( ret == `next || ret == `language )
+		{		 
+		    AIgeneral::Language = UI::QueryWidget(`id(`language), `CurrentItem);
+		    
+		}
+	    }
+	until ( ret == `next || ret == `back || ret == `abort );
+	return ret;
+    }
+
+
+    global define symbol KeyboardDialog() ``{
+    
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	any result = WFM::CallFunction( `inst_keyboard( true, true ) );
+	return result;	
+    }
+
+
+
+    
+    global define symbol TimezoneDialog() ``{
+
+	string tz = AIgeneral::Clock["timezone"]:"";
+	if ( tz == "")
+	{
+	    import "Misc";	    
+	    tz         = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, "" );	   
+	    
+	    if ( tz == "")
+	    {		
+		tz = Timezone::GetTimezoneForLanguage(AIgeneral::Language, "en_US");
+	    }
+	    AIgeneral::Clock["timezone"]  = tz;
+	}
+    
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	any result = WFM::CallFunction( `inst_timezone( true, true ) );	
+	return result;	
+    }
+
+
+
+
+    
+    global define symbol MouseDialog() ``{
+    
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	any result = WFM::CallFunction( `inst_mouse( true, true ) );	
+	return result;	
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     /**
      * Main dialog
      */
@@ -106,7 +314,8 @@ your hardware and preferences then press <b>Next</b> to continue.</p>
 		forceboot = UI::QueryWidget(`id(`forceboot), `Value);
 		debugboot = UI::QueryWidget(`id(`debugboot), `Value);
 		confirm = UI::QueryWidget(`id(`confirm), `Value);
-		if (reboot && forceboot) {
+		if (reboot && forceboot)
+		{
 		    UI::WarningPopup(_("You cannot request rebooting the machine and
 force it not to boot at the same time.
 "));
@@ -133,94 +342,11 @@ force it not to boot at the same time.
 	return ret;
     }
 
-    /**
-     * Language
-     *
-     */
-    global define GetLanguageTerm(string language)
-	``{
-	boolean use_utf8 = true;		// utf8 is default
-
-	if (!lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
-	{
-	    use_utf8 = false;		// fallback to ascii
-	}
-	if (language==""){
-	    language = Language::language;
-	}
-	map languageselsort = mapmap(`lang_code, `lang_info, Language::Selection(),
-				     ``([lang_info[1]:"",	// ASCII value is the key
-					 [lang_info[use_utf8?0:1]:"", lang_code]
-					 ]));
-
-	term languagesel =
-	    `ComboBox(`id(`language), `opt(`notify), _("Lan&guage:"),
-		      maplist (`name, `codelist, languageselsort,
-			       ``(`item(`id(codelist[1]:""), codelist[0]:"", (language == codelist[1]:"")))));
-
-	return (languagesel);
-    }
+ 
 
 
-    /**
-     * Keyboards
-     *
-     */
-    global define ConfigureKeyboard(string keyboard)
-	``{
-	if (keyboard == "")
-	{
-	    keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "en_US");
-	    Keyboard::current_kbd=keyboard;
-	}
 
-
-	term keyboardsel = `dummy();
-	list keyboardlist_by_translation =
-	    maplist( string keyboard_code, string keyboard_name, Keyboard::Selection(),
-		     ``{
-			 return `item(`id( keyboard_code ),
-				      keyboard_name,
-				      Keyboard::current_kbd == keyboard_code);
-		     } );
-
-	keyboardsel = `ComboBox( `id( `keyboard ), `opt( `notify ),
-				 // title for selection box 'keyboard layout'
-				 _("&Keyboard layout"),
-				 keyboardlist_by_translation);
-	return (keyboardsel);
-    }
-
-
-    /**
-     * Timezone
-     *
-     */
-
-    global define GetTimeZoneTerm(string timezone) ``{
-
-	if (timezone=="") {
-	    import "Misc";
-	    timezone         = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, timezone );
-	    if (timezone=="")
-	    {		
-		timezone = Timezone::GetTimezoneForLanguage(Language::language, "en_US");
-	    }
-	}
-	// build up timezone selection box
-
-	map zonemap = Timezone::Selection();
-
-	term timezonesel = `ComboBox( `id( `timezone ), `opt( `notify ),
-				      // title for selection box 'timezone'
-				      _("Time &Zone"),
-				      maplist( `name, `key, zonemap,
-					       ``{
-						   return `item( `id( key ), name, key == timezone );
-					       })
-				      );
-	return (timezonesel);
-    }
+ 
 
 
     /**

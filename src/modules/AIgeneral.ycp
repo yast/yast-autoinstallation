@@ -34,27 +34,35 @@
     // Show Reboot Message
     global boolean RebootMsg = false;
 
+
+    
     // Keyboard
-    global string Keyboard = "";
+    global map Keyboard = $[];
 
-    // Timezone
-    global string Timezone = "";
-
+ 
     // Mouse, if not autoprobed
-    global string Mouse = "";
+    global map  Mouse = $[];
 
-    // Hardware clock
-    global string Hwclock = "";
 
+    global map Clock = $[];    
+
+
+    global map Mode = $[];
+
+    
     // Show proposal and ask user for confirmation to go on with auto-installation
     // Similar to interactive mode, without letting use change settings
     // Interactive mode implies confirmation as well..
     global boolean Confirm = true;
 
-    
-    
-    global map general = $[];
+        
+  
 
+
+
+    /**
+     * Constructor
+     */
     global define void AIgeneral () ``{
 	
 	return;
@@ -69,15 +77,10 @@
 	string language_name 		= "";
 	string keyboard_name 		= "";
 	string mouse_name 		= "";
-	map mouse 			= general["mouse"]:$[];
-	map keyboard 			= general["keyboard"]:$[];
-	map mode 			= general["mode"]:$[];
-	map clock 			= general["clock"]:$[];
-	string language 		= general["language"]:"";
-	
-	if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe")
+			
+	if ( Mouse["id"]:"" != "" && Mouse["id"]:"" != "probe")
 	{
-	    Mouse::Set(mouse["id"]:"");
+	    Mouse::Set(Mouse["id"]:"");
 	    mouse_name = Mouse::MakeProposal(false, false);
 	}
 	else
@@ -85,23 +88,23 @@
 	    mouse_name = "probe";
 	}
 
-	if (language!="")
+	if (Language != "")
 	{
-	    Language::Set(language);
+	    Language::Set(Language);
 	    language_name= Language::MakeProposal(false, false);
 	}
 	
-	if (keyboard != $[])
+	if (Keyboard  != $[])
 	{
-	    Keyboard::SetLanguage(keyboard["keymap"]:"");
+	    Keyboard::current_kbd = "";
+	    y2milestone("keymap: %1", Keyboard["keymap"]:"");
+	    Keyboard::SetLanguage(Keyboard["keymap"]:"");
 	    keyboard_name = Keyboard::Name();
 	}
 
-	string hwclock = "";
-	if ( clock["hwclock"]:"" != "" )
-	{
-	    hwclock = (clock["hwclock"]:"" == "GMT") ?  _("GMT") : _("Local time");
-	}
+
+	string hwclock = (Clock["hwclock"]:""  == "UTC") ?  _("UTC") : _("Local time");
+	    
 	
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Language"));
@@ -113,26 +116,26 @@
 				   keyboard_name : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Time Zone"));
-	summary = Summary::AddLine(summary, (clock["timezone"]:"" != "") ?
-				   clock["timezone"]:"" : Summary::NotConfigured());
+	summary = Summary::AddLine(summary, ( Clock["timezone"]:"" != "") ?
+				   Clock["timezone"]:"" : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Hardware clock"));
+	summary = Summary::AddLine(summary,  hwclock );
 
 	summary = Summary::AddHeader(summary, _("Mouse"));
 	summary = Summary::AddLine(summary, (mouse_name != "") ?
-				   mouse_name : Summary::NotConfigured());
-
-	summary = Summary::AddHeader(summary, _("Hardware clock"));
-	summary = Summary::AddLine(summary, ( hwclock == "" ) ? _("Default") : hwclock );
+				   mouse_name : Summary::NotConfigured());	
 
 	summary = Summary::AddHeader(summary, _("Reboot after installation"));
-	summary = Summary::AddLine(summary, (mode["reboot"]:false) ?
+	summary = Summary::AddLine(summary, (Mode["reboot"]:false) ?
 				   _("Yes") : _("No"));
 
 	summary = Summary::AddHeader(summary, _("Confirm every step of the boot process?"));
-	summary = Summary::AddLine(summary, (mode["interactive_boot"]:false) ?
+	summary = Summary::AddLine(summary, (Mode["interactive_boot"]:false) ?
 				   _("Yes") : _("No"));
 	
 	summary = Summary::AddHeader(summary, _("Confirm installation?"));
-	summary = Summary::AddLine(summary, (mode["confirm"]:false) ?
+	summary = Summary::AddLine(summary, (Mode["confirm"]:false) ?
 				   _("Yes") : _("No"));
 	
 	return summary;				   
@@ -140,18 +143,38 @@
 
 
 
-    global define boolean Import (map settings) ``{	
-	general = settings;
+    global define boolean Import (map settings)
+	``{
+	Language = 	settings["language"]:"";
+	Keyboard =      settings["keyboard"]:$[];;	
+	Clock	=	settings["clock"]:$[];
+	Mouse = 	settings["mouse"]:$[];
+	Mode  = 	settings["mode"]:$[];
+	
 	return true;
     }
+    
+    global define boolean Export ()
+	``{
+	
+	map general = $[];
+	
+	general["language"] = Language ;
 
+	Keyboard["keyboard_values"] = Keyboard::GetExpertValues();
+	general["keyboard"] = Keyboard;
+	general["clock"] = Clock;
+	general["mouse"] = Mouse;
+    
+	return general;
+    }
 
+    /*
     global define boolean Process() ``{   
    
 	// Get default values as fallback
 
 	string default_keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "english-us" );
-	Keyboard =  default_keyboard;
 	Language = Language::language;
 	Mouse = "probe";		
 
@@ -164,7 +187,7 @@
 	    else if (k == "keyboard" && is(v, map))
 	    {
 		y2milestone("Keymap: %1", v);
-		Keyboard = v["keymap"]:default_keyboard;
+		Keymap = v["keymap"]:default_keyboard;
 	    }
 	 
 	    else if (k == "clock" && is(v, map))
@@ -241,10 +264,7 @@
 	return;    	
     }
 
-    global define boolean Export () ``{
-	return general;
-    }
-
+    */
 
 
     global define boolean Write() ``{
@@ -261,7 +281,7 @@
 	// Hardware Clock
 	////////////////////////////////////////////////////////////////////////
     
-	Timezone::hwclock = Hwclock;
+	Timezone::hwclock =  (Hwclock == "UTC" || Hwclock == "GMT") ? "-u" : "--localtime";
 
 	// mouse
 	////////////////////////////////////////////////////////////////////////

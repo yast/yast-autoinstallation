@@ -25,7 +25,7 @@
 
     textdomain "autoinst";
 
-    
+
     /**
      *  Determine how and where the partitions are added in autoinst mode
      *  modifies targetMap with new partition list for the specified device
@@ -49,7 +49,7 @@ exist on this system"));
 	    return false; // FIXME
 	}
 
-	// user visible name of target 
+	// user visible name of target
 	string targetname = target["name"]:""; // FIXME: Maybe not needed
 
 	// The current list of partitions
@@ -65,10 +65,10 @@ exist on this system"));
 	integer first_logical_nr = 5;
 
 	list full_region = [];
-	
+
 	integer bytes_per_unit = 0;
 	integer disk_size = 0;
-	
+
 	// fdisk partition ids
 	integer	fsid_boot	= Partitions::FsidBoot();
 	integer	fsid_root   = Partitions::fsid_native;
@@ -81,7 +81,7 @@ exist on this system"));
 
 	// The number of possible primary partitions
 	max_primary = target["max_primary"]:4;
-	
+
 	// this will tell if automatic partitioning if feasible
 	boolean can_do_auto = false;
 
@@ -94,10 +94,10 @@ exist on this system"));
 	/**
 	 * prepare_partitions
 	 */
-	
+
 	map part_data = $[];
 	boolean partitions_defined = false;
-	
+
 	foreach(`dev, `v , AIStorage::targetMap,
 		``{
 	    if (dev == target_is)
@@ -117,12 +117,12 @@ exist on this system"));
 	boolean already_partitioned = false;
 	boolean root_created = false;
 	string use = "";
-	
+
 	if ( haskey(part_data , "use"))
 	{
 	    use= part_data["use"]:"";
 	}
-	
+
 	string keep = "";
 	if ( haskey(part_data, "keep"))
 	{
@@ -184,7 +184,7 @@ exist on this system"));
 		}
 		else
 		{
-		    partitions = CreatePartitions (partitions, unused_region, 
+		    partitions = CreatePartitions (partitions, unused_region,
 		                                   target["label"]:"" );
 		}
 		rewrite_settings (partitions, target, driveMap);
@@ -234,27 +234,27 @@ exist on this system"));
 	    }
 	    */
 
-	    
+
 	    list p_to_keep = [];
-	    list auto_partitions = AIStorage::targetMap[target_is, "partitions"]:[];			
+	    list auto_partitions = AIStorage::targetMap[target_is, "partitions"]:[];
 	    foreach (map auto_part , auto_partitions, ``{
 		if ( haskey(auto_part, "create") &&   !auto_part["create"]:true )
 		{
 		    p_to_keep = add( p_to_keep, auto_part["partition_nr"]:-1);
-		}		
+		}
 	    });
 
 	    // now loop through partitions
 	    boolean creating_anything = false;
-	    
+
 	    foreach (`pentry, partitions, ``{
-		
+
 		symbol ptype = pentry["type"]:`unknown;
-		
+
 		if (ptype != `extended)
 		{
 		    boolean to_be_deleted = false;
-		    
+
 		    if ( use == "all")
 		    {
 			to_be_deleted = true;
@@ -277,17 +277,17 @@ exist on this system"));
 				pentry["mount"] = autopart["mount"]:mntpoint;
 				string dev = Storage::GetDeviceName( target_is, pentry["nr"]:0 );
 				y2milestone( "Auto-partitiong device:%1", dev );
-				
+
 				if ( pentry["format"]:false)
 				{
 				    symbol detected_fs = pentry["detected_fs"]:`reiser;
 				    pentry["used_fs"] = StringFS2Symbol(  autopart["filesystem"]:detected_fs);
 				}
 				else
-				{				  
+				{
 				    pentry["used_fs"] = FileSystems::DetectFs( dev );
 				}
-				
+
 				pentry["kept"] = true;
 				autopart["kept"] = true;
 			    }
@@ -431,7 +431,7 @@ to contain a minimal installation.");
 	} // while (true)
 	return (true);
     }
-    
+
 
     /**
      * Get number of last primary partition
@@ -466,18 +466,18 @@ to contain a minimal installation.");
 
     global define CreatePartitions (list partitions, list selected_region, string label)
 	``{
-	
+
 	y2milestone("initial partition list: %1", partitions);
 	y2milestone("selected region: %1", selected_region);
-	
+
 	partitions = filter (`pentry,
 			     partitions,
 			     ``(lookup (pentry, "type", `unknown) != `free)
 			     );
 	partitions = renumber_logical_partitions (partitions);
-	
+
 	y2milestone("partition list after renumbering: %1", partitions);
-	
+
 	symbol ptype = `primary;
 	integer last_pnr = 0;
 	list region = [ 0 , 0 ];
@@ -509,7 +509,7 @@ to contain a minimal installation.");
 
 	// Get new partitions as specified in control file
 	list tmp_auto_partitions =  AIStorage::targetMap[target_is, "partitions"]:[];
-	
+
 	list auto_partitions = filter (`pentry,
 				       tmp_auto_partitions ,
 				       ``(!pentry["kept"]:false )
@@ -525,7 +525,7 @@ to contain a minimal installation.");
 							      &&  pentry["partition_id"]:-1 != 5
 							      )
 				 );
-	if (size(primaries)>0)
+	if ( size(primaries) > 0 )
 	{
 	    y2milestone("primary partitions needed");
 	    last_pnr = getLastPrimary(partitions);
@@ -554,7 +554,8 @@ to contain a minimal installation.");
 							       )
 				 );
 
-	y2milestone("Auto-Partitions after creating Primary: %1", auto_partitions);
+	y2milestone("Partitions up to now: %1", partitions);
+	y2milestone("still to be created partitions(after Primary): %1", auto_partitions);
 
 	if (size(auto_partitions) == 0)
 	{
@@ -593,12 +594,21 @@ to contain a minimal installation.");
 		    ext_fsid = Partitions::fsid_extended_win;
 		}
 		list extended = filter (`pentry, auto_partitions, ``((pentry["partition_type"]:"none" == "extended" || pentry["partition_id"]:0 == 15 || pentry["partition_id"]:0 == 5)));
-		list ext_region = [0,0];
-		if (size(extended) == 1)
+		list ext_region = [ 0 , 0 ];
+		
+		if ( size(extended) == 1 )
 		{
 		    y2milestone("extended found");
-		    ext_region = lookup(select(extended,0,$[]),"region",[]);
-		    auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "extended" ||  pentry["partition_id"]:0 == 5)));
+		    ext_region = extended[0, "region"]:[]; // lookup(select(extended,0,$[]),"region",[]);
+		    if (ext_region == [] )
+		    {
+			ext_region = calcRegion(extended[0]:$[], region);
+		    }
+		    region  = ext_region;
+
+		    y2milestone("Extended region: %1 - Region: %2", ext_region, region);
+		    
+		    auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "extended" || pentry["partition_id"]:0 == 15 ||  pentry["partition_id"]:0 == 5)));
 		    selected_region = ext_region;
 		}
 		else
@@ -784,7 +794,7 @@ to contain a minimal installation.");
 	    part["used_fs"] = StringFS2Symbol(  currentPartition["filesystem"]:"reiser");
 	}
 
-
+	y2milestone("Adding partition: %1", part);
 
 	return part;
     }
@@ -1067,4 +1077,4 @@ to contain a minimal installation.");
 	return (ret_zero + ret_reread);
     }
 
-}	
+}
