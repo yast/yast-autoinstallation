@@ -242,7 +242,10 @@
 	Report::Set(GetMap(Install , "report", true));
 	Fstab = fstabSettings();
 	X11 = Configure["x11"]:$[];
-
+	if (size(X11) == 0 || !X11["configure_x11"]:false)
+	{
+	    Mode::x11_setup_needed = false;
+	}
 
 	map Software = Install["software"]:$[];
 
