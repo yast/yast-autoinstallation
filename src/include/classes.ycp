@@ -10,12 +10,12 @@
     textdomain "autoinst";
     import "Label";
     import "Popup";
+  
+
     /**
-     * Dialog Contents
+     * XML_cleanup()
+     * @return boolean
      */
-
-
-
     global define boolean XML_cleanup(string in, string out)
 	``{
 	import "XML";
@@ -24,19 +24,25 @@
 	return XML::YCPToXMLFile(`profile, ycpin, out);
     }
 
-    
+
+    /**
+     * class_dialog_contents()
+     * @return term
+     */
     global define term class_dialog_contents ()
 	``{
-	list classes = maplist(map class , AutoinstClass::Classes,     ``{
+	list classes = maplist(map class , AutoinstClass::Classes,  ``{
+	    
 	    string pathtoClass = sformat("%1/%2", AutoinstConfig::classDir, class["name"]:("Unknown"));
-	    list files_in_class = (list) SCR::Read(.target.dir, pathtoClass);
-	    return (`item(
+	    list files_in_class = (list) SCR::Read(.target.dir, pathtoClass);	    
+	    y2milestone("class: %1", class);
+	    term i = `item(
 			  `id(class["name"]:"Unknown"),
 			  class["name"]:"No name",
-			  class["order"]:"0",
+			  class["order"]:0,
 			  size(files_in_class)
-			  )
-		    );
+			  );
+	    return (i) ;
 	});
 
 	term contents =
@@ -58,12 +64,14 @@
 	return contents;
     }
 
-   /**
+
+    
+    /**
+     * AddEditClasses()
      * Add or Edit a class
      * @param symbol mode
      * @param symbol 
      */
-
     global define symbol AddEditClasses(symbol mode, string name)
 	``{
 	list classNames = maplist(map c,
@@ -89,12 +97,12 @@
 				    `Heading( _("Edit or Create Classes")),
 				    `VSpacing(1),
 				    `HBox(
-					  `TextEntry(`id(`name), _("Na&me"), lookup(class,"name","")),
-					  `IntField(`id(`order), _("Or&der:"), 1, 10, order)
+					  `TextEntry(`id(`name), _("Na&me"), class["name"]:"" ),
+					  `IntField(`id(`order), _("Or&der:"), 1, 10, class["order"]:order)
 					  ),
 				    `MultiLineEdit(`id(`description), `opt(`hstretch),
 						   _("Descri&ption:"),
-						   lookup(class,"description","")),
+						   class["description"]:""),
 				    `VSpacing(1),
 				    `HBox(
 					  `PushButton(`id(`save), Label::SaveButton()),
@@ -131,7 +139,7 @@
 		}
 		map newClass = $[
 				 "name": name,
-				 "order": (string) UI::QueryWidget(`id(`order),`Value),
+				 "order": (integer) UI::QueryWidget(`id(`order),`Value),
 				 "description": (string)UI::QueryWidget(`id(`description),`Value)
 		];
 		if (mode == `new)
@@ -264,6 +272,11 @@ to delete.
     }
 
 
+    /**
+     * GetClassOrder()
+     * @param string class name
+     * @return integer class order
+     */
     global define integer GetClassOrder(string name)``{
 	integer order = 0;
 	foreach(map class, AutoinstClass::Classes, ``{

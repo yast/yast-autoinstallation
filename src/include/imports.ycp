@@ -9,6 +9,7 @@
 {
     textdomain "autoinst";
     import "AutoinstConfig";
+	import "AutoinstStorage";
     import "Popup";
     import "Profile";
 
@@ -24,21 +25,21 @@
 
 	list files = (list)SCR::Read(.target.dir, AutoinstConfig::AliceRepository + "/info");
 	list extensions = ["sys.tcf" ];
-	list hosts = [];
+	list<string> hosts = [];
 	string host = "";
 	foreach(string file, files, ``{
 	    foreach(string ext, extensions, ``{
 		if (issubstring(file, ext))
 		{
 		    integer extsize = size(splitstring(ext, "."));
-		    list comp = splitstring(file, ".");
+		    list<string> comp = splitstring(file, ".");
 		    integer i = 0;
 		    while (i < extsize) {
 			comp  = remove(comp, size(comp) - 1 );
 			i = i + 1;
 		    }
 
-		    hosts=add(hosts,mergestring(comp,"."));
+		    hosts = add(hosts,mergestring(comp,"."));
 		}
 	    });
 
@@ -548,10 +549,12 @@ the configuration files are read and converted.
 		host = (string)UI::QueryWidget(`id(`table), `CurrentItem);
 		if (host != nil && host != "")
 		{
+		/* FIXME
 		    showFeedback(_("
 Reading Alice configuration files.
 This may take a while. Please wait...
 "));
+		*/
 
 		    map aliceConf = $[];
 		    map aliceret = createAliceConf(host);
@@ -562,12 +565,12 @@ This may take a while. Please wait...
 		    else
 		    {
 			Popup::Error(_("Error while importing ALICE data"));
-			clearFeedback();
+			// FIXME: clearFeedback();
 			continue;
 		    }
 
 		    Profile::Import(createProfile(aliceConf));
-		    clearFeedback();
+		    // FIXME: clearFeedback();
 		}
 	    }
 	} until (ret == `next || ret == `back );
@@ -821,7 +824,7 @@ This may take a while. Please wait...
 		partition["mount"] = mount;
 		partition["order"] = order;
 		partition["format"] = (v["noformat"]:-1 == -1 );
-		partition["filesystem"] = StringFS2Symbol(fstype);
+		partition["filesystem"] = AutoinstStorage::StringFS2Symbol(fstype);
 	    }
 
 	    partition["size"] = sformat("%1mb", v["size"]:-1);

@@ -16,33 +16,43 @@
     import "Report";
 
     include "autoinstall/io.ycp";
-    include "autoinstall/imports.ycp";
+    include "autoinstall/kickstart.ycp";
+    include "autoinstall/alice.ycp";
     include "autoinstall/classes.ycp";
 
-
+    
     /**
      * Create a list to be used with the table widget
      * @param tree data
      * @return list
      */
-    global define list CreateTableList( list MenuTreeData, string current)
+    define list CreateTableList( list MenuTreeData, string current)
 	``{
 	list menu_options = maplist(map e, MenuTreeData, ``{
-	    if ((size(e["children"]:[]) > 0 ))
+	
+	    if (size(e["children"]:[]) > 0 )
 	    {
+		string title=   e["title"]:"" ;
+		string entry = e["entry"]:"";
 		list childrenlist = CreateTableList(e["children"]:[], current);
-		return `item(`id(e["entry"]:""), e["title"]:"", ( e["entry"]:"" == current ) , childrenlist);
+		return `item(`id(entry), title, ( entry  == current ) , childrenlist);
 	    }
 	    else
 	    {
-		return `item(`id(e["entry"]:""),e["title"]:"",( e["entry"]:"" == current ));
+		string title=   e["title"]:"" ;
+		string entry = e["entry"]:"";
+		return `item(`id(entry), title ,( entry == current ));
 	    }
-	});
+	});	
 	return menu_options;
     }
+    
 
-
-    global define void content_dialog( string resource, map resourceMap, string module_auto ) ``{
+    /**
+     * content_dialog()
+     * @return void
+     */
+    define void content_dialog( string resource, map resourceMap, string module_auto ) ``{
 
 	string summary =  (string)Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
 	string caption = resourceMap["Name"]:"";
@@ -68,10 +78,14 @@
 
 
     /**
+     * module_contents()
+     * @param string resource
+     * @param map resource map
+     * @param list menu items
      * Module configuration dialog
-     *
+     * @return symbol
      */
-    global define symbol module_contents(string resource, map resourceMap , list menuitems) ``{
+    define symbol module_contents(string resource, map resourceMap , list menuitems) ``{
 	// y2milestone("FLAT a: %1", Profile::Flat);
 
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
@@ -159,10 +173,19 @@
     }
 
 
-    global define void CreateTreeWidget(string current ) ``{
+
+    /**
+     * CreateTreeWidget()
+     * Create tree widget
+     * @return void
+     */
+    define void CreateTreeWidget(string current ) ``{
 
 	list menu_options = CreateTableList(Y2ModuleConfig::MenuTreeData, current);
+	y2milestone("menu options: %1", menu_options);
+	
 	Wizard::ReplaceButtonBox(`VSpacing(0.6));
+	
 	UI::ReplaceWidget(`id(`helpSpace) ,
 			  `VBox(
 				`Tree(
@@ -181,7 +204,7 @@
     /**
      * Menu interface
      */
-    global define symbol ConfTree(list menuitems)
+    define symbol ConfTree(list menuitems)
 	``{
 	Wizard::SetScreenShotName ("autoyast-conftree");
 	y2milestone("dd: %1", menuitems);
@@ -462,7 +485,7 @@
 			string head = _("Import Kickstart File");
 			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
 
-			if ( filename != "" )
+			if ( filename != nil )
 			{
 			    map ksConfig = readKS(filename);
 			    Profile::Import(ks2ay(ksConfig));
@@ -471,6 +494,10 @@ Check the imported syntax and make sure the package selection and partitioning
 were imported correctly.
 "));
 			}
+			else {
+			    Report::Error(_("Invalid file name, select another file"));
+			}
+			
 			Wizard::CloseDialog();
 		    }
 		    else if (ret == `menu_save) // SAVE
