@@ -8,14 +8,14 @@
 {
     textdomain "autoinst";
 
-    
+
 
     global define x11Options(map x11)
 	``{
 	string caption = _("X11 Configuration");
 	boolean x11_enabled = x11["configure_x11"]:false;
-		
-	
+
+
 	list resolutions        = [];
 	list resolutions_list = ["640x480", "800x600", "1024x768", "1152x864", "1280x960", "1280x1024", "1600x1200"];
 	list depths_list = [
@@ -74,7 +74,7 @@
 					   `CheckBox(
 						     `id(`start_x11),
 						     // This sets the runlevel to 5.
-						     _("&Start the X Window System on boot"), false						     
+						     _("&Start the X Window System on boot"), false
 					   )),
 				     `VSpacing(1),
 				     `HBox(
@@ -142,7 +142,7 @@
 							     )
 						       )
 						)
-				      )				     				    				     			       
+				      )
 				)
 		       */
 		       )
@@ -172,7 +172,7 @@ be started at boot time and what display manager should be used.</p>
 	repeat {
 	    ret = UI::UserInput();
 
-	    
+
 	    if (UI::QueryWidget(`id(`enable_x11), `Value))
 	    {
 		UI::ChangeWidget(`id(`depth), `Enabled, true);
@@ -201,17 +201,17 @@ be started at boot time and what display manager should be used.</p>
 	    }
 	    else if (ret == `key || ret ==`next)
 	    {
-		x11["configure_x11"] 	= UI::QueryWidget(`id(`enable_x11), `Value);
+		x11["configure_x11"]	= UI::QueryWidget(`id(`enable_x11), `Value);
 
-		any depth 	= UI::QueryWidget(`id(`depth), `Value);
+		any depth	= UI::QueryWidget(`id(`depth), `Value);
 		if (is(depth, integer))
 		    x11=add(x11,"color_depth", depth);
 
-		any resol 	= UI::QueryWidget(`id(`resolution), `Value);
+		any resol	= UI::QueryWidget(`id(`resolution), `Value);
 		if (is(resol, string))
 		    x11=add(x11,"resolution", resol);
 
-		any default_dm 	= UI::QueryWidget(`id(`dm), `Value);
+		any default_dm	= UI::QueryWidget(`id(`dm), `Value);
 		if (is(default_dm, string))
 		    x11=add(x11,"display_manager", default_dm);
 
@@ -222,13 +222,12 @@ be started at boot time and what display manager should be used.</p>
 		any xdm	= UI::QueryWidget(`id(`start_x11), `Value);
 		if (is(default_dm, boolean))
 		    x11=add(x11,"start_x11", xdm);
-		
-		// TODO: Changes runlevel resource
 
-		
+
+
 	    }
-	  
-	} until ( ret == `key || ret ==`next || ret ==`back);
+	y2milestone("ret=%1", ret);
+	} until ( ret == `key || ret ==`next || ret ==`back || ret == `abort);
 	settings = x11;
 	return ret;
     }
@@ -236,6 +235,6 @@ be started at boot time and what display manager should be used.</p>
 
 
 
-	
+
 
 }
