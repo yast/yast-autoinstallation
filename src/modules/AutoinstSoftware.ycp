@@ -55,6 +55,10 @@
 	return true;
     }
 
+
+    /**
+     * Constructer
+     */
     global define void AutoinstSoftware() ``{
 	if ( Mode::cont )
 	{	    
@@ -102,18 +106,17 @@
 	
 	//
 	// Update profile
-	//
-	
+	//	
 	Profile::Flat["software"] = Export();
 	return;
     }
 
+    
     /**
      * Remove packages not needed by modules, i.e. NIS, NFS etc.
      * @param list of packages to remove
      * @return void
      */
-
     global define void RemoveModulePackages (list module_packages) ``{
 	packages = filter(string p, packages, ``(!contains(module_packages,p)));
 	
@@ -161,31 +164,33 @@
     global define boolean Write()
 	``{
 	boolean ok = true;
-	boolean ret = false;
 	
 	Pkg::SetLocale (Language::language);
 
 	Packages::Init(true);
-
-	// Standard Packages
-	boolean retval = false;
-
+		
 	string  base_selection = base;
-	if (size(base_selection) > 0) {
-	if (! Pkg::SetSelection( base_selection ))
+	
+	if (size(base_selection) > 0)
 	{
-	    y2error("Error while setting base selection: %1", base_selection);
-	    Report::Error(sformat(_("Could not set base selection: %1"), base_selection));
-	    return false;
+	    if (! Pkg::SetSelection( base_selection ))
+	    {
+		y2error("Error while setting base selection: %1", base_selection);
+		Report::Error(sformat(_("Could not set base selection: %1"), base_selection));
+		return false;
+	    }
 	}
-    } else {
-        Popup::Warning(_("Base selection is not configured in control file.
+	else
+	{
+	    Popup::Warning(_("Base selection is not configured in control file.
 If packages to install have been added individually, 
 this message can be ignored."));
-    }
+	}
 
+	
 	list failed = [];
-	foreach(`s, toset(addons),
+	
+	foreach(string s, toset(addons),
 		``{
 	    if (!Pkg::SetSelection( s ))
 	    {
@@ -194,9 +199,10 @@ this message can be ignored."));
 	});
 
 	list failed_again = [];
-	if (size(failed) > 0 ) {
-
-	    foreach(`s, failed,
+	
+	if (size(failed) > 0 )
+	{
+	    foreach(string s, failed,
 		    ``{
 		if (!Pkg::SetSelection( s ))
 		{
@@ -207,88 +213,95 @@ this message can be ignored."));
 	if (size(failed_again) > 0 )
 	{
 	    y2error("Error while setting-addon selection: %1", s);
-	    Report::Warning(_("Could not set add-on selections."));
+	    Report::Warning(_("Could not set add-on selections: %1"), mergestring(failed_again, ","));
 	}
-
-
-	// single selected packages
 
 	if (!Pkg::ActivateSelections())
 	{
 	    return false;
 	}
-	// Now remove all packages from remove-packages (Note: This is a workaround for bug # )
 
 
+	list autoinstPacks = autoinstPackages ();
+	y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
 
-	list extraPackages = calcExtraPackages ();
-	y2milestone("Packages selected in autoinstall mode: %1", extraPackages);
-
-	if (size(extraPackages) > 0 )
+	if (size(autoinstPacks) > 0 )
 	{
-	    Pkg::DoProvide(extraPackages);
+	    Pkg::DoProvide(autoinstPacks);
 	}
 
-	Pkg::DoProvide (Packages::ComputeSystemPackageList());
+	
+	list computed_packages = Packages::ComputeSystemPackageList();
+	y2milestone("Computed list of packages: %1", computed_packages);
+	
 
+	//
+	// Now remove all packages listed in remove-packages 
+	//
 	y2milestone("Packages to be removed: %1", remove_packages);
 	if (size(remove_packages) > 0 )
 	{
-	    foreach (`rp, remove_packages, ``{
+	    foreach (string rp, remove_packages, ``{
 		Pkg::PkgNeutral(rp);
 	    });
 
 	    Pkg::DoRemove(remove_packages);
 	}
 
-
-
-
+	//
+	// Solve dependencies
+	//
 	Pkg::PkgSolve();
-
-
+	
 	SpaceCalculation::ShowPartitionWarning();
-	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",  Pkg::GetSelections(`selected, "base"), Pkg::GetSelections(`selected, ""));
+	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",
+		     Pkg::GetSelections(`selected, "base"),
+		     Pkg::GetSelections(`selected, ""));
 
 	return (ok);
     }
 
-
-    global define list calcExtraPackages ()
-	``{
-
-	list extra_packages = union( packages , forcedPackages);
-
-	if (kernel != "")
-	{
-	    extra_packages = add ( extra_packages , kernel);
-	}
-	return extra_packages;
-    }
-
-
-
-
-
-
-
+    /**
+     * Compute list of packages selected by user and other packages needed for important
+     * configuration modules.
+     */
+    
     global define list autoinstPackages()
 	``{
 	
 	list allpackages = [];
+	
+	// the primary list of packages
+	allpackages = union (allpackages,  packages);
 
-	allpackages = union (allpackages, packages);
-
-	// In autoinst mode, a kernel might be external and not available
-	// in packages
-	if (  size(kernel) == 0)
+	// In autoinst mode, a kernel should not be  available
+	// in <packages>
+	if ( size(kernel) == 0)
 	{
 	    import "Kernel";
-	    allpackages = union (allpackages, Kernel::kernel_packages);
+	    if (Pkg::IsAvailable (Kernel::kernel_packages[0]:"k_deflt"))
+	    {
+		allpackages = union (allpackages, Kernel::kernel_packages);
+	    }
+	    else
+	    {
+		y2warning ("%1 not available, using k_deflt", Kernel::kernel_packages);
+		allpackages = add (allpackages, "k_deflt");
+	    }	   
 	}
-	else {
-	    allpackages = add (allpackages, kernel);
+	else
+	{
+	    if (Pkg::IsAvailable (kernel))
+	    {
+		allpackages = add (allpackages, kernel);
+	    }
+	    else
+	    {
+		y2warning ("%1 not available, using k_deflt", Kernel::kernel_packages);
+		allpackages = add (allpackages, "k_deflt");
+	    }	   	    
 	}
+
 
 
 	if (haskey(Profile::Flat, "ldap")) {
@@ -328,12 +341,7 @@ this message can be ignored."));
 				allpackages = add(allpackages, "amavis-sendmail");
 		}
 	}
-	list extraPackages = calcExtraPackages ();
-	if (size(extraPackages) > 0 )
-	{
-	    allpackages = union(allpackages,extraPackages);
-	}
-	y2debug("package list calculated for auto-installation: %1", allpackages);
+	
 	return allpackages;
     }
 
