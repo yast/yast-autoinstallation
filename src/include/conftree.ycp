@@ -41,10 +41,11 @@
 
 
     
-    global define content_dialog(map mod, any settings) ``{
-	string summary =  Call::Function(module_auto, ["Summary", settings]);
-	string caption = d["Name"]:"Configurtion";
-	string buttonLabel = d["Helptext"]:"Configure";
+    global define content_dialog( string resource, map resourceMap ) ``{
+	
+	string summary =  Call::Function(module_auto, ["Summary", AIConfig::getResourceData(resourceMap , resource)]);
+	string caption = resourceMap["Name"]:"Configurtion";
+	string buttonLabel = resourceMap["Helptext"]:"Configure";
 	term contents =
 	    `VBox(		
 		  `RichText( `id(`summary), summary),		  
@@ -68,40 +69,42 @@
      * Module configuration dialog
      *
      */
-    global define module_contents(map d, any settings ) ``{
-
-	any original_settings = settings;
+    global define module_contents(string resource, map resourceMap ) ``{
+	y2milestone("FLAT a: %1", Profile::Flat);
 	
-	string module_auto = d["AutoClient"]:"none";	
-	content_dialog( d , settings);
+	any original_settings = AIConfig::getResourceData(resourceMap , resource);
+	
+	string module_auto = resourceMap["AutoClient"]:"none";
+	
+	content_dialog( resource , resourceMap);
+	
 	any ret= nil;
-
 	
 	repeat {
 	    ret = UI::UserInput();
 	    
 	    if( ret == `configure )
 	    {
-		any seq = Call::Function(module_auto, ["Change", settings]);
+		any seq = Call::Function(module_auto, ["Change", AIConfig::getResourceData(resourceMap ,resource)]);
 		
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
-		    settings = Call::Function(module_auto, ["Result", settings]);
+		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
 		}
-		y2milestone("New Settings: %1", settings);
-		content_dialog(d,settings);
+		y2milestone("New Settings: %1", Profile::Flat);
+		content_dialog( resource , resourceMap);
 	    }
 	    else if( ret == `reset)
 	    {		
-		settings = Call::Function(module_auto, ["Reset", settings]);		
-		content_dialog( d , settings );
+		Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  AIConfig::getResourceData(resourceMap , resource) ]);
+		content_dialog(resource,  resourceMap);		
 	    }
-	     
-	    if ( settings != original_settings )
+	    
+	    if ( original_settings != AIConfig::getResourceData(resourceMap , resource) )
 	    {				
 		Profile::changed = true;
-	    }  
-	    Profile::Flat[resource] =  settings;
+	    }	   	    	    	    
+	    y2milestone("FLAT b: %1", eval(Profile::Flat));
 	    
 	} until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key || contains(menuitems, ret) );		
 	
@@ -248,18 +251,13 @@
 
 	    }
 	 
-	    foreach(`p,`d, AIConfig::ModuleMap, ``{
+	    foreach(string def_resource, map resourceMap, AIConfig::ModuleMap, ``{
 		
-		if (tree_item == p)
+		if (tree_item == def_resource)
 		{
 		    // Set resource name, if not using default value
-		    string resource = AIConfig::getResource(p);		    
-		  		    		    
-		    string data_type = d["AutoinstDataType"]:"map";
-		    if ( data_type == "map")
-			ret = module_contents(d, Profile::Flat[resource]:$[]);
-		    else
-			ret = module_contents(d, Profile::Flat[resource]:[]);		   		    		    
+		    string resource = AIConfig::getResource(def_resource);	    		    
+		    ret = module_contents( resource , resourceMap);
 		}
 	    });
 

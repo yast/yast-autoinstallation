@@ -16,57 +16,14 @@
     import "Wizard";
     import "Summary";
     import "Report";
+    import "AIsoftware";
     include "wizard/sequencer.ycp";
     include "ui/common_messages.ycp";
     include "autoinstall/dialogs.ycp";
 
-    string func = WFM::Args(0);
-    map param = $[];
-    if (func != "Result")
-    {
-	param = WFM::Args(1);
-	AIConfig::softwareSettings = param;
-    }
-    
-    map ret = $[];
+    string func = WFM::Args(0);   
+    map param = WFM::Args(1);
 
-
-    string base = param["base"]:"";
-
-    list addons = param["addons"]:[];
-
-    list pacs = param["packages"]:[];
-
-    map software = param;
-
-
-    /**
-     * Summary
-     * @return Html formatted configuration summary
-     */
-    define string Summary()``{
-	string summary = "";
-	summary = Summary::AddHeader(summary, _("Base Selection"));
-	summary = Summary::AddLine(summary, (base != "") ?
-				   software["base"]:"None" : Summary::NotConfigured());
-	summary = Summary::AddHeader(summary, _("Add-on Selections"));
-	if (size( software["addons"]:[])>0)
-	{
-	    summary = Summary::OpenList(summary);
-	    foreach(`a, software["addons"]:[], ``{
-		summary = Summary::AddListItem(summary, a);
-	    });
-	    summary = Summary::CloseList(summary);
-	}
-	else
-	{
-	    summary = Summary::AddLine(summary, Summary::NotConfigured());
-	}
-	summary = Summary::AddHeader(summary, _("Individualy selected Packages"));
-	summary = Summary::AddLine(summary, sformat("%1", size(software["packages"]:[])));
-
-	return summary;
-    }
 
 
 
@@ -82,7 +39,7 @@
      * Select packages
      */
 
-    define packageSelector() ``{
+    define symbol packageSelector() ``{
 	string language = UI::GetLanguage(true);
 
 	string title = _("Software Selection");
@@ -132,7 +89,7 @@ TODO
 		baseconfs_box = add( baseconfs_box, `Left(`RadioButton(`id(data[0]:""),     // id
 								       `opt(`notify, `autoShortcut),
 								       data[1]:"",              // descrption
-								       (data[0]:"" == base)   )));
+								       (data[0]:"" == AIsoftware::base)   )));
 	    }
 	});
 
@@ -183,9 +140,9 @@ TODO
 		    // set the new selection
 		    boolean pkgret = Pkg::SetSelection( base_selection );
 		    
-		    if (size(pacs)>0)
+		    if (size(AIsoftware::pacs)>0)
 		    {
-			Pkg::DoProvide(pacs);
+			Pkg::DoProvide( AIsoftware::pacs );
 		    }
 		    
 		    y2milestone ( "Selecting '%1' returns: %2", base_selection, pkgret );
@@ -201,20 +158,20 @@ TODO
 		    any details_ret = `again;
 
 		   
-			boolean ret = Pkg::SetSelection( base_selection );
-			foreach(string addon, addons, ``{
-			    Pkg::SetSelection( addon );
-			});
+		    ret = Pkg::SetSelection( base_selection );
+		    foreach(string addon, AIsoftware::addons, ``{
+			Pkg::SetSelection( addon );
+		    });
 			
 			
-			if (size(pacs)>0)
-			{
-			    Pkg::DoProvide(pacs);
-			}
+		    if (size(AIsoftware::pacs)>0)
+		    {
+			Pkg::DoProvide(AIsoftware::pacs);
+		    }
 			
-			y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
-			// activate current selection before entering package widget
-			Pkg::ActivateSelections();
+		    y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
+		    // activate current selection before entering package widget
+		    Pkg::ActivateSelections();
 
 		 
 		    
@@ -255,8 +212,8 @@ TODO
 	}
 	else
 	{
-	    seladd = addons;
-	    selbase = [base];
+	    seladd = AIsoftware::addons;
+	    selbase = [AIsoftware::base];
 	}
 	
 
@@ -282,19 +239,17 @@ TODO
 	list onlysel = Pkg::GetPackages(`selected, true);
 	y2milestone("selection packages: %1, all packages: %2", size(onlysel), size(allpacs));
 
-	pacs = [];
+	AIsoftware::pacs = [];
 	foreach(string package, allpacs, ``{
 	    if (!contains(onlysel, package)) {
-		pacs=add(pacs,package);
+		AIsoftware::pacs = add (AIsoftware::pacs,package);
 	    }
 	});
 	
 	
-	software["addons"] = seladd;
-	software["base"] =   selbase[0]:"";
-	software["packages"] = pacs;
-
-	AIConfig::softwareSettings = software;
+	AIsoftware::addons = seladd;
+	AIsoftware::base =   selbase[0]:"";	
+	
 	Wizard::CloseDialog();
 	return ret;
     }
@@ -303,18 +258,19 @@ TODO
 /* create a  summary*/
     
     if(func == "Summary") {
-	return Summary();
+	AIsoftware::Import(param);
+	return AIsoftware::Summary();
     }
     else if (func == "Reset") {
-	software= $[];
-	return (true);
+	AIsoftware::Import($[]);	
+	return ($[]);
     }
     else if (func == "Change") {	
 	any res = packageSelector();
 	return res;
     }
     else if (func == "Result") {
-	return(AIConfig::softwareSettings);
+	return(AIsoftware::Export());
     }
 
 /* unknown function */

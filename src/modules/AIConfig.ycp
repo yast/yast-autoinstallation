@@ -190,6 +190,21 @@
     global define string getResource( string default_resource) ``{
 	return ModuleMap[default_resource, "AutoinstResource"]:default_resource;	
     }
+
+    /**
+     * Get resource data
+     */
+
+    global define any getResourceData( map resourceMap, string resource) ``{
+	
+	string resource = resourceMap[resource, "AutoinstResource"]:resource;
+	string data_type = resourceMap["AutoinstDataType"]:"map";
+	if (data_type == "map") 
+	    return (eval(Profile::Flat[resource]:$[]));	
+	else
+	    return (eval(Profile::Flat[resource]:[]));
+		
+    }
     
  
 }

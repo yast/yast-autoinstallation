@@ -1,0 +1,78 @@
+/**
+ * File:	modules/AIsoftware.ycp
+ * Package:	Autoyast
+ * Summary:	Software
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ *
+ */
+{
+    module "AIsoftware";    
+    textdomain "autoinst";
+
+    import "Summary";
+
+    global string base = "";
+    global list addons = [];
+    global list pacs = [];
+    global string kernel = "";
+    
+
+    /**
+     * Import data
+     * @param settings settings to be imported
+     * @return true on success
+     */
+    global define boolean Import(map settings) ``{
+
+	base = settings["base"]:"";
+	addons = settings["addons"]:[];
+	pacs = settings["packages"]:[];
+	kernel = settings["kernel"]:"";
+    }
+
+
+    /**
+     * Export data
+     * @return dumped settings (later acceptable by Import())
+     */
+    global define map Export() ``{
+
+	return eval($[
+		      "base" 		: base,
+		      "addons"		: addons,
+		      "packages" 	: pacs,
+		      "kernel"		: kernel
+		    ]);
+    }
+    
+    /**
+     * Summary
+     * @return Html formatted configuration summary
+     */
+    global define string Summary()``{
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Base Selection"));
+	summary = Summary::AddLine(summary, (base != "") ?
+				   base : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Add-on Selections"));
+	if (size( addons) > 0 )
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(`a, addons, ``{
+		summary = Summary::AddListItem(summary, a);
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	else
+	{
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
+	summary = Summary::AddHeader(summary, _("Individualy selected Packages"));
+	summary = Summary::AddLine(summary, sformat("%1", size(pacs)));
+
+	return summary;
+    }    
+
+}
