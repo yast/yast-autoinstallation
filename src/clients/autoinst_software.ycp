@@ -26,10 +26,13 @@
     map param = $[];
 
     /* Check arguments */
-    if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
+    {
 	func = (string) WFM::Args(0);
 	if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	{
 	    param = (map) WFM::Args(1);
+	}
     }
     y2debug("func=%1", func);
     y2debug("param=%1", param);
@@ -50,8 +53,11 @@ Select one of the following <b>base</b> selections and click <i>Detailed<i> to a
 more <b>add-on</b> selections and packages.
 </p>
 ");
-	AutoinstSoftware::pmInit();
-	
+	Pkg::TargetFinish ();
+	// AutoinstSoftware::pmInit();
+		
+	Pkg::SourceStartManager(true);
+	 
 	Wizard::CreateDialog();
 
 	Wizard::SetContents(title,
@@ -59,7 +65,7 @@ more <b>add-on</b> selections and packages.
 			    helptext, false, true);
 
 	list available_base_selections = Pkg::GetSelections( `available, "base" );
-
+	y2milestone ("available_base_selections %1", available_base_selections);
 	list current_base_selections = Pkg::GetSelections( `selected, "base" );
 	y2milestone ("current_base_selections %1", current_base_selections);
 
@@ -137,17 +143,13 @@ more <b>add-on</b> selections and packages.
 	boolean selret = false;
 	repeat
 	    {
-
 		ret = Wizard::UserInput();
 
 		// get the newly selected base configuration
 		string base_selection = (string) UI::QueryWidget( `id(`baseconf),`CurrentButton );
 
 		// Inform the package manager on `next about the new (only about a NEW) selection
-		// or if the selection has changed
-
-		
-	
+		// or if the selection has changed			
 		    		
 		if (ret == `next)
 		{
@@ -159,7 +161,6 @@ more <b>add-on</b> selections and packages.
 			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
 			});		
 		    }
-
 		}		
 		else if ( ret == `details )
 		{
@@ -186,15 +187,11 @@ more <b>add-on</b> selections and packages.
 			if ( ret == `accept )
 			    ret = `next;
 		    }
-		}
-		
-
+		}		
 	    }  until ( ret == `next  || ret == `back);
-
-
 	
 	Pkg::ActivateSelections();
-	
+	y2milestone("blah 1");
 	list allpacs = Pkg::GetPackages(`selected, true);
 	y2milestone("All packages: %1 ( %2 )", allpacs, size(allpacs));
 	

@@ -48,9 +48,17 @@
 
     global string karch = "";
 
-    global string model = ""; // Still not supported (FIXME)
+    // Taken from smbios
+    global string product = "";
 
-    global string vendor = ""; // Still not supported (FIXME)
+    // Taken from smbios
+    global string product_vendor = "";
+    
+    // Taken from smbios
+    global string board_vendor = "";
+
+    // Taken from smbios
+    global string board = "";
 
     global integer memsize = 0;
 
@@ -78,7 +86,6 @@
     global list LinuxPartitions = [];
 
 
-
     global map UserRules = $[];
 
     // Local Variables
@@ -95,9 +102,6 @@
 	return;
     }
 
-
-
-
     /**
      * Cleanup XML file from namespaces put by xslt
      */
@@ -110,7 +114,10 @@
     }
 
 
-
+    /**
+     * StdErrLog()
+     * Dialog for error messages
+     */
     global define void StdErrLog( string stderr) ``{
 	UI::OpenDialog(
 		       `opt( `decorated ),
@@ -136,7 +143,9 @@
     
     
     /**
+     * getMAC()
      * Return MAC address of active device
+     * @return string mac address
      */
     global define string getMAC() ``{
 	string tmpmac = "";
@@ -169,7 +178,9 @@
 
 
     /**
+     * getHostid()
      * Return host id (hex ip )
+     * @return string host ID
      */
     global define string getHostid () ``{
 	import "IP";
@@ -178,12 +189,51 @@
     }
 
 
-
     /**
+     * ProbeRules()
      * Probe all system data to build  a set of rules
+     * @return void
      */
     global define void ProbeRules () ``{
 
+	// SMBIOS Data	
+	list bios = (list) SCR::Read(.probe.bios);
+
+	if (size(bios) != 1)
+	{
+	    y2warning("Warning: BIOS list size is %1", size(bios));
+	}
+
+	map biosinfo = (map)(bios[0]:$[]);
+	list<map> smbios = (list<map>)(biosinfo["smbios"]:[]);
+
+	map sysinfo = $[];
+	map boardinfo = $[];
+
+	foreach(map inf, smbios, ``{
+	    if (inf["type"]:"" == "sysinfo")
+	    {
+		sysinfo = inf;
+	    }
+	    else if (inf["type"]:"" == "boardinfo")
+	    {
+		boardinfo = inf;
+	    }
+	});
+
+	if (size(sysinfo) > 0)
+	{	    	    
+	    product = (string)(sysinfo["product"]:"");
+	    product_vendor = (string)(sysinfo["manufacturer"]:"");
+	} 
+
+	if (size(boardinfo) > 0)
+	{
+	    board = (string)(boardinfo["product"]:"");
+	    board_vendor = (string)(boardinfo["manufacturer"]:"");
+	}
+
+	
 	//
 	// Architecture
 	//
@@ -268,9 +318,9 @@
     }
 
     /**
+     * shellseg()
      * Create shell command for rule verification
      */
-
     define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
 	
 	if (op == "and")
@@ -281,11 +331,17 @@
 	string tmpshell = "";
 	y2debug("Match type: %1", matchtype);
 	if (matchtype == "exact")
+	{
 	    tmpshell = tmpshell + sformat("\"$%1\" = \"%2\" ", var,  val);
+	}
 	else if (matchtype == "greater")
+	{
 	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" ",  var,  val);
+	}
 	else if (matchtype == "lower")
+	{
 	    tmpshell = tmpshell + sformat("\"$%1\" -lt \"%2\" ",  var,  val);
+	}
 	else if (matchtype == "range")
 	{
 	    list range =splitstring((string)val, "-");
@@ -306,7 +362,9 @@
 
 
     /**
+     * verifyrules()
      * Verify rules using the shell
+     * @return integer
      */
     define integer verifyrules ()
     ``{
@@ -320,8 +378,9 @@
     }
 
     /**
+     * Read()
      * Read rules file
-     *
+     * @return void
      */
     global define void Read() ``{
 	import "XML";
@@ -447,6 +506,31 @@
 			ismatch = true;
 			env[rule] = arch;
 		    }
+		    else if ( rule == "board" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = board;
+		    }
+		    else if ( rule == "board_vendor" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = board_vendor;
+		    }
+		    else if ( rule == "product_vendor" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = product_vendor;
+		    }
+		    else if ( rule == "product" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = product;
+		    }		    
+		    
 		    else if ( rule == "disksize" )
 		    {
 			// [ $["device":"/dev/hda", "size":"100000"] ]
@@ -491,17 +575,17 @@
 
 
     /**
+     * Files();
      * Return list of file to merge (Order matters)
      */
     global define list Files () ``{
 	return tomerge;
     }
 
-
-
-
     /**
+     * GetRules()
      * Return list of file to merge (Order matters)
+     * @return boolean
      */
     global define boolean GetRules () ``{
 
@@ -558,6 +642,7 @@
 
 
     /**
+     * Merge()
      * Merge Rule results
      * @param the resulting control file path
      * @return true on success
@@ -613,8 +698,9 @@
 
 
     /**
+     * Process()
      * Process Rules
-     *
+     * @return boolean
      */
     global define boolean Process(  string result_profile  )
 	``{
@@ -676,9 +762,11 @@ classes."));
 
 
     /**
+     * CreateDefault()
      * Create default rule in case no rules file is available
      * This adds a list of file starting from full hex ip representation to
      * only the first letter. Then default and finally mac address.
+     * @return void
      */
     global define void CreateDefault() ``{
 
@@ -697,8 +785,11 @@ classes."));
     }
 
    /**
-     * Create default rule in case no rules file is available (Only one file which is given by the user)
-     */
+    * CreateFile()
+    * Create default rule in case no rules file is available (Only one file which is given by the user)
+    * @param string file name
+    * @return void
+    */
     global define void CreateFile(string filename) ``{
 	tomerge = add (tomerge, filename);
 	y2milestone("Created default rules:", tomerge);

@@ -26,20 +26,27 @@
 
     global map Software = $[];
 
+    // Base selection
     global string base = "";
+
+    // Add-on selections
     global list addons = [];
+
+    // Individual packages
     global list<string> packages = [];
+
+    // Kernel, force type of kernel to be installed
     global string kernel = "";
+
+    // Packages that should be installed in continue mode   
     global list post_packages = [];
+
+    // Package that should be removed from list, and not installed    
     global list<string> remove_packages = [];
-    global list delete_packages = [];
-
-    global list forcedPackages = [];
-
- 
-
+        
 
     /**
+     * Import()
      * Import data
      * @param settings settings to be imported
      * @return true on success
@@ -56,8 +63,6 @@
 
 	return true;
     }
-
-
     /**
      * Constructer
      */
@@ -70,6 +75,7 @@
     }
 
     /**
+     * Export()
      * Export data
      * @return dumped settings (later acceptable by Import())
      */
@@ -99,8 +105,9 @@
 
 
     /**
+     * AddModulePackages()
      * Add packages needed by modules, i.e. NIS, NFS etc.
-     * @param list of packages to add
+     * @param list of strings packages to add
      * @return void
      */
     global define void AddModulePackages(list<string> module_packages)
@@ -130,7 +137,7 @@
 
 
     /**
-     * Summary
+     * Summary()
      * @return Html formatted configuration summary
      */
     global define string Summary()``{
@@ -159,8 +166,8 @@
     /**
      * Compute list of packages selected by user and other packages needed for important
      * configuration modules.
-     */
-    
+     * @return list of strings list of packages needed for autoinstallation
+     */    
     global define list<string> autoinstPackages()
 	``{
 	
@@ -243,6 +250,7 @@
 
 
     /**
+     * Write()
      * Configure software settings
      * @param void
      * @return boolean
@@ -268,11 +276,10 @@
 	}
 	else
 	{
-	    Popup::Warning(_("Base selection is not configured in control file.
+	    Popup::Warning(_("Base selection is not set in control file.
 If packages to install have been added individually, 
 this message can be ignored."));
 	}
-
 	
 	list failed = [];
 	
@@ -309,7 +316,7 @@ this message can be ignored."));
 
 
 	list<string> autoinstPacks = autoinstPackages ();
-	y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
+	y2debug("Packages selected in autoinstall mode: %1", autoinstPacks);
 
 	if (size(autoinstPacks) > 0 )
 	{
@@ -318,7 +325,7 @@ this message can be ignored."));
 
 	
 	list computed_packages = Packages::ComputeSystemPackageList();
-	y2milestone("Computed list of packages: %1", computed_packages);
+	y2debug("Computed list of packages: %1", computed_packages);
 	
 
 	//
@@ -355,8 +362,7 @@ this message can be ignored."));
 	
 	string tmproot = AutoinstConfig::tmpDir;
 	
-	SCR::Execute(.target.mkdir, tmproot + "/root");
-	
+	SCR::Execute(.target.mkdir, tmproot + "/root");	
 	Pkg::TargetInit( tmproot + "/root", true);
 	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
 	return;

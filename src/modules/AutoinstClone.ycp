@@ -196,9 +196,7 @@
      * @return list list of installed software package
      */
     global define map Software() ``{
-	
 	boolean ret = Pkg::TargetInit("/", false);
-	
 	list base =  Pkg::GetSelections(`installed, "base");
 	list addons =  Pkg::GetSelections(`installed, "addon");
 	list inst = Pkg::GetPackages(`installed, true);
@@ -219,7 +217,6 @@
         });
 
 	Pkg::ActivateSelections();
-	Pkg::PkgInstall("k_deflt");
 
 	list sel =  Pkg::GetPackages(`selected, true);
 	foreach(string p, inst, ``{
@@ -228,18 +225,14 @@
 	});
 
 	list packages = Pkg::FilterPackages(false, false, true, true);
-	
 	Pkg::TargetFinish ();
-	
 	// Remove kernel packages
 	list userpackages =  filter(string pkg, packages, ``(! regexpmatch(pkg, "k_.*")));
 
-	
 	map software = $[];
 	software["base"] = base[0]:"";
 	software["addons"] = addons;
 	software["packages"] = userpackages;
-	
 	return software;
     }
 

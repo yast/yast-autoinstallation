@@ -1,27 +1,47 @@
 /**
- * File:		autoinstall/partitioning.ycp
- * Module:		Autoinstallation
- * Authors:             Anas Nashif <nashif@suse.de>
- * Purpose:		functions for partitioning in autoinst mode
+ * File:	autoinstall/partitioning.ycp
+ * Module:	Autoinstallation
+ * Authors:     Anas Nashif <nashif@suse.de>
+ * Purpose:	functions for partitioning in autoinst mode
  *
  * $Id$
  */
-
-{
-    
+{    
     include "partitioning/auto_part_functions.ycp";   
     include "partitioning/auto_part_prepare.ycp";    
     include "partitioning/auto_part_create.ycp";    
     include "partitioning/auto_finish.ycp";
-    include "partitioning/auto_part_ui.ycp";
-    
-    /*  
-    include "partitioning/partition_defines.ycp";
-    */
-
+    include "partitioning/auto_part_ui.ycp";    
     
     textdomain "autoinst";
 
+    /**
+     * StringFS2Symbol()
+     * @param any filesystem string
+     * @return symbol filesystem type
+     */
+    global define symbol StringFS2Symbol (any fs) ``{
+	if (is(fs,symbol))
+	{
+	    return (symbol)fs;
+	}
+
+	map filesystems =
+	    $[
+	      "ext2":	`ext2,
+	      "ext3":	`ext3,
+	      "reiser":	`reiser,
+	      "lvm":	`lvm,
+	      "raid":	`raid,
+	      "jfs":	`jfs,
+	      "fat32":	`fat32,
+	      "xfs":	`xfs,
+	      "fat16":	`fat16,
+	      "swap":	`swap,
+	      "none":	`none
+	    ];
+	return filesystems[fs]:`reiser;
+    }
 
 
     /**
@@ -355,13 +375,13 @@
 		part["fsid"] =  fsid_boot;
 	    }
 
-	    symbol tmpfs = AutoinstStorage::StringFS2Symbol(currentPartition["filesystem"]:"none");
+	    symbol tmpfs = StringFS2Symbol(currentPartition["filesystem"]:"none");
 	    if (tmpfs != `none)
 	    {
 		part["used_fs"] = tmpfs;
 	    }
 	    else
-	    {
+	    {		
 		if (fsid_boot == Partitions::fsid_fat32)
 		{
 		    // for ia64, /boot is FAT32
@@ -372,7 +392,7 @@
 	else if (mount_point == "/")
 	{
 	    root_region=region;
-	    part["used_fs"] =  AutoinstStorage::StringFS2Symbol(currentPartition["filesystem"]:"reiser");
+	    part["used_fs"] =  StringFS2Symbol(currentPartition["filesystem"]:"reiser");
 	}
 	else if (lvm_group != "")
 	{
@@ -400,7 +420,7 @@
 	}
 	else
 	{
-	    part["used_fs"] = AutoinstStorage::StringFS2Symbol(  currentPartition["filesystem"]:"reiser");
+	    part["used_fs"] = StringFS2Symbol(  currentPartition["filesystem"]:"reiser");
 	}
 
 	y2milestone("Adding partition: %1", part);
@@ -411,7 +431,12 @@
 
 
 
-
+    /**
+     * SortPartitions()
+     * Sort Partitions
+     * @param list list of partitions
+     * @return list 
+     */
     global define list SortPartitions(list p) ``{
 	p = sort( map p1, map p2, p,
 		  ``(start_of_region (p1["region"]:[])
@@ -426,7 +451,6 @@
      *  @param label
      *  @return new partitions list
      */
-
     global define list CreatePartitions (list partitions, list<integer> selected_region, string label)
 	``{
 
@@ -684,6 +708,7 @@
 
 
     /**
+     *  AutoPartition ()
      *  Determine how and where the partitions are added in autoinst mode
      *  modifies targetMap with new partition list for the specified device
      *  @param device name of the target drive
@@ -975,7 +1000,7 @@ exist on this system.
 				if ( pentry["format"]:false)
 				{
 				    symbol detected_fs = pentry["detected_fs"]:`reiser;
-				    pentry["used_fs"] = AutoinstStorage::StringFS2Symbol( autopart["filesystem"]:detected_fs);
+				    pentry["used_fs"] = StringFS2Symbol( autopart["filesystem"]:detected_fs);
 				}
 				else
 				{
@@ -1028,7 +1053,7 @@ exist on this system.
 				if ( pentry["format"]:false)
 				{
 				    symbol detected_fs = pentry["detected_fs"]:`reiser;
-				    pentry["used_fs"] = AutoinstStorage::StringFS2Symbol(  autopart["filesystem"]:detected_fs);
+				    pentry["used_fs"] = StringFS2Symbol(  autopart["filesystem"]:detected_fs);
 				}
 				else
 				{
@@ -1195,9 +1220,7 @@ to contain a minimal installation.");
 	} // while (true)
 	y2milestone("returning=%1", ok );
 	return (ok);
-    }
+    }    
 
-
-    
-
+    // EOF
 }
