@@ -28,6 +28,10 @@
     global string filepath = "";
     global string host = "";
     global string directory =  "";
+
+
+	global string user = "";
+	global string pass = "";
     string ip = "";
     string mac = "";
 
@@ -49,9 +53,14 @@
 	    scheme = urltok["scheme"]:"default";
 	    host = urltok["host"]:"";
 	    filepath = urltok["path"]:"";
+		port = urltok["port"]:"";
+		user = urltok["user"]:"";
+		pass = urltok["pass"]:"";
 
 	    ip = AutoInstallRules::hostaddress;
+
 	    mac = AutoInstallRules::mac;
+
 	    ProtocolMessage();
 	}
     }
@@ -327,7 +336,16 @@
 	if ( Scheme == "http" )
 	{
 	    import "HTTP";
-	    string full_url = sformat("http://%1%2", Host ,  Path );
+	    string full_url = "";
+		if (user!= ""  && pass != "")
+		{
+			full_url = sformat("http://%1%2", Host ,  Path );
+		}
+		else
+		{
+			full_url = sformat("http://%1:%2@%3%4", user, pass, Host ,  Path );
+		}
+
 	    map res = HTTP::Get(full_url, Localfile);
 	    if (res["code"]:0 == 200)
 	    {
@@ -342,7 +360,16 @@
 	if ( Scheme == "ftp" )
 	{
 	    import "FTP";
-	    string full_url = sformat("ftp://%1%2", Host ,  Path );
+	    string full_url = "";
+		if (user!= ""  && pass != "")
+		{
+			full_url = sformat("ftp://%1%2", Host ,  Path );
+		}
+		else
+		{
+			full_url = sformat("ftp://%1:%2@%3%4", user, pass, Host ,  Path );
+		}
+
 	    map res = FTP::Get(full_url, Localfile);
 	    if (SCR::Read(.target.size, Localfile) > 0)
 	    {
