@@ -162,9 +162,21 @@ Make sure the control file has the correct syntax and values.
 		 ``{
 	    if (data["initialize"]:false)
 	    {
-		init_done = true;
-		integer zero_ret = InitDevice(device);
-		y2milestone("Initializing device:%1 --> %2", device, zero_ret);
+		import "AutoinstGeneral";
+		
+		string title = _("Initialization of partition table requested");
+		string msg = sformat(_("You have requested to initialize the partition table of drive %1, should
+drive %1 be initialized now?"), device);
+		
+		if (AutoinstGeneral::Confirm && !UI::YesNoHeadlinePopup(title, msg)) {
+		    y2warning("%1 was not initialzied", device);
+		}
+		else
+		{		    
+		    init_done = true;
+		    integer zero_ret = InitDevice(device);
+		    y2milestone("Initializing device: %1 --> %2", device, zero_ret);
+		}
 	    }
 	});
 
