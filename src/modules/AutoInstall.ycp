@@ -17,7 +17,7 @@
     import "Report";
     import "XML";
     include "autoinstall/io.ycp";
-    include "autoinstall/url.ycp";
+  
 
 
     // Put all scripts and autoinstall data in this directory for later access
@@ -120,7 +120,9 @@
     global map targetMap = $[];
 
 
-
+    global list loadKernelModules = [];
+    global list configureKernelModules = [];
+    
     global list RAID = [];
 
     global list Fstab = [];
@@ -166,7 +168,7 @@
     global define void AutoInstall()
 	``{
 
-	if (Mode::config || Mode::cont)
+	if (Mode::config || ( Mode::cont &&  Mode::autoinst))
 	{
 	    list MenuEntries = ReadMenuEntries();
 	    ModuleMap = select(MenuEntries,0,$[]);
@@ -174,7 +176,7 @@
 	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
 
-	if (!Mode::config &&  ! (Mode::cont && Restore()))
+	if (!Mode::config &&  ! ( Mode::cont && !Mode::autoinst && Restore() ))
 	{
 	    if ( SCR::Read(.target.size,xml_tmpfile) != -1  && size ( Profile ) == 0)
 	    {
@@ -184,7 +186,7 @@
 	    ParseCmdLine();
 	}
 
-	if (Mode::cont && size(Profile) > 0)
+	if (Mode::cont && size ( Profile ) > 0)
 	{
 	    y2milestone("Enabling Auto-Installation mode");
 	    Mode::autoinst = true;
@@ -201,7 +203,7 @@
     global define boolean ProcessProfile()
 	``{
 	any ret = nil;
-	if ( SCR::Read(.target.size, xml_tmpfile)>0 )
+	if ( SCR::Read(.target.size, xml_tmpfile) > 0 )
 	{
 	     ret = XML::XMLToYCPFile( xml_tmpfile );
 	     if (ret == nil)
@@ -569,6 +571,22 @@
         return;
     }
 
+
+    global define void Finalize() ``{
+	
+	sysconfigSettings();
+	if (  X11["default_wm"]:"" != "") {
+	    SCR::Write (.sysconfig.windowmanager.DEFAULT_WM, X11["default_wm"]:"kde");
+	    SCR::Write (.sysconfig.windowmanager, nil);
+	}
+	if (  X11["display_manager"]:"" != "") {
+	    SCR::Write (.sysconfig.displaymanager.DISPLAYMANAGER, X11["display_manager"]:"kdm");
+	    SCR::Write (.sysconfig.displaymanager, nil);
+	}
+	
+	    
+    }
+
     /**
      * Write sysconfig variables
      * @param void
@@ -844,16 +862,17 @@
      */
     global define boolean ParseCmdLine ()
 	``{
+	include "transfer/url.ycp";
 	map result = $[];
-	string cmdLine = "";
-	integer slashpos = 0;
+	string cmdLine = "";	
 	any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
-	if (autoinstall != nil)
+	
+	if (autoinstall != nil && is(autoinstall,string))
 	{
 	    cmdLine = autoinstall;
 	    if (cmdLine == "default")
 	    {
-		result["scheme"]=cmdLine;
+		result["scheme"]= "default";
 		ProfileLocation = result;
 		return true;
 	    }

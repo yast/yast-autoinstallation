@@ -222,8 +222,9 @@
 		y2milestone("cdlist %1: %2", cdnum, cdlist);
 		foreach (`p, cdlist, ``{
 		    string pacPath = sformat("%1/suse/%2", AIServer::PackageRep ,select(p,0,""));
-		    y2milestone("path %1", pacPath);
-		    if (SCR::Read(.target.size, pacPath)==-1) {
+		    // y2milestone("path %1", pacPath);
+		    if (SCR::Read(.target.size, pacPath)==-1)
+		    {
 			found = found +1;
 		    }
 		    

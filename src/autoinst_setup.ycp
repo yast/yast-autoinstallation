@@ -31,6 +31,7 @@ Please wait while the system is being prepared for auto-installation.
 </P>"));
     list progress_stages =
 	[
+	 _("Load and configure additional kernel modules"),
 	 _("Configure Language, Keyboard and Time zone "),
 	 _("Configure Mouse"),
 	 _("Execute pre-install user scripts"),
@@ -42,6 +43,7 @@ Please wait while the system is being prepared for auto-installation.
 
     list progress_descriptions =
 	[
+	 _("Loading and configuring additional kernel modules"),
 	 _("Configuring language, Keyboard and Time zone..."),
 	 _("Configuring Mouse..."),
 	 _("Executing pre-install user scripts..."),
@@ -59,6 +61,44 @@ Please wait while the system is being prepared for auto-installation.
 		  progress_descriptions,
 		  help_text );
 
+
+    // Additional Kernel modules
+    ///////////////////////////////////////////////////////////////////////
+    if (is(AutoInstall::loadKernelModules, list) && size(AutoInstall::loadKernelModules) > 0 )
+    {
+	foreach(`m, AutoInstall::loadKernelModules, ``{
+	    if (m["module"]:"" != "")
+	    {
+		ModuleLoading::Load(m["module"]:"",
+				    m["module_arguments"]:"",
+				    m["vendor"]:"Additional Module",
+				    m["device"]:"Additional Module",
+				    false,
+				    m["modprobe"]:false);
+		if (m["configure"]:false)
+		{
+		    ModulesConf::ModuleArgs (m["module"]:"",m["module_arguments"]:"" );
+		}
+	    }
+	
+	});
+    }
+
+    if (is(AutoInstall::configureKernelModules, list) && size(AutoInstall::configureKernelModules) > 0 )
+    {
+	foreach(`m, AutoInstall::configureKernelModules, ``{
+	    if (m["module"]:"" != "")
+	    {	
+		ModulesConf::ModuleArgs (m["module"]:"",m["module_arguments"]:"" );
+	
+	    }
+	
+	});
+    }   
+
+    
+
+    
     //Keyboard
     ///////////////////////////////////////////////////////////////////////
     // Set it in Keyboard module.
