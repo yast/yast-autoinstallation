@@ -326,7 +326,7 @@
     }
 
     /**
-     *
+     * Get Group name
      */
     string groupName (string tree_item) {
         list<string> tok = splitstring(tree_item, "@");
@@ -338,7 +338,7 @@
     }
 
     /**
-     *
+     * Get module name
      */
     string moduleName (string tree_item) {
         list<string> tok = splitstring(tree_item, "@");
@@ -405,6 +405,8 @@
                 if (ret == `tree || ret == `menu_tree)
                 {
                     tree_item = (string ) UI::QueryWidget(`id(`tree), `CurrentItem);
+                    if (tree_item == nil )
+                        continue;
                 }
                 else
                 {
