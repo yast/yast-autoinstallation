@@ -8,152 +8,46 @@
  */
 {
     textdomain "autoinst";
-	import "Label";
-
+    import "Label";
+    import "Popup";
     /**
      * Dialog Contents
      */
 
     global define term class_dialog_contents ()
 	``{
-
-	list classes = maplist(map class , AutoinstClass::Classes,
-			       ``{
-				   string pathtoClass = sformat("%1/%2", AutoinstConfig::classDir, class["name"]:("Unknown"));
-
-				   list files_in_class = SCR::Read(.target.dir, pathtoClass);
-				   return (`item(
-						 `id(class["name"]:"Unknown"),
-						 class["name"]:"No name",
-						 class["order"]:"0",
-						 size(files_in_class)
-						 )
-					   );
-			       });
-
+	list classes = maplist(map class , AutoinstClass::Classes,     ``{
+	    string pathtoClass = sformat("%1/%2", AutoinstConfig::classDir, class["name"]:("Unknown"));
+	    list files_in_class = (list) SCR::Read(.target.dir, pathtoClass);
+	    return (`item(
+			  `id(class["name"]:"Unknown"),
+			  class["name"]:"No name",
+			  class["order"]:"0",
+			  size(files_in_class)
+			  )
+		    );
+	});
 
 	term contents =
-    `VBox(
-	  `VWeight(40, `Table( `id(`table), `opt (`notify, `immediate),
-			       `header(_("Class Name"), _("Order"), _("Configurations")),
-			       classes
-			       )
-		   ),
-	  `VSpacing(1),
-	  `VWeight(40,`RichText(`id(`description), _("Class Description"))),
-	  `VSpacing(1),
-	  `HBox(
-		`PushButton(`id(`new), _("Ne&w")),
-		`PushButton(`id(`edit), _("&Edit")),
-		`PushButton(`id(`delete), _("&Delete"))
-		)
-	  );
+	    `VBox(
+		  `VWeight(40, `Table( `id(`table), `opt (`notify, `immediate),
+				       `header(_("Class Name"), _("Order"), _("Configurations")),
+				       classes
+				       )
+			   ),
+		  `VSpacing(1),
+		  `VWeight(40,`RichText(`id(`description), _("Class Description"))),
+		  `VSpacing(1),
+		  `HBox(
+			`PushButton(`id(`new), _("Ne&w")),
+			`PushButton(`id(`edit), _("&Edit")),
+			`PushButton(`id(`delete), _("&Delete"))
+			)
+		  );
 	return contents;
     }
 
-
-    /**
-     * Manage Classes
-     *
-     */
-    global define symbol ManageClasses()
-	``{
-
-	string title = _("Classes");
-
-	string help = _("<p>Use this interface to define classes of control files. </p>
-");
-
-	help = help + _("<p>For example, you can define a class of configurations for
-a specific  department, group, or site in your company environment.</p>
-");
-
-	help = help + _("<p>The order (priority) defines the hierarchy of a class
-and when it is merged when creating a control file.
-</p>
-");
-
-
-	Wizard::SetContents(title,
-			    class_dialog_contents() , help, true, true);
-	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
-	Wizard::ReplaceAbortButton(`Empty());
-	any ret = nil;
-	repeat
-	    {
-		if (size(AutoinstClass::Classes) == 0 )
-		{
-		    UI::ChangeWidget(`id(`edit), `Enabled, false);
-		    UI::ChangeWidget(`id(`delete),`Enabled, false);
-		}
-
-		string class =  UI::QueryWidget(`id(`table), `CurrentItem);
-		map selected_class = select(filter(map c,  AutoinstClass::Classes,``(c["name"]:""  == class) ), 0, $[] );
-		if ( class != nil )
-		{
-		    UI::ChangeWidget(`id(`description), `Value, selected_class["description"]:_("No Description"));
-		}
-
-		ret = UI::UserInput();
-
-		y2milestone("ret: %1, class: %2", ret, class);
-
-
-		if (ret == `new)
-		{
-		    any defret = AddEditClasses(ret, "");
-
-		    Wizard::SetContents(title,
-					 class_dialog_contents(), help, true, true);
-		}
-		else if (ret ==`edit)
-		{
-		    if (class == nil)
-		    {
-			Popup::Message(_("Select at least one class
-to edit.
-"));
-			continue;
-		    }
-		    any defret = AddEditClasses(ret, class);
-		    if (defret != `cancel)
-		    {
-
-		    }
-		    Wizard::SetContents(title,
-					class_dialog_contents(), help, true, true);
-		}
-		else if (ret ==`delete)
-		{
-		    if (class == nil) {
-			Popup::Message(_("Select at least one class
-to delete.
-"));
-			continue;
-		    }
-		    AutoinstClass::Classes = filter(map c,  AutoinstClass::Classes,``( lookup(c,"name","")!=class) );
-
-		    Wizard::SetContents(title,
-					class_dialog_contents(), help, true, true);
-
-		}
-
-
-
-	    } until (ret == `back || ret == `next );
-
-	if (ret == `next)
-	{
-	    AutoinstClass::Save();
-	}
-	return ret;
-
-    }
-
-
-
-    /**
+   /**
      * Add or Edit a class
      * @param symbol mode
      * @param symbol 
@@ -169,7 +63,7 @@ to delete.
 	map class = $[];
 	if (mode == `edit)
 	{
-	    class = select(filter(
+	    class = (map) select(filter(
 				  map c,
 				  AutoinstClass::Classes,
 				  ``(lookup(c,"name","")== name)),0,$[]);
@@ -205,10 +99,10 @@ to delete.
 	}
 	symbol ret = `none;
 	repeat {
-	    ret = UI::UserInput();
+	    ret = (symbol) UI::UserInput();
 	    if (ret == `save )
 	    {
-		if (UI::QueryWidget(`id(`name),`Value) == "")
+		if ((string) UI::QueryWidget(`id(`name),`Value) == "")
 		{
 		    Popup::Message(_("That name is already used. Select another name."));
 		    continue;
@@ -218,7 +112,7 @@ to delete.
 		    Popup::Message(_("That name is already used. Select another name."));
 		    continue;
 		}
-		string name = UI::QueryWidget(`id(`name),`Value);
+		string name = (string) UI::QueryWidget(`id(`name),`Value);
 		if (checkFileName(name) != 0 || name == "")
 		{
 		    Popup::Error(invalidFileName());
@@ -226,8 +120,8 @@ to delete.
 		}
 		map newClass = $[
 				 "name": name,
-				 "order":UI::QueryWidget(`id(`order),`Value),
-				 "description":UI::QueryWidget(`id(`description),`Value)
+				 "order": (string) UI::QueryWidget(`id(`order),`Value),
+				 "description": (string)UI::QueryWidget(`id(`description),`Value)
 		];
 		if (mode == `new)
 		{
@@ -238,7 +132,7 @@ to delete.
 		{
 		    AutoinstClass::Classes=    maplist(
 						 map c, AutoinstClass::Classes,``{
-						     if (lookup(c,"name","") == UI::QueryWidget(`id(`name),`Value)) {
+						     if (c["name"]:"" == (string) UI::QueryWidget(`id(`name),`Value)) {
 							 return newClass;
 						     }
 						     else
@@ -253,10 +147,114 @@ to delete.
 
 	UI::CloseDialog();
 
-	return ret;
+	return (symbol)ret;
     }
 
 
+    
+
+    /**
+     * Manage Classes
+     *
+     */
+    global define symbol ManageClasses()
+	``{
+
+	string title = _("Classes");
+
+	string help = _("<p>Use this interface to define classes of control files. </p>
+");
+
+	help = help + _("<p>For example, you can define a class of configurations for
+a specific  department, group, or site in your company environment.</p>
+");
+
+	help = help + _("<p>The order (priority) defines the hierarchy of a class
+and when it is merged when creating a control file.
+</p>
+");
+
+
+	Wizard::SetContents(title,
+			    class_dialog_contents() , help, true, true);
+	
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+	
+	Wizard::ReplaceAbortButton(`Empty());
+	any ret = nil;
+	repeat
+	    {
+		if (size(AutoinstClass::Classes) == 0 )
+		{
+		    UI::ChangeWidget(`id(`edit), `Enabled, false);
+		    UI::ChangeWidget(`id(`delete),`Enabled, false);
+		}
+
+		string class =  (string) UI::QueryWidget(`id(`table), `CurrentItem);
+		map selected_class = (map) select(filter(map c,  AutoinstClass::Classes,``(c["name"]:""  == class) ), 0, $[] );
+		if ( class != nil )
+		{
+		    UI::ChangeWidget(`id(`description), `Value, selected_class["description"]:_("No Description"));
+		}
+
+		ret =(symbol) UI::UserInput();		
+
+		if (ret == `new)
+		{
+		    any defret = AddEditClasses(ret, "");
+
+		    Wizard::SetContents(title,
+					 class_dialog_contents(), help, true, true);
+		}
+		else if (ret ==`edit)
+		{
+		    if (class == nil)
+		    {
+			Popup::Message(_("Select at least one class
+to edit.
+"));
+			continue;
+		    }
+		    any defret = AddEditClasses(ret, class);
+		    if (defret != `cancel)
+		    {
+
+		    }
+		    Wizard::SetContents(title,
+					class_dialog_contents(), help, true, true);
+		}
+		else if (ret ==`delete)
+		{
+		    if (class == nil)
+		    {
+			Popup::Message(_("Select at least one class
+to delete.
+"));
+			continue;
+		    }
+		    AutoinstClass::Classes = filter(map c,  AutoinstClass::Classes,``( lookup(c,"name","")!=class) );
+
+		    Wizard::SetContents(title,
+					class_dialog_contents(), help, true, true);
+
+		}
+
+
+
+	    } until (ret == `back || ret == `next );
+
+	if (ret == `next)
+	{
+	    AutoinstClass::Save();
+	}
+	return (symbol)ret;
+
+    }
+
+
+
+ 
 
 
     /**

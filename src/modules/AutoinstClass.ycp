@@ -43,6 +43,38 @@
 
 
 
+    /**
+     * find a profile path
+     * @param string profile name
+     * @return string profile Path
+     *
+     */
+    global define string findPath(string name, string class)
+	``{
+	map result = (map) select(filter(map c,  confs,
+				   ``(c["name"]:"" == name && c["class"]:"" == class)),0,$[]);
+
+	string profile_path = sformat("%1/%2/%3", AutoinstConfig::classDir, result["class"]:"", result["name"]:"default");
+	return profile_path;
+    }
+
+
+    /**
+     * Read classes
+     */
+    global define void Read()
+	``{
+	if (SCR::Read(.target.size, classPath) != -1)
+	{
+	    // TODO: use XML module
+	    map tmp = (map)SCR::Read(.xml, classPath);
+	    Classes = tmp["classes"]:[];
+	}
+	return;
+    }
+
+
+    
     /*
      * Constructor
      * @return void
@@ -65,7 +97,7 @@
 			       string resultFileName
 			       )
 	``{
-	string tmpdir = SCR::Read( .target.tmpdir );
+	string tmpdir = AutoinstConfig::tmpDir;
 	string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'addon'\" --param with ";
 	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"", configuration["class"]:"") + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
@@ -75,26 +107,12 @@
 
 	y2milestone("Merge command: %1", MergeCommand);
 
-	map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
+	map out = (map)SCR::Execute(.target.bash_output, MergeCommand, $[]);
 	y2milestone("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
 	return (out);
     }
 
 
-
-    /**
-     * Read classes
-     */
-    global define void Read()
-	``{
-	if (SCR::Read(.target.size, classPath) != -1)
-	{
-	    // TODO: use XML module
-	    map tmp = SCR::Read(.xml, classPath);
-	    Classes = tmp["classes"]:[];
-	}
-	return;
-    }
 
 
 
@@ -107,7 +125,7 @@
 	confs = [];
 	foreach(map class, Classes,
 		``{
-	    list files = SCR::Read(.target.dir, classDir + "/" + class["name"]:"xxx");
+	    list files = (list) SCR::Read(.target.dir, classDir + "/" + class["name"]:"xxx");
 	    if (files != nil ) {
 		y2milestone("Files in class %1: %2", class["name"]:"xxx", files);
 		list tmp_confs = maplist(string file , files , ``{
@@ -130,7 +148,7 @@
      * Save Class definitions
      */
 
-    global define Save()
+    global define boolean Save()
 	``{
 	map tmp = $[ "classes":Classes];
 	y2debug("saving classes: %1", classPath);
@@ -155,7 +173,6 @@
 
     global define list Export()
 	``{
-
 	return profile_conf;
     }
 
@@ -176,20 +193,5 @@
 	return summary;
     }
 
-
-    /**
-     * find a profile path
-     * @param string profile name
-     * @return string profile Path
-     *
-     */
-    global define findPath(string name, string class)
-	``{
-	map result = select(filter(map c,  confs,
-				   ``(c["name"]:"" == name && c["class"]:"" == class)),0,$[]);
-
-	string profile_path = sformat("%1/%2/%3", AutoinstConfig::classDir, result["class"]:"", result["name"]:"default");
-	return profile_path;
-    }
 
 }
