@@ -1,7 +1,11 @@
 /**
+ * File:	include/autoinstall/general_settings.ycp
+ * Package:	Auto-installation
+ * Summary:	General Settings
+ * Author:	Anas Nashif <nashif@suse.de>
  *
+ * $Id$
  */
-
 {
     /**
      * Main dialog
@@ -66,7 +70,7 @@
 
 	string help_text = _("<p>This part of the configuration is required for
 the autoinstallation. Select the values matching
-your hardware and preferences then press <b>Accept</b> to continue.</p>
+your hardware and preferences then press <b>Next</b> to continue.</p>
 ");
 
 
@@ -76,10 +80,12 @@ your hardware and preferences then press <b>Accept</b> to continue.</p>
 	Wizard::SetContents(_("Environment and Basic Options"),
 			    contents, help_text, true , true);
 
+	Wizard::ReplaceAbortButton(`Empty());
+
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
-	    if (ret == `accept)
+	    if (ret == `next)
 	    {
 		language= UI::QueryWidget(`id(`language), `Value);
 		timezone= UI::QueryWidget(`id(`timezone), `Value);
@@ -122,7 +128,7 @@ force it not to boot at the same time.
 				       ]
 		];
 	    }	    
-	} until (ret == `accept || ret == `cancel);
+	} until (ret == `next || ret == `back);
 
 	return ret;
     }

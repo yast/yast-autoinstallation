@@ -199,75 +199,52 @@
      * @param void
      * @return void
      */
-    global define bootloaderSettings()``{
+    global define boolean bootloaderSettings()``{
 
 	// Bootloader::manual_location = true;
 	Bootloader = Profile::Flat["bootloader"]:$[];
 
-
-	map toimport = $[];
-
-	if (!issubstring(Bootloader["location"]:"mbr", "/dev/"))
-	{
-	    toimport["location"] = Bootloader["location"]:"mbr";
-	}
-	else
-	{
-	    toimport["loader_device"] = Bootloader["location"]:"mbr";
-	}
-
-	
-	if (haskey(Bootloader, "loader_type"))
-	{
-	    toimport["loader_type"] = Bootloader["loader_type"]:"grub";
-	}
-
-
-	/**
-	 * FIXEME
 	string parameters = Bootloader["kernel_parameters"]:"";
 
 	if ( size(parameters) > 0)
 	{
 	    foreach (`parameter, splitstring(parameters, " "),
 		     ``{
-		list param_value_list = splitstring (parameter, "=");
-
-		// now only collect keys not in discardlist
+		list param_value_list = splitstring (parameter, "=");		
 		if (size (param_value_list) > 0)
 		{
 		    Kernel::AddCmdLine (param_value_list[0]:"", param_value_list[1]:"");
 		}
 	    });
+	    Bootloader = remove(Bootloader, "kernel_parameters");
 	}
 
-	// Lilo settings
-	Boot::Set(
-		  Bootloader["linear"]:false,
-		  Bootloader["activate"]:false,
-		  Bootloader["lba_support"]:false
-		  );
-
+	
 	// Add initrd modules
 	if (size(Bootloader["initrd_modules"]:[]) > 0)
 	{
-	    foreach(`m, Bootloader["initrd_modules"]:[],
+	    import "Initrd";
+	    foreach(map mod , Bootloader["initrd_modules"]:[],
 		    ``{
-		Boot::AddInitrdModule (m, "");
+		Initrd::AddModule (mod["module"]:"", mod["module_args"]:"");
 	    });
+	    Bootloader = remove(Bootloader, "initrd_modules");
 	}
 
-	Boot::Set();
-	*/
 
-	// Bootloader::Import(toimport);
-	Bootloader::Reset ();
-	Bootloader::Propose ();
+	if (Bootloader == $[])
+	{
+	    Bootloader::Propose ();
+	    return true;
+	}
+	else
+	{
+	    Bootloader::Import(Bootloader);
+	    // FIXME: detect if configuration is the result of cloning.
+	    BootCommon::was_proposed = false;
+	    Bootloader::Propose ();
+	}
     }
-
-
-
-
 
 
 

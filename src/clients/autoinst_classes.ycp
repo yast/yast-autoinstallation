@@ -16,166 +16,59 @@
     import "Summary";
     import "AIClass";
 
-    
+
     include "autoinstall/classes.ycp";
-    include "ui/common_messages.ycp";    
+    include "ui/common_messages.ycp";
 
 
+    any ret = nil;
+    string func = "";
+    list param = [];
+ 
+    /* Check arguments */
+    if(size(Args()) > 0 && is(Args(0), string)) {
+	func = WFM::Args(0);
+	if(size(Args()) > 1 && is(Args(1), list ))
+	    param = WFM::Args(1);
+    }
+    y2debug("func=%1", func);
+    y2debug("param=%1", param);
 
-    define classConfiguration() ``{
-	string title = _("Class Configuration");
-	string help = _("<p>Choose one or more of the listed classes to which the current control
-file should belong.</p>
-");
-
-	
-	map profiles = $[];
-	if (size(AIClass::Classes) == 0 )							      
-	{	
-	    AIClass::Parse();	
-	}
-	    
-	foreach(map prof, AIClass::Profiles, ``{	
-	    string class = prof["class"]:"Default";
-	    list ui_list = profiles[class]:[];
-	    if (size(ui_list)==0)
-	    {
-		ui_list=add(ui_list,`item(`id("none"),
-					  _("None"))
-			    );
-	    }
-	    
-	    ui_list=add(ui_list,`item(`id(prof["name"]:"Unknown"),
-				      prof["name"]:"Unknown", (
-							       filter(`cc, AIClass::currentProfile, ``(cc["configuration"]:"" == prof["name"]:"Unknown")) > 0))
-			);
-	    
-	    profiles[class] =  ui_list;
-	});
-	
-	term Combo = `VBox();
-
-	if (size(profiles)>0) {
-	    foreach(`k,`v, profiles,``{
-		Combo=add(Combo,	 
-			  `Left(
-				`ComboBox(`id(k),`opt(`hstretch,`autoShortcut),  k,
-					  v
-					  )
-				)
-			  );		
-	    });
-	}
-	else
-	{
-	    Combo = `Left(`Label(`id(`emptyclasses), _("No profiles in this class")));	    
-	}
-
-	term contents =
-	    `Top(
-		 `Left(
-		       `VBox(
-			     Combo
-			     )
-		       )
-		 );
-	
-		
-	Wizard::SetContents(title,	
-			    contents, help , true, true);
-	any ret=nil;
-	symbol next = nil;
-	repeat {
-	    ret = UI::UserInput();
-	    integer n = 0;
-	    if (ret ==`next)
-	    {
-		list selected_profiles = [];	    
-		foreach(map prof, AIClass::Profiles,``{
-		    
-		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
-		    
-		    if (selected != nil) {
-			if (selected != "none") {
-			    n = n +1;
-			}
-			selected_profiles = add(selected_profiles,
-						$[					      
-						  "class_name":prof["class"]:"none",
-						  "configuration":selected
-						]
-						);
-		    }
-		    
-		});
-		
-		if (n ==  0) {
-		  
-		    
-		    UI::ErrorPopup(_("Select at least one class configuration
-to perform a merge.
-"));
-		    continue;
-		}
-		
-		list sorted_profiles =  filter(`c, toset(selected_profiles),``(c["configuration"]:""!= "none")	 
-					       );
-	    
-		y2debug("Selected Profiles: %1", sorted_profiles);
-		AIClass::currentProfile = sorted_profiles;
-	    }
-	    
-	    
-	} until  (ret == `next || ret ==`back || (ret == `abort && UI::ReallyAbortPopup (Profile::changed)) );
+        
+   
+    if (func == "Import") {
+	ret = AIClass::Import(param);	
+    }
+    /* create a  summary*/
+    else if (func == "Summary") {
+	ret =  AIClass::Summary();
+    }
+    else if (func == "Reset") {
+	AIClass::Import([]);
+	ret = [];
+    }
+    else if (func == "Change") {
+	Wizard::CreateDialog();
+	ret =  classConfiguration();
+	Wizard::CloseDialog();
 	return ret;
     }
-
-
-    
-    define set_contents()
-	``{
-	term contents =
-	    `VBox(
-		  `VSpacing(1),
-		  `RichText( `id(`summary), AIClass::Summary()),
-		  `VSpacing(0.5),
-		  `HBox(
-			`PushButton(`id(`configure), _("&Class Configuration")),
-			`HStretch(),
-			`PushButton(`id(`reset), _("&Reset Configuration"))
-			),
-		  `VSpacing(1)
-		  );
-	Wizard::SetContents(_("Class Configuration"),
-			    contents, "", true, true);
+    else if (func == "Result") {
+	ret = AIClass::Export();
+    }
+    /* unknown function */
+    else {
+	y2error("unknown function: %1", func);
+	ret =  false;
     }
 
+    y2debug("ret=%1", ret);
+    y2milestone("General auto finished");
+    y2milestone("----------------------------------------");
 
-    set_contents();
-    any result = nil;
-    any ret = nil;
-    repeat {
-	ret = UI::UserInput();
-	if (ret == `configure)
-	{
-	    
-	    Wizard::CreateDialog ();	    
-	    result =  classConfiguration();
-	    UI::CloseDialog ();
+    return ret;
 
-	    if (result == `next || result == `finish )
-	    {
-		settings = AIClass::Export ();
-	    }
-	    set_contents();
-	}
-	else if ( ret == `reset)
-	{
-	    settings = [];
-	    AIClass::Set(settings);
-	    set_contents();
-	}
-    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+/* EOF */
 
-    return [ret, settings];
+
 }
