@@ -10,7 +10,7 @@
 {
     textdomain "autoinst";
 
-   
+
     /**
      * Compute packages needed for autoinstallation
      * @return list packages
@@ -18,7 +18,7 @@
 
     global define list autoinstPackages(list packageList, string kernel )
 	``{
-	
+
 	map configure = Profile::current["configure"]:$[];
 	list packages = [];
 
@@ -50,7 +50,7 @@
 	    if (start_nfsserver)
 		packages = union(packages, ["yast2-nfs-server", "nfs-utils"]);
 	}
-	
+
 	if (haskey(configure, "inetd")) {
 		map inetd = configure["inetd"]:$[];
 		if (inetd["start_inetd"]:false)
@@ -86,7 +86,7 @@
      */
     global define string checkProfile() ``{
 	import "Profile";
-	
+
 	map software = Profile::Flat["software"]:$[];
 
 	string base = software["base"]:"";
@@ -96,7 +96,7 @@
 
 
 	string error_msg = "";
-	
+
 	if (base == "" && size( packs ) < 50)
 	{
 	    error_msg = _("Base selection not defined.");
@@ -112,11 +112,11 @@
      * Check if selected packages are available
      */
     global define string checkPackageAvail() ``{
-	 
+
 	string descrDir 	= ISO::productData["descrdir"]:"suse/setup/descr";
 	string dataDir 	= ISO::productData["datadir"]:"./suse";
 	string sourceDir 	= ISO::sourceDir;
-	string packDB 		= descrDir + "/packages";	 
+	string packDB 		= descrDir + "/packages";
 	Progress::Title(sformat(_("Checking for package database: %1"), packDB));
 
 	string error_msg = "";
@@ -125,26 +125,26 @@
 	}
 
 	Progress::Title(_("Checking for package availability..."));
-	
+
 	list selPacs = Pkg::GetPackages (`selected , false);
 	list failed = [];
 	foreach(`pac, selPacs, ``{
-	    
+
 	    list tok = splitstring( pac , " ");
-	    
+
 	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
 	    string location = tok[3]:"noarch" + "/" + pacname;
-	    
-	    string localpath =  ISO::sourceDir + "/" + dataDir + "/" + location;	
+
+	    string localpath =  ISO::sourceDir + "/" + dataDir + "/" + location;
 	    integer pacsize = SCR::Read(.target.size, localpath);
-	    
+
 	    if (pacsize == -1)
-	    {	
+	    {
 		failed=add(failed, tok[0]:"Error");
 	    }
-	    
-	  
-	  
+
+
+
 	});
 	ISO::missing_packages = failed;
 	if (size(failed) > 0 )
@@ -154,12 +154,12 @@
 
 	return error_msg;
     }
-    
+
 
     /**
      * Set packages
      */
-    
+
     global define boolean setPackages() ``{
 	import "Profile";
 
@@ -172,7 +172,7 @@
 	list addons = _soft["addons"]:[];
 	list packs  = _soft["packages"]:[];
 	string kernel = _soft["kernel"]:"";
-	
+
 
 	if (base!="")
 	{
@@ -182,7 +182,7 @@
 	{
 	    Pkg::SetSelection("Minimal");
 	}
-	
+
 	// Addons
 	if (size(addons) > 0 )
 	{
@@ -193,12 +193,12 @@
 
 	Pkg::DoProvide(autoinstPackages(packs, kernel));
 	Pkg::PkgSolve();
-	
+
 	return (Pkg::ActivateSelections());
 
     }
-    
- 
+
+
     /**
      * ISO size dialog
      *
@@ -236,12 +236,12 @@
 			   `HSpacing(1)
 			   );
 
-	
-	
+
+
 	if (UI::HasSpecialWidget(`DownloadProgress)) {
 	    UI::OpenDialog(
 			   contents
-			   );	    
+			   );
 	    UI::UserInput();
 	    UI::CloseDialog();
 	}
@@ -271,23 +271,23 @@
 			    "options"	:	``(isoOptions()),
 			    "create"	:	``(createISO() )
 	];
-    
+
 	map sequence = $[
 			 "ws_start" 	: "options",
 			 "options"	: $[
-					    `next	: "verify",					    
+					    `next	: "verify",
 			 ],
 			 "verify"	: $[
 					    `next	: "summary",
 					    `abort	: `ws_finish
-			 ],	
+			 ],
 			 "summary"	: $[
-					    `next	: "create" 
+					    `next	: "create"
 					    ],
 			 "create"	: $[
 					    `next	: `ws_finish
 					    ]
-			 
+
 	];
 	// Translators: dialog caption
 	string caption = _("Custom ISO Image");
@@ -300,7 +300,7 @@
 			      true,
 			      true);
 
-	
+
 	any ret = WizardSequencer (iso_dlg, sequence);
 
 	Wizard::CloseDialog ();
@@ -320,22 +320,22 @@
 	string help= _("Enter the desired name of the ISO image to create and
 select any of the listed options.
 ");
-	
+
 	term contents =
 	    `Top(
 		 `VBox(
 		       `HBox(
-			     `TextEntry(`id(`file), _("Save ISO &File as:"), ISO::isoFile)		
-			     )		      
+			     `TextEntry(`id(`file), _("Save ISO &File as:"), ISO::isoFile)
+			     )
 		       )
 		 );
-	
+
 	Wizard::SetContents ( caption,
 			      contents,
 			      help,
 			      true,
 			      true);
-	
+
 	any ret = nil;
 	repeat
 	    {
@@ -350,13 +350,13 @@ select any of the listed options.
 		    }
 		    ISO::isoFile = f;
 		}
-		
+
 	    }  until (ret == `next || ret == `back);
-	
+
 	return ret;
     }
 
-    
+
     /**
      * ISO Summary
      */
@@ -365,7 +365,7 @@ select any of the listed options.
 	import "HTML";
 
 	// caption
-	string caption = _("ISO Summary");	
+	string caption = _("ISO Summary");
 	string html =  HTML::Heading(_("Package Source"));
 	html = html + HTML::Para(ISO::sourceDir);
 
@@ -378,14 +378,14 @@ select any of the listed options.
 	} else {
 	    html = html + HTML::Para(_("None"));
 	}
-	
+
 	term contents =
 	    `RichText(html);
 
 	string help_text = _("<p>Verify if the data in the summary box is correct then
 press Next to continue</p>
 ");
-	
+
 	Wizard::SetContentsButtons ( caption,
 				     contents,
 				     help_text,
@@ -398,14 +398,14 @@ press Next to continue</p>
 	    }  until (ret == `next || ret == `back || ret == `abort);
 	return ret;
     }
-    
+
     /**
      * ISO creation Dialog
      *
      */
     global define isoDialog()
 	``{
-		
+
 	import "Progress";
 
 	// caption
@@ -420,7 +420,7 @@ Fix the problem and try again.</p>
 
 	list progress_stages =
 	    [
-	     _("Set up Package Source"),	     
+	     _("Set up Package Source"),
 	     _("Verify Profile Consistency"),
 	     _("Create Package List"),
 	     _("Verify Package Availability")
@@ -430,10 +430,10 @@ Fix the problem and try again.</p>
 	    [
 	     _("Configuring package source..."),
 	     _("Verifying control file consistency..."),
-	     _("Creating package list..."),	     
-	     _("Verifying package availability...")	   
+	     _("Creating package list..."),
+	     _("Verifying package availability...")
 	     ];
-	
+
 	Progress::New(
 		      _("Verify Data for ISO Image"),
 		      "",     // progress_title
@@ -441,34 +441,34 @@ Fix the problem and try again.</p>
 		      progress_stages,
 		      progress_descriptions,
 		      help );
-	
+
 
 	boolean success = true;
 	Progress::NextStage();
 	success = ISO::initSource();
 
-	
-	Progress::NextStage();	
+
+	Progress::NextStage();
 	string error_msg = checkProfile();
 	if (error_msg != "") {
 	    UI::ErrorPopup(error_msg);
 	    return `abort;
 	}
-	
+
 
 	Progress::NextStage();
 	success = setPackages();
-	
-	
+
+
 	Progress::NextStage();
-	error_msg = checkPackageAvail();	
+	error_msg = checkPackageAvail();
 	if (error_msg != "")
 	{
-	    UI::ErrorPopup(error_msg);	    
+	    UI::ErrorPopup(error_msg);
 	}
-	
+
 	Progress::Finish();
-	
+
 	UI::ChangeWidget(`id(`next), `Enabled, true);
 	UI::ChangeWidget(`id(`back), `Enabled, true);
 	any ret = nil;
@@ -476,15 +476,15 @@ Fix the problem and try again.</p>
 	    {
 		ret = UI::UserInput();
 
-		
+
 
 	    }  until (ret == `next || ret == `back || ret == `abort);
-	
+
 	return ret;
     }
 
 
-    
+
     /**
      * Create ISO
      *
@@ -492,8 +492,8 @@ Fix the problem and try again.</p>
     global define createISO() ``{
 
 	import "Progress";
-	
-	
+
+
 	string help = UI(_("<P>
 Please wait while the directory structure for the new ISO file is created.
 </P>
@@ -501,7 +501,7 @@ Please wait while the directory structure for the new ISO file is created.
 	help = help + _("<p>Press <b>Next</b> to start creating the ISO file.</p>");
 
 
-	    
+
 	list progress_stages =
 	    [
 	     _("Create skeleton with essential files"),
@@ -511,18 +511,18 @@ Please wait while the directory structure for the new ISO file is created.
 
 	list progress_descriptions =
 	    [
-	     
+
 	     _("Creating skeleton with essential files"),
 	     _("Saving control file in ISO directory..."),
-	     _("Copying selected packages")	   
+	     _("Copying selected packages")
 	     ];
 
-	
+
 	list selPacs = Pkg::GetPackages (`selected , false);
-		
+
 	y2milestone ("install %1", selPacs);
 
-	
+
 	Progress::New(
 		      _("Creating ISO image"),
 		      "",     // progress_title
@@ -530,36 +530,36 @@ Please wait while the directory structure for the new ISO file is created.
 		      progress_stages,
 		      progress_descriptions,
 		      help );
-	
 
-		
+
+
 	Progress::NextStage();
 	ISO::createISOSkeleton();
 
 	Progress::NextStage();
-	
+
 	string cpCmd = sformat("cp /usr/share/autoinstall/isolinux.cfg %1/skeleton/boot/loader", ISO::skeletonDir);
 	SCR::Execute (.target.bash, cpCmd);
-	
+
 	Progress::NextStep();
-	
+
 	string location = sformat("%1/skeleton/autoinst.xml", ISO::skeletonDir);
 	Profile::Save(location);
-	
-	Progress::NextStage();	
-	
+
+	Progress::NextStage();
+
 	integer i = 0;
-	
-	
+
+
 	string datadir = ISO::productData["datadir"]:"./suse";
-	y2milestone ("datadir %1", datadir);	
+	y2milestone ("datadir %1", datadir);
 	foreach(`pac, selPacs, ``{
-	    
+
 	    list tok = splitstring( pac , " ");
-	    
+
 	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
 	    string location = tok[3]:"noarch" + "/" + pacname;
-	    
+
 	    string localpath =  ISO::sourceDir + "/" + datadir + "/" + location;
 	    y2debug("local path: %1", localpath);
 	    integer pacsize = SCR::Read(.target.size, localpath);
@@ -568,36 +568,36 @@ Please wait while the directory structure for the new ISO file is created.
 		Progress::Title(sformat(_("Copying %1"),  pacname));
 		Progress::NextStep();
 		string dir = ISO::skeletonDir + "/skeleton/" + datadir + "/" + tok[3]:"noarch";
-		
+
 		if (size(SCR::Read(.target.dir, dir)) == nil )
 		{
 		    SCR::Execute(.target.mkdir , dir);
 		}
-		
+
 		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, ISO::skeletonDir, datadir, location);
 		y2debug("%1", cpCmd);
-		any ret = SCR::Execute (.target.bash, cpCmd);			
+		any ret = SCR::Execute (.target.bash, cpCmd);
 	    }
-	  
-	  
+
+
 	});
-	
+
 
 	Progress::Title(_("ISO image directory ready"));
 	Progress::Finish();
-	
-	UI::ChangeWidget(`id(`next), `Enabled, true);	
+
+	UI::ChangeWidget(`id(`next), `Enabled, true);
 
 	any ret  = nil;
 
 	repeat
 	    {
-		ret = UI::UserInput();	
+		ret = UI::UserInput();
 		if (ret == `next)
 		{
 		    string mkisofscmd =	ISO::createISOCmd(ISO::isoFile );
 		    y2milestone("command: %1",  mkisofscmd );
-		    
+
 		    string du = lookup(SCR::Execute(.target.bash_output, sformat("du -s -b %1/skeleton | awk -F' ' ' { printf $1 }'", ISO::skeletonDir )), "stdout", "");
 		    integer fsSize = tointeger(du);
 		    y2milestone("size: %1" , fsSize);
@@ -605,12 +605,12 @@ Please wait while the directory structure for the new ISO file is created.
 		    isoSizeDialog(fsSize, ISO::isoFile);
 
 		}
-	
+
 	    } until (ret == `next || ret == `back || ret == `abort);
 	return ret;
     }
 
 
 
-    
+
 }

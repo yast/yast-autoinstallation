@@ -131,7 +131,10 @@ more <b>add-on</b> selections and packages.
 	Wizard::SetContents(title, contents, helptext, true, true);
 
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel);
-	UI::ChangeWidget(`id(`back), `Enabled, false);
+	// UI::ChangeWidget(`id(`back), `Enabled, false);
+	Wizard::ReplaceAbortButton(`Empty());
+	
+	
 	any ret = nil;
 	boolean error_found = false;
 
@@ -193,30 +196,19 @@ more <b>add-on</b> selections and packages.
 		    }
 
 		    if ( details_ret == `accept )
-		    {
-			ret = `next;
-			Pkg::ActivateSelections();
-			break;
+		    {		
+			Pkg::ActivateSelections();			
 		    }
-		    else if ( details_ret == `cancel )
-		    {
-			ret = `cancel;
-			break;
-		    }
-		    else if ( details_ret == `abort )
-		    {
-			ret = `abort;
-			break;
-		    }
+		 
 		}
 
-	    } until ( ret == `next  || ret == `cancel ||  ret == `abort);
+	    } until ( ret == `next  || ret == `back);
 
 	list allpacs = Pkg::GetPackages(`selected, true);
 
 	list seladd = [];
 	list selbase = [];
-	if ( ret != `abort || ret != `cancel )
+	if ( ret != `back )
 	{
 	    seladd =  Pkg::GetSelections(`selected, "");
 	    selbase =  Pkg::GetSelections(`selected, "base");
