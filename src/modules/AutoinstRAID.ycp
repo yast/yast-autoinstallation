@@ -66,9 +66,18 @@
      * Return existing MDs
      * @return list list of existing MDs
      */
+    /*
     global define list ExistingMDs ( string md ) {
 	return(filter( map part, get_possible_rds( Storage::GetTargetMap() ),  
                     ``( part["raid_name"]:"-1" == md )));
+    }
+    */
+
+
+    map FindMatchingDevice(integer nr) {
+        list<map> match = filter(map d, ExistingRAID["/dev/md", "partitions"]:[], 
+                ``(d["nr"]:-1 == nr && !d["delete"]:false));
+        return match[0]:$[];
     }
 
 
@@ -133,7 +142,10 @@
     }
 
 
-
+    /**
+     * Remove MDs if desired
+     * @return boolean
+     */
     define boolean remove_possible_mds () {
 
         boolean prefer_remove = raid["/dev/md", "prefer_remove"]:false;
@@ -150,6 +162,7 @@
             // update our variable
             ExistingRAID["/dev/md"] = allmds;
         }
+	y2milestone("ExistingRAID after delete: %1", ExistingRAID );
         return true;
     }
 
@@ -162,90 +175,92 @@
         remove_possible_mds ();
         list<map> raid_partitions = raid["/dev/md", "partitions"]:[];
 
-	list<map> RaidList =  maplist ( map md, raid_partitions,  ``{
+	list<map> RaidList =  [];
+        foreach ( map md, raid_partitions,  ``{
+
 	    string use	= raid["/dev/md","use"]:"none";
 	    string dev	= sformat("/dev/md%1", md["partition_nr"]:0);
-	    md["device"]	= dev;
+	    
+            map existing = FindMatchingDevice(md["partition_nr"]:0);
+            
+            if (existing != $[] && existing != nil )
+            {
+                existing["mount"] = md["mount"]:"";
+		if (!haskey(md, "format"))
+		    existing["format"]	= false;
+		else
+		    existing["format"] = md["format"]:false;
 
+		if (md["format"]:false)
+		    existing["used_fs"]	= md["filesystem"]:`ext2;
 
-	    if (md["loop_fs"]:false || md["crypt_fs"]:false)
-	    {
-		md["crypt_key"] =   Storage::AddCryptToClassified( md["crypt_key"]:"");
-	    }
-	    y2milestone("Working on %1", md);
-
-
-	    string chunk_size = "4";
-	    map options = md["raid_options"]:$[];
-	    string raid_type	= options["raid_type"]:"raid1";
-
-	    if ( raid_type == "raid5" )
-	    {
-		chunk_size = "128";
-	    }
-	    if ( raid_type == "raid0" )
-	    {
-		chunk_size = "32";
-	    }
-
-
-	    if (!haskey(options, "raid_type"))
-	    {
-		options["raid_type"] = raid_type;
-	    }
-
-	    string sel_chunksize = options["chunk_size"]:"";
-
-	    if ( sel_chunksize != "" )
-	    {
-		chunk_size = sel_chunksize;
-		options["chunk_size"]	= chunk_size;
-	    }
-
-
-	    if(  raid_type == "raid5" && options["parity_algorithm"]:"" == "" )
-	    {
-		options["parity_algorithm"] = "left-symmetric";
-	    }
-
-	    md["nr"] = md["partition_nr"]:0;
-
-
-            // LVM on RAID
-
-	    if (md["lvm_group"]:"" != "")
-	    {
-		md["fsid"]		= Partitions::fsid_lvm;
-	    }
+		existing["create"]	= false;
+		RaidList=add(RaidList, existing );
+            }
 	    else
 	    {
-		md["fsid"]		= md["partition_id"]:Partitions::fsid_native;
-	    }
+		md["device"]	= dev;
 
+		if (md["loop_fs"]:false || md["crypt_fs"]:false)
+		    md["crypt_key"] =   Storage::AddCryptToClassified( md["crypt_key"]:"");
+
+		y2milestone("Working on %1", md);
+
+		string chunk_size = "4";
+		map options = md["raid_options"]:$[];
+		string raid_type	= options["raid_type"]:"raid1";
+
+		if ( raid_type == "raid5" )
+		    chunk_size = "128";
+
+		if ( raid_type == "raid0" )
+		    chunk_size = "32";
+
+
+		if (!haskey(options, "raid_type"))
+		    options["raid_type"] = raid_type;
+
+		string sel_chunksize = options["chunk_size"]:"";
+
+		if ( sel_chunksize != "" ) {
+		    chunk_size = sel_chunksize;
+		    options["chunk_size"]	= chunk_size;
+		}
+
+
+		if(  raid_type == "raid5" && options["parity_algorithm"]:"" == "" )
+		    options["parity_algorithm"] = "left-symmetric";
+
+		md["nr"] = md["partition_nr"]:0;
+
+
+		// LVM on RAID
+		if (md["lvm_group"]:"" != "")
+		    md["fsid"]		= Partitions::fsid_lvm;
+		else
+		    md["fsid"]		= md["partition_id"]:Partitions::fsid_native;
             
-	    md["region"]		= [0 , 1];
+		md["region"]		= [0 , 1];
 
-	    if (!haskey(md, "create"))
-	    {
-		md["create"]	= true;
-		md["status"]	= "create";
+		if (!haskey(md, "create")) {
+		    md["create"]	= true;
+		    md["status"]	= "create";
+		}
+
+		if (!haskey(md, "format"))
+		    md["format"]	= false;
+
+		if (md["format"]:false)
+		    md["used_fs"]	= md["filesystem"]:`ext2;
+
+		md["type"]		= `sw_raid;
+
+		if (haskey(md, "raid_options"))
+		    md=remove(md, "raid_options");
+
+		RaidList=add(RaidList, union(md, options) );
 	    }
-
-	    if (!haskey(md, "format"))
-	    {
-		md["format"]	= false;
-	    }
-
-	    if (md["format"]:false)
-	    {
-		md["used_fs"]	= md["filesystem"]:`ext2;
-	    }
-
-	    md["type"]		= `sw_raid;
-            if (haskey(md, "raid_options"))
-                md=remove(md, "raid_options");
-
-	    return (union(md, options));
+	   
 	});
 
 
@@ -257,16 +272,9 @@
 			       return( md );
 			   }));
 
-	list allraid = [];
-	if (size (ExistingRAID["/dev/md","partitions"]:[]) > 0 )
-	{
-	    allraid = union (ExistingRAID["/dev/md", "partitions"]:[], RaidList );
-	}
-	else
-	{
-	    allraid =  RaidList;
-	}
-        y2milestone("All RAID: %1", allraid);
+
+
+        y2milestone("All RAID: %1", RaidList);
 
 
         map<string, any> RaidMap = 
@@ -274,7 +282,7 @@
             "cyl_count" : 1,                   
             "cyl_size" : 1024 * 1024,         
             "name" : Partitions::raid_name,
-            "partitions" : allraid,
+            "partitions" : RaidList,
             ];
 	y2milestone("RaidMap: %1", RaidMap);
 
