@@ -349,7 +349,7 @@
 	import "Installation";
 	// Copy pre scripts to target system.
 	import "AutoinstScripts";
-	AutoinstScripts::Write("chroot-scripts");
+	AutoinstScripts::Write("chroot-scripts", false);
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AutoinstScripts::scripts_dir);
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoinstScripts::logs_dir);
 
