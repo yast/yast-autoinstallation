@@ -82,11 +82,11 @@ Please wait while the system is being configured.
 	string p = r["res"]:"";
 	map d = r["data"]:$[];
 
-	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write")
+	if (d["X-SuSE-YaST-AutoInst"]:"" == "all" || d["X-SuSE-YaST-AutoInst"]:"" == "write")
 	{
-	    if (haskey(d,"AutoinstResource"))
+	    if (haskey(d,"X-SuSE-YaST-AutoInstResource"))
 	    {
-		resource = d["AutoinstResource"]:"unknown";
+		resource = d["X-SuSE-YaST-AutoInstResource"]:"unknown";
 	    }
 	    else
 	    {
@@ -95,8 +95,8 @@ Please wait while the system is being configured.
 	    y2milestone("current resource: %1", resource);
 
 	    // determine name of client, if not default name
-	    if (haskey(d,"AutoClient"))
-		module_auto = d["AutoClient"]:"none";
+	    if (haskey(d,"X-SuSE-YaST-AutoClient"))
+		module_auto = d["X-SuSE-YaST-AutoClient"]:"none";
 	    else
 		module_auto = sformat("%1_auto", p);
 
@@ -104,8 +104,8 @@ Please wait while the system is being configured.
 	    if (haskey(Profile::Flat , resource) )
 	    {
 		y2milestone("Writing configuration for %1", p);
-		string tomerge = d["AutoinstMerge"]:"";
-		string tomergetypes = d["AutoinstMergeTypes"]:"";
+		string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+		string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
 		list MergeTypes = splitstring(tomergetypes, ",");
 
 		if (  size(tomerge) > 0 )
@@ -128,7 +128,7 @@ Please wait while the system is being configured.
 		    Call::Function(module_auto, ["Import", eval(result) ]);
 		    Call::Function(module_auto, ["Write", eval(result) ]);
 		}
-		else if (d["AutoinstDataType"]:"map" == "map")
+		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
 		{
 		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:$[]));
 		    if (size(Profile::Flat[resource]:$[]) > 0 )
