@@ -182,7 +182,7 @@
     define void CreateTreeWidget(string current ) ``{
 
 	list menu_options = CreateTableList(Y2ModuleConfig::MenuTreeData, current);
-	y2milestone("menu options: %1", menu_options);
+	// y2milestone("menu options: %1", menu_options);
 	
 	Wizard::ReplaceButtonBox(`VSpacing(0.6));
 	
@@ -288,6 +288,7 @@
 		    foreach(string k , map v, Y2ModuleConfig::ModuleMap, ``{
 			if (v["X-SuSE-YaST-Group"]:"" == tree_item)
 			{
+			    y2milestone("name: %1 (%2)", v["Name"]:"", k );
 			    string colored = HTML::Colorize( HTML::Link(v["Name"]:"", k), "#8BC460");
 			    html = html + HTML::Heading(colored);
 			    html = html + HTML::Para(v["GenericName"]:"");
@@ -308,8 +309,12 @@
 
 		    while ( true )
 		    {
-			ret = Wizard::UserInput();
+			
+			ret =  UI::UserInput();
 			y2milestone("INPUT: %1", ret);
+			if (ret == nil)
+			    break;
+			
 
 			if (ret == `key)
 			{

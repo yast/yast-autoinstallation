@@ -38,11 +38,9 @@
     y2debug("param=%1", param);
 
 
-
-
-
     /**
      * Select packages
+     * @return symbol 
      */
     define symbol packageSelector() ``{
 	string language = UI::GetLanguage(true);
@@ -94,10 +92,16 @@ more <b>add-on</b> selections and packages.
 	    }
 	});
 
+	boolean selected = false;
 	// construct display box in order
 	foreach(string  order, list data, sorted_base_selections,
 		``{
 	    {
+		if (AutoinstSoftware::base == "" && !selected)
+		{
+		    AutoinstSoftware::base = data[0]:"";
+		    selected = true;
+		}
 		baseconfs_box = add( baseconfs_box, `Left(`RadioButton(`id(data[0]:""),     // id
 								       `opt(`notify, `autoShortcut),
 								       data[1]:"",              // descrption
@@ -130,8 +134,7 @@ more <b>add-on</b> selections and packages.
 				  );
 
 	Wizard::SetContents(title, contents, helptext, true, true);
-
-	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+	
 	
 	// UI::ChangeWidget(`id(`back), `Enabled, false);
 	
