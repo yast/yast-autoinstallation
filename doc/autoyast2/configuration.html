@@ -228,7 +228,9 @@ CLASS="screen"
           &#60;mode&#62;                
               &#60;confirm config:type="boolean"&#62;true&#60;/confirm&#62;
               &#60;forceboot config:type="boolean"&#62;false&#60;/forceboot&#62;
+              &#60;!-- YaST2 now always reboots the system, so this option ios depricated 
               &#60;reboot config:type="boolean"&#62;false&#60;/reboot&#62;
+              --&#62;
           &#60;/mode&#62;
 
       &#60;/general&#62;
@@ -241,17 +243,53 @@ CLASS="screen"
 ></TR
 ></TABLE
 ></DIV
+><DIV
+CLASS="warning"
 ><P
->&#13;	The <I
+></P
+><TABLE
+CLASS="warning"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="./stylesheet-images/warning.gif"
+HSPACE="5"
+ALT="Warning"></TD
+><TH
+ALIGN="LEFT"
+VALIGN="CENTER"
+><B
+>Warning</B
+></TH
+></TR
+><TR
+><TD
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;              The <I
 CLASS="emphasis"
 >reboot</I
 > property in the <I
 CLASS="emphasis"
 >mode</I
 >
-	resource is used to force a reboot after initial system setup and before
-	the system is booted for the first time.
-      </P
+              resource was used to force a reboot after initial system setup and before
+              the system is booted for the first time. Currently after initial installation
+              all systems must boot, which makes this option obsolete
+
+          </P
+></TD
+></TR
+></TABLE
+></DIV
 ><P
 >&#13;	By default, the auto-installation process has to be confirmed by the
 	user. The confirmation should be disabled if a fully unattended
