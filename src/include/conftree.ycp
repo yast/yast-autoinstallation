@@ -480,9 +480,9 @@
 		    }
 		    else if (ret == `menu_kickstart)
 		    {
-			Wizard::CreateDialog();
 			
-			string head = _("Import Kickstart File");
+			
+			
 			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
 
 			if ( filename != nil )
@@ -497,8 +497,7 @@ were imported correctly.
 			else {
 			    Report::Error(_("Invalid file name, select another file"));
 			}
-			
-			Wizard::CloseDialog();
+						
 		    }
 		    else if (ret == `menu_save) // SAVE
 		    {

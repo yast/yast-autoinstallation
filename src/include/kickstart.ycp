@@ -56,7 +56,8 @@
     global define map ks_x11(map ksConfig)
 	``{
 	
-	if (ksConfig["skipx"]:0 != 1 && haskey(ksConfig,"xconfig"))	{
+	if (ksConfig["skipx"]:0 != 1 && haskey(ksConfig,"xconfig"))
+	{
 	    map x11 = $[];
 	    map ks_x = ksConfig["xconfig"]:$[];
 
@@ -144,7 +145,7 @@
 	{
 	    map ks_clock = ksConfig["timezone"]:$[];
 	    clock["timezone"] 	= ks_clock["timezone"]:"";
-	    clock["hwclock"]	= ( ks_clock["utc"]:0 == 1 ) ? "GMT" : "localtime";
+	    clock["hwclock"]	= ( ks_clock["utc"]:"" == "1" ) ? "GMT" : "localtime";
 	}
 	general["clock"] = clock;
 
@@ -206,9 +207,10 @@
      * KS Partitioning
      */
     global define list ks_part (map ksConfig) ``{
-	y2milestone("KS Partitioning: %1", ksConfig["partitioning"]:$[]);
 	
+	y2milestone("KS Partitioning: %1", ksConfig["partitioning"]:$[]);	
 	import "Partitions";
+	
 	list drives = [];
 	list part1 = maplist(string k, map v, ksConfig["partitioning"]:$[],   ``{
 	    map drive = $[];
@@ -220,8 +222,11 @@
 
 	    drives=add(drives, drive);
 	});
+
+	// sort and make unique entries
 	drives = toset(drives);
-	y2milestone("Drives: %1", drives);
+	
+	y2milestone("Drives: %1", drives);	
 	
 	foreach(string k, map v, ksConfig["partitioning"]:$[],   ``{
 	    
@@ -250,20 +255,24 @@
 	    {
 		partition["mount"] = mount;
 		partition["order"] = order;
-		partition["format"] = (v["noformat"]:-1 == -1 );
+		partition["format"] = (v["noformat"]:"" == "" );
 		partition["filesystem"] = AutoinstStorage::StringFS2Symbol(fstype);
 	    }
 
-	    partition["size"] = sformat("%1mb", v["size"]:-1);
+	    partition["size"] = sformat("%1mb", v["size"]:"");
 
 	    // Remove those later
-	    if (v["maxsize"]:0 != 0 )
-		partition["maxsize"] =  sformat("%1mb", v["maxsize"]:0);
+	    if (v["maxsize"]:"" != "" )
+	    {
+		partition["maxsize"] =  sformat("%1mb", v["maxsize"]:"");
+	    }
 
-	    if ( v["grow"]:-1 == 1 )
+	    if ( v["grow"]:"" == "1" )
+	    {
 		partition["grow"] =  true;
+	    }
 	    
-	    foreach(map d, drives, ``{
+	    drives = maplist(map d, drives, ``{
 		string dev = sformat("/dev/%1", v["ondisk"]:"");
 		if ( dev  == d["device"]:"")
 		{
@@ -279,7 +288,9 @@
 		    d["partitions"]	= sort(map x, map y, part, ``(x["order"]:-1 < y["order"]:-1 ));		    
 		}
 		y2milestone("KS Drive: %1", d);
+		return (d);
 	    });
+	    
 	});
 
 	list newdrives = maplist(map drive, drives, ``{
@@ -323,12 +334,18 @@
 		if (size(alldrives) == 1 )
 		{
 		    drive["device"] = sformat("/dev/%1", alldrives[0]:"");
-		    if (clearpart["all"]:-1 == 1)
+		    if (clearpart["all"]:"" == "1")
+		    {
 			drive["use"] = "all";
-		    else if (clearpart["linux"]:-1 == 1)
+		    }
+		    else if (clearpart["linux"]:"" == "1")
+		    {
 			drive["use"] = "linux";
-		    else if (clearpart["initlabel"]:-1 == 1)
-			drive["initialize"] = true;		    
+		    }
+		    else if (clearpart["initlabel"]:"" == "1")
+		    {
+			drive["initialize"] = true;
+		    }
 		}
 	    }
 	    
@@ -480,13 +497,13 @@
 	    }
 	}
 
-	if (auth["enablemd5"]:0 == 1)
+	if (auth["enablemd5"]:"0" == "1")
 	{
 	    security["encryption"] = "md5";
 	}
 
 
-	if (auth["enableldapauth"]:0 == 1)
+	if (auth["enableldapauth"]:"0" == "1")
 	{
 	    ldap["start_ldap"] = true;
 	    if (haskey(auth, "nisdomain"))
@@ -522,6 +539,7 @@
 	{
 	    bootloader["linear"] = ( bl["linear"]:0 == 1  ||  bl["nolinear"]:0 != 1);
 	}
+	// FIXME
 	bootloader["lba_support"] = (bl["lba32"]:0 == 1);
 	return bootloader;
     }
@@ -546,9 +564,9 @@
 				"addon": []
 		      ],	
 		      "Printing Support": $[
-				"base": "Minimal",
-				"addon": [],
-				"packages": ["a2ps", "ghostscript-mini", "hp-officeJet", "yast2-printer", "cups-client", "cups", "cups-libs", "cups-drivers"]
+					    "base": "Minimal",
+					    "addon": [],
+					    "packages": ["a2ps", "ghostscript-mini", "hp-officeJet", "yast2-printer", "cups-client", "cups", "cups-libs", "cups-drivers"]
 		      ],
 		      "Cups": $[
 				"base": "Minimal",
@@ -556,26 +574,26 @@
 				"packages":  ["cups-client", "cups", "cups-libs", "cups-drivers"]
 		      ],	
 		      "X Window System": $[
-				"base": "Minimal+X11",
-				"addon": [],
-				"packages": []
+					   "base": "Minimal+X11",
+					   "addon": [],
+					   "packages": []
 		      ],
 		      "Dialup Networking Support":  $[
-				"base": "Minimal",
-				"addon": [],
-				"packages": ["ppp", "minicom", "wvdial", "i4l-base", "i4lfirm", "i4l-isdnlog"]
+						      "base": "Minimal",
+						      "addon": [],
+						      "packages": ["ppp", "minicom", "wvdial", "i4l-base", "i4lfirm", "i4l-isdnlog"]
 		      ],
 		      "GNOME Desktop Environment":
 		      $[
-				"base": "Minimal+X11",
-				"addon": ["Gnome"],
-				"packages": []
+			"base": "Minimal+X11",
+			"addon": ["Gnome"],
+			"packages": []
 		      ],
 		      "KDE Desktop Environment": 
 		      $[
-				"base": "Minimal+X11",
-				"addon": ["Kde-Desktop"],
-				"packages": []
+			"base": "Minimal+X11",
+			"addon": ["Kde-Desktop"],
+			"packages": []
 		      ],
 		      "Graphical Internet":
 		      $[
@@ -596,10 +614,10 @@
 			"packages": []
 		      ],
 		      "Graphics":
-		            $[
-			      "base": "Minimal+X11",
-			      "addon": [],
-			      "packages": [ "ImageMagick", "xsane", "gimp", "netpbm", "dia", "gtkam" ]
+		      $[
+			"base": "Minimal+X11",
+			"addon": [],
+			"packages": [ "ImageMagick", "xsane", "gimp", "netpbm", "dia", "gtkam" ]
 		      ],
 		      "Office/Productivity":
 		      $[
@@ -644,7 +662,7 @@
 			"packages": []
 		      ],
 		      "Development Tools":
-		          $[
+		      $[
 			"base": "Minimal",
 			"addon": ["Basis-Devel"],
 			"packages": []
@@ -688,7 +706,7 @@
 	software["base"] = "Minimal";
 	software["addons"] = addons;
 	software["packages"] = toset(union(filter(string pac, packages, ``(pac!="")), selpacs));
-	software["nopackages"] = filter(string pac, nopackages, ``(pac!=""));
+	software["remove-packages"] = filter(string pac, nopackages, ``(pac!=""));
 
 
 	return software;

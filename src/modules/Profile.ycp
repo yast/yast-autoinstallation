@@ -121,7 +121,7 @@
      */
     global define void Prepare()
 	``{
-	y2debug("Modulemap: %1", ModuleMap );
+	// y2debug("Modulemap: %1", ModuleMap );
 	y2debug("Flat: %1", Flat );
 	
 	foreach(string p, map d, ModuleMap, ``{
@@ -135,7 +135,20 @@
 		resource = p;
 	    }
 	    string tomerge = d["X-SuSE-YaST-AutoinstMerge"]:"";
-	    if ( size(Flat[resource]:$[]) != 0 || tomerge != "")
+	    
+	    y2milestone("resource: %1", resource);
+	    integer s = 0;
+	    if ( d["X-SuSE-YaST-AutoinstDataType"]:"map" == "map" )
+	    {
+		
+		s = size(Flat[resource]:$[]);
+	    }
+	    else
+	    {
+		s = size(Flat[resource]:[]) ;
+	    }
+	    
+	    if ( s != 0 || tomerge != "")
 	    {
 		if (d["X-SuSE-YaST-AutoinstPath"]:"" == "install")
 		{
@@ -157,9 +170,13 @@
 			integer i = 0;
 			foreach( string res, splitstring(tomerge, ",") , ``{
 			    if ( MergeTypes[i]:"map" == "map" && Flat[res]:$[] != $[])
+			    {
 				Configure[res] = Flat[res]:$[];
+			    }
 			    else if (  Flat[res]:[] != [] )
+			    {
 				Configure[res] = Flat[res]:[];
+			    }
 			    i = i + 1;
 			});
 		    }
