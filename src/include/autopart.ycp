@@ -1083,8 +1083,9 @@ $Id$
 	    
 	    if( g["extended_possible"]:false &&
 		size(ps)+1>=size(g["free_pnr"]:[]) &&
-		size(filter(map up, (list<map>)ps, ``(up["partition_type"]:"none"
-					   == "primary")))  == 0 
+		size(filter(map up, (list<map>)ps, ``(
+                            up["partition_type"]:"none" == "primary" || 
+                            contains(lg["free_pnr"]:[], up["partition_nr"]:0) )))  == 0 
 		)
 	    {
 		y2milestone( "creating extended" );
@@ -1165,7 +1166,8 @@ $Id$
 		
                 // number of needed primaries by user
 		integer sp = size(filter(map up, (list<map>)ps,
-					 ``(up["partition_type"]:"none"  == "primary")));
+					 ``(up["partition_type"]:"none"  == "primary" ||
+                                             contains(llg["free_pnr"]:[], up["partition_nr"]:0))));
 
                 y2milestone("number of primaries requested: %1", sp );
 		integer cp = 0;
