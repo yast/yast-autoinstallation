@@ -39,10 +39,11 @@
 
     define pmInit() ``{
 
-	Pkg::SourceStartCache(true);
+	
 	string tmproot = SCR::Read (.target.tmpdir);
 	SCR::Execute(.target.mkdir, tmproot + "/root");
 	Pkg::TargetInit( tmproot + "/root", true);
+	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
     }
 
     /**
@@ -131,13 +132,15 @@ more <b>add-on</b> selections and packages.
 	Wizard::SetContents(title, contents, helptext, true, true);
 
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel);
+	
 	// UI::ChangeWidget(`id(`back), `Enabled, false);
+	
 	Wizard::ReplaceAbortButton(`Empty());
 	
 	
 	any ret = nil;
 	boolean error_found = false;
-
+	boolean selret = false;
 	repeat
 	    {
 
@@ -148,13 +151,39 @@ more <b>add-on</b> selections and packages.
 
 		// Inform the package manager on `next about the new (only about a NEW) selection
 		// or if the selection has changed
-
+		
 		if (ret == `next)
 		{
 		    // set the new selection
-		    boolean pkgret = Pkg::SetSelection( base_selection );
+		    boolean pkgret = Pkg::SetSelection( base_selection );		    
 
-		    if (size(AutoinstSoftware::packages )>0)
+		}		
+		else if ( ret == `details )
+		{
+		    ret = `again;
+		    
+		    Pkg::SetSelection( base_selection );
+		    
+		    foreach(string addon, AutoinstSoftware::addons, ``{
+			Pkg::SetSelection( addon );
+		    });
+		    
+		    if (size(AutoinstSoftware::packages ) > 0)
+		    {
+			Pkg::DoProvide(AutoinstSoftware::packages);
+		    }
+		    
+		    while ( ret == `again )
+		    {
+			ret = WFM::CallFunction( `inst_packages( true, true ) );
+
+			if ( ret == `accept )
+			    ret = `blah;
+		    }
+		}
+		
+		    /*
+		    if ( size(AutoinstSoftware::packages ) > 0 )
 		    {
 			Pkg::DoProvide( AutoinstSoftware::packages );
 		    }
@@ -169,10 +198,12 @@ more <b>add-on</b> selections and packages.
 
 		if ( ret == `details )
 		{
-		    any details_ret = `again;
+		    ret = `again;
 
-
-		    ret = Pkg::SetSelection( base_selection );
+		    Pkg::ClearSelection(AutoinstSoftware::base);
+		    any selret = Pkg::SetSelection( base_selection );
+		    Pkg::ActivateSelections();
+		    
 		    foreach(string addon, AutoinstSoftware::addons, ``{
 			Pkg::SetSelection( addon );
 		    });
@@ -183,12 +214,19 @@ more <b>add-on</b> selections and packages.
 			Pkg::DoProvide(AutoinstSoftware::packages);
 		    }
 
-		    y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
+		    y2milestone ( "Selecting '%1' returns: %2", base_selection, selret );
 		    // activate current selection before entering package widget
 		    Pkg::ActivateSelections();
 
+		    while ( ret == `again )
+		    {
+			ret = WFM::CallFunction( `inst_packages( true, true ) );
 
+			if ( ret == `accept )
+			    ret = `next;
+		    }
 
+		 
 		    while ( details_ret == `again )
 		    {
 			details_ret = WFM::CallFunction( `inst_packages( true, true ) );
@@ -196,16 +234,22 @@ more <b>add-on</b> selections and packages.
 		    }
 
 		    if ( details_ret == `accept )
-		    {		
+		    {
+			
 			Pkg::ActivateSelections();			
-		    }
-		 
+		    }		    		 
 		}
+		    */
 
-	    } until ( ret == `next  || ret == `back);
+	    }  until ( ret == `next  || ret == `back);
 
+
+	
+	Pkg::ActivateSelections();
+	 
 	list allpacs = Pkg::GetPackages(`selected, true);
-
+	y2milestone("All packages: %1", allpacs);
+	
 	list seladd = [];
 	list selbase = [];
 	if ( ret != `back )
@@ -221,35 +265,7 @@ more <b>add-on</b> selections and packages.
 
 
 
-	foreach(string selection , union(selbase, seladd),
-		``{
-	    Pkg::ClearSelection(selection);
-	});
-
-	Pkg::DoRemove (allpacs);
-	y2milestone("Still selected: %1", Pkg::GetPackages(`selected, true));
-
-
-	Pkg::SetSelection(selbase[0]:"");
-
-	foreach(string selection , seladd,
-		``{
-	    Pkg::SetSelection(selection);
-	});
-	Pkg::ActivateSelections();
-	Pkg::PkgSolve();
-
-	list onlysel = Pkg::GetPackages(`selected, true);
-	y2milestone("selection packages: %1, all packages: %2", size(onlysel), size(allpacs));
-
-	AutoinstSoftware::packages = [];
-	foreach(string package, allpacs, ``{
-	    if (!contains(onlysel, package)) {
-		AutoinstSoftware::packages = add (AutoinstSoftware::packages , package);
-	    }
-	});
-
-
+	
 	AutoinstSoftware::addons = seladd;
 	AutoinstSoftware::base =   selbase[0]:"";
 

@@ -13,12 +13,10 @@
     textdomain "autoinst";
 
     import "Profile";
-    import "Installation";
     import "Mode";
     import "Report";
-    import "XML";
-    import "X11Version";
-    import "Bootloader";
+    import "XML";    
+
 
 
     // Main directory for data generated during installation
@@ -185,6 +183,7 @@
      * @return void
      */
     global define boolean bootloaderSettings()``{
+	import "Bootloader";
 	import "BootCommon";
 
 	any ret = nil;
@@ -284,6 +283,7 @@
      */
     global define void Finish ()
 	``{
+	import "Installation";
 	// Copy pre scripts to target system.
 	import "AutoinstScripts";
 	AutoinstScripts::Write("chroot-scripts");
