@@ -5,7 +5,7 @@
 >
 <!ELEMENT crypt_key (#PCDATA)>
 <!-- <!ELEMENT device (#PCDATA)>  : redefined --> 
-<!ELEMENT drive (device?, initialize?, partitions?, use?)>
+<!ELEMENT drive (device?, initialize?,  is_lvm_vg?, partitions?, pesize?,use?)>
 <!ELEMENT filesystem (#PCDATA)>
 <!ATTLIST filesystem
 	config:type CDATA #REQUIRED
@@ -43,9 +43,13 @@
 <!ATTLIST option_blank
 	config:type CDATA #REQUIRED
 >
+<!ELEMENT is_lvm_vg (#PCDATA)>
+<!ATTLIST is_lvm_vg
+	config:type CDATA #REQUIRED
+>
 <!ELEMENT option_str (#PCDATA)>
 <!ELEMENT option_value (#PCDATA)>
-<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, label?, lvm_group?, mount?, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?, region?, size?, maxsize?, grow?, create?)>
+<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, lv_name?, label?, lvm_group?, mount?, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?, region?, size?, maxsize?, grow?, create?)>
 <!-- <!ELEMENT lvm_group (#PCDATA)> -->
 <!ELEMENT raid_name (#PCDATA)>
 <!ELEMENT raid_type (#PCDATA)>

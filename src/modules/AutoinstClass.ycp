@@ -16,7 +16,7 @@
 
 {
     module "AutoinstClass";
-    
+
     import "AutoinstConfig";
     import "XML";
     import "Summary";
@@ -24,7 +24,7 @@
 
 
 
-    
+
     global string classDir = AutoinstConfig::Repository + "/classes";
 
     global string ClassConf = "/etc/autoinstall";
@@ -34,14 +34,14 @@
     global list Profiles = [];
 
     global list Classes = [];
-    
+
     global list confs = [];
 
-    string class_file = "classes.xml";   
+    string class_file = "classes.xml";
 
     string classPath = sformat("%1/%2", ClassConf, class_file);
- 
-   
+
+
 
     /*
      * Constructor
@@ -64,7 +64,7 @@
 			       )
 	``{
 	string tmpdir = SCR::Read( .target.tmpdir );
-	string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'addon'\" --param with ";	
+	string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'addon'\" --param with ";
 	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"") + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
@@ -88,14 +88,14 @@
 	if (SCR::Read(.target.size, classPath) != -1)
 	{
 	    // TODO: use XML module
-	    map tmp = SCR::Read(.xml, classPath);	    
+	    map tmp = SCR::Read(.xml, classPath);
 	    Classes = tmp["classes"]:[];
 	}
 	return;
     }
 
 
-    
+
     /**
      * Read files from class directories
      * @return void
@@ -112,7 +112,7 @@
 		    map conf = $[];
 		    conf["class"] =  class["name"]:"xxx";
 		    conf["name"]  = file;
-		    return (conf);		
+		    return (conf);
 		});
 		y2milestone("Configurations: %1", tmp_confs);
 		confs = union(confs, tmp_confs);
@@ -125,7 +125,7 @@
 
 
     /**
-     * Save Class definitions     
+     * Save Class definitions
      */
 
     global define Save()
@@ -138,8 +138,8 @@
 
 
     /**
-     * Import configuration     
-     */  
+     * Import configuration
+     */
 
     global define boolean Import(list settings)
 	``{
@@ -148,19 +148,19 @@
     }
 
     /**
-     * Export configuration     
-     */ 
+     * Export configuration
+     */
 
     global define list Export()
 	``{
-	
+
 	return profile_conf;
     }
 
     /**
      * Configuration Summary
-     */ 
-    
+     */
+
     global define string Summary() ``{
 	string summary = "";
 
@@ -174,7 +174,7 @@
 	return summary;
     }
 
-    
+
     /**
      * find a profile path
      * @param string profile name
