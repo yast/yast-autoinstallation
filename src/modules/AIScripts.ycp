@@ -23,7 +23,6 @@
     /**
      * Constructor
      */
-
     define void AIScripts()
 	``{
 	merged = mergeScripts();
@@ -33,7 +32,6 @@
      * Set module data
      * @return void
      */
-
     global define void Set(map s)``{
 	pre = s["pre-scripts"]:[];
 	post = s["post-scripts"]:[];
@@ -100,46 +98,16 @@
      */
     global define boolean Import(map s)
 	``{
-	if (size(s) == 0)
-	    return true;
 	Set(s);
-
 	return true;
     }
 
 
 
-
-    /**
-     * @return  script configuration summary dialog
-     */
-    global define string Summary()
-	``{
-	list allscripts = maplist(`s, merged,
-				  ``{
-				      return (`item(`id(s["filename"]:"Unknown"),
-						    s["filename"]:"Unknown",
-						    typeString(s["type"]:""),
-						    s["interpreter"]:"Unknown")
-					      );
-				  });
-	term contents =
-	    `VBox(
-		  `Left(
-			`Label(_("Available Scripts"))
-			),
-		  `Table( `id(`table), `opt(`notify),
-			  `header(_("Script Name"), _("Type"), _("Interpreter")),
-			  allscripts
-			  ),
-		  `HBox(
-			`PushButton(`id(`new),  NewButtonLabel()),
-			`PushButton(`id(`edit), EditButtonLabel()),
-			`PushButton(`id(`delete), DeleteButtonLabel())
-			)
-		  );
-	return contents;
+    global define string Summary() ``{
+	return _("TODO");
     }
+
 
 
     /**
@@ -201,17 +169,12 @@
     }
 
 
-
-
-
-
-
     /**
      * return type of script as formatted string
      * @param script type
      * @return type as translated string
      */
-    define string typeString(string type)``{
+    global define string typeString(string type)``{
 	if (type == "pre-scripts")
 	{
 	    return _("Pre");

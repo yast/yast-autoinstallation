@@ -10,9 +10,7 @@
     textdomain "autoinst";
     import "Mode";
     Mode::config = true;
-    include "ui/file_popups.ycp";
-    
-
+        
     import "Wizard";
     import "Summary";
     import "AIScripts";
@@ -20,44 +18,54 @@
     include "ui/common_messages.ycp";
     include "autoinstall/script_dialogs.ycp";
 
-    list args = WFM::Args ();
+    
+    string func = WFM::Args(0);
+    map param = $[];
 
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
+      /**
+     * @return  script configuration dialog
+     */
+    define string dialog_contents()
+	``{
+	list allscripts = maplist(`s, AIScripts::merged,
+				  ``{
+				      return (`item(`id(s["filename"]:"Unknown"),
+						    s["filename"]:"Unknown",
+						    AIScripts::typeString(s["type"]:""),
+						    s["interpreter"]:"Unknown")
+					      );
+				  });
+	term contents =
+	    `VBox(
+		  `Left(
+			`Label(_("Available Scripts"))
+			),
+		  `Table( `id(`table), `opt(`notify),
+			  `header(_("Script Name"), _("Type"), _("Interpreter")),
+			  allscripts
+			  ),
+		  `HBox(
+			`PushButton(`id(`new),  NewButtonLabel()),
+			`PushButton(`id(`edit), EditButtonLabel()),
+			`PushButton(`id(`delete), DeleteButtonLabel())
+			)
+		  );
+	return contents;
     }
-    if ( !is ( WFM::Args (0), map ) )
-    {
-	y2error ("Bad argument: %1", WFM::Args (0));
-	return false;
-    }
-
-    map settings = $[];
-    {
-	integer i = 0;
-	while (i < size (WFM::Args()))
-	{
-	    if (is (WFM::Args (i), map) && nil != WFM::Args (i))	settings = WFM::Args (i);
-	    i = i + 1;
-	}
-    }
-
-    y2milestone("Imported: (%1)", settings);
-    AIScripts::Import ( settings );
 
 
-
-
+    
     /**
-     *
+     * Main dialog
      *
      */
-    global define symbol set_contents()
+    global define symbol ScriptsDialog()	
     ``{
+
+	string help = _("TODO");
 	string title = _("User Script Management");
 	Wizard::SetContents(title,
-			    AIScripts::Summary(), "", true, true);
+			    dialog_contents(), help, true, true);
 
 	any ret = nil;
 	repeat {
@@ -98,20 +106,46 @@
 		}
 	    }
 	    Wizard::SetContents(title,
-			    AIScripts::Summary(), "", true, true);
+			    dialog_contents(), help, true, true);
 
 
-	} until (ret == `next || ret == `key || ret == `back || (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
+	} until (ret == `accept || ret == `cancel  );
 
 	return ret;
     }
 
 
-
-    symbol ret = set_contents();
-    settings = AIScripts::Export();
-
-    return [ret, settings];
+/* create a  summary*/
+    if (func == "Summary")
+    {    
+	return ( AIScripts::Summary());
+    }
+    else if (func == "Reset")
+    {
+	y2milestone ("Calling Reset");
+	AIScripts::Import($[]);
+	return (true);
+    }	
+    else if (func == "Change") {
+	y2milestone ("Calling Change");
+	Wizard::CreateDialog();
+	Wizard::RestoreHelp("");
+	Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());    
+	any res =ScriptsDialog();    
+	Wizard::CloseDialog();
+	return res;
+    }
+    else if (func == "Result") {
+	y2milestone ("Calling Result");	
+	return(AIScripts::Export());
+    }
+    /* unknown function */
+    else {
+	y2error("unknown function: %1", func);
+	return false;
+    }
+    
+    
 }
 
 

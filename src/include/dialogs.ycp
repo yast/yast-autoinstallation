@@ -264,8 +264,8 @@ must begin with letter, and must be
      *
      */
     global define cloneSystem()``{
+	
 	Wizard::SetScreenShotName ("autoyast-cloneSystem");
-
 	
 	string help = _("<p>This tool will create a new profile by reading
 information from this system. Select the resources you want to read from this system
@@ -277,16 +277,16 @@ to autoinstall a new system.</p>");
 
 	term contents =
 	    `VBox(
-		  `MultiSelectionBox( "Select additional resources to clone:",
+		  `MultiSelectionBox( `id(`res), "Select additional resources to clone:",
 				      [
-				       _("Network"),
-				       _("Authentication (NIS, LDAP, etc.)"),
-				       _("NFS Exports"),
-				       _("NFS mounts"),
-				       _("Sound"),
-				       _("Printer"),
-				       _("Mail"),
-				       _("Users")				       
+				       `item(`id("networking"), _("Network")),
+				       `item(`id("auth"),_("Authentication (NIS, LDAP, etc.)")),
+				       `item(`id("nfs_server"),_("NFS Exports")),
+				       `item(`id("nfs"),_("NFS mounts")),
+				       `item(`id("sound"),_("Sound")),
+				       `item(`id("printer"),_("Printer")),
+				       `item(`id("mail"),_("Mail")),
+				       `item(`id("users"), _("Users"))				       
 				       ]
 				      )
 		  );
@@ -301,11 +301,13 @@ to autoinstall a new system.</p>");
 	    {
 		ret = UI::UserInput();	
 		if (ret ==`accept)
-		{		  		    		    
+		{
+		    list selected_items = UI::QueryWidget( `id(`res), `SelectedItems );
 		    showFeedback( _("Collecting system data.
 Please wait....
-"));
-		    AIClone::exportProfile();
+"));		 
+		    AIClone::exportProfile(selected_items);
+		    
 		    clearFeedback();
 
 		}

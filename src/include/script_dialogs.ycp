@@ -86,7 +86,7 @@ environment, choose the <i>chroot-scripts</i> options.
 			)
 		  );
 
-
+	Wizard::ReplaceButtonBox(`VSpacing(0.6));
 	Wizard::SetContents(title,
 			    contents, help, true, true);
 
@@ -121,10 +121,13 @@ name and the content of the script.
 	    }
 	    else if (ret == `loadsource)
 	    {
-		string filename = PopupFile("/");
-		string source = SCR::Read(.target.string, filename);
-		UI::ChangeWidget(`id(`source), `Value, source);
-		continue;
+		string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open file") );
+		if (filename!=nil)
+		{ 
+		    string source = SCR::Read(.target.string, filename);
+		    UI::ChangeWidget(`id(`source), `Value, source);
+		    continue;
+		}
 	    }
 
 	} until (ret == `save || ret == `cancel || ret == `back);

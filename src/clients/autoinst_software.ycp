@@ -20,9 +20,9 @@
     include "ui/common_messages.ycp";
     include "autoinstall/dialogs.ycp";
 
-	string func = WFM::Args(0);
-	map param = WFM::Args(1);
-	map ret = $[];
+    string func = WFM::Args(0);
+    map param = WFM::Args(1);
+    map ret = $[];
 
 
     string base = param["base"]:"Custom";
@@ -63,6 +63,14 @@
 
 
 
+    define pmInit() ``{
+	
+	Pkg::SourceStartCache(true);
+	string tmproot = SCR::Read (.target.tmpdir);
+	SCR::Execute(.target.mkdir, tmproot + "/root");
+	Pkg::TargetInit( tmproot + "/root", true);
+    }
+
     /**
      * Select packages
      */
@@ -75,11 +83,13 @@
 TODO
 </p>
 ");
+	pmInit();
 	Wizard::CreateDialog();
 
 	Wizard::SetContents(title,
 			    `HVCenter(`Label(_("Reading package database..."))),
 			    helptext, false, true);
+	
 	list available_base_selections = Pkg::GetSelections( `available, "base" );
 	y2milestone("AVAILABLE Selections: %1",  available_base_selections);
 	// Construct a box with radiobuttons for each software base configuration
