@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT general (clock, keyboard, language, mode?, mouse)>
+
+<!ELEMENT clock (hwclock, timezone)>
+<!ELEMENT hwclock (#PCDATA)>
+<!ELEMENT timezone (#PCDATA)>
+
+<!ELEMENT keyboard (keymap)>
+<!ELEMENT keymap (#PCDATA)>
+
+
+<!ELEMENT language (#PCDATA)>
+
+<!ELEMENT mode (confirm?, disable_abort, forceboot?,  reboot?)>
+<!ELEMENT confirm (#PCDATA)>
+<!ATTLIST confirm
+	config:type CDATA #REQUIRED
+>
+
+<!ELEMENT disable_abort (#PCDATA)>
+<!ATTLIST disable_abort
+	config:type CDATA #REQUIRED
+>
+
+<!-- <!ELEMENT default (#PCDATA)> -->
+<!ELEMENT forceboot (#PCDATA)>
+<!ATTLIST forceboot
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT reboot (#PCDATA)>
+<!ATTLIST reboot
+	config:type CDATA #REQUIRED
+>
+
+<!ELEMENT mouse (id)>
+<!ELEMENT id (#PCDATA)>

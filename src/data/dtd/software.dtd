@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT software (addons?, base, kernel?, packages?, post-packages?, remove-packages?)>
+
+<!ELEMENT addons (addon+)>
+<!ATTLIST addons
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT base (#PCDATA)>
+<!ELEMENT addon (#PCDATA)>
+<!ELEMENT kernel (#PCDATA)>
+<!ELEMENT post-packages (package+)>
+<!ELEMENT packages (package+)>
+<!ATTLIST packages
+	config:type CDATA #REQUIRED
+>
+<!ATTLIST post-packages
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT remove-packages (package+)>
+<!ATTLIST remove-packages
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT package (#PCDATA)>

@@ -12,6 +12,13 @@
 <!ENTITY % security SYSTEM "security.dtd">
 <!ENTITY % x11 SYSTEM "x11.dtd">
 <!ENTITY % fw SYSTEM "fw.dtd">
+<!ENTITY % runlevels SYSTEM "runlevels.dtd">
+<!ENTITY % reporting SYSTEM "reporting.dtd">
+<!ENTITY % bootloader SYSTEM "bootloader.dtd">
+<!ENTITY % general SYSTEM "general.dtd">
+<!ENTITY % scripts SYSTEM "scripts.dtd">
+<!ENTITY % files SYSTEM "files.dtd">
+<!ENTITY % software SYSTEM "software.dtd">
 
 %sound;
 %x11;
@@ -25,6 +32,13 @@
 %networking;
 %nis;
 %mail;
+%bootloader;
+%general;
+%reporting;
+%runlevels;
+%software;
+%scripts;
+%files;
 
 <!ENTITY % optiontags "job-sheets|snd_enable|snd_index">
 <!ENTITY % printerstags "cups_installation|database|default|printcap|server_hostname|spooler">
@@ -43,7 +57,9 @@
 <!ELEMENT nis_server (#PCDATA | %nisservertags;)* >
 <!ELEMENT group (#PCDATA | %grouptags;)* >
 
-<!ELEMENT configure (firewall?, files?, groups?,inetd?, ldap?, mail?, networking?,   nfs?, nfs_server?,  nis?, nisplus?,  nis_server?,printer?, runlevels?, scripts?, security?, sound?,sysconfig?, user_defaults?,  users?, x11?)>
+
+
+<!ELEMENT configure (files?, firewall?,  groups?,inetd?, ldap?, mail?, networking?,   nfs?, nfs_server?,  nis?, nisplus?,  nis_server?, printer?, runlevels?, scripts?, security?, sound?, sysconfig?, user_defaults?,  users?, x11?)>
 <!ELEMENT install ( bootloader?, general?, lvm?, partitioning?, raid?, report?, software? )>
 <!ELEMENT profile (configure?, install?)>
 <!ATTLIST profile

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT scripts (chroot-scripts?, post-scripts?, pre-scripts?)>
+<!ELEMENT chroot-scripts (script+)>
+<!ATTLIST chroot-scripts
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT post-scripts (script+)>
+<!ATTLIST post-scripts
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT pre-scripts (script+)>
+<!ATTLIST pre-scripts
+	config:type CDATA #REQUIRED
+>
+
+<!ELEMENT script (filename, interpreter, source)>
+<!ELEMENT filename (#PCDATA)>
+<!ELEMENT interpreter (#PCDATA)>
+<!ELEMENT source (#PCDATA)>
