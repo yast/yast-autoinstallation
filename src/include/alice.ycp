@@ -23,8 +23,8 @@
     define term aliceHostList()
 	``{
 
-	list files = (list)SCR::Read(.target.dir, AutoinstConfig::AliceRepository + "/info");
-	list extensions = ["sys.tcf" ];
+	list<string> files = (list<string>)SCR::Read(.target.dir, AutoinstConfig::AliceRepository + "/info");
+	list<string> extensions = ["sys.tcf" ];
 	list<string> hosts = [];
 	string host = "";
 	foreach(string file, files, ``{
@@ -63,22 +63,22 @@
 
     define boolean _cleanup(string in, string out)
 	``{
-	map ycpin = XML::XMLToYCPFile(in);
+	map<string, any> ycpin = XML::XMLToYCPFile(in);
 	y2milestone("Writing file as %1", out);
 
 	map sortedMap = $[];
-	list keys = toset(maplist(string k, any v, ycpin, ``(k)));
-	
+	list<string> keys = toset(maplist(string k, any v, ycpin, ``(k)));
+
 	foreach(string k, keys, ``{
 	    sortedMap[k]=ycpin[k]:"";
 	});
 	return XML::YCPToXMLFile(`alice, sortedMap, out);
     }
 
-    
-    define map mergeFiles(list files, string dir)
+
+    define map mergeFiles(list<string> files, string dir)
 	``{
-	
+
 	aliceXmlSetup();
 	integer cnt = 0;
 	string base = "";
@@ -126,7 +126,7 @@
 	MakeinfoCommand = MakeinfoCommand + host;
 	map out = (map)SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR": AutoinstConfig::tmpDir , "ALICE_HOME":AutoinstConfig::AliceRepository]);
 	string filelist = (string)SCR::Read(.target.string, AutoinstConfig::tmpDir + "/filelist");
-	list files = splitstring(filelist, "\n");
+	list<string> files = splitstring(filelist, "\n");
 	y2milestone("files: %1", files);
 
 	map ret =  mergeFiles(files, AutoinstConfig::tmpDir);
@@ -146,13 +146,10 @@
     define list createAlicePartitions(string partitions)
 	``{
 	SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_part", partitions);
-	list raw_part =  (list) SCR::Read(.tmp.alice.part);
-	
-	
-	
-	list part =filter(map pe, raw_part, ``(!haskey(pe, "path")));
+	list<map> raw_part =  (list<map>) SCR::Read(.tmp.alice.part);
+	list<map> part =filter(map pe, raw_part, ``(!haskey(pe, "path")));
 	y2milestone("and parts again: %1", part);
-	list newPartitions = maplist(map p, part, ``{
+	list<map> newPartitions = maplist(map p, part, ``{
 	    map newPart = $[];
 
 	    if (p["mount"]:""!="NONE" && p["mount"]:""!="SWAP")
@@ -196,14 +193,14 @@
      */
     define list readSelection(string selection) ``{
 	SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_software", "Toinstall:\n" + selection + "\nLlatsniot:\n");
-	list sel = filter(string p, (list) SCR::Read(.yast1sel.selection, "/var/lib/autoinstall/tmp/alice_software"), ``(p!=""));
+	list<string> sel = filter(string p, (list<string>) SCR::Read(.yast1sel.selection, "/var/lib/autoinstall/tmp/alice_software"), ``(p!=""));
 	SCR::Execute(.target.remove, "/var/lib/autoinstall/tmp/alice_software");
 	SCR::UnmountAgent(.tmp.alice.software);
 	return sel;
     }
 
 
-    
+
     /**
      * create software map from alice data
      * @param map aliceConf alice configuration
@@ -269,7 +266,7 @@
 
 	 SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_network", network);
 	 map raw_interfaces =  (map) SCR::Read(.tmp.alice.network);
-	 list interfaces = maplist(string iface, map data, raw_interfaces, ``{
+	 list<string> interfaces = maplist(string iface, map<string, map> data, raw_interfaces, ``{
 	     map interface = $[];
 	     if (data["bootproto"]:"" == "dhcpclient")
 	     {
@@ -290,8 +287,8 @@
 	     return (interface);
 	 });
 
-	 list nameserver = filter( string n, splitstring(DNS_NAMESERVER, " "), ``(n!= "" && n!= " "));
-	 list searchlist = filter(string s, splitstring(DNS_SEARCHLIST, " "), ``(s!= "" && s!= " "));
+	 list<string> nameserver = filter( string n, splitstring(DNS_NAMESERVER, " "), ``(n!= "" && n!= " "));
+	 list<string> searchlist = filter(string s, splitstring(DNS_SEARCHLIST, " "), ``(s!= "" && s!= " "));
 
 	 string hostname = (string) select(splitstring( SYS_NAME, "."), 0 , "");
 	 string domain = mergestring(remove(splitstring( SYS_NAME, "."), 0), ".");
@@ -394,7 +391,7 @@
 	    init["netdevice"]=aliceConf["NET_INST_DEV"]:"";
 	}
 
-	list ifaces = networking["interfaces"]:[];
+	list<map> ifaces = networking["interfaces"]:[];
 	foreach(map iface, ifaces, ``{
 	    if (iface["device"]:"" == init["netdevice"]:"")
 	    {
@@ -415,7 +412,7 @@
      * @return map Profile
      */
 
-    define map createProfile(map aliceConf)
+    define map createProfile(map<string, string> aliceConf)
 	``{
 	import "Misc";
 	// General resource
@@ -460,7 +457,7 @@
 	map mice = (map) Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
         y2debug("Mice %1", mice);
 	boolean found = false;
-	map mouse = $[];
+	map<string, list> mouse = $[];
 	foreach(string k,list v, mice, ``{
 	    map data = (map) select(v,1,$[]);
 	    y2debug("yours %1, mine %2",  data["device"]:"", aliceConf["SYS_MOUSE_DEVICE"]:"none");
