@@ -99,9 +99,9 @@
 		return (new_pe);
 	    });
 	    map drive = $[];
-	    drive["partitions"]=p;
-	    drive["device"] = k;
-	    drive["use"] = "all";
+	    drive["partitions"]	= p;
+	    drive["device"] 	= k;
+	    drive["use"] 	= "all";
 
 	    return drive;
 	});
@@ -179,18 +179,44 @@
 
 	map general = $[];
 	general["language"] = Misc::SysconfigRead(.sysconfig.language.DEFAULT_LANGUAGE, Language::language );
-	general["keyboard"] = Misc::SysconfigRead(.sysconfig.keyboard.YAST2_KBD,  Keyboard::GetKeyboardForLanguage( Language::language, "en_US") );
-	general["timezone"] = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, Timezone::timezone );
-	general["mouse"]    = Misc::SysconfigRead(.sysconfig.mouse.YAST_MOUSE, "probe" );
-	string hwc = Misc::SysconfigRead(.sysconfig.clock.GMT, "-u");
-	if (hwc == "--localtime")
+	map keyboard = $[];
+	keyboard["keymap"]  = Misc::SysconfigRead(.sysconfig.keyboard.YAST2_KBD,  Keyboard::GetKeyboardForLanguage( Language::language, "en_US") );
+	
+	general["keyboard"] = keyboard;
+	map clock = $[];
+	clock["timezone"]   = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, Timezone::timezone );
+		if ( size( Storage::GetWinPrimPartitions( Storage::GetTargetMap() ) ) > 0 )
 	{
-	    general["hwclock"] = "localtime";
+	    // Win partitions present ==> assume local time.
+	    //
+	    hwclock = "--localtime";
+	    y2milestone("Assuming local time");
 	}
 	else
 	{
-	    general["hwclock"] = "GMT";
+	    // No Win partitions ==> assume UTC.
+	    //
+	    hwclock = "-u";
+	    y2milestone("Assuming UTC");
 	}
+	string hwc 	    = Misc::SysconfigRead(.sysconfig.clock.HWCLOCK, hwclock);
+	if (hwc == "--localtime")
+	{
+	    clock["hwclock"] = "localtime";
+	}
+	else if (hwc == "-u")
+	{
+	    clockl["hwclock"] = "GMT";
+	}
+	else
+	{
+	    clockl["hwclock"] = "";
+	}	
+	general["clock"]    = clock;
+	
+	map mouse = $[];
+	mouse["id"]	    = Misc::SysconfigRead(.sysconfig.mouse.YAST_MOUSE, "probe" );
+	general["mouse"]    = mouse;
 
 	return general;
     }
@@ -199,7 +225,8 @@
      * Build the profile
      * @return map Profile
      */
-    global define void constructProfile()``{
+    global define void constructProfile()
+	``{
 	map Install = $[];
 	Install["partitioning"] = Partitioning();
 	Install["software"] = Software();
