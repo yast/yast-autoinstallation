@@ -826,9 +826,10 @@
 	map result = $[];
 	string cmdLine = "";
 	integer slashpos = 0;
-	if (haskey( Mode::installMap, "AutoYaST"))
+	string autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
+	if (autoinstall!="")
 	{
-	    cmdLine = Mode::installMap["AutoYaST"]:"default";
+	    cmdLine = autoinstall;
 	    if (cmdLine == "default")
 	    {
 		result["scheme"]=cmdLine;
