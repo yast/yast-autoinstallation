@@ -842,6 +842,7 @@ is the different package and package selection names used, those have to be adap
 	    string fstype = (k == "swap") ? "swap" :  v["fstype"]:"";
 	    partition["filesystem"] = StringFS2Symbol(fstype);
 	    partition["mount"] = k;
+	    partition["format"] = true;
 	    partition["size"] = sformat("%1mb", v["size"]:-1);
 	    if (v["grow"]:0 == 1) {
 		partition["size"] = "max";
