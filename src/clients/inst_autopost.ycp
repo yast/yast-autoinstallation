@@ -17,15 +17,52 @@
     import "AutoinstSoftware";
     import "AutoinstScripts";
     import "Report";
+    import "Progress";
+
+    y2milestone("Profile=%1", Profile::Flat );
+
+    define void Step (string s) {
+        Progress::NextStep();
+        Progress::Title(sformat(_("Checking required packages for %1"), s));
+        return;
+    }
 
     list<string> packages = [];
     string resource = "";
     string module_auto = "";
 
     if (Profile::Flat["report"]:$[] != $[])
-    {
         Report::Import(Profile::Flat["report"]:$[]);
-    }
+
+
+    string help_text = _("<p>
+Please wait while the system is prepared for autoinstallation.</p>
+");
+    list<string> progress_stages =
+	[
+	 _("Install required packages."),
+	 ];
+
+    integer steps = size(filter(string p, map d, Y2ModuleConfig::ModuleMap, ``( 
+	(d["X-SuSE-YaST-AutoInst"]:"" == "all" || 
+         d["X-SuSE-YaST-AutoInst"]:"" == "write") &&
+        haskey(Profile::Flat, d["X-SuSE-YaST-AutoInstResource"]:p)  )));
+
+
+    steps = steps + 3;
+
+    Progress::New(
+		  _("Preparing System for Automatic Installation"),
+		  "",     // progress_title
+		  steps ,	// progress bar length
+		  progress_stages,
+		  [],
+		  help_text );
+    Progress::NextStage();
+    Progress::Title(_("Checking for required packages..."));
+
+
+    y2milestone("Steps: %1", steps );
 
     foreach(string p, map d, Y2ModuleConfig::ModuleMap,
 	    ``{
@@ -38,15 +75,17 @@
 		resource = d["X-SuSE-YaST-AutoInstResource"]:"unknown";
 	    else
 		resource = p;
+
 	    y2milestone("current resource: %1", resource);
 
 	    // determine name of client, if not use default name
-	    if (haskey(d,"X-SuSE-YaST-AutoClient"))
-		module_auto = d["X-SuSE-YaST-AutoClient"]:"none";
+	    if (haskey(d,"X-SuSE-YaST-AutoinstClient"))
+		module_auto = d["X-SuSE-YaST-AutoinstClient"]:"none";
 	    else
 		module_auto = sformat("%1_auto", p);
 
 	    map result = $[];
+
 	    if (haskey(Profile::Flat , resource) )
 	    {
 		y2milestone("Importing configuration for %1", p);
@@ -68,6 +107,7 @@
 		    y2milestone("Calling auto client with: %1", result);
 		    if (size(result) > 0 )
                     {
+                        Step(p);
 		        Call::Function(module_auto, ["Import", eval(result) ]);
 	                map out = (map)Call::Function(module_auto, ["Packages" ]);
 	                packages = (list<string>) union(packages, out["install"]:[]);
@@ -78,6 +118,7 @@
 		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:$[]));
 		    if (size(Profile::Flat[resource]:$[]) > 0 )
                     {
+                        Step(p);
 		        Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
 	                map out = (map)Call::Function(module_auto, ["Packages" ]);
 	                packages = (list<string>) union(packages, out["install"]:[]);
@@ -87,6 +128,7 @@
 		{
 		    if (size(Profile::Flat[resource]:[]) > 0 )
                     {
+                        Step(p);
 		        Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
 	                map out = (map)Call::Function(module_auto, ["Packages" ]);
 	                packages = (list<string>) union(packages, out["install"]:[]);
@@ -95,9 +137,24 @@
             }
         }
     });
+
+    // Add all found packages
+    Progress::NextStep();
+    Progress::Title(_("Adding found packages..."));
     AutoinstSoftware::addPostPackages(packages);
+
+    // Run early network scripts
+    Progress::NextStep();
+    Progress::Title(_("Running scripts... %1"));
     AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
     AutoinstScripts::Write("post-scripts", true);
+
+
+    // Finish
+    Progress::NextStage();
+    Progress::Finish();
+
+    y2milestone("Finished required package collection");
 
     return `auto;
 }
