@@ -53,8 +53,6 @@
 	{
 	    this_drive = select(filter(map d, partitioning,``(lookup(d,"device","") == item)),0,$[]);
 	    new_val = $[
-			"crypt_fs"	: false,
-			"crypt_key" : "",
 			"partition_id"	: 131,
 			"filesystem"	: `reiser
 	    ];
@@ -322,8 +320,6 @@ needs. All fields are required.</P>
 		    {
 			return_value = add( return_value, "format",  false );
 			return_value = add( return_value, "partition_id", fs_int   );
-			return_value = add( return_value, "crypt_fs", false);
-			return_value = add( return_value, "crypt_key", "");
 			if( create )
 			{
 			    return_value = add( return_value, "filesystem", `unknown);
@@ -395,7 +391,8 @@ needs. All fields are required.</P>
 
 		// crypto settings
 		boolean crypt_fs = UI::QueryWidget(`id(`crypt_fs), `Value );
-		return_value = add( return_value, "crypt_fs",   crypt_fs );
+		return_value = add( return_value, "loop_fs", crypt_fs );
+		return_value = add( return_value, "crypt", "twofish" );
 
 		if ( crypt_fs )
 		{
