@@ -274,7 +274,7 @@
     global define boolean Read (string file)
 	``{
 	import "AutoinstCompat";
-	
+
 	y2debug("Reading %1", file);
 	current = XML::XMLToYCPFile(file);
 
@@ -287,8 +287,8 @@
 
 	Install = current["install"]:$[];
 	Configure = current["configure"]:$[];
-	Flat = AutoinstCompat::Compat( Install, Configure);			
-	
+	Flat = AutoinstCompat::Compat( Install, Configure);
+
 	if (Mode::autoinst)
 	{
 	    import "AutoInstall";

@@ -57,24 +57,27 @@
 			    result[res] = Profile::Flat[res]:[];
 			i = i + 1;
 		    });
-		    Call::Function(module_auto, ["Import", result ]);
+		    // Call::Function(module_auto, ["Import", result ]);
 		    any out = Call::Function(module_auto, ["Packages", result ]);
 			if (is(out, map))
 				packages = union(packages, out["install"]:[]);
+			// Call::Function(module_auto, ["Reset", $[] ]);
 		}
 		else if (d["AutoinstDataType"]:"map" == "map")
 		{
-		    Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
+		    // Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
 		    any out = Call::Function(module_auto, ["Packages", Profile::Flat[resource]:$[]  ]);
 			if (is(out, map))
 				packages = union(packages, out["install"]:[]);
+			// Call::Function(module_auto, ["Reset", $[] ]);
 		}
 		else
 		{
-		    Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
+		    // Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
 		    any out = Call::Function(module_auto, ["Packages",  Profile::Flat[resource]:[] ]);
 			if (is(out, list))
 				packages = union(packages, out["install"]:[]);
+			// Call::Function(module_auto, ["Reset", [] ]);
 		}
 	    }
 	}

@@ -116,18 +116,18 @@ Please wait while the system is being configured.
 			else
 		       logStep( sformat (_("Not configuring %1"), p));
 
-		    // Call::Function(module_auto, ["Import", result ]);
-		    Call::Function(module_auto, ["Write", result ]);
+		    Call::Function(module_auto, ["Import", eval(result) ]);
+		    Call::Function(module_auto, ["Write", eval(result) ]);
 		}
 		else if (d["AutoinstDataType"]:"map" == "map")
 		{
-		    y2milestone("Calling auto client with: %1",  Profile::Flat[resource]:$[]);
+		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:$[]));
 			if (size(Profile::Flat[resource]:$[]) > 0 )
 		       logStep( sformat (_("Configuring %1"), p));
 			else
 		       logStep( sformat (_("Not configuring %1"), p));
-		    // Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
-		    Call::Function(module_auto, ["Write", Profile::Flat[resource]:$[]  ]);
+		    Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
+		    Call::Function(module_auto, ["Write", eval(Profile::Flat[resource]:$[])  ]);
 		}
 		else
 		{
@@ -136,9 +136,9 @@ Please wait while the system is being configured.
 			else
 		       logStep( sformat (_("Not configuring %1"), p));
 
-		    y2milestone("Calling auto client with: %1",  Profile::Flat[resource]:[]);
-		    // Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
-		    Call::Function(module_auto, ["Write",  Profile::Flat[resource]:[] ]);
+		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:[]));
+		    Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
+		    Call::Function(module_auto, ["Write",  eval(Profile::Flat[resource]:[]) ]);
 		}
 	    }
 	}

@@ -1,0 +1,88 @@
+/**
+ * File:	clients/autoinst_test.ycp
+ * Package:	Auto-installation
+ * Author:      Anas Nashif <nashif@suse.de>
+ * Summary:	This module finishes auto-installation and configures
+ *		the system as described in the profile file.
+ *
+ * $Id$
+ */
+
+{
+
+    textdomain "autoinst";
+    import "Profile";
+	Profile::Read("/var/adm/autoinstall/cache/installedSystem.xml");
+    import "AutoInstall";
+    import "AutoinstScripts";
+    import "Product";
+    import "Wizard";
+    import "Call";
+    import "Y2ModuleConfig";
+
+
+
+
+    string resource = WFM::Args(0);
+
+	y2milestone("Resource: %1", resource);
+    string module_auto = "";
+	sleep(1000);
+
+
+
+	map d = Y2ModuleConfig::ModuleMap[resource]:$[];
+	string p = resource;
+
+	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write" && ( resource == p || resource == d["AutoinstResource"]:"unknown" ))
+	{
+	    y2milestone("current resource: %1", resource);
+
+	    // determine name of client, if not default name
+	    if (haskey(d,"AutoClient"))
+		module_auto = d["AutoClient"]:"none";
+	    else
+		module_auto = sformat("%1_auto", p);
+
+	    map result = $[];
+	    if (haskey(Profile::Flat , resource) )
+	    {
+		y2milestone("Writing configuration for %1", p);
+		string tomerge = d["AutoinstMerge"]:"";
+		string tomergetypes = d["AutoinstMergeTypes"]:"";
+		list MergeTypes = splitstring(tomergetypes, ",");
+
+		if (  size(tomerge) > 0 )
+		{
+		    integer i = 0;
+		    foreach( string res, splitstring(tomerge, ",") ,
+			     ``{
+			if ( MergeTypes[i]:"map" == "map")
+			    result[res] = Profile::Flat[res]:$[];
+			else
+			    result[res] = Profile::Flat[res]:[];
+			i = i + 1;
+		    });
+		    y2milestone("Calling auto client with: %1", result);
+
+		    Call::Function(module_auto, ["Import", result ]);
+		    Call::Function(module_auto, ["Write", result ]);
+		}
+		else if (d["AutoinstDataType"]:"map" == "map")
+		{
+		    y2milestone("Calling auto client with: %1",  Profile::Flat[resource]:$[]);
+		    Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
+		    Call::Function(module_auto, ["Write", Profile::Flat[resource]:$[]  ]);
+		}
+		else
+		{
+
+		    y2milestone("Calling auto client with: %1",  Profile::Flat[resource]:[]);
+		    Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
+		    Call::Function(module_auto, ["Write",  Profile::Flat[resource]:[] ]);
+		}
+	    }
+	}
+
+    return `next;
+}
