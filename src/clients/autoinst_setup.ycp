@@ -125,7 +125,7 @@ Please wait while the system is prepared for autoinstallation.
     // User has to create the new profile in a pre-defined
     // location for easy processing in pre-script.
 
-    if (SCR::Read(.target.size, Profile::modified_profile))
+    if (SCR::Read(.target.size, Profile::modified_profile) > 0 )
     {
 	if (! Profile::Read( AutoInstall::modified_profile ) || Profile::current == $[] )
 	{
@@ -135,10 +135,8 @@ control file and try again.
 "));
 	    return `abort;
 	}
-	 AutoInstall::ProcessSpecialResources();
-    }
-
-
+	AutoInstall::ProcessSpecialResources();	
+    }    
 
     // Partitioning and Storage
     ////////////////////////////////////////////////////////////////////////

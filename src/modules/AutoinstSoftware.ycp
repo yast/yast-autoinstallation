@@ -210,7 +210,19 @@
 	{
 	    return false;
 	}
+	// Now remove all packages from remove-packages (Note: This is a workaround for bug # )
 
+	y2milestone("Packages to be removed: %1", remove_packages);
+	if (size(remove_packages) > 0 )
+	{
+	    foreach (`rp, remove_packages, ``{
+		Pkg::PkgNeutral(rp);	    
+	    });
+	    
+	    Pkg::DoRemove(remove_packages);
+	}
+
+		
 	list extraPackages = calcExtraPackages ();
 	y2debug("Packages selected in autoinstall mode: %1", extraPackages);
 
@@ -222,16 +234,6 @@
 	Pkg::DoProvide (Packages::ComputeSystemPackageList());
 
 
-	// Now remove all packages from remove-packages (Note: This is a workaround for bug # )
-	if (size(remove_packages) > 0 )
-	{
-	    foreach (`rp, remove_packages,
-		     ``{
-		Pkg::PkgNeutral(rp);	    
-	    });
-	    
-	    Pkg::DoRemove(remove_packages);
-	}
 
 	
 	Pkg::PkgSolve();
