@@ -9,7 +9,7 @@
 {
     global define void profileSetup()
 	``{
-	
+
 	map doc = $[];
 	doc["listEntries"]=   $[
 			       "users":"user",
@@ -41,35 +41,35 @@
 			       "logical_volumes":"lv",
 			       "files":"file"
 	];
-	
+
 	doc["cdataSections"] = ["source", "info_file"];
 	doc["systemID"] = "/usr/lib/YaST2/include/profile.dtd";
 	doc["rootElement"] =  "profile";
-	
+
 	XML::xmlCreateDoc(`profile, doc);
 	return;
     }
 
     global define void classSetup()
 	``{
-	
-	map doc = $[];				
-	doc["listEntries"] =  	$[
+
+	map doc = $[];
+	doc["listEntries"] =	$[
 				  "classes":"class"
-	];	
+	];
 	doc["rootElement"] = "autoinstall";
-	XML::xmlCreateDoc(`class, doc);	
+	XML::xmlCreateDoc(`class, doc);
     }
 
     global define void profileFileSetup()
 	``{
-	
-	map doc = $[];				
-	doc["listEntries"] =  	$[
+
+	map doc = $[];
+	doc["listEntries"] =	$[
 				  "profiles":"template"
-	];	
+	];
 	doc["rootElement"] = "autoinstall";
-	XML::xmlCreateDoc(`profileConf, doc);	
-    }    
-    
+	XML::xmlCreateDoc(`profileConf, doc);
+    }
+
 }
