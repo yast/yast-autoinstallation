@@ -1,15 +1,8 @@
 /**
- * File:
- *	autoinst.ycp
- *
- * Module:
- *	Autoinstall
- *
- * Summary:
- *	This module handles the configuration for auto-installation
- *
- * Authors:
- *	Anas Nashif <nashif@suse.de>
+ * File:   	conftree.ycp
+ * Module: 	Autoinstall
+ * Summary: 	This module handles the configuration for auto-installation
+ * Authors: 	Anas Nashif <nashif@suse.de>
  *
  * $Id$
  */
@@ -17,8 +10,10 @@
 
     textdomain "autoinst";
     import "HTML";
+    import "Call";
+    include "autoinstall/readconfig.ycp";
 
-
+    
     /**
      * Create a list to be used with the table widget
      * @param tree data
@@ -42,6 +37,59 @@
 	return menu_options;
     }
 
+    global define content_dialog(map mod, any settings) ``{
+	string summary =  Call::Function(clientName, ["Summary", settings]);
+	string caption = d["Name"]:"Configurtion";
+	string buttonLabel = d["Helptext"]:"Configure";
+	term contents =
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), summary),
+		  `VSpacing(0.5),
+		  `HBox(
+			// push button label
+			`PushButton(`id(`configure), _("Configur&e") ),
+			`HStretch(),
+			// push button label
+			`PushButton(`id(`reset), _("Reset Confi&guration"))
+			),
+		  `VSpacing(1)
+		  );
+	// caption of lan auto configuration
+	Wizard::SetContents(
+			    Translate(caption),
+			    contents, "", true, true);
+    }
+
+    global define module_contents(string clientName, map d, any settings ) ``{
+	content_dialog(d,settings);
+	any ret= nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if(ret == `configure)
+	    {
+		any seq = Call::Function(clientName, ["Change", settings]);
+		if (seq == `next || seq == `finish)
+		{
+		    settings = Call::Function(clientName, ["Result", $[]]);
+		}
+		y2milestone("settings: %1", settings);
+		content_dialog(d,settings);
+	    }
+	    else if( ret == `reset)
+	    {
+		Call::Function(clientName, ["Reset", $[]]);
+		content_dialog(d, $[]);
+	    }
+	    y2milestone("return %1", ret);
+	} until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key);
+
+	return [ ret, settings];
+    }
+
+
+
+    
     /**
      * Menu interface
      */
@@ -76,8 +124,10 @@
 		foreach(`k,`v, AIConfig::ModuleMap, ``{
 		    if (v["Group"]:"" == tree_item)
 		    {						
-			html = html + HTML::Heading( HTML::Link(Translate(v["Name"]:""),k));
-			html = html + HTML::Para(Translate(v["Helptext"]:""));			
+			// html = html + HTML::Heading( HTML::Link(Translate(v["Name"]:""),k));
+			// html = html + HTML::Para(Translate(v["Helptext"]:""));			
+			html = html + HTML::Heading( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k));
+			html = html + HTML::Para(ReadKey(v["Textdomain"]:"", "Helptext", v));
 		    }
 		});
 
@@ -143,15 +193,14 @@
 
 			if (d["AutoinstPath"]:"configure" == "install")
 			{
-			    result = CallModule(module_auto, [eval(Profile::Install[resource]:$[])]);
+			    result = module_contents(module_auto, d, Profile::Install[resource]:$[]);			    
 			}
 			else
 			{
-			    result = CallModule(module_auto, [eval(Profile::Configure[resource]:$[])]);
+			    result = module_contents(module_auto, d, Profile::Configure[resource]:$[]);			    
 			}
-
-			map data = select(result,1,$[]);
-			ret = select(result,0,`empty);
+			ret = select(result,0,`none);
+			map data = select(result,1,$[]);			
 
 
 			if (d["AutoinstPath"]:"configure" == "install")
@@ -210,7 +259,8 @@
 		}
 	    });
 
-	    if (ret == `key) {
+	    if (ret == `key)
+	    {
 		tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
 		if (tree_item == nil)
 		    tree_item = "Hardware";		

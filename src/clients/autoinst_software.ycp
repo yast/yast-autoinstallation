@@ -19,54 +19,30 @@
     include "wizard/sequencer.ycp";
     include "ui/common_messages.ycp";
     include "autoinstall/dialogs.ycp";
-    
 
-    list args = WFM::Args ();
-
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( WFM::Args (0), map ) )
-    {
-	y2error ("Bad argument: %1", WFM::Args (0));
-	return false;
-    }
-
-    map settings = $[];
-    {
-	integer i = 0;
-	while (i < size (WFM::Args()))
-	{
-	    if (is (WFM::Args (i), map) && nil != WFM::Args (i))	settings = WFM::Args (i);
-
-	    i = i + 1;
-	}
-    }
+	string func = WFM::Args(0);
+	map param = WFM::Args(1);
+	map ret = $[];
 
 
+    string base = param["base"]:"Custom";
+
+    list addons = param["addons"]:[];
+
+    list pacs = param["packages"]:[];
+
+    map software = param;
 
 
-    string base = settings["base"]:"Custom";
-
-    list addons = settings["addons"]:[];
-
-    list pacs = settings["packages"]:[];
-
-    map software = settings;     
-    
     /**
      * @return Html formatted configuration summary
      */
     define string Summary()``{
 	string summary = "";
-	
 	summary = Summary::AddHeader(summary, _("Base Selection"));
 	summary = Summary::AddLine(summary, (base != "") ?
 				   software["base"]:"None" : Summary::NotConfigured());
 	summary = Summary::AddHeader(summary, _("Add-on Selections"));
-	
 	if (size( software["addons"]:[])>0)
 	{
 	    summary = Summary::OpenList(summary);
@@ -87,30 +63,25 @@
 
 
 
-
+    /**
+     * Select packages
+     */
 
     define packageSelector() ``{
 	string language = UI::GetLanguage(true);
 
-	// Wizard::CreateDialog();
-
-	// Dialog title for software selection
 	string title = _("Software Selection");
 	string helptext = _("<p>
 TODO
 </p>
 ");
+	Wizard::CreateDialog();
 
 	Wizard::SetContents(title,
 			    `HVCenter(`Label(_("Reading package database..."))),
 			    helptext, false, true);
-	
-
-	
 	list available_base_selections = Pkg::GetSelections( `available, "base" );
-	
 	y2milestone("AVAILABLE Selections: %1",  available_base_selections);
-	
 	// Construct a box with radiobuttons for each software base configuration
 	term baseconfs_box = `VBox();
 
@@ -214,7 +185,7 @@ TODO
 			*/
 			y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
 			// activate current selection before entering package widget
-			Pkg::ActivateSelections();			
+			Pkg::ActivateSelections();
 
 		    }
 		    while ( details_ret == `again )
@@ -242,7 +213,6 @@ TODO
 		}
 
 	    } until ( (ret == `next && !error_found) || ret == `cancel ||  ret == `back || ret == `abort);
-	
 	// list allpacs = Pkg::GetPackages(`selected, true);	
 	list seladd =  Pkg::GetSelections(`selected, "");
 	list selbase =  Pkg::GetSelections(`selected, "base");
@@ -273,55 +243,36 @@ TODO
 	});
 	
 	*/
-	
 	software["addons"] = seladd;
 	software["base"] =   selbase[0]:"";
 	software["packages"] = pacs;
-
+	Wizard::CloseDialog();
 	return ret;
     }
 
 
-    define set_contents()
-	``{	
-	term contents =
-	    `VBox(
-		  `VSpacing(1),
-		  `RichText( `id(`summary), Summary()),
-		  `VSpacing(0.5),
-		  `HBox(
-			`PushButton(`id(`configure), _("&Configure")),
-			`HStretch(),
-			`PushButton(`id(`reset), _("Reset Co&nfiguration"))
-			),
-		  `VSpacing(1)
-		  );
-	Wizard::SetContents(_("Software"),
-			    contents, "", true, true);
+/* create a  summary*/
+    
+    if(func == "Summary") {
+	return Summary();
+    }
+    else if (func == "Reset") {
+	software= $[];
+	return (true);
+    }
+    else if (func == "Change") {	
+	any res = packageSelector();
+	return res;
+    }
+    else if (func == "Result") {
+	return(software);
     }
 
-    set_contents();
-    any result = nil;
-    any ret = nil;
-    repeat {
-	ret = UI::UserInput();
-	if (ret == `configure)
-	{	        	    
-	    result =  packageSelector();
-	    
-	    if (result == `next || result == `finish)
-	    {
-		settings = software;
-	    }
-	    set_contents();
-	}
-	else if ( ret == `reset)
-	{
-	    settings = $[];
-	    software = $[];
-	    set_contents();
-	}
-    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+/* unknown function */
+    else {
+	y2error("unknown function: %1", func);
+	return false;
+    }
 
-    return [ret, settings];
+/* Finish */
 }
