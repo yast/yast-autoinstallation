@@ -1,6 +1,6 @@
 @HEADER-COMMENT@
 
-# neededforbuild yast2-devel-packages
+# neededforbuild yast2-devel-packages yast2 yast2-installation yast2-xml yast2-transfer yast2-storage yast2-country yast2-mouse yast2-bootloader yast2-packager yast2-x11
 
 @HEADER@
 Requires:	yast2-core yast2-xml libxslt
@@ -118,11 +118,11 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
 
 @ydatadir@/monitors.ycp
-@moduledir@/AutoinstClass.ycp
-@moduledir@/AutoinstLinuxrc.ycp
-@moduledir@/AutoinstConfig.ycp
-@moduledir@/ISO.ycp
-@moduledir@/AutoinstX11.ycp
+@moduledir@/AutoinstClass.y*
+@moduledir@/AutoinstLinuxrc.y*
+@moduledir@/AutoinstConfig.y*
+@moduledir@/ISO.y*
+@moduledir@/AutoinstX11.y*
 @agentdir@/ag_yast1sel
 @agentdir@/ag_ksimport
 
@@ -158,25 +158,25 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 /usr/share/autoinstall/xslt/merge.xslt
 # config file
 
-@moduledir@/AutoinstClone.ycp
+@moduledir@/AutoinstClone.y*
 %dir @yncludedir@/autoinstall
 @yncludedir@/autoinstall/partitioning.ycp
 @yncludedir@/autoinstall/profileDialogs.ycp
 @yncludedir@/autoinstall/io.ycp
 
-@moduledir@/AutoInstall.ycp
-@moduledir@/AutoinstScripts.ycp
-@moduledir@/AutoinstGeneral.ycp
-@moduledir@/Y2ModuleConfig.ycp
-@moduledir@/Profile.ycp
-@moduledir@/AutoinstFile.ycp
-@moduledir@/AutoinstCompat.ycp
-@moduledir@/AutoinstSoftware.ycp
-@moduledir@/AutoinstLVM.ycp
-@moduledir@/AutoinstRAID.ycp
-@moduledir@/AutoinstStorage.ycp
-@moduledir@/AutoInstallRules.ycp
-@moduledir@/ProfileLocation.ycp
+@moduledir@/AutoInstall.y*
+@moduledir@/AutoinstScripts.y*
+@moduledir@/AutoinstGeneral.y*
+@moduledir@/Y2ModuleConfig.y*
+@moduledir@/Profile.y*
+@moduledir@/AutoinstFile.y*
+@moduledir@/AutoinstCompat.y*
+@moduledir@/AutoinstSoftware.y*
+@moduledir@/AutoinstLVM.y*
+@moduledir@/AutoinstRAID.y*
+@moduledir@/AutoinstStorage.y*
+@moduledir@/AutoInstallRules.y*
+@moduledir@/ProfileLocation.y*
 
 #clients
 @clientdir@/autoinst_init.ycp
