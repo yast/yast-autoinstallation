@@ -1,51 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT nis (nis_broadcast?, nis_broken_server?, nis_by_dhcp?, nis_domain, nis_domain_by_dhcp?, nis_local_only?, nis_options?, nis_other_domains?, nis_servers, nis_servers_by_dhcp?, start_autofs, start_nis)>
+
+
+<!-- NIS Client --> 
+
+<!ENTITY % y2_nisclient (nis_broadcast|nis_broken_server|nis_by_dhcp|nis_domain|nis_domain_by_dhcp|nis_local_only|nis_options|nis_other_domains|nis_servers|nis_servers_by_dhcp|start_autofs|start_nis)>
+
+<!ELEMENT nis (%y2_nisclient;)* >
 <!ELEMENT nis_broadcast (#PCDATA)>
 <!ATTLIST nis_broadcast
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
 
 <!ELEMENT nis_broken_server (#PCDATA)>
 <!ATTLIST nis_broken_server
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT nis_servers_by_dhcp (#PCDATA)>
 <!ATTLIST nis_servers_by_dhcp
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT nis_domain_by_dhcp (#PCDATA)>
 <!ATTLIST nis_domain_by_dhcp
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT nis_domain (#PCDATA)>
 <!ELEMENT nis_local_only (#PCDATA)>
 <!ATTLIST nis_local_only
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT nis_options (#PCDATA)>
-<!ELEMENT nis_other_domain (nis_broadcast?, nis_domain, nis_servers)>
+<!ENTITY % y2_nis_other_domain (nis_broadcast|nis_domain|nis_servers" )
+<!ELEMENT nis_other_domain (%y2_nis_other_domain;)*>
 <!ELEMENT nis_other_domains (nis_other_domain*)>
 <!ATTLIST nis_other_domains
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "list"
 >
 <!ELEMENT nis_servers (nis_server+)>
 <!ATTLIST nis_servers
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "list"
 >
 <!ELEMENT start_autofs (#PCDATA)>
 <!ATTLIST start_autofs
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT start_nis (#PCDATA)>
 <!ATTLIST start_nis
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
+
+
+<!-- Common -->
+<!ELEMENT nis_server (#PCDATA | %nisservertags;)* >
+
+<!-- NIS Server -->
+<!ENTITY % y2_nisserver "domain| maps_to_serve| merge_group| merge_passwd| nopush| pwd_chfn| pwd_chsh| pwd_srcdir| securenets| server_type| slaves| start_ypbind| start_yppasswdd| start_ypxfrd">
+
+
 <!ELEMENT comment (#PCDATA)>
 <!ELEMENT flag (#PCDATA)>
 <!ELEMENT forename (#PCDATA)>
 <!ELEMENT gid (#PCDATA)>
 <!ATTLIST gid
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "integer"
 >
 <!ELEMENT grouplist (#PCDATA)>
 <!ELEMENT hash (#PCDATA)>
@@ -54,71 +70,71 @@
 <!ELEMENT last_change (#PCDATA)>
 <!ELEMENT maps_to_serve (nis_map+)>
 <!ATTLIST maps_to_serve
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "list"
 >
 <!ELEMENT max (#PCDATA)>
 <!ELEMENT merge_passwd (#PCDATA)>
 <!ATTLIST merge_passwd
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT min (#PCDATA)>
 <!ELEMENT nis_map (#PCDATA)>
-<!-- <!ELEMENT nis_server (domain, maps_to_serve, merge_group, merge_passwd, nopush, pwd_chfn, pwd_chsh, pwd_srcdir, securenets, server_type, slaves, start_ypbind, start_yppasswdd, start_ypxfrd)> -->
 <!ELEMENT nopush (#PCDATA)>
 <!ATTLIST nopush
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
-<!ELEMENT password_settings (expire?, flag?, inact?, last_change?, max?, min?, warn?)>
+<!ENTITY % y2_password_settings "expire| flag| inact| last_change| max| min| warn">
+<!ELEMENT password_settings (%y2_password_settings;)*>
+
 <!ELEMENT pwd_chfn (#PCDATA)>
 <!ATTLIST pwd_chfn
-	config:type CDATA #REQUIRED
+	config:type CDATA NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT pwd_chsh (#PCDATA)>
 <!ATTLIST pwd_chsh
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT pwd_srcdir (#PCDATA)>
-<!ELEMENT securenet (comment?, hash?, netmask?, network?)>
+<!ELEMENT securenet (comment| hash| netmask| network?)>
 <!ELEMENT securenets (securenet+)>
 <!ATTLIST securenets
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "list"
 >
 <!ELEMENT server_type (#PCDATA)>
 <!ELEMENT shell (#PCDATA)>
 <!ELEMENT slave (#PCDATA)>
 <!ELEMENT slaves (slave+)>
 <!ATTLIST slaves
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "list"
 >
 <!ELEMENT start_ypbind (#PCDATA)>
 <!ATTLIST start_ypbind
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT start_yppasswdd (#PCDATA)>
 <!ATTLIST start_yppasswdd
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT start_ypxfrd (#PCDATA)>
 <!ATTLIST start_ypxfrd
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "boolean"
 >
 <!ELEMENT surname (#PCDATA)>
 <!ELEMENT uid (#PCDATA)>
 <!ATTLIST uid
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "integer"
 >
 <!-- <!ELEMENT user (encrypted, forename, gid, grouplist, home, password_settings, shell, surname, uid, user_password, username)> -->
 <!ELEMENT user_password (#PCDATA)>
 <!ELEMENT username (#PCDATA)>
 <!ELEMENT users (user+)>
 <!ATTLIST users
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "list"
 >
 <!ELEMENT warn (#PCDATA)>
 
 
-
 <!ELEMENT nis_by_dhcp (#PCDATA)>
 <!ATTLIST nis_by_dhcp
-	config:type CDATA #REQUIRED
+	config:type NMTOKEN #FIXED "boolean"
 >

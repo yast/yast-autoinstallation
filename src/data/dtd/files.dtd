@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT files (file+)>
-<!ATTLIST files
-	config:type CDATA #REQUIRED
->
 
-<!ELEMENT file (file_contents, file_path)>
+<!-- 
+<!ENTITY % y2_files "source|interpreter">
+-->
+<!ENTITY % y2_files_scripts "file_contents|file_path|file_permissions|file_owner|file_script" >
+<!ELEMENT files (file+)>
+<!ATTLIST files config:type CDATA NMTOKEN #FIXED "list" >
+<!ELEMENT file (%y2_files;)*>
 <!ELEMENT file_contents (#PCDATA)>
 <!ELEMENT file_path (#PCDATA)>
+<!ELEMENT file_permissions (#PCDATA)>
+<!ELEMENT file_owner (#PCDATA)>
+<!ELEMENT file_script (%y2_files_scripts;)+ >

@@ -101,13 +101,13 @@ define symbol addFileDialog( symbol mode , string name)
 
 		// help 1/2
 		string help =  _("<p>Using this dialog, copy the contents of the file and specify the final
-				path on the installed system. YaST2 will copy this file to the specified location.</p>");
+path on the installed system. YaST2 will copy this file to the specified location.</p>");
 
 		// help 2/2
 		help = help + _("<p>To protect copied files, set the owner and the permissions of the files.
-				Set the owner using the syntax <i>userid.groupid</i>.  Permissions can be a symbolic
-				representation of changes to make or an octal  number  representing  the bit pattern for the
-				new permissions.
+Set the owner using the syntax <i>userid.groupid</i>.  Permissions can be a symbolic
+representation of changes to make or an octal  number  representing  the bit pattern for the
+new permissions.
 				");
 
 
@@ -220,9 +220,9 @@ define symbol CustomFileDialog ()``{
 	string title = _("Add Complete Configuration Files");
 
 	string help = _("<p>For many applications and services, you might have prepared
-			a configuration file that should be copied in a complete form to a location in the
-			installed system. For example, this is the case if you are installing a web server
-			and have an httpd.conf configuration file prepared.</p>
+a configuration file that should be copied in a complete form to a location in the
+installed system. For example, this is the case if you are installing a web server
+and have an httpd.conf configuration file prepared.</p>
 			");
 
 	Wizard::SetContents(title,
@@ -309,7 +309,6 @@ else if (func == "Reset") {
 }
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
-  
     Wizard::CreateDialog();
     ret = CustomFileDialog();
     Wizard::CloseDialog();

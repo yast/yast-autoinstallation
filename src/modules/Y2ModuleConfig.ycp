@@ -15,12 +15,11 @@
     import "Profile";
     import "Installation";
     import "Desktop";
-    
 
     // include "autoinstall/io.ycp";
 
     global map GroupMap = $[];
-    global map ModuleMap = $[];
+    global map<string, map> ModuleMap = $[];
 
     /**
      * MenuTreeData
@@ -253,7 +252,7 @@
      */
     global define list Deps () ``{
 
-	map deps = $[
+	map<string, list> deps = $[
 			"files": ["users"],
 			"nfs":	 ["lan"],
 			"nfs_server": ["lan"],
@@ -263,7 +262,7 @@
 			"firewall": ["lan"],
 			];
 
-	list m = [];
+	list<map> m = [];
 	list done = [];
 
 	foreach(string p, map d, ModuleMap,
@@ -271,10 +270,8 @@
 
 		if (!contains(done, p)) {
 		if (haskey(deps, p)) {
-			
-			foreach(list r, deps[p]:[], ``{
+			foreach(string r, deps[p]:[], ``{
 				if (!contains(done, r)) {
-				
 				m = add(m, $["res":r, "data":ModuleMap[r]:$[]]);
 				done = add(done, r);
 				}

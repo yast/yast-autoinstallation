@@ -30,7 +30,7 @@
     global map Configure = $[];
 
     // defined in Y2ModuleConfig
-    global map ModuleMap = $[];
+    global map<string, map> ModuleMap = $[];
 
 
     global string Version = "";
@@ -282,9 +282,9 @@
      * @param list lvm_standalone Stand alone LVM configuration
      * @return list LVM configuration integrated into partitioning resource
      */
-    global define list convertLVM (list lvm_standalone ) ``{
+    global define list<map> convertLVM (list<map> lvm_standalone ) ``{
 
-	list all_lvm = [];
+	list<map> all_lvm = [];
 
 	foreach (map group, lvm_standalone, ``{
 	    map new_lvm = $[];
@@ -322,7 +322,7 @@
      * @param list raid_standalone Stand alone RAID configuration
      * @return map RAID configuration integrated into partitioning resource
      */
-    global define map convertRAID (list raid_standalone ) ``{
+    global define map convertRAID (list<map> raid_standalone ) ``{
 	map raid = $[];
 
 	raid["device"]	= "/dev/md";
@@ -408,7 +408,7 @@
 	// general
 	boolean old = false;
 
-	map general_options	= Install["general"]:$[];
+	map<string, any> general_options	= Install["general"]:$[];
 	map security		= Configure["security"]:$[];
 	map report		= Install["report"]:$[];
 
@@ -471,9 +471,9 @@
 	    }
 
 	    map net = Configure["networking"]:$[];
-	    list ifaces = net["interfaces"]:[];
+	    list<map> ifaces = net["interfaces"]:[];
 
-	    list newifaces = maplist(map iface , ifaces, ``{
+	    list newifaces = maplist(map<string, string> iface , ifaces, ``{
 		map newiface = mapmap(string k, string v, iface, ``{
 		    return ($[tolower(k): v]);
 		});
@@ -490,7 +490,7 @@
 	//
 	// RAID
 	//
-	list old_raid = Install["raid"]:[];
+	list<map> old_raid = Install["raid"]:[];
 	if (size(old_raid) > 0 )
 	{
 	    map new_raid = convertRAID(old_raid);
@@ -502,16 +502,15 @@
 	//
 	// LVM
 	//
-
-	list old_lvm = Install["lvm"]:[];
+	list<map> old_lvm = Install["lvm"]:[];
 	if (size(old_lvm) > 0 )
 	{
-	    list new_lvm = convertLVM(old_lvm);
-	    list d = Install["partitioning"]:[];
-	    d = union (d, new_lvm );
+	    list<map> new_lvm = convertLVM(old_lvm);
+	    list<map> d = Install["partitioning"]:[];
+	    d = (list<map>) union (d, new_lvm );
 	    Install["partitioning"] = d;
 	}
-	return (union(Configure, Install));
+	return ((map)union(Configure, Install));
     }
 
 

@@ -33,9 +33,9 @@
 
     global list Profiles = [];
 
-    global list Classes = [];
+    global list<map> Classes = [];
 
-    global list confs = [];
+    global list<map> confs = [];
 
     string class_file = "classes.xml";
 
@@ -98,7 +98,7 @@
 			       )
 	``{
 
-	string dontmerge_str = "";	
+	string dontmerge_str = "";
 	integer i = 1;
 	foreach (string dm,  AutoinstConfig::dontmerge, ``{
 	    dontmerge_str = dontmerge_str + sformat(" --param dontmerge%1 \"'%2'\" ", i,  dm);
@@ -106,7 +106,7 @@
 	});
 	string tmpdir = AutoinstConfig::tmpDir;
 	string MergeCommand = sformat("/usr/bin/xsltproc --novalid --param replace \"'false'\" %1 --param with ",dontmerge_str ) ;
-	
+
 	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"", configuration["class"]:"") + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
@@ -143,7 +143,7 @@
 		    return (conf);
 		});
 		y2milestone("Configurations: %1", tmp_confs);
-		confs = union(confs, tmp_confs);
+		confs = (list<map>)union(confs, tmp_confs);
 	    }
 	});
 	y2milestone("Configurations: %1", confs);
