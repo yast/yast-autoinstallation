@@ -8,14 +8,13 @@
  */
 
 {
-
     textdomain "autoinst";
 
-
-    //
-    // Shows a dialog when 'control file' can't be found
-    //
-
+    /**
+      * Shows a dialog when 'control file' can't be found
+      * @param string original
+      * @return string new
+      */
     define string ProfileSourceDialog (string original)
         ``{
             string helptext = _("<p>
@@ -79,7 +78,7 @@
 
     /**
      * Disk selection dialog
-     * @return device
+     * @return string device
      */
     define string DiskSelection() ``{
 
@@ -192,11 +191,5 @@
         UI::CloseDialog();
         return option;
     }
-
-
-
-
-
-
-
+// EOF
 }

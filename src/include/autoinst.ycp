@@ -10,17 +10,19 @@
 
     /**
      * Configure bootloader settings
-     * @param void
-     * @return void
+     * @return boolean
      */
     global define boolean bootloaderSettings()``{
 	import "Bootloader";
 	import "BootCommon";
+        import "Profile";
+        import "Kernel";
+        import "Initrd";
 
-	any ret = nil;
+	boolean ret = false;
 
 	// Bootloader::manual_location = true;
-	Bootloader = Profile::Flat["bootloader"]:$[];
+	map Bootloader = Profile::Flat["bootloader"]:$[];
 
 	y2debug ("Importing settings %1", Bootloader);
 	if (Bootloader == $[] )
@@ -108,56 +110,6 @@
 	    }
 	});
 
-    }
-
-    /**
-     * Finish Auto-Installation by saving misc files
-     * @return void
-     */
-    global define void Finish ()
-	``{
-
-	AutoinstScripts::Write("chroot-scripts", false);
-
-	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AutoinstScripts::scripts_dir);
-	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoinstScripts::logs_dir);
-
-	SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", xml_tmpfile ,  Installation::destdir ,  xml_file) );
-	SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",   Installation::destdir ,  xml_file) );
-
-	return;
-    }
-
-    /**
-     * Linuxrc Settings
-     * @param: linuxrc map
-     * @return map modified linuxrc map
-     */
-    global define map Linuxrc(map linuxrc) ``{
-	import "Bootloader";
-	import "AutoinstGeneral";
-
-	if (AutoinstGeneral::Mode["forceboot"]:false )
-	{
-	    linuxrc["Root"] = Bootloader::getRootDevice ();
-	}
-
-        // FIXME: This is not needed anymore, machine always does hard boot
-	if (AutoinstGeneral::Mode["reboot"]:false )
-	{
-	    linuxrc["Root"] = "reboot";
-	}
-
-	if (AutoinstGeneral::Mode["rebootmsg"]:false)
-	{
-	    linuxrc["RebootMsg"] = "1";
-	}
-	else
-	{
-	    linuxrc["RebootMsg"] = "0";
-	}
-	y2milestone("Linuxrc settings: %1", linuxrc);
-	return linuxrc;
     }
 
 }

@@ -8,14 +8,11 @@
  */
 
 {
-
     module "AutoinstGeneral";
     textdomain "autoinst";
 
     import "AutoInstall";
-    import "AutoinstConfig";
-
-    
+    import "AutoinstConfig";   
     import "Summary";
     import "Keyboard";
     import "Mouse";
@@ -27,10 +24,6 @@
 
 
 
-    //
-    // Hard Reboot
-    //
-    global boolean Reboot = false;
 
     //
     // Dont Hard Reboot
@@ -161,7 +154,8 @@
 
     /**
      * Import Configuration
-     *
+     * @param map settings
+     * @return booelan
      */
     global define boolean Import (map settings)
 	``{
@@ -177,6 +171,7 @@
 
     /**
      * Export Configuration
+     * @return map
      */
     global define map Export ()
 	``{
@@ -199,7 +194,7 @@
 
     /**
      * Write General  Configuration
-     * @return true on success
+     * @return boolean true on success
      */
     global define boolean Write() ``{
 
@@ -208,7 +203,8 @@
 	y2milestone("timezone -> %1", Clock["timezone"]:"" );
 	
 	AutoinstConfig::Confirm = mode["confirm"]:true;
-
+	AutoinstConfig::ForceBoot = mode["forceboot"]:false;
+		    
 	Keyboard::default_kbd = keyboard["keymap"]:"";
 	Keyboard::SetConsole( keyboard["keymap"]:"" );
 	Keyboard::SetX11( keyboard["keymap"]:"" );

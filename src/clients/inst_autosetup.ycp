@@ -8,7 +8,6 @@
  */
 
 {
-
     textdomain "autoinst";
 
     import "AutoinstConfig";
@@ -22,89 +21,45 @@
     import "AutoinstGeneral";
     import "AutoinstSoftware";
     import "BootCommon";
-    
     import "Popup";
-    
 
 
-    string help_text = _("<P>
-Please wait while the system is prepared for autoinstallation.
-</P>
-");
+    string help_text = _("<P>Please wait while the system is prepared for autoinstallation.</P>");
     list progress_stages =
-	[
-	 _("Load and configure additional kernel modules"),
-	 _("Configure General Settings "),
-	 _("Execute pre-install user scripts"),
-	 _("Create partition plans"),
-	 _("Configure Software selections"),
-	 _("Configure Bootloader")
-	 ];
+        [
+    _("Configure General Settings "),
+    _("Execute pre-install user scripts"),
+    _("Create partition plans"),
+    _("Configure Software selections"),
+    _("Configure Bootloader")
+        ];
 
     list progress_descriptions =
-	[
-	 _("Loading and configuring additional kernel modules"),
-	 _("Configuring general settings..."),
-	 _("Executing pre-install user scripts..."),
-	 _("Creating partition plans..."),
-	 _("Configuring Software selections..."),
-	 _("Configuring Bootloader...")
-	 ];
-    
-    // Wizard::SetEasyInstallationStep( EasyInstallationStepDescriptions(), 2 );
+        [
+    _("Configuring general settings..."),
+    _("Executing pre-install user scripts..."),
+    _("Creating partition plans..."),
+    _("Configuring Software selections..."),
+    _("Configuring Bootloader...")
+        ];
 
     Progress::New(
-		  _("Preparing System for Automated Installation"),
-		  "",     // progress_title
-		  size( progress_stages ),	// progress bar length
-		  progress_stages,
-		  progress_descriptions,
-		  help_text );
+            _("Preparing System for Automated Installation"),
+            "",     // progress_title
+            size( progress_stages ),	// progress bar length
+            progress_stages,
+            progress_descriptions,
+            help_text );
 
 
-	if(UI::PollInput() == `abort)
-		if (Popup::ConfirmAbort (`painless))
-			return `abort;
+    if(UI::PollInput() == `abort)
+        if (Popup::ConfirmAbort (`painless))
+            return `abort;
     Progress::NextStage();
 
-    /*
-      // FIXME
 
-    if (is(AutoInstall::loadKernelModules, list) && size(AutoInstall::loadKernelModules) > 0 )
-    {
-	foreach(`m, AutoInstall::loadKernelModules, ``{
-	    if (m["module"]:"" != "")
-	    {
-		ModuleLoading::Load(m["module"]:"",
-				    m["module_arguments"]:"",
-				    m["vendor"]:"Additional Module",
-				    m["device"]:"Additional Module",
-				    false,
-				    m["modprobe"]:false);
-		if (m["configure"]:false)
-		{
-		    ModulesConf::ModuleArgs (m["module"]:"",m["module_arguments"]:"" );
-		}
-	    }
-
-	});
-    }
-
-    if (is(AutoInstall::configureKernelModules, list) && size(AutoInstall::configureKernelModules) > 0 )
-    {
-	foreach(`m, AutoInstall::configureKernelModules, ``{
-	    if (m["module"]:"" != "")
-	    {
-		ModulesConf::ModuleArgs (m["module"]:"",m["module_arguments"]:"" );
-	    }
-
-	});
-    }
-
-    */
-    
     // configure general settings
-    
+
     if(UI::PollInput() == `abort)
 	if (Popup::ConfirmAbort (`painless))
 	    return `abort;
@@ -120,7 +75,7 @@ Please wait while the system is prepared for autoinstallation.
     if(UI::PollInput() == `abort)
 	if (Popup::ConfirmAbort (`painless))
 	    return `abort;
-    
+
     Progress::NextStage();
 
     // Pre-Scripts
@@ -141,7 +96,6 @@ control file and try again.
 "));
 	    return `abort;
 	}
-	// AutoInstall::ProcessSpecialResources();
     }
 
     //
@@ -152,7 +106,7 @@ control file and try again.
 	if (Popup::ConfirmAbort (`painless))
 	    return `abort;
 
-    
+
     Progress::NextStage();
     AutoinstStorage::Import(Profile::Flat["partitioning"]:[]) ;
 
@@ -160,7 +114,7 @@ control file and try again.
     {
 	Report::Error(_("Error while configuring partitions.
 Try again.
-"));	
+"));
 	y2error("Aborting...");
 	return `abort;
     }
@@ -171,10 +125,10 @@ Try again.
     if(UI::PollInput() == `abort)
 	if (Popup::ConfirmAbort (`painless))
 	    return `abort;
-    
+
     Progress::NextStage();
     AutoinstSoftware::Import( Profile::Flat["software"]:$[] );
-    
+
     if (!AutoinstSoftware::Write())
     {
 	Report::Error(_("Error while configuring software selections.
@@ -190,7 +144,7 @@ Try again.
 	if (Popup::ConfirmAbort (`painless))
 	    return `abort;
     Progress::NextStage();
-    
+
     BootCommon::getLoaderType(true);
     // FIXME: AutoInstall::bootloaderSettings();
 
