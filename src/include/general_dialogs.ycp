@@ -139,7 +139,8 @@ your hardware and preferences and press <b>next</b> to continue.</p>");
      */
     global define ConfigureKeyboard(string keyboard)
     ``{
-	if (keyboard=="") {
+	if (keyboard == "")
+	{
 	    keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "en_US");
 	    Keyboard::current_kbd=keyboard;
 	}
@@ -173,7 +174,9 @@ your hardware and preferences and press <b>next</b> to continue.</p>");
 	    import "Misc";
 	    timezone         = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, timezone );
 	    if (timezone=="")
+	    {		
 		timezone = Timezone::GetTimezoneForLanguage(Language::language, "en_US");
+	    }
 	}
 	// build up timezone selection box
 

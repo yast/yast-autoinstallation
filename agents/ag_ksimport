@@ -142,7 +142,7 @@ while ( <STDIN> )
 	    }
 	    elsif (m/^upgrade/) 
 	    {		
-		$result{'upgrade'} = 1;
+		$result{'mode'} = "upgrade";
 	    }
 
 	    elsif (m/^skipx/) 
@@ -286,7 +286,9 @@ while ( <STDIN> )
 		GetOptions (\%h,
 			    'device=s', 'emulthree' );
 		
-		$result{'mouse'} = \%h;
+		my %m = %h;
+		$m{'type'} = $ARGV[1];
+		$result{'mouse'} = \%m;
 	    }
 	    elsif (m/^clearpart.*/) {
 		my $input = $_;		
