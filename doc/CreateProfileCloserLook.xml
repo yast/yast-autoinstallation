@@ -431,243 +431,205 @@ If one disk fails, all data is still intact. If two disks fail simultaneously,
       </example>
     </sect3>
   </sect2>
-  
+      
 
-  <sect2 id="CreateProfile.Software">
-    <title>
-      Software
-    </title>
-
-    <sect3 id="Software.Selections">
-      <title>
-	Package Selections
-      </title>
-      <para>	
-	You can choose between two different types of package selections:
-      </para>
-      <itemizedlist>
-	  <listitem>
-	    <para>
-	      Use a pre-defined package base selection, i.e. default, development,
-	      default+office etc. in addition to several <emphasis>Add-on</emphasis> selections.
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      Custom package selection, i.e. package selection of an existing
-	    system using the <command>rpm</command> command or similar tools.
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      Additional local packages, i.e. external packages (non  &company-suse;  packages) 
-	      and packages for initial system setup and configuration.
-	    </para>
-	  </listitem>
-	</itemizedlist>
-	
-	<para>
-	  In the control file, packages and package selections are described as
-	  the following:
-	</para>
-      &example.software;
-	<para>
-	  A list of possible pre-defined selections is shown in the table
-	  below. You can choose one base selection in addition to multiple 
-	  add-on selections.
-	</para>
-      <note>	
-	<para>Selections might vary depending on the installed product.</para>
-      </note>
-	<table frame='top' id="StandardSL">
-	  <title id="StandardSL.title">Software selections</title>
-	  <tgroup cols='4'>
-	    <thead>
-	      <row>
-		<entry>Name</entry>
-		<entry>YaST2 Value</entry>
-		<entry>Type</entry>
-		<entry>Description</entry>	      
-	      </row>
-	    </thead>
-	    <tbody>
-
-	      <row>
-		<entry>Minimal+X11</entry>
-		<entry>Minimal+X11</entry>
-		<entry>Base</entry>
-		<entry>Minimum graphical system (without KDE)</entry>
-	      </row>
-
-	      <row>
-		<entry>Minimal</entry>
-		<entry>Minimal</entry>
-		<entry>Base</entry>
-		<entry>Minimal System</entry>
-	      </row>
-	      <row>
-		<entry>Development</entry>
-		<entry>Linux-devel</entry>
-		<entry>Add-on</entry>
-		<entry>System with Development Tools</entry>
-	      </row>
-	      <row>
-		<entry>Standard</entry>
-		<entry>Standard</entry>
-		<entry>Base</entry>
-		<entry>Default system</entry>
-	      </row>
-	      <row>
-		<entry>Default</entry>
-		<entry>default</entry>
-		<entry>Base</entry>
-		<entry>Default system with Office</entry>
-	      </row>
-	    
-
-
-	      <row>
-		<entry>Gnome</entry>
-		<entry>Gnome</entry>
-		<entry>Add-on</entry>
-		<entry>Gnome System</entry>
-	      </row>
-
-	      <row>
-		<entry>Kde Desktop</entry>
-		<entry>Kde-Desktop</entry>
-		<entry>Add-on</entry>
-		<entry>KDE Desktop Environment</entry>
-	      </row>
-
-	      <row>
-		<entry>Kde</entry>
-		<entry>Kde</entry>
-		<entry>Add-on</entry>
-		<entry>All of KDE</entry>
-	      </row>
-
-
-	      <row>
-		<entry>Multimedia</entry>
-		<entry>Multimedia</entry>
-		<entry>Add-on</entry>
-		<entry>Multimedia</entry>
-	      </row>
-
-	      <row>
-		<entry>SuSE-Documentation</entry>
-		<entry>SuSE-Documentation</entry>
-		<entry>Add-on</entry>
-		<entry>Help & Support Documentation</entry>
-	      </row>
-
-
-	    </tbody>
-	  </tgroup>
-	</table>
-      </sect3>
-      <sect3>
+      <sect2 id="CreateProfile.Software">
 	<title>
-	  Custom Package Selections
+	  Software
 	</title>
-	<para>	
-	  In addition to the pre-defined selections, you can create custom selections
-	  by providing  a customized selection file in the selection
-	  directory. The selection files have a special format and any
-	  additional selection file must conform to this format, otherwise
-	  &yast2; will not be able to read it.	  	  
-	</para>
-	<para>
-	  As an example for the selection file, please take a look at the files
-	  available in the directory <filename>/suse/setup/descr/</filename> on
-	  the CD-ROMs.
-	</para>
-	<para>
-	  After creating a selection file, you can add it to the configuration
-	  as described above.
-	</para>
-      &example.customSoftware;
-      </sect3>
-      <sect3>
+
+	<sect3 id="Software.Selections">
+	  <title>
+	    Package Selections
+	  </title>
+	  <para>	
+	    You can install software on the new system using the following
+	    different ways:
+	  </para>
+	  <itemizedlist>
+	    <listitem>
+	      <para>
+		Use a pre-defined package base selection, i.e. Minimal, Minimal+X11,
+		default etc. in addition to several <emphasis>Add-on</emphasis> selections.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		Custom package selection, i.e. package selection of an existing
+		system using the <command>rpm</command> command or similar tools.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		Additional local packages, i.e. external packages (non  &company-suse;  packages) 
+		and packages for initial system setup and configuration.
+	      </para>
+	    </listitem>
+	  </itemizedlist>
+	  
+	  <para>
+	    In the control file, packages and package selections are described as
+	    the following:
+	  </para>
+	  &example.software;
+	  <para>
+	    A list of possible pre-defined selections is shown in the table
+	    below. You can choose one base selection in addition to one or multiple 
+	    add-on selections.
+	  </para>
+	  <note>	
+	    <para>Selections might vary depending on the installed product. To
+	      find  a complete list of the selections, please check the
+	      directory <filename>suse/setup/descr</filename></para>
+	  </note>
+	  <table frame='top' id="StandardSL">
+	    <title id="StandardSL.title">Software selections</title>
+	    <tgroup cols='4'>
+	      <thead>
+		<row>
+		  <entry>Name</entry>
+		  <entry>YaST2 Value</entry>
+		  <entry>Type</entry>
+		  <entry>Description</entry>	      
+		</row>
+	      </thead>
+	      <tbody>
+
+		<row>
+		  <entry>Minimal+X11</entry>
+		  <entry>Minimal+X11</entry>
+		  <entry>Base</entry>
+		  <entry>Minimum graphical system (without KDE)</entry>
+		</row>
+
+		<row>
+		  <entry>Minimal</entry>
+		  <entry>Minimal</entry>
+		  <entry>Base</entry>
+		  <entry>Minimal System</entry>
+		</row>
+		<row>
+		  <entry>Development</entry>
+		  <entry>Linux-devel</entry>
+		  <entry>Add-on</entry>
+		  <entry>System with Development Tools</entry>
+		</row>
+		<row>
+		  <entry>Standard</entry>
+		  <entry>Standard</entry>
+		  <entry>Base</entry>
+		  <entry>Default system</entry>
+		</row>
+		<row>
+		  <entry>Default</entry>
+		  <entry>default</entry>
+		  <entry>Base</entry>
+		  <entry>Default system with Office</entry>
+		</row>
+		
+
+
+		<row>
+		  <entry>Gnome</entry>
+		  <entry>Gnome</entry>
+		  <entry>Add-on</entry>
+		  <entry>Gnome System</entry>
+		</row>
+
+		<row>
+		  <entry>Kde Desktop</entry>
+		  <entry>Kde-Desktop</entry>
+		  <entry>Add-on</entry>
+		  <entry>KDE Desktop Environment</entry>
+		</row>
+
+		<row>
+		  <entry>Kde</entry>
+		  <entry>Kde</entry>
+		  <entry>Add-on</entry>
+		  <entry>All of KDE</entry>
+		</row>
+
+
+		<row>
+		  <entry>SuSE-Documentation</entry>
+		  <entry>SuSE-Documentation</entry>
+		  <entry>Add-on</entry>
+		  <entry>Help & Support Documentation</entry>
+		</row>
+
+
+	      </tbody>
+	    </tgroup>
+	  </table>
+	</sect3>
+	<sect3>
+	  <title>
+	    Custom Package Selections
+	  </title>
+	  <para>	
+	    In addition to the pre-defined selections, you can create custom selections
+	    by providing  a customized selection file in the selection
+	    directory. (<filename>suse/setup/descr</filename>) The selection files have a special format and any
+	    additional selection file must conform to this format, otherwise
+	    &yast2; will not be able to read it.	  	  
+	  </para>
+	  <para>
+	    As an example for the selection file, please take a look at the files
+	    available in the directory <filename>/suse/setup/descr/</filename> on
+	    the CD-ROMs.
+	  </para>
+	  <para>
+	    After creating a selection file, you can add it to the configuration
+	    as described above.
+	  </para>
+	  &example.customSoftware;
+	</sect3>
+	<sect3>
+	  <title>
+	    Installing additional and customized Packages
+	  </title>
+	  <para>
+	    In addition to the packages available for installation on the CDs,
+	    you can add external  packages including customized  kernels. Customized
+	    kernel packages must be compatible to the  &company-suse;  packages and must
+	    install the kernel files to the same locations.
+	  </para>
+	  
+	</sect3>
+      </sect2>
+
+
+
+
+      <sect2 id="CreateProfile.Services">
 	<title>
-	  Installing additional and customized Packages
+	  Services and Runlevels
 	</title>
 	<para>
-	  In addition to the packages available for installation on the CDs,
-	  you can add non- &company-suse;  packages including non- &company-suse;  kernels. Customized
-	  kernel packages must be compatible to the  &company-suse;  packages and must
-	  install the kernel files to the same locations.
+	  With the runlevel resource you can set the default runlevel and specify
+	  in detail which system services you want to be started in which
+	  runlevel.
 	</para>
-     
+	<para>
+	  The default property specifies the <emphasis>default</emphasis> run
+	  level of the system. Changes to the default runlevel will take effect
+	  next time you boot the target system. After installation is completed,
+	  the system has runlevel 5, which is  <emphasis>Full multiuser with
+	    network and xdm</emphasis>. If you have configured a system with no
+	  X11, then it is recommended to reboot the system after the first stage
+	  using the <emphasis>reboot</emphasis> property in the <emphasis>general</emphasis> resource.
+
+	</para>
+	<para>
+	  Please specify the runlevels a service should run in using a space
+	  delimited list of the runlevels as shown in the following example.
+	</para>
 	<example>
 	  <title>
-	    Additional packages not delivered with  &company-suse; 
+	    Run-level Configuration
 	  </title>
 	  <screen>
-<![CDATA[
-....
-<software>
-    <extra_packages>
-         <package_location>
-            custom
-         </package_location>
-         <packages  config:type="list">
-            <package>atftp</package>
-         </packages>
-    </extra_packages>
-    <base>Minimal+X11</base>
-</software>
-....
-]]>
-	  </screen>
-	</example>
-	<para>
-	  Using the last example, packages in <emphasis>Minimal+X11</emphasis>
-	  will be installed in addition to some external, user defined packages
-	  which will be available in the directory <filename>custom</filename>.
-	  </para>
-      <note>
-	<para>
-	  The directory <filename>custom</filename> must reside under the
-	  <filename>suse</filename> tree.
-
-	</para>
-	</note>
-      </sect3>
-  </sect2>
-
-
-
-
-    <sect2 id="CreateProfile.Services">
-      <title>
-	Services and Runlevels
-      </title>
-      <para>
-	With the runlevel resource you can set the default runlevel and specify
-	in detail which system services you want to be started in which
-	runlevel.
-      </para>
-      <para>
-	The default property specifies the <emphasis>default</emphasis> run
-	level of the system. Changes to the default runlevel will take effect
-	next time you boot the target system. After installation is completed,
-	the system has runlevel 5, which is  <emphasis>Full multiuser with
-	  network and xdm</emphasis>. If you have configured a system with no
-	X11, then it is recommended to reboot the system after the first stage
-	using the <emphasis>reboot</emphasis> property in the <emphasis>general</emphasis> resource.
-
-      </para>
-      <para>
-	Please specify the runlevels a service should run in using a space
-	delimited list of the runlevels as shown in the following example.
-      </para>
-         <example>
-	<title>
-	  Run-level Configuration
-	</title>
-	<screen>
 <![CDATA[
 <configure>
 ....
