@@ -5,7 +5,7 @@
 #
 
 SUBDIRS = autodocs images entities bin components examples xsl
-htmldir = $(docdir)
+htmldir = $(docdir)/html
 
 xml_file = autoyast.xml
 xml_files =  $(wildcard *.xml) 
@@ -56,8 +56,8 @@ images.ent:
 
 
 webimages:
-	mkdir -p $(BUILD)/img
-	cp -a images/WEB/*png $(BUILD)/img
+	mkdir -p html/img
+	cp -a images/WEB/*png html/img
 
 
 .PHONY: images examples.ent components.ent 
@@ -100,8 +100,9 @@ images: images/EPS/* images/PNG/*
 
 
 install-data-local:
-	install -d -m 755 $(DESTDIR)/@docdir@/html
-	cp -a $(BUILD)/* $(DESTDIR)/@docdir@/html
+	install -d -m 755 $(DESTDIR)$(htmldir)
+	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
+	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
 
 
 clean-local:
