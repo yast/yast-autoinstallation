@@ -49,7 +49,7 @@ full-examples.ent:
 
 date:
 	date > systemdate
-all: date fullnoref
+all:
 
 install-data-am: $(xml_file)  
 	mkdir -p $(DESTDIR)$(docdir)/xml/images; \
@@ -109,7 +109,7 @@ publish: html
 		chmod -R a+r $(HOME)/Export/autoinstall/autoyast2; \
 		chmod a+x `find $(HOME)/Export/autoinstall/autoyast2 -type d`;
 
-.PHONY: images examples.ent components.ent
+.PHONY: images examples.ent components.ent 
 
 images: images/EPS/* images/PNG/* 
 	@if ! [ -e "img" ]; then \
