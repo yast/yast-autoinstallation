@@ -230,6 +230,8 @@
      */
     global define map General() ``{
 	import "Language";
+	import "Mode";
+	Mode::config = false;
 	import "Keyboard";
 	import "Mouse";
 	import "Timezone";
@@ -238,7 +240,7 @@
 	general["language"] = Language::language;
 	
 	map keyboard = $[];
-	y2milestone("Current Keyboard: %1", Keyboard::current_kbd);
+	y2milestone("Current Keyboard: %1", Keyboard::default_kbd);
 	keyboard["keymap"]  = Keyboard::current_kbd;
 
 	general["keyboard"] = keyboard;
@@ -275,6 +277,7 @@
 	map mouse = $[];
 	mouse["id"]	    = Misc::SysconfigRead(.sysconfig.mouse.YAST_MOUSE, "probe" );
 	general["mouse"]    = mouse;
+	Mode::config = true;
 	return general;
     }
 
@@ -348,12 +351,13 @@
      */
     global define void Process()
 	``{
+	y2milestone("Additional resources: %1 %2", base, additional);
 	Profile::Reset();
 	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
 	    // Set resource name, if not using default value
-
+	    
 	    string resource = resourceMap[def_resource, "AutoinstResource"]:def_resource;
-
+	    y2milestone("current resource: %1", resource);
 	    if (contains(additional, resource))
 	    {
 		boolean ret = CommonClone(def_resource, resourceMap);

@@ -305,7 +305,7 @@ to autoinstall a new system.</p>
 		  `VSpacing(1),
 		  `MultiSelectionBox( `id(`res), _("Select additional resources to clone:"),
 				      [
-				       `item(`id("networking"), _("Network")),
+				       `item(`id("lan"), _("Network")),
 				       `item(`id("nis"),_("NIS")),
 				       `item(`id("nis_server"),_("NIS Server")),
 				       `item(`id("nfs_server"),_("NFS Exports")),
@@ -331,7 +331,7 @@ to autoinstall a new system.</p>
 		ret = UI::UserInput();	
 		if (ret ==`next)
 		{
-		    AutoinstClone::base = UI::QueryWidget( `id(`res), `SelectedItems );
+		    AutoinstClone::base = UI::QueryWidget( `id(`baseres), `SelectedItems );
 		    AutoinstClone::additional = UI::QueryWidget( `id(`res), `SelectedItems );
 		    showFeedback( _("Collecting system data.
 Please wait...
