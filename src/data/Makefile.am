@@ -4,7 +4,6 @@
 # $Id$
 #
 
-dtddir = /usr/share/autoinstall/dtd
 xmldir = /usr/share/autoinstall/xslt
 miscdir = /usr/share/autoinstall/
 
