@@ -29,7 +29,7 @@
     {
         map bash = (map)SCR::Execute (.target.bash_output, "mktemp -t " + base + ".XXXXXXXXXX || exit 1 ", $["TMPDIR":tmpdir]);
         string ret = bash["stdout"]:"";
-        ret = select(splitstring(ret,"\n"), 0 , "");
+        ret = splitstring(ret,"\n")[0]:"";
         SCR::Execute(.target.remove, ret);
         return (ret);
     }
