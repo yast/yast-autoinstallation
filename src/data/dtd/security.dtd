@@ -1,6 +1,4 @@
-
-<!ENTITY % y2_security "console_shutdown| cracklib_dict_path| cwd_in_root_path| cwd_in_user_path| displaymanager_remote_access| enable_sysrq|   passwd_encryption|  fail_delay| faillog_enab| gid_max| gid_min| kdm_shutdown| lastlog_enab| obscure_checks_enab| pass_max_days| pass_max_len| pass_min_days| pass_min_len| pass_warn_age| passwd_encryption| passwd_use_cracklib| permission_security| run_updatedb_as| system_gid_max| system_gid_min| system_uid_max| system_uid_min| uid_max| uid_min| useradd_cmd| userdel_postcmd| userdel_precmd">
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT console_shutdown (#PCDATA)>
 <!ELEMENT cwd_in_root_path (#PCDATA)>
 <!ELEMENT cwd_in_user_path (#PCDATA)>
@@ -11,6 +9,7 @@
 <!ELEMENT passwd_encryption (#PCDATA)>
 <!ELEMENT fail_delay (#PCDATA)>
 <!ELEMENT faillog_enab (#PCDATA)>
+<!ELEMENT faillog_auth (#PCDATA)>
 <!ELEMENT gid_max (#PCDATA)>
 <!ELEMENT gid_min (#PCDATA)>
 <!ELEMENT kdm_shutdown (#PCDATA)>
@@ -33,4 +32,6 @@
 <!ELEMENT useradd_cmd (#PCDATA)>
 <!ELEMENT userdel_postcmd (#PCDATA)>
 <!ELEMENT userdel_precmd (#PCDATA)>
-
+<!ELEMENT group_encryption (#PCDATA)>
+<!ENTITY % y2_security "console_shutdown| cracklib_dict_path| cwd_in_root_path| cwd_in_user_path| displaymanager_remote_access| enable_sysrq| passwd_encryption|  fail_delay| faillog_enab| gid_max| gid_min| kdm_shutdown| lastlog_enab| obscure_checks_enab| pass_max_days| pass_max_len| pass_min_days| pass_min_len| pass_warn_age|  passwd_use_cracklib| permission_security| run_updatedb_as| system_gid_max| system_gid_min| system_uid_max| system_uid_min| uid_max| uid_min| useradd_cmd| userdel_postcmd| userdel_precmd| group_encryption">
+<!ELEMENT security (%y2_security;)*>

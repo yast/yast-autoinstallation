@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!ELEMENT ntp-client ( peers, start_at_boot, start_in_chroot? ) >
+<!ELEMENT ntp-client (configure_dhcp, peers, start_at_boot, start_in_chroot? ) >
 
 <!ELEMENT create_symlink ( #PCDATA ) >
 <!ATTLIST create_symlink config:type  CDATA #FIXED  "boolean" >
 
+<!ELEMENT configure_dhcp ( #PCDATA ) >
+<!ATTLIST configure_dhcp config:type  CDATA #FIXED  "boolean" >
 
 <!ELEMENT initial_sync ( #PCDATA ) >
 <!ELEMENT fudge_comment ( #PCDATA ) >
