@@ -59,7 +59,8 @@
     /**
      * Constructor
      */
-    global define void AutoinstGeneral () ``{
+    global define void AutoinstGeneral ()
+    {
 
 	return;
     }
@@ -70,7 +71,8 @@
      * Summary of configuration
      * @return string Formatted summary
      */
-    global define string Summary()``{
+    global define string Summary()
+    {
 
 	string language_name		= "";
 	string keyboard_name		= "";
@@ -123,7 +125,7 @@
 				   mouse_name : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Confirm installation?"));
-	summary = Summary::AddLine(summary, (mode["confirm"]:false) ?
+	summary = Summary::AddLine(summary, (mode["confirm"]:true) ?
 				   _("Yes") : _("No"));
 
         /*
@@ -185,8 +187,8 @@
      * Write General  Configuration
      * @return boolean true on success
      */
-    global define boolean Write() ``{
-
+    global define boolean Write()
+    {
 	y2milestone("keymap -> %1", keyboard["keymap"]:"" );
 	y2milestone("timezone -> %1", Clock["timezone"]:"" );
 
