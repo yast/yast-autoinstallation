@@ -266,11 +266,20 @@ needs. All fields are required.</P>
 		    }
 
 		    if( filesystem != last_option_fs )
+		    {
 			fs_options = $[];
+		    }
 		    last_option_fs = filesystem;
+		    
 		    if( ret == `fs_options )
 		    {
 			fs_options =  FileSystemOptions( fs_options, selected_fs );
+		    }
+		    else if( ret == `fstab_options )
+		    {
+			map new = $[];
+			FstabOptions( new, new_val, selected_fs );
+			y2milestone("fstab %1", new_val);
 		    }
 
 		}
@@ -378,8 +387,13 @@ needs. All fields are required.</P>
 		    }
 		}
 		if( fs_options != $[] && lookup( return_value, "format" ,false))
+		{
 		    return_value = add( return_value, "fs_options", fs_options);
-		else return_value = filter(`key, `value, return_value, ``( key != "fs_options"));
+		}
+		else
+		{
+		    return_value = filter(`key, `value, return_value, ``( key != "fs_options"));
+		}
 
 
 	    }
@@ -426,6 +440,8 @@ needs. All fields are required.</P>
 	}
 	map current_drive = select(filter(`d, drives,``(d["device"]:"" == item)), 0, $[]);
 	boolean usefree = (current_drive["use"]:"" == "free");
+	boolean init = current_drive["initialize"]:false;
+	
 	boolean reuse_all = (current_drive["use"]:"" == "all");
 	list partitions = splitstring(current_drive["use"]:"", ",");
 
@@ -487,7 +503,8 @@ For more information, please consult the documentation
 					      mergestring(partitions, ",")
 					      )
 				   )
-			     )
+			     ),
+		       `Left(`CheckBox(`id(`init), _("Initialize harddri&ve"), init))
 		       )
 		 );
 
@@ -531,6 +548,12 @@ For more information, please consult the documentation
 			if (usewhat !="")
 			    drive["use"] = usewhat;
 
+			if (UI::QueryWidget(`id(`init), `Value))
+			     drive["initialize"] = true;
+			else
+			    drive["initialize"] = false;
+
+			
 			drives=add(drives,drive);
 			AIStorage::drives=drives;
 		    }

@@ -518,18 +518,23 @@ templates directory?");
 			{
 			    filename = SaveFileAs(AIConfig::TemplateRepository );
 			}
-
-			y2debug("file name: %1", filename);
+			
+			y2milestone("file name: %1", filename);
 			if (filename == "")
+			{
 			    continue;
-			if (checkFileName(filename) !=0 )
+			}
+
+			list filename_comp = splitstring(filename, "/");
+			string basename = select(filename_comp, size(filename_comp) - 1, "");
+			if (checkFileName(basename) !=0 )
 			{
 			    UI::ErrorPopup(invalidFileName());
 			    continue;
 			}
 			else
 			{
-			    AIConfig::currentFile= filename;
+			    AIConfig::currentFile = filename;
 			}
 		    }
 

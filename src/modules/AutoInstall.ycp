@@ -17,6 +17,7 @@
     import "Report";
     import "XML";
     include "autoinstall/io.ycp";
+    include "transfer/url.ycp";
 
 
     // Put all scripts and autoinstall data in this directory for later access
@@ -809,84 +810,6 @@
     }	// save()
 
 
-    /**
-     * <pre><scheme>://<authority><path>?<query></pre>
-     */
-    global define map parseURI(string uri)
-	``{
-
-	map result = $[];
-	integer pos = findfirstof( uri, ":" );
-	string scheme = substring(uri, 0, pos );
-	
-	result["scheme"] =  scheme;
-	
-	if (substring(uri, pos, 3) != "://")
-	{
-	    y2error("Wrong url syntax");
-	    return $[];
-	}
-
-	uri = substring(uri, pos + 3 , size (uri) - 1);
-	
-	if (
-	    scheme == "tftp" ||
-	    scheme == "ftp" ||
-	    scheme == "nfs"  ||
-	    scheme == "http")
-	{
-	    y2milestone("rem: %1",uri);
-	    pos = findfirstof( uri, ":" );
-	    if (pos == nil)
-	    {
-		pos = findfirstof( uri, "/" );
-		slashpos = pos;
-	    }
-	    else
-	    {
-		slashpos = findfirstof( uri, "/" );
-		if (slashpos!=nil)
-		{
-		    result = add(result, "port", substring(uri,pos +1, slashpos - pos -1));
-		}
-		else
-		{
-		    result = add(result, "port", substring(uri,pos+1, size(uri) - pos));
-		}
-	    }
-
-	    if (pos != nil)
-	    {
-		result = add(result, "server", substring(uri, 0, pos ));
-	    }
-	    else
-	    {
-		result = add(result, "server", uri);
-		result = add(result, "path", "/");
-	    }
-
-	    if (slashpos!=nil) {
-		result = add(result, "path",substring(uri, slashpos, size(uri)));
-	    }
-
-	}
-	else if (
-		   scheme == "floppy" ||
-		   scheme == "file" ||
-		   scheme == "cdrom"
-		   )
-	{
-	    result = add(result, "path",sformat("/%1",uri));
-	}
-	else
-	{
-	    y2error("Scheme not supported");
-	     return $[];
-	}
-	return result;
-	
-    }
-
     
 
     /**
@@ -910,12 +833,12 @@
 	    }
 	    else
 	    {
-		result = parseURI (cmdLine);
+		result = parse_url (cmdLine);
 	    }
 	}
 
 	
-	if (size (result) == 0)
+	if (result["scheme"]:"" == "")
 	{
 	    // Autoinstall mode was not activated from command line.
 	    // There must be a floppy with an 'autoinst.xml' in order
@@ -923,7 +846,7 @@
 	    // autoinst.xml as the control file.
 	    
 	    result = add(result, "scheme", "floppy");
-	    result = add(result, "path","autoinst.xml");
+	    result = add(result, "path","/autoinst.xml");
 	}
 	ProfileLocation = result;
 	return true;;
