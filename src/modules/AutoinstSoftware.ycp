@@ -263,7 +263,7 @@
 
                 if (conf["start_autofs"]:false)
                 {
-                    string pkg = "autofs";
+                    string pkg = "autofs4";
                     if (! contains ( allpackages, "autofs4"))
                     {
                         allpackages = add (allpackages, pkg);
@@ -280,6 +280,14 @@
 		map ldapclient = Profile::Flat["ldap"]:$[];
 		if (ldapclient["start_ldap"]:false)
 			allpackages = (list<string>) union(allpackages, ["pam_ldap","nss_ldap"]);
+                if (ldapclient["start_autofs"]:false)
+                {
+                    string pkg = "autofs4";
+                    if (! contains ( allpackages, "autofs4"))
+                    {
+                        allpackages = add (allpackages, pkg);
+                    }
+                }
 	}
 
 	if (haskey(Profile::Flat, "nfs_server"))
