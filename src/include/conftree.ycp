@@ -21,18 +21,18 @@
      * @return list
      */
 
-    global define CreateTableList( list MenuTreeData)
+    global define CreateTableList( list MenuTreeData, string current)
 	``{
 	list menu_options = maplist(`e, MenuTreeData,
 				    ``{
 					if ((e["children"]:[]>0))
 					{
-					    list childrenlist = CreateTableList(lookup(e,"children",[]));
-					    return `item(`id(e["entry"]:""), e["title"]:"",false, childrenlist);
+					    list childrenlist = CreateTableList(lookup(e,"children",[]), current);
+					    return `item(`id(e["entry"]:""), e["title"]:"", ( e["entry"]:"" == current ) , childrenlist);
 					}
 					else
 					{
-					    return `item(`id(e["entry"]:""),e["title"]:"", false);
+					    return `item(`id(e["entry"]:""),e["title"]:"",( e["entry"]:"" == current ));
 					}
 				    });
 	return menu_options;
@@ -90,7 +90,7 @@
 	    {
 		any seq = Call::Function(module_auto, ["Change", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
 
-		y2milestone("Change response: %1", seq);
+		y2debug("Change response: %1", seq);
 
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
@@ -115,7 +115,7 @@
 		    }
 		}
 
-		y2milestone("New Settings: %1", Profile::Flat);
+		y2debug("New Settings: %1", Profile::Flat);
 		content_dialog( resource , resourceMap);
 	    }
 	    else if( ret == `reset)
@@ -157,9 +157,9 @@
     }
 
 
-    global define void CreateTreeWidget() ``{
+    global define void CreateTreeWidget(string current ) ``{
 
-	list menu_options = CreateTableList(Y2ModuleConfig::MenuTreeData);
+	list menu_options = CreateTableList(Y2ModuleConfig::MenuTreeData, current);
 	Wizard::ReplaceButtonBox(`VSpacing(0.6));
 	UI::ReplaceWidget(`id(`helpSpace) ,
 			  `VBox(
@@ -238,11 +238,10 @@
 
 
 	UI::ReplaceWidget(`id(`image) , menu);
-	CreateTreeWidget();
-
-
-
 	string tree_item = "System";
+	CreateTreeWidget( tree_item);
+
+
 	any ret = `key;
 	any func_ret = "";
 
@@ -282,7 +281,7 @@
 		    while ( true )
 		    {
 			ret = Wizard::UserInput();
-			y2milestone("INPUT: %1", ret);
+			y2debug("INPUT: %1", ret);
 
 			if (ret == `key)
 			{
@@ -313,7 +312,7 @@
 		    {
 			// Set resource name, if not using default value
 			string resource = Y2ModuleConfig::getResource(def_resource);
-			y2milestone("Resource map: %1",  resourceMap );
+			y2debug("Resource map: %1",  resourceMap );
 			ret = module_contents( resource , resourceMap);
 		    }
 		});
@@ -333,7 +332,7 @@
 		}
 		else if ( contains(menuitems,ret) )
 		{
-		    y2milestone("MENU: %1", ret);
+		    y2debug("MENU: %1", ret);
 
 		    boolean exit_after = false;
 		    if (ret == `menu_reps)
