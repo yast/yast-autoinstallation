@@ -168,7 +168,9 @@ Make sure the control file has the correct syntax and values.
 		string msg = sformat(_("You have requested to initialize the partition table of drive %1, should
 drive %1 be initialized now?"), device);
 		boolean do_init = true;
-		if (AutoinstGeneral::Confirm) {
+		
+		if (AutoInstall::Confirm)
+		{
 		    if ( !UI::YesNoHeadlinePopup(title, msg))
 		    {
 			y2warning("%1 was not initialzied", device);

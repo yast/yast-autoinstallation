@@ -7,7 +7,8 @@
  */
 {
     textdomain "autoinst";
-
+    
+    include "ui/file_popups.ycp";
 
     /**
      * Preferences Dialog
@@ -86,10 +87,10 @@ contains all the packages.</p>
 	    string new_classdir = UI::QueryWidget(`id(`classdir), `Value);
 	    string new_susedir = UI::QueryWidget(`id(`susedir), `Value);
 	    string new_alicedir = UI::QueryWidget(`id(`alicedir), `Value);
-
+	    
 	    if (ret ==`opendir)
 	    {
-		new_rep = UI::AskForExistingDirectory(AutoinstConfig::Repository , _("Select Directory") );
+		new_rep = PopupDir(AutoinstConfig::Repository );
 		if (new_rep != nil)
 		{
 		    UI::ChangeWidget(`id(`repository), `Value, new_rep);
@@ -98,7 +99,7 @@ contains all the packages.</p>
 	    }
 	    else if (ret ==`openclassdir)
 	    {
-		new_classdir = UI::AskForExistingDirectory( AutoinstConfig::classDir , _("Select Directory") );
+		new_classdir = PopupDir( AutoinstConfig::classDir);
 		if (new_classdir != nil)
 		{
 		    UI::ChangeWidget(`id(`classdir), `Value, new_classdir);
@@ -107,7 +108,7 @@ contains all the packages.</p>
 	    }
 	    else if (ret ==`opensusedir)
 	    {	
-		new_susedir = UI::AskForExistingDirectory( AutoinstConfig::PackageRepository  , _("Select Directory") );
+		new_susedir = PopupDir( AutoinstConfig::PackageRepository  );
 		if (new_susedir != nil)
 		{
 		    UI::ChangeWidget(`id(`susedir), `Value, new_susedir );
@@ -116,7 +117,7 @@ contains all the packages.</p>
 	    }
 	    else if (ret ==`openalicedir)
 	    {	
-		new_alicedir = UI::AskForExistingDirectory( AutoinstConfig::AliceRepository  , _("Select Directory") );
+		new_alicedir = PopupDir( AutoinstConfig::AliceRepository  );
 		if (new_alicedir != nil)
 		{
 		    UI::ChangeWidget(`id(`alicedir), `Value, new_alicedir );
@@ -365,12 +366,6 @@ Please wait...
 	    UI::CloseDialog();
 	popup_open = false;
     };
-
-
-
-
-
- 
 
 
 
