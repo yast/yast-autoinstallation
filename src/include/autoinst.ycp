@@ -1,0 +1,176 @@
+/**
+ * File:	include/autoinstall/autoinst.ycp
+ * Package:	Auto-installation
+ * Summary:	autoinstallation routines
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+
+
+
+
+    /**
+     * Configure bootloader settings
+     * @param void
+     * @return void
+     */
+    global define boolean bootloaderSettings()``{
+	import "Bootloader";
+	import "BootCommon";
+
+	any ret = nil;
+
+	// Bootloader::manual_location = true;
+	Bootloader = Profile::Flat["bootloader"]:$[];
+
+	y2debug ("Importing settings %1", Bootloader);
+	if (Bootloader == $[] )
+	{
+	    Bootloader::Propose ();
+	    return true;
+	}
+
+	string parameters = Bootloader["kernel_parameters"]:"";
+	if ( size(parameters) > 0)
+	{
+	    foreach ( string parameter, splitstring(parameters, " "),
+		     ``{
+		list param_value_list = splitstring (parameter, "=");
+		if (size (param_value_list) > 0)
+		{
+		    Kernel::AddCmdLine (param_value_list[0]:"", param_value_list[1]:"");
+		}
+	    });
+	    Bootloader = remove(Bootloader, "kernel_parameters");
+	}
+
+	map current = Initrd::Export();
+	y2milestone("Current initrd modules: %1", current);
+	list modlist = current["list"]:[];
+	map modsett = current["settings"]:$[];
+	foreach(map mod, Bootloader["initrd_modules"]:[], ``{
+	    if (mod["module"]:"" != "" )
+	    {
+		modlist = add(modlist, mod["module"]:"");
+		modsett = add(modsett, mod["module"]:"" , mod["module_args"]:"");
+	    }
+	});
+	if (size(modlist) > 0 )
+	    Bootloader["initrd"] = $[ "list": modlist, "settings" : modsett ];
+
+	// cleanup
+	if (haskey(Bootloader, "initrd_modules"))
+	    Bootloader = remove(Bootloader, "initrd_modules");
+
+
+	y2debug ("Starting importing settings");
+	ret = Bootloader::Import(Bootloader);
+	y2debug ("Importing done, result %1", Bootloader::Export ());
+	BootCommon::DetectDisks ();
+	y2debug ("Proposing - fix");
+	Bootloader::Propose ();
+	y2debug ("Proposing done");
+	// fix GRUB's device names
+	if (Bootloader::getLoaderType () == "grub")
+	{
+	    import "BootGRUB";
+	    string gfxmenu = BootCommon::globals["gfxmenu"]:"";
+	    if (gfxmenu != "")
+		BootCommon::globals["gfxmenu"] = BootGRUB::file2grub (gfxmenu);
+
+	    BootCommon::sections = maplist (`s, BootCommon::sections, ``{
+		string initrd = s["initrd"]:"";
+		if (initrd != "" && substring(initrd, 0, 1) == "/")
+		{
+		    s["initrd"] = BootGRUB::file2grub (initrd);
+		}
+		string kernel = s["kernel"]:"";
+		if (kernel != "" && substring (kernel, 0, 1) == "/")
+		{
+		    list(string) parts = splitstring (kernel, " ");
+		    parts = filter (`p, parts, ``(p != ""));
+		    kernel = parts[0]:"";
+		    parts[0] = BootGRUB::file2grub (kernel);
+		    s["kernel"] = mergestring (parts, " ");
+		}
+		return s;
+	    });
+	}
+	// fix root partitions
+	y2milestone ("Fixing partitions");
+	foreach (string s, ["linux", "failsafe"], ``{
+	    string root = Bootloader::getKernelParam (s, "root");
+	    y2milestone ("Section %1 has root %2", s, root);
+	    if (root == "true" || root == "false" || root == "")
+	    {
+		y2milestone ("Setting root of %1 to %2", s, BootCommon::RootPartitionDevice);
+		Bootloader::setKernelParam (s, "root",
+					    BootCommon::RootPartitionDevice);
+	    }
+	});
+
+    }
+
+    
+
+    /**
+     * Finish Auto-Installation by saving misc files
+     */
+    global define void Finish ()
+	``{
+
+	AutoinstScripts::Write("chroot-scripts", false);
+
+	
+	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AutoinstScripts::scripts_dir);
+	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoinstScripts::logs_dir);
+
+	SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", xml_tmpfile ,  Installation::destdir ,  xml_file) );
+	SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",   Installation::destdir ,  xml_file) );
+
+	return;
+    }
+
+    /**
+     * Linuxrc Settings
+     * @param: linuxrc map
+     * @return modified linuxrc map
+     */
+
+    global define map Linuxrc(map linuxrc) ``{
+	import "Bootloader";
+	import "AutoinstGeneral";
+
+	if (AutoinstGeneral::Mode["forceboot"]:false && Mode::hardBoot)
+	{
+	    linuxrc["Root"] = Bootloader::getRootDevice ();
+	}
+
+	if (AutoinstGeneral::Mode["reboot"]:false && !Mode::hardBoot)
+	{
+	    linuxrc["Root"] = "reboot";
+	    Mode::hardBoot = true;
+	}
+
+	if (AutoinstGeneral::Mode["rebootmsg"]:false)
+	{
+	    linuxrc["RebootMsg"] = "1";
+	}
+	else
+	{
+	    linuxrc["RebootMsg"] = "0";
+	}
+	y2milestone("Linuxrc settings: %1", linuxrc);
+	return linuxrc;
+    }
+
+
+
+
+    
+
+}
