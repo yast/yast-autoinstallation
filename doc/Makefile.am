@@ -4,7 +4,7 @@
 # $Id$
 #
 
-SUBDIRS = autodocs images entities bin components
+SUBDIRS = autodocs images entities bin components examples
 
 htmldir = @docdir@
 xml_file = autoyast2.xml
