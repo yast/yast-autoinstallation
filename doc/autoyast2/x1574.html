@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>'info' file format</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Advanced Linuxrc Options"
+HREF="appendix.linuxrc.html"><LINK
+REL="PREVIOUS"
+TITLE="Advanced Linuxrc Options"
+HREF="appendix.linuxrc.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="appendix.linuxrc.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Appendix B. Advanced Linuxrc Options</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+>&nbsp;</TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="AEN1574"
+>B.2. 'info' file format</A
+></H1
+><P
+>&#13;      Lines starting with '<I
+CLASS="emphasis"
+>#</I
+>' are comments, valid entries are of the form
+      <TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;	key: value
+      </PRE
+></TD
+></TR
+></TABLE
+>
+      Note that <I
+CLASS="emphasis"
+>value</I
+> extends to the end of the line and so may contain spaces.
+      <I
+CLASS="emphasis"
+>key</I
+> is matched case insensitive.
+    </P
+><P
+>&#13;      You can use the same key - value pairs on the kernel command line using the syntax
+      <SPAN
+CLASS="interface"
+>&#13;	key=value
+      </SPAN
+>
+      Lines that don't have the form described above are ignored.
+    </P
+><P
+>&#13;      Valid keys are (values given are just examples)
+    </P
+><DIV
+CLASS="table"
+><A
+NAME="AEN1584"
+></A
+><P
+><B
+>Table B-1. Advanced <B
+CLASS="command"
+>linuxrc</B
+> keywords</B
+></P
+><TABLE
+BORDER="1"
+BGCOLOR="#E0E0E0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+>Keyword/Value</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>Language: de_DE</TD
+><TD
+>  set the language</TD
+></TR
+><TR
+><TD
+>Keytable: de-lat1-nd</TD
+><TD
+>  load this keytable</TD
+></TR
+><TR
+><TD
+>Display: Color|Mono|Alt</TD
+><TD
+>  set the menu color scheme</TD
+></TR
+><TR
+><TD
+>Install: nfs://server/install/8.0-i386</TD
+><TD
+>  install
+	      via NFS from <I
+CLASS="emphasis"
+>server</I
+> (note: you can give username, password etc. in the URL, too)  </TD
+></TR
+><TR
+><TD
+>InstMode: cd|hd|nfs|smb|ftp|http|tftp</TD
+><TD
+>  set installation mode</TD
+></TR
+><TR
+><TD
+>HostIP: 10.10.0.2</TD
+><TD
+>  the client ip address</TD
+></TR
+><TR
+><TD
+>Netmask: 255.255.0.0</TD
+><TD
+>  network mask</TD
+></TR
+><TR
+><TD
+>Gateway: 10.10.0.1</TD
+><TD
+>  gateway</TD
+></TR
+><TR
+><TD
+>Server: 10.10.0.1</TD
+><TD
+>  installation server address</TD
+></TR
+><TR
+><TD
+>Nameserver: 10.10.0.1</TD
+><TD
+>  nameserver</TD
+></TR
+><TR
+><TD
+>Proxy: 10.10.0.1</TD
+><TD
+>  proxy (either ftp or http)</TD
+></TR
+><TR
+><TD
+>ProxyPort: 10.10.0.1</TD
+><TD
+>  proxy port</TD
+></TR
+><TR
+><TD
+>Partition: hda1</TD
+><TD
+>  partition with install sources for hard disk install</TD
+></TR
+><TR
+><TD
+>Serverdir: /install/8.0-i386</TD
+><TD
+>  base directory of the installation sources</TD
+></TR
+><TR
+><TD
+>Netdevice: eth0</TD
+><TD
+>  network interface to use</TD
+></TR
+><TR
+><TD
+>BOOTPWait: 5</TD
+><TD
+>  sleep 5 seconds between network activation and starting bootp</TD
+></TR
+><TR
+><TD
+>BOOTPTimeout: 10</TD
+><TD
+>  10 seconds timeout for BOOTP requests</TD
+></TR
+><TR
+><TD
+>DHCPTimeout: 60</TD
+><TD
+>  60 seconds timeout for DHCP requests</TD
+></TR
+><TR
+><TD
+>TFTPTimeout: 10</TD
+><TD
+>  10 seconds timeout for TFTP connection</TD
+></TR
+><TR
+><TD
+>ForceRootimage: 0|1</TD
+><TD
+>  load the installation system into ramdisk</TD
+></TR
+><TR
+><TD
+>Textmode: 0|1</TD
+><TD
+>  start YaST in text mode</TD
+></TR
+><TR
+><TD
+>Username: name</TD
+><TD
+>  set user name (e.g. for FTP install)</TD
+></TR
+><TR
+><TD
+>Password: password</TD
+><TD
+>  set password (e.g. for FTP install)</TD
+></TR
+><TR
+><TD
+>WorkDomain: domain</TD
+><TD
+>  set work domain for SMB install</TD
+></TR
+><TR
+><TD
+>ForceInsmod: 0|1</TD
+><TD
+>  use '<I
+CLASS="emphasis"
+>-f</I
+>' option when running <I
+CLASS="emphasis"
+>insmod</I
+></TD
+></TR
+><TR
+><TD
+>DHCP: 0|1</TD
+><TD
+>  start DHCP daemon <I
+CLASS="emphasis"
+>now</I
+>, but see <I
+CLASS="emphasis"
+>UseDHCP</I
+></TD
+></TR
+><TR
+><TD
+>UseDHCP: 0|1</TD
+><TD
+>  use DHCP instead of BOOTP (DHCP is default)</TD
+></TR
+><TR
+><TD
+>MemLimit: 10000</TD
+><TD
+>  ask for swap if free memory drops below 10000 kB</TD
+></TR
+><TR
+><TD
+>MemYaST: 20000</TD
+><TD
+>  run YaST in text mode if free memory is below 20000 kB</TD
+></TR
+><TR
+><TD
+>MemYaSTText: 10000</TD
+><TD
+>  ask for swap before starting YaST if free memory is below 10000 kB</TD
+></TR
+><TR
+><TD
+>MemModules: 20000</TD
+><TD
+>  delete all modules before starting YaST if free memory is below 20000 kB</TD
+></TR
+><TR
+><TD
+>MemLoadImage: 50000</TD
+><TD
+>  load installation system into ramdisk if free memory is above 50000 kB</TD
+></TR
+><TR
+><TD
+>Manual: 0|1</TD
+><TD
+>  start Linuxrc in manual mode</TD
+></TR
+><TR
+><TD
+>NoPCMCIA: 0|1</TD
+><TD
+>  don't start card manager</TD
+></TR
+><TR
+><TD
+>Domain: zap.de</TD
+><TD
+>  set domain name (used for name server lookups)</TD
+></TR
+><TR
+><TD
+>RootImage: /suse/images/root</TD
+><TD
+>  installation system image</TD
+></TR
+><TR
+><TD
+>RescueImage: /suse/images/rescue</TD
+><TD
+>  rescue system image</TD
+></TR
+><TR
+><TD
+>InstallDir: /suse/inst-sys</TD
+><TD
+>  installation system</TD
+></TR
+><TR
+><TD
+>Rescue: 1|nfs://server/dir</TD
+><TD
+>  load rescue system; the URL variant specifies the location of the rescue image explicitly</TD
+></TR
+><TR
+><TD
+>AutoYaST: ftp://autoyastfile</TD
+><TD
+>  location of autoinstall file; activates autoinstall mode</TD
+></TR
+><TR
+><TD
+>VNC: 0|1</TD
+><TD
+>  setup VNC server</TD
+></TR
+><TR
+><TD
+>VNCPassword: password</TD
+><TD
+>  sets VNC server password</TD
+></TR
+><TR
+><TD
+>UseSSH: 0|1</TD
+><TD
+>  setup SSH server</TD
+></TR
+><TR
+><TD
+>SSHPassword: password</TD
+><TD
+>  sets SSH server password (this will not be the final root password!)</TD
+></TR
+><TR
+><TD
+>AddSwap: 0|3|/dev/hda5</TD
+><TD
+>  if 0, do never ask for swap; if the argument is a positive number <I
+CLASS="emphasis"
+>n</I
+>,
+	      activate the <I
+CLASS="emphasis"
+>n</I
+>'th swap partition; is the argument is a partition name,  activate this swap partition</TD
+></TR
+><TR
+><TD
+>Exec: command</TD
+><TD
+>  run <I
+CLASS="emphasis"
+>command</I
+></TD
+></TR
+><TR
+><TD
+>USBWait: 4</TD
+><TD
+>  wait 4 seconds after loading USB modules</TD
+></TR
+><TR
+><TD
+>Insmod: module params</TD
+><TD
+>  load this module</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="appendix.linuxrc.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Advanced Linuxrc Options</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="appendix.linuxrc.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

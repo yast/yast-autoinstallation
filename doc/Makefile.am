@@ -4,17 +4,18 @@
 # $Id$
 #
 
-SUBDIRS = autodocs images entities bin components examples
+SUBDIRS = autodocs images entities bin components examples autoyast2
 
-htmldir = @docdir@
 xml_file = autoyast2.xml
 style_file = autoyast2.dsl
 xml_files =  $(wildcard *.xml) 
 
-EXTRA_DIST = 
+
+
+EXTRA_DIST = $(xml_files) $(style_file)
 
 CLEANFILES = *.dvi *.aux *.tex *.log *.bak *.out\
-  .html.sum; rm -rf autoyast2 autoyast2.junk profile.dtd.xml elements \
+  .html.sum; autoyast2.junk profile.dtd.xml elements \
   elements.xml elements.ent db2html.* profile autoyast2.ps*		\
   profile.dtd.xml examples.ent components.ent .ps.sum  autoyast2.out autoyast2.pdf \
   images.ent img
