@@ -99,7 +99,6 @@ Please wait while the system is prepared for autoinstallation.
 	    if (m["module"]:"" != "")
 	    {
 		ModulesConf::ModuleArgs (m["module"]:"",m["module_arguments"]:"" );
-
 	    }
 
 	});
@@ -121,6 +120,23 @@ Please wait while the system is prepared for autoinstallation.
     AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
     AutoinstScripts::Write("pre-scripts");
 
+
+    // Reread Profile in case it was modified in pre-script
+    // User has to create the new profile in a pre-defined
+    // location for easy processing in pre-script.
+
+    if (SCR::Read(.target.size, Profile::modified_profile))
+    {
+	if (! Profile::Read( AutoInstall::modified_profile ) || Profile::current == $[] )
+	{
+	    Popup::Error(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+	    return `abort;
+	}
+	 AutoInstall::ProcessSpecialResources();
+    }
 
 
 

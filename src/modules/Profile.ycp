@@ -33,6 +33,8 @@
     // Configuration changes!
     global boolean changed = false;
 
+    global string profile_dir	= "/tmp/profile";
+    global string modified_profile = profile_dir + "/modified.xml";
 
 
 
@@ -52,8 +54,9 @@
 
     global define void Profile ()
     ``{
+	SCR::Execute(.target.mkdir, profile_dir);
 	 // setup profile XML parameters
-	 profileSetup();
+	 profileSetup();	 
 	 return;
      }
 
@@ -282,11 +285,7 @@
 
 	Install = current["install"]:$[];
 	Configure = current["configure"]:$[];
-	Flat = AutoinstCompat::Compat( Install, Configure);
-	
-	
-
-	
+	Flat = AutoinstCompat::Compat( Install, Configure);			
 	
 	if (Mode::autoinst)
 	{
