@@ -297,7 +297,8 @@
 	      <para><emphasis>Mountable by User (user):</emphasis> The file system may be mounted by an ordinary user. Default is false.</para>
 	    </listitem>
 	    <listitem>
-	      <para><emphasis>Data Journaling Mode (ordered | journal |
+	      <para>
+		<emphasis>Data Journaling Mode (ordered | journal |
 		  writeback) :</emphasis> Specifies the journaling mode for
 		file data. journal -- All data is committed into the journal
 		prior to being written into the main file system. ordered --
@@ -337,8 +338,10 @@
 	
 	  <para>
 	    The last example is only useful if you exactly know the
-	    boundaries of the partitions and it only makes sense  if you are creating
-	    an exact copy of  a system, for example when cloning.
+	    boundaries of the partitions and it does only make sense if you are creating
+	    an exact copy of  a system, for example when cloning. The first
+	    region entry in the list is the beginning of the region, the second
+	    represents the length of the region.
 	  </para>
 	  
 	  <para>
@@ -863,7 +866,7 @@
                     <raid_type>raid1</raid_type>
                 </raid_options>
                 <format config:type="boolean">true</format>
-                <filesystem config:type="symbol">reiserfs</filesystem>
+                <filesystem config:type="symbol">reiser</filesystem>
                 <partition_id config:type="integer">131</partition_id>
                 <mount>/space</mount>
                 <partition_nr config:type="integer">0</partition_nr>
