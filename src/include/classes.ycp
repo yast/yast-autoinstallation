@@ -14,7 +14,7 @@
      * Dialog Contents
      */
 
-    global define class_dialog_contents ()
+    global define term class_dialog_contents ()
 	``{
 
 	list classes = maplist(map class , AutoinstClass::Classes,
@@ -156,10 +156,10 @@ to delete.
     /**
      * Add or Edit a class
      * @param symbol mode
-     * @param string name
+     * @param symbol 
      */
 
-    global define AddEditClasses(symbol mode, string name)
+    global define symbol AddEditClasses(symbol mode, string name)
 	``{
 	list classNames = maplist(map c,
 				  AutoinstClass::Classes,
@@ -203,7 +203,7 @@ to delete.
 	{
 	    UI::ChangeWidget(`id(`name), `Enabled, false);
 	}
-
+	symbol ret = `none;
 	repeat {
 	    ret = UI::UserInput();
 	    if (ret == `save )

@@ -96,8 +96,11 @@
 	doc["nameSpace"] = "http://www.suse.com/1.0/yast2ns";
 	doc["typeNamespace"] = "http://www.suse.com/1.0/configns";
 	XML::xmlCreateDoc(`class, doc);
+	return;
     }
 
+
+    
     global define void aliceXmlSetup()
 	``{
 
@@ -107,5 +110,6 @@
 	doc["systemID"] = "/usr/share/autoinstall/dtd/profile.dtd";
 	doc["nameSpace"] = "http://www.suse.com/1.0/Alice";
 	XML::xmlCreateDoc(`alice, doc);
+	return;
     }
 }

@@ -25,8 +25,7 @@
     /**
      * Export
      */
-    global define boolean Export () ``{
-	
+    global define map Export () ``{	
 	return x11;
     }
 
@@ -37,7 +36,7 @@
     global define string Summary() ``{
 	string summary = "";
 	map m = x11["monitor"]:$[];
-	any    current_vendor = m["monitor_vendor"]:"";
+	string    current_vendor = m["monitor_vendor"]:"";
 	string current_model  = m["monitor_device"]:"";
 
 	map   d   = m["display"]:$[];
