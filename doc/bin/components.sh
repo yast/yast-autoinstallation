@@ -8,7 +8,7 @@ for i in `ls components/*.xml`; do
 	fi
 		
 done
-if [ "$mode" == 'min' ]; then
+if [ "$mode" == 'min' -o "$mode" == 'noref' ]; then
 	echo "<!ENTITY  Elements \"\">"
 else
 	echo "<!ENTITY  Elements SYSTEM \"elements.xml\">"

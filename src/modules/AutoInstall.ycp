@@ -16,6 +16,8 @@
     import "Mode";
     import "Report";
     import "XML";
+    import "X11Version";
+    
     include "autoinstall/io.ycp";
   
 
@@ -24,34 +26,50 @@
     //
     global string dir = Installation::yast2dir + "/Autoinstall";
 
+
+    
     // Temporary directory for storing profile before installation starts
     //
     global string tmpdir = SCR::Read( .target.tmpdir );
 
+
+    
     // Temporary file name for retrieved system profile
     //
     global string xml_tmpfile = tmpdir + "/Autoinstall.xml";
 
+
+    
     // Final location for retrieved system profile
     //
     global string xml_file = Installation::yast2dir + "/Autoinstall.xml";
 
+
+    
     // File with parsed data from system profile
     //
     string Profile_file = Installation::yast2dir + "/Autoinstall_data.ycp";
 
+
+    
     // Main directory for data generated during installation
     //
     global string var_dir = "/var/adm/autoinstall";
 
+
+    
     // Directory for the pre/post and chroot scripts
     //
     global string scripts_dir = var_dir + "/scripts";
 
+
+    
     // Directory where log files of pre/post and chroot scripts are kept
     //
     global string logs_dir = var_dir + "/logs";
 
+
+    
     // Directory where copmlete configuration files are kept.
     //
     global string files_dir = var_dir + "/files";
@@ -176,14 +194,16 @@
 	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
 
-	if (!Mode::config &&  ! ( Mode::cont && !Mode::autoinst && Restore() ))
+	if (!Mode::config &&  ! ( Mode::cont && Restore() ))
 	{
 	    if ( SCR::Read(.target.size,xml_tmpfile) != -1  && size ( Profile ) == 0)
 	    {
 		// Profile is available and it has not been parsed yet.
 		ProcessProfile();
 	    }
-	    ParseCmdLine();
+	    // Just to be sure
+	    if (Mode::initial && Mode::autoinst)
+		ParseCmdLine();
 	}
 
 	if (Mode::cont && size ( Profile ) > 0)
@@ -224,6 +244,23 @@
 	Report::Set(GetMap(Install , "report", true));
 	Fstab = fstabSettings();
 	X11 = Configure["x11"]:$[];
+
+
+	map Software = Install["software"]:$[];
+	
+	// .Minimal has no X11
+	if (Software["base"]:"" == "Minimal" || size(X11) == 0 || !X11["configure_x11"]:false   )
+	{
+	    y2milestone("Dont configure X11");
+	    X11Version::have_x11 = false;
+	}
+	else {
+	    y2milestone("Configure X11");
+	    X11Version::have_x11 = true;
+	}
+		
+	postPackageList();
+	
 	return true;
     }
 
@@ -392,31 +429,40 @@
      * @return void
      */
     global define bootloaderSettings()``{
-
+	
+	Boot::manual_location = true;
 	Bootloader = GetMap(Install, "bootloader", true);
 
-	if (issubstring(Bootloader["location"]:"mbr", "/dev/")) {
+	if (issubstring(Bootloader["location"]:"mbr", "/dev/"))
+	{
 	    Boot::device=Bootloader["location"]:"mbr";
 	    Boot::location="custom";
-	} else {
+	}
+	else
+	{
 	    Boot::location=Bootloader["location"]:"mbr";
 	}
+	
 	string parameters = Bootloader["kernel_parameters"]:"";
-	if (size(parameters)>0) {
+	
+	if ( size(parameters) > 0)
+	{
 	    foreach (`parameter, splitstring(parameters, " "),
-		     ``{
-		// split "key=value" to ["key", "value"]
-
+		     ``{		
 		list param_value_list = splitstring (parameter, "=");
 
 		// now only collect keys not in discardlist
-		if (size (param_value_list) > 0)   {
+		if (size (param_value_list) > 0)
+		{
 		    Kernel::AddCmdLine (param_value_list[0]:"", param_value_list[1]:"");
 		}
 	    });
 	}
+	
 	// Lilo settings
-	if (Boot::LoaderType == "lilo") {
+	
+	if (Boot::LoaderType == "lilo")
+	{
 	    import "BootLILO";
 	    BootLILO::Set(
 			  Bootloader["linear"]:false,
@@ -424,9 +470,20 @@
 			  Bootloader["lba_support"]:false
 			  );
 	}
+	else if (Boot::LoaderType == "grub")
+	{
+	    import "BootGRUB";
+	    BootGRUB::Set(
+			  Bootloader["linear"]:false,
+			  Bootloader["activate"]:false,
+			  Bootloader["lba_support"]:false
+			  );
+	}
+
 
 	// Add initrd modules
-	if (size(Bootloader["initrd_modules"]:[])>0) {
+	if (size(Bootloader["initrd_modules"]:[]) > 0)
+	{
 	    foreach(`m, Bootloader["initrd_modules"]:[],
 		    ``{
 		Boot::AddInitrdModule (m, "");
@@ -437,12 +494,39 @@
     }
 
     /**
+     * Return post package list
+     * @return void
+     */
+    global define  postPackageList() ``{
+	map Software = Install["software"]:$[];		
+	map extra = Software["extra_packages"]:$[];
+	
+	string extra_location = extra["package_location"]:"external";
+	
+	list post_packages = extra["post-packages"]:[];
+
+	if (size(post_packages) > 0)
+	{
+	    foreach(string p, post_packages,
+		    ``{
+		y2milestone("Adding %1 to post package list", p);
+		post_install_list=add(post_install_list, [extra_location + "/" + p, p, 2, false]);
+	    });
+	}
+
+	y2milestone("Additional non-SuSE post packages: %1",  post_install_list);
+	return;
+    }
+    
+    /**
      * Parse package list
      * @return list Packages
      */
     global define list packageList()``{
 	map Software = Install["software"]:$[];
 	list Packages = Software["packages"]:[];
+
+
 	return Packages;
     }
 
@@ -540,7 +624,7 @@
 
 	// Extra Packages TODO :Check if packages are actually available
 	list extra_packages = extra["packages"]:[];
-	list post_packages = extra["post-packages"]:[];
+	
 	if (size(extra_packages) > 0)
 	{
 	    foreach(string p, extra_packages,
@@ -549,17 +633,9 @@
 		install_list=add(install_list, [extra_location + "/" + p, p, 1, false]);
 	    });
 	}
-	if (size(post_packages) > 0)
-	{
-	    foreach(string p, post_packages,
-		    ``{
-		y2milestone("Adding %1 to post package list", p);
-		post_install_list=add(post_install_list, [extra_location + "/" + p, p, 1, false]);
-	    });
-	}
 
-	y2milestone("Additional non-SuSE packages: %1",  install_list);
-	y2milestone("Additional non-SuSE post packages: %1",  post_install_list);
+
+	y2milestone("Additional non-SuSE packages: %1",  install_list);	
 
 	Kernel = Software["kernel"]:"";
 	if (Kernel == "")
@@ -568,9 +644,13 @@
 		Kernel = extra["kernel"]:"";
 	}
 
+
         return;
     }
-
+    /**
+     * Finalize autoinst settings
+     *
+     */
 
     global define void Finalize() ``{
 	
@@ -839,7 +919,7 @@
     global define void Save()
 	``{
 
-	if (size(SCR::Read  (.target.dir, tmpdir))>0)
+	if (size(SCR::Read  (.target.dir, tmpdir)) > 0 )
 	{
 	    if (SCR::Execute (.target.bash, "/bin/cp -a " + tmpdir + " " + dir) == 0)
 	    {

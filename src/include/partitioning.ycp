@@ -132,7 +132,7 @@
 		    && !root_created
 		    && select(unused_region,1,0) != 0)
 		{		
-		    partitions = create_partitions (partitions, unused_region);
+		    partitions = create_partitions (target_is, partitions, unused_region);
 		    root_created = true;
 		}
 		else if (select(unused_region,1,0) != 0)
@@ -164,7 +164,7 @@
 		if (!partitions_defined
 		    && !root_created)
 		{
-		    partitions = create_partitions (partitions, unused_region);
+		    partitions = create_partitions (target_is,partitions, unused_region);
 		    root_created = true;
 		    
 		}
@@ -332,7 +332,7 @@ to contain a minimal installation.");
 		if (!partitions_defined
 		    && !root_created)
 		{
-		    partitions = create_partitions (all_partitions, selected);
+		    partitions = create_partitions (target_is, all_partitions, selected);
 		    root_created = true;
 		}
 		else
