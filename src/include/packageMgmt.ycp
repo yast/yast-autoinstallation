@@ -10,7 +10,7 @@
 {
     textdomain "autoinst";
 
-   
+
     /**
      * Compute packages needed for autoinstallation
      * @return list packages
@@ -18,7 +18,7 @@
 
     global define list autoinstPackages(list packageList, string kernel )
 	``{
-	
+
 	map configure = AIConfig::Profile["configure"]:$[];
 	list packages = [];
 
@@ -28,7 +28,7 @@
 	// in common.pkd
 	if (size(kernel)==0)
 	{
-	    packages =add (packages, "k_deflt");
+	    packages =union (packages, ["k_deflt", "k_athlon", "k_smp"]);
 	}
 
 	if (haskey(configure, "nis")) {
@@ -45,6 +45,12 @@
 			packages = union(packages, ["pam_ldap","nss_ldap"]);
 	}
 
+	if (haskey(configure, "nfs_server"))
+	{
+	    boolean start_nfsserver = configure["nfs_server", "start_nfsserver"]:false;
+	    if (start_nfsserver)
+		packages = union(packages, ["yast2-nfs-server", "nfs-utils"]);
+	}
 
 	if (haskey(configure, "inetd")) {
 		map inetd = configure["inetd"]:$[];
@@ -80,7 +86,7 @@
     /**
      * Set packages
      */
-    
+
     global define boolean setPackages() ``{
 	import "AIConfig";
 
@@ -93,8 +99,8 @@
 	list addons = _soft["addons"]:[];
 	list packs  = _soft["packages"]:[];
 	string kernel = _soft["kernel"]:"";
-	
-	boolean src = AIServer::initSource();
+
+	boolean src = AIServer::initSource(true);
 	if (src)
 	{
 	    if (base!="")
@@ -105,7 +111,7 @@
 	    {
 		Pkg::SetSelection("Minimal");
 	    }
-	
+
 	    // Addons
 	    if (size(addons) > 0 )
 	    {
@@ -120,14 +126,14 @@
 	}
 	return false;
     }
-    
- 
+
+
     /**
      * ISO size dialog
      *
      */
     global define isoSizeDialog(integer expectedSize, string filename)``{
-	
+
 	UI::OpenDialog(
 		       `VBox(
 			     `Heading(_("Please wait while the ISO file is created.")),
@@ -141,15 +147,15 @@
 	return;
     }
 
-    
+
     /**
      * ISO creation Dialog
      *
      */
     global define isoDialog()``{
-	
+
 	AIServer::nojoliet = true;
-	
+
 	term contents = `Top(
 			     `VBox(
 				   `VSquash(
@@ -163,10 +169,10 @@
 					    ),
 				   `VSquash(
 					    `TextEntry(`id(`dest), _("&Destination"), "")
-					    )				   
+					    )
 				   )
 			     );
-	
+
 	string caption = _("Create Custom CD");
 	string help = _("<P>Enter the location of your copied CDs in
 the <em>SuSE Package Directory</em>
@@ -182,8 +188,8 @@ the RPMS of one or all copied CDs.</p>
 needed to create the ISO image.</p>
 ");
 
-	
-  
+
+
 	Wizard::SetContentsButtons (caption,
 				    contents,
 				    help,
@@ -196,10 +202,10 @@ needed to create the ISO image.</p>
 		ret = UI::UserInput();
 
 		if (ret == `next)
-		{		    
+		{
 		    AIServer::sourceDir = UI::QueryWidget(`id(`susedir), `Value);
 		    string f = UI::QueryWidget(`id(`dest), `Value);
-		   
+
 		    if (   f == "" || f == nil)
 		    {
 			UI::ErrorPopup(invalidFileName());
@@ -208,7 +214,7 @@ needed to create the ISO image.</p>
 		    AIServer::isoFile = f;
 		}
 
-	    }  until (ret == `next || ret == `back || ret == `abort);    
+	    }  until (ret == `next || ret == `back || ret == `abort);
 	return ret;
     }
 
@@ -224,8 +230,8 @@ needed to create the ISO image.</p>
 	    return `next;
 	}
 
-	
-	
+
+
 	string help = UI(_("<P>
 Please wait while the directory structure for the new ISO file is created.
 </P>
@@ -233,7 +239,7 @@ Please wait while the directory structure for the new ISO file is created.
 	help = help + _("<p>Press <b>Next</b> to create the ISO file.</p>");
 
 
-	    
+
 	list progress_stages =
 	    [
 	     _("Create skeleton with essential files"),
@@ -245,15 +251,15 @@ Please wait while the directory structure for the new ISO file is created.
 	    [
 	     _("Creating skeleton with essential files"),
 	     _("Saving control file"),
-	     _("Copying selected packages")	   
+	     _("Copying selected packages")
 	     ];
 
-	
+
 	list selPacs = Pkg::GetPackages (`selected , false);
-		
+
 	y2milestone ("install %1", selPacs);
 
-	
+
 	Progress::New(
 		      _("Creating ISO image"),
 		      "",     // progress_title
@@ -262,73 +268,73 @@ Please wait while the directory structure for the new ISO file is created.
 		      progress_descriptions,
 		      help );
 
-	
+
 	Progress::NextStage();
 	AIServer::createISOSkeleton();
 
 	Progress::NextStage();
-	
+
 	string cpCmd = sformat("cp /usr/share/autoinstall/isolinux.cfg %1/skeleton/boot/loader", AIServer::skelDir);
 	SCR::Execute (.target.bash, cpCmd);
-	
+
 	Progress::NextStep();
-	
+
 	string location = sformat("%1/skeleton/autoinst.xml", AIServer::skelDir);
 	AIConfig::SaveProfile(location);
-	
-	Progress::NextStage();	
-	
+
+	Progress::NextStage();
+
 	integer i = 0;
-	
 
 
 
 
-	
+
+
 	string datadir = AIServer::productData["datadir"]:"./suse";
-	y2milestone ("datadir %1", datadir);	
+	y2milestone ("datadir %1", datadir);
 	foreach(`pac, selPacs, ``{
 	    // y2milestone("package: %1", pac);
 	    list tok = splitstring(pac, " ");
 	    //  "yast2-security 2.6.8 31 noarch";
 	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
 	    string location = tok[3]:"noarch" + "/" + pacname;
-	    
-	    string localpath =  AIServer::PackageRep + "/" + datadir + "/" + location;	    	  
+
+	    string localpath =  AIServer::PackageRep + "/" + datadir + "/" + location;
 	    integer pacsize = SCR::Read(.target.size, localpath);
 	    if (pacsize!=-1)
 	    {
 		Progress::Title(sformat(_("Copying %1"),  pacname));
 		Progress::NextStep();
 		string dir = AIServer::skelDir + "/skeleton/" + datadir + "/" + tok[3]:"noarch";
-		
+
 		if (size(SCR::Read(.target.dir, dir)) == nil )
 		{
 		    SCR::Execute(.target.mkdir , dir);
 		}
-		
+
 		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, AIServer::skelDir, datadir, location);
-		any ret = SCR::Execute (.target.bash, cpCmd);			
+		any ret = SCR::Execute (.target.bash, cpCmd);
 	    }
-	  
-	  
+
+
 	});
-	
+
 
 	Progress::Title(_("ISO image directory ready"));
 	Progress::Finish();
-	UI::ChangeWidget(`id(`next), `Enabled, true);	
+	UI::ChangeWidget(`id(`next), `Enabled, true);
 
 	any ret  = nil;
 
 	repeat
 	    {
-		ret = UI::UserInput();	
+		ret = UI::UserInput();
 		if (ret == `next)
 		{
 		    string mkisofscmd =	AIServer::createISOCmd(AIServer::isoFile );
 		    y2milestone("command: %1",  mkisofscmd );
-		    
+
 		    string du = lookup(SCR::Execute(.target.bash_output, sformat("du -s -b %1/skeleton | awk -F' ' ' { printf $1 }'", AIServer::skelDir )), "stdout", "");
 		    integer fsSize = tointeger(du);
 		    y2milestone("size: %1" , fsSize);
@@ -336,12 +342,12 @@ Please wait while the directory structure for the new ISO file is created.
 		    isoSizeDialog(fsSize, AIServer::isoFile);
 
 		}
-	
+
 	    } until (ret == `next || ret == `back || ret == `abort);
 	return ret;
     }
 
 
 
-    
+
 }

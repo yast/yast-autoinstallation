@@ -4,44 +4,96 @@
       Auto-Installation with SuSE Linux
     </title>
     <body >
-	<table cellspacing=0 border=0 cellpadding=0>
+	<table border="0" width="800">
 	<tr>
-		<td><img src="./title.png"></td>
-		<td background="./fill.png" width=100%>&nbsp;</td>
-		<td><img src="./suse.png"></td>
+	<td colspan="2" >
+		<table cellspacing=0 border=0 cellpadding=0>
+			<tr>
+				<td><img src="./title.png"></td>
+				<td background="./fill.png" width=100%>&nbsp;</td>
+				<td><img src="./suse.png"></td>
+			</tr>
+		</table>
+	</td>
 	</tr>
-	</table>
-	</table>
-      
-	<h2>YaST1</h2>
-	<ul>
-	  <li><a href="Auto-Install.english.ps.gz">Original AutoYaST Documentation</A></li>
-	  <li><a href="autoyast1/index.html">Auto-Installation with YaST1</A></li>
-	  <li><a href="xautoyast/index.html">XML Extensions to Auto-Installation with YaST1 (experiemntal)</A></li>	  
-	</ul>
-	<h2>Alice</h2>
-	<ul>
-	  <li><a href="alice/index.html">Documentation</A></li>
-	</ul>
-	<h2>YaST2</h2>
+
+	<tr>
+	<td valign="top" width="125">
+
+	<b><a href="index.html">Current (8.1)</a></b><br>
+	<b><a href="8.0/index.html">8.0</a></b><br>
+	<b><a href="links.html">Links</a></b><br>
+	<b>Old</b> <br>
+	&nbsp;YaST1<br>
+	&nbsp;Alice<br>
+
+	</td>
+	<td>
+
+
+	<h2>AutoYaST2</h2>
+
+	<p>
+	 AutoYaST2 is the system for installing one ore more SuSE Linux systems automatically and without user intervention. Using AutoYaST2, you can create a configuration for a single system or a set of systems to control automated installations. The control file  can be provided to YaST2 during installation in different ways. 
+	</p>
+		<h3>Major Changes from 8.0 to 8.1</h3>
+		<ul>
+			<li>Configuration system was adapted to support modular operation. Now the configuration system will automatically allow any additional YaST2 modules which are installed in the system and which have auto-install features.</li>
+			<li>Configuration System offers additional interfaces for configuring the following resources:</li>
+			<ul>		
+				<li>Sysconfig Variables</li>
+				<li>Complete  Configuration files</li>
+				<li>Security Settings</li>
+				<li>Software Selections and additional packages</li>
+				<li>NFS Server/Client configuration</li>
+			</ul>		
+			<li>RAID Support</li>
+			<li>Better control of installation process</li>
+			<li>Improved Class Management and merge of classes</li>
+			<li>Configuration system now offers the possibility to import the following formats:
+			<ul>
+				<li>Alice Configuration files</li>
+				<li>Kickstart files</li>
+			</ul>
+			<li>Basic Cloning support
+			<li>Create ISO for a configuration
+			<li>XML parser is now based on libxml2 (unlike Qt XML extensions in 8.0)</li>
+			<li>More partitioning options added. Now it is possible to set filesystem and mount(fstab) options.</li>
+			<li>If confirmation of installation is choosen, the "proposal" interface is shown,
+				 where changes can be done to installation values</li>
+			<li><b>Profile Format Changes</b> - To enable some new features, we had to make some changes to the format of the profile. Here are the major changes:
+			<ul>
+				<li>All <b>custom scripts</b> are now under one resource <em>&lt;scripts&gt;</em></li>
+				<li>Cleaned Partitioning options from unused properties and added comperhensive properties which are easy to identify and understand</li>
+				<li>The <b>general</b> resource has been extended to support more options for the various properties.
+			</ul>
+		</ul>
 		<h3>Documentation</h3>
 		<ul>
-		  <li><a href="autoyast2-spec/index.html">Auto-Installation with YaST2</A> - Specification</li>
-	  	  <li><a href="autoyast2/index.html">Auto-Installation with YaST2</A> - Documentation (<a href="AutoYaST2.pdf">PDF</A>)</li>
+	  	  <li><a href="/~nashif/autoinstall/8.1/html/index.html">Auto-Installation with YaST2</A> (<a href="8.1/autoyast2.pdf">PDF</a>)</li>
+	  	  <li><a href="/~nashif/autoinstall/8.1/profile/index.html">Profile Reference</a> </li>
 		</ul>
-		<h3>Presentations</h3>
+
+		<h3>Misc. Downloads</h3>
 		<ul>
-	    	<li><a href="autoyast2.sdd">Auto-Installation with YaST2</A> - Workshop slides (15.02.2002), in Staroffice format</li>
-			<li><a href="autoyast2-20020403.sxi">Workshop Slides 03.04.2002 (Staroffice 6.0)</a> (in <a href="autoyast2-20020403.pdf">PDF</a>)</li>
-
-
+	  	  <li><a href="ftp://ftp.suse.com/pub/people/nashif/autoinstall/">GRUB Floppy image</a> - Use this floppy to boot a client from a floppy with/without a DHCP server, a TFTP server is needed always. (See REAME file on the floppy)
 		</ul>
+
+
 
 		<h3>Mailing Lists</h3>
 <a href="http://www.suse.com/us/support/mailinglists/">suse-autoinstall@suse.com</a> is a mailing list dealing with auto-installation features
 in general and the new features in YaST2 in particular. The archives of the mailing-list can be found <a href="http://lists2.suse.com/archive/suse-autoinstall/">here</a>.
-		<h3><a href="bugs.html">Bugs and known issues</a></h3>
-      <hr>
+		<h3><a href="8.1/bugs.html">Bugs and known issues</a></h3>
+      	</td>
+	</tr>
+	<tr><td><img src="./spacer.gif" height="50"></td>
+	<td valign="buttom">
+	<hr>
 	$Id$
+	</td></tr>
+	</table>
+
+
     </body>
 </html>

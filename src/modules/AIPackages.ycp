@@ -12,11 +12,12 @@
     textdomain "autoinst";
     
     import "Packages";
-    import "AIServer";    
+    import "AIServer";
+    import "AIConfig";
     import "Summary";
     
 
-    global boolean PkdInitialized = false;
+ 
 
     global string base = "";    
     
@@ -29,10 +30,11 @@
     global list Selections = [];
 
     /**
-     *
+     * Constructor
      */    
     global define void AIPackages()
-	``{	   	   
+	``{
+	y2milestone("Getting selections");
 	GetSelections();	   	
 	return;
     }
@@ -43,35 +45,37 @@
     global define boolean GetSelections()
 	``{
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating package selections...")));
-	    
-
-	string base_url = "dir://" + AIServer::PackageRep;
+	Selections = SCR::Read(.target.ycp, [ "/var/lib/autoinstall/selections.cache", []] );
+    	if (size(Selections) == 0)
+	{
+	    AIServer::initSource(false);
+	    list basesel = maplist(`s, Pkg::GetSelections(`all, "base") , ``{
+		any data = Pkg::SelectionData(s);
+		y2debug("Selection data: %1", data);
+		if (is(data , map)) {
+		    return ([s, data["summary"]:"", data["category"]:"base"]);
+		}
+		else
+		{
+		    return ([]);
+		}
+	    });
+	    list addonsel = maplist(`s, Pkg::GetSelections(`all, "") , ``{
+		any data = Pkg::SelectionData(s);
+		y2debug("Selection data: %1", data);
+		if (is(data , map)) {
+		    return ([s, data["summary"]:"", data["category"]:"addon"]);
+		}
+		else
+		{
+		    return ([]);
+		}
+	    });
+	    Selections = union(basesel,  addonsel);	    
+	    SCR::Write(.target.yast2, "/var/lib/autoinstall/selections.cache", Selections);
 	
-	Pkg::SourceStartCache(true);
-	
-	list basesel = maplist(`s, Pkg::GetSelections(`all, "base") , ``{
-	    any data = Pkg::SelectionData(s);
-	    if (is(data , map)) {
-		return ([s, data["summary"]:"", data["category"]:"base"]);
-	    }
-	    else
-	    {
-		return ([]);
-	    }
-	});
-	list addonsel = maplist(`s, Pkg::GetSelections(`all, "") , ``{
-	    any data = Pkg::SelectionData(s);
-	    if (is(data , map)) {
-		return ([s, data["summary"]:"", data["category"]:"addon"]);
-	    }
-	    else
-	    {
-		return ([]);
-	    }
-	});
-	Selections = union(basesel,  addonsel);
-	
-	    	
+	    Pkg::SourceFinishAll ();
+	}
 	UI::CloseDialog();
 	return true;
     }

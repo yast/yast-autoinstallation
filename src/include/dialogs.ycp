@@ -271,7 +271,8 @@ contains all the packages.</p>
 	    {
 
 		f = UI::QueryWidget (`id (`newname), `Value);
-		if (checkFileName(f) !=0 || f == "") {
+		if (checkFileName(f) !=0 || f == "")
+		{
 		    UI::ErrorPopup(invalidFileName());
 		    continue;
 		}
@@ -595,7 +596,11 @@ to save the current profile.
 		}
 
 
-	    } until (ret == `edit || ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	    } until (ret == `edit || ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));	
+	if (ret == `back)
+	{	 	 
+	    UI::ChangeWidget (`id (`next), `Label, NextButtonLabel);
+	}
 	Wizard::RestoreScreenShotName ();
 	return ret;
     }
