@@ -122,7 +122,6 @@
     }
 
     /**
-     * ConstructMenu()
      * Construct Menu Widget
      * @return list
      */
@@ -135,10 +134,11 @@
 	    map menu_entry = $["entry":m, "title":name];
 	    list menu_list = [];
 	    if (haskey(v,"X-SuSE-YaST-Group"))
-	    {	
+	    {
 		string parent = v["X-SuSE-YaST-Group"]:"";
 		MenuTreeData = maplist (map k, MenuTreeData, ``{
-		    if (k["entry"]:"" == parent) {
+		    if (k["entry"]:"" == parent)
+                    {
 			list children = k["children"]:[];
 			children = add(children,menu_entry);
 			k["children"] = children;
@@ -192,8 +192,9 @@
 
 
     /**
-     * getResource()
      * Get resource name
+     * @param string resource
+     * @return string resource as defined in desktop file
      */
     global define string getResource( string default_resource)
 	``{

@@ -19,7 +19,7 @@
 
     map ksConfig = $[];
 
-
+    global string ksfile = "";
 
     /**
      * Constructor
@@ -32,16 +32,16 @@
      * Read a Kickstart file
      * @return map kickstart configuration.
      */
-    global define map Read(string file)``{
+    global define map Read()``{
 
-	ksConfig = (map) SCR::Read(.kickstart, file);
+	ksConfig = (map) SCR::Read(.kickstart, ksfile);
 	SCR::UnmountAgent(.kickstart);
 
+	y2debug("Kickstart config raw: %1", ksConfig);
 	if (ksConfig == $[] || ksConfig == nil)
 	{
 	    return $[];
 	}
-	y2debug("Kickstart config raw: %1", ksConfig);
     }
 
     /**

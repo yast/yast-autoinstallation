@@ -1,0 +1,92 @@
+/**
+ *
+ *
+ */
+{
+    import "Wizard";
+    import "Label";
+
+    include "autoinstall/classes.ycp";
+    /**
+     * Whole configuration of autoyast
+     * @return `back, `abort or `next
+     */
+    any AutoSequence () ``{
+
+        map dialogs =
+            $[
+            "main":       ``(MainDialog() ),
+            "preferences":  ``(Preferences() ),
+            "alice"     :   ``(aliceDialog() ),
+            "kickstart"     :   ``(kickstartDialog() ),
+            "clone"     :   ``(cloneSystem() ),
+            "classes"     :   ``(ManageClasses() ),
+            "merge"     :   ``(MergeDialog() )
+            ];
+
+
+            map sequence =
+                $[ "ws_start" : "main",
+            "main":
+                $[
+                `menu_exit	: `ws_finish,
+                `menu_reps       : "preferences",
+                `menu_alice     : "alice",
+                `menu_kickstart : "kickstart",
+                `menu_merge : "merge",
+                `menu_classes : "classes",
+                `menu_clone : "clone",
+                ],
+            "merge":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "classes":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "clone":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "kickstart":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "alice":
+                $[
+                `next       : "main",
+                `back       : "main"
+                `abort       : "main",
+                ],
+            "preferences":
+                $[
+                `next       : "main",
+                `back       : "main"
+                ]
+            ];
+
+        // Translators: dialog caption
+        string caption = _("Autoinstall Configuration");
+        term contents = `Label (_("Initializing ..."));
+        Wizard::CreateDialog ();
+        Wizard::SetContentsButtons ( caption,
+                contents,
+                "",
+                Label::BackButton (),
+                Label::NextButton ());
+
+
+        symbol ret = Sequencer::Run(dialogs, sequence);
+        UI::CloseDialog ();
+        return ret;
+    }
+}

@@ -10,6 +10,8 @@
     textdomain "autoinst";
     import "Label";
     import "Popup";
+    import "AutoinstClass";
+    import "XML";
 
 
     /**
@@ -18,7 +20,6 @@
      */
     define boolean XML_cleanup(string in, string out)
 	``{
-	import "XML";
 	map ycpin = XML::XMLToYCPFile(in);
 	y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin);
 	return XML::YCPToXMLFile(`profile, ycpin, out);
@@ -182,6 +183,7 @@
     define symbol ManageClasses()
 	``{
 
+        Wizard::CreateDialog();
 	string title = _("Classes");
 
 	string help = _("<p>Use this interface to define classes of control files. </p>
@@ -266,6 +268,7 @@ to delete.
 	{
 	    AutoinstClass::Save();
 	}
+        Wizard::CloseDialog();
 	return (symbol)ret;
 
     }
@@ -293,7 +296,6 @@ to delete.
      */
     define boolean MergeAll(list<map> selected_profiles, symbol base)
 	``{
-	import "Profile";
 	string tmpdir = AutoinstConfig::tmpDir;
 	SCR::Execute(.target.mkdir, tmpdir);
 
@@ -372,11 +374,13 @@ to delete.
 
     /**
      * Merge Dialog
-     *
+     * @return symbol
      */
-
     define symbol MergeDialog()
 	``{
+
+
+        Wizard::CreateDialog();
 	string title = _("Merge Classes");
 	map<string, list> profiles = $[];
 
@@ -527,6 +531,7 @@ to perform a merge.
 	    }
 	} until  (ret == `next || ret == `back );
 
+        Wizard::CloseDialog();
 	return (symbol)ret;
     }
 
