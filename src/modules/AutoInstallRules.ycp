@@ -150,29 +150,10 @@
      */
     global define string getMAC() ``{
 	string tmpmac = "";
-	list<map> ifconfig = (list<map>)SCR::Read(.run.ifconfig);
-	string device = "";
 	if (Mode::initial)
 	{
-	    device  = (string)SCR::Read (.etc.install_inf.Netdevice);
+	    tmpmac  = (string)SCR::Read (.etc.install_inf.NetHWAddr);
 	}
-	else
-	{
-	    // Fallback
-	    device = "eth0";
-	}
-
-	foreach(map dev, ifconfig, ``{
-	    if (dev["name"]:"" == device)
-	    {
-		string link = dev["value", "link"]:"";
-		list<string> linktok = splitstring(link, " ");
-		list clean = filter(string tok, linktok, ``(tok != ""));
-		y2debug("mac line: %1", clean);
-		tmpmac = clean[3]:"";
-	    }
-
-	});
 	string cleanmac = deletechars(tmpmac, ":");
 	return cleanmac;
     }
@@ -397,6 +378,7 @@
 
     string SubVars(string file)
     {
+        y2milestone("file: %1" , file);
         string var = "";
         any first = findfirstof(file, "@");
         any last = findlastof(file, "@");
@@ -409,6 +391,7 @@
                 var = substring(file,ffirst  , llast - ffirst );
             }
         }
+        y2milestone("var: %1", var);
         if (var!="")
         {
             string val = ATTR[var]:"";
