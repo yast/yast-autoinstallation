@@ -68,7 +68,7 @@
 
     /**
      * Go through resources and properties and set types accordingly
-     *
+     * @param value any value
      */
     global define ConvertType(any value) ``{
 	if (is(value, boolean))
@@ -164,8 +164,8 @@
      * Get Configuration Map
      * @return map  Configuration Map
      */
-    global define GetConfMap (string type, boolean convert)``{
-	map result = Configure[type]:$[];
+    global define GetConfMap (map parent, string type, boolean convert)``{
+	map result = parent[type]:$[];
 	if (!convert)
 	    return result;
 
@@ -186,9 +186,9 @@
      * Get configuration list
      *
      */
-    global define GetConfList (string type, boolean convert )
+    global define GetConfList (map parent, string type, boolean convert )
 	``{
-	list result =  Configure[type]:[];
+	list result =  parent[type]:[];
 	if (!convert)
 	    return result;
 
