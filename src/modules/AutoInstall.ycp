@@ -354,6 +354,7 @@
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoinstScripts::logs_dir);
 
 	SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", xml_tmpfile ,  Installation::destdir ,  xml_file) );
+	SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",   Installation::destdir ,  xml_file) );
 
 	return;
     }

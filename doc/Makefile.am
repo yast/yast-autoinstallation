@@ -29,7 +29,7 @@ examples: examples.ent
 date:
 	date > systemdate
 
-pdf: $(xml_files) components.ent examples.ent
+pdf: $(xml_files) examples components images
 		if test -e .ps.sum; then \
 			oldsum="`cat .ps.sum`"; \
 		fi;\
