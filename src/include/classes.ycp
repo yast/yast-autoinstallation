@@ -9,9 +9,6 @@
 {
     textdomain "autoinst";
     
-
-
-
     
     /**
      * Dialog Contents     
@@ -417,6 +414,116 @@ to be able to  perform a merge.
 	return ret;
     }
 
+
+    global define symbol classConfiguration() ``{
+	
+	string title = _("Class Configuration");
+	string help = _("<p>Choose one or more of the listed classes to which the current control
+file should belong.</p>
+");
+
+	AIClass::Files();
+
+	map profiles = $[];
+
+	foreach(map prof, AIClass::confs, ``{
+	    string class = prof["class"]:"default";
+	    list ui_list = profiles[class]:[];
+	  
+	    	    
+	    if (size(ui_list)==0)
+	    {
+		ui_list=add(ui_list,`item(`id("none"),
+					  _("None"))
+			    );
+	    }
+	    
+	    ui_list=add(ui_list,`item(`id(prof["name"]:"Unknown"),
+				      prof["name"]:"Unknown"));
+			
+	    profiles[class] =  ui_list;
+	});
+
+	term Combo = `VBox();
+
+	if (size(profiles)>0) {
+	    foreach(`k,`v, profiles,``{
+		Combo=add(Combo,
+			  `Left(
+				`ComboBox(`id(k),`opt(`hstretch,`autoShortcut),  k,
+					  v
+					  )
+				)
+			  );
+	    });
+	}
+	else
+	{
+	    Combo = `Left(`Label(`id(`emptyclasses), _("No profiles in this class")));
+	}
+
+	term contents =
+	    `Top(
+		 `Left(
+		       `VBox(
+			     Combo
+			     )
+		       )
+		 );
+
+
+	Wizard::SetContents(title,
+			    contents, help , true, true);
+
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+
+	
+	any ret = nil;
+	symbol next = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    integer n = 0;
+	    if (ret ==`next)
+	    {
+		list selected_profiles = [];
+		foreach(map prof, AIClass::confs,``{
+
+		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
+
+		    if (selected != nil) {
+			if (selected != "none") {
+			    n = n +1;
+			}
+			selected_profiles = add(selected_profiles,
+						$[
+						  "class_name":prof["class"]:"none",
+						  "configuration":selected
+						]
+						);
+		    }
+
+		});
+
+		if (n ==  0) {
+
+
+		    UI::ErrorPopup(_("Select at least one class configuration.
+"));
+		    continue;
+		}
+
+		list sorted_profiles =  filter(`c, toset(selected_profiles),``(c["configuration"]:""!= "none")
+					       );
+
+		y2debug("Selected Profiles: %1", sorted_profiles);
+		AIClass::profile_conf = sorted_profiles;
+	    }
+
+
+	} until  (ret == `next || ret ==`back );
+	return ret;
+    }
 
     
 

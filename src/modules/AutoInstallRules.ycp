@@ -140,6 +140,10 @@
 	haspcmcia = (SCR::Read(.etc.install_inf.HasPCMCIA) == 0);
 	xserver = SCR::Read(.etc.install_inf.XServer);
 
+	list others = Storage::GetForeignPrimary();
+	y2milestone ("Other primaries: %1", others);
+	list other_l = Storage::GetOtherLinuxPartitions();
+	y2milestone ("Other linux parts: %1", other_l);
 
 	
 	return;	
@@ -375,7 +379,8 @@
 	boolean stop = false;
 	foreach(string file, tomerge,		
 		``{
-	    if (!stop) {
+	    if (!stop)
+	    {
 		string dir = ProfileLocation::dirname ( file );	    
 		if (dir != "")
 		{
@@ -412,12 +417,14 @@
 
     /**
      * Merge Rule results
+     * @param the resulting control file path
+     * @return true on success
      */    
     global define boolean Merge (  string result_profile   )
 	``{
 	
 	string tmpdir = SCR::Read( .target.tmpdir );		
-	boolean error = false;
+	boolean ok = true;
 	boolean skip = false;
 
 	string base_profile  =  tmpdir + "/base_profile.xml";
@@ -445,7 +452,7 @@
 		if (xsltret["exit"]:-1 != 0 )
 		{
 		    y2error("Merge Failed");
-		    error =  true;
+		    ok =  false;
 		}
 		    
 		XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
@@ -454,9 +461,65 @@
 	});
 
 	SCR::Execute(.target.bash, "cp " +  tmpdir + "/base_profile.xml " + result_profile );
-	return !error;
+	return ok;
     }
 
+
+    global define boolean Process(  string result_profile  )
+	``{
+
+	boolean ok = true;
+	string tmpdir = SCR::Read( .target.tmpdir );
+	string prefinal = local_rules_location + "/prefinal_autoinst.xml" ;
+	Merge (  prefinal );
+	tomerge = [];
+
+	
+	// Now check if there any classes defined in theis pre final control file
+	if (! Profile::Read( prefinal )) {
+	    UI::ErrorPopup(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+	    return false;
+	}
+
+	if ( haskey(Profile::Flat, "classes") )
+	{
+	    y2milestone("User defined classes available, processing....");
+	    list classes = Profile::Flat["classes"]:[];
+	    foreach(map class, classes,
+		    ``{
+		tomerge = add(tomerge,  "classes/" + class["class_name"]:"none" + "/" + class["configuration"]:"none");
+	    });
+	    
+	    y2milestone("New files to process: %1", tomerge);
+	    Behaviour = `multiple;
+	    boolean ret  = GetRules();
+	    if (ret)
+	    {
+		tomerge = prepend(tomerge, "prefinal_autoinst.xml");
+		ok = Merge ( result_profile );
+	    }
+	    else
+	    {
+		Report::Error(_("User defined classes could not be retrieved.
+Make sure all classes are defined correctly and available for this system via
+the network or localy. System will be installed with original control file without using
+classes."));
+		ok = false;
+		SCR::Execute(.target.bash, "cp " + prefinal + " "  + result_profile );
+	    }
+	}
+	else
+	{
+	    SCR::Execute(.target.bash, "cp " + prefinal + " "  + result_profile );
+	}
+	
+	return ok;
+	
+    }
+    
 
     /**
      * Create default rule in case no rules file is available

@@ -123,7 +123,15 @@
 	    }		  
 	});
 
+	// No interface for those yet...
+	
+	if ( Flat["lvm"]:[] != []  )
+	    Install["lvm"] = Flat["lvm"]:[]  ;
+	if ( Flat["raid"]:[] != [] )
+	    Install["raid"] = Flat["raid"]:[];
 
+	
+	
 	if (Install != $[])
 	{
 	    current["install"] = Install;
@@ -194,8 +202,11 @@
 	return SCR::Write( .target.ycp, parsedControlFile, current );
     }
 
-
- 
+    /**
+     * Read YCP data as the control file
+     * @param ycp file
+     * @return boolean
+     */
 
     global define boolean ReadYCP( string parsedControlFile )
 	``{

@@ -86,24 +86,23 @@
      */
     global define string checkProfile() ``{
 	import "Profile";
+	
+	map software = Profile::Flat["software"]:$[];
 
-	map _prof = Profile::current;
-
-	map _conf = _prof["install"]:$[];
-	map _soft = _conf["software"]:$[];
-
-	string base = _soft["base"]:"";
-	list addons = _soft["addons"]:[];
-	list packs  = _soft["packages"]:[];
-	string kernel = _soft["kernel"]:"";
+	string base = software["base"]:"";
+	list addons = software["addons"]:[];
+	list packs  = software["packages"]:[];
+	string kernel = software["kernel"]:"";
 
 
 	string error_msg = "";
 	
-	if (base == "" && size(packs)<20) {
+	if (base == "" && size( packs ) < 50)
+	{
 	    error_msg = _("Base selection not defined.");
 	}
-	else if (size(software) == 0) {
+	else if (size(software) == 0)
+	{
 	    error_msg = _("Software resource not defined.");
 	}
 	return error_msg;
@@ -206,17 +205,48 @@
      */
     global define isoSizeDialog(integer expectedSize, string filename)``{
 
-	string iso_msg = _("Please wait while the ISO file is created...");
+	// heading
+	string headline = _("Creating ISO file...");
+	// message
+	string message = _("This may take several minutes...");
+
+	term contents = `HBox(
+			   `HSpacing(1),
+			   `HCenter (
+				     `HSquash(
+					      `VBox (
+						     `HCenter (
+							       `HSquash(
+									`VBox(
+									      `Left( `Heading( headline )),
+									      `VSpacing(0.2),
+									      `Left(`Label(message))
+									      )
+									)
+							       ),
+						     `VSpacing(0.2),
+						     `DownloadProgress(ISO::isoFile, filename, expectedSize - 5000000),
+						     `HSquash(
+							      `PushButton(`id(`close), CloseButtonLabel())
+							      ),
+						     `VSpacing(0.2)
+						     )
+					      )
+				     ),
+			   `HSpacing(1)
+			   );
+
+	
+	
 	if (UI::HasSpecialWidget(`DownloadProgress)) {
 	    UI::OpenDialog(
-			   `VBox(
-				 `Heading(iso_msg),
-				 `DownloadProgress(ISO::isoFile, filename, expectedSize - 1000000)								
-				 )
+			   contents
 			   );	    
 	    UI::UserInput();
 	    UI::CloseDialog();
-	} else {
+	}
+	else
+	{
 	    showFeedback(iso_msg);
 	    while (true) {
 		integer expect = expectedSize - 1000000;
@@ -262,7 +292,7 @@
 			      true,
 			      true);
 
-	Wizard::ReplaceAbortButton(`Empty());
+	
 	any ret = WizardSequencer (iso_dlg, sequence);
 
 	Wizard::CloseDialog ();
@@ -275,7 +305,10 @@
      * ISO Options
      */
     global define isoOptions()``{
+
+	// caption
 	string caption = _("ISO Options");
+	// help
 	string help= _("Enter the desired name of the ISO image to create and
 select any of the listed options.
 ");
@@ -294,6 +327,7 @@ select any of the listed options.
 			      help,
 			      true,
 			      true);
+	
 	any ret = nil;
 	repeat
 	    {
@@ -321,6 +355,8 @@ select any of the listed options.
 
     global define isoSummary() ``{
 	import "HTML";
+
+	// caption
 	string caption = _("ISO Summary");	
 	string html =  HTML::Heading(_("Package Source"));
 	html = html + HTML::Para(ISO::sourceDir);
@@ -363,7 +399,8 @@ press Next to continue</p>
 	``{
 		
 	import "Progress";
-	
+
+	// caption
 	string caption = _("Custom CDs");
 
 	string help = _("<p>Please wait while the data and packages are verified...
@@ -450,7 +487,7 @@ Fix the problem and try again.</p>
 	
 	
 	string help = UI(_("<P>
-Please wait while the directory structure for the new ISO file is created.
+Wait while the directory structure for the new ISO file is created.
 </P>
 "));
 	help = help + _("<p>Press <b>Next</b> to start creating the ISO file.</p>");
@@ -516,7 +553,7 @@ Please wait while the directory structure for the new ISO file is created.
 	    string location = tok[3]:"noarch" + "/" + pacname;
 	    
 	    string localpath =  ISO::sourceDir + "/" + datadir + "/" + location;
-	    y2milestone("local path: %1", localpath);
+	    y2debug("local path: %1", localpath);
 	    integer pacsize = SCR::Read(.target.size, localpath);
 	    if (pacsize!=-1)
 	    {
@@ -530,7 +567,7 @@ Please wait while the directory structure for the new ISO file is created.
 		}
 		
 		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, ISO::skeletonDir, datadir, location);
-		y2milestone("%1", cpCmd);
+		y2debug("%1", cpCmd);
 		any ret = SCR::Execute (.target.bash, cpCmd);			
 	    }
 	  

@@ -18,8 +18,8 @@
     import "Product";
     import "Progress";
     import "Call";
-    
-  
+
+
     // Help text for last dialog of base installation
     string help_text = _("<p>
 Please wait while the system is being configured.
@@ -74,7 +74,6 @@ Please wait while the system is being configured.
 	    Profile::Flat["runlevels"] = runlevels;
 	}
     }
-  
 
 
     y2debug("Module map: %1", AutoInstall::ModuleMap);
@@ -103,18 +102,18 @@ Please wait while the system is being configured.
 
 	    map result = $[];
 	    y2milestone("Writing configuration for %1", d["Name"]:"");
-	  
+
 	    if (haskey(Profile::Flat , resource) )
 	    {
 		string tomerge = d["AutoinstMerge"]:"";
 		string tomergetypes = d["AutoinstMergeTypes"]:"";
 		list MergeTypes = splitstring(tomergetypes, ",");
 		if (  size(tomerge) > 0 )
-		{		    
+		{
 		    integer i = 0;
 		    foreach( string res, splitstring(tomerge, ",") ,
 			     ``{
-			if ( MergeTypes[i]:"map" == "map") 
+			if ( MergeTypes[i]:"map" == "map")
 			    result[res] = Profile::Flat[res]:$[];
 			else
 			    result[res] = Profile::Flat[res]:[];
@@ -145,7 +144,7 @@ Please wait while the system is being configured.
     AIScripts::Write("post-scripts");
 
 
-		      
+
     Progress::Finish();
 
     return `next;
