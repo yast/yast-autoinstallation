@@ -194,8 +194,7 @@ Make sure the control file has the correct syntax and values.
      * Initialize devices
      */
     global define void Initialize () ``{
-	
-
+	import "Storage";
 	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
 	{
 	    Storage::DestroyLvmOnAllDisks();
