@@ -11,8 +11,8 @@
     textdomain "autoinst";
     import "HTML";
     import "Call";
-	import "Label";
-
+    import "Label";
+    
     include "readconfig.ycp";
 
 
@@ -43,7 +43,7 @@
 
 
     global define content_dialog( string resource, map resourceMap ) ``{
-	include "readconfig.ycp";
+
 	string summary =  Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
 	string domain = resourceMap["Textdomain"]:"base";
 	string caption = ReadKey (domain, "Name", resourceMap);

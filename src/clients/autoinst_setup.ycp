@@ -12,34 +12,22 @@
     textdomain "autoinst";
 
     import "AutoInstall";
-    import "Installation";
-    import "Keyboard";
-    import "Kernel";
-    import "Mouse";
-    import "Language";
-    import "Timezone";
-    import "Console";
-    import "Storage";
+    import "Profile";
     import "Progress";
-    import "Bootloader";
     import "Report";
-    import "Packages";
     import "Wizard";
-    import "SpaceCalculation";
     import "AutoinstStorage";
     import "AutoinstScripts";
     import "AutoinstGeneral";
     import "AutoinstSoftware";
     import "Popup";
-
-	include "partitioning/lvm_pv_lib.ycp";
-
+    
 
 
-    string help_text = UI(_("<P>
+    string help_text = _("<P>
 Please wait while the system is prepared for autoinstallation.
 </P>
-"));
+");
     list progress_stages =
 	[
 	 _("Load and configure additional kernel modules"),
@@ -59,7 +47,8 @@ Please wait while the system is prepared for autoinstallation.
 	 _("Configuring Software selections..."),
 	 _("Configuring Bootloader...")
 	 ];
-	Wizard::SetEasyInstallationStep( EasyInstallationStepDescriptions(), 2 );
+    
+    // Wizard::SetEasyInstallationStep( EasyInstallationStepDescriptions(), 2 );
 
     Progress::New(
 		  _("Preparing System for Automated Installation"),
@@ -75,9 +64,8 @@ Please wait while the system is prepared for autoinstallation.
 			return `abort;
     Progress::NextStage();
 
-    // FIXME
-    // Additional Kernel modules
-    ///////////////////////////////////////////////////////////////////////
+    /*
+      // FIXME
 
     if (is(AutoInstall::loadKernelModules, list) && size(AutoInstall::loadKernelModules) > 0 )
     {
@@ -110,7 +98,8 @@ Please wait while the system is prepared for autoinstallation.
 	});
     }
 
-
+    */
+    
     // configure general settings
 	if(UI::PollInput() == `abort)
 		if (Popup::ConfirmAbort (`painless))
@@ -138,7 +127,7 @@ Please wait while the system is prepared for autoinstallation.
 
     if (SCR::Read(.target.size, Profile::modified_profile) > 0 )
     {
-	if (! Profile::Read( AutoInstall::modified_profile ) || Profile::current == $[] )
+	if (! Profile::Read( Profile::modified_profile ) || Profile::current == $[] )
 	{
 	    Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the
@@ -146,7 +135,7 @@ control file and try again.
 "));
 	    return `abort;
 	}
-	AutoInstall::ProcessSpecialResources();
+	// AutoInstall::ProcessSpecialResources();
     }
 
     // Partitioning and Storage

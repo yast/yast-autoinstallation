@@ -28,17 +28,24 @@ y2milestone("Files auto started");
 
 import "AutoinstFile";
 import "Wizard";
+import "Popup";
+
+
+include "autoinstall/file_dialogs.ycp";
 
 any ret = nil;
 string func = "";
 list param = [];
 
 /* Check arguments */
-if(size(Args()) > 0 && is(Args(0), string)) {
-    func = WFM::Args(0);
-    if(size(Args()) > 1 && is(Args(1), list))
-	param = WFM::Args(1);
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
+{
+    func = (string) WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), list))
+	param = (list) WFM::Args(1);
 }
+
+
 y2debug("func=%1", func);
 y2debug("param=%1", param);
 
@@ -59,7 +66,7 @@ else if (func == "Reset") {
 }
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
-	include "autoinstall/file_dialogs.ycp";
+  
     Wizard::CreateDialog();
     ret = CustomFileDialog();
     Wizard::CloseDialog();

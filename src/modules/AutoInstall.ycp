@@ -6,9 +6,7 @@
  *
  * $Id$
  */
-
 {
-
     module "AutoInstall";
     textdomain "autoinst";
 
@@ -78,6 +76,7 @@
      */
     global define void AutoInstall()
 	``{
+	
 	if (!Mode::config &&  ! ( Mode::cont && Continue() ))
 	{
 	    if ( SCR::Read(.target.size, AutoinstConfig::xml_tmpfile) != -1  && size ( Profile::current ) == 0)
