@@ -57,7 +57,7 @@
 
     global define list DeletedMDs ( string md )
 	``{
-	list ret = [];
+	list<list<map> > ret = [];
 	foreach( string dev, map devmap, targetMap,
 		 ``{
 	    ret = add( ret,
@@ -73,7 +73,7 @@
 		       );
 	});
 
-	return((list)flatten(ret) );
+	return( flatten(ret) );
     }
 
 

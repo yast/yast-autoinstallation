@@ -337,9 +337,9 @@
     }
 
 
-    global define list DeletedPVs ( string vgname )
+    global define list<map> DeletedPVs ( string vgname )
 	``{
-	list ret = [];
+	list<list<map> > ret = [];
 	foreach( string dev, map devmap, targetMap,
 		 ``{
 	    ret = add( ret,
@@ -357,7 +357,7 @@
 		       );
 	});
 
-	return( (list)flatten(ret) );
+	return( flatten(ret) );
     }
 
     /**

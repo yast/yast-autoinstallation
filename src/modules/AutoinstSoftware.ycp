@@ -21,16 +21,17 @@
     import "Report";    
     import "Language";
     import "Kernel";
+    import "AutoinstConfig";
 
 
     global map Software = $[];
 
     global string base = "";
     global list addons = [];
-    global list packages = [];
+    global list<string> packages = [];
     global string kernel = "";
     global list post_packages = [];
-    global list remove_packages = [];
+    global list<string> remove_packages = [];
     global list delete_packages = [];
 
     global list forcedPackages = [];
@@ -102,9 +103,9 @@
      * @param list of packages to add
      * @return void
      */
-    global define void AddModulePackages(list module_packages)
+    global define void AddModulePackages(list<string> module_packages)
 	``{
-	packages = toset(union(packages,  module_packages));
+	packages = toset((list<string>) union(packages,  module_packages));
 	
 	//
 	// Update profile
@@ -160,13 +161,13 @@
      * configuration modules.
      */
     
-    global define list autoinstPackages()
+    global define list<string> autoinstPackages()
 	``{
 	
-	list allpackages = [];
+	list<string> allpackages = [];
 	
 	// the primary list of packages
-	allpackages = union (allpackages,  packages);
+	allpackages = (list<string>) union (allpackages,  packages);
 
 	// In autoinst mode, a kernel should not be  available
 	// in <packages>
@@ -175,7 +176,7 @@
 	    import "Kernel";
 	    if (Pkg::IsAvailable (Kernel::kernel_packages[0]:"k_deflt"))
 	    {
-		allpackages = union (allpackages, Kernel::kernel_packages);
+		allpackages = (list<string>) union (allpackages, Kernel::kernel_packages);
 	    }
 	    else
 	    {
@@ -201,14 +202,14 @@
 	if (haskey(Profile::Flat, "ldap")) {
 		map ldapclient = Profile::Flat["ldap"]:$[];
 		if (ldapclient["start_ldap"]:false)
-			allpackages = union(allpackages, ["pam_ldap","nss_ldap"]);
+			allpackages = (list<string>) union(allpackages, ["pam_ldap","nss_ldap"]);
 	}
 
 	if (haskey(Profile::Flat, "nfs_server"))
 	{
 	    boolean start_nfsserver = Profile::Flat["nfs_server", "start_nfsserver"]:false;
 	    if (start_nfsserver)
-		allpackages = union(allpackages, ["yast2-nfs-server", "nfs-utils"]);
+		allpackages = (list<string>) union(allpackages, ["yast2-nfs-server", "nfs-utils"]);
 	}
 
 
@@ -283,7 +284,7 @@ this message can be ignored."));
 	    }
 	});
 
-	list failed_again = [];
+	list<string> failed_again = [];
 	
 	if (size(failed) > 0 )
 	{
@@ -307,7 +308,7 @@ this message can be ignored."));
 	}
 
 
-	list autoinstPacks = autoinstPackages ();
+	list<string> autoinstPacks = autoinstPackages ();
 	y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
 
 	if (size(autoinstPacks) > 0 )
@@ -336,7 +337,7 @@ this message can be ignored."));
 	//
 	// Solve dependencies
 	//
-	Pkg::PkgSolve();
+	Pkg::PkgSolve(false);
 	
 	SpaceCalculation::ShowPartitionWarning();
 	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",

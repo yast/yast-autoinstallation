@@ -516,7 +516,7 @@ due to usage of the \"max\" option."));
 	boolean init = current_drive["initialize"]:false;
 
 	boolean reuse_all = (current_drive["use"]:"" == "all");
-	list partitions = splitstring(current_drive["use"]:"", ",");
+	list<string> partitions = splitstring(current_drive["use"]:"", ",");
 
 	if (filterchars(partitions[0]:"", "1234567890") != partitions[0]:"")
 	    partitions = [];
