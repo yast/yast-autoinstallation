@@ -1,5 +1,10 @@
 /**
+ * File:	modules/AutoinstLVM.ycp
+ * Module:	Auto-Installation
+ * Summary:	LVM
+ * Authors:	Anas Nashif <nashif@suse.de>
  *
+ * $Id$
  */
 {
 
@@ -26,7 +31,9 @@
 
     global map Volumes = $[];
 
+    global boolean PVsNotConfigured = false;
 
+    
     list region = [0,0];
     map targetMap = $[];
     integer pesize = 0;
@@ -41,12 +48,15 @@
 	targetMap 	= Storage::GetTargetMap();
 	modify_targets	= Storage::GetModifyTargets();
 	ExistingLVM 	= filter(`k,`v, targetMap, ``(v["is_lvm_vg"]:false));
+	
 	y2milestone("Existing LVM: %1", ExistingLVM);
+	
 	ExistingVGs 	= maplist (`d, `g, ExistingLVM, ``{
 	    return (substring(d, 5) );
 	});
 
 	y2milestone("Existing VGs: %1", ExistingVGs );
+	
 	foreach (`v, ExistingVGs, ``{
 	    string dev = sformat("/dev/%1", v);
 	    if (size(ExistingLVM[dev,"partitions"]:[]) > 0 )
@@ -198,10 +208,32 @@
     }
 
 
-
+    /**
+     *	Return only those PVs on disks touched by the control file, dont add PVs of
+     * 	unconfigured disks.
+     */
+    
     global define list ExistingPVs ( string vgname )
 	``{
-	return(filter( `part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname )));
+	map tm = $[];
+	y2milestone("Possible devices: %1", AutoinstStorage::configured_devices );
+	foreach(`k, `v, targetMap, ``{
+	    
+	    if (contains(AutoinstStorage::configured_devices, k))
+		tm[k] = v;
+		}
+		);
+	y2milestone("Target Map of allowed devices: %1 (%2)", tm, targetMap);
+	
+	list all_possible_pvs = filter( `part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname ));
+	list possible_pvs = filter( `part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
+
+	y2milestone("Possible PVs: %1 (%2)",  all_possible_pvs,  possible_pvs);
+	if (all_possible_pvs != possible_pvs)
+	    PVsNotConfigured = true;
+	
+	return (possible_pvs);
+
     }
 
 

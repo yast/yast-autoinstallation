@@ -19,6 +19,8 @@
 
     global list drives = [];
 
+    global list configured_devices = [];
+
     global map targetMap = $[];
 
     global map lvm  = $[];
@@ -87,41 +89,6 @@
 
 
 
-    global define list convertLVM (list lvm_standalone ) ``{
-
-	list all_lvm = [];
-
-	foreach (map group, lvm_standalone, ``{
-	    map new_lvm = $[];
-	    string vg = group["lvm_name"]:"";
-
-	    new_lvm["device"]       = sformat("/dev/%1", vg );
-	    new_lvm["is_lvm_vg"]    = true;
-	    new_lvm["use"]      = "all";
-	    new_lvm["pesize"]       = group["pesize"]:"";
-	    list partitions = maplist(`lv, group["logical_volumes"]:[], ``{
-
-		symbol lv_fs     = AutoinstStorage::StringFS2Symbol( lv["lv_fs"]:`reise);
-
-
-		return( $[ "filesystem": lv_fs,
-			   "lv_name":    lv["lv_name"]:"",
-			   "mount":  lv["lv_mount"]:"",
-			   "size":   lv["lv_size"]:"",
-			   "stripes":    lv["stripes"]:1
-			]);
-
-	    });
-
-	    new_lvm["partitions"] = partitions;
-	    all_lvm = add (all_lvm, new_lvm);
-
-	});
-	y2milestone("Converted LVM: %1", all_lvm);
-
-	return (all_lvm);
-    }
-
 
     
     /**
@@ -155,7 +122,11 @@
                                   ``{
                                       return($["device":k, "size": v["cyl_size"]:0 ]);
                                   });
-
+	
+        list physical_devices = maplist( `k, `v, physical_targetmap ,
+                                  ``{
+                                      return(k);
+                                  });
 
 	y2milestone("Drives=%1", alldrives);
 
@@ -175,7 +146,7 @@
 	    string device = "";
 	    y2milestone("Drive: %1", drive);
 
-	    if (drive["device"]:"" == "ask" )
+	    if (drive["device"]:"" == "ask"  && size(physical_drives) > 1 )
 	    {
 		y2milestone("Manual selection of device...");
 		any dev = DiskSelection();
@@ -184,20 +155,27 @@
 		    first_set = true;
 		    device = dev;
 		}
-		else
-		{
-		    abort = true;
-		}
+		if (contains(physical_devices, device))
+		    configured_devices=add(configured_devices, device);
+		
 		return ( [device , drive ] );
 	    }
-	    if (!first_set && drive["device"]:"" == "")
+
+	    
+	    if (!first_set && ( drive["device"]:"" == ""  || drive["device"]:"" == "ask"))
 	    {
 		device = Storage::GetPartDisk();
 		first_set = true;
+		if (contains(physical_devices, device))
+		configured_devices=add(configured_devices, device);
+		
 		return ( [device , drive ] );
 	    }
 	    else if (drive["device"]:"" != "")
 	    {
+		if (contains(physical_devices, drive["device"]:""))
+		configured_devices=add(configured_devices, drive["device"]:"");
+		
 		return([drive["device"]:"", drive ]);
 	    }
 
@@ -268,7 +246,8 @@ Make sure the control file has the correct syntax and values.
 	if ( size(lvm) != 0)
 	{
 	    y2milestone("Configuring LVM");
-	    autoLVM();
+	    if (!autoLVM() )
+		return false;
 	}
 
 	return true;

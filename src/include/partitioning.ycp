@@ -972,6 +972,7 @@ to contain a minimal installation.");
 	    {
 		Report::Message("Old LVM Available");
 		y2milestone("Old LVM available");
+		
 		foreach(`vgdev, `vg, AutoinstLVM::ExistingLVM, ``{
 
 		    string vg = substring(vgdev, 5);
@@ -993,7 +994,17 @@ to contain a minimal installation.");
 		    {
 			delete = true;
 		    }
-		    
+
+		    if (AutoinstLVM::PVsNotConfigured)
+		    {
+			Report::Error(sformat(_("Logical volumes of group \"%1\" exist on unconfigured devices.
+You have to delete old Volume Groups first or configure all devices containing
+physical volumes belonging to this group."), vgname));
+			return ( false );
+		    }
+			
+
+		    // Delete old LVM
 		    if ( delete )
 		    {
 			map ExistingVG = AutoinstLVM::ExistingLVM[vgdev]:$[];
@@ -1051,8 +1062,7 @@ to contain a minimal installation.");
 	
 	list RaidList =  maplist ( map device, AutoinstStorage::raid["/dev/md", "partitions"]:[],  ``{
 
-	    string use 		= 	AutoinstStorage::raid["/dev/md","use"]:"none";
-	    
+	    string use 		= 	AutoinstStorage::raid["/dev/md","use"]:"none";	    
 	    string dev 		= 	sformat("/dev/md%1", device["partition_nr"]:0);
 	    
 	    if (AutoinstRAID::OldAvailable)
@@ -1071,38 +1081,33 @@ to contain a minimal installation.");
 
 	    device["device"] 	= dev;
 	    
-	    string chunk_size = "4";
-	    string raid_level = "";
-	    if (haskey(device, "raid_level"))
-	    {
-		raid_level	= device["raid_level"]:"raid1";
-	    }
-	    else
-	    {
-		raid_level	= device["raid_type"]:"raid1";
-	    }
+	    string chunk_size = "4";  
+	  
+	    raid_type	= device["raid_type"]:"raid1";	  	    
 
-	    
-
-	    if ( raid_level == "raid5" )
+	    if ( raid_type == "raid5" )
 	    {
 		chunk_size = "128";
 	    }
-	    if ( raid_level == "raid0" )
+	    if ( raid_type == "raid0" )
 	    {
 		chunk_size = "32";
 	    }
-	    string sel_chunksize = device["chunk_size"]:"";
+
+	    map options = device["raid_options"]:$[];
+	    
+	    string sel_chunksize = options["chunk_size"]:"";
 
 	    if ( sel_chunksize != "" )
 	    {
 		chunk_size = sel_chunksize;
+		options["chunk_size"]	= chunk_size;
 	    }
 
 
-	    if(  raid_level == "raid5" && device["parity_algorithm"]:"" == "" )
+	    if(  raid_type == "raid5" && options["parity_algorithm"]:"" == "" )
 	    {
-		device["parity_algorithm"] = "left-symmetric";
+		options["parity_algorithm"] = "left-symmetric";
 	    }
 
 	    device["nr"] = device["partition_nr"]:"0";
@@ -1117,9 +1122,8 @@ to contain a minimal installation.");
 		device["create"]		= true;
 		device["status"]		= "create";
 	    }
-
-	    device["raid_type"] 	= raid_level;	    
-	    device["chunk_size"]	= chunk_size;
+	    
+	    
 
 	    if (!haskey(device, "format"))
 	    {
@@ -1136,7 +1140,9 @@ to contain a minimal installation.");
 	    {
 		device["crypt_key"] =   Storage::AddCryptToClassified( device["crypt_key"]:"");
 	    }
-	    return (device);
+
+	    
+	    return (union(device, options));
 	});
 	
 
