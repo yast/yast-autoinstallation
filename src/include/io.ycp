@@ -8,7 +8,8 @@
  */
 {
     textdomain "autoinst";
-	import "URL";
+    import "URL";
+    import "Installation";
     /**
      * Basename
      * @param string path
@@ -56,6 +57,11 @@
         }
 	toks["path"]   = Path;
         string full_url = URL::Build(toks);
+
+        string tmp_dir = (string)WFM::Read(.local.tmpdir, []);
+        string mount_point = tmp_dir + "/tmp_mount";
+        WFM::Execute(.local.mkdir, mount_point );
+
 	if ( Scheme == "http" )
 	{
 	    import "HTTP";
@@ -110,18 +116,18 @@
 		if (Mode::boot == "cd")
 		{
 		    string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
-		    integer shellret =  (integer) SCR::Execute(.target.bash, "/bin/mount /dev/" + cdrom + " /mnt");
-		    if (shellret != 0 )
+		    if (!(boolean)WFM::Execute(.local.mount, ["/dev/" + cdrom,
+                                mount_point, Installation::mountlog] ))
 		    {
 			y2warning("Mount failed");
 		    }
 		    else
 		    {
-			string cpcmd = sformat("cp /mnt/%1 %2", Path , Localfile);
+			string cpcmd = sformat("cp " + mount_point + "/%1 %2", Path , Localfile);
 			y2milestone("Copy profile: %1", cpcmd);
 			SCR::Execute(.target.bash, cpcmd);
 		    }
-		    shellret =  (integer) SCR::Execute(.target.bash, "/bin/umount  /mnt");
+		    WFM::Execute(.local.umount, mount_point);
 		    if (SCR::Read(.target.size, Localfile) > 0 )
 		    {
 			return (true);
@@ -138,15 +144,13 @@
 		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
 	    }
 
-	    integer shellret =  (integer)SCR::Execute(.target.bash, "/bin/mount " + Host + ":" + dirname(Path) +" /mnt -t nfs");
-
-	    if (shellret != 0 )
+	    if (!(boolean)SCR::Execute(.local.mount, [ Host + ":" + dirname(Path), mount_point, Installation::mountlog ], "-t nfs" ))
 	    {
 		y2warning("Mount failed");
 		return (false);
 	    }
 
-	    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + basename(Path) + " " + Localfile) == 0)
+	    if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + " " + basename(Path) + " " + Localfile) == 0)
 	    {
 		ok = true;
 	    }
@@ -156,7 +160,7 @@
 
 	    }
 
-	    WFM::Execute(.local.bash, "/bin/umount /mnt");
+	    WFM::Execute(.local.umount, mount_point);
 
 	}
 	else if (Scheme == "floppy")
@@ -164,9 +168,9 @@
 	    import "StorageDevices";
 	    if (StorageDevices::FloppyReady())
 	    {
-		SCR::Execute(.target.mount, [StorageDevices::FloppyDevice, "/media/floppy"], "-t auto");
+		SCR::Execute(.local.mount, [StorageDevices::FloppyDevice, "/media/floppy"], "-t auto");
 
-		if (SCR::Execute (.target.bash, "/bin/cp /media/floppy/" + Path + " " + Localfile) != 0)
+		if (WFM::Execute (.local.bash, "/bin/cp /media/floppy/" + Path + " " + Localfile) != 0)
 		{
 		    y2error("Control file can't be found");
 		}
@@ -181,9 +185,10 @@
 	{
 	    if ( Host != "" && Path != "")
 	    {
-		SCR::Execute(.target.mount, [sformat("/dev/%1", Host) , "/mnt"], "-t auto");
+		SCR::Execute(.local.mount, [sformat("/dev/%1", Host) ,
+                        mount_point], "-t auto");
 
-		if (SCR::Execute (.target.bash, "/bin/cp /mnt" +  Path + " " + Localfile) != 0 )
+		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  Path + " " + Localfile) != 0 )
 		{
 		    y2error("Control file can't be found");
 		}
@@ -191,7 +196,7 @@
 		{
 		    ok = true;
 		}
-		SCR::Execute(.target.umount, "/mnt");
+		WFM::Execute(.local.umount, mount_point);
 	    }
 	}
 	else if (Scheme == "tftp") // Device
@@ -213,6 +218,9 @@
 	}
 	return ( ok );
     }
+
+
+
     boolean GetURL(string url, string target)  {
         AutoinstConfig::urltok=URL::Parse(url);
         map toks = AutoinstConfig::urltok;
