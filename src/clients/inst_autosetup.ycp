@@ -23,6 +23,7 @@
     import "BootCommon";
     import "Popup";
 
+    include "autoinstall/autoinst.ycp";
 
     string help_text = _("<P>Please wait while the system is prepared for autoinstallation.</P>");
     list<string> progress_stages =
@@ -60,10 +61,6 @@
 
     // configure general settings
 
-    if(UI::PollInput() == `abort)
-	if (Popup::ConfirmAbort (`painless))
-	    return `abort;
-    Progress::NextStage();
 
     //
     // Set Mouse, timezone and other workflow variables
@@ -146,7 +143,7 @@ Try again.
     Progress::NextStage();
 
     BootCommon::getLoaderType(true);
-    // FIXME: AutoInstall::bootloaderSettings();
+    bootloaderSettings();
 
     Progress::Finish();
 

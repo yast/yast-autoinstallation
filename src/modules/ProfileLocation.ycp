@@ -9,21 +9,21 @@
 {
     module "ProfileLocation";
     textdomain "autoinst";
-    
+
     import "AutoinstConfig";
     import "AutoInstallRules";
     import "StorageDevices";
-    import "Mode";    
+    import "Mode";
     import "Installation";
     import "Popup";
     import "Label";
     import "URL";
-   
+
 
     include "autoinstall/autoinst_dialogs.ycp";
     include "autoinstall/io.ycp";
 
- 
+
     /**
      * Constructor
      * @return void
@@ -33,16 +33,16 @@
 	return;
     }
 
-    
+
     /**
      * Initiate retrieving of control files and Rules.
-     * @return boolean 
+     * @return boolean
      */
     global define boolean Process() ``{
 
 	boolean ok = false;
 	boolean ret = false;
-	
+
 	y2milestone("Path to remote control file: %1", AutoinstConfig::filepath);
 
 	string localfile  =  AutoinstConfig::xml_tmpfile;
@@ -78,17 +78,17 @@
 			AutoinstConfig::ParseCmdLine(newURI);
 			AutoinstConfig::SetProtocolMessage();
 			continue;
-		    }				
-		}					    			
+		    }
+		}
 	    }
-	}	
+	}
 	else
 	{
 	    is_directory = true;
 	}
 
 	AutoinstConfig::directory = dirname(AutoinstConfig::filepath);
-	
+
 	y2milestone("Dir=%1", AutoinstConfig::directory);
 	y2milestone("Fetching Rules File");
 
@@ -99,10 +99,10 @@
 	{
 	    y2error("Error creating directory: %1", AutoinstConfig::local_rules_location );
 	}
-	
+
 	ret = Get(AutoinstConfig::scheme,
 		  AutoinstConfig::host,
-		  AutoinstConfig::directory + "/" +  AutoinstConfig::remote_rules_location ,		
+		  AutoinstConfig::directory + "/" +  AutoinstConfig::remote_rules_location ,
 		  AutoinstConfig::local_rules_file);
 
 	if (ret)
@@ -139,12 +139,12 @@
 			{
 			    ret = Get(AutoinstConfig::scheme,
 				      AutoinstConfig::host,
-				      AutoinstConfig::filepath,				    
+				      AutoinstConfig::filepath,
 				      localfile);
-			}		
+			}
 		    }
 		    first = false;
-		    
+
 		    if (ret)
 		    {
 			break;
@@ -161,9 +161,9 @@
 			    AutoinstConfig::ParseCmdLine(newURI);
 			    AutoinstConfig::SetProtocolMessage();
 			    continue;
-			}				
-		    }		    
-	
+			}
+		    }
+
 		}
 	    }
 	}
@@ -196,7 +196,7 @@
 		    {
 			ret = Get(AutoinstConfig::scheme,
 				  AutoinstConfig::host,
-				  AutoinstConfig::filepath,				
+				  AutoinstConfig::filepath,
 				  localfile);
 		    }
 		    first = false;
@@ -216,7 +216,7 @@
 			    AutoinstConfig::ParseCmdLine(newURI);
 			    AutoinstConfig::SetProtocolMessage();
 			    continue;
-			}				
+			}
 		    }
 		}
 	    }

@@ -12,26 +12,61 @@
      * Configure bootloader settings
      * @return boolean
      */
-    global define boolean bootloaderSettings()``{
+    define boolean bootloaderSettings()``{
 	import "Bootloader";
 	import "BootCommon";
         import "Profile";
         import "Kernel";
         import "Initrd";
+        import "Arch";
 
 	boolean ret = false;
 
 	// Bootloader::manual_location = true;
-	map Bootloader = Profile::Flat["bootloader"]:$[];
+	map ai = Profile::Flat["bootloader"]:$[];
 
-	y2debug ("Importing settings %1", Bootloader);
-	if (Bootloader == $[] )
+	y2debug ("Importing settings %1", ai);
+	if (ai == $[] )
 	{
 	    Bootloader::Propose ();
 	    return true;
 	}
+        map<string, any> exp = $[
+            "loader_type" : ai["loader_type"]:"",
+            "location" : ai["location"]:"",
+            "loader_device" : ai["loader_device"]:"",
+            "specific" : $[],
+        ];
+        if (Arch::ppc)
+        {
+            if (haskey (ai, "prep_boot_partition"))
+            {
+                exp["specific", "prep_boot_partition"]
+                    = ai["prep_boot_partition"]:"";
+            }
+            if (haskey (ai, "streamfile"))
+            {
+                exp["specific", "streamfile"]
+                    = ai["streamfile"]:"";
+            }
+            if (haskey (ai, "iseries_write_slot_a"))
+            {
+                exp["specific", "iseries_write_slot_a"]
+                    = ai["iseries_write_slot_a"]:true;
+            }
+            if (haskey (ai, "iseries_write_slot_b"))
+            {
+                exp["specific", "iseries_write_slot_b"]
+                    = ai["iseries_write_slot_b"]:true;
+            }
+            if (haskey (ai, "of_defaultdevice"))
+            {
+                exp["specific", "of_defaultdevice"]
+                    = ai["of_defaultdevice"]:false;
+            }
+        }
 
-	string parameters = Bootloader["kernel_parameters"]:"";
+	string parameters = ai["kernel_parameters"]:"";
 	if ( size(parameters) > 0)
 	{
 	    foreach ( string parameter, splitstring(parameters, " "),
@@ -42,35 +77,29 @@
 		    Kernel::AddCmdLine (param_value_list[0]:"", param_value_list[1]:"");
 		}
 	    });
-	    Bootloader = remove(Bootloader, "kernel_parameters");
 	}
 
 	map current = Initrd::Export();
 	y2milestone("Current initrd modules: %1", current);
 	list modlist = current["list"]:[];
 	map modsett = current["settings"]:$[];
-	foreach(map mod, Bootloader["initrd_modules"]:[], ``{
-	    if (mod["module"]:"" != "" )
-	    {
-		modlist = add(modlist, mod["module"]:"");
-		modsett = add(modsett, mod["module"]:"" , mod["module_args"]:"");
-	    }
-	});
-	if (size(modlist) > 0 )
-	    Bootloader["initrd"] = $[ "list": modlist, "settings" : modsett ];
-
-	// cleanup
-	if (haskey(Bootloader, "initrd_modules"))
-	    Bootloader = remove(Bootloader, "initrd_modules");
+        foreach(map mod, ai["initrd_modules"]:[], ``{
+            modlist = add(modlist, mod["module"]:"");
+            modsett = add(modsett, mod["module"]:"", mod["module_args"]:$[]);
+        });
+        if (size(modlist) > 0 )
+            exp["initrd"] = $[ "list": modlist, "settings" : modsett ];
 
 
-	y2debug ("Starting importing settings");
-	ret = Bootloader::Import(Bootloader);
+	y2debug ("Bootloader: Importing settings");
+	ret = Bootloader::Import(exp);
 	y2debug ("Importing done, result %1", Bootloader::Export ());
 	BootCommon::DetectDisks ();
 	y2debug ("Proposing - fix");
 	Bootloader::Propose ();
 	y2debug ("Proposing done");
+
+        /*
 	// fix GRUB's device names
 	if (Bootloader::getLoaderType () == "grub")
 	{
@@ -109,6 +138,7 @@
 					    BootCommon::RootPartitionDevice);
 	    }
 	});
+        */
 
     }
 
