@@ -49,8 +49,7 @@
 	``{
 
 	include "autoinstall/io.ycp";
-	include "autoinstall/help.ycp";
-	include "autoinstall/autoinst_functions.ycp";
+	include "autoinstall/help.ycp";	
 
 
 	list menu_options = CreateTableList(AIConfig::MenuTreeData);
@@ -102,8 +101,9 @@
 		}
 
 	    }
+	 
 	    foreach(`p,`d, AIConfig::ModuleMap, ``{
-		y2debug("Checking data from %1", p);
+		// y2milestone("Checking data from %1: %2", p, d );
 		if (tree_item == p) {
 		    // Set resource name, if not using default value
 

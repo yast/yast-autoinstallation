@@ -260,8 +260,10 @@ this may take a while, please wait..."));
 
 	install["partitioning"] = drives;	
 	install["general"] = general;
-	install["software"] = createAliceSoftware(aliceConf);
+	install["software"] = createAliceSoftware(aliceConf);	
 	configure["networking"] = createAliceNetwork(aliceConf);
+
+	install["init"] = aliceInit(aliceConf, 	configure["networking"]:$[]);
 	configure["users"] =  createAliceUsers(aliceConf);
 	if (aliceConf["NETWORK_NIS_YPDOMAIN"]:"" != "")
 	    configure["nis"] =  createAliceNis(aliceConf);
@@ -486,6 +488,49 @@ this may take a while, please wait..."));
 	users=add(users,root);
 
 	return users;
+    }
+
+    global define aliceInit(map aliceConf, map networking)``{
+	map init = $[];
+	y2milestone("networking %1", networking);
+	if ( aliceConf["SYS_BOOT_MODE"]:"" == "NET") {
+	    init["instmode"] = "nfs";
+	}
+	if (size(aliceConf["SYS_INST_DIR"]:"") > 0) {
+	    string serverdir = regexpsub( aliceConf["SYS_INST_DIR"]:"", "(.*)\%version(.*)", "\\1" + aliceConf["SYS_OS_VERSION"]:"" + "\\2");
+	    y2milestone("serverdir: %1", serverdir);	    
+	    init["serverdir"] = regexpsub( serverdir, "(.*)\%arch(.*)", "\\1" + aliceConf["SYS_ARCH"]:"" + "\\2");
+	   
+	}
+	if (haskey(aliceConf,"SYS_INSMOD_MODULES")) {
+	    list modules = splitstring(aliceConf["SYS_INSMOD_MODULES"]:"", "\n");
+	    init["insmod"]=modules;
+	}
+	if (haskey(aliceConf,"SYS_KEYTABLE")) {	    
+	    init["keytable"]=aliceConf["SYS_KEYTABLE"]:"";
+	}
+	if (haskey(aliceConf,"SYS_LANGUAGE")) {	    
+	    init["language"]=aliceConf["SYS_LANGUAGE"]:"";
+	}
+	if (haskey(aliceConf,"SYS_INST_SERVER")) {	    
+	    init["server"]=aliceConf["SYS_INST_SERVER"]:"";
+	}
+
+	if (haskey(aliceConf,"NET_INST_DEV")) {	    
+	    init["netdevice"]=aliceConf["NET_INST_DEV"]:"";
+	}
+
+	list ifaces = networking["interfaces"]:[];
+	foreach(`iface, ifaces, ``{
+	    if (iface["device"]:"" == init["netdevice"]:"")
+	    {
+		init["ip"] = iface["ipaddr"]:"";
+		init["netmask"] = iface["netmask"]:"";		
+	    }
+	});
+	init["gateway"] = aliceConf["DEF_GATEWAY"]:"";
+	return init;
+	
     }
 
     

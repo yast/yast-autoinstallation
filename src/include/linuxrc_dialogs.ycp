@@ -169,22 +169,22 @@
 		AILinuxrc::textmode = UI::QueryWidget(`id(`textmode), `Value);
 		
 		if (!UI::QueryWidget(`id(`usedhcp), `Value)) {
-		    if(!check_ip4(UI::QueryWidget(`id(`ip), `Value))) {
+		    if(!check_ip4(UI::QueryWidget(`id(`ip), `Value))  && UI::QueryWidget(`id(`ip), `Value) != "") {
 			UI::ErrorPopup(_("The IP address is incorrect"));
 			UI::SetFocus(`id(`ip));
 			continue;
 		    }
-		    if(!check_netmask(UI::QueryWidget(`id(`netmask), `Value))) {
+		    if(!check_netmask(UI::QueryWidget(`id(`netmask), `Value)) && UI::QueryWidget(`id(`netmask), `Value) != "" ) {
 			UI::ErrorPopup(_("The subnet mask is incorrect"));
 			UI::SetFocus(`id(`netmask));
 			continue;
 		    }
-		    if(!check_ip4(UI::QueryWidget(`id(`gateway), `Value))) {
+		    if(!check_ip4(UI::QueryWidget(`id(`gateway), `Value)) && UI::QueryWidget(`id(`gateway), `Value) != "") {
 			UI::ErrorPopup(_("The IP address is incorrect"));
 			UI::SetFocus(`id(`gateway));
 			continue;
 		    }
-		    if(!check_ip4(UI::QueryWidget(`id(`nameserver), `Value))) {
+		    if(!check_ip4(UI::QueryWidget(`id(`nameserver), `Value)) && UI::QueryWidget(`id(`nameserver), `Value) != "" ) {
 			UI::ErrorPopup(_("The IP address is incorrect"));
 			UI::SetFocus(`id(`nameserver));
 			continue;
@@ -196,6 +196,7 @@
 		    AILinuxrc::nameserver = UI::QueryWidget(`id(`nameserver), `Value);
 		    AILinuxrc::domain = UI::QueryWidget(`id(`domain), `Value);    
 		}
+		
 		AILinuxrc::netdevice = UI::QueryWidget(`id(`netdevice), `Value);
 		AILinuxrc::method = UI::QueryWidget(`id(`method), `Value);
 		if (UI::WidgetExists(`id(`workdomain))) {
