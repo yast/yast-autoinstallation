@@ -14,7 +14,7 @@
      * @param string path
      * @return string  basename
      */
-    global define string basename (string filePath)
+    define string basename (string filePath)
 	``{
 	list pathComponents = splitstring(filePath, "/");
 	string ret = pathComponents[size(pathComponents) -1 ]: "";
@@ -27,7 +27,7 @@
      * @param string path
      * @return  string dirname
      */
-    global define string dirname (string filePath)
+    define string dirname (string filePath)
 	``{
 	   list pathComponents = splitstring(filePath, "/");
 	   string last = pathComponents[size(pathComponents) -1]:"";
@@ -40,7 +40,7 @@
      * Get control files from different sources
      * @return boolean true on success
      */
-    global define boolean Get(string Scheme,
+    define boolean Get(string Scheme,
 			      string Host,
 			      string Path,
 			      string Localfile)
@@ -48,17 +48,14 @@
 	boolean ok = false;
 	map res = $[];
 	map toks =  AutoinstConfig::urltok;
-	
 	toks["scheme"] = Scheme;
 	toks["host"]   = Host;
 	toks["path"]   = Path;
-	    
 	if ( Scheme == "http" )
 	{
 	    import "HTTP";
 	    string full_url = URL::Build(toks);
 	    res = HTTP::Get(full_url, Localfile);
-	    
 	    if (res["code"]:0 == 200)
 	    {
 		return (true);
@@ -73,7 +70,6 @@
 	{
 	    import "FTP";
 	    string full_url = URL::Build(toks);
-	 	    
 	    res = FTP::Get(full_url, Localfile);
 	    if ( res["code"]:-1 == 0 && SCR::Read(.target.size, Localfile) > 0 )
 	    {
@@ -136,7 +132,7 @@
 	{
 	    if (Mode::boot != "nfs")
 	    {
-		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );	
+		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
 	    }
 
 	    integer shellret =  (integer)SCR::Execute(.target.bash, "/bin/mount " + Host + ":" + dirname(Path) +" /mnt -t nfs");
