@@ -321,14 +321,14 @@
       * @param map resource name
       * @return list
       */
-     define boolean CommonClone(string resource, map resourceMap) ``{
-
+     define boolean CommonClone(string resource, map resourceMap)
+	 ``{
 
 	 string data_type = resourceMap["X-SuSE-YaST-AutoInstDataType"]:"map";
 	 string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
 	 string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
 
-	 string auto = sformat("%1_auto", resource);
+	 string auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"";
 	 resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:resource;
 
 	 boolean readret = false;

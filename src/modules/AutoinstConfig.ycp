@@ -13,10 +13,12 @@
     import "Misc";
     import "Mode";
     import "Installation";
-    
+    import "URL";
 
     include "autoinstall/xml.ycp";
-    include "autoinstall/io.ycp";
+
+
+
 
  
     // Profile Repository
@@ -146,20 +148,24 @@
     
     global  boolean popup_open = false;
 
+
+
+    
+    include "autoinstall/io.ycp";
+    
+
     /**
      * Return location of profile from command line.
      * @return map with protocol, server, path
      * @example autoyast=http://www.server.com/profiles/
      */
-
     global define boolean ParseCmdLine (string autoinstall)
 	``{
 	import "URL";
 	
 	map result = $[];
 	string cmdLine = "";
-
-
+	
 	if (size(autoinstall) > 0   )
 	{
 	    cmdLine = (string)autoinstall;
@@ -190,12 +196,12 @@
 	}
 	urltok = result;
 	
-	scheme = urltok["scheme"]:"default";
-	host = urltok["host"]:"";
-	filepath = urltok["path"]:"";
-	port = urltok["port"]:"";
-	user = urltok["user"]:"";
-	pass = urltok["pass"]:"";
+	scheme 		= urltok["scheme"]:"default";
+	host 		= urltok["host"]:"";
+	filepath 	= urltok["path"]:"";
+	port 		= urltok["port"]:"";
+	user	 	= urltok["user"]:"";
+	pass 		= urltok["pass"]:"";
 	return true;;
     }
 
@@ -247,12 +253,26 @@
 	return;
     }
 
-
+ 
+    /**
+     * Save Configuration global settings
+     * @return	void
+     */
+    global define void Save ()
+	``{
+	// Write sysconfig variables.	
+	y2milestone("Saving configuration data");
+	
+	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );	
+	SCR::Write( .sysconfig.autoinstall.ALICE_REPOSITORY, AliceRepository );
+	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir);
+	
+	return;
+    }
     
     /**
      * Constructor
-     * @return	 void          
-     * 
+     * @return void               
      */
     global define void AutoinstConfig ()
 	``{	
@@ -261,16 +281,17 @@
 	    any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
 	    if (autoinstall != nil && is ( autoinstall , string ) )
 	    {
-		ParseCmdLine((string)autoinstall);
+		ParseCmdLine((string) autoinstall);		
 	    }
 	}
-	else
+	else if (Mode::config )
 	{
 	    // Load configuration data from /etc/sysconfig/autoinstall
 	    Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");		
 	    AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");	
 	    classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );	
 	    string tmp_dontmerge = Misc::SysconfigRead( .sysconfig.autoinstall.XSLT_DONTMERGE, "addon,conf" );
+	    
 	    dontmerge = splitstring(tmp_dontmerge, ",");
 	    
 	    // Set the defaults, just in case.
@@ -283,26 +304,6 @@
     }
 
 
-
-    
-
-    /**
-     * Save()
-     * @return	void
-     * Save Configuration global settings
-     */
-
-    global define void Save ()
-	``{
-	// Write sysconfig variables.	
-	y2milestone("Saving configuration data");
-	
-	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );	
-	SCR::Write( .sysconfig.autoinstall.ALICE_REPOSITORY, AliceRepository );
-	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir);
-	
-	return;
-    }
 
 
 }

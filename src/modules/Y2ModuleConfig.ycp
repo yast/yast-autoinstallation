@@ -15,8 +15,9 @@
     import "Profile";
     import "Installation";
     import "Desktop";
+    
 
-    include "autoinstall/io.ycp";
+    // include "autoinstall/io.ycp";
 
     global map GroupMap = $[];
     global map ModuleMap = $[];
@@ -74,6 +75,7 @@
 		    string client =  name + "_auto";
 		    values["X-SuSE-YaST-AutoInstClient"] = client;
 		}
+		y2milestone("values: %1", values["X-SuSE-YaST-AutoInstClient"]:"" );
 		confs[name]=values;
 	    }
 	});

@@ -17,6 +17,7 @@
     import "Installation";
     import "Popup";
     import "Label";
+    import "URL";
    
 
     include "autoinstall/autoinst_dialogs.ycp";
@@ -25,6 +26,7 @@
  
     /**
      * Constructor
+     * @return void
      */
     global define void ProfileLocation ()
 	``{
@@ -34,6 +36,7 @@
     
     /**
      * Initiate retrieving of control files and Rules.
+     * @return boolean 
      */
     global define boolean Process() ``{
 
@@ -57,9 +60,7 @@
 		ret = Get(AutoinstConfig::scheme,
 			  AutoinstConfig::host,
 			  AutoinstConfig::filepath,
-			  AutoinstConfig::port,
-			  AutoinstConfig::user,
-			  AutoinstConfig::pass, localfile
+			  localfile
 			  );
 		if (ret)
 		{
@@ -86,17 +87,22 @@
 	    is_directory = true;
 	}
 
-	string directory = dirname(AutoinstConfig::filepath);
-	y2milestone("Dir=%1", directory);
+	AutoinstConfig::directory = dirname(AutoinstConfig::filepath);
+	
+	y2milestone("Dir=%1", AutoinstConfig::directory);
 	y2milestone("Fetching Rules File");
 
 	// Get rules file
+
+	boolean mkdir = (boolean)SCR::Execute(.target.mkdir, AutoinstConfig::local_rules_location);
+	if (!mkdir)
+	{
+	    y2error("Error creating directory: %1", AutoinstConfig::local_rules_location );
+	}
+	
 	ret = Get(AutoinstConfig::scheme,
 		  AutoinstConfig::host,
-		  directory + "/" +  AutoinstConfig::remote_rules_location ,
-		  AutoinstConfig::port,
-		  AutoinstConfig::user,
-		  AutoinstConfig::pass,
+		  AutoinstConfig::directory + "/" +  AutoinstConfig::remote_rules_location ,		
 		  AutoinstConfig::local_rules_file);
 
 	if (ret)
@@ -133,12 +139,9 @@
 			{
 			    ret = Get(AutoinstConfig::scheme,
 				      AutoinstConfig::host,
-				      AutoinstConfig::filepath,
-				      AutoinstConfig::port,
-				      AutoinstConfig::user, AutoinstConfig::pass,
+				      AutoinstConfig::filepath,				    
 				      localfile);
-			}
-		
+			}		
 		    }
 		    first = false;
 		    
@@ -193,10 +196,7 @@
 		    {
 			ret = Get(AutoinstConfig::scheme,
 				  AutoinstConfig::host,
-				  AutoinstConfig::filepath,
-				  AutoinstConfig::port,
-				  AutoinstConfig::user,
-				  AutoinstConfig::pass,
+				  AutoinstConfig::filepath,				
 				  localfile);
 		    }
 		    first = false;

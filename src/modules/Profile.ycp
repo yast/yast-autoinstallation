@@ -46,16 +46,14 @@
      */
     global define void Profile ()
 	``{
+	//
+	// setup profile XML parameters for writing
+	//
+	profileSetup();
+	
 	if (Mode::initial)
 	{
 	    SCR::Execute(.target.mkdir, AutoinstConfig::profile_dir);
-	}
-	else
-	{
-	    //
-	    // setup profile XML parameters for writing
-	    //
-	    profileSetup();
 	}
 	return;
     }
@@ -70,7 +68,8 @@
     
     /**
      * Read Profile properties and Version
-     *
+     * @param map Profile Properties
+     * @return void
      */
     global define void ReadProperties (map properties)
 	``{
@@ -96,6 +95,7 @@
     /**
      * Import Profile
      * @param map profile
+     * @return void
      */
     global define void Import(map profile)
 	``{
@@ -114,6 +114,8 @@
 	
 	return;
     }
+
+
     
     /**
      * Prepare Profile for saving and remove empty data structs

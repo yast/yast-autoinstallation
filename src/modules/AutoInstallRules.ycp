@@ -23,7 +23,7 @@
     import "Label";
     import "Report";
     import "Popup";
-    
+    import "URL";
   
     include "autoinstall/io.ycp";
 
@@ -575,12 +575,14 @@
 
 
     /**
-     * Files();
      * Return list of file to merge (Order matters)
+     * @return list list of files
      */
     global define list Files () ``{
 	return tomerge;
     }
+
+    
 
     /**
      * GetRules()
@@ -595,9 +597,6 @@
 	string host = AutoinstConfig::host;
 	string filepath = AutoinstConfig::filepath;
 	string directory = AutoinstConfig::directory;
-	string port = AutoinstConfig::port;
-	string user = AutoinstConfig::user;
-	string pass = AutoinstConfig::pass;
 
 	list valid = [];
 	boolean stop = false;
@@ -612,7 +611,7 @@
 		}
 
 		string localfile = AutoinstConfig::local_rules_location + "/" + file  ;
-		if (!Get( scheme, host, directory + "/" + file , port, user, pass, localfile))
+		if (!Get( scheme, host, directory + "/" + file, localfile))
 		{
 		    y2error("Error while fetching file:  %1", directory + "/" + file);
 		}
