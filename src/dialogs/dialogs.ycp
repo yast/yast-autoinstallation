@@ -262,8 +262,8 @@ must begin with letter, and must be
 	Wizard::SetContents(title,
 			    contents, HELPS["clone"]:"", true, true);
 	Wizard::HideAbortButton();
-
-	UI::ChangeWidget(`id(`next), `Label, Label::CreateButton());
+	Wizard::SetNextButton(`next, Label::CreateButton() );
+	
 	symbol ret = `none;
 	repeat
 	    {
@@ -390,7 +390,7 @@ the configuration files are read and converted.
                 Alice::aliceHostList(), help, true, true);
 
 	Wizard::HideAbortButton();
-	UI::ChangeWidget(`id(`next), `Label, _("&Import"));
+	Wizard::SetNextButton(`next, _("&Import") );
 
 
 	any ret = "";
