@@ -1,26 +1,21 @@
 /**
- * File:
- *	modules/AIServer.ycp
- *
- * Module:
- *	AIServer
- *
- * Summary:
- *	This module handles the configuration for auto-installation server
- *
- * Authors:
- *	Anas Nashif <nashif@suse.de>
+ * File:	modules/AIServer.ycp
+ * Package:	Autoinstallation
+ * Summary:	Configuration for auto-installation server
+ * Authors:	Anas Nashif <nashif@suse.de>
  *
  * $Id$
  */
+
 {
+
     module "AIServer";
+    textdomain "autoinst";
     import "Misc";
-    import "AIConfig";    
+    import "AIConfig";
 
     // tmp dir
     global string tmpDir = "";
-
 
 
     ///////////////////////////////////////////////////////////////////////
@@ -59,7 +54,7 @@
     global boolean createdNewSource = false;
 
 
-    
+
     /**
      * Constructer
      *
@@ -257,4 +252,5 @@ a source, please make sure to enable it.
 	return (mergestring( [media_data[0]:"",media_data[1]:"", "1"] , "\n"));
     }
 
+/* EOF */
 }
