@@ -20,104 +20,14 @@
 
     
     string func = WFM::Args(0);
-    map param = $[];
+    map param = WFM::Args(1);
 
-      /**
-     * @return  script configuration dialog
-     */
-    define string dialog_contents()
-	``{
-	list allscripts = maplist(`s, AIScripts::merged,
-				  ``{
-				      return (`item(`id(s["filename"]:"Unknown"),
-						    s["filename"]:"Unknown",
-						    AIScripts::typeString(s["type"]:""),
-						    s["interpreter"]:"Unknown")
-					      );
-				  });
-	term contents =
-	    `VBox(
-		  `Left(
-			`Label(_("Available Scripts"))
-			),
-		  `Table( `id(`table), `opt(`notify),
-			  `header(_("Script Name"), _("Type"), _("Interpreter")),
-			  allscripts
-			  ),
-		  `HBox(
-			`PushButton(`id(`new),  NewButtonLabel()),
-			`PushButton(`id(`edit), EditButtonLabel()),
-			`PushButton(`id(`delete), DeleteButtonLabel())
-			)
-		  );
-	return contents;
-    }
+    y2milestone("Parameter: %1", param);
 
-
-    
-    /**
-     * Main dialog
-     *
-     */
-    global define symbol ScriptsDialog()	
-    ``{
-
-	string help = _("TODO");
-	string title = _("User Script Management");
-	Wizard::SetContents(title,
-			    dialog_contents(), help, true, true);
-
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-
-	    if (ret == `new) {
-		Wizard::CreateDialog();
-		ScriptDialog(ret , "" );
-		Wizard::CloseDialog();
-	    }
-	    else if (ret == `edit)
-	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil)
-		{
-		    Wizard::CreateDialog();
-		    ScriptDialog(ret , name  );
-		    Wizard::CloseDialog();
-		}
-		else
-		{
-		    UI::MessagePopup(_("Select a script first."));
-		    continue;
-		}
-
-	    }
-	    else if (ret == `delete)
-	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil) {
-		    AIScripts::deleteScript(name);
-
-		}
-		else
-		{
-		    UI::MessagePopup(_("Select a script first."));
-		    continue;
-		}
-	    }
-	    Wizard::SetContents(title,
-			    dialog_contents(), help, true, true);
-
-
-	} until (ret == `accept || ret == `cancel  );
-
-	return ret;
-    }
-
-
-/* create a  summary*/
+    /* create a  summary*/
     if (func == "Summary")
-    {    
+    {
+	AIScripts::Import(param);
 	return ( AIScripts::Summary());
     }
     else if (func == "Reset")
@@ -128,6 +38,7 @@
     }	
     else if (func == "Change") {
 	y2milestone ("Calling Change");
+	AIScripts::Import(param);
 	Wizard::CreateDialog();
 	Wizard::RestoreHelp("");
 	Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());    

@@ -9,108 +9,145 @@
     textdomain "autoinst";
 
 
+    include "wizard/sequencer.ycp";
+    include "ui/common_messages.ycp";
 
-    global define x11Options(map x11)
-	``{
-	string caption = _("X11 Configuration");
-	boolean x11_enabled = x11["configure_x11"]:false;
+    global define symbol X11AutoSequence () ``{
+	
+	map dialogs = $[
+			"x11"		:	``(   x11Options() )
 
-
-	define updateContents(map x11) ``{
-	    list resolutions        = [];
-	    list resolutions_list = ["640x480", "800x600", "1024x768", "1152x864", "1280x960", "1280x1024", "1600x1200"];
-	    list depths_list = [
-				$[
-				  "desc"	:_("8 Bit / 256 Colors"),
-				  "depth"	: 8
-				],
-				  $[
-				    "desc"	:_("15 Bit / 32 K Colors (PPC)"),
-				    "depth"	: 15
-				  ],
-				  $[
-				    "desc"	:_("16 Bit / 64 K Colors"),
-				    "depth"	: 16
-				  ],
-				  $[
-				    "desc"	:_("24 Bit / 16 M Colors"),
-				    "depth"	: 24
-				  ],
-				  $[
-				    "desc"	:_("32 Bit / 16 M Colors"),
-				    "depth"	: 32
-				  ]
-	    ];
+	];
 
 
-	    foreach(string res, resolutions_list , ``{
-		resolutions=add(resolutions, `item( `id(res), res, (res == x11["resolution"]:"1024x768")));
-	    });
-	    list color_depths       = [];
+	map sequence = $[
+			 "ws_start"	: "x11",
+			 "x11"	:
+			 $[
+			   `abort	: `abort,
+			   `next	: `next
+			 ]
+	];
 
-	    foreach(map d, depths_list , ``{
-		color_depths=add(color_depths, `item( `id(d["depth"]:16), d["desc"]:_("16 Bit / 64 K Colors") , ( d["depth"]:16 == x11["color_depth"]:16)));
-	    });
 
-	    term contents =
-		`Top(
-		     `VBox(
-			   `Frame( _("&General Options:"),
-				   `VBox(
-					 `Left(
-					       `CheckBox(
-							 `id(`enable_x11),
-							 `opt(`notify),
-							 _("&Configure the X Window System"),
-							 x11["configure_x11"]:false)
-					       ),
-					 `Left(
-					       `CheckBox(
-							 `id(`enable_3d),
-							 _("&Enable 3D Support if possible"),
-							 x11["enable_3d"]:false)
-					       ),
-					 `Left(
-					       `CheckBox(
-							 `id(`start_x11),
-							 // This sets the runlevel to 5.
-							 _("&Start the X Window System on boot"), x11["start_x11"]:false
-							 )),
-					 `VSpacing(1),
-					 `HBox(
-					       `HWeight(50,
-							`ComboBox(`id(`depth),
-								  _("Co&lor Depth"),
-								  color_depths
+
+	Wizard::CreateDialog ();
+	symbol ret  =  WizardSequencer (dialogs, sequence);
+	UI::CloseDialog ();
+	
+	return ret;
+    }
+  
+    global define updateContents() ``{
+	map x11 = AIx11::x11;
+	list resolutions        = [];
+	list resolutions_list = ["640x480", "800x600", "1024x768", "1152x864", "1280x960", "1280x1024", "1600x1200"];
+	list depths_list = [
+			    $[
+			      "desc"	:_("8 Bit / 256 Colors"),
+			      "depth"	: 8
+			    ],
+			      $[
+				"desc"	:_("15 Bit / 32 K Colors (PPC)"),
+				"depth"	: 15
+			      ],
+			      $[
+				"desc"	:_("16 Bit / 64 K Colors"),
+				"depth"	: 16
+			      ],
+			      $[
+				"desc"	:_("24 Bit / 16 M Colors"),
+				"depth"	: 24
+			      ],
+			      $[
+				"desc"	:_("32 Bit / 16 M Colors"),
+				"depth"	: 32
+			      ]
+	];
+
+
+	foreach(string res, resolutions_list , ``{
+	    resolutions=add(resolutions, `item( `id(res), res, (res == x11["resolution"]:"1024x768")));
+	});
+	list color_depths       = [];
+
+	foreach(map d, depths_list , ``{
+	    color_depths=add(color_depths, `item( `id(d["depth"]:16), d["desc"]:_("16 Bit / 64 K Colors") , ( d["depth"]:16 == x11["color_depth"]:16)));
+	});
+
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Frame( _("&General Options:"),
+			       `VBox(
+				     `Left(
+					   `CheckBox(
+						     `id(`enable_x11),
+						     `opt(`notify),
+						     _("&Configure the X Window System"),
+						     x11["configure_x11"]:false)
+					   ),
+				     `Left(
+					   `CheckBox(
+						     `id(`enable_3d),
+						     _("&Enable 3D Support if possible"),
+						     x11["enable_3d"]:false)
+					   ),
+				     `Left(
+					   `CheckBox(
+						     `id(`start_x11),
+						     // This sets the runlevel to 5.
+						     _("&Start the X Window System on boot"), x11["start_x11"]:false
+						     )),
+				     `VSpacing(1),
+				     `HBox(
+					   `HWeight(50,
+						    `ComboBox(`id(`depth),
+							      _("Co&lor Depth"),
+							      color_depths
+							      )),
+					   `HSpacing(1),
+					   `HWeight(50,`ComboBox(`id(`resolution), _("Resol&ution"),
+								 resolutions
+								 )
+						    )
+					   )
+				     )
+			       ),
+		       `Frame( _("Display &Manager:"),
+			       `VBox(
+				     `HBox(
+					   `HWeight(30, `ComboBox(`id(`dm), _("&Display Manager"),
+								  [
+								   `item(`id	("kdm"), _("KDM"), (x11["display_manager"]:"kdm" == "kdm")),
+								   `item(`id("gdm"), _("GDM"), (x11["display_manager"]:"kdm" == "gdm"))
+								   ]
 								  )),
-					       `HSpacing(1),
-					       `HWeight(50,`ComboBox(`id(`resolution), _("Resol&ution"),
-								     resolutions
-								     )
-							)
-					       )
-					 )
-				   ),
-			   `Frame( _("Display &Manager:"),
-				   `VBox(
-					 `HBox(
-					       `HWeight(30, `ComboBox(`id(`dm), _("&Display Manager"),
-								      [
-								       `item(`id	("kdm"), _("KDM"), (x11["display_manager"]:"kdm" == "kdm")),
-								       `item(`id("gdm"), _("GDM"), (x11["display_manager"]:"kdm" == "gdm"))
-								       ]
-								      )),
-					       `HWeight(70,`Empty())
-					       )
-					 )
-				   ),
-			   `VStretch(),
-			   `PushButton(`id(`monitor), _("Configure Monit&or"))
+					   `HWeight(70,`Empty())
+					   )
+				     )
+			       ),
+		       `VStretch(),
+		       `PushButton(`id(`monitor), _("Configure Monit&or"))
 
-			   )
-		     );
-	    return contents;
-	}
+		       )
+		 );
+	return contents;
+    }  
+
+
+
+
+
+    
+    global define x11Options()
+	``{
+	
+	
+	string caption = _("X11 Configuration");
+	boolean x11_enabled = AIx11::x11["configure_x11"]:false;
+
+
 
 	string help = _("<p>Use this dialog to configure the X11 system and the
 display attached to the computer to install.</P>
@@ -120,7 +157,7 @@ be started at boot time and what display manager should be used.</p>
 ");
 
 	Wizard::SetContents(caption,
-			    updateContents(x11), help, true, true);
+			    updateContents(), help, true, true);
 
 
 	if (!x11_enabled) {
@@ -158,42 +195,43 @@ be started at boot time and what display manager should be used.</p>
 
 	    if (ret == `key || ret ==`next || ret == `monitor )
 	    {
-		x11["configure_x11"]	= UI::QueryWidget(`id(`enable_x11), `Value);
+		AIx11::x11["configure_x11"]	= UI::QueryWidget(`id(`enable_x11), `Value);
 
 		any depth	= UI::QueryWidget(`id(`depth), `Value);
 		if (is(depth, integer))
-		    x11=add(x11,"color_depth", depth);
+		    AIx11::x11["color_depth"] =  depth ;
 
 		any resol	= UI::QueryWidget(`id(`resolution), `Value);
 		if (is(resol, string))
-		    x11=add(x11,"resolution", resol);
+		    AIx11::x11["resolution"] =  resol;
 
 		any default_dm	= UI::QueryWidget(`id(`dm), `Value);
 		if (is(default_dm, string))
-		    x11=add(x11,"display_manager", default_dm);
+		    AIx11::x11["display_manager"] =  default_dm;
 
 		any enable_3d	= UI::QueryWidget(`id(`enable_3d), `Value);
 		if (is(enable_3d, boolean))
-		    x11=add(x11,"enable_3d", enable_3d);
+		    AIx11::x11["enable_3d"] = enable_3d;
 
 		any xdm	= UI::QueryWidget(`id(`start_x11), `Value);
 		if (is(xdm, boolean))
-		    x11=add(x11,"start_x11", xdm);
+		    AIx11::x11["start_x11"] =  xdm;
 	    }
 	    if (ret == `monitor)
 	    {
-		any video_ret = CallFunction( `autoinst_monitor(settings ) );
+		any video_ret = CallFunction( `autoinst_monitor(x11) );
 		y2milestone("video_ret %1", video_ret);
-		x11["monitor"] = video_ret;
+		AIx11::x11["monitor"] = video_ret;
 
 		Wizard::SetContents(caption,
-			    updateContents(x11), help, true, true);
+				    updateContents(), help, true, true);
 		continue;
 	    }
 
 	    y2milestone("ret=%1 ", ret);
-	} until ( ret == `key || ret ==`next || ret ==`back || ret == `abort);
-	settings = x11;
+	} until (  ret ==`next || ret ==`back || ret == `abort);
+		
+	
 	return ret;
     }
 

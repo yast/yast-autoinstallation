@@ -10,9 +10,8 @@
 {
     module "AIScripts";
     textdomain "autoinst";
+    
     include "ui/common_messages.ycp";
-
-
 
     global list pre = [];
     global list post = [];
@@ -28,17 +27,6 @@
 	merged = mergeScripts();
     }
 
-    /**
-     * Set module data
-     * @return void
-     */
-    global define void Set(map s)``{
-	pre = s["pre-scripts"]:[];
-	post = s["post-scripts"]:[];
-	chroot = s["chroot-scripts"]:[];
-	merged = mergeScripts();
-	return;
-    }
 
     /**
      * Dump the settings to a map, for autoinstallation use.
@@ -51,6 +39,7 @@
 	chroot = [];
 	y2milestone("Merged %1", merged);
 	// split
+	
 	foreach(`s, merged, ``{
 	    if (s["type"]:"" == "pre-scripts")
 		pre = add(pre,s);
@@ -62,29 +51,33 @@
 
 
 	// clean
-	return ($["pre-scripts": maplist (`p, pre,
-					 ``{
+	list expre =  maplist (`p, pre,  ``{
 	    return ($["filename":p["filename"]:"",
-		    "interpreter": p["interpreter"]:"",
-		    "source":p["source"]:""
+		      "interpreter": p["interpreter"]:"",
+		      "source":p["source"]:""
 		    ]);
-	}),
-		 "post-scripts": maplist (`p, post,
-					  ``{
-		     return ($["filename":p["filename"]:"",
-			     "interpreter": p["interpreter"]:"",
-			     "source":p["source"]:""]
-			     );
-		 }),
-		 "chroot-scripts": maplist (`p, chroot,
-					    ``{
-		     return ($["filename":p["filename"]:"",
-			     "interpreter": p["interpreter"]:"",
-			     "source":p["source"]:""
-			     ]);
+	});
+	list expost =  maplist (`p, post, ``{
+	    return ($["filename":p["filename"]:"",
+				"interpreter": p["interpreter"]:"",
+				"source":p["source"]:""]
+			      );
+	});
+	list exchroot =  maplist (`p, chroot, ``{
+	    return ($["filename":p["filename"]:"",
+				"interpreter": p["interpreter"]:"",
+				"source":p["source"]:""
+			      ]);
+	});
+	map result = $[];
+	if (size(expre) > 0 ) 
+	    result["pre-scripts"] = expre;
+	if (size(expost) > 0 ) 
+	    result["post-scripts"] = expost;
+	if (size(exchroot) > 0 ) 
+	    result["chroot-scripts"] = exchroot;	
 
-		 })
-		 ]);
+	return result;
 
     }
 
@@ -98,14 +91,57 @@
      */
     global define boolean Import(map s)
 	``{
-	Set(s);
+	pre = s["pre-scripts"]:[];
+	post = s["post-scripts"]:[];
+	chroot = s["chroot-scripts"]:[];
+	merged = mergeScripts();
 	return true;
     }
 
 
 
     global define string Summary() ``{
-	return _("TODO");
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Pre Scripts"));
+	if (size( pre) > 0 )
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(map script, pre, ``{
+		summary = Summary::AddListItem(summary, script["filename"]:"" );
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	else
+	{
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
+	summary = Summary::AddHeader(summary, _("Post Scripts"));
+	if (size( post) > 0)
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(map script, post, ``{
+		summary = Summary::AddListItem(summary, script["filename"]:"" );
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	else
+	{
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
+	summary = Summary::AddHeader(summary, _("Chroot Scripts"));
+	if (size( chroot) > 0 )
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(map script, chroot, ``{
+		summary = Summary::AddListItem(summary, script["filename"]:"" );
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	else
+	{
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}	
+	return summary;
     }
 
 
@@ -198,6 +234,7 @@
      * @return merged list
      */
     define list mergeScripts () ``{
+	
 	list result =	maplist (`p, pre,
 				 ``{
 				     p = add(p,"type","pre-scripts");

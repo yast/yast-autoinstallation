@@ -46,8 +46,13 @@
 	</listitem>
       </itemizedlist>      
     </section>
-    <section>
-      <title>The run-time module interface in CMS</title>
+  <section>
+    <title>The run-time module interface in CMS</title>
+    <para>The new interface (AKA _auto.ycp client) is now similar to the proposal
+      structure and consists of functions. All the dialog code has been moved to
+      autoyast to simplify the interface and to provide  a common user interface for
+      all modules appearing in the autoyast configuration system.
+    </para>
       <para>
 	The interface of a run-time configuration module in the CMS has the follwoing
 	components:	
@@ -68,8 +73,8 @@
 	</listitem>
 	<listitem>
 	  <para>
-	    <emphasis>Reset Button</emphasis>: A buttom for resetting the
-	  configuration data. This will delete only data for the running module.
+	    <emphasis>Reset Button</emphasis>: A button for resetting the
+	  configuration data. This will delete only data in the running module.
 	  </para>
 	</listitem>
       </itemizedlist>
@@ -82,18 +87,64 @@
     <section>
       <title>Run-time modules in <emphasis>auto</emphasis> mode</title>
       <para>
-	The &lt;module name&gt;_auto.ycp client accepts 1 argument which has to
-      be  a <emphasis>map</emphasis> (struct)  with  the configuration data if
-      available or an empty map, if the data is configured for first time.</para>
-	
-    <para>
-      The &lt;module  name&gt;_auto.ycp client returns a list which has the latest user input,
-      i.e. <emphasis>`next</emphasis> or <emphasis>`back</emphasis>  as the
-      first element. The second element contains  the configuration data in the
-      form of a map.
+	The &lt;module name&gt;_auto.ycp client accepts 2 argument:
     </para>
-   
- 
+    <itemizedlist>
+      <listitem>
+	<para>
+	  Function
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Configuration Data
+	</para>
+      </listitem>      
+    </itemizedlist>
+    <para>The following functions are needed to make any module work in autoyast:</para>
+  <itemizedlist>
+      <listitem>
+	<para>
+	  <emphasis>Summary:</emphasis></para>
+	<para>
+    To provide  a brief summary of the configuration.
+    Calls &gt;Module&lt;::Summary()
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <emphasis>Reset:</emphasis></para>
+	<para>
+    Resets the configuration. It returns empty values but it also can return
+    default values, depending on the module.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <emphasis>Change:</emphasis></para>
+	<para>
+    This function starts the widget sequence
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <emphasis>Write</emphasis></para>
+	<para>
+    Write the configuration without displaying any widgets and popups and
+    without restarting any services etc.
+    Calls &lt;Module&gt;::Write (and sets &lt;Module&gt;::write_only true)
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <emphasis>Result:</emphasis></para>
+	<para>
+    Returns the current configuration
+    Calls &lt;Module&gt;::Export
+	</para>
+      </listitem>      
+    </itemizedlist>
+  
     <para>
       The following example shows &lt;module name&gt;_auto.ycp with the changes
       needed for the new behaviour. 
@@ -103,86 +154,60 @@
       <programlisting>
 <![CDATA[
 {
-    textdomain "nis";
+import "Nis";
+include "nis/ui.ycp";
 
-    import "Nis";
-    import "Wizard";
-    include "nis/ui.ycp";
+string func = WFM::Args(0);
+map param = WFM::Args(1);
 
-    list args = Args ();
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( Args (0), map ) )
-    {
-	y2error ("Bad argument for nis_auto: %1", Args (0));
-	return false;
-    }    
-    map settings = $[];
-    {
-	integer i = 0;
-	while (i < size (Args()))
-	{
-	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);	    
-	    i = i + 1;
-	}
-    }    
-    y2milestone("Imported: (%1)", settings);
-    Nis::Import ( settings );
-
-    define set_contents()``{	
-	term contents =
-	    `VBox(
-		  `VSpacing(1),
-		  `RichText( `id(`summary), Nis::Summary()),
-		  `VSpacing(0.5),
-		  `HBox(
-			`PushButton(`id(`configure), _("&Configure NIS")),
-			`HStretch(),
-			`PushButton(`id(`reset), _("&Reset Configuration"))
-			),
-		  `VSpacing(1)
-		  );
-
-	Wizard::SetContents(_("NIS Configuration"),
-			    contents, "", true, true);
-    }
-
-
-    Nis::_autofs_allowed = true;
-    set_contents();
-    any result = nil;
-    any ret = nil;
-    repeat {
-	ret = UI::UserInput();
-	if (ret == `configure) {
-
-	    
-	        Wizard::CreateDialog ();
-		Wizard::ReplaceAbortButton(`Empty ());
-		result = NisDialog ();
-
-				
-		UI::CloseDialog ();
-		if (result == `next || result == `finish)
-		{
-		     settings = Nis::Export ();
-		} 
-		Nis::Set(settings);
-		set_contents();
-	} else if ( ret == `reset) {
-	    settings= $[];
-	    Nis::Set(settings);
-	    set_contents();
-	}
-		
-	y2milestone("ret: %1", ret);
-    } until (ret == `back || ret == `next || ret ==`key || ret == `finish);   
-  
-    return [ret, settings];
+/**
+ * Create a summary
+ * return string
+ */
+if(func == "Summary") {
+    Nis::Import(param);
+    return ( Nis::Summary());
 }
+/**
+ * Reset configuration
+ * return map or list
+ */
+else if (func == "Reset") {
+    Nis::Import($[]);
+    return ($[]);
+}
+/**
+ * Change configuration
+ * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
+ */
+else if (func == "Change") {
+    Nis::Import(param);
+    any res = AutoSequence();
+    return res;
+}
+/**
+ * Return configuration data
+ * return map or list
+ */
+else if (func == "Result") {
+    return(Nis::Export());
+}
+/**
+ * Write configuration data
+ * return boolean
+ */
+else if (func == "Write") {
+    Nis::write_only = true;
+    return(Nis::Write());
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+    return false;
+}
+
+}
+
 
 
 ]]>
@@ -208,43 +233,7 @@
 	</para>
 
       </refsect1>
-     
-      <refsect1>
-	<title>Example</title>
-	<example>
-	  <title>Import()</title>
-	  <programlisting>
-<![CDATA[
-    global define boolean Import (map settings) ``{
-	if (size (settings) == 0)
-	{
-	    //Provide defaults for autoinstallation editing:
-	    //Leave empty.
-	    old_domain = domain;
-	    return true;
-	}
-
-	boolean missing = false;
-	foreach (`k, ["start_nis", "nis_domain", "nis_servers","start_autofs"], ``{
-	    if (! haskey (settings, k))
-	    {
-		y2error ("Missing at Import: '%1'.", k);
-		missing = true;
-	    }
-	});
-	if (missing)
-	{
-	    return false;
-	}
-	
-	Set(settings);
-	return true;
-    }
-]]>
-</programlisting>
-	</example>
-
-      </refsect1>
+         
       <refsect1>
 	<title>Returns</title>
 	<para>Import() return false if some of the required keys are missing in the
@@ -289,46 +278,7 @@
 	<para>This function returns a map of the configuration data.</para>
       </refsect1>
     </refentry>
-    <refentry>
-      <refnamediv>
-	<refname>Set()</refname>
-	<refpurpose>Set the module data in a specific state</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Description</title>
-	<para>Instead of using<emphasis> Import()</emphasis>,<emphasis> Set()</emphasis> is needed if module has to be set
-	  to a specific state without checking the validity of the data. This
-	  is required when resetting the module configuration data. This
-	  function is used in <emphasis>Import()</emphasis> to set the module with the imported data
-	  after validity checking has been done.
-	</para>
-      </refsect1>
-      <refsect1>
-	<title>Example</title>
-	<example>
-	  <title>Set()</title>
-	  <programlisting>
-<![CDATA[
-    global define void Set (map settings) ``{
-        start = lookup (settings, "start_nis", false);
-        servers = lookup (settings, "nis_servers", []);
-        domain = lookup (settings, "nis_domain", "");
-        old_domain = domain;
-        // autofs is not touched in Write if the map does not want it
-        _autofs_allowed = haskey (settings, "start_autofs");
-        _start_autofs = lookup (settings, "start_autofs", false);
-    }
-]]>
-</programlisting>
-	</example>
-      </refsect1>
-      <refsect1>
-	<title>Returns</title>
-	<para>
-	  void
-	</para>
-      </refsect1>
-    </refentry>
+
     <refentry>
       <refnamediv>
 	<refname>Write()</refname>
@@ -338,7 +288,9 @@
 	<title>Description</title>
 	<para>Commit configured data. This function is also used in normal
 	  operation mode and should not be used to write configuration in
-	  auto-installation mode. Instead, use<emphasis> WriteOnly()</emphasis>.</para>
+	  auto-installation mode. Instead, use<emphasis> WriteOnly()</emphasis>
+	  or set the global variable <emphasis>write_only</emphasis> to true
+	  before writing.</para>
       </refsect1>
     </refentry>
     <refentry>
@@ -360,7 +312,7 @@
     
     <para>
       When the CMS is invloked, it  checks for the configuration files in
-      <filename>/usr/lib/YaST2/config</filename>(?) and evaluates them to
+      <filename>/usr/share/YaST2/config</filename> and evaluates them to
       later include them in the configuration interface.
     </para>
     <para>AutoYaST2 CMs uses the same configuration file used for the YaST2
@@ -482,13 +434,13 @@ Textdomain = nis
 	<listitem>
 	  <para><emphasis>Type of exported data</emphasis>: </para>
 	  <para>Modules should only export data which is normally selected or
-	entered by the use in normal module operation. No computed or
+	entered by the user in normal module operation. No computed or
 	automatically probed data should be exported.</para>
 	</listitem>
 	<listitem>	  
 	  <para><emphasis>Use Namespaces</emphasis></para>
 	  <para>Exported variables should have a unique name when possible and
-	    when using general terminology. To avoid conflicts and confusion,
+	    when  general terminology is being used. To avoid conflicts and confusion,
 	    use a name space identifier with common words. For example, if  a
 	    module should export the variable name
 	    <emphasis>options</emphasis>, it is better to export<emphasis> &lt;module
@@ -499,7 +451,7 @@ Textdomain = nis
 	<listitem>
 	  <para><emphasis>Lower case variables</emphasis></para>
 	  <para>To have a common and unified look of the control file, please
-	    use lower case variables.</para>
+	    use lower case variables when exporting the configuration data.</para>
 	</listitem>
 	<listitem>
 	  <para>The structure of the exported data should be readable and not
