@@ -106,17 +106,19 @@
 	boolean already_partitioned = false;
 	boolean root_created = false;
 	string use = "";
-	string reuse = "";
+	
 	if ( haskey(part_data, "use"))
 	{
 	    use= part_data["use"]:"";
 	}
-	else if ( haskey(part_data, "reuse"))
+	
+	string keep = "";
+	if ( haskey(part_data, "keep"))
 	{
-	    reuse= part_data["reuse"]:"";
+	    keep = part_data["keep"]:"";
 	}
 
-
+	
 	if ( (num_primary ( partitions ) > 0) || contains_extended ( partitions ) )
 	{
 	    already_partitioned = true;
@@ -203,21 +205,23 @@
 		});
 
 	    }
-	    list reusepart = [];
-	    if (reuse!= "" && reuse != "all" && reuse != "free")
+	    list p_to_keep = [];
+	    if (keep!= "" )
 	    {
-		y2milestone("reusing  selected partitions");
-		list selected_partitions = [];
-		list tmp_reusepart = splitstring(reuse, ",");
-
-		reusepart = maplist (`p, tmp_reusepart, ``{
+		y2milestone("reusing selected partitions: %1", keep);
+		list tmp_keep = splitstring(keep, ",");
+		foreach(`p, tmp_keep, ``{
 		    if  ( findfirstnotof( p, "0123456789") == nil  )
 		    {
-			return(tointeger(p));
+			p_to_keep = add(p_to_keep, tointeger(p));
 		    }
 		});
 	    }
+
+	    
+
 	    // now loop through partitions
+	    boolean creating_anything = false;
 	    foreach (`pentry, partitions, ``{
 		symbol ptype = lookup (pentry, "type", `unknown);
 		if (ptype != `extended) {
@@ -225,21 +229,24 @@
 		    if (use == "all")
 		    {
 			selection = true;
+			creating_anything = true;
 		    }
 		    else if (contains(selpart, pentry["nr"]:-1))
 		    {
 			selection = true;
+			creating_anything = true;
 		    }
-		    else if (contains(reusepart, pentry["nr"]:-1))
+		    else if (contains(p_to_keep, pentry["nr"]:-1))
 		    {
 			map d = AutoInstall::targetMap[target_is]:$[];
 			list autoparts =  d["partitions"]:[];
 			list newautoparts = maplist(`autopart , autoparts, ``{
 			    if (autopart["partition_nr"]:-2 == pentry["nr"]:-1)
 			    {
+				string mntpoint = sformat("/data%1", pentry["nr"]:0);
 				pentry["create"] = false;
-				pentry["format"] = autopart["format"]:true;
-				pentry["mount"] = autopart["mount"]:"/data999";
+				pentry["format"] = autopart["format"]:false;
+				pentry["mount"] = autopart["mount"]:mntpoint;
 				string dev = Storage::GetDeviceName( target_is, pentry["nr"]:0 );
 				if ( pentry["format"]:false)
 				{
@@ -248,10 +255,10 @@
 				else
 				{
 				    y2milestone( "dev:%1", dev );
-				    pentry["used_fs"] = DetectFs( dev );
+				    pentry["used_fs"] = FileSystems::DetectFs( dev );
 				}
-				pentry["reused"] = true;
-				autopart["reused"] = true;
+				pentry["kept"] = true;
+				autopart["kept"] = true;
 			    }
 			    return (autopart);
 			});
@@ -259,6 +266,7 @@
 			AutoInstall::targetMap[target_is] = d;
 
 		    }
+
 		    pentry["delete"] =  selection;
 
 
@@ -313,7 +321,7 @@
 		// this condition is described within the reason
 		reason = _("The selected partitions are not contiguous.");
 	    }
-	    else if (contains_extended (old_partitions))
+	    else if (contains_extended (old_partitions) && creating_anything)
 	    {
 		selected = calculate_selected_region (selected_partitions, extended_region (old_partitions));
 
@@ -322,7 +330,7 @@
 		    // consistency check: a condition for the installation is not fullfilled
 		    // this condition is described within the reason
 		    reason = _("Too few partitions are marked for removal.
-									To install Linux, select more partitions to remove.");
+To install Linux, select more partitions to remove.");
 		}
 		else if (size_of_region (selected) < minimal_size && size(reusepart) == 0 )
 		{
@@ -330,7 +338,7 @@
 		    // consistency check: a condition for the installation is not fullfilled
 		    // this condition is described within the reason
 		    reason = _("The selected partitions are not big
-									enough to contain a minimal installation.");
+enough to contain a minimal installation.");
 		}
 		else
 		{
@@ -339,25 +347,25 @@
 			warn_not_bootable ();
 		}
 	    }
-	    else if ((num_primary (old_partitions) == max_primary)
+	    else if ( ( ( num_primary (old_partitions) == max_primary ) &&  creating_anything )
 		     || ((partition_type == `ABSD || partition_type == `SBSD)
 			 && (size (old_partitions) - size (selected_partitions) + 3 >= max_partitions)))
 	    {
 		// consistency check: a condition for the installation is not fullfilled
 		// this condition is described within the reason
 		reason = _("Too few partitions are marked for removal.
-								To install Linux, select more partitions to remove.");
+To install Linux, select more partitions to remove.");
 	    }
 	    else
 	    {
 		selected = calculate_selected_region (selected_partitions, nil);
-		if (size_of_region (selected) < minimal_size && size(reusepart) == 0 )
+		if (size_of_region (selected) < minimal_size && creating_anything)
 		{
 		    y2warning ("selected: %1", selected); // FIXME
 		    // consistency check: a condition for the installation is not fullfilled
 		    // this condition is described by the reason
 		    reason = _("The selected partitions are not big enough
-									to contain a minimal installation.");
+to contain a minimal installation.");
 		}
 		else
 		{
@@ -466,7 +474,7 @@
 	list tmp_auto_partitions =  lookup(AutoInstall::targetMap[target_is]:$[], "partitions",[]);
 	list auto_partitions = filter (`pentry,
 				       tmp_auto_partitions ,
-				       ``(!pentry["reused"]:false )
+				       ``(!pentry["kept"]:false )
 				       );
 
 	y2debug("auto part (1): %1", auto_partitions);

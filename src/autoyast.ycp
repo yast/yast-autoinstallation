@@ -8,12 +8,12 @@
 {
     textdomain "autoinst";
     import "Wizard";
-    // Wizard::image_prefix = "autoyast_";
-
+  
     import "Mode";
     Mode::config = true;
 
-    import "AIConfig";
+    import "Profile";
+    import "AIConfig";    
     import "AIServer";
     import "AIClone";
     import "AIClass";
@@ -25,60 +25,21 @@
 
     include "ui/common_popups.ycp";
     include "ui/common_messages.ycp";
-    include "wizard/sequencer.ycp";
-    include "ui/file_popups.ycp";
+    include "wizard/sequencer.ycp";    
 
 
     include "autoinstall/dialogs.ycp";
     include "autoinstall/help.ycp";
     include "autoinstall/conftree.ycp";
     include "autoinstall/classes.ycp";
-    include "autoinstall/packageMgmt.ycp";
-    // include "autoinstall/mediaManagement.ycp";
+    include "autoinstall/packageMgmt.ycp";    
     include "autoinstall/imports.ycp";
     include "autoinstall/io.ycp";
-
-
-    define initPM ()
-	``{
-	if (AIConfig::PMcalled) {
-	    return `found_descr;
-	}
-	
-	UI::OpenDialog(`opt(`decorated ),`Label(_("Reading package information; One moment please...")));
-
-	// start package manager
-	list sources = Pkg::SourceStartCache(true);
-	if (size (sources) <= 0)
-	{
-	    UI::CloseDialog();
-	    return `unknown_descr;
-	}
-
-	AIConfig::sourceData	= Pkg::SourceGeneralData(sources[0]:-1);
-	AIConfig::productData	= Pkg::SourceProductData(sources[0]:-1);
-	AIConfig::mediaData	= Pkg::SourceMediaData(sources[0]:-1);
-	
-	string tmprep = SCR::Read(.target.tmpdir);
-	SCR::Execute(.target.mkdir, tmprep);
-	y2milestone("Fake root %1", tmprep);
-
-	if (tmprep != nil)
-	{
-	    Pkg::TargetInit (tmprep, true);
-	}
-
-
-	UI::CloseDialog();
-	
-	AIConfig::PMcalled = true;
-	return `found_descr;
-
-    };	// initPM
-
-	
     
     boolean popup_open = false;
+    symbol ct = `single;
+
+    
     global map dialogs = $[
 			   "configurationType"	:	``(   configurationType() ),
 			   "file"		:	``(   FileDialog() ),
@@ -260,7 +221,7 @@
     global define symbol configurationType()
 	``{
 	Wizard::SetScreenShotName ("autoyast-configurationType");
-	symbol ct = AIConfig::config_type;
+	
 	y2milestone("type %1", ct);
 	// Translators: dialog caption
 	string caption = _("Autoinstallation Configuration System");
@@ -284,22 +245,7 @@
 										ct == `single)
 								  )
 							   )
-						  ),
-					    /*
-					      `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`hostConf),
-										`opt (`notify),
-										_("&Host Configuration"),
-										ct == `host)
-								  )
-							   )
-						  ),
-					    */
+						  ),					  
 					    `HBox(
 						  `HWeight(10,
 							   `Empty()
@@ -329,21 +275,7 @@
 					     `VSpacing (1),
 					    `Left(`Label(_("Media Management"))),
 					    `VSpacing (0.5),
-					    /*
-					    `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`server),
-										`opt (`notify),
-										_("Pr&epare Server"),
-										ct == `server)
-								  )
-							   )
-						  ),
-					    */
+					  
 					    `HBox(
 						  `HWeight(10,
 							   `Empty()
@@ -357,21 +289,7 @@
 								  )
 							   )
 						  ),
-					    /*
-					    `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`netboot),
-										`opt (`notify),
-										_("&Create Netboot Image"),
-										ct == `netboot)
-								  )
-							   )
-						  ),
-					    */
+					 
 					    `VSpacing (1),
 					    `Left(`Label(_("Import data"))),
 					    `VSpacing (0.5),
@@ -410,25 +328,25 @@
 		  );
 
 
+	
 	Wizard::SetContentsButtons (caption,
 				    contents,
 				    ConfigurationTypeHelp(),
 				    BackButtonLabel (),
 				    NextButtonLabel ());
 
-	initPM();
+	// initPM();
 	any ret = nil;
 	while (true)
 	{
 	    ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
 
 	    ret = UI::UserInput ();
-	    if (ret == `back || ret == `pref || ret == `next  || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)))
+	    if (ret == `back || ret == `pref || ret == `next  || (ret == `abort && UI::ReallyAbortPopup (Profile::changed)))
 	    {
 		break;
 	    }
-	}
-	AIConfig::config_type=ct;
+	}	
 
 	if (ret == `back   || ret == `abort || ret == `pref)
 	{
@@ -440,11 +358,6 @@
 	}
     }
     any ret = AutoSequence ();
-    Wizard::RestoreScreenShotName ();
-
-    if (SCR::Read(.target.size, "/var/lib/autoinstall/selections.cache") > 0)
-    {
-	SCR::Execute(.target.remove, "/var/lib/autoinstall/selections.cache");
-    }
+    Wizard::RestoreScreenShotName (); 
     return ret;
 }

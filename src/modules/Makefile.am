@@ -4,6 +4,7 @@
 
 module_DATA =		\
 	AutoInstall.ycp 	\
+	Profile.ycp			\
 	AI*.ycp	
 
 EXTRA_DIST = $(module_DATA) 

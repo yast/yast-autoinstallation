@@ -143,11 +143,11 @@
 
 			if (d["AutoinstPath"]:"configure" == "install")
 			{
-			    result = CallModule(module_auto, [eval(AIConfig::Install[resource]:$[])]);
+			    result = CallModule(module_auto, [eval(Profile::Install[resource]:$[])]);
 			}
 			else
 			{
-			    result = CallModule(module_auto, [eval(AIConfig::Configure[resource]:$[])]);
+			    result = CallModule(module_auto, [eval(Profile::Configure[resource]:$[])]);
 			}
 
 			map data = select(result,1,$[]);
@@ -156,30 +156,30 @@
 
 			if (d["AutoinstPath"]:"configure" == "install")
 			{			    
-			    if (data!=eval(AIConfig::Install[resource]:$[]))
+			    if (data!=eval(Profile::Install[resource]:$[]))
 			    {				
-				AIConfig::changed = true;
+				Profile::changed = true;
 			    }
-			    AIConfig::Install[resource] =  data;
+			    Profile::Install[resource] =  data;
 			}
 			else
 			{
-			    if (data!=eval(AIConfig::Configure[resource]:$[]))
+			    if (data!=eval(Profile::Configure[resource]:$[]))
 			    {
-				AIConfig::changed = true;
-			    }
-			    AIConfig::Configure[resource] =  data;
+				Profile::changed = true;
+			    }	
+			    Profile::Configure[resource] =  data;
 			}
 			y2debug("New data for %1: %2", resource, data);
 		    } else {
 
 			if (d["AutoinstPath"]:"configure" == "install")
 			{
-			    result = CallModule(module_auto, [AIConfig::Install[resource]:[]]);
+			    result = CallModule(module_auto, [Profile::Install[resource]:[]]);
 			}
 			else
 			{
-			    result = CallModule(module_auto, [AIConfig::Configure[resource]:[]]);
+			    result = CallModule(module_auto, [Profile::Configure[resource]:[]]);
 			}
 
 			list data = select(result,1,[]);
@@ -188,19 +188,19 @@
 
 			if (d["AutoinstPath"]:"configure" == "install")
 			{
-			    if (data!=AIConfig::Install[resource]:[])
+			    if (data!=Profile::Install[resource]:[])
 			    {				
-				AIConfig::changed = true;
+				Profile::changed = true;
 			    }
-			    AIConfig::Install[resource] =  data;
+			    Profile::Install[resource] =  data;
 			}
 			else
 			{
-			    if (data!=AIConfig::Configure[resource]:[])
+			    if (data != Profile::Configure[resource]:[])
 			    {				
-				AIConfig::changed = true;
+				Profile::changed = true;
 			    }
-			    AIConfig::Configure[resource] =  data;
+			    Profile::Configure[resource] =  data;
 			}
 			y2debug("New data for %1: %2", resource, data);
 		    }
@@ -222,7 +222,7 @@
 		break;
 	    }	    
 
-	} until ( ret == `next || ret == `back ||  (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	} until ( ret == `next || ret == `back ||  (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
 
 	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel());
 	Wizard::RestoreHelp("");
@@ -230,7 +230,7 @@
 	Wizard::RestoreScreenShotName ();
 	if (ret != `back && ret != `abort)
 	{
-	    return AIConfig::config_type;
+	    return ct;
 	}
 	else
 	{
