@@ -131,21 +131,20 @@
                );
     }
 
-
-
     /**
      * Create physical volume
      * @param string volume group name
      * @param string device
      * @return void
      */
-    global define void CreatePV (string vgname, string device) ``{
+    global define void CreatePV (string vgname, string device, boolean lvm2) ``{
 
         map create_pv = $[
-            "use_module" : "lvm_ll",
-            "type"       : "create_pv",
-            "vgname"     : vgname,
-            "device"     : device
+                "use_module" : "lvm_ll",
+                "type"       : "create_pv",
+                "vgname"     : vgname,
+                "device"     : device,
+                "lvm2"       : lvm2
             ];
 
         modify_targets = addTargetModification( modify_targets, create_pv );
@@ -198,9 +197,22 @@
     global define map CreateLV (string vgname, map lv) ``{
 
         string lvsize_str	= lv["size"]:"";
-        string lv_name		= lv["lv_name"]:"";
+        string mount_point      = lv["mount"]:"";
+        integer lvsize = 0;
+        list<map> parts    = get_possible_pvs( Storage::GetTargetMap() );
+        integer vgsize = (integer)get_vg_size( parts, vgname, `int);
 
-        integer lvsize		= kmgt_str_to_byte(lvsize_str);
+	if (lvsize_str == "auto" && mount_point == "swap")
+	{
+            y2milestone("slot size: %1", vgsize/1024*1024 );
+	    lvsize = 1024*1024*Partitions::SwapSizeMb(vgsize/(1024*1024));
+	}
+        else
+        {
+            lvsize = kmgt_str_to_byte(lvsize_str);
+        }
+
+        string lv_name		= lv["lv_name"]:"";
 
         if (pesize == 0 )
         {
@@ -512,7 +524,7 @@ physical volumes belonging to this group.
                     new_volume = CreateVG (vgname, lvm2);
 
                     foreach(map pv, new_pvs, ``{
-                            CreatePV (vgname, pv["device"]:"");
+                            CreatePV (vgname, pv["device"]:"", lvm2);
                             });
                 }
                 else

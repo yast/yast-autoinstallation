@@ -8,6 +8,18 @@
  */
 {
 
+    define any lookup_value (list<map> section, string key,
+            any default)
+        ``{
+            any ret = default;
+            foreach (map m, section, ``{
+                    if (m["key"]:"" == key)
+                    ret =
+                    m["value"]:default;
+                    });
+            return ret;
+        }
+
     /**
      * Configure bootloader settings
      * @return boolean
@@ -31,40 +43,27 @@
 	    Bootloader::Propose ();
 	    return true;
 	}
-        map<string, any> exp = $[
-            "loader_type" : ai["loader_type"]:"",
-            "location" : ai["location"]:"",
-            "loader_device" : ai["loader_device"]:"",
-            "specific" : $[],
-        ];
-        if (Arch::ppc)
-        {
-            if (haskey (ai, "prep_boot_partition"))
-            {
-                exp["specific", "prep_boot_partition"]
-                    = ai["prep_boot_partition"]:"";
-            }
-            if (haskey (ai, "streamfile"))
-            {
-                exp["specific", "streamfile"]
-                    = ai["streamfile"]:"";
-            }
-            if (haskey (ai, "iseries_write_slot_a"))
-            {
-                exp["specific", "iseries_write_slot_a"]
-                    = ai["iseries_write_slot_a"]:true;
-            }
-            if (haskey (ai, "iseries_write_slot_b"))
-            {
-                exp["specific", "iseries_write_slot_b"]
-                    = ai["iseries_write_slot_b"]:true;
-            }
-            if (haskey (ai, "of_defaultdevice"))
-            {
-                exp["specific", "of_defaultdevice"]
-                    = ai["of_defaultdevice"]:false;
-            }
-        }
+	map <string, any> exp = $[
+	    "loader_type" : ai["loader_type"]:"",
+	    "location" : ai["location"]:"",
+	    "loader_device" : ai["loader_device"]:"",
+	    "specific" : $[],
+	];
+	// global PPC stuff
+	if (ai["loader_type"]:"" == "ppc")
+	{
+	    foreach (string k, ["iseries_streamfile", "iseries_write_slot_a",
+		"iseries_write_slot_b", "iseries_write_streamfile",
+		"iseries_write_prepboot", "prep_boot_partition",
+		"of_defaultdevice", "board_type", ],
+	    {
+		if (haskey (ai, k))
+		{
+		    exp["specific", k] = ai[k]:nil;
+		}
+	    });
+	}
+
 
 	string parameters = ai["kernel_parameters"]:"";
 	if ( size(parameters) > 0)
@@ -90,6 +89,65 @@
         if (size(modlist) > 0 )
             exp["initrd"] = $[ "list": modlist, "settings" : modsett ];
 
+	// sections stuff
+	exp["specific", "sections"] = maplist (list<map<string,any> > s,
+	    ai["sections"]:[],
+	``{
+	    return s;
+	});
+	// global options stuff
+	exp["specific", "global"] = ai["global"]:[];
+
+	string default_key = BootCommon::getDefaultKey ();
+	if (haskey (ai, "default"))
+	{
+	    any default_val = nil;
+	    if (BootCommon::getDefaultType () == `index)
+	    {
+		integer index = BootCommon::getDefaultFirstIndex () -1;
+		foreach (map s, ai["sections"]:[], ``{
+		    index = index + 1;
+		    if (s["title"]:"" == ai["default"]:"")
+			default_val = index;
+		});
+	    }
+	    else
+	    {
+		default_val = ai["default"]:"";
+	    }
+	    if (default_val != nil) // TODO check section existence
+	    {
+		exp["specific", "global"] = filter (
+		    map m,
+		    exp["specific", "global"]:[],
+		``(
+		    m["key"]:"" != default_key
+		));
+		exp["specific", "global"] = add (exp["specific", "global"]:[],
+		    $[
+			"key" : default_key,
+			"value" : default_val,
+		    ]
+		);
+	    }
+	}
+	ai["default"] = nil;
+	any default_val
+	    = lookup_value (exp["specific", "global"]:[], default_key, nil);
+	string default = nil;
+	if (default_val != nil)
+	{
+	    if (BootCommon::getDefaultType () == `index)
+	    {
+		default = (string)(ai["sections", (integer)default_val, "title"]:nil);
+	    }
+	    else
+	    {
+		default = (string) default_val;
+	    }
+	}
+	if (default != nil)
+	    ai["default"] = default;
 
 	y2debug ("Bootloader: Importing settings");
 	ret = Bootloader::Import(exp);
@@ -98,47 +156,6 @@
 	y2debug ("Proposing - fix");
 	Bootloader::Propose ();
 	y2debug ("Proposing done");
-
-        /*
-	// fix GRUB's device names
-	if (Bootloader::getLoaderType () == "grub")
-	{
-	    import "BootGRUB";
-	    string gfxmenu = BootCommon::globals["gfxmenu"]:"";
-	    if (gfxmenu != "")
-		BootCommon::globals["gfxmenu"] = BootGRUB::file2grub (gfxmenu);
-
-	    BootCommon::sections = maplist (`s, BootCommon::sections, ``{
-		string initrd = s["initrd"]:"";
-		if (initrd != "" && substring(initrd, 0, 1) == "/")
-		{
-		    s["initrd"] = BootGRUB::file2grub (initrd);
-		}
-		string kernel = s["kernel"]:"";
-		if (kernel != "" && substring (kernel, 0, 1) == "/")
-		{
-		    list(string) parts = splitstring (kernel, " ");
-		    parts = filter (`p, parts, ``(p != ""));
-		    kernel = parts[0]:"";
-		    parts[0] = BootGRUB::file2grub (kernel);
-		    s["kernel"] = mergestring (parts, " ");
-		}
-		return s;
-	    });
-	}
-	// fix root partitions
-	y2milestone ("Fixing partitions");
-	foreach (string s, ["linux", "failsafe"], ``{
-	    string root = Bootloader::getKernelParam (s, "root");
-	    y2milestone ("Section %1 has root %2", s, root);
-	    if (root == "true" || root == "false" || root == "")
-	    {
-		y2milestone ("Setting root of %1 to %2", s, BootCommon::RootPartitionDevice);
-		Bootloader::setKernelParam (s, "root",
-					    BootCommon::RootPartitionDevice);
-	    }
-	});
-        */
 
     }
 

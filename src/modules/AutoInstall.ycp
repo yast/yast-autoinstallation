@@ -105,11 +105,15 @@
      */
     global define void Finish ( string destdir )
         ``{
-            SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir + "/pre-scripts/* " + destdir + AutoinstConfig::scripts_dir);
-            SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir + "/pre-scripts/logs/* " + destdir + AutoinstConfig::logs_dir);
+            SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir
+                    + "/pre-scripts/* " + destdir + AutoinstConfig::scripts_dir);
+            SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir
+                    + "/pre-scripts/logs/* " + destdir + AutoinstConfig::logs_dir);
 
-            SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", AutoinstConfig::xml_tmpfile ,  destdir ,  AutoinstConfig::xml_file) );
-            SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",   destdir ,  AutoinstConfig::xml_file) );
+            SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3",
+                        AutoinstConfig::xml_tmpfile ,  destdir ,  AutoinstConfig::xml_file) );
+            SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",
+                        destdir ,  AutoinstConfig::xml_file) );
 
             return;
         }
