@@ -262,7 +262,7 @@ must begin with letter, and must be
      */
     global define cloneSystem()``{
 	
-	Wizard::SetScreenShotName ("autoyast-cloneSystem");
+
 	
 	string help = _("<p>This tool will create a new profile by reading
 information from this system. Select the resources you want to read from this system
@@ -290,14 +290,14 @@ to autoinstall a new system.</p>");
 
 	Wizard::SetContents(title,
 			    contents, help, true, true);
+	Wizard::ReplaceAbortButton(`Empty());
 
-
-	UI::ChangeWidget(`id(`accept), `Label, _("Clo&ne"));
+	UI::ChangeWidget(`id(`next), `Label, _("Clo&ne"));
 	any ret = nil;	
 	repeat
 	    {
 		ret = UI::UserInput();	
-		if (ret ==`accept)
+		if (ret ==`next)
 		{
 		    list selected_items = UI::QueryWidget( `id(`res), `SelectedItems );
 		    showFeedback( _("Collecting system data.
@@ -308,9 +308,9 @@ Please wait....
 		    clearFeedback();
 
 		}
-	    } until (ret == `accept || ret == `cancel || contains(menuitems, ret) );
+	    } until (ret == `next || ret == `back);
 	
-	Wizard::RestoreScreenShotName ();
+	
 	return ret;	
     }
 

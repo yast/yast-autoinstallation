@@ -79,8 +79,9 @@ and when it is merged when creating a control file.
 	  
 	Wizard::SetContents(title,	
 			    class_dialog_contents() , help, true, true);
-				    	
-	
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	Wizard::ReplaceAbortButton(`Empty());
 	any ret = nil;	
 	repeat
 	    {
@@ -143,9 +144,9 @@ to be delete .
 		
 	
 	    
-	    } until (ret == `cancel || ret == `accept );
+	    } until (ret == `back || ret == `next );
 
-	if (ret == `accept)
+	if (ret == `next)
 	{	 
 	    AIClass::Save();
 	}
@@ -356,11 +357,11 @@ script is used.</P>
 	Wizard::SetContents(title,	
 			    contents, help , true, true);
 
-	list widgets = [ `merge, `empty, `current, `result, `save, `load ];
-	
-
-	UI::ChangeWidget(`id(`accept), `Label, FinishButtonLabel());
-	UI::ChangeWidget(`id(`accept), `Enabled, false);
+	Wizard::ReplaceAbortButton(`Empty());
+	list widgets = [ `merge, `empty, `current ];
+		
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Enabled, false);
 	
 	any ret = nil;
 	repeat {
@@ -409,9 +410,9 @@ to be able to  perform a merge.
 		    y2milestone("Calling merge with %1 (%2)", sorted_profiles, base);
 		    MergeAll(sorted_profiles, base);
 		}
-		UI::ChangeWidget(`id(`accept), `Enabled, true);
+		UI::ChangeWidget(`id(`next), `Enabled, true);
 	    }	 
-	} until  (ret == `accept || ret == `cancel );
+	} until  (ret == `next || ret == `back );
 
 	return ret;
     }
