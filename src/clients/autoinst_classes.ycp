@@ -15,10 +15,13 @@
     import "Wizard";
     import "Summary";
     import "AutoinstClass";
+    import "AutoinstConfig";
 
-
-    include "autoinstall/classes.ycp";
     import "Label";
+
+    include "autoinstall/dialogs.ycp";
+    include "autoinstall/classes.ycp";
+    
 
 
     any ret = nil;
@@ -26,17 +29,18 @@
     list param = [];
  
     /* Check arguments */
-    if(size(Args()) > 0 && is(Args(0), string)) {
-	func = WFM::Args(0);
-	if(size(Args()) > 1 && is(Args(1), list ))
-	    param = WFM::Args(1);
+    if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+	func = (string)WFM::Args(0);
+	if(size(WFM::Args()) > 1 && is(WFM::Args(1), list ))
+	    param = (list) WFM::Args(1);
     }
     y2debug("func=%1", func);
     y2debug("param=%1", param);
 
         
    
-    if (func == "Import") {
+    if (func == "Import")
+    {
 	ret = AutoinstClass::Import(param);	
     }
     /* create a  summary*/
