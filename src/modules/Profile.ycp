@@ -129,16 +129,16 @@
 	    // Set resource name, if not using default value
 	    //
 	    
-	    string resource = d["X-SuSE-YaST-AutoinstResource"]:"";
+	    string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
 	    if (resource == "")
 	    {
 		resource = p;
 	    }
-	    string tomerge = d["X-SuSE-YaST-AutoinstMerge"]:"";	    
+	    string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";	    
 	    
 	    integer s = 0;
 	    if ( tomerge == "") {
-		if ( d["X-SuSE-YaST-AutoinstDataType"]:"map" == "map" )
+		if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
 		{		
 		    s = size(Flat[resource]:$[]);
 		}
@@ -150,9 +150,9 @@
 	    
 	    if ( s != 0 || tomerge != "")
 	    {
-		if (d["X-SuSE-YaST-AutoinstPath"]:"" == "install")
+		if (d["X-SuSE-YaST-AutoInstPath"]:"" == "install")
 		{
-		    if ( d["X-SuSE-YaST-AutoinstDataType"]:"map" == "map" )
+		    if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
 		    {
 			Install[resource] = Flat[resource]:$[];
 		    }
@@ -163,7 +163,7 @@
 		}
 		else
 		{
-		    string tomergetypes = d["X-SuSE-YaST-AutoinstMergeTypes"]:"";
+		    string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
 		    list MergeTypes = splitstring(tomergetypes, ",");
 		    if ( size(tomerge) > 0 )
 		    {
@@ -182,7 +182,7 @@
 			    i = i + 1;
 			});
 		    }
-		    else if ( d["X-SuSE-YaST-AutoinstDataType"]:"map" == "map" )
+		    else if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
 		    {
 			Configure[resource] = Flat[resource]:$[];
 		    }
