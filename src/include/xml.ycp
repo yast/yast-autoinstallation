@@ -46,6 +46,8 @@
 	doc["cdataSections"] = ["source", "info_file"];
 	doc["systemID"] = "/usr/share/YaST2/include/autoinstall/profile.dtd";
 	doc["rootElement"] =  "profile";
+	doc["nameSpace"] = "http://www.suse.com/1.0/yast2ns";
+	doc["typeNamespace"] = "http://www.suse.com/1.0/configns";
 
 	XML::xmlCreateDoc(`profile, doc);
 	return;
@@ -76,4 +78,14 @@
 	XML::xmlCreateDoc(`profileConf, doc);
     }
 
+
+    global define void aliceXmlSetup()
+	``{
+
+	map doc = $[];
+	doc["rootElement"] = "alice";
+	doc["systemID"] = "/usr/share/YaST2/include/autoinstall/profile.dtd";
+	doc["nameSpace"] = "http://suse.com/alice";
+	XML::xmlCreateDoc(`alice, doc);
+    }    
 }

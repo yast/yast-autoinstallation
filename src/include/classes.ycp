@@ -811,7 +811,8 @@ to be able to perform a merge"), min));
 	
 	boolean error = false;
 	boolean skip = false;
-	foreach(`c, selected_profiles, ``{
+	foreach(`c, selected_profiles,
+		``{
 	    y2milestone("AIClass::Profiles: %1",  AIClass::Profiles);
 	    map profile = select(filter(`cc, AIClass::Profiles,
 				      ``( cc["name"]:"" == c["profile"]:"" )

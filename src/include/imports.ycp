@@ -8,6 +8,7 @@
  */
 {
     textdomain "autoinst";
+    // include "autoinstall/classes.ycp";
 
     global define aliceImportOptions()
 	``{
@@ -25,7 +26,8 @@
 			     ),
 		       `VSpacing(1),
 		       `Left(`Label(_("What should be done with loaded data?"))),
-		       `HBox(`HWeight(10, `Empty()),
+		       `HBox(
+			     `HWeight(10, `Empty()),
 			     `HWeight(90, `RadioButtonGroup(`id(`rbg),
 							    `VBox(
 								  `Left(
@@ -155,34 +157,108 @@ the configuration files are being read and converted.
 	    {
 		host = UI::QueryWidget(`id(`table), `CurrentItem);
 		if (host != nil && host != "") {
-		    showFeedback(_("Reading Alice configuration files,
-this may take a while, please wait..."));
+		    showFeedback(_("
+Reading Alice configuration files,
+this may take a while, please wait...
+"));
 
-		    map aliceConf = createAliceConf(host);		    
+		    map aliceConf = $[];
+		    any aliceret = createAliceConf(host);		    
+		    if (is(aliceret, map) && aliceret != $[])
+		    {
+			aliceConf = aliceret;
+		    }
+		    else
+		    {
+			UI::ErrorPopup(_("Error while importing ALICE data"));
+			clearFeedback();
+			continue;			    
+		    }
+			
 		    AIConfig::Import(createProfile(aliceConf));
-		    
 		    clearFeedback();
 		    UI::ChangeWidget(`id(`next), `Enabled, true);
 		}
 	    }
 	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	
 	if (ret == `next) {
-	    if (AIServer::aliceOutput == `hostname) {
+	    if (AIServer::aliceOutput == `hostname)
+	    {
 		AIConfig::currentFile = sformat("%1.xml", host);
 		ret = `save;
-	    } else {
+	    }	  
+	    else
+	    {
 		ret = AIServer::aliceOutput;
 	    }
 	}
 	return ret;
     }
 
-    global define map createAliceConf(string host)``{
+    global define any createAliceConf(string host)
+	``{
+	
 	string MakeinfoCommand = "alice make_info_file --yast2 ";
 	MakeinfoCommand = MakeinfoCommand + host;	
 	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR":AIServer::tmpDir, "ALICE_HOME":AIServer::aliceRep]);
-	map ret = XML::XMLToYCPFile(AIServer::aliceRep + "/tmp/" + host + ".xml");
+	string filelist = SCR::Read(.target.string, AIServer::tmpDir + "/filelist");
+	list files = splitstring(filelist, "\n");
+	y2milestone("files: %1", files);
+	
+	any ret =  mergeFiles(files, AIServer::tmpDir);
+	SCR::Execute(.target.remove,  AIServer::tmpDir + "/filelist");
+	y2milestone("alice conf %1", ret);
 	return ret;
+    }
+
+    global define map mergeFiles(list files, string dir)
+	``{
+	include "autoinstall/xml.ycp";
+	aliceXmlSetup();
+	integer cnt = 0;
+	string base = "";
+	foreach (`f, files, ``{	    
+	    if (f!="") {
+		
+		string filename = sformat("%1/%2", dir, f);
+		y2milestone("Working on %1", filename);
+		base = sformat("%1/base.xml", dir);
+		if (cnt == 0)
+		{
+		    _cleanup(filename, base);
+		}
+		else
+		{
+		
+		    string MergeCommand = "/usr/bin/xsltproc --param replace \"'true'\" --param with ";	
+		    MergeCommand = MergeCommand + "\"'" + filename + "'\"  ";
+		    MergeCommand = MergeCommand + "--output " +  dir + "/mergeOutput ";
+		    MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
+		    MergeCommand = MergeCommand +   base + " ";
+	
+		    y2milestone("Merge command: %1", MergeCommand);
+	
+		    map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
+		    y2milestone("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
+		    _cleanup(sformat("%1/mergeOutput", dir), base);
+		}
+		
+		cnt = cnt + 1;
+	    }
+	    
+	});
+	any ret = XML::XMLToYCPFile(base);
+	
+	return (ret);	
+    }
+
+    
+    global define _cleanup(string in, string out)
+	``{	
+	map ycpin = XML::XMLToYCPFile(in);
+	y2milestone("Writing file as %1", out);
+	return XML::YCPToXMLFile(`alice, ycpin, out);
     }
     
     /**

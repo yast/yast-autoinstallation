@@ -168,20 +168,28 @@ contains all the packages.</p>");
 	list files = [];
 	string tabHeader = "";
 	string caption = "";
-	if (type == `ready) {
+	if (type == `ready)
+	{
 	    files = SCR::Read(.target.dir, AIConfig::Repository);
 	    tabHeader = _("Control file");
 	    caption = _("Current Profile: ");
 	}
-	else {
+	else
+	{
 	    files = SCR::Read(.target.dir, AIConfig::TemplateRepository);
 	    tabHeader = _("Control file Template");
 	    caption = _("Current Template: ");
 	}
 
-	list xmlfiles = maplist(string file, files, ``{
-	    return (`item(`id(file), file));
+	list xmlfiles = [];
+	foreach(string file, files,
+		``{
+	    if (SCR::Read(.target.dir,  AIConfig::Repository + "/" + file) == nil)
+	    {
+		xmlfiles= add (xmlfiles,`item(`id(file), file));
+	    }
 	});
+	
 	term contents =
 	    `VBox(
 		  `Left(`HBox(
