@@ -362,29 +362,15 @@
             part["crypt"] =		currentPartition["crypt"]:"twofish";
         }
 
-        if (haskey(currentPartition, "fstopt") && currentPartition["fstopt"]:"" != "")
-        {
-            part["fstopt"]		= currentPartition["fstopt"]:"";
-        }
-
-        if (haskey(currentPartition, "label") && currentPartition["label"]:"" != "")
-        {
-            part["label"]		= currentPartition["label"]:"";
-        }
-
-        if (haskey(currentPartition, "mountby"))
-        {
-            part["mountby"]	= currentPartition["mountby"]:`device;
-        }
 
 
-        symbol tmpfs = currentPartition["filesystem"]:`none;
+        symbol tmpfs = currentPartition["filesystem"]:Partitions::DefaultBootFs();
         if (mount_point == "swap" || tmpfs == `swap)
         {
             part["fsid"] =  Partitions::fsid_swap;
             part["mount"] = "swap";
         }
-        else if (mount_point == "/boot")
+        else if (mount_point == "/boot" || mount_point == "/boot/efi")
         {
             if (currentPartition["partition_id"]:0 != 0)
             {
@@ -392,21 +378,11 @@
             }
             else
             {
-                part["fsid"] =  fsid_boot;
+                part["fsid"] =  Partitions::FsidBoot();
             }
 
-            if (tmpfs != `none)
-            {
-                part["used_fs"] = tmpfs;
-            }
-            else
-            {
-                if (fsid_boot == Partitions::fsid_fat32)
-                {
-                    // for ia64, /boot is FAT32
-                    part["used_fs"] = `fat32;
-                }
-            }
+            part["used_fs"] = tmpfs;
+            part["fstype"] = Partitions::FsIdToString( Partitions::FsidBoot());
         }
         else if (mount_point == "/")
         {
@@ -440,6 +416,21 @@
         else
         {
             part["used_fs"] =  currentPartition["filesystem"]:`reiser;
+        }
+
+        if (haskey(currentPartition, "fstopt") && currentPartition["fstopt"]:"" != "")
+        {
+            part["fstopt"]		= currentPartition["fstopt"]:FileSystems::DefaultFstabOptions(part);
+        }
+
+        if (haskey(currentPartition, "label") && currentPartition["label"]:"" != "")
+        {
+            part["label"]		= currentPartition["label"]:"";
+        }
+
+        if (haskey(currentPartition, "mountby"))
+        {
+            part["mountby"]	= currentPartition["mountby"]:`device;
         }
 
         y2milestone("Adding partition: %1", part);
