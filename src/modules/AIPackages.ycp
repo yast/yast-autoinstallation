@@ -12,72 +12,114 @@
     textdomain "autoinst";
     
     import "Packages";
+    import "AIServer";    
     import "Summary";
     
 
-    boolean local_descr = false;
-
-    global list Selections = [];
+    global boolean PkdInitialized = false;
 
     global string base = "";    
     
     global list addons = [];
            
-    global list pacs = [];    
-    
+    global list pacs = [];
+
+  
+    // all available selections
+    global list Selections = [];
+
+    /**
+     *
+     */    
     global define void AIPackages()
 	``{
-	if (SCR::Read(.target.size, "/var/lib/autoinstall/selections/current")>0)
+	if (SCR::Read(.target.size, "/var/lib/autoinstall/selections/current") > 0)
 	{
 	    y2milestone("Selection file found, reading...");
 	    ReadSelections();
 	}
 	else
 	{
+	   
+	    y2milestone("Rep URL: %1", base_url);
 	    GetSelections();
 	    SaveSelections();
 	}
 	return;
     }
 
-
+    /**
+     *
+     */   
     global define boolean GetSelections()
 	``{
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating package selections...")));
-	local_descr = Packages::CheckLocalDescription();
-	if (local_descr)
-	{	    
-	    Packages::Init(true);
-	    Selections = maplist(`s, Pkg::GetSelections(`all) , ``{
-		any data = Pkg::SelectionData(s);
-		if (is(data , map)) {
-		    return ([s, data["summary"]:"", data["category"]:"base"]);
-		}
-		else
-		{
-		    return ([]);
-		}
-	    });
-
 	    
+	if (!PkdInitialized)
+	{
+	    string base_url = "dir://" + AIServer::PackageRep;
+	    Pkg::SourceInit (base_url);
 	}
+	else
+	{
+	    y2milestone("Package Manager alrady called");
+	}
+	
+	list basesel = maplist(`s, Pkg::GetSelections(`all, "base") , ``{
+	    any data = Pkg::SelectionData(s);
+	    if (is(data , map)) {
+		return ([s, data["summary"]:"", data["category"]:"base"]);
+	    }
+	    else
+	    {
+		return ([]);
+	    }
+	});
+	list addonsel = maplist(`s, Pkg::GetSelections(`all, "") , ``{
+	    any data = Pkg::SelectionData(s);
+	    if (is(data , map)) {
+		return ([s, data["summary"]:"", data["category"]:"addon"]);
+	    }
+	    else
+	    {
+		return ([]);
+	    }
+	});
+	Selections = union(basesel,  addonsel);
+	
+	    	
 	UI::CloseDialog();
-	return local_descr;
+	return true;
     }
-
+    
+    /**
+     *
+     */   
     global define boolean SaveSelections()
 	``{
-	boolean ret = SCR::Write(.target.ycp, "/var/lib/autoinstall/selections/current", Selections);
-	return ret;
+	if (Selections != nil && is(Selections,list))
+	{
+	    SCR::Write(.target.ycp, "/var/lib/autoinstall/selections/current", Selections);
+	    return true;
+	}
+	else
+	{
+	    return false;
+	}	
     }
 
+    /**
+     *
+     */       
     global define boolean ReadSelections()
 	``{
 	Selections = SCR::Read(.target.ycp, "/var/lib/autoinstall/selections/current");
 	return ( size(Selections)>0 );
     }
 
-
+    /**
+     *
+     */   
     global define string getSelDescr(string sel)
 	``{
 	string result = "Custom Selection";

@@ -49,10 +49,8 @@
 			   "profile"		:	``(   Profile()),
 			   "merge"		:	``(   MergeDialog()),
 			   "save"		:	``(   SaveDialog() ),
-			   "preferences"	:	``(   Preferences()),
-			   "serverSetup"	:	``(   serverSetup()),
-			   "cloneSystem"	:	``(   cloneSystem()),		
-			   "media"		:	``(   packageManagement()),			  
+			   "preferences"	:	``(   Preferences()),			   
+			   "cloneSystem"	:	``(   cloneSystem()),					   
 			   "alice"		:	``(   aliceImportOptions() ),
 			   "aliceList"		:	``(   aliceImportList() ),
 			   "kickstart"		:	``(   kickstartImport() ),
@@ -79,8 +77,7 @@
 			   `abort	: `abort,
 			   `single	: "file",
 			   `profiles	: "profiles",
-			   `pref	: "preferences",
-			   `server	: "serverSetup",
+			   `pref	: "preferences",			   
 			   `clone	: "cloneSystem",			  
 			   `alice	: "alice",
 			   `kickstart   : "kickstart",
@@ -118,12 +115,7 @@
 			   `load	: "tree",
 			   `save	: "save"
 
-			 ],
-			 "serverSetup":
-			 $[
-			   `abort	: `abort,
-			   `next	: "configurationType"
-			 ],
+			 ],			
 			 "iso":
 			 $[
 			   `next	: "createiso",			   
@@ -131,19 +123,14 @@
 			 ],
 			 "openProfile":
 			 $[
-			   `next	: "media",
+			   `next	: "iso", // FIXME -> iso
 			   `abort	: `abort
 			 ],
 			 "createiso":
 			 $[
 			   `next	: "configurationType",
 			   `abort	: `abort
-			 ],
-			 "media":
-			 $[
-			   `abort	: `abort,
-			   `next	: "iso"
-			 ],
+			 ],			
 		
 			 "file":
 			 $[
@@ -196,8 +183,7 @@
 			 "save":
 			 $[
 			   `abort	: `abort,
-			   `edit	: "tree",
-			   `media	: "media",
+			   `edit	: "tree",			   
 			   `next	: `ws_finish
 			 ],
 			 "preferences":

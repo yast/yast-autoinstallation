@@ -221,17 +221,7 @@ contains all the packages.</p>
 			`HBox(
 			      `PushButton(`id(`saveprofile), _("&Save")),
 			      `PushButton(`id(`saveas), _("Save &As")),
-			      `PushButton(`id(`edit), _("&Edit")),			      
-			      `HStretch(),
-			      `MenuButton(_("Optio&ns"),
-					  [
-					   `item(`id (`media), _("Crea&te ISO"))
-					   /*
-					   `item(`id (`netboot), _("Create Netboot Image"))
-					   */
-				     
-					   ]
-					  )
+			      `PushButton(`id(`edit), _("&Edit"))
 			      )
 			),
 		  `VSpacing(0.5)
@@ -565,12 +555,7 @@ to save the current profile.
 			UI::WarningPopup(_("An error occured while saving the file."));
 		    }
 
-		}
-		else if (ret == `media)
-		{
-		    UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
-		    break;
-		}
+		}	
 		else	if (ret == `next && AIConfig::changed)
 		{
 		    if (UI::YesNoHeadlinePopup(_("The configuration has been modifed."), _("Should the changes be saved?")))

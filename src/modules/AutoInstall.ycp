@@ -494,7 +494,7 @@
      */
     global define  list postPackageList() ``{
 	map Software = Install["software"]:$[];		
-	list postPackages = Software["post-packages"]:$[];
+	list postPackages = Software["post-packages"]:[];
 			
 	y2milestone("Post packages: %1",  postPackages);
 	return postPackages;
@@ -522,7 +522,6 @@
 	boolean ret = false;
 	
 	Packages::Init(true);
-
 	
 	// Standard Packages
 	boolean retval = false;
@@ -537,47 +536,30 @@
 	    y2milestone ( "Selecting %1 returns: %2", base_selection, ret );	     
 	}
 
-	
-	
-	/*
-	if (Software["ignore_error_log"]:false)
-	{
-	    Report::YesNoErrors["packages"] = true;
-	}	
-	*/
-
-	
-	foreach(`s, addons, ``{	
+	foreach(`s, toset(addons),
+		``{	
 	    ret = Pkg::SetSelection( s );	    
 	});
 
-
 	// single selected packages
-	list Packages = union(Software["packages"]:[], forcedPackages);
-	
-
-	/**
-	 * get all packages to install
-	 *
-	 * Initialize server with the packages which have to be installed, but without resetting
-	 * single-selected packages.
-	 */	
-	
-	// FIXME
-	Pkg::DoProvide( union(package_list, Packages));	
+	list Packages = union(Software["packages"]:[], forcedPackages);			
+	Pkg::DoProvide(Packages);
 
 	SpaceCalculation::ShowPartitionWarning();
-
 	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",  Pkg::GetSelections(`selected, "base"), Pkg::GetSelections(`selected, ""));
 
         return;
     }
+
+
+    
     /**
      * Finalize autoinst settings
-     *
+     * @param
+     * @return void
      */
-
-    global define void Finalize() ``{
+    global define void Finalize()
+	``{
 	
 	sysconfigSettings();
 	if (  X11["default_wm"]:"" != "") {
@@ -589,7 +571,7 @@
 	    SCR::Write (.sysconfig.displaymanager, nil);
 	}
 	
-	    
+	return;    
     }
 
     /**
