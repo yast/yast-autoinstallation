@@ -8,13 +8,14 @@
 {
     textdomain "autoinst";
 
-	import "Label";
+    import "Label";
+    import "Popup";
 
     /**
      * Preferences Dialog
      *
      */
-    global define Preferences()
+    global define symbol Preferences()
 	``{
 	Wizard::SetScreenShotName ("autoyast-preferences");
 	term contents =
@@ -72,13 +73,13 @@ contains all the packages.</p>
 	UI::ChangeWidget(`id(`next), `Label, Label::NextButton());
 
 	boolean changed = false;
-	any ret = "";
+	symbol ret = `none;
 	repeat {
-	    ret = UI::UserInput();
+	    ret = (symbol)UI::UserInput();
 
-	    string new_rep = UI::QueryWidget(`id(`repository), `Value);
-	    string new_classdir = UI::QueryWidget(`id(`classdir), `Value);
-	    string new_alicedir = UI::QueryWidget(`id(`alicedir), `Value);
+	    string new_rep = (string)UI::QueryWidget(`id(`repository), `Value);
+	    string new_classdir = (string)UI::QueryWidget(`id(`classdir), `Value);
+	    string new_alicedir = (string)UI::QueryWidget(`id(`alicedir), `Value);
 
 	    if (ret ==`opendir)
 	    {
@@ -126,7 +127,8 @@ contains all the packages.</p>
 		}
 	    }
 
-	} until (ret == `back ||  ret == `next || contains(menuitems, ret));
+	    // FIXME	} until (ret == `back ||  ret == `next || contains(menuitems, ret));
+	    } until (ret == `back ||  ret == `next);
 
 	Wizard::RestoreScreenShotName ();
 	if ( changed  )
@@ -140,10 +142,36 @@ contains all the packages.</p>
 
 
 
+    /**
+     * Check validity of file name
+     * @param string file name
+     * @return 0 if valid, -1 if not.
+     */
+    global define integer checkFileName (string name) ``{
+        if (name != filterchars (name, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-")
+	    || size (name) > 127)
+	{
+	    return -1;
+	}
+
+        return 0;
+    }
 
 
+    /**
+     * Return a message about invalid file names
+     * @param -
+     * @return message
+     */
+    global define string invalidFileName() ``{
+	return(_("Invalid file name.
+Names can only contain letters, numbers, and underscore,
+must begin with letter, and must be
+127 characters long or less.
+"));
+    }
 
-
+    
 
     /**
      * Popup for a new file name
@@ -181,9 +209,8 @@ contains all the packages.</p>
 		break;
 	    }
 	    else if (ret == `ok)
-	    {
-
-		f = UI::QueryWidget (`id (`newname), `Value);
+	    {		
+		f = (string)UI::QueryWidget (`id (`newname), `Value);
 		if (checkFileName(f) !=0 || f == "")
 		{
 		    Popup::Error(invalidFileName());
@@ -202,34 +229,6 @@ contains all the packages.</p>
 
 
 
-    /**
-     * Check validity of file name
-     * @param string file name
-     * @return 0 if valid, -1 if not.
-     */
-    global define integer checkFileName (string name) ``{
-        if (name != filterchars (name, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-")
-	    || size (name) > 127)
-	{
-	    return -1;
-	}
-
-        return 0;
-    }
-
-    /**
-     * Return a message about invalid file names
-     * @param -
-     * @return message
-     */
-    global define string invalidFileName() ``{
-	return(_("Invalid file name.
-Names can only contain letters, numbers, and underscore,
-must begin with letter, and must be
-127 characters long or less.
-"));
-    }
-
 
 
 
@@ -238,9 +237,9 @@ must begin with letter, and must be
      * Clone running system
      *
      */
-    global define cloneSystem()``{
+    global define symbol cloneSystem()``{
 	
-
+	import "AutoinstClone";
 	import "Profile";
 	
 	string help = _("<p>This tool creates a reference profile by reading
@@ -298,10 +297,10 @@ to autoinstall a new system.</p>
 	Wizard::ReplaceAbortButton(`Empty());
 
 	UI::ChangeWidget(`id(`next), `Label, _("Crea&te"));
-	any ret = nil;	
+	symbol ret = `none;	
 	repeat
 	    {
-		ret = UI::UserInput();	
+		ret = (symbol)UI::UserInput();	
 		if (ret ==`next)
 		{
 		    AutoinstClone::base = UI::QueryWidget( `id(`baseres), `SelectedItems );

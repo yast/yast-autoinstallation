@@ -13,8 +13,10 @@
 
     import "Mode";
     import "Profile";
-    include "autoinstall/io.ycp";
+    import "Installation";
     
+    include "autoinstall/io.ycp";
+    include "readconfig.ycp";
 
     global map GroupMap = $[];
     global map ModuleMap = $[];
@@ -27,31 +29,6 @@
 
 
     global boolean x11_installed = false;
-
-
-    /**
-     * Constructor
-     */
-    global define void Y2ModuleConfig () ``{
-
-	// Read module configuration data (y2cc)
-	if (!Mode::initial)
-	{
-	    y2debug("Modules: %1", ModuleMap);
-	    list MenuEntries = ReadMenuEntries();
-	    ModuleMap = select(MenuEntries,0,$[]);
-	    
-	    Profile::ModuleMap = ModuleMap;
-	    
-	    GroupMap = select(MenuEntries,1,$[]);
-	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
-	}
-	if (Mode::config)
-	{
-	    // construct the tree menu
-	    ConstructMenu();
-	}
-    }
 
     /**
      * Read module configuration files
@@ -108,6 +85,60 @@
 	});
 	return [configurations, groups];
     }
+
+
+    define list ConstructMenu() ``{
+	
+	CreateGroupTree(GroupMap);
+	foreach(string m, map v, ModuleMap, ``{
+	    string domain = v["Textdomain"]:"base";
+	    string name = ReadKey (domain, "Name", v);
+	    map menu_entry = $["entry":m, "title":name];
+	    list menu_list = [];
+	    if (haskey(v,"Group")) {
+		string parent = v["Group"]:"";
+		MenuTreeData = maplist (`k, MenuTreeData, ``{
+		    if (k["entry"]:"" == parent) {
+			list children = k["children"]:[];
+			children = add(children,menu_entry);
+			k["children"] = children;
+			return(k);
+		    }
+		    else {
+			return (k);
+		    }
+		});
+	    } else {
+		MenuTreeData = add(MenuTreeData,menu_entry);
+	    }
+	});
+    }
+
+    
+    /**
+     * Constructor
+     */
+    global define void Y2ModuleConfig () ``{
+
+	// Read module configuration data (y2cc)
+	if (!Mode::initial)
+	{
+	    y2debug("Modules: %1", ModuleMap);
+	    list MenuEntries = ReadMenuEntries();
+	    ModuleMap = MenuEntries[0]:$[];
+	    
+	    Profile::ModuleMap = ModuleMap;
+	    
+	    GroupMap = MenuEntries[1]:$[];
+	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
+	}
+	if (Mode::config)
+	{
+	    // construct the tree menu
+	    ConstructMenu();
+	}
+    }
+
 
     /**
      * Get resource name
@@ -190,32 +221,6 @@
     }
 
 
-    define list ConstructMenu() ``{
-	include "readconfig.ycp";
-	CreateGroupTree(GroupMap);
-	foreach(string m, map v, ModuleMap, ``{
-	    string domain = v["Textdomain"]:"base";
-	    string name = ReadKey (domain, "Name", v);
-	    map menu_entry = $["entry":m, "title":name];
-	    list menu_list = [];
-	    if (haskey(v,"Group")) {
-		string parent = v["Group"]:"";
-		MenuTreeData = maplist (`k, MenuTreeData, ``{
-		    if (k["entry"]:"" == parent) {
-			list children = k["children"]:[];
-			children = add(children,menu_entry);
-			k["children"] = children;
-			return(k);
-		    }
-		    else {
-			return (k);
-		    }
-		});
-	    } else {
-		MenuTreeData = add(MenuTreeData,menu_entry);
-	    }
-	});
-    }
 
 /*
 
