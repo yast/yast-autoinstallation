@@ -3,7 +3,21 @@
 #
 # $Id$
 #
-client_DATA = $(wildcard *.ycp)
+client_DATA = \
+    autoyast.ycp \
+    classes_auto.ycp \
+    files_auto.ycp \
+    general_auto.ycp \
+    inst_autoconfigure.ycp \
+    inst_autoimage.ycp \
+    inst_autoinit.ycp \
+    inst_autopost.ycp \
+    inst_autosetup.ycp \
+    report_auto.ycp \
+    scripts_auto.ycp \
+    software_auto.ycp \
+    storage_auto.ycp
+
 
 EXTRA_DIST =                    \
 	$(client_DATA)
