@@ -62,17 +62,8 @@ Please wait while the system is prepared for autoinstallation.</p>
     while (true)
     {
 	ret = AutoInstallRules::GetRules();
-	if (ret)
-	{
-	    break;
-	}
-	else
-	{
-	    if (ProfileSourceDlg() == `abort)
-		return `abort;
-	    else
-		continue;
-	}
+	if (!ret)
+	    y2error("Error while getting rules");
     }
     sleep(1000);
 

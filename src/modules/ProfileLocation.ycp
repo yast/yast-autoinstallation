@@ -1,5 +1,10 @@
 /**
+ * File:	modules/ProfileLocation.ycp
+ * Package:	Auto-installation
+ * Summary:	Process Auto-Installation Location
+ * Author:	Anas Nashif <nashif@suse.de>
  *
+ * $Id$
  */
 {
     module "ProfileLocation";
@@ -10,8 +15,8 @@
     import "AutoInstallRules";
     import "StorageDevices";
     import "Mode";
- 
-
+    include "ui/common_messages.ycp";    
+    include "autoinstall/profileDialogs.ycp";
     
     global string message = "";
    
@@ -155,22 +160,27 @@
 	boolean is_directory = false;
 	
 	string filename = basename(filepath);	
-
-
+	y2milestone("Filename=%1", filename);
+	boolean ret = false;
 	if ( filename != "" )
 	{
-	    // Now try to fetch the file using the scheme from the command line	    
-	    boolean ret = Get(scheme, host, filepath, localfile);
-	    if (!ret)
+	    while (true)
 	    {
-		is_directory = true;
-		directory = filepath;
-		SCR::Execute(.target.remove, localfile);
+		ret = Get(scheme, host, filepath, localfile);
+		if (ret)
+		{
+		    break;
+		}
+		else
+		{
+		    if (ProfileSourceDlg() == `abort)
+			return `abort;
+		    else
+			continue;
+		}
 	    }
-	    else
-	    {
-		directory = dirname(filepath);
-	    }
+
+	    directory = dirname(filepath);
 	}
 	else
 	{
