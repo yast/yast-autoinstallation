@@ -255,7 +255,7 @@
 	Wizard::HideNextButton();
 	Wizard::HideBackButton();
 	Wizard::HideAbortButton();
-	UI::ReplaceWidget(`id(`helpSpace) ,
+        Wizard::ReplaceCustomHelp(
 			  `VBox(
 				`Tree(
 				      `id(`tree),
@@ -264,7 +264,7 @@
 				      menu_options
 				      ),
 				`VSpacing(1))
-			  );
+                );
 
 	UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), AutoinstConfig::currentFile));
 	return;
