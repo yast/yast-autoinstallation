@@ -313,12 +313,13 @@ this may take a while, please wait...
 	    general["hwclock"] = "localtime";
 
 	map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
-	// y2milestone("Mice %1", mice);
+        y2debug("Mice %1", mice);	
 	boolean found = false;
 	foreach(`k,`v, mice, ``{
 	    map data = select(v,1,$[]);
-	    // y2milestone("yours %1, mine %2",  data["device"]:"", aliceConf["SYS_MOUSE_DEVICE"]:"none");
-	    if ( data["wheels"]:0 == 0 && data["device"]:"" == aliceConf["SYS_MOUSE_DEVICE"]:"none") {
+	    y2debug("yours %1, mine %2",  data["device"]:"", aliceConf["SYS_MOUSE_DEVICE"]:"none");
+	    if ( data["wheels"]:0 == 0 && data["device"]:"" == aliceConf["SYS_MOUSE_DEVICE"]:"none")
+	    {
 		general["mouse"] = k;
 		found = true;
 	    }

@@ -64,21 +64,25 @@
 	any func_ret = "";
 
 	repeat {
-	    if (size(AIConfig::GroupMap) == 0) {
+	    if (size(AIConfig::GroupMap) == 0)
+	    {
 		UI::ErrorPopup("Error while reading configuration data");
 		ret = `back;
 		break;
 	    }
-	    if (haskey(AIConfig::GroupMap, tree_item)) {
+	    if (haskey(AIConfig::GroupMap, tree_item))
+	    {
 		string html = "";
 		foreach(`k,`v, AIConfig::ModuleMap, ``{
-		    if (v["Group"]:"" == tree_item) {
+		    if (v["Group"]:"" == tree_item)
+		    {
 			html = html + HTML::Heading( HTML::Link(Translate(v["Name"]:""),k));
 			html = html + HTML::Para(Translate(v["Helptext"]:""));
 		    }
 		});
 
-		if (html == "") {
+		if (html == "")
+		{
 		    html = HTML::Heading(_("No modules available in this group."));
 		}
 		term contents = `RichText(html);
@@ -88,16 +92,19 @@
 
 		while ( true )
 		{
-		    ret = Wizard::UserInput();
+		    ret = UI::UserInput();
 		    y2milestone("INPUT: %1", ret);
-		    if (ret == `key) {
+		    if (ret == `key)
+		    {
 			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
 			break;
 		    }
-		    else if (ret == `next || ret == `back || ret == `abort) {
+		    else if (ret == `next || ret == `back || ret == `abort)
+		    {
 			break;
 		    }
-		    else {
+		    else
+		    {
 			tree_item = ret;
 			break;
 		    }
@@ -212,7 +219,12 @@
 		    tree_item = "Hardware";
 		y2milestone("item %1", tree_item);
 	    }
-	   
+	    if (ret  == nil)
+	    {
+		UI::ErrorPopup("Error while reading configuration data");
+		ret = `back;
+		break;
+	    }
 	    y2milestone("Final ret %1", ret);
 
 	} until ( ret == `next || ret == `back ||  (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));

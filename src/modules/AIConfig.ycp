@@ -11,6 +11,7 @@
     textdomain "autoinst";
     
     import "Mode";
+    import "Misc";
     import "AIServer";
     import "AutoInstall";
         
@@ -91,7 +92,8 @@
      * Import Profile
      * @param map profile
      */
-    global define void Import(map profile)``{
+    global define void Import(map profile)
+	``{
 	Profile = profile;
 	Configure = profile["configure"]:$[];
 	Install = profile["install"]:$[];
@@ -138,16 +140,16 @@
 	    y2milestone("Not a Template");
 	    isTemplate = false;
 	}
+
+	if (Configure!=$[])
+	    Profile["configure"] = Configure;
+	else if (haskey(Profile,"configure"))
+	    Profile=remove(Profile,"configure");
 	if (Install!= $[])
 	    Profile["install"] = Install;
 	else if (haskey(Profile,"install"))
 	    Profile=remove(Profile,"install");
 	
-	if (Configure!=$[])
-	    Profile["configure"] = Configure;
-	else if (haskey(Profile,"configure"))
-	    Profile=remove(Profile,"configure");
-
 	return;
 
     }
@@ -198,6 +200,8 @@
 	y2milestone("Reading %1", filePath);
 	Profile = XML::XMLToYCPFile(filePath);
 	
+	y2milestone("Profile: %1", Profile);
+	
 	Install = Profile["install"]:$[];
 	Configure = Profile["configure"]:$[];
 	Compat();
@@ -244,13 +248,8 @@
 
     global define void Load ()
     ``{
-	Repository = SCR::Read( .sysconfig.autoinstall.REPOSITORY);
-	if (Repository == nil)
-	    Repository = "/var/lib/autoinstall/repository/";
-	
-	AIServer::PackageRep = SCR::Read( .sysconfig.autoinstall.PACKAGE_REPOSITORY);
-	if (AIServer::PackageRep == nil)
-	    AIServer::PackageRep = "";
+	Repository 		= Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
+	AIServer::PackageRep 	= Misc::SysconfigRead( .sysconfig.autoinstall.PACKAGE_REPOSITORY, "/");
 	return;
     }
 
@@ -469,27 +468,6 @@
 	});
     }
 
-    global define set_contents(string Module, string summary)
-	``{
-	
-	string button = Translate(ModuleMap[Module]:"");
-	string caption = Translate(ModuleMap[Helptext]:"");
-	
-	term contents = 
-	    `VBox(
-		  `VSpacing(1),
-		  `RichText( `id(`summary), summary),
-		  `VSpacing(0.5),
-		  `HBox(
-			`PushButton(`id(`configure), button),
-			`HStretch(),
-			`PushButton(`id(`reset), _("&Reset Configuration"))
-			),
-		  `VSpacing(1)
-		  );
-	Wizard::SetContents(caption,
-			    contents, "", true, true);
-    }
 
  
 }

@@ -75,17 +75,21 @@ Please wait while the system is being prepared for auto-installation.
     // User::encryptionMethod=AutoInstall::Encryption;
 
     // Timezone
+    
     Progress::Title(_("Configuring Timezone"));
     Timezone::Set(AutoInstall::Timezone);
 
     // Hardware Clock
     ////////////////////////////////////////////////////////////////////////
+    
     Timezone::hwclock = AutoInstall::Hwclock;
 
     // mouse
     ////////////////////////////////////////////////////////////////////////
+    
     Progress::NextStage();
-    if (AutoInstall::Mouse!="probe") {
+    if (AutoInstall::Mouse!="probe")
+    {
 	Mouse::Set(AutoInstall::Mouse);
     }
 

@@ -11,10 +11,10 @@
 
     global define  symbol GeneralOptions() ``{
 
-	string timezone = eval(AIGeneral::timezone);
-	string keyboard = eval(AIGeneral::keyboard);
-	string clock = eval(AIGeneral::hwclock);
-	string mouse = eval(AIGeneral::mouse);
+	string timezone = eval(AIGeneral::clock["timezone"]:"");
+	string keyboard = eval(AIGeneral::keyboard["keymap"]:"");
+	boolean utc = eval(AIGeneral::clock["utc"]:false);
+	string mouse = eval(AIGeneral::mouse["id"]:"");
 	string language = eval(AIGeneral::language);
 
 	term contents =
@@ -28,10 +28,10 @@
 			     `ComboBox(`id(`hwclock), _("&Hardware clock set to"),
 				       [
 					// ComboBox entry: hardware clock set to local time
-					`item(`id(`hwclock_localtime), _("local time"), (clock == "localtime") ),
+					`item(`id(`hwclock_localtime), _("Local time"), utc ),
 
 					// ComboBox entry: hardware clock set GMT
-					`item(`id(`hwclock_gmt ),      _("GMT"), (clock == "GMT") )
+					`item(`id(`hwclock_gmt ),      _("GMT"), utc )
 					]
 
 				       )
