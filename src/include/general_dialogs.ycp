@@ -17,6 +17,10 @@
 	string mouse = eval(AIGeneral::mouse["id"]:"");
 	string language = eval(AIGeneral::language);
 
+	boolean reboot = eval(AIGeneral::mode["reboot"]:false);
+	boolean debugboot = eval(AIGeneral::mode["interactive_boot"]:false);
+	boolean confirm = eval(AIGeneral::mode["confirm"]:false);
+	
 	term contents =
 	    `Top(
 		 `VBox(
@@ -35,7 +39,12 @@
 					]
 
 				       )
-			     )
+			     ),
+		       `VSpacing(1),
+		       `Left(`CheckBox(`id(`reboot), _("Reboot after installation?"), reboot)),
+		       `Left(`CheckBox(`id(`confirm), _("Confirm installation?"), confirm)),
+		       `Left(`CheckBox(`id(`debugboot), _("Confirm every step of the boot process?"), debugboot))
+		       
 		       )
 		 );
 
@@ -54,29 +63,37 @@ your hardware and preferences and press <b>next</b> to continue.</p>");
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
-	    if (ret == `next) {
+	    if (ret == `next)
+	    {
 		language= UI::QueryWidget(`id(`language), `Value);
 		timezone= UI::QueryWidget(`id(`timezone), `Value);
 		keyboard= UI::QueryWidget(`id(`keyboard), `Value);
 
 
 		symbol hwclock = UI::QueryWidget (`id (`hwclock), `Value);
-		if (hwclock == `hwclock_localtime)
-		{
-		    clock= "localtime";
-		}
+		if (hwclock == `hwclock_localtime)		    
+		    utc = false;		
 		else
-		{
-		    clock = "GMT";
-		}
+		    utc = true;
+		
 		mouse = UI::QueryWidget(`id(`mouse), `Value);
 
+
+		reboot = UI::QueryWidget(`id(`reboot), `Value);
+		debugboot = UI::QueryWidget(`id(`debugboot), `Value);
+		confirm = UI::QueryWidget(`id(`confirm), `Value);
+		
 		AIGeneral::Set($[
-					  "mouse":mouse,
-					  "keyboard": keyboard,
-					  "timezone":timezone,
-					  "hwclock":clock,
-					  "language":language]
+					  "mouse": $["id":mouse],
+					  "keyboard": $["keymap":keyboard],
+					  "clock": $["timezone":timezone],
+					  "clock": $["utc": utc],
+					  "language":language,
+					  "mode": $[
+						    "reboot":reboot,
+						    "confirm":confirm,
+						    "interactive_boot":debugboot
+					  ]]
 					);
 	    }
 	} until (ret == `next || ret == `back || ret ==`abort);

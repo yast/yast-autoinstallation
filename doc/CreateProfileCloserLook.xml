@@ -2,7 +2,9 @@
   <title>Closer look on control file resources</title>
   <para>
     This section features the most important parts of a control file for
-    standard purposes. 
+    standard purposes. To have an idea about the other options available,
+    please consult the reference <!-- link --> and use the configuration
+    management system.
   </para>
   <sect2 id="CreateProfile.General">
     <title>
@@ -12,8 +14,12 @@
     <para>
       This is a <emphasis>required</emphasis> section of the profile. General
       options include all the settings related to the installation process and
-      the environment of the installed system. The following 4 properties are
-      required: <emphasis>language</emphasis>,<emphasis> keyboard</emphasis>,<emphasis> clock</emphasis> and <emphasis>mouse</emphasis>.
+      the environment of the installed system. This resource includes among
+      other the following 4 properties which are required:
+      <emphasis>language</emphasis>,<emphasis> keyboard</emphasis>,<emphasis>
+	clock</emphasis> and <emphasis>mouse</emphasis> almost for any
+      installation. If left out, default values will be used, which might not
+      be in one hand with how you want the system to be installed.
       
     </para>
     &example.generalOptions;
@@ -25,12 +31,12 @@
     <para>
       By default, the auto-installation process has to be confirmed by the
       user. The confirmation should be disabled if a fully unattended
-      installation is desired. This options is used to control the
+      installation is desired. This options is used to view and change the
       settings on a target system before anything is changed and can be
-      used when debugging. It is set to <emphasis>true</emphasis> by default
+      used for debugging. It is set to <emphasis>true</emphasis> by default
       to avoid recursive installs when the system schedules a reboot due
       to a different kernel than the default or if  a reboot was requested in
-      the control file.
+      the control file. 
     </para>
     
   </sect2>
@@ -69,7 +75,7 @@
       some places but should not be ignored.
     </para>
     <para>
-      The default setting in	auto-installation mode is to show all messages without logging and
+      The default setting in auto-installation mode is to show all messages without logging and
       with a timeout of 10 seconds.
     </para>
 
@@ -99,9 +105,9 @@
 	that the default setting is to write the bootloader
       </para>
       <para>
-	If you choose to install a boot loader, you must  choose  where to to
+	If you choose to install a boot loader, you must  decide  where to to
 	install it (the Master Boot Record or the first sector of
-	the /boot partition). Install the boot loader on the MBR if you plan to
+      the<filename> /boot</filename> partition). Install the boot loader on the MBR if you plan to
 	use it as your boot loader. If you are using a different boot loader,
 	install LILO on the first sector of the <filename>/boot</filename> partition and configure the
 	other boot loader to boot  &company-suse;  Linux.
@@ -110,7 +116,7 @@
 	If you need to pass any special parameters to the kernel to be used when the
 	system boots, enter them using the Kernel parameters property. Additionally,
 	you can choose whether you want to use
-	linear mode and whether you want to force the use of lba32 mode.
+      <emphasis>linear</emphasis> mode and whether you want to force the use of <emphasis>lba32</emphasis> mode.
       </para>
     &example.bootloader;
       
@@ -129,7 +135,7 @@
 	<para>
 	  For the automated partitioning to be completed, only the sizes and mount points of
 	  partitions are needed. All other data needed for successful partitioning
-	  can be calculated automatically when left out.
+	  is calculated during installation if left out.
 	</para>
 	<para>
 	  If no partitions are defined and the specified drive is also the drive where
@@ -245,9 +251,9 @@
 	  <title>
 	    Create LVM Physical Volume
 	  </title>
-<para>
-The following example show
-	  how to prepare for LVM in the <emphasis>partitioning</emphasis> directive:
+	<para>
+	  The following example show
+	  how to prepare for LVM in the <emphasis>partitioning</emphasis> resource:
 </para>
 	  <screen>
 <![CDATA[
@@ -583,21 +589,7 @@ The following example show
       </example>
       
     </sect2>
-  <sect2>
-    <title>Authentication</title>
-    <para>
-      Use the <emphasis>encryption</emphasis> property to setup the
-      encryption method you want to use on the target system. If not
-      set,<emphasis>DES</emphasis> is configured.
-    </para>
-    <para>
-      <emphasis>DES</emphasis>, the Linux default method, works in all
-      network environments, but it restricts you to passwords no longer than
-      eight characters. <emphasis>MD5</emphasis> allows longer passwords,
-      thus provides more security, but some network protocols don't support
-      this, and you may have problems with NIS.
-    </para>
-  </sect2>
+
   <sect2 id="CreateProfile.Network">
     <title>
       Network configuration
@@ -694,7 +686,7 @@ The following example show
     <para>
       Using the features of this module, you will be able to change the local
       security settings on the target system.	The local security settings
-      include the boot configuration, login settings, password settings, some
+      include the boot configuration, login settings, password settings,
       user addition settings, and file permissions.
     </para>
     <para>
@@ -703,6 +695,22 @@ The following example show
       the running system which lets you create your own, customized
       configuration.
     </para>           
+    <simplesec>
+    <title>Authentication</title><!-- TODO -->
+    <para>
+      Use the <emphasis>encryption</emphasis> property to setup the
+      encryption method you want to use on the target system. If not
+      set,<emphasis>DES</emphasis> is configured.
+    </para>
+    <para>
+      <emphasis>DES</emphasis>, the Linux default method, works in all
+      network environments, but it restricts you to passwords no longer than
+      eight characters. <emphasis>MD5</emphasis> allows longer passwords,
+      thus provides more security, but some network protocols don't support
+      this, and you may have problems with NIS.
+    </para>
+    </simplesec>
+
     &example.security;
   </sect2>
 
@@ -758,7 +766,7 @@ The following example show
       All  but the pre-install scripts can be written in either shell or
       perl script language. When added to the control file manually, the
       scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
-      the file syntax and other tags defined in the file.
+      the file syntax and other tags defined in the control file.
     </para>
     
     &example.scripts;
@@ -769,7 +777,7 @@ The following example show
       scripts is located in the <filename>log</filename> directory.
     </para>
     <para>
-      The log is the out put resulting when executing the shell scripts using
+      The log is the output resulting when executing the shell scripts using
       the following command:
     </para>
     <screen>
@@ -803,21 +811,21 @@ The following example show
     
 
     <sect2>
-      <title>Adding complete configurations</title>
-      <para>
-	For many applications and services you might have prepared a
-	configuration file which should be copied in a complete form to some
-	location in the installed system. This is for example if you are
-	installing  a web server and have a <emphasis>ready to go</emphasis>
-	server configuration file (<filename>httpd.conf</filename>).
-      </para>
-      <para>
-	Using this resource, you can embbed the file into the control file by
-	specifying the final path on the installed system. &yast2; will copy this
-	file to the specified location.
-      </para>
+    <title>Adding complete configurations</title>
+    <para>
+      For many applications and services you might have prepared a
+      configuration file which should be copied in a complete form to some
+      location in the installed system. This is for example if you are
+      installing  a web server and have a <emphasis>ready to go</emphasis>
+      server configuration file (<filename>httpd.conf</filename>).
+    </para>
+    <para>
+      Using this resource, you can embbed the file into the control file by
+      specifying the final path on the installed system. &yast2; will copy this
+      file to the specified location.
+    </para>
     &example.files;
-    </sect2>
+  </sect2>
   &CreateProfileMisc;
 
 </sect1>
