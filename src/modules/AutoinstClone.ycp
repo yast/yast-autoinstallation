@@ -24,6 +24,7 @@
     import "Profile";
     import "Y2ModuleConfig";
     import "Misc";
+    import "Storage";
 
 
 
@@ -215,10 +216,10 @@
 	import "Bootloader";
 	map bootloader = $[];
 
-	boolean readret = Call::Function("bootloader_auto", ["Read", $[] ]);
+	boolean readret = (boolean)Call::Function("bootloader_auto", ["Read", $[] ]);
 	if (readret)
 	{
-	    bootloader = Call::Function("bootloader_auto", ["Export", $[] ]);
+	    bootloader = (map)Call::Function("bootloader_auto", ["Export", $[] ]);
 	}
 
 	return bootloader;
@@ -291,7 +292,7 @@
       * @param resource name
       * @return list
       */
-     define boolean CommonClone(string resource, map resMap) ``{
+     define boolean CommonClone(string resource, map resourceMap) ``{
 
 
 	 string data_type = resourceMap["AutoinstDataType"]:"map";
@@ -309,8 +310,8 @@
 	     list MergeTypes = splitstring(tomergetypes, ",");
 	     list Merge = splitstring(tomerge, ",");
 
-	     boolean readret = Call::Function(auto , ["Read", $[] ]);
-	     any result = Call::Function(auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
+	     boolean readret = (boolean)Call::Function(auto , ["Read", $[] ]);
+	     map result = (map)Call::Function(auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 	     y2milestone("export result: %1", result);
 	     integer i = 0;
 	     foreach( string res, splitstring(tomerge, ",") , ``{
@@ -330,12 +331,12 @@
 	 {
 	     if (data_type == "map")
 	     {
-		 readret = Call::Function(auto , ["Read", $[] ]);
+		 readret = (boolean)Call::Function(auto , ["Read", $[] ]);
 		 Profile::Flat[resource]  = Call::Function(auto, ["Export", $[] ]) ;
 	     }
 	     else
 	     {
-		 readret = Call::Function(auto , ["Read", [] ]);
+		 readret = (boolean)Call::Function(auto , ["Read", [] ]);
 		 Profile::Flat[resource]  = Call::Function(auto, ["Export", [] ]) ;
 	     }
 	 }
@@ -413,7 +414,7 @@
      * Export profile, Used only from within autoyast2
      * @return void
      */
-    global define map Export()
+    global define void Export()
 	``{
 
 	import "Profile";

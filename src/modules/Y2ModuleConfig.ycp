@@ -38,18 +38,18 @@
 	``{
 	import "Desktop";
 	Desktop::AgentPath = .autoyast2.desktop;
-	
-	Desktop::Values= [ "Name",
-			   "GenericName",
-			   "X-SuSE-YaST-AutoInst",
-			   "X-SuSE-YaST-AutoinstResource",
-			   "X-SuSE-YaST-AutoinstClient",			   
-			   "X-SuSE-YaST-Group",
-			   "X-SuSE-YaST-AutoinstPath",
-			   "X-SuSE-YaST-AutoinstMerge",
-			   "X-SuSE-YaST-AutoinstMergeTypes"
-			   ];
-	Desktop::Read();
+
+	list Values= [ "Name",
+		  "GenericName",
+		  "X-SuSE-YaST-AutoInst",
+		  "X-SuSE-YaST-AutoinstResource",
+		  "X-SuSE-YaST-AutoinstClient",
+		  "X-SuSE-YaST-Group",
+		  "X-SuSE-YaST-AutoinstPath",
+		  "X-SuSE-YaST-AutoinstMerge",
+		  "X-SuSE-YaST-AutoinstMergeTypes"
+	];
+	Desktop::Read(Values);
 	map configurations = Desktop::Modules;
 	map groups = Desktop::Groups;
 

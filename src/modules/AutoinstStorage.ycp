@@ -22,9 +22,9 @@
     import "Bootloader";
     import "BootCommon";
 
-    // include "partitioning/custom_part_dialogs.ycp";	
+    include "partitioning/custom_part_dialogs.ycp";	
     // include "partitioning/partition_defines.ycp";
-    // include "autoinstall/partition_dialogs.ycp";
+    include "autoinstall/partition_dialogs.ycp";
 
    
 
@@ -135,6 +135,67 @@
 	summary = Summary::CloseList(summary);
 	return summary;
     }
+
+
+
+    /**
+     * Preprocess partition plan and prepare for creating partitions.
+     */
+
+    global define void PreProcess() ``{
+
+	AutoTargetMap =  listmap (map drive, AutoPartPlan, ``{
+	    boolean first_set = false;
+	    string device = "";
+	    y2milestone("Working on drive: %1", drive);
+
+	    if (drive["device"]:"" == "ask"  && size(PhysicalDrives) > 1 )
+	    {
+		string dev = DiskSelection();
+		if (dev != nil)
+		{
+		    first_set = true;
+		    device = dev;
+		}
+		if (contains(PhysicalDevices, device))
+		{
+		    ConfiguredDevices=add(ConfiguredDevices, device);
+		}
+
+		return  $[device: drive ];
+	    }
+
+	    if (!first_set && ( drive["device"]:"" == ""  || drive["device"]:"" == "ask"))
+	    {
+		device = Storage::GetPartDisk();
+		first_set = true;
+		if (contains(PhysicalDevices, device))
+		{
+		    ConfiguredDevices=add(ConfiguredDevices, device);
+		}
+
+		return $[device: drive ];
+	    }
+	    else if (drive["device"]:"" != "")
+	    {
+		if (contains(PhysicalDevices, drive["device"]:""))
+		{
+		    ConfiguredDevices=add(ConfiguredDevices, drive["device"]:"");
+		}
+		string dev = drive["device"]:"";
+		return$[dev: drive ];
+	    }
+
+	});
+
+	// Add MD devices as well
+	if (haskey(AutoTargetMap, "/dev/md"))
+	{
+	    ConfiguredDevices=add(ConfiguredDevices, "/dev/md");
+	}
+
+	return;
+    }
     
 
     /**
@@ -144,9 +205,6 @@
      */
     global define boolean Write()
 	``{
-
-
-
 
 	map InitialTargetMap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", InitialTargetMap);
@@ -263,65 +321,6 @@ Make sure the control file has the correct syntax and values.
 	return true;
     }
 
-    /**
-     * Preprocess partition plan and prepare for creating partitions.
-     */
-
-    global define PreProcess() ``{
-
-	AutoTargetMap =  listmap (map drive, AutoPartPlan, ``{
-	    boolean first_set = false;
-	    string device = "";
-	    y2milestone("Working on drive: %1", drive);
-
-	    if (drive["device"]:"" == "ask"  && size(PhysicalDrives) > 1 )
-	    {
-		any dev = DiskSelection();
-		if (dev != nil)
-		{
-		    first_set = true;
-		    device = dev;
-		}
-		if (contains(PhysicalDevices, device))
-		{
-		    ConfiguredDevices=add(ConfiguredDevices, device);
-		}
-
-		return ( [device , drive ] );
-	    }
-
-	    if (!first_set && ( drive["device"]:"" == ""  || drive["device"]:"" == "ask"))
-	    {
-		device = Storage::GetPartDisk();
-		first_set = true;
-		if (contains(PhysicalDevices, device))
-		{
-		    ConfiguredDevices=add(ConfiguredDevices, device);
-		}
-
-		return ( [device , drive ] );
-	    }
-	    else if (drive["device"]:"" != "")
-	    {
-		if (contains(PhysicalDevices, drive["device"]:""))
-		{
-		    ConfiguredDevices=add(ConfiguredDevices, drive["device"]:"");
-		}
-
-		return([drive["device"]:"", drive ]);
-	    }
-
-	});
-
-	// Add MD devices as well
-	if (haskey(AutoTargetMap, "/dev/md"))
-	{
-	    ConfiguredDevices=add(ConfiguredDevices, "/dev/md");
-	}
-
-	return;
-    }
-
     
     /**
      * Initialize devices
@@ -361,8 +360,8 @@ Make sure the control file has the correct syntax and values.
 			       )
 		       );
 	});
-
-	return( flatten(ret) );
+	list output = flatten(ret);
+	return( output );
     }
 
 }

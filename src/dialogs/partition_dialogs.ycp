@@ -18,11 +18,42 @@
     import "Label";
     import "Popup";
     import "String";
+    import "AutoinstStorage";
+    
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_lib.ycp";
     include "partitioning/custom_part_dialogs.ycp";
     include "partitioning/partition_defines.ycp";
 
+
+
+
+   /**
+     * Build the id for a partition entry in the man table.
+     * @parm disk_dev_name name of the devie e.g.: /dev/hda
+     * @parm nr number of the partition e.g.: 1
+     * @return string e.g.: 01./dev/hda
+     */
+
+    global define string  build_id(  string disk_dev_name , any nr )
+	``{
+        return (sformat( "%1:%2", disk_dev_name, nr));
+    };
+
+
+        /**
+     * get target
+     * @return targets
+     */
+    global define map  getTargets ()
+	``{
+	map auto_targets =  listmap (map d, AutoinstStorage::AutoPartPlan, ``{
+	    string device = lookup(d,"device","");
+	    return([device,d]);
+	});
+	return auto_targets;
+    }
+    
     /*
      * Partition Dialog
      *
@@ -30,7 +61,7 @@
      * @param item item to edit
      * @return symbol
      */
-    global define PartitionDialog (symbol mode, string item)
+    global define symbol PartitionDialog (symbol mode, string item)
 	``{
 	list partitioning =  AutoinstStorage::AutoPartPlan;
 	list item_id = splitstring(item,":");
@@ -41,18 +72,19 @@
 	if (size(item_id)>1)
 	{ //Partition
 	    this_drive =
-		select(filter(map d,
+		(map )select(filter(map d,
 			      partitioning,
 			      ``(lookup(d,"device","") == select(item_id,0,""))),
 		       0,
 		       $[]
 		       );
-	    new_val = select(this_drive["partitions"]:[], tointeger(select(item_id,1,"")) - 1, $[]);
-	    drive = select(item_id,0,"");
+	    new_val = (map) select(this_drive["partitions"]:[], tointeger(select(item_id,1,"")) - 1, $[]);
+	    drive = (string) select(item_id,0,"");
 	}
 	else
 	{
-	    this_drive = select(filter(map d, partitioning,``(lookup(d,"device","") == item)),0,$[]);
+	    this_drive =
+		(map ) select(filter(map d, partitioning,``(lookup(d,"device","") == item)),0,$[]);
 	    new_val = $[
 			"partition_id"	: 131,
 			"filesystem"	: `reiser
@@ -63,8 +95,8 @@
 	new_val["fsid"] = new_val["partition_id"]:Partitions::fsid_native;
 	new_val["used_fs"] = new_val["filesystem"]:`reiser;
 
-
-	list other_drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
+	
+	list other_drives = filter(map d ,partitioning,``(lookup(d,"device","") != drive));
 
 	map file_systems 	= FileSystems::GetAllFileSystems(true, true);
 	boolean create		= lookup ( new_val , "create", false);
@@ -220,7 +252,7 @@ needs. All fields are required.</P>
 
 		if( UI::QueryWidget(`id(`format),  `CurrentButton) == `format_true )
 		{
-		    symbol filesystem  =  UI::QueryWidget(`id(`fs), `Value);
+		    symbol filesystem  =  (symbol)UI::QueryWidget(`id(`fs), `Value);
 		    map selected_fs =  lookup( file_systems, filesystem , $[] );
 		    // y2milestone("filesystems=%1, this fsystem=%2", selected_fs, filesystem );
 
@@ -232,7 +264,7 @@ needs. All fields are required.</P>
 			return_value     = add( return_value , "partition_id",  selected_fs[`fsid]:131 );
 		    }
 
-		    string mount	=  UI::QueryWidget( `id(`mount_point), `Value);
+		    string mount	= (string)  UI::QueryWidget( `id(`mount_point), `Value);
 		    string subStr	=  substring( String::CutBlanks(mount) , 0,1  );
 		    return_value	=  add( return_value , "mount" , mount);
 		    not_used_mountpoints =  notUsedMountpoints( getTargets(), lookup(selected_fs, `mountpoints, []));
@@ -312,8 +344,8 @@ needs. All fields are required.</P>
 
 		    UI::ChangeWidget(`id(`crypt_fs),    `Value,   false );
 
-		    return_value     = filter(`k, `v , return_value , ``( k != "filesystem" && k != "fs_options"));
-		    string fs_string = UI::QueryWidget(`id(`fsid_point ) , `Value);
+		    return_value     = filter(string k, string v , return_value , ``( k != "filesystem" && k != "fs_options"));
+		    string fs_string = (string) UI::QueryWidget(`id(`fsid_point ) , `Value);
 		    fs_string        = substring( fs_string, 0, 4  );
 		    integer fs_int   = tointeger( fs_string        );
 
@@ -338,18 +370,19 @@ needs. All fields are required.</P>
 	    if ( ret == `ok )
 	    {
 
-		if (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max )
+		if ((symbol) UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max )
 		{
 		    return_value= add(return_value,"size","max");
 		}
-		else if (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto )
+		else if ((symbol) UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto )
 		{
 		    return_value = add (return_value,"size","auto");
 		}
 		else
 		{
-		    string partitionSize =  UI::QueryWidget(`id(`partsize),   `Value);
-		    if (  partitionSize == "") {
+		    string partitionSize =  (string) UI::QueryWidget(`id(`partsize),   `Value);
+		    if (  partitionSize == "")
+		    {
 			Report::Warning(_("Enter the partition size."));
 			continue;
 		    }
@@ -358,7 +391,7 @@ needs. All fields are required.</P>
 			return_value=add(return_value,"size", partitionSize);
 		    }
 		}
-		if (UI::QueryWidget(`id(`asprimary),  `Value))
+		if ((boolean)UI::QueryWidget(`id(`asprimary),  `Value))
 		{
 		    return_value= add(return_value, "partition_type" ,"primary");
 		}
@@ -370,7 +403,7 @@ needs. All fields are required.</P>
 		}
 		else
 		{
-		    change( return_value, "mount",  String::CutBlanks( UI::QueryWidget(`id(`mount_point),   `Value)));
+		    change( return_value, "mount",  String::CutBlanks( (string)UI::QueryWidget(`id(`mount_point),   `Value)));
 		}
 
 		// add fstype to return_value
@@ -384,14 +417,14 @@ needs. All fields are required.</P>
 
 
 		if( !check_crypt_fs_mount_points(lookup(return_value, "mount", ""),
-						     UI::QueryWidget(`id(`crypt_fs), `Value ) ))
+						 (boolean)UI::QueryWidget(`id(`crypt_fs), `Value ) ))
 		{
 		    UI::SetFocus(`id(`mount_point));
 		    continue;
 		}
 
 		// crypto settings
-		boolean crypt_fs = UI::QueryWidget(`id(`crypt_fs), `Value );
+		boolean crypt_fs = (boolean)UI::QueryWidget(`id(`crypt_fs), `Value );
 		return_value = add( return_value, "loop_fs", crypt_fs );
 		return_value = add( return_value, "crypt", "twofish" );
 
@@ -415,7 +448,7 @@ needs. All fields are required.</P>
 		}
 		else
 		{
-		    return_value = filter(`key, `value, return_value, ``( key != "fs_options"));
+		    return_value = filter(string key, any value, return_value, ``( key != "fs_options"));
 		}
 
 
@@ -450,23 +483,23 @@ needs. All fields are required.</P>
      * @param item item to edit
      * @return symbol
      */
-    global define DriveDialog(symbol mode, string item)
+    global define symbol DriveDialog(symbol mode, string item)
 	``{
 
-	list devices = ["/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/sda","/dev/sdb"];
+	list<string> devices = ["/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/sda","/dev/sdb"];
 	if (issubstring(item, "dev")) {
 	    devices=add(devices, item);
 	}
 
 	list drives = AutoinstStorage::AutoPartPlan;
-	list configured_drives = maplist(`c, drives, ``{
+	list configured_drives = maplist(map c, drives, ``{
 	    return(lookup(c,"device","***"));
 	});
 
 	if (item == nil || item == "") {
 	    item = "none";
 	}
-	map current_drive = select(filter(`d, drives,``(d["device"]:"" == item)), 0, $[]);
+	map current_drive = (map)select(filter(map d, drives,``(d["device"]:"" == item)), 0, $[]);
 	boolean usefree = (current_drive["use"]:"" == "free");
 	boolean init = current_drive["initialize"]:false;
 
@@ -498,7 +531,7 @@ For more information, consult the documentation.
 			     `ComboBox(`id(`target),
 				       `opt(`editable),
 				       _("&Drive"),
-				       maplist(`dd, toset(devices), ``{
+				       maplist(string dd, toset(devices), ``{
 					   return(`item(`id(dd), dd, ((dd == item) ? true : false)));
 				       })
 				       )
@@ -559,15 +592,15 @@ For more information, consult the documentation.
 	repeat {
 	    ret = UI::UserInput();
 
-	    if ( UI::QueryWidget(`id(`bgroup2), `CurrentButton) != `reuselisted)
+	    if ( (symbol)UI::QueryWidget(`id(`bgroup2), `CurrentButton) != `reuselisted)
 		UI::ChangeWidget(`id(`reuse_partitions), `Enabled, false);
 	    else
 		UI::ChangeWidget(`id(`reuse_partitions), `Enabled, true);
 
 	    if (ret == `next)
 	    {
-		string device = UI::QueryWidget(`id(`target),`Value);
-		symbol driveopts = UI::QueryWidget(`id(`bgroup2), `CurrentButton);
+		string device = (string) UI::QueryWidget(`id(`target),`Value);
+		symbol driveopts = (symbol) UI::QueryWidget(`id(`bgroup2), `CurrentButton);
 		string usewhat = "";
 		if (mode == `create)
 		{
@@ -577,7 +610,7 @@ For more information, consult the documentation.
 			if (driveopts == `reuseall)
 			    usewhat = "all";
 			else if (driveopts == `reuselisted)
-			    usewhat = UI::QueryWidget(`id(`reuse_partitions), `Value);
+			    usewhat = (string) UI::QueryWidget(`id(`reuse_partitions), `Value);
 			else if (driveopts == `usefree)
 			    usewhat = "free";
 			else if (driveopts == `uselinux)
@@ -586,7 +619,7 @@ For more information, consult the documentation.
 			if (usewhat !="")
 			    drive["use"] = usewhat;
 
-			if (UI::QueryWidget(`id(`init), `Value))
+			if ((boolean) UI::QueryWidget(`id(`init), `Value))
 			     drive["initialize"] = true;
 			else
 			    drive["initialize"] = false;
@@ -605,12 +638,12 @@ Select or enter another device name.
 
 		} else {
 		    //remove current drive from list
-		    drives=filter(`d, drives,``(d["device"]:"" != item));
+		    drives=filter(map d, drives,``(d["device"]:"" != item));
 
 		    if (driveopts == `reuseall)
 			usewhat = "all";
 		    else if (driveopts == `reuselisted)
-			usewhat = UI::QueryWidget(`id(`reuse_partitions), `Value);
+			usewhat = (string) UI::QueryWidget(`id(`reuse_partitions), `Value);
 		    else if (driveopts == `usefree)
 			usewhat = "free";
 		    else if (driveopts == `uselinux)
@@ -626,212 +659,21 @@ Select or enter another device name.
 	    }
 	} until (ret == `next || ret ==`abort || ret == `back);
 	Wizard::CloseDialog();
-	return ret;
+	return (symbol)ret;
 
 
     }
 
 
-    /**
-     * get target
-     * @return targets
-     */
-    global define getTargets ()
-	``{
-	map auto_targets =  listmap (`d, AutoinstStorage::AutoPartPlan, ``{
-	    string device = lookup(d,"device","");
-	    return([device,d]);
-	});
-	return auto_targets;
-    }
 
 
-    /**
-     * Main Partitioning Dialog
-     * @return symbol
-     */
-
-    global define symbol StorageDialog()
-	``{
-
-	any ret = nil;
-	any action = nil;
-
-
-	string help_text = "";
-
-	help_text =  _("<p> Partition your hard disks... </p>");
-
-	help_text = help_text + _("<p>
-The table to the right shows the partitions to be created on the target system.
-</p>
-");
-	help_text = help_text + _("<p><b>Hard disks</b> are designated like this </p>") +
-	    _("<tt>/dev/hda </tt>1st EIDE disk
-<tt>/dev/hdb </tt>2nd EIDE disk
-<tt>/dev/hdc </tt>3rd EIDE disk") +
-_("<p>etc.</p>")+
-_("<p>- or - </p>")+
-_("<p><tt>/dev/sda </tt>1st SCSI disk
-<tt>/dev/sdb </tt>2nd SCSI disk
-<tt>/dev/sdc </tt>3rd SCSI disk</p>");
-
-	 help_text = help_text + _("If no partitions are defined and the specified drive is also
-the drive where the root partition should reside, the following partitions are
-created automatically:");
-	 help_text = help_text + _(" <tt>/boot</tt>, <tt>swap</tt>, and a root partition <tt>/</tt>.
-Sizes are calculated automatically.
-");
-
-	 help_text = help_text + _("<p><b>Advanced Options</b></p>");
-
-	help_text = help_text + _("By default, AutoYaST2 will create an extended partition and adds all new partitions as logical devices. It is possible, however, to instruct AutoYaST2 to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in MBytes.");
-	help_text = help_text + _("These options and other advanced options cannot be configured using this
-interface.  Instead, add them manually to the control file.
-");
-
-	help_text = help_text + _("<p>
-For LVM and RAID setup, consult the documentation and add the configuration
-to an existing control file. You can only create unformatted LVM and RAID partitions as
-a preparation.
-</p>
-");
-
-	Wizard::SetContents(_("Partition Plans"),
-			    StorageDialogContents() , help_text, true, true);
-
-	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
-	repeat {
-	    any item = UI::QueryWidget(`id(`table), `CurrentItem);
-
-	    if (item ==nil)
-	    {
-		UI::ChangeWidget(`id(`delete), `Enabled, false);
-		UI::ChangeWidget(`id(`edit), `Enabled, false);
-
-	    }
-	    else
-	    {
-		list whatitem = splitstring(item,":");
-		if (size(whatitem) >1)
-		{ //Partition
-		    UI::ChangeWidget(`id(`part), `Enabled, false);
-		}
-	    }
-	    ret = UI::UserInput();
-
-	    item = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list drives = AutoinstStorage::AutoPartPlan;
-	    list configured_drives = maplist(`c, drives, ``{
-		return(lookup(c,"device",""));
-	    });
-
-
-	    if (contains(configured_drives, item))
-	    {
-		UI::ChangeWidget(`id(`part), `Enabled, true);
-	    }
-	    else
-	    {
-		UI::ChangeWidget(`id(`part), `Enabled, false);
-	    }
-	    list whatitem = [];
-	    if(item!=nil)
-	    {
-		whatitem = splitstring( item , ":");
-	    }
-
-	    if (ret == `table && size(whatitem) == 0)
-	    {
-		UI::ChangeWidget(`id(`delete), `Enabled, true);
-		UI::ChangeWidget(`id(`edit), `Enabled, true);
-	    }
-	    else if (ret == `drive)
-	    {
-		action = DriveDialog(`create, "" );
-	    }
-	    else if  (ret == `part)
-	    {
-		if (item != nil) {
-		    action = PartitionDialog(`create, item);
-		    UI::ChangeWidget(`id(`table), `CurrentItem, item);
-		}
-		else
-		{
-		    Popup::Message(_("Select a drive first."));
-		    continue;
-		}
-	    }
-	    else if (ret == `edit)
-	    {
-		list item_id = splitstring(item,":");
-		if (size(item_id) >1)
-		{ //Partition
-		    action = PartitionDialog(`edit, item);
-		    UI::ChangeWidget(`id(`table), `CurrentItem, select(item_id,0,""));
-		}
-		else
-		{
-		    action = DriveDialog(`edit, item );
-		}
-	    }
-	    else if (ret == `delete)
-	    {
-
-		list partitioning =  AutoinstStorage::AutoPartPlan;
-		list item_id = splitstring(item,":");
-		map this_drive = $[];
-		string drive = "";
-
-		if (size(item_id)>1) { //Partition
-		    this_drive =
-			select(filter(map d,
-				      partitioning,
-				      ``(lookup(d,"device","") == select(item_id,0,""))),
-			       0,
-			       $[]
-			       );
-		    drive= select(item_id,0,"");
-		    list drive_partitions = this_drive["partitions"]:[];
-		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
-		    change(this_drive,"partitions", drive_partitions);
-
-		    AutoinstStorage::AutoPartPlan= maplist(`d, partitioning,
-					       ``{
-						   if (d["device"]:"" == drive)
-						   {
-						       return(this_drive);
-						   }
-						   else
-						   {
-						       return(d);
-						   }
-					       });
-		}
-		else
-		{
-		    drive = item;
-		    AutoinstStorage::AutoPartPlan = filter(`d,partitioning,``(lookup(d,"device","") != drive));
-		}
-
-
-	    }
-	    if (ret !=`table) {
-		Wizard::SetContents(_("Partition Plan"),
-				    StorageDialogContents() , help_text, true, true);
-	    }
-
-	} until (ret == `next  || ret == `back );
-	return ret;
-    }
 
     global define term StorageDialogContents()
 	``{
 
 	list drives_table = [];
 	string id = "";
-	foreach(`d, AutoinstStorage::AutoPartPlan,
+	foreach(map d, AutoinstStorage::AutoPartPlan,
 		``{
 	    id =lookup(d,"device","");
 	    term a = `item(`id(id));
@@ -847,7 +689,7 @@ a preparation.
 	    integer start_id = 1;
 	    if (size(part)>0)
 	    {
-		foreach(`p, part,
+		foreach(map p, part,
 			``{
 		    id = build_id(lookup(d,"device",""), start_id );
 		    term b = `item(`id(id));
@@ -934,27 +776,198 @@ a preparation.
 	return contents;
     }
 
+    
 
     /**
-     * Build the id for a partition entry in the man table.
-     * @parm disk_dev_name name of the devie e.g.: /dev/hda
-     * @parm nr number of the partition e.g.: 1
-     * @return string e.g.: 01./dev/hda
+     * Main Partitioning Dialog
+     * @return symbol
      */
 
-    global define build_id(  string disk_dev_name , any nr )
+    global define symbol StorageDialog()
 	``{
-        return (sformat( "%1:%2", disk_dev_name, nr));
-    };
+
+	any ret = nil;
+	any action = nil;
 
 
+	string help_text = "";
+
+	help_text =  _("<p> Partition your hard disks... </p>");
+
+	help_text = help_text + _("<p>
+The table to the right shows the partitions to be created on the target system.
+</p>
+");
+	help_text = help_text + _("<p><b>Hard disks</b> are designated like this </p>") +
+	    _("<tt>/dev/hda </tt>1st EIDE disk
+<tt>/dev/hdb </tt>2nd EIDE disk
+<tt>/dev/hdc </tt>3rd EIDE disk") +
+_("<p>etc.</p>")+
+_("<p>- or - </p>")+
+_("<p><tt>/dev/sda </tt>1st SCSI disk
+<tt>/dev/sdb </tt>2nd SCSI disk
+<tt>/dev/sdc </tt>3rd SCSI disk</p>");
+
+	 help_text = help_text + _("If no partitions are defined and the specified drive is also
+the drive where the root partition should reside, the following partitions are
+created automatically:");
+	 help_text = help_text + _(" <tt>/boot</tt>, <tt>swap</tt>, and a root partition <tt>/</tt>.
+Sizes are calculated automatically.
+");
+
+	 help_text = help_text + _("<p><b>Advanced Options</b></p>");
+
+	help_text = help_text + _("By default, AutoYaST2 will create an extended partition and adds all new partitions as logical devices. It is possible, however, to instruct AutoYaST2 to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in MBytes.");
+	help_text = help_text + _("These options and other advanced options cannot be configured using this
+interface.  Instead, add them manually to the control file.
+");
+
+	help_text = help_text + _("<p>
+For LVM and RAID setup, consult the documentation and add the configuration
+to an existing control file. You can only create unformatted LVM and RAID partitions as
+a preparation.
+</p>
+");
+
+	Wizard::SetContents(_("Partition Plans"),
+			    StorageDialogContents() , help_text, true, true);
+
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+	repeat {
+	    any item = UI::QueryWidget(`id(`table), `CurrentItem);
+
+	    if (item ==nil)
+	    {
+		UI::ChangeWidget(`id(`delete), `Enabled, false);
+		UI::ChangeWidget(`id(`edit), `Enabled, false);
+
+	    }
+	    else
+	    {
+		list whatitem = (list)splitstring( (string)item,":");
+		if (size(whatitem) >1)
+		{ //Partition
+		    UI::ChangeWidget(`id(`part), `Enabled, false);
+		}
+	    }
+	    ret = UI::UserInput();
+
+	    item = UI::QueryWidget(`id(`table), `CurrentItem);
+	    list drives = AutoinstStorage::AutoPartPlan;
+	    list configured_drives = maplist(map c, drives, ``{
+		return(lookup(c,"device",""));
+	    });
+
+
+	    if (contains(configured_drives, item))
+	    {
+		UI::ChangeWidget(`id(`part), `Enabled, true);
+	    }
+	    else
+	    {
+		UI::ChangeWidget(`id(`part), `Enabled, false);
+	    }
+	    list whatitem = [];
+	    if(item!=nil)
+	    {
+		whatitem = splitstring( (string)item , ":");
+	    }
+
+	    if (ret == `table && size(whatitem) == 0)
+	    {
+		UI::ChangeWidget(`id(`delete), `Enabled, true);
+		UI::ChangeWidget(`id(`edit), `Enabled, true);
+	    }
+	    else if (ret == `drive)
+	    {
+		action = DriveDialog(`create, "" );
+	    }
+	    else if  (ret == `part)
+	    {
+		if (item != nil) {
+		    action = PartitionDialog(`create, (string)item);
+		    UI::ChangeWidget(`id(`table), `CurrentItem, (string)item);
+		}
+		else
+		{
+		    Popup::Message(_("Select a drive first."));
+		    continue;
+		}
+	    }
+	    else if (ret == `edit)
+	    {
+		list item_id = splitstring((string)item,":");
+		if (size(item_id) >1)
+		{ //Partition
+		    action = PartitionDialog(`edit, (string)item);
+		    UI::ChangeWidget(`id(`table), `CurrentItem, select(item_id,0,""));
+		}
+		else
+		{
+		    action = DriveDialog(`edit, (string) item );
+		}
+	    }
+	    else if (ret == `delete)
+	    {
+
+		list partitioning =  AutoinstStorage::AutoPartPlan;
+		list item_id = splitstring((string)item,":");
+		map this_drive = $[];
+		string drive = "";
+
+		if (size(item_id)>1) { //Partition
+		    this_drive =
+			(map)select(filter(map d,
+				      partitioning,
+				      ``(lookup(d,"device","") == select(item_id,0,""))),
+			       0,
+			       $[]
+			       );
+		    drive= (string)select(item_id,0,"");
+		    list drive_partitions = this_drive["partitions"]:[];
+		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
+		    change(this_drive,"partitions", drive_partitions);
+
+		    AutoinstStorage::AutoPartPlan= maplist(map d, partitioning,
+					       ``{
+						   if (d["device"]:"" == drive)
+						   {
+						       return(this_drive);
+						   }
+						   else
+						   {
+						       return(d);
+						   }
+					       });
+		}
+		else
+		{
+		    drive = (string)item;
+		    AutoinstStorage::AutoPartPlan = filter(map d,partitioning,``(lookup(d,"device","") != drive));
+		}
+
+
+	    }
+	    if (ret !=`table) {
+		Wizard::SetContents(_("Partition Plan"),
+				    StorageDialogContents() , help_text, true, true);
+	    }
+
+	} until (ret == `next  || ret == `back );
+	return ret;
+    }
+
+
+
+ 
     /**
      * Disk selection dialog
      * @return device 
      */
 
 
-    global define DiskSelection() ``{
+    global define string DiskSelection() ``{
 
 	y2milestone("Selecting disk manually....");
 	map tm = Storage::GetTargetMap();
@@ -965,7 +978,7 @@ a preparation.
 	    term buttonbox = `VBox();
 
 	    integer i = 0;
-	    foreach( `tname, `tdata, tm,
+	    foreach( string tname, map tdata, tm,
 		     ``{
 		if( Storage::IsRealDisk( tname, tdata ))
 		{
@@ -1041,7 +1054,7 @@ are shown here. Select the hard disk on which to install SuSE Linux.
 	UI::OpenDialog(`opt(`decorated), ask_device_dialog);
 
 	any ret = nil;
-	any option = nil;
+	string option = "";
 
 	repeat
 	    {
@@ -1049,13 +1062,13 @@ are shown here. Select the hard disk on which to install SuSE Linux.
 		y2milestone("ret=%1", ret);
 		if( ret == `ok )
 		{
-		    option = UI::QueryWidget(`id(`options), `CurrentButton);
+		    option = (string) UI::QueryWidget(`id(`options), `CurrentButton);
 		    y2milestone( "selected disk: %1", option );
 		    if( option == nil )
 		    {
 			// there is a selection from that one option has to be
 			// chosen - at the moment no option is chosen
-			UI::MessagePopup(_("Select one of the options to continue."));
+			Popup::Message(_("Select one of the options to continue."));
 			continue;
 		    }
 		}
