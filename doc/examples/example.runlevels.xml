@@ -8,8 +8,7 @@
 ....
   <runlevels>
    <default>3</default>
-   <services config:type="list" >
-   
+   <services config:type="list" >   
     <service>
      <service_name>at</service_name>
      <service_start>3 5</service_start>
@@ -17,8 +16,11 @@
     </service>
     <service>
      <service_name>portmap</service_name>
-     <service_start>3 5</service_start>
-     <service_stop>2 3 5</service_stop>
+     <service_status>enable</service_status>    
+    </service>
+    <service>
+     <service_name>hwscan</service_name>
+     <service_status>disable</service_status>    
     </service>
    </services>
   </runlevels>

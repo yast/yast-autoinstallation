@@ -1,0 +1,534 @@
+#!/usr/bin/perl
+
+use File::stat;
+use FileHandle;
+use strict 'refs';
+#use RPM;
+
+local (@DATADIRS,@LANGUAGES,%IGNORE,%SEEN_PACKAGE,%IGNORE_PACKAGE);
+my %lang_alias = ("czech"=>"cz","english"=>"en","french"=>"fr","german"=>"de","italian"=>"it","spanish"=>"es" );
+my $ignored_packages = "";
+my $ignore_sources = "0";
+my $extra_provides = "/usr/share/autoinstall/EXTRA_PROV";
+
+$i = 0;
+while ( $arg = shift ( @ARGV ) ) {
+  if ( $arg eq "-d" ) { push @DATADIRS , shift @ARGV ; }
+  elsif ( $arg eq "-l" ) { push @LANGUAGES , shift @ARGV ; }
+  elsif ( $arg eq "-p" ) { $pdb_data_dir = shift @ARGV ; }
+  elsif ( $arg eq "-x" ) { $extra_provides = shift @ARGV ; }
+  elsif ( $arg eq "-i" ) { $ignore_dir = shift @ARGV ; }
+  elsif ( $arg eq "-I" ) { $ignore_file = shift @ARGV ; }
+  elsif ( $arg eq "-o" ) { $output_dir = shift @ARGV ; }
+  elsif ( $arg eq "-S" ) { $ignore_sources = "1"; }
+  else {
+	 print "usage: create_package_descr\n";
+	 print "	[-d DATADIR1 [-d DATADIR2 [... ] ] ] (default cwd)\n";
+	 print "	[-x EXTRA_PROV_FILE ]\n";
+	 print "	[-i IGNORE_DIR ] [-I IGNORE_FILE ]\n";
+	 print "	[-l LANG1 [-l LANG2 [... ] ]    (default english)\n";
+	 print "	[-o OUTPUT_DIR ]                (default cwd/setup/descr)\n";
+	 die ("unknown parameter\n");
+  }
+}
+
+push @DATADIRS , "." unless ( @DATADIRS );
+push @LANGUAGES , "english" unless ( @LANGUAGES );
+$output_dir = "./setup/descr/" unless ( $output_dir );
+
+print "\n\nusing settings:\n";
+print "datadirs: ".join(",",@DATADIRS)."\n";
+print "languages: ".join(",",@LANGUAGES)."\n";
+print "output dir: $output_dir\n";
+if ( -d $pdb_data_dir ) {
+  print "pdb data: $pdb_data_dir\n";
+} else {
+  print "$pdb_data_dir is not a directory: ignoring\n";
+  $pdb_data_dir = "";
+}
+
+unless ( -d $output_dir ) {
+	print "creating output directory $output_dir\n";
+	mkdir_p($output_dir);
+}
+
+if ( $extra_provides ) {
+  if ( -f $extra_provides ) {
+    print "extra_provides: $extra_provides\n";
+    %xprovlist = %{ReadFileToHash( $extra_provides )};
+  } else {
+    print "extra_provides: file $extra_provides not found!\n";
+  }
+} else {
+    print "extra_provides: not specified\n";
+    print "WARNING: this means all provides like /bin/sh will be missing\n";
+}
+
+if ( $ignore_dir ) {
+  if ( -d $ignore_dir && opendir ( IGNDIR, "$ignore_dir") ) {
+    while ( $ign = readdir( IGNDIR ) ) {
+      next if ( $ign =~ /^\./ );
+      $IGNORE_PACKAGE{$ign} = "yes";
+    }
+    closedir ( IGNDIR );
+    print "ignoring packages listed in dir $ignore_dir\n";
+  }
+}
+
+if ( $ignore_file ) {
+  if ( -f $ignore_file && open ( IGNFILE, "$ignore_file" ) ) {
+    while ( $ign = <IGNFILE> ) {
+      chomp ( $ign );
+      $IGNORE_PACKAGE{$ign} = "yes";
+    }
+    close ( IGNFILE );
+    print "ignoring packages listed in file $ignore_file\n";
+  }
+}
+
+if ( $ignore_sources eq "1" ) {
+    print "WARNING: ignoring all source packages\n";
+}
+
+$pkg_main = OpenFileWrite ( "$output_dir/packages" );
+WriteSEntry( $pkg_main, "Ver", "2.0" );
+foreach $lang (@LANGUAGES) {
+  $pkg_lang{$lang} = OpenFileWrite ( "$output_dir/packages.$lang_alias{$lang}" );
+  WriteSEntry( $pkg_lang{$lang}, "Ver", "2.0" );
+}
+$pkg_du = OpenFileWrite ( "$output_dir/packages.DU" );
+
+WriteSEntry( $pkg_du, "Ver", "2.0" );
+
+$media_number = 0;
+$dotcounter = 0;
+$allcounter = 0;
+foreach $datapath (@DATADIRS) {
+  $media_number++;
+  open ( FIND, "find $datapath -name \"*.[rs]pm\" -maxdepth 2 -print | sort |" );
+  while ( <FIND> ) {
+   #print "found $_\n";
+   $dotcounter++;
+   $allcounter++;
+   if ( $dotcounter == 10 ) {
+      print ".";
+      $dotcounter = 0;
+   }
+   $filespec = $_;
+   chomp ( $filespec );
+   $filespec =~ /\/([^\/]*)$/;
+   $filename = $1;
+   $filesize = stat($filespec)->size;
+   # name, version, release, arch, obsolete, requires, provides,
+   # conflicts, copyright, group, buildtime, size, sourcerpm
+   my %res = RPM::rpmq_many($_, 1000, 1001, 1002, 1022,
+                        1090, 1114, 1115,
+                        1047, 1112, 1113,
+                        1049, 1048, 1050,
+                        1054, 1053, 1055,
+                        1014, 1016, 1006, 1009, 1044,1004,1005);
+    my @depexcl = $res{1054};
+    my @prereq = rpmq_add_req_flagsvers(\%res, 1049, 1048, 1050); # requires
+    RPM::rpmq_add_flagsvers(\%res, 1047, 1112, 1113); # provides
+    RPM::rpmq_add_flagsvers(\%res, 1090, 1114, 1115); # obsoletes
+    RPM::rpmq_add_flagsvers(\%res, 1054, 1053, 1055); # conflicts
+   $rpm_name = $res{1000}[0];
+   if ( $IGNORE_PACKAGE{$rpm_name} && $IGNORE_PACKAGE{$rpm_name} eq "yes" ) {
+      $ignored_packages .= " $rpm_name";
+      next;
+   }
+   $srcrpm = $res{1044}[0];
+   $srcrpm =~ s/^(.*)-([^-]*)-([^-]*)\.([^\.]*)\.rpm$/\1 \2 \3 \4/;
+   if ( $res{1044}[0] ) {
+	@DULIST = RpmToDulist($filespec,"");
+	$file_arch = $res{1022}[0];
+   } else {
+	next if ( $ignore_sources eq "1" );
+	# has no source, so it is a source
+	$file_arch = $filename;
+	$file_arch =~ s/^.*\.([^\.]*)\.rpm$/\1/;
+	@DULIST = RpmToDulist($filespec,"/usr/src/packages/");
+   }
+   if ( $xprovlist{$rpm_name} ) {
+     foreach $xprov (split('\s', $xprovlist{$rpm_name} )) {
+	push (@{$res{1047}},$xprov);
+     }
+   }
+
+    WriteSeparator( $pkg_main );
+    WriteSEntry( $pkg_main, "Pkg", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $file_arch");
+    if ( $res{1044}[0] ) {
+    	# has src, so it's a binary package
+    	WriteMEntry( $pkg_main, "Req", @{$res{1049}} );
+    	WriteMEntry( $pkg_main, "Prq", @prereq );
+    	WriteMEntry( $pkg_main, "Prv", @{$res{1047}} );
+    	WriteMEntry( $pkg_main, "Con", @{$res{1054}} );
+    	WriteMEntry( $pkg_main, "Obs", @{$res{1090}} );
+    	WriteSEntry( $pkg_main, "Grp", $res{1016}[0] );
+    	WriteSEntry( $pkg_main, "Lic", $res{1014}[0] );
+    	WriteSEntry( $pkg_main, "Src", $srcrpm );
+	WriteSEntry( $pkg_main, "Tim", $res{1006}[0] );
+    }
+    WriteSEntry( $pkg_main, "Loc", "$media_number $filename");
+    WriteSEntry( $pkg_main, "Siz", "$filesize $res{1009}[0]" );
+	
+    if ( $SEEN_PACKAGE{"$rpm_name $res{1001}[0] $res{1002}[0]"} ) {
+	$found_in = $SEEN_PACKAGE{"$rpm_name $res{1001}[0] $res{1002}[0]"};
+	WriteSEntry( $pkg_main, "Shr", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $found_in");
+    } else {
+	if ( $pdb_data_dir ) {
+	    delete $INC{"$pdb_data_dir/$rpm_name.pl"};
+	    require "$pdb_data_dir/$rpm_name.pl" if ( -f "$pdb_data_dir/$rpm_name.pl");
+
+	    WriteMEntry( $pkg_main, "Aut", @{$pacdata{$rpm_name}{"authorname"}} );
+	    foreach $lang (@LANGUAGES) {
+		WriteSeparator( $pkg_lang{$lang} );
+		WriteSEntry( $pkg_lang{$lang}, "Pkg", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $file_arch");
+		WriteSEntry( $pkg_lang{$lang}, "Sum", $pacdata{$rpm_name}{$lang}{"label"} );
+		WriteMEntry( $pkg_lang{$lang}, "Des", @{$pacdata{$rpm_name}{$lang}{"description"}});
+		WriteMEntry( $pkg_lang{$lang}, "Ins", @{$pacdata{$rpm_name}{$lang}{"notice"}});
+		WriteMEntry( $pkg_lang{$lang}, "Del", @{$pacdata{$rpm_name}{$lang}{"delnotice"}});
+	    }
+	} else {
+	    foreach $lang (@LANGUAGES) {
+		WriteSeparator( $pkg_lang{$lang} );
+		WriteSEntry( $pkg_lang{$lang}, "Pkg", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $file_arch");
+		WriteSEntry( $pkg_lang{$lang}, "Sum", "$res{1004}[0]" );
+		WriteMEntry( $pkg_lang{$lang}, "Des", split('\n', $res{1005}[0] ));
+	    }
+	}
+    }
+    WriteSeparator( $pkg_du );
+    WriteSEntry( $pkg_du, "Pkg", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $file_arch");
+    WriteMEntry( $pkg_du, "Dir", @DULIST );
+    $SEEN_PACKAGE{"$rpm_name $res{1001}[0] $res{1002}[0]"} = $file_arch;
+  }
+  close ( FIND );
+}
+print " done\nprocessed $allcounter packages\n";
+if ( $ignored_packages ) {
+    print "following packages were ignored: $ignored_packages\n";
+}
+
+close ( $pkg_main );
+foreach $lang (@LANGUAGES) {
+  close ( $pkg_lang{$lang} );
+}
+close ( $pkg_du );
+
+print "now recoding to UTF-8: ";
+foreach $file ("packages","packages.DU") {
+    print "$file ";
+    system ( "recode ISO-8859-1...UTF-8 $output_dir/$file" );
+}
+foreach $lang (@LANGUAGES) {
+    $file = "packages.$lang_alias{$lang}";
+    print "$file ";
+    if ( $lang eq "czech" ) {
+	system ( "recode ISO-8859-2...UTF-8 $output_dir/$file" );
+    } else {
+	system ( "recode ISO-8859-1...UTF-8 $output_dir/$file" );
+    }
+}
+print "\n";
+
+#####################################################################
+#####################################################################
+
+sub mkdir_p {
+  my $dir = shift;
+
+  return 1 if -d $dir;
+  if ($dir =~ /^(.*)\//) {
+    mkdir_p($1) || return undef;
+  }
+  return undef if !mkdir($dir, 0777);
+  return 1;
+}
+
+sub OpenFileWrite {
+  my $filename = shift;
+  my ($FH) = new FileHandle;
+  open ($FH, ">$filename") || die "ERROR: can't write output file $filename";
+  return $FH;
+}
+
+sub OpenFileRead {
+  my $filename = shift;
+  my ($FH) = new FileHandle;
+  open ($FH, "<$filename") || die "ERROR: can't read input file $filename";
+  return $FH;
+}
+
+sub ReadFileToHash {
+  local ($filename) = @_;
+  local (%temp);
+  my $FH = OpenFileRead( $filename );
+  while (<$FH>) {
+    chomp ($_);
+    last if ( $_ =~ /^:END/ );
+    next if ( $_ =~ /^\#/ );
+    next if ( $_ =~ /^\s$/ );
+    local ($le,$ri) = split (/:/, $_, 2 );
+    $le =~ s/^\s*(.*)\s*$/\1/;
+    $ri =~ s/^\s*(.*)\s*$/\1/;
+    $temp{$le}=$ri;
+  }
+  close ($FH);
+  \%temp;
+}
+
+sub WriteSeparator {
+  my ($FH) = shift;
+  print $FH "##----------------------------------------\n";
+}
+
+sub WriteSEntry {
+  my ($FH,$tag,$value) = @_;
+  if ( $value ) { print $FH "=$tag: $value\n"; }
+}
+
+sub WriteMEntry {
+  my ($FH,$tag,@value) = @_;
+  if ( @value && $value[0] ) {
+    print $FH "+$tag:\n";
+    print $FH join("\n", @value)."\n";
+    print $FH "-$tag:\n";
+  }
+}
+
+sub rpmq_add_req_flagsvers {
+  my $res = shift;
+  my $name = shift;
+  my $flags = shift;
+  my $vers = shift;
+  my @prereq = ();
+  return unless $res;
+  my @flags = @{$res->{$flags} || []};
+  my @vers = @{$res->{$vers} || []};
+  for (@{$res->{$name}}) {
+    if (@flags && ($flags[0] & 0xe) && @vers) {
+      $_ .= ' ';
+      $_ .= '<' if $flags[0] & 2;
+      $_ .= '>' if $flags[0] & 4;
+      $_ .= '=' if $flags[0] & 8;
+      $_ .= " $vers[0]";
+    }
+    if ( $flags[0] & 64 ) {
+	push ( @prereq, $_ );
+    }
+    shift @flags;
+    shift @vers;
+  }
+  return @prereq;
+}
+
+sub RpmToDulist {
+    local ($filename,$prefix) = @_;
+    local (%dirsize, %subdirsize, %dirnum, %subdirnum, @dulist);
+
+    open ( FILES , "rpm -qplv $filename |") || die "cant open infile $filename";
+    while (<FILES>) {
+        ($rights , $owner, $group, $size, $month, $day, $time, $name ) = split( ' ', $_ );
+        $size = int ( $size / 1024 ) + 1;
+        if ( $_ =~ /^\-/ ) {
+	    $name = $prefix.$name;
+            @path = split ( '/', $name );
+            pop ( @path );
+            $rpath = join('/',@path) ;
+            $dirsize{$rpath} += $size;
+            $dirnum{$rpath} += 1;
+            $subdirsize{$rpath} += 0;
+            $subdirnum{$rpath} += 0;
+            while (pop(@path)) {
+                $rpath = join('/',@path) ;
+                $subdirsize{$rpath} += $size;
+                $subdirnum{$rpath} += 1;
+            }
+        }
+    }
+    close (FILES);
+
+    foreach $dir ( sort ( keys (%subdirsize) ) ) {
+        if ( $dirsize{$dir} || $subdirsize{$dir} ) {
+            $prdir = $dir;
+            $prdir =~ s/^\///;
+	    $curline = "$prdir/ ";
+	    $curline .= $dirsize{$dir} ? "$dirsize{$dir} " : "0 ";
+            $curline .= $subdirsize{$dir} ? "$subdirsize{$dir} " : "0 ";
+            $curline .= $dirnum{$dir} ? "$dirnum{$dir} " : "0 ";
+            $curline .= $subdirnum{$dir} ? "$subdirnum{$dir} " : "0 ";
+	    push @dulist, $curline;
+        }
+    }
+    return @dulist;
+}
+
+####################### copied from RPM.pm by mls #################################
+package RPM;
+
+sub rpmpq {
+  my $rpm = shift;
+  local *RPM;
+
+  return undef unless open(RPM, "< $rpm");
+  my $head;
+  if (sysread(RPM, $head, 75) < 11) {
+    close RPM;
+    return undef;
+  }
+  close RPM;
+  return unpack('@10Z65', $head);
+}
+
+sub rpmq {
+  my $rpm = shift;
+  my $stag = shift;
+
+  my %ret = rpmq_many($rpm, $stag);
+  return @{$ret{0+$stag} || [undef]};
+}
+
+sub rpmq_many {
+  my $rpm = shift;
+  my @stags = @_;
+
+  my %stags = map {0+$_ => 1} @stags;
+
+  my ($magic, $sigtype, $headmagic, $cnt, $cntdata, $lead, $head, $index, $data, $tag, $type, $offset, $count);
+
+  local *RPM;
+  return () unless open(RPM, "<$rpm");
+  if (read(RPM, $lead, 96) != 96) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+
+  ($magic, $sigtype) = unpack('N@78n', $lead);
+  if ($magic != 0xedabeedb || $sigtype != 5) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+
+  if (read(RPM, $head, 16) != 16) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+  ($headmagic, $cnt, $cntdata) = unpack('N@8NN', $head);
+  if ($headmagic != 0x8eade801) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+  if (read(RPM, $index, $cnt * 16) != $cnt * 16) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+  $cntdata = ($cntdata + 7) & ~7;
+  if (read(RPM, $data, $cntdata) != $cntdata) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+
+  if (read(RPM, $head, 16) != 16) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+  ($headmagic, $cnt, $cntdata) = unpack('N@8NN', $head);
+  if ($headmagic != 0x8eade801) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+  if (read(RPM, $index, $cnt * 16) != $cnt * 16) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+  if (read(RPM, $data, $cntdata) != $cntdata) {
+    warn("Bad rpm $rpm\n");
+    close RPM;
+    return ();
+  }
+  close RPM;
+
+  my %res = ();
+  while($cnt-- > 0) {
+    ($tag, $type, $offset, $count, $index) = unpack('N4a*', $index);
+    $tag = 0+$tag;
+    if ($stags{$tag}) {
+      eval {
+	if ($type == 0) {
+	  $res{$tag} = [ '' ];
+	} elsif ($type == 1) {
+	  $res{$tag} = [ unpack("\@${offset}c$count", $data) ];
+	} elsif ($type == 2) {
+	  $res{$tag} = [ unpack("\@${offset}c$count", $data) ];
+	} elsif ($type == 3) {
+	  $res{$tag} = [ unpack("\@${offset}n$count", $data) ];
+	} elsif ($type == 4) {
+	  $res{$tag} = [ unpack("\@${offset}N$count", $data) ];
+	} elsif ($type == 5) {
+	  $res{$tag} = [ undef ];
+	} elsif ($type == 6) {
+	  $res{$tag} = [ unpack("\@${offset}Z*", $data) ];
+	} elsif ($type == 7) {
+	  $res{$tag} = [ unpack("\@${offset}a$count", $data) ];
+	} elsif ($type == 8 || $type == 9) {
+	  my $d = unpack("\@${offset}a*", $data);
+	  my @res = split("\0", $d, $count + 1);
+	  $res{$tag} = [ splice @res, 0, $count ];
+	} else {
+	  $res{$tag} = [ undef ];
+	}
+      };
+      if ($@) {
+	warn("Bad rpm $rpm: $@\n");
+        return ();
+      }
+    }
+  }
+  return %res;
+}
+
+sub rpmq_add_flagsvers {
+  my $res = shift;
+  my $name = shift;
+  my $flags = shift;
+  my $vers = shift;
+
+  return unless $res;
+  my @flags = @{$res->{$flags} || []};
+  my @vers = @{$res->{$vers} || []};
+  for (@{$res->{$name}}) {
+    if (@flags && ($flags[0] & 0xe) && @vers) {
+      $_ .= ' ';
+      $_ .= '<' if $flags[0] & 2;
+      $_ .= '>' if $flags[0] & 4;
+      $_ .= '=' if $flags[0] & 8;
+      $_ .= " $vers[0]";
+    }
+    shift @flags;
+    shift @vers;
+  }
+}
+
+sub rpmq_provreq {
+  my $rpm = shift;
+
+  my @prov = ();
+  my @req = ();
+  my $r;
+  my %res = rpmq_many($rpm, 1047, 1049, 1048, 1050, 1112, 1113);
+  rpmq_add_flagsvers(\%res, 1047, 1112, 1113);
+  rpmq_add_flagsvers(\%res, 1049, 1048, 1050);
+  return $res{1047}, $res{1049};
+}
+
+1;

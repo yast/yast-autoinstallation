@@ -582,7 +582,7 @@
 	<para>
 	  The default property specifies the <emphasis>default</emphasis> run
 	  level of the system. Changes to the default runlevel will take effect
-	  next time you boot the target system. After installation is completed,
+	  the next time you boot the system. After installation is completed,
 	  the system has runlevel 5, which is  <emphasis>Full multiuser with
 	    network and xdm</emphasis>. If you have configured a system with no
 	  X11, then it is recommended to reboot the system after the first stage
@@ -590,38 +590,13 @@
 
 	</para>
 	<para>
-	  Please specify the runlevels a service should run in using a space
-	  delimited list of the runlevels as shown in the following example.
+	  A service should run in using a space delimited list of the runlevels
+	  as shown in the  following example. An alternative to specifying the
+	  exact runlevels is to change the status of the service by either
+	  enabling or disabling it using the
+	  <emphasis>service_status</emphasis> property.
 	</para>
-	<example>
-	  <title>
-	    Run-level Configuration
-	  </title>
-	  <screen>
-<![CDATA[
-<configure>
-....
-  <runlevels>
-   <default>3</default>
-   <services config:type="list" >
-   
-    <service>
-     <service_name>at</service_name>
-     <service_start>3 5</service_start>
-     <service_stop>2 3 5</service_stop>
-    </service>
-    <service>
-     <service_name>portmap</service_name>
-     <service_start>3 5</service_start>
-     <service_stop>2 3 5</service_stop>
-    </service>
-   </services>
-  </runlevels>
-....
-</configure>
-]]>
-	  </screen>
-	</example>
+	&example.runlevel;
 	
       </sect2>
 

@@ -631,26 +631,30 @@
 	map Software = Install["software"]:$[];
 	list addons = Software["addons"]:[];
 
-	if (Software["base"]:"" != "")
+	string  base_selection = Software["base"]:"Minimal";
+	if (! Pkg::SetSelection( base_selection ))
 	{
-	    string  base_selection = Software["base"]:"Minimal";
-	    ret = Pkg::SetSelection( base_selection );
-	    y2milestone ( "Selecting %1 returns: %2", base_selection, ret );	     
+	    y2error("Error while setting base selection: %1", base_selection);	  
+	    return false;
 	}
-
+	
 	foreach(`s, toset(addons),
 		``{	
-	    ret = Pkg::SetSelection( s );	    
+	    if (!Pkg::SetSelection( s ))
+	    {
+		y2error("Error while setting addon selection: %1", s);
+		Report::Warning(_("Could not set add on selection %1"), s);
+	    }
 	});
 
 	// single selected packages
-	list Packages = union(Software["packages"]:[], forcedPackages);			
+	list Packages = union(Software["packages"]:[], forcedPackages);
+	
 	Pkg::DoProvide(Packages);
 
 	SpaceCalculation::ShowPartitionWarning();
 	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",  Pkg::GetSelections(`selected, "base"), Pkg::GetSelections(`selected, ""));
-	return (Pkg::ActivateSelections());
-        
+	return (Pkg::ActivateSelections());        
     }
 
 

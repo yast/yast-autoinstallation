@@ -79,7 +79,7 @@ Please wait while the system is being configured.
 
     AutoInstall::CopyFiles();
 
-    y2milestone("Module map: %1", AutoInstall::ModuleMap);
+    y2debug("Module map: %1", AutoInstall::ModuleMap);
     foreach(`p,`d, AutoInstall::ModuleMap,
 	    ``{
 
@@ -98,7 +98,7 @@ Please wait while the system is being configured.
 		module_write = sformat("%1_write", p);
 
 
-	    y2milestone("Writing configuration for %1", d["Name"]:"");
+	    y2debug("Writing configuration for %1", d["Name"]:"");
 	    if (haskey(install, resource) || haskey(configure, resource) )
 	    {
 		if (d["AutoinstDataType"]:"map" == "map")
