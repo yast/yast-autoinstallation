@@ -201,8 +201,10 @@
     }
 
     /**
-     * getResourceData()
      * Get resource data
+     * @param resourceMap Resource Map
+     * @param resrouce the resource
+     * @return any Resource Data
      */
     global define any getResourceData( map resourceMap, string resource)
     {
@@ -227,17 +229,26 @@
 		    mergedResource[res] = eval(Profile::Flat[res]:[]);
 		i = i + 1;
 	    });
-	    return mergedResource;
+            if (mergedResource==$[])
+                return nil;
+            else
+	        return mergedResource;
 	}
 	else
 	{
 	    if (data_type == "map")
 	    {
-		return (eval(Profile::Flat[resource]:$[]));
+                if (Profile::Flat[resource]:$[] == $[])
+                    return nil;
+                else
+		    return (eval(Profile::Flat[resource]:$[]));
 	    }
 	    else
 	    {
-		return (eval(Profile::Flat[resource]:[]));
+                if (Profile::Flat[resource]:[] == [] )
+                    return nil;
+                else
+		    return (eval(Profile::Flat[resource]:[]));
 	    }
 	}
 
