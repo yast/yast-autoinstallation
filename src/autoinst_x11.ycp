@@ -16,11 +16,11 @@
     import "Summary";
 
     include "wizard/sequencer.ycp";
-   
-    include "ui/common_messages.ycp";
-    
 
-    
+    include "ui/common_messages.ycp";
+
+
+
     list args = WFM::Args ();
 
     if ( size (args) <= 0 )
@@ -47,7 +47,7 @@
     y2milestone("Imported: (%1)", settings);
     map x11 = settings;
     include "autoinstall/x11_dialogs.ycp";
-    
+
     define Summary() ``{
 	string summary = "";
 	map m = settings["monitor"]:$[];
@@ -66,7 +66,7 @@
 
 	string horizontal = sformat("%1 - %2",  d["min_hsync"]:0 , d["max_hsync"]:0);
 	string vertical = sformat("%1 - %2",  d["min_vsync"]:0 , d["max_vsync"]:0);
-	
+
 	summary = Summary::AddHeader(summary, _("Monitor"));
 	summary = Summary::AddLine(summary, monitor);
 	summary = Summary::AddHeader(summary, _("Horizontal frequency"));
@@ -77,7 +77,7 @@
 	return summary;
     }
 
-    
+
     define set_contents()
 	``{
 	string caption = _("Configure &X11 Options");
@@ -98,7 +98,7 @@
     }
     map dialogs = $[
 		    "x11"		:	``(   x11Options(settings) )
-		   
+
     ];
 
 
