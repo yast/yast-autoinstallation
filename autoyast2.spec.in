@@ -36,6 +36,9 @@ Requires:	yast2-transfer
 
 @INSTALL@
 
+# Class conf
+install -d $RPM_BUILD_ROOT/etc/autoinstall
+
 # Installation files
 install -d $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
 install -d $RPM_BUILD_ROOT/var/adm/autoinstall/logs
@@ -58,6 +61,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 
 %files
 %defattr(-,root,root)
+%dir /etc/autoinstall
 %dir @yncludedir@/autoinstall
 %dir /var/lib/autoinstall/repository
 %dir /var/lib/autoinstall/repository/templates
