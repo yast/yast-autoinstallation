@@ -139,35 +139,58 @@
             string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
             if ( (boolean) WFM::CallFunction(module_auto, ["GetModified"]))
             {
-            any resource_data = WFM::CallFunction(module_auto, ["Export"]);
+                any resource_data = WFM::CallFunction(module_auto, ["Export"]);
 
-            integer s = 0;
-            if ( tomerge == "") {
-            if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
-            {
-            s = size((map)resource_data);
-            }
-            else
-            {
-                s = size((list)resource_data);
-            }
-            }
+                integer s = 0;
+                if ( tomerge == "") {
+                    if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
+                    {
+                        s = size((map)resource_data);
+                    }
+                    else
+                    {
+                        s = size((list)resource_data);
+                    }
+                }
 
-            if ( s != 0 || tomerge != "")
-            {
-                if (d["X-SuSE-YaST-AutoInstPath"]:"" == "install")
+                if ( s != 0 || tomerge != "")
                 {
-                    Install[resource] = resource_data;
+
+                    if (size(tomerge) > 0 )
+                    {
+                        integer i = 0;
+                        string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
+                        list MergeTypes = splitstring(tomergetypes, ",");
+
+                        foreach( string res, (list<string>)splitstring(tomerge, ",") , ``{
+                            if ( MergeTypes[i]:"map" == "map")
+                            {
+                                Configure[res] = lookup( (map)
+                                    resource_data, "res", $[]);
+                            }
+                            else
+                            {
+                                Configure[res] = lookup( (map)
+                                    resource_data, res, [] );
+                            }
+                            i = i + 1;
+                        });
+                    } else {
+
+                        if (d["X-SuSE-YaST-AutoInstPath"]:"" == "install")
+                        {
+                            Install[resource] = resource_data;
+                        }
+                        else
+                        {
+                            Configure[resource] = resource_data;
+                        }
+                    }
                 }
-                else
+                else if (s == 0 )
                 {
-                    Configure[resource] = resource_data;
+                    e = add ( e, resource);
                 }
-            }
-            else if (s == 0 )
-            {
-                e=add(e, resource);
-            }
             }
 	});
 
