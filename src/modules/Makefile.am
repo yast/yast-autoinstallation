@@ -9,14 +9,16 @@ module_DATA = $(wildcard *.ycp)
 EXTRA_DIST =                    \
 	$(module_DATA)
 
-symlinks:
-	test -d dialogs || mkdir dialogs && ln -sf ../../dialogs dialogs/autoinstall
-	test -d include || mkdir include && ln -sf ../../include include/autoinstall
+dialogs:
+	mkdir dialogs && ln -sf ../../dialogs dialogs/autoinstall
+
+include:
+	mkdir include && ln -sf ../../include include/autoinstall
 
 
 #	test -L autoinstall || ln -sf ../include autoinstall
 
-ycpchook = symlinks
+ycpchook = dialogs include
 
 include $(top_srcdir)/Makefile.am.common
 
