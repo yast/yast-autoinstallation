@@ -1,0 +1,24 @@
+{
+
+
+    import "XML";
+    import "Mode";
+    Mode::config = true;
+    include "autoinstall/xml.ycp";
+
+    profileSetup();
+    string client = "";
+
+    if (size (WFM::Args ()) > 0 && (is (WFM::Args(0), string)))
+    {
+        client = (string)WFM::Args(0);
+    }
+
+    WFM::CallFunction( client + "_auto", ["Read"]);
+    any result = WFM::CallFunction( client + "_auto", ["Export"]);
+    map current = $[];
+    current[client] = result;
+    XML::YCPToXMLFile(`profile, current,  client + ".xml");
+
+
+}
