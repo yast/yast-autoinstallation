@@ -1,0 +1,87 @@
+/**
+ * File:	clients/autoinst_post.ycp
+ * Package:	Auto-installation
+ * Author:      Anas Nashif <nashif@suse.de>
+ * Summary:	This module finishes auto-installation and configures
+ *		the system as described in the profile file.
+ *
+ * $Id$
+ */
+
+{
+    textdomain "autoinst";
+    import "Profile";
+    import "AutoInstall";
+    import "Call";
+    import "Y2ModuleConfig";
+	import "AutoinstSoftware";
+
+	list packages = [];
+    string resource = "";
+    string module_auto = "";
+
+    foreach(`p,`d, Y2ModuleConfig::ModuleMap,
+	    ``{
+
+	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write")
+	{
+	    if (haskey(d,"AutoinstResource"))
+	    {
+		resource = d["AutoinstResource"]:"unknown";
+	    }
+	    else
+	    {
+		resource = p;
+	    }
+	    // determine name of client, if not default name
+	    if (haskey(d,"AutoClient"))
+		module_auto = d["AutoClient"]:"none";
+	    else
+		module_auto = sformat("%1_auto", p);
+
+	    map result = $[];
+	    if (haskey(Profile::Flat , resource) )
+	    {
+		string tomerge = d["AutoinstMerge"]:"";
+		string tomergetypes = d["AutoinstMergeTypes"]:"";
+		list MergeTypes = splitstring(tomergetypes, ",");
+
+		if (  size(tomerge) > 0 )
+		{
+		    integer i = 0;
+		    foreach( string res, splitstring(tomerge, ",") ,
+			     ``{
+			if ( MergeTypes[i]:"map" == "map")
+			    result[res] = Profile::Flat[res]:$[];
+			else
+			    result[res] = Profile::Flat[res]:[];
+			i = i + 1;
+		    });
+		    Call::Function(module_auto, ["Import", result ]);
+		    any out = Call::Function(module_auto, ["Packages", result ]);
+			if (is(out, list))
+				packages = union(packages, out);
+		}
+		else if (d["AutoinstDataType"]:"map" == "map")
+		{
+		    Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
+		    any out = Call::Function(module_auto, ["Packages", Profile::Flat[resource]:$[]  ]);
+			if (is(out, list))
+				packages = union(packages, out);
+		}
+		else
+		{
+		    Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
+		    any out = Call::Function(module_auto, ["Packages",  Profile::Flat[resource]:[] ]);
+			if (is(out, list))
+				packages = union(packages, out);
+		}
+	    }
+	}
+    });
+	list post = AutoinstSoftware::post_packages;
+	AutoinstSoftware::post_packages = toset(union(post,packages));
+
+	return `auto;
+
+}
