@@ -30,7 +30,7 @@
 
 		       `VSquash(`HBox(
 
-				      `TextEntry(`id(`classdir), _("&Class directory:"), AIClass::ClassDir),
+				      `TextEntry(`id(`classdir), _("&Class directory:"), AIClass::classDir),
 				      `VBox(
 					    `VSpacing(),
 					    `Bottom(`PushButton(`id(`openclassdir), _("Select &Directory")))
@@ -51,7 +51,7 @@
 
 
 	string help = _("<P>
-Enter the directory where all <em>Profiles</em> should be stored in
+Enter the directory where all <em>control files</em> should be stored in
 the <b>Repository</b> field.</P>");
 
 	help = help + _("<P>In case you are using the classes feature
@@ -93,15 +93,15 @@ contains all the packages.</p>");
 	    }
 	    else if (ret ==`openclassdir)
 	    {	
-		new_classdir = PopupDir(AIClass::ClassDir);
-		if ( AIClass::ClassDir!= new_classdir) {
+		new_classdir = PopupDir(AIClass::classDir);
+		if ( AIClass::classDir!= new_classdir) {
 		    changed = true;
-		    AIClass::ClassDir = new_classdir;
+		    AIClass::classDir = new_classdir;
 		}
 		
-		if (AIClass::ClassDir!="")
+		if (AIClass::classDir!="")
 		{
-		    UI::ChangeWidget(`id(`classdir), `Value, AIClass::ClassDir);	
+		    UI::ChangeWidget(`id(`classdir), `Value, AIClass::classDir);	
 		}
 
 	    }
@@ -127,9 +127,9 @@ contains all the packages.</p>");
 		    changed = true;
 		    AIConfig::Repository = new_rep;
 		}
-		if (AIClass::ClassDir != new_classdir) {
+		if (AIClass::classDir != new_classdir) {
 		    changed = true;
-		    AIClass::ClassDir = new_classdir;
+		    AIClass::classDir = new_classdir;
 		}			
 	    }
 	    
@@ -137,9 +137,9 @@ contains all the packages.</p>");
 		changed = true;
 		AIServer::PackageRep = new_susedir;
 	    }
-	    if ( AIClass::ClassDir!= new_classdir) {
+	    if ( AIClass::classDir!= new_classdir) {
 		changed = true;
-		AIClass::ClassDir = new_classdir;
+		AIClass::classDir = new_classdir;
 	    }
 	    if (AIConfig::Repository != new_rep) {
 		changed = true;
@@ -324,9 +324,16 @@ contains all the packages.</p>");
 	``{
 	string title = _("File Management");
 	string help = _("
-<P>Please select one of the listed Profiles and press <b>Open</b>
+<P>Please select one of the listed <em>Control Files</em> and use the <b>Edit</b> button
 to load it or create a new Profile using the
 <b>New</b> button.</P>");
+
+	help = help + _("<p>You can switch between complete control files, which are ready to be used
+and templates which contain class defintions and can be created using this dialog.</p>");
+
+	help = help + _("<p>Control file created from templates will be automatically copied into the
+<em>control file repository</em></p>");
+
 
 	
 	Wizard::SetContents(title,
