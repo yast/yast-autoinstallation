@@ -75,12 +75,9 @@
 		string html = "";
 		foreach(`k,`v, AIConfig::ModuleMap, ``{
 		    if (v["Group"]:"" == tree_item)
-		    {
-			y2milestone("domain : %1", v["Textdomain"]:"autoinst");
-			string dummy = textdomain (v["Textdomain"]:"autoinst");
+		    {						
 			html = html + HTML::Heading( HTML::Link(Translate(v["Name"]:""),k));
-			html = html + HTML::Para(Translate(v["Helptext"]:""));
-			string dummy2 = textdomain ("autoinst");
+			html = html + HTML::Para(Translate(v["Helptext"]:""));			
 		    }
 		});
 
