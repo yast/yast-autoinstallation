@@ -133,16 +133,19 @@
 	Storage::SetPartDisk(mbrDisk);
 
 	// Set devices if missing
-
 	y2milestone("Drives: %1", drives);
 
 	boolean abort = false;
 
+
+	// Start the real work
+
+	
 	targetMap =  listmap (map drive, drives, ``{
 	    boolean first_set = false;
 	    string device = "";
 	    y2milestone("Drive: %1", drive);
-
+	   
 	    if (drive["device"]:"" == "ask"  && size(physical_drives) > 1 )
 	    {
 		y2milestone("Manual selection of device...");

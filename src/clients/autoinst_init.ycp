@@ -62,9 +62,9 @@ Please wait while the system is prepared for autoinstallation.</p>
 	y2error("Aborting...");
 	return `abort;
     }
-    
+
     sleep(1000);
-       
+
 
     Progress::NextStage();
 
@@ -75,7 +75,8 @@ Please wait while the system is prepared for autoinstallation.</p>
 
     Progress::NextStage();
 
-    if (! Profile::Read( AutoInstall::xml_tmpfile ) || Profile::current == $[] ) {
+    if (! Profile::Read( AutoInstall::xml_tmpfile ) || Profile::current == $[] )
+    {
 	Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the
 control file and try again.
@@ -83,7 +84,12 @@ control file and try again.
 	return `abort;
     }
     y2milestone ("Autoinstall control file %1",  Profile::current );
-    
+
+    // Copy the control file for easy access by user to  a pre-defined
+    // directory
+
+    SCR::Execute(.target.bash, sformat("cp %1 %2/autoinst.xml",  AutoInstall::xml_tmpfile, Profile::profile_dir));
+
     AutoInstall::ProcessSpecialResources();
 
     boolean use_utf8 = true;		// utf8 is default
@@ -92,7 +98,7 @@ control file and try again.
     {
 	use_utf8 = false;		// fallback to ascii
     }
-    
+
     string language = Profile::current["install","general","language"]:Language::language;
     // Set it in the Language module.
     //
@@ -101,7 +107,7 @@ control file and try again.
     // Set Console font
     //
     Console::SelectFont( language );
-      
+
 
     Installation::encoding = (use_utf8) ? "UTF-8" : Console::encoding;
 
@@ -110,7 +116,7 @@ control file and try again.
     UI::SetLanguage (language, Installation::encoding);
     WFM::SetLanguage(language, "UTF-8");
 
-    
+
 
     sleep(1000);
     Progress::Finish();

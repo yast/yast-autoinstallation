@@ -1110,6 +1110,57 @@ cd /usr/local/CDs/8.2/suse
 	  </para>
 	  &example.proxy;
 	</section>
+	<section id="Configuration.Network.Inetd">
+		<title>(X)Inetd </title>
+		<para>First, an example:</para>
+		
+	<example>
+	  <title>
+		Inetd Example
+	  </title>
+	  <screen>
+<![CDATA[
+
+<profile>
+ <configure>
+  ...
+  <inetd>
+    <netd_service config:type="symbol">xinetd</netd_service>
+    <netd_status config:type="integer">0</netd_status>
+    <netd_conf config:type="list">
+      <conf>
+	<script>imap</script>
+	<service>pop3</service>
+	<enabled config:type="boolean">true</enabled>
+      </conf>
+      <conf>
+	<server>in.ftpd</server>
+	<server_args>-A</server_args>
+	<enabled config:type="boolean">true</enabled>
+      </conf>
+      <conf>
+	<service>daytime</service>
+	<protocol>tcp</protocol>
+      </conf>
+      ....
+      <conf>...</conf>
+    </netd_conf>
+  </inetd>
+  ...
+ </configure>
+</profile>
+]]>
+	  </screen>
+	</example>
+<para>The profile has elements to specify which superserver should be used (netd_service), whether it should be enabled (netd_status) and how the services should be configured (netd_conf).
+</para>
+<para>A service description element has conceptually two parts: key and non-key. When writing the configuration, services are matched using the key fields and to the matching service, non-key fields are applied. If no service matches, it is created. If more services match, a warning is reported. The key fields are script, service, protocol and server.
+</para>
+<para>Service and protocol are matched literally. script is the base name of the config file: usually a file in /etc/xinetd.d, eg. "echo-udp", or "inetd.conf". For compatibility with 8.2, server is matched more loosely: if it is /usr/sbin/tcpd, the real server name is taken from server_args. After that, the basename of the first whitespace-sparated word is taken and these values are compared.
+</para>
+<para>FIXEME</para>
+
+	</section>
 	<section id="Configuration.Network.NIS">
 	  <title>
 	    NIS
