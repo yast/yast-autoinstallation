@@ -196,27 +196,36 @@
     global define map Bootloader()``{
 	import "Bootloader";
 	map bootloader = $[];
-	bootloader["location"] = Misc::SysconfigRead(.sysconfig.bootloader.LOADER_LOCATION, "mbr" );
 
-	map cloned = Call::Function("bootloader_auto", ["Clone", $[] ]);
-	y2milestone("cloned: %1", cloned);
-	
-	/*
-	if (Misc::SysconfigRead(.sysconfig.bootloader.LOADER_LOCATION, "" ) == "lilo" ||
-	    Bootloader::LoaderType == "lilo")
+	boolean readret = Call::Function("bootloader_auto", ["Read", $[] ]);
+	if (readret)
 	{
-	    string lba = Misc::SysconfigRead(.sysconfig.bootloader.LILO_LBA, "no");
-	    bootloader["lba_support"] = (lba == "yes")? true : false;
-	    string activate = Misc::SysconfigRead(.sysconfig.bootloader.LILO_ACTIVATE, "no");
-	    bootloader["activate"] = (activate == "yes")? true : false;
-	    string linear = Misc::SysconfigRead(.sysconfig.bootloader.LILO_LINEAR, "no");
-	    bootloader["linear"] = (linear == "yes")? true : false;
-	}
-	*/
+	    bootloader = Call::Function("bootloader_auto", ["Result", $[] ]);
+	}		
+
 	return bootloader;
 
     };
 
+    /**
+     * Bootloader options
+     */
+    global define map Netowrking()``{
+	import "Lan";
+	map lan = $[];
+	
+
+	boolean readret = Call::Function("lan_auto", ["Read", $[] ]);
+	if (!readret)
+	{
+	    lan  = Call::Function("lan_auto", ["Result", $[] ]);
+	}
+		
+	return lan;
+
+    };
+
+    
     /**
      * General options
      */
@@ -360,7 +369,7 @@
 	    }
 	    else if (resource == "networking")
 	    {		
-		Configure[resource] = Call::Function("lan_auto", [ "Clone",  $[] ]);
+		Configure[resource] = Networking();
 	    }
 	    else if (resource == "sound")
 	    {		
@@ -396,7 +405,7 @@
 	Install["partitioning"] = Partitioning();
 	Install["software"] = Software();
 	Install["general"] = General();
-	Install["bootloader"] = Call::Function("bootloader_auto", ["Clone", $[] ]);
+	Install["bootloader"] = Bootloader();
 	Profile["install"] = Install;
 	Profile["configure"] = Configure;
 	return;

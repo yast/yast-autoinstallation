@@ -79,7 +79,9 @@ the configuration files are read and converted.
 ");
 	Wizard::SetContents(_("Hosts in Alice Repository"),
 			    aliceHostList(), help, true, true);
-	UI::ChangeWidget(`id(`accept), `Label, _("&Import"));
+
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, _("&Import"));
 
 
 	any ret = "";
@@ -87,7 +89,7 @@ the configuration files are read and converted.
 	repeat
 	    {
 	    ret = UI::UserInput();
-	    if (ret == `accept)
+	    if (ret == `next)
 	    {
 		host = UI::QueryWidget(`id(`table), `CurrentItem);
 		if (host != nil && host != "")
@@ -115,7 +117,7 @@ This may take a while. Please wait...
 		   
 		}
 	    }
-	} until (ret == `accept || ret == `cancel );
+	} until (ret == `next || ret == `back );
 
 
 	Wizard::RestoreScreenShotName ();
@@ -127,13 +129,13 @@ This may take a while. Please wait...
 
 	string MakeinfoCommand = "alice make_info_file --yast2 ";
 	MakeinfoCommand = MakeinfoCommand + host;
-	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR":AIServer::tmpDir, "ALICE_HOME":AIConfig::AliceRepository]);
-	string filelist = SCR::Read(.target.string, AIServer::tmpDir + "/filelist");
+	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR": AIConfig::tmpDir , "ALICE_HOME":AIConfig::AliceRepository]);
+	string filelist = SCR::Read(.target.string, AIConfig::tmpDir + "/filelist");
 	list files = splitstring(filelist, "\n");
 	y2milestone("files: %1", files);
 
-	any ret =  mergeFiles(files, AIServer::tmpDir);
-	SCR::Execute(.target.remove,  AIServer::tmpDir + "/filelist");
+	any ret =  mergeFiles(files, AIConfig::tmpDir);
+	SCR::Execute(.target.remove,  AIConfig::tmpDir + "/filelist");
 	y2milestone("alice conf %1", ret);
 	return ret;
     }
@@ -420,8 +422,8 @@ This may take a while. Please wait...
 	     if (data["bootproto"]:"" == "dhcpclient")
 	     {
 		 interface["bootproto"] = "dhcp";
-		 interrface["device"] = iface;
-		 interrface["startmode"] = "onboot";
+		 interface["device"] = iface;
+		 interface["startmode"] = "onboot";
 	     }
 	     else
 	     {
