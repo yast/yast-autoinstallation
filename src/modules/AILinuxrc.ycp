@@ -1,0 +1,129 @@
+/**
+ * File:	modules/AILinuxrc.ycp
+ * Package:	General Options for Auto-installations
+ * Authors:	Anas Nashif (nashif@suse.de)
+ * Summary:	Handle linuxrc options
+ *
+ * $Id$
+ */
+{
+    
+    module "AILinuxrc";
+    textdomain "autoinst";
+
+    global string method = "";
+    global string server = "";
+    global string serverdir = "";
+    global string ip = "";
+    global string port = "";
+    global string netmask = "";
+    global string gateway = "";
+    global string ayserver = "";
+    global string ayserverdir = "";
+    global string aymethod = "";
+    global string ayport = "";
+    global string netdevice = "";
+    global string partition = "";
+    global string domain = "";
+    
+    global string nameserver = "";
+    global string workdomain = "";
+    global boolean textmode = false;
+    global boolean usedhcp = false;
+     
+    /**
+     * Constructor
+     *
+     */
+    
+    define void AILinuxrc()``{
+	return;
+    }
+
+    /**
+     * Export data
+     *
+     */
+    global define map Export()``{
+	map toexport =
+	    $[
+	      "instmode":method,
+	      "server":server,
+	      "serverdir":serverdir,
+	      "ip":ip,
+	      "netmask":netmask,
+	      "gateway":gateway,
+	      "nameserver":nameserver,
+	      "domain":domain,
+	      "workdomain":workdomain,
+	      "usedhcp":usedhcp,
+	      "textmode":textmode,
+	      "partition":partition,
+	      "port":port,
+	      "profile_server":ayserver,
+	      "profile_protocol":aymethod,
+	      "profile_port":ayport,
+	      "profile_location":ayserverdir
+	      
+	    ];	
+	return toexport;	
+    }
+    
+    /**
+     * Import data
+     *
+     */
+    global define boolean Import(map settings) ``{
+	
+	if (size (settings) == 0)
+	{
+	    //Provide defaults for autoinstallation editing:
+	    //Leave empty.	    
+	    return true;
+	}
+	Set(settings);
+	return true;	
+    }
+
+
+    
+    /**
+     * Set data to a certain status
+     *
+     */
+    global define void Set(map s) ``{
+	method 		= s["instmode"]:"";
+	server 		= s["server"]:"";
+	serverdir	= s["serverdir"]:"";
+	ip		= s["ip"]:"";
+	netmask		= s["netmask"]:"";
+	gateway		= s["gateway"]:"";
+	textmode	= s["textmode"]:"";
+	port		= s["port"]:"";
+	partition	= s["partition"]:"";
+	nameserver	= s["nameserver"]:"";
+	domain		= s["domain"]:"";
+	workdomain	= s["workdomain"]:"";
+	ayserver	= s["profile_server"]:"";
+	aymethod	= s["profile_protocol"]:"";
+	ayport		= s["profile_port"]:"";
+	ayserverdir	= s["profile_location"]:"";
+    }
+    
+    /**
+     * Summary of configuration
+     *
+     */    
+    global define string Summary()``{
+
+
+	    
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Installation Method"));
+	summary = Summary::AddLine(summary, (method != "") ?
+				   method : Summary::NotConfigured());
+
+	return summary;				   
+    }
+
+}

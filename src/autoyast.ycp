@@ -1,6 +1,6 @@
 /**
  * File:
- *	autoyast.ycp	
+ *	autoyast.ycp
  *
  * Summary:
  *	Main file for client call
@@ -15,25 +15,25 @@
     textdomain "autoinst";
     import "Wizard";
     // Wizard::image_prefix = "autoyast_";
-    
+
     import "Mode";
     Mode::config = true;
     import "AIConfig";
     import "AIServer";
     import "AIClone";
     import "AIClass";
-    
+
     import "Summary";
-        
-    
-   
-   
+
+
+
+
     include "ui/common_popups.ycp";
     include "ui/common_messages.ycp";
     include "wizard/sequencer.ycp";
     include "require.ycp";
     include "ui/file_popups.ycp";
-  
+
 
     include "autoinstall/dialogs.ycp";
     include "autoinstall/help.ycp";
@@ -42,37 +42,37 @@
     include "autoinstall/packageMgmt.ycp";
     include "autoinstall/imports.ycp";
     include "autoinstall/io.ycp";
-    
-  	
+
+
     boolean popup_open = false;
     global map dialogs = $[
 			   "configurationType"	:	``(   configurationType() ),
-			   "file"		: 	``(   FileDialog() ),
-			   "tree"		: 	``(   ConfTree() ),
-			   "profiles"		: 	``(   ManageProfiles() ),
+			   "file"			:	``(   FileDialog() ),
+			   "tree"			:	``(   ConfTree() ),
+			   "profiles"		:	``(   ManageProfiles() ),
 			   "classes"		:	``(   ManageClasses() ),
-			   "profile"		: 	``(   Profile()),
-			   "merge"		:	``(   MergeDialog()),
-			   "save"		:	``(   SaveDialog() ),
+			   "profile"		:	``(   Profile()),
+			   "merge"			:	``(   MergeDialog()),
+			   "save"			:	``(   SaveDialog() ),
 			   "preferences"	:	``(   Preferences()),
 			   "serverSetup"	:	``(   serverSetup()),
 			   "cloneSystem"	:	``(   cloneSystem()),
 			   "packageManagement"	:	``(   packageManagement()),
 			   "selectionInfo"	:	``(   selectionInfo()),
-			   "alice"		:	``(   aliceImportOptions() ),
+			   "alice"			:	``(   aliceImportOptions() ),
 			   "aliceList"		:	``(   aliceImportList() ),
-			   "kickstart"		:	``(   kickstartImport() )
-			   
+			   "kickstart"		:	``(   kickstartImport() ),
+			   "hosts"			:	``(   hostConf() )
     ];
-    
-    
+
+
     /**
      * Whole configuration of autoyast
      * @return `back, `abort or `next
      */
-    
+
     global define symbol AutoSequence () ``{
-	
+
 	map sequence = $[
 			 "ws_start" : "configurationType",
 			 "configurationType":
@@ -81,11 +81,12 @@
 			   `single	: "file",
 			   `profiles	: "profiles",
 			   `pref	: "preferences",
-			   `server	: "serverSetup",			   
+			   `server	: "serverSetup",
 			   `clone	: "cloneSystem",
 			   `verifysel	: "packageManagement",
 			   `alice	: "alice",
-			   `kickstart   : "kickstart"
+			   `kickstart   : "kickstart",
+			   `hostConf	: "hosts"
 			 ],
 			 "alice":
 			 $[
@@ -97,18 +98,23 @@
 			   `abort	: `abort,
 			   `next	: "configurationType",
 			   `save	: "save",
-			   `load	: "tree",			   
+			   `load	: "tree",
+			 ],
+			 "hosts":
+			 $[
+			   `abort	: `abort,
+			   `next	: "configurationType"
 			 ],
 			 "kickstart":
 			 $[
 			   `abort	: `abort,
 			   `next	: "configurationType"
-			 ],			 
+			 ],
 			 "cloneSystem":
 			 $[
 			   `load	: "tree",
 			   `save	: "save"
-			   
+
 			 ],
 			 "serverSetup":
 			 $[
@@ -147,7 +153,7 @@
 			 $[
 			   `next	: "profiles",
 			   `abort	: `abort
-			   
+
 			 ],
 			 "profile":
 			 $[
@@ -164,7 +170,7 @@
 			 $[
 			   `abort	: `abort,
 			   `edit	: "tree",
-			   `next	: `ws_finish			   
+			   `next	: `ws_finish
 			 ],
 			 "preferences":
 			 $[
@@ -173,7 +179,7 @@
 			 ]
 	];
 
-	
+
 	// Translators: dialog caption
 	string caption = _("Auto-Install Configuration");
 	term contents = `Label (_("Initializing ..."));
@@ -191,7 +197,7 @@
 	UI::CloseDialog ();
 	return ret;
     }
-    
+
 
     /**
      * Main dialog
@@ -205,7 +211,7 @@
 	term contents =
 	    `VBox(
 		  `RadioButtonGroup (
-				     `id (`ctg),				     
+				     `id (`ctg),
 				     `VBox (
 					    `VSpacing (1),
 					    `Left(`Label(_("Profile Management"))),
@@ -220,6 +226,19 @@
 										`opt (`notify),
 										_("Create/Edit Configurati&ons"),
 										ct == `single)
+								  )
+							   )
+						  ),
+					      `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`hostConf),
+										`opt (`notify),
+										_("&Host Configuration"),
+										ct == `host)
 								  )
 							   )
 						  ),
@@ -264,7 +283,7 @@
 										ct == `prepServer)
 								  )
 							   )
-						  ),		
+						  ),
 					    `HBox(
 						  `HWeight(10,
 							   `Empty()
@@ -278,7 +297,7 @@
 								  )
 							   )
 						  ),
-					 	   `VSpacing (1),
+						   `VSpacing (1),
 					    `Left(`Label(_("Import data"))),
 					    `VSpacing (0.5),
 					    `HBox(
@@ -293,7 +312,7 @@
 										ct == `alice)
 								  )
 							   )
-						  ),		
+						  ),
 					    `HBox(
 						  `HWeight(10,
 							   `Empty()
@@ -306,34 +325,34 @@
 										ct == `kickstart)
 								  )
 							   )
-						  ),		    
+						  ),
 					    `VStretch(),
 					    `PushButton(`id(`pref), _("&Preferences")),
 					    `VSpacing(1)
 					    )
 				     )
-				    
+
 		  );
 
-	
+
 	Wizard::SetContentsButtons (caption,
 				    contents,
 				    ConfigurationTypeHelp(),
 				    BackButtonLabel (),
-				    NextButtonLabel ());	
+				    NextButtonLabel ());
 	any ret = nil;
 	while (true)
 	{
-	    ct = UI::QueryWidget (`id (`ctg), `CurrentButton);	   
+	    ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
 
 	    ret = UI::UserInput ();
 	    if (ret == `back || ret == `pref || ret == `next  || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)))
 	    {
 		break;
-	    } 
+	    }
 	}
 	AIConfig::config_type=ct;
-	
+
 	if (ret == `back   || ret == `abort || ret == `pref)
 	{
 	    return ret;
@@ -342,6 +361,6 @@
 	{
 	    return ct;
 	}
-    }        
+    }
     any ret = AutoSequence ();
 }

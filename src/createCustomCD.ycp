@@ -15,7 +15,7 @@
     include "ui/common_messages.ycp";
 
     
-    global define dlg(integer expectedSize, string filename)``{
+    global define isoSizeDialog(integer expectedSize, string filename)``{
 	
 	    UI::OpenDialog(
 	       `VBox(
@@ -57,7 +57,7 @@
 	    integer fsSize = tointeger(du);
 	    y2milestone("size: %1" , fsSize);
 	    SCR::Execute (.target.bash_background,  mkisofscmd);
-	    dlg(fsSize, dest);
+	    isoSizeDialog(fsSize, dest);
 
 	}
 	

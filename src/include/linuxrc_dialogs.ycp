@@ -1,0 +1,295 @@
+/**
+ * File:	include/autoinstall/general_dialogs.ycp
+ * Module:	Environment
+ * Summary:	Handle environment data
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+
+    
+
+    global define linuxrcOptions()``{
+
+
+	string method = eval(AILinuxrc::method);
+	
+
+	
+	map instMethods = $[
+			     "nfs"	: _("NFS"),
+			     "hd"	: _("Hard drive"),
+			     "cd"	: _("CDROM"),
+			     "smb"	: _("Samba"),
+			     "ftp"	: _("FTP"),
+			     "http"	: _("HTTP")
+	];
+
+
+	list methods = maplist(`k,`v, instMethods, ``{
+	    return(`item(`id(k), v, (method == k)));
+	});
+
+	string help_text = _("Help");
+
+	term isPoint =  `VBox(			     
+			      `HBox(
+				    `HWeight(30,`TextEntry(`id(`server), `opt(`notify), _("&Server"), AILinuxrc::server)),
+				    `HWeight(10,`TextEntry(`id(`port), `opt(`notify), _("P&ort"), AILinuxrc::port  )),
+				    `HWeight(35,`TextEntry(`id(`serverdir), `opt(`notify), _("Server &Directory"), AILinuxrc::serverdir))
+			      )
+			      );
+	term smbPoint = `HBox(			     
+			      `HWeight(30,`TextEntry(`id(`workdomain), `opt(`notify), _("&Domain"), AILinuxrc::workdomain)),
+			      `HWeight(40, `Empty())
+			      );
+	term hdPoint = `HBox(
+			     
+			      `HWeight(30,`TextEntry(`id(`partition), `opt(`notify), _("&Partition"), AILinuxrc::partition)),
+			      `HWeight(40, `Empty())
+			      );
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Frame(_("Installation Source"),
+			      `VBox(
+				    `Left(`ComboBox(`id(`method), `opt(`notify), _("&Method"),
+					      methods
+					      )
+					  ),
+				    `ReplacePoint(`id(`is), isPoint )
+				    )
+			      ),
+		       `VSpacing(0.5),
+		     
+		       `Frame(_("Other Settings"), 
+			      `HBox(
+				   
+				    `CheckBox(`id(`usedhcp), `opt(`notify), _("Use DHCP") , AILinuxrc::usedhcp),
+				    `CheckBox(`id(`textmode), _("Start in text mode"), AILinuxrc::textmode),
+				    `HStretch()
+				    )
+			      ),
+		       `VSpacing(0.5),
+		       `Frame(_("Client Network Settings"),
+			      `VBox(
+				   `Left(`ComboBox(`id(`netdevice), `opt(`notify), _("Net de&vice"),
+						   ["eth0", "eth1", "eth2"]
+						   )
+					 ),
+				   `HBox(					 				    
+					 `TextEntry(`id(`ip), `opt(`notify), _("&IP"), AILinuxrc::ip),
+					 `TextEntry(`id(`netmask), `opt(`notify), _("Netmas&k"), AILinuxrc::netmask  ),
+					 `TextEntry(`id(`gateway), `opt(`notify), _("Gatewa&y"), AILinuxrc::gateway)
+					 ),
+				   `HBox(
+					 `TextEntry(`id(`nameserver), `opt(`notify), _("Nameserver"), AILinuxrc::nameserver),
+					 `TextEntry(`id(`domain), `opt(`notify), _("Domain"), AILinuxrc::domain  )				  
+					 )
+				   )
+			      )      		       
+		       )
+		 );
+
+	
+	Wizard::SetContents(_("Installation Options"),
+			    contents, help_text, true , true);
+
+	any ret = nil;
+	
+	repeat {
+	   
+	    method = UI::QueryWidget(`id(`method), `Value);	    
+	  
+
+
+	    
+	    if ( method != "smb" && method != "hd" &&( UI::WidgetExists(`id(`workdomain)) ||  UI::WidgetExists(`id(`partition)) ) ) {
+		UI::ReplaceWidget(`id(`is), isPoint);
+	    }
+	    
+	    if ( method == "cd") {		
+		UI::ChangeWidget(`id(`server), `Enabled, false);
+		UI::ChangeWidget(`id(`serverdir), `Enabled, false);
+		UI::ChangeWidget(`id(`port), `Enabled, false);		
+	    }
+	    else if ( method == "smb") {		
+		UI::ReplaceWidget(`id(`is), smbPoint);
+	    }
+	    else if ( method == "hd") {		
+		UI::ReplaceWidget(`id(`is), hdPoint);
+	    }
+	    else if  ( method == "nfs") {
+		UI::ChangeWidget(`id(`port), `Enabled, false);
+		UI::ChangeWidget(`id(`server), `Enabled, true);
+		UI::ChangeWidget(`id(`serverdir), `Enabled, true);
+	    }
+	    else if  ( method == "ftp") {
+		UI::ChangeWidget(`id(`port), `Enabled, false);
+		UI::ChangeWidget(`id(`server), `Enabled, true);
+		UI::ChangeWidget(`id(`serverdir), `Enabled, true);
+	    } else {
+		UI::ChangeWidget(`id(`server), `Enabled, true);
+		UI::ChangeWidget(`id(`serverdir), `Enabled, true);
+		UI::ChangeWidget(`id(`port), `Enabled, true);	
+	    }
+
+	    if (UI::QueryWidget(`id(`usedhcp), `Value)) {
+		UI::ChangeWidget(`id(`ip), `Enabled, false);
+		UI::ChangeWidget(`id(`netmask), `Enabled, false);
+		UI::ChangeWidget(`id(`gateway), `Enabled, false);
+		UI::ChangeWidget(`id(`nameserver), `Enabled, false);
+		UI::ChangeWidget(`id(`domain), `Enabled, false);
+	    } else {
+		UI::ChangeWidget(`id(`ip), `Enabled, true);
+		UI::ChangeWidget(`id(`netmask), `Enabled, true);
+		UI::ChangeWidget(`id(`gateway), `Enabled, true);
+		UI::ChangeWidget(`id(`nameserver), `Enabled, true);
+		UI::ChangeWidget(`id(`domain), `Enabled, true);		
+	    }
+		
+	    ret = UI::UserInput();
+	    if (ret == `next) {
+		if ( method != "smb" && method != "hd" && method!="cd") {
+		    
+		    if(!check_ip4(UI::QueryWidget(`id(`server), `Value))) {
+			UI::ErrorPopup(_("The IP address is incorrect"));
+			UI::SetFocus(`id(`server));
+			continue;
+		    }
+		    AILinuxrc::server = UI::QueryWidget(`id(`server), `Value);
+		    
+		    AILinuxrc::serverdir = UI::QueryWidget(`id(`serverdir), `Value);
+		    AILinuxrc::port = UI::QueryWidget(`id(`port), `Value);
+		  
+		}
+		AILinuxrc::usedhcp = UI::QueryWidget(`id(`usedhcp), `Value);
+		AILinuxrc::textmode = UI::QueryWidget(`id(`textmode), `Value);
+		
+		if (!UI::QueryWidget(`id(`usedhcp), `Value)) {
+		    if(!check_ip4(UI::QueryWidget(`id(`ip), `Value))) {
+			UI::ErrorPopup(_("The IP address is incorrect"));
+			UI::SetFocus(`id(`ip));
+			continue;
+		    }
+		    if(!check_netmask(UI::QueryWidget(`id(`netmask), `Value))) {
+			UI::ErrorPopup(_("The subnet mask is incorrect"));
+			UI::SetFocus(`id(`netmask));
+			continue;
+		    }
+		    if(!check_ip4(UI::QueryWidget(`id(`gateway), `Value))) {
+			UI::ErrorPopup(_("The IP address is incorrect"));
+			UI::SetFocus(`id(`gateway));
+			continue;
+		    }
+		    if(!check_ip4(UI::QueryWidget(`id(`nameserver), `Value))) {
+			UI::ErrorPopup(_("The IP address is incorrect"));
+			UI::SetFocus(`id(`nameserver));
+			continue;
+		    }
+		    
+		    AILinuxrc::ip = UI::QueryWidget(`id(`ip), `Value);
+		    AILinuxrc::netmask = UI::QueryWidget(`id(`netmask), `Value);
+		    AILinuxrc::gateway = UI::QueryWidget(`id(`gateway), `Value);
+		    AILinuxrc::nameserver = UI::QueryWidget(`id(`nameserver), `Value);
+		    AILinuxrc::domain = UI::QueryWidget(`id(`domain), `Value);    
+		}
+		AILinuxrc::netdevice = UI::QueryWidget(`id(`netdevice), `Value);
+		AILinuxrc::method = UI::QueryWidget(`id(`method), `Value);
+		if (UI::WidgetExists(`id(`workdomain))) {
+		    AILinuxrc::method = UI::QueryWidget(`id(`method), `Value);
+		}
+		if (UI::WidgetExists(`id(`partition))) {
+		    AILinuxrc::partition = UI::QueryWidget(`id(`partition), `Value);
+		}
+		
+	    }
+	    
+	} until (ret == `next || ret == `back || ret ==`abort);
+
+	return ret;
+    }
+
+
+
+    global define autoyastOptions ()``{
+	
+	string aymethod = eval(AILinuxrc::aymethod);
+	map ayMethods = $[
+			  "nfs"	: _("NFS"),
+			  "file"	: _("File"),			   
+			  "tftp"	: _("TFTP"),
+			  "http"	: _("HTTP")
+	];			
+
+
+    	list aymethods = maplist(`k,`v, ayMethods, ``{
+	    return(`item(`id(k), v, (aymethod == k)));
+	});
+	string help_text = _("Help");
+	term contents =
+	    `Top(
+		 `VBox(		      
+		       `Frame(_("Profile Location"), 
+			      `VBox(				    
+				    `Left(`ComboBox(`id(`aymethod), `opt(`notify), _("Me&thod"),
+						    aymethods
+						    )
+					  ),
+				    `HBox(
+				    
+					  `HWeight(30,`TextEntry(`id(`ayserver), `opt(`notify), _("S&erver"), AILinuxrc::ayserver)),
+					  `HWeight(10,`TextEntry(`id(`ayport), `opt(`notify), _("&Port"), AILinuxrc::ayport  )),
+					  `HWeight(35,`TextEntry(`id(`ayserverdir), `opt(`notify), _("Profile &Location"), AILinuxrc::ayserverdir))
+					  )
+				    )
+			      )
+		       )
+		 );
+	
+    	Wizard::SetContents(_("Autoyast Options"),
+			    contents, help_text, true , true);
+
+	any ret = nil;
+	
+	repeat {
+	    aymethod = UI::QueryWidget(`id(`aymethod), `Value);
+	   
+	    if ( aymethod == "file") {		
+		UI::ChangeWidget(`id(`ayserver), `Enabled, false);	
+		UI::ChangeWidget(`id(`ayport), `Enabled, false);		
+	    }
+	    else if  ( aymethod == "nfs") {
+		UI::ChangeWidget(`id(`ayport), `Enabled, false);
+	    }
+	    else if  ( aymethod == "tftp") {
+		UI::ChangeWidget(`id(`ayport), `Enabled, false);	
+	    } else {
+		UI::ChangeWidget(`id(`ayserver), `Enabled, true);		
+		UI::ChangeWidget(`id(`ayport), `Enabled, true);	
+	    }
+	    		
+	    ret = UI::UserInput();
+
+	    if (ret == `next) {
+		
+		if(!check_ip4(UI::QueryWidget(`id(`ayserver), `Value)) && aymethod != "file") {
+		    UI::ErrorPopup(_("The IP address is incorrect"));
+		    UI::SetFocus(`id(`server));
+		    continue;
+		}
+		AILinuxrc::ayserver = UI::QueryWidget(`id(`ayserver), `Value);
+		    
+		AILinuxrc::ayserverdir = UI::QueryWidget(`id(`ayserverdir), `Value);
+		AILinuxrc::ayport = UI::QueryWidget(`id(`ayport), `Value);
+		AILinuxrc::aymethod = UI::QueryWidget(`id(`aymethod), `Value);
+		break;
+	    }
+	    
+	} until (ret == `next || ret == `back || ret ==`abort);
+
+	return ret;
+    }
+}

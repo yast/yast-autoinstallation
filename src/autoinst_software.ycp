@@ -17,7 +17,7 @@
     include "wizard/sequencer.ycp";
     include "ui/common_messages.ycp";
     include "autoinstall/dialogs.ycp";
-    
+
     y2milestone("Selections: %1", AIPackages::Selections);
 
     list args = Args ();
@@ -32,14 +32,14 @@
 	y2error ("Bad argument: %1", Args (0));
 	return false;
     }
-    list    possible_start_dialogs = ["selections", "custom", "single"];    
+    list    possible_start_dialogs = ["selections", "custom", "single"];
     map settings = $[];
     {
 	integer i = 0;
 	while (i < size (Args()))
 	{
 	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);
-	  
+
 	    i = i + 1;
 	}
     }
@@ -48,8 +48,8 @@
 		    "selections": 	``(   Selections() ),
 		    "custom"	:	``(   customPackages() )
     ];
-    
-  
+
+
     map sequence = $[
 		    "ws_start" 	: "selections",
 		    "selections":
@@ -65,9 +65,9 @@
 		      `back	: "selections"
 		    ]
     ];
-    
-    
-    y2milestone("Imported: (%1)", settings);    
+
+
+    y2milestone("Imported: (%1)", settings);
     AIPackages::Import ( settings );
 
 
@@ -95,7 +95,7 @@
 			     ),
 		       `HBox(
 			     `PushButton(`id(`add), AddButtonLabel()),
-			     `PushButton(`id(`delete), DeleteButtonLabel()),			     
+			     `PushButton(`id(`delete), DeleteButtonLabel()),
 			     `PushButton(`id(`load), _("&Load"))
 			     ),
 		       `VSpacing(0.5),
@@ -105,7 +105,7 @@
 	return contents;
     }
 
-    
+
     /**
      *
      *
@@ -129,7 +129,7 @@
 			AIPackages::pacs=add(AIPackages::pacs,pac);
 		    else
 			AIPackages::custom_pacs=add(AIPackages::custom_pacs,pac);
-		
+
 		Wizard::SetContents(caption,
 			    packagesContent(), "", true, true);
 		continue;
@@ -145,7 +145,7 @@
 			    packagesContent(), "", true, true);
 		 continue;
 	    }
-	    
+
 	} until (ret == `back || ret ==`next || ret == `abort);
 	return ret;
     }
@@ -156,20 +156,20 @@
 
 
 
-    
+
     define Selections()
 	``{
-	string base 		= AIPackages::base;
-	list addons 		= AIPackages::addons;
-	term baseconfs 		= `VBox();
-	list categories 	= [];
-	list base_selections 	= [];	
-	list pacsels 		= AIPackages::Selections;
+	string base		= AIPackages::base;
+	list addons		= AIPackages::addons;
+	term baseconfs		= `VBox();
+	list categories	= [];
+	list base_selections	= [];
+	list pacsels		= AIPackages::Selections;
 
 	foreach(`sel, pacsels, ``{
-	    string selid   	= select(sel, 0, "");
-	    string group   	= select(sel, 2, "");
-	    string seldesc 	= select(sel, 1, "");
+	    string selid	= select(sel, 0, "");
+	    string group	= select(sel, 2, "");
+	    string seldesc	= select(sel, 1, "");
 	    if ( group == "baseconf" )
 	    {
 		baseconfs = add(baseconfs, `Left(`RadioButton(`id(selid),`opt(`notify, `autoShortcut),
@@ -187,7 +187,7 @@
 
 	    if ( group == "addon" )
 	    {
-		categories = add(categories, `item(`id(selid), seldesc, contains(addons, selid)));		
+		categories = add(categories, `item(`id(selid), seldesc, contains(addons, selid)));
 	    }
 
 	});
@@ -259,9 +259,9 @@
 		if (basesel == "custom") {
 		    basesel = UI::QueryWidget(`id(`customsel), `Value);
 		}
-		
-		addons = UI::QueryWidget( `id(`addons), `SelectedItems );		
-	
+
+		addons = UI::QueryWidget( `id(`addons), `SelectedItems );
+
 	    }
 	} until	( ret == `next ||  ret ==`back || ret == `abort);
 
@@ -299,7 +299,7 @@
 	        Wizard::CreateDialog ();
 		Wizard::ReplaceAbortButton(`Empty ());
 		result =  WizardSequencer (dialogs, sequence);
-		UI::CloseDialog ();		
+		UI::CloseDialog ();
 		if (result == `next || result == `finish)
 		{
 		    settings = AIPackages::Export ();
