@@ -17,6 +17,8 @@
     import "Report";
     import "XML";
     import "X11Version";
+    import "Language";
+
     
     include "autoinstall/io.ycp";
   
@@ -278,13 +280,11 @@
      */
 
     global define void generalSettings () ``{
-	// Get default values as fallback
-	string default_timezone = lookup(Installation::infoMap,"timezone","Europe/Berlin");
+	// Get default values as fallback	
 	string default_keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "english-us" );
 
 	Keyboard = default_keyboard;
-	Language = Language::language;
-	Timezone = default_timezone;
+	Language = Language::language;	
 	Mouse = "probe";
 	Encryption = "des";
 
@@ -294,6 +294,7 @@
 	foreach(`k,`v, general , ``{
 	    if (k == "language")
 	    {
+		y2milestone("Setting language to %1", v);
 		Language 	= v;
 	    }
 	    else if (k == "keyboard" && is(v, map))
@@ -306,7 +307,7 @@
 	    }
 	    else if (k == "clock" && is(v, map))
 	    {
-		Timezone = v["timezone"]:default_timezone;
+		Timezone = v["timezone"]:"";
 		string hwc = v["hwclock"]:"";
 		if (hwc != "")
 		{
