@@ -271,20 +271,21 @@ in addition to the default resources like partitioning and package selections.</
 ");
 
 	help = help + _("<p>By default, cloning will create an exact copy of the
-configuration for all basic resource like partitioning, bootloader and software. This however
-will work on the same hardware only. If you check one of the basic resources, the default
-settings will be used instead of the configuration of this system (Other data will be read
-from configuration files on the system):</p>");
-	help = help + _("<p><ul><li>partitions will be created on the whole disk and sizes will be calculated automatically</li>");
+configuration for all basic resources, such as partitioning, boot loader, and software. This, however,
+will only work on the same hardware. If you check one of the basic resources, the default
+settings will be used instead of the configuration of this system.  Other data will be read
+from configuration files on the system.</p>
+");
+	help = help + _("<p><ul><li>Partitions will be created on the whole disk and sizes will be calculated automatically</li>");
 	help = help + _("<li>Default software selection will be installed</li>");
-	help = help + _("<li>Bootloader location and bootloader sections will be determined automatically</li></ul></p>");
+	help = help + _("<li>Boot loader location and boot loader sections will be determined automatically</li></ul></p>");
 	
 	help = help + _("<p>Examine any produced control file before using it
 to autoinstall a new system.</p>
 ");
 
 	// caption
-	string title = _("Clone system");
+	string title = _("Clone System");
 
 	term contents =
 	    `VBox(
@@ -292,7 +293,7 @@ to autoinstall a new system.</p>
 		  `MultiSelectionBox( `id(`baseres), _("Basic resources (check to use default settings):"),
 				      [
 				       `item(`id("partitioning"), _("Partitioning")),
-				       `item(`id("bootloader"),_("Bootloader")),
+				       `item(`id("bootloader"),_("Boot Loader")),
 				       `item(`id("software"),_("Software"))		       
 				       ]
 				      ),
