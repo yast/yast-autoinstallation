@@ -164,7 +164,12 @@ Please wait while the system is prepared for autoinstallation.
     // Software
     //////////////////////////////////////////////////////////////////////////
     Progress::NextStage();
-    AutoInstall::softwareSettings();
+    if (!AutoInstall::softwareSettings())
+    {
+	Report::Error(_("Error while configuring software selections.
+Please try again!"));
+	return `abort;
+    }
 
     Progress::Finish();
 

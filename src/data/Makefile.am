@@ -9,7 +9,8 @@ xmldir = /usr/share/autoinstall/xslt
 miscdir = /usr/share/autoinstall/
 
 misc_DATA = \
-	isolinux.cfg
+	isolinux.cfg \
+	EXTRA_PROV
 
 ydata_DATA = \
 	monitors.ycp
