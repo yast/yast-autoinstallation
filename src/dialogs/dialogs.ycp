@@ -431,11 +431,12 @@ the configuration files are read and converted.
         return (o["stderr"]:"");
     }
 
-    string rng_validate(string file) {
+    map rng_validate(string file) {
         string cmd = sformat("/usr/bin/xmllint --relaxng %1 -noout %2",
                 Directory::schemadir + "/autoyast/rng/profile.rng", file );
         map o = (map)SCR::Execute(.target.bash_output, cmd);
-        return (o["stderr"]:"");
+        y2debug("validation output: %1", o);
+        return o;
     }
 
     string xml_validate(string file) {
@@ -492,17 +493,19 @@ the configuration files are read and converted.
         sleep(1000);
         summary = Summary::AddHeader(summary, _("Checking XML with DTD validation..."));
         UI::ChangeWidget(`id(`richtext), `Value , summary);
-        scrret = rng_validate(file);
-        if (scrret == "")
+        map valout = rng_validate(file);
+
+        if (valout["exit"]:-1 == 0)
         {
             summary = summary + HTML::Colorize(_("OK"), "green");
+            UpdateValidDialog(summary, "" );
         }
         else
         {
             summary = summary + HTML::Colorize(_("Error"), "Red");
+            UpdateValidDialog(summary, valout["stderr"]:"" );
         }
         // Update
-        UpdateValidDialog(summary, scrret );
         sleep(1000);
 
 
