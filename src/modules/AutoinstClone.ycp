@@ -26,15 +26,13 @@
     import "Misc";
     import "Storage";
     import "AutoinstConfig";
-
-
-
-    global map Profile = $[];
-
     include "autoinstall/xml.ycp";
 
-    integer bytes_per_unit = 0;
+    
 
+    global map Profile = $[];
+  
+    integer bytes_per_unit = 0;
 
 
     // spceial treatment for base resources
@@ -42,8 +40,6 @@
 
     // aditional configuration resources o be cloned
     global list additional = [];
-
-
 
 
     /**
@@ -55,11 +51,9 @@
 	return;
     }
 
-
     /**
      * Set root password
      */
-
     define list root() ``{
 	list shadow = (list) SCR::Read(.etc.shadow);
 	map rootacct = (map) select(filter(map acct, shadow, ``(acct["username"]:"" == "root")), 0 , $[]);
@@ -75,6 +69,10 @@
 
     /**
      * Find mount points in running system
+     * @param string device name
+     * @param map partition
+     * @param list mount points
+     * @return string
      */
     define string findMountpoint(string device, map p, list mounts) ``{
 	string mountPoint = "";
@@ -90,14 +88,13 @@
 
     /**
      * Convert units to size
+     * @param list region
+     * @return integer size
      */
-
     define integer units_to_size (list region) ``{
 	integer units = (integer) select(region,1,0);
 	return (units * bytes_per_unit)  -  bytes_per_unit + 1;
     };
-
-
 
 
     /**
@@ -191,6 +188,8 @@
 	return drives;
     }
 
+
+    
     /**
      * Return list of software packages of calling client
      * @return list list of installed software package
@@ -240,6 +239,7 @@
 
     /**
      * Bootloader options
+     * @return map bootloader options
      */
     global define map Bootloader()``{
 	map bootloader = $[];
@@ -257,6 +257,7 @@
 
     /**
      * General options
+     * @return map general options
      */
     global define map General() ``{
 	import "Language";
@@ -316,18 +317,19 @@
 
      /**
       * Clone a Resource
-      * @param resource name
+      * @param string resource
+      * @param map resource name
       * @return list
       */
      define boolean CommonClone(string resource, map resourceMap) ``{
 
 
-	 string data_type = resourceMap["AutoinstDataType"]:"map";
-	 string tomerge = resourceMap["AutoinstMerge"]:"";
-	 string tomergetypes = resourceMap["AutoinstMergeTypes"]:"";
+	 string data_type = resourceMap["X-SuSE-YaST-AutoinstDataType"]:"map";
+	 string tomerge = resourceMap["X-SuSE-YaST-AutoinstMerge"]:"";
+	 string tomergetypes = resourceMap["X-SuSE-YaST-AutoinstMergeTypes"]:"";
 
 	 string auto = sformat("%1_auto", resource);
-	 resource = resourceMap["AutoinstResource"]:resource;
+	 resource = resourceMap["X-SuSE-YaST-AutoinstResource"]:resource;
 
 	 boolean readret = false;
 
@@ -374,6 +376,36 @@
 
 
 
+     /**
+      * Create a list of clonable resources 
+      * @return list list to be used in widgets
+      */
+     global define list createClonableList() 
+	 ``{
+	 list items = [];
+	 foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
+	     y2milestone("r: %1 => %2", def_resource, resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" );
+	     boolean clonable = ( resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" == "true" );
+	     if (clonable)
+	     {
+		 // Set resource name, if not using default value
+		 string resource = resourceMap["X-SuSE-YaST-AutoinstResource"]:"";
+		 string name = resourceMap["Name"]:"";
+		 if (resource != "")
+		 {
+		     items = add(items, `item(`id(resource), name ) );
+		 }
+		 else
+		 {
+		     items = add(items, `item(`id(def_resource), name ) );
+		 }
+	     }
+	 });
+	 return items;
+     }
+
+    
+
     /**
      * Build the profile
      * @return map Profile
@@ -383,9 +415,9 @@
 	y2milestone("Additional resources: %1 %2", base, additional);
 	Profile::Reset();
 	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
+	    
 	    // Set resource name, if not using default value
-
-	    string resource = resourceMap[def_resource, "AutoinstResource"]:def_resource;
+	    string resource = resourceMap["X-SuSE-YaST-AutoinstResource"]:def_resource;
 	    y2milestone("current resource: %1", resource);
 	    if (contains(additional, resource))
 	    {
@@ -426,7 +458,7 @@
 
     /**
      * Write the profile to a defined path
-     * @param outputFile Output file path
+     * @param string outputFile Output file path
      * @return boolean true on success
      */
     global define boolean Write(string outputFile)``{

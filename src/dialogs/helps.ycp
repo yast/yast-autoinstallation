@@ -14,16 +14,35 @@ textdomain "autoinst";
 /**
  * All helps are here
  */
-global map HELPS = $[
+global map HELPS =
+    $[
 
-	"drivedialog": _("<p> Partition your hard disks... </p>") 
+      "clone":
+      	_("<p>This tool creates a reference profile by reading
+information from this system. Select the resources to read from this system
+in addition to the default resources, like partitioning and package selections.</p>
+")
+      + _("<p>By default, referencing creates an exact copy of the
+configuration for all basic resources, such as partitioning, boot loader, and software. This, however,
+only works on the same hardware. If you check one of the basic resources, a general configuration is 
+created instead of the actual configuration of this system.  Other data is read
+from configuration files on the system.</p>
+")
+      + _("<p><ul><li>Partitions will be created on the whole disk and sizes will be calculated automatically</li>")
+      +_("<li>Default software selection will be installed</li>")
+      + _("<li>Boot loader location and boot loader sections will be determined automatically</li></ul></p>")
+      + _("<p>Make sure you examine any resulting control file before using it
+to autoinstall a new system.</p>
+"),
+	"drivedialog":
+      
+      _("<p> Partition your hard disks... </p>") 
 
-	+ _("<p>
-The table to the right shows the partitions to be created on the target system.
+      + _("<p>The table to the right shows the partitions to be created on the target system.
 </p>
 ")
-	 + _("<p><b>Hard disks</b> are designated like this </p>") +
-	    _("<tt>/dev/hda </tt>1st EIDE disk
+      + _("<p><b>Hard disks</b> are designated like this </p>") 
+      + _("<tt>/dev/hda </tt>1st EIDE disk
 <tt>/dev/hdb </tt>2nd EIDE disk
 <tt>/dev/hdc </tt>3rd EIDE disk") +
 _("<p>etc.</p>")+
@@ -32,22 +51,22 @@ _("<p><tt>/dev/sda </tt>1st SCSI disk
 <tt>/dev/sdb </tt>2nd SCSI disk
 <tt>/dev/sdc </tt>3rd SCSI disk</p>")
 
-	  + _("If no partitions are defined and the specified drive is also
+      + _("If no partitions are defined and the specified drive is also
 the drive where the root partition should reside, the following partitions are
 created automatically:")
-	  + _(" <tt>/boot</tt>, <tt>swap</tt>, and a root partition <tt>/</tt>.
+      + _(" <tt>/boot</tt>, <tt>swap</tt>, and a root partition <tt>/</tt>.
 Sizes are calculated automatically.
 ")
 
-	  + _("<p><b>Advanced Options</b></p>")
+      + _("<p><b>Advanced Options</b></p>")
 
-	 + _("By default, AutoYaST2 will create an extended partition and adds all new partitions as logical devices. It is possible, however, to instruct AutoYaST2 to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in MBytes.")
+      + _("By default, AutoYaST2 will create an extended partition and adds all new partitions as logical devices. It is possible, however, to instruct AutoYaST2 to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in MBytes.")
 
-	 + _("These options and other advanced options cannot be configured using this
+      + _("These options and other advanced options cannot be configured using this
 interface.  Instead, add them manually to the control file.
 ")
 
-	 + _("<p>
+      + _("<p>
 For LVM and RAID setup, consult the documentation and add the configuration
 to an existing control file. You can only create unformatted LVM and RAID partitions as
 a preparation.

@@ -12,8 +12,6 @@
     textdomain "autoinst";
     import "AutoinstStorage";
 
-
-
     /**
      * Provide Compatibility to older distributions.
      * @param lvm_standalone Stand alone LVM configuration
@@ -58,11 +56,8 @@
      * Provide Compatibility to older distributions.
      * @param raid_standalone Stand alone RAID configuration
      * @return RAID configuration integrated into partitioning resource
-     */
-    
+     */  
     global define map convertRAID (list raid_standalone ) ``{
-
-
 	map raid = $[];
 
 	raid["device"] 	= "/dev/md";
@@ -102,6 +97,10 @@
 	    if (haskey(r, "filesystem"))
 	    {
 		ret["filesystem"] = fs;
+	    }	
+	    if (haskey(r, "lvm_group"))
+	    {
+		ret["lvm_group"] = fs;
 	    }
 
 	    return (ret);
@@ -115,16 +114,13 @@
 
     /**
      * General compatibility issues
-     *
-     */
-    
+     * @param map install section
+     * @param map configure section
+     * @return map converted profile
+     */    
     global define map Compat(map Install, map Configure) ``{
 
-
-
-	//
 	// scripts
-	//
 	if ( haskey(Configure, "pre-scripts") ||
 	    haskey(Configure, "post-scripts") ||
 	    haskey(Configure, "chroot-scripts")	    )
@@ -253,10 +249,5 @@
 	}
 	return (union(Configure, Install));
     }
-
-
-
-
-
 
 }

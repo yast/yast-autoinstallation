@@ -26,12 +26,17 @@
 
     global map raid = $[];
 
+
+
+    // Local variables
     list region = [0,0];
     map targetMap = $[];
 
+
+    
     /**
      * Constructor
-     *
+     * @return void
      */
     global define void AutoinstRAID () ``{
 
@@ -48,13 +53,20 @@
 	return;
     }
 
-
+    /**
+     * Return existing MDs
+     * @return list list of existing MDs
+     */
     global define list ExistingMDs ( string md )
 	``{
 	return(filter( map part, get_possible_rds( targetMap ),  ``( part["raid_name"]:"-1" == md )));
     }
 
-
+    
+    /**
+     * Return deleted MDs
+     * @return list list of deleted MDs
+     */
     global define list DeletedMDs ( string md )
 	``{
 	list<list<map> > ret = [];
@@ -76,7 +88,10 @@
 	return( flatten(ret) );
     }
 
-
+    /**
+     * Delete MDs
+     * @return list list of deleted MDs
+     */
     global define list DeleteMDs ()
 	``{
 	targetMap =  Storage::GetTargetMap();
@@ -113,13 +128,9 @@
     }  	
 
 
-
-
-
-
     /**
      * Create RAID
-     *
+     * @return boolean
      */
     global define boolean Write()
 	``{
@@ -264,13 +275,6 @@
 	
 	return true;
     }
-
-
-
-
-
-
-
     
 
 }
