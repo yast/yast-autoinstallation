@@ -331,9 +331,13 @@
 	    else if (k == "hwclock") // compat
 	    {
 		if (v == "localtime")
+		{
 		    Hwclock = "--localtime";
-		else
+		}
+		else if  (v == "GMT")
+		{
 		    Hwclock = "-u";
+		}
 	    }
 	    else if (k == "timezone") // compat
 	    {
@@ -555,13 +559,16 @@
 	``{
 	
 	sysconfigSettings();
-	if (  X11["default_wm"]:"" != "") {
-	    SCR::Write (.sysconfig.windowmanager.DEFAULT_WM, X11["default_wm"]:"kde");
-	    SCR::Write (.sysconfig.windowmanager, nil);
-	}
-	if (  X11["display_manager"]:"" != "") {
-	    SCR::Write (.sysconfig.displaymanager.DISPLAYMANAGER, X11["display_manager"]:"kdm");
-	    SCR::Write (.sysconfig.displaymanager, nil);
+	if (X11Version::have_x11())
+	{
+	    if (  X11["default_wm"]:"" != "") {
+		SCR::Write (.sysconfig.windowmanager.DEFAULT_WM, X11["default_wm"]:"kde");
+		SCR::Write (.sysconfig.windowmanager, nil);
+	    }
+	    if (  X11["display_manager"]:"" != "") {
+		SCR::Write (.sysconfig.displaymanager.DISPLAYMANAGER, X11["display_manager"]:"kdm");
+		SCR::Write (.sysconfig.displaymanager, nil);
+	    }
 	}
 	
 	return;    
