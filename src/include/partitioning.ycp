@@ -920,9 +920,6 @@ to contain a minimal installation.");
 	    part["lvm_group"]		=  lvm_group;
 	    part["mount"]		=  "";
 	    part["fstype"]		=  "Linux LVM";
-
-
-
 	}
 	else if (raid_name != "")
 	{
@@ -934,8 +931,7 @@ to contain a minimal installation.");
 	    part["raid_name"]		= raid_name;
 
 	    part["mount"]		= "";
-	    part["fstype"]		= "Linux RAID";
-	    part["raid_type"]		= currentPartition["raid_type"]:"raid";
+	    part["fstype"]		= "Linux RAID";	    
    
 	}
 	else
@@ -964,7 +960,10 @@ to contain a minimal installation.");
 
 	    string use 		= volume_group["use"]:"none";
 	    string vgname	= substring(device, 5);
-
+	    list new_pvs	= AutoinstLVM::ExistingPVs(vgname);
+	    list new_pvs_dev 	= maplist(`pv, existing_pvs, ``{
+		return(pv["device"]:"");
+	    });
 
 	    if (AutoinstLVM::OldAvailable )
 	    {
@@ -972,15 +971,28 @@ to contain a minimal installation.");
 
 		    string vg = substring(vgdev, 5);
 		    boolean delete = false;
+		    list deleted_pvs = DeletedPVs(vg);
+		    
+		    list del_pvs_dev 	= maplist(`pv, deleted_pvs, ``{
+			return(pv["device"]:"");
+		    });
+		    
 		    if ( use == "all" && vg == vgname )
 		    {			 
 			delete = true;
 		    }
-		    else if (size(DeletedPVs(vg)) > 0 )
+		    else if (
+			     size(deleted_pvs) > 0
+			     && size(toset(union(del_pvs_dev,  new_pvs_dev))) < (size(del_pvs_dev) + size( new_pvs_dev))
+			     )
 		    {
 			delete = true;
 		    }
 
+
+
+
+		    
 		    if ( delete)
 		    {
 			map ExistingVG = AutoinstLVM::ExistingLVM[vgdev]:$[];
@@ -995,16 +1007,13 @@ to contain a minimal installation.");
 		});
 	    }
 	    
-	    AutoinstLVM::SetPESIZE( volume_group["pesize"]:"4M" );
-
-	  		    
-	    list existing_pvs	= AutoinstLVM::ExistingPVs(vgname);
+	    AutoinstLVM::SetPESIZE( volume_group["pesize"]:"4M" );	  		    	   
 			
-	    y2milestone("Existing PVs: %1",  existing_pvs );
+	    y2milestone("Existing PVs: %1",  new_pvs );
 
 	    map new_volume = AutoinstLVM::CreateVG (vgname);
 
-	    foreach(map pv, existing_pvs, ``{
+	    foreach(map pv, new_pvs, ``{
 		AutoinstLVM::CreatePV (vgname, pv["device"]:"");
 	    });
 
@@ -1036,14 +1045,15 @@ to contain a minimal installation.");
      */
     global define void autoRAID()
 	``{
+		
+	list RaidList =  maplist ( map device, AutoinstStorage::raid["/dev/md", "partitions"]:[],  ``{
 
-	map raid =filter(`k,`v, AutoinstStorage::targetMap, ``(k == "/dev/md"));
-	
-	list RaidList =  maplist (map device, raid["partitions"]:[],  ``{
-
+	    y2milestone("Working on %1", device);
+	    
 	    string chunk_size = "4";
 	    string raid_level = "";
-	    if (haskey(device, "raid_level")) {
+	    if (haskey(device, "raid_level"))
+	    {
 		raid_level	= device["raid_level"]:"raid1";
 	    }
 	    else
@@ -1087,7 +1097,7 @@ to contain a minimal installation.");
 		device["status"]		= "create";
 	    }
 
-	    device["raid_level"] 	= raid_level;	    
+	    device["raid_type"] 	= raid_level;	    
 	    device["chunk_size"]	= chunk_size;
 
 	    if (!haskey(device, "format"))

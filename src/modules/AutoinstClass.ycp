@@ -102,18 +102,23 @@
      */
     global define void Files()
 	``{
+	confs = [];
 	foreach(map class, Classes,
 		``{
 	    list files = SCR::Read(.target.dir, classDir + "/" + class["name"]:"xxx");
-	    y2milestone("Files in class %1: %2", class["name"]:"xxx", files);
-	    list tmp_confs = maplist(string file , files , ``{
-		map conf = $[];
-		conf["class"] =  class["name"]:"xxx";
-		conf["name"]  = file;
-		return (conf);		
-	    });
-	    confs = union(confs, tmp_confs);
+	    if (files != nil ) {
+		y2milestone("Files in class %1: %2", class["name"]:"xxx", files);
+		list tmp_confs = maplist(string file , files , ``{
+		    map conf = $[];
+		    conf["class"] =  class["name"]:"xxx";
+		    conf["name"]  = file;
+		    return (conf);		
+		});
+		y2milestone("Configurations: %1", tmp_confs);
+		confs = union(confs, tmp_confs);
+	    }
 	});
+	y2milestone("Configurations: %1", confs);
 	return;
     }
 
