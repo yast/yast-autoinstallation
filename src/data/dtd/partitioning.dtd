@@ -3,6 +3,11 @@
 <!ATTLIST crypt_fs
 	config:type CDATA #REQUIRED
 >
+<!ELEMENT loop_fs (#PCDATA)>
+<!ATTLIST loop_fs
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT crypt (#PCDATA)>
 <!ELEMENT crypt_key (#PCDATA)>
 <!-- <!ELEMENT device (#PCDATA)>  : redefined --> 
 <!ELEMENT drive (device?, initialize?,  is_lvm_vg?, partitions?, pesize?,use?)>
@@ -49,7 +54,7 @@
 >
 <!ELEMENT option_str (#PCDATA)>
 <!ELEMENT option_value (#PCDATA)>
-<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, lv_name?, label?, lvm_group?, mount?, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?, region?, size?, maxsize?, grow?, create?)>
+<!ELEMENT partition (create?, crypt?, crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, grow?,loop_fs?, lv_name?, label?, lvm_group?, maxsize?, mount?, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?, region?, size?)>
 <!-- <!ELEMENT lvm_group (#PCDATA)> -->
 <!ELEMENT raid_name (#PCDATA)>
 <!ELEMENT raid_type (#PCDATA)>
