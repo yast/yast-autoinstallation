@@ -585,7 +585,8 @@
 			{
                             string profile_name = ruledef["profile"]:"";
                             profile_name = SubVars(profile_name);
-			    tomerge = add(tomerge, profile_name);
+                            if (ruledef["match_with_base"]:true)
+			        tomerge = add(tomerge, profile_name);
 			    go_on = ruledef["continue"]:false;
 			}
 			else

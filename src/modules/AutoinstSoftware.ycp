@@ -217,6 +217,21 @@
 	}
 
 
+	if (haskey(Profile::Flat, "nis")) {
+		map conf = Profile::Flat["nis"]:$[];
+		if (conf["start_nis"]:false)
+			allpackages = (list<string>) union(allpackages, ["yast2-nis-client","ypbind"]);
+
+                if (conf["start_autofs"]:false)
+                {
+                    string pkg = "autofs";
+                    if (! contains ( allpackages, "autofs4"))
+                    {
+                        allpackages = add (allpackages, pkg);
+                    }
+                }
+
+	}
 
 	if (haskey(Profile::Flat, "ldap")) {
 		map ldapclient = Profile::Flat["ldap"]:$[];
@@ -232,11 +247,6 @@
 	}
 
 
-	if (haskey(Profile::Flat, "nisplus")) {
-		map nisplus = Profile::Flat["nisplus"]:$[];
-		if (nisplus["start_nisplus"]:false)
-			allpackages = add(allpackages, "nis-utils");
-	}
 	if (haskey(Profile::Flat, "mail")) {
 		map mail = Profile::Flat["mail"]:$[];
 		if (mail["mta"]:`other == `postfix)

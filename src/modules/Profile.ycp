@@ -121,6 +121,9 @@
 	``{
 	// y2debug("Modulemap: %1", ModuleMap );
 	y2debug("Flat: %1", Flat );
+        Install = $[];
+        Configure = $[];
+        list<string> e = [];
 
 	foreach(string p, map d, ModuleMap, ``{
 	    //
@@ -131,7 +134,8 @@
 	    if (resource == "")
 	    {
 		resource = p;
-	    }
+            }
+            y2milestone("resource: %1", resource );
 	    string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
 
 	    integer s = 0;
@@ -172,7 +176,7 @@
 				if (Flat[res]:$[] != $[])
 				    Configure[res] = Flat[res]:$[];
 			    }
-			    else 
+			    else
 			    {
 				if ( Flat[res]:[] != [])
 				    Configure[res] = Flat[res]:[];
@@ -189,29 +193,32 @@
 			Configure[resource] = Flat[resource]:[];
 		    }
 		}
-	    }
+            } else if (s == 0 ){
+                e=add(e, resource);
+            }
 	});
 
 
 	if (Install != $[])
 	{
+            foreach(string k, any v, current["install"]:$[], ``{
+                    if (!haskey(Install, k) && !contains(e, k ))
+                        Install[k] = v;
+                    });
 	    current["install"] = Install;
-	}
-	else if (haskey(current,"install"))
-	{
-	    current=remove( current,"install");
 	}
 
 	if (Configure!=$[])
 	{
+            foreach(string k, any v, current["configure"]:$[], ``{
+                    if (!haskey(Configure, k) && !contains(e, k ))
+                        Configure[k] = v;
+                    });
 	    current["configure"] = Configure;
 	}
-	else if (haskey(current,"configure"))
-	{
-	    current = remove(current,"configure");
-	}
 
 
+	Flat = (map<string, any>)union( Configure, Install );
 	return;
 
     }
