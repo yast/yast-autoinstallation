@@ -23,7 +23,7 @@
 
     define void Step (string s) {
         Progress::NextStep();
-        Progress::Title(sformat(_("Checking required packages for %1"), s));
+        Progress::Title(sformat(_("Checking for packages required for %1..."), s));
         return;
     }
 
@@ -40,7 +40,7 @@ Please wait while the system is prepared for autoinstallation.</p>
 ");
     list<string> progress_stages =
 	[
-	 _("Install required packages."),
+	 _("Install required packages"),
 	 ];
 
     integer steps = size(filter(string p, map d, Y2ModuleConfig::ModuleMap, ``( 
