@@ -430,7 +430,27 @@
 	</section>	
       </section>
 
+      <section>
+	<title>Using existing mount table (fstab)</title>
+	<para>
+	  This option will allow the AutoYaST to use an existing
+	  <filename>/etc/fstab</filename> and use the partition data from
+	  from a previous installation. All partitions are kept and no new
+	  partitions are created. The found partitions will be formatted and
+	  mounted as specified in <filename>/etc/fstab</filename> found on a
+	  Linux root partition.
+	</para>
+	<para>
+	  Although the default behaviour is to format all partitions, it is
+	  also possible to leave some partitions untouched and only mount them,
+	  for example data partitions. If multiple installations are found on
+	  the system (multiple root partitions with different
+	  <emphasis>fstab</emphasis> files, the installation will abort, unless
+	  the desired root partition is configured in the control file. The
+	  following example illustrates how this option can be used:
+	</para>
 
+      </section>
 
       <section>
 	<title>
