@@ -127,17 +127,20 @@
 	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
         y2debug("module_auto: %1", module_auto );
 
-	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
+	any original_settings = WFM::CallFunction(module_auto, ["Export"]);
         any seq = WFM::CallFunction(module_auto, ["Change"]);
         y2debug("Change response: %1", seq);
         if (seq == `accept || seq == `next || seq == `finish)
         {
-            boolean mod = (boolean)WFM::CallFunction(module_auto, ["GetModified"]);
-            if (mod)
+	    any new_settings = WFM::CallFunction(module_auto, ["Export"]);
+            if (original_settings!=new_settings)
             {
+                WFM::CallFunction(module_auto, ["SetModified"]);
                 Profile::changed = true;
                 Profile::prepare = true;
             }
+        } else {
+            WFM::CallFunction(module_auto, ["Import", original_settings]);
         }
         return (seq);
     }

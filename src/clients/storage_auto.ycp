@@ -47,11 +47,11 @@ y2debug("param=%1", param);
 /* Import Data*/
 if(func == "Import") {
     ret = AutoinstStorage::Import ((list<map>)param);
-	if (ret == nil)
-	{
-	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
-	    ret = false;
-	}
+    if (ret == nil)
+    {
+        y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+        ret = false;
+    }
 }
 /* Create a  summary*/
 else if(func == "Summary") {
@@ -66,11 +66,7 @@ else if (func == "Reset") {
 else if (func == "Change") {
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("disk");
-    list exp1 = AutoinstStorage::Export();
     ret = StorageDialog();
-    list exp2 = AutoinstStorage::Export();
-    if (exp1!=exp2)
-        AutoinstStorage::SetModified();
     Wizard::CloseDialog();
 }
 /* Return actual state */
@@ -80,6 +76,9 @@ else if (func == "Export") {
 /* Return true if modified */
 else if (func == "GetModfied") {
     ret = AutoinstStorage::GetModified();
+}
+else if (func == "SetModfied") {
+    AutoinstStorage::SetModified();
 }
 /* Unknown function */
 else {

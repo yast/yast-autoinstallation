@@ -14,6 +14,26 @@
     import "Summary";
 
 
+    /* default value of settings modified */
+    global boolean modified = false;
+
+
+    /**
+     * Function sets internal variable, which indicates, that any
+     * settings were modified, to "true"
+     */
+    global define void SetModified () {
+        y2milestone("SetModified");
+        modified = true;
+    }
+
+    /**
+     * Functions which returns if the settings were modified
+     * @return boolean  settings were modified
+     */
+    global define boolean GetModified () {
+        return modified;
+    }
 
     global list<map> Files = [];
 
@@ -59,7 +79,8 @@
     /**
      * Write Settings
      */
-    global define boolean Write () ``{
+    global define boolean Write ()
+    {
 	import "AutoInstall";
 	y2milestone("Writing Files to the system");
 	if ( size( Files )==0 )
