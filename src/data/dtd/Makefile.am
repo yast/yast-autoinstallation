@@ -4,7 +4,7 @@
 # $Id$
 #
 
-dtddir = /usr/share/autoinstall/dtd
+dtddir = $(prefix)/share/autoinstall/dtd
 
 dtd_DATA = $(wildcard *.dtd)
 

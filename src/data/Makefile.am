@@ -6,8 +6,8 @@
 
 SUBDIRS = dtd rng
 
-xmldir = /usr/share/autoinstall/xslt
-miscdir = /usr/share/autoinstall/
+xmldir = $(prefix)/share/autoinstall/xslt
+miscdir = $(prefix)/share/autoinstall/
 
 misc_DATA = \
 	EXTRA_PROV
