@@ -1,0 +1,32 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace config = "http://www.suse.com/1.0/configns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+software =
+  element software {
+    addons?, base, kernel?, packages?, post-packages?, remove-packages?
+  }
+addons =
+  element addons {
+    LIST,
+    addon+
+  }
+base = element base { text }
+addon = element addon { text }
+kernel = element kernel { text }
+post-packages =
+  element post-packages {
+    LIST,
+    package+
+  }
+packages =
+  element packages {
+    LIST,
+    package+
+  }
+remove-packages =
+  element remove-packages {
+    LIST,
+    package+
+  }
+package = element package { text }
