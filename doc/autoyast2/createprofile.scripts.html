@@ -153,32 +153,41 @@ CLASS="emphasis"
 CLASS="acronym"
 >YaST2</ACRONYM
 > has completed the
-	    installation and after it has booted the system the first time.</P
+	    installation and after it has booted the system for the first time.</P
 ></LI
 ><LI
 ><P
 >Chroot environment post-install scripts</P
 ><P
 >Chroot scripts are executed after all packages have been
-	    installed  before
+	    installed  and before
 	    <ACRONYM
 CLASS="acronym"
 >YaST2</ACRONYM
 > boots for the first time and before the boot loader is
 	    installed. Although the name of this type of scripts might imply
 	    that the scripts executed in the chroot environment, the scripts
-	    are actually executed in the system before its mounted. To make any
+	    are actually executed in the system before it was mounted. To make any
 	    changes to the system, the prefix <I
 CLASS="emphasis"
 >/mnt</I
 > has to
 	    be used to any path.
 	  </P
+><P
+>&#13;              It is also possible to run the <I
+CLASS="emphasis"
+>chroot scripts</I
+> in
+              the installed system by adding the boolean element <I
+CLASS="emphasis"
+>chrooted</I
+>
+          </P
 ></LI
 ></UL
 ><P
->&#13;	All  but the pre-install scripts can be written in either shell or
-	perl script language. When added to the control file manually, the
+>&#13;	When added to the control file manually, the
 	scripts have to be included in a <I
 CLASS="emphasis"
 >CDATA</I
@@ -188,11 +197,11 @@ CLASS="emphasis"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN809"
+NAME="AEN823"
 ></A
 ><P
 ><B
->Example 4-34. Post script configuration</B
+>Example 4-35. Post script configuration</B
 ></P
 ><TABLE
 BORDER="0"
@@ -225,6 +234,23 @@ echo "Do something usefull"
   &#60;pre-scripts&#62;
    .....
   &#60;/pre-scripts&#62;
+  &#60;chroot-scripts&#62;
+      &#60;script&#62;
+          &#60;chrooted config:type="boolean"&#62;true&#60;/chrooted&#62;
+          &#60;filename&#62;chrooted.sh&#60;/filename&#62;
+          &#60;interpreter&#62;shell&#60;/interpreter&#62;
+          &#60;source&#62;
+
+&#60;![CDATA[
+#!/bin/sh
+cat /etc/fstab
+
+]]&#62;
+
+    &#60;/source&#62;
+   &#60;/script&#62;
+  &#60;/chroot-scripts&#62;
+
 ...
 &#60;/scripts&#62;
 

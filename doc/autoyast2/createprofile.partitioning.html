@@ -85,7 +85,7 @@ CLASS="section"
 ><H2
 CLASS="section"
 ><A
-NAME="AEN342"
+NAME="AEN344"
 >4.4.1. Automated Partitioning</A
 ></H2
 ><P
@@ -327,7 +327,7 @@ CLASS="emphasis"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN403"
+NAME="AEN405"
 ></A
 ><P
 ><B
@@ -368,7 +368,7 @@ CLASS="screen"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN408"
+NAME="AEN410"
 ></A
 ><P
 ><B
@@ -429,7 +429,7 @@ CLASS="section"
 ><H2
 CLASS="section"
 ><A
-NAME="AEN411"
+NAME="AEN413"
 >4.4.2. Advanced Partitioning features</A
 ></H2
 ><DIV
@@ -437,7 +437,7 @@ CLASS="section"
 ><H3
 CLASS="section"
 ><A
-NAME="AEN413"
+NAME="AEN415"
 >4.4.2.1. Mount Options</A
 ></H3
 ><P
@@ -556,7 +556,7 @@ CLASS="emphasis"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN451"
+NAME="AEN453"
 ></A
 ><P
 ><B
@@ -599,7 +599,7 @@ CLASS="section"
 ><H3
 CLASS="section"
 ><A
-NAME="AEN454"
+NAME="AEN456"
 >4.4.2.2. Creating Primary and Extended Partitions</A
 ></H3
 ><P
@@ -633,7 +633,7 @@ CLASS="emphasis"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN463"
+NAME="AEN465"
 ></A
 ><P
 ><B
@@ -703,7 +703,7 @@ CLASS="screen"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN468"
+NAME="AEN470"
 ></A
 ><P
 ><B
@@ -770,7 +770,7 @@ CLASS="section"
 ><H3
 CLASS="section"
 ><A
-NAME="AEN471"
+NAME="AEN473"
 >4.4.2.3. Keeping Specific Partitions</A
 ></H3
 ><P
@@ -799,7 +799,7 @@ CLASS="acronym"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN477"
+NAME="AEN479"
 ></A
 ><P
 ><B
@@ -915,7 +915,7 @@ CLASS="acronym"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN492"
+NAME="AEN494"
 ></A
 ><P
 ><B
@@ -969,8 +969,95 @@ CLASS="section"
 ><H2
 CLASS="section"
 ><A
-NAME="AEN495"
->4.4.3. Logical Volume Manager (LVM)</A
+NAME="AEN497"
+>4.4.3. Using existing mount table (fstab)</A
+></H2
+><P
+>&#13;	  This option will allow the AutoYaST to use an existing
+	  <TT
+CLASS="filename"
+>/etc/fstab</TT
+> and use the partition data from
+	  from a previous installation. All partitions are kept and no new
+	  partitions are created. The found partitions will be formatted and
+	  mounted as specified in <TT
+CLASS="filename"
+>/etc/fstab</TT
+> found on a
+	  Linux root partition.
+	</P
+><P
+>&#13;	  Although the default behaviour is to format all partitions, it is
+	  also possible to leave some partitions untouched and only mount them,
+	  for example data partitions. If multiple installations are found on
+	  the system (multiple root partitions with different
+	  <I
+CLASS="emphasis"
+>fstab</I
+> files, the installation will abort, unless
+	  the desired root partition is configured in the control file. The
+	  following example illustrates how this option can be used:
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN504"
+></A
+><P
+><B
+>Example 4-11. 
+	    Reading existing <TT
+CLASS="filename"
+>/etc/fstab</TT
+>
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+    &#60;install&#62;
+        &#60;partitioning_advanced&#62;
+            &#60;fstab&#62;
+                &#60;!-- Read data from existing fstab. If multiple root partitions are
+                found, use the one specified below. Otherwise the first root
+                partition is taken --&#62;
+                &#60;!-- &#60;root_partition&#62;/dev/hda5&#60;/root_partition&#62; --&#62;
+                &#60;use_existing_fstab config:type="boolean"&#62;true&#60;/use_existing_fstab&#62;
+                &#60;!-- all partitions found in fstab will be formatted and mounted
+                by default unless a partition is listed below with different
+                settings --&#62;
+                &#60;partitions config:type="list"&#62;
+                    &#60;partition&#62;
+                        &#60;format config:type="boolean"&#62;false&#60;/format&#62;
+                        &#60;mount&#62;/bootmirror&#60;/mount&#62;
+                    &#60;/partition&#62;
+                &#60;/partitions&#62;
+            &#60;/fstab&#62;
+        &#60;/partitioning_advanced&#62;
+
+
+    &#60;/install&#62;
+
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN508"
+>4.4.4. Logical Volume Manager (LVM)</A
 ></H2
 ><P
 >&#13;	  To configure LVM, first you need to create a <I
@@ -982,11 +1069,11 @@ CLASS="emphasis"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN499"
+NAME="AEN512"
 ></A
 ><P
 ><B
->Example 4-11. 
+>Example 4-12. 
 	    Create LVM Physical Volume
 	  </B
 ></P
@@ -1060,11 +1147,11 @@ CLASS="emphasis"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN511"
+NAME="AEN524"
 ></A
 ><P
 ><B
->Example 4-12. 
+>Example 4-13. 
 	    LVM Logical Volumes (Old syntax)
 	  </B
 ></P
@@ -1131,11 +1218,11 @@ CLASS="screen"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN515"
+NAME="AEN528"
 ></A
 ><P
 ><B
->Example 4-13. 
+>Example 4-14. 
 	    LVM Logical Volumes (New syntax)
 	  </B
 ></P
@@ -1202,8 +1289,8 @@ CLASS="section"
 ><H2
 CLASS="section"
 ><A
-NAME="AEN518"
->4.4.4. Software RAID</A
+NAME="AEN531"
+>4.4.5. Software RAID</A
 ></H2
 ><P
 >&#13;	  Using <ACRONYM
@@ -1299,11 +1386,11 @@ CLASS="emphasis"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN545"
+NAME="AEN558"
 ></A
 ><P
 ><B
->Example 4-14. RAID1 configuration (Old Syntax)</B
+>Example 4-15. RAID1 configuration (Old Syntax)</B
 ></P
 ><TABLE
 BORDER="0"
@@ -1373,11 +1460,11 @@ CLASS="screen"
 ><DIV
 CLASS="example"
 ><A
-NAME="AEN549"
+NAME="AEN562"
 ></A
 ><P
 ><B
->Example 4-15. RAID1 configuration (New configuration&#62;</B
+>Example 4-16. RAID1 configuration (New configuration&#62;</B
 ></P
 ><TABLE
 BORDER="0"
