@@ -62,7 +62,7 @@
 
     global integer memsize = 0;
 
-    global list disksize = [];
+    global list<map<string, any> > disksize = [];
 
     global integer totaldisk = 0;
 
@@ -86,12 +86,12 @@
     global list LinuxPartitions = [];
 
 
-    global map UserRules = $[];
+    global map<string, any> UserRules = $[];
 
     // Local Variables
     string shell = "";
     map env = $[];
-    list tomerge = [];
+    list<string> tomerge = [];
 
 
     /**
@@ -149,7 +149,7 @@
      */
     global define string getMAC() ``{
 	string tmpmac = "";
-	list ifconfig = (list)SCR::Read(.run.ifconfig);
+	list<map> ifconfig = (list<map>)SCR::Read(.run.ifconfig);
 	string device = "";
 	if (Mode::initial)
 	{
@@ -165,7 +165,7 @@
 	    if (dev["name"]:"" == device)
 	    {
 		string link = dev["value", "link"]:"";
-		list linktok = splitstring(link, " ");
+		list<string> linktok = splitstring(link, " ");
 		list clean = filter(string tok, linktok, ``(tok != ""));
 		y2debug("mac line: %1", clean);
 		tmpmac = clean[3]:"";
@@ -254,7 +254,7 @@
 	// Disk sizes
 	//
 	
-	map storage =  Storage::GetTargetMap();
+	map<string,map<string, any> > storage =  Storage::GetTargetMap();
 	totaldisk = 0;
 	disksize = maplist( string k, map v, storage ,
 			    ``{
@@ -344,9 +344,9 @@
 	}
 	else if (matchtype == "range")
 	{
-	    list range =splitstring((string)val, "-");
+	    list<string> range =splitstring(tostring(val), "-");
 	    y2debug("Range: %1", range);
-	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" -a \"$%1\" -lt \"%3\" ",  var,  range[0]:0,  range[1]:0);
+	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" -a \"$%1\" -lt \"%3\" ",  var,  range[0]:"0",  range[1]:"0");
 	}
 
 	if (match)
@@ -389,11 +389,16 @@
 
 	y2milestone("Rules: %1", UserRules);
 
-	list rulelist = UserRules["rules"]:[];
+	list<map <string, map> > rulelist = UserRules["rules"]:[];
+	if (rulelist == nil)		// check result of implicit type conversion
+	{
+	    y2error ("Key 'rules' has wrong type");
+	    rulelist = [];
+	}
 
 	boolean ismatch = false;
 	boolean go_on = true;
-	foreach ( map ruleset, rulelist, ``{
+	foreach ( map<string, map> ruleset, rulelist, ``{
 	    y2debug("Ruleset: %1", ruleset);
 	    if (go_on) {
 		foreach(string rule, map ruledef, ruleset, ``{
@@ -534,12 +539,12 @@
 		    else if ( rule == "disksize" )
 		    {
 			// [ $["device":"/dev/hda", "size":"100000"] ]
-			list disk = splitstring(match, " ");
+			list<string> disk = splitstring(match, " ");
 
 			// ["/dev/hda", "1000"]
 
 			integer i = 0;
-			foreach(map dev, disksize, ``{
+			foreach(map<string, any> dev, disksize, ``{
 			    string var1 = sformat("disksize_size%1", i );
 			    string var2 = sformat("disksize_device%1", i );
 			    shellseg(ismatch , var1 , disk[1]:"" , op, matchtype);
@@ -555,7 +560,7 @@
 		    {
 			if ( verifyrules() == 0 )
 			{
-			    tomerge = add(tomerge,  ruledef["profile"]:"");
+			    tomerge = add(tomerge, ruledef["profile"]:"");
 			    go_on = ruledef["continue"]:false;
 			}
 			else
@@ -578,7 +583,7 @@
      * Return list of file to merge (Order matters)
      * @return list list of files
      */
-    global define list Files () ``{
+    global define list<string> Files () ``{
 	return tomerge;
     }
 
@@ -598,7 +603,7 @@
 	string filepath = AutoinstConfig::filepath;
 	string directory = AutoinstConfig::directory;
 
-	list valid = [];
+	list<string> valid = [];
 	boolean stop = false;
 	foreach(string file, tomerge,
 		``{
@@ -726,7 +731,7 @@ control file and try again.
 	if ( haskey(Profile::Flat, "classes") )
 	{
 	    y2milestone("User defined classes available, processing....");
-	    list classes = Profile::Flat["classes"]:[];
+	    list<map> classes = Profile::Flat["classes"]:[];
 	    foreach(map class, classes,
 		    ``{
 		tomerge = add(tomerge,  "classes/" + class["class_name"]:"none" + "/" + class["configuration"]:"none");

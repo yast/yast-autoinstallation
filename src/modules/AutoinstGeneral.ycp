@@ -240,7 +240,7 @@
 	    string device = mouse["device"]:"none";
 	    integer wheels = mouse["wheels"]:0;
 
-	    map mice = (map)Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+	    map<string, list> mice = (map<string, list>)Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
 
 	    foreach(string f,list g, mice, ``{
 		map data = g[1]:$[];

@@ -288,7 +288,7 @@ to delete.
     /**
      * The merge operation
      */
-    define boolean MergeAll(list selected_profiles, symbol base)
+    define boolean MergeAll(list<map> selected_profiles, symbol base)
 	``{
 	import "Profile";
 	string tmpdir = AutoinstConfig::tmpDir;
@@ -375,7 +375,7 @@ to delete.
     define symbol MergeDialog()
 	``{
 	string title = _("Merge Classes");
-	map profiles = $[];
+	map<string, list> profiles = $[];
 
 	term Combo = `VBox();
 	AutoinstClass::Files();
@@ -475,7 +475,7 @@ script is used.</P>
 	    integer n = 0;
 	    if (ret == `merge)
 	    {
-		list selected_profiles = [];
+		list<map> selected_profiles = [];
 		foreach (map prof, AutoinstClass::confs,``{
 
 		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
@@ -509,7 +509,7 @@ to perform a merge.
 		    continue;
 		}
 
-		list sorted_profiles =  sort(map x, map y, filter(map c, toset(selected_profiles),``(c["profile"]:""!= "none")),
+		list<map> sorted_profiles =  sort(map x, map y, filter(map c, toset(selected_profiles),``(c["profile"]:""!= "none")),
 					     ``(x["order"]:0<y["order"]:0)
 					     );
 		y2debug("Selected Profiles: %1", sorted_profiles);
@@ -538,7 +538,7 @@ file should belong.</p>
 
 	AutoinstClass::Files();
 
-	map profiles = $[];
+	map<string, list> profiles = $[];
 
 	foreach(map prof, AutoinstClass::confs, ``{
 	    string class = prof["class"]:"default";
@@ -600,7 +600,7 @@ file should belong.</p>
 	    integer n = 0;
 	    if (ret ==`next)
 	    {
-		list selected_profiles = [];
+		list<map> selected_profiles = [];
 		foreach(map prof, AutoinstClass::confs,``{
 
 		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
@@ -627,7 +627,7 @@ file should belong.</p>
 		    continue;
 		}
 
-		list sorted_profiles =  filter(map c, toset(selected_profiles),``(c["configuration"]:""!= "none")
+		list<map> sorted_profiles =  filter(map c, toset(selected_profiles),``(c["configuration"]:""!= "none")
 					       );
 
 		y2debug("Selected Profiles: %1", sorted_profiles);

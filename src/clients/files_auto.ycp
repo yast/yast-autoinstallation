@@ -76,9 +76,9 @@ define void AddEditFile(string fileName, string source, string permissions, stri
  * @param file name
  * @return modified list of files
  */
-define list  deleteFile(string fileName)
+define list<map>  deleteFile(string fileName)
 	``{
-		list new =  filter(map s , AutoinstFile::Files, ``(s["file_path"]:"" != fileName));
+		list<map> new =  filter(map s , AutoinstFile::Files, ``(s["file_path"]:"" != fileName));
 		return  (new);
 	}
 
@@ -296,11 +296,21 @@ y2debug("param=%1", param);
 
 /* Import Data*/
 if(func == "Import") {
-    ret = AutoinstFile::Import(param);
+    ret = AutoinstFile::Import((list<map>)param);
+	if (ret == nil)
+	{
+	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+	    ret = false;
+	}
 }
 /* Create a  summary*/
 else if(func == "Summary") {
     ret = AutoinstFile::Summary();
+	if (ret == nil)
+	{
+	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+	    ret = false;
+	}
 }
 /* Reset configuration */
 else if (func == "Reset") {

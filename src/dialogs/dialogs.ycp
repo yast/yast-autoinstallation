@@ -266,8 +266,8 @@ must begin with letter, and must be
 		ret = (symbol)UI::UserInput();
 		if (ret ==`next)
 		{
-		    AutoinstClone::base = (list)UI::QueryWidget( `id(`baseres), `SelectedItems );
-		    AutoinstClone::additional = (list)UI::QueryWidget( `id(`res), `SelectedItems );
+		    AutoinstClone::base = (list<string>)UI::QueryWidget( `id(`baseres), `SelectedItems );
+		    AutoinstClone::additional = (list<string>)UI::QueryWidget( `id(`res), `SelectedItems );
                     Popup::ShowFeedback( _("Collecting system data..."), _("This may take a while..."));
 		    AutoinstClone::Process();
 		    Profile::changed = true;
@@ -329,6 +329,7 @@ the configuration files are read and converted.
 			continue;
 		    }
 
+                    Alice::createProfile();
 		    Profile::Import(Alice::Result);
                     Popup::ClearFeedback();
 		}

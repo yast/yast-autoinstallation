@@ -21,13 +21,13 @@
     global map current = $[];
 
     // Flat control file with all resources on one level
-    global map Flat = $[];
+    global map<string, any > Flat = $[];
 
     // the install portion of the XML configuration file
-    global map Install = $[];
+    global map<string, any > Install = $[];
 
     // the configure portion of the XML configuration file
-    global map Configure = $[];
+    global map<string, any > Configure = $[];
 
     // defined in Y2ModuleConfig
     global map<string, map> ModuleMap = $[];
@@ -106,7 +106,7 @@
 
 	Configure = profile["configure"]:$[];
 	Install = profile["install"]:$[];
-	Flat = union( Configure, Install );
+	Flat = (map<string, any>)union( Configure, Install );
 
 	return;
     }
@@ -471,7 +471,7 @@
 	    }
 
 	    map net = Configure["networking"]:$[];
-	    list<map> ifaces = net["interfaces"]:[];
+	    list<map<string, string> > ifaces = net["interfaces"]:[];
 
 	    list newifaces = maplist(map<string, string> iface , ifaces, ``{
 		map newiface = mapmap(string k, string v, iface, ``{

@@ -47,10 +47,9 @@
     /**
      * CheckDeleteTag
      */
-
-    global define boolean CheckDeleteTag (map e, list<map> a) ``{
+    global define boolean CheckDeleteTag (map<string, any> e, list<map<string, any> > a) ``{
         boolean delete = false;
-        foreach (map p , a , ``{
+        foreach (map<string, any> p , a , ``{
 	    if (p["partition_nr"]:-1 == e["nr"]:-2 && !delete) {
                 delete = p["delete"]:false;
 	    }
@@ -84,9 +83,9 @@
      * SaneRegionLimits
      * @return boolean
      */
-    global define boolean SaneRegionLimits (list<integer> unused,  list partitions) ``{
+    global define boolean SaneRegionLimits (list<integer> unused,  list<map> partitions) ``{
 
-        map lastPart = (map) select(partitions, size(partitions) -1 , $[]);
+        map lastPart = select(partitions, size(partitions) -1 , $[]);
         y2milestone("last partitions = %1", lastPart );
         list<integer> last_region = [  lastPart["region", 0 ]:0  , lastPart["region", 1]:0 ];
 
@@ -112,9 +111,9 @@
 	y2milestone("Total available space: %1", totalsize);
 
 	// Get new partitions as specified in control file
-	list<map> TmpAutoPartitions =  AutoTargetMap[TargetDevice, "partitions"]:[];
+	list<map<string, any> > TmpAutoPartitions =  AutoTargetMap[TargetDevice, "partitions"]:[];
 
-	list<map> AutoPartitions = filter (map pentry,
+	list<map<string, any> > AutoPartitions = filter (map<string, any> pentry,
 				      TmpAutoPartitions ,
 				      ``(!pentry["kept"]:false )
 				      );
@@ -322,8 +321,8 @@
      * @param list<integer> global region
      * @return map partition data ready
      */
-    global define map addPartition(
-				   map currentPartition,
+    global define map<string, any> addPartition(
+				   map<string, any> currentPartition,
 				   symbol ptype,
 				   integer last_pnr,
 				   list<integer> selected_region) ``{
@@ -343,7 +342,7 @@
 
 
         // Partition Template
-        map part =
+        map<string, any> part =
             $[
 	      "create":	true,
 	      "format":	currentPartition["format"]:true,
@@ -457,8 +456,8 @@
      * @param list list of partitions
      * @return list
      */
-    global define list<map> SortPartitions(list<map> p) ``{
-        p = sort( map p1, map p2, p,
+    global define list<map<string, any> > SortPartitions(list<map<string, any> > p) ``{
+        p = sort( map<string, any> p1, map<string, any> p2, p,
 		  ``(start_of_region (p1["region"]:[])
 		     < start_of_region(p2["region"]:[])));
         return (p);
@@ -471,7 +470,7 @@
      *  @param label
      *  @return new partitions list
      */
-    global define list<map> CreatePartitions (list<map> partitions, list<integer> selected_region, string label)
+    global define list<map<string, any> > CreatePartitions (list<map<string, any> > partitions, list<integer> selected_region, string label)
         ``{
 
 	y2milestone("Initial partition list: %1", partitions);
@@ -479,7 +478,7 @@
 
 	recalculateSizes(selected_region);
 
-	partitions = filter (map pentry,
+	partitions = filter (map<string, any> pentry,
 			     partitions,
 			     ``(pentry["type"]:`unknown != `free)
 			     );
@@ -510,7 +509,7 @@
 	root_region = [ 0 , 0 ];
 	boolean empty_disk = (partitions == []);
 
-	map absd_partition =
+	map<string, any> absd_partition =
 	    $[
 	      "create":true,
 	      "format":true,
@@ -521,16 +520,16 @@
 	    ];
 
 	// Get new partitions as specified in control file
-	list<map> TmpAutoPartitions =  AutoTargetMap[TargetDevice, "partitions"]:[];
+	list<map<string, any> > TmpAutoPartitions =  AutoTargetMap[TargetDevice, "partitions"]:[];
 
-	list<map> AutoPartitions = filter (map pentry,
+	list<map<string, any> > AutoPartitions = filter (map<string, any> pentry,
 				      TmpAutoPartitions ,
 				      ``(!pentry["kept"]:false )
 				      );
 
 	// First create any primary partitions if requested in control file.
 
-	list<map> primaries = filter ( map pentry, AutoPartitions,
+	list<map<string, any> > primaries = filter ( map<string, any> pentry, AutoPartitions,
 				  ``(
 				     ( pentry["partition_type"]:"none" == "primary"
 				       || pentry["partition_nr"]:99 < Partitions::MaxPrimary(label) )
@@ -543,27 +542,27 @@
 	if ( size (primaries) > 0 )
 	{
 	    y2milestone("Primary partitions needed");
-	    list<map> tmp_p = partitions;
+	    list<map<string, any> > tmp_p = partitions;
 	    last_pnr = getLastPrimary(partitions);
 
-	    list<map> PrimaryAutoPartitions = maplist(map p, primaries,   ``{
+	    list<map<string, any> > PrimaryAutoPartitions = maplist(map<string, any> p, primaries,   ``{
 		if ((label=="bsd" || label=="sun")
 		    && (last_pnr == 3))
 		{
 		    last_pnr = last_pnr + 1;
 		}
-		map newPart = addPartition(p,  ptype, last_pnr, selected_region);
+		map<string, any> newPart = addPartition(p,  ptype, last_pnr, selected_region);
 		y2debug("new partition: %1", newPart );
-		tmp_p = (list<map> )union(tmp_p, [newPart]);
+		tmp_p = (list<map<string, any> > )union(tmp_p, [newPart]);
 		last_pnr = getLastPrimary(SortPartitions(tmp_p));
 		return (newPart);
 	    });
 	    last_pnr = last_pnr - 1;
-	    partitions = SortPartitions ( (list<map> ) union(partitions , PrimaryAutoPartitions));
+	    partitions = SortPartitions ( (list<map<string, any> > ) union(partitions , PrimaryAutoPartitions));
 	}
 
 	// Filter primaries
-	AutoPartitions = filter(map pentry, AutoPartitions,
+	AutoPartitions = filter(map<string, any> pentry, AutoPartitions,
 				``( ! (
 				       (
 					pentry["partition_type"]:"none" == "primary"
@@ -611,7 +610,7 @@
 		{
 		    ext_fsid = Partitions::fsid_extended_win;
 		}
-		list<map> extended = filter (map pentry, AutoPartitions,
+		list<map<string, any> > extended = filter (map<string, any> pentry, AutoPartitions,
 					``(
 					   (
 					    pentry["partition_type"]:"none" == "extended"
@@ -626,7 +625,7 @@
 		    y2milestone("Extended found");
 		    extended_region = extended[0, "region"]:[];
 
-		    map ExtendedPartition = extended[0]:$[];
+		    map<string, any> ExtendedPartition = extended[0]:$[];
 		    if (haskey(ExtendedPartition, "partition_id"))
 		    {
 			ext_fsid = ExtendedPartition["partition_id"]:ext_fsid;
@@ -640,7 +639,7 @@
 
 		    y2milestone("Extended region: %1 - Region: %2", extended_region, region);
 
-		    AutoPartitions = filter(map pentry, AutoPartitions,
+		    AutoPartitions = filter(map<string, any> pentry, AutoPartitions,
 					    ``(!(pentry["partition_type"]:"none" == "extended"
 						 || pentry["partition_id"]:0 == 15
 						 ||  pentry["partition_id"]:0 == 5))
@@ -672,7 +671,7 @@
 		// We know that these partitions are numbered contiguously
 
 		last_pnr = first_logical_nr - 1;
-		foreach (map pentry, partitions, ``{
+		foreach (map<string, any> pentry, partitions, ``{
 
 		    if (!pentry["delete"]:false
 			&& (pentry["type"]:`unknown == `logical))
@@ -688,14 +687,14 @@
 	last_pnr = last_pnr + 1;
 
 
-	list<map> LogicalAutoPartitions = maplist(map p, AutoPartitions,
+	list<map<string, any> > LogicalAutoPartitions = maplist(map<string, any> p, AutoPartitions,
 					     ``{
 						 if ((label == "bsd" || label == "sun")
 						     && (last_pnr == 3))
 						 {
 						     last_pnr = last_pnr + 1;
 						 }
-						 map newPart = addPartition(p,  ptype, last_pnr, selected_region);
+						 map<string, any> newPart = addPartition(p,  ptype, last_pnr, selected_region);
 						 last_pnr = last_pnr + 1;
 						 return(newPart);
 					     });
@@ -711,7 +710,7 @@
 
 	Storage::SetWholeDisk( selected_region == full_region);
 
-	list<map> finalPartitions =  (list<map> ) union(partitions,LogicalAutoPartitions);
+	list<map<string, any> > finalPartitions =  (list<map<string, any> > ) union(partitions, LogicalAutoPartitions);
 
 	y2milestone("FINAL Partitions: %1", finalPartitions);
 	return( finalPartitions );
@@ -744,7 +743,7 @@ exist on this system."));
 	}
 
 	// The current list of partitions
-	list<map> partitions = target["partitions"]:[];
+	list<map<string, any> > partitions = target["partitions"]:[];
 
 	max_partitions = compute_max_partitions (target);
 
@@ -925,21 +924,21 @@ exist on this system."));
 	    }
 
 	    // The partitions that remain untouched.
-	    list<map> old_partitions = [];
+	    list<map<string, any> > old_partitions = [];
 
 	    // The partitions that are deleted.
-	    list<map> selected_partitions = [];
+	    list<map<string, any> > selected_partitions = [];
 
 	    // The union of both lists.
-	    list<map> all_partitions = [];
+	    list<map<string, any> > all_partitions = [];
 
-	    map extended_pentry = $[];
+	    map<string, any> extended_pentry = $[];
 
 	    list<integer> KeepPartitions = [];
 
 	    boolean StrictMode = false;
 
-	    list<map> AutoPartitions = maplist (map part , AutoTarget["partitions"]:[],
+	    list<map<string, any> > AutoPartitions = maplist (map<string, any> part , AutoTarget["partitions"]:[],
 					   ``{
 					       if ( haskey(part, "create") && !part["create"]:true  && part["partition_nr"]:-1 != -1 )
 					       {
@@ -981,7 +980,7 @@ exist on this system."));
 	    // now loop through partitions
 	    boolean creating_anything = false;
 
-	    foreach (map pentry, partitions, ``{
+	    foreach (map<string, any> pentry, partitions, ``{
 
 		y2milestone("Working on %1", pentry);
 
@@ -1046,7 +1045,7 @@ exist on this system."));
 		    else if ( contains(KeepPartitions, pentry["nr"]:-1) )
 		    {
 			map drive = AutoinstStorage::AutoTargetMap[TargetDevice]:$[];
-			list<map> newautoparts = maplist(map autopart , AutoPartitions , ``{
+			list<map<string, any> > newautoparts = maplist(map<string, any> autopart , AutoPartitions , ``{
 			    if (autopart["partition_nr"]:-2 == pentry["nr"]:-1)
 			    {
 				string mntpoint = "";

@@ -46,7 +46,12 @@ y2debug("param=%1", param);
 
 /* Import Data*/
 if(func == "Import") {
-    ret = AutoinstStorage::Import(param);
+    ret = AutoinstStorage::Import ((list<map>)param);
+	if (ret == nil)
+	{
+	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+	    ret = false;
+	}
 }
 /* Create a  summary*/
 else if(func == "Summary") {

@@ -17,7 +17,7 @@
      * @param lvm_standalone Stand alone LVM configuration
      * @return LVM configuration integrated into partitioning resource
      */
-    global define list convertLVM (list lvm_standalone ) ``{
+    global define list convertLVM (list<map> lvm_standalone ) ``{
 
 	list all_lvm = [];
 
@@ -57,7 +57,7 @@
      * @param raid_standalone Stand alone RAID configuration
      * @return RAID configuration integrated into partitioning resource
      */  
-    global define map convertRAID (list raid_standalone ) ``{
+    global define map convertRAID (list<map> raid_standalone ) ``{
 	map raid = $[];
 
 	raid["device"] 	= "/dev/md";
@@ -118,7 +118,7 @@
      * @param map configure section
      * @return map converted profile
      */    
-    global define map Compat(map Install, map Configure) ``{
+    global define map<string, any> Compat(map Install, map Configure) ``{
 
 	// scripts
 	if ( haskey(Configure, "pre-scripts") ||
@@ -143,7 +143,7 @@
 	// general
 	boolean old = false;
 
-	map general_options 	= Install["general"]:$[];
+	map<string,any> general_options 	= Install["general"]:$[];
 	map security 		= Configure["security"]:$[];
 	map report		= Install["report"]:$[];
 
@@ -206,9 +206,9 @@
 	    }
 
 	    map net = Configure["networking"]:$[];
-	    list ifaces = net["interfaces"]:[];
+	    list<map<string, string> > ifaces = net["interfaces"]:[];
 
-	    list newifaces = maplist(map iface , ifaces, ``{
+	    list newifaces = maplist(map<string, string> iface , ifaces, ``{
 		map newiface = mapmap(string k, string v, iface, ``{
 		    return ($[tolower(k): v]);
 		});
@@ -226,7 +226,7 @@
 	//
 	// RAID
 	//
-	list old_raid = Install["raid"]:[];
+	list<map> old_raid = Install["raid"]:[];
 	if (size(old_raid) > 0 )
 	{
 	    map new_raid = convertRAID(old_raid);
@@ -239,7 +239,7 @@
 	// LVM
 	//
 	
-	list old_lvm = Install["lvm"]:[];
+	list<map> old_lvm = Install["lvm"]:[];
 	if (size(old_lvm) > 0 )
 	{
 	    list new_lvm = convertLVM(old_lvm);
@@ -247,7 +247,7 @@
 	    d = union (d, new_lvm );
 	    Install["partitioning"] = d;
 	}
-	return (union(Configure, Install));
+	return ((map<string, any>)union(Configure, Install));
     }
 
 }
