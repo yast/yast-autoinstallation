@@ -23,7 +23,7 @@ in <b>AutoYaST</b>, so some limitations should be taken into consideration. A st
 configuration file with no special customization can, however, be imported without any loss of data.</p>
 ");
 
-	
+
 	term contents =
 	    `Top(
 		 `VBox(
@@ -51,7 +51,7 @@ configuration file with no special customization can, however, be imported witho
 									      `HStretch(),
 									      `TextEntry(`id(`result), _("Name of resulting &profile"), ""),
 									      `HStretch()
-							    
+
 									      )
 									),
 								  `Left(
@@ -63,7 +63,7 @@ configuration file with no special customization can, however, be imported witho
 			     )
 		       )
 		 );
-		
+
 	Wizard::SetContents(title,
 			    contents, help , true, true);
 
@@ -85,20 +85,20 @@ configuration file with no special customization can, however, be imported witho
 			continue;
 		    }
 		}
-		
-		
+
+
 	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 	Wizard::RestoreScreenShotName ();
 	return ret;
     }
-    
+
     /**
      * Generate control file list
      * @return file list
      */
     global define aliceHostList()
 	``{
-	
+
 	list files = SCR::Read(.target.dir, AIServer::aliceRep + "/info");
 	list extensions = ["sys.tcf"	];
 	list hosts = [];
@@ -114,18 +114,18 @@ configuration file with no special customization can, however, be imported witho
 			comp  = remove(comp, size(comp) - 1 );
 			i = i + 1;
 		    }
-		    
+
 		    hosts=add(hosts,mergestring(comp,"."));
 		}
 	    });
-		
+
 	});
 	list hostfiles = maplist(string host, toset(hosts), ``{
 	    return (`item(`id(host), host));
 	});
-	
+
 	term contents =
-	    `VBox(	
+	    `VBox(
 		  `VSpacing(0.5),
 		  `Table(`id(`table), `opt(`notify,`immediate), `header("Host"),
 			 hostfiles
@@ -133,8 +133,8 @@ configuration file with no special customization can, however, be imported witho
 
 		  `VSpacing(0.5),
 		  `VBox(
-			`HBox(			      
-			      `PushButton(`id(`import), _("&Import"))			      
+			`HBox(
+			      `PushButton(`id(`import), _("&Import"))
 			      )
 
 			),
@@ -145,12 +145,12 @@ configuration file with no special customization can, however, be imported witho
 
 
 
-    
+
     global define aliceImportList()
 	``{
 
 	Wizard::SetScreenShotName ("autoyast-alice-2");
-	
+
 	string help = _("<p>Using this dialog, select a
 host from the <b>ALICE</b> repository.</p>
 ");
@@ -163,7 +163,7 @@ the configuration files are read and converted.
 			    aliceHostList(), help, true, true);
 	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
 	UI::ChangeWidget(`id(`next), `Enabled, false);
-	
+
 	any ret = "";
 	string host = "";
 	repeat
@@ -180,7 +180,7 @@ This may take a while. Please wait...
 "));
 
 		    map aliceConf = $[];
-		    any aliceret = createAliceConf(host);		    
+		    any aliceret = createAliceConf(host);
 		    if (is(aliceret, map) && aliceret != $[])
 		    {
 			aliceConf = aliceret;
@@ -189,22 +189,22 @@ This may take a while. Please wait...
 		    {
 			UI::ErrorPopup(_("Error while importing ALICE data"));
 			clearFeedback();
-			continue;			    
+			continue;
 		    }
-			
+
 		    AIConfig::Import(createProfile(aliceConf));
 		    clearFeedback();
 		    UI::ChangeWidget(`id(`next), `Enabled, true);
 		}
 	    }
 	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-	
+
 	if (ret == `next) {
 	    if (AIServer::aliceOutput == `hostname)
 	    {
 		AIConfig::currentFile = sformat("%1.xml", host);
 		ret = `save;
-	    }	  
+	    }
 	    else
 	    {
 		ret = AIServer::aliceOutput;
@@ -216,14 +216,14 @@ This may take a while. Please wait...
 
     global define any createAliceConf(string host)
 	``{
-	
+
 	string MakeinfoCommand = "alice make_info_file --yast2 ";
-	MakeinfoCommand = MakeinfoCommand + host;	
+	MakeinfoCommand = MakeinfoCommand + host;
 	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR":AIServer::tmpDir, "ALICE_HOME":AIServer::aliceRep]);
 	string filelist = SCR::Read(.target.string, AIServer::tmpDir + "/filelist");
 	list files = splitstring(filelist, "\n");
 	y2milestone("files: %1", files);
-	
+
 	any ret =  mergeFiles(files, AIServer::tmpDir);
 	SCR::Execute(.target.remove,  AIServer::tmpDir + "/filelist");
 	y2milestone("alice conf %1", ret);
@@ -236,9 +236,9 @@ This may take a while. Please wait...
 	aliceXmlSetup();
 	integer cnt = 0;
 	string base = "";
-	foreach (`f, files, ``{	    
+	foreach (`f, files, ``{
 	    if (f!="") {
-		
+
 		string filename = sformat("%1/%2", dir, f);
 		y2milestone("Working on %1", filename);
 		base = sformat("%1/base.xml", dir);
@@ -248,32 +248,32 @@ This may take a while. Please wait...
 		}
 		else
 		{
-		
-		    string MergeCommand = "/usr/bin/xsltproc --param replace \"'true'\" --param with ";	
+
+		    string MergeCommand = "/usr/bin/xsltproc --param replace \"'true'\" --param with ";
 		    MergeCommand = MergeCommand + "\"'" + filename + "'\"  ";
 		    MergeCommand = MergeCommand + "--output " +  dir + "/mergeOutput ";
 		    MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
 		    MergeCommand = MergeCommand +   base + " ";
-	
+
 		    y2milestone("Merge command: %1", MergeCommand);
-	
+
 		    map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
 		    y2milestone("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
 		    _cleanup(sformat("%1/mergeOutput", dir), base);
 		}
-		
+
 		cnt = cnt + 1;
 	    }
-	    
+
 	});
 	any ret = XML::XMLToYCPFile(base);
-	
-	return (ret);	
+
+	return (ret);
     }
 
-    
+
     global define _cleanup(string in, string out)
-	``{	
+	``{
 	map ycpin = XML::XMLToYCPFile(in);
 	y2milestone("Writing file as %1", out);
 
@@ -284,7 +284,7 @@ This may take a while. Please wait...
 	});
 	return XML::YCPToXMLFile(`alice, sortedMap, out);
     }
-    
+
     /**
      * Create the profile from Alice data
      * @param map alice data
@@ -292,14 +292,14 @@ This may take a while. Please wait...
      */
 
     global define map createProfile(map aliceConf)
-	``{	
+	``{
 	import "Misc";
 	// General resource
 	////////////////////////////////////////////////////////
 	map keymap2yast1 = $[
 			     "us"		:"english-us",
 			     "de-lat1-nd"	:"german",
-			     "fr-latin1"	:"french",			    
+			     "fr-latin1"	:"french",
 			     "it"		:"italian",
 			     "es"		:"spanish",
 			     "nl"		:"dutch",
@@ -310,14 +310,14 @@ This may take a while. Please wait...
 			     "gr"		:"greek"  ,
 			     "trq"		:"turkish",
 			     "ru1"		:"russian",
-			     "cz-lat2"		:"czech" 
+			     "cz-lat2"		:"czech"
 	];
 	map lang2iso = SCR::Read( .target.yast2, "lang2iso.ycp");
 
 	map general = $[];
 	map install = $[];
 	map configure = $[];
-	
+
 	// SYS_LANGUAGE, SYS_KEYTABLE, SYS_TIMEZONE, SYS_MOUSE_DEVICE, SYS_HWC_GMT
 	string language = aliceConf["SYS_LANGUAGE"]:"english";
 	general["language"] = lang2iso[language]:"en_US";
@@ -330,7 +330,7 @@ This may take a while. Please wait...
 	    general["hwclock"] = "localtime";
 
 	map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
-        y2debug("Mice %1", mice);	
+        y2debug("Mice %1", mice);
 	boolean found = false;
 	foreach(`k,`v, mice, ``{
 	    map data = select(v,1,$[]);
@@ -345,30 +345,30 @@ This may take a while. Please wait...
 	    general["mouse"] = "probe";
 
 
-	
+
 	list drives = [];
 	map newDrive = $[];
 	foreach(`k,`v, aliceConf , ``{
-	    if (issubstring(k, "SYS_PART")) {	
-		string device =  "/dev/" + select(splitstring(k,"_"), 2, "");		
+	    if (issubstring(k, "SYS_PART")) {
+		string device =  "/dev/" + select(splitstring(k,"_"), 2, "");
 		list partitions  = createAlicePartitions(v);
 		y2milestone("Partitions for %1: %2", device , partitions );
 		drives = add(drives, $["device":device, "partitions": partitions]);
 	    }
 	});
-	
 
 
-	install["partitioning"] = drives;	
+
+	install["partitioning"] = drives;
 	install["general"] = general;
-	install["software"] = createAliceSoftware(aliceConf);	
+	install["software"] = createAliceSoftware(aliceConf);
 	configure["networking"] = createAliceNetwork(aliceConf);
 
 	install["init"] = aliceInit(aliceConf, 	configure["networking"]:$[]);
 	configure["users"] =  createAliceUsers(aliceConf);
 	if (aliceConf["NETWORK_NIS_YPDOMAIN"]:"" != "")
 	    configure["nis"] =  createAliceNis(aliceConf);
-	
+
 	map profile = $[];
 	profile["install"] = install;
 	profile["configure"] = configure;
@@ -380,27 +380,27 @@ This may take a while. Please wait...
      * create partition list from alice data
      * @param string partition
      * @return list  list of partitions
-     */    
+     */
     global define list createAlicePartitions(string partitions)
 	``{
 	SCR::Write(.target.string, "/tmp/alice_part", partitions);
-	
+
 	list raw_part =  SCR::Read(.tmp.alice.part);
-	
+
 	list part =filter(`pe, raw_part, ``(!haskey(pe, "path")));
 	y2milestone("and parts again: %1", part);
 	list newPartitions = maplist(`p, part, ``{
 	    map newPart = $[];
-	    
+
 	    if (p["mount"]:""!="NONE" && p["mount"]:""!="SWAP")
 	    {
 		newPart["mount"] = p["mount"]:"";
 	    }
 	    else if (p["mount"]:"" == "SWAP")
 	    {
-		newPart["partition_id"]= tointeger(sformat("0x%1","82"));		
+		newPart["partition_id"]= tointeger(sformat("0x%1","82"));
 	    }
-	    
+
 	    if (p["size"]:-1 == 0)
 	    {
 		newPart["size"]= "max";
@@ -409,7 +409,7 @@ This may take a while. Please wait...
 	    {
 		newPart["size"]= sformat("%1mb", p["size"]:0);
 	    }
-		
+
 	    if (haskey(p,"id")) {
 		string hex = sformat("0x%1", p["id"]:"83");
 		newPart["partition_id"]= tointeger(hex);
@@ -418,7 +418,7 @@ This may take a while. Please wait...
 		newPart["partition_nr"]= tointeger(p["num"]:"0");
 	    }
 
-	    return newPart;	    	
+	    return newPart;
 	});
 	SCR::Execute(.target.remove,  "/tmp/alice_part");
 	SCR::UnmountAgent(.tmp.alice.part);
@@ -431,14 +431,14 @@ This may take a while. Please wait...
      * @param map aliceConf alice configuration
      * @return map  software map
      */
-    
+
     global define map createAliceSoftware(map aliceConf) ``{
 
 	map software= $[];
 	string base = "";
 	if (size(aliceConf["SYS_SW_SELLIST"]:"")>0)
 	{
-	    string SYS_SW_SELLIST = aliceConf["SYS_SW_SELLIST"]:"";	    
+	    string SYS_SW_SELLIST = aliceConf["SYS_SW_SELLIST"]:"";
 	    software["packages"] = readSelection(SYS_SW_SELLIST);
 	}
 	else if (aliceConf["SYS_SW_SELECTION"]:"" != "")
@@ -447,14 +447,14 @@ This may take a while. Please wait...
 	    base = select(tmpsel, size(tmpsel) - 1 , "");
 	    software["base"] = select(splitstring(base, "."), 0, "Minimal");
 	}
-	
+
 	if (aliceConf["SYS_INST_KERNEL"]:"" != "")
 	{
 	    software["kernel"] = aliceConf["SYS_INST_KERNEL"]:"";
 	}
 	if (aliceConf["SYS_SW_ADDLIST"]:"" != "")
 	{
-	    string SYS_SW_ADDLIST = aliceConf["SYS_SW_ADDLIST"]:"";	    
+	    string SYS_SW_ADDLIST = aliceConf["SYS_SW_ADDLIST"]:"";
 	    software["packages"] = readSelection(SYS_SW_ADDLIST);
 	}
 	if (aliceConf["SYS_SW_AUXLIST"]:"" != "")
@@ -466,7 +466,7 @@ This may take a while. Please wait...
 	    software["extra_packages"] = extra;
 	}
 	return software;
-	
+
     }
     /**
      * Read package selection from a file
@@ -475,20 +475,20 @@ This may take a while. Please wait...
      */
     global define list readSelection(string selection) ``{
 	SCR::Write(.target.string, "/tmp/alice_software", "Toinstall:\n" + selection + "\nLlatsniot:\n");
-	list sel = filter(`p, SCR::Read(.yast1sel.selection,"/tmp/alice_software"), ``(p!=""));	    
+	list sel = filter(`p, SCR::Read(.yast1sel.selection,"/tmp/alice_software"), ``(p!=""));
 	SCR::Execute(.target.remove, "/tmp/alice_software");
 	SCR::UnmountAgent(.tmp.alice.software);
 	return sel;
     }
 
 
-    
+
     /**
      * create network map from alice data
      * @param map aliceConf alice configuration
      * @return map  network map
-     */ 
-    global define map createAliceNetwork(map aliceConf) ``{ 
+     */
+    global define map createAliceNetwork(map aliceConf) ``{
 	 include "network/ip.ycp";
 	 string network =  aliceConf["NET_IP_CONFIG"]:"";
 	 string DNS_NAMESERVER = aliceConf["DNS_NAMESERVER"]:"";
@@ -496,14 +496,14 @@ This may take a while. Please wait...
 	 string SYS_NAME = aliceConf["SYS_NAME"]:"";
 	 string DEF_GATEWAY = aliceConf["DEF_GATEWAY"]:"";
 	 string ROUTES = aliceConf["ROUTES"]:"";
-	 
-	 
+
+
 	 map networking = $[];
 	 map dns = $[];
 	 map routing = $[];
 
 
-	 
+
 	 SCR::Write(.target.string, "/tmp/alice_network", network);
 	 map raw_interfaces =SCR::Read(.tmp.alice.network);
 	 list interfaces = maplist(`iface, `data, raw_interfaces, ``{
@@ -529,10 +529,10 @@ This may take a while. Please wait...
 
 	 list nameserver = filter(`n, splitstring(DNS_NAMESERVER, " "), ``(n!= "" && n!= " "));
 	 list searchlist = filter(`s, splitstring(DNS_SEARCHLIST, " "), ``(s!= "" && s!= " "));
-	 
+
 	 string hostname = select(splitstring( SYS_NAME, "."), 0 , "");
 	 string domain = mergestring(remove(splitstring( SYS_NAME, "."), 0), ".");
-	 
+
 	 dns["hostname"] = hostname;
 	 dns["domain"] = domain;
 	 dns["searchlist"] = searchlist;
@@ -555,11 +555,11 @@ This may take a while. Please wait...
 	 }
 	 routing=add(routing, "routes", routes);
 	 routing=add(routing,"ip_forwarding", false);
-	 
+
 	 networking["interfaces"] = interfaces;
 	 networking["dns"] = dns;
 	 networking["routing"] = routing;
-	 
+
 	 return networking;
      }
 
@@ -577,7 +577,7 @@ This may take a while. Please wait...
 	nis["nis_domain"] = nis_domain;
 	nis["nis_servers"] = nis_servers;
 	nis["start_nis"] = true;
-	
+
 	return nis;
     }
 
@@ -606,25 +606,25 @@ This may take a while. Please wait...
 	}
 	if (size(aliceConf["SYS_INST_DIR"]:"") > 0) {
 	    string serverdir = regexpsub( aliceConf["SYS_INST_DIR"]:"", "(.*)\%version(.*)", "\\1" + aliceConf["SYS_OS_VERSION"]:"" + "\\2");
-	    y2milestone("serverdir: %1", serverdir);	    
+	    y2milestone("serverdir: %1", serverdir);
 	    init["serverdir"] = regexpsub( serverdir, "(.*)\%arch(.*)", "\\1" + aliceConf["SYS_ARCH"]:"" + "\\2");
-	   
+
 	}
 	if (haskey(aliceConf,"SYS_INSMOD_MODULES")) {
 	    list modules = splitstring(aliceConf["SYS_INSMOD_MODULES"]:"", "\n");
 	    init["insmod"]=modules;
 	}
-	if (haskey(aliceConf,"SYS_KEYTABLE")) {	    
+	if (haskey(aliceConf,"SYS_KEYTABLE")) {
 	    init["keytable"]=aliceConf["SYS_KEYTABLE"]:"";
 	}
-	if (haskey(aliceConf,"SYS_LANGUAGE")) {	    
+	if (haskey(aliceConf,"SYS_LANGUAGE")) {
 	    init["language"]=aliceConf["SYS_LANGUAGE"]:"";
 	}
-	if (haskey(aliceConf,"SYS_INST_SERVER")) {	    
+	if (haskey(aliceConf,"SYS_INST_SERVER")) {
 	    init["server"]=aliceConf["SYS_INST_SERVER"]:"";
 	}
 
-	if (haskey(aliceConf,"NET_INST_DEV")) {	    
+	if (haskey(aliceConf,"NET_INST_DEV")) {
 	    init["netdevice"]=aliceConf["NET_INST_DEV"]:"";
 	}
 
@@ -633,19 +633,19 @@ This may take a while. Please wait...
 	    if (iface["device"]:"" == init["netdevice"]:"")
 	    {
 		init["ip"] = iface["ipaddr"]:"";
-		init["netmask"] = iface["netmask"]:"";		
+		init["netmask"] = iface["netmask"]:"";
 	    }
 	});
 	init["gateway"] = aliceConf["DEF_GATEWAY"]:"";
 	return init;
-	
+
     }
 
-    
+
     global define kickstartImport()
 	``{
 	Wizard::SetScreenShotName ("autoyast-kickstart");
-	
+
 	string title = _("Import Kickstart files");
 	string help = _("<p>Using this feature,  import <b>Kickstart</b> configuration
 files.</p>
@@ -665,7 +665,7 @@ is the different package and package selection names used. They must be adapted 
 		 `VBox(
 		       `VSquash(
 				`HBox(
-					
+
 				      `TextEntry(`id(`filename), _("Kickstart file name"), ""),
 				      `VBox(
 					    `VSpacing(),
@@ -673,7 +673,7 @@ is the different package and package selection names used. They must be adapted 
 					    )
 				      )
 				),
-			 
+
 		       `VSpacing(1),
 		       `Left(`Label(_("What should be done with loaded data?"))),
 		       `HBox(
@@ -693,7 +693,7 @@ is the different package and package selection names used. They must be adapted 
 									      `HStretch(),
 									      `TextEntry(`id(`result), _("Name of resulting &profile"), ""),
 									      `HStretch()
-							    
+
 									      )
 									),
 								  `Left(
@@ -704,9 +704,9 @@ is the different package and package selection names used. They must be adapted 
 				      )
 			     )
 		       )
-		 );	
+		 );
 
-		
+
 	Wizard::SetContents(title,
 			    contents, help , true, true);
 	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
@@ -715,10 +715,10 @@ is the different package and package selection names used. They must be adapted 
 	repeat
 	    {
 		ret = UI::UserInput();
-		
+
 		filename = UI::QueryWidget(`id(`filename), `Value);
 		AIServer::ksOutput = UI::QueryWidget(`id(`rbg), `CurrentButton);
-		
+
 		if ( AIServer::ksOutput == `save && ret == `next)
 		{
 		    if ( UI::QueryWidget(`id(`result), `Value) != "" )
@@ -731,7 +731,7 @@ is the different package and package selection names used. They must be adapted 
 			continue;
 		    }
 		}
-		
+
 		if (ret == `open)
 		{
 		    filename = PopupFile(AIConfig::Repository + "/");
@@ -742,7 +742,7 @@ is the different package and package selection names used. They must be adapted 
 		}
 		else if (ret == `next && filename != "")
 		{
-		    
+
 		    map ksConfig = readKS(filename);
 		    AIConfig::Import(ks2ay(ksConfig));
 		    UI::WarningPopup(_("
@@ -751,7 +751,7 @@ you need to go through the package and software configuration
 to make sure the packages and selections are compatible with
 SuSE package names and package groups.
 "));
-		    
+
 		}
 		else if (ret == `next && filename == "")
 		{
@@ -759,17 +759,17 @@ SuSE package names and package groups.
 		    UI::SetFocus(`id(`filename));
 		    continue;
 		}
-		
+
 	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 
-	
+
 	if (ret == `next)
 	{
 	    if (AIServer::ksOutput == `hostname)
 	    {
 		AIConfig::currentFile = filename;
 		ret = `save;
-	    }	  
+	    }
 	    else
 	    {
 		ret = AIServer::ksOutput;
@@ -789,9 +789,9 @@ SuSE package names and package groups.
 	    return $[];
 	}
 	y2milestone("Kickstart config raw: %1", ksConfig);
-	
+
 	return ksConfig;
-	
+
     }
 
     global define map ks2ay(map ksConfig) ``{
@@ -807,21 +807,21 @@ SuSE package names and package groups.
 	configure["nis"] 	= select(ks_auth(ksConfig), 0 , $[]);
 	configure["ldap"] 	= select(ks_auth(ksConfig), 1 , $[]);
 	configure["security"] 	=  select(ks_auth(ksConfig), 2 , $[]);
-	
+
 	install["init"] 	= select(ks_network(ksConfig), 1 , $[]);
 	install["software"] 	=  ks_software(ksConfig);
 	install["partitioning"] = ks_part(ksConfig);
 	install["raid"] 	= ks_raid(ksConfig);
 	install["bootloader"] 	=  ks_bootloader(ksConfig);
 	install["general"] 	= ks_general(ksConfig);
-	
+
 	profile["install"] 	= install;
 	profile["configure"] 	= configure;
 	AIConfig::changed 	= true;
-	
+
 	y2milestone("Profile : %1", profile);
 	return profile;
-	
+
     }
 
     global define map ks_users (map ksConfig)
@@ -836,8 +836,8 @@ SuSE package names and package groups.
 
 	users = add(users, root);
 	return users;
-	
-	
+
+
     }
 
     global define map kx_x11(map ksConfig)
@@ -849,7 +849,7 @@ SuSE package names and package groups.
 
 	    if (haskey(ks_x, "depth"))
 		x11["color_depth"] = ks_x["depth"]:0;
-	    
+
 	    if (haskey(ks_x, "resolution"))
 		x11["resolution"] = ks_x["resolution"]:"";
 
@@ -862,7 +862,7 @@ SuSE package names and package groups.
 	    map monitor = $[];
 	    if (haskey(ks_x, "vsync") || ks_x["monitor"]:"")
 	    {
-		
+
 		map display = $[];
 		list hsync = splitstring(ks_x["hsync"]:"", "-");
 		list vsync = splitstring(ks_x["vsync"]:"", "-");
@@ -873,7 +873,7 @@ SuSE package names and package groups.
 		monitor["monitor_vendor"] = select(splitstring(ks_x["monitor"]:"", " "), 0 , "");
 		monitor["monitor_device"] = select(splitstring(ks_x["monitor"]:"", " "), 1 , "");
 		monitor["display"] = display;
-		
+
 	    }
 	    if (size(monitor) > 0 )
 	    {
@@ -887,28 +887,28 @@ SuSE package names and package groups.
 	    return $[];
 	}
     }
-    
+
     global define map ks_general(map ksConfig)
 	``{
 	map general = $[];
-	
-	// Language	
+
+	// Language
 	general["language"] = ksConfig["language"]:"";
 
 	// Keyboard
-	map keyboard = $[];	
+	map keyboard = $[];
 	if (haskey( ksConfig , "keyboard"))
 	{
 	    import "Keyboard";
-	    map keyboards =  Keyboard::keymap2yast();	
+	    map keyboards =  Keyboard::keymap2yast();
 	    keyboard["keymap"] = keyboards[ksConfig["keyboard"]:""]:"";
 	}
-	
+
 	general["keyboard"] = keyboard;
-	
+
 	// Mouse
 	map mouse = $[];
-	
+
 	if(haskey(ksConfig, "mouse"))
 	{
 	    map ks_mouse 	= ksConfig["mouse"]:$[];
@@ -931,31 +931,31 @@ SuSE package names and package groups.
 	}
 	general["clock"] = clock;
 
-	
+
 	// Mode
 	map mode = $[];
 	if (haskey(ksConfig, "mode"))
-	{	    
+	{
 	    mode["installation"] 	= ( ksConfig["mode"]:"" == "install" );
 	    mode["upgrade"] 		= ( ksConfig["mode"]:"" == "upgrade" );
-	  
+
 	}
 	mode["reboot"] 		= ( ksConfig["reboot"]:0 == 1 );
 	mode["interactive"] 	=  ( ksConfig["interactive"]:0 == 1 );
 	general["mode"] = mode;
-			
-	   
+
+
 	return general;
-	
+
     }
 
-    
+
     global define map ks_scripts(map ksConfig)
 	``{
 	map scripts = $[];
 	list postscripts = [];
 	list prescripts = [];
-	
+
 	if (haskey(ksConfig, "post-script"))
 	{
 	    map script = $[];
@@ -963,26 +963,26 @@ SuSE package names and package groups.
 	    map post = ksConfig["post"]:$[];
 	    script["interpreter"] = post["interpreter"]:"shell";
 	    script["filename"] = "kspost";
-	    postscripts = add(postscripts, script);	    
+	    postscripts = add(postscripts, script);
 	}
 	scripts["post-scripts"] =   postscripts;
 	if (haskey(ksConfig, "pre-script"))
 	{
 	    map script = $[];
 	    script["source"] = SCR::Read(.target.string, ksConfig["pre-script"]:"");
-	    
+
 	    script["interpreter"] = "/bin/sh";
 	    script["filename"] = "kspre";
-	    prescripts = add(prescripts, script);	    
+	    prescripts = add(prescripts, script);
 	}
 	scripts["pre-scripts"] =   prescripts;
-	return scripts;	
+	return scripts;
     }
 
 
-    
+
     /**
-     * StringFS2Symbol()     
+     * StringFS2Symbol()
      * @param any filesystem string
      * @return symbol filesystem type
      */
@@ -1001,11 +1001,11 @@ SuSE package names and package groups.
 	      "fat32":	`fat32,
 	      "xfs":	`xfs,
 	      "fat16":	`fat16,
-	      "swap":	`swap	
+	      "swap":	`swap
 	    ];
-	return filesystems[fs]:`ext2;	
+	return filesystems[fs]:`ext2;
     }
-    
+
     global define list ks_part (map ksConfig) ``{
 	import "Partitions";
 	list drives = [];
@@ -1016,30 +1016,30 @@ SuSE package names and package groups.
 		drive["device"] = v["ondisk"]:"";
 	    }
 	    drive["partitions"] = [];
-	    
+
 	    drives=add(drives, drive);
 	});
 	drives=toset(drives);
 
-	
+
 	foreach(`k, `v, ksConfig["partitioning"]:$[],   ``{
 	    map partition = $[];
 	    string mount = select(splitstring(k, "_"), 0 , "");
 	    string fstype = (mount == "swap") ? "swap" :  v["fstype"]:"";
-	    
-	    integer partition_id = Partitions::fsid_native;	    
+
+	    integer partition_id = Partitions::fsid_native;
 	    integer raiddevice = 0;
-	    
+
 	    if (regexpmatch(mount, "^raid\..*"))
 	    {
 		y2milestone("device: %1", mount);
 		partition_id =  Partitions::fsid_raid;
 		partition["partition_id"] = partition_id;
 		raiddevice = tointeger(substring(mount, 5, 1)) ;
-		
+
 		partition["raid_name"] = sformat("/dev/md%1", raiddevice);
 		partition["format"] = false;
-		
+
 	    }
 	    else
 	    {
@@ -1047,12 +1047,12 @@ SuSE package names and package groups.
 		partition["format"] = true;
 		partition["filesystem"] = StringFS2Symbol(fstype);
 	    }
-	    
-	   
-	 
+
+
+
 
 	    partition["size"] = sformat("%1mb", v["size"]:-1);
-	    
+
 	    if (v["grow"]:0 == 1)
 	    {
 		partition["size"] = "max";
@@ -1067,7 +1067,7 @@ SuSE package names and package groups.
 		}
 	    });
 	});
-	
+
 
 
 
@@ -1078,7 +1078,7 @@ SuSE package names and package groups.
     // $["/scr":$["device":"md0", "level":0]]
     global define list ks_raid (map ksConfig)
 	``{
-	
+
 	list raid = maplist(`d,`data, ksConfig["raid"]:$[], ``{
 	    map r = $[];
 	    r["mount"]		= d;
@@ -1092,14 +1092,14 @@ SuSE package names and package groups.
 
     global define list  ks_network (map ksConfig) ``{
 	include "network/ip.ycp";
-	
-	map init = $[];		 
+
+	map init = $[];
 	map networking = $[];
 	map dns = $[];
 
 	list nameserver = [];
 	string gateway = "";
-	
+
 	map routing = $[];
 	map rawNet = ksConfig["networking"]:$[];
 	list interfaces = maplist(`iface, `data, rawNet, ``{
@@ -1120,7 +1120,7 @@ SuSE package names and package groups.
 		interface["netmask"] = data["netmask"]:"";
 		interface["startmode"] = "onboot";
 		interface["broadcast"] = compute_broadcast(data["ip"]:"",data["netmask"]:"");
-		
+
 		init["ip"] = data["ip"]:"";
 		init["nameserver"] = data["nameserver"]:"";
 		init["netmask"] = data["netmask"]:"";
@@ -1133,13 +1133,13 @@ SuSE package names and package groups.
 	});
 
 
-	
-	
+
+
 	list searchlist = [];
-	 
+
 	string hostname = "";
 	string domain = "";
-	 
+
 	dns["hostname"] = hostname;
 	dns["domain"] = domain;
 	dns["searchlist"] = searchlist;
@@ -1158,7 +1158,7 @@ SuSE package names and package groups.
 	}
 	routing=add(routing, "routes", routes);
 	routing=add(routing,"ip_forwarding", false);
-	 
+
 	networking["interfaces"] = interfaces;
 	networking["dns"] = dns;
 	networking["routing"] = routing;
@@ -1190,7 +1190,7 @@ SuSE package names and package groups.
 	map security = $[];
 	map ldap = $[];
 
-	
+
 	if (auth["enablenis"]:0 == 1)
 	{
 	    nis["start_nis"] = true;
@@ -1202,13 +1202,13 @@ SuSE package names and package groups.
 		nis["nis_servers"] = nisserver;
 	    }
 	}
-	
+
 	if (auth["enablemd5"]:0 == 1)
 	{
 	    security["encryption"] = "md5";
 	}
 
-	
+
 	if (auth["enableldapauth"]:0 == 1)
 	{
 	    ldap["start_ldap"] = true;
@@ -1218,10 +1218,10 @@ SuSE package names and package groups.
 		ldap["ldap_server"] = auth["ldapserver"]:"";
 	    if ((auth["enableldaptls"]:0 == 1))
 		ldap["ldap_tls"] = true;
-	}	
+	}
 
 	return [nis, ldap, security];
-	
+
     }
 
 
@@ -1237,14 +1237,14 @@ SuSE package names and package groups.
 	{
 	    bootloader["write_bootloader"] = false;
 	}
-	
+
 	bootloader["kernel_parameters"] = bl["append"]:"";
 	if (haskey(bl, "linear") || haskey(bl, "nolinear") )
 	{
 	    bootloader["linear"] = (bl["linear"]:0 == 1 || !bl["nolinear"]:0 == 1);
 	}
 	bootloader["lba_support"] = (bl["lba32"]:0 == 1);
-	return bootloader;				     
+	return bootloader;
     }
 
     global define ks_software (map ksConfig)
@@ -1259,7 +1259,7 @@ SuSE package names and package groups.
 	software["packages"] = packages;
 	software["nopackages"] = nopackages;
 
-	
+
 	return software;
     }
 }

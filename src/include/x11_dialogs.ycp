@@ -106,45 +106,7 @@
 			       ),
 		       `VStretch(),
 		       `PushButton(`id(`monitor), _("Configure Monit&or"))
-		       /*
-		       `VSquash(
-				`HBox(
-				      `HWeight( 1,
-						`Frame(
-						       // Frame title for horizontal frequency input fields
-						       _("Horizontal frequency"),
-						       `HBox(
-							     `HWeight( 35, `TextEntry( `id(`min_hsync ), `opt(`shrinkable), _("min") ) ),
 
-							     // Separator between min and max frequency fields
-							     `HWeight( 10, `Bottom(`Label( _("-") ) ) ),
-							     `HWeight( 35, `TextEntry( `id(`max_hsync ), `opt(`shrinkable), _("max") ) ),
-
-							     // Unit for horizontal frequency
-							     `HWeight( 17, `Bottom(`Label( _("kHz") ) ) )
-							     )
-						       )
-						),
-				      `HSpacing(0.8),
-				      `HWeight( 1,
-						`Frame(
-						       // Frame title for vertical frequency input fields
-						       _("Vertical frequency"),
-						       `HBox(
-							     `HWeight( 35, `TextEntry( `id(`min_vsync ), `opt(`shrinkable), _("min") ) ),
-
-							     // Separator between min and max frequency fields
-							     `HWeight( 10, `Bottom(`Label( _("-") ) ) ),
-							     `HWeight( 35, `TextEntry( `id(`max_vsync ), `opt(`shrinkable), _("max") ) ),
-
-							     // Unit for horizontal frequency
-							     `HWeight( 17, `Bottom( `Label( _("Hz") ) ) )
-							     )
-						       )
-						)
-				      )
-				)
-		       */
 		       )
 		 );
 
@@ -220,7 +182,7 @@ be started at boot time and what display manager should be used.</p>
 		    x11=add(x11,"enable_3d", enable_3d);
 
 		any xdm	= UI::QueryWidget(`id(`start_x11), `Value);
-		if (is(default_dm, boolean))
+		if (is(xdm, boolean))
 		    x11=add(x11,"start_x11", xdm);
 
 

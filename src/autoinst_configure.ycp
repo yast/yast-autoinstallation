@@ -59,6 +59,21 @@ Please wait while the system is being configured.
     map install = AutoInstall::Profile["install"]:$[];
     map configure = AutoInstall::Profile["configure"]:$[];
 
+    // make some adaptions
+    if (haskey(configure,"x11"))
+    {
+	boolean start_xdm = configure["x11", "start_x11 "]:false;
+	map runlevels = configure["runlevels"]:$[];
+	if (start_xdm)
+	{
+	    runlevels["default"] = "5";	
+	}
+	else
+	{
+	    runlevels["default"] = "3";	
+	}
+	configure["runlevels"] = runlevels;	
+    }
     // Now we write additional data without a _write client, i.e. fstab
 
 
