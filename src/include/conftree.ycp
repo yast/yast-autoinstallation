@@ -179,9 +179,10 @@
      * @return symbol
      */
     define symbol module_contents(string resource) ``{
-
-        resource = Y2ModuleConfig::getResource(resource);
+        y2debug("resource: %1", resource);
+        //resource = Y2ModuleConfig::getResource(resource);
         map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
+        y2debug("resource Map: %1", resourceMap);
 
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
 
