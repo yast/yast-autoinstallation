@@ -265,8 +265,8 @@
 
 
 	 SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_network", network);
-	 map raw_interfaces =  (map) SCR::Read(.tmp.alice.network);
-	 list<string> interfaces = maplist(string iface, map<string, map> data, raw_interfaces, ``{
+	 map<string, map> raw_interfaces =  (map<string, map>) SCR::Read(.tmp.alice.network);
+	 list<map> interfaces = maplist(string iface, map data, raw_interfaces, ``{
 	     map interface = $[];
 	     if (data["bootproto"]:"" == "dhcpclient")
 	     {
@@ -442,7 +442,7 @@
 	// SYS_LANGUAGE, SYS_KEYTABLE, SYS_TIMEZONE, SYS_MOUSE_DEVICE, SYS_HWC_GMT
 	string language = aliceConf["SYS_LANGUAGE"]:"english";
 	general["language"] = lang2iso[language]:"en_US";
-	
+
 	string keymap = aliceConf["SYS_KEYTABLE"]:"us";
 	general["keyboard"] = $[ "keymap" : keymap2yast1[keymap]:"english-us" ];
 	map clock = $[];
@@ -453,8 +453,8 @@
 	    clock["hwclock"] = "localtime";
 
 	general["clock"] = clock;
-	
-	map mice = (map) Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+
+	map<string, list> mice = (map<string, list>) Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
         y2debug("Mice %1", mice);
 	boolean found = false;
 	map<string, list> mouse = $[];
@@ -546,12 +546,7 @@ the configuration files are read and converted.
 		host = (string)UI::QueryWidget(`id(`table), `CurrentItem);
 		if (host != nil && host != "")
 		{
-		/* FIXME
-		    showFeedback(_("
-Reading Alice configuration files.
-This may take a while. Please wait...
-"));
-		*/
+                   Popup::ShowFeedback(_("Reading Alice configuration files."), _("This may take a while. Please wait..."));
 
 		    map aliceConf = $[];
 		    map aliceret = createAliceConf(host);
@@ -562,12 +557,12 @@ This may take a while. Please wait...
 		    else
 		    {
 			Popup::Error(_("Error while importing ALICE data"));
-			// FIXME: clearFeedback();
+                        Popup::ClearFeedback();
 			continue;
 		    }
 
 		    Profile::Import(createProfile(aliceConf));
-		    // FIXME: clearFeedback();
+                    Popup::ClearFeedback();
 		}
 	    }
 	} until (ret == `next || ret == `back );
@@ -577,6 +572,5 @@ This may take a while. Please wait...
 	return (symbol)ret;
     }
 
-
-    
+    // EOF
 }
