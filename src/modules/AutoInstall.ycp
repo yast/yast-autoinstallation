@@ -628,12 +628,13 @@
 
 	map Software = Install["software"]:$[];
 	list addons = Software["addons"]:[];
-	Kernel = Software["kernel"]:"";
+
 
 	string  base_selection = Software["base"]:"Minimal";
 	if (! Pkg::SetSelection( base_selection ))
 	{
 	    y2error("Error while setting base selection: %1", base_selection);
+	    Report::Error(sformat(_("Could not set base selection: %1"), s));
 	    return false;
 	}
 
@@ -641,18 +642,23 @@
 		``{
 	    if (!Pkg::SetSelection( s ))
 	    {
-		y2error("Error while setting addon selection: %1", s);
-		Report::Warning(sformat(_("Could not set add on selection %1"), s));
+		y2error("Error while setting-addon selection: %1", s);
+		Report::Warning(sformat(_("Could not set add-on selection %1"), s));
 	    }
 	});
 
 	// single selected packages
-	list Packages = union(Software["packages"]:[], forcedPackages);
+
 	if (!Pkg::ActivateSelections()) {
 	    return false;
 	}
 
-	Pkg::DoProvide(Packages);
+
+	list extraPackages = calcExtraPackages ();
+	y2milestone("Packages selected in autoinstall mode: %1", extraPackages);
+	if (size(extraPackages) > 0 ) {
+	    Pkg::DoProvide(extraPackages);
+	}
 
 	Pkg::DoProvide (Packages::ComputeSystemPackageList());
 	Pkg::PkgSolve();
@@ -664,6 +670,23 @@
 	return (ok);
     }
 
+
+    global define list calcExtraPackages () ``{
+
+	map Software = Install["software"]:$[];
+	Kernel = Software["kernel"]:"";
+	
+	// single selected packages
+	list Packages = union(Software["packages"]:[], forcedPackages);
+	
+	if (Kernel!="") {
+	    Packages=add(Packages,Kernel);
+	}
+
+	return Packages;
+
+    }
+    
 
 
     /**
@@ -1028,6 +1051,9 @@
 	return [configurations, groups];
     }
 
+
+
+    
     /**
      * Add a single entry to the Sysconfig list of variables
      * @param string file name / path
