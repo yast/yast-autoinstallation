@@ -20,18 +20,14 @@
     include "partitioning/lvm_lib.ycp";
 
     include "partitioning/lvm_lv_lib.ycp";
-    // include "partitioning/lvm_ui_lib.ycp";
-    // include "partitioning/lvm_ui_dialogs.ycp";
-
 
 
     global list ConfiguredDevices = [];
 
-    global map modify_targets = $[];
 
-    global map ExistingLVM = $[];
+    global map<string, map> ExistingLVM = $[];
 
-    global list ExistingVGs = [];
+    global list<string> ExistingVGs = [];
 
     global boolean OldAvailable = false;
 
@@ -41,10 +37,20 @@
 
 
     list<integer> region = [0,0];
-    map targetMap = $[];
+
+
+    // temporary copy of variable from Storage
+    map <string, map> targetMap = $[];
+
+    // temporary copy of variable from Storage
+    map<integer, map> modify_targets = $[];
+
+
+    // PE Size
     integer pesize = 0;
 
-    global map lvm = $[];
+    // LVM map as imported from Profile
+    global map<string, map> lvm = $[];
 
 
 
@@ -54,26 +60,25 @@
      */
     global define void AutoinstLVM () ``{
 
-	targetMap		= Storage::GetTargetMap();
-	modify_targets		= Storage::GetModifyTargets();
-	ExistingLVM		= filter(string k, map v, targetMap, ``(v["is_lvm_vg"]:false));
+        targetMap	= Storage::GetTargetMap();
+        modify_targets	= (map <integer, map>) Storage::GetModifyTargets();
+        ExistingLVM	= filter(string k, map v, targetMap, ``(v["is_lvm_vg"]:false));
+        y2debug("Existing LVM: %1", ExistingLVM);
 
-	y2milestone("Existing LVM: %1", ExistingLVM);
+        ExistingVGs	= maplist (string  d, map g, ExistingLVM, ``{
+                return (substring(d, 5) );
+                });
 
-	ExistingVGs		= maplist (string  d, map g, ExistingLVM, ``{
-	    return (substring(d, 5) );
-	});
+        y2debug("Existing VGs: %1", ExistingVGs );
 
-	y2milestone("Existing VGs: %1", ExistingVGs );
-
-	foreach (string v, ExistingVGs, ``{
-	    string dev = sformat("/dev/%1", v);
-	    if (size(ExistingLVM[dev,"partitions"]:[]) > 0 )
-	    {
-		OldAvailable = true;
-	    }
-	});
-	return;
+        foreach (string v, ExistingVGs, ``{
+                string dev = sformat("/dev/%1", v);
+                if (size(ExistingLVM[dev,"partitions"]:[]) > 0 )
+                {
+                OldAvailable = true;
+                }
+                });
+        return;
     }
 
     /**
@@ -82,13 +87,13 @@
      * @return void
      */
     global define void RemoveVG (string vgname) ``{
-	map remove_vg = $[
-			  "use_module" : "lvm_ll",
-			  "type"       : "remove_vg",
-			  "vgname"     : vgname
-	];
-	modify_targets = addTargetModification( modify_targets, remove_vg );
-	return;
+        map remove_vg = $[
+            "use_module" : "lvm_ll",
+            "type"       : "remove_vg",
+            "vgname"     : vgname
+            ];
+        modify_targets = addTargetModification( modify_targets, remove_vg );
+        return;
     }
 
 
@@ -101,23 +106,24 @@
      */
     global define map CreateVG (string vgname) ``{
 
-	map create_vg = $[
-			  "use_module" : "lvm_ll",
-			  "type"       : "create_vg",
-			  "vgname"     : vgname,
-			  "pesize"     : pesize,
-			  "devices"    : []
-	];
-	modify_targets = addTargetModification( modify_targets, create_vg );
+        map create_vg = $[
+            "use_module" : "lvm_ll",
+        "type"       : "create_vg",
+        "vgname"     : vgname,
+        "pesize"     : pesize,
+        "devices"    : []
+            ];
 
-	return ( $[
-		   "name"      : vgname,
-		   "cyl_count" : 0,
-		   "cyl_size"  : pesize,
-		   "is_lvm_vg" : true,
-		   "partitions": []
-		 ]
-		 );
+        modify_targets = addTargetModification( modify_targets, create_vg );
+
+        return ( $[
+                "name"      : vgname,
+                "cyl_count" : 0,
+                "cyl_size"  : pesize,
+                "is_lvm_vg" : true,
+                "partitions": []
+                ]
+               );
     }
 
 
@@ -130,33 +136,33 @@
      */
     global define void CreatePV (string vgname, string device) ``{
 
-	map create_pv = $[
-			      "use_module" : "lvm_ll",
-			      "type"       : "create_pv",
-			      "vgname"     : vgname,
-			      "device"     : device
-	];
+        map create_pv = $[
+            "use_module" : "lvm_ll",
+            "type"       : "create_pv",
+            "vgname"     : vgname,
+            "device"     : device
+            ];
 
-	modify_targets = addTargetModification( modify_targets, create_pv );
+        modify_targets = addTargetModification( modify_targets, create_pv );
 
     }
 
-   /**
+    /**
      * Remove logical volume
      * @param string volume group name
      * @param string logical volume
      * @return void
      */
     global define void RemoveLV (string vgname, string lvname) ``{
-	map remove_lv = $[
-			      "use_module" : "lvm_ll",
-			      "type"       : "remove_lv",
-			      "name"       : lvname,
-			      "vgname"     : vgname,
-			      "target_map_entry":$[]
-	];
-	modify_targets = addTargetModification( modify_targets, remove_lv );
-	return;
+        map remove_lv = $[
+            "use_module" : "lvm_ll",
+            "type"       : "remove_lv",
+            "name"       : lvname,
+            "vgname"     : vgname,
+            "target_map_entry":$[]
+            ];
+        modify_targets = addTargetModification( modify_targets, remove_lv );
+        return;
     }
 
     /**
@@ -166,17 +172,17 @@
      * @return void
      */
     global define void RemovePV (string vgname, string device) ``{
-	map remove_pv = $[
-			  "use_module"	: "lvm_ll",
-			  "type"		: "remove_pv",
-			  "vgname"		: vgname,
-			  "device"		: device
-	];
-	modify_targets = addTargetModification( modify_targets, remove_pv );
-	return;
+        map remove_pv = $[
+            "use_module"	: "lvm_ll",
+            "type"		: "remove_pv",
+            "vgname"		: vgname,
+            "device"		: device
+            ];
+        modify_targets = addTargetModification( modify_targets, remove_pv );
+        return;
     }
 
-   /**
+    /**
      * Create logical volume
      * @param string volume group name
      * @param map logical volume
@@ -184,61 +190,59 @@
      */
     global define map CreateLV (string vgname, map lv) ``{
 
-	string lvsize_str	= lv["size"]:"";
-	string lv_name		= lv["lv_name"]:"";
+        string lvsize_str	= lv["size"]:"";
+        string lv_name		= lv["lv_name"]:"";
 
-	integer lvsize		= kmgt_str_to_byte(lvsize_str);
+        integer lvsize		= kmgt_str_to_byte(lvsize_str);
 
+        if (pesize == 0 )
+        {
+            pesize = 1;
+        }
 
-	if (pesize == 0 )
-	{
-	    pesize = 1;
-	}
+        integer virtual_cyl_end = lvsize / pesize;
+        region = [0, virtual_cyl_end ];
+        integer bytes_of_part	= 0;
+        integer cyl_size		= pesize;
+        integer nb_cyl			= region[1]:0;
 
+        bytes_of_part =  ( nb_cyl ) * cyl_size;
 
-	integer virtual_cyl_end = lvsize / pesize;
-	region = [0, virtual_cyl_end ];
-	integer bytes_of_part	= 0;
-	integer cyl_size		= pesize;
-	integer nb_cyl			= region[1]:0;
+        map create_lv = $[
+            "use_module" : "lvm_ll",
+        "type"       : "create_lv",
+        "name"       : lv_name,
+        "size"       : bytes_of_part,
+        "vgname"     : vgname,
+        "stripes"    : lv["stripes"]:1
+            ];
+        modify_targets = addTargetModification( modify_targets, create_lv );
 
-	bytes_of_part =  ( nb_cyl ) * cyl_size;
+        symbol lv_fs = lv["filesystem"]:`ext2;
 
-	map create_lv = $[
-			      "use_module" : "lvm_ll",
-			      "type"       : "create_lv",
-			      "name"       : lv_name,
-			      "size"       : bytes_of_part,
-			      "vgname"     : vgname,
-			      "stripes"    : lv["stripes"]:1
-	];
-	modify_targets = addTargetModification( modify_targets, create_lv );
-
-	symbol lv_fs = lv["filesystem"]:`ext2;
-
-	return ($[
-		  "create"		: true,
-		  "fs_options"		: lv["fs_options"]:$[],
-		  "use_module"		: "lvm_ll",
-		  "fsid"		: 142,
-		  "fstype"		: "LV",
-		  "nr"			: lv_name,
-		  "ori_nr"		: lv_name,
-		  "region"		: region,
-		  "size_bytes"		: bytes_of_part,
-		  "mount"		: lv["mount"]:"" ,
-		  "used_fs"		: lv_fs,
-		  "format"		: lv["format"]:true ,
-		  "crypt_fs"		: lv["crypt"]:false ,
-		  "crypt_key"		: lv["crypt_key"]:"",
-		  "type"		: `lvm,
-		  "device"		: "/dev/" + vgname + "/" + lv_name
-		]);
+        return ($[
+                "create"		: true,
+                "fs_options"		: lv["fs_options"]:$[],
+                "use_module"		: "lvm_ll",
+                "fsid"		: 142,
+                "fstype"		: "LV",
+                "nr"			: lv_name,
+                "ori_nr"		: lv_name,
+                "region"		: region,
+                "size_bytes"		: bytes_of_part,
+                "mount"		: lv["mount"]:"" ,
+                "used_fs"		: lv_fs,
+                "format"		: lv["format"]:true ,
+                "crypt_fs"		: lv["crypt"]:false ,
+                "crypt_key"		: lv["crypt_key"]:"",
+                "type"		: `lvm,
+                "device"		: "/dev/" + vgname + "/" + lv_name
+                ]);
 
     };
 
 
-   /**
+    /**
      * Resize  logical volume
      * @param string volume group name
      * @param map logical volume
@@ -246,57 +250,57 @@
      */
     global define map ResizeLV (string vgname, map lv) ``{
 
-	string lvsize_str	= lv["size"]:"";
-	string lv_name		= lv["lv_name"]:"";
+        string lvsize_str	= lv["size"]:"";
+        string lv_name		= lv["lv_name"]:"";
 
-	integer lvsize		= kmgt_str_to_byte(lvsize_str);
+        integer lvsize		= kmgt_str_to_byte(lvsize_str);
 
-	if (pesize == 0 )
-	{
-	    pesize = 1;
-	}
+        if (pesize == 0 )
+        {
+            pesize = 1;
+        }
 
-	integer virtual_cyl_end = lvsize / pesize;
-	region = [0, virtual_cyl_end ];
-	integer bytes_of_part	= 0;
-	integer cyl_size		= pesize;
-	integer nb_cyl			= region[1]:0;
+        integer virtual_cyl_end = lvsize / pesize;
+        region = [0, virtual_cyl_end ];
+        integer bytes_of_part	= 0;
+        integer cyl_size		= pesize;
+        integer nb_cyl			= region[1]:0;
 
-	bytes_of_part =  ( nb_cyl ) * cyl_size;
+        bytes_of_part =  ( nb_cyl ) * cyl_size;
 
 
-	region = [0, virtual_cyl_end ];
+        region = [0, virtual_cyl_end ];
 
-	map resize_lv = $[
-			      "use_module" : "lvm_ll",
-			      "type"       : "resize_lv",
-			      "name"       : lv_name,
-			      "size"       : bytes_of_part,
-			      "vgname"     : vgname
-	];
-	modify_targets = addTargetModification( modify_targets, resize_lv );
+        map resize_lv = $[
+            "use_module" : "lvm_ll",
+        "type"       : "resize_lv",
+        "name"       : lv_name,
+        "size"       : bytes_of_part,
+        "vgname"     : vgname
+            ];
+        modify_targets = addTargetModification( modify_targets, resize_lv );
 
-	symbol lv_fs =  lv["filesystem"]:`ext2;
+        symbol lv_fs =  lv["filesystem"]:`ext2;
 
-	return ($[
-		  "changed_size"	: true,
-		  "stripes"		: lv["stripes"]:1,
-		  "fs_options"		: lv["fs_options"]:$[],
-		  "use_module"		: "lvm_ll",
-		  "fsid"		: 142,
-		  "fstype"		: "LV",
-		  "nr"			: lv_name,
-		  "ori_nr"		: lv_name,
-		  "region"		: [0, virtual_cyl_end ],
-		  "size_bytes"		: bytes_of_part,
-		  "mount"		: lv["mount"]:"" ,
-		  "used_fs"		: lv["used_fs"]:`unknown,
-		  "format"		: lv["format"]:false ,
-		  "crypt_fs"		: lv["crypt"]:false ,
-		  "crypt_key"		: lv["crypt_key"]:"",
-		  "type"		: `lvm,
-		  "device"		: "/dev/" + vgname + "/" + lv_name
-		]);
+        return ($[
+                "changed_size"	: true,
+                "stripes"		: lv["stripes"]:1,
+                "fs_options"		: lv["fs_options"]:$[],
+                "use_module"		: "lvm_ll",
+                "fsid"		: 142,
+                "fstype"		: "LV",
+                "nr"			: lv_name,
+                "ori_nr"		: lv_name,
+                "region"		: [0, virtual_cyl_end ],
+                "size_bytes"		: bytes_of_part,
+                "mount"		: lv["mount"]:"" ,
+                "used_fs"		: lv["used_fs"]:`unknown,
+                "format"		: lv["format"]:false ,
+                "crypt_fs"		: lv["crypt"]:false ,
+                "crypt_key"		: lv["crypt_key"]:"",
+                "type"		: `lvm,
+                "device"		: "/dev/" + vgname + "/" + lv_name
+                ]);
 
     };
 
@@ -308,35 +312,35 @@
      */
     global define map KeepLV (string vgname, map lv) ``{
 
-	string lvsize_str   = lv["size"]:"";
-	string lv_name		= lv["lv_name"]:"";
+        string lvsize_str   = lv["size"]:"";
+        string lv_name		= lv["lv_name"]:"";
 
-	integer lvsize		= kmgt_str_to_byte(lvsize_str);
+        integer lvsize		= kmgt_str_to_byte(lvsize_str);
 
 
 
-	return ($[
-		  "create"		: false,
-		  "fsid"		: 142,
-		  "fstype"		: "LV",
-		  "nr"			: lv_name,
-		  "mount"		: lv["mount"]:"" ,
-		  "used_fs"		: lv["used_fs"]:`reiser,
-		  "format"		: lv["format"]:false ,
-		  "type"		: `lvm,
-		  "device"		: "/dev/" + vgname + "/" + lv_name
-		]);
+        return ($[
+                "create"		: false,
+                "fsid"		: 142,
+                "fstype"		: "LV",
+                "nr"			: lv_name,
+                "mount"		: lv["mount"]:"" ,
+                "used_fs"		: lv["used_fs"]:`reiser,
+                "format"		: lv["format"]:false ,
+                "type"		: `lvm,
+                "device"		: "/dev/" + vgname + "/" + lv_name
+                ]);
     };
 
 
-   /**
+    /**
      * Set PE Size
      * @param string pe size string
      * @return void
      */
     global define void SetPESIZE (string pesize_str) ``{
-	pesize	=  pesize_str_to_byte( pesize_str );
-	return;
+        pesize	=  pesize_str_to_byte( pesize_str );
+        return;
 
     }
 
@@ -346,36 +350,33 @@
      * @param string volume group name
      * @return list existing PVs
      */
-    global define list ExistingPVs ( string vgname )
-	``{
-	map tm = $[];
+    global define list<map> ExistingPVs ( string vgname )
+        ``{
+            map<string, map> tm = $[];
 
-	foreach(string k, map v, targetMap, ``{
-	    if (contains(ConfiguredDevices, k))
-	    {
-		tm[k] = v;
-	    }
-	});
-
-
-	 y2milestone("targetMap= %1", targetMap);
-	 y2milestone("tm= %1", tm);
-
-	list all_possible_pvs = filter( map part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname && !part["delete"]:false ));
-	list possible_pvs = filter( map part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
+            foreach(string k, map v, targetMap, ``{
+                    if (contains(ConfiguredDevices, k))
+                    {
+                    tm[k] = v;
+                    }
+                    });
 
 
-	 y2milestone("all pvs= %1", all_possible_pvs);
-	 y2milestone("possible pvs= %1", possible_pvs);
+            y2debug("targetMap= %1", targetMap);
 
-	if (all_possible_pvs != possible_pvs)
-	{
-	    PVsNotConfigured = true;
-	}
+            list<map> all_possible_pvs = filter( map part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname && !part["delete"]:false ));
+            list<map> possible_pvs = filter( map part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
 
-	return (possible_pvs);
+            y2debug("all pvs= %1", all_possible_pvs);
+            y2debug("possible pvs= %1", possible_pvs);
 
-    }
+            if (all_possible_pvs != possible_pvs)
+            {
+                PVsNotConfigured = true;
+            }
+
+            return (possible_pvs);
+        }
 
     /**
      * Return list of deleted PVS
@@ -383,26 +384,26 @@
      * @return list<map> list of deleted PVs
      */
     global define list<map> DeletedPVs ( string vgname )
-	``{
-	list<list<map> > ret = [];
-	foreach( string dev, map devmap, targetMap,
-		 ``{
-	    ret = add( ret,
-		       filter( map part, devmap["partitions"]:[],
-			       ``(
-				  part["lvm_group"]:"" == vgname
-				  &&
-				  part["delete"]:false
-				  &&
-				  ( part["fsid"]:0 == Partitions::fsid_lvm ||
-				    part["fsid"]:0 == Partitions::fsid_raid ||
-				    part["fsid"]:0 == Partitions::fsid_native )
-				  )
-			       )
-		       );
-	});
-	return( flatten(ret) );
-    }
+        ``{
+            list<list<map> > ret = [];
+            foreach( string dev, map devmap, targetMap,
+                    ``{
+                    ret = add( ret,
+                        filter( map part, devmap["partitions"]:[],
+                            ``(
+                                part["lvm_group"]:"" == vgname
+                                &&
+                                part["delete"]:false
+                                &&
+                                ( part["fsid"]:0 == Partitions::fsid_lvm ||
+                                  part["fsid"]:0 == Partitions::fsid_raid ||
+                                  part["fsid"]:0 == Partitions::fsid_native )
+                              )
+                            )
+                        );
+                    });
+            return( flatten(ret) );
+        }
 
     /**
      * Write LVM Configuration
@@ -410,146 +411,146 @@
      */
     global define boolean Write () ``{
 
-	Storage::ZeroNewPartitions = true;
-	boolean error = false;
+        Storage::ZeroNewPartitions = true;
+        boolean error = false;
 
 
-	foreach (string device, map volume_group, lvm ,
-		 ``{
+        foreach (string device, map volume_group, lvm ,
+                ``{
 
-	    string use		= volume_group["use"]:"none";
-	    list SelectedPartitions = [];
-	    string vgname	= substring(device, 5);
-	    list new_pvs	= ExistingPVs(vgname);
-	    list new_pvs_dev	= maplist(map pv, new_pvs, ``{
-		return(pv["device"]:"");
-	    });
+                string use		= volume_group["use"]:"none";
+                list<string> SelectedPartitions = [];
+                string vgname	= substring(device, 5);
+                list<map> new_pvs	= ExistingPVs(vgname);
+                list<string> new_pvs_dev	= maplist(map pv, new_pvs, ``{
+                    return(pv["device"]:"");
+                    });
 
-	    if (AutoinstLVM::OldAvailable )
-	    {
-		y2milestone("Old LVM available");
-		foreach(string vgdev, string vg, ExistingLVM, ``{
+                if (AutoinstLVM::OldAvailable )
+                {
+                y2milestone("Old LVM available");
+                foreach(string vgdev, map vg, ExistingLVM, ``{
 
-		    string vgn = substring(vgdev, 5);
-		    boolean delete = false;
-		    list deleted_pvs = DeletedPVs(vgn);
+                    string vgn = substring(vgdev, 5);
+                    boolean delete = false;
+                    list<map> deleted_pvs = DeletedPVs(vgn);
 
-		    list del_pvs_dev = maplist(map pv, deleted_pvs,
-						  ``{
-						      return(pv["device"]:"");
-						  });
+                    list<string> del_pvs_dev = maplist(map pv, deleted_pvs,
+                        ``{
+                        return(pv["device"]:"");
+                        });
 
-		    list lv_on_raid = filter(string dev, del_pvs_dev, ``(issubstring(dev, "/dev/md")));
+                    list<string> lv_on_raid = filter(string dev, del_pvs_dev, ``(issubstring(dev, "/dev/md")));
 
-		    if ( use == "all" && vgn == vgname )
-		    {
-			delete = true;
-		    }
-		    else if (
-			     size(deleted_pvs) > 0
-			     && size(toset(union(del_pvs_dev,  new_pvs_dev))) < (size(del_pvs_dev) + size( new_pvs_dev))
-			     )
-		    {
-			delete = true;
-		    }
+                    if ( use == "all" && vgn == vgname )
+                    {
+                    delete = true;
+                    }
+                    else if (
+                        size(deleted_pvs) > 0
+                        && size(toset(union(del_pvs_dev,  new_pvs_dev))) < (size(del_pvs_dev) + size( new_pvs_dev))
+                        )
+                    {
+                        delete = true;
+                    }
 
-		    if (PVsNotConfigured)
-		    {
-			Report::Error(sformat(_("Logical volumes of group \"%1\" exist on unconfigured devices.
-Delete old volume groups first or configure all devices containing
-physical volumes belonging to this group.
-"), vgname));
-			error = true;
-		    }
+                    if (PVsNotConfigured)
+                    {
+                        Report::Error(sformat(_("Logical volumes of group \"%1\" exist on unconfigured devices.
+                                        Delete old volume groups first or configure all devices containing
+                                        physical volumes belonging to this group.
+                                        "), vgname));
+                        error = true;
+                    }
 
-		    // Delete old LVM
-		    if ( delete && !error && size(lv_on_raid) == 0)
-		    {
-			map ExistingVG = ExistingLVM[vgdev]:$[];
+                    // Delete old LVM
+                    if ( delete && !error && size(lv_on_raid) == 0)
+                    {
+                        map ExistingVG = ExistingLVM[vgdev]:$[];
 
-			list ExistingLVs = ExistingVG["partitions"]:[];
+                        list<map> ExistingLVs = ExistingVG["partitions"]:[];
 
-			foreach(map lv, ExistingLVs, ``{
-			    RemoveLV( vg, lv["nr"]:"");
-			});
+                        foreach(map lv, ExistingLVs, ``{
+                                RemoveLV( vgn, lv["nr"]:"");
+                                });
 
-			RemoveVG( vg );
-		    }
+                        RemoveVG( vgn );
+                    }
 
-		    // Delete selected only
-		    if (use!= "" && use != "all" && use != "free" && use != "none")
-		    {
-			y2milestone("using only selected lvs");
-			SelectedPartitions = splitstring(use, ",");
-		    }
+                    // Delete selected only
+                    if (use!= "" && use != "all" && use != "free" && use != "none")
+                    {
+                        y2milestone("using only selected lvs");
+                        SelectedPartitions = splitstring(use, ",");
+                    }
 
-		    if (size(SelectedPartitions) > 0 && !delete)
-		    {
-			foreach(string lv, SelectedPartitions, ``{
-			    RemoveLV( vg, lv);
-			});
-		    }
-
-
-		});
-	    }
-
-	    SetPESIZE( volume_group["pesize"]:"4M" );
-	    y2milestone("Existing PVs: %1",  new_pvs );
-	    map new_volume = $[];
-
-	    if (use == "all")
-	    {
-		new_volume = CreateVG (vgname);
-
-		foreach(map pv, new_pvs, ``{
-		    CreatePV (vgname, pv["device"]:"");
-		});
-	    }
-	    else
-	    {
-		new_volume = ExistingLVM[device]:$[];
-	    }
-
-	    list new_partitions = maplist(map lv,  volume_group["partitions"]:[], ``{
-
-		list lvlist =  ExistingLVM[device, "partitions"]:[];
-		map this_lv = (map) select(filter(map p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
-
-		y2debug("This LV: %1", this_lv);
-
-		lv["used_fs"]	=	this_lv["used_fs"]:`none;
+                    if (size(SelectedPartitions) > 0 && !delete)
+                    {
+                        foreach(string lv, SelectedPartitions, ``{
+                                RemoveLV( vgn, lv);
+                                });
+                    }
 
 
-		if (lv["create"]:true && !lv["resize"]:false)
-		{
-		    return (CreateLV( vgname, lv ));
-		}
-		else if (lv["resize"]:false)
-		{
-		    return (ResizeLV( vgname, lv ));
-		}
-		else
-		{
-		    return (KeepLV( vgname, lv ));
-		}
-	    });
+                });
+                }
 
-	    new_volume["partitions"] = new_partitions;
-	    Volumes[device] = new_volume;
-	});
+                SetPESIZE( volume_group["pesize"]:"4M" );
+                y2milestone("Existing PVs: %1",  new_pvs );
+                map new_volume = $[];
+
+                if (use == "all")
+                {
+                    new_volume = CreateVG (vgname);
+
+                    foreach(map pv, new_pvs, ``{
+                            CreatePV (vgname, pv["device"]:"");
+                            });
+                }
+                else
+                {
+                    new_volume = ExistingLVM[device]:$[];
+                }
+
+                list new_partitions = maplist(map lv,  volume_group["partitions"]:[], ``{
+
+                        list<map> lvlist =  ExistingLVM[device, "partitions"]:[];
+                        map this_lv = select(filter(map p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
+
+                        y2debug("This LV: %1", this_lv);
+
+                        lv["used_fs"]	=	this_lv["used_fs"]:`none;
 
 
-	y2milestone("Volumes: %1", Volumes);
-	if (error)
-	    return false;
+                        if (lv["create"]:true && !lv["resize"]:false)
+                        {
+                        return (CreateLV( vgname, lv ));
+                        }
+                        else if (lv["resize"]:false)
+                        {
+                        return (ResizeLV( vgname, lv ));
+                        }
+                        else
+                        {
+                        return (KeepLV( vgname, lv ));
+                        }
+                });
 
-	Storage::SetModifyTargets( modify_targets );
-	map new_targetMap = union(Storage::GetTargetMap(), Volumes);
+                new_volume["partitions"] = new_partitions;
+                Volumes[device] = new_volume;
+                });
 
-	Storage::SetTargetMap(new_targetMap);
 
-	return true;
+                y2milestone("Volumes: %1", Volumes);
+                if (error)
+                    return false;
+
+                Storage::SetModifyTargets( modify_targets );
+                map new_targetMap = union(Storage::GetTargetMap(), Volumes);
+
+                Storage::SetTargetMap(new_targetMap);
+
+                return true;
     }
 
 }

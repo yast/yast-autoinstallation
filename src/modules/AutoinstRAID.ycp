@@ -19,7 +19,7 @@
     include "partitioning/raid_lib.ycp";
 
 
-    global map ExistingRAID = $[];
+    global map<string, map> ExistingRAID = $[];
 
     global boolean OldAvailable = false;
 
@@ -29,7 +29,9 @@
 
     // Local variables
     list region = [0,0];
-    map targetMap = $[];
+
+    // Temporary copy of variable from Storage
+    map<string, map> targetMap = $[];
 
 
     /**
@@ -40,7 +42,7 @@
 
 	targetMap	= Storage::GetTargetMap();
 	ExistingRAID	= filter(string k,map v, targetMap, ``(k == "/dev/md"));
-	y2milestone("Existing RAID: %1", ExistingRAID );
+	y2debug("Existing RAID: %1", ExistingRAID );
 
 	if (size(ExistingRAID) > 0 )
 	{
@@ -105,8 +107,8 @@
 
 	if (OldAvailable)
 	{
-	    list mds = targetMap["/dev/md","partitions"]:[];
-	    list new_mds = maplist( map md, mds ,``{
+	    list<map> mds = targetMap["/dev/md","partitions"]:[];
+	    list<map> new_mds = maplist( map md, mds ,``{
 		if ( contains(to_bo_deleted, md["device"]:""))
 		{
 		    md["delete"] = true;
@@ -128,15 +130,15 @@
     global define boolean Write()
 	``{
 
-	list RaidList =  maplist ( map device, raid["/dev/md", "partitions"]:[],  ``{
+	list<map> RaidList =  maplist ( map device, raid["/dev/md", "partitions"]:[],  ``{
 
 	    string use	= raid["/dev/md","use"]:"none";
 	    string dev	= sformat("/dev/md%1", device["partition_nr"]:0);
 
 	    if (OldAvailable)
 	    {
-		list mds = ExistingRAID["/dev/md","partitions"]:[];
-		list new_mds = maplist( map md, mds ,``{
+		list<map> mds = ExistingRAID["/dev/md","partitions"]:[];
+		list<map> new_mds = maplist( map md, mds ,``{
 
 		    if ( use == "all" && dev == md["device"]:"" )
 		    {
@@ -233,7 +235,7 @@
 	});
 
 
-        map tg = Storage::GetTargetMap();
+        map<string, map> tg = Storage::GetTargetMap();
 	RaidList= maplist( map part, RaidList,
 		 ``({
 		     integer len = raid_size_byte( tg, part);
