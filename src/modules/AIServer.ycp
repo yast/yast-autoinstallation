@@ -78,7 +78,7 @@
     global map sourceData = $[];
     global map productData = $[];
     global map mediaData = $[];
-    
+    global boolean createdNewSource = false;
     /**
      * Constructer
      *
@@ -92,7 +92,7 @@
 
 
     /**
-     *
+     * Create skeleton directory
      */
     define void createSkelDir()``{
 	skelDir = tmpDir + "/iso_skeleton";
@@ -101,56 +101,48 @@
     }
 
     /**
-     *
+     * initialize source
      */
     global define boolean initSource() ``{
 
 	list theSources = [];
+	string base_url = "dir://" + sourceDir;
 	if (!AIConfig::PkdInitialized)
 	{	    
-	    string grepCmd = sformat("grep \"^VERSION\" %1/content | cut -d' ' -f 2",  sourceDir);
-	    map out = SCR::Execute(.target.bash_output, grepCmd);
-	    list version_raw = splitstring(out["stdout"]:"",  "\n");
-	    string version = version_raw[0]:"";
-	    y2milestone("version :%1", version);
-	    if (version == "")
-	    {
-		y2error("Non-valid package repository..");
-		return false;
-	    }
-		
-	    theSources = Pkg::SourceStartCache (true);
+	 		
+	    theSources = Pkg::SourceStartCache (false);
 	    y2milestone("sources: %1", theSources);
 	    if (size (theSources) <= 0)
 	    {
-		y2error ("Pkg::SourceStartCache failed");
-		theSources = [];		
+		y2error ("No Sources available, creating a new source.");
+		theSources = [];
 	    }
 	    else
 	    {
 		foreach (`source, theSources, ``{
 		    y2milestone("source: %1", source);
-		    map pdata = Pkg::SourceProductData (source);
-		    y2milestone("data %1", pdata);
-		    if (contains(splitstring(pdata["productversion"]:"","-"), version))
+		    map sdata = Pkg::SourceMediaData(source);
+		    
+		    if (sdata["url"]:"" == base_url)
 		    {
 			AIConfig::theSource = source;
+			boolean enable = Pkg::SourceSetEnabled(source, true);
+			if (!enable)
+			{
+			    y2warning("Error while trying to enable source %1", source);
+			    return false;
+			}
 		    }
 		});
 	    }
 	    
-	    if (AIConfig::theSource == -1) {
-		y2milestone("creating new source");
-		string base_url = "dir://" + sourceDir;
-		integer ret = Pkg::SourceCreate (base_url);
-		  
-		if (ret!=nil)
-		{
-		    AIConfig::theSource = ret;
-		}	  
-	    }
-
-	  
+	    if (AIConfig::theSource == -1)
+	    {
+		Report::Error(_("No source with this path was found,
+please add the source using the source manager using the control center and
+try again."));
+		return false;
+	    }	  
 	}
 	else
 	{
