@@ -1,0 +1,222 @@
+/**
+ *
+ */
+{
+
+    textdomain "autoinst";
+    include "ui/common_messages.ycp";
+    
+    /**
+     *
+     */
+    global define void AddEditVar(string varkey, string varval, string varpath)
+	``{
+	boolean modified = false;
+	vars = maplist (map var ,  AIsysconfig::sysconfigVars, ``{
+	    // Edit
+	    if (var["sysconfig_key"]:"" == varkey)
+	    {
+		map oldVar = $[];
+		oldVar["sysconfig_key"] =  varkey;
+		oldVar["sysconfig_value"] = varval;
+		oldVar["sysconfig_path"] =  varpath;
+		
+		modified = true;
+		return oldVar;
+	    }
+	    else
+	    {
+		return var;
+	    }
+	});
+	
+
+	if (!modified)
+	{
+	    map var = $[];
+	    var=add(var,"sysconfig_key", varkey);
+	    var=add(var,"sysconfig_value", varval);
+	    var=add(var,"sysconfig_path", varpath);	    
+	    AIsysconfig::sysconfigVars = add(  AIsysconfig::sysconfigVars , var);
+	}
+	
+	return;
+    }
+
+
+    
+    /**
+     * delete a var from a list
+     * @param var name
+     * @return modified list of vars
+     */
+    global define list  deleteVar(string varName)
+	``{	
+	list new =  filter(`s,  AIsysconfig::sysconfigVars , ``(lookup(s,"sysconfig_key","")!= varName));
+	return  (new);
+    }
+
+
+    /**
+     * Dialog for adding a var
+     *
+     */
+
+    global define addVarDialog(symbol mode , string name)
+    ``{
+	map var = $[];
+	if (mode == `edit)
+	{
+	    list filtered_vars = filter(`s,  AIsysconfig::sysconfigVars  ,``((lookup(s,"sysconfig_key","") == name)));
+	    if (size(filtered_vars)>0)
+	    {
+		var = select(filtered_vars,0,$[]);
+	    }
+	}
+
+	string help = _("<p>Use this dialog to configure sysconfig variables directly. 
+The path is relative to the <em>/etc/sysconfig</em> directory.</p>");
+
+	help = help + _("<p>Make sure the values do not contain any special charechters.</p>");
+
+	string title = _("Sysconfig  Variable Editor");
+
+	term contents=
+	    `VBox(
+		  `HBox(
+			`TextEntry(`id(`varkey), _("&Key"), lookup(var,"sysconfig_key","")),
+			`TextEntry(`id(`varval), _("&Value"), lookup(var,"sysconfig_value",""))
+			),
+		  `VSpacing(2),
+		  `HBox(
+			`TextEntry(`id(`varpath), _("&Path"), lookup(var,"sysconfig_path",""))
+			),
+		  `VStretch()
+		  );
+
+
+	Wizard::SetContents(title,
+			    contents, help, true, true);
+
+
+	if (mode == `edit)
+	{
+	    UI::ChangeWidget(`id(`varname), `Enabled, false);
+	}
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `next)
+	    {
+		string varkey	= UI::QueryWidget(`id(`varkey), `Value);
+		string varval	= UI::QueryWidget(`id(`varval), `Value);
+		string varpath	= UI::QueryWidget(`id(`varpath), `Value);
+
+		if (varpath == "" || varkey == "")
+		{
+		    UI::MessagePopup(_("Provide at least the variable
+key and the path of the file containing the variable.
+"));
+		    continue;
+		}
+		else
+		{
+		    AddEditVar( varkey, varval, varpath);
+		}
+	    }
+
+	} until ( ret == `next || ret == `back || ret == `abort);
+	return ret;
+    }
+
+
+
+
+    /**
+     * Summary of configuration
+     */
+    global define symbol dialog_contents() ``{
+
+	list allvars = maplist(map s, AIsysconfig::sysconfigVars,
+				  ``{
+				      return (`item(`id(s["sysconfig_key"]:"Unknown"),
+						    s["sysconfig_key"]:"Unknown",  s["sysconfig_value"]:"Unknown", s["sysconfig_path"]:"Unknown"));
+				  });
+	term contents =
+	    `VBox(
+		  `Left(
+			`Label(_("Available Sysconfig Variables"))
+			),
+		  `Table( `id(`table), `opt(`notify),
+			  `header(_("Variable Key"), _("Variable Value"), _("File in /etc/sysconfig")),
+			  allvars
+
+			  ),
+		  `HBox(
+			`PushButton(`id(`new),  NewButtonLabel()),
+			`PushButton(`id(`edit), EditButtonLabel()),
+			`PushButton(`id(`delete), DeleteButtonLabel())
+			)
+		  );
+	return contents;
+    }
+
+
+    global define SysconfigDialog()``{
+
+	string title = _("Add Configuration Variables");
+	string help = _("TODO");
+
+	Wizard::CreateDialog();
+
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	Wizard::SetContents(title,
+			    dialog_contents(), help, true, true);
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+
+	    if (ret == `new) {
+	
+		addVarDialog(ret , "" );
+		
+	    }
+	    else if (ret == `edit)
+	    {
+		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil)
+		{		
+		    addVarDialog(ret , name  );		
+		}
+		else
+		{
+		    UI::MessagePopup(_("Please select a variable first."));
+		    continue;
+		}
+
+	    }
+	    else if (ret == `delete)
+	    {
+		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil)
+		{
+		    AIsysconfig::sysconfigVars = deleteVar(name);
+
+		}
+		else
+		{
+		    UI::MessagePopup(_("Please select a variable first."));
+		    continue;
+		}
+	    }
+	    Wizard::SetContents(title,
+				dialog_contents(), help, true, true);
+
+
+	} until (ret == `next || ret == `back || ret == `abort );
+	Wizard::CloseDialog();
+	return ret;
+    }
+}

@@ -17,16 +17,30 @@
 
     include "autoinstall/x11_dialogs.ycp";
 
-    string func = WFM::Args(0);
-    map param = WFM::Args(1);
+    any ret = nil;
+    string func = "";
+    map param = $[];
 
+    /* Check arguments */
+    if(size(Args()) > 0 && is(Args(0), string)) {
+	func = WFM::Args(0);
+	if(size(Args()) > 1 && is(Args(1), map))
+	    param = WFM::Args(1);
+    }
+    y2debug("func=%1", func);
+    y2debug("param=%1", param);
+
+
+    
+    if(func == "Import") {
+	ret = AIx11::Import(param);	
+    }
     /**
      * Create a summary
      * return string
      */
-    if(func == "Summary") {
-	AIx11::Import(param);
-	return ( AIx11::Summary());
+    else if(func == "Summary") {	
+	ret =  AIx11::Summary();
     }
     /**
      * Reset configuration
@@ -34,31 +48,35 @@
      */
     else if (func == "Reset") {
 	AIx11::Import($[]);
-	return ($[]);
+	ret =  $[];
     }
     /**
      * Change configuration
      * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
      */
-    else if (func == "Change") {
-	AIx11::Import(param);
-	any res = X11AutoSequence();
-	return res;
+    else if (func == "Change") {	
+	ret = X11AutoSequence();
     }
     /**
      * Return configuration data
      * return map or list
      */
     else if (func == "Result") {
-	return(AIx11::Export());
+	ret = AIx11::Export();
     }
-  
     
     /* unknown function */
     else {
 	y2error("unknown function: %1", func);
-	return false;
+	ret =  false;
     }
-   
+  
+    y2debug("ret=%1", ret);
+    y2milestone("X11 auto finished");
+    y2milestone("----------------------------------------");
+
+    return ret;
+
+/* EOF */ 
  
 }

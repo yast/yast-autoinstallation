@@ -11,25 +11,43 @@
     import "Mode";
     Mode::config = true;
 
-
     import "Wizard";
     import "Summary";
     import "Report";
 
     include "ui/common_messages.ycp";
     include "autoinstall/reporting_dialogs.ycp";
+    
+    y2milestone("----------------------------------------");
+    y2milestone("Report auto started");
 
+    any ret = nil;
+    string func = "";
+    map param = $[];
 
-    string func = WFM::Args(0);
-    map param = WFM::Args(1);
+    /* Check arguments */
+    if(size(Args()) > 0 && is(Args(0), string)) {
+	func = WFM::Args(0);
+	if(size(Args()) > 1 && is(Args(1), map))
+	    param = WFM::Args(1);
+    }
+    y2debug("func=%1", func);
+    y2debug("param=%1", param);
+
 
     /**
      * Create a summary
      * return string
      */
-    if(func == "Summary") {
-	Report::Import(param);
-	return ( Report::Summary());
+    if (func == "Import") {
+	ret = Report::Import(param);	
+    }
+    /**
+     * Create a summary
+     * return string
+     */
+    else if(func == "Summary") {	
+	ret =  Report::Summary();
     }
     /**
      * Reset configuration
@@ -37,35 +55,40 @@
      */
     else if (func == "Reset") {
 	Report::Import($[]);
-	return ($[]);
+	ret = $[];
     }
     /**
      * Change configuration
      * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
      */
     else if (func == "Change") {
-	Report::Import(param);
 	Wizard::CreateDialog();
 	Wizard::ReplaceAbortButton(`Empty ());
-	any res = ReportingDialog();
+	ret = ReportingDialog();
 	Wizard::CloseDialog();
-	return res;
     }
     /**
      * Return configuration data
      * return map or list
      */
     else if (func == "Result") {
-	return(Report::Export());
+	ret = Report::Export();
     }
-  
-    
+      
     /* unknown function */
     else {
 	y2error("unknown function: %1", func);
-	return false;
+	ret =  false;
     }
 
+    y2debug("ret=%1", ret);
+    y2milestone("Report auto finished");
+    y2milestone("----------------------------------------");
+
+    return ret;
+
+    /* EOF */
+    
 }
 
 

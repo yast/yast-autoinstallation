@@ -21,8 +21,18 @@
     include "ui/common_messages.ycp";
     include "autoinstall/dialogs.ycp";
 
-    string func = WFM::Args(0);
-    map param = WFM::Args(1);
+    any ret = nil;
+    string func = "";
+    map param = $[];
+
+    /* Check arguments */
+    if(size(Args()) > 0 && is(Args(0), string)) {
+	func = WFM::Args(0);
+	if(size(Args()) > 1 && is(Args(1), map))
+	    param = WFM::Args(1);
+    }
+    y2debug("func=%1", func);
+    y2debug("param=%1", param);
 
 
 
@@ -255,32 +265,35 @@ TODO
     }
 
 
-/* create a  summary*/
+    /* create a  summary*/
 
     if(func == "Summary") {
-	return AIsoftware::Summary();
+	ret =  AIsoftware::Summary();
     }
     else if (func == "Import") {
-	AIsoftware::Import(param);
-	return (true);
+	ret = AIsoftware::Import(param);
     }
     else if (func == "Reset") {
 	AIsoftware::Import($[]);
-	return ($[]);
+	ret =  $[];
     }
     else if (func == "Change") {
-	any res = packageSelector();
-	return res;
+	ret  = packageSelector();	
     }
     else if (func == "Result") {
-	return(AIsoftware::Export());
+	ret = AIsoftware::Export();
     }
-
-/* unknown function */
+    /* unknown function */
     else {
 	y2error("unknown function: %1", func);
-	return false;
+	ret = false;
     }
 
+    y2debug("ret=%1", ret);
+    y2milestone("Software auto finished");
+    y2milestone("----------------------------------------");
+
+    return ret;
+    
 /* Finish */
 }

@@ -1,264 +1,85 @@
 /**
- * File:	clients/autoinst_sysconfig.ycp
- * Package:	Autoinstallation Configuration System
- * Summary:	Sysconfig variable Settings
- * Authors:	Anas Nashif<nashif@suse.de>
+ * File:	clients/AIsysconfig_auto.ycp
+ * Package:	Configuration of AIsysconfig
+ * Summary:	Client for autoinstallation
+ * Authors:	XXmaintainerXX <XXemailXX>
  *
  * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
  */
+
+/**
+ * @param function to execute
+ * @param map/list of AIsysconfig settings
+ * @return map edited settings, Summary or boolean on success depending on called function
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = WFM::CallFunction ("AIsysconfig_auto", [ "Summary", mm ]);
+ */
+
 {
-    textdomain "autoinst";
-    import "Mode";
-    Mode::config = true;
 
+textdomain "autoinst";
 
-    import "Wizard";
-    import "Summary";
+y2milestone("----------------------------------------");
+y2milestone("sysconfig auto started");
 
-    include "wizard/sequencer.ycp";
+import "AIsysconfig";
+include "autoinstall/sysconfig_dialogs.ycp";
 
-    include "ui/common_messages.ycp";
-    include "ui/file_popups.ycp";
+any ret = nil;
+string func = "";
+list param = [];
 
-
-    list args = WFM::Args ();
-
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( WFM::Args (0), list ) )
-    {
-	y2error ("Bad argument: %1", WFM::Args (0));
-	return false;
-    }
-
-    list settings = [];
-    {
-	integer i = 0;
-	while (i < size (WFM::Args()))
-	{
-	    if (is (WFM::Args (i), list) && nil != WFM::Args (i))	settings = WFM::Args (i);
-	    i = i + 1;
-	}
-    }
-
-    y2milestone("Imported: (%1)", settings);
-    list vars = settings;
-
-    define void AddEditVar(string varkey, string varval, string varpath)
-	``{
-	
-	boolean modified = false;
-	vars = maplist (`var , vars, ``{
-	    // Edit
-	    if (var["sysconfig_key"]:"" == varkey)
-	    {
-		map oldVar = $[];
-		oldVar=add(oldVar,"sysconfig_key", varkey);
-		oldVar=add(oldVar,"sysconfig_value", varval);
-		oldVar=add(oldVar,"sysconfig_path", varpath);
-		modified = true;
-		return oldVar;
-	    }
-	    else {
-		return var;
-	    }
-	});
-
-	if (!modified)
-	{
-	    map var = $[];
-	    var=add(var,"sysconfig_key", varkey);
-	    var=add(var,"sysconfig_value", varval);
-	    var=add(var,"sysconfig_path", varpath);
-	    vars=add(vars,var);
-	}
-	return;
-    }
-
-    /**
-     * delete a var from a list
-     * @param var name
-     * @return modified list of vars
-     */
-    global define list  deleteVar(string varName)
-	``{
-	y2milestone("deleteing %1", varName);
-	list new =  filter(`s, vars, ``(lookup(s,"sysconfig_key","")!= varName));
-	y2milestone ("New list of vars: %1", new);
-	return  (new);
-    }
-
-
-    /**
-     * Dialog for adding a var
-     *
-     */
-
-    global define addVarDialog(symbol mode , string name)
-    ``{
-	map var = $[];
-	if (mode == `edit)
-	{
-	    list filtered_vars = filter(`s, vars,``((lookup(s,"sysconfig_key","") == name)));
-	    if (size(filtered_vars)>0)
-	    {
-		var = select(filtered_vars,0,$[]);
-	    }
-	}
-
-	string help = _("<p>Use this dialog to configure sysconfig variables directly. 
-The path is relative to the <em>/etc/sysconfig</em> directory.</p>");
-
-	help = help + _("<p>Make sure the values do not contain any special charechters.</p>");
+/* Check arguments */
+if(size(Args()) > 0 && is(Args(0), string)) {
+    func = WFM::Args(0);
+    if(size(Args()) > 1 && is(Args(1), list))
+	param = WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
 
 
 
-	string title = _("Sysconfig  Variable Editor");
+/* Import Data*/
+if(func == "Import") {
+    ret = AIsysconfig::Import(param);
+}
+/* Create a  summary*/
+else if(func == "Summary") {
+    ret = AIsysconfig::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    AIsysconfig::Import($[]);
+    ret = $[];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    ret = SysconfigDialog();
+}
+/* Return actual state */
+else if (func == "Result") {
+    ret = AIsysconfig::Export();
+}
+/* Write givven settings */
+else if (func == "Write") {
+    ret = AIsysconfig::Write();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
 
-	term contents=
-	    `VBox(
-		  `HBox(
-			`TextEntry(`id(`varkey), _("&Key"), lookup(var,"sysconfig_key","")),
-			`TextEntry(`id(`varval), _("&Value"), lookup(var,"sysconfig_value",""))						
-			),
-		  `VSpacing(2),
-		  `HBox(
-			`TextEntry(`id(`varpath), _("&Path"), lookup(var,"sysconfig_path",""))
-			),		  
-		  `VStretch()
-		  );
+y2debug("ret=%1", ret);
+y2milestone("sysconfig auto finished");
+y2milestone("----------------------------------------");
 
+return ret;
 
-	Wizard::SetContents(title,
-			    contents, help, true, true);
-
-
-	if (mode == `edit)
-	{
-	    UI::ChangeWidget(`id(`varname), `Enabled, false);
-	}
-
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-	    if (ret == `next)
-	    {
-		string varkey 	= UI::QueryWidget(`id(`varkey), `Value);
-		string varval 	= UI::QueryWidget(`id(`varval), `Value);
-		string varpath 	= UI::QueryWidget(`id(`varpath), `Value);
-
-		if (varpath == "" || varkey == "")
-		{
-		    UI::MessagePopup(_("Provide at least the variable
-key and the path of the file containing the variable.
-"));
-		    continue;
-		}
-		else
-		{
-		    AddEditVar( varkey, varval, varpath);
-		}
-	    }	  
-
-	} until ( ret == `next || ret == `back || ret == `abort);
-	return ret;
-    }
-
-
-
-
-    /**
-     * Summary of configuration
-     */
-    define Summary() ``{
-
-	list allvars = maplist(`s, vars,
-				  ``{
-				      return (`item(`id(s["sysconfig_key"]:"Unknown"),
-						    s["sysconfig_key"]:"Unknown",  s["sysconfig_value"]:"Unknown", s["sysconfig_path"]:"Unknown"));
-				  });
-	term contents =
-	    `VBox(
-		  `Left(
-			`Label(_("Available Sysconfig Variables"))
-			),
-		  `Table( `id(`table), `opt(`notify),
-			  `header(_("Variable Key"), _("Variable Value"), _("File in /etc/sysconfig")),
-			  allvars
-
-			  ),
-		  `HBox(
-			`PushButton(`id(`new),  NewButtonLabel()),
-			`PushButton(`id(`edit), EditButtonLabel()),
-			`PushButton(`id(`delete), DeleteButtonLabel())
-			)
-		  );
-	return contents;
-    }
-
-
-    define set_contents()``{
-
-	string title = _("Add Configuration Variables");
-	string help = _("TODO");
-
-	Wizard::SetContents(title,
-			    Summary(), "", true, true);
-
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-
-	    if (ret == `new) {
-		Wizard::CreateDialog();
-		addVarDialog(ret , "" );
-		Wizard::CloseDialog();
-	    }
-	    else if (ret == `edit)
-	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil)
-		{
-		    Wizard::CreateDialog();
-		    addVarDialog(ret , name  );
-		    Wizard::CloseDialog();
-		}
-		else
-		{
-		    UI::MessagePopup(_("Select a variable first."));
-		    continue;
-		}
-
-	    }
-	    else if (ret == `delete)
-	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil) {
-		    vars = deleteVar(name);
-
-		}
-		else
-		{
-		    UI::MessagePopup(_("Select a variable first."));
-		    continue;
-		}
-	    }
-	    Wizard::SetContents(title,
-				Summary(), "", true, true);
-
-
-	} until (ret == `next || ret == `key || ret == `back || ret == `abort );
-
-	return ret;
-    }
-
-
-
-    any ret = set_contents();
-    settings = vars;
-
-    return [ret, settings];
+/* EOF */
 }
