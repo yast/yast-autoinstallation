@@ -65,10 +65,23 @@
 
 
 
-<!ELEMENT configure (files?, firewall?,  groups?,inetd?, ldap?, mail?, networking?,   nfs?, nfs_server?,  nis?, nisplus?,  nis_server?, ntp-client?,  printer?, runlevels?, samba-client?, scripts?, security?, sound?, sysconfig?, user_defaults?,  users?, x11?)>
-<!ELEMENT install ( bootloader?, general?, lvm?, partitioning?, raid?, report?, software? )>
+<!ENTITY % y2_configure "files| firewall|  groups|inetd| ldap| mail| networking|   nfs| nfs_server|  nis| nisplus|  nis_server| ntp-client|  printer| runlevels| samba-client| scripts| security| sound| sysconfig| user_defaults|  users| x11">
+<!ELEMENT configure (%y2_configure;)*>
+<!ENTITY % y2_install "bootloader| classes| general| lvm| partitioning|partitioning_advanced| raid| report| software">
+<!ELEMENT install (%y2_install;)*>
 <!ELEMENT profile (configure?, install?)>
 <!ATTLIST profile
 	xmlns CDATA #REQUIRED
 	xmlns:config CDATA #REQUIRED
 >
+
+
+<!ELEMENT class (class_name, configuration)>
+<!ELEMENT classes (class+)>
+<!ATTLIST classes
+	config:type CDATA #FIXED 'list'
+>
+<!ELEMENT class_name (#PCDATA)>
+<!ELEMENT configuration (#PCDATA)>
+
+
