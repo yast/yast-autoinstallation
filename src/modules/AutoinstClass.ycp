@@ -51,8 +51,8 @@
      */
     global define string findPath(string name, string class)
 	``{
-	map result = (map) select(filter(map c,  confs,
-				   ``(c["name"]:"" == name && c["class"]:"" == class)),0,$[]);
+	map result = (map) filter(map c,  confs,
+				   ``(c["name"]:"" == name && c["class"]:"" == class))[0]:$[];
 
 	string profile_path = sformat("%1/%2/%3", AutoinstConfig::classDir, result["class"]:"", result["name"]:"default");
 	return profile_path;
