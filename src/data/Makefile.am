@@ -18,9 +18,6 @@ ydata_DATA = \
 xml_DATA = \
     merge.xslt
 
-dtd_DATA = \
-	profile.dtd	\
-	classes.dtd \
-	profiles.dtd
+dtd_DATA = $(wildcard *.dtd)
 
 EXTRA_DIST = $(dtd_DATA) $(xml_DATA) $(ydata_DATA) $(misc_DATA)

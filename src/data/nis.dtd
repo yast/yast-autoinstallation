@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT nis (nis_broadcast?, nis_broken_server?, nis_domain, nis_local_only?, nis_options?, nis_other_domains?, nis_servers, start_autofs, start_nis)>
+<!ELEMENT nis_broadcast (#PCDATA)>
+<!ATTLIST nis_broadcast
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_broken_server (#PCDATA)>
+<!ATTLIST nis_broken_server
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_domain (#PCDATA)>
+<!ELEMENT nis_local_only (#PCDATA)>
+<!ATTLIST nis_local_only
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_options (#PCDATA)>
+<!ELEMENT nis_other_domain (nis_broadcast?, nis_domain, nis_servers)>
+<!ELEMENT nis_other_domains (nis_other_domain+)>
+<!ATTLIST nis_other_domains
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_server (#PCDATA)>
+<!ELEMENT nis_servers (nis_server+)>
+<!ATTLIST nis_servers
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT start_autofs (#PCDATA)>
+<!ATTLIST start_autofs
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT start_nis (#PCDATA)>
+<!ATTLIST start_nis
+	config:type CDATA #REQUIRED
+>

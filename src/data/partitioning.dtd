@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT crypt_fs (#PCDATA)>
+<!ATTLIST crypt_fs
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT crypt_key (#PCDATA)>
+<!-- <!ELEMENT device (#PCDATA)>  : redefined --> 
+<!ELEMENT drive (device?, initialize?, partitions?, use?)>
+<!ELEMENT filesystem (#PCDATA)>
+<!ATTLIST filesystem
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT format (#PCDATA)>
+<!ATTLIST format
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT fs_options (opt_format?, opt_hash?, opt_blocksize?, opt_block_size?, opt_bytes_per_indoe?, opt_raid?, opt_reserved_blocks?, opt_inode_align?, opt_max_inode_space?)>
+<!ELEMENT fstopt (#PCDATA)>
+<!ELEMENT initialize (#PCDATA)>
+<!ATTLIST initialize
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT label (#PCDATA)>
+<!ELEMENT mount (#PCDATA)>
+<!ELEMENT mountby (#PCDATA)>
+<!ATTLIST mountby
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT opt_block_size (option_str, option_value)>
+<!ELEMENT opt_blocksize (option_str, option_value)>
+<!ELEMENT opt_bytes_per_indoe (option_str, option_value)>
+<!ELEMENT opt_format (option_blank, option_str, option_value)>
+<!ELEMENT opt_hash (option_blank, option_str, option_value)>
+<!ELEMENT opt_inode_align (option_str, option_value)>
+<!ELEMENT opt_max_inode_space (option_str, option_value)>
+<!ELEMENT opt_raid (option_str, option_value)>
+<!ELEMENT opt_reserved_blocks (option_str, option_value)>
+<!ELEMENT option_blank (#PCDATA)>
+<!ATTLIST option_blank
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT option_str (#PCDATA)>
+<!ELEMENT option_value (#PCDATA)>
+<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format, fs_options?, fstopt?, label?, mount, mountby?, partition_id, size)>
+<!ELEMENT partition_id (#PCDATA)>
+<!ATTLIST partition_id
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT partitioning (drive+)>
+<!ATTLIST partitioning
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT partitions (partition+)>
+<!ATTLIST partitions
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT size (#PCDATA)>
+<!ELEMENT use (#PCDATA)>
