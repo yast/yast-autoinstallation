@@ -10,17 +10,15 @@
 
     module "AutoinstCompat";
     textdomain "autoinst";
+    import "AutoinstStorage";
 
-    include "autoinstall/partitioning_routines.ycp";
 
 
-    
     /**
      * Provide Compatibility to older distributions.
      * @param lvm_standalone Stand alone LVM configuration
      * @return LVM configuration integrated into partitioning resource
      */
-    
     global define list convertLVM (list lvm_standalone ) ``{
 
 	list all_lvm = [];
@@ -35,7 +33,7 @@
 	    new_lvm["pesize"]       = group["pesize"]:"";
 	    list partitions = maplist(map lv, group["logical_volumes"]:[], ``{
 
-		symbol lv_fs     = StringFS2Symbol( lv["lv_fs"]:`reiser);
+		symbol lv_fs     = AutoinstStorage::StringFS2Symbol( lv["lv_fs"]:`reiser);
 
 
 		return( $[ "filesystem": lv_fs,
@@ -72,7 +70,7 @@
 
 	list partitions = maplist(map r, raid_standalone, ``{
 
-	    symbol fs = StringFS2Symbol( r["filesystem"]:`reiser);
+	    symbol fs = AutoinstStorage::StringFS2Symbol( r["filesystem"]:`reiser);
 
 
 	    map raid_options = $[];
