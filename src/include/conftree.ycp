@@ -64,7 +64,11 @@
 	any func_ret = "";
 
 	repeat {
-
+	    if (size(AIConfig::GroupMap) == 0) {
+		UI::ErrorPopup("Error while reading configuration data");
+		ret = `back;
+		break;
+	    }
 	    if (haskey(AIConfig::GroupMap, tree_item)) {
 		string html = "";
 		foreach(`k,`v, AIConfig::ModuleMap, ``{

@@ -2,23 +2,28 @@
 
 <!--
    Merging two XML files
-   Version 1.3
-   GPL (c) Oliver Becker, 2000-08-13
+   Version 1.5
+   LGPL (c) Oliver Becker, 2002-01-29
    obecker@informatik.hu-berlin.de
 -->
 
-<xslt:transform version="1.1"
+<xslt:transform version="1.0"
                 xmlns:xslt="http://www.w3.org/1999/XSL/Transform"
-                xmlns:m="http://www.suse.com/merge"
+                xmlns:m="http://informatik.hu-berlin.de/merge"
                 exclude-result-prefixes="m">
+<xslt:output method="xml" cdata-section-elements="list source partitions YAST_INFO SYS_SW_SELLIST SYS_SW_ADDLIST SYS_PCMCIA_MODULES SYS_RC_CONFIG_VARS NET_IP_CONFIG SYS_PART_sda SYS_PART_sdb SYS_PART_sdc SYS_PART_sdd SYS_PART_hda SYS_PART_hdb SYS_PART_hdc SYS_PART_hdd USERLIST INETDLIST ETC_HOSTS MODULES_CONF GROUPLIST SYS_SW_AUXLIST ROUTES"/> 
 
-<xslt:output method="xml" cdata-section-elements="list source"/> 
 
 <!-- Normalize the contents of text, comment, and processing-instruction
      nodes before comparing?
      Default: yes -->
 <xslt:param name="normalize" select="'yes'" />
 
+<!-- Don't merge elements with this (qualified) name -->
+<xslt:param name="dontmerge" />
+
+<!-- If set to true, text nodes in file1 will be replaced -->
+<xslt:param name="replace" select="false()" />
 
 <!-- Variant 1: Source document looks like
      <?xml version="1.0"?>
@@ -31,10 +36,12 @@
 <xslt:template match="m:merge" >
    <xslt:variable name="file1" select="string(m:file1)" />
    <xslt:variable name="file2" select="string(m:file2)" />
+<!--
    <xslt:message>
       <xslt:text />Merging '<xslt:value-of select="$file1" />
       <xslt:text />' and '<xslt:value-of select="$file2"/>'<xslt:text />
    </xslt:message>
+-->
    <xslt:if test="$file1='' or $file2=''">
       <xslt:message terminate="yes">
          <xslt:text>No files to merge specified</xslt:text>
@@ -54,10 +61,12 @@
 <xslt:param name="with" />
 
 <xslt:template match="*">
+<!--
    <xslt:message>
       <xslt:text />Merging input with '<xslt:value-of select="$with"/>
       <xslt:text>'</xslt:text>
    </xslt:message>
+-->
    <xslt:if test="string($with)=''">
       <xslt:message terminate="yes">
          <xslt:text>No input file specified (parameter 'with')</xslt:text>
@@ -81,13 +90,7 @@
    <xslt:choose>
       <!-- Is $nodes1 resp. $nodes2 empty? -->
       <xslt:when test="count($nodes1)=0">
-      <xslt:variable name="typeZ">
-	<xslt:apply-templates mode="m:detect-type" select="$nodes2" />
-      </xslt:variable>
-    <xslt:if test="not($typeZ = 'text')">
          <xslt:copy-of select="$nodes2" />
-    </xslt:if>
-
       </xslt:when>
       <xslt:when test="count($nodes2)=0">
          <xslt:copy-of select="$nodes1" />
@@ -167,6 +170,15 @@
                      </xslt:call-template>
                   </xslt:when>
 
+                  <!-- $first1 is a text node and replace mode was
+                       activated -->
+                  <xslt:when test="$type1='text' and $replace">
+                     <xslt:call-template name="m:merge">
+                        <xslt:with-param name="nodes1" select="$rest1" />
+                        <xslt:with-param name="nodes2" select="$nodes2" />
+                     </xslt:call-template>
+                  </xslt:when>
+
                   <!-- else: $first1 is not in $rest2 or
                        $first1 is an empty text node -->
                   <xslt:otherwise>
@@ -230,7 +242,8 @@
       <!-- Are $node1 and $node2 element nodes with the same name? -->
       <xslt:when test="$type1='element' and $type2='element' and
                        local-name($node1)=local-name($node2) and
-                       namespace-uri($node1)=namespace-uri($node2)">
+                       namespace-uri($node1)=namespace-uri($node2) and
+                       name($node1)!=$dontmerge and name($node2)!=$dontmerge">
          <!-- Comparing the attributes -->
          <xslt:variable name="diff-att">
             <!-- same number ... -->

@@ -18,9 +18,6 @@
     import "XML";
 
 
-    include "autoinstall/partitioning.ycp";
-    include "autoinstall/lvm.ycp";
-    include "partitioning/partition_defines.ycp";
 
     // Put all scripts and autoinstall data in this directory for later access
     //
@@ -505,6 +502,10 @@
 
     global define void partitionSettings()
 	``{
+	
+	include "autoinstall/partitioning.ycp";
+	include "autoinstall/lvm.ycp";
+	include "partitioning/partition_defines.ycp";
 	Partitioning = Install["partitioning"]:[];
 
 	map init_targetmap = Storage::GetTargetMap();

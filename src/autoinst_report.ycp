@@ -150,14 +150,14 @@ Warning can be skipped in some places but should not be ignored.</p>");
 		      "errors": err,
 		      "warnings": war
 		    ]);
+	return ret;
     }
 
 
 
     set_contents();
     any result = nil;
-    any ret = nil;
-    map exported = $[];
+    any ret = nil;    
     repeat {
 	ret = UI::UserInput();
 	if (ret == `configure)
@@ -169,22 +169,20 @@ Warning can be skipped in some places but should not be ignored.</p>");
 
 	    if (result == `next || result == `finish)
 	    {
-		exported = Report::Export ();
-	    } else {
-		exported = settings;
+		settings = Report::Export ();
 	    }
-
+	    //Report::Set(settings);
 	    set_contents();
 	}
 	else if ( ret == `reset)
 	{
-	    exported = $[];
-	    Report::Set(exported);
+	    settings = $[];
+	    Report::Set(settings);
 	    set_contents();
 	}
     } until (ret == `back || ret == `next || ret ==`key || ret == `abort);
 
-    return [ret, exported];
+    return [ret, settings];
 }
 
 

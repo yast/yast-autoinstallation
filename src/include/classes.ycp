@@ -180,7 +180,7 @@ to be able to delete something."));
 	string source = "";
 	string profile_path = "";
 	AIConfig::PrepProfile();
-	string source = XML::YCPToXMLString(`profile, AIConfig::Profile);
+	source = XML::YCPToXMLString(`profile, AIConfig::Profile);
 	if (mode == `edit)
 	{
 	    thisProfile = select(filter(map profile,  AIClass::Profiles,``(profile["name"]:"" == name)),0,$[]);		
@@ -736,6 +736,7 @@ can load the resulting file into memory for further processing
 	}
 	
 	boolean error = false;
+	boolean skip = false;
 	foreach(`c, selected_profiles, ``{
 
 	    map profile = select(filter(`cc, AIClass::Profiles,
@@ -744,27 +745,33 @@ can load the resulting file into memory for further processing
 			       0,
 			       $[]
 			       );
+	    if (base == `empty && !skip) {
+		string f = AIClass::findPath(profile["name"]:"");
+		SCR::Execute(.target.bash, "cp " + f + " " + tmpdir + "/base_profile.xml");
+		skip = true;
+	    } else {
 
-	    y2debug("Working on profile: %1", profile);
-	    string base_text = "empty";
-	    if (base != `empty)
-		base_text = "current";
+		y2debug("Working on profile: %1", profile);
+		string base_text = "empty";
+		if (base != `empty)
+		    base_text = "current";
 	
-	    if (profile["name"]:"" != "" && !error) {
-		showFeedback(sformat("Merging %1 with %2 template", profile["name"]:"", base_text));
-		map saxonret = AIClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "/result.xml");
-		if (saxonret["exit"]:-1 != 0 ) {
-		    UI::ErrorPopup(sformat(_("Merge failed:\n %1"), saxonret["stderr"]:"error"));
-		    error =  true;
+		if (profile["name"]:"" != "" && !error) {
+		    showFeedback(sformat("Merging %1 with %2....", profile["name"]:"", base_text));
+		    map saxonret = AIClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "/result.xml");
+		    if (saxonret["exit"]:-1 != 0 ) {
+			UI::ErrorPopup(sformat(_("Merge failed:\n %1"), saxonret["stderr"]:"error"));
+			error =  true;
+		    }
+		    SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml " + tmpdir + "/base_profile.xml");
 		}
-		SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml " + tmpdir + "/base_profile.xml");
+		else {
+		    error = true;
+		}
 	    }
-	    else
-		error = true;
-	    
-	    
-	  
 	});
+
+	
 	if (error)
 	{
 	    clearFeedback();
