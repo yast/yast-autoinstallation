@@ -77,14 +77,14 @@
 
 
 	string helptext = _("
-<P>Please enter the partition information according to your
+<P>Enter the partition information according to your
 needs. All fields are required.</P>
-<P>For more information, please refer to the online documentation
+<P>For more information, refer to the online documentation.
 </P>
 ");
 	string title = "";
 	if (mode == `create )
-	    title = _("Create new Partition");
+	    title = _("Create New Partition");
 	else
 	    title = _("Edit Partition");
 
@@ -106,7 +106,7 @@ needs. All fields are required.</P>
 						     `Left(
 							   `RadioButton(`id(`max),
 									`opt(`notify),
-									_("Fill to &maximum allowable Space"),
+									_("Fill to &maximum allowable space"),
 									(partition_size == "max")
 									)
 							   ),
@@ -319,7 +319,7 @@ needs. All fields are required.</P>
 		    }
 		    else
 		    {
-			WarningPopup(_("The partition ID must between 0x00 and 0xff"));
+			WarningPopup(_("The partition ID must between 0x00 and 0xff."));
 			UI::SetFocus(`id(`fsid_point));
 			continue;
 		    }
@@ -455,11 +455,11 @@ needs. All fields are required.</P>
 
 	string help = _("
 <P>
-Please specify the drive name you want to configure
+Specify the drive name to configure
 and how the partitioning should be performed.
 </P>
 <P>
-For more information, please consult the documentation
+For more information, consult the documentation.
 </P>
 ");
 	string title = _("Configure Drives");
@@ -488,7 +488,7 @@ For more information, please consult the documentation
 								   )
 						      ),
 						`Left(`RadioButton(`id(`reuselisted),`opt(`notify),
-								   _("&Use the following (comma seperated) partitions"),
+								   _("&Use the following (comma separated) partitions"),
 								   (size(partitions)>0)
 								   )
 						      )
@@ -499,12 +499,12 @@ For more information, please consult the documentation
 			     `Left(
 				   `TextEntry(
 					      `id(`reuse_partitions),
-					      _("&Partition numbers (i.e 3,4,5)"),
+					      _("&Partition numbers (i.e., 3,4,5)"),
 					      mergestring(partitions, ",")
 					      )
 				   )
 			     ),
-		       `Left(`CheckBox(`id(`init), _("Initialize harddri&ve"), init))
+		       `Left(`CheckBox(`id(`init), _("Initialize hard dri&ve"), init))
 		       )
 		 );
 
@@ -559,8 +559,9 @@ For more information, please consult the documentation
 		    }
 		    else
 		    {
-			UI::MessagePopup(_("This device is already configured,
-Please choose or enter another device name."));
+			UI::MessagePopup(_("This device is already configured.
+Choose or enter another device name.
+"));
 			continue;
 		    }
 

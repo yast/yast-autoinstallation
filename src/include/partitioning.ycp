@@ -279,8 +279,8 @@
 		{
 		    // consistency check: a condition for the installation is not fullfilled
 		    // this condition is described within the reason
-		    reason = _("There are too many partitions left to
-create the required partitions for Linux.");
+		    reason = _("Too few partitions are marked for removal.
+To install Linux, select more partitions to remove.");
 		}
 		else if (size_of_region (selected) < minimal_size)
 		{
@@ -303,8 +303,8 @@ enough to contain a minimal installation.");
 	    {
 		// consistency check: a condition for the installation is not fullfilled
 		// this condition is described within the reason
-		reason = _("There are too many partitions left to
-create the required partitions for Linux.");
+		reason = _("Too few partitions are marked for removal.
+To install Linux, select more partitions to remove.");
 	    }
 	    else
 	    {
@@ -822,7 +822,7 @@ to contain a minimal installation.");
 				      device["nr"] =tointeger(substring(device["name"]:"/dev/md0", 7));
 				      
 				      
-				      device["device"]		= Storage::GetDeviceName( "/dev/md", device["nr"]:0 );
+				      device["device"]		= Storage::GetDeviceName( "/dev/md", substring(device["raid"]:"md0", 2) );
 				      device["fsid"] 		= device["partition_id"]:Partitions::fsid_native;
 				      device["region"] 		= [0 , 1];
 				      device["create"] 		= true;
@@ -873,7 +873,7 @@ to contain a minimal installation.");
 	string mount_point = currentPartition["mount"]:"";
 	list autoRegion = currentPartition["region"]:[];
 	
-	if (psize!= "" && psize!="auto")
+	if (psize!= "" && psize!="auto" && psize != "max")
 	{
 	    units = size_to_units(kmgt_str_to_byte(psize));
 	    if (units == 0) 

@@ -94,8 +94,8 @@
 				       )
 			     ),
 		       `VSpacing(1),
-		       `Left(`CheckBox(`id(`reboot), _("Reboot after installation?"), reboot)),
-		       `Left(`CheckBox(`id(`forceboot), _("Do not reboot after installation, even if system requires so?"), forceboot)),
+		       `Left(`CheckBox(`id(`reboot), _("Reboot after installation"), reboot)),
+		       `Left(`CheckBox(`id(`forceboot), _("Do not reboot after installation even if the system requires it"), forceboot)),
 		       `Left(`CheckBox(`id(`confirm), _("Confirm installation?"), confirm)),
 		       `Left(`CheckBox(`id(`debugboot), _("Confirm every step of the boot process?"), debugboot))
 		       
@@ -104,14 +104,15 @@
 
 
 	string help_text = _("<p>This part of the configuration is required for
-the auto-installation. Please select the values matching
-your hardware and preferences and press <b>next</b> to continue.</p>");
+the autoinstallation. Select the values matching
+your hardware and preferences then press <b>Next</b> to continue.</p>
+");
 
 
 
 	Wizard::ReplaceAbortButton(`Empty());
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
-	Wizard::SetContents(_("Environment and basic Options"),
+	Wizard::SetContents(_("Environment and Basic Options"),
 			    contents, help_text, true , true);
 
 	any ret = nil;
@@ -139,8 +140,9 @@ your hardware and preferences and press <b>next</b> to continue.</p>");
 		debugboot = UI::QueryWidget(`id(`debugboot), `Value);
 		confirm = UI::QueryWidget(`id(`confirm), `Value);
 		if (reboot && forceboot) {
-		    UI::WarningPopup(_("You can't request rebooting the machine
-and force booting it at the same time"));
+		    UI::WarningPopup(_("You cannot request rebooting the machine and
+force it not to boot at the same time.
+"));
 		    continue;
 		}
 		settings = $[
@@ -321,7 +323,7 @@ and force booting it at the same time"));
 	summary = Summary::AddLine(summary, (keyboard_name != "") ?
 				   keyboard_name : Summary::NotConfigured());
 
-	summary = Summary::AddHeader(summary, _("Timezone"));
+	summary = Summary::AddHeader(summary, _("Time Zone"));
 	summary = Summary::AddLine(summary, (clock["timezone"]:"" != "") ?
 				   clock["timezone"]:"" : Summary::NotConfigured());
 
@@ -333,7 +335,7 @@ and force booting it at the same time"));
 	summary = Summary::AddLine(summary, (clock["utc"]:false) ?
 				   _("GMT") : _("Local time"));
 
-	summary = Summary::AddHeader(summary, _("Reboot after installation?"));
+	summary = Summary::AddHeader(summary, _("Reboot after installation"));
 	summary = Summary::AddLine(summary, (mode["reboot"]:false) ?
 				   _("Yes") : _("No"));
 

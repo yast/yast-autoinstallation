@@ -55,13 +55,15 @@
 Enter the directory where all <em>control files</em> should be stored in
 the <b>Repository</b> field.</P>");
 
-	help = help + _("<P>In case you are using the classes feature
-of Autoyast, you also should enter the class directory. This is where
-all class files are stored</p>");
+	help = help + _("<P>If you are using the classes feature
+of Autoyast, also enter the class directory. This is where
+all class files are stored</p>
+");
 
 	help = help + _("<P>The <b>Package repository</b> is where you have copied
-the SuSE CDs. This directory must have a subdirectory called <b>suse</b> which
-contains all the packages.</p>");
+the SuSE CDs. This directory must have a subdirectory called <b>suse</b> that
+contains all the packages.</p>
+");
 
 
 	Wizard::SetContents(_("Preferences"),
@@ -144,7 +146,7 @@ contains all the packages.</p>");
 	else
 	{
 	    files = SCR::Read(.target.dir, AIConfig::TemplateRepository);
-	    tabHeader = _("Control file Template");
+	    tabHeader = _("Control File Template");
 	    caption = _("Current Template: ");
 	}
 
@@ -223,8 +225,10 @@ contains all the packages.</p>");
 			      `HStretch(),
 			      `MenuButton(_("Optio&ns"),
 					  [
-					   `item(`id (`media), _("Crea&te ISO")),
+					   `item(`id (`media), _("Crea&te ISO"))
+					   /*
 					   `item(`id (`netboot), _("Create Netboot Image"))
+					   */
 				     
 					   ]
 					  )
@@ -302,12 +306,14 @@ contains all the packages.</p>");
 	
 	string title = _("File Management");
 	string help = _("
-<P>Please select one of the listed <em>Control Files</em> and use the <b>Edit</b> button
-to load it or create a new Profile using the
-<b>New</b> button.</P>");
+<P>Select one of the listed <em>Control Files</em> and use the <b>Edit</b> button
+to load it or create a new profile using the
+<b>New</b> button.</P>
+");
 
-	help = help + _("<p>You can switch between complete control files, which are ready to be used
-and templates which contain class defintions and can be created using this dialog.</p>");
+	help = help + _("<p>You can switch between complete control files, which are ready to use,
+and templates, which contain class defintions and can be created using this dialog.</p>
+");
 
 	help = help + _("<p>Control files created from templates will be automatically copied into the
 <em>control file repository</em></p>");
@@ -361,7 +367,7 @@ and templates which contain class defintions and can be created using this dialo
 	    if (ret == `new && type != `templates)
 	    {
 		AIConfig::Profile = $[];
-		AIConfig::currentFile = NewFileName(  _("&New Profile Name"), _("New Profile"));
+		AIConfig::currentFile = NewFileName(  _("New Profile Name"), _("New Profile"));
 
 		if (AIConfig::currentFile!="")
 		{
@@ -397,7 +403,7 @@ and templates which contain class defintions and can be created using this dialo
 	    {
 		if (UI::QueryWidget(`id(`table), `CurrentItem) == nil)
 		{
-		    UI::WarningPopup(_("Please select a file first."));
+		    UI::WarningPopup(_("Select a file first."));
 		    continue;
 		}
 		if (type == `templates)
@@ -454,14 +460,16 @@ and templates which contain class defintions and can be created using this dialo
 	``{
 	Wizard::SetScreenShotName ("autoyast-saveDialog");
 	string help = _("
-<P>Now you can save the configuration you have created. After
+<P>Now you can save the configuration created. After
 saving the control file, you can continue editing and creating new
-configurations.</P>");
+configurations.</P>
+");
 
 	help = help + _("
-<P>Please check the syntax of the Profile before saving it. For more information
+<P>Check the syntax of the Profile before saving it. For more information
 about the syntax of the resulting <em>XML</em> file,
-consult the online documentation</p>");
+consult the online documentation.</p>
+");
 
 
 
@@ -540,8 +548,9 @@ templates directory?");
 
 
 		    if (AIConfig::currentFile == "") {
-			UI::WarningPopup(_("You must provide a file name
-to be able to save the current profile!"));
+			UI::WarningPopup(_("Provide a file name
+to save the current profile.
+"));
 			continue;
 		    }
 
@@ -553,7 +562,7 @@ to be able to save the current profile!"));
 		    }
 		    else
 		    {
-			UI::WarningPopup(_("Error occured while saving the file"));
+			UI::WarningPopup(_("An error occured while saving the file."));
 		    }
 
 		}
@@ -564,7 +573,7 @@ to be able to save the current profile!"));
 		}
 		else	if (ret == `next && AIConfig::changed)
 		{
-		    if (UI::YesNoHeadlinePopup(_("Configuration has been modifed"), _("Should the changes be saved?")))
+		    if (UI::YesNoHeadlinePopup(_("The configuration has been modifed."), _("Should the changes be saved?")))
 		    {
 			string filename = SaveFileAs(AIConfig::Repository + "/");
 
@@ -578,8 +587,9 @@ to be able to save the current profile!"));
 			}
 			if (AIConfig::currentFile == "")
 			{
-			    UI::WarningPopup(_("You must provide a file name
-to be able to save the current profile!"));
+			    UI::WarningPopup(_("Provide a file name
+to save the current profile.
+"));
 			    continue;
 			}
 
@@ -589,7 +599,7 @@ to be able to save the current profile!"));
 			}
 			else
 			{
-			    UI::WarningPopup(_("Error occured while saving the file"));
+			    UI::WarningPopup(_("An error occured while saving the file."));
 			}
 
 			AIConfig::changed=false;
@@ -626,9 +636,10 @@ to be able to save the current profile!"));
      */
     global define string invalidFileName() ``{
 	return(_("Invalid file name.
-Name can only contain letters, numbers and underscore,
-must begin with letter and must be
-at most 127 characters long."));
+Names can only contain letters, numbers, and underscore,
+must begin with letter, and must be
+127 characters long or less.
+"));
     }
 
 
@@ -643,7 +654,7 @@ information from this machine.</p>");
 				   `RadioButtonGroup(`id(`rbg),
 						     `VBox(
 							   `Left(
-								 `RadioButton(`id(`save),`opt(`notify), _("Save &result into Repository"), true)
+								 `RadioButton(`id(`save),`opt(`notify), _("Save &result into repository"), true)
 								 ),
 							   `Left(
 								 `HBox(
@@ -710,8 +721,9 @@ information from this machine.</p>");
 		    AIClone::extraPackageLocation = UI::QueryWidget(`id(`extra_loc), `Value);
 		    action = UI::QueryWidget(`id(`rbg), `CurrentButton);
 		    AIConfig::currentFile =  UI::QueryWidget(`id(`result), `Value);
-		    showFeedback( _("collecting system data,
-please wait...."));
+		    showFeedback( _("Collecting system data.
+Please wait....
+"));
 		    AIClone::exportProfile();
 		    clearFeedback();
 
@@ -797,8 +809,9 @@ please wait...."));
 	
 	string title = _("Load a Control File");
 	string help = _("
-<P>Please select one of the listed <em>Control Files</em> and use the <b>next</b> button
-to load it</P>");
+<P>Select one of the listed <em>Control Files</em> and use <b>Next</b> 
+to load it.</P>
+");
 
 
 
@@ -833,7 +846,7 @@ to load it</P>");
 		}
 		else
 		{
-		    UI::ErrorPopup(_("Please select a file"));
+		    UI::ErrorPopup(_("Select a file."));
 		    continue;
 		}
 		    

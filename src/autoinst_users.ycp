@@ -124,17 +124,19 @@
 			      )
 		       )
 		 );
-	string help = _("<p>This dialog gives you the possibility to set the root password
-and additionally create the primary system user or the admin user to get you going after
-the installation is finished.</p>");
+	string help = _("<p>This dialog gives the possibility to set the root password
+and additionally create the primary system user or the admin user for after the installation is finished.</p>
+");
 
-	help = help + _("<p>Beside those two primary accounts, you can add more users with more
-options by editing the control file created using this package.</p>");
+	help = help + _("<p>As well as those two primary accounts, add more users with more
+options by editing the control file created using this package.</p>
+");
 
 	help = help + _("<h2>Encryption</h2>");
-	help = help + _("<P>Select the encryption method you want to use for the passwords. Passwords
+	help = help + _("<P>Select the encryption method to use for the passwords. Passwords
 will be encrypted if a clear password is given to avoid having passwords stored in the control file in
-clear text</p>");
+clear text.</p>
+");
 
 	help = help + _("<b>IMPORTANT:</b><br>If you choose an encryption method other than the default (<b>DES</b>), make sure
 you also select this method in the <b>security configuration</b> to guarantee that all passwords on the system
@@ -162,9 +164,10 @@ are encrypted the same way</p>");
 		if (size (rpassword) < 5 && size (rpassword) > 1)
 		{
 		    // explain how a password has to be formed
-		    UI::MessagePopup(_("The password must have at least 5 characters.
-Please try again.
-  "));
+		    UI::MessagePopup(_("The password must have at least five characters.
+Try again.
+  
+"));
 		    continue;
 		}
 		any ret2 = findfirstnotof( rpassword, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|\?{[()]}" );
@@ -185,8 +188,8 @@ Please try again.
 		string valid_password_chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|\?{[()]}";
 		if  ( (size( username ) < 2 || size( username ) > 8 ) && username != "")
 		{
-		    UI::MessagePopup(_("The user name must be between 2 and 8 characters in length.
-Please try again.
+		    UI::MessagePopup(_("The user name must be between two and eight characters in length.
+Try again.
 "));
 		    continue;
 		}
@@ -199,7 +202,7 @@ Please try again.
 		    UI::MessagePopup(_("The user name may contain only
 lowercase letters and digits
 and must begin with a letter.
-Please try again.
+Try again.
 "));
 		    continue;
 		}
@@ -208,9 +211,10 @@ Please try again.
 		if (size (upassword) < 5 && size (upassword) > 1)
 		{
 		    // explain how a password has to be formed
-		    UI::MessagePopup(_("The password must have at least 5 characters.
-Please try again.
-  "));
+		    UI::MessagePopup(_("The password must have at least five characters.
+Try again.
+  
+"));
 		    continue;
 		}
 		ret2 = findfirstnotof( upassword, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|\?{[()]}" );
@@ -280,7 +284,7 @@ Please try again.
 	summary = Summary::AddHeader(summary, _("Users"));
 	if (size(settings)>0)
 	{
-	    summary = Summary::AddLine(summary,_("Users configured"));
+	    summary = Summary::AddLine(summary,_("Configured Users"));
 	    foreach(`u, users, ``{
 		summary = Summary::OpenList(summary);
 		summary = Summary::AddListItem(summary,u["username"]:"");
@@ -339,4 +343,4 @@ Please try again.
 
     return [ret, settings];
 }
-}
+

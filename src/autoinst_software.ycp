@@ -113,17 +113,20 @@
     define customPackages() ``{
 	string caption = _("Single Package Configuration");
 	string pactype = "suse";
-	string help = _("<p>Use thisdialog to select single packages. The listing of single selected
-packages has 2 different views. One with distribution packages anda second with external packages.
-</p>");
+	string help = _("<p>Use this dialog to select single packages. The listing of single selected
+packages has two different views:  one with distribution packages and a second with external packages.
+</p>
+");
 
-	help = help + _("<p>Make sure to enter the location of the external packages
-if you have entered any. The path to the location of the external packages is relative to the <b>suse</b> directory
-on the CD-ROM or on the NFS Server if you have copied the CDs to your local system.</p>");
+	help = help + _("<p>Enter the location of the external packages
+to use. The path to the location of the external packages is relative to the <b>suse</b> directory
+on the CD-ROM or on the NFS Server if you have copied the CDs to your local system.</p>
+");
 
 	
 	help = help + _("<p>You can also load a list of packages from a text file using the <em>Load</em> button.
-the file must contain a list of packages with one package per line.</p>");
+The file must contain a list of packages with one package per line.</p>
+");
 	
 	Wizard::SetContents(caption,
 			    packagesContent(), help, true, true);
@@ -242,11 +245,13 @@ the file must contain a list of packages with one package per line.</p>");
 		 );
 
 	
-	string help = _("<p>Please choose one of the pre-defined base package selection or
-add your own package using the <em>Custom Selection</em> field.</p>");
-	help = help + _("<p>Additionally, you can select one or more of the add-on selections listed</p>");
-	help = help + _("<p><b>Note</b><br>The listed selections are read from the running system,
-depending on what Product you are trying to auto-install these selections might not be available</p>");
+	string help = _("<p>Choose one of the predefined base package selections or
+add your own package using the <em>Custom Selection</em> field.</p>
+");
+	help = help + _("<p>Additionally, you can select one or more of the add-on selections listed.</p>");
+	help = help + _("<p><b>Note</b><br>The listed selections are read from the running system.
+Depending on what product to autoinstall, these selections might not be available.</p>
+");
 
 	
 	
@@ -337,6 +342,5 @@ depending on what Product you are trying to auto-install these selections might 
     } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
 
     return [ret, settings];
-}
 
 }

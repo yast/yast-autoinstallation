@@ -49,11 +49,13 @@
 
     define classConfiguration() ``{
 	string title = _("Class Configuration");
-	string help = _("<p>Choose one or more of the listed classes that the current control file should belong to.
-Adding classes to a control file will automaticallu turn the control file from a usable control file to a template.</p>");
+	string help = _("<p>Choose one or more of the listed classes to which the current control file should belong.
+Adding classes to a control file will automatically change the control file from a usable control file to a template.</p>
+");
 
-	help = help + _("<p>Later you will be able to generate an installable control file from this template by merging the
-classes.</p>");
+	help = help + _("<p>Later, you will be able to generate an installable control file from this template by merging the
+classes.</p>
+");
 	
 	map profiles = $[];
 	if (size(AIClass::Classes) == 0 )							      
@@ -138,8 +140,9 @@ classes.</p>");
 		if (n ==  0) {
 		  
 		    
-		    UI::ErrorPopup(_("You have to select at least 1 class configuration
-to be able to perform a merge"));
+		    UI::ErrorPopup(_("Select at least one class configuration
+to perform a merge.
+"));
 		    continue;
 		}
 		
