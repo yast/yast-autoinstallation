@@ -27,7 +27,7 @@
                 Profile::changed=false;
                 list pathComponents = splitstring(  (string)filename, "/");
                 string base = (string) select(pathComponents, size(pathComponents) -1, "default");
-                UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
+                UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), base));
             }
             else
             {
@@ -465,7 +465,7 @@
                     list pathComponents = splitstring(  (string)filename, "/");
 
                     string base = (string) select(pathComponents, size(pathComponents) -1, "default");
-                    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
+                    UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), base));
 
                     Profile::ReadXML((string)filename);
                 }
@@ -520,7 +520,7 @@
             {
                 Profile::Reset();
                 AutoinstConfig::currentFile = "";
-                UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
+                UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), "Untitled"));
             }
             else if (ret == `menu_exit) // EXIT
             {
