@@ -2,87 +2,76 @@
   <title>Closer look on control file resources</title>
   <para>
     This section features the most important parts of a control file for
-standard purposes. 
+    standard purposes. 
   </para>
-    <sect2 id="CreateProfile.General">
-      <title>
-	General Options
-      </title>
+  <sect2 id="CreateProfile.General">
+    <title>
+      General Options
+    </title>
 
-      <para>
-	This is a <emphasis>required</emphasis> section of the profile. General
-	options include all the settings related to the installation process and
-	the environment of the installed system. The following 4 properties are
-      required: language, keyboard, time zone, mouse.
-	
-      </para>
-    &example.generalOptions;
-      <para>
-	The <emphasis>reboot</emphasis> property is used to force a reboot
-	after initial system setup and before the system is booted for the
-	first time.
-      </para>
     <para>
-      Use the <emphasis>encryption_method</emphasis> property to setup the
-	encryption method you want to use on the target system. If not
-	set,<emphasis>DES</emphasis> is configured.
-      </para>
-      <para>
-	<emphasis>DES</emphasis>, the Linux default method, works in all
-	network environments, but it restricts you to passwords no longer than
-	eight characters. <emphasis>MD5</emphasis> allows longer passwords,
-	thus provides more security, but some network protocols don't support
-	this, and you may have problems with NIS.
-      </para>
-      <para>
-	By default, the auto-installation process has to be confirmed by the
-	user. The confirmation should be disabled if a full unattended
-	installation is desired. This options is used to control the
-	settings on a target system before anything is changed and can be
-	used when debugging. It is set to <emphasis>true</emphasis> by default
-	to avoid recursive installs when the system has to reboot after
-	changing the kernel or if  a reboot was requested.
-      </para>
-   
-    </sect2>
-    <sect2 id="CreateProfile.Reporting">
-      <title id="CreateProfile.Reporting.title">
-	Reporting
-      </title>
+      This is a <emphasis>required</emphasis> section of the profile. General
+      options include all the settings related to the installation process and
+      the environment of the installed system. The following 4 properties are
+      required: <emphasis>language</emphasis>,<emphasis> keyboard</emphasis>,<emphasis> clock</emphasis> and <emphasis>mouse</emphasis>.
+      
+    </para>
+    &example.generalOptions;
+    <para>
+      The <emphasis>reboot</emphasis> property in the <emphasis>mode</emphasis>
+      resource is used to force a reboot after initial system setup and before the system is booted for the
+      first time.
+    </para>
+    <para>
+      By default, the auto-installation process has to be confirmed by the
+      user. The confirmation should be disabled if a fully unattended
+      installation is desired. This options is used to control the
+      settings on a target system before anything is changed and can be
+      used when debugging. It is set to <emphasis>true</emphasis> by default
+      to avoid recursive installs when the system schedules a reboot due
+      to a different kernel than the default or if  a reboot was requested in
+      the control file.
+    </para>
+    
+  </sect2>
+  <sect2 id="CreateProfile.Reporting">
+    <title id="CreateProfile.Reporting.title">
+      Reporting
+    </title>
     
 
     &example.reporting;
-      <para>
-	The <emphasis>report</emphasis> resource manages 3 types of pop-ups
-	that may appear during installation.
-      </para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    Pop up messages (Normally only non-critical, informative messages)
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Warning messages (If something might go wrong)
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Error messages (In the case of an error)
-	  </para>
-	</listitem>
-      </itemizedlist>
-      <para>
-	Depending on your experience, you can skip, log and show (with timeout)
-	those messages. It is recommended to show all
-	<emphasis>messages</emphasis> with timeout. Warning can be skipped in
-	some places but should not be ignored.
-      </para>
-      <para>
-	The default setting in	auto-installation mode is to show all messages without logging and
-	with a timeout of 10 seconds.
-      </para>
+    <para>
+      The <emphasis>report</emphasis> resource manages 3 types of pop-ups
+      that may appear during installation.
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  Pop up messages (Normally only non-critical, informative messages)
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Warning messages (If something might go wrong)
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Error messages (In the case of an error)
+	</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Depending on your experience, you can skip, log and show (with timeout)
+      those messages. It is recommended to show all
+      <emphasis>messages</emphasis> with timeout. Warning can be skipped in
+      some places but should not be ignored.
+    </para>
+    <para>
+      The default setting in	auto-installation mode is to show all messages without logging and
+      with a timeout of 10 seconds.
+    </para>
 
     <note>
       <title>
@@ -90,12 +79,12 @@ standard purposes.
       </title>
       <para>
 	Note that not all messages during installation are controlled by the
-      <emphasis>report</emphasis> resource. Some critical messages concerning
-      package installation and partitioning will still show up ignoring your
-      settings in the <emphasis>report</emphasis> section.
+	<emphasis>report</emphasis> resource. Some critical messages concerning
+	package installation and partitioning will still show up ignoring your
+	settings in the <emphasis>report</emphasis> section.
       </para>
     </note>
-    </sect2>
+  </sect2>
 
 
 
@@ -594,28 +583,43 @@ The following example show
       </example>
       
     </sect2>
-    <sect2 id="CreateProfile.Network">
-      <title>
-	Network configuration
-      </title>
+  <sect2>
+    <title>Authentication</title>
+    <para>
+      Use the <emphasis>encryption</emphasis> property to setup the
+      encryption method you want to use on the target system. If not
+      set,<emphasis>DES</emphasis> is configured.
+    </para>
+    <para>
+      <emphasis>DES</emphasis>, the Linux default method, works in all
+      network environments, but it restricts you to passwords no longer than
+      eight characters. <emphasis>MD5</emphasis> allows longer passwords,
+      thus provides more security, but some network protocols don't support
+      this, and you may have problems with NIS.
+    </para>
+  </sect2>
+  <sect2 id="CreateProfile.Network">
+    <title>
+      Network configuration
+    </title>
 
-      <sect3 id="Configuration.Network.Devices">
-	<title>
-	  Network devices, DNS and Routing.
-	</title>
+    <sect3 id="Configuration.Network.Devices">
+      <title>
+	Network devices, DNS and Routing.
+      </title>
       <para>
 	Network configuration is used to connect a single  &company-suse;  Linux
-	  workstation to an Ethernet-based LAN or to configure dial-up
-	  connection. More complex configuration (multiple network cards,
-	  routing, etc.) is now also provided. With this module it's possible to
-	  configure (set-up) Ethernet Controllers and Token-Ring Controllers.
-	</para>
-	<para>
-	  To configure network settings and activate networking automatically,
-	  one global resource is  used to store the whole network configuration.
-	</para>
+	workstation to an Ethernet-based LAN or to configure dial-up
+	connection. More complex configuration (multiple network cards,
+	routing, etc.) is now also provided. With this module it's possible to
+	configure (set-up) Ethernet Controllers and Token-Ring Controllers.
+      </para>
+      <para>
+	To configure network settings and activate networking automatically,
+	one global resource is  used to store the whole network configuration.
+      </para>
       &example.network;
-      </sect3>
+    </sect3>
 
 
     <sect3 id="Configuration.Network.NIS">
@@ -648,127 +652,127 @@ The following example show
       <para>
 	The installed machine can be set up as
 	<emphasis>> &ldap;  client</emphasis> to authenticate  users with an
-	  Open &ldap;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
-	  and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
-	</para>
-	<para>
-	  If  &ldap;  is activated, <emphasis>NSS</emphasis> and <emphasis>PAM</emphasis>
-	  will be configured accordingly to use  &ldap;  for user authentication.
-	</para>
-      &example.ldapclient;
-      </sect3>
-      <sect3>
-	<title>
-	  NFS
-	</title>
-	<para>
-	  Batch operation of NFS Client module is not programmed in (nfs_write
-	  with options), but the already written routine, <command>nfs_client_save</command> can be
-	  used for auto-installation and <filename>/etc/fstab</filename> configuration.
-	</para>
-      &example.nfs;
-      </sect3>
-      
-      <sect3 id='Configuration.Network.Sendmail'>
-	<title>
-	  Mail Configuration (Sendmail or Postfix)
-	</title>
-	<para>
-	  For the mail configuration of the client the existing module for
-	  mail configuration available in the running system is used. This
-	  module enables very sophisticated mail configuration and should be
-	  used instead of editing the mail resource manually.
-	</para>
-      &example.mail;
-      </sect3>
-    </sect2>
-    <sect2 id="CreateProfile.Security">
-      <title>
-	Security settings
-      </title>
-      
-      <para>
-	Using the features of this module, you will be able to change the local
-	security settings on the target system.	The local security settings
-	include the boot configuration, login settings, password settings, some
-	user addition settings, and file permissions.
+	Open &ldap;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
+	and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
       </para>
       <para>
-	Configuring the security settings automatically corrosponds to the
-	<emphasis>Custom Settings</emphasis> in the security module available in
-	the running system which lets you create your own, customized
-	configuration.
-      </para>           
-    &example.security;
-    </sect2>
-
-
-    <sect2 id="Configuration.Security.users">
+	If  &ldap;  is activated, <emphasis>NSS</emphasis> and <emphasis>PAM</emphasis>
+	will be configured accordingly to use  &ldap;  for user authentication.
+      </para>
+      &example.ldapclient;
+    </sect3>
+    <sect3>
       <title>
-	Users
+	NFS
       </title>
       <para>
-	The root user and at least one normal user can be added during install
-	using data supplied in the control file. User data and passwords
-	(encrypted or clear text) are part of the <emphasis>configure</emphasis> resource in the
-	control file.
-      </para>     
+	Batch operation of NFS Client module is not programmed in (nfs_write
+	with options), but the already written routine, <command>nfs_client_save</command> can be
+	used for auto-installation and <filename>/etc/fstab</filename> configuration.
+      </para>
+      &example.nfs;
+    </sect3>
+    
+    <sect3 id='Configuration.Network.Sendmail'>
+      <title>
+	Mail Configuration (Sendmail or Postfix)
+      </title>
       <para>
+	For the mail configuration of the client the existing module for
+	mail configuration available in the running system is used. This
+	module enables very sophisticated mail configuration and should be
+	used instead of editing the mail resource manually.
+      </para>
+      &example.mail;
+    </sect3>
+  </sect2>
+  <sect2 id="CreateProfile.Security">
+    <title>
+      Security settings
+    </title>
+    
+    <para>
+      Using the features of this module, you will be able to change the local
+      security settings on the target system.	The local security settings
+      include the boot configuration, login settings, password settings, some
+      user addition settings, and file permissions.
+    </para>
+    <para>
+      Configuring the security settings automatically corrosponds to the
+      <emphasis>Custom Settings</emphasis> in the security module available in
+      the running system which lets you create your own, customized
+      configuration.
+    </para>           
+    &example.security;
+  </sect2>
+
+
+  <sect2 id="Configuration.Security.users">
+    <title>
+      Users
+    </title>
+    <para>
+      The root user and at least one normal user can be added during install
+      using data supplied in the control file. User data and passwords
+      (encrypted or clear text) are part of the <emphasis>configure</emphasis> resource in the
+      control file.
+    </para>     
+    <para>
       At least the root user should be configured during
-	auto-installation, which will insure you will be able to login after
-	installation is finished and of course it insure nobody else can login
-	into the system (if password is not set).
-      </para> 
+      auto-installation, which will insure you will be able to login after
+      installation is finished and of course it insure nobody else can login
+      into the system (if password is not set).
+    </para> 
     &example.users;
     
 
-    </sect2>
-    <sect2>
-      <title>Custom user scripts</title>
-      <para>
-	By adding scripts to the auto-installation process you can customize the
-	installation for your needs and take control in different stages of the
-	installation.
-      </para>
-      <para>
-	In the auto-installation process, three types of scripts can be executed:
-      </para>
-      <itemizedlist>
-	<listitem>
-	  <para>Pre-Install Scripts</para>
-	  <para>Executed before &yast2; does any real change of the system
-	    (Before partitioning and package installation)</para>	  
-	</listitem>
-	<listitem>
-	  <para>Post-Install Scripts</para>
-	  <para>These scripts are executed after &yast2; has completed the
-	    installation and after it has booted the system the first time.</para>
-	</listitem>
-	<listitem>
-	  <para>Chroot environment post-install scripts</para>
-	  <para>Chroot scripts are executed in the chroot environment before
-	    &yast2; boots for the first time and before the boot loader is installed.</para>
-	</listitem>
-      </itemizedlist>
-      <para>
-	All  but the pre-install scripts can be written in either shell or
-	perl script language. When added to the control file manually, the
+  </sect2>
+  <sect2>
+    <title>Custom user scripts</title>
+    <para>
+      By adding scripts to the auto-installation process you can customize the
+      installation for your needs and take control in different stages of the
+      installation.
+    </para>
+    <para>
+      In the auto-installation process, three types of scripts can be executed:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>Pre-Install Scripts</para>
+	<para>Executed before &yast2; does any real change of the system
+	  (Before partitioning and package installation)</para>	  
+      </listitem>
+      <listitem>
+	<para>Post-Install Scripts</para>
+	<para>These scripts are executed after &yast2; has completed the
+	  installation and after it has booted the system the first time.</para>
+      </listitem>
+      <listitem>
+	<para>Chroot environment post-install scripts</para>
+	<para>Chroot scripts are executed in the chroot environment before
+	  &yast2; boots for the first time and before the boot loader is installed.</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      All  but the pre-install scripts can be written in either shell or
+      perl script language. When added to the control file manually, the
       scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
-	the file syntax and other tags defined in the file.
-      </para>
+      the file syntax and other tags defined in the file.
+    </para>
     
     &example.scripts;
-      <para>
-	After installation is finished, the scripts and the output logs can be
-	found in the directory <filename>/var/adm/autoinstall</filename>. The
-	scripts are located in <filename>scripts</filename> and the output log of the
-	scripts is located in the <filename>log</filename> directory.
-      </para>
-      <para>
-	The log is the out put resulting when executing the shell scripts using
-	the following command:
-      </para>
-      <screen>
+    <para>
+      After installation is finished, the scripts and the output logs can be
+      found in the directory <filename>/var/adm/autoinstall</filename>. The
+      scripts are located in <filename>scripts</filename> and the output log of the
+      scripts is located in the <filename>log</filename> directory.
+    </para>
+    <para>
+      The log is the out put resulting when executing the shell scripts using
+      the following command:
+    </para>
+    <screen>
 <![CDATA[
 /bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
 ]]>

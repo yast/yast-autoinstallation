@@ -63,10 +63,19 @@ Please wait while the system is being prepared for auto-installation.
     ///////////////////////////////////////////////////////////////////////
     // Set it in Keyboard module.
     Progress::NextStage();
+    
     Progress::Title(_("Configuring Keyboard"));
+
+    map install = AutoInstall::Profile["install"]:$[];
+    map configure = AutoInstall::Profile["configure"]:$[];
+
+    
+    
     AutoInstall::generalSettings();
+    
     string keyboard = AutoInstall::Keyboard;
     y2milestone("Setting keyboard to: %1", keyboard);
+    
     Keyboard::SetConsole( keyboard );
     Keyboard::SetX11( keyboard );
 

@@ -131,24 +131,24 @@
 	});
 
 	if ( size(Install["classes"]:[])>0)
-	{
-	    y2milestone("Template Found");
+	{	    
 	    isTemplate = true;
 	}
 	else
-	{
-	    y2milestone("Not a Template");
+	{	    
 	    isTemplate = false;
 	}
 
-	if (Configure!=$[])
-	    Profile["configure"] = Configure;
-	else if (haskey(Profile,"configure"))
-	    Profile=remove(Profile,"configure");
+
 	if (Install!= $[])
 	    Profile["install"] = Install;
 	else if (haskey(Profile,"install"))
 	    Profile=remove(Profile,"install");
+	
+	if (Configure!=$[])
+	    Profile["configure"] = Configure;
+	else if (haskey(Profile,"configure"))
+	    Profile=remove(Profile,"configure");
 	
 	return;
 
@@ -276,113 +276,6 @@
 	Install = Profile["install"]:$[];
 	Configure = Profile["configure"]:$[];
 	return;
-    }
-
-    /**
-     * ConvertMap
-     *
-     */
-    
-    global define ConvertMap (map MyMap)
-	``{				
-	map ret = mapmap(`k,`v, MyMap,
-	    ``{
-	    if (is(v, map) || is(v,list)) {
-		return ([k,v]);
-	    }
-	    else
-	    {
-		return ([k,ConvertType(v)]);
-	    }
-	});
-	return ret;
-    }
-    
-    /**
-     * GetConfList
-     *
-     */
-    
-    global define GetConfList (string parent, string type, boolean convert )
-	``{
-	map Parent = Profile[parent]:$[];
-	list result =  Parent[type]:[];
-	if (!convert)
-	    return result;
-	
-	list ret = maplist(`v, result,
-	    ``{
-	    if (is(v, map) || is(v,list)) {
-		return (v);
-	    }
-	    else
-	    {
-		return (ConvertType(v));
-	    }
-	});
-	return ret;	
-    }
-
-    /**
-     * GetConfMap
-     *
-     */
-    
-    global define GetConfMap (string parent, string type, boolean convert)
-	``{
-	map Parent = Profile[parent]:$[];
-	map result = Parent[type]:$[];
-	if (!convert)
-	    return result;
-	
-	map ret = mapmap(`k,`v, result,
-	    ``{
-	    if (is(v, map) || is(v,list)) {
-		return ([k,v]);
-	    }
-	    else
-	    {
-		return ([k,ConvertType(v)]);
-	    }
-	});
-	return ret;
-		     
-    }
-
-    
-    /**
-     * ConvertType()
-     *
-     */
-    define ConvertType(any value) ``{	
-	if (is(value, boolean))
-	    return value;
-	else if (is(value, integer))
-	    return value;
-	else if (is(value, symbol))
-	    return value;
-	else if (is(value, string)) {
-	    if (value == "")
-		return value;	    
-	    else if (value == "true")
-	    {
-		return true;
-	    }
-	    else if ( value == "false")
-	    {		
-		return false;		
-	    }
-	    else if  ( findfirstnotof( value, "0123456789") == nil  )
-	    {		
-		return(tointeger(value));		
-	    }
-	    else
-	    {
-		return value;
-	    }
-	} else {
-	    return value;
-	}	
     }
 
 

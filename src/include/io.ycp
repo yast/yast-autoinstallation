@@ -64,6 +64,167 @@
 	return mkisofs;
     }
 
-   
+
+
+    /**
+     * Go through resources and properties and set types accordingly
+     *
+     */
+    global define ConvertType(any value) ``{
+	if (is(value, boolean))
+	    return value;
+	else if (is(value, integer))
+	    return value;
+	else if (is(value, symbol))
+	    return value;
+	else if (is(value, string)) {
+	    if (value == "")
+		return value;
+	    else if (value == "true")
+	    {
+		return true;
+	    }
+	    else if ( value == "false")
+	    {
+		return false;
+	    }
+	    else if  ( findfirstnotof( value, "0123456789") == nil  )
+	    {
+		return(tointeger(value));
+	    }
+	    else
+	    {
+		return value;
+	    }
+	} else {
+	    return value;
+	}
+    }
+
+
+    /**
+     * Get a resource configuration map from control file
+     * @param string parent
+     * @param string resource
+     * @param boolean convert types
+     * @return map configuration list
+     */
+    global define map GetMap (map parent, string resource, boolean convert)
+	``{
+	map result = parent[resource]:$[];
+
+	if (!convert)
+	{
+	    return result;
+	}
+
+	map ret = mapmap(`k,`v, result,
+			 ``{
+			     if (is(v, map) || is(v,list)) {
+				 return ([k,v]);
+			     }
+			     else
+			     {
+				 return ([k,ConvertType(v)]);
+			     }
+			 });
+	return ret;
+
+    }
+
+    /**
+     * Geta configuration list from Profile
+     * @param string parent
+     * @param string resource
+     * @param boolean convert types
+     * @return list configuration list
+     */
+    global define list GetList (map parent, string resource, boolean convert)``{
+	list result = parent[resource]:[];
+	if (!convert)
+	{
+	    return result;
+	}
+
+	list ret = maplist(`k, result,
+			 ``{
+			     if (is(v, map) || is(v,list)) {
+				 return (v);
+			     }
+			     else
+			     {
+				 return (ConvertType(v));
+			     }
+			 });
+	return ret;
+
+    }
+
+    /**
+     * Get Configuration Map
+     * @return map  Configuration Map
+     */
+    global define GetConfMap (string type, boolean convert)``{
+	map result = Configure[type]:$[];
+	if (!convert)
+	    return result;
+
+	map ret = mapmap(`k,`v, result,
+			 ``{
+			     if (is(v, map) || is(v,list)) {
+				 return ([k,v]);
+			     }
+			     else
+			     {
+				 return ([k,ConvertType(v)]);
+			     }
+			 });
+	return ret;
+
+    }
+    /**
+     * Get configuration list
+     *
+     */
+    global define GetConfList (string type, boolean convert )
+	``{
+	list result =  Configure[type]:[];
+	if (!convert)
+	    return result;
+
+	list ret = maplist(`v, result,
+			   ``{
+			       if (is(v, map) || is(v,list)) {
+				   return (v);
+			       }
+			       else
+			       {
+				   return (ConvertType(v));
+			       }
+			   });
+	return ret;
+    }
+
+    /**
+     * Convert a Map to accepted values
+     *
+     */
+    global define map ConvertMap (map MyMap)
+	``{
+	map ret = mapmap(`k,`v, MyMap,
+			 ``{
+			     if (is(v, map) || is(v,list)) {
+				 return ([k,v]);
+			     }
+			     else
+			     {
+				 return ([k,ConvertType(v)]);
+			     }
+			 });
+	return ret;
+    }
+
+
+
 
 }

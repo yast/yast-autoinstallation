@@ -14,9 +14,7 @@
     global define linuxrcOptions()``{
 
 
-	string method = eval(AILinuxrc::method);
-	
-
+	string method = eval(AILinuxrc::method);	
 	
 	map instMethods = $[
 			     "nfs"	: _("NFS"),
@@ -32,7 +30,9 @@
 	    return(`item(`id(k), v, (method == k)));
 	});
 
-	string help_text = _("Help");
+	string help_text = _("<P>The information enterd in this and the following dialogs will be used
+in the early boot process to determine the source of the installation and the initial system
+settings, i.e. network and system environment.</P>");
 
 	term isPoint =  `VBox(			     
 			      `HBox(
@@ -229,7 +229,10 @@
     	list aymethods = maplist(`k,`v, ayMethods, ``{
 	    return(`item(`id(k), v, (aymethod == k)));
 	});
-	string help_text = _("Help");
+	string help_text = _("<P>
+Use this dialog to enter the location of the <em>control file</em>. The <em>control file</em> can be
+located on the media directly accessible to the system (i.e. floppy, CD) or on the network and can
+be retrieved using several methods (HTTP, NFS, TFTP).</p>");
 	term contents =
 	    `Top(
 		 `VBox(		      

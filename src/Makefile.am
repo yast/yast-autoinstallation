@@ -11,6 +11,7 @@ client_DATA = \
 	autoinst_setup.ycp \
 	autoinst_init.ycp \
 	autoinst_linuxrc.ycp \
+	autoinst_x11.ycp \
 	autoinst_classes.ycp \
 	autoinst_configure.ycp \
 	autoinst_bootloader.ycp \
