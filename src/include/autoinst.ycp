@@ -6,12 +6,7 @@
  *
  * $Id$
  */
-
 {
-
-
-
-
 
     /**
      * Configure bootloader settings
@@ -115,17 +110,15 @@
 
     }
 
-    
-
     /**
      * Finish Auto-Installation by saving misc files
+     * @return void
      */
     global define void Finish ()
 	``{
 
 	AutoinstScripts::Write("chroot-scripts", false);
 
-	
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AutoinstScripts::scripts_dir);
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoinstScripts::logs_dir);
 
@@ -138,22 +131,21 @@
     /**
      * Linuxrc Settings
      * @param: linuxrc map
-     * @return modified linuxrc map
+     * @return map modified linuxrc map
      */
-
     global define map Linuxrc(map linuxrc) ``{
 	import "Bootloader";
 	import "AutoinstGeneral";
 
-	if (AutoinstGeneral::Mode["forceboot"]:false && Mode::hardBoot)
+	if (AutoinstGeneral::Mode["forceboot"]:false )
 	{
 	    linuxrc["Root"] = Bootloader::getRootDevice ();
 	}
 
-	if (AutoinstGeneral::Mode["reboot"]:false && !Mode::hardBoot)
+        // FIXME: This is not needed anymore, machine always does hard boot
+	if (AutoinstGeneral::Mode["reboot"]:false )
 	{
 	    linuxrc["Root"] = "reboot";
-	    Mode::hardBoot = true;
 	}
 
 	if (AutoinstGeneral::Mode["rebootmsg"]:false)
@@ -167,10 +159,5 @@
 	y2milestone("Linuxrc settings: %1", linuxrc);
 	return linuxrc;
     }
-
-
-
-
-    
 
 }
