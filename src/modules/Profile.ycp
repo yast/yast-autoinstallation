@@ -134,18 +134,18 @@
 	    {
 		resource = p;
 	    }
-	    string tomerge = d["X-SuSE-YaST-AutoinstMerge"]:"";
+	    string tomerge = d["X-SuSE-YaST-AutoinstMerge"]:"";	    
 	    
-	    y2milestone("resource: %1", resource);
 	    integer s = 0;
-	    if ( d["X-SuSE-YaST-AutoinstDataType"]:"map" == "map" )
-	    {
-		
-		s = size(Flat[resource]:$[]);
-	    }
-	    else
-	    {
-		s = size(Flat[resource]:[]) ;
+	    if ( tomerge == "") {
+		if ( d["X-SuSE-YaST-AutoinstDataType"]:"map" == "map" )
+		{		
+		    s = size(Flat[resource]:$[]);
+		}
+		else
+		{
+		    s = size(Flat[resource]:[]) ;
+		}
 	    }
 	    
 	    if ( s != 0 || tomerge != "")
@@ -169,13 +169,15 @@
 		    {
 			integer i = 0;
 			foreach( string res, splitstring(tomerge, ",") , ``{
-			    if ( MergeTypes[i]:"map" == "map" && Flat[res]:$[] != $[])
+			    if ( MergeTypes[i]:"map" == "map" )
 			    {
-				Configure[res] = Flat[res]:$[];
+				if (Flat[res]:$[] != $[])
+				    Configure[res] = Flat[res]:$[];
 			    }
-			    else if (  Flat[res]:[] != [] )
+			    else 
 			    {
-				Configure[res] = Flat[res]:[];
+				if ( Flat[res]:[] != [])
+				    Configure[res] = Flat[res]:[];
 			    }
 			    i = i + 1;
 			});

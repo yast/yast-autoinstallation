@@ -74,11 +74,9 @@
     
     list root_region = [];
 
-    include "partitioning/custom_part_dialogs.ycp";	
-    // include "partitioning/partition_defines.ycp";
-    include "autoinstall/partition_dialogs.ycp";    
+    include "partitioning/custom_part_dialogs.ycp";	    
     include "autoinstall/partitioning.ycp";
-    
+    include "autoinstall/autoinst_dialogs.ycp";
   
     /**
      * Dump the settings to a map, for autoinstallation use.
@@ -369,5 +367,104 @@ Make sure the control file has the correct syntax and values.
 	list<map> output = flatten(ret);
 	return( output );
     }
+
+    
+    /**
+     * build_id()
+     * Build the id for a partition entry in the man table.
+     * @parm disk_dev_name name of the devie e.g.: /dev/hda
+     * @parm nr number of the partition e.g.: 1
+     * @return string e.g.: 01./dev/hda
+     */
+    define string  build_id(  string disk_dev_name , any nr )
+	``{
+        return (sformat( "%1:%2", disk_dev_name, nr));
+    };
+
+    
+    /**
+     * Overview()
+     * Partitioning Overview
+     * @return term
+     */
+    global define list Overview()
+	``{
+
+	map allfs = FileSystems::GetAllFileSystems(true, true);
+	list drives_table = [];
+	
+	string id = "";
+	foreach(map d, AutoPartPlan,
+		``{
+	    id = d["device"]:"";
+	    term a = `item(`id(id), d["device"]:"", "", "", "", "", "" );	    
+
+	    drives_table = add (drives_table, a);
+	    
+	    list partitions = d["partitions"]:[];
+	    integer start_id = 1;
+	    
+	    if ( size (partitions) > 0 )
+	    {
+		foreach(map p, partitions, ``{
+		    id = build_id(d["device"]:"" , start_id );
+		    
+		    term b = `item(`id(id));
+		    b = add (b, "");
+
+		    b=add(b, p["mount"]:"" );
+		    b=add(b, p["size"]:"");
+		    		  		    		  
+		    if (!haskey(p, "filesystem_id"))
+		    {
+			b=add(b, Partitions::FsIdToString(p["partition_id"]:131));
+		    }
+		    else
+		    {
+			b=add(b, Partitions::FsIdToString(p["filesystem_id"]:131));
+		    }
+		    
+		    map fs = allfs[p["filesystem"]:`nothing]:$[];
+		    string fs_name = fs[`name]:"";
+		    
+		    b=add(b, fs_name);
+		    
+		    if ( size( p["region"]:[] ) > 0 )
+		    {
+			b=add(b, sformat("%1 - %2", select(p["region"]:[], 0 , 0), select(p["region"]:[], 1 , 0)));
+		    }
+		    else
+		    {
+			b=add(b, "");
+		    }
+
+		    drives_table = add(drives_table, b);
+		    start_id = start_id + 1;
+		});
+	    }
+
+	});
+	
+	integer entries = size(drives_table);
+	list reversed_table = [];
+	integer counter = entries;
+	
+	term tmp = `item(`id(`empty));
+	
+	while (counter != 0)
+	{
+	    reversed_table=add(reversed_table, select(drives_table, counter -1, tmp));
+	    counter = counter - 1;
+
+	}
+	y2debug("table: %1", drives_table );
+	return drives_table;
+	
+
+    }
+
+    
+
+    
 
 }

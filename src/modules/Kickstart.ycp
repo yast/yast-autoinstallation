@@ -1,12 +1,13 @@
 /**
- * File:	include/autoinstall/imports.ycp
+ * File:	modules/Kickstart.ycp
  * Package:	Autoinstallation Configuration System
- * Summary:	Imports older and foreign format
+ * Summary:	Imports older and foreign formats
  * Authors:	Anas Nashif<nashif@suse.de>
  *
  * $Id$
  */
 {
+    module "Kickstart";
     textdomain "autoinst";
     import "AutoinstConfig";
     import "AutoinstStorage";
@@ -16,27 +17,40 @@
     include "autoinstall/xml.ycp";
 
 
+    map ksConfig = $[];
+
+
+
+    /**
+     * Constructor
+     */
+    global define void Kickstart() ``{
+	return;
+    }
     
     /**
+     * Read()
      * Read a Kickstart file
+     * @return map kickstart configuration.
      */
-    global define map readKS(string ks)``{
+    global define map Read(string file)``{
 
-	map ksConfig = (map) SCR::Read(.kickstart, ks);
+	ksConfig = (map) SCR::Read(.kickstart, file);
 	SCR::UnmountAgent(.kickstart);
-	if (ksConfig == $[])
+	
+	if (ksConfig == $[] || ksConfig == nil)
 	{
 	    return $[];
 	}
 	y2debug("Kickstart config raw: %1", ksConfig);
-
-	return ksConfig; 
     }
     
-    /**       
-     * KS Users
+    /**
+     * Users()
+     * Read KS Users (root)
+     * @return list user list
      */
-    global define list ks_users (map ksConfig)
+    define list Users()
 	``{	
 	map ks_user =  ksConfig["users"]:$[];
 	list users = [];
@@ -47,13 +61,14 @@
 
 	users = add(users, root);
 	return users;
-
-
     }
-    /**       
-     * KS X11
+    
+    /**
+     * X11
+     * Read KS X11
+     * @return map x11 configuration
      */
-    global define map ks_x11(map ksConfig)
+    define map X11()
 	``{
 	
 	if (ksConfig["skipx"]:0 != 1 && haskey(ksConfig,"xconfig"))
@@ -103,10 +118,12 @@
     }
 
     
-    /**       
+    /**
+     * General()
      * KS General
+     * @return map general configuration
      */
-    global define map ks_general(map ksConfig)
+    define map General()
 	``{
 	map general = $[];
 
@@ -170,7 +187,7 @@
     /**       
      * KS Scripts
      */
-    global define map ks_scripts(map ksConfig)
+    define map Scripts()
 	``{
 	map scripts = $[];
 	list postscripts = [];
@@ -206,7 +223,7 @@
     /**       
      * KS Partitioning
      */
-    global define list ks_part (map ksConfig) ``{
+    define list Partitioning () ``{
 	
 	y2milestone("KS Partitioning: %1", ksConfig["partitioning"]:$[]);	
 	import "Partitions";
@@ -352,9 +369,7 @@
 	    drive["partitions"] = dp;
 	    return (drive);
 	    
-	});
-
-	
+	});	
 	y2milestone("Drives: %1", newdrives);
 	return newdrives;
 	
@@ -363,7 +378,7 @@
     /**
      * KS RAID
      */   
-    global define list ks_raid (map ksConfig)
+    define list Raid ()
 	``{
 
 	list raid = maplist(string d, map data, ksConfig["raid"]:$[], ``{
@@ -381,7 +396,7 @@
     /**
      * KS Network
      */
-    global define list  ks_network (map ksConfig) ``{	
+    define list  Network () ``{	
 	import "IP";
 	map init = $[];
 	map networking = $[];
@@ -421,9 +436,6 @@
 	    }
 	    return (interface);
 	});
-
-
-
 
 	list searchlist = [];
 
@@ -475,7 +487,7 @@
     /**
      * KS Authentication
      */
-    global define list ks_auth(map ksConfig) ``{
+    define list Authentication() ``{
 
 	map auth = ksConfig["auth"]:$[];
 
@@ -521,7 +533,7 @@
     /**
      * KS Bootloader
      */
-    global define map ks_bootloader (map ksConfig) ``{
+    define map Bootloader () ``{
 
 	map bl = ksConfig["bootloader"]:$[];
 	map bootloader = $[];
@@ -544,10 +556,12 @@
 	return bootloader;
     }
 
+
+    
     /**
      * KS Software
      */
-    global define map  ks_software (map ksConfig)
+    define map  Software ()
 	``{
 
 	map software = $[];
@@ -715,7 +729,7 @@
     /**       
      * Kickstart to AutoYaST main
      */
-    global define map ks2ay(map ksConfig) ``{
+    global define map KS2AY() ``{
 
 	map profile = $[];
 	map general = $[];
@@ -723,19 +737,19 @@
 	map configure = $[];
 
 	// Scripts
-	configure["scripts"] 	= ks_scripts(ksConfig);
-	configure["networking"] = (map) select(ks_network(ksConfig), 0 , $[]);
-	configure["nis"] 	= (map) select(ks_auth(ksConfig), 0 , $[]);
-	configure["ldap"] 	= (map) select(ks_auth(ksConfig), 1 , $[]);
-	configure["security"] 	= (map) select(ks_auth(ksConfig), 2 , $[]);
-	configure["users"]	= ks_users (ksConfig);
+	configure["scripts"] 	= Scripts();
+	configure["networking"] = (map) select(Network(), 0 , $[]);
+	configure["nis"] 	= (map) select(Authentication(), 0 , $[]);
+	configure["ldap"] 	= (map) select(Authentication(), 1 , $[]);
+	configure["security"] 	= (map) select(Authentication(), 2 , $[]);
+	configure["users"]	=  Users ();
 
-	install["init"] 	= (map) select(ks_network(ksConfig), 1 , $[]);
-	install["software"] 	=  ks_software(ksConfig);
-	install["partitioning"] = ks_part(ksConfig);
-	install["raid"] 	= ks_raid(ksConfig);
-	install["bootloader"] 	= ks_bootloader(ksConfig);
-	install["general"] 	= ks_general(ksConfig);
+	install["init"] 	= (map) select(Network(), 1 , $[]);
+	install["software"] 	= Software();
+	install["partitioning"] = Partitioning();
+	install["raid"] 	= Raid();
+	install["bootloader"] 	= Bootloader();
+	install["general"] 	= General();
 
 	profile["install"] 	= install;
 	profile["configure"] 	= configure;
@@ -743,7 +757,6 @@
 
 	y2debug("Profile : %1", profile);
 	return profile;
-
     }
     
 }

@@ -11,7 +11,7 @@
      * Language
      *
      */
-    global define symbol LanguageDialog()
+    define symbol LanguageDialog()
 	``{
 	import "Language";
 	string language = AutoinstGeneral::language;
@@ -90,7 +90,7 @@ Choose the new <b>language</b> for your SuSE Linux system.
     /**
      * Keyboard
      */
-    global define symbol KeyboardDialog() ``{
+    define symbol KeyboardDialog() ``{
 
 	// create the wizard dialog
 	//
@@ -103,7 +103,7 @@ Choose the new <b>language</b> for your SuSE Linux system.
     /**
      * Timezone
      */
-    global define symbol TimezoneDialog() ``{
+    define symbol TimezoneDialog() ``{
 	import "Timezone";
 
 	string tz = AutoinstGeneral::Clock["timezone"]:"";
@@ -131,7 +131,7 @@ Choose the new <b>language</b> for your SuSE Linux system.
     /**
      * Mouse
      */
-    global define symbol MouseDialog() ``{
+    define symbol MouseDialog() ``{
 
 	// create the wizard dialog
 	//
@@ -143,7 +143,7 @@ Choose the new <b>language</b> for your SuSE Linux system.
     /**
      * Main dialog
      */
-    global define  symbol ModeDialog() ``{
+    define  symbol ModeDialog() ``{
 
 
 	map mode		= AutoinstGeneral::mode;
@@ -205,7 +205,7 @@ force it not to boot at the same time.
      * Dialog for General Settings
      *
      */
-    global define symbol generalSequence () ``{
+    define symbol generalSequence () ``{
 	map dialogs = $[
 			"language"	: ``(LanguageDialog()),
 			"keyboard"	: ``(KeyboardDialog()),
