@@ -163,7 +163,9 @@ needs. All fields are required.</P>
 	map return_value     = new_val;
 
 	if (partition_size == "auto")
+	{
 	    UI::ChangeWidget(`id(`partsize) , `Enabled, false);
+	}
 
 	any ret = nil;
 	boolean pdisk = false; // TODO
@@ -319,7 +321,7 @@ needs. All fields are required.</P>
 		    }
 		    else
 		    {
-			WarningPopup(_("The partition ID must between 0x00 and 0xff."));
+			Report::Warning(_("The partition ID must between 0x00 and 0xff."));
 			UI::SetFocus(`id(`fsid_point));
 			continue;
 		    }
@@ -329,16 +331,25 @@ needs. All fields are required.</P>
 	    if ( ret == `ok )
 	    {
 
-
 		if (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max )
+		{
 		    return_value=add(return_value,"size","max");
-
+		}
 		else if (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto )
+		{
 		    return_value=add(return_value,"size","auto");
+		}
 		else
 		{
 		    string partitionSize =  UI::QueryWidget(`id(`partsize),   `Value);
-		    return_value=add(return_value,"size",partitionSize);
+		    if (  partitionSize == "") {
+			Report::Warning(_("You have to enter the partition size."));
+			continue;
+		    }
+		    else
+		    {
+			return_value=add(return_value,"size",partitionSize);
+		    }
 		}
 
 

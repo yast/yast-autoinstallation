@@ -60,6 +60,21 @@
 	return (units * bytes_per_unit)  -  bytes_per_unit + 1;
     };
 
+
+
+    global define map Network() ``{
+	import "Lan";
+	import "Progress";
+
+	Progress::off();
+	Lan::Read();
+      
+	Progress::on();
+	map lan = Lan::Export();
+	return lan;
+
+    }
+    
     /**
      * Create a partition plan for the calling client
      * @return list partition plan
@@ -101,9 +116,10 @@
 	    map drive = $[];
 	    drive["partitions"]	= p;
 	    drive["device"]	= k;
-		if (size(p) > 0 ) {
-			drive["use"]	= "all";
-		}
+	    if (size(p) > 0 )
+	    {
+		drive["use"]	= "all";
+	    }
 
 	    return drive;
 	});
@@ -204,21 +220,109 @@
 	return general;
     }
 
+
+
+    define map Sound () ``{
+
+	import "Sound";
+	import "Joystick";
+	
+	Sound::Read(``{});
+	Joystick::Read(``{});
+
+	map sound = Sound::Export();
+	return sound;
+    }
+
+
+    define map Printer() ``{
+
+	import "Printer";
+
+	Printer::Read();
+
+	map printer = Printer::Export();
+	return printer;
+	    
+    }
+
+     define map Nis() ``{
+
+	import "Nis";
+
+	Nis::Read();
+
+	map nis = Nis::Export();
+	return nis;
+	    
+    }   
+
+
+     define map NfsServer() ``{
+
+	 import "NfsServer";
+
+	 NfsServer::Read();
+
+	 map settings = NfsServer::Export();
+	 return settings;
+	    
+     }
+
+     define map Mail() ``{
+
+	 import "Mail";
+
+	 Mail::Read(``{});
+
+	 map settings = Mail::Export();
+	 return settings;
+	    
+     }
+      
+     define map NfsClient() ``{
+
+	 import "Nfs";
+
+	 Nfs::Read(``{});
+
+	 map settings = Nfs::Export();
+	 return settings;
+	    
+     }
+
+ 
+
+      
     /**
      * Build the profile
      * @return map Profile
      */
     global define void constructProfile()
 	``{
+	
 	map Install = $[];
+	map Configure = $[];
+	Configure["networking"] = Network();
+	Configure["sound"] = Sound();
+	Configure["printer"] = Printer();
+	Configure["nis"] = Nis();
+	Configure["nfs_server"] = NfsServer();
+	Configure["nfs"] = NfsClient();
+	Configure["mail"] = Mail();
+	
 	Install["partitioning"] = Partitioning();
 	Install["software"] = Software();
 	Install["general"] = General();
 	Install["bootloader"] = Bootloader();
 	Profile["install"] = Install;
+	Profile["configure"] = Configure;
 	return;
     }
 
+
+
+    
 
 
     /**
