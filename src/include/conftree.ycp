@@ -148,7 +148,7 @@
 	    }	   	    	    	    
 	    // y2milestone("FLAT b: %1", eval(Profile::Flat));
 	    
-	} until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key || contains(menuitems, ret) );		
+	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key || contains(menuitems, ret) );		
 	
 	return ret;
     }
@@ -531,7 +531,7 @@
 		
 		}
 
-	    } until ( ret == `exit || ret == `back );
+	    } until ( ret == `exit || ret == `cancel || ret == `back );
 
 	Wizard::RestoreHelp("");
 	Wizard::RestoreScreenShotName ();
