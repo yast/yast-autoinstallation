@@ -13,22 +13,22 @@
     include "ui/common_messages.ycp";
 
 
-    
+
     global list pre = [];
     global list post = [];
     global list chroot = [];
-    
+
     global list merged = [];
 
     /**
      * Constructor
      */
-    
+
     define void AIScripts()
 	``{
 	merged = mergeScripts();
     }
-    
+
     /**
      * Set module data
      * @return void
@@ -59,9 +59,9 @@
 	    else if (s["type"]:"" == "post-scripts")
 		post = add(post,s);
 	    else if (s["type"]:"" == "chroot-scripts")
-		chroot = add(chroot,s);	    
+		chroot = add(chroot,s);
 	});
-	
+
 
 	// clean
 	return ($["pre-scripts": maplist (`p, pre,
@@ -69,14 +69,14 @@
 	    return ($["filename":p["filename"]:"",
 		    "interpreter": p["interpreter"]:"",
 		    "source":p["source"]:""
-		    ]);	    
+		    ]);
 	}),
 		 "post-scripts": maplist (`p, post,
 					  ``{
 		     return ($["filename":p["filename"]:"",
 			     "interpreter": p["interpreter"]:"",
 			     "source":p["source"]:""]
-			     );	    
+			     );
 		 }),
 		 "chroot-scripts": maplist (`p, chroot,
 					    ``{
@@ -84,10 +84,10 @@
 			     "interpreter": p["interpreter"]:"",
 			     "source":p["source"]:""
 			     ]);
-	    
+
 		 })
 		 ]);
-				
+
     }
 
 
@@ -101,15 +101,15 @@
     global define boolean Import(map s)
 	``{
 	if (size(s) == 0)
-	    return true;	
+	    return true;
 	Set(s);
-	
+
 	return true;
     }
 
 
 
-    
+
     /**
      * @return  script configuration summary dialog
      */
@@ -123,25 +123,25 @@
 						    s["interpreter"]:"Unknown")
 					      );
 				  });
-	term contents =	 
+	term contents =
 	    `VBox(
 		  `Left(
 			`Label(_("Available Scripts"))
 			),
 		  `Table( `id(`table), `opt(`notify),
 			  `header(_("Script Name"), _("Type"), _("Interpreter")),
-			  allscripts			 
+			  allscripts
 			  ),
 		  `HBox(
 			`PushButton(`id(`new),  NewButtonLabel()),
 			`PushButton(`id(`edit), EditButtonLabel()),
 			`PushButton(`id(`delete), DeleteButtonLabel())
-			)		  
+			)
 		  );
 	return contents;
     }
 
-    
+
     /**
      * delete a script from a list
      * @param script name
@@ -157,7 +157,7 @@
     }
 
 
-    
+
     /**
      * Add or edit a script
      * @param scriptName script name
@@ -167,7 +167,7 @@
      * @return -
      */
     global define void AddEditScript(string scriptName, string source, string interpreter, string type)
-    ``{	
+    ``{
 	list newScripts = [];
 	boolean modified = false;
 	merged = maplist (`script , merged, ``{
@@ -194,23 +194,23 @@
 	    script=add(script,"source", source);
 	    script=add(script,"interpreter", interpreter);
 	    script=add(script,"type", type);
-	    
+
 	    merged=add(merged,script);
 	}
 	return;
     }
 
 
-    
 
 
 
-    
+
+
     /**
      * return type of script as formatted string
      * @param script type
      * @return type as translated string
-     */ 
+     */
     define string typeString(string type)``{
 	if (type == "pre-scripts")
 	{
@@ -226,9 +226,9 @@
 	}
 	return _("Unknown");
     }
-	
 
-    
+
+
     /**
      * merge all types of scripts into one single list
      * @param -
@@ -237,7 +237,7 @@
     define list mergeScripts () ``{
 	list result =	maplist (`p, pre,
 				 ``{
-				     p = add(p,"type","pre-scripts");				     
+				     p = add(p,"type","pre-scripts");
 				     return p;
 				 });
 	result = union(result, 	maplist (`p, post,
@@ -245,7 +245,7 @@
 				     p = add(p,"type","post-scripts");
 				     return p;
 				 })
-		       );	
+		       );
 	result = union(result, 	maplist (`p, chroot,
 				 ``{
 				     p = add(p,"type","chroot-scripts");
@@ -254,5 +254,5 @@
 		       );
 	return result;
     }
-	
+
 }

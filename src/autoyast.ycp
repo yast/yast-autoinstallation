@@ -39,6 +39,35 @@
     include "autoinstall/io.ycp";
 
 
+    define initPM ()
+	``{
+	UI::OpenDialog(`opt(`decorated ),`Label(_("Reading package information; One moment please...")));
+
+	// start package manager
+	list sources = Pkg::SourceStartCache(true);
+	if (size (sources) <= 0)
+	{
+	    UI::CloseDialog();
+	    return `unknown_descr;
+	}
+	string tmprep = SCR::Read(.target.tmpdir);
+	SCR::Execute(.target.mkdir, tmprep);
+	y2milestone("Fake root %1", tmprep);
+
+	if (tmprep != nil)
+	{
+	    Pkg::TargetInit (tmprep, true);
+	}
+
+
+	UI::CloseDialog();
+
+	return `found_descr;
+
+    };	// initPM
+
+	
+    
     boolean popup_open = false;
     global map dialogs = $[
 			   "configurationType"	:	``(   configurationType() ),
@@ -376,6 +405,8 @@
 				    ConfigurationTypeHelp(),
 				    BackButtonLabel (),
 				    NextButtonLabel ());
+
+	initPM();
 	any ret = nil;
 	while (true)
 	{

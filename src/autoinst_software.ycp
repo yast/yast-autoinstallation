@@ -12,14 +12,14 @@
     import "Mode";
     Mode::config = true;
 
-    import "AIPackages";
+
     import "Wizard";
+    import "Summary";
     import "Report";
     include "wizard/sequencer.ycp";
     include "ui/common_messages.ycp";
     include "autoinstall/dialogs.ycp";
-
-    y2milestone("Selections: %1", AIPackages::Selections);
+    
 
     list args = WFM::Args ();
 
@@ -33,7 +33,7 @@
 	y2error ("Bad argument: %1", WFM::Args (0));
 	return false;
     }
-    list    possible_start_dialogs = ["selections", "custom", "single"];
+
     map settings = $[];
     {
 	integer i = 0;
@@ -45,248 +45,229 @@
 	}
     }
 
-    map dialogs = $[
-		    "selections": 	``(   Selections() ),
-		    "custom"	:	``(   customPackages() )
-    ];
 
 
-    map sequence = $[
-		    "ws_start" 	: "selections",
-		    "selections":
-		    $[
-		      `abort 	: `abort,
-		      `next	: "custom",
-		      `back	: `back
-		    ],
-		    "custom"	:
-		    $[
-		      `abort 	: `abort,
-		      `next	: `next,
-		      `back	: "selections"
-		    ]
-    ];
+
+    string base = settings["base"]:"Custom";
+
+    list addons = settings["addons"]:[];
+
+    list pacs = settings["packages"]:[];
+
+    map software = settings;
+    map  sourceData	= Pkg::SourceGeneralData(sources[0]:-1);
+    map productData	= Pkg::SourceProductData(sources[0]:-1);
+    map mediaData	= Pkg::SourceMediaData(sources[0]:-1);
+    y2milestone ("sourcedata: (%1), productdata(%2), mediadata(%3)", sourceData, productData, mediaData);
 
 
-    y2milestone("Imported: (%1)", settings);
-    AIPackages::Import ( settings );
-
-
-    define packagesContent() ``{
-	list pacs = maplist(string pac, AIPackages::pacs, ``{
-	    return (`item(`id(pac), pac));
-	});
-		
-	term contents =
-	    `Top(
-		 `VBox(
-		       `Table(`id(`pacs), `opt(`notify,`immediate), `header(_("Packages")),
-			      pacs
-			      ),		     
-		       `HBox(
-			     `PushButton(`id(`add), AddButtonLabel()),
-			     `PushButton(`id(`delete), DeleteButtonLabel())			     
-			     )
-		       
-		       )
-		 );
-	return contents;
-    }
-
-
+    
     /**
-     *
-     *
+     * @return Html formatted configuration summary
      */
-    define customPackages() ``{
-	string caption = _("Single Package Configuration");	
-	string help = _("<p>Use this dialog to select single packages. The listing of single selected
-packages has two different views:  one with distribution packages and a second with external packages.
-</p>
-");
-	/*
-	help = help + _("<p>You can also load a list of packages from a text file using the <em>Load</em> button.
-The file must contain a list of packages with one package per line.</p>
-");
-	*/
+    define string Summary()``{
+	string summary = "";
 	
-	Wizard::SetContents(caption,
-			    packagesContent(), help, true, true);
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();	    
-	    if ( ret == `add)
-	    {
-		string pac = NewFileName(  _("Add Packages"), _("Packa&ges"));
-		if (pac!="")
-		{		   
-		    AIPackages::pacs=add(AIPackages::pacs,pac);		 
-		}
-
-		Wizard::SetContents(caption,
-			    packagesContent(), help, true, true);
-		continue;
-	    }
-	    else if ( ret == `delete)
-	    {
-		 string selpac = UI::QueryWidget(`id(`pacs), `CurrentItem);
-		 if (is(selpac,string) && selpac !="")
-		 {
-		     if (contains(AIPackages::pacs, selpac))
-			 AIPackages::pacs=filter(`p , AIPackages::pacs,``(p!=selpac));
-		 }
-
-		 
-		 Wizard::SetContents(caption,
-			    packagesContent(), help, true, true);
-		 continue;
-	    }
-	    else if ( ret == `load)
-	    {
-		Report::Error("Not ready yet");
-	    }	    
-
-	} until (ret == `back || ret ==`next || ret == `abort);
-	return ret;
-    }
-
-
-    define Selections()
-	``{
-	string base		= AIPackages::base;
-	list addons		= AIPackages::addons;
-	term baseconfs		= `VBox();
-	list categories	= [];
-	list base_selections	= [];
-	list pacsels		= AIPackages::Selections;
-
-	foreach(`sel, pacsels, ``{
-	    string selid	= select(sel, 0, "");
-	    string group	= select(sel, 2, "");
-	    string seldesc	= select(sel, 1, "");
-	    if ( group == "baseconf" )
-	    {
-		baseconfs = add(baseconfs, `Left(`RadioButton(`id(selid),`opt(`notify, `autoShortcut),
-							      seldesc,
-							      (base== selid))));
-		base_selections = add(base_selections, selid);
-	    }
-
-	});
-
-	foreach(`sel, pacsels, ``{
-	    string   selid   = select(sel, 0, "");
-	    string   group   = select(sel, 2, "");
-	    string   seldesc = select(sel, 1, "");
-
-	    if ( group == "addon" )
-	    {
-		categories = add(categories, `item(`id(selid), seldesc, contains(addons, selid)));
-	    }
-
-	});
-
-	baseconfs = add(baseconfs, `VBox(
-					 `Left(
-					       `RadioButton(`id("custom"),
-							    `opt(`notify),
-							    _("&Custom Selection"),
-							    (!contains(base_selections,base))
-							    )
-					       ),
-					 `HBox(
-					       `HWeight(20, `Empty()),
-					       `HWeight(40, `TextEntry(`id(`customsel), _("Selec&tion"), (!contains(base_selections,base))?base:"")
-							),
-					       `HWeight(40,`Empty())
-					       )
-
-					 )
-			);
-
-	term contents =
-	    `Top(
-		 `VBox(
-		       `VSpacing(0.5),
-		       `Frame( _("Base package selections:"),
-			       `VBox(
-				     `RadioButtonGroup( `id(`bgroup), baseconfs)
-
-				     )
-			       ),
-		       `VSpacing(0.5),
-		       `Frame(
-			      _("Add-Ons:"),
-			      `MultiSelectionBox( `id(`addons), _("Cho&ose one or more of the following selections:"),
-						   categories )
-			       )
-		       )
-		 );
-
+	summary = Summary::AddHeader(summary, _("Base Selection"));
+	summary = Summary::AddLine(summary, (base != "") ?
+				   software["base"]:"None" : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Add-on Selections"));
 	
-	string help = _("<p>Choose one of the predefined base package selections or
-add your own package using the <em>Custom Selection</em> field.</p>
-");
-	help = help + _("<p>Additionally, you can select one or more of the add-on selections listed.</p>");
-	help = help + _("<p><b>Note</b><br>The listed selections are read from the running system.
-Depending on what product to autoinstall, these selections might not be available.</p>
-");
-
-	
-	
-	Wizard::SetContents(_("Package Selection"),
-			    contents, help, true, true);
-
-	any ret = nil;
-	if ( contains(base_selections,base))
+	if (size( software["addons"]:[])>0)
 	{
-	    UI::ChangeWidget(`id(`customsel), `Enabled, false);
+	    summary = Summary::OpenList(summary);
+	    foreach(`a, software["addons"]:[], ``{
+		summary = Summary::AddListItem(summary, a);
+	    });
+	    summary = Summary::CloseList(summary);
 	}
 	else
 	{
-	    UI::ChangeWidget(`id(`customsel), `Enabled, true);
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
+	summary = Summary::AddHeader(summary, _("Individualy selected Packages"));
+	summary = Summary::AddLine(summary, sformat("%1", size(software["packages"]:[])));
+
+	return summary;
+    }
+
+
+
+
+
+    define packageSelector() ``{
+	string language = UI::GetLanguage(true);
+
+	// Wizard::CreateDialog();
+
+	// Dialog title for software selection
+	string title = _("Software Selection");
+	string helptext = _("<p>
+TODO
+</p>
+");
+
+	Wizard::SetContents(title,
+			    `HVCenter(`Label(_("Reading package database..."))),
+			    helptext, false, true);
+
+	symbol result = initPM();
+
+	if ((result == `done)
+	    || (result == `failed))
+	{
+	    UI::CloseDialog();
+	    return `next;
 	}
 
+	list available_base_selections = Pkg::GetSelections( `available, "base" );
+	// Construct a box with radiobuttons for each software base configuration
+	term baseconfs_box = `VBox();
 
-	string basesel = "Minimal"; //default is Minimal
+	// sort available_base_selections by order
+	// $[ "order" : [ "name", "summary" ], .... ]
 
-	repeat {
-	    ret = UI::UserInput();
-	    if (UI::QueryWidget(`id(`bgroup), `CurrentButton) != "custom")
-		UI::ChangeWidget(`id(`customsel), `Enabled, false);
-	    else
-		UI::ChangeWidget(`id(`customsel), `Enabled, true);
-
-
-	    if ( ret == `next || ret == `finish)
+	map sorted_base_selections = $[];
+	foreach( `selection, available_base_selections,
+		 ``{
+	    map selection_data = Pkg::SelectionData (selection);
+	    if (selection_data != nil)
 	    {
-		basesel = UI::QueryWidget(`id(`bgroup), `CurrentButton);
-		if (basesel == "custom") {
-		    basesel = UI::QueryWidget(`id(`customsel), `Value);
+		string order = selection_data["order"]:"";
+		// use selection name as sort criteria if not given
+		if (order == "")
+		    order = selection;
+		sorted_base_selections[order] = [selection, selection_data["summary"]:("'"+selection+"'")];
+	    }
+	});
+
+	// construct display box in order
+	foreach(`order, `data, sorted_base_selections,
+		``{
+	    {
+		baseconfs_box = add( baseconfs_box, `Left(`RadioButton(`id(data[0]:""),     // id
+								       `opt(`notify, `autoShortcut),
+								       data[1]:"",              // descrption
+								       (data[0]:"" == base)   )));
+	    }
+	});
+
+	term contents = `HVSquash(
+				  `VBox(
+					`HSquash(
+						 `VBox(
+						       `Frame(
+							      // Frame caption for software selection
+							      _("Software"),
+							      `VBox(
+								    `VSpacing(0.3),
+								    `RadioButtonGroup(`id(`baseconf),`opt(`notify), baseconfs_box),
+								    `VSpacing(0.3)
+								    )
+							      ),
+						       `VSpacing(),
+
+						       // Push button that will pop up the detailed
+						       // software selection (e.g. Multimedia, Games,
+						       // KDE, Gnome, ... - not the individual packages!)
+						       `PushButton( `id(`details),  _("&Detailed selection...") )
+						       )
+						 )
+					)
+				  );
+
+	Wizard::SetContents(title, contents, helptext, true, true);
+	any ret = nil;
+	boolean error_found = false;
+
+	repeat
+	    {
+
+		ret = Wizard::UserInput();
+
+		// get the newly selected base configuration
+		string base_selection = UI::QueryWidget( `id(`baseconf),`CurrentButton );
+
+		if ( (ret == `abort)
+		     && UI::ReallyAbortPopup(false) )
+		{
+		    Wizard::CloseDialog();
+		    return `abort;
 		}
 
-		addons = UI::QueryWidget( `id(`addons), `SelectedItems );
+		// Inform the package manager on `next about the new (only about a NEW) selection
+		// or if the selection has changed
 
-	    }
-	} until	( ret == `next ||  ret ==`back || ret == `abort);
+		if (ret == `next)
+		{
+		    // set the new selection
+		    boolean pkgret = Pkg::SetSelection( base_selection );
 
-	AIPackages::base = basesel;
-	AIPackages::addons =  addons ;
+		    y2milestone ( "Selecting '%1' returns: %2", base_selection, pkgret );
 
+		    pkgret = Pkg::ActivateSelections();
+		    y2milestone ("Pkg::ActivateSelections() returns %1", pkgret);
+
+
+		}
+
+		if ( ret == `details )
+		{
+		    any details_ret = `again;
+
+		    if (save_selection != base_selection || size(Pkg::GetPackages(`selected, true)) == 0)
+		    {
+			boolean ret = Pkg::SetSelection( base_selection );
+
+			y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
+			// activate current selection before entering package widget
+			Pkg::ActivateSelections();			
+
+		    }
+		    while ( details_ret == `again )
+		    {
+			details_ret = WFM::CallFunction( `inst_packages( true, true ) );
+			y2milestone("details_ret %1", details_ret);
+		    }
+
+		    if ( details_ret == `accept )
+		    {
+			ret = `next;
+			Pkg::ActivateSelections();
+			break;
+		    }
+		    else if ( details_ret == `cancel )
+		    {
+			ret = `cancel;
+			break;
+		    }
+		    else if ( details_ret == `abort )
+		    {
+			ret = `abort;
+			break;
+		    }
+		}
+
+	    } until ( (ret == `next && !error_found) || ret == `cancel ||  ret == `back );
+	
+	software["addons"] = Pkg::GetSelections(`selected, "");	
+	software["base"] = select(Pkg::GetSelections(`selected, "base"), 0 , "");
+	y2milestone("addons: %1", software["addons"]:[]);
 	return ret;
     }
 
+
     define set_contents()
-	``{
+	``{	
 	term contents =
 	    `VBox(
 		  `VSpacing(1),
-		  `RichText( `id(`summary), AIPackages::Summary()),
+		  `RichText( `id(`summary), Summary()),
 		  `VSpacing(0.5),
 		  `HBox(
 			`PushButton(`id(`configure), _("&Configure")),
 			`HStretch(),
-			`PushButton(`id(`reset), _("&Reset Configuration"))
+			`PushButton(`id(`reset), _("Reset Co&nfiguration"))
 			),
 		  `VSpacing(1)
 		  );
@@ -300,22 +281,19 @@ Depending on what product to autoinstall, these selections might not be availabl
     repeat {
 	ret = UI::UserInput();
 	if (ret == `configure)
-	{
-	        Wizard::CreateDialog ();
-		Wizard::ReplaceAbortButton(`Empty ());
-		result =  WizardSequencer (dialogs, sequence);
-		UI::CloseDialog ();
-		if (result == `next || result == `finish)
-		{
-		    settings = AIPackages::Export ();
-		}
-		AIPackages::Set(settings);
-		set_contents();
+	{	        	    
+	    result =  packageSelector();
+	    
+	    if (result == `next || result == `finish)
+	    {
+		settings = software;
+	    }
+	    set_contents();
 	}
 	else if ( ret == `reset)
 	{
 	    settings = $[];
-	    AIPackages::Set(settings);
+	    software = $[];
 	    set_contents();
 	}
     } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);

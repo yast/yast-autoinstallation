@@ -19,14 +19,14 @@
     import "XML";
     import "Summary";
     include "autoinstall/xml.ycp";
-    
+
     global string classDir = "/var/lib/autoinstall/classes";
 
     global string ClassConf = "/etc/autoinstall";
 
 
     global map Working = $[];
-    
+
     global list Profiles = [];
 
     global list Classes = [];
@@ -35,9 +35,9 @@
 
     global boolean changed = false;
     // local
-    
+
     string class_file = "classes.xml";
-    
+
     string profile_file = "profiles.xml";
 
     string classPath = sformat("%1/%2", ClassConf, class_file);
@@ -47,15 +47,15 @@
 
     global map Working = $[];
 
-    
+
     global list currentProfile = [];
 
-    
+
     /*
      * Constructor
      *
      */
-    
+
     global define void AIClass()
 	``{
 	Load();
@@ -72,14 +72,14 @@
      *
      */
     global define findPath(string name)
-	``{		
+	``{
 	map result = select(filter(map c,  Profiles,
 				  ``(lookup(c,"name","")== name)),0,$[]);
-	
-	string profile_path = sformat("%1/%2/%3", classDir, result["class"]:"", result["name"]:"default");		
+
+	string profile_path = sformat("%1/%2/%3", classDir, result["class"]:"", result["name"]:"default");
 	return profile_path;
     }
-    
+
 
 
     global define map MergeClasses(map configuration,
@@ -88,8 +88,8 @@
 			       )
 	``{
 	string tmpdir = SCR::Read( .target.tmpdir );
-	
-	string MergeCommand = "/usr/bin/xsltproc --param replace \"'false'\" --param dontmerge \"'addon'\" --param dontmerge \"'package'\" --param with ";	
+
+	string MergeCommand = "/usr/bin/xsltproc --param replace \"'false'\" --param dontmerge \"'addon'\" --param dontmerge \"'package'\" --param with ";
 	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"") + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
@@ -101,23 +101,23 @@
 	MergeCommand = MergeCommand + base_profile + " replace=true  > ";
 	MergeCommand = MergeCommand + tmpdir + resultFileName;
 	*/
-	
+
 	y2debug("Merge command: %1", MergeCommand);
-	
+
 	map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
 	y2debug("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
-	return (out);	
+	return (out);
     }
 
-    
-    
+
+
     /**
      * Load stored data in sysconfig
-     * @return	void          
+     * @return	void
      */
 
     global define void Load ()
-    ``{	
+    ``{
 	string tmpclassDir = SCR::Read( .sysconfig.autoinstall.CLASS_DIR);
 	if (tmpclassDir != nil)
 	{
@@ -126,18 +126,18 @@
 	return;
     }
 
-    
+
     /**
-     * Save Configuration global settings            
-     * @return	void         
+     * Save Configuration global settings
+     * @return	void
      */
 
     global define void Save ()
     ``{
 	// Write sysconfig variables.
 	//
-	y2debug("Saving class information");	    
-	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir );	
+	y2debug("Saving class information");
+	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir );
 	return;
     }
 
@@ -165,7 +165,7 @@
 	// TODO: use XML module
 	if (SCR::Read(.target.size, profileConfPath ) != -1)
 	{
-	    map tmp = SCR::Read(.xml, profileConfPath);	
+	    map tmp = SCR::Read(.xml, profileConfPath);
 	    Profiles = tmp["profiles"]:[];
 	}
 	y2debug("Profiles: %1", Profiles);
@@ -174,7 +174,7 @@
     /**
      * Parse all configuration files an read directories
      *
-     */    
+     */
     global define void Parse()
 	``{
 	readClasses();
@@ -186,7 +186,7 @@
     /**
      * Read files from class directories
      * @return void
-     */    
+     */
     global define void readClassFiles()
 	``{
 	foreach(map class, Classes,
@@ -197,13 +197,13 @@
 	return;
     }
 
-    
-  
+
+
     /*
      * CreateClassDirs()
      *
      */
-    
+
     global define CreateClassDirs()
 	``{
 
@@ -226,18 +226,18 @@
 	    }
 	});
 	return;
-    }  
-    
+    }
+
     /**
      * Save Class definitions
      *
      */
-    
+
     global define SaveClasses()
 	``{
 	map tmp = $[ "classes":Classes];
 	y2debug("saving classes: %1", classPath);
-	return (XML::YCPToXMLFile(`class, tmp, classPath));	
+	return (XML::YCPToXMLFile(`class, tmp, classPath));
     }
 
     /**
@@ -247,17 +247,17 @@
     global define SaveProfiles()
 	``{
 	map tmp = $["profiles":Profiles];
-	return (XML::YCPToXMLFile(`profileConf, tmp, profileConfPath));		
+	return (XML::YCPToXMLFile(`profileConf, tmp, profileConfPath));
     }
 
 
 
 
-    
- 
 
-    
-    
+
+
+
+
     global define boolean Import(list settings)
 	``{
 
@@ -265,8 +265,8 @@
 	return true;
     }
 
-   
-    
+
+
     global define list Export()
 	``{
 	list settings = currentProfile;
@@ -274,11 +274,11 @@
     }
 
     global define string Summary() ``{
-	string summary = "";	
-	    
+	string summary = "";
+
 	foreach(`c, currentProfile, ``{
 	    summary = Summary::AddHeader(summary, c["class_name"]:"None");
-	    summary = Summary::AddLine(summary,  c["configuration"]:"None");  
+	    summary = Summary::AddLine(summary,  c["configuration"]:"None");
 	});
 	if (size(summary) == 0 ) {
 	    return Summary::NotConfigured();
