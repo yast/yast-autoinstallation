@@ -277,13 +277,15 @@ Please wait while the directory structure for the new ISO file is created.
 	    //  "yast2-security 2.6.8 31 noarch";
 	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
 	    string location = tok[3]:"noarch" + "/" + pacname;
-	    	  	    
+	    
 	    string localpath =  AIServer::PackageRep + "/" + datadir + "/" + location;	    	  
 	    integer pacsize = SCR::Read(.target.size, localpath);
 	    if (pacsize!=-1)
 	    {
 		Progress::Title(sformat(_("Copying %1"),  pacname));
 		Progress::NextStep();
+		SCR::Execute(.target.mkdir ,  AIServer::skelDir + "/skeleton/" + datadir + "/" + tok[3]:"noarch");
+		
 		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, AIServer::skelDir, datadir, location);
 		any ret = SCR::Execute (.target.bash, cpCmd);			
 	    }
