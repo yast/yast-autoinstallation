@@ -15,6 +15,7 @@
     import "AutoinstConfig";
     import "XML";
     import "Popup";
+    import "ProductControl";
 
     include "autoinstall/xml.ycp";
 
@@ -112,6 +113,9 @@
 	Configure = profile["configure"]:$[];
 	Install = profile["install"]:$[];
 	Flat = (map<string, any>)union( Configure, Install );
+
+        if (!Flat["x11", "configure_x11"]:false)
+            ProductControl::DisabledModules=add(ProductControl::DisabledModules, "x11");
 
 	return;
     }
