@@ -113,10 +113,15 @@
      */
     global define void Finish ( string destdir )
     {
-        SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir
-                + "/pre-scripts/* " + destdir + AutoinstConfig::scripts_dir);
-        SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir
-                + "/pre-scripts/logs/* " + destdir + AutoinstConfig::logs_dir);
+        list dircontents = (list)SCR::Read(.target.dir, AutoinstConfig::tmpDir
+                                + "/pre-scripts/");
+        if (size(dircontents) > 0 )
+        {
+            SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir
+                    + "/pre-scripts/* " + destdir + AutoinstConfig::scripts_dir);
+            SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir
+                    + "/pre-scripts/logs/* " + destdir + AutoinstConfig::logs_dir);
+        }
 
         SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3",
                     AutoinstConfig::xml_tmpfile ,  destdir ,  AutoinstConfig::xml_file) );
@@ -129,6 +134,7 @@
 
     /**
      * Put PXE file on the boot server using tftp
+     * @return true on success
      */
     global boolean PXELocalBoot ()
     {
