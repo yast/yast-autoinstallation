@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grammar xmlns:config="http://www.suse.com/1.0/configns" ns="http://www.suse.com/1.0/yast2ns" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <include href="nfs.rng"/>
+  <include href="nis.rng"/>
+  <include href="sysconfig.rng"/>
   <define name="install">
     <element name="install">
 		<empty/>
@@ -14,13 +16,18 @@
       		<value>symbol</value>
       		<value>boolean</value>
   		</choice>
-        <data type="NCName"/>
      </attribute>
   </define>
   <define name="configure">
     <element name="configure">
       <optional>
         <ref name="nfs"/>
+      </optional>
+      <optional>
+        <ref name="nis"/>
+      </optional>
+      <optional>
+        <ref name="sysconfig"/>
       </optional>
     </element>
   </define>
