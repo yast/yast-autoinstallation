@@ -37,16 +37,7 @@
 	to a a detection of a special kernel architecture or if  a reboot was requested in
 	the control file. 
       </para>
-      <note>
-	<title>Confirmation when partition tables are to be initialized</title>
-	<para>Note that when deleting LVM and RAID configurations on the
-	  target system, the confirmation screen comes up only after the partition
-	  data has been deleted. In case you are just testing, make sure you
-	  disable destorying LVM and RAID. Besides, the pre-scripts are also
-	  executed before the confirmation screen, so if you have critical
-	  scripts that might change the system, the confirmation screen might
-	  be too late.</para>
-      </note>
+     
     </section>
     <section id="CreateProfile.Reporting">
       <title id="CreateProfile.Reporting.title">
@@ -567,8 +558,7 @@
 	  </title>
 	  <para>
 	    The following example shows how to prepare for LVM in the
-	    <emphasis>partitioning</emphasis> 
-	    resource:
+	    <emphasis>partitioning</emphasis> resource:
 	  </para>
 	  <screen>
 <![CDATA[
@@ -598,18 +588,38 @@
 	  created  will use all available space on this drive.
 	</para>
 	<para>
-	  The logical volumes should be defined in the <emphasis>LVM</emphasis>
-	  resource. Currently it is not possible to configure LVM using the
+	  Up to SuSE Linux 8.2 the LVM configuration was done in a seperate
+	  resource. This method for configuring LVM is still
+	  supported, however a new and easier way is introduced starting from
+	  this release which allows you to have the LVM configuration
+	  directly in  the <emphasis>partitioning</emphasis> resource.
+	</para>
+	<para>Currently it is not possible to configure LVM using the
 	  configuration system, instead it is required to
 	  add the resource manually as shown in the  following example.
 	</para>
 
 	<example>
 	  <title>
-	    LVM Logical Volumes
+	    LVM Logical Volumes (Old syntax)
 	  </title>
 	  <screen>
 <![CDATA[
+....
+ <partitioning config:type="list">
+     <drive>
+         <device>/dev/sda</device>         
+         <use>all</use>
+         <partitions config:type="list">
+            <partition>
+               <size>max</size>
+               <lvm_group>system</lvm_group>
+               <partition_type>primary</partition_type>
+            </partition>
+         </partitions>
+     </drive>
+ </partitioning>
+.....
 ....
   <lvm config:type="list">
      <lvm_group>
@@ -638,6 +648,59 @@
    </lvm_group>
   </lvm>
 .....
+]]>
+	  </screen>
+	</example>
+	<para>Using the new method, the above configuration has the following syntax:</para>
+
+	<example>
+	  <title>
+	    LVM Logical Volumes (New syntax)
+	  </title>
+	  <screen>
+<![CDATA[
+....
+ <partitioning config:type="list">
+     <drive>
+         <device>/dev/sda</device>         
+         <use>all</use>
+         <partitions config:type="list">
+            <partition>
+               <size>max</size>
+               <lvm_group>system</lvm_group>
+               <partition_type>primary</partition_type>
+            </partition>
+         </partitions>
+     </drive>
+     <drive>
+        <device>/dev/system</device>       
+        <is_lvm_vg config:type="boolean">true</is_lvm_vg>
+        <partitions config:type="list">
+            <partition>
+                <filesystem config:type="symbol">reiser</filesystem>
+                <lv_name>user_lv</lv_name>
+                <mount>/usr</mount>
+                <size>500mb</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">reiser</filesystem>
+                <lv_name>opt_lv</lv_name>
+                <mount>/opt</mount>
+                <size>1500mb</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">reiser</filesystem>
+                <lv_name>var_lv</lv_name>
+                <mount>/var</mount>
+                <size>200mb</size>
+            </partition>
+        </partitions>
+        <pesize>4M</pesize>
+        <use>all</use>
+     </drive>
+ </partitioning>
+.....
+....
 ]]>
 	  </screen>
 	</example>
@@ -710,6 +773,7 @@
             <partition_id config:type="integer">253</partition_id>
             <format config:type="boolean">false</format>
             <raid_name>/dev/md0</raid_name>
+            <raid_type>raid</raid_type>
             <size>4gb</size>            
           </partition>
 
@@ -726,6 +790,7 @@
              <partition_id config:type="integer">253</partition_id>
              <format config:type="boolean">false</format>
              <raid_name>/dev/md0</raid_name>            
+             <raid_type>raid</raid_type>
              <size>4gb</size>
           </partition>
          </partitions>
@@ -766,6 +831,7 @@
             <partition_id config:type="integer">253</partition_id>
             <format config:type="boolean">false</format>
             <raid_name>/dev/md0</raid_name>
+            <raid_type>raid</raid_type>
             <size>4gb</size>            
           </partition>
 
@@ -782,6 +848,7 @@
              <partition_id config:type="integer">253</partition_id>
              <format config:type="boolean">false</format>
              <raid_name>/dev/md0</raid_name>            
+             <raid_type>raid</raid_type>
              <size>4gb</size>
           </partition>
          </partitions>
@@ -799,7 +866,7 @@
                 <filesystem config:type="symbol">reiserfs</filesystem>
                 <partition_id config:type="integer">131</partition_id>
                 <mount>/space</mount>
-                <partition_nr config:type="integer">0</partition_nr>                
+                <partition_nr config:type="integer">0</partition_nr>
             </partition>
         </partitions>
         <use>all</use>
@@ -827,7 +894,7 @@
 	      <emphasis>/dev/md0</emphasis> is configured.</para>	   
 	  </listitem>
 	  <listitem>
-	    <para>All RAID specific options are contained in
+	    <para>All RAID specific options are contained in the
 	      <emphasis>raid_options</emphasis> resource.</para>
 	  </listitem>
 	</itemizedlist>
