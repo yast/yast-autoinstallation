@@ -198,9 +198,9 @@
 
 	// Get rules file
 	ret = Get(scheme,
-			  host,
-			  directory + "/" +  AutoInstallRules::remote_rules_location ,
-			  AutoInstallRules::local_rules_file);
+		  host,
+		  directory + "/" +  AutoInstallRules::remote_rules_location ,
+		  AutoInstallRules::local_rules_file);
 
 	if (ret)
 	{
@@ -214,6 +214,7 @@
 
 
 	boolean process_rules = true;
+	boolean try_default_rules = false;
 
 	if ( AutoInstallRules::userrules )
 	{
@@ -229,9 +230,16 @@
 		{
 		    if (!first)
 		    {
-			ret = Get(scheme, host, filepath, localfile);
+			filename = basename(filepath);
+			y2milestone("filename: %1", filename);
+			if ( filename != "")
+			{
+			    ret = Get(scheme, host, filepath, localfile);
+			}
+		
 		    }
 		    first = false;
+		    
 		    if (ret)
 		    {
 			break;
@@ -247,6 +255,11 @@
 	    }
 	}
 	else
+	{
+		try_default_rules = true;
+	}
+
+	if (try_default_rules)
 	{
 	    y2milestone("Creating default Rules");
 	    if (is_directory)
