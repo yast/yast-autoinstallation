@@ -13,6 +13,9 @@
     textdomain "autoinst";
 
     import "AutoInstall";
+    import "AutoinstConfig";
+
+    
     import "Summary";
     import "Keyboard";
     import "Mouse";
@@ -23,35 +26,53 @@
     import "Profile";
 
 
-    // Language
-    global string Language = "";
 
+    //
     // Hard Reboot
+    //
     global boolean Reboot = false;
 
+    //
     // Dont Hard Reboot
+    //
     global boolean ForceBoot = false;
 
+    //
     // Show Reboot Message
+    //
     global boolean RebootMsg = false;
 
+    //
     // Show proposal and ask user for confirmation to go on with auto-installation
     // Similar to interactive mode, without letting use change settings
     // Interactive mode implies confirmation as well..
+    //
     global boolean Confirm = true;
 
+    //
     // Keyboard
-    global map Keyboard = $[];
+    //
+    global map keyboard = $[];
 
+    //
+    // Language
+    //
+    global string language = "";
 
+    //
     // Mouse, if not autoprobed
-    global map  Mouse = $[];
+    //
+    global map  mouse = $[];
 
-
+    //
+    // Clock Settings
+    //
     global map Clock = $[];
 
-
-    global map Mode = $[];
+    //
+    // Mode Settings
+    //
+    global map mode = $[];
 
 
     /**
@@ -74,9 +95,9 @@
 	string keyboard_name		= "";
 	string mouse_name		= "";
 
-	if ( Mouse["id"]:"" != "" && Mouse["id"]:"" != "probe")
+	if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe")
 	{
-	    Mouse::Set(Mouse["id"]:"");
+	    Mouse::Set(mouse["id"]:"");
 	    mouse_name = Mouse::MakeProposal(false, false);
 	}
 	else
@@ -84,17 +105,17 @@
 	    mouse_name = "probe";
 	}
 
-	if (Language != "")
+	if (language != "")
 	{
-	    Language::Set(Language);
+	    Language::Set(language);
 	    language_name= Language::MakeProposal(false, false);
 	}
 
-	if (Keyboard  != $[])
+	if (keyboard  != $[])
 	{
 	    Keyboard::current_kbd = "";
-	    y2milestone("keymap: %1", Keyboard["keymap"]:"");
-	    Keyboard::SetLanguage(Keyboard["keymap"]:"");
+	    y2milestone("keymap: %1", keyboard["keymap"]:"");
+	    Keyboard::SetLanguage(keyboard["keymap"]:"");
 	    keyboard_name = Keyboard::Name();
 	}
 
@@ -123,15 +144,15 @@
 				   mouse_name : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Confirm installation?"));
-	summary = Summary::AddLine(summary, (Mode["confirm"]:false) ?
+	summary = Summary::AddLine(summary, (mode["confirm"]:false) ?
 				   _("Yes") : _("No"));
 
 	summary = Summary::AddHeader(summary, _("Reboot after installation"));
-	summary = Summary::AddLine(summary, (Mode["reboot"]:false) ?
+	summary = Summary::AddLine(summary, (mode["reboot"]:false) ?
 				   _("Yes") : _("No"));
 
 	summary = Summary::AddHeader(summary, _("Force Boot after Installation"));
-	summary = Summary::AddLine(summary, (Mode["forceboot"]:false) ?
+	summary = Summary::AddLine(summary, (mode["forceboot"]:false) ?
 				   _("Yes") : _("No"));
 
 
@@ -140,15 +161,15 @@
 
     /**
      * Import Configuration
+     *
      */
-
     global define boolean Import (map settings)
 	``{
-	Language = 	settings["language"]:"";
-	Keyboard =      settings["keyboard"]:$[];;
+	language = 	settings["language"]:"";
+	keyboard =      settings["keyboard"]:$[];;
 	Clock	=	settings["clock"]:$[];
-	Mouse = 	settings["mouse"]:$[];
-	Mode  = 	settings["mode"]:$[];
+	mouse = 	settings["mouse"]:$[];
+	mode  = 	settings["mode"]:$[];
 
 	return true;
     }
@@ -157,76 +178,82 @@
     /**
      * Export Configuration
      */
-    global define boolean Export ()
+    global define map Export ()
 	``{
 
 	map general = $[];
 
-	general["language"] = Language ;
-	if (haskey(Keyboard, "keyboard_values") || Keyboard::ExpertSettingsChanged )
-	    Keyboard["keyboard_values"] = Keyboard::GetExpertValues();
+	general["language"] = language ;
+	if (haskey(keyboard, "keyboard_values") || Keyboard::ExpertSettingsChanged )
+	{
+	    keyboard["keyboard_values"] = Keyboard::GetExpertValues();
+	}
 
-	general["keyboard"] = Keyboard;
+	general["keyboard"] = keyboard;
 	general["clock"] = Clock;
-	general["mouse"] = Mouse;
-	general["mode"] = Mode;
+	general["mouse"] = mouse;
+	general["mode"] = mode;
 	return general;
     }
 
 
     /**
-     * Write Configuration
+     * Write General  Configuration
      */
 
     global define boolean Write() ``{
-	// Process();
-	y2milestone("Writing general settings: keymap -> %1, timezone -> %2",  Keyboard["keymap"]:"", Clock["timezone"]:"" );
-	AutoInstall::Confirm = Mode["confirm"]:true;
-	AutoInstall::interactive = Mode["confirm"]:true;;
 
+	
+	y2milestone("keymap -> %1", keyboard["keymap"]:"" );
+	y2milestone("timezone -> %1", Clock["timezone"]:"" );
+	
+	AutoinstConfig::Confirm = mode["confirm"]:true;
 
-	Keyboard::default_kbd = Keyboard["keymap"]:"";
-	Keyboard::SetConsole( Keyboard["keymap"]:"" );
-	Keyboard::SetX11( Keyboard["keymap"]:"" );
+	Keyboard::default_kbd = keyboard["keymap"]:"";
+	Keyboard::SetConsole( keyboard["keymap"]:"" );
+	Keyboard::SetX11( keyboard["keymap"]:"" );
 
+	//
 	// Timezone
+	//
 	if (Clock["timezone"]:"" != "")
 	{
 	    Timezone::Set( Clock["timezone"]:"", true );
 	}
 
+	//
 	// Hardware Clock
-	////////////////////////////////////////////////////////////////////////
+	//
 
 	Timezone::hwclock =  (Clock["hwclock"]:"" == "UTC" || Clock["hwclock"]:"" == "GMT") ? "-u" : "--localtime";
 
+	//
 	// mouse
-	////////////////////////////////////////////////////////////////////////
+	//
 
-	if ( Mouse["id"]:"" != "probe" && Mouse["id"]:"" != "")
+	if ( mouse["id"]:"" != "probe" && mouse["id"]:"" != "")
 	{
-	    Mouse::Set(Mouse["id"]:"");
+	    Mouse::Set(mouse["id"]:"");
 	}
-
-
-	// Otherwise, try to find the mouse id from the DB using data supplied by user,
-	// at least the device is needed.
-
-	else if (haskey(Mouse,"device"))
+	else if (haskey(mouse,"device"))
 	{
-	    string device = Mouse["device"]:"none";
-	    integer wheels = Mouse["wheels"]:0;
+	    //
+	    // Otherwise, try to find the mouse id from the DB using data supplied by user,
+	    // at least the device is needed.
+	    //
+	    string device = mouse["device"]:"none";
+	    integer wheels = mouse["wheels"]:0;
 
-	    map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+	    map mice = (map)Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
 
 	    foreach(string f,list g, mice, ``{
 		map data = g[1]:$[];
 		if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
 		{
-		    Mouse["id"] =  f;
+		    mouse["id"] =  f;
 		}
 	    });
-	     Mouse::Set(Mouse["id"]:"");
+	     Mouse::Set(mouse["id"]:"");
 	}
     }
 

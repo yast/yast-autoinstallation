@@ -9,173 +9,43 @@
 {
     module "ProfileLocation";
     textdomain "autoinst";
-
+    
+     import "AutoinstConfig";
     import "AutoInstallRules";
     import "StorageDevices";
-    import "Mode";
-    
+    import "Mode";    
     import "Installation";
+    import "Popup";
+    import "Label";
+   
 
     include "autoinstall/autoinst_dialogs.ycp";
+    include "autoinstall/io.ycp";
 
-    global string message = "";
-
-
-    // Data from command line
-    map urltok = $[];
-
-    global string scheme = "";
-    global string filepath = "";
-    global string host = "";
-    global string directory =  "";
-	global string port = "";
-
-
-	global string user = "";
-	global string pass = "";
-    string ip = "";
-    string mac = "";
-
-
-
-
-    boolean portmap = false;
-
+ 
     /**
      * Constructor
      */
-
-    global define void ProfileLocation () ``{
-	// Just to be sure
-	if (Mode::initial)
-	{
-	    ParseCmdLine();
-
-	    scheme = urltok["scheme"]:"default";
-	    host = urltok["host"]:"";
-	    filepath = urltok["path"]:"";
-		port = urltok["port"]:"";
-		user = urltok["user"]:"";
-		pass = urltok["pass"]:"";
-
-	    ip = AutoInstallRules::hostaddress;
-
-	    mac = AutoInstallRules::mac;
-
-	    ProtocolMessage();
-	}
-    }
-
-
-    /**
-     * Return location of profile from command line.
-     * @return map with protocol, server, path
-     * @example autoyast=http://www.server.com/profiles/
-     */
-
-    global define boolean ParseCmdLine ()
+    global define void ProfileLocation ()
 	``{
-	import "URL";
-	map result = $[];
-	string cmdLine = "";
-	any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
-
-	if (autoinstall != nil && is ( autoinstall , string ) )
-	{
-	    cmdLine = autoinstall;
-	    if (cmdLine == "default")
-	    {
-		result["scheme"] = "file";
-		result["path"]   = "/autoinst.xml";
-		urltok = result;
-		return true;
-	    }
-	    else
-	    {
-		result = URL::Parse (cmdLine);
-	    }
-	}
-
-
-	if (result["scheme"]:"" == "")
-	{
-	    // Autoinstall mode was not activated from command line.
-	    // There must be a floppy with an 'autoinst.xml' in order
-	    // to be able to reach this point, so we set floppy with
-	    // autoinst.xml as the control file.
-
-	    result = add(result, "scheme", "floppy");
-	    result = add(result, "path","/autoinst.xml");
-	}
-	urltok = result;
-	return true;;
+	return;
     }
 
-
-
-    /**
-     * ProtocolMessag()
-     * @return message descriping location
-     */
-
-    global define void ProtocolMessage () ``{
-	string retrieving = _("Retrieving control file from");
-
-
-	if (scheme == "floppy")
-	{
-	    message =  _("Retrieving control file from floppy.");
-	}
-	else if (scheme == "tftp")
-	{
-	    message =  sformat ( _("Retrieving control file from TFTP server: %1."),  host );
-	}
-	else if (scheme == "nfs")
-	{
-	    message =  sformat ( _("Retrieving control file from NFS server: %1."), host );
-	}
-	else if (scheme == "http")
-	{
-	    message =  sformat ( _("Retrieving control file from HTTP server: %1."),  host );
-	}
-	else if (scheme == "ftp")
-	{
-	    message =  sformat ( _("Retrieving control file from FTP server: %1."),  host );
-	}
-	else if (scheme == "file")
-	{
-	    message =  sformat ( _("Copying control file from file: %1."),  filepath);
-	}
-	else if (scheme == "device")
-	{
-	    message =  sformat ( _("Copying control file from device: /dev/%1."),  filepath );
-	}
-	else if (scheme == "default")
-	{
-	    message =   _("Copying control file from default file.");
-	}
-	else
-	{
-	    message =   _("Source unknown.");
-	}
-    }
-
-
+    
     /**
      * Initiate retrieving of control files and Rules.
      */
-
     global define boolean Process() ``{
 
 	boolean ok = false;
 	boolean ret = false;
-	y2milestone("Path to remote control file: %1", filepath);
+	y2milestone("Path to remote control file: %1", AutoinstConfig::filepath);
 
 	string localfile  =  AutoinstConfig::xml_tmpfile;
 
 	boolean is_directory = false;
 
-	string filename = basename(filepath);
+	string filename = basename(AutoinstConfig::filepath);
 
 
 	if ( filename != "" )
@@ -183,34 +53,50 @@
 	    y2milestone("File=%1", filename);
 	    while (true)
 	    {
-		ret = Get(scheme, host, filepath, localfile);
+		ret = Get(AutoinstConfig::scheme,
+			  AutoinstConfig::host,
+			  AutoinstConfig::filepath,
+			  AutoinstConfig::port,
+			  AutoinstConfig::user,
+			  AutoinstConfig::pass, localfile
+			  );
 		if (ret)
 		{
 		    break;
 		}
 		else
 		{
-		    if (ProfileSourceDlg() == `abort)
-			return `abort;
+		    string newURI = ProfileSourceDialog(AutoinstConfig::OriginalURI);
+		    if ( newURI == "")
+		    {
+			return (false);
+		    }
 		    else
+		    {
+			AutoinstConfig::ParseCmdLine(newURI);
+			AutoinstConfig::SetProtocolMessage();
 			continue;
-		}
+		    }				
+		}					    			
 	    }
-	}
+	}	
 	else
 	{
 	    is_directory = true;
 	}
 
-	directory = dirname(filepath);
+	string directory = dirname(AutoinstConfig::filepath);
 	y2milestone("Dir=%1", directory);
 	y2milestone("Fetching Rules File");
 
 	// Get rules file
-	ret = Get(scheme,
-		  host,
-		  directory + "/" +  AutoInstallRules::remote_rules_location ,
-		  AutoInstallRules::local_rules_file);
+	ret = Get(AutoinstConfig::scheme,
+		  AutoinstConfig::host,
+		  directory + "/" +  AutoinstConfig::remote_rules_location ,
+		  AutoinstConfig::port,
+		  AutoinstConfig::user,
+		  AutoinstConfig::pass,
+		  AutoinstConfig::local_rules_file);
 
 	if (ret)
 	{
@@ -219,7 +105,7 @@
 	else
 	{
 	    AutoInstallRules::userrules = false;
-	    SCR::Execute(.target.remove, AutoInstallRules::local_rules_file );
+	    SCR::Execute(.target.remove, AutoinstConfig::local_rules_file );
 	}
 
 
@@ -240,11 +126,16 @@
 		{
 		    if (!first)
 		    {
-			filename = basename(filepath);
+			filename = basename(AutoinstConfig::filepath);
 			y2milestone("filename: %1", filename);
 			if ( filename != "")
 			{
-			    ret = Get(scheme, host, filepath, localfile);
+			    ret = Get(AutoinstConfig::scheme,
+				      AutoinstConfig::host,
+				      AutoinstConfig::filepath,
+				      AutoinstConfig::port,
+				      AutoinstConfig::user, AutoinstConfig::pass,
+				      localfile);
 			}
 		
 		    }
@@ -256,11 +147,19 @@
 		    }
 		    else
 		    {
-			if (ProfileSourceDlg() == `abort)
-			    return false;
+			string newURI = ProfileSourceDialog(AutoinstConfig::OriginalURI);
+			if ( newURI == "")
+			{
+			    return (false);
+			}
 			else
+			{
+			    AutoinstConfig::ParseCmdLine(newURI);
+			    AutoinstConfig::SetProtocolMessage();
 			    continue;
-		    }
+			}				
+		    }		    
+	
 		}
 	    }
 	}
@@ -291,7 +190,13 @@
 		{
 		    if (!first)
 		    {
-			ret = Get(scheme, host, filepath, localfile);
+			ret = Get(AutoinstConfig::scheme,
+				  AutoinstConfig::host,
+				  AutoinstConfig::filepath,
+				  AutoinstConfig::port,
+				  AutoinstConfig::user,
+				  AutoinstConfig::pass,
+				  localfile);
 		    }
 		    first = false;
 		    if (ret)
@@ -300,10 +205,17 @@
 		    }
 		    else
 		    {
-			if (ProfileSourceDlg() == `abort)
-			    return false;
+			string newURI = ProfileSourceDialog(AutoinstConfig::OriginalURI);
+			if ( newURI == "")
+			{
+			    return (false);
+			}
 			else
+			{
+			    AutoinstConfig::ParseCmdLine(newURI);
+			    AutoinstConfig::SetProtocolMessage();
 			    continue;
+			}				
 		    }
 		}
 	    }
@@ -320,228 +232,6 @@
     }
 
 
-
-
-    /**
-     * Get control files from different sources
-     *
-     */
-
-    global define boolean Get(string Scheme,
-			      string Host,
-			      string Path ,
-			      string Localfile)
-	``{
-	boolean ok = false;
-
-	if ( Scheme == "http" )
-	{
-	    import "HTTP";
-	    string full_url = "";
-		string port_str = "";
-		if (port!= "")
-		{
-			port_str = sformat(":%1", port);
-		}
-		if (user!= ""  && pass != "")
-		{
-			full_url = sformat("http://%1%2", Host , port_str,  Path );
-		}
-		else
-		{
-			full_url = sformat("http://%1:%2@%3%4%s", user, pass, Host , port_str,  Path );
-		}
-
-	    map res = HTTP::Get(full_url, Localfile);
-	    if (res["code"]:0 == 200)
-	    {
-		return (true);
-	    }
-	    else
-	    {
-		y2error("Can't find URL: %1", full_url);
-		return (false);
-	    }
-	}
-	if ( Scheme == "ftp" )
-	{
-	    import "FTP";
-	    string full_url = "";
-		if (user!= ""  && pass != "")
-		{
-			full_url = sformat("ftp://%1%2", Host ,  Path );
-		}
-		else
-		{
-			full_url = sformat("ftp://%1:%2@%3%4", user, pass, Host ,  Path );
-		}
-
-	    map res = FTP::Get(full_url, Localfile);
-	    if (SCR::Read(.target.size, Localfile) > 0)
-	    {
-		return (true);
-	    }
-	    else
-	    {
-		y2error("Can't find URL: %1", full_url);
-		return (false);
-	    }
-	}
-	else if (Scheme == "file")
-	{
-	    string file = sformat("%1/%2", Installation::sourcedir, Path);
-	    if (SCR::Read(.target.size, file) > 0 )
-	    {
-		string cpcmd = sformat("cp %1 %2", file, Localfile);
-		y2milestone("Copy profile: %1", cpcmd);
-		SCR::Execute(.target.bash, cpcmd);
-	    }
-	    else
-	    {
-		string cpcmd = sformat("cp %1 %2", Path , Localfile);
-		y2milestone("Copy profile: %1", cpcmd);
-		SCR::Execute(.target.bash, cpcmd);
-	    }
-
-	    if (SCR::Read(.target.size, Localfile) > 0 )
-	    {
-		ok = true;
-	    }
-	    else
-	    {
-		y2milestone("Try on installation media: %1", Mode::boot);
-		if (Mode::boot == "cd")
-		{
-		    string cdrom = SCR::Read (.etc.install_inf.Cdrom);
-		    integer shellret =  SCR::Execute(.target.bash, "/bin/mount /dev/" + cdrom + " /mnt");
-		    if (shellret != 0 )
-		    {
-			y2warning("Mount failed");
-		    }
-		    else
-		    {
-			string cpcmd = sformat("cp /mnt/%1 %2", Path , Localfile);
-			y2milestone("Copy profile: %1", cpcmd);
-			SCR::Execute(.target.bash, cpcmd);
-		    }
-		    shellret =  SCR::Execute(.target.bash, "/bin/umount  /mnt");
-		    if (SCR::Read(.target.size, Localfile) > 0 )
-		    {
-			return (true);
-		    }
-		}
-
-		ok = false;
-	    }
-	}
-	else if (Scheme == "nfs")  // NFS
-	{
-	    if (Mode::boot != "nfs" && !portmap)
-	    {
-		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
-		portmap = true;
-	    }
-
-	    integer shellret =  SCR::Execute(.target.bash, "/bin/mount " + Host + ":" + dirname(Path) +" /mnt -t nfs");
-	    if (shellret != 0 )
-	    {
-		y2warning("Mount failed");
-		return (false);
-	    }
-
-	    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + basename(Path) + " " + Localfile) == 0)
-	    {
-		ok = true;
-	    }
-	    else
-	    {
-		y2error("Control file can't be found");
-
-	    }
-
-	    WFM::Execute(.local.bash, "/bin/umount /mnt");
-
-	}
-	else if (Scheme == "floppy")
-	{
-	    if (StorageDevices::FloppyReady())
-	    {
-		SCR::Execute(.target.mount, [StorageDevices::FloppyDevice, "/media/floppy"], "-t auto");
-
-		if (SCR::Execute (.target.bash, "/bin/cp /media/floppy/" + Path + " " + Localfile) != 0)
-		{
-		    y2error("Control file can't be found");
-		}
-		else
-		{
-		    ok = true;
-		}
-		SCR::Execute(.target.umount, "/media/floppy");
-	    }
-	}
-	else if (Scheme == "device") // Device
-	{
-	    if ( Host != "" && Path != "")
-	    {
-		SCR::Execute(.target.mount, [sformat("/dev/%1", Host) , "/mnt"], "-t auto");
-
-		if (SCR::Execute (.target.bash, "/bin/cp /mnt" +  Path + " " + Localfile) != 0 )
-		{
-		    y2error("Control file can't be found");
-		}
-		else
-		{
-		    ok = true;
-		}
-		SCR::Execute(.target.umount, "/mnt");
-	    }
-	}
-	else if (Scheme == "tftp") // Device
-	{
-	    import "TFTP";
-	    if (TFTP::Get(host,  Path, Localfile ))
-	    {
-		ok = true;
-	    }
-	    else
-	    {
-		y2error("Control file can't be found");
-	    }
-	}
-	else
-	{
-	    y2error("Protocol not supported");
-	    ok = false;
-	}
-
-
-	return ( ok );
-    }
-
-
-
-
-
-    /**
-     * return basename
-     */
-    global define string basename (string filePath)
-	``{
-	list pathComponents = splitstring(filePath, "/");
-	return (select(pathComponents, size(pathComponents) -1, ""));
-    }
-
-
-
-    /**
-     * return dirname
-     */
-    global define string dirname (string filePath)
-	``{
-	   list pathComponents = splitstring(filePath, "/");
-	   string last = select(pathComponents, size(pathComponents) -1, "");
-	   return (substring(filePath, 0 , size(filePath) - size(last)));
-    }
 
 
 }

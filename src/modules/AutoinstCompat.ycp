@@ -1,7 +1,7 @@
 /**
  * File:	modules/AutoinstCompat.ycp
  * Module:	Auto-Installation
- * Summary:	Compat
+ * Summary:	Compatibility 
  * Authors:	Anas Nashif <nashif@suse.de>
  *
  * $Id$
@@ -11,14 +11,15 @@
     module "AutoinstCompat";
     textdomain "autoinst";
 
-    import "AutoinstStorage";
+    include "autoinstall/partitioning_routines.ycp";
 
 
+    
     /**
      * Provide Compatibility to older distributions.
+     * @param lvm_standalone Stand alone LVM configuration
+     * @return LVM configuration integrated into partitioning resource
      */
-
-
     
     global define list convertLVM (list lvm_standalone ) ``{
 
@@ -32,9 +33,9 @@
 	    new_lvm["is_lvm_vg"]    = true;
 	    new_lvm["use"]      = "all";
 	    new_lvm["pesize"]       = group["pesize"]:"";
-	    list partitions = maplist(`lv, group["logical_volumes"]:[], ``{
+	    list partitions = maplist(map lv, group["logical_volumes"]:[], ``{
 
-		symbol lv_fs     = AutoinstStorage::StringFS2Symbol( lv["lv_fs"]:`reiser);
+		symbol lv_fs     = StringFS2Symbol( lv["lv_fs"]:`reiser);
 
 
 		return( $[ "filesystem": lv_fs,
@@ -55,10 +56,13 @@
 	return (all_lvm);
     }
 
-
-
-
-   global define map convertRAID (list raid_standalone ) ``{
+    /**
+     * Provide Compatibility to older distributions.
+     * @param raid_standalone Stand alone RAID configuration
+     * @return RAID configuration integrated into partitioning resource
+     */
+    
+    global define map convertRAID (list raid_standalone ) ``{
 
 
 	map raid = $[];
@@ -66,11 +70,9 @@
 	raid["device"] 	= "/dev/md";
 	raid["use"]	= "all";
 
+	list partitions = maplist(map r, raid_standalone, ``{
 
-
-	list partitions = maplist(`r, raid_standalone, ``{
-
-	    symbol fs = AutoinstStorage::StringFS2Symbol( r["filesystem"]:`reiser);
+	    symbol fs = StringFS2Symbol( r["filesystem"]:`reiser);
 
 
 	    map raid_options = $[];
@@ -85,9 +87,9 @@
 
 
 	    map ret = $[
-			 "raid_options"	: raid_options,
-			 "format"	: r["format"]:false,
-			 "partition_nr"	: nr
+			"raid_options"	: raid_options,
+			"format"	: r["format"]:false,
+			"partition_nr"	: nr
 
 	    ];
 
@@ -113,12 +115,18 @@
     }
 
 
+    /**
+     * General compatibility issues
+     *
+     */
     
     global define map Compat(map Install, map Configure) ``{
 
-	// 8.0 -> 8.1
 
+
+	//
 	// scripts
+	//
 	if ( haskey(Configure, "pre-scripts") ||
 	    haskey(Configure, "post-scripts") ||
 	    haskey(Configure, "chroot-scripts")	    )
@@ -219,14 +227,11 @@
 	    Install["report"] = report;
 	    Configure["security"] = security;
 	    Configure["networking"] = net;
-
-
 	}    
-    }
-
-
+  
+	//
 	// RAID
-
+	//
 	list old_raid = Install["raid"]:[];
 	if (size(old_raid) > 0 )
 	{
@@ -235,8 +240,11 @@
 	    d =add (d, new_raid );
 	    Install["partitioning"] = d;
 	}
-
+	
+	//
 	// LVM
+	//
+	
 	list old_lvm = Install["lvm"]:[];
 	if (size(old_lvm) > 0 )
 	{

@@ -13,6 +13,9 @@
 
 
     import "Arch";
+    import "Installation";
+    import "AutoinstConfig";
+    import "XML";
     import "Storage";
     import "Kernel";
     import "Mode";
@@ -20,13 +23,9 @@
     import "Label";
     import "Report";
     import "Popup";
-    import "ProfileLocation";
-
-    include "autoinstall/autoinst_dialogs.ycp";
-
-    global string remote_rules_location = "rules/rules.xml";
-    global string local_rules_location = "";
-    global string local_rules_file = "";
+    
+  
+    include "autoinstall/io.ycp";
 
     global boolean userrules = false;
 
@@ -94,96 +93,59 @@
      *
      */
     global define void AutoInstallRules () ``{
-		return;
-	}
-
-
-
-
-    global define void Init () ``{
-
-
-	local_rules_location = SCR::Read(.target.tmpdir) + "/rules";
-	SCR::Execute(.target.mkdir, local_rules_location);
-
-	local_rules_file = local_rules_location + "/rules.xml";
-
-	if (Mode::initial)
-	{
-	    ProbeRules();
-	}
-
 	return;
     }
+
+
+
 
     /**
-     * Probe all system data to build  a set of rules
+     * Cleanup XML file from namespaces put by xslt
      */
-    global define void ProbeRules () ``{
+    global define boolean XML_cleanup(string in, string out)
+	``{
 
-	// Architecture
-	arch = Arch::architecture;
-
-	karch = select(Kernel::kernel_packages, 0, "k_deflt");
-
-
-	// Memory
-	integer memory = 0;
-	list memories = SCR::Read(.probe.memory);
-	memory = memories[0,"resource","phys_mem",0,"range"]:0;
-	memsize =  memory / ( 1024 * 1024);
-
-
-	// Disk sizes
-	map storage =  Storage::GetTargetMap();
-	totaldisk = 0;
-	disksize = maplist( `k, `v, storage ,
-			    ``{
-				integer size_in_mb = v["cyl_size"]:0 * v["cyl_count"]:0 / ( 1024 * 1024 ) ;
-				totaldisk = totaldisk + size_in_mb;
-				return($["device":k, "size": size_in_mb]);
-			    });
-	// MAC
-	mac = getMAC();
-
-	// Network
-	if (Mode::initial)
-	    hostaddress  = SCR::Read(.etc.install_inf.IP);
-	else
-	    hostaddress  = "192.168.1.1"; // FIXME
-
-	// Hostid (i.e. a8c00101);
-	hostid = getHostid();
-
-
-
-	hostname = SCR::Read(.etc.install_inf.Hostname);
-	domain = SCR::Read(.etc.install_inf.Domain);
-	network = SCR::Read(.etc.install_inf.Network);
-	haspcmcia = SCR::Read(.etc.install_inf.HasPCMCIA);
-	xserver = SCR::Read(.etc.install_inf.XServer);
-
-	NonLinuxPartitions = Storage::GetForeignPrimary();
-	others = size(NonLinuxPartitions );
-	y2milestone ("Other primaries: %1", NonLinuxPartitions);
-	LinuxPartitions = Storage::GetOtherLinuxPartitions();
-	linux = size(LinuxPartitions);
-	y2milestone ("Other linux parts: %1",  LinuxPartitions);
-
-
-	return;
+	map ycpin = XML::XMLToYCPFile(in);
+	y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin);
+	return XML::YCPToXMLFile(`profile, ycpin, out);
     }
 
+
+
+    global define void StdErrLog( string stderr) ``{
+	UI::OpenDialog(
+		       `opt( `decorated ),
+		       `VBox(
+			     `VSpacing(0.5),
+			     `HSpacing(50),
+			     `HBox (
+				    `HSpacing(0.5),
+				    `LogView(`id(`log),  Label::ErrorMsg()  , 10, 100 ),
+				    `HSpacing(0.5)
+				    ),
+			     `VSpacing(0.2),
+			     `PushButton( `id(`ok), `opt(`default), Label::OKButton() ),
+			     `VSpacing(0.5)
+			     )
+		       );
+
+	UI::ChangeWidget(`id(`log),`Value, stderr);
+	UI::UserInput();
+	UI::CloseDialog();
+
+    };
+    
+    
     /**
      * Return MAC address of active device
      */
     global define string getMAC() ``{
 	string tmpmac = "";
-	list ifconfig = SCR::Read(.run.ifconfig);
+	list ifconfig = (list)SCR::Read(.run.ifconfig);
 	string device = "";
 	if (Mode::initial)
 	{
-	    device  = SCR::Read (.etc.install_inf.Netdevice);
+	    device  = (string)SCR::Read (.etc.install_inf.Netdevice);
 	}
 	else
 	{
@@ -217,6 +179,139 @@
     }
 
 
+
+    /**
+     * Probe all system data to build  a set of rules
+     */
+    global define void ProbeRules () ``{
+
+	// Architecture
+	arch = Arch::architecture;
+
+	karch = Kernel::kernel_packages[0]:"k_deflt";
+
+
+	// Memory
+	integer memory = 0;
+	list memories = (list)SCR::Read(.probe.memory);
+	memory = memories[0,"resource","phys_mem",0,"range"]:0;
+	memsize =  memory / ( 1024 * 1024);
+
+
+	// Disk sizes
+	map storage =  Storage::GetTargetMap();
+	totaldisk = 0;
+	disksize = maplist( string k, map v, storage ,
+			    ``{
+				integer size_in_mb = v["cyl_size"]:0 * v["cyl_count"]:0 / ( 1024 * 1024 ) ;
+				totaldisk = totaldisk + size_in_mb;
+				return($["device":k, "size": size_in_mb]);
+			    });
+	// MAC
+	mac = getMAC();
+
+	//
+	// Network
+	//
+	if (Mode::initial)
+	{
+	    hostaddress  = (string)SCR::Read(.etc.install_inf.IP);
+	}
+	else
+	{
+	    hostaddress  = "192.168.1.1"; // FIXME
+	}
+
+	//
+	// Hostid (i.e. a8c00101);
+	//
+	hostid = getHostid();
+
+
+
+	hostname = (string)SCR::Read(.etc.install_inf.Hostname);
+	domain = (string)SCR::Read(.etc.install_inf.Domain);
+	network = (string)SCR::Read(.etc.install_inf.Network);
+	haspcmcia = (string)SCR::Read(.etc.install_inf.HasPCMCIA);
+	xserver = (string)SCR::Read(.etc.install_inf.XServer);
+
+	NonLinuxPartitions = Storage::GetForeignPrimary();
+	others = size(NonLinuxPartitions );
+	
+	y2milestone ("Other primaries: %1", NonLinuxPartitions);
+	
+	LinuxPartitions = Storage::GetOtherLinuxPartitions();
+	linux = size(LinuxPartitions);
+	
+	y2milestone ("Other linux parts: %1",  LinuxPartitions);
+
+
+	return;
+    }
+
+
+
+    global define void Init () ``{
+
+	if (Mode::initial)
+	{
+	    ProbeRules();
+	}
+
+	return;
+    }
+
+    /**
+     * Create shell command for rule verification
+     */
+
+    define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
+	if (op == "and")
+	    op = " -a ";
+	else if (op == "or")
+	    op = " -o ";
+
+	string tmpshell = "";
+	y2debug("Match type: %1", matchtype);
+	if (matchtype == "exact")
+	    tmpshell = tmpshell + sformat("\"$%1\" = \"%2\" ", var,  val);
+	else if (matchtype == "greater")
+	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" ",  var,  val);
+	else if (matchtype == "lower")
+	    tmpshell = tmpshell + sformat("\"$%1\" -lt \"%2\" ",  var,  val);
+	else if (matchtype == "range")
+	{
+	    list range =splitstring((string)val, "-");
+	    y2debug("Range: %1", range);
+	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" -a \"$%1\" -lt \"%3\" ",  var,  range[0]:0,  range[1]:0);
+	}
+
+	if (match)
+	{
+	    shell = shell + sformat(" %1 %2", op, tmpshell);
+	}
+	else
+	{
+	    shell = tmpshell;
+	}
+
+    }
+
+
+    /**
+     * Verify rules using the shell
+     */
+    define integer verifyrules ()
+    ``{
+
+	string script = sformat("if [ %1 ]; then exit 0; else exit 1; fi", shell);
+	map ret = (map)SCR::Execute (.target.bash_output, script, env);
+	
+	y2milestone("Bash return: %1 (%2) (%3)", script, ret, env);
+	
+	return ret["exit"]:-1;
+    }
+
     /**
      * Read rules file
      *
@@ -224,7 +319,7 @@
     global define void Read() ``{
 	import "XML";
 
-	UserRules = XML::XMLToYCPFile( local_rules_file );
+	UserRules = XML::XMLToYCPFile( AutoinstConfig::local_rules_file );
 
 	y2milestone("Rules: %1", UserRules);
 
@@ -259,12 +354,14 @@
 		    else if ( rule == "custom1" ||  rule == "custom2" || rule == "custom3" ||  rule == "custom4" || rule == "custom5")
 		    {
 			string script = ruledef["script"]:"exit -1";
-			string tmpdir = SCR::Read( .target.tmpdir );
+			string tmpdir = AutoinstConfig::tmpDir;
+			
 			string scriptPath = sformat("%1/%2", tmpdir,  "rule_" + rule);
+			
 			y2milestone("Writing rule script into %1", scriptPath);
 			SCR::Write(.target.string, scriptPath, script);
 
-			map out = SCR::Execute (.target.bash_output, "/bin/sh " + scriptPath, $[]);
+			map out = (map) SCR::Execute (.target.bash_output, "/bin/sh " + scriptPath, $[]);
 			string script_result = out["stdout"]:"";
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
@@ -385,53 +482,6 @@
     }
 
 
-    /**
-     * Create shell command for rule verification
-     */
-
-    define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
-	if (op == "and")
-	    op = " -a ";
-	else if (op == "or")
-	    op = " -o ";
-
-	string tmpshell = "";
-	y2debug("Match type: %1", matchtype);
-	if (matchtype == "exact")
-	    tmpshell = tmpshell + sformat("\"$%1\" = \"%2\" ", var,  val);
-	else if (matchtype == "greater")
-	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" ",  var,  val);
-	else if (matchtype == "lower")
-	    tmpshell = tmpshell + sformat("\"$%1\" -lt \"%2\" ",  var,  val);
-	else if (matchtype == "range")
-	{
-	    list range = splitstring(val, "-");
-	    y2debug("Range: %1", range);
-	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" -a \"$%1\" -lt \"%3\" ",  var,  range[0]:0,  range[1]:0);
-	}
-
-	if (match)
-	{
-	    shell = shell + sformat(" %1 %2", op, tmpshell);
-	}
-	else
-	{
-	    shell = tmpshell;
-	}
-
-    }
-
-    /**
-     * Verify rules using the shell
-     */
-    define verifyrules ()
-    ``{
-
-	string script = sformat("if [ %1 ]; then exit 0; else exit 1; fi", shell);
-	map ret = SCR::Execute (.target.bash_output, script, env);
-	y2milestone("Bash return: %1 (%2) (%3)", script, ret, env);
-	return ret["exit"]:-1;
-    }
 
     /**
      * Return list of file to merge (Order matters)
@@ -450,10 +500,13 @@
 
 	y2milestone("Getting Rules: %1", tomerge);
 
-	string scheme = ProfileLocation::scheme;
-	string host = ProfileLocation::host;
-	string filepath = ProfileLocation::filepath;
-	string directory = ProfileLocation::directory;
+	string scheme = AutoinstConfig::scheme;
+	string host = AutoinstConfig::host;
+	string filepath = AutoinstConfig::filepath;
+	string directory = AutoinstConfig::directory;
+	string port = AutoinstConfig::port;
+	string user = AutoinstConfig::user;
+	string pass = AutoinstConfig::pass;
 
 	list valid = [];
 	boolean stop = false;
@@ -461,22 +514,23 @@
 		``{
 	    if (!stop)
 	    {
-		string dir = ProfileLocation::dirname ( file );
+		string dir = dirname ( file );
 		if (dir != "")
 		{
-		    SCR::Execute(.target.mkdir, local_rules_location + "/" + dir);
+		    SCR::Execute(.target.mkdir, AutoinstConfig::local_rules_location + "/" + dir);
 		}
 
-		string localfile = local_rules_location + "/" + file  ;
-		if (!ProfileLocation::Get( scheme, host, directory + "/" + file , localfile))
+		string localfile = AutoinstConfig::local_rules_location + "/" + file  ;
+		if (!Get( scheme, host, directory + "/" + file , port, user, pass, localfile))
 		{
 		    y2error("Error while fetching file:  %1", directory + "/" + file);
-
 		}
 		else
 		{
 		    if (Behaviour == `one)
+		    {
 			stop = true;
+		    }
 
 		    valid = add(valid, file);
 
@@ -504,7 +558,7 @@
     global define boolean Merge (  string result_profile   )
 	``{
 
-	string tmpdir = SCR::Read( .target.tmpdir );
+	string tmpdir = AutoinstConfig::tmpDir;
 	boolean ok = true;
 	boolean skip = false;
 
@@ -514,7 +568,7 @@
 		``{
 	    y2milestone("Working on file: %1", file);
 
-	    string current_profile = local_rules_location + "/" + file;
+	    string current_profile = AutoinstConfig::local_rules_location + "/" + file;
 	    if (!skip)
 	    {
 		if (!XML_cleanup(current_profile,  tmpdir + "/base_profile.xml"))
@@ -529,7 +583,7 @@
 		MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
 		MergeCommand = MergeCommand +   base_profile + " ";
 
-		map xsltret = SCR::Execute(.target.bash_output, MergeCommand);
+		map xsltret = (map)SCR::Execute(.target.bash_output, MergeCommand);
 		y2milestone("Merge result: %1", xsltret);
 		if (xsltret["exit"]:-1 != 0 || xsltret["stderr"]:"" != "")
 		{
@@ -559,8 +613,8 @@
 	``{
 
 	boolean ok = true;
-	string tmpdir = SCR::Read( .target.tmpdir );
-	string prefinal = local_rules_location + "/prefinal_autoinst.xml" ;
+	string tmpdir = AutoinstConfig::tmpDir;
+	string prefinal = AutoinstConfig::local_rules_location + "/prefinal_autoinst.xml" ;
 	if (!Merge (  prefinal ) )
 	    return false;
 
@@ -646,15 +700,4 @@ classes."));
 
 
 
-
-    /**
-     * Cleanup XML file from namespaces put by xslt
-     */
-    global define boolean XML_cleanup(string in, string out)
-	``{
-
-	map ycpin = XML::XMLToYCPFile(in);
-	y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin);
-	return XML::YCPToXMLFile(`profile, ycpin, out);
-    }
 }

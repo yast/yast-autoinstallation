@@ -11,29 +11,19 @@
 
     textdomain "autoinst";
 
-    import "Popup";
    
-
+    //
     // Shows a dialog when 'control file' can't be found
-
-    global define symbol ProfileSourceDlg ()
+    //
+    
+    global define string ProfileSourceDialog (string original)
 	``{
-	import "ProfileLocation";
-	list supported_protocol = ["HTTP","NFS", "TFTP", "Floppy", "File", "Device"];
-	list protocols = maplist(string p, supported_protocol, ``{
-	    if (tolower(p) ==  ProfileLocation::scheme ) {
-		return (`item(`id(tolower(p)), p , true));
-	    }
-	    else {
-		return (`item(`id(tolower(p)), p ));
-	    }
-	});
-
-	string helptext = UI(_("<p>
+	string helptext = _("<p>
 Profile for this machine could not be found or retrieved.
 Please make sure you have specified the correct location
-on the command line.</p>"));
-	string title = UI(_("System Profile Location"));
+on the command line.</p>");
+	string title = _("System Profile Location");
+	
 	UI::OpenDialog(`opt( `decorated ),
 		       `HBox(
 			     `HWeight(50, `RichText( helptext )),
@@ -43,100 +33,48 @@ on the command line.</p>"));
 				      `VBox(
 					    `Heading( title),
 					    `VSpacing(1),
-					    `VStretch(),
-					    `Left(`ComboBox(`id(`protocol), `opt(`notify), _("&Protocol"), protocols )),
-					    `Left(`TextEntry(`id(`server), _("&Server or Device:"), ProfileLocation::host)),
-					    `Left(`TextEntry(`id(`Path), _("Pa&th:"), ProfileLocation::filepath)),
+					    `VStretch(),					    
+					    `Left(`TextEntry(`id(`uri), _("&Profile Location:"), original )),				   
 					    `VSpacing(1),
 					    `VStretch(),
 					    `HBox(
 						  `PushButton(`id(`retry), `opt(`default),  Label::RetryButton()   ),
 						  `PushButton(`id(`abort),  Label::AbortButton() )
 						  )
-					    ))
+					    )
+				      )
 			     )
 		       );
 
-	any ret = "";
-	string server = "";
-	string Path = "";
-
-	if ( ProfileLocation::scheme == "file" || ProfileLocation::scheme  == "floppy" || ProfileLocation::scheme == "cdrom")
-	{
-	    UI::ChangeWidget(`id(`server), `Enabled, false);
-	    UI::SetFocus(`id(`Path));
-	}
-	else
-	{
-	    UI::SetFocus(`id(`server));
-	}
-
-
+	symbol ret = `none;
+	string uri = "";
 	repeat {
-	    ret = UI::UserInput();
+	    ret = (symbol)UI::UserInput();
 
 	    if (ret == `abort)
 	    {
 		if (Popup::ConfirmAbort(`painless))
-		    return `abort;
+		{
+		    return ("");
+		}
 		else
+		{
 		    continue;
+		}
 	    }
-
-	    string protocol =  UI::QueryWidget(`id(`protocol), `Value );
-
-	    if (
-		     protocol == "nfs" ||
-		     protocol == "tftp" ||
-		     protocol == "http" ||
-		     protocol == "device"
-		     )
+	    
+	    uri = (string)UI::QueryWidget(`id(`uri), `Value );
+	    if (uri == "")
 	    {
-		UI::ChangeWidget(`id(`server), `Enabled, true);
-		ProfileLocation::scheme = tolower(protocol);
+		continue;
 	    }
-	    else if (protocol == "file" || protocol == "floppy")
-	    {
-		ProfileLocation::scheme = tolower(protocol);
-		UI::ChangeWidget(`id(`server), `Enabled, false);
-	    }
-
-
-	    server = UI::QueryWidget(`id(`server), `Value );
-	    Path = UI::QueryWidget(`id(`Path), `Value );
+	    
 	} until (ret == `retry  || ret == `abort);
 
-	ProfileLocation::host		= server;
-	ProfileLocation::filepath 	= Path;
-
 	UI::CloseDialog();
-	return `next;
+	return uri;
     }
 
-
-
-    global define void StdErrLog( string stderr) ``{
-	UI::OpenDialog(
-		       `opt( `decorated ),
-		       `VBox(
-			     `VSpacing(0.5),
-			     `HSpacing(50),
-			     `HBox (
-				    `HSpacing(0.5),
-				    `LogView(`id(`log),  Label::ErrorMsg()  , 10, 100 ),
-				    `HSpacing(0.5)
-				    ),
-			     `VSpacing(0.2),
-			     `PushButton( `id(`ok), `opt(`default), Label::OKButton() ),
-			     `VSpacing(0.5)
-			     )
-		       );
-
-	UI::ChangeWidget(`id(`log),`Value, stderr);
-	UI::UserInput();
-	UI::CloseDialog();
-
-    };
 
 
 
