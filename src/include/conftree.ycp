@@ -372,6 +372,17 @@
 		    ret = cloneSystem();		    
 		    CreateTreeWidget();		    
 		}
+		else if ( ret == `menu_iso)
+		{
+		    import "ISO";
+		    Wizard::RestoreHelp("");
+		    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+		    
+		    ret = isoSequence();
+
+		    
+		    CreateTreeWidget();		    
+		}		
 		else if (ret == `menu_exit) // EXIT
 		{
 		    if (Profile::changed)
@@ -384,14 +395,14 @@
 			
 			symbol answer = UI::AnyQuestionPopup3(_("Control file changed."),
 							      sformat(_("Do you want to save the changes to %1?"), current),
-							      _("&Yes"),
-							      _("&No"),
-							      _("&Cancel"),
+							      UI::YesButtonLabel(),
+							      UI::NoButtonLabel(),
+							      UI::CancelButtonLabel(),
 							      `focus_yes
 							      );
 			if (answer == `no)
-			{
-			    ret = `next;
+			{	
+			    ret = `exit;
 			}
 			else if (answer == `yes)
 			{
@@ -406,9 +417,12 @@
 		    }
 		    else
 		    {
-			ret = `next;
+			ret = `exit;
 		    }
 		}
+
+
+
 		
 		
 		if (ret == `menu_open) // OPEN
@@ -498,6 +512,9 @@
 					sourceView , "", true , true);
 		    tree_item = "System"; 		    		    
 		}
+		else if ( ret == `menu_tree) {
+		    tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+		}
 		else if (ret == `menu_new) // NEW
 		{
 		    Profile::Reset();
@@ -508,7 +525,7 @@
 		
 	    }
 
-	} until ( ret == `next || ret == `back ||   (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
+	} until ( ret == `exit );
 
 	Wizard::RestoreHelp("");
 	Wizard::RestoreScreenShotName ();

@@ -21,11 +21,17 @@
     include "autoinstall/dialogs.ycp";
 
     string func = WFM::Args(0);
-    map param = WFM::Args(1);
+    map param = $[];
+    if (func != "Result")
+    {
+	param = WFM::Args(1);
+	AIConfig::softwareSettings = param;
+    }
+    
     map ret = $[];
 
 
-    string base = param["base"]:"Custom";
+    string base = param["base"]:"";
 
     list addons = param["addons"]:[];
 
@@ -35,6 +41,7 @@
 
 
     /**
+     * Summary
      * @return Html formatted configuration summary
      */
     define string Summary()``{
@@ -91,7 +98,13 @@ TODO
 			    helptext, false, true);
 	
 	list available_base_selections = Pkg::GetSelections( `available, "base" );
-	y2milestone("AVAILABLE Selections: %1",  available_base_selections);
+	
+	list current_base_selections = Pkg::GetSelections( `selected, "base" );
+	y2milestone ("current_base_selections %1", current_base_selections);
+
+	// save the current base selection
+	string save_selection = current_base_selections[0]:"default";	
+
 	// Construct a box with radiobuttons for each software base configuration
 	term baseconfs_box = `VBox();
 
@@ -148,6 +161,9 @@ TODO
 				  );
 
 	Wizard::SetContents(title, contents, helptext, true, true);
+	
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel);
+	UI::ChangeWidget(`id(`back), `Enabled, false);	
 	any ret = nil;
 	boolean error_found = false;
 
@@ -166,12 +182,12 @@ TODO
 		{
 		    // set the new selection
 		    boolean pkgret = Pkg::SetSelection( base_selection );
-		    /*
+		    
 		    if (size(pacs)>0)
 		    {
 			Pkg::DoProvide(pacs);
 		    }
-		    */
+		    
 		    y2milestone ( "Selecting '%1' returns: %2", base_selection, pkgret );
 
 		    pkgret = Pkg::ActivateSelections();
@@ -184,20 +200,24 @@ TODO
 		{
 		    any details_ret = `again;
 
-		    if (save_selection != base_selection || size(Pkg::GetPackages(`selected, true)) == 0)
-		    {
+		   
 			boolean ret = Pkg::SetSelection( base_selection );
-			/*
+			foreach(string addon, addons, ``{
+			    Pkg::SetSelection( addon );
+			});
+			
+			
 			if (size(pacs)>0)
 			{
 			    Pkg::DoProvide(pacs);
 			}
-			*/
+			
 			y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
 			// activate current selection before entering package widget
 			Pkg::ActivateSelections();
 
-		    }
+		 
+		    
 		    while ( details_ret == `again )
 		    {
 			details_ret = WFM::CallFunction( `inst_packages( true, true ) );
@@ -222,18 +242,33 @@ TODO
 		    }
 		}
 
-	    } until ( (ret == `next && !error_found) || ret == `cancel ||  ret == `back || ret == `abort);
-	// list allpacs = Pkg::GetPackages(`selected, true);	
-	list seladd =  Pkg::GetSelections(`selected, "");
-	list selbase =  Pkg::GetSelections(`selected, "base");
+	    } until ( ret == `next  || ret == `cancel ||  ret == `abort);
+	
+	list allpacs = Pkg::GetPackages(`selected, true);
 
-	/*
+	list seladd = [];
+	list selbase = [];
+	if ( ret != `abort || ret != `cancel )
+	{
+	    seladd =  Pkg::GetSelections(`selected, "");
+	    selbase =  Pkg::GetSelections(`selected, "base");
+	}
+	else
+	{
+	    seladd = addons;
+	    selbase = [base];
+	}
+	
+
+	
 	foreach(string selection , union(selbase, seladd),
 		``{
 	    Pkg::ClearSelection(selection);
 	});
 	
 	Pkg::DoRemove (allpacs);
+	y2milestone("Still selected: %1", Pkg::GetPackages(`selected, true));
+	
 	
 	Pkg::SetSelection(selbase[0]:"");
 	
@@ -242,6 +277,8 @@ TODO
 	    Pkg::SetSelection(selection);
 	});
 	Pkg::ActivateSelections();
+	Pkg::PkgSolve();
+	
 	list onlysel = Pkg::GetPackages(`selected, true);
 	y2milestone("selection packages: %1, all packages: %2", size(onlysel), size(allpacs));
 
@@ -252,10 +289,12 @@ TODO
 	    }
 	});
 	
-	*/
+	
 	software["addons"] = seladd;
 	software["base"] =   selbase[0]:"";
 	software["packages"] = pacs;
+
+	AIConfig::softwareSettings = software;
 	Wizard::CloseDialog();
 	return ret;
     }
@@ -275,7 +314,7 @@ TODO
 	return res;
     }
     else if (func == "Result") {
-	return(software);
+	return(AIConfig::softwareSettings);
     }
 
 /* unknown function */
