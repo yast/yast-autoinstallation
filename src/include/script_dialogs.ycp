@@ -220,7 +220,7 @@ name and the content of the script.
 	    }
 	    else if (ret == `loadsource)
 	    {
-		string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Open File") );
+		string filename = PopupFile( AutoinstConfig::Repository);
 		if (filename!=nil)
 		{
 		    string source = SCR::Read(.target.string, filename);

@@ -425,7 +425,10 @@
 		
 		    if (ret == `menu_open) // OPEN
 		    {
-			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Open File") );
+						
+			
+			string filename = PopupFile( AutoinstConfig::Repository);
+			
 			if (filename!=nil)
 			{			
 			    y2milestone("file: %1", filename);
@@ -441,7 +444,9 @@
 		    {
 			Wizard::CreateDialog();	
 			include "autoinstall/imports.ycp";
-			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Import Kickstart File") );
+			string head = _("Import Kickstart File");
+			string filename = PopupFile( AutoinstConfig::Repository);
+			// string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Import Kickstart File") );
 			if ( filename!=nil )
 			{
 			    map ksConfig = readKS(filename);
@@ -457,7 +462,8 @@ were imported correctly.
 		    {
 			if (AutoinstConfig::currentFile == "")
 			{
-			    string filename = UI::AskForSaveFileName( AutoinstConfig::Repository, "*", "Save file" );
+
+			    string filename = SaveFileAs( AutoinstConfig::Repository);
 			    if (filename != nil)
 			    {
 				AutoinstConfig::currentFile = filename;
@@ -484,8 +490,9 @@ were imported correctly.
 		    }
 		    else if (ret == `menu_saveas) // SAVE AS
 		    {
-			string filename = UI::AskForSaveFileName( AutoinstConfig::Repository, "*", "Save as..." );
-			if (filename!=nil) {
+			
+			string filename = SaveFileAs(AutoinstConfig::Repository);
+			if ( filename != nil ) {
 			    AutoinstConfig::currentFile = filename;
 			    if ( Profile::Save( AutoinstConfig::currentFile ))
 			    {
