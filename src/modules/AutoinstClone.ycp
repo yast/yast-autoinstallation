@@ -214,7 +214,7 @@
 	boolean readret = Call::Function("bootloader_auto", ["Read", $[] ]);
 	if (readret)
 	{
-	    bootloader = Call::Function("bootloader_auto", ["Result", $[] ]);
+	    bootloader = Call::Function("bootloader_auto", ["Export", $[] ]);
 	}		
 
 	return bootloader;
@@ -306,9 +306,9 @@
 	     
 	     foreach ( string res, Merge, ``{
 		 if ( MergeTypes[i]:"map" == "map") 
-		     Profile::Flat[res] =    Call::Function(auto, ["Result", $[] ]) ;
+		     Profile::Flat[res] =    Call::Function(auto, ["Export", $[] ]) ;
 		 else
-		     Profile::Flat[res] = Call::Function(auto, ["Result", [] ]) ;
+		     Profile::Flat[res] = Call::Function(auto, ["Export", [] ]) ;
 		 i = i + 1;
 	     });
 	     
@@ -318,12 +318,12 @@
 	     if (data_type == "map")
 	     {
 		 readret = Call::Function(auto , ["Read", $[] ]);
-		 Profile::Flat[resource]  = Call::Function(auto, ["Result", $[] ]) ;
+		 Profile::Flat[resource]  = Call::Function(auto, ["Export", $[] ]) ;
 	     }
 	     else
 	     {
 		 readret = Call::Function(auto , ["Read", [] ]);
-		 Profile::Flat[resource]  = Call::Function(auto, ["Result", [] ]) ;
+		 Profile::Flat[resource]  = Call::Function(auto, ["Export", [] ]) ;
 	     }
 	 }
 

@@ -60,6 +60,8 @@
     // Parsed data to be used to set variables in other modules
     //////////////////////////////////////////////////////////////
 
+    
+    global boolean Confirm  = true;    
     global boolean interactive = true;
 
 
@@ -75,6 +77,7 @@
   
     global boolean IgnorePkgErr = true;
     global map Bootloader = $[];
+
     
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Local variables
@@ -182,12 +185,17 @@
      * @return void
      */
     global define boolean bootloaderSettings()``{
+	import "BootCommon";
 
+	any ret = nil;
+	
 	// Bootloader::manual_location = true;
 	Bootloader = Profile::Flat["bootloader"]:$[];
 
-	string parameters = Bootloader["kernel_parameters"]:"";
+	y2debug ("Importing settings %1", Bootloader);
 
+
+	string parameters = Bootloader["kernel_parameters"]:"";
 	if ( size(parameters) > 0)
 	{
 	    foreach (`parameter, splitstring(parameters, " "),
@@ -200,7 +208,6 @@
 	    });
 	    Bootloader = remove(Bootloader, "kernel_parameters");
 	}
-
 	
 	// Add initrd modules
 	if (size(Bootloader["initrd_modules"]:[]) > 0)
@@ -213,19 +220,53 @@
 	    Bootloader = remove(Bootloader, "initrd_modules");
 	}
 
+	
+	y2debug ("Starting importing settings");
+	ret = Bootloader::Import(Bootloader);
+	y2debug ("Importing done, result %1", Bootloader::Export ());
+	BootCommon::DetectDisks ();
+	y2debug ("Proposing - fix");
+	Bootloader::Propose ();
+	y2debug ("Proposing done");
+	// fix GRUB's device names
+	if (Bootloader::getLoaderType () == "grub")
+	{
+	    import "BootGRUB";
+	    string gfxmenu = BootCommon::globals["gfxmenu"]:"";
+	    if (gfxmenu != "")
+		BootCommon::globals["gfxmenu"] = BootGRUB::file2grub (gfxmenu);
+	    
+	    BootCommon::sections = maplist (`s, BootCommon::sections, ``{
+		string initrd = s["initrd"]:"";
+		if (initrd != "" && substring(initrd, 0, 1) == "/")
+		{
+		    s["initrd"] = BootGRUB::file2grub (initrd);
+		}
+		string kernel = s["kernel"]:"";
+		if (kernel != "" && substring (kernel, 0, 1) == "/")
+		{
+		    list(string) parts = splitstring (kernel, " ");
+		    parts = filter (`p, parts, ``(p != ""));
+		    kernel = parts[0]:"";
+		    parts[0] = BootGRUB::file2grub (kernel);
+		    s["kernel"] = mergestring (parts, " ");
+		}
+		return s;
+	    });
+	}
+	// fix root partitions
+	y2milestone ("Fixing partitions");
+	foreach (`s, ["linux", "failsafe"], ``{
+	    string root = Bootloader::getKernelParam (s, "root");
+	    y2milestone ("Section %1 has root %2", s, root);
+	    if (root == "true" || root == "false" || root == "")
+	    {
+		y2milestone ("Setting root of %1 to %2", s, BootCommon::RootPartitionDevice);
+		Bootloader::setKernelParam (s, "root",
+					    BootCommon::RootPartitionDevice);
+	    }
+	});
 
-	if (Bootloader == $[])
-	{
-	    Bootloader::Propose ();
-	    return true;
-	}
-	else
-	{
-	    Bootloader::Import(Bootloader);
-	    // FIXME: detect if configuration is the result of cloning.
-	    BootCommon::was_proposed = false;
-	    Bootloader::Propose ();
-	}
     }
 
 
@@ -264,18 +305,18 @@
 	import "Bootloader";
 	import "AutoinstGeneral";
 
-	if (AutoinstGeneral::ForceBoot && Mode::hardBoot)
+	if (AutoinstGeneral::Mode["forceboot"]:false && Mode::hardBoot)
 	{
 	    linuxrc["Root"] = Bootloader::getRootDevice ();
 	}
 
-	if (AutoinstGeneral::Reboot && !Mode::hardBoot)
+	if (AutoinstGeneral::Mode["reboot"]:false && !Mode::hardBoot)
 	{
 	    linuxrc["Root"] = "reboot";
 	    Mode::hardBoot = true;
 	}
 
-	if (AutoinstGeneral::RebootMsg)
+	if (AutoinstGeneral::Mode["rebootmsg"]:false)
 	{
 	    linuxrc["RebootMsg"] = "1";
 	}
