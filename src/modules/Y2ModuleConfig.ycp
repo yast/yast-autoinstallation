@@ -108,7 +108,6 @@
     /**
      * Get resource name
      */
-
     global define string getResource( string default_resource) ``{
 	return ModuleMap[default_resource, "AutoinstResource"]:default_resource;
     }
@@ -119,7 +118,6 @@
     /**
      * Get resource data
      */
-
     global define any getResourceData( map resourceMap, string resource) ``{
 
 
@@ -214,5 +212,58 @@
 	});
     }
 
+/*
+
+XML Example
+
+<dependencies>
+	<files config:type="list">
+		<dependency>users</dependency>
+	</files>
+</dependencies>
+
+*/
+
+
+	global define list Deps () ``{
+
+	map deps = $[
+			"files": ["users"],
+			"nfs":	 ["lan"],
+			"nfs_server": ["lan"],
+			"samba-server": ["lan"],
+			"samba-client": ["lan"],
+			"printer": ["lan"],
+			"firewall": ["lan"],
+			];
+
+	list m = [];
+	list done = [];
+	foreach(`p,`d, ModuleMap,
+        ``{
+
+		if (!contains(done, p)) {
+		if (haskey(deps, p)) {
+			y2milestone("found dep");
+			foreach(`r, deps[p]:[], ``{
+				if (!contains(done, r)) {
+				y2milestone("working on %1", r);
+				m = add(m, $["res":r, "data":ModuleMap[r]:$[]]);
+				done = add(done, r);
+				}
+			});
+			m = add(m, $["res":p, "data":d]);
+			done = add(done, p);
+		}
+		else {
+			m = add(m, $["res":p, "data":d]);
+			done = add(done, p);
+		}
+		}
+	});
+
+	return m;
+
+	}
 
 }

@@ -22,7 +22,6 @@
 
 
 	integer current_step    = 0;    // Required by logStep()
-	string log_destination = ">>/var/log/YaST2/y2log.autoyast";
 
     string resource = "";
     string module_auto = "";
@@ -48,7 +47,7 @@ Please wait while the system is being configured.
 </p>");
 
 
-	integer max_steps = size(Y2ModuleConfig::ModuleMap) + 1;
+	integer max_steps = size(Y2ModuleConfig::ModuleMap) + 3;
     term contents = `VBox(
               `LogView(`id(`log), "", 10, 0 ),
 
@@ -69,9 +68,18 @@ Please wait while the system is being configured.
     y2debug("Flat profile: %1", Profile::Flat);
 
 
+	list deps = [];
+	if (haskey(Profile::Flat, "dependencies"))
+		deps = eval(Profile::Flat["dependencies"]:$[]);
+	else
+		deps = Y2ModuleConfig::Deps();
 
-    foreach(`p,`d, Y2ModuleConfig::ModuleMap,
+	y2milestone("Order: %1", maplist(`d, deps, ``(d["res"]:"")));
+
+    foreach(`r, deps,
 	    ``{
+	string p = r["res"]:"";
+	map d = r["data"]:$[];
 
 	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write")
 	{
