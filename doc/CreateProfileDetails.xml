@@ -112,33 +112,40 @@
 
 
     <section id="CreateProfile.Bootloader">
-      <title>The Boot loader</title>
-      <warning>
-          <title>Bootloader Changes</title>
-          <para>Since SuSE Linux 8.2, the bootloader configuration has undergone a
-              major rework and now offers more features and configuration
-              possibilities.
-          </para>
-      </warning>
-      <para>
-          It is now possible to specify which bootloader needs to be
-          installed and it  is possible to specify sections and
-          more bootloader options.
-      </para>
-      <para>
-	If the bootloader resource is not configured, the system will propose
-	best configuration depending on the partitioning plan. In some cases
-	you must  decide  where to to install the bootloader (the Master Boot Record or the first sector of
-	the<filename> /boot</filename> partition) and must specify additional options for the bootloader to be installed correctly.
-      </para>
-      <para>
-	For example, install the bootloader on the Linux root partition, add the value <emphasis>root</emphasis>
-	to the <emphasis>location</emphasis> property.
-      </para>
-      <para>
-	You can pass  special parameters to the kernel to be used when the
-	system boots, enter these parameters using the <emphasis>kernel_parameters</emphasis> property. 
-      </para>
+        <title>The Boot loader</title>
+        <warning>
+            <title>Bootloader Changes</title>
+            <para>Since SuSE Linux 8.2, the bootloader configuration has undergone a
+                major rework and now offers more features and configuration
+                possibilities.
+            </para>
+        </warning>
+        <para>
+            It is now possible to specify which bootloader needs to be
+            installed and it  is possible to specify sections and
+            more bootloader options.
+        </para>
+        <para>
+            If the bootloader resource is not configured, the system will propose
+            best configuration depending on the partitioning plan. In some cases
+            you must  decide  where to to install the bootloader (the Master Boot Record or the first sector of
+            the<filename> /boot</filename> partition) and must specify additional options for the bootloader to be installed correctly.
+        </para>
+        <note><title>Boot Partition on IA64 Systems</title>
+            <para>The boot partition on <emphasis>IA64</emphasis> is
+                <emphasis>/boot/efi</emphasis> and is set to this value if only
+                <emphasis>/boot</emphasis> is configured in the control
+                file.
+            </para>
+        </note>
+        <para>
+            For example, install the bootloader on the Linux root partition, add the value <emphasis>root</emphasis>
+            to the <emphasis>location</emphasis> property.
+        </para>
+        <para>
+            You can pass  special parameters to the kernel to be used when the
+            system boots, enter these parameters using the <emphasis>kernel_parameters</emphasis> property. 
+        </para>
       &example.bootloader;
       
       <tip>
