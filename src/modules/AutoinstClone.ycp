@@ -28,10 +28,8 @@
     import "AutoinstConfig";
     include "autoinstall/xml.ycp";
 
-    
-
     global map Profile = $[];
-  
+
     integer bytes_per_unit = 0;
 
 
@@ -377,10 +375,10 @@
 
 
      /**
-      * Create a list of clonable resources 
+      * Create a list of clonable resources
       * @return list list to be used in widgets
       */
-     global define list createClonableList() 
+     global define list createClonableList()
 	 ``{
 	 list items = [];
 	 foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
@@ -390,6 +388,8 @@
 	     {
 		 // Set resource name, if not using default value
 		 string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
+                 if (resource == "")
+                    resource = def_resource;
 		 string name = resourceMap["Name"]:"";
 		 if (resource != "")
 		 {
@@ -404,8 +404,6 @@
 	 return items;
      }
 
-    
-
     /**
      * Build the profile
      * @return map Profile
@@ -415,9 +413,11 @@
 	y2milestone("Additional resources: %1 %2", base, additional);
 	Profile::Reset();
 	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
-	    
+
 	    // Set resource name, if not using default value
-	    string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:def_resource;
+	    string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
+            if (resource == "")
+                resource = def_resource;
 	    y2milestone("current resource: %1", resource);
 	    if (contains(additional, resource))
 	    {

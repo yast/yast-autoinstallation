@@ -103,16 +103,16 @@
 	//
 	// Compat stuff here (FIXME)
 	//
-	
+
 	Configure = profile["configure"]:$[];
 	Install = profile["install"]:$[];
 	Flat = union( Configure, Install );
-	
+
 	return;
     }
 
 
-    
+
     /**
      * Prepare Profile for saving and remove empty data structs
      * @return void
@@ -121,23 +121,23 @@
 	``{
 	// y2debug("Modulemap: %1", ModuleMap );
 	y2debug("Flat: %1", Flat );
-	
+
 	foreach(string p, map d, ModuleMap, ``{
 	    //
 	    // Set resource name, if not using default value
 	    //
-	    
+
 	    string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
 	    if (resource == "")
 	    {
 		resource = p;
 	    }
-	    string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";	    
-	    
+	    string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+
 	    integer s = 0;
 	    if ( tomerge == "") {
 		if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
-		{		
+		{
 		    s = size(Flat[resource]:$[]);
 		}
 		else
@@ -145,7 +145,7 @@
 		    s = size(Flat[resource]:[]) ;
 		}
 	    }
-	    
+
 	    if ( s != 0 || tomerge != "")
 	    {
 		if (d["X-SuSE-YaST-AutoInstPath"]:"" == "install")
@@ -211,7 +211,7 @@
 	    current = remove(current,"configure");
 	}
 
-	
+
 	return;
 
     }
@@ -277,6 +277,242 @@
 	}
     }
 
+    /**
+     * Provide Compatibility to older distributions.
+     * @param list lvm_standalone Stand alone LVM configuration
+     * @return list LVM configuration integrated into partitioning resource
+     */
+    global define list convertLVM (list lvm_standalone ) ``{
+
+	list all_lvm = [];
+
+	foreach (map group, lvm_standalone, ``{
+	    map new_lvm = $[];
+	    string vg = group["lvm_name"]:"";
+
+	    new_lvm["device"]       = sformat("/dev/%1", vg );
+	    new_lvm["is_lvm_vg"]    = true;
+	    new_lvm["use"]      = "all";
+	    new_lvm["pesize"]       = group["pesize"]:"";
+	    list partitions = maplist(map lv, group["logical_volumes"]:[], ``{
+
+		symbol lv_fs     = lv["lv_fs"]:`reiser;
+
+
+		return( $[ "filesystem": lv_fs,
+			   "lv_name":    lv["lv_name"]:"",
+			   "mount":  lv["lv_mount"]:"",
+			   "size":   lv["lv_size"]:"",
+			   "stripes":    lv["stripes"]:1
+			]);
+
+	    });
+
+	    new_lvm["partitions"] = partitions;
+	    all_lvm = add (all_lvm, new_lvm);
+
+	});
+	y2milestone("Converted LVM: %1", all_lvm);
+
+	return (all_lvm);
+    }
+
+    /**
+     * Provide Compatibility to older distributions.
+     * @param list raid_standalone Stand alone RAID configuration
+     * @return map RAID configuration integrated into partitioning resource
+     */
+    global define map convertRAID (list raid_standalone ) ``{
+	map raid = $[];
+
+	raid["device"]	= "/dev/md";
+	raid["use"]	= "all";
+
+	list partitions = maplist(map r, raid_standalone, ``{
+
+	    symbol fs =  r["filesystem"]:`reiser;
+
+
+	    map raid_options = $[];
+
+	    raid_options["chunk_size"]			= r["chunk_size"]:"";
+	    raid_options["raid_type"]			= r["raid_type"]:"raid1";
+	    raid_options["parity_algorithm"]		= r["parity_algorithm"]:"";
+	    raid_options["persistent_superblock"]	= r["persistent_superblock"]:false;
+
+	    integer nr = tointeger(substring(r["device_name"]:"/dev/md0", 7));
+
+
+
+	    map ret = $[
+			"raid_options"	: raid_options,
+			"format"	: r["format"]:false,
+			"partition_nr"	: nr
+
+	    ];
+
+	    if (haskey(r, "mount"))
+	    {
+		ret["mount"] = r["mount"]:"";
+	    }
+	    if (haskey(r, "partition_id"))
+	    {
+		ret["partition_id"] = r["partition_id"]:131;
+	    }
+	    if (haskey(r, "filesystem"))
+	    {
+		ret["filesystem"] = fs;
+	    }
+	    if (haskey(r, "lvm_group"))
+	    {
+		ret["lvm_group"] = fs;
+	    }
+
+	    return (ret);
+
+	});
+	raid["partitions"]	= partitions;
+
+	return (raid);
+    }
+
+
+    /**
+     * General compatibility issues
+     * @param map install section
+     * @param map configure section
+     * @return map converted profile
+     */
+    global define map Compat(map Install, map Configure) ``{
+
+	// scripts
+	if ( haskey(Configure, "pre-scripts") ||
+	    haskey(Configure, "post-scripts") ||
+	    haskey(Configure, "chroot-scripts")	    )
+	{
+	    list pre = Configure["pre-scripts"]:[];
+	    list post = Configure["post-scripts"]:[];
+	    list chroot = Configure["chroot-scripts"]:[];
+	    map scripts = $[
+			    "pre-scripts":pre,
+			    "post-scripts":post,
+			    "chroot-scripts":chroot
+	    ];
+	    Configure = remove(Configure, "pre-scripts");
+	    Configure = remove(Configure, "post-scripts");
+	    Configure = remove(Configure, "chroot-scripts");
+
+	    Configure["scripts"] = scripts;
+	}
+
+	// general
+	boolean old = false;
+
+	map general_options	= Install["general"]:$[];
+	map security		= Configure["security"]:$[];
+	map report		= Install["report"]:$[];
+
+
+	foreach(string k, any v, general_options , ``{
+	    if (k == "keyboard" && is(v, string))
+	    {
+		old = true;
+	    }
+	    else if (k == "mouse" && is(v, string))
+	    {
+		old = true;
+	    }
+	    else if (k == "encryption_method")
+	    {
+		old = true;
+	    }
+	    else if (k == "timezone" &&  is(v, string))
+	    {
+		old = true;
+	    }
+	});
+
+	map new_general = $[];
+
+	if (old)
+	{
+	    y2milestone("Old format, converting.....");
+	    new_general["language"]	= general_options["language"]:"";
+	    map keyboard = $[];
+	    keyboard["keymap"]		= general_options["keyboard"]:"";
+	    new_general["keyboard"]	= keyboard;
+
+	    map clock = $[];
+	    clock["timezone"]		= general_options["timezone"]:"";
+	    if ( general_options["hwclock"]:"" == "localtime")
+	    {
+		clock["hwclock"] = "localtime";
+	    }
+	    else if  ( general_options["hwclock"]:""  == "GMT")
+	    {
+		clock["hwclock"] = "GMT";
+	    }
+	    new_general["clock"]	= clock;
+
+	    map mode = $[];
+	    if (haskey(general_options, "reboot")) {
+		mode["reboot"] =  general_options["reboot"]:false;
+	    }
+	    if (haskey(report, "confirm")) {
+		mode["confirm"]	= report["confirm"]:false;
+		report = remove(report, "confirm");
+	    }
+	    new_general["mode"]	= mode;
+
+
+	    if (haskey(general_options, "encryption_method"))
+	    {
+		security["encryption"] = general_options["encryption_method"]:"";
+	    }
+
+	    map net = Configure["networking"]:$[];
+	    list ifaces = net["interfaces"]:[];
+
+	    list newifaces = maplist(map iface , ifaces, ``{
+		map newiface = mapmap(string k, string v, iface, ``{
+		    return ($[tolower(k): v]);
+		});
+		return newiface;
+	    });
+
+	    net["interfaces"] =  newifaces;
+
+	    Install["general"] = new_general;
+	    Install["report"] = report;
+	    Configure["security"] = security;
+	    Configure["networking"] = net;
+	}
+	//
+	// RAID
+	//
+	list old_raid = Install["raid"]:[];
+	if (size(old_raid) > 0 )
+	{
+	    map new_raid = convertRAID(old_raid);
+	    list d = Install["partitioning"]:[];
+	    d =add (d, new_raid );
+	    Install["partitioning"] = d;
+	}
+
+	//
+	// LVM
+	//
+
+	list old_lvm = Install["lvm"]:[];
+	if (size(old_lvm) > 0 )
+	{
+	    list new_lvm = convertLVM(old_lvm);
+	    list d = Install["partitioning"]:[];
+	    d = union (d, new_lvm );
+	    Install["partitioning"] = d;
+	}
+	return (union(Configure, Install));
+    }
 
 
     /**
@@ -296,7 +532,7 @@
 	    return (false);
 	}
 	Import (current);
-	// FIXME: Flat = AutoinstCompat::Compat( Install, Configure);
+	Flat = AutoinstCompat::Compat( Install, Configure);
 	return (true);
     }
 

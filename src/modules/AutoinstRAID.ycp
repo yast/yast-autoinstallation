@@ -39,8 +39,6 @@
     global define void AutoinstRAID () ``{
 
 	targetMap	= Storage::GetTargetMap();
-	y2milestone("Current TargetMap: %1", targetMap );
-
 	ExistingRAID	= filter(string k,map v, targetMap, ``(k == "/dev/md"));
 	y2milestone("Existing RAID: %1", ExistingRAID );
 
@@ -60,7 +58,7 @@
 	return(filter( map part, get_possible_rds( targetMap ),  ``( part["raid_name"]:"-1" == md )));
     }
 
-    
+
     /**
      * Return deleted MDs
      * @return list list of deleted MDs
@@ -94,22 +92,22 @@
 	``{
 	targetMap =  Storage::GetTargetMap();
 	list to_bo_deleted = [];
-	foreach( string dev, map devmap, targetMap, ``{	    
-	    foreach( map part,  devmap["partitions"]:[], ``{	
+	foreach( string dev, map devmap, targetMap, ``{
+	    foreach( map part,  devmap["partitions"]:[], ``{
 		if (part["old_raid_name"]:"" != "" && part["delete"]:false)
 		{
 		    to_bo_deleted= add(to_bo_deleted, part["old_raid_name"]:"");
-		}		    		   
+		}
 	    });
 	});
-	
+
 	y2milestone("mds to delete: %1", to_bo_deleted);
-	
+
 	if (OldAvailable)
 	{
 	    list mds = targetMap["/dev/md","partitions"]:[];
 	    list new_mds = maplist( map md, mds ,``{
-		if ( contains(to_bo_deleted, md["device"]:"")) 
+		if ( contains(to_bo_deleted, md["device"]:""))
 		{
 		    md["delete"] = true;
 		}
@@ -121,13 +119,10 @@
 	    targetMap["/dev/md"] = allmds;
 	    Storage::SetTargetMap(targetMap);
 	}
-
-
-    }  	
-
+    }
 
     /**
-     * Create RAID
+     * Create RAID Configuration
      * @return boolean
      */
     global define boolean Write()
@@ -238,9 +233,10 @@
 	});
 
 
-	foreach( map part, RaidList,
+        map tg = Storage::GetTargetMap();
+	RaidList= maplist( map part, RaidList,
 		 ``({
-		     integer len = raid_size_byte( Storage::GetTargetMap(), part);
+		     integer len = raid_size_byte( tg, part);
 		     part["region"] = [0, len / (1024 * 1024)];
 		     return( part );
 		 }));
@@ -270,10 +266,10 @@
 	map new_targetMap = union(Storage::GetTargetMap(), RaidMap);
 	Storage::SetTargetMap(new_targetMap);
 	y2milestone("Targets: %1", Storage::GetTargetMap());
-	
+
 	return true;
     }
-    
+
 
 }
 
