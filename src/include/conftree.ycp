@@ -12,7 +12,7 @@
     import "HTML";
     import "Call";
     import "Label";
-    
+
     include "readconfig.ycp";
 
 
@@ -186,7 +186,6 @@
 	``{
 	Wizard::SetScreenShotName ("autoyast-conftree");
 	include "autoinstall/io.ycp";
-	include "autoinstall/help.ycp";
 	term image = Wizard::HeaderImage(false);
 	term menu =
 	    `VBox(
@@ -549,11 +548,11 @@ were imported correctly.
 				       `opt(`plainText),
 				       source
 				       );
-			
+
 			Wizard::SetContents(_("Source"),
 					    sourceView , "", true , true);
 			tree_item = "System";
-			
+
 		    }
 		    else if ( ret == `menu_tree) {
 			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);

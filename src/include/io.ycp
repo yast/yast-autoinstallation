@@ -9,7 +9,6 @@
 {
     textdomain "autoinst";
 
-    
     /**
      * return basename
      */
@@ -53,7 +52,6 @@
 	    import "HTTP";
 	    string full_url = "";
 	    string port_str = "";
-	    
 	    if (port !=  "")
 	    {
 		port_str = sformat(":%1", port);
@@ -157,7 +155,7 @@
 	    }
 
 	    integer shellret =  (integer)SCR::Execute(.target.bash, "/bin/mount " + Host + ":" + dirname(Path) +" /mnt -t nfs");
-	    
+
 	    if (shellret != 0 )
 	    {
 		y2warning("Mount failed");
@@ -234,5 +232,4 @@
 	return ( ok );
     }
 
-    
 }
