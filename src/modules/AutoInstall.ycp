@@ -76,7 +76,8 @@
     // Show proposal and ask use for confirmation to go on with auto-installation
     // Similar to interactive mode, without letting use change settings
     // Interactive mode implies confirmation as well..
-    global boolean Confirm = false;
+    
+    global boolean Confirm = true;
 
 
     global string Encryption = "des";
@@ -123,6 +124,14 @@
     // Extra package to be added using inst_rpmcopy
     global list install_list = [];
 
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Local variables
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    
     // Sysconfig variable already registered
     list registered_list = [];
 
@@ -130,6 +139,9 @@
     map Install = $[];
     map Configure = $[];
 
+    list SysconfigVars = [];
+
+    list forcedPackages = [];
     
     /**
      * Constructer
@@ -143,7 +155,7 @@
 	    list MenuEntries = ReadMenuEntries();
 	    ModuleMap = select(MenuEntries,0,$[]);
 	    GroupMap = select(MenuEntries,1,$[]);		    
-	  
+	    y2milestone("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
 	
 	if (!Mode::config &&  ! (Mode::cont && Restore()))
@@ -217,32 +229,128 @@
      */
 
     global define void generalSettings () ``{
-	// Get default values as fallback
+	// Get default values as fallback	
 	string default_timezone = lookup(Installation::infoMap,"timezone","Europe/Berlin");
 	string default_keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "english-us" );
-
-	map general = GetMap("install", "general", true);
-
-	Language 	= general["language"]:Language::language;
-	Keyboard 	= general["keyboard"]:default_keyboard;
-	Timezone 	= general["timezone"]:default_timezone;
-
-	Reboot 		= general["reboot"]:false;
-	Encryption	= general["encryption_method"]:"des";
-	Confirm		= general["confirm"]:true;
-	interactive	= general["interactive"]:false;
-
-	if (Confirm)
-	    interactive = true;
 	
-	if (general["hwclock"]:"localtime" == "localtime")
-	    Hwclock 	=  "--localtime";
-	else
-	    Hwclock 	=  "-u";
+	Keyboard = default_keyboard;
+	Language = Language::language;
+	Timezone = default_timezone;
+	Mouse = "probe";
+	Encryption = "des";
 
-	Mouse = lookup(general,"mouse", "probe");
+	
+	map general = GetMap("install", "general", true);
+	
+	foreach(`k,`v, general , ``{
+	    if (k == "language")
+	    {
+		Language 	= v;
+	    }
+	    else if (k == "keyboard" && is(v, map))
+	    {
+		Keyboard = v["keymap"]:default_keyboard;
+	    }
+	    else if (k == "keyboard" && is(v, string)) // compat
+	    {
+		Keyboard = v;
+	    }
+	    else if (k == "clock" && is(v, map))
+	    {
+		Timezone = v["timezone"]:default_timezone;
+		if (v["utc"]:false) 
+		    Hwclock 	=  "--localtime";
+		else
+		    Hwclock 	=  "-u";
+
+		if (size(v["ntp_servers"]:[])>0) {
+		    string key = "XNTPD_INITIAL_NTPDATE";
+		    string val = mergestring(v["ntp_servers"]:[], " ");
+		    string file = "xntp";
+		    addSysconfigVar(file,  key, val, "xntp");
+		}
+		
+	    }
+	    else if (k == "hwclock") // compat
+	    {	
+		if (v == "localtime")
+		    Hwclock 	=  "--localtime";
+		else
+		    Hwclock 	=  "-u";
+	    }
+	    else if (k == "timezone") // compat
+	    {
+		Timezone 	= v;
+	    }
+	    else if (k == "mouse"  && is(v, map) )
+	    {
+		// if id is set, then just take it and ignore everything else
+		if (v["id"]:"" != "")
+		{
+		    Mouse = id;
+		}
+		
+		// Otherwise, try to find the mouse id from the DB using data supplied by user,
+		// at least the device is needed.
+		
+		else if (haskey(v,"device")) 
+		{
+		    string device = v["device"]:"none";
+		    integer wheels = v["wheels"]:0;
+		    
+		    map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");		   
+		  
+		    foreach(`f,`g, mice, ``{
+			map data = select(g,1,$[]);			
+			if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
+			{
+			    Mouse =  f;			
+			}
+		    });		 
+		} 				    		
+	    }
+	    else if (k == "mouse" && is(v, string))
+	    {
+		Mouse = v;
+	    }
+	    else if (k == "mode")
+	    {
+		Confirm = v["confirm"]:true;
+		interactive = v["interactive"]:true;
+		Reboot = v["reboot"]:false;
+		if (haskey(v, "interactive_boot")) {
+		    string key = "PROMPT_FOR_CONFIRM";
+		    string val = (v["interactive_boot"]:false) ? "yes"  : "no";
+		    string file = "boot";
+		    addSysconfigVar(file,  key, val, "");
+		}
+	    }
+	    else if (k == "reboot")
+	    {
+		Reboot = v;
+	    }
+	    else if (k == "confirm")
+	    {
+		Confirm = v;
+	    }
+	    else if (k == "encryption_method")
+	    {
+		Encryption = v;
+	    }
+	    else if (k == "encryption")
+	    {
+		Encryption = v["method"]:"des";
+	    }
+	    		
+
+	});
+	
+	if (!Confirm)
+	    interactive = false;
+	
 	return;
     }
+
 
     /**
      * Configure bootloader settings
@@ -326,11 +434,11 @@
 	    Selections = add(Selections, Software["base"]:"");
 	}
 
-	list Packages = Software["packages"]:[];
-
+	list Packages = union(Software["packages"]:[], forcedPackages);
+	/**
 	if (Software["ignore_error_log"]:false)
 	    Report::YesNoErrors["packages"] = true;
-
+	*/
 	if (size(Selections) > 1)
 	{
 	    integer sel = 1;
@@ -421,10 +529,13 @@
      */
     global define void sysconfigSettings()
 	``{
+	
 	list Sysconfig = GetConfList("sysconfig", true);
-	if (size(AutoInstall::Sysconfig)>0)
+	list allSysconfig = union(Sysconfig, SysconfigVars);
+	
+	if (size(allSysconfig)>0)
 	{
-	    foreach(map var , AutoInstall::Sysconfig, ``{
+	    foreach(map var , allSysconfig, ``{
 		WriteSysconfigValue( var["sysconfig_path"]:"dummy",
 				     var["sysconfig_key"]:"dummy",
 				     var["sysconfig_value"]:"dummy"
@@ -1032,6 +1143,23 @@
 	return [configurations, groups];
     }
    
-
+    /**
+     * Add a single entry to the Sysconfig list of variables
+     * @param string file name / path
+     * @param string key
+     * @param string value
+     * @param string package name which uses this variable if installation of package has to be forced.
+     * @return void
+     */
+    global define void addSysconfigVar(string file, string key, string value, string package)
+	``{
+	
+	SysconfigVars=add(SysconfigVars, $["sysconfig_path":file, "sysconfig_key":key, "sysconfig_value": value]);
+	if (package != "") {
+	    forcedPackages = add(forcedPackages, package);
+	}
+    }
+    
+    
 }
 

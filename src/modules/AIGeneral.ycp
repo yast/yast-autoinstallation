@@ -16,13 +16,17 @@
     import "Keyboard";    
     import "Timezone";  
 
-
-    global string mouse = "";
     global string language = "";
-    global string keyboard = "";
-    global string timezone = "";
-    global string hwclock = "";
 
+    
+    global map mouse = $[];    
+    global map keyboard = $[];
+    global map clock = $[];
+    global map mode = $[];
+  
+    
+    
+    string version = "";
 
     define void AIGeneral()``{
 	return;
@@ -37,12 +41,14 @@
 	    $[
 	      "mouse":eval(mouse),
 	      "keyboard": eval(keyboard),
-	      "timezone":eval(timezone),
-	      "hwclock":eval(hwclock),
+	      "clock":eval(clock),
+	      "mode":eval(mode),
 	      "language":eval(language)
 	    ];	
 	return toexport;	
     }
+
+   
     
     /**
      * Impor data
@@ -57,19 +63,19 @@
 	    return true;
 	}
 
-	boolean missing = false;
-	foreach (`k, ["mouse", "keyboard", "language", "hwclock", "timezone"], ``{
-	    if (! haskey (settings, k))
-	    {
-		y2error ("Missing at Import: '%1'.", k);
-		missing = true;
-	    }
+	// Check compatibility
+	foreach(`k,`v, settings, ``{
+	    if (k == "hwclock")
+		version="8.0";
+	    else if ( k == "keyboard" && is(v, string) )
+		version="8.0";
+	    else if ( k == "mouse" && is(v, string) )
+		version = "8.0";
+		
 	});
-	if (missing)
-	{
-	    return false;
-	}
 
+
+	
 	Set(settings);
 	return true;	
     }
@@ -78,19 +84,37 @@
     
     /**
      * Set data to a certain status
-     *
+     * @param map settings
+     * @return void
      */
     global define void Set(map s) ``{
-	mouse = s["mouse"]:"";
-	language = s["language"]:"";
-	keyboard = s["keyboard"]:"";
-	timezone = s["timezone"]:"";
-	hwclock = s["hwclock"]:"";	
+	if (version == "8.0")
+	{
+	    mouse["id"] 	= s["mouse"]:"";	    
+	    language 		= s["language"]:"";	    
+	    keyboard["keymap"] 	= s["keyboard"]:"";	    
+	    clock["timezone"] 	= s["timezone"]:"";
+	    if (s["hwclock"]:"" == "localtime") 
+		clock["utc"] 	=  false;
+	    else
+		clock["utc"] 	=  true;
+	    
+	    mode["reboot"]	=  s["reboot"]:false;	    
+	}
+	else
+	{
+	    mouse 		= s["mouse"]:$[];
+	    keyboard 		= s["keyboard"]:$[];
+	    clock		= s["clock"]:$[];
+	    mode		= s["mode"]:$[];	    
+	    language		= s["language"]:"";
+	}
     }
+
     
     /**
      * Summary of configuration
-     *
+     * @return string Formatted summary
      */    
     global define string Summary()``{
 
@@ -98,8 +122,8 @@
 	string keyboard_name = "";
 	string mouse_name = "";
 	
-	if ( mouse != "" && mouse != "probe"){
-	    Mouse::Set(mouse);
+	if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe"){
+	    Mouse::Set(mouse["id"]:"");
 	    mouse_name = Mouse::MakeProposal(false, false);
 	} else {
 	    mouse_name = "probe";
@@ -110,7 +134,7 @@
 	    language_name= Language::MakeProposal(false, false);
 	}
 	if (keyboard!="") {
-	    Keyboard::SetLanguage(keyboard);
+	    Keyboard::SetLanguage(keyboard["keymap"]:"");
 	    keyboard_name = Keyboard::Name();
 	}
 	    
@@ -123,16 +147,16 @@
 				   keyboard_name : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Timezone"));
-	summary = Summary::AddLine(summary, (timezone != "") ?
-				   timezone : Summary::NotConfigured());
+	summary = Summary::AddLine(summary, (clock["timezone"]:"" != "") ?
+				   clock["timezone"]:"" : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Mouse"));
 	summary = Summary::AddLine(summary, (mouse_name != "") ?
 				   mouse_name : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Hardware clock"));
-	summary = Summary::AddLine(summary, (hwclock != "") ?
-				   hwclock : Summary::NotConfigured());
+	summary = Summary::AddLine(summary, (clock["utc"]:false) ?
+				   _("GMT") : _("Local time"));
 
 	return summary;				   
     }
