@@ -342,9 +342,11 @@
 		    else if ( ret == `menu_alice)
 		    {
 			y2milestone("Importing ALICE data");
-			Wizard::RestoreHelp("");
-			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+			include "autoinstall/imports.ycp";
+			Wizard::CreateDialog();	
+						
 			ret = aliceImportList();
+			Wizard::CloseDialog();	
 			CreateTreeWidget();		    
 		    }
 		    else if ( ret == `menu_classes)
@@ -358,6 +360,7 @@
 		    else if ( ret == `menu_clone)
 		    {
 			import "AIClone";
+			
 			Wizard::CreateDialog();						
 			cloneSystem();
 			Wizard::CloseDialog();
@@ -373,7 +376,8 @@
 		    }			    
 		    else if ( ret == `menu_iso)
 		    {
-			import "ISO";								    
+			import "ISO";
+			include "autoinstall/iso.ycp";
 			isoSequence();		    
 			
 		    }		
@@ -434,11 +438,15 @@
 		    }
 		    else if (ret == `menu_kickstart)
 		    {
+			Wizard::CreateDialog();	
+			include "autoinstall/imports.ycp";
 			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Import Kickstart file") );
-			if (filename!=nil) {
+			if ( filename!=nil )
+			{
 			    map ksConfig = readKS(filename);
 			    Profile::Import(ks2ay(ksConfig));
 			}
+			Wizard::CloseDialog();	
 		    }
 		    else if (ret == `menu_save) // SAVE
 		    {

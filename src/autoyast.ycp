@@ -19,8 +19,6 @@
     import "Summary";
 
 
-
-
     include "ui/common_popups.ycp";
     include "ui/common_messages.ycp";
     include "wizard/sequencer.ycp";    
@@ -29,16 +27,9 @@
     include "autoinstall/dialogs.ycp";
     include "autoinstall/help.ycp";
     include "autoinstall/conftree.ycp";
-    include "autoinstall/classes.ycp";
-    include "autoinstall/iso.ycp";    
-    include "autoinstall/imports.ycp";
     include "autoinstall/io.ycp";
     
     boolean popup_open = false;
-    symbol ct = `single;
-
-
-
     
     global list menuitems = [`menu_open,
 			     `menu_delete,
@@ -110,6 +101,6 @@
 
 
     any ret = AutoSequence ();
-    Wizard::RestoreScreenShotName (); 
+
     return ret;
 }
