@@ -5,6 +5,7 @@
 #
 
 config_DATA = autoyast.y2cc autoinst_modules.conf
+desktop_DATA = autoyast.desktop
 
-EXTRA_DIST =  $(config_DATA)
+EXTRA_DIST =  $(config_DATA) $(desktop_DATA)
 
