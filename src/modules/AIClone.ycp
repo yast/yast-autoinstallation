@@ -115,27 +115,15 @@
 
     global define map Software()``{
 	import "Packages";
-	Mode::config = false;
-	Packages::Init(true);
-
-	// map allInstalledPackages = SCR::Read(.package.packageList);
-
-
-	list productPackages = [];
-	// now find out which package are original SuSE package from an
-	// official SuSE installation medium
-
-	foreach(`p,`v, allInstalledPackages, ``{
-	    if  (v[1]:"" == "i")
-	    {
-		productPackages = add(productPackages,p);
-	    }
-	});
+	
+	boolean ret = Pkg::TargetInit("/", false);
+	list allInstalledPackages = Pkg::GetPackages(`installed, true);
+	y2debug("installed packages %1", allInstalledPackages);
 
 	map software = $[];
-	software["packages"] = productPackages;
+	software["packages"] = allInstalledPackages;
 	software["base"] = "Minimal";
-	Mode::config = true;
+	
 	return software;
     }
 

@@ -627,7 +627,10 @@ must begin with letter, and must be
 "));
     }
 
-
+    /**
+     * Clone running system
+     *
+     */
     global define cloneSystem()``{
 	Wizard::SetScreenShotName ("autoyast-cloneSystem");
 	string help = _("<p>This will create a new profile by reading
@@ -653,38 +656,14 @@ information from this machine.</p>");
 								 `RadioButton(`id(`load), `opt(`notify),_("&Load resulting profile"))
 								 )
 							   )
-						     ),
-				   `VSpacing(1),
-				   `Left(
-					 `CheckBox(`id(`extra), `opt(`notify), _("Add non-SuSE &packages"), AIClone::add_extraPackages)
-					 ),
-				   `Left(
-					 `HBox(
-					       `HWeight(
-							20,`Empty()
-							),
-					       `HWeight(
-							60,`TextEntry(`id(`extra_loc), _("&Directory with external packages"), AIClone::extraPackageLocation)
-							),
-					       `HWeight(
-							20,`Empty()
-							)
-					       )
-					 )
+						     )				   				 
 				   )
 			     );
 
 	Wizard::SetContents(title,
 			    contents, help, true, true);
 
-	if (UI::QueryWidget(`id(`extra), `Value))
-	{
-	    UI::ChangeWidget(`id(`extra_loc), `Enabled, true);
-	}
-	else
-	{
-	    UI::ChangeWidget(`id(`extra_loc), `Enabled, false);
-	}
+
 
 	any ret = nil;
 	symbol action = nil;
@@ -692,18 +671,9 @@ information from this machine.</p>");
 	    {
 		ret = UI::UserInput();
 
-		if (UI::QueryWidget(`id(`extra), `Value))
-		{
-		    UI::ChangeWidget(`id(`extra_loc), `Enabled, true);
-		}
-		else
-		{
-		     UI::ChangeWidget(`id(`extra_loc), `Enabled, false);
-		}
+	
 		if (ret ==`next)
-		{
-		    AIClone::add_extraPackages = UI::QueryWidget(`id(`extra), `Value);
-		    AIClone::extraPackageLocation = UI::QueryWidget(`id(`extra_loc), `Value);
+		{		  
 		    action = UI::QueryWidget(`id(`rbg), `CurrentButton);
 		    AIConfig::currentFile =  UI::QueryWidget(`id(`result), `Value);
 		    showFeedback( _("Collecting system data.
