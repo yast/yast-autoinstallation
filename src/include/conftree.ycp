@@ -96,7 +96,7 @@
 		    list MergeTypes = splitstring(tomergetypes, ",");
 		    if (size(tomerge) > 0 )
 		    {
-			any result = Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
+			any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 			integer i = 0;
 			foreach( string res, splitstring(tomerge, ",") , ``{
 			    if ( MergeTypes[i]:"map" == "map") 
@@ -108,7 +108,7 @@
 		    }
 		    else
 		    {
-			Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
+			Profile::Flat[resource]  =  Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		    }
 		}
 		
@@ -123,7 +123,7 @@
 		list MergeTypes = splitstring(tomergetypes, ",");
 		if (size(tomerge) > 0 )
 		{
-		    any result = Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
+		    any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		    integer i = 0;
 		    foreach( string res, splitstring(tomerge, ",") , ``{
 			if ( MergeType[i]:"map" == "map") 
@@ -135,7 +135,7 @@
 		}
 		else
 		{
-		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
+		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		}
 		    
 		Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);

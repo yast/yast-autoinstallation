@@ -552,8 +552,17 @@ This may take a while. Please wait...
 
     }
 
+    /***************************************************************************************
+     *
+     * KICKSTART
+     * 
+     ***************************************************************************************/
 
 
+    
+    /**
+     * Read a Kickstart file
+     */
     global define boolean readKS(string ks)``{
 
 	map ksConfig = SCR::Read(.kickstart, ks);
@@ -562,12 +571,14 @@ This may take a while. Please wait...
 	{
 	    return $[];
 	}
-	y2milestone("Kickstart config raw: %1", ksConfig);
+	y2debug("Kickstart config raw: %1", ksConfig);
 
 	return ksConfig;
 
     }
-
+    /**       
+     * Kickstart to AutoYaST main
+     */
     global define map ks2ay(map ksConfig) ``{
 
 	map profile = $[];
@@ -580,24 +591,29 @@ This may take a while. Please wait...
 	configure["networking"] = select(ks_network(ksConfig), 0 , $[]);
 	configure["nis"] 	= select(ks_auth(ksConfig), 0 , $[]);
 	configure["ldap"] 	= select(ks_auth(ksConfig), 1 , $[]);
-	configure["security"] 	=  select(ks_auth(ksConfig), 2 , $[]);
+	configure["security"] 	= select(ks_auth(ksConfig), 2 , $[]);
+	configure["users"]	= ks_users (ksConfig);
 
 	install["init"] 	= select(ks_network(ksConfig), 1 , $[]);
 	install["software"] 	=  ks_software(ksConfig);
 	install["partitioning"] = ks_part(ksConfig);
 	install["raid"] 	= ks_raid(ksConfig);
-	install["bootloader"] 	=  ks_bootloader(ksConfig);
+	install["bootloader"] 	= ks_bootloader(ksConfig);
 	install["general"] 	= ks_general(ksConfig);
 
 	profile["install"] 	= install;
 	profile["configure"] 	= configure;
-	AutoinstConfig::changed 	= true;
+	Profile::changed 	= true;
 
-	y2milestone("Profile : %1", profile);
+	y2debug("Profile : %1", profile);
 	return profile;
 
     }
 
+    
+    /**       
+     * KS Users
+     */
     global define map ks_users (map ksConfig)
 	``{
 
@@ -605,7 +621,7 @@ This may take a while. Please wait...
 	list users = [];
 	map root = $[];
 	root["username"] = "root";
-	root["password"] = ks_user["password"]:"";
+	root["user_password"] = ks_user["password"]:"";
 	root["encrypted"] = (ks_user["iscrypted"]:0 == 1);
 
 	users = add(users, root);
@@ -613,7 +629,9 @@ This may take a while. Please wait...
 
 
     }
-
+    /**       
+     * KS X11
+     */
     global define map kx_x11(map ksConfig)
 	``{
 	if (ksConfig["skipx"]:0 != 1 && haskey(ksConfig,"xconfig"))
@@ -661,7 +679,9 @@ This may take a while. Please wait...
 	    return $[];
 	}
     }
-
+    /**       
+     * KS General
+     */
     global define map ks_general(map ksConfig)
 	``{
 	map general = $[];
@@ -723,7 +743,9 @@ This may take a while. Please wait...
 
     }
 
-
+    /**       
+     * KS Scripts
+     */
     global define map ks_scripts(map ksConfig)
 	``{
 	map scripts = $[];
@@ -780,25 +802,35 @@ This may take a while. Please wait...
 	return filesystems[fs]:`ext2;
     }
 
+    
+    /**       
+     * KS Partitioning
+     */
     global define list ks_part (map ksConfig) ``{
+	y2milestone("KS Partitioning: %1", ksConfig["partitioning"]:$[]);
+	
 	import "Partitions";
 	list drives = [];
 	list part1 = maplist(`k, `v, ksConfig["partitioning"]:$[],   ``{
 	    map drive = $[];
 	    if (haskey(v, "ondisk"))
 	    {
-		drive["device"] = v["ondisk"]:"";
+		drive["device"] = sformat("/dev/%1", v["ondisk"]:"");
 	    }
 	    drive["partitions"] = [];
 
 	    drives=add(drives, drive);
 	});
-	drives=toset(drives);
-
-
+	drives = toset(drives);
+	y2milestone("Drives: %1", drives);
+	
 	foreach(`k, `v, ksConfig["partitioning"]:$[],   ``{
+	    
 	    map partition = $[];
-	    string mount = select(splitstring(k, "_"), 0 , "");
+	    list mountlist = splitstring(k, "_");
+	    string mount = mountlist[0]:"/data";
+	    integer order = tointeger(mountlist[1]:"0");
+	    
 	    string fstype = (mount == "swap") ? "swap" :  v["fstype"]:"";
 
 	    integer partition_id = Partitions::fsid_native;
@@ -818,38 +850,89 @@ This may take a while. Please wait...
 	    else
 	    {
 		partition["mount"] = mount;
-		partition["format"] = true;
+		partition["order"] = order;
+		partition["format"] = (v["noformat"]:-1 == -1 );
 		partition["filesystem"] = StringFS2Symbol(fstype);
 	    }
 
-
-
-
 	    partition["size"] = sformat("%1mb", v["size"]:-1);
 
-	    if (v["grow"]:0 == 1)
-	    {
-		partition["size"] = "max";
-
-	    }
+	    // Remove those later
+	    partition["maxsize"] = sformat("%1mb", v["maxsize"]:0);	   
+	    partition["grow"] =  ( v["grow"]:-1 == 1);
+	    
 	    foreach(`d, drives, ``{
-		if (v["ondisk"]:"" == d["device"]:"")
+		string dev = sformat("/dev/%1", v["ondisk"]:"");
+		if ( dev  == d["device"]:"")
 		{
 		    list part 		= d["partitions"]:[];
-		    part 		= add(part, partition);
-		    d["partitions"]	= part;
+		    part 		= add ( part, partition );
+		    d["partitions"]	= sort(`x, `y, part, ``(x["order"]:-1 < y["order"]:-1 ));
+		    
 		}
+		y2milestone("KS Drive: %1", d);
 	    });
 	});
 
+	list newdrives = maplist(map drive, drives, ``{
 
+	    integer numpart = size(drive["partitions"]:[]);
+	    y2milestone("partitions: %1", numpart);
+	    boolean ismax = false;	    	    
+	    if ( drive["partitions", numpart -1 , "grow"]:false )
+	    {				
+		ismax = true;
+	    }
+	    integer i = 1;
+	    list dp = maplist(map p,  drive["partitions"]:[], ``{
+		if (i == numpart && ismax)
+		{
+		    p ["size"] = "max";
+		}
+		p = remove(p, "grow");
+		p = remove(p, "order");
+		i = i + 1;
+		return(p);
+	    });
 
+	    map clearpart = ksConfig["clearpart"]:$[];
+	    string devicetok = select(splitstring(drive["device"]:"","/"), 1, "");
+	    if (devicetok != "" && clearpart["drives"]:"" != "")
+	    {
+		if (issubstring(clearpart["drives"]:"", devicetok))
+		{
+		    if (clearpart["all"]:-1 == 1)
+			drive["use"] = "all";
+		    else if (clearpart["linux"]:-1 == 1)
+			drive["use"] = "linux";
+		    else if (clearpart["initlabel"]:-1 == 1)
+			drive["initialize"] = true;
+		}		
+	    }
+	    else if  ( clearpart["drives"]:"" == "" )
+	    {
+		if (clearpart["all"]:-1 == 1)
+		drive["use"] = "all";
+		else if (clearpart["linux"]:-1 == 1)
+		drive["use"] = "linux";
+		else if (clearpart["initlabel"]:-1 == 1)
+		drive["initialize"] = true;
+	    }
+	    
+	    drive["partitions"] = dp;
+	    return (drive);
+	    
+	});
 
-	return drives;
+	
+	y2milestone("Drives: %1", newdrives);
+	return newdrives;
+	
     }
 
-
-    // $["/scr":$["device":"md0", "level":0]]
+    /**
+     * KS RAID
+     */   
     global define list ks_raid (map ksConfig)
 	``{
 
@@ -864,6 +947,10 @@ This may take a while. Please wait...
 	return raid;
     }
 
+
+    /**
+     * KS Network
+     */
     global define list  ks_network (map ksConfig) ``{
 	include "network/ip.ycp";
 
@@ -955,6 +1042,10 @@ This may take a while. Please wait...
 	return [networking, init];
     }
 
+
+    /**
+     * KS Authentication
+     */
     global define ks_auth(map ksConfig) ``{
 
 	map auth = ksConfig["auth"]:$[];
@@ -998,7 +1089,9 @@ This may take a while. Please wait...
 
     }
 
-
+    /**
+     * KS Bootloader
+     */
     global define ks_bootloader (map ksConfig) ``{
 
 	map bl = ksConfig["bootloader"]:$[];
@@ -1021,6 +1114,9 @@ This may take a while. Please wait...
 	return bootloader;
     }
 
+    /**
+     * KS Software
+     */
     global define ks_software (map ksConfig)
 	``{
 

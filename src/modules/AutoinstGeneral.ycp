@@ -22,6 +22,7 @@
     import "Profile";
     
 
+    
     // Language
     global string Language = "";
 
@@ -51,13 +52,6 @@
 
 
     global map Mode = $[];
-
-    
-
-
-        
-  
-
 
 
     /**
@@ -269,27 +263,32 @@
 
 
     global define boolean Write() ``{
-	Process();
-	Keyboard::SetConsole( Keyboard );
-	Keyboard::SetX11( Keyboard );
+	// Process();
+	y2milestone("Writing general settings: keymap -> %1, timezone -> %2",  Keyboard["keymap"]:"", Clock["timezone"]:"" );
+	AutoInstall::Confirm = Mode["confirm"]:true;
+	AutoInstall::interactive = Mode["confirm"]:true;;
+
+	
+	Keyboard::SetConsole( Keyboard["keymap"]:"" );
+	Keyboard::SetX11( Keyboard["keymap"]:"" );
  
 	// Timezone   	
-	if (Timezone != "")
+	if (Clock["timezone"]:"" != "")
 	{
-	    Timezone::Set(Timezone);
+	    Timezone::Set( Clock["timezone"]:"" );
 	}
 
 	// Hardware Clock
 	////////////////////////////////////////////////////////////////////////
     
-	Timezone::hwclock =  (Hwclock == "UTC" || Hwclock == "GMT") ? "-u" : "--localtime";
+	Timezone::hwclock =  (Clock["hwclock"]:"" == "UTC" || Clock["hwclock"]:"" == "GMT") ? "-u" : "--localtime";
 
 	// mouse
 	////////////////////////////////////////////////////////////////////////
     	
-	if ( Mouse != "probe" )
+	if ( Mouse["id"]:"" != "probe" )
 	{
-	    Mouse::Set(Mouse);
+	    Mouse::Set(Mouse["id"]:"");
 	}	
     }
 
