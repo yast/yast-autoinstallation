@@ -1023,24 +1023,27 @@ create_package_descr  -d /usr/local/CDs/LATEST/suse
 	<listitem>
 	  <para>Post-Install Scripts</para>
 	  <para>These scripts are executed after &yast2; has completed the
-	    installation and after it has booted the system the first time.</para>
+	    installation and after it has booted the system for the first time.</para>
 	</listitem>
 	<listitem>
 	  <para>Chroot environment post-install scripts</para>
 	  <para>Chroot scripts are executed after all packages have been
-	    installed  before
+	    installed  and before
 	    &yast2; boots for the first time and before the boot loader is
 	    installed. Although the name of this type of scripts might imply
 	    that the scripts executed in the chroot environment, the scripts
-	    are actually executed in the system before its mounted. To make any
+	    are actually executed in the system before it was mounted. To make any
 	    changes to the system, the prefix <emphasis>/mnt</emphasis> has to
 	    be used to any path.
 	  </para>
+          <para>
+              It is also possible to run the <emphasis>chroot scripts</emphasis> in
+              the installed system by adding the boolean element <emphasis>chrooted</emphasis>
+          </para>
 	</listitem>
       </itemizedlist>
       <para>
-	All  but the pre-install scripts can be written in either shell or
-	perl script language. When added to the control file manually, the
+	When added to the control file manually, the
 	scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
 	the file syntax and other tags defined in the control file.
       </para>

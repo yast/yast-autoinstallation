@@ -25,6 +25,23 @@ echo "Do something usefull"
   <pre-scripts>
    .....
   </pre-scripts>
+  <chroot-scripts>
+      <script>
+          <chrooted config:type="boolean">true</chrooted>
+          <filename>chrooted.sh</filename>
+          <interpreter>shell</interpreter>
+          <source>
+]]>
+&lt;![CDATA[
+#!/bin/sh
+cat /etc/fstab
+
+]]&gt;
+<![CDATA[
+    </source>
+   </script>
+  </chroot-scripts>
+
 ...
 </scripts>
 ]]>
