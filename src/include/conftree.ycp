@@ -180,9 +180,11 @@
 	Wizard::SetScreenShotName ("autoyast-conftree");
 	include "autoinstall/io.ycp";
 	include "autoinstall/help.ycp";	
-
+	term image = Wizard::HeaderImage(false);
 	term menu =
 	    `VBox(
+		  image,
+		  `VSpacing(0.5),
 		  `Left(
 			`HBox(		
 			      `MenuButton( _("&File"),
@@ -214,8 +216,8 @@
 					   ),			      					  
 			      `MenuButton( _("&Classes and Rules "),
 					   [
-					    `item(`id(`menu_rulesfile), _("Manage R&ules file")      ),
-					    `item(`id(`menu_classes), _("Mana&ge Classes")      ),
+					    `item(`id(`menu_rules), _("R&ules")      ),
+					    `item(`id(`menu_classes), _("Cla&sses")      ),
 					    `item(`id(`menu_merge), _("Me&rge Classes")      ),
 					    ]
 					   ),
@@ -227,7 +229,7 @@
 					   )			      		
 			      )
 			),
-		  `VSpacing(1)
+		  `VSpacing(0.5)
 		  );
 	
 	
@@ -349,38 +351,31 @@
 		    {
 			import "AIClass";
 			include "autoinstall/classes.ycp";
-			Wizard::CreateDialog();
-			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-			ret = ManageClasses();
+			Wizard::CreateDialog();			
+			ManageClasses();
 			Wizard::CloseDialog();
 		    }		    
 		    else if ( ret == `menu_clone)
 		    {
 			import "AIClone";
-			Wizard::RestoreHelp("");
-			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-			ret = cloneSystem();		    
-			CreateTreeWidget();		    
+			Wizard::CreateDialog();						
+			cloneSystem();
+			Wizard::CloseDialog();
+			
 		    }
 		    else if ( ret == `menu_merge)
 		    {
 			import "AIClass";
 			include "autoinstall/classes.ycp";		
-			Wizard::CreateDialog();
-			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-			ret = MergeDialog();
+			Wizard::CreateDialog();			
+			MergeDialog();
 			Wizard::CloseDialog();
 		    }			    
 		    else if ( ret == `menu_iso)
 		    {
-			import "ISO";
-			Wizard::RestoreHelp("");
-			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-		    
-			ret = isoSequence();
-
-		    
-			CreateTreeWidget();		    
+			import "ISO";								    
+			isoSequence();		    
+			
 		    }		
 		    else if (ret == `menu_exit) // EXIT
 		    {
@@ -512,7 +507,8 @@
 		    }
 		    else if ( ret == `menu_tree) {
 			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
-			if (tree_item == nil) {
+			if (tree_item == nil)
+			{
 			    tree_item = "System"; 
 			}
 		    }

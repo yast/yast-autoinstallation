@@ -81,7 +81,9 @@
 	return packages;
     }
 
-
+    /**
+     * Check profile for consistency
+     */
     global define string checkProfile() ``{
 	import "Profile";
 
@@ -107,6 +109,9 @@
 	return error_msg;
     }
 
+    /**
+     * Check if selected packages are available
+     */
     global define string checkPackageAvail() ``{
 	 
 	string descrDir 	= ISO::productData["descrdir"]:"suse/setup/descr";
@@ -254,13 +259,13 @@
 	Wizard::SetContents ( caption,
 			      contents,
 			      "",
-			      false,
+			      true,
 			      true);
 
-
+	Wizard::ReplaceAbortButton(`Empty());
 	any ret = WizardSequencer (iso_dlg, sequence);
 
-	UI::CloseDialog ();
+	Wizard::CloseDialog ();
 	return ret;
     }
 
@@ -286,13 +291,14 @@ select any of the listed options.");
 	Wizard::SetContents ( caption,
 			      contents,
 			      help,
-			      false,
+			      true,
 			      true);
 	any ret = nil;
 	repeat
 	    {
 		ret = UI::UserInput();
-		if ( ret == `next) {
+		if ( ret == `next)
+		{
 		    string f  = UI::QueryWidget(`id(`file), `Value);
 		    if (   f == "" || f == nil)
 		    {
@@ -302,7 +308,7 @@ select any of the listed options.");
 		    ISO::isoFile = f;
 		}
 		
-	    }  until (ret == `next || ret == `abort);
+	    }  until (ret == `next || ret == `back);
 	
 	return ret;
     }
