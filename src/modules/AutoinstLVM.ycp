@@ -45,13 +45,13 @@
      */
     global define void AutoinstLVM () ``{
 
-	targetMap 	= Storage::GetTargetMap();
+	targetMap		= Storage::GetTargetMap();
 	modify_targets	= Storage::GetModifyTargets();
-	ExistingLVM 	= filter(`k,`v, targetMap, ``(v["is_lvm_vg"]:false));
+	ExistingLVM		= filter(`k,`v, targetMap, ``(v["is_lvm_vg"]:false));
 
 	y2milestone("Existing LVM: %1", ExistingLVM);
 
-	ExistingVGs 	= maplist (`d, `g, ExistingLVM, ``{
+	ExistingVGs		= maplist (`d, `g, ExistingLVM, ``{
 	    return (substring(d, 5) );
 	});
 
@@ -289,7 +289,7 @@
 
     /**
      *	Return only those PVs on disks touched by the control file, dont add PVs of
-     * 	unconfigured disks.
+     *	unconfigured disks. FIXME
      */
 
     global define list ExistingPVs ( string vgname )
@@ -304,11 +304,20 @@
 	});
 
 
-	list all_possible_pvs = filter( `part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname ));
+	 y2milestone("targetMap= %1", targetMap);
+	 y2milestone("tm= %1", tm);
+	
+	list all_possible_pvs = filter( `part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname && !part["delete"]:false ));
 	list possible_pvs = filter( `part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
 
+	
+	 y2milestone("all pvs= %1", all_possible_pvs);
+	 y2milestone("possible pvs= %1", possible_pvs);
+
 	if (all_possible_pvs != possible_pvs)
+	{
 	    PVsNotConfigured = true;
+	}
 
 	return (possible_pvs);
 

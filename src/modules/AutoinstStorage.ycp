@@ -140,15 +140,14 @@
 
 	// Start the real work
 
-	
+
 	targetMap =  listmap (map drive, drives, ``{
 	    boolean first_set = false;
 	    string device = "";
 	    y2milestone("Drive: %1", drive);
-	   
+
 	    if (drive["device"]:"" == "ask"  && size(physical_drives) > 1 )
 	    {
-		y2milestone("Manual selection of device...");
 		any dev = DiskSelection();
 		if (dev != nil)
 		{
@@ -255,7 +254,12 @@ Make sure the control file has the correct syntax and values.
 	{
 	    y2milestone("Configuring RAID");
 	    autoRAID();
+	} else {
+	    import "AutoinstRAID";
+	    AutoinstRAID::DeleteMDs();
+	    
 	}
+
 
 	if ( size(lvm) != 0)
 	{
