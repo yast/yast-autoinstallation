@@ -123,7 +123,10 @@ Please wait while the system is prepared for autoinstallation.
     // Timezone
     
     Progress::Title(_("Configuring Timezone"));
-    Timezone::Set(AutoInstall::Timezone);
+    if (AutoInstall::Timezone != "")
+    {
+	Timezone::Set(AutoInstall::Timezone);
+    }
 
     // Hardware Clock
     ////////////////////////////////////////////////////////////////////////

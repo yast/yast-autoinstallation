@@ -168,7 +168,7 @@ control file and try again.
 	use_utf8 = false;		// fallback to ascii
     }
 
-    string language = AutoInstall::Language;
+    string language = AutoInstall::Profile["install","general","language"]:Language::language;    
     Language::Set(language);
     
     // Set Console font
@@ -187,13 +187,7 @@ control file and try again.
     
     sleep(1000);
     Progress::Finish();
-    if ( AutoInstall::Profile == $[])
-    {
-	UI::ErrorPopup(_("An error occured while parsing the control file.
-Check the syntax of the control file and try again.
-"));
-	return `abort;
-    }
+ 
     
     return `next;
 }
