@@ -191,6 +191,7 @@
     global define symbol ConfTree(list menuitems)
 	``{
 	Wizard::SetScreenShotName ("autoyast-conftree");
+	y2milestone("dd: %1", menuitems);
 	
 	term image = Wizard::HeaderImage(false);
 	term menu =
@@ -292,7 +293,7 @@
 		    while ( true )
 		    {
 			ret = Wizard::UserInput();
-			y2debug("INPUT: %1", ret);
+			y2milestone("INPUT: %1", ret);
 
 			if (ret == `key)
 			{
@@ -308,7 +309,8 @@
 			    break;
 			}
 			else
-			{			    
+			{
+			    tree_item = (string)ret;
 			    break;
 			}
 		    }
@@ -338,7 +340,7 @@
 		    Popup::Error(_("Error while reading configuration data."));
 		    ret = `back;
 		}
-		else if ( contains(menuitems,ret) )
+		else if ( contains( menuitems , ret) )
 		{
 		    y2debug("MENU: %1", ret);
 
@@ -452,10 +454,7 @@
 
 		    if (ret == `menu_open) // OPEN
 		    {
-
-
 			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
-
 			if (filename != "")
 			{
 			    y2milestone("file: %1", filename);
@@ -492,7 +491,6 @@ were imported correctly.
 		    {
 			if (AutoinstConfig::currentFile == "")
 			{
-
 			    string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));			    
 			    if (filename !=  nil )
 			    {
@@ -520,7 +518,6 @@ were imported correctly.
 		    }
 		    else if (ret == `menu_saveas) // SAVE AS
 		    {
-
 			string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
 			if ( filename != nil )
 			{
@@ -558,7 +555,8 @@ were imported correctly.
 			tree_item = "System";
 
 		    }
-		    else if ( ret == `menu_tree) {
+		    else if ( ret == `menu_tree)
+		    {
 			tree_item = (string) UI::QueryWidget(`id(`key), `CurrentItem);
 			if (tree_item == nil)
 			{
@@ -570,11 +568,8 @@ were imported correctly.
 			Profile::Reset();
 			AutoinstConfig::currentFile = "";
 			UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
-
 		    }
-
 		}
-
 	    } until ( ret == `exit || ret == `cancel || ret == `back );
 
 	Wizard::RestoreHelp("");
