@@ -135,8 +135,8 @@
 
 	  <para>
 	    For the automated partitioning to be completed, only the sizes and mount points of
-	    partitions are needed. All other data needed for successful partitioning
-	    is calculated during installation if left out.
+	    partitions are required. All other data needed for successful partitioning
+	    can be calculated during installation if not given in the control file.
 	  </para>
 	  <para>
 	    If no partitions are defined and the specified drive is also the drive where
@@ -172,6 +172,7 @@
 	      </para>
 	    </listitem>
 	  </itemizedlist>
+	
 	  <para>
 	    Depending on the initial status of the drive and how it was
 	    previously partitioned, it is possible to create the <emphasis>default</emphasis>
@@ -197,7 +198,7 @@
 		This option will lead to the deletion of existing partitions.
 	      </para>
 	    </listitem>
-	    <listitem>
+	    <listitem> <!-- FIXME -->
 	      <para>
 		<emphasis>Reuse all available linux partitions</emphasis>
 	      </para>
@@ -220,7 +221,7 @@
 	  <para>	
 	    In case of the presence of multiple drives in the target system, all
 	    drives  should be identified with their device
-	    names and with additional information related to the above mentioned behavior.
+	    names and the way the partitioning should be performed.
 	  </para>
 
 	  <para>
@@ -236,8 +237,10 @@
 	  <para>A fixed size can be given as shown below:</para>
 	  <formalpara>
 	    <title>Size</title>
-	    <para><emphasis>1gb</emphasis> will create a partition with 1 GB size.<emphasis> 1500mb</emphasis> will create
-	      a parition which is 1.5 GB big.</para>
+	    <para>
+	      <emphasis>1gb</emphasis> will create a partition with 1 GB size.<emphasis> 1500mb</emphasis> will create
+	      a parition which is 1.5 GB big.
+	    </para>
 	  </formalpara>
 	  &example.partitioning;
 
