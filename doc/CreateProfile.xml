@@ -5,7 +5,7 @@
     <section id="Autoinstallation.collectInfo">
       <title>Collect information</title>
       <para>
-	In order to create the control file, you need to collect information about the systems your are going to
+	In order to create the control file, first you need to collect information about the systems your are going to
 	install. This includes among other things hardware data and network
 	information. Make sure you know the following about the machines you want to install:
       </para>
@@ -30,8 +30,8 @@
 	Using the Configuration Management System
       </title>  
       <para>
-	In order to create the control file for a specific computer, a &yast2; configuration
-	based system is provided. This system depends on existing modules
+	In order to create the control file for one or more computers, a configuration
+	interface based on &yast2 is provided. This system depends on existing modules
 	which are usually used to configure a computer in regular operation mode,
 	i.e. after &company-suse; Linux is installed.
       </para>
@@ -61,20 +61,16 @@
 	  valid and insures that it can be used directly to start  automated installation.
 	</para>
 	<para>
-	  Make sure the configuration system is installed (package <emphasis>autoyast2</emphasis>) and call it using the <emphasis>YaST2 Control
-	    Center</emphasis> or call it directly as root with the
+	  Make sure the configuration system is installed (package
+	<emphasis>autoyast2</emphasis>) and call it using the <emphasis>YaST2
+	  Control  Center</emphasis> or call it directly as root with the
 	  following command (make sure the <emphasis>DISPLAY</emphasis> variable is set correctly to
 	  start the graphical user interface instead of the text based one):
 	</para>
 	<screen>
 /sbin/yast2 autoyast
 	</screen>
-      <!--
-	<section>
-	  <title>Going through the Configuration Management System</title>
-	  <para>FIXME</para>
-	</section>
-      -->
+
       </section>
 
 
@@ -101,7 +97,7 @@
 	<emphasis>libxml2</emphasis> package:     
       </para>
       <screen>
-	xmllint &lt;control file&gt;
+xmllint &lt;control file&gt;
       </screen>
       <para>
 	If the control file is not well formed, i.e. if a tag is not closed,

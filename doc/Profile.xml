@@ -77,10 +77,11 @@
          <source>
 ]]>
             &lt;![CDATA[
-		#!/bin/sh 
-		echo "Starting installation" 
-		exit 0
-           ]]&gt;
+#!/bin/sh 
+echo "Starting installation" 
+exit 0
+
+]]&gt;
 <![CDATA[
          </source>
      </script>  
@@ -227,11 +228,11 @@
   <device>/dev/hda</device> 
   <partitions config:type="list"> 
      <partition> 
-        <size>1000</size> 
+        <size>1000mb</size> 
         <mount>/</mount> 
      </partition> 
      <partition> 
-        <size>250</size> 
+        <size>250mb</size> 
         <mount>/tmp</mount> 
      </partition> 
   </partitions> 
@@ -281,55 +282,7 @@
 	</screen>
       </example>
     </section>
-<!--
-    <section>
-      <title>
-	Named Elements
-      </title>
-      <para>
-	The name does not need to be unique in the profile but must be unique
-	against all siblings of the same element type. The <abbrev>&dtd;</abbrev> cannot validate
-	this (without the specific name values being encoded into it). Multiple
-	instances of the same resource or property element can optionally be
-	given a name so that they can be addressed by name rather than by
-	index. This is specified with the <emphasis>config:name</emphasis> attribute. 
-      </para>
-      <example> 
-	<title>
-	  Named Elements
-	</title>
-	<screen>	     
-<![CDATA[
-<drive> 
-  <name>/dev/hda</name> 
-  <partitions config:type="list" > 
-     <partition config:name="root"> 
-        <size>1000</size> 
-        <mount>/</mount> 
-     </partition> 
-     <partition config:name="tmp"> 
-        <size>250</size> 
-        <mount>/tmp</mount> 
-     </partition> 
-  </partitions> 
-</drive>
-]]>
-	</screen>
-      </example>
-      <para>
-	Multiple instances of the same element must either all be named or
-	all unnamed, mixes of named and unnamed elements of the same type
-	are not permitted. This restriction is specified in the &dtd;. The
-	&dtd; also restricts the use of the <emphasis>config:name</emphasis> attribute to elements
-	permitted to appear more than once.
-      </para>
-      <para>
-	Without explicit names the names of multiple instances of elements are
-	a constructed index position. The names of single instances of elements
-	are the same as the element type.
-      </para>
-    </section>
--->
+
     <section>
       <title>
 	Attributes
