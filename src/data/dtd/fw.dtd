@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!ENTITY % y2_firewall "fw_allow_fw_traceroute|fw_autoprotect_services|fw_dev_ext|fw_dev_int|fw_log_accept_all|fw_log_accept_crit|fw_log_drop_all|fw_log_drop_crit|fw_masq_nets|fw_masquerade|fw_protect_from_internal|fw_route|fw_services_ext_tcp|start_firewall" >
-<!ELEMENT firewall (&y2_firewall;)* >
+<!ELEMENT firewall (%y2_firewall;)* >
 
 <!ELEMENT fw_allow_fw_traceroute ( #PCDATA ) >
 
@@ -32,4 +32,4 @@
 
 <!ELEMENT start_firewall ( #PCDATA ) >
 
-<!ATTLIST start_firewall config:type NMTOKEN #FIXED "boolean" >
+<!ATTLIST start_firewall config:type CDATA #FIXED "boolean" >

@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!ELEMENT ntp-client ( peers, start_at_boot, start_in_chroot ) >
+
 <!ELEMENT create_symlink ( #PCDATA ) >
-<!ATTLIST create_symlink config:type NMTOKEN #REQUIRED >
+<!ATTLIST create_symlink config:type  CDATA #FIXED  "boolean" >
 
 
 <!ELEMENT initial_sync ( #PCDATA ) >
-<!ATTLIST initial_sync config:type NMTOKEN #REQUIRED >
+<!ATTLIST initial_sync config:type CDATA #FIXED  "boolean" >
 
-<!ELEMENT ntp-client ( peers, start_at_boot, start_in_chroot ) >
 
 <!ELEMENT param ( #PCDATA ) >
 
 <!ELEMENT peer ( address | create_symlink | device | initial_sync | param | type )* >
 
 <!ELEMENT peers ( peer+ ) >
-<!ATTLIST peers config:type NMTOKEN #REQUIRED >
+<!ATTLIST peers config:type  CDATA #FIXED  "list" >
 
 
 <!ELEMENT start_at_boot ( #PCDATA ) >
-<!ATTLIST start_at_boot config:type NMTOKEN #REQUIRED >
+<!ATTLIST start_at_boot config:type  CDATA #FIXED  "boolean" >
 
 <!ELEMENT start_in_chroot ( #PCDATA ) >
-<!ATTLIST start_in_chroot config:type NMTOKEN #REQUIRED >
+<!ATTLIST start_in_chroot config:type  CDATA #FIXED  "boolean" >
