@@ -1,7 +1,7 @@
 /**
  * File:	clients/autoinst_general.ycp
  * Package:	Autoinstallation Configuration System
- * Summary: General Settings
+ * Summary: 	General Settings
  * Authors:	Anas Nashif<nashif@suse.de>
  *
  * $Id$
@@ -13,10 +13,14 @@
 
 
     import "Wizard";
-    import "Summary";
-    import "AIGeneral";
+    import "Summary";    
+    import "Keyboard";        
+    import "Mouse";
+    import "Language";
+    import "Keyboard";    
+    import "Timezone";  
 
-    include "autoinstall/general_dialogs.ycp";
+   
     include "ui/common_messages.ycp";
 
 
@@ -43,15 +47,313 @@
 	}
     }
 
-    y2milestone("Imported: (%1)", settings);
-    AIGeneral::Import ( settings );
+    y2milestone("Imported: (%1)", settings);    
 
+
+
+    define  symbol GeneralOptions() ``{
+
+	// Clock
+	map _clock 		= settings["clock"]:$[];
+	string timezone 	= _clock["timezone"]:"";
+	boolean utc 		= _clock["utc"]:false;
+
+	// Keyboard
+	map _keyboard 		=  settings["keyboard"]:$[];
+	string keyboard 	= _keyboard["keymap"]:"";
+
+	map _mouse 		= settings["mouse"]:$[];
+	string mouse 		= _mouse["id"]:"";
+
+	
+	string language = settings["language"]:"";
+
+	map _mode 		= settings["mode"]:$[];
+	boolean reboot 		= _mode["reboot"]:false;
+	boolean forceboot	= _mode["forceboot"]:false;
+	boolean debugboot 	= _mode["interactive_boot"]:false;
+	boolean confirm 	= _mode["confirm"]:false;
+	
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Left(GetLanguageTerm(language)),
+		       `Left(ConfigureKeyboard(keyboard)),
+		       `Left(ConfigureMouse(mouse)),
+		       `Left(GetTimeZoneTerm(timezone)),
+		       `Left(
+			     `ComboBox(`id(`hwclock), _("&Hardware clock set to"),
+				       [
+					// ComboBox entry: hardware clock set to local time
+					`item(`id(`hwclock_localtime), _("Local time"), utc ),
+
+					// ComboBox entry: hardware clock set GMT
+					`item(`id(`hwclock_gmt ),      _("GMT"), utc )
+					]
+
+				       )
+			     ),
+		       `VSpacing(1),
+		       `Left(`CheckBox(`id(`reboot), _("Reboot after installation?"), reboot)),
+		       `Left(`CheckBox(`id(`forceboot), _("Do not reboot after installation, even if system requires so?"), forceboot)),
+		       `Left(`CheckBox(`id(`confirm), _("Confirm installation?"), confirm)),
+		       `Left(`CheckBox(`id(`debugboot), _("Confirm every step of the boot process?"), debugboot))
+		       
+		       )
+		 );
+
+
+	string help_text = _("<p>This part of the configuration is required for
+the auto-installation. Please select the values matching
+your hardware and preferences and press <b>next</b> to continue.</p>");
+
+
+
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	Wizard::SetContents(_("Environment and basic Options"),
+			    contents, help_text, true , true);
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `next)
+	    {
+		language= UI::QueryWidget(`id(`language), `Value);
+		timezone= UI::QueryWidget(`id(`timezone), `Value);
+		keyboard= UI::QueryWidget(`id(`keyboard), `Value);
+
+
+		symbol hwclock = UI::QueryWidget (`id (`hwclock), `Value);
+		if (hwclock == `hwclock_localtime)		    
+		    utc = false;		
+		else
+		    utc = true;
+		
+		mouse = UI::QueryWidget(`id(`mouse), `Value);
+		map m = $[];
+	
+
+		reboot = UI::QueryWidget(`id(`reboot), `Value);
+		forceboot = UI::QueryWidget(`id(`forceboot), `Value);
+		debugboot = UI::QueryWidget(`id(`debugboot), `Value);
+		confirm = UI::QueryWidget(`id(`confirm), `Value);
+		if (reboot && forceboot) {
+		    UI::WarningPopup(_("You can't request rebooting the machine
+and force booting it at the same time"));
+		    continue;
+		}
+		settings = $[
+			     "mouse": $["id": mouse],
+			     "keyboard": $["keymap":keyboard],
+			     "clock": $[
+					"timezone":timezone,
+					"utc": utc
+			     ],
+			     "language":language,
+			     "mode": $[
+				       "reboot":reboot,
+				       "forceboot":forceboot,
+				       "confirm":confirm,
+				       "interactive_boot":debugboot
+			     ]
+		];
+	    }
+	} until (ret == `next || ret == `back || ret ==`abort);
+
+	return ret;
+    }
+
+    /**
+     * Language
+     *
+     */
+    define GetLanguageTerm(string language)
+    ``{
+	boolean use_utf8 = true;		// utf8 is default
+
+	if (!lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
+	{
+	    use_utf8 = false;		// fallback to ascii
+	}
+	if (language==""){
+	    language = Language::language;
+	}
+	map languageselsort = mapmap(`lang_code, `lang_info, Language::Selection(),
+				``([lang_info[1]:"",	// ASCII value is the key
+				    [lang_info[use_utf8?0:1]:"", lang_code]
+				   ]));
+
+	term languagesel =
+	    `ComboBox(`id(`language), `opt(`notify), _("Lan&guage:"),
+			  maplist (`name, `codelist, languageselsort,
+				   ``(`item(`id(codelist[1]:""), codelist[0]:"", (language == codelist[1]:"")))));
+
+	return (languagesel);
+    }
+
+
+    /**
+     * Keyboards
+     *
+     */
+    define ConfigureKeyboard(string keyboard)
+    ``{
+	if (keyboard == "")
+	{
+	    keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "en_US");
+	    Keyboard::current_kbd=keyboard;
+	}
+
+
+	term keyboardsel = `dummy();
+	list keyboardlist_by_translation =
+	    maplist( string keyboard_code, string keyboard_name, Keyboard::Selection(),
+		     ``{
+			 return `item(`id( keyboard_code ),
+				      keyboard_name,
+				      Keyboard::current_kbd == keyboard_code);
+		     } );
+
+	keyboardsel = `ComboBox( `id( `keyboard ), `opt( `notify ),
+				     // title for selection box 'keyboard layout'
+				     _("&Keyboard layout"),
+				     keyboardlist_by_translation);
+	return (keyboardsel);
+	}
+
+
+    /**
+     * Timezone
+     *
+     */
+
+    define GetTimeZoneTerm(string timezone) ``{
+
+	if (timezone=="") {
+	    import "Misc";
+	    timezone         = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, timezone );
+	    if (timezone=="")
+	    {		
+		timezone = Timezone::GetTimezoneForLanguage(Language::language, "en_US");
+	    }
+	}
+	// build up timezone selection box
+
+	map zonemap = Timezone::Selection();
+
+	term timezonesel = `ComboBox( `id( `timezone ), `opt( `notify ),
+			   // title for selection box 'timezone'
+			   _("Time &Zone"),
+			   maplist( `name, `key, zonemap,
+				    ``{
+					return `item( `id( key ), name, key == timezone );
+				    })
+				      );
+	return (timezonesel);
+    }
+
+
+    /**
+     * Mouse
+     *
+     */
+
+    define ConfigureMouse(string mouse)
+    ``{
+	list mouselist = maplist (string mouse_code, string mouse_name, Mouse::Selection (),
+		 ``{
+		     return `item(`id (mouse_code),
+				  mouse_name,
+				  mouse == mouse_code);
+		 });
+	mouselist = add(mouselist, `item(`id ("probe"), _("Autoprobe"), mouse == "probe"));
+
+	term contents =
+		`ComboBox(`id(`mouse),
+			  _("&Mouse"),
+			  mouselist
+			  );
+	return contents;
+    }
+
+    /**
+     * Summary of configuration
+     * @return string Formatted summary
+     */    
+    define string Summary()``{
+
+	string language_name = "";
+	string keyboard_name = "";
+	string mouse_name = "";
+	map mouse = settings["mouse"]:$[];
+	map keyboard = settings["keyboard"]:$[];
+	map mode = settings["mode"]:$[];
+	map clock = settings["clock"]:$[];
+
+	
+	if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe")
+	{
+	    Mouse::Set(mouse["id"]:"");
+	    mouse_name = Mouse::MakeProposal(false, false);
+	}
+	else
+	{
+	    mouse_name = "probe";
+	}
+
+	if (language!="")
+	{
+	    Language::Set(language);
+	    language_name= Language::MakeProposal(false, false);
+	}
+	if (keyboard!="")
+	{
+	    Keyboard::SetLanguage(keyboard["keymap"]:"");
+	    keyboard_name = Keyboard::Name();
+	}
+	    
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Language"));
+	summary = Summary::AddLine(summary, (language_name != "") ?
+				   language_name : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Keyboard"));
+	summary = Summary::AddLine(summary, (keyboard_name != "") ?
+				   keyboard_name : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Timezone"));
+	summary = Summary::AddLine(summary, (clock["timezone"]:"" != "") ?
+				   clock["timezone"]:"" : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Mouse"));
+	summary = Summary::AddLine(summary, (mouse_name != "") ?
+				   mouse_name : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Hardware clock"));
+	summary = Summary::AddLine(summary, (clock["utc"]:false) ?
+				   _("GMT") : _("Local time"));
+
+	summary = Summary::AddHeader(summary, _("Reboot after installation?"));
+	summary = Summary::AddLine(summary, (mode["reboot"]:false) ?
+				   _("Yes") : _("No"));
+
+	summary = Summary::AddHeader(summary, _("Confirm every step of the boot process?"));
+	summary = Summary::AddLine(summary, (mode["interactive_boot"]:false) ?
+				   _("Yes") : _("No"));
+	
+	summary = Summary::AddHeader(summary, _("Confirm installation?"));
+	summary = Summary::AddLine(summary, (mode["confirm"]:false) ?
+				   _("Yes") : _("No"));
+	
+	return summary;				   
+    }
+    
     define set_contents()
 	``{
 	term contents =
 	    `VBox(
 		  `VSpacing(1),
-		  `RichText( `id(`summary), AIGeneral::Summary()),
+		  `RichText( `id(`summary), Summary()),
 		  `VSpacing(0.5),
 		  `HBox(
 			`PushButton(`id(`configure), _("&Configure General Options")),
@@ -77,17 +379,12 @@
 		Wizard::ReplaceAbortButton(`Empty ());
 		result =  GeneralOptions();
 		UI::CloseDialog ();
-
-		if (result == `next || result == `finish )
-		{
-		    settings = AIGeneral::Export ();
-		}
+	
 		set_contents();
 	}
 	else if ( ret == `reset)
 	{
-	    settings = $[];
-	    AIGeneral::Set(settings);
+	    settings = $[];	    
 	    set_contents();
 	}
     } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
