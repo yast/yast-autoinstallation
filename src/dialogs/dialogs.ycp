@@ -13,9 +13,46 @@
     import "Profile";
     include "autoinstall/helps.ycp";
 
+    /**
+     * Returns a term describing the default wizard header image.
+     *
+     * @param add_bottom_tile add a 3D border at the bottom?
+     * @return term describing the header image.
+     **/
+    define term HeaderImage( boolean add_bottom_tile ) ``{
+        term image = `Image( `opt(`zeroWidth, `easterEgg), `suseheader, "SuSE");
+
+        import "Directory";
+        string theme_path = Directory::themedir + "/current/wizard/";
+        boolean have_fancy_ui = true;
+        if ( have_fancy_ui )
+        {
+            image =
+                `VBox(
+                      `HBox(
+                            `Image( theme_path + "title-bar-left.png", "YaST2" ),
+                            `HWeight( 1, // Layout trick: Lower layout priority with weight
+                                      `HBox(
+                                            `Image( theme_path + "title-bar-right.png", "" ),
+                                            `Image(theme_path + "top-gradient.png", "SuSE" )
+                                            )
+                                      )
+                            )
+                      );
+
+            if ( add_bottom_tile )
+            {
+                image = add( image, `Image(`opt(`tiled, `zeroWidth ) , theme_path + "topRow_bottomTile.png", "" ) );
+            }
+        }
+
+        return image;
+    };
+
+
     define term GenericDialog( term button_box ) ``{
         return `VBox( `id(`WizardDialog),
-                      `ReplacePoint( `id(`image ), `Empty() ),
+                      `ReplacePoint( `id(`topmenu ), `Empty() ),
                       `HBox(
                             `HWeight( 30, `ReplacePoint( `id(`helpSpace), `RichText(`id(`HelpText), ""))),
                             `HSpacing(1),
