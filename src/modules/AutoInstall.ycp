@@ -20,98 +20,75 @@
     import "Kernel";
 
 
-
+    //
     // Main directory for data generated during installation
     //
     global string var_dir = "/var/adm/autoinstall";
 
+    //
     // Cache directory
     //
     global string cache = var_dir + "/cache";
 
+    //
     // Temporary directory for storing profile before installation starts
     //
-    global string tmpdir = SCR::Read( .target.tmpdir );
+    global string tmpdir = (string)SCR::Read( .target.tmpdir );
 
+    //
     // Temporary file name for retrieved system profile
     //
     global string xml_tmpfile = tmpdir + "/autoinst.xml";
 
+    //
     // Final location for retrieved system profile
     //
     global string xml_file = cache + "/installedSystem.xml";
 
+    //
     // Parsed data from XML control in YCP format
     //
     string parsedControlFile = cache + "/autoinst.ycp";
 
+    //
     // Direcotry for runtime operation data
+    //
     global string runtime_dir = "/var/lib/autoinstall";
 
-
-    // Directory where copmlete configuration files are kept.
+    //
+    // Directory where complete configuration files are kept.
     //
     global string files_dir = var_dir + "/files";
 
+    //
     // Auto-Configuration mode
     //
     global boolean autoconf = false;
 
+    //
     // Parsed data to be used to set variables in other modules
-    //////////////////////////////////////////////////////////////
-
-
+    //
     global boolean Confirm  = true;
+    
     global boolean interactive = true;
 
 
     global map Profile = $[];
 
-    global map X11 = $[];
+    // FIXME: global map X11 = $[];
 
 
-    global list loadKernelModules = [];
-    global list configureKernelModules = [];
+    // FIXME: global list loadKernelModules = [];
+    // FIXME: global list configureKernelModules = [];
 
 
 
-    global boolean IgnorePkgErr = false;
-    global map Bootloader = $[];
+    // FIXME: global boolean IgnorePkgErr = false;
+    
+    // FIXME: global map Bootloader = $[];
 
     // Default runlevel
-    global string default_rl = "5";
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    // Local variables
-    /////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    /**
-     * Constructer
-     *
-     */
-    global define void AutoInstall()
-	``{
-	if (!Mode::config &&  ! ( Mode::cont && Continue() ))
-	{
-	    if ( SCR::Read(.target.size, xml_tmpfile) != -1  && size ( Profile::current ) == 0)
-	    {
-		// Profile is available and it has not been parsed yet.
-		Profile::Read(  xml_tmpfile );
-	    }
-
-	}
-
-	if (Mode::cont && size ( Profile::current ) > 0)
-	{
-	    y2milestone("Enabling Auto-Installation mode");
-	    Mode::autoinst = true;
-	}
-
-
-	return;
-    }
-
+    // FIXME: global string default_rl = "5";
 
 
     /**
@@ -139,26 +116,51 @@
 	else
 	{
 	    boolean ret = Profile::ReadYCP ( parsedControlFile );
-	    if ( Profile::current == $[] || !ret )	// No saved data base.
+	    if ( Profile::current == $[] || !ret )	
 	    {
 		y2milestone( "No saved autoinstall data found" );
 		return (false);
 	    }
-	    else	// saved data  found
+	    else
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
 		SCR::Execute(.target.remove, parsedControlFile);
-
 		Profile = Profile::current;
-
 		ProcessSpecialResources();
-
 		return (true);
 	    }
 	}
 
 
     }
+
+    /**
+     * Constructer
+     *
+     */
+    global define void AutoInstall()
+	``{
+	if (!Mode::config &&  ! ( Mode::cont && Continue() ))
+	{
+	    if ( SCR::Read(.target.size, xml_tmpfile) != -1  && size ( Profile::current ) == 0)
+	    {
+		// Profile is available and it has not been parsed yet.
+		Profile::Read(  xml_tmpfile );
+	    }
+	}
+
+	if (Mode::cont && size ( Profile::current ) > 0)
+	{
+	    y2milestone("Enabling Auto-Installation mode");
+	    Mode::autoinst = true;
+	}
+
+
+	return;
+    }
+
+
+
 
 
     /**
@@ -253,7 +255,7 @@
 	string parameters = Bootloader["kernel_parameters"]:"";
 	if ( size(parameters) > 0)
 	{
-	    foreach (`parameter, splitstring(parameters, " "),
+	    foreach ( string parameter, splitstring(parameters, " "),
 		     ``{
 		list param_value_list = splitstring (parameter, "=");
 		if (size (param_value_list) > 0)
@@ -318,7 +320,7 @@
 	}
 	// fix root partitions
 	y2milestone ("Fixing partitions");
-	foreach (`s, ["linux", "failsafe"], ``{
+	foreach (string s, ["linux", "failsafe"], ``{
 	    string root = Bootloader::getKernelParam (s, "root");
 	    y2milestone ("Section %1 has root %2", s, root);
 	    if (root == "true" || root == "false" || root == "")

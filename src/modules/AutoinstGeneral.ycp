@@ -219,8 +219,8 @@
 
 	    map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
 
-	    foreach(`f,`g, mice, ``{
-		map data = select(g,1,$[]);
+	    foreach(string f,list g, mice, ``{
+		map data = g[1]:$[];
 		if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
 		{
 		    Mouse["id"] =  f;

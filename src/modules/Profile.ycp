@@ -11,9 +11,8 @@
     textdomain "autoinst";
 
     import "Mode";
-    import "XML";
-    import "AutoInstall";
-    import "Y2ModuleConfig";
+    import "AutoinstConfig";
+    import "XML";    
 
     include "autoinstall/xml.ycp";
 
@@ -39,6 +38,8 @@
     global string modified_profile = profile_dir + "/modified.xml";
 
 
+    // defined in Y2ModuleConfig
+    global map ModuleMap = $[];
 
     // Local
 
@@ -85,8 +86,10 @@
 	Install = $[];
 	Configure = $[];
 	current = $[];
+	
 	y2debug("FLAT: %1", Flat);
-	foreach(`p,`d, Y2ModuleConfig::ModuleMap, ``{
+	
+	foreach(string p, map d, ModuleMap, ``{
 
 	    // Set resource name, if not using default value
 	    string resource = d["AutoinstResource"]:p;
@@ -106,7 +109,6 @@
 		}
 		else
 		{
-
 		    string tomergetypes = d["AutoinstMergeTypes"]:"";
 		    list MergeTypes = splitstring(tomergetypes, ",");
 		    if ( size(tomerge) > 0 )
@@ -141,7 +143,7 @@
 	    Install["raid"] = Flat["raid"]:[];
 
 
-	// y2milestone("Install: %1", Install);
+	
 	if (Install != $[])
 	{
 	    current["install"] = Install;
@@ -150,17 +152,16 @@
 	{
 	    current=remove( current,"install");
 	}
-	// y2milestone("Configure: %1", Configure);
+	
 	if (Configure!=$[])
 	{
 	    current["configure"] = Configure;
 	}
 	else if (haskey(current,"configure"))
 	{
-	    current=remove(current,"configure");
+	    current = remove(current,"configure");
 	}
-
-	// y2milestone("Current Profile: %1", current);
+	
 	return;
 
     }
@@ -184,7 +185,7 @@
     /**
      * Save YCP data into XML
      * @param  path to file
-     * @return	boolean
+     * @return	boolean true on success
      */
     global define boolean Save (string file)
     ``{
@@ -193,7 +194,7 @@
 
 	if ( find( file, "/") == -1 )
 	{
-	    return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", Repository, file)));
+	    return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", AutoinstConfig::Repository, file)));
 	}
 	else
 	{
@@ -222,7 +223,7 @@
 
     global define boolean ReadYCP( string parsedControlFile )
 	``{
-	current = SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
+	current = (map) SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
 	if (current == $[])
 	{
 	    return false;
@@ -234,36 +235,6 @@
 	    Flat = union ( Install, Configure);
 	    return true;
 	}
-    }
-
-
-
-
-
-    /**
-     * Parse()
-     * @param action: Reset or default
-     * @return	void
-     *
-     * Parse XML Profile
-     */
-
-    global define void Parse (symbol action, string new_path)
-    ``{
-	if (action == `reset)
-	{
-	    current = $[];
-	}
-	else if (action == `load && new_path != "")
-	    current = SCR::Read(.xml, new_path);
-	else
-	    current = SCR::Read(.xml, Repository + "/" + Profile_file);
-
-
-	Install = current["install"]:$[];
-	Configure = current["configure"]:$[];
-	Flat = union ( Install, Configure);
-	return;
     }
 
 
@@ -291,39 +262,7 @@
 	Configure = current["configure"]:$[];
 	Flat = AutoinstCompat::Compat( Install, Configure);
 
-	if (Mode::autoinst)
-	{
-	    import "AutoInstall";
-	    AutoInstall::Profile = Profile::current;
-	}
 	return true;
     }
-
-
-
-
-
-
-    /**
-     * Add a single entry to the Sysconfig list of variables
-     * @param string file name / path
-     * @param string key
-     * @param string value
-     * @param string package name which uses this variable if installation of package has to be forced.
-     * @return void
-     */
-    global define void addSysconfigVar(string file, string key, string value, string package)
-	``{
-
-	SysconfigVars=add(SysconfigVars, $["sysconfig_path":file, "sysconfig_key":key, "sysconfig_value": value]);
-
-	// Add package needed with sysconfig variable to package stack.
-	// FIXME
-	if (package != "")
-	{
-	    forcedPackages = add(forcedPackages, package);
-	}
-    }
-
 
 }

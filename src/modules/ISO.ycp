@@ -238,7 +238,7 @@ a source, make sure it is enabled.
 
 	commands= add(commands, sformat("/bin/cp %1/media.1/products   %2/skeleton/media.1/products",  sourceDir , skeletonDir));
 
-	foreach (`c, commands, ``{
+	foreach (string c, commands, ``{
 	    ret = SCR::Execute (.target.bash, c);
 	    if (ret != 0)
 	    {
@@ -252,7 +252,7 @@ a source, make sure it is enabled.
 
 	list pacdirs = productData["architectures"]:["i686", "i586", "i486", "i386", "noarch"];
 
-	foreach(`dir, pacdirs, ``{
+	foreach(string dir, pacdirs, ``{
 	    string dirname =  sformat("%1/skeleton/%2/%3", skeletonDir, dataDir, dir);
 	    SCR::Execute (.target.mkdir, dirname);
 	});

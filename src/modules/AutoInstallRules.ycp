@@ -22,7 +22,7 @@
     import "Popup";
     import "ProfileLocation";
 
-    include "autoinstall/profileDialogs.ycp";
+    include "autoinstall/autoinst_dialogs.ycp";
 
     global string remote_rules_location = "rules/rules.xml";
     global string local_rules_location = "";
@@ -191,7 +191,7 @@
 	    device = "eth0";
 	}
 
-	foreach(`dev, ifconfig, ``{
+	foreach(map dev, ifconfig, ``{
 	    if (dev["name"]:"" == device)
 	    {
 		string link = dev["value", "link"]:"";
@@ -568,7 +568,8 @@
 
 
 	// Now check if there any classes defined in theis pre final control file
-	if (! Profile::Read( prefinal )) {
+	if (! Profile::Read( prefinal ))
+	{
 	    Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the
 control file and try again.

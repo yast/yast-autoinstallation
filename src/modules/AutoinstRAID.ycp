@@ -57,7 +57,7 @@
     global define list DeletedMDs ( string md )
 	``{
 	list ret = [];
-	foreach( `dev, `devmap, targetMap,
+	foreach( string dev, map devmap, targetMap,
 		 ``{
 	    ret = add( ret,
 		       filter( `part, devmap["partitions"]:[],
@@ -80,8 +80,8 @@
 	``{
 	targetMap =  Storage::GetTargetMap();
 	list to_bo_deleted = [];
-	foreach( `dev, `devmap, targetMap, ``{	    
-	    foreach( `part,  devmap["partitions"]:[], ``{	
+	foreach( string dev, map devmap, targetMap, ``{	    
+	    foreach( map part,  devmap["partitions"]:[], ``{	
 		if (part["old_raid_name"]:"" != "" && part["delete"]:false)
 		{
 		    to_bo_deleted= add(to_bo_deleted, part["old_raid_name"]:"");
@@ -228,7 +228,7 @@
 	});
 
 
-	foreach( `part, RaidList,
+	foreach( map part, RaidList,
 		 ``({
 		     integer len = raid_size_byte( Storage::GetTargetMap(), part);
 		     part["region"] = [0, len / (1024 * 1024)];

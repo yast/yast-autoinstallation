@@ -21,7 +21,7 @@
 	list hosts = [];
 	string host = "";
 	foreach(string file, files, ``{
-	    foreach(`ext, extensions, ``{
+	    foreach(string ext, extensions, ``{
 		if (issubstring(file, ext))
 		{
 		    integer extsize = size(splitstring(ext, "."));
@@ -143,8 +143,8 @@ This may take a while. Please wait...
 	aliceXmlSetup();
 	integer cnt = 0;
 	string base = "";
-	foreach (`f, files, ``{
-	    if (f!="") {
+	foreach (string f, files, ``{
+	    if (f != "" ) {
 
 		string filename = sformat("%1/%2", dir, f);
 		y2milestone("Working on %1", filename);
@@ -186,7 +186,7 @@ This may take a while. Please wait...
 
 	map sortedMap = $[];
 	list keys = toset(maplist(`k,`v, ycpin, ``(k)));
-	foreach(`k, keys, ``{
+	foreach(string k, keys, ``{
 	    sortedMap[k]=ycpin[k]:"";
 	});
 	return XML::YCPToXMLFile(`alice, sortedMap, out);
@@ -244,7 +244,7 @@ This may take a while. Please wait...
         y2debug("Mice %1", mice);
 	boolean found = false;
 	map mouse = $[];
-	foreach(`k,`v, mice, ``{
+	foreach(string k,list v, mice, ``{
 	    map data = select(v,1,$[]);
 	    y2debug("yours %1, mine %2",  data["device"]:"", aliceConf["SYS_MOUSE_DEVICE"]:"none");
 	    if ( data["wheels"]:0 == 0 && data["device"]:"" == aliceConf["SYS_MOUSE_DEVICE"]:"none")
@@ -261,8 +261,9 @@ This may take a while. Please wait...
 
 	list drives = [];
 	map newDrive = $[];
-	foreach(`k,`v, aliceConf , ``{
-	    if (issubstring(k, "SYS_PART")) {
+	foreach(string k, string v, aliceConf , ``{
+	    if (issubstring(k, "SYS_PART"))
+	    {
 		string device =  "/dev/" + select(splitstring(k,"_"), 2, "");
 		list partitions  = createAlicePartitions(v);
 		y2milestone("Partitions for %1: %2", device , partitions );
@@ -545,7 +546,7 @@ This may take a while. Please wait...
 	}
 
 	list ifaces = networking["interfaces"]:[];
-	foreach(`iface, ifaces, ``{
+	foreach(map iface, ifaces, ``{
 	    if (iface["device"]:"" == init["netdevice"]:"")
 	    {
 		init["ip"] = iface["ipaddr"]:"";
@@ -829,7 +830,7 @@ This may take a while. Please wait...
 	drives = toset(drives);
 	y2milestone("Drives: %1", drives);
 	
-	foreach(`k, `v, ksConfig["partitioning"]:$[],   ``{
+	foreach(string k, map v, ksConfig["partitioning"]:$[],   ``{
 	    
 	    map partition = $[];
 	    list mountlist = splitstring(k, "_");
@@ -869,7 +870,7 @@ This may take a while. Please wait...
 	    if ( v["grow"]:-1 == 1 )
 		partition["grow"] =  true;
 	    
-	    foreach(`d, drives, ``{
+	    foreach(map d, drives, ``{
 		string dev = sformat("/dev/%1", v["ondisk"]:"");
 		if ( dev  == d["device"]:"")
 		{

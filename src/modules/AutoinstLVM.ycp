@@ -62,7 +62,7 @@
 
 	y2milestone("Existing VGs: %1", ExistingVGs );
 
-	foreach (`v, ExistingVGs, ``{
+	foreach (string v, ExistingVGs, ``{
 	    string dev = sformat("/dev/%1", v);
 	    if (size(ExistingLVM[dev,"partitions"]:[]) > 0 )
 	    {
@@ -301,7 +301,7 @@
 	``{
 	map tm = $[];
 
-	foreach(`k, `v, targetMap, ``{
+	foreach(string k, map v, targetMap, ``{
 	    if (contains(AutoinstStorage::ConfiguredDevices, k))
 	    {
 		tm[k] = v;
@@ -332,7 +332,7 @@
     global define list DeletedPVs ( string vgname )
 	``{
 	list ret = [];
-	foreach( `dev, `devmap, targetMap,
+	foreach( string dev, map devmap, targetMap,
 		 ``{
 	    ret = add( ret,
 		       filter( `part, devmap["partitions"]:[],
@@ -375,20 +375,18 @@
 
 	    if (AutoinstLVM::OldAvailable )
 	    {
-
 		y2milestone("Old LVM available");
+		foreach(string vgdev, map vg, ExistingLVM, ``{
 
-		foreach(`vgdev, `vg, ExistingLVM, ``{
-
-		    string vg = substring(vgdev, 5);
+		    string vgn = substring(vgdev, 5);
 		    boolean delete = false;
-		    list deleted_pvs = DeletedPVs(vg);
+		    list deleted_pvs = DeletedPVs(vgn);
 
-		    list del_pvs_dev 	= maplist(`pv, deleted_pvs, ``{
-			return(pv["device"]:"");
-		    });
-
-		    if ( use == "all" && vg == vgname )
+		    list del_pvs_dev = maplist(`pv, deleted_pvs,
+						  ``{
+						      return(pv["device"]:"");
+						  });
+		    if ( use == "all" && vgn == vgname )
 		    {
 			delete = true;
 		    }
@@ -417,13 +415,11 @@ physical volumes belonging to this group.
 			map ExistingVG = ExistingLVM[vgdev]:$[];
 
 			list ExistingLVs = ExistingVG["partitions"]:[];
-			foreach(`lv, ExistingLVs, ``{
+			foreach(map lv, ExistingLVs, ``{
 			    RemoveLV( vg, lv["nr"]:"");
 			});
-
 			RemoveVG( vg );
 		    }
-
 
 		    // Delete selected only
 		    if (use!= "" && use != "all" && use != "free" && use != "none")
@@ -434,7 +430,7 @@ physical volumes belonging to this group.
 
 		    if (size(SelectedPartitions) > 0 && !delete)
 		    {
-			foreach(`lv, SelectedPartitions, ``{
+			foreach(string lv, SelectedPartitions, ``{
 			    RemoveLV( vg, lv);
 			});
 		    }

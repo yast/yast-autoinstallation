@@ -12,12 +12,13 @@
     textdomain "autoinst";
 
     import "Partitions";
+    import "FileSystems";
     import "Mode";
     import "Summary";
     import "Report";
 
     include "partitioning/partition_defines.ycp";
-    include "autoinstall/autoinst_dialogs.ycp";
+    include "autoinstall/partition_dialogs.ycp";
 
     // Partition plan as parsed from control file
     global list AutoPartPlan = [];
@@ -339,7 +340,7 @@ Make sure the control file has the correct syntax and values.
 	``{
 	map tm = Storage::GetTargetMap();
 	list ret = [];
-	foreach( `dev, `devmap, tm,
+	foreach( string dev, map devmap, tm,
 		 ``{
 	    ret = add( ret,
 		       filter( `part, devmap["partitions"]:[],

@@ -293,7 +293,7 @@ to delete.
 
 	if ( size(profiles) > 0 )
 	{
-	    foreach(`k,`v, profiles,``{
+	    foreach(string k, list v, profiles,``{
 		Combo = add(Combo,
 			  `HBox(
 				`HWeight(50,(`Left(
@@ -447,7 +447,7 @@ file should belong.</p>
 	term Combo = `VBox();
 
 	if (size(profiles)>0) {
-	    foreach(`k,`v, profiles,``{
+	    foreach(string k, list v, profiles,``{
 		Combo=add(Combo,
 			  `Left(
 				`ComboBox(`id(k),`opt(`hstretch,`autoShortcut),  k,

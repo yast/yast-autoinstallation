@@ -265,7 +265,7 @@
 		if (haskey(Y2ModuleConfig::GroupMap, tree_item))
 		{
 		    string html = "";
-		    foreach(`k,`v, Y2ModuleConfig::ModuleMap, ``{
+		    foreach(string k , map v, Y2ModuleConfig::ModuleMap, ``{
 			if (v["Group"]:"" == tree_item)
 			{
 			    string colored = HTML::Colorize( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k), "#8BC460");

@@ -62,7 +62,7 @@
 	y2milestone("Merged %1", merged);
 	// split
 
-	foreach(`s, merged, ``{
+	foreach(map s, merged, ``{
 	    if (s["type"]:"" == "pre-scripts")
 		pre = add(pre,s);
 	    else if (s["type"]:"" == "post-scripts")
@@ -338,10 +338,10 @@
 	}
 
 
-	foreach( `s, scripts,
+	foreach( map s, scripts,
 		 ``{
-	    string scriptInterpreter=s["interpreter"]:"shell";
-	    string scriptName=s["filename"]:type;
+	    string scriptInterpreter	= s["interpreter"]:"shell";
+	    string scriptName = s["filename"]:type;
 	    string scriptPath = "";
 
 	    if (type == "pre-scripts")
