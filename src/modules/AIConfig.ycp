@@ -110,13 +110,15 @@
     
     define void CreateGroupTree (map Groups)
     ``{
+	include "autoinstall/readconfig.ycp";
         term groupwidget = `VBox ();
         list grouplist = [];
         grouplist = SortGroups (Groups, maplist (`rawname, `group, Groups, ``(rawname)));
         string is_first = "";
         foreach (`rawname, grouplist,
         ``{
-	    string name    = Translate(Groups[rawname, "Name"]:"???");
+	    // string name    = Translate(Groups[rawname, "Name"]:"???");
+	    string name    = ReadKey(Groups[rawname, "Textdomain"]:"base", "Name", Groups[rawname]:$[]);
 	    map MeunTreeEntry = $["entry":rawname, "title":name];
 	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);	    
         });
