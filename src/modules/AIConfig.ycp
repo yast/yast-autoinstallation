@@ -17,6 +17,9 @@
     include "autoinstall/xml.ycp";
     include "autoinstall/io.ycp";
 
+    
+    // tmp dir
+    global string tmpDir = "";
 
     
     
@@ -51,7 +54,7 @@
 
 
 
-
+    global map softwareSettings = $[];
     global map generalSettings = $[];
     
     /**
@@ -64,6 +67,8 @@
 
     global define void AIConfig ()
     ``{
+
+	tmpDir = SCR::Read (.target.tmpdir);
 	// Load configuration data from /etc/sysconfig/autoinstall
 	Load();
 

@@ -14,7 +14,7 @@
 
     import "Profile";
     import "AIConfig";    
-    import "AIServer";
+    import "ISO";
     import "AIClone";
     import "AIClass";
 
@@ -32,7 +32,7 @@
     include "autoinstall/help.ycp";
     include "autoinstall/conftree.ycp";
     include "autoinstall/classes.ycp";
-    include "autoinstall/packageMgmt.ycp";    
+    include "autoinstall/iso.ycp";    
     include "autoinstall/imports.ycp";
     include "autoinstall/io.ycp";
     
@@ -42,7 +42,7 @@
 
 
     
-    list menuitems = [`menu_open,
+    global list menuitems = [`menu_open,
 		      `menu_delete,
 		      `menu_save,
 		      `menu_saveas,
@@ -58,29 +58,19 @@
 		      `menu_clone
     ];
 
-    
-    global map dialogs = $[			 
-			   "file"		:	``(   FileDialog() ),
-			   "tree"		:	``(   ConfTree() ),
-			   "profiles"		:	``(   ManageProfiles() ),
-			   "classes"		:	``(   ManageClasses() ),
-			   "profile"		:	``(   Profile()),
-			   "merge"		:	``(   MergeDialog()),
-			   "save"		:	``(   SaveDialog() ),
-			   "preferences"	:	``(   Preferences()),			   
-			   "cloneSystem"	:	``(   cloneSystem()),					   
-			   "alice"		:	``(   aliceImportOptions() ),
-			   "aliceList"		:	``(   aliceImportList() ),
-			   "kickstart"		:	``(   kickstartImport() ),
-			   "hosts"		:	``(   hostConf() ),
-			   "processTemplate"	:	``(   processTemplate() ),
-			   "iso"		:	``(   isoDialog() ),
-			   "createiso"		:	``(   createISO() ),
-			   "openProfile"	:	``(   openProfile() )
 
+    global map iso_dlg =  $[
+			    "verify"	:	``(isoDialog()),
+			    "summary"	:	``(isoSummary()),
+			    "options"	:	``(isoOptions()),
+			    "create"	:	``(createISO() )
+    ];
+    
+    global map dialogs = $[			 			   
+			   "tree"		:	``(   ConfTree() )			 
     ];
 
-
+    
     /**
      * Whole configuration of autoyast
      * @return `back, `abort or `next
@@ -89,106 +79,11 @@
     global define symbol AutoSequence () ``{
 
 	map sequence = $[
-			 "ws_start" : "tree",		
-			 "alice":
-			 $[
-			   `abort	: `abort,
-			   `next	: "aliceList"
-			 ],
-			 "aliceList":
-			 $[
-			   `abort	: `abort,			  
-			   `save	: "save",
-			   `load	: "tree"
-			  
-			 ],
-			 "hosts":
-			 $[
-			   `abort	: `abort,
-			   `next	: "tree"
-			 ],
-			 "kickstart":
-			 $[
-			   `abort	: `abort,
-			   `next	: "tree",
-			   `save	: "save",
-			   `load	: "tree",
-			   `failed	: "tree"
-			 ],
-			 "cloneSystem":
-			 $[
-			   `load	: "tree",
-			   `save	: "save"
-
-			 ],			
-			 "iso":
-			 $[
-			   `next	: "createiso",			   
-			   `abort	: `abort
-			 ],
-			 "openProfile":
-			 $[
-			   `next	: "iso", // FIXME -> iso
-			   `abort	: `abort
-			 ],
-			 "createiso":
-			 $[
-			   `next	: "tree",
-			   `abort	: `abort
-			 ],			
-		
-			 "file":
-			 $[
-			   `abort	: `abort,
-			   `open	: "tree",
-			   `next	: "tree",
-			   `merge	: "processTemplate"
-			 ],
-			 "processTemplate":
-			 $[
-			   `next	: "save",
-			   `abort	: `abort
-
-			 ],
-			 "profiles":
-			 $[
-			   `abort	: `abort,
-			   `add		: "classes",
-			   `new		: "tree",
-			   `edit	: "tree",
-			   `next	: "merge"
-			 ],
+			 "ws_start" : "tree",
+			 
 			 "tree":
 			 $[			
-			   `next	: `ws_finish
-			 ],
-			 "classes":
-			 $[
-			   `next	: "profiles",
-			   `abort	: `abort
-
-			 ],
-			 "profile":
-			 $[
-			   `abort	: `abort,
-			   `next	: "profiles"
-			 ],
-			 "merge":
-			 $[
-			   `abort	:`abort,
-			   `next	: "save",
-			   `profiles	: "profiles"
-			 ],
-			 "save":
-			 $[
-			   `abort	: `abort,
-			   `edit	: "tree",			   
-			   `next	: `ws_finish
-			 ],
-			 "preferences":
-			 $[
-			   `abort	: `abort,
-			   `next	: "tree"
+			   `exit	: `ws_finish
 			 ]
 	];
 
