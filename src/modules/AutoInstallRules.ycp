@@ -1,6 +1,10 @@
 /**
+ * File:	modules/AutoInstallRules.ycp
+ * Package:	Auto-installation
+ * Summary:	Process Auto-Installation Rules
+ * Author:	Anas Nashif <nashif@suse.de>
  *
- *
+ * $Id$
  */
 {
 
@@ -23,8 +27,10 @@
 
     global symbol Behaviour = `many;
 
-
-
+    /////////////////////////////////////////////
+    // Pre-defined Rules
+    /////////////////////////////////////////////
+    /////////////////////////////////////////////
     
     global string hostname = "";
 
@@ -38,9 +44,9 @@
 
     global string karch = "";
 
-    global string model = "";
+    global string model = ""; // Still not supported (FIXME)
 
-    global string vendor = "";
+    global string vendor = ""; // Still not supported (FIXME)
 
     global integer memsize = 0;
 
@@ -57,6 +63,9 @@
     global string xserver = "";
 
     global boolean haspcmcia = false;
+
+    /////////////////////////////////////////////
+    /////////////////////////////////////////////
 	
 
     global map UserRules = $[];
@@ -67,6 +76,7 @@
 
     list tomerge = [];
 
+    
     /**
      * Constructor
      *
@@ -138,7 +148,6 @@
     /**
      * Return MAC address of active device
      */
-
     global define string getMAC() ``{
 	string tmpmac = "";
 	list ifconfig = SCR::Read(.run.ifconfig);
@@ -171,8 +180,7 @@
 
     /**
      * Return host id (hex ip )
-     */
-    
+     */    
     global define string getHostid () ``{
 	include "network/ip.ycp";
 	string hex = ip2hex(hostaddress);
@@ -186,7 +194,6 @@
      * Read rules file
      *
      */
-
     global define void Read() ``{
 	import "XML";
 	
@@ -431,7 +438,11 @@
     }
 
 
-
+    /**
+     * Create default rule in case no rules file is available
+     * This adds a list of file starting from full hex ip representation to
+     * only the first letter. Then default and finally mac address.
+     */
     global define void CreateDefault() ``{
 
 	Behaviour = `one;
@@ -448,7 +459,9 @@
 	return;
     }
 
-    
+   /**
+     * Create default rule in case no rules file is available (Only one file which is given by the user)   
+     */    
     global define void CreateFile(string filename) ``{
 	tomerge = add (tomerge, filename);
 	y2milestone("Created default rules:", tomerge);
