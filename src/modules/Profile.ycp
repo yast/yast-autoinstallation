@@ -10,6 +10,7 @@
     module "Profile";
     textdomain "autoinst";
 
+    import "Stage";
     import "Mode";
     import "AutoinstConfig";
     import "XML";
@@ -52,7 +53,7 @@
 	// setup profile XML parameters for writing
 	//
 	profileSetup();
-	if (Mode::initial)
+	if (Stage::initial ())
 	{
 	    SCR::Execute(.target.mkdir, AutoinstConfig::profile_dir);
 	}

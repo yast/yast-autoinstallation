@@ -280,7 +280,7 @@
      */
     global define void AutoinstConfig ()
 	``{
-	if (Mode::autoinst)
+	if (Mode::autoinst ())
 	{
 	    any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
 	    if (autoinstall != nil && is ( autoinstall , string ) )
@@ -290,7 +290,7 @@
                 SetProtocolMessage();
 	    }
 	}
-	else if (Mode::config )
+	else if (Mode::config () )
 	{
 	    // Load configuration data from /etc/sysconfig/autoinstall
 	    Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
@@ -305,7 +305,7 @@
 		Repository = "/var/lib/autoinstall/repository";
 	    }
 	} 
-        else if (Mode::test && Mode::normal)
+        else if (Mode::test () && Mode::normal ())
         {
             local_rules_file = (string)WFM::Args(1);
         }

@@ -48,9 +48,9 @@
     /**
      * Constructor
      */
-    global define void AutoinstClone()``{
-
-	Mode::normal = true;
+    global define void AutoinstClone()
+    {
+	Mode::SetMode ("normal");
 	return;
     }
 
@@ -108,7 +108,7 @@
      */
     global define list Partitioning()
     {
-	Mode::config = false;
+	Mode::SetMode("normal");
         StorageDevices::InitDone();
 	map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
@@ -237,7 +237,7 @@
 
 	    return drive;
 	});
-	Mode::config = true;
+	Mode::SetMode("autoinst_config");
 	return drives;
     }
 
@@ -319,7 +319,7 @@
     {
 	import "Language";
 	import "Mode";
-	Mode::config = false;
+	Mode::SetMode ("normal");
 	import "Keyboard";
 	import "Timezone";
 
@@ -368,7 +368,7 @@
         mode["confirm"] = false;
         general["mode"] = mode;
 
-	Mode::config = true;
+	Mode::SetMode ("autoinst_config");
 	return general;
     }
 

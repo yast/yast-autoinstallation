@@ -12,6 +12,7 @@
 
     import "Profile";
     import "Mode";
+    import "Stage";
     import "AutoinstConfig";
     import "AutoInstallRules";
     import "Report";
@@ -63,23 +64,23 @@
      */
     global define void AutoInstall()
     {
-        if (Mode::cont)
+        if (Stage::cont ())
         {
             boolean ret = Continue();
             if (ret && size ( Profile::current ) > 0)
             {
                 y2milestone("Enabling Auto-Installation mode");
-                Mode::SwitchMode("autoinst");
+                Mode::SetMode("autoinstallation");
             }
             else {
-                if (Mode::autoinst)
+                if (Mode::autoinst ())
                 {
                     y2milestone("No autoyast data found, switching back to manual installation");
-                    Mode::SwitchMode("installation");
+                    Mode::SetMode("installation");
                 }
             }
         }
-        else if (Mode::initial)
+        else if (Stage::initial ())
         {
 
             if ( SCR::Read(.target.size, AutoinstConfig::xml_tmpfile) != -1
@@ -100,7 +101,7 @@
      */
     global define boolean Save()
     {
-        if (Mode::autoinst)
+        if (Mode::autoinst ())
 	    return (Profile::SaveProfileStructure( AutoinstConfig::parsedControlFile ));
         else
             return true;

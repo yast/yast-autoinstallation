@@ -98,7 +98,7 @@
      */
     define void AutoinstScripts()
     {
-	if ( !Mode::autoinst )
+	if ( !Mode::autoinst () )
 	{
 	    merged = mergeScripts();
 	}
@@ -350,7 +350,7 @@
      */
     global define boolean Write( string type , boolean special)
     {
-        if (!Mode::autoinst)
+        if (!Mode::autoinst ())
             return true;
 
 	list<map> scripts = [];
