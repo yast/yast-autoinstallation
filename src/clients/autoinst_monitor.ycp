@@ -115,9 +115,9 @@
     //		5.5  --->  6
     //		5    --->  5
     //
-    define any ceiling( any value )
+    define integer ceiling( any value )
 	``{
-	if ( is( value, integer ) ) return( value );		// already integer
+	if ( is( value, integer ) ) return (integer) value;	// already integer
 
 	if ( is( value, float ) )				// is float
 	{
@@ -139,9 +139,9 @@
     //		5.5  --->  5
     //		5    --->  5
     //
-    define any  floor( any value )
+    define integer floor( any value )
 	``{
-	if ( is( value, integer ) ) return( value );		// already integer
+	if ( is( value, integer ) ) return (integer) value;	// already integer
 
 	if ( is( value, float ) )				// is float
 	{
@@ -350,10 +350,10 @@
 	    current_vendor = select( vendors, 0, "" );				// default 1st entry
 	    if ( is( current_vendor, term ) )					// honor special "No X11" entry
 	    {
-		current_vendor = (string) select( current_vendor[0]:[], 0, "" );	// `item(`id("No X11"), _("No X11"))
+		current_vendor = (string) (((term)current_vendor)[0, 0]:"");	// `item(`id("No X11"), _("No X11"))
 	    }
-	    SetCurrentVendor( current_vendor );					// select current vendor
-	    change_vendor( current_vendor, all_monitors );			// display new models and select the right one
+	    SetCurrentVendor( (string) current_vendor );			// select current vendor
+	    change_vendor( (string) current_vendor, all_monitors );		// display new models and select the right one
 	}
     }
 
@@ -377,11 +377,11 @@
 	// First find resolution string within model string.
 	// E.g. "PANORAMIC SUPERWIDE 1024X768@75HZ" --> "1024X768@75HZ"
 	//
-	list res_list = splitstring( model, " " );
+	list<string> res_list = splitstring( model, " " );
 
 	if ( size( res_list ) > 0 )
 	{
-	    string resolution = find(`res, res_list, ``( issubstring( res, "@") ));
+	    string resolution = find(string res, res_list, ``( issubstring( res, "@") ));
 
 	    // 1. "1024X768@75HZ" --> "1024" and "768@75HZ"
 	    //
@@ -421,10 +421,10 @@
     //*********************
 
 
-    min_hsync = ceiling( lookup( display, "min_hsync", 0 ) );
-    max_hsync = floor  ( lookup( display, "max_hsync", 0 ) );
-    min_vsync = ceiling( lookup( display, "min_vsync", 0 ) );
-    max_vsync = floor  ( lookup( display, "max_vsync", 0 ) );
+    min_hsync = ceiling( display["min_hsync"]:0 );
+    max_hsync = floor  ( display["max_hsync"]:0 );
+    min_vsync = ceiling( display["min_vsync"]:0 );
+    max_vsync = floor  ( display["max_vsync"]:0 );
 
     // Read the monitor db and get vendors and models lists.
     // Optionally extend db with probed monitor.
@@ -442,9 +442,9 @@
 
     // Now that the monitor_db may have been extended we can display the GUI
     //
-    string help_text = UI::X11VideoDataDialogHelpText();
+    string help_text = X11VideoDataDialogHelpText();
 
-    term contents = UI::X11VideoDataDialog( vendors, [] );
+    term contents = X11VideoDataDialog( vendors, [] );
 
     Wizard::SetContents(
 			  // Title for monitor configuration dialog:
@@ -488,7 +488,7 @@
 	    if ( new_vendor != current_vendor )			// do it if different
 	    {
 		current_vendor = new_vendor;
-		change_vendor( current_vendor, all_monitors );	// display new models and select 1st
+		change_vendor( (string) current_vendor, all_monitors );	// display new models and select 1st
 	    }
 	    // UI::SetFocus (`id(`models));	Commented out since this is not usable without mouse
 	}
@@ -499,7 +499,7 @@
 	    if ( new_model != current_model )			// do it if different
 	    {
 		current_model = new_model;
-		update_frequency_for_model( current_vendor, current_model, all_monitors );   // update sync values
+		update_frequency_for_model( (string) current_vendor, current_model, all_monitors );   // update sync values
 	    }
 	    // UI::SetFocus (`id(`next));	Commented out since this is not usable without mouse
 	}

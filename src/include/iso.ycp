@@ -207,7 +207,7 @@
 	packs = union(packs, postpacks);
 	Pkg::DoProvide(autoinstPackages(packs, kernel));
 	boolean ret = Pkg::ActivateSelections();
-	Pkg::PkgSolve();
+	Pkg::PkgSolve(false);
 
 	return (ret);
 

@@ -64,11 +64,11 @@
      * SaneRegionLimits
      */ 
 
-    global define boolean SaneRegionLimits (list unused,  list partitions) ``{
+    global define boolean SaneRegionLimits (list<integer> unused,  list partitions) ``{
 	
 	map lastPart = (map) select(partitions, size(partitions) -1 , $[]);
 	y2milestone("last partitions = %1", lastPart );
-	list last_region = [  lastPart["region", 0 ]:0  , lastPart["region", 1]:0 ];
+	list<integer> last_region = [  lastPart["region", 0 ]:0  , lastPart["region", 1]:0 ];
 
 	y2milestone("last=%1, unused=%2", end_of_region(last_region) , end_of_region(unused) );
 
@@ -84,7 +84,7 @@
      * Racalculate sizes
      *
      */
-    global define void recalculateSizes ( list region )
+    global define void recalculateSizes ( list<integer> region )
 	``{
 	integer totalsize = size_of_region (region, bytes_per_unit);
 	
@@ -215,7 +215,7 @@
      * @param list region list
      * @return list new region
      */
-    global define list calcRegion(map currentPartition, list region , list selected_region)
+    global define list<integer> calcRegion(map currentPartition, list<integer> region , list<integer> selected_region)
 	``{
 	y2milestone("Region in=%1", region);
 	integer units = 0;
@@ -227,7 +227,7 @@
 	}
 
 	string mount_point = currentPartition["mount"]:"";
-	list autoRegion = currentPartition["region"]:[];
+	list<integer> autoRegion = currentPartition["region"]:[];
 
 	if ( psize != "" && psize != "auto" && psize != "max" )
 	{
@@ -286,7 +286,7 @@
      * @return map partition data ready
      */
 
-    global define map addPartition(map currentPartition, list region, symbol ptype, integer last_pnr, list selected_region) ``{
+    global define map addPartition(map currentPartition, list<integer> region, symbol ptype, integer last_pnr, list<integer> selected_region) ``{
 
 	string mount_point = currentPartition["mount"]:"";
 
@@ -427,7 +427,7 @@
      *  @return new partitions list
      */
 
-    global define list CreatePartitions (list partitions, list selected_region, string label)
+    global define list CreatePartitions (list partitions, list<integer> selected_region, string label)
 	``{
 
 	y2milestone("Initial partition list: %1", partitions);
@@ -447,7 +447,7 @@
 	symbol ptype = `primary;
 	integer last_pnr = 0;
 
-	list region = [0,0];
+	list<integer> region = [0,0];
 
 	if (selected_region[0]:0 != 0 )
 	{
@@ -576,7 +576,7 @@
 					    || pentry["partition_id"]:0 == 5))
 					);
 
-		list extended_region = [ 0 , 0 ];
+		list<integer> extended_region = [ 0 , 0 ];
 
 		if ( size(extended) == 1 )
 		{
@@ -792,7 +792,7 @@ exist on this system.
 		}
 	    }
 
-	    list lp = [];
+	    list<string> lp = [];
 	    
 	    string seq = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19";
 	    
@@ -1099,7 +1099,7 @@ exist on this system.
 	    // Check selection for plausability
 
 	    string reason = "";
-	    list selected = [];
+	    list<integer> selected = [];
 
 	    if (!contiguous_selection (selected_partitions))
 	    {

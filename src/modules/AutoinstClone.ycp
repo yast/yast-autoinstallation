@@ -25,6 +25,7 @@
     import "Y2ModuleConfig";
     import "Misc";
     import "Storage";
+    import "AutoinstConfig";
 
 
 
@@ -176,7 +177,7 @@
 		}
 		else
 		{
-		    list up = [];
+		    list<string> up = [];
 		    foreach(integer i, usepartitions, ``{
 			up=add(up,sformat("%1", i));
 		    });
@@ -199,7 +200,7 @@
 	boolean ret = Pkg::TargetInit("/", false);
 	
 	list base =  Pkg::GetSelections(`installed, "base");
-	list addon =  Pkg::GetSelections(`installed, "addon");
+	list addons =  Pkg::GetSelections(`installed, "addon");
 	list inst = Pkg::GetPackages(`installed, true);
 
 	Pkg::TargetFinish ();
@@ -236,7 +237,7 @@
 	
 	map software = $[];
 	software["base"] = base[0]:"";
-	software["addons"] = addon;
+	software["addons"] = addons;
 	software["packages"] = userpackages;
 	
 	return software;

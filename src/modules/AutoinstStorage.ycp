@@ -53,11 +53,11 @@
 
     integer size_of_swap = 0 ;
 
-    list full_region = [];
+    list<integer> full_region = [];
 
     boolean can_do_auto = false;
 
-    list unused_region = [ 0, 0 ];
+    list<integer> unused_region = [ 0, 0 ];
 
     integer minimal_size = 0;
     
@@ -340,10 +340,10 @@ Make sure the control file has the correct syntax and values.
     }
 
 
-    global define list DeletedMDs ( string vgname )
+    global define list<map> DeletedMDs ( string vgname )
 	``{
 	map tm = Storage::GetTargetMap();
-	list ret = [];
+	list<list<map> >  ret = [];
 	foreach( string dev, map devmap, tm,
 		 ``{
 	    ret = add( ret,
@@ -360,7 +360,7 @@ Make sure the control file has the correct syntax and values.
 			       )
 		       );
 	});
-	list output = (list)flatten(ret);
+	list<map> output = flatten(ret);
 	return( output );
     }
 
