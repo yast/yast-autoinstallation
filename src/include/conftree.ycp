@@ -176,17 +176,15 @@
 
 
     /**
-     * CreateTreeWidget()
      * Create tree widget
+     * @param string
      * @return void
      */
     define void CreateTreeWidget(string current ) ``{
 
 	list menu_options = CreateTableList(Y2ModuleConfig::MenuTreeData, current);
 	// y2milestone("menu options: %1", menu_options);
-	
 	Wizard::ReplaceButtonBox(`VSpacing(0.6));
-	
 	UI::ReplaceWidget(`id(`helpSpace) ,
 			  `VBox(
 				`Tree(
@@ -202,17 +200,14 @@
 	return;
     }
 
+
+
     /**
-     * Menu interface
+     * @return menu term
      */
-    define symbol ConfTree(list menuitems)
-	``{
-	Wizard::SetScreenShotName ("autoyast-conftree");
-	y2milestone("dd: %1", menuitems);
-
+    define term menuTerm () {
 	term image = Wizard::HeaderImage(false);
-
-	term menu =
+	term topmenu =
 	    `VBox(
 		  image,
 		  `VSpacing(0.5),
@@ -232,7 +227,6 @@
 						   ),
 					    `menu( _("&Preferences"),
 						   [
-						    //    `item(`id(`menu_general), _("General")),
 						    `item(`id(`menu_reps), _("Reposi&tories"))
 
 						    ]),
@@ -261,9 +255,22 @@
 			),
 		  `VSpacing(0.5)
 		  );
+                  return topmenu;
+    }
 
+    /**
+     * Menu interface
+     * @param list menu items
+     * @return symbol
+     */
+    define symbol ConfTree(list menuitems)
+	``{
+	Wizard::SetScreenShotName ("autoyast-conftree");
+	y2debug("dd: %1", menuitems);
 
-	UI::ReplaceWidget(`id(`image) , menu);
+        term topmenu = menuTerm ();
+
+	UI::ReplaceWidget(`id(`image) , topmenu);
 
 	// Default tree item
 	string tree_item = "System";
@@ -310,12 +317,10 @@
 
 		    while ( true )
 		    {
-			
 			ret =  UI::UserInput();
 			y2milestone("INPUT: %1", ret);
 			if (ret == nil)
 			    break;
-			
 
 			if (ret == `key)
 			{
@@ -473,23 +478,23 @@
 			{
 			    y2milestone("file: %1", filename);
 			    AutoinstConfig::currentFile = filename;
-			    
+
 			    list pathComponents = splitstring(  filename, "/");
-			    
-			    string base = (string) select(pathComponents, size(pathComponents) -1, "default");			    
+
+			    string base = (string) select(pathComponents, size(pathComponents) -1, "default");
 			    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
-			    
+
 			    Profile::ReadXML(filename);
 
 			}
 		    }
 		    else if (ret == `menu_kickstart)
-		    {									
+		    {
 			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load."));
 
 			if ( filename != nil )
 			{
-			    
+
 			    Kickstart::Read(filename);
 			    map ksay = Kickstart::KS2AY();
 			    if (ksay == $[])
@@ -501,7 +506,7 @@ file and try again.
 			    else
 			    {
 				Profile::Import(ksay);
-			    
+
 				Report::Message(_("Kickstart file was imported.
 Check the imported syntax and make sure the package selection and partitioning
 were imported correctly.
@@ -511,13 +516,13 @@ were imported correctly.
 			else {
 			    Report::Error(_("Invalid file name. Select another file."));
 			}
-						
+
 		    }
 		    else if (ret == `menu_save) // SAVE
 		    {
 			if (AutoinstConfig::currentFile == "")
 			{
-			    string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));			    
+			    string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
 			    if (filename !=  nil )
 			    {
 				AutoinstConfig::currentFile = filename;

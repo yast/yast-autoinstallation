@@ -45,6 +45,9 @@
     // Package that should be removed from list, and not installed
     global list<string> remove_packages = [];
 
+    // Additional languages for packages
+    global list<string> additional_locales = [];
+
 
     /**
      * Import data
@@ -56,6 +59,7 @@
 	Software = settings;
 	base = settings["base"]:"";
 	addons = settings["addons"]:[];
+	additional_locales = settings["additional_locales"]:[];
 	packages = (list<string>)union(settings["packages"]:[], Require::AddModulePackages) ;
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
@@ -252,6 +256,8 @@
 	``{
 	boolean ok = true;
 	Pkg::SetLocale (Language::language);
+        additional_locales=add(additional_locales, Language::language );
+        Pkg::SetAdditionalLocales(toset(additional_locales));
 
 	Packages::Init(true);
 	string  base_selection = base;
