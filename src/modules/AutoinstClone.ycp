@@ -195,8 +195,6 @@
      * @return list list of installed software package
      */
     global define map Software()``{
-	import "Packages";
-
 	boolean ret = Pkg::TargetInit("/", false);
 	list allInstalledPackages = Pkg::GetPackages(`installed, true);
 	y2debug("installed packages %1", allInstalledPackages);
@@ -213,7 +211,6 @@
      * Bootloader options
      */
     global define map Bootloader()``{
-	import "Bootloader";
 	map bootloader = $[];
 
 	boolean readret = (boolean)Call::Function("bootloader_auto", ["Read", $[] ]);
@@ -235,7 +232,6 @@
 	import "Mode";
 	Mode::config = false;
 	import "Keyboard";
-	import "Mouse";
 	import "Timezone";
 
 	map general = $[];
