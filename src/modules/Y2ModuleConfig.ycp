@@ -14,7 +14,7 @@
     import "Mode";
     import "Profile";
     include "autoinstall/io.ycp";
-
+    
 
     global map GroupMap = $[];
     global map ModuleMap = $[];
@@ -40,6 +40,9 @@
 	    y2debug("Modules: %1", ModuleMap);
 	    list MenuEntries = ReadMenuEntries();
 	    ModuleMap = select(MenuEntries,0,$[]);
+	    
+	    Profile::ModuleMap = ModuleMap;
+	    
 	    GroupMap = select(MenuEntries,1,$[]);
 	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
@@ -59,11 +62,12 @@
 	list directory = SCR::Dir(.autoinst.menuentry.s);
 	map configurations = $[];
 	map groups = $[];
-	foreach (`i, directory, ``{
+	
+	foreach (string i, directory, ``{
 	    path single_conf = add(.autoinst.menuentry.s, i);
 	    list configuration = SCR::Dir(single_conf);
 
-	    foreach(`s , configuration, ``{
+	    foreach( string s , configuration, ``{
 
 		string name = select(splitstring(s, " "), 1 , "");
 		string type = select(splitstring(s, " "), 0 , "");
@@ -72,7 +76,8 @@
 		main_section = add(main_section, s);
 		list vals = SCR::Dir(main_section);
 		map values = $[];
-		foreach(`v, vals, ``{
+		
+		foreach(string v, vals, ``{
 		    values[v]=SCR::Read(add(main_section,v));
 		});
 
@@ -162,9 +167,9 @@
         list grouplist = [];
         grouplist = SortGroups (Groups, maplist (`rawname, `group, Groups, ``(rawname)));
         string is_first = "";
-        foreach (`rawname, grouplist,
+        foreach (string rawname, grouplist,
 		 ``{
-	    // string name    = Translate(Groups[rawname, "Name"]:"???");
+	    
 	    string name    = ReadKey(Groups[rawname, "Textdomain"]:"base", "Name", Groups[rawname]:$[]);
 	    map MeunTreeEntry = $["entry":rawname, "title":name];
 	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
@@ -188,7 +193,7 @@
     define list ConstructMenu() ``{
 	include "readconfig.ycp";
 	CreateGroupTree(GroupMap);
-	foreach(`m,`v, ModuleMap, ``{
+	foreach(string m, map v, ModuleMap, ``{
 	    string domain = v["Textdomain"]:"base";
 	    string name = ReadKey (domain, "Name", v);
 	    map menu_entry = $["entry":m, "title":name];
@@ -242,13 +247,14 @@ XML Example
 
 	list m = [];
 	list done = [];
-	foreach(`p,`d, ModuleMap,
+	
+	foreach(string p, map d, ModuleMap,
         ``{
 
 		if (!contains(done, p)) {
 		if (haskey(deps, p)) {
 			y2milestone("found dep");
-			foreach(`r, deps[p]:[], ``{
+			foreach(list r, deps[p]:[], ``{
 				if (!contains(done, r)) {
 				y2milestone("working on %1", r);
 				m = add(m, $["res":r, "data":ModuleMap[r]:$[]]);

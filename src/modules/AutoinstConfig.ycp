@@ -9,20 +9,13 @@
 {
     module "AutoinstConfig";
     textdomain "autoinst";
-
-    import "Mode";
-    import "Misc";
-    import "AutoInstall";
+   
+    import "Misc";    
 
     include "autoinstall/xml.ycp";
     include "autoinstall/io.ycp";
 
-
-    // tmp dir
-    global string tmpDir = "";
-
-    global any data = nil;
-
+ 
     // Profile Repository
     global string Repository = "";
 
@@ -32,6 +25,7 @@
     // Alice Repository
     global string AliceRepository = "";
 
+    // Classes
     global string classDir = "";
 
     // Current file name
@@ -39,58 +33,41 @@
 
 
 
-    /**
-     * MenuTreeData
-     * @return: list ofmodules
-     */
-    global  list MenuTreeData =[];
+    //
+    // Temporary directory for storing profile before installation starts
+    //
+    global string tmpdir = (string)SCR::Read( .target.tmpdir );
 
+    //
+    // Temporary file name for retrieved system profile
+    //
+    global string xml_tmpfile = tmpdir + "/autoinst.xml";
 
-
-    global map softwareSettings = $[];
-    global map generalSettings = $[];
-
+    
+    
     /**
      * Constructor
-     * @return	 void
-     *
-     * Initializes global language, either from Mode (/etc/install.inf)
-     * or from /etc/rc.config
+     * @return	 void          
+     * 
      */
 
     global define void AutoinstConfig ()
 	``{
-
-	tmpDir = SCR::Read (.target.tmpdir);
+	
 	// Load configuration data from /etc/sysconfig/autoinstall
-	Load();
-
-
+	Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");		
+	AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");	
+	classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );	
 
 	// Set the defaults, just in case.
 	if (Repository == "" || Repository == nil )
 	{
 	    Repository = "/var/lib/autoinstall/repository";
 	}
-
 	return;
     }
 
-    /**
-     * Load()
-     * @return	void
-     * Load Configuration settings
-     */
-
-    global define void Load ()
-	``{
-	Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
-	// PackageRepository = Misc::SysconfigRead( .sysconfig.autoinstall.PACKAGE_REPOSITORY, "/tmp");
-	AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");
-	classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );
-	return;
-    }
-
+ 
 
     /**
      * Save()
@@ -100,13 +77,13 @@
 
     global define void Save ()
 	``{
-	// Write some sysconfig variables.
-	//
+	// Write sysconfig variables.	
 	y2milestone("Saving configuration data");
-	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );
-	// SCR::Write( .sysconfig.autoinstall.PACKAGE_REPOSITORY, PackageRepository );
+	
+	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );	
 	SCR::Write( .sysconfig.autoinstall.ALICE_REPOSITORY, AliceRepository );
 	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir);
+	
 	return;
     }
 

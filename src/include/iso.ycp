@@ -197,7 +197,7 @@
 	// Addons
 	if (size(addons) > 0 )
 	{
-	    foreach(`s, addons, ``{
+	    foreach(string s, addons, ``{
 		Pkg::SetSelection(s);
 	    });
 	}
@@ -582,7 +582,7 @@ Please wait while the directory structure for the new ISO file is created.
 
 	string datadir = ISO::productData["datadir"]:"./suse";
 	y2milestone ("datadir %1", datadir);
-	foreach(`pac, selPacs, ``{
+	foreach(string pac, selPacs, ``{
 
 	    list tok = splitstring( pac , " ");
 

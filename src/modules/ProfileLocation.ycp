@@ -10,15 +10,13 @@
     module "ProfileLocation";
     textdomain "autoinst";
 
-
-    import "AutoInstall";
     import "AutoInstallRules";
     import "StorageDevices";
     import "Mode";
-    import "Label";
+    
     import "Installation";
 
-    include "autoinstall/profileDialogs.ycp";
+    include "autoinstall/autoinst_dialogs.ycp";
 
     global string message = "";
 
@@ -173,7 +171,7 @@
 	boolean ret = false;
 	y2milestone("Path to remote control file: %1", filepath);
 
-	string localfile  =  AutoInstall::xml_tmpfile;
+	string localfile  =  AutoinstConfig::xml_tmpfile;
 
 	boolean is_directory = false;
 
@@ -313,7 +311,7 @@
 
 	if (process_rules)
 	{
-	    boolean rulesret = AutoInstallRules::Process( AutoInstall::xml_tmpfile);
+	    boolean rulesret = AutoInstallRules::Process( AutoinstConfig::xml_tmpfile);
 	    y2milestone("rulesret=%1", rulesret);
 	    return rulesret;
 	}

@@ -18,6 +18,102 @@
      * Provide Compatibility to older distributions.
      */
 
+
+    
+    global define list convertLVM (list lvm_standalone ) ``{
+
+	list all_lvm = [];
+
+	foreach (map group, lvm_standalone, ``{
+	    map new_lvm = $[];
+	    string vg = group["lvm_name"]:"";
+
+	    new_lvm["device"]       = sformat("/dev/%1", vg );
+	    new_lvm["is_lvm_vg"]    = true;
+	    new_lvm["use"]      = "all";
+	    new_lvm["pesize"]       = group["pesize"]:"";
+	    list partitions = maplist(`lv, group["logical_volumes"]:[], ``{
+
+		symbol lv_fs     = AutoinstStorage::StringFS2Symbol( lv["lv_fs"]:`reiser);
+
+
+		return( $[ "filesystem": lv_fs,
+			   "lv_name":    lv["lv_name"]:"",
+			   "mount":  lv["lv_mount"]:"",
+			   "size":   lv["lv_size"]:"",
+			   "stripes":    lv["stripes"]:1
+			]);
+
+	    });
+
+	    new_lvm["partitions"] = partitions;
+	    all_lvm = add (all_lvm, new_lvm);
+
+	});
+	y2milestone("Converted LVM: %1", all_lvm);
+
+	return (all_lvm);
+    }
+
+
+
+
+   global define map convertRAID (list raid_standalone ) ``{
+
+
+	map raid = $[];
+
+	raid["device"] 	= "/dev/md";
+	raid["use"]	= "all";
+
+
+
+	list partitions = maplist(`r, raid_standalone, ``{
+
+	    symbol fs = AutoinstStorage::StringFS2Symbol( r["filesystem"]:`reiser);
+
+
+	    map raid_options = $[];
+
+	    raid_options["chunk_size"]			= r["chunk_size"]:"";
+	    raid_options["raid_type"]			= r["raid_type"]:"raid1";
+	    raid_options["parity_algorithm"]		= r["parity_algorithm"]:"";
+	    raid_options["persistent_superblock"] 	= r["persistent_superblock"]:false;
+
+	    integer nr = tointeger(substring(r["device_name"]:"/dev/md0", 7));
+
+
+
+	    map ret = $[
+			 "raid_options"	: raid_options,
+			 "format"	: r["format"]:false,
+			 "partition_nr"	: nr
+
+	    ];
+
+	    if (haskey(r, "mount"))
+	    {
+		ret["mount"] = r["mount"]:"";
+	    }
+	    if (haskey(r, "partition_id"))
+	    {
+		ret["partition_id"] = r["partition_id"]:131;
+	    }
+	    if (haskey(r, "filesystem"))
+	    {
+		ret["filesystem"] = fs;
+	    }
+
+	    return (ret);
+
+	});
+	raid["partitions"]	= partitions;
+
+	return (raid);
+    }
+
+
+    
     global define map Compat(map Install, map Configure) ``{
 
 	// 8.0 -> 8.1
@@ -112,7 +208,7 @@
 
 	    list newifaces = maplist(map iface , ifaces, ``{
 		map newiface = mapmap(string k, string v, iface, ``{
-		    return ([tolower(k), v]);
+		    return ($[tolower(k): v]);
 		});
 		return newiface;
 	    });
@@ -124,9 +220,9 @@
 	    Configure["security"] = security;
 	    Configure["networking"] = net;
 
-	    changed = true;
 
-	}
+	}    
+    }
 
 
 	// RAID
@@ -152,99 +248,6 @@
 	return (union(Configure, Install));
     }
 
-
-
-    global define list convertLVM (list lvm_standalone ) ``{
-
-	list all_lvm = [];
-
-	foreach (map group, lvm_standalone, ``{
-	    map new_lvm = $[];
-	    string vg = group["lvm_name"]:"";
-
-	    new_lvm["device"]       = sformat("/dev/%1", vg );
-	    new_lvm["is_lvm_vg"]    = true;
-	    new_lvm["use"]      = "all";
-	    new_lvm["pesize"]       = group["pesize"]:"";
-	    list partitions = maplist(`lv, group["logical_volumes"]:[], ``{
-
-		symbol lv_fs     = AutoinstStorage::StringFS2Symbol( lv["lv_fs"]:`reiser);
-
-
-		return( $[ "filesystem": lv_fs,
-			   "lv_name":    lv["lv_name"]:"",
-			   "mount":  lv["lv_mount"]:"",
-			   "size":   lv["lv_size"]:"",
-			   "stripes":    lv["stripes"]:1
-			]);
-
-	    });
-
-	    new_lvm["partitions"] = partitions;
-	    all_lvm = add (all_lvm, new_lvm);
-
-	});
-	y2milestone("Converted LVM: %1", all_lvm);
-
-	return (all_lvm);
-    }
-
-
-
-
-   global define map convertRAID (list raid_standalone ) ``{
-
-
-	map raid = $[];
-
-	raid["device"] 	= "/dev/md";
-	raid["use"]	= "all";
-
-
-
-	list partitions = maplist(`r, raid_standalone, ``{
-
-	    symbol fs = AutoinstStorage::StringFS2Symbol( r["filesystem"]:`reiser);
-
-
-	    map raid_options = $[];
-
-	    raid_options["chunk_size"]			= r["chunk_size"]:"";
-	    raid_options["raid_type"]			= r["raid_type"]:"raid1";
-	    raid_options["parity_algorithm"]		= r["parity_algorithm"]:"";
-	    raid_options["persistent_superblock"] 	= r["persistent_superblock"]:false;
-
-	    integer nr = tointeger(substring(r["device_name"]:"/dev/md0", 7));
-
-
-
-	    map ret = $[
-			 "raid_options"	: raid_options,
-			 "format"	: r["format"]:false,
-			 "partition_nr"	: nr
-
-	    ];
-
-	    if (haskey(r, "mount"))
-	    {
-		ret["mount"] = r["mount"]:"";
-	    }
-	    if (haskey(r, "partition_id"))
-	    {
-		ret["partition_id"] = r["partition_id"]:131;
-	    }
-	    if (haskey(r, "filesystem"))
-	    {
-		ret["filesystem"] = fs;
-	    }
-
-	    return (ret);
-
-	});
-	raid["partitions"]	= partitions;
-
-	return (raid);
-    }
 
 
 

@@ -17,7 +17,7 @@
     textdomain "autoinst";
     import "Label";
     import "Popup";
-	import "String";
+    import "String";
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_lib.ycp";
     include "partitioning/custom_part_dialogs.ycp";
@@ -32,7 +32,7 @@
      */
     global define PartitionDialog (symbol mode, string item)
 	``{
-	list partitioning =  AutoinstStorage::drives;
+	list partitioning =  AutoinstStorage::AutoPartPlan;
 	list item_id = splitstring(item,":");
 	map this_drive = $[];
 	string drive = "";
@@ -437,7 +437,7 @@ needs. All fields are required.</P>
 		partitions[tointeger(select(item_id,1,"")) - 1] = return_value;
 	    }
 	    change(this_drive,"partitions",partitions);
-	    AutoinstStorage::drives=add(other_drives,this_drive);
+	    AutoinstStorage::AutoPartPlan=add(other_drives,this_drive);
 	}
 	return ret;
     }
@@ -458,7 +458,7 @@ needs. All fields are required.</P>
 	    devices=add(devices, item);
 	}
 
-	list drives = AutoinstStorage::drives;
+	list drives = AutoinstStorage::AutoPartPlan;
 	list configured_drives = maplist(`c, drives, ``{
 	    return(lookup(c,"device","***"));
 	});
@@ -593,7 +593,7 @@ For more information, consult the documentation.
 
 
 			drives=add(drives,drive);
-			AutoinstStorage::drives=drives;
+			AutoinstStorage::AutoPartPlan = drives;
 		    }
 		    else
 		    {
@@ -621,7 +621,7 @@ Select or enter another device name.
 
 		    current_drive["device"] = device;
 		    drives=add(drives,current_drive);
-		    AutoinstStorage::drives=drives;
+		    AutoinstStorage::AutoPartPlan = drives;
 		}
 	    }
 	} until (ret == `next || ret ==`abort || ret == `back);
@@ -638,7 +638,7 @@ Select or enter another device name.
      */
     global define getTargets ()
 	``{
-	map auto_targets =  listmap (`d, AutoinstStorage::drives, ``{
+	map auto_targets =  listmap (`d, AutoinstStorage::AutoPartPlan, ``{
 	    string device = lookup(d,"device","");
 	    return([device,d]);
 	});
@@ -722,7 +722,7 @@ a preparation.
 	    ret = UI::UserInput();
 
 	    item = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list drives = AutoinstStorage::drives;
+	    list drives = AutoinstStorage::AutoPartPlan;
 	    list configured_drives = maplist(`c, drives, ``{
 		return(lookup(c,"device",""));
 	    });
@@ -779,7 +779,7 @@ a preparation.
 	    else if (ret == `delete)
 	    {
 
-		list partitioning =  AutoinstStorage::drives;
+		list partitioning =  AutoinstStorage::AutoPartPlan;
 		list item_id = splitstring(item,":");
 		map this_drive = $[];
 		string drive = "";
@@ -797,7 +797,7 @@ a preparation.
 		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
 		    change(this_drive,"partitions", drive_partitions);
 
-		    AutoinstStorage::drives= maplist(`d, partitioning,
+		    AutoinstStorage::AutoPartPlan= maplist(`d, partitioning,
 					       ``{
 						   if (d["device"]:"" == drive)
 						   {
@@ -812,7 +812,7 @@ a preparation.
 		else
 		{
 		    drive = item;
-		    AutoinstStorage::drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
+		    AutoinstStorage::AutoPartPlan = filter(`d,partitioning,``(lookup(d,"device","") != drive));
 		}
 
 
@@ -831,7 +831,7 @@ a preparation.
 
 	list drives_table = [];
 	string id = "";
-	foreach(`d, AutoinstStorage::drives,
+	foreach(`d, AutoinstStorage::AutoPartPlan,
 		``{
 	    id =lookup(d,"device","");
 	    term a = `item(`id(id));
@@ -947,5 +947,129 @@ a preparation.
         return (sformat( "%1:%2", disk_dev_name, nr));
     };
 
+
+    /**
+     * Disk selection dialog
+     * @return device 
+     */
+
+
+    global define DiskSelection() ``{
+
+	y2milestone("Selecting disk manually....");
+	map tm = Storage::GetTargetMap();
+	term contents = `Dummy();
+
+	if( size(tm) > 0)
+	{
+	    term buttonbox = `VBox();
+
+	    integer i = 0;
+	    foreach( `tname, `tdata, tm,
+		     ``{
+		if( Storage::IsRealDisk( tname, tdata ))
+		{
+		    string tlinename = tdata["name"]:"?";
+		    string tline = "&" + (i+1) + ":    " + tlinename;
+		    boolean sel = Storage::GetPartDisk()==tname &&
+			Storage::GetPartMode()!="CUSTOM";
+		    buttonbox = add( buttonbox,
+				     `Left(`RadioButton(`id(tname), tline, sel )));
+		    i = i + 1;
+		}
+	    });
+
+	    buttonbox = add(buttonbox, `VSpacing(0.8) );
+
+
+	    // This dialog selects the target disk for the installation.
+	    // Below this label, all targets are listed that can be used as
+	    // installation target
+
+	    // heading text
+	    contents = `Frame( _("Choose a hard disk"),
+			       `RadioButtonGroup(`id(`options),
+						 `VBox( `VSpacing(0.4),
+							`HSquash(buttonbox),
+							`VSpacing(0.4)
+							)
+						 )
+			       );
+	}
+	else
+	{
+
+	    contents = `Label (_("No disks found."));
+	}
+
+	// There are several hard disks found. Linux is completely installed on
+	// one hard disk - this selection is done here
+	// "Preparing Hard Disk - Step 1" is the description of the dialog what to
+	// do while the following locale is the help description
+	// help part 1 of 1
+	string help_text = _("<p>
+All hard disks automatically detected on your system
+are shown here. Select the hard disk on which to install SuSE Linux.
+</p>
+");
+	import "Label";
+	term buttons = `HBox(
+			 `PushButton(`id(`ok), `opt(`default), Label::OKButton ),
+			 `PushButton(`id(`abort), Label::AbortButton )
+			);
+
+
+
+	term ask_device_dialog = `HBox(
+				     `VSpacing( 15 ),       // force dialog height
+				     `VBox(
+					   `HSpacing( 30 ), // force help text width
+					   `RichText( help_text )
+					   ),
+				     `HSpacing( 3 ),
+				     `VBox(
+					   `VSpacing( 1 ),
+					   `Heading(_("Hard Disk Selection") ),
+					    contents,
+					   `VStretch(),
+					   buttons
+
+					   ),
+				     `HSpacing( 3 )
+				     );
+
+	UI::OpenDialog(`opt(`decorated), ask_device_dialog);
+
+	any ret = nil;
+	any option = nil;
+
+	repeat
+	    {
+		ret = Wizard::UserInput();
+		y2milestone("ret=%1", ret);
+		if( ret == `ok )
+		{
+		    option = UI::QueryWidget(`id(`options), `CurrentButton);
+		    y2milestone( "selected disk: %1", option );
+		    if( option == nil )
+		    {
+			// there is a selection from that one option has to be
+			// chosen - at the moment no option is chosen
+			UI::MessagePopup(_("Select one of the options to continue."));
+			continue;
+		    }
+		}
+	    } until ( ret == `ok || ret == `abort );
+
+	UI::CloseDialog();
+	return option;
+    }
+
+
+
+
+
+
+    
 
 }
