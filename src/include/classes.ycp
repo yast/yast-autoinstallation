@@ -74,22 +74,21 @@
      * @param symbol
      */
     define symbol AddEditClasses(symbol mode, string name)
-	``{
-	list classNames = maplist(map c,
-				  AutoinstClass::Classes,
-				  ``(lookup(c,"name",""))
+	{
+	list classNames = maplist(map c, AutoinstClass::Classes, ``(c["name"]:"")
 				  );
 
 	map class = $[];
 	if (mode == `edit)
 	{
-	    class = (map) select(filter(
-				  map c,
+	    list cl = filter( map c,
 				  AutoinstClass::Classes,
-				  ``(lookup(c,"name","")== name)),0,$[]);
+				  ``(c["name"]:""== name));
+            map class = cl[0]:$[];
 	}
 
-	integer order =  tointeger(lookup(class,"order", sformat("%1", size(AutoinstClass::Classes) + 1)));
+        string tmp = sformat("%1", size(AutoinstClass::Classes) + 1);
+	integer order =  tointeger(class["order"]:tmp);
 
 	UI::OpenDialog( `opt(`decorated),
 			`HBox(
@@ -216,7 +215,8 @@ and when it is merged when creating a control file.
 		}
 
 		string class =  (string) UI::QueryWidget(`id(`table), `CurrentItem);
-		map selected_class = (map) select(filter(map c,  AutoinstClass::Classes,``(c["name"]:""  == class) ), 0, $[] );
+                list cl = filter(map c,  AutoinstClass::Classes,``(c["name"]:""  == class) );
+		map selected_class = cl[0]:$[];
 		if ( class != nil )
 		{
 		    UI::ChangeWidget(`id(`description), `Value, selected_class["description"]:_("No Description"));
@@ -253,7 +253,7 @@ to delete.
 "));
 			continue;
 		    }
-		    AutoinstClass::Classes = filter(map c,  AutoinstClass::Classes,``( lookup(c,"name","")!=class) );
+		    AutoinstClass::Classes = filter(map c,  AutoinstClass::Classes,``( c["name"]:""!=class) );
 
 		    Wizard::SetContents(title,
 					class_dialog_contents(), help, true, true);
@@ -309,12 +309,10 @@ to delete.
 	boolean skip = false;
 	foreach( map c, selected_profiles,
 		``{
-	    map profile = (map)select(filter(map cc, AutoinstClass::confs,
+	    list pl = filter(map cc, AutoinstClass::confs,
 					``( cc["name"]:"" == c["profile"]:""  && cc["class"]:"yyy" == c["class"]:"xxx")
-					),
-				 0,
-				 $[]
-				 );
+					);
+            map profile = pl[0]:$[];
 	    if (base == `empty && !skip)
 	    {
 		y2milestone("Working on profile: %1", profile);

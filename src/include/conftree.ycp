@@ -31,7 +31,8 @@
                 Popup::Message(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
                 Profile::changed=false;
                 list pathComponents = splitstring(  (string)filename, "/");
-                string base = (string) select(pathComponents, size(pathComponents) -1, "default");
+                integer s = size(pathComponents) - 1;
+                string base = pathComponents[s]:"default";
             }
             else
             {
@@ -191,7 +192,8 @@
     /**
      * @return menu term
      */
-    define term menus () {
+    define void  menus () 
+    {
         list<map> Menu = [];
         Menu = Wizard::AddMenu( Menu ,  _("&File"),        "file-menu" );
         Menu = Wizard::AddMenu( Menu ,  _("&View"),        "view-menu" );
@@ -228,6 +230,7 @@
         Menu = Wizard::AddMenuEntry     ( Menu ,  "tools-menu", _("Check &Validity of Profile"),
                     "menu_valid"      );
         Wizard::CreateMenu(Menu);
+        return;
     }
 
     /**
@@ -416,7 +419,8 @@
 
                     list pathComponents = splitstring(  (string)filename, "/");
 
-                    string base = (string) select(pathComponents, size(pathComponents) -1, "default");
+                    integer s = size(pathComponents) -1;
+                    string base = pathComponents[s]:"default";
                     Profile::ReadXML((string)filename);
                     Popup::ShowFeedback(_("Reading configuration data"), _("This may take a while"));
                     foreach(string p, map d, Profile::ModuleMap, ``{

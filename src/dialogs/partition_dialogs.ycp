@@ -61,7 +61,7 @@
      */
     define map<string, map> getTargets () ``{
 	map<string, map> auto_targets =  listmap (map d, AutoinstStorage::AutoPartPlan, ``{
-	    string device = lookup (d, "device", "");
+	    string device = d["device"]:"";
 	    return ($[device:d]);
 	});
 	return auto_targets;
@@ -87,7 +87,7 @@
 	{   //Partition
 	    this_drive = select (filter (map d,
 			      partitioning,
-			      ``(lookup(d,"device","") == select(item_id,0,""))),
+			      ``(d["device"]:"" == select(item_id,0,""))),
 		       0,
 		       $[]
 		       );
@@ -96,7 +96,7 @@
 	}
 	else
 	{
-	    this_drive = select (filter (map d, partitioning,``(lookup(d,"device","") == item)),0,$[]);
+	    this_drive = select (filter (map d, partitioning,``(d["device"]:"" == item)),0,$[]);
 	    new_val = $[
 			"partition_id"	: 131,
 			"filesystem"	: `reiser
@@ -108,19 +108,19 @@
 	new_val["used_fs"] = new_val["filesystem"]:`reiser;
 
 
-	list<map> other_drives = filter (map d, partitioning, ``(lookup(d,"device","") != drive));
+	list<map> other_drives = filter (map d, partitioning, ``(d["device"]:"" != drive));
 
 	map<symbol, map<symbol, any> > file_systems = FileSystems::GetAllFileSystems(true, true);
-	boolean create		= lookup ( new_val , "create", false);
-	string  partition_size	= lookup ( new_val , "size", "");
-	boolean format		= lookup ( new_val , "format", false);
+	boolean create		=  new_val["create"]:false;
+	string  partition_size	=  new_val["size"]:"";
+	boolean format		=  new_val["format"]:false;
 
 	string partition_type	= new_val["partition_type"]:"";
 
-	symbol last_option_fs	= lookup ( new_val , "filesystem", `ext2);
-	map fs_options      = lookup ( new_val , "fs_options" , $[]);
+	symbol last_option_fs	= new_val["filesystem"]:`ext2;
+	map fs_options          = new_val["fs_options"]:$[];
 
-	list<string> not_used_mountpoints = notUsedMountpoints( getTargets(),  lookup( lookup( file_systems, last_option_fs, $[]), `mountpoints, []));
+	list<string> not_used_mountpoints = notUsedMountpoints( getTargets(),  file_systems[last_option_fs, `mountpoints]:[]);
 
 
 	string helptext = _("
@@ -244,7 +244,7 @@ needs. All fields are required.</P>
 	}
 
 
-	if ( lookup( new_val, "partition_id", 131) == 130  )
+	if ( new_val["partition_id"]:131 == 130  )
 	{
 	    set_false = union( set_false, [ `crypt_fs ] );
 
@@ -273,7 +273,7 @@ needs. All fields are required.</P>
 		if( UI::QueryWidget(`id(`format),  `CurrentButton) == `format_true )
 		{
 		    symbol filesystem  =  (symbol)UI::QueryWidget(`id(`fs), `Value);
-		    map selected_fs =  lookup( file_systems, filesystem , $[] );
+		    map selected_fs =  file_systems[filesystem]:$[];
 
 
 		    return_value     = add( return_value , "format",  true );
@@ -287,7 +287,7 @@ needs. All fields are required.</P>
 		    string mount	= (string)  UI::QueryWidget( `id(`mount_point), `Value);
 		    string subStr	=  substring( String::CutBlanks(mount) , 0,1  );
 		    return_value	=  add( return_value , "mount" , mount);
-		    not_used_mountpoints =  notUsedMountpoints( getTargets(), lookup(selected_fs, `mountpoints, []));
+		    not_used_mountpoints =  notUsedMountpoints( getTargets(), selected_fs[`mountpoints]:[]);
 
 		    if( filesystem == `swap )
 		    {
@@ -315,10 +315,10 @@ needs. All fields are required.</P>
 
 
 		    ChangeExistingSymbolsState( [ `mount_point, `fs ], true);
-		    UI::ChangeWidget(`id(`fsid_point) , `Value  , lookup( selected_fs , `fsid_item, ""));
+		    UI::ChangeWidget(`id(`fsid_point) , `Value  , selected_fs[`fsid_item]:"");
 		    UI::ChangeWidget(`id(`fsid_point) , `Enabled, false);
-		    UI::ChangeWidget(`id(`fs_options) , `Enabled, (lookup( selected_fs, `options, []) != [] ));
-		    if( lookup( selected_fs, `crypt, false))
+		    UI::ChangeWidget(`id(`fs_options) , `Enabled, (selected_fs[`options]:[] != [] ));
+		    if( selected_fs[`crypt]:false)
 		    {
 			UI::ChangeWidget(`id(`crypt_fs) , `Enabled, true);
 		    }
@@ -430,7 +430,7 @@ due to use of the \"max\" option.
 		}
 
 		// save mountpoint
-		if ( create && (! lookup( return_value, "format" , true )))
+		if ( create && (! return_value["format"]:true))
 		{
 		    return_value["mount"] =  "";
 		}
@@ -442,7 +442,7 @@ due to use of the \"max\" option.
 		// add fstype to return_value
 		if ( !pdisk_disk )
 		{
-		    integer fs_id =  lookup( return_value, "partition_id", 0 );
+		    integer fs_id =  return_value["partition_id"]:0;
 		    if (haskey(return_value, "fsid"))
 		    {
 			return_value = remove (return_value,"fsid");
@@ -450,7 +450,7 @@ due to use of the \"max\" option.
 		}
 
 
-		if( !check_crypt_fs_mount_points(lookup(return_value, "mount", ""),
+		if( !check_crypt_fs_mount_points(return_value["mount"]:"",
 						 (boolean)UI::QueryWidget(`id(`crypt_fs), `Value ) ))
 		{
 		    UI::SetFocus(`id(`mount_point));
@@ -495,7 +495,7 @@ due to use of the \"max\" option.
 
 	if ( ret != `cancel )
 	{
-	    list partitions = lookup(this_drive,"partitions",[]);
+	    list partitions = this_drive["partitions"]:[];
 	    if (mode == `create)
 	    {
 		partitions=add(partitions,return_value);
@@ -529,7 +529,7 @@ due to use of the \"max\" option.
 
 	list<map> drives = AutoinstStorage::AutoPartPlan;
 	list configured_drives = maplist(map c, drives, ``{
-	    return(lookup(c,"device","***"));
+	    return(c["device"]:"***");
 	});
 
 	if (item == nil || item == "") {
@@ -845,14 +845,14 @@ due to use of the \"max\" option.
 		    this_drive =
 			(map)select(filter(map d,
 				      partitioning,
-				      ``(lookup(d,"device","") == select(item_id,0,""))),
+				      ``(d["device"]:"" == item_id[0]:"")),
 			       0,
 			       $[]
 			       );
 		    drive= (string)select(item_id,0,"");
 		    list drive_partitions = this_drive["partitions"]:[];
 
-		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
+		    drive_partitions= remove(drive_partitions, tointeger(item_id[1]:"") - 1);
 
 		    this_drive["partitions"] =  drive_partitions;
 
