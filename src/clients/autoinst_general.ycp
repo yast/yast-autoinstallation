@@ -12,7 +12,7 @@
     import "Mode";
     Mode::config = true;
 
-    import "AIgeneral";
+    import "AutoinstGeneral";
     import "Wizard";
 
     include "ui/common_messages.ycp";
@@ -36,14 +36,14 @@
         
    
     if (func == "Import") {
-	ret = AIgeneral::Import(param);	
+	ret = AutoinstGeneral::Import(param);	
     }
     /* create a  summary*/
     else if (func == "Summary") {
-	ret =  AIgeneral::Summary();
+	ret =  AutoinstGeneral::Summary();
     }
     else if (func == "Reset") {
-	AIgeneral::Import($[]);
+	AutoinstGeneral::Import($[]);
 	ret = $[];
     }
     else if (func == "Change") {
@@ -51,7 +51,7 @@
 	return ret;
     }
     else if (func == "Result") {
-	ret = AIgeneral::Export();
+	ret = AutoinstGeneral::Export();
     }
     /* unknown function */
     else {

@@ -9,6 +9,6 @@ module_DATA =		\
 	Y2ModuleConfig.ycp	\
 	Profile.ycp			\
 	ISO.ycp			\
-	AI*.ycp	
+	Autoinst*.ycp	
 
 EXTRA_DIST = $(module_DATA) 

@@ -244,10 +244,10 @@
     global define void Finish ()
 	``{
 	// Copy pre scripts to target system.
-	import "AIScripts";
-	AIScripts::Write("chroot-scripts");
-	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AIScripts::scripts_dir);
-	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AIScripts::logs_dir);
+	import "AutoinstScripts";
+	AutoinstScripts::Write("chroot-scripts");
+	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AutoinstScripts::scripts_dir);
+	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoinstScripts::logs_dir);
 
 	SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", xml_tmpfile ,  Installation::destdir ,  xml_file) );
 
@@ -262,20 +262,20 @@
 
     global define map Linuxrc(map linuxrc) ``{
 	import "Bootloader";
-	import "AIgeneral";
+	import "AutoinstGeneral";
 
-	if (AIgeneral::ForceBoot && Mode::hardBoot)
+	if (AutoinstGeneral::ForceBoot && Mode::hardBoot)
 	{
 	    linuxrc["Root"] = Bootloader::getRootDevice ();
 	}
 
-	if (AIgeneral::Reboot && !Mode::hardBoot)
+	if (AutoinstGeneral::Reboot && !Mode::hardBoot)
 	{
 	    linuxrc["Root"] = "reboot";
 	    Mode::hardBoot = true;
 	}
 
-	if (AIgeneral::RebootMsg)
+	if (AutoinstGeneral::RebootMsg)
 	{
 	    linuxrc["RebootMsg"] = "1";
 	}

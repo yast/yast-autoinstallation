@@ -1,5 +1,5 @@
 /**
- * File:	modules/AIgeneral.ycp
+ * File:	modules/AutoinstGeneral.ycp
  * Package: 	Autoyast 
  * Summary:	Configuration of general settings for autoyast
  * Authors:	Anas Nashif (nashif@suse.de)
@@ -8,7 +8,7 @@
  */
 
 {
-    module "AIgeneral";
+    module "AutoinstGeneral";
     textdomain "autoinst";
 
     import "AutoInstall";
@@ -34,7 +34,10 @@
     // Show Reboot Message
     global boolean RebootMsg = false;
 
-
+    // Show proposal and ask user for confirmation to go on with auto-installation
+    // Similar to interactive mode, without letting use change settings
+    // Interactive mode implies confirmation as well..
+    global boolean Confirm = true;
     
     // Keyboard
     global map Keyboard = $[];
@@ -50,10 +53,7 @@
     global map Mode = $[];
 
     
-    // Show proposal and ask user for confirmation to go on with auto-installation
-    // Similar to interactive mode, without letting use change settings
-    // Interactive mode implies confirmation as well..
-    global boolean Confirm = true;
+
 
         
   
@@ -63,7 +63,7 @@
     /**
      * Constructor
      */
-    global define void AIgeneral () ``{
+    global define void AutoinstGeneral () ``{
 	
 	return;
     }
@@ -124,19 +124,20 @@
 
 	summary = Summary::AddHeader(summary, _("Mouse"));
 	summary = Summary::AddLine(summary, (mouse_name != "") ?
-				   mouse_name : Summary::NotConfigured());	
+				   mouse_name : Summary::NotConfigured());
+	
+	summary = Summary::AddHeader(summary, _("Confirm installation?"));
+	summary = Summary::AddLine(summary, (Mode["confirm"]:false) ?
+				   _("Yes") : _("No"));	
 
 	summary = Summary::AddHeader(summary, _("Reboot after installation"));
 	summary = Summary::AddLine(summary, (Mode["reboot"]:false) ?
 				   _("Yes") : _("No"));
-
-	summary = Summary::AddHeader(summary, _("Confirm every step of the boot process?"));
-	summary = Summary::AddLine(summary, (Mode["interactive_boot"]:false) ?
-				   _("Yes") : _("No"));
 	
-	summary = Summary::AddHeader(summary, _("Confirm installation?"));
-	summary = Summary::AddLine(summary, (Mode["confirm"]:false) ?
+	summary = Summary::AddHeader(summary, _("Force boot after installation"));
+	summary = Summary::AddLine(summary, (Mode["forceboot"]:false) ?
 				   _("Yes") : _("No"));
+
 	
 	return summary;				   
     }

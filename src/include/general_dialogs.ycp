@@ -18,7 +18,8 @@
 			"language"	: ``(LanguageDialog()),
 			"keyboard"	: ``(KeyboardDialog()),
 			"timezone"	: ``(TimezoneDialog()),
-			"mouse"		: ``(MouseDialog())
+			"mouse"		: ``(MouseDialog()),
+			"mode"		: ``(ModeDialog())
 	];
 
 	
@@ -37,9 +38,13 @@
 					    `abort	: `abort
 			 ],
 			 "mouse" 	: $[
+					    `next	: "mode",
+					    `abort	: `abort
+			 ],
+			 "mode" 	: $[
 					    `next	: `next,
 					    `abort	: `abort
-			  ]
+			 ]
 	];
 			 
 	// Translators: dialog caption
@@ -72,7 +77,7 @@
     global define LanguageDialog()
 	``{
 
-	string language = AIgeneral::Language;
+	string language = AutoinstGeneral::Language;
 	
 	boolean use_utf8 = true;		// utf8 is default
 
@@ -123,7 +128,7 @@ Choose the new <b>language</b> for your SuSE Linux system.
 
 	Wizard::ReplaceAbortButton(`Empty());
 	any ret = nil;
-
+	
 	UI::SetFocus(`id(`language));
 
 	repeat
@@ -131,7 +136,7 @@ Choose the new <b>language</b> for your SuSE Linux system.
 		ret = Wizard::UserInput();
 		if ( ret == `next || ret == `language )
 		{		 
-		    AIgeneral::Language = UI::QueryWidget(`id(`language), `CurrentItem);
+		    AutoinstGeneral::Language = UI::QueryWidget(`id(`language), `CurrentItem);
 		    
 		}
 	    }
@@ -154,7 +159,7 @@ Choose the new <b>language</b> for your SuSE Linux system.
     
     global define symbol TimezoneDialog() ``{
 
-	string tz = AIgeneral::Clock["timezone"]:"";
+	string tz = AutoinstGeneral::Clock["timezone"]:"";
 	if ( tz == "")
 	{
 	    import "Misc";	    
@@ -162,9 +167,9 @@ Choose the new <b>language</b> for your SuSE Linux system.
 	    
 	    if ( tz == "")
 	    {		
-		tz = Timezone::GetTimezoneForLanguage(AIgeneral::Language, "en_US");
+		tz = Timezone::GetTimezoneForLanguage(AutoinstGeneral::Language, "en_US");
 	    }
-	    AIgeneral::Clock["timezone"]  = tz;
+	    AutoinstGeneral::Clock["timezone"]  = tz;
 	}
     
 	// create the wizard dialog
@@ -190,152 +195,68 @@ Choose the new <b>language</b> for your SuSE Linux system.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     
     /**
      * Main dialog
      */
     
-    global define  symbol GeneralOptions() ``{
+    global define  symbol ModeDialog() ``{
 
-	map settings = AIgeneral::general;
-	
-	// Clock
-	map _clock 		= settings["clock"]:$[];
-	string timezone 	= _clock["timezone"]:"";
-	string hwclock 		= _clock["hwclock"]:"";
 
-	// Keyboard
-	map _keyboard 		=  settings["keyboard"]:$[];
-	string keyboard 	= _keyboard["keymap"]:"";
-
-	map _mouse 		= settings["mouse"]:$[];
-	string mouse 		= _mouse["id"]:"";
-
-	
-	string language = settings["language"]:"";
-
-	map _mode 		= settings["mode"]:$[];
-	boolean reboot 		= _mode["reboot"]:false;
-	boolean forceboot	= _mode["forceboot"]:false;
-	boolean debugboot 	= _mode["interactive_boot"]:false;
-	boolean confirm 	= _mode["confirm"]:false;
+	map mode 		= AutoinstGeneral::Mode;
+	boolean reboot 		= mode["reboot"]:false;
+	boolean forceboot	= mode["forceboot"]:false;
+	boolean confirm 	= mode["confirm"]:true;
 	
 	term contents =
 	    `Top(
 		 `VBox(
-		       `Left(GetLanguageTerm(language)),
-		       `Left(ConfigureKeyboard(keyboard)),
-		       `Left(ConfigureMouse(mouse)),
-		       `Left(GetTimeZoneTerm(timezone)),
-		       `Left(
-			     `ComboBox(`id(`hwclock), _("&Hardware clock set to"),
-				       [
-					// ComboBox entry: hardware clock set to local time
-					`item(`id(`hwclock_empty), "", (hwclock == "") ),
-					
-					// ComboBox entry: hardware clock set to local time
-					`item(`id(`hwclock_localtime), _("Local time"), (hwclock == "localtime") ),
-
-					// ComboBox entry: hardware clock set GMT
-					`item(`id(`hwclock_gmt ),      _("GMT"),  (hwclock == "GMT")  )
-					]
-
-				       )
-			     ),
-		       `VSpacing(1),
-		       `Left(`CheckBox(`id(`reboot), _("Reboot after installation"), reboot)),
-		       `Left(`CheckBox(`id(`forceboot), _("Do not reboot after installation even if the system requires it"), forceboot)),
 		       `Left(`CheckBox(`id(`confirm), _("Confirm installation?"), confirm)),
-		       `Left(`CheckBox(`id(`debugboot), _("Confirm every step of the boot process?"), debugboot))
+		       `Left(`CheckBox(`id(`reboot), _("Reboot after installation"), reboot)),
+		       `Left(`CheckBox(`id(`forceboot), _("Do not reboot after installation even if the system requires it"), forceboot))
 		       
 		       )
 		 );
 
 
-	string help_text = _("<p>This part of the configuration is required for
-the autoinstallation. Select the values matching
-your hardware and preferences then press <b>Next</b> to continue.</p>
+	string help_text = _("<P>
+The options in this dialog control the behaviour of the AutoYaST during Auto-Installation.
+</P>
 ");
 
 
 	
 	
 	
-	Wizard::SetContents(_("Environment and Basic Options"),
+	Wizard::SetContents(_("Other Options"),
 			    contents, help_text, true , true);
 
 	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 
+	
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
 	    if (ret == `next)
 	    {
-		language= UI::QueryWidget(`id(`language), `Value);
-		timezone= UI::QueryWidget(`id(`timezone), `Value);
-		keyboard= UI::QueryWidget(`id(`keyboard), `Value);
-
-		symbol hardwareclock = UI::QueryWidget (`id (`hwclock), `Value);
-		if (hardwareclock == `hwclock_localtime)		    
-		    hwclock = "localtime";		
-		else if ( hardwareclock == `hwclock_gmt)
-		    hwclock = "GMT";
-		
-		
-		mouse = UI::QueryWidget(`id(`mouse), `Value);
-		map m = $[];
 	
-
-		reboot = UI::QueryWidget(`id(`reboot), `Value);
-		forceboot = UI::QueryWidget(`id(`forceboot), `Value);
-		debugboot = UI::QueryWidget(`id(`debugboot), `Value);
+		map m = $[];	
 		confirm = UI::QueryWidget(`id(`confirm), `Value);
+		reboot = UI::QueryWidget(`id(`reboot), `Value);
+		forceboot = UI::QueryWidget(`id(`forceboot), `Value);	
+
 		if (reboot && forceboot)
 		{
-		    UI::WarningPopup(_("You cannot request rebooting the machine and
+		    UI::WarningPopup(_("You can not request rebooting the machine and
 force it not to boot at the same time.
 "));
 		    continue;
 		}
-		AIgeneral::general = $[
-				       "mouse": $["id": mouse],
-				       "keyboard": $["keymap":keyboard],
-				       "clock": $[
-						  "timezone":timezone,
-						  "hwclock": hwclock
-				       ],
-				       "language":language,
-				       "mode": $[
-						 "reboot":reboot,
-						 "forceboot":forceboot,
-						 "confirm":confirm,
-						 "interactive_boot":debugboot
-				       ]
-		];
+		mode["reboot"] = reboot;
+		mode["forceboot"] = forceboot;
+		mode["confirm"] = confirm;
+		AutoinstGeneral::Mode = mode;
 	    }	    
 	} until (ret == `next || ret == `back);
 
@@ -343,35 +264,6 @@ force it not to boot at the same time.
     }
 
  
-
-
-
- 
-
-
-    /**
-     * Mouse
-     *
-     */
-
-    global define ConfigureMouse(string mouse)
-	``{
-	list mouselist = maplist (string mouse_code, string mouse_name, Mouse::Selection (),
-				  ``{
-				      return `item(`id (mouse_code),
-						   mouse_name,
-						   mouse == mouse_code);
-				  });
-	mouselist = add(mouselist, `item(`id ("probe"), _("Autoprobe"), mouse == "probe"));
-
-	term contents =
-	    `ComboBox(`id(`mouse),
-		      _("&Mouse"),
-		      mouselist
-		      );
-	return contents;
-    }
-
 
 
 

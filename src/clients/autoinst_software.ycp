@@ -16,7 +16,7 @@
     import "Wizard";
     import "Summary";
     import "Report";
-    import "AIsoftware";
+    import "AutoinstSoftware";
     include "wizard/sequencer.ycp";
     include "ui/common_messages.ycp";
     include "autoinstall/dialogs.ycp";
@@ -100,7 +100,7 @@ more <b>add-on</b> selections and packages.
 		baseconfs_box = add( baseconfs_box, `Left(`RadioButton(`id(data[0]:""),     // id
 								       `opt(`notify, `autoShortcut),
 								       data[1]:"",              // descrption
-								       (data[0]:"" == AIsoftware::base)   )));
+								       (data[0]:"" == AutoinstSoftware::base)   )));
 	    }
 	});
 
@@ -151,9 +151,9 @@ more <b>add-on</b> selections and packages.
 		    // set the new selection
 		    boolean pkgret = Pkg::SetSelection( base_selection );
 
-		    if (size(AIsoftware::pacs)>0)
+		    if (size(AutoinstSoftware::pacs)>0)
 		    {
-			Pkg::DoProvide( AIsoftware::pacs );
+			Pkg::DoProvide( AutoinstSoftware::pacs );
 		    }
 
 		    y2milestone ( "Selecting '%1' returns: %2", base_selection, pkgret );
@@ -170,14 +170,14 @@ more <b>add-on</b> selections and packages.
 
 
 		    ret = Pkg::SetSelection( base_selection );
-		    foreach(string addon, AIsoftware::addons, ``{
+		    foreach(string addon, AutoinstSoftware::addons, ``{
 			Pkg::SetSelection( addon );
 		    });
 
 
-		    if (size(AIsoftware::pacs)>0)
+		    if (size(AutoinstSoftware::pacs)>0)
 		    {
-			Pkg::DoProvide(AIsoftware::pacs);
+			Pkg::DoProvide(AutoinstSoftware::pacs);
 		    }
 
 		    y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
@@ -223,8 +223,8 @@ more <b>add-on</b> selections and packages.
 	}
 	else
 	{
-	    seladd = AIsoftware::addons;
-	    selbase = [AIsoftware::base];
+	    seladd = AutoinstSoftware::addons;
+	    selbase = [AutoinstSoftware::base];
 	}
 
 
@@ -250,16 +250,16 @@ more <b>add-on</b> selections and packages.
 	list onlysel = Pkg::GetPackages(`selected, true);
 	y2milestone("selection packages: %1, all packages: %2", size(onlysel), size(allpacs));
 
-	AIsoftware::pacs = [];
+	AutoinstSoftware::pacs = [];
 	foreach(string package, allpacs, ``{
 	    if (!contains(onlysel, package)) {
-		AIsoftware::pacs = add (AIsoftware::pacs,package);
+		AutoinstSoftware::pacs = add (AutoinstSoftware::pacs,package);
 	    }
 	});
 
 
-	AIsoftware::addons = seladd;
-	AIsoftware::base =   selbase[0]:"";
+	AutoinstSoftware::addons = seladd;
+	AutoinstSoftware::base =   selbase[0]:"";
 
 	Wizard::CloseDialog();
 	return ret;
@@ -269,20 +269,20 @@ more <b>add-on</b> selections and packages.
     /* create a  summary*/
 
     if(func == "Summary") {
-	ret =  AIsoftware::Summary();
+	ret =  AutoinstSoftware::Summary();
     }
     else if (func == "Import") {
-	ret = AIsoftware::Import(param);
+	ret = AutoinstSoftware::Import(param);
     }
     else if (func == "Reset") {
-	AIsoftware::Import($[]);
+	AutoinstSoftware::Import($[]);
 	ret =  $[];
     }
     else if (func == "Change") {
 	ret  = packageSelector();	
     }
     else if (func == "Result") {
-	ret = AIsoftware::Export();
+	ret = AutoinstSoftware::Export();
     }
     /* unknown function */
     else {

@@ -23,11 +23,11 @@
      */
     global define string dialog_contents()
 	``{
-	list allscripts = maplist(`s, AIScripts::merged,
+	list allscripts = maplist(`s, AutoinstScripts::merged,
 				  ``{
 				      return (`item(`id(s["filename"]:"Unknown"),
 						    s["filename"]:"Unknown",
-						    AIScripts::typeString(s["type"]:""),
+						    AutoinstScripts::typeString(s["type"]:""),
 						    s["interpreter"]:"Unknown")
 					      );
 				  });
@@ -96,7 +96,7 @@ your needs and take control in different stages of the installation.</p>
 	    {
 		string name = UI::QueryWidget(`id(`table), `CurrentItem);
 		if (name != nil) {
-		    AIScripts::deleteScript(name);
+		    AutoinstScripts::deleteScript(name);
 
 		}
 		else
@@ -128,7 +128,7 @@ your needs and take control in different stages of the installation.</p>
 	map script = $[];
 	if (mode == `edit)
 	{
-	    list filtered_scripts = filter(`s, AIScripts::merged,``((lookup(s,"filename","") == name)));
+	    list filtered_scripts = filter(`s, AutoinstScripts::merged,``((lookup(s,"filename","") == name)));
 	    if (size(filtered_scripts)>0)
 	    {
 		script = select(filtered_scripts,0,$[]);
@@ -215,12 +215,12 @@ name and the content of the script.
 		else
 		{
 		    y2debug("Calling ConfigureScripts: %1, %2, %3, %4", scriptName, source, interpreter, type);
-		    AIScripts::AddEditScript( scriptName, source, interpreter, type);
+		    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type);
 		}
 	    }
 	    else if (ret == `loadsource)
 	    {
-		string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open File") );
+		string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Open File") );
 		if (filename!=nil)
 		{
 		    string source = SCR::Read(.target.string, filename);

@@ -8,29 +8,29 @@
 {
     textdomain "autoinst";
     import "Wizard";
-  
+
     import "Mode";
     Mode::config = true;
 
     import "Profile";
-    import "AIConfig";    
+    import "AutoinstConfig";
     import "ISO";
-    import "Y2ModuleConfig";      
+    import "Y2ModuleConfig";
     import "Summary";
 
 
     include "ui/common_popups.ycp";
     include "ui/common_messages.ycp";
-    include "wizard/sequencer.ycp";    
+    include "wizard/sequencer.ycp";
 
 
     include "autoinstall/dialogs.ycp";
     include "autoinstall/help.ycp";
     include "autoinstall/conftree.ycp";
     include "autoinstall/io.ycp";
-    
+
     boolean popup_open = false;
-    
+
     global list menuitems = [`menu_open,
 			     `menu_delete,
 			     `menu_save,
@@ -52,11 +52,11 @@
 
 
 
-    global map dialogs = $[			 			   
-			   "tree"		:	``(   ConfTree() )			 
+    global map dialogs = $[
+			   "tree"		:	``(   ConfTree() )
     ];
 
-    
+
     /**
      * Whole configuration of autoyast
      * @return `back, `abort or `next
@@ -66,10 +66,10 @@
 
 	map sequence = $[
 			 "ws_start" : "tree",
-			 
+
 			 "tree":
-			 $[			
-			   `exit	: `ws_finish			   
+			 $[
+			   `exit	: `ws_finish
 			 ]
 	];
 

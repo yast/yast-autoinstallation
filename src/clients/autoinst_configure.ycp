@@ -14,7 +14,7 @@
 
     import "Profile";
     import "AutoInstall";
-    import "AIScripts";
+    import "AutoinstScripts";
     import "Product";
     import "Progress";
     import "Call";
@@ -142,8 +142,8 @@ Please wait while the system is being configured.
     });
 
     Progress::NextStage();
-    AIScripts::Import(Profile::Flat["scripts"]:$[]);
-    AIScripts::Write("post-scripts");
+    AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
+    AutoinstScripts::Write("post-scripts");
 
     Progress::Finish();
 

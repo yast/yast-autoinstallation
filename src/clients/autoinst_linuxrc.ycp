@@ -14,7 +14,7 @@
 
     import "Wizard";
     import "Summary";
-    import "AILinuxrc";
+    import "AutoinstLinuxrc";
 
     include "wizard/sequencer.ycp";
     include "autoinstall/linuxrc_dialogs.ycp";
@@ -45,14 +45,14 @@
     }
 
     y2milestone("Imported: (%1)", settings);
-    AILinuxrc::Import ( settings );
+    AutoinstLinuxrc::Import ( settings );
 
     define set_contents()
 	``{
 	term contents =
 	    `VBox(
 		  `VSpacing(1),
-		  `RichText( `id(`summary), AILinuxrc::Summary()),
+		  `RichText( `id(`summary), AutoinstLinuxrc::Summary()),
 		  `VSpacing(0.5),
 		  `HBox(
 			`PushButton(`id(`configure), _("&Installation Options")),
@@ -101,14 +101,14 @@
 
 	    if (result == `next || result == `finish )
 	    {
-		settings = AILinuxrc::Export ();
+		settings = AutoinstLinuxrc::Export ();
 	    }
 	    set_contents();
 	}
 	else if ( ret == `reset)
 	{
 	    settings = $[];
-	    AILinuxrc::Set(settings);
+	    AutoinstLinuxrc::Set(settings);
 	    set_contents();
 	}
     } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
