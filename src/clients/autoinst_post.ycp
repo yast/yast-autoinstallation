@@ -14,13 +14,13 @@
     import "AutoInstall";
     import "Call";
     import "Y2ModuleConfig";
-	import "AutoinstSoftware";
+    import "AutoinstSoftware";
 
-	list packages = [];
+    list packages = [];
     string resource = "";
     string module_auto = "";
 
-    foreach(`p,`d, Y2ModuleConfig::ModuleMap,
+    foreach(string p, map d, Y2ModuleConfig::ModuleMap,
 	    ``{
 
 	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write")
@@ -82,9 +82,9 @@
 	    }
 	}
     });
-	list post = AutoinstSoftware::post_packages;
-	AutoinstSoftware::post_packages = toset(union(post,packages));
+    list post = AutoinstSoftware::post_packages;
+    AutoinstSoftware::post_packages = toset(union(post,packages));
 
-	return `auto;
+    return `auto;
 
 }

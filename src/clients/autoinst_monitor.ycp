@@ -45,17 +45,17 @@
 	integer i = 0;
 	while (i < size (WFM::Args()))
 	{
-	    if (is (WFM::Args (i), map) && nil != WFM::Args (i))	settings = WFM::Args (i);
+	    if (is (WFM::Args (i), map) && nil != WFM::Args (i)) settings = (map)WFM::Args (i);
 	    i = i + 1;
 	}
     }
 
 
-    //************************************************************************
+    //******************
     // global variables
     //*****************
 
-    string tmpdir = SCR::Read(.target.tmpdir);
+    string tmpdir = (string)SCR::Read(.target.tmpdir);
 
     // the pathes for the monitor db
     //
@@ -115,7 +115,7 @@
     //		5.5  --->  6
     //		5    --->  5
     //
-    define ceiling( any value )
+    define any ceiling( any value )
 	``{
 	if ( is( value, integer ) ) return( value );		// already integer
 
@@ -139,7 +139,7 @@
     //		5.5  --->  5
     //		5    --->  5
     //
-    define floor( any value )
+    define any  floor( any value )
 	``{
 	if ( is( value, integer ) ) return( value );		// already integer
 
@@ -159,33 +159,33 @@
     // Add a special monitor list entry for users who don't want to install X11 at all.
     // Returns a list of strings.
     //
-    define get_vendors( list monitor_db )
+    define list get_vendors( list monitor_db )
 	``{
 	y2debug ("get_vendors (%1)", monitor_db);
 	// "No X11" here means no configuration of X11 (at most 10 characters)
-	return toset( maplist( `monitor, monitor_db, ``( lookup( monitor, `vendor, "" ))))  ;
+	return toset( maplist( map monitor, monitor_db, ``( lookup( monitor, `vendor, "" ))))  ;
     }
 
 
     // Get a list of all monitor models for a specified vendor from the monitor database.
     // Returns a list of strings.
     //
-    define get_models_for_vendor( string vendor, list monitor_db )
+    define list get_models_for_vendor( string vendor, list monitor_db )
 	``{
-	list vendor_monitors = filter( `monitor, monitor_db, ``( lookup( monitor, `vendor, "" ) == vendor ) );
-	return toset( maplist( `monitor, vendor_monitors, ``( lookup( monitor, `model, "" ))) );
+	list vendor_monitors = filter( map monitor, monitor_db, ``( lookup( monitor, `vendor, "" ) == vendor ) );
+	return toset( maplist( map monitor, vendor_monitors, ``( monitor[`model]:"")) );
     };
 
 
     // Automagically update the frequency values for a specified model.
     //
-    define update_frequency_for_model( string vendor, string model, list monitor_db )
+    define void update_frequency_for_model( string vendor, string model, list monitor_db )
 	``{
 	// Get the data record for this monitor
 	//
-	map monitor = find( `monitor, monitor_db,
-			    ``((lookup( monitor, `vendor, "" ) == vendor)
-			       && (lookup( monitor, `model, "" ) == model)) );
+	map monitor = (map)find( map monitor, monitor_db,
+			    ``(( monitor[`vendor]:""  == vendor)
+			       && (monitor[`model]:""  == model)) );
 
 	// Set all the input fields according to this monitor's data
 	// first, assign the value to a float. the monitor data may contain
@@ -199,6 +199,7 @@
 	SetMinVsync (tostring( fsyncval, 1 ));
 	fsyncval = tofloat( lookup( monitor, `max_vsync, 0.0 ) );
 	SetMaxVsync (tostring( fsyncval, 1 ));
+	return;
     }
 
     // Automagically update the models list for a specified vendor.
@@ -208,7 +209,7 @@
     //
     // ATTENTION: Changes global variable current_model (convenient here).
     //
-    define change_vendor( string vendor, list monitor_db )
+    define void change_vendor( string vendor, list monitor_db )
 	``{
 	if ( vendor == "No X11" )						// No X11 means no models to choose from
 	{
@@ -231,7 +232,7 @@
 	    if ( models != [] )							// there are models to be displayed
 	    {
 		if ( ! contains( models, current_model ) )			// current model is unknown
-		    current_model = select( models, 0, "" );			// default first entry
+		    current_model = models[0]:"";			// default first entry
 
 		SetCurrentModel( current_model );				// select entry
 		update_frequency_for_model( vendor, current_model, monitor_db );// update sync values
@@ -246,11 +247,12 @@
 		current_model = "";						// no current model
 	    }
 	}
+	return;
     }
 
     // Check if the number is in the format [+]<number>[kKmMgGtT]
     // Returns true or false
-    define IsNumber( string input )
+    define boolean IsNumber( string input )
 	``{
 	integer n = 0;
 	while ( n < size( input ) )
@@ -281,29 +283,19 @@
     //   o current_vendor
     //   o current_model
     //
-    define get_vendors_and_models()
+    define void get_vendors_and_models()
 	``{
 
-	// First Read the monitor description file.
-	// a list of records like this:
-	//
-	//	  $[
-	//	       vendor:		"EIZO",
-	//	       model:		"F563-T",
-	//	       min_hsync:	55.5,
-	//	       max_hsync:	160,
-	//	       min_vsync:	30.5,
-	//	       max_vsync:	86
-	//	   ]
-	//
-	all_monitors = SCR::Read( .target.ycp, [ static_monitors, nil ] );		// first try modified version
+
+	all_monitors = (list)SCR::Read( .target.ycp, [ static_monitors, nil ] );		// first try modified version
 
 	if ( all_monitors == nil )						// no hit
 	{
-	    all_monitors = SCR::Read( .target.ycp, [ static_monitors, [] ] );	// "factory db"
+	    all_monitors = (list)SCR::Read( .target.ycp, [ static_monitors, [] ] );	// "factory db"
 	    y2milestone("Got factory monitor db");
 	}
-	else y2milestone("Got modified monitor db");
+	else
+	    y2milestone("Got modified monitor db");
 
 	//SCR::Write( .dumpto.tmp.monitor_db, all_monitors );
 
@@ -312,32 +304,6 @@
 	vendors = get_vendors( all_monitors );
 	y2debug ("Vendors initial: %1", vendors );
 
-	// If the X11 module already contains monitor data try to use them.
-	//
-	// So we have sevaral cases to deal with:
-	//
-	// o The X11 module did not contain any monitor data (neither probed nor from an earlier run)
-	//   ==> Let the user choose a monitor from the monitor_db or enter values manually.
-	//
-	// o The X11 module does contain monitor data that can be found in the monitor_db.
-	//   This may result from an earlier run or from probing.
-	//   ==> Preselect this Monitor in the monitor_db displayed on screen.
-	//
-	// o The X11 module does contain monitor data but these can not be found in the monitor_db.
-	//   This may result from probing a monitor missing in the monitor_db.
-	//   Additionally these data may be only a partly hit if the vendor is known but the model isn't.
-	//   ==> Try to use as much information from the monitor data as possible. Add to the monitor_db those
-	//       data not already contained, i.e. invent a new entry.
-	//
-	// So the strategy is as follows:
-	//
-	// If there are monitor data in the X11 module.
-	//    If those data can _not_ be found in the monitor_db (vendor AND model).
-	//       Build and add an entry for those data in the monitor_db.
-	//    Select vendor and model in the GUI, update sync values (all this should now succeed in any case).
-	// Else (no monitor data present)
-	//    Display vendors and select 1st entry as default
-	//
 	if ( settings != $[] )	// monitor data present
 	{
 	    // if there has been freaky probing replace vendor and/or model with
@@ -372,19 +338,19 @@
     //   o current_model
     //   o all_monitors
     //
-    define display_models_and_values()
+    define  void display_models_and_values()
 	``{
 	if ( contains( vendors, current_vendor ) )				// current vendor is known
 	{
-	    SetCurrentVendor( current_vendor );					// select current vendor
-	    change_vendor( current_vendor, all_monitors );			// display new models and select the right one
+	    SetCurrentVendor( (string) current_vendor );					// select current vendor
+	    change_vendor( (string)current_vendor, all_monitors );			// display new models and select the right one
 	}
 	else									// current vendor is unknown
 	{
 	    current_vendor = select( vendors, 0, "" );				// default 1st entry
 	    if ( is( current_vendor, term ) )					// honor special "No X11" entry
 	    {
-		current_vendor = select( select( current_vendor, 0, "" ), 0, "" );	// `item(`id("No X11"), _("No X11"))
+		current_vendor = (string) select( current_vendor[0]:[], 0, "" );	// `item(`id("No X11"), _("No X11"))
 	    }
 	    SetCurrentVendor( current_vendor );					// select current vendor
 	    change_vendor( current_vendor, all_monitors );			// display new models and select the right one
@@ -396,7 +362,7 @@
     // height, and refresh are extracted and assigned to the X11 user_data struct
     // along with a constant color depth of 8 bit (VESA) or 16 bit (LCD).
     //
-    define store_VESA_LCD( string model, boolean is_VESA )
+    define void store_VESA_LCD( string model, boolean is_VESA )
 	``{
 	integer currentWidth      = 0;
 	integer currentHeight     = 0;
@@ -427,12 +393,12 @@
 
 		// 2. "768@75HZ" --> "768" and "75HZ"
 		//
-		list second = splitstring( select( first, 1, "" ), "@" );
+		list second = splitstring( first[1]: "" , "@" );
 
 		if ( size( second ) > 0 )
 		{
-		    currentHeight    = tointeger( select( second, 0, "" ) );
-		    currentFrequency = tointeger( select( second, 1, "" ) );
+		    currentHeight    = tointeger( second[0]: "" );
+		    currentFrequency = tointeger( second[1]: "" );
 		}
 	    }
 	}

@@ -12,33 +12,11 @@
     include "wizard/sequencer.ycp";
     import "Label";
 
-    global define symbol X11AutoSequence () ``{
-
-	map dialogs = $[
-			"x11"		:	``(   x11Options() )
-
-	];
-
-
-	map sequence = $[
-			 "ws_start"	: "x11",
-			 "x11"	:
-			 $[
-			   `abort	: `abort,
-			   `next	: `next
-			 ]
-	];
 
 
 
-	Wizard::CreateDialog ();
-	symbol ret  =  WizardSequencer (dialogs, sequence);
-	UI::CloseDialog ();
-
-	return ret;
-    }
-
-    global define updateContents() ``{
+  
+    global define term updateContents() ``{
 	map x11 = AutoinstX11::x11;
 	list resolutions        = [];
 	list resolutions_list = ["640x480", "800x600", "1024x768", "1152x864", "1280x960", "1280x1024", "1600x1200"];
@@ -126,10 +104,7 @@
 					   `HWeight(70,`Empty())
 					   )
 				     )
-			       ),
-		       `VStretch(),
-		       `PushButton(`id(`monitor), _("Configure Monit&or"))
-
+			       )		     
 		       )
 		 );
 	return contents;
@@ -137,10 +112,11 @@
 
 
 
-    /**
+
+   /**
      * X11 Options
      */
-    global define x11Options()
+    global define symbol x11Options()
 	``{
 
 
@@ -169,7 +145,7 @@ be started at boot time and what display manager should be used.</p>
 	    UI::ChangeWidget(`id(`dm), `Enabled, false);
 	    UI::ChangeWidget(`id(`enable_3d), `Enabled, false);
 	    UI::ChangeWidget(`id(`start_x11), `Enabled, false);
-	    UI::ChangeWidget(`id(`monitor), `Enabled, false);
+	    
 	}
 
 	any ret = nil;
@@ -177,14 +153,13 @@ be started at boot time and what display manager should be used.</p>
 	    ret = UI::UserInput();
 
 
-	    if (UI::QueryWidget(`id(`enable_x11), `Value))
+	    if ((boolean)UI::QueryWidget(`id(`enable_x11), `Value))
 	    {
 		UI::ChangeWidget(`id(`depth), `Enabled, true);
 		UI::ChangeWidget(`id(`resolution), `Enabled, true);
 		UI::ChangeWidget(`id(`dm), `Enabled, true);
 		UI::ChangeWidget(`id(`enable_3d), `Enabled, true);
-		UI::ChangeWidget(`id(`start_x11), `Enabled, true);
-		UI::ChangeWidget(`id(`monitor), `Enabled, true);
+		UI::ChangeWidget(`id(`start_x11), `Enabled, true);		
 	    }
 	    else
 	    {
@@ -192,13 +167,12 @@ be started at boot time and what display manager should be used.</p>
 		UI::ChangeWidget(`id(`resolution), `Enabled, false);
 		UI::ChangeWidget(`id(`dm), `Enabled, false);
 		UI::ChangeWidget(`id(`enable_3d), `Enabled, false);
-		UI::ChangeWidget(`id(`start_x11), `Enabled, false);
-		UI::ChangeWidget(`id(`monitor), `Enabled, false);
+		UI::ChangeWidget(`id(`start_x11), `Enabled, false);		
 	    }
 
-	    if (ret == `key || ret ==`next || ret == `monitor )
+	    if (ret == `key || ret ==`next  )
 	    {
-		AutoinstX11::x11["configure_x11"]	= UI::QueryWidget(`id(`enable_x11), `Value);
+		AutoinstX11::x11["configure_x11"]	= (boolean)UI::QueryWidget(`id(`enable_x11), `Value);
 
 		any depth	= UI::QueryWidget(`id(`depth), `Value);
 		if (is(depth, integer))
@@ -229,22 +203,45 @@ be started at boot time and what display manager should be used.</p>
 		if (is(xdm, boolean))
 		    AutoinstX11::x11["start_x11"] =  xdm;
 	    }
-	    if (ret == `monitor)
-	    {
-		any video_ret = CallFunction( `autoinst_monitor(x11) );
-		y2milestone("video_ret %1", video_ret);
-		AutoinstX11::x11["monitor"] = video_ret;
 
-		Wizard::SetContents(caption,
-				    updateContents(), help, true, true);
-		continue;
-	    }
 	    
 	} until (  ret ==`next || ret ==`back );
 
+
+	return (symbol)ret;
+    }
+
+
+
+
+
+
+    
+    global define symbol X11AutoSequence () ``{
+
+	map dialogs = $[
+			"x11"		:	``(   x11Options() )
+
+	];
+
+	map sequence = $[
+			 "ws_start"	: "x11",
+			 "x11"	:
+			 $[
+			   `abort	: `abort,
+			   `next	: `next
+			 ]
+	];
+
+	Wizard::CreateDialog ();
+	symbol ret  =  WizardSequencer (dialogs, sequence);
+	UI::CloseDialog ();
 
 	return ret;
     }
 
 
+  
+
+ 
 }
