@@ -13,7 +13,7 @@
     /**
      * Add or edit a file
      */
-    global define void AddEditFile(string fileName, string source)
+    global define void AddEditFile(string fileName, string source, string permissions, string owner)
 	``{
 
 	list newFiles = [];
@@ -25,6 +25,8 @@
 		map oldFile = $[];
 		oldFile=add(oldFile,"file_path", fileName);
 		oldFile=add(oldFile,"file_contents", source);
+		oldFile=add(oldFile,"file_permissions", permissions);
+		oldFile=add(oldFile,"file_owner", owner);
 		modified = true;
 		return oldFile;
 	    }
@@ -38,6 +40,8 @@
 	    map file = $[];
 	    file=add(file,"file_path", fileName);
 	    file=add(file,"file_contents", source);
+	    file=add(file,"file_permissions", permissions);
+	    file=add(file,"file_owner", owner);
 	    AutoinstFile::Files = add (  AutoinstFile::Files, file);
 	}
 	return;
@@ -73,8 +77,16 @@
 		file = select(filtered_files,0,$[]);
 	    }
 	}
+	// help 1/2
 	string help =  _("<p>Using this dialog, copy the contents of the file and specify the final
 path on the installed system. YaST2 will copy this file to the specified location.</p>");
+
+	// help 2/2
+	help = help + _("<p>To protect copied files, you can set the owner and the permissions of the files.
+Owner can be set using the syntax <i>userid.groupid</i> and permissions can be either a symbolic
+representation of changes to make, or an octal  number  representing  the bit pattern for the
+new permissions.");
+	
 
 	string title = _("Configuration File Editor");
 
@@ -84,6 +96,11 @@ path on the installed system. YaST2 will copy this file to the specified locatio
 			`TextEntry(`id(`filename), _("&File Path"), file["file_path"]:""),
 			`HStretch(),
 			`Empty()
+			),
+		  `HBox(
+			`TextEntry(`id(`owner), _("&Owner"), file["owner"]:""),
+			`HStretch(),
+			`TextEntry(`id(`perm), _("&Permissions"), file["permissions"]:"")
 			),
 		  `VSpacing(1),
 		  `HBox(
@@ -111,7 +128,8 @@ path on the installed system. YaST2 will copy this file to the specified locatio
 	    if (ret == `next)
 	    {
 		string fileName = UI::QueryWidget(`id(`filename), `Value);
-
+		string permissions = UI::QueryWidget(`id(`perm), `Value);
+		string owner = UI::QueryWidget(`id(`owner), `Value);
 		string source = UI::QueryWidget(`id(`source), `Value);
 
 		if (source == "" || fileName == "")
@@ -123,7 +141,7 @@ name and the content of the file.
 		}
 		else
 		{
-		    AddEditFile( fileName,source);
+		    AddEditFile( fileName,source, permissions, owner);
 		}
 	    }
 	    else if (ret == `loadsource)
@@ -152,8 +170,7 @@ name and the content of the file.
 
 	list allfiles = maplist(`s, AutoinstFile::Files,
 				  ``{
-				      return (`item(`id(s["file_path"]:"Unknown"),
-						    s["file_path"]:"Unknown" ));
+				      return (`item(`id(s["file_path"]:"Unknown"),  s["file_path"]:"Unknown" , s["file_owner"]:"", s["file_permissions"]:""));
 				  });
 	term contents =
 	    `VBox(
@@ -161,7 +178,7 @@ name and the content of the file.
 			`Label(_("Available Files"))
 			),
 		  `Table( `id(`table), `opt(`notify),
-			  `header(_("File Path")),
+			  `header(_("File Path"), _("Owner"), _("Permissions")),
 			  allfiles
 
 			  ),

@@ -74,10 +74,10 @@ exist on this system.
 
 	// fdisk partition ids
 	integer	fsid_boot	= Partitions::FsidBoot();
-	integer	fsid_root   	= Partitions::fsid_native;
+	integer	fsid_root	= Partitions::fsid_native;
 
 	// How much to allocate for swap
-	integer size_of_swap 	= 1024 * 1024 * Partitions::SwapSizeMb(0);
+	integer size_of_swap	= 1024 * 1024 * Partitions::SwapSizeMb(0);
 
 	// calculate size of the /boot partition
 	integer size_of_boot = Partitions::MinimalNeededBootsize();
@@ -846,11 +846,11 @@ to contain a minimal installation.");
 	      "create":	true,
 	      "format":	currentPartition["format"]:true,
 	      "fs_options": currentPartition["fs_options"]:$[],
-	      "type": 	ptype,
-	      "fsid": 	auto_fsid,
+	      "type":	ptype,
+	      "fsid":	auto_fsid,
 	      "nr":	last_pnr,
 	      "region":	region,
-	      "mount": 	mount_point,
+	      "mount":	mount_point,
 	      "device": get_device_name(target_is, last_pnr)
 	    ];
 
@@ -862,17 +862,17 @@ to contain a minimal installation.");
 
 	if (haskey(currentPartition, "fstopt") && currentPartition["fstopt"]:"" != "")
 	{
-	    part["fstopt"] 		= currentPartition["fstopt"]:"";
+	    part["fstopt"]		= currentPartition["fstopt"]:"";
 	}
 
 	if (haskey(currentPartition, "label") && currentPartition["label"]:"" != "")
 	{
-	    part["label"] 		= currentPartition["label"]:"";
+	    part["label"]		= currentPartition["label"]:"";
 	}
 
 	if (haskey(currentPartition, "mountby"))
 	{
-	    part["mountby"] 	= currentPartition["mountby"]:`device;
+	    part["mountby"]	= currentPartition["mountby"]:`device;
 	}
 
 
@@ -929,8 +929,8 @@ to contain a minimal installation.");
 	    part["used_fs"]		= `unknown;
 	    part["fsid"]		= Partitions::fsid_raid;
 	    part["format"]		= false;
-	    part["raid_name"]		= raid_name;
-
+	    part["raid_name"]	= raid_name;
+        part["raid_type"]   = currentPartition["raid_type"]:"raid"
 	    part["mount"]		= "";
 	    part["fstype"]		= "Linux RAID";
 
@@ -1153,6 +1153,10 @@ physical volumes which belong to this group."), vgname));
 	    }
 
 
+        if (!haskey(options, "raid_type"))
+        {
+           options["raid_type"] = raid_type;
+        }
 
 	    string sel_chunksize = options["chunk_size"]:"";
 
