@@ -156,7 +156,8 @@ the configuration files are being read and converted.
 	    if (ret == `import)
 	    {
 		host = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (host != nil && host != "") {
+		if (host != nil && host != "")
+		{
 		    showFeedback(_("
 Reading Alice configuration files,
 this may take a while, please wait...
@@ -619,24 +620,394 @@ this may take a while, please wait...
     global define kickstartImport()
 	``{
 	string title = _("Import Kickstart files");
-	string help = "";
+	string help = _("<p>Using this feature, you can import <b>Kickstart</b> configuration
+files.</p>");
+	help = help + _("<p>System configuration in a <em>Kickstart</em> file may vary in it's scope from what is offered
+in <b>AutoYaST</b>, so some limitations should be taken into consideration. A standard <em>Kickstart</em>
+configuration file with no distribution specific configuration options can still be imported without
+much loss of data</p>");
+
+	help = help + _("<p>The main problem you will be facing when importing a <em>Kickstart</em> file
+is the different package and package selection names used, those have to be adapted manually!</p>");
+
 	term contents =
 	    `Top(
 		 `VBox(
-		       `Left(`Label(_("Still not ready")))
+		       `VSquash(
+				`HBox(
+					
+				      `TextEntry(`id(`filename), _("Kickstart file name"), ""),
+				      `VBox(
+					    `VSpacing(),
+					    `PushButton(`id(`open), `opt(`notify), _("Select File"))
+					    )
+				      )
+				),
+			 
+		       `VSpacing(1),
+		       `Left(`Label(_("What should be done with loaded data?"))),
+		       `HBox(
+			     `HWeight(10, `Empty()),
+			     `HWeight(90, `RadioButtonGroup(`id(`rbg),
+							    `VBox(
+								  `Left(
+									`RadioButton(`id(`hostname), `opt(`notify),_("&Use  file name as new profile name"),
+										     (AIServer::ksOutput == `hostname))
+									),
+								  `Left(
+									`RadioButton(`id(`save),`opt(`notify), _("Save result &into Repository"),
+										     (AIServer::ksOutput == `save))
+									),
+								  `Left(
+									`HBox(
+									      `HStretch(),
+									      `TextEntry(`id(`result), _("Name of resulting &profile"), ""),
+									      `HStretch()
+							    
+									      )
+									),
+								  `Left(
+									`RadioButton(`id(`load), `opt(`notify),_("&Load resulting profile"), (AIServer::ksOutput == `load) )
+									)
+								  )
+							    )
+				      )
+			     )
 		       )
-		 );
+		 );	
+
 		
 	Wizard::SetContents(title,
 			    contents, help , true, true);
-
+	string filename = "";
 	any ret = nil;
 	repeat
 	    {
 		ret = UI::UserInput();
 		
+		filename = UI::QueryWidget(`id(`filename), `Value);
+		AIServer::ksOutput = UI::QueryWidget(`id(`rbg), `CurrentButton);
+		if ( AIServer::ksOutput == `save && ret == `next)
+		{
+		    if ( UI::QueryWidget(`id(`result), `Value) != "" )
+		    {
+			AIConfig::currentFile =  UI::QueryWidget(`id(`result), `Value);
+		    }
+		    else
+		    {
+			UI::MessagePopup(_("Please provide a valid profile name"));
+			continue;
+		    }
+		}
+		
+		if (ret == `open)
+		{
+		    filename = PopupFile(AIConfig::Repository + "/");
+		    if (filename!="")
+		    {
+			UI::ChangeWidget(`id(`filename), `Value, filename);
+		    }
+		}
+		else if (ret == `next && filename != "")
+		{
+		    
+		    map ksConfig = readKS(filename);
+		    AIConfig::Import(ks2ay(ksConfig));		    
+		}
+		else if (ret == `next && filename == "") {
+		    UI::MessagePopup(_("Please select a file first!"));
+		    UI::SetFocus(`id(`filename));
+		    continue;
+		}
+		
 	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	
+	if (ret == `next) {
+	    if (AIServer::ksOutput == `hostname)
+	    {
+		AIConfig::currentFile = filename;
+		ret = `save;
+	    }	  
+	    else
+	    {
+		ret = AIServer::ksOutput;
+	    }
+	}
 	return ret;
-    }    
+    }
+
+
+    global define boolean readKS(string ks)``{
+
+	map ksConfig = SCR::Read(.kickstart, ks);
+	if (ksConfig == $[]) {
+	    return $[];
+	}
+	return ksConfig;
+	
+    }
+
+    global define map ks2ay(map ksConfig) ``{
+
+	map profile = $[];
+	map general = $[];
+	map install = $[];
+	map configure = $[];
+
+	// Scripts
+	configure["scripts"] = ks_scripts(ksConfig);
+	configure["networking"] = select(ks_network(ksConfig), 0 , $[]);
+	configure["nis"] = select(ks_auth(ksConfig), 0 , $[]);
+	configure["ldap"] = select(ks_auth(ksConfig), 1 , $[]);
+
+	
+	install["init"] = select(ks_network(ksConfig), 1 , $[]);
+	install["partitioning"] = ks_part(ksConfig);
+	install["bootloader"] =  ks_bootloader(ksConfig);
+
+	
+	profile["install"] = install;
+	profile["configure"] = configure;
+	y2milestone("Profile : %1", profile);
+	return profile;
+	
+    }
+
+    global define map ks_scripts(map ksConfig)
+	``{
+	map scripts = $[];
+	list postscripts = [];
+	list prescripts = [];
+	
+	if (haskey(ksConfig, "post-script"))
+	{
+	    map script = $[];
+	    script["source"] = SCR::Read(.target.string, ksConfig["post-script"]:"");
+	    map post = ksConfig["post"]:$[];
+	    script["interpreter"] = post["interpreter"]:"shell";
+	    script["filename"] = "kspost";
+	    postscripts = add(postscripts, script);	    
+	}
+	scripts["post-scripts"] =   postscripts;
+	if (haskey(ksConfig, "pre-script"))
+	{
+	    map script = $[];
+	    script["source"] = SCR::Read(.target.string, ksConfig["pre-script"]:"");
+	    
+	    script["interpreter"] = "/bin/sh";
+	    script["filename"] = "kspre";
+	    prescripts = add(prescripts, script);	    
+	}
+	scripts["pre-scripts"] =   prescripts;
+	return scripts;	
+    }
+
+
     
+    /**
+     * StringFS2Symbol()     
+     * @param any filesystem string
+     * @return symbol filesystem type
+     */
+    global define StringFS2Symbol(any fs)``{
+	if (is(fs,symbol)) {
+	    return fs;
+	}
+	map filesystems =
+	    $[
+	      "ext2":	`ext2,
+	      "ext3":	`ext3,
+	      "reiser":	`reiser,
+	      "lvm":	`lvm,
+	      "raid":	`raid,
+	      "jfs":	`jfs,
+	      "fat32":	`fat32,
+	      "xfs":	`xfs,
+	      "fat16":	`fat16,
+	      "swap":	`swap	
+	    ];
+	return filesystems[fs]:`ext2;	
+    }
+    
+    global define list ks_part (map ksConfig) ``{
+
+	list drives = [];
+	list part1 = maplist(`k, `v, ksConfig["partitioning"]:$[],   ``{
+
+	    drives=add(drives, v["ondisk"]:"");
+	    map partition = $[];
+
+	    string fstype = (k == "swap") ? "swap" :  v["fstype"]:"";
+	    partition["filesystem"] = StringFS2Symbol(fstype);
+	    partition["mount"] = k;
+	    partition["size"] = sformat("%1mb", v["size"]:-1);
+	    if (v["grow"]:0 == 1) {
+		partition["size"] = "max";
+	    }
+	    return (partition);
+	});
+	drives=toset(drives);
+	y2milestone("part1: %1 drives: %2", part1, drives);
+	
+	list partitioning = maplist(`d, drives, ``{
+	    
+	    if (d != "") {
+		map disk = $[];
+		disk["device"] = sformat("/dev/%1", d);
+		disk["partitions"] = filter(`f, part1, ``(f["ondisk"]:"" != d));
+		y2milestone("disk parts %1", 	disk["partitions"]:[]);
+		return (disk);
+	    }
+	});
+
+	return partitioning;
+    }
+
+
+
+    global define list  ks_network (map ksConfig) ``{
+	include "network/ip.ycp";
+	
+	map init = $[];		 
+	map networking = $[];
+	map dns = $[];
+
+	list nameserver = [];
+	string gateway = "";
+	
+	map routing = $[];
+	map rawNet = ksConfig["networking"]:$[];
+	list interfaces = maplist(`iface, `data, rawNet, ``{
+	    map interface = $[];
+	    if (data["bootproto"]:"" == "dhcp")
+	    {
+		interface["bootproto"] = "dhcp";
+		interrface["device"] = iface;
+		interrface["startmode"] = "onboot";
+		init["usedhcp"] = true;
+	    }
+	    else
+	    {
+		interface["device"] = iface;
+		interface["bootproto"] = "static";
+		interface["network"] =  compute_network(data["ip"]:"",data["netmask"]:"");
+		interface["ipaddr"] = data["ip"]:"";
+		interface["netmask"] = data["netmask"]:"";
+		interface["startmode"] = "onboot";
+		interface["broadcast"] = compute_broadcast(data["ip"]:"",data["netmask"]:"");
+		
+		init["ip"] = data["ip"]:"";
+		init["nameserver"] = data["nameserver"]:"";
+		init["netmask"] = data["netmask"]:"";
+		init["gateway"] = data["gateway"]:"";
+		init["netdevice"] = data["device"]:"";
+		nameserver = [ data["nameserver"]:""];
+		gateway =  data["gateway"]:"";
+	    }
+	    return (interface);
+	});
+
+
+	
+	
+	list searchlist = [];
+	 
+	string hostname = "";
+	string domain = "";
+	 
+	dns["hostname"] = hostname;
+	dns["domain"] = domain;
+	dns["searchlist"] = searchlist;
+	dns["nameservers"] = nameserver;
+
+	list routes= [];
+	map route = $[];
+
+	if (gateway!="") {
+	    route["destination"] = "default";
+	    route["device"] = "-";
+	    route["gateway"] = gateway;
+	    route["netmask"] = "-";
+	    routes=add(routes, route);
+	}
+	routing=add(routing, "routes", routes);
+	routing=add(routing,"ip_forwarding", false);
+	 
+	networking["interfaces"] = interfaces;
+	networking["dns"] = dns;
+	networking["routing"] = routing;
+
+
+	// init
+	if (haskey(ksConfig, "nfs")) {
+	    map nfs = ksConfig["nfs"]:$[];
+	    init["instmode"] = "nfs";
+	    init["server"] = nfs["server"]:"";
+	    init["serverdir"] = nfs["dir"]:"";
+	}
+
+	if (ksConfig["text"]:0  == 1) {
+	    init["textmode"] = true;
+	}
+
+	return [networking, init];
+    }
+
+    global define ks_auth(map ksConfig) ``{
+
+	map auth = ksConfig["auth"]:$[];
+
+	// NIS
+	map nis = $[];
+	map authentication = $[];
+	map ldap = $[];
+
+	
+	if (auth["enablenis"]:0 == 1) {
+	    nis["start_nis"] = true;
+	    if (haskey(auth, "nisdomain"))
+		nis["nis_domain"] = auth["nisdomain"]:"";
+	    if (haskey(auth, "nisserver"))
+	    {
+		list nisserver = [ auth["nisserver"]:"" ];
+		nis["nis_servers"] = nisserver;
+	    }
+	}
+	
+	if (auth["enablemd5"]:0 == 1) {
+	    authentication["enablemd5"] = true;
+	}
+
+	
+	if (auth["enableldapauth"]:0 == 1) {
+	    ldap["start_ldap"] = true;
+	    if (haskey(auth, "nisdomain"))
+		ldap["ldap_domain"] = auth["ldapbasedn"]:"";
+	    if (haskey(auth, "ldapserver"))
+		ldap["ldap_server"] = auth["ldapserver"]:"";
+	    if ((auth["enableldaptls"]:0 == 1))
+		ldap["ldap_tls"] = true;
+	}	
+
+	return [nis, ldap, authentication];
+	
+    }
+
+
+    global define ks_bootloader (map ksConfig) ``{
+
+	map bl = ksConfig["bootloader"]:$[];
+	map bootloader = $[];
+	if (bl["location"]:"" != "none") {
+	    bootloader["location"] = bl["location"]:"";
+	} else {
+	    bootloader["write_bootloader"] = false;
+	}
+	
+	bootloader["kernel_parameters"] = bl["append"]:"";
+	bootloader["linear"] = (bl["linear"]:0 == 1 || !bl["nolinear"]:0 == 1);
+	bootloader["lba_support"] = (bl["lba32"]:0 == 1);
+	return bootloader;				     
+    }
 }

@@ -5,7 +5,7 @@ use diagnostics;
 
 use strict;
 use Getopt::Long;
-
+use POSIX qw(tmpnam);
 
 y2milestone ("ag_ksimport started");
 
@@ -21,20 +21,143 @@ while ( <STDIN> )
     my ($command, $path, $argument) = ycp::ParseCommand ($_);
     if ($command eq "Read" )
     {
-	y2milestone( "Importing:", $argument );
+	
 
-	my   $ks    =  $argument;
-	my    %result;
+	my   $ks     =  $argument;
+	
+
+ 	my    %result;
 
 	my %partitioning = ();
-	
-	open (KS, "< $ks");
+	my %raid = ();
+	my %networking = ();
+	my @packages = ();
 
+
+
+	open (KS, "< $ks");
+	my $inpre = 0;
+	my $inpost = 0;
+	my $inpackages = 0;
+	my $openedPost = 0;
+	my $openedPre = 0;
+	
 	while (<KS>) {
-	    chop;
-	    if (m/install/) {
+	   
+	    if (!$inpre && !$inpost) {
+		chop;	
+	    } 
+
+	    if ($inpackages && !m/^\%pre/ &&  !m/^\%post/) 
+	    {			
+		my $input = $_;	
+		push (@packages	, $input);
+	    }
+	    elsif ($inpre && !m/^\%pre/ &&!m/^\%packages/) 
+	    {		
+		print PRE $_;
+	    }
+	    elsif (m/^%pre/) 
+	    {		
+		$inpost = 0;
+		$inpre = 1;
+		$inpackages = 0;
+		$openedPre = 1;
+		my $pre_file = tmpnam();
+		open(PRE,"> " . $pre_file);
+		$result{'pre-script'} = $pre_file;
+	    }
+	    elsif ($inpost && !m/^%post/ && !m/^\%packages/) 
+	    {
+		print POST $_;
+	    }
+	    elsif (m/^%post/) 
+	    {
+		my $input = $_;		
+		my $post_file = tmpnam();
+		open(POST,"> " . $post_file);
+		$result{'post-script'} = $post_file;		
+		$openedPost = 1;
+		$inpre = 0;
+		$inpost = 1;
+		$inpackages = 0;
+
+
+		@ARGV = split(/ / , $input);
+		my %h = ();
+		GetOptions (\%h,
+			    'nochroot', 'interpreter' );
+		
+		$result{'post'} = \%h;
+	    }	  
+	    elsif (m/^%packages/) 
+	    {
+		my $input = $_;					
+		$inpackages = 1;
+		$inpre = 0;
+		$inpost = 0;
+		
+		
+	    }	  
+
+  
+	    elsif (m/^install/) 
+	    {
 		$result{'mode'} = "install";
 	    }
+	    elsif (m/^lang/) 
+	    {
+		my @argv = split (/ /);
+		$result{'language'} = $argv[1];
+	    }
+	    elsif (m/^cdrom/) 
+	    {
+		$result{'cdrom'} = 1;
+	    }	 
+	    elsif (m/^zerombr/) 
+	    {
+		my @argv = split (/ /);
+		$result{'zerombr'} = $argv[1];
+	    }
+	    elsif (m/^langsupport/) 
+	    {
+		my @argv = split (/ /);
+		$result{'langsupport'} = $argv[1];
+	    }
+
+	    elsif (m/^keyboard/) 
+	    {
+		my @argv = split (/ /);
+		$result{'keyboard'} = $argv[1];
+	    }
+
+	    elsif (m/^interactive/) 
+	    {		
+		$result{'interactive'} = 1;
+	    }
+
+	    elsif (m/^reboot/) 
+	    {		
+		$result{'reboot'} = 1;
+	    }
+	    elsif (m/^upgrade/) 
+	    {		
+		$result{'upgrade'} = 1;
+	    }
+
+	    elsif (m/^skipx/) 
+	    {		
+		$result{'skipx'} = 1;
+	    }
+	    elsif (m/^text/) 
+	    {		
+		$result{'textmode'} = 1;
+	    }	    
+	    elsif (m/^lilocheck/) 
+	    {		
+		$result{'lilocheck'} = 1;
+	    }
+
 	    elsif (m/^part.*/) {
 		my $part = $_;	
 		
@@ -57,6 +180,20 @@ while ( <STDIN> )
 
 			    );
 		$partitioning{$ARGV[1]} = \%h;
+	    }
+	    elsif (m/^raid\s.*/) 
+	    {
+		y2milestone("in RAID section");
+		my $input = $_;		
+		@ARGV = split(/ / , $input);
+		my %h = ();
+		GetOptions (\%h,
+			    'level=s', 'device=s',
+			    'spares=s', 'fstype=s',
+			    'noformat'
+			    );
+	
+		$raid{$ARGV[1]} = \%h;
 	    }
 	    elsif (m/^rootpw.*/) {
 		my $rootpw = $_;
@@ -84,6 +221,32 @@ while ( <STDIN> )
 		$users{'íscrypted'}= $iscrypted;
 
 		$result{'users'} = \%users;
+	    }
+	    elsif (m/^timezone.*/) {
+		my $input = $_;		
+
+		@ARGV = split(/ / , $input);
+
+		my %h = ();
+		GetOptions (\%h,
+			    'utc'
+			    );
+	
+		my $tz ;
+		my $utc = 0;
+
+		if (!exists($h{'utc'})) {
+		    $tz = $ARGV[1];
+		} else {
+		    $tz = $ARGV[1];
+		    $utc = 1;
+		}
+		my %timezone = ();
+		$timezone{'utc'}= $utc;
+		$timezone{'timezone'}= $tz;
+		
+
+		$result{'timezone'} = \%timezone;
 	    }
 	    elsif (m/^auth.*/ || m/authconfig.*/) 
 	    {
@@ -115,6 +278,16 @@ while ( <STDIN> )
 		
 		$result{'bootloader'} = \%h;
 	    }
+	    elsif  (m/^mouse.*/ ) 
+	    {
+		my $mouse = $_;		
+		@ARGV = split(/ / , $mouse);
+		my %h = ();
+		GetOptions (\%h,
+			    'device=s', 'emulthree' );
+		
+		$result{'mouse'} = \%h;
+	    }
 	    elsif (m/^clearpart.*/) {
 		my $input = $_;		
 		@ARGV = split(/ / , $input);
@@ -135,13 +308,83 @@ while ( <STDIN> )
 			    'nodns', 'device=s', 'hostname=s'
 			    );
 		
-		$result{'network'} = \%h;
+		if (exists($h{'device'})) {
+		    $networking{$h{'device'}} = \%h;
+		}
+		else
+		{
+		    $networking{'eth0'} = \%h;
+		}
+	    }
+	    elsif (m/^nfs.*/) 
+	    {
+		my $input = $_;		
+		@ARGV = split(/ / , $input);
+		my %h = ();
+		GetOptions (\%h,
+			   'server=s', 'dir=s'
+			    );
+		
+		$result{'nfs'} = \%h;
+	    }
+	    elsif (m/^nfs.*/) {
+		my $input = $_;		
+		@ARGV = split(/ / , $input);
+		my %h = ();
+		GetOptions (\%h,
+			   'server=s', 'dir=s'
+			    );
+		
+		$result{'nfs'} = \%h;
+	    }
+	    elsif (m/^hardrive.*/) {
+		my $input = $_;		
+		@ARGV = split(/ / , $input);
+		my %h = ();
+		GetOptions (\%h,
+			   'partition=s', 'dir=s'
+			    );
+		
+		$result{'harddrive'} = \%h;
+	    }
+	    elsif (m/^url.*/) {
+		my $input = $_;		
+		@ARGV = split(/ / , $input);
+		my %h = ();
+		GetOptions (\%h,
+			   'url=s'
+			    );
+		
+		$result{'url'} = \%h;
+	    }
+	    elsif (m/^xconfig.*/) {
+		my $input = $_;		
+		@ARGV = split(/ / , $input);
+		my %h = ();
+		GetOptions (\%h,
+			    'server=s', 'card=s', 'videoram=s',
+			    'monitor=s', 'hsync=s', 'vsync=s',
+			    'resolution=s', 'depth=s', 
+			    'startxonboot', 'noprobe', 'defaultdesktop=s'
+			    );
+		
+		$result{'xconfig'} = \%h;
 	    }	    
 	    
 	}
 	$result{'partitioning'} = \%partitioning;
+	$result{'raid'} = \%raid;
+	$result{'networking'} = \%networking;
+
+	$result{'packages'} = \@packages;
 
 	close KS;
+	if ($openedPre) {
+	    close PRE;
+	}
+	if ($openedPost) {
+	    close POST;
+	}
 	ycp::Return ( \%result );
 
 	
