@@ -179,7 +179,7 @@ name and the contents of the file.."));
 			}
 
 		} until (ret == `next || ret == `back );
-		UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+		Wizard::SetNextButton(`next, Label::FinishButton() );
 		return (symbol) ret;
 	}
 
@@ -227,7 +227,7 @@ and have an httpd.conf configuration file prepared.</p>");
 	Wizard::SetContents(title,
 			dialog_contents(), help, true, true);
 
-	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+	Wizard::SetNextButton(`next, Label::FinishButton() );
 	Wizard::HideAbortButton();
 	string select_msg = _("Select a file from the table first.");
 	any ret = nil;
