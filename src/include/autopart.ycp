@@ -1152,15 +1152,6 @@ $Id$
 		)
 	    {
 		map llg = (map) eval(lg);
-		if( e["exists"]:false )
-		{
-		    llg["gap",gindex,"cylinders"] = 0;
-		}
-		else
-		{
-		    llg["gap",gindex,"cylinders"] = 
-			llg["gap",gindex,"cylinders"]:0 - part["cylinders"]:0;
-		}
 
 		list addl = [ pindex ];
 		
@@ -1175,11 +1166,8 @@ $Id$
 		    cp = cp + size(gg["created_primary"]:[]);
 		});
 
-                
 		boolean ex = false;
-
                 y2milestone("number of created primaries: %1", cp );
-
 	
 		// Extended
 		if( llg["extended_possible"]:false &&
@@ -1231,14 +1219,23 @@ $Id$
 
 		}
 		
-	
-
-		
 		if (!ex)
 		{
 		    llg["gap",gindex,"added"] = 
 			add( llg["gap",gindex,"added"]:[], addl );
 		}
+
+                if (!ex) {
+                    if( e["exists"]:false )
+                    {
+                        llg["gap",gindex,"cylinders"] = 0;
+                    }
+                    else
+                    {
+                        llg["gap",gindex,"cylinders"] = 
+                            llg["gap",gindex,"cylinders"]:0 - part["cylinders"]:0;
+                    }
+                }
 		
 		if( pindex+1 < size(ps) || ex )
 		{
@@ -1268,7 +1265,7 @@ $Id$
      */
     define map normalize_gaps( list ps, map g )
 	``{
-	y2milestone( "gap %1", g );
+	y2milestone( "normalize_gaps: gap %1", g );
 	integer gindex = 0;
 	integer pindex = 0;
 	foreach( map e, g["gap"]:[],
