@@ -175,8 +175,8 @@
      */
     global define void PreProcess() ``{
 
+        boolean first_set = false;
 	AutoTargetMap =  listmap (map drive, AutoPartPlan, ``{
-	    boolean first_set = false;
 	    string device = "";
 	    y2milestone("Working on drive: %1", drive);
 
@@ -228,6 +228,9 @@
 	return;
     }
 
+    /**
+     * Handle /etc/fstab usage
+     */
     boolean handle_fstab()
     {
         import "RootPart";

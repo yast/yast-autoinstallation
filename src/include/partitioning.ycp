@@ -43,6 +43,20 @@
         return filesystems[fs]:`reiser;
     }
 
+    global boolean CheckMountsSize() {
+	// Get new partitions as specified in control file
+	list<map<string, any> > TmpAutoPartitions =  AutoTargetMap[TargetDevice, "partitions"]:[];
+
+	list<string> mounts = maplist (map<string, any> pentry,
+				      TmpAutoPartitions ,
+				      ``{
+                                      return pentry["mount"]:"";
+                                      }
+				      );
+        mounts = filter(string m , mounts, ``(m!=""));
+        //contains(FileSystems::system_m_points)
+        return true;
+    }
 
     /**
      * CheckDeleteTag
@@ -1140,7 +1154,9 @@ exist on this system."));
 To install Linux, select more partitions to remove.");
 		    y2milestone(reason);
 		}
-		else if (size_of_region (selected , bytes_per_unit) < minimal_size  )
+		// else if (size_of_region (selected , bytes_per_unit) < minimal_size )
+                // dont check for sizes, it is done somewhere else. (#36459)
+		else if (false)
 		{
 		    y2milestone("selected: %1", selected);
 		    // consistency check: a condition for the installation is not fullfilled

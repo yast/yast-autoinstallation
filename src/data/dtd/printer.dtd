@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT Uri (#PCDATA)>
 <!ELEMENT config (#PCDATA)>
 <!ELEMENT create_remote_queue (#PCDATA)>
 <!ATTLIST create_remote_queue
@@ -15,7 +14,6 @@
 >
 <!ELEMENT info (#PCDATA)>
 <!ELEMENT job-sheets (#PCDATA)>
-<!ELEMENT location (#PCDATA)>
 <!ELEMENT lprng-state (#PCDATA)>
 <!ELEMENT name (#PCDATA)>
 <!ELEMENT ownppd (#PCDATA)>
@@ -23,17 +21,26 @@
 <!ATTLIST printcap
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT printcap_entry (Uri?, config?, create_remote_queue?, cups-state, device?, device_ieee?, ff, info, location, lprng-state, name, options?, printers?, ownppd?, raw, type, uri?, vendor?, vendor_ieee?)>
-<!ELEMENT printer (#PCDATA | default | printcap)*>
+<!ENTITY % y2_printcap_entry "accepting|allowusers|bannerend|bannerstart|denyusers|info|location|manufacturer|model|name|nick|options|ppd_options|raw|state|uri" >
+<!ELEMENT location (#PCDATA)>
+
+<!ELEMENT printcap_entry (%y2_printcap_entry;)>
+<!ELEMENT printer (#PCDATA | default | printcap| cups_installation | server_hostname | spooler )*>
 <!ELEMENT printers (printer+)>
 <!ATTLIST printers
-	config:type CDATA #REQUIRED
+	config:type CDATA #R
+>
+<!ELEMENT cups_installation (#PCDATA)>
+<!ATTLIST cups_installation
+	config:type CDATA #FIXED "symbol"
 >
 <!ELEMENT raw (#PCDATA)>
 <!ATTLIST raw
 	config:type CDATA #REQUIRED
 >
 <!ELEMENT type (#PCDATA)>
+<!ELEMENT spooler (#PCDATA)>
+<!ELEMENT server_hostname (#PCDATA)>
 <!ELEMENT uri (#PCDATA)>
 <!ELEMENT vendor (#PCDATA)>
 <!ELEMENT vendor_ieee (#PCDATA)>
