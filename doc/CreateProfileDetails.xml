@@ -325,8 +325,8 @@
 	  By default, &autoyast2; will create an extended partition and will add all
 	  new partitions as logical devices. It is possible however to
 	  instruct &autoyast2; to create a certain partition as a primary
-	  partition or as extended partition. Additionally, it is possible to
-	  specify the size of  a partition using sectors rather than sizes in Mbytes.
+	  or as extended partition. Additionally, it is possible to
+	  specify the size of a partition using sectors instead of size in Mbytes.
 	</para>
 	<para>
 	  The properties <emphasis>partition_id</emphasis> and
@@ -1071,111 +1071,89 @@ cd /usr/local/CDs/8.2/suse
 	
       </section>
 
-      <section id="CreateProfile.Network">
+    <section id="CreateProfile.Network">
+      <title>
+	Network configuration
+      </title>
+
+      <section id="Configuration.Network.Devices">
 	<title>
-	  Network configuration
+	  Network devices, DNS and Routing.
 	</title>
+	<para>
+	  Network configuration is used to connect a single  &company-suse;  Linux
+	  workstation to an Ethernet-based LAN or to configure dial-up
+	  connection. More complex configuration (multiple network cards,
+	  routing, etc.) is also provided. With this module it's possible to
+	  configure and setup Ethernet Controllers and Token-Ring Controllers.
+	</para>
+	<para>
+	  To configure network settings and activate networking automatically,
+	  one global resource is used to store the whole network configuration.
+	</para>
+	
+	&example.network;
+      </section>
 
-	<section id="Configuration.Network.Devices">
-	  <title>
-	    Network devices, DNS and Routing.
-	  </title>
-	  <para>
-	    Network configuration is used to connect a single  &company-suse;  Linux
-	    workstation to an Ethernet-based LAN or to configure dial-up
-	    connection. More complex configuration (multiple network cards,
-	    routing, etc.) is now also provided. With this module it's possible to
-	    configure (set-up) Ethernet Controllers and Token-Ring Controllers.
-	  </para>
-	  <para>
-	    To configure network settings and activate networking automatically,
-	    one global resource is  used to store the whole network configuration.
-	  </para>
-	  &example.network;
-	</section>
+      <section id="Configuration.Network.Proxy">
+	<title>
+	  Proxy
+	</title>
+	<para>
+	  Configure your Internet proxy (caching) settings using this
+	  resource.
+	</para>
+	<para>
+	  <emphasis>HTTP proxy</emphasis> is the name of the proxy server for your access to the world wide web (WWW).
+	  <emphasis>FTP proxy</emphasis> is the name of the proxy server for your access to the file transfer services (FTP).
+	  <emphasis>No proxy</emphasis> domains is a list of domains for
+	  which the requests should be done directly without caching.
+	</para>
+	<para>
+	  If you are using a proxy server with authorization, fill in Proxy user name and Proxy password.
+	</para>
+	&example.proxy;
+      </section>
+      <section id="Configuration.Network.Inetd">
+	<title>(X)Inetd </title>
+	<para>First, an example:</para>
+	
+	&example.inetd;
 
-	<section id="Configuration.Network.Proxy">
-	  <title>
-	    Proxy
-	  </title>
-	  <para>
-	    Configure your Internet proxy (caching) settings using this
-	    resource.
-	    </para>
-	  <para>
-	    <emphasis>HTTP proxy</emphasis> is the name of the proxy server for your access to the world wide web (WWW).
-	    <emphasis>FTP proxy</emphasis> is the name of the proxy server for your access to the file transfer services (FTP).
-	    <emphasis>No proxy</emphasis> domains is a list of domains for
-	    which the requests should be done directly without caching.
-	    </para>
-	  <para>
-	    If you are using a proxy server with authorization, fill in Proxy user name and Proxy password.
-	  </para>
-	  &example.proxy;
-	</section>
-	<section id="Configuration.Network.Inetd">
-		<title>(X)Inetd </title>
-		<para>First, an example:</para>
-		
-	<example>
-	  <title>
-		Inetd Example
-	  </title>
-	  <screen>
-<![CDATA[
-
-<profile>
- <configure>
-  ...
-  <inetd>
-    <netd_service config:type="symbol">xinetd</netd_service>
-    <netd_status config:type="integer">0</netd_status>
-    <netd_conf config:type="list">
-      <conf>
-	<script>imap</script>
-	<service>pop3</service>
-	<enabled config:type="boolean">true</enabled>
-      </conf>
-      <conf>
-	<server>in.ftpd</server>
-	<server_args>-A</server_args>
-	<enabled config:type="boolean">true</enabled>
-      </conf>
-      <conf>
-	<service>daytime</service>
-	<protocol>tcp</protocol>
-      </conf>
-      ....
-      <conf>...</conf>
-    </netd_conf>
-  </inetd>
-  ...
- </configure>
-</profile>
-]]>
-	  </screen>
-	</example>
-<para>The profile has elements to specify which superserver should be used (netd_service), whether it should be enabled (netd_status) and how the services should be configured (netd_conf).
-</para>
-<para>A service description element has conceptually two parts: key and non-key. When writing the configuration, services are matched using the key fields and to the matching service, non-key fields are applied. If no service matches, it is created. If more services match, a warning is reported. The key fields are script, service, protocol and server.
-</para>
-<para>Service and protocol are matched literally. script is the base name of the config file: usually a file in /etc/xinetd.d, eg. "echo-udp", or "inetd.conf". For compatibility with 8.2, server is matched more loosely: if it is /usr/sbin/tcpd, the real server name is taken from server_args. After that, the basename of the first whitespace-sparated word is taken and these values are compared.
-</para>
-<para>FIXEME</para>
+	<para>
+	  The profile has elements to specify which superserver should be
+	  used (netd_service), whether it should be enabled (netd_status) and
+	  how the services should be configured (netd_conf).
+	</para>
+	<para>
+	  A service description element has conceptually two parts: key and
+	  non-key. When writing the configuration, services are matched using
+	  the key fields and to the matching service, non-key fields are
+	  applied. If no service matches, it is created. If more services
+	  match, a warning is reported. The key fields are script, service,
+	  protocol and server.
+	</para>
+	<para>
+	  Service and protocol are matched literally. script is the base name
+	  of the config file: usually a file in /etc/xinetd.d, eg. "echo-udp",
+	  or "inetd.conf". For compatibility with 8.2, server is matched more
+	  loosely: if it is /usr/sbin/tcpd, the real server name is taken from
+	  server_args. After that, the basename of the first
+	  whitespace-sparated word is taken and these values are compared.
+	</para>
+	<para>FIXEME</para>
 
 	</section>
 	<section id="Configuration.Network.NIS">
-	  <title>
-	    NIS
-	  </title>
+	  <title>NIS</title>
 	  <para>
-	    The target machine can be set up as a
-	    <emphasis>NIS client</emphasis>. You can specify multiple servers
-	    by using the <emphasis>list</emphasis> attribute (config:type="list").
+	  Using the <emphasis>nis</emphasis> resource, you can configure the target machine as a <emphasis>NIS
+	    client</emphasis>. The following example shows a detailed
+	  configuration using multiple domains.
 	  </para>
 	  &example.nis;
 	</section>
-	<section id='Configuration.Network.NISplus'>
+	<section id="Configuration.Network.NISplus">
 	  <title>
 	    NIS+
 	  </title>
@@ -1192,9 +1170,9 @@ cd /usr/local/CDs/8.2/suse
 	    &ldap;  client
 	  </title>
 	  <para>
-	    The installed machine can be set up as
+	    The installed machine can be set up as an
 	    <emphasis>> &ldap;  client</emphasis> to authenticate  users with an
-	    Open &ldap;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
+	  OpenLDAP;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
 	    and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
 	  </para>
 	  <para>

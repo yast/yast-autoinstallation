@@ -6,11 +6,14 @@
 <![CDATA[
 <configure>
 ...
-         <ldap>
-             <start_ldapclient>false</start_ldapclient>
-             <ldap_domain>domain</ldap_domain>
-             <ldap_address>192.168.1.1</ldap_domain>
-         </ldap>
+    <ldap>
+      <ldap_domain> dc=mydomain,dc=com</ldap_domain>
+      <ldap_server>10.10.0.1</ldap_server>
+      <ldap_tls config:type="boolean">true</ldap_tls>
+      <ldap_v2 config:type="boolean">true</ldap_v2>
+      <pam_password>crypt</pam_password>
+      <start_ldap config:type="boolean">true</start_ldap>
+    </ldap>
 ...
 </configure>
 ]]>

@@ -5,17 +5,78 @@
 <configure>
 ...
     <mail>
-        <mta>sendmail</mta>
-        <connection_type>permanent</connection_type>
-        <local_domains config:type="list"></local_domains>
-        <outgoing_mail_server></outgoing_mail_server>
-        <from_header ></from_header>
-        <masquerade_other_domains config:type="list"></masquerade_other_domains>
-        <masquerade_users config:type="list"></masquerade_users>
-        <fetchmail config:type="list"></fetchmail>
-        <aliases config:type="list"></aliases>
-        <merge_aliases></merge_aliases>
-        <virtual_users config:type="list"></virtual_users>
+      <aliases config:type="list">
+        <alias>
+          <alias>root</alias>
+          <comment></comment>
+          <destinations>foo</destinations>
+        </alias>
+        <alias>
+          <alias>test</alias>
+          <comment></comment>
+          <destinations>foo</destinations>
+        </alias>
+      </aliases>
+      <connection_type config:type="symbol">permanent</connection_type>
+      <fetchmail config:type="list">
+        <fetchmail_entry>
+          <local_user>foo</local_user>
+          <password>bar</password>
+          <protocol>POP3</protocol>
+          <remote_user>foo</remote_user>
+          <server>pop.foo.com</server>
+        </fetchmail_entry>
+        <fetchmail_entry>
+          <local_user>test</local_user>
+          <password>bar</password>
+          <protocol>IMAP</protocol>
+          <remote_user>test</remote_user>
+          <server>blah.com</server>
+        </fetchmail_entry>
+      </fetchmail>
+      <from_header>test.com</from_header>
+      <listen_remote config:type="boolean">true</listen_remote>
+      <local_domains config:type="list">
+        <domains>test1.com</domains>
+      </local_domains>
+      <masquerade_other_domains config:type="list">
+        <domain>blah.com</domain>
+      </masquerade_other_domains>
+      <masquerade_users config:type="list">
+        <masquerade_user>
+          <address>joe@test.com</address>
+          <comment></comment>
+          <user>joeuser</user>
+        </masquerade_user>
+        <masquerade_user>
+          <address>bar@test.com</address>
+          <comment></comment>
+          <user>foo</user>
+        </masquerade_user>
+      </masquerade_users>
+      <mta config:type="symbol">postfix</mta>
+      <outgoing_mail_server>test.com</outgoing_mail_server>
+      <postfix_mda config:type="symbol">local</postfix_mda>
+      <smtp_auth config:type="list">
+        <listentry>
+          <password>bar</password>
+          <server>test.com</server>
+          <user>foo</user>
+        </listentry>
+      </smtp_auth>
+      <use_amavis config:type="boolean">true</use_amavis>
+      <virtual_users config:type="list">
+        <virtual_user>
+          <alias>test.com</alias>
+          <comment></comment>
+          <destinations>foo.com</destinations>
+        </virtual_user>
+        <virtual_user>
+          <alias>geek.com</alias>
+          <comment></comment>
+          <destinations>bar.com</destinations>
+        </virtual_user>
+      </virtual_users>
     </mail>
 ...
 </configure>
