@@ -170,13 +170,13 @@
                         foreach( string res, (list<string>)splitstring(tomerge, ",") , ``{
                             if ( MergeTypes[i]:"map" == "map")
                             {
-                                Configure[res] = lookup( (map)
-                                    resource_data, "res", $[]);
+                                map<string,any> rd = (map<string,any>)resource_data;
+                                Configure[res] = rd[res]:$[];
                             }
                             else
                             {
-                                Configure[res] = lookup( (map)
-                                    resource_data, res, [] );
+                                map<string,any> rd =(map<string,any>)resource_data;
+                                Configure[res] = rd[res]:[];
                             }
                             i = i + 1;
                         });

@@ -19,7 +19,8 @@
 
 	boolean use_utf8 = true;		// utf8 is default
 
-	if (!lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
+        map ui = UI::GetDisplayInfo();
+	if (!ui["HasFullUtf8Support"]:true)
 	{
 	    use_utf8 = false;		// fallback to ascii
 	}
