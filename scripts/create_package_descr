@@ -3,7 +3,7 @@
 use File::stat;
 use FileHandle;
 use strict 'refs';
-#use RPM;
+#use RPMQ;		# FIXME: a local copy of RPM.pm is here.
 
 local (@DATADIRS,@LANGUAGES,%SEEN_PACKAGE,%IGNORE_PACKAGE);
 my %lang_alias = ("czech"=>"cs","english"=>"en","french"=>"fr","german"=>"de","italian"=>"it","spanish"=>"es","hungarian"=>"hu" );
@@ -34,6 +34,10 @@ while ( $arg = shift ( @ARGV ) ) {
 	 print "	[-i IGNORE_DIR ] [-I IGNORE_FILE ]\n";
 	 print "	[-l LANG1 [-l LANG2 [... ] ]    (default english)\n";
 	 print "	[-o OUTPUT_DIR ]                (default cwd/setup/descr)\n";
+	 print "	[-Z ]                           (add_licenses)\n";
+	 print "	[-S ]                           (ignore_sources)\n";
+	 print "	[-P ]                           (prefer_yastdescr)\n";
+	 print "	[-L ]                           (ignore_symlinks)\n";
 	 die ("unknown parameter\n");
   }
 }
@@ -182,7 +186,9 @@ foreach $datapath (@DATADIRS) {
      foreach $xprov (split('\s', $xprovlist{"$rpm_name.$file_arch"} )) {
 	push (@{$res{1047}},$xprov);
      }
-   } elsif ( $xprovlist{$rpm_name} ) {
+   }
+   # should be else if, but merging both is needed right now
+   if ( $xprovlist{$rpm_name} ) {
      foreach $xprov (split('\s', $xprovlist{$rpm_name} )) {
 	push (@{$res{1047}},$xprov);
      }
