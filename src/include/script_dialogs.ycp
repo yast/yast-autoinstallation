@@ -21,7 +21,7 @@
     /**
      * @return  script configuration dialog
      */
-    global define string dialog_contents()
+    global define string script_dialog_contents()
 	``{
 	list allscripts = maplist(`s, AutoinstScripts::merged,
 				  ``{
@@ -65,13 +65,16 @@ your needs and take control in different stages of the installation.</p>
 
 	string title = _("User Script Management");
 	Wizard::SetContents(title,
-			    dialog_contents(), help, true, true);
+			    script_dialog_contents(), help, true, true);
 
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
 
-	    if (ret == `new) {
+	    if (ret == `new)
+	    {
 		Wizard::CreateDialog();
 		ScriptDialog(ret , "" );
 		Wizard::CloseDialog();
@@ -106,10 +109,10 @@ your needs and take control in different stages of the installation.</p>
 		}
 	    }
 	    Wizard::SetContents(title,
-			    dialog_contents(), help, true, true);
+			    script_dialog_contents(), help, true, true);
 
 
-	} until (ret == `accept || ret == `cancel  );
+	} until (ret == `next || ret == `back  );
 
 	return ret;
     }
@@ -221,7 +224,7 @@ name and the content of the script.
 	    else if (ret == `loadsource)
 	    {
 		string filename = PopupFile( AutoinstConfig::Repository);
-		if (filename!=nil)
+		if (filename != "")
 		{
 		    string source = SCR::Read(.target.string, filename);
 		    UI::ChangeWidget(`id(`source), `Value, source);

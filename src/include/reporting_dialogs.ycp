@@ -1,6 +1,12 @@
+/**
+ * File:	include/autoinstall/report_dialogs.ycp
+ * Summary:	Handle reporting behaviour
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
 {
-
-
 
 global define symbol ReportingDialog()
     ``{
@@ -84,9 +90,7 @@ Warnings can be skipped in some places, but should not be ignored.</p>
 	}
     } until (ret == `next || ret == `back);
 
-    Report::message_settings =  msg;
-    Report::error_settings =  err;
-    Report::warning_settings =  war;
+	Report::Import($["messages":msg, "errors":err, "warnings":war]);
     return ret;
 }
 

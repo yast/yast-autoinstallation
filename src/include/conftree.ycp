@@ -443,7 +443,7 @@
 			
 			string filename = PopupFile( AutoinstConfig::Repository);
 			
-			if (filename!=nil)
+			if (filename != "")
 			{			
 			    y2milestone("file: %1", filename);
 			    AutoinstConfig::currentFile = filename;
@@ -460,8 +460,8 @@
 			include "autoinstall/imports.ycp";
 			string head = _("Import Kickstart File");
 			string filename = PopupFile( AutoinstConfig::Repository);
-			// string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Import Kickstart File") );
-			if ( filename!=nil )
+			
+			if ( filename != "" )
 			{
 			    map ksConfig = readKS(filename);
 			    Profile::Import(ks2ay(ksConfig));
@@ -478,7 +478,7 @@ were imported correctly.
 			{
 
 			    string filename = SaveFileAs( AutoinstConfig::Repository);
-			    if (filename != nil)
+			    if (filename !=  "" )
 			    {
 				AutoinstConfig::currentFile = filename;
 			  
@@ -506,7 +506,9 @@ were imported correctly.
 		    {
 			
 			string filename = SaveFileAs(AutoinstConfig::Repository);
-			if ( filename != nil ) {
+			if ( filename != "" )
+			{
+			    y2milestone("filename: %1", filename );
 			    AutoinstConfig::currentFile = filename;
 			    if ( Profile::Save( AutoinstConfig::currentFile ))
 			    {

@@ -78,15 +78,14 @@
 	Install = $[];
 	Configure = $[];
 	current = $[];
-	y2milestone("FLAT: %1", Flat);
+	y2debug("FLAT: %1", Flat);
 	foreach(`p,`d, Y2ModuleConfig::ModuleMap, ``{
 
 	    // Set resource name, if not using default value
 	    string resource = d["AutoinstResource"]:p;
-
-	    if ( size(Flat[resource]:$[]) != 0)
+	    string tomerge = d["AutoinstMerge"]:"";
+	    if ( size(Flat[resource]:$[]) != 0 || tomerge != "")
 	    {
-
 		if (d["AutoinstPath"]:"" == "install")
 		{
 		    if ( d["AutoinstDataType"]:"map" == "map" )
@@ -100,16 +99,16 @@
 		}
 		else
 		{
-		    string tomerge = d["AutoinstMerge"]:"";
+		    
 		    string tomergetypes = d["AutoinstMergeTypes"]:"";
 		    list MergeTypes = splitstring(tomergetypes, ",");
 		    if ( size(tomerge) > 0 )
 		    {
 			integer i = 0;
 			foreach( string res, splitstring(tomerge, ",") , ``{
-			    if ( MergeTypes[i]:"map" == "map")
+			    if ( MergeTypes[i]:"map" == "map" && Flat[res]:$[] != $[])
 				Configure[res] = Flat[res]:$[];
-			    else
+			    else if (  Flat[res]:[] != [] )
 				Configure[res] = Flat[res]:[];
 			    i = i + 1;
 			});
@@ -183,7 +182,7 @@
     global define boolean Save (string file)
     ``{
 	Prepare();
-	y2milestone("Saving data (%1) to XML file %2", current, file);
+	y2debug("Saving data (%1) to XML file %2", current, file);
 
 	if ( find( file, "/") == -1 )
 	{

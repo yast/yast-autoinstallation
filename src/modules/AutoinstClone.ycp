@@ -303,20 +303,24 @@
 	 if (size(tomerge) > 0 )
 	 {
 	     list MergeTypes = splitstring(tomergetypes, ",");
-	     list Merge = splitstring(tomerge, ",");
-	     integer i = 0;
+	     list Merge = splitstring(tomerge, ",");	     
 
 	     boolean readret = Call::Function(auto , ["Read", $[] ]);
-	  
-	     
-	     foreach ( string res, Merge, ``{
-		 if ( MergeTypes[i]:"map" == "map") 
-		     Profile::Flat[res] =    Call::Function(auto, ["Export", $[] ]) ;
+	     any result = Call::Function(auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
+	     y2milestone("export result: %1", result);
+	     integer i = 0;
+	     foreach( string res, splitstring(tomerge, ",") , ``{
+		 if ( MergeTypes[i]:"map" == "map")
+		 {
+		     Profile::Flat[res] = result[res]:$[];
+		     
+		 }
 		 else
-		     Profile::Flat[res] = Call::Function(auto, ["Export", [] ]) ;
+		     Profile::Flat[res] = result[res]:[];
+
+		 y2debug("flat: %1", Profile::Flat);
 		 i = i + 1;
-	     });
-	     
+	     });	     	   	     
 	 }
 	 else
 	 {
@@ -382,6 +386,7 @@
 	}
 
 	Profile::Flat["general"] = General();
+	y2debug("b4 prepare: %1", Profile::Flat );
 	Profile::Prepare();
 	return;
     }
