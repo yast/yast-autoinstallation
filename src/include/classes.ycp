@@ -314,7 +314,7 @@ to which class it should belong</P>");
 	term contents =	 
 	    `VBox(
 		  `VWeight(40, `Table( `id(`table), `opt (`notify, `immediate),
-				       `header("Class Name", "Order", "Classes"),			 
+				       `header("Class Name", "Order", "Configurations"),
 				       classes			 
 				       )
 			   ),
@@ -565,9 +565,9 @@ to be able to delete something."));
 
 	if (size(profiles)>0) {
 	    foreach(`k,`v, profiles,``{
-		Combo=add(Combo,		 
+		Combo=add(Combo,	 
 			  `Left(
-				`ComboBox(`id(k),`opt(`hstretch),  k,
+				`ComboBox(`id(k),`opt(`hstretch,`autoShortcut),  k,
 					  v
 					  )
 				)
@@ -668,7 +668,8 @@ can load the resulting file into memory for further processing
 	    
 	    
 	    symbol base = UI::QueryWidget(`id(`rbg), `CurrentButton);
-	   
+
+	    integer n = 0;
 	    if (ret == `merge)
 	    {		
 		UI::ChangeWidget(`id(`next), `Enabled, true);
@@ -676,7 +677,11 @@ can load the resulting file into memory for further processing
 		foreach(map prof, AIClass::Profiles,``{
 		    
 		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
+		    
 		    if (selected != nil) {
+			if (selected != "none") {
+			    n = n +1;
+			}
 			selected_profiles = add(selected_profiles,
 					       $[
 						 "order": GetClassOrder(prof["class"]:""),
@@ -685,7 +690,19 @@ can load the resulting file into memory for further processing
 					       ]
 					       );
 		    }
+		    
 		});
+		
+		if (n ==  0) {
+		    integer min = 1;
+		    if (base == `empty)
+			min = 2;
+		    
+		    UI::ErrorPopup(sformat(_("You have to select at least %1 class configurations
+to be able to perform a merge"), min));
+		    continue;
+		}
+		
 		list sorted_profiles =  sort(`x,`y, filter(`c, toset(selected_profiles),``(c["profile"]:""!= "none")),
 					    ``(x["order"]:0<=y["order"]:0)					
 					    );
@@ -698,8 +715,11 @@ can load the resulting file into memory for further processing
 		ret = `next;
 	    }	 
 	} until  (ret == `next || ret ==`back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)) );
-
-	if (size(profiles) == 0 || next == `save)
+	
+	if (ret == `abort) {
+	    return ret;
+	}
+	else if (size(profiles) == 0 || next == `save)
 	{
 	    return `profiles;
 	}

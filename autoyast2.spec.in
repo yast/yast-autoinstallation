@@ -30,16 +30,29 @@ Requires:	yast2-xml yast2-core
 
 @INSTALL@
 
+# Installation files
 install -d $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
 install -d $RPM_BUILD_ROOT/var/adm/autoinstall/logs
 install -d $RPM_BUILD_ROOT/var/adm/autoinstall/files
 
+# Repository
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/templates
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/classes
+
+
 @CLEAN@
+
+%post
+%{fillup_only -n autoinstall}
 
 
 %files
 %defattr(-,root,root)
 %dir @yncludedir@/autoinstall
+%dir /var/lib/autoinstall/repository
+%dir /var/lib/autoinstall/classes
+
 
 @yncludedir@/autoinstall/auth_dialogs.ycp
 @yncludedir@/autoinstall/bootloader_dialogs.ycp
@@ -88,12 +101,14 @@ install -d $RPM_BUILD_ROOT/var/adm/autoinstall/files
 @agentdir@/ag_yast1sel
 
 
-@yncludedir@/autoinstall/profile.dtd
-%dir /var/adm/autoinstall/
-%dir /var/adm/autoinstall/scripts
-%dir /var/adm/autoinstall/logs
-%dir /var/adm/autoinstall/files
+# DTD files
+@yncludedir@/autoinstall/*.dtd
 %doc @docdir@
+
+# additional files
+/usr/share/autoinstall/*
+/var/adm/fillup-templates/sysconfig.autoinstall
+
 
 %files installation
 %defattr(-,root,root)
@@ -111,4 +126,10 @@ install -d $RPM_BUILD_ROOT/var/adm/autoinstall/files
 @clientdir@/autoinst_setup.ycp
 @yncludedir@/autoinstall/xml.ycp
 
+
+
+%dir /var/adm/autoinstall/
+%dir /var/adm/autoinstall/scripts
+%dir /var/adm/autoinstall/logs
+%dir /var/adm/autoinstall/files
 

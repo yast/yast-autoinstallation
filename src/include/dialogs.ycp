@@ -164,8 +164,20 @@ contains all the packages.</p>");
      * Generate control file list
      * @return file list
      */
-    global define FileList() ``{
-	list files = SCR::Read(.target.dir, AIConfig::Repository);
+    global define FileList(symbol type) ``{
+	list files = [];
+	string tabHeader = "";
+	string caption = "";
+	if (type == `ready) {
+	    files = SCR::Read(.target.dir, AIConfig::Repository);
+	    tabHeader = _("Control file");
+	    caption = _("Current Profile: ");
+	}
+	else {
+	    files = SCR::Read(.target.dir, AIConfig::TemplateRepository);
+	    tabHeader = _("Control file Template");
+	    caption = _("Current Template: ");
+	}
 
 	list xmlfiles = maplist(string file, files, ``{
 	    return (`item(`id(file), file));
@@ -173,16 +185,24 @@ contains all the packages.</p>");
 	term contents =
 	    `VBox(
 		  `Left(`HBox(
-			      `Label(_("Current Profile: ")),
+			      `Label(caption),
 			      `Label(`id(`loaded), `opt(`outputField),  _("None                                                   "))
 			      )
 			),
 		  `VSpacing(0.5),
-		  `Table(`id(`table), `opt(`notify,`immediate), `header("Profile"),
+		  `Table(`id(`table), `opt(`notify,`immediate), `header(tabHeader),
 			 xmlfiles
 			 ),
 
 		  `VSpacing(0.5),
+		  `HBox(
+			`RadioButtonGroup(`id(`type),`opt(`notify),
+					  `HBox(
+						`RadioButton(`id(`ready),`opt(`notify), _("Installable Confi&gurations"), (type == `ready)),
+						`RadioButton(`id(`templates),`opt(`notify), _("Tem&plates"),  (type == `templates))
+						)
+					  )
+			),
 		  `VBox(
 			`HBox(
 			      `PushButton(`id(`new), _("Ne&w")),			      
@@ -294,21 +314,22 @@ contains all the packages.</p>");
      */   
     global define symbol FileDialog()
 	``{
-	
+	string title = _("File Management");
 	string help = _("
 <P>Please select one of the listed Profiles and press <b>Open</b>
 to load it or create a new Profile using the
 <b>New</b> button.</P>");
 
 	
-	Wizard::SetContents(_("File Management"),
-			    FileList(), help, true, true);
+	Wizard::SetContents(title,
+			    FileList(`ready), help, true, true);
 	
 	
-	
+	symbol type = `ready;
 	any ret = "";	
 	repeat {
 	    any selected_file = UI::QueryWidget(`id(`table), `CurrentItem);
+	    type =  UI::QueryWidget(`id(`type), `CurrentButton);
 	    
 	    if (selected_file == nil)  {
 		UI::ChangeWidget(`id(`open), `Enabled, false);
@@ -329,9 +350,17 @@ to load it or create a new Profile using the
 	    else 
 	    {
 		UI::ChangeWidget(`id(`next), `Enabled, false);
+	    }	    
+
+	    if (type == `templates) {
+		UI::ChangeWidget(`id(`new), `Enabled, false);
+		
 	    }
 	    
-	    ret = UI::UserInput();	 	    
+	    ret = UI::UserInput();
+	 
+	  
+	    
 	    
 	    if (ret == `new)
 	    {
@@ -353,10 +382,17 @@ to load it or create a new Profile using the
 	    {
 		if (selected_file!=nil) {
 		    AIConfig::currentFile=selected_file;
-		    
-		    AIConfig::ReadProfile(sformat("%1/%2", AIConfig::Repository,selected_file));
+		  
+		    if (type == `templates)
+		    {
+			AIConfig::ReadProfile(sformat("%1/%2", AIConfig::TemplateRepository,selected_file));
+		    }
+		    else
+		    {
+			AIConfig::ReadProfile(sformat("%1/%2", AIConfig::Repository,selected_file));
+		    }
 		}		
-		UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);	
+		UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);		
 	    }
 	    else if (ret == `delete)
 	    {
@@ -364,20 +400,36 @@ to load it or create a new Profile using the
 		    UI::WarningPopup(_("Please select a file first."));
 		    continue;
 		}
-		SCR::Execute(.target.bash, "rm " + AIConfig::Repository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
-		Wizard::SetContents(_("File Management"),
-				    FileList(), help, true, true);	
+		if (type == `template)
+		    SCR::Execute(.target.bash, "rm " + AIConfig::TemplateRepository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
+		else
+		    SCR::Execute(.target.bash, "rm " + AIConfig::Repository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
+		
+		Wizard::SetContents(title,
+				    FileList(type), help, true, true);	
 	    }
-	    else if (ret == `help)
-	    {		
-		UI::LongTextPopup (_("Help"), `RichText (helpTexts("file")), 50, 15);		
+	    if (UI::QueryWidget(`id(`type), `CurrentButton) != type) {
+		if ( UI::QueryWidget(`id(`type), `CurrentButton) == `ready )
+		{
+		    Wizard::SetContents(title,
+					FileList(`ready), help, true, true);
+		
+		}
+		else if  (UI::QueryWidget(`id(`type), `CurrentButton) == `templates )
+		{
+		    Wizard::SetContents(title,
+					FileList(`templates), help, true, true);
+		    
+		}
 	    }
 	     
 	} until (ret == `next ||
 		 ret == `open || 
 		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));		
-
-	return ret;
+	if (type == `templates && ret == `next)
+	    return `merge;
+	else
+	    return ret;
     }
 
     /**
@@ -427,8 +479,20 @@ consult the online documentation</p>");
 	    
 		if (ret == `saveprofile || ret == `saveas)
 		{
+		    if (AIConfig::isTemplate) {
+			UI::MessagePopup(_("You are saving a control file with configured classes.
+This file will be saved in the templates directory."));
+			
+		    }
+		    
 		    if (ret == `saveas) {
-			string filename=SaveFileAs(AIConfig::Repository );
+			string filename = "";
+			if (!AIConfig::isTemplate) {
+			    filename = SaveFileAs(AIConfig::Repository );
+			} else {
+			     filename = SaveFileAs(AIConfig::TemplateRepository );
+			}
+			
 			y2debug("file name: %1", filename);
 			if (filename == "")
 			    continue;
