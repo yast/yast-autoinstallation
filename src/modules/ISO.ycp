@@ -60,7 +60,7 @@
      **/
     global define void ISO()
 	``{
-	tmpDir = AutoinstConfig::tmpDir;	
+	tmpDir = AutoinstConfig::tmpDir;
 	return;
     }
 
@@ -70,12 +70,12 @@
      */
     define boolean createSkelDir()
 	``{
-	
+
 	skeletonDir = tmpDir + "/iso_skeleton";
-	return SCR::Execute(.target.mkdir, skeletonDir);	
+	return SCR::Execute(.target.mkdir, skeletonDir);
     }
 
-    
+
     /**
      * initialize source
      */
@@ -92,8 +92,8 @@ a source, make sure it is enabled.
 	theSources = Pkg::SourceStartCache (false);
 	y2milestone("sources: %1", theSources);
 	if (size (theSources) > 0)
-	{	    
-	    foreach (integer source, theSources, ``{		
+	{
+	    foreach (integer source, theSources, ``{
 		map sdata = Pkg::SourceMediaData(source);
 		y2milestone("Source Data %1", sdata);
 		theSource = source;
@@ -106,9 +106,9 @@ a source, make sure it is enabled.
 	}
 
 
-	sourceData	= 	Pkg::SourceGeneralData(theSource);
-	productData	= 	Pkg::SourceProductData(theSource);
-	mediaData	= 	Pkg::SourceMediaData(theSource);
+	sourceData	=	Pkg::SourceGeneralData(theSource);
+	productData	=	Pkg::SourceProductData(theSource);
+	mediaData	=	Pkg::SourceMediaData(theSource);
 	y2milestone("Product Data: %1", productData);
 	y2milestone("Source Data: %1",  sourceData);
 	y2milestone("Media Data: %1", mediaData);
@@ -118,10 +118,10 @@ a source, make sure it is enabled.
 	string url = sourceData["url"]:"";
 	map tok = URL::Parse(url);
 	sourceDir = tok["path"]:"";
-	
+
 	y2milestone("Source dir %1", sourceDir);
 
-	
+
 	if (mediaData != nil && productData != nil && sourceData != nil && sourceDir != "")
 	    return true;
 	else
@@ -208,32 +208,32 @@ a source, make sure it is enabled.
      *
      */
     global define createISOSkeleton () ``{
-	
+
 	list commands = [];
 	integer ret = 0;
 	boolean success = true;
-	
+
 	success = createSkelDir();
 	if (!success)
 	    return false;
 
 	string descrDir = productData["descrdir"]:"suse/setup/descr";
 	string dataDir =   productData["datadir"]:"./suse";
-	
+
 	y2milestone("creating skeleton in %1", skeletonDir);
 	success = SCR::Execute(.target.mkdir, sformat("%1/skeleton/%2", skeletonDir, dataDir));
 	if (!success)
 	    return false;
 
 
-	
+
 	commands= add(commands, sformat("/bin/cp -a %1/boot %2/skeleton", sourceDir, skeletonDir));
 	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/%2",  skeletonDir, descrDir));
 	commands= add(commands, sformat("/bin/cp -a %1/%2/* %3/skeleton/%4", sourceDir,  descrDir, skeletonDir, descrDir));
 	commands= add(commands, sformat("/bin/cp  %1/* %2/skeleton/", sourceDir, skeletonDir));
 	commands= add(commands, sformat("/bin/cp -a %1/media.1  %2/skeleton/", sourceDir, skeletonDir));
 	// commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/media.1",  skeletonDir));
-	
+
 	commands= add(commands, sformat("/bin/cp %1/media.1/products   %2/skeleton/media.1/products",  sourceDir , skeletonDir));
 
 	foreach (`c, commands, ``{
@@ -245,11 +245,11 @@ a source, make sure it is enabled.
 	});
 	if (!success)
 	    return false;
-	
+
 	// SCR::Write(.target.string,   sformat("%1/skeleton/media.1/media",  skeletonDir),  readMedia());
-	
+
 	list pacdirs = productData["architectures"]:["i686", "i586", "i486", "i386", "noarch"];
-	
+
 	foreach(`dir, pacdirs, ``{
 	    string dirname =  sformat("%1/skeleton/%2/%3", skeletonDir, dataDir, dir);
 	    SCR::Execute (.target.mkdir, dirname);
@@ -258,7 +258,7 @@ a source, make sure it is enabled.
     }
 
 
-    
+
     /**
      * Parse media data
      */

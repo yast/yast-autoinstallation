@@ -20,7 +20,7 @@
     include "partitioning/lvm_ui_dialogs.ycp";
     include "partitioning/lvm_pv_lib.ycp";
     include "partitioning/lvm_lib.ycp";
-  
+
     include "partitioning/lvm_lv_lib.ycp";
     include "partitioning/partition_defines.ycp";
 
@@ -117,7 +117,7 @@ exist on this system.
 	boolean already_partitioned = false;
 	boolean root_created = false;
 	string use = "";
-	
+
 	if ( haskey(part_data , "use"))
 	{
 	    use = part_data["use"]:"";
@@ -173,7 +173,7 @@ exist on this system.
 
 	    if ( can_do_auto && use == "free")
 	    {
-		y2milestone("Using free space only");		
+		y2milestone("Using free space only");
 		if (!partitions_defined
 		    && !root_created
 		    && unused_region[1]:0 != 0)
@@ -191,7 +191,7 @@ exist on this system.
 		    return (false);
 		}
 
-		
+
 		if (!SaneRegionLimits( unused_region, partitions) )
 		{
 		    Report::Error(no_space_reason);
@@ -316,7 +316,7 @@ exist on this system.
 			pentry["create"] = false;
 			foreach (map autopart , auto_partitions , ``{
 			    if (pentry["fsid"]:-1 == autopart["partition_id"]:-2)
-			    {			
+			    {
 				string dev = Storage::GetDeviceName( target_is, pentry["nr"]:0 );
 				y2milestone( "STRICT MODE: Auto-partitioning device: %1", dev );
 				if ( pentry["format"]:false)
@@ -334,11 +334,11 @@ exist on this system.
 
 				pentry["mount"] = autopart["mount"]:mntpoint;
 				pentry["format"] = autopart["format"]:false;
-				
+
 				if ( autopart["lvm_group"]:"" != "" )
 				{
 				    pentry["lvm_group"]	=  autopart["lvm_group"]:"";
-				}				
+				}
 				pentry["kept"] = true;
 			    }
 			    else
@@ -380,11 +380,11 @@ exist on this system.
 				}
 				if (pentry["used_fs"]:`unknown != `unknown )
 				    mntpoint = sformat("/data%1", pentry["nr"]:0);
-			
+
 				pentry["mount"] = autopart["mount"]:mntpoint;
 				pentry["kept"] = true;
 				autopart["kept"] = true;
-					
+
 				if ( autopart["lvm_group"]:"" != "" )
 				{
 				    pentry["lvm_group"]	=  autopart["lvm_group"]:"";
@@ -399,7 +399,7 @@ exist on this system.
 
 		    // Mark for deletion
 		    pentry["delete"] =  to_be_deleted;
-		    
+
 		    if (!to_be_deleted)
 		    {
 			// Read extended partition if any logical partitions
@@ -638,7 +638,7 @@ to contain a minimal installation.");
 	list auto_partitions = filter (`pentry,
 				       tmp_auto_partitions ,
 				       ``(!pentry["kept"]:false )
-				       );	
+				       );
 
 	// First create any primary partitions if specified so in control file.
 	// FIXME: use max_primaries instead of fixed number
@@ -808,7 +808,7 @@ to contain a minimal installation.");
 	Storage::SetWholeDisk( selected_region == full_region);
 
 	list finalPartitions =  union(partitions,logical_auto_partitions);
-	
+
 	y2milestone("FINAL partitions: %1", finalPartitions);
 	return( finalPartitions );
 
@@ -932,8 +932,8 @@ to contain a minimal installation.");
 	    part["raid_name"]		= raid_name;
 
 	    part["mount"]		= "";
-	    part["fstype"]		= "Linux RAID";	    
-   
+	    part["fstype"]		= "Linux RAID";
+
 	}
 	else
 	{
@@ -959,35 +959,35 @@ to contain a minimal installation.");
 	Storage::ZeroNewPartitions = true;
 	boolean error = false;
 
-	
+
 	foreach (string device, map volume_group, AutoinstStorage::lvm ,
 		 ``{
 
-	    string use 		= volume_group["use"]:"none";
+	    string use		= volume_group["use"]:"none";
 	    list selpart = [];
 	    string vgname	= substring(device, 5);
 	    list new_pvs	= AutoinstLVM::ExistingPVs(vgname);
-	    list new_pvs_dev 	= maplist(`pv, new_pvs, ``{
+	    list new_pvs_dev	= maplist(`pv, new_pvs, ``{
 		return(pv["device"]:"");
-	    });	   
+	    });
 
 	    if (AutoinstLVM::OldAvailable )
 	    {
-	
+
 		y2milestone("Old LVM available");
-		
+
 		foreach(`vgdev, `vg, AutoinstLVM::ExistingLVM, ``{
 
 		    string vg = substring(vgdev, 5);
 		    boolean delete = false;
 		    list deleted_pvs = AutoinstLVM::DeletedPVs(vg);
-		    
+
 		    list del_pvs_dev 	= maplist(`pv, deleted_pvs, ``{
 			return(pv["device"]:"");
 		    });
-		    
+
 		    if ( use == "all" && vg == vgname )
-		    {			 
+		    {
 			delete = true;
 		    }
 		    else if (
@@ -1004,48 +1004,48 @@ to contain a minimal installation.");
 You have to delete old volume groups first or configure all devices containing
 physical volumes which belong to this group."), vgname));
 			error = true;
-			
+
 		    }
-			
+
 
 		    // Delete old LVM
 		    if ( delete && !error)
 		    {
 			map ExistingVG = AutoinstLVM::ExistingLVM[vgdev]:$[];
-		
+
 			list ExistingLVs = ExistingVG["partitions"]:[];
 			foreach(`lv, ExistingLVs, ``{
 			    AutoinstLVM::RemoveLV( vg, lv["nr"]:"");
 			});
-			
+
 			AutoinstLVM::RemoveVG( vg );
 		    }
 
-		    
+
 		    // Delete selected only
 		    if (use!= "" && use != "all" && use != "free" && use != "none")
 		    {
-			y2milestone("using only selected lvs");			
-			selpart = splitstring(use, ",");			
+			y2milestone("using only selected lvs");
+			selpart = splitstring(use, ",");
 		    }
-		    
+
 		    if (size(selpart) > 0 && !delete)
 		    {
 			foreach(`lv, selpart, ``{
 			    AutoinstLVM::RemoveLV( vg, lv);
 			});
 		    }
-		
-		    
+
+
 		});
 	    }
 
-	  
-	    AutoinstLVM::SetPESIZE( volume_group["pesize"]:"4M" );	  		    	   
-			
+
+	    AutoinstLVM::SetPESIZE( volume_group["pesize"]:"4M" );
+
 	    y2milestone("Existing PVs: %1",  new_pvs );
 	    map new_volume = $[];
-	    
+
 	    if (use == "all")
 	    {
 		new_volume = AutoinstLVM::CreateVG (vgname);
@@ -1058,53 +1058,53 @@ physical volumes which belong to this group."), vgname));
 	    {
 		new_volume = AutoinstLVM::ExistingLVM[device]:$[];
 	    }
-		
+
 	    list new_partitions = maplist(map lv,  volume_group["partitions"]:[], ``{
 
 		list lvlist =  AutoinstLVM::ExistingLVM[device, "partitions"]:[];
 		map this_lv = select(filter(`p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
-		
+
 		y2debug("This LV: %1", this_lv);
-		
+
 		lv["used_fs"]	=	this_lv["used_fs"]:`none;
 
-		
+
 		if (lv["create"]:true && !lv["resize"]:false)
 		{
-		    return (AutoinstLVM::CreateLV( vgname, lv ));		    
+		    return (AutoinstLVM::CreateLV( vgname, lv ));
 		}
 		else if (lv["resize"]:false)
 		{
-		    
-		    return (AutoinstLVM::ResizeLV( vgname, lv ));		    
-		}	
+
+		    return (AutoinstLVM::ResizeLV( vgname, lv ));
+		}
 		else
 		{
-	
+
 		    return (AutoinstLVM::KeepLV( vgname, lv ));
 		}
 	    });
 
 	    new_volume["partitions"] = new_partitions;
-	    AutoinstLVM::Volumes[device] = new_volume;	  
-		
+	    AutoinstLVM::Volumes[device] = new_volume;
+
 	});
 
 
 	y2milestone("Volumes: %1", AutoinstLVM::Volumes);
 	if (error)
 	    return false;
-	
-	Storage::SetModifyTargets( AutoinstLVM::modify_targets );	
+
+	Storage::SetModifyTargets( AutoinstLVM::modify_targets );
 	map new_targetMap = union(Storage::GetTargetMap(), AutoinstLVM::Volumes);
-	
+
 	Storage::SetTargetMap(new_targetMap);
 
 	return true;
     }
-    
 
-    
+
+
     /**
      * Create RAID
      *
@@ -1112,19 +1112,19 @@ physical volumes which belong to this group."), vgname));
     global define void autoRAID()
 	``{
 	import "AutoinstRAID";
-	
+
 	list RaidList =  maplist ( map device, AutoinstStorage::raid["/dev/md", "partitions"]:[],  ``{
 
-	    string use 		= 	AutoinstStorage::raid["/dev/md","use"]:"none";	    
-	    string dev 		= 	sformat("/dev/md%1", device["partition_nr"]:0);
-	    
+	    string use		=	AutoinstStorage::raid["/dev/md","use"]:"none";
+	    string dev		=	sformat("/dev/md%1", device["partition_nr"]:0);
+
 	    if (AutoinstRAID::OldAvailable)
 	    {
 		list mds = AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[];
 		list new_mds = maplist( `md, mds ,``{
-		    
+
 		    if ( use == "all" && dev == md["device"]:"" )
-		    {			 			 
+		    {
 			 md["delete"] = true;
 		    }
 		    return (md);
@@ -1134,14 +1134,14 @@ physical volumes which belong to this group."), vgname));
 		AutoinstRAID::ExistingRAID["/dev/md"] = allmds;
 	    }
 
-	    
+
 	    y2milestone("Working on %1", device);
 
-	    device["device"] 	= dev;
-	    
-	    string chunk_size = "4";  
-	    map options = device["raid_options"]:$[];	    
-	    string raid_type	= options["raid_type"]:"raid1";	  	    
+	    device["device"]	= dev;
+
+	    string chunk_size = "4";
+	    map options = device["raid_options"]:$[];
+	    string raid_type	= options["raid_type"]:"raid1";
 
 	    if ( raid_type == "raid5" )
 	    {
@@ -1152,8 +1152,8 @@ physical volumes which belong to this group."), vgname));
 		chunk_size = "32";
 	    }
 
-	   
-	    
+
+
 	    string sel_chunksize = options["chunk_size"]:"";
 
 	    if ( sel_chunksize != "" )
@@ -1187,8 +1187,8 @@ physical volumes which belong to this group."), vgname));
 		device["create"]	= true;
 		device["status"]	= "create";
 	    }
-	    
-	    
+
+
 
 	    if (!haskey(device, "format"))
 	    {
@@ -1200,7 +1200,7 @@ physical volumes which belong to this group."), vgname));
 		symbol selected_fs	= AutoinstStorage::StringFS2Symbol(device["filesystem"]:"");
 		device["used_fs"]	= selected_fs;
 	    }
-	    
+
 	    device["type"]		= `sw_raid;
 
 
@@ -1209,10 +1209,10 @@ physical volumes which belong to this group."), vgname));
 		device["crypt_key"] =   Storage::AddCryptToClassified( device["crypt_key"]:"");
 	    }
 
-	    
+
 	    return (union(device, options));
 	});
-	
+
 
 	foreach( `part, RaidList,
 		 ``({
@@ -1222,7 +1222,7 @@ physical volumes which belong to this group."), vgname));
 		 }));
 
 	list allraid = [];
-	
+
 	if (size (AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[]) > 0 )
 	{
 	    y2milestone("Existing RAID: %1", AutoinstRAID::ExistingRAID);
@@ -1232,7 +1232,7 @@ physical volumes which belong to this group."), vgname));
 	{
 	    allraid =  RaidList;
 	}
-	
+
 	map RaidMap = $[ "/dev/md" :
 			 $[
 			   "cyl_count" : 1,                         // typicall 1
@@ -1245,7 +1245,7 @@ physical volumes which belong to this group."), vgname));
 
 	map new_targetMap = union(Storage::GetTargetMap(), RaidMap);
 	Storage::SetTargetMap(new_targetMap);
-	
+
 	y2milestone("Targets: %1", Storage::GetTargetMap());
     }
 
