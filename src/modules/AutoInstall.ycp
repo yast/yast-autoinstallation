@@ -14,103 +14,43 @@
 
     import "Profile";
     import "Mode";
+    import "AutoinstConfig";
     import "Report";
-    import "XML";
-    import "Initrd";
-    import "Kernel";
 
-
-    //
-    // Main directory for data generated during installation
-    //
-    global string var_dir = "/var/adm/autoinstall";
-
-    //
-    // Cache directory
-    //
-    global string cache = var_dir + "/cache";
-
-    //
-    // Temporary directory for storing profile before installation starts
-    //
-    global string tmpdir = (string)SCR::Read( .target.tmpdir );
-
-    //
-    // Temporary file name for retrieved system profile
-    //
-    global string xml_tmpfile = tmpdir + "/autoinst.xml";
-
-    //
-    // Final location for retrieved system profile
-    //
-    global string xml_file = cache + "/installedSystem.xml";
 
     //
     // Parsed data from XML control in YCP format
     //
-    string parsedControlFile = cache + "/autoinst.ycp";
-
-    //
-    // Direcotry for runtime operation data
-    //
-    global string runtime_dir = "/var/lib/autoinstall";
-
-    //
-    // Directory where complete configuration files are kept.
-    //
-    global string files_dir = var_dir + "/files";
+    string parsedControlFile = AutoinstConfig::cache + "/autoinst.ycp";
+    
 
     //
     // Auto-Configuration mode
     //
     global boolean autoconf = false;
 
-    //
-    // Parsed data to be used to set variables in other modules
-    //
-    global boolean Confirm  = true;
+
     
-    global boolean interactive = true;
-
-
-    global map Profile = $[];
-
-    // FIXME: global map X11 = $[];
-
-
-    // FIXME: global list loadKernelModules = [];
-    // FIXME: global list configureKernelModules = [];
-
-
-
-    // FIXME: global boolean IgnorePkgErr = false;
-    
-    // FIXME: global map Bootloader = $[];
-
-    // Default runlevel
-    // FIXME: global string default_rl = "5";
-
-
     /**
      * Read saved data in continue mode
+     * @return boolean true on success
      */
     global define boolean Continue() ``{
 
+	//
 	// First check if there are some other control files availabe
 	// i.e. for post-installation only
-	string autoconf_file = runtime_dir + "/autoconf/autoconf.xml";
+	//
+	string autoconf_file = AutoinstConfig::runtime_dir + "/autoconf/autoconf.xml";
 
 	if ( SCR::Read(.target.size, autoconf_file) != -1 )
 	{
 	    y2milestone("XML Post installation data found: %1", autoconf_file );
 	    autoconf = true;
 	    Profile::Read(  autoconf_file  );
-	    boolean ret = Profile::Read(  xml_tmpfile );
-	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, cache));
-
-	    Profile = Profile::current;
-	    ProcessSpecialResources();
-
+	    boolean ret = Profile::Read(  AutoinstConfig::xml_tmpfile );
+	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, AutoinstConfig::cache));
+	   
 	    return (ret);
 	}
 	else
@@ -125,27 +65,28 @@
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
 		SCR::Execute(.target.remove, parsedControlFile);
-		Profile = Profile::current;
-		ProcessSpecialResources();
+		
 		return (true);
 	    }
 	}
-
 
     }
 
     /**
      * Constructer
-     *
+     * @return: void
      */
     global define void AutoInstall()
 	``{
 	if (!Mode::config &&  ! ( Mode::cont && Continue() ))
 	{
-	    if ( SCR::Read(.target.size, xml_tmpfile) != -1  && size ( Profile::current ) == 0)
+	    if ( SCR::Read(.target.size, AutoinstConfig::xml_tmpfile) != -1  && size ( Profile::current ) == 0)
 	    {
+		//
 		// Profile is available and it has not been parsed yet.
-		Profile::Read(  xml_tmpfile );
+		//
+		Profile::Read(  AutoinstConfig::xml_tmpfile );
+		Report::Import(Profile::Flat["report"]:$[]);
 	    }
 	}
 
@@ -153,6 +94,7 @@
 	{
 	    y2milestone("Enabling Auto-Installation mode");
 	    Mode::autoinst = true;
+	    Report::Import(Profile::Flat["report"]:$[]);
 	}
 
 
@@ -160,182 +102,9 @@
     }
 
 
-
-
-
-    /**
-     * Parse profile and set some values
-     * @param true on success
-     */
-    global define boolean ProcessSpecialResources ()
-	``{
-	Report::Import(Profile::Flat["report"]:$[]);
-	X11 = Profile::Flat["x11"]:$[];
-	configureX11();
-	return true;
-    }
-
-    /**
-     * Configure X11 and Runlevel settings
-     *
-     */
-
-    global define boolean configureX11 () ``{
-
-
-	map runlevels = Profile::Flat["runlevels"]:$[];
-
-	if (Mode::initial && haskey(Profile::Flat,"x11"))
-	{
-	    // start_x11 set to true = runlevel = 5
-	    // If runlevel is set, then it overrides x11 settings.
-	    // If no x11 conf is given and no runlevel  is set, then runlevel => 3.
-
-		if (haskey(X11, "start_x11"))
-		{
-		    boolean start_xdm = X11["start_x11"]:false;
-		    if (start_xdm)
-		    {
-			if (runlevels["default"]:"" == "" )
-			{
-			    default_rl = "5";
-			}
-		    }
-		    else
-		    {
-			if (runlevels["default"]:"" == "" )
-			{
-			    default_rl = 3;
-			}
-		    }
-		}
-	}
-	else if (Mode::initial)
-	{
-	    default_rl = runlevels["default"]:"3";
-	}
-	else if (Mode::cont)
-	{
-	    // Check if X11 package is installed.
-		import "Require";
-	    boolean x11_installed = Require::IsPackageInstalledTarget("XFree86");
-		y2milestone("X11: %1, x11_installed: %2", X11, x11_installed );
-
-	    if ( size(X11) == 0 || !X11["configure_x11"]:false  || !x11_installed)
-	    {
-		y2milestone("x11 setup not needed");
-		Mode::x11_setup_needed = false;
-	    }
-	}
-
-    }
-
-
-    /**
-     * Configure bootloader settings
-     * @param void
-     * @return void
-     */
-    global define boolean bootloaderSettings()``{
-	import "Bootloader";
-	import "BootCommon";
-
-	any ret = nil;
-
-	// Bootloader::manual_location = true;
-	Bootloader = Profile::Flat["bootloader"]:$[];
-
-	y2debug ("Importing settings %1", Bootloader);
-	if (Bootloader == $[] )
-	{
-	    Bootloader::Propose ();
-	    return true;
-	}
-
-	string parameters = Bootloader["kernel_parameters"]:"";
-	if ( size(parameters) > 0)
-	{
-	    foreach ( string parameter, splitstring(parameters, " "),
-		     ``{
-		list param_value_list = splitstring (parameter, "=");
-		if (size (param_value_list) > 0)
-		{
-		    Kernel::AddCmdLine (param_value_list[0]:"", param_value_list[1]:"");
-		}
-	    });
-	    Bootloader = remove(Bootloader, "kernel_parameters");
-	}
-
-	map current = Initrd::Export();
-	y2milestone("Current initrd modules: %1", current);
-	list modlist = current["list"]:[];
-	map modsett = current["settings"]:$[];
-	foreach(map mod, Bootloader["initrd_modules"]:[], ``{
-	    if (mod["module"]:"" != "" )
-	    {
-		modlist = add(modlist, mod["module"]:"");
-		modsett = add(modsett, mod["module"]:"" , mod["module_args"]:"");
-	    }
-	});
-	if (size(modlist) > 0 )
-	    Bootloader["initrd"] = $[ "list": modlist, "settings" : modsett ];
-
-	// cleanup
-	if (haskey(Bootloader, "initrd_modules"))
-	    Bootloader = remove(Bootloader, "initrd_modules");
-
-
-	y2debug ("Starting importing settings");
-	ret = Bootloader::Import(Bootloader);
-	y2debug ("Importing done, result %1", Bootloader::Export ());
-	BootCommon::DetectDisks ();
-	y2debug ("Proposing - fix");
-	Bootloader::Propose ();
-	y2debug ("Proposing done");
-	// fix GRUB's device names
-	if (Bootloader::getLoaderType () == "grub")
-	{
-	    import "BootGRUB";
-	    string gfxmenu = BootCommon::globals["gfxmenu"]:"";
-	    if (gfxmenu != "")
-		BootCommon::globals["gfxmenu"] = BootGRUB::file2grub (gfxmenu);
-
-	    BootCommon::sections = maplist (`s, BootCommon::sections, ``{
-		string initrd = s["initrd"]:"";
-		if (initrd != "" && substring(initrd, 0, 1) == "/")
-		{
-		    s["initrd"] = BootGRUB::file2grub (initrd);
-		}
-		string kernel = s["kernel"]:"";
-		if (kernel != "" && substring (kernel, 0, 1) == "/")
-		{
-		    list(string) parts = splitstring (kernel, " ");
-		    parts = filter (`p, parts, ``(p != ""));
-		    kernel = parts[0]:"";
-		    parts[0] = BootGRUB::file2grub (kernel);
-		    s["kernel"] = mergestring (parts, " ");
-		}
-		return s;
-	    });
-	}
-	// fix root partitions
-	y2milestone ("Fixing partitions");
-	foreach (string s, ["linux", "failsafe"], ``{
-	    string root = Bootloader::getKernelParam (s, "root");
-	    y2milestone ("Section %1 has root %2", s, root);
-	    if (root == "true" || root == "false" || root == "")
-	    {
-		y2milestone ("Setting root of %1 to %2", s, BootCommon::RootPartitionDevice);
-		Bootloader::setKernelParam (s, "root",
-					    BootCommon::RootPartitionDevice);
-	    }
-	});
-
-    }
-
-
     /**
      * Save configuration
+     * @return: boolean true on success
      */
 
     global define boolean Save()
@@ -345,55 +114,5 @@
 
 
 
-    /**
-     * Finish Auto-Installation by saving misc files
-     */
-    global define void Finish ()
-	``{
-	import "Installation";
-	// Copy pre scripts to target system.
-	import "AutoinstScripts";
-	AutoinstScripts::Write("chroot-scripts", false);
-	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AutoinstScripts::scripts_dir);
-	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoinstScripts::logs_dir);
-
-	SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", xml_tmpfile ,  Installation::destdir ,  xml_file) );
-	SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",   Installation::destdir ,  xml_file) );
-
-	return;
-    }
-
-    /**
-     * Linuxrc Settings
-     * @param: linuxrc map
-     * @return modified linuxrc map
-     */
-
-    global define map Linuxrc(map linuxrc) ``{
-	import "Bootloader";
-	import "AutoinstGeneral";
-
-	if (AutoinstGeneral::Mode["forceboot"]:false && Mode::hardBoot)
-	{
-	    linuxrc["Root"] = Bootloader::getRootDevice ();
-	}
-
-	if (AutoinstGeneral::Mode["reboot"]:false && !Mode::hardBoot)
-	{
-	    linuxrc["Root"] = "reboot";
-	    Mode::hardBoot = true;
-	}
-
-	if (AutoinstGeneral::Mode["rebootmsg"]:false)
-	{
-	    linuxrc["RebootMsg"] = "1";
-	}
-	else
-	{
-	    linuxrc["RebootMsg"] = "0";
-	}
-	y2milestone("Linuxrc settings: %1", linuxrc);
-	return linuxrc;
-    }
 }
 

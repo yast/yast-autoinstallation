@@ -13,29 +13,29 @@
 
     import "Mode";
     import "Label";
-    import "Installation";
+   
+    import "AutoinstConfig";
     import "Summary";
 
 
-    global string tmpdir = (string)SCR::Read( .target.tmpdir );
-
-    // Main directory for data generated during installation
     //
-    global string var_dir = "/var/adm/autoinstall";
-
-    // Directory for the pre/post and chroot scripts
+    // Pre scripts
     //
-    global string scripts_dir = var_dir + "/scripts";
-
-    // Directory where log files of pre/post and chroot scripts are kept
-    //
-    global string logs_dir = var_dir + "/logs";
-
-
     global list pre = [];
+    
+    //
+    // Post scripts
+    //
     global list post = [];
+    
+    //
+    // Chroot scripts
+    //
     global list chroot = [];
 
+    //
+    // Merged scripts
+    //
     global list merged = [];
 
 
@@ -319,7 +319,7 @@
 
 	if (type == "pre-scripts")
 	{
-	    tmpdirString = sformat("%1/%2", tmpdir, type);
+	    tmpdirString = sformat("%1/%2", AutoinstConfig::tmpDir, type);
 	    SCR::Execute (.target.mkdir, tmpdirString);
 
 	    current_logdir = sformat("%1/logs", tmpdirString);
@@ -327,15 +327,15 @@
 	}
 	else if (type == "chroot-scripts")
 	{
-		tmpdirString = sformat("%1%2", (chrooted) ? "" : Installation::destdir,  scripts_dir);
-	    SCR::Execute (.target.mkdir, (chrooted) ? scripts_dir : tmpdirString);
+		tmpdirString = sformat("%1%2", (chrooted) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir);
+	    SCR::Execute (.target.mkdir, (chrooted) ? AutoinstConfig::scripts_dir : tmpdirString);
 
-	    current_logdir = sformat("%1%2", (chrooted) ? "" : Installation::destdir, logs_dir);
-	    SCR::Execute (.target.mkdir,  (chrooted) ? logs_dir : current_logdir);
+	    current_logdir = sformat("%1%2", (chrooted) ? "" : AutoinstConfig::destdir, AutoinstConfig::logs_dir);
+	    SCR::Execute (.target.mkdir,  (chrooted) ? AutoinstConfig::logs_dir : current_logdir);
 	}
 	else
 	{
-	    current_logdir = logs_dir;
+	    current_logdir = AutoinstConfig::logs_dir;
 	}
 
 
@@ -347,13 +347,13 @@
 
 	    if (type == "pre-scripts")
 	    {
-		scriptPath = sformat("%1/%2/%3", tmpdir, type, scriptName);
+		scriptPath = sformat("%1/%2/%3", AutoinstConfig::tmpDir, type, scriptName);
 		y2milestone("Writing pre script into %1", scriptPath);
 		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
 	    }
 	    else if (type == "chroot-scripts")
 	    {
-		scriptPath = sformat("%1%2/%3", (chrooted) ? "/" : Installation::destdir,  scripts_dir,  scriptName);
+		scriptPath = sformat("%1%2/%3", (chrooted) ? "/" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
 		y2milestone("Writing chroot script into %1", scriptPath);
 		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
 	    }
@@ -363,7 +363,7 @@
 		Pkg::SourceFinishAll();
 		Pkg::TargetFinish();
 
-		scriptPath = sformat("%1/%2", scripts_dir, scriptName);
+		scriptPath = sformat("%1/%2", AutoinstConfig::scripts_dir, scriptName);
 		y2milestone("Writing  script into %1", scriptPath);
 		SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
 	    }

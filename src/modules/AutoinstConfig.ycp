@@ -10,7 +10,10 @@
     module "AutoinstConfig";
     textdomain "autoinst";
    
-    import "Misc";    
+    import "Misc";
+    import "Mode";
+    import "Installation";
+    
 
     include "autoinstall/xml.ycp";
     include "autoinstall/io.ycp";
@@ -30,44 +33,231 @@
 
     // Current file name
     global string currentFile = "";
-
-
-
+    
     //
     // Temporary directory for storing profile before installation starts
     //
     global string tmpDir = (string)SCR::Read( .target.tmpdir );
+    
+    //
+    // Main directory for data generated during installation
+    //
+    global string var_dir = "/var/adm/autoinstall";
 
+    //
+    // Directory for the pre/post and chroot scripts
+    //
+    global string scripts_dir = var_dir + "/scripts";
+
+    //
+    // Directory where log files of pre/post and chroot scripts are kept
+    //
+    global string logs_dir = var_dir + "/logs";
+
+    //
+    // Destination dir
+    //
+    global string destdir = Installation::destdir;
+
+      
+    //
+    // Cache directory
+    //
+    global string cache = var_dir + "/cache";
+  
     //
     // Temporary file name for retrieved system profile
     //
     global string xml_tmpfile = tmpDir + "/autoinst.xml";
 
+    //
+    // Final location for retrieved system profile
+    //
+    global string xml_file = cache + "/installedSystem.xml";
+
+
+    //
+    // Direcotry for runtime operation data
+    //
+    global string runtime_dir = "/var/lib/autoinstall";
+
+    //
+    // Directory where complete configuration files are kept.
+    //
+    global string files_dir = var_dir + "/files";
+
+
+
+    global string remote_rules_location = "rules/rules.xml";
+    global string local_rules_location = tmpDir + "/rules";
+    global string local_rules_file = local_rules_location + "/rules.xml";
+
+   // Data from command line
+    global map urltok = $[];
     
+    global string scheme =  "";
+    global string host = "";
+    global string filepath = "";
+    global string directory = "";
+    global string port = "";
+    global string user = "";
+    global string pass = "";
+
+    
+    //
+    // Default runlevel
+    //
+    global string default_rl = "5";
+
+    
+    //
+    // Confirm installation
+    //
+    global boolean Confirm = true;
+
+
+    global string OriginalURI = "";
+
+    global string message = "";
+
+
+    /**
+     * Return location of profile from command line.
+     * @return map with protocol, server, path
+     * @example autoyast=http://www.server.com/profiles/
+     */
+
+    global define boolean ParseCmdLine (string autoinstall)
+	``{
+	import "URL";
+	
+	map result = $[];
+	string cmdLine = "";
+
+
+	if (size(autoinstall) > 0   )
+	{
+	    cmdLine = (string)autoinstall;
+	    if (cmdLine == "default")
+	    {
+		result["scheme"] = "file";
+		result["path"]   = "/autoinst.xml";
+		urltok = result;
+		return true;
+	    }
+	    else
+	    {
+		result = URL::Parse (cmdLine);
+		OriginalURI = cmdLine;
+	    }
+	}
+
+
+	if (result["scheme"]:"" == "")
+	{
+	    // Autoinstall mode was not activated from command line.
+	    // There must be a floppy with an 'autoinst.xml' in order
+	    // to be able to reach this point, so we set floppy with
+	    // autoinst.xml as the control file.
+
+	    result = add(result, "scheme", "floppy");
+	    result = add(result, "path","/autoinst.xml");
+	}
+	urltok = result;
+	
+	scheme = urltok["scheme"]:"default";
+	host = urltok["host"]:"";
+	filepath = urltok["path"]:"";
+	port = urltok["port"]:"";
+	user = urltok["user"]:"";
+	pass = urltok["pass"]:"";
+	return true;;
+    }
+
+
+
+    /**
+     * SetProtocolMessage ()
+     * @return void
+     */
+
+    global define void SetProtocolMessage () ``{
+
+	if (scheme == "floppy")
+	{
+	    message =  _("Retrieving control file from floppy.");
+	}
+	else if (scheme == "tftp")
+	{
+	    message =  sformat ( _("Retrieving control file from TFTP server: %1."),  host );
+	}
+	else if (scheme == "nfs")
+	{
+	    message =  sformat ( _("Retrieving control file from NFS server: %1."), host );
+	}
+	else if (scheme == "http")
+	{
+	    message =  sformat ( _("Retrieving control file from HTTP server: %1."),  host );
+	}
+	else if (scheme == "ftp")
+	{
+	    message =  sformat ( _("Retrieving control file from FTP server: %1."),  host );
+	}
+	else if (scheme == "file")
+	{
+	    message =  sformat ( _("Copying control file from file: %1."),  filepath);
+	}
+	else if (scheme == "device")
+	{
+	    message =  sformat ( _("Copying control file from device: /dev/%1."),  filepath );
+	}
+	else if (scheme == "default")
+	{
+	    message =   _("Copying control file from default file.");
+	}
+	else
+	{
+	    message =   _("Source unknown.");
+	}
+	return;
+    }
+
+
     
     /**
      * Constructor
      * @return	 void          
      * 
      */
-
     global define void AutoinstConfig ()
-	``{
-	
-	// Load configuration data from /etc/sysconfig/autoinstall
-	Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");		
-	AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");	
-	classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );	
-
-	// Set the defaults, just in case.
-	if (Repository == "" || Repository == nil )
+	``{	
+	if (Mode::autoinst)
 	{
-	    Repository = "/var/lib/autoinstall/repository";
+	    any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
+	    if (autoinstall != nil && is ( autoinstall , string ) )
+	    {
+		ParseCmdLine((string)autoinstall);
+	    }
+	}
+	else
+	{
+	    // Load configuration data from /etc/sysconfig/autoinstall
+	    Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");		
+	    AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");	
+	    classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );	
+
+	    // Set the defaults, just in case.
+	    if (Repository == "" || Repository == nil )
+	    {
+		Repository = "/var/lib/autoinstall/repository";
+	    }
 	}
 	return;
     }
 
- 
+
+
+    
 
     /**
      * Save()
