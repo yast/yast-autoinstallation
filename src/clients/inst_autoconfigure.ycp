@@ -9,7 +9,6 @@
  */
 
 {
-
     textdomain "autoinst";
 
     import "Profile";
@@ -33,7 +32,8 @@
      *
      * @param step_descr description of the step.
      */
-    define void logStep( string step_descr ) ``{
+    define void logStep( string step_descr )
+    {
 	current_step = current_step + 1;
 	UI::ChangeWidget( `id(`progress), `Value, current_step );
 	UI::ChangeWidget( `id(`log), `LastLine, step_descr + "\n" );
