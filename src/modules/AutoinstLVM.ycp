@@ -143,7 +143,7 @@
     }
 
 
-    global define CreateLV (string vgname, map lv) ``{
+    global define map CreateLV (string vgname, map lv) ``{
 
 	string lvsize_str	= lv["size"]:"";
 	string lv_name		= lv["lv_name"]:"";
@@ -181,8 +181,8 @@
 
 	return ($[
 		  "create"		: true,
-		  "fs_options"	: lv["fs_options"]:$[],
-		  "use_module"	: "lvm_ll",
+		  "fs_options"		: lv["fs_options"]:$[],
+		  "use_module"		: "lvm_ll",
 		  "fsid"		: 142,
 		  "fstype"		: "LV",
 		  "nr"			: lv_name,
@@ -200,6 +200,86 @@
 
     };
 
+    global define map ResizeLV (string vgname, map lv) ``{
+
+	string lvsize_str	= lv["size"]:"";
+	string lv_name		= lv["lv_name"]:"";
+
+	integer lvsize		= kmgt_str_to_byte(lvsize_str);
+
+
+	if (pesize == 0 )
+	{
+	    pesize = 1;
+	}
+
+
+	integer virtual_cyl_end = lvsize / pesize;
+	region = [0, virtual_cyl_end ];
+	integer bytes_of_part	= 0;
+	integer cyl_size		= pesize;
+	integer nb_cyl			= region[1]:0;
+
+	bytes_of_part =  ( nb_cyl ) * cyl_size;
+
+
+	region = [0, virtual_cyl_end ];
+	
+	map resize_lv = $[
+			      "use_module" : "lvm_ll",
+			      "type"       : "resize_lv",
+			      "name"       : lv_name,
+			      "size"       : bytes_of_part,
+			      "vgname"     : vgname			   
+	];
+	modify_targets = addTargetModification( modify_targets, resize_lv );
+
+	symbol lv_fs = AutoinstStorage::StringFS2Symbol( lv["filesystem"]:"ext2");
+
+	return ($[
+		  "changed_size"	: true,
+		  "stripes"		: lv["stripes"]:1,
+		  "fs_options"		: lv["fs_options"]:$[],
+		  "use_module"		: "lvm_ll",
+		  "fsid"		: 142,
+		  "fstype"		: "LV",
+		  "nr"			: lv_name,
+		  "ori_nr"		: lv_name,
+		  "region"		: [0, virtual_cyl_end ],
+		  "size_bytes"		: bytes_of_part,
+		  "mount"		: lv["mount"]:"" ,
+		  "used_fs"		: lv["used_fs"]:`unknown,
+		  "format"		: lv["format"]:false ,
+		  "crypt_fs"		: lv["crypt"]:false ,
+		  "crypt_key"		: lv["crypt_key"]:"",
+		  "type"		: `lvm,
+		  "device"		: "/dev/" + vgname + "/" + lv_name
+		]);
+
+    };
+    global define map KeepLV (string vgname, map lv) ``{
+
+	
+	string lv_name		= lv["lv_name"]:"";
+	integer lvsize		= kmgt_str_to_byte(lvsize_str);
+
+
+
+	return ($[
+		  "create"		: false,		  		  
+		  "fsid"		: 142,
+		  "fstype"		: "LV",
+		  "nr"			: lv_name,		
+		  "mount"		: lv["mount"]:"" ,
+		  "used_fs"		: lv["used_fs"]:`reiser,
+		  "format"		: lv["format"]:false ,		
+		  "type"		: `lvm,
+		  "device"		: "/dev/" + vgname + "/" + lv_name
+		]);
+
+    };
+
+    
 
     global define void SetPESIZE (string pesize_str) ``{
 	pesize	=  pesize_str_to_byte( pesize_str );
