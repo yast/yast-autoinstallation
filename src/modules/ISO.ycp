@@ -80,6 +80,8 @@
      * initialize source
      */
     global define boolean initSource() ``{
+
+	import "URL";
 	string error_msg = _("
 No distribution source was found.  Add a source using the
 source manager available in the control center. After adding
@@ -114,7 +116,7 @@ a source, make sure it is enabled.
 
 
 	string url = sourceData["url"]:"";
-	map tok = parse_url(url);
+	map tok = URL::Parse(url);
 	sourceDir = tok["path"]:"";
 	
 	y2milestone("Source dir %1", sourceDir);
@@ -268,46 +270,6 @@ a source, make sure it is enabled.
 
 
 
-
-
-
-
-
-
-    
-    global define map parse_url(string uri)
-	``{
-
-	map tokens = $[];
-	list rawtokens = regexptokenize (uri, "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
-
-
-
-	/* no processing necessary on the scheme */
-	tokens["scheme"] = rawtokens[1]:"";
-
-	/* the path to the resource */
-	tokens["path"] = rawtokens[4]:"";
-
-	/* the query part */
-	tokens["query"] = rawtokens[6]:"";
-
-	/* the fragment */
-	tokens["fragment"] = rawtokens[8]:"";
-
-	/* extract the username, pass, and port from the hostname */
-	/* extract username:pass@host:port from regex results */
-	list userpass = regexptokenize (rawtokens[3]:"", "^(([^@:]+)(:([^@:]+))?@)?((\\[([^]]+)\\])|([^:@]+))(:([^:@]+))?");
-	tokens["user"] = userpass[1]:"";
-	tokens["pass"] = userpass[3]:"";
-	if (userpass[7]:"" == "")
-	    tokens["host"] =    userpass[6]:"";
-	else
-	    tokens["host"] = userpass[7]:"";
-	tokens["port"] = userpass[9]:"";
-	y2debug("tokens: %1", tokens);
-	return tokens;
-    }
 
 
 }

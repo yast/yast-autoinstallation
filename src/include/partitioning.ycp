@@ -957,20 +957,23 @@ to contain a minimal installation.");
 	import "AutoinstLVM";
 	import "Storage";
 	Storage::ZeroNewPartitions = true;
+	boolean error = false;
+
 	
 	foreach (string device, map volume_group, AutoinstStorage::lvm ,
 		 ``{
 
 	    string use 		= volume_group["use"]:"none";
+	    list selpart = [];
 	    string vgname	= substring(device, 5);
 	    list new_pvs	= AutoinstLVM::ExistingPVs(vgname);
 	    list new_pvs_dev 	= maplist(`pv, new_pvs, ``{
 		return(pv["device"]:"");
-	    });
+	    });	   
 
 	    if (AutoinstLVM::OldAvailable )
 	    {
-		Report::Message("Old LVM Available");
+	
 		y2milestone("Old LVM available");
 		
 		foreach(`vgdev, `vg, AutoinstLVM::ExistingLVM, ``{
@@ -998,14 +1001,15 @@ to contain a minimal installation.");
 		    if (AutoinstLVM::PVsNotConfigured)
 		    {
 			Report::Error(sformat(_("Logical volumes of group \"%1\" exist on unconfigured devices.
-You have to delete old Volume Groups first or configure all devices containing
-physical volumes belonging to this group."), vgname));
-			return ( false );
+You have to delete old volume groups first or configure all devices containing
+physical volumes which belong to this group."), vgname));
+			error = true;
+			
 		    }
 			
 
 		    // Delete old LVM
-		    if ( delete )
+		    if ( delete && !error)
 		    {
 			map ExistingVG = AutoinstLVM::ExistingLVM[vgdev]:$[];
 		
@@ -1013,34 +1017,83 @@ physical volumes belonging to this group."), vgname));
 			foreach(`lv, ExistingLVs, ``{
 			    AutoinstLVM::RemoveLV( vg, lv["nr"]:"");
 			});
-			Report::Message(sformat("Removing %1", vg));
+			
 			AutoinstLVM::RemoveVG( vg );
 		    }
+
+		    
+		    // Delete selected only
+		    if (use!= "" && use != "all" && use != "free" && use != "none")
+		    {
+			y2milestone("using only selected lvs");			
+			selpart = splitstring(use, ",");			
+		    }
+		    
+		    if (size(selpart) > 0 && !delete)
+		    {
+			foreach(`lv, selpart, ``{
+			    AutoinstLVM::RemoveLV( vg, lv);
+			});
+		    }
+		
 		    
 		});
 	    }
-	    
+
+	  
 	    AutoinstLVM::SetPESIZE( volume_group["pesize"]:"4M" );	  		    	   
 			
 	    y2milestone("Existing PVs: %1",  new_pvs );
+	    map new_volume = $[];
+	    
+	    if (use == "all")
+	    {
+		new_volume = AutoinstLVM::CreateVG (vgname);
 
-	    map new_volume = AutoinstLVM::CreateVG (vgname);
-
-	    foreach(map pv, new_pvs, ``{
-		AutoinstLVM::CreatePV (vgname, pv["device"]:"");
-	    });
-
+		foreach(map pv, new_pvs, ``{
+		    AutoinstLVM::CreatePV (vgname, pv["device"]:"");
+		});
+	    }
+	    else
+	    {
+		new_volume = AutoinstLVM::ExistingLVM[device]:$[];
+	    }
 		
 	    list new_partitions = maplist(map lv,  volume_group["partitions"]:[], ``{
 
-		return (AutoinstLVM::CreateLV( vgname, lv ));
+		list lvlist =  AutoinstLVM::ExistingLVM[device, "partitions"]:[];
+		map this_lv = select(filter(`p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
+		
+		y2debug("This LV: %1", this_lv);
+		
+		lv["used_fs"]	=	this_lv["used_fs"]:`none;
+
+		
+		if (lv["create"]:true && !lv["resize"]:false)
+		{
+		    return (AutoinstLVM::CreateLV( vgname, lv ));		    
+		}
+		else if (lv["resize"]:false)
+		{
+		    
+		    return (AutoinstLVM::ResizeLV( vgname, lv ));		    
+		}	
+		else
+		{
+	
+		    return (AutoinstLVM::KeepLV( vgname, lv ));
+		}
 	    });
 
 	    new_volume["partitions"] = new_partitions;
 	    AutoinstLVM::Volumes[device] = new_volume;	  
 		
 	});
-	    
+
+
+	y2milestone("Volumes: %1", AutoinstLVM::Volumes);
+	if (error)
+	    return false;
 	
 	Storage::SetModifyTargets( AutoinstLVM::modify_targets );	
 	map new_targetMap = union(Storage::GetTargetMap(), AutoinstLVM::Volumes);

@@ -65,7 +65,7 @@
 
     global define boolean ParseCmdLine ()
 	``{
-	include "transfer/url.ycp";
+	import "URL";
 	map result = $[];
 	string cmdLine = "";
 	any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
@@ -82,7 +82,7 @@
 	    }
 	    else
 	    {
-		result = parse_url (cmdLine);
+		result = URL::Parse (cmdLine);
 	    }
 	}
 
