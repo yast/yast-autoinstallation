@@ -64,8 +64,8 @@
 	integer bytes_per_unit = 0;
 	integer disk_size = 0;
 
-	integer 	fsid_boot      	= Partitions::FsidBoot();
-	integer        	fsid_root       = Partitions::fsid_native;
+	integer	fsid_boot	= Partitions::FsidBoot();
+	integer	fsid_root   = Partitions::fsid_native;
 
 	// How much to allocate for swap
 	integer size_of_swap = calculate_needed_swap ();
@@ -108,13 +108,14 @@
 	boolean already_partitioned = false;
 	boolean root_created = false;
 	string use = "";
+	string reuse = "";
 	if ( haskey(part_data, "use"))
 	{
 	    use= part_data["use"]:"";
 	}
 	else if ( haskey(part_data, "reuse"))
 	{
-	    use= part_data["reuse"]:"";
+	    reuse= part_data["reuse"]:"";
 	}
 
 
@@ -204,7 +205,21 @@
 		});
 
 	    }
+	    list reusepart = [];
+	    if (reuse!= "" && reuse != "all" && reuse != "free")
+	    {
+		y2milestone("reusing  selected partitions");
+		list selected_partitions = [];
+		list tmp_reusepart = splitstring(reuse, ",");
 
+		reusepart = maplist (`p, tmp_reusepart, ``{
+		    if  ( findfirstnotof( p, "0123456789") == nil  )
+		    {
+			return(tointeger(p));
+		    }
+		});
+
+	    }
 
 	    // now loop through partitions
 	    foreach (`pentry, partitions, ``{
@@ -219,7 +234,38 @@
 		    {
 			selection = true;
 		    }
-		    pentry = add (pentry, "delete", selection);
+		    else if (contains(reusepart, pentry["nr"]:-1))
+		    {
+			map d = AutoInstall::targetMap[target_is]:$[];
+			list autoparts =  d["partitions"]:[];
+			list newautoparts = maplist(`autopart , autoparts, ``{
+			    if (autopart["partition_nr"]:-2 == pentry["nr"]:-1)
+			    {
+				pentry["create"] = false;
+				pentry["format"] = autopart["format"]:true;
+				pentry["mount"] = autopart["mount"]:"/data999";
+				string dev = Storage::GetDeviceName( target_is, pentry["nr"]:0 );
+				if ( pentry["format"]:false)
+				{
+				    pentry["used_fs"] = StringFS2Symbol(  autopart["filesystem"]:"reiser");
+				}
+				else
+				{
+				    y2milestone( "dev:%1", dev );
+				    pentry["used_fs"] = DetectFs( dev );
+				}
+				pentry["reused"] = true;
+				autopart["reused"] = true;
+			    }
+			    return (autopart);
+			});
+			d["partitions"] = newautoparts;
+			AutoInstall::targetMap[target_is] = d;
+
+		    }
+		    pentry["delete"] =  selection;
+
+
 
 		    if (!selection)
 		    {
@@ -282,7 +328,7 @@
 		    reason = _("Too few partitions are marked for removal.
 To install Linux, select more partitions to remove.");
 		}
-		else if (size_of_region (selected) < minimal_size)
+		else if (size_of_region (selected) < minimal_size && size(reusepart) == 0 )
 		{
 		    y2milestone("selected: %1", selected);
 		    // consistency check: a condition for the installation is not fullfilled
@@ -309,7 +355,7 @@ To install Linux, select more partitions to remove.");
 	    else
 	    {
 		selected = calculate_selected_region (selected_partitions, nil);
-		if (size_of_region (selected) < minimal_size)
+		if (size_of_region (selected) < minimal_size && size(reusepart) == 0 )
 		{
 		    y2warning ("selected: %1", selected); // FIXME
 		    // consistency check: a condition for the installation is not fullfilled
@@ -388,7 +434,6 @@ to contain a minimal installation.");
 			     partitions,
 			     ``(lookup (pentry, "type", `unknown) != `free)
 			     );
-
 	partitions = renumber_logical_partitions (partitions);
 	y2debug("partition list after renumbering: %1", partitions);
 	symbol ptype = `primary;
@@ -421,7 +466,12 @@ to contain a minimal installation.");
 	    ];
 
 	// Get new partitions as specified in control file
-	list auto_partitions =  lookup(AutoInstall::targetMap[target_is]:$[], "partitions",[]);
+	list tmp_auto_partitions =  lookup(AutoInstall::targetMap[target_is]:$[], "partitions",[]);
+	list auto_partitions = filter (`pentry,
+			     tmp_auto_partitions ,
+			     ``(!pentry["reused"]:false )
+			     );
+
 	y2debug("auto part (1): %1", auto_partitions);
 
 	// First create any primary partitions if specified so in control file.
@@ -659,12 +709,12 @@ to contain a minimal installation.");
 	{
 	    Storage::SetLvmUse( true );
 
-	    part["used_fs"] 	=  `unknown;
+	    part["used_fs"]	=  `unknown;
 	    part["fsid"]		=  Partitions::fsid_lvm;
-	    part["format"] 		=  false;
-	    part["lvm_group"] 	=  lvm_group;
-	    part["mount"] 		=  "";
-	    part["fstype"] 		=  "Linux LVM";
+	    part["format"]		=  false;
+	    part["lvm_group"]	=  lvm_group;
+	    part["mount"]		=  "";
+	    part["fstype"]		=  "Linux LVM";
 
 
 
@@ -673,16 +723,16 @@ to contain a minimal installation.");
 	{
 	    any nr = substring(raid_name, 7);
 
-	    part["used_fs"] 	= `unknown;
+	    part["used_fs"]	= `unknown;
 	    part["fsid"]		= Partitions::fsid_raid;
-	    part["format"] 		= false;
-	    part["raid_name"] 	= raid_name;
+	    part["format"]		= false;
+	    part["raid_name"]	= raid_name;
 
-	    part["mount"] 		= "";
-	    part["fstype"] 		= "Linux RAID";
+	    part["mount"]		= "";
+	    part["fstype"]		= "Linux RAID";
 	    part["raid_type"]	= currentPartition["raid_type"]:"raid";
 
-	    // part["region"] 		= [0, raid_size_byte(Storage::GetTargetMap(),
+	    // part["region"]		= [0, raid_size_byte(Storage::GetTargetMap(),
 	    //                                 part) / (1024 * 1024)];
 	}
 	else
@@ -705,11 +755,11 @@ to contain a minimal installation.");
 
 	foreach (map group, AutoInstall::LVM,
 		 ``{
-	    string vg 			= group["lvm_name"]:"";
+	    string vg			= group["lvm_name"]:"";
 	    integer pesize		= pesize_str_to_byte( lookup( group, "pesize", "4M" ));
 
 
-	    list existing_pvs  	= filter( `part, get_possible_pvs( tmap ),
+	    list existing_pvs	= filter( `part, get_possible_pvs( tmap ),
 					  ``( lookup( part, "lvm_group", "") == vg ));
 
 	    if (size(existing_pvs) > 0 )
@@ -738,7 +788,7 @@ to contain a minimal installation.");
 		// LVs
 
 		list part = group["logical_volumes"]:[];
-		list region 		= [0,0];
+		list region		= [0,0];
 
 		map new_volume = $[
 				   "name"      : vg,
