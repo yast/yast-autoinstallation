@@ -196,12 +196,12 @@
 	}
 	urltok = result;
 
-	scheme 		= urltok["scheme"]:"default";
-	host 		= urltok["host"]:"";
-	filepath 	= urltok["path"]:"";
-	port 		= urltok["port"]:"";
-	user	 	= urltok["user"]:"";
-	pass 		= urltok["pass"]:"";
+	scheme		= urltok["scheme"]:"default";
+	host		= urltok["host"]:"";
+	filepath	= urltok["path"]:"";
+	port		= urltok["port"]:"";
+	user	        = urltok["user"]:"";
+	pass		= urltok["pass"]:"";
 	return true;;
     }
 
@@ -220,19 +220,19 @@
 	}
 	else if (scheme == "tftp")
 	{
-	    message =  sformat ( _("Retrieving control file from TFTP server: %1."),  host );
+	    message =  sformat ( _("Retrieving control file (%1) from TFTP server: %2."), filepath,  host );
 	}
 	else if (scheme == "nfs")
 	{
-	    message =  sformat ( _("Retrieving control file from NFS server: %1."), host );
+	    message =  sformat ( _("Retrieving control file (%1) from NFS server: %2."), filepath, host );
 	}
 	else if (scheme == "http")
 	{
-	    message =  sformat ( _("Retrieving control file from HTTP server: %1."),  host );
+	    message =  sformat ( _("Retrieving control file (%1) from HTTP server: %2."), filepath, host );
 	}
 	else if (scheme == "ftp")
 	{
-	    message =  sformat ( _("Retrieving control file from FTP server: %1."),  host );
+	    message =  sformat ( _("Retrieving control file (%1) from FTP server: %2."), filepath,  host );
 	}
 	else if (scheme == "file")
 	{
@@ -282,6 +282,7 @@
 	    if (autoinstall != nil && is ( autoinstall , string ) )
 	    {
 		ParseCmdLine((string) autoinstall);
+                SetProtocolMessage();
 	    }
 	}
 	else if (Mode::config )
