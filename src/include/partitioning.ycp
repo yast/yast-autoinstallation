@@ -426,7 +426,12 @@ to contain a minimal installation.");
 	
 	// First create any primary partitions if specified so in control file.
 	
-	list primaries = filter (`pentry, auto_partitions, ``( pentry["partition_type"]:"none" == "primary" || pentry["partition_nr"]:6 < 5 ) );
+	list primaries = filter (`pentry, auto_partitions, ``(
+							      ( pentry["partition_type"]:"none" == "primary" || pentry["partition_nr"]:6 < 5 )
+							      &&  pentry["partition_id"]:-1 != 15
+							      &&  pentry["partition_id"]:-1 != 5
+							      )
+				 );
 	if (size(primaries)>0)
 	{
 	    y2debug("primaries needed");
@@ -443,10 +448,19 @@ to contain a minimal installation.");
 						       return(newPart);
 						   });
 	    last_pnr = last_pnr - 1;
-	    partitions = union(partitions,primary_auto_partitions);
+	    partitions = union(partitions , primary_auto_partitions);
 	}
 	
-	auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "primary")));
+	auto_partitions = filter(`pentry, auto_partitions, ``( ! (
+								  (
+								   pentry["partition_type"]:"none" == "primary" || pentry["partition_nr"]:6 < 5
+								   )
+								   &&  pentry["partition_id"]:-1 != 15
+								   &&  pentry["partition_id"]:-1 != 5
+								  )
+							       )
+				 );
+	
 	y2debug("auto part (2): %1", auto_partitions);
 	
 	if (size(auto_partitions) == 0) {
