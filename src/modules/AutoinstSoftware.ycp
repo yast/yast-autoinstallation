@@ -58,7 +58,8 @@
      * Function sets internal variable, which indicates, that any
      * settings were modified, to "true"
      */
-    global define void SetModified () {
+    global define void SetModified ()
+    {
         modified = true;
     }
 
@@ -66,7 +67,8 @@
      * Functions which returns if the settings were modified
      * @return boolean  settings were modified
      */
-    global define boolean GetModified () {
+    global define boolean GetModified ()
+    {
         return modified;
     }
 
@@ -113,8 +115,8 @@
      * Export data
      * @return dumped settings (later acceptable by Import())
      */
-    global define map Export() ``{
-
+    global define map Export()
+    {
 	map s = $[];
 	if (base != "")
 	    s["base"] = base ;
@@ -159,7 +161,8 @@
      * @param list of packages to remove
      * @return void
      */
-    global define void RemoveModulePackages (list<string> module_packages) ``{
+    global define void RemoveModulePackages (list<string> module_packages)
+    {
         PackageAI::toinstall = filter(string p, PackageAI::toinstall, ``(!contains(module_packages,p)));
 	Profile::Flat["software"] = Export();
 	return;
@@ -171,7 +174,8 @@
      * Summary
      * @return Html formatted configuration summary
      */
-    global define string Summary()``{
+    global define string Summary()
+    {
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Base Selection"));
 	summary = Summary::AddLine(summary, (base != "") ?
@@ -210,7 +214,7 @@
      * @return list of strings list of packages needed for autoinstallation
      */
     global define list<string> autoinstPackages()
-	``{
+    {
 
 	list<string> allpackages = [];
 
@@ -316,7 +320,7 @@
      * @return boolean
      */
     global define boolean Write()
-	``{
+    {
 
         if (imaging)
         {
@@ -433,7 +437,8 @@ this message can be ignored."));
     /**
      * Initialize temporary target
      */
-    global define void  pmInit() ``{
+    global define void  pmInit()
+    {
 
 	string tmproot = AutoinstConfig::tmpDir;
 
@@ -449,7 +454,8 @@ this message can be ignored."));
      * @param list calculated post packages
      * @return void
      */
-    global define void addPostPackages(list<string> calcpost) ``{
+    global define void addPostPackages(list<string> calcpost)
+    {
 	post_packages = (list<string>)toset(union(calcpost,post_packages));
 	return;
     }
