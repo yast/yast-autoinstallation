@@ -35,12 +35,14 @@ Please wait while the system is being prepared for autoinstallation.</p>
     list progress_stages =
 	[
 	 _("Retrieve & Read Control File"),
+	 _("Process Profiles and Rules"),
 	 _("Parse control file")
 	 ];
 
     list progress_descriptions =
 	[
 	 _("Retrieving System Profile"),
+	 _("Processing Profiles and Rules"),
 	 _("Parsing control file")
 	 ];
 
@@ -56,83 +58,10 @@ Please wait while the system is being prepared for autoinstallation.</p>
     Progress::Title(ProfileLocation::message);
 
     boolean ret = false;
+    ProfileLocation::Process();
     while (true)
-    {
-
-	string profile_location =  AutoInstall::xml_tmpfile;
-
-	if (ProfileLocation::scheme == "tftp")  // TFTP
-	{
-	    ret = ProfileLocation::TFTP( profile_location);
-	}
-	else if (ProfileLocation::scheme == "file" )  // FILE or CDROM
-	{
-	    string file_path = sformat("%1/%2", Installation::sourcedir, locationParams["path"]:"");
-	    if (SCR::Read(.target.size, file_path)>0)
-	    {
-		string cpcmd = sformat("cp %1/%2 %3", Installation::sourcedir, locationParams["path"]:"", profile_location);
-		y2milestone("copy profile: %1", cpcmd);
-		SCR::Execute(.target.bash, cpcmd);
-	    }
-	    else
-	    {
-		string cpcmd = sformat("cp %1 %2", locationParams["path"]:"", profile_location);
-		y2milestone("copy profile: %1", cpcmd);
-		SCR::Execute(.target.bash, cpcmd);
-	    }
-
-	    if (SCR::Read(.target.size, profile_location) >0)
-	    {
-		ret = true;
-	    }
-	    else
-	    {
-		ret = false;
-	    }
-	}
-	else if (ProfileLocation::scheme == "nfs")  // NFS
-	{
-	    ret = ProfileLocation::NFS( profile_location);
-	}
-	else if (ProfileLocation::scheme == "http")  // HTTP
-	{
-	    ret = ProfileLocation::HTTP( profile_location);
-	}
-	else if (ProfileLocation::scheme == "floppy") // FLOPPY
-	{
-	    ret = ProfileLocation::FLOPPY( profile_location);
-	}
-	else if (ProfileLocation::scheme == "device") // Device
-	{
-	    ret = ProfileLocation::DEVICE ( profile_location);
-	}
-	else if (ProfileLocation::scheme == "default") // DEFAULT
-	{
-	    if (SCR::Read(.target.size, "/autoinst.xml") >0)
-	    {
-		string cpcmd = sformat("cp /autoinst.xml %1",  profile_location);
-		y2milestone("copy profile: %1", cpcmd);
-		SCR::Execute(.target.bash, cpcmd);
-		ret = true;
-	    }
-	    else if (SCR::Read(.target.size, sformat("%1/autoinst.xml", Installation::sourcedir)) > 0)
-	    {
-		string cpcmd = sformat("cp %1/autoinst.xml %2", Installation::sourcedir , profile_location);
-		y2milestone("copy profile: %1", cpcmd);
-		SCR::Execute(.target.bash, cpcmd);
-		ret = true;
-	    }
-	    else
-	    {
-		ret = false;
-	    }
-	}
-	else
-	{
-	    y2error("Protocol not supported");
-	}
-
-
+    {	 
+	ret = AutoInstallRules::GetRules();
 	if (ret)
 	{
 	    break;
@@ -147,6 +76,12 @@ Please wait while the system is being prepared for autoinstallation.</p>
 	}
     }
     sleep(1000);
+
+    ret = false;
+    
+    ret = AutoInstallRules::Merge( AutoInstall::xml_tmpfile);
+    
+    Progress::NextStage();
 
     // Set reporting behaviour to default, changed later if required
     Report::LogMessages(true);
