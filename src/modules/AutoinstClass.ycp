@@ -97,8 +97,17 @@
 			       string resultFileName
 			       )
 	``{
+
+	string dontmerge_str = "";
+	y2milestone("dd: %1", AutoinstConfig::dontmerge );
+	integer i = 1;
+	foreach (string dm,  AutoinstConfig::dontmerge, ``{
+	    dontmerge_str = dontmerge_str + sformat(" --param dontmerge%1 \"'%2'\" ", i,  dm);
+	    i = i + 1;
+	});
 	string tmpdir = AutoinstConfig::tmpDir;
-	string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'addon'\" --param with ";
+	string MergeCommand = sformat("/usr/bin/xsltproc --novalid --param replace \"'false'\" %1 --param with ",dontmerge_str ) ;
+	
 	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"", configuration["class"]:"") + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";

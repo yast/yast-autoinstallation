@@ -139,6 +139,11 @@
 
     global string message = "";
 
+    // Class merging.
+    // lists not to be merged, instead they will be "added"
+    //
+    global list dontmerge = [];
+    
 
     /**
      * Return location of profile from command line.
@@ -264,7 +269,9 @@
 	    Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");		
 	    AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");	
 	    classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );	
-
+	    string tmp_dontmerge = Misc::SysconfigRead( .sysconfig.autoinstall.XSLT_DONTMERGE, "addon,conf" );
+	    dontmerge = splitstring(tmp_dontmerge, ",");
+	    
 	    // Set the defaults, just in case.
 	    if (Repository == "" || Repository == nil )
 	    {
