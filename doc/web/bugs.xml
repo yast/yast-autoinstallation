@@ -16,219 +16,54 @@
     </para>
   <section>
     <title>Bugs</title>
+
+
+<!-- bug start -->
     <refentry>
       <refnamediv>
-	<refname>Control file over network</refname>
-	<refpurpose>Bug in URL parser</refpurpose>
+	<refname>Configuration options missing in configuration system</refname>
+	<refpurpose></refpurpose>
       </refnamediv>
       <refsect1>
 	<title>Applies to</title>
-	<para>SuSE Linux Version 8.0</para>
+	<para>SuSE Linux Version 8.1</para>
       </refsect1>
       <refsect1>
 	<title>Severity</title>
-	<para>Major with workaround</para>
+	<para>Major</para>
       </refsect1>
       <refsect1>
 	<title>Symptom</title>
-	<para>Retrieving the control file via network does not work in some
-	  cases. Using the following keyword on the command line results in an
-	  error.</para>
-	<para><emphasis>autoyast=nfs://ip-of-nfs:/path/autoinst.xml</emphasis></para>
+	<para>
+		When using the configuration system (<command>yast2 autoyast</command>) many configuration modules, i.e. partitioning 
+		do not show up in the configuration tree.
+	  </para>
       </refsect1>
       <refsect1>
 	<title>Cause</title>
-	<para>Parsing the URL with a colon after the IP of the server fails.</para>
+	<para>Missing file in RPM package</para>
       </refsect1>
       <refsect1>
 	<title>Solution</title>
-	<para>Remove the second colon in the URL or update auto-installation
-	  module from the SuSE FTP server.</para>
+	<para>
+		Install new package. 
+	  </para>
       </refsect1>
       <refsect1>
 	<title>Status</title>
 	<para>Fixed, Update package <ulink
-	    url="ftp://ftp.suse.com/pub/suse/i386/update/8.0/yast1">available
-	    on official FTP server.</ulink></para>
+	    url="ftp://ftp.suse.com/pub/people/nashif/autoyast2/8.1/RPMS">available
+	    on FTP server.</ulink></para>
       </refsect1>
     </refentry>
 
+<!-- bug end -->
 
 
-
-    <refentry>
-      <refnamediv>
-	<refname>Root password not set</refname>
-	<refpurpose>Root password not set when given as clear text</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Applies to</title>
-	<para>SuSE Linux Version 8.0</para>
-      </refsect1>
-      <refsect1>
-	<title>Severity</title>
-	<para>Major with workaround</para>
-      </refsect1>
-      <refsect1>
-	<title>Symptom</title>	
-	<para>
-	  See <ulink
-	    url="http://lists.suse.com/archive/suse-autoinstall/2002-May/0009.html">http://lists.suse.com/archive/suse-autoinstall/2002-May/0009.html</ulink>
-</para>
-      </refsect1>
-       <refsect1>
-	<title>Cause</title>
-	<para>Root password in described case is not set.</para>
-      </refsect1>
-  <refsect1>
-	<title>Solution</title>
-	<para>Use <emphasis>encrypted</emphasis> password in the control file.</para>
-      </refsect1>      
-     <refsect1>
-	<title>Status</title>
-	<para>Fixed, Update package<ulink url="ftp://ftp.suse.com/pub/people/nashif/autoyast2"> available on FTP server</ulink>.</para>
-      </refsect1>
-
-    </refentry>
-
-
-
-    <refentry>
-      <refnamediv>
-	<refname>Problems creating more than 4 partitions</refname>
-	<refpurpose>Only primary partitions are created</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Applies to</title>
-	<para>SuSE Linux Version 8.0</para>
-      </refsect1>
-      <refsect1>
-	<title>Severity</title>
-	<para>Major</para>
-      </refsect1>
-      <refsect1>
-	<title>Symptom</title>	
-	<para>
-	  When more than 4 partitions are configured in the control file, no
-	  extended partiton is created. This problem occurs only when
-	  partitioning  a harddisk from scratch.
-	</para>
-      </refsect1>
-       <refsect1>
-	<title>Cause</title>
-	<para>
-	  Partition type is not changed during creation of partitions
-	</para>
-      </refsect1>
-  <refsect1>
-	<title>Solution</title>
-	<para>Use update package.</para>
-      </refsect1>      
-     <refsect1>
-	<title>Status</title>
-	<para>Fixed, Update package<ulink url="ftp://ftp.suse.com/pub/people/nashif/autoyast2"> available on FTP server</ulink>.</para>
-      </refsect1>
-
-    </refentry>
-
-
-
-
-
-    <refentry>
-      <refnamediv>
-	<refname>Routes are not set</refname>
-	<refpurpose>Routes are not set as specified in control file</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Applies to</title>
-	<para>SuSE Linux Version 8.0</para>
-      </refsect1>
-      <refsect1>
-	<title>Severity</title>
-	<para>Major</para>
-      </refsect1>
-      <refsect1>
-	<title>Symptom</title>	
-	<para>
-	  See <ulink
-	    url="http://lists.suse.com/archive/suse-autoinstall/2002-May/0010.html">http://lists.suse.com/archive/suse-autoinstall/2002-May/0010.html</ulink>
-</para>
-      </refsect1>
-       <refsect1>
-	<title>Cause</title>
-	<para>Routes section is ignored due to a check for a parameter which
-	  is set during normal operation</para>
-      </refsect1>
-  <refsect1>
-	<title>Solution</title>
-	<para>Use update package for the network configuration module</para>
-      </refsect1>      
-     <refsect1>
-	<title>Status</title>
-	<para>Fixed, Update package<ulink url="ftp://ftp.suse.com/pub/people/nashif/autoyast2"> available on FTP server</ulink>.</para>
-      </refsect1>
-
-    </refentry>
   </section>
   <section>
     <title>Wishlist</title>
   <para>nothing yet</para>
-  </section>
-  <section>
-    <title>Misc.</title>
-    <section>
-      <title>Using update packages</title>
-      <para>Update package <ulink
-	    url="ftp://ftp.suse.com/pub/suse/i386/update/8.0/yast1">available
-	    on official FTP server</ulink> can be easily used with network
-	installations (Over NFS) and in other cases only with custom made boot
-	media (i.e. custom made CDs).</para>
-      <para>To use an update package, you can either copy the new RPM into the
-	right series (<filename>yast1</filename> or <filename>yast2</filename>)
-	in the <filename>suse</filename> directory and overwrite the old
-	package, even though it has a different name, i.e.
-	</para>
-<screen>
-cp /tmp/yast2-module-autoinst-2.5.23-1.noarch.rpm  &lt;path to suse&gt;/suse/yast1/yast2-module-autoinst-2.5.22-0.noarch.rpm
-</screen>
-      <para>
-	Or by removing the old package and replacing it with the new update
-	package. This requires a change of the package information in
-	<filename>suse/setup/descr/common.pkd</filename>. (At least Filename and
-	Version fields	of the package entry)
-      </para>
-    </section>
-    <section>
-      <title>Using update packages during installation.</title>
-      <para>In this case you need unpack the <emphasis>root</emphasis> image
-	which is available in the directory <filename>suse/image</filename>
-	into a new directory under <filename>suse</filename> called
-	<filename>inst-sys</filename>. To accomplish this, please follow the
-	next example:</para>
-<screen>
-cd  &lt;path to suse&gt;/suse
-mkdir  inst-sys
-cd inst-sys
-mount -oloop  &lt;path to suse&gt;/suse/images/root /mnt
-cp -a /mnt/* .
-</screen>
-      <para>
-	Next time you install, YaST2 will be started from
-	<filename>inst-sys</filename> instead of the <emphasis>root</emphasis>
-	image.
-	Changes in the <filename>inst-sys</filename> directory will affect the
-	installation, so only make required changes.
-      </para>
-      <para>To unpack a package into inst-sys, use the following script which
-	can be called <emphasis>unrpm</emphasis> (<ulink
-	  url="http://www.suse.de/~nashif/autoinstall/unrpm"> unrpm
-	  script</ulink>):</para>
-      <screen>
-cd  &lt;path to suse&gt;/suse/inst-sys
-unrpm /tmp/yast2-module-autoinst-2.5.23-1.noarch.rpm
-</screen>
-    </section>
   </section>
 </article>
     

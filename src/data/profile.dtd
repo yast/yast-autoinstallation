@@ -27,12 +27,14 @@
 
 <!ENTITY % optiontags "job-sheets|snd_enable|snd_index">
 <!ENTITY % usertags "encrypted|user_password| username">
+<!ENTITY % lvmtags "lvm_name|pesize|logical_volumes">
 
 
 
 <!-- This is to solve conflict between diffeent resources having same tag -->
 <!ELEMENT options (#PCDATA | %optiontags;)* > 
 <!ELEMENT user (#PCDATA | %usertags;)* > 
+<!ELEMENT lvm_group (#PCDATA | %lvmtags;)* > 
 
 <!ELEMENT configure (files?, inetd?, ldap?, mail?, networking?,  nfs?, nfs_server?, nis?, nisplus?,  printer?, runlevels?, scripts?, security?, sysconfig?,  users?, x11?)>
 <!ELEMENT install ( bootloader?, general?, lvm?, partitioning?, raid?, report?, software? )>

@@ -187,7 +187,7 @@ to delete.
 	Wizard::SetScreenShotName ("autoyast-classConf");
 	symbol mode = AIClass::Working["action"]:`nothing;
 	string name = AIClass::Working["profile"]:"";
-	y2milestone("Profile in work: %1", AIClass::Working);
+	y2debug("Profile in work: %1", AIClass::Working);
 	    
 	map thisProfile = $[];
 	
@@ -199,7 +199,7 @@ to delete.
 	{
 	    thisProfile = select(filter(map profile,  AIClass::Profiles,``(profile["name"]:"" == name)),0,$[]);		
 	    profile_path = AIClass::findPath(name);
-	    y2milestone("Profile path: %1", profile_path);	    		  
+	    y2debug("Profile path: %1", profile_path);	    		  
 	}
 
 	
@@ -379,7 +379,7 @@ is merged when joining several classes</p>
 	Wizard::SetContents(title,	
 			    RereadClasses(), help, true, true);
 
-	// UI::ChangeWidget (`id (`next), `Label, FinishButtonLabel());
+	
 		
 	    	
 	any class =  UI::QueryWidget(`id(`table), `CurrentItem);
@@ -448,7 +448,7 @@ to delete something.
 		Wizard::SetContents(title,
 				    RereadClasses(), help, true, true);
 		
-		y2milestone("classes: %1", AIClass::Classes );
+		y2debug("classes: %1", AIClass::Classes );
 		AIClass::SaveClasses();
 	    }     
 	    
@@ -514,17 +514,26 @@ to delete something.
 	
 	repeat {
 	    ret = UI::UserInput();
-	    if (ret == `save ) {		
-		if (UI::QueryWidget(`id(`name),`Value) == "") {
+	    if (ret == `save )
+	    {
+		if (UI::QueryWidget(`id(`name),`Value) == "")
+		{
 		    UI::MessagePopup(_("That name is already used. Select another name."));
 		    continue;
 		}
-		if (mode !=`edit && contains(classNames, UI::QueryWidget(`id(`name),`Value))) {
+		if (mode !=`edit && contains(classNames, UI::QueryWidget(`id(`name),`Value)))
+		{		    
 		    UI::MessagePopup(_("That name is already used. Select another name."));
 		    continue;
-		}	
+		}
+		string name = UI::QueryWidget(`id(`name),`Value);
+		if (checkFileName(name) != 0 || name == "")
+		{
+		    UI::ErrorPopup(invalidFileName());
+		    continue;
+		}
 		map newClass = $[
-				 "name":UI::QueryWidget(`id(`name),`Value),
+				 "name": name,
 				 "order":UI::QueryWidget(`id(`order),`Value),
 				 "description":UI::QueryWidget(`id(`description),`Value)
 		];
@@ -586,10 +595,10 @@ to delete something.
 	    list sorted_profiles =  sort(`x,`y, filter(`c, toset(selected_profiles),``(c["profile"]:""!= "none")),
 					 ``(x["order"]:0<=y["order"]:0)					
 					 );
-	    y2milestone("Selected Profiles: %1", sorted_profiles);
+	    y2debug("Selected Profiles: %1", sorted_profiles);
 	    if (size(sorted_profiles)>0)
 	    {
-		y2milestone("Running Merge...");
+		y2debug("Running Merge...");
 		MergeAll(sorted_profiles, `current, AIConfig::currentFile);
 	    }
 	    return `next;
@@ -845,7 +854,7 @@ to perform a merge.
 	boolean skip = false;
 	foreach(`c, selected_profiles,
 		``{
-	    y2milestone("AIClass::Profiles: %1",  AIClass::Profiles);
+	    y2debug("AIClass::Profiles: %1",  AIClass::Profiles);
 	    map profile = select(filter(`cc, AIClass::Profiles,
 				      ``( cc["name"]:"" == c["profile"]:"" )
 				      ),
@@ -861,7 +870,7 @@ to perform a merge.
 	    else
 	    {
 
-		y2milestone("Working on profile: %1", profile);
+		y2debug("Working on profile: %1", profile);
 		string base_text = "empty control file";
 		if (base != `empty)
 		    base_text = "current control file";

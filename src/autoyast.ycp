@@ -400,4 +400,10 @@
     }
     any ret = AutoSequence ();
     Wizard::RestoreScreenShotName ();
+
+    if (SCR::Read(.target.size, "/var/lib/autoinstall/selections.cache") > 0)
+    {
+	SCR::Execute(.target.remove, "/var/lib/autoinstall/selections.cache");
+    }
+    return ret;
 }

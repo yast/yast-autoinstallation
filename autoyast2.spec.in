@@ -1,6 +1,6 @@
 @HEADER-COMMENT@
 
-# neededforbuild  ImageMagick docbook-dsssl-stylesheets docbook-toys docbook_3 docbook_4 expat freetype2 iso_ent jade_dsl liblcms libpng perl-Text-DelimMatch perl-URI perl-XML-DOM perl-XML-Parser perl-XML-RegExp perl-XML-Simple perl-libwww-perl sp sp-devel xf86 yast2-devel-packages ghostscript-fonts-other ghostscript-fonts-std ghostscript-library ghostscript-serv ghostscript-x11 libgimpprint glib
+# neededforbuild  ImageMagick docbook-dsssl-stylesheets docbook-toys docbook_3 docbook_4 expat freetype2 iso_ent jade_dsl liblcms libpng perl-Text-DelimMatch perl-URI perl-XML-DOM perl-XML-Parser perl-XML-RegExp perl-XML-Simple perl-libwww-perl sp sp-devel xf86 yast2-devel-packages ghostscript-fonts-other ghostscript-fonts-std ghostscript-library ghostscript-serv ghostscript-x11 libgimpprint glib cups-libs libtiff libjpeg openssl
 
 @HEADER@
 Requires:	yast2-core yast2-xml libxslt autoyast2-installation
@@ -70,6 +70,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 
 
 @configdir@/autoyast.y2cc
+@configdir@/autoinst_modules.conf
 @yncludedir@/autoinstall/bootloader_dialogs.ycp
 @yncludedir@/autoinstall/classes.ycp
 @yncludedir@/autoinstall/conftree.ycp
@@ -88,6 +89,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 @clientdir@/autoinst_general.ycp
 @clientdir@/autoinst_report.ycp
 @clientdir@/autoinst_linuxrc.ycp
+@clientdir@/autoinst_classes.ycp
 @clientdir@/autoinst_x11.ycp
 @clientdir@/autoinst_users.ycp
 @clientdir@/autoinst_monitor.ycp
@@ -135,6 +137,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 %files installation
 %defattr(-,root,root)
 @scrconfdir@/autoinstall.scr
+
 @moduledir@/AIClone.ycp
 @clientdir@/autoinst_configure.ycp
 %dir @yncludedir@/autoinstall
