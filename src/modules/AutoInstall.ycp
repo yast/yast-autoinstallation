@@ -895,8 +895,10 @@
 	integer counter = 0;
 	foreach(map file, Files,
 		``{
-	    if (file["file_contents"]:"" != "") {
+	    if (file["file_contents"]:"" != "")
+	    {
 		string alternate_location = sformat("%1/%2", files_dir, counter);
+		y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );
 		SCR::Write (.target.string, file["file_path"]:alternate_location, file["file_contents"]:"");
 	    }
 	    counter = counter + 1;

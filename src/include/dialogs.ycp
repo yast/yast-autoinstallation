@@ -79,49 +79,23 @@ contains all the packages.</p>");
 
 	    if (ret ==`opendir)
 	    {
-		new_rep = PopupDir(AIConfig::Repository);
-		if (AIConfig::Repository != new_rep) {
-		    changed = true;
-		    AIConfig::Repository = new_rep;
-		}
-
-		if (AIConfig::Repository!="")
-		{
-		    UI::ChangeWidget(`id(`repository), `Value, AIConfig::Repository);
-		}
-
+		new_rep = PopupDir(AIConfig::Repository);	
+		UI::ChangeWidget(`id(`repository), `Value, new_rep);
+		continue;
 	    }
 	    else if (ret ==`openclassdir)
 	    {
-		new_classdir = PopupDir(AIClass::classDir);
-		if ( AIClass::classDir!= new_classdir) {
-		    changed = true;
-		    AIClass::classDir = new_classdir;
-		}
-
-		if (AIClass::classDir!="")
-		{
-		    UI::ChangeWidget(`id(`classdir), `Value, AIClass::classDir);
-		}
-
+		new_classdir = PopupDir(AIClass::classDir);		
+		UI::ChangeWidget(`id(`classdir), `Value, new_classdir);
+		continue;
 	    }
 	    else if (ret ==`opensusedir)
-	    {
-		if (AIServer::PackageRep=="")
-		    AIServer::PackageRep="/";
-		new_susedir = PopupDir(AIServer::PackageRep);
-		if ( AIServer::PackageRep!= new_susedir) {
-		    changed = true;
-		    AIServer::PackageRep = new_susedir;
-		}
-
-		if (AIServer::PackageRep!="")
-		{
-		    UI::ChangeWidget(`id(`susedir), `Value, AIServer::PackageRep);
-		}
-
+	    {		
+		new_susedir = PopupDir((AIServer::PackageRep == "") ? "/tmp" : AIServer::PackageRep);	
+		UI::ChangeWidget(`id(`susedir), `Value, new_susedir );
+		continue;
 	    }
-	    else if (ret == `key || ret==`next)
+	    else if ( ret==`next)
 	    {
 		if (AIConfig::Repository != new_rep) {
 		    changed = true;
@@ -130,21 +104,13 @@ contains all the packages.</p>");
 		if (AIClass::classDir != new_classdir) {
 		    changed = true;
 		    AIClass::classDir = new_classdir;
+		}	   
+		if ( AIServer::PackageRep!= new_susedir) {
+		    changed = true;
+		    AIServer::PackageRep = new_susedir;
 		}
 	    }
-
-	    if ( AIServer::PackageRep!= new_susedir) {
-		changed = true;
-		AIServer::PackageRep = new_susedir;
-	    }
-	    if ( AIClass::classDir!= new_classdir) {
-		changed = true;
-		AIClass::classDir = new_classdir;
-	    }
-	    if (AIConfig::Repository != new_rep) {
-		changed = true;
-		AIConfig::Repository = new_rep;
-	    }
+	   
 
 
 	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));

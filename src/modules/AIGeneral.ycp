@@ -158,6 +158,18 @@
 	summary = Summary::AddLine(summary, (clock["utc"]:false) ?
 				   _("GMT") : _("Local time"));
 
+	summary = Summary::AddHeader(summary, _("Reboot after installation?"));
+	summary = Summary::AddLine(summary, (mode["reboot"]:false) ?
+				   _("Yes") : _("No"));
+
+	summary = Summary::AddHeader(summary, _("Confirm every step of the boot process?"));
+	summary = Summary::AddLine(summary, (mode["interactive_boot"]:false) ?
+				   _("Yes") : _("No"));
+	
+	summary = Summary::AddHeader(summary, _("Confirm installation?"));
+	summary = Summary::AddLine(summary, (mode["confirm"]:false) ?
+				   _("Yes") : _("No"));
+	
 	return summary;				   
     }
 

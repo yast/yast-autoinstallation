@@ -18,75 +18,111 @@
     <mediaobject>&cms-configuration-type;</mediaobject>
   </figure>
   
+  <sect2>
+    <title>Creating a new Profile</title>
+    <para>
+      Apart from some exceptions, almost all resources of the control file can
+      be configured using the configuration management system. The system
+      offers you much flexibility and the configuration of some resources is
+      the same one used to create configuration on a local system. New
+      interfaces were created for special and complex configuration resources,
+      i.e. Partitioning and General options to make it easier for you o access
+      the infromation easy and fast. 
+    </para>
+    <para>
+      Besides, using the &cms; guarantees that the resulting control file is
+      valid and can be used directly to start an automated installation.
+    </para>
+  </sect2>
+
+
+  <sect2>
+    <title>Import of Legacy and Foreign Configuration Files</title>
+    <para>Using &autoyast2;, you can import ALICE configuration files from
+      previous SuSE releases and foreign auto-installation systems
+      (Kickstart). Please consult the chapter dealing with these issues in this manual.
+  </sect2>
   <sect2 id="Classes">
     <title>
       Using Classes and Templates
     </title>
     <simplesect>
-    <para>
-      Using the configuration management system, you can define a set of
-      classes. The class definition consists  of the following variable for each class:
-    </para>
-    <itemizedlist>
-      <listitem>
-	<para>	        
-	  Name: Class name
-	</para>
-      </listitem>
-      <listitem>
-	<para>	    
-	  Descriptions: Class description
-	</para>
-      </listitem>
-      <listitem>
-	<para>	        
-	  Order: Order (or priority) of the class in the stack of migration
-	</para>
-      </listitem>
-    </itemizedlist>
-    <figure>
-      <title>Defining Classes</title>
-      <mediaobject>&cms-class-definitions;</mediaobject>	  
-    </figure>
-    <para>
-      You can create as many classes as required, however it is
-      recommended to keep the set of classes as small as possible to keep the
-      configuration system concise. As an example, the following set of
-      classes can be used:
-    </para>
-    <itemizedlist>
-      <listitem>
-	<para>
-	  site: Classes describing a physical location or site.
-	</para>
-      </listitem>
-      <listitem>
-	<para>machine: Classes describing a type of machine or make</para>
-      </listitem>
-      <listitem>
-	<para>role: Classes describing the function of the machine to be installed</para>
-      </listitem>
-      <listitem>
-	<para>group: Classes describing a department or a group within a site or a location.</para>
-      </listitem>
-    </itemizedlist>
-    <para>
-      A  file defined in a class can have the same syntax and format as the
-      regular control file and represents a subset of the configuration. For example,
-      to create a new control file  for a special computer with a specific network
-      interface, only the resource in the control file, which control
-      the configuration of the network are needed. Having multiple network
-      types, you can merge the one needed for a special type of hardware
-      with other class files and thus, creating a new control file which
-      corosponds to the defined classes.
-    </para>
+      <para>
+	Using the configuration management system, you can define a set of
+	classes. The class definition consists  of the following variable for each class:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>	        
+	    Name: Class name
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>	    
+	    Descriptions: Class description
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>	        
+	    Order: Order (or priority) of the class in the stack of migration
+	  </para>
+	</listitem>
+      </itemizedlist>
+      <figure>
+	<title>Defining Classes</title>
+	<mediaobject>&cms-class-definitions;</mediaobject>	  
+      </figure>
+      <para>
+	You can create as many classes as required, however it is
+	recommended to keep the set of classes as small as possible to keep the
+	configuration system concise. As an example, the following set of
+	classes can be used:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    site: Classes describing a physical location or site.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>machine: Classes describing a type of machine or make</para>
+	</listitem>
+	<listitem>
+	  <para>role: Classes describing the function of the machine to be installed</para>
+	</listitem>
+	<listitem>
+	  <para>group: Classes describing a department or a group within a site or a location.</para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	A  file defined in a class can have the same syntax and format as the
+	regular control file and represents a subset of the configuration. For example,
+	to create a new control file  for a special computer with a specific network
+	interface, only the resource in the control file, which control
+	the configuration of the network are needed. Having multiple network
+	types, you can merge the one needed for a special type of hardware
+	with other class files and thus, creating a new control file which
+	corosponds to the defined classes.
+      </para>
 
     </simplesect>
     <simplesect>
       <title>Templates</title>
-      
+      <para>      
+	Templates are control files which are not complete in their content and
+	belong to one or several classes. To make a template installable, it has
+	to run through  a merge process which will set all needed values
+	according to the data available in the configurations  within
+	the classes.
+      </para>
+      <para>
+	If you define classes in the control file using the &cms;, the file
+	will not be saved in the repository, instead it will be installed in
+	the <filename>templates</filename> directory in the repository.
+      </para>
     </simplesect>
   </sect2>
+
 </sect1>
 
 

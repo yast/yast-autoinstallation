@@ -56,7 +56,15 @@ on the command line.</p>"));
 	any ret = "";
 	string server = "";
 	string Path = "";
-	UI::SetFocus(`id(`server));
+
+	if (parameters["scheme"]:"" == "file" || parameters["scheme"]:"" == "cdrom") {
+	    UI::ChangeWidget(`id(`server), `Enabled, false);
+	    UI::SetFocus(`id(`Path));
+	}
+	else
+	{
+	    UI::SetFocus(`id(`server));
+	}
 	repeat {
 	    ret = UI::UserInput();
 	    if (ret == `abort)

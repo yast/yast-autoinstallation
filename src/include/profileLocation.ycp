@@ -14,6 +14,8 @@
 
     import "StorageDevices";
     import "Mode";
+    import "TFTP";
+    import "HTTP";
     include "network/ip.ycp";
 
 
@@ -73,12 +75,9 @@
 	``{
 	string ip = "";
 	string path_to_file = lookup(cmdLine, "path","");
-	string server = cmdLine["server"]:"";
-	
-	map tftpmap = $[];
+	string server = cmdLine["server"]:"";		
 	boolean ok = false;
-	tftpmap = add(tftpmap, "localfile", localfile);
-	
+	string remote = "";
 	if (substring(path_to_file, size(path_to_file) -1) == "/")
 	{
 	    ip = Mode::installMap["ip"]:"";
@@ -86,9 +85,9 @@
 
 	   
 	    y2milestone("Trying to load: %1%2", path_to_file, tmp_hex_ip );
-	    tftpmap = add(tftpmap, "serverstr", server + ":" + path_to_file + tmp_hex_ip);
+	    remote = sformat("%1/%2",  path_to_file , tmp_hex_ip);
 	    
-	    if (SCR::Execute(.tftp,"get", tftpmap))
+	    if (TFTP::Get(server, remote, localfile))
 	    {
 		y2milestone("tftp success");
 		ok = true;
@@ -100,8 +99,8 @@
 		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size(tmp_hex_ip)-1);
 		    y2milestone("Trying to load: %1%2", path_to_file, tmp_hex_ip );
 		    
-		    tftpmap = change(tftpmap, "serverstr", server + ":" + path_to_file + tmp_hex_ip);
-		    if (SCR::Execute(.tftp, "get", tftpmap))
+		    remote = sformat("%1/%2",  path_to_file , tmp_hex_ip);
+		    if (TFTP::Get(server, remote, localfile ))
 		    {
 			y2milestone("tftp success");
 			ok = true;
@@ -113,7 +112,8 @@
 		    y2warning("Trying to load: %1default", path_to_file);
 		    
 		    tftpmap = change(tftpmap, "serverstr", server + ":" + path_to_file + "default");
-		    if (!SCR::Execute(.tftp, "get", tftpmap))
+		    remote = sformat("%1/default",  path_to_file);
+		    if (!TFTP::Get(server, remote, localfile))
 		    {
 			y2error("Control file can't be found");
 		    }
@@ -126,9 +126,8 @@
 	    }
 	}
 	else
-	{
-	    tftpmap = add(tftpmap, "serverstr", server + ":" + path_to_file);
-	    if (SCR::Execute(.tftp, "get", tftpmap))
+	{	    	    
+	    if (TFTP::Get(server,  path_to_file, localfile ))
 	    {
 		ok = true;
 	    }
@@ -292,7 +291,7 @@
 	``{
 	string ip = "";
 	boolean ok = false;
-	string server = parameters["path"]:"";
+	string server = parameters["server"]:"";
 	
 	string path_to_file = lookup(parameters, "path","");
 
@@ -314,7 +313,7 @@
 	y2milestone("filename: %1", FileName);
 	y2milestone("http dir: %1", http_dir);
 
-
+	map res = $[];
 	if (is_directory)
 	{
 
@@ -327,7 +326,9 @@
 	    }
 	    y2milestone("Trying to load: %1%2", path_to_file, tmp_hex_ip );
 	    string full_url = sformat("http://%1/%2/%3", server,  http_dir, tmp_hex_ip );
-	    if (lookup(SCR::Execute ( .http.getFile, full_url, localfile),"ok",false))
+
+	    res = HTTP::Get(full_url, localfile);
+	    if (res["code"]:0 == 200)
 	    {
 		y2milestone("copy from http success");
 		ok = true;
@@ -339,8 +340,9 @@
 		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size(tmp_hex_ip)-1);
 		    y2warning("Trying to load: %1%2", path_to_file, tmp_hex_ip );
 
-		    string full_url = sformat("http://%1/%2/%3", server ,  http_dir, tmp_hex_ip );
-		    if (lookup(SCR::Execute ( .http.getFile, full_url, localfile),"ok",false))
+		    string full_url = sformat("http://%1%2/%3", server ,  http_dir, tmp_hex_ip );
+		    res = HTTP::Get(full_url, localfile);
+		    if (res["code"]:0 == 200)
 		    {
 			y2milestone("Autoinstall: HTTP success");
 			ok = true;
@@ -350,8 +352,9 @@
 		if (!ok)
 		{
 		    y2warning("Trying to load: %1default", path_to_file);
-		    string full_url = sformat("http://%1/%2/default", server ,  http_dir );
-		    if (lookup(SCR::Execute ( .http.getFile,full_url , localfile),"ok",false))
+		    string full_url = sformat("http://%1%2/default", server ,  http_dir );
+		    res = HTTP::Get(full_url, localfile);
+		    if (res["code"]:0 == 200)
 		    {
 			y2milestone("Autoinstall: HTTP success");
 			ok = true;
@@ -366,8 +369,9 @@
 	}
 	else
 	{
-	    string full_url = sformat("http://%1/%2/%3", server ,  http_dir ,  FileName);
-	    if (lookup(SCR::Execute ( .http.getFile, full_url  , localfile),"ok",false))
+	    string full_url = sformat("http://%1%2/%3", server ,  http_dir ,  FileName);
+	    res = HTTP::Get(full_url, localfile);
+	    if (res["code"]:0 == 200)
 	    {
 		ok = true;
 	    }

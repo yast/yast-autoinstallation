@@ -1,0 +1,74 @@
+
+
+Current Behaviour
+==================
+
+Currently Linuxrc needs several variables defined on the command line to make it boot the installation source,
+without complaining, for example if the user wishes to perform an auto-installation using a control file
+which is available on the CDROM (by building  a custom CD), linuxrc takes the 'file' scheme as the installation method 
+(instmode) and complains that 'file' is unsupported. It tries then to setup network via DHCP instead of using the 
+installation sources available on the CDROM.
+
+The keyword 'autoyast' should activate autoinstallation (by setting the value of the keyword in /etc/install.inf), but 
+linuxrc should behave just as normal if no other instruction are given on the command line or in the 'info' file.
+
+The user should be able for example to have the control files on a remote server and let YaST2 or Linuxrc fetch them from
+that server, but if nothing else is given, Linuxrc will just examine the boot media for an installation source like usual..
+
+The protocol specified in the 'autoyast' keyword should not be taken as the 'insmode'.
+
+
+
+
+The info file
+===================
+
+Currently and in some cases (and if the command line is not used), the user has to supply two different control files, one 
+for Linuxrc and one for YaST2. To make handling of complex installation easier, one file only should be our target. This can
+be accomplished in different ways:
+
+1. Let Linuxrc parse the XML control file for data it needs --> Requires implementing XML parsing in Linuxrc which would
+affect the size.
+
+2. Embed the traditional info file in the XML control file and let Linuxrc extract it --> Easy to implement and does not
+require many changes in Linuxrc.
+
+
+The control file must be placed in one of two locations:
+
+    * On a boot disk (also on CDROM)
+    * On a network
+
+
+Linuxrc should  be able to fetch the control file over the network in the following way:
+
+If the user adds the autoyast keyword on the command line with a remote location, i.e
+
+autoyast=http://10.10.0.1/file.xml
+
+then linuxrc activates the network (DHCP Server must be available) and fetches the file. Linuxrc then extracts the embedded 
+info file and evaluates the information within. In this case linuxrc knows more about the environment and can start installation
+as specified in the extracted 'info' file.
+The fetched control file is saved in a 'safe place' and is made available for YaST2 (i.e. by adding the path to /etc/install.inf).
+
+
+The control file with the embedded has the following form (only relevant part shown):
+
+
+...
+...
+      <info_file>
+<![CDATA[
+#
+# Don't remove the following line:
+# start_linuxrc_conf
+#
+install: nfs://1.1.1.1/server
+Textmode: 1
+
+# end_linuxrc_conf
+# Do not remove the above comment
+#]]>
+      </info_file>
+...
+...
