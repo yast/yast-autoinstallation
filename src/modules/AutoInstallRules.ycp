@@ -17,7 +17,7 @@
     import "Kernel";
     import "Mode";
     import "Profile";
-    import "Label";    
+    import "Label";
     include "autoinstall/profileDialogs.ycp";
 
     global string remote_rules_location = "rules/rules.xml";
@@ -73,9 +73,9 @@
     global list NonLinuxPartitions = [];
 
     global list LinuxPartitions = [];
-	
 
-    
+
+
     global map UserRules = $[];
 
     // Local
@@ -96,7 +96,7 @@
 	SCR::Execute(.target.mkdir, local_rules_location);
 
 	local_rules_file = local_rules_location + "/rules.xml";
-	
+
 	if (Mode::initial)
 	{
 	    ProbeRules();
@@ -204,7 +204,7 @@
 	string hex = ip2hex(hostaddress);
 	return hex;
     }
-    
+
 
     /**
      * Read rules file
@@ -252,14 +252,14 @@
 			string scriptPath = sformat("%1/%2", tmpdir,  "rule_" + rule);
 			y2milestone("Writing rule script into %1", scriptPath);
 			SCR::Write(.target.string, scriptPath, script);
-			
+
 			map out = SCR::Execute (.target.bash_output, "/bin/sh " + scriptPath, $[]);
 			string script_result = out["stdout"]:"";
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
-			
+
 			env[rule] = script_result;
-		    }		    
+		    }
 		    else if ( rule == "domain" )
 		    {
 			shellseg(ismatch, rule, match, op, matchtype);
@@ -289,7 +289,7 @@
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
 			env[rule] = others;
-		    }		    
+		    }
 		    else if ( rule == "xserver" )
 		    {
 			shellseg(ismatch, rule, match, op, matchtype);
@@ -325,13 +325,13 @@
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
 			env[rule] = hostid;
-		    }		    
+		    }
 		    else if ( rule == "arch" )
 		    {
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
 			env[rule] = arch;
-		    }		    
+		    }
 		    else if ( rule == "disksize" )
 		    {
 			// [ $["device":"/dev/hda", "size":"100000"] ]
@@ -524,7 +524,7 @@
 		{
 		    y2error("Merge Failed");
 		    StdErrLog(xsltret["stderr"]:"");
-		    ok =  false;		   
+		    ok =  false;
 		}
 
 		XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
@@ -539,7 +539,7 @@
 	return ok;
     }
 
-    
+
     /**
      * Process Rules
      *
@@ -552,7 +552,7 @@
 	string prefinal = local_rules_location + "/prefinal_autoinst.xml" ;
 	if (!Merge (  prefinal ) )
 	    return false;
-	
+
 	tomerge = [];
 
 

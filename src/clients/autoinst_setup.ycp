@@ -30,7 +30,7 @@
     import "AutoinstGeneral";
     import "AutoinstSoftware";
 
-    
+
 
     string help_text = UI(_("<P>
 Please wait while the system is prepared for autoinstallation.
@@ -41,7 +41,7 @@ Please wait while the system is prepared for autoinstallation.
 	 _("Load and configure additional kernel modules"),
 	 _("Configure General Settings "),
 	 _("Execute pre-install user scripts"),
-	 _("Create partition plans"),	
+	 _("Create partition plans"),
 	 _("Configure Software selections"),
 	 _("Configure Bootloader")
 	 ];
@@ -70,7 +70,7 @@ Please wait while the system is prepared for autoinstallation.
     // FIXME
     // Additional Kernel modules
     ///////////////////////////////////////////////////////////////////////
-    
+
     if (is(AutoInstall::loadKernelModules, list) && size(AutoInstall::loadKernelModules) > 0 )
     {
 	foreach(`m, AutoInstall::loadKernelModules, ``{
@@ -87,7 +87,7 @@ Please wait while the system is prepared for autoinstallation.
 		    ModulesConf::ModuleArgs (m["module"]:"",m["module_arguments"]:"" );
 		}
 	    }
-	
+
 	});
     }
 
@@ -95,50 +95,50 @@ Please wait while the system is prepared for autoinstallation.
     {
 	foreach(`m, AutoInstall::configureKernelModules, ``{
 	    if (m["module"]:"" != "")
-	    {	
+	    {
 		ModulesConf::ModuleArgs (m["module"]:"",m["module_arguments"]:"" );
-	
-	    }
-	
-	});
-    }   
 
-    
+	    }
+
+	});
+    }
+
+
     // configure general settings
     Progress::NextStage();
 
     AutoinstGeneral::Import(Profile::Flat["general"]:$[]);
     AutoinstGeneral::Write();
-    
+
 
     // Scripts
     ///////////////////////////////////////////////////////////////////////////
 
     Progress::NextStage();
-    
+
     AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
     AutoinstScripts::Write("pre-scripts");
 
-    
 
-    
+
+
     // Partitioning and Storage
     ////////////////////////////////////////////////////////////////////////
 
     Progress::NextStage();
     AutoinstStorage::Import(Profile::Flat["partitioning"]:[]) ;
-    
+
     if (!AutoinstStorage::Write())
     {
 	y2error("Aborting...");
 	return `abort;
     }
-    
+
 
     // Software
     //////////////////////////////////////////////////////////////////////////
-    Progress::NextStage();    
-    AutoinstSoftware::Import( Profile::Flat["software"]:$[] );			
+    Progress::NextStage();
+    AutoinstSoftware::Import( Profile::Flat["software"]:$[] );
     if (!AutoinstSoftware::Write())
     {
 	Report::Error(_("Error while configuring software selections.
@@ -153,7 +153,7 @@ Try again.
 
     Progress::NextStage();
     AutoInstall::bootloaderSettings();
-    
+
 
     Progress::Finish();
 

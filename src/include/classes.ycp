@@ -554,13 +554,14 @@ file should belong.</p>
 	foreach( map c, selected_profiles,
 		``{
 	    map profile = select(filter(`cc, AutoinstClass::confs,
-					``( cc["name"]:"" == c["profile"]:"" )
+					``( cc["name"]:"" == c["profile"]:""  && cc["class"]:"yyy" == c["class"]:"xxx")
 					),
 				 0,
 				 $[]
 				 );
 	    if (base == `empty && !skip)
 	    {
+		y2milestone("Working on profile: %1", profile);
 		SCR::Execute(.target.bash, "cp " + AutoinstConfig::classDir + "/" + profile["class"]:""  + "/" +  profile["name"]:"" +  "  " + tmpdir + "/base_profile.xml");
 		skip = true;
 	    }
@@ -575,7 +576,8 @@ file should belong.</p>
 
 		if (profile["name"]:"" != "" && !error)
 		{
-		    showFeedback(sformat("Merging %1 with %2....", profile["name"]:"", base_text));
+		    showFeedback(sformat("Merging %1 (%2) with %3 ....", profile["name"]:"",profile["class"]:"", base_text));
+			y2milestone("Merging %1 with %2....", profile["name"]:"", base_text);
 		    map xsltret = AutoinstClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "result.xml");
 		    if (xsltret["exit"]:-1 != 0 )
 		    {
@@ -583,6 +585,7 @@ file should belong.</p>
 			error =  true;
 		    }
 		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
+			Popup::Error("Wait...");
 		}
 		else
 		{
