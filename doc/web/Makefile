@@ -17,7 +17,7 @@ autolayout.xml: layout.xml
 	$(PROC) --output $@ $(STYLEDIR)/autolayout.xsl $<
 	make depends
 
-%.html: autolayout.xml
+%.html: autolayout.xml 
 	$(PROC) --output $@  $(STYLEOPT)  $(STYLESHEET)  $(filter-out autolayout.xml,$^) 
 
 depends: autolayout.xml

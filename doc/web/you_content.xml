@@ -6,7 +6,6 @@
       save bandwidth.
     </para>
   </section>
-
   <section>
     <title>
       Mirroring the Update Packages
@@ -141,36 +140,88 @@ ftp://192.168.0.1/updates/
     <para>
       The tool <command>online_update</command> is specially suitable for cron jobs and
       scripts. The following options are available with the
-      <command>online_update</command> (<filename>/usr/bin/online_update</filename>) tool:</para>
+      <command>online_update</command>
+    (<filename>/usr/bin/online_update</filename>) tool. The list of available
+    options can be shown by running <command> online_update -h</command>.
+  </para>
     <screen>
 
-Usage: online-update [-u url] [-p product] [-v version] [-a arch] [-d] [-s] [-n] [-g] [-i] [security] [recommended] [document] [optional]
+# online_update -h
+Usage: online-update [options] [types]
 
--u url      Base URL of directory tree from which to get patches.
+-u, --url URL            Base URL of directory tree used to get patches from.
+                         Supported protocols: http, ftp, smb, nfs, cd, dvd, file.
+                         If no protocol is given a local file is assumed.
+                         Examples: 'ftp://ftp.suse.com/pub/suse', 'cd:///',
+                                   'file:/var/lib/YaST2/you/mnt'
+                                   '/var/lib/YaST2/you/mnt'
 
--g          Only download patches; do not install.
--i          Install downloaded patches; do not download.
+-g, --download-only      Only download patches, don't install.
+-i, --install-only       Install downloaded patches, don't download.
 
--p product  Name of product for which to get patches.
--v version  Version of product for which to get patches.
--a arch     Base architecture of product for which to get patches.
+-q, --quick-check        Quick check for new updates. Doesn't check for types
+                         of updates.
+-k, --check              Check for new updates.
 
--d          Dry run. Only get patches; do not install them.
+-c, --show-config        Show configuration. Don't do anything.
+
+-p, --product PRODUCT    Name of product to get patches for.
+-v, --version VERSION    Version of product to get patches for.
+-a, --architecture ARCH  Base architecture of product to get patches for.
+-l, --language LANGCODE  Language used to show patch descriptions.
+
+-r, --reload             Reload patches from server.
+-d, --dry-run            Dry run. Only get patches, don't install them.
+-n, --no-sig-check       No signature check of downloaded files.
+
+-s, --show-patches       Show list of patches (Additionaly use -d to only show list
+                         of patches without installing them).
+-V, --verbose            Be verbose.
+-D, --debug              Debug output.
+
+security | recommended | document | optional   Types of patches to be installed.
+
+  </screen>
+  <para>The options displayed above are from the SuSE Linux 9.0. SLES8 has the
+    following options:</para>
+
+  <screen>
+
+% online_update -h
+Usage: online-update [-u url] [-p product] [-v version] [-a arch] [-d] [-s] \
+    [-n] [-g] [-i] \
+    [security] [recommended] [document] [optional]
+
+-u url      Base URL of directory tree used to get patches from.
+
+-g          Only download patches, don't install.
+-i          Install downloaded patches, don't download.
+
+-p product  Name of product to get patches for.
+-v version  Version of product to get patches for.
+-a arch     Base architecture of product to get patches for.
+
+-d          Dry run. Only get patches, don't install them.
 -n          No signature check of downloaded files.
 
 -s          Show list of patches.
 -V          Be verbose.
 -D          Debug output.
 
-security | recommended | document | optional   Types of patches to install.
+security | recommended | document | optional   Types of patches to be
+    installed.
 
-    </screen>
-    <para>
-      Although there are different  possibilities to set a cronjob, only the easiest
-      option is described. Proceed as follows:
-    </para>
+  </screen>
+  <para>
+    SuSE Linux 9.0 offers an option to create the cron job using the
+    <emphasis>YOU</emphasis> interface.
+  </para>
+  <para>
+    Although there are different  possibilities to set a cronjob, only the easiest
+    option is described. Proceed as follows:
+  </para>
 
-    <orderedlist>
+  <orderedlist>
       <listitem>
 	<para>Login as root</para>
       </listitem>    
@@ -222,6 +273,11 @@ MAILTO=""
     </note>
 
   </section>
+
+
+  
+
+
 <!--
   <section>
     <title>Creating a Patch CD-ROM</title>
@@ -263,5 +319,5 @@ MAILTO=""
 
 -graft-points i386/update/9.0=/usr/local/update/i386/update/9.0
     </screen>
-	-->
   </section>
+	-->
