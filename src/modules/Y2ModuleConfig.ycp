@@ -58,7 +58,7 @@
 	Desktop::Read(Values);
 	map configurations = Desktop::Modules;
 
-	y2milestone("%1", configurations );
+	y2debug("%1", configurations );
 	map groups = Desktop::Groups;
 
 	map confs = $[];
@@ -75,7 +75,7 @@
 		    string client =  name + "_auto";
 		    values["X-SuSE-YaST-AutoInstClient"] = client;
 		}
-		y2milestone("values: %1", values["X-SuSE-YaST-AutoInstClient"]:"" );
+		y2debug("values: %1", values["X-SuSE-YaST-AutoInstClient"]:"" );
 		confs[name]=values;
 	    }
 	});
@@ -106,7 +106,7 @@
      */
     define void CreateGroupTree (map Groups)
 	``{
-	y2milestone("Groups: %1", Groups);
+	y2debug("Groups: %1", Groups);
 
         list grouplist = [];
         grouplist = SortGroups (Groups, maplist (string rawname, map group, Groups, ``(rawname)));
@@ -120,7 +120,7 @@
 	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
         });
 
-	y2milestone("data: %1", MenuTreeData);
+	y2debug("data: %1", MenuTreeData);
 	return;
     }
 
@@ -274,10 +274,10 @@
 
 		if (!contains(done, p)) {
 		if (haskey(deps, p)) {
-			y2milestone("found dep");
+			
 			foreach(list r, deps[p]:[], ``{
 				if (!contains(done, r)) {
-				y2milestone("working on %1", r);
+				
 				m = add(m, $["res":r, "data":ModuleMap[r]:$[]]);
 				done = add(done, r);
 				}

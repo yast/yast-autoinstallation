@@ -16,7 +16,7 @@
     import "Y2ModuleConfig";
     import "AutoinstSoftware";
 
-    list packages = [];
+    list<string> packages = [];
     string resource = "";
     string module_auto = "";
 
@@ -75,16 +75,16 @@
 		}
 		else
 		{
-		    // Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
-		    any out = Call::Function(module_auto, ["Packages",  Profile::Flat[resource]:[] ]);
+		    map out = (map) Call::Function(module_auto, ["Packages",  Profile::Flat[resource]:[] ]);
 			if (is(out, list))
-				packages = union(packages, lookup( (map) out, "install", [] ));
-			// Call::Function(module_auto, ["Reset", [] ]);
+                        {
+			    packages = (list<string>) union(packages, (list<string>)out["install"]:[]);
+                        }
 		}
 	    }
 	}
     });
-    list post = AutoinstSoftware::post_packages;
+    list<string> post = AutoinstSoftware::post_packages;
     AutoinstSoftware::post_packages = toset(union(post,packages));
 
     return `auto;
