@@ -104,22 +104,62 @@
      *
      */
     global define initSource() ``{
-	
+
+	list theSources = [];
 	if (!AIConfig::PkdInitialized)
 	{
-	    string base_url = "dir://" + PackageRep;
-	    AIConfig::theSource = Pkg::SourceInit (base_url);
+	    
+
+	    string grepCmd = sformat("grep \"^VERSION\" %1/content | cut -d' ' -f 2",  PackageRep);
+	    map out = SCR::Execute(.target.bash_output, grepCmd);
+	    list version_raw = splitstring(out["stdout"]:"",  "\n");
+	    string version = version_raw[0]:"";
+
+		
+	    theSources = Pkg::SourceStartCache (true);
+	    y2milestone("sources: %1", theSources);
+	    if (size (theSources) <= 0)
+	    {
+		y2error ("Pkg::SourceStartCache failed");
+		theSources = [];
+	    }
+	    else
+	    {
+		foreach (`source, theSources, ``{
+		    y2milestone("source: %1", source);
+		    map pdata = Pkg::SourceProductData (source);
+		    y2milestone("data %1", pdata);
+		    if (contains(splitstring(pdata["productversion"]:"","-"), version))
+		    {
+			AIConfig::theSource = source;
+		    }
+		});
+	    }
+	    
+	    if (AIConfig::theSource == -1) {
+		y2milestone("creating new source");
+		string base_url = "dir://" + PackageRep;
+		integer ret = Pkg::SourceCreate (base_url);
+		  
+		if (ret!=nil)
+		{
+		    AIConfig::theSource = ret;
+		}	  
+	    }
+
+	  
 	}
 	else
 	{
 	    y2milestone("Source already active");
 	}
-	// Base selection
-
+	
 	sourceData 	= Pkg::SourceGeneralData(AIConfig::theSource);
+	y2milestone("source data %1", sourceData );
 	productData 	= Pkg::SourceProductData(AIConfig::theSource);
+	y2milestone("prod data %1", productData );
 	mediaData 	= Pkg::SourceMediaData(AIConfig::theSource);
-
+	y2milestone("media data %1", mediaData );
 	return;
     }
 	    
@@ -153,11 +193,11 @@
 
 	if (applicationID == "")
 	{	  	   
-	    params = params + sformat(" -A %1", productData["label"]:"SuSE-Linux");	   
+	    params = params + sformat(" -A \"%1\"", productData["label"]:"SuSE-Linux");	   
 	}
 	else
 	{
-	    params = params + sformat(" -A %1", applicationID);
+	    params = params + sformat(" -A \"%1\"", applicationID);
 	}
 	
 

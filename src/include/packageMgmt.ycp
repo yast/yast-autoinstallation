@@ -234,14 +234,14 @@ Please wait while the directory structure for the new ISO file is created.
 	     ];
 
 	
-	list ins_del_count = Pkg::PkgPrepareOrder();
-	y2milestone ("delete %1, install %2", ins_del_count[0]:-1, ins_del_count[1]:-1);
+	list selPacs = Pkg::GetPackages (`selected,false);
+	y2milestone ("install %1", selPacs);
 
 	
 	Progress::New(
 		      _("Creating ISO image"),
 		      "",     // progress_title
-		      size( progress_stages ) + ins_del_count[1]:-1 + 1,	// progress bar length
+		      size( progress_stages ) + size(selPacs) + 1,	// progress bar length
 		      progress_stages,
 		      progress_descriptions,
 		      help );
@@ -270,27 +270,26 @@ Please wait while the directory structure for the new ISO file is created.
 
 	
 	string datadir = AIServer::productData["datadir"]:"./suse";
-	y2milestone ("datadir %1", datadir);
-	string pkgname = "";
-	pkgname = Pkg::PkgNextInstall();	
-	while ((pkgname != nil)
-	       && (pkgname != ""))
-	{
-	    
-	    string location = Pkg::PkgLocation (pkgname);	    
-	    string localpath = Pkg::SourceProvide (AIConfig::theSource, datadir + "/" + location);	    
-	    y2milestone("local path %1", localpath);
+	y2milestone ("datadir %1", datadir);	
+	foreach(`pac, selPacs, ``{
+	    y2milestone("package: %1", pac);
+	    list tok = splitstring(pac, " ");
+	    //  "yast2-security 2.6.8 31 noarch";
+	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
+	    string location = tok[3]:"noarch" + "/" + pacname;
+	    	  	    
+	    string localpath =  AIServer::PackageRep + "/" + datadir + "/" + location;	    	  
 	    integer pacsize = SCR::Read(.target.size, localpath);
 	    if (pacsize!=-1)
 	    {
-		Progress::Title(sformat(_("Copying %1"),  pkgname));
+		Progress::Title(sformat(_("Copying %1"),  pacname));
 		Progress::NextStep();
 		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, AIServer::skelDir, datadir, location);
 		any ret = SCR::Execute (.target.bash, cpCmd);			
 	    }
-
-	    pkgname = Pkg::PkgNextInstall();
-	}
+	  
+	  
+	});
 	
 
 	Progress::Title(_("ISO image directory ready"));
