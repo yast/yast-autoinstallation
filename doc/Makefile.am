@@ -20,7 +20,6 @@ CLEANFILES = autoyast2.dvi autoyast2.aux autoyast2.tex autoyast2.log \
   images.ent img
 
 
-all: html
 
 components: components.ent
 	bin/components.sh noref > components.ent
