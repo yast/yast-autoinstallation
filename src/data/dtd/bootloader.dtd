@@ -1,84 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT bootloader (initrd_modules?, loader_device, loader_type, location, specific?, write_settings?)>
-<!ELEMENT write_settings (#PCDATA)>
+<!ELEMENT bootloader (global?, initrd_modules?, loader_device?, loader_type, location , sections?)>
 
-<!ELEMENT __order__ (order_entry+)>
-<!ATTLIST __order__
-    config:type CDATA #REQUIRED
->
-
-<!ELEMENT order_entry (#PCDATA)>
 <!ELEMENT initrd_modules (initrd_module+)>
 <!ATTLIST initrd_modules
-    config:type CDATA #REQUIRED
+    config:type CDATA #FIXED 'list'
 >
-<!ELEMENT initrd_module (module, module_args)>
+<!ELEMENT initrd_module (module, module_args?)>
 <!ELEMENT module_args (#PCDATA)>
 
 <!ELEMENT loader_device (#PCDATA)>
 <!ELEMENT loader_type (#PCDATA)>
-<!ELEMENT specific (activate, device_map, global, grub_conf, repl_mbr, sections)>
-<!ELEMENT activate (#PCDATA)>
-<!ATTLIST activate
-    config:type CDATA #REQUIRED
+<!-- also for samba -->
+<!ENTITY % y2_global "winbind|workgroup">
+<!ELEMENT global (%y2_global;| global_entry+)>
+<!ELEMENT global_entry (key, value)>
+
+<!ATTLIST global
+    config:type CDATA #FIXED 'list'
 >
-<!ELEMENT device_map (device_map_entry+)>
-<!ATTLIST device_map
-    config:type CDATA #REQUIRED
->
-<!ELEMENT device_map_entry (device+)>
-<!ATTLIST device_map_entry
-    config:type CDATA #REQUIRED
->
-<!ELEMENT global (__order__, color, default, gfxmenu, timeout)>
-<!ELEMENT color (#PCDATA)>
-<!ELEMENT chainloader (#PCDATA)>
 
 
-
-<!ELEMENT gfxmenu (#PCDATA)>
-<!ELEMENT grub_conf (addr, device, discswitch, menu, root, s2prefix, stage1, stage2)>
-<!ELEMENT addr (#PCDATA)>
-<!ELEMENT default (#PCDATA)>
-<!ATTLIST default
+<!ELEMENT key (#PCDATA)>
+<!ELEMENT value (#PCDATA)>
+<!ATTLIST value
     config:type CDATA #IMPLIED
 >
-<!ELEMENT discswitch (#PCDATA)>
-<!ATTLIST discswitch
-    config:type CDATA #REQUIRED
->
-<!ELEMENT menu (#PCDATA)>
-<!ELEMENT merge_group (#PCDATA)>
-<!ATTLIST merge_group
-    config:type CDATA #REQUIRED
->
-
-<!ELEMENT root (#PCDATA)>
-
-<!ELEMENT s2prefix (#PCDATA)>
-<!ELEMENT stage1 (#PCDATA)>
-<!ELEMENT stage2 (#PCDATA)>
-<!ELEMENT repl_mbr (#PCDATA)>
-<!ATTLIST repl_mbr
-    config:type CDATA #REQUIRED
->
 <!ATTLIST sections
-    config:type CDATA #REQUIRED
+    config:type CDATA #FIXED 'list'
+>
+<!ATTLIST section
+    config:type CDATA #FIXED 'list'
 >
 
 <!ELEMENT sections (section+)>
-<!ELEMENT section (__order__, initrd?, kernel?, chainloader?, root?, title)>
-<!ELEMENT initrd (#PCDATA)>
-<!ELEMENT title (#PCDATA)>
-
+<!ELEMENT section (section_entry+)>
+<!ELEMENT section_entry (key, value)>
 
 
 <!ELEMENT kernel_parameters (#PCDATA)>
-<!ELEMENT lba_support (#PCDATA)>
-<!ATTLIST lba_support
-	config:type CDATA #REQUIRED
->
-<!ELEMENT linear (#PCDATA)>
-<!ATTLIST linear
-	config:type CDATA #REQUIRED
->
