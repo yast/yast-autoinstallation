@@ -12,10 +12,16 @@
     include "partitioning/auto_part_functions.ycp";
     include "partitioning/auto_part_prepare.ycp";
     include "partitioning/auto_part_create.ycp";
-    include "partitioning/auto_finish.ycp";
-    include "partitioning/partition_defines.ycp";
+    include "partitioning/auto_finish.ycp";    
     include "partitioning/size_calculations.ycp";
     include "partitioning/raid_lib.ycp";
+    include "partitioning/partition_defines.ycp";
+    include "partitioning/lvm_ui_lib.ycp";
+    include "partitioning/lvm_ui_dialogs.ycp";
+    include "partitioning/lvm_lib.ycp";
+    include "partitioning/lvm_pv_lib.ycp";
+    include "partitioning/lvm_lv_lib.ycp";
+
     
     textdomain "autoinst";
     /**
@@ -543,11 +549,16 @@ to contain a minimal installation.");
 	    string mount_point = currentPartition["mount"]:"";
 	    region = calcRegion(currentPartition, region);
 	    
-	    integer auto_fsid = currentPartition["partition_id"]:Partitions::fsid_native;	  
-	    string lvm_group = currentPartition["lvm_group"]:"";	    
+	    integer auto_fsid = currentPartition["partition_id"]:Partitions::fsid_native;
+
+	    // LVM
+	    string lvm_group = currentPartition["lvm_group"]:"";
+	 
 
 	    // Raid
 	    string raid_name = currentPartition["raid_name"]:"";
+
+	    
 	    
 	    // Partition Template
 	    map part =
@@ -585,35 +596,13 @@ to contain a minimal installation.");
 		Storage::SetLvmUse( true );
 		
 		part["used_fs"] 	=  `unknown;
-		part["fsid"]		=  Paritions::fsid_lvm;
+		part["fsid"]		=  Partitions::fsid_lvm;
 		part["format"] 		=  false;
-		part["lvm_group"] 	= lvm_group;
+		part["lvm_group"] 	=  lvm_group;
 		part["mount"] 		=  "";
 		part["fstype"] 		=  "Linux LVM";
-		
-		
-		CreateModifyMap(lvm_group, target_is + last_pnr);
-		
-		string lvmdev = sformat("/dev/%1", lvm_group);
-		
-		if (AutoInstall::LvmVolumes[lvmdev]:$[] == $[])
-		{
-		    CreateAutoLvmMap(lvm_group);
-		}
-		
-		list mod = maplist(`k,`v, Storage::GetModifyTargets(),
-				   ``{
-				       return(v);
-				   });
-		
-		integer count = 0;
-		map modmap = listmap(`k, sort(`x,`y, mod, ``(x["order"]:0 <= y["order"]:0)),
-				     ``{
-					 count = count + 1;
-					 return([count,k]);
-				     });
-		
-		Storage::SetModifyTargets(modmap);
+	
+	
 		
 	    }
 	    else if (raid_name != "")
@@ -637,16 +626,129 @@ to contain a minimal installation.");
 	    {
 		part["used_fs"] = StringFS2Symbol(  currentPartition["filesystem"]:"reiser");
 	    }
+
+	    
+	    
 	    return part;
     }
 
 
     global define autoLVM() ``{
 	
+
+
+	
+	map LvmVolumes = $[];
+	map tmap = Storage::GetTargetMap();
+	map modify_targets	= Storage::GetModifyTargets();
+
+	
+	foreach (map group, AutoInstall::LVM,
+				 ``{
+				     string vg = group["lvm_name"]:"";				     
+				     integer pesize		= pesize_str_to_byte( lookup( group, "pesize", "4M" ));
+
+				     
+				     list existing_pvs  = filter( `part, get_possible_pvs( tmap ),
+								  ``( lookup( part, "lvm_group", "") == vg ));
+
+
+				     
+				     map new_create_vg = $[
+							   "use_module" : "lvm_ll",
+							   "type"       : "create_vg",
+							   "vgname"     : vg,
+							   "pesize"     : pesize,
+							   "devices"    : []
+				     ];
+				     modify_targets = addTargetModification( modify_targets, new_create_vg );
+
+
+				     foreach(`pv, existing_pvs, ``{
+					 map new_create_pv = $[
+							       "use_module" : "lvm_ll",
+							       "type"       : "create_pv",
+							       "vgname"     : vg,
+							       "device"     : pv["device"]:""							       
+					 ];
+					 modify_targets = addTargetModification( modify_targets, new_create_pv );
+				     });
+
+				     // LVs
+				     
+				     list part = group["logical_volumes"]:[];
+				     list region 		= [0,0];
+				   
+				     map new_volume = $[
+							"name"      : vg,
+							"cyl_count" : 0,
+							"cyl_size"  : pesize,
+							"is_lvm_vg" : true,
+							"partitions": []
+				     ];
+				     list new_partitions = maplist(map lv, part, ``{
+
+					 integer lv_size = kmgt_str_to_byte(lv["lv_size"]:"");
+					 if (pesize == 0 )
+					 {
+					     pesize = 1;
+					 }
+
+					 integer virtual_cyl_end   = lv_size / pesize;
+					 region = [0, virtual_cyl_end ];
+					 
+					 integer bytes_of_part = 0;
+					 integer cyl_size   = pesize;
+					 integer nb_cyl = select (region, 1, 0 );
+					 
+					 bytes_of_part =  ( nb_cyl ) * cyl_size;
+					
+					 map new_create_lv = $[
+							       "use_module" : "lvm_ll",
+							       "type"       : "create_lv",
+							       "name"       : lookup(lv, "lv_name", ""),
+							       "size"       : bytes_of_part,
+							       "vgname"     : vg,
+							       "stripes"    : 1,
+							       "order"	     : 3
+					 ];
+					 modify_targets = addTargetModification( modify_targets, new_create_lv );
+					 
+					 return ($[
+						   "create"	: true,
+						   "fs_options" : $[] ,
+						   "use_module" : "lvm_ll",
+						   "fsid"   : 142,
+						   "fstype" : "LV",
+						   "nr"     : lookup(lv, "lv_name", ""),
+						   "ori_nr"	: lookup(lv, "lv_name", ""),
+						   "region" : [0, virtual_cyl_end ],
+						   "size_bytes":  bytes_of_part,
+						   "mount"  : lookup( lv, "lv_mount", ""),
+						   "used_fs": StringFS2Symbol(lookup(lv, "lv_fs","ext2")),
+						   "format" : lookup( lv, "lv_format" , true),
+						   "crypt_fs" : lookup( lv, "lv_crypt", false ),
+						   "crypt_key":"",
+						   "type"   :`lvm
+						 ]);
+				     });
+				     
+				     Storage::SetModifyTargets( modify_targets );
+				     new_volume = change(new_volume, "partitions", new_partitions);
+				     LvmVolumes = add(LvmVolumes, "/dev/" + vg, new_volume);
+				 });
+	
+	if (LvmVolumes!= $[])
+	{
+	    map new_targetMap = union(Storage::GetTargetMap(), LvmVolumes);
+	    Storage::SetTargetMap(new_targetMap);
+	}
     }
 
 
-    
+    /**
+     * Create RAID
+     */
     global define autoRAID()
 	``{
 	list RaidList =  maplist (map device, AutoInstall::RAID,
@@ -769,5 +871,15 @@ to contain a minimal installation.");
 	];
 	return filesystems[fs]:`ext2;	
   }
+
+    global define integer InitDevice(string del_device)
+	``{
+	
+	string zero_string = sformat( "/bin/dd if=/dev/zero of=%1 bs=2k count=100", del_device );
+	integer ret_zero   = SCR::Execute(.target.bash, zero_string );
+	integer ret_reread = SCR::Execute(.target.bash, sformat("/sbin/blockdev --rereadpt %1", del_device ));
+	y2milestone( "Partitiontable of device %1 deleted (%2-%3)", del_device, ret_zero, ret_reread);
+	return (ret_zero + ret_reread);
+    }
 
 }

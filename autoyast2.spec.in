@@ -4,6 +4,7 @@
 
 @HEADER@
 Requires:	yast2-core yast2-xml libxslt autoyast2-installation
+Requires:	mkisofs alice-compat
 Provides:	yast2-module-autoinst yast2-config-autoinst
 Obsoletes:	yast2-module-autoinst yast2-config-autoinst
 
@@ -59,7 +60,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/classes
 @yncludedir@/autoinstall/bootloader_dialogs.ycp
 @yncludedir@/autoinstall/classes.ycp
 @yncludedir@/autoinstall/conftree.ycp
-@yncludedir@/autoinstall/general_dialogs.ycp
 @yncludedir@/autoinstall/linuxrc_dialogs.ycp
 @yncludedir@/autoinstall/dialogs.ycp
 @yncludedir@/autoinstall/help.ycp
@@ -100,7 +100,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/classes
 @moduledir@/AIClass.ycp
 @moduledir@/AILinuxrc.ycp
 @moduledir@/AIConfig.ycp
-@moduledir@/AIGeneral.ycp
 @moduledir@/AIPackages.ycp
 @moduledir@/AIScripts.ycp
 @moduledir@/AIServer.ycp
@@ -124,7 +123,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/classes
 @moduledir@/AIClone.ycp
 @clientdir@/autoinst_configure.ycp
 %dir @yncludedir@/autoinstall
-@yncludedir@/autoinstall/lvm.ycp
 @yncludedir@/autoinstall/partitioning.ycp
 @yncludedir@/autoinstall/profileLocation.ycp
 @yncludedir@/autoinstall/profileDialogs.ycp
