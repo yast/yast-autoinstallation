@@ -40,7 +40,7 @@
     global boolean PVsNotConfigured = false;
 
 
-    list region = [0,0];
+    list<integer> region = [0,0];
     map targetMap = $[];
     integer pesize = 0;
 
@@ -204,8 +204,6 @@
 
 	bytes_of_part =  ( nb_cyl ) * cyl_size;
 
-
-	region = [0, virtual_cyl_end ];
 	map create_lv = $[
 			      "use_module" : "lvm_ll",
 			      "type"       : "create_lv",
@@ -226,7 +224,7 @@
 		  "fstype"		: "LV",
 		  "nr"			: lv_name,
 		  "ori_nr"		: lv_name,
-		  "region"		: [0, virtual_cyl_end ],
+		  "region"		: region,
 		  "size_bytes"		: bytes_of_part,
 		  "mount"		: lv["mount"]:"" ,
 		  "used_fs"		: lv_fs,

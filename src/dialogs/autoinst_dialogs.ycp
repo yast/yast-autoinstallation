@@ -9,6 +9,8 @@
 
 {
     textdomain "autoinst";
+    import "Label";
+    import "Storage";
 
     /**
       * Shows a dialog when 'control file' can't be found
@@ -82,7 +84,6 @@
      */
     define string DiskSelection() ``{
 
-        import "Storage";
         y2milestone("Selecting disk manually....");
         map tm = Storage::GetTargetMap();
         term contents = `Dummy();
@@ -139,7 +140,6 @@
                 are shown here. Select the hard disk on which to install SuSE Linux.
                 </p>
                 ");
-        import "Label";
         term buttons = `HBox(
                 `PushButton(`id(`ok), `opt(`default), Label::OKButton() ),
                 `PushButton(`id(`abort), Label::AbortButton() )
