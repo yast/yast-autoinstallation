@@ -18,6 +18,5 @@ ydata_DATA = \
 xml_DATA = \
     merge.xslt
 
-dtd_DATA = $(wildcard *.dtd)
 
-EXTRA_DIST = $(dtd_DATA) $(xml_DATA) $(ydata_DATA) $(misc_DATA)
+EXTRA_DIST =  $(xml_DATA) $(ydata_DATA) $(misc_DATA)

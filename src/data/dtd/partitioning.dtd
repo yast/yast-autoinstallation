@@ -45,7 +45,7 @@
 >
 <!ELEMENT option_str (#PCDATA)>
 <!ELEMENT option_value (#PCDATA)>
-<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, label?, lvm_group?, mount, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?,size, maxsize?, grow?, create?)>
+<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, label?, lvm_group?, mount?, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?, region?, size?, maxsize?, grow?, create?)>
 <!-- <!ELEMENT lvm_group (#PCDATA)> -->
 <!ELEMENT raid_name (#PCDATA)>
 <!ELEMENT raid_type (#PCDATA)>
@@ -62,10 +62,19 @@
 <!ATTLIST partitioning
 	config:type CDATA #REQUIRED
 >
+<!ELEMENT region (region_entry+)>
+<!ATTLIST region
+	config:type CDATA #REQUIRED
+>
 <!ELEMENT partitions (partition+)>
 <!ATTLIST partitions
 	config:type CDATA #REQUIRED
 >
+<!ELEMENT region_entry (#PCDATA)>
+<!ATTLIST  region_entry
+	config:type CDATA #REQUIRED
+>
+
 <!ELEMENT size (#PCDATA)>
 <!ELEMENT maxsize (#PCDATA)>
 <!ELEMENT grow (#PCDATA)>
