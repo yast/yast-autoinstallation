@@ -21,13 +21,12 @@
 
     include "autoinstall/dialogs.ycp";
     include "autoinstall/classes.ycp";
-    
 
 
     any ret = nil;
     string func = "";
     list param = [];
- 
+
     /* Check arguments */
     if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
 	func = (string)WFM::Args(0);
@@ -39,11 +38,9 @@
     y2debug("func=%1", func);
     y2debug("param=%1", param);
 
-        
-   
     if (func == "Import")
     {
-	ret = AutoinstClass::Import ((list<map>) param);	
+	ret = AutoinstClass::Import ((list<map>) param);
 	if (ret == nil)
 	{
 	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");

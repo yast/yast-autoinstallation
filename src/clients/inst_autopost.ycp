@@ -29,32 +29,73 @@
 
     foreach(string p, map d, Y2ModuleConfig::ModuleMap,
 	    ``{
-	if (d["X-SuSE-YaST-AutoInst"]:"" == "all" || d["X-SuSE-YaST-AutoInst"]:"" == "write")
+
+	if (d["X-SuSE-YaST-AutoInst"]:"" == "all"
+            || d["X-SuSE-YaST-AutoInst"]:"" == "write")
 	{
 	    if (haskey(d,"X-SuSE-YaST-AutoInstResource") &&
-                d["X-SuSE-YaST-AutoInstResource"]:"" != "")
-	    {
+                d["X-SuSE-YaST-AutoInstResource"]:"" != "" )
 		resource = d["X-SuSE-YaST-AutoInstResource"]:"unknown";
-	    }
 	    else
-	    {
 		resource = p;
-	    }
-	    // determine name of client, if not default name
+	    y2milestone("current resource: %1", resource);
+
+	    // determine name of client, if not use default name
 	    if (haskey(d,"X-SuSE-YaST-AutoClient"))
 		module_auto = d["X-SuSE-YaST-AutoClient"]:"none";
 	    else
 		module_auto = sformat("%1_auto", p);
 
+	    map result = $[];
 	    if (haskey(Profile::Flat , resource) )
 	    {
-	        map out = (map)Call::Function(module_auto, ["Packages" ]);
-	        packages = (list<string>) union(packages, out["install"]:[]);
-	    }
-	}
+		y2milestone("Importing configuration for %1", p);
+		string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+		string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
+		list MergeTypes = splitstring(tomergetypes, ",");
+
+		if (  size(tomerge) > 0 )
+		{
+		    integer i = 0;
+		    foreach( string res, splitstring(tomerge, ",") ,
+			     ``{
+			if ( MergeTypes[i]:"map" == "map")
+			    result[res] = Profile::Flat[res]:$[];
+			else
+			    result[res] = Profile::Flat[res]:[];
+			i = i + 1;
+		    });
+		    y2milestone("Calling auto client with: %1", result);
+		    if (size(result) > 0 )
+                    {
+		        Call::Function(module_auto, ["Import", eval(result) ]);
+	                map out = (map)Call::Function(module_auto, ["Packages" ]);
+	                packages = (list<string>) union(packages, out["install"]:[]);
+                    }
+		}
+		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
+		{
+		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:$[]));
+		    if (size(Profile::Flat[resource]:$[]) > 0 )
+                    {
+		        Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
+	                map out = (map)Call::Function(module_auto, ["Packages" ]);
+	                packages = (list<string>) union(packages, out["install"]:[]);
+                    }
+		}
+		else
+		{
+		    if (size(Profile::Flat[resource]:[]) > 0 )
+                    {
+		        Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
+	                map out = (map)Call::Function(module_auto, ["Packages" ]);
+	                packages = (list<string>) union(packages, out["install"]:[]);
+                    }
+		}
+            }
+        }
     });
     AutoinstSoftware::addPostPackages(packages);
-
     AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
     AutoinstScripts::Write("post-scripts", true);
 
