@@ -12,20 +12,11 @@
     include "partitioning/auto_part_functions.ycp";
     include "partitioning/auto_part_prepare.ycp";
     include "partitioning/auto_part_create.ycp";
-    include "partitioning/auto_finish.ycp";
-    include "partitioning/raid_lib.ycp";
+    include "partitioning/auto_finish.ycp";   
     include "partitioning/partition_defines.ycp";
     include "partitioning/auto_part_ui.ycp";
-    include "partitioning/lvm_ui_lib.ycp";
-    include "partitioning/lvm_ui_dialogs.ycp";
-    include "partitioning/lvm_pv_lib.ycp";
-    include "partitioning/lvm_lib.ycp";
-
-    include "partitioning/lvm_lv_lib.ycp";
     include "partitioning/partition_defines.ycp";
-
-
-
+    
     textdomain "autoinst";
 
 
@@ -35,25 +26,25 @@
      *  @param device name of the target drive
      *  @return true on success
      */
-    global define boolean AutoPartition (string target_is)
+    global define boolean AutoPartition (string TargetDevice)
 	``{
 
+	// For compatibility
+	string target_is = TargetDevice;
+	
 	// find the selected target in the map of all possible targets
 	map driveMap =  Storage::GetTargetMap();
 
 	// description of the choosen target disk
-	map target = driveMap[target_is]:$[];
+	map target = driveMap[TargetDevice]:$[];
 
 	if (target == $[])
 	{
 	    Report::Error(_("The device configured in the control file does not
 exist on this system.
 "));
-	    return false; //
+	    return false;
 	}
-
-	// user visible name of target
-	string targetname = target["name"]:""; // FIXME: Maybe not needed
 
 	// The current list of partitions
 	list partitions = target["partitions"]:[];
@@ -65,7 +56,7 @@ exist on this system.
 
 
 	// The partition number of the first logical partition
-	integer first_logical_nr = 5;
+	integer first_logical_nr = max_primary + 1;
 
 	list full_region = [];
 
@@ -95,38 +86,30 @@ exist on this system.
 	 * prepare_partitions
 	 */
 
-	map part_data = $[];
 	boolean partitions_defined = false;
+	if (size(target["partitions"]:[]) > 0)
+	{
+	    partitions_defined = true;
+	}
 
-	foreach(string device, map device_data , AutoinstStorage::targetMap,
-		``{
-	    if (device == target_is)
-	    {
-		part_data = device_data;
-		if (size(device_data["partitions"]:[]) > 0)
-		{
-		    partitions_defined = true;
-		}
-	    }
-	});
-
-	string no_space_reason = sformat(_("No free space available on %1"), target_is);
+	string no_space_reason = sformat(_("No free space available on %1"), TargetDevice);
 
 	partitions = prepare_partitions (target, partitions);
 
 	boolean already_partitioned = false;
 	boolean root_created = false;
 	string use = "";
+	map AutoTarget = AutoinstStorage::AutoTargetMap[TargetDevice]:$[];
 
-	if ( haskey(part_data , "use"))
+	if ( haskey( AutoTarget  , "use"))
 	{
-	    use = part_data["use"]:"";
+	    use = AutoTarget["use"]:"";
 	}
 
 	if (use == "linux")
 	{
 	    list linuxp = [];
-	    if( Storage::IsRealDisk( target_is, target ) )
+	    if( Storage::IsRealDisk( TargetDevice, target ) )
 	    {
 		list l = filter( map `p, target["partitions"]:[],
 				 ``(!p["delete"]:false &&
@@ -150,7 +133,8 @@ exist on this system.
 	    
 	    integer s = size(target["partitions"]:[]);
 	    
-	    if ( size (linuxp ) > 0 ) {
+	    if ( size (linuxp ) > 0 )
+	    {
 		lp = maplist(map p, linuxp, ``{
 		    return(sformat("%1", p["nr"]:-1));
 		});		
@@ -160,8 +144,7 @@ exist on this system.
 		    use = "none";
 		    Report::Error(no_space_reason);
 		    return (false);
-		}
-		
+		}		
 	    }
 	    else
 	    {
@@ -172,8 +155,7 @@ exist on this system.
 
 
 	// First check if free space should be used
-	//
-	
+	//	
 
 	if ( (num_primary ( partitions ) > 0) || contains_extended ( partitions ) )
 	{
@@ -236,12 +218,10 @@ exist on this system.
 		{
 		    partitions = create_partitions (target,partitions, unused_region);
 		    root_created = true;
-
 		}
 		else
 		{
-		    partitions = CreatePartitions (partitions, unused_region,
-		                                   target["label"]:"" );
+		    partitions = CreatePartitions (partitions, unused_region, target["label"]:"" );
 		}
 		rewrite_settings (partitions, target, driveMap);
 		if (size(partitions) > 0 )
@@ -250,8 +230,6 @@ exist on this system.
 		}
 		break;
 	    }
-
-
 
 	    // The partitions that remain untouched.
 	    list old_partitions = [];
@@ -264,71 +242,70 @@ exist on this system.
 
 	    map extended_pentry = $[];
 
+	    list KeepPartitions = [];
+	    
+	    boolean StrictMode = false;
 
-	    list p_to_keep = [];
-	    boolean strict_mode = false;
-
-	    list auto_partitions = maplist (map auto_part , AutoinstStorage::targetMap[target_is, "partitions"]:[],
+	    list AutoPartitions = maplist (map part , AutoinstStorage::AutoTargetMap[TargetDevice, "partitions"]:[],
 		     ``{
-
-		if ( haskey(auto_part, "create") &&   !auto_part["create"]:true  &&  auto_part["partition_nr"]:-1 != -1 )
+		if ( haskey(part, "create") && !part["create"]:true  && part["partition_nr"]:-1 != -1 )
 		{
-		    p_to_keep = add( p_to_keep, auto_part["partition_nr"]:-1);
-		    auto_part["kept"] = true;
-		    y2milestone("Keeping: %1", auto_part);
+		    KeepPartitions = add( KeepPartitions, part["partition_nr"]:-1);
+		    part["kept"] = true;
+		    y2milestone("Keeping Partition: %1", part);
 		}
-		else if (  haskey (auto_part, "create")   &&  ! auto_part["create"]:true  &&  auto_part["partition_id"]:-1 != -1 )
+		else if (  haskey (part, "create")   &&  !part["create"]:true  && part["partition_id"]:-1 != -1 )
 		{
-		    /*  No partition numbers given, so we can't delete any partition.
-			We will look for first partition of this type and use it, if required format it and mount
-			it as described in the control file. If no partitions of this type are available, they will be
-			ignored.
-		    */
-		    strict_mode = true;
+		    /*
+		      No partition numbers given, so we can't delete any partition.
+		      We will look for first partition of this type and use it, if required, format it and mount
+		      it as described in the control file. If no partitions of this type are available, they will be
+		      ignored.
+		    */	
+		    StrictMode = true;
 		    use = "none";
 
-		    auto_part["kept"] = true;
+		    part["kept"] = true;
 		}
-
-		return (auto_part);
-
+		return (part);
 	    });
 
-	    list selpart = [];
+	    list SelectedPartitions = [];
 	    if (use!= "" && use != "all" && use != "free" && use != "none")
 	    {
-		y2milestone("using only selected partitions");
+		y2milestone("Using only selected partitions");
 		list selected_partitions = [];
 		list tmp_selpart = splitstring(use, ",");
 
-		selpart = maplist (`p, tmp_selpart, ``{
+		SelectedPartitions = maplist (`p, tmp_selpart, ``{
 		    if  ( findfirstnotof( p, "0123456789") == nil  )
 		    {
 			return(tointeger(p));
 		    }
 		});
-
 	    }
 
 	    // now loop through partitions
 	    boolean creating_anything = false;
 
 	    foreach (`pentry, partitions, ``{
-
+		
+		y2milestone("Working on %1", pentry);
+		
 		symbol ptype = pentry["type"]:`unknown;
 
 		if (ptype != `extended)
 		{
 		    boolean to_be_deleted = false;
-
+		    
 		    // STRICT Mode: No partitions are deleted or re-created
-		    if (strict_mode)
+		    if (StrictMode)
 		    {
 			pentry["create"] = false;
-			foreach (map autopart , auto_partitions , ``{
+			foreach (map autopart , AutoPartitions , ``{
 			    if (pentry["fsid"]:-1 == autopart["partition_id"]:-2)
 			    {
-				string dev = Storage::GetDeviceName( target_is, pentry["nr"]:0 );
+				string dev = Storage::GetDeviceName( TargetDevice, pentry["nr"]:0 );
 				y2milestone( "STRICT MODE: Auto-partitioning device: %1", dev );
 				if ( pentry["format"]:false)
 				{
@@ -357,29 +334,32 @@ exist on this system.
 				y2milestone("No match -  existing %1, new %2", pentry["fsid"]:-1, autopart["partition_id"]:-2 );
 			    }
 			});
-		    }
+		    } // Strict mode
 		    else if ( use == "all")
 		    {
 			to_be_deleted = true;
 			creating_anything = true;
 		    }
-		    else if ( contains (selpart, pentry["nr"]:-1) )
+		    else if (CheckDeleteTag(pentry, AutoPartitions))
 		    {
 			to_be_deleted = true;
 			creating_anything = true;
 		    }
-		    else if ( contains(p_to_keep, pentry["nr"]:-1) )
+		    else if ( contains (SelectedPartitions, pentry["nr"]:-1) )
 		    {
-			map drive = AutoinstStorage::targetMap[target_is]:$[];
-			list newautoparts = maplist(map autopart , auto_partitions , ``{
+			to_be_deleted = true;
+			creating_anything = true;
+		    }
+		    else if ( contains(KeepPartitions, pentry["nr"]:-1) )
+		    {
+			map drive = AutoinstStorage::AutoTargetMap[TargetDevice]:$[];
+			list newautoparts = maplist(map autopart , AutoPartitions , ``{
 			    if (autopart["partition_nr"]:-2 == pentry["nr"]:-1)
 			    {
 				string mntpoint = "";
 				pentry["create"] = false;
 				pentry["format"] = autopart["format"]:false;
-				string dev = Storage::GetDeviceName( target_is, pentry["nr"]:0 );
-				y2milestone( "Auto-partitiong device:%1", dev );
-
+				string dev = Storage::GetDeviceName( TargetDevice, pentry["nr"]:0 );
 				if ( pentry["format"]:false)
 				{
 				    symbol detected_fs = pentry["detected_fs"]:`reiser;
@@ -389,6 +369,7 @@ exist on this system.
 				{
 				    pentry["used_fs"] = FileSystems::DetectFs( dev );
 				}
+				
 				if (pentry["used_fs"]:`unknown != `unknown )
 				    mntpoint = sformat("/data%1", pentry["nr"]:0);
 
@@ -404,7 +385,7 @@ exist on this system.
 			    return (autopart);
 			});
 			drive["partitions"] = newautoparts;
-			AutoinstStorage::targetMap[target_is] = drive;
+			AutoinstStorage::AutoTargetMap[TargetDevice] = drive;
 
 		    }
 
@@ -438,11 +419,10 @@ exist on this system.
 		    extended_pentry = pentry;
 		}
 	    });
-
+	    // There are no logical partitions left, mark the extended
+	    // partition for deletion
 	    if (size (extended_pentry) > 0)
-	    {
-		// There are no logical partitions left, mark the extended
-		// partition for deletion
+	    {	
 		extended_pentry = add (extended_pentry, "delete", true);
 		all_partitions = add (all_partitions, extended_pentry);
 	    }
@@ -528,8 +508,7 @@ to contain a minimal installation.");
 		}
 		else
 		{
-		    partitions = CreatePartitions (all_partitions, selected,
-		                                   target["label"]:"" );
+		    partitions = CreatePartitions (all_partitions, selected, target["label"]:"" );
 		    if (!SaneRegionLimits( selected, partitions) )
 		    {
 			Report::Error(no_space_reason);
@@ -551,13 +530,25 @@ to contain a minimal installation.");
 
 
     /**
+     * CheckDeleteTag
+     */
+
+    global define CheckDeleteTag (map e, list a) ``{
+	boolean delete = false;
+	foreach (map p , a , ``{
+	    if (p["partition_nr"]:-1 == e["nr"]:-2 && !delete) {
+		delete = p["delete"]:false;
+	    }
+	});
+	return (delete);
+    }
+    
+    /**
      * Get number of last primary partition
      * @param list partition list
      * @return integer partition number
      */
     global define integer getLastPrimary(list p)``{
-
-
 	list used_primaries =
 	    maplist (`pentry,
 		     filter (`pentry, p, ``(!pentry["delete"]:false)),
@@ -570,11 +561,16 @@ to contain a minimal installation.");
 	{
 	    unused = unused + 1;
 	}
+	y2milestone("Using primary: %1", unused);
 	return unused;
     }
 
+    /**
+     * SaneRegionLimits
+     */ 
 
     global define SaneRegionLimits (list unused,  list partitions) ``{
+	
 	map lastPart = select(partitions, size(partitions) -1 , $[]);
 	y2milestone("last partitions = %1", lastPart );
 	list last_region = [  lastPart["region", 0 ]:0  , lastPart["region", 1]:0 ];
@@ -582,10 +578,10 @@ to contain a minimal installation.");
 	y2milestone("last=%1, unused=%2", end_of_region(last_region) , end_of_region(unused) );
 
 	if ( end_of_region(last_region) > end_of_region(unused)  && end_of_region(unused) != 0 )
+	{
 	    return false;
-
+	}
 	return true;
-
     }
 
 
@@ -593,41 +589,45 @@ to contain a minimal installation.");
      *	Create partitions defined in the Profile
      *	@param list of available partitions on the drive
      *  @param Region on drive where new partitions are added
-     * @param label
+     *  @param label
      *  @return new partitions list
      */
 
     global define CreatePartitions (list partitions, list selected_region, string label)
 	``{
 
-	y2milestone("initial partition list: %1", partitions);
-	y2milestone("selected region: %1", selected_region);
-
+	y2milestone("Initial partition list: %1", partitions);
+	y2milestone("Selected region: %1", selected_region);
 
 	recalculateSizes(selected_region);
 
 	partitions = filter (`pentry,
 			     partitions,
-			     ``(lookup (pentry, "type", `unknown) != `free)
-			     );
+			     ``(pentry["type"]:`unknown != `free)
+			     );	
+	
 	partitions = renumber_logical_partitions (partitions);
 
-	y2milestone("partition list after renumbering: %1", partitions);
+	// y2milestone("partition list after renumbering: %1", partitions);
 
 	symbol ptype = `primary;
 	integer last_pnr = 0;
 
-	list region = [ 0 , 0 ];
+	list region = [0,0];
 
-	list old = filter (`pentry,
-			   partitions,
-			   ``(!pentry ["delete"]:false)
-			   );
-
-	if ( size(old) > 0 )
+	if (selected_region[0]:0 != 0 )
 	{
-	    map lastPart = select(old, size(old) -1 , $[]);
-	    region = [  lastPart["region", 0 ]:0  , lastPart["region", 1]:0 ];
+	    list old = filter (`pentry,
+			       partitions,
+			       ``(!pentry ["delete"]:false)
+			       );
+
+	    if ( size(old) > 0 )
+	    {
+		map lastPart = select(old, size(old) -1 , $[]);
+		region = [  lastPart["region", 0 ]:0  , lastPart["region", 1]:0 ];
+	    }
+
 	}
 
 
@@ -645,59 +645,66 @@ to contain a minimal installation.");
 	    ];
 
 	// Get new partitions as specified in control file
-	list tmp_auto_partitions =  AutoinstStorage::targetMap[target_is, "partitions"]:[];
+	list TmpAutoPartitions =  AutoinstStorage::AutoTargetMap[TargetDevice, "partitions"]:[];
 
-	list auto_partitions = filter (`pentry,
-				       tmp_auto_partitions ,
+	list AutoPartitions = filter (`pentry,
+				      TmpAutoPartitions ,
 				       ``(!pentry["kept"]:false )
 				       );
 
-	// First create any primary partitions if specified so in control file.
-	// FIXME: use max_primaries instead of fixed number
-	list primaries = filter (`pentry, auto_partitions, ``(
-							      ( pentry["partition_type"]:"none" == "primary"
-								|| pentry["partition_nr"]:99 < Partitions::MaxPrimary(label) )
-							      &&  pentry["partition_id"]:-1 != 15
-							      &&  pentry["partition_id"]:-1 != 5
-							      )
+	// First create any primary partitions if requested in control file.
+
+	list primaries = filter (`pentry, AutoPartitions,
+				 ``(
+				    ( pentry["partition_type"]:"none" == "primary"
+				      || pentry["partition_nr"]:99 < Partitions::MaxPrimary(label) )
+				    && pentry["partition_id"]:-1 != 15
+				    && pentry["partition_id"]:-1 != 5
+				    && pentry["create"]:true 
+				    )
 				 );
+	
 	if ( size (primaries) > 0 )
 	{
-	    y2milestone("primary partitions needed");
+	    y2milestone("Primary partitions needed");
+	    list tmp_p = partitions;
 	    last_pnr = getLastPrimary(partitions);
-	    list primary_auto_partitions = maplist(`p, primaries,   ``{
+	    
+	    list PrimaryAutoPartitions = maplist(`p, primaries,   ``{
 		if ((label=="bsd" || label=="sun")
 		    && (last_pnr == 3))
 		{
 		    last_pnr = last_pnr + 1;
 		}
 		map newPart = addPartition(p);
-		last_pnr = last_pnr + 1;
+		tmp_p = union(tmp_p, [newPart]);
+		last_pnr = getLastPrimary(SortPartitions(tmp_p));
 		return (newPart);
 	    });
 	    last_pnr = last_pnr - 1;
-	    partitions = union(partitions , primary_auto_partitions);
+	    partitions = union(partitions , PrimaryAutoPartitions);
 	}
 
-	auto_partitions = filter(`pentry, auto_partitions, ``( ! (
-								  (
-								   pentry["partition_type"]:"none" == "primary"
-								   || pentry["partition_nr"]:99 < Partitions::MaxPrimary(label)
-								   )
-								  &&  pentry["partition_id"]:-1 != 15
-								  &&  pentry["partition_id"]:-1 != 5
-								  )
-							       )
-				 );
+	// Filter primaries
+	AutoPartitions = filter(`pentry, AutoPartitions,
+				``( ! (
+				       (
+					pentry["partition_type"]:"none" == "primary"
+					|| pentry["partition_nr"]:99 < Partitions::MaxPrimary(label)
+					)
+				       &&  pentry["partition_id"]:-1 != 15
+				       &&  pentry["partition_id"]:-1 != 5
+				       )
+				    )
+				);
 
 	y2milestone("Partitions up to now: %1", partitions);
-	y2milestone("Partitions still to be created (other than Primary): %1", auto_partitions);
+	y2milestone("Pending Partitions: %1", AutoPartitions);
 
-	if ( size(auto_partitions) == 0)
+	if ( size(AutoPartitions) == 0)
 	{
 	    return (partitions);
 	}
-
 
 	if (label == "msdos")
 	{
@@ -705,7 +712,7 @@ to contain a minimal installation.");
 	}
 	else
 	{
-	    // If we don't have a FAT partition_type get the
+	    // If we don't have a FAT partition type get the
 	    // last used partition number
 	    integer unused_primary_pnr = getLastPrimary(partitions);
 	    last_pnr = unused_primary_pnr - 1;
@@ -718,9 +725,7 @@ to contain a minimal installation.");
 	{
 	    if (!contains_extended (partitions))
 	    {
-
 		integer unused_primary_pnr = getLastPrimary(partitions);
-
 		// create new extended partition
 		// if it starts above cyl 1024, create it as fsid_extended_win
 
@@ -729,45 +734,56 @@ to contain a minimal installation.");
 		{
 		    ext_fsid = Partitions::fsid_extended_win;
 		}
-		list extended = filter (`pentry, auto_partitions, ``((pentry["partition_type"]:"none" == "extended"
-								      || pentry["partition_id"]:0 == 15
-								      || pentry["partition_id"]:0 == 5))
+		list extended = filter (`pentry, AutoPartitions,
+					``(
+					   (
+					    pentry["partition_type"]:"none" == "extended"
+					    || pentry["partition_id"]:0 == 15
+					    || pentry["partition_id"]:0 == 5))
 					);
 
-		list ext_region = [ 0 , 0 ];
+		list extended_region = [ 0 , 0 ];
 
 		if ( size(extended) == 1 )
 		{
-		    y2milestone("extended found");
-		    ext_region = extended[0, "region"]:[]; // lookup(select(extended,0,$[]),"region",[]);
-		    if (ext_region == [] )
+		    y2milestone("Extended found");
+		    extended_region = extended[0, "region"]:[];
+		    
+		    map ExtendedPartition = extended[0]:$[];
+		    if (haskey(ExtendedPartition, "partition_id"))
 		    {
-			ext_region = calcRegion(extended[0]:$[], region);
+			ext_fsid = ExtendedPartition["partition_id"]:ext_fsid;
 		    }
-		    region  = ext_region;
+		    
+		    if (extended_region == [] )
+		    {
+			extended_region = calcRegion(extended[0]:$[], region);
+		    }
+		    region  = extended_region;
 
-		    y2milestone("Extended region: %1 - Region: %2", ext_region, region);
+		    y2milestone("Extended region: %1 - Region: %2", extended_region, region);
 
-		    auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "extended"
-									    || pentry["partition_id"]:0 == 15
-									    ||  pentry["partition_id"]:0 == 5))
-					     );
-
-		    selected_region = ext_region;
+		    AutoPartitions = filter(`pentry, AutoPartitions,
+					    ``(!(pentry["partition_type"]:"none" == "extended"
+						 || pentry["partition_id"]:0 == 15
+						 ||  pentry["partition_id"]:0 == 5))
+					    );	
+		    selected_region = extended_region;
 		}
 		else
 		{
-		    ext_region =  [ end_of_region(region), end_of_region(selected_region) -  end_of_region(region)];
+		    extended_region =  [ end_of_region(region), end_of_region(selected_region) -  end_of_region(region)];
 		}
 		y2milestone("Adding extended partition to: %1",partitions);
+		
 		partitions = add (partitions,
 				  $[
 				    "create":true,
 				    "type":`extended,
 				    "fsid":ext_fsid,
 				    "nr":unused_primary_pnr,
-				    "region": ext_region,
-				    "device": get_device_name(target_is, unused_primary_pnr)
+				    "region": extended_region,
+				    "device": get_device_name(TargetDevice, unused_primary_pnr)
 				  ]);
 		y2milestone("Partitions including extended: %1", partitions);
 
@@ -795,8 +811,7 @@ to contain a minimal installation.");
 	last_pnr = last_pnr + 1;
 
 
-
-	list logical_auto_partitions = maplist(`p, auto_partitions,
+	list LogicalAutoPartitions = maplist(`p, AutoPartitions,
 					       ``{
 						   if ((label == "bsd" || label == "sun")
 						       && (last_pnr == 3))
@@ -819,9 +834,9 @@ to contain a minimal installation.");
 
 	Storage::SetWholeDisk( selected_region == full_region);
 
-	list finalPartitions =  union(partitions,logical_auto_partitions);
+	list finalPartitions =  union(partitions,LogicalAutoPartitions);
 
-	y2milestone("FINAL partitions: %1", finalPartitions);
+	y2milestone("FINAL Partitions: %1", finalPartitions);
 	return( finalPartitions );
 
     }; // CreatePartitons
@@ -863,7 +878,7 @@ to contain a minimal installation.");
 	      "nr":	last_pnr,
 	      "region":	region,
 	      "mount":	mount_point,
-	      "device": get_device_name(target_is, last_pnr)
+	      "device": get_device_name(TargetDevice, last_pnr)
 	    ];
 
 	if (currentPartition["loop_fs"]:false || currentPartition["crypt_fs"]:false)
@@ -959,316 +974,6 @@ to contain a minimal installation.");
     }
 
 
-    /**
-     * LVM Configuration
-     *
-     */
-
-
-    global define boolean autoLVM () ``{
-
-	import "AutoinstLVM";
-	import "Storage";
-	Storage::ZeroNewPartitions = true;
-	boolean error = false;
-
-
-	foreach (string device, map volume_group, AutoinstStorage::lvm ,
-		 ``{
-
-	    string use		= volume_group["use"]:"none";
-	    list selpart = [];
-	    string vgname	= substring(device, 5);
-	    list new_pvs	= AutoinstLVM::ExistingPVs(vgname);
-	    list new_pvs_dev	= maplist(`pv, new_pvs, ``{
-		return(pv["device"]:"");
-	    });
-
-	    if (AutoinstLVM::OldAvailable )
-	    {
-
-		y2milestone("Old LVM available");
-
-		foreach(`vgdev, `vg, AutoinstLVM::ExistingLVM, ``{
-
-		    string vg = substring(vgdev, 5);
-		    boolean delete = false;
-		    list deleted_pvs = AutoinstLVM::DeletedPVs(vg);
-
-		    list del_pvs_dev 	= maplist(`pv, deleted_pvs, ``{
-			return(pv["device"]:"");
-		    });
-
-		    if ( use == "all" && vg == vgname )
-		    {
-			delete = true;
-		    }
-		    else if (
-			     size(deleted_pvs) > 0
-			     && size(toset(union(del_pvs_dev,  new_pvs_dev))) < (size(del_pvs_dev) + size( new_pvs_dev))
-			     )
-		    {
-			delete = true;
-		    }
-
-		    if (AutoinstLVM::PVsNotConfigured)
-		    {
-			Report::Error(sformat(_("Logical volumes of group \"%1\" exist on unconfigured devices.
-Delete old volume groups first or configure all devices containing
-physical volumes belonging to this group.
-"), vgname));
-			error = true;
-
-		    }
-
-
-		    // Delete old LVM
-		    if ( delete && !error)
-		    {
-			map ExistingVG = AutoinstLVM::ExistingLVM[vgdev]:$[];
-
-			list ExistingLVs = ExistingVG["partitions"]:[];
-			foreach(`lv, ExistingLVs, ``{
-			    AutoinstLVM::RemoveLV( vg, lv["nr"]:"");
-			});
-
-			AutoinstLVM::RemoveVG( vg );
-		    }
-
-
-		    // Delete selected only
-		    if (use!= "" && use != "all" && use != "free" && use != "none")
-		    {
-			y2milestone("using only selected lvs");
-			selpart = splitstring(use, ",");
-		    }
-
-		    if (size(selpart) > 0 && !delete)
-		    {
-			foreach(`lv, selpart, ``{
-			    AutoinstLVM::RemoveLV( vg, lv);
-			});
-		    }
-
-
-		});
-	    }
-
-
-	    AutoinstLVM::SetPESIZE( volume_group["pesize"]:"4M" );
-
-	    y2milestone("Existing PVs: %1",  new_pvs );
-	    map new_volume = $[];
-
-	    if (use == "all")
-	    {
-		new_volume = AutoinstLVM::CreateVG (vgname);
-
-		foreach(map pv, new_pvs, ``{
-		    AutoinstLVM::CreatePV (vgname, pv["device"]:"");
-		});
-	    }
-	    else
-	    {
-		new_volume = AutoinstLVM::ExistingLVM[device]:$[];
-	    }
-
-	    list new_partitions = maplist(map lv,  volume_group["partitions"]:[], ``{
-
-		list lvlist =  AutoinstLVM::ExistingLVM[device, "partitions"]:[];
-		map this_lv = select(filter(`p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
-
-		y2debug("This LV: %1", this_lv);
-
-		lv["used_fs"]	=	this_lv["used_fs"]:`none;
-
-
-		if (lv["create"]:true && !lv["resize"]:false)
-		{
-		    return (AutoinstLVM::CreateLV( vgname, lv ));
-		}
-		else if (lv["resize"]:false)
-		{
-
-		    return (AutoinstLVM::ResizeLV( vgname, lv ));
-		}
-		else
-		{
-
-		    return (AutoinstLVM::KeepLV( vgname, lv ));
-		}
-	    });
-
-	    new_volume["partitions"] = new_partitions;
-	    AutoinstLVM::Volumes[device] = new_volume;
-
-	});
-
-
-	y2milestone("Volumes: %1", AutoinstLVM::Volumes);
-	if (error)
-	    return false;
-
-	Storage::SetModifyTargets( AutoinstLVM::modify_targets );
-	map new_targetMap = union(Storage::GetTargetMap(), AutoinstLVM::Volumes);
-
-	Storage::SetTargetMap(new_targetMap);
-
-	return true;
-    }
-
-
-
-    /**
-     * Create RAID
-     *
-     */
-    global define void autoRAID()
-	``{
-	import "AutoinstRAID";
-
-	list RaidList =  maplist ( map device, AutoinstStorage::raid["/dev/md", "partitions"]:[],  ``{
-
-	    string use		=	AutoinstStorage::raid["/dev/md","use"]:"none";
-	    string dev		=	sformat("/dev/md%1", device["partition_nr"]:0);
-
-	    if (AutoinstRAID::OldAvailable)
-	    {
-		list mds = AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[];
-		list new_mds = maplist( `md, mds ,``{
-
-		    if ( use == "all" && dev == md["device"]:"" )
-		    {
-			 md["delete"] = true;
-		    }
-		    return (md);
-		});
-		map allmds =  AutoinstRAID::ExistingRAID["/dev/md"]:$[];
-		allmds["partitions"]	= new_mds;
-		AutoinstRAID::ExistingRAID["/dev/md"] = allmds;
-	    }
-
-
-	    y2milestone("Working on %1", device);
-
-	    device["device"]	= dev;
-
-	    string chunk_size = "4";
-	    map options = device["raid_options"]:$[];
-	    string raid_type	= options["raid_type"]:"raid1";
-
-	    if ( raid_type == "raid5" )
-	    {
-		chunk_size = "128";
-	    }
-	    if ( raid_type == "raid0" )
-	    {
-		chunk_size = "32";
-	    }
-
-
-        if (!haskey(options, "raid_type"))
-        {
-           options["raid_type"] = raid_type;
-        }
-
-	    string sel_chunksize = options["chunk_size"]:"";
-
-	    if ( sel_chunksize != "" )
-	    {
-		chunk_size = sel_chunksize;
-		options["chunk_size"]	= chunk_size;
-	    }
-
-
-	    if(  raid_type == "raid5" && options["parity_algorithm"]:"" == "" )
-	    {
-		options["parity_algorithm"] = "left-symmetric";
-	    }
-
-	    device["nr"] = device["partition_nr"]:"0";
-
-
-
-	    if (device["lvm_group"]:"" != "")
-	    {
-		device["fsid"]		= Partitions::fsid_lvm;
-	    }
-	    else
-	    {
-		device["fsid"]		= device["partition_id"]:Partitions::fsid_native;
-	    }
-	    device["region"]		= [0 , 1];
-
-	    if (!haskey(device, "create"))
-	    {
-		device["create"]	= true;
-		device["status"]	= "create";
-	    }
-
-
-
-	    if (!haskey(device, "format"))
-	    {
-		device["format"]	= false;
-	    }
-
-	    if (device["format"]:false)
-	    {
-		symbol selected_fs	= AutoinstStorage::StringFS2Symbol(device["filesystem"]:"");
-		device["used_fs"]	= selected_fs;
-	    }
-
-	    device["type"]		= `sw_raid;
-
-
-	    if (device["loop_fs"]:false || device["crypt_fs"]:false)
-	    {
-		device["crypt_key"] =   Storage::AddCryptToClassified( device["crypt_key"]:"");
-	    }
-
-
-	    return (union(device, options));
-	});
-
-
-	foreach( `part, RaidList,
-		 ``({
-		     integer len = raid_size_byte( Storage::GetTargetMap(), part);
-		     part["region"] = [0, len / (1024 * 1024)];
-		     return( part );
-		 }));
-
-	list allraid = [];
-
-	if (size (AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[]) > 0 )
-	{
-	    y2milestone("Existing RAID: %1", AutoinstRAID::ExistingRAID);
-	    allraid = union (AutoinstRAID::ExistingRAID["/dev/md", "partitions"]:[], RaidList );
-	}
-	else
-	{
-	    allraid =  RaidList;
-	}
-
-	map RaidMap = $[ "/dev/md" :
-			 $[
-			   "cyl_count" : 1,                         // typicall 1
-			   "cyl_size" : 1048576,                    // const 1MB
-			   "name" : "Linux Software RAID",
-			   "partitions" : allraid,
-			 ]
-	];
-	y2milestone("RaidMap: %1", RaidMap);
-
-	map new_targetMap = union(Storage::GetTargetMap(), RaidMap);
-	Storage::SetTargetMap(new_targetMap);
-
-	y2milestone("Targets: %1", Storage::GetTargetMap());
-    }
-
-
-
 
     /**
      * Racalculate sizes
@@ -1280,10 +985,10 @@ physical volumes belonging to this group.
 	y2milestone("Total available space: %1", totalsize);
 
 	// Get new partitions as specified in control file
-	list tmp_auto_partitions =  AutoinstStorage::targetMap[target_is, "partitions"]:[];
+	list TmpAutoPartitions =  AutoinstStorage::AutoTargetMap[TargetDevice, "partitions"]:[];
 
-	list auto_partitions = filter (`pentry,
-				       tmp_auto_partitions ,
+	list AutoPartitions = filter (`pentry,
+				       TmpAutoPartitions ,
 				       ``(!pentry["kept"]:false )
 				       );
 	string psize = "";
@@ -1297,7 +1002,7 @@ physical volumes belonging to this group.
 	boolean region_active = false;
 	boolean grow_possible  = true;
 
-	foreach(map part, auto_partitions, ``{
+	foreach(map part, AutoPartitions, ``{
 	    if (size(part["region"]:[]) == 0 )
 	    {
 		psize = part["size"]:"";
@@ -1367,9 +1072,9 @@ physical volumes belonging to this group.
 	if (max < totalsize )
 	{
 	    y2milestone("Using maximal growable sizes is possible");
-	    integer  number_of_partitions = size( auto_partitions );
+	    integer  number_of_partitions = size( AutoPartitions );
 	    integer i = 1;
-	    list npartitions = maplist(map part, auto_partitions, ``{
+	    list npartitions = maplist(map part, AutoPartitions, ``{
 
 		if ( part["maxsize"]:"" != "" && part["grow"]:false )
 		{
@@ -1385,9 +1090,9 @@ physical volumes belonging to this group.
 		return (part);
 	    });
 	    y2milestone("Partitions with new sizes: %1", npartitions);
-	    map drive = AutoinstStorage::targetMap[target_is]:$[];
+	    map drive = AutoinstStorage::AutoTargetMap[TargetDevice]:$[];
 	    drive["partitions"] = npartitions;
-	    AutoinstStorage::targetMap[target_is] = drive;
+	    AutoinstStorage::AutoTargetMap[TargetDevice] = drive;
 	}
 	else
 	{
@@ -1407,7 +1112,7 @@ physical volumes belonging to this group.
      */
     global define calcRegion(map currentPartition, list region )
 	``{
-	y2milestone("Region=%1", region);
+	y2milestone("Region in=%1", region);
 	integer units = 0;
 	string psize = "";
 	if ( size(currentPartition["region"]:[]) == 0 )
@@ -1445,6 +1150,8 @@ physical volumes belonging to this group.
 	else if (psize == "max")
 	{
 	    units = end_of_region (selected_region) - end_of_region (region);
+	   
+	    y2milestone("units: %1", units);
 	}
 	else if ( psize == ""  &&  size(autoRegion) > 0 )
 	{
@@ -1466,7 +1173,11 @@ physical volumes belonging to this group.
 
 
 
-
-
+    global define list SortPartitions(list p) ``{
+	p = sort( `p1, `p2, p,
+			   ``(start_of_region (p1["region"]:[])
+			      <= start_of_region(p2["region"]:[])));
+	return (p);	
+    }
 
 }

@@ -22,7 +22,8 @@
 
     global boolean OldAvailable = false;
 
-
+    global map raid = $[];
+    
     list region = [0,0];
     map targetMap = $[];
 
@@ -106,7 +107,168 @@
 	    Storage::SetTargetMap(targetMap);
 	}
 
+
     }  	
+
+
+
+
+
+
+    /**
+     * Create RAID
+     *
+     */
+    global define boolean Write()
+	``{
+
+	list RaidList =  maplist ( map device, raid["/dev/md", "partitions"]:[],  ``{
+
+	    string use	= raid["/dev/md","use"]:"none";
+	    string dev	= sformat("/dev/md%1", device["partition_nr"]:0);
+
+	    if (OldAvailable)
+	    {
+		list mds = ExistingRAID["/dev/md","partitions"]:[];
+		list new_mds = maplist( `md, mds ,``{
+
+		    if ( use == "all" && dev == md["device"]:"" )
+		    {
+			 md["delete"] = true;
+		    }
+		    return (md);
+		});
+		map allmds =  ExistingRAID["/dev/md"]:$[];
+		allmds["partitions"]	= new_mds;
+		ExistingRAID["/dev/md"] = allmds;
+	    }
+
+
+	    y2milestone("Working on %1", device);
+
+	    device["device"]	= dev;
+
+	    string chunk_size = "4";
+	    map options = device["raid_options"]:$[];
+	    string raid_type	= options["raid_type"]:"raid1";
+
+	    if ( raid_type == "raid5" )
+	    {
+		chunk_size = "128";
+	    }
+	    if ( raid_type == "raid0" )
+	    {
+		chunk_size = "32";
+	    }
+
+
+        if (!haskey(options, "raid_type"))
+        {
+           options["raid_type"] = raid_type;
+        }
+
+	    string sel_chunksize = options["chunk_size"]:"";
+
+	    if ( sel_chunksize != "" )
+	    {
+		chunk_size = sel_chunksize;
+		options["chunk_size"]	= chunk_size;
+	    }
+
+
+	    if(  raid_type == "raid5" && options["parity_algorithm"]:"" == "" )
+	    {
+		options["parity_algorithm"] = "left-symmetric";
+	    }
+
+	    device["nr"] = device["partition_nr"]:"0";
+
+
+
+	    if (device["lvm_group"]:"" != "")
+	    {
+		device["fsid"]		= Partitions::fsid_lvm;
+	    }
+	    else
+	    {
+		device["fsid"]		= device["partition_id"]:Partitions::fsid_native;
+	    }
+	    device["region"]		= [0 , 1];
+
+	    if (!haskey(device, "create"))
+	    {
+		device["create"]	= true;
+		device["status"]	= "create";
+	    }
+
+
+
+	    if (!haskey(device, "format"))
+	    {
+		device["format"]	= false;
+	    }
+
+	    if (device["format"]:false)
+	    {
+		symbol selected_fs	= AutoinstStorage::StringFS2Symbol(device["filesystem"]:"");
+		device["used_fs"]	= selected_fs;
+	    }
+
+	    device["type"]		= `sw_raid;
+
+
+	    if (device["loop_fs"]:false || device["crypt_fs"]:false)
+	    {
+		device["crypt_key"] =   Storage::AddCryptToClassified( device["crypt_key"]:"");
+	    }
+
+
+	    return (union(device, options));
+	});
+
+
+	foreach( `part, RaidList,
+		 ``({
+		     integer len = raid_size_byte( Storage::GetTargetMap(), part);
+		     part["region"] = [0, len / (1024 * 1024)];
+		     return( part );
+		 }));
+
+	list allraid = [];
+
+	if (size (ExistingRAID["/dev/md","partitions"]:[]) > 0 )
+	{
+	    y2milestone("Existing RAID: %1", ExistingRAID);
+	    allraid = union (ExistingRAID["/dev/md", "partitions"]:[], RaidList );
+	}
+	else
+	{
+	    allraid =  RaidList;
+	}
+
+	map RaidMap = $[ "/dev/md" :
+			 $[
+			   "cyl_count" : 1,                         // typicall 1
+			   "cyl_size" : 1048576,                    // const 1MB
+			   "name" : "Linux Software RAID",
+			   "partitions" : allraid,
+			 ]
+	];
+	y2milestone("RaidMap: %1", RaidMap);
+
+	map new_targetMap = union(Storage::GetTargetMap(), RaidMap);
+	Storage::SetTargetMap(new_targetMap);
+	y2milestone("Targets: %1", Storage::GetTargetMap());
+	
+	return true;
+    }
+
+
+
+
+
+
+
     
 
 }
