@@ -74,7 +74,7 @@ Please wait while the system is being configured.
 	    else
 	    {
 		runlevels["default"] = "3";
-	    }	
+	    }
 	    configure["runlevels"] = runlevels;
 	}
     }
@@ -142,9 +142,9 @@ Please wait while the system is being configured.
         foreach (map user, users, ``{
             if (user["username"]:"" == "root") {
                 set_root = true;
-		Users::rootPassword =  user["user_password"]:"";
+				Users::rootPassword =  user["user_password"]:"";
                 if (!user["encrypted"]:false) {
-		    cryptRootPassword();
+					Users::cryptRootPassword();
                 }
 
             }

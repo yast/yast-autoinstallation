@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT addon (#PCDATA)>
+<!ELEMENT kernel (#PCDATA)>
 <!ELEMENT addons (addon+)>
 <!ATTLIST addons
 	config:type CDATA #REQUIRED
@@ -37,7 +38,7 @@
 >
 <!ELEMENT script (filename, interpreter, source)>
 <!ELEMENT scripts (chroot-scripts?, post-scripts?, pre-scripts?)>
-<!ELEMENT software (addons?, base, packages?, post-packages?)>
+<!ELEMENT software (addons?, base, packages?, post-packages?, kernel?)>
 <!ELEMENT source (#PCDATA)>
 <!ELEMENT sysconfig (sysconfig_entry+)>
 <!ATTLIST sysconfig
