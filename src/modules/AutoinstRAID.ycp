@@ -16,20 +16,15 @@
 
     include "partitioning/partition_defines.ycp";
     include "partitioning/raid_lib.ycp";
- 
 
 
     global map ExistingRAID = $[];
-
-    
 
     global boolean OldAvailable = false;
 
 
     list region = [0,0];
     map targetMap = $[];
-  
-
 
     /**
      * Constructor
@@ -37,9 +32,10 @@
      */
     global define void AutoinstRAID () ``{
 
-	targetMap 	= Storage::GetTargetMap();
+	targetMap	= Storage::GetTargetMap();
 	y2milestone("Current TargetMap: %1", targetMap );
-	ExistingRAID 	= filter(`k,`v, targetMap, ``(k == "/dev/md"));
+
+	ExistingRAID	= filter(`k,`v, targetMap, ``(k == "/dev/md"));
 	y2milestone("Existing RAID: %1", ExistingRAID );
 
 	if (size(ExistingRAID) > 0 )
@@ -48,8 +44,6 @@
 	}
 	return;
     }
-
-
 
 
     global define list ExistingMDs ( string md )
@@ -70,7 +64,7 @@
 				  &&
 				  part["delete"]:false
 				  &&
-				  part["fsid"]:0 == Partitions::fsid_raid 
+				  part["fsid"]:0 == Partitions::fsid_raid
 				  )
 			       )
 		       );
@@ -78,6 +72,42 @@
 
 	return( flatten(ret) );
     }
+
+
+    global define list DeleteMDs ()
+	``{
+	targetMap =  Storage::GetTargetMap();
+	list to_bo_deleted = [];
+	foreach( `dev, `devmap, targetMap, ``{	    
+	    foreach( `part,  devmap["partitions"]:[], ``{	
+		if (part["old_raid_name"]:"" != "" && part["delete"]:false)
+		{
+		    to_bo_deleted= add(to_bo_deleted, part["old_raid_name"]:"");
+		}		    		   
+	    });
+	});
+	
+	y2milestone("mds to delete: %1", to_bo_deleted);
+	
+	if (OldAvailable)
+	{
+	    list mds = targetMap["/dev/md","partitions"]:[];
+	    list new_mds = maplist( `md, mds ,``{
+		if ( contains(to_bo_deleted, md["device"]:"")) 
+		{
+		    md["delete"] = true;
+		}
+		return (md);
+	    });
+	    y2milestone("new_mds: %1", new_mds );
+	    map allmds =  targetMap["/dev/md"]:$[];
+	    allmds["partitions"] = new_mds;
+	    targetMap["/dev/md"] = allmds;
+	    Storage::SetTargetMap(targetMap);
+	}
+
+    }  	
+    
 
 }
 
