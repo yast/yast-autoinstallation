@@ -9,7 +9,6 @@ Obsoletes:	yast2-module-autoinst yast2-config-autoinst
 Provides:	yast2-lib-autoinst
 Obsoletes:	yast2-lib-autoinst
 PreReq:		%insserv_prereq %fillup_prereq
-Source1:	doc-9.0.tar.bz2
 
 BuildArchitectures:	noarch
 
@@ -38,7 +37,7 @@ Group:		YaST2
 -
 
 @PREP@
-%setup -q -a 1
+%setup -q 
 
 @BUILD@
 
@@ -59,7 +58,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/rules
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/classes
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
-
 
 @CLEAN@
 
@@ -87,6 +85,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 @yncludedir@/autoinstall/partition_dialogs.ycp
 @yncludedir@/autoinstall/script_dialogs.ycp
 @yncludedir@/autoinstall/general_dialogs.ycp
+@yncludedir@/autoinstall/wizards.ycp
 @yncludedir@/autoinstall/helps.ycp
 
 @clientdir@/general_auto.ycp

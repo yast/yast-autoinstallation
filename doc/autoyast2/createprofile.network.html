@@ -1,0 +1,769 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;	Network configuration
+      </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Configuration and Installation Options"
+HREF="configuration.html"><LINK
+REL="PREVIOUS"
+TITLE="
+	Services and Run-levels
+      "
+HREF="createprofile.services.html"><LINK
+REL="NEXT"
+TITLE="
+	Security settings
+      "
+HREF="createprofile.security.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="createprofile.services.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 4. Configuration and Installation Options</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="createprofile.security.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="CreateProfile.Network"
+>4.7. Network configuration</A
+></H1
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="Configuration.Network.Devices"
+>4.7.1. Network devices, DNS and Routing.</A
+></H2
+><P
+>&#13;	  Network configuration is used to connect a single  <I
+CLASS="emphasis"
+>SuSE</I
+>  Linux
+	  workstation to an Ethernet-based LAN or to configure dial-up
+	  connection. More complex configuration (multiple network cards,
+	  routing, etc.) is also provided. With this module it's possible to
+	  configure and setup Ethernet Controllers and Token-Ring Controllers.
+	</P
+><P
+>&#13;	  To configure network settings and activate networking automatically,
+	  one global resource is used to store the whole network configuration.
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN663"
+></A
+><P
+><B
+>Example 4-23. 
+	    Network configuration
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+ &#60;configure&#62;
+.....
+    &#60;networking&#62;
+      &#60;dns&#62;
+        &#60;dhcp_hostname config:type="boolean"&#62;true&#60;/dhcp_hostname&#62;
+        &#60;dhcp_resolv config:type="boolean"&#62;true&#60;/dhcp_resolv&#62;
+        &#60;domain&#62;local&#60;/domain&#62;
+        &#60;hostname&#62;linux&#60;/hostname&#62;
+      &#60;/dns&#62;
+      &#60;interfaces config:type="list"&#62;
+        &#60;interface&#62;
+          &#60;bootproto&#62;dhcp&#60;/bootproto&#62;
+          &#60;device&#62;eth0&#60;/device&#62;        
+          &#60;startmode&#62;onboot&#60;/startmode&#62;
+        &#60;/interface&#62;
+      &#60;/interfaces&#62;
+      &#60;routing&#62;
+        &#60;ip_forward config:type="boolean"&#62;false&#60;/ip_forward&#62;
+        &#60;routes config:type="list"&#62;
+          &#60;route&#62;
+            &#60;destination&#62;default&#60;/destination&#62;
+            &#60;device&#62;-&#60;/device&#62;
+            &#60;gateway&#62;192.168.1.240&#60;/gateway&#62;
+            &#60;netmask&#62;-&#60;/netmask&#62;
+          &#60;/route&#62;
+        &#60;/routes&#62;
+      &#60;/routing&#62;
+      &#60;modules config:type="list"&#62;
+        &#60;module_entry&#62;
+          &#60;device&#62;eth0&#60;/device&#62;
+          &#60;module&#62;e100&#60;/module&#62;
+          &#60;options&#62;&#60;/options&#62;
+        &#60;/module_entry&#62;
+      &#60;/modules&#62;
+    &#60;/networking&#62;
+....
+ &#60;/configure&#62;
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="Configuration.Network.Proxy"
+>4.7.2. Proxy</A
+></H2
+><P
+>&#13;	  Configure your Internet proxy (caching) settings using this
+	  resource.
+	</P
+><P
+>&#13;	  <I
+CLASS="emphasis"
+>HTTP proxy</I
+> is the name of the proxy server for your access to the world wide web (WWW).
+	  <I
+CLASS="emphasis"
+>FTP proxy</I
+> is the name of the proxy server for your access to the file transfer services (FTP).
+	  <I
+CLASS="emphasis"
+>No proxy</I
+> domains is a list of domains for
+	  which the requests should be done directly without caching.
+	</P
+><P
+>&#13;	  If you are using a proxy server with authorization, fill in Proxy user name and Proxy password.
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN674"
+></A
+><P
+><B
+>Example 4-24. 
+	  Netwrok configuration: Proxy
+	</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;configure&#62;
+...
+    &#60;proxy&#62;
+       &#60;http_proxy&#62;proxy.example.com:3128&#60;/http_proxy&#62;
+       &#60;ftp_proxy&#62;proxy.example.com:3128&#60;/ftp_proxy&#62;
+       &#60;no_proxy&#62;localhost&#60;/no_proxy&#62;
+       &#60;proxy_user&#62;user&#60;/proxy_user&#62;
+       &#60;proxy_password&#62;password&#60;/proxy_password&#62;
+    &#60;/proxy&#62;
+...
+&#60;/configure&#62;
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="Configuration.Network.Inetd"
+>4.7.3. (X)Inetd</A
+></H2
+><P
+>First, an example:</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN680"
+></A
+><P
+><B
+>Example 4-25. 
+	    Inetd Example
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+
+&#60;profile&#62;
+ &#60;configure&#62;
+  ...
+  &#60;inetd&#62;
+    &#60;netd_service config:type="symbol"&#62;xinetd&#60;/netd_service&#62;
+    &#60;netd_status config:type="integer"&#62;0&#60;/netd_status&#62;
+    &#60;netd_conf config:type="list"&#62;
+      &#60;conf&#62;
+	&#60;script&#62;imap&#60;/script&#62;
+	&#60;service&#62;pop3&#60;/service&#62;
+	&#60;enabled config:type="boolean"&#62;true&#60;/enabled&#62;
+      &#60;/conf&#62;
+      &#60;conf&#62;
+	&#60;server&#62;in.ftpd&#60;/server&#62;
+	&#60;server_args&#62;-A&#60;/server_args&#62;
+	&#60;enabled config:type="boolean"&#62;true&#60;/enabled&#62;
+      &#60;/conf&#62;
+      &#60;conf&#62;
+	&#60;service&#62;daytime&#60;/service&#62;
+	&#60;protocol&#62;tcp&#60;/protocol&#62;
+      &#60;/conf&#62;
+      ....
+      &#60;conf&#62;...&#60;/conf&#62;
+    &#60;/netd_conf&#62;
+  &#60;/inetd&#62;
+  ...
+ &#60;/configure&#62;
+&#60;/profile&#62;
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	  The profile has elements to specify which superserver should be
+	  used (netd_service), whether it should be enabled (netd_status) and
+	  how the services should be configured (netd_conf).
+	</P
+><P
+>&#13;	  A service description element has conceptually two parts: key and
+	  non-key. When writing the configuration, services are matched using
+	  the key fields and to the matching service, non-key fields are
+	  applied. If no service matches, it is created. If more services
+	  match, a warning is reported. The key fields are script, service,
+	  protocol and server.
+	</P
+><P
+>&#13;	  Service and protocol are matched literally. script is the base name
+	  of the config file: usually a file in<TT
+CLASS="filename"
+> /etc/xinetd.d</TT
+>, for example "echo-udp",
+	  or "inetd.conf". For compatibility with 8.2, server is matched more
+	  loosely: if it is <TT
+CLASS="filename"
+>/usr/sbin/tcpd</TT
+>, the real server name is taken from
+	  server_args. After that, the basename of the first
+	  whitespace-sparated word is taken and these values are compared.
+	</P
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="Configuration.Network.NIS"
+>4.7.4. NIS</A
+></H2
+><P
+>&#13;	  Using the <I
+CLASS="emphasis"
+>nis</I
+> resource, you can configure the target machine as a <I
+CLASS="emphasis"
+>NIS
+	    client</I
+>. The following example shows a detailed
+	  configuration using multiple domains.
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN693"
+></A
+><P
+><B
+>Example 4-26. 
+	  Network configuration: NIS
+	</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;configure&#62;
+...
+    &#60;nis&#62;
+      &#60;nis_broadcast config:type="boolean"&#62;true&#60;/nis_broadcast&#62;
+      &#60;nis_broken_server config:type="boolean"&#62;true&#60;/nis_broken_server&#62;
+      &#60;nis_by_dhcp config:type="boolean"&#62;false&#60;/nis_by_dhcp&#62;
+      &#60;nis_domain&#62;test.com&#60;/nis_domain&#62;
+      &#60;nis_local_only config:type="boolean"&#62;true&#60;/nis_local_only&#62;
+      &#60;nis_options&#62;&#60;/nis_options&#62;
+      &#60;nis_other_domains config:type="list"&#62;
+        &#60;nis_other_domain&#62;
+          &#60;nis_broadcast config:type="boolean"&#62;false&#60;/nis_broadcast&#62;
+          &#60;nis_domain&#62;domain.com&#60;/nis_domain&#62;
+          &#60;nis_servers config:type="list"&#62;
+            &#60;nis_server&#62;10.10.0.1&#60;/nis_server&#62;
+          &#60;/nis_servers&#62;
+        &#60;/nis_other_domain&#62;
+      &#60;/nis_other_domains&#62;
+      &#60;nis_servers config:type="list"&#62;
+        &#60;nis_server&#62;192.168.1.1&#60;/nis_server&#62;
+      &#60;/nis_servers&#62;
+      &#60;start_autofs config:type="boolean"&#62;true&#60;/start_autofs&#62;
+      &#60;start_nis config:type="boolean"&#62;true&#60;/start_nis&#62;
+    &#60;/nis&#62;
+...
+&#60;/configure&#62;
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="Configuration.Network.LDAP"
+>4.7.5. <ACRONYM
+CLASS="acronym"
+>LDAP</ACRONYM
+>  client</A
+></H2
+><P
+>&#13;	  The installed machine can be set up as an
+	  <I
+CLASS="emphasis"
+>&#62; <ACRONYM
+CLASS="acronym"
+>LDAP</ACRONYM
+>  client</I
+> to authenticate  users with an
+	  OpenLDAP;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
+	  and the IP address of the  <ACRONYM
+CLASS="acronym"
+>LDAP</ACRONYM
+>  server (e.g., 10.20.0.2).
+	</P
+><P
+>&#13;	  If  <ACRONYM
+CLASS="acronym"
+>LDAP</ACRONYM
+>  is activated, <I
+CLASS="emphasis"
+>NSS</I
+> and <I
+CLASS="emphasis"
+>PAM</I
+>
+	  will be configured accordingly to use  <ACRONYM
+CLASS="acronym"
+>LDAP</ACRONYM
+>  for user authentication.
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN708"
+></A
+><P
+><B
+>Example 4-27. 
+	    Network configuration:  <ACRONYM
+CLASS="acronym"
+>LDAP</ACRONYM
+>  client
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;configure&#62;
+...
+    &#60;ldap&#62;
+      &#60;ldap_domain&#62; dc=mydomain,dc=com&#60;/ldap_domain&#62;
+      &#60;ldap_server&#62;10.10.0.1&#60;/ldap_server&#62;
+      &#60;ldap_tls config:type="boolean"&#62;true&#60;/ldap_tls&#62;
+      &#60;ldap_v2 config:type="boolean"&#62;true&#60;/ldap_v2&#62;
+      &#60;pam_password&#62;crypt&#60;/pam_password&#62;
+      &#60;start_ldap config:type="boolean"&#62;true&#60;/start_ldap&#62;
+    &#60;/ldap&#62;
+...
+&#60;/configure&#62;
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN712"
+>4.7.6. NFS Client and Server</A
+></H2
+><P
+>&#13;	  Configuration of a system as an NFS client or an NFS server is
+	  possible and can be done using the configuration system. The
+	  following example shows how both NFS client and server can be configured.
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN715"
+></A
+><P
+><B
+>Example 4-28. 
+	    Network configuration: NFS client
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;configure&#62;
+...
+    &#60;nfs config:type="list"&#62;
+      &#60;nfs_entry&#62;
+        &#60;mount_point&#62;/home&#60;/mount_point&#62;
+        &#60;nfs_options&#62;defaults&#60;/nfs_options&#62;
+        &#60;server_path&#62;192.168.1.1:/home&#60;/server_path&#62;
+      &#60;/nfs_entry&#62;
+    &#60;/nfs&#62;
+...
+&#60;/configure&#62;
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="example"
+><A
+NAME="AEN718"
+></A
+><P
+><B
+>Example 4-29. 
+	    Network configuration: NFS server
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+  &#60;configure&#62;
+....
+    &#60;nfs_server&#62;
+      &#60;nfs_exports config:type="list"&#62;
+        &#60;nfs_export&#62;
+          &#60;allowed config:type="list"&#62;
+            &#60;allowed_clients&#62;*(ro,root_squash,sync)&#60;/allowed_clients&#62;
+          &#60;/allowed&#62;
+          &#60;mountpoint&#62;/home&#60;/mountpoint&#62;
+        &#60;/nfs_export&#62;
+        &#60;nfs_export&#62;
+          &#60;allowed config:type="list"&#62;
+            &#60;allowed_clients&#62;*(ro,root_squash,sync)&#60;/allowed_clients&#62;
+          &#60;/allowed&#62;
+          &#60;mountpoint&#62;/work&#60;/mountpoint&#62;
+        &#60;/nfs_export&#62;
+      &#60;/nfs_exports&#62;
+      &#60;start_nfsserver config:type="boolean"&#62;true&#60;/start_nfsserver&#62;
+    &#60;/nfs_server&#62;
+....
+  &#60;/configure&#62;
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="Configuration.Network.Sendmail"
+>4.7.7. Mail Configuration (Sendmail or Postfix)</A
+></H2
+><P
+>&#13;	  For the mail configuration of the client this
+	  module lets you create a detailed mail configuration. The module
+	  contains various options and it is recommended to use it at least for
+	  the initial configuration.
+	  
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN724"
+></A
+><P
+><B
+>Example 4-30. Mail Configuration</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;configure&#62;
+...
+    &#60;mail&#62;
+      &#60;aliases config:type="list"&#62;
+        &#60;alias&#62;
+          &#60;alias&#62;root&#60;/alias&#62;
+          &#60;comment&#62;&#60;/comment&#62;
+          &#60;destinations&#62;foo&#60;/destinations&#62;
+        &#60;/alias&#62;
+        &#60;alias&#62;
+          &#60;alias&#62;test&#60;/alias&#62;
+          &#60;comment&#62;&#60;/comment&#62;
+          &#60;destinations&#62;foo&#60;/destinations&#62;
+        &#60;/alias&#62;
+      &#60;/aliases&#62;
+      &#60;connection_type config:type="symbol"&#62;permanent&#60;/connection_type&#62;
+      &#60;fetchmail config:type="list"&#62;
+        &#60;fetchmail_entry&#62;
+          &#60;local_user&#62;foo&#60;/local_user&#62;
+          &#60;password&#62;bar&#60;/password&#62;
+          &#60;protocol&#62;POP3&#60;/protocol&#62;
+          &#60;remote_user&#62;foo&#60;/remote_user&#62;
+          &#60;server&#62;pop.foo.com&#60;/server&#62;
+        &#60;/fetchmail_entry&#62;
+        &#60;fetchmail_entry&#62;
+          &#60;local_user&#62;test&#60;/local_user&#62;
+          &#60;password&#62;bar&#60;/password&#62;
+          &#60;protocol&#62;IMAP&#60;/protocol&#62;
+          &#60;remote_user&#62;test&#60;/remote_user&#62;
+          &#60;server&#62;blah.com&#60;/server&#62;
+        &#60;/fetchmail_entry&#62;
+      &#60;/fetchmail&#62;
+      &#60;from_header&#62;test.com&#60;/from_header&#62;
+      &#60;listen_remote config:type="boolean"&#62;true&#60;/listen_remote&#62;
+      &#60;local_domains config:type="list"&#62;
+        &#60;domains&#62;test1.com&#60;/domains&#62;
+      &#60;/local_domains&#62;
+      &#60;masquerade_other_domains config:type="list"&#62;
+        &#60;domain&#62;blah.com&#60;/domain&#62;
+      &#60;/masquerade_other_domains&#62;
+      &#60;masquerade_users config:type="list"&#62;
+        &#60;masquerade_user&#62;
+          &#60;address&#62;joe@test.com&#60;/address&#62;
+          &#60;comment&#62;&#60;/comment&#62;
+          &#60;user&#62;joeuser&#60;/user&#62;
+        &#60;/masquerade_user&#62;
+        &#60;masquerade_user&#62;
+          &#60;address&#62;bar@test.com&#60;/address&#62;
+          &#60;comment&#62;&#60;/comment&#62;
+          &#60;user&#62;foo&#60;/user&#62;
+        &#60;/masquerade_user&#62;
+      &#60;/masquerade_users&#62;
+      &#60;mta config:type="symbol"&#62;postfix&#60;/mta&#62;
+      &#60;outgoing_mail_server&#62;test.com&#60;/outgoing_mail_server&#62;
+      &#60;postfix_mda config:type="symbol"&#62;local&#60;/postfix_mda&#62;
+      &#60;smtp_auth config:type="list"&#62;
+        &#60;listentry&#62;
+          &#60;password&#62;bar&#60;/password&#62;
+          &#60;server&#62;test.com&#60;/server&#62;
+          &#60;user&#62;foo&#60;/user&#62;
+        &#60;/listentry&#62;
+      &#60;/smtp_auth&#62;
+      &#60;use_amavis config:type="boolean"&#62;true&#60;/use_amavis&#62;
+      &#60;virtual_users config:type="list"&#62;
+        &#60;virtual_user&#62;
+          &#60;alias&#62;test.com&#60;/alias&#62;
+          &#60;comment&#62;&#60;/comment&#62;
+          &#60;destinations&#62;foo.com&#60;/destinations&#62;
+        &#60;/virtual_user&#62;
+        &#60;virtual_user&#62;
+          &#60;alias&#62;geek.com&#60;/alias&#62;
+          &#60;comment&#62;&#60;/comment&#62;
+          &#60;destinations&#62;bar.com&#60;/destinations&#62;
+        &#60;/virtual_user&#62;
+      &#60;/virtual_users&#62;
+    &#60;/mail&#62;
+...
+&#60;/configure&#62;
+
+	    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="createprofile.services.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="createprofile.security.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Services and Run-levels</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="configuration.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Security settings</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

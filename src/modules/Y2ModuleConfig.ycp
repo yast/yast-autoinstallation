@@ -54,7 +54,7 @@
 	Desktop::Read(Values);
 	map<string,map> configurations = Desktop::Modules;
 
-	y2debug("%1", configurations );
+	//y2debug("%1", configurations );
 	map groups = Desktop::Groups;
 
 	map confs = $[];
@@ -71,7 +71,7 @@
 		    string client =  name + "_auto";
 		    values["X-SuSE-YaST-AutoInstClient"] = client;
 		}
-		y2debug("values: %1", values["X-SuSE-YaST-AutoInstClient"]:"" );
+		// y2debug("values: %1", values["X-SuSE-YaST-AutoInstClient"]:"" );
 		confs[name]=values;
 	    }
 	});
@@ -103,7 +103,7 @@
      */
     define void CreateGroupTree (map<string, map> Groups)
 	``{
-	y2debug("Groups: %1", Groups);
+	//y2debug("Groups: %1", Groups);
 
         list<string> grouplist = [];
         grouplist = SortGroups (Groups, maplist (string rawname, map group, Groups, ``(rawname)));
@@ -117,7 +117,7 @@
 	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
         });
 
-	y2debug("data: %1", MenuTreeData);
+	//y2debug("data: %1", MenuTreeData);
 	return;
     }
 
@@ -154,7 +154,7 @@
 		MenuTreeData = add(MenuTreeData,menu_entry);
 	    }
 	});
-	y2debug("MenuTreeData: %1", MenuTreeData );
+	// y2debug("MenuTreeData: %1", MenuTreeData );
     }
 
 
@@ -170,7 +170,7 @@
 
 	if (!Mode::initial)
 	{
-	    y2debug("Modules: %1", ModuleMap);
+	    // y2debug("Modules: %1", ModuleMap);
 	    list MenuEntries = ReadMenuEntries();
 
 	    ModuleMap = MenuEntries[0]:$[];
@@ -185,7 +185,7 @@
 	if (Mode::config)
 	{
 	    // construct the tree menu
-	    y2debug("Calling Construct Menu");
+	    // y2debug("Calling Construct Menu");
 	    ConstructMenu();
 	}
     }
