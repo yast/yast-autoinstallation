@@ -281,7 +281,7 @@ needs. All fields are required.</P>
 		    else if( ret == `fstab_options )
 		    {
 			map new = $[];
-			FstabOptions( new, return_value, selected_fs );
+			FstabOptions( new, return_value);
 			y2milestone("fstab %1", return_value);
 		    }
 
@@ -530,6 +530,7 @@ For more information, consult the documentation.
 	Wizard::CreateDialog();
 	string help_text = _("Help");
 	Wizard::SetContents( title, contents, help, true , true );
+	Wizard::ReplaceAbortButton(`Empty());
 	
 	if (size(partitions)>0)
 	{
