@@ -129,6 +129,19 @@
 	summary = Summary::AddHeader(summary, _("Installation Method"));
 	summary = Summary::AddLine(summary, (method != "") ?
 				   method : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Initial Installation Language"));
+	summary = Summary::AddLine(summary, (language != "") ?
+				   language : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Initial Installation Keytable"));
+	summary = Summary::AddLine(summary, (keytable != "") ?
+				   keytable : Summary::NotConfigured());
+	
+	summary = Summary::AddHeader(summary, _("Installation Server"));
+	summary = Summary::AddLine(summary, (server != "") ?
+				   server : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Installation Server Directory"));
+	summary = Summary::AddLine(summary, (serverdir != "") ?
+				   serverdir : Summary::NotConfigured());	
 
 	return summary;				   
     }

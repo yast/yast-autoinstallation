@@ -272,11 +272,15 @@
     }
 
     global define string Summary() ``{
-	string summary = "";
+	string summary = "";	
+	    
 	foreach(`c, currentProfile, ``{
 	    summary = Summary::AddHeader(summary, c["class_name"]:"None");
 	    summary = Summary::AddLine(summary,  c["configuration"]:"None");  
 	});
+	if (size(summary) == 0 ) {
+	    return Summary::NotConfigured();
+	}
 	return summary;
     }
 

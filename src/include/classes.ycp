@@ -66,11 +66,13 @@
     global define ManageProfiles()
 	``{
 	string title = _("Profile/Class Management ");
-	string help = _("<P>Use this interface to add and define new classes. A Class can contain
-any part of a complete Profile. When several classes are defined, they can
-be merged togather to create a complete Profile that can be used to install
+	string help = _("<P>Use this interface to add and define new classes. A class contains several configuration
+which represent  a subset of a complete <em>control file</em>. When several classes are defined, they can
+be merged togather to create a complete <em>control file</em> that can be used to install
 a client.
 </P>");
+	help = help + _("<P>Alternatively, you can associate several classes with a control file
+(in this case it will be saved as <b>template</b>). </P>");
 
 	Wizard::SetContents(title,
 			    RereadProfiles(), help, true, true);
@@ -297,7 +299,7 @@ to which class it should belong</P>");
 	
 	list classes = maplist(map class , AIClass::Classes,
 			       ``{
-				   string pathtoClass = sformat("%1/%2", AIClass::ClassDir, lookup(class,"name","Unknown"));
+				   string pathtoClass = sformat("%1/%2", AIClass::classDir, lookup(class,"name","Unknown"));
 				   list classes_in_group = SCR::Read(.target.dir, pathtoClass);
 				   return (`item(
 						 `id(lookup(class,"name","xxx")),

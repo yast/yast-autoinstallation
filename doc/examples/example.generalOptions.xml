@@ -5,15 +5,42 @@
     <install>
 ...
         <general>
-            <keyboard>german</keyboard>
             <language>de_DE</language>
-            <timezone>US/Eastern</timezone>
-            <hwclock>localtime</hwclock>
+            <keyboard>
+				<keymap>german</keymap>
+				<rate>24</rate>
+				<delay>24</delay>
+				<numlock>on</numlock> <!-- on|off|bios -->
+				<scrolllock>on</scrolllock> <!-- on|off -->
+				<capslock>on</capslock> <!-- on|off|disables -->
+			</keyboard>
 
-            <reboot  config:type="boolean">false</reboot>
-            <interactive config:type="boolean">false</interactive>
+			<clock>
+            	<timezone>US/Eastern</timezone>
+            	<utc config:type="boolean">true</utc>
+				<ntp_servers config:type="list">
+					<ntp_server>ntp.example.com</ntp_server>
+				</ntp_servers>
+			</clock>
+			<mouse>
+				<id>ps0</id>
+				<device>/dev/psaux</device>
+				<gpm>
+					<protocol>ps2</protocol>
+					<parameters></parameters>
+				</gpm>
+				<wheels config:type="integer">1</wheels>
+				<buttons config:type="integer">1</buttons>
+				<xemu3 config:type="boolean">true</xemu3>
+			</mouse>	
+			<mode>
+				<installation config:type="boolean">true</installation>
+				<upgrade config:type="boolean">false</upgrade>
+            	<confirm config:type="boolean">false</confirm>
+				<interactive_boot config:type="boolean">false</interactive_boot>
+           		<reboot  config:type="boolean">false</reboot>
+			</mode>
 
-            <encryption_method>des</encryption_method>
         </general>
 ...
     </install>

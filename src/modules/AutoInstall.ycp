@@ -16,7 +16,7 @@
     import "Mode";    
     import "Report";
     import "XML";
-
+    include "autoinstall/io.ycp";
 
 
     // Put all scripts and autoinstall data in this directory for later access
@@ -186,15 +186,15 @@
 
     global define void ProcessProfile()
 	``{
-
-	Profile = XML::XMLToYCPFile( xml_tmpfile );
+	if (SCR::Read(.target.size, xml_tmpfile)>0)
+	    Profile = XML::XMLToYCPFile( xml_tmpfile );
 	// the install section
 	Install = Profile["install"]:$[];
 
 	// and the configure section
 	Configure = Profile["configure"]:$[];
 
-	Report::Set(GetMap("install", "report", true));
+	Report::Set(GetMap(Install , "report", true));
 	Fstab = fstabSettings();
 	return;
     }
@@ -208,7 +208,7 @@
      * @return list fstab list to be used by write_fstab
      */
     global define list fstabSettings()``{
-	list fstab_raw = GetList("install", "fstab", true);
+	list fstab_raw = GetList(Configure, "fstab", true);
 	list fstab = maplist(`f, fstab_raw, ``{
 	    map entry = $[];
 	    entry["spec"] 	= f["fs_spec"]:"";
@@ -240,7 +240,7 @@
 	Encryption = "des";
 
 	
-	map general = GetMap("install", "general", true);
+	map general = GetMap(Install, "general", true);
 	
 	foreach(`k,`v, general , ``{
 	    if (k == "language")
@@ -359,7 +359,7 @@
      */
     global define bootloaderSettings()``{
 
-	Bootloader = GetMap("install", "bootloader", true);
+	Bootloader = GetMap(Install, "bootloader", true);
 
 	if (issubstring(Bootloader["location"]:"mbr", "/dev/")) {
 	    Boot::device=Bootloader["location"]:"mbr";
@@ -554,7 +554,9 @@
 
     global define scriptSettings(string type)
 	``{
-	list scripts = GetConfList(type, true);
+
+	map allScripts = configure["scripts"]:$[];
+	list scripts = allScripts[type]:[];
 
 	string tmpdirString = "";
 	string current_logdir = "";
@@ -946,161 +948,6 @@
 
 
 
-
-
-    /**
-     * ConvertType
-     *
-     */
-    define ConvertType(any value) ``{
-	if (is(value, boolean))
-	    return value;
-	else if (is(value, integer))
-	    return value;
-	else if (is(value, symbol))
-	    return value;
-	else if (is(value, string)) {
-	    if (value == "")
-		return value;
-	    else if (value == "true")
-	    {
-		return true;
-	    }
-	    else if ( value == "false")
-	    {
-		return false;
-	    }
-	    else if  ( findfirstnotof( value, "0123456789") == nil  )
-	    {
-		return(tointeger(value));
-	    }
-	    else
-	    {
-		return value;
-	    }
-	} else {
-	    return value;
-	}
-    }
-
-
-    /**
-     * Geta configuration Map from Profile   
-     * @param string parent
-     * @param string resource
-     * @param boolean convert types
-     * @return map configuration list
-     */
-    define map GetMap (string parent, string resource, boolean convert)``{
-	map Parent = Profile[parent]:$[];
-	map result = Parent[resource]:$[];
-	if (!convert)
-	    return result;
-
-	map ret = mapmap(`k,`v, result,
-			 ``{
-			     if (is(v, map) || is(v,list)) {
-				 return ([k,v]);
-			     }
-			     else
-			     {
-				 return ([k,ConvertType(v)]);
-			     }
-			 });
-	return ret;
-
-    }
-    
-    /**
-     * Geta configuration list from Profile
-     * @param string parent
-     * @param string resource
-     * @param boolean convert types
-     * @return list configuration list
-     */
-    define list GetList (string parent, string resource, boolean convert)``{
-	map Parent = Profile[parent]:$[];
-	list result = Parent[resource]:[];
-	if (!convert)
-	    return result;
-
-	list ret = maplist(`k, result,
-			 ``{
-			     if (is(v, map) || is(v,list)) {
-				 return (v);
-			     }
-			     else
-			     {
-				 return (ConvertType(v));
-			     }
-			 });
-	return ret;
-
-    }
-    
-    /**
-     * Get Configuration Map
-     * @return map  Configuration Map
-     */
-    global define GetConfMap (string type, boolean convert)``{
-	map result = Configure[type]:$[];
-	if (!convert)
-	    return result;
-
-	map ret = mapmap(`k,`v, result,
-			 ``{
-			     if (is(v, map) || is(v,list)) {
-				 return ([k,v]);
-			     }
-			     else
-			     {
-				 return ([k,ConvertType(v)]);
-			     }
-			 });
-	return ret;
-
-    }
-    /**
-     * Get configuration list 
-     *
-     */
-    global define GetConfList (string type, boolean convert )
-	``{
-	list result =  Configure[type]:[];
-	if (!convert)
-	    return result;
-
-	list ret = maplist(`v, result,
-			   ``{
-			       if (is(v, map) || is(v,list)) {
-				   return (v);
-			       }
-			       else
-			       {
-				   return (ConvertType(v));
-			       }
-			   });
-	return ret;
-    }
-
-    /**
-     * Convert a Map to accepted values
-     *
-     */
-    global define map ConvertMap (map MyMap)
-	``{
-	map ret = mapmap(`k,`v, MyMap,
-			 ``{
-			     if (is(v, map) || is(v,list)) {
-				 return ([k,v]);
-			     }
-			     else
-			     {
-				 return ([k,ConvertType(v)]);
-			     }
-			 });
-	return ret;
-    }
 
 
 
