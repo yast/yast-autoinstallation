@@ -3,7 +3,6 @@
 #
 
 agent_SCRIPTS = \
-	ag_yast1sel \
 	ag_ksimport
 
 scrconf_DATA = $(wildcard *.scr)

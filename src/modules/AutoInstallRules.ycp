@@ -103,13 +103,6 @@
     global list<string> tomerge = [];
 
 
-    /**
-     * Constructor
-     *
-     */
-    global define void AutoInstallRules () ``{
-	return;
-    }
 
     /**
      * Cleanup XML file from namespaces put by xslt
@@ -154,7 +147,8 @@
      * Return MAC address of active device
      * @return string mac address
      */
-    global define string getMAC() ``{
+    global define string getMAC()
+    {
 	string tmpmac = "";
 	if (Mode::initial)
 	{
@@ -169,7 +163,8 @@
      * Return host id (hex ip )
      * @return string host ID
      */
-    global define string getHostid () ``{
+    global define string getHostid ()
+    {
 	string hex = IP::ToHex(hostaddress);
 	return hex;
     }
@@ -179,7 +174,8 @@
      * Probe all system data to build  a set of rules
      * @return void
      */
-    global define void ProbeRules () ``{
+    global define void ProbeRules ()
+    {
 
 	// SMBIOS Data
 	list bios = (list) SCR::Read(.probe.bios);
@@ -248,13 +244,16 @@
 	//
 
 	map<string,map> storage =  Storage::GetTargetMap();
+        map<string,map> PhysicalTargetMap = filter(string k, map v, storage ,
+                ``(Storage::IsRealDisk(k, v) ));
 	totaldisk = 0;
-	disksize = maplist( string k, map v, storage ,
+	disksize = maplist( string k, map v,  PhysicalTargetMap,
 			    ``{
 				integer size_in_mb = v["cyl_size"]:0 * v["cyl_count"]:0 / ( 1024 * 1024 ) ;
 				totaldisk = totaldisk + size_in_mb;
 				return($["device":k, "size": size_in_mb]);
 			    });
+        y2debug("disksize: %1", disksize);
 	//
 	// MAC
 	//
@@ -315,27 +314,18 @@
 
 
 
-    global define void Init () ``{
-
-	if (Mode::initial)
-	{
-	    ProbeRules();
-	}
-
-	return;
-    }
 
     /**
      * Create shell command for rule verification
-     * @param boolean
-     * @param string
-     * @param string
-     * @param string
-     * @param string
+     * @param match
+     * @param var
+     * @param val
+     * @param op
+     * @param matchtype
      * @return void
      */
-    define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
-
+    define void shellseg (boolean match, string var, any val, string op, string matchtype)
+    {
 	if (op == "and")
 	    op = " && ";
 	else if (op == "or")
@@ -376,6 +366,9 @@
 	    shell = tmpshell + " ] ) ";
 	}
 
+        y2debug("var: %1, val: %2", var, val);
+        y2debug("shell: %1", shell);
+        return;
     }
 
 
@@ -384,7 +377,7 @@
      * @return integer
      */
     define integer verifyrules ()
-    ``{
+    {
 
 	string script = sformat("if %1; then exit 0; else exit 1; fi", shell);
 	map ret = (map)SCR::Execute (.target.bash_output, script, env);
@@ -528,15 +521,19 @@
 		    }
                     else if ( rule == "disksize" )
                     {
+                        y2debug("creating rule check for disksize");
                         list<string> disk = splitstring(match, " ");
-
                         integer i = 0;
                         string t  = "";
-                        if (shell!="")
+                        if (shell != "" )
+                        {
                             t  = shell + sformat(" %1 ( ", (op == "and") ? "&&" : "||" );
+                        }
                         else
+                        {
                             t  = shell + sformat(" ( ");
-                        foreach(map<string, any> dev, disksize, ``{
+                        }
+                        foreach(map<string, any> dev, disksize, {
                             string var1 = sformat("disksize_size%1", i );
                             string var2 = sformat("disksize_device%1", i );
 
@@ -563,6 +560,8 @@
                         });
                         t = t + " ) ";
                         shell = t;
+                        y2debug("shell: %1", shell);
+			ismatch = true;
                     }
 		    else if ( rule == "result" )
 		    {
@@ -570,6 +569,8 @@
 			{
                             string profile_name = ruledef["profile"]:"";
                             profile_name = SubVars(profile_name);
+                            y2milestone("Final Profile name: %1", profile_name
+                                    );
                             if (ruledef["match_with_base"]:true)
                             {
 			        tomerge = add(tomerge, profile_name);
@@ -658,11 +659,11 @@
 
     /**
      * Merge Rule results
-     * @param the resulting control file path
-     * @return true on success
+     * @param result_profile the resulting control file path
+     * @return boolean true on success
      */
     global define boolean Merge (  string result_profile   )
-	``{
+    {
 
 	string tmpdir = AutoinstConfig::tmpDir;
 	boolean ok = true;
@@ -725,10 +726,11 @@
 
     /**
      * Process Rules
+     * @param string result_profile
      * @return boolean
      */
     global define boolean Process(  string result_profile  )
-	``{
+    {
 
 	boolean ok = true;
 	string tmpdir = AutoinstConfig::tmpDir;
@@ -797,8 +799,8 @@ file without using classes.
      * only the first letter. Then default and finally mac address.
      * @return void
      */
-    global define void CreateDefault() ``{
-
+    global define void CreateDefault()
+    {
 	Behaviour = `one;
 	string tmp_hex_ip = hostid;
 	tomerge = add(tomerge, tmp_hex_ip );
@@ -816,15 +818,36 @@ file without using classes.
 
    /**
     * Create default rule in case no rules file is available (Only one file which is given by the user)
-    * @param string file name
+    * @param filename file name
     * @return void
     */
-    global define void CreateFile(string filename) ``{
+    global define void CreateFile(string filename) 
+    {
 	tomerge = add (tomerge, filename);
 	y2milestone("Created default rules:", tomerge);
 	return;
     }
+    /**
+     * Constructor
+     *
+     */
+    global define void AutoInstallRules () ``{
+	return;
+    }
 
+
+    /**
+      * Initialize
+      */
+    global define void Init () ``{
+
+	if (Mode::initial || Mode::test)
+	{
+	    ProbeRules();
+	}
+
+	return;
+    }
 
 
 }
