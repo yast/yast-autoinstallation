@@ -3,6 +3,6 @@
 #
 # $Id$
 #
-SUBDIRS = include modules data clients config dialogs schema
+SUBDIRS = include modules data clients config dialogs schema tests
 
 
