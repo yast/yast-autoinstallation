@@ -37,7 +37,7 @@
 
 
 
-    // spceial reatment for base resources
+    // spceial treatment for base resources
     global list base = [];
 
     // aditional configuration resources o be cloned
@@ -197,7 +197,8 @@
      */
     global define map Software() ``{
 	boolean ret = Pkg::TargetInit("/", false);
-	list base =  Pkg::GetSelections(`installed, "base");
+	
+	base =  Pkg::GetSelections(`installed, "base");
 	list addons =  Pkg::GetSelections(`installed, "addon");
 	list inst = Pkg::GetPackages(`installed, true);
 

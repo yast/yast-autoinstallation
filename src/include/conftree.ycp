@@ -14,9 +14,9 @@
     import "Label";
     import "Installation";
     import "Report";
+    import "Kickstart";
 
-    include "autoinstall/io.ycp";
-    include "autoinstall/kickstart.ycp";
+    include "autoinstall/io.ycp";    
     include "autoinstall/alice.ycp";
     include "autoinstall/classes.ycp";
 
@@ -479,20 +479,28 @@
 			}
 		    }
 		    else if (ret == `menu_kickstart)
-		    {
-			
-			
-			
+		    {									
 			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
 
 			if ( filename != nil )
 			{
-			    map ksConfig = readKS(filename);
-			    Profile::Import(ks2ay(ksConfig));
-			    Report::Message(_("Kickstart file was imported.
+			    
+			    Kickstart::Read(filename);
+			    map ksay = Kickstart::KS2AY();
+			    if (ksay == $[])
+			    {
+				Report::Error(_("Error while loading Kickstart file, verify syntax of
+file and try again"));
+			    }
+			    else
+			    {
+				Profile::Import(ksay);
+			    
+				Report::Message(_("Kickstart file was imported.
 Check the imported syntax and make sure the package selection and partitioning
 were imported correctly.
 "));
+			    }
 			}
 			else {
 			    Report::Error(_("Invalid file name, select another file"));
