@@ -110,11 +110,6 @@
 	import "BootCommon";
 
 
-	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
-	{
-	    Storage::DestroyLvmOnAllDisks();
-	}
-
 	map init_targetmap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", init_targetmap);
 	
@@ -179,12 +174,6 @@ Make sure the control file has the correct syntax and values.
 		boolean ret = AutoPartition(device);
 	    });
 	}
-	else
-	{
-	    map firstDrive = alldrives[0]:$[];
-	    boolean ret = AutoPartition(firstDrive["device"]:"/dev/hda");
-	}
-
 
 
 	if ( size(raid) != 0)
@@ -199,10 +188,20 @@ Make sure the control file has the correct syntax and values.
 
     }
 
+
+    
     /**
      * Initialize devices
      */
-    global define Initialize () ``{
+    global define void Initialize () ``{
+	
+
+	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
+	{
+	    Storage::DestroyLvmOnAllDisks();
+	}
+
+	
 	foreach (string device, map data, targetMap,
 		 ``{
 	    if (data["initialize"]:false)
@@ -211,7 +210,7 @@ Make sure the control file has the correct syntax and values.
 		y2milestone("Initializing device: %1 --> %2", device, zero_ret);		
 	    }		    
 	});
-	
+	return;
     }
 
 
