@@ -11,14 +11,22 @@
     module "AutoinstStorage";
     textdomain "autoinst";
 
+    import "Storage";
     import "Partitions";
     import "FileSystems";
     import "Mode";
     import "Summary";
-    import "Report";
+    import "Report";  
+    import "Storage";
+    import "Partitions";
+    import "Bootloader";
+    import "BootCommon";
 
-    include "partitioning/partition_defines.ycp";
-    include "autoinstall/partition_dialogs.ycp";
+    // include "partitioning/custom_part_dialogs.ycp";	
+    // include "partitioning/partition_defines.ycp";
+    // include "autoinstall/partition_dialogs.ycp";
+
+   
 
     // Partition plan as parsed from control file
     global list AutoPartPlan = [];
@@ -34,25 +42,60 @@
     list PhysicalDrives = [];
     list PhysicalDevices = [];
 
+
+    integer max_partitions = 0;
+
+    // The number of possible primary partitions
+    integer max_primary = 0;
+
+    // The partition number of the first logical partition
+    integer first_logical_nr = 0;
+
+    // size of the /boot partition
+    integer size_of_boot = 0;
+
+    integer size_of_swap = 0 ;
+
+    list full_region = [];
+
+    boolean can_do_auto = false;
+
+    list unused_region = [ 0, 0 ];
+
+    integer minimal_size = 0;
+    
+    integer bytes_per_unit = 0;
+
+    string TargetDevice = "";
+
+    integer	fsid_boot = 0;
+    integer	fsid_root = 0;
+
+
+    string target_is = "";
+    list root_region = [];
+    
+    include "autoinstall/partitioning_routines.ycp";
+    include "autoinstall/partitioning.ycp";
+    
   
     /**
      * Dump the settings to a map, for autoinstallation use.
-     * @return map
+     * @return list
      */
     global define list Export()
 	``{
-	list clean_drives = maplist(`d, drives, ``{
-	    list p = maplist(`part, d["partitions"]:[] ,
-			     ``{
-
-				 if (haskey(part, "fsid")) {
-				     part = remove(part, "fsid");
-				 }
-				 if (haskey(part, "used_fs")) {
-				     part = remove(part, "used_fs");
-				 }
-				 return part;
-			     });
+	list clean_drives = maplist(map d,  AutoPartPlan, ``{
+	    list p = maplist(map part, d["partitions"]:[] , ``{
+		if (haskey(part, "fsid"))
+		{
+		    part = remove(part, "fsid");
+		}
+		if (haskey(part, "used_fs")) {
+		    part = remove(part, "used_fs");
+		}
+		return part;
+	    });
 	    d["partitions"] = p;
 	    return d;
 	});
@@ -68,11 +111,9 @@
      * @param settings a list	[...]
      * @return	success
      */
-    global define boolean Import(list settings)
-	``{
-
+    global define boolean Import(list settings)	``{
 	AutoPartPlan = settings;
-	return;
+	return true;
     }
 
 
@@ -94,7 +135,7 @@
 	summary = Summary::CloseList(summary);
 	return summary;
     }
-
+    
 
     /**
      * Create partition plan
@@ -103,30 +144,25 @@
      */
     global define boolean Write()
 	``{
-	import "AutoinstLVM";
-	import "AutoinstRAID";
-	import "Storage";
-	import "Partitions";
-	import "Bootloader";
-	import "BootCommon";
 
-	include "autoinstall/partitioning.ycp";
+
+
 
 	map InitialTargetMap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", InitialTargetMap);
 
-	list alldrives = maplist( `k, `v, InitialTargetMap ,  ``{
+	list alldrives = maplist( string k, map v, InitialTargetMap ,  ``{
 	    return($["device":k, "size": v["cyl_size"]:0 ]);
 	});
 
-	PhysicalTargetMap = filter(`k, `v, InitialTargetMap , ``(Storage::IsRealDisk(k, v) ));
+	PhysicalTargetMap = filter(string k, map v, InitialTargetMap , ``(Storage::IsRealDisk(k, v) ));
 
-        PhysicalDrives = maplist( `k, `v, PhysicalTargetMap ,
+        PhysicalDrives = maplist( string k, map v, PhysicalTargetMap ,
                                   ``{
                                       return($["device":k, "size": v["cyl_size"]:0 ]);
                                   });
 
-        PhysicalDevices = maplist( `k, `v, PhysicalTargetMap ,
+        PhysicalDevices = maplist( string k, map v, PhysicalTargetMap ,
                                   ``{
                                       return(k);
                                   });
@@ -186,7 +222,8 @@ Make sure the control file has the correct syntax and values.
 		if ( Storage::IsRealDisk( device, data) )
 		{
 		    y2milestone("Creating partition plans for %1", device);
-		    boolean ret = AutoPartition(device);
+		    TargetDevice = device;
+		    boolean ret = AutoPartition();
 		    if (!ret)
 		    {
 			ok = false;
@@ -198,9 +235,9 @@ Make sure the control file has the correct syntax and values.
 		return false;
 	    }
 	}
-
-	AutoinstLVM::lvm   = filter(`k,`v, AutoinstStorage::AutoTargetMap, ``(v["is_lvm_vg"]:false));
-	AutoinstRAID::raid = filter(`k,`v, AutoinstStorage::AutoTargetMap, ``(k == "/dev/md"));
+	/*
+	AutoinstLVM::lvm   = filter(string k, map v, AutoinstStorage::AutoTargetMap, ``(v["is_lvm_vg"]:false));
+	AutoinstRAID::raid = filter(string k, map v, AutoinstStorage::AutoTargetMap, ``(k == "/dev/md"));
 
 	if ( size(AutoinstRAID::raid) != 0)
 	{
@@ -209,7 +246,7 @@ Make sure the control file has the correct syntax and values.
 	}
 	else
 	{
-	    import "AutoinstRAID";
+	    
 	    AutoinstRAID::DeleteMDs();	    
 	}
 
@@ -222,7 +259,7 @@ Make sure the control file has the correct syntax and values.
 		return false;
 	    }
 	}
-
+	*/
 	return true;
     }
 
@@ -290,7 +327,7 @@ Make sure the control file has the correct syntax and values.
      * Initialize devices
      */
     global define void Initialize () ``{
-	import "Storage";
+
 
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
@@ -304,11 +341,6 @@ Make sure the control file has the correct syntax and values.
     }
 
 
-
-
-
-
-
     global define list DeletedMDs ( string vgname )
 	``{
 	map tm = Storage::GetTargetMap();
@@ -316,7 +348,7 @@ Make sure the control file has the correct syntax and values.
 	foreach( string dev, map devmap, tm,
 		 ``{
 	    ret = add( ret,
-		       filter( `part, devmap["partitions"]:[],
+		       filter( map part, devmap["partitions"]:[],
 			       ``(
 				  part["lvm_group"]:"" == vgname
 				  &&
