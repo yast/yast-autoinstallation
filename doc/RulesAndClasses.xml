@@ -121,8 +121,64 @@
 	to check more attributes, i.e. memory or architectures, you can add
 	more attributes  the rule resource as shown in the next example.
       </para>
+      <example>
+	<title>
+	  Simple rules file
+	</title>		
+
+	<para>
+	  The following simple example illustrates how the rules file is used
+	  to retrieve the configuration for a client with known hardware.
+	</para>
+	<screen>
+<![CDATA[
+<?xml version="1.0"?>
+<!DOCTYPE autoinstall SYSTEM "/usr/share/YaST2/include/autoinstall/profiles.dtd">
+<autoinstall xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <rules config:type="list">
+    <rule>
+       <disksize>
+            <match>/dev/hdc 1000</match>
+            <match_type>greater</match_type>
+       </disksize>
+       <memsize>	    
+            <match>1000</match>
+            <match_type>greater</match_type>
+       </memsize>
+       <result>
+            <profile>machine1.xml</profile>
+            <continue config:type="boolean">false</continue>
+        </result>
+    </rule>
+    <rule>
+       <disksize>
+            <match>/dev/hda 1000</match>
+            <match_type>greater</match_type>
+       </disksize>
+       <memsize>	    
+            <match>256</match>
+            <match_type>greater</match_type>
+       </memsize>
+       <result>
+            <profile>machine2.xml</profile>
+            <continue config:type="boolean">false</continue>
+        </result>
+    </rule>
+  </rules>
+</autoinstall>
+]]>
+	</screen>
+
+      </example>	 
+      <para>
+	The rules directory must be location in the same referenced directory
+	used with the <emphasis>autoyast</emphasis> keyboard on boot time, so
+	if the client was booted using autoyast=http://10.10.0.1/profiles/,
+	&autoyast; will search for the rules file in 
+	http://10.10.0.1/profiles/rules/rules.xml.
+      </para>
     </section>
-      <section>
+    <section>
 	<title>Rules file structure</title>
 	<para>
 	  The <filename>rules.xml</filename> file must have:	  
@@ -233,8 +289,7 @@
       session. For example you can identify a system using rules which contain
       class definitions in them. The process is described in the figures
       <quote><link linkend='rulesflow'
-	  endterm="rulesflow.title"></link></quote> and
-      FIXME.
+	  endterm="rulesflow.title"></link></quote>.
     </para>
     <para>
       After retrieving the rules and merging them, the generated control file

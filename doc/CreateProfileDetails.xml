@@ -94,33 +94,33 @@
 
 
 
-      <section id="CreateProfile.Bootloader">
-	<title>The Boot loader (FIXME)</title>
-	<para>
-	  If you do not want to install a boot loader, you have to specify this
-	  using the <emphasis>write_bootloader</emphasis> property (Boolean
-	  value). In this case make sure you create a boot disk or have
-	  another way to boot your system (such as a third-party boot loader). Note
-	  that the default setting is to write the bootloader
-	</para>
-	<para>
-	  If you choose to install a boot loader, you must  decide  where to to
-	  install it (the Master Boot Record or the first sector of
-	  the<filename> /boot</filename> partition). 
-	</para>
-	<para>
-		Too install the bootloader on the Linux root partition, add the value <emphasis>root</emphasis>
-		 to the location property.
-	</para>
-	<para>
-	  You can pass  special parameters to the kernel to be used when the
-	  system boots, enter these parameters using the kernel parameters property. Additionally,
-	  you can choose whether you want to use
-	  <emphasis>linear</emphasis> mode and whether you want to force the use of <emphasis>LBA32</emphasis> mode.
-	</para>
-	&example.bootloader;
-	
-      </section>
+    <section id="CreateProfile.Bootloader">
+      <title>The Boot loader</title>
+      <para>The bootloader configuration in SuSE Linux 8.2 has undergone a
+	major rework and now offers more features and configuration
+	possibilities.
+      </para>
+      <para>It is now possible to specify which bootloader needs to be
+	installed (GRUB or LILO) and it  is possible to specify sections and
+	more bootloader options.
+      </para>
+      <para>
+	If the bootloader resource is not configured, the system will propose
+	best configuration depending on the partitioning plan. In some cases
+	you must  decide  where to to install the bootloader (the Master Boot Record or the first sector of
+	the<filename> /boot</filename> partition) and must specify some options.
+      </para>
+      <para>
+	For example, t install the bootloader on the Linux root partition, add the value <emphasis>root</emphasis>
+	to the <emphasis>location</emphasis> property.
+      </para>
+      <para>
+	You can pass  special parameters to the kernel to be used when the
+	system boots, enter these parameters using the <emphasis>kernel_parameters</emphasis> property. 
+      </para>
+      &example.bootloader;
+      
+    </section>
 
       <section id="CreateProfile.Partitioning">
 	<title>
@@ -199,17 +199,19 @@
 
 	      </para>
 	    </listitem>
-<!-- 
+
 	    <listitem>
 	      <para>
 		<emphasis>Reuse all available Linux partitions</emphasis>
 	      </para>
 	      <para>
-		This option will lead to the deletion of existing Linux
-		partitions. All other partitions (i.e. Windows) will be kept.
+	      This option will lead to the deletion of existing Linux
+	      partitions. All other partitions (i.e. Windows) will be
+	      kept. Note that this works only if the linux partitions are at the end of the device.
+	      
 	      </para>
 	    </listitem>
- FIXME -->
+
 	    <listitem>
 	      <para>
 		<emphasis>Reuse only specified partitions</emphasis>
