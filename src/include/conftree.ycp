@@ -169,7 +169,7 @@
 				`VSpacing(1))
 			  );
 	
-	UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), AIConfig::currentFile));
+	UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), AutoinstConfig::currentFile));
 	return; 
     }
     
@@ -352,7 +352,7 @@
 		    }
 		    else if ( ret == `menu_classes)
 		    {
-			import "AIClass";
+			import "AutoinstClass";
 			include "autoinstall/classes.ycp";
 			Wizard::CreateDialog();			
 			ManageClasses();
@@ -360,7 +360,7 @@
 		    }		    
 		    else if ( ret == `menu_clone)
 		    {
-			import "AIClone";
+			import "AutoinstClone";
 			
 			Wizard::CreateDialog();						
 			cloneSystem();
@@ -369,7 +369,7 @@
 		    }
 		    else if ( ret == `menu_merge)
 		    {
-			import "AIClass";
+			import "AutoinstClass";
 			include "autoinstall/classes.ycp";		
 			Wizard::CreateDialog();			
 			MergeDialog();
@@ -387,10 +387,10 @@
 			if (Profile::changed)
 			{
 			    string current = "";
-			    if (AIConfig::currentFile == "")
+			    if (AutoinstConfig::currentFile == "")
 				current = "Untitled";
 			    else
-				current = AIConfig::currentFile;
+				current = AutoinstConfig::currentFile;
 			
 			    symbol answer = UI::AnyQuestionPopup3(_("Control file changed."),
 								  sformat(_("Save the changes to %1?"), current),
@@ -425,11 +425,11 @@
 		
 		    if (ret == `menu_open) // OPEN
 		    {
-			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open File") );
+			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Open File") );
 			if (filename!=nil)
 			{			
 			    y2milestone("file: %1", filename);
-			    AIConfig::currentFile = filename;
+			    AutoinstConfig::currentFile = filename;
 			    list pathComponents = splitstring(  filename, "/");
 			    string base = select(pathComponents, size(pathComponents) -1, "default");
 			    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
@@ -441,7 +441,7 @@
 		    {
 			Wizard::CreateDialog();	
 			include "autoinstall/imports.ycp";
-			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Import Kickstart File") );
+			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Import Kickstart File") );
 			if ( filename!=nil )
 			{
 			    map ksConfig = readKS(filename);
@@ -451,12 +451,12 @@
 		    }
 		    else if (ret == `menu_save) // SAVE
 		    {
-			if (AIConfig::currentFile == "")
+			if (AutoinstConfig::currentFile == "")
 			{
-			    string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save file" );
+			    string filename = UI::AskForSaveFileName( AutoinstConfig::Repository, "*", "Save file" );
 			    if (filename != nil)
 			    {
-				AIConfig::currentFile = filename;
+				AutoinstConfig::currentFile = filename;
 			  
 			    }
 			    else
@@ -465,9 +465,9 @@
 			    }
 			}
 		    
-			if ( Profile::Save( AIConfig::currentFile ))
+			if ( Profile::Save( AutoinstConfig::currentFile ))
 			{
-			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
+			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
 			    Profile::changed = false;
 			    if (exit_after)
 				ret = `next;
@@ -480,12 +480,12 @@
 		    }
 		    else if (ret == `menu_saveas) // SAVE AS
 		    {
-			string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save as..." );
+			string filename = UI::AskForSaveFileName( AutoinstConfig::Repository, "*", "Save as..." );
 			if (filename!=nil) {
-			    AIConfig::currentFile = filename;
-			    if ( Profile::Save( AIConfig::currentFile ))
+			    AutoinstConfig::currentFile = filename;
+			    if ( Profile::Save( AutoinstConfig::currentFile ))
 			    {
-				UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
+				UI::MessagePopup(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
 				Profile::changed=false;
 				list pathComponents = splitstring(  filename, "/");
 				string base = select(pathComponents, size(pathComponents) -1, "default");
@@ -524,7 +524,7 @@
 		    else if (ret == `menu_new) // NEW
 		    {
 			Profile::Reset();
-			AIConfig::currentFile = "";
+			AutoinstConfig::currentFile = "";
 			UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
 		    	
 		    }		

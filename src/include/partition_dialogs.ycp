@@ -30,7 +30,7 @@
      */
     global define PartitionDialog (symbol mode, string item)
 	``{
-	list partitioning =  AIStorage::drives;
+	list partitioning =  AutoinstStorage::drives;
 	list item_id = splitstring(item,":");
 	map this_drive = $[];
 	string drive = "";
@@ -427,7 +427,7 @@ needs. All fields are required.</P>
 		partitions[tointeger(select(item_id,1,"")) - 1] = return_value;
 	    }
 	    change(this_drive,"partitions",partitions);
-	    AIStorage::drives=add(other_drives,this_drive);
+	    AutoinstStorage::drives=add(other_drives,this_drive);
 	}
 	return ret;
     }
@@ -448,7 +448,7 @@ needs. All fields are required.</P>
 	    devices=add(devices, item);
 	}
 
-	list drives = AIStorage::drives;
+	list drives = AutoinstStorage::drives;
 	list configured_drives = maplist(`c, drives, ``{
 	    return(lookup(c,"device","***"));
 	});
@@ -578,7 +578,7 @@ For more information, consult the documentation.
 
 			
 			drives=add(drives,drive);
-			AIStorage::drives=drives;
+			AutoinstStorage::drives=drives;
 		    }
 		    else
 		    {
@@ -606,7 +606,7 @@ Select or enter another device name.
 
 		    current_drive["device"] = device;
 		    drives=add(drives,current_drive);
-		    AIStorage::drives=drives;
+		    AutoinstStorage::drives=drives;
 		}
 	    }
 	} until (ret == `next || ret ==`abort || ret == `back);
@@ -623,7 +623,7 @@ Select or enter another device name.
      */
     global define getTargets ()
 	``{
-	map auto_targets =  listmap (`d, AIStorage::drives, ``{
+	map auto_targets =  listmap (`d, AutoinstStorage::drives, ``{
 	    string device = lookup(d,"device","");
 	    return([device,d]);
 	});
@@ -748,7 +748,7 @@ a preparation.
 	    ret = UI::UserInput();
 
 	    item = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list drives = AIStorage::drives;
+	    list drives = AutoinstStorage::drives;
 	    list configured_drives = maplist(`c, drives, ``{
 		return(lookup(c,"device",""));
 	    });
@@ -805,7 +805,7 @@ a preparation.
 	    else if (ret == `delete)
 	    {
 
-		list partitioning =  AIStorage::drives;
+		list partitioning =  AutoinstStorage::drives;
 		list item_id = splitstring(item,":");
 		map this_drive = $[];
 		string drive = "";
@@ -823,7 +823,7 @@ a preparation.
 		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
 		    change(this_drive,"partitions", drive_partitions);
 		    
-		    AIStorage::drives= maplist(`d, partitioning,
+		    AutoinstStorage::drives= maplist(`d, partitioning,
 					       ``{
 						   if (d["device"]:"" == drive)
 						   {
@@ -838,7 +838,7 @@ a preparation.
 		else
 		{
 		    drive = item;
-		    AIStorage::drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
+		    AutoinstStorage::drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
 		}
 
 
@@ -857,7 +857,7 @@ a preparation.
 			
 	list drives_table = [];
 	string id = "";
-	foreach(`d, AIStorage::drives,
+	foreach(`d, AutoinstStorage::drives,
 		``{
 	    id =lookup(d,"device","");
 	    term a = `item(`id(id));

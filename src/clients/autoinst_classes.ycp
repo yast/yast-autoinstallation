@@ -14,7 +14,7 @@
 
     import "Wizard";
     import "Summary";
-    import "AIClass";
+    import "AutoinstClass";
 
 
     include "autoinstall/classes.ycp";
@@ -37,14 +37,14 @@
         
    
     if (func == "Import") {
-	ret = AIClass::Import(param);	
+	ret = AutoinstClass::Import(param);	
     }
     /* create a  summary*/
     else if (func == "Summary") {
-	ret =  AIClass::Summary();
+	ret =  AutoinstClass::Summary();
     }
     else if (func == "Reset") {
-	AIClass::Import([]);
+	AutoinstClass::Import([]);
 	ret = [];
     }
     else if (func == "Change") {
@@ -54,7 +54,7 @@
 	return ret;
     }
     else if (func == "Result") {
-	ret = AIClass::Export();
+	ret = AutoinstClass::Export();
     }
     /* unknown function */
     else {

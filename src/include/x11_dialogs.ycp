@@ -39,7 +39,7 @@
     }
 
     global define updateContents() ``{
-	map x11 = AIx11::x11;
+	map x11 = AutoinstX11::x11;
 	list resolutions        = [];
 	list resolutions_list = ["640x480", "800x600", "1024x768", "1152x864", "1280x960", "1280x1024", "1600x1200"];
 	list depths_list = [
@@ -145,7 +145,7 @@
 
 
 	string caption = _("X11 Configuration");
-	boolean x11_enabled = AIx11::x11["configure_x11"]:false;
+	boolean x11_enabled = AutoinstX11::x11["configure_x11"]:false;
 
 
 
@@ -195,33 +195,33 @@ be started at boot time and what display manager should be used.</p>
 
 	    if (ret == `key || ret ==`next || ret == `monitor )
 	    {
-		AIx11::x11["configure_x11"]	= UI::QueryWidget(`id(`enable_x11), `Value);
+		AutoinstX11::x11["configure_x11"]	= UI::QueryWidget(`id(`enable_x11), `Value);
 
 		any depth	= UI::QueryWidget(`id(`depth), `Value);
 		if (is(depth, integer))
-		    AIx11::x11["color_depth"] =  depth ;
+		    AutoinstX11::x11["color_depth"] =  depth ;
 
 		any resol	= UI::QueryWidget(`id(`resolution), `Value);
 		if (is(resol, string))
-		    AIx11::x11["resolution"] =  resol;
+		    AutoinstX11::x11["resolution"] =  resol;
 
 		any default_dm	= UI::QueryWidget(`id(`dm), `Value);
 		if (is(default_dm, string))
-		    AIx11::x11["display_manager"] =  default_dm;
+		    AutoinstX11::x11["display_manager"] =  default_dm;
 
 		any enable_3d	= UI::QueryWidget(`id(`enable_3d), `Value);
 		if (is(enable_3d, boolean))
-		    AIx11::x11["enable_3d"] = enable_3d;
+		    AutoinstX11::x11["enable_3d"] = enable_3d;
 
 		any xdm	= UI::QueryWidget(`id(`start_x11), `Value);
 		if (is(xdm, boolean))
-		    AIx11::x11["start_x11"] =  xdm;
+		    AutoinstX11::x11["start_x11"] =  xdm;
 	    }
 	    if (ret == `monitor)
 	    {
 		any video_ret = CallFunction( `autoinst_monitor(x11) );
 		y2milestone("video_ret %1", video_ret);
-		AIx11::x11["monitor"] = video_ret;
+		AutoinstX11::x11["monitor"] = video_ret;
 
 		Wizard::SetContents(caption,
 				    updateContents(), help, true, true);

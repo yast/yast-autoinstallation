@@ -20,7 +20,7 @@
 	    `Top(
 		 `VBox(
 		       `VSquash(`HBox(
-				      `TextEntry(`id(`repository), _("&Profile Repository:"), AIConfig::Repository),
+				      `TextEntry(`id(`repository), _("&Profile Repository:"), AutoinstConfig::Repository),
 				      `VBox(
 					    `VSpacing(),
 					    `Bottom(`PushButton(`id(`opendir), _("&Select Directory")))
@@ -29,7 +29,7 @@
 				),		       
 		       `VSquash(`HBox(
 
-				      `TextEntry(`id(`classdir), _("&Class directory:"), AIConfig::classDir),
+				      `TextEntry(`id(`classdir), _("&Class directory:"), AutoinstConfig::classDir),
 				      `VBox(
 					    `VSpacing(),
 					    `Bottom(`PushButton(`id(`openclassdir), _("Select &Directory")))
@@ -38,7 +38,7 @@
 				),
 		       `VSquash(
 				`HBox(
-				      `TextEntry(`id(`susedir), _("SuSE &Package Directory:"), AIConfig::PackageRepository),
+				      `TextEntry(`id(`susedir), _("SuSE &Package Directory:"), AutoinstConfig::PackageRepository),
 				      `VBox(
 					    `VSpacing(),
 					    `Bottom(`PushButton(`id(`opensusedir), _("Select Dire&ctory")))
@@ -47,7 +47,7 @@
 				),
 		       `VSquash(
 				`HBox(
-				      `TextEntry(`id(`alicedir), _("&Alice Repository:"), AIConfig::AliceRepository),
+				      `TextEntry(`id(`alicedir), _("&Alice Repository:"), AutoinstConfig::AliceRepository),
 				      `VBox(
 					    `VSpacing(),
 					    `Bottom(`PushButton(`id(`openalicedir), _("Select Director&y")))
@@ -89,7 +89,7 @@ contains all the packages.</p>
 
 	    if (ret ==`opendir)
 	    {
-		new_rep = UI::AskForExistingDirectory(AIConfig::Repository , _("Select Directory") );
+		new_rep = UI::AskForExistingDirectory(AutoinstConfig::Repository , _("Select Directory") );
 		if (new_rep != nil)
 		{
 		    UI::ChangeWidget(`id(`repository), `Value, new_rep);
@@ -98,7 +98,7 @@ contains all the packages.</p>
 	    }
 	    else if (ret ==`openclassdir)
 	    {
-		new_classdir = UI::AskForExistingDirectory( AIConfig::classDir , _("Select Directory") );
+		new_classdir = UI::AskForExistingDirectory( AutoinstConfig::classDir , _("Select Directory") );
 		if (new_classdir != nil)
 		{
 		    UI::ChangeWidget(`id(`classdir), `Value, new_classdir);
@@ -107,7 +107,7 @@ contains all the packages.</p>
 	    }
 	    else if (ret ==`opensusedir)
 	    {	
-		new_susedir = UI::AskForExistingDirectory( AIConfig::PackageRepository  , _("Select Directory") );
+		new_susedir = UI::AskForExistingDirectory( AutoinstConfig::PackageRepository  , _("Select Directory") );
 		if (new_susedir != nil)
 		{
 		    UI::ChangeWidget(`id(`susedir), `Value, new_susedir );
@@ -116,7 +116,7 @@ contains all the packages.</p>
 	    }
 	    else if (ret ==`openalicedir)
 	    {	
-		new_alicedir = UI::AskForExistingDirectory( AIConfig::AliceRepository  , _("Select Directory") );
+		new_alicedir = UI::AskForExistingDirectory( AutoinstConfig::AliceRepository  , _("Select Directory") );
 		if (new_alicedir != nil)
 		{
 		    UI::ChangeWidget(`id(`alicedir), `Value, new_alicedir );
@@ -125,26 +125,26 @@ contains all the packages.</p>
 	    }	    
 	    else if ( ret==`accept)
 	    {
-		if (AIConfig::Repository != new_rep)
+		if (AutoinstConfig::Repository != new_rep)
 		{
 		    changed = true;
-		    AIConfig::Repository = new_rep;
+		    AutoinstConfig::Repository = new_rep;
 		}
-		if (AIConfig::classDir != new_classdir)
+		if (AutoinstConfig::classDir != new_classdir)
 		{
 		    changed = true;
-		    AIConfig::classDir = new_classdir;
+		    AutoinstConfig::classDir = new_classdir;
 		}	   
-		if ( AIConfig::PackageRepository!= new_susedir)
+		if ( AutoinstConfig::PackageRepository!= new_susedir)
 		{
 		    changed = true;
-		    AIConfig::PackageRepository = new_susedir;
+		    AutoinstConfig::PackageRepository = new_susedir;
 		}
 		
-		if ( AIConfig::AliceRepository!= new_alicedir)
+		if ( AutoinstConfig::AliceRepository!= new_alicedir)
 		{
 		    changed = true;
-		    AIConfig::AliceRepository = new_alicedir;
+		    AutoinstConfig::AliceRepository = new_alicedir;
 		}
 	    }	   
 
@@ -153,7 +153,7 @@ contains all the packages.</p>
 	Wizard::RestoreScreenShotName ();
 	if ( changed  )
 	{
-	    AIConfig::Save();	    
+	    AutoinstConfig::Save();	    
 	    changed =false;
 	}
 	return ret;
@@ -325,12 +325,12 @@ to autoinstall a new system.</p>
 		ret = UI::UserInput();	
 		if (ret ==`next)
 		{
-		    AIClone::base = UI::QueryWidget( `id(`res), `SelectedItems );
-		    AIClone::additional = UI::QueryWidget( `id(`res), `SelectedItems );
+		    AutoinstClone::base = UI::QueryWidget( `id(`res), `SelectedItems );
+		    AutoinstClone::additional = UI::QueryWidget( `id(`res), `SelectedItems );
 		    showFeedback( _("Collecting system data.
 Please wait...
 "));		 
-		    AIClone::Process();
+		    AutoinstClone::Process();
 		    
 		    Profile::changed = true;
 		    clearFeedback();

@@ -17,7 +17,7 @@
 
 
     import "Wizard";
-    import "AIStorage";
+    import "AutoinstStorage";
     import "FileSystems";
 
     include "ui/common_messages.ycp";
@@ -42,15 +42,15 @@ y2debug("param=%1", param);
 
 /* Import Data*/
 if(func == "Import") {
-    ret = AIStorage::Import(param);
+    ret = AutoinstStorage::Import(param);
 }
 /* Create a  summary*/
 else if(func == "Summary") {
-    ret = AIStorage::Summary();
+    ret = AutoinstStorage::Summary();
 }
 /* Reset configuration */
 else if (func == "Reset") {
-    AIStorage::Import([]);
+    AutoinstStorage::Import([]);
     ret = [];
 }
 /* Change configuration (run AutoSequence) */
@@ -61,7 +61,7 @@ else if (func == "Change") {
 }
 /* Return actual state */
 else if (func == "Result") {
-    ret = AIStorage::Export();
+    ret = AutoinstStorage::Export();
 }
 /* Unknown function */
 else {

@@ -14,7 +14,7 @@
     global define linuxrcOptions()``{
 
 
-	string method = eval(AILinuxrc::method);	
+	string method = eval(AutoinstLinuxrc::method);	
 	
 	map instMethods = $[
 			     "nfs"	: _("NFS"),
@@ -37,18 +37,18 @@ settings, such as the network and system environment.</P>
 
 	term isPoint =  `VBox(			     
 			      `HBox(
-				    `HWeight(30,`TextEntry(`id(`server), `opt(`notify), _("&Server"), AILinuxrc::server)),
-				    `HWeight(10,`TextEntry(`id(`port), `opt(`notify), _("P&ort"), AILinuxrc::port  )),
-				    `HWeight(35,`TextEntry(`id(`serverdir), `opt(`notify), _("Server &Directory"), AILinuxrc::serverdir))
+				    `HWeight(30,`TextEntry(`id(`server), `opt(`notify), _("&Server"), AutoinstLinuxrc::server)),
+				    `HWeight(10,`TextEntry(`id(`port), `opt(`notify), _("P&ort"), AutoinstLinuxrc::port  )),
+				    `HWeight(35,`TextEntry(`id(`serverdir), `opt(`notify), _("Server &Directory"), AutoinstLinuxrc::serverdir))
 			      )
 			      );
 	term smbPoint = `HBox(			     
-			      `HWeight(30,`TextEntry(`id(`workdomain), `opt(`notify), _("&Domain"), AILinuxrc::workdomain)),
+			      `HWeight(30,`TextEntry(`id(`workdomain), `opt(`notify), _("&Domain"), AutoinstLinuxrc::workdomain)),
 			      `HWeight(40, `Empty())
 			      );
 	term hdPoint = `HBox(
 			     
-			      `HWeight(30,`TextEntry(`id(`partition), `opt(`notify), _("&Partition"), AILinuxrc::partition)),
+			      `HWeight(30,`TextEntry(`id(`partition), `opt(`notify), _("&Partition"), AutoinstLinuxrc::partition)),
 			      `HWeight(40, `Empty())
 			      );
 	term contents =
@@ -68,8 +68,8 @@ settings, such as the network and system environment.</P>
 		       `Frame(_("Other Settings"), 
 			      `HBox(
 				   
-				    `CheckBox(`id(`usedhcp), `opt(`notify), _("Use DHCP") , AILinuxrc::usedhcp),
-				    `CheckBox(`id(`textmode), _("Start in text mode"), AILinuxrc::textmode),
+				    `CheckBox(`id(`usedhcp), `opt(`notify), _("Use DHCP") , AutoinstLinuxrc::usedhcp),
+				    `CheckBox(`id(`textmode), _("Start in text mode"), AutoinstLinuxrc::textmode),
 				    `HStretch()
 				    )
 			      ),
@@ -81,13 +81,13 @@ settings, such as the network and system environment.</P>
 						   )
 					 ),
 				   `HBox(					 				    
-					 `TextEntry(`id(`ip), `opt(`notify), _("&IP"), AILinuxrc::ip),
-					 `TextEntry(`id(`netmask), `opt(`notify), _("Netmas&k"), AILinuxrc::netmask  ),
-					 `TextEntry(`id(`gateway), `opt(`notify), _("Gatewa&y"), AILinuxrc::gateway)
+					 `TextEntry(`id(`ip), `opt(`notify), _("&IP"), AutoinstLinuxrc::ip),
+					 `TextEntry(`id(`netmask), `opt(`notify), _("Netmas&k"), AutoinstLinuxrc::netmask  ),
+					 `TextEntry(`id(`gateway), `opt(`notify), _("Gatewa&y"), AutoinstLinuxrc::gateway)
 					 ),
 				   `HBox(
-					 `TextEntry(`id(`nameserver), `opt(`notify), _("Name server"), AILinuxrc::nameserver),
-					 `TextEntry(`id(`domain), `opt(`notify), _("Domain"), AILinuxrc::domain  )				  
+					 `TextEntry(`id(`nameserver), `opt(`notify), _("Name server"), AutoinstLinuxrc::nameserver),
+					 `TextEntry(`id(`domain), `opt(`notify), _("Domain"), AutoinstLinuxrc::domain  )				  
 					 )
 				   )
 			      )      		       
@@ -160,14 +160,14 @@ settings, such as the network and system environment.</P>
 			UI::SetFocus(`id(`server));
 			continue;
 		    }
-		    AILinuxrc::server = UI::QueryWidget(`id(`server), `Value);
+		    AutoinstLinuxrc::server = UI::QueryWidget(`id(`server), `Value);
 		    
-		    AILinuxrc::serverdir = UI::QueryWidget(`id(`serverdir), `Value);
-		    AILinuxrc::port = UI::QueryWidget(`id(`port), `Value);
+		    AutoinstLinuxrc::serverdir = UI::QueryWidget(`id(`serverdir), `Value);
+		    AutoinstLinuxrc::port = UI::QueryWidget(`id(`port), `Value);
 		  
 		}
-		AILinuxrc::usedhcp = UI::QueryWidget(`id(`usedhcp), `Value);
-		AILinuxrc::textmode = UI::QueryWidget(`id(`textmode), `Value);
+		AutoinstLinuxrc::usedhcp = UI::QueryWidget(`id(`usedhcp), `Value);
+		AutoinstLinuxrc::textmode = UI::QueryWidget(`id(`textmode), `Value);
 		
 		if (!UI::QueryWidget(`id(`usedhcp), `Value)) {
 		    if(!check_ip4(UI::QueryWidget(`id(`ip), `Value))  && UI::QueryWidget(`id(`ip), `Value) != "") {
@@ -191,20 +191,20 @@ settings, such as the network and system environment.</P>
 			continue;
 		    }
 		    
-		    AILinuxrc::ip = UI::QueryWidget(`id(`ip), `Value);
-		    AILinuxrc::netmask = UI::QueryWidget(`id(`netmask), `Value);
-		    AILinuxrc::gateway = UI::QueryWidget(`id(`gateway), `Value);
-		    AILinuxrc::nameserver = UI::QueryWidget(`id(`nameserver), `Value);
-		    AILinuxrc::domain = UI::QueryWidget(`id(`domain), `Value);    
+		    AutoinstLinuxrc::ip = UI::QueryWidget(`id(`ip), `Value);
+		    AutoinstLinuxrc::netmask = UI::QueryWidget(`id(`netmask), `Value);
+		    AutoinstLinuxrc::gateway = UI::QueryWidget(`id(`gateway), `Value);
+		    AutoinstLinuxrc::nameserver = UI::QueryWidget(`id(`nameserver), `Value);
+		    AutoinstLinuxrc::domain = UI::QueryWidget(`id(`domain), `Value);    
 		}
 		
-		AILinuxrc::netdevice = UI::QueryWidget(`id(`netdevice), `Value);
-		AILinuxrc::method = UI::QueryWidget(`id(`method), `Value);
+		AutoinstLinuxrc::netdevice = UI::QueryWidget(`id(`netdevice), `Value);
+		AutoinstLinuxrc::method = UI::QueryWidget(`id(`method), `Value);
 		if (UI::WidgetExists(`id(`workdomain))) {
-		    AILinuxrc::method = UI::QueryWidget(`id(`method), `Value);
+		    AutoinstLinuxrc::method = UI::QueryWidget(`id(`method), `Value);
 		}
 		if (UI::WidgetExists(`id(`partition))) {
-		    AILinuxrc::partition = UI::QueryWidget(`id(`partition), `Value);
+		    AutoinstLinuxrc::partition = UI::QueryWidget(`id(`partition), `Value);
 		}
 		
 	    }
@@ -218,7 +218,7 @@ settings, such as the network and system environment.</P>
 
     global define autoyastOptions ()``{
 	
-	string aymethod = eval(AILinuxrc::aymethod);
+	string aymethod = eval(AutoinstLinuxrc::aymethod);
 	map ayMethods = $[
 			  "nfs"	: _("NFS"),
 			  "file"	: _("File"),			   
@@ -246,9 +246,9 @@ be retrieved using several methods (HTTP, NFS, TFTP).</p>
 					  ),
 				    `HBox(
 				    
-					  `HWeight(30,`TextEntry(`id(`ayserver), `opt(`notify), _("S&erver"), AILinuxrc::ayserver)),
-					  `HWeight(10,`TextEntry(`id(`ayport), `opt(`notify), _("&Port"), AILinuxrc::ayport  )),
-					  `HWeight(35,`TextEntry(`id(`ayserverdir), `opt(`notify), _("Profile &Location"), AILinuxrc::ayserverdir))
+					  `HWeight(30,`TextEntry(`id(`ayserver), `opt(`notify), _("S&erver"), AutoinstLinuxrc::ayserver)),
+					  `HWeight(10,`TextEntry(`id(`ayport), `opt(`notify), _("&Port"), AutoinstLinuxrc::ayport  )),
+					  `HWeight(35,`TextEntry(`id(`ayserverdir), `opt(`notify), _("Profile &Location"), AutoinstLinuxrc::ayserverdir))
 					  )
 				    )
 			      )
@@ -286,11 +286,11 @@ be retrieved using several methods (HTTP, NFS, TFTP).</p>
 		    UI::SetFocus(`id(`server));
 		    continue;
 		}
-		AILinuxrc::ayserver = UI::QueryWidget(`id(`ayserver), `Value);
+		AutoinstLinuxrc::ayserver = UI::QueryWidget(`id(`ayserver), `Value);
 		    
-		AILinuxrc::ayserverdir = UI::QueryWidget(`id(`ayserverdir), `Value);
-		AILinuxrc::ayport = UI::QueryWidget(`id(`ayport), `Value);
-		AILinuxrc::aymethod = UI::QueryWidget(`id(`aymethod), `Value);
+		AutoinstLinuxrc::ayserverdir = UI::QueryWidget(`id(`ayserverdir), `Value);
+		AutoinstLinuxrc::ayport = UI::QueryWidget(`id(`ayport), `Value);
+		AutoinstLinuxrc::aymethod = UI::QueryWidget(`id(`aymethod), `Value);
 		break;
 	    }
 	    

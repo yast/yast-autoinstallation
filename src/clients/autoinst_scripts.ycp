@@ -9,7 +9,7 @@
 {
     textdomain "autoinst";
 
-    import "AIScripts";
+    import "AutoinstScripts";
     import "Wizard";
     import "Summary";
 
@@ -31,17 +31,17 @@
 
     if (func == "Import")
     {
-	ret = AIScripts::Import(param);
+	ret = AutoinstScripts::Import(param);
     }
     /* create a  summary*/
     else if (func == "Summary")
     {
-	AIScripts::Import(param);
-	ret =  AIScripts::Summary();
+	AutoinstScripts::Import(param);
+	ret =  AutoinstScripts::Summary();
     }
     else if (func == "Reset")
     {
-	AIScripts::Import($[]);
+	AutoinstScripts::Import($[]);
 	ret =  $[];
     }
     else if (func == "Change") {
@@ -53,7 +53,7 @@
     }
     else if (func == "Result")
     {
-	ret = AIScripts::Export();
+	ret = AutoinstScripts::Export();
     }
     /* unknown function */
     else {

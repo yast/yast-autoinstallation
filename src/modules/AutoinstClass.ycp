@@ -1,9 +1,9 @@
 /**
  * File:
- *	modules/AIClass.ycp
+ *	modules/AutoinstClass.ycp
  *
  * Module:
- *	AIClass
+ *	AutoinstClass
  *
  * Summary:
  *	This module handles the configuration for auto-installation
@@ -15,9 +15,9 @@
  */
 
 {
-    module "AIClass";
+    module "AutoinstClass";
     
-    import "AIConfig";
+    import "AutoinstConfig";
     import "XML";
     import "Summary";
     include "autoinstall/xml.ycp";
@@ -25,7 +25,7 @@
 
 
     
-    global string classDir = AIConfig::Repository + "/classes";
+    global string classDir = AutoinstConfig::Repository + "/classes";
 
     global string ClassConf = "/etc/autoinstall";
 
@@ -48,7 +48,7 @@
      *
      */
 
-    global define void AIClass()
+    global define void AutoinstClass()
 	``{
 	classSetup();
 	Read();
@@ -181,7 +181,7 @@
 	map result = select(filter(map c,  confs,
 				   ``(lookup(c,"name","")== name)),0,$[]);
 
-	string profile_path = sformat("%1/%2/%3", AIConfig::classDir, result["class"]:"", result["name"]:"default");
+	string profile_path = sformat("%1/%2/%3", AutoinstConfig::classDir, result["class"]:"", result["name"]:"default");
 	return profile_path;
     }
 

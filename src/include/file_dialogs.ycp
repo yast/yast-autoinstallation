@@ -17,7 +17,7 @@
 
 	list newFiles = [];
 	boolean modified = false;
-	AIFiles::Files   = maplist (`file , AIFiles::Files, ``{
+	AutoinstFiles::Files   = maplist (`file , AutoinstFiles::Files, ``{
 	    // Edit
 	    if (file["file_path"]:"" == fileName)
 	    {
@@ -37,7 +37,7 @@
 	    map file = $[];
 	    file=add(file,"file_path", fileName);
 	    file=add(file,"file_contents", source);
-	    AIFiles::Files = add (  AIFiles::Files, file);
+	    AutoinstFiles::Files = add (  AutoinstFiles::Files, file);
 	}
 	return;
     }
@@ -51,7 +51,7 @@
      */
     global define list  deleteFile(string fileName)
 	``{
-	list new =  filter(`s, AIFiles::Files, ``(lookup(s,"file_path","")!= fileName));
+	list new =  filter(`s, AutoinstFiles::Files, ``(lookup(s,"file_path","")!= fileName));
 	return  (new);
     }
 
@@ -66,7 +66,7 @@
 	map file = $[];
 	if (mode == `edit)
 	{
-	    list filtered_files = filter(`s, AIFiles::Files,``((lookup(s,"file_path","") == name)));
+	    list filtered_files = filter(`s, AutoinstFiles::Files,``((lookup(s,"file_path","") == name)));
 	    if (size(filtered_files)>0)
 	    {
 		file = select(filtered_files,0,$[]);
@@ -149,7 +149,7 @@ name and the content of the file.
      */
     global define dialog_contents() ``{
 
-	list allfiles = maplist(`s, AIFiles::Files,
+	list allfiles = maplist(`s, AutoinstFiles::Files,
 				  ``{
 				      return (`item(`id(s["file_path"]:"Unknown"),
 						    s["file_path"]:"Unknown" ));
@@ -218,7 +218,7 @@ and have an httpd.conf configuration file prepared.</p>
 	    {
 		string name = UI::QueryWidget(`id(`table), `CurrentItem);
 		if (name != nil) {
-		    AIFiles::Files = deleteFile(name);
+		    AutoinstFiles::Files = deleteFile(name);
 
 		}
 		else

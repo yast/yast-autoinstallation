@@ -25,10 +25,10 @@
     import "Report";
     import "Packages";
     import "SpaceCalculation";
-    import "AIStorage";
-    import "AIScripts";
-    import "AIgeneral";
-    import "AIsoftware";
+    import "AutoinstStorage";
+    import "AutoinstScripts";
+    import "AutoinstGeneral";
+    import "AutoinstSoftware";
 
     
 
@@ -107,8 +107,8 @@ Please wait while the system is prepared for autoinstallation.
     // configure general settings
     Progress::NextStage();
 
-    AIgeneral::Import(Profile::Flat["general"]:$[]);
-    AIgeneral::Write();
+    AutoinstGeneral::Import(Profile::Flat["general"]:$[]);
+    AutoinstGeneral::Write();
     
 
     // Scripts
@@ -116,8 +116,8 @@ Please wait while the system is prepared for autoinstallation.
 
     Progress::NextStage();
     
-    AIScripts::Import(Profile::Flat["scripts"]:$[]);
-    AIScripts::Write("pre-scripts");
+    AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
+    AutoinstScripts::Write("pre-scripts");
 
 
     // Bootloader::Read();
@@ -127,15 +127,15 @@ Please wait while the system is prepared for autoinstallation.
     ////////////////////////////////////////////////////////////////////////
 
     Progress::NextStage();
-    AIStorage::Import( [ Profile::Flat["partitioning"]:[],   Profile::Flat["lvm"]:[],  Profile::Flat["raid"]:[]]) ;
-    AIStorage::Write();
+    AutoinstStorage::Import( [ Profile::Flat["partitioning"]:[],   Profile::Flat["lvm"]:[],  Profile::Flat["raid"]:[]]) ;
+    AutoinstStorage::Write();
     
 
     // Software
     //////////////////////////////////////////////////////////////////////////
     Progress::NextStage();    
-    AIsoftware::Import( Profile::Flat["software"]:$[] );			
-    if (!AIsoftware::Write())
+    AutoinstSoftware::Import( Profile::Flat["software"]:$[] );			
+    if (!AutoinstSoftware::Write())
     {
 	Report::Error(_("Error while configuring software selections.
 Try again.

@@ -1,13 +1,14 @@
-
+/**
+ *
+ *
+ */
 
 {
 
-    module "AIx11";
+    module "AutoinstX11";
     textdomain "autoinst";
-    
     import "Summary";
 
-    
     global map x11 = $[];
 
 
@@ -22,10 +23,8 @@
 	y2milestone("Exported: %1", x11);
 	return x11;
     }
-    
     global define string Summary() ``{
 	string summary = "";
-	
 	map m = x11["monitor"]:$[];
 	any    current_vendor = m["monitor_vendor"]:"";
 	string current_model  = m["monitor_device"]:"";

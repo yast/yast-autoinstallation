@@ -11,7 +11,7 @@
     import "Mode";
     Mode::config = true;
 
-    import "AIx11";
+    import "AutoinstX11";
     import "Wizard";
     import "Summary";
 
@@ -33,21 +33,21 @@
 
     
     if(func == "Import") {
-	ret = AIx11::Import(param);	
+	ret = AutoinstX11::Import(param);	
     }
     /**
      * Create a summary
      * return string
      */
     else if(func == "Summary") {	
-	ret =  AIx11::Summary();
+	ret =  AutoinstX11::Summary();
     }
     /**
      * Reset configuration
      * return map or list
      */
     else if (func == "Reset") {
-	AIx11::Import($[]);
+	AutoinstX11::Import($[]);
 	ret =  $[];
     }
     /**
@@ -62,7 +62,7 @@
      * return map or list
      */
     else if (func == "Result") {
-	ret = AIx11::Export();
+	ret = AutoinstX11::Export();
     }
     
     /* unknown function */

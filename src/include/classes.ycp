@@ -1,6 +1,6 @@
 /**
  * File: 	include/autoinstall/dialogs.ycp
- * Module:	AIConfig
+ * Module:	AutoinstConfig
  * Summary:	This module handles the configuration for auto-installation
  * Authors:	Anas Nashif <nashif@suse.de>
  *
@@ -17,9 +17,9 @@
     global define class_dialog_contents ()
 	``{
 	
-	list classes = maplist(map class , AIClass::Classes,
+	list classes = maplist(map class , AutoinstClass::Classes,
 			       ``{
-				   string pathtoClass = sformat("%1/%2", AIConfig::classDir, class["name"]:("Unknown"));
+				   string pathtoClass = sformat("%1/%2", AutoinstConfig::classDir, class["name"]:("Unknown"));
 				   
 				   list files_in_class = SCR::Read(.target.dir, pathtoClass);
 				   return (`item(
@@ -82,14 +82,14 @@ and when it is merged when creating a control file.
 	any ret = nil;	
 	repeat
 	    {
-	    	if (size(AIClass::Classes) == 0 )
+	    	if (size(AutoinstClass::Classes) == 0 )
 		{
 		    UI::ChangeWidget(`id(`edit), `Enabled, false);
 		    UI::ChangeWidget(`id(`delete),`Enabled, false);
 		}
 		
 		string class =  UI::QueryWidget(`id(`table), `CurrentItem);
-		map selected_class = select(filter(map c,  AIClass::Classes,``(c["name"]:""  == class) ), 0, $[] );  
+		map selected_class = select(filter(map c,  AutoinstClass::Classes,``(c["name"]:""  == class) ), 0, $[] );  
 		if ( class != nil )
 		{
 		    UI::ChangeWidget(`id(`description), `Value, selected_class["description"]:_("No Description"));
@@ -132,7 +132,7 @@ to delete.
 "));
 			continue;
 		    }
-		    AIClass::Classes = filter(map c,  AIClass::Classes,``( lookup(c,"name","")!=class) );
+		    AutoinstClass::Classes = filter(map c,  AutoinstClass::Classes,``( lookup(c,"name","")!=class) );
 	
 		    Wizard::SetContents(title,
 					class_dialog_contents(), help, true, true);	
@@ -145,7 +145,7 @@ to delete.
 
 	if (ret == `next)
 	{	 
-	    AIClass::Save();
+	    AutoinstClass::Save();
 	}
 	return ret;
  
@@ -162,7 +162,7 @@ to delete.
     global define AddEditClasses(symbol mode, string name)
 	``{	
 	list classNames = maplist(map c,
-				  AIClass::Classes,
+				  AutoinstClass::Classes,
 				  ``(lookup(c,"name",""))
 				  );
 	
@@ -171,11 +171,11 @@ to delete.
 	{	    
 	    class = select(filter(
 				  map c,
-				  AIClass::Classes,
+				  AutoinstClass::Classes,
 				  ``(lookup(c,"name","")== name)),0,$[]);
 	}
 	
-	integer order =  tointeger(lookup(class,"order", sformat("%1", size(AIClass::Classes) + 1)));
+	integer order =  tointeger(lookup(class,"order", sformat("%1", size(AutoinstClass::Classes) + 1)));
 	
 	UI::OpenDialog( `opt(`decorated),			
 			`HBox(
@@ -231,13 +231,13 @@ to delete.
 		];
 		if (mode == `new)
 		{
-		    AIClass::Classes=add(AIClass::Classes, newClass);
-		    SCR::Execute(.target.mkdir, AIConfig::classDir + "/" + name);
+		    AutoinstClass::Classes=add(AutoinstClass::Classes, newClass);
+		    SCR::Execute(.target.mkdir, AutoinstConfig::classDir + "/" + name);
 		}
 		else
 		{
-		    AIClass::Classes=    maplist(
-						 map c, AIClass::Classes,``{
+		    AutoinstClass::Classes=    maplist(
+						 map c, AutoinstClass::Classes,``{
 						     if (lookup(c,"name","") == UI::QueryWidget(`id(`name),`Value)) {
 							 return newClass;
 						     }
@@ -270,8 +270,8 @@ to delete.
 	map profiles = $[];
 
 	term Combo = `VBox();
-	AIClass::Files();
-	foreach(map prof, AIClass::confs, ``{
+	AutoinstClass::Files();
+	foreach(map prof, AutoinstClass::confs, ``{
 	    
 	    string class = prof["class"]:"Default";
 	    list ui_list = profiles[class]:[];
@@ -368,7 +368,7 @@ script is used.</P>
 	    if (ret == `merge)
 	    {				
 		list selected_profiles = [];
-		foreach (map prof, AIClass::confs,``{
+		foreach (map prof, AutoinstClass::confs,``{
 		    
 		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
 		    
@@ -422,11 +422,11 @@ to be able to  perform a merge.
 file should belong.</p>
 ");
 
-	AIClass::Files();
+	AutoinstClass::Files();
 
 	map profiles = $[];
 
-	foreach(map prof, AIClass::confs, ``{
+	foreach(map prof, AutoinstClass::confs, ``{
 	    string class = prof["class"]:"default";
 	    list ui_list = profiles[class]:[];
 	  
@@ -487,7 +487,7 @@ file should belong.</p>
 	    if (ret ==`next)
 	    {
 		list selected_profiles = [];
-		foreach(map prof, AIClass::confs,``{
+		foreach(map prof, AutoinstClass::confs,``{
 
 		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
 
@@ -517,7 +517,7 @@ file should belong.</p>
 					       );
 
 		y2debug("Selected Profiles: %1", sorted_profiles);
-		AIClass::profile_conf = sorted_profiles;
+		AutoinstClass::profile_conf = sorted_profiles;
 	    }
 
 
@@ -553,7 +553,7 @@ file should belong.</p>
 	boolean skip = false;
 	foreach( map c, selected_profiles,
 		``{	  
-	    map profile = select(filter(`cc, AIClass::confs,
+	    map profile = select(filter(`cc, AutoinstClass::confs,
 					``( cc["name"]:"" == c["profile"]:"" )
 					),
 				 0,
@@ -561,7 +561,7 @@ file should belong.</p>
 				 );
 	    if (base == `empty && !skip)
 	    {		
-		SCR::Execute(.target.bash, "cp " + AIConfig::classDir + "/" + profile["class"]:""  + "/" +  profile["name"]:"" +  "  " + tmpdir + "/base_profile.xml");
+		SCR::Execute(.target.bash, "cp " + AutoinstConfig::classDir + "/" + profile["class"]:""  + "/" +  profile["name"]:"" +  "  " + tmpdir + "/base_profile.xml");
 		skip = true;
 	    }
 	    else
@@ -576,7 +576,7 @@ file should belong.</p>
 		if (profile["name"]:"" != "" && !error)
 		{
 		    showFeedback(sformat("Merging %1 with %2....", profile["name"]:"", base_text));
-		    map xsltret = AIClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "result.xml");
+		    map xsltret = AutoinstClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "result.xml");
 		    if (xsltret["exit"]:-1 != 0 )
 		    {
 			UI::ErrorPopup(sformat(_("Merge failed:\n %1"), xsltret["stderr"]:"error"));
@@ -621,7 +621,7 @@ file should belong.</p>
     
     global define integer GetClassOrder(string name)``{
 	integer order = 0;
-	foreach(map class, AIClass::Classes, ``{
+	foreach(map class, AutoinstClass::Classes, ``{
 	    if (class["name"]:"" == name)
 		order = class["order"]:0;
 	});

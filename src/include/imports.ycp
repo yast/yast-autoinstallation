@@ -17,7 +17,7 @@
     global define aliceHostList()
 	``{
 
-	list files = SCR::Read(.target.dir, AIConfig::AliceRepository + "/info");
+	list files = SCR::Read(.target.dir, AutoinstConfig::AliceRepository + "/info");
 	list extensions = ["sys.tcf" ];
 	list hosts = [];
 	string host = "";
@@ -129,13 +129,13 @@ This may take a while. Please wait...
 
 	string MakeinfoCommand = "alice make_info_file --yast2 ";
 	MakeinfoCommand = MakeinfoCommand + host;
-	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR": AIConfig::tmpDir , "ALICE_HOME":AIConfig::AliceRepository]);
-	string filelist = SCR::Read(.target.string, AIConfig::tmpDir + "/filelist");
+	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR": AutoinstConfig::tmpDir , "ALICE_HOME":AutoinstConfig::AliceRepository]);
+	string filelist = SCR::Read(.target.string, AutoinstConfig::tmpDir + "/filelist");
 	list files = splitstring(filelist, "\n");
 	y2milestone("files: %1", files);
 
-	any ret =  mergeFiles(files, AIConfig::tmpDir);
-	SCR::Execute(.target.remove,  AIConfig::tmpDir + "/filelist");
+	any ret =  mergeFiles(files, AutoinstConfig::tmpDir);
+	SCR::Execute(.target.remove,  AutoinstConfig::tmpDir + "/filelist");
 	y2milestone("alice conf %1", ret);
 	return ret;
     }
@@ -591,7 +591,7 @@ This may take a while. Please wait...
 
 	profile["install"] 	= install;
 	profile["configure"] 	= configure;
-	AIConfig::changed 	= true;
+	AutoinstConfig::changed 	= true;
 
 	y2milestone("Profile : %1", profile);
 	return profile;
