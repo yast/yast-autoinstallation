@@ -564,7 +564,7 @@
 
 	string tmpdirString = "";
 	string current_logdir = "";
-	if (type == "prescripts")
+	if (type == "pre-scripts")
 	{
 	    tmpdirString = sformat("%1/%2", tmpdir, type);
 	    SCR::Execute (.target.mkdir, tmpdirString);
@@ -572,7 +572,8 @@
 	    current_logdir = sformat("%1/logs", tmpdirString);
 	    SCR::Execute (.target.mkdir, tmplogdir );
 	}
-	else {
+	else
+	{
 	    current_logdir = logs_dir;
 	}
 
@@ -583,10 +584,10 @@
 	    string scriptName=s["filename"]:type;
 	    string scriptPath = "";
 
-	    if (type == "prescripts")
+	    if (type == "pre-scripts")
 	    {
 		scriptPath = sformat("%1/%2/%3", tmpdir, type, scriptName);
-		SCR::Write(.target.string, scriptPath, s["source"]:"");
+		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
 	    }
 	    else
 	    {
