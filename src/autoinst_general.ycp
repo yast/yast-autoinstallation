@@ -85,10 +85,13 @@
 			     `ComboBox(`id(`hwclock), _("&Hardware clock set to"),
 				       [
 					// ComboBox entry: hardware clock set to local time
-					`item(`id(`hwclock_localtime), _("Local time"), utc ),
+					`item(`id(`hwclock_empty), "", (hwclock == "") ),
+					
+					// ComboBox entry: hardware clock set to local time
+					`item(`id(`hwclock_localtime), _("Local time"), (hwclock == "localtime") ),
 
 					// ComboBox entry: hardware clock set GMT
-					`item(`id(`hwclock_gmt ),      _("GMT"), utc )
+					`item(`id(`hwclock_gmt ),      _("GMT"),  (hwclock == "GMT")  )
 					]
 
 				       )
@@ -125,11 +128,12 @@ your hardware and preferences then press <b>Next</b> to continue.</p>
 		keyboard= UI::QueryWidget(`id(`keyboard), `Value);
 
 
-		symbol hwclock = UI::QueryWidget (`id (`hwclock), `Value);
-		if (hwclock == `hwclock_localtime)		    
-		    utc = false;		
-		else
-		    utc = true;
+		symbol hardwareclock = UI::QueryWidget (`id (`hwclock), `Value);
+		if (hardwareclock == `hwclock_localtime)		    
+		    hwclock = "localtime";		
+		else if ( hardwareclock == `hwclock_gmt)
+		    hwclock = "GMT";
+		
 		
 		mouse = UI::QueryWidget(`id(`mouse), `Value);
 		map m = $[];
@@ -150,7 +154,7 @@ force it not to boot at the same time.
 			     "keyboard": $["keymap":keyboard],
 			     "clock": $[
 					"timezone":timezone,
-					"utc": utc
+					"hwclock": hwclock
 			     ],
 			     "language":language,
 			     "mode": $[
@@ -292,7 +296,7 @@ force it not to boot at the same time.
 	map keyboard = settings["keyboard"]:$[];
 	map mode = settings["mode"]:$[];
 	map clock = settings["clock"]:$[];
-
+	string language = settings["language"]:"";
 	
 	if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe")
 	{
@@ -314,7 +318,13 @@ force it not to boot at the same time.
 	    Keyboard::SetLanguage(keyboard["keymap"]:"");
 	    keyboard_name = Keyboard::Name();
 	}
-	    
+
+	string hwclock = "";
+	if ( clock["hwclock"]:"" != "" )
+	{
+	    hwclock = (clock["hwclock"]:"" == "GMT") ?  _("GMT") : _("Local time");
+	}
+	
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Language"));
 	summary = Summary::AddLine(summary, (language_name != "") ?
@@ -332,8 +342,7 @@ force it not to boot at the same time.
 				   mouse_name : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Hardware clock"));
-	summary = Summary::AddLine(summary, (clock["utc"]:false) ?
-				   _("GMT") : _("Local time"));
+	summary = Summary::AddLine(summary, hwclock);
 
 	summary = Summary::AddHeader(summary, _("Reboot after installation"));
 	summary = Summary::AddLine(summary, (mode["reboot"]:false) ?

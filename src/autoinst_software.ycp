@@ -85,8 +85,7 @@
 			      ),		     
 		       `HBox(
 			     `PushButton(`id(`add), AddButtonLabel()),
-			     `PushButton(`id(`delete), DeleteButtonLabel()),
-			     `PushButton(`id(`load), _("&Load"))
+			     `PushButton(`id(`delete), DeleteButtonLabel())			     
 			     )
 		       
 		       )
@@ -104,10 +103,12 @@
 	string help = _("<p>Use this dialog to select single packages. The listing of single selected
 packages has two different views:  one with distribution packages and a second with external packages.
 </p>
-");	
+");
+	/*
 	help = help + _("<p>You can also load a list of packages from a text file using the <em>Load</em> button.
 The file must contain a list of packages with one package per line.</p>
 ");
+	*/
 	
 	Wizard::SetContents(caption,
 			    packagesContent(), help, true, true);

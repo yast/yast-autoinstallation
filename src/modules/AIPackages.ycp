@@ -32,19 +32,8 @@
      *
      */    
     global define void AIPackages()
-	``{
-	if (SCR::Read(.target.size, "/var/lib/autoinstall/selections/current") > 0)
-	{
-	    y2milestone("Selection file found, reading...");
-	    ReadSelections();
-	}
-	else
-	{
-	   
-	    y2milestone("Rep URL: %1", base_url);
-	    GetSelections();
-	    SaveSelections();
-	}
+	``{	   	   
+	GetSelections();	   	
 	return;
     }
 
@@ -55,16 +44,10 @@
 	``{
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating package selections...")));
 	    
-	if (!PkdInitialized)
-	{
-	    string base_url = "dir://" + AIServer::PackageRep;
-	    Pkg::SourceInit (base_url);
-	}
-	else
-	{
-	    y2milestone("Package Manager alrady called");
-	}
-	
+
+	string base_url = "dir://" + AIServer::PackageRep;
+	Pkg::TargetInit ("/", false);
+
 	list basesel = maplist(`s, Pkg::GetSelections(`all, "base") , ``{
 	    any data = Pkg::SelectionData(s);
 	    if (is(data , map)) {
@@ -92,30 +75,6 @@
 	return true;
     }
     
-    /**
-     *
-     */   
-    global define boolean SaveSelections()
-	``{
-	if (Selections != nil && is(Selections,list))
-	{
-	    SCR::Write(.target.ycp, "/var/lib/autoinstall/selections/current", Selections);
-	    return true;
-	}
-	else
-	{
-	    return false;
-	}	
-    }
-
-    /**
-     *
-     */       
-    global define boolean ReadSelections()
-	``{
-	Selections = SCR::Read(.target.ycp, "/var/lib/autoinstall/selections/current");
-	return ( size(Selections)>0 );
-    }
 
     /**
      *
