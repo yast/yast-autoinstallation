@@ -251,7 +251,9 @@
 
 	list menu_options = CreateTreeList(Y2ModuleConfig::MenuTreeData, current);
 	// y2milestone("menu options: %1", menu_options);
-	Wizard::ReplaceButtonBox(`VSpacing(0.6));
+	Wizard::HideNextButton();
+	Wizard::HideBackButton();
+	Wizard::HideAbortButton();
 	UI::ReplaceWidget(`id(`helpSpace) ,
 			  `VBox(
 				`Tree(
