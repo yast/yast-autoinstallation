@@ -107,9 +107,9 @@
 	    }
 	}
 
-    string help = _("<p>For many applications and services you might have prepared a configuration file which should be copied in a complete form to some location in the installed system. This is for example if you are installing a web server and have a ready to go  configuration file httpd.conf.</p>");
+    string help = _("<p>For many applications and services, you might have prepared a configuration file which should be copied in a complete form to some location in the installed system. For example, this is the case if you are installing a web server and have a httpd.conf configuration file prepared.</p>");
 
-    help =  help + _("<p>Using this resource, you can embbed the file into the control file by specifying the final path on the installed system. YaST2 will copy this file for you on the specified location.</p>");
+    help =  help + _("<p>Using this resource, embed the file into the control file by specifying the final path on the installed system. YaST2 will copy this file to the specified location.</p>");
 
 	string title = _("Configuration File Editor");
 
@@ -154,8 +154,9 @@
 
 		if (source == "" || fileName == "")
 		{
-		    UI::MessagePopup(_("You have at least to provide the file
-name and the content of the file"));
+		    UI::MessagePopup(_("Provide at least the file
+name and the content of the file.
+"));
 		    continue;
 		}
 		else
@@ -239,7 +240,7 @@ name and the content of the file"));
 		}
 		else
 		{
-		    UI::MessagePopup(_("You have to select a file first"));
+		    UI::MessagePopup(_("Select a file first."));
 		    continue;
 		}
 
@@ -253,7 +254,7 @@ name and the content of the file"));
 		}
 		else
 		{
-		    UI::MessagePopup(_("You have to select a file first"));
+		    UI::MessagePopup(_("Select a file first."));
 		    continue;
 		}
 	    }

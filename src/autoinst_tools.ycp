@@ -50,11 +50,13 @@
 	string help_text = _("<h3>PXE</h3>");
 	help_text = help_text +
 	    _("<p>Create PXE configuration and
-prepare system for booting with PXE</p>");
+prepare system for booting with PXE.</p>
+");
 
 	help_text = help_text +
 	    _("<p>Use this only if this machine is the server
-which all other clients should boot from.</p>");
+from which all other clients should boot.</p>
+");
 
 	term contents =
 	    `Top(
@@ -68,7 +70,7 @@ which all other clients should boot from.</p>");
 					     `HStretch(),
 					     `VBox(
 						   `VSpacing(),
-						   `Bottom(`PushButton(`id(`setup_pxe), _("&Setup PXE"))
+						   `Bottom(`PushButton(`id(`setup_pxe), _("&Set up PXE"))
 							   )
 						   )
 					     )
@@ -119,8 +121,9 @@ which all other clients should boot from.</p>");
 	Progress::NextStage();
 	list pxeconfig = SCR::Read(.target.dir, AIServer::Tftpboot + "/pxelinux.cfg");
 	if (size(pxeconfig)>0) {
-	    if (!UI::YesNoPopup(_("Configuration exists, are you sure
-you want to create new configuration files?"))) {
+	    if (!UI::YesNoPopup(_("Configuration exists. 
+Create new configuration files?
+"))) {
 		return `next;
 		}
 	}
@@ -130,7 +133,8 @@ you want to create new configuration files?"))) {
 
 	if (!RequireAndConflict (needed_pkgs, [],
 			     _("<p>To make this machine accessible to the target machines,
-the following package: <b>%1</b>  must be installed.</p>") +
+the package <b>%1</b>  must be installed.</p>
+") +
 _("<p>Do you want to install it now?</p>")
 				 )
 	    )
@@ -150,7 +154,7 @@ _("<p>Do you want to install it now?</p>")
 	}
 	pxeconfig = SCR::Read(.target.dir, "/usr/share/autoyast/pxelinux.cfg");
 	if (size(pxeconfig)==0) {
-	    UI::ErrorPopup(_("Configuration files can't be found"));
+	    UI::ErrorPopup(_("Configuration files cannot be found"));
 	    return `next;
 	} else {
 	    SCR::Execute(.target.bash, "cp -a /usr/share/autoyast/pxelinux.cfg " + AIServer::Tftpboot);

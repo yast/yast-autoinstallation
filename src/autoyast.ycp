@@ -209,7 +209,7 @@
 
 
 	// Translators: dialog caption
-	string caption = _("Auto-Install Configuration");
+	string caption = _("Autoinstall Configuration");
 	term contents = `Label (_("Initializing ..."));
 
 	Wizard::CreateDialog ();
@@ -237,7 +237,7 @@
 	Wizard::SetScreenShotName ("autoyast-configurationType");
 	symbol ct = AIConfig::config_type;
 	// Translators: dialog caption
-	string caption = _("Auto-Installation configuration System");
+	string caption = _("Autoinstallation Configuration System");
 	term contents =
 	    `VBox(
 		  `RadioButtonGroup (
@@ -254,7 +254,7 @@
 							   `Left (
 								  `RadioButton (`id (`single),
 										`opt (`notify),
-										_("Create/Edit Configurati&ons"),
+										_("Create or Edit Configurati&ons"),
 										ct == `single)
 								  )
 							   )
@@ -282,7 +282,7 @@
 							   `Left (
 								  `RadioButton (`id (`profiles),
 										`opt (`notify),
-										_("&Create/Edit Classes"),
+										_("&Create or Edit Classes"),
 										ct == `profiles)
 								  )
 							   )
@@ -331,6 +331,7 @@
 								  )
 							   )
 						  ),
+					    /*
 					    `HBox(
 						  `HWeight(10,
 							   `Empty()
@@ -344,7 +345,7 @@
 								  )
 							   )
 						  ),
-					    
+					    */
 					    `VSpacing (1),
 					    `Left(`Label(_("Import data"))),
 					    `VSpacing (0.5),

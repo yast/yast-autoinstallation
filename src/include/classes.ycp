@@ -71,14 +71,16 @@
 	``{
 
 	Wizard::SetScreenShotName ("autoyast-classMgmt-1");
-	string title = _("Profile/Class Management ");
-	string help = _("<P>Use this interface to add and define new classes. A class contains several configuration
-which represent  a subset of a complete <em>control file</em>. When several classes are defined, they can
+	string title = _("Profile and Class Management ");
+	string help = _("<P>Use this interface to add and define new classes. A class contains several configurations
+that represent  a subset of a complete <em>control file</em>. When several classes are defined, they can
 be merged togather to create a complete <em>control file</em> that can be used to install
 a client.
-</P>");
-	help = help + _("<P>Alternatively, you can associate several classes with a control file
-(in this case it will be saved as <b>template</b>). </P>");
+</P>
+");
+	help = help + _("<P>Alternatively, associate several classes with a control file
+(in this case it will be saved as <b>template</b>). </P>
+");
 
 	Wizard::SetContents(title,
 			    RereadProfiles(), help, true, true);
@@ -123,8 +125,9 @@ a client.
 		{
 		    if (profile == nil)
 		    {
-			UI::MessagePopup(_("You have to select a configuration
-to be able to edit."));		    
+			UI::MessagePopup(_("Select a configuration
+to edit.
+"));		    
 			continue;
 		    }
 		    AIClass::Working = $["action":ret, "profile":profile];		
@@ -136,8 +139,9 @@ to be able to edit."));
 		{
 		    if (profile == nil)
 		    {
-			UI::MessagePopup(_("You have to select a configuration
-to be able to delete."));
+			UI::MessagePopup(_("Select a configuration
+to delete.
+"));
 			continue;
 		    }
 		    string filePath =  AIClass::findPath(profile);
@@ -146,7 +150,7 @@ to be able to delete."));
 		    {
 			if (!SCR::Execute(.target.remove, filePath) )
 			{
-			    UI::WarningPopup(_("Error occured while deleting class."));
+			    UI::WarningPopup(_("Error occurred while deleting class."));
 			    continue;
 			}
 		    }
@@ -157,7 +161,7 @@ to be able to delete."));
 		    
 		    if (!AIClass::SaveProfiles())		
 		    {
-			UI::WarningPopup(_("Error occured while saving the classes file."));
+			UI::WarningPopup(_("Error occurred while saving the classes file."));
 		    }
 		    
 		    Wizard::SetContents(title,	
@@ -208,7 +212,7 @@ to be able to delete."));
 			      ( class["name"]:"Unknown" ==  thisProfile["class"]:""))
 			);
 	});
-	string caption = _("Edit/Create Profile");
+	string caption = _("Edit or Create Profile");
 	
 	term contents =					   
 	    `VBox(		 			
@@ -228,8 +232,9 @@ to be able to delete."));
 			     thisProfile["description"]:"")
 		  );
 
-	string help = _("<P>Please enter the configuration name and select
-to which class it should belong</P>");
+	string help = _("<P>Enter the configuration name and select
+to which class it should belong.</P>
+");
 	
 	Wizard::SetContentsButtons (caption, contents, help,
 				    BackButtonLabel (), NextButtonLabel ());
@@ -249,7 +254,7 @@ to which class it should belong</P>");
 	    {		
 		if (UI::QueryWidget(`id(`name),`Value) == "")
 		{
-		    UI::MessagePopup(_("Please type a name for this configuration."));
+		    UI::MessagePopup(_("Enter a name for this configuration."));
 		    continue;
 		}
 		string newname = UI::QueryWidget(`id(`name),`Value);
@@ -290,7 +295,7 @@ to which class it should belong</P>");
 		
 		if (!AIClass::SaveProfiles())		
 		{
-		    UI::WarningPopup(_("Error occured while saving the classes file."));
+		    UI::WarningPopup(_("Error occurred while saving the classes file."));
 		}
 	    } 	 
 	} until (ret == `next || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed))  || ret == `back );
@@ -354,13 +359,16 @@ to which class it should belong</P>");
 	string title = _("Classes");
 	
 	string help = _("<p>Use this screen to define the groups of classes
-you want to use in a multiple host environment.</p>");
+to use in a multiple host environment.</p>
+");
 	
-	help = help + _("<p>For example, you can define  a class group for
-a department or a site in you company environment.</p>");
+	help = help + _("<p>For example, define  a class group for
+a department or a site in your company environment.</p>
+");
 	
-	help = help + _("<p>The order (periority) defines when a certain class group
-is merged when joining several classes</p>");
+	help = help + _("<p>The order (priority) defines when a certain class group
+is merged when joining several classes</p>
+");
 
 	
 	if (size(AIClass::Classes) == 0)
@@ -413,8 +421,9 @@ is merged when joining several classes</p>");
 	    else if (ret ==`edit)
 	    {
 		if (class == nil) {
-		    UI::MessagePopup(_("You have at least to select a class
-to be able to edit."));
+		    UI::MessagePopup(_("Select at least a class
+to edit.
+"));
 		    continue;
 		}
 		y2debug("ret: %1, class: %2", ret, class);	
@@ -429,8 +438,9 @@ to be able to edit."));
 	    else if (ret ==`delete)
 	    {
 		if (class == nil) {
-		    UI::MessagePopup(_("You have at least to select a class
-to be able to delete something."));
+		    UI::MessagePopup(_("At least select a class
+to delete something.
+"));
 		    continue;
 		}
 		AIClass::Classes =
@@ -479,7 +489,7 @@ to be able to delete something."));
 			`HBox(
 			      `HSpacing(0.5),
 			      `VBox(
-				    `Heading( _("Edit/Create Classes")),
+				    `Heading( _("Edit or Create Classes")),
 				    `VSpacing(1),
 				    `HBox(				    
 					  `TextEntry(`id(`name), _("Na&me"), lookup(class,"name","")),
@@ -506,11 +516,11 @@ to be able to delete something."));
 	    ret = UI::UserInput();
 	    if (ret == `save ) {		
 		if (UI::QueryWidget(`id(`name),`Value) == "") {
-		    UI::MessagePopup(_("Name already used, please select another name!"));
+		    UI::MessagePopup(_("That name is already used. Select another name."));
 		    continue;
 		}
 		if (mode !=`edit && contains(classNames, UI::QueryWidget(`id(`name),`Value))) {
-		    UI::MessagePopup(_("Name already used, please select another name!"));
+		    UI::MessagePopup(_("That name is already used. Select another name."));
 		    continue;
 		}	
 		map newClass = $[
@@ -586,7 +596,7 @@ to be able to delete something."));
 	}
 	else
 	{
-	    UI::ErrorPopup(_("This is not  a template"));
+	    UI::ErrorPopup(_("This is not a template."));
 	    return `back;
 	}
 	
@@ -666,7 +676,7 @@ to be able to delete something."));
 			     `RadioButtonGroup(`id(`rbg2),
 					       `VBox(
 						     `Left(
-							   `RadioButton(`id(`save),`opt(`notify), _("Save &result into Repository"), true)
+							   `RadioButton(`id(`save),`opt(`notify), _("Save &result into repository"), true)
 							   ),
 						     `Left(
 							   `HBox(
@@ -689,17 +699,20 @@ to be able to delete something."));
 
 	string help = _("<p>If you have defined and created <b>
 classes</b>, you will be able to merge them using this interface to create
-a new <i>Profile</i> which will contain information from every class
-depending on the periority (order) you have set when
-creating the classes</P>");
+a new <i>Profile</i> that will contain information from every class
+depending on the priority (order) set when
+creating the classes</P>
+");
 
 	help = help + _("<P>To merge the classes, a <b>XSLT</b>
-script is used</P>");
+script is used.</P>
+");
 	help = help + _("<p>
 This script can either create a file that can be saved in the
-repository or alternativaly it
-can load the resulting file into memory for further processing
-</P>");
+repository or, alternatively, 
+load the resulting file into memory for further processing.
+</P>
+");
 	
 	Wizard::SetContents(title,	
 			    contents, help , true, true);
@@ -765,8 +778,9 @@ can load the resulting file into memory for further processing
 		    if (base == `empty)
 			min = 2;
 		    
-		    UI::ErrorPopup(sformat(_("You have to select at least %1 class configurations
-to be able to perform a merge"), min));
+		    UI::ErrorPopup(sformat(_("Select at least %1 class configurations
+to perform a merge.
+"), min));
 		    continue;
 		}
 		
@@ -895,7 +909,7 @@ to be able to perform a merge"), min));
 	    }
 	    else
 	    {
-		UI::ErrorPopup(_("Parse can't find resulting profile"));
+		UI::ErrorPopup(_("Parse cannot find resulting profile"));
 	    }
 	}
 	SCR::Execute(.target.remove, "/tmp/autoinst_result.xml");

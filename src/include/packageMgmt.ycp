@@ -207,7 +207,7 @@
 	summary = Summary::AddLine(summary, sformat(_("%1 Mb"), SourceSize / ( 1000 * 1000)));
 	
 	summary = Summary::AddHeader(summary, _("Packages"));
-	summary = Summary::AddLine(summary, sformat(_("%1 Packages will be installed"), size(allPacs)));
+	summary = Summary::AddLine(summary, sformat(_("%1 packages will be installed"), size(allPacs)));
 	
 	summary = Summary::AddHeader(summary, _("Consistency Check"));
 	if (!consistency)
@@ -233,9 +233,9 @@
 	    });
 
 	    if (found == 0)
-		summary = Summary::AddLine(summary,_("All Packages are available"));
+		summary = Summary::AddLine(summary,_("All packages are available"));
 	    else
-		summary = Summary::AddLine(summary,sformat(_("%1 Packages missing."), found));
+		summary = Summary::AddLine(summary,sformat(_("%1 packages missing."), found));
 	}
 	    
 	
@@ -278,7 +278,7 @@
 	Installation::sourcedir = AIServer::PackageRep;
 	if (!AIServer::PkdInitialized)
 	{
-	    showFeedback(_("Please wait while the package database is being initialized...."));
+	    showFeedback(_("Please wait while the package database is initialized..."));
 	    Packages::Init(false);
 	    AIServer::PkdInitialized=true;
 	    clearFeedback();
@@ -301,17 +301,21 @@
 		  );
 
 	string help = _("<P>
-This dialog shows the package selection you have made and gives you an idea about the
-expected size of the ISO file you are going to create.</P>");
+This dialog shows the package selection made and gives an idea of the
+expected size of the ISO file to create.</P>
+");
 
-	help = help + _("<p>You can overwrite the package settings you have entered
-in the control file by selecting some new package groups</p>");
+	help = help + _("<p>You can overwrite the package settings entered
+in the control file by selecting some new package groups.</p>
+");
 
-	help = help + _("YaST2 automatically adds packages which are not included in
-you selection but will be needed to perform the installation</p>");
+	help = help + _("YaST2 automatically adds packages not included in
+you selection but needed to perform the installation.</p>
+");
 
-	help = help + _("Use the <b>Consistency Check</b> to make sure all package
-are available</p>");
+	help = help + _("Use the <b>Consistency Check</b> to make sure all packages
+are available.</p>
+");
 
 	
 	Wizard::SetContents(_("Package Repository"),
@@ -355,7 +359,7 @@ are available</p>");
 	
 	UI::OpenDialog(
 		       `VBox(
-			     `Heading(_("Please wait while the ISO file is being created")),
+			     `Heading(_("Please wait while the ISO file is created.")),
 			     `DownloadProgress(AIServer::isoFile, filename, expectedSize - 1000000),
 			     `HSpacing(50), // force width
 			     `PushButton(`opt(`default), CloseButtonLabel())
@@ -393,16 +397,19 @@ are available</p>");
 			     );
 	
 	string caption = _("Create Custom CD");
-	string help = _("<P>Enter the locaion where you have copied you CDs in
+	string help = _("<P>Enter the location of your copied CDs in
 the <em>SuSE Package Directory</em>
-field. This directory must contain the <b>suse</b> subdirectory which contains
-the RPMS of either 1 CD or all copied CDs</p>");
+field. This directory must contain the <b>suse</b> subdirectory, which contains
+the RPMS of one or all copied CDs.</p>
+");
 
-	help = help + _("<p>In the <em>Destination</em> enter the name of the ISO file to be created, i.e.
-<b>/tmp/suse.iso</b></p>");
+	help = help + _("<p>In the <em>Destination</em>, enter the name of the ISO file to create, such as
+<b>/tmp/suse.iso</b></p>
+");
 
-	help = help + _("<p>Pressing <b>next</b> will create the directory structure
-needed to create the ISO image</p>");
+	help = help + _("<p>Pressing <b>Next</b> will create the directory structure
+needed to create the ISO image.</p>
+");
 
 	
   
@@ -442,24 +449,25 @@ needed to create the ISO image</p>");
 	import "Progress";
 
 	string help = UI(_("<P>
-Please wait while the directory structure for the new ISO file is being created.
-</P>"));
-	help = help + _("<p>Press <b>next</b> to create the ISO file</p>");
+Please wait while the directory structure for the new ISO file is created.
+</P>
+"));
+	help = help + _("<p>Press <b>Next</b> to create the ISO file.</p>");
 
 
 	    
 	list progress_stages =
 	    [
-	     _("Create Skeleton with essential files"),
+	     _("Create skeleton with essential files"),
 	     _("Saving Control File"),
-	     _("Copy selection packages")
+	     _("Copy selected packages")
 	     ];
 
 	list progress_descriptions =
 	    [
-	     _("Creating Skeleton with essential files"),
+	     _("Creating skeleton with essential files"),
 	     _("Saving control file"),
-	     _("Copying selection packages")	   
+	     _("Copying selected packages")	   
 	     ];
 
 

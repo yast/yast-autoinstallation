@@ -24,7 +24,7 @@
 			     `VStretch(),
 			     `Left(
 				   `RadioButton( `id( "none" ), `opt(`notify),
-						 _("&Do not configure the bootloader (Done automatically)"), loc == "none")
+						 _("&Do not configure the boot loader (Done automatically)"), loc == "none")
 				   ),
 			     `Left(
 				   `RadioButton( `id( "mbr" ), `opt(`notify),
@@ -114,7 +114,7 @@
 	// determine  location of lilo boot loader
 	term contents = `VCenter(`HSquash(`RadioButtonGroup(`id(`options), buttons) ) );
 			 
-	Wizard::SetContents(_("Bootloader Configuration"),
+	Wizard::SetContents(_("Boot Loader Configuration"),
 			    contents, "", true, true);
 
 	any ret = "";
@@ -160,7 +160,7 @@ options to continue.
 				|| (option == "")
 				|| (substring (option, 0, 5) != "/dev/")))
 			{
-			    UI::MessagePopup(_("You did not enter a partition!"));
+			    UI::MessagePopup(_("You did not enter a partition."));
 			    has_error = true;
 			    UI::ChangeWidget(`id(`key), `CurrentItem, "bootloader");
 			    continue;

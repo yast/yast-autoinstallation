@@ -26,13 +26,14 @@ _("
 <h3>Classes support</h3>
 <p>
 Define whether classes should be enabled and where the class files
-should be saved</P>");
+should be saved.</P>
+");
 
 
 
 	map texts =$[
 	    "bootloader":
-	    _("Help for the Bootloader"),
+	    _("Help for the Boot Loader"),
 	    "report":
 	    _("Help for the Messages & Logs"),
 	    "preferences":
@@ -40,7 +41,7 @@ should be saved</P>");
 	];
 	string default_help = _("
 <P>
-Please consult the online documentation in
+Consult the online documentation in
 /usr/share/doc/packages/yast2-module-autoinst
 </P>
 ");
@@ -51,23 +52,26 @@ Please consult the online documentation in
 
     global define ConfigurationTypeHelp() ``{
 
-	string help = _("<P>Please select one of the
-following options:</P>");
+	string help = _("<P>Select one of the
+following options:</P>
+");
 	help = help + _("<h3>Manage Configurations</h3>
 <P>
 Any configuration created using this option
-would be usable for a full automated installation. In additional to fully operational
-control files, you can create templates by assigning a control file to different, defined
+would be usable for a full automated installation. In addition to fully operational
+control files, you can create templates by assigning a control file to different defined
 classes.
-</P>");
+</P>
+");
 	help = help + _("<h3>Manage classes</H3>
 <P>Create classes of configurations and generate single
 configurations from a set of classes.</P>
 </p>");
-	help = help + _("<h3>Clone This system</H3>
+	help = help + _("<h3>Clone this system</H3>
 <P>Use this option to create a simplified control file with the partitions and packages
 available in this machine.
-</p>");
+</p>
+");
 	help = help + _("<h3>Import legacy and foreign control files</H3>
 <p>Import <em>Alice</em> configuration from previous SuSE releases or import <em>Kickstart</em> 
 configuration files.

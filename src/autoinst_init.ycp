@@ -29,10 +29,11 @@
 
 
     string help_text = UI(_("<p>
-Please wait while the system is being prepared for auto-installation.</p>"));
+Please wait while the system is prepared for autoinstallation.</p>
+"));
     list progress_stages =
 	[
-	 _("Retrieve & Read control file"),
+	 _("Retrieve & Read Control File"),
 	 _("Parse control file")
 	 ];
 
@@ -149,8 +150,9 @@ Please wait while the system is being prepared for auto-installation.</p>"));
     
     if (!AutoInstall::ProcessProfile()) {
 	UI::ErrorPopup(_("Error while parsing the control file.
-Please check the log files for more details. Please fix the
-control file and try again."));
+Check the log files for more details. Fix the
+control file and try again.
+"));
 	return `abort;
     }
 
@@ -183,8 +185,9 @@ control file and try again."));
     Progress::Finish();
     if ( AutoInstall::Profile == $[])
     {
-	UI::ErrorPopup(_("Error occured while parsing the control file,
-please check the syntax of the control file and try again..."));
+	UI::ErrorPopup(_("An error occured while parsing the control file.
+Check the syntax of the control file and try again.
+"));
 	return `abort;
     }
     

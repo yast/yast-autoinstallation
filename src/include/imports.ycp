@@ -15,11 +15,13 @@
 	Wizard::SetScreenShotName ("autoyast-alice-1");
 	string title = _("Import Alice configuration");
 
-	string help = _("<p>Using this feature, you can import <b>Alice</b> configuration
-files.</p>");
+	string help = _("<p>Using this feature, import <b>Alice</b> configuration
+files.</p>
+");
 	help = help + _("<p>System configuration in  <em>Alice</em> files may vary in their scope from what is offered
 in <b>AutoYaST</b>, so some limitations should be taken into consideration. A standard <em>Alice</em>
-configuration file with no special customization can however be imported without any loss of data.</p>");
+configuration file with no special customization can, however, be imported without any loss of data.</p>
+");
 
 	
 	term contents =
@@ -37,11 +39,11 @@ configuration file with no special customization can however be imported without
 			     `HWeight(90, `RadioButtonGroup(`id(`rbg),
 							    `VBox(
 								  `Left(
-									`RadioButton(`id(`hostname), `opt(`notify),_("&Use hostname from alice as profile name"),
+									`RadioButton(`id(`hostname), `opt(`notify),_("&Use host name from alice as profile name"),
 										     (AIServer::aliceOutput == `hostname))
 									),
 								  `Left(
-									`RadioButton(`id(`save),`opt(`notify), _("Save result &into Repository"),
+									`RadioButton(`id(`save),`opt(`notify), _("Save result &into repository"),
 										     (AIServer::aliceOutput == `save))
 									),
 								  `Left(
@@ -79,7 +81,7 @@ configuration file with no special customization can however be imported without
 		    }
 		    else
 		    {
-			UI::MessagePopup(_("Please provide a valid profile name"));
+			UI::MessagePopup(_("Provide a valid profile name."));
 			continue;
 		    }
 		}
@@ -149,13 +151,14 @@ configuration file with no special customization can however be imported without
 
 	Wizard::SetScreenShotName ("autoyast-alice-2");
 	
-	string help = _("<p>Using this dialog you can select a
+	string help = _("<p>Using this dialog, select a
 host from the <b>ALICE</b> repository.</p>
 ");
-	help = help + _("<p>Converting <b>ALICE</b> data to be used with the new auto-installation
-system might take some time, so please be patient while
-the configuration files are being read and converted.
-</p>");
+	help = help + _("<p>Converting <b>ALICE</b> data to use with the new autoinstallation
+system might take some time.  Be patient while
+the configuration files are read and converted.
+</p>
+");
 	Wizard::SetContents(_("Hosts in Alice Repository"),
 			    aliceHostList(), help, true, true);
 	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
@@ -172,8 +175,8 @@ the configuration files are being read and converted.
 		if (host != nil && host != "")
 		{
 		    showFeedback(_("
-Reading Alice configuration files,
-this may take a while, please wait...
+Reading Alice configuration files.
+This may take a while. Please wait...
 "));
 
 		    map aliceConf = $[];
@@ -644,15 +647,18 @@ this may take a while, please wait...
 	Wizard::SetScreenShotName ("autoyast-kickstart");
 	
 	string title = _("Import Kickstart files");
-	string help = _("<p>Using this feature, you can import <b>Kickstart</b> configuration
-files.</p>");
-	help = help + _("<p>System configuration in a <em>Kickstart</em> file may vary in it's scope from what is offered
+	string help = _("<p>Using this feature,  import <b>Kickstart</b> configuration
+files.</p>
+");
+	help = help + _("<p>System configuration in a <em>Kickstart</em> file may vary in its scope from what is offered
 in <b>AutoYaST</b>, so some limitations should be taken into consideration. A standard <em>Kickstart</em>
-configuration file with no distribution specific configuration options can still be imported without
-much loss of data</p>");
+configuration file with no distribution-specific configuration options can still be imported without
+much loss of data.</p>
+");
 
 	help = help + _("<p>The main problem you will be facing when importing a <em>Kickstart</em> file
-is the different package and package selection names used, those have to be adapted manually!</p>");
+is the different package and package selection names used. They must be adapted manually.</p>
+");
 
 	term contents =
 	    `Top(
@@ -679,7 +685,7 @@ is the different package and package selection names used, those have to be adap
 										     (AIServer::ksOutput == `hostname))
 									),
 								  `Left(
-									`RadioButton(`id(`save),`opt(`notify), _("Save result &into Repository"),
+									`RadioButton(`id(`save),`opt(`notify), _("Save result &into repository"),
 										     (AIServer::ksOutput == `save))
 									),
 								  `Left(
@@ -721,7 +727,7 @@ is the different package and package selection names used, those have to be adap
 		    }
 		    else
 		    {
-			UI::MessagePopup(_("Please provide a valid profile name"));
+			UI::MessagePopup(_("Provide a valid profile name."));
 			continue;
 		    }
 		}
@@ -742,13 +748,14 @@ is the different package and package selection names used, those have to be adap
 		    UI::WarningPopup(_("
 Importing foreign configuration files means that
 you need to go through the package and software configuration
-to make sure that the packages and selections are compatible with
-SuSE package names and package groups."));
+to make sure the packages and selections are compatible with
+SuSE package names and package groups.
+"));
 		    
 		}
 		else if (ret == `next && filename == "")
 		{
-		    UI::MessagePopup(_("Please select a file first!"));
+		    UI::MessagePopup(_("Select a file first."));
 		    UI::SetFocus(`id(`filename));
 		    continue;
 		}

@@ -36,7 +36,7 @@
 
     y2milestone("Imported: (%1)", settings);
     AIBootloader::Import ( settings );
-    string caption = _("Bootloader Configuration");
+    string caption = _("Boot Loader Configuration");
 
 
     
@@ -55,7 +55,7 @@
 			     `VStretch(),
 			     `Left(
 				   `RadioButton( `id( "none" ), `opt(`notify),
-						 _("&Do not configure the bootloader (Done automatically)"), loc == "none")
+						 _("&Do not configure the boot loader (Done automatically)"), loc == "none")
 				   ),
 			     `Left(
 				   `RadioButton( `id( "mbr" ), `opt(`notify),
@@ -167,7 +167,7 @@ will be saved to disk as a precaution.
 
     helptext = helptext + _("<p>
 - In the <b>/boot</b> partition.  Choose this option if you
-have installed several operating systems on your hard drive and want to
+have several operating systems installed on your hard drive and want to
 continue using your old boot manager, such as <tt>loadlin</tt>. No changes
 will be made to the existing MBR.<br>
 The boot manager is always installed on the <b>/boot</b> partition.
@@ -253,7 +253,7 @@ options to continue.
 				|| (option == "")
 				|| (substring (option, 0, 5) != "/dev/")))
 			{
-			    UI::MessagePopup(_("You did not enter a partition!"));
+			    UI::MessagePopup(_("You did not enter a partition."));
 			    has_error = true;
 			    UI::ChangeWidget(`id(`key), `CurrentItem, "bootloader");
 			    continue;

@@ -38,17 +38,19 @@
 
 	string help = _("
 <h3>Pre-Scripts</h3>
-<P>You can add commands to run on the system  before the installation begins. </P>
-<h3>Post-Scripts</h3>");
+<P>Add commands to run on the system  before the installation begins. </P>
+<h3>Post-Scripts</h3>
+");
 	help = help + _("
 <P>You can also add commands to execute on the system after the installation
 is completed. These scripts are run outside the chroot environment.
 </P>");
 	help = help + _("
 <H3>Chroot Environment</H3>
-<P>If you want your post-installation script to run inside of the chroot
+<P>For your postinstallation script to run inside the chroot
 environment, choose the <i>chroot-scripts</i> options.
-</P>");
+</P>
+");
 	string title = _("Script Editor");
 
 	term contents=
@@ -106,8 +108,9 @@ environment, choose the <i>chroot-scripts</i> options.
 
 		if (source == "" || scriptName == "")
 		{
-		    UI::MessagePopup(_("You have at least to provide the script
-name and the content of the script"));
+		    UI::MessagePopup(_("Provide at least the script
+name and the content of the script.
+"));
 		    continue;
 		}
 		else
