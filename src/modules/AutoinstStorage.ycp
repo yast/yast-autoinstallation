@@ -1,5 +1,5 @@
 /**
- * File:	modules/AutoinstScripts.ycp
+ * File:	modules/AutoinstStorage.ycp
  * Module:	Auto-Installation
  * Summary:	Storage
  * Authors:	Anas Nashif <nashif@suse.de>
@@ -87,6 +87,43 @@
 
 
 
+    global define list convertLVM (list lvm_standalone ) ``{
+
+	list all_lvm = [];
+
+	foreach (map group, lvm_standalone, ``{
+	    map new_lvm = $[];
+	    string vg = group["lvm_name"]:"";
+
+	    new_lvm["device"]       = sformat("/dev/%1", vg );
+	    new_lvm["is_lvm_vg"]    = true;
+	    new_lvm["use"]      = "all";
+	    new_lvm["pesize"]       = group["pesize"]:"";
+	    list partitions = maplist(`lv, group["logical_volumes"]:[], ``{
+
+		symbol lv_fs     = AutoinstStorage::StringFS2Symbol( lv["lv_fs"]:`reise);
+
+
+		return( $[ "filesystem": lv_fs,
+			   "lv_name":    lv["lv_name"]:"",
+			   "mount":  lv["lv_mount"]:"",
+			   "size":   lv["lv_size"]:"",
+			   "stripes":    lv["stripes"]:1
+			]);
+
+	    });
+
+	    new_lvm["partitions"] = partitions;
+	    all_lvm = add (all_lvm, new_lvm);
+
+	});
+	y2milestone("Converted LVM: %1", all_lvm);
+
+	return (all_lvm);
+    }
+
+
+    
     /**
      * Create partition plans
      * @param void
