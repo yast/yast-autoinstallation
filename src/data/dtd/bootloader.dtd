@@ -36,7 +36,6 @@
 
 
 
-<!ELEMENT clock (hwclock, timezone)>
 <!ELEMENT gfxmenu (#PCDATA)>
 <!ELEMENT grub_conf (addr, device, discswitch, menu, root, s2prefix, stage1, stage2)>
 <!ELEMENT addr (#PCDATA)>
@@ -74,27 +73,7 @@
 
 
 
-<!ELEMENT confirm (#PCDATA)>
-<!ATTLIST confirm
-	config:type CDATA #REQUIRED
->
-<!-- <!ELEMENT default (#PCDATA)> -->
-<!ELEMENT errors (log, show, timeout)>
-<!ELEMENT forceboot (#PCDATA)>
-<!ATTLIST forceboot
-	config:type CDATA #REQUIRED
->
-<!ELEMENT general (clock, keyboard, language, mode?, mouse)>
-<!ELEMENT hwclock (#PCDATA)>
-<!ELEMENT id (#PCDATA)>
-<!ELEMENT interactive_boot (#PCDATA)>
-<!ATTLIST interactive_boot
-	config:type CDATA #REQUIRED
->
 <!ELEMENT kernel_parameters (#PCDATA)>
-<!ELEMENT keyboard (keymap)>
-<!ELEMENT keymap (#PCDATA)>
-<!ELEMENT language (#PCDATA)>
 <!ELEMENT lba_support (#PCDATA)>
 <!ATTLIST lba_support
 	config:type CDATA #REQUIRED
@@ -103,48 +82,3 @@
 <!ATTLIST linear
 	config:type CDATA #REQUIRED
 >
-<!-- <!ELEMENT location (#PCDATA)> -->
-<!ELEMENT log (#PCDATA)>
-<!ATTLIST log
-	config:type CDATA #REQUIRED
->
-<!ELEMENT messages (log, show, timeout)>
-<!ELEMENT mode (confirm?, forceboot?, interactive_boot?, reboot?)>
-<!ELEMENT mouse (id)>
-<!ELEMENT reboot (#PCDATA)>
-<!ATTLIST reboot
-	config:type CDATA #REQUIRED
->
-<!ELEMENT report (errors, messages, warnings)>
-<!ELEMENT runlevels (default?, services?)>
-<!ELEMENT service (service_name, service_status?, service_start?, service_stop?)>
-<!ELEMENT service_name (#PCDATA)>
-<!ELEMENT service_status (#PCDATA)>
-<!ELEMENT service_start (#PCDATA)>
-<!ELEMENT service_stop (#PCDATA)>
-<!ELEMENT services (service+)>
-<!ATTLIST services
-	config:type CDATA #REQUIRED
->
-<!ELEMENT show (#PCDATA)>
-<!ATTLIST show
-	config:type CDATA #REQUIRED
->
-<!ELEMENT timeout (#PCDATA)>
-<!ATTLIST timeout
-	config:type CDATA #REQUIRED
->
-<!ELEMENT timezone (#PCDATA)>
-<!ELEMENT warnings (log, show, timeout)>
-
-
-<!ELEMENT classes (class+)>
-<!ATTLIST classes
-    config:type CDATA #REQUIRED
->
-
-<!ELEMENT class (class_name, configuration)>
-
-<!ELEMENT class_name (#PCDATA)>
-<!ELEMENT configuration (#PCDATA)>
-
