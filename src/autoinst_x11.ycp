@@ -1,0 +1,117 @@
+/**
+ * File:	clients/autoinst_x11.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	X11 Settings
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Mode";
+    Mode::config = true;
+
+
+    import "Wizard";
+    import "Summary";
+
+    include "wizard/sequencer.ycp";
+   
+    include "ui/common_messages.ycp";
+    
+
+    
+    list args = WFM::Args ();
+
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( WFM::Args (0), map ) )
+    {
+	y2error ("Bad argument: %1", WFM::Args (0));
+	return false;
+    }
+
+    map settings = $[];
+    {
+	integer i = 0;
+	while (i < size (WFM::Args()))
+	{
+	    if (is (WFM::Args (i), map) && nil != WFM::Args (i))	settings = WFM::Args (i);
+	    i = i + 1;
+	}
+    }
+
+    y2milestone("Imported: (%1)", settings);
+    map x11 = settings;
+    include "autoinstall/x11_dialogs.ycp";
+    
+    define Summary() ``{
+	string summary = "";
+	return summary;
+    }
+
+    
+    define set_contents()
+	``{
+	string caption = _("X11 Options");
+	term contents =
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), Summary()),
+		  `VSpacing(0.5),
+		  `HBox(
+			`PushButton(`id(`configure), caption),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			),
+		  `VSpacing(1)
+		  );
+	Wizard::SetContents(caption,
+			    contents, "", true, true);
+    }
+    map dialogs = $[
+		    "x11"		:	``(   x11Options(settings) )
+		   
+    ];
+
+
+    map sequence = $[
+		     "ws_start"	: "x11",
+		     "x11"	:
+		     $[
+		       `abort	: `abort,
+		       `next	: `ws_finish
+		     ]
+    ];
+
+
+    set_contents();
+    any result = nil;
+    any ret = nil;
+    repeat {
+	ret = UI::UserInput();
+	if (ret == `configure)
+	{
+
+	    Wizard::CreateDialog ();
+	    result =  WizardSequencer (dialogs, sequence);
+	    UI::CloseDialog ();
+
+	    if (result == `next || result == `finish )
+	    {
+		settings = x11;
+	    }
+	    set_contents();
+	}
+	else if ( ret == `reset)
+	{
+	    settings = $[];
+	    set_contents();
+	}
+    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+
+    return [ret, settings];
+}
