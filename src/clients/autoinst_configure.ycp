@@ -114,7 +114,7 @@ Please wait while the system is being configured.
 			if (size(result) > 0 )
 		       logStep( sformat (_("Configuring %1"), p));
 			else
-		       logStep( sformat (_("Not configuring %1"), p));
+		       logStep( sformat (_("Not Configuring %1"), p));
 
 		    Call::Function(module_auto, ["Import", eval(result) ]);
 		    Call::Function(module_auto, ["Write", eval(result) ]);
@@ -125,7 +125,7 @@ Please wait while the system is being configured.
 			if (size(Profile::Flat[resource]:$[]) > 0 )
 		       logStep( sformat (_("Configuring %1"), p));
 			else
-		       logStep( sformat (_("Not configuring %1"), p));
+		       logStep( sformat (_("Not Configuring %1"), p));
 		    Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
 		    Call::Function(module_auto, ["Write", eval(Profile::Flat[resource]:$[])  ]);
 		}
@@ -134,7 +134,7 @@ Please wait while the system is being configured.
 			if (size(Profile::Flat[resource]:[]) > 0 )
 		       logStep( sformat (_("Configuring %1"), p));
 			else
-		       logStep( sformat (_("Not configuring %1"), p));
+		       logStep( sformat (_("Not Configuring %1"), p));
 
 		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:[]));
 		    Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
