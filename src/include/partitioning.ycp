@@ -1120,13 +1120,18 @@ physical volumes which belong to this group."), vgname));
 	    
 	    if (AutoinstRAID::OldAvailable)
 	    {
-		foreach( `md, AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[], ``{
+		list mds = AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[];
+		list new_mds = maplist( `md, mds ,``{
 		    
 		    if ( use == "all" && dev == md["device"]:"" )
 		    {			 			 
 			 md["delete"] = true;
 		    }
+		    return (md);
 		});
+		map allmds =  AutoinstRAID::ExistingRAID["/dev/md"]:$[];
+		allmds["partitions"]	= new_mds;
+		AutoinstRAID::ExistingRAID["/dev/md"] = allmds;
 	    }
 
 	    
@@ -1135,8 +1140,8 @@ physical volumes which belong to this group."), vgname));
 	    device["device"] 	= dev;
 	    
 	    string chunk_size = "4";  
-	  
-	    raid_type	= device["raid_type"]:"raid1";	  	    
+	    map options = device["raid_options"]:$[];	    
+	    string raid_type	= options["raid_type"]:"raid1";	  	    
 
 	    if ( raid_type == "raid5" )
 	    {
@@ -1147,7 +1152,7 @@ physical volumes which belong to this group."), vgname));
 		chunk_size = "32";
 	    }
 
-	    map options = device["raid_options"]:$[];
+	   
 	    
 	    string sel_chunksize = options["chunk_size"]:"";
 
@@ -1166,8 +1171,15 @@ physical volumes which belong to this group."), vgname));
 	    device["nr"] = device["partition_nr"]:"0";
 
 
-	   
-	    device["fsid"]		= device["partition_id"]:Partitions::fsid_native;
+
+	    if (device["lvm_group"]:"" != "")
+	    {
+		device["fsid"]		= Partitions::fsid_lvm;
+	    }
+	    else
+	    {
+		device["fsid"]		= device["partition_id"]:Partitions::fsid_native;
+	    }
 	    device["region"]		= [0 , 1];
 
 	    if (!haskey(device, "create"))
@@ -1183,9 +1195,12 @@ physical volumes which belong to this group."), vgname));
 		device["format"]	= false;
 	    }
 
-	    symbol selected_fs	= AutoinstStorage::StringFS2Symbol(device["filesystem"]:"");
-
-	    device["used_fs"]		= selected_fs;
+	    if (device["format"]:false)
+	    {
+		symbol selected_fs	= AutoinstStorage::StringFS2Symbol(device["filesystem"]:"");
+		device["used_fs"]	= selected_fs;
+	    }
+	    
 	    device["type"]		= `sw_raid;
 
 
@@ -1209,9 +1224,14 @@ physical volumes which belong to this group."), vgname));
 	list allraid = [];
 	
 	if (size (AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[]) > 0 )
+	{
+	    y2milestone("Existing RAID: %1", AutoinstRAID::ExistingRAID);
 	    allraid = union (AutoinstRAID::ExistingRAID["/dev/md", "partitions"]:[], RaidList );
+	}
 	else
+	{
 	    allraid =  RaidList;
+	}
 	
 	map RaidMap = $[ "/dev/md" :
 			 $[

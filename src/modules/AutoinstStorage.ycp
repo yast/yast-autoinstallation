@@ -156,7 +156,9 @@
 		    device = dev;
 		}
 		if (contains(physical_devices, device))
+		{
 		    configured_devices=add(configured_devices, device);
+		}
 		
 		return ( [device , drive ] );
 	    }
@@ -166,20 +168,32 @@
 	    {
 		device = Storage::GetPartDisk();
 		first_set = true;
+		
 		if (contains(physical_devices, device))
-		configured_devices=add(configured_devices, device);
+		{
+		    configured_devices=add(configured_devices, device);
+		}
 		
 		return ( [device , drive ] );
 	    }
 	    else if (drive["device"]:"" != "")
 	    {
 		if (contains(physical_devices, drive["device"]:""))
-		configured_devices=add(configured_devices, drive["device"]:"");
+		{
+		    configured_devices=add(configured_devices, drive["device"]:"");
+		}
 		
 		return([drive["device"]:"", drive ]);
 	    }
 
 	});
+
+	// Add MD devices as well
+	
+	if (haskey(targetMap, "/dev/md"))
+	{
+	     configured_devices=add(configured_devices, "/dev/md");
+	}
 
 
 	y2milestone("New Auto-Install tagetMap=%1", targetMap);
