@@ -35,7 +35,8 @@
 	{
 	    y2milestone("XML Post installation data found: %1", AutoinstConfig::autoconf_file );
 	    ret = Profile::ReadXML (   AutoinstConfig::autoconf_file  );
-	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", AutoinstConfig::autoconf_file, AutoinstConfig::cache));
+	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2",
+                        AutoinstConfig::autoconf_file, AutoinstConfig::cache));
 	    return (ret);
 	}
 	else
