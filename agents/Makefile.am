@@ -2,7 +2,10 @@
 # Makefile.am for y2c_autoinst/agents
 #
 
-agent_SCRIPTS = ag_yast1sel
+agent_SCRIPTS = \
+	ag_yast1sel \
+	ag_ksimport
+
 scrconf_DATA = $(wildcard *.scr)
 
 fillupdir = /var/adm/fillup-templates/
