@@ -41,8 +41,13 @@
 >
 <!ELEMENT option_str (#PCDATA)>
 <!ELEMENT option_value (#PCDATA)>
-<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format, fs_options?, fstopt?, label?, mount, mountby?, partition_id, size)>
+<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, label?, mount, mountby?, partition_id?, partition_nr?, partitions_type?, size)>
 <!ELEMENT partition_id (#PCDATA)>
+<!ELEMENT partition_nr (#PCDATA)>
+<!ATTLIST partition_nr
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT partition_type (#PCDATA)>
 <!ATTLIST partition_id
 	config:type CDATA #REQUIRED
 >
