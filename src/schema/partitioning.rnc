@@ -1,0 +1,117 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace config = "http://www.suse.com/1.0/configns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+partitioning =
+  element partitioning {
+    LIST,
+    drive+
+  }
+drive =
+  element drive {
+    device?, initialize?, is_lvm_vg?, partitions?, pesize?, use?
+  }
+initialize =
+  element initialize { BOOLEAN }
+is_lvm_vg =
+  element is_lvm_vg { BOOLEAN }
+partitions =
+  element partitions {
+    LIST,
+    partition+
+  }
+y2_partition =
+  create
+  | crypt
+  | crypt_fs
+  | crypt_key
+  | filesystem
+  | format
+  | fs_options
+  | fstopt
+  | grow
+  | label
+  | loop_fs
+  | lv_name
+  | lvm_group
+  | maxsize
+  | mount
+  | mountby
+  | noauto
+  | partition_id
+  | partition_nr
+  | partition_type
+  | raid_name
+  | raid_type
+  | region
+  | size
+partition = element partition { y2_partition* }
+noauto =
+  element noauto { BOOLEAN }
+create =
+  element create { BOOLEAN }
+crypt = element crypt { text }
+crypt_fs =
+  element crypt_fs { BOOLEAN }
+crypt_key = element crypt_key { text }
+# <!ELEMENT device (#PCDATA)>  : redefined
+filesystem =
+  element filesystem { SYMBOL }
+format =
+  element format { BOOLEAN }
+fs_options =
+  element fs_options {
+    opt_blocksize?,
+    opt_block_size?,
+    opt_bytes_per_indoe?,
+    opt_format?,
+    opt_hash?,
+    opt_inode_align?,
+    opt_max_inode_space?,
+    opt_raid?,
+    opt_reserved_blocks?
+  }
+opt_block_size = element opt_block_size { option_str, option_value }
+opt_blocksize = element opt_blocksize { option_str, option_value }
+opt_bytes_per_indoe =
+  element opt_bytes_per_indoe { option_str, option_value }
+opt_format =
+  element opt_format { option_blank, option_str, option_value }
+opt_hash = element opt_hash { option_blank, option_str, option_value }
+opt_inode_align = element opt_inode_align { option_str, option_value }
+opt_max_inode_space =
+  element opt_max_inode_space { option_str, option_value }
+opt_raid = element opt_raid { option_str, option_value }
+opt_reserved_blocks =
+  element opt_reserved_blocks { option_str, option_value }
+fstopt = element fstopt { text }
+grow =
+  element grow { BOOLEAN }
+label = element label { text }
+loop_fs =
+  element loop_fs { BOOLEAN }
+mount = element mount { text }
+mountby =
+  element mountby { SYMBOL }
+option_blank =
+  element option_blank { BOOLEAN }
+option_str = element option_str { text }
+option_value = element option_value { text }
+# <!ELEMENT lvm_group (#PCDATA)>
+raid_name = element raid_name { text }
+raid_type = element raid_type { text }
+partition_nr =
+  element partition_nr { INTEGER }
+partition_type = element partition_type { text }
+partition_id =
+  element partition_id { INTEGER }
+region =
+  element region {
+    LIST,
+    region_entry+
+  }
+region_entry =
+  element region_entry { INTEGER }
+size = element size { text }
+maxsize = element maxsize { text }
+use = element use { text }
