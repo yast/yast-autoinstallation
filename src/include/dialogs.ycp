@@ -7,7 +7,7 @@
  */
 {
     textdomain "autoinst";
-    
+
     include "ui/file_popups.ycp";
 
     /**
@@ -27,7 +27,7 @@
 					    `Bottom(`PushButton(`id(`opendir), _("&Select Directory")))
 					    )
 				      )
-				),		       
+				),
 		       `VSquash(`HBox(
 
 				      `TextEntry(`id(`classdir), _("&Class directory:"), AutoinstConfig::classDir),
@@ -79,7 +79,9 @@ contains all the packages.</p>
 	Wizard::SetContents(_("Preferences"),
 			    contents, help , true, true);
 
-
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel());
+	
 	boolean changed = false;
 	any ret = "";
 	repeat {
@@ -126,7 +128,7 @@ contains all the packages.</p>
 		}
 		continue;
 	    }	    
-	    else if ( ret==`accept)
+	    else if ( ret == `next)
 	    {
 		if (AutoinstConfig::Repository != new_rep)
 		{
@@ -151,7 +153,7 @@ contains all the packages.</p>
 		}
 	    }	   
 
-	} until (ret == `cancel ||  ret == `accept || contains(menuitems, ret));
+	} until (ret == `back ||  ret == `next || contains(menuitems, ret));
 	
 	Wizard::RestoreScreenShotName ();
 	if ( changed  )

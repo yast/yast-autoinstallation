@@ -1044,7 +1044,9 @@ to contain a minimal installation.");
 	y2milestone("Targets: %1", Storage::GetTargetMap());
     }
 
-
+    /**
+     * Racalculate sizes
+     */
     global define void recalculateSizes ( list region )
 	``{
 	integer totalsize = size_of_region (region);
@@ -1063,44 +1065,106 @@ to contain a minimal installation.");
 	boolean grow = false;
 	integer min = 0;
 	integer max = 0;
-
+	string mount_point = "";
+	integer ratio = 0;
+	boolean region_active = false;
 	boolean grow_possible  = true;
 	
 	foreach(map part, auto_partitions, ``{	    
 	    if (size(part["region"]:[]) == 0 )
 	    {
 		psize = part["size"]:"";
-		maxsize =  part["maxsize"]:"";
+		mount_point = part["mount"]:"";
+		ratio = part["ratio"]:0;
+		
+		if (part["maxsize"]:"" != "")
+		{
+		    maxsize = kmgt_str_to_byte(part["maxsize"]:"");
+		}
+		
 		grow =  part["grow"]:false;
 	    }
 	    else
 	    {
-		 grow_possible  = false;
+		realsize = size_of_region (part["region"]:[] );
+		region_active = true;
 	    }
-	    
-	    if ( psize != "" && psize!="auto" && psize != "max" )
+
+	    if (psize == "auto")
+	    {
+		if (mount_point == "/boot")
+		{
+		    realsize = size_of_boot;
+		}
+		else if  (mount_point == "swap")
+		{
+		    realsize = size_of_swap;
+		}
+	    }
+	    else if ( psize != "" && psize != "max" )
 	    {
 		realsize = kmgt_str_to_byte(psize);	    
 	    }
+	    else if (ratio != 0 )
+	    {
+		integer tmp_size = totalsize * ( ratio / 100);
+		if (maxsize > 0 )
+		    realsize = maxsize;
+		else
+		    realsize = tmp_size;
+	    }
+	    else if (!region_active )
+	    {
+		realsize = 0;
+	    }
+	    
 
-	    min = realsize + min;
+	    min = min + realsize;
 	    max = max + maxsize;
+	    region_active = false;
+	    maxsize = 0;
+	    realsize = 0;
 	});
 
+	
+	y2milestone("Minimal size: %1 - Maximal size: %2", min, max);
+
 	if (min < totalsize) {
-	    y2milestone("Using default sizes possible");
+	    y2milestone("Using default sizes is possible");
 	}
 	else
 	{
 	    y2milestone("Not enough space for default size!");
 	}
 
-	if (max < totalsize) {
-	    y2milestone("Using maximal growabe  sizes possible");
+	if (max < totalsize )
+	{
+	    y2milestone("Using maximal growable sizes is possible");
+	    integer  number_of_partitions = size( auto_partitions );
+	    integer i = 1;
+	    list npartitions = maplist(map part, auto_partitions, ``{
+		
+		if ( part["maxsize"]:"" != "" && part["grow"]:false )
+		{
+		    part["size"] =  part["maxsize"]:"";
+		}
+		else if ( part["maxsize"]:"" == "" && part["grow"]:false && i == number_of_partitions)
+		{
+		    part["size"] = "max";
+		}
+	
+		y2debug ("counter: %1, partitions: %2", i,  number_of_partitions);
+		i = i + 1;
+		return (part);
+	    });
+	    y2milestone("Partitions with new sizes: %1", npartitions);
+	    map drive = AutoinstStorage::targetMap[target_is]:$[];
+	    drive["partitions"] = npartitions;
+	    AutoinstStorage::targetMap[target_is] = drive;
 	}
 	else
 	{
-	    y2milestone("Grow not possible");
+	    y2milestone("Growing not possible");
 	}
 
 	
@@ -1109,7 +1173,7 @@ to contain a minimal installation.");
     
 
     /**
-     * Caclculate new Region
+     * Calculate new Region
      * @param map partition map
      * @param list region list
      * @return list new region
@@ -1147,6 +1211,7 @@ to contain a minimal installation.");
 	    else {
 		units = end_of_region (selected_region) - end_of_region (region);
 	    }
+	    
 	}
 	else if (psize == "max")
 	{
@@ -1204,11 +1269,15 @@ to contain a minimal installation.");
      */
     global define integer InitDevice(string del_device)
 	``{
-
-	string zero_string = sformat( "/bin/dd if=/dev/zero of=%1 bs=2k count=100", del_device );
-	integer ret_zero   = SCR::Execute(.target.bash, zero_string );
-	integer ret_reread = SCR::Execute(.target.bash, sformat("/sbin/blockdev --rereadpt %1", del_device ));
-	y2milestone( "Partitiontable of device %1 deleted (%2-%3)", del_device, ret_zero, ret_reread);
+	integer ret_zero = 0 ;
+	integer ret_reread = 0 ;
+	if (!Mode::test )
+	{
+	    string zero_string = sformat( "/bin/dd if=/dev/zero of=%1 bs=2k count=100", del_device );
+	    ret_zero   = SCR::Execute(.target.bash, zero_string );
+	    ret_reread = SCR::Execute(.target.bash, sformat("/sbin/blockdev --rereadpt %1", del_device ));
+	    y2milestone( "Partitiontable of device %1 deleted (%2-%3)", del_device, ret_zero, ret_reread);
+	}
 	return (ret_zero + ret_reread);
     }
 

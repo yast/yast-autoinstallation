@@ -337,20 +337,32 @@
 		    boolean exit_after = false;
 		    if (ret == `menu_reps)
 		    {
-			Wizard::RestoreHelp("");
-			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-			ret = Preferences();
-			CreateTreeWidget();
+			Wizard::CreateDialog();	
+			Preferences();
+			Wizard::CloseDialog();	
 		    }	
 		    else if ( ret == `menu_alice)
 		    {
 			y2milestone("Importing ALICE data");
-			include "autoinstall/imports.ycp";
-			Wizard::CreateDialog();	
-						
-			ret = aliceImportList();
-			Wizard::CloseDialog();	
-			CreateTreeWidget();		    
+			// verify that needed packages are installed
+			import "Require";
+			import "Mode";
+			Mode::config = false;
+			// notification 1/2
+			string pkgmsg =  _("<p>The following package is needed for importing ALICE data:<b> %1</b></p>");
+			pkgmsg = pkgmsg + _("<p>Do you want to install it now?</p>");
+			
+			boolean reqret = Require::RequireAndConflictTarget(["alice-compat"], [], pkgmsg );
+
+			Mode::config = true;
+			if (reqret )
+			{
+			    include "autoinstall/imports.ycp";
+			    Wizard::CreateDialog();							
+			    aliceImportList();			
+			    Wizard::CloseDialog();
+			}
+			
 		    }
 		    else if ( ret == `menu_classes)
 		    {
