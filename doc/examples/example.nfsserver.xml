@@ -1,0 +1,27 @@
+	<example>
+	  <title>
+	    Network configuration: NFS server
+	  </title>
+	  <screen>
+<![CDATA[
+....
+  <configure>
+....
+    <nfs_server>
+      <nfs_exports config:type="list">
+        <nfs_export>
+          <allowed config:type="list">
+            <allowed_clients>192.168.1.0/255.255.255.0(ro,root_squash,sync)</allowed_clients>
+          </allowed>
+          <mountpoint>/test</mountpoint>
+        </nfs_export>
+      </nfs_exports>
+      <start_nfsserver config:type="boolean">true</start_nfsserver>
+    </nfs_server>
+....
+  </configure>
+...
+
+]]>
+	  </screen>
+	</example>
