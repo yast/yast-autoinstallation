@@ -78,16 +78,16 @@ Please wait while the system is being configured.
 		if (d["AutoinstDataType"]:"map" == "map")
 		{
 		    if (d["AutoinstPath"]:"configure" == "install")		
-			result = CallModule(module_write, [eval(AutoInstall::Install[resource]:$[])]);		
+			result = WFM::CallModule(module_write, [eval(AutoInstall::Install[resource]:$[])]);		
 		    else				    
-			result = CallModule(module_write, [eval(AutoInstall::Configure[resource]:$[])]);	   	
+			result = WFM::CallModule(module_write, [eval(AutoInstall::Configure[resource]:$[])]);	   	
 		}
 		else
 		{
 		    if (d["AutoinstPath"]:"configure" == "install")				    
-			result = CallModule(module_write, [AutoInstall::Install[resource]:[]]);		
+			result = WFM::CallModule(module_write, [AutoInstall::Install[resource]:[]]);		
 		    else				  
-			result = CallModule(module_write, [AutoInstall::Configure[resource]:[]]);		
+			result = WFM::CallModule(module_write, [AutoInstall::Configure[resource]:[]]);		
 		}
 	    }
 	}
