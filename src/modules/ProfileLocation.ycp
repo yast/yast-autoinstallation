@@ -153,6 +153,7 @@
     global define boolean Process() ``{
 
 	boolean ok = false;
+	boolean ret = false;
 	y2milestone("Path to remote control file: %1", filepath);
 
 	string localfile  =  AutoInstall::xml_tmpfile;
@@ -160,10 +161,11 @@
 	boolean is_directory = false;
 	
 	string filename = basename(filepath);	
-	y2milestone("Filename=%1", filename);
-	boolean ret = false;
+
+	
 	if ( filename != "" )
 	{
+	    y2milestone("File=%1", filename);
 	    while (true)
 	    {
 		ret = Get(scheme, host, filepath, localfile);
@@ -178,40 +180,68 @@
 		    else
 			continue;
 		}
-	    }
-
-	    directory = dirname(filepath);
+	    }	    
 	}
 	else
-	{
-	    directory = dirname(filepath);
+	{	    	  	    
 	    is_directory = true;
 	}
 	
-
-	y2milestone("filename: %1", filename);
-	y2milestone("directory: %1", directory);
-
+	directory = dirname(filepath);
+	y2milestone("Dir=%1", directory);
 	y2milestone("Fetching Rules File");
 	
 	// Get rules file	
-	boolean ret = Get(scheme,
+	ret = Get(scheme,
 			  host,
 			  directory + "/" +  AutoInstallRules::remote_rules_location ,
 			  AutoInstallRules::local_rules_file);
 	
-	if (!ret)
+	if (ret)
 	{
-	    AutoInstallRules::userrules = false;
-	    SCR::Execute(.target.remove, AutoInstallRules::local_rules_file );
+	    AutoInstallRules::userrules = true;	
 	}
 	else
 	{
-	    AutoInstallRules::userrules = true;
+	    AutoInstallRules::userrules = false;
+	    SCR::Execute(.target.remove, AutoInstallRules::local_rules_file );	    
 	}
 
-	
-	if ( !AutoInstallRules::userrules )
+
+	boolean process_rules = true;
+
+	if ( AutoInstallRules::userrules )
+	{
+	    y2milestone("Reading Rules File");
+	    AutoInstallRules::Read();
+	     
+	    ret = AutoInstallRules::GetRules();
+	    if (!ret && filename == "")
+	    {
+		boolean first = true;
+		process_rules = false;		
+		while (true)
+		{
+		    if (!first)
+		    {
+			ret = Get(scheme, host, filepath, localfile);			
+		    }
+		    first = false;
+		    if (ret)
+		    {
+			break;
+		    }
+		    else
+		    {
+			if (ProfileSourceDlg() == `abort)
+			    return false;
+			else
+			    continue;
+		    }		   
+		}	    
+	    }	    
+	}	
+	else
 	{
 	    y2milestone("Creating default Rules");
 	    if (is_directory)
@@ -223,13 +253,42 @@
 	    {
 		// Create rules for file
 		AutoInstallRules::CreateFile( filename );	    
-	    }	
+	    }
+	    ret = AutoInstallRules::GetRules();
+	    if (!ret)
+	    {
+		boolean first = true;
+		process_rules = false;		
+		while (true)
+		{
+		    if (!first)
+		    {
+			ret = Get(scheme, host, filepath, localfile);			
+		    }
+		    first = false;
+		    if (ret)
+		    {
+			break;
+		    }
+		    else
+		    {
+			if (ProfileSourceDlg() == `abort)
+			    return false;
+			else
+			    continue;
+		    }		   
+		}	    
+	    }	    
 	}
-	else
+
+	if (process_rules)
 	{
-	    y2milestone("Reading Rules File");
-	    AutoInstallRules::Read();
+	    boolean rulesret = AutoInstallRules::Process( AutoInstall::xml_tmpfile);
+	    y2milestone("rulesret=%1", rulesret);
+	    return rulesret;
 	}
+
+	return true;
     }
 
 

@@ -127,7 +127,12 @@ Please wait while the system is prepared for autoinstallation.
 
     Progress::NextStage();
     AutoinstStorage::Import( [ Profile::Flat["partitioning"]:[],   Profile::Flat["lvm"]:[],  Profile::Flat["raid"]:[]]) ;
-    AutoinstStorage::Write();
+    
+    if (!AutoinstStorage::Write())
+    {
+	y2error("Aborting...");
+	return `abort;
+    }
     
 
     // Software
@@ -139,6 +144,7 @@ Please wait while the system is prepared for autoinstallation.
 	Report::Error(_("Error while configuring software selections.
 Try again.
 "));
+	y2error("Aborting...");
 	return `abort;
     }
 
