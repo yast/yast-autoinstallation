@@ -37,9 +37,9 @@
     </para>     
     <para>
       Make sure the configuration system is installed (package
-      <emphasis>yast2-config-autoinst</emphasis> and call it using the <emphasis>YaST2 Control
+      <emphasis>autoyast2</emphasis> and call it using the <emphasis>YaST2 Control
 	Center</emphasis> or call it directly as root with the
-      following command (make sure the DISPLAY variable is set correctly to
+      following command (make sure the <emphasis>DISPLAY</emphasis> variable is set correctly to
       start the graphical user interface instead of the text based one):
     </para>
     <screen>
@@ -105,26 +105,26 @@
       Auto-installing a loose system
     </title>
     <para>
-      The best way to auto-install one system  without any network connection
+      The best way to auto-install a system  without any network connections
       is by using the standard CDs that come with the  &company-suse;  Linux box. Using the
       CDs in combination with the a floppy disk can let you get started with
-      AutoYaST very fast and without spending much time configuring server
-      environment and network.
+      &autoyast2; very fast and without spending much time configuring server
+      and network environments.
     </para>
     <para>
-      As it will be discussed in the following chapters, you need to prepare a
-      floppy disk with a profile file containing all data needed for &yast2; to
+      As it will be discussed in the following chapters, you will need to prepare a
+      floppy disk with a control file containing all data needed for &yast2; to
       complete the auto-installation process.
     </para>
     <para>
       Create the control file as described in the <link
 	linkend="gettingStarted.createProfile">previous</link> section and
-      name it <filename>autoinst.xml</filename>. Copy
-      <filename>autoinst.xml</filename> to the floppy by either mounting the
+      name it <filename>autoinst.xml</filename>. Copy the file
+      <filename>autoinst.xml</filename> to a floppy by either mounting the
       floppy or by using the <emphasis>mtools</emphasis>.
     </para>
     <screen>
-      mcopy autoinst.xml a:
+mcopy autoinst.xml a:
     </screen>
 
   </sect1>
@@ -141,21 +141,24 @@
     <sect2>
       <title>Setting up an installation repository</title>
       <para>
-	The server can server  as a configuration repository. The clients will need to access
+	A system can be setup to serve as a configuration repository. The clients will access
 	the server resources in order to boot, install packages and so on. To
 	achieve this, various network services must be properly set up.
       </para>
       <para>
-	The installation server exports the  &company-suse;  Linux distribution's files
+	The installation server should export the  &company-suse;  Linux distribution's files
 	via &nfs;. Create a directory on a filesystem with enough free space
 	(several gigabytes) and copy the contents of the CDs into this
 	directory. This directory is then to be exported via
-	&nfs; (via an appropriate entry in <filename>/etc/exports</filename>).
+	&nfs; (via an appropriate entry in
+	<filename>/etc/exports</filename>). The following steps describe how to
+	create an installation repository:
+	
       </para>
       <para>
 	Login on the machine designated as installation server and create a
 	directory to hold the  &company-suse;  Linux distribution files,
-	eg.<filename> /usr/local/SuSE/current</filename>. 
+	i.e. <filename> /usr/local/SuSE/current</filename>. 
       </para>
       <para>
 	In our example <filename>/usr/local/SuSE/current</filename> is the base directory for the  &company-suse;  Linux
@@ -165,17 +168,19 @@
 	keyword. (i.e. <emphasis>install=nfs://192.168.1.1/usr/local/SuSE/current</emphasis>)
       </para>
       <para>
-	Next copy the files from the all CDs into the
+	Now copy the files from  all CDs into the
 	<emphasis>current</emphasis> directory or just copy those CDs
 	required for the installation. Make sure that all packages needed for
-	the installation are copied. Make sure the dot files on the CD-ROM are
-	also copied which server as identification of the media)
+	the installation are copied. Make sure the dot files in the root
+	directory of  the CD-ROM are
+	also copied, these files serve as identification of the installation
+	media. Use the following command to copy the CDs.
 
       </para>
       <screen>
-	mount /cdrom
-	cd /cdrom && cp -va . /usr/local/SuSE/current ; cd -
-	umount /cdrom
+mount /cdrom
+cd /cdrom && cp -va . /usr/local/SuSE/current ; cd -
+umount /cdrom
       </screen>
       <para>
 	Repeat this sequence for all other CDs. The directory
@@ -187,13 +192,13 @@
 	    The contents of all CDs is copied into one directory and thus
 	    creating single directory structure with a
 	    subdirectory <emphasis>suse</emphasis> which included all the
-	    package groups. This type of structure is recommended as it
+	    packages. This type of structure is recommended as it
 	    is easier to manage and will provide a true, single source
 	    installation medium.
 	  </para>
 	  <para>
 	    To make the directory look like a single medium for the client,
-	    you can modify the package database available on the CDs by
+	    you can modify the package database available on the first CD by
 	    replacing the reference to the different CDs to one single CD,
 	    which is in our case CD number 1.
 	  </para>
@@ -203,9 +208,9 @@
 	    <filename>suse/setup/descr</filename>:
 	  </para>
 	  <screen>
-	    cd /usr/local/SuSE/current/suse/setup/descr
-	    perl -pi -e 's/InstPath:\t0[2|3|4|5|6|7]/InstPath:\t01/' common.pkd
-	    cd -
+cd /usr/local/SuSE/current/suse/setup/descr
+perl -pi -e 's/InstPath:\t0[2|3|4|5|6|7]/InstPath:\t01/' common.pkd
+cd -
 	  </screen>
 	</listitem>
 	<listitem>
@@ -226,7 +231,7 @@
 	&nfs; server module.
       </para>
       <para>
-	Additionally, you need to modify the following services to start every
+	Additionally, you need to make the following services  start every
 	time the system boots.
       </para>
       <itemizedlist>
@@ -245,7 +250,7 @@
     <sect2>
       <title>Setting up  a configuration repository</title>
       <para>
-	A configuration repository holds the control file for multiple
+	A configuration repository holds the control files for multiple
 	machines. The control files can have any file names, which have to
 	specified at the boot time of a client. To avoid supplying the
 	profile name for every client, you can only define the directory of
@@ -253,7 +258,7 @@
 	to load a file with a name matching it's IP address in hex
 	mode. (See <link linkend="Invoking.HTTP"
 	  endterm="Invoking.HTTP.title"> </link>). This has the advantage that you will be dealing with
-	consistent file names rather than IPs as filenames which might lead to
+	consistent file names rather than IPs as file names which might lead to
 	some confusion.
       </para>
       <para>
@@ -278,7 +283,7 @@
 	<para>
 	  Create a directory and make it available via &nfs; to the clients by
 	  exporting it. This directory may for example be in the same place
-	  where you have copied the CDs. (<filename>/usr/local/SuSE</filename>)
+	  where you have copied the CDs. (i.e. <filename>/usr/local/SuSE</filename>)
 	</para>
       </sect3>
       <sect3>

@@ -381,14 +381,15 @@
 	device and use  &dhcp;  to to configure the Ethernet device.
       </para>
     </sect2>
-    
-    <sect2>
-      <title>
-	Control file retrievable via TFTP.
+
+    <sect2 id="Invoking.HTTP">
+      <title id="Invoking.HTTP.title">
+	Control file retrievable via HTTP.
       </title>
+    
       <para>
-	To use TFTP set the boot command line variable <emphasis>autoyast</emphasis>
-	with control file location using the tftp protocol.  It is
+	To use HTTP set the boot command line variable <emphasis>autoyast</emphasis>
+	with control file location using the <emphasis>http</emphasis> protocol.  It is
 	possible to specify the location of the control file using the following
 	methods:
       </para>
@@ -397,7 +398,7 @@
 	  <para>
 	    Specify the exact location of the control file:
 	    <screen>
-autoyast=tftp://192.168.1.1/control-files/client01.xml
+autoyast=http://192.168.1.1/control-files/client01.xml
 	    </screen>
 	  </para>
 	</listitem>
@@ -406,7 +407,7 @@ autoyast=tftp://192.168.1.1/control-files/client01.xml
 	    Specify a directory where several control files are located
 	  </para>
 	  <screen>
-autoyast=tftp://192.168.1.1/control-files/
+autoyast=http://192.168.1.1/control-files/
 	  </screen>
 	  <para>
 	    In this case the relevant control file is retrieved using the hex digit
@@ -416,7 +417,7 @@ autoyast=tftp://192.168.1.1/control-files/
       </orderedlist>
       <para>	
 	If only the pathprefix variable is defined, &yast2; will fetch the
-	control file from the TFTP server in the following way:
+	control file from the HTTP server in the following way:
       </para>
       <orderedlist numeration="arabic">
 	<listitem>
@@ -435,7 +436,7 @@ autoyast=tftp://192.168.1.1/control-files/
 	</listitem>
       </orderedlist>
       <para>
-	As an example, for 192.0.2.91, TFTP will try
+	As an example, for 192.0.2.91, the HTTP client will try
 	<emphasis>C000025B</emphasis>, <emphasis>C000025</emphasis>,
 	<emphasis>C00002</emphasis>,<emphasis>C0000</emphasis>,
 	<emphasis>C000</emphasis>, <emphasis>C00</emphasis>,
@@ -455,14 +456,27 @@ myhost # /usr/sbin/gethostip 10.10.0.1
 	</screen>
       </example>
     </sect2>                    
-    <sect2 id="Invoking.HTTP">
-      <title id="Invoking.HTTP.title">
-	Control file retrievable via HTTP.
+
+
+
+
+
+
+   
+    <sect2>
+      <title>
+	Control file retrievable via TFTP.
       </title>
-      <para>
-	This option is similar to the former one using TFTP.
+    
+  <para>
+	This option is similar to the former one using HTTP.
       </para>
     </sect2>
+
+
+
+
+
    <sect2>
       <title>
 	Control file on a NFS server
