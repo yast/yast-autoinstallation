@@ -350,6 +350,8 @@
                 ret = UI::QueryWidget(`id(`wizardTree), `CurrentItem);
             }
             y2debug("INPUT: %1", ret);
+            if (ret == `cancel)
+                ret = "menu_exit";
 
             if (ret == `configure)
             {

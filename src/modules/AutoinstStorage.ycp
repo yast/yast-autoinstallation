@@ -7,11 +7,11 @@
  * $Id$
  */
 {
-
     module "AutoinstStorage";
     textdomain "autoinst";
 
     import "Storage";
+    import "RootPart";
     import "Partitions";
     import "FileSystems";
     import "Mode";
@@ -236,7 +236,6 @@
      */
     boolean handle_fstab()
     {
-        import "RootPart";
 
         if (!RootPart::didSearchForRootPartitions)
         {
