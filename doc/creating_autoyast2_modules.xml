@@ -3,91 +3,82 @@
 "/usr/share/xml/db41xml/docbookx.dtd"[]>
 
   <article>
-    <articleinfo>    
-      <title>AutoYaST Configuration Management System (CMS)</title>
-      <author>
-	<firstname>Anas</firstname>
-	<surname>Nashif</surname>
-      </author>    
-    </articleinfo>
-    <para>
-      AutoYaST2 CMS now has a new interface which enables adding modules in
-      execution time, depending on what modules are installed on the
-      System. To enable this functionality, the various YaST2 run-time modules
-      have to be adapted. CMS code that dealt with the different modules has
-      moved to the run-time modules to keep such parts of the code in sync with
-      the development being done on these modules.
-    </para>
-    <section>
-      <title>Introduction</title>
-      <para>
-	The new plugin-like design has the following advantages:
-      </para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    New Run-time module can be integrated automatically in the CMS,
-	    thus new features in YaST2 mean new features in the auto-installer.
-	  </para>		  
-	</listitem> 
-	<listitem>
-
-	  <para>
-	    Only installed run-time modules are being offered in the CMS. This
-	    allows the integration of speciality run-time modules which are
-	    only present on business products for example.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Code which is relevant to one run-time configuration module is kept in one place
-	    instead of maintaining it in different modules.
-	  </para>
-	</listitem>
-      </itemizedlist>      
-    </section>
+  <articleinfo>    
+    <title>AutoYaST Configuration Management System</title>
+    <author>
+      <firstname>Anas</firstname>
+      <surname>Nashif</surname>
+    </author>    
+  </articleinfo>
   <section>
-    <title>The run-time module interface in CMS</title>
-    <para>The new interface (AKA _auto.ycp client) is now similar to the proposal
-      structure and consists of functions. All the dialog code has been moved to
+    <title>Introduction</title>
+    <para>
+      The plugin-like design has the following advantages:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  New Run-time module can be integrated automatically in AutoYaST,
+	  thus new features in YaST2 mean new features in the auto-installer.
+	</para>		  
+      </listitem> 
+      <listitem>
+	<para>
+	  Only installed run-time modules are offered and used to autoinstall
+	  the system. This  allows the integration of speciality run-time modules which are
+	  only present on business products for example.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Code which is relevant to one run-time configuration module is kept in one place
+	  instead of maintaining it in different modules.
+	</para>
+      </listitem>
+    </itemizedlist>      
+  </section>
+  <section>
+    <title>The run-time module interface in AutoYaST</title>
+    <para>The new interface (AKA _auto.ycp client) is similar to the proposal
+      structure and consists of functions that can be accessed using arguments. All the dialog code has been moved to
       autoyast to simplify the interface and to provide  a common user interface for
       all modules appearing in the autoyast configuration system.
     </para>
-      <para>
-	The interface of a run-time configuration module in the CMS has the follwoing
-	components:	
-      </para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    <emphasis>Summary Area,</emphasis>: Contains a summary of the consifguration with the
-	    values if available. If values where not configured, the phrase
+    <para>
+      The interface of a run-time configuration module in AutoYaST has the follwoing
+      components:	
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  <emphasis>Summary Area,</emphasis>: Contains a summary of the consifguration with the
+	  values if available. If values where not configured, the phrase
 	  <emphasis>'Not configured yet'</emphasis> is used, which is available from the summary module.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    <emphasis>Configuration Button</emphasis>: A button which calls the module in auto mode
-	    (<emphasis>&lt;module name&gt;_auto.ycp</emphasis>).
-	  </para>	  
-	</listitem>
-	<listitem>
-	  <para>
-	    <emphasis>Reset Button</emphasis>: A button for resetting the
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <emphasis>Configuration Button</emphasis>: A button which calls the module in auto mode
+	  (<emphasis>&lt;module name&gt;_auto.ycp</emphasis>).
+	</para>	  
+      </listitem>
+      <listitem>
+	<para>
+	  <emphasis>Reset Button</emphasis>: A button for resetting the
 	  configuration data. This will delete only data in the running module.
-	  </para>
-	</listitem>
-      </itemizedlist>
-      <para>
-	The summary area is filled with data from the <emphasis>Summary</emphasis> function in the
-	module controling the configuration. (i.e
-	<emphasis>NIS::Summary()</emphasis> in the NIS package).
-      </para>      
-    </section>
-    <section>
-      <title>Run-time modules in <emphasis>auto</emphasis> mode</title>
-      <para>
-	The &lt;module name&gt;_auto.ycp client accepts 2 arguments:
+	</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      The summary area is filled with data from the <emphasis>Summary</emphasis> function in the
+      module controling the configuration. (i.e
+      <emphasis>NIS::Summary()</emphasis> in the NIS package).
+    </para>      
+  </section>
+  <section>
+    <title>Run-time modules in <emphasis>auto</emphasis> mode</title>
+    <para>
+      The &lt;module name&gt;_auto.ycp client accepts 2 arguments:
     </para>
     <itemizedlist>
       <listitem>
@@ -101,8 +92,8 @@
 	</para>
       </listitem>      
     </itemizedlist>
-    <para>The following functions are needed to make any module work in autoyast:</para>
-  <itemizedlist>
+    <para>The following functions are needed to make any module work in AutoYaST:</para>
+    <itemizedlist>
       <listitem>
 	<para>
 	  <emphasis>Import:</emphasis></para>
@@ -114,40 +105,40 @@
 	<para>
 	  <emphasis>Summary:</emphasis></para>
 	<para>
-    To provide  a brief summary of the configuration.
-    Calls &gt;Module&lt;::Summary()
+	  To provide  a brief summary of the configuration.
+	  Calls &gt;Module&lt;::Summary()
 	</para>
       </listitem>
       <listitem>
 	<para>
 	  <emphasis>Reset:</emphasis></para>
 	<para>
-    Resets the configuration. It returns empty values but it also can return
-    default values, depending on the module.
+	  Resets the configuration. It returns empty values but it also can return
+	  default values, depending on the module.
 	</para>
       </listitem>
       <listitem>
 	<para>
 	  <emphasis>Change:</emphasis></para>
 	<para>
-    This function starts the widget sequence
+	  This function starts the widget sequence
 	</para>
       </listitem>
       <listitem>
 	<para>
 	  <emphasis>Write</emphasis></para>
 	<para>
-    Write the configuration without displaying any widgets and popups and
-    without restarting any services etc.
-    Calls &lt;Module&gt;::Write (and sets &lt;Module&gt;::write_only true)
+	  Write the configuration without displaying any widgets and popups and
+	  without restarting any services etc.
+	  Calls &lt;Module&gt;::Write (and sets &lt;Module&gt;::write_only true)
 	</para>
       </listitem>
       <listitem>
 	<para>
 	  <emphasis>Export:</emphasis></para>
 	<para>
-    Returns the current configuration
-    Calls &lt;Module&gt;::Export
+	  Returns the current configuration
+	  Calls &lt;Module&gt;::Export
 	</para>
       </listitem>     
       <listitem>
@@ -164,14 +155,14 @@
 	  <emphasis>remove</emphasis> are normally determined dynamically,
 	  depending on the configuration.
 	  
-	  </para>
+	</para>
 	<para>
 	  The function can either return a map directly or it can call a module
 	  function &lt;Module&gt;::AutoPackages().
 	</para>
       </listitem>      
     </itemizedlist>
-  
+    
     <para>
       The following example shows &lt;module name&gt;_auto.ycp with the changes
       needed for the new behaviour. 
@@ -179,99 +170,99 @@
     <example>
       <title>XXpkgXX_auto.ycp (XXpkgXX = module name)</title>
       <programlisting>
-<![CDATA[
-/**
- * @param function to execute
- * @param map/list of XXpkgXX settings
- * @return map edited settings, Summary or boolean on success depending on called function
- * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallFunction ("XXpkgXX_auto", [ "Summary", mm ]);
- */
+	<![CDATA[
+	/**
+	* @param function to execute
+	* @param map/list of XXpkgXX settings
+	* @return map edited settings, Summary or boolean on success depending on called function
+	* @example map mm = $[ "FAIL_DELAY" : "77" ];
+	* @example map ret = WFM::CallFunction ("XXpkgXX_auto", [ "Summary", mm ]);
+	*/
 
-{
+	{
 
-textdomain "XXpkgXX";
+	textdomain "XXpkgXX";
 
-y2milestone("----------------------------------------");
-y2milestone("XXPkgXX auto started");
+	y2milestone("----------------------------------------");
+	y2milestone("XXPkgXX auto started");
 
-import "XXPkgXX";
-include "XXpkgXX/wizards.ycp";
+	import "XXPkgXX";
+	include "XXpkgXX/wizards.ycp";
 
-any ret = nil;
-string func = "";
-map param = $[];
+	any ret = nil;
+	string func = "";
+	map param = $[];
 
-/* Check arguments */
-if(size(Args()) > 0 && is(Args(0), string)) {
-    func = WFM::Args(0);
-    if(size(Args()) > 1 && is(Args(1), map))
+	/* Check arguments */
+	if(size(Args()) > 0 && is(Args(0), string)) {
+	func = WFM::Args(0);
+	if(size(Args()) > 1 && is(Args(1), map))
 	param = WFM::Args(1);
-}
-y2debug("func=%1", func);
-y2debug("param=%1", param);
+	}
+	y2debug("func=%1", func);
+	y2debug("param=%1", param);
 
-/* Create a  summary*/
-if(func == "Summary") {    
-    ret = select(XXPkgXX::Summary(), 0, "");
-}
-else if (func == "Import") {
-    ret = XXPkgXX::Import($[]);
-    return ret ;
-}
+	/* Create a  summary*/
+	if(func == "Summary") {    
+	ret = select(XXPkgXX::Summary(), 0, "");
+	}
+	else if (func == "Import") {
+	ret = XXPkgXX::Import($[]);
+	return ret ;
+	}
 
-/* Reset configuration */
-else if (func == "Reset") {
-    XXPkgXX::Import($[]);
-    ret = $[];
-}
-/* Change configuration (run AutoSequence) */
-else if (func == "Change") {
-    ret = XXPkgXXAutoSequence();
-}
-/* Return required packages */
-else if (func == "Packages") {
-    ret = XXPkgXX::AutoPackags();
-}
-/* Return actual state */
-else if (func == "Export") {
-    ret = XXPkgXX::Export();
-}
-/* Write given settings */
-else if (func == "Write") {
-    import "Progress";
-    XXPkgXX::write_only = true;
-    Progress::off();
-    ret = XXPkgXX::Write();
-    Progress::on();
-    return ret;
-}
-/* Unknown function */
-else {
-    y2error("Unknown function: %1", func);
-    ret = false;
-}
+	/* Reset configuration */
+	else if (func == "Reset") {
+	XXPkgXX::Import($[]);
+	ret = $[];
+	}
+	/* Change configuration (run AutoSequence) */
+	else if (func == "Change") {
+	ret = XXPkgXXAutoSequence();
+	}
+	/* Return required packages */
+	else if (func == "Packages") {
+	ret = XXPkgXX::AutoPackags();
+	}
+	/* Return actual state */
+	else if (func == "Export") {
+	ret = XXPkgXX::Export();
+	}
+	/* Write given settings */
+	else if (func == "Write") {
+	import "Progress";
+	XXPkgXX::write_only = true;
+	Progress::off();
+	ret = XXPkgXX::Write();
+	Progress::on();
+	return ret;
+	}
+	/* Unknown function */
+	else {
+	y2error("Unknown function: %1", func);
+	ret = false;
+	}
 
-y2debug("ret=%1", ret);
-y2milestone("XXPkgXX auto finished");
-y2milestone("----------------------------------------");
+	y2debug("ret=%1", ret);
+	y2milestone("XXPkgXX auto finished");
+	y2milestone("----------------------------------------");
 
-return ret;
+	return ret;
 
-/* EOF */
-}
-
-
+	/* EOF */
+	}
 
 
-]]>
+
+
+	]]>
       </programlisting>
     </example>
   </section>
   <section>
     <title>Module functions needed for Auto-Install</title>
     <para>The follwoing is the list of function that should be available with
-      the modules to provide the functionality needed in the CMS.
+      the modules to provide the functionality needed in the AutoYaST.
     </para>
     <refentry>
       <refnamediv>
@@ -286,18 +277,18 @@ return ret;
 	</para>
 
       </refsect1>
-         
+      
       <refsect1>
 	<title>Returns</title>
 	<para>
 	  For example, the function can return the following structure:
 	</para>
 	<screen>
-$[
-   "install": ["pkg1", "pkg2"], 
-   "remove": ["pkg3"]
-]
-</screen>
+	  $[
+	  "install": ["pkg1", "pkg2"], 
+	  "remove": ["pkg3"]
+	  ]
+	</screen>
       </refsect1>
     </refentry>
     <refentry>
@@ -314,7 +305,7 @@ $[
 	</para>
 
       </refsect1>
-         
+      
       <refsect1>
 	<title>Returns</title>
 	<para>Import() return false if some of the required keys are missing in the
@@ -341,17 +332,17 @@ $[
 	<example>
 	  <title>Export()</title>
 	  <programlisting>
-<![CDATA[
-    global define map Export () ``{
-	return $[
+	    <![CDATA[
+	    global define map Export () ``{
+	    return $[
 	    "start_nis": start,
 	    "nis_servers": servers,
 	    "nis_domain": domain,
 	    "start_autofs": _start_autofs,
 	    ];
-    }
-]]>
-</programlisting>
+	    }
+	    ]]>
+	  </programlisting>
 	</example>
       </refsect1>
       <refsect1>
@@ -388,12 +379,10 @@ $[
     <title>Configuration file</title>
     
     <para>
-      When the CMS is invloked, it  checks for the configuration files in
-      <filename>/usr/share/YaST2/config</filename> and evaluates them to
-      later include them in the configuration interface.
-    </para>
-    <para>AutoYaST2 CMs uses the same configuration file used for the YaST2
-      Control Center with some additions and modifications.
+      When AutoYaST  is invoked, it  checks for the desktop files in
+      <filename>/usr/share/applications/YaST2</filename> and evaluates them to
+      later include them in the configuration interface. AutoYaST uses the same configuration file used for the YaST2
+      Control Center with some additional enhancements.
     </para>
     <para>
       The following is an example of the configuration file for the NIS module:
@@ -401,55 +390,41 @@ $[
     <example>
       <title>Auto-Install Configuration file for NIS</title>
       <programlisting>
-;
-; Menuentry file used by
-;  YaST2 Control Center
-;
-; $Id$
-;
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Net_advanced;
 
-[Y2Module nis]
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=nis
 
-; name of the entry, shown in y2cc
-Name = _("NIS client")
+X-SuSE-YaST-Group=Net_advanced
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=all
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstClonable=true
 
-; "raw" group name to which this module belongs
-; see /usr/lib/YaST2/etc/y2controlcentericons.y2cc for valid values
-Group = Net_advanced
+Icon=nis_client
+Exec=/sbin/yast2 nis
 
-; icon displayed in y2cc
-Icon = nis_client.png
+Name=NIS Client
+GenericName=Configure NIS client
 
-; *one* *short* descriptive line for y2cc
-Helptext = _("Configure NIS client")
-
-; arguments, seperated by space
-Arguments = 
-
-; whether root privileges are required to run this module
-RequiresRoot = true
-
-; default size for window, Y2CC will set $Y2_GEOMETRY to this value
-Geometry = 
-
-; string to use for sorting instead of Name
-SortKey = 
-
-; which textdomain to use for translations (important!)
-Textdomain = nis
-
-; vim:syntax=dosini
 
       </programlisting>
     </example>
-    <para>In addition to the keywords from the last example, the CMS also evaluates
+    <para>In addition to the keywords from the last example, AutoYaST also evaluates
       the following keywords:</para>
 
     <refentry>
       <refnamediv>
-	<refname>Autoinst</refname>
+	<refname>X-SuSE-YaST-AutoInst</refname>
 	<refpurpose>Is the module compatible with the
-	  CMS and can Import/Export configurations?</refpurpose>
+	  AutoYaST and can Import/Export configurations?</refpurpose>
       </refnamediv>
       <refsect1>
 	<title>Values:</title>
@@ -457,10 +432,12 @@ Textdomain = nis
 	  <itemizedlist>
 	    <listitem>
 	      <para><emphasis>all</emphasis>: Full auto-installation support,
-		including configuration (_auto) and writing (_write) </para>	
+		including  the AutoYaST interface and writing configurations
+		during autoinstall. </para>	
 	    </listitem>
 	    <listitem>
-	      <para><emphasis>write</emphasis>: Write only support </para>	
+	      <para><emphasis>write</emphasis>: Write only support. No
+		integration into AutoYaST interface. </para>	
 	    </listitem>     
 	    <listitem>
 	      <para><emphasis>configure</emphasis>: Configuration only support.
@@ -476,7 +453,7 @@ Textdomain = nis
     </refentry>
     <refentry>
       <refnamediv>
-	<refname>AutoinstPath</refname>
+	<refname>X-SuSE-YaST-AutoInstPath</refname>
 	<refpurpose>Path in the control file</refpurpose>
       </refnamediv>
       <refsect1>
@@ -489,19 +466,60 @@ Textdomain = nis
     </refentry>
     <refentry>
       <refnamediv>
-	<refname>AutoClient</refname>
-	<refpurpose>NAme of the client to call</refpurpose>
+	<refname>X-SuSE-YaST-AutoInstClient</refname>
+	<refpurpose>Name of the client to call</refpurpose>
       </refnamediv>
       <refsect1>
 	<title>Values</title>
-	<para>	Name of the client to be called by the CMS.</para>
+	<para>	Name of the client to be called by AutoYaST</para>
       </refsect1>
       <refsect1>
 	<title>Default Value</title>
 	<para>&lt;module name&gt;_auto</para>
       </refsect1>
     </refentry>
- 
+    <refentry>
+      <refnamediv>
+	<refname>X-SuSE-YaST-AutoInstDataType</refname>
+	<refpurpose>Data type of configuration section</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values</title>
+	<para>map or list</para>
+      </refsect1>
+      <refsect1>
+	<title>Default Value</title>
+	<para>map</para>
+      </refsect1>
+    </refentry>
+     <refentry>
+      <refnamediv>
+	<refname>X-SuSE-YaST-AutoInstResource</refname>
+	<refpurpose>Name of the resource in the Profile</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values</title>
+	<para>string</para>
+      </refsect1>
+      <refsect1>
+	<title>Default Value</title>
+	<para></para>
+      </refsect1>
+    </refentry>   
+     <refentry>
+      <refnamediv>
+	<refname>X-SuSE-YaST-AutoInstRequires</refname>
+	<refpurpose>What modules a re required before this module is run. </refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values</title>
+	<para>comma delimited list of required modules</para>
+      </refsect1>
+      <refsect1>
+	<title>Default Value</title>
+	<para></para>
+      </refsect1>
+    </refentry>   
   </section>
   <section>
     <title>Conventions for module Writers</title>
@@ -511,8 +529,8 @@ Textdomain = nis
 	<listitem>
 	  <para><emphasis>Type of exported data</emphasis>: </para>
 	  <para>Modules should only export data which is normally selected or
-	entered by the user in normal module operation. No computed or
-	automatically probed data should be exported.</para>
+	    entered by the user in normal module operation. No computed or
+	    automatically probed data should be exported.</para>
 	</listitem>
 	<listitem>	  
 	  <para><emphasis>Use Namespaces</emphasis></para>
@@ -521,7 +539,7 @@ Textdomain = nis
 	    use a name space identifier with common words. For example, if  a
 	    module should export the variable name
 	    <emphasis>options</emphasis>, it is better to export<emphasis> &lt;module
-	    name&gt;.options</emphasis> to avoid confusion with other modules using
+	      name&gt;.options</emphasis> to avoid confusion with other modules using
 	    <emphasis>options</emphasis>, which is very common in configurations.	    
 	  </para>	  
 	</listitem>
@@ -540,7 +558,7 @@ Textdomain = nis
 	    rather than it's contents</para>
 	</listitem>
       </itemizedlist>
-     
+      
     </section>    
 
     <section>
@@ -558,7 +576,7 @@ Textdomain = nis
 	  <para>
 	    This category needs no special attention and is easy to integrate with
 	    the AutoYaST. 
-	</para>
+	  </para>
 	</listitem>
 	<listitem>
 	  <para>Simple modules dealing with hardware configuration (i.e. network,
