@@ -16,6 +16,7 @@
     import "Installation";
     import "AutoInstall";
     import "ProfileLocation";
+	import "AutoInstallRules";
     import "Progress";
     import "Report";
     import "Language";
@@ -52,10 +53,14 @@ Please wait while the system is prepared for autoinstallation.</p>
 		  progress_stages,
 		  progress_descriptions,
 		  help_text );
+	symbol startret=	WFM::CallFunction(`inst_startup() );
 
     Progress::NextStage();
     Progress::Title(ProfileLocation::message);
 
+
+	// Initialize Rules
+	AutoInstallRules::Init();
     boolean ret = false;
     if (!ProfileLocation::Process())
     {

@@ -219,15 +219,6 @@ this message can be ignored."));
 	}
 	// Now remove all packages from remove-packages (Note: This is a workaround for bug # )
 
-	y2milestone("Packages to be removed: %1", remove_packages);
-	if (size(remove_packages) > 0 )
-	{
-	    foreach (`rp, remove_packages, ``{
-		Pkg::PkgNeutral(rp);
-	    });
-
-	    Pkg::DoRemove(remove_packages);
-	}
 
 
 	list extraPackages = calcExtraPackages ();
@@ -239,6 +230,16 @@ this message can be ignored."));
 	}
 
 	Pkg::DoProvide (Packages::ComputeSystemPackageList());
+
+	y2milestone("Packages to be removed: %1", remove_packages);
+	if (size(remove_packages) > 0 )
+	{
+	    foreach (`rp, remove_packages, ``{
+		Pkg::PkgNeutral(rp);
+	    });
+
+	    Pkg::DoRemove(remove_packages);
+	}
 
 
 
@@ -315,12 +316,15 @@ this message can be ignored."));
 		if (mail["mta"]:`other == `postfix)
 		{
 			allpackages = add(allpackages, "postfix");
+			remove_packages = add(remove_packages, "sendmail");
 			if (mail["use_amavis"]:false)
 				allpackages = add(allpackages, "amavis-postfix");
 		}
 		else if (mail["mta"]:`other == `sendmail)
 		{
 			allpackages = add(allpackages, "sendmail");
+			remove_packages = add(remove_packages, "postfix");
+
 			if (mail["use_amavis"]:false)
 				allpackages = add(allpackages, "amavis-sendmail");
 		}
