@@ -58,21 +58,26 @@ Please wait while the system is prepared for autoinstallation.</p>
     while (true)
     {
 	map locationParams = AutoInstall::ProfileLocation;
-	string protocol =  locationParams["scheme"]:"";
+	string protocol =  locationParams["scheme"]:"default";
+
+	y2milestone("protocol: %1", protocol);
 	string profile_location =  AutoInstall::xml_tmpfile;
 
 	if (protocol == "tftp")  // TFTP
 	{
 	    ret = UseTFTP(locationParams, profile_location);
 	}
-	else if (protocol == "file" || protocol == "cdrom" )  // FILE or CDROM
+	else if (protocol == "file" )  // FILE or CDROM
 	{
 	    string file_path = sformat("%1/%2", Installation::sourcedir, locationParams["path"]:"");
-	    if (SCR::Read(.target.size, file_path)>0) {
+	    if (SCR::Read(.target.size, file_path)>0)
+	    {
 		string cpcmd = sformat("cp %1/%2 %3", Installation::sourcedir, locationParams["path"]:"", profile_location);
 		y2milestone("copy profile: %1", cpcmd);
 		SCR::Execute(.target.bash, cpcmd);
-	    } else {
+	    }
+	    else
+	    {
 		string cpcmd = sformat("cp %1 %2", locationParams["path"]:"", profile_location);
 		y2milestone("copy profile: %1", cpcmd);
 		SCR::Execute(.target.bash, cpcmd);
