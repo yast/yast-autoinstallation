@@ -11,7 +11,7 @@
     module "AutoinstScripts";
     textdomain "autoinst";
     import "Mode";
-    
+
     import "Label";
 
 
@@ -20,7 +20,7 @@
     // Main directory for data generated during installation
     //
     global string var_dir = "/var/adm/autoinstall";
-    
+
     // Directory for the pre/post and chroot scripts
     //
     global string scripts_dir = var_dir + "/scripts";
@@ -28,8 +28,8 @@
     // Directory where log files of pre/post and chroot scripts are kept
     //
     global string logs_dir = var_dir + "/logs";
-    
-    
+
+
     global list pre = [];
     global list post = [];
     global list chroot = [];
@@ -42,7 +42,7 @@
     define void AutoinstScripts()
 	``{
 	if ( !Mode::autoinst )
-	{	 
+	{
 	    merged = mergeScripts();
 	}
     }
@@ -59,7 +59,7 @@
 	chroot = [];
 	y2milestone("Merged %1", merged);
 	// split
-	
+
 	foreach(`s, merged, ``{
 	    if (s["type"]:"" == "pre-scripts")
 		pre = add(pre,s);
@@ -79,23 +79,24 @@
 	});
 	list expost =  maplist (`p, post, ``{
 	    return ($["filename":p["filename"]:"",
-				"interpreter": p["interpreter"]:"",
-				"source":p["source"]:""]
-			      );
+		      "interpreter": p["interpreter"]:"",
+		      "source":p["source"]:""]
+		    );
 	});
 	list exchroot =  maplist (`p, chroot, ``{
 	    return ($["filename":p["filename"]:"",
-				"interpreter": p["interpreter"]:"",
-				"source":p["source"]:""
-			      ]);
+		      "interpreter": p["interpreter"]:"",
+		      "source":p["source"]:"",
+		      "chrooted":p["chrooted"]:false
+		    ]);
 	});
 	map result = $[];
-	if (size(expre) > 0 ) 
+	if (size(expre) > 0 )
 	    result["pre-scripts"] = expre;
-	if (size(expost) > 0 ) 
+	if (size(expost) > 0 )
 	    result["post-scripts"] = expost;
-	if (size(exchroot) > 0 ) 
-	    result["chroot-scripts"] = exchroot;	
+	if (size(exchroot) > 0 )
+	    result["chroot-scripts"] = exchroot;
 
 	return result;
 
@@ -114,6 +115,7 @@
 	pre = s["pre-scripts"]:[];
 	post = s["post-scripts"]:[];
 	chroot = s["chroot-scripts"]:[];
+	
 	merged = mergeScripts();
 	return true;
     }
@@ -160,7 +162,7 @@
 	else
 	{
 	    summary = Summary::AddLine(summary, Summary::NotConfigured());
-	}	
+	}
 	return summary;
     }
 
@@ -191,7 +193,7 @@
      * @return -
      */
     global define void AddEditScript(string scriptName, string source, string interpreter, string type)
-    ``{
+	``{
 	list newScripts = [];
 	boolean modified = false;
 	merged = maplist (`script , merged, ``{
@@ -254,49 +256,60 @@
      * @return merged list
      */
     define list mergeScripts () ``{
-	
+
 	list result =	maplist (`p, pre,
 				 ``{
 				     p = add(p,"type","pre-scripts");
 				     return p;
 				 });
 	result = union(result, 	maplist (`p, post,
-				 ``{
-				     p = add(p,"type","post-scripts");
-				     return p;
-				 })
+					 ``{
+					     p = add(p,"type","post-scripts");
+					     return p;
+					 })
 		       );
 	result = union(result, 	maplist (`p, chroot,
-				 ``{
-				     p = add(p,"type","chroot-scripts");
-				     return p;
-				 })
+					 ``{
+					     p = add(p,"type","chroot-scripts");
+					     return p;
+					 })
 		       );
 	return result;
     }
 
 
-     /**
+    /**
      * Execute pre scripts
      * @param type of script
      * @return true on success
      */
 
-    global define boolean Write( string type )
+    global define boolean Write( string type , boolean chrooted)
 	``{
 
 	list scripts = [];
 	if (type == "pre-scripts")
+	{
 	    scripts = pre;
-	else if ( type == "chroot-scripts")
-	    scripts = chroot;
+	}
+	else if ( type == "chroot-scripts" && !chrooted)
+	{
+	    scripts = filter(`s, chroot, ``(!s["chrooted"]:false));
+	}
+	else if ( type == "chroot-scripts" && chrooted)
+	{
+	    scripts = filter(`s, chroot, ``(s["chrooted"]:false));
+	}
 	else if (type == "post-scripts")
+	{
 	    scripts = post;
-	else {
+	}
+	else
+	{
 	    y2error("Unsupported script type");
 	    return false;
 	}
-		
+
 
 	string tmpdirString = "";
 	string current_logdir = "";
@@ -311,11 +324,11 @@
 	}
 	else if (type == "chroot-scripts")
 	{
-	    tmpdirString = sformat("%1%2", Installation::destdir,  scripts_dir);
-	    SCR::Execute (.target.mkdir, tmpdirString);
+		tmpdirString = sformat("%1%2", (chrooted) ? "" : Installation::destdir,  scripts_dir);
+	    SCR::Execute (.target.mkdir, (chrooted) ? scripts_dir : tmpdirString);
 
-	    current_logdir = sformat("%1%2", Installation::destdir, logs_dir);
-	    SCR::Execute (.target.mkdir,  current_logdir);
+	    current_logdir = sformat("%1%2", (chrooted) ? "" : Installation::destdir, logs_dir);
+	    SCR::Execute (.target.mkdir,  (chrooted) ? logs_dir : current_logdir);
 	}
 	else
 	{
@@ -337,13 +350,13 @@
 	    }
 	    else if (type == "chroot-scripts")
 	    {
-		scriptPath = sformat("%1%2/%3", Installation::destdir,  scripts_dir,  scriptName);
+		scriptPath = sformat("%1%2/%3", (chrooted) ? "/" : Installation::destdir,  scripts_dir,  scriptName);
 		y2milestone("Writing chroot script into %1", scriptPath);
 		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
 	    }
 	    else
 	    {
-	    // disable all sources and finish target
+		// disable all sources and finish target
 		Pkg::SourceFinishAll();
 		Pkg::TargetFinish();
 
@@ -380,5 +393,5 @@
     }
 
 
-    
+
 }

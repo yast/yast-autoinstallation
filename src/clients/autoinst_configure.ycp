@@ -157,7 +157,7 @@ Please wait while the system is being configured.
 
     logStep( _("Executing Post-Scripts"));
     AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
-    AutoinstScripts::Write("post-scripts");
+    AutoinstScripts::Write("post-scripts", false);
 
 	// Just in case, remove this file to avoid reconfiguring...
     SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
