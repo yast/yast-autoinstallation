@@ -4,7 +4,7 @@
 # $Id$
 #
 
-schemadir =  $(yast2dir)/schema/autoyast/rnc
-schema_DATA = $(wildcard *.rnc)
+schemafilesdir =  $(schemadir)/autoyast/rnc
+schemafiles_DATA = $(wildcard *.rnc)
 
-EXTRA_DIST = $(schema_DATA) 
+EXTRA_DIST = $(schemafiles_DATA) 
