@@ -3,6 +3,7 @@
   <include href="nfs.rng"/>
   <include href="nis.rng"/>
   <include href="sysconfig.rng"/>
+  <include href="kerberos_client.rng"/>
   <define name="install">
     <element name="install">
 		<empty/>
@@ -20,6 +21,9 @@
   </define>
   <define name="configure">
     <element name="configure">
+      <optional>
+        <ref name="kerberos_client"/>
+      </optional>
       <optional>
         <ref name="nfs"/>
       </optional>
