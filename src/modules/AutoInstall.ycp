@@ -58,7 +58,8 @@
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
 		SCR::Execute(.target.remove, AutoinstConfig::parsedControlFile);
-		
+
+		X11 = Profile::Flat["x11"]:$[];
 		return (true);
 	    }
 	}
