@@ -82,6 +82,7 @@
 
     /**
      * SaneRegionLimits
+     * @return boolean
      */
     
     global define boolean SaneRegionLimits (list<integer> unused,  list partitions) ``{
@@ -102,7 +103,8 @@
 
     /**
      * Racalculate sizes
-     *
+     * @param list region
+     * @return void
      */
     global define void recalculateSizes ( list<integer> region )
 	``{
@@ -747,7 +749,7 @@ exist on this system.
 
 	full_region = [];
 
-	bytes_per_unit = 0;
+	bytes_per_unit = target["cyl_size"]:1;
 	
 	integer disk_size = 0;
 
@@ -1134,6 +1136,9 @@ exist on this system.
 	    }
 	    else if (contains_extended (old_partitions) && creating_anything)
 	    {
+		
+		y2milestone("ext: %1", extended_region (old_partitions) );
+		
 		selected = calculate_selected_region (selected_partitions, extended_region (old_partitions));
 
 		if (!can_create_logical (old_partitions))
@@ -1171,7 +1176,11 @@ To install Linux, select more partitions to remove.");
 	    }
 	    else
 	    {
-		selected = calculate_selected_region (selected_partitions, nil);
+		
+		
+		selected = calculate_selected_region (selected_partitions, [] );
+
+		y2milestone("%1 %2 %3 %4 %5", size_of_region (selected, bytes_per_unit ) , selected , bytes_per_unit, minimal_size, creating_anything  );
 		if (size_of_region (selected, bytes_per_unit ) < minimal_size && creating_anything)
 		{
 		    y2warning ("selected: %1", selected); // FIXME

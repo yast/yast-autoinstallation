@@ -1,12 +1,8 @@
 #
-# Makefile.am for y2c_autoinst/src
+# Makefile.am for autoinstallation/src
 #
 # $Id$
 #
 SUBDIRS = include modules data clients config dialogs
 
-client_DATA = \
-	autoyast.ycp 
 
-
-EXTRA_DIST = $(client_DATA) 

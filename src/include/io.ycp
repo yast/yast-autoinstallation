@@ -8,9 +8,11 @@
  */
 {
     textdomain "autoinst";
-
+   
     /**
-     * return basename
+     * Basename
+     * @param string path
+     * @return string  basename
      */
     global define string basename (string filePath)
 	``{
@@ -20,9 +22,10 @@
     }
 
 
-
     /**
-     * return dirname
+     * Get directory name
+     * @param string path
+     * @return  string dirname
      */
     global define string dirname (string filePath)
 	``{
@@ -35,37 +38,27 @@
 
     /**
      * Get control files from different sources
-     *
+     * @return boolean true on success
      */
     global define boolean Get(string Scheme,
 			      string Host,
-			      string Path ,
-			      string port,
-			      string user,
-			      string pass,
+			      string Path,
 			      string Localfile)
 	``{
 	boolean ok = false;
-
+	map res = $[];
+	map toks =  AutoinstConfig::urltok;
+	
+	toks["scheme"] = Scheme;
+	toks["host"]   = Host;
+	toks["path"]   = Path;
+	    
 	if ( Scheme == "http" )
 	{
 	    import "HTTP";
-	    string full_url = "";
-	    string port_str = "";
-	    if (port !=  "")
-	    {
-		port_str = sformat(":%1", port);
-	    }
-	    if (user == ""  && pass  == "")
-	    {
-		full_url = sformat("http://%1%2", Host , port_str,  Path );
-	    }
-	    else
-	    {
-		full_url = sformat("http://%1:%2@%3%4%s", user, pass, Host , port_str,  Path );
-	    }
-
-	    map res = HTTP::Get(full_url, Localfile);
+	    string full_url = URL::Build(toks);
+	    res = HTTP::Get(full_url, Localfile);
+	    
 	    if (res["code"]:0 == 200)
 	    {
 		return (true);
@@ -79,18 +72,10 @@
 	if ( Scheme == "ftp" )
 	{
 	    import "FTP";
-	    string full_url = "";
-		if (user!= ""  && pass != "")
-		{
-			full_url = sformat("ftp://%1%2", Host ,  Path );
-		}
-		else
-		{
-			full_url = sformat("ftp://%1:%2@%3%4", user, pass, Host ,  Path );
-		}
-
-	    map res = FTP::Get(full_url, Localfile);
-	    if (SCR::Read(.target.size, Localfile) > 0)
+	    string full_url = URL::Build(toks);
+	 	    
+	    res = FTP::Get(full_url, Localfile);
+	    if ( res["code"]:-1 == 0 && SCR::Read(.target.size, Localfile) > 0 )
 	    {
 		return (true);
 	    }
@@ -122,7 +107,7 @@
 	    }
 	    else
 	    {
-		y2milestone("Try on installation media: %1", Mode::boot);
+		y2milestone("Trying to find file on installation media: %1", Mode::boot);
 		if (Mode::boot == "cd")
 		{
 		    string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
@@ -227,8 +212,6 @@
 	    y2error("Protocol not supported");
 	    ok = false;
 	}
-
-
 	return ( ok );
     }
 

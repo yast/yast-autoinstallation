@@ -60,6 +60,7 @@ Please wait while the system is prepared for autoinstallation.</p>
         if (Popup::ConfirmAbort (`painless))
             return `abort;
 
+    
     Progress::NextStage();
     Progress::Title(AutoinstConfig::message);
 
@@ -86,8 +87,7 @@ Please wait while the system is prepared for autoinstallation.</p>
 
     //
     // Set reporting behaviour to default, changed later if required
-    //
-    
+    //    
     Report::LogMessages(true);
     Report::LogErrors(true);
     Report::LogWarnings(true);
@@ -107,13 +107,15 @@ control file and try again.
 	return `abort;
     }
     
-    y2milestone ("Autoinstall control file %1",  Profile::current );
+    y2debug ("Autoinstall control file %1",  Profile::current );
 
+
+    Report::Import(Profile::current["install", "report"]:$[]);
+    
     //
     // Copy the control file for easy access by user to  a pre-defined
     // directory
     //
-
     SCR::Execute(.target.bash, sformat("cp %1 %2/autoinst.xml",  AutoinstConfig::xml_tmpfile, AutoinstConfig::profile_dir));
 
     // AutoInstall::ProcessSpecialResources();
@@ -132,21 +134,19 @@ control file and try again.
     //
     Language::Set( language );
 
+    
     //
     // Set Console font
     //
-    Console::SelectFont( language );
+    Installation::encoding = Console::SelectFont( Language::language );
 
+    if (lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
+    {
+        Installation::encoding = "UTF-8";
+    }
 
-    Installation::encoding = (use_utf8) ? "UTF-8" : Console::encoding;
-
-    //
-    // Set it in YaST2
-    //
-    UI::SetLanguage (language, Installation::encoding);
-    WFM::SetLanguage(language, "UTF-8");
-
-
+    UI::SetLanguage (Language::language, Installation::encoding);
+    WFM::SetLanguage (Language::language, "UTF-8");
 
     sleep(1000);
     Progress::Finish();
