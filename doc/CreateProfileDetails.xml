@@ -683,21 +683,28 @@
 	</itemizedlist>
 	<para>
 	  As with LVM, you need to create all <emphasis><acronym>RAID</acronym></emphasis> partitions first and assign
-	  the partitions to the <acronym>RAID</acronym> device you want to create and you need to
-	  specify whether a partition or a device should be configured in the
+	  the partitions to the <acronym>RAID</acronym> device you want to
+	  create and additionally you need to  specify whether a partition or a device should be configured in the
 	  <acronym>RAID</acronym>  or if it should configured as a <emphasis>Spare</emphasis> device.
+	</para>
+	<para>
+	  Up to SuSE Linux 8.2 the raid configuration was done in a seperate
+	  resource. This method for configuring raid devices is still
+	  supported, however a new and easier way is introduced starting from
+	  this release which allows the user to have the raid configuration
+	  directly in  the <emphasis>partitioning</emphasis> resource.
 	</para>
 	<para>
 	  The following example shows a simple RAID1 configuration:
 	</para>
 	<example>
-	  <title>RAID1 configuration</title>
+	  <title>RAID1 configuration (Old configuration></title>
 	  <screen>
 <![CDATA[
 ....
    <partitioning config:type="list">
       <drive>
-        <device>/dev/hdc</device>
+        <device>/dev/sda</device>
         <partitions config:type="list">
           <partition>
             <partition_id config:type="integer">253</partition_id>
@@ -712,7 +719,7 @@
         <use>all</use>
       </drive>
       <drive>
-        <device>/dev/sda</device>
+        <device>/dev/sdb</device>
         <use>all</use>
         <partitions config:type="list">
           <partition>
@@ -731,7 +738,7 @@
           <parity_algorithm>left-asymmetric</parity_algorithm>
           <persistent_superblock  config:type="boolean">true</persistent_superblock>
           <raid_type>raid1</raid_type>
-          <filesystem_id config:type="integer">131</filesystem_id>
+          <partition_id config:type="integer">131</partition_id>
           <chunk_size>4</chunk_size>
           <mount>/space</mount>
           <format config:type="boolean">true</format>
@@ -743,6 +750,90 @@
 ]]>	  
 	    </screen>
 	  </example>
+
+	<para>Using the new method, the above configuration has the following syntax:</para>
+
+	<example>
+	  <title>RAID1 configuration (New configuration></title>
+	  <screen>
+<![CDATA[
+....
+   <partitioning config:type="list">
+      <drive>
+        <device>/dev/sda</device>
+        <partitions config:type="list">
+          <partition>
+            <partition_id config:type="integer">253</partition_id>
+            <format config:type="boolean">false</format>
+            <raid_name>/dev/md0</raid_name>
+            <size>4gb</size>            
+          </partition>
+
+          <!-- Here come the regular partitions, i.e. / and swap -->        
+
+        </partitions>
+        <use>all</use>
+      </drive>
+      <drive>
+        <device>/dev/sdb</device>
+        <use>all</use>
+        <partitions config:type="list">
+          <partition>
+             <partition_id config:type="integer">253</partition_id>
+             <format config:type="boolean">false</format>
+             <raid_name>/dev/md0</raid_name>            
+             <size>4gb</size>
+          </partition>
+         </partitions>
+      </drive>
+      <drive>
+         <device>/dev/md</device>
+         <partitions config:type="list">
+            <partition>
+                <raid_options>
+                    <parity_algorithm>left-asymmetric</parity_algorithm>
+                    <chunk_size>4</chunk_size>
+                    <raid_type>raid1</raid_type>
+                </raid_options>
+                <format config:type="boolean">true</format>
+                <filesystem config:type="symbol">reiserfs</filesystem>
+                <partition_id config:type="integer">131</partition_id>
+                <mount>/space</mount>
+                <partition_nr config:type="integer">0</partition_nr>                
+            </partition>
+        </partitions>
+        <use>all</use>
+    </drive>
+ 
+   </partitioning>
+ 
+....
+]]>	  
+	    </screen>
+	  </example>
+
+	<para>
+	  The following has to be taken into consideration when configuring
+	  raid using the new syntax:
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>The device for raid is always <emphasis>/dev/md</emphasis></para>
+	  </listitem>
+	  <listitem>
+	    <para>The property <emphasis>partition_nr</emphasis> is used to
+	      determine the MD device number. if
+	      <emphasis>partition_nr</emphasis> is equal to 0, then
+	      <emphasis>/dev/md0</emphasis> is configured.</para>	   
+	  </listitem>
+	  <listitem>
+	    <para>All RAID specific options are contained in
+	      <emphasis>raid_options</emphasis> resource.</para>
+	  </listitem>
+	</itemizedlist>
+
+
+
 	</section>
       </section>      
       <section id="CreateProfile.Software">
