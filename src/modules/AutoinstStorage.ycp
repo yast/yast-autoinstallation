@@ -18,15 +18,12 @@
 
 
     global list drives = [];
-       
 
     global map targetMap = $[];
 
     global map lvm  = $[];
     global map raid = $[];
-    
 
-    
     /**
      * Dump the settings to a map, for autoinstallation use.
      * @return map
@@ -57,14 +54,14 @@
      * Get all the configuration from a map.
      * When called by autoinst_<module name> (preparing autoinstallation data)
      * the list may be empty.
-     * @param settings a list 	[...]
+     * @param settings a list	[...]
      * @return	success
      */
     global define boolean Import(list settings)
 	``{
 
 	drives = settings;
-    
+
 	return;
     }
 
@@ -106,41 +103,41 @@
 
 	map init_targetmap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", init_targetmap);
-		
-	
+
+
 	list alldrives = maplist( `k, `v, init_targetmap ,
-				  ``{				      
+				  ``{
 				      return($["device":k, "size": v["cyl_size"]:0 ]);
 				  }
 				  );
-	
+
 
 	map physical_targetmap = filter(`k, `v, init_targetmap , ``(Storage::IsRealDisk(k, v) ));
-	
+
         list physical_drives = maplist( `k, `v, physical_targetmap ,
                                   ``{
                                       return($["device":k, "size": v["cyl_size"]:0 ]);
                                   });
-	
-	
+
+
 	y2milestone("Drives=%1", alldrives);
-	
+
 	string mbrDisk = lookup(select(physical_drives,0,$[]),"device", BootCommon::mbrDisk);
-	
+
 	y2milestone("MBR disk= %1", mbrDisk );
 	Storage::SetPartDisk(mbrDisk);
-	
+
 	// Set devices if missing
-	
+
 	y2milestone("Drives: %1", drives);
 
 	boolean abort = false;
-	
+
 	targetMap =  listmap (map drive, drives, ``{
 	    boolean first_set = false;
 	    string device = "";
 	    y2milestone("Drive: %1", drive);
-	    
+
 	    if (drive["device"]:"" == "ask" )
 	    {
 		y2milestone("Manual selection of device...");
@@ -156,7 +153,6 @@
 		}
 		return ( [device , drive ] );
 	    }
-	    
 	    if (!first_set && drive["device"]:"" == "")
 	    {
 		device = Storage::GetPartDisk();
@@ -167,13 +163,11 @@
 	    {
 		return([drive["device"]:"", drive ]);
 	    }
-	    
 
 	});
 
 
 	y2milestone("New Auto-Install tagetMap=%1", targetMap);
-	
 	if ( targetMap == $[] || abort )
 	{
 	    // Something went really wrong..
@@ -185,31 +179,27 @@ Make sure the control file has the correct syntax and values.
 
 	// Initialize disks if needed
 	boolean init_done = false;
-	
 	foreach (string device, map data, targetMap,
-		 ``{	    	    
+		 ``{
 	    if (data["initialize"]:false)
 	    {
-		    map thisDevice = init_targetmap[device]:$[];		 
+		    map thisDevice = init_targetmap[device]:$[];
 		    thisDevice["partitions"] = [];
 		    init_targetmap[device] = thisDevice;
 		    Storage::SetTargetMap(init_targetmap);
 		    init_done = true;
-	    }		    
+	    }
 	});
 
 
-	
 	if (init_done)
 	{
 	    map afterinit_targetmap = Storage::GetTargetMap();
 	    y2milestone("Target map after initialzing disk: %1", afterinit_targetmap);
 	}
 
-	
 	if ( size(targetMap) > 0)
 	{
-	    
 	    boolean ok = true;
 	    foreach (string device, map data, targetMap,
 		     ``{
@@ -229,11 +219,9 @@ Make sure the control file has the correct syntax and values.
 	    }
 	}
 
-	
-	lvm 	= filter(`k,`v, AutoinstStorage::targetMap, ``(v["is_lvm_vg"]:false));
-	raid 	= filter(`k,`v, AutoinstStorage::targetMap, ``(k == "/dev/md"));
+	lvm	= filter(`k,`v, AutoinstStorage::targetMap, ``(v["is_lvm_vg"]:false));
+	raid	= filter(`k,`v, AutoinstStorage::targetMap, ``(k == "/dev/md"));
 
-	
 	if ( size(raid) != 0)
 	{
 	    y2milestone("Configuring RAID");
@@ -250,7 +238,6 @@ Make sure the control file has the correct syntax and values.
     }
 
 
-    
     /**
      * Initialize devices
      */
@@ -260,27 +247,23 @@ Make sure the control file has the correct syntax and values.
 	foreach (string device, map data, targetMap,
 		 ``{
 	    if (data["initialize"]:false)
-	    {			    
+	    {
 		integer zero_ret = Storage::ZeroDevice( device );
-		y2milestone("Initializing device: %1 --> %2", device, zero_ret);		
-	    }		    
+		y2milestone("Initializing device: %1 --> %2", device, zero_ret);
+	    }
 	});
 	return;
     }
 
 
 
-
-
-
-    
     global define DiskSelection() ``{
 
 	y2milestone("Selecting disk manually....");
 	map tm = Storage::GetTargetMap();
 	term contents = `Dummy();
 
-	
+
 	if( size(tm) > 0)
 	{
 	    term buttonbox = `VBox();
@@ -301,7 +284,7 @@ Make sure the control file has the correct syntax and values.
 	    });
 
 	    buttonbox = add(buttonbox, `VSpacing(0.8) );
-	 
+
 
 	    // This dialog selects the target disk for the installation.
 	    // Below this label, all targets are listed that can be used as
@@ -319,7 +302,7 @@ Make sure the control file has the correct syntax and values.
 	}
 	else
 	{
-   
+
 	    contents = `Label (_("No disks found."));
 	}
 
@@ -335,11 +318,11 @@ are shown here. Select the hard disk on which to install SuSE Linux.
 ");
 	import "Label";
 	term buttons = `HBox(
-			 `PushButton(`id(`ok), `opt(`default), Label::OKButton ),		
-			 `PushButton(`id(`abort), Label::AbortButton ) 
+			 `PushButton(`id(`ok), `opt(`default), Label::OKButton ),
+			 `PushButton(`id(`abort), Label::AbortButton )
 			);
 
-	
+
 
 	term ask_device_dialog = `HBox(
 				     `VSpacing( 15 ),       // force dialog height
@@ -354,13 +337,13 @@ are shown here. Select the hard disk on which to install SuSE Linux.
 					    contents,
 					   `VStretch(),
 					   buttons
-					   
+
 					   ),
-				     `HSpacing( 3 )				       
+				     `HSpacing( 3 )
 				     );
 
 	UI::OpenDialog(`opt(`decorated), ask_device_dialog);
-	
+
 	any ret = nil;
 	any option = nil;
 
@@ -378,10 +361,10 @@ are shown here. Select the hard disk on which to install SuSE Linux.
 			// chosen - at the moment no option is chosen
 			UI::MessagePopup(_("Select one of the options to continue."));
 			continue;
-		    }		 
+		    }
 		}
 	    } until ( ret == `ok || ret == `abort );
-	
+
 	UI::CloseDialog();
 	return option;
     }
@@ -415,5 +398,30 @@ are shown here. Select the hard disk on which to install SuSE Linux.
     }
 
 
+
     
+    global define list DeletedMDs ( string vgname )
+	``{
+	map tm = Storage::GetTargetMap();
+	list ret = [];
+	foreach( `dev, `devmap, tm,
+		 ``{
+	    ret = add( ret,
+		       filter( `part, devmap["partitions"]:[],
+			       ``(				 
+				  part["lvm_group"]:"" == vgname 
+				  &&
+				  part["delete"]:false
+				  &&
+				  ( part["fsid"]:0 == Partitions::fsid_lvm ||
+				    part["fsid"]:0 == Partitions::fsid_raid ||
+				    part["fsid"]:0 == Partitions::fsid_native )
+				  )
+			       )
+		       );
+	});
+
+	return( flatten(ret) );
+    }
+
 }

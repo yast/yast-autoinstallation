@@ -25,7 +25,6 @@
 
 	packages = union (packages, packageList);
 
-
 	if (size(kernel)==0)
 	{
 	    packages =union (packages, ["k_deflt", "k_athlon", "k_smp"]);
@@ -112,32 +111,29 @@
 
     global define  getRpmPath(string pac, boolean full) ``{
 
-	string dataDir 	= ISO::productData["datadir"]:"./suse";
-	
+	string dataDir	= ISO::productData["datadir"]:"./suse";
+
 	list tok = splitstring( pac , " ");
 	string pacname = "";
 	if (full)
 	    pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
 	else
 	     pacname = tok[0]:"error" +  ".rpm";
-	
 	string location = tok[3]:"noarch" + "/" + pacname;
 	string localpath =  ISO::sourceDir + "/" + dataDir + "/" + location;
 
-	
 	return localpath;
     };
 
-    
     /**
      * Check if selected packages are available
      */
     global define string checkPackageAvail() ``{
 
-	string descrDir 	= ISO::productData["descrdir"]:"suse/setup/descr";
-	string dataDir 	= ISO::productData["datadir"]:"./suse";
-	string sourceDir 	= ISO::sourceDir;
-	string packDB 		= descrDir + "/packages";
+	string descrDir	= ISO::productData["descrdir"]:"suse/setup/descr";
+	string dataDir	= ISO::productData["datadir"]:"./suse";
+	string sourceDir	= ISO::sourceDir;
+	string packDB		= descrDir + "/packages";
 	Progress::Title(sformat(_("Checking for package database: %1"), packDB));
 
 	string error_msg = "";
@@ -155,12 +151,10 @@
 	    integer pacsize1 = SCR::Read(.target.size, getRpmPath(pac, false));
 	    if (pacsize == -1 && pacsize1 == -1)
 	    {
-		failed = add (failed, tok[0]:"Error");
+		failed = add (failed, getRpmPath(pac, true));
 	    }
 	});
-	
 	ISO::missing_packages = failed;
-	
 	if (size(failed) > 0 )
 	{
 	    integer num = size(failed);
@@ -568,16 +562,8 @@ Please wait while the directory structure for the new ISO file is created.
 	if ( size(SCR::Read(.target.dir, AutoinstConfig::classDir) ) > 0 )
 	{
 	    y2milestone("class dir exists...");
-	    SCR::Execute (.target.bash, sformat("cp -a %1 %2/skeleton/",   AutoinstConfig::classDir, ISO::skeletonDir ) );	    
+	    SCR::Execute (.target.bash, sformat("cp -a %1 %2/skeleton/",   AutoinstConfig::classDir, ISO::skeletonDir ) );
 	}
-	/*
-	if ( size(SCR::Read(.target.dir, AutoinstConfig::Repository) ) > 0 )
-	{
-	    y2milestone("rules dir exists...");
-	    SCR::Execute (.target.bash, sformat("cp -a %1 %2/skeleton/",   AutoinstConfig::Repository + "/rules" , ISO::skeletonDir ) );	    
-	}
-	*/
-	
 	string location = sformat("%1/skeleton/autoinst.xml", ISO::skeletonDir);
 	Profile::Save(location);
 
@@ -609,9 +595,9 @@ Please wait while the directory structure for the new ISO file is created.
 		}
 
 		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, ISO::skeletonDir, datadir, location);
-		
+
 		y2debug("%1", cpCmd);
-		
+
 		any ret = SCR::Execute (.target.bash, cpCmd);
 	    }
 

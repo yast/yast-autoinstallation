@@ -1,0 +1,81 @@
+/**
+ * 
+ */
+{
+
+    module "AutoinstRAID";
+    textdomain "autoinst";
+
+    import "Storage";
+    import "AutoinstStorage";
+
+    include "partitioning/partition_defines.ycp";
+    include "partitioning/raid_lib.ycp";
+ 
+
+
+    global map ExistingRAID = $[];
+
+    
+
+    global boolean OldAvailable = false;
+
+
+
+
+
+    list region = [0,0];
+    map targetMap = $[];
+  
+
+
+    /**
+     * Constructor
+     *
+     */
+    global define void AutoinstRAID () ``{
+
+	targetMap 	= Storage::GetTargetMap();
+	y2milestone("Current TargetMap: %1", targetMap );
+	ExistingRAID 	= filter(`k,`v, targetMap, ``(k == "/dev/md"));
+	y2milestone("Existing RAID: %1", ExistingRAID );
+
+	if (size(ExistingRAID) > 0 )
+	{
+	    OldAvailable = true;
+	}
+	return;
+    }
+
+
+
+
+    global define list ExistingMDs ( string md )
+	``{
+	return(filter( `part, get_possible_rds( targetMap ),  ``( part["raid_name"]:"-1" == md )));
+    }
+
+
+    global define list DeletedMDs ( string md )
+	``{
+	list ret = [];
+	foreach( `dev, `devmap, targetMap,
+		 ``{
+	    ret = add( ret,
+		       filter( `part, devmap["partitions"]:[],
+			       ``(
+				  part["raid_name"]:"" == md
+				  &&
+				  part["delete"]:false
+				  &&
+				  part["fsid"]:0 == Partitions::fsid_raid 
+				  )
+			       )
+		       );
+	});
+
+	return( flatten(ret) );
+    }
+
+}
+
