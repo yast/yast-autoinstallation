@@ -376,6 +376,24 @@
         return contents;
     }
 
+
+
+    void ShowSource() {
+        Profile::Prepare();
+        string source = XML::YCPToXMLString(`profile, Profile::current);
+        UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
+
+        term sourceView =
+            `RichText( `id(`class_source ),
+                    `opt(`plainText),
+                    source
+                    );
+
+        Wizard::SetContents(_("Source"),
+                sourceView , "", true , true);
+        return;
+    }
+
     /**
      * Menu interface
      * @param list menu items
@@ -470,21 +488,13 @@
 
                     Profile::ReadXML((string)filename);
                 }
+                if (UI::WidgetExists(`id(`class_source))) {
+                    ShowSource();
+                }
             }
             else if (ret == `menu_source) // Show SOURCE
             {
-                Profile::Prepare();
-                string source = XML::YCPToXMLString(`profile, Profile::current);
-                UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
-
-                term sourceView =
-                    `RichText( `id(`class_source ),
-                            `opt(`plainText),
-                            source
-                            );
-
-                Wizard::SetContents(_("Source"),
-                        sourceView , "", true , true);
+                ShowSource();
                 tree_item = "System";
 
             }
@@ -522,6 +532,9 @@
                 Profile::Reset();
                 AutoinstConfig::currentFile = "";
                 UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), "Untitled"));
+                if (UI::WidgetExists(`id(`class_source))) {
+                    ShowSource();
+                }
             }
             else if (ret == `menu_exit) // EXIT
             {
