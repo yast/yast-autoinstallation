@@ -927,7 +927,7 @@ SuSE package names and package groups.
 	{
 	    map ks_clock = ksConfig["timezone"]:$[];
 	    clock["timezone"] 	= ks_clock["timezone"]:"";
-	    clock["utc"]	= ( ks_clock["utc"]:0 == 1 );
+	    clock["hwclock"]	= ( ks_clock["utc"]:0 == 1 ) ? "GMT" : "localtime";
 	}
 	general["clock"] = clock;
 
