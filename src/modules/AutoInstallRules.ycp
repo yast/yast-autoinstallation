@@ -325,11 +325,11 @@
     define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
 
 	if (op == "and")
-	    op = " -a ";
+	    op = " && ";
 	else if (op == "or")
-	    op = " -o ";
+	    op = " || ";
 
-	string tmpshell = "";
+	string tmpshell = " ( [ ";
 	y2debug("Match type: %1", matchtype);
         if (is( val, string) && (string)val == "*")
         {
@@ -357,11 +357,11 @@
 
 	if (match)
 	{
-	    shell = shell + sformat(" %1 %2", op, tmpshell);
+	    shell = shell + sformat(" %1 %2 ] )", op, tmpshell);
 	}
 	else
 	{
-	    shell = tmpshell;
+	    shell = tmpshell + " ] ) ";
 	}
 
     }
@@ -374,7 +374,7 @@
     define integer verifyrules ()
     ``{
 
-	string script = sformat("if [ %1 ]; then exit 0; else exit 1; fi", shell);
+	string script = sformat("if %1; then exit 0; else exit 1; fi", shell);
 	map ret = (map)SCR::Execute (.target.bash_output, script, env);
 
 	y2milestone("Bash return: %1 (%2) (%3)", script, ret, env);
@@ -707,6 +707,7 @@
 	string tmpdir = AutoinstConfig::tmpDir;
 	boolean ok = true;
 	boolean skip = false;
+        boolean error = false;
 
 	string base_profile  =  tmpdir + "/base_profile.xml";
 
@@ -718,10 +719,13 @@
 	    if (!skip)
 	    {
 		if (!XML_cleanup(current_profile,  tmpdir + "/base_profile.xml"))
+                {
 		    y2error("Error reading XML file");
+                    error = true;
+                }
 		skip = true;
 	    }
-	    else
+	    else if (!error )
 	    {
 		string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'package, addon'\"  --param with ";
 		MergeCommand = MergeCommand + "\"'" + current_profile + "'\"  ";
@@ -741,8 +745,16 @@
 		XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
 
 	    }
+            else
+            {
+                y2error ("Error while merging control files");
+            }
 	});
 
+        if (error )
+        {
+            return !error;
+        }
 
 	SCR::Execute(.target.bash, "cp " +  tmpdir + "/base_profile.xml " + result_profile );
 
