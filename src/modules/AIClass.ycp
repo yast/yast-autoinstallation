@@ -102,10 +102,10 @@
 	MergeCommand = MergeCommand + tmpdir + resultFileName;
 	*/
 	
-	y2milestone("Merge command: %1", MergeCommand);
+	y2debug("Merge command: %1", MergeCommand);
 	
 	map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
-	y2milestone("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
+	y2debug("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
 	return (out);	
     }
 
@@ -151,6 +151,7 @@
 	{
 	    // TODO: use XML module
 	    map tmp = SCR::Read(.xml, classPath);
+	    // y2debug("tmp %1", tmp["classes"]:[]);
 	    Classes = tmp["classes"]:[];
 	}
 	return;
@@ -162,11 +163,12 @@
     global define void readProfiles()
 	``{
 	// TODO: use XML module
-	if (SCR::Read(.target.size, profileConfPath ) != -1) {
+	if (SCR::Read(.target.size, profileConfPath ) != -1)
+	{
 	    map tmp = SCR::Read(.xml, profileConfPath);	
 	    Profiles = tmp["profiles"]:[];
 	}
-	y2milestone("Profiles: %1", Profiles);
+	y2debug("Profiles: %1", Profiles);
 	return;
     }
     /**
@@ -220,7 +222,7 @@
 	    }
 	    else
 	    {
-		y2milestone("directory created");
+		y2debug("directory created");
 	    }
 	});
 	return;
@@ -234,7 +236,7 @@
     global define SaveClasses()
 	``{
 	map tmp = $[ "classes":Classes];
-	y2milestone("saving classes: %1", classPath);
+	y2debug("saving classes: %1", classPath);
 	return (XML::YCPToXMLFile(`class, tmp, classPath));	
     }
 
