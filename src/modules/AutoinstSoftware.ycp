@@ -51,8 +51,7 @@
     global list<string> additional_locales = [];
 
 
-    string imagefile = "";
-    string iface = "";
+    global string ft_module = "";
     boolean imaging = false;
 
 
@@ -74,10 +73,9 @@
 
 
         // Imaging
-        map<string, any> image = settings["software_images"]:$[];
+        map<string, any> image = settings["system_images"]:$[];
         imaging = image["enable_multicast_images"]:false;
-        imagefile = image["image_file"]:"";
-        iface = image["network_device"]:"";
+        ft_module = image["module_name"]:"";
 
 	return true;
     }
@@ -271,11 +269,10 @@
 
         if (imaging)
         {
-            if (imagefile!="") {
+            if (ft_module!="")
+            {
                 ProductControl::DisabledModules=add(ProductControl::DisabledModules, "kickoff");
                 ProductControl::DisabledModules=add(ProductControl::DisabledModules, "rpmcopy");
-                AutoinstImage::image_name = imagefile;
-                AutoinstImage::iface = iface;
                 AutoinstImage::enabled = true;
                 return true;
             }
