@@ -1,0 +1,208 @@
+-------------------------------------------------------------------
+Wed May 29 11:44:59 EDT 2002 - nashif@suse.de
+
+- Run post-install depending on installed modules 
+- Use yast2-lib-xml instead of using XML agent directly
+- Improved automated partitioning
+- Rely on yast2-lib-network instead of custom code
+
+-------------------------------------------------------------------
+Wed Apr 17 14:56:09 EDT 2002 - nashif@suse.de
+
+- fixed parsing of command line parameters, now also parse port number
+  and handle colon in url
+- In failure pop-up default to previously selected protocol
+
+-------------------------------------------------------------------
+Tue Mar 26 19:30:31 EST 2002 - nashif@suse.de
+
+- Through fix for #15430, runme_at_boot is not deleted in autoinst mode (inst_root is
+  not called in autoinst mode). Remove runme_at_boot here
+
+-------------------------------------------------------------------
+Tue Mar 26 23:17:57 CET 2002 - nashif@suse.de
+
+ - handle default behaviour (distinguish between medium root and installation
+   root)
+
+-------------------------------------------------------------------
+Tue Mar 26 11:52:28 EST 2002 - nashif@suse.de
+
+- If a file referenced with file:// is not found on source medium, try to find it
+  relative to the mount root/installation system
+
+
+-------------------------------------------------------------------
+Mon Mar 25 03:52:41 EST 2002 - nashif@suse.de
+
+- Fixed bug: Copy control file if specified with file:// from the right
+  source location
+- Fixed bug: return error if control file not found with file://
+- indent code
+- doc updates
+
+-------------------------------------------------------------------
+Tue Mar 19 12:29:51 EST 2002 - nashif@suse.de
+
+- finalized documentation
+- default pesize for LVM is 4M and not 0
+- bug #15082: Added call for missing printconf in post-intallation
+
+
+-------------------------------------------------------------------
+Fri Mar 15 16:41:13 CET 2002 - nashif@suse.de
+
+- Fixed bug #15005: Use /var/adm/autoinstall/logs instead of
+  /var/adm/autoinstall/inst-logs for logging output of post scripts
+- Documentation updates
+- 2.5.18
+
+
+-------------------------------------------------------------------
+Mon Mar  4 11:34:28 EST 2002 - nashif@suse.de
+
+- Doc updates
+- 2.5.17
+
+-------------------------------------------------------------------
+Sun Mar  3 21:48:41 EST 2002 - nashif@suse.de
+
+- added md5 support (bug #13250)
+- added reboot options to force reboot after auto-installation
+- Fixed problem with profile retrieval where functions returned false
+  when they had to return true!
+- use profile as id for sgml references instead of default one 
+
+-------------------------------------------------------------------
+Thu Feb 28 13:41:58 EST 2002 - nashif@suse.de
+
+- Fixed bug#14084
+
+-------------------------------------------------------------------
+Thu Feb 28 11:57:00 EST 2002 - nashif@suse.de
+
+- Set the langauge correctly using the Language module
+- Added debug messages in setup client
+- Removed unused User module from autoinst_setup
+- doc updates
+
+-------------------------------------------------------------------
+Tue Feb 26 13:39:11 EST 2002 - nashif@suse.de
+
+- use Language::language instead of Installation::Language
+- Set selection to Minimal if nothing is declared
+- Check for configured X11 correctly
+
+-------------------------------------------------------------------
+Mon Feb 18 23:22:39 CET 2002 - nashif@suse.de
+
+- use network data from installMap instead of scr
+- doc updates
+
+-------------------------------------------------------------------
+Wed Feb 13 20:56:23 CET 2002 - nashif@suse.de
+
+- doc updates
+- completed feature to have complete conf files which
+  can be copied anywhere in the installed system
+- completed feature to add any sysconfig variable given the path, key
+  and value
+- script directories are now created in the spec file
+
+
+-------------------------------------------------------------------
+Tue Feb 12 16:56:19 CET 2002 - nashif@suse.de
+
+- Create only selected partitions, if specified in control file
+- 2.5.15
+
+-------------------------------------------------------------------
+Mon Feb 11 17:49:42 CET 2002 - nashif@suse.de
+
+- doc updates
+- configure runlevel, inetd
+- 2.5.14
+
+-------------------------------------------------------------------
+Tue Feb  5 17:28:18 CET 2002 - nashif@suse.de
+
+- Updated documentation. now with a reference
+- 2.5.13
+
+-------------------------------------------------------------------
+Mon Feb  4 18:12:25 CET 2002 - nashif@suse.de
+
+- Fixed documentation and images 
+- 2.5.12
+
+-------------------------------------------------------------------
+Mon Feb  4 11:55:12 EST 2002 - nashif@suse.de
+
+- Partitioning modifications
+- Code cleanup
+- 2.5.11
+
+-------------------------------------------------------------------
+Mon Jan 28 11:14:16 EST 2002 - nashif@suse.de
+
+- X11 configuration updates
+- Package selection updates
+- Bootloader configuration finalized
+- 2.5.10
+
+-------------------------------------------------------------------
+Fri Jan 25 07:41:52 CET 2002 - nashif@suse.de
+
+- Option to initialize disks added
+- Removed dependency on XML agent
+- Updated docs
+
+-------------------------------------------------------------------
+Mon Jan 21 11:18:26 EST 2002 - nashif@suse.de
+
+- Adapted to latest version of YaST2
+- non-SuSE package handling
+- Post-install improvements( Mail)
+- preview version 
+
+-------------------------------------------------------------------
+Tue Jan 15 12:24:30 EST 2002 - nashif@suse.de
+
+- Handle packages in package module
+- Fixed Makefile.am for documentation
+- Mail directive parsing improvements 
+
+-------------------------------------------------------------------
+Mon Jan 14 19:55:31 CET 2002 - nashif@suse.de
+
+- SGML Documentation
+- control file changes (report directive )
+
+-------------------------------------------------------------------
+Sun Jan 13 23:28:52 EST 2002 - nashif@suse.de
+
+- X11 Support
+- Various post-install additions (nis, nis+, mail, security etc.)
+- XML Parser improvements
+
+-------------------------------------------------------------------
+Tue Jan  8 01:43:54 EST 2002 - nashif@suse.de
+
+- Added LVM Support
+- Execute user-defined scripts before system first boot
+- Make all the way to the login prompt :-)
+
+-------------------------------------------------------------------
+Thu Jan  3 10:35:28 EST 2002 - nashif@suse.de
+
+- Split module to installation and configuration parts
+
+-------------------------------------------------------------------
+Mon Nov 19 03:37:04 CET 2001 - nashif@suse.de
+
+- Fix lookup defaults
+
+-------------------------------------------------------------------
+Mon Oct 22 00:45:15 2001 - nashif@suse.de
+
+- initial version

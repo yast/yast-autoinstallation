@@ -1,0 +1,186 @@
+/**
+ * File:
+ *	autoinst_tools.ycp
+ *
+ * Module:
+ *	Autoinstall Tools
+ *
+ * Summary:
+ *	This module handles the configuration for auto-installation
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "AIConfig";
+    import "Wizard";
+    import "Progress";
+    import "Runlevel";
+    include "require.ycp";
+
+    include "wizard/sequencer.ycp";
+
+    map Aliases = $[
+		    "begin"     : ``(MainDialog()),
+		    "pxe"    : ``(PxeDialog())
+
+    ];
+
+    map Sequence = $[
+		     "ws_start" : "begin",
+		     "begin" :	$[
+				  `setup_pxe : "pxe",
+				  `next	:	`ws_finish,
+		     ],
+		     "pxe" :	$[
+				  `finish : `ws_finish,
+				  `next :	`ws_finish
+		     ]
+    ];
+
+
+
+    define MainDialog() ``{
+
+	string tftpboot = AIConfig::Tftpboot;
+
+	string help_text = _("<h3>PXE</h3>");
+	help_text = help_text +
+	    _("<p>Create PXE configuration and
+prepare system for booting with PXE</p>");
+
+	help_text = help_text +
+	    _("<p>Use this only if this machine is the server
+which all other clients should boot from.</p>");
+
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Frame(_("PXE"),
+			      `VSquash(
+				       `HBox(
+					     `TextEntry(`id(`tftpboot), _("&Tftpboot directory"),
+							tftpboot
+							),
+					     `HStretch(),
+					     `VBox(
+						   `VSpacing(),
+						   `Bottom(`PushButton(`id(`setup_pxe), _("&Setup PXE"))
+							   )
+						   )
+					     )
+				       )
+			      )
+		       )
+		 );
+
+	Wizard::CreateDialog();
+	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::SetContents(_("Tools"),
+			    contents, help_text, true , true);
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `setup_pxe) {
+		AIConfig::Tftpboot = UI::QueryWidget(`id(`tftpboot), `Value);
+		break;
+	    }
+	} until (ret == `next || ret == `back );
+
+	// UI::CloseDialog();
+	return ret;
+    }
+
+    define PxeDialog()``{
+
+
+	list needed_pkgs = ["tftp", "syslinux", "inetd", "dhcp-server"];
+
+
+	Progress::New (
+        "Setup PXE",
+        "Initial progress caption",
+        4,
+        [
+	 "Check existing configuration",
+	 "Check for needed RPMs",
+	 "Copy needed files",
+	 "Restart Services",
+	 ],
+        [ "Stage 1...", "Stage 2...", "Stage 3...", "Finished", ],
+        "Help text"
+        );
+
+
+	Progress::NextStage();
+	list pxeconfig = SCR::Read(.target.dir, AIConfig::Tftpboot + "/pxelinux.cfg");
+	if (size(pxeconfig)>0) {
+	    if (!UI::YesNoPopup(_("Configuration exists, are you sure
+you want to create new configuration files?"))) {
+		return `next;
+		}
+	}
+
+	Progress::NextStage();
+	// Check for missing packages
+
+	if (!RequireAndConflict (needed_pkgs, [],
+			     _("<p>To make this machine accessible to the target machines,
+the following package: <b>%1</b>  must be installed.</p>") +
+_("<p>Do you want to install it now?</p>")
+				 )
+	    )
+	{
+	    return `next;
+	}
+
+
+	Progress::NextStage();
+	// Copy needed files
+	if (!SCR::Execute(.target.mkdir, AIConfig::Tftpboot)) {
+	    UI::ErrorPopup(sformat(_("Error while creating %1"), AIConfig::Tftpboot));
+	}
+	if (SCR::Read(.target.size, "/usr/share/syslinux/pxelinux.0")!=0) {
+	    Progress::Title(_("Copying pxelinux.0"));
+	    SCR::Execute(.target.bash, "cp /usr/share/syslinux/pxelinux.0 " + AIConfig::Tftpboot);
+	}
+	pxeconfig = SCR::Read(.target.dir, "/usr/share/autoyast/pxelinux.cfg");
+	if (size(pxeconfig)==0) {
+	    UI::ErrorPopup(_("Configuration files can't be found"));
+	    return `next;
+	} else {
+	    SCR::Execute(.target.bash, "cp -a /usr/share/autoyast/pxelinux.cfg " + AIConfig::Tftpboot);
+	}
+
+
+	sleep(1000);
+	Progress::NextStage();
+
+	list neededServices= ["inetd", "dhcpd"];
+
+	foreach (`s, neededServices, ``{
+	    Progress::Title(sformat(_("Starting %1"), s));
+	    if (!Runlevel::ServiceEnabled (s)) {
+		Runlevel::ServiceAdjust (s, "enable");
+	    }
+	    if ( Runlevel::ServiceStatus (s) != 0)
+		Runlevel::RunInitScript (s, "start");
+	});
+
+
+
+	sleep(1000);
+	Progress::Finish();
+	// UI::CloseDialog ();
+	return `next;
+
+    }
+
+    symbol ui = WizardSequencer(Aliases, Sequence);
+    UI::CloseDialog ();
+    return ui;
+}

@@ -1,0 +1,321 @@
+/**
+ * File:	clients/autoinst_software.ycp
+ * Package:	Autoinstallation Configuration System
+ * Authors:	Anas Nashif (nashif@suse.de)
+ * Summary:	Handle Package selections and packages
+ *
+ * $Id$
+ */
+{
+
+    textdomain "autoinst";
+    import "Mode";
+    Mode::config = true;
+
+    import "AIPackages";
+    import "Wizard";
+    include "wizard/sequencer.ycp";
+    include "ui/common_messages.ycp";
+    include "autoinstall/dialogs.ycp";
+    
+    y2milestone("Selections: %1", AIPackages::Selections);
+
+    list args = Args ();
+
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( Args (0), map ) )
+    {
+	y2error ("Bad argument: %1", Args (0));
+	return false;
+    }
+    list    possible_start_dialogs = ["selections", "custom", "single"];    
+    map settings = $[];
+    {
+	integer i = 0;
+	while (i < size (Args()))
+	{
+	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);
+	  
+	    i = i + 1;
+	}
+    }
+
+    map dialogs = $[
+		    "selections": 	``(   Selections() ),
+		    "custom"	:	``(   customPackages() )
+    ];
+    
+  
+    map sequence = $[
+		    "ws_start" 	: "selections",
+		    "selections":
+		    $[
+		      `abort 	: `abort,
+		      `next	: "custom",
+		      `back	: `back
+		    ],
+		    "custom"	:
+		    $[
+		      `abort 	: `abort,
+		      `next	: `next,
+		      `back	: "selections"
+		    ]
+    ];
+    
+    
+    y2milestone("Imported: (%1)", settings);    
+    AIPackages::Import ( settings );
+
+
+    define packagesContent() ``{
+	list suse_pacs = maplist(string pac, AIPackages::pacs, ``{
+	    return (`item(`id(pac), pac, _("SuSE Package")));
+	});
+	list custom_pacs = maplist(string pac, AIPackages::custom_pacs, ``{
+	    return (`item(`id(pac), pac, _("Custom Package")));
+	});
+	list pacs = union(suse_pacs, custom_pacs);
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Table(`id(`pacs), `opt(`notify,`immediate), `header(_("Packages"), _("Type")),
+			      pacs
+			      ),
+		       `HBox(
+			     `RadioButtonGroup( `id(`pactype),
+						`HBox(
+						      `RadioButton(`id("custom"),`opt(`notify), _("Custom &Packages"), (pactype=="custom") ),
+						      `RadioButton(`id("suse"), `opt(`notify),_("&Distribution Packages"),(pactype=="suse") )
+						      )
+						)
+			     ),
+		       `HBox(
+			     `PushButton(`id(`add), AddButtonLabel()),
+			     `PushButton(`id(`delete), DeleteButtonLabel()),			     
+			     `PushButton(`id(`load), _("&Load"))
+			     ),
+		       `VSpacing(0.5),
+		       `Left(`TextEntry(`id(`location), _("Relative path of cu&stom packages"), AIPackages::custom_location))
+		       )
+		 );
+	return contents;
+    }
+
+    
+    /**
+     *
+     *
+     */
+    define customPackages() ``{
+	string caption = _("Single Package Configuration");
+	string pactype = "suse";
+
+
+	Wizard::SetContents(caption,
+			    packagesContent(), "", true, true);
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    AIPackages::custom_location = UI::QueryWidget(`id(`location), `Value);
+	    pactype = UI::QueryWidget(`id(`pactype), `CurrentButton);
+	    if ( ret == `add) {
+		string pac = NewFileName(  _("Add Packages"), _("Packa&ges"));
+		if (pac!="")
+		    if (pactype == "suse")
+			AIPackages::pacs=add(AIPackages::pacs,pac);
+		    else
+			AIPackages::custom_pacs=add(AIPackages::custom_pacs,pac);
+		
+		Wizard::SetContents(caption,
+			    packagesContent(), "", true, true);
+		continue;
+	    } else if ( ret == `delete) {
+		 string selpac = UI::QueryWidget(`id(`pacs), `CurrentItem);
+		 if (is(selpac,string) && selpac !="") {
+		     if (contains(AIPackages::custom_pacs, selpac))
+			 AIPackages::custom_pacs=filter(`p, AIPackages::custom_pacs,``(p!=selpac));
+		     else if (contains(AIPackages::pacs, selpac))
+			 AIPackages::pacs=filter(`p,AIPackages::pacs,``(p!=selpac));
+		 }
+		 Wizard::SetContents(caption,
+			    packagesContent(), "", true, true);
+		 continue;
+	    }
+	    
+	} until (ret == `back || ret ==`next || ret == `abort);
+	return ret;
+    }
+
+
+
+
+
+
+
+    
+    define Selections()
+	``{
+	string base 		= AIPackages::base;
+	list addons 		= AIPackages::addons;
+	term baseconfs 		= `VBox();
+	list categories 	= [];
+	list base_selections 	= [];	
+	list pacsels 		= AIPackages::Selections;
+
+	foreach(`sel, pacsels, ``{
+	    string selid   	= select(sel, 0, "");
+	    string group   	= select(sel, 2, "");
+	    string seldesc 	= select(sel, 1, "");
+	    if ( group == "baseconf" )
+	    {
+		baseconfs = add(baseconfs, `Left(`RadioButton(`id(selid),`opt(`notify, `autoShortcut),
+							      seldesc,
+							      (base== selid))));
+		base_selections = add(base_selections, selid);
+	    }
+
+	});
+
+	foreach(`sel, pacsels, ``{
+	    string   selid   = select(sel, 0, "");
+	    string   group   = select(sel, 2, "");
+	    string   seldesc = select(sel, 1, "");
+
+	    if ( group == "addon" )
+	    {
+		categories = add(categories, `item(`id(selid), seldesc, contains(addons, selid)));		
+	    }
+
+	});
+
+	baseconfs = add(baseconfs, `VBox(
+					 `Left(
+					       `RadioButton(`id("custom"),
+							    `opt(`notify),
+							    _("&Custom Selection"),
+							    (!contains(base_selections,base))
+							    )
+					       ),
+					 `HBox(
+					       `HWeight(20, `Empty()),
+					       `HWeight(40, `TextEntry(`id(`customsel), _("Selec&tion"), (!contains(base_selections,base))?base:"")
+							),
+					       `HWeight(40,`Empty())
+					       )
+
+					 )
+			);
+
+	term contents =
+	    `Top(
+		 `VBox(
+		       `VSpacing(0.5),
+		       `Frame( _("Base package selections:"),
+			       `VBox(
+				     `RadioButtonGroup( `id(`bgroup), baseconfs)
+
+				     )
+			       ),
+		       `VSpacing(0.5),
+		       `Frame(
+			      _("Add-Ons:"),
+			      `MultiSelectionBox( `id(`addons), _("Cho&ose one or more of the following selections:"),
+						   categories )
+			       )
+		       )
+		 );
+
+	Wizard::SetContents(_("Package Selection"),
+			    contents, "", true, true);
+
+	any ret = nil;
+	if ( contains(base_selections,base))
+	{
+	    UI::ChangeWidget(`id(`customsel), `Enabled, false);
+	}
+	else
+	{
+	    UI::ChangeWidget(`id(`customsel), `Enabled, true);
+	}
+
+
+	string basesel = "Minimal"; //default is Minimal
+
+	repeat {
+	    ret = UI::UserInput();
+	    if (UI::QueryWidget(`id(`bgroup), `CurrentButton) != "custom")
+		UI::ChangeWidget(`id(`customsel), `Enabled, false);
+	    else
+		UI::ChangeWidget(`id(`customsel), `Enabled, true);
+
+
+	    if ( ret == `next || ret == `finish)
+	    {
+		basesel = UI::QueryWidget(`id(`bgroup), `CurrentButton);
+		if (basesel == "custom") {
+		    basesel = UI::QueryWidget(`id(`customsel), `Value);
+		}
+		
+		addons = UI::QueryWidget( `id(`addons), `SelectedItems );		
+	
+	    }
+	} until	( ret == `next ||  ret ==`back || ret == `abort);
+
+	AIPackages::base = basesel;
+	AIPackages::addons =  addons ;
+
+	return ret;
+    }
+
+    define set_contents()
+	``{
+	term contents =
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), AIPackages::Summary()),
+		  `VSpacing(0.5),
+		  `HBox(
+			`PushButton(`id(`configure), _("&Configure")),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			),
+		  `VSpacing(1)
+		  );
+	Wizard::SetContents(_("Software"),
+			    contents, "", true, true);
+    }
+
+    set_contents();
+    any result = nil;
+    any ret = nil;
+    repeat {
+	ret = UI::UserInput();
+	if (ret == `configure)
+	{
+	        Wizard::CreateDialog ();
+		Wizard::ReplaceAbortButton(`Empty ());
+		result =  WizardSequencer (dialogs, sequence);
+		UI::CloseDialog ();		
+		if (result == `next || result == `finish)
+		{
+		    settings = AIPackages::Export ();
+		}
+		AIPackages::Set(settings);
+		set_contents();
+	}
+	else if ( ret == `reset)
+	{
+	    settings = $[];
+	    AIPackages::Set(settings);
+	    set_contents();
+	}
+    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+
+    return [ret, settings];
+}
+
+}

@@ -1,0 +1,47 @@
+/**
+ * File:
+ *   tmp_alice_part.scr
+ * Summary:
+ *   SCR Agent for reading yast1/alice partition plans
+ * Access:
+ *   read
+ * Authors:
+ *   Anas Nashif <nashif@suse.de>
+ * See:
+ *   anyagent
+ *   libscr
+ */
+.tmp.alice.part
+
+`ag_anyagent(
+		Description(
+			``(File("/tmp/alice_part")),  // real file name
+			"#\n",			// Comment
+			true,			// read-only
+			``(
+				List(
+					Tuple(
+						Optional(Whitespace()),
+							   Choice(
+									[Sequence ("path", Optional(Whitespace ()), "=", Optional(Whitespace ()), `path (String("^\=\n ")))],
+								   [
+								   Sequence(
+									   Name(String("^= \t\n")),
+									   "=",
+									   Value(String("^\n \t="))
+									   )
+								   ],
+								   [
+								   `size(Number("^\=\n "))
+								   ],
+								   [
+								   `mount(String("^\=\n "))
+								   ]
+								   ), Continue(Optional(Whitespace())
+							  )
+						)
+					, "\n"
+				)
+				)
+				)
+				)

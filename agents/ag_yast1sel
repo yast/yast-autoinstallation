@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Author: Mathias Kettner <kettner@suse.de>
+# Copyright SuSE GmbH 1999
+#
+# Converts a package selection file from the old YaST syntax to
+# the new YaST2 syntax.
+# 
+# Usage: $0 [ filename ]
+#
+export LC_ALL=C
+exec 2>/dev/null
+
+convert () {
+echo '[' 
+cat $1 \
+  | sed -n '/Toinstall:/,/Llatsniot:/p'\
+  | sed 1d\
+  | sed '$d'\
+  | sed 's/ //g'\
+  | sed 's/\(.*\)/"\1",/'\
+  | sed '$s/,//' ; echo  ']' 
+ 
+}
+while true ; do
+    IFS=
+    read COMMAND || exit
+    unset IFS
+
+    case "$COMMAND" in
+        "result ("*)
+            exit
+            ;;
+
+        "Read (.selection,"*)
+	    file=$(echo "$COMMAND" | sed 's/^Read (.selection, *"\(.*\)")/\1/')
+	    convert $file
+	;;
+        *)
+            echo nil
+    esac
+done
+

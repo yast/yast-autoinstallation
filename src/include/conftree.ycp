@@ -1,0 +1,230 @@
+/**
+ * File:
+ *	autoinst.ycp
+ *
+ * Module:
+ *	Autoinstall
+ *
+ * Summary:
+ *	This module handles the configuration for auto-installation
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+
+    textdomain "autoinst";
+    import "HTML";
+
+
+
+
+
+
+    /**
+     * Create a list to be used with the table widget
+     * @param tree data
+     * @return list
+     */
+
+    global define CreateTableList( list MenuTreeData)
+    ``{
+	list menu_options = maplist(`e, MenuTreeData,
+	``{
+	    if ((e["children"]:[]>0))
+	    {
+		list childrenlist = CreateTableList(lookup(e,"children",[]));
+		return `item(`id(e["entry"]:""), e["title"]:"",false, childrenlist);
+	    }
+	    else
+	    {
+		return `item(`id(e["entry"]:""),e["title"]:"", false);
+	    }
+	});
+	return menu_options;
+    }
+
+    /**
+     * Menu interface
+     */
+    global define symbol ConfTree()
+	``{
+
+	include "autoinstall/io.ycp";
+	include "autoinstall/help.ycp";
+	include "autoinstall/autoinst_functions.ycp";
+
+
+	list menu_options = CreateTableList(AIConfig::MenuTreeData);
+
+
+	UI::ReplaceWidget(`id(`helpSpace) , `VBox(`Tree( `id(`key),  `opt(`notify,`vstretch), _("Opt&ions"), menu_options), `VSpacing(1)));
+	// Wizard::ReplaceAbortButton(`Empty());
+
+	UI::ChangeWidget(`id(`next), `Label, AcceptButtonLabel());
+	string tree_item = "System";
+	any ret = `key;
+	any func_ret = "";
+
+	repeat {
+
+	    if (haskey(AIConfig::GroupMap, tree_item)) {
+		string html = "";
+		foreach(`k,`v, AIConfig::ModuleMap, ``{
+		    if (v["Group"]:"" == tree_item) {
+			html = html + HTML::Heading( HTML::Link(Translate(v["Name"]:""),k));
+			html = html + HTML::Para(Translate(v["Helptext"]:""));
+		    }
+		});
+
+		if (html == "") {
+		    html = HTML::Heading(_("No modules available in this group."));
+		}
+		term contents = `RichText(html);
+
+		Wizard::SetContents(_("Available modules"),
+				    contents, "", true , true);
+
+		while ( true )
+		{
+		    ret = Wizard::UserInput();
+		    y2milestone("INPUT: %1", ret);
+		    if (ret == `key) {
+			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+			break;
+		    }
+		    else if (ret == `next || ret == `back || ret == `abort) {
+			break;
+		    }
+		    else {
+			tree_item = ret;
+			break;
+		    }
+
+		}
+
+	    }
+	    foreach(`p,`d, AIConfig::ModuleMap, ``{
+		y2debug("Checking data from %1", p);
+		if (tree_item == p) {
+		    // Set resource name, if not using default value
+
+		    string resource = "";		    
+		    if (haskey(d,"AutoinstResource"))
+		    {
+			resource = d["AutoinstResource"]:"unknown";
+		    }
+		    else
+		    {
+			resource = p;
+		    }
+
+		    string module_auto = "";
+		    // determine name of client, if not default name
+		    if (haskey(d,"AutoClient"))
+		    {
+			module_auto = d["AutoClient"]:"none";
+		    }
+		    else
+		    {
+			module_auto = sformat("%1_auto", p);
+		    }
+		    list result = [];
+		    if (d["AutoinstDataType"]:"map" == "map") {
+
+			if (d["AutoinstPath"]:"configure" == "install")
+			{
+			    result = CallModule(module_auto, [eval(AIConfig::Install[resource]:$[])]);
+			}
+			else
+			{
+			    result = CallModule(module_auto, [eval(AIConfig::Configure[resource]:$[])]);
+			}
+
+			map data = select(result,1,$[]);
+			ret = select(result,0,`empty);
+
+
+			if (d["AutoinstPath"]:"configure" == "install")
+			{			    
+			    if (data!=eval(AIConfig::Install[resource]:$[]))
+			    {
+				y2milestone("config changed");
+				AIConfig::changed = true;
+			    }
+			    AIConfig::Install[resource] =  data;
+			}
+			else
+			{
+			    if (data!=eval(AIConfig::Configure[resource]:$[]))
+			    {
+				AIConfig::changed = true;
+			    }
+			    AIConfig::Configure[resource] =  data;
+			}
+			y2milestone("New data for %1: %2", resource, data);
+		    } else {
+
+			if (d["AutoinstPath"]:"configure" == "install")
+			{
+			    result = CallModule(module_auto, [AIConfig::Install[resource]:[]]);
+			}
+			else
+			{
+			    result = CallModule(module_auto, [AIConfig::Configure[resource]:[]]);
+			}
+
+			list data = select(result,1,[]);
+			ret = select(result,0,`empty);
+
+
+			if (d["AutoinstPath"]:"configure" == "install")
+			{
+			    if (data!=AIConfig::Install[resource]:[])
+			    {
+				y2milestone("config changed");
+				AIConfig::changed = true;
+			    }
+			    AIConfig::Install[resource] =  data;
+			}
+			else
+			{
+			    if (data!=AIConfig::Configure[resource]:[])
+			    {
+				y2milestone("config changed");
+				AIConfig::changed = true;
+			    }
+			    AIConfig::Configure[resource] =  data;
+			}
+			y2milestone("New data for %1: %2", resource, data);
+		    }
+
+
+
+		}
+	    });
+
+	    if (ret == `key) {
+		tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+		if (tree_item == nil)
+		    tree_item = "Hardware";
+		y2milestone("item %1", tree_item);
+	    }
+	   
+	    y2milestone("Final ret %1", ret);
+
+	} until ( ret == `next || ret == `back ||  (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel());
+	Wizard::RestoreHelp("");
+	Wizard::RestoreAbortButton();
+	if (ret != `back && ret != `abort) {
+	    return AIConfig::config_type;
+	}
+	else {
+	    return ret;
+	}
+    }
+}

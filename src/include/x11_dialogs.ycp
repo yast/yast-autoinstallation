@@ -1,0 +1,361 @@
+/**
+ * File:
+ *	env_dialogs.ycp
+ *
+ * Module:
+ *	Environment
+ *
+ * Summary:
+ *	Handle environment data
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+
+    include "x11/video_data_dialog.ycp";
+    
+    global define X11_general()
+    ``{
+	
+	map x11 = eval(AIConfig::X11);
+	boolean x11_enabled = x11["configure_x11"]:false;
+	y2debug("x11_enabled: %1", x11);
+	list resolutions        = [];
+	list resolutions_list = ["640x480", "800x600", "1024x768", "1152x864", "1280x960", "1280x1024", "1600x1200"];
+	list depths_list = [
+			    $[
+			      "desc"	:_("8 Bit / 256 Colors"),
+			      "depth"	: 8
+			    ],
+			      $[
+			      "desc"	:_("15 Bit / 32 K Colors (PPC)"),
+			      "depth"	: 15
+			      ],
+			      $[
+			      "desc"	:_("16 Bit / 64 K Colors"),
+			      "depth"	: 16
+			      ],
+			      $[
+			      "desc"	:_("24 Bit / 16 M Colors"),
+			      "depth"	: 24
+			      ],		      
+			      $[
+			      "desc"	:_("32 Bit / 16 M Colors"),
+			      "depth"	: 32
+			      ]
+	];
+
+	
+	foreach(string res, resolutions_list , ``{
+	    resolutions=add(resolutions, `item( `id(res), res, (res == x11["resolution"]:"1024x768")));
+	});
+	list color_depths       = [];
+	
+	foreach(map d, depths_list , ``{
+	    color_depths=add(color_depths, `item( `id(d["depth"]:16), d["desc"]:_("16 Bit / 64 K Colors") , ( d["depth"]:16 == x11["color_depth"]:16)));
+	});
+	
+
+	term contents = 
+	    `VBox(
+		  `Frame( _("&General Options:"),
+			  `VBox(
+				`Left(
+				      `CheckBox(
+						`id(`enable_x11),
+						`opt(`notify),
+						_("&Configure the X Window System"),
+						x11_enabled)
+				      ),
+				`Left(
+				      `CheckBox(
+						`id(`enable_3d),
+						_("&Enable 3D Support if possible"),
+						x11["enable_3d"]:false)
+				      ),
+				`Left(
+				      `CheckBox(
+						`id(`start_x11),
+						// This sets the runlevel to 5.
+						_("&Start the X Window System on boot"),
+						(AIConfig::Runlevels["default"]:"3" == "5"))
+				      ),
+				`VSpacing(1),
+				`HBox(
+				      `HWeight(50,
+					       `ComboBox(`id(`depth),
+							 _("Co&lor Depth"),
+							 color_depths	
+						   )),	
+				      `HSpacing(1),
+				      `HWeight(50,`ComboBox(`id(`resolution), _("&Resolution"),
+							    resolutions       
+							    )	
+					       )	
+				      )	
+				)
+			  ),
+		  `Frame( _("Display &Manager:"),
+			  `VBox(
+				`HBox(
+				      `HWeight(30, `ComboBox(`id(`dm), _("&Display Manager"),
+							     [	
+							      `item(`id	("kdm"), _("KDM"), (x11["display_manager"]:"kdm" == "kdm")),
+							      `item(`id("gdm"), _("GDM"), (x11["display_manager"]:"kdm" == "gdm"))
+							     ]
+							     )),
+				      `HWeight(70,`Empty())
+				      )	
+				)	
+			  )
+		  
+		  );
+	Wizard::SetContents(_("X11 Configuration"),	
+			    contents, "", true, true);
+
+	
+	if (!x11_enabled) {
+	    UI::ChangeWidget(`id(`depth), `Enabled, false);
+	    UI::ChangeWidget(`id(`resolution), `Enabled, false);
+	    UI::ChangeWidget(`id(`dm), `Enabled, false);
+	    UI::ChangeWidget(`id(`enable_3d), `Enabled, false);
+	    UI::ChangeWidget(`id(`start_x11), `Enabled, false);
+	}
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (UI::QueryWidget(`id(`enable_x11), `Value))
+	    {
+		UI::ChangeWidget(`id(`depth), `Enabled, true);
+		UI::ChangeWidget(`id(`resolution), `Enabled, true);
+		UI::ChangeWidget(`id(`dm), `Enabled, true);
+		UI::ChangeWidget(`id(`enable_3d), `Enabled, true);
+		UI::ChangeWidget(`id(`start_x11), `Enabled, true);
+	    }
+	    else
+	    {
+		UI::ChangeWidget(`id(`depth), `Enabled, false);
+		UI::ChangeWidget(`id(`resolution), `Enabled, false);
+		UI::ChangeWidget(`id(`dm), `Enabled, false);
+		UI::ChangeWidget(`id(`enable_3d), `Enabled, false);
+		UI::ChangeWidget(`id(`start_x11), `Enabled, false);
+	    }
+	    if (ret == `key || ret ==`next)
+	    {
+		x11_enabled 	= UI::QueryWidget(`id(`enable_x11), `Value);
+		
+		any depth 	= UI::QueryWidget(`id(`depth), `Value);
+		if (is(depth, integer))
+		    x11=add(x11,"color_depth", depth);
+		
+		any resol 	= UI::QueryWidget(`id(`resolution), `Value);
+		if (is(resol, string))
+		    x11=add(x11,"resolution", resol);	
+		
+		any default_dm 	= UI::QueryWidget(`id(`dm), `Value);
+		if (is(default_dm, string))
+		    x11=add(x11,"display_manager", default_dm);
+		
+		any enable_3d	= UI::QueryWidget(`id(`enable_3d), `Value);
+		if (is(enable_3d, boolean))
+		    x11=add(x11,"enable_3d", enable_3d);
+		
+		any xdm	= UI::QueryWidget(`id(`start_x11), `Value);
+		if (is(enable_3d, boolean) && xdm)
+		    AIConfig::Runlevels["default"] = "5";
+		else
+		    AIConfig::Runlevels["default"] = "3";
+
+		
+	    }else if (ret == `help)
+	    {
+		UI::LongTextPopup (_("Help"), `RichText (helpTexts("x11")), 50, 15);
+	    }
+	} until ( ret == `key || ret ==`next || ret ==`back);
+	
+	x11=add(x11,"configure_x11", x11_enabled);
+	if (x11!=AIConfig::X11 )
+	    AIConfig::changed=true;
+	
+	AIConfig::X11 = x11;
+	
+	return ret;
+    }
+
+
+    global define X11_monitor()
+    ``{
+	
+	term contents =
+	    `VBox(
+		  `RichText( `id(`mon),  MonitorDialogSummary()),
+		  `VSpacing(1),
+		  `HBox(
+			`PushButton(`id(`conf_monitor), _("&Configure Monitor")),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			)
+			
+		  );
+
+	
+	Wizard::SetContents(_("Monitor Configuration"),	
+			    contents, "", true, true);
+
+	if (!AIConfig::X11["configure_x11"]: false)
+	    UI::ChangeWidget(`id(`conf_monitor), `Enabled, false);
+	
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `conf_monitor)
+	    {
+		term save_button = `PushButton(`id(`next), SaveButtonLabel());
+		UI::ReplaceWidget(`id(`rep_finish), save_button);
+		UI::ReplaceWidget(`id(`rep_help),  `Empty(`id(`help)));
+		UI::ReplaceWidget(`id(`rep_abort),  `PushButton(`id(`abort), Wizard::AbortButtonLabel()));
+
+		term help =  `RichText (UI::X11VideoDataDialogHelpText());
+		
+		UI::ReplaceWidget(`id(`tree_rp), help);
+		
+		any video_ret = CallFunction( `inst_video_data( false, true ) );
+		UI::ReplaceWidget(`id(`rep_finish),`PushButton(`id(`next), Wizard::FinishButtonLabel()));
+		UI::ReplaceWidget(`id(`rep_abort),  `Empty(`id(`abort)));
+		UI::ReplaceWidget(`id(`rep_help),`PushButton(`id(`help), Wizard::HelpButtonLabel()));
+		UI::ReplaceWidget(`id(`tree_rp),
+				  `Tree( `id(`key),  `opt(`notify,`vstretch),  _("&Options"), CreateTableList(MenuTreeData())));
+		term new_contents =		    
+		    `VBox(
+			  `RichText( `id(`mon),  MonitorDialogSummary()),
+			  `VSpacing(1),
+			   `HBox(
+				 `PushButton(`id(`conf_monitor), _("&Configure Monitor")),
+				 `PushButton(`id(`reset), _("&Reset"))
+				 )
+			  );
+		Wizard::SetContents(_("Monitor Configuration"),	
+					new_contents, "", true, true);
+		
+		
+		y2debug("Monitor %1", X11::get_monitor());
+		
+	    }
+	    else if (ret == `reset)
+	    {
+		remove(AIConfig::x11,"monitor");
+		X11::set_monitor($[]);
+		term new_contents =		    
+		    `VBox(
+			  `RichText( `id(`mon),  MonitorDialogSummary()),
+			  `VSpacing(1),
+			   `HBox(
+				 `PushButton(`id(`conf_monitor), _("&Configure Monitor")),
+				 `PushButton(`id(`reset), _("&Reset"))
+				 )
+			  );
+		Wizard::SetContents(_("Monitor Configuration"),	
+					new_contents, "", true, true);
+		continue;
+	    }		
+	    else if (ret == `help)
+	    {
+		UI::LongTextPopup (_("Help"), `RichText (helpTexts("monitor")), 50, 15);
+	    }
+	} until ( ret == `key || ret ==`next || ret == `back);
+	return ret;
+	    
+    }
+
+
+
+    global define ceiling( any value )
+	``{
+	if ( is( value, integer ) ) return( value );		// already integer
+
+	if ( is( value, float ) )				// is float
+	{
+	    if ( tofloat( tointeger( value ) ) == value )	// is whole-numbered
+		return( tointeger( value ) );			// return as is
+	    else						// not whole-numbered
+		return( tointeger( value ) + 1 );		// round up
+	}
+	else
+	{
+	    y2error( "ceiling(): parameter error: <%1> (only integer and float allowed)", value );
+	    return( nil );
+	}
+    }
+
+    
+    // Round down a value given as integer or float to the prev. integer (floor).
+    // e.g.:
+    //		5.5  --->  5
+    //		5    --->  5
+    //
+    global define floor( any value )
+	``{
+	if ( is( value, integer ) ) return( value );		// already integer
+
+	if ( is( value, float ) )				// is float
+	{
+	    return( tointeger( value ) );			// round down
+	}
+	else
+	{
+	    y2error( "floor(): parameter error: <%1> (only integer and float allowed)", value );
+	    return( nil );
+	}
+    }
+
+
+
+    global define MonitorDialogSummary() ``{
+	any    current_vendor = lookup( X11::get_monitor(), "vendor", "" );
+	string current_model  = lookup( X11::get_monitor(), "device", "" );
+
+	list   display_list   = lookup( X11::get_monitor(), "display", [] );
+    
+	map display = $[];
+	if ( display_list != [] ) display = select( display_list, 0, $[] );
+
+	integer min_hsync = 0;
+	integer max_hsync = 0;
+	integer min_vsync = 0;
+	integer max_vsync = 0;
+
+	min_hsync = ceiling( lookup ( display, "min_hsync", 0 ) );
+	max_hsync = floor  ( lookup ( display, "max_hsync", 0 ) );
+	min_vsync = ceiling( lookup ( display, "min_vsync", 0 ) );
+	max_vsync = floor  ( lookup ( display, "max_vsync", 0 ) );
+	
+
+
+	
+	string summary = "";
+	string monitor =  Summary::NotConfigured();
+	
+	if (size(current_vendor) > 0)
+	{
+	    monitor =  sformat("%1   %2", current_vendor, current_model);
+	}
+
+	string horizontal = sformat("%1 - %2",  min_hsync , max_hsync);
+	string vertical = sformat("%1 - %2",  min_vsync , max_vsync);
+	summary = Summary::AddHeader(summary, _("Monitor"));
+	summary = Summary::AddLine(summary, monitor);
+	summary = Summary::AddHeader(summary, _("Horizental frequency"));
+	summary = Summary::AddLine(summary, horizontal);
+	summary = Summary::AddHeader(summary, _("Vertical frequency"));
+	summary = Summary::AddLine(summary, vertical);
+	
+	return summary;
+    }
+
+
+}

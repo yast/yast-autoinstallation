@@ -1,0 +1,66 @@
+	<example>
+	  <title>Automated partitioning</title>
+	<para>
+	  The following is an example of a single drive system, which is not
+	  pre-partitioned and should be automatically partitioned according to
+	  the described pre-defined partition plan:
+	</para>
+	  <screen>
+<![CDATA[
+....
+<partitioning  config:type="list">
+     <drive>
+        <device>/dev/hda</device>       
+        <reuse>all</reuse>
+     </drive>
+</partitioning>
+.....
+]]>
+	  </screen>
+	</example>
+	<para>
+	  A more detailed example shows how existing partitions  and
+	  how multiple drives are handled.
+	</para>
+	<example>
+	  <title>Detailed automated partitioning</title>
+	  <screen>
+<![CDATA[
+....
+<partitioning  config:type="list">
+     <drive>
+        <device>/dev/hda</device>        
+        <use>free</use>
+        <partitions config:type="list">
+           <partition>
+              <mount>/</mount>
+              <size>5gb</size>
+           </partition>
+           <partition>
+              <mount>swap</mount>
+              <size>1gb</size>
+           </partition>
+        </partitions>
+     </drive>
+     <drive>
+        <device>/dev/hdb</device>
+        <use>all</use>
+        <partitions config:type="list">
+           <partition>
+              <mount>/data1</mount>
+              <size>15gb</size>
+              <filesystem>reiser</filesystem>
+           </partition>
+           <partition>
+              <mount>/data2</mount>
+              <size>auto</size>
+              <filesystem>jfs</filesystem>
+           </partition>
+        </partitions>
+     </drive>
+</partitioning>
+.....
+]]>
+	  </screen>
+	</example>
+	

@@ -1,0 +1,157 @@
+/**
+ * File:	AIPackages.ycp
+ * Package:	Package selections for Auto-installation
+ * Authors:	Anas Nashif (nashif@suse.de)
+ * Summary:	Handle Package selections and packages
+ *
+ * $Id$
+ */
+
+{
+    module "AIPackages";
+    textdomain "autoinst";
+    
+    import "Packages";
+    import "Summary";
+    
+
+    boolean local_descr = false;
+
+    global list Selections = [];
+
+    global string base = "";
+    global list addons = [];
+        
+    global string custom_location = "";
+    global string custom_kernel = "";
+
+    global list pacs = [];
+    global list custom_pacs = [];
+    
+    global define void AIPackages()``{
+	if (SCR::Read(.target.size, "/var/lib/autoinstall/selections/current")>0) {
+	    y2milestone("Selection file found, reading...");
+	    ReadSelections();
+	}
+	else
+	{
+	    GetSelections();
+	    SaveSelections();
+	}
+	return;
+    }
+
+
+    global define boolean GetSelections() ``{
+	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating package selections...")));
+	local_descr = Packages::CheckLocalDescription();
+	if (local_descr) {	    
+	    Packages::Init(true);
+	    Selections = SCR::Read(.package.selGroups);	    
+	}
+	UI::CloseDialog();
+	return local_descr;
+    }
+
+    global define boolean SaveSelections() ``{
+	boolean ret = SCR::Write(.target.ycp, "/var/lib/autoinstall/selections/current", Selections);
+	return ret;
+    }
+
+    global define boolean ReadSelections() ``{
+	Selections = SCR::Read(.target.ycp, "/var/lib/autoinstall/selections/current");
+	return (size(Selections)>0);
+    }
+
+
+    global define string getSelDescr(string sel) ``{
+	string result = "Custom Selection";
+	foreach(`s,Selections,``{
+	    if (select(s,0,"") == sel)
+		result = select(s,1,"");
+	});
+	return result;
+    }
+
+    /**
+     * Set module data
+     * @param settings $[..]
+     * @return void
+     */
+
+    global define void Set(map settings)``{
+	base = settings["base"]:"";
+	addons =  settings["addons"]:[];
+	pacs = settings["packages"]:[];
+	map custom = settings["extra_packages"]:$[];
+	custom_location = custom["package_location"]:"";
+	custom_pacs = custom["packages"]:[];
+	custom_kernel = custom["kernel"]:"";
+	return;
+    }
+    
+    /**
+     * Dump the settings to a map, for autoinstallation use.
+     * @return map
+     */
+    global define map Export()``{
+	map extra = $[
+		      "package_location": custom_location,
+		      "packages":	custom_pacs,
+		      "kernel":		custom_kernel
+		      
+	];
+	return ($[
+		  "base":base,
+		  "addons":addons,
+		  "packages": pacs,
+		  "extra_packages": extra
+		]);
+    }
+
+
+    /**
+     * Get all the configuration from a map.
+     * When called by autoinst_packages (preparing autoinstallation data)
+     * the map may be empty.
+     * @param settings	$[...]
+     * @return	success
+     */  
+    global define boolean Import(map settings)``{
+	
+	Set(settings);
+	return true;
+    }
+    
+    /**
+     * @return Html formatted configuration summary
+     */    
+    global define string Summary()``{
+	string summary = "";
+
+	summary = Summary::AddHeader(summary, _("Base Selection"));
+	summary = Summary::AddLine(summary, (base != "") ?
+				   getSelDescr(base) + " (" + base + ")" : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Addon Selections"));
+	if (size(addons)>0) {
+	    summary = Summary::OpenList(summary);
+	    foreach(`a, addons, ``{
+		summary = Summary::AddListItem(summary, getSelDescr(a));
+	    });
+	    summary = Summary::CloseList(summary);
+	} else {
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
+	summary = Summary::AddHeader(summary, _("Distribution packages"));
+	summary = Summary::AddLine(summary, sformat("%1", size(pacs)));
+	summary = Summary::AddHeader(summary, _("Custom packages"));
+	summary = Summary::AddLine(summary, sformat("%1", size(custom_pacs)));
+	summary = Summary::AddHeader(summary, _("Location of custom packages"));
+	summary = Summary::AddLine(summary, (custom_location != "")? custom_location : Summary::NotConfigured());	
+	
+	return summary;
+    }
+
+
+  
+}

@@ -1,0 +1,46 @@
+/**
+ * File:
+ *	modules/AIServer.ycp
+ *
+ * Module:
+ *	AIServer
+ *
+ * Summary:
+ *	This module handles the configuration for auto-installation server
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    module "AIServer";
+
+    // Package repository. Source directory for network installation
+    global string PackageRep = "";
+
+    // Packages::Init() called?
+    global boolean PkdInitialized = false;
+
+    // Tftp root directory
+    global string Tftpboot = "/tftpboot";
+
+    // Selections
+    global list Selections = [];
+
+    // tmp dir
+    global string tmpDir = "";
+
+    global symbol aliceOutput = `load;
+
+    ///////////////////////////////////////////////////////////////////////
+    // Alice
+    ///////////////////////////////////////////////////////////////////////
+
+    global string aliceRep = "/bigdisk/work/devel/alice/alice";
+
+    global define void AIServer()``{
+	tmpDir = SCR::Read (.target.tmpdir);
+    }
+
+}

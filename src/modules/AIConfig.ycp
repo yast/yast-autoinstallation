@@ -1,0 +1,436 @@
+/**
+ * File:	modules/AIConfig.ycp
+ * Module:	Auto-Installation
+ * Summary:	This module handles the configuration for auto-installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{    
+    module "AIConfig";
+    textdomain "autoinst";
+    
+    import "Mode";
+    import "AIServer";
+    import "AutoInstall";
+        
+    include "autoinstall/xml.ycp";
+    include "autoinstall/io.ycp";
+    // Profile Repository
+    global string Repository = "";
+    
+    // The Complete Profile
+    global map Profile = $[];
+        
+    // Current file name
+    global string currentFile = "";
+
+    global symbol config_type = `single;        
+    
+    // Configuration changes!
+    global boolean changed = false;
+
+    // file saved successfully
+    global boolean save_success = false;
+
+    // the install portion of the XML configuration file
+    global map Install = $[];
+         
+    // the configure portion of the XML configuration file
+    global map Configure = $[];
+ 
+
+    // Modules
+       
+    global map GroupMap = $[];
+    global map ModuleMap = $[];
+
+    /** 
+     * MenuTreeData     
+     * @return: list ofmodules
+     */
+    global  list MenuTreeData =[];
+    
+    /**
+     * Constructor
+     * @return	 void
+     *
+     * Initializes global language, either from Mode (/etc/install.inf)
+     * or from /etc/rc.config
+     */
+
+    global define void AIConfig ()
+    ``{
+	
+	Load();
+	profileSetup();	    	
+	ModuleMap = AutoInstall::ModuleMap;
+	GroupMap = AutoInstall::GroupMap;
+	
+	ConstructMenu();
+	y2debug("Modules: %1", ModuleMap);
+	if (Repository == "" || Repository == nil )
+	{
+	    Repository = "/";
+	}
+	
+	return;
+	
+    }
+
+    /**
+     * Import Profile
+     * @param map profile
+     */
+    global define void Import(map profile)``{
+	Profile = profile;
+	Configure = profile["configure"]:$[];
+	Install = profile["install"]:$[];
+	return;
+    }
+    
+    /**
+     * Prepare profile for saving and remove empty data structs
+     * @return void
+     */
+    global define void PrepProfile()``{
+	
+	foreach(`p,`d, ModuleMap, ``{
+	    // Set resource name, if not using default value
+	    string resource = "";
+	    if (haskey(d,"AutoinstResource"))
+		resource = d["AutoinstResource"]:"unknown";
+	    else
+		resource = p;
+	    
+	    if (d["AutoinstPath"]:"" == "install") {		
+		if (size(Install[resource]:$[])==0 && haskey(Install, resource))
+		{		    
+		    Install=remove(Install,resource);
+		}
+	    }
+	    else
+	    {		
+		if (size(Configure[resource]:$[])==0 && haskey(Configure, resource))
+		{		
+		    Configure=remove(Configure,resource);
+		}
+	    }	
+	});
+
+	
+	if (Install!= $[])
+	    Profile["install"] = Install;
+	else if (haskey(Profile,"install"))
+	    Profile=remove(Profile,"install");
+	
+	if (Configure!=$[])
+	    Profile["configure"] = Configure;
+	else if (haskey(Profile,"configure"))
+	    Profile=remove(Profile,"configure");
+
+	return;
+
+    }
+
+    /**
+     * Reset profile to initial status
+     * @return void
+     */
+    global define void resetProfile() ``{
+	Profile = $[];
+	Install = $[];
+	Configure = $[];
+	return;
+    }
+    
+    /**
+     * Save YCP data into XML
+     * @param filePath path to file name
+     * @return	boolean          
+     */
+
+    global define boolean SaveProfile (string filePath)
+    ``{	
+	PrepProfile();
+	y2milestone("Saving data to XML file %1 (%2).", filePath, Profile);
+	if (find(filePath, "/") == -1 )
+	    return (XML::YCPToXMLFile(`profile, Profile, sformat("%1/%2", Repository, filePath)));
+	else
+	    return (XML::YCPToXMLFile(`profile, Profile,  filePath));
+    }
+
+ 
+    /**
+     * Read XML into  YCP data 
+     * @param filePath path to file name
+     * @return	void
+     */
+    global define void ReadProfile (string filePath)
+	``{
+	Profile = XML::XMLToYCPFile(filePath);
+	Install = Profile["install"]:$[];
+	Configure = Profile["configure"]:$[];	
+	return;
+    }
+
+
+    /**
+     * Load()
+     *
+     * @return	void
+     *
+     * Load Configuration settings
+     */
+
+    global define void Load ()
+    ``{
+	Repository = SCR::Read( .sysconfig.autoinstall.REPOSITORY);
+	if (Repository == nil)
+	    Repository = "/var/lib/autoinstall/repository/";
+	
+	AIServer::PackageRep = SCR::Read( .sysconfig.autoinstall.PACKAGE_REPOSITORY);
+	if (AIServer::PackageRep == nil)
+	    AIServer::PackageRep = "";
+	return;
+    }
+
+
+    /**
+     * Parse()
+     * @param action: Reset or default
+     * @return	void
+     *
+     * Parse XML Profile
+     */
+
+    global define void Parse (symbol action, string new_path)
+    ``{
+	if (action == `reset) {
+	    Profile = $[];	    
+	}
+	else if (action == `load && new_path != "")
+	    Profile = SCR::Read(.xml, new_path);
+	else
+	    Profile = SCR::Read(.xml, Repository + "/" + Profile_file);
+
+	
+	Install = Profile["install"]:$[];
+	Configure = Profile["configure"]:$[];
+	return;
+    }
+
+    /**
+     * ConvertMap
+     *
+     */
+    
+    global define ConvertMap (map MyMap)
+	``{				
+	map ret = mapmap(`k,`v, MyMap,
+	    ``{
+	    if (is(v, map) || is(v,list)) {
+		return ([k,v]);
+	    }
+	    else
+	    {
+		return ([k,ConvertType(v)]);
+	    }
+	});
+	return ret;
+    }
+    
+    /**
+     * GetConfList
+     *
+     */
+    
+    global define GetConfList (string parent, string type, boolean convert )
+	``{
+	map Parent = Profile[parent]:$[];
+	list result =  Parent[type]:[];
+	if (!convert)
+	    return result;
+	
+	list ret = maplist(`v, result,
+	    ``{
+	    if (is(v, map) || is(v,list)) {
+		return (v);
+	    }
+	    else
+	    {
+		return (ConvertType(v));
+	    }
+	});
+	return ret;	
+    }
+
+    /**
+     * GetConfMap
+     *
+     */
+    
+    global define GetConfMap (string parent, string type, boolean convert)
+	``{
+	map Parent = Profile[parent]:$[];
+	map result = Parent[type]:$[];
+	if (!convert)
+	    return result;
+	
+	map ret = mapmap(`k,`v, result,
+	    ``{
+	    if (is(v, map) || is(v,list)) {
+		return ([k,v]);
+	    }
+	    else
+	    {
+		return ([k,ConvertType(v)]);
+	    }
+	});
+	return ret;
+		     
+    }
+
+    
+    /**
+     * ConvertType()
+     *
+     */
+    define ConvertType(any value) ``{	
+	if (is(value, boolean))
+	    return value;
+	else if (is(value, integer))
+	    return value;
+	else if (is(value, symbol))
+	    return value;
+	else if (is(value, string)) {
+	    if (value == "")
+		return value;	    
+	    else if (value == "true")
+	    {
+		return true;
+	    }
+	    else if ( value == "false")
+	    {		
+		return false;		
+	    }
+	    else if  ( findfirstnotof( value, "0123456789") == nil  )
+	    {		
+		return(tointeger(value));		
+	    }
+	    else
+	    {
+		return value;
+	    }
+	} else {
+	    return value;
+	}	
+    }
+
+
+    define PreparePartitons(map drive)``{
+
+	list partitions = maplist(map p, drive["partitions"]:[], ``{
+	    
+	});
+	
+    }
+    
+    
+    /**
+     * Save()
+     *
+     * @return	void
+     *
+     * Save Configuration global settings
+     */
+
+    global define void Save ()
+    ``{
+	// Write some sysconfig variables.
+	//
+	y2warning("Saving configuration data");
+	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );
+	SCR::Write( .sysconfig.autoinstall.PACKAGE_REPOSITORY, AIServer::PackageRep );
+	return;
+    }
+
+
+
+    
+    define void CreateGroupTree (map Groups)
+    ``{
+        term groupwidget = `VBox ();
+        list grouplist = [];
+        grouplist = SortGroups (Groups, maplist (`rawname, `group, Groups, ``(rawname)));
+        string is_first = "";
+        foreach (`rawname, grouplist,
+        ``{
+	    string name    = Translate(Groups[rawname, "Name"]:"???");
+	    map MeunTreeEntry = $["entry":rawname, "title":name];
+	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);	    
+        });
+	return;
+    }
+
+    define SortGroups (map GroupMap, list GroupList)
+    ``{
+        return
+        sort (`x, `y, GroupList,
+        ``{
+            string first = GroupMap[x, "SortKey"]:"";
+            string second = GroupMap[y, "SortKey"]:"";
+            return (first <= second);
+        });
+    }
+
+
+    define list ConstructMenu() ``{
+	CreateGroupTree(GroupMap);
+	foreach(`m,`v, ModuleMap, ``{
+	    string name    = Translate(lookup(v, "Name", "unknown"));
+	    map menu_entry = $["entry":m, "title":name];
+	    list menu_list = [];
+	    if (haskey(v,"Group")) {
+		string parent = v["Group"]:"";
+		MenuTreeData = maplist (`k, MenuTreeData, ``{
+		    if (k["entry"]:"" == parent) {
+			list children = k["children"]:[];
+			children = add(children,menu_entry);
+			k["children"] = children;
+			return(k);
+		    }
+		    else {
+			return (k);
+		    }
+		});
+	    } else {
+		MenuTreeData=add(MenuTreeData,menu_entry);
+	    }
+	});
+    }
+
+    global define set_contents(string Module, string summary)
+	``{
+	
+	string button = Translate(ModuleMap[Module]:"");
+	string caption = Translate(ModuleMap[Helptext]:"");
+	
+	term contents = 
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), summary),
+		  `VSpacing(0.5),
+		  `HBox(
+			`PushButton(`id(`configure), button),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			),
+		  `VSpacing(1)
+		  );
+	Wizard::SetContents(caption,
+			    contents, "", true, true);
+    }
+
+ 
+}

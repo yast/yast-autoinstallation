@@ -1,0 +1,115 @@
+@HEADER-COMMENT@
+# neededforbuild  liblcms ImageMagick xf86 freetype2 libpng ycpdoc yast2-testsuite dejagnu expect tcl yast2-base libycp liby2 libyui libscr yast2-core-wfm yast2-core-scr yast2-agent-system libycp-devel yast2-devtools docbook-dsssl-stylesheets docbook-toys docbook_3 jade_dsl sp sp-devel iso_ent docbook_4 perl-Text-DelimMatch perl-XML-Parser perl-XML-DOM perl-XML-RegExp expat perl-libwww-perl perl-URI perl-XML-Simple
+
+@HEADER@
+Requires:	yast2 yast2-lib-wizard yast2-lib-sequencer
+Requires:	yast2-lib-xml yast2-lib-network
+
+BuildArchitectures:	noarch
+
+Summary:	YaST2 auto-installation
+
+%description
+-
+
+%package instsys
+Version:    @VERSION@
+Summary:    YaST2 Modules for inst-sys
+Group:      SuSE internal
+%description instsys
+-
+
+%package core
+Version:    @VERSION@
+Summary:    YaST2 Modules for inst-sys
+Group:      YaST2
+%description core
+-
+
+
+@PREP@
+
+@BUILD-YCP@
+
+@INSTALL-YCP@
+install -d $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
+install -d $RPM_BUILD_ROOT/var/adm/autoinstall/logs
+install -d $RPM_BUILD_ROOT/var/adm/autoinstall/files
+
+@CLEAN@
+
+
+%files
+%defattr(-,root,root)
+%dir @yncludedir@/autoinstall
+
+@yncludedir@/autoinstall/auth_dialogs.ycp
+@yncludedir@/autoinstall/bootloader_dialogs.ycp
+@yncludedir@/autoinstall/classes.ycp
+@yncludedir@/autoinstall/conftree.ycp
+@yncludedir@/autoinstall/general_dialogs.ycp
+@yncludedir@/autoinstall/help.ycp
+@yncludedir@/autoinstall/imports.ycp
+@yncludedir@/autoinstall/intallation-server.ycp
+@yncludedir@/autoinstall/io.ycp
+@yncludedir@/autoinstall/packageMgmt.ycp
+@yncludedir@/autoinstall/partition_dialogs.ycp
+@yncludedir@/autoinstall/script_dialogs.ycp
+@yncludedir@/autoinstall/x11_dialogs.ycp
+@yncludedir@/autoinstall/xml.ycp
+
+@clientdir@/autoinst_bootloader.ycp
+@clientdir@/autoinst_general.ycp
+@clientdir@/autoinst_report.ycp
+@clientdir@/autoinst_scripts.ycp
+@clientdir@/autoinst_software.ycp
+@clientdir@/autoinst_storage.ycp
+@clientdir@/autoinst_tools.ycp
+@clientdir@/autoyast.ycp
+#@clientdir@/createCustomCD.ycp
+
+@scrconfdir@/cfg_autoinstall.scr
+@scrconfdir@/syslinux_cfg.scr
+@scrconfdir@/tmp_alice_network.scr
+@scrconfdir@/tmp_alice_part.scr
+@scrconfdir@/tmp_alice_routes.scr
+@scrconfdir@/yast1sel.scr
+
+
+@moduledir@/AIBootloader.ycp
+@moduledir@/AIClass.ycp
+@moduledir@/AIConfig.ycp
+@moduledir@/AIGeneral.ycp
+@moduledir@/AIPackages.ycp
+@moduledir@/AIScripts.ycp
+@moduledir@/AIServer.ycp
+@moduledir@/AIStorage.ycp
+@agentdir@/ag_yast1sel
+
+
+@yncludedir@/autoinstall/profile.dtd
+%dir /var/adm/autoinstall/
+%dir /var/adm/autoinstall/scripts
+%dir /var/adm/autoinstall/logs
+%dir /var/adm/autoinstall/files
+%doc @docdir@
+
+%files instsys
+%defattr(-,root,root)
+%dir @yncludedir@/autoinstall
+@yncludedir@/autoinstall/lvm.ycp
+@yncludedir@/autoinstall/partitioning.ycp
+@yncludedir@/autoinstall/profileLocation.ycp
+@yncludedir@/autoinstall/profileDialogs.ycp
+@yncludedir@/autoinstall/profile.dtd
+@moduledir@/AutoInstall.ycp
+@clientdir@/autoinst_init.ycp
+@clientdir@/autoinst_setup.ycp
+
+%files core
+%defattr(-,root,root)
+@scrconfdir@/autoinstall.scr
+@moduledir@/AIClone.ycp
+@moduledir@/AutoInstall.ycp
+@clientdir@/autoinst_configure.ycp
+

@@ -1,0 +1,102 @@
+/**
+ * File:	clients/inst_autoconf.ycp
+ * Package:	Auto-installation
+ * Author:      Anas Nashif <nashif@suse.de>
+ * Summary:	This module finishes auto-installation and configures
+ *		the system as described in the profile file.
+ *
+ * $Id$
+ */
+
+{
+
+    textdomain "autoinst";
+
+    import "AutoInstall";
+    import "User";
+    import "Product";
+    import "Progress";
+
+    include "autoinstall/misc_writes.ycp";
+
+    
+    // Help text for last dialog of base installation
+    string help_text = _("<p>
+Please wait while the system is being configured.
+</p>");
+
+    list progress_stages =
+	[
+			 _("Configure System"),			 
+			 _("Execute post-install user scripts")
+	];
+
+
+    list progress_descriptions =
+	[
+			 _("Configuring System..."),
+			 _("Executing post-install user scripts...")
+	];
+
+
+    Progress::New(
+                        _("Configuring System according to auto-install settings"),
+                        "",     // progress_title
+			size( progress_stages ),	// progress bar length
+			progress_stages,
+			progress_descriptions,
+                        help_text );
+
+
+    SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
+
+    Progress::NextStage();
+    string resource = "";
+    string module_write = "";
+    boolean result = false;
+    y2milestone("Module map: %1", AutoInstall::ModuleMap);
+    foreach(`p,`d, AutoInstall::ModuleMap,
+	    ``{
+	
+	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write") {	    
+	    if (haskey(d,"AutoinstResource"))
+		resource = d["AutoinstResource"]:"unknown";	    
+	    else	    
+		resource = p;
+	    y2milestone("current resource: %1", resource);
+	    
+	    // determine name of client, if not default name
+	    if (haskey(d,"WriteClient"))	 
+		module_write = d["WriteClient"]:"none";	 
+	    else	 
+		module_write = sformat("%1_write", p);
+	 
+	 
+	    y2milestone("Writing configuration for %1", d["Name"]:"");
+	    if (haskey(AutoInstall::Install, resource) || haskey(AutoInstall::Configure, resource) )
+	    {
+		if (d["AutoinstDataType"]:"map" == "map")
+		{
+		    if (d["AutoinstPath"]:"configure" == "install")		
+			result = CallModule(module_write, [eval(AutoInstall::Install[resource]:$[])]);		
+		    else				    
+			result = CallModule(module_write, [eval(AutoInstall::Configure[resource]:$[])]);	   	
+		}
+		else
+		{
+		    if (d["AutoinstPath"]:"configure" == "install")				    
+			result = CallModule(module_write, [AutoInstall::Install[resource]:[]]);		
+		    else				  
+			result = CallModule(module_write, [AutoInstall::Configure[resource]:[]]);		
+		}
+	    }
+	}
+    });
+    Progress::NextStage();
+    // Now we write additional data that can't be written using a _write client, i.e. fstab
+    
+    
+    Progress::Finish();
+
+    return `next;
+}

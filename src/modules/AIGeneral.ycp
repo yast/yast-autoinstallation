@@ -1,0 +1,140 @@
+/**
+ * File:	AIGeneal.ycp
+ * Package:	General Options for Auto-installations
+ * Authors:	Anas Nashif (nashif@suse.de)
+ * Summary:	Handle general options
+ *
+ * $Id$
+ */
+{
+    module "AIGeneral";
+    textdomain "autoinst";
+    
+    import "Keyboard";        
+    import "Mouse";
+    import "Language";
+    import "Keyboard";    
+    import "Timezone";  
+
+
+    global string mouse = "";
+    global string language = "";
+    global string keyboard = "";
+    global string timezone = "";
+    global string hwclock = "";
+
+
+    define void AIGeneral()``{
+	return;
+    }
+
+    /**
+     * Export data
+     *
+     */
+    global define map Export()``{
+	map toexport =
+	    $[
+	      "mouse":eval(mouse),
+	      "keyboard": eval(keyboard),
+	      "timezone":eval(timezone),
+	      "hwclock":eval(hwclock),
+	      "language":eval(language)
+	    ];	
+	return toexport;	
+    }
+    
+    /**
+     * Impor data
+     *
+     */
+    global define boolean Import(map settings) ``{
+	
+	if (size (settings) == 0)
+	{
+	    //Provide defaults for autoinstallation editing:
+	    //Leave empty.	    
+	    return true;
+	}
+
+	boolean missing = false;
+	foreach (`k, ["mouse", "keyboard", "language", "hwclock", "timezone"], ``{
+	    if (! haskey (settings, k))
+	    {
+		y2error ("Missing at Import: '%1'.", k);
+		missing = true;
+	    }
+	});
+	if (missing)
+	{
+	    return false;
+	}
+
+	Set(settings);
+	return true;	
+    }
+
+
+    
+    /**
+     * Set data to a certain status
+     *
+     */
+    global define void Set(map s) ``{
+	mouse = s["mouse"]:"";
+	language = s["language"]:"";
+	keyboard = s["keyboard"]:"";
+	timezone = s["timezone"]:"";
+	hwclock = s["hwclock"]:"";	
+    }
+    
+    /**
+     * Summary of configuration
+     *
+     */    
+    global define string Summary()``{
+
+	string language_name = "";
+	string keyboard_name = "";
+	string mouse_name = "";
+	
+	if ( mouse != "" && mouse != "probe"){
+	    Mouse::Set(mouse);
+	    mouse_name = Mouse::MakeProposal(false, false);
+	} else {
+	    mouse_name = "probe";
+	}
+
+	if (language!="") {
+	    Language::Set(language);
+	    language_name= Language::MakeProposal(false, false);
+	}
+	if (keyboard!="") {
+	    Keyboard::SetLanguage(keyboard);
+	    keyboard_name = Keyboard::Name();
+	}
+	    
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Language"));
+	summary = Summary::AddLine(summary, (language_name != "") ?
+				   language_name : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Keyboard"));
+	summary = Summary::AddLine(summary, (keyboard_name != "") ?
+				   keyboard_name : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Timezone"));
+	summary = Summary::AddLine(summary, (timezone != "") ?
+				   timezone : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Mouse"));
+	summary = Summary::AddLine(summary, (mouse_name != "") ?
+				   mouse_name : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary, _("Hardware clock"));
+	summary = Summary::AddLine(summary, (hwclock != "") ?
+				   hwclock : Summary::NotConfigured());
+
+	return summary;				   
+    }
+
+}

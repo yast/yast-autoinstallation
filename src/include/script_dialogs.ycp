@@ -1,0 +1,136 @@
+/**
+ * File:
+ *	script_dialogs.ycp
+ *
+ * Module:
+ *	script_dialogs.ycp
+ *
+ * Summary:
+ *	This module handles the configuration for auto-installation
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+    textdomain "autoinst";
+    /**
+     * Dialog for adding/Editing  a script
+     * @param mode `edit or `new
+     * @param name script name
+     * @return symbol
+     */
+
+    global define ScriptDialog(symbol mode , string name)
+    ``{
+	map script = $[];
+	if (mode == `edit)
+	{
+	    list filtered_scripts = filter(`s, AIScripts::merged,``((lookup(s,"filename","") == name)));
+	    if (size(filtered_scripts)>0)
+	    {
+		script = select(filtered_scripts,0,$[]);
+	    }
+	}
+
+	string help = _("
+<h3>Pre-Scripts</h3>
+<P>You can add commands to run on the system  before the installation begins. </P>
+<h3>Post-Scripts</h3>");
+	help = help + _("
+<P>You can also add commands to execute on the system after the installation
+is completed. These scripts are run outside the chroot environment.
+</P>");
+	help = help + _("
+<H3>Chroot Environment</H3>
+<P>If you want your post-installation script to run inside of the chroot
+environment, choose the <i>chroot-scripts</i> options.
+</P>");
+	string title = _("Script Editor");
+
+	term contents=
+	    `VBox(
+		  `HBox(
+			`TextEntry(`id(`filename), _("&File Name"), lookup(script,"filename","")),
+			`ComboBox( `id(`interpreter), _("&Interpreter"),
+				   [
+				    `item(`id("perl"), _("Perl"),(script["interpreter"]:"shell" == "perl")),
+				    `item(`id("shell"), _("Shell"),(script["interpreter"]:"shell" == "shell"))
+				    ]
+				   ),
+			`ComboBox( `id(`type), _("&Type"),
+				   [
+				    `item(`id("pre-scripts"), _("Pre"), (script["type"]:""  == "pre-scripts")),
+				    `item(`id("post-scripts"), _("Post"),(script["type"]:"" == "post-scripts")),
+				    `item(`id("chroot-scripts"), _("Chroot"),(script["type"]:"" == "chroot-scripts"))
+				    ]
+				   ),
+			`HStretch(),
+			`Empty()
+			),
+		  `VSpacing(1),
+		  `HBox(
+			`MultiLineEdit(`id(`source), _("S&cript Source"), script["source"]:"")
+			),
+		  `VSpacing(1),
+		  `HBox(
+			`PushButton(`id(`save), SaveButtonLabel()),
+			`PushButton(`id(`loadsource), _("&Load new source")),
+			`PushButton(`id(`cancel), CancelButtonLabel())
+
+			)
+		  );
+
+
+	Wizard::SetContents(title,
+			    contents, help, true, true);
+
+
+	if (mode == `edit)
+	{
+	    UI::ChangeWidget(`id(`filename), `Enabled, false);
+	}
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `save) {
+		string scriptName = UI::QueryWidget(`id(`filename), `Value);
+
+		string type = UI::QueryWidget(`id(`type), `Value);
+		string interpreter = UI::QueryWidget(`id(`interpreter), `Value);
+		string source = UI::QueryWidget(`id(`source), `Value);
+
+		if (source == "" || scriptName == "")
+		{
+		    UI::MessagePopup(_("You have at least to provide the script
+name and the content of the script"));
+		    continue;
+		}
+		else
+		{
+		    y2debug("Calling ConfigureScripts: %1, %2, %3, %4", scriptName, source, interpreter, type);
+		    AIScripts::AddEditScript( scriptName, source, interpreter, type);
+		}
+	    }
+	    else if (ret == `loadsource)
+	    {
+		string filename = PopupFile("/");
+		string source = SCR::Read(.target.string, filename);
+		UI::ChangeWidget(`id(`source), `Value, source);
+		continue;
+	    }
+
+	} until (ret == `save || ret == `cancel || ret == `back);
+	return ret;
+
+    }
+
+
+
+
+
+}

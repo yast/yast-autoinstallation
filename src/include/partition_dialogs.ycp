@@ -1,0 +1,626 @@
+/**
+ * File:
+ *	partition_dialogs.ycp
+ *
+ * Module:
+ *	Partitioning
+ *
+ * Summary:
+ *	Handle Partitioning  data
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    include "ui/common_popups.ycp";
+    include "partitioning/custom_part_helptexts.ycp";
+
+
+
+    /*
+     * PartitionDialog
+     *
+     * @param mode mode of operation
+     * @param item item to edit
+     * @return symbol
+     */
+    global define PartitionDialog (symbol mode, string item)
+	``{
+	list partitioning =  AIStorage::drives;
+	list item_id = splitstring(item,":");
+	map this_drive = $[];
+	string drive = "";
+	map new_val = $[];
+
+	if (size(item_id)>1)
+	{ //Partition
+	    this_drive =
+		select(filter(map d,
+			      partitioning,
+			      ``(lookup(d,"device","") == select(item_id,0,""))),
+		       0,
+		       $[]
+		       );
+	    new_val = select(this_drive["partitions"]:[], tointeger(select(item_id,1,"")) - 1, $[]);
+	    drive = select(item_id,0,"");
+	}
+	else
+	{
+	    this_drive = select(filter(map d, partitioning,``(lookup(d,"device","") == item)),0,$[]);
+	    new_val = $[
+			"crypt_fs"	: false,
+			"crypt_key" : "",
+			"partition_id"	: 131,
+			"filesystem"	: `reiser
+	    ];
+	    drive = item;
+	}
+
+	new_val["fsid"] = new_val["partition_id"]:0;
+	
+	list other_drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
+	
+	map file_systems 	= FileSystems::GetAllFileSystems(true, true);
+	boolean create		= lookup ( new_val , "create", false);
+	string  partition_size	= lookup ( new_val , "size", "auto");
+	boolean format		= lookup ( new_val , "format", false);
+	
+	symbol last_option_fs	= lookup ( new_val , "filesystem", `ext2);
+	map fs_options      = lookup ( new_val , "fs_options" , $[]);
+
+	list not_used_mountpoints = notUsedMountpoints( getTargets(),  lookup( lookup( file_systems, last_option_fs, $[]), `mountpoints, []));
+
+
+	string helptext = _("
+<P>Please enter the partition information according to your
+needs. All fields are required.</P>
+<P>For more information, please refer to the online documentation
+</P>
+");
+	string title = "";
+	if (mode == `create )
+	    title = _("Create new Partition");
+	else
+	    title = _("Edit Partition");
+
+	term field_dlg_right =
+	    `VBox(
+		  `Top(
+		       `VBox(
+			     `TextEntry(`id(`partsize), _("&Size"), (partition_size!="auto" && partition_size!="max")?partition_size:""),
+			     `RadioButtonGroup(`id(`sizeopt),
+					       `VBox(
+						     `Left(
+							   `RadioButton(`id(`fixed),
+									`opt(`notify),
+									_("&Fixed Size"),
+									(partition_size != "auto"
+									 && partition_size != "max")
+									)
+							   ),
+						     `Left(
+							   `RadioButton(`id(`max),
+									`opt(`notify),
+									_("Fill to &maximum allowable Space"),
+									(partition_size == "max")
+									)
+							   ),
+						     `Left(
+							   `RadioButton(`id(`auto),
+									`opt(`notify),
+									_("Determine &automatically"),
+									(partition_size == "auto")
+									)
+							   )
+						     )
+					       )
+
+			     )
+		       ),
+		  `VSpacing(1),
+		  `ReplacePoint( `id(`mount_dlg_rp), UI::MountDlg( new_val , not_used_mountpoints ))
+		  );
+	term field_dlg_left = `Top( `ReplacePoint( `id( `format_dlg_rp), UI::FormatDlg( new_val, file_systems) ));
+
+	UI::OpenDialog(
+		       `opt(`decorated  ),
+		       `HBox(
+			     `HWeight(30, `RichText( helptext)),
+			     `HStretch(),
+			     `HSpacing(1),
+			     `HWeight(70,
+				      `VBox(
+					    `Heading( title),
+					    `VSpacing(1),
+					    `VStretch(),
+					    `HBox(
+						  field_dlg_left,
+						  `HSpacing(2),
+						  field_dlg_right //,
+						  //`HSpacing(2)
+						  ),
+					    `VSpacing(1),
+					    `VStretch(),
+					    `HBox(
+						  // popup create partition:
+						  `PushButton(`id(`ok), `opt(`default),  Wizard::OKButtonLabel()   ),
+						  // popup create partition:
+						  `PushButton(`id(`cancel),  Wizard::CancelButtonLabel() )
+						  )
+					    )
+				      ),
+			     `HSpacing(1),
+			     `HStretch()
+			     )
+		       );
+
+	map return_value     = new_val;
+
+	if (partition_size == "auto")
+	    UI::ChangeWidget(`id(`partsize) , `Enabled, false);
+
+	any ret = nil;
+	boolean pdisk = false; // TODO
+	boolean pdisk_disk = false; // TODO
+
+	list set_false = [];
+
+
+	if( ! format )
+	{
+	    set_false = union( set_false, [ `crypt_fs, `fs, `fs_options] );
+	    if( create ) set_false = union( set_false, [`mount_point ] );
+	    if( pdisk_disk ) set_false = add( set_false, `fsid_point);
+	}
+	else
+	{
+	    set_false = union( set_false, [ `fsid_point,`fs_options ]);
+	}
+
+
+	if ( lookup( new_val, "partition_id", 131) == 130  )
+	{
+	    set_false = union( set_false, [ `crypt_fs ] );
+
+	}
+
+	UI::ChangeExistingSymbolsState( set_false, false);
+
+	repeat{
+
+	    ret = UI::UserInput();
+	    if (ret != `cancel)
+	    {
+		if ( UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max
+		     || UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto)
+		{
+		    UI::ChangeWidget(`id(`partsize) , `Enabled, false);
+		}
+		else
+		{
+		    UI::ChangeWidget(`id(`partsize) , `Enabled, true);
+		}
+
+
+		if( UI::QueryWidget(`id(`format),  `CurrentButton) == `format_true )
+		{
+		    symbol filesystem  =  UI::QueryWidget(`id(`fs), `Value);
+		    map selected_fs =  lookup( file_systems, filesystem , $[] );
+
+		    return_value     = add( return_value , "format",  true );
+		    return_value     = add( return_value , "filesystem", filesystem );
+
+		    if ( !pdisk_disk )
+		    {
+			return_value     = add( return_value , "partition_id",    lookup( selected_fs, `fs_id   , 131));
+		    }
+
+		    string mount	   =  UI::QueryWidget( `id(`mount_point), `Value);
+		    string subStr     =  substring( CutBlanks(mount) , 0,1  );
+		    return_value      =  add( return_value , "mount" , mount);
+		    not_used_mountpoints =  notUsedMountpoints( getTargets(), lookup(selected_fs, `mountpoints, []));
+
+		    if( filesystem == `swap )
+		    {
+			not_used_mountpoints = add( not_used_mountpoints , "swap" );
+			if( mount != "" && mount != "swap" )
+			{
+			    return_value = add (return_value , "mount" , "swap" );
+			    UI::ReplaceWidget(`id(`mount_dlg_rp), UI::MountDlg( return_value ,not_used_mountpoints));
+			}
+			if( mount == "" )
+			{
+			    UI::ReplaceWidget(`id(`mount_dlg_rp), UI::MountDlg( return_value ,not_used_mountpoints));
+			}
+		    }
+		    else
+		    {
+			if( mount == "swap" || mount == "")
+			{
+			    if( mount == "swap")
+				return_value = add (return_value , "mount" ,GetMountPointProposal( getTargets(), [] ) );
+
+			    UI::ReplaceWidget(`id(`mount_dlg_rp), UI::MountDlg( return_value, not_used_mountpoints ));
+			}
+		    }
+
+
+		    UI::ChangeExistingSymbolsState( [ `mount_point, `fs ], true);
+		    UI::ChangeWidget(`id(`fsid_point) , `Value  , lookup( selected_fs , `fsid_item, ""));
+		    UI::ChangeWidget(`id(`fsid_point) , `Enabled, false);
+		    UI::ChangeWidget(`id(`fs_options) , `Enabled, (lookup( selected_fs, `options, []) != [] ));
+		    if( lookup( selected_fs, `crypt, false))
+		    {
+			UI::ChangeWidget(`id(`crypt_fs) , `Enabled, true);
+		    }
+		    else
+		    {
+			UI::ChangeWidget(`id(`crypt_fs) , `Enabled, false);
+			UI::ChangeWidget(`id(`crypt_fs),  `Value,   false );
+		    }
+
+		    if( filesystem != last_option_fs )
+			fs_options = $[];
+		    last_option_fs = filesystem;
+		    if( ret == `fs_options )
+		    {
+			fs_options =  UI::FileSystemOptions( fs_options, selected_fs );
+		    }
+
+		}
+		else
+		{
+		    map fs_options     = $[];
+		    list set_true  = [ `fsid_point ];
+
+		    if(pdisk_disk ) set_true = [];
+
+		    list set_false = [ `crypt_fs, `fs, `fs_options];
+		    // list set_false = [ `crypt_fs, `fs];
+
+		    if( create )  set_false = add( set_false, `mount_point );
+		    else          set_true  = add( set_true , `mount_point );
+
+		    UI::ChangeExistingSymbolsState( set_true  ,true );
+		    UI::ChangeExistingSymbolsState( set_false ,false );
+
+		    UI::ChangeWidget(`id(`crypt_fs),    `Value,   false );
+
+		    return_value     = filter(`k, `v , return_value , ``( k != "filesystem" && k != "fs_options"));
+		    string fs_string = UI::QueryWidget(`id(`fsid_point ) , `Value);
+		    fs_string        = substring( fs_string, 0, 4  );
+		    integer fs_int   = tointeger( fs_string        );
+
+		    if( fs_int >= 0 && fs_int <= 255 )
+		    {
+			return_value = add( return_value, "format",  false );
+			return_value = add( return_value, "partition_id", fs_int   );
+			return_value = add( return_value, "crypt_fs", false);
+			return_value = add( return_value, "crypt_key", "");
+			if( create )
+			{
+			    return_value = add( return_value, "filesystem", `unknown);
+			}
+		    }
+		    else
+		    {
+			WarningPopup(_("The partition ID must between 0x00 and 0xff"));
+			UI::SetFocus(`id(`fsid_point));
+			continue;
+		    }
+		}
+	    }
+
+	    if ( ret == `ok )
+	    {
+
+
+		if (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max )
+		    return_value=add(return_value,"size","max");
+
+		else if (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto )
+		    return_value=add(return_value,"size","auto");
+		else
+		{
+		    string partitionSize =  UI::QueryWidget(`id(`partsize),   `Value);
+		    return_value=add(return_value,"size",partitionSize);
+		}
+
+
+		// save mountpoint
+		if ( create && (! lookup( return_value, "format" , true )))
+		{
+		    change( return_value, "mount", "");
+		}
+		else
+		{
+		    change( return_value, "mount",  CutBlanks( UI::QueryWidget(`id(`mount_point),   `Value)));
+		}
+
+		// add fstype to return_value
+
+		if ( !pdisk_disk )
+		{
+		    integer fs_id =  lookup( return_value, "partition_id", 0 );
+		    return_value=remove(return_value,"fsid");
+		}
+
+
+		if( !UI::check_crypt_fs_mount_points(lookup(return_value, "mount", ""),
+						     UI::QueryWidget(`id(`crypt_fs), `Value ) ))
+		{
+		    UI::SetFocus(`id(`mount_point));
+		    continue;
+		}
+
+		// crypto settings
+		boolean crypt_fs = UI::QueryWidget(`id(`crypt_fs), `Value );
+		return_value = add( return_value, "crypt_fs",   crypt_fs );
+
+		if ( crypt_fs )
+		{
+		    string fs_passwd = UI::DlgCreateCryptFs();
+		    // Ask the user for a password for cryptofs, else set crypto to nil??
+		    if ( fs_passwd != nil )
+		    {
+			return_value = add( return_value, "crypt_key",  fs_passwd);
+		    }
+		    else
+		    {
+			ret = `retry;
+			UI::ChangeWidget(`id(`crypt_fs), `Value, false);
+		    }
+		}
+		if( fs_options != $[] && lookup( return_value, "format" ,false))
+		    return_value = add( return_value, "fs_options", fs_options);
+		else return_value = filter(`key, `value, return_value, ``( key != "fs_options"));
+
+
+	    }
+
+	} until (ret == `ok || ret == `cancel);
+	UI::CloseDialog();
+	if ( ret != `cancel )
+	{
+	    list partitions = lookup(this_drive,"partitions",[]);
+	    if (mode == `create) {
+		partitions=add(partitions,return_value);
+	    } else if (mode == `edit) {
+		partitions[tointeger(select(item_id,1,"")) - 1] = return_value;
+	    }
+	    change(this_drive,"partitions",partitions);
+	    AIStorage::drives=add(other_drives,this_drive);
+	}
+	return ret;
+    }
+
+
+
+    /*
+     * Create Drive dialog
+     * @param mode mode of operation
+     * @param item item to edit
+     * @return symbol
+     */
+    global define DriveDialog(symbol mode, string item)
+	``{
+
+	list devices = ["/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/sda","/dev/sdb"];
+	if (issubstring(item, "dev")) {
+	    devices=add(devices, item);
+	}
+
+	list drives = AIStorage::drives;
+	list configured_drives = maplist(`c, drives, ``{
+	    return(lookup(c,"device","***"));
+	});
+
+	if (item == nil || item == "") {
+	    item = "none";
+	}
+	map current_drive = select(filter(`d, drives,``(d["device"]:"" == item)), 0, $[]);
+	boolean usefree = (current_drive["use"]:"" == "free");
+	boolean reuse_all = (current_drive["use"]:"" == "all");
+	list partitions = splitstring(current_drive["use"]:"", ",");
+
+	if (filterchars(partitions[0]:"", "1234567890") != partitions[0]:"")
+	    partitions = [];
+
+	map drive = $[];
+	if (!(usefree || reuse_all || size(partitions)>0)) {
+	    reuse_all = true;
+	}
+
+	string help = _("
+<P>
+Please specify the drive name you want to configure
+and how the partitioning should be performed.
+</P>
+<P>
+For more information, please consult the documentation
+</P>
+");
+	string title = _("Configure Drives");
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Left(
+			     `ComboBox(`id(`target),
+				       `opt(`editable),
+				       _("&Drive"),
+				       maplist(`dd, toset(devices), ``{
+					   return(`item(`id(dd), dd, ((dd == item) ? true : false)));
+				       })
+				       )
+			     ),
+		       `RadioButtonGroup( `id(`bgroup2),
+					  `VBox(
+						`Left(`RadioButton(`id(`usefree),`opt(`notify),
+								   _("Use available &free space only"),
+								   usefree
+								   )
+						      ),
+						`Left(`RadioButton(`id(`reuseall), `opt(`notify),
+								   _("&Reuse all existing partitions"),
+								   reuse_all
+								   )
+						      ),
+						`Left(`RadioButton(`id(`reuselisted),`opt(`notify),
+								   _("&Use the following (comma seperated) partitions"),
+								   (size(partitions)>0)
+								   )
+						      )
+						)
+					  ),
+		       `HBox(
+			     `HSpacing(1),
+			     `Left(
+				   `TextEntry(
+					      `id(`reuse_partitions),
+					      _("&Partition numbers (i.e 3,4,5)"),
+					      mergestring(partitions, ",")
+					      )
+				   )
+			     )
+		       )
+		 );
+
+
+	Wizard::CreateDialog();
+	string help_text = _("Help");
+	Wizard::SetContents( title,   contents, help, true , true );
+	if (size(partitions)>0)
+	    UI::ChangeWidget(`id(`reuse_partitions), `Enabled, true);
+	else
+	    UI::ChangeWidget(`id(`reuse_partitions), `Enabled, false);
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+
+	    if ( UI::QueryWidget(`id(`bgroup2), `CurrentButton) != `reuselisted)
+		UI::ChangeWidget(`id(`reuse_partitions), `Enabled, false);
+	    else
+		UI::ChangeWidget(`id(`reuse_partitions), `Enabled, true);
+
+	    if (ret == `next)
+	    {
+		string device = UI::QueryWidget(`id(`target),`Value);
+		symbol driveopts = UI::QueryWidget(`id(`bgroup2), `CurrentButton);
+		string usewhat = "";
+		if (mode == `create)
+		{
+		    if (!contains(configured_drives,device)) {
+			drive=add(drive, "device",device);
+
+			if (driveopts == `reuseall)
+			    usewhat = "all";
+			else if (driveopts == `reuselisted)
+			    usewhat = UI::QueryWidget(`id(`reuse_partitions), `Value);
+			else if (driveopts == `usefree)
+			    usewhat = "free";
+			else if (driveopts == `uselinux)
+			    usewhat = "linux";
+
+			if (usewhat !="")
+			    drive["use"] = usewhat;
+
+			drives=add(drives,drive);
+			AIStorage::drives=drives;
+		    }
+		    else
+		    {
+			UI::MessagePopup(_("This device is already configured,
+Please choose or enter another device name."));
+			continue;
+		    }
+
+		} else {
+		    //remove current drive from list
+		    drives=filter(`d, drives,``(d["device"]:"" != item));
+
+		    if (driveopts == `reuseall)
+			usewhat = "all";
+		    else if (driveopts == `reuselisted)
+			usewhat = UI::QueryWidget(`id(`reuse_partitions), `Value);
+		    else if (driveopts == `usefree)
+			usewhat = "free";
+		    else if (driveopts == `uselinux)
+			usewhat = "linux";
+
+		    if (usewhat !="")
+			current_drive["use"] = usewhat;
+
+		    current_drive["device"] = device;
+		    drives=add(drives,current_drive);
+		    AIStorage::drives=drives;
+		}
+	    }
+	} until (ret == `next || ret ==`abort || ret == `back);
+	Wizard::CloseDialog();
+	return ret;
+
+
+    }
+
+
+
+
+
+    /**
+     * get target
+     * @return targets
+     */
+    global define getTargets ()
+	``{
+	map auto_targets =  listmap (`d, AIStorage::drives, ``{
+	    string device = lookup(d,"device","");
+	    return([device,d]);
+	});
+	return auto_targets;
+    }
+
+    /**
+     *
+     * Remove blanks at begin and end of input string
+     * (blanks between remain untouched).
+     * @param input string, usually an user input
+     *
+     * @return string
+     * @example CutBlanks ( "  any input     " );
+     */
+
+    global define CutBlanks( string input )
+	``{
+	string  output = input;
+	boolean go_on = true;
+
+	if ( size ( output ) > 0 )
+	{
+	    integer pos = findfirstnotof( output, " " );
+
+	    if ( pos != nil )
+	    {
+		output = substring( output, pos );
+	    }
+	    integer last_pos = size ( output ) - 1;
+
+	    while ( go_on )
+	    {
+		if ( substring( output, last_pos ) == " " )
+		{
+		    output = substring( output, 0, last_pos );
+		    last_pos = last_pos-1;
+		}
+		else
+		{
+		    go_on = false;
+		}
+	    }
+	}
+	return output;
+    };
+}

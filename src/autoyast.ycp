@@ -1,0 +1,347 @@
+/**
+ * File:
+ *	autoyast.ycp	
+ *
+ * Summary:
+ *	Main file for client call
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    textdomain "autoinst";
+    import "Wizard";
+    // Wizard::image_prefix = "autoyast_";
+    
+    import "Mode";
+    Mode::config = true;
+    import "AIConfig";
+    import "AIServer";
+    import "AIClone";
+    import "AIClass";
+    
+    import "Summary";
+        
+    
+   
+   
+    include "ui/common_popups.ycp";
+    include "ui/common_messages.ycp";
+    include "wizard/sequencer.ycp";
+    include "require.ycp";
+    include "ui/file_popups.ycp";
+  
+
+    include "autoinstall/dialogs.ycp";
+    include "autoinstall/help.ycp";
+    include "autoinstall/conftree.ycp";
+    include "autoinstall/classes.ycp";
+    include "autoinstall/packageMgmt.ycp";
+    include "autoinstall/imports.ycp";
+    include "autoinstall/io.ycp";
+    
+  	
+    boolean popup_open = false;
+    global map dialogs = $[
+			   "configurationType"	:	``(   configurationType() ),
+			   "file"		: 	``(   FileDialog() ),
+			   "tree"		: 	``(   ConfTree() ),
+			   "profiles"		: 	``(   ManageProfiles() ),
+			   "classes"		:	``(   ManageClasses() ),
+			   "profile"		: 	``(   Profile()),
+			   "merge"		:	``(   MergeDialog()),
+			   "save"		:	``(   SaveDialog() ),
+			   "preferences"	:	``(   Preferences()),
+			   "serverSetup"	:	``(   serverSetup()),
+			   "cloneSystem"	:	``(   cloneSystem()),
+			   "packageManagement"	:	``(   packageManagement()),
+			   "selectionInfo"	:	``(   selectionInfo()),
+			   "alice"		:	``(   aliceImportOptions() ),
+			   "aliceList"		:	``(   aliceImportList() ),
+			   "kickstart"		:	``(   kickstartImport() )
+			   
+    ];
+    
+    
+    /**
+     * Whole configuration of autoyast
+     * @return `back, `abort or `next
+     */
+    
+    global define symbol AutoSequence () ``{
+	
+	map sequence = $[
+			 "ws_start" : "configurationType",
+			 "configurationType":
+			 $[
+			   `abort	: `abort,
+			   `single	: "file",
+			   `profiles	: "profiles",
+			   `pref	: "preferences",
+			   `server	: "serverSetup",			   
+			   `clone	: "cloneSystem",
+			   `verifysel	: "packageManagement",
+			   `alice	: "alice",
+			   `kickstart   : "kickstart"
+			 ],
+			 "alice":
+			 $[
+			   `abort	: `abort,
+			   `next	: "aliceList"
+			 ],
+			 "aliceList":
+			 $[
+			   `abort	: `abort,
+			   `next	: "configurationType",
+			   `save	: "save",
+			   `load	: "tree",			   
+			 ],
+			 "kickstart":
+			 $[
+			   `abort	: `abort,
+			   `next	: "configurationType"
+			 ],			 
+			 "cloneSystem":
+			 $[
+			   `load	: "tree",
+			   `save	: "save"
+			   
+			 ],
+			 "serverSetup":
+			 $[
+			   `abort	: `abort,
+			   `next	: "configurationType"
+			 ],
+			 "packageManagement":
+			 $[
+			   `abort	: `abort,
+			   `next	: "selectionInfo"
+			 ],
+			 "file":
+			 $[
+			   `abort	: `abort,
+			   `open	: "tree",
+			   `next	: "tree"
+			 ],
+			 "profiles":
+			 $[
+			   `abort	: `abort,
+			   `add		: "classes",
+			   `new		: "tree",
+			   `edit	: "tree",
+			   `next	: "merge"
+			 ],
+			 "tree":
+			 $[
+			   `abort	: `abort,
+			   `single	: "save",
+			   `profiles	: "profile",
+			   `clone	: "save",
+			   `alice	: "save",
+			   `next	: "save"
+			 ],
+			 "classes":
+			 $[
+			   `next	: "profiles",
+			   `abort	: `abort
+			   
+			 ],
+			 "profile":
+			 $[
+			   `abort	: `abort,
+			   `next	: "profiles"
+			 ],
+			 "merge":
+			 $[
+			   `abort	:`abort,
+			   `next	: "save",
+			   `profiles	: "profiles"
+			 ],
+			 "save":
+			 $[
+			   `abort	: `abort,
+			   `edit	: "tree",
+			   `next	: `ws_finish			   
+			 ],
+			 "preferences":
+			 $[
+			   `abort	: `abort,
+			   `next	: "configurationType"
+			 ]
+	];
+
+	
+	// Translators: dialog caption
+	string caption = _("Auto-Install Configuration");
+	term contents = `Label (_("Initializing ..."));
+
+	Wizard::CreateDialog ();
+	Wizard::SetContentsButtons ( caption,
+				     contents,
+				     "",
+				     BackButtonLabel (),
+				     NextButtonLabel ());
+
+
+	any ret = WizardSequencer (dialogs, sequence);
+
+	UI::CloseDialog ();
+	return ret;
+    }
+    
+
+    /**
+     * Main dialog
+     * @return symbol
+     */
+
+    global define symbol configurationType()``{
+	symbol ct = AIConfig::config_type;
+	// Translators: dialog caption
+	string caption = _("Auto-Installation configuration System");
+	term contents =
+	    `VBox(
+		  `RadioButtonGroup (
+				     `id (`ctg),				     
+				     `VBox (
+					    `VSpacing (1),
+					    `Left(`Label(_("Profile Management"))),
+					    `VSpacing (0.5),
+					    `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`single),
+										`opt (`notify),
+										_("Create/Edit Configurati&ons"),
+										ct == `single)
+								  )
+							   )
+						  ),
+					    `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`profiles),
+										`opt (`notify),
+										_("&Create/Edit Classes"),
+										ct == `profiles)
+								  )
+							   )
+						  ),
+					    `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`clone),
+										`opt (`notify),
+										_("C&lone this machine"),
+										ct == `clone)
+								  )
+							   )
+						  ),
+					     `VSpacing (1),
+					    `Left(`Label(_("Server Management"))),
+					    `VSpacing (0.5),
+					    `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`prepServer),
+										`opt (`notify),
+										_("Pr&epare Server"),
+										ct == `prepServer)
+								  )
+							   )
+						  ),		
+					    `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`verifysel),
+										`opt (`notify),
+										_("&Verify Selections and Packages"),
+										ct == `verifysel)
+								  )
+							   )
+						  ),
+					 	   `VSpacing (1),
+					    `Left(`Label(_("Import data"))),
+					    `VSpacing (0.5),
+					    `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`alice),
+										`opt (`notify),
+										_("Import Alice confi&guration"),
+										ct == `alice)
+								  )
+							   )
+						  ),		
+					    `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`kickstart),
+										`opt (`notify),
+										_("&Import Kickstart file"),
+										ct == `kickstart)
+								  )
+							   )
+						  ),		    
+					    `VStretch(),
+					    `PushButton(`id(`pref), _("&Preferences")),
+					    `VSpacing(1)
+					    )
+				     )
+				    
+		  );
+
+	
+	Wizard::SetContentsButtons (caption,
+				    contents,
+				    ConfigurationTypeHelp(),
+				    BackButtonLabel (),
+				    NextButtonLabel ());	
+	any ret = nil;
+	while (true)
+	{
+	    ct = UI::QueryWidget (`id (`ctg), `CurrentButton);	   
+
+	    ret = UI::UserInput ();
+	    if (ret == `back || ret == `pref || ret == `next  || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)))
+	    {
+		break;
+	    } 
+	}
+	AIConfig::config_type=ct;
+	
+	if (ret == `back   || ret == `abort || ret == `pref)
+	{
+	    return ret;
+	}
+	else
+	{
+	    return ct;
+	}
+    }        
+    any ret = AutoSequence ();
+}

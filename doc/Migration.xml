@@ -1,0 +1,208 @@
+  <chapter id="Migration">
+    <title>Migration from &yast1; and &alice;</title>
+    <para>
+      "&alice; is basically a system of scripts and programs which integrate
+      existing interfaces together with easily adaptable modules that
+      provide for customization of the installed system to your needs."
+    </para>
+    
+    
+    <sect1 id="Migration.interface">
+      <title>
+	Interface with &yast1; and &alice;
+      </title>
+      <para>
+	&alice; uses &yast1; for the installation of the Linux System. This is
+	done by creating a boot medium with the needed control file (<filename>info</filename>)
+	from a set of configuration files maintained in a CVS repository. The
+	<emphasis>info</emphasis> file has the traditional format used with &yast1;. To
+	make &alice;  work with &yast2;, &alice; should be able to create a control
+	file in the proposed format discussed in this document.
+      </para>
+      <para>
+	The configuration files used with &alice;  consist of Tags. &alice; uses
+	various shell scripts to generate the <emphasis>info</emphasis> file for
+	use with &yast1;. For &yast2;, other methods should be used to generate the
+	control file. For &xml; there exist different ways for transforming data
+	from any format to &xml;. &xslt; will be used for transforming
+	&alice; configuration files into &yast2; control files.
+	</para>
+    </sect1>
+    
+    <sect1 id="Migration.configuration">
+      <title>
+	System Configuration with &alice;
+      </title>
+      <para>
+	The system configuration is done almost entirely after the system is
+	installed and is initiated as the <emphasis>%post</emphasis> section of the &alice; RPM
+	package. 
+      </para>
+      <sect2>
+	<title>
+	  &alice; modules
+	</title>
+	<para>	
+	  As described above, &alice; consists of modules. Each of these modules perform certain tasks and requires one or
+	  multiple configuration files. The modules are shell scripts that are
+	  envoked after installation of the machine to set different things up. 
+	</para>
+	<para>
+	  &yast2; offers an extensive and rich interface to the installed system
+	  which replaces most of these modules available with &alice; The following is a list of all &alice; modules, their
+	  function and how they can be replaced by &yast2; modules which are
+	  already available or which can be integrated easily:
+	</para>
+	
+	<para>
+	  The  modules <emphasis>prepare_alice</emphasis> and
+	  <emphasis>make_all</emphasis> are the base and parent scripts of all
+	  &alice; modules.	  
+	  The module <emphasis>prepare_alice</emphasis> is called right after the initial
+	  installation process - which is done when &yast1; is  finished
+	  with basic installation.
+	</para>
+	<para>
+	  With &yast2;, the alternative to these module is a part of the system
+	  and not an addition or extension. This means that &yast2; configures
+	  the system in one single process and not, as with &alice; in two
+	  different, independent steps.
+	</para>
+	<para>The following table show how the result of some &alice modules
+	  can be accomplished with &yast2;
+	</para>
+	<table id="alice.modules">
+	  <title id="alice.modules.title">&alice; vs. &yast2; modules</title>
+	  <tgroup cols="4">
+	    <thead>
+	      <row>
+		<entry>Module</entry>
+		<entry>&alice;</entry>
+		<entry>&yast2;</entry>
+		<entry>Concerned files</entry>
+	      </row>
+	    </thead>
+	    <tbody>
+	      <row>
+		<entry>User configuration</entry>
+		
+		<entry>Adding users is performed without any consistency
+		  checks.</entry>
+		<entry>Using &yast2; users module</entry>
+		<entry><filename>/etc/passwd</filename></entry>
+	      </row>
+	      <row>
+		<entry>Group configuration</entry>
+		
+		<entry>Adding groups is performed without any consistency
+		  checks.</entry>
+		<entry>Using &yast2; users module</entry>
+		<entry><filename>/etc/group</filename></entry>
+	      </row>
+	      <row>
+		<entry>Services</entry>
+		<entry>X</entry>
+		<entry>-</entry>
+		<entry><filename>/etc/services</filename></entry>
+	      </row>
+
+	      <row>
+		<entry>Inetd</entry>
+		<entry>X</entry>
+		<entry>Using the inetd module<</entry>
+		<entry><filename>/etc/inetd.conf</filename></entry>
+	      </row>
+	      <row>
+		<entry>Syslog</entry>
+		<entry>X</entry>
+		<entry></entry>
+		<entry><filename>/etc/syslog.conf</filename></entry>
+	      </row>
+	      <row>
+		<entry>Lilo</entry>
+		<entry>X</entry>
+		<entry>X</entry>
+		<entry><filename>/etc/lilo.conf</filename></entry>
+	      </row>
+	      <row>
+		<entry>SNMP</entry>
+		<entry>X</entry>
+		<entry>-</entry>
+		<entry><filename>/etc/ucdsnmpd.conf</filename></entry>
+	      </row>
+	      <row>
+		<entry>Cron</entry>
+		<entry>X</entry>
+		<entry>-</entry>
+		<entry><filename>/etc/crontab</filename></entry>
+	      </row>
+	      <row>
+		<entry>hosts</entry>
+		<entry>X</entry>
+		<entry>X</entry>
+		<entry><filename>/etc/hosts</filename></entry>
+	      </row>    
+	      <row>
+		<entry>Routing</entry>
+		<entry>X</entry>
+		<entry>X</entry>
+		<entry><filename>/etc/route.conf</filename></entry>
+	      </row> 
+	      <row>
+		<entry>Printer</entry>
+		<entry>X</entry>
+		<entry>X</entry>
+		<entry><filename>/etc/printcap</filename></entry>
+	      </row> 
+	      <row>
+		<entry>SSH</entry>
+		<entry>X</entry>
+		<entry>-</entry>
+		<entry><filename>/etc/ssh</filename></entry>
+	      </row> 
+	      <row>
+		<entry>Kernel modules</entry>
+		<entry>X</entry>
+		<entry>X</entry>
+		<entry><filename>/etc/modules.conf</filename></entry>
+	      </row> 
+	      
+	    </tbody>
+	  </tgroup>
+	</table>
+      </sect2>
+      <sect2>
+	<title>
+	  Other configuration options with &yast2; and &alice;
+	</title>
+	
+	<para>
+	  The last table describes only a fraction of the features of both &yast2;
+	  and &alice;. Many other services are configured by setting the
+	  right values in <filename>/etc/rc.config</filename> in the case of
+	  former &company-suse; distribution and &alice; and
+	  <filename>/etc/sysconfig</filename> in the case of &yast2;. 
+	</para>
+	<para>
+	  &alice; uses  <filename>/etc/rc.config</filename> and it's derivatives 
+	  for example to setup network devices and various networking services and
+	  clients.
+	</para>
+	<para>
+	  Entries in <filename>/etc/sysconfig</filename> can be easily set and
+	  modified using &yast2;. For network services it is recommended to use the
+	  relevant &yast2; modules dealing with networking , rather than modifying
+	  <filename>/etc/sysconfig/network</filename> directly.
+	</para>
+      </sect2>
+     
+    </sect1>
+    
+    
+  </chapter>
+      <!--
+       Local Variables:
+       mode: xml
+       sgml-parent-document: ("autoyast2.xml" "book" "part")
+       End:
+      -->

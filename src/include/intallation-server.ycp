@@ -1,0 +1,32 @@
+/**
+ * File:	include/autoinstall/server.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Server setup
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    global define serverSetup() ``{
+	string title = _("Server setup");
+	string help = "";
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Left(`Label(_("Still not ready")))
+		       )
+		 );
+
+	Wizard::SetContents(title,
+			    contents, help , true, true);
+
+	any ret = nil;
+	repeat
+	    {
+		ret = UI::UserInput();
+
+	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	return ret;
+    }
+}

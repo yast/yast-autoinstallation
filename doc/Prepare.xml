@@ -1,0 +1,151 @@
+  <PART>
+  <TITLE>Preparing for Auto-Installation</TITLE>
+  <PARTINTRO>
+    <TITLE>Getting Started</TITLE>
+    <para>
+      Depending on the installation environment, hardware settings and the
+      complexity of the configuration certain preparations have to take place
+      before any installation can take place.
+    </para>
+    <sect1>
+      <title>
+	Examine if auto-installation is actually a solution for you
+      </title>
+      <para>
+	Installing a single client in an interactive way using  &company-suse;  is only a
+	couple of clicks away. So if you intention is to install only  a small
+	number of systems which differ in hardware and configuration maybe it
+	is faster to install them the traditional way.
+      </para>
+      <para>
+	Auto-Installation gets to be interesting when installing large number
+	of machines which at least have one thing in common. For example
+	auto-installation can be used for installing a network of workstation
+	which share the same environemnt and have similar hardware.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Collect information</title>
+      <para>
+	You need to collect information about the machines to be
+	installed. This includes hardware and network information. Please make
+	sure you know the following about the machines you want to install:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>Hard disk types and sizes</para>	  
+	</listitem>
+	<listitem>
+	  <para>Graphic interface and attached monitor if any</para>
+	</listitem>
+	<listitem>
+	  <para>Network insterface and MAC address if know</para>
+	</listitem>	
+      </itemizedlist>
+      <para>
+	With these parameters you are ready to go and create a control file
+	to control the auto-installation process.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Create the control file</title>
+      <para>
+	To create a control file  you either can use the configuration
+	system which covers most of the features of the auto-installation
+	system or you can use your favourite editor. In some cases you may need
+	to add some information manually after creating the control file with
+	the configuration system
+      </para>
+      <para>
+	After creating the control file, make sure it  has a valid syntax. The
+	easy way to check the syntax is by using some tools already available
+	on the distribution. For example to verfiy that the file is well
+	formed, use the utility <command>tidy</command> from the package with
+	the same name.
+      </para>
+      <screen>
+	tidy -xml &lt;control file&gt;
+      </screen>
+      <para>
+	If the control file is not well formed, i.e. if a tag is not closed,
+	tidy will have an output similar to the following:
+      </para>
+      <screen>
+	<![CDATA[
+	line 11 column 3 - Warning: unexpected </pre-scripts> in <script>
+	line 12 column 2 - Warning: unexpected </configure> in <script>
+	line 13 column 1 - Warning: unexpected </profile> in <script>
+	This document has errors that must be fixed before
+	using HTML Tidy to generate a tidied up version.
+	]]>
+      </screen>
+      <para>
+	Before going on with the auto-installation, please fix any errors
+	resulting from such checks. The auto-installation process can't be
+	started with  non-well formed control files.
+      </para>
+    </sect1>
+    <sect1>
+      <title>
+	Decide how you wish to boot the target system.
+      </title>
+      <para>
+	A target system can be booted in different ways. Booting the machine
+	and initiating the auto-installation process is as important as the
+	installation itself. Depending on how many target systems you wish to
+	install, the following methods are supported:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>Floppy</para>
+	  <para>Not recommended in complex network environments. A Floppy
+	    nowadays can't hold all necessary information needed to setup a
+	    machine for installation. A Floppy  should only be used in very
+	    special cases and if it is used, the default boot floppy compenents
+	    supplied with  &company-suse;  must be modifed to match you exact needs.
+	  </para>
+	  <para>
+	    However, the floppy can be used to store the control file and other
+	    information needed for installation.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>CD-ROM</para>
+	  <para>
+	    You can use the original  &company-suse;  CD-ROMs in compenation with other
+	    media, i.e. with a floppy to hold the control file or in compenation
+	    with network where the control file can be located.
+	  </para>
+	  <para>
+	    It is also possible to create customized CD-ROMs to hold only the
+	    package you need in addition to the control file which also can be
+	    saved on the CD-ROM. This method requires creation of CD-ROMs
+	    everytime you wish to change the configuration though.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>Network
+	  </para>
+	  <para>
+	    Using the network to boot a target system is the most
+	    convinient way for auto-installing. Booting over the network and
+	    holding a repository of control files on an accessible server can
+	    be very flexible especially when configuring different types of
+	    system with different roles and hardware.</para>
+	</listitem>
+      </itemizedlist>
+    </sect1>
+  </partintro>
+
+  &Profile;
+  &CreateProfile;
+  &ConfigurationManagement;
+  
+  &Bootmanagement;
+  </PART>
+      <!--
+       Local Variables:
+       mode: xml
+       sgml-parent-document: ("autoyast2.xml" "book" "part")
+       End:
+      -->

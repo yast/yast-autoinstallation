@@ -1,0 +1,70 @@
+/**
+ * File:	clients/createCustomCD.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Create Media
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+
+    import "Wizard";
+    include "autoinstall/io.ycp";
+    include "ui/common_popups.ycp";
+    include "ui/common_messages.ycp";
+
+    
+    global define dlg(integer expectedSize, string filename)``{
+	
+	    UI::OpenDialog(
+	       `VBox(
+		     `DownloadProgress(_("ISO image"), filename, expectedSize ),
+		     `HSpacing(50), // force width
+		     `PushButton(`opt(`default), CloseButtonLabel())
+		     )
+	       );
+	    UI::UserInput();
+	    UI::CloseDialog();
+	    return;
+    }
+
+    term contents = `VBox(
+			  `TextEntry(`id(`source), _("&Source"), "/work/CDs/original-8.0"),
+			  `TextEntry(`id(`dest), _("&Destination"), "/tmp/suse.iso"),
+			  `PushButton(`id(`mkisofs), _("C&reate ISO"))
+			  );
+
+    string caption = _("Create Custom CD");
+    
+    Wizard::CreateDialog();
+    Wizard::SetContentsButtons (caption,
+				contents,
+				"",
+				BackButtonLabel (),
+				NextButtonLabel ());
+
+    any ret = nil;
+    repeat {
+	ret = UI::UserInput();
+	string source = UI::QueryWidget(`id(`source), `Value);
+	string dest = UI::QueryWidget(`id(`dest), `Value);
+	if (ret == `mkisofs)
+	{
+	    string mkisofscmd =  createISOCmd(true, source, dest);
+	    y2milestone("command: %1",  mkisofscmd );
+	    string du = lookup(SCR::Execute(.target.bash_output, sformat("du -s -b %1 | awk -F' ' ' { printf $1 }'", source)), "stdout", "");
+	    integer fsSize = tointeger(du);
+	    y2milestone("size: %1" , fsSize);
+	    SCR::Execute (.target.bash_background,  mkisofscmd);
+	    dlg(fsSize, dest);
+
+	}
+	
+
+    } until (ret == `next || ret == `back);
+    UI::CloseDialog();
+}
+
+
+

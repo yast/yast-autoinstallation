@@ -1,0 +1,222 @@
+/**
+ * File:	include/autoinstall/packageMgmt.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Package Management
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    textdomain "autoinst";
+
+    /**
+     * Create selection table for widget
+     * @param list current selection
+     * @return list selections as widget list
+     */
+    global define list CreateSelTable(list selected) ``{
+	
+	list Selections = SCR::Read(.package.selGroups);		
+	
+	list ui_sel = maplist(list sel, Selections, ``{
+	    return (`item(`id(select(sel,0,"None")), contains(selected,select(sel,0,"None")) ? "s" : "", select(sel,0,"None"), select(sel,1,"None"), select(sel,2,"None")));
+	});
+	return ui_sel;
+    }
+    
+    /**
+     *
+     */
+    global define addSelection(string selection) ``{
+	if (contains(AIServer::Selections,selection)) {
+	    return (filter(`s, AIServer::Selections,``(s!=selection)));
+	} else {
+	    return(add(AIServer::Selections,selection));
+	}
+    }
+
+    /**
+     *
+     */
+    global define SelectionInfo(boolean consistency)``{
+	
+	list current_sel = AIServer::Selections;
+	y2milestone("current sel: %1", current_sel );
+	if (size(current_sel) > 1) 
+	{
+	    integer sel = 1;	
+	    SCR::Execute(.package.selectSelInstall, select( current_sel,0,"" ),true );
+	    while (sel < size(current_sel) - 1) {
+		SCR::Execute(.package.selectSelInstall, select( current_sel,sel,"" ),false );
+		sel = sel + 1;
+	    }
+	    SCR::Execute(.package.selectSelInstall, select( current_sel,size(current_sel)-1,"" ),false );
+	} 
+	else if (size(current_sel) == 1)
+	{
+	    SCR::Execute(.package.selectSelInstall, select( current_sel,0, "" ), true );
+	}
+	
+	list packages = SCR::Read (.package.selPackages);
+	
+	y2milestone("Packages: %1", packages);
+	SCR::Execute(.package.setInstallSelection, packages, false);
+	list neededCDs = SCR::Read (.package.neededCDs);
+	y2milestone("needed CDs: %1", neededCDs );
+	
+	integer CdSourceSize = 0;
+	integer SourceSize = 0;
+	integer cdnum = 1;
+	integer InstalledSize = 0;
+	boolean anyCD = false;
+	
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Needed CDs"));
+	summary = Summary::OpenList(summary);
+	
+	integer i = 1;
+	foreach(`cd, neededCDs, ``{
+	    if (cd != 0) {
+		anyCD = true;
+		list cdlist = SCR::Read (.package.installSetCD, i);
+		foreach (`p, cdlist, ``{
+		    string pacPath = sformat("%1/suse/%2", AIServer::PackageRep ,select(p,0,""));
+		    integer pacsize = SCR::Read(.target.size, pacPath);
+		    if (pacsize!=-1) {
+			CdSourceSize = CdSourceSize + pacsize;			
+		    }
+		    
+		});
+		string entry = sformat("<p>CD%1 will install <b>%2 Mb</b> (%3 Kb) of software.<br>Size of sources is <b>%4 Mb</b> (%5 Kb)</p>",i, cd/1000, cd, CdSourceSize/ 1000000,  CdSourceSize/ 1000);
+		summary = Summary::AddListItem(summary, entry);
+	    }
+	    SourceSize = SourceSize + CdSourceSize;
+	    CdSourceSize = 0;
+	    InstalledSize = InstalledSize + cd;
+	    i = i + 1;
+	});	
+	
+	summary = Summary::CloseList(summary);
+
+	if (!anyCD)
+	    summary = Summary::AddLine(summary,_("None"));
+
+	
+	summary = Summary::AddHeader(summary, _("Total installed size"));
+	summary = Summary::AddLine(summary, sformat(_("%1 Mb"), InstalledSize / 1000));
+	summary = Summary::AddHeader(summary, _("Total package size"));
+	summary = Summary::AddLine(summary, sformat(_("%1 Mb"), SourceSize / ( 1000 * 1000)));
+	
+	summary = Summary::AddHeader(summary, _("Packages"));
+	summary = Summary::AddLine(summary, sformat(_("%1 Packages will be installed"), size(packages)));
+	
+	summary = Summary::AddHeader(summary, _("Consistency Check"));
+	if (!consistency)
+	    summary = Summary::AddLine(summary, _("Not done yet"));
+	else
+	{
+	    cdnum = 1;
+	    integer found = 0;
+	    
+	    foreach(`cd, neededCDs, ``{		
+		list cdlist = SCR::Read (.package.installSetCD, cdnum);
+		y2milestone("cdlist %1: %2", cdnum, cdlist);
+		foreach (`p, cdlist, ``{
+		    string pacPath = sformat("%1/suse/%2", AIServer::PackageRep ,select(p,0,""));
+		    y2milestone("path %1", pacPath);
+		    if (SCR::Read(.target.size, pacPath)==-1) {
+			found = found +1;
+		    }
+		    
+		});
+		cdnum = cdnum + 1;
+	    });
+
+	    if (found == 0)
+		summary = Summary::AddLine(summary,_("All Packages are available"));
+	    else
+		summary = Summary::AddLine(summary,sformat(_("%1 Packages missing."), found));
+	}
+	    
+	
+	
+	
+
+	//y2milestone("list %1", SCR::Read (.package.installSetCD, 1));
+	return summary;
+	
+    }
+    
+
+    /**
+     *
+     */
+    global define packageManagement() ``{
+	import "Packages";
+	import "Installation";
+	import "Mode";
+
+	Installation::destdir = "/mnt";
+	InstMedia::source_medium = true;
+	Installation::sourcedir = AIServer::PackageRep;
+	if (!AIServer::PkdInitialized)
+	{
+	    Packages::Init(false);
+	    AIServer::PkdInitialized=true;
+	}
+
+
+	term contents =
+	    `VBox(
+		  `VWeight(50, `Table( `id(`table), `opt(`notify, `keepSorting), `header(_("Status"), _("Name"), _("Description"), _("Type")),
+				       CreateSelTable(AIServer::Selections)
+				       )
+			   ),
+		  `VSpacing(1),
+		  `VWeight(50, `RichText(`id(`summary), SelectionInfo(false))
+			   ),
+		  `HBox(
+			`PushButton(`id(`consistency), _("Consistenc&y Check")),
+			`PushButton(`id(`reset), _("Reset Selecti&ons"))
+			)				    
+		  );
+
+	string help = _("<P>
+Help</P>");
+
+
+
+	
+	Wizard::SetContents(_("Package Repository"),
+			    contents, help , true, true);
+	
+	any ret = "";
+	repeat {
+	    ret = UI::UserInput();
+	    string sel = "";
+	    if (ret == `table)
+	    {
+		sel = UI::QueryWidget(`id(`table), `CurrentItem);
+		AIServer::Selections=addSelection( sel);
+		UI::ChangeWidget(`id(`table), `Items, CreateSelTable(toset(AIServer::Selections)));
+		UI::ChangeWidget(`id(`table), `CurrentItem, sel);
+		UI::ChangeWidget(`id(`summary), `Value, SelectionInfo(false));
+	    }
+	    else if ( ret == `consistency)
+	    {
+		UI::ChangeWidget(`id(`summary), `Value, SelectionInfo(true));
+	    }
+	    else if ( ret == `reset)
+	    {
+		AIServer::Selections=[];
+		UI::ChangeWidget(`id(`table), `Items, CreateSelTable(toset(AIServer::Selections)));
+		UI::ChangeWidget(`id(`table), `CurrentItem, sel);
+		UI::ChangeWidget(`id(`summary), `Value, SelectionInfo(false));
+	    }
+	    
+	    y2milestone("ret: %1", ret);
+	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	return ret;
+    }
+}

@@ -1,0 +1,688 @@
+/**
+ * File:		autoinstall/partitioning.ycp
+ * Module:		Autoinstallation
+ * Authors:             Anas Nashif <nashif@suse.de>
+ * Purpose:		functions for partitioning in autoinst mode
+ *
+ *
+ * $Id$
+ */
+
+{    
+    include "partitioning/auto_part_functions.ycp";
+    include "partitioning/auto_part_prepare.ycp";
+    include "partitioning/auto_part_create.ycp";
+    include "partitioning/auto_finish.ycp";
+    include "partitioning/partition_defines.ycp";
+    include "partitioning/size_calculations.ycp";
+
+    textdomain "autoinst";
+    /**
+     *  Determine how and where the partitions are added in autoinst mode
+     *  modifies targetMap with new partition list for the specified device
+     *  @param device name of the target drive
+     *  @return true on success
+     */
+    
+    global define AutoPartition(string target_is)
+    ``{
+
+	// find the selected target in the map of all possible targets
+	map driveMap =  Storage::GetTargetMap();
+
+	// description of the choosen target disk
+	map target = lookup (driveMap, target_is, $[]);
+
+	// user visible name of target
+	string targetname = lookup (target, "name", "");
+
+	// The current list of partitions
+	list partitions = lookup (target, "partitions", []);
+
+	symbol partition_type = compute_partition_type (Boot::LoaderType);
+	integer max_partitions = compute_max_partitions (target, partition_type);
+
+	// The number of possible primary partitions
+	integer max_primary = compute_max_primary (partition_type);
+
+	
+	// The partition number of the first logical partition
+	integer first_logical_nr = 5;
+
+
+	// fdisk partition ids
+	
+	list full_region = [];
+	integer bytes_per_unit = 0;
+	integer disk_size = 0;
+	
+	integer 	fsid_boot      	= Partitions::fsid_native;
+	integer        	fsid_root       = Partitions::fsid_native;
+
+	// How much to allocate for swap
+	integer size_of_swap = calculate_needed_swap ();
+
+	// calculate size of the /boot partition
+	integer size_of_boot = calculate_needed_boot (
+				    Arch::architecture,
+				    Boot::LoaderType);
+
+
+	// this will tell if automatic partitioning if feasible
+	boolean can_do_auto = false;
+
+	// this will get the minimal size for a default system
+	//   (boot + swap + default root)
+	integer minimal_size = 0;
+
+	list unused_region = [ 0, 0 ];
+
+	/**
+	 * prepare_partitions
+	 */
+
+	map part_data = $[];
+	boolean partitions_defined = false;
+	foreach(`dev, `v , AutoInstall::targetMap, 
+	``{
+	    if (dev == target_is)
+	    {
+		part_data=v;
+		if (size(v["partitions"]:[])>0)
+		{
+		    partitions_defined = true;
+		}
+	    }
+	});
+
+	partitions = prepare_partitions (target, partitions);
+	
+	SCR::Write (.dumpto.tmp.prepared_partitions, partitions);
+	
+	boolean already_partitioned = false;	
+	boolean root_created = false;
+
+	if ( (num_primary ( partitions ) > 0) || contains_extended ( partitions ) )
+	{
+	    already_partitioned = true;
+
+	    // If there is an unpartitioned area on the disk, check if it should be used.
+	    // (this will automatically partition this area)
+	    
+	    if ( can_do_auto && (part_data["use"]:"" == "free"))
+	    {
+		// Note: CreatePartitions changes targetMap
+		if (!partitions_defined
+		    && !root_created
+		    && select(unused_region,1,0) != 0)
+		{		
+		    partitions = create_partitions (partitions, unused_region);
+		    root_created = true;
+		}
+		else if (select(unused_region,1,0) != 0)
+		{			
+		    partitions = CreatePartitions (partitions, unused_region);
+		}
+		else if (select(unused_region,1,0) == 0)
+		{
+		    string reason = sformat(_("No free space available on %1"), target_is);
+		    Report::Error(reason);
+		    return (true);
+		}
+		rewrite_settings (partitions, target, driveMap); 
+		auto_undefine ();
+		return (true);
+	    }	
+	}
+	else
+	{
+	    // no partitions found	    
+	    y2milestone ("Partitioning whole disk");
+	    Storage::SetWholeDisk( true );
+	}
+
+	while (true)
+	{
+	    if (!already_partitioned)
+	    {
+		if (!partitions_defined
+		    && !root_created)
+		{
+		    partitions = create_partitions (partitions, unused_region);
+		    root_created = true;
+		    
+		}
+		else
+		{
+		    partitions = CreatePartitions (partitions, unused_region);
+		}
+		rewrite_settings (partitions, target, driveMap);
+		break;
+	    }
+
+
+
+	    // The partitions that remain untouched.
+	    list old_partitions = [];
+
+	    // The partitions that are deleted.
+	    list selected_partitions = [];
+
+	    // The union of both lists.
+	    list all_partitions = [];
+
+	    map extended_pentry = $[];
+
+	    
+	    list selpart = [];
+	    if (haskey(part_data, "use")
+		&& part_data["use"]:""!="all"
+		&& part_data["use"]:"" != "free")
+	    {
+		list selected_partitions = splitstring(part_data["use"]:"", ",");
+		selpart = maplist (`p, selected_partitions, ``{
+		    if  ( findfirstnotof( p, "0123456789") == nil  )
+		    {		
+			return(tointeger(p));		
+		    }		   
+		});
+		    
+	    }
+	    // now loop through partitions	    
+	    foreach (`pentry, partitions, ``{
+		symbol ptype = lookup (pentry, "type", `unknown);
+		if (ptype != `extended) {
+		    boolean selection = false;
+		    if (lookup(part_data,"use","") == "all")
+		    {
+			selection = true;
+		    }
+		    else if (contains(selpart, pentry["ui_id"]:-1))
+		    {
+			selection = true;
+		    }
+		    pentry = add (pentry, "delete", selection);
+
+		    if (!selection)
+		    {
+			// Read extended partition if any logical partitions
+			// remain
+			if ((ptype == `logical)
+			    && (size (extended_pentry) > 0))
+			{
+			    old_partitions = add (old_partitions, extended_pentry);
+			    all_partitions = add (all_partitions, extended_pentry);
+			    extended_pentry = $[];
+			}
+
+			old_partitions = add (old_partitions, pentry);
+		    }
+		    else
+		    {
+			selected_partitions = add (selected_partitions, pentry);
+		    }
+		    all_partitions = add (all_partitions, pentry);
+		}
+		else
+		{
+		    extended_pentry = pentry;
+		}
+	    });
+
+	    if (size (extended_pentry) > 0)
+	    {
+		// There are no logical partitions left, mark the extended
+		// partition for deletion
+
+		extended_pentry = add (extended_pentry, "delete", true);
+		all_partitions = add (all_partitions, extended_pentry);
+	    }
+
+	    y2debug ("all_partitions '%1'", all_partitions);
+	    y2debug ("selected_partitions '%1'", selected_partitions);
+	    y2debug ("old_partitions '%1'", old_partitions);
+
+	    // Check selection for plausability
+	    boolean ok = false;
+	    string reason = "";
+	    list selected = [];
+
+	    if (!contiguous_selection (selected_partitions))
+	    {
+		// consistency check: a condition for the installation is not fullfilled
+		// this condition is described within the reason
+		reason = _("The selected partitions are not contiguous.");
+	    }
+	    else if (contains_extended (old_partitions))
+	    {
+		selected = calculate_selected_region (selected_partitions, extended_region (old_partitions));
+		
+		if (!can_create_logical (old_partitions))
+		{
+		    // consistency check: a condition for the installation is not fullfilled
+		    // this condition is described within the reason
+		    reason = _("There are too many partitions left to
+create the required partitions for Linux.");
+		}
+		else if (size_of_region (selected) < minimal_size)
+		{
+		    y2debug("selected: %1", selected);
+		    // consistency check: a condition for the installation is not fullfilled
+		    // this condition is described within the reason
+		    reason = _("The selected partitions are not big
+enough to contain a minimal installation.");
+		}
+		else
+		{
+		    ok = true;
+		    if (!bootable (selected))
+			warn_not_bootable ();
+		}
+	    }
+	    else if ((num_primary (old_partitions) == max_primary)
+		     || ((partition_type == `ABSD || partition_type == `SBSD)
+			 && (size (old_partitions) - size (selected_partitions) + 3 >= max_partitions)))
+	    {
+		// consistency check: a condition for the installation is not fullfilled
+		// this condition is described within the reason
+		reason = _("There are too many partitions left to
+create the required partitions for Linux.");
+	    }
+	    else
+	    {
+		selected = calculate_selected_region (selected_partitions, nil);
+		if (size_of_region (selected) < minimal_size)
+		{
+		    y2warning ("selected: %1", selected); // FIXME
+		    // consistency check: a condition for the installation is not fullfilled
+		    // this condition is described by the reason
+		    reason = _("The selected partitions are not big enough
+to contain a minimal installation.");
+		}
+		else
+		{
+		    ok = true;
+		    if (!bootable (selected))
+		    {
+			warn_not_bootable ();
+		    }
+		}
+	    }
+
+	    if (ok)
+	    {
+		if (!partitions_defined
+		    && !root_created)
+		{
+		    partitions = create_partitions (all_partitions, selected);
+		    root_created = true;
+		}
+		else
+		{
+		    partitions = CreatePartitions (all_partitions, selected);
+		}
+		y2debug("final partitions %1", partitions);
+		rewrite_settings (partitions, target, driveMap); 
+		break;
+	    }
+	    Report::Error(reason);
+	    break;
+
+	} // while (true)
+	return (true);
+    }
+
+    /**
+     * Get number of last primary partition
+     * @param list partition list
+     * @return integer partition number
+     */    
+    global define integer getLastPrimary(list p)``{
+
+
+	list used_primaries =
+	    maplist (`pentry,
+		     filter (`pentry, p, ``(!pentry["delete"]:false)),
+		     ``(pentry["nr"]:0)
+		     );
+
+	integer unused = 1;
+
+	while (contains (used_primaries, unused))
+	{
+	    unused = unused + 1;
+	}
+	return unused;
+    }
+    
+    /**  
+     *	Create partitions defined in the machine Profile
+     *	@param list of available partitions on the drive
+     *  @param Region on drive where new partitions are added
+     *  @return new partitions list
+     */
+    
+    global define CreatePartitions (list partitions, list selected_region)
+    ``{
+	y2debug("initial partition list: %1", partitions);
+	y2debug("selected region: %1", selected_region);
+	partitions = filter (`pentry,
+			     partitions,
+			     ``(lookup (pentry, "type", `unknown) != `free)
+			     );
+	
+	partitions = renumber_logical_partitions (partitions);
+	y2debug("partition list after renumbering: %1", partitions);
+	symbol ptype = `primary;
+	integer last_pnr = 0;		
+	list region = [ 0 , 0 ];
+	list root_region = [ 0 , 0 ];
+	boolean empty_disk = (partitions == []);
+
+	map absd_partition =
+	    $[
+	      "create":true,
+	      "format":true,
+	      "type": `primary,
+	      "fsid":Partitions::fsid_empty,
+	      "nr":3,
+	      "region":full_region
+	    ];
+
+	// Get new partitions as specified in control file	
+	list auto_partitions =  lookup(AutoInstall::targetMap[target_is]:$[], "partitions",[]);
+	y2debug("auto part (1): %1", auto_partitions);
+	
+	// First create any primary partitions if specified so in control file.
+	
+	list primaries = filter (`pentry, auto_partitions, ``( pentry["partition_type"]:"none" == "primary" || pentry["partition_nr"]:6 < 5 ) );
+	if (size(primaries)>0)
+	{
+	    y2debug("primaries needed");
+	    last_pnr = getLastPrimary(partitions);
+	    list primary_auto_partitions = maplist(`p, primaries,
+						   ``{	    
+						       if ((partition_type == `ABSD || partition_type == `SBSD)
+							   && (last_pnr == 3))
+						       {
+							   last_pnr = last_pnr + 1;
+						       }
+						       map newPart = addPartition(p);
+						       last_pnr = last_pnr + 1;
+						       return(newPart);
+						   });
+	    last_pnr = last_pnr - 1;
+	    partitions = union(partitions,primary_auto_partitions);
+	}
+	
+	auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "primary")));
+	y2debug("auto part (2): %1", auto_partitions);
+	
+	if (size(auto_partitions) == 0) {
+	    return (partitions);
+	}
+
+	
+	if (partition_type == `FAT)
+	{
+	    ptype = `logical;
+	}
+	else
+	{
+	    // If we don't have a FAT partition_type get the
+	    // last used partition number
+	    integer unused_primary_pnr = getLastPrimary(partitions);
+	    last_pnr = unused_primary_pnr - 1;
+	}
+
+
+	// Add the extended partition if necessary
+
+	if (ptype == `logical)
+	{
+	    if (!contains_extended (partitions))
+	    {
+	
+		integer unused_primary_pnr = getLastPrimary(partitions);
+
+		// create new extended partition
+		// if it starts above cyl 1024, create it as fsid_extended_win
+		
+		integer ext_fsid = Partitions::fsid_extended;
+		if (start_of_region (selected_region) >= 1024)
+		{
+		    ext_fsid = Partitions::fsid_extended_win;
+		}
+		list extended = filter (`pentry, auto_partitions, ``((pentry["partition_type"]:"none" == "extended" || pentry["partition_id"]:0 == 5)));
+		list ext_region = [0,0];
+		if (size(extended) == 1) {
+		    y2debug("extended found");
+		    ext_region = lookup(select(extended,0,$[]),"region",[]);
+		    auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "extended")));
+		    selected_region = ext_region;
+		}
+		else
+		{
+		    ext_region =  [ end_of_region(region), end_of_region(selected_region) -  end_of_region(region)];
+		}
+		y2debug("Adding extended partition to: %1",partitions);
+		partitions = add (partitions,
+				$[
+				  "create":true,
+				  "type":`extended,
+				  "fsid":ext_fsid,
+				  "nr":unused_primary_pnr,
+				  "region": ext_region
+				]);
+		y2debug("Partitions including extended: %1", partitions);
+
+		last_pnr = max_primary;
+	    }
+	    else
+	    {
+		// Find the last used logical partition number.
+		// We know that these partitions are numbered contiguously
+		last_pnr = first_logical_nr - 1;
+		foreach (`pentry, partitions, ``{
+		    if (!pentry["delete"]:false
+			&& (pentry["type"]:`unknown == `logical))
+		    {
+			last_pnr = pentry["nr"]:0;
+		    }
+		});
+	    }
+	} // ptype == `logical
+	
+
+	last_pnr = last_pnr + 1;
+	
+
+	
+	list logical_auto_partitions = maplist(`p, auto_partitions,
+        ``{	    
+	    if ((partition_type == `ABSD || partition_type == `SBSD)
+		&& (last_pnr == 3))
+	    {
+		    last_pnr = last_pnr + 1;
+	    }
+	    map newPart = addPartition(p);
+	    last_pnr = last_pnr + 1;
+	    return(newPart);
+	});
+
+	// Add flag whether using the entire disk
+	if ((partition_type == `ABSD || partition_type == `SBSD)
+		&& (last_pnr == 3)
+		&& empty_disk)
+	{
+	    partitions = add (partitions, absd_partition);
+	}
+	Storage::SetWholeDisk(selected_region == full_region);
+	
+	list finalPartitions =  union(partitions,logical_auto_partitions);
+	y2milestone("partitions: %1", finalPartitions);	
+	return( finalPartitions );
+	
+    }; // CreatePartitons
+
+
+    /**
+     * create a partition
+     * @param currentPartition partition data as specified in control file
+     * @return partition data ready for actuall work
+     */
+
+    global define map addPartition(map currentPartition) ``{
+		    
+	    string mount_point = currentPartition["mount"]:"";
+	    region = calcRegion(currentPartition, region);
+	    
+	    integer auto_fsid = currentPartition["partition_id"]:Partitions::fsid_native;	  
+	    string lvm_group = currentPartition["lvm_group"]:"";	    
+	    
+	    // Partition Template
+	    map part =
+	    $[
+	      "create":true,
+	      "format":currentPartition["format"]:true,
+	      "type": ptype,
+	      "fsid": auto_fsid,
+	      "nr":last_pnr,
+	      "region":region,
+	      "mount": mount_point
+	    ];
+
+	    if (mount_point == "swap" || StringFS2Symbol(p["filesystem"]:"") == `swap)
+	    {
+		part["fsid"] =  Partitions::fsid_swap;
+	    }
+	    else if (mount_point == "/boot")
+	    {
+		part["fsid"] =  fsid_boot;
+		if (fsid_boot == Partitions::fsid_fat16)
+		{
+                    // for ia64, /boot is FAT16
+		    boot_part["used_fs"]:`fat16;
+		}
+	    }
+	    else if (mount_point == "/")	    {
+		root_region=region;
+		part["used_fs"] =  StringFS2Symbol(currentPartition["filesystem"]:"reiser");
+	    }
+	    else if (lvm_group != "")
+	    {
+		Storage::SetLvmUse( true );
+		
+		part["used_fs"] =  `unknown;
+		part["fsid"]= 142;
+		part["format"] =  false;
+		part["lvm_group"] = lvm_group;
+		part["mount"] =  "";
+		part["fstype"] =  "Linux LVM";
+		
+		CreateModifyMap(lvm_group, target_is + last_pnr);
+		
+		string lvmdev = sformat("/dev/%1", lvm_group);
+		if (AutoInstall::LvmVolumes[lvmdev]:$[] == $[]) {
+		    CreateAutoLvmMap(lvm_group);
+		}
+		list mod = maplist(`k,`v, Storage::GetModifyTargets(), ``{
+		    return(v);
+		});
+		integer count = 0;
+		map modmap = listmap(`k, sort(`x,`y, mod, ``(x["order"]:0 <= y["order"]:0)), ``{
+		    count = count + 1;
+		    return([count,k]);
+		});
+		Storage::SetModifyTargets(modmap);
+		
+	    }
+	    else
+	    {
+		part["used_fs"] = StringFS2Symbol(p["filesystem"]:"reiser");
+	    }
+	    return part;
+    }
+
+    
+    /**
+     * Caclculate new Region
+     * @param map partition map
+     * @param list region list
+     * @return list new region
+     */
+    global define calcRegion(map currentPartition, list region ) ``{
+	integer units = 0;
+	string psize = currentPartition["size"]:"";
+	string mount_point = currentPartition["mount"]:"";
+	list autoRegion = currentPartition["region"]:[];
+	
+	if (psize!= "" && psize!="auto")
+	{
+	    units = size_to_units(kmgt_str_to_byte(psize));
+	    if (units == 0) 
+	    {
+		units = end_of_region (selected_region) - end_of_region (region);
+	    }
+	}
+	else if (psize == "auto") 
+	{
+	    if (mount_point == "/boot") 
+	    {
+		units = size_to_units (size_of_boot);
+	    }
+	    else if  (mount_point == "swap")
+	    {
+		units = size_to_units (size_of_swap);
+	    }
+	    else {
+		units = end_of_region (selected_region) - end_of_region (region);
+	    }
+	}
+	else if (psize == "max")
+	{
+	    units = end_of_region (selected_region) - end_of_region (region);		
+	}
+	else if (psize == "" && size(autoRegion)>0)	    
+	{
+	    return autoRegion;
+	}
+
+	
+	if (select(region,1, -1)==0)
+	{
+	    region = [select(selected_region, 0, 0), units];
+	}
+	else
+	{
+	    region = [ end_of_region(region), units];
+	}
+	return region;
+    }
+    
+    /**
+     * StringFS2Symbol()     
+     * @param any filesystem string
+     * @return symbol filesystem type
+     */
+    global define StringFS2Symbol(any fs)``{
+	if (is(fs,symbol)) {
+	    return fs;
+	}
+	map filesystems =
+	    $[
+	      "ext2":	`ext2,
+	      "ext3":	`ext3,
+	      "reiser":	`reiser,
+	      "lvm":	`lvm,
+	      "raid":	`raid,
+	      "jfs":	`jfs,
+	      "fat32":	`fat32,
+	      "xfs":	`xfs,
+	      "fat16":	`fat16,
+	      "swap":	`swap	
+	];
+	return filesystems[fs]:`ext2;	
+  }
+
+}

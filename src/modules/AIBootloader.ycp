@@ -1,0 +1,77 @@
+/**
+ * File:	AIGeneal.ycp
+ * Package:	General Options for Auto-installations
+ * Authors:	Anas Nashif (nashif@suse.de)
+ * Summary:	Handle Bootloader options
+ *
+ * $Id$
+ */
+{
+    module "AIBootloader";
+    textdomain "autoinst";
+    
+    import "Summary";
+
+    
+
+    global map Settings= $[];;
+    /**
+     * Set module data
+     * @return void
+     */
+
+    global define void Set(map settings)``{
+	Settings= settings;
+    }
+
+    /**
+     * Dump the settings to a map, for autoinstallation use.
+     * @return map
+     */
+    global define map Export()``{
+	return Summary;
+    }
+
+
+    /**
+     * Get all the configuration from a map.
+     * When called by autoinst_<module name> (preparing autoinstallation data)
+     * the map may be empty.
+     * @param settings	$[...]
+     * @return	success
+     */
+    global define boolean Import(map settings)``{
+	Settings= settings;
+	return true;
+    }
+
+    /**
+     * @return Html formatted configuration summary
+     */
+    global define string Summary()``{
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Location"));
+	summary = Summary::AddLine(summary, (Settings["location"]:"" != "") ?
+				 Settings["location"]:""   : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("kernel Boot Parameters"));
+	summary = Summary::AddLine(summary, (Settings["kernel_parameters"]:"" != "") ?
+				   Settings["kernel_parameters"]:""   : Summary::NotConfigured());
+
+	
+	summary = Summary::AddHeader(summary, _("Use the 'linear' option"));
+	summary = Summary::AddLine(summary, (Settings["linear"]:false) ?
+				   _("Yes")   : Summary::NotConfigured());
+	
+	summary = Summary::AddHeader(summary, _("LBA Support?"));
+	summary = Summary::AddLine(summary, (Settings["lba_support"]:false) ?
+				   _("Yes")   : Summary::NotConfigured());
+
+	summary = Summary::AddHeader(summary,  _("Activate LILO partition"));
+	summary = Summary::AddLine(summary, (Settings["activate"]:false) ?
+				   _("Yes")   : Summary::NotConfigured());	
+		
+	return summary;
+    }
+   
+    
+}

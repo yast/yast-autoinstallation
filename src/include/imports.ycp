@@ -1,0 +1,515 @@
+/**
+ * File:	include/autoinstall/imports.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Imports older and foreign format
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+
+    global define aliceImportOptions()
+	``{
+	string title = _("Import Alice configuration");
+	string help = _("Help");
+
+	
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Left(`HBox(
+				   `TextEntry(`id(`alicerep), _("Alice &Home"), AIServer::aliceRep),
+				   `HStretch()
+				   )
+			     ),
+		       `VSpacing(1),
+		       `Left(`Label(_("What should be done with loaded data?"))),
+		       `HBox(`HWeight(10, `Empty()),
+			     `HWeight(90, `RadioButtonGroup(`id(`rbg),
+							    `VBox(
+								  `Left(
+									`RadioButton(`id(`hostname), `opt(`notify),_("&Use hostname from alice as profile name"),
+										     (AIServer::aliceOutput == `hostname))
+									),
+								  `Left(
+									`RadioButton(`id(`save),`opt(`notify), _("Save result &into Repository"),
+										     (AIServer::aliceOutput == `save))
+									),
+								  `Left(
+									`HBox(
+									      `HStretch(),
+									      `TextEntry(`id(`result), _("Name of resulting &profile"), ""),
+									      `HStretch()
+							    
+									      )
+									),
+								  `Left(
+									`RadioButton(`id(`load), `opt(`notify),_("&Load resulting profile"), (AIServer::aliceOutput == `load) )
+									)
+								  )
+							    )
+				      )
+			     )
+		       )
+		 );
+		
+	Wizard::SetContents(title,
+			    contents, help , true, true);
+
+	any ret = nil;
+	repeat
+	    {
+		ret = UI::UserInput();
+		AIServer::aliceRep = UI::QueryWidget(`id(`alicerep), `Value);
+		AIServer::aliceOutput = UI::QueryWidget(`id(`rbg), `CurrentButton);
+		if ( AIServer::aliceOutput == `save && ret == `next)
+		{
+		    if ( UI::QueryWidget(`id(`result), `Value) != "" )
+		    {
+			AIConfig::currentFile =  UI::QueryWidget(`id(`result), `Value);
+		    }
+		    else
+		    {
+			UI::MessagePopup(_("Please provide a valid profile name"));
+			continue;
+		    }
+		}
+		
+		
+	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));	
+	return ret;
+    }
+    
+    /**
+     * Generate control file list
+     * @return file list
+     */
+    global define aliceHostList() ``{
+	
+	list files = SCR::Read(.target.dir, AIServer::aliceRep + "/info");
+	list extensions = ["sys.tcf"	];
+	list hosts = [];
+	string host = "";
+	foreach(string file, files, ``{
+	    foreach(`ext, extensions, ``{
+		if (issubstring(file, ext))
+		{
+		    integer extsize = size(splitstring(ext, "."));
+		    list comp = splitstring(file, ".");
+		    integer i = 0;
+		    while (i < extsize) {
+			comp  = remove(comp, size(comp) - 1 );
+			i = i + 1;
+		    }
+		    
+		    hosts=add(hosts,mergestring(comp,"."));
+		}
+	    });
+		
+	});
+	list hostfiles = maplist(string host, toset(hosts), ``{
+	    return (`item(`id(host), host));
+	});
+	
+	term contents =
+	    `VBox(	
+		  `VSpacing(0.5),
+		  `Table(`id(`table), `opt(`notify,`immediate), `header("Host"),
+			 hostfiles
+			 ),
+
+		  `VSpacing(0.5),
+		  `VBox(
+			`HBox(			      
+			      `PushButton(`id(`import), _("&Import"))			      
+			      )
+
+			),
+		  `VSpacing(0.5)
+		  );
+	return contents;
+    }
+
+
+
+    
+    global define aliceImportList()
+	``{
+	string help = _("<p>Using this dialog you can select a
+host from the <b>ALICE</b> repository.</p>
+");
+	help = help + _("<p>Converting <b>ALICE</b> data to be used with the new auto-installation
+system might take some time, so please be patient while
+the configuration files are being read and converted.
+</p>");
+	Wizard::SetContents(_("Hosts in Alice Repository"),
+			    aliceHostList(), help, true, true);		
+	UI::ChangeWidget(`id(`next), `Enabled, false);
+	any ret = "";
+	string host = "";
+	repeat
+	    {
+	    ret = UI::UserInput();
+	    if (ret == `import)
+	    {
+		host = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (host != nil && host != "") {
+		    showFeedback(_("Reading Alice configuration files,
+this may take a while, please wait..."));
+
+		    map aliceConf = createAliceConf(host);		    
+		    AIConfig::Import(createProfile(aliceConf));
+		    
+		    clearFeedback();
+		    UI::ChangeWidget(`id(`next), `Enabled, true);
+		}
+	    }
+	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	if (ret == `next) {
+	    if (AIServer::aliceOutput == `hostname) {
+		AIConfig::currentFile = sformat("%1.xml", host);
+		ret = `save;
+	    } else {
+		ret = AIServer::aliceOutput;
+	    }
+	}
+	return ret;
+    }
+
+    global define map createAliceConf(string host)``{
+	string MakeinfoCommand = "alice make_info_file --yast2 ";
+	MakeinfoCommand = MakeinfoCommand + host;	
+	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR":AIServer::tmpDir, "ALICE_HOME":AIServer::aliceRep]);
+	map ret = XML::XMLToYCPFile(AIServer::aliceRep + "/tmp/" + host + ".xml");
+	return ret;
+    }
+    
+    /**
+     * Create the profile from Alice data
+     * @param map alice data
+     * @return map Profile
+     */
+
+    global define map createProfile(map aliceConf)
+	``{	
+	import "Misc";
+	// General resource
+	////////////////////////////////////////////////////////
+	map keymap2yast1 = $[
+			     "us"		:"english-us",
+			     "de-lat1-nd"	:"german",
+			     "fr-latin1"	:"french",			    
+			     "it"		:"italian",
+			     "es"		:"spanish",
+			     "nl"		:"dutch",
+			     "pt2"		:"portugese",
+			     "br-abnt2"		:"portugese-br",
+			     "hu"		:"hungarian",
+			     "Pl02"		:"polish" ,
+			     "gr"		:"greek"  ,
+			     "trq"		:"turkish",
+			     "ru1"		:"russian",
+			     "cz-lat2"		:"czech" 
+	];
+	map lang2iso = SCR::Read( .target.yast2, "lang2iso.ycp");
+
+	map general = $[];
+	map install = $[];
+	map configure = $[];
+	
+	// SYS_LANGUAGE, SYS_KEYTABLE, SYS_TIMEZONE, SYS_MOUSE_DEVICE, SYS_HWC_GMT
+	string language = aliceConf["SYS_LANGUAGE"]:"english";
+	general["language"] = lang2iso[language]:"en_US";
+	string keymap = aliceConf["SYS_KEYTABLE"]:"us";
+	general["keyboard"] = keymap2yast1[keymap]:"english-us";
+	general["timezone"] =  aliceConf["SYS_TIMEZONE"]:"CET";
+	if ( aliceConf["SYS_HWC_GMT"]:"no" == "yes")
+	    general["hwclock"] = "GMT";
+	else
+	    general["hwclock"] = "localtime";
+
+	map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+	// y2milestone("Mice %1", mice);
+	boolean found = false;
+	foreach(`k,`v, mice, ``{
+	    map data = select(v,1,$[]);
+	    // y2milestone("yours %1, mine %2",  data["device"]:"", aliceConf["SYS_MOUSE_DEVICE"]:"none");
+	    if ( data["wheels"]:0 == 0 && data["device"]:"" == aliceConf["SYS_MOUSE_DEVICE"]:"none") {
+		general["mouse"] = k;
+		found = true;
+	    }
+	});
+	if (!found)
+	    general["mouse"] = "probe";
+
+
+	
+	list drives = [];
+	map newDrive = $[];
+	foreach(`k,`v, aliceConf , ``{
+	    if (issubstring(k, "SYS_PART")) {	
+		string device =  "/dev/" + select(splitstring(k,"_"), 2, "");		
+		list partitions  = createAlicePartitions(v);
+		y2milestone("Partitions for %1: %2", device , partitions );
+		drives = add(drives, $["device":device, "partitions": partitions]);
+	    }
+	});
+	
+
+
+	install["partitioning"] = drives;	
+	install["general"] = general;
+	install["software"] = createAliceSoftware(aliceConf);
+	configure["networking"] = createAliceNetwork(aliceConf);
+	configure["users"] =  createAliceUsers(aliceConf);
+	if (aliceConf["NETWORK_NIS_YPDOMAIN"]:"" != "")
+	    configure["nis"] =  createAliceNis(aliceConf);
+	
+	map profile = $[];
+	profile["install"] = install;
+	profile["configure"] = configure;
+	y2milestone("Profile : %1", profile);
+	return profile;
+    }
+
+    /**
+     * create partition list from alice data
+     * @param string partition
+     * @return list  list of partitions
+     */    
+    global define list createAlicePartitions(string partitions)
+	``{
+	SCR::Write(.target.string, "/tmp/alice_part", partitions);
+	
+	list raw_part =  SCR::Read(.tmp.alice.part);
+	
+	list part =filter(`pe, raw_part, ``(!haskey(pe, "path")));
+	y2milestone("and parts again: %1", part);
+	list newPartitions = maplist(`p, part, ``{
+	    map newPart = $[];
+	    
+	    if (p["mount"]:""!="NONE" && p["mount"]:""!="SWAP")
+	    {
+		newPart["mount"] = p["mount"]:"";
+	    }
+	    else if (p["mount"]:"" == "SWAP")
+	    {
+		newPart["partition_id"]= tointeger(sformat("0x%1","82"));		
+	    }
+	    
+	    if (p["size"]:-1 == 0)
+	    {
+		newPart["size"]= "max";
+	    }
+	    else
+	    {
+		newPart["size"]= sformat("%1mb", p["size"]:0);
+	    }
+		
+	    if (haskey(p,"id")) {
+		string hex = sformat("0x%1", p["id"]:"83");
+		newPart["partition_id"]= tointeger(hex);
+	    }
+	    if (haskey(p,"num")) {
+		newPart["partition_nr"]= tointeger(p["num"]:"0");
+	    }
+
+	    return newPart;	    	
+	});
+	SCR::Execute(.target.remove,  "/tmp/alice_part");
+	SCR::UnmountAgent(.tmp.alice.part);
+	y2milestone("Alice Partitions %1", newPartitions);
+	return  newPartitions;
+    }
+
+    /**
+     * create software map from alice data
+     * @param map aliceConf alice configuration
+     * @return map  software map
+     */
+    
+    global define map createAliceSoftware(map aliceConf) ``{
+
+	map software= $[];
+	string base = "";
+	if (size(aliceConf["SYS_SW_SELLIST"]:"")>0) {
+	    string SYS_SW_SELLIST = aliceConf["SYS_SW_SELLIST"]:"";	    
+	    software["packages"] = readSelection(SYS_SW_SELLIST);
+	}
+	else if (aliceConf["SYS_SW_SELECTION"]:"" != "") {
+	    list tmpsel = splitstring(aliceConf["SYS_SW_SELECTION"]:"", "/");
+	    base = select(tmpsel, size(tmpsel) - 1 , "");
+	    software["base"] = select(splitstring(base, "."), 0, "Minimal");
+	}
+	
+	if (aliceConf["SYS_INST_KERNEL"]:"" != "") {
+	    software["kernel"] = aliceConf["SYS_INST_KERNEL"]:"";
+	}
+	if (aliceConf["SYS_SW_ADDLIST"]:"" != "") {
+	    string SYS_SW_ADDLIST = aliceConf["SYS_SW_ADDLIST"]:"";	    
+	    software["packages"] = readSelection(SYS_SW_ADDLIST);
+	}
+	if (aliceConf["SYS_SW_AUXLIST"]:"" != "") {
+	    string SYS_SW_AUXLIST = aliceConf["SYS_SW_AUXLIST"]:"";
+	    map extra = $[];
+	    extra["packages"] = readSelection(SYS_SW_AUXLIST);
+	    extra["package_location"] = "custom";
+	    software["extra_packages"] = extra;
+	}
+	return software;
+	
+    }
+    /**
+     * Read package selection from a file
+     * @param string selection as string
+     * @return list package selection list
+     */
+    global define list readSelection(string selection) ``{
+	SCR::Write(.target.string, "/tmp/alice_software", "Toinstall:\n" + selection + "\nLlatsniot:\n");
+	list sel = filter(`p, SCR::Read(.yast1sel.selection,"/tmp/alice_software"), ``(p!=""));	    
+	SCR::Execute(.target.remove, "/tmp/alice_software");
+	SCR::UnmountAgent(.tmp.alice.software);
+	return sel;
+    }
+    /**
+     * create network map from alice data
+     * @param map aliceConf alice configuration
+     * @return map  network map
+     */ 
+
+    global define map createAliceNetwork(map aliceConf) ``{ 
+	 include "network/ip.ycp";
+	 string network =  aliceConf["NET_IP_CONFIG"]:"";
+	 string DNS_NAMESERVER = aliceConf["DNS_NAMESERVER"]:"";
+	 string DNS_SEARCHLIST = aliceConf["DNS_SEARCHLIST"]:"";
+	 string SYS_NAME = aliceConf["SYS_NAME"]:"";
+	 string DEF_GATEWAY = aliceConf["DEF_GATEWAY"]:"";
+	 string ROUTES = aliceConf["ROUTES"]:"";
+	 
+	 
+	 map networking = $[];
+	 map dns = $[];
+	 map routing = $[];
+
+
+	 
+	 SCR::Write(.target.string, "/tmp/alice_network", network);
+	 map raw_interfaces =SCR::Read(.tmp.alice.network);
+	 list interfaces = maplist(`iface, `data, raw_interfaces, ``{
+	     map interface = $[];
+	     if (data["bootproto"]:"" == "dhcpclient")
+	     {
+		 interface["bootproto"] = "dhcp";
+		 interrface["device"] = iface;
+		 interrface["startmode"] = "onboot";
+	     }
+	     else
+	     {
+		 interface["device"] = iface;
+		 interface["bootproto"] = "static";
+		 interface["network"] =  compute_network(ip2string(data["ipaddr"]:""),ip2string(data["netmask"]:""));
+		 interface["ipaddr"] = ip2string(data["ipaddr"]:"");
+		 interface["netmask"] = ip2string(data["netmask"]:"");
+		 interface["startmode"] = "onboot";
+		 interface["broadcast"] = compute_broadcast(ip2string(data["ipaddr"]:""),ip2string(data["netmask"]:""));
+	     }
+	     return (interface);
+	 });
+
+	 list nameserver = filter(`n, splitstring(DNS_NAMESERVER, " "), ``(n!= "" && n!= " "));
+	 list searchlist = filter(`s, splitstring(DNS_SEARCHLIST, " "), ``(s!= "" && s!= " "));
+	 
+	 string hostname = select(splitstring( SYS_NAME, "."), 0 , "");
+	 string domain = mergestring(remove(splitstring( SYS_NAME, "."), 0), ".");
+	 
+	 dns["hostname"] = hostname;
+	 dns["domain"] = domain;
+	 dns["searchlist"] = searchlist;
+	 dns["nameservers"] = nameserver;
+
+	 list routes= [];
+	 map route = $[];
+
+	 if (DEF_GATEWAY!="") {
+	     route["destination"] = "default";
+	     route["device"] = "-";
+	     route["gateway"] = DEF_GATEWAY;
+	     route["netmask"] = "-";
+	     routes=add(routes, route);
+	 }
+	 if (ROUTES!="") {
+	     SCR::Write(.target.string, "/tmp/alice_routes", ROUTES);
+	     list raw_routes =SCR::Read(.tmp.alice.routes);
+	     routes = union(routes, raw_routes);
+	 }
+	 routing=add(routing, "routes", routes);
+	 routing=add(routing,"ip_forwarding", false);
+	 
+	 networking["interfaces"] = interfaces;
+	 networking["dns"] = dns;
+	 networking["routing"] = routing;
+	 
+	 return networking;
+     }
+
+
+
+    /**
+     * create NIS map from alice data
+     * @param map aliceConf alice configuration
+     * @return map  NIS map
+     */
+    global define map createAliceNis (map aliceConf) ``{
+	map nis = $[];
+	string nis_domain = aliceConf["NETWORK_NIS_YPDOMAIN"]:"";
+	list nis_servers = splitstring( aliceConf["NETWORK_NIS_YPSERVER"]:"", " ");
+	nis["nis_domain"] = nis_domain;
+	nis["nis_servers"] = nis_servers;
+	nis["start_nis"] = true;
+	
+	return nis;
+    }
+
+    /**
+     * create users list from alice data
+     * @param map aliceConf alice configuration
+     * @return list  List of users
+     */
+    global define list  createAliceUsers (map aliceConf) ``{
+	list users = [];
+	// root
+	map root = $[];
+	root["encrypted"] = true;
+	root["username"] = "root";
+	root["user_password"] =  aliceConf["SYS_ROOT_START_PWD"]:"";
+	users=add(users,root);
+
+	return users;
+    }
+
+    
+    global define kickstartImport()
+	``{
+	string title = _("Import Kickstart files");
+	string help = "";
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Left(`Label(_("Still not ready")))
+		       )
+		 );
+		
+	Wizard::SetContents(title,
+			    contents, help , true, true);
+
+	any ret = nil;
+	repeat
+	    {
+		ret = UI::UserInput();
+		
+	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	return ret;
+    }    
+    
+}

@@ -1,0 +1,254 @@
+/**
+ * File:	modules/AIScripts.ycp
+ * Module:	Auto-Installation
+ * Summary:	Custom scripts
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    module "AIScripts";
+    textdomain "autoinst";
+    include "ui/common_messages.ycp";
+
+
+    
+    global list pre = [];
+    global list post = [];
+    global list chroot = [];
+    
+    global list merged = [];
+
+    /**
+     * Constructor
+     */
+    
+    define void AIScripts()
+	``{
+	merged = mergeScripts();
+    }
+    
+    /**
+     * Set module data
+     * @return void
+     */
+
+    global define void Set(map s)``{
+	pre = s["pre-scripts"]:[];
+	post = s["post-scripts"]:[];
+	chroot = s["chroot-scripts"]:[];
+	merged = mergeScripts();
+	return;
+    }
+
+    /**
+     * Dump the settings to a map, for autoinstallation use.
+     * @return map
+     */
+    global define map Export()
+	``{
+	pre = [];
+	post = [];
+	chroot = [];
+	y2milestone("Merged %1", merged);
+	// split
+	foreach(`s, merged, ``{
+	    if (s["type"]:"" == "pre-scripts")
+		pre = add(pre,s);
+	    else if (s["type"]:"" == "post-scripts")
+		post = add(post,s);
+	    else if (s["type"]:"" == "chroot-scripts")
+		chroot = add(chroot,s);	    
+	});
+	
+
+	// clean
+	return ($["pre-scripts": maplist (`p, pre,
+					 ``{
+	    return ($["filename":p["filename"]:"",
+		    "interpreter": p["interpreter"]:"",
+		    "source":p["source"]:""
+		    ]);	    
+	}),
+		 "post-scripts": maplist (`p, post,
+					  ``{
+		     return ($["filename":p["filename"]:"",
+			     "interpreter": p["interpreter"]:"",
+			     "source":p["source"]:""]
+			     );	    
+		 }),
+		 "chroot-scripts": maplist (`p, chroot,
+					    ``{
+		     return ($["filename":p["filename"]:"",
+			     "interpreter": p["interpreter"]:"",
+			     "source":p["source"]:""
+			     ]);
+	    
+		 })
+		 ]);
+				
+    }
+
+
+    /**
+     * Get all the configuration from a map.
+     * When called by autoinst_<module name> (preparing autoinstallation data)
+     * the map may be empty.
+     * @param settings	$[...]
+     * @return	success
+     */
+    global define boolean Import(map s)
+	``{
+	if (size(s) == 0)
+	    return true;	
+	Set(s);
+	
+	return true;
+    }
+
+
+
+    
+    /**
+     * @return  script configuration summary dialog
+     */
+    global define string Summary()
+	``{
+	list allscripts = maplist(`s, merged,
+				  ``{
+				      return (`item(`id(s["filename"]:"Unknown"),
+						    s["filename"]:"Unknown",
+						    typeString(s["type"]:""),
+						    s["interpreter"]:"Unknown")
+					      );
+				  });
+	term contents =	 
+	    `VBox(
+		  `Left(
+			`Label(_("Available Scripts"))
+			),
+		  `Table( `id(`table), `opt(`notify),
+			  `header(_("Script Name"), _("Type"), _("Interpreter")),
+			  allscripts			 
+			  ),
+		  `HBox(
+			`PushButton(`id(`new),  NewButtonLabel()),
+			`PushButton(`id(`edit), EditButtonLabel()),
+			`PushButton(`id(`delete), DeleteButtonLabel())
+			)		  
+		  );
+	return contents;
+    }
+
+    
+    /**
+     * delete a script from a list
+     * @param script name
+     * @return modified list of scripts
+     */
+    global define list  deleteScript(string scriptName)
+	``{
+	return  ( filter(`s, merged, ``(lookup(s,"filename","")!= scriptName)));
+    }
+
+
+    
+    /**
+     * Add or edit a script
+     * @param scriptName script name
+     * @param source source of script
+     * @param interpreter interpreter to be used with script
+     * @param type type of script
+     * @return -
+     */
+    global define void AddEditScript(string scriptName, string source, string interpreter, string type)
+    ``{	
+	list newScripts = [];
+	boolean modified = false;
+	merged = maplist (`script , merged, ``{
+	    // Edit
+	    if (script["filename"]:"" == scriptName)
+	    {
+		map oldScript = $[];
+		oldScript=add(oldScript,"filename", scriptName);
+		oldScript=add(oldScript,"source", source);
+		oldScript=add(oldScript,"interpreter", interpreter);
+		oldScript=add(oldScript,"type", type);
+		modified = true;
+		return oldScript;
+	    }
+	    else {
+		return script;
+	    }
+	});
+
+	if (!modified)
+	{
+	    map script = $[];
+	    script=add(script,"filename", scriptName);
+	    script=add(script,"source", source);
+	    script=add(script,"interpreter", interpreter);
+	    script=add(script,"type", type);
+	    
+	    merged=add(merged,script);
+	}
+	return;
+    }
+
+
+    
+
+
+
+    
+    /**
+     * return type of script as formatted string
+     * @param script type
+     * @return type as translated string
+     */ 
+    define string typeString(string type)``{
+	if (type == "pre-scripts")
+	{
+	    return _("Pre");
+	}
+	else if (type == "post-scripts")
+	{
+	    return _("Post");
+	}
+	else if (type == "chroot-scripts")
+	{
+	    return _("Chroott");
+	}
+	return _("Unknown");
+    }
+	
+
+    
+    /**
+     * merge all types of scripts into one single list
+     * @param -
+     * @return merged list
+     */
+    define list mergeScripts () ``{
+	list result =	maplist (`p, pre,
+				 ``{
+				     p = add(p,"type","pre-scripts");				     
+				     return p;
+				 });
+	result = union(result, 	maplist (`p, post,
+				 ``{
+				     p = add(p,"type","post-scripts");
+				     return p;
+				 })
+		       );	
+	result = union(result, 	maplist (`p, chroot,
+				 ``{
+				     p = add(p,"type","chroot-scripts");
+				     return p;
+				 })
+		       );
+	return result;
+    }
+	
+}

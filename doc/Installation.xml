@@ -1,0 +1,80 @@
+
+
+<chapter id="Installation">
+  <title>Starting Auto-Installation</title>
+  <sect1 id="Installation.process">
+    
+    <title>
+      The Auto-Installation Process
+    </title>
+    <para>
+      After the system has booted and the control file has been retrieved,
+      &yast2; performs configuration of the system according to the information
+      contained in the  control
+      file. All the configuration is summarized in a window that is shown by
+      default and should be deactivated if a full automatic installation is
+      needed.      
+    </para>
+    <para>
+      When reaching the point where the summary of the configuration is shown,
+      &yast2; has only probed hardware and prepared the system for
+      auto-installation, thus, nothing has been changed in the system yet, so
+      that in case of any error, the process still can be aborted.
+    </para>
+    
+  </sect1>
+  <sect1 id="Installation.Interface">
+    <title>
+      Interface during Auto-Install
+    </title>
+    <para>
+      A system should be automatically install-able without the need to have
+      any graphic adaptor or monitor. Having a monitor attached to the
+      client machine is nevertheless recommended to follow the process and
+      to get feedback in case of any errors. Choosing between the Qt and the
+      Ncurses interfaces is possible. For headless
+      clients, system messages can be monitored using the serial console.
+    </para>
+    <sect2 id="Installation.Interface.X11">
+      <title>
+	X11 Interface
+      </title>
+      <para>
+	This is the  default interface while auto-installing. No special
+	variables are required to activate it.
+      </para>
+    </sect2>
+    <sect2 id="Installation.Interface.SerialConsole">
+      <title>
+	Serial console
+      </title>
+      <para>
+	You can start installing a system using the serial console by adding
+	the keyword console (i.e. console=ttyS0) to the command line of the
+	kernel. This will start linuxrc in console mode and later in the
+	process, &yast2; also is started in serial console mode.
+      </para>
+    </sect2>
+    <sect2 id="Installation.Interface.Ncurses">
+      <title>
+	Text based YaST2-Installation
+      </title>
+      <para>
+	This option can also be activated on the command line. This will start
+	YaST2 in <emphasis>Ncurses</emphasis> mode. To start &yast2; in text
+	mode, add <emphasis>textmode=1</emphasis> on the command line.
+      </para>
+      <para>
+	Starting &yast2; in text mode is recommended when installing  a client
+	with less than 64 MB or when X11 is not being configured at all,
+	especially on headless machines.
+      </para>
+    </sect2>
+  </sect1>
+  </chapter>
+      <!--
+       Local Variables:
+       mode: xml
+       sgml-parent-document: ("autoyast2.xml" "book" "chapter")
+       End:
+      -->  

@@ -1,0 +1,301 @@
+
+
+  <sect1 id="Profile.Structure">
+    <title>
+      Structure
+    </title>
+    <para>
+      Below is an example of a basic control file container, the actual content
+      of which is explained later on in this chapter. 
+    </para>
+      
+    <example>
+      <title>Control file container</title>
+      <screen>
+<![CDATA[
+<?xml version="1.0"?>
+<!DOCTYPE control_file SYSTEM
+ "/usr/lib/YaST2/include/control-file.dtd">
+ <profile
+ xmlns="http://www.suse.de/1.0/cfns"
+ xmlns:config="http://www.suse.de/1.0/cfgns">
+ 
+<!-- RESOURCES -->
+</profile>
+]]>
+      </screen>
+    </example>
+    <para>
+      The profile element (root node) contains one or more distinct resource
+      elements. The permissible resource elements are specified in the
+      &dtd;. 
+    </para>
+    <para>
+      The root element in the control  file can for example contain the
+      following sub-keywords:
+    </para>              
+    <itemizedlist>
+      <listitem>
+	<para>
+	  installation	(Tag <emphasis>&lt;install&gt;</emphasis> )
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      Lilo configuration: lilo device, lilo type (Tag <emphasis>&lt;bootloader&gt;</emphasis> )
+	    </para>
+	  </listitem>	
+	  <listitem>
+	    <para>
+	      Partitioning: drives and partition plans (Tag <emphasis>&lt;partitioning&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      General: Installation instructions, including all variables related to
+	      the client i.e. display, languages, keyboard etc. (Tag <emphasis>&lt;general&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      Software:  Software and Package selections (Tag <emphasis>&lt;software&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	</itemizedlist>	            
+      </listitem>
+      <listitem>
+	<para>
+	  configuration	 (Tag <emphasis>&lt;configure&gt;</emphasis> )     
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      Network:  network configuration for the
+	      client and servers providing services to the target client (Tag <emphasis>&lt;networking&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      Users:  user administration, including first user and root. (Tag <emphasis>&lt;users&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      User scripts: pre-configuration. (Tag <emphasis>&lt;pre-scripts&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      User scripts: post-configuration. (Tag <emphasis>&lt;post-scripts&gt;</emphasis> )
+	    </para>
+	  </listitem>
+
+	</itemizedlist>	  
+	</listitem>
+    </itemizedlist>
+    <sect2>
+      <title>
+	Resources and Properties
+      </title>
+      <para>
+	A resource element either contains multiple and distinct property and
+	resource elements or contains multiple instances of the same resource
+	element or is empty. The permissible content of a resource element is
+	specified in the &dtd;. 
+      </para>
+      <para>
+	A property element is either empty or contains a literal value. The
+	per-missible property elements and values in each resource element are
+	specified in the &dtd;.
+      </para>
+      <para>
+	An element can be either a container of other elements (a resource) or
+	have a literal value (a property), it can never be both. This
+	restriction is specified in the &dtd;. A configuration component with
+	more than one value must either be represented as some kind of embedded
+	list in a property value or as a nested resource.
+      </para>
+    </sect2>
+    <sect2>
+      <title>
+	Nested Resources
+      </title>
+      <para>
+	Nested resource elements allow a tree like structure of configuration
+	components to be built to any level.  
+      </para>
+      <example> 
+	<title>
+	  Nested Resources
+	</title>
+	<screen>	 
+<![CDATA[
+...
+<drive> 
+  <device>/dev/hda</device> 
+  <partitions> 
+     <partition> 
+        <size>1000</size> 
+        <mount>/</mount> 
+     </partition> 
+     <partition> 
+        <size>250</size> 
+        <mount>/tmp</mount> 
+     </partition> 
+  </partitions> 
+</drive>
+....
+]]>
+	</screen>
+      </example>
+
+      <para>
+	In the example above the disk resource consists of a device property
+	and a partitions resource. The partitions resource contains multiple
+	instances of the partition resource. Each partition resource contains a
+	size and mount property.	
+      </para>
+      <para>
+	Although it is specified in the &dtd; that the partitions resource
+	contains multiple instances, it is still required to specify this to
+	avoid false data typing. Using the example above, imagine having  a
+	drive with only one partition. This will result in interpreting the
+	partition resource as a property. To avoid this the following syntax
+	must be used when defining multiple instances. For more information
+	about type attributes, see next section.
+      </para>
+      <example> 
+	<title>
+	  Nested Resources with type attributes
+	</title>
+	<screen>	 
+<![CDATA[
+...
+<drive> 
+  <device>/dev/hda</device> 
+  <partitions config:type="list"> 
+     <partition> 
+        <size>1000</size> 
+        <mount>/</mount> 
+     </partition> 
+     <partition> 
+        <size>250</size> 
+        <mount>/tmp</mount> 
+     </partition> 
+  </partitions> 
+</drive>
+....
+]]>
+	</screen>
+      </example>
+    </sect2>
+<!--
+    <sect2>
+      <title>
+	Named Elements
+      </title>
+      <para>
+	The name does not need to be unique in the profile but must be unique
+	against all siblings of the same element type. The <abbrev>&dtd;</abbrev> cannot validate
+	this (without the specific name values being encoded into it). Multiple
+	instances of the same resource or property element can optionally be
+	given a name so that they can be addressed by name rather than by
+	index. This is specified with the <emphasis>config:name</emphasis> attribute. 
+      </para>
+      <example> 
+	<title>
+	  Named Elements
+	</title>
+	<screen>	     
+<![CDATA[
+<drive> 
+  <name>/dev/hda</name> 
+  <partitions config:type="list" > 
+     <partition config:name="root"> 
+        <size>1000</size> 
+        <mount>/</mount> 
+     </partition> 
+     <partition config:name="tmp"> 
+        <size>250</size> 
+        <mount>/tmp</mount> 
+     </partition> 
+  </partitions> 
+</drive>
+]]>
+	</screen>
+      </example>
+      <para>
+	Multiple instances of the same element must either be all named or
+	all unnamed, mixes of named and unnamed elements of the same type
+	are not permitted. This restriction is specified in the &dtd;. The
+	&dtd; also restricts the use of the <emphasis>config:name</emphasis> attribute to elements
+	permitted to appear more than once.
+      </para>
+      <para>
+	Without explicit names the names of multiple instances of elements are
+	a constructed index position. The names of single instances of elements
+	are the same as the element type.
+      </para>
+    </sect2>
+-->
+    <sect2>
+      <title>
+	Attributes
+      </title>
+      <para>
+	Global profile attributes are used to define meta-data on resources and
+	properties. Attributes are used to define timestamps, access control,
+	dynamic values and context switching. They are also used for naming and
+	typing properties as shown in earlier sections
+	<footnote>
+	  <para>
+	    Profile attributes are in a separate namespace so they don't have
+	    to be treated as reserved words in the default namespace. New ones
+	    can then be added without having to potentially alter existing
+	    profiles.
+	  </para>
+	</footnote>.
+      </para>
+      <para>
+	Profile attributes are defined in the configuration namespace and must
+	always be prefixed with <emphasis>config:</emphasis> . All profile attributes are
+	optional. Most can be used with both resource and property elements but
+	some can only be used with one type of element which is specified in
+	the &dtd;. 
+      </para>
+      <para>
+	There are no ordering constraints on attributes and no significance
+	should be interpreted from a specific ordering. 
+      </para>
+      <sect3>
+	<title>
+	  Attribute Names
+	</title>
+	<para>
+	  The name of a resource or property element is used for addressing and
+	  distinguishing multiple instances of the same element. The name of an
+	  element can be defined using the <emphasis>config:name</emphasis> attribute. By default for
+	  single instance elements the name is the same as the element type. By
+	  default for multiple instance elements the name is the index position
+	  number of the element. An element can only be addressed by its
+	  specified name or by its generated index number, never by both. 
+	</para>
+      </sect3>
+      <sect3 id="profile.structure.attributes.types">
+	<title id="profile.structure.attributes.types.title">
+	  Attribute Type
+	</title>
+	<para>
+	  The type of an element is defined using the <emphasis>config:type</emphasis> attribute. The
+	  type of a resource element is always RESOURCE , although this can
+	  also be made explicit with this attribute (to ensure correct
+	  identification of an empty element for example when there is no &dtd;
+	  to refer to). A resource element cannot be any other type and this
+	  restriction is specified in the &dtd;. The type of a property element
+	  determines the interpretation of its literal value. The type of a
+	  property element defaults to <emphasis>STRING</emphasis> , as specified in the &dtd;. The
+	  full set of permissible types is specified in the &dtd;. 
+	</para>
+      </sect3>	  
+    </sect2>
+  </sect1>

@@ -1,0 +1,117 @@
+/**
+ * File:	clients/autoinst_scripts.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Scripts
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Mode";
+    Mode::config = true;
+    include "ui/file_popups.ycp";
+    
+
+    import "Wizard";
+    import "Summary";
+    import "AIScripts";
+
+    include "ui/common_messages.ycp";
+    include "autoinstall/script_dialogs.ycp";
+
+    list args = Args ();
+
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( Args (0), map ) )
+    {
+	y2error ("Bad argument: %1", Args (0));
+	return false;
+    }
+
+    map settings = $[];
+    {
+	integer i = 0;
+	while (i < size (Args()))
+	{
+	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);
+	    i = i + 1;
+	}
+    }
+
+    y2milestone("Imported: (%1)", settings);
+    AIScripts::Import ( settings );
+
+
+
+
+    /**
+     *
+     *
+     */
+    global define symbol set_contents()
+    ``{
+	string title = _("User Script Management");
+	Wizard::SetContents(title,
+			    AIScripts::Summary(), "", true, true);
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+
+	    if (ret == `new) {
+		Wizard::CreateDialog();
+		ScriptDialog(ret , "" );
+		Wizard::CloseDialog();
+	    }
+	    else if (ret == `edit)
+	    {
+		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil)
+		{
+		    Wizard::CreateDialog();
+		    ScriptDialog(ret , name  );
+		    Wizard::CloseDialog();
+		}
+		else
+		{
+		    UI::MessagePopup(_("You have to select a script first"));
+		    continue;
+		}
+
+	    }
+	    else if (ret == `delete)
+	    {
+		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil) {
+		    deleteScript(name);
+
+		}
+		else
+		{
+		    UI::MessagePopup(_("You have to select a script first"));
+		    continue;
+		}
+	    }
+	    Wizard::SetContents(title,
+			    AIScripts::Summary(), "", true, true);
+
+
+	} until (ret == `next || ret == `key || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	return ret;
+    }
+
+
+
+    symbol ret = set_contents();
+    settings = AIScripts::Export();
+
+    return [ret, settings];
+}
+
+

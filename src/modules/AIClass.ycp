@@ -1,0 +1,229 @@
+/**
+ * File:
+ *	modules/AIClass.ycp
+ *
+ * Module:
+ *	AIClass
+ *
+ * Summary:
+ *	This module handles the configuration for auto-installation
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    module "AIClass";
+    include "autoinstall/xml.ycp";
+    
+    global string ClassDir = "/var/lib/autoinstall/classes";
+
+    global string ClassConf = "/etc/autoinstall";
+
+
+    global map Working = $[];
+    
+    global list Profiles = [];
+
+    global list Classes = [];
+
+    global map ProfileFiles = $[];
+
+    global boolean changed = false;
+    // local
+    
+    string class_file = "classes.xml";
+    
+    string profile_file = "profiles.xml";
+
+    string classPath = sformat("%1/%2", ClassConf, class_file);
+
+    string profileConfPath = sformat("%1/%2", ClassConf, profile_file);
+
+
+    global map Working = $[];
+    /*
+     * Constructor
+     *
+     */
+    
+    global define void AIClass()
+	``{
+	Load();
+	classSetup();
+	profileFileSetup();
+	return;
+    }
+
+
+    /**
+     * find a profile path
+     * @param string profile name
+     * @return string profile Path
+     *
+     */
+    global define findPath(string name)
+	``{		
+	map result = select(filter(map c,  Profiles,
+				  ``(lookup(c,"name","")== name)),0,$[]);
+	
+	string profile_path = sformat("%1/%2/%3", ClassDir, result["class"]:"", result["name"]:"default");		
+	return profile_path;
+    }
+    
+
+
+    global define map MergeClasses(map Class,
+			       string base_profile,
+			       string resultFileName
+			       )
+	``{
+	// saxon.sh /var/lib/AutoYaST/software/devel  /etc/AutoYaST/merge.xslt  with=/var/lib/AutoYaST/site/nuremberg > result.xml
+	// First argument overrides second
+
+	string tmpdir = SCR::Read( .target.tmpdir );
+
+	string MergeCommand = "/usr/bin/xsltproc --param with ";	
+	MergeCommand = MergeCommand + "\"'" + base_profile + "'\"  ";
+	MergeCommand = MergeCommand + "--output " +  tmpdir + resultFileName + " ";
+	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
+	MergeCommand = MergeCommand + findPath(Class["name"]:"") + " ";	
+	y2milestone("Merge command: %1", MergeCommand);	
+	map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
+	y2milestone("SAXON stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
+	return (out);	
+    }
+
+    
+    
+    /**
+     * Load()
+     *
+     * @return	void
+     *
+     * Load Configuration settings
+     */
+
+    global define void Load ()
+    ``{	
+	string tmpClassDir = SCR::Read( .sysconfig.autoinstall.CLASS_DIR);
+	if (tmpClassDir != nil)
+	    ClassDir = tmpClassDir;
+	// ClassPath = sformat("%1/%2", ClassDir, ClassFile); 		
+	return;
+    }
+
+    
+    /**
+     * Save Configuration global settings            
+     * @return	void         
+     */
+
+    global define void Save ()
+    ``{
+	// Write some sysconfig variables.
+	//
+
+	y2warning("Saving class information");	    
+	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, ClassDir );	
+	return;
+    }
+
+
+
+    global define void readClasses() ``{
+	if (SCR::Read(.target.size, classPath) != -1)
+	{
+	    map tmp = SCR::Read(.xml, classPath);
+	    Classes = tmp["classes"]:[];
+	}
+	return;
+    }
+
+
+    global define void readProfiles()
+	``{
+	if (SCR::Read(.target.size,profileConfPath ) != -1) {
+	    map tmp = SCR::Read(.xml, profileConfPath);	
+	    Profiles = tmp["profiles"]:[];
+	}
+	return;
+    }
+    /**
+     * Parse all configuration files an read directories
+     *
+     */    
+    global define void Parse()
+	``{
+	readClasses();
+	readProfiles();
+	ReadFiles();
+	return;
+    }
+
+    /**
+     * Read files from class directories
+     * @return void
+     */    
+    global define void ReadFiles()
+	``{
+	foreach(map class, Classes,
+		``{
+	    list files = SCR::Read(.target.dir, ClassDir + "/" + class["name"]:"xxx");
+	    ProfileFiles=add(ProfileFiles, class["name"]:"xxx" , files);
+	});
+	return;
+    }
+  
+    /*
+     * CreateClassDirs()
+     *
+     */
+    
+    global define CreateClassDirs()
+	``{
+
+	foreach(map class, Classes,
+		``{
+	    list dirs = SCR::Read(.target.dir, ClassDir);
+	    string name = lookup(class,"name","Unknown");
+	    string full_path = sformat("%1/%2", ClassDir, name);
+	    if (contains(dirs, name))
+		return;
+
+	    any ret = SCR::Execute (.target.mkdir, full_path);
+	    if (!ret)
+	    {
+		y2error("Error while creating directory %1: %2", full_path, ret);
+	    }
+	    else {
+		y2milestone("directory created");
+	    }
+	});
+	return;
+    }  
+    
+    /*
+     * Save Class definitions
+     *
+     */
+    
+    global define SaveClasses()
+	``{
+	map tmp = $[ "classes":Classes];
+	y2milestone("saving classes: %1", classPath);
+	return (XML::YCPToXMLFile(`class, tmp, classPath));	
+    }
+    
+    global define SaveProfiles()
+	``{
+	map tmp = $[ "profiles":Profiles];
+	return (XML::YCPToXMLFile(`profileConf, tmp, profileConfPath));		
+    }
+
+
+
+    
+}

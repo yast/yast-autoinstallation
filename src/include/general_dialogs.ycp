@@ -1,0 +1,651 @@
+/**
+ * File:	include/autoinstall/dialogs.ycp
+ * Module:	Auto-Installation Configuration System
+ * Summary:	This module handles the configuration for auto-installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+
+    /**
+     * Preferences Dialog
+     *
+     */
+    global define Preferences()
+	``{
+	term contents =
+	    `Top(
+		 `VBox(
+		       `VSquash(`HBox(
+				      `TextEntry(`id(`repository), _("&Profile Repository:"), AIConfig::Repository),
+				      `VBox(
+					    `VSpacing(),
+					    `Bottom(`PushButton(`id(`opendir), _("Select &Directory")))
+					    )
+				      )
+				),
+
+		       // `Left(`CheckBox(`id(`enable_classes), `opt(`notify), _("Use classes for multi-host configurations"), AIClass::enable)),
+
+		       `VSquash(`HBox(
+
+				      `TextEntry(`id(`classdir), _("&Class directory:"), AIClass::ClassDir),
+				      `VBox(
+					    `VSpacing(),
+					    `Bottom(`PushButton(`id(`openclassdir), _("Select &Directory")))
+					    )
+				      )
+				),
+		       `VSquash(
+				`HBox(
+				      `TextEntry(`id(`susedir), _("&SuSE Package Directory:"), AIServer::PackageRep),
+				      `VBox(
+					    `VSpacing(),
+					    `Bottom(`PushButton(`id(`opensusedir), _("Select &Directory")))
+					    )
+				      )
+				)
+		       )
+		 );
+
+
+	string help = _("<P>
+Enter the directory where all <em>Profiles</em> should be stored in
+the <b>Repository</b> field.</P>");
+
+	help = help + _("<P>In case you are using the classes feature
+of Autoyast, you also should enter the class directory. This is where
+all class files are stored</p>");
+
+	help = help + _("<P>The <b>Package repository</b> is where you have copied
+the SuSE CDs. This directory must have a subdirectory called <b>suse</b> which
+contains all the packages.</p>");
+
+
+	Wizard::SetContents(_("Preferences"),
+			    contents, help , true, true);
+
+
+	boolean changed = false;
+	any ret = "";
+	repeat {
+	    ret = UI::UserInput();
+
+	    string new_rep = UI::QueryWidget(`id(`repository), `Value);
+	    string new_classdir = UI::QueryWidget(`id(`classdir), `Value);
+	    string new_susedir = UI::QueryWidget(`id(`susedir), `Value);
+
+
+	    if (ret ==`opendir)
+	    {
+		new_rep = PopupDir(AIConfig::Repository);
+		if (AIConfig::Repository != new_rep) {
+		    changed = true;
+		    AIConfig::Repository = new_rep;
+		}
+
+		if (AIConfig::Repository!="")
+		{
+		    UI::ChangeWidget(`id(`repository), `Value, AIConfig::Repository);
+		}
+
+	    }
+	    else if (ret ==`openclassdir)
+	    {
+		new_classdir = PopupDir(AIClass::ClassDir);
+		if ( AIClass::ClassDir!= new_classdir) {
+		    changed = true;
+		    AIClass::ClassDir = new_classdir;
+		}
+
+		if (AIClass::ClassDir!="")
+		{
+		    UI::ChangeWidget(`id(`classdir), `Value, AIClass::ClassDir);
+		}
+
+	    }
+	    else if (ret ==`opensusedir)
+	    {
+		if (AIServer::PackageRep=="")
+		    AIServer::PackageRep="/";
+		new_susedir = PopupDir(AIServer::PackageRep);
+		if ( AIServer::PackageRep!= new_susedir) {
+		    changed = true;
+		    AIServer::PackageRep = new_susedir;
+		}
+
+		if (AIServer::PackageRep!="")
+		{
+		    UI::ChangeWidget(`id(`susedir), `Value, AIServer::PackageRep);
+		}
+
+	    }
+	    else if (ret == `key || ret==`next)
+	    {
+		if (AIConfig::Repository != new_rep) {
+		    changed = true;
+		    AIConfig::Repository = new_rep;
+		}
+		if (AIClass::ClassDir != new_classdir) {
+		    changed = true;
+		    AIClass::ClassDir = new_classdir;
+		}
+	    }
+
+	    if ( AIServer::PackageRep!= new_susedir) {
+		changed = true;
+		AIServer::PackageRep = new_susedir;
+	    }
+	    if ( AIClass::ClassDir!= new_classdir) {
+		changed = true;
+		AIClass::ClassDir = new_classdir;
+	    }
+	    if (AIConfig::Repository != new_rep) {
+		changed = true;
+		AIConfig::Repository = new_rep;
+	    }
+
+
+	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	if (changed  ) {
+	    AIConfig::Save();
+	    AIClass::Save();
+	    changed =false;
+	}
+	return ret;
+    }
+
+
+
+
+    /**
+     * Generate control file list
+     * @return file list
+     */
+    global define FileList() ``{
+	list files = SCR::Read(.target.dir, AIConfig::Repository);
+
+	list xmlfiles = maplist(string file, files, ``{
+	    return (`item(`id(file), file));
+	});
+	term contents =
+	    `VBox(
+		  `Left(`HBox(
+			      `Label(_("Current Profile: ")),
+			      `Label(`id(`loaded), `opt(`outputField),  _("None                                                   "))
+			      )
+			),
+		  `VSpacing(0.5),
+		  `Table(`id(`table), `opt(`notify,`immediate), `header("Profile"),
+			 xmlfiles
+			 ),
+
+		  `VSpacing(0.5),
+		  `VBox(
+			`HBox(
+			      `PushButton(`id(`new), _("Ne&w")),
+			      `PushButton(`id(`open), _("&Open")),
+			      `PushButton(`id(`delete), _("&Delete"))
+			      )
+
+			),
+		  `VSpacing(0.5)
+		  );
+	return contents;
+    }
+
+
+
+   /**
+    * Dialog for saving control files
+    * @return dialog contents
+    */
+
+    global define FileListSave() ``{
+	string source = "";
+	term contents =
+	    `VBox(
+		  `Left(`HBox(
+			      `Label(_("Current Profile: ")),
+			      `Label(`id(`loaded), `opt(`outputField), _("None                                            "))
+			      )
+			),
+		  `VSpacing(0.5),
+		  `RichText( `id(`class_source ), `opt(`plainText),
+			     source
+			     ),
+
+		  `VSpacing(0.5),
+		  `VBox(
+
+			`HBox(
+			      `PushButton(`id(`saveprofile), _("&Save")),
+			      `PushButton(`id(`saveas), _("Save &As")),
+			      `PushButton(`id(`edit), _("&Edit"))
+			      )
+
+			),
+		  `VSpacing(0.5)
+		  );
+	return contents;
+    }
+
+
+
+    /**
+     * Popup for a new file name
+     * @return string new file name
+     */
+    global define string NewFileName(string caption, string textentry)``{
+	term con =
+	    `HBox(
+		  `HSpacing(1),
+		  `VBox(
+			`VSpacing(0.2),
+			// Translators: popup dialog heading
+			`Heading (caption),
+			//  _("&New Profile Name") _("New Profile")
+			// Translators: text entry label
+			`Left (`TextEntry (`id (`newname), textentry, "")),
+
+			`VSpacing(0.2),
+			`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+			      `PushButton(`id(`cancel), CancelButtonLabel())),
+			`VSpacing(0.2)
+			),
+		  `HSpacing(1)
+		  );
+
+	UI::OpenDialog (`opt(`decorated), con);
+	UI::SetFocus (`id (`newname));
+	string f = "";
+	any ret = nil;
+	while (true)
+	{
+	    ret = UI::UserInput ();
+	    if (ret == `cancel)
+	    {
+		break;
+	    }
+	    else if (ret == `ok)
+	    {
+
+		f = UI::QueryWidget (`id (`newname), `Value);
+		if (checkFileName(f) !=0 || f == "") {
+		    UI::ErrorPopup(invalidFileName());
+		    continue;
+		}
+		break;
+	    }
+	}
+
+	UI::CloseDialog ();
+
+	return (ret == `ok)? f : "";
+    }
+
+
+
+    /**
+     * Main file dialog
+     * @return symbol
+     */
+    global define symbol FileDialog()
+	``{
+
+	string help = _("
+<P>Please select one of the listed Profiles and press <b>Open</b>
+to load it or create a new Profile using the
+<b>New</b> button.</P>");
+
+
+	Wizard::SetContents(_("File Management"),
+			    FileList(), help, true, true);
+
+
+
+	any ret = "";
+	repeat {
+	    any selected_file = UI::QueryWidget(`id(`table), `CurrentItem);
+
+	    if (selected_file == nil)  {
+		UI::ChangeWidget(`id(`open), `Enabled, false);
+		UI::ChangeWidget(`id(`delete), `Enabled, false);
+	    } else {
+		UI::ChangeWidget(`id(`open), `Enabled, true);
+		UI::ChangeWidget(`id(`delete), `Enabled, true);
+	    }
+
+	    if  (AIConfig::currentFile !="")
+	    {
+		UI::ChangeWidget(`id(`loaded), `Value, 	AIConfig::currentFile);
+	    }
+	    else if (size(AIConfig::Profile)>0)
+	    {
+		UI::ChangeWidget(`id(`next), `Enabled, true);
+	    }
+	    else
+	    {
+		UI::ChangeWidget(`id(`next), `Enabled, false);
+	    }
+
+	    ret = UI::UserInput();
+
+	    if (ret == `new)
+	    {
+		AIConfig::Profile = $[];
+		AIConfig::currentFile = NewFileName(  _("&New Profile Name"), _("New Profile"));
+
+		if (AIConfig::currentFile!="")
+		{
+		    UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);
+		    UI::ChangeWidget(`id(`next), `Enabled, true);
+		    ret = `open;
+		}
+		else
+		{
+		    continue;
+		}
+	    }
+	    else if (ret == `open)
+	    {
+		if (selected_file!=nil) {
+		    AIConfig::currentFile=selected_file;
+
+		    AIConfig::ReadProfile(sformat("%1/%2", AIConfig::Repository,selected_file));
+		}
+		UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);
+	    }
+	    else if (ret == `delete)
+	    {
+		if (UI::QueryWidget(`id(`table), `CurrentItem)== nil) {
+		    UI::WarningPopup(_("Please select a file first."));
+		    continue;
+		}
+		SCR::Execute(.target.bash, "rm " + AIConfig::Repository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
+		Wizard::SetContents(_("File Management"),
+				    FileList(), help, true, true);
+	    }
+	    else if (ret == `help)
+	    {
+		UI::LongTextPopup (_("Help"), `RichText (helpTexts("file")), 50, 15);
+	    }
+
+	} until (ret == `next ||
+		 ret == `open ||
+		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	return ret;
+    }
+
+    /**
+     * Save dialog
+     *
+     */
+
+    global define SaveDialog()
+	``{
+
+	string help = _("
+<P>Now you can save the configuration you have created. After
+saving the control file, you can continue editing and creating new
+configurations.</P>");
+
+	help = help + _("
+<P>Please check the syntax of the Profile before saving it. For more information
+about the syntax of the resulting <em>XML</em> file,
+consult the online documentation</p>");
+
+
+
+
+	Wizard::SetContents(_("File Management"),
+			    FileListSave(), help, true, true);
+
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel);
+
+	AIConfig::PrepProfile();
+	string source = XML::YCPToXMLString(`profile, AIConfig::Profile);
+	if (size(source)>0)
+	{
+	    UI::ChangeWidget(`id(`class_source ), `Value, source);
+	}
+	else
+	{
+	    UI::ChangeWidget(`id(`class_source ), `Value, "");
+	}
+	any ret = nil;
+	repeat
+	    {
+		if  (AIConfig::currentFile !="")
+		{
+		    UI::ChangeWidget(`id(`loaded), `Value, 	AIConfig::currentFile);
+		}
+		ret = UI::UserInput();
+
+		if (ret == `saveprofile || ret == `saveas)
+		{
+		    if (ret == `saveas) {
+			string filename=SaveFileAs(AIConfig::Repository );
+			y2debug("file name: %1", filename);
+			if (filename == "")
+			    continue;
+			if (checkFileName(filename) !=0 )
+			{
+			    UI::ErrorPopup(invalidFileName());
+			    continue;
+			}
+			else
+			{
+			    AIConfig::currentFile= filename;
+			}
+		    }
+
+
+		    if (AIConfig::currentFile == "") {
+			UI::WarningPopup(_("You must provide a file name
+to be able to save the current profile!"));
+			continue;
+		    }
+
+		    if (AIConfig::SaveProfile(AIConfig::currentFile))
+		    {
+			UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
+			AIConfig::changed=false;
+			continue;
+		    }
+		    else
+		    {
+			UI::WarningPopup(_("Error occured while saving the file"));
+		    }
+
+		}
+
+
+		if (ret == `next && AIConfig::changed)
+		{
+		    if (UI::YesNoHeadlinePopup(_("Configuration has been modifed"), _("Should the changes be saved?")))
+		    {
+			string filename=SaveFileAs(AIConfig::Repository);
+
+			if (filename=="")
+			{
+			    continue;
+			}
+			else
+			{
+			    AIConfig::currentFile= filename;
+			}
+			if (AIConfig::currentFile == "")
+			{
+			    UI::WarningPopup(_("You must provide a file name
+to be able to save the current profile!"));
+			    continue;
+			}
+
+			if (AIConfig::SaveFile(AIConfig::currentFile))
+			{
+			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
+			}
+			else
+			{
+			    UI::WarningPopup(_("Error occured while saving the file"));
+			}
+
+			AIConfig::changed=false;
+		    }
+
+		}
+
+
+	    } until (ret == `edit || ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	return ret;
+    }
+
+
+    /**
+     * Check validity of file name
+     * @param string file name
+     * @return 0 if valid, -1 if not.
+     */
+    global define integer checkFileName (string name) ``{
+        if (name != filterchars (name, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+	    || size (name) > 127)
+	{
+	    return -1;
+	}
+
+        return 0;
+    }
+
+    /**
+     * Return a message about invalid file names
+     * @param -
+     * @return message
+     */
+    global define string invalidFileName() ``{
+	return(_("Invalid file name.
+Name can only contain letters, numbers and underscore,
+must begin with letter and must be
+at most 127 characters long."));
+    }
+
+
+    global define cloneSystem()``{
+	string help = _("<p>This will create a new profile by reading
+information from this machine.</p>");
+	string title = "Clone machine";
+
+	term contents = `Top(
+			     `VBox(
+				   `RadioButtonGroup(`id(`rbg),
+						     `VBox(
+							   `Left(
+								 `RadioButton(`id(`save),`opt(`notify), _("Save &result into Repository"), true)
+								 ),
+							   `Left(
+								 `HBox(
+								       `HStretch(),
+								       `TextEntry(`id(`result), _("&Name of resulting profile"), "clone.xml"),
+								       `HStretch()
+
+								       )
+								 ),
+							   `Left(
+								 `RadioButton(`id(`load), `opt(`notify),_("&Load resulting profile"))
+								 )
+							   )
+						     ),
+				   `VSpacing(1),
+				   `Left(
+					 `CheckBox(`id(`extra), `opt(`notify), _("Add non-SuSE &packages"), AIClone::add_extraPackages)
+					 ),
+				   `Left(
+					 `HBox(
+					       `HWeight(
+							20,`Empty()
+							),
+					       `HWeight(
+							60,`TextEntry(`id(`extra_loc), _("&Directory with external packages"), AIClone::extraPackageLocation)
+							),
+					       `HWeight(
+							20,`Empty()
+							)
+					       )
+					 )
+				   )
+			     );
+
+	Wizard::SetContents(title,
+			    contents, help, true, true);
+
+	if (UI::QueryWidget(`id(`extra), `Value))
+	{
+	    UI::ChangeWidget(`id(`extra_loc), `Enabled, true);
+	}
+	else
+	{
+	    UI::ChangeWidget(`id(`extra_loc), `Enabled, false);
+	}
+
+	any ret = nil;
+	symbol action = nil;
+	repeat
+	    {
+		ret = UI::UserInput();
+
+		if (UI::QueryWidget(`id(`extra), `Value))
+		{
+		    UI::ChangeWidget(`id(`extra_loc), `Enabled, true);
+		}
+		else
+		{
+		     UI::ChangeWidget(`id(`extra_loc), `Enabled, false);
+		}
+		if (ret ==`next)
+		{
+		    AIClone::add_extraPackages = UI::QueryWidget(`id(`extra), `Value);
+		    AIClone::extraPackageLocation = UI::QueryWidget(`id(`extra_loc), `Value);
+		    action = UI::QueryWidget(`id(`rbg), `CurrentButton);
+		    AIConfig::currentFile =  UI::QueryWidget(`id(`result), `Value);
+		    showFeedback( _("collecting system data,
+please wait...."));
+		    AIClone::exportProfile();
+		    clearFeedback();
+
+		}
+	    } until (ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	if (ret == `next)
+	    return action;
+
+	return ret;
+    }
+
+    /**
+     * Show feedback message in a simple dialog.
+     * @param msg message to show
+     **/
+    global define void showFeedback( string msg ) ``{
+	if ( popup_open )
+	{
+	    UI::CloseDialog();
+	}
+	UI::OpenDialog( `VBox( `Label( msg ) ) );
+	y2debug( msg );
+	popup_open = true;
+    };
+
+
+    /**
+     * Close feedback dialog if it is open
+     **/
+    global define void clearFeedback() ``{
+	if ( popup_open )
+	    UI::CloseDialog();
+	popup_open = false;
+    };
+
+}

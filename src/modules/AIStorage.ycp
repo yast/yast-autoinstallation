@@ -1,0 +1,172 @@
+/**
+ * File:	modules/AIScripts.ycp
+ * Module:	Auto-Installation
+ * Summary:	Storage
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+
+    module "AIStorage";
+    textdomain "autoinst";
+    include "partitioning/partition_defines.ycp";
+    
+
+
+    global list drives = [];
+
+
+
+    
+    /**
+     * Set module data
+     * @return void
+     */
+
+    global define void Set()``{
+	return;
+    }
+
+    /**
+     * Dump the settings to a map, for autoinstallation use.
+     * @return map
+     */
+    global define list Export()``{
+	return drives;
+    }
+
+
+    /**
+     * Get all the configuration from a map.
+     * When called by autoinst_<module name> (preparing autoinstallation data)
+     * the map may be empty.
+     * @param settings	$[...]
+     * @return	success
+     */
+    global define boolean Import(list settings)``{
+	drives = settings;
+	return;
+    }
+
+    /**
+     * @return  configuration summary dialog
+     */   
+   
+    global define term Summary()
+	``{
+			
+	list drives_table = [];
+	string id = "";
+	foreach(`d, drives,
+		``{
+	    id =lookup(d,"device","");
+	    term a = `item(`id(id));
+	    a = add(a, lookup(d,"device",""));
+	    a = add(a, "");
+	    a = add(a, "");
+	    a = add(a, "");
+	    a = add(a, "");
+	    a = add(a, "");
+	    
+	    drives_table = add(drives_table, a);
+	    list part = lookup(d,"partitions",[]);
+	    integer start_id = 1;
+	    if (size(part)>0)
+	    {
+		foreach(`p, part,
+			``{		    
+		    id = build_id(lookup(d,"device",""), start_id );
+		    term b = `item(`id(id));
+		    b=add(b, "");
+			   
+		    b=add(b, lookup(p,"mount",""));
+		    b=add(b, lookup(p,"size", ""));
+		    // integer pid = tohexstring(p["partition_id"]:0) ;
+		    if (!haskey(p, "filesystem_id"))
+			b=add(b, UI::FsIdToString(p["partition_id"]:131));
+		    else
+			b=add(b, UI::FsIdToString(p["filesystem_id"]:131));
+
+		    
+		    if (lookup(p,"filesystem",`nothing) == `reiser)
+		    {
+			b=add(b, "Reiser");
+		    }
+		    else if (lookup(p,"filesystem",`nothing) == `ext2)
+		    {
+			b=add(b, "Ext2");
+		    }
+		    else if (lookup(p,"filesystem",`nothing) == `ext3)
+		    {
+			b=add(b, "Ext3");
+		    }
+		    else if (lookup(p,"filesystem",`nothing) == `jfs)
+		    {
+			b=add(b, "JFS");
+		    }
+		    else if (lookup(p,"filesystem",`nothing) == `xfs)
+		    {
+			b=add(b, "XFS");
+		    }
+		    else
+		    {
+			b=add(b, "");
+		    }
+
+		    if (size(p["region"]:[]) > 0 )
+		    {
+			b=add(b, sformat("%1 - %2", select(p["region"]:[], 0 , 0), select(p["region"]:[], 1 , 0)));
+		    }
+		    else
+		    {
+			b=add(b, "");
+		    }
+		    
+		    drives_table = add(drives_table, b);
+		    start_id = start_id + 1;
+		});
+	    }
+
+	});
+	integer entries = size(drives_table);
+	list reversed_table = [];
+	integer counter = entries;
+	term tmp = `item(`id(`empty));	
+	while (counter != 0)
+	{
+	    reversed_table=add(reversed_table, select(drives_table, counter -1, tmp));
+	    counter = counter - 1;
+			       
+	}	
+	term contents =	    
+	    `VBox(
+		  `Table(`id(`table), `opt(`notify, `immediate, `keepSorting),
+			 `header("Device", "Mount", "  Size  ",  "  Type  " , "  File System  ", "Region   "),
+			 reversed_table
+			 ),
+		  `HBox(
+			`PushButton(`id(`drive), _("Add Dri&ve")),
+			`PushButton(`id(`part), _("Add &Partition")),
+			`PushButton(`id(`edit), _("&Edit")),
+			`PushButton(`id(`delete), _("&Delete"))
+			)
+		  );
+	return contents;
+    }
+
+
+   
+    /**
+     * Build the id for a partition entry in the man table.
+     * @parm disk_dev_name name of the devie e.g.: /dev/hda
+     * @parm nr number of the partition e.g.: 1
+     * @return string e.g.: 01./dev/hda
+     */
+
+    global define build_id(  string disk_dev_name , any nr )
+	``{       
+        return (sformat( "%1:%2", disk_dev_name, nr));        
+    };
+
+}

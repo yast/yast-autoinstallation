@@ -1,0 +1,817 @@
+/**
+ * File: 	include/autoinstall/dialogs.ycp
+ * Module:	AIConfig
+ * Summary:	This module handles the configuration for auto-installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    /*
+     * RereadClasses()
+     *
+     */
+    
+    global define RereadProfiles ()
+	``{
+	if (size(AIClass::Profiles) == 0) {
+	    AIClass::Parse();
+	}
+	
+	list profiles = [];
+	
+	foreach(map profile, AIClass::Profiles,
+		``{	 
+	    profiles=add(profiles,`item(
+				       `id(profile["name"]:"Unknown"),
+				       profile["name"]:"Unknown" ,
+				       profile["class"]:"No Class",
+				       profile["description"]:""
+				       )
+			);	    
+	});
+	
+
+	term contents =	 
+	    `VBox(
+		  `VWeight(40, `Table( `id(`table), `opt(`notify, `immediate), 
+				       `header("File", "Class", "Description"),			
+				       profiles
+				       )
+			   ),		
+		  `VSpacing(1),		 
+		  `HBox(			
+			`PushButton(`id(`new), _("Ne&w")),
+			`PushButton(`id(`edit), _("&Edit")),
+			`PushButton(`id(`delete), _("&Delete")),
+			`HStretch(),
+			`PushButton(`id(`add), _("&Add Classes"))
+			),
+		  `VSpacing(0.5)
+		  
+		  );
+	return contents;
+    }
+
+
+
+    
+    /**
+     * Main class interface
+     * 
+     */
+    
+    global define ManageProfiles()
+	``{
+	string title = _("Profile/Class Management ");
+	string help = _("
+<P>
+Use this interface to add and define new classes. A Class can contain
+any part of a complete Profile. When several classes are defined, they can
+be merged togather to create a complete Profile that can be used to install
+a client.
+</P>");
+
+	Wizard::SetContents(title,
+			    RereadProfiles(), help, true, true);
+
+	any ret = nil;
+	if ( size(AIClass::Classes) == 0)
+	{	  
+	    UI::ChangeWidget(`id(`new), `Enabled, false);
+	}
+	
+	any profile  =  UI::QueryWidget(`id(`table), `CurrentItem);
+	if (profile == nil)
+	{
+	    UI::ChangeWidget(`id(`edit), `Enabled, false);
+	    UI::ChangeWidget(`id(`delete), `Enabled, false);
+	}
+	
+	repeat
+	    {		
+		ret = UI::UserInput();
+		profile =  UI::QueryWidget(`id(`table), `CurrentItem);
+
+	    
+		if (ret == `table)
+		{
+		    UI::ChangeWidget(`id(`edit), `Enabled, true);
+		    UI::ChangeWidget(`id(`delete), `Enabled, true);
+		}
+		else if (ret == `new)
+		{
+		    AIClass::Working = $["action":ret, "profile":""];
+		    AIConfig::resetProfile();
+		    break;
+		}
+		else if (ret == `add)
+		{		
+		    break;
+		}
+		else if (ret ==`edit)
+		{
+		    if (profile == nil)
+		    {
+			UI::MessagePopup(_("You have at least to select a template
+to be able to edit it."));		    
+			continue;
+		    }
+		    AIClass::Working = $["action":ret, "profile":profile];
+		
+		    string filePath = AIClass::findPath(profile);
+		    
+		    AIConfig::ReadProfile(filePath);
+		    break;
+		}
+		else if (ret ==`delete)
+		{
+		    if (profile == nil)
+		    {
+			UI::MessagePopup(_("You have at least to select a class
+to be able to delete something."));
+			continue;
+		    }
+		    string filePath =  AIClass::findPath(profile);
+		
+		    if (SCR::Read(.target.size,filePath) > 0)
+		    {
+			if (!SCR::Execute(.target.remove, filePath) )
+			{
+			    UI::WarningPopup(_("Error occured while deleting class."));
+			    continue;
+			}
+		    }
+		
+		    AIClass::Profiles =
+			filter(map c, AIClass::Profiles,``(lookup(c,"name","") != profile));
+		    AIClass::changed= true;
+		    
+		    if (!AIClass::SaveProfiles())		
+		    {
+			UI::WarningPopup(_("Error occured while saving the classes file."));
+		    }
+		    Wizard::SetContents(title,	
+					RereadProfiles(), help, true, true);
+		}
+	  
+	    
+	    } until (ret == `next || ret == `key ||  ret ==`add || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	return ret;	
+    }
+
+
+
+
+    /**
+     * Add a new profile configuration to a class
+     *      
+     */
+
+    global define Profile()
+	``{
+	symbol mode = AIClass::Working["action"]:`nothing;
+	string name = AIClass::Working["profile"]:"";
+	y2milestone("Profile in work: %1", AIClass::Working);
+	    
+	map thisProfile = $[];
+	
+	string source = "";
+	string profile_path = "";
+	AIConfig::PrepProfile();
+	string source = XML::YCPToXMLString(`profile, AIConfig::Profile);
+	if (mode == `edit)
+	{
+	    thisProfile = select(filter(map profile,  AIClass::Profiles,``(profile["name"]:"" == name)),0,$[]);		
+	    profile_path = AIClass::findPath(name);
+	    y2milestone("Profile path: %1", profile_path);	    		  
+	}
+
+	
+	list classes = [];
+	foreach (map class, AIClass::Classes,``{
+	    classes=add(classes,
+			`item(
+			      `id(class["name"]:"Unknown"),
+			      class["name"]:"Unknown",
+			      ( class["name"]:"Unknown" ==  thisProfile["class"]:""))
+			);
+	});
+	string caption = _("Edit/Create Profile");
+	
+	term contents =					   
+	    `VBox(		 			
+		  `HBox(
+			`TextEntry(`id(`name), _("&Profile name"), thisProfile["name"]:""),
+			`ComboBox(`id(`class), _("Cl&ass name"),
+				  classes
+				  )
+			),
+		  `VSpacing(1),
+		  `RichText( `id(`profile_source ), `opt(`plainText), 
+			     source
+			     ),
+		  `VSpacing(1),
+		  `TextEntry(`id(`description), `opt(`hstretch),
+			     _("&Description:"),	
+			     thisProfile["description"]:"")
+		  );
+
+	string help = _("<P>Please enter at least the profile name and select
+to which class it should belong</P>");
+	
+	Wizard::SetContentsButtons (caption, contents, help,
+				    BackButtonLabel (), NextButtonLabel ());
+	
+	if (mode == `edit)
+	    UI::ChangeWidget(`id(`name), `Enabled, false);
+
+	string content = XML::YCPToXMLString(`profile, AIConfig::Profile);
+	UI::ChangeWidget(`id(`profile_source ), `Value, content);
+			
+	
+	
+	repeat
+	    {
+	    ret = UI::UserInput();
+ 
+	    if (ret == `next ) {		
+		if (UI::QueryWidget(`id(`name),`Value) == "") {
+		    UI::MessagePopup(_("Please type a name for this profile."));
+		    continue;
+		}
+		string newname = UI::QueryWidget(`id(`name),`Value);
+		if (checkFileName(newname) !=0) {
+		    UI::ErrorPopup(invalidFileName());
+		    continue;
+		}
+		map newProfileConf = $[
+				 "name":newname,
+				 "class":UI::QueryWidget(`id(`class),`Value),
+				 "description":UI::QueryWidget(`id(`description),`Value)
+		];
+		if (mode == `new)
+		{
+		    AIClass::Profiles=add(AIClass::Profiles, newProfileConf);
+		}
+		else
+		{
+		    AIClass::Profiles=maplist(map t, AIClass::Profiles,``{
+			if (lookup(t,"name","") == name) {
+			    return newProfileConf;
+			}
+			else
+			{
+			    return t;
+			}
+			
+		    });
+		}
+		
+		
+		map current_profileConf = select(filter(map cclass, AIClass::Profiles,
+							``(lookup(cclass,"name","") == newname)), 0 , $[]);
+		    
+		AIConfig::SaveProfile( AIClass::findPath(newname));
+					
+		
+		if (!AIClass::SaveProfiles())		
+		{
+		    UI::WarningPopup(_("Error occured while saving the classes file."));
+		}
+	    } 	 
+	} until (ret == `next || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed))  || ret == `back );
+		
+	return ret;
+    }
+
+
+    
+    /**
+     * Reread classes and change widget
+     * 
+     *
+     */
+
+    global define RereadClasses ()
+	``{
+	
+	list classes = maplist(map class , AIClass::Classes,
+			       ``{
+				   string pathtoClass = sformat("%1/%2", AIClass::ClassDir, lookup(class,"name","Unknown"));
+				   list classes_in_group = SCR::Read(.target.dir, pathtoClass);
+				   return (`item(
+						 `id(lookup(class,"name","xxx")),
+						 lookup(class,"name","No name"),
+						 lookup(class,"order","0"),
+						 lookup(class,"parent",size(classes_in_group))
+						 )
+					   );
+			       });
+	
+	
+	term contents =	 
+	    `VBox(
+		  `VWeight(40, `Table( `id(`table), `opt (`notify, `immediate),
+				       `header("Class Name", "Order", "Classes"),			 
+				       classes			 
+				       )
+			   ),
+		  `VSpacing(1),
+		  `VWeight(40,`RichText(`id(`description), _("Class Description"))),
+		  `VSpacing(1),
+		  `HBox(			
+			`PushButton(`id(`new), _("Ne&w")),
+			`PushButton(`id(`edit), _("&Edit")),
+			`PushButton(`id(`delete), _("&Delete"))
+			)
+		  );
+	return contents;
+    }
+
+    /** 
+     * Manage Classes
+     * 
+     *
+     */
+
+    
+    global define ManageClasses()
+	``{
+	string title = ("Classes");
+	
+	string help = _("<p>Use this screen to define the groups of classes
+you want to use in a multiple host environment.</p>");
+	
+	help = help + _("<p>For example, you can define  a class group for
+a department or a site in you company environment.</p>");
+	
+	help = help + _("<p>The order (periority) defines when a certain class group
+is merged when joining several classes</p>");
+
+	
+	if (size(AIClass::Classes) == 0)
+	{
+	    AIClass::Parse();
+	}
+	  
+	Wizard::SetContents(title,	
+			    RereadClasses(), help, true, true);
+
+	// UI::ChangeWidget (`id (`next), `Label, FinishButtonLabel());
+	any ret = nil;		
+	    	
+	any class =  UI::QueryWidget(`id(`table), `CurrentItem);
+	if (class == nil) {
+	    UI::ChangeWidget(`id(`edit), `Enabled, false);
+	    UI::ChangeWidget(`id(`delete),`Enabled, false);
+	}
+	repeat
+	    {
+	    
+	    class =  UI::QueryWidget(`id(`table), `CurrentItem);
+	    map selected_class = select(filter(map c,  AIClass::Classes,``(lookup(c,"name","")== class)),0,$[]);  
+	    if (class!=nil)
+		UI::ChangeWidget(`id(`description), `Value, lookup(selected_class,"description","No Description"));
+
+	    
+	    ret = UI::UserInput();
+	    
+	    y2debug("ret: %1, class: %2", ret, class);
+
+	  
+	    
+	    if (ret == `table)
+	    {
+		UI::ChangeWidget(`id(`edit), `Enabled, true);
+		UI::ChangeWidget(`id(`delete),`Enabled, true);
+	    }
+
+
+
+	    
+	    if (ret == `new)
+	    {
+		any defret = AddEditClasses(ret, "");
+		if (defret != `cancel) {
+		    AIClass::CreateClassDirs();
+		    Wizard::SetContents(title,
+					RereadClasses(), help, true, true);
+		    AIClass::SaveClasses();
+		}
+	    }
+	    else if (ret ==`edit)
+	    {
+		if (class == nil) {
+		    UI::MessagePopup(_("You have at least to select a class
+to be able to edit."));
+		    continue;
+		}
+		y2debug("ret: %1, class: %2", ret, class);	
+		any defret = AddEditClasses(ret, class);
+		if (defret != `cancel)
+		{
+		    Wizard::SetContents(title,	
+					RereadClasses(), help, true, true);
+		    AIClass::SaveClasses();
+		}
+	    }
+	    else if (ret ==`delete)
+	    {
+		if (class == nil) {
+		    UI::MessagePopup(_("You have at least to select a class
+to be able to delete something."));
+		    continue;
+		}
+		AIClass::Classes =
+		    filter(map c, AIClass::Classes,``(lookup(c,"name","")!=class));
+		Wizard::SetContents(title,
+				    RereadClasses(), help, true, true);
+		
+		y2milestone("classes: %1", AIClass::Classes );
+		AIClass::SaveClasses();
+	    }     
+	    
+	} until (ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	
+	return ret;
+ 
+    }
+
+
+    
+    /*
+     *Add or Edit a class
+     * 
+     *
+     */
+
+    global define AddEditClasses(symbol mode, string name)
+	``{
+	list classNames = maplist(map c,
+				     AIClass::Classes,
+				     ``(lookup(c,"name",""))
+				     );
+	
+	map class = $[];
+	if (mode == `edit) {	    
+	    class = select(filter(
+				     map c,
+				     AIClass::Classes,
+				     ``(lookup(c,"name","")== name)),0,$[]);
+	}
+	
+	integer order =  tointeger(lookup(class,"order", sformat("%1", size(AIClass::Classes) + 1)));
+	
+	UI::OpenDialog( `opt(`decorated),			
+			`HBox(
+			      `HSpacing(0.5),
+			      `VBox(
+				    `Heading( _("Edit/Create Classes")),
+				    `VSpacing(1),
+				    `HBox(				    
+					  `TextEntry(`id(`name), _("Na&me"), lookup(class,"name","")),
+					  `IntField(`id(`order), _("Or&der:"), 1, 10, order)
+					  ),
+				    `MultiLineEdit(`id(`description), `opt(`hstretch),
+						   _("Descri&ption:"),	
+						   lookup(class,"description","")),
+				    `VSpacing(1),
+				    `HBox(
+					  `PushButton(`id(`save), SaveButtonLabel()),			      
+					  `PushButton(`id(`cancel), CancelButtonLabel())
+					  )
+				    ),
+			      `HSpacing(0.5)
+			      )
+			);
+	if (mode == `edit)
+	{
+	    UI::ChangeWidget(`id(`name), `Enabled, false);
+	}
+	
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `save ) {		
+		if (UI::QueryWidget(`id(`name),`Value) == "") {
+		    UI::MessagePopup(_("We need a name here, don't we?"));
+		    continue;
+		}
+		if (mode !=`edit && contains(classNames, UI::QueryWidget(`id(`name),`Value))) {
+		    UI::MessagePopup(_("We need another name here, don't we?"));
+		    continue;
+		}	
+		map newClass = $[
+				 "name":UI::QueryWidget(`id(`name),`Value),
+				 "order":UI::QueryWidget(`id(`order),`Value),
+				 "description":UI::QueryWidget(`id(`description),`Value)
+		];
+		if (mode == `new)
+		{
+		    AIClass::Classes=add(AIClass::Classes, newClass);		    
+		}
+		else
+		{
+		    AIClass::Classes=
+			maplist(
+				map c, AIClass::Classes,``{
+				    if (lookup(c,"name","") == UI::QueryWidget(`id(`name),`Value)) {
+					return newClass;
+				    }
+				    else
+				    {
+					return c;
+				    }				    
+				});
+		}   
+		
+		y2milestone("Saved Class: %1", AIClass::Classes);
+	    } 
+	} until (ret == `save || ret == `cancel);
+	UI::CloseDialog();
+	
+	return ret;
+    }
+
+
+
+    global define MergeDialog()``{
+	string title = _("Merge Classes");
+	map profiles = $[];
+	if (size(AIClass::Classes) == 0 )							      
+	{	
+	    AIClass::Parse();	
+	}
+	    
+	foreach(map prof, AIClass::Profiles, ``{	
+	    string class = prof["class"]:"Default";
+	    list ui_list = profiles[class]:[];
+	    if (size(ui_list)==0)
+	    {
+		ui_list=add(ui_list,`item(`id("none"),
+					  _("None"))
+			    );
+	    }
+	    
+	    ui_list=add(ui_list,`item(`id(prof["name"]:"Unknown"),
+				      prof["name"]:"Unknown")
+			);
+	    
+	    profiles[class] =  ui_list;
+	});
+	
+	term Combo = `VBox();
+
+	if (size(profiles)>0) {
+	    foreach(`k,`v, profiles,``{
+		Combo=add(Combo,		 
+			  `Left(
+				`ComboBox(`id(k),`opt(`hstretch),  k,
+					  v
+					  )
+				)
+			  );		
+	    });
+	}
+	else
+	{
+	    Combo = `Left(`Label(`id(`emptyclasses), _("No profiles in this class")));	    
+	}
+
+	term contents =
+	    `Top(
+		 `Left(
+		       `VBox(
+			     Combo,
+			     `VSpacing(),
+			     `RadioButtonGroup(`id(`rbg),
+					       `VBox(
+						     `Left(
+							   `RadioButton(`id(`empty), _("&Merge with empty template"), true)
+							   ),
+						     `Left(
+							   `RadioButton(`id(`current), _("Merge with &current loaded template"))
+							   )
+						     )
+					       ),
+			     `VSpacing(),
+			     `RadioButtonGroup(`id(`rbg2),
+					       `VBox(
+						     `Left(
+							   `RadioButton(`id(`save),`opt(`notify), _("Save &result into Repository"), true)
+							   ),
+						     `Left(
+							   `HBox(
+								 `HStretch(),
+								 `TextEntry(`id(`result), _("&Name of resulting profile"), "result.xml"),
+								 `HStretch()
+							    
+								 )
+							   ),
+						     `Left(
+							   `RadioButton(`id(`load), `opt(`notify),_("&Load resulting profile"))
+							   )
+						     )
+					       ),			
+			     `PushButton(`id(`merge), _("Merge Cla&sses"))
+			     )
+		       )
+		 );
+		  
+
+	string help = _("<p>If you have defined and created <b>
+classes</b>, you will be able to merge them using this interface to create
+a new <i>Profile</i> which will contain information from every class
+depending on the periority (order) you have set when
+creating the classes</P>");
+
+	help = help + _("<P>To merge the classes, a <b>XSLT</b>
+script is used</P>");
+	help = help + _("<p>
+This script can either create a file that can be saved in the
+repository or alternativaly it
+can load the resulting file into memory for further processing
+</P>");
+	
+	Wizard::SetContents(title,	
+			    contents, help , true, true);
+
+	list widgets = [ `merge, `empty, `current, `result, `save, `load ];
+	
+	if (size(profiles)==0)
+	{	    
+	    foreach(`w, widgets,``(UI::ChangeWidget(`id(w), `Enabled, false)));	  	    
+	}
+	
+	// UI::ChangeWidget(`id(`next), `Enabled, false);
+	any ret=nil;
+	symbol next = nil;
+	repeat {
+	    ret = UI::UserInput();
+
+	    string result = "";
+	    next = UI::QueryWidget(`id(`rbg2), `CurrentButton);
+	    if (next == `save)
+	    {
+		UI::ChangeWidget(`id(`result), `Enabled, true);
+		result = UI::QueryWidget(`id(`result), `Value);
+		if (ret == `merge) {
+		    AIConfig::currentFile = result;
+		}
+	    }
+	    else if (next == `load)
+	    {
+		UI::ChangeWidget(`id(`result), `Enabled, false);
+		AIConfig::currentFile = "NewProfile.xml";
+	    }
+	    
+	    
+	    symbol base = UI::QueryWidget(`id(`rbg), `CurrentButton);
+	   
+	    if (ret == `merge)
+	    {		
+		UI::ChangeWidget(`id(`next), `Enabled, true);
+		list selected_profiles = [];
+		foreach(map prof, AIClass::Profiles,``{
+		    
+		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
+		    if (selected != nil) {
+			selected_profiles = add(selected_profiles,
+					       $[
+						 "order": GetClassOrder(prof["class"]:""),
+						 "class":prof["class"]:"none",
+						 "profile":selected
+					       ]
+					       );
+		    }
+		});
+		list sorted_profiles =  sort(`x,`y, filter(`c, toset(selected_profiles),``(c["profile"]:""!= "none")),
+					    ``(x["order"]:0<=y["order"]:0)					
+					    );
+		y2debug("Selected Profiles: %1", sorted_profiles);
+		if (size(sorted_profiles)>0)
+		{
+		    y2debug("Running Merge...");
+		    MergeAll(sorted_profiles, base, result);
+		}
+		ret = `next;
+	    }	 
+	} until  (ret == `next || ret ==`back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)) );
+
+	if (size(profiles) == 0 || next == `save)
+	{
+	    return `profiles;
+	}
+	else
+	{
+	    return ret;
+	}
+    }
+
+
+
+    
+    global define boolean MergeAll(list selected_profiles, symbol base, string result)``{
+	
+	string tmpdir = SCR::Read( .target.tmpdir );
+	SCR::Execute(.target.mkdir, tmpdir);
+	string final_path = "";
+	if (result != "") {
+	    final_path = AIConfig::Repository + "/" + result;
+	}
+	
+	
+	if (base == `empty)
+	{
+	    XML::YCPToXMLFile(`profile, $[], tmpdir + "/base_profile.xml");	    
+	}
+	else if (base == `current)
+	{
+	    AIConfig::WriteProfile( tmpdir + "/base_profile.xml");
+	}
+	else
+	{
+	    return false;
+	}
+	
+	boolean error = false;
+	foreach(`c, selected_profiles, ``{
+
+	    map profile = select(filter(`cc, AIClass::Profiles,
+				      ``( cc["name"]:"" == c["profile"]:"" )
+				      ),
+			       0,
+			       $[]
+			       );
+
+	    y2debug("Working on profile: %1", profile);
+	    string base_text = "empty";
+	    if (base != `empty)
+		base_text = "current";
+	
+	    if (profile["name"]:"" != "" && !error) {
+		showFeedback(sformat("Merging %1 with %2 template", profile["name"]:"", base_text));
+		map saxonret = AIClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "/result.xml");
+		if (saxonret["exit"]:-1 != 0 ) {
+		    UI::ErrorPopup(sformat(_("Merge failed:\n %1"), saxonret["stderr"]:"error"));
+		    error =  true;
+		}
+		SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml " + tmpdir + "/base_profile.xml");
+	    }
+	    else
+		error = true;
+	    
+	    
+	  
+	});
+	if (error)
+	{
+	    clearFeedback();
+	    return false;
+	}
+
+	// Backup file
+	SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml /tmp/autoinst_result.xml" );
+	
+	if (final_path!="")
+	{
+	    showFeedback(sformat("Copying resulting file to %1...", final_path));
+	    SCR::Execute(.target.bash, "cp /tmp/autoinst_result.xml "  + final_path );
+	}
+	else
+	{
+	    showFeedback(_("Loading resulting file..."));
+	    if (SCR::Read(.target.size, "/tmp/autoinst_result.xml")>0)
+	    {
+		AIConfig::ReadProfile("/tmp/autoinst_result.xml" );
+	    }
+	    else
+	    {
+		UI::ErrorPopup(_("Parse can't find resulting profile"));
+	    }
+	}
+	SCR::Execute(.target.remove, "/tmp/autoinst_result.xml");
+	clearFeedback();
+	return true;
+    }
+
+
+
+    
+
+    global define integer GetClassOrder(string name)``{
+	integer order = 0;
+	foreach(map class, AIClass::Classes, ``{
+	    if (class["name"]:"" == name)
+		order = class["order"]:0;
+	});
+	return order;
+    }
+
+
+    
+
+
+
+}

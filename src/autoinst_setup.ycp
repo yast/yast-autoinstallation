@@ -1,0 +1,123 @@
+/**
+ * File:	clients/autoinst_setup.ycp
+ * Package:	Auto-installation
+ * Summary:	Setup and prepare system for auto-installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+    textdomain "autoinst";
+
+    import "AutoInstall";
+    import "Installation";
+    import "Keyboard";
+    import "Kernel";
+    import "Mouse";
+    import "Language";
+    import "Timezone";
+    import "Console";
+    import "Storage";
+    import "Progress";
+    import "Boot";
+    import "Report";
+    import "Packages";
+    import "User";    
+    import "SpaceCalculation";
+
+    string help_text = UI(_("<p>
+Please wait while the system is being prepared for auto-installation.
+</p>"));
+    list progress_stages =
+	[
+	_("Configure Language, Keyboard and Time zone "),
+	_("Configure Mouse"),
+	_("Create partition plans"),
+	_("Configure Bootloader"),
+	_("Prepare X11 data"),
+	_("Configure Software selections"),
+	_("Execute pre-install user scripts")
+
+	];
+
+    list progress_descriptions =
+	[
+	    _("Configuring language, Keyboard and Time zone..."),
+	    _("Configuring Mouse..."),
+	    _("Creating partition plans..."),
+	    _("Configuring Bootloader..."),
+	    _("Preparing X11 data..."),
+	    _("Configuring Software selections..."),
+	    _("Executing pre-install user scripts...")
+	];
+
+    Progress::New(
+		  _("Preparing System for Automatic Installation"),
+		  "",     // progress_title
+		  size( progress_stages ),	// progress bar length
+		  progress_stages,
+		  progress_descriptions,
+		  help_text );
+
+    //Keyboard
+    ///////////////////////////////////////////////////////////////////////
+    // Set it in Keyboard module.
+    Progress::NextStage();
+    Progress::Title(_("Configuring Keyboard"));
+    AutoInstall::generalSettings();
+    string keyboard = AutoInstall::Keyboard;
+    y2milestone("Setting keyboard to: %1", keyboard);
+    Keyboard::SetConsole( keyboard );
+    Keyboard::SetX11( keyboard );
+
+    // Encryption method
+    ////////////////////////////////////////////////////////////////////////
+    User::encryptionMethod=AutoInstall::Encryption;
+
+    // Timezone
+    Progress::Title(_("Configuring Timezone"));
+    Timezone::Set(AutoInstall::Timezone);
+
+    // Hardware Clock
+    ////////////////////////////////////////////////////////////////////////
+    Timezone::hwclock = AutoInstall::Hwclock;
+
+    // mouse
+    ////////////////////////////////////////////////////////////////////////
+    Progress::NextStage();
+    if (AutoInstall::Mouse!="probe") {
+	Mouse::Set(AutoInstall::Mouse);
+    }
+
+    // Partitioning and Storage
+    ////////////////////////////////////////////////////////////////////////
+
+    Progress::NextStage();
+    AutoInstall::partitionSettings();    
+
+    // Bootloader
+    /////////////////////////////////////////////////////////////////////////
+
+    Progress::NextStage();
+    AutoInstall::bootloaderSettings();
+    
+    // X11
+    ////////////////////////////////////////////////////////////////////////
+    Progress::NextStage();
+
+    // Software
+    //////////////////////////////////////////////////////////////////////////
+    Progress::NextStage();
+    AutoInstall::softwareSettings();
+
+    // Scripts
+    ///////////////////////////////////////////////////////////////////////////
+
+    Progress::NextStage();
+    AutoInstall::scriptSettings("pre-scripts");
+    Progress::Finish();
+
+    return `auto;
+}

@@ -1,0 +1,115 @@
+    <sect2 id="CreateProfile.Hardware">
+      <title>
+	Miscellaneous hardware and system components
+      </title>
+	  
+	  <para>
+	    In addition to the core component configuration, like network
+	    authentication and security, AutoYaST2 offers a wide range of
+	    hardware and system configuration which is available by default on
+	    any system installed manually and in an interactive way. For
+	    example, it is possible to configure printers, sound devices, TV
+	    cards and any other hardware components which have a module within YaST2.
+	  </para>
+	  <para>
+	    Any new configuration options that will be added to &yast2; will be
+	    automatically available as auto-installation directives.
+	  </para>
+ 
+      <sect3 id="CreateProfile.Hardware.Printer">
+	<title>
+	  Printer
+	</title>
+
+	  <para>
+	    Although Printer configuration, like other configurations can be
+	    done manually, it is recommended to use the Configuration System to
+	    create such a configuration because of the complexity and the range
+	    of options offered by such modules.
+	  </para>
+	  <para>
+	    Using the configuration system will guarntee that the options
+	    provided are consisten. The following is an example of a
+	  confiuration section covering <emphasis>CUPS</emphasis> which was
+	  created using the configuration system.
+	    </para>
+	  <example>
+	    <title>
+	      Printer configuration using CUPS
+	    </title>
+	    <screen>
+<![CDATA[
+ <configure>
+....
+  <cups>
+   <classes config:type="list" />
+   <default>lp</default>
+   <printers config:type="list" >
+    <printer>
+     <Accepting config:type="boolean" >true</Accepting>
+     <Info>Hewlett-Packard HP LaserJet 1100</Info>
+     <Location>Parallel printer on /dev/lp0</Location>
+     <Name>lp</Name>
+     <State>idle</State>
+     <Uri>parallel:/dev/lp0</Uri>
+     <bus>parallel</bus>
+     <dev_name>/dev/lp0</dev_name>
+     <device>HP LaserJet 1100</device>
+     <ppd>/usr/share/cups/model/laserjet.ppd</ppd>
+     <ppds/>    
+     <vendor>Hewlett-Packard</vendor>
+    </printer>
+   </printers>
+   <server>10.10.1.1</server>
+   <type config:type="integer" >0</type>
+  </cups>
+....
+ </configure>
+]]>
+	    </screen>
+	  </example>
+      </sect3>
+
+      <sect3 id="CreateProfile.Hardware.Sound">
+	<title>
+	  Sound devices
+	</title>
+	<para>
+	  An example of a sound configuration created using the configuration
+	  system is shown below.
+	</para>
+	<example>
+	  <title>
+	    Sound configuration
+	  </title>
+	  <screen>
+<![CDATA[
+ <configure>
+....
+  <sound>
+   <autoinstall config:type="boolean" >true</autoinstall>
+   <modules_conf config:type="list" >
+    <module_conf>
+     <alias>snd-card-0</alias>
+     <model>Dynasonix Pro, Dynasonix</model>
+     <module>snd-interwave</module>
+     <options>
+      <snd_enable>1</snd_enable>
+      <snd_index>0</snd_index>
+     </options>
+     <unique_key>uniq.virtual</unique_key>
+    </module_conf>
+   </modules_conf>
+   <rc_vars>
+    <LOAD_ALSA>yes</LOAD_ALSA>
+    <LOAD_ALSA_SEQ>yes</LOAD_ALSA_SEQ>
+   </rc_vars>
+   <volume_settings config:type="list" />
+  </sound>
+....
+ </configure>
+]]>
+	  </screen>
+	</example>
+      </sect3>
+    </sect2>

@@ -1,0 +1,92 @@
+ <sect1 id="CreateProfile.CMS">
+  <title>Using the Configuration Management System</title>
+  <para>
+    In order to create the control file for  a specific system, a &yast2;
+    based system is provided. This system depends on existing modules
+    which are usually used to configure a system in regular operation mode,
+    i.e. after &company-suse; Linux is installed.
+  </para>
+  <para>
+    The configuration management system lets you create control files easily and
+    additionally lets you manage a repository of configurations for use
+    in a networked environment and with multiple clients.
+  </para>
+  <figure>
+    <title>Configuration System</title>
+    <mediaobject>&cms-configuration-type;</mediaobject>
+  </figure>
+  
+  <sect2 id="Classes">
+    <title>
+      Using Classes
+    </title>
+    <para>
+      Using the configuration management system, you can define a set of
+      classes. The class definition consists  of the following variable for each class:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>	        
+	  Name: Class name
+	</para>
+      </listitem>
+      <listitem>
+	<para>	    
+	  Descriptions: Class description
+	</para>
+      </listitem>
+      <listitem>
+	<para>	        
+	  Order: Order (or priority) of the class in the stack of migration
+	</para>
+      </listitem>
+    </itemizedlist>
+    <figure>
+      <title>Defining Classes</title>
+      <mediaobject>&cms-class-definitions;</mediaobject>	  
+    </figure>
+    <para>
+      You can create as many classes as required, however it is
+      recommended to keep the set of classes as small as possible to keep the
+      configuration system concise. As an example, the following set of
+      classes can be used:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  site: Classes describing a physical location or site.
+	</para>
+      </listitem>
+      <listitem>
+	<para>machine: Classes describing a type of machine or make</para>
+      </listitem>
+      <listitem>
+	<para>role: Classes describing the function of the machine to be installed</para>
+      </listitem>
+      <listitem>
+	<para>group: Classes describing a department or a group within a site or a location.</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      A  file defined in a class can have the same syntax and format as the
+      regular control file and represents a subset of the configuration. For example,
+      to create a new control file  for a special machine with a specific network
+      interface, only the resource in the control file, which control
+      the configuration of the network are needed. Having multiple network
+      types, you can merge the one needed for a special type of hardware
+      with other class files and thus, creating a new control file which
+      corosponds to the defined classes.
+
+
+    </para>
+  </sect2>
+    </sect1>
+
+
+
+      <!--
+       Local Variables:
+       mode: xml
+       sgml-parent-document: ("autoyast2.xml" "book" "sect1")
+       End:
+      -->

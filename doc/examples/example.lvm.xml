@@ -1,0 +1,33 @@
+	<example>
+	  <title>
+	    Create LVM Physical Volume
+	  </title>
+<para>
+The following example show
+	  how to prepare for LVM in the <emphasis>partitioning</emphasis> directive:
+</para>
+	  <screen>
+<![CDATA[
+....
+<partitioning config:type="list">
+     <drive>
+         <device>/dev/sda</device>         
+         <use>all</use>
+         <partitions config:type="list">
+            <partition>
+               <size>auto</size>
+               <lvm_group>system</lvm_group>
+            </partition>
+         </partitions>
+     </drive>
+</partitioning>
+.....
+]]>
+	  </screen>
+	<para>
+	  The last example will create a non-formatted partition on device
+	  <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
+	  with the volume group <emphasis>system</emphasis>. The partition
+	  created  will use all available space on this drive.
+	</para>
+	</example>

@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"/usr/share/xml/db41xml/docbookx.dtd"[]>
+
+  <article>
+    <articleinfo>    
+      <title>AutoYaST Configuration Management System (CMS)</title>
+      <author>
+	<firstname>Anas</firstname>
+	<surname>Nashif</surname>
+      </author>    
+    </articleinfo>
+    <para>
+      AutoYaST2 CMS now has a new interface which enables adding modules in
+      execution time, depending on what modules are installed on the
+      System. To enable this functionality, the various YaST2 run-time modules
+      have to be adapted. CMS code that dealt with the different modules has
+      moved to the run-time modules to keep such parts of the code in sync with
+      the development being done on these modules.
+    </para>
+    <section>
+      <title>Introduction</title>
+      <para>
+	The new plugin-like design has the following advantages:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    New Run-time module can be integrated automatically in the CMS,
+	    thus new features in YaST2 mean new features in the auto-installer.
+	  </para>		  
+	</listitem> 
+	<listitem>
+
+	  <para>
+	    Only installed run-time modules are being offered in the CMS. This
+	    allows the integration of speciality run-time modules which are
+	    only present on business products for example.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Code which is relevant to one run-time configuration module is kept in one place
+	    instead of maintaining it in different modules.
+	  </para>
+	</listitem>
+      </itemizedlist>      
+    </section>
+    <section>
+      <title>The run-time module interface in CMS</title>
+      <para>
+	The interface of a run-time configuration module in the CMS has the follwoing
+	components:	
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    <emphasis>Summary Area,</emphasis>: Contains a summary of the consifguration with the
+	    values if available. If values where not configured, the phrase
+	  <emphasis>'Not configured yet'</emphasis> is used, which is available from the summary module.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>Configuration Button</emphasis>: A button which calls the module in auto mode
+	    (<emphasis>&lt;module name&gt;_auto.ycp</emphasis>).
+	  </para>	  
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>Reset Button</emphasis>: A buttom for resetting the
+	  configuration data. This will delete only data for the running module.
+	  </para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	The summary area is filled with data from the <emphasis>Summary</emphasis> function in the
+	module controling the configuration. (i.e
+	<emphasis>NIS::Summary()</emphasis> in the NIS package).
+      </para>      
+    </section>
+    <section>
+      <title>Run-time modules in <emphasis>auto</emphasis> mode</title>
+      <para>
+	The &lt;module name&gt;_auto.ycp client accepts 1 argument which has to
+      be  a <emphasis>map</emphasis> (struct)  with  the configuration data if
+      available or an empty map, if the data is configured for first time.</para>
+	
+    <para>
+      The &lt;module  name&gt;_auto.ycp client returns a list which has the latest user input,
+      i.e. <emphasis>`next</emphasis> or <emphasis>`back</emphasis>  as the
+      first element. The second element contains  the configuration data in the
+      form of a map.
+    </para>
+   
+ 
+    <para>
+      The following example shows &lt;module name&gt;_auto.ycp with the changes
+      needed for the new behaviour. 
+    </para>
+    <example>
+      <title>nis_auto.ycp</title>
+      <programlisting>
+<![CDATA[
+{
+    textdomain "nis";
+
+    import "Nis";
+    import "Wizard";
+    include "nis/ui.ycp";
+
+    list args = Args ();
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( Args (0), map ) )
+    {
+	y2error ("Bad argument for nis_auto: %1", Args (0));
+	return false;
+    }    
+    map settings = $[];
+    {
+	integer i = 0;
+	while (i < size (Args()))
+	{
+	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);	    
+	    i = i + 1;
+	}
+    }    
+    y2milestone("Imported: (%1)", settings);
+    Nis::Import ( settings );
+
+    define set_contents()``{	
+	term contents =
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), Nis::Summary()),
+		  `VSpacing(0.5),
+		  `HBox(
+			`PushButton(`id(`configure), _("&Configure NIS")),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			),
+		  `VSpacing(1)
+		  );
+
+	Wizard::SetContents(_("NIS Configuration"),
+			    contents, "", true, true);
+    }
+
+
+    Nis::_autofs_allowed = true;
+    set_contents();
+    any result = nil;
+    any ret = nil;
+    repeat {
+	ret = UI::UserInput();
+	if (ret == `configure) {
+
+	    
+	        Wizard::CreateDialog ();
+		Wizard::ReplaceAbortButton(`Empty ());
+		result = NisDialog ();
+
+				
+		UI::CloseDialog ();
+		if (result == `next || result == `finish)
+		{
+		     settings = Nis::Export ();
+		} 
+		Nis::Set(settings);
+		set_contents();
+	} else if ( ret == `reset) {
+	    settings= $[];
+	    Nis::Set(settings);
+	    set_contents();
+	}
+		
+	y2milestone("ret: %1", ret);
+    } until (ret == `back || ret == `next || ret ==`key || ret == `finish);   
+  
+    return [ret, settings];
+}
+
+
+]]>
+      </programlisting>
+    </example>
+  </section>
+  <section>
+    <title>Module functions needed for Auto-Install</title>
+    <para>The follwoing is the list of function that should be available with
+      the modules to provide the functionality needed in the CMS.
+    </para>
+    <refentry>
+      <refnamediv>
+	<refname>Import()</refname>
+	<refpurpose>Imports settings from arguments</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Description</title>
+	<para>This function imports settings from arguments and sets the module
+	  variables. The <emphasis>Import</emphasis> function should bring the
+	  module to a state where the data imported is enough for the module to
+	  write (See Write()) a usable configuration.
+	</para>
+
+      </refsect1>
+     
+      <refsect1>
+	<title>Example</title>
+	<example>
+	  <title>Import()</title>
+	  <programlisting>
+<![CDATA[
+    global define boolean Import (map settings) ``{
+	if (size (settings) == 0)
+	{
+	    //Provide defaults for autoinstallation editing:
+	    //Leave empty.
+	    old_domain = domain;
+	    return true;
+	}
+
+	boolean missing = false;
+	foreach (`k, ["start_nis", "nis_domain", "nis_servers","start_autofs"], ``{
+	    if (! haskey (settings, k))
+	    {
+		y2error ("Missing at Import: '%1'.", k);
+		missing = true;
+	    }
+	});
+	if (missing)
+	{
+	    return false;
+	}
+	
+	Set(settings);
+	return true;
+    }
+]]>
+</programlisting>
+	</example>
+
+      </refsect1>
+      <refsect1>
+	<title>Returns</title>
+	<para>Import() return false if some of the required keys are missing in the
+	  imported map. If the imported data is empty, it returns true and
+	  starts the module using default values.
+	</para>
+      </refsect1>
+    </refentry>
+    <refentry>
+      <refnamediv>
+	<refname>Export()</refname>
+	<refpurpose>Exports configured data to calling module</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Description</title>
+	<para>Exports configured data to calling module. This function also
+	  converts the internal variables to unique and human readable
+	  variables which can be used in the control file needed for the
+	  auto-installation. It is not allowed to export <emphasis>maps</emphasis> with configured
+	  data as the keys. Configured data must be the value of a variable.</para>
+      </refsect1>
+      <refsect1>
+	<title>Example</title>
+	<example>
+	  <title>Export()</title>
+	  <programlisting>
+<![CDATA[
+    global define map Export () ``{
+	return $[
+	    "start_nis": start,
+	    "nis_servers": servers,
+	    "nis_domain": domain,
+	    "start_autofs": _start_autofs,
+	    ];
+    }
+]]>
+</programlisting>
+	</example>
+      </refsect1>
+      <refsect1>
+	<title>Returns</title>
+	<para>This function returns a map of the configuration data.</para>
+      </refsect1>
+    </refentry>
+    <refentry>
+      <refnamediv>
+	<refname>Set()</refname>
+	<refpurpose>Set the module data in a specific state</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Description</title>
+	<para>Instead of using<emphasis> Import()</emphasis>,<emphasis> Set()</emphasis> is needed if module has to be set
+	  to a specific state without checking the validity of the data. This
+	  is required when resetting the module configuration data. This
+	  function is used in <emphasis>Import()</emphasis> to set the module with the imported data
+	  after validity checking has been done.
+	</para>
+      </refsect1>
+      <refsect1>
+	<title>Example</title>
+	<example>
+	  <title>Set()</title>
+	  <programlisting>
+<![CDATA[
+    global define void Set (map settings) ``{
+        start = lookup (settings, "start_nis", false);
+        servers = lookup (settings, "nis_servers", []);
+        domain = lookup (settings, "nis_domain", "");
+        old_domain = domain;
+        // autofs is not touched in Write if the map does not want it
+        _autofs_allowed = haskey (settings, "start_autofs");
+        _start_autofs = lookup (settings, "start_autofs", false);
+    }
+]]>
+</programlisting>
+	</example>
+      </refsect1>
+      <refsect1>
+	<title>Returns</title>
+	<para>
+	  void
+	</para>
+      </refsect1>
+    </refentry>
+    <refentry>
+      <refnamediv>
+	<refname>Write()</refname>
+	<refpurpose>Write or commit configured or imported data</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Description</title>
+	<para>Commit configured data. This function is also used in normal
+	  operation mode and should not be used to write configuration in
+	  auto-installation mode. Instead, use<emphasis> WriteOnly()</emphasis>.</para>
+      </refsect1>
+    </refentry>
+    <refentry>
+      <refnamediv>
+	<refname>WriteOnly()</refname>
+	<refpurpose>Only write/commit data, do not restart any services yet</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title></title>
+	<para>Write configuration only without restarting services or make the
+	  system use the new configuration. This is important in the so called
+	  <emphasis>continue mode</emphasis>, as services are started directly
+	  after the YaST2 has finished installation anyways.</para>
+      </refsect1>
+    </refentry>
+  </section>
+  <section>
+    <title>Configuration file</title>
+    
+    <para>
+      When the CMS is invloked, it  checks for the configuration files in
+      <filename>/usr/lib/YaST2/config</filename>(?) and evaluates them to
+      later include them in the configuration interface.
+    </para>
+    <para>AutoYaST2 CMs uses the same configuration file used for the YaST2
+      Control Center with some additions and modifications.
+    </para>
+    <para>
+      The following is an example of the configuration file for the NIS module:
+    </para>
+    <example>
+      <title>Auto-Install Configuration file for NIS</title>
+      <programlisting>
+;
+; Menuentry file used by
+;  YaST2 Control Center
+;
+; $Id$
+;
+
+[Y2Module nis]
+
+; name of the entry, shown in y2cc
+Name = _("NIS client")
+
+; "raw" group name to which this module belongs
+; see /usr/lib/YaST2/etc/y2controlcentericons.y2cc for valid values
+Group = Net_advanced
+
+; icon displayed in y2cc
+Icon = nis_client.png
+
+; *one* *short* descriptive line for y2cc
+Helptext = _("Configure NIS client")
+
+; arguments, seperated by space
+Arguments = 
+
+; whether root privileges are required to run this module
+RequiresRoot = true
+
+; default size for window, Y2CC will set $Y2_GEOMETRY to this value
+Geometry = 
+
+; string to use for sorting instead of Name
+SortKey = 
+
+; which textdomain to use for translations (important!)
+Textdomain = nis
+
+; vim:syntax=dosini
+
+      </programlisting>
+    </example>
+    <para>In addition to the keywords from the last example, the CMS also evaluates
+      the following keywords:</para>
+
+    <refentry>
+      <refnamediv>
+	<refname>Autoinst</refname>
+	<refpurpose>Is the module compatible with the
+	  CMS and can Import/Export configurations?</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values:</title>
+	<para>
+	  <itemizedlist>
+	    <listitem>
+	      <para><emphasis>all</emphasis>: Full auto-installation support,
+		including configuration (_auto) and writing (_write) </para>	
+	    </listitem>
+	    <listitem>
+	      <para><emphasis>write</emphasis>: Write only support </para>	
+	    </listitem>     
+	    <listitem>
+	      <para><emphasis>configure</emphasis>: Configuration only support.
+		Normally used only with parts related to installation like
+		partitioning and general options which have no run-time module
+		with support for auto-installation. Data is written using the
+		common installation process and modules available in YaST2</para>
+	    </listitem>    
+
+	  </itemizedlist>  
+	</para>
+      </refsect1>
+    </refentry>
+    <refentry>
+      <refnamediv>
+	<refname>AutoinstPath</refname>
+	<refpurpose>Path in the control file</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values:</title>
+	<para>	configure or install: All run-time configuration modules are
+	  contained in the <emphasis>configure</emphasis> resource. Only
+	  configuration data directly touching the installation of a system are
+	  contained in the <emphasis>install</emphasis> resource.</para>
+      </refsect1>
+    </refentry>
+    <refentry>
+      <refnamediv>
+	<refname>AutoClient</refname>
+	<refpurpose>NAme of the client to call</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values</title>
+	<para>	Name of the client to be called by the CMS.</para>
+      </refsect1>
+      <refsect1>
+	<title>Default Value</title>
+	<para>&lt;module name&gt;_auto</para>
+      </refsect1>
+    </refentry>
+ 
+  </section>
+  <section>
+    <title>Conventions for module Writers</title>
+    <section>
+      <title>Exported Data</title>
+      <itemizedlist>
+	<listitem>
+	  <para><emphasis>Type of exported data</emphasis>: </para>
+	  <para>Modules should only export data which is normally selected or
+	entered by the use in normal module operation. No computed or
+	automatically probed data should be exported.</para>
+	</listitem>
+	<listitem>	  
+	  <para><emphasis>Use Namespaces</emphasis></para>
+	  <para>Exported variables should have a unique name when possible and
+	    when using general terminology. To avoid conflicts and confusion,
+	    use a name space identifier with common words. For example, if  a
+	    module should export the variable name
+	    <emphasis>options</emphasis>, it is better to export<emphasis> &lt;module
+	    name&gt;.options</emphasis> to avoid confusion with other modules using
+	    <emphasis>options</emphasis>, which is very common in configurations.	    
+	  </para>	  
+	</listitem>
+	<listitem>
+	  <para><emphasis>Lower case variables</emphasis></para>
+	  <para>To have a common and unified look of the control file, please
+	    use lower case variables.</para>
+	</listitem>
+	<listitem>
+	  <para>The structure of the exported data should be readable and not
+	    unnecessarly complex.</para>
+	</listitem>
+	<listitem>
+	  <para>Avoid using configuration data as the key in a map key/value
+	    pair. The key of the pair must always contain the variable name,
+	    rather than it's contents</para>
+	</listitem>
+      </itemizedlist>
+     
+    </section>    
+  </section>
+  </article>
+

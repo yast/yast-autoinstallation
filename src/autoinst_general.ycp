@@ -1,0 +1,96 @@
+/**
+ * File:	clients/autoinst_general.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary: General Settings
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Mode";
+    Mode::config = true;
+
+
+    import "Wizard";
+    import "Summary";
+    import "AIGeneral";
+
+    include "autoinstall/general_dialogs.ycp";
+    include "ui/common_messages.ycp";
+
+
+    list args = Args ();
+
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( Args (0), map ) )
+    {
+	y2error ("Bad argument: %1", Args (0));
+	return false;
+    }
+
+    map settings = $[];
+    {
+	integer i = 0;
+	while (i < size (Args()))
+	{
+	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);
+	    i = i + 1;
+	}
+    }
+
+    y2milestone("Imported: (%1)", settings);
+    AIGeneral::Import ( settings );
+
+    define set_contents()
+	``{
+	term contents =
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), AIGeneral::Summary()),
+		  `VSpacing(0.5),
+		  `HBox(
+			`PushButton(`id(`configure), _("&Configure General Options")),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			),
+		  `VSpacing(1)
+		  );
+	Wizard::SetContents(_("General Options"),
+			    contents, "", true, true);
+    }
+
+
+
+    set_contents();
+    any result = nil;
+    any ret = nil;
+    repeat {
+	ret = UI::UserInput();
+	if (ret == `configure)
+	{
+	        Wizard::CreateDialog ();
+		Wizard::ReplaceAbortButton(`Empty ());
+		result =  GeneralOptions();
+		UI::CloseDialog ();
+
+		if (result == `next || result == `finish )
+		{
+		    settings = AIGeneral::Export ();
+		}
+		set_contents();
+	}
+	else if ( ret == `reset)
+	{
+	    settings = $[];
+	    AIGeneral::Set(settings);
+	    set_contents();
+	}
+    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+
+    return [ret, settings];
+}

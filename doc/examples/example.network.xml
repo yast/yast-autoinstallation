@@ -1,0 +1,50 @@
+	<example>
+	  <title>
+	    Network configuration
+	  </title>
+	  <screen>
+<![CDATA[
+ <configure>
+.....
+  <network>
+   <dns>
+    <dhcp_hostname config:type="boolean" >false</dhcp_hostname>
+    <dns_domain></dns_domain>
+    <hostname></hostname>
+    <nameservers config:type="list">
+      <nameserver></nameserver>
+    </nameservers>
+    <searchlist  config:type="list" >
+        <search></search>
+    </searchlist>
+   </dns>
+   <interfaces config:type="list" >
+    <interface>
+     <BOOTMODE>onboot</BOOTMODE>
+     <BOOTPROTO>static</BOOTPROTO>
+     <BROADCAST>192.168.2.255</BROADCAST>
+     <IPADDR>192.168.2.2</IPADDR>
+     <NETMASK>255.255.255.0</NETMASK>
+     <NETWORK>192.168.2.0</NETWORK>   
+     <device>eth0</device>
+     <module></module>
+     <options></options>
+    </interface>
+   </interfaces>
+   <routing>
+    <ip_forwarding config:type="boolean">false</ip_forwarding>
+	<routes config:type="list">
+      <route>
+        <destination>default</destination>
+        <device></device>
+        <gateway>192.168.2.1</gateway>
+        <netmask>0.0.0.0</netmask>
+      </route>
+    </routes>
+   </routing>
+  </network>
+....
+ </configure>
+]]>
+	  </screen>
+	</example>
