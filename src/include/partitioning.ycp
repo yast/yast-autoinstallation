@@ -866,10 +866,11 @@ to contain a minimal installation.");
 	      "device": get_device_name(target_is, last_pnr)
 	    ];
 
-	if (currentPartition["loop_fs"]:false)
+	if (currentPartition["loop_fs"]:false || currentPartition["crypt_fs"]:false)
 	{
 	    part["loop_fs"]  =    currentPartition["loop_fs"]:false;
 	    part["crypt_key"] =   Storage::AddCryptToClassified( currentPartition["crypt_key"]:"");
+	    part["crypt"] =		currentPartition["crypt"]:"twofish";
 	}
 
 	if (haskey(currentPartition, "fstopt") && currentPartition["fstopt"]:"" != "")
@@ -1221,7 +1222,7 @@ physical volumes belonging to this group.
 	    device["type"]		= `sw_raid;
 
 
-	    if (device["loop_fs"]:false)
+	    if (device["loop_fs"]:false || device["crypt_fs"]:false)
 	    {
 		device["crypt_key"] =   Storage::AddCryptToClassified( device["crypt_key"]:"");
 	    }
