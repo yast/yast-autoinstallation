@@ -59,7 +59,7 @@
      */
     define list root() ``{
 	list<map> shadow = (list<map>) SCR::Read(.etc.shadow);
-	map rootacct = (map) select(filter(map acct, shadow, ``(acct["username"]:"" == "root")), 0 , $[]);
+	map rootacct = (map) filter(map acct, shadow, ``(acct["username"]:"" == "root"))[0]:$[];
 	list users = [];
 	map rootacct_mod = $[];
 	rootacct_mod["user_password"] = rootacct["password"]:"";
