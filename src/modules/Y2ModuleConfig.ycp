@@ -18,14 +18,14 @@
 
     // include "autoinstall/io.ycp";
 
-    global map GroupMap = $[];
+    global map<string, map> GroupMap = $[];
     global map<string, map> ModuleMap = $[];
 
     /**
      * MenuTreeData
      * @return: list of modules
      */
-    global  list MenuTreeData =[];
+    global list<map> MenuTreeData =[];
 
 
     global boolean x11_installed = false;
@@ -39,7 +39,7 @@
 	``{
 	Desktop::AgentPath = .autoyast2.desktop;
 
-	list Values= [ "Name",
+	list<string> Values= [ "Name",
 		       "GenericName",
 		       "X-SuSE-YaST-AutoInst",
 		       "X-SuSE-YaST-AutoInstResource",
@@ -80,11 +80,12 @@
 
 
     /**
-     * SortGroup()
      * Sort tree groups
+     * @param map<string, map> group map
+     * @param list<string> group list
      * @return list
      */
-    define list SortGroups (map GroupMap, list<string> GroupList)
+    define list<string> SortGroups (map<string, map> GroupMap, list<string> GroupList)
 	``{
         return
 	    sort (string x, string y, GroupList,
@@ -96,15 +97,15 @@
     }
 
     /**
-     * CreateGroupTree()
      * Create group tree
+     * @param map<string, map> groups
      * @return void
      */
-    define void CreateGroupTree (map Groups)
+    define void CreateGroupTree (map<string, map> Groups)
 	``{
 	y2debug("Groups: %1", Groups);
 
-        list grouplist = [];
+        list<string> grouplist = [];
         grouplist = SortGroups (Groups, maplist (string rawname, map group, Groups, ``(rawname)));
 
         foreach (string name, grouplist, ``{
@@ -220,8 +221,8 @@
 	map mergedResource = $[];
 	if (size(tomerge) > 0 )
 	{
-	    list MergeTypes = splitstring(tomergetypes, ",");
-	    list Merge = splitstring(tomerge, ",");
+	    list<string> MergeTypes = splitstring(tomergetypes, ",");
+	    list<string> Merge = splitstring(tomerge, ",");
 	    integer i = 0;
 	    foreach ( string res, Merge, ``{
 		if ( MergeTypes[i]:"map" == "map")
@@ -250,9 +251,9 @@
      * Deps()
      * Simple dependency resolving
      */
-    global define list Deps () ``{
+    global define list<map> Deps () ``{
 
-	map<string, list> deps = $[
+	map<string, list<string> > deps = $[
 			"files": ["users"],
 			"nfs":	 ["lan"],
 			"nfs_server": ["lan"],

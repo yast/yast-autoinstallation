@@ -29,7 +29,7 @@
 
     global string ClassConf = "/etc/autoinstall";
 
-    global list profile_conf = [];
+    global list<map> profile_conf = [];
 
     global list Profiles = [];
 
@@ -133,10 +133,10 @@
 	confs = [];
 	foreach(map class, Classes,
 		``{
-	    list files = (list) SCR::Read(.target.dir, classDir + "/" + class["name"]:"xxx");
+	    list<string> files = (list<string>) SCR::Read(.target.dir, classDir + "/" + class["name"]:"xxx");
 	    if (files != nil ) {
 		y2milestone("Files in class %1: %2", class["name"]:"xxx", files);
-		list tmp_confs = maplist(string file , files , ``{
+		list<map> tmp_confs = maplist(string file , files , ``{
 		    map conf = $[];
 		    conf["class"] =  class["name"]:"xxx";
 		    conf["name"]  = file;
@@ -169,7 +169,7 @@
      * Import configuration
      */
 
-    global define boolean Import(list settings)
+    global define boolean Import(list<map> settings)
 	``{
 	profile_conf = settings;
 	return true;
@@ -179,7 +179,7 @@
      * Export configuration
      */
 
-    global define list Export()
+    global define list<map> Export()
 	``{
 	return profile_conf;
     }

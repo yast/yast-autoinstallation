@@ -15,7 +15,7 @@
 
 
 
-    global list Files = [];
+    global list<map> Files = [];
 
 
     /**
@@ -44,7 +44,7 @@
     /**
      * Import Settings
      */
-    global define boolean Import (list settings) ``{
+    global define boolean Import (list<map> settings) ``{
 	Files = settings;
 	return true;
     }
@@ -52,7 +52,7 @@
     /**
      * Export Settings
      */
-    global define list  Export () ``{
+    global define list<map> Export () ``{
 	return Files;
     }
 

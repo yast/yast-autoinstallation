@@ -27,9 +27,9 @@
      * @param tree data
      * @return list
      */
-    define list CreateTableList( list MenuTreeData, string current)
+    define list<term> CreateTableList( list<map> MenuTreeData, string current)
 	``{
-	list menu_options = maplist(map e, MenuTreeData, ``{
+	list<term> menu_options = maplist(map e, MenuTreeData, ``{
 
 	    if (size(e["children"]:[]) > 0 )
 	    {
@@ -117,7 +117,7 @@
 		    {
 			any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 			integer i = 0;
-			foreach( string res, (list)splitstring(tomerge, ",") , ``{
+			foreach( string res, (list<string>)splitstring(tomerge, ",") , ``{
 			    if ( MergeTypes[i]:"map" == "map")
 			    {
 				Profile::Flat[res] = lookup( (map) result, "res", $[]);

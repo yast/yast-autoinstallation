@@ -29,6 +29,8 @@
 	``{
 
 	list<string> files = (list<string>)SCR::Read(.target.dir, AutoinstConfig::AliceRepository + "/info");
+        if (files == nil)
+            files = [];
 	list<string> extensions = ["sys.tcf" ];
 	list<string> hosts = [];
 	string host = "";
@@ -205,9 +207,12 @@
      * @return list package selection list
      */
     define list readSelection(string selection) ``{
+        y2debug("Writing selection: %1", selection);
 	SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_software", "Toinstall:\n" + selection + "\nLlatsniot:\n");
-	list<string> sel = filter(string p, (list<string>) SCR::Read(.yast1sel.selection, "/var/lib/autoinstall/tmp/alice_software"), ``(p!=""));
-	SCR::Execute(.target.remove, "/var/lib/autoinstall/tmp/alice_software");
+        list<string> sel= (list<string>) SCR::Read(.yast1sel.selection, "/var/lib/autoinstall/tmp/alice_software");
+        y2debug("sel: %1" , sel );
+	sel = filter(string p, sel, ``(p!=""));
+	//SCR::Execute(.target.remove, "/var/lib/autoinstall/tmp/alice_software");
 	SCR::UnmountAgent(.tmp.alice.software);
 	return sel;
     }
@@ -278,6 +283,7 @@
 	 map<string, map> raw_interfaces =  (map<string, map>) SCR::Read(.tmp.alice.network);
 	 list<map> interfaces = (list<map>)maplist(string iface, map data, raw_interfaces, ``{
 	     map interface = $[];
+             y2debug("data: %1", data);
 	     if (data["bootproto"]:"" == "dhcpclient")
 	     {
 		 interface["bootproto"] = "dhcp";
@@ -288,11 +294,11 @@
 	     {
 		 interface["device"] = iface;
 		 interface["bootproto"] = "static";
-		 interface["network"] =  IP::ComputeNetwork(data["ipaddr"]:"0", data["netmask"]:"");
-		 interface["ipaddr"] = data["ipaddr"]:"";
-		 interface["netmask"] = data["netmask"]:"";
+		 interface["network"] =  IP::ComputeNetwork(sformat("%1",data["ipaddr"]:0), sformat("%1",data["netmask"]:0));
+		 interface["ipaddr"] = IP::ToString(data["ipaddr"]:0);
+		 interface["netmask"] = IP::ToString(data["netmask"]:0);
 		 interface["startmode"] = "onboot";
-		 interface["broadcast"] = IP::ComputeBroadcast(data["ipaddr"]:"",data["netmask"]:"");
+		 interface["broadcast"] = IP::ComputeBroadcast(sformat("%1",data["ipaddr"]:0), sformat("%1",data["netmask"]:0));
 	     }
 	     return (interface);
 	 });
@@ -421,7 +427,7 @@
      * Create the profile from Alice data
      * @return map Profile
      */
-    define void createProfile()
+    global define void createProfile()
 	``{
 	import "Misc";
 	// General resource
@@ -463,7 +469,7 @@
 
 	general["clock"] = clock;
 
-	map<string, list> mice = (map<string, list>) Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+	map<string, list> mice = (map<string, list>) eval(SCR::Read(.target.yast2, [ "mouse_db.ycp", $[]]));
         y2debug("Mice %1", mice);
 	boolean found = false;
 	map<string, string> mouse = $[];

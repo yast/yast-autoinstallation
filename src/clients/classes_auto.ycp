@@ -32,7 +32,9 @@
     if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
 	func = (string)WFM::Args(0);
 	if(size(WFM::Args()) > 1 && is(WFM::Args(1), list ))
+	{
 	    param = (list) WFM::Args(1);
+	}
     }
     y2debug("func=%1", func);
     y2debug("param=%1", param);
@@ -41,7 +43,12 @@
    
     if (func == "Import")
     {
-	ret = AutoinstClass::Import(param);	
+	ret = AutoinstClass::Import ((list<map>) param);	
+	if (ret == nil)
+	{
+	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+	    ret = false;
+	}
     }
     /* create a  summary*/
     else if (func == "Summary") {

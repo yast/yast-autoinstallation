@@ -38,13 +38,13 @@
 
 	y2milestone("item %1", item);
 	boolean exists = false;
-	map drive = (map) select(
-				 filter(
-					map d, AutoinstStorage::AutoPartPlan,
-					``(item == d["device"]:"")), 0, $[]
-				 );
+	map drive = select(
+			 filter(
+				map d, AutoinstStorage::AutoPartPlan,
+				``(item == d["device"]:"")), 0, $[]
+			 );
 
-	list ps = drive["partitions"]:[];
+	list<map> ps = drive["partitions"]:[];
 	foreach (map p, ps, ``{
 
 	    if (p["size"]:"" == "max")
@@ -59,10 +59,10 @@
      * Get target
      * @return map targets
      */
-    define map getTargets () ``{
-	map auto_targets =  listmap (map d, AutoinstStorage::AutoPartPlan, ``{
-	    string device = lookup(d,"device","");
-	    return($[device:d]);
+    define map<string, map> getTargets () ``{
+	map<string, map> auto_targets =  listmap (map d, AutoinstStorage::AutoPartPlan, ``{
+	    string device = lookup (d, "device", "");
+	    return ($[device:d]);
 	});
 	return auto_targets;
     }
@@ -76,29 +76,27 @@
      */
     define symbol PartitionDialog (symbol mode, string item) ``{
 
-	list partitioning =  AutoinstStorage::AutoPartPlan;
-	list item_id = splitstring(item,":");
+	list<map> partitioning =  AutoinstStorage::AutoPartPlan;
+	list<string> item_id = splitstring(item,":");
 
 	map this_drive = $[];
 	string drive = "";
-	map new_val = $[];
+	map<string, any> new_val = $[];
 
 	if (size(item_id)>1)
 	{   //Partition
-	    this_drive =
-		(map )select(filter(map d,
+	    this_drive = select (filter (map d,
 			      partitioning,
 			      ``(lookup(d,"device","") == select(item_id,0,""))),
 		       0,
 		       $[]
 		       );
-	    new_val = (map) select(this_drive["partitions"]:[], tointeger(select(item_id,1,"")) - 1, $[]);
+	    new_val = (map<string, any>) select (this_drive["partitions"]:[], tointeger (select (item_id, 1, "")) - 1, $[]);
 	    drive = (string) select(item_id,0,"");
 	}
 	else
 	{
-	    this_drive =
-		(map ) select(filter(map d, partitioning,``(lookup(d,"device","") == item)),0,$[]);
+	    this_drive = select (filter (map d, partitioning,``(lookup(d,"device","") == item)),0,$[]);
 	    new_val = $[
 			"partition_id"	: 131,
 			"filesystem"	: `reiser
@@ -110,9 +108,9 @@
 	new_val["used_fs"] = new_val["filesystem"]:`reiser;
 
 
-	list other_drives = filter(map d ,partitioning,``(lookup(d,"device","") != drive));
+	list<map> other_drives = filter (map d, partitioning, ``(lookup(d,"device","") != drive));
 
-	map file_systems 	= FileSystems::GetAllFileSystems(true, true);
+	map<symbol, map<symbol, any> > file_systems = FileSystems::GetAllFileSystems(true, true);
 	boolean create		= lookup ( new_val , "create", false);
 	string  partition_size	= lookup ( new_val , "size", "");
 	boolean format		= lookup ( new_val , "format", false);
@@ -122,7 +120,7 @@
 	symbol last_option_fs	= lookup ( new_val , "filesystem", `ext2);
 	map fs_options      = lookup ( new_val , "fs_options" , $[]);
 
-	list not_used_mountpoints = notUsedMountpoints( getTargets(),  lookup( lookup( file_systems, last_option_fs, $[]), `mountpoints, []));
+	list<string> not_used_mountpoints = notUsedMountpoints( getTargets(),  lookup( lookup( file_systems, last_option_fs, $[]), `mountpoints, []));
 
 
 	string helptext = _("
@@ -220,7 +218,7 @@ needs. All fields are required.</P>
 			     )
 		       );
 
-	map return_value     = new_val;
+	map<string, any> return_value     = new_val;
 
 	if (partition_size == "auto")
 	{
@@ -341,7 +339,7 @@ needs. All fields are required.</P>
 		    }
 		    else if( ret == `fstab_options )
 		    {
-			return_value = FstabOptions($[], return_value);
+			return_value = FstabOptions ((map<string, any>)$[], return_value);
 			y2milestone("fstab %1", return_value);
 		    }
 
@@ -364,7 +362,7 @@ needs. All fields are required.</P>
 
 		    UI::ChangeWidget(`id(`crypt_fs),    `Value,   false );
 
-		    return_value     = filter(string k, string v , return_value , ``( k != "filesystem" && k != "fs_options"));
+		    return_value     = filter (string k, any v , return_value , ``( k != "filesystem" && k != "fs_options"));
 		    string fs_string = (string) UI::QueryWidget(`id(`fsid_point ) , `Value);
 		    fs_string        = substring( fs_string, 0, 4  );
 		    integer fs_int   = tointeger( fs_string        );
@@ -506,7 +504,7 @@ due to use of the \"max\" option.
 	    }
 	    this_drive["partitions"] = partitions;
 
-	    AutoinstStorage::AutoPartPlan=add(other_drives,this_drive);
+	    AutoinstStorage::AutoPartPlan = add (other_drives, this_drive);
 	}
 	return (symbol)ret;
     }
@@ -527,7 +525,7 @@ due to use of the \"max\" option.
 	    devices=add(devices, item);
 	}
 
-	list drives = AutoinstStorage::AutoPartPlan;
+	list<map> drives = AutoinstStorage::AutoPartPlan;
 	list configured_drives = maplist(map c, drives, ``{
 	    return(lookup(c,"device","***"));
 	});
@@ -759,7 +757,7 @@ Select or enter another device name.
 
 	    string item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 
-	    list drives = AutoinstStorage::AutoPartPlan;
+	    list<map> drives = AutoinstStorage::AutoPartPlan;
 	    list configured_drives = maplist(map c, drives, ``{
 		return(c["device"]:"");
 	    });
@@ -836,8 +834,8 @@ due to use of the \"max\" option.
 	    }
 	    else if (ret == `delete)
 	    {
-		list partitioning =  AutoinstStorage::AutoPartPlan;
-		list item_id = splitstring(item,":");
+		list<map> partitioning =  AutoinstStorage::AutoPartPlan;
+		list<string> item_id = splitstring(item,":");
 		map this_drive = $[];
 		string drive = "";
 

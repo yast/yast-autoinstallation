@@ -18,6 +18,8 @@ cat $1 \
   | sed 1d\
   | sed '$d'\
   | sed 's/ //g'\
+  | sed 's/^#.*//g'\
+  | sed 's/^Description.*//g'\
   | sed 's/\(.*\)/"\1",/'\
   | sed '$s/,//' ; echo  ']' 
  
@@ -32,9 +34,9 @@ while true ; do
             exit
             ;;
 
-        "Read (.selection,"*)
-	    file=$(echo "$COMMAND" | sed 's/^Read (.selection, *"\(.*\)")/\1/')
-	    convert $file
+        "\`Read (.selection,"*)
+	    file=$(echo "$COMMAND" | sed 's/^`Read (.selection, *"\(.*\)")/\1/')
+            convert $file
 	;;
         *)
             echo nil

@@ -34,10 +34,10 @@
 
 
     // spceial treatment for base resources
-    global list base = [];
+    global list<string> base = [];
 
     // aditional configuration resources o be cloned
-    global list additional = [];
+    global list<string> additional = [];
 
 
     /**
@@ -53,7 +53,7 @@
      * Set root password
      */
     define list root() ``{
-	list shadow = (list) SCR::Read(.etc.shadow);
+	list<map> shadow = (list<map>) SCR::Read(.etc.shadow);
 	map rootacct = (map) select(filter(map acct, shadow, ``(acct["username"]:"" == "root")), 0 , $[]);
 	list users = [];
 	map rootacct_mod = $[];
@@ -72,7 +72,7 @@
      * @param list mount points
      * @return string
      */
-    define string findMountpoint(string device, map p, list mounts) ``{
+    define string findMountpoint(string device, map p, list<map> mounts) ``{
 	string mountPoint = "";
 	foreach(map mount , mounts, ``{
 	    string m = sformat("%1%2", device ,  p["nr"]:"");
@@ -103,17 +103,17 @@
 	Mode::config = false;
 	import "Storage";
 	import "Partitions";
-	map StorageMap = (map) eval(Storage::GetTargetMap());
+	map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
 	StorageMap = Storage::GetFsysType(StorageMap);
 	y2milestone("Storagemap %1", StorageMap);
-	list mounts = (list) SCR::Read(.etc.fstab);
+	list<map> mounts = (list<map>) SCR::Read(.etc.fstab);
 
 	list drives = maplist(string k, map v, StorageMap, ``{
 	    bytes_per_unit = v["cyl_size"]:1;
 	    list partitions = [];
 	    list winp = [];
-	    list usepartitions = [];
+	    list<integer> usepartitions = [];
 	    foreach(map pe, v["partitions"]:[], ``{
 		map new_pe = $[];
 		boolean skipwin = false;
@@ -174,7 +174,7 @@
 		{
 		    list<string> up = [];
 		    foreach(integer i, usepartitions, ``{
-			up=add(up,sformat("%1", i));
+			up = add (up, sformat("%1", i));
 		    });
 		    drive["use"]	= mergestring(up, ",");
 		}
@@ -190,14 +190,17 @@
     
     /**
      * Return list of software packages of calling client
-     * @return list list of installed software package
+     * @return map map of installed software package
+     *  	"base" -> string (base selection)
+     *		"addons" -> list<string> addon selections
+     *		"packages" -> list<string> user selected packages
      */
-    global define map Software() ``{
+    global define map<string, any > Software() ``{
 	boolean ret = Pkg::TargetInit("/", false);
 	
-	base =  Pkg::GetSelections(`installed, "base");
-	list addons =  Pkg::GetSelections(`installed, "addon");
-	list inst = Pkg::GetPackages(`installed, true);
+	base = Pkg::GetSelections(`installed, "base");
+	list<string> addons =  Pkg::GetSelections(`installed, "addon");
+	list<string> inst = Pkg::GetPackages(`installed, true);
 
 	Pkg::TargetFinish ();
 
@@ -216,18 +219,18 @@
 
 	Pkg::ActivateSelections();
 
-	list sel =  Pkg::GetPackages(`selected, true);
+	list<string> sel =  Pkg::GetPackages(`selected, true);
 	foreach(string p, inst, ``{
 	    if (!contains(sel, p))
 		Pkg::PkgInstall(p);
 	});
 
-	list packages = Pkg::FilterPackages(false, false, true, true);
+	list<string> packages = Pkg::FilterPackages(false, false, true, true);
 	Pkg::TargetFinish ();
 	// Remove kernel packages
-	list userpackages =  filter(string pkg, packages, ``(! regexpmatch(pkg, "k_.*")));
+	list<string> userpackages =  filter(string pkg, packages, ``(! regexpmatch(pkg, "k_.*")));
 
-	map software = $[];
+	map<string, any > software = $[];
 	software["base"] = base[0]:"";
 	software["addons"] = addons;
 	software["packages"] = userpackages;
