@@ -194,15 +194,51 @@
      * Return list of software packages of calling client
      * @return list list of installed software package
      */
-    global define map Software()``{
+    global define map Software() ``{
+	
 	boolean ret = Pkg::TargetInit("/", false);
-	list allInstalledPackages = Pkg::GetPackages(`installed, true);
-	y2debug("installed packages %1", allInstalledPackages);
+	
+	list base =  Pkg::GetSelections(`installed, "base");
+	list addon =  Pkg::GetSelections(`installed, "addon");
+	list inst = Pkg::GetPackages(`installed, true);
 
+	Pkg::TargetFinish ();
+
+
+	string tmproot = AutoinstConfig::tmpDir;
+	SCR::Execute(.target.mkdir, tmproot + "/rootclone");
+	Pkg::TargetInit( tmproot + "/rootclone", true);
+	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
+
+	Pkg::SourceStartManager(true);
+
+	Pkg::SetSelection( base[0]:"" );
+	foreach(string addon, addons, ``{
+	    Pkg::SetSelection( addon );
+        });
+
+	Pkg::ActivateSelections();
+	Pkg::PkgInstall("k_deflt");
+
+	list sel =  Pkg::GetPackages(`selected, true);
+	foreach(string p, inst, ``{
+	    if (!contains(sel, p))
+		Pkg::PkgInstall(p);
+	});
+
+	list packages = Pkg::FilterPackages(false, false, true, true);
+	
+	Pkg::TargetFinish ();
+	
+	// Remove kernel packages
+	list userpackages =  filter(string pkg, packages, ``(! regexpmatch(pkg, "k_.*")));
+
+	
 	map software = $[];
-	software["packages"] =  filter(string p, allInstalledPackages, ``(! regexpmatch(p, "k_.*")));
-	// software["base"] = "Minimal";
-
+	software["base"] = base[0]:"";
+	software["addons"] = addon;
+	software["packages"] = userpackages;
+	
 	return software;
     }
 

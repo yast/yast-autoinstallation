@@ -37,22 +37,10 @@
 
 
 
-    define void  pmInit() ``{
-
-	
-	string tmproot = AutoinstConfig::tmpDir;
-	
-	SCR::Execute(.target.mkdir, tmproot + "/root");
-	
-	Pkg::TargetInit( tmproot + "/root", true);
-	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
-	return;
-    }
 
     /**
      * Select packages
      */
-
     define symbol packageSelector() ``{
 	string language = UI::GetLanguage(true);
 
@@ -62,7 +50,8 @@ Select one of the following <b>base</b> selections and click <i>Detailed<i> to a
 more <b>add-on</b> selections and packages.
 </p>
 ");
-	pmInit();
+	AutoinstSoftware::pmInit();
+	
 	Wizard::CreateDialog();
 
 	Wizard::SetContents(title,
