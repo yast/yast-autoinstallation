@@ -97,15 +97,12 @@
      * @return void
      */
     global define void Import(map profile)
-	``{
+    {
 	y2milestone("importing profile");
 	current  = profile;
 
 	ReadProperties(current["properties"]:$[]);
 
-	//
-	// Compat stuff here (FIXME)
-	//
 
 	Configure = profile["configure"]:$[];
 	Install = profile["install"]:$[];
@@ -122,13 +119,15 @@
     global define void Prepare()
     {
         if (!prepare)
+        {
             return;
+        }
         Popup::ShowFeedback(_("Collecting configuration data"), _("This may take a while"));
         Install = $[];
         Configure = $[];
         list<string> e = [];
 
-	foreach(string p, map d, ModuleMap, ``{
+	foreach(string p, map d, ModuleMap, {
 	    //
 	    // Set resource name, if not using default value
 	    //
