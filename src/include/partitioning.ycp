@@ -425,7 +425,7 @@ to contain a minimal installation.");
 	y2debug("auto part (1): %1", auto_partitions);
 	
 	// First create any primary partitions if specified so in control file.
-	
+	// FIXME: use max_primaries instead of fixed number
 	list primaries = filter (`pentry, auto_partitions, ``(
 							      ( pentry["partition_type"]:"none" == "primary" || pentry["partition_nr"]:6 < 5 )
 							      &&  pentry["partition_id"]:-1 != 15
@@ -434,7 +434,7 @@ to contain a minimal installation.");
 				 );
 	if (size(primaries)>0)
 	{
-	    y2debug("primaries needed");
+	    y2milestone("primaries needed");
 	    last_pnr = getLastPrimary(partitions);
 	    list primary_auto_partitions = maplist(`p, primaries,
 						   ``{	    
@@ -461,7 +461,7 @@ to contain a minimal installation.");
 							       )
 				 );
 	
-	y2debug("auto part (2): %1", auto_partitions);
+	y2milestone("auto part (2): %1", auto_partitions);
 	
 	if (size(auto_partitions) == 0) {
 	    return (partitions);
@@ -502,16 +502,16 @@ to contain a minimal installation.");
 		list ext_region = [0,0];
 		if (size(extended) == 1)
 		{
-		    y2debug("extended found");
+		    y2milestone("extended found");
 		    ext_region = lookup(select(extended,0,$[]),"region",[]);
-		    auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "extended")));
+		    auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "extended" ||  pentry["partition_id"]:0 == 5)));
 		    selected_region = ext_region;
 		}
 		else
 		{
 		    ext_region =  [ end_of_region(region), end_of_region(selected_region) -  end_of_region(region)];
 		}
-		y2debug("Adding extended partition to: %1",partitions);
+		y2milestone("Adding extended partition to: %1",partitions);
 		partitions = add (partitions,
 				$[
 				  "create":true,
