@@ -339,6 +339,8 @@
      */
     global define boolean Write( string type , boolean special)
     {
+        if (!Mode::autoinst)
+            return true;
 
 	list<map> scripts = [];
 	if (type == "pre-scripts")
