@@ -35,7 +35,7 @@
 <!ATTLIST nis_other_domains
 	config:type CDATA  #FIXED "list"
 >
-<!ELEMENT nis_servers (nis_server+)>
+<!ELEMENT nis_servers (nis_server*)>
 <!ATTLIST nis_servers
 	config:type CDATA  #FIXED "list"
 >
@@ -51,14 +51,14 @@
 
 
 <!-- NIS Server -->
-<!ENTITY % y2_nisserver "domain| maps_to_serve| merge_group| merge_passwd| nopush| pwd_chfn| pwd_chsh| pwd_srcdir| securenets| server_type| slaves| start_ypbind| start_yppasswdd| start_ypxfrd">
+<!ENTITY % y2_nisserver "domain| maps_to_serve| merge_group| merge_passwd| nopush| pwd_chfn| pwd_chsh| pwd_srcdir| securenets| server_type| slaves| start_ypbind| start_yppasswdd| start_ypxfrd| mingid| minuid">
 
 
 <!ELEMENT comment (#PCDATA)>
 <!ELEMENT flag (#PCDATA)>
 <!ELEMENT forename (#PCDATA)>
-<!ELEMENT gid (#PCDATA)>
-<!ATTLIST gid
+<!ELEMENT mingid (#PCDATA)>
+<!ATTLIST mingid
 	config:type CDATA  #FIXED "integer"
 >
 <!ELEMENT grouplist (#PCDATA)>
@@ -66,13 +66,17 @@
 <!ELEMENT home (#PCDATA)>
 <!ELEMENT inact (#PCDATA)>
 <!ELEMENT last_change (#PCDATA)>
-<!ELEMENT maps_to_serve (nis_map+)>
+<!ELEMENT maps_to_serve (nis_map*)>
 <!ATTLIST maps_to_serve
 	config:type CDATA  #FIXED "list"
 >
 <!ELEMENT max (#PCDATA)>
 <!ELEMENT merge_passwd (#PCDATA)>
 <!ATTLIST merge_passwd
+	config:type CDATA  #FIXED "boolean"
+>
+<!ELEMENT merge_group (#PCDATA)>
+<!ATTLIST merge_group
 	config:type CDATA  #FIXED "boolean"
 >
 <!ELEMENT min (#PCDATA)>
@@ -94,14 +98,14 @@
 >
 <!ELEMENT pwd_srcdir (#PCDATA)>
 <!ELEMENT securenet (comment| hash| netmask| network?)>
-<!ELEMENT securenets (securenet+)>
+<!ELEMENT securenets (securenet*)>
 <!ATTLIST securenets
 	config:type CDATA #FIXED "list"
 >
 <!ELEMENT server_type (#PCDATA)>
 <!ELEMENT shell (#PCDATA)>
 <!ELEMENT slave (#PCDATA)>
-<!ELEMENT slaves (slave+)>
+<!ELEMENT slaves (slave*)>
 <!ATTLIST slaves
 	config:type CDATA  #FIXED "list"
 >
@@ -118,8 +122,8 @@
 	config:type CDATA #FIXED "boolean"
 >
 <!ELEMENT surname (#PCDATA)>
-<!ELEMENT uid (#PCDATA)>
-<!ATTLIST uid
+<!ELEMENT minuid (#PCDATA)>
+<!ATTLIST minuid
 	config:type CDATA #FIXED "integer"
 >
 <!-- <!ELEMENT user (encrypted, forename, gid, grouplist, home, password_settings, shell, surname, uid, user_password, username)> -->
