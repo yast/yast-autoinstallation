@@ -14,9 +14,20 @@ my $ignore_symlinks = "0";
 my $prefer_yastdescr = "0";
 my $extra_provides = "/usr/share/autoinstall/EXTRA_PROV";
 
+sub usage {
+	 print "usage: create_package_descr\n";
+	 print "	[-d DATADIR1 [-d DATADIR2 [... ] ] ] (default cwd)\n";
+     print "	[-p PDB_DATA_DIR ]\n";
+	 print "	[-x EXTRA_PROV_FILE ]\n";
+	 print "	[-i IGNORE_DIR ] [-I IGNORE_FILE ]\n";
+	 print "	[-l LANG1 [-l LANG2 [... ] ]    (default english)\n";
+	 print "	[-o OUTPUT_DIR ]                (default cwd/setup/descr)\n";
+}
+
 while ( $arg = shift ( @ARGV ) ) {
   if ( $arg eq "-d" ) { push @DATADIRS , shift @ARGV ; }
   elsif ( $arg eq "-l" ) { push @LANGUAGES , shift @ARGV ; }
+  elsif ( $arg eq "-h" ) { usage; exit; }
   elsif ( $arg eq "-p" ) { $pdb_data_dir = shift @ARGV ; }
   elsif ( $arg eq "-x" ) { $extra_provides = shift @ARGV ; }
   elsif ( $arg eq "-i" ) { $ignore_dir = shift @ARGV ; }
@@ -26,13 +37,7 @@ while ( $arg = shift ( @ARGV ) ) {
   elsif ( $arg eq "-P" ) { $prefer_yastdescr = "1"; }
   elsif ( $arg eq "-L" ) { $ignore_symlinks = "1"; }
   else {
-	 print "usage: create_package_descr\n";
-	 print "	[-d DATADIR1 [-d DATADIR2 [... ] ] ] (default cwd)\n";
-         print "	[-p PDB_DATA_DIR ]\n";
-	 print "	[-x EXTRA_PROV_FILE ]\n";
-	 print "	[-i IGNORE_DIR ] [-I IGNORE_FILE ]\n";
-	 print "	[-l LANG1 [-l LANG2 [... ] ]    (default english)\n";
-	 print "	[-o OUTPUT_DIR ]                (default cwd/setup/descr)\n";
+	 usage;
 	 die ("unknown parameter\n");
   }
 }
@@ -47,14 +52,13 @@ push @DATADIRS , "." unless ( @DATADIRS );
 push @LANGUAGES , "english" unless ( @LANGUAGES );
 $output_dir = "./setup/descr/" unless ( $output_dir );
 
-print "\n\nusing settings:\n";
+print "using settings:\n";
 print "datadirs: ".join(",",@DATADIRS)."\n";
 print "languages: ".join(",",@LANGUAGES)."\n";
 print "output dir: $output_dir\n";
 if ( -d $pdb_data_dir ) {
   print "pdb data: $pdb_data_dir\n";
 } else {
-  print "$pdb_data_dir is not a directory: ignoring\n";
   $pdb_data_dir = "";
 }
 
