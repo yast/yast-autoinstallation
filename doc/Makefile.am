@@ -32,6 +32,12 @@ minimal-examples.ent:
 minimal-compoenents:
 	bin/components.sh min > components.ent
 
+fullnoref: fullnoref-examples.ent fullnoref-components  html
+
+fullnoref-components:
+	bin/components.sh noref > components.ent
+fullnoref-examples.ent:
+	bin/examples.sh > examples.ent
 
 
 full: full-examples.ent full-components dtdparse/dtdparse profile/elements.ent html

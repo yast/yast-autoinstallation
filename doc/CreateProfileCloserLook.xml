@@ -49,7 +49,7 @@
     </title>
     
 
-    &example.reporting;
+	
     <para>
       The <emphasis>report</emphasis> resource manages 3 types of pop-ups
       that may appear during installation.
@@ -71,6 +71,7 @@
 	</para>
       </listitem>
     </itemizedlist>
+&example.reporting;
     <para>
       Depending on your experience, you can skip, log and show (with timeout)
       those messages. It is recommended to show all
@@ -87,7 +88,7 @@
 	Critical system messages
       </title>
       <para>
-	Note that <b>not</b> all messages during installation are controlled by the
+	    Note that <emphasis>not</emphasis> all messages during installation are controlled by the
 	<emphasis>report</emphasis> resource. Some critical messages concerning
 	package installation and partitioning will still show up ignoring your
 	settings in the <emphasis>report</emphasis> section.
@@ -102,22 +103,19 @@
       <title>The Boot loader</title>
       <para>
 	If you do not want to install a boot loader, you have to specify this
-	using the <emphasis>write_bootloader</emphasis> property (Boolean value). If you choose not
-	to install a boot loader, make sure you create a boot disk or have
-	another way to boot  your system (such as a third-party boot loader). Note
+	using the <emphasis>write_bootloader</emphasis> property (Boolean
+	  value). In this case make sure you create a boot disk or have
+	another way to boot your system (such as a third-party boot loader). Note
 	that the default setting is to write the bootloader
       </para>
       <para>
 	If you choose to install a boot loader, you must  decide  where to to
 	install it (the Master Boot Record or the first sector of
-      the<filename> /boot</filename> partition). Install the boot loader on the MBR if you plan to
-	use it as your boot loader. If you are using a different boot loader,
-	install LILO on the first sector of the <filename>/boot</filename> partition and configure the
-	other boot loader to boot  &company-suse;  Linux.
+      the<filename> /boot</filename> partition). 
       </para>
       <para>
-	If you need to pass any special parameters to the kernel to be used when the
-	system boots, enter them using the Kernel parameters property. Additionally,
+	You can pass  special parameters to the kernel to be used when the
+	system boots, enter these parameters using the kernel parameters property. Additionally,
 	you can choose whether you want to use
       <emphasis>linear</emphasis> mode and whether you want to force the use of <emphasis>lba32</emphasis> mode.
       </para>

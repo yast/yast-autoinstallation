@@ -5,12 +5,12 @@
     <install>
 ...
          <bootloader>
-             <write_bootloader>true</write_bootloader>
+             <write_bootloader config:type="boolean">true</write_bootloader>
              <location>mbr</location>
-             <linear>false</linear>
-             <lba_support>false</lba_support>
-             <activate>true</activate>
-             <kernel_parameters></kernel_parameters>
+             <linear  config:type="boolean">false</linear>
+             <lba_support  config:type="boolean">false</lba_support>
+             <activate  config:type="boolean">true</activate>
+             <kernel_parameters>foo=bar bar=foo</kernel_parameters>
              <initrd_modules  config:type="list" >
                  <module>+++some kernel module name+++</module>
              </initrd_modules>
