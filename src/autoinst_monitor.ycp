@@ -1,10 +1,9 @@
 /**
+ * File:		include/autoinstall/inst_video_data.ycp
  *
- * $Id$
- *
- * Module:		inst_video_data.ycp
- *
- * Author:		Thomas Roelz <tom@suse.de>
+ * Author:		Anas Nashif <nashif@suse.de>
+ * Originally by:
+ *			Thomas Roelz <tom@suse.de>
  *			(some code partly recycled from old version from (schubi@suse.de)
  *
  * Purpose:		Let the user select a monitor from the monitor data base.
@@ -13,6 +12,7 @@
  *			Optionally read a monitor driver floppy
  *			(originally intended for MS Windows).
  *
+ * $Id$
  *
  */
 {
@@ -27,7 +27,7 @@
 
     map settings = $[];
 
-   
+
     list args = WFM::Args ();
 
     if ( size (args) <= 0 )
@@ -50,7 +50,7 @@
 	}
     }
 
-    
+
     //************************************************************************
     // global variables
     //*****************
@@ -60,7 +60,7 @@
     // the pathes for the monitor db
     //
     string static_monitors  = Directory::datadir + "/monitors.ycp";	// factory default
-	
+
     string min_hsync_string = "";
     string max_hsync_string = "";
     string min_vsync_string = "";
@@ -74,10 +74,10 @@
     map monitor = settings["monitor"]:$[];
     map display = monitor["display"]:$[];
 
-    
+
     any    current_vendor = monitor["monitor_vendor"]:"" ;
     string current_model  = monitor["monitor_device"]:"" ;
-   
+
 
     integer min_hsync = 0;
     integer max_hsync = 0;
@@ -92,7 +92,7 @@
     //
     list vendors = [];
     list models  = [];
-     
+
 
     any ret = nil;
 
@@ -133,7 +133,7 @@
 	}
     }
 
-    
+
     // Round down a value given as integer or float to the prev. integer (floor).
     // e.g.:
     //		5.5  --->  5
@@ -154,7 +154,7 @@
 	}
     }
 
- 
+
     // Get a list of all monitor vendors from the monitor database.
     // Add a special monitor list entry for users who don't want to install X11 at all.
     // Returns a list of strings.
@@ -304,7 +304,7 @@
 	    y2milestone("Got factory monitor db");
 	}
 	else y2milestone("Got modified monitor db");
-	    
+
 	//SCR::Write( .dumpto.tmp.monitor_db, all_monitors );
 
 	// Then get a list of all the vendors in the monitor database as it is on disk.
@@ -349,7 +349,7 @@
 		current_vendor = _("unknown vendor");
 		monitor["monitor_vendor"] = current_vendor ;
 	    }
-	    
+
 	    if ( monitor["device"]:""  == "" )
 	    {
 		// monitor model not known
@@ -454,7 +454,7 @@
     // initial
     //*********************
 
-    
+
     min_hsync = ceiling( lookup( display, "min_hsync", 0 ) );
     max_hsync = floor  ( lookup( display, "max_hsync", 0 ) );
     min_vsync = ceiling( lookup( display, "min_vsync", 0 ) );
@@ -479,7 +479,7 @@
     string help_text = UI::X11VideoDataDialogHelpText();
 
     term contents = UI::X11VideoDataDialog( vendors, [] );
-    
+
     Wizard::SetContents(
 			  // Title for monitor configuration dialog:
 			  // The user is prompted for vendor and model of his monitor.
@@ -496,9 +496,9 @@
     // If this is still impossible select the first vendor as default because X and NCURSES
     // should have the same behaviour. Since NCURSES always selects the first item in the list
     // this requires the internal data to be set appropriate.
-    // 
+    //
     display_models_and_values();
-    
+
 
 
     //***********
@@ -619,9 +619,9 @@ Try again.
 		change ( display, "max_hsync", max_hsync );
 		change ( display, "max_vsync", max_vsync );
 		change ( display, "min_vsync", min_vsync );
-		
 
-	
+
+
 
 		// Add those values
 		//
@@ -635,14 +635,14 @@ Try again.
 		if ( current_vendor == " VESA" )	// " VESA" with blank!
 		{
 		    store_VESA_LCD( current_model, true );	// VESA
-		    
+
 		}
 		else if ( current_vendor == " LCD" )	// " LCD" with blank!
 		{
 		    store_VESA_LCD( current_model, false );	// LCD
-		    
+
 		}
-	
+
 
 		y2milestone("Monitor settings after manual selection: %1", settings );
 	    }
@@ -653,9 +653,9 @@ Try again.
     // Event loop
     //*******************************************************************************
 
-   
+
     return settings;
-    
+
 }
 
 

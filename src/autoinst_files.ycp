@@ -1,0 +1,272 @@
+/**
+ * File:	clients/autoinst_files.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Configuration File Settings
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Mode";
+    Mode::config = true;
+
+
+    import "Wizard";
+    import "Summary";
+
+    include "wizard/sequencer.ycp";
+
+    include "ui/common_messages.ycp";
+    include "ui/file_popups.ycp";
+
+
+    list args = WFM::Args ();
+
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( WFM::Args (0), list ) )
+    {
+	y2error ("Bad argument: %1", WFM::Args (0));
+	return false;
+    }
+
+    list settings = [];
+    {
+	integer i = 0;
+	while (i < size (WFM::Args()))
+	{
+	    if (is (WFM::Args (i), list) && nil != WFM::Args (i))	settings = WFM::Args (i);
+	    i = i + 1;
+	}
+    }
+
+    y2milestone("Imported: (%1)", settings);
+    list files = settings;	
+
+    define void AddEditFile(string fileName, string source)
+	``{	
+	list newFiles = [];
+	boolean modified = false;
+	files = maplist (`file , files, ``{
+	    // Edit
+	    if (file["file_path"]:"" == fileName)
+	    {
+		map oldFile = $[];
+		oldFile=add(oldFile,"file_path", fileName);
+		oldFile=add(oldFile,"file_contents", source);		
+		modified = true;
+		return oldFile;
+	    }
+	    else {
+		return file;
+	    }
+	});
+
+	if (!modified)
+	{
+	    map file = $[];
+	    file=add(file,"file_path", fileName);
+	    file=add(file,"file_contents", source);	    	    	    
+	    files=add(files,file);
+	}
+	return;
+    }
+
+    /**
+     * delete a file from a list
+     * @param file name
+     * @return modified list of files
+     */
+    global define list  deleteFile(string fileName)
+	``{
+	y2milestone("deleteing %1", fileName);
+	list new =  filter(`s, files, ``(lookup(s,"file_path","")!= fileName));
+	y2milestone ("New list of files: %1", new);
+	return  (new);
+    }
+
+
+    /**
+     * Dialog for adding a file 
+     *
+     */
+    
+    global define addFileDialog(symbol mode , string name)
+    ``{
+	map file = $[];
+	if (mode == `edit)
+	{
+	    list filtered_files = filter(`s, files,``((lookup(s,"file_path","") == name)));
+	    if (size(filtered_files)>0)
+	    {
+		file = select(filtered_files,0,$[]);
+	    }
+	}
+
+	string help = _("TODO");
+	string title = _("Configuration File Editor");
+
+	term contents=
+	    `VBox(
+		  `HBox(
+			`TextEntry(`id(`filename), _("&File Path"), lookup(file,"file_path","")),		
+			`HStretch(),
+			`Empty()
+			),
+		  `VSpacing(1),
+		  `HBox(
+			`MultiLineEdit(`id(`source), _("File So&urce"), file["file_contents"]:"")
+			),
+		  `VSpacing(1),
+		  `HBox(
+			`PushButton(`id(`save), SaveButtonLabel()),
+			`PushButton(`id(`loadsource), _("&Load new contents"))
+		
+
+			)
+		  );
+
+
+	Wizard::SetContents(title,
+			    contents, help, true, true);
+
+
+	if (mode == `edit)
+	{
+	    UI::ChangeWidget(`id(`filename), `Enabled, false);
+	}
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `save)
+	    {
+		string fileName = UI::QueryWidget(`id(`filename), `Value);
+		
+		string source = UI::QueryWidget(`id(`source), `Value);
+
+		if (source == "" || fileName == "")
+		{
+		    UI::MessagePopup(_("You have at least to provide the file
+name and the content of the file"));
+		    continue;
+		}
+		else
+		{		   
+		    AddEditFile( fileName,source);
+		}
+	    }
+	    else if (ret == `loadsource)
+	    {
+		string filename = PopupFile("/");
+		string source = "";
+		if (filename!="")
+		    source = SCR::Read(.target.string, filename);		
+		    
+		UI::ChangeWidget(`id(`source), `Value, source);
+		continue;
+	    }
+
+	} until (ret == `save || ret == `next || ret == `back );
+	return ret;
+    }
+
+
+
+    
+    /**
+     * Summary of configuration
+     */    
+    define Summary() ``{	
+
+	list allfiles = maplist(`s, files,
+				  ``{
+				      return (`item(`id(s["file_path"]:"Unknown"),
+						    s["file_path"]:"Unknown" ));
+				  });
+	term contents =	 
+	    `VBox(
+		  `Left(
+			`Label(_("Available Files"))
+			),
+		  `Table( `id(`table), `opt(`notify),
+			  `header(_("File Path")),
+			  allfiles
+			  
+			  ),
+		  `HBox(
+			`PushButton(`id(`new),  NewButtonLabel()),
+			`PushButton(`id(`edit), EditButtonLabel()),
+			`PushButton(`id(`delete), DeleteButtonLabel())
+			)		  
+		  );
+	return contents;
+    }
+
+
+    define set_contents()``{
+	
+	string title = _("Add Complete Configuration Files");
+	string help = _("TODO");
+	
+	Wizard::SetContents(title,
+			    Summary(), "", true, true);
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+
+	    if (ret == `new) {
+		Wizard::CreateDialog();
+		addFileDialog(ret , "" );
+		Wizard::CloseDialog();
+	    }
+	    else if (ret == `edit)
+	    {
+		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil)
+		{
+		    Wizard::CreateDialog();
+		    addFileDialog(ret , name  );
+		    Wizard::CloseDialog();
+		}
+		else
+		{
+		    UI::MessagePopup(_("You have to select a file first"));
+		    continue;
+		}
+
+	    }
+	    else if (ret == `delete)
+	    {
+		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil) {
+		    files = deleteFile(name);
+
+		}
+		else
+		{
+		    UI::MessagePopup(_("You have to select a file first"));
+		    continue;
+		}
+	    }
+	    Wizard::SetContents(title,
+				Summary(), "", true, true);
+
+
+	} until (ret == `next || ret == `key || ret == `back || ret == `abort );
+
+	return ret;	   		       	    
+    }
+
+   
+
+    any ret = set_contents();
+    settings = files;
+	 
+    return [ret, settings];
+}

@@ -21,7 +21,7 @@
 
 
     /*
-     * PartitionDialog
+     * Partition Dialog
      *
      * @param mode mode of operation
      * @param item item to edit
@@ -59,7 +59,9 @@
 	    drive = item;
 	}
 
-	new_val["fsid"] = new_val["partition_id"]:0;
+	new_val["fsid"] = new_val["partition_id"]:Partitions::fsid_native;
+	new_val["used_fs"] = new_val["filesystem"]:`reiser;
+
 	
 	list other_drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
 	
@@ -111,7 +113,7 @@ needs. All fields are required.</P>
 						     `Left(
 							   `RadioButton(`id(`auto),
 									`opt(`notify),
-									_("Determine &automatically"),
+									_("Determine &automatically (only /boot and swap)"),
 									(partition_size == "auto")
 									)
 							   )
@@ -123,6 +125,7 @@ needs. All fields are required.</P>
 		  `VSpacing(1),
 		  `ReplacePoint( `id(`mount_dlg_rp), UI::MountDlg( new_val , not_used_mountpoints ))
 		  );
+	y2milestone("New values: %1", new_val);
 	term field_dlg_left = `Top( `ReplacePoint( `id( `format_dlg_rp), UI::FormatDlg( new_val, file_systems) ));
 
 	UI::OpenDialog(
@@ -177,7 +180,7 @@ needs. All fields are required.</P>
 	}
 	else
 	{
-	    set_false = union( set_false, [ `fsid_point,`fs_options ]);
+	    set_false = union( set_false, [ `fsid_point]);
 	}
 
 
