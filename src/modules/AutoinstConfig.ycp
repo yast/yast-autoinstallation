@@ -6,23 +6,23 @@
  *
  * $Id$
  */
-{    
+{
     module "AutoinstConfig";
     textdomain "autoinst";
-    
+
     import "Mode";
-    import "Misc";    
+    import "Misc";
     import "AutoInstall";
-        
+
     include "autoinstall/xml.ycp";
     include "autoinstall/io.ycp";
 
-    
+
     // tmp dir
     global string tmpDir = "";
 
     global any data = nil;
-    
+
     // Profile Repository
     global string Repository = "";
 
@@ -30,17 +30,17 @@
     global string PackageRepository = "";
 
     // Alice Repository
-    global string AliceRepository = "";    
-	
+    global string AliceRepository = "";
+
     global string classDir = "";
-            
+
     // Current file name
     global string currentFile = "";
-     
-  
- 
-    /** 
-     * MenuTreeData     
+
+
+
+    /**
+     * MenuTreeData
      * @return: list ofmodules
      */
     global  list MenuTreeData =[];
@@ -49,7 +49,7 @@
 
     global map softwareSettings = $[];
     global map generalSettings = $[];
-    
+
     /**
      * Constructor
      * @return	 void
@@ -72,13 +72,13 @@
 	{
 	    Repository = "/var/lib/autoinstall/repository";
 	}
-	
-	return;	
+
+	return;
     }
 
     /**
-     * Load()     
-     * @return	void     
+     * Load()
+     * @return	void
      * Load Configuration settings
      */
 
@@ -91,10 +91,10 @@
 	return;
     }
 
-    
+
     /**
-     * Save()     
-     * @return	void     
+     * Save()
+     * @return	void
      * Save Configuration global settings
      */
 
@@ -110,5 +110,5 @@
 	return;
     }
 
-   
+
 }
