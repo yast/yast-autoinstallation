@@ -140,7 +140,7 @@
 	Progress::Title(sformat(_("Checking for package database: %1"), packDB));
 
 	string error_msg = "";
-	if (SCR::Execute(.target.size, sourceDir + "/" + packDB) == -1 ) {
+	if (SCR::Read(.target.size, sourceDir + "/" + packDB) == -1 ) {
 	    error_msg = _("Package database not found.");
 	}
 
@@ -564,6 +564,19 @@ Please wait while the directory structure for the new ISO file is created.
 
 	Progress::NextStep();
 
+	if ( size(SCR::Read(.target.dir, AutoinstConfig::classDir) ) > 0 )
+	{
+	    y2milestone("class dir exists...");
+	    SCR::Execute (.target.bash, sformat("cp -a %1 %2/skeleton/",   AutoinstConfig::classDir, ISO::skeletonDir ) );	    
+	}
+	/*
+	if ( size(SCR::Read(.target.dir, AutoinstConfig::Repository) ) > 0 )
+	{
+	    y2milestone("rules dir exists...");
+	    SCR::Execute (.target.bash, sformat("cp -a %1 %2/skeleton/",   AutoinstConfig::Repository + "/rules" , ISO::skeletonDir ) );	    
+	}
+	*/
+	
 	string location = sformat("%1/skeleton/autoinst.xml", ISO::skeletonDir);
 	Profile::Save(location);
 
