@@ -235,7 +235,7 @@ needs. All fields are required.</P>
 
 	if( ! format )
 	{
-	    set_false = union( set_false, [ `crypt_fs, `fs, `fs_options] );
+	    set_false = union( set_false, [ `crypt_fs, `fs, `fs_options, `fstab_options, `mount_point ] );
 	    if( create ) set_false = union( set_false, [`mount_point ] );
 	    if( pdisk_disk ) set_false = add( set_false, `fsid_point);
 	}
@@ -315,7 +315,7 @@ needs. All fields are required.</P>
 		    }
 
 
-		    ChangeExistingSymbolsState( [ `mount_point, `fs ], true);
+		    ChangeExistingSymbolsState( [ `mount_point, `fs, `fstab_options ], true);
 		    UI::ChangeWidget(`id(`fsid_point) , `Value  , selected_fs[`fsid_item]:"");
 		    UI::ChangeWidget(`id(`fsid_point) , `Enabled, false);
 		    UI::ChangeWidget(`id(`fs_options) , `Enabled, (selected_fs[`options]:[] != [] ));
@@ -353,11 +353,11 @@ needs. All fields are required.</P>
 
 		    if(pdisk_disk ) set_true = [];
 
-		    list set_false = [ `crypt_fs, `fs, `fs_options];
+		    list set_false = [ `crypt_fs, `fs, `fs_options, `fstab_options, `mount_point];
 		    // list set_false = [ `crypt_fs, `fs];
 
-		    if( create )  set_false = add( set_false, `mount_point );
-		    else          set_true  = add( set_true , `mount_point );
+                    //if( create )  set_false = add( set_false, `mount_point );
+		    //else          set_true  = add( set_true , `mount_point );
 
 		    ChangeExistingSymbolsState( set_true  ,true );
 		    ChangeExistingSymbolsState( set_false ,false );
