@@ -154,9 +154,9 @@ more <b>add-on</b> selections and packages.
 		    // set the new selection
 		    boolean pkgret = Pkg::SetSelection( base_selection );
 
-		    if (size(AutoinstSoftware::pacs)>0)
+		    if (size(AutoinstSoftware::packages )>0)
 		    {
-			Pkg::DoProvide( AutoinstSoftware::pacs );
+			Pkg::DoProvide( AutoinstSoftware::packages );
 		    }
 
 		    y2milestone ( "Selecting '%1' returns: %2", base_selection, pkgret );
@@ -178,9 +178,9 @@ more <b>add-on</b> selections and packages.
 		    });
 
 
-		    if (size(AutoinstSoftware::pacs)>0)
+		    if (size(AutoinstSoftware::packages ) > 0)
 		    {
-			Pkg::DoProvide(AutoinstSoftware::pacs);
+			Pkg::DoProvide(AutoinstSoftware::packages);
 		    }
 
 		    y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
@@ -242,10 +242,10 @@ more <b>add-on</b> selections and packages.
 	list onlysel = Pkg::GetPackages(`selected, true);
 	y2milestone("selection packages: %1, all packages: %2", size(onlysel), size(allpacs));
 
-	AutoinstSoftware::pacs = [];
+	AutoinstSoftware::packages = [];
 	foreach(string package, allpacs, ``{
 	    if (!contains(onlysel, package)) {
-		AutoinstSoftware::pacs = add (AutoinstSoftware::pacs,package);
+		AutoinstSoftware::packages = add (AutoinstSoftware::packages , package);
 	    }
 	});
 
