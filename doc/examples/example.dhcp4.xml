@@ -1,12 +1,10 @@
 <example>
   <title>Grub image via DHCP</title>
 <screen>
-option domain-name "int.cfallin.org";
+option domain-name "example.org";
 option domain-name-servers 10.0.0.1;
+option T150 code 150 = string;
 
-subnet 12.0.0.0 netmask 255.0.0.0 {
-	# attbi cable modem - ignore
-}
 
 subnet 10.0.0.0 netmask 255.255.255.0 {
 	range 10.0.0.128 10.0.0.192;
@@ -16,7 +14,7 @@ subnet 10.0.0.0 netmask 255.255.255.0 {
 	# GRUB network boot stuff
 	filename "/tftpboot/nbgrub";
 	server-name "10.0.0.1";
-	option option-150 "(nd)/tftpboot/menu.lst";
+        option T150 "(nd)/tftpboot/menu.lst";
 }
 
 </screen>
