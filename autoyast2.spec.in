@@ -13,15 +13,12 @@ Summary:	YaST2 auto-installation
 %description
 -
 
-@HEADER-INSTSYS@
-Summary:        Network stuff for instsys
-Requires:		yast2-network-instsys yast2-xml yast2-core
 
-
-%package core
+%package installation
 Version:    @VERSION@
 Summary:    YaST2 Modules for inst-sys
 Group:      YaST2
+Requires:		yast2-network-instsys yast2-xml yast2-core
 %description core
 -
 
@@ -93,8 +90,11 @@ install -d $RPM_BUILD_ROOT/var/adm/autoinstall/files
 %dir /var/adm/autoinstall/files
 %doc @docdir@
 
-%files instsys
+%files installation
 %defattr(-,root,root)
+@scrconfdir@/autoinstall.scr
+@moduledir@/AIClone.ycp
+@clientdir@/autoinst_configure.ycp
 %dir @yncludedir@/autoinstall
 @yncludedir@/autoinstall/lvm.ycp
 @yncludedir@/autoinstall/partitioning.ycp
@@ -105,10 +105,4 @@ install -d $RPM_BUILD_ROOT/var/adm/autoinstall/files
 @clientdir@/autoinst_init.ycp
 @clientdir@/autoinst_setup.ycp
 
-%files core
-%defattr(-,root,root)
-@scrconfdir@/autoinstall.scr
-@moduledir@/AIClone.ycp
-@moduledir@/AutoInstall.ycp
-@clientdir@/autoinst_configure.ycp
 
