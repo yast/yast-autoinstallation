@@ -35,15 +35,15 @@
 	}
 	else if (Protocol == "tftp")
 	{
-	    message =  sformat ( _("Retrieving control file from TFTP server %1."),  lookup(cmdLine, "server", "unknown") );
+	    message =  sformat ( _("Retrieving control file from TFTP server %1."),  lookup(cmdLine, "host", "unknown") );
 	}
 	else if (Protocol == "nfs")
 	{
-	    message =  sformat ( _("Retrieving control file from NFS server %1."),  lookup(cmdLine, "server", "unknown") );
+	    message =  sformat ( _("Retrieving control file from NFS server %1."),  lookup(cmdLine, "host", "unknown") );
 	}
 	else if (Protocol == "http")
 	{
-	    message =  sformat ( _("Retrieving control file from HTTP server %1."),  lookup(cmdLine, "server", "unknown") );
+	    message =  sformat ( _("Retrieving control file from HTTP server %1."),  lookup(cmdLine, "host", "unknown") );
 	}
 	else if (Protocol == "file")
 	{
@@ -75,7 +75,7 @@
 	``{
 	string ip = "";
 	string path_to_file = lookup(cmdLine, "path","");
-	string server = cmdLine["server"]:"";		
+	string server = cmdLine["host"]:"";
 	boolean ok = false;
 	string remote = "";
 	if (substring(path_to_file, size(path_to_file) -1) == "/")
@@ -155,7 +155,7 @@
 	string path_to_file = parameters["path"]:"";
 	list pathComp = splitstring(path_to_file, "/");
 
-	string server = parameters["server"]:"";
+	string server = parameters["host"]:"";
 	boolean is_directory = false;
 	string FileName = "";
 	string mount_dir = "";
@@ -291,7 +291,7 @@
 	``{
 	string ip = "";
 	boolean ok = false;
-	string server = parameters["server"]:"";
+	string server = parameters["host"]:"";
 	
 	string path_to_file = lookup(parameters, "path","");
 	y2milestone("Path to remote control file: %1", path_to_file);

@@ -70,9 +70,8 @@
 	integer size_of_swap = calculate_needed_swap ();
 
 	// calculate size of the /boot partition
-	integer size_of_boot = calculate_needed_boot (
-				    Arch::architecture,
-				    Boot::LoaderType);
+	integer size_of_boot = Partitions::minimal_needed_bootsize; 
+
 
 
 	// this will tell if automatic partitioning if feasible
@@ -557,14 +556,16 @@ to contain a minimal installation.");
 
 	    // Raid
 	    string raid_name = currentPartition["raid_name"]:"";
-
 	    
 	    
 	    // Partition Template
 	    map part =
 	    $[
-	      "create":true,
+	      "create":true,	      
+	      "crypt_fs":  currentPartition["crypt_fs"]:false,
+	      "crypt_key": currentPartition["crypt_key"]:"",
 	      "format":currentPartition["format"]:true,
+	      "fs_options": currentPartition["fs_options"]:$[],	      	      
 	      "type": ptype,
 	      "fsid": auto_fsid,
 	      "nr":last_pnr,
@@ -573,6 +574,25 @@ to contain a minimal installation.");
 	      "device": get_device_name(target_is, last_pnr)
 	    ];
 
+	    
+	    if (haskey(currentPartition, "fstopt") && currentPartition["fstop"]:"" != "")
+	    {
+		part["fstopt"] 	= "fstopt" : currentPartition["fstop"]:"";		
+	    }
+	    
+	    if (haskey(currentPartition, "label") && currentPartition["label"]:"" != "")
+	    {
+		part["label"] 	= currentPartition["label"]:"";
+	    }
+
+	    if (haskey(currentPartition, "mountby"))
+	    {
+		part["mountby"] 	= currentPartition["mountby"]:`device;
+	    }
+	    
+	    
+
+	    
 	    if (mount_point == "swap" || StringFS2Symbol(p["filesystem"]:"") == `swap)
 	    {
 		part["fsid"] =  Partitions::fsid_swap;
@@ -647,98 +667,100 @@ to contain a minimal installation.");
 	
 	foreach (map group, AutoInstall::LVM,
 				 ``{
-				     string vg = group["lvm_name"]:"";				     
+				     string vg 			= group["lvm_name"]:"";				     
 				     integer pesize		= pesize_str_to_byte( lookup( group, "pesize", "4M" ));
 
 				     
-				     list existing_pvs  = filter( `part, get_possible_pvs( tmap ),
+				     list existing_pvs  	= filter( `part, get_possible_pvs( tmap ),
 								  ``( lookup( part, "lvm_group", "") == vg ));
 
-
+				     if (size(existing_pvs) > 0 )
+				     {
 				     
-				     map new_create_vg = $[
-							   "use_module" : "lvm_ll",
-							   "type"       : "create_vg",
-							   "vgname"     : vg,
-							   "pesize"     : pesize,
-							   "devices"    : []
-				     ];
-				     modify_targets = addTargetModification( modify_targets, new_create_vg );
-
-
-				     foreach(`pv, existing_pvs, ``{
-					 map new_create_pv = $[
+					 map new_create_vg = $[
 							       "use_module" : "lvm_ll",
-							       "type"       : "create_pv",
+							       "type"       : "create_vg",
 							       "vgname"     : vg,
-							       "device"     : pv["device"]:""							       
+							       "pesize"     : pesize,
+							       "devices"    : []
 					 ];
-					 modify_targets = addTargetModification( modify_targets, new_create_pv );
-				     });
+					 modify_targets = addTargetModification( modify_targets, new_create_vg );
 
-				     // LVs
+
+					 foreach(`pv, existing_pvs, ``{
+					     map new_create_pv = $[
+								   "use_module" : "lvm_ll",
+								   "type"       : "create_pv",
+								   "vgname"     : vg,
+								   "device"     : pv["device"]:""							       
+					     ];
+					     modify_targets = addTargetModification( modify_targets, new_create_pv );
+					 });
+
+					 // LVs
 				     
-				     list part = group["logical_volumes"]:[];
-				     list region 		= [0,0];
+					 list part = group["logical_volumes"]:[];
+					 list region 		= [0,0];
 				   
-				     map new_volume = $[
-							"name"      : vg,
-							"cyl_count" : 0,
-							"cyl_size"  : pesize,
-							"is_lvm_vg" : true,
-							"partitions": []
-				     ];
-				     list new_partitions = maplist(map lv, part, ``{
-
-					 integer lv_size = kmgt_str_to_byte(lv["lv_size"]:"");
-					 if (pesize == 0 )
-					 {
-					     pesize = 1;
-					 }
-
-					 integer virtual_cyl_end   = lv_size / pesize;
-					 region = [0, virtual_cyl_end ];
-					 
-					 integer bytes_of_part = 0;
-					 integer cyl_size   = pesize;
-					 integer nb_cyl = select (region, 1, 0 );
-					 
-					 bytes_of_part =  ( nb_cyl ) * cyl_size;
-					
-					 map new_create_lv = $[
-							       "use_module" : "lvm_ll",
-							       "type"       : "create_lv",
-							       "name"       : lookup(lv, "lv_name", ""),
-							       "size"       : bytes_of_part,
-							       "vgname"     : vg,
-							       "stripes"    : 1,
-							       "order"	     : 3
+					 map new_volume = $[
+							    "name"      : vg,
+							    "cyl_count" : 0,
+							    "cyl_size"  : pesize,
+							    "is_lvm_vg" : true,
+							    "partitions": []
 					 ];
-					 modify_targets = addTargetModification( modify_targets, new_create_lv );
+					 list new_partitions = maplist(map lv, part, ``{
+
+					     integer lv_size = kmgt_str_to_byte(lv["lv_size"]:"");
+					     if (pesize == 0 )
+					     {
+						 pesize = 1;
+					     }
+
+					     integer virtual_cyl_end   = lv_size / pesize;
+					     region = [0, virtual_cyl_end ];
 					 
-					 return ($[
-						   "create"	: true,
-						   "fs_options" : $[] ,
-						   "use_module" : "lvm_ll",
-						   "fsid"   : 142,
-						   "fstype" : "LV",
-						   "nr"     : lookup(lv, "lv_name", ""),
-						   "ori_nr"	: lookup(lv, "lv_name", ""),
-						   "region" : [0, virtual_cyl_end ],
-						   "size_bytes":  bytes_of_part,
-						   "mount"  : lookup( lv, "lv_mount", ""),
-						   "used_fs": StringFS2Symbol(lookup(lv, "lv_fs","ext2")),
-						   "format" : lookup( lv, "lv_format" , true),
-						   "crypt_fs" : lookup( lv, "lv_crypt", false ),
-						   "crypt_key":"",
-						   "type"   :`lvm,
-						   "device" : "/dev/" + vg + "/" + lookup(lv, "lv_name", "")
-						 ]);
-				     });
+					     integer bytes_of_part = 0;
+					     integer cyl_size   = pesize;
+					     integer nb_cyl = select (region, 1, 0 );
+					 
+					     bytes_of_part =  ( nb_cyl ) * cyl_size;
+					
+					     map new_create_lv = $[
+								   "use_module" : "lvm_ll",
+								   "type"       : "create_lv",
+								   "name"       : lookup(lv, "lv_name", ""),
+								   "size"       : bytes_of_part,
+								   "vgname"     : vg,
+								   "stripes"    : 1,
+								   "order"	     : 3
+					     ];
+					     modify_targets = addTargetModification( modify_targets, new_create_lv );
+					 
+					     return ($[
+						       "create"	: true,
+						       "fs_options" : $[] ,
+						       "use_module" : "lvm_ll",
+						       "fsid"   : 142,
+						       "fstype" : "LV",
+						       "nr"     : lookup(lv, "lv_name", ""),
+						       "ori_nr"	: lookup(lv, "lv_name", ""),
+						       "region" : [0, virtual_cyl_end ],
+						       "size_bytes":  bytes_of_part,
+						       "mount"  : lookup( lv, "lv_mount", ""),
+						       "used_fs": StringFS2Symbol(lookup(lv, "lv_fs","ext2")),
+						       "format" : lookup( lv, "lv_format" , true),
+						       "crypt_fs" : lookup( lv, "lv_crypt", false ),
+						       "crypt_key":"",
+						       "type"   :`lvm,
+						       "device" : "/dev/" + vg + "/" + lookup(lv, "lv_name", "")
+						     ]);
+					 });
 				     
-				     Storage::SetModifyTargets( modify_targets );
-				     new_volume = change(new_volume, "partitions", new_partitions);
-				     LvmVolumes = add(LvmVolumes, "/dev/" + vg, new_volume);
+					 Storage::SetModifyTargets( modify_targets );
+					 new_volume = change(new_volume, "partitions", new_partitions);
+					 LvmVolumes = add(LvmVolumes, "/dev/" + vg, new_volume);
+				     }
 				 });
 	
 	if (LvmVolumes!= $[])
