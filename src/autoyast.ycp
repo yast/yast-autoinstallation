@@ -51,8 +51,7 @@
 			   "save"		:	``(   SaveDialog() ),
 			   "preferences"	:	``(   Preferences()),
 			   "serverSetup"	:	``(   serverSetup()),
-			   "cloneSystem"	:	``(   cloneSystem()),
-			   //"packageManagement"	:	``(   packageManagement()),
+			   "cloneSystem"	:	``(   cloneSystem()),		
 			   "media"		:	``(   packageManagement()),			  
 			   "alice"		:	``(   aliceImportOptions() ),
 			   "aliceList"		:	``(   aliceImportList() ),
@@ -60,7 +59,8 @@
 			   "hosts"		:	``(   hostConf() ),
 			   "processTemplate"	:	``(   processTemplate() ),
 			   "iso"		:	``(   isoDialog() ),
-			   "createiso"		:	``(   createISO() )
+			   "createiso"		:	``(   createISO() ),
+			   "openProfile"	:	``(   openProfile() )
 
     ];
 
@@ -84,7 +84,8 @@
 			   `clone	: "cloneSystem",			  
 			   `alice	: "alice",
 			   `kickstart   : "kickstart",
-			   `hostConf	: "hosts"
+			   `hostConf	: "hosts",
+			   `directmedia : "openProfile"
 			 ],
 			 "alice":
 			 $[
@@ -128,6 +129,11 @@
 			   `next	: "createiso",			   
 			   `abort	: `abort
 			 ],
+			 "openProfile":
+			 $[
+			   `next	: "media",
+			   `abort	: `abort
+			 ],
 			 "createiso":
 			 $[
 			   `next	: "configurationType",
@@ -138,6 +144,7 @@
 			   `abort	: `abort,
 			   `next	: "iso"
 			 ],
+		
 			 "file":
 			 $[
 			   `abort	: `abort,
@@ -315,7 +322,7 @@
 							   ),
 						  `HWeight(90,
 							   `Left (
-								  `RadioButton (`id (`media),
+								  `RadioButton (`id (`directmedia),
 										`opt (`notify),
 										_("&Media Management"),
 										ct == `media)

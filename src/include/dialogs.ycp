@@ -193,6 +193,7 @@ contains all the packages.</p>");
 
 
 
+
    /**
     * Dialog for saving control files
     * @return dialog contents
@@ -400,9 +401,13 @@ and templates which contain class defintions and can be created using this dialo
 		    continue;
 		}
 		if (type == `templates)
+		{
 		    SCR::Execute(.target.bash, "rm " + AIConfig::TemplateRepository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
+		}
 		else
+		{
 		    SCR::Execute(.target.bash, "rm " + AIConfig::Repository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
+		}
 
 		Wizard::SetContents(title,
 				    FileList(type), help, true, true);
@@ -730,4 +735,102 @@ please wait...."));
 	popup_open = false;
     };
 
+
+    /**
+     * Generate control file list
+     * @return file list
+     */
+    global define FileListClean() ``{
+	list files = [];
+	string tabHeader = "";
+	string caption = "";
+
+	files = SCR::Read(.target.dir, AIConfig::Repository);
+	tabHeader = _("Control file");
+	caption = _("Current Profile: ");
+
+
+	list xmlfiles = [];
+	foreach(string file, files,
+		``{
+	    if (SCR::Read(.target.dir,  AIConfig::Repository + "/" + file) == nil)
+	    {
+		xmlfiles= add (xmlfiles,`item(`id(file), file));
+	    }
+	});
+
+	term contents =
+	    `VBox(
+		  `Left(`HBox(
+			      `Label(caption),
+			      `Label(`id(`loaded), `opt(`outputField),  _("None                                                   "))
+			      )
+			),
+		  `VSpacing(0.5),
+		  `Table(`id(`table), `opt(`notify,`immediate), `header(tabHeader),
+			 xmlfiles
+			 )
+		  );
+	return contents;
+    }
+    /**
+     * Open file dialog
+     * @return symbol
+     */
+    global define symbol openProfile()
+	``{
+	Wizard::SetScreenShotName ("autoyast-openfile");
+	
+	string title = _("Load a Control File");
+	string help = _("
+<P>Please select one of the listed <em>Control Files</em> and use the <b>next</b> button
+to load it</P>");
+
+
+
+
+	Wizard::SetContents(title,
+			    FileListClean(), help, true, true);
+
+
+	
+	any ret = "";
+	repeat {
+	    any selected_file = UI::QueryWidget(`id(`table), `CurrentItem);
+
+	  
+	    if  (AIConfig::currentFile !="")
+	    {
+		UI::ChangeWidget(`id(`loaded), `Value, 	AIConfig::currentFile);
+	    }
+	 
+
+	    ret = UI::UserInput();
+	    
+	    if (ret == `next)
+	    {
+		y2milestone("Reading control file: %1", selected_file);	
+
+		if (selected_file!=nil)
+		{
+		    AIConfig::currentFile=selected_file;		  
+		    AIConfig::ReadProfile(sformat("%1/%2", AIConfig::Repository,selected_file));
+		    UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);
+		}
+		else
+		{
+		    UI::ErrorPopup(_("Please select a file"));
+		    continue;
+		}
+		    
+	    }	   
+
+
+	} until (ret == `next ||	
+		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	Wizard::RestoreScreenShotName ();
+	return ret;
+    }
+    
 }
