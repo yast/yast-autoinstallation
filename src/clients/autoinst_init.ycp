@@ -16,7 +16,7 @@
     import "Installation";
     import "AutoInstall";
     import "ProfileLocation";
-	import "AutoInstallRules";
+    import "AutoInstallRules";
     import "Progress";
     import "Report";
     import "Language";
@@ -25,8 +25,7 @@
     import "Label";
     import "Popup";
 
-    include "autoinstall/profileDialogs.ycp";
-    // include "autoinstall/partitioning.ycp";
+    include "autoinstall/autoinst_dialogs.ycp";
 
 
     string help_text = UI(_("<p>
@@ -55,6 +54,10 @@ Please wait while the system is prepared for autoinstallation.</p>
 		  help_text );
 	symbol startret=	WFM::CallFunction(`inst_startup() );
 
+    if(UI::PollInput() == `abort)
+        if (Popup::ConfirmAbort (`painless))
+            return `abort;
+
     Progress::NextStage();
     Progress::Title(ProfileLocation::message);
 
@@ -71,6 +74,9 @@ Please wait while the system is prepared for autoinstallation.</p>
     sleep(1000);
 
 
+    if(UI::PollInput() == `abort)
+        if (Popup::ConfirmAbort (`painless))
+            return `abort;
     Progress::NextStage();
 
     // Set reporting behaviour to default, changed later if required
@@ -78,6 +84,9 @@ Please wait while the system is prepared for autoinstallation.</p>
     Report::LogErrors(true);
     Report::LogWarnings(true);
 
+    if(UI::PollInput() == `abort)
+        if (Popup::ConfirmAbort (`painless))
+            return `abort;
     Progress::NextStage();
 
     if (! Profile::Read( AutoInstall::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)

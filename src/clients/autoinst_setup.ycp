@@ -29,6 +29,7 @@
     import "AutoinstScripts";
     import "AutoinstGeneral";
     import "AutoinstSoftware";
+    import "Popup";
 
 	include "partitioning/lvm_pv_lib.ycp";
 
@@ -67,6 +68,9 @@ Please wait while the system is prepared for autoinstallation.
 		  help_text );
 
 
+	if(UI::PollInput() == `abort)
+		if (Popup::ConfirmAbort (`painless))
+			return `abort;
     Progress::NextStage();
 
     // FIXME
@@ -106,17 +110,22 @@ Please wait while the system is prepared for autoinstallation.
 
 
     // configure general settings
+	if(UI::PollInput() == `abort)
+		if (Popup::ConfirmAbort (`painless))
+			return `abort;
     Progress::NextStage();
 
     AutoinstGeneral::Import(Profile::Flat["general"]:$[]);
     AutoinstGeneral::Write();
 
 
-    // Scripts
-    ///////////////////////////////////////////////////////////////////////////
 
+	if(UI::PollInput() == `abort)
+		if (Popup::ConfirmAbort (`painless))
+			return `abort;
     Progress::NextStage();
 
+    // Scripts
     AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
     AutoinstScripts::Write("pre-scripts", false);
 
@@ -135,12 +144,15 @@ control file and try again.
 "));
 	    return `abort;
 	}
-	AutoInstall::ProcessSpecialResources();	
-    }    
+	AutoInstall::ProcessSpecialResources();
+    }
 
     // Partitioning and Storage
     ////////////////////////////////////////////////////////////////////////
 
+	if(UI::PollInput() == `abort)
+		if (Popup::ConfirmAbort (`painless))
+			return `abort;
     Progress::NextStage();
     AutoinstStorage::Import(Profile::Flat["partitioning"]:[]) ;
 
@@ -152,7 +164,10 @@ control file and try again.
 
 
     // Software
-    //////////////////////////////////////////////////////////////////////////
+
+	if(UI::PollInput() == `abort)
+		if (Popup::ConfirmAbort (`painless))
+			return `abort;
     Progress::NextStage();
     AutoinstSoftware::Import( Profile::Flat["software"]:$[] );
     if (!AutoinstSoftware::Write())
@@ -165,8 +180,10 @@ Try again.
     }
 
     // Bootloader
-    /////////////////////////////////////////////////////////////////////////
 
+	if(UI::PollInput() == `abort)
+		if (Popup::ConfirmAbort (`painless))
+			return `abort;
     Progress::NextStage();
     BootCommon::getLoaderType(true);
     AutoInstall::bootloaderSettings();

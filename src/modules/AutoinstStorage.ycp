@@ -15,17 +15,23 @@
     import "Mode";
     import "Summary";
     include "partitioning/partition_defines.ycp";
+    include "autoinstall/autoinst_dialogs.ycp";
+
+    // Partition plan as parsed from control file
+    global list AutoPartPlan = [];
+
+    // All configured devices
+    global list ConfiguredDevices = [];
+
+    // Prepared target map from parsed data
+    global map AutoTargetMap = $[];
 
 
-    global list drives = [];
+    map PhysicalTargetMap = $[];
+    list PhysicalDrives = [];
+    list PhysicalDevices = [];
 
-    global list configured_devices = [];
-
-    global map targetMap = $[];
-
-    global map lvm  = $[];
-    global map raid = $[];
-
+  
     /**
      * Dump the settings to a map, for autoinstallation use.
      * @return map
@@ -62,8 +68,7 @@
     global define boolean Import(list settings)
 	``{
 
-	drives = settings;
-
+	AutoPartPlan = settings;
 	return;
     }
 
@@ -77,10 +82,10 @@
     global define string Summary() ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Drives"));
-	integer num = size(drives);
+	integer num = size(AutoPartPlan);
 	summary = Summary::AddLine( summary, sformat(_("Total of %1 drive", "Total of %1 drives", num), num));
 	summary = Summary::OpenList(summary);
-	foreach(map drive, drives, ``{
+	foreach(map drive, AutoPartPlan, ``{
 	    summary = Summary::AddListItem(summary, drive["device"]:_("No specific device configured") );
 	});
 	summary = Summary::CloseList(summary);
@@ -89,12 +94,14 @@
 
 
     /**
-     * Create partition plans
+     * Create partition plan
      * @param void
      * @return boolean
      */
     global define boolean Write()
 	``{
+	import "AutoinstLVM";
+	import "AutoinstRAID";
 	import "Storage";
 	import "Partitions";
 	import "Bootloader";
@@ -102,101 +109,45 @@
 
 	include "autoinstall/partitioning.ycp";
 
-	map init_targetmap = Storage::GetTargetMap();
-	y2milestone("Initial Target map: %1", init_targetmap);
+	map InitialTargetMap = Storage::GetTargetMap();
+	y2milestone("Initial Target map: %1", InitialTargetMap);
 
+	list alldrives = maplist( `k, `v, InitialTargetMap ,  ``{
+	    return($["device":k, "size": v["cyl_size"]:0 ]);
+	});
 
-	list alldrives = maplist( `k, `v, init_targetmap ,
-				  ``{
-				      return($["device":k, "size": v["cyl_size"]:0 ]);
-				  }
-				  );
+	PhysicalTargetMap = filter(`k, `v, InitialTargetMap , ``(Storage::IsRealDisk(k, v) ));
 
-
-	map physical_targetmap = filter(`k, `v, init_targetmap , ``(Storage::IsRealDisk(k, v) ));
-
-        list physical_drives = maplist( `k, `v, physical_targetmap ,
+        PhysicalDrives = maplist( `k, `v, PhysicalTargetMap ,
                                   ``{
                                       return($["device":k, "size": v["cyl_size"]:0 ]);
                                   });
 
-        list physical_devices = maplist( `k, `v, physical_targetmap ,
+        PhysicalDevices = maplist( `k, `v, PhysicalTargetMap ,
                                   ``{
                                       return(k);
                                   });
 
 	y2milestone("Drives=%1", alldrives);
 
-	string mbrDisk = lookup(select(physical_drives,0,$[]),"device", BootCommon::mbrDisk);
-
+	map FirstDrive = PhysicalDrives[0]:$[];
+	
+	string mbrDisk = FirstDrive["device"]:BootCommon::mbrDisk;
+	
 	y2milestone("MBR disk= %1", mbrDisk );
+	
 	Storage::SetPartDisk(mbrDisk);
-
-	// Set devices if missing
-	y2milestone("Drives: %1", drives);
+	
+	y2milestone("Drives: %1", AutoPartPlan);
 
 	boolean abort = false;
 
-
 	// Start the real work
+	
+	PreProcess();
 
-
-	targetMap =  listmap (map drive, drives, ``{
-	    boolean first_set = false;
-	    string device = "";
-	    y2milestone("Drive: %1", drive);
-
-	    if (drive["device"]:"" == "ask"  && size(physical_drives) > 1 )
-	    {
-		any dev = DiskSelection();
-		if (dev != nil)
-		{
-		    first_set = true;
-		    device = dev;
-		}
-		if (contains(physical_devices, device))
-		{
-		    configured_devices=add(configured_devices, device);
-		}
-
-		return ( [device , drive ] );
-	    }
-
-
-	    if (!first_set && ( drive["device"]:"" == ""  || drive["device"]:"" == "ask"))
-	    {
-		device = Storage::GetPartDisk();
-		first_set = true;
-
-		if (contains(physical_devices, device))
-		{
-		    configured_devices=add(configured_devices, device);
-		}
-
-		return ( [device , drive ] );
-	    }
-	    else if (drive["device"]:"" != "")
-	    {
-		if (contains(physical_devices, drive["device"]:""))
-		{
-		    configured_devices=add(configured_devices, drive["device"]:"");
-		}
-
-		return([drive["device"]:"", drive ]);
-	    }
-
-	});
-
-	// Add MD devices as well
-
-	if (haskey(targetMap, "/dev/md"))
-	{
-	     configured_devices=add(configured_devices, "/dev/md");
-	}
-
-
-	y2milestone("New Auto-Install tagetMap=%1", targetMap);
-	if ( targetMap == $[] || abort )
+	y2milestone("New Auto-Install tagetMap=%1", AutoTargetMap);
+	if ( AutoTargetMap == $[] || abort )
 	{
 	    // Something went really wrong..
 	    Report::Error(_("An error occurred while trying to create the partitioning plans.
@@ -206,30 +157,28 @@ Make sure the control file has the correct syntax and values.
 	}
 
 	// Initialize disks if needed
-	boolean init_done = false;
-	foreach (string device, map data, targetMap,
+	boolean DriveInitialized = false;
+	foreach (string device, map data, AutoTargetMap,
 		 ``{
 	    if (data["initialize"]:false)
 	    {
-		    map thisDevice = init_targetmap[device]:$[];
+		    map thisDevice = InitialTargetMap[device]:$[];
 		    thisDevice["partitions"] = [];
-		    init_targetmap[device] = thisDevice;
-		    Storage::SetTargetMap(init_targetmap);
-		    init_done = true;
+		    InitialTargetMap[device] = thisDevice;
+		    Storage::SetTargetMap(InitialTargetMap);
+		    DriveInitialized = true;
 	    }
 	});
 
-
-	if (init_done)
-	{
-	    map afterinit_targetmap = Storage::GetTargetMap();
-	    y2milestone("Target map after initialzing disk: %1", afterinit_targetmap);
+	if (DriveInitialized)
+	{	    
+	    y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
 	}
 
-	if ( size(targetMap) > 0)
+	if ( size(AutoTargetMap) > 0)
 	{
 	    boolean ok = true;
-	    foreach (string device, map data, targetMap,
+	    foreach (string device, map data, AutoTargetMap,
 		     ``{
 		if ( Storage::IsRealDisk( device, data) )
 		{
@@ -247,38 +196,100 @@ Make sure the control file has the correct syntax and values.
 	    }
 	}
 
-	lvm	= filter(`k,`v, AutoinstStorage::targetMap, ``(v["is_lvm_vg"]:false));
-	raid	= filter(`k,`v, AutoinstStorage::targetMap, ``(k == "/dev/md"));
+	AutoinstLVM::lvm   = filter(`k,`v, AutoinstStorage::AutoTargetMap, ``(v["is_lvm_vg"]:false));
+	AutoinstRAID::raid = filter(`k,`v, AutoinstStorage::AutoTargetMap, ``(k == "/dev/md"));
 
-	if ( size(raid) != 0)
+	if ( size(AutoinstRAID::raid) != 0)
 	{
 	    y2milestone("Configuring RAID");
-	    autoRAID();
-	} else {
+	    AutoinstRAID::Write();
+	}
+	else
+	{
 	    import "AutoinstRAID";
-	    AutoinstRAID::DeleteMDs();
-	    
+	    AutoinstRAID::DeleteMDs();	    
 	}
 
 
-	if ( size(lvm) != 0)
+	if ( size(AutoinstLVM::lvm) != 0)
 	{
 	    y2milestone("Configuring LVM");
-	    if (!autoLVM() )
+	    if (!AutoinstLVM::Write() )
+	    {
 		return false;
+	    }
 	}
 
 	return true;
     }
 
+    /**
+     * Preprocess partition plan and prepare for creating partitions.
+     */
 
+    global define PreProcess() ``{
+
+	AutoTargetMap =  listmap (map drive, AutoPartPlan, ``{
+	    boolean first_set = false;
+	    string device = "";
+	    y2milestone("Working on drive: %1", drive);
+
+	    if (drive["device"]:"" == "ask"  && size(PhysicalDrives) > 1 )
+	    {
+		any dev = DiskSelection();
+		if (dev != nil)
+		{
+		    first_set = true;
+		    device = dev;
+		}
+		if (contains(PhysicalDevices, device))
+		{
+		    ConfiguredDevices=add(ConfiguredDevices, device);
+		}
+
+		return ( [device , drive ] );
+	    }
+
+	    if (!first_set && ( drive["device"]:"" == ""  || drive["device"]:"" == "ask"))
+	    {
+		device = Storage::GetPartDisk();
+		first_set = true;
+		if (contains(PhysicalDevices, device))
+		{
+		    ConfiguredDevices=add(ConfiguredDevices, device);
+		}
+
+		return ( [device , drive ] );
+	    }
+	    else if (drive["device"]:"" != "")
+	    {
+		if (contains(PhysicalDevices, drive["device"]:""))
+		{
+		    ConfiguredDevices=add(ConfiguredDevices, drive["device"]:"");
+		}
+
+		return([drive["device"]:"", drive ]);
+	    }
+
+	});
+
+	// Add MD devices as well
+	if (haskey(AutoTargetMap, "/dev/md"))
+	{
+	    ConfiguredDevices=add(ConfiguredDevices, "/dev/md");
+	}
+
+	return;
+    }
+
+    
     /**
      * Initialize devices
      */
     global define void Initialize () ``{
 	import "Storage";
 
-	foreach (string device, map data, targetMap,
+	foreach (string device, map data, AutoTargetMap,
 		 ``{
 	    if (data["initialize"]:false && !data["is_lvm_vg"]:false && data["device"]:"" != "/dev/md" )
 	    {
@@ -290,118 +301,6 @@ Make sure the control file has the correct syntax and values.
     }
 
 
-
-    global define DiskSelection() ``{
-
-	y2milestone("Selecting disk manually....");
-	map tm = Storage::GetTargetMap();
-	term contents = `Dummy();
-
-
-	if( size(tm) > 0)
-	{
-	    term buttonbox = `VBox();
-
-	    integer i = 0;
-	    foreach( `tname, `tdata, tm,
-		     ``{
-		if( Storage::IsRealDisk( tname, tdata ))
-		{
-		    string tlinename = tdata["name"]:"?";
-		    string tline = "&" + (i+1) + ":    " + tlinename;
-		    boolean sel = Storage::GetPartDisk()==tname &&
-			Storage::GetPartMode()!="CUSTOM";
-		    buttonbox = add( buttonbox,
-				     `Left(`RadioButton(`id(tname), tline, sel )));
-		    i = i + 1;
-		}
-	    });
-
-	    buttonbox = add(buttonbox, `VSpacing(0.8) );
-
-
-	    // This dialog selects the target disk for the installation.
-	    // Below this label, all targets are listed that can be used as
-	    // installation target
-
-	    // heading text
-	    contents = `Frame( _("Choose a hard disk"),
-			       `RadioButtonGroup(`id(`options),
-						 `VBox( `VSpacing(0.4),
-							`HSquash(buttonbox),
-							`VSpacing(0.4)
-							)
-						 )
-			       );
-	}
-	else
-	{
-
-	    contents = `Label (_("No disks found."));
-	}
-
-	// There are several hard disks found. Linux is completely installed on
-	// one hard disk - this selection is done here
-	// "Preparing Hard Disk - Step 1" is the description of the dialog what to
-	// do while the following locale is the help description
-	// help part 1 of 1
-	string help_text = _("<p>
-All hard disks automatically detected on your system
-are shown here. Select the hard disk on which to install SuSE Linux.
-</p>
-");
-	import "Label";
-	term buttons = `HBox(
-			 `PushButton(`id(`ok), `opt(`default), Label::OKButton ),
-			 `PushButton(`id(`abort), Label::AbortButton )
-			);
-
-
-
-	term ask_device_dialog = `HBox(
-				     `VSpacing( 15 ),       // force dialog height
-				     `VBox(
-					   `HSpacing( 30 ), // force help text width
-					   `RichText( help_text )
-					   ),
-				     `HSpacing( 3 ),
-				     `VBox(
-					   `VSpacing( 1 ),
-					   `Heading(_("Hard Disk Selection") ),
-					    contents,
-					   `VStretch(),
-					   buttons
-
-					   ),
-				     `HSpacing( 3 )
-				     );
-
-	UI::OpenDialog(`opt(`decorated), ask_device_dialog);
-
-	any ret = nil;
-	any option = nil;
-
-	repeat
-	    {
-		ret = Wizard::UserInput();
-		y2milestone("ret=%1", ret);
-		if( ret == `ok )
-		{
-		    option = UI::QueryWidget(`id(`options), `CurrentButton);
-		    y2milestone( "selected disk: %1", option );
-		    if( option == nil )
-		    {
-			// there is a selection from that one option has to be
-			// chosen - at the moment no option is chosen
-			UI::MessagePopup(_("Select one of the options to continue."));
-			continue;
-		    }
-		}
-	    } until ( ret == `ok || ret == `abort );
-
-	UI::CloseDialog();
-	return option;
-    }
 
 
     /**
