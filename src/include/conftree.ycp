@@ -88,7 +88,9 @@
 	    if( ret == `configure )
 	    {
 		any seq = Call::Function(module_auto, ["Change", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
+		
 		y2milestone("Change response: %1", seq);
+		
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
 		    string tomerge = resourceMap["AutoinstMerge"]:"";
