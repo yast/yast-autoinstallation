@@ -20,12 +20,12 @@
 
     /**
      * MenuTreeData
-     * @return: list ofmodules
+     * @return: list of modules
      */
     global  list MenuTreeData =[];
 
 
-	global boolean x11_installed = false;
+    global boolean x11_installed = false;
 
 
     /**
@@ -36,28 +36,25 @@
 	// Read module configuration data (y2cc)
 	if (!Mode::initial)
 	{
-
 	    y2debug("Modules: %1", ModuleMap);
 	    list MenuEntries = ReadMenuEntries();
 	    ModuleMap = select(MenuEntries,0,$[]);
 	    GroupMap = select(MenuEntries,1,$[]);
 	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
-
 	if (Mode::config)
 	{
 	    // construct the tree menu
 	    ConstructMenu();
 	}
-
     }
 
     /**
      * Read module configuration files
      * @return: map
      */
-
-    global define list ReadMenuEntries() ``{
+    global define list ReadMenuEntries()
+	``{
 	list directory = SCR::Dir(.autoinst.menuentry.s);
 	map configurations = $[];
 	map groups = $[];
@@ -84,9 +81,10 @@
 		}
 		else if (type == "Y2Module")
 		{
-			if (name == "x11")
-				x11_installed = true;
-
+		    if (name == "x11")
+		    {
+			x11_installed = true;
+		    }
 		    if (values["Autoinst"]:"" == "configure" || values["Autoinst"]:"" == "all")
 		    {
 			string module_auto = "";
@@ -108,7 +106,8 @@
     /**
      * Get resource name
      */
-    global define string getResource( string default_resource) ``{
+    global define string getResource( string default_resource)
+	``{
 	return ModuleMap[default_resource, "AutoinstResource"]:default_resource;
     }
 
@@ -225,7 +224,10 @@ XML Example
 */
 
 
-	global define list Deps () ``{
+    /**
+     * Simple dependency resolving 
+     */ 
+    global define list Deps () ``{
 
 	map deps = $[
 			"files": ["users"],
@@ -264,6 +266,6 @@ XML Example
 
 	return m;
 
-	}
+    }
 
 }

@@ -18,8 +18,6 @@
 
     textdomain "autoinst";
 
-    include "ui/file_popups.ycp";
-    
     /**
      * @return  script configuration dialog
      */
@@ -176,7 +174,6 @@ environment, choose the <i>chroot scripts</i> options.
 				    `item(`id("perl"), _("Perl"),(script["interpreter"]:"shell" == "perl")),
 				    `item(`id("shell"), _("Shell"),(script["interpreter"]:"shell" == "shell")),
 				    `item(`id("shell"), _("Python"),(script["interpreter"]:"shell" == "python"))
-				    
 				    ]
 				   ),
 			`ComboBox( `id(`type), _("&Type"),
@@ -237,7 +234,7 @@ name and the content of the script.
 	    }
 	    else if (ret == `loadsource)
 	    {
-		string filename = PopupFile( AutoinstConfig::Repository);
+		string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
 		if (filename != "")
 		{
 		    string source = SCR::Read(.target.string, filename);
