@@ -786,21 +786,23 @@ SuSE package names and package groups."));
 	map configure = $[];
 
 	// Scripts
-	configure["scripts"] = ks_scripts(ksConfig);
+	configure["scripts"] 	= ks_scripts(ksConfig);
 	configure["networking"] = select(ks_network(ksConfig), 0 , $[]);
-	configure["nis"] = select(ks_auth(ksConfig), 0 , $[]);
-	configure["ldap"] = select(ks_auth(ksConfig), 1 , $[]);
-	configure["security"] =  select(ks_auth(ksConfig), 2 , $[]);
+	configure["nis"] 	= select(ks_auth(ksConfig), 0 , $[]);
+	configure["ldap"] 	= select(ks_auth(ksConfig), 1 , $[]);
+	configure["security"] 	=  select(ks_auth(ksConfig), 2 , $[]);
 	
-	install["init"] = select(ks_network(ksConfig), 1 , $[]);
-	install["software"] =  ks_software(ksConfig);
+	install["init"] 	= select(ks_network(ksConfig), 1 , $[]);
+	install["software"] 	=  ks_software(ksConfig);
 	install["partitioning"] = ks_part(ksConfig);
-	install["bootloader"] =  ks_bootloader(ksConfig);
+	install["raid"] 	= ks_raid(ksConfig);
+	install["bootloader"] 	=  ks_bootloader(ksConfig);
 	install["general"] 	= ks_general(ksConfig);
 	
-	profile["install"] = install;
-	profile["configure"] = configure;
-	AIConfig::changed = true;
+	profile["install"] 	= install;
+	profile["configure"] 	= configure;
+	AIConfig::changed 	= true;
+	
 	y2milestone("Profile : %1", profile);
 	return profile;
 	
@@ -989,41 +991,88 @@ SuSE package names and package groups."));
     }
     
     global define list ks_part (map ksConfig) ``{
-
+	import "Partitions";
 	list drives = [];
 	list part1 = maplist(`k, `v, ksConfig["partitioning"]:$[],   ``{
-
-	    drives=add(drives, v["ondisk"]:"");
-	    map partition = $[];
-
-	    string fstype = (k == "swap") ? "swap" :  v["fstype"]:"";
-	    partition["filesystem"] = StringFS2Symbol(fstype);
-	    partition["mount"] = k;
-	    partition["format"] = true;
-	    partition["size"] = sformat("%1mb", v["size"]:-1);
-	    if (v["grow"]:0 == 1) {
-		partition["size"] = "max";
+	    map drive = $[];
+	    if (haskey(v, "ondisk"))
+	    {
+		drive["device"] = v["ondisk"]:"";
 	    }
-	    return (partition);
+	    drive["partitions"] = [];
+	    
+	    drives=add(drives, drive);
 	});
 	drives=toset(drives);
-	y2milestone("part1: %1 drives: %2", part1, drives);
-	
-	list partitioning = maplist(`d, drives, ``{
-	    
-	    if (d != "") {
-		map disk = $[];
-		disk["device"] = sformat("/dev/%1", d);
-		disk["partitions"] = filter(`f, part1, ``(f["ondisk"]:"" != d));
-		y2milestone("disk parts %1", 	disk["partitions"]:[]);
-		return (disk);
-	    }
-	});
 
-	return partitioning;
+	
+	foreach(`k, `v, ksConfig["partitioning"]:$[],   ``{
+	    map partition = $[];
+	    string mount = select(splitstring(k, "_"), 0 , "");
+	    string fstype = (mount == "swap") ? "swap" :  v["fstype"]:"";
+	    
+	    integer partition_id = Partitions::fsid_native;	    
+	    integer raiddevice = 0;
+	    
+	    if (regexpmatch(mount, "^raid\..*"))
+	    {
+		y2milestone("device: %1", mount);
+		partition_id =  Partitions::fsid_raid;
+		partition["partition_id"] = partition_id;
+		raiddevice = tointeger(substring(mount, 5, 1)) ;
+		
+		partition["raid_name"] = sformat("/dev/md%1", raiddevice);
+		partition["format"] = false;
+		
+	    }
+	    else
+	    {
+		partition["mount"] = mount;
+		partition["format"] = true;
+		partition["filesystem"] = StringFS2Symbol(fstype);
+	    }
+	    
+	   
+	 
+
+	    partition["size"] = sformat("%1mb", v["size"]:-1);
+	    
+	    if (v["grow"]:0 == 1)
+	    {
+		partition["size"] = "max";
+
+	    }
+	    foreach(`d, drives, ``{
+		if (v["ondisk"]:"" == d["device"]:"")
+		{
+		    list part 		= d["partitions"]:[];
+		    part 		= add(part, partition);
+		    d["partitions"]	= part;
+		}
+	    });
+	});
+	
+
+
+
+	return drives;
     }
 
 
+    // $["/scr":$["device":"md0", "level":0]]
+    global define list ks_raid (map ksConfig)
+	``{
+	
+	list raid = maplist(`d,`data, ksConfig["raid"]:$[], ``{
+	    map r = $[];
+	    r["mount"]		= d;
+	    r["format"] 	= (data["nofromat"]:0 == 1) ? false : true;
+	    r["name"] 		= sformat("/dev/%1", data["device"]:"md0");
+	    r["raid_level"] 	= sformat("raid%1", data["level"]:0);
+	    return (r);
+	});
+	return raid;
+    }
 
     global define list  ks_network (map ksConfig) ``{
 	include "network/ip.ycp";
@@ -1140,7 +1189,7 @@ SuSE package names and package groups."));
 	
 	if (auth["enablemd5"]:0 == 1)
 	{
-	    security["md5_support"] = "yes";
+	    security["encryption"] = "md5";
 	}
 
 	
