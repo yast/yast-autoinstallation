@@ -49,7 +49,7 @@ full-examples.ent:
 
 date:
 	date > systemdate
-all: date full
+all: date fullnoref
 
 install-data-am: $(xml_file)  
 	mkdir -p $(DESTDIR)$(docdir)/xml/images; \
