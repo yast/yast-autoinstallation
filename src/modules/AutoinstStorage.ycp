@@ -149,6 +149,14 @@
                         d["prefer_remove"] = true;
                }
             }
+            // see if <usepart> is used and add the partitions to <keep_partition_num>
+            foreach(map p, d["partitions"]:[], ``{
+                    if (p["usepart"]:-1 != -1 ){
+                        d["keep_partition_num"] = add(d["keep_partition_num"]:[], p["usepart"]:-1);
+                    }
+                    });
+            d["keep_partition_num"] = toset(d["keep_partition_num"]:[]);
+
             return($[device:d]);
             });
 
