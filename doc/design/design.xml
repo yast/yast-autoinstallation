@@ -105,6 +105,13 @@
   <itemizedlist>
       <listitem>
 	<para>
+	  <emphasis>Import:</emphasis></para>
+	<para>
+	  Import existing data into the module, usually done only once at the beginning.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
 	  <emphasis>Summary:</emphasis></para>
 	<para>
     To provide  a brief summary of the configuration.
@@ -185,10 +192,14 @@ y2debug("func=%1", func);
 y2debug("param=%1", param);
 
 /* Create a  summary*/
-if(func == "Summary") {
-    XXPkgXX::Import(param);
+if(func == "Summary") {    
     ret = select(XXPkgXX::Summary(), 0, "");
 }
+else if (func == "Import") {
+    ret = XXPkgXX::Import($[]);
+    return ret ;
+}
+
 /* Reset configuration */
 else if (func == "Reset") {
     XXPkgXX::Import($[]);
@@ -196,7 +207,6 @@ else if (func == "Reset") {
 }
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
-    XXPkgXX::Import(param);
     ret = XXPkgXXAutoSequence();
 }
 /* Return actual state */
@@ -207,7 +217,6 @@ else if (func == "Result") {
 else if (func == "Write") {
     import "Progress";
     XXPkgXX::write_only = true;
-    XXPkgXX::Import(param);
     Progress::off();
     ret = XXPkgXX::Write();
     Progress::on();

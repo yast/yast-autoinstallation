@@ -10,15 +10,29 @@
 
     import "Arch";
     import "Storage";
+    import "Kernel";
     import "Mode";
+    import "Profile";
+    
 
-    global string hostname = "avicenna";
+    global string remote_rules_location = "rules/rules.xml";
+    global string local_rules_location = "";
+    global string local_rules_file = "";
+
+    global boolean userrules = false;
+
+    global symbol Behaviour = `many;
+
+
+
+    
+    global string hostname = "";
 
     global string hostaddress = "";
 
     global string network = "";
 
-    global string domainname = "";
+    global string domain = "";
 
     global string arch = "";
 
@@ -40,11 +54,13 @@
 
     global map installed = $[];
 
+    global string xserver = "";
 
+    global boolean haspcmcia = false;
+	
 
     global map UserRules = $[];
-
-
+   
     // Local
     string shell = "";
     map env = $[];
@@ -56,28 +72,34 @@
      *
      */ 
     global define void AutoInstallRules () ``{
-	ProbeKernelArch();
-	y2milestone("Rules: %1", ProbeRules());
-	
+	local_rules_location = SCR::Read(.target.tmpdir) + "/rules";
+	SCR::Execute(.target.mkdir, local_rules_location);
+
+	local_rules_file = local_rules_location + "/rules.xml";
+
+	ProbeRules();
+
 	return;
     }
 
     /**
      * Probe all system data to build  a set of rules
      */
-    global define map ProbeRules () ``{
-
-	map rules = $[];
-
+    global define void ProbeRules () ``{
 
 	// Architecture
 	arch = Arch::architecture;	
-	rules["arch"] = arch;
-	rules["karch"] = karch;
 
-	// Memory
-	rules["memsize"] = memsize;
+	karch = select(Kernel::kernel_packages, 0, "k_deflt");
 
+
+	// Memory	
+	integer memory = 0;	
+	list memories = SCR::Read(.probe.memory);
+	memory = memories[0,"resource","phys_mem",0,"range"]:0;
+	memsize =  memory / ( 1024 * 1024);
+
+	
 	// Disk sizes
 	map storage =  Storage::GetTargetMap();
 	totaldisk = 0;
@@ -88,32 +110,29 @@
 				return($["device":k, "size": size_in_mb]);
 			    });
 
-	rules["disksize"] = disksize ;	
-	rules["totaldisk"] = totaldisk ;
-
 	// MAC
-	mac = getMAC();
-	
-	rules["mac"] = mac;
+	mac = getMAC();	
 
 	// Network
 	if (Mode::initial)
 	    hostaddress  = SCR::Read(.etc.install_inf.IP);
 	else
-	    hostaddress  = "192.168.1.1"; // FIXME
-
-	rules["hostaddress"] = hostaddress;
+	    hostaddress  = "192.168.1.1"; // FIXME	
 	
-	// Hostid (i.e. 0xa8c00101);
+	// Hostid (i.e. a8c00101);
 	hostid = getHostid();
 
-	rules["hostid"] = hostid;
 
-	rules["hostname"] = "avicenna";
-	rules["domainname"] = "";
-	rules["network"] = "";
+
+	hostname = SCR::Read(.etc.install_inf.Hostname);
+	domain = SCR::Read(.etc.install_inf.Domain);
+	network = SCR::Read(.etc.install_inf.Network);
+	haspcmcia = (SCR::Read(.etc.install_inf.HasPCMCIA) == 0);
+	xserver = SCR::Read(.etc.install_inf.XServer);
+
+
 	
-	return rules;	
+	return;	
     }
 
     /**
@@ -140,12 +159,12 @@
 		string link = dev["value", "link"]:"";
 		list linktok = splitstring(link, " ");
 		list clean = filter(`tok, linktok, ``(tok != ""));
-		y2milestone("mac line: %1", clean);
+		y2debug("mac line: %1", clean);
 		tmpmac = clean[3]:"";
 	    }
 
 	});
-	string cleanmac = deletechars(tolower(tmpmac), ":");
+	string cleanmac = deletechars(tmpmac, ":");
 	return cleanmac;
     }
 
@@ -157,169 +176,10 @@
     global define string getHostid () ``{
 	include "network/ip.ycp";
 	string hex = ip2hex(hostaddress);
-	return tolower(hex);
+	return hex;
     }
 
 
-    /**
-     * Probe for kernel architecture
-     *
-     * @return void
-     */
-
-    global define void ProbeKernelArch ()
-	``{
-	karch = "default";
-	integer memory = 0;
-	// check for > 4GB memory
-	list memories = SCR::Read(.probe.memory);
-	memory = memories[0,"resource","phys_mem",0,"range"]:0;
-	y2milestone ("Physical memory %1", memory);
-	
-	if (Arch::has_smp)
-	{	    
-	    karch = "smp";	 
-	}
-
-	if (Arch::i386)
-	{
-	    // get flags from WFM /proc/cpuinfo (for pae and tsc tests below)
-
-	    string cpuinfo_flags = SCR::Read(.proc.cpuinfo.value.0."flags");	// check only first processor
-	    list cpuflags = (size(cpuinfo_flags) > 0) ? splitstring(cpuinfo_flags, " ") : [];
-
-
-
-	    if (Arch::has_smp)
-	    {
-		// x86, SMP -> must check PAE
-		if (!contains (cpuflags, "pae"))
-		{
-
-		    karch = "nopaesmp";		
-		}
-	    }
-	    else if (memory > 0x100000000)		// > 4GB
-	    {
-		karch = "smp";		
-	    }
-	    else
-	    {
-		// non-smp
-
-		// read cpu specific information (for first cpu only)
-		map cpu = select (SCR::Read (.probe.cpu), 0, $[]);
-		integer cpu_family = cpu["family"]:0;
-		integer cpu_model = cpu["model"]:0;
-
-		if ((cpu["vendor"]:"" == "AuthenticAMD")
-		    && (cpu_family >= 6))
-		{
-		    karch = "athlon";
-		}
-		// special handling for cyrix, it pretends to be a pentium but isnt
-		//   so extra check for "tsc" flag
-		else if ((cpu_family < 5)	// not pentium
-			 || ((cpu_family == 5)
-			     && (!contains (cpuflags, "tsc"))))
-		{
-		    karch = "i386";
-		}
-	    }
-	}
-	else if (Arch::alpha
-		 && !Arch::has_smp)
-	{
-	    if (serial_console)
-	    {
-		karch =  "serial";
-	    }
-
-	    if (tga_controller_found)
-	    {
-		karch = "tga";
-	    }
-	}
-	else if (Arch::ppc)
-	{
-	    binary = "vmlinux";
-	    if (Arch::board_mac_new
-		|| Arch::board_mac_old)
-	    {
-		karch = "default";
-	    }
-
-	    if (Arch::board_mac_nubus)
-	    {
-		karch = "ppcnubus";
-	    }
-
-	    if (Arch::board_chrp)
-	    {
-		// XXX fixme
-		string chrp_cpu = "";
-		list cpuProbe = SCR::Read(.probe.cpu);
-		foreach (`cpuProbe, cpuProbe,
-			 ``{
-		    chrp_cpu = cpuProbe["model"]:"";
-		    chrp_cpu = tolower (chrp_cpu);
-		});
-
-		if (issubstring (chrp_cpu, "power3")
-		    && Arch::ppc32)
-		{
-		    karch = "power3";
-		}
-		else if (Arch::ppc64)
-		{
-		    karch = "ppc64";
-		}
-		else
-		{
-		    karch = "default";
-		}
-	    }
-	    else if (Arch::board_iseries)
-	    {
-		karch = "iseries64";
-	    }
-	    else if (Arch::board_prep)
-	    {
-		karch = "default";
-	    }
-	}
-	else if (Arch::sparc64)
-	{
-	    if (Arch::has_smp)
-	    {
-		karch = "smp";
-	    }
-	    else
-	    {
-		karch = "default";
-	    }
-	}
-	else if (Arch::ia64)
-	{
-	    list cpuProbe = SCR::Read (.probe.cpu);
-	    string model = cpuProbe[0,"model"]:"Itanium";
-	    if (issubstring(model, "Itanium 2"))
-	    {
-		if (Arch::has_smp)
-		    karch = "itanium2-smp";
-		else
-		    karch = "itanium2";
-	    }
-	}
-	else if (Arch::s390)
-	{
-	    karch = "default";
-	}
-	memsize = memory /  ( 1024 * 1024 );
-	
-	y2milestone("Kernel Architecture: %1", karch);
-	return;
-    }	// ProbeKernelArch ()
 
 
     /**
@@ -329,7 +189,9 @@
 
     global define void Read() ``{
 	import "XML";
-	UserRules = XML::XMLToYCPFile( "/work/CDs/full-8.1-i386/rules/rules.xml" );
+	
+	UserRules = XML::XMLToYCPFile( local_rules_file );
+	
 	y2milestone("Rules: %1", UserRules);
 
 	list rulelist = UserRules["rules"]:[];
@@ -342,42 +204,73 @@
 		foreach(string rule, map ruledef, ruleset, ``{
 		    y2debug("Rule: %1", rule);
 		    y2debug("Ruledef: %1", ruledef);
+		    
 		    string match = ruledef["match"]:"undefined";
+		    
+		    string op = ruledef["operator"]:"and";
+		    string matchtype = ruledef["match_type"]:"exact";		    
 		
 		    if ( rule == "hostname")
 		    {
-			string op = ruledef["operator"]:"";
-			string matchtype = "exact";
-		   		    
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
 			env[rule] = hostname;
-
 		    }
-		    else if ( rule == "memsize" )
-		    {
-			string op = ruledef["operator"]:"and";
-			string matchtype = ruledef["match_type"]:"exact";
-		    
-
+		    else if ( rule == "domain" )
+		    {    
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;		 
-			env[rule] = memsize;
+			env[rule] = domain;		    
 		    }
+		    else if ( rule == "network" )
+		    {    
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;		 
+			env[rule] = network;		    
+		    }
+		    else if ( rule == "xserver" )
+		    {    
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;		 
+			env[rule] = xserver;		    
+		    }		    
+		    else if ( rule == "memsize" )
+		    {    
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;		 
+			env[rule] = memsize;		    
+		    }
+		    }		    
+		    else if ( rule == "totaldisk" )
+		    {    
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;		 
+			env[rule] = totaldisk;		    
+		    }		    
+		    else if ( rule == "karch" )
+		    {		
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;		 
+			env[rule] = karch;
+		    }		    
 		    else if ( rule == "result" )
-		    {		    
+		    {
 			if ( verifyrules() == 0 )
 			{
 			    tomerge = add(tomerge,  ruledef["profile"]:"");
+			    go_on = ruledef["continue"]:false;
+			}
+			else
+			{
+			    go_on = true;
 			}
 			shell = "";
-			go_on = ruledef["continue"]:false;
+			ismatch = false;			
 		    }					
 		   
 		});
 	    }
-	});
-	y2milestone("Shell: %1", shell);
+	});	
 	return;
     }
 
@@ -421,10 +314,12 @@
     /**
      * Verify rules using the shell
      */
-    define verifyrules () ``{
-	string script = sformat("if [ %1 ]; then exit 0; else exit 1; fi", shell);
+    define verifyrules ()
+    ``{
+	
+	string script = sformat("if [ %1 ]; then exit 0; else exit 1; fi", shell);	
 	map ret = SCR::Execute (.target.bash_output, script, env);
-	y2debug("Bash return: %1", ret);
+	y2milestone("Bash return: %1 (%2) (%3)", script, ret, env);
 	return ret["exit"]:-1;	
     }
 
@@ -434,4 +329,144 @@
     global define list Files () ``{
 	return tomerge;
     }
+
+
+
+    
+    /**
+     * Return list of file to merge (Order matters)
+     */
+    global define boolean GetRules () ``{
+
+	y2milestone("Getting Rules: %1", tomerge);
+	
+	string scheme = ProfileLocation::scheme;
+	string host = ProfileLocation::host;
+	string filepath = ProfileLocation::filepath;
+	string directory = ProfileLocation::directory;
+
+	list valid = [];
+	boolean stop = false;
+	foreach(string file, tomerge,		
+		``{
+	    if (!stop) {
+		string dir = ProfileLocation::dirname ( file );	    
+		if (dir != "")
+		{
+		    SCR::Execute(.target.mkdir, local_rules_location + "/" + dir);
+		}
+	    
+		string localfile = local_rules_location + "/" + file  ;
+		if (!ProfileLocation::Get( scheme, host, directory + "/" + file , localfile))
+		{
+		    y2error("Error while fetching file:  %1", directory + "/" + file);
+		
+		}
+		else
+		{
+		    if (Behaviour == `one)
+			stop = true;
+		
+		    valid = add(valid, file);
+		
+		}
+	    }
+	});
+	tomerge = valid;
+	if (size ( tomerge ) == 0 )
+	{
+	    return (false);
+	}
+	else
+	{
+	    return (true);
+	}
+    }
+    
+
+    /**
+     * Merge Rule results
+     */    
+    global define boolean Merge (  string result_profile   )
+	``{
+	
+	string tmpdir = SCR::Read( .target.tmpdir );		
+	boolean error = false;
+	boolean skip = false;
+
+	string base_profile  =  tmpdir + "/base_profile.xml";
+	
+	foreach(string file, tomerge,
+		``{
+	    y2milestone("Working on file: %1", file);
+	    	    
+	    string current_profile = local_rules_location + "/" + file;
+	    if (!skip)
+	    {
+		XML_cleanup(current_profile,  tmpdir + "/base_profile.xml");
+		skip = true;
+	    }
+	    else
+	    {
+		string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'package, addon'\"  --param with ";	
+		MergeCommand = MergeCommand + "\"'" + current_profile + "'\"  ";
+		MergeCommand = MergeCommand + "--output " +  tmpdir + "/result.xml";
+		MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
+		MergeCommand = MergeCommand +   base_profile + " ";
+		    
+		map xsltret = SCR::Execute(.target.bash_output, MergeCommand);
+		y2milestone("Merge result: %1", xsltret);
+		if (xsltret["exit"]:-1 != 0 )
+		{
+		    y2error("Merge Failed");
+		    error =  true;
+		}
+		    
+		XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
+			
+	    }
+	});
+
+	SCR::Execute(.target.bash, "cp " +  tmpdir + "/base_profile.xml " + result_profile );
+	return !error;
+    }
+
+
+
+    global define void CreateDefault() ``{
+
+	Behaviour = `one;
+	string tmp_hex_ip = hostid;
+	tomerge = add(tomerge, tmp_hex_ip );
+	while (size(tmp_hex_ip) != 1)
+	{
+	    tmp_hex_ip = substring(tmp_hex_ip, 0 , size ( tmp_hex_ip ) - 1 );
+	    tomerge = add(tomerge, tmp_hex_ip );
+	}
+	tomerge = add(tomerge, mac );
+	tomerge = add(tomerge, "default" );
+	y2milestone("Created default rules:", tomerge);
+	return;
+    }
+
+    
+    global define void CreateFile(string filename) ``{
+	tomerge = add (tomerge, filename);
+	y2milestone("Created default rules:", tomerge);
+	return;
+    }
+
+
+
+    
+    /**
+     * Cleanup XML file from namespaces put by xslt
+     */
+    global define XML_cleanup(string in, string out)
+	``{
+	
+	map ycpin = XML::XMLToYCPFile(in);	
+	y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin);
+	return XML::YCPToXMLFile(`profile, ycpin, out);
+    }    
 }
