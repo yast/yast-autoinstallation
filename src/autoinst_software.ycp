@@ -54,13 +54,7 @@
 
     list pacs = settings["packages"]:[];
 
-    map software = settings;
-    map  sourceData	= Pkg::SourceGeneralData(sources[0]:-1);
-    map productData	= Pkg::SourceProductData(sources[0]:-1);
-    map mediaData	= Pkg::SourceMediaData(sources[0]:-1);
-    y2milestone ("sourcedata: (%1), productdata(%2), mediadata(%3)", sourceData, productData, mediaData);
-
-
+    map software = settings;     
     
     /**
      * @return Html formatted configuration summary
@@ -110,17 +104,13 @@ TODO
 	Wizard::SetContents(title,
 			    `HVCenter(`Label(_("Reading package database..."))),
 			    helptext, false, true);
+	
 
-	symbol result = initPM();
-
-	if ((result == `done)
-	    || (result == `failed))
-	{
-	    UI::CloseDialog();
-	    return `next;
-	}
-
+	
 	list available_base_selections = Pkg::GetSelections( `available, "base" );
+	
+	y2milestone("AVAILABLE Selections: %1",  available_base_selections);
+	
 	// Construct a box with radiobuttons for each software base configuration
 	term baseconfs_box = `VBox();
 
@@ -188,13 +178,6 @@ TODO
 		// get the newly selected base configuration
 		string base_selection = UI::QueryWidget( `id(`baseconf),`CurrentButton );
 
-		if ( (ret == `abort)
-		     && UI::ReallyAbortPopup(false) )
-		{
-		    Wizard::CloseDialog();
-		    return `abort;
-		}
-
 		// Inform the package manager on `next about the new (only about a NEW) selection
 		// or if the selection has changed
 
@@ -202,7 +185,12 @@ TODO
 		{
 		    // set the new selection
 		    boolean pkgret = Pkg::SetSelection( base_selection );
-
+		    /*
+		    if (size(pacs)>0)
+		    {
+			Pkg::DoProvide(pacs);
+		    }
+		    */
 		    y2milestone ( "Selecting '%1' returns: %2", base_selection, pkgret );
 
 		    pkgret = Pkg::ActivateSelections();
@@ -218,7 +206,12 @@ TODO
 		    if (save_selection != base_selection || size(Pkg::GetPackages(`selected, true)) == 0)
 		    {
 			boolean ret = Pkg::SetSelection( base_selection );
-
+			/*
+			if (size(pacs)>0)
+			{
+			    Pkg::DoProvide(pacs);
+			}
+			*/
 			y2milestone ( "Selecting '%1' returns: %2", base_selection, ret );
 			// activate current selection before entering package widget
 			Pkg::ActivateSelections();			
@@ -248,11 +241,43 @@ TODO
 		    }
 		}
 
-	    } until ( (ret == `next && !error_found) || ret == `cancel ||  ret == `back );
+	    } until ( (ret == `next && !error_found) || ret == `cancel ||  ret == `back || ret == `abort);
 	
-	software["addons"] = Pkg::GetSelections(`selected, "");	
-	software["base"] = select(Pkg::GetSelections(`selected, "base"), 0 , "");
-	y2milestone("addons: %1", software["addons"]:[]);
+	// list allpacs = Pkg::GetPackages(`selected, true);	
+	list seladd =  Pkg::GetSelections(`selected, "");
+	list selbase =  Pkg::GetSelections(`selected, "base");
+
+	/*
+	foreach(string selection , union(selbase, seladd),
+		``{
+	    Pkg::ClearSelection(selection);
+	});
+	
+	Pkg::DoRemove (allpacs);
+	
+	Pkg::SetSelection(selbase[0]:"");
+	
+	foreach(string selection , seladd,
+		``{
+	    Pkg::SetSelection(selection);
+	});
+	Pkg::ActivateSelections();
+	list onlysel = Pkg::GetPackages(`selected, true);
+	y2milestone("selection packages: %1, all packages: %2", size(onlysel), size(allpacs));
+
+	pacs = [];
+	foreach(string package, allpacs, ``{
+	    if (!contains(onlysel, package)) {
+		pacs=add(pacs,package);
+	    }
+	});
+	
+	*/
+	
+	software["addons"] = seladd;
+	software["base"] =   selbase[0]:"";
+	software["packages"] = pacs;
+
 	return ret;
     }
 
@@ -299,5 +324,4 @@ TODO
     } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
 
     return [ret, settings];
-
 }

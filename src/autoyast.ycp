@@ -41,6 +41,10 @@
 
     define initPM ()
 	``{
+	if (AIConfig::PMcalled) {
+	    return `found_descr;
+	}
+	
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Reading package information; One moment please...")));
 
 	// start package manager
@@ -50,6 +54,11 @@
 	    UI::CloseDialog();
 	    return `unknown_descr;
 	}
+
+	AIConfig::sourceData	= Pkg::SourceGeneralData(sources[0]:-1);
+	AIConfig::productData	= Pkg::SourceProductData(sources[0]:-1);
+	AIConfig::mediaData	= Pkg::SourceMediaData(sources[0]:-1);
+	
 	string tmprep = SCR::Read(.target.tmpdir);
 	SCR::Execute(.target.mkdir, tmprep);
 	y2milestone("Fake root %1", tmprep);
@@ -61,7 +70,8 @@
 
 
 	UI::CloseDialog();
-
+	
+	AIConfig::PMcalled = true;
 	return `found_descr;
 
     };	// initPM
