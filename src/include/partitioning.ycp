@@ -468,7 +468,7 @@
 	
 	partitions = renumber_logical_partitions (partitions);
 
-	// y2milestone("partition list after renumbering: %1", partitions);
+	y2milestone("Partition list after renumbering: %1", partitions);
 
 	symbol ptype = `primary;
 	integer last_pnr = 0;
@@ -772,12 +772,18 @@ exist on this system.
 
 	unused_region = [ 0, 0 ];
 
+	
 	/**
 	 * prepare_partitions
 	 */
+	
+	string use = "";
+	map AutoTarget = AutoTargetMap[TargetDevice]:$[];
 
+	
 	boolean partitions_defined = false;
-	if (size(target["partitions"]:[]) > 0)
+	
+	if (size(AutoTarget["partitions"]:[]) > 0)
 	{
 	    partitions_defined = true;
 	}
@@ -786,12 +792,11 @@ exist on this system.
 
 	partitions = prepare_partitions (target, partitions);
 
-	
 
 	boolean already_partitioned = false;
+	
 	boolean root_created = false;
-	string use = "";
-	map AutoTarget = AutoTargetMap[TargetDevice]:$[];
+
 
 	if ( haskey( AutoTarget  , "use"))
 	{
@@ -876,13 +881,6 @@ exist on this system.
 		    return (false);
 		}
 
-		/*
-		if (!SaneRegionLimits( unused_region, partitions) )
-		{
-		    Report::Error(no_space_reason);
-		    return (false);
-		}
-		*/
 
 		rewrite_settings (partitions, target, driveMap);		
 		return (true);
@@ -905,8 +903,7 @@ exist on this system.
 	{
 	    if (!already_partitioned)
 	    {
-		if (!partitions_defined
-		    && !root_created)
+		if (!partitions_defined  && !root_created)
 		{
 		    partitions = create_partitions (target,partitions, unused_region);
 		    root_created = true;
@@ -1179,8 +1176,7 @@ To install Linux, select more partitions to remove.");
 		
 		
 		selected = calculate_selected_region (selected_partitions, [] );
-
-		y2milestone("%1 %2 %3 %4 %5", size_of_region (selected, bytes_per_unit ) , selected , bytes_per_unit, minimal_size, creating_anything  );
+		
 		if (size_of_region (selected, bytes_per_unit ) < minimal_size && creating_anything)
 		{
 		    y2warning ("selected: %1", selected); // FIXME
@@ -1201,23 +1197,16 @@ to contain a minimal installation.");
 
 	    if (ok)
 	    {
-		if (!partitions_defined
-		    && !root_created)
+		if (!partitions_defined  && !root_created)
 		{
+		    y2milestone("Creating pre-defined partition plan");
 		    partitions = create_partitions (target, all_partitions, selected);
 		    root_created = true;
 		}
 		else
 		{
+		    y2milestone("Creating custom partition plan");
 		    partitions = CreatePartitions (all_partitions, selected, target["label"]:"" );
-		    /*
-		    if (!SaneRegionLimits( selected, partitions) )
-		    {
-			Report::Error(no_space_reason);
-			ok = false;
-			break;
-		    }
-		    */
 		}
 		y2milestone("Final partitions %1", partitions);
 		rewrite_settings (partitions, target, driveMap);
