@@ -65,7 +65,9 @@
     global define symbol PartitionDialog (symbol mode, string item)
 	``{
 	list partitioning =  AutoinstStorage::AutoPartPlan;
+	
 	list item_id = splitstring(item,":");
+	
 	map this_drive = $[];
 	string drive = "";
 	map new_val = $[];
@@ -128,7 +130,8 @@ needs. All fields are required.</P>
 	    `VBox(
 		  `Top(
 		       `VBox(
-			     `TextEntry(`id(`partsize), _("&Size"), (partition_size!="auto" && partition_size!="max") ? partition_size : "" ),
+			     `TextEntry(`id(`partsize), _("&Size"),
+					(partition_size!="auto" && partition_size!="max") ? partition_size : "" ),
 			     `RadioButtonGroup(`id(`sizeopt),
 					       `VBox(
 						     `Left(
@@ -255,7 +258,7 @@ needs. All fields are required.</P>
 		{
 		    symbol filesystem  =  (symbol)UI::QueryWidget(`id(`fs), `Value);
 		    map selected_fs =  lookup( file_systems, filesystem , $[] );
-		    // y2milestone("filesystems=%1, this fsystem=%2", selected_fs, filesystem );
+		    
 
 		    return_value     = add( return_value , "format",  true );
 		    return_value     = add( return_value , "filesystem", filesystem );
@@ -370,9 +373,16 @@ needs. All fields are required.</P>
 
 	    if ( ret == `ok )
 	    {
-
 		if ((symbol) UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max )
 		{
+		    // Check if a partition already was configured with "max" size
+		    if (CheckIfMaxSet(drive))
+		    {			
+			Popup::Error(_("No additional partitions can be added.
+The  last partition you have created ends at the disk boundaries
+due to usage of the \"max\" option."));
+			continue;
+		    }
 		    return_value= add(return_value,"size","max");
 		}
 		else if ((symbol) UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto )
@@ -665,10 +675,35 @@ Select or enter another device name.
 
     }
 
+    /**
+     *
+     */
+    global define boolean CheckIfMaxSet( string item )
+	``{
+
+	y2milestone("item %1", item);
+	boolean exists = false;
+	map drive = (map) select(
+				 filter(
+					map d, AutoinstStorage::AutoPartPlan,
+					``(item == d["device"]:"")), 0, $[]
+				 );
+	
+	list ps = drive["partitions"]:[];
+	foreach (map p, ps, ``{
+	    
+	    if (p["size"]:"" == "max")
+		exists = true;
+	});
+
+	return exists;
+    }
 
 
-
-
+    
+    /**
+     *
+     */
     global define term StorageDialogContents()
 	``{
 
@@ -886,7 +921,16 @@ a preparation.
 	    }
 	    else if  (ret == `part)
 	    {
-		if (item != nil) {
+		if (item != nil)
+		{
+		    // Check if a partition already was configured with "max" size
+		    if (CheckIfMaxSet((string)item))
+		    {			
+			Popup::Error(_("No additional partitions can be added.
+The  last partition you have created ends at the disk boundaries
+due to usage of the \"max\" option."));
+			continue;
+		    }
 		    action = PartitionDialog(`create, (string)item);
 		    UI::ChangeWidget(`id(`table), `CurrentItem, (string)item);
 		}
