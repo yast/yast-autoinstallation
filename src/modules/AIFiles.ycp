@@ -1,7 +1,11 @@
 /**
+ * File:	modules/AIFiles.ycp
+ * Package:	AutoYaST
+ * Authors:	Anas Nashif (nashif@suse.de)
+ * Summary:	Handle complete configuration file dumps
  *
+ * $Id$
  */
-
 {
     module "AIFiles";
     textdomain "autoinst";
@@ -29,13 +33,13 @@
 	}
 	return summary;
     }
-    
+
     global define boolean Import (list settings) ``{
 	Files = settings;
 	return true;
     }
 
-    
+
     global define list  Export () ``{
 	return Files;
     }
