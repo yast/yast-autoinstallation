@@ -115,6 +115,7 @@
 
     global define map Software()``{
 	import "Packages";
+	Mode::config = false;
 	Packages::Init(true);
 
 	map allInstalledPackages = SCR::Read(.package.packageList);
@@ -144,6 +145,7 @@
 	    software["extra_packages"] = extra_packages;
 	}
 	SCR::UnmountAgent(.package);
+	Mode::config = true;
 	return software;
     }
 
@@ -185,7 +187,8 @@
 	general["keyboard"] = keyboard;
 	map clock = $[];
 	clock["timezone"]   = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, Timezone::timezone );
-		if ( size( Storage::GetWinPrimPartitions( Storage::GetTargetMap() ) ) > 0 )
+	string hwclock = "";
+	if ( size( Storage::GetWinPrimPartitions( Storage::GetTargetMap() ) ) > 0 )
 	{
 	    // Win partitions present ==> assume local time.
 	    //
@@ -206,11 +209,11 @@
 	}
 	else if (hwc == "-u")
 	{
-	    clockl["hwclock"] = "GMT";
+	    clock["hwclock"] = "GMT";
 	}
 	else
 	{
-	    clockl["hwclock"] = "";
+	    clock["hwclock"] = "";
 	}	
 	general["clock"]    = clock;
 	
