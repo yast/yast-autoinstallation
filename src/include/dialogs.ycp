@@ -846,5 +846,92 @@ to load it</P>");
 	Wizard::RestoreScreenShotName ();
 	return ret;
     }
+
+
+    global define serverSetup() ``{
+	import "Misc";
+	string title = _("Server Setup");
+	string help = _("TODO");
+
+	string dhcpif = Misc::SysconfigRead(.sysconfig.dhcpd.DHCPD_INTERFACE, "eth1");
+	
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Frame(_("NFS Configuration"),
+			      `VBox(
+				    `Left(
+					  `CheckBox(`id(`nfs), _("Configure as N&FS Installation Server"))
+					  ),
+				    `VSpacing(0.5),
+				    `Left(
+					  `HBox(
+						`HWeight(1,`TextEntry(`id(`suserep), _("Package Repo&sitory"), AIServer::PackageRep)),
+						`HWeight(2,`Empty())
+							 
+						)
+					  )				    
+				    )
+			      ),
+		       `VSpacing(0.5),
+		       `Frame(_("DHCP Configuration"),
+			      `VBox(
+				    `Left(				
+					  `CheckBox(`id(`dhcp), _("Start DHCP"))
+					  ),
+				    `VSpacing(0.5),
+				    `Left(
+					  `HBox(
+						`HWeight(1,`TextEntry(`id(`dhcpif), _("DHCP Interface"), dhcpif)),
+						`HWeight(2,`Empty())
+						)
+					  )
+				    )
+			      ),
+		       `VSpacing(0.5),
+		       `Frame(_("TFTP Configuration"),
+			      `VBox(
+				    `Left(				
+					  `CheckBox(`id(`dhcp), _("Configure TFTP"))
+					  ),
+				    `VSpacing(0.5),
+				    `Left(
+					  `HBox(
+						`HWeight(1,`TextEntry(`id(`tftproot), _("Tftp Ro&ot"), AIServer::Tftpboot)),
+						`HWeight(2,`Empty())
+						)
+					  )
+				    )
+			      )
+		       )		       		       
+		 );
+	
+	
+	Wizard::SetContents(title,
+			    contents, help, true, true);
+
+	any ret = "";
+	repeat {
+	   
+
+	    ret = UI::UserInput();
+	    
+	    if (ret == `next)
+	    {
+	
+	    }	   
+
+
+	} until (ret == `next ||	
+		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	
+	return ret;
+   
+
+	
+	
+    }
+
     
 }

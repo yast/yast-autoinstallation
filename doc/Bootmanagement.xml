@@ -2,12 +2,11 @@
   <title>
     Boot Management
   </title>
-  <sect1 id="Bootmanagement.How">
-    <title>
-      How the client boots
-    </title>
+  
+   <sect1>
+    <title>Choosing the right Boot Medium</title>
     <para>
-      There are two methods for booting the client. The computer can boot from
+      There are different methods for booting the client. The computer can boot from
       its network interface card (NIC) to receive the boot images via  &dhcp; /TFTP
       or a suitable kernel as well as an initrd image are loaded from a
       floppy or a bootable CDROM. 
@@ -50,37 +49,180 @@
 	such as network addresses and which additionaly is capable of communicating with a
 	TFTP-server to get the boot image.
       </para>
+     
+      <para>
+	
+	<ulink url="http://etherboot.sourceforge.net/">Etherboot</ulink> and
+	<ulink url="http://www.han.de/~gero/netboot.html">netboot</ulink>
+	are capable of creating a PROM  binary (which must still be programmed onto a PROM) and a
+	corresponding "tagged" TFTP boot image which includes a kernel and
+	an initial ramdisk. Some tools exist that help test a boot PROM
+	image, in fact the support utilities are pretty much common to both
+	etherboot and netboot. 
+      </para>
+      
+      
+      
+      <para>	  
+	Another alternative  to etherboot and netboot is to use a PXE-compliant
+	boot PROM.  PXE (Pre-boot Execution Environment) is a protocol
+	designed by Intel that allows computers to boot through the
+	network. PXE is stored in the ROM of new generation network
+	cards. When the computer boots up, the BIOS loads the PXE ROM in
+	the memory and executes it. A menu is displayed, allowing the
+	computer to boot an operating system loaded through the
+	network.
+      </para>
+      <para>
+	To install a client via Pre-Boot Execution Environment (&pxe;) you
+	don't need a &pxe; server! &pxe; uses a &bootp; request to get an IP
+	address and other network information and a bootloader program to the
+	client. You can either use a &bootp; server for doing this or a &dhcp;
+	and &tftp; server.
+      </para>
+      <para>
+	In the following sections, you will find a description of how &dhcp;
+	and &tftp; should be setup to make &pxe; installations possible.
+      </para>
       <simplesect>
-	<title>Etherboot and netboot</title>
-		  <para>
-
-	    <ulink url="http://etherboot.sourceforge.net/">Etherboot</ulink> and
-	    <ulink url="http://www.han.de/~gero/netboot.html">netboot</ulink>
-	    are capable of creating a PROM  binary (which must still be programmed onto a PROM) and a
-	    corresponding "tagged" TFTP boot image which includes a kernel and
-	    an initial ramdisk. Some tools exist that help test a boot PROM
-	    image, in fact the support utilities are pretty much common to both
-	    etherboot and netboot. 
-	  </para>
+	<title>DHCP</title>
+	<para>Install the &dhcp; server from ISC (http://www.isc.org/) by
+	  using the package available in the &company-suse; distribution. Configure
+	  the &dhcp; server parameter in
+	  <filename>/etc/sysconfig/dhcpd</filename> and make sure you have a
+	  working configuration file <filename>/etc/dhcpd.conf</filename>.
+	</para>
       </simplesect>
-	 
-
       <simplesect>
-	<title> Using PXE boot-PROMs </title>
-	  
-	  <para>	  
-	    Another alternative  to etherboot and netboot is to use a PXE-compliant
-	    boot PROM.  PXE (Pre-boot Execution Environment) is a protocol
-	    designed by Intel that allows computers to boot through the
-	    network. PXE is stored in the ROM of new generation network
-	    cards. When the computer boots up, the BIOS loads the PXE ROM in
-	    the memory and executes it. A menu is displayed, allowing the
-	    computer to boot an operating system loaded through the
-	    network.
-	  </para></simplesect>
+	<title>PXE Bootloader</title>
 
-    </sect2>
+	<para>
+	  PXE can load a program into the client's memory and start it. The bootloader then loads its configuration file via
+	  TFTP from the the server defined in
+	  <emphasis>next-server</emphasis> (in the<filename>
+	    dhcpd.conf</filename> file example above).
+
+	</para>
+
+	<para>
+	  The bootloader configuration file determines whether a client boots from its local hard disk or over the network.
+	</para>
+	<para>
+	  Here are example configuration files for both cases:
+	</para>
+	<example>
+	  <title>Configuration file for PXELINUX net boot</title>
+	  <programlisting>
+default linux
+serial 0,9600n8
+label linux
+  kernel linux
+  append console=ttyS0,9800 console=tty0 load_ramdisk=1  initrd=initrd  autoyast=nfs://nfsserv/file.xml
+	  </programlisting>
+	</example>
+
+	
+
+	<para>Boot from local hard disk (filename default):</para>
+	<example>
+	  <title>Configuration file for PXELINUX local boot</title>
+	  <programlisting>
+default linux
+label linux
+  localboot 0
+  </programlisting>
+	</example>
+
+	<para>
+	  <filename>pxelinux.0</filename> tries to read several configuration files. It uses
+	  the first one it finds. The filenames it looks for are determined
+	  by the IP address of the client it is running on. It converts the
+	  four decimal number parts of an IP address (they are devided by
+	  dots) into hexadecimal numbers and concatenates them. Example: IP
+	  address 192.168.0.11 gets converted into C0 A8 00 0B (without the
+	  spaces).
+	</para>
+	<para>The search for files starts at<emphasis> C0A8000B</emphasis> and proceeds by
+	  removing one digit from the right (leaving<emphasis> C0A8000</emphasis>) and so
+	  forth. When all digits are removed it will try as last resort the
+	  filename default.
+	</para>
+	<para>On your TFTP server, this algorithm can be used to tell each single machine how to boot:</para>
+	<example>
+	  <title>PXELINUX Configuration</title>
+	  <programlisting>
+/tftpboot/pxelinux.cfg/
+                   C0A8000B -> default.netboot-8.0    
+                   C0A8000C -> default.netboot-8.1    
+                   default.netboot-8.0
+                   default.netboot-8.1
+                   default
+	  </programlisting>
+	</example>
+	<para>
+	  This is important if you install a lot of machines at the same
+	  time. You can watch the syslog file on your TFTP server and
+	  whenever a client got its initial RAM disk transmitted, you can
+	  remove the symlink for that machine from the<filename> pxelinux.cfg</filename>
+	  directory. This forces the client to load the default configuration
+	  which says: "Boot from local disk!" when it reboots after AutoYaST
+	  is done.
+	</para>	  
+
+      </simplesect>
+      <simplesect>
+	<title>TFTP</title>
+	<para>PXE requires a special TFTP server. Read <filename>pxelinux.doc</filename> from the already mentioned syslinux package for details.</para>
+
+	<para>
+	  The inetd based TFTP server  cannot reliably handle much more
+	  than 64 clients at a time! With more clients not all of them will
+	  get an answer from your TFTP and you will see syslog messages like
+	  this: 
+	</para>
+	<screen>
+tftpd: read: Connection refused.
+</screen>
+	  <para>
+	    To overcome this problem you can  use <emphasis>atftp</emphasis>
+	    which is available as a package.   This TFTP server can run as
+	    stand-alone daemon.
+	  </para>
+
+
+
+	  <para>
+	    The TFTP server directory /tftpboot should look like this:
+	  </para>
+	  
+	  <example>
+	    <title>Tftpboot dir contents</title>
+	  <programlisting>
+/tftpboot/initrd     
+          pxelinux.0
+          linux    
+	  </programlisting></example>
+
+	<para>
+	  See next section for how to get the files
+	  <filename>linux</filename> and <filename>initrd</filename>.
+	</para>
+	
+      </simplesect>
+      <simplesect>
+	<title>Kernel and Initial Ramdisk</title>
+	<para>For network booting and other configurations, it is recommended to use the images available on every &company-suse;
+	  CD-ROM in the directory
+	  <filename>/suse/images/boot</filename>. The initial ramdisk
+	  (initrd) contains all kernel modules needed for successful
+	  installation. In special cases, you might need to build you own
+	  kernel or use special kernels available on the CD-ROM. 
+	</para>
+      </simplesect>
+    
+    </sect2>     
   </sect1>
+
 
   <sect1 id='Invoking'>
     <title>
