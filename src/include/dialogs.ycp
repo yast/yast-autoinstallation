@@ -271,15 +271,15 @@ must begin with letter, and must be
 
 	import "Profile";
 	
-	string help = _("<p>This tool will create a new profile by reading
+	string help = _("<p>This tool will create a reference profile by reading
 information from this system. Select the resources to read from this system
 in addition to the default resources, like partitioning and package selections.</p>
 ");
 
-	help = help + _("<p>By default, cloning will create an exact copy of the
+	help = help + _("<p>By default, referencing  will create an exact copy of the
 configuration for all basic resources, such as partitioning, boot loader, and software. This, however,
-will only work on the same hardware. If you check one of the basic resources, the default
-settings will be used instead of the configuration of this system.  Other data will be read
+will only work on the same hardware. If you check one of the basic resources a general configuration
+created instead of the actual configuration of this system.  Other data will be read
 from configuration files on the system.</p>
 ");
 	help = help + _("<p><ul><li>Partitions will be created on the whole disk and sizes will be calculated automatically</li>");
@@ -290,13 +290,13 @@ from configuration files on the system.</p>
 to autoinstall a new system.</p>
 ");
 
-	// caption
-	string title = _("Clone System");
+	// title
+	string title = _("Create a Reference Control File");
 
 	term contents =
 	    `VBox(
 		  		  
-		  `MultiSelectionBox( `id(`baseres), _("Basic Resources (Check to Use Default Settings):"),
+		  `MultiSelectionBox( `id(`baseres), _("Basic Resources (Check to Create Global  Settings):"),
 				      [
 				       `item(`id("partitioning"), _("Partitioning")),
 				       `item(`id("bootloader"),_("Boot Loader")),
@@ -304,7 +304,7 @@ to autoinstall a new system.</p>
 				       ]
 				      ),
 		  `VSpacing(1),
-		  `MultiSelectionBox( `id(`res), _("Select Additional Resources to Clone:"),
+		  `MultiSelectionBox( `id(`res), _("Select Additional Resources:"),
 				      [
 				       `item(`id("lan"), _("Network")),
 				       `item(`id("nis"),_("NIS")),
@@ -325,7 +325,7 @@ to autoinstall a new system.</p>
 	
 	Wizard::ReplaceAbortButton(`Empty());
 
-	UI::ChangeWidget(`id(`next), `Label, _("Clo&ne"));
+	UI::ChangeWidget(`id(`next), `Label, _("Crea&te"));
 	any ret = nil;	
 	repeat
 	    {
