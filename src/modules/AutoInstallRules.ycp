@@ -25,6 +25,7 @@
     import "Popup";
     import "URL";
     import "IP";
+    import "Product";
 
     include "autoinstall/io.ycp";
 
@@ -38,6 +39,10 @@
 
     // All system attributes;
     map ATTR = $[];
+
+    global string installed_product = "";
+
+    global string installed_product_version = "";
 
     global string hostname = "";
 
@@ -298,6 +303,13 @@
 
 	y2milestone ("Other linux parts: %1",  LinuxPartitions);
 
+        installed_product = Product::name;
+        installed_product_version = Product::version;
+        ATTR["installed_product"] = installed_product;
+        ATTR["installed_product_version"] = installed_product_version;
+
+        y2milestone("Installing %1 %2", installed_product, installed_product_version);
+
 	return;
     }
 
@@ -413,8 +425,8 @@
      * Read rules file
      * @return void
      */
-    global define void Read() ``{
-
+    global define void Read()
+    {
 	UserRules = XML::XMLToYCPFile( AutoinstConfig::local_rules_file );
 
 	y2milestone("Rules: %1", UserRules);
@@ -451,6 +463,18 @@
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
 			env[rule] = hostaddress;
+		    }
+		    else if ( rule == "installed_product_version")
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = installed_product_version;
+		    }
+		    else if ( rule == "installed_product")
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = installed_product;
 		    }
 		    else if ( rule == "custom1" ||  rule == "custom2" || rule == "custom3" ||  rule == "custom4" || rule == "custom5")
 		    {
@@ -635,18 +659,17 @@
      * Return list of file to merge (Order matters)
      * @return list list of files
      */
-    global define list<string> Files () ``{
+    global define list<string> Files ()
+    {
 	return tomerge;
     }
-
-
 
     /**
      * Return list of file to merge (Order matters)
      * @return boolean
      */
-    global define boolean GetRules () ``{
-
+    global define boolean GetRules ()
+    {
 	y2milestone("Getting Rules: %1", tomerge);
 
 	string scheme = AutoinstConfig::scheme;
