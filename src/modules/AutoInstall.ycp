@@ -102,6 +102,9 @@
 
     global map Bootloader = $[];
 
+
+    global map X11 = $[];
+
     // partitioning
     global list Partitioning = [];
     global list LVM = [];
@@ -196,6 +199,7 @@
 
 	Report::Set(GetMap(Install , "report", true));
 	Fstab = fstabSettings();
+	X11 = Configure["x11"]:$[];
 	return;
     }
 
@@ -287,7 +291,7 @@
 		// if id is set, then just take it and ignore everything else
 		if (v["id"]:"" != "")
 		{
-		    Mouse = id;
+		    Mouse = v["id"]:"";
 		}
 		
 		// Otherwise, try to find the mouse id from the DB using data supplied by user,
@@ -530,7 +534,7 @@
     global define void sysconfigSettings()
 	``{
 	
-	list Sysconfig = GetConfList("sysconfig", true);
+	list Sysconfig = GetConfList(Configure, "sysconfig", true);
 	list allSysconfig = union(Sysconfig, SysconfigVars);
 	
 	if (size(allSysconfig)>0)
@@ -555,7 +559,7 @@
     global define scriptSettings(string type)
 	``{
 
-	map allScripts = configure["scripts"]:$[];
+	map allScripts = Configure["scripts"]:$[];
 	list scripts = allScripts[type]:[];
 
 	string tmpdirString = "";
@@ -881,7 +885,7 @@
     global define void CopyFiles()
 	``{
 
-	list Files = GetConfList("files", true);
+	list Files = GetConfList(Configure, "files", true);
 
 	if (size(Files)==0)
 	{
