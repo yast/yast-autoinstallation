@@ -17,7 +17,7 @@
      * Show feedback message in a simple dialog.
      * @param msg message to show
      **/
-    global define void showFeedback( string msg ) ``{
+    define void showFeedback( string msg ) ``{
 	if ( AutoinstConfig::popup_open )
 	{
 	    UI::CloseDialog();
@@ -31,21 +31,19 @@
     /**
      * Close feedback dialog if it is open
      **/
-    global define void clearFeedback() ``{
+    define void clearFeedback() ``{
 	if ( AutoinstConfig::popup_open )
 	    UI::CloseDialog();
 	AutoinstConfig::popup_open = false;
     };
 
 
-
-    
-    
     /**
+	 * Preferences()
      * Preferences Dialog
-     *
+     * @return symbol
      */
-    global define symbol Preferences()
+    define symbol Preferences()
 	``{
 	Wizard::SetScreenShotName ("autoyast-preferences");
 	term contents =
@@ -177,7 +175,7 @@ contains all the packages.</p>
      * @param string file name
      * @return 0 if valid, -1 if not.
      */
-    global define integer checkFileName (string name) ``{
+    define integer checkFileName (string name) ``{
         if (name != filterchars (name, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-")
 	    || size (name) > 127)
 	{
@@ -193,7 +191,7 @@ contains all the packages.</p>
      * @param -
      * @return message
      */
-    global define string invalidFileName() ``{
+    define string invalidFileName() ``{
 	return(_("Invalid file name.
 Names can only contain letters, numbers, and underscore,
 must begin with letter, and must be
@@ -201,13 +199,12 @@ must begin with letter, and must be
 "));
     }
 
-    
 
     /**
      * Popup for a new file name
      * @return string new file name
      */
-    global define string NewFileName(string caption, string textentry)``{
+    define string NewFileName(string caption, string textentry)``{
 	term con =
 	    `HBox(
 		  `HSpacing(1),
@@ -259,11 +256,10 @@ must begin with letter, and must be
      * Clone running system
      *
      */
-    global define symbol cloneSystem()``{
+    define symbol cloneSystem()``{
 	
 	import "AutoinstClone";
 	import "Profile";
-	
 	string help = _("<p>This tool creates a reference profile by reading
 information from this system. Select the resources to read from this system
 in addition to the default resources, like partitioning and package selections.</p>
@@ -278,7 +274,6 @@ from configuration files on the system.</p>
 	help = help + _("<p><ul><li>Partitions will be created on the whole disk and sizes will be calculated automatically</li>");
 	help = help + _("<li>Default software selection will be installed</li>");
 	help = help + _("<li>Boot loader location and boot loader sections will be determined automatically</li></ul></p>");
-	
 	help = help + _("<p>Examine any produced control file before using it
 to autoinstall a new system.</p>
 ");
@@ -288,12 +283,11 @@ to autoinstall a new system.</p>
 
 	term contents =
 	    `VBox(
-		  		  
-		  `MultiSelectionBox( `id(`baseres), _("Basic Resources (Check to Create Global  Settings):"),
+		  `MultiSelectionBox( `id(`baseres), _("Basic Resources (Check to Create  Settings):"),
 				      [
 				       `item(`id("partitioning"), _("Partitioning")),
 				       `item(`id("bootloader"),_("Boot Loader")),
-				       `item(`id("software"),_("Software"))		       
+				       `item(`id("software"),_("Software"))
 				       ]
 				      ),
 		  `VSpacing(1),
@@ -315,33 +309,27 @@ to autoinstall a new system.</p>
 
 	Wizard::SetContents(title,
 			    contents, help, true, true);
-	
 	Wizard::ReplaceAbortButton(`Empty());
 
 	UI::ChangeWidget(`id(`next), `Label, _("Crea&te"));
-	symbol ret = `none;	
+	symbol ret = `none;
 	repeat
 	    {
-		ret = (symbol)UI::UserInput();	
+		ret = (symbol)UI::UserInput();
 		if (ret ==`next)
 		{
 		    AutoinstClone::base = (list)UI::QueryWidget( `id(`baseres), `SelectedItems );
 		    AutoinstClone::additional = (list)UI::QueryWidget( `id(`res), `SelectedItems );
 		    showFeedback( _("Collecting system data.
 Please wait...
-"));		 
+"));
 		    AutoinstClone::Process();
-		    
 		    Profile::changed = true;
 		    clearFeedback();
 
 		}
 	    } until (ret == `next || ret == `back);
-	
-	
-	return ret;	
+	return ret;
     }
 
-
-    
 }

@@ -30,6 +30,9 @@
 
     global boolean x11_installed = false;
 
+
+
+    
     /**
      * Read module configuration files
      * @return: map
@@ -74,7 +77,11 @@
     }
 
 
-
+    /**
+     * SortGroup()
+     * Sort tree groups
+     * @return list
+     */
     define list SortGroups (map GroupMap, list GroupList)
 	``{
         return
@@ -86,7 +93,11 @@
 	    });
     }
 
-
+    /**
+     * CreateGroupTree()
+     * Create group tree
+     * @return void
+     */
     define void CreateGroupTree (map Groups)
 	``{
 	y2milestone("Groups: %1", Groups);
@@ -107,7 +118,11 @@
 	return;
     }
 
-
+    /**
+     * ConstructMenu()
+     * Construct Menu Widget
+     * @return list
+     */
     define list ConstructMenu() ``{
 
 	CreateGroupTree(GroupMap);
@@ -116,7 +131,8 @@
 	    string name = v["Name"]:"";
 	    map menu_entry = $["entry":m, "title":name];
 	    list menu_list = [];
-	    if (haskey(v,"X-SuSE-YaST-Group")) {
+	    if (haskey(v,"X-SuSE-YaST-Group"))
+	    {	
 		string parent = v["X-SuSE-YaST-Group"]:"";
 		MenuTreeData = maplist (map k, MenuTreeData, ``{
 		    if (k["entry"]:"" == parent) {
@@ -129,14 +145,18 @@
 			return (k);
 		    }
 		});
-	    } else {
+	    }
+	    else
+	    {
 		MenuTreeData = add(MenuTreeData,menu_entry);
 	    }
 	});
+	y2debug("MenuTreeData: %1", MenuTreeData );
     }
 
 
     /**
+     * Y2ModuleConfig ()
      * Constructor
      */
     global define void Y2ModuleConfig () ``{
@@ -162,12 +182,14 @@
 	if (Mode::config)
 	{
 	    // construct the tree menu
+	    y2debug("Calling Construct Menu");
 	    ConstructMenu();
 	}
     }
 
 
     /**
+     * getResource()
      * Get resource name
      */
     global define string getResource( string default_resource)
@@ -179,10 +201,8 @@
 	    return ret;
     }
 
-
-
-
     /**
+     * getResourceData()
      * Get resource data
      */
     global define any getResourceData( map resourceMap, string resource) ``{
@@ -220,12 +240,8 @@
 
     }
 
-
-
-
-
-
     /**
+     * Deps()
      * Simple dependency resolving
      */
     global define list Deps () ``{

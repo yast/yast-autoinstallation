@@ -26,7 +26,7 @@
 
 
 
-    global list menuitems = [`menu_open,
+    list menuitems = [`menu_open,
 			     `menu_delete,
 			     `menu_save,
 			     `menu_saveas,
@@ -44,7 +44,7 @@
 			     `mene_rules,
 			     `menu_merge
 			     ];
-    global map dialogs =
+    map dialogs =
 	$[
 	  "tree":``(   ConfTree(menuitems) )
 	];
@@ -54,11 +54,11 @@
      * Whole configuration of autoyast
      * @return `back, `abort or `next
      */
-    global define symbol AutoSequence () ``{
+    define symbol AutoSequence () ``{
 
 	map sequence =
 	    $[
-	      "ws_start" : "tree",	      
+	      "ws_start" : "tree",
 	      "tree":
 	      $[
 		`exit	: `ws_finish
@@ -76,7 +76,7 @@
 				     Label::NextButton ());
 
 
-	any ret = WizardSequencer (dialogs, sequence);
+	symbol ret = (symbol)WizardSequencer (dialogs, sequence);
 	UI::CloseDialog ();
 	return ret;
     }
