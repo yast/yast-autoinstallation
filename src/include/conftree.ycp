@@ -42,9 +42,10 @@
 
     
     global define content_dialog( string resource, map resourceMap ) ``{
-	
+	include "readconfig.ycp";
 	string summary =  Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
-	string caption = resourceMap["Name"]:"Configurtion";
+	string domain = resourceMap["Textdomain"]:"base";
+	string caption = ReadKey (domain, "Name", resourceMap);
 	string buttonLabel = resourceMap["Helptext"]:"Configure";
 	term contents =
 	    `VBox(		
@@ -59,7 +60,7 @@
 		  );
 	// caption of lan auto configuration
 	Wizard::SetContents(
-			    Translate(caption),
+			    caption,
 			    contents, "", true, true);
     }
 
