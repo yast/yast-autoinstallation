@@ -114,7 +114,7 @@
 ;;!Only top level of appendixes!
 (define (toc-depth nd)
   (if (string=? (gi nd) (normalize "book"))
-      2
+      3
       (if (string=? (gi nd) (normalize "appendix"))
         0
         1)))
