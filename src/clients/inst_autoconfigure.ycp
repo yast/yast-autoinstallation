@@ -74,15 +74,7 @@ Please wait while the system is being configured.
     y2debug("Flat profile: %1", Profile::Flat);
 
 
-    list<map> deps = [];
-    if (haskey(Profile::Flat, "dependencies"))
-    {
-	deps = Y2ModuleConfig::Deps(Profile::Flat["dependencies"]:$[]);
-    }
-    else
-    {
-	deps = Y2ModuleConfig::Deps($[]);
-    }
+    list<map> deps =  Y2ModuleConfig::Deps();
 
     y2milestone("Order: %1", maplist(map d, deps, ``(d["res"]:"")));
 
