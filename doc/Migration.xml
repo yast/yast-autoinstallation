@@ -1,6 +1,6 @@
   <chapter id="Migration">
     <title>Legacy and foreign Configuration formats</title>
-    <sect1>
+    <section>
       <title>Migration from &yast1; and &alice;</title>
       <para>
 	ALICE, SuSEs former auto-installation system was a system built around
@@ -17,17 +17,13 @@
 	<emphasis>info</emphasis> file has the traditional format used with &yast1;.
       </para>
       
-      
-      <sect2 id="Migration.configuration">
-	<title>
-	  System Configuration with &alice;
-	</title>
+  
 	<para>
 	  The system configuration is done almost entirely after the system is
 	  installed and is initiated using the <emphasis>%post</emphasis> section of the &alice; RPM
 	  package.
 	</para>
-	<simplesect>
+	<section>
 	  <title>
 	    &alice; modules
 	  </title>
@@ -161,8 +157,8 @@
 	      </tbody>
 	    </tgroup>
 	  </table>
-	</simplesect>
-	<simplesect>
+	</section>
+	<section>
 	  <title>
 	    Other configuration options with &yast2; and &alice;
 	  </title>
@@ -174,15 +170,15 @@
 	  </para>
 	  <para>
 	    Entries in <filename>/etc/sysconfig</filename> can be easily set and
-	    modified using &yast2; and AutoYaST2. For network services it is recommended to use the
+	    modified using &yast2; and AutoYaST. For network services it is recommended to use the
 	    relevant &yast2; modules dealing with networking , rather than modifying
 	    <filename>/etc/sysconfig/network</filename> directly.
 	  </para>
-	</simplesect>
+	</section>
 	
-      </sect2>
-    </sect1>
-    <sect1>
+      </section>
+  
+    <section>
       <title>Redhat Kickstart</title>
       <para>
 	The Configuration Management System offers an option for importing
@@ -191,33 +187,33 @@
 	system. To import a <emphasis>Kickstart</emphasis> file, you only need
 	to enter the path of the configuration file and decide how to handle
 	the data, by either saving the result into a file directly or by
-	loading the resulting AutoYaST2 compatible control file into the
+	loading the resulting AutoYaST compatible control file into the
 	Configuration Management System to add more configuration options
 	available with SuSE. The following sections describe some limitations
 	and issues to consider when importing from a foreign source:
       </para>
-      <simplesect>
+      <section>
 	<title>Software selections and packages</title>
 	<para>
 	  It is not possible at the moment to import package selections and
-	  single package listing into AutoYaST2. The packages will be
+	  single package listing into AutoYaST. The packages will be
 	  added to the control file, but manual selection of the desired
 	  packages is needed. The reason is that package groups and package
 	  names  might differ depending on the source distribution
 	</para>
-      </simplesect>
-      <simplesect>
+      </section>
+      <section>
 	<title>User scripts</title>
 	<para>
 	  Kickstart offers two types of scripts, <emphasis>pre</emphasis> and
 	  <emphasis>post</emphasis> scripts. More scripts (&gt;2)  are
-	  not supported as in AutoYaST2. So it might be needed to split large
+	  not supported as in AutoYaST. So it might be needed to split large
 	  scripts into smaller components depending on the function to make
 	  such scripts manageable
 	</para>
-      </simplesect>
-    </sect1>
-    
+      </section>
+   
+    </section>
   </chapter>
   <!--
   Local Variables:
