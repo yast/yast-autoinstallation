@@ -43,287 +43,415 @@
       <para>An AutoYaST configuration server that defines rules and profiles.</para>
     </listitem>
   </itemizedlist>
-    
+  
+  <section>
+    <title>
+      Boot Server
+    </title>
     <section>
-	<title>
-	  Boot Server
-	</title>
-	<para>
-	  The boot server is composed of DHCP or BOOTP  and tftp servers. In
-	  some cases the boot server has to be in the same network segment as
-	  the client due to the fact that DHCP or TFTP packets will not be
-	  forwarded across a router.	  
-	</para>
- 
+      <title>Introduction</title>
+    <para>
+      The boot server is composed of &dhcp; or &bootp;  and &tftp; servers. In
+      some cases the boot server has to be in the same network segment as
+      the client due to the fact that &dhcp; or &tftp; packets will not be
+      forwarded across  routers.	  
+    </para>
+    
+    <para>
+      For administrative purposes, booting from a network card (NIC) is much more
+      flexible than booting from a floppy or other types of media. In order to use this boot method,
+      the client's NIC needs to have a boot PROM that is able to communicate with a
+      &dhcp; or &bootp;  server to receive  configuration parameters
+      such as network addresses and boot server location.
+    </para>
+    <para>	  
+      &pxe; (Pre-boot Execution Environment) is a protocol
+      designed by Intel that allows computers to boot through the
+      network. <acronym>PXE</acronym> is stored in the ROM of new generation network
+      cards. When the computer boots up, the BIOS loads the &pxe; ROM in
+      the memory and executes it. A menu can be displayed, allowing the
+      computer to boot an operating system loaded through the
+      network.
+    </para>
+    <para>
+      To install a client via Pre-Boot Execution Environment (&pxe;) you
+      don't need a &pxe; server! &pxe; sends a &bootp; request to get an IP
+      address and other network information and a bootloader program to the
+      client. You can either use a &bootp; server or a &dhcp;
+      and &tftp; server.
+    </para>
+    <para>	
+      <ulink url="http://etherboot.sourceforge.net/">Etherboot</ulink> and
+      <ulink url="http://www.han.de/~gero/netboot.html">netboot</ulink>
+      are capable of creating a PROM  binary (which must still be programmed onto a PROM) and a
+      corresponding "tagged" &tftp; boot image which includes a kernel and
+      the initial ramdisk (initrd).
+    </para>
+    <para>
+      Unlike a PXE ROM, which loads an intermediate network boot program, these
+      other network booting solutions are designed to load a specially-marked
+      Linux kernel directly. There are only three differences in the server
+      configuration:
+
+      </para>
+    <itemizedlist>
+      <listitem>
+	<para>You don't need PXELinux at all.</para>
+      </listitem>
+      <listitem>
+	<para>In the DHCP configuration, the filename parameter contains the name of the client kernel file.</para>
+      </listitem>
+      <listitem>
+	<para> The client kernel file needs to be processed by the mknbi program to correctly recognized by the ROM.</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      One or two protocols (depending on how you set it up) are used to boot a
+      machine off the network. The first, DHCP, is a protocol to allow hosts to
+      automatically configure their network parameters from a server, and is
+      commonly used on networks to make IP address allocation and network
+      administration easier. You'll only need to set this up if you use
+      Etherboot or PXE. The second, TFTP, is a stripped down FTP protocol, commonly
+      used in bootloaders where a full FTP client would be too large. The
+      server machine (Boot server)  must run servers for at least TFTP, and DHCP too if you
+      want to load an image off the network.
+      </para>
+    </section>
+
+    <section>
+      <title>Required Services on the Boot Server</title>
+    <section>
+      <title>DHCP</title>
       <para>
-	For administrative purposes, booting from a network card (NIC) is much more
-	flexible than booting from a floppy or other types of media. In order to use this boot method,
-	the client's NIC needs to have a boot PROM that is able to communicate with a
-	&dhcp; or BOOTP  server to receive  configuration parameters
-	such as network addresses and boot server location.
-      </para>
-      <para>	
-	<ulink url="http://etherboot.sourceforge.net/">Etherboot</ulink> and
-	<ulink url="http://www.han.de/~gero/netboot.html">netboot</ulink>
-	are capable of creating a PROM  binary (which must still be programmed onto a PROM) and a
-	corresponding "tagged" TFTP boot image which includes a kernel and
-	an initial ramdisk. Some tools exist that help test a boot PROM
-	image, in fact the support utilities are pretty much common to both
-	etherboot and netboot. 
-      </para>
-      <para>	  
-	An alternative to etherboot and netboot is a PXE-compliant
-	  boot PROM.  <acronym>PXE</acronym> (Pre-boot Execution Environment) is a protocol
-	designed by Intel that allows computers to boot through the
-	  network. <acronym>PXE</acronym> is stored in the ROM of new generation network
-	  cards. When the computer boots up, the BIOS loads the<acronym> PXE</acronym> ROM in
-	the memory and executes it. A menu can be displayed, allowing the
-	computer to boot an operating system loaded through the
-	network.
+	Install the &dhcp; server from ISC (http://www.isc.org/) by
+	using the package available in the &company-suse; distribution. Configure
+	the &dhcp; server parameter in
+	<filename>/etc/sysconfig/dhcpd</filename> and make sure you have a
+	working configuration file <filename>/etc/dhcpd.conf</filename>.
       </para>
       <para>
-	To install a client via Pre-Boot Execution Environment (&pxe;) you
-	don't need a &pxe; server! &pxe; sends a &bootp; request to get an IP
-	address and other network information and a bootloader program to the
-	client. You can either use a &bootp; server or a &dhcp;
-	and &tftp; server.
+	Note that you'll need the Ethernet address of your client machine before
+	you can use this &dhcp; configuration. There are several ways to get this
+	information. If the client machine already has Linux installed, use
+	ifconfig and look for the <emphasis>HWaddr</emphasis> value. 
+      </para>
+      <para>The PXE ROM will often show such information either in the
+	configuration screen or during an attempt to boot from the network. If
+	none of those work, use arpwatch or tcpdump on the server to watch the
+	network packets from the client as the client tries to network boot.
+      </para>
+    </section>
+
+    <section>
+      <title>TFTP</title>
+      <para>
+	PXE requires a special &tftp; server. Read
+	<filename>/usr/share/doc/packages/syslinux/pxelinux.doc</filename> from the already mentioned <emphasis>syslinux</emphasis>
+	package for details.
       </para>
       <para>
-	The following sections describe  how &dhcp;
-	and &tftp; should be setup to make a &pxe; based installation possible.
+	The INETD based &tftp; server  cannot reliably handle much more
+	than 64 clients at a time! With more clients not all of them will
+	get an answer from your &tftp; and you will see syslog messages like
+	this: 
       </para>
-
-
-
-      <section>
-	<title>DHCP</title>
-	<para>
-	  Install the &dhcp; server from ISC (http://www.isc.org/) by
-	  using the package available in the &company-suse; distribution. Configure
-	  the &dhcp; server parameter in
-	  <filename>/etc/sysconfig/dhcpd</filename> and make sure you have a
-	  working configuration file <filename>/etc/dhcpd.conf</filename>.
-	</para>
-      </section>
-
-
-      <section>
-	<title>PXE Bootloader</title>
-
-	<para>
-	  PXE can load a program into the client's memory and start it. The
-	  bootloader then loads its configuration file via  TFTP from the the server defined in
-	  <emphasis>next-server</emphasis> (in the<filename>
-	    dhcpd.conf</filename> file example above).	 
-	</para>
-
-	<para>
-	  The bootloader configuration file determines whether a client boots
-	  from its local hard disk or over the network.
-	</para>
-	<para>
-	  Here are example configuration files for both cases:
-	</para>
-	<example>
-	  <title>Configuration file for PXELINUX net boot</title>
-	  <programlisting>
-default linux
-serial 0,9600n8
-label linux
-  kernel linux
-  append console=ttyS0,9800 console=tty0 load_ramdisk=1  initrd=initrd  autoyast=nfs://nfsserv/file.xml
-	  </programlisting>
-	</example>
-
-	
-
-	<para>Boot from local hard disk (filename default):</para>
-	<example>
-	  <title>Configuration file for PXELINUX local boot</title>
-	  <programlisting>
-default linux
-label linux
-  localboot 0
-  </programlisting>
-	</example>
-
-	<para>
-	  <filename>pxelinux.0</filename> tries to read several configuration files. It uses
-	  the first one it finds. The filenames it looks for are determined
-	  by the IP address of the client it is running on. It converts the
-	  four decimal number parts of an IP address (they are devided by
-	  dots) into hexadecimal numbers and concatenates them. Example: IP
-	  address 192.168.0.11 gets converted into C0 A8 00 0B (without the
-	  spaces).
-	</para>
-	<para>The search for files starts at<emphasis> C0A8000B</emphasis> and proceeds by
-	  removing one digit from the right (leaving<emphasis> C0A8000</emphasis>) and so
-	  forth. When all digits are removed it will try as last resort the
-	  filename default.
-	</para>
-	<para>On your TFTP server, this algorithm can be used to tell each single machine how to boot:</para>
-	<example>
-	  <title>PXELINUX Configuration</title>
-	  <programlisting>
-/tftpboot/pxelinux.cfg/
-                   C0A8000B -> default.netboot-8.0    
-                   C0A8000C -> default.netboot-8.1    
-                   default.netboot-8.0
-                   default.netboot-8.1
-                   default
-	  </programlisting>
-	</example>
-	<para>
-	  This is important if you install a lot of machines at the same
-	  time. You can watch the syslog file on your TFTP server and
-	  whenever a client got its initial RAM disk transmitted, you can
-	  remove the symlink for that machine from the<filename> pxelinux.cfg</filename>
-	  directory. This forces the client to load the default configuration
-	  which says: "Boot from local disk!" when it reboots after AutoYaST
-	  is done.
-	</para>	  
-
-      </section>
-
-
-      <section>
-	<title>TFTP</title>
-	<para>PXE requires a special TFTP server. Read
-	  <filename>pxelinux.doc</filename> from the already mentioned syslinux
-	  package for details.</para>
-
-
-	<para>
-	  The inetd based TFTP server  cannot reliably handle much more
-	  than 64 clients at a time! With more clients not all of them will
-	  get an answer from your TFTP and you will see syslog messages like
-	  this: 
-	</para>
-	<screen>
+      <screen>
 tftpd: read: Connection refused.
-	</screen>
-	  <para>
-	    To overcome this problem you can  use <emphasis>atftp</emphasis>
-	    which is available as a package.   This TFTP server can run as
-	    stand-alone daemon.
-	  </para>
-	  <para>
-	  The TFTP server directory <filename>/tftpboot</filename> should look like this:
-	  </para>
-	  
-	  <example>
-	    <title>Tftpboot dir contents</title>
-	  <programlisting>
+      </screen>
+      <para>
+	To overcome this problem you can  use <emphasis>atftp</emphasis>
+	which is available as a package.   This &tftp; server can run as
+	stand-alone daemon.
+      </para>
+      <para>
+	The &tftp; server directory <filename>/tftpboot</filename> should
+	look like the following:
+      </para>
+      
+      <example>
+	<title>Tftpboot dir contents</title>
+	<programlisting>
 /tftpboot/initrd     
           pxelinux.0
           linux    
-	  </programlisting></example>
+	</programlisting></example>
 
-	<para>
-	  See next section for how to get the files
-	  <filename>linux</filename> and <filename>initrd</filename>.
-	</para>
-	
-      </section>
+      <para>
+	See next section for how to get the files  <filename>linux</filename> and <filename>initrd</filename>.
+      </para>
+      
+    </section>
+    </section>
 
+    <section>
+      <title>Boot Server Configuration</title>
 
 
       <section>
 	<title>Kernel and Initial Ramdisk</title>
 	<para>
 	  For network booting and other configurations, it is recommended to
-	  use the images available on every &company-suse; CD-ROM in the directory
-	  <filename>/suse/images/boot</filename>. The initial ramdisk
+	  use the images available on the first &company-suse; CD-ROM in the directory
+	  <filename>boot/loader</filename>. The initial ramdisk
 	  (initrd) contains all kernel modules needed for successful
 	  installation. In special cases, you might need to build you own
 	  kernel or use special kernels available on the CD-ROM. 
 	</para>
+	<para>
+	  Copy the kernel image and the initial ramdisk to the &tftp; directory
+	  (<filename>/tftpboot</filename>. Those files will be called from the
+	  configuration files of either PXE or GRUB.
+	</para>
       </section>
+      
 
 
-      <section>
-	<title>
-	  &bootp;/&dhcp; Options
-	</title>
-    
+    <section>
+      <title>
+	&dhcp; Configuration Examples
+      </title>
+	
 	<para>
 	  To allow the specification of the source media location when booting
 	  over the network,  <emphasis>root-path</emphasis> options of   &dhcp;   can be used.	 
 	</para>
-	<example>
-	  <title>
-	    <filename>/etc/dhcpd.conf</filename> with the <emphasis>root-path</emphasis> option
-	  </title>
-	  <screen>
-subnet 192.168.1.0 netmask 255.255.255.0 
-{
-      range dynamic-bootp 192.168.1.100 192.168.1.110;
-      option broadcast-address 192.168.1.255;
-      option routers 192.168.1.1;
-      filename "vmlinuz.nbi";
-      option root-path "/tftpboot/CDs";
-	
-      next-server 192.168.1.1; 
-}
-	  </screen>
-	</example>
+	&example.dhcp2;
 	<para> 
 	  One more example shows how the  &dhcp;  server can send an image to the
 	  client, depending on the type of the requesting client (PXE or
 	  Etherboot).
 	</para>
-	<example>
-	  <title> &dhcp;  server configuration with PXE and Etherboot options</title>
-	  <screen>
-ddns-update-style none;
-allow bootp;
-allow booting;
-
-
-subnet 192.168.1.0 netmask 255.255.255.0 {
-  range dynamic-bootp 192.168.1.100 192.168.1.110;
-  option domain-name "cluster.suse.de";
-  option routers 192.168.1.240;
-  option subnet-mask 255.255.255.0;
-  option broadcast-address 192.168.1.255;
-  filename "vmlinuz-node.nbi";
-  option root-path "/local/CD1";
-}
-
-
-group {
-    next-server 192.168.1.240;
-    use-host-decl-names on;
-
-    host n1 {
-        hardware ethernet 00:00:1c:b5:6e:71;
-        fixed-address n1;
-        if substring (option vendor-class-identifier, 0, 9) = "PXEClient" {
-            filename "/tulip.lzpxe";
-        } else if substring (option vendor-class-identifier, 0, 9) = "Etherboot" {
-            filename "/vmlinuz-node.nbi";
-        }
-    }
-    host n2 {
-        hardware ethernet 00:00:1c:b5:72:ea;
-        fixed-address n2;
-        if substring (option vendor-class-identifier, 0, 9) = "PXEClient" {
-            filename "pxelinux.0";
-        } else if substring (option vendor-class-identifier, 0, 9) = "Etherboot" {
-            filename "/vmlinuz-node.nbi";
-        }
-    }
-}
-	
-	  </screen>      
-	  </example>
-
-	</section>
-
+	&example.dhcp1;
       </section>
 
+	<section>
+	  <title>Booting with PXE</title>
 
+	  <para>
+	    PXE can load a program into the client's memory and start it (the bootloader). The
+	    bootloader then loads its configuration file via  &tftp; from the server defined in
+	    <emphasis>next-server</emphasis> in <filename>/etc/dhcpd.conf</filename>.
+	  </para>
+	  <para>
+	    The bootloader configuration file determines whether a client boots
+	    from its local hard disk or over the network.
+	  </para>
+	  <para>
+	    The following are example configuration files for both cases:
+	  </para>
+	  <example>
+	    <title>Configuration file for PXELINUX net boot</title>
+	    <programlisting>
+default linux
+serial 0,9600n8
+label linux
+  kernel linux
+  append console=ttyS0,9800 console=tty0 load_ramdisk=1  initrd=initrd  autoyast=nfs://nfsserv/file.xml
+	    </programlisting>
+	  </example>
 
+	  <para>Boot from local hard disk (filename default):</para>
+	  <example>
+	    <title>Configuration file for PXELINUX local boot</title>
+	    <programlisting>
+default linux
+label linux
+  localboot 0
+	    </programlisting>
+	  </example>
+
+	  <para>
+	    The file <filename>pxelinux.0</filename> tries to read several configuration files. It uses
+	    the first one it finds. The filenames it looks for are determined
+	    by the IP address of the client it is running on. It converts the
+	    four decimal number parts of an IP address (they are devided by
+	    dots) into hexadecimal numbers and concatenates them. Example: IP
+	    address 192.168.0.11 gets converted into C0 A8 00 0B (without the
+	    spaces).
+	  </para>
+	  <para>The search for files starts at <emphasis>C0A8000B</emphasis> and proceeds by
+	    removing one digit from the right (leaving<emphasis> C0A8000</emphasis>) and so
+	    forth. When all digits are removed it will try as last resort the
+	    filename default.
+	  </para>
+	  <para>On your &tftp; server, this algorithm can be used to tell each single machine how to boot:</para>
+	  <example>
+	    <title>PXELINUX Configuration</title>
+	    <programlisting>
+/tftpboot/pxelinux.cfg/
+                   C0A8000B -> default.netboot-8.0    
+                   C0A8000C -> default.netboot-8.1    
+                   default.netboot-8.0
+                   default.netboot-8.1
+                   default
+	    </programlisting>
+	  </example>
+	  <para>
+	    This is important if you install a lot of machines at the same
+	    time. You can watch the syslog file on your &tftp; server and
+	    whenever a client got its initial RAM disk transmitted, you can
+	    remove the symlink for that machine from the <filename>pxelinux.cfg</filename>
+	    directory. This forces the client to load the default configuration
+	    which says: "Boot from local disk!" when the machine reboots after AutoYaST
+	    is done. (This process can be automated by monitoring the network or
+	    <emphasis>syslog</emphasis> for booting clients and removing the links
+	    with a script running in thr background)
+	  </para>	  
+
+	</section>
+	<section>
+	  <title>Booting with Etherboot</title>
+	  <para>
+	    Etherboot, as mentioned earlier, is the piece of software that
+	    loads off of a floppy or boot EPROM and loads the GRUB, the
+	    second-stage loader, off the server. It is a freely-available, open
+	    source package which also can be found with SuSE Linux.
+	  </para>
+	  <para>
+	    To use etherboot with a boot EPROM, consult the etherboot
+	    documentation. The etherboot package contains pre-compiled images
+	    for boot EPROM and floppies.
+	  </para>
+	  <para>To create a bootable floppy for network installation copy the
+	    image in a floppy:</para>
+	  <programlisting>
+cat /usr/lib/etherboot/dsk/&lt;NIC&gt; > /dev/fd0
+</programlisting>
+	  <para>Once you have a bootable floppy, test-boot it. You should
+	    receive a prompt asking whether to boot from (L)ocal or
+	    (N)etwork. Choose network. If  you haven't set up a DHCP server yet,
+	    it should hang - but at least Etherboot works.
+	  </para>
+	  <para>To boot using etherboot, you need to create the tagged image
+	    using <command>mknbi-linux</command> which is part of the
+	    <emphasis>mknbi</emphasis> package. Assuming you have copied the
+	    linux image and the initial ramdisk to a directory (images) below
+	    <filename>/tftpboot</filename>, the following command line will be
+	    used to create the image:</para>
+	  <programlisting>
+mknbi-linux images/linux images/initrd --output=linux.nbi-9.0
+</programlisting>
+	  <para>Using the <emphasis>--param</emphasis> command line option, you
+	    can set the kernel parameter in case you don't have them applied
+	    somewhere else.
+	    </para>
+	  <programlisting>
+mknbi-linux images/linux images/initrd --output=linux.nbi-9.0   --param='autoyast="http://192.168.1.1/profiles" .....'
+</programlisting>
+
+	  <para>An alternative for adding the kernel parameters while
+	    creating the image which is not optimal for multiple clients
+	    needing different parameters is to make the &dhcp; server send the
+	    parameters during booting using a special option in
+	    <filename>/etc/dhcpd.conf</filename>.
+	  </para>
+	  <para>You need to define two custom options (T128 and T129) in the &dhcp;
+	    configuration as described in the following example:</para>
+	  &example.dhcp3;
+      </section>
+   
+      <section id="grubfloppy">
+	<title>GRUB Floppy</title>
+	<para>
+	  To create a GRUB boot floppy with the menu interface, the easiest way
+	  is:
+	</para>
+	<orderedlist>
+	  <listitem>
+	    <para>Create filesystem in your floppy disk. For example:</para>
+	    <screen>
+<![CDATA[
+$ mke2fs /dev/fd0
+]]>
+</screen>
+	  </listitem>
+	  <listitem>
+	  <para>Mount it on somewhere, say, <filename>/mnt</filename>.</para>
+	  </listitem>
+	  <listitem>
+	  <para>Copy the GRUB images from <filename>/usr/lib/grub/</filename> to <filename>/mnt/boot/grub</filename>. Only<emphasis> stage1</emphasis>,
+	    <emphasis>stage2</emphasis> (Use <emphasis>stage2.netboot</emphasis> in this case) and <emphasis>menu.lst</emphasis> are necessary. You may not copy "stage1.5"s.</para>
+	  </listitem>
+	<listitem>
+	  <para>Unmount the floppy.</para>
+	</listitem>
+	  <listitem>
+	    <para> Run the following command:</para>
+	    <screen>
+<![CDATA[
+$ /usr/sbin/grub --batch <<EOT
+	       root (fd0)
+               setup (fd0)
+               quit
+               EOT
+]]>
+</screen>
+
+	    </listitem>
+	  </orderedlist>
+	  <para>
+	    The file <filename>menu.list</filename> can have multiple enteries. the
+	    following example shows different ways for booting the client over the network:
+	  </para>
+	  &example.grubmenu;
+	  <note>
+	    <title>NIC Support</title>
+	    <para>
+	      GRUB does not support all network interfaces and having all network
+	      interfaces enabled in the
+	      <filename>/usr/lib/grub/stage2.netboot</filename> might have some
+	      side effects when booting certains network devices.
+	    </para>
+	  </note>
+      </section>		
+      <section>
+	<title>Combining Etherboot with GRUB</title>
+	<para>
+	  GRUB consists of several images: two essential stages, optional
+	  stages called Stage 1.5, and two network boot images. Here is a short
+	  overview of the network boot images:
+	</para>
+	<formalpara>
+	  <title>nbgrub</title>
+	  <para>This is a network boot image for the Network Image Proposal
+	    used by some network boot loaders, such as Etherboot. This is
+	    mostly the same as Stage 2, but this also sets up a network and
+	    loads a configuration file from the network.</para>
+
+	</formalpara>
+	<formalpara>
+	  <title>pxegrub</title>
+	  <para>This is another network boot image for the Preboot Execution
+	    Environment used by several Netboot ROMs. This is identical to
+	    <emphasis>nbgrub</emphasis>, except for the format.</para>
+
+	</formalpara>
+	<para>Those images are the same as the normal Stage 2, except that they
+	  set up a network automatically, and try to load a configuration file
+	  from the network, if specified. The usage is very simple: If the
+	  machine has a PXE ROM, use `pxegrub'. If the machine has a NBI loader
+	  such as Etherboot, use `nbgrub'. There is no difference between them
+	  but their formats. As how to load a second stage image you want to
+	  use should be described in the manual on your Net Boot ROM, please
+	  refer to the manual, for more information.</para>
+
+	<para>
+	  However, there is one thing specific to GRUB. Namely, how to specify
+	  a configuration file in a BOOTP/DHCP server. For now, GRUB uses the
+	  tag `150', to get the name of a configuration file. This below is an
+	  example about a DHCP configuration:</para>
+	&example.dhcp4;
+
+	<para>Note that you should specify the drive name <emphasis>(nd)</emphasis> in the name of
+	  the configuration file. That is because you can change the root drive
+	  before downloading the configuration from the TFTP server, when the
+	  preset menu feature is used.
+	</para>
+
+    
+      </section>
+    </section>
+  </section>
 
 </chapter>
 
