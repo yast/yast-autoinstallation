@@ -199,10 +199,40 @@
 	Profile = XML::XMLToYCPFile(filePath);
 	
 	Install = Profile["install"]:$[];
-	Configure = Profile["configure"]:$[];	
+	Configure = Profile["configure"]:$[];
+	Compat();
 	return;
     }
 
+    /**
+     * Provide Compatibility to older distributions.
+     */
+    
+    define void Compat() ``{
+	// 8.0 -> 8.1
+	// scripts
+	if (
+	    haskey(Configure, "pre-scripts") ||
+	    haskey(Configure, "post-scripts") ||
+	    haskey(Configure, "chroot-scripts")
+	    ) {
+	    list pre = Configure["pre-scripts"]:[];
+	    list post = Configure["post-scripts"]:[];
+	    list chroot = Configure["chroot-scripts"]:[];
+	    map scripts = $[
+			    "pre-scripts":pre,
+			    "post-scripts":post,
+			    "chroot-scripts":chroot
+	    ];
+	    Configure = remove(Configure, "pre-scripts");
+	    Configure = remove(Configure, "post-scripts");
+	    Configure = remove(Configure, "chroot-scripts");
+
+	    Configure["scripts"] = scripts;
+	}
+
+	return;
+    }
 
     /**
      * Load()

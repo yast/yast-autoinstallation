@@ -62,7 +62,9 @@
 			   "alice"			:	``(   aliceImportOptions() ),
 			   "aliceList"		:	``(   aliceImportList() ),
 			   "kickstart"		:	``(   kickstartImport() ),
-			   "hosts"			:	``(   hostConf() )
+			   "hosts"			:	``(   hostConf() ),
+			   "processTemplate"	:	``(   processTemplate() )
+			   
     ];
 
 
@@ -131,7 +133,13 @@
 			   `abort	: `abort,
 			   `open	: "tree",
 			   `next	: "tree",
-			   `merge	: "merge"
+			   `merge	: "processTemplate"
+			 ],
+			 "processTemplate":
+			 $[
+			   `next	: "save",
+			   `abort	: `abort
+			   
 			 ],
 			 "profiles":
 			 $[

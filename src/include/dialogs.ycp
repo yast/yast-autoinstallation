@@ -205,9 +205,9 @@ contains all the packages.</p>");
 			),
 		  `VBox(
 			`HBox(
-			      `PushButton(`id(`new), _("Ne&w")),			      
-			      `PushButton(`id(`open), _("&Open")),
-			      `PushButton(`id(`delete), _("&Delete"))
+			      `ReplacePoint(`id(`rpnew), `PushButton(`id(`new), NewButtonLabel())),
+			      `PushButton(`id(`open), EditButtonLabel()),
+			      `PushButton(`id(`delete), DeleteButtonLabel())
 			      )
 
 			),
@@ -329,16 +329,24 @@ to load it or create a new Profile using the
 	any ret = "";	
 	repeat {
 	    any selected_file = UI::QueryWidget(`id(`table), `CurrentItem);
+	    
 	    type =  UI::QueryWidget(`id(`type), `CurrentButton);
 	    
-	    if (selected_file == nil)  {
+	    if (selected_file == nil)
+	    {
 		UI::ChangeWidget(`id(`open), `Enabled, false);
 		UI::ChangeWidget(`id(`delete), `Enabled, false);
-	    } else {
+	    }
+	    else
+	    {
 		UI::ChangeWidget(`id(`open), `Enabled, true);
 		UI::ChangeWidget(`id(`delete), `Enabled, true);
+		if (type == `templates) {
+		    UI::ReplaceWidget(`id(`rpnew), `PushButton(`id(`new), _("Create Confi&guration")));
+		}
 	    }
 
+	    
 	    if  (AIConfig::currentFile !="")
 	    {		
 		UI::ChangeWidget(`id(`loaded), `Value, 	AIConfig::currentFile);
@@ -352,17 +360,11 @@ to load it or create a new Profile using the
 		UI::ChangeWidget(`id(`next), `Enabled, false);
 	    }	    
 
-	    if (type == `templates) {
-		UI::ChangeWidget(`id(`new), `Enabled, false);
-		
-	    }
 	    
 	    ret = UI::UserInput();
-	 
-	  
-	    
-	    
-	    if (ret == `new)
+	 	 	    
+	    y2milestone("selected file: %1, %2, %3", selected_file, type, ret);
+	    if (ret == `new && type != `templates)
 	    {
 		AIConfig::Profile = $[];
 		AIConfig::currentFile = NewFileName(  _("&New Profile Name"), _("New Profile"));
@@ -378,14 +380,17 @@ to load it or create a new Profile using the
 		    continue;
 		}
 	    }	 
-	    else if (ret == `open)
+	    else if (ret == `open || (type ==`templates && ret == `new))
 	    {
+		y2milestone("Reading control file: %1", selected_file);
 		if (selected_file!=nil) {
 		    AIConfig::currentFile=selected_file;
 		  
 		    if (type == `templates)
 		    {
+			
 			AIConfig::ReadProfile(sformat("%1/%2", AIConfig::TemplateRepository,selected_file));
+			AIConfig::isTemplate = true;
 		    }
 		    else
 		    {
@@ -396,11 +401,11 @@ to load it or create a new Profile using the
 	    }
 	    else if (ret == `delete)
 	    {
-		if (UI::QueryWidget(`id(`table), `CurrentItem)== nil) {
+		if (UI::QueryWidget(`id(`table), `CurrentItem) == nil) {
 		    UI::WarningPopup(_("Please select a file first."));
 		    continue;
 		}
-		if (type == `template)
+		if (type == `templates)
 		    SCR::Execute(.target.bash, "rm " + AIConfig::TemplateRepository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
 		else
 		    SCR::Execute(.target.bash, "rm " + AIConfig::Repository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
@@ -408,7 +413,15 @@ to load it or create a new Profile using the
 		Wizard::SetContents(title,
 				    FileList(type), help, true, true);	
 	    }
-	    if (UI::QueryWidget(`id(`type), `CurrentButton) != type) {
+	    
+	    if (type == `templates && ret == `new)
+	    {
+		any result =  processTemplate();
+	    }
+
+	    
+	    if (UI::QueryWidget(`id(`type), `CurrentButton) != type)
+	    {
 		if ( UI::QueryWidget(`id(`type), `CurrentButton) == `ready )
 		{
 		    Wizard::SetContents(title,
@@ -422,14 +435,15 @@ to load it or create a new Profile using the
 		    
 		}
 	    }
+	    
+	
 	     
 	} until (ret == `next ||
 		 ret == `open || 
-		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));		
-	if (type == `templates && ret == `next)
-	    return `merge;
-	else
-	    return ret;
+		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+
+	
+	return ret;
     }
 
     /**
