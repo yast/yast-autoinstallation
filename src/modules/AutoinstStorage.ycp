@@ -133,11 +133,30 @@
 	// Set devices if missing
 	
 	y2milestone("Drives: %1", drives);
+
+	boolean abort = false;
 	
 	targetMap =  listmap (map drive, drives, ``{
 	    boolean first_set = false;
 	    string device = "";
 	    y2milestone("Drive: %1", drive);
+	    
+	    if (drive["device"]:"" == "ask" )
+	    {
+		y2milestone("Manual selection of device...");
+		any dev = DiskSelection();
+		if (dev != nil)
+		{
+		    first_set = true;
+		    device = dev;
+		}
+		else
+		{
+		    abort = true;
+		}
+		return ( [device , drive ] );
+	    }
+	    
 	    if (!first_set && drive["device"]:"" == "")
 	    {
 		device = Storage::GetPartDisk();
@@ -148,13 +167,14 @@
 	    {
 		return([drive["device"]:"", drive ]);
 	    }
+	    
 
 	});
 
 
 	y2milestone("New Auto-Install tagetMap=%1", targetMap);
 	
-	if ( targetMap == $[] )
+	if ( targetMap == $[] || abort )
 	{
 	    // Something went really wrong..
 	    Report::Error(_("An error occurred while trying to create the partitioning plans.
@@ -246,6 +266,124 @@ Make sure the control file has the correct syntax and values.
 	    }		    
 	});
 	return;
+    }
+
+
+
+
+
+
+    
+    global define DiskSelection() ``{
+
+	y2milestone("Selecting disk manually....");
+	map tm = Storage::GetTargetMap();
+	term contents = `Dummy();
+
+	
+	if( size(tm) > 0)
+	{
+	    term buttonbox = `VBox();
+
+	    integer i = 0;
+	    foreach( `tname, `tdata, tm,
+		     ``{
+		if( Storage::IsRealDisk( tname, tdata ))
+		{
+		    string tlinename = tdata["name"]:"?";
+		    string tline = "&" + (i+1) + ":    " + tlinename;
+		    boolean sel = Storage::GetPartDisk()==tname &&
+			Storage::GetPartMode()!="CUSTOM";
+		    buttonbox = add( buttonbox,
+				     `Left(`RadioButton(`id(tname), tline, sel )));
+		    i = i + 1;
+		}
+	    });
+
+	    buttonbox = add(buttonbox, `VSpacing(0.8) );
+	 
+
+	    // This dialog selects the target disk for the installation.
+	    // Below this label, all targets are listed that can be used as
+	    // installation target
+
+	    // heading text
+	    contents = `Frame( _("Choose a hard disk"),
+			       `RadioButtonGroup(`id(`options),
+						 `VBox( `VSpacing(0.4),
+							`HSquash(buttonbox),
+							`VSpacing(0.4)
+							)
+						 )
+			       );
+	}
+	else
+	{
+   
+	    contents = `Label (_("No disks found."));
+	}
+
+	// There are several hard disks found. Linux is completely installed on
+	// one hard disk - this selection is done here
+	// "Preparing Hard Disk - Step 1" is the description of the dialog what to
+	// do while the following locale is the help description
+	// help part 1 of 1
+	string help_text = _("<p>
+All hard disks automatically detected on your system
+are shown here. Select the hard disk on which to install SuSE Linux.
+</p>
+");
+	import "Label";
+	term buttons = `HBox(
+			 `PushButton(`id(`ok), `opt(`default), Label::OKButton ),		
+			 `PushButton(`id(`abort), Label::AbortButton ) 
+			);
+
+	
+
+	term ask_device_dialog = `HBox(
+				     `VSpacing( 15 ),       // force dialog height
+				     `VBox(
+					   `HSpacing( 30 ), // force help text width
+					   `RichText( help_text )
+					   ),
+				     `HSpacing( 3 ),
+				     `VBox(
+					   `VSpacing( 1 ),
+					   `Heading(_("Hard Disk Selection") ),
+					    contents,
+					   `VStretch(),
+					   buttons
+					   
+					   ),
+				     `HSpacing( 3 )				       
+				     );
+
+	UI::OpenDialog(`opt(`decorated), ask_device_dialog);
+	
+	any ret = nil;
+	any option = nil;
+
+	repeat
+	    {
+		ret = Wizard::UserInput();
+		y2milestone("ret=%1", ret);
+		if( ret == `ok )
+		{
+		    option = UI::QueryWidget(`id(`options), `CurrentButton);
+		    y2milestone( "selected disk: %1", option );
+		    if( option == nil )
+		    {
+			// there is a selection from that one option has to be
+			// chosen - at the moment no option is chosen
+			UI::MessagePopup(_("Select one of the options to continue."));
+			continue;
+		    }		 
+		}
+	    } until ( ret == `ok || ret == `abort );
+	
+	UI::CloseDialog();
+	return option;
     }
 
 

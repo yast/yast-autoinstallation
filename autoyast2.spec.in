@@ -74,6 +74,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 %dir /var/lib/autoinstall/repository/rules
 %dir /var/lib/autoinstall/repository/classes
 %dir /var/lib/autoinstall/tmp
+%dir /var/lib/autoinstall
 
 
 @configdir@/autoyast.y2cc
@@ -142,11 +143,15 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 %files installation
 %defattr(-,root,root)
 @scrconfdir@/autoinstall.scr
+# DTD files
+%dir /usr/share/autoinstall
+%dir /usr/share/autoinstall/dtd
+%dir /usr/share/autoinstall/rng
+/usr/share/autoinstall/dtd/*
+/usr/share/autoinstall/rng/*
+
 %dir /usr/share/autoinstall/xslt
 /usr/share/autoinstall/xslt/merge.xslt
-# DTD files
-/usr/share/autoinstall/dtd
-
 # config file
 @configdir@/autoinst_modules.conf
 

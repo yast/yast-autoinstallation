@@ -68,11 +68,11 @@ on the command line.</p>"));
 	    UI::SetFocus(`id(`server));
 	}
 
-	
+
 	repeat {
 	    ret = UI::UserInput();
-	 
-	    
+
+
 	    if (ret == `abort)
 	    {
 		if (CallFunction(`inst_confirm_abort(`painless)))
@@ -80,12 +80,12 @@ on the command line.</p>"));
 		else
 		    continue;
 	    }
-	    
+
 	    string protocol =  UI::QueryWidget(`id(`protocol), `Value );
-	 
+
 	    if (
 		     protocol == "nfs" ||
-		     protocol == "tftp" ||		    
+		     protocol == "tftp" ||
 		     protocol == "http" ||
 		     protocol == "device"
 		     )
@@ -99,7 +99,7 @@ on the command line.</p>"));
 		UI::ChangeWidget(`id(`server), `Enabled, false);
 	    }
 
-	    
+
 	    server = UI::QueryWidget(`id(`server), `Value );
 	    Path = UI::QueryWidget(`id(`Path), `Value );
 	} until (ret == `retry  || ret == `abort);
@@ -112,7 +112,7 @@ on the command line.</p>"));
     }
 
 
-    
+
     global define void StdErrLog( string stderr) ``{
 	UI::OpenDialog(
 		       `opt( `decorated ),
@@ -121,7 +121,7 @@ on the command line.</p>"));
 			     `HSpacing(50),
 			     `HBox (
 				    `HSpacing(0.5),
-				    `LogView(`id(`log),  Label::ErrorMsg()  , 10, 100 ),				    
+				    `LogView(`id(`log),  Label::ErrorMsg()  , 10, 100 ),
 				    `HSpacing(0.5)
 				    ),
 			     `VSpacing(0.2),
@@ -133,7 +133,19 @@ on the command line.</p>"));
 	UI::ChangeWidget(`id(`log),`Value, stderr);
 	UI::UserInput();
 	UI::CloseDialog();
-	
+
     };
+
+
+
+
+
+
+
+
+
+
+
+
     
 }
