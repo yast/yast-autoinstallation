@@ -34,6 +34,7 @@
     include "autoinstall/conftree.ycp";
     include "autoinstall/classes.ycp";
     include "autoinstall/packageMgmt.ycp";
+    // include "autoinstall/mediaManagement.ycp";
     include "autoinstall/imports.ycp";
     include "autoinstall/io.ycp";
 
@@ -41,23 +42,25 @@
     boolean popup_open = false;
     global map dialogs = $[
 			   "configurationType"	:	``(   configurationType() ),
-			   "file"			:	``(   FileDialog() ),
-			   "tree"			:	``(   ConfTree() ),
+			   "file"		:	``(   FileDialog() ),
+			   "tree"		:	``(   ConfTree() ),
 			   "profiles"		:	``(   ManageProfiles() ),
 			   "classes"		:	``(   ManageClasses() ),
 			   "profile"		:	``(   Profile()),
-			   "merge"			:	``(   MergeDialog()),
-			   "save"			:	``(   SaveDialog() ),
+			   "merge"		:	``(   MergeDialog()),
+			   "save"		:	``(   SaveDialog() ),
 			   "preferences"	:	``(   Preferences()),
 			   "serverSetup"	:	``(   serverSetup()),
 			   "cloneSystem"	:	``(   cloneSystem()),
-			   "packageManagement"	:	``(   packageManagement()),
-			   "selectionInfo"	:	``(   selectionInfo()),
-			   "alice"			:	``(   aliceImportOptions() ),
+			   //"packageManagement"	:	``(   packageManagement()),
+			   "media"		:	``(   packageManagement()),			  
+			   "alice"		:	``(   aliceImportOptions() ),
 			   "aliceList"		:	``(   aliceImportList() ),
 			   "kickstart"		:	``(   kickstartImport() ),
-			   "hosts"			:	``(   hostConf() ),
-			   "processTemplate"	:	``(   processTemplate() )
+			   "hosts"		:	``(   hostConf() ),
+			   "processTemplate"	:	``(   processTemplate() ),
+			   "iso"		:	``(   isoDialog() ),
+			   "createiso"		:	``(   createISO() )
 
     ];
 
@@ -78,8 +81,7 @@
 			   `profiles	: "profiles",
 			   `pref	: "preferences",
 			   `server	: "serverSetup",
-			   `clone	: "cloneSystem",
-			   `verifysel	: "packageManagement",
+			   `clone	: "cloneSystem",			  
 			   `alice	: "alice",
 			   `kickstart   : "kickstart",
 			   `hostConf	: "hosts"
@@ -121,10 +123,20 @@
 			   `abort	: `abort,
 			   `next	: "configurationType"
 			 ],
-			 "packageManagement":
+			 "iso":
+			 $[
+			   `next	: "createiso",			   
+			   `abort	: `abort
+			 ],
+			 "createiso":
+			 $[
+			   `next	: "configurationType",
+			   `abort	: `abort
+			 ],
+			 "media":
 			 $[
 			   `abort	: `abort,
-			   `next	: "selectionInfo"
+			   `next	: "iso"
 			 ],
 			 "file":
 			 $[
@@ -178,6 +190,7 @@
 			 $[
 			   `abort	: `abort,
 			   `edit	: "tree",
+			   `media	: "media",
 			   `next	: `ws_finish
 			 ],
 			 "preferences":
@@ -300,10 +313,10 @@
 							   ),
 						  `HWeight(90,
 							   `Left (
-								  `RadioButton (`id (`verifysel),
+								  `RadioButton (`id (`media),
 										`opt (`notify),
-										_("&Verify Selections and Packages"),
-										ct == `verifysel)
+										_("&Media Management"),
+										ct == `media)
 								  )
 							   )
 						  ),

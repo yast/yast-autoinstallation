@@ -27,9 +27,11 @@
 
     global list pacs = [];
     global list custom_pacs = [];
+
     
     global define void AIPackages()``{
-	if (SCR::Read(.target.size, "/var/lib/autoinstall/selections/current")>0) {
+	if (SCR::Read(.target.size, "/var/lib/autoinstall/selections/current")>0)
+	{
 	    y2milestone("Selection file found, reading...");
 	    ReadSelections();
 	}
@@ -45,7 +47,8 @@
     global define boolean GetSelections() ``{
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating package selections...")));
 	local_descr = Packages::CheckLocalDescription();
-	if (local_descr) {	    
+	if (local_descr)
+	{	    
 	    Packages::Init(true);
 	    Selections = SCR::Read(.package.selGroups);	    
 	}

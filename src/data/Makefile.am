@@ -6,6 +6,10 @@
 
 dtddir = @yncludedir@/autoinstall
 xmldir = /usr/share/autoinstall/xslt
+miscdir = /usr/share/autoinstall/
+
+misc_DATA = \
+	isolinux.cfg
 
 ydata_DATA = \
 	monitors.ycp
@@ -18,4 +22,4 @@ dtd_DATA = \
 	classes.dtd \
 	profiles.dtd
 
-EXTRA_DIST = $(dtd_DATA) $(xml_DATA) $(ydata_DATA)
+EXTRA_DIST = $(dtd_DATA) $(xml_DATA) $(ydata_DATA) $(misc_DATA)
