@@ -95,7 +95,12 @@
 	``{
 	import "Storage";
 	import "Partitions";
-	include "autoinstall/partitioning.ycp";
+	include "autoinstall/partitioning.ycp";	
+	import "Bootloader";
+	import "BootCommon";
+
+
+	
 	
 	if ( lvm[ 0, "destroy_old"]:false )
 	{
@@ -110,9 +115,9 @@
 				  return($["device":k, "size": lookup(v,"cyl_size",0)]);
 	});
 
-	y2milestone("Drives: %1", alldrives);
+	y2milestone("Drives: %1, MBR disk: %2", alldrives , BootCommon::mbrDisk);
 
-	Storage::SetPartDisk(lookup(select(alldrives,0,$[]),"device", Boot::FindMbrDisk()));
+	Storage::SetPartDisk(lookup(select(alldrives,0,$[]),"device", BootCommon::mbrDisk));
 
 	// Set devices if missing
 	targetMap =  listmap (map drive, drives, ``{
