@@ -73,38 +73,57 @@
 	    }
 	}
 
-	// help 1/4
+	// help 1/6
 	string help = _("
 <h3>Pre-Scripts</h3>
 <P>Add commands to run on the system  before the installation begins. </P>
 ");
-	// help 2/4
+	// help 2/6
 	help = help + _("
 <h3>Post-Scripts</h3>
 <P>You can also add commands to execute on the system after the installation
 is completed. These scripts are run outside the chroot environment.
 </P>");
-	// help 3/4
+	// help 3/6
 	help = help + _("
-<H3>Chroot Environment</H3>
+<H3>Chroot Scripts</H3>
 <P>For your postinstallation script to run inside the chroot
-environment, choose the <i>chroot scripts</i> options.
+environment, choose the <i>chroot scripts</i> options. Those scripts are
+run before the system reboots for the first time. By default, the Chroot 
+scripts are run in the installation system. To access files in the installed 
+system you always have to use the mount point \"/mnt\" in your scripts.
 </P>
 ");
+	// help 4/6
+        help = help + _("
+<p>It is possible to run the Chroot scripts in a later stage and after
+the bootloader has been configured using the special boolean tag \"chrooted\"
+which will cause the scripts to run directly in the installed system. 
+")
+	// help 5/6
 	help = help + _("
-<H3>Init Environment</H3>
+<H3>Init Scripts</H3>
 <P>These scripts are executed during the initial boot process and after
-YaST; has finished. The final scripts are executed using a special
-<b>init.d</b> script which is executed only once. 
+YaST has finished configuring the system. The final scripts are executed 
+using a special <b>rc</b> script which is executed only once. 
 The final scripts are executed toward the end of the boot
 process and after network has been intialized.
 </P>
 ");
 
-	// help 4/4
+	// help 6/6
 	help = help + _("
 <H3>Interpreter:</H3>
-<P>Pre-scripts can only be shell scripts. Do not use <i>Perl</i> or <i>Python</i> for pre-scripts.
+<P>Pre-scripts can only be shell scripts. Do not use <i>Perl</i> or 
+<i>Python</i> for pre-scripts.
+</P>
+");
+	help = help + _("
+<H3>Network Access:</H3>
+<P>While executing postinstallation scripts, the network is disabled and
+requires initialization in the scripts to make the network accessible. An
+alternative to postscripts with network is the usage of the init scripts which
+guarantee a fully configured system when running the scripts.
 </P>
 ");
 	string title = _("Script Editor");
