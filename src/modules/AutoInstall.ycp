@@ -207,17 +207,24 @@
 	    });
 	    Bootloader = remove(Bootloader, "kernel_parameters");
 	}
-	
-	// Add initrd modules
-	if (size(Bootloader["initrd_modules"]:[]) > 0)
-	{
-	    import "Initrd";
-	    foreach(map mod , Bootloader["initrd_modules"]:[],
-		    ``{
-		Initrd::AddModule (mod["module"]:"", mod["module_args"]:"");
-	    });
-	    Bootloader = remove(Bootloader, "initrd_modules");
-	}
+
+	map current = Initrd::Export();
+	y2milestone("Current initrd modules: %1", current);
+	list modlist = current["list"]:[];
+	map modsett = current["settings"]:$[];
+	foreach(map mod, Bootloader["initrd_modules"]:[], ``{
+	    if (mod["module"]:"" != "" )
+	    {
+		modlist = add(modlist, mod["module"]:"");	    
+		modsett = add(modsett, mod["module"]:"" , mod["module_args"]:"");
+	    }
+	});
+	if (size(modlist) > 0 )
+	    Bootloader["initrd"] = $[ "list": modlist, "settings" : modsett ];
+
+	// cleanup
+	if (haskey(Bootloader, "initrd_modules"))
+	    Bootloader = remove(Bootloader, "initrd_modules");	
 
 	
 	y2debug ("Starting importing settings");

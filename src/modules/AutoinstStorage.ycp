@@ -25,15 +25,6 @@
 
     global map targetMap = $[];
 
-
-
-
-
-
-
-
-
-
     
     /**
      * Dump the settings to a map, for autoinstallation use.
@@ -119,16 +110,14 @@
 	import "BootCommon";
 
 
-
-
 	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
 	{
 	    Storage::DestroyLvmOnAllDisks();
 	}
 
 	map init_targetmap = Storage::GetTargetMap();
-	y2milestone("Inital Target map: %1", init_targetmap);
-
+	y2milestone("Initial Target map: %1", init_targetmap);
+	
 	list alldrives = maplist( `k, `v, init_targetmap ,
 			      ``{
 				  return($["device":k, "size": v["cyl_size"]:0 ]);
@@ -172,41 +161,18 @@ Make sure the control file has the correct syntax and values.
 		 ``{
 	    if (data["initialize"]:false)
 	    {
-		import "AutoinstGeneral";
-		
-		string title = _("Initialization of Partition Table Requested");
-		string msg = sformat(_("You have requested to initialize the partition table of drive %1.  Should
-drive %1 be initialized now?
-"), device);
-		boolean do_init = true;
-		
-		if (AutoInstall::Confirm)
-		{
-		    if ( !UI::YesNoHeadlinePopup(title, msg))
-		    {
-			y2warning("%1 was not initialzied", device);
-		    }
-		    else
-		    {		    
-			do_init = false;
-		    }
-		}
-
-		if (do_init)
-		{
-		    init_done = true;
-		    integer zero_ret = InitDevice(device);
-		    y2milestone("Initializing device: %1 --> %2", device, zero_ret);
-		}
+		    map thisDevice = init_targetmap[device]:$[];
+		    thisDevice["partitions"] = [];
+		    init_targetmap[device] = thisDevice;
+		    Storage::SetTargetMap(init_targetmap);		    	
 	    }		    
 	});
 
-	// Re-probe Targets
-	if (init_done)
+	map afterinit_targetmap = Storage::GetTargetMap();
+	y2milestone("Target map after initialzing disk: %1", afterinit_targetmap);
+	
+	if ( size(targetMap) > 0)
 	{
-	    Storage::ReReadTargetMap();
-	}
-	if (size(targetMap) > 0) {
 	    foreach (string device, map data, targetMap,
 		     ``{
 		y2milestone("Creating partition plans for %1", device);
@@ -233,8 +199,20 @@ drive %1 be initialized now?
 
     }
 
-
-
+    /**
+     * Initialize devices
+     */
+    global define Initialize () ``{
+	foreach (string device, map data, targetMap,
+		 ``{
+	    if (data["initialize"]:false)
+	    {			    
+		integer zero_ret = InitDevice(device);
+		y2milestone("Initializing device: %1 --> %2", device, zero_ret);		
+	    }		    
+	});
+	
+    }
 
 
 }
