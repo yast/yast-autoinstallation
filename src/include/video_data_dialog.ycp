@@ -1,0 +1,272 @@
+/**
+ * $Id$
+ *
+ * Module:		video_data_dialog.ycp
+ *			(some code partly recycled from old inst_video_data.ycp from (sh@sue.de)
+ *
+ * Purpose:		UI part of the automatic X11 configuration (monitor data)
+ *
+ * Author:		Thomas Roelz <tom@suse.de>
+ */
+
+
+{
+    textdomain "autoinst";
+
+    import "Wizard";
+
+    
+    UI( ``{
+
+	/*
+	 * Create dialog for monitor selection
+	 *
+	 * @param lists of vendors and models (each a list of strings)
+	 *
+	 * @return dialog as term to be put into Wizard::SetContents()
+	 */
+
+	global define X11VideoDataDialog( list vendors, list models )
+	    ``{
+	    // Build the wizard windows contents:
+	    //
+	    // Two selection boxes (one for monitor vendors, one for the monitor
+	    // models belonging to the currently selected vendor,
+	    // input fields for hsync and vsync (min and max each)
+	    // and a push button to import monitor data from a floppy.
+
+	    term x11_video_data_dialog =
+		`VBox(
+		      `HBox(
+			    `ReplacePoint( `id(`replace_point_vendors),
+					   `SelectionBox( `id(`vendors), `opt(`notify),
+							  // Headline for monitor vendor selection box
+							  _("&Vendor"),
+							  vendors
+							  )
+					   ),
+			    `ReplacePoint( `id(`replace_point_models),
+					   `SelectionBox( `id(`models), `opt(`notify),
+							  // Headline for monitor model selection box
+							  _("M&odel"),
+							  models
+							  )
+					   )
+			    ),
+		      `VSpacing(0.2),
+		      `VSquash(
+			       `HBox(
+				     `HWeight( 1,
+					       `Frame(
+						      // Frame title for horizontal frequency input fields
+						      _("Horizontal frequency"),
+						      `HBox(
+							    `HWeight( 35, `TextEntry( `id(`min_hsync ), `opt(`shrinkable), _("&min") ) ),
+
+							    // Separator between min and max frequency fields
+							    `HWeight( 10, `Bottom(`Label( _("-") ) ) ),
+							    `HWeight( 35, `TextEntry( `id(`max_hsync ), `opt(`shrinkable), _("m&ax") ) ),
+
+							    // Unit for horizontal frequency
+							    `HWeight( 17, `Bottom(`Label( _("kHz") ) ) )
+							    )
+						      )
+					       ),
+				     `HSpacing(0.8),
+				     `HWeight( 1,
+					       `Frame(
+						      // Frame title for vertical frequency input fields
+						      _("Vertical frequency"),
+						      `HBox(
+							    `HWeight( 35, `TextEntry( `id(`min_vsync ), `opt(`shrinkable), _("m&in") ) ),
+
+							    // Separator between min and max frequency fields
+							    `HWeight( 10, `Bottom(`Label( _("-") ) ) ),
+							    `HWeight( 35, `TextEntry( `id(`max_vsync ), `opt(`shrinkable), _("ma&x") ) ),
+
+							    // Unit for horizontal frequency
+							    `HWeight( 17, `Bottom( `Label( _("Hz") ) ) )
+							    )
+						      )
+					       )
+				     )
+			       )		     
+		      );
+
+	    return x11_video_data_dialog;
+	};	// End of X11VideoDataDialog()
+
+
+	/*
+	 * Get the `Value property of an arbitrary widget
+	 *
+	 * @param widget_id	ID of the widget, e.g. `resolution
+	 *
+	 * @return the widget's `Value property
+	 */
+	global define GetValue( symbol widget_id )	``{
+	    return QueryWidget(`id( widget_id ), `Value );
+	};
+
+
+	/*
+	 * Set the `Value property of an arbitrary widget
+	 *
+	 * @param widget_id	ID of the widget, e.g. `resolution
+	 * @param new_value	the new value
+	 */
+	global define SetValue( symbol	widget_id,
+				any	new_value	) ``{
+	    ChangeWidget(`id( widget_id ), `Value, new_value );
+	};
+
+
+	/*
+	 * Get help text for video data dialog
+	 *
+	 * @return multi line help text in RichText (HTML like) format
+	 */
+
+	global define X11VideoDataDialogHelpText()
+	    ``{
+	    /*
+	     * Help text (HTML like) for X11 video data dialog
+	     */
+
+	    // help part 1 of 8
+	    string helptext = _("<p>
+Please select your monitor's <b>vendor</b> and <b>model</b>.
+</p>
+");
+
+	    // help part 2 of 8
+	    helptext = helptext + _("<p>
+If your monitor is not listed here, use <b>VESA</b>.
+Most monitors comply with this standard.
+</p>
+");
+
+	    // help part 3 of 8
+	    helptext = helptext + _("<p>
+You can use a monitor <b>driver disk</b> to import the monitor's
+technical data. You do not need a special Linux monitor
+driver disk -- most common monitor driver disks will do. Just try the
+floppy that came with your monitor.
+</p>
+");
+
+	    // help part 4 of 8
+	    helptext = helptext + _("<p>
+If you do not want to use the X Window System (X11), select
+<b>no X11</b>.
+</p>
+");
+
+	    // help part 5 of 8
+	    helptext = helptext + _("<p>
+Modify the monitor's frequencies in the respective input
+fields below the selection boxes.
+Refer to your monitor manual for your monitor's maximum
+frequencies. <b><i>Do not exceed</i></b> the values specified there.
+Otherwise, there is a serious risk of <b><i>damaging your monitor</i></b>.
+</p>
+");
+
+	    // help part 6 of 8
+	    helptext = helptext + _("<p>
+The <b>horizontal frequency</b> (in kHz) specifies how many times
+per second the monitor can write a horizontal scan line. This is a
+hard limit of the monitor, independent of the screen resolution.
+</p>
+");
+
+	    // help part 7 of 8
+	    helptext = helptext + _("<p>
+The <b>vertical frequency</b> (in Hz) specifies how many times per
+second the image on the screen is refreshed. This value depends on the
+screen resolution and the monitor's maximum horizontal frequency.
+</p>
+");
+
+	    // help part 8 of 8
+	    helptext = helptext + _("<p>
+If you experience a constant high frequency beep from your monitor,
+you might wish to use slightly lower frequency values than the maximum
+specified in your monitor's manual. This usually helps a lot to reduce
+the noise.
+</p>
+");
+	    
+	    return helptext;
+
+	};	// End of X11VideoDataDialogHelpText()
+    });		// End of UI(....
+
+
+    //
+    // WFM defines
+    //
+
+    // get the sync values --> string
+    //
+    global define GetMinHsync()	``{ return UI::GetValue(`min_hsync ); };
+    global define GetMaxHsync()	``{ return UI::GetValue(`max_hsync ); };
+    global define GetMinVsync()	``{ return UI::GetValue(`min_vsync ); };
+    global define GetMaxVsync()	``{ return UI::GetValue(`max_vsync ); };
+
+    // set the sync values (every single value)
+    //
+    global define SetMinHsync( string new_value ) ``{ UI::SetValue(`min_hsync, new_value ); };
+    global define SetMaxHsync( string new_value ) ``{ UI::SetValue(`max_hsync, new_value ); };
+    global define SetMinVsync( string new_value ) ``{ UI::SetValue(`min_vsync, new_value ); };
+    global define SetMaxVsync( string new_value ) ``{ UI::SetValue(`max_vsync, new_value ); };
+
+    // set the focus to the input fields
+    //
+    global define SetFocusMinHsync() ``{ UI::SetFocus(`id(`min_hsync)); }
+    global define SetFocusMaxHsync() ``{ UI::SetFocus(`id(`max_hsync)); }
+    global define SetFocusMinVsync() ``{ UI::SetFocus(`id(`min_vsync)); }
+    global define SetFocusMaxVsync() ``{ UI::SetFocus(`id(`max_vsync)); }
+
+    // get the current vendor and model --> string
+    //
+    global define GetCurrentVendor() ``{ return UI::QueryWidget(`id(`vendors), `CurrentItem); }
+    global define GetCurrentModel () ``{ return UI::QueryWidget(`id(`models),  `CurrentItem); }
+
+    // set the current vendor and model
+    //
+    global define SetCurrentVendor( string new_item ) ``{ UI::ChangeWidget(`id(`vendors), `CurrentItem, new_item ); }
+    global define SetCurrentModel ( string new_item ) ``{ UI::ChangeWidget(`id(`models),  `CurrentItem, new_item ); }
+    
+    // replace the vendor list
+    //
+    global define ReplaceVendors( list new_value ) ``{
+	UI::ReplaceWidget( `id( `replace_point_vendors),
+			    `SelectionBox( `id(`vendors), `opt(`notify),
+					   // Headline for monitor vendor selection box
+					   _("Vendor"),
+					   new_value
+					   )
+			    );
+    }
+
+    // replace the model list
+    //
+    global define ReplaceModels( list new_value ) ``{
+	UI::ReplaceWidget( `id( `replace_point_models),
+			    `SelectionBox( `id( `models),
+					   `opt( `notify ),
+					   // Headline for monitor model selection box
+					   _("Model"),
+					   new_value
+					   )
+			    );
+    }
+
+    // Handle `back button
+    //
+    global define SetBackState( boolean new_value )	``{ UI::ChangeWidget(`id(`back), `Enabled, new_value ); }
+    global define GetBackState()  			``{ return UI::QueryWidget(`id(`back), `Enabled ); }
+}		// End of include block
+
+// - EOF -

@@ -7,6 +7,9 @@
 dtddir = @yncludedir@/autoinstall
 xmldir = /usr/share/autoinstall/xslt
 
+ydata_DATA = \
+	monitors.ycp
+
 xml_DATA = \
     merge.xslt
 
@@ -15,4 +18,4 @@ dtd_DATA = \
 	classes.dtd \
 	profiles.dtd
 
-EXTRA_DIST = $(dtd_DATA) $(xml_DATA)
+EXTRA_DIST = $(dtd_DATA) $(xml_DATA) $(ydata_DATA)
