@@ -11,9 +11,10 @@ xml_files =  $(wildcard *.xml)
 
 CATALOG="./catalog.xml"
 XSLTPROC="/usr/bin/xsltproc"
-IMAGES=/usr/share/xml/docbook/stylesheet/nwalsh/current/images
-STYLESHEETS=/usr/share/xml/docbook/stylesheet/nwalsh/current
-BUILD=build
+BUILD=html
+STYLESHEET_FO=$(ydatadir)/docbook/stylesheets/customize-fo.xsl
+STYLESHEET_HTML=$(ydatadir)/docbook/stylesheets/customize-html.xsl
+
 
 
 EXTRA_DIST = $(xml_files) $(wildcard *.xsl) $(wildcard *.css)
@@ -33,29 +34,28 @@ examples: examples.ent
 	bin/examples.sh > examples.ent
 
 chunks: $(xml_files) examples components 
-	XML_CATALOG_FILES=$(CATALOG) \
 	xsltproc \
 	-stringparam base.dir "$(BUILD)/" \
 	--xinclude \
-	chunks.xsl \
+	$(STYLESHEET_HTML) \
 	autoyast.xml
+$(BUILD)/susebooks.css:
+	cp $(ydatadir)/docbook/css/susebooks.css $(BUILD)
+	cp -a $(ydatadir)/docbook/images $(BUILD)
+
 
 images.ent:
 	@make -r -C images/WEB -f makefile.ent ima
 
-html: images.ent chunks webimages builddir
+html: images.ent chunks webimages $(BUILD)/susebooks.css
 
-builddir: 
-	cp style.css $(BUILD)
-	cp -a $(IMAGES) $(BUILD)
 
 webimages:
 	mkdir -p $(BUILD)/img
 	cp -a images/WEB/*png $(BUILD)/img
 
 autoyast.fo: print.xsl $(xml_files) examples components images
-	XML_CATALOG_FILES=$(CATALOG) \
-	$(XSLTPROC) --output autoyast.fo --xinclude  print.xsl  autoyast.xml
+	$(XSLTPROC) --output autoyast.fo --xinclude  $(STYLESHEET_FO)  autoyast.xml
 
 
 pdf: autoyast.fo
