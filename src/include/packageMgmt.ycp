@@ -76,7 +76,7 @@
 	return packages;
     }
 
-    global define void setPackages() ``{
+    global define boolean setPackages() ``{
 	import "AIConfig";
 
 	map _prof = AIConfig::Profile;
@@ -89,16 +89,8 @@
 	list packs  = _soft["packages"]:[];
 	string kernel = _soft["kernel"]:"";
 	
-	if (!AIConfig::PkdInitialized)
-	{
-	    string base_url = "dir://" + AIServer::PackageRep;
-	    AIConfig::theSource = Pkg::SourceInit (base_url);
-	}
-	else
-	{
-	    y2milestone("Source already active");
-	}
-	// Base selection
+	AIServer::initSource();
+	
 	if (base!="")
 	{
 	    Pkg::SetSelection(base);
@@ -113,8 +105,8 @@
 	}
 
 	Pkg::DoProvide(autoinstPackages(packs, kernel));
-	Pkg::ActivateSelections();
-	return ;
+	
+	return (Pkg::ActivateSelections());
 	
     }
     
@@ -260,7 +252,7 @@ Please wait while the directory structure for the new ISO file is created.
 
 	Progress::NextStage();
 	
-	string cpCmd = sformat("cp /usr/share/autoinstall/isolinux.cfg %1/skeleton/suse/images/boot/", AIServer::skelDir);
+	string cpCmd = sformat("cp /usr/share/autoinstall/isolinux.cfg %1/skeleton/boot/loader", AIServer::skelDir);
 	SCR::Execute (.target.bash, cpCmd);
 	
 	Progress::NextStep();
@@ -276,8 +268,8 @@ Please wait while the directory structure for the new ISO file is created.
 
 
 
-	map product = Pkg::SourceProductData (AIConfig::theSource);
-	string datadir = product["datadir"]:"suse";
+	
+	string datadir = AIServer::productData["datadir"]:"./suse";
 	y2milestone ("datadir %1", datadir);
 	string pkgname = "";
 	pkgname = Pkg::PkgNextInstall();	
@@ -293,7 +285,7 @@ Please wait while the directory structure for the new ISO file is created.
 	    {
 		Progress::Title(sformat(_("Copying %1"),  pkgname));
 		Progress::NextStep();
-		string cpCmd = sformat("cp %1 %2/skeleton/suse/%3", localpath, AIServer::skelDir,  location);
+		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, AIServer::skelDir, datadir, location);
 		any ret = SCR::Execute (.target.bash, cpCmd);			
 	    }
 
