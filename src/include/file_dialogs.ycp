@@ -127,7 +127,7 @@ name and the content of the file.
 	    }
 	    else if (ret == `loadsource)
 	    {
-		string filename = UI::AskForExistingFile( "", "*", _("Open file") );
+		string filename = UI::AskForExistingFile( "", "*", _("Open File") );
 		if (filename!=nil)
 		{
 		    string source = SCR::Read(.target.string, filename);
@@ -179,16 +179,17 @@ name and the content of the file.
 	string title = _("Add Complete Configuration Files");
 
 	string help = _("<p>For many applications and services, you might have prepared
-a configuration file which should be copied in a complete form to a location in the
+a configuration file that should be copied in a complete form to a location in the
 installed system. For example, this is the case if you are installing a web server
-and have a httpd.conf configuration file prepared.</p>");
+and have an httpd.conf configuration file prepared.</p>
+");
 
 	Wizard::SetContents(title,
 			    dialog_contents(), help, true, true);
 
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 	Wizard::ReplaceAbortButton(`Empty());
-	string select_msg = _("Please Select a file from the table first.");
+	string select_msg = _("Select a file from the table first.");
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();

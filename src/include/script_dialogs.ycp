@@ -59,8 +59,9 @@
     ``{
 
 	string help = _("<p>
-By adding scripts to the auto-installation process you can customize the installation for
-your needs and take control in different stages of the installation.</p>");
+By adding scripts to the autoinstallation process, customize the installation for
+your needs and take control in different stages of the installation.</p>
+");
 
 	string title = _("User Script Management");
 	Wizard::SetContents(title,
@@ -146,7 +147,7 @@ is completed. These scripts are run outside the chroot environment.
 	help = help + _("
 <H3>Chroot Environment</H3>
 <P>For your postinstallation script to run inside the chroot
-environment, choose the <i>chroot-scripts</i> options.
+environment, choose the <i>chroot scripts</i> options.
 </P>
 ");
 	string title = _("Script Editor");
@@ -219,7 +220,7 @@ name and the content of the script.
 	    }
 	    else if (ret == `loadsource)
 	    {
-		string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open file") );
+		string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open File") );
 		if (filename!=nil)
 		{
 		    string source = SCR::Read(.target.string, filename);
