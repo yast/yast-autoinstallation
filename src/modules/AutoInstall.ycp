@@ -81,6 +81,10 @@
     global map ModuleMap = $[];
 
 
+
+
+    global map Bootloader = $[];
+    
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Local variables
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +183,7 @@
     global define boolean ProcessSpecialResources ()
 	``{
 
-	Report::Set(Profile::Flat["report"]:$[]);
+	Report::Import(Profile::Flat["report"]:$[]);
 	X11 = Profile::Flat["x11"]:$[];
 
 	if (size(X11) == 0 || !X11["configure_x11"]:false )
@@ -197,7 +201,7 @@
      */
     global define bootloaderSettings()``{
 
-	Boot::manual_location = true;
+	// Bootloader::manual_location = true;
 	Bootloader = Profile::Flat["bootloader"]:$[];
 
 

@@ -8,24 +8,27 @@
  *
  */
 {
-    module "AIsoftware";    
+    module "AIsoftware";
     textdomain "autoinst";
 
     import "Summary";
 
-    global map Software = $[];
+
     
+
+    global map Software = $[];
+
     global string base = "";
     global list addons = [];
     global list packages = [];
     global string kernel = "";
     global list post_packages = [];
-    
+
     global list forcedPackages = [];
 
 
 
-    
+
     /**
      * Import data
      * @param settings settings to be imported
@@ -49,14 +52,14 @@
     global define map Export() ``{
 
 	return eval($[
-		      "base" 		: base,
+		      "base"		: base,
 		      "addons"		: addons,
-		      "packages" 	: packages,
+		      "packages"	: packages,
 		      "kernel"		: kernel,
 		      "post-packages"   : post_packages
 		    ]);
     }
-    
+
     /**
      * Summary
      * @return Html formatted configuration summary
@@ -83,11 +86,11 @@
 	summary = Summary::AddLine(summary, sformat("%1", size(packages)));
 
 	return summary;
-    }    
+    }
 
 
 
-    
+
 
 
     /**
@@ -99,14 +102,14 @@
 	``{
 	boolean ok = true;
 	boolean ret = false;
-	
+
 	// y2milestone("set Locale to %1", Language::language);
 	Pkg::SetLocale (Language::language);
-	
+
 	Packages::Init(true);
 	// Standard Packages
 	boolean retval = false;
-		
+
 	string  base_selection = base;
 	if (! Pkg::SetSelection( base_selection ))
 	{
@@ -133,7 +136,7 @@
 
 	list extraPackages = calcExtraPackages ();
 	y2milestone("Packages selected in autoinstall mode: %1", extraPackages);
-	
+
 	if (size(extraPackages) > 0 )
 	{
 	    Pkg::DoProvide(extraPackages);
@@ -152,9 +155,9 @@
 
     global define list calcExtraPackages ()
 	``{
-		
+
 	list extra_packages = union( packages , forcedPackages);
-	
+
 	if (kernel != "")
 	{
 	    extra_packages = add ( extra_packages , kernel);
@@ -162,5 +165,86 @@
 	return extra_packages;
     }
 
+
+
+
+
+
     
+    global define list autoinstPackages()
+	``{
+	import "Profile";
+	
+	list allpackages = [];
+
+	allpackages = union (allpackages, packages);
+
+	// In autoinst mode, a kernel might be external and not available
+	// in packages
+	if (  size(kernel) == 0)
+	{
+	    import "Kernel";
+	    allpackages = union (allpackages, Kernel::kernel_packages);
+	}
+	else {
+	    allpackages = add (allpackages, kernel);
+	}
+
+	if (haskey(Profile::Flat, "nis")) {
+		map nis = Profile::Flat["nis"]:$[];
+		if (nis["start_nis"]:false)
+			allpackages = add(allpackages, "ypbind");
+		if (nis["start_autofs"]:false)
+			allpackages = add(allpackages, "autofs");
+	}
+
+	if (haskey(Profile::Flat, "ldap")) {
+		map ldapclient = Profile::Flat["ldap"]:$[];
+		if (ldapclient["start_ldap"]:false)
+			allpackages = union(allpackages, ["pam_ldap","nss_ldap"]);
+	}
+
+	if (haskey(Profile::Flat, "nfs_server"))
+	{
+	    boolean start_nfsserver = Profile::Flat["nfs_server", "start_nfsserver"]:false;
+	    if (start_nfsserver)
+		allpackages = union(allpackages, ["yast2-nfs-server", "nfs-utils"]);
+	}
+
+	if (haskey(Profile::Flat, "inetd")) {
+		map inetd = Profile::Flat["inetd"]:$[];
+		if (inetd["start_inetd"]:false)
+			allpackages = add(allpackages, "inetd");
+	}
+
+	if (haskey(Profile::Flat, "nisplus")) {
+		map nisplus = Profile::Flat["nisplus"]:$[];
+		if (nisplus["start_nisplus"]:false)
+			allpackages = add(allpackages, "nis-utils");
+	}
+	if (haskey(Profile::Flat, "mail")) {
+		map mail = Profile::Flat["mail"]:$[];
+		if (mail["mta"]:`other == `postfix)
+		{
+			allpackages = add(allpackages, "postfix");
+			if (mail["use_amavis"]:false)
+				allpackages = add(allpackages, "amavis-postfix");
+		}
+		else if (mail["mta"]:`other == `sendmail)
+		{
+			allpackages = add(allpackages, "sendmail");
+			if (mail["use_amavis"]:false)
+				allpackages = add(allpackages, "amavis-sendmail");
+		}
+	}
+	list extraPackages = calcExtraPackages ();
+	if (size(extraPackages) > 0 )
+	{
+	    allpackages = union(allpackages,extraPackages);
+	}
+	y2milestone("package list calculated for auto-installation: %1", allpackages);
+	return allpackages;
+    }
+
+    //EOF
 }
