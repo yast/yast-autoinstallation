@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT bootloader (global?, initrd_modules?, loader_device?, loader_type, location , sections?)>
+<!ELEMENT bootloader (activate?, global?, initrd_modules?, loader_device?, loader_type,
+        location ,  repl_mbr?, sections?)>
 
+
+<!ELEMENT activate (#PCDATA)>
+<!ATTLIST activate
+    config:type CDATA #FIXED 'boolean'
+>
+<!ELEMENT repl_mbr (#PCDATA)>
+<!ATTLIST repl_mbr
+    config:type CDATA #FIXED 'boolean'
+>
 <!ELEMENT initrd_modules (initrd_module+)>
 <!ATTLIST initrd_modules
     config:type CDATA #FIXED 'list'

@@ -6,6 +6,8 @@
 <!ELEMENT default (#PCDATA)>
 <!ELEMENT create_remote_queue (#PCDATA)>
 <!ATTLIST create_remote_queue config:type CDATA #FIXED 'boolean' >
+<!ELEMENT accepting (#PCDATA)>
+<!ATTLIST accepting config:type CDATA #FIXED 'boolean' >
 <!ELEMENT cups-state (#PCDATA)>
 <!-- <!ELEMENT default (#PCDATA)> -->
 <!-- <!ELEMENT device (#PCDATA)>: redefined -->
@@ -20,8 +22,11 @@
 <!ELEMENT printcap (printcap_entry*)>
 <!ATTLIST printcap config:type CDATA #FIXED 'list' >
 <!ENTITY % y2_printcap_entry
-"accepting|allowusers|bannerend|bannerstart|denyusers|info|location|manufacturer|model|name|nick|options|ppd_options|raw|state|uri|ff" >
+    "accepting|allowusers|bannerend|bannerstart|denyusers|ff|info|location|manufacturer|
+    model|name|nick|options|ppd_options|raw|state|uri">
 <!ELEMENT location (#PCDATA)>
+<!ELEMENT bannerstart (#PCDATA)>
+<!ELEMENT bannerend (#PCDATA)>
 <!ELEMENT manufacturer (#PCDATA)>
 <!ELEMENT model (#PCDATA)>
 <!ELEMENT nick (#PCDATA)>
@@ -29,7 +34,13 @@
 <!ATTLIST ppd_options config:type CDATA #FIXED 'list' >
 <!ELEMENT ppd_option (key,value)>
 
+<!ELEMENT denyusers (denyuser*)>
+<!ATTLIST denyusers config:type CDATA #FIXED 'list' >
+<!ELEMENT denyuser (#PCDATA)>
 
+<!ELEMENT allowusers (allowuser*)>
+<!ATTLIST allowusers config:type CDATA #FIXED 'list' >
+<!ELEMENT allowuser (#PCDATA)>
 <!ELEMENT printcap_entry (%y2_printcap_entry;)*>
 <!ELEMENT printers (printer+)>
 <!ATTLIST printers config:type CDATA #FIXED 'list' >
