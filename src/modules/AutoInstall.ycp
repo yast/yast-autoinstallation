@@ -19,7 +19,7 @@
     // Auto-Configuration mode
     //
     global boolean autoconf = false;
-    
+
 
     /**
      * Read saved data in continue mode
@@ -53,7 +53,7 @@
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
 		SCR::Execute(.target.remove, AutoinstConfig::parsedControlFile);
-		
+
 		return (true);
 	    }
 	}
@@ -89,17 +89,15 @@
 	return;
     }
 
-    
+
     /**
      * Save configuration
      * @return: boolean true on success
      */
     global define boolean Save() ``{
-	
 	return (Profile::SaveProfileStructure( AutoinstConfig::parsedControlFile ));
     }
 
-    
     /**
      * Finish Auto-Installation by saving misc files
      * @param string destdir
@@ -107,7 +105,6 @@
      */
     global define void Finish ( string destdir )
         ``{
-              
             SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir + "/pre-scripts/* " + destdir + AutoinstConfig::scripts_dir);
             SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir + "/pre-scripts/logs/* " + destdir + AutoinstConfig::logs_dir);
 
@@ -117,8 +114,6 @@
             return;
         }
 
- 
-   
 //EOF
 }
 

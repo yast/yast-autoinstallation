@@ -33,7 +33,11 @@ Progress::New(
 
 Progress::NextStage();
 string udprec = sformat("/usr/sbin/udp-receiver  --interface %1 --nosync --file %2 --log /tmp/udp-receiver.log ", iface,  file);
-SCR::Execute(.target.bash, udprec);
+if (SCR::Execute(.target.bash, udprec) != 0)
+{
+    Report::Error(_("Error while retrieving image."));
+    return `abort;
+}
 
 string untar = sformat("tar -C %1 -zxpf %2", Installation::destdir, file);
 Progress::NextStage();
