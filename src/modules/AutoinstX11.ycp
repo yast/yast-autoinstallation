@@ -1,8 +1,11 @@
 /**
+ * File:	modules/AutoinstX11.ycp
+ * Module:	Auto-Installation
+ * Summary:	X11
+ * Authors:	Anas Nashif <nashif@suse.de>
  *
- *
+ * $Id$
  */
-
 {
 
     module "AutoinstX11";
@@ -11,18 +14,26 @@
 
     global map x11 = $[];
 
-
+    /**
+     * Import
+     */
     global define boolean Import (map settings) ``{
-	x11 = settings;
-	y2milestone("Imported: %1", x11);
+	x11 = settings;	
 	return true;
     }
 
-
+    /**
+     * Export
+     */
     global define boolean Export () ``{
-	y2milestone("Exported: %1", x11);
+	
 	return x11;
     }
+
+    /**
+     * Summary
+     */
+    
     global define string Summary() ``{
 	string summary = "";
 	map m = x11["monitor"]:$[];
