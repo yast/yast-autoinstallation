@@ -12,7 +12,7 @@ my $ignored_packages = "";
 my $ignore_sources = "0";
 my $ignore_symlinks = "0";
 my $prefer_yastdescr = "0";
-my $extra_provides = "/usr/share/autoinstall/EXTRA_PROV";
+my $extra_provides = "";
 
 sub usage {
 	 print "usage: create_package_descr\n";
@@ -40,6 +40,17 @@ while ( $arg = shift ( @ARGV ) ) {
 	 usage;
 	 die ("unknown parameter\n");
   }
+}
+if ($extra_provides eq "")
+{
+    print 'EXTRA_PROV_FILE location missing. Call this script with 
+
+        -x <location to EXTRA_PROV file>. 
+
+The EXTRA_PROV is available on the first CD in the directory
+suse/setup/descr
+';
+    exit 1;
 }
 
 if ( $ignore_symlinks eq "1" ) {
