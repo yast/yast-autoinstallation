@@ -31,7 +31,7 @@
 
     global string volumePreparer	= "SuSE Linux AG";
 
-    global string volumeID		= "SU8200.001";
+    global string volumeID		= "SU9100.001";
 
     global string publisher		= "SuSE Linux AG";
 
@@ -42,6 +42,8 @@
     global integer totalPacs		= 0;
 
 
+    string skeleton = "";
+    
     // Packages Source
     global map sourceData = $[];
     global map productData = $[];
@@ -74,6 +76,8 @@
 	``{
 
 	skeletonDir = tmpDir + "/iso_skeleton";
+	skeleton = skeletonDir + "/skeleton";
+	
 	return (boolean)SCR::Execute(.target.mkdir, skeletonDir);
     }
 
@@ -115,19 +119,20 @@ a source, make sure it is enabled.
 	y2milestone("Source Data: %1",  sourceData);
 	y2milestone("Media Data: %1", mediaData);
 
-
-
 	string url = sourceData["url"]:"";
 	map tok = URL::Parse(url);
 	sourceDir = tok["path"]:"";
 
 	y2milestone("Source dir %1", sourceDir);
 
-
 	if (mediaData != nil && productData != nil && sourceData != nil && sourceDir != "")
+	{
 	    return true;
+	}
 	else
+	{
 	    return false;
+	}
     }
 
 
@@ -139,9 +144,7 @@ a source, make sure it is enabled.
     define void initIsoParams ()
 	``{
 
-
-	string skeleton = skeletonDir + "/skeleton";
-
+	
 	if (nojoliet)
 	{
 	    params =  "-r -T -pad -no-emul-boot -boot-load-size 4 -boot-info-table";
@@ -150,8 +153,10 @@ a source, make sure it is enabled.
 	{
 	    params = "-r -T -J -pad -no-emul-boot -boot-load-size 4 -boot-info-table";
 	}
+	
 	string tmp_datadir = productData["datadir"]:"./suse";
 	string datadir = ( substring(tmp_datadir, 0, 1 ) == ".") ? substring(tmp_datadir, 1, size(tmp_datadir)) :   tmp_datadir;
+	
 	y2milestone("Data dir: %1", datadir);
 
 	suseDir = skeleton + datadir;
@@ -178,11 +183,12 @@ a source, make sure it is enabled.
     global define string createISOCmd (string dest )
 	``{
 
-	initIsoParams ();
-	string skeleton = skeletonDir + "/skeleton";
+	initIsoParams ();	
 
-	string isotmp = AutoinstConfig::tmpDir;
+	string isotmp = tmpDir;
+	
 	SCR::Execute(.target.mkdir, isotmp + "/iso");
+	
 	string sortfile = isotmp + "/sortfile";
 
 	if (SCR::Read(.target.dir, suseDir)!=nil && SCR::Read(.target.dir, bootDir)!= nil )
@@ -191,7 +197,9 @@ a source, make sure it is enabled.
 	    integer ret = (integer)SCR::Execute (.target.bash, findstring);
 
 	    params = params + sformat(" -sort %1  -b boot/loader/isolinux.bin -c boot.cat", sortfile);
-	    y2milestone("found boot image. Making CD bootable.");
+	    
+	    y2milestone("Found boot image. Making CD bootable.");
+	    
 	    SCR::Execute(.target.mkdir, sformat("%1/iso/boot/loader", isotmp));
 
 	}
