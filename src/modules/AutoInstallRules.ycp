@@ -13,6 +13,7 @@
 
 
     import "Arch";
+    import "Stage";
     import "Installation";
     import "AutoinstConfig";
     import "XML";
@@ -150,7 +151,7 @@
     global define string getMAC()
     {
 	string tmpmac = "";
-	if (Mode::initial)
+	if (Stage::initial ())
 	{
 	    tmpmac  = (string)SCR::Read (.etc.install_inf.HWAddr);
 	}
@@ -263,7 +264,7 @@
 	//
 	// Network
 	//
-	if (Mode::initial)
+	if (Stage::initial ())
 	{
 	    hostaddress  = (string)SCR::Read(.etc.install_inf.IP);
 	}
@@ -841,7 +842,7 @@ file without using classes.
       */
     global define void Init () ``{
 
-	if (Mode::initial || Mode::test)
+	if (Stage::initial () || Mode::test ())
 	{
 	    ProbeRules();
 	}

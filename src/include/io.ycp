@@ -115,8 +115,8 @@
 	    }
 	    else
 	    {
-		y2milestone("Trying to find file on installation media: %1", Mode::boot);
-		if (Mode::boot == "cd")
+		y2milestone("Trying to find file on installation media: %1", Installation::boot ());
+		if (Installation::boot () == "cd")
 		{
 		    string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
 		    if (!(boolean)WFM::Execute(.local.mount, ["/dev/" + cdrom,
@@ -142,7 +142,7 @@
 	}
 	else if (Scheme == "nfs")  // NFS
 	{
-	    if (Mode::boot != "nfs")
+	    if (Installation::boot () != "nfs")
 	    {
 		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
 	    }

@@ -12,6 +12,7 @@
     textdomain "autoinst";
 
     import "Mode";
+    import "Stage";
     import "Profile";
     import "Installation";
     import "Desktop";
@@ -166,7 +167,7 @@
     global define void Y2ModuleConfig () ``{
 
 	/* Read module configuration data (desktop files) */
-	if (!Mode::initial)
+	if (!Stage::initial ())
 	{
 	    list MenuEntries = ReadMenuEntries();
 
@@ -178,7 +179,7 @@
 
 	}
 
-	if (Mode::config)
+	if (Mode::config ())
 	{
 	    // construct the tree menu
 	    ConstructMenu();
