@@ -400,9 +400,9 @@
             ret =  UI::UserInput();
             y2debug("INPUT: %1", ret);
 
-            if (ret == `tree || is(ret, string) && ( issubstring((string)ret,"module@") || issubstring((string)ret,"group@") ) )
+            if (ret == `menu_tree || ret == `tree || is(ret, string) && ( issubstring((string)ret,"module@") || issubstring((string)ret,"group@") ) )
             {
-                if (ret == `tree)
+                if (ret == `tree || ret == `menu_tree)
                 {
                     tree_item = (string ) UI::QueryWidget(`id(`tree), `CurrentItem);
                 }
@@ -465,6 +465,23 @@
 
                     Profile::ReadXML((string)filename);
                 }
+            }
+            else if (ret == `menu_source) // Show SOURCE
+            {
+                Profile::Prepare();
+                string source = XML::YCPToXMLString(`profile, Profile::current);
+                UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
+
+                term sourceView =
+                    `RichText( `id(`class_source ),
+                            `opt(`plainText),
+                            source
+                            );
+
+                Wizard::SetContents(_("Source"),
+                        sourceView , "", true , true);
+                tree_item = "System";
+
             }
             else if (ret == `menu_save) // SAVE
             {
@@ -547,72 +564,6 @@
             }
         }
         /*
-		    else if ( ret == `menu_classes)
-		    {
-			import "AutoinstClass";
-
-			Wizard::CreateDialog();
-			ManageClasses();
-			Wizard::CloseDialog();
-		    }
-		    else if ( ret == `menu_clone)
-		    {
-			import "AutoinstClone";
-
-			Wizard::CreateDialog();
-			cloneSystem();
-			Wizard::CloseDialog();
-
-		    }
-		    else if ( ret == `menu_merge)
-		    {
-			import "AutoinstClass";
-
-			Wizard::CreateDialog();
-			MergeDialog();
-			Wizard::CloseDialog();
-		    }
-		    else if (ret == `menu_exit) // EXIT
-		    {
-			if (Profile::changed)
-			{
-			    string current = "";
-			    if (AutoinstConfig::currentFile == "")
-			    {
-				current = "Untitled";
-			    }
-			    else
-			    {
-				current = AutoinstConfig::currentFile;
-			    }
-
-			    symbol answer = Popup::AnyQuestion3(_("Control file changed."),
-								  sformat(_("Save the changes to %1?"), current),
-								  Label::YesButton(),
-								  Label::NoButton(),
-								  Label::CancelButton(),
-								  `focus_yes
-								  );
-			    if (answer == `no)
-			    {
-				ret = `exit;
-			    }
-			    else if (answer == `yes)
-			    {
-				ret = `menu_save;
-				exit_after = true;
-			    }
-			    else
-			    {
-				continue;
-			    }
-			}
-			else
-			{
-			    ret = `exit;
-			}
-		    }
-
 
 
 
