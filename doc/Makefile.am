@@ -40,21 +40,18 @@ chunks: $(xml_files) examples components
 	chunks.xsl \
 	autoyast.xml
 
-html: builddir chunks style stylesheet-images webimages
-
-builddir: 
-	mkdir -p $(BUILD)
+images.ent:
 	@make -r -C images/WEB -f makefile.ent ima
 
-style:
+html: images.ent chunks webimages builddir
+
+builddir: 
 	cp style.css $(BUILD)
+	cp -a $(IMAGES) $(BUILD)
 
 webimages:
 	mkdir -p build/img
 	cp -a images/WEB/*png build/img
-
-stylesheet-images:
-	cp -a $(IMAGES) $(BUILD)
 
 autoyast.fo: print.xsl $(xml_files) examples components images
 	XML_CATALOG_FILES=$(CATALOG) \
