@@ -58,11 +58,9 @@
 			i = i + 1;
 		    });
 		    // Call::Function(module_auto, ["Import", result ]);
-		    
 		    any out = Call::Function(module_auto, ["Packages", result ]);
 		    if (is(out, map))
-			packages = union(packages, lookup((map ) out, "install", [] ));
-		    
+			packages = (list<string>)union(packages, lookup((map ) out, "install", [] ));
 		    // Call::Function(module_auto, ["Reset", $[] ]);
 		}
 		else if (d["AutoinstDataType"]:"map" == "map")
@@ -70,7 +68,7 @@
 		    // Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
 		    any out = Call::Function(module_auto, ["Packages", Profile::Flat[resource]:$[]  ]);
 			if (is(out, map))
-			    packages = union(packages, lookup ((map) out, "install", [] ));
+			    packages = (list<string>)union(packages, lookup ((map) out, "install", [] ));
 			// Call::Function(module_auto, ["Reset", $[] ]);
 		}
 		else
@@ -85,7 +83,7 @@
 	}
     });
     list<string> post = AutoinstSoftware::post_packages;
-    AutoinstSoftware::post_packages = toset(union(post,packages));
+    AutoinstSoftware::post_packages = (list<string>)toset(union(post,packages));
 
     return `auto;
 
