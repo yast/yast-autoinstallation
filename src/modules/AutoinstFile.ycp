@@ -89,12 +89,12 @@
 		}
 		if (file["file_owner"]:"" != "")
 		{
-		    SCR::Execute (.target.bash, sformat("chown %1 %2", file["file_owner"]:"",  file["file_path"]:alternate_location ));  
+		    SCR::Execute (.target.bash, sformat("chown %1 %2", file["file_owner"]:"",  file["file_path"]:alternate_location ));
 		}
 
 		map script = file["file_script"]:$[];
 		if (script != $[])
-		{		    
+		{
 		    string current_logdir = AutoinstConfig::logs_dir;
 		    list name_tok = splitstring(file["file_path"]:alternate_location, "/");
 		    string scriptName = "";

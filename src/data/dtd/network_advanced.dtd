@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT allowed (allowed_clients+)>
-<!ATTLIST allowed
-	config:type CDATA #REQUIRED
->
-<!ELEMENT allowed_clients (#PCDATA)>
 <!ELEMENT ldap (ldap_domain, ldap_server, ldap_tls, ldap_v2, start_ldap)>
 <!ELEMENT ldap_domain (#PCDATA)>
 <!ELEMENT ldap_server (#PCDATA)>
@@ -15,40 +10,7 @@
 <!ATTLIST ldap_v2
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT mount_point (#PCDATA)>
-<!ELEMENT mountpoint (#PCDATA)>
-<!ELEMENT nfs (nfs_entry+)>
-<!ATTLIST nfs
-	config:type CDATA #REQUIRED
->
-<!ELEMENT nfs_entry (mount_point, nfs_options, server_path)>
-<!ELEMENT nfs_export (allowed, mountpoint)>
-<!ELEMENT nfs_exports (nfs_export+)>
-<!ATTLIST nfs_exports
-	config:type CDATA #REQUIRED
->
-<!ELEMENT nfs_options (#PCDATA)>
-<!ELEMENT nfs_server (nfs_exports, start_nfsserver)>
-<!ELEMENT nisplus (nisplus_domain, nisplus_password, nisplus_server, start_autofs, start_nisplus)>
-<!ELEMENT nisplus_domain (#PCDATA)>
-<!ELEMENT nisplus_password (#PCDATA)>
-<!ELEMENT nisplus_server (#PCDATA)>
-<!ELEMENT server_path (#PCDATA)>
-<!--
-<!ELEMENT start_autofs (#PCDATA)>
-<!ATTLIST start_autofs
-	config:type CDATA #REQUIRED
->
--->
 <!ELEMENT start_ldap (#PCDATA)>
 <!ATTLIST start_ldap
-	config:type CDATA #REQUIRED
->
-<!ELEMENT start_nfsserver (#PCDATA)>
-<!ATTLIST start_nfsserver
-	config:type CDATA #REQUIRED
->
-<!ELEMENT start_nisplus (#PCDATA)>
-<!ATTLIST start_nisplus
 	config:type CDATA #REQUIRED
 >
