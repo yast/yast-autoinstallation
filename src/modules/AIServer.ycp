@@ -16,30 +16,10 @@
 {
     module "AIServer";
     import "Misc";
-
-    // Package repository. Source directory for network installation
-    global string PackageRep = "";
-
-    // Tftp root directory
-    global string Tftpboot = "/tftpboot";
+    import "AIConfig";    
 
     // tmp dir
     global string tmpDir = "";
-
-
-    ///////////////////////////////////////////////////////////////////////
-    // Alice
-    ///////////////////////////////////////////////////////////////////////
-    global symbol aliceOutput = `load;
-
-    global string aliceRep = "";
-
-
-
-    ///////////////////////////////////////////////////////////////////////
-    // Kickstart
-    ///////////////////////////////////////////////////////////////////////
-    global symbol ksOutput = `load;
 
 
 
@@ -83,9 +63,8 @@
      **/
     global define void AIServer()
 	``{
-	tmpDir = SCR::Read (.target.tmpdir);
-	PackageRep = Misc::SysconfigRead( .sysconfig.autoinstall.PACKAGE_REPOSITORY, "/tmp");
-	sourceDir = PackageRep;
+	tmpDir = SCR::Read (.target.tmpdir);	
+	sourceDir = AIConfig::PackageRepository;
 	return;
     }
 

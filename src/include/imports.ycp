@@ -8,89 +8,7 @@
  */
 {
     textdomain "autoinst";
-    // include "autoinstall/classes.ycp";
-
-    global define aliceImportOptions()
-	``{
-	Wizard::SetScreenShotName ("autoyast-alice-1");
-	string title = _("Import Alice configuration");
-
-	string help = _("<p>Using this feature, import <b>Alice</b> configuration
-files.</p>
-");
-	help = help + _("<p>System configuration in  <em>Alice</em> files may vary in their scope from what is offered
-in <b>AutoYaST</b>, so some limitations should be taken into consideration. A standard <em>Alice</em>
-configuration file with no special customization can, however, be imported without any loss of data.</p>
-");
-
-
-	term contents =
-	    `Top(
-		 `VBox(
-		       `Left(`HBox(
-				   `TextEntry(`id(`alicerep), _("Alice &Home"), AIServer::aliceRep),
-				   `HStretch()
-				   )
-			     ),
-		       `VSpacing(1),
-		       `Left(`Label(_("What should be done with loaded data?"))),
-		       `HBox(
-			     `HWeight(10, `Empty()),
-			     `HWeight(90, `RadioButtonGroup(`id(`rbg),
-							    `VBox(
-								  `Left(
-									`RadioButton(`id(`hostname), `opt(`notify),_("&Use host name from alice as profile name"),
-										     (AIServer::aliceOutput == `hostname))
-									),
-								  `Left(
-									`RadioButton(`id(`save),`opt(`notify), _("Save result &into repository"),
-										     (AIServer::aliceOutput == `save))
-									),
-								  `Left(
-									`HBox(
-									      `HStretch(),
-									      `TextEntry(`id(`result), _("Name of resulting &profile"), ""),
-									      `HStretch()
-
-									      )
-									),
-								  `Left(
-									`RadioButton(`id(`load), `opt(`notify),_("&Load resulting profile"), (AIServer::aliceOutput == `load) )
-									)
-								  )
-							    )
-				      )
-			     )
-		       )
-		 );
-
-	Wizard::SetContents(title,
-			    contents, help , true, true);
-
-	any ret = nil;
-	repeat
-	    {
-		ret = UI::UserInput();
-		AIServer::aliceRep = UI::QueryWidget(`id(`alicerep), `Value);
-		AIServer::aliceOutput = UI::QueryWidget(`id(`rbg), `CurrentButton);
-		if ( AIServer::aliceOutput == `save && ret == `next)
-		{
-		    if ( UI::QueryWidget(`id(`result), `Value) != "" )
-		    {
-			AIConfig::currentFile =  UI::QueryWidget(`id(`result), `Value);
-		    }
-		    else
-		    {
-			UI::MessagePopup(_("Provide a valid profile name."));
-			continue;
-		    }
-		}
-
-
-	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-	Wizard::RestoreScreenShotName ();
-	return ret;
-    }
+ 
 
     /**
      * Generate control file list
@@ -99,8 +17,8 @@ configuration file with no special customization can, however, be imported witho
     global define aliceHostList()
 	``{
 
-	list files = SCR::Read(.target.dir, AIServer::aliceRep + "/info");
-	list extensions = ["sys.tcf"	];
+	list files = SCR::Read(.target.dir, AIConfig::AliceRepository + "/info");
+	list extensions = ["sys.tcf" ];
 	list hosts = [];
 	string host = "";
 	foreach(string file, files, ``{
@@ -129,15 +47,7 @@ configuration file with no special customization can, however, be imported witho
 		  `VSpacing(0.5),
 		  `Table(`id(`table), `opt(`notify,`immediate), `header("Host"),
 			 hostfiles
-			 ),
-
-		  `VSpacing(0.5),
-		  `VBox(
-			`HBox(
-			      `PushButton(`id(`import), _("&Import"))
-			      )
-
-			),
+			 ),		 
 		  `VSpacing(0.5)
 		  );
 	return contents;
@@ -154,6 +64,14 @@ configuration file with no special customization can, however, be imported witho
 	string help = _("<p>Using this dialog, select a
 host from the <b>ALICE</b> repository.</p>
 ");
+	help = help +  _("<p>Using this feature, import <b>Alice</b> configuration
+files.</p>
+");
+	help = help + _("<p>System configuration in  <em>Alice</em> files may vary in their scope from what is offered
+in <b>AutoYaST</b>, so some limitations should be taken into consideration. A standard <em>Alice</em>
+configuration file with no special customization can, however, be imported without any loss of data.</p>
+");
+	
 	help = help + _("<p>Converting <b>ALICE</b> data to use with the new autoinstallation
 system might take some time.  Be patient while
 the configuration files are read and converted.
@@ -161,15 +79,15 @@ the configuration files are read and converted.
 ");
 	Wizard::SetContents(_("Hosts in Alice Repository"),
 			    aliceHostList(), help, true, true);
-	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
-	UI::ChangeWidget(`id(`next), `Enabled, false);
+	UI::ChangeWidget(`id(`accept), `Label, _("&Import"));
+
 
 	any ret = "";
 	string host = "";
 	repeat
 	    {
 	    ret = UI::UserInput();
-	    if (ret == `import)
+	    if (ret == `accept)
 	    {
 		host = UI::QueryWidget(`id(`table), `CurrentItem);
 		if (host != nil && host != "")
@@ -192,24 +110,14 @@ This may take a while. Please wait...
 			continue;
 		    }
 
-		    AIConfig::Import(createProfile(aliceConf));
+		    Profile::Import(createProfile(aliceConf));
 		    clearFeedback();
-		    UI::ChangeWidget(`id(`next), `Enabled, true);
+		   
 		}
 	    }
-	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	} until (ret == `accept || ret == `cancel );
 
-	if (ret == `next) {
-	    if (AIServer::aliceOutput == `hostname)
-	    {
-		AIConfig::currentFile = sformat("%1.xml", host);
-		ret = `save;
-	    }
-	    else
-	    {
-		ret = AIServer::aliceOutput;
-	    }
-	}
+
 	Wizard::RestoreScreenShotName ();
 	return ret;
     }
@@ -219,7 +127,7 @@ This may take a while. Please wait...
 
 	string MakeinfoCommand = "alice make_info_file --yast2 ";
 	MakeinfoCommand = MakeinfoCommand + host;
-	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR":AIServer::tmpDir, "ALICE_HOME":AIServer::aliceRep]);
+	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR":AIServer::tmpDir, "ALICE_HOME":AIConfig::AliceRepository]);
 	string filelist = SCR::Read(.target.string, AIServer::tmpDir + "/filelist");
 	list files = splitstring(filelist, "\n");
 	y2milestone("files: %1", files);
@@ -249,7 +157,7 @@ This may take a while. Please wait...
 		else
 		{
 
-		    string MergeCommand = "/usr/bin/xsltproc --param replace \"'true'\" --param with ";
+		    string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'true'\" --param with ";
 		    MergeCommand = MergeCommand + "\"'" + filename + "'\"  ";
 		    MergeCommand = MergeCommand + "--output " +  dir + "/mergeOutput ";
 		    MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
@@ -642,143 +550,6 @@ This may take a while. Please wait...
 
     }
 
-
-    global define kickstartImport()
-	``{
-	Wizard::SetScreenShotName ("autoyast-kickstart");
-
-	string title = _("Import Kickstart files");
-	string help = _("<p>Using this feature,  import <b>Kickstart</b> configuration
-files.</p>
-");
-	help = help + _("<p>System configuration in a <em>Kickstart</em> file may vary in its scope from what is offered
-in <b>AutoYaST</b>, so some limitations should be taken into consideration. A standard <em>Kickstart</em>
-configuration file with no distribution-specific configuration options can still be imported without
-much loss of data.</p>
-");
-
-	help = help + _("<p>The main problem you will be facing when importing a <em>Kickstart</em> file
-is the different package and package selection names used. They must be adapted manually.</p>
-");
-
-	term contents =
-	    `Top(
-		 `VBox(
-		       `VSquash(
-				`HBox(
-
-				      `TextEntry(`id(`filename), _("Kickstart file name"), ""),
-				      `VBox(
-					    `VSpacing(),
-					    `PushButton(`id(`open), `opt(`notify), _("Select File"))
-					    )
-				      )
-				),
-
-		       `VSpacing(1),
-		       `Left(`Label(_("What should be done with loaded data?"))),
-		       `HBox(
-			     `HWeight(10, `Empty()),
-			     `HWeight(90, `RadioButtonGroup(`id(`rbg),
-							    `VBox(
-								  `Left(
-									`RadioButton(`id(`hostname), `opt(`notify),_("&Use  file name as new profile name"),
-										     (AIServer::ksOutput == `hostname))
-									),
-								  `Left(
-									`RadioButton(`id(`save),`opt(`notify), _("Save result &into repository"),
-										     (AIServer::ksOutput == `save))
-									),
-								  `Left(
-									`HBox(
-									      `HStretch(),
-									      `TextEntry(`id(`result), _("Name of resulting &profile"), ""),
-									      `HStretch()
-
-									      )
-									),
-								  `Left(
-									`RadioButton(`id(`load), `opt(`notify),_("&Load resulting profile"), (AIServer::ksOutput == `load) )
-									)
-								  )
-							    )
-				      )
-			     )
-		       )
-		 );
-
-
-	Wizard::SetContents(title,
-			    contents, help , true, true);
-	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
-	string filename = "";
-	any ret = nil;
-	repeat
-	    {
-		ret = UI::UserInput();
-
-		filename = UI::QueryWidget(`id(`filename), `Value);
-		AIServer::ksOutput = UI::QueryWidget(`id(`rbg), `CurrentButton);
-
-		if ( AIServer::ksOutput == `save && ret == `next)
-		{
-		    if ( UI::QueryWidget(`id(`result), `Value) != "" )
-		    {
-			AIConfig::currentFile =  UI::QueryWidget(`id(`result), `Value);
-		    }
-		    else
-		    {
-			UI::MessagePopup(_("Provide a valid profile name."));
-			continue;
-		    }
-		}
-
-		if (ret == `open)
-		{
-		    filename = PopupFile(AIConfig::Repository + "/");
-		    if (filename!="")
-		    {
-			UI::ChangeWidget(`id(`filename), `Value, filename);
-		    }
-		}
-		else if (ret == `next && filename != "")
-		{
-
-		    map ksConfig = readKS(filename);
-		    AIConfig::Import(ks2ay(ksConfig));
-		    UI::WarningPopup(_("
-Importing foreign configuration files means that
-you need to go through the package and software configuration
-to make sure the packages and selections are compatible with
-SuSE package names and package groups.
-"));
-
-		}
-		else if (ret == `next && filename == "")
-		{
-		    UI::MessagePopup(_("Select a file first."));
-		    UI::SetFocus(`id(`filename));
-		    continue;
-		}
-
-	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-
-
-	if (ret == `next)
-	{
-	    if (AIServer::ksOutput == `hostname)
-	    {
-		AIConfig::currentFile = filename;
-		ret = `save;
-	    }
-	    else
-	    {
-		ret = AIServer::ksOutput;
-	    }
-	}
-	return ret;
-	Wizard::RestoreScreenShotName ();
-    }
 
 
     global define boolean readKS(string ks)``{

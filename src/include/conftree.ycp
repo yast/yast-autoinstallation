@@ -11,8 +11,11 @@
     textdomain "autoinst";
     import "HTML";
     import "Call";
-    include "autoinstall/readconfig.ycp";
 
+    include "readconfig.ycp";
+
+
+    
     
     /**
      * Create a list to be used with the table widget
@@ -37,23 +40,23 @@
 	return menu_options;
     }
 
+
+
+    
     global define content_dialog(map mod, any settings) ``{
 	string summary =  Call::Function(clientName, ["Summary", settings]);
 	string caption = d["Name"]:"Configurtion";
 	string buttonLabel = d["Helptext"]:"Configure";
 	term contents =
-	    `VBox(
-		  `VSpacing(1),
-		  `RichText( `id(`summary), summary),
-		  `VSpacing(0.5),
+	    `VBox(		
+		  `RichText( `id(`summary), summary),		  
 		  `HBox(
 			// push button label
 			`PushButton(`id(`configure), _("Configur&e") ),
 			`HStretch(),
 			// push button label
 			`PushButton(`id(`reset), _("Reset Confi&guration"))
-			),
-		  `VSpacing(1)
+			)
 		  );
 	// caption of lan auto configuration
 	Wizard::SetContents(
@@ -62,14 +65,15 @@
     }
 
     global define module_contents(string clientName, map d, any settings ) ``{
-	content_dialog(d,settings);
+	
+	content_dialog( d , settings);
 	any ret= nil;
 	repeat {
 	    ret = UI::UserInput();
 	    if(ret == `configure)
 	    {
 		any seq = Call::Function(clientName, ["Change", settings]);
-		if (seq == `next || seq == `finish)
+		if (seq == `accept || seq == `next || seq == `finish)
 		{
 		    settings = Call::Function(clientName, ["Result", $[]]);
 		}
@@ -82,13 +86,30 @@
 		content_dialog(d, $[]);
 	    }
 	    y2milestone("return %1", ret);
-	} until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key);
+	} until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key || contains(menuitems, ret) );
 
 	return [ ret, settings];
     }
 
 
+    global define void CreateTreeWidget() ``{
 
+	list menu_options = CreateTableList(AIConfig::MenuTreeData);
+	Wizard::ReplaceButtonBox(`VSpacing(0.6));
+	UI::ReplaceWidget(`id(`helpSpace) ,
+			  `VBox(			
+				`Tree(
+				      `id(`key),
+				       `opt(`notify,`vstretch),
+				       "Untitled",
+				       menu_options
+				       ),
+				`VSpacing(1))
+			  );
+	
+	UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), AIConfig::currentFile));
+	return; 
+    }
     
     /**
      * Menu interface
@@ -99,14 +120,54 @@
 	include "autoinstall/io.ycp";
 	include "autoinstall/help.ycp";	
 
+	term menu =
+	    `VBox(
+		  `Left(
+			`HBox(		
+			      `MenuButton( _("&File"),
+					   [
+					    `item(`id(`menu_new), _("&New")      ),
+					    `item(`id(`menu_open), _("&Open")      ),
+					    `item(`id(`menu_save), _("&Save")      ),
+					    `item(`id(`menu_saveas), _("Save &As")      ),
+					    `menu( _("Im&port") ,
+						   [
+						    `item(`id(`menu_alice), _("Import A&lice data")),
+						    `item(`id(`menu_kickstart), _("Import &Kickstart file"))
+						    ]
+						   ),
+					    `menu( _("&Preferences"),
+						   [
+						    `item(`id(`menu_general), _("General")),
+						    `item(`id(`menu_reps), _("Reposi&tories")),
+						    
+						    ]),
+					    `item(`id(`menu_exit), _("E&xit")      )
+					    ]
+					   ),
+			      `MenuButton( _("&View"),
+					   [
+					    `item(`id(`menu_tree), _("Configu&ration Tree")      ),
+					    `item(`id(`menu_source), _("So&urce")      )
+					    ]
+					   ),
+			      `MenuButton( _("&Tools"),
+					   [
+					    `item(`id(`menu_iso), _("&Create ISO image")      ),
+					    `item(`id(`menu_clone), _("Clone t&his system")      )
+					    ]
+					   )			      		
+			      )
+			),
+		  `VSpacing(1)
+		  );
+	
+	
+	UI::ReplaceWidget(`id(`image) , menu);	
+	CreateTreeWidget();
 
-	list menu_options = CreateTableList(AIConfig::MenuTreeData);
 
-
-	UI::ReplaceWidget(`id(`helpSpace) , `VBox(`Tree( `id(`key),  `opt(`notify,`vstretch), _("Opt&ions"), menu_options), `VSpacing(1)));
-	// Wizard::ReplaceAbortButton(`Empty());
-
-	UI::ChangeWidget(`id(`next), `Label, AcceptButtonLabel());
+	
 	string tree_item = "System";
 	any ret = `key;
 	any func_ret = "";
@@ -115,7 +176,7 @@
 	    if (size(AIConfig::GroupMap) == 0)
 	    {
 		UI::ErrorPopup(_("Error while reading configuration data"));
-		ret = `back;
+		ret = `next;
 		break;
 	    }
 	    if (haskey(AIConfig::GroupMap, tree_item))
@@ -123,10 +184,9 @@
 		string html = "";
 		foreach(`k,`v, AIConfig::ModuleMap, ``{
 		    if (v["Group"]:"" == tree_item)
-		    {						
-			// html = html + HTML::Heading( HTML::Link(Translate(v["Name"]:""),k));
-			// html = html + HTML::Para(Translate(v["Helptext"]:""));			
-			html = html + HTML::Heading( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k));
+		    {								
+			string colored = HTML::Colorize( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k), "#8BC460");
+			html = html + HTML::Heading(colored);
 			html = html + HTML::Para(ReadKey(v["Textdomain"]:"", "Helptext", v));
 		    }
 		});
@@ -137,13 +197,17 @@
 		}
 		term contents = `RichText(html);
 
-		Wizard::SetContents(_("Available modules"),
-				    contents, "", true , true);
+		if (ret != `menu_source)
+		{
+		    Wizard::SetContents(_("Available modules"),
+					contents, "", true , true);
+		}
 
 		while ( true )
 		{
 		    ret = Wizard::UserInput();
 		    y2milestone("INPUT: %1", ret);
+		    
 		    if (ret == `key)
 		    {
 			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
@@ -151,6 +215,10 @@
 		    }
 		    else if (ret == `next || ret == `back || ret == `abort)
 		    {
+			break;
+		    }
+		    else if (contains(menuitems, ret) )
+		    {			
 			break;
 		    }
 		    else
@@ -164,10 +232,10 @@
 	    }
 	 
 	    foreach(`p,`d, AIConfig::ModuleMap, ``{
-		// y2milestone("Checking data from %1: %2", p, d );
-		if (tree_item == p) {
+		
+		if (tree_item == p)
+		{
 		    // Set resource name, if not using default value
-
 		    string resource = "";		    
 		    if (haskey(d,"AutoinstResource"))
 		    {
@@ -189,14 +257,18 @@
 			module_auto = sformat("%1_auto", p);
 		    }
 		    list result = [];
-		    if (d["AutoinstDataType"]:"map" == "map") {
-
+		    if (d["AutoinstDataType"]:"map" == "map")
+		    {
+			
+			
 			if (d["AutoinstPath"]:"configure" == "install")
 			{
+			    y2milestone("Calling external function with data = %1", Profile::Install[resource]:$[]);
 			    result = module_contents(module_auto, d, Profile::Install[resource]:$[]);			    
 			}
 			else
 			{
+			    y2milestone("Calling external function with data = %1", Profile::Configure[resource]:$[]);
 			    result = module_contents(module_auto, d, Profile::Configure[resource]:$[]);			    
 			}
 			ret = select(result,0,`none);
@@ -219,8 +291,10 @@
 			    }	
 			    Profile::Configure[resource] =  data;
 			}
-			y2debug("New data for %1: %2", resource, data);
-		    } else {
+			y2milestone("New data for %1: %2", resource, data);
+		    }
+		    else
+		    {
 
 			if (d["AutoinstPath"]:"configure" == "install")
 			{
@@ -251,7 +325,7 @@
 			    }
 			    Profile::Configure[resource] =  data;
 			}
-			y2debug("New data for %1: %2", resource, data);
+			y2milestone("New data for %1: %2", resource, data);
 		    }
 
 
@@ -263,28 +337,141 @@
 	    {
 		tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
 		if (tree_item == nil)
-		    tree_item = "Hardware";		
+		{
+		    tree_item = "System";
+		}
 	    }
-	    if (ret  == nil)
+	    else if (ret  == nil)
 	    {
 		UI::ErrorPopup(_("Error while reading configuration data"));
-		ret = `back;
-		break;
-	    }	    
+		ret = `back;		
+	    }
+	    else if ( contains(menuitems,ret) )
+	    {
+		y2milestone("MENU: %1", ret);
 
-	} until ( ret == `next || ret == `back ||  (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
+		if (ret == `menu_reps)
+		{
+		    Wizard::RestoreHelp("");
+		    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+		    ret = Preferences();
+		    CreateTreeWidget();
+		}	
+		else if ( ret == `menu_alice)
+		{
+		    y2milestone("Importing ALICE data");
+		    Wizard::RestoreHelp("");
+		    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+		    ret = aliceImportList();
+		    CreateTreeWidget();		    
+		}
+		else if ( ret == `menu_clone)
+		{
+		    Wizard::RestoreHelp("");
+		    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+		    ret = cloneSystem();		    
+		    CreateTreeWidget();		    
+		}
 
-	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel());
+		
+		
+		if (ret == `menu_open) // OPEN
+		{
+		    string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open file") );
+		    if (filename!=nil)
+		    {			
+			y2milestone("file: %1", filename);
+			AIConfig::currentFile = filename;
+			list pathComponents = splitstring(  filename, "/");
+			string base = select(pathComponents, size(pathComponents) -1, "default");
+			UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
+			Profile::Read(filename);
+			
+		    }
+		}
+		else if (ret == `menu_kickstart)
+		{
+		    string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Import Kickstart file") );
+		    if (filename!=nil) {
+			map ksConfig = readKS(filename);
+			Profile::Import(ks2ay(ksConfig));
+		    }
+		}
+		else if (ret == `menu_save) // SAVE
+		{
+		    if (AIConfig::currentFile == "") {
+			string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save file" );
+			if (filename!=nil) {
+			    AIConfig::currentFile = filename;
+			  
+			}
+		    }
+		  					    
+		    if ( Profile::Save( AIConfig::currentFile ))
+		    {
+			UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
+			Profile::changed=false;			
+		    }
+		    else
+		    {
+			UI::WarningPopup(_("An error occured while saving the file."));
+		    }
+		    
+		}
+		else if (ret == `menu_saveas) // SAVE AS
+		{
+		    string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save as..." );
+		    if (filename!=nil) {
+			AIConfig::currentFile = filename;
+			if ( Profile::Save( AIConfig::currentFile ))
+			{
+			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
+			    Profile::changed=false;
+			    list pathComponents = splitstring(  filename, "/");
+			    string base = select(pathComponents, size(pathComponents) -1, "default");
+			    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
+			}
+			else
+			{
+			    UI::WarningPopup(_("An error occured while saving the file."));
+			}
+		    }
+		}
+		else if (ret == `menu_source) // Show SOURCE
+		{
+		    y2milestone("Showing source...");
+		    Profile::Prepare();
+		    string source = XML::YCPToXMLString(`profile, Profile::current);
+		    UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
+
+		   
+		    term sourceView =
+			`RichText( `id(`class_source ),
+				   `opt(`plainText),
+				   source
+				   );
+		    Wizard::SetContents(_("Source"),
+					sourceView , "", true , true);
+		    tree_item = "System"; 		    		    
+		}
+		else if (ret == `menu_new) // NEW
+		{
+		    Profile::Reset();
+		    AIConfig::currentFile = "";
+		    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
+		    	
+		}		
+		else if (ret == `menu_exit) // EXIT
+		{
+		    ret = `next;
+		}
+	    }
+
+	} until ( ret == `next || ret == `back ||   (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
+
 	Wizard::RestoreHelp("");
-	Wizard::RestoreAbortButton();
 	Wizard::RestoreScreenShotName ();
-	if (ret != `back && ret != `abort)
-	{
-	    return ct;
-	}
-	else
-	{
-	    return ret;
-	}
+	return ret;
+    
     }
 }

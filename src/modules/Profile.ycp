@@ -9,8 +9,9 @@
 {    
     module "Profile";
     textdomain "autoinst";
+    import "XML";
     include "autoinstall/xml.ycp";
-   
+    
 
     
     // The Complete current Profile
@@ -184,9 +185,10 @@
     global define boolean Save (string filePath)
     ``{	
 	Prepare();
-	y2milestone("Saving data to XML file %1", filePath);
+	y2milestone("Saving data (%1) to XML file %2", current, filePath);
 	
-	if (find(filePath, "/") == -1 ) {
+	if (find(filePath, "/") == -1 )
+	{
 	    if (isTemplate) {
 		return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", TemplateRepository, filePath)));
 	    }
@@ -197,6 +199,7 @@
 	}
 	else
 	{
+	    y2milestone("full path");
 	    return (XML::YCPToXMLFile(`profile, current,  filePath));
 	}
     }
@@ -282,7 +285,8 @@
 
 	
 	foreach(string k, any v, general_options , ``{
-	    if (k == "keyboard" && is(v, map)) {
+	    if (k == "keyboard" && is(v, string))
+	    {
 		old = true;
 	    }
 	    else if (k == "mouse" && is(v, string))
@@ -339,8 +343,7 @@
 	    list ifaces = net["interfaces"]:[];
 	    
 	    list newifaces = maplist(map iface , ifaces, ``{
-		map newiface = mapmap(string k, string v, iface, ``{
-		    y2milestone("blah");
+		map newiface = mapmap(string k, string v, iface, ``{		    
 		    return ([tolower(k), v]);
 		});
 		return newiface;
