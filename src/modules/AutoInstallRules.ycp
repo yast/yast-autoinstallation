@@ -59,7 +59,9 @@
 
     global string mac = "";
 
-    global map installed = $[];
+    global integer linux = 0;
+
+    global integer others = 0;
 
     global string xserver = "";
 
@@ -151,8 +153,10 @@
 	xserver = SCR::Read(.etc.install_inf.XServer);
 
 	NonLinuxPartitions = Storage::GetForeignPrimary();
+	others = size(NonLinuxPartitions );
 	y2milestone ("Other primaries: %1", NonLinuxPartitions);
 	LinuxPartitions = Storage::GetOtherLinuxPartitions();
+	linux = size(LinuxPartitions);
 	y2milestone ("Other linux parts: %1",  LinuxPartitions);
 
 
@@ -273,7 +277,19 @@
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
 			env[rule] = mac;
-		    }		  	    
+		    }
+		    else if ( rule == "linux" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = linux;
+		    }
+		    else if ( rule == "others" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = others;
+		    }		    
 		    else if ( rule == "xserver" )
 		    {
 			shellseg(ismatch, rule, match, op, matchtype);
