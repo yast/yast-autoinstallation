@@ -83,10 +83,17 @@
 	    y2error("Error creating directory: %1", AutoinstConfig::local_rules_location );
 	}
 
-	ret = Get(AutoinstConfig::scheme,
-		  AutoinstConfig::host,
-		  AutoinstConfig::directory + "/" +  AutoinstConfig::remote_rules_location ,
-		  AutoinstConfig::local_rules_file);
+        if (is_directory)
+        {
+            ret = Get(AutoinstConfig::scheme,
+                    AutoinstConfig::host,
+                    AutoinstConfig::directory + "/" +  AutoinstConfig::remote_rules_location ,
+                    AutoinstConfig::local_rules_file);
+        }
+        else
+        {
+            ret = false;
+        }
 
 	if (ret)
 	{
