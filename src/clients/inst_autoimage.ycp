@@ -6,12 +6,12 @@ import "Installation";
 import "Progress";
 import "Report";
 import "AutoinstImage";
+import "AutoinstSoftware";
 
 if (!AutoinstImage::enabled)
     return `auto;
 
-string file = Installation::destdir +  "/" + AutoinstImage::image_name;
-string iface = AutoinstImage::iface;
+
 
 string help_text = _("<p>
 Please wait while the image is retrieved.</p>
@@ -19,13 +19,13 @@ Please wait while the image is retrieved.</p>
 list<string> progress_stages =
 [
  _("Retrieve Image File"),
- _("Unpack files into system")
+  _("Install image file")
  ];
 
  list<string> progress_descriptions =
  [
   _("Retrieving image file..."),
-  _("Unpacking image file..."),
+  _("Installing image file...")
   ];
 
 Progress::New(
@@ -37,18 +37,13 @@ Progress::New(
 	      help_text );
 
 Progress::NextStage();
-string udprec = sformat("/usr/sbin/udp-receiver  --interface %1 --nosync --file %2 --log /tmp/udp-receiver.log ", iface,  file);
-if (SCR::Execute(.target.bash, udprec) != 0)
+if (!AutoinstImage::Get(AutoinstSoftware::ft_module, Installation::destdir ))
 {
     Report::Error(_("Error while retrieving image."));
     return `abort;
 }
 
-string untar = sformat("tar -C %1 -zxpf %2", Installation::destdir, file);
-Progress::NextStage();
-SCR::Execute(.target.bash, untar);
 
-SCR::Execute(.target.remove, "/" + file );
 Progress::Finish();
 
 return `next;

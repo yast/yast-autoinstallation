@@ -24,6 +24,12 @@
     import "AutoinstLVM";
     import "AutoinstRAID";
 
+
+
+    // Read existing fstab and format partitions, but dont create anything
+    // Use same mountpoints etc.
+    global boolean read_fstab = false;
+
     // Show warning for /boot on raid
     global boolean BootRaidWarning = true;
 
@@ -121,13 +127,14 @@
 
     /**
      * Get all the configuration from a map.
-     * When called by autoinst_<module name> (preparing autoinstallation data)
+     * When called by inst_auto<module name> (preparing autoinstallation data)
      * the list may be empty.
      * @param settings a list	[...]
      * @return	boolean success
      */
-    global define boolean Import(list<map> settings)	``{
+    global define boolean Import(list<map> settings) ``{
 	AutoPartPlan = settings;
+        read_fstab = settings[0, "read_fstab"]:false;
 	return true;
     }
 
@@ -209,6 +216,42 @@
 	return;
     }
 
+    boolean handle_fstab()
+    {
+        import "RootPart";
+
+        if (!RootPart::didSearchForRootPartitions)
+        {
+            UI::OpenDialog (`opt(`decorated ),
+                            `Label(_("Evaluating root partition. One moment please...")));
+            RootPart::FindRootPartitions ();
+            UI::CloseDialog ();
+        }
+
+        if (RootPart::numberOfValidRootPartitions == 0)
+        {
+            // a popup
+            Popup::Message(_("No Linux root partition found."));
+            return false;
+        }
+
+        // We must only change RootPart::selectedRootPartition if booting
+        // is inevitable.
+
+        if (RootPart::numberOfValidRootPartitions == 1)
+        {
+            RootPart::SetSelectedToValid ();
+        }
+        else {
+            Popup::Message(_("Multiple root partitions found,
+Auto-Installation not possible."));
+            return false;
+        }
+        RootPart::MountPartitions(RootPart::selectedRootPartition);
+        RootPart::UnmountPartitions ();
+        RootPart::SetFormatPartitions ();
+        return true;
+    }
 
     /**
      * Create partition plan
@@ -216,6 +259,10 @@
      */
     global define boolean Write()
 	``{
+        if (read_fstab)
+        {
+            return (handle_fstab());
+        }
 
 	map<string, map> InitialTargetMap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", InitialTargetMap);
