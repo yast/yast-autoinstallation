@@ -12,7 +12,6 @@
     textdomain "autoinst";
 
     import "Storage";
-    import "AutoinstStorage";
     import "Partitions";
     import "FileSystems";
 
@@ -33,7 +32,6 @@
     map targetMap = $[];
 
 
-    
     /**
      * Constructor
      * @return void
@@ -223,7 +221,7 @@
 
 	    if (device["format"]:false)
 	    {
-		symbol selected_fs	= AutoinstStorage::StringFS2Symbol(device["filesystem"]:"");
+		symbol selected_fs	= device["filesystem"]:`ext2;
 		device["used_fs"]	= selected_fs;
 	    }
 
