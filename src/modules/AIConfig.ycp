@@ -18,7 +18,11 @@
     include "autoinstall/io.ycp";
     // Profile Repository
     global string Repository = "";
-    
+
+
+    // Templates
+    global string TemplateRepository = "";
+	
     // The Complete Profile
     global map Profile = $[];
         
@@ -39,7 +43,8 @@
     // the configure portion of the XML configuration file
     global map Configure = $[];
  
-
+    global boolean isTemplate = false;
+    
     // Modules
        
     global map GroupMap = $[];
@@ -71,7 +76,11 @@
 	y2debug("Modules: %1", ModuleMap);
 	if (Repository == "" || Repository == nil )
 	{
-	    Repository = "/";
+	    Repository = "/tmp";
+	}
+	if (TemplateRepository == "" || TemplateRepository == nil )
+	{
+	    TemplateRepository = Repository + "/templates";
 	}
 	
 	return;
@@ -107,7 +116,7 @@
 		if (size(Install[resource]:$[])==0 && haskey(Install, resource))
 		{		    
 		    Install=remove(Install,resource);
-		}
+		}	
 	    }
 	    else
 	    {		
@@ -115,10 +124,20 @@
 		{		
 		    Configure=remove(Configure,resource);
 		}
+	
 	    }	
 	});
 
-	
+	if ( size(Install["classes"]:[])>0)
+	{
+	    y2milestone("Template Found");
+	    isTemplate = true;
+	}
+	else
+	{
+	    y2milestone("Not a Template");
+	    isTemplate = false;
+	}
 	if (Install!= $[])
 	    Profile["install"] = Install;
 	else if (haskey(Profile,"install"))
@@ -153,9 +172,17 @@
     global define boolean SaveProfile (string filePath)
     ``{	
 	PrepProfile();
-	y2milestone("Saving data to XML file %1 (%2).", filePath, Profile);
-	if (find(filePath, "/") == -1 )
-	    return (XML::YCPToXMLFile(`profile, Profile, sformat("%1/%2", Repository, filePath)));
+	y2milestone("Saving data to XML file %1", filePath);
+	
+	if (find(filePath, "/") == -1 ) {
+	    if (isTemplate) {
+		return (XML::YCPToXMLFile(`profile, Profile, sformat("%1/%2", TemplateRepository, filePath)));
+	    }
+	    else
+	    {
+		return (XML::YCPToXMLFile(`profile, Profile, sformat("%1/%2", Repository, filePath)));
+	    }
+	}
 	else
 	    return (XML::YCPToXMLFile(`profile, Profile,  filePath));
     }
@@ -168,7 +195,9 @@
      */
     global define void ReadProfile (string filePath)
 	``{
+	y2milestone("Reading %1", filePath);
 	Profile = XML::XMLToYCPFile(filePath);
+	
 	Install = Profile["install"]:$[];
 	Configure = Profile["configure"]:$[];	
 	return;

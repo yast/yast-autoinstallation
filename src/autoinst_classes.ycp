@@ -1,0 +1,202 @@
+/**
+ * File:	clients/autoinst_linuxrc.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary: 	Linuxrc Settings
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Mode";
+    Mode::config = true;
+
+
+    import "Wizard";
+    import "Summary";
+    import "AIClass";
+
+    
+    include "autoinstall/classes.ycp";
+    include "ui/common_messages.ycp";    
+
+    list args = Args ();
+
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( Args (0), list ) )
+    {
+	y2error ("Bad argument: %1", Args (0));
+	return false;
+    }
+
+    list settings = [];
+    {
+	integer i = 0;
+	while (i < size (Args()))
+	{
+	    if (is (Args (i), list) && nil != Args (i))	settings = Args (i);
+	    i = i + 1;
+	}
+    }
+
+    y2milestone("Imported: (%1)", settings);
+    AIClass::Import ( settings );
+
+
+    define classConfiguration() ``{
+	string title = _("Class Configuration");
+	string help = _("TODO");
+	
+	map profiles = $[];
+	if (size(AIClass::Classes) == 0 )							      
+	{	
+	    AIClass::Parse();	
+	}
+	    
+	foreach(map prof, AIClass::Profiles, ``{	
+	    string class = prof["class"]:"Default";
+	    list ui_list = profiles[class]:[];
+	    if (size(ui_list)==0)
+	    {
+		ui_list=add(ui_list,`item(`id("none"),
+					  _("None"))
+			    );
+	    }
+	    
+	    ui_list=add(ui_list,`item(`id(prof["name"]:"Unknown"),
+				      prof["name"]:"Unknown", (
+							       filter(`cc, AIClass::currentProfile, ``(cc["configuration"]:"" == prof["name"]:"Unknown")) > 0))
+			);
+	    
+	    profiles[class] =  ui_list;
+	});
+	
+	term Combo = `VBox();
+
+	if (size(profiles)>0) {
+	    foreach(`k,`v, profiles,``{
+		Combo=add(Combo,	 
+			  `Left(
+				`ComboBox(`id(k),`opt(`hstretch,`autoShortcut),  k,
+					  v
+					  )
+				)
+			  );		
+	    });
+	}
+	else
+	{
+	    Combo = `Left(`Label(`id(`emptyclasses), _("No profiles in this class")));	    
+	}
+
+	term contents =
+	    `Top(
+		 `Left(
+		       `VBox(
+			     Combo
+			     )
+		       )
+		 );
+	
+		
+	Wizard::SetContents(title,	
+			    contents, help , true, true);
+	any ret=nil;
+	symbol next = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    integer n = 0;
+	    if (ret ==`next)
+	    {
+		list selected_profiles = [];	    
+		foreach(map prof, AIClass::Profiles,``{
+		    
+		    any selected = UI::QueryWidget(`id(prof["class"]:""), `Value);
+		    
+		    if (selected != nil) {
+			if (selected != "none") {
+			    n = n +1;
+			}
+			selected_profiles = add(selected_profiles,
+						$[					      
+						  "class_name":prof["class"]:"none",
+						  "configuration":selected
+						]
+						);
+		    }
+		    
+		});
+		
+		if (n ==  0) {
+		  
+		    
+		    UI::ErrorPopup(_("You have to select at least 1 class configuration
+to be able to perform a merge"));
+		    continue;
+		}
+		
+		list sorted_profiles =  filter(`c, toset(selected_profiles),``(c["configuration"]:""!= "none")	 
+					       );
+	    
+		y2debug("Selected Profiles: %1", sorted_profiles);
+		AIClass::currentProfile = sorted_profiles;
+	    }
+	    
+	    
+	} until  (ret == `next || ret ==`back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)) );
+	return ret;
+    }
+
+
+    
+    define set_contents()
+	``{
+	term contents =
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), AIClass::Summary()),
+		  `VSpacing(0.5),
+		  `HBox(
+			`PushButton(`id(`configure), _("&Class Configuration")),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			),
+		  `VSpacing(1)
+		  );
+	Wizard::SetContents(_("Installation Options"),
+			    contents, "", true, true);
+    }
+
+
+    set_contents();
+    any result = nil;
+    any ret = nil;
+    repeat {
+	ret = UI::UserInput();
+	if (ret == `configure)
+	{
+	    
+	    Wizard::CreateDialog ();	    
+	    result =  classConfiguration();
+	    UI::CloseDialog ();
+
+	    if (result == `next || result == `finish )
+	    {
+		settings = AIClass::Export ();
+	    }
+	    set_contents();
+	}
+	else if ( ret == `reset)
+	{
+	    settings = [];
+	    AIClass::Set(settings);
+	    set_contents();
+	}
+    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+
+    return [ret, settings];
+}
