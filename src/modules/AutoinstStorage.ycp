@@ -30,6 +30,9 @@
     // Use same mountpoints etc.
     global boolean read_fstab = false;
 
+    // Fstab options
+    global map fstab = $[];
+
     // Show warning for /boot on raid
     global boolean BootRaidWarning = true;
 
@@ -134,7 +137,16 @@
      */
     global define boolean Import(list<map> settings) ``{
 	AutoPartPlan = settings;
-        read_fstab = settings[0, "read_fstab"]:false;
+	return true;
+    }
+    /**
+     * Import Fstab data
+     * @param map
+     * @return	boolean success
+     */
+    global define boolean ImportFstab(map settings) ``{
+        fstab = settings["fstab"]:$[];
+        read_fstab = fstab["use_existing_fstab"]:false;
 	return true;
     }
 
@@ -237,19 +249,26 @@
 
         // We must only change RootPart::selectedRootPartition if booting
         // is inevitable.
+        string rp = fstab["root_partition"]:"";
+        list<map> fstab_partitions = fstab["partitions"]:[];
 
         if (RootPart::numberOfValidRootPartitions == 1)
         {
             RootPart::SetSelectedToValid ();
         }
-        else {
-            Popup::Message(_("Multiple root partitions found,
-Auto-Installation not possible."));
+        else if ( rp == ""){
+            Popup::Message(_("Multiple root partitions found, You did not configure
+which root partition should be used.  Auto-Installation not possible."));
             return false;
         }
+        else if ( haskey(RootPart::rootPartitions, rp) && RootPart::numberOfValidRootPartitions > 1)
+        {
+            RootPart::selectedRootPartition = rp;
+        }
+
         RootPart::MountPartitions(RootPart::selectedRootPartition);
         RootPart::UnmountPartitions ();
-        RootPart::SetFormatPartitions ();
+        RootPart::SetFormatPartitions (fstab_partitions);
         return true;
     }
 

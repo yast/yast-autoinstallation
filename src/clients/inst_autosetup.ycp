@@ -105,7 +105,8 @@ control file and try again.
 
 
     Progress::NextStage();
-    AutoinstStorage::Import(Profile::Flat["partitioning"]:[]) ;
+    AutoinstStorage::Import(Profile::Flat["partitioning"]:[]);
+    AutoinstStorage::ImportFstab(Profile::Flat["partitioning_advanced"]:$[]);
 
     if (!AutoinstStorage::Write())
     {

@@ -1,6 +1,10 @@
 /**
+ * File:		wizards.ycp
+ * Module:		Autoinstall
+ * Summary:		This module handles the configuration for auto-installation
+ * Authors:		Anas Nashif <nashif@suse.de>
  *
- *
+ * $Id$
  */
 {
     import "Wizard";
@@ -23,7 +27,8 @@
             "kickstart"     :   ``(kickstartDialog() ),
             "clone"     :   ``(cloneSystem() ),
             "classes"     :   ``(ManageClasses() ),
-            "merge"     :   ``(MergeDialog() )
+            "merge"     :   ``(MergeDialog() ),
+            "valid"     :   ``(ValidDialog() )
             ];
 
 
@@ -38,8 +43,15 @@
                 `menu_merge : "merge",
                 `menu_classes : "classes",
                 `menu_clone : "clone",
+                `menu_valid : "valid",
                 ],
             "merge":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "valid":
                 $[
                 `next       : "main",
                 `abort       : "main",
