@@ -343,6 +343,10 @@
 	    }
 	    else
 	    {
+	    // disable all sources and finish target
+		Pkg::SourceFinishAll();
+		Pkg::TargetFinish();
+
 		scriptPath = sformat("%1/%2", scripts_dir, scriptName);
 		y2milestone("Writing  script into %1", scriptPath);
 		SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
@@ -364,7 +368,7 @@
 	    {
 		executionString = sformat("/usr/bin/python %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
 		SCR::Execute (.target.bash,executionString);
-	    }	    
+	    }
 	    else
 	    {
 		y2error("Unknown interpreter: %1", scriptInterpreter);
