@@ -102,7 +102,8 @@
      * @param list of packages to add
      * @return void
      */
-    global define void AddModulePackages(list module_packages) ``{
+    global define void AddModulePackages(list module_packages)
+	``{
 	packages = toset(union(packages,  module_packages));
 	
 	//
@@ -345,6 +346,21 @@ this message can be ignored."));
 	return (ok);
     }
 
+
+    /**
+     * Initialize temporary target
+     */
+    global define void  pmInit() ``{
+	
+	string tmproot = AutoinstConfig::tmpDir;
+	
+	SCR::Execute(.target.mkdir, tmproot + "/root");
+	
+	Pkg::TargetInit( tmproot + "/root", true);
+	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
+	return;
+    }
+    
 
     //EOF
 }
