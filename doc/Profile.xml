@@ -55,12 +55,12 @@
          <device>/dev/hda</device>
          <partitions config:type="list">
            <partition>
-              <filesystem>ext2</filesystem>
+              <filesystem config:type="symbol">ext2</filesystem>
               <size>520Mb</size>
               <mount>/</mount>
            </partition>
            <partition>
-              <filesystem>reiser</filesystem>
+              <filesystem config:type="symbol">reiser</filesystem>
               <size>1200Mb</size>
               <mount>/data</mount>
            </partition>
@@ -225,7 +225,7 @@
 ...
 <drive> 
   <device>/dev/hda</device> 
-  <partitions> 
+  <partitions config:type="list"> 
      <partition> 
         <size>1000</size> 
         <mount>/</mount> 
