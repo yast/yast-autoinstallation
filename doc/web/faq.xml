@@ -14,9 +14,31 @@
 <?dbhtml toc="1" ?>  
 <?dbhtml cellspacing="3px" cellpadding="3px" ?> 
 
-    <qandadiv>
-      <title >General/ Unsorted</title>
-  
+      <qandadiv>
+	<title >General/ Unsorted</title>
+	<qandaentry>
+	  <question>
+	    <para>When is an auto-installation problem really  AutoYaST related?</para>
+	  </question>
+	  <answer>
+	    <para>If you have issues during auto-installing a client it does not
+	      always mean that it is autoyast related. AutoYaST relies on many
+	      general installation components and thus, some problems might be
+	      general installation problems. During auto-installation, almost all
+	      problems perior the start of yast2 are linuxrc related. For example,
+	      if the installation source can't be found, then you have to check the
+	      kernel command line variables, (i.e. install) which are used by
+	      linuxrc to fetch the installation image (boot/root).</para>
+
+	    <para>If yast2 starts and a problem occurs, most likely it is an
+	      autoyast issue and has to be reported as such. The control file is
+	      retrieved by yast2 and not by linuxrc as with releases perior to
+	      8.0.</para>
+
+	  </answer>
+	</qandaentry>
+
+
       <qandaentry>
 	<question>
 	  
@@ -133,28 +155,21 @@
 	<para>To avoid this, use an <emphasis>info</emphasis> file with all parameters. </para>
       </answer>
     </qandaentry>
-    <qandaentry>
-      <question>
-	<para>When is an auto-installation problem really  AutoYaST related?</para>
-      </question>
-      <answer>
-	<para>If you have issues during auto-installing a client it does not
-	  always mean that it is autoyast related. AutoYaST relies on many
-	  general installation components and thus, some problems might be
-	  general installation problems. During auto-installation, almost all
-	  problems perior the start of yast2 are linuxrc related. For example,
-	  if the installation source can't be found, then you have to check the
-	  kernel command line variables, (i.e. install) which are used by
-	  linuxrc to fetch the installation image (boot/root).</para>
 
-	<para>If yast2 starts and a problem occurs, most likely it is an
-	  autoyast issue and has to be reported as such. The control file is
-	  retrieved by yast2 and not by linuxrc as with releases perior to
-	  8.0.</para>
-
-      </answer>
-    </qandaentry>
      </qandadiv>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <qandadiv>
       <title>SuSE Linux Enterprise Server 8</title>
