@@ -162,7 +162,8 @@
 	
 	if (size(failed) > 0 )
 	{
-	    error_msg = sformat(_("%1 packages not available."), size(failed));
+	    integer num = size(failed);
+	    error_msg = sformat(_("%1 package not available.", "%1 packages not available.", num), num);
 	}
 
 	return error_msg;
