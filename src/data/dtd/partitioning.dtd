@@ -1,40 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT crypt_fs (#PCDATA)>
-<!ATTLIST crypt_fs
+<!ELEMENT partitioning (drive+)>
+<!ATTLIST partitioning
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT loop_fs (#PCDATA)>
-<!ATTLIST loop_fs
-	config:type CDATA #REQUIRED
->
-<!ELEMENT crypt (#PCDATA)>
-<!ELEMENT crypt_key (#PCDATA)>
-<!-- <!ELEMENT device (#PCDATA)>  : redefined --> 
-<!ELEMENT drive (device?, initialize?,  is_lvm_vg?, partitions?, pesize?,use?)>
-<!ELEMENT filesystem (#PCDATA)>
-<!ATTLIST filesystem
-	config:type CDATA #REQUIRED
->
-<!ELEMENT create (#PCDATA)>
-<!ATTLIST create
-	config:type CDATA #REQUIRED
->
-<!ELEMENT format (#PCDATA)>
-<!ATTLIST format
-	config:type CDATA #REQUIRED
->
-<!ELEMENT fs_options (opt_format?, opt_hash?, opt_blocksize?, opt_block_size?, opt_bytes_per_indoe?, opt_raid?, opt_reserved_blocks?, opt_inode_align?, opt_max_inode_space?)>
-<!ELEMENT fstopt (#PCDATA)>
+<!ELEMENT drive (device?, initialize?,  is_lvm_vg?, partitions?, pesize?, use?)>
 <!ELEMENT initialize (#PCDATA)>
 <!ATTLIST initialize
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT label (#PCDATA)>
-<!ELEMENT mount (#PCDATA)>
-<!ELEMENT mountby (#PCDATA)>
-<!ATTLIST mountby
+<!ELEMENT is_lvm_vg (#PCDATA)>
+<!ATTLIST is_lvm_vg
 	config:type CDATA #REQUIRED
 >
+
+<!ELEMENT partitions (partition+)>
+<!ATTLIST partitions
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT partition (create?, crypt?, crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, grow?, label?, loop_fs?, lv_name?, lvm_group?, maxsize?, mount?, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?, region?, size?)>
+
+
+<!ELEMENT create (#PCDATA)>
+<!ATTLIST create
+	config:type CDATA #REQUIRED
+>
+
+<!ELEMENT crypt (#PCDATA)>
+<!ELEMENT crypt_fs (#PCDATA)>
+<!ATTLIST crypt_fs
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT crypt_key (#PCDATA)>
+<!-- <!ELEMENT device (#PCDATA)>  : redefined --> 
+<!ELEMENT filesystem (#PCDATA)>
+<!ATTLIST filesystem
+	config:type CDATA #REQUIRED
+>
+
+<!ELEMENT format (#PCDATA)>
+<!ATTLIST format
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT fs_options ( opt_blocksize?, opt_block_size?, opt_bytes_per_indoe?, opt_format?, opt_hash?,  opt_inode_align?, opt_max_inode_space?, opt_raid?, opt_reserved_blocks? )>
 <!ELEMENT opt_block_size (option_str, option_value)>
 <!ELEMENT opt_blocksize (option_str, option_value)>
 <!ELEMENT opt_bytes_per_indoe (option_str, option_value)>
@@ -44,17 +51,32 @@
 <!ELEMENT opt_max_inode_space (option_str, option_value)>
 <!ELEMENT opt_raid (option_str, option_value)>
 <!ELEMENT opt_reserved_blocks (option_str, option_value)>
+
+
+
+<!ELEMENT fstopt (#PCDATA)>
+<!ELEMENT grow (#PCDATA)>
+<!ATTLIST grow
+	config:type CDATA #REQUIRED
+>
+
+<!ELEMENT label (#PCDATA)>
+
+<!ELEMENT loop_fs (#PCDATA)>
+<!ATTLIST loop_fs
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT mount (#PCDATA)>
+<!ELEMENT mountby (#PCDATA)>
+<!ATTLIST mountby
+	config:type CDATA #REQUIRED
+>
 <!ELEMENT option_blank (#PCDATA)>
 <!ATTLIST option_blank
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT is_lvm_vg (#PCDATA)>
-<!ATTLIST is_lvm_vg
-	config:type CDATA #REQUIRED
->
 <!ELEMENT option_str (#PCDATA)>
 <!ELEMENT option_value (#PCDATA)>
-<!ELEMENT partition (create?, crypt?, crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, grow?,loop_fs?, lv_name?, label?, lvm_group?, maxsize?, mount?, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?, region?, size?)>
 <!-- <!ELEMENT lvm_group (#PCDATA)> -->
 <!ELEMENT raid_name (#PCDATA)>
 <!ELEMENT raid_type (#PCDATA)>
@@ -67,16 +89,8 @@
 <!ATTLIST partition_id
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT partitioning (drive+)>
-<!ATTLIST partitioning
-	config:type CDATA #REQUIRED
->
 <!ELEMENT region (region_entry+)>
 <!ATTLIST region
-	config:type CDATA #REQUIRED
->
-<!ELEMENT partitions (partition+)>
-<!ATTLIST partitions
 	config:type CDATA #REQUIRED
 >
 <!ELEMENT region_entry (#PCDATA)>
@@ -86,5 +100,7 @@
 
 <!ELEMENT size (#PCDATA)>
 <!ELEMENT maxsize (#PCDATA)>
-<!ELEMENT grow (#PCDATA)>
 <!ELEMENT use (#PCDATA)>
+
+
+
