@@ -1429,21 +1429,5 @@ to contain a minimal installation.");
     }
 
 
-    /**
-     * Initialize device
-     */
-    global define integer InitDevice(string del_device)
-	``{
-	integer ret_zero = 0 ;
-	integer ret_reread = 0 ;
-	if (!Mode::test )
-	{
-	    string zero_string = sformat( "/bin/dd if=/dev/zero of=%1 bs=2k count=100", del_device );
-	    ret_zero   = SCR::Execute(.target.bash, zero_string );
-	    ret_reread = SCR::Execute(.target.bash, sformat("/sbin/blockdev --rereadpt %1", del_device ));
-	    y2milestone( "Partitiontable of device %1 deleted (%2-%3)", del_device, ret_zero, ret_reread);
-	}
-	return (ret_zero + ret_reread);
-    }
 
 }

@@ -1,8 +1,8 @@
 /**
- * File:   	conftree.ycp
- * Module: 	Autoinstall
- * Summary: 	This module handles the configuration for auto-installation
- * Authors: 	Anas Nashif <nashif@suse.de>
+ * File:		conftree.ycp
+ * Module:		Autoinstall
+ * Summary:		This module handles the configuration for auto-installation
+ * Authors:		Anas Nashif <nashif@suse.de>
  *
  * $Id$
  */
@@ -13,8 +13,8 @@
     import "Call";
 
     include "readconfig.ycp";
-    
-    
+
+
     /**
      * Create a list to be used with the table widget
      * @param tree data
@@ -40,7 +40,7 @@
 
 
 
-    
+
     global define content_dialog( string resource, map resourceMap ) ``{
 	include "readconfig.ycp";
 	string summary =  Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
@@ -48,13 +48,13 @@
 	string caption = ReadKey (domain, "Name", resourceMap);
 	string buttonLabel = resourceMap["Helptext"]:"Configure";
 	term contents =
-	    `VBox(		
-		  `RichText( `id(`summary), summary),		  
+	    `VBox(
+		  `RichText( `id(`summary), summary),
 		  `HBox(
 			// push button label
 			`PushButton(`id(`reset), _("Reset Confi&guration")),
 			`HStretch(),
-			// push button label			
+			// push button label
 			`PushButton(`id(`configure), _("Configur&e") )
 			)
 		  );
@@ -72,26 +72,26 @@
      */
     global define module_contents(string resource, map resourceMap ) ``{
 	// y2milestone("FLAT a: %1", Profile::Flat);
-	
+
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
-	
+
 	string module_auto = resourceMap["AutoClient"]:"none";
 
 	// Import Data
 	Call::Function(module_auto, ["Import", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
 	content_dialog( resource , resourceMap);
-	
+
 	any ret= nil;
-	
+
 	repeat {
 	    ret = UI::UserInput();
-	    
+
 	    if( ret == `configure )
 	    {
 		any seq = Call::Function(module_auto, ["Change", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
-		
+
 		y2milestone("Change response: %1", seq);
-		
+
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
 		    string tomerge = resourceMap["AutoinstMerge"]:"";
@@ -102,7 +102,7 @@
 			any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 			integer i = 0;
 			foreach( string res, splitstring(tomerge, ",") , ``{
-			    if ( MergeTypes[i]:"map" == "map") 
+			    if ( MergeTypes[i]:"map" == "map")
 				Profile::Flat[res] = result[res]:$[];
 			    else
 				Profile::Flat[res] = result[res]:[];
@@ -114,7 +114,7 @@
 			Profile::Flat[resource]  =  Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		    }
 		}
-		
+
 		y2milestone("New Settings: %1", Profile::Flat);
 		content_dialog( resource , resourceMap);
 	    }
@@ -129,7 +129,7 @@
 		    any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		    integer i = 0;
 		    foreach( string res, splitstring(tomerge, ",") , ``{
-			if ( MergeType[i]:"map" == "map") 
+			if ( MergeType[i]:"map" == "map")
 			    Profile::Flat[res] = $[];
 			else
 			    Profile::Flat[res] = [];
@@ -140,19 +140,19 @@
 		{
 		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		}
-		    
+
 		Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-		content_dialog(resource,  resourceMap);		
+		content_dialog(resource,  resourceMap);
 	    }
-	    
+
 	    if ( original_settings != Y2ModuleConfig::getResourceData(resourceMap , resource) )
-	    {				
+	    {
 		Profile::changed = true;
-	    }	   	    	    	    
+	    }
 	    // y2milestone("FLAT b: %1", eval(Profile::Flat));
-	    
-	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key || contains(menuitems, ret) );		
-	
+
+	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key || contains(menuitems, ret) );
+
 	return ret;
     }
 
@@ -162,7 +162,7 @@
 	list menu_options = CreateTableList(Y2ModuleConfig::MenuTreeData);
 	Wizard::ReplaceButtonBox(`VSpacing(0.6));
 	UI::ReplaceWidget(`id(`helpSpace) ,
-			  `VBox(			
+			  `VBox(
 				`Tree(
 				      `id(`key),
 				      `opt(`notify,`vstretch),
@@ -171,11 +171,11 @@
 				      ),
 				`VSpacing(1))
 			  );
-	
+
 	UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), AutoinstConfig::currentFile));
-	return; 
+	return;
     }
-    
+
     /**
      * Menu interface
      */
@@ -183,14 +183,14 @@
 	``{
 	Wizard::SetScreenShotName ("autoyast-conftree");
 	include "autoinstall/io.ycp";
-	include "autoinstall/help.ycp";	
+	include "autoinstall/help.ycp";
 	term image = Wizard::HeaderImage(false);
 	term menu =
 	    `VBox(
 		  image,
 		  `VSpacing(0.5),
 		  `Left(
-			`HBox(		
+			`HBox(
 			      `MenuButton( _("&File"),
 					   [
 					    `item(`id(`menu_new), _("&New")      ),
@@ -207,7 +207,7 @@
 						   [
 						    //    `item(`id(`menu_general), _("General")),
 						    `item(`id(`menu_reps), _("Reposi&tories"))
-						    
+
 						    ]),
 					    `item(`id(`menu_exit), _("E&xit")      )
 					    ]
@@ -217,7 +217,7 @@
 					    `item(`id(`menu_tree), _("Configu&ration Tree")      ),
 					    `item(`id(`menu_source), _("So&urce")      )
 					    ]
-					   ),			      					  
+					   ),
 			      `MenuButton( _("&Classes"),
 					   [
 					    // `item(`id(`menu_rules), _("R&ules")      ),
@@ -230,18 +230,18 @@
 					    `item(`id(`menu_iso), _("&Create ISO Image")      ),
 					    `item(`id(`menu_clone), _("Clone T&his System")      )
 					    ]
-					   )			      		
+					   )
 			      )
 			),
 		  `VSpacing(0.5)
 		  );
-	
-	
-	UI::ReplaceWidget(`id(`image) , menu);	
+
+
+	UI::ReplaceWidget(`id(`image) , menu);
 	CreateTreeWidget();
 
 
-	
+
 	string tree_item = "System";
 	any ret = `key;
 	any func_ret = "";
@@ -254,13 +254,13 @@
 		    ret = `next;
 		    break;
 		}
-	    
+
 		if (haskey(Y2ModuleConfig::GroupMap, tree_item))
-		{	
+		{
 		    string html = "";
 		    foreach(`k,`v, Y2ModuleConfig::ModuleMap, ``{
 			if (v["Group"]:"" == tree_item)
-			{								
+			{
 			    string colored = HTML::Colorize( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k), "#8BC460");
 			    html = html + HTML::Heading(colored);
 			    html = html + HTML::Para(ReadKey(v["Textdomain"]:"", "Helptext", v));
@@ -283,7 +283,7 @@
 		    {
 			ret = Wizard::UserInput();
 			y2milestone("INPUT: %1", ret);
-		    
+
 			if (ret == `key)
 			{
 			    tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
@@ -294,7 +294,7 @@
 			    break;
 			}
 			else if (contains(menuitems, ret) )
-			{			
+			{
 			    break;
 			}
 			else
@@ -306,11 +306,11 @@
 		    }
 
 		}
-	 
+
 		foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
-		
+
 		    if (tree_item == def_resource)
-		    {		  
+		    {
 			// Set resource name, if not using default value
 			string resource = Y2ModuleConfig::getResource(def_resource);
 			y2milestone("Resource map: %1",  resourceMap );
@@ -329,19 +329,19 @@
 		else if (ret  == nil)
 		{
 		    UI::ErrorPopup(_("Error while reading configuration data."));
-		    ret = `back;		
+		    ret = `back;
 		}
 		else if ( contains(menuitems,ret) )
 		{
 		    y2milestone("MENU: %1", ret);
-		
+
 		    boolean exit_after = false;
 		    if (ret == `menu_reps)
 		    {
-			Wizard::CreateDialog();	
+			Wizard::CreateDialog();
 			Preferences();
-			Wizard::CloseDialog();	
-		    }	
+			Wizard::CloseDialog();
+		    }
 		    else if ( ret == `menu_alice)
 		    {
 			y2milestone("Importing ALICE data");
@@ -352,51 +352,51 @@
 			// notification 1/2
 			string pkgmsg =  _("<p>The following package is needed for importing ALICE data:<b> %1</b></p>");
 			pkgmsg = pkgmsg + _("<p>Do you want to install it now?</p>");
-			
+
 			boolean reqret = Require::RequireAndConflictTarget(["alice-compat"], [], pkgmsg );
 
 			Mode::config = true;
 			if (reqret )
 			{
 			    include "autoinstall/imports.ycp";
-			    Wizard::CreateDialog();							
-			    aliceImportList();			
+			    Wizard::CreateDialog();
+			    aliceImportList();
 			    Wizard::CloseDialog();
 			}
-			
+
 		    }
 		    else if ( ret == `menu_classes)
 		    {
 			import "AutoinstClass";
 			include "autoinstall/classes.ycp";
-			Wizard::CreateDialog();			
+			Wizard::CreateDialog();
 			ManageClasses();
 			Wizard::CloseDialog();
-		    }		    
+		    }
 		    else if ( ret == `menu_clone)
 		    {
 			import "AutoinstClone";
-			
-			Wizard::CreateDialog();						
+
+			Wizard::CreateDialog();
 			cloneSystem();
 			Wizard::CloseDialog();
-			
+
 		    }
 		    else if ( ret == `menu_merge)
 		    {
 			import "AutoinstClass";
-			include "autoinstall/classes.ycp";		
-			Wizard::CreateDialog();			
+			include "autoinstall/classes.ycp";
+			Wizard::CreateDialog();
 			MergeDialog();
 			Wizard::CloseDialog();
-		    }			    
+		    }
 		    else if ( ret == `menu_iso)
 		    {
 			import "ISO";
 			include "autoinstall/iso.ycp";
-			isoSequence();		    
-			
-		    }		
+			isoSequence();
+
+		    }
 		    else if (ret == `menu_exit) // EXIT
 		    {
 			if (Profile::changed)
@@ -406,7 +406,7 @@
 				current = "Untitled";
 			    else
 				current = AutoinstConfig::currentFile;
-			
+
 			    symbol answer = UI::AnyQuestionPopup3(_("Control file changed."),
 								  sformat(_("Save the changes to %1?"), current),
 								  UI::YesButtonLabel(),
@@ -415,7 +415,7 @@
 								  `focus_yes
 								  );
 			    if (answer == `no)
-			    {	
+			    {
 				ret = `exit;
 			    }
 			    else if (answer == `yes)
@@ -426,7 +426,7 @@
 			    else
 			    {
 				continue;
-			    }			
+			    }
 			}
 			else
 			{
@@ -436,32 +436,32 @@
 
 
 
-		
-		
+
+
 		    if (ret == `menu_open) // OPEN
 		    {
-						
-			
+
+
 			string filename = PopupFile( AutoinstConfig::Repository);
-			
+
 			if (filename != "")
-			{			
+			{
 			    y2milestone("file: %1", filename);
 			    AutoinstConfig::currentFile = filename;
 			    list pathComponents = splitstring(  filename, "/");
 			    string base = select(pathComponents, size(pathComponents) -1, "default");
 			    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
 			    Profile::Read(filename);
-			
+
 			}
 		    }
 		    else if (ret == `menu_kickstart)
 		    {
-			Wizard::CreateDialog();	
+			Wizard::CreateDialog();
 			include "autoinstall/imports.ycp";
 			string head = _("Import Kickstart File");
 			string filename = PopupFile( AutoinstConfig::Repository);
-			
+
 			if ( filename != "" )
 			{
 			    map ksConfig = readKS(filename);
@@ -471,7 +471,7 @@ Check the imported syntax and make sure the package selection and partitioning
 were imported correctly.
 "));
 			}
-			Wizard::CloseDialog();	
+			Wizard::CloseDialog();
 		    }
 		    else if (ret == `menu_save) // SAVE
 		    {
@@ -482,14 +482,14 @@ were imported correctly.
 			    if (filename !=  "" )
 			    {
 				AutoinstConfig::currentFile = filename;
-			  
+
 			    }
 			    else
 			    {
 				continue;
 			    }
 			}
-		    
+
 			if ( Profile::Save( AutoinstConfig::currentFile ))
 			{
 			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
@@ -501,11 +501,11 @@ were imported correctly.
 			{
 			    UI::WarningPopup(_("An error occured while saving the file."));
 			}
-		    
+
 		    }
 		    else if (ret == `menu_saveas) // SAVE AS
 		    {
-			
+
 			string filename = SaveFileAs(AutoinstConfig::Repository);
 			if ( filename != "" )
 			{
@@ -532,7 +532,7 @@ were imported correctly.
 			string source = XML::YCPToXMLString(`profile, Profile::current);
 			UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
 
-		   
+
 			term sourceView =
 			    `RichText( `id(`class_source ),
 				       `opt(`plainText),
@@ -540,13 +540,13 @@ were imported correctly.
 				       );
 			Wizard::SetContents(_("Source"),
 					    sourceView , "", true , true);
-			tree_item = "System"; 		    		    
+			tree_item = "System";
 		    }
 		    else if ( ret == `menu_tree) {
 			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
 			if (tree_item == nil)
 			{
-			    tree_item = "System"; 
+			    tree_item = "System";
 			}
 		    }
 		    else if (ret == `menu_new) // NEW
@@ -554,9 +554,9 @@ were imported correctly.
 			Profile::Reset();
 			AutoinstConfig::currentFile = "";
 			UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
-		    	
-		    }		
-		
+
+		    }
+
 		}
 
 	    } until ( ret == `exit || ret == `cancel || ret == `back );
@@ -564,6 +564,6 @@ were imported correctly.
 	Wizard::RestoreHelp("");
 	Wizard::RestoreScreenShotName ();
 	return ret;
-    
+
     }
 }
