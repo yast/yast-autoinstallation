@@ -23,6 +23,7 @@
     import "Kernel";
     import "AutoinstConfig";
 
+    import "Require";
 
     global map Software = $[];
 
@@ -46,7 +47,6 @@
 
 
     /**
-     * Import()
      * Import data
      * @param settings settings to be imported
      * @return true on success
@@ -56,10 +56,10 @@
 	Software = settings;
 	base = settings["base"]:"";
 	addons = settings["addons"]:[];
-	packages = settings["packages"]:[];
+	packages = (list<string>)union(settings["packages"]:[], Require::AddModulePackages) ;
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
-	remove_packages = settings["remove-packages"]:[];
+	remove_packages = (list<string>)union ( settings["remove-packages"]:[], Require::RemoveModulePackages );
 
 	return true;
     }
@@ -75,7 +75,6 @@
     }
 
     /**
-     * Export()
      * Export data
      * @return dumped settings (later acceptable by Import())
      */
@@ -105,7 +104,6 @@
 
 
     /**
-     * AddModulePackages()
      * Add packages needed by modules, i.e. NIS, NFS etc.
      * @param list of strings packages to add
      * @return void
@@ -113,15 +111,13 @@
     global define void AddModulePackages(list<string> module_packages)
 	``{
 	packages = toset((list<string>) union(packages,  module_packages));
-	
 	//
 	// Update profile
-	//	
+	//
 	Profile::Flat["software"] = Export();
 	return;
     }
 
-    
     /**
      * Remove packages not needed by modules, i.e. NIS, NFS etc.
      * @param list of packages to remove
@@ -129,7 +125,6 @@
      */
     global define void RemoveModulePackages (list<string> module_packages) ``{
 	packages = filter(string p, packages, ``(!contains(module_packages,p)));
-	
 	Profile::Flat["software"] = Export();
 	return;
     }
@@ -137,7 +132,7 @@
 
 
     /**
-     * Summary()
+     * Summary
      * @return Html formatted configuration summary
      */
     global define string Summary()``{
@@ -181,14 +176,14 @@
 	if ( size(kernel) == 0)
 	{
 	    import "Kernel";
-	    if (Pkg::IsAvailable (Kernel::kernel_packages[0]:"k_deflt"))
+	    if (Pkg::IsAvailable (Kernel::kernel_packages[0]:"kernel-default"))
 	    {
 		allpackages = (list<string>) union (allpackages, Kernel::kernel_packages);
 	    }
 	    else
 	    {
-		y2warning ("%1 not available, using k_deflt", Kernel::kernel_packages);
-		allpackages = add (allpackages, "k_deflt");
+		y2warning ("%1 not available, using kernel-default", Kernel::kernel_packages);
+		allpackages = add (allpackages, "kernel-default");
 	    }
 	}
 	else
@@ -199,8 +194,8 @@
 	    }
 	    else
 	    {
-		y2warning ("%1 not available, using k_deflt", Kernel::kernel_packages);
-		allpackages = add (allpackages, "k_deflt");
+		y2warning ("%1 not available, using kernel-default", Kernel::kernel_packages);
+		allpackages = add (allpackages, "kernel-default");
 	    }
 	}
 
@@ -243,14 +238,12 @@
 				allpackages = add(allpackages, "amavis-sendmail");
 		}
 	}
-	
 	return allpackages;
     }
 
 
 
     /**
-     * Write()
      * Configure software settings
      * @param void
      * @return boolean
@@ -258,13 +251,10 @@
     global define boolean Write()
 	``{
 	boolean ok = true;
-	
 	Pkg::SetLocale (Language::language);
 
 	Packages::Init(true);
-		
 	string  base_selection = base;
-	
 	if (size(base_selection) > 0)
 	{
 	    if (! Pkg::SetSelection( base_selection ))
