@@ -62,11 +62,11 @@
 		//
 		// determine name of client, if not default name
 		//
-		if (!haskey(values,"X-SuSE-YaST-AutoinstClient"))
+		if (!haskey(values,"X-SuSE-YaST-AutoinstClient") && values["X-SuSE-YaST-AutoinstClient"]:"" == "")
 		{
 		    string client =  name + "_auto";
 		    values["X-SuSE-YaST-AutoinstClient"] = client;
-		}          
+		}
 		confs[name]=values;
 	    }	    
 	});
@@ -90,7 +90,7 @@
     define void CreateGroupTree (map Groups)
 	``{
 	y2milestone("Groups: %1", Groups);
-        term groupwidget = `VBox ();
+
         list grouplist = [];
         grouplist = SortGroups (Groups, maplist (string rawname, map group, Groups, ``(rawname)));
         
