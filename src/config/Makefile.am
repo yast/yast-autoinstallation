@@ -4,7 +4,7 @@
 # $Id$
 #
 
-modconfigdir = /usr/share/autoinstall/modules
+modconfigdir = $(prefix)/share/autoinstall/modules
 modconfig_DATA = \
 	partitioning.desktop \
 	general.desktop \

@@ -4,7 +4,7 @@
 # $Id$
 #
 
-rngdir = /usr/share/autoinstall/rng
+rngdir = $(prefix)/share/autoinstall/rng
 
 rng_DATA = $(wildcard *.rng)
 
