@@ -7,13 +7,14 @@
  * $Id$
  */
 {
-    module "Kickstart";
     textdomain "autoinst";
+    module "Kickstart";
     import "AutoinstConfig";
     import "AutoinstStorage";
     import "Popup";
     import "Profile";
     import "Y2ModuleConfig";
+    import "FileSystems";
 
     include "autoinstall/xml.ycp";
 
@@ -262,7 +263,7 @@
 		partition["mount"] = mount;
 		partition["order"] = order;
 		partition["format"] = (v["noformat"]:"" == "" );
-		partition["filesystem"] = AutoinstStorage::StringFS2Symbol(fstype);
+		partition["filesystem"] = FileSystems::FsToSymbol(fstype);
 	    }
 
 	    partition["size"] = sformat("%1mb", v["size"]:"");
