@@ -10,7 +10,7 @@
     textdomain "autoinst";
     import "Label";
     import "Popup";
-  
+
 
     /**
      * XML_cleanup()
@@ -32,9 +32,9 @@
     define term class_dialog_contents ()
 	``{
 	list classes = maplist(map class , AutoinstClass::Classes,  ``{
-	    
+
 	    string pathtoClass = sformat("%1/%2", AutoinstConfig::classDir, class["name"]:("Unknown"));
-	    list files_in_class = (list) SCR::Read(.target.dir, pathtoClass);	    
+	    list files_in_class = (list) SCR::Read(.target.dir, pathtoClass);
 	    y2milestone("class: %1", class);
 	    term i = `item(
 			  `id(class["name"]:"Unknown"),
@@ -65,12 +65,12 @@
     }
 
 
-    
+
     /**
      * AddEditClasses()
      * Add or Edit a class
      * @param symbol mode
-     * @param symbol 
+     * @param symbol
      */
     define symbol AddEditClasses(symbol mode, string name)
 	``{
@@ -170,7 +170,7 @@
     }
 
 
-    
+
 
     /**
      * Manage Classes
@@ -196,10 +196,10 @@ and when it is merged when creating a control file.
 
 	Wizard::SetContents(title,
 			    class_dialog_contents() , help, true, true);
-	
+
 	Wizard::ReplaceAbortButton(`Empty());
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
-	
+
 	Wizard::ReplaceAbortButton(`Empty());
 	any ret = nil;
 	repeat
@@ -217,7 +217,7 @@ and when it is merged when creating a control file.
 		    UI::ChangeWidget(`id(`description), `Value, selected_class["description"]:_("No Description"));
 		}
 
-		ret =(symbol) UI::UserInput();		
+		ret =(symbol) UI::UserInput();
 
 		if (ret == `new)
 		{
@@ -286,7 +286,7 @@ to delete.
 	return order;
     }
 
- 
+
 
 
     /**
@@ -332,9 +332,9 @@ to delete.
 		if (profile["name"]:"" != "" && !error)
 		{
 		    showFeedback(sformat("Merging %1 (%2) with %3 ....", profile["name"]:"",profile["class"]:"", base_text));
-		    
+
 		    y2milestone("Merging %1 with %2....", profile["name"]:"", base_text);
-		    
+
 		    map xsltret = AutoinstClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "result.xml");
 		    if (xsltret["exit"]:-1 != 0 )
 		    {
@@ -342,7 +342,7 @@ to delete.
 			error =  true;
 		    }
 		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
-		    
+
 		}
 		else
 		{
@@ -368,7 +368,7 @@ to delete.
 	return true;
     }
 
-    
+
     /**
      * Merge Dialog
      *
@@ -499,7 +499,7 @@ script is used.</P>
 
 		if (n ==  0) {
 		    integer min = 1;
-		    
+
 		    if (base == `empty)
 		    {
 			min = 2;
@@ -515,13 +515,13 @@ to perform a merge.
 					     ``(x["order"]:0<=y["order"]:0)
 					     );
 		y2debug("Selected Profiles: %1", sorted_profiles);
-		
+
 		if ( size(sorted_profiles)>0 )
 		{
 		    y2milestone("Calling merge with %1 (%2)", sorted_profiles, base);
 		    MergeAll(sorted_profiles, base);
 		}
-		
+
 		UI::ChangeWidget(`id(`next), `Enabled, true);
 	    }
 	} until  (ret == `next || ret == `back );
