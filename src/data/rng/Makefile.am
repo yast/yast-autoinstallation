@@ -6,6 +6,6 @@
 
 rngdir = /usr/share/autoinstall/rng
 
-dtd_DATA = $(wildcard *.rng)
+rng_DATA = $(wildcard *.rng)
 
 EXTRA_DIST = $(rng_DATA) 
