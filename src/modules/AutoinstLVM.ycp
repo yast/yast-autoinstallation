@@ -40,7 +40,7 @@
 
 
     // temporary copy of variable from Storage
-    map <string, map> targetMap = $[];
+    // map <string, map> targetMap = $[];
 
     // temporary copy of variable from Storage
     map<integer, map> modify_targets = $[];
@@ -63,9 +63,9 @@
      */
     global define void Init () ``{
 
-        targetMap	= Storage::GetTargetMap();
+        // targetMap	= Storage::GetTargetMap();
         modify_targets	= (map <integer, map>) Storage::GetModifyTargets();
-        ExistingLVM	= filter(string k, map v, targetMap, ``(v["is_lvm_vg"]:false));
+        ExistingLVM	= filter(string k, map v, Storage::GetTargetMap(), ``(v["is_lvm_vg"]:false));
         y2debug("Existing LVM: %1", ExistingLVM);
 
         ExistingVGs	= maplist (string  d, map g, ExistingLVM, ``{
@@ -107,14 +107,15 @@
      * @param string volume group name
      * @return map new VG
      */
-    global define map CreateVG (string vgname) ``{
+    global define map CreateVG (string vgname, boolean lvm2) ``{
 
         map create_vg = $[
             "use_module" : "lvm_ll",
-        "type"       : "create_vg",
-        "vgname"     : vgname,
-        "pesize"     : pesize,
-        "devices"    : []
+            "type"       : "create_vg",
+            "vgname"     : vgname,
+            "pesize"     : pesize,
+            "devices"    : [],
+            "lvm2"       : lvm2,
             ];
 
         modify_targets = addTargetModification( modify_targets, create_vg );
@@ -124,6 +125,7 @@
                 "cyl_count" : 0,
                 "cyl_size"  : pesize,
                 "is_lvm_vg" : true,
+                "lvm2"      : lvm2,
                 "partitions": []
                 ]
                );
@@ -359,14 +361,15 @@
         ``{
             map<string, map> tm = $[];
 
-            foreach(string k, map v, targetMap, ``{
+            y2milestone("ConfiguredDevices: %1", ConfiguredDevices );
+            foreach(string k, map v, Storage::GetTargetMap(), ``{
                     if (contains(ConfiguredDevices, k))
                     {
                     tm[k] = v;
                     }
                     });
 
-            list<map> all_possible_pvs = filter( map part, get_possible_pvs( targetMap ),
+            list<map> all_possible_pvs = filter( map part, get_possible_pvs( Storage::GetTargetMap() ),
                     ``( part["lvm_group"]:"" == vgname && !part["delete"]:false ));
             list<map> possible_pvs = filter( map part, get_possible_pvs( tm ),
                     ``( part["lvm_group"]:"" == vgname ));
@@ -390,7 +393,7 @@
     global define list<map> DeletedPVs ( string vgname )
         ``{
             list<list<map> > ret = [];
-            foreach( string dev, map devmap, targetMap,
+            foreach( string dev, map devmap, Storage::GetTargetMap(),
                     ``{
                     ret = add( ret,
                         filter( map part, devmap["partitions"]:[],
@@ -423,6 +426,7 @@
                 ``{
 
                 string use	= volume_group["use"]:"none";
+                boolean lvm2	= volume_group["lvm2"]:true;
                 list<string> SelectedPartitions = [];
                 string vgname	= substring(device, 5);
                 list<map> new_pvs	= ExistingPVs(vgname);
@@ -505,7 +509,7 @@ physical volumes belonging to this group.
 
                 if (use == "all")
                 {
-                    new_volume = CreateVG (vgname);
+                    new_volume = CreateVG (vgname, lvm2);
 
                     foreach(map pv, new_pvs, ``{
                             CreatePV (vgname, pv["device"]:"");
