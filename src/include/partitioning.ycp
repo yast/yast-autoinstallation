@@ -481,7 +481,7 @@ to contain a minimal installation.");
 				  "fsid":ext_fsid,
 				  "nr":unused_primary_pnr,
 				  "region": ext_region,
-				  "device": get_device_name(target_is, last_pnr)
+				  "device": get_device_name(target_is, unused_primary_pnr)
 				]);
 		y2debug("Partitions including extended: %1", partitions);
 
@@ -576,6 +576,7 @@ to contain a minimal installation.");
 	    if (mount_point == "swap" || StringFS2Symbol(p["filesystem"]:"") == `swap)
 	    {
 		part["fsid"] =  Partitions::fsid_swap;
+		part["mount"] = "swap";
 	    }
 	    else if (mount_point == "/boot")
 	    {
@@ -619,6 +620,7 @@ to contain a minimal installation.");
 		part["mount"] 		= "";
 		part["fstype"] 		= "Linux RAID";
 		part["raid_type"]	= currentPartition["raid_type"]:"raid";
+		
 		// part["region"] 		= [0, raid_size_byte(Storage::GetTargetMap(), 
 	        //                                 part) / (1024 * 1024)];
 	    }
@@ -729,7 +731,8 @@ to contain a minimal installation.");
 						   "format" : lookup( lv, "lv_format" , true),
 						   "crypt_fs" : lookup( lv, "lv_crypt", false ),
 						   "crypt_key":"",
-						   "type"   :`lvm
+						   "type"   :`lvm,
+						   "device" : "/dev/" + vg + "/" + lookup(lv, "lv_name", "")
 						 ]);
 				     });
 				     
@@ -748,6 +751,7 @@ to contain a minimal installation.");
 
     /**
      * Create RAID
+     *
      */
     global define autoRAID()
 	``{
@@ -761,6 +765,7 @@ to contain a minimal installation.");
 				      device["region"] 		= [0 , 1];
 				      device["create"] 		= true;
 				      device["status"] 		= "create";
+				      device["raid_type"] 	= device["raid_level"]:"raid1";
 				      
 				      if (!haskey(device, "format"))
 				      {

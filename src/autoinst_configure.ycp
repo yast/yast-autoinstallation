@@ -148,6 +148,18 @@ You will not be able to login!
     }
 
     Progress::NextStage();        
+
+
+    string output = "";
+    foreach(`mod, `conf, configure["custom_variables"]:$[], ``{
+        foreach(`k,`v, conf, ``{
+            output = output + sformat("%1=\"%2\"\n", k , v );
+        });
+        string filename = sformat("/var/adm/autoinstall/variables/%1", mod);
+        SCR::Write(.target.string, filename, output);
+        output = "";
+    });
+
     AutoInstall::scriptSettings("post-scripts");
 
     

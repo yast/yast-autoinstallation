@@ -294,7 +294,7 @@
 	string server = parameters["server"]:"";
 	
 	string path_to_file = lookup(parameters, "path","");
-
+	y2milestone("Path to remote control file: %1", path_to_file);
 
 	boolean is_directory = false;
 	string FileName = basename(path_to_file);
@@ -307,7 +307,7 @@
 	}
 	else
 	{
-	    http_dir = mergestring(FileName, "/");
+	    http_dir = path_to_file;
 	}
 
 	y2milestone("filename: %1", FileName);
@@ -369,7 +369,7 @@
 	}
 	else
 	{
-	    string full_url = sformat("http://%1%2/%3", server ,  http_dir ,  FileName);
+	    string full_url = sformat("http://%1%2", server ,  http_dir );
 	    res = HTTP::Get(full_url, localfile);
 	    if (res["code"]:0 == 200)
 	    {
