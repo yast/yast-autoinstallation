@@ -31,9 +31,8 @@
     global define void Y2ModuleConfig () ``{
 
 	// Read module configuration data (y2cc)
-	if (Mode::config || ( Mode::cont &&  Mode::autoinst))
+	if (Mode::normal || Mode::config || ( Mode::cont &&  Mode::autoinst))
 	{
-
 	
 	    y2debug("Modules: %1", ModuleMap);	    
 	    list MenuEntries = ReadMenuEntries();

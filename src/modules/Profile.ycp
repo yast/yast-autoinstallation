@@ -78,7 +78,7 @@
 	Install = $[];
 	Configure = $[];
 	current = $[];
-	y2debug("FLAT: %1", Flat);
+	y2milestone("FLAT: %1", Flat);
 	foreach(`p,`d, Y2ModuleConfig::ModuleMap, ``{
 
 	    // Set resource name, if not using default value
@@ -135,7 +135,7 @@
 	    Install["raid"] = Flat["raid"]:[];
 
 
-
+	// y2milestone("Install: %1", Install);
 	if (Install != $[])
 	{
 	    current["install"] = Install;
@@ -144,7 +144,7 @@
 	{
 	    current=remove( current,"install");
 	}
-
+	// y2milestone("Configure: %1", Configure);
 	if (Configure!=$[])
 	{
 	    current["configure"] = Configure;
@@ -153,6 +153,8 @@
 	{
 	    current=remove(current,"configure");
 	}
+
+	// y2milestone("Current Profile: %1", current);
 	return;
 
     }
