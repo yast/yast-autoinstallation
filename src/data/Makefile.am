@@ -19,5 +19,7 @@ ydata_DATA = \
 xml_DATA = \
     merge.xslt
 
+fillupdir = /var/adm/fillup-templates/
+fillup_DATA = sysconfig.autoinstall
 
-EXTRA_DIST =  $(xml_DATA) $(ydata_DATA) $(misc_DATA)
+EXTRA_DIST =  $(xml_DATA) $(ydata_DATA) $(misc_DATA) $(fillup_DATA)

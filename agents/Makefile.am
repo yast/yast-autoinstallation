@@ -8,7 +8,5 @@ agent_SCRIPTS = \
 
 scrconf_DATA = $(wildcard *.scr)
 
-fillupdir = /var/adm/fillup-templates/
-fillup_DATA = sysconfig.autoinstall
 
-EXTRA_DIST = $(scrconf_DATA) $(fillup_DATA) $(agent_SCRIPTS)
+EXTRA_DIST = $(scrconf_DATA)  $(agent_SCRIPTS)
