@@ -80,14 +80,11 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 %dir /var/lib/autoinstall/tmp
 
 
-@configdir@/autoyast.y2cc
 @desktopdir@/autoyast.desktop
 /usr/share/autoinstall/modules/*.desktop
 @yncludedir@/autoinstall/classes.ycp
 @yncludedir@/autoinstall/conftree.ycp
-@yncludedir@/autoinstall/linuxrc_dialogs.ycp
 @yncludedir@/autoinstall/dialogs.ycp
-@yncludedir@/autoinstall/help.ycp
 @yncludedir@/autoinstall/imports.ycp
 @yncludedir@/autoinstall/iso.ycp
 @yncludedir@/autoinstall/partition_dialogs.ycp
@@ -117,7 +114,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
 @ydatadir@/monitors.ycp
 @moduledir@/AutoinstClass.y*
-@moduledir@/AutoinstLinuxrc.y*
 @moduledir@/AutoinstConfig.y*
 @moduledir@/ISO.y*
 @agentdir@/ag_yast1sel
@@ -158,8 +154,10 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 @moduledir@/AutoinstClone.y*
 %dir @yncludedir@/autoinstall
 @yncludedir@/autoinstall/partitioning.ycp
-@yncludedir@/autoinstall/profileDialogs.ycp
 @yncludedir@/autoinstall/io.ycp
+@yncludedir@/autoinstall/autoinst.ycp
+@yncludedir@/autoinstall/autoinst_dialogs.ycp
+@yncludedir@/autoinstall/partitioning_routines.ycp
 
 @moduledir@/AutoInstall.y*
 @moduledir@/AutoinstScripts.y*
@@ -177,6 +175,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
 #clients
 @clientdir@/autoinst_init.ycp
+@clientdir@/autoinst_image.ycp
 @clientdir@/autoinst_setup.ycp
 @clientdir@/autoinst_configure.ycp
 @clientdir@/autoinst_post.ycp
@@ -196,5 +195,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
 
 %files utils
+%defattr(-,root,root)
 /usr/share/autoinstall/EXTRA_PROV
 /usr/bin/create_package_descr
