@@ -418,8 +418,16 @@ needed to create the ISO image</p>");
 
 		if (ret == `next)
 		{
+		    
 		    AIServer::sourceDir = UI::QueryWidget(`id(`susedir), `Value);
-		    AIServer::isoFile  = UI::QueryWidget(`id(`dest), `Value);
+		    string f = UI::QueryWidget(`id(`dest), `Value);
+		   
+		    if (   f == "" || f == nil)
+		    {
+			UI::ErrorPopup(invalidFileName());
+			continue;
+		    }
+		    AIServer::isoFile = f;
 		}
 
 	    }  until (ret == `next || ret == `back || ret == `abort);    
@@ -527,4 +535,8 @@ Please wait while the directory structure for the new ISO file is being created.
 	    } until (ret == `next || ret == `back || ret == `abort);
 	return ret;
     }
+
+
+
+    
 }
