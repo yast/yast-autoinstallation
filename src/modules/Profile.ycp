@@ -47,7 +47,7 @@
      * @return void
      */
     global define void Profile ()
-	``{
+    {
 	//
 	// setup profile XML parameters for writing
 	//
@@ -60,8 +60,12 @@
     }
 
 
+    /**
+     * Detect Version
+     * @return string
+     */
     define string DetectVersion()
-	``{
+    {
 	return "";
     }
 
@@ -227,7 +231,8 @@
      * Reset profile to initial status
      * @return void
      */
-    global define void Reset () ``{
+    global define void Reset ()
+    {
 	y2milestone("Resetting profile contents");
 	current = $[];
 	Install = $[];
@@ -244,7 +249,7 @@
      * @return	boolean true on success
      */
     global define boolean Save (string file)
-    ``{
+    {
 	Prepare();
 	y2debug("Saving data (%1) to XML file %2", current, file);
 	return (XML::YCPToXMLFile(`profile, current,  file));
@@ -258,7 +263,7 @@
      * @see	Restore()
      */
     global define boolean SaveProfileStructure ( string parsedControlFile)
-	``{
+    {
 	y2milestone("Saving control file in YCP format");
 	return SCR::Write( .target.ycp, parsedControlFile, current );
     }
@@ -269,7 +274,7 @@
      * @return boolean
      */
     global define boolean ReadProfileStructure ( string parsedControlFile )
-	``{
+    {
 	current = (map) SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
 	if (current == $[])
 	{
@@ -287,8 +292,8 @@
      * @param list lvm_standalone Stand alone LVM configuration
      * @return list LVM configuration integrated into partitioning resource
      */
-    global define list<map> convertLVM (list<map> lvm_standalone ) ``{
-
+    global define list<map> convertLVM (list<map> lvm_standalone )
+    {
 	list<map> all_lvm = [];
 
 	foreach (map group, lvm_standalone, ``{
@@ -327,7 +332,8 @@
      * @param list raid_standalone Stand alone RAID configuration
      * @return map RAID configuration integrated into partitioning resource
      */
-    global define map convertRAID (list<map> raid_standalone ) ``{
+    global define map convertRAID (list<map> raid_standalone )
+    {
 	map raid = $[];
 
 	raid["device"]	= "/dev/md";
@@ -388,8 +394,8 @@
      * @param map configure section
      * @return map converted profile
      */
-    global define map<string, any> Compat(map Install, map Configure) ``{
-
+    global define map<string, any> Compat(map Install, map Configure)
+    {
 	// scripts
 	if ( haskey(Configure, "pre-scripts") ||
 	    haskey(Configure, "post-scripts") ||
@@ -525,7 +531,7 @@
      * @return	boolean
      */
     global define boolean ReadXML (string file)
-	``{
+    {
 	y2debug("Reading %1", file);
 	current = XML::XMLToYCPFile(file);
 
