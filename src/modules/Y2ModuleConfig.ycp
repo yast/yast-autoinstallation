@@ -87,6 +87,40 @@
     }
 
 
+
+    define list SortGroups (map GroupMap, list GroupList)
+	``{
+        return
+	    sort (`x, `y, GroupList,
+		  ``{
+		string first = GroupMap[x, "SortKey"]:"";
+		string second = GroupMap[y, "SortKey"]:"";
+		return (first <= second);
+	    });
+    }
+
+
+    define void CreateGroupTree (map Groups)
+	``{
+
+        term groupwidget = `VBox ();
+        list grouplist = [];
+        grouplist = SortGroups (Groups, maplist (`rawname, `group, Groups, ``(rawname)));
+        string is_first = "";
+        foreach (string rawname, grouplist,
+		 ``{
+	    
+	    string name    = ReadKey(Groups[rawname, "Textdomain"]:"base", "Name", Groups[rawname]:$[]);
+	    map MeunTreeEntry = $["entry":rawname, "title":name];
+	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
+        });
+	return;
+    }
+
+
+
+    
+
     define list ConstructMenu() ``{
 	
 	CreateGroupTree(GroupMap);
@@ -97,7 +131,7 @@
 	    list menu_list = [];
 	    if (haskey(v,"Group")) {
 		string parent = v["Group"]:"";
-		MenuTreeData = maplist (`k, MenuTreeData, ``{
+		MenuTreeData = maplist (map k, MenuTreeData, ``{
 		    if (k["entry"]:"" == parent) {
 			list children = k["children"]:[];
 			children = add(children,menu_entry);
@@ -189,36 +223,6 @@
     }
 
 
-
-
-    define void CreateGroupTree (map Groups)
-	``{
-	include "readconfig.ycp";
-        term groupwidget = `VBox ();
-        list grouplist = [];
-        grouplist = SortGroups (Groups, maplist (`rawname, `group, Groups, ``(rawname)));
-        string is_first = "";
-        foreach (string rawname, grouplist,
-		 ``{
-	    
-	    string name    = ReadKey(Groups[rawname, "Textdomain"]:"base", "Name", Groups[rawname]:$[]);
-	    map MeunTreeEntry = $["entry":rawname, "title":name];
-	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
-        });
-	return;
-    }
-
-
-    define SortGroups (map GroupMap, list GroupList)
-	``{
-        return
-	    sort (`x, `y, GroupList,
-		  ``{
-		string first = GroupMap[x, "SortKey"]:"";
-		string second = GroupMap[y, "SortKey"]:"";
-		return (first <= second);
-	    });
-    }
 
 
 

@@ -21,7 +21,7 @@
     import "Y2ModuleConfig";
 
 
-	integer current_step    = 0;    // Required by logStep()
+    integer current_step    = 0;    // Required by logStep()
 
     string resource = "";
     string module_auto = "";
@@ -68,16 +68,16 @@ Please wait while the system is being configured.
     y2debug("Module map: %1", Y2ModuleConfig::ModuleMap);
     y2debug("Flat profile: %1", Profile::Flat);
 
+    
+    list deps = [];
+    if (haskey(Profile::Flat, "dependencies"))
+	deps = (list)eval(Profile::Flat["dependencies"]:$[]);
+    else
+	deps = (list)Y2ModuleConfig::Deps();
 
-	list deps = [];
-	if (haskey(Profile::Flat, "dependencies"))
-		deps = eval(Profile::Flat["dependencies"]:$[]);
-	else
-		deps = Y2ModuleConfig::Deps();
+    y2milestone("Order: %1", maplist(map d, deps, ``(d["res"]:"")));
 
-	y2milestone("Order: %1", maplist(`d, deps, ``(d["res"]:"")));
-
-    foreach(`r, deps,
+    foreach(map r, deps,
 	    ``{
 	string p = r["res"]:"";
 	map d = r["data"]:$[];
@@ -120,10 +120,10 @@ Please wait while the system is being configured.
 			i = i + 1;
 		    });
 		    y2milestone("Calling auto client with: %1", result);
-			if (size(result) > 0 )
-		       logStep( sformat (_("Configuring %1"), p));
-			else
-		       logStep( sformat (_("Not Configuring %1"), p));
+		    if (size(result) > 0 )
+			logStep( sformat (_("Configuring %1"), p));
+		    else
+			logStep( sformat (_("Not Configuring %1"), p));
 
 		    Call::Function(module_auto, ["Import", eval(result) ]);
 		    Call::Function(module_auto, ["Write", eval(result) ]);
@@ -131,19 +131,19 @@ Please wait while the system is being configured.
 		else if (d["AutoinstDataType"]:"map" == "map")
 		{
 		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:$[]));
-			if (size(Profile::Flat[resource]:$[]) > 0 )
-		       logStep( sformat (_("Configuring %1"), p));
-			else
-		       logStep( sformat (_("Not Configuring %1"), p));
+		    if (size(Profile::Flat[resource]:$[]) > 0 )
+			logStep( sformat (_("Configuring %1"), p));
+		    else
+			logStep( sformat (_("Not Configuring %1"), p));
 		    Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
 		    Call::Function(module_auto, ["Write", eval(Profile::Flat[resource]:$[])  ]);
 		}
 		else
 		{
-			if (size(Profile::Flat[resource]:[]) > 0 )
-		       logStep( sformat (_("Configuring %1"), p));
-			else
-		       logStep( sformat (_("Not Configuring %1"), p));
+		    if (size(Profile::Flat[resource]:[]) > 0 )
+			logStep( sformat (_("Configuring %1"), p));
+		    else
+			logStep( sformat (_("Not Configuring %1"), p));
 
 		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:[]));
 		    Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
@@ -152,7 +152,7 @@ Please wait while the system is being configured.
 	    }
 	}
 	else {
-		logStep( sformat (_("Skipping %1"), p));
+	    logStep( sformat (_("Skipping %1"), p));
 	}
     });
 

@@ -11,14 +11,14 @@
     module "AutoinstSoftware";
     textdomain "autoinst";
 
+    import "Profile";
     import "Summary";
     import "Mode";
     import "SpaceCalculation";
     import "Packages";
     import "Report";
     import "Popup";
-    import "Report";
-    import "Packages";
+    import "Report";    
     import "Language";
 
 
@@ -30,20 +30,12 @@
     global string kernel = "";
     global list post_packages = [];
     global list remove_packages = [];
-	global list delete_packages = [];
+    global list delete_packages = [];
 
     global list forcedPackages = [];
 
-    global boolean showErrors = true;
+ 
 
-    global define void AutoinstSoftware() ``{
-	if ( Mode::cont )
-	{
-	    import "Profile";
-	    Import(Profile::Flat["software"]:$[]);
-	}
-
-    }
 
     /**
      * Import data
@@ -60,15 +52,16 @@
 	post_packages = settings["post-packages"]:[];
 	remove_packages = settings["remove-packages"]:[];
 
-	showErrors = settings["show_errors"]:true;
-	if (Mode::initial)
-	{
-	    import "AutoInstall";
-	    AutoInstall::IgnorePkgErr = showErrors;
-	}
 	return true;
     }
 
+    global define void AutoinstSoftware() ``{
+	if ( Mode::cont )
+	{	    
+	    Import(Profile::Flat["software"]:$[]);
+	}
+
+    }
 
     /**
      * Export data
@@ -94,8 +87,6 @@
 	if (remove_packages != [])
 	    s["remove-packages"] = remove_packages ;
 
-	if (!showErrors)
-	    s["show_errors"] = false;
 
 	return (s);
     }
@@ -108,8 +99,11 @@
      */
     global define void AddModulePackages(list module_packages) ``{
 	packages = toset(union(packages,  module_packages));
+	
+	//
 	// Update profile
-	import "Profile";
+	//
+	
 	Profile::Flat["software"] = Export();
 	return;
     }
@@ -122,7 +116,7 @@
 
     global define void RemoveModulePackages (list module_packages) ``{
 	packages = filter(string p, packages, ``(!contains(module_packages,p)));
-	import "Profile";
+	
 	Profile::Flat["software"] = Export();
 	return;
     }
@@ -142,7 +136,7 @@
 	if (size( addons) > 0 )
 	{
 	    summary = Summary::OpenList(summary);
-	    foreach(`a, addons, ``{
+	    foreach(string a, addons, ``{
 		summary = Summary::AddListItem(summary, a);
 	    });
 	    summary = Summary::CloseList(summary);
@@ -168,8 +162,7 @@
 	``{
 	boolean ok = true;
 	boolean ret = false;
-
-	// y2milestone("set Locale to %1", Language::language);
+	
 	Pkg::SetLocale (Language::language);
 
 	Packages::Init(true);
@@ -281,8 +274,7 @@ this message can be ignored."));
 
     global define list autoinstPackages()
 	``{
-	import "Profile";
-
+	
 	list allpackages = [];
 
 	allpackages = union (allpackages, packages);

@@ -75,23 +75,23 @@ Warnings can be skipped in some places, but should not be ignored.</p>
 
     any ret = nil;
     repeat {
-	ret = UI::UserInput();
+	ret = (symbol)UI::UserInput();
 	if ( ret ==`next)
 	{
-	    msg["show"] = UI::QueryWidget(`id(`msgshow), `Value);
-	    msg["log"] = UI::QueryWidget(`id(`msglog), `Value);
-	    msg["timeout"] = UI::QueryWidget(`id(`msgtime), `Value);
-	    err["show"] =UI::QueryWidget(`id(`errshow), `Value);
-	    err["log"] = UI::QueryWidget(`id(`errlog), `Value);
-	    err["timeout"] = UI::QueryWidget(`id(`errtime), `Value);
-	    war["show"] = UI::QueryWidget(`id(`warshow), `Value);
-	    war["log"] = UI::QueryWidget(`id(`warlog), `Value);
-	    war["timeout"] = UI::QueryWidget(`id(`wartime), `Value);
+	    msg["show"] = (boolean)UI::QueryWidget(`id(`msgshow), `Value);
+	    msg["log"] = (boolean)UI::QueryWidget(`id(`msglog), `Value);
+	    msg["timeout"] = (integer)UI::QueryWidget(`id(`msgtime), `Value);
+	    err["show"] = (boolean)UI::QueryWidget(`id(`errshow), `Value);
+	    err["log"] = (boolean)UI::QueryWidget(`id(`errlog), `Value);
+	    err["timeout"] = (integer)UI::QueryWidget(`id(`errtime), `Value);
+	    war["show"] = (boolean)UI::QueryWidget(`id(`warshow), `Value);
+	    war["log"] = (boolean)UI::QueryWidget(`id(`warlog), `Value);
+	    war["timeout"] = (integer)UI::QueryWidget(`id(`wartime), `Value);
 	}
     } until (ret == `next || ret == `back);
 
 	Report::Import($["messages":msg, "errors":err, "warnings":war]);
-    return ret;
+    return (symbol)ret;
 }
 
 }
