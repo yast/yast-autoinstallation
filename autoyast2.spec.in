@@ -1,5 +1,5 @@
 @HEADER-COMMENT@
-# neededforbuild yast2-devel-packages yast2 yast2-installation yast2-xml yast2-transfer yast2-storage yast2-country yast2-mouse yast2-bootloader yast2-packager yast2-x11 yast2-update libxml2 libxslt docbook-xsl-stylesheets docbook_4
+# neededforbuild yast2-devel-packages yast2 yast2-installation yast2-transfer yast2-storage yast2-country yast2-mouse yast2-bootloader yast2-packager yast2-x11 yast2-update libxml2 libxslt docbook-xsl-stylesheets docbook_4
 
 @HEADER@
 Requires:	yast2-core yast2-xml libxslt
@@ -126,9 +126,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
 %files installation
 %defattr(-,root,root)
-
-
-
 @scrconfdir@/autoinstall.scr
 @scrconfdir@/cfg_autoinstall.scr
 # DTD files
@@ -146,7 +143,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
 @moduledir@/AutoinstClone.y*
 %dir @yncludedir@/autoinstall
-@yncludedir@/autoinstall/partitioning.ycp
+@yncludedir@/autoinstall/autopart.ycp
 @yncludedir@/autoinstall/io.ycp
 @yncludedir@/autoinstall/autoinst_dialogs.ycp
 /usr/share/YaST2/control/*.xml
