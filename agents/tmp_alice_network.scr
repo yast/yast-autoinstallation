@@ -16,30 +16,30 @@
 .tmp.alice.network
 
 `ag_anyagent (
-    Description (
-        ``(File ("/var/lib/autoinstall/tmp/alice_network")),
+    `Description (
+        (`File ("/var/lib/autoinstall/tmp/alice_network")),
         "#\n",
         true,
-        ``(
-            Tuple(
-                Optional(Whitespace()),
-                Name(String("^\t\n ")),
-                Whitespace(),
-                Value (
-                    Or(
-                        Tuple(
-                            `ipaddr(Ip4Number()),
-                            Whitespace(),
-                            `netmask(Ip4Number()),
-                            Whitespace(),
-                            `broadcast(Ip4Number())
+        (
+            `Tuple(
+                `Optional(`Whitespace()),
+                `Name(`String("^\t\n ")),
+                `Whitespace(),
+                `Value (
+                    `Or(
+                        `Tuple(
+                            `ipaddr(`Ip4Number()),
+                            `Whitespace(),
+                            `netmask(`Ip4Number()),
+                            `Whitespace(),
+                            `broadcast(`Ip4Number())
                             ),
-                        Tuple(
-                            `bootproto(String("^\n\t "))
+                        `Tuple(
+                            `bootproto(`String("^\n\t "))
                             )
                         )
                     ),
-                Continue ("\n")
+                `Continue ("\n")
                 )
             )
         )
