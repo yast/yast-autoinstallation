@@ -383,10 +383,11 @@ This may take a while. Please wait...
      */
     global define list createAlicePartitions(string partitions)
 	``{
-	SCR::Write(.target.string, "/tmp/alice_part", partitions);
-
+	SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_part", partitions);
 	list raw_part =  SCR::Read(.tmp.alice.part);
-
+	
+	
+	
 	list part =filter(`pe, raw_part, ``(!haskey(pe, "path")));
 	y2milestone("and parts again: %1", part);
 	list newPartitions = maplist(`p, part, ``{
@@ -420,7 +421,7 @@ This may take a while. Please wait...
 
 	    return newPart;
 	});
-	SCR::Execute(.target.remove,  "/tmp/alice_part");
+	SCR::Execute(.target.remove,  "/var/lib/autoinstall/tmp/alice_part");
 	SCR::UnmountAgent(.tmp.alice.part);
 	y2milestone("Alice Partitions %1", newPartitions);
 	return  newPartitions;
@@ -474,9 +475,9 @@ This may take a while. Please wait...
      * @return list package selection list
      */
     global define list readSelection(string selection) ``{
-	SCR::Write(.target.string, "/tmp/alice_software", "Toinstall:\n" + selection + "\nLlatsniot:\n");
-	list sel = filter(`p, SCR::Read(.yast1sel.selection,"/tmp/alice_software"), ``(p!=""));
-	SCR::Execute(.target.remove, "/tmp/alice_software");
+	SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_software", "Toinstall:\n" + selection + "\nLlatsniot:\n");
+	list sel = filter(`p, SCR::Read(.yast1sel.selection, "/var/lib/autoinstall/tmp/alice_software"), ``(p!=""));
+	SCR::Execute(.target.remove, "/var/lib/autoinstall/tmp/alice_software");
 	SCR::UnmountAgent(.tmp.alice.software);
 	return sel;
     }
@@ -504,7 +505,7 @@ This may take a while. Please wait...
 
 
 
-	 SCR::Write(.target.string, "/tmp/alice_network", network);
+	 SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_network", network);
 	 map raw_interfaces =SCR::Read(.tmp.alice.network);
 	 list interfaces = maplist(`iface, `data, raw_interfaces, ``{
 	     map interface = $[];
@@ -549,7 +550,7 @@ This may take a while. Please wait...
 	     routes=add(routes, route);
 	 }
 	 if (ROUTES!="") {
-	     SCR::Write(.target.string, "/tmp/alice_routes", ROUTES);
+	     SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_routes", ROUTES);
 	     list raw_routes =SCR::Read(.tmp.alice.routes);
 	     routes = union(routes, raw_routes);
 	 }

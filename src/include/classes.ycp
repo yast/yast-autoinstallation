@@ -884,8 +884,7 @@ to perform a merge.
 			UI::ErrorPopup(sformat(_("Merge failed:\n %1"), saxonret["stderr"]:"error"));
 			error =  true;
 		    }
-		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
-		    // SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml " + tmpdir + "/base_profile.xml");
+		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");		    
 		}
 		else
 		{
@@ -902,26 +901,26 @@ to perform a merge.
 	}
 
 	// Backup file
-	SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml /tmp/autoinst_result.xml" );
+	SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml /var/lib/autoinstall/tmp/autoinst_result.xml" );
 	
 	if (final_path!="")
 	{
 	    showFeedback(sformat("Copying resulting file to %1...", final_path));
-	    SCR::Execute(.target.bash, "cp /tmp/autoinst_result.xml "  + final_path );
+	    SCR::Execute(.target.bash, "cp  /var/lib/autoinstall/tmp/autoinst_result.xml "  + final_path );
 	}
 	else
 	{
 	    showFeedback(_("Loading resulting file..."));
-	    if (SCR::Read(.target.size, "/tmp/autoinst_result.xml")>0)
+	    if (SCR::Read(.target.size, "/var/lib/autoinstall/tmp/autoinst_result.xml")>0)
 	    {
-		AIConfig::ReadProfile("/tmp/autoinst_result.xml" );
+		AIConfig::ReadProfile(" /var/lib/autoinstall/tmp/autoinst_result.xml" );
 	    }
 	    else
 	    {
 		UI::ErrorPopup(_("Parse cannot find resulting profile"));
 	    }
 	}
-	SCR::Execute(.target.remove, "/tmp/autoinst_result.xml");
+	SCR::Execute(.target.remove, " /var/lib/autoinstall/tmp/autoinst_result.xml");
 	clearFeedback();
 	Wizard::RestoreScreenShotName ();
 	return true;

@@ -87,7 +87,7 @@
 	y2debug("Modules: %1", ModuleMap);
 	if (Repository == "" || Repository == nil )
 	{
-	    Repository = "/tmp";
+	    Repository = "/var/lib/autoinstall/repository";
 	}
 	if (TemplateRepository == "" || TemplateRepository == nil )
 	{
@@ -258,10 +258,10 @@
      */
     global define void ReadProfile (string filePath)
 	``{
-	y2milestone("Reading %1", filePath);
+	y2debug("Reading %1", filePath);
 	Profile = XML::XMLToYCPFile(filePath);
 	
-	y2milestone("Profile: %1", Profile);
+	y2debug("Profile: %1", Profile);
 	
 	Install = Profile["install"]:$[];
 	Configure = Profile["configure"]:$[];
@@ -275,6 +275,7 @@
     
     define void Compat() ``{
 	// 8.0 -> 8.1
+	
 	// scripts
 	if (
 	    haskey(Configure, "pre-scripts") ||
@@ -295,7 +296,87 @@
 
 	    Configure["scripts"] = scripts;
 	}
+	// general
+	boolean old = false;
+	map general_options 	= Install["general"]:$[];
+	map security 		= Configure["security"]:$[];
+	map report		= Install["report"]:$[];
 
+	
+	foreach(string k, any v, general_options , ``{
+	    if (k == "keyboard" && is(v, map)) {
+		old = true;
+	    }
+	    else if (k == "mouse" && is(v, string))
+	    {
+		old = true;
+	    }
+	    else if (k == "encryption_method")
+	    {
+		old = true;		
+	    }
+	    else if (k == "timezone" &&  is(v, string))
+	    {
+		old = true;		
+	    }
+	});
+
+	map new_general = $[];
+	if (old) {
+	    y2milestone("Old format, converting.....");
+	    new_general["language"] 	= general_options["language"]:"";
+	    map keyboard = $[];
+	    keyboard["keymap"] 		= general_options["keyboard"]:"";
+	    new_general["keyboard"]	= keyboard;
+	    
+	    map clock = $[];
+	    clock["timezone"] 		= general_options["timezone"]:"";
+	    if ( general_options["hwclock"]:"" == "localtime")
+	    {
+		clock["hwclock"] = "localtime";
+	    }
+	    else if  ( general_options["hwclock"]:""  == "GMT")
+	    {
+		clock["hwclock"] = "GMT";
+	    }
+	    new_general["clock"]	= clock;
+
+	    map mode = $[];
+	    if (haskey(general_options, "reboot")) {
+		mode["reboot"] =  general_options["reboot"]:false;		
+	    }
+	    if (haskey(report, "confirm")) {
+		mode["confirm"] 	= report["confirm"]:false;
+		report = remove(report, "confirm");
+	    }	    
+	    new_general["mode"]	= mode;
+
+	    
+	    if (haskey(general_options, "encryption_method"))
+	    {
+		security["encryption"] = general_options["encryption_method"]:"";
+	    }
+
+	    map net = Configure["networking"]:$[];
+	    list ifaces = net["interfaces"]:[];
+	    
+	    list newifaces = maplist(map iface , ifaces, ``{
+		map newiface = mapmap(string k, string v, iface, ``{
+		    y2milestone("blah");
+		    return ([tolower(k), v]);
+		});
+		return newiface;
+	    });
+	    
+	    net["interfaces"] =  newifaces;
+	    
+	    Install["general"] = new_general;
+	    Install["report"] = report;
+	    Configure["security"] = security;
+	    Configure["networking"] = net;
+	    changed = true;
+	    
+	}		
 	return;
     }
 
@@ -309,7 +390,7 @@
 
     global define void Load ()
     ``{
-	Repository 		= Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");	
+	Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");	
 	return;
     }
 

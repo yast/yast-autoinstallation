@@ -100,8 +100,10 @@
 	    });
 	    map drive = $[];
 	    drive["partitions"]	= p;
-	    drive["device"] 	= k;
-	    drive["use"] 	= "all";
+	    drive["device"]	= k;
+		if (size(p) > 0 ) {
+			drive["use"]	= "all";
+		}
 
 	    return drive;
 	});
