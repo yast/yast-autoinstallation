@@ -15,72 +15,20 @@
     import "AutoinstConfig";
     import "Y2ModuleConfig";
     import "Label";
-    import "AutoinstClass";
     import "Sequencer";
 
 
-    boolean popup_open = false;
     include "autoinstall/dialogs.ycp";
     include "autoinstall/conftree.ycp";
-    include "autoinstall/io.ycp";
+    include "autoinstall/wizards.ycp";
 
 
-
-    list menuitems = [`menu_open,
-			     `menu_delete,
-			     `menu_save,
-			     `menu_saveas,
-			     `menu_alice,
-			     `menu_kickstart,
-			     `menu_new,
-			     `menu_iso,
-			     `menu_exit,
-			     `menu_source,
-			     `menu_tree,
-			     `menu_reps,
-			     `menu_general,
-			     `menu_clone,
-			     `menu_classes,
-			     `mene_rules,
-			     `menu_merge
-			     ];
-    map dialogs =
-	$[
-	  "tree":``(   ConfTree(menuitems) )
-	];
-
-
-    /**
-     * Whole configuration of autoyast
-     * @return `back, `abort or `next
-     */
-    define symbol AutoSequence () ``{
-
-	map sequence =
-	    $[
-	      "ws_start" : "tree",
-	      "tree":
-	      $[
-		`exit	: `ws_finish
-	      ]
-	    ];
-
-	// Translators: dialog caption
-	string caption = _("Autoinstall Configuration");
-	term contents = `Label (_("Initializing ..."));
-	Wizard::CreateDialog ();
-	Wizard::SetContentsButtons ( caption,
-				     contents,
-				     "",
-				     Label::BackButton (),
-				     Label::NextButton ());
-
-
-        symbol ret = Sequencer::Run(dialogs, sequence);
-	UI::CloseDialog ();
-	return ret;
+    if (size(Y2ModuleConfig::GroupMap) == 0)
+    {
+        Popup::Error(_("Error while reading configuration data."));
+        return `abort;
     }
 
-    any ret = AutoSequence ();
+    symbol ret = (symbol)AutoSequence ();
     return ret;
 }

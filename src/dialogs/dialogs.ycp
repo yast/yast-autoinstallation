@@ -20,6 +20,7 @@
      */
     define symbol Preferences()
 	``{
+        Wizard::CreateDialog();
 	Wizard::SetScreenShotName ("autoyast-preferences");
 	term contents =
 	    `HVSquash(
@@ -130,7 +131,6 @@ contains all the packages.</p>
 		}
 	    }
 
-	    // FIXME	} until (ret == `back ||  ret == `next || contains(menuitems, ret));
 	    } until (ret == `back ||  ret == `next);
 
 	Wizard::RestoreScreenShotName ();
@@ -139,6 +139,7 @@ contains all the packages.</p>
 	    AutoinstConfig::Save();
 	    changed =false;
 	}
+        Wizard::CloseDialog();
 	return ret;
     }
 
@@ -237,6 +238,9 @@ must begin with letter, and must be
 	import "AutoinstClone";
 	import "Profile";
 
+
+        Wizard::CreateDialog();
+
 	// title
 	string title = _("Create a Reference Control File");
 	list items = AutoinstClone::createClonableList();
@@ -275,17 +279,82 @@ must begin with letter, and must be
 
 		}
 	    } until (ret == `next || ret == `back);
+        Wizard::CloseDialog();
 	return ret;
     }
 
+
+
+    define symbol kickstartDialog() {
+
+        import "Progress";
+        import "Kickstart";
+        import "Report";
+
+
+        string caption = _("Importing Kickstart file");
+        y2debug("Importing Kickstart data");
+        Wizard::CreateDialog();
+        term contents = `Label (_("Initializing ..."));
+	Wizard::SetContents(caption,
+                contents, HELPS["kickstart"]:"" , false, false);
+        integer steps = 2;
+        integer sl = 500;
+
+        // We do not set help text here, because it was set outside
+        Progress::New( caption,  "", steps, [
+                // progress stage
+                _("Read Kickstart file"),
+                _("Import data"),
+                ], [
+                _("Reading Kickstart file"),
+                // progress step
+                _("Importing data..."),
+                // progress step
+                _("Finished")
+                ],
+                ""
+                );
+
+
+        Progress::NextStage();
+        any filename = nil;
+        filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a kickstart file."));
+        if (filename == nil || filename == "")
+        {
+            return `abort;
+        }
+
+        Kickstart::ksfile = (string)filename;
+        Kickstart::Read();
+        Progress::NextStage();
+        map ksay = Kickstart::KS2AY();
+        Progress::Finish();
+        if (ksay == $[])
+        {
+            Report::Error(_("Error while loading Kickstart file. Verify the syntax of
+file and try again."));
+        }
+        else
+        {
+            Profile::Import(ksay);
+            Report::Message(_("Kickstart file was imported.
+Check the imported syntax and make sure the package selection and partitioning
+were imported correctly."));
+        }
+        Wizard::CloseDialog();
+        return `next;
+    }
 
     /**
      * Alice Config
      * @return symbol
      */
-    define symbol aliceImportList()
+    define symbol aliceDialog()
 	``{
-            import "Alice";
+        import "Alice";
+        import "Require";
+        import "Mode";
 
 	string help = _("<p>Using this dialog, select a
 host from the <b>ALICE</b> repository.</p>
@@ -302,6 +371,21 @@ system might take some time.  Be patient while
 the configuration files are read and converted.
 </p>
 ");
+        Wizard::CreateDialog();
+        term contents = `Label (_("Initializing ..."));
+	Wizard::SetContents(_("Import Data from an Alice Repository"),
+                contents, "", false, false);
+        y2milestone("Importing ALICE data");
+
+        Mode::config = false;
+        // notification 1/2
+        string pkgmsg =  _("<p>The following package is needed for importing ALICE data:<b> %1</b></p>");
+        pkgmsg = pkgmsg + _("<p>Do you want to install it now?</p>");
+
+        boolean reqret = Require::RequireAndConflictTarget(["alice-compat"], [], pkgmsg );
+        if (!reqret)
+            return `abort;
+
 	Wizard::SetContents(_("Hosts in Alice Repository"),
                 Alice::aliceHostList(), help, true, true);
 
@@ -338,6 +422,7 @@ the configuration files are read and converted.
 
 
 	Wizard::RestoreScreenShotName ();
+        Wizard::CloseDialog();
 	return (symbol)ret;
     }
 
