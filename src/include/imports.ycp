@@ -426,24 +426,29 @@ this may take a while, please wait...
 
 	map software= $[];
 	string base = "";
-	if (size(aliceConf["SYS_SW_SELLIST"]:"")>0) {
+	if (size(aliceConf["SYS_SW_SELLIST"]:"")>0)
+	{
 	    string SYS_SW_SELLIST = aliceConf["SYS_SW_SELLIST"]:"";	    
 	    software["packages"] = readSelection(SYS_SW_SELLIST);
 	}
-	else if (aliceConf["SYS_SW_SELECTION"]:"" != "") {
+	else if (aliceConf["SYS_SW_SELECTION"]:"" != "")
+	{
 	    list tmpsel = splitstring(aliceConf["SYS_SW_SELECTION"]:"", "/");
 	    base = select(tmpsel, size(tmpsel) - 1 , "");
 	    software["base"] = select(splitstring(base, "."), 0, "Minimal");
 	}
 	
-	if (aliceConf["SYS_INST_KERNEL"]:"" != "") {
+	if (aliceConf["SYS_INST_KERNEL"]:"" != "")
+	{
 	    software["kernel"] = aliceConf["SYS_INST_KERNEL"]:"";
 	}
-	if (aliceConf["SYS_SW_ADDLIST"]:"" != "") {
+	if (aliceConf["SYS_SW_ADDLIST"]:"" != "")
+	{
 	    string SYS_SW_ADDLIST = aliceConf["SYS_SW_ADDLIST"]:"";	    
 	    software["packages"] = readSelection(SYS_SW_ADDLIST);
 	}
-	if (aliceConf["SYS_SW_AUXLIST"]:"" != "") {
+	if (aliceConf["SYS_SW_AUXLIST"]:"" != "")
+	{
 	    string SYS_SW_AUXLIST = aliceConf["SYS_SW_AUXLIST"]:"";
 	    map extra = $[];
 	    extra["packages"] = readSelection(SYS_SW_AUXLIST);
@@ -465,12 +470,14 @@ this may take a while, please wait...
 	SCR::UnmountAgent(.tmp.alice.software);
 	return sel;
     }
+
+
+    
     /**
      * create network map from alice data
      * @param map aliceConf alice configuration
      * @return map  network map
      */ 
-
     global define map createAliceNetwork(map aliceConf) ``{ 
 	 include "network/ip.ycp";
 	 string network =  aliceConf["NET_IP_CONFIG"]:"";
@@ -722,9 +729,15 @@ is the different package and package selection names used, those have to be adap
 		{
 		    
 		    map ksConfig = readKS(filename);
-		    AIConfig::Import(ks2ay(ksConfig));		    
+		    AIConfig::Import(ks2ay(ksConfig));
+		    UI::WarningPopup(_("
+Importing foreign configuration files means that
+you need to go through the package and software configuration
+to make sure that the packages and selections are compatible with
+SuSE package names and package groups."));
 		}
-		else if (ret == `next && filename == "") {
+		else if (ret == `next && filename == "")
+		{
 		    UI::MessagePopup(_("Please select a file first!"));
 		    UI::SetFocus(`id(`filename));
 		    continue;
@@ -755,6 +768,7 @@ is the different package and package selection names used, those have to be adap
 	if (ksConfig == $[]) {
 	    return $[];
 	}
+	y2milestone("Kickstart config raw: %1", ksConfig);
 	return ksConfig;
 	
     }
@@ -771,12 +785,13 @@ is the different package and package selection names used, those have to be adap
 	configure["networking"] = select(ks_network(ksConfig), 0 , $[]);
 	configure["nis"] = select(ks_auth(ksConfig), 0 , $[]);
 	configure["ldap"] = select(ks_auth(ksConfig), 1 , $[]);
-
+	configure["security"] =  select(ks_auth(ksConfig), 2 , $[]);
 	
 	install["init"] = select(ks_network(ksConfig), 1 , $[]);
+	install["software"] =  ks_software(ksConfig);
 	install["partitioning"] = ks_part(ksConfig);
 	install["bootloader"] =  ks_bootloader(ksConfig);
-
+	install["general"] 	= ks_general(ksConfig);
 	
 	profile["install"] = install;
 	profile["configure"] = configure;
@@ -785,6 +800,68 @@ is the different package and package selection names used, those have to be adap
 	
     }
 
+
+    global define map ks_general(map ksConfig)
+	``{
+	map general = $[];
+	
+	// Language	
+	general["language"] = ksConfig["language"]:"";
+
+	// Keyboard
+	map keyboard = $[];	
+	if (haskey( ksConfig , "keyboard"))
+	{
+	    import "Keyboard";
+	    map keyboards =  Keyboard::keymap2yast();	
+	    keyboard["keymap"] = keyboards[ksConfig["keyboard"]:""]:"";
+	}
+	
+	general["keyboard"] = keyboard;
+	
+	// Mouse
+	map mouse = $[];
+	
+	if(haskey(ksConfig, "mouse"))
+	{
+	    map ks_mouse 	= ksConfig["mouse"]:$[];
+	    mouse["device"] 	= ks_mouse["device"]:"";
+	    mouse["xemu3"]	= ( ks_mouse["emulthree"]:0 == 1);
+	    if (ks_mouse["type"]:"" == "none") {
+		mouse["id"]	= "non";
+	    }
+	}
+	general["mouse"] = mouse;
+
+	// Clock
+	map  clock = $[];
+	if (haskey(ksConfig, "timezone"))
+	{
+	    map ks_clock = ksConfig["timezone"]:$[];
+	    clock["timezone"] 	= ks_clock["timezone"]:"";
+	    clock["utc"]	= ( ks_clock["utc"]:0 == 1 );
+	}
+	general["clock"] = clock;
+
+	
+	// Mode
+	map mode = $[];
+	if (haskey(ksConfig, "mode"))
+	{	    
+	    mode["installation"] 	= ( ksConfig["mode"]:"" == "install" );
+	    mode["upgrade"] 		= ( ksConfig["mode"]:"" == "upgrade" );
+	  
+	}
+	mode["reboot"] 		= ( ksConfig["reboot"]:0 == 1 );
+	mode["interactive"] 	=  ( ksConfig["interactive"]:0 == 1 );
+	general["mode"] = mode;
+			
+	   
+	return general;
+	
+    }
+
+    
     global define map ks_scripts(map ksConfig)
 	``{
 	map scripts = $[];
@@ -936,7 +1013,8 @@ is the different package and package selection names used, those have to be adap
 	list routes= [];
 	map route = $[];
 
-	if (gateway!="") {
+	if (gateway!="")
+	{
 	    route["destination"] = "default";
 	    route["device"] = "-";
 	    route["gateway"] = gateway;
@@ -952,14 +1030,16 @@ is the different package and package selection names used, those have to be adap
 
 
 	// init
-	if (haskey(ksConfig, "nfs")) {
+	if (haskey(ksConfig, "nfs"))
+	{
 	    map nfs = ksConfig["nfs"]:$[];
 	    init["instmode"] = "nfs";
 	    init["server"] = nfs["server"]:"";
 	    init["serverdir"] = nfs["dir"]:"";
 	}
 
-	if (ksConfig["text"]:0  == 1) {
+	if (ksConfig["text"]:0  == 1)
+	{
 	    init["textmode"] = true;
 	}
 
@@ -972,11 +1052,12 @@ is the different package and package selection names used, those have to be adap
 
 	// NIS
 	map nis = $[];
-	map authentication = $[];
+	map security = $[];
 	map ldap = $[];
 
 	
-	if (auth["enablenis"]:0 == 1) {
+	if (auth["enablenis"]:0 == 1)
+	{
 	    nis["start_nis"] = true;
 	    if (haskey(auth, "nisdomain"))
 		nis["nis_domain"] = auth["nisdomain"]:"";
@@ -987,12 +1068,14 @@ is the different package and package selection names used, those have to be adap
 	    }
 	}
 	
-	if (auth["enablemd5"]:0 == 1) {
-	    authentication["enablemd5"] = true;
+	if (auth["enablemd5"]:0 == 1)
+	{
+	    security["md5_support"] = "yes";
 	}
 
 	
-	if (auth["enableldapauth"]:0 == 1) {
+	if (auth["enableldapauth"]:0 == 1)
+	{
 	    ldap["start_ldap"] = true;
 	    if (haskey(auth, "nisdomain"))
 		ldap["ldap_domain"] = auth["ldapbasedn"]:"";
@@ -1002,7 +1085,7 @@ is the different package and package selection names used, those have to be adap
 		ldap["ldap_tls"] = true;
 	}	
 
-	return [nis, ldap, authentication];
+	return [nis, ldap, security];
 	
     }
 
@@ -1011,15 +1094,37 @@ is the different package and package selection names used, those have to be adap
 
 	map bl = ksConfig["bootloader"]:$[];
 	map bootloader = $[];
-	if (bl["location"]:"" != "none") {
+	if (bl["location"]:"" != "none")
+	{
 	    bootloader["location"] = bl["location"]:"";
-	} else {
+	}
+	else
+	{
 	    bootloader["write_bootloader"] = false;
 	}
 	
 	bootloader["kernel_parameters"] = bl["append"]:"";
-	bootloader["linear"] = (bl["linear"]:0 == 1 || !bl["nolinear"]:0 == 1);
+	if (haskey(bl, "linear") || haskey(bl, "nolinear") )
+	{
+	    bootloader["linear"] = (bl["linear"]:0 == 1 || !bl["nolinear"]:0 == 1);
+	}
 	bootloader["lba_support"] = (bl["lba32"]:0 == 1);
 	return bootloader;				     
+    }
+
+    global define ks_software (map ksConfig)
+	``{
+
+	map software = $[];
+	list all = ksConfig["packages"]:[];
+	list selections = filter(`s, all, ``(issubstring(s, "@")));
+	list packages = filter(`s, all, ``(!issubstring(s, "@")));
+	list nopackages =  filter(`s, all, ``(regexpmatch( s, "^-.*" )));
+	software["base"] = "Minimal";
+	software["packages"] = packages;
+	software["nopackages"] = nopackages;
+
+	
+	return software;
     }
 }
