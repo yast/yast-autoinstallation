@@ -168,13 +168,11 @@
 
 	if (size(autoinstall) > 0   )
 	{
-	    cmdLine = (string)autoinstall;
+	    cmdLine = autoinstall;
 	    if (cmdLine == "default")
 	    {
 		result["scheme"] = "file";
 		result["path"]   = "/autoinst.xml";
-		urltok = result;
-		return true;
 	    }
 	    else
 	    {
@@ -202,6 +200,7 @@
 	port		= urltok["port"]:"";
 	user	        = urltok["user"]:"";
 	pass		= urltok["pass"]:"";
+        y2milestone("urltok = %1", urltok );
 	return true;;
     }
 
@@ -244,7 +243,7 @@
 	}
 	else if (scheme == "default")
 	{
-	    message =   _("Copying control file from default file.");
+	    message =   _("Copying control file from default location.");
 	}
 	else
 	{
@@ -282,6 +281,7 @@
 	    if (autoinstall != nil && is ( autoinstall , string ) )
 	    {
 		ParseCmdLine((string) autoinstall);
+                y2milestone("cmd line=%1", autoinstall );
                 SetProtocolMessage();
 	    }
 	}

@@ -196,7 +196,7 @@
      */
     global define void ProbeRules () ``{
 
-	// SMBIOS Data	
+	// SMBIOS Data
 	list bios = (list) SCR::Read(.probe.bios);
 
 	if (size(bios) != 1)
@@ -222,10 +222,10 @@
 	});
 
 	if (size(sysinfo) > 0)
-	{	    	    
+	{
 	    product = (string)(sysinfo["product"]:"");
 	    product_vendor = (string)(sysinfo["manufacturer"]:"");
-	} 
+	}
 
 	if (size(boardinfo) > 0)
 	{
@@ -233,18 +233,18 @@
 	    board_vendor = (string)(boardinfo["manufacturer"]:"");
 	}
 
-	
+
 	//
 	// Architecture
 	//
-	
+
 	arch = Arch::architecture;
 	karch = Kernel::kernel_packages[0]:"k_deflt";
 
 	//
 	// Memory
 	//
-	
+
 	integer memory = 0;
 	list memories = (list)SCR::Read(.probe.memory);
 	memory = memories[0,"resource","phys_mem",0,"range"]:0;
@@ -253,7 +253,7 @@
 	//
 	// Disk sizes
 	//
-	
+
 	map<string,map> storage =  Storage::GetTargetMap();
 	totaldisk = 0;
 	disksize = maplist( string k, map v, storage ,
@@ -294,12 +294,12 @@
 
 	NonLinuxPartitions = Storage::GetForeignPrimary();
 	others = size(NonLinuxPartitions );
-	
+
 	y2milestone ("Other primaries: %1", NonLinuxPartitions);
-	
+
 	LinuxPartitions = Storage::GetOtherLinuxPartitions();
 	linux = size(LinuxPartitions);
-	
+
 	y2milestone ("Other linux parts: %1",  LinuxPartitions);
 
 	return;
@@ -322,7 +322,7 @@
      * Create shell command for rule verification
      */
     define void shellseg (boolean match, string var, any val, string op, string matchtype) ``{
-	
+
 	if (op == "and")
 	    op = " -a ";
 	else if (op == "or")
@@ -371,9 +371,9 @@
 
 	string script = sformat("if [ %1 ]; then exit 0; else exit 1; fi", shell);
 	map ret = (map)SCR::Execute (.target.bash_output, script, env);
-	
+
 	y2milestone("Bash return: %1 (%2) (%3)", script, ret, env);
-	
+
 	return ret["exit"]:-1;
     }
 
@@ -587,7 +587,7 @@
 	return tomerge;
     }
 
-    
+
 
     /**
      * GetRules()
@@ -747,10 +747,12 @@ control file and try again.
 	    }
 	    else
 	    {
-		Report::Error(_("User-defined classes could not be retrieved.
-Make sure all classes are defined correctly and available for this system via
-the network or locally. The system will be installed with the original control file without using
-classes."));
+		Report::Error(_("
+User-defined classes could not be retrieved.  Make sure all classes 
+are defined correctly and available for this system via the network
+or locally. The system can not be installed with the original control 
+file without using classes."));
+
 		ok = false;
 		SCR::Execute(.target.bash, "cp " + prefinal + " "  + result_profile );
 	    }
