@@ -12,9 +12,11 @@
 
     textdomain "autoinst";
 
+    import "Profile";
     import "AutoInstall";
     import "Product";
     import "Progress";
+    import "AIFiles";
 
     include "autoinstall/misc_writes.ycp";
 
@@ -56,9 +58,6 @@ Please wait while the system is being configured.
     string module_write = "";
     boolean result = false;
 
-    map install = AutoInstall::Profile["install"]:$[];
-    map configure = AutoInstall::Profile["configure"]:$[];
-
     // make some adaptions
     if (haskey(configure,"x11"))
     {
@@ -81,7 +80,10 @@ Please wait while the system is being configured.
     // Now we write additional data without a _write client, i.e. fstab
 
 
-    AutoInstall::CopyFiles();
+    AIFiles::Import(Profile::Flat["files"]:[]);
+    if ( !AIFiles::Write() ) {
+	y2error("Error while writing complete files");
+    }
 
     y2debug("Module map: %1", AutoInstall::ModuleMap);
     foreach(`p,`d, AutoInstall::ModuleMap,
@@ -90,9 +92,13 @@ Please wait while the system is being configured.
 	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write")
 	{
 	    if (haskey(d,"AutoinstResource"))
+	    {
 		resource = d["AutoinstResource"]:"unknown";
+	    }
 	    else
+	    {
 		resource = p;
+	    }
 	    y2milestone("current resource: %1", resource);
 
 	    // determine name of client, if not default name
@@ -125,6 +131,9 @@ Please wait while the system is being configured.
 
 
     Progress::NextStage();
+
+    // FIXME
+    /*
     list users = configure["users"]:[];
     if (size(users)>0)
     {
@@ -164,22 +173,10 @@ You will not be able to login!
             CallFunction(`users_write(users));
         }
     }
+    */
 
     Progress::NextStage();
-
-
-    string output = "";
-    foreach(`mod, `conf, configure["custom_variables"]:$[], ``{
-        foreach(`k,`v, conf, ``{
-            output = output + sformat("%1=\"%2\"\n", k , v );
-        });
-        string filename = sformat("/var/adm/autoinstall/variables/%1", mod);
-        SCR::Write(.target.string, filename, output);
-        output = "";
-    });
-
-    AutoInstall::scriptSettings("post-scripts");
-
+    AIScripts::Write("post-scripts");
 
     Progress::Finish();
 

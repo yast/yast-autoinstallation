@@ -6,18 +6,55 @@
     module "AIgeneral";
     textdomain "autoinst";
 
-    
+    import "AutoInstall";
     import "Summary";    
     import "Keyboard";        
     import "Mouse";
     import "Language";
     import "Keyboard";    
-    import "Timezone";  
+    import "Timezone";
+    import "Misc";
+    import "Profile";
+    
 
+    // Language
+    global string Language = "";
 
+    // Hard Reboot
+    global boolean Reboot = false;
 
+    // Dont Hard Reboot
+    global boolean ForceBoot = false;
+
+    // Show Reboot Message
+    global boolean RebootMsg = false;
+
+    // Keyboard
+    global string Keyboard = "";
+
+    // Timezone
+    global string Timezone = "";
+
+    // Mouse, if not autoprobed
+    global string Mouse = "";
+
+    // Hardware clock
+    global string Hwclock = "";
+
+    // Show proposal and ask user for confirmation to go on with auto-installation
+    // Similar to interactive mode, without letting use change settings
+    // Interactive mode implies confirmation as well..
+    global boolean Confirm = true;
+
+    
+    
     global map general = $[];
 
+    global define void AIgeneral () ``{
+	
+	return;
+    }
+    
     /**
      * Summary of configuration
      * @return string Formatted summary
@@ -98,15 +135,136 @@
 
 
 
-    global define boolean Import (map settings) ``{
+    global define boolean Import (map settings) ``{	
 	general = settings;
 	return true;
     }
 
 
+    global define boolean Process() ``{   
+   
+	// Get default values as fallback
+
+	string default_keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "english-us" );
+	Keyboard =  default_keyboard;
+	Language = Language::language;
+	Mouse = "probe";		
+
+	foreach(`k,`v, general , ``{
+	    if (k == "language")
+	    {
+		y2milestone("Language: %1", v);
+		Language 	= v;
+	    }
+	    else if (k == "keyboard" && is(v, map))
+	    {
+		y2milestone("Keymap: %1", v);
+		Keyboard = v["keymap"]:default_keyboard;
+	    }
+	 
+	    else if (k == "clock" && is(v, map))
+	    {
+		Timezone = v["timezone"]:"";
+		string hwc = v["hwclock"]:"";
+		if (hwc != "")
+		{
+		    if (hwc == "localtime")
+			Hwclock = "--localtime";
+		    else
+			Hwclock = "-u";
+		}
+
+		if (size(v["ntp_servers"]:[])>0)
+		{
+		    string key = "XNTPD_INITIAL_NTPDATE";
+		    string val = mergestring(v["ntp_servers"]:[], " ");
+		    string file = "xntp";
+		    Profile::addSysconfigVar(file,  key, val, "xntp");
+		}
+
+	    }
+	    else if (k == "mouse"  && is(v, map) )
+	    {
+		// if id is set, then just take it and ignore everything else
+		if (v["id"]:"" != "")
+		{
+		    Mouse = v["id"]:"";
+		}
+
+		// Otherwise, try to find the mouse id from the DB using data supplied by user,
+		// at least the device is needed.
+
+		else if (haskey(v,"device"))
+		{
+		    string device = v["device"]:"none";
+		    integer wheels = v["wheels"]:0;
+
+		    map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+
+		    foreach(`f,`g, mice, ``{
+			map data = select(g,1,$[]);
+			if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
+			{
+			    Mouse =  f;
+			}
+		    });
+		}
+		else if (haskey(v, "probe"))
+		{
+		    // FIXME
+		}
+	    }	 
+	    else if (k == "mode")
+	    {
+		Confirm = v["confirm"]:true;
+		AutoInstall::interactive = Confirm;
+
+		Reboot = v["reboot"]:false;
+		ForceBoot =  v["forceboot"]:false;
+		RebootMsg =  v["rebootmsg"]:false;
+
+		if (haskey(v, "interactive_boot"))
+		{
+		    string key = "PROMPT_FOR_CONFIRM";
+		    string val = (v["interactive_boot"]:false) ? "yes"  : "no";
+		    string file = "boot";
+		    Profile::addSysconfigVar(file,  key, val, "");
+		}
+	    }
+	});
+
+	return;    	
+    }
+
     global define boolean Export () ``{
 	return general;
     }
 
+
+
+    global define boolean Write() ``{
+	Process();
+	Keyboard::SetConsole( Keyboard );
+	Keyboard::SetX11( Keyboard );
+ 
+	// Timezone   	
+	if (Timezone != "")
+	{
+	    Timezone::Set(Timezone);
+	}
+
+	// Hardware Clock
+	////////////////////////////////////////////////////////////////////////
+    
+	Timezone::hwclock = Hwclock;
+
+	// mouse
+	////////////////////////////////////////////////////////////////////////
+    	
+	if ( Mouse != "probe" )
+	{
+	    Mouse::Set(Mouse);
+	}	
+    }
 
 }

@@ -88,7 +88,7 @@
 	 */
 	map part_data = $[];
 	boolean partitions_defined = false;
-	foreach(`dev, `v , AutoInstall::targetMap,
+	foreach(`dev, `v , AIStorage::targetMap,
 		``{
 	    if (dev == target_is)
 	    {
@@ -238,7 +238,7 @@
 		    }
 		    else if (contains(p_to_keep, pentry["nr"]:-1))
 		    {
-			map d = AutoInstall::targetMap[target_is]:$[];
+			map d = AIStorage::targetMap[target_is]:$[];
 			list autoparts =  d["partitions"]:[];
 			list newautoparts = maplist(`autopart , autoparts, ``{
 			    if (autopart["partition_nr"]:-2 == pentry["nr"]:-1)
@@ -263,7 +263,7 @@
 			    return (autopart);
 			});
 			d["partitions"] = newautoparts;
-			AutoInstall::targetMap[target_is] = d;
+			AIStorage::targetMap[target_is] = d;
 
 		    }
 
@@ -472,7 +472,7 @@ to contain a minimal installation.");
 	    ];
 
 	// Get new partitions as specified in control file
-	list tmp_auto_partitions =  lookup(AutoInstall::targetMap[target_is]:$[], "partitions",[]);
+	list tmp_auto_partitions =  lookup(AIStorage::targetMap[target_is]:$[], "partitions",[]);
 	list auto_partitions = filter (`pentry,
 				       tmp_auto_partitions ,
 				       ``(!pentry["kept"]:false )
@@ -759,7 +759,7 @@ to contain a minimal installation.");
 	map modify_targets	= Storage::GetModifyTargets();
 
 
-	foreach (map group, AutoInstall::LVM,
+	foreach (map group, AIStorage::lvm,
 		 ``{
 	    string vg			= group["lvm_name"]:"";
 	    integer pesize		= pesize_str_to_byte( lookup( group, "pesize", "4M" ));
@@ -871,7 +871,7 @@ to contain a minimal installation.");
      */
     global define autoRAID()
 	``{
-	list RaidList =  maplist (map device, AutoInstall::RAID,
+	list RaidList =  maplist (map device, AIStorage::raid,
 				  ``{
 
 				      string chunk_size = "4";

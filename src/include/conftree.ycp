@@ -99,7 +99,7 @@
 			any result = Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
 			integer i = 0;
 			foreach( string res, splitstring(tomerge, ",") , ``{
-			    if ( MergeType[i]:"map" == "map") 
+			    if ( MergeTypes[i]:"map" == "map") 
 				Profile::Flat[res] = result[res]:$[];
 			    else
 				Profile::Flat[res] = result[res]:[];

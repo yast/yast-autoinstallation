@@ -8,6 +8,10 @@
  */
 {
     textdomain "autoinst";
+
+
+	y2milestone("----------------------------------------");
+	y2milestone("Storage auto started");
     import "Mode";
     Mode::config = true;
 
@@ -18,167 +22,58 @@
 
     include "ui/common_messages.ycp";
     include "autoinstall/partition_dialogs.ycp";
-    include "partitioning/partition_defines.ycp";
-    include "partitioning/custom_part_dialogs.ycp";
-    list args = WFM::Args ();
-
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( WFM::Args (0), list ) )
-    {
-	y2error ("Bad argument: %1", WFM::Args (0));
-	return false;
-    }
-
-    list settings = [];
-    {
-	integer i = 0;
-	while (i < size (WFM::Args()))
-	{
-	    if (is (WFM::Args (i), list) && nil != WFM::Args (i))	settings = WFM::Args (i);
-	    i = i + 1;
-	}
-    }
-
-    y2milestone("Imported: (%1)", settings);
-    AIStorage::Import ( settings );
-
-
-    global define Storage()
-	``{
-
-	any ret = nil;
-	any action = nil;
-	Wizard::SetContents(_("Partition Plan"),
-			    AIStorage::Summary(), "", true, true);
 
 
 
-	repeat {
-	    any item = UI::QueryWidget(`id(`table), `CurrentItem);
+any ret = nil;
+string func = "";
+list param = [];
 
-	    if (item ==nil) {
-		UI::ChangeWidget(`id(`delete), `Enabled, false);
-		UI::ChangeWidget(`id(`edit), `Enabled, false);
-
-	    }
-	    else
-	    {
-		list whatitem = splitstring(item,":");
-		if (size(whatitem) >1)
-		{ //Partition
-		    UI::ChangeWidget(`id(`part), `Enabled, false);
-		}
-	    }
-	    ret = UI::UserInput();
-
-	    item = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list drives = AIStorage::drives;
-	    list configured_drives = maplist(`c, drives, ``{
-		return(lookup(c,"device",""));
-	    });
+/* Check arguments */
+if(size(Args()) > 0 && is(Args(0), string)) {
+    func = WFM::Args(0);
+    if(size(Args()) > 1 && is(Args(1), list))
+	param = WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
 
 
-	    if (contains(configured_drives, item))
-	    {
-		UI::ChangeWidget(`id(`part), `Enabled, true);
-	    }
-	    else
-	    {
-		UI::ChangeWidget(`id(`part), `Enabled, false);
-	    }
-	    list whatitem = [];
-	    if(item!=nil)
-	    {		
-		whatitem = splitstring( item , ":");
-	    }
 
-	    if (ret == `table && size(whatitem) == 0)
-	    {
-		UI::ChangeWidget(`id(`delete), `Enabled, true);
-		UI::ChangeWidget(`id(`edit), `Enabled, true);
-	    }
-	    else if (ret == `drive)
-	    {
-		action = DriveDialog(`create, "" );
-	    }
-	    else if  (ret == `part)
-	    {
-		if (item != nil) {
-		    action = PartitionDialog(`create, item);
-		    UI::ChangeWidget(`id(`table), `CurrentItem, item);
-		}
-		else
-		{
-		    UI::MessagePopup(_("Select a drive."));
-		    continue;
-		}
-	    }
-	    else if (ret == `edit)
-	    {
-		list item_id = splitstring(item,":");
-		if (size(item_id) >1)
-		{ //Partition
-		    action = PartitionDialog(`edit, item);
-		    UI::ChangeWidget(`id(`table), `CurrentItem, select(item_id,0,""));
-		}
-		else
-		{
-		    action = DriveDialog(`edit, item );
-		}
-	    }
-	    else if (ret == `delete)
-	    {
+/* Import Data*/
+if(func == "Import") {
+    ret = AIStorage::Import(param);
+}
+/* Create a  summary*/
+else if(func == "Summary") {
+    ret = AIStorage::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    AIStorage::Import([]);
+    ret = [];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+	Wizard::CreateDialog();
+    ret = StorageDialog();
+	Wizard::CloseDialog();
+}
+/* Return actual state */
+else if (func == "Result") {
+    ret = AIStorage::Export();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
 
-		list partitioning =  AIStorage::drives;
-		list item_id = splitstring(item,":");
-		map this_drive = $[];
-		string drive = "";
+y2debug("ret=%1", ret);
+y2milestone("Storage auto finished");
+y2milestone("----------------------------------------");
 
-		if (size(item_id)>1) { //Partition
-		    this_drive =
-			select(filter(map d,
-				      partitioning,
-				      ``(lookup(d,"device","") == select(item_id,0,""))),
-			       0,
-			       $[]
-			       );
-		    drive= select(item_id,0,"");
-		    list drive_partitions = this_drive["partitions"]:[];
-		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
-		    change(this_drive,"partitions", drive_partitions);
-		    AIStorage::drives= maplist(`d, partitioning,``{
-			if (d["device"]:"" == drive) {
-			    return(this_drive);
-			} else {
-			    return(d);
-			}
-		    });
-		}
-		else
-		{
-		    drive = item;
-		    AIStorage::drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
-		}
+return ret;
 
-
-	    }
-	    if (ret !=`table) {
-		Wizard::SetContents(_("Partition Plan"),
-				    AIStorage::Summary(), "", true, true);
-	    }
-
-	} until (ret == `next || ret == `key || ret == `abort || ret == `back  || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-	return ret;
-
-    }
-
-
-    symbol ret = Storage();
-    settings = AIStorage::Export();
-
-    return [ret, settings];
+/* EOF */
 }

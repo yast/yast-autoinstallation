@@ -10,24 +10,20 @@
 
     module "AIStorage";
     textdomain "autoinst";
-    include "partitioning/partition_defines.ycp";
+    
     import "Partitions";
-
-    global list drives = [];
-
-
+    import "Mode";
+    include "partitioning/partition_defines.ycp";
 
     
-    /**
-     * Set module data
-     * @return void
-     */
+    global list drives = [];
+    
+    global list lvm = [];
+    
+    global list raid = [];
 
-    global define void Set()
-	``{
-	return;
-    }
-
+    global map targetMap = $[];
+    
     /**
      * Dump the settings to a map, for autoinstallation use.
      * @return map
@@ -58,137 +54,131 @@
     /**
      * Get all the configuration from a map.
      * When called by autoinst_<module name> (preparing autoinstallation data)
-     * the map may be empty.
-     * @param settings	$[...]
+     * the list may be empty.
+     * @param settings a list 	[...]
      * @return	success
      */
-    global define boolean Import(list settings)``{
-	drives = settings;
+    global define boolean Import(list settings)
+	``{
+	if (Mode::autoinst)
+	{
+	    drives = settings[0]:[];
+	    lvm = settings[1]:[];
+	    raid = settings[2]:[];
+	}
+	else
+	{
+	    drives = settings;
+	}
 	return;
     }
 
+
+    
     /**
+     * Summary
      * @return  configuration summary dialog
      */   
    
-    global define term Summary()
+    global define string Summary() ``{
+	return "";
+    }
+
+    
+
+    /**
+     * Create partition plans
+     * @param void
+     * @return void
+     */
+    global define void Write()
 	``{
-			
-	list drives_table = [];
-	string id = "";
-	foreach(`d, drives,
-		``{
-	    id =lookup(d,"device","");
-	    term a = `item(`id(id));
-	    a = add(a, lookup(d,"device",""));
-	    a = add(a, "");
-	    a = add(a, "");
-	    a = add(a, "");
-	    a = add(a, "");
-	    a = add(a, "");
-	    
-	    drives_table = add(drives_table, a);
-	    list part = lookup(d,"partitions",[]);
-	    integer start_id = 1;
-	    if (size(part)>0)
+	import "Storage";
+	import "Partitions";
+	include "autoinstall/partitioning.ycp";
+	
+	if ( lvm[ 0, "destroy_old"]:false )
+	{
+	    Storage::DestroyLvmOnAllDisks();
+	}
+
+	map init_targetmap = Storage::GetTargetMap();
+	y2milestone("Inital Target map: %1", init_targetmap);
+
+	list alldrives = maplist( `k, `v, init_targetmap ,
+			      ``{
+				  return($["device":k, "size": lookup(v,"cyl_size",0)]);
+	});
+
+	y2milestone("Drives: %1", alldrives);
+
+	Storage::SetPartDisk(lookup(select(alldrives,0,$[]),"device", Boot::FindMbrDisk()));
+
+	// Set devices if missing
+	targetMap =  listmap (map drive, drives, ``{
+	    boolean first_set = false;
+	    string device = "";
+	    if (!first_set && drive["device"]:"" == "")
 	    {
-		foreach(`p, part,
-			``{		    
-		    id = build_id(lookup(d,"device",""), start_id );
-		    term b = `item(`id(id));
-		    b=add(b, "");
-			   
-		    b=add(b, lookup(p,"mount",""));
-		    b=add(b, lookup(p,"size", ""));
-		    // integer pid = tohexstring(p["partition_id"]:0) ;
-		    if (!haskey(p, "filesystem_id"))
-		    {
-			b=add(b, Partitions::FsIdToString(p["partition_id"]:131));
-		    }
-		    else
-		    {
-			b=add(b, Partitions::FsIdToString(p["filesystem_id"]:131));
-		    }
-
-		    
-		    if (lookup(p,"filesystem",`nothing) == `reiser)
-		    {
-			b=add(b, "Reiser");
-		    }
-		    else if (lookup(p,"filesystem",`nothing) == `ext2)
-		    {
-			b=add(b, "Ext2");
-		    }
-		    else if (lookup(p,"filesystem",`nothing) == `ext3)
-		    {
-			b=add(b, "Ext3");
-		    }
-		    else if (lookup(p,"filesystem",`nothing) == `jfs)
-		    {
-			b=add(b, "JFS");
-		    }
-		    else if (lookup(p,"filesystem",`nothing) == `xfs)
-		    {
-			b=add(b, "XFS");
-		    }
-		    else
-		    {
-			b=add(b, "");
-		    }
-
-		    if (size(p["region"]:[]) > 0 )
-		    {
-			b=add(b, sformat("%1 - %2", select(p["region"]:[], 0 , 0), select(p["region"]:[], 1 , 0)));
-		    }
-		    else
-		    {
-			b=add(b, "");
-		    }
-		    
-		    drives_table = add(drives_table, b);
-		    start_id = start_id + 1;
-		});
+		device = Storage::GetPartDisk();
+		first_set = true;
+		return([device,drive]);
+	    }
+	    else if (drive["device"]:"" != "")
+	    {
+		return([drive["device"]:"",drive]);
 	    }
 
 	});
-	integer entries = size(drives_table);
-	list reversed_table = [];
-	integer counter = entries;
-	term tmp = `item(`id(`empty));	
-	while (counter != 0)
+
+	y2milestone("New Auto-Install tagetMap: %1", targetMap);
+
+	// Initialize disks if needed
+	boolean init_done = false;
+	foreach (string device, map data, targetMap,
+		 ``{
+	    if (data["initialize"]:false)
+	    {
+		init_done = true;
+		integer zero_ret = InitDevice(device);
+		y2milestone("Initializing device:%1 --> %2", device, zero_ret);
+	    }
+	});
+
+	// Re-probe Targets
+	if (init_done)
 	{
-	    reversed_table=add(reversed_table, select(drives_table, counter -1, tmp));
-	    counter = counter - 1;
-			       
-	}	
-	term contents =	    
-	    `VBox(
-		  `Table(`id(`table), `opt(`notify, `immediate, `keepSorting),
-			 `header(_("Device"), _("Mount"), _("  Size  "),  _("  Type  ") ,_("  File System  "), _("Region   ")),
-			 drives_table
-			 ),
-		  `HBox(
-			`PushButton(`id(`drive), _("Add Dri&ve")),
-			`PushButton(`id(`part), _("Add &Partition")),
-			`PushButton(`id(`edit), _("&Edit")),
-			`PushButton(`id(`delete), _("&Delete"))
-			)
-		  );
-	return contents;
+	    Storage::ReReadTargetMap();
+	}
+	if (size(targetMap) > 0) {
+	    foreach (string device, map data, targetMap,
+		     ``{
+		y2milestone("Creating partition plans for %1", device);
+		boolean ret = AutoPartition(device);
+	    });
+	}
+	else
+	{
+	    map firstDrive = alldrives[0]:$[];
+	    boolean ret = AutoPartition(firstDrive["device"]:"/dev/hda");
+	}
+
+
+
+	if ( size(raid) != 0)
+	{
+	    autoRAID();
+	}
+
+	if ( size(lvm) != 0)
+	{
+	    autoLVM();
+	}
+
     }
 
 
-   
-    /**
-     * Build the id for a partition entry in the man table.
-     * @parm disk_dev_name name of the devie e.g.: /dev/hda
-     * @parm nr number of the partition e.g.: 1
-     * @return string e.g.: 01./dev/hda
-     */
 
-    global define build_id(  string disk_dev_name , any nr )
-	``{       
-        return (sformat( "%1:%2", disk_dev_name, nr));        
-    };
+
 
 }

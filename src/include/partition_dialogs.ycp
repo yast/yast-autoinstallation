@@ -18,7 +18,8 @@
     include "ui/common_popups.ycp";
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_lib.ycp";
-
+    include "partitioning/custom_part_dialogs.ycp";
+    include "partitioning/partition_defines.ycp";
 
     /*
      * Partition Dialog
@@ -577,7 +578,7 @@ For more information, consult the documentation.
 		    else
 		    {
 			UI::MessagePopup(_("This device is already configured.
-Choose or enter another device name.
+Please choose or enter another device name.
 "));
 			continue;
 		    }
@@ -609,9 +610,6 @@ Choose or enter another device name.
 
 
     }
-
-
-
 
 
     /**
@@ -667,4 +665,304 @@ Choose or enter another device name.
 	}
 	return output;
     };
+
+
+    /**
+     * Main Partitioning Dialog
+     * @return symbol
+     */
+
+    global define symbol StorageDialog()
+	``{
+
+	any ret = nil;
+	any action = nil;
+
+
+	string help_text = "";
+	
+	help_text =  _("<p> Partition your hard disks... </p>");
+
+	help_text = help_text + _("<p>
+The table to the right shows the partitions to be created on the target system.
+</p>
+");
+	help_text = help_text + _("<p><b>Hard disks</b> are designated like this </p>") +
+	    _("<tt>/dev/hda </tt>1st EIDE disk
+<tt>/dev/hdb </tt>2nd EIDE disk
+<tt>/dev/hdc </tt>3rd EIDE disk") +
+_("<p>etc.</p>")+
+_("<p>- or - </p>")+
+_("<p><tt>/dev/sda </tt>1st SCSI disk
+<tt>/dev/sdb </tt>2nd SCSI disk
+<tt>/dev/sdc </tt>3rd SCSI disk</p>");
+
+	 help_text = help_text + _("If no partitions are defined and the specified drive is also
+the drive where the root partition should reside, the following partitions are
+created automatically:");
+	 help_text = help_text + _(" <tt>/boot</tt>, <tt>swap</tt> and a root partition <tt>/</tt>.
+Sizes are calculated automatically");
+	 
+	 help_text = help_text + _("<p><b>Advanced Options</b></p>");
+	 
+	help_text = help_text + _("By default, AutoYaST2 will create an extended partition and adds all new partitions as logical devices. It is possible however to instruct AutoYaST2 to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in Mbytes.");
+	help_text = help_text + _("These options and other advanced options can't be configured using this
+interface, instead you should add them manually to the control file");
+	
+	help_text = help_text + _("<p>
+For LVM and RAID setup, please consult the documentation and add the configuration
+to an existing control file. You can only create unformatted LVM and RAID partitions as
+a preparation.
+</p>
+");	      
+	
+	Wizard::SetContents(_("Partition Plans"),
+			    StorageDialogContents() , help_text, true, true);
+
+
+
+	repeat {
+	    any item = UI::QueryWidget(`id(`table), `CurrentItem);
+
+	    if (item ==nil)
+	    {
+		UI::ChangeWidget(`id(`delete), `Enabled, false);
+		UI::ChangeWidget(`id(`edit), `Enabled, false);
+
+	    }
+	    else
+	    {
+		list whatitem = splitstring(item,":");
+		if (size(whatitem) >1)
+		{ //Partition
+		    UI::ChangeWidget(`id(`part), `Enabled, false);
+		}
+	    }
+	    ret = UI::UserInput();
+
+	    item = UI::QueryWidget(`id(`table), `CurrentItem);
+	    list drives = AIStorage::drives;
+	    list configured_drives = maplist(`c, drives, ``{
+		return(lookup(c,"device",""));
+	    });
+
+
+	    if (contains(configured_drives, item))
+	    {
+		UI::ChangeWidget(`id(`part), `Enabled, true);
+	    }
+	    else
+	    {
+		UI::ChangeWidget(`id(`part), `Enabled, false);
+	    }
+	    list whatitem = [];
+	    if(item!=nil)
+	    {
+		whatitem = splitstring( item , ":");
+	    }
+
+	    if (ret == `table && size(whatitem) == 0)
+	    {
+		UI::ChangeWidget(`id(`delete), `Enabled, true);
+		UI::ChangeWidget(`id(`edit), `Enabled, true);
+	    }
+	    else if (ret == `drive)
+	    {
+		action = DriveDialog(`create, "" );
+	    }
+	    else if  (ret == `part)
+	    {
+		if (item != nil) {
+		    action = PartitionDialog(`create, item);
+		    UI::ChangeWidget(`id(`table), `CurrentItem, item);
+		}
+		else
+		{
+		    UI::MessagePopup(_("Please select a drive first."));
+		    continue;
+		}
+	    }
+	    else if (ret == `edit)
+	    {
+		list item_id = splitstring(item,":");
+		if (size(item_id) >1)
+		{ //Partition
+		    action = PartitionDialog(`edit, item);
+		    UI::ChangeWidget(`id(`table), `CurrentItem, select(item_id,0,""));
+		}
+		else
+		{
+		    action = DriveDialog(`edit, item );
+		}
+	    }
+	    else if (ret == `delete)
+	    {
+
+		list partitioning =  AIStorage::drives;
+		list item_id = splitstring(item,":");
+		map this_drive = $[];
+		string drive = "";
+
+		if (size(item_id)>1) { //Partition
+		    this_drive =
+			select(filter(map d,
+				      partitioning,
+				      ``(lookup(d,"device","") == select(item_id,0,""))),
+			       0,
+			       $[]
+			       );
+		    drive= select(item_id,0,"");
+		    list drive_partitions = this_drive["partitions"]:[];
+		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
+		    change(this_drive,"partitions", drive_partitions);
+		    
+		    AIStorage::drives= maplist(`d, partitioning,
+					       ``{
+						   if (d["device"]:"" == drive)
+						   {
+						       return(this_drive);
+						   }
+						   else
+						   {
+						       return(d);
+						   }
+					       });
+		}
+		else
+		{
+		    drive = item;
+		    AIStorage::drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
+		}
+
+
+	    }
+	    if (ret !=`table) {
+		Wizard::SetContents(_("Partition Plan"),
+				    StorageDialogContents() , help_text, true, true);
+	    }
+
+	} until (ret == `next || ret == `abort || ret == `back );
+	return ret;
+    }
+
+    global define term StorageDialogContents()
+	``{
+			
+	list drives_table = [];
+	string id = "";
+	foreach(`d, AIStorage::drives,
+		``{
+	    id =lookup(d,"device","");
+	    term a = `item(`id(id));
+	    a = add(a, lookup(d,"device",""));
+	    a = add(a, "");
+	    a = add(a, "");
+	    a = add(a, "");
+	    a = add(a, "");
+	    a = add(a, "");
+	    
+	    drives_table = add(drives_table, a);
+	    list part = lookup(d,"partitions",[]);
+	    integer start_id = 1;
+	    if (size(part)>0)
+	    {
+		foreach(`p, part,
+			``{		    
+		    id = build_id(lookup(d,"device",""), start_id );
+		    term b = `item(`id(id));
+		    b=add(b, "");
+			   
+		    b=add(b, lookup(p,"mount",""));
+		    b=add(b, lookup(p,"size", ""));
+		    // integer pid = tohexstring(p["partition_id"]:0) ;
+		    if (!haskey(p, "filesystem_id"))
+		    {
+			b=add(b, Partitions::FsIdToString(p["partition_id"]:131));
+		    }
+		    else
+		    {
+			b=add(b, Partitions::FsIdToString(p["filesystem_id"]:131));
+		    }
+
+		    
+		    if (lookup(p,"filesystem",`nothing) == `reiser)
+		    {
+			b=add(b, "Reiser");
+		    }
+		    else if (lookup(p,"filesystem",`nothing) == `ext2)
+		    {
+			b=add(b, "Ext2");
+		    }
+		    else if (lookup(p,"filesystem",`nothing) == `ext3)
+		    {
+			b=add(b, "Ext3");
+		    }
+		    else if (lookup(p,"filesystem",`nothing) == `jfs)
+		    {
+			b=add(b, "JFS");
+		    }
+		    else if (lookup(p,"filesystem",`nothing) == `xfs)
+		    {
+			b=add(b, "XFS");
+		    }
+		    else
+		    {
+			b=add(b, "");
+		    }
+
+		    if (size(p["region"]:[]) > 0 )
+		    {
+			b=add(b, sformat("%1 - %2", select(p["region"]:[], 0 , 0), select(p["region"]:[], 1 , 0)));
+		    }
+		    else
+		    {
+			b=add(b, "");
+		    }
+		    
+		    drives_table = add(drives_table, b);
+		    start_id = start_id + 1;
+		});
+	    }
+
+	});
+	integer entries = size(drives_table);
+	list reversed_table = [];
+	integer counter = entries;
+	term tmp = `item(`id(`empty));	
+	while (counter != 0)
+	{
+	    reversed_table=add(reversed_table, select(drives_table, counter -1, tmp));
+	    counter = counter - 1;
+			       
+	}	
+	term contents =	    
+	    `VBox(
+		  `Table(`id(`table), `opt(`notify, `immediate, `keepSorting),
+			 `header(_("Device"), _("Mount"), _("  Size  "),  _("  Type  ") ,_("  File System  "), _("Region   ")),
+			 drives_table
+			 ),
+		  `HBox(
+			`PushButton(`id(`drive), _("Add Dri&ve")),
+			`PushButton(`id(`part), _("Add &Partition")),
+			`PushButton(`id(`edit), _("&Edit")),
+			`PushButton(`id(`delete), _("&Delete"))
+			)
+		  );
+	return contents;
+    }
+
+   
+    /**
+     * Build the id for a partition entry in the man table.
+     * @parm disk_dev_name name of the devie e.g.: /dev/hda
+     * @parm nr number of the partition e.g.: 1
+     * @return string e.g.: 01./dev/hda
+     */
+
+    global define build_id(  string disk_dev_name , any nr )
+	``{       
+        return (sformat( "%1:%2", disk_dev_name, nr));        
+    };
+
+    
 }

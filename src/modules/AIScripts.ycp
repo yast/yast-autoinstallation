@@ -13,6 +13,22 @@
     
     include "ui/common_messages.ycp";
 
+
+    global string tmpdir = SCR::Read( .target.tmpdir );
+
+    // Main directory for data generated during installation
+    //
+    global string var_dir = "/var/adm/autoinstall";
+    
+    // Directory for the pre/post and chroot scripts
+    //
+    global string scripts_dir = var_dir + "/scripts";
+
+    // Directory where log files of pre/post and chroot scripts are kept
+    //
+    global string logs_dir = var_dir + "/logs";
+    
+    
     global list pre = [];
     global list post = [];
     global list chroot = [];
@@ -24,7 +40,10 @@
      */
     define void AIScripts()
 	``{
-	merged = mergeScripts();
+	if ( !Mode::autoinst )
+	{	 
+	    merged = mergeScripts();
+	}
     }
 
 
@@ -255,4 +274,101 @@
 	return result;
     }
 
+
+     /**
+     * Execute pre scripts
+     * @param type of script
+     * @return true on success
+     */
+
+    global define boolean Write( string type )
+	``{
+
+	list scripts = [];
+	if (type == "pre-scripts")
+	    scripts = pre;
+	else if ( type == "chroot-scripts")
+	    scripts = chroot;
+	else if (type == "post-scripts")
+	    scripts = post;
+	else {
+	    y2error("Unsupported script type");
+	    return false;
+	}
+		
+
+	string tmpdirString = "";
+	string current_logdir = "";
+
+	if (type == "pre-scripts")
+	{
+	    tmpdirString = sformat("%1/%2", tmpdir, type);
+	    SCR::Execute (.target.mkdir, tmpdirString);
+
+	    current_logdir = sformat("%1/logs", tmpdirString);
+	    SCR::Execute (.target.mkdir,  current_logdir);
+	}
+	else if (type == "chroot-scripts")
+	{
+	    tmpdirString = sformat("%1%2", Installation::destdir,  scripts_dir);
+	    SCR::Execute (.target.mkdir, tmpdirString);
+
+	    current_logdir = sformat("%1%2", Installation::destdir, logs_dir);
+	    SCR::Execute (.target.mkdir,  current_logdir);
+	}
+	else
+	{
+	    current_logdir = logs_dir;
+	}
+
+
+	foreach( `s, scripts,
+		 ``{
+	    string scriptInterpreter=s["interpreter"]:"shell";
+	    string scriptName=s["filename"]:type;
+	    string scriptPath = "";
+
+	    if (type == "pre-scripts")
+	    {
+		scriptPath = sformat("%1/%2/%3", tmpdir, type, scriptName);
+		y2milestone("Writing pre script into %1", scriptPath);
+		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
+	    }
+	    else if (type == "chroot-scripts")
+	    {
+		scriptPath = sformat("%1%2/%3", Installation::destdir,  scripts_dir,  scriptName);
+		y2milestone("Writing chroot script into %1", scriptPath);
+		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
+	    }
+	    else
+	    {
+		scriptPath = sformat("%1/%2", scripts_dir, scriptName);
+		y2milestone("Writing  script into %1", scriptPath);
+		SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
+	    }
+
+	    // string message =  sformat(_("Executing user supplied script: %1"), scriptName);
+	    string executionString = "";
+	    if (scriptInterpreter == "shell")
+	    {
+		executionString = sformat("/bin/sh -x %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+		SCR::Execute (.target.bash, executionString);
+	    }
+	    else if (scriptInterpreter == "perl")
+	    {
+		executionString = sformat("/usr/bin/perl %1  2&> %3/%4.log", scriptPath, current_logdir, scriptName);
+		SCR::Execute (.target.bash,executionString);
+	    }
+	    else
+	    {
+		y2error("Unknown interpreter: %1", scriptInterpreter);
+	    }
+	    y2milestone("Script Execution command: %1", executionString );
+	});
+
+	return true;
+    }
+
+
+    
 }

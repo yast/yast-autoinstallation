@@ -27,12 +27,22 @@
     // the configure portion of the XML configuration file
     global map Configure = $[];
 
-   
-
     // Configuration changes!
     global boolean changed = false;
 
 
+
+
+    // Local
+
+    // Aditional sysconfi vars
+    list SysconfigVars = [];
+
+    // additional forced packages
+    list forcedPackages = [];
+
+    
+    
     /** 
      * Constructor
      */
@@ -75,8 +85,7 @@
 	    {
 
 		if (d["AutoinstPath"]:"" == "install")
-		{
-		    y2milestone("Prepare: Configure");
+		{		 
 		    if ( d["AutoinstDataType"]:"map" == "map" )
 		    {
 			Install[resource] = Flat[resource]:$[];
@@ -88,10 +97,23 @@
 		}
 		else
 		{
-		    y2milestone("Prepare: Configure");
-		    if ( d["AutoinstDataType"]:"map" == "map" )
-		    {
-			Configure[resource] = Flat[resource]:$[];
+		    string tomerge = d["AutoinstMerge"]:"";
+		    string tomergetypes = d["AutoinstMergeTypes"]:"";
+		    list MergeTypes = splitstring(tomergetypes, ",");
+		    if ( size(tomerge) > 0 )
+		    {			    
+			integer i = 0;
+			foreach( string res, splitstring(tomerge, ",") , ``{
+			    if ( MergeTypes[i]:"map" == "map")
+				Configure[res] = Flat[res]:$[];				
+			    else
+				Configure[res] = Flat[res]:[];
+			    i = i + 1;
+			});
+		    }
+		    else if ( d["AutoinstDataType"]:"map" == "map" )
+		    {				
+			Configure[resource] = Flat[resource]:$[];			
 		    }
 		    else
 		    {
@@ -129,7 +151,7 @@
      * Reset profile to initial status
      * @return void
      */
-    global define void Reset() ``{
+    global define void Reset () ``{
 	current = $[];
 	Install = $[];
 	Configure = $[];
@@ -141,24 +163,46 @@
     
     /**
      * Save YCP data into XML
-     * @param filePath path to file name
+     * @param  path to file
      * @return	boolean          
      */
-    global define boolean Save (string filePath)
+    global define boolean Save (string file)
     ``{	
 	Prepare();
-	y2milestone("Saving data (%1) to XML file %2", current, filePath);
+	y2milestone("Saving data (%1) to XML file %2", current, file);
 	
-	if (find(filePath, "/") == -1 )
+	if ( find( file, "/") == -1 )
 	{	   
-	    return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", Repository, filePath)));
+	    return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", Repository, file)));
 	}
 	else
 	{
-	    y2milestone("full path");
-	    return (XML::YCPToXMLFile(`profile, current,  filePath));
+	    return (XML::YCPToXMLFile(`profile, current,  file));
 	}
     }
+
+
+    /**
+     * Save the current data into a file to be read after a reboot.
+     * @param	-
+     * @return  true on success
+     * @see	Restore()
+     */
+    global define boolean SaveYCP( string parsedControlFile)
+	``{	
+	y2milestone("Saving control file in YCP format");
+	return SCR::Write( .target.ycp, parsedControlFile, current );
+    }
+
+
+ 
+
+    global define boolean ReadYCP( string parsedControlFile )
+	``{
+	current = SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
+    }
+
+    
 
     
     
@@ -172,7 +216,8 @@
 
     global define void Parse (symbol action, string new_path)
     ``{
-	if (action == `reset) {
+	if (action == `reset)
+	{
 	    current = $[];	    
 	}
 	else if (action == `load && new_path != "")
@@ -191,27 +236,36 @@
     
     /**
      * Read XML into  YCP data 
-     * @param filePath path to file name
-     * @return	void
+     * @param  path to file
+     * @return	boolean
      */
-    global define void Read (string filePath)
+    global define boolean Read (string file)
 	``{
 	
-	y2debug("Reading %1", filePath);
-	current = XML::XMLToYCPFile(filePath);
+	y2debug("Reading %1", file);
+	current = XML::XMLToYCPFile(file);
+
+	if ( current != $[]  && size(current) == 0 )
+	    return (false);
 	
 	y2debug("Profile: %1", current);
 	
 	Install = current["install"]:$[];
 	Configure = current["configure"]:$[];
 	Flat = union ( Install, Configure );
-
 	
 	Compat();
-	
-	return;
+	if (Mode::autoinst)
+	{
+	    import "AutoInstall";
+	    AutoInstall::Profile = Profile::current;
+	}	
+	return true;
     }
 
+
+
+    
     /**
      * Provide Compatibility to older distributions.
      */
@@ -324,5 +378,29 @@
 	}		
 	return;
     }
+
+
+
+    /**
+     * Add a single entry to the Sysconfig list of variables
+     * @param string file name / path
+     * @param string key
+     * @param string value
+     * @param string package name which uses this variable if installation of package has to be forced.
+     * @return void
+     */
+    global define void addSysconfigVar(string file, string key, string value, string package)
+	``{
+
+	SysconfigVars=add(SysconfigVars, $["sysconfig_path":file, "sysconfig_key":key, "sysconfig_value": value]);
+	
+	// Add package needed with sysconfig variable to package stack.
+	// FIXME
+	if (package != "")
+	{
+	    forcedPackages = add(forcedPackages, package);
+	}
+    }
+
     
 }
