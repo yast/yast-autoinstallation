@@ -11,6 +11,7 @@
     import "Label";
     import "Popup";
     import "Profile";
+    import "Directory";
     include "autoinstall/helps.ycp";
 
     /**
@@ -430,6 +431,13 @@ the configuration files are read and converted.
         return (o["stderr"]:"");
     }
 
+    string rng_validate(string file) {
+        string cmd = sformat("/usr/bin/xmllint --relaxng %1 -noout %2",
+                Directory::schemadir + "/autoyast/rng/profile.rng", file );
+        map o = (map)SCR::Execute(.target.bash_output, cmd);
+        return (o["stderr"]:"");
+    }
+
     string xml_validate(string file) {
         string cmd = sformat("/usr/bin/xmllint  -noout %1", file );
         map o = (map)SCR::Execute(.target.bash_output, cmd);
@@ -443,6 +451,10 @@ the configuration files are read and converted.
         return;
     }
 
+    /**
+     * Validate Dialog
+     * @return symbol
+     */
     symbol ValidDialog() {
         import "Summary";
         import "HTML";
@@ -480,7 +492,7 @@ the configuration files are read and converted.
         sleep(1000);
         summary = Summary::AddHeader(summary, _("Checking XML with DTD validation..."));
         UI::ChangeWidget(`id(`richtext), `Value , summary);
-        scrret = dtd_validate(file);
+        scrret = rng_validate(file);
         if (scrret == "")
         {
             summary = summary + HTML::Colorize(_("OK"), "green");
