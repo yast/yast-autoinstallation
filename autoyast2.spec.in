@@ -1,29 +1,28 @@
 @HEADER-COMMENT@
-
 # neededforbuild yast2-devel-packages yast2 yast2-installation yast2-xml yast2-transfer yast2-storage yast2-country yast2-mouse yast2-bootloader yast2-packager yast2-x11
 
 @HEADER@
 Requires:	yast2-core yast2-xml libxslt
-Requires:   autoyast2-installation = %{version}
+Requires:	autoyast2-installation = %{version}
 Provides:	yast2-module-autoinst yast2-config-autoinst
 Obsoletes:	yast2-module-autoinst yast2-config-autoinst
 Provides:	yast2-lib-autoinst
 Obsoletes:	yast2-lib-autoinst
 PreReq:		%insserv_prereq %fillup_prereq
-Source1:    doc-9.0.tar.bz2
+Source1:	doc-9.0.tar.bz2
 
 BuildArchitectures:	noarch
 
-Summary:	YaST2 auto-installation
+Summary:	YaST2 - Auto-Installation
 
 %description
 -
 
 
 %package installation
-Version:    @VERSION@
-Summary:    YaST2 Modules for inst-sys
-Group:      YaST2
+Version:	@VERSION@
+Summary:	YaST2 - Auto-Installation: Installation Modules
+Group:		YaST2
 Requires:	yast2-xml yast2-core
 Requires:	yast2-transfer
 Provides:	yast2-trans-autoinst
@@ -32,9 +31,9 @@ Obsoletes:	yast2-trans-autoinst
 -
 
 %package utils
-Version:    @VERSION@
-Summary:    YaST2 Modules for inst-sys
-Group:      YaST2
+Version:	@VERSION@
+Summary:	YaST2 - Auto-Installation: Utilities
+Group:		YaST2
 %description utils
 -
 
@@ -77,7 +76,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 %dir /var/lib/autoinstall/repository/rules
 %dir /var/lib/autoinstall/repository/classes
 %dir /var/lib/autoinstall/tmp
-%doc html
+%doc @docdir@
 
 
 @desktopdir@/autoyast.desktop
