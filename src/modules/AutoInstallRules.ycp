@@ -200,8 +200,8 @@
      * Return host id (hex ip )
      */
     global define string getHostid () ``{
-	include "network/ip.ycp";
-	string hex = ip2hex(hostaddress);
+	import "IP";
+	string hex = IP::ToHex(hostaddress);
 	return hex;
     }
 

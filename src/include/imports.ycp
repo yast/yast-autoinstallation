@@ -402,7 +402,7 @@ This may take a while. Please wait...
      * @return map  network map
      */
     global define map createAliceNetwork(map aliceConf) ``{
-	 include "network/ip.ycp";
+	 import "IP";
 	 string network =  aliceConf["NET_IP_CONFIG"]:"";
 	 string DNS_NAMESERVER = aliceConf["DNS_NAMESERVER"]:"";
 	 string DNS_SEARCHLIST = aliceConf["DNS_SEARCHLIST"]:"";
@@ -431,11 +431,11 @@ This may take a while. Please wait...
 	     {
 		 interface["device"] = iface;
 		 interface["bootproto"] = "static";
-		 interface["network"] =  compute_network(ip2string(data["ipaddr"]:""),ip2string(data["netmask"]:""));
-		 interface["ipaddr"] = ip2string(data["ipaddr"]:"");
-		 interface["netmask"] = ip2string(data["netmask"]:"");
+		 interface["network"] =  compute_network(IP::ToString(data["ipaddr"]:""),IP::ToString(data["netmask"]:""));
+		 interface["ipaddr"] = IP::ToString(data["ipaddr"]:"");
+		 interface["netmask"] = IP::ToString(data["netmask"]:"");
 		 interface["startmode"] = "onboot";
-		 interface["broadcast"] = compute_broadcast(ip2string(data["ipaddr"]:""),ip2string(data["netmask"]:""));
+		 interface["broadcast"] = compute_broadcast(IP::ToString(data["ipaddr"]:""),IP::ToString(data["netmask"]:""));
 	     }
 	     return (interface);
 	 });
