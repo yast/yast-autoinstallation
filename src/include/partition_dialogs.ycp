@@ -17,6 +17,7 @@
     textdomain "autoinst";
     import "Label";
     import "Popup";
+	import "String";
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_lib.ycp";
     include "partitioning/custom_part_dialogs.ycp";
@@ -62,16 +63,16 @@
 	new_val["fsid"] = new_val["partition_id"]:Partitions::fsid_native;
 	new_val["used_fs"] = new_val["filesystem"]:`reiser;
 
-	
+
 	list other_drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
-	
+
 	map file_systems 	= FileSystems::GetAllFileSystems(true, true);
 	boolean create		= lookup ( new_val , "create", false);
 	string  partition_size	= lookup ( new_val , "size", "");
 	boolean format		= lookup ( new_val , "format", false);
-	
+
 	string partition_type	= new_val["partition_type"]:"";
-	
+
 	symbol last_option_fs	= lookup ( new_val , "filesystem", `ext2);
 	map fs_options      = lookup ( new_val , "fs_options" , $[]);
 
@@ -102,7 +103,7 @@ needs. All fields are required.</P>
 									`opt(`notify),
 									_("&Fixed Size"),
 									(partition_size != "auto"
-									 && partition_size != "max") 
+									 && partition_size != "max")
 									)
 							   ),
 						     `Left(
@@ -132,7 +133,7 @@ needs. All fields are required.</P>
 		       `ReplacePoint( `id(`mount_dlg_rp), MountDlg( new_val , not_used_mountpoints ))
 		  );
 	y2milestone("New values: %1", new_val);
-	
+
 	term field_dlg_left = `Top( `ReplacePoint( `id( `format_dlg_rp), FormatDlg( new_val, file_systems) ));
 
 	UI::OpenDialog(
@@ -232,8 +233,8 @@ needs. All fields are required.</P>
 		    }
 
 		    string mount	=  UI::QueryWidget( `id(`mount_point), `Value);
-		    string subStr     	=  substring( CutBlanks(mount) , 0,1  );
-		    return_value      	=  add( return_value , "mount" , mount);
+		    string subStr	=  substring( String::CutBlanks(mount) , 0,1  );
+		    return_value	=  add( return_value , "mount" , mount);
 		    not_used_mountpoints =  notUsedMountpoints( getTargets(), lookup(selected_fs, `mountpoints, []));
 
 		    if( filesystem == `swap )
@@ -280,7 +281,7 @@ needs. All fields are required.</P>
 			fs_options = $[];
 		    }
 		    last_option_fs = filesystem;
-		    
+
 		    if( ret == `fs_options )
 		    {
 			fs_options =  FileSystemOptions( fs_options, selected_fs );
@@ -369,7 +370,7 @@ needs. All fields are required.</P>
 		}
 		else
 		{
-		    change( return_value, "mount",  CutBlanks( UI::QueryWidget(`id(`mount_point),   `Value)));
+		    change( return_value, "mount",  String::CutBlanks( UI::QueryWidget(`id(`mount_point),   `Value)));
 		}
 
 		// add fstype to return_value
@@ -421,9 +422,9 @@ needs. All fields are required.</P>
 	    }
 
 	} until (ret == `ok || ret == `cancel);
-	
+
 	UI::CloseDialog();
-	
+
 	if ( ret != `cancel )
 	{
 	    list partitions = lookup(this_drive,"partitions",[]);
@@ -468,7 +469,7 @@ needs. All fields are required.</P>
 	map current_drive = select(filter(`d, drives,``(d["device"]:"" == item)), 0, $[]);
 	boolean usefree = (current_drive["use"]:"" == "free");
 	boolean init = current_drive["initialize"]:false;
-	
+
 	boolean reuse_all = (current_drive["use"]:"" == "all");
 	list partitions = splitstring(current_drive["use"]:"", ",");
 
@@ -522,7 +523,7 @@ For more information, consult the documentation.
 						      )
 						)
 					  ),
-		       
+
 		       `HBox(
 			     `HSpacing(1),
 			     `Left(
@@ -544,7 +545,7 @@ For more information, consult the documentation.
 	Wizard::SetContents( title, contents, help, true , true );
 	Wizard::ReplaceAbortButton(`Empty());
 
-	
+
 	if (size(partitions)>0)
 	{
 	    UI::ChangeWidget(`id(`reuse_partitions), `Enabled, true);
@@ -590,7 +591,7 @@ For more information, consult the documentation.
 			else
 			    drive["initialize"] = false;
 
-			
+
 			drives=add(drives,drive);
 			AutoinstStorage::drives=drives;
 		    }
@@ -644,47 +645,6 @@ Select or enter another device name.
 	return auto_targets;
     }
 
-    /**
-     *
-     * Remove blanks at begin and end of input string
-     * (blanks between remain untouched).
-     * @param input string, usually an user input
-     *
-     * @return string
-     * @example CutBlanks ( "  any input     " );
-     */
-
-    global define CutBlanks( string input )
-	``{
-	string  output = input;
-	boolean go_on = true;
-
-	if ( size ( output ) > 0 )
-	{
-	    integer pos = findfirstnotof( output, " " );
-
-	    if ( pos != nil )
-	    {
-		output = substring( output, pos );
-	    }
-	    integer last_pos = size ( output ) - 1;
-
-	    while ( go_on )
-	    {
-		if ( substring( output, last_pos ) == " " )
-		{
-		    output = substring( output, 0, last_pos );
-		    last_pos = last_pos-1;
-		}
-		else
-		{
-		    go_on = false;
-		}
-	    }
-	}
-	return output;
-    };
-
 
     /**
      * Main Partitioning Dialog
@@ -699,7 +659,7 @@ Select or enter another device name.
 
 
 	string help_text = "";
-	
+
 	help_text =  _("<p> Partition your hard disks... </p>");
 
 	help_text = help_text + _("<p>
@@ -722,21 +682,21 @@ created automatically:");
 	 help_text = help_text + _(" <tt>/boot</tt>, <tt>swap</tt>, and a root partition <tt>/</tt>.
 Sizes are calculated automatically.
 ");
-	 
+
 	 help_text = help_text + _("<p><b>Advanced Options</b></p>");
-	 
+
 	help_text = help_text + _("By default, AutoYaST2 will create an extended partition and adds all new partitions as logical devices. It is possible, however, to instruct AutoYaST2 to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in MBytes.");
 	help_text = help_text + _("These options and other advanced options cannot be configured using this
 interface.  Instead, add them manually to the control file.
 ");
-	
+
 	help_text = help_text + _("<p>
 For LVM and RAID setup, consult the documentation and add the configuration
 to an existing control file. You can only create unformatted LVM and RAID partitions as
 a preparation.
 </p>
-");	      
-	
+");
+
 	Wizard::SetContents(_("Partition Plans"),
 			    StorageDialogContents() , help_text, true, true);
 
@@ -836,7 +796,7 @@ a preparation.
 		    list drive_partitions = this_drive["partitions"]:[];
 		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
 		    change(this_drive,"partitions", drive_partitions);
-		    
+
 		    AutoinstStorage::drives= maplist(`d, partitioning,
 					       ``{
 						   if (d["device"]:"" == drive)
@@ -868,7 +828,7 @@ a preparation.
 
     global define term StorageDialogContents()
 	``{
-			
+
 	list drives_table = [];
 	string id = "";
 	foreach(`d, AutoinstStorage::drives,
@@ -881,18 +841,18 @@ a preparation.
 	    a = add(a, "");
 	    a = add(a, "");
 	    a = add(a, "");
-	    
+
 	    drives_table = add(drives_table, a);
 	    list part = lookup(d,"partitions",[]);
 	    integer start_id = 1;
 	    if (size(part)>0)
 	    {
 		foreach(`p, part,
-			``{		    
+			``{
 		    id = build_id(lookup(d,"device",""), start_id );
 		    term b = `item(`id(id));
 		    b=add(b, "");
-			   
+
 		    b=add(b, lookup(p,"mount",""));
 		    b=add(b, lookup(p,"size", ""));
 		    // integer pid = tohexstring(p["partition_id"]:0) ;
@@ -907,7 +867,7 @@ a preparation.
 			b=add(b, Partitions::FsIdToString(p["filesystem_id"]:131));
 		    }
 
-		    
+
 		    if (lookup(p,"filesystem",`nothing) == `reiser)
 		    {
 			b=add(b, "Reiser");
@@ -941,7 +901,7 @@ a preparation.
 		    {
 			b=add(b, "");
 		    }
-		    
+
 		    drives_table = add(drives_table, b);
 		    start_id = start_id + 1;
 		});
@@ -951,14 +911,14 @@ a preparation.
 	integer entries = size(drives_table);
 	list reversed_table = [];
 	integer counter = entries;
-	term tmp = `item(`id(`empty));	
+	term tmp = `item(`id(`empty));
 	while (counter != 0)
 	{
 	    reversed_table=add(reversed_table, select(drives_table, counter -1, tmp));
 	    counter = counter - 1;
-			       
-	}	
-	term contents =	    
+
+	}
+	term contents =
 	    `VBox(
 		  `Table(`id(`table), `opt(`notify, `immediate, `keepSorting),
 			 `header(_("Device"), _("Mount"), _("  Size  "),  _("  Type  ") ,_("  File System  "), _("Region   ")),
@@ -974,7 +934,7 @@ a preparation.
 	return contents;
     }
 
-   
+
     /**
      * Build the id for a partition entry in the man table.
      * @parm disk_dev_name name of the devie e.g.: /dev/hda
@@ -983,9 +943,9 @@ a preparation.
      */
 
     global define build_id(  string disk_dev_name , any nr )
-	``{       
-        return (sformat( "%1:%2", disk_dev_name, nr));        
+	``{
+        return (sformat( "%1:%2", disk_dev_name, nr));
     };
 
-    
+
 }
