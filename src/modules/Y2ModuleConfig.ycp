@@ -182,9 +182,11 @@
 
 
     define list ConstructMenu() ``{
+	include "readconfig.ycp";
 	CreateGroupTree(GroupMap);
 	foreach(`m,`v, ModuleMap, ``{
-	    string name    = Translate(lookup(v, "Name", "unknown"));
+	    string domain = v["Textdomain"]:"base";
+	    string name = ReadKey (domain, "Name", v);
 	    map menu_entry = $["entry":m, "title":name];
 	    list menu_list = [];
 	    if (haskey(v,"Group")) {
