@@ -15,7 +15,7 @@
 
     global define ProfileSourceDlg (map parameters)
 	``{
-	list supported_protocol = ["HTTP","NFS", "TFTP", "CDROM", "Floppy", "File"];
+	list supported_protocol = ["HTTP","NFS", "TFTP", "CDROM", "Floppy", "File", "Device"];
 	list protocols = maplist(`p, supported_protocol, ``{
 	    if (tolower(p) == parameters["scheme"]:"") {
 		return (`item(`id(tolower(p)), p , true));
@@ -41,7 +41,7 @@ on the command line.</p>"));
 					    `VSpacing(1),
 					    `VStretch(),
 					    `Left(`ComboBox(`id(`protocol), `opt(`notify), _("&Protocol"), protocols )),
-					    `Left(`TextEntry(`id(`server), _("&Server or Device:"), parameters["server"]:"")),
+					    `Left(`TextEntry(`id(`server), _("&Server or Device:"), parameters["host"]:"")),
 					    `Left(`TextEntry(`id(`Path), _("Pa&th:"), parameters["path"]:"")),
 					    `VSpacing(1),
 					    `VStretch(),
@@ -75,15 +75,12 @@ on the command line.</p>"));
 		    continue;
 	    }
 	    string protocol =  UI::QueryWidget(`id(`protocol), `Value );
-	    if (protocol == "Harddisk")
-	    {
-		parameters["protocol"] = "hd";
-	    }
-	    else if (
+	    if (
 		     protocol == "NFS" ||
 		     protocol == "TFTP" ||
 		     protocol == "CDROM" ||
-		     protocol == "HTTP"
+		     protocol == "HTTP" ||
+		     protocol == "Device"
 		     )
 	    {
 		parameters["scheme"] = tolower(protocol);
@@ -97,7 +94,7 @@ on the command line.</p>"));
 	    Path = UI::QueryWidget(`id(`Path), `Value );
 	} until (ret == `retry  || ret == `abort);
 
-	parameters["server"]	= server;
+	parameters["host"]	= server;
 	parameters["path"] 	= Path;
 	AutoInstall::ProfileLocation = parameters;
 	UI::CloseDialog();
