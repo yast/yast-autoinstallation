@@ -2,8 +2,8 @@
 
 <!--
    Merging two XML files
-   Version 1.5
-   LGPL (c) Oliver Becker, 2002-01-29
+   Version 1.6
+   LGPL (c) Oliver Becker, 2002-07-05
    obecker@informatik.hu-berlin.de
 -->
 
@@ -11,8 +11,8 @@
                 xmlns:xslt="http://www.w3.org/1999/XSL/Transform"
                 xmlns:m="http://informatik.hu-berlin.de/merge"
                 exclude-result-prefixes="m">
-<xslt:output method="xml" cdata-section-elements="list source partitions YAST_INFO SYS_SW_SELLIST SYS_SW_ADDLIST SYS_PCMCIA_MODULES SYS_RC_CONFIG_VARS NET_IP_CONFIG SYS_PART_sda SYS_PART_sdb SYS_PART_sdc SYS_PART_sdd SYS_PART_hda SYS_PART_hdb SYS_PART_hdc SYS_PART_hdd USERLIST INETDLIST ETC_HOSTS MODULES_CONF GROUPLIST SYS_SW_AUXLIST ROUTES"/> 
 
+<xslt:output method="xml" cdata-section-elements="list source partitions YAST_INFO SYS_SW_SELLIST SYS_SW_ADDLIST SYS_PCMCIA_MODULES SYS_RC_CONFIG_VARS NET_IP_CONFIG SYS_PART_sda SYS_PART_sdb SYS_PART_sdc SYS_PART_sdd SYS_PART_hda SYS_PART_hdb SYS_PART_hdc SYS_PART_hdd USERLIST INETDLIST ETC_HOSTS MODULES_CONF GROUPLIST SYS_SW_AUXLIST ROUTES"/>
 
 <!-- Normalize the contents of text, comment, and processing-instruction
      nodes before comparing?
@@ -36,12 +36,10 @@
 <xslt:template match="m:merge" >
    <xslt:variable name="file1" select="string(m:file1)" />
    <xslt:variable name="file2" select="string(m:file2)" />
-<!--
    <xslt:message>
       <xslt:text />Merging '<xslt:value-of select="$file1" />
       <xslt:text />' and '<xslt:value-of select="$file2"/>'<xslt:text />
    </xslt:message>
--->
    <xslt:if test="$file1='' or $file2=''">
       <xslt:message terminate="yes">
          <xslt:text>No files to merge specified</xslt:text>
@@ -147,6 +145,8 @@
                         <xslt:when test="$type1='element'">
                            <xslt:element name="{name($first1)}" 
                                          namespace="{namespace-uri($first1)}">
+                              <xslt:copy-of select="$first1/namespace::*" />
+                              <xslt:copy-of select="$first2/namespace::*" />
                               <xslt:copy-of select="$first1/@*" />
                               <xslt:call-template name="m:merge">
                                  <xslt:with-param name="nodes1" 
@@ -198,6 +198,8 @@
                   <xslt:when test="$type1='element'">
                      <xslt:element name="{name($first1)}" 
                                    namespace="{namespace-uri($first1)}">
+                        <xslt:copy-of select="$first1/namespace::*" />
+                        <xslt:copy-of select="$first2/namespace::*" />
                         <xslt:copy-of select="$first1/@*" />
                         <xslt:call-template name="m:merge">
                            <xslt:with-param name="nodes1" 

@@ -112,11 +112,10 @@
     // partitioning
     global list Partitioning = [];
     global list LVM = [];
-    global map LvmVolumes = $[];
-    
+       
     global map targetMap = $[];
     
-    global map LvmMap = $[];
+   
 
     global list RAID = [];
     
@@ -631,10 +630,10 @@
 
     global define void partitionSettings()
 	``{
-	
-	include "autoinstall/partitioning.ycp";
-	include "autoinstall/lvm.ycp";
-	include "partitioning/partition_defines.ycp";
+	import "Partitions";
+	include "autoinstall/partitioning.ycp";	
+
+
 	
 	Partitioning = Install["partitioning"]:[];
 
@@ -676,7 +675,7 @@
 	    if (data["initialize"]:false)
 	    {
 		init_done = true;
-		integer zero_ret = Storage::ZeroDevice(device);
+		integer zero_ret = InitDevice(device);
 		y2milestone("Initializing device:%1 --> %2", device, zero_ret);
 	    }
 	});
@@ -694,7 +693,12 @@
 	});
 
 	raidSettings();
-	autoRAID();
+	if (size(RAID)!= 0)
+	    autoRAID();
+	lvmSettings();
+	if (size(LVM)!= 0)
+	    autoLVM();
+	
     }
 
 
@@ -709,18 +713,7 @@
 
 	LVM = Install["lvm"]:[];
 
-	LvmMap =  listmap (map group, LVM,
-			       ``{
-				   string lvm_name = lookup(group,"lvm_name","system");
-				   return([lvm_name,group]);
-	});
 
-
-	if (AutoInstall::LvmVolumes!= $[])
-	{
-	    map new_targetMap = union(Storage::GetTargetMap(), AutoInstall::LvmVolumes);
-	    Storage::SetTargetMap(new_targetMap);
-	}
     }
 
     /**
