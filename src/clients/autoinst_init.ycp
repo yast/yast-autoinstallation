@@ -80,7 +80,7 @@ Please wait while the system is prepared for autoinstallation.</p>
 
     Progress::NextStage();
 
-    if (! Profile::Read( AutoInstall::xml_tmpfile ) || Profile::current == $[] )
+    if (! Profile::Read( AutoInstall::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
     {
 	Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the

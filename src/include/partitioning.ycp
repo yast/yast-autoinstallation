@@ -110,7 +110,7 @@ exist on this system.
 	    }
 	});
 
-
+	string no_space_reason = sformat(_("No free space available on %1"), target_is);
 
 	partitions = prepare_partitions (target, partitions);
 
@@ -126,31 +126,42 @@ exist on this system.
 	if (use == "linux")
 	{
 	    list linuxp = [];
-		if( Storage::IsRealDisk( target_is, target ) )
+	    if( Storage::IsRealDisk( target_is, target ) )
+	    {
+		list l = filter( map `p, target["partitions"]:[],
+				 ``(!p["delete"]:false &&
+				    !p["format"]:false &&
+				    Partitions::IsLinuxPartition(p["fsid"]:0)) );
+		
+		l = filter( `p, l, ``(contains( [`xfs, `ext2, `ext3, `jfs, `reiser, `swap],
+						p["used_fs"]:`unknown)));
+		l = filter( `p, l, ``(!contains( FileSystems::system_m_points,
+						 p["mount"]:"" )));
+		
+		if( size(l)>0 )
 		{
-		    list l = filter( map `p, target["partitions"]:[],
-				     ``(!p["delete"]:false &&
-					!p["format"]:false &&
-					Partitions::IsLinuxPartition(p["fsid"]:0)) );
-		    l = filter( `p, l, ``(contains( [`xfs, `ext2, `ext3, `jfs, `reiser, `swap],
-						    p["used_fs"]:`unknown)));
-		    l = filter( `p, l, ``(!contains( FileSystems::system_m_points,
-						     p["mount"]:"" )));
-		    if( size(l)>0 )
-		    {
-			linuxp = union( linuxp, l );
-		    }
+		    linuxp = union( linuxp, l );
 		}
+	    }
 
 	    list lp = [];
-
-	    if ( size (linuxp ) > 0 )
-	    {
+	    
+	    string seq = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19";
+	    
+	    integer s = size(target["partitions"]:[]);
+	    
+	    if ( size (linuxp ) > 0 ) {
 		lp = maplist(map p, linuxp, ``{
 		    return(sformat("%1", p["nr"]:-1));
-		});
-		y2debug("linux partitions: %1", lp );
-		use = mergestring(lp, ",");
+		});		
+		use = mergestring(lp, ",");		
+		if (!contains(lp, target["partitions", s-1, "nr"]:0 ) || !issubstring(seq, use ) )
+		{		
+		    use = "none";
+		    Report::Error(no_space_reason);
+		    return (false);
+		}
+		
 	    }
 	    else
 	    {
@@ -162,7 +173,7 @@ exist on this system.
 
 	// First check if free space should be used
 	//
-	string no_space_reason = sformat(_("No free space available on %1"), target_is);
+	
 
 	if ( (num_primary ( partitions ) > 0) || contains_extended ( partitions ) )
 	{

@@ -20,6 +20,10 @@
 >
 <!ELEMENT interpreter (#PCDATA)>
 <!ELEMENT package (#PCDATA)>
+<!ELEMENT remove-packages (package+)>
+<!ATTLIST remove-packages
+	config:type CDATA #REQUIRED
+>
 <!ELEMENT post-packages (package+)>
 <!ATTLIST post-packages
 	config:type CDATA #REQUIRED
@@ -38,7 +42,7 @@
 >
 <!ELEMENT script (filename, interpreter, source)>
 <!ELEMENT scripts (chroot-scripts?, post-scripts?, pre-scripts?)>
-<!ELEMENT software (addons?, base, packages?, post-packages?, kernel?)>
+<!ELEMENT software (addons?, base, kernel?, packages?, post-packages?, remove-packages?)>
 <!ELEMENT source (#PCDATA)>
 <!ELEMENT sysconfig (sysconfig_entry+)>
 <!ATTLIST sysconfig
