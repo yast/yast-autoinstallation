@@ -387,8 +387,11 @@ script is used.</P>
 
 		if (n ==  0) {
 		    integer min = 1;
+		    
 		    if (base == `empty)
+		    {
 			min = 2;
+		    }
 
 		    Popup::Error(sformat(_("Select at least %1  configurations
 to perform a merge.
@@ -396,15 +399,17 @@ to perform a merge.
 		    continue;
 		}
 
-		list sorted_profiles =  sort(`x,`y, filter(`c, toset(selected_profiles),``(c["profile"]:""!= "none")),
+		list sorted_profiles =  sort(map x, map y, filter(`c, toset(selected_profiles),``(c["profile"]:""!= "none")),
 					     ``(x["order"]:0<=y["order"]:0)
 					     );
 		y2debug("Selected Profiles: %1", sorted_profiles);
+		
 		if ( size(sorted_profiles)>0 )
 		{
 		    y2milestone("Calling merge with %1 (%2)", sorted_profiles, base);
 		    MergeAll(sorted_profiles, base);
 		}
+		
 		UI::ChangeWidget(`id(`next), `Enabled, true);
 	    }
 	} until  (ret == `next || ret == `back );
@@ -413,6 +418,8 @@ to perform a merge.
     }
 
 
+
+    
     global define symbol classConfiguration() ``{
 
 	string title = _("Class Configuration");
@@ -531,27 +538,20 @@ file should belong.</p>
     global define boolean MergeAll(list selected_profiles, symbol base)
 	``{
 
-	string tmpdir = SCR::Read( .target.tmpdir );
+	string tmpdir = AutoinstConfig::tmpDir;
 	SCR::Execute(.target.mkdir, tmpdir);
 
-	if (base == `empty)
-	{
-	    XML::YCPToXMLFile(`profile, $[], tmpdir + "/base_profile.xml");
-	}
-	else if (base == `current)
+	if (base == `current)
 	{
 	    Profile::Save( tmpdir + "/base_profile.xml");
 	}
-	else
-	{
-	    return false;
-	}
+
 
 	boolean error = false;
 	boolean skip = false;
 	foreach( map c, selected_profiles,
 		``{
-	    map profile = select(filter(`cc, AutoinstClass::confs,
+	    map profile = select(filter(map cc, AutoinstClass::confs,
 					``( cc["name"]:"" == c["profile"]:""  && cc["class"]:"yyy" == c["class"]:"xxx")
 					),
 				 0,
@@ -575,7 +575,9 @@ file should belong.</p>
 		if (profile["name"]:"" != "" && !error)
 		{
 		    showFeedback(sformat("Merging %1 (%2) with %3 ....", profile["name"]:"",profile["class"]:"", base_text));
-			y2milestone("Merging %1 with %2....", profile["name"]:"", base_text);
+		    
+		    y2milestone("Merging %1 with %2....", profile["name"]:"", base_text);
+		    
 		    map xsltret = AutoinstClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "result.xml");
 		    if (xsltret["exit"]:-1 != 0 )
 		    {
@@ -583,7 +585,7 @@ file should belong.</p>
 			error =  true;
 		    }
 		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
-			Popup::Error("Wait...");
+		    
 		}
 		else
 		{
@@ -602,7 +604,7 @@ file should belong.</p>
 	// Backup file
 	SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml /var/lib/autoinstall/tmp/autoinst_result.xml" );
 
-	Profile::Read("/var/lib/autoinstall/tmp/autoinst_result.xml" );
+	Profile::ReadXML("/var/lib/autoinstall/tmp/autoinst_result.xml" );
 	SCR::Execute(.target.remove, " /var/lib/autoinstall/tmp/autoinst_result.xml");
 	clearFeedback();
 

@@ -21,6 +21,16 @@
 
 <!-- Don't merge elements with this (qualified) name -->
 <xslt:param name="dontmerge" />
+<xslt:param name="dontmerge1" />
+<xslt:param name="dontmerge2" />
+<xslt:param name="dontmerge3" />
+<xslt:param name="dontmerge4" />
+<xslt:param name="dontmerge5" />
+<xslt:param name="dontmerge6" />
+<xslt:param name="dontmerge7" />
+<xslt:param name="dontmerge8" />
+<xslt:param name="dontmerge9" />
+<xslt:param name="dontmerge10" />
 
 <!-- If set to true, text nodes in file1 will be replaced -->
 <xslt:param name="replace" select="false()" />
@@ -245,7 +255,17 @@
       <xslt:when test="$type1='element' and $type2='element' and
                        local-name($node1)=local-name($node2) and
                        namespace-uri($node1)=namespace-uri($node2) and
-                       name($node1)!=$dontmerge and name($node2)!=$dontmerge">
+                       name($node1)!=$dontmerge and name($node2)!=$dontmerge and 
+                       name($node1)!=$dontmerge1 and name($node2)!=$dontmerge1 and 
+                       name($node1)!=$dontmerge2 and name($node2)!=$dontmerge2 and 
+                       name($node1)!=$dontmerge3 and name($node2)!=$dontmerge3 and 
+                       name($node1)!=$dontmerge4 and name($node2)!=$dontmerge4 and 
+                       name($node1)!=$dontmerge5 and name($node2)!=$dontmerge5 and 
+                       name($node1)!=$dontmerge6 and name($node2)!=$dontmerge6 and 
+                       name($node1)!=$dontmerge7 and name($node2)!=$dontmerge7 and 
+                       name($node1)!=$dontmerge8 and name($node2)!=$dontmerge8 and 
+                       name($node1)!=$dontmerge9 and name($node2)!=$dontmerge9 and 
+                       name($node1)!=$dontmerge10 and name($node2)!=$dontmerge10">
          <!-- Comparing the attributes -->
          <xslt:variable name="diff-att">
             <!-- same number ... -->
