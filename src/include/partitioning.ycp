@@ -563,7 +563,7 @@ to contain a minimal installation.");
 	    $[
 	      "create":true,	      
 	      "crypt_fs":  currentPartition["crypt_fs"]:false,
-	      "crypt_key": currentPartition["crypt_key"]:"",
+	      "crypt_key": Storage::AddCryptToClassified( currentPartition["crypt_key"]:""),
 	      "format":currentPartition["format"]:true,
 	      "fs_options": currentPartition["fs_options"]:$[],	      	      
 	      "type": ptype,
@@ -577,12 +577,12 @@ to contain a minimal installation.");
 	    
 	    if (haskey(currentPartition, "fstopt") && currentPartition["fstop"]:"" != "")
 	    {
-		part["fstopt"] 	= "fstopt" : currentPartition["fstop"]:"";		
+		part["fstopt"] 		= currentPartition["fstop"]:"";
 	    }
 	    
 	    if (haskey(currentPartition, "label") && currentPartition["label"]:"" != "")
 	    {
-		part["label"] 	= currentPartition["label"]:"";
+		part["label"] 		= currentPartition["label"]:"";
 	    }
 
 	    if (haskey(currentPartition, "mountby"))
