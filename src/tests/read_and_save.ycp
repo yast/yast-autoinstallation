@@ -1,10 +1,15 @@
 {
 
 
+    textdomain "autoinst";
     import "XML";
+    import "Wizard";
+    import "Popup";
     import "Mode";
     Mode::config = true;
     include "autoinstall/xml.ycp";
+    Wizard::CreateDialog();
+    Popup::ShowFeedback(_("Read Configuration Data"), _("This may take a while"));
 
     profileSetup();
     string client = "";
@@ -19,6 +24,9 @@
     map current = $[];
     current[client] = result;
     XML::YCPToXMLFile(`profile, current,  client + ".xml");
+    Popup::ClearFeedback();
+
+    Wizard::CloseDialog();
 
 
 }

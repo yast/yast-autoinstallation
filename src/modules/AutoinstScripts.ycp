@@ -43,7 +43,8 @@
      * Function sets internal variable, which indicates, that any
      * settings were modified, to "true"
      */
-    global define void SetModified () {
+    global define void SetModified ()
+    {
         modified = true;
     }
 
@@ -51,7 +52,8 @@
      * Functions which returns if the settings were modified
      * @return boolean  settings were modified
      */
-    global define boolean GetModified () {
+    global define boolean GetModified ()
+    {
         return modified;
     }
 
@@ -61,10 +63,10 @@
      * @param -
      * @return merged list
      */
-    define list<map> mergeScripts ()
+    list<map> mergeScripts ()
     {
 
-	list<map> result =	maplist (map p, pre,
+	list<map> result = maplist (map p, pre,
 				 ``{
 				     p = add(p,"type","pre-scripts");
 				     return p;
@@ -182,11 +184,13 @@
      */
     global define boolean Import(map s)
     {
+        y2debug("Calling AutoinstScripts::Import()");
 	pre = s["pre-scripts"]:[];
 	init = s["init-scripts"]:[];
 	post = s["post-scripts"]:[];
 	chroot = s["chroot-scripts"]:[];
 	merged = mergeScripts();
+        y2debug("merged: %1", merged);
 	return true;
     }
 
@@ -305,6 +309,7 @@
 
 	    merged=add(merged,script);
 	}
+        y2debug("Merged scripts: %1", merged);
 	return;
     }
 
