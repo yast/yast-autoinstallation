@@ -468,7 +468,7 @@
 
 		    if (ret == `menu_open) // OPEN
 		    {
-			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
+			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load."));
 			if (filename != "")
 			{
 			    y2milestone("file: %1", filename);
@@ -485,7 +485,7 @@
 		    }
 		    else if (ret == `menu_kickstart)
 		    {									
-			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
+			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load."));
 
 			if ( filename != nil )
 			{
@@ -494,8 +494,9 @@
 			    map ksay = Kickstart::KS2AY();
 			    if (ksay == $[])
 			    {
-				Report::Error(_("Error while loading Kickstart file, verify syntax of
-file and try again"));
+				Report::Error(_("Error while loading Kickstart file. Verify the syntax of
+file and try again.
+"));
 			    }
 			    else
 			    {
@@ -508,7 +509,7 @@ were imported correctly.
 			    }
 			}
 			else {
-			    Report::Error(_("Invalid file name, select another file"));
+			    Report::Error(_("Invalid file name. Select another file."));
 			}
 						
 		    }

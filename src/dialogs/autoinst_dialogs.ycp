@@ -20,9 +20,10 @@
     define string ProfileSourceDialog (string original)
         ``{
             string helptext = _("<p>
-                    Profile for this machine could not be found or retrieved.
-                    Please make sure you have specified the correct location
-                    on the command line.</p>");
+                    A profile for this machine could not be found or retrieved.
+                    Check that you entered the correct location
+                    on the command line.</p>
+");
             string title = _("System Profile Location");
 
             UI::OpenDialog(`opt( `decorated ),
@@ -137,9 +138,10 @@
         // help part 1 of 1
         string help_text = _("<p>
                 All hard disks automatically detected on your system
-                are shown here. Select the hard disk on which to install SuSE Linux.
+                are shown here. Select the hard disk on which to install SUSE LINUX.
                 </p>
-                ");
+                
+");
         term buttons = `HBox(
                 `PushButton(`id(`ok), `opt(`default), Label::OKButton() ),
                 `PushButton(`id(`abort), Label::AbortButton() )
