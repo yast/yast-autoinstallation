@@ -80,12 +80,9 @@
 			       string resultFileName
 			       )
 	``{
-	// saxon.sh /var/lib/AutoYaST/software/devel  /etc/AutoYaST/merge.xslt  with=/var/lib/AutoYaST/site/nuremberg > result.xml
-	// First argument overrides second
-
 	string tmpdir = SCR::Read( .target.tmpdir );
 
-	string MergeCommand = "/usr/bin/xsltproc --param with ";	
+	string MergeCommand = "/usr/bin/xsltproc --param replace \"'true'\" --param with ";	
 	MergeCommand = MergeCommand + "\"'" + base_profile + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";

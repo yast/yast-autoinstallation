@@ -11,6 +11,8 @@ xml_DATA = \
     merge.xslt
 
 dtd_DATA = \
-	profile.dtd
+	profile.dtd	\
+	classes.dtd \
+	profiles.dtd
 
 EXTRA_DIST = $(dtd_DATA) $(xml_DATA)

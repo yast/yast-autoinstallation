@@ -329,7 +329,53 @@
 (define %component-subtitle-quadding% 
   'start)
 
+;;########################################
+;; Section auto-label
+;;#######################################
+(define (section-autolabel nd #!optional (force-label? #f))
+  (let* ((isep (gentext-intra-label-sep nd))
+	 (prefix (section-autolabel-prefix nd)))
+    (if (and (or force-label? %section-autolabel%)
+	     (or %label-preface-sections%
+		 (not hasprf)))
+	(cond
+	 ((equal? (gi nd) (normalize "sect1"))
+	  (string-append prefix (format-number (child-number nd) 
+					       (label-number-format nd))))
+	 ((equal? (gi nd) (normalize "sect2"))
+	  (string-append 
+	   (element-label (ancestor (normalize "sect1") nd) force-label?)
+	   isep 
+	   (format-number (child-number nd) (label-number-format nd))))
+	 ((equal? (gi nd) (normalize "sect3"))
+	  "")
+	 ;; (string-append
+	 ;;  (element-label (ancestor (normalize "sect2") nd) force-label?)
+	 ;;  isep 
+	 ;;  (format-number (child-number nd) (label-number-format nd))))
+	 ((equal? (gi nd) (normalize "sect4"))
+	  (string-append
+	   (element-label (ancestor (normalize "sect3") nd) force-label?)
+	   isep 
+	   (format-number (child-number nd) (label-number-format nd))))
+	 ((equal? (gi nd) (normalize "sect5"))
+	  (string-append 
+	   (element-label (ancestor (normalize "sect4") nd) force-label?)
+	   isep 
+	   (format-number (child-number nd) (label-number-format nd))))
 
+	 ((equal? (gi nd) (normalize "simplesect"))
+          "")
+	 ((equal? (gi nd) (normalize "section"))
+	  (if (node-list-empty? (ancestor (normalize "section") nd))
+	      (string-append prefix (format-number (child-number nd) 
+						   (label-number-format nd)))
+	      (string-append 
+	       (element-label (ancestor (normalize "section") nd) force-label?)
+	       isep 
+	       (format-number (child-number nd) (label-number-format nd)))))
+	 (else (string-append (gi nd) " IS NOT A SECTION!")))
+	"")))
 
 
 ;;======================================

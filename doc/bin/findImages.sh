@@ -5,6 +5,6 @@
 LANG=$1;
 
 cd "images";
-find *.eps PNG/*.png 2>/dev/null \
+find EPS/*.eps PNG/*.png 2>/dev/null \
 	| sed -e "s#EPS/##; s#PNG/##" \
 	| sort -u; 

@@ -43,7 +43,7 @@
 	];
 
 	doc["cdataSections"] = ["source", "info_file"];
-	doc["systemID"] = "/usr/lib/YaST2/include/profile.dtd";
+	doc["systemID"] = "/usr/share/YaST2/include/autoinstall/profile.dtd";
 	doc["rootElement"] =  "profile";
 
 	XML::xmlCreateDoc(`profile, doc);
@@ -58,6 +58,8 @@
 				  "classes":"class"
 	];
 	doc["rootElement"] = "autoinstall";
+	doc["systemID"] = "/usr/share/YaST2/include/autoinstall/classes.dtd";
+	
 	XML::xmlCreateDoc(`class, doc);
     }
 
@@ -69,6 +71,7 @@
 				  "profiles":"template"
 	];
 	doc["rootElement"] = "autoinstall";
+	doc["systemID"] = "/usr/share/YaST2/include/autoinstall/profiles.dtd";
 	XML::xmlCreateDoc(`profileConf, doc);
     }
 
