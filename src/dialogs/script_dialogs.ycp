@@ -205,7 +205,7 @@ your needs and take control in different stages of the installation.</p>
 			    script_dialog_contents(), help, true, true);
 
 	Wizard::HideAbortButton();
-	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+	Wizard::SetNextButton(`next, Label::FinishButton() );
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
