@@ -331,7 +331,9 @@ to delete.
 
 		if (profile["name"]:"" != "" && !error)
 		{
-		    showFeedback(sformat("Merging %1 (%2) with %3 ....", profile["name"]:"",profile["class"]:"", base_text));
+                    Popup::ShowFeedback(sformat("Merging %1 (%2) with %3 ....",
+                                profile["name"]:"",profile["class"]:"",
+                                base_text), "");
 
 		    y2milestone("Merging %1 with %2....", profile["name"]:"", base_text);
 
@@ -354,7 +356,7 @@ to delete.
 
 	if (error)
 	{
-	    clearFeedback();
+            Popup::ClearFeedback();
 	    return false;
 	}
 
@@ -363,7 +365,7 @@ to delete.
 
 	Profile::ReadXML("/var/lib/autoinstall/tmp/autoinst_result.xml" );
 	SCR::Execute(.target.remove, " /var/lib/autoinstall/tmp/autoinst_result.xml");
-	clearFeedback();
+        Popup::ClearFeedback();
 
 	return true;
     }
