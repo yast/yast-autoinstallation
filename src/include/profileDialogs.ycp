@@ -13,86 +13,86 @@
 
     // Shows a dialog when 'control file' can't be found
 
-    global define ProfileSourceDlg (map autoyast)
-    ``{
-	    list supported_protocol = ["HTTP","NFS", "TFTP", "CDROM", "Floppy", "File"];
-	    list protocols = maplist(`p, supported_protocol, ``{
-		if (tolower(p) == autoyast["protocol"]:"") {
-		    return (`item(`id(tolower(p)), p , true));
-		}
-		else {
-		     return (`item(`id(tolower(p)), p ));
-		}
-	    });
+    global define ProfileSourceDlg (map parameters)
+	``{
+	list supported_protocol = ["HTTP","NFS", "TFTP", "CDROM", "Floppy", "File"];
+	list protocols = maplist(`p, supported_protocol, ``{
+	    if (tolower(p) == parameters["scheme"]:"") {
+		return (`item(`id(tolower(p)), p , true));
+	    }
+	    else {
+		return (`item(`id(tolower(p)), p ));
+	    }
+	});
 
-	    string helptext = UI(_("<p>
+	string helptext = UI(_("<p>
 Profile for this machine could not be found or retrieved.
 Please make sure you have specified the correct location
 on the command line.</p>"));
-	    string title = UI(_("System Profile Location"));
-	    UI::OpenDialog(`opt( `decorated ),
-			    `HBox(
-				`HWeight(50, `RichText( helptext )),
-				`HStretch(),
-				`HSpacing(1),
-				`HWeight(50,
-				    `VBox(
-					`Heading( title),
-					`VSpacing(1),
-					`VStretch(),
-					`Left(`ComboBox(`id(`protocol), `opt(`notify), _("&Protocol"), protocols )),
-					`Left(`TextEntry(`id(`server), _("&Server or Device:"), lookup(autoyast, "server", ""))),
-					`Left(`TextEntry(`id(`Path), _("Pa&th:"), lookup(autoyast, "path", ""))),
-					`VSpacing(1),
-					`VStretch(),
-					`HBox(
-					    `PushButton(`id(`retry), `opt(`default),  RetryButtonLabel()   ),
-					    `PushButton(`id(`abort),  AbortButtonLabel() )
-					)
-				))
-			    )
-			);
+	string title = UI(_("System Profile Location"));
+	UI::OpenDialog(`opt( `decorated ),
+		       `HBox(
+			     `HWeight(50, `RichText( helptext )),
+			     `HStretch(),
+			     `HSpacing(1),
+			     `HWeight(50,
+				      `VBox(
+					    `Heading( title),
+					    `VSpacing(1),
+					    `VStretch(),
+					    `Left(`ComboBox(`id(`protocol), `opt(`notify), _("&Protocol"), protocols )),
+					    `Left(`TextEntry(`id(`server), _("&Server or Device:"), parameters["server"]:"")),
+					    `Left(`TextEntry(`id(`Path), _("Pa&th:"), parameters["path"]:"")),
+					    `VSpacing(1),
+					    `VStretch(),
+					    `HBox(
+						  `PushButton(`id(`retry), `opt(`default),  RetryButtonLabel()   ),
+						  `PushButton(`id(`abort),  AbortButtonLabel() )
+						  )
+					    ))
+			     )
+		       );
 
-	    any ret = "";
-	    string server = "";
-	    string Path = "";
-	    UI::SetFocus(`id(`server));
-	    repeat {
-		ret = UI::UserInput();
-		if (ret == `abort)
-		{
-		    if (CallFunction(`inst_confirm_abort(`painless)))
-			return `abort;
-		    else
-			continue;
-		}
-		string protocol =  UI::QueryWidget(`id(`protocol), `Value );
-		if (protocol == "Harddisk")
-		{
-		    autoyast=add(autoyast,"protocol","hd");
-		}
-		else if (
-			 protocol == "NFS" ||
-			 protocol == "TFTP" ||
-			 protocol == "CDROM" ||
-			 protocol == "HTTP"
-			 )
-		{
-		    autoyast=add(autoyast,"protocol",tolower(protocol));
-		}
-		else if (protocol == "File" || protocol == "Floppy")
-		{
-		    autoyast=add(autoyast,"protocol",tolower(protocol));
-		    UI::ChangeWidget(`id(`server), `Enabled, false);
-		}
-		server = UI::QueryWidget(`id(`server), `Value );
-		Path = UI::QueryWidget(`id(`Path), `Value );
-	    } until (ret == `retry  || ret == `abort);
+	any ret = "";
+	string server = "";
+	string Path = "";
+	UI::SetFocus(`id(`server));
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `abort)
+	    {
+		if (CallFunction(`inst_confirm_abort(`painless)))
+		    return `abort;
+		else
+		    continue;
+	    }
+	    string protocol =  UI::QueryWidget(`id(`protocol), `Value );
+	    if (protocol == "Harddisk")
+	    {
+		parameters["protocol"] = "hd";
+	    }
+	    else if (
+		     protocol == "NFS" ||
+		     protocol == "TFTP" ||
+		     protocol == "CDROM" ||
+		     protocol == "HTTP"
+		     )
+	    {
+		parameters["scheme"] = tolower(protocol);
+	    }
+	    else if (protocol == "File" || protocol == "Floppy")
+	    {
+		parameters["scheme"] = tolower(protocol);
+		UI::ChangeWidget(`id(`server), `Enabled, false);
+	    }
+	    server = UI::QueryWidget(`id(`server), `Value );
+	    Path = UI::QueryWidget(`id(`Path), `Value );
+	} until (ret == `retry  || ret == `abort);
 
-	    autoyast=add(autoyast,"server",server);
-	    autoyast=add(autoyast,"path",Path);
-	    AutoInstall::ProfileLocation = autoyast;
-	    UI::CloseDialog();
-	    return `next;
+	parameters["server"]	= server;
+	parameters["path"] 	= Path;
+	AutoInstall::ProfileLocation = parameters;
+	UI::CloseDialog();
+	return `next;
     }
 }

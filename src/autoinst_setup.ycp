@@ -24,37 +24,35 @@
     import "Boot";
     import "Report";
     import "Packages";
-    import "User";    
     import "SpaceCalculation";
 
-    string help_text = UI(_("<p>
+    string help_text = UI(_("<P>
 Please wait while the system is being prepared for auto-installation.
-</p>"));
+</P>"));
     list progress_stages =
 	[
-	_("Configure Language, Keyboard and Time zone "),
-	_("Configure Mouse"),
-	_("Create partition plans"),
-	_("Configure Bootloader"),
-	_("Prepare X11 data"),
-	_("Configure Software selections"),
-	_("Execute pre-install user scripts")
-
-	];
+	 _("Configure Language, Keyboard and Time zone "),
+	 _("Configure Mouse"),
+	 _("Execute pre-install user scripts"),
+	 _("Create partition plans"),
+	 _("Configure Bootloader"),
+	 _("Prepare X11 data"),
+	 _("Configure Software selections")
+	 ];
 
     list progress_descriptions =
 	[
-	    _("Configuring language, Keyboard and Time zone..."),
-	    _("Configuring Mouse..."),
-	    _("Executing pre-install user scripts..."),
-	    _("Creating partition plans..."),
-	    _("Configuring Bootloader..."),
-	    _("Preparing X11 data..."),
-	    _("Configuring Software selections...")
-	];
+	 _("Configuring language, Keyboard and Time zone..."),
+	 _("Configuring Mouse..."),
+	 _("Executing pre-install user scripts..."),
+	 _("Creating partition plans..."),
+	 _("Configuring Bootloader..."),
+	 _("Preparing X11 data..."),
+	 _("Configuring Software selections...")
+	 ];
 
     Progress::New(
-		  _("Preparing System for Automatic Installation"),
+		  _("Preparing System for Automated Installation"),
 		  "",     // progress_title
 		  size( progress_stages ),	// progress bar length
 		  progress_stages,
@@ -72,9 +70,9 @@ Please wait while the system is being prepared for auto-installation.
     Keyboard::SetConsole( keyboard );
     Keyboard::SetX11( keyboard );
 
-    // Encryption method
+    // Encryption method TODO
     ////////////////////////////////////////////////////////////////////////
-    User::encryptionMethod=AutoInstall::Encryption;
+    // User::encryptionMethod=AutoInstall::Encryption;
 
     // Timezone
     Progress::Title(_("Configuring Timezone"));
@@ -120,5 +118,5 @@ Please wait while the system is being prepared for auto-installation.
 
     Progress::Finish();
 
-    return `auto;
+    return `next;
 }

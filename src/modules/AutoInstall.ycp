@@ -172,8 +172,10 @@
      *
      */
 
-    global define void ProcessProfile()``{
+    global define void ProcessProfile()
+	``{
 
+	Profile = XML::XMLToYCPFile( xml_tmpfile );
 	// the install section
 	Install = Profile["install"]:$[];
 
@@ -229,6 +231,9 @@
 	Encryption	= general["encryption_method"]:"des";
 	Confirm		= general["confirm"]:true;
 	interactive	= general["interactive"]:false;
+
+	if (Confirm)
+	    interactive = true;
 	
 	if (general["hwclock"]:"localtime" == "localtime")
 	    Hwclock 	=  "--localtime";
@@ -638,89 +643,121 @@
     }	// save()
 
 
+    /**
+     * <pre><scheme>://<authority><path>?<query></pre>
+     */
+    global define map parseURI(string uri)
+	``{
 
+	map result = $[];
+	integer pos = findfirstof( uri, ":" );
+	string scheme = substring(uri, 0, pos );
+	
+	result["scheme"] =  scheme;
+	
+	if (substring(uri, pos, 3) != "://")
+	{
+	    y2error("Wrong url syntax");
+	    return $[];
+	}
+
+	uri = substring(uri, pos + 3 , size (uri) - 1);
+	
+	if (
+	    scheme == "tftp" ||
+	    scheme == "ftp" ||
+	    scheme == "nfs"  ||
+	    scheme == "http")
+	{
+	    y2milestone("rem: %1",uri);
+	    pos = findfirstof( uri, ":" );
+	    if (pos == nil)
+	    {
+		pos = findfirstof( uri, "/" );
+		slashpos = pos;
+	    }
+	    else
+	    {
+		slashpos = findfirstof( uri, "/" );
+		if (slashpos!=nil)
+		{
+		    result = add(result, "port", substring(uri,pos +1, slashpos - pos -1));
+		}
+		else
+		{
+		    result = add(result, "port", substring(uri,pos+1, size(uri) - pos));
+		}
+	    }
+
+	    if (pos != nil)
+	    {
+		result = add(result, "server", substring(uri, 0, pos ));
+	    }
+	    else
+	    {
+		result = add(result, "server", uri);
+		result = add(result, "path", "/");
+	    }
+
+	    if (slashpos!=nil) {
+		result = add(result, "path",substring(uri, slashpos, size(uri)));
+	    }
+
+	}
+	else if (
+		   scheme == "floppy" ||
+		   scheme == "file" ||
+		   scheme == "cdrom"
+		   )
+	{
+	    result = add(result, "path",sformat("/%1",uri));
+	}
+	else
+	{
+	    y2error("Scheme not supported");
+	     return $[];
+	}
+	return result;
+	
+    }
+
+    
 
     /**
      * Return location of profile from command line.
      * @return map with protocol, server, path
      * @example autoyast=http://www.server.com/profiles/
      */
-    global define map ParseCmdLine ()
+    global define boolean ParseCmdLine ()
 	``{
 	map result = $[];
+	string cmdLine = "";
 	integer slashpos = 0;
 	if (haskey( Mode::installMap, "autoinstall"))
 	{
-	    string autoinstall = Mode::installMap["autoinstall"]:"default";
-	    if (autoinstall == "default") {
-		result["protocol"]=autoinstall;
+	    cmdLine = Mode::installMap["autoinstall"]:"default";
+	    if (cmdLine == "default")
+	    {
+		result["scheme"]=cmdLine;
 		ProfileLocation = result;
-		return;
-	    }
-	    integer pos = findfirstof( autoinstall, ":" );
-	    string protocol = substring(autoinstall, 0, pos );
-	    result = add(result, "protocol", protocol);
-	    if (substring(autoinstall,pos,3) != "://") {
-		y2error("Wrong url syntax");
-		return;
+		return true;
 	    }
 
-	    autoinstall = substring(autoinstall,pos+3, size(autoinstall) - 1);
-	    if (
-		protocol == "tftp" ||
-		protocol == "nfs"  ||
-		protocol == "http")
-	    {
-
-		y2milestone("rem: %1",autoinstall);
-		pos = findfirstof( autoinstall, ":" );
-		if (pos == nil) {
-		    pos = findfirstof( autoinstall, "/" );
-		    slashpos = pos;
-		}
-		else {
-		    slashpos = findfirstof( autoinstall, "/" );
-		    if (slashpos!=nil)
-			result = add(result, "port", substring(autoinstall,pos +1, slashpos - pos -1));
-		    else
-			result = add(result, "port", substring(autoinstall,pos+1, size(autoinstall) - pos));
-		}
-
-		if (pos != nil)
-		    result = add(result, "server", substring(autoinstall, 0, pos ));
-		else {
-		    result = add(result, "server", autoinstall);
-		    result = add(result, "path", "/");
-		}
-
-		if (slashpos!=nil) {
-		    result = add(result, "path",substring(autoinstall, slashpos, size(autoinstall)));
-		}
-
-	    } else if (
-		       protocol == "floppy" ||
-		       protocol == "file" ||
-		       protocol == "cdrom"
-		       )
-	    {
-		result = add(result, "path",sformat("/%1",autoinstall));
-	    }
-	    else {
-		y2error("Protocol not supported");
-	    }
 	}
-
+	result = parseURI (cmdLine);
+	
 	if (size (result) == 0)
 	{
 	    // Autoinstall mode was not activated from command line.
 	    // There must be a floppy with an 'autoinst.xml' in order
 	    // to be able to reach this point, so we set floppy with
 	    // autoinst.xml as the control file.
-	    result = add(result, "protocol", "floppy");
+	    
+	    result = add(result, "scheme", "floppy");
 	    result = add(result, "path","autoinst.xml");
 	}
 	ProfileLocation = result;
-	return;
+	return true;;
     }
 
     /**

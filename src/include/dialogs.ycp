@@ -507,11 +507,15 @@ This file will be saved in the templates directory."));
 			
 		    }
 		    
-		    if (ret == `saveas) {
+		    if (ret == `saveas)
+		    {
 			string filename = "";
-			if (!AIConfig::isTemplate) {
+			if (!AIConfig::isTemplate)
+			{
 			    filename = SaveFileAs(AIConfig::Repository );
-			} else {
+			}
+			else
+			{
 			     filename = SaveFileAs(AIConfig::TemplateRepository );
 			}
 			
@@ -554,7 +558,7 @@ to be able to save the current profile!"));
 		{
 		    if (UI::YesNoHeadlinePopup(_("Configuration has been modifed"), _("Should the changes be saved?")))
 		    {	
-			string filename=SaveFileAs(AIConfig::Repository);
+			string filename = SaveFileAs(AIConfig::Repository + "/");
 		
 			if (filename=="")
 			{
