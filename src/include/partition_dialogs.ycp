@@ -133,6 +133,7 @@ needs. All fields are required.</P>
 		       `ReplacePoint( `id(`mount_dlg_rp), MountDlg( new_val , not_used_mountpoints ))
 		  );
 	y2milestone("New values: %1", new_val);
+	
 	term field_dlg_left = `Top( `ReplacePoint( `id( `format_dlg_rp), FormatDlg( new_val, file_systems) ));
 
 	UI::OpenDialog(
@@ -221,18 +222,19 @@ needs. All fields are required.</P>
 		{
 		    symbol filesystem  =  UI::QueryWidget(`id(`fs), `Value);
 		    map selected_fs =  lookup( file_systems, filesystem , $[] );
+		    // y2milestone("filesystems=%1, this fsystem=%2", selected_fs, filesystem );
 
 		    return_value     = add( return_value , "format",  true );
 		    return_value     = add( return_value , "filesystem", filesystem );
 
 		    if ( !pdisk_disk )
 		    {
-			return_value     = add( return_value , "partition_id",    lookup( selected_fs, `fs_id   , 131));
+			return_value     = add( return_value , "partition_id",  selected_fs[`fsid]:131 );
 		    }
 
-		    string mount	   =  UI::QueryWidget( `id(`mount_point), `Value);
-		    string subStr     =  substring( CutBlanks(mount) , 0,1  );
-		    return_value      =  add( return_value , "mount" , mount);
+		    string mount	=  UI::QueryWidget( `id(`mount_point), `Value);
+		    string subStr     	=  substring( CutBlanks(mount) , 0,1  );
+		    return_value      	=  add( return_value , "mount" , mount);
 		    not_used_mountpoints =  notUsedMountpoints( getTargets(), lookup(selected_fs, `mountpoints, []));
 
 		    if( filesystem == `swap )
@@ -896,6 +898,8 @@ a preparation.
 		    b=add(b, lookup(p,"mount",""));
 		    b=add(b, lookup(p,"size", ""));
 		    // integer pid = tohexstring(p["partition_id"]:0) ;
+
+		    y2milestone("p id = %1", p["partition_id"]:0 );
 		    if (!haskey(p, "filesystem_id"))
 		    {
 			b=add(b, Partitions::FsIdToString(p["partition_id"]:131));
