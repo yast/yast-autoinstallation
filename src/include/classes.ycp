@@ -14,6 +14,17 @@
      * Dialog Contents
      */
 
+
+
+    global define boolean XML_cleanup(string in, string out)
+	``{
+	import "XML";
+	map ycpin = XML::XMLToYCPFile(in);
+	y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin);
+	return XML::YCPToXMLFile(`profile, ycpin, out);
+    }
+
+    
     global define term class_dialog_contents ()
 	``{
 	list classes = maplist(map class , AutoinstClass::Classes,     ``{
@@ -202,7 +213,7 @@ and when it is merged when creating a control file.
 
 		if (ret == `new)
 		{
-		    any defret = AddEditClasses(ret, "");
+		    symbol defret = AddEditClasses((symbol)ret, "");
 
 		    Wizard::SetContents(title,
 					 class_dialog_contents(), help, true, true);
@@ -216,7 +227,7 @@ to edit.
 "));
 			continue;
 		    }
-		    any defret = AddEditClasses(ret, class);
+		    symbol defret = AddEditClasses((symbol)ret, class);
 		    if (defret != `cancel)
 		    {
 
@@ -253,16 +264,104 @@ to delete.
     }
 
 
+    global define integer GetClassOrder(string name)``{
+	integer order = 0;
+	foreach(map class, AutoinstClass::Classes, ``{
+	    if (class["name"]:"" == name)
+		order = class["order"]:0;
+	});
+	return order;
+    }
 
  
 
 
     /**
+     * The merge operation
+     */
+    global define boolean MergeAll(list selected_profiles, symbol base)
+	``{
+	import "Profile";
+	string tmpdir = AutoinstConfig::tmpDir;
+	SCR::Execute(.target.mkdir, tmpdir);
+
+	if (base == `current)
+	{
+	    Profile::Save( tmpdir + "/base_profile.xml");
+	}
+
+
+	boolean error = false;
+	boolean skip = false;
+	foreach( map c, selected_profiles,
+		``{
+	    map profile = (map)select(filter(map cc, AutoinstClass::confs,
+					``( cc["name"]:"" == c["profile"]:""  && cc["class"]:"yyy" == c["class"]:"xxx")
+					),
+				 0,
+				 $[]
+				 );
+	    if (base == `empty && !skip)
+	    {
+		y2milestone("Working on profile: %1", profile);
+		SCR::Execute(.target.bash, "cp " + AutoinstConfig::classDir + "/" + profile["class"]:""  + "/" +  profile["name"]:"" +  "  " + tmpdir + "/base_profile.xml");
+		skip = true;
+	    }
+	    else
+	    {
+		y2milestone("Working on profile: %1", profile);
+		string base_text = "empty control file";
+		if (base != `empty)
+		{
+		    base_text = "current control file";
+		}
+
+		if (profile["name"]:"" != "" && !error)
+		{
+		    showFeedback(sformat("Merging %1 (%2) with %3 ....", profile["name"]:"",profile["class"]:"", base_text));
+		    
+		    y2milestone("Merging %1 with %2....", profile["name"]:"", base_text);
+		    
+		    map xsltret = AutoinstClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "result.xml");
+		    if (xsltret["exit"]:-1 != 0 )
+		    {
+			Popup::Error(sformat(_("Merge failed:\n %1"), xsltret["stderr"]:"error"));
+			error =  true;
+		    }
+		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
+		    
+		}
+		else
+		{
+		    error = true;
+		}
+	    }
+	});
+
+
+	if (error)
+	{
+	    clearFeedback();
+	    return false;
+	}
+
+	// Backup file
+	SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml /var/lib/autoinstall/tmp/autoinst_result.xml" );
+
+	Profile::ReadXML("/var/lib/autoinstall/tmp/autoinst_result.xml" );
+	SCR::Execute(.target.remove, " /var/lib/autoinstall/tmp/autoinst_result.xml");
+	clearFeedback();
+
+	return true;
+    }
+
+    
+    /**
      * Merge Dialog
      *
      */
 
-    global define MergeDialog()
+    global define symbol MergeDialog()
 	``{
 	string title = _("Merge Classes");
 	map profiles = $[];
@@ -361,7 +460,7 @@ script is used.</P>
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
-	    symbol base = UI::QueryWidget(`id(`rbg), `CurrentButton);
+	    symbol base = (symbol)UI::QueryWidget(`id(`rbg), `CurrentButton);
 	    integer n = 0;
 	    if (ret == `merge)
 	    {
@@ -399,7 +498,7 @@ to perform a merge.
 		    continue;
 		}
 
-		list sorted_profiles =  sort(map x, map y, filter(`c, toset(selected_profiles),``(c["profile"]:""!= "none")),
+		list sorted_profiles =  sort(map x, map y, filter(map c, toset(selected_profiles),``(c["profile"]:""!= "none")),
 					     ``(x["order"]:0<=y["order"]:0)
 					     );
 		y2debug("Selected Profiles: %1", sorted_profiles);
@@ -414,7 +513,7 @@ to perform a merge.
 	    }
 	} until  (ret == `next || ret == `back );
 
-	return ret;
+	return (symbol)ret;
     }
 
 
@@ -518,7 +617,7 @@ file should belong.</p>
 		    continue;
 		}
 
-		list sorted_profiles =  filter(`c, toset(selected_profiles),``(c["configuration"]:""!= "none")
+		list sorted_profiles =  filter(map c, toset(selected_profiles),``(c["configuration"]:""!= "none")
 					       );
 
 		y2debug("Selected Profiles: %1", sorted_profiles);
@@ -527,109 +626,14 @@ file should belong.</p>
 
 
 	} until  (ret == `next || ret ==`back );
-	return ret;
+	return (symbol)ret;
     }
 
 
 
-    /**
-     * The merge operation
-     */
-    global define boolean MergeAll(list selected_profiles, symbol base)
-	``{
-
-	string tmpdir = AutoinstConfig::tmpDir;
-	SCR::Execute(.target.mkdir, tmpdir);
-
-	if (base == `current)
-	{
-	    Profile::Save( tmpdir + "/base_profile.xml");
-	}
-
-
-	boolean error = false;
-	boolean skip = false;
-	foreach( map c, selected_profiles,
-		``{
-	    map profile = select(filter(map cc, AutoinstClass::confs,
-					``( cc["name"]:"" == c["profile"]:""  && cc["class"]:"yyy" == c["class"]:"xxx")
-					),
-				 0,
-				 $[]
-				 );
-	    if (base == `empty && !skip)
-	    {
-		y2milestone("Working on profile: %1", profile);
-		SCR::Execute(.target.bash, "cp " + AutoinstConfig::classDir + "/" + profile["class"]:""  + "/" +  profile["name"]:"" +  "  " + tmpdir + "/base_profile.xml");
-		skip = true;
-	    }
-	    else
-	    {
-		y2milestone("Working on profile: %1", profile);
-		string base_text = "empty control file";
-		if (base != `empty)
-		{
-		    base_text = "current control file";
-		}
-
-		if (profile["name"]:"" != "" && !error)
-		{
-		    showFeedback(sformat("Merging %1 (%2) with %3 ....", profile["name"]:"",profile["class"]:"", base_text));
-		    
-		    y2milestone("Merging %1 with %2....", profile["name"]:"", base_text);
-		    
-		    map xsltret = AutoinstClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "result.xml");
-		    if (xsltret["exit"]:-1 != 0 )
-		    {
-			Popup::Error(sformat(_("Merge failed:\n %1"), xsltret["stderr"]:"error"));
-			error =  true;
-		    }
-		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
-		    
-		}
-		else
-		{
-		    error = true;
-		}
-	    }
-	});
-
-
-	if (error)
-	{
-	    clearFeedback();
-	    return false;
-	}
-
-	// Backup file
-	SCR::Execute(.target.bash, "cp " + tmpdir + "/result.xml /var/lib/autoinstall/tmp/autoinst_result.xml" );
-
-	Profile::ReadXML("/var/lib/autoinstall/tmp/autoinst_result.xml" );
-	SCR::Execute(.target.remove, " /var/lib/autoinstall/tmp/autoinst_result.xml");
-	clearFeedback();
-
-	return true;
-    }
-
-
-    global define XML_cleanup(string in, string out)
-	``{
-
-	map ycpin = XML::XMLToYCPFile(in);
-	y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin);
-	return XML::YCPToXMLFile(`profile, ycpin, out);
-    }
 
 
 
-    global define integer GetClassOrder(string name)``{
-	integer order = 0;
-	foreach(map class, AutoinstClass::Classes, ``{
-	    if (class["name"]:"" == name)
-		order = class["order"]:0;
-	});
-	return order;
-    }
 
 
 

@@ -12,10 +12,10 @@
     import "Mode";
     Mode::config = true;
 
-
     import "Wizard";
     import "Summary";
     import "Report";
+    import "AutoinstConfig";
     import "AutoinstSoftware";
     include "wizard/sequencer.ycp";
     import "Label";
@@ -26,10 +26,10 @@
     map param = $[];
 
     /* Check arguments */
-    if(size(Args()) > 0 && is(Args(0), string)) {
-	func = WFM::Args(0);
-	if(size(Args()) > 1 && is(Args(1), map))
-	    param = WFM::Args(1);
+    if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+	func = (string) WFM::Args(0);
+	if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	    param = (map) WFM::Args(1);
     }
     y2debug("func=%1", func);
     y2debug("param=%1", param);
@@ -37,13 +37,16 @@
 
 
 
-    define pmInit() ``{
+    define void  pmInit() ``{
 
 	
-	string tmproot = SCR::Read (.target.tmpdir);
+	string tmproot = AutoinstConfig::tmpDir;
+	
 	SCR::Execute(.target.mkdir, tmproot + "/root");
+	
 	Pkg::TargetInit( tmproot + "/root", true);
 	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
+	return;
     }
 
     /**
@@ -81,7 +84,7 @@ more <b>add-on</b> selections and packages.
 	// $[ "order" : [ "name", "summary" ], .... ]
 
 	map sorted_base_selections = $[];
-	foreach( `selection, available_base_selections,
+	foreach( string selection, available_base_selections,
 		 ``{
 	    map selection_data = Pkg::SelectionData (selection);
 	    if (selection_data != nil)
@@ -89,13 +92,15 @@ more <b>add-on</b> selections and packages.
 		string order = selection_data["order"]:"";
 		// use selection name as sort criteria if not given
 		if (order == "")
+		{
 		    order = selection;
+		}
 		sorted_base_selections[order] = [selection, selection_data["summary"]:("'"+selection+"'")];
 	    }
 	});
 
 	// construct display box in order
-	foreach(`order, `data, sorted_base_selections,
+	foreach(string  order, list data, sorted_base_selections,
 		``{
 	    {
 		baseconfs_box = add( baseconfs_box, `Left(`RadioButton(`id(data[0]:""),     // id
@@ -147,7 +152,7 @@ more <b>add-on</b> selections and packages.
 		ret = Wizard::UserInput();
 
 		// get the newly selected base configuration
-		string base_selection = UI::QueryWidget( `id(`baseconf),`CurrentButton );
+		string base_selection = (string) UI::QueryWidget( `id(`baseconf),`CurrentButton );
 
 		// Inform the package manager on `next about the new (only about a NEW) selection
 		// or if the selection has changed
@@ -161,7 +166,7 @@ more <b>add-on</b> selections and packages.
 		    boolean pkgret = Pkg::SetSelection( base_selection );
 		    if (size(AutoinstSoftware::packages ) > 0)
 		    {
-			foreach(`p, AutoinstSoftware::packages, ``{
+			foreach(string p, AutoinstSoftware::packages, ``{
 			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
 			});		
 		    }
@@ -180,14 +185,14 @@ more <b>add-on</b> selections and packages.
 		    Pkg::ActivateSelections();	
 		    if (size(AutoinstSoftware::packages ) > 0)
 		    {
-			foreach(`p, AutoinstSoftware::packages, ``{
+			foreach(string p, AutoinstSoftware::packages, ``{
 			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
 			});		
 		    }
 	
 		    while ( ret == `again )
 		    {
-			ret = WFM::CallFunction( `inst_packages( true, true ) );
+			ret = (symbol)WFM::CallFunction( "inst_packages", [ true, true ] );
 
 			if ( ret == `accept )
 			    ret = `next;
@@ -224,7 +229,7 @@ more <b>add-on</b> selections and packages.
 	AutoinstSoftware::base =   selbase[0]:"";
 
 	Wizard::CloseDialog();
-	return ret;
+	return (symbol)ret;
     }
 
 
