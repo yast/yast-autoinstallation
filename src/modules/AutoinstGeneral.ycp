@@ -61,6 +61,8 @@
 	
 	return;
     }
+
+
     
     /**
      * Summary of configuration
@@ -136,7 +138,9 @@
 	return summary;				   
     }
 
-
+    /**
+     * Import Configuration
+     */ 
 
     global define boolean Import (map settings)
 	``{
@@ -150,7 +154,9 @@
     }
 
 
-    
+    /**
+     * Export Configuration
+     */     
     global define boolean Export ()
 	``{
 	
@@ -166,103 +172,10 @@
 	return general;
     }
 
-    /*
-    global define boolean Process() ``{   
-   
-	// Get default values as fallback
 
-	string default_keyboard = Keyboard::GetKeyboardForLanguage( Language::language, "english-us" );
-	Language = Language::language;
-	Mouse = "probe";		
-
-	foreach(`k,`v, general , ``{
-	    if (k == "language")
-	    {
-		y2milestone("Language: %1", v);
-		Language 	= v;
-	    }
-	    else if (k == "keyboard" && is(v, map))
-	    {
-		y2milestone("Keymap: %1", v);
-		Keymap = v["keymap"]:default_keyboard;
-	    }
-	 
-	    else if (k == "clock" && is(v, map))
-	    {
-		Timezone = v["timezone"]:"";
-		string hwc = v["hwclock"]:"";
-		if (hwc != "")
-		{
-		    if (hwc == "localtime")
-			Hwclock = "--localtime";
-		    else
-			Hwclock = "-u";
-		}
-
-		if (size(v["ntp_servers"]:[])>0)
-		{
-		    string key = "XNTPD_INITIAL_NTPDATE";
-		    string val = mergestring(v["ntp_servers"]:[], " ");
-		    string file = "xntp";
-		    Profile::addSysconfigVar(file,  key, val, "xntp");
-		}
-
-	    }
-	    else if (k == "mouse"  && is(v, map) )
-	    {
-		// if id is set, then just take it and ignore everything else
-		if (v["id"]:"" != "")
-		{
-		    Mouse = v["id"]:"";
-		}
-
-		// Otherwise, try to find the mouse id from the DB using data supplied by user,
-		// at least the device is needed.
-
-		else if (haskey(v,"device"))
-		{
-		    string device = v["device"]:"none";
-		    integer wheels = v["wheels"]:0;
-
-		    map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
-
-		    foreach(`f,`g, mice, ``{
-			map data = select(g,1,$[]);
-			if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
-			{
-			    Mouse =  f;
-			}
-		    });
-		}
-		else if (haskey(v, "probe"))
-		{
-		    // FIXME
-		}
-	    }	 
-	    else if (k == "mode")
-	    {
-		Confirm = v["confirm"]:true;
-		AutoInstall::interactive = Confirm;
-
-		Reboot = v["reboot"]:false;
-		ForceBoot =  v["forceboot"]:false;
-		RebootMsg =  v["rebootmsg"]:false;
-
-		if (haskey(v, "interactive_boot"))
-		{
-		    string key = "PROMPT_FOR_CONFIRM";
-		    string val = (v["interactive_boot"]:false) ? "yes"  : "no";
-		    string file = "boot";
-		    Profile::addSysconfigVar(file,  key, val, "");
-		}
-	    }
-	});
-
-	return;    	
-    }
-
-    */
-
+    /**
+     * Write Configuration
+     */ 
 
     global define boolean Write() ``{
 	// Process();
