@@ -47,11 +47,10 @@
 	// The current list of partitions
 	list partitions = target["partitions"]:[];
 
-	symbol partition_type = compute_partition_type (Boot::LoaderType);
-	integer max_partitions = compute_max_partitions (target, partition_type);
+	integer max_partitions = compute_max_partitions (target);
 
 	// The number of possible primary partitions
-	integer max_primary = compute_max_primary (partition_type);
+	integer max_primary = compute_max_primary (target);
 
 
 	// The partition number of the first logical partition
@@ -138,7 +137,7 @@
 		}
 		else if (select(unused_region,1,0) != 0)
 		{
-		    partitions = CreatePartitions (partitions, unused_region);
+		    partitions = CreatePartitions (partitions, unused_region, target["label"]:"");
 		}
 		else if (select(unused_region,1,0) == 0)
 		{
@@ -171,7 +170,8 @@
 		}
 		else
 		{
-		    partitions = CreatePartitions (partitions, unused_region);
+		    partitions = CreatePartitions (partitions, unused_region, 
+		                                   target["label"]:"" );
 		}
 		rewrite_settings (partitions, target, driveMap);
 		break;
@@ -348,7 +348,7 @@ enough to contain a minimal installation.");
 		}
 	    }
 	    else if ( ( ( num_primary (old_partitions) == max_primary ) &&  creating_anything )
-		     || ((partition_type == `ABSD || partition_type == `SBSD)
+		     || ((target["label"]:""=="bsd" || target["label"]:""=="sun")
 			 && (size (old_partitions) - size (selected_partitions) + 3 >= max_partitions)))
 	    {
 		// consistency check: a condition for the installation is not fullfilled
@@ -387,7 +387,8 @@ to contain a minimal installation.");
 		}
 		else
 		{
-		    partitions = CreatePartitions (all_partitions, selected);
+		    partitions = CreatePartitions (all_partitions, selected,
+		                                   target["label"]:"" );
 		}
 		y2debug("final partitions %1", partitions);
 		rewrite_settings (partitions, target, driveMap);
@@ -431,7 +432,7 @@ to contain a minimal installation.");
      *  @return new partitions list
      */
 
-    global define CreatePartitions (list partitions, list selected_region)
+    global define CreatePartitions (list partitions, list selected_region, string label)
 	``{
 	y2debug("initial partition list: %1", partitions);
 	y2debug("selected region: %1", selected_region);
@@ -493,7 +494,7 @@ to contain a minimal installation.");
 	    last_pnr = getLastPrimary(partitions);
 	    list primary_auto_partitions = maplist(`p, primaries,
 						   ``{
-						       if ((partition_type == `ABSD || partition_type == `SBSD)
+						       if ((label=="bsd" || label=="sun")
 							   && (last_pnr == 3))
 						       {
 							   last_pnr = last_pnr + 1;
@@ -523,7 +524,7 @@ to contain a minimal installation.");
 	}
 
 
-	if (partition_type == `FAT)
+	if (label == "msdos")
 	{
 	    ptype = `logical;
 	}
@@ -602,7 +603,7 @@ to contain a minimal installation.");
 
 	list logical_auto_partitions = maplist(`p, auto_partitions,
 					       ``{
-						   if ((partition_type == `ABSD || partition_type == `SBSD)
+						   if ((label == "bsd" || label == "sun")
 						       && (last_pnr == 3))
 						   {
 						       last_pnr = last_pnr + 1;
@@ -613,7 +614,7 @@ to contain a minimal installation.");
 					       });
 
 	// Add flag whether using the entire disk
-	if ((partition_type == `ABSD || partition_type == `SBSD)
+	if ((label == "bsd" || label == "sun")
 	    && (last_pnr == 3)
 	    && empty_disk)
 	{
