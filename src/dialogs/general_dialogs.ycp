@@ -151,7 +151,6 @@ Choose the new <b>language</b> for your SuSE Linux system.
 
 
 	map mode		= AutoinstGeneral::mode;
-	boolean reboot		= mode["reboot"]:false;
 	boolean forceboot	= mode["forceboot"]:false;
 	boolean confirm	= mode["confirm"]:true;
 
@@ -159,14 +158,28 @@ Choose the new <b>language</b> for your SuSE Linux system.
 	    `Top(
 		 `VBox(
 		       `Left(`CheckBox(`id(`confirm), _("Con&firm installation?"), confirm)),
-		       `Left(`CheckBox(`id(`reboot), _("Reboo&t after installation"), reboot)),
 		       `Left(`CheckBox(`id(`forceboot), _("Do not reboot after installation e&ven if the system requires it"), forceboot))
 
 		       )
 		 );
 
 	string help_text = _("<P>
-The options in this dialog control the behaviour of the AutoYaST during Auto-Installation.
+The options in this dialog control the behaviour of the AutoYaST during
+Auto-Installation.
+</P>
+");
+	help_text = help_text + _("<P>
+Uncheck the confirmation option to make YaST autoinstall with interuption. This
+options is set by default to avoid unwanted installation of system. It will
+stop during installation and shows a summary of requested operations in the
+usual proposal screen.
+</P>
+");
+	help_text = help_text + _("<P>
+By default, the system will reboot after initial phase of
+installation is completed. You can prevent the system from booting and continue
+directly into the installed system. This is not recommended and should be used
+only for debugging purposes.
 </P>
 ");
 
@@ -184,17 +197,8 @@ The options in this dialog control the behaviour of the AutoYaST during Auto-Ins
 
 		map m = $[];
 		confirm = (boolean)UI::QueryWidget(`id(`confirm), `Value);
-		reboot = (boolean)UI::QueryWidget(`id(`reboot), `Value);
 		forceboot = (boolean) UI::QueryWidget(`id(`forceboot), `Value);
 
-		if (reboot && forceboot)
-		{
-		    Popup::Warning(_("You can not request rebooting the machine and
-force it not to boot at the same time.
-"));
-		    continue;
-		}
-		mode["reboot"] = reboot;
 		mode["forceboot"] = forceboot;
 		mode["confirm"] = confirm;
 		AutoinstGeneral::mode = mode;

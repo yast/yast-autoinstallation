@@ -12,7 +12,7 @@
 
     import "Mode";
     import "AutoinstConfig";
-    import "XML";    
+    import "XML";
 
     include "autoinstall/xml.ycp";
 
@@ -29,7 +29,6 @@
     // the configure portion of the XML configuration file
     global map Configure = $[];
 
- 
     // defined in Y2ModuleConfig
     global map ModuleMap = $[];
 
@@ -50,7 +49,6 @@
 	// setup profile XML parameters for writing
 	//
 	profileSetup();
-	
 	if (Mode::initial)
 	{
 	    SCR::Execute(.target.mkdir, AutoinstConfig::profile_dir);
@@ -59,13 +57,11 @@
     }
 
 
-    
     define string DetectVersion()
 	``{
 	return "";
     }
 
-    
     /**
      * Read Profile properties and Version
      * @param map Profile Properties
@@ -74,7 +70,6 @@
     global define void ReadProperties (map properties)
 	``{
 	Version = properties["version"]:"";
-	
 	Description = properties["description"]:"";
 
 	if (Version != "3.0" || Version == "")
@@ -88,10 +83,11 @@
 	} else {
 	    y2milestone("AutoYaST Profile Version  %1 Detected.", Version);
 	}
-		
 	return;
     }
-    
+
+
+
     /**
      * Import Profile
      * @param map profile
@@ -245,8 +241,8 @@
     global define boolean Save (string file)
     ``{
 	Prepare();
-	y2debug("Saving data (%1) to XML file %2", current, file);	
-	return (XML::YCPToXMLFile(`profile, current,  file));    
+	y2debug("Saving data (%1) to XML file %2", current, file);
+	return (XML::YCPToXMLFile(`profile, current,  file));
     }
 
 
@@ -298,8 +294,8 @@
 	if ( current != $[]  && size(current) == 0 )
 	{
 	    return (false);
-	}	
-	Import (current);	
+	}
+	Import (current);
 	// FIXME: Flat = AutoinstCompat::Compat( Install, Configure);
 	return (true);
     }
