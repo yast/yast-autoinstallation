@@ -104,7 +104,11 @@
      * initialize source
      */
     global define boolean initSource() ``{
-
+	string error = _("
+No source with this path was found, please add the source using the
+source manager which is available in the control center. After adding
+a source, please make sure to enable it.
+");
 	list theSources = [];
 	string base_url = "dir://" + sourceDir;
 	if (!AIConfig::PkdInitialized)
@@ -112,12 +116,7 @@
 	 		
 	    theSources = Pkg::SourceStartCache (false);
 	    y2milestone("sources: %1", theSources);
-	    if (size (theSources) <= 0)
-	    {
-		y2error ("No Sources available, creating a new source.");
-		theSources = [];
-	    }
-	    else
+	    if (size (theSources) > 0)	    	
 	    {
 		foreach (`source, theSources, ``{
 		    y2milestone("source: %1", source);
@@ -126,21 +125,19 @@
 		    if (sdata["url"]:"" == base_url)
 		    {
 			AIConfig::theSource = source;
-			boolean enable = Pkg::SourceSetEnabled(source, true);
-			if (!enable)
+			map gdata = Pkg::SourceGeneralData( source );
+			boolean state = lookup( gdata, "enabled", true );
+			if (!state)
 			{
-			    y2warning("Error while trying to enable source %1", source);
-			    return false;
+			    Report::Error(error);
+			    return false;			    
 			}
 		    }
 		});
-	    }
-	    
-	    if (AIConfig::theSource == -1)
+	    }	    
+	    else
 	    {
-		Report::Error(_("No source with this path was found,
-please add the source using the source manager using the control center and
-try again."));
+		Report::Error(error);
 		return false;
 	    }	  
 	}
