@@ -14,9 +14,8 @@
     import "Mode";
     import "Profile";
     import "Installation";
-    
+
     include "autoinstall/io.ycp";
-   
 
     global map GroupMap = $[];
     global map ModuleMap = $[];
@@ -40,7 +39,7 @@
 	Desktop::AgentPath = .autoyast2.desktop;
 
 	list Values= [ "Name",
-		  "GenericName",
+		  // probably not required: "GenericName",
 		  "X-SuSE-YaST-AutoInst",
 		  "X-SuSE-YaST-AutoinstResource",
 		  "X-SuSE-YaST-AutoinstClient",
@@ -68,7 +67,7 @@
 		    values["X-SuSE-YaST-AutoinstClient"] = client;
 		}
 		confs[name]=values;
-	    }	    
+	    }
 	});
 	return [confs, groups];
     }
@@ -93,24 +92,27 @@
 
         list grouplist = [];
         grouplist = SortGroups (Groups, maplist (string rawname, map group, Groups, ``(rawname)));
-        
-        foreach (string name, grouplist,
-		 ``{	    	   
-	    map MeunTreeEntry = $["entry":name, "title":name];
+
+        foreach (string name, grouplist, ``{
+	    textdomain "base";
+	    string title = Desktop::Translate(Groups[name, "Name"]:name);
+	    textdomain "autoinst";
+
+	    map MeunTreeEntry = $[ "entry":name, "title":title ];
 	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
         });
 
 	y2milestone("data: %1", MenuTreeData);
 	return;
     }
-    
+
 
     define list ConstructMenu() ``{
-	
+
 	CreateGroupTree(GroupMap);
-	
-	foreach(string m, map v, ModuleMap, ``{	    
-	    string name = v["Name"]:"";	    
+
+	foreach(string m, map v, ModuleMap, ``{
+	    string name = v["Name"]:"";
 	    map menu_entry = $["entry":m, "title":name];
 	    list menu_list = [];
 	    if (haskey(v,"X-SuSE-YaST-Group")) {
@@ -132,7 +134,7 @@
 	});
     }
 
-    
+
     /**
      * Constructor
      */
@@ -141,21 +143,21 @@
 	//
 	// Read module configuration data (desktop files)
 	//
-	
+
 	if (!Mode::initial)
 	{
-	    y2debug("Modules: %1", ModuleMap);	    
+	    y2debug("Modules: %1", ModuleMap);
 	    list MenuEntries = ReadMenuEntries();
-	    
+
 	    ModuleMap = MenuEntries[0]:$[];
-	    
+
 	    Profile::ModuleMap = ModuleMap;
-	    
+
 	    GroupMap = MenuEntries[1]:$[];
 
 	}
 
-	
+
 	if (Mode::config)
 	{
 	    // construct the tree menu
@@ -168,7 +170,7 @@
      * Get resource name
      */
     global define string getResource( string default_resource)
-	``{	
+	``{
 	string ret = ModuleMap[default_resource, "X-SuSE-YaST-AutoinstResource"]:"";
 	if (ret == "")
 	    return default_resource;
@@ -223,8 +225,8 @@
 
 
     /**
-     * Simple dependency resolving 
-     */ 
+     * Simple dependency resolving
+     */
     global define list Deps () ``{
 
 	map deps = $[
@@ -239,7 +241,7 @@
 
 	list m = [];
 	list done = [];
-	
+
 	foreach(string p, map d, ModuleMap,
         ``{
 
