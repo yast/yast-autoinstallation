@@ -13,8 +13,13 @@
     import "XML";
     import "Call";
     import "Label";
+    import "Popup";
+    import "Wizard";
     import "Report";
+    import "AutoinstConfig";
+    import "Profile";
 
+    list<map> Tree = [];
 
     any SaveAs() {
         any filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
@@ -27,7 +32,7 @@
                 Profile::changed=false;
                 list pathComponents = splitstring(  (string)filename, "/");
                 string base = (string) select(pathComponents, size(pathComponents) -1, "default");
-                UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), base));
+                // UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), base));
             }
             else
             {
@@ -44,7 +49,8 @@
      * @param tree data
      * @return list
      */
-    define list<term> CreateTreeList( list<map> MenuTreeData, string current)
+    define void CreateTreeList( list<map> MenuTreeData, string current ,
+            string parent)
 	``{
 	list<term> tree_items = maplist(map e, MenuTreeData, ``{
 
@@ -52,17 +58,17 @@
 	    {
 		string title=   e["title"]:"" ;
 		string entry = "group@" + e["entry"]:"";
-		list childrenlist = CreateTreeList(e["children"]:[], current);
-		return `item(`id(entry), title, ( entry  == current ) , childrenlist);
+                Tree = Wizard::AddTreeItem( Tree, parent, title , entry );
+		CreateTreeList(e["children"]:[], current, entry);
 	    }
 	    else
 	    {
 		string title=   e["title"]:"" ;
 		string entry =  "module@" + e["entry"]:"";
-		return `item(`id(entry), title ,( entry == current ));
+                Tree = Wizard::AddTreeItem( Tree, parent, title , entry );
 	    }
 	});
-	return tree_items;
+        Wizard::CreateTree(Tree, "");
     }
 
 
@@ -89,7 +95,9 @@
 	// caption of lan auto configuration
 	Wizard::SetContents(
 			    caption,
-			    contents, "", true, true);
+			    contents, AutoinstConfig::MainHelp(), true, true);
+        // Wizard::SetTitleIcon(resource);
+        Wizard::SetDesktopIcon(resource);
 	return;
     }
 
@@ -196,50 +204,6 @@
 	content_dialog( resource , resourceMap, module_auto);
 
         any ret = `next;
-        /*
-	any ret= nil;
-
-	repeat {
-	    ret = UI::UserInput();
-
-	    if( ret == `configure )
-	    {
-		y2milestone("New Settings: %1", Profile::Flat);
-		content_dialog( resource , resourceMap, module_auto);
-	    }
-	    else if( ret == `reset)
-	    {
-		string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
-		string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
-		list MergeTypes = splitstring(tomergetypes, ",");
-		if (size(tomerge) > 0 )
-		{
-		    any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-		    integer i = 0;
-		    foreach( string res, splitstring(tomerge, ",") , ``{
-			if ( MergeTypes[i]:"map" == "map")
-			    Profile::Flat[res] = $[];
-			else
-			    Profile::Flat[res] = [];
-			i = i + 1;
-		    });
-		}
-		else
-		{
-		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-		}
-
-		Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-		content_dialog(resource,  resourceMap, module_auto);
-	    }
-
-	    if ( original_settings != Y2ModuleConfig::getResourceData(resourceMap , resource) )
-	    {
-		Profile::changed = true;
-	    }
-	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key || contains(menuitems, ret) );
-
-        */
 	return (symbol)ret;
     }
 
@@ -252,23 +216,13 @@
      */
     define void CreateTreeWidget(string current ) ``{
 
-	list menu_options = CreateTreeList(Y2ModuleConfig::MenuTreeData, current);
+	CreateTreeList(Y2ModuleConfig::MenuTreeData, current, "");
 	// y2milestone("menu options: %1", menu_options);
 	Wizard::HideNextButton();
 	Wizard::HideBackButton();
 	Wizard::HideAbortButton();
-        Wizard::ReplaceCustomHelp(
-			  `VBox(
-				`Tree(
-				      `id(`tree),
-				      `opt(`notify,`vstretch),
-				      _("Untitled"),
-				      menu_options
-				      ),
-				`VSpacing(1))
-                );
 
-	UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), AutoinstConfig::currentFile));
+	// UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), AutoinstConfig::currentFile));
 	return;
     }
 
@@ -277,55 +231,46 @@
     /**
      * @return menu term
      */
-    define term menuTerm () {
-	term topmenu =
-	    `VBox(
-		  `Left(
-			`HBox(
-			      `MenuButton( _("&File"),
-					   [
-					    `item(`id(`menu_new), _("&New")      ),
-					    `item(`id(`menu_open), _("&Open")      ),
-					    `item(`id(`menu_save), _("&Save")      ),
-					    `item(`id(`menu_saveas), _("Save &As")      ),
-					    `menu( _("Im&port") ,
-						   [
-						    `item(`id(`menu_alice), _("Import A&lice Data")),
-						    `item(`id(`menu_kickstart), _("Import &Kickstart File"))
-						    ]
-						   ),
-					    `menu( _("&Preferences"),
-						   [
-						    `item(`id(`menu_reps), _("Reposi&tories"))
+    define term menus () {
+        list<map> Menu = [];
+        Menu = Wizard::AddMenu( Menu ,  _("&File"),        "file-menu" );
+        Menu = Wizard::AddMenu( Menu ,  _("&View"),        "view-menu" );
+        Menu = Wizard::AddMenu( Menu ,  _("&Classes"),        "class-menu" );
+        Menu = Wizard::AddMenu( Menu ,  _("&Tools"),        "tools-menu" );
+        Menu = Wizard::AddMenu( Menu ,  _("&Preferences"),        "pref-menu" );
 
-						    ]),
-					    `item(`id(`menu_exit), _("E&xit")      )
-					    ]
-					   ),
-			      `MenuButton( _("&View"),
-					   [
-					    `item(`id(`menu_tree), _("Configu&ration Tree")      ),
-					    `item(`id(`menu_source), _("So&urce")      )
-					    ]
-					   ),
-			      `MenuButton( _("&Classes"),
-					   [
-					    // `item(`id(`menu_rules), _("R&ules")      ),
-					    `item(`id(`menu_classes), _("Cla&sses")      ),
-					    `item(`id(`menu_merge), _("Me&rge Classes")      ),
-					    ]
-					   ),
-			      `MenuButton( _("&Tools"),
-					   [
-					    `item(`id(`menu_clone), _("Create Reference Pro&file")      ),
-					    `item(`id(`menu_valid), _("Check &Validity of Profile")      )
-					    ]
-					   )
-			      )
-			),
-		  `VSpacing(0.5)
-		  );
-                  return topmenu;
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("&New"),
+                    "menu_new"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("&Open"),
+                    "menu_open"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("&Save"),
+                    "menu_save"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("Save &As"),
+                    "menu_saveas"      );
+        Menu = Wizard::AddSubMenu       ( Menu ,  "file-menu", _("Im&port"),
+                    "file-import"   );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-import", _("Import A&lice Data"),
+                    "menu_alice"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-import", _("Import &Kickstart File"),
+                    "menu_kickstart"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("E&xit"),
+                    "menu_exit"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "pref-menu", _("Reposi&tories"),
+                    "menu_reps"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("Configu&ration Tree"),
+                    "menu_tree"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("So&urce"),
+                    "menu_source"     );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "class-menu", _("Cla&sses"),
+                    "menu_classes"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "class-menu", _("Me&rge Classes"),
+                    "menu_merge"      );
+
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "tools-menu", _("Create Reference Pro&file"),
+                    "menu_clone"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "tools-menu", _("Check &Validity of Profile"),
+                    "menu_valid"      );
+        Wizard::CreateMenu(Menu);
     }
 
     /**
@@ -377,12 +322,12 @@
     }
 
 
-
+    /**
+     * Show Source
+     */
     void ShowSource() {
         Profile::Prepare();
         string source = XML::YCPToXMLString(`profile, Profile::current);
-        UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
-
         term sourceView =
             `RichText( `id(`class_source ),
                     `opt(`plainText),
@@ -390,7 +335,7 @@
                     );
 
         Wizard::SetContents(_("Source"),
-                sourceView , "", true , true);
+                sourceView , AutoinstConfig::MainHelp(), true , true);
         return;
     }
 
@@ -401,57 +346,28 @@
      */
     any MainDialog()
 	``{
-        term topmenu = menuTerm ();
 
-	UI::ReplaceWidget(`id(`topmenu) , topmenu);
-	// Default tree item
-	string tree_item = "System";
-	CreateTreeWidget( tree_item);
-        term contents = modules(tree_item);
+        string tree_item ="group@System";
+        term contents = modules("System");
         Wizard::SetContents(_("Available modules"),
-                   contents, "", true , true);
-	UI::ChangeWidget(`id(`tree), `CurrentItem, tree_item);
+                   contents, AutoinstConfig::MainHelp(), true , true);
+        Wizard::SelectTreeItem( tree_item );
 
-	any ret = `tree;
 	any func_ret = "";
+        any ret = nil;
 
         while(true)
         {
-
-            ret =  UI::UserInput();
+            map event = UI::WaitForEvent();
+            ret = event["ID"]:nil;
+            if (ret == `wizardTree)
+                ret = UI::QueryWidget(`id(`wizardTree), `CurrentItem);
             y2debug("INPUT: %1", ret);
 
-            if (ret == `menu_tree || ret == `tree || is(ret, string) && ( issubstring((string)ret,"module@") || issubstring((string)ret,"group@") ) )
+            if (ret == `configure)
             {
-                if (ret == `tree || ret == `menu_tree)
-                {
-                    tree_item = (string ) UI::QueryWidget(`id(`tree), `CurrentItem);
-                    if (tree_item == nil )
-                        continue;
-                }
-                else
-                {
-                    tree_item = (string)ret;
-	            UI::ChangeWidget(`id(`tree), `CurrentItem, tree_item);
-                }
-                y2debug("tree_item: %1", tree_item );
-                string group=groupName(tree_item);
-                string modulename=moduleName(tree_item);
-                contents = `Empty();
-                if (group!="")
-                {
-                    contents = modules(group);
-                    Wizard::SetContents(_("Available modules"),
-                        contents, "", true , true);
-                }
-                else if (modulename!="")
-                {
-                    module_contents(modulename);
-                }
-            }
-            else if (ret == `configure)
-            {
-                tree_item = (string ) UI::QueryWidget(`id(`tree), `CurrentItem);
+                tree_item = Wizard::QueryTreeItem();
+                y2debug("tree item: %1", tree_item);
                 string modulename=moduleName(tree_item);
                 y2debug("configure module: %1", modulename);
                 if (modulename!="")
@@ -464,7 +380,7 @@
             else if (ret == `reset)
             {
                 y2debug("reset");
-                tree_item = (string ) UI::QueryWidget(`id(`tree), `CurrentItem);
+                tree_item = Wizard::QueryTreeItem();
                 string modulename=moduleName(tree_item);
                 y2debug("configure module");
                 if (modulename!="")
@@ -474,7 +390,53 @@
                     module_contents(modulename);
                 }
             }
-            else if (ret == `menu_open) // OPEN
+            else if ( issubstring((string)ret,"module@") || issubstring((string)ret,"group@") )
+            {
+                tree_item = (string)ret;
+                y2debug("tree_item: %1", tree_item );
+                Wizard::SelectTreeItem( tree_item );
+
+                string group=groupName(tree_item);
+                string modulename=moduleName(tree_item);
+
+                contents = `Empty();
+
+                if (group!="" )
+                {
+                    contents = modules(group);
+                    Wizard::SetContents(_("Available modules"),
+                        contents, AutoinstConfig::MainHelp(), true , true);
+                }
+                else if (modulename!="")
+                {
+                    module_contents(modulename);
+                }
+            }
+            else if (ret == "menu_tree") // source -> tree
+            {
+                y2debug("change to tree");
+                tree_item = Wizard::QueryTreeItem();
+                if (tree_item == "")
+                    tree_item = "group@System";
+                y2debug("tree_item: %1", tree_item );
+                string group=groupName(tree_item);
+                string modulename=moduleName(tree_item);
+
+                contents = `Empty();
+
+                if (group!="" )
+                {
+                    contents = modules(group);
+                    Wizard::SetContents(_("Available modules"),
+                        contents, AutoinstConfig::MainHelp(), true , true);
+                }
+                else if (modulename!="")
+                {
+                    module_contents(modulename);
+                }
+
+            }
+            else if (ret == "menu_open") // OPEN
             {
                 any filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load."));
                 if (filename != "" && filename != nil)
@@ -484,21 +446,20 @@
                     list pathComponents = splitstring(  (string)filename, "/");
 
                     string base = (string) select(pathComponents, size(pathComponents) -1, "default");
-                    UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), base));
-
                     Profile::ReadXML((string)filename);
                 }
                 if (UI::WidgetExists(`id(`class_source))) {
                     ShowSource();
                 }
+                ret = `menu_open;
             }
-            else if (ret == `menu_source) // Show SOURCE
+            else if (ret == "menu_source") // Show SOURCE
             {
                 ShowSource();
                 tree_item = "System";
-
+                ret = `menu_source;
             }
-            else if (ret == `menu_save) // SAVE
+            else if (ret == "menu_save") // SAVE
             {
                 if (AutoinstConfig::currentFile == "")
                 {
@@ -522,22 +483,25 @@
                 {
                     Popup::Warning(_("An error occured while saving the file."));
                 }
+                ret = `menu_save;
             }
-            else if (ret == `menu_saveas) // SAVE AS
+            else if (ret == "menu_saveas") // SAVE AS
             {
                 SaveAs();
+                ret = `menu_saveas;
             }
-            else if (ret == `menu_new) // NEW
+            else if (ret == "menu_new") // NEW
             {
                 Profile::Reset();
                 AutoinstConfig::currentFile = "";
-                UI::ChangeWidget(`id(`tree), `Label, sformat(_("Fi&le: %1"), "Untitled"));
                 if (UI::WidgetExists(`id(`class_source))) {
                     ShowSource();
                 }
+                ret = `menu_new;
             }
-            else if (ret == `menu_exit) // EXIT
+            else if (ret == "menu_exit") // EXIT
             {
+                ret = `menu_exit;
                 if (Profile::changed)
                 {
                     string current = "";
@@ -578,6 +542,8 @@
             }
             else
             {
+                term s = toterm(ret);
+                ret = (symbol)symbolof(s);
                 break;
             }
         }
