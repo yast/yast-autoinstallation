@@ -8,12 +8,12 @@
  */
 {
     textdomain "autoinst";
+    import "GetInstArgs";
     /**
      * Language
      * @return symbol
      */
-    define symbol LanguageDialog()
-	``{
+    define symbol LanguageDialog() {
 	import "Language";
 	string language = AutoinstGeneral::language;
 
@@ -98,7 +98,7 @@ Choose the new <b>language</b> for your &product; system.
 	// create the wizard dialog
 	//
 	Wizard::CreateDialog();
-	symbol result = (symbol)WFM::CallFunction( "inst_keyboard", [ true, true ] );
+	symbol result = (symbol)WFM::CallFunction( "inst_keyboard", [ GetInstArgs::Buttons(true,true) ] );
 	return result;
     }
 
@@ -126,7 +126,7 @@ Choose the new <b>language</b> for your &product; system.
 	// create the wizard dialog
 	//
 	Wizard::CreateDialog();
-	any result = WFM::CallFunction( "inst_timezone", [ true, true ]);
+	any result = WFM::CallFunction( "inst_timezone", [ GetInstArgs::Buttons(true,true) ]);
 	return (symbol)result;
     }
 
@@ -141,7 +141,7 @@ Choose the new <b>language</b> for your &product; system.
 	// create the wizard dialog
 	//
 	Wizard::CreateDialog();
-	any result = WFM::CallFunction( "inst_mouse", [  true, true ] );
+	any result = WFM::CallFunction( "inst_mouse", [ GetInstArgs::Buttons(true,true) ] );
 	return (symbol)result;
     }
 

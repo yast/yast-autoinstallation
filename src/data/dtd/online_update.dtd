@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!ENTITY % y2_you "update_time|autoget|enable_autoupdate">
-<!ENTITY % y2_updatetime "minute|hour">
+<!ENTITY % y2_updatetime "minute|hour|random_time|day">
 <!ELEMENT online_update (%y2_you;)* >
 <!ELEMENT update_time (%y2_updatetime;)* >
 
@@ -20,5 +20,13 @@
 <!ELEMENT hour (#PCDATA)>
 <!ATTLIST hour
         config:type CDATA  #FIXED "integer"
+>
+<!ELEMENT day (#PCDATA)>
+<!ATTLIST day 
+        config:type CDATA  #FIXED "integer"
+>
+<!ELEMENT random_time (#PCDATA)>
+<!ATTLIST  random_time
+        config:type CDATA  #FIXED "boolean"
 >
 
