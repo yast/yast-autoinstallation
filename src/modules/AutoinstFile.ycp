@@ -13,7 +13,6 @@
 
 
 
-    
     global list Files = [];
 
 
@@ -55,12 +54,11 @@
 	return Files;
     }
 
-    
     /**
      * Write Settings
      */
     global define boolean Write () ``{
-
+	import "AutoInstall";
 	y2milestone("Writing Files to the system");
 	if ( size( Files )==0 )
 	{
@@ -73,12 +71,12 @@
 		``{
 	    if (file["file_contents"]:"" != "")
 	    {
-		string alternate_location = sformat("%1/%2", files_dir, counter);
-		y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );		
+		string alternate_location = sformat("%1/%2", AutoInstall::files_dir, counter);
+		y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );
 		success = SCR::Write (.target.string, file["file_path"]:alternate_location, file["file_contents"]:"");
 	    }
 	    counter = counter + 1;
 	});
-	return sucess;;
+	return success;;
     }
 }
