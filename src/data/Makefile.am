@@ -10,13 +10,10 @@ xmldir = /usr/share/autoinstall/xslt
 miscdir = /usr/share/autoinstall/
 
 misc_DATA = \
-	isolinux.cfg \
-	options.msg \
-	message \
 	EXTRA_PROV
 
-ydata_DATA = \
-	monitors.ycp
+#ydata_DATA = \
+#	monitors.ycp
 
 xml_DATA = \
     merge.xslt
@@ -24,4 +21,4 @@ xml_DATA = \
 fillupdir = /var/adm/fillup-templates/
 fillup_DATA = sysconfig.autoinstall
 
-EXTRA_DIST =  $(xml_DATA) $(ydata_DATA) $(misc_DATA) $(fillup_DATA)
+EXTRA_DIST =  $(xml_DATA)  $(misc_DATA) $(fillup_DATA) #  $(ydata_DATA)
