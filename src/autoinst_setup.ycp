@@ -46,11 +46,11 @@ Please wait while the system is being prepared for auto-installation.
 	[
 	    _("Configuring language, Keyboard and Time zone..."),
 	    _("Configuring Mouse..."),
+	    _("Executing pre-install user scripts..."),
 	    _("Creating partition plans..."),
 	    _("Configuring Bootloader..."),
 	    _("Preparing X11 data..."),
-	    _("Configuring Software selections..."),
-	    _("Executing pre-install user scripts...")
+	    _("Configuring Software selections...")
 	];
 
     Progress::New(
@@ -91,18 +91,24 @@ Please wait while the system is being prepared for auto-installation.
 	Mouse::Set(AutoInstall::Mouse);
     }
 
+    // Scripts
+    ///////////////////////////////////////////////////////////////////////////
+
+    Progress::NextStage();
+    AutoInstall::scriptSettings("pre-scripts");
+
     // Partitioning and Storage
     ////////////////////////////////////////////////////////////////////////
 
     Progress::NextStage();
-    AutoInstall::partitionSettings();    
+    AutoInstall::partitionSettings();
 
     // Bootloader
     /////////////////////////////////////////////////////////////////////////
 
     Progress::NextStage();
     AutoInstall::bootloaderSettings();
-    
+
     // X11
     ////////////////////////////////////////////////////////////////////////
     Progress::NextStage();
@@ -112,11 +118,6 @@ Please wait while the system is being prepared for auto-installation.
     Progress::NextStage();
     AutoInstall::softwareSettings();
 
-    // Scripts
-    ///////////////////////////////////////////////////////////////////////////
-
-    Progress::NextStage();
-    AutoInstall::scriptSettings("pre-scripts");
     Progress::Finish();
 
     return `auto;
