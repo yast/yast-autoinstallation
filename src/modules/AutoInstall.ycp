@@ -17,7 +17,7 @@
     import "Report";
     import "XML";
     include "autoinstall/io.ycp";
-    include "transfer/url.ycp";
+    include "autoinstall/url.ycp";
 
 
     // Put all scripts and autoinstall data in this directory for later access
@@ -176,7 +176,7 @@
 	
 	if (!Mode::config &&  ! (Mode::cont && Restore()))
 	{
-	    if ( SCR::Read(.target.size,xml_tmpfile) != -1  && size(Profile) == 0)
+	    if ( SCR::Read(.target.size,xml_tmpfile) != -1  && size ( Profile ) == 0)
 	    {
 		// Profile is available and it has not been parsed yet.									
 		ProcessProfile();
@@ -791,6 +791,7 @@
 	    y2milestone( "Found saved autoinst data : <%1>", Profile );
 	    return (ProcessProfile());	    
 	}
+	
     }	// Restore()
 
 
@@ -832,8 +833,8 @@
 	map result = $[];
 	string cmdLine = "";
 	integer slashpos = 0;
-	string autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
-	if (autoinstall!="")
+	any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
+	if (autoinstall != nil)
 	{
 	    cmdLine = autoinstall;
 	    if (cmdLine == "default")
