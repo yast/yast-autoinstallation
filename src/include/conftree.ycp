@@ -275,11 +275,8 @@
      * @return menu term
      */
     define term menuTerm () {
-	term image = Wizard::HeaderImage(false);
 	term topmenu =
 	    `VBox(
-		  image,
-		  `VSpacing(0.5),
 		  `Left(
 			`HBox(
 			      `MenuButton( _("&File"),
@@ -383,8 +380,9 @@
     any MainDialog()
 	``{
         term topmenu = menuTerm ();
-	UI::ReplaceWidget(`id(`image) , topmenu);
 
+        GenericDialog( `Empty());
+	UI::ReplaceWidget(`id(`image) , topmenu);
 	// Default tree item
 	string tree_item = "System";
 	CreateTreeWidget( tree_item);

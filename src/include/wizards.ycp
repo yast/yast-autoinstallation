@@ -7,6 +7,9 @@
     import "Label";
 
     include "autoinstall/classes.ycp";
+    include "autoinstall/dialogs.ycp";
+
+
     /**
      * Whole configuration of autoyast
      * @return `back, `abort or `next
@@ -77,7 +80,7 @@
         // Translators: dialog caption
         string caption = _("Autoinstall Configuration");
         term contents = `Label (_("Initializing ..."));
-        Wizard::CreateDialog ();
+        UI::OpenDialog(`opt(`defaultsize), GenericDialog(`Empty()) );
         Wizard::SetContentsButtons ( caption,
                 contents,
                 "",
