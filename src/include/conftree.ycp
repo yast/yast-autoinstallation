@@ -212,9 +212,11 @@
 					    `item(`id(`menu_source), _("So&urce")      )
 					    ]
 					   ),			      					  
-			      `MenuButton( _("&Classes"),
+			      `MenuButton( _("&Classes and Rules "),
 					   [
-					    `item(`id(`menu_newclass), _("New Class")      )					    
+					    `item(`id(`menu_rulesfile), _("Manage R&ules file")      ),
+					    `item(`id(`menu_classes), _("Mana&ge Classes")      ),
+					    `item(`id(`menu_merge), _("Me&rge Classes")      ),
 					    ]
 					   ),
 			      `MenuButton( _("&Tools"),
@@ -343,6 +345,15 @@
 			ret = aliceImportList();
 			CreateTreeWidget();		    
 		    }
+		    else if ( ret == `menu_classes)
+		    {
+			import "AIClass";
+			include "autoinstall/classes.ycp";
+			Wizard::CreateDialog();
+			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+			ret = ManageClasses();
+			Wizard::CloseDialog();
+		    }		    
 		    else if ( ret == `menu_clone)
 		    {
 			import "AIClone";
@@ -351,6 +362,15 @@
 			ret = cloneSystem();		    
 			CreateTreeWidget();		    
 		    }
+		    else if ( ret == `menu_merge)
+		    {
+			import "AIClass";
+			include "autoinstall/classes.ycp";		
+			Wizard::CreateDialog();
+			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+			ret = MergeDialog();
+			Wizard::CloseDialog();
+		    }			    
 		    else if ( ret == `menu_iso)
 		    {
 			import "ISO";

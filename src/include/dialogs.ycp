@@ -26,13 +26,10 @@
 					    `Bottom(`PushButton(`id(`opendir), _("&Select Directory")))
 					    )
 				      )
-				),
-
-		       // `Left(`CheckBox(`id(`enable_classes), `opt(`notify), _("Use classes for multi-host configurations"), AIClass::enable)),
-
+				),		       
 		       `VSquash(`HBox(
 
-				      `TextEntry(`id(`classdir), _("&Class directory:"), AIClass::classDir),
+				      `TextEntry(`id(`classdir), _("&Class directory:"), AIConfig::classDir),
 				      `VBox(
 					    `VSpacing(),
 					    `Bottom(`PushButton(`id(`openclassdir), _("Select &Directory")))
@@ -101,7 +98,7 @@ contains all the packages.</p>
 	    }
 	    else if (ret ==`openclassdir)
 	    {
-		new_classdir = UI::AskForExistingDirectory( AIClass::classDir , _("Select Directory") );
+		new_classdir = UI::AskForExistingDirectory( AIConfig::classDir , _("Select Directory") );
 		if (new_classdir != nil)
 		{
 		    UI::ChangeWidget(`id(`classdir), `Value, new_classdir);
@@ -133,10 +130,10 @@ contains all the packages.</p>
 		    changed = true;
 		    AIConfig::Repository = new_rep;
 		}
-		if (AIClass::classDir != new_classdir)
+		if (AIConfig::classDir != new_classdir)
 		{
 		    changed = true;
-		    AIClass::classDir = new_classdir;
+		    AIConfig::classDir = new_classdir;
 		}	   
 		if ( AIConfig::PackageRepository!= new_susedir)
 		{
@@ -156,8 +153,7 @@ contains all the packages.</p>
 	Wizard::RestoreScreenShotName ();
 	if ( changed  )
 	{
-	    AIConfig::Save();
-	    AIClass::Save();
+	    AIConfig::Save();	    
 	    changed =false;
 	}
 	return ret;

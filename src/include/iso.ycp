@@ -24,8 +24,7 @@
 
 	packages = union (packages, packageList);
 
-	// In autoinst mode, a kernel might be external and not available
-	// in common.pkd
+
 	if (size(kernel)==0)
 	{
 	    packages =union (packages, ["k_deflt", "k_athlon", "k_smp"]);
@@ -252,11 +251,11 @@
 	term contents = `Label (_("Initializing ..."));
 
 	Wizard::CreateDialog ();
-	Wizard::SetContentsButtons ( caption,
-				     contents,
-				     "",
-				     CancelButtonLabel (),
-				     NextButtonLabel ());
+	Wizard::SetContents ( caption,
+			      contents,
+			      "",
+			      false,
+			      true);
 
 
 	any ret = WizardSequencer (iso_dlg, sequence);
@@ -284,11 +283,11 @@ select any of the listed options.");
 		       )
 		 );
 	
-	Wizard::SetContentsButtons ( caption,
-				     contents,
-				     help,
-				     BackButtonLabel (),
-				     NextButtonLabel ());
+	Wizard::SetContents ( caption,
+			      contents,
+			      help,
+			      false,
+			      true);
 	any ret = nil;
 	repeat
 	    {
@@ -303,7 +302,7 @@ select any of the listed options.");
 		    ISO::isoFile = f;
 		}
 		
-	    }  until (ret == `next || ret == `back || ret == `abort);
+	    }  until (ret == `next || ret == `abort);
 	
 	return ret;
     }
