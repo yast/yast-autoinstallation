@@ -82,20 +82,26 @@ contains all the packages.</p>
 
 	    if (ret ==`opendir)
 	    {
-		new_rep = PopupDir(AIConfig::Repository);	
-		UI::ChangeWidget(`id(`repository), `Value, new_rep);
+		new_rep = UI::AskForExistingDirectory(AIConfig::Repository , _("Select Directory") );
+		if (new_rep != nil) {
+		    UI::ChangeWidget(`id(`repository), `Value, new_rep);
+		}
 		continue;
 	    }
 	    else if (ret ==`openclassdir)
 	    {
-		new_classdir = PopupDir(AIClass::classDir);		
-		UI::ChangeWidget(`id(`classdir), `Value, new_classdir);
+		new_classdir = UI::AskForExistingDirectory( AIClass::classDir , _("Select Directory") );
+		if (new_classdir != nil) {
+		    UI::ChangeWidget(`id(`classdir), `Value, new_classdir);
+		}
 		continue;
 	    }
 	    else if (ret ==`opensusedir)
-	    {		
-		new_susedir = PopupDir((AIServer::PackageRep == "") ? "/tmp" : AIServer::PackageRep);	
-		UI::ChangeWidget(`id(`susedir), `Value, new_susedir );
+	    {	
+		new_susedir = UI::AskForExistingDirectory( AIServer::PackageRep  , _("Select Directory") );
+		if (new_susedir != nil) {
+		    UI::ChangeWidget(`id(`susedir), `Value, new_susedir );
+		}
 		continue;
 	    }
 	    else if ( ret==`next)
@@ -116,7 +122,7 @@ contains all the packages.</p>
 	   
 
 
-	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
 	Wizard::RestoreScreenShotName ();
 	if (changed  ) {
 	    AIConfig::Save();
@@ -153,9 +159,9 @@ contains all the packages.</p>
 	list xmlfiles = [];
 	foreach(string file, files,
 		``{
-	    if (SCR::Read(.target.dir,  AIConfig::Repository + "/" + file) == nil)
+	    if (SCR::Read(.target.size,  AIConfig::Repository + "/" + file) > 0 )
 	    {
-		xmlfiles= add (xmlfiles,`item(`id(file), file));
+		xmlfiles= add (xmlfiles,`item(`id(file), file, "", ""));
 	    }
 	});
 
@@ -167,7 +173,7 @@ contains all the packages.</p>
 			      )
 			),
 		  `VSpacing(0.5),
-		  `Table(`id(`table), `opt(`notify,`immediate), `header(tabHeader),
+		  `Table(`id(`table), `opt(`notify,`immediate), `header(_("Control File"), _("Version"), _("Last changed")),
 			 xmlfiles
 			 ),
 
@@ -342,7 +348,7 @@ and templates, which contain class defintions and can be created using this dial
 	    {
 		UI::ChangeWidget(`id(`loaded), `Value, 	AIConfig::currentFile);
 	    }
-	    else if (size(AIConfig::Profile)>0)
+	    else if ( size(Profile::current) > 0 )
 	    {
 		UI::ChangeWidget(`id(`next), `Enabled, true);
 	    }
@@ -357,8 +363,8 @@ and templates, which contain class defintions and can be created using this dial
 	    y2milestone("selected file: %1, %2, %3", selected_file, type, ret);
 	    if (ret == `new && type != `templates)
 	    {
-		AIConfig::resetProfile();
-		y2milestone("prof: %1", AIConfig::Profile);
+		Profile::Reset();
+		y2debug("prof: %1", Profile::current);
 		AIConfig::currentFile = NewFileName(  _("New Profile Name"), _("New Profile"));
 
 		if (AIConfig::currentFile != "")
@@ -381,12 +387,12 @@ and templates, which contain class defintions and can be created using this dial
 		    if (type == `templates)
 		    {
 
-			AIConfig::ReadProfile(sformat("%1/%2", AIConfig::TemplateRepository,selected_file));
-			AIConfig::isTemplate = true;
+			Profile::Read(sformat("%1/%2", AIConfig::TemplateRepository , selected_file));
+			Profile::isTemplate = true;
 		    }
 		    else
 		    {
-			AIConfig::ReadProfile(sformat("%1/%2", AIConfig::Repository,selected_file));
+			Profile::Read(sformat("%1/%2", AIConfig::Repository , selected_file));
 		    }
 		}
 		UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);
@@ -437,7 +443,7 @@ and templates, which contain class defintions and can be created using this dial
 
 	} until (ret == `next ||
 		 ret == `open ||
-		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+		 ret == `back || (ret == `abort && UI::ReallyAbortPopup ( Profile::changed) ) );
 
 	Wizard::RestoreScreenShotName ();
 	return ret;
@@ -471,8 +477,8 @@ consult the online documentation.</p>
 
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel);
 
-	AIConfig::PrepProfile();
-	string source = XML::YCPToXMLString(`profile, AIConfig::Profile);
+	Profile::Prepare();
+	string source = XML::YCPToXMLString(`profile, Profile::current);
 	if (size(source)>0)
 	{
 	    UI::ChangeWidget(`id(`class_source ), `Value, source);
@@ -492,7 +498,7 @@ consult the online documentation.</p>
 
 		if (ret == `saveprofile || ret == `saveas)
 		{
-		    if (AIConfig::isTemplate)
+		    if ( Profile::isTemplate )
 		    {
 			string header = _("Saving a control file with classes");
 			string message =  _("Should this control file be saved in the
@@ -501,8 +507,8 @@ templates directory?");
 			if (!UI::YesNoHeadlinePopup(header,message))
 			{
 			    y2milestone("not template");
-			    AIConfig::isTemplate = false;
-			    AIConfig::removeClasses();
+			    Profile::isTemplate = false;
+			    Profile::unclassify();
 			}
 
 		    }
@@ -510,17 +516,17 @@ templates directory?");
 		    if (ret == `saveas)
 		    {
 			string filename = "";
-			if (!AIConfig::isTemplate)
-			{
-			    filename = SaveFileAs(AIConfig::Repository );
+			if ( !Profile::isTemplate )
+			{			    
+			    filename = UI::AskForSaveFileName( AIConfig::Repository, "*.xml", "Save as..." );
 			}
 			else
 			{
-			    filename = SaveFileAs(AIConfig::TemplateRepository );
+			    filename = UI::AskForSaveFileName(AIConfig::TemplateRepository , "*.xml", "Save as..." );			    
 			}
 			
-			y2milestone("file name: %1", filename);
-			if (filename == "")
+			
+			if (filename == "" || filename == nil)
 			{
 			    continue;
 			}
@@ -540,16 +546,16 @@ templates directory?");
 
 
 		    if (AIConfig::currentFile == "") {
-			UI::WarningPopup(_("Provide a file name
-to save the current profile.
+			UI::WarningPopup(_("Please provide a file name
+to be able to save the current profile.
 "));
 			continue;
 		    }
 
-		    if (AIConfig::SaveProfile(AIConfig::currentFile))
+		    if ( Profile::Save( AIConfig::currentFile ))
 		    {
 			UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
-			AIConfig::changed=false;
+			Profile::changed=false;
 			continue;
 		    }
 		    else
@@ -558,13 +564,15 @@ to save the current profile.
 		    }
 
 		}	
-		else	if (ret == `next && AIConfig::changed)
+		else	if (ret == `next && Profile::changed)
 		{
 		    if (UI::YesNoHeadlinePopup(_("The configuration has been modifed."), _("Should the changes be saved?")))
 		    {
-			string filename = SaveFileAs(AIConfig::Repository + "/");
+			
+			string filename =  UI::AskForSaveFileName( AIConfig::Repository, "*.xml", _("Save as...") );
 
-			if (filename == "")
+			
+			if (filename == "" && filename == nil)
 			{
 			    continue;
 			}
@@ -581,7 +589,7 @@ to save the current profile.
 			    continue;
 			}
 
-			if (AIConfig::SaveProfile(AIConfig::currentFile))
+			if ( Profile::Save( AIConfig::currentFile ))
 			{
 			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
 			}
@@ -590,13 +598,13 @@ to save the current profile.
 			    UI::WarningPopup(_("An error occured while saving the file."));
 			}
 
-			AIConfig::changed=false;
+			Profile::changed=false;
 		    }
 
 		}
 
 
-	    } until (ret == `edit || ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));	
+	    } until (ret == `edit || ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup ( Profile::changed )));	
 	if (ret == `back)
 	{	 	 
 	    UI::ChangeWidget (`id (`next), `Label, NextButtonLabel);
@@ -634,6 +642,10 @@ must begin with letter, and must be
 "));
     }
 
+
+
+
+    
     /**
      * Clone running system
      *
@@ -690,7 +702,7 @@ Please wait....
 		    clearFeedback();
 
 		}
-	    } until (ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	    } until (ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
 	if (ret == `next)
 	    return action;
 	
@@ -761,6 +773,9 @@ Please wait....
 		  );
 	return contents;
     }
+
+
+    
     /**
      * Open file dialog
      * @return symbol
@@ -803,12 +818,12 @@ to load it.</P>
 		if (selected_file!=nil)
 		{
 		    AIConfig::currentFile=selected_file;		  
-		    AIConfig::ReadProfile(sformat("%1/%2", AIConfig::Repository,selected_file));
+		    Profile::Read(sformat("%1/%2", AIConfig::Repository , selected_file));
 		    UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);
 		}
 		else
 		{
-		    UI::ErrorPopup(_("Select a file."));
+		    UI::ErrorPopup(_("Please Select a file first."));
 		    continue;
 		}
 		    
@@ -816,97 +831,10 @@ to load it.</P>
 
 
 	} until (ret == `next ||	
-		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
 
 	Wizard::RestoreScreenShotName ();
 	return ret;
     }
-
-
-    global define serverSetup() ``{
-	import "Misc";
-	string title = _("Server Setup");
-	string help = _("TODO");
-
-	string dhcpif = Misc::SysconfigRead(.sysconfig.dhcpd.DHCPD_INTERFACE, "eth1");
-	
-	term contents =
-	    `Top(
-		 `VBox(
-		       `Frame(_("NFS Configuration"),
-			      `VBox(
-				    `Left(
-					  `CheckBox(`id(`nfs), _("Configure as N&FS Installation Server"))
-					  ),
-				    `VSpacing(0.5),
-				    `Left(
-					  `HBox(
-						`HWeight(1,`TextEntry(`id(`suserep), _("Package Repo&sitory"), AIServer::PackageRep)),
-						`HWeight(2,`Empty())
-							 
-						)
-					  )				    
-				    )
-			      ),
-		       `VSpacing(0.5),
-		       `Frame(_("DHCP Configuration"),
-			      `VBox(
-				    `Left(				
-					  `CheckBox(`id(`dhcp), _("Start DHCP"))
-					  ),
-				    `VSpacing(0.5),
-				    `Left(
-					  `HBox(
-						`HWeight(1,`TextEntry(`id(`dhcpif), _("DHCP Interface"), dhcpif)),
-						`HWeight(2,`Empty())
-						)
-					  )
-				    )
-			      ),
-		       `VSpacing(0.5),
-		       `Frame(_("TFTP Configuration"),
-			      `VBox(
-				    `Left(				
-					  `CheckBox(`id(`dhcp), _("Configure TFTP"))
-					  ),
-				    `VSpacing(0.5),
-				    `Left(
-					  `HBox(
-						`HWeight(1,`TextEntry(`id(`tftproot), _("Tftp Ro&ot"), AIServer::Tftpboot)),
-						`HWeight(2,`Empty())
-						)
-					  )
-				    )
-			      )
-		       )		       		       
-		 );
-	
-	
-	Wizard::SetContents(title,
-			    contents, help, true, true);
-
-	any ret = "";
-	repeat {
-	   
-
-	    ret = UI::UserInput();
-	    
-	    if (ret == `next)
-	    {
-	
-	    }	   
-
-
-	} until (ret == `next ||	
-		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-
-	
-	return ret;
-   
-
-	
-	
-    }
-
     
 }

@@ -1,0 +1,198 @@
+/**
+ * File:	clients/autoinst_init.ycp
+ * Package:	Auto-installation
+ * Summary:	Parses XML Profile for automatic installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ *
+ * Calls: autoinst_get_profile.ycp
+ */
+
+{
+
+    textdomain "autoinst";
+
+    import "Installation";
+    import "AutoInstall";
+    import "Progress";
+    import "Report";
+    import "Language";
+    import "Console";
+
+    include "ui/common_messages.ycp";
+    include "ui/common_popups.ycp";
+
+    include "autoinstall/profileDialogs.ycp";
+    include "autoinstall/profileLocation.ycp";
+    // include "autoinstall/partitioning.ycp";
+
+
+    string help_text = UI(_("<p>
+Please wait while the system is prepared for autoinstallation.</p>
+"));
+    list progress_stages =
+	[
+	 _("Retrieve & Read Control File"),
+	 _("Parse control file")
+	 ];
+
+    list progress_descriptions =
+	[
+	 _("Retrieving System Profile"),
+	 _("Parsing control file")
+	 ];
+
+    Progress::New(
+		  _("Preparing System for Automatic Installation"),
+		  "",     // progress_title
+		  size( progress_stages ),	// progress bar length
+		  progress_stages,
+		  progress_descriptions,
+		  help_text );
+
+    Progress::NextStage();
+    Progress::Title(ProtocolMessage(AutoInstall::ProfileLocation));
+
+    boolean ret = false;
+    while (true)
+    {
+	map locationParams = AutoInstall::ProfileLocation;
+	string protocol =  locationParams["scheme"]:"default";
+
+	y2milestone("protocol: %1", protocol);
+	string profile_location =  AutoInstall::xml_tmpfile;
+
+	if (protocol == "tftp")  // TFTP
+	{
+	    ret = UseTFTP(locationParams, profile_location);
+	}
+	else if (protocol == "file" )  // FILE or CDROM
+	{
+	    string file_path = sformat("%1/%2", Installation::sourcedir, locationParams["path"]:"");
+	    if (SCR::Read(.target.size, file_path)>0)
+	    {
+		string cpcmd = sformat("cp %1/%2 %3", Installation::sourcedir, locationParams["path"]:"", profile_location);
+		y2milestone("copy profile: %1", cpcmd);
+		SCR::Execute(.target.bash, cpcmd);
+	    }
+	    else
+	    {
+		string cpcmd = sformat("cp %1 %2", locationParams["path"]:"", profile_location);
+		y2milestone("copy profile: %1", cpcmd);
+		SCR::Execute(.target.bash, cpcmd);
+	    }
+
+	    if (SCR::Read(.target.size, profile_location) >0)
+	    {
+		ret = true;
+	    }
+	    else
+	    {
+		ret = false;
+	    }
+	}
+	else if (protocol == "nfs")  // NFS
+	{
+	    ret = UseNFS(locationParams, profile_location);
+	}
+	else if (protocol == "http")  // HTTP
+	{
+	    ret = UseHTTP(locationParams, profile_location);
+	}
+	else if (protocol == "floppy") // FLOPPY
+	{
+	    ret = UseFLOPPY(locationParams, profile_location);
+	}
+	else if (protocol == "device") // Device
+	{
+	    ret = fetchFromDevice (locationParams, profile_location);
+	}
+	else if (protocol == "default") // DEFAULT
+	{
+	    if (SCR::Read(.target.size, "/autoinst.xml") >0)
+	    {
+		string cpcmd = sformat("cp /autoinst.xml %1",  profile_location);
+		y2milestone("copy profile: %1", cpcmd);
+		SCR::Execute(.target.bash, cpcmd);
+		ret = true;
+	    }
+	    else if (SCR::Read(.target.size, sformat("%1/autoinst.xml", Installation::sourcedir)) > 0)
+	    {
+		string cpcmd = sformat("cp %1/autoinst.xml %2", Installation::sourcedir , profile_location);
+		y2milestone("copy profile: %1", cpcmd);
+		SCR::Execute(.target.bash, cpcmd);
+		ret = true;
+	    }
+	    else
+	    {
+		ret = false;
+	    }
+	}
+	else
+	{
+	    y2error("Protocol not supported");
+	}
+
+
+	if (ret)
+	{
+	    break;
+	}
+	else
+	{
+	    if (ProfileSourceDlg(AutoInstall::ProfileLocation) == `abort)
+		return `abort;
+	    else
+		continue;
+
+	}
+    }
+    sleep(1000);
+
+    // Set reporting behaviour to default, changed later if required
+    Report::LogMessages(true);
+    Report::LogErrors(true);
+    Report::LogWarnings(true);
+
+    Progress::NextStage();
+    
+    if (!AutoInstall::ProcessProfile()) {
+	UI::ErrorPopup(_("Error while parsing the control file.
+Check the log files for more details. Fix the
+control file and try again.
+"));
+	return `abort;
+    }
+
+
+    boolean use_utf8 = true;		// utf8 is default
+
+    if (!lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
+    {
+	use_utf8 = false;		// fallback to ascii
+    }
+
+    string language = AutoInstall::Profile["install","general","language"]:Language::language;    
+    Language::Set(language);
+    
+    // Set Console font
+    
+    Console::SelectFont( language );
+
+    Installation::encoding = (use_utf8) ? "UTF-8" : Console::encoding;
+
+    // Set it in YaST2 
+
+    UI::SetLanguage (language, Installation::encoding);
+    WFM::SetLanguage(language, "UTF-8");
+
+
+    y2milestone ("Autoinstall control file %1",  AutoInstall::Profile );
+    
+    sleep(1000);
+    Progress::Finish();
+ 
+    
+    return `next;
+}

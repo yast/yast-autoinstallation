@@ -1,0 +1,361 @@
+/**
+ * File:	modules/AIConfig.ycp
+ * Module:	Auto-Installation
+ * Summary:	This module handles the configuration for auto-installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{    
+    module "Profile";
+    textdomain "autoinst";
+    include "autoinstall/xml.ycp";
+   
+
+    
+    // The Complete current Profile
+    global map current = $[];
+
+    // the install portion of the XML configuration file
+    global map Install = $[];
+         
+    // the configure portion of the XML configuration file
+    global map Configure = $[];
+
+    
+    global boolean isTemplate = false;
+
+    // Configuration changes!
+    global boolean changed = false;
+
+
+    /** 
+     * Constructor
+     */
+    
+    global define void Profile ()
+    ``{
+	 // setup profile XML parameters
+	 profileSetup();
+	 return;
+     }
+    
+    /**
+     * Import Profile
+     * @param map profile
+     */
+    global define void Import(map profile)
+	``{
+	current  = profile;
+	Configure = profile["configure"]:$[];
+	Install = profile["install"]:$[];
+	return;
+    }
+      /**
+     * Prepare profile for saving and remove empty data structs
+     * @return void
+     */
+    global define void Prepare()``{
+	
+	foreach(`p,`d, AutoInstall::ModuleMap, ``{
+	    // Set resource name, if not using default value
+	    string resource = "";
+	    if (haskey(d,"AutoinstResource"))
+		resource = d["AutoinstResource"]:"unknown";
+	    else
+		resource = p;
+	    
+	    if (d["AutoinstPath"]:"" == "install") {		
+		if (size(Install[resource]:$[])==0 && haskey(Install, resource))
+		{		    
+		    Install=remove(Install,resource);
+		}	
+	    }
+	    else
+	    {		
+		if (size(Configure[resource]:$[])==0 && haskey(Configure, resource))
+		{		
+		    Configure=remove(Configure,resource);
+		}
+	
+	    }	
+	});
+
+	if ( size(Install["classes"]:[])>0)
+	{	    
+	    isTemplate = true;
+	}
+	else
+	{	    
+	    isTemplate = false;
+	}
+
+
+	if (Install != $[])
+	{
+	    current["install"] = Install;
+	}
+	else if (haskey(current,"install"))
+	{
+	    current=remove( current,"install");
+	}
+	
+	if (Configure!=$[])
+	{
+	    current["configure"] = Configure;
+	}
+	else if (haskey(current,"configure"))
+	{
+	    current=remove(current,"configure");
+	}
+	return;
+
+    }
+
+    
+    /**
+     * 
+     * Remove class resource from Profile
+     */
+
+    global define unclassify() ``{
+	foreach(`p,`d, ModuleMap, ``{
+	    // Set resource name, if not using default value
+	    string resource = "";
+	    if (haskey(d,"AutoinstResource"))
+		resource = d["AutoinstResource"]:"unknown";
+	    else
+		resource = p;
+	    
+	    if (d["AutoinstPath"]:"" == "install") {		
+		if (size(Install[resource]:$[])==0 && haskey(Install, resource))
+		{		    
+		    Install=remove(Install,resource);
+		}	
+	    }
+	    else
+	    {		
+		if (size(Configure[resource]:$[])==0 && haskey(Configure, resource))
+		{		
+		    Configure=remove(Configure,resource);
+		}
+	
+	    }	
+	});
+
+	if ( size(Install["classes"]:[])>0)
+	{	    
+	    Install = remove(Install, "classes");
+	}
+
+	if (Install!= $[])
+	    current["install"] = Install;
+	else if (haskey(current,"install"))
+	    current=remove(current,"install");
+	
+	if (Configure!=$[])
+	    current["configure"] = Configure;
+	else if (haskey(current,"configure"))
+	    current=remove(current,"configure");
+	
+	return;	
+    }
+
+
+    
+    /**
+     * Reset profile to initial status
+     * @return void
+     */
+    global define void Reset() ``{
+	current = $[];
+	Install = $[];
+	Configure = $[];
+	return;
+    }
+
+
+    
+    /**
+     * Save YCP data into XML
+     * @param filePath path to file name
+     * @return	boolean          
+     */
+    global define boolean Save (string filePath)
+    ``{	
+	Prepare();
+	y2milestone("Saving data to XML file %1", filePath);
+	
+	if (find(filePath, "/") == -1 ) {
+	    if (isTemplate) {
+		return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", TemplateRepository, filePath)));
+	    }
+	    else
+	    {
+		return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", Repository, filePath)));
+	    }
+	}
+	else
+	{
+	    return (XML::YCPToXMLFile(`profile, current,  filePath));
+	}
+    }
+
+    
+    
+    /**
+     * Parse()
+     * @param action: Reset or default
+     * @return	void
+     *
+     * Parse XML Profile
+     */
+
+    global define void Parse (symbol action, string new_path)
+    ``{
+	if (action == `reset) {
+	    current = $[];	    
+	}
+	else if (action == `load && new_path != "")
+	    current = SCR::Read(.xml, new_path);
+	else
+	    current = SCR::Read(.xml, Repository + "/" + Profile_file);
+
+	
+	Install = current["install"]:$[];
+	Configure = current["configure"]:$[];
+	return;
+    }
+
+
+    
+    /**
+     * Read XML into  YCP data 
+     * @param filePath path to file name
+     * @return	void
+     */
+    global define void Read (string filePath)
+	``{
+	y2debug("Reading %1", filePath);
+	current = XML::XMLToYCPFile(filePath);
+	
+	y2debug("Profile: %1", current);
+	
+	Install = current["install"]:$[];
+	Configure = current["configure"]:$[];
+	Compat();
+	return;
+    }
+
+    /**
+     * Provide Compatibility to older distributions.
+     */
+    
+    define void Compat() ``{
+	// 8.0 -> 8.1
+	
+	// scripts
+	if (
+	    haskey(Configure, "pre-scripts") ||
+	    haskey(Configure, "post-scripts") ||
+	    haskey(Configure, "chroot-scripts")
+	    ) {
+	    list pre = Configure["pre-scripts"]:[];
+	    list post = Configure["post-scripts"]:[];
+	    list chroot = Configure["chroot-scripts"]:[];
+	    map scripts = $[
+			    "pre-scripts":pre,
+			    "post-scripts":post,
+			    "chroot-scripts":chroot
+	    ];
+	    Configure = remove(Configure, "pre-scripts");
+	    Configure = remove(Configure, "post-scripts");
+	    Configure = remove(Configure, "chroot-scripts");
+
+	    Configure["scripts"] = scripts;
+	}
+	// general
+	boolean old = false;
+	map general_options 	= Install["general"]:$[];
+	map security 		= Configure["security"]:$[];
+	map report		= Install["report"]:$[];
+
+	
+	foreach(string k, any v, general_options , ``{
+	    if (k == "keyboard" && is(v, map)) {
+		old = true;
+	    }
+	    else if (k == "mouse" && is(v, string))
+	    {
+		old = true;
+	    }
+	    else if (k == "encryption_method")
+	    {
+		old = true;		
+	    }
+	    else if (k == "timezone" &&  is(v, string))
+	    {
+		old = true;		
+	    }
+	});
+
+	map new_general = $[];
+	if (old) {
+	    y2milestone("Old format, converting.....");
+	    new_general["language"] 	= general_options["language"]:"";
+	    map keyboard = $[];
+	    keyboard["keymap"] 		= general_options["keyboard"]:"";
+	    new_general["keyboard"]	= keyboard;
+	    
+	    map clock = $[];
+	    clock["timezone"] 		= general_options["timezone"]:"";
+	    if ( general_options["hwclock"]:"" == "localtime")
+	    {
+		clock["hwclock"] = "localtime";
+	    }
+	    else if  ( general_options["hwclock"]:""  == "GMT")
+	    {
+		clock["hwclock"] = "GMT";
+	    }
+	    new_general["clock"]	= clock;
+
+	    map mode = $[];
+	    if (haskey(general_options, "reboot")) {
+		mode["reboot"] =  general_options["reboot"]:false;		
+	    }
+	    if (haskey(report, "confirm")) {
+		mode["confirm"] 	= report["confirm"]:false;
+		report = remove(report, "confirm");
+	    }	    
+	    new_general["mode"]	= mode;
+
+	    
+	    if (haskey(general_options, "encryption_method"))
+	    {
+		security["encryption"] = general_options["encryption_method"]:"";
+	    }
+
+	    map net = Configure["networking"]:$[];
+	    list ifaces = net["interfaces"]:[];
+	    
+	    list newifaces = maplist(map iface , ifaces, ``{
+		map newiface = mapmap(string k, string v, iface, ``{
+		    y2milestone("blah");
+		    return ([tolower(k), v]);
+		});
+		return newiface;
+	    });
+	    
+	    net["interfaces"] =  newifaces;
+	    
+	    Install["general"] = new_general;
+	    Install["report"] = report;
+	    Configure["security"] = security;
+	    Configure["networking"] = net;
+	    changed = true;
+	    
+	}		
+	return;
+    }
+    
+}
