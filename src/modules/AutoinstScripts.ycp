@@ -49,7 +49,8 @@
      * @param -
      * @return merged list
      */
-    define list<map> mergeScripts () ``{
+    define list<map> mergeScripts ()
+    {
 
 	list<map> result =	maplist (map p, pre,
 				 ``{
@@ -82,7 +83,7 @@
      * Constructor
      */
     define void AutoinstScripts()
-	``{
+    {
 	if ( !Mode::autoinst )
 	{
 	    merged = mergeScripts();
@@ -95,14 +96,14 @@
      * @return map
      */
     global define map<string, list> Export()
-	``{
+    {
 	pre = [];
 	post = [];
 	chroot = [];
 	init = [];
 	y2milestone("Merged %1", merged);
-	// split
 
+	// split
 	foreach(map s, merged, ``{
 	    if (s["type"]:"" == "pre-scripts")
 		pre = add(pre,s);
@@ -168,7 +169,7 @@
      * @return	success
      */
     global define boolean Import(map s)
-	``{
+    {
 	pre = s["pre-scripts"]:[];
 	init = s["init-scripts"]:[];
 	post = s["post-scripts"]:[];
@@ -183,7 +184,8 @@
      * Return Summary
      * @return string summary
      */
-    global define string Summary() ``{
+    global define string Summary()
+    {
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Pre Scripts"));
 	if (size( pre) > 0 )
@@ -224,6 +226,19 @@
 	{
 	    summary = Summary::AddLine(summary, Summary::NotConfigured());
 	}
+	summary = Summary::AddHeader(summary, _("Init Scripts"));
+	if (size( init) > 0 )
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(map script, init, ``{
+		summary = Summary::AddListItem(summary, script["filename"]:"" );
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	else
+	{
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
 	return summary;
     }
 
@@ -235,7 +250,7 @@
      * @return void
      */
     global define void  deleteScript(string scriptName)
-	``{
+    {
 	list<map> clean = filter(map s, merged, ``(s["filename"]:"" != scriptName));
 	merged = clean;
 	return;
@@ -251,8 +266,11 @@
      * @param type type of script
      * @return void
      */
-    global define void AddEditScript(string scriptName, string source, string interpreter, string type)
-	``{
+    global define void AddEditScript(string scriptName,
+            string source,
+            string interpreter,
+            string type)
+    {
 	boolean modified = false;
 	merged = maplist (map script , merged, ``{
 	    // Edit
@@ -290,7 +308,8 @@
      * @param script type
      * @return string type as translated string
      */
-    global define string typeString(string type)``{
+    global define string typeString(string type)
+    {
 	if (type == "pre-scripts")
 	{
 	    return _("Pre");
@@ -298,6 +317,10 @@
 	else if (type == "post-scripts")
 	{
 	    return _("Post");
+	}
+	else if (type == "init-scripts")
+	{
+	    return _("Init");
 	}
 	else if (type == "chroot-scripts")
 	{
@@ -315,7 +338,7 @@
      * @return boolean true on success
      */
     global define boolean Write( string type , boolean special)
-	``{
+    {
 
 	list<map> scripts = [];
 	if (type == "pre-scripts")

@@ -22,12 +22,11 @@
     import "AutoinstConfig";
 
 
-
     /**
      * @return  script configuration dialog
      */
     define term script_dialog_contents()
-	``{
+    {
 	list allscripts = maplist(map s, AutoinstScripts::merged,
 				  ``{
 				      return (`item(`id(s["filename"]:"Unknown"),
@@ -63,7 +62,7 @@
      */
 
     define symbol ScriptDialog(symbol mode , string name)
-    ``{
+    {
 	map script = $[];
 	if (mode == `edit)
 	{
@@ -78,10 +77,10 @@
 	string help = _("
 <h3>Pre-Scripts</h3>
 <P>Add commands to run on the system  before the installation begins. </P>
-<h3>Post-Scripts</h3>
 ");
 	// help 2/4
 	help = help + _("
+<h3>Post-Scripts</h3>
 <P>You can also add commands to execute on the system after the installation
 is completed. These scripts are run outside the chroot environment.
 </P>");
@@ -90,6 +89,15 @@ is completed. These scripts are run outside the chroot environment.
 <H3>Chroot Environment</H3>
 <P>For your postinstallation script to run inside the chroot
 environment, choose the <i>chroot scripts</i> options.
+</P>
+");
+	help = help + _("
+<H3>Init Environment</H3>
+<P>These scripts are executed during the initial boot process and after
+YaST; has finished. The final scripts are executed using a special
+<b>init.d</b> script which is executed only once. 
+The final scripts are executed toward the end of the boot
+process and after network has been intialized.
 </P>
 ");
 
@@ -116,7 +124,8 @@ environment, choose the <i>chroot scripts</i> options.
 				   [
 				    `item(`id("pre-scripts"), _("Pre"), (script["type"]:""  == "pre-scripts")),
 				    `item(`id("post-scripts"), _("Post"),(script["type"]:"" == "post-scripts")),
-				    `item(`id("chroot-scripts"), _("Chroot"),(script["type"]:"" == "chroot-scripts"))
+				    `item(`id("chroot-scripts"), _("Chroot"),(script["type"]:"" == "chroot-scripts")),
+				    `item(`id("init-scripts"), _("Init"), (script["type"]:""  == "init-scripts"))
 				    ]
 				   ),
 			`HStretch(),
