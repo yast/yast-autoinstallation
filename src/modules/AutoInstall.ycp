@@ -619,7 +619,7 @@
      */
     global define boolean softwareSettings()
 	``{
-
+	boolean ok = true;
 	boolean ret = false;
 	// y2milestone("set Locale to %1", Language::language);
 	Pkg::SetLocale (Language::language);
@@ -649,12 +649,22 @@
 
 	// single selected packages
 	list Packages = union(Software["packages"]:[], forcedPackages);
-	
+	if (!Pkg::ActivateSelections()) {
+	    return false;
+	}
+
 	Pkg::DoProvide(Packages);
+
+	if (!Confirm) {
+	    // add additional (internal) packages, like kernel etc.
+	    Pkg::DoProvide (Packages::ComputeSystemPackageList());
+	    Pkg::PkgSolve();
+	}
 
 	SpaceCalculation::ShowPartitionWarning();
 	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",  Pkg::GetSelections(`selected, "base"), Pkg::GetSelections(`selected, ""));
-	return (Pkg::ActivateSelections());        
+	
+	return (ok);     
     }
 
 
