@@ -93,13 +93,17 @@
         string caption = _("Autoinstall Configuration");
         term contents = `Label (_("Initializing ..."));
         // UI::OpenDialog(`opt(`defaultsize), GenericDialog(`Empty()) );
-        Wizard::OpenCustomDialog(`Empty(), `Empty());
+        //Wizard::OpenCustomDialog(`Empty(), `Empty());
+        Wizard::CreateTreeDialog();
+	string tree_item = "System";
         Wizard::SetContentsButtons ( caption,
                 contents,
-                "",
+                AutoinstConfig::MainHelp(),
                 Label::BackButton (),
                 Label::NextButton ());
 
+	CreateTreeWidget( tree_item);
+        menus();
 
         symbol ret = Sequencer::Run(dialogs, sequence);
         UI::CloseDialog ();

@@ -22,10 +22,13 @@
     include "autoinstall/conftree.ycp";
     include "autoinstall/wizards.ycp";
 
+        string mainhelp = _("dd");
 
     if (size(Y2ModuleConfig::GroupMap) == 0)
     {
+        Wizard::CreateDialog();
         Popup::Error(_("Error while reading configuration data."));
+        Wizard::CloseDialog();
         return `abort;
     }
 
