@@ -21,97 +21,68 @@
     include "ui/common_messages.ycp";
     include "network/ip.ycp";
 
-    list args = WFM::Args ();
-
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( WFM::Args (0), map ) )
-    {
-	y2error ("Bad argument: %1", WFM::Args (0));
-	return false;
-    }
-
-    map settings = $[];
-    {
-	integer i = 0;
-	while (i < size (WFM::Args()))
-	{
-	    if (is (WFM::Args (i), map) && nil != WFM::Args (i))	settings = WFM::Args (i);
-	    i = i + 1;
-	}
-    }
-
-    y2milestone("Imported: (%1)", settings);
-    AutoinstLinuxrc::Import ( settings );
-
-    define set_contents()
-	``{
-	term contents =
-	    `VBox(
-		  `VSpacing(1),
-		  `RichText( `id(`summary), AutoinstLinuxrc::Summary()),
-		  `VSpacing(0.5),
-		  `HBox(
-			`PushButton(`id(`configure), _("&Installation Options")),
-			`HStretch(),
-			`PushButton(`id(`reset), _("&Reset Configuration"))
-			),
-		  `VSpacing(1)
-		  );
-	Wizard::SetContents(_("Installation Options"),
-			    contents, "", true, true);
-    }
-    map dialogs = $[
-		    "autoyast": 	``(   autoyastOptions() ),
-		    "linuxrc"	:	``(   linuxrcOptions() )
-    ];
 
 
-    map sequence = $[
-		     "ws_start" 	: "linuxrc",
-		     "linuxrc":
-		     $[
-		       `abort 	: `abort,
-		       `next	: "autoyast",
-		       `back	: `back
-		     ],
-		     "autoyast"	:
-		     $[
-		       `abort 	: `abort,
-		       `next	: `next,
-		       `back	: "linuxrc"
-		     ]
-    ];
-    
+any ret = nil;
+string func = "";
+map param = $[];
 
-    set_contents();
-    any result = nil;
-    any ret = nil;
-    repeat {
-	ret = UI::UserInput();
-	if (ret == `configure)
-	{
-	    
-	    Wizard::CreateDialog ();	    
-	    result =  WizardSequencer (dialogs, sequence);	    
-	    UI::CloseDialog ();
+/* Check arguments */
+if(size(Args()) > 0 && is(Args(0), string)) {
+    func = WFM::Args(0);
+    if(size(Args()) > 1 && is(Args(1), map))
+	param = WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
 
-	    if (result == `next || result == `finish )
-	    {
-		settings = AutoinstLinuxrc::Export ();
-	    }
-	    set_contents();
-	}
-	else if ( ret == `reset)
-	{
-	    settings = $[];
-	    AutoinstLinuxrc::Set(settings);
-	    set_contents();
-	}
-    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+/* Create a summary*/
+if(func == "Summary") {
+    ret = AutoinstLinuxrc::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    AutoinstLinuxrc::Import($[]);
+    ret = $[];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    ret = linuxrcAutoSequence();
+}
+/* Import configuration */
+else if (func == "Import") {
+    ret = AutoinstLinuxrc::Import(param);
+}
+/* Return actual state */
+else if (func == "Export") {
+    ret = AutoinstLinuxrc::Export();
+}
+/* Read current state */
+else if (func == "Read") {
+    import "Progress";
+    Progress::off();
+    ret = AutoinstLinuxrc::Read();
+    Progress::on();
+}
+/* Write givven settings */
+else if (func == "Write") {
+    import "Progress";
+    Progress::off();
+    AutoinstLinuxrc::write_only = true;
+    ret = AutoinstLinuxrc::Write();
+    Progress::on();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
 
-    return [ret, settings];
+y2debug("ret=%1", ret);
+y2milestone("AutoinstLinuxrc auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
 }
