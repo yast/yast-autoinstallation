@@ -458,11 +458,11 @@ due to use of the \"max\" option.
 		// crypto settings
 		boolean crypt_fs = (boolean)UI::QueryWidget(`id(`crypt_fs), `Value );
 		return_value = add( return_value, "loop_fs", crypt_fs );
-		return_value = add( return_value, "crypt", "twofish" );
+		return_value = add( return_value, "crypt", "twofish256" );
 
 		if ( crypt_fs )
 		{
-		    string fs_passwd = DlgCreateCryptFs();
+		    string fs_passwd = DlgCreateCryptFs(20);
 		    // Ask the user for a password for cryptofs, else set crypto to nil??
 		    if ( fs_passwd != nil )
 		    {
