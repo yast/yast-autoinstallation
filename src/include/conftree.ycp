@@ -22,19 +22,19 @@
      */
 
     global define CreateTableList( list MenuTreeData)
-    ``{
-	list menu_options = maplist(`e, MenuTreeData,
 	``{
-	    if ((e["children"]:[]>0))
-	    {
-		list childrenlist = CreateTableList(lookup(e,"children",[]));
-		return `item(`id(e["entry"]:""), e["title"]:"",false, childrenlist);
-	    }
-	    else
-	    {
-		return `item(`id(e["entry"]:""),e["title"]:"", false);
-	    }
-	});
+	list menu_options = maplist(`e, MenuTreeData,
+				    ``{
+					if ((e["children"]:[]>0))
+					{
+					    list childrenlist = CreateTableList(lookup(e,"children",[]));
+					    return `item(`id(e["entry"]:""), e["title"]:"",false, childrenlist);
+					}
+					else
+					{
+					    return `item(`id(e["entry"]:""),e["title"]:"", false);
+					}
+				    });
 	return menu_options;
     }
 
@@ -91,13 +91,52 @@
 		y2milestone("Change response: %1", seq);
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
-		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+		    string tomerge = resourceMap["AutoinstMerge"]:"";
+		    string tomergetypes = resourceMap["AutoinstMergeTypes"]:"";
+		    list MergeTypes = splitstring(tomergetypes, ",");
+		    if (size(tomerge) > 0 )
+		    {
+			any result = Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+			integer i = 0;
+			foreach( string res, splitstring(tomerge, ",") , ``{
+			    if ( MergeType[i]:"map" == "map") 
+				Profile::Flat[res] = result[res]:$[];
+			    else
+				Profile::Flat[res] = result[res]:[];
+			    i = i + 1;
+			});
+		    }
+		    else
+		    {
+			Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+		    }
 		}
 		y2milestone("New Settings: %1", Profile::Flat);
 		content_dialog( resource , resourceMap);
 	    }
 	    else if( ret == `reset)
-	    {		
+	    {
+
+		string tomerge = resourceMap["AutoinstMerge"]:"";
+		string tomergetypes = resourceMap["AutoinstMergeTypes"]:"";
+		list MergeTypes = splitstring(tomergetypes, ",");
+		if (size(tomerge) > 0 )
+		{
+		    any result = Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+		    integer i = 0;
+		    foreach( string res, splitstring(tomerge, ",") , ``{
+			if ( MergeType[i]:"map" == "map") 
+			    Profile::Flat[res] = $[];
+			else
+			    Profile::Flat[res] = [];
+			i = i + 1;
+		    });
+		}
+		else
+		{
+		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+		}
+		    
 		Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  AIConfig::getResourceData(resourceMap , resource) ]);
 		content_dialog(resource,  resourceMap);		
 	    }
@@ -122,10 +161,10 @@
 			  `VBox(			
 				`Tree(
 				      `id(`key),
-				       `opt(`notify,`vstretch),
-				       "Untitled",
-				       menu_options
-				       ),
+				      `opt(`notify,`vstretch),
+				      "Untitled",
+				      menu_options
+				      ),
 				`VSpacing(1))
 			  );
 	
@@ -199,274 +238,274 @@
 	any ret = `key;
 	any func_ret = "";
 
-	repeat {
-	    y2milestone("in repeat: %1", tree_item);
-	    if (size(AIConfig::GroupMap) == 0)
+	repeat
 	    {
-		UI::ErrorPopup(_("Error while reading configuration data"));
-		ret = `next;
-		break;
-	    }
+		if (size(AIConfig::GroupMap) == 0)
+		{
+		    UI::ErrorPopup(_("Error while reading configuration data"));
+		    ret = `next;
+		    break;
+		}
 	    
-	    if (haskey(AIConfig::GroupMap, tree_item))
-	    {	
-		string html = "";
-		foreach(`k,`v, AIConfig::ModuleMap, ``{
-		    if (v["Group"]:"" == tree_item)
-		    {								
-			string colored = HTML::Colorize( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k), "#8BC460");
-			html = html + HTML::Heading(colored);
-			html = html + HTML::Para(ReadKey(v["Textdomain"]:"", "Helptext", v));
+		if (haskey(AIConfig::GroupMap, tree_item))
+		{	
+		    string html = "";
+		    foreach(`k,`v, AIConfig::ModuleMap, ``{
+			if (v["Group"]:"" == tree_item)
+			{								
+			    string colored = HTML::Colorize( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k), "#8BC460");
+			    html = html + HTML::Heading(colored);
+			    html = html + HTML::Para(ReadKey(v["Textdomain"]:"", "Helptext", v));
+			}
+		    });
+
+		    if (html == "")
+		    {
+			html = HTML::Heading(_("No modules available in this group."));
+		    }
+		    term contents = `RichText(html);
+
+		    if (ret != `menu_source)
+		    {
+			Wizard::SetContents(_("Available modules"),
+					    contents, "", true , true);
+		    }
+
+		    while ( true )
+		    {
+			ret = Wizard::UserInput();
+			y2milestone("INPUT: %1", ret);
+		    
+			if (ret == `key)
+			{
+			    tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+			    break;
+			}
+			else if (ret == `next || ret == `back || ret == `abort)
+			{
+			    break;
+			}
+			else if (contains(menuitems, ret) )
+			{			
+			    break;
+			}
+			else
+			{
+			    tree_item = ret;
+			    break;
+			}
+
+		    }
+
+		}
+	 
+		foreach(string def_resource, map resourceMap, AIConfig::ModuleMap, ``{
+		
+		    if (tree_item == def_resource)
+		    {		  
+			// Set resource name, if not using default value
+			string resource = AIConfig::getResource(def_resource);	    		    
+			ret = module_contents( resource , resourceMap);
 		    }
 		});
 
-		if (html == "")
+		if (ret == `key)
 		{
-		    html = HTML::Heading(_("No modules available in this group."));
+		    tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+		    if (tree_item == nil)
+		    {
+			tree_item = "System";
+		    }
 		}
-		term contents = `RichText(html);
-
-		if (ret != `menu_source)
+		else if (ret  == nil)
 		{
-		    Wizard::SetContents(_("Available modules"),
-					contents, "", true , true);
+		    UI::ErrorPopup(_("Error while reading configuration data"));
+		    ret = `back;		
 		}
-
-		while ( true )
+		else if ( contains(menuitems,ret) )
 		{
-		    ret = Wizard::UserInput();
-		    y2milestone("INPUT: %1", ret);
-		    
-		    if (ret == `key)
-		    {
-			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
-			break;
-		    }
-		    else if (ret == `next || ret == `back || ret == `abort)
-		    {
-			break;
-		    }
-		    else if (contains(menuitems, ret) )
-		    {			
-			break;
-		    }
-		    else
-		    {
-			tree_item = ret;
-			break;
-		    }
-
-		}
-
-	    }
-	 
-	    foreach(string def_resource, map resourceMap, AIConfig::ModuleMap, ``{
+		    y2milestone("MENU: %1", ret);
 		
-		if (tree_item == def_resource)
-		{		  
-		    // Set resource name, if not using default value
-		    string resource = AIConfig::getResource(def_resource);	    		    
-		    ret = module_contents( resource , resourceMap);
-		}
-	    });
-
-	    if (ret == `key)
-	    {
-		tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
-		if (tree_item == nil)
-		{
-		    tree_item = "System";
-		}
-	    }
-	    else if (ret  == nil)
-	    {
-		UI::ErrorPopup(_("Error while reading configuration data"));
-		ret = `back;		
-	    }
-	    else if ( contains(menuitems,ret) )
-	    {
-		y2milestone("MENU: %1", ret);
-		
-		boolean exit_after = false;
-		if (ret == `menu_reps)
-		{
-		    Wizard::RestoreHelp("");
-		    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-		    ret = Preferences();
-		    CreateTreeWidget();
-		}	
-		else if ( ret == `menu_alice)
-		{
-		    y2milestone("Importing ALICE data");
-		    Wizard::RestoreHelp("");
-		    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-		    ret = aliceImportList();
-		    CreateTreeWidget();		    
-		}
-		else if ( ret == `menu_clone)
-		{
-		    import "AIClone";
-		    Wizard::RestoreHelp("");
-		    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-		    ret = cloneSystem();		    
-		    CreateTreeWidget();		    
-		}
-		else if ( ret == `menu_iso)
-		{
-		    import "ISO";
-		    Wizard::RestoreHelp("");
-		    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
-		    
-		    ret = isoSequence();
-
-		    
-		    CreateTreeWidget();		    
-		}		
-		else if (ret == `menu_exit) // EXIT
-		{
-		    if (Profile::changed)
+		    boolean exit_after = false;
+		    if (ret == `menu_reps)
 		    {
-			string current = "";
-			if (AIConfig::currentFile == "")
-			    current = "Untitled";
-			else
-			    current = AIConfig::currentFile;
+			Wizard::RestoreHelp("");
+			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+			ret = Preferences();
+			CreateTreeWidget();
+		    }	
+		    else if ( ret == `menu_alice)
+		    {
+			y2milestone("Importing ALICE data");
+			Wizard::RestoreHelp("");
+			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+			ret = aliceImportList();
+			CreateTreeWidget();		    
+		    }
+		    else if ( ret == `menu_clone)
+		    {
+			import "AIClone";
+			Wizard::RestoreHelp("");
+			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+			ret = cloneSystem();		    
+			CreateTreeWidget();		    
+		    }
+		    else if ( ret == `menu_iso)
+		    {
+			import "ISO";
+			Wizard::RestoreHelp("");
+			Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+		    
+			ret = isoSequence();
+
+		    
+			CreateTreeWidget();		    
+		    }		
+		    else if (ret == `menu_exit) // EXIT
+		    {
+			if (Profile::changed)
+			{
+			    string current = "";
+			    if (AIConfig::currentFile == "")
+				current = "Untitled";
+			    else
+				current = AIConfig::currentFile;
 			
-			symbol answer = UI::AnyQuestionPopup3(_("Control file changed."),
-							      sformat(_("Do you want to save the changes to %1?"), current),
-							      UI::YesButtonLabel(),
-							      UI::NoButtonLabel(),
-							      UI::CancelButtonLabel(),
-							      `focus_yes
-							      );
-			if (answer == `no)
-			{	
+			    symbol answer = UI::AnyQuestionPopup3(_("Control file changed."),
+								  sformat(_("Do you want to save the changes to %1?"), current),
+								  UI::YesButtonLabel(),
+								  UI::NoButtonLabel(),
+								  UI::CancelButtonLabel(),
+								  `focus_yes
+								  );
+			    if (answer == `no)
+			    {	
+				ret = `exit;
+			    }
+			    else if (answer == `yes)
+			    {
+				ret = `menu_save;
+				exit_after = true;
+			    }
+			    else
+			    {
+				continue;
+			    }			
+			}
+			else
+			{
 			    ret = `exit;
 			}
-			else if (answer == `yes)
-			{
-			    ret = `menu_save;
-			    exit_after = true;
-			}
-			else
-			{
-			    continue;
-			}			
 		    }
-		    else
-		    {
-			ret = `exit;
-		    }
-		}
 
 
 
 		
 		
-		if (ret == `menu_open) // OPEN
-		{
-		    string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open file") );
-		    if (filename!=nil)
-		    {			
-			y2milestone("file: %1", filename);
-			AIConfig::currentFile = filename;
-			list pathComponents = splitstring(  filename, "/");
-			string base = select(pathComponents, size(pathComponents) -1, "default");
-			UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
-			Profile::Read(filename);
-			
-		    }
-		}
-		else if (ret == `menu_kickstart)
-		{
-		    string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Import Kickstart file") );
-		    if (filename!=nil) {
-			map ksConfig = readKS(filename);
-			Profile::Import(ks2ay(ksConfig));
-		    }
-		}
-		else if (ret == `menu_save) // SAVE
-		{
-		    if (AIConfig::currentFile == "")
+		    if (ret == `menu_open) // OPEN
 		    {
-			string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save file" );
-			if (filename != nil)
-			{
+			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open file") );
+			if (filename!=nil)
+			{			
+			    y2milestone("file: %1", filename);
 			    AIConfig::currentFile = filename;
-			  
-			}
-			else
-			{
-			    continue;
-			}
-		    }
-		    
-		    if ( Profile::Save( AIConfig::currentFile ))
-		    {
-			UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
-			Profile::changed = false;
-			if (exit_after)
-			    ret = `next;
-		    }
-		    else
-		    {
-			UI::WarningPopup(_("An error occured while saving the file."));
-		    }
-		    
-		}
-		else if (ret == `menu_saveas) // SAVE AS
-		{
-		    string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save as..." );
-		    if (filename!=nil) {
-			AIConfig::currentFile = filename;
-			if ( Profile::Save( AIConfig::currentFile ))
-			{
-			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
-			    Profile::changed=false;
 			    list pathComponents = splitstring(  filename, "/");
 			    string base = select(pathComponents, size(pathComponents) -1, "default");
 			    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
+			    Profile::Read(filename);
+			
+			}
+		    }
+		    else if (ret == `menu_kickstart)
+		    {
+			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Import Kickstart file") );
+			if (filename!=nil) {
+			    map ksConfig = readKS(filename);
+			    Profile::Import(ks2ay(ksConfig));
+			}
+		    }
+		    else if (ret == `menu_save) // SAVE
+		    {
+			if (AIConfig::currentFile == "")
+			{
+			    string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save file" );
+			    if (filename != nil)
+			    {
+				AIConfig::currentFile = filename;
+			  
+			    }
+			    else
+			    {
+				continue;
+			    }
+			}
+		    
+			if ( Profile::Save( AIConfig::currentFile ))
+			{
+			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
+			    Profile::changed = false;
+			    if (exit_after)
+				ret = `next;
 			}
 			else
 			{
 			    UI::WarningPopup(_("An error occured while saving the file."));
 			}
+		    
 		    }
-		}
-		else if (ret == `menu_source) // Show SOURCE
-		{
-		    y2milestone("Showing source...");
-		    Profile::Prepare();
-		    string source = XML::YCPToXMLString(`profile, Profile::current);
-		    UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
+		    else if (ret == `menu_saveas) // SAVE AS
+		    {
+			string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save as..." );
+			if (filename!=nil) {
+			    AIConfig::currentFile = filename;
+			    if ( Profile::Save( AIConfig::currentFile ))
+			    {
+				UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
+				Profile::changed=false;
+				list pathComponents = splitstring(  filename, "/");
+				string base = select(pathComponents, size(pathComponents) -1, "default");
+				UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
+			    }
+			    else
+			    {
+				UI::WarningPopup(_("An error occured while saving the file."));
+			    }
+			}
+		    }
+		    else if (ret == `menu_source) // Show SOURCE
+		    {
+			y2milestone("Showing source...");
+			Profile::Prepare();
+			string source = XML::YCPToXMLString(`profile, Profile::current);
+			UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
 
 		   
-		    term sourceView =
-			`RichText( `id(`class_source ),
-				   `opt(`plainText),
-				   source
-				   );
-		    Wizard::SetContents(_("Source"),
-					sourceView , "", true , true);
-		    tree_item = "System"; 		    		    
-		}
-		else if ( ret == `menu_tree) {
-		    tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
-		    if (tree_item == nil) {
-			tree_item = "System"; 
+			term sourceView =
+			    `RichText( `id(`class_source ),
+				       `opt(`plainText),
+				       source
+				       );
+			Wizard::SetContents(_("Source"),
+					    sourceView , "", true , true);
+			tree_item = "System"; 		    		    
 		    }
-		}
-		else if (ret == `menu_new) // NEW
-		{
-		    Profile::Reset();
-		    AIConfig::currentFile = "";
-		    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
+		    else if ( ret == `menu_tree) {
+			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+			if (tree_item == nil) {
+			    tree_item = "System"; 
+			}
+		    }
+		    else if (ret == `menu_new) // NEW
+		    {
+			Profile::Reset();
+			AIConfig::currentFile = "";
+			UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
 		    	
-		}		
+		    }		
 		
-	    }
+		}
 
-	} until ( ret == `exit );
+	    } until ( ret == `exit );
 
 	Wizard::RestoreHelp("");
 	Wizard::RestoreScreenShotName ();

@@ -18,43 +18,58 @@
     include "ui/common_messages.ycp";
     include "autoinstall/script_dialogs.ycp";
 
-    
-    string func = WFM::Args(0);
-    map param = WFM::Args(1);
+    any ret = nil;
+    string func = "";
+    map param = $[];
 
-    y2milestone("Parameter: %1", param);
+    /* Check arguments */
+    if(size(Args()) > 0 && is(Args(0), string)) {
+	func = WFM::Args(0);
+	if(size(Args()) > 1 && is(Args(1), map))
+	    param = WFM::Args(1);
+    }
+    y2debug("func=%1", func);
+    y2debug("param=%1", param);
 
+    if (func == "Import")
+    {
+	ret = AIScripts::Import(param);	
+    }
     /* create a  summary*/
-    if (func == "Summary")
+    else if (func == "Summary")
     {
 	AIScripts::Import(param);
-	return ( AIScripts::Summary());
+	ret =  AIScripts::Summary();
     }
     else if (func == "Reset")
     {
-	y2milestone ("Calling Reset");
 	AIScripts::Import($[]);
-	return (true);
+	ret =  $[];
     }	
     else if (func == "Change") {
-	y2milestone ("Calling Change");
-	AIScripts::Import(param);
 	Wizard::CreateDialog();
 	Wizard::RestoreHelp("");
 	Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());    
-	any res =ScriptsDialog();    
+	ret =ScriptsDialog();    
 	Wizard::CloseDialog();
-	return res;
     }
-    else if (func == "Result") {
-	y2milestone ("Calling Result");	
-	return(AIScripts::Export());
+    else if (func == "Result")
+    {	
+	ret = AIScripts::Export();
     }
     /* unknown function */
     else {
 	y2error("unknown function: %1", func);
-	return false;
+	ret = false;
     }
+
+    y2debug("ret=%1", ret);
+    y2milestone("scripts auto finished");
+    y2milestone("----------------------------------------");
+
+    return ret;
+
+    
     
     
 }

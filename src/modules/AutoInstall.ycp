@@ -111,7 +111,6 @@
     // Show Reboot Message
     global boolean RebootMsg = false;
 
-
     // Keyboard
     global string Keyboard = "";
 
@@ -124,6 +123,7 @@
     // Hardware clock
     global string Hwclock = "";
 
+    // Bootloader
     global map Bootloader = $[];
 
 
@@ -195,6 +195,8 @@
 	    y2milestone("Enabling Auto-Installation mode");
 	    Mode::autoinst = true;
 	}
+
+	
 	if (Mode::config || ( Mode::cont &&  Mode::autoinst))
 	{
 	    list MenuEntries = ReadMenuEntries();
@@ -259,7 +261,7 @@
     global define boolean Restore()
 	``{
 	// First check if there are some other control files availabe
-	// for post-instaaltion only
+	// i.e. for post-installation only
 
 	string autoconf_file = runtime_dir + "/autoconf/autoconf.xml";
 	if ( SCR::Read(.target.size, autoconf_file) != -1 )
@@ -844,12 +846,10 @@
      * @param void
      * @return void
      */
-    global define lvmSettings()
+    global define void lvmSettings()
 	``{
-
 	LVM = Install["lvm"]:[];
-
-
+	return;
     }
 
     /**
@@ -857,10 +857,10 @@
      * @param void
      * @return void
      */
-    global define raidSettings()
+    global define void raidSettings()
 	``{
-
 	RAID = Install["raid"]:[];
+	return;
     }
 
 

@@ -7,17 +7,17 @@
  * $Id$
  */
 {
-    textdomain "autoinst";
-    import "Mode";
+textdomain "autoinst";
+
+
+import "Mode";
     Mode::config = true;
 
     import "AIgeneral";
     import "Wizard";
 
-   
-    include "ui/common_messages.ycp";    
+    include "ui/common_messages.ycp";
     include "autoinstall/general_dialogs.ycp";
-    
     string func = WFM::Args(0);
     map param = WFM::Args(1);
 
@@ -29,28 +29,34 @@
     }
     else if (func == "Reset") {
 	y2milestone ("Calling Reset");
-	AIgeneral::Import($[]);	
+	AIgeneral::Import($[]);
 	return ($[]);
-    }	
+    }
     else if (func == "Change") {
 	AIgeneral::Import(param);
 	y2milestone ("Calling Change");
 	Wizard::CreateDialog();
 	Wizard::RestoreHelp("");
-	Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());    
-	any res = GeneralOptions();    
+	Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+	any res = GeneralOptions();
 	Wizard::CloseDialog();
 	return res;
     }
     else if (func == "Result") {
-	y2milestone ("Calling Result");	
+	y2milestone ("Calling Result");
 	return(AIgeneral::Export());
     }
     /* unknown function */
     else {
 	y2error("unknown function: %1", func);
-	return false;
+	ret =  false;
     }
-    
 
+y2debug("ret=%1", ret);
+y2milestone("XXPkgXX auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
 }
