@@ -7,7 +7,7 @@ all: mytitlepages.xsl
 
 mytitlepages.xsl: mytitlepage.templates.xml
 	$(XSLTPROC) \
-	--output $@ \ 
+	--output $@ \
 	$(STYLESHEETS)/template/titlepage.xsl $<
 
 
