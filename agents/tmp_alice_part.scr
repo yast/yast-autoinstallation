@@ -14,30 +14,30 @@
 .tmp.alice.part
 
 `ag_anyagent(
-		Description(
-			``(File("/var/lib/autoinstall/tmp/alice_part")),  // real file name
+		`Description(
+			(`File("/var/lib/autoinstall/tmp/alice_part")),  // real file name
 			"#\n",			// Comment
 			true,			// read-only
-			``(
-				List(
-					Tuple(
-						Optional(Whitespace()),
-							   Choice(
-									[Sequence ("path", Optional(Whitespace ()), "=", Optional(Whitespace ()), `path (String("^\=\n ")))],
+			(
+				`List(
+					`Tuple(
+						`Optional(`Whitespace()),
+							   `Choice(
+									[`Sequence ("path", `Optional(`Whitespace ()), "=", `Optional(`Whitespace ()), `path (`String("^\=\n ")))],
 								   [
-								   Sequence(
-									   Name(String("^= \t\n")),
+								   `Sequence(
+									   `Name(`String("^= \t\n")),
 									   "=",
-									   Value(String("^\n \t="))
+									   `Value(`String("^\n \t="))
 									   )
 								   ],
 								   [
-								   `size(Number("^\=\n "))
+								   `size(`Number("^\=\n "))
 								   ],
 								   [
-								   `mount(String("^\=\n "))
+								   `mount(`String("^\=\n "))
 								   ]
-								   ), Continue(Optional(Whitespace())
+								   ), `Continue(`Optional(`Whitespace())
 							  )
 						)
 					, "\n"

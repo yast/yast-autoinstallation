@@ -15,20 +15,20 @@
  */
 .tmp.alice.routes
 `ag_anyagent(
-    Description(
-    ``(File("/var/lib/autoinstall/tmp/alice_routes")),  // real file name
+    `Description(
+    (`File("/var/lib/autoinstall/tmp/alice_routes")),  // real file name
     "#\n",                      // comment
     true,                      // read-only?
-    ``(List(
-        Tuple(
-		Optional(Whitespace()),
-        `destination(String("^ \t\n")),
-        Whitespace(),
-        `gateway(String("^ \t\n")),
-        Whitespace(),
-        `netmask(String("^ \t\n")),
-        Optional(Whitespace()),
-        Optional(`device(String("^ \t\n")))
+    (`List(
+        `Tuple(
+		`Optional(`Whitespace()),
+        `destination(`String("^ \t\n")),
+        `Whitespace(),
+        `gateway(`String("^ \t\n")),
+        `Whitespace(),
+        `netmask(`String("^ \t\n")),
+        `Optional(`Whitespace()),
+        `Optional(`device(`String("^ \t\n")))
         ),
     "\n"
     ))
