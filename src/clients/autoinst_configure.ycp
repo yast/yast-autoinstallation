@@ -68,7 +68,7 @@ Please wait while the system is being configured.
     y2debug("Module map: %1", Y2ModuleConfig::ModuleMap);
     y2debug("Flat profile: %1", Profile::Flat);
 
-    
+
     list deps = [];
     if (haskey(Profile::Flat, "dependencies"))
 	deps = (list)eval(Profile::Flat["dependencies"]:$[]);
@@ -84,7 +84,8 @@ Please wait while the system is being configured.
 
 	if (d["X-SuSE-YaST-AutoInst"]:"" == "all" || d["X-SuSE-YaST-AutoInst"]:"" == "write")
 	{
-	    if (haskey(d,"X-SuSE-YaST-AutoInstResource"))
+	    if (haskey(d,"X-SuSE-YaST-AutoInstResource") &&
+                d["X-SuSE-YaST-AutoInstResource"]:"" != "" )
 	    {
 		resource = d["X-SuSE-YaST-AutoInstResource"]:"unknown";
 	    }
