@@ -13,10 +13,9 @@
     textdomain "autoinst";
 
     import "AutoInstall";
-    import "User";
+    
     import "Product";
     import "Progress";
-    import "User";
     
     include "autoinstall/misc_writes.ycp";
 
@@ -28,14 +27,16 @@ Please wait while the system is being configured.
 
     list progress_stages =
 	[
-			 _("Configure System"),			 
-			 _("Execute post-install user scripts")		 
+			 _("Configure System"),			 			 
+			 _("Create User accounts and set root password"),
+			 _("Execute post-install user scripts")
 	];
 
 
     list progress_descriptions =
 	[
 			 _("Configuring System..."),
+			 _("Creating user accounts and setting root password"),
 			 _("Executing post-install user scripts...")
 	];
 
@@ -60,50 +61,7 @@ Please wait while the system is being configured.
     map configure = AutoInstall::Profile["configure"]:$[];
         
     // Now we write additional data without a _write client, i.e. fstab
-    list users = configure["users"]:[];
-    if (size(users)>0) {
-        boolean set_root = false;
-        foreach (map user, users, ``{
-            if (user["username"]:"" == "root") {
-                set_root = true;
-                if (user["encrypted"]:false) {
-                    User::rootPassword =  user["user_password"]:"";
-                }
-                else
-                {
-                    string pw = user["user_password"]:"";
-                    if ( User::encryptionMethod == "md5" )
-                    {
 
-                        SCR::Write( .pam.all.password.pam_unix2,   "+md5" );
-                        SCR::Write( .pam.all.password.pam_pwcheck, "+md5" );
-                        User::rootPassword = cryptmd5 (pw);
-                    }
-                    else
-                    {
-
-                        SCR::Write( .pam.all.password.pam_unix2,   "-md5" );
-                        SCR::Write( .pam.all.password.pam_pwcheck, "-md5" );
-                        User::rootPassword = crypt (pw);
-                    }
-                }
-            }
-        });
-        // Root password and user account
-        if (!User::SetRootPassword())
-        {
-            // Error msg
-            y2error("Error while adding the root user");
-            Report::Error(_("The root password could not be set!
-You will not be able to login!
-"));
-        }
-
-        Progress::Title(_("Adding user accounts.."));
-        if (!(size(users) == 1 && set_root)) {
-            CallFunction(`users_write(users));
-        }
-    }
     
     AutoInstall::CopyFiles();
     
@@ -146,11 +104,51 @@ You will not be able to login!
 	    }
 	}
     });
+   
+  
+    Progress::NextStage(); 
+    list users = configure["users"]:[];
+    if (size(users)>0)
+    {
+	import "Users";
+	if (UserDefs::encryption == `md5)
+	{
+	    Users::encryptionMethod = "md5";
+	}
+	else if (UserDefs::encryption == `blowfish)
+	{
+	    Users::encryptionMethod = "blowfish";
+	}         
+	
+        boolean set_root = false;
+        foreach (map user, users, ``{
+            if (user["username"]:"" == "root") {
+                set_root = true;
+		Users::rootPassword =  user["user_password"]:"";
+                if (!user["encrypted"]:false) {                                                
+		    cryptRootPassword();
+                }
+		
+            }
+        });
+        // Root password and user account
+        if (!Users::SetRootPassword())
+        {
+            // Error msg
+            y2error("Error while adding the root user");
+            Report::Error(_("The root password could not be set!
+You will not be able to login!
+"));
+        }
+
+        Progress::Title(_("Adding user accounts.."));
+        if (!(size(users) == 1 && set_root)) {
+            CallFunction(`users_write(users));
+        }
+    }
+
     Progress::NextStage();        
     AutoInstall::scriptSettings("post-scripts");
-  
-    
- 
 
     
     Progress::Finish();

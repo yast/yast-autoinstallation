@@ -86,15 +86,18 @@ your hardware and preferences and press <b>next</b> to continue.</p>");
 		AIGeneral::Set($[
 					  "mouse": $["id":mouse],
 					  "keyboard": $["keymap":keyboard],
-					  "clock": $["timezone":timezone],
-					  "clock": $["utc": utc],
+					  "clock": $[
+						     "timezone":timezone,
+						     "utc": utc
+					  ],
 					  "language":language,
 					  "mode": $[
 						    "reboot":reboot,
 						    "confirm":confirm,
 						    "interactive_boot":debugboot
-					  ]]
-					);
+					  ]
+			       ]
+			       );
 	    }
 	} until (ret == `next || ret == `back || ret ==`abort);
 
