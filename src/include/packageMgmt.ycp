@@ -249,8 +249,8 @@ Please wait while the directory structure for the new ISO file is created.
 	     ];
 
 	
-	list selPacs = Pkg::GetPackages (`selected,false);
-	
+	list selPacs = Pkg::GetPackages (`selected , false);
+		
 	y2milestone ("install %1", selPacs);
 
 	
@@ -288,7 +288,7 @@ Please wait while the directory structure for the new ISO file is created.
 	string datadir = AIServer::productData["datadir"]:"./suse";
 	y2milestone ("datadir %1", datadir);	
 	foreach(`pac, selPacs, ``{
-	    y2milestone("package: %1", pac);
+	    // y2milestone("package: %1", pac);
 	    list tok = splitstring(pac, " ");
 	    //  "yast2-security 2.6.8 31 noarch";
 	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
@@ -300,7 +300,12 @@ Please wait while the directory structure for the new ISO file is created.
 	    {
 		Progress::Title(sformat(_("Copying %1"),  pacname));
 		Progress::NextStep();
-		SCR::Execute(.target.mkdir ,  AIServer::skelDir + "/skeleton/" + datadir + "/" + tok[3]:"noarch");
+		string dir = AIServer::skelDir + "/skeleton/" + datadir + "/" + tok[3]:"noarch";
+		
+		if (size(SCR::Read(.target.dir, dir)) == nil )
+		{
+		    SCR::Execute(.target.mkdir , dir);
+		}
 		
 		string cpCmd = sformat("cp %1 %2/skeleton/%3/%4", localpath, AIServer::skelDir, datadir, location);
 		any ret = SCR::Execute (.target.bash, cpCmd);			
