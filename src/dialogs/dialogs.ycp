@@ -11,6 +11,36 @@
     import "Label";
     import "Popup";
 
+
+
+    /**
+     * Show feedback message in a simple dialog.
+     * @param msg message to show
+     **/
+    global define void showFeedback( string msg ) ``{
+	if ( AutoinstConfig::popup_open )
+	{
+	    UI::CloseDialog();
+	}
+	UI::OpenDialog( `VBox( `Label( msg ) ) );
+	y2debug( msg );
+	AutoinstConfig::popup_open = true;
+    };
+
+
+    /**
+     * Close feedback dialog if it is open
+     **/
+    global define void clearFeedback() ``{
+	if ( AutoinstConfig::popup_open )
+	    UI::CloseDialog();
+	AutoinstConfig::popup_open = false;
+    };
+
+
+
+    
+    
     /**
      * Preferences Dialog
      *
@@ -295,8 +325,8 @@ to autoinstall a new system.</p>
 		ret = (symbol)UI::UserInput();	
 		if (ret ==`next)
 		{
-		    AutoinstClone::base = UI::QueryWidget( `id(`baseres), `SelectedItems );
-		    AutoinstClone::additional = UI::QueryWidget( `id(`res), `SelectedItems );
+		    AutoinstClone::base = (list)UI::QueryWidget( `id(`baseres), `SelectedItems );
+		    AutoinstClone::additional = (list)UI::QueryWidget( `id(`res), `SelectedItems );
 		    showFeedback( _("Collecting system data.
 Please wait...
 "));		 
@@ -312,33 +342,6 @@ Please wait...
 	return ret;	
     }
 
-    /**
-     * Show feedback message in a simple dialog.
-     * @param msg message to show
-     **/
-    global define void showFeedback( string msg ) ``{
-	if ( popup_open )
-	{
-	    UI::CloseDialog();
-	}
-	UI::OpenDialog( `VBox( `Label( msg ) ) );
-	y2debug( msg );
-	popup_open = true;
-    };
-
-
-    /**
-     * Close feedback dialog if it is open
-     **/
-    global define void clearFeedback() ``{
-	if ( popup_open )
-	    UI::CloseDialog();
-	popup_open = false;
-    };
-
-
-
-    
 
     
 }
