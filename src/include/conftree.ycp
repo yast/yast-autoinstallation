@@ -14,13 +14,12 @@
     import "Label";
     import "Installation";
     import "Report";
-    
+
     include "autoinstall/io.ycp";
     include "autoinstall/imports.ycp";
     include "autoinstall/classes.ycp";
-    include "autoinstall/iso.ycp";
 
-    
+
     /**
      * Create a list to be used with the table widget
      * @param tree data
@@ -46,8 +45,6 @@
     global define void content_dialog( string resource, map resourceMap, string module_auto ) ``{
 
 	string summary =  (string)Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
-	
-	
 	string caption = resourceMap["Name"]:"";
 	string buttonLabel = resourceMap["GenericName"]:"Configure";
 	term contents =
@@ -155,7 +152,7 @@
 	    if ( original_settings != Y2ModuleConfig::getResourceData(resourceMap , resource) )
 	    {
 		Profile::changed = true;
-	    }	
+	    }
 	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key || contains(menuitems, ret) );
 
 	return (symbol)ret;
@@ -188,9 +185,9 @@
 	``{
 	Wizard::SetScreenShotName ("autoyast-conftree");
 	y2milestone("dd: %1", menuitems);
-	
-	term image = Wizard::HeaderImage(false);					       
-	
+
+	term image = Wizard::HeaderImage(false);
+
 	term menu =
 	    `VBox(
 		  image,
@@ -233,7 +230,6 @@
 					   ),
 			      `MenuButton( _("&Tools"),
 					   [
-					    `item(`id(`menu_iso), _("&Create ISO Image")      ),
 					    `item(`id(`menu_clone), _("Create Reference Pro&file")      )
 					    ]
 					   )
@@ -247,9 +243,7 @@
 
 	// Default tree item
 	string tree_item = "System";
-	
 	CreateTreeWidget( tree_item);
-	
 	UI::ChangeWidget(`id(`key), `CurrentItem, tree_item);
 
 
@@ -356,7 +350,7 @@
 			// verify that needed packages are installed
 			import "Require";
 			import "Mode";
-			
+
 			Mode::config = false;
 			// notification 1/2
 			string pkgmsg =  _("<p>The following package is needed for importing ALICE data:<b> %1</b></p>");
@@ -367,7 +361,7 @@
 			Mode::config = true;
 			if (reqret )
 			{
-			    
+
 			    Wizard::CreateDialog();
 			    aliceImportList();
 			    Wizard::CloseDialog();
@@ -377,7 +371,7 @@
 		    else if ( ret == `menu_classes)
 		    {
 			import "AutoinstClass";
-			
+
 			Wizard::CreateDialog();
 			ManageClasses();
 			Wizard::CloseDialog();
@@ -394,17 +388,10 @@
 		    else if ( ret == `menu_merge)
 		    {
 			import "AutoinstClass";
-			
+
 			Wizard::CreateDialog();
 			MergeDialog();
 			Wizard::CloseDialog();
-		    }
-		    else if ( ret == `menu_iso)
-		    {
-			import "ISO";
-			
-			isoSequence();
-
 		    }
 		    else if (ret == `menu_exit) // EXIT
 		    {

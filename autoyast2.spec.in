@@ -5,7 +5,6 @@
 @HEADER@
 Requires:	yast2-core yast2-xml libxslt
 Requires:   autoyast2-installation = %{version}
-Requires:	mkisofs
 Provides:	yast2-module-autoinst yast2-config-autoinst
 Obsoletes:	yast2-module-autoinst yast2-config-autoinst
 Provides:	yast2-lib-autoinst
@@ -86,7 +85,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 @yncludedir@/autoinstall/conftree.ycp
 @yncludedir@/autoinstall/dialogs.ycp
 @yncludedir@/autoinstall/imports.ycp
-@yncludedir@/autoinstall/iso.ycp
 @yncludedir@/autoinstall/partition_dialogs.ycp
 @yncludedir@/autoinstall/script_dialogs.ycp
 @yncludedir@/autoinstall/video_data_dialog.ycp
@@ -115,7 +113,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 @ydatadir@/monitors.ycp
 @moduledir@/AutoinstClass.y*
 @moduledir@/AutoinstConfig.y*
-@moduledir@/ISO.y*
 @agentdir@/ag_yast1sel
 @agentdir@/ag_ksimport
 
@@ -123,9 +120,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 %doc html
 
 # additional files
-/usr/share/autoinstall/isolinux.cfg
-/usr/share/autoinstall/message
-/usr/share/autoinstall/options.msg
 
 /var/adm/fillup-templates/sysconfig.autoinstall
 

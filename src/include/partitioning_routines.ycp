@@ -9,32 +9,6 @@
 
 {
 
-    /**
-     * StringFS2Symbol()
-     * @param any filesystem string
-     * @return symbol filesystem type
-     */
-    global define symbol StringFS2Symbol (any fs) ``{
-	if (is(fs,symbol))
-	{
-	    return (symbol)fs;
-	}
-
-	map filesystems =
-	    $[
-	      "ext2":	`ext2,
-	      "ext3":	`ext3,
-	      "reiser":	`reiser,
-	      "lvm":	`lvm,
-	      "raid":	`raid,
-	      "jfs":	`jfs,
-	      "fat32":	`fat32,
-	      "xfs":	`xfs,
-	      "fat16":	`fat16,
-	      "swap":	`swap
-	    ];
-	return filesystems[fs]:`reiser;
-    }
 
 
 

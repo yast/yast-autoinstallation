@@ -22,9 +22,7 @@
     import "Bootloader";
     import "BootCommon";
 
- 
    
-
     // Partition plan as parsed from control file
     global list AutoPartPlan = [];
 
@@ -36,7 +34,9 @@
 
 
     map PhysicalTargetMap = $[];
+    
     list PhysicalDrives = [];
+    
     list PhysicalDevices = [];
 
 
@@ -66,10 +66,12 @@
     string TargetDevice = "";
 
     integer	fsid_boot = 0;
+    
     integer	fsid_root = 0;
 
 
     string target_is = "";
+    
     list root_region = [];
 
     include "partitioning/custom_part_dialogs.ycp";	
@@ -116,13 +118,10 @@
 	return true;
     }
 
-
-
     /**
      * Summary
      * @return  configuration summary dialog
      */
-
     global define string Summary() ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Drives"));
@@ -139,9 +138,10 @@
 
 
     /**
+     * PreProcess()
      * Preprocess partition plan and prepare for creating partitions.
+     * @return void
      */
-
     global define void PreProcess() ``{
 
 	AutoTargetMap =  listmap (map drive, AutoPartPlan, ``{
@@ -199,6 +199,7 @@
     
 
     /**
+     * Write()
      * Create partition plan
      * @param void
      * @return boolean
@@ -323,11 +324,11 @@ Make sure the control file has the correct syntax and values.
 
     
     /**
+     * Initialize ()
      * Initialize devices
+     * @return void
      */
     global define void Initialize () ``{
-
-
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
 	    if (data["initialize"]:false && !data["is_lvm_vg"]:false && data["device"]:"" != "/dev/md" )
@@ -340,6 +341,12 @@ Make sure the control file has the correct syntax and values.
     }
 
 
+
+    /**
+     * DeletedMDs ()
+     * Delete Software raid
+     * @return list
+     */
     global define list<map> DeletedMDs ( string vgname )
 	``{
 	map tm = Storage::GetTargetMap();
