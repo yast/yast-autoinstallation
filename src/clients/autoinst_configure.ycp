@@ -16,7 +16,6 @@
     import "AutoInstall";
     import "Product";
     import "Progress";
-    import "AIFiles";
 
     include "autoinstall/misc_writes.ycp";
 
@@ -79,11 +78,6 @@ Please wait while the system is being configured.
     }
     // Now we write additional data without a _write client, i.e. fstab
 
-
-    AIFiles::Import(Profile::Flat["files"]:[]);
-    if ( !AIFiles::Write() ) {
-	y2error("Error while writing complete files");
-    }
 
     y2debug("Module map: %1", AutoInstall::ModuleMap);
     foreach(`p,`d, AutoInstall::ModuleMap,

@@ -50,12 +50,12 @@
     }
 
 
-    
+
     /**
      * Main dialog
      * @return symbol
      */
-    global define symbol ScriptsDialog()	
+    global define symbol ScriptsDialog()
     ``{
 
 	string help = _("<p>
@@ -114,7 +114,7 @@ your needs and take control in different stages of the installation.</p>");
     }
 
 
-    
+
     /**
      * Dialog for adding/Editing  a script
      * @param mode `edit or `new
@@ -221,7 +221,7 @@ name and the content of the script.
 	    {
 		string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open file") );
 		if (filename!=nil)
-		{ 
+		{
 		    string source = SCR::Read(.target.string, filename);
 		    UI::ChangeWidget(`id(`source), `Value, source);
 		    continue;

@@ -13,7 +13,7 @@
     include "ui/common_messages.ycp";
 
     global define symbol X11AutoSequence () ``{
-	
+
 	map dialogs = $[
 			"x11"		:	``(   x11Options() )
 
@@ -34,10 +34,10 @@
 	Wizard::CreateDialog ();
 	symbol ret  =  WizardSequencer (dialogs, sequence);
 	UI::CloseDialog ();
-	
+
 	return ret;
     }
-  
+
     global define updateContents() ``{
 	map x11 = AIx11::x11;
 	list resolutions        = [];
@@ -133,17 +133,17 @@
 		       )
 		 );
 	return contents;
-    }  
+    }
 
 
 
 
 
-    
+
     global define x11Options()
 	``{
-	
-	
+
+
 	string caption = _("X11 Configuration");
 	boolean x11_enabled = AIx11::x11["configure_x11"]:false;
 
@@ -230,8 +230,8 @@ be started at boot time and what display manager should be used.</p>
 
 	    y2milestone("ret=%1 ", ret);
 	} until (  ret ==`next || ret ==`back || ret == `abort);
-		
-	
+
+
 	return ret;
     }
 

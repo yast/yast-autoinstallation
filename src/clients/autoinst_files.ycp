@@ -1,276 +1,89 @@
 /**
  * File:	clients/autoinst_files.ycp
- * Package:	Autoinstallation Configuration System
- * Summary:	Configuration File Settings
- * Authors:	Anas Nashif<nashif@suse.de>
+ * Package:	Configuration of XXpkgXX
+ * Summary:	Client for autoinstallation
+ * Authors:	Anas Nashif <nashif@suse.de>
  *
  * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
  */
+
+/**
+ * @param function to execute
+ * @param list of file settings
+ * @return map edited settings, Summary or boolean on success depending on called function
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = WFM::CallFunction ("autoinst_files", [ "Summary", mm ]);
+ */
+
 {
-    textdomain "autoinst";
-    import "Mode";
-    Mode::config = true;
 
+textdomain "autoinst";
 
-    import "Wizard";
-    import "Summary";
+y2milestone("----------------------------------------");
+y2milestone("Files auto started");
 
-    include "wizard/sequencer.ycp";
+import "AIFiles";
+import "Wizard";
+include "autoinstall/file_dialogs.ycp";
 
-    include "ui/common_messages.ycp";
-    include "ui/file_popups.ycp";
+any ret = nil;
+string func = "";
+list param = [];
 
-
-    list args = WFM::Args ();
-
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( WFM::Args (0), list ) )
-    {
-	y2error ("Bad argument: %1", WFM::Args (0));
-	return false;
-    }
-
-    list settings = [];
-    {
-	integer i = 0;
-	while (i < size (WFM::Args()))
-	{
-	    if (is (WFM::Args (i), list) && nil != WFM::Args (i))	settings = WFM::Args (i);
-	    i = i + 1;
-	}
-    }
-
-    y2milestone("Imported: (%1)", settings);
-    list files = settings;	
-
-    define void AddEditFile(string fileName, string source)
-	``{	
-	list newFiles = [];
-	boolean modified = false;
-	files = maplist (`file , files, ``{
-	    // Edit
-	    if (file["file_path"]:"" == fileName)
-	    {
-		map oldFile = $[];
-		oldFile=add(oldFile,"file_path", fileName);
-		oldFile=add(oldFile,"file_contents", source);		
-		modified = true;
-		return oldFile;
-	    }
-	    else {
-		return file;
-	    }
-	});
-
-	if (!modified)
-	{
-	    map file = $[];
-	    file=add(file,"file_path", fileName);
-	    file=add(file,"file_contents", source);	    	    	    
-	    files=add(files,file);
-	}
-	return;
-    }
-
-    /**
-     * delete a file from a list
-     * @param file name
-     * @return modified list of files
-     */
-    global define list  deleteFile(string fileName)
-	``{
-	y2milestone("deleteing %1", fileName);
-	list new =  filter(`s, files, ``(lookup(s,"file_path","")!= fileName));
-	y2milestone ("New list of files: %1", new);
-	return  (new);
-    }
-
-
-    /**
-     * Dialog for adding a file 
-     *
-     */
-    
-    global define addFileDialog(symbol mode , string name)
-    ``{
-	map file = $[];
-	if (mode == `edit)
-	{
-	    list filtered_files = filter(`s, files,``((lookup(s,"file_path","") == name)));
-	    if (size(filtered_files)>0)
-	    {
-		file = select(filtered_files,0,$[]);
-	    }
-	}
-
-    string help = _("<p>For many applications and services, you might have prepared a configuration file which should be copied in a complete form to some location in the installed system. For example, this is the case if you are installing a web server and have a httpd.conf configuration file prepared.</p>");
-
-    help =  help + _("<p>Using this resource, embed the file into the control file by specifying the final path on the installed system. YaST2 will copy this file to the specified location.</p>");
-
-	string title = _("Configuration File Editor");
-
-	term contents=
-	    `VBox(
-		  `HBox(
-			`TextEntry(`id(`filename), _("&File Path"), lookup(file,"file_path","")),		
-			`HStretch(),
-			`Empty()
-			),
-		  `VSpacing(1),
-		  `HBox(
-			`MultiLineEdit(`id(`source), _("File So&urce"), file["file_contents"]:"")
-			),
-		  `VSpacing(1),
-		  `HBox(
-			`PushButton(`id(`save), SaveButtonLabel()),
-			`PushButton(`id(`loadsource), _("&Load new contents"))
-		
-
-			)
-		  );
-
-
-	Wizard::SetContents(title,
-			    contents, help, true, true);
-
-
-	if (mode == `edit)
-	{
-	    UI::ChangeWidget(`id(`filename), `Enabled, false);
-	}
-
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-	    if (ret == `save)
-	    {
-		string fileName = UI::QueryWidget(`id(`filename), `Value);
-		
-		string source = UI::QueryWidget(`id(`source), `Value);
-
-		if (source == "" || fileName == "")
-		{
-		    UI::MessagePopup(_("Provide at least the file
-name and the content of the file.
-"));
-		    continue;
-		}
-		else
-		{		   
-		    AddEditFile( fileName,source);
-		}
-	    }
-	    else if (ret == `loadsource)
-	    {
-		string filename = PopupFile("/");
-		string source = "";
-		if (filename!="")
-		    source = SCR::Read(.target.string, filename);		
-		    
-		UI::ChangeWidget(`id(`source), `Value, source);
-		continue;
-	    }
-
-	} until (ret == `save || ret == `next || ret == `back );
-	return ret;
-    }
+/* Check arguments */
+if(size(Args()) > 0 && is(Args(0), string)) {
+    func = WFM::Args(0);
+    if(size(Args()) > 1 && is(Args(1), list))
+	param = WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
 
 
 
-    
-    /**
-     * Summary of configuration
-     */    
-    define Summary() ``{	
+/* Import Data*/
+if(func == "Import") {
+    ret = AIFiles::Import(param);
+}
+/* Create a  summary*/
+else if(func == "Summary") {
+    ret = AIFiles::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    AIFiles::Import([]);
+    ret = [];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    Wizard::CreateDialog();
+    Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());    
+    ret = CustomFileDialog();
+    Wizard::CloseDialog();
+}
+/* Return actual state */
+else if (func == "Result") {
+    ret = AIFiles::Export();
+}
+/* Write givven settings */
+else if (func == "Write") {            
+    ret = AIFiles::Write();    
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
 
-	list allfiles = maplist(`s, files,
-				  ``{
-				      return (`item(`id(s["file_path"]:"Unknown"),
-						    s["file_path"]:"Unknown" ));
-				  });
-	term contents =	 
-	    `VBox(
-		  `Left(
-			`Label(_("Available Files"))
-			),
-		  `Table( `id(`table), `opt(`notify),
-			  `header(_("File Path")),
-			  allfiles
-			  
-			  ),
-		  `HBox(
-			`PushButton(`id(`new),  NewButtonLabel()),
-			`PushButton(`id(`edit), EditButtonLabel()),
-			`PushButton(`id(`delete), DeleteButtonLabel())
-			)		  
-		  );
-	return contents;
-    }
+y2debug("ret=%1", ret);
+y2milestone("Files auto finished");
+y2milestone("----------------------------------------");
 
+return ret;
 
-    define set_contents()``{
-	
-	string title = _("Add Complete Configuration Files");
-	string help = _("TODO");
-	
-	Wizard::SetContents(title,
-			    Summary(), "", true, true);
-
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-
-	    if (ret == `new) {
-		Wizard::CreateDialog();
-		addFileDialog(ret , "" );
-		Wizard::CloseDialog();
-	    }
-	    else if (ret == `edit)
-	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil)
-		{
-		    Wizard::CreateDialog();
-		    addFileDialog(ret , name  );
-		    Wizard::CloseDialog();
-		}
-		else
-		{
-		    UI::MessagePopup(_("Select a file first."));
-		    continue;
-		}
-
-	    }
-	    else if (ret == `delete)
-	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil) {
-		    files = deleteFile(name);
-
-		}
-		else
-		{
-		    UI::MessagePopup(_("Select a file first."));
-		    continue;
-		}
-	    }
-	    Wizard::SetContents(title,
-				Summary(), "", true, true);
-
-
-	} until (ret == `next || ret == `key || ret == `back || ret == `abort );
-
-	return ret;	   		       	    
-    }
-
-   
-
-    any ret = set_contents();
-    settings = files;
-	 
-    return [ret, settings];
+/* EOF */
 }

@@ -4,7 +4,6 @@
 # $Id$
 #
 client_DATA = \
-	autoinst_tools.ycp \
 	autoinst_setup.ycp \
 	autoinst_init.ycp \
 	autoinst_linuxrc.ycp \

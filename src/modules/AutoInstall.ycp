@@ -514,10 +514,12 @@
     global define map Linuxrc(map linuxrc) ``{
 	import "Bootloader";
 	import "AIgeneral";
+	
 	if (AIgeneral::ForceBoot && Mode::hardBoot)
 	{
-	    linuxrc["Root"] = Bootloader::getRootDevice ();
+	    linuxrc["Root"] = Bootloader::getRootDevice ();	    
 	}
+	
 	if (AIgeneral::Reboot && !Mode::hardBoot)
 	{
 	    linuxrc["Root"] = "reboot";
@@ -532,6 +534,7 @@
 	{
 	    linuxrc["RebootMsg"] = "0";
 	}
+	y2milestone("Linuxrc settings: %1", linuxrc);
 	return linuxrc;
     }
 }
