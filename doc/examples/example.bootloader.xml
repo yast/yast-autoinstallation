@@ -1,23 +1,18 @@
-      <example>
-	<title>Bootloader configuration</title>
-	<screen>
-<![CDATA[
-    <install>
-...
-         <bootloader>             
-             <location>mbr</location>
-             <loader_type>grub</loader_type>
-             <loader_device>/dev/hda</loader_device>
-             <kernel_parameters>foo=bar bar=foo</kernel_parameters>
-             <initrd_modules  config:type="list" >
-                 <module_entry>
-                     <module>aic7xxx</module>
-                     <module_args/>
-                 </module_entry>
-             </initrd_modules>
-         </bootloader>
-...
-    </install>
-]]>
-	</screen>
-      </example>
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <install>
+    <bootloader>
+      <global config:type="list">
+        <global_entry>
+          <key>prompt</key>
+          <value config:type="boolean">false</value>
+        </global_entry>
+      </global>
+      <loader_device></loader_device>
+      <loader_type>lilo</loader_type>
+      <location>mbr</location>
+      <sections config:type="list"/>
+    </bootloader>
+  </install>
+</profile>

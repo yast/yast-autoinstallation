@@ -1,45 +1,35 @@
-	<example>
-	  <title>Advanced Automated partitioning</title>
 
-	  <screen>
-<![CDATA[
-....
-    <partitioning config:type="list">
-      <drive>
-        <device>/dev/hdc</device>
-        <partitions config:type="list">
-          <partition>
-            <partition_id config:type="integer">5</partition_id>
-            
-            <region config:type="list">
-              <region_entry config:type="integer">0</region_entry>
-              <region_entry config:type="integer">16858</region_entry>
-            </region>            
-          </partition>
-          <partition>
-            <filesystem config:type="symbol">reiser</filesystem>
-            <mount>/</mount>
-            <partition_id config:type="integer">131</partition_id>           
-            <region config:type="list">
-              <region_entry config:type="integer">0</region_entry>
-              <region_entry config:type="integer">2081</region_entry>
-            </region>           
-          </partition>
-          <partition>
-            <mount>swap</mount>
-            <partition_id config:type="integer">130</partition_id>          
-            <region config:type="list">
-              <region_entry config:type="integer">2081</region_entry>
-              <region_entry config:type="integer">781</region_entry>
-            </region>
-            </partition>
-        </partitions>
-        <use>all</use>
-      </drive>
-</partitioning>
-.....
-]]>
-	  </screen>
-	</example>
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/hdc</device>
+      <partitions config:type="list">
+	<partition>
+	  <partition_id config:type="integer">5</partition_id>	  
+	  <region config:type="list">
+	    <region_entry config:type="integer">0</region_entry>
+	    <region_entry config:type="integer">16858</region_entry>
+	  </region>            
+	</partition>
+	<partition>
+	  <filesystem config:type="symbol">reiser</filesystem>
+	  <mount>/</mount>
+	  <partition_id config:type="integer">131</partition_id>           
+	  <region config:type="list">
+	    <region_entry config:type="integer">0</region_entry>
+	    <region_entry config:type="integer">2081</region_entry>
+	  </region>           
+	</partition>
+	<partition>
+	  <mount>swap</mount>
+	  <partition_id config:type="integer">130</partition_id>          
+	  <region config:type="list">
+	    <region_entry config:type="integer">2081</region_entry>
+	    <region_entry config:type="integer">781</region_entry>
+	  </region>
+	</partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
 
 	

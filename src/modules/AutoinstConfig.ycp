@@ -50,6 +50,7 @@
     // Directory for the pre/post and chroot scripts
     //
     global string scripts_dir = var_dir + "/scripts";
+    global string initscripts_dir = var_dir + "/init.d";
 
     //
     // Directory where log files of pre/post and chroot scripts are kept
@@ -146,10 +147,20 @@
     //
     global list<string> dontmerge = [];
 
+    //
+    // Halt after initial phase
+    //
+    global boolean Halt = false;
 
-
+    //
+    // Dont Hard Reboot
+    //
     global boolean ForceBoot = false;
 
+    //
+    // Show Reboot Message
+    //
+    global boolean RebootMsg = false;
 
     include "autoinstall/io.ycp";
 

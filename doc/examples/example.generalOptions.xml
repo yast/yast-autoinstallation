@@ -1,34 +1,24 @@
-      <example>
-	<title>General Options</title>
-	<screen>
-<![CDATA[
-    <install>
-...
-      <general>
-          <language>de_DE</language>
-          <keyboard>
-              <keymap>german</keymap>              
-          </keyboard>
-          <clock>
-              <timezone>US/Eastern</timezone>
-              <hwclock>UTC</hwclock>              
-          </clock>
-          <mouse>
-              <id>ps0</id>
-              <device>/dev/psaux</device>     
-          </mouse>
-          <mode>                
-              <confirm config:type="boolean">true</confirm>
-              <forceboot config:type="boolean">false</forceboot>
-              <!-- YaST2 now always reboots the system, so this option ios depricated 
-              <reboot config:type="boolean">false</reboot>
-              -->
-          </mode>
 
-      </general>
-...
-    </install>
+  <install>
 
-]]>
-	</screen>
-      </example>      
+    <general>
+      <clock>
+	<hwclock>UTC</hwclock>              
+	<timezone>US/Eastern</timezone>	
+      </clock>
+      <keyboard>
+	<keymap>german</keymap>              
+      </keyboard>
+      <language>de_DE</language>
+      <mode>                
+	<confirm config:type="boolean">true</confirm>
+	<forceboot config:type="boolean">false</forceboot>  
+      </mode>
+      <mouse>
+	<device>/dev/psaux</device>     
+	<id>ps0</id>	
+      </mouse>
+    </general>
+
+  </install>
+

@@ -1,102 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT LOAD_ALSA_SEQ (#PCDATA)>
-<!ELEMENT accepting (#PCDATA)>
-<!ATTLIST accepting
-	config:type CDATA #REQUIRED
->
-<!ELEMENT autoinstall (#PCDATA)>
-<!ATTLIST autoinstall
-	config:type CDATA #REQUIRED
->
-<!ELEMENT bannerend (#PCDATA)>
-<!ELEMENT bannerstart (#PCDATA)>
-<!ELEMENT config (#PCDATA)>
-<!ELEMENT cups-state (#PCDATA)>
-<!ELEMENT cups_installation (#PCDATA)>
-<!ATTLIST cups_installation
-	config:type CDATA #REQUIRED
->
-<!ELEMENT database (#PCDATA)>
-<!ATTLIST database
-	config:type CDATA #IMPLIED
->
-<!ELEMENT device_db (#PCDATA)>
-<!ELEMENT device_id (#PCDATA)>
-<!ATTLIST device_id
-	config:type CDATA #REQUIRED
->
-<!ELEMENT device_ieee (#PCDATA)>
-<!ELEMENT info (#PCDATA)>
-<!ELEMENT listentry (#PCDATA | listentry)*>
-<!ATTLIST listentry
-	config:type (boolean | integer | list) #IMPLIED
->
-<!ELEMENT location (#PCDATA)>
-<!ELEMENT lprng-state (#PCDATA)>
-<!ELEMENT model (#PCDATA)>
-<!ELEMENT modelset_required (#PCDATA)>
-<!ATTLIST modelset_required
-	config:type CDATA #REQUIRED
->
 <!ELEMENT module_conf (alias?, model?, module?, options?, unique_key?)>
-<!ELEMENT modules_conf (module_conf)>
+<!ELEMENT modules_conf (module_conf*)>
 <!ATTLIST modules_conf
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT name (#PCDATA)>
 <!ELEMENT new (#PCDATA)>
 <!ATTLIST new
 	config:type CDATA #REQUIRED
 >
-<!-- <!ELEMENT options (snd_enable, snd_index)> -->
-<!ELEMENT ownppd (#PCDATA)>
-<!ELEMENT printcap (printcap_entry+)>
-<!ATTLIST printcap
-	config:type CDATA #REQUIRED
->
-<!ELEMENT printcap_entry (Uri?, accepting?, bannerend?, bannerstart?, comment?, config?, cups-state?, database?, device?, device_db?, device_id?, device_ieee?, ff?, info?, location?, lprng-state?, modelset_required?, name?, new?, options?, ownppd?, printers?, raw?, state?, type?, unique_key?, unknown-state?, uri?, vendor?, vendor_db?, vendor_id?, vendor_ieee?)> 
-<!-- <!ELEMENT printer (cups_installation?, database?, default?, printcap?, server_hostname?, spooler?)> -->
-
-<!ELEMENT job-sheets (#PCDATA)>
-<!ELEMENT ff (#PCDATA)>
-<!ATTLIST ff
-	config:type CDATA #REQUIRED
->
-
-<!ELEMENT Uri (#PCDATA)>
-
-<!ELEMENT printers (printer+)>
-<!ATTLIST printers
-	config:type CDATA #REQUIRED
->
-<!ELEMENT raw (#PCDATA)>
-<!ATTLIST raw
-	config:type CDATA #REQUIRED
->
 
 <!ELEMENT rc_vars (LOAD_ALSA_SEQ)>
-<!ELEMENT server_hostname (#PCDATA)>
 <!ELEMENT snd_enable (#PCDATA)>
 <!ELEMENT snd_index (#PCDATA)>
-<!ELEMENT sound (autoinstall, modules_conf, rc_vars, volume_settings)>
-<!ELEMENT spooler (#PCDATA)>
+<!ELEMENT sound (configure_detected?, modules_conf?, rc_vars?, volume_settings?)>
 <!ELEMENT state (#PCDATA)>
-<!ELEMENT type (#PCDATA)>
 <!ELEMENT unique_key (#PCDATA)>
 <!ELEMENT unknown-state (#PCDATA)>
-<!ELEMENT uri (#PCDATA)>
-<!ELEMENT vendor (#PCDATA)>
-<!ELEMENT vendor_db (#PCDATA)>
-<!ELEMENT vendor_id (#PCDATA)>
+<!ELEMENT volume_component_settings (#PCDATA)>
+<!ATTLIST volume_component_settings
+	config:type CDATA #IMPLIED
+>
 <!ATTLIST vendor_id
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT vendor_ieee (#PCDATA)>
-<!ELEMENT volume_entry (listentry+)>
+<!ELEMENT volume_entry (Headphone?, Master?, volume_component*)>
 <!ATTLIST volume_entry
+	config:type CDATA #IMPLIED
+>
+<!ELEMENT Headphone (#PCDATA)>
+<!ELEMENT Master (#PCDATA)>
+<!ATTLIST Headphone
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT volume_settings (volume_entry)>
+<!ATTLIST Master
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT volume_component (volume_component_settings*)>
+<!ATTLIST volume_component
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT volume_settings (volume_entry*)>
 <!ATTLIST volume_settings
 	config:type CDATA #REQUIRED
 >
+<!ELEMENT configure_detected (#PCDATA)>
+<!ATTLIST configure_detected
+	config:type CDATA #FIXED 'boolean'
+>
+
+<!ELEMENT ac97_clock (#PCDATA)>
+<!ELEMENT ac97_quirk (#PCDATA)>
+<!ELEMENT enable (#PCDATA)>
+<!ELEMENT index (#PCDATA)>
+<!ELEMENT isapnp (#PCDATA)>
+<!ELEMENT joystick (#PCDATA)>

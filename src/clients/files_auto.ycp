@@ -158,7 +158,8 @@ new permissions.
 				if ( source == "" || fileName == "")
 				{
 					Popup::Message(_("Provide at least the file
-name and the contents of the file.."));
+name and the contents of the file.
+"));
 					ret = `again;
 					continue;
 				}
@@ -169,7 +170,7 @@ name and the contents of the file.."));
 			}
 			else if (ret == `loadsource)
 			{
-				string filename = UI::AskForExistingFile( "", "*.*", _("Select a file to load.") );
+				string filename = UI::AskForExistingFile( "", "*", _("Select a file to load.") );
 				if (filename != "")
 				{
 					string source = (string) SCR::Read(.target.string, filename);

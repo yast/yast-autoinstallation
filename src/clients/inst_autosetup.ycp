@@ -16,16 +16,21 @@
     import "Progress";
     import "Report";
     import "Wizard";
+    import "Mode";
     import "AutoinstStorage";
     import "AutoinstScripts";
     import "AutoinstGeneral";
     import "AutoinstSoftware";
+    import "Bootloader";
     import "BootCommon";
+    import "Initrd";
+    import "Kernel";
     import "Popup";
     import "RunlevelEd";
     import "Arch";
 
     include "autoinstall/autoinst.ycp";
+    include "bootloader/routines/autoinstall.ycp";
 
     string help_text = _("<P>Please wait while the system is prepared for autoinstallation.</P>");
     list<string> progress_stages =
@@ -35,7 +40,7 @@
     _("Create partition plans"),
     _("Configure Software selections"),
     _("Configure Bootloader"),
-    _("Configure Runlevel")
+    _("Configure runlevel")
         ];
 
     list<string> progress_descriptions =
@@ -45,7 +50,7 @@
     _("Creating partition plans..."),
     _("Configuring Software selections..."),
     _("Configuring Bootloader..."),
-    _("Configuring Runlevel...")
+    _("Configuring runlevel...")
         ];
 
     Progress::New(
@@ -111,7 +116,7 @@ control file and try again.
 
     Progress::NextStage();
     AutoinstStorage::Import(Profile::Flat["partitioning"]:[]);
-    AutoinstStorage::ImportFstab(Profile::Flat["partitioning_advanced"]:$[]);
+    AutoinstStorage::ImportAdvanced(Profile::Flat["partitioning_advanced"]:$[]);
 
     if (!AutoinstStorage::Write())
     {
@@ -149,18 +154,29 @@ Try again.
     Progress::NextStage();
 
     BootCommon::getLoaderType(true);
-    bootloaderSettings();
+    Bootloader::Import(AI2Export (Profile::Flat["bootloader"]:$[]));
+    BootCommon::DetectDisks ();
+    y2debug ("autoyast: Proposing - fix");
+    Bootloader::Propose ();
+    y2debug ("autoyast: Proposing done");
+
 
     Progress::NextStage();
-    string rl = Profile::Flat["runlevel", "default"]:"";
+    string rl = Profile::Flat["runlevels", "default"]:"";
+    y2milestone("autoyast - configured runlevel: %1", rl);
     if (rl!="")
     {
         RunlevelEd::default = rl;
     }
     else
     {
-        RunlevelEd::default = (Arch::x11_setup_needed && Pkg::IsSelected ("XFree86") )? "5": "3";
+        RunlevelEd::default = (Mode::x11_setup_needed
+                && Arch::x11_setup_needed
+                && Pkg::IsSelected ("XFree86") )? "5": "3";
     }
+    y2milestone("autoyast - setting runlevel to: %1", RunlevelEd::default);
+
+    AutoInstall::PXELocalBoot();
 
     Progress::Finish();
 

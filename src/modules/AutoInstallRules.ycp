@@ -35,7 +35,7 @@
     /////////////////////////////////////////////
     // Pre-defined Rules
     /////////////////////////////////////////////
-    /////////////////////////////////////////////
+
     // All system attributes;
     map ATTR = $[];
 
@@ -94,7 +94,8 @@
     // Local Variables
     string shell = "";
     map env = $[];
-    list<string> tomerge = [];
+
+    global list<string> tomerge = [];
 
 
     /**
@@ -154,7 +155,7 @@
 	{
 	    tmpmac  = (string)SCR::Read (.etc.install_inf.HWAddr);
 	}
-	string cleanmac = deletechars(tmpmac, ":");
+	string cleanmac = deletechars((tmpmac!=nil)?tmpmac:"", ":");
 	return cleanmac;
     }
 
@@ -618,7 +619,6 @@
 
 
     /**
-     * GetRules()
      * Return list of file to merge (Order matters)
      * @return boolean
      */
@@ -674,7 +674,6 @@
 
 
     /**
-     * Merge()
      * Merge Rule results
      * @param the resulting control file path
      * @return true on success
@@ -730,7 +729,6 @@
 
 
     /**
-     * Process()
      * Process Rules
      * @return boolean
      */
@@ -741,7 +739,9 @@
 	string tmpdir = AutoinstConfig::tmpDir;
 	string prefinal = AutoinstConfig::local_rules_location + "/prefinal_autoinst.xml" ;
 	if (!Merge (  prefinal ) )
+        {
 	    return false;
+        }
 
 	tomerge = [];
 
@@ -778,8 +778,9 @@ control file and try again.
 		Report::Error(_("
 User-defined classes could not be retrieved.  Make sure all classes 
 are defined correctly and available for this system via the network
-or locally. The system can not be installed with the original control 
-file without using classes."));
+or locally. The system cannot be installed with the original control 
+file without using classes.
+"));
 
 		ok = false;
 		SCR::Execute(.target.bash, "cp " + prefinal + " "  + result_profile );
@@ -796,7 +797,6 @@ file without using classes."));
 
 
     /**
-     * CreateDefault()
      * Create default rule in case no rules file is available
      * This adds a list of file starting from full hex ip representation to
      * only the first letter. Then default and finally mac address.
@@ -820,7 +820,6 @@ file without using classes."));
     }
 
    /**
-    * CreateFile()
     * Create default rule in case no rules file is available (Only one file which is given by the user)
     * @param string file name
     * @return void

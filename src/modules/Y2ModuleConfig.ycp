@@ -68,7 +68,7 @@
 		//
 		// determine name of client, if not default name
 		//
-		if (!haskey(values,"X-SuSE-YaST-AutoInstClient") && values["X-SuSE-YaST-AutoInstClient"]:"" == "")
+		if (!haskey(values,"X-SuSE-YaST-AutoInstClient") || values["X-SuSE-YaST-AutoInstClient"]:"" == "")
 		{
 		    string client =  name + "_auto";
                     y2debug("client: %1", client);
@@ -252,8 +252,8 @@
     }
 
     /**
-     * Deps()
      * Simple dependency resolving
+     * @return list<map>
      */
     global define list<map> Deps () ``{
 

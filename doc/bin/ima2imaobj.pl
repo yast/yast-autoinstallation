@@ -111,13 +111,24 @@ while( <@files> ){
       $entity =~ s/.pdf//g;
   }
   
+  if ($format eq 'PNG') {
   $entities .= "<!ENTITY $entity '
   <imageobject> 
-    <imagedata fileref=\"img/".$name."\" width=\"10cm\" revision=\"1\" format=\"".$format."\" align=\"center\"/>
+    <imagedata fileref=\"img/".$entity.".png\"   revision=\"1\" format=\"".$format."\" align=\"center\"/>
   </imageobject>
   <imageobject> 
-    <imagedata fileref=\"img/".$entity.".png\" width=\"10cm\" revision=\"1\" format=\"PNG\" align=\"center\"/>
+    <imagedata fileref=\"img/".$entity.".png\"  revision=\"1\" format=\"PNG\" align=\"center\"/>
   </imageobject>' >\n";
+  }else{
+  $entities .= "<!ENTITY $entity '
+  <imageobject> 
+    <imagedata fileref=\"img/".$entity.".png\"  revision=\"1\" format=\"PNG\" align=\"center\"/>
+  </imageobject>
+  <imageobject> 
+    <imagedata fileref=\"img/".$entity.".png\"  revision=\"1\" format=\"PNG\" align=\"center\"/>
+  </imageobject>' >\n";
+
+  }
 }
 
 my $file = "images.ent";

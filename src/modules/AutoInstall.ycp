@@ -13,13 +13,11 @@
     import "Profile";
     import "Mode";
     import "AutoinstConfig";
+    import "AutoInstallRules";
     import "Report";
+    import "TFTP";
 
-    //
-    // Auto-Configuration mode
-    //
     global boolean autoconf = false;
-
 
     /**
      * Read saved data in continue mode
@@ -31,19 +29,17 @@
 	// First check if there are some other control files availabe
 	// i.e. for post-installation only
 	//
-
+        boolean ret = false;
 	if ( SCR::Read(.target.size, AutoinstConfig::autoconf_file) != -1 )
 	{
 	    y2milestone("XML Post installation data found: %1", AutoinstConfig::autoconf_file );
-	    autoconf = true;
-	    Profile::ReadXML (   AutoinstConfig::autoconf_file  );
-	    boolean ret = Profile::ReadXML(  AutoinstConfig::xml_tmpfile );
+	    ret = Profile::ReadXML (   AutoinstConfig::autoconf_file  );
 	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", AutoinstConfig::autoconf_file, AutoinstConfig::cache));
 	    return (ret);
 	}
 	else
 	{
-	    boolean ret = Profile::ReadProfileStructure ( AutoinstConfig::parsedControlFile );
+	    ret = Profile::ReadProfileStructure ( AutoinstConfig::parsedControlFile );
 	    if ( Profile::current == $[] || !ret )
 	    {
 		y2milestone( "No saved autoinstall data found" );
@@ -53,10 +49,11 @@
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
 		SCR::Execute(.target.remove, AutoinstConfig::parsedControlFile);
-
 		return (true);
 	    }
 	}
+
+        return false;
 
     }
 
@@ -64,29 +61,36 @@
      * Constructer
      * @return: void
      */
-    global define void AutoInstall()
-	``{
-	if (!Mode::config &&  ! ( Mode::cont && Continue() ))
-	{
-	    if ( SCR::Read(.target.size, AutoinstConfig::xml_tmpfile) != -1  && size ( Profile::current ) == 0)
-	    {
-		//
-		// Profile is available and it has not been parsed yet.
-		//
-		Profile::ReadXML(  AutoinstConfig::xml_tmpfile );
-		Report::Import(Profile::Flat["report"]:$[]);
-	    }
-	}
+    global define void AutoInstall() {
 
-	if (Mode::cont && size ( Profile::current ) > 0)
-	{
-	    y2milestone("Enabling Auto-Installation mode");
-	    Mode::autoinst = true;
-	    Report::Import(Profile::Flat["report"]:$[]);
-	}
+        if (Mode::cont)
+        {
+            boolean ret = Continue();
+            if (ret && size ( Profile::current ) > 0)
+            {
+                y2milestone("Enabling Auto-Installation mode");
+                Mode::SwitchMode("autoinst");
+            }
+            else {
+                if (Mode::autoinst)
+                {
+                    y2milestone("No autoyast data found, switching back to manual installation");
+                    Mode::SwitchMode("installation");
+                }
+            }
+        }
+        else if (Mode::initial)
+        {
 
-
-	return;
+            if ( SCR::Read(.target.size, AutoinstConfig::xml_tmpfile) != -1
+                    && size ( Profile::current ) == 0)
+            {
+                y2milestone("autoyast: %1 found", AutoinstConfig::xml_tmpfile);
+                // Profile is available and it has not been parsed yet.
+                Profile::ReadXML(  AutoinstConfig::xml_tmpfile );
+            }
+        }
+        return;
     }
 
 
@@ -117,6 +121,34 @@
 
             return;
         }
+
+
+    /**
+     * Put PXE file on the boot server using tftp
+     */
+    global boolean PXELocalBoot ()
+    {
+        string tmpdir = (string)SCR::Read(.target.tmpdir);
+        string hexfile = sformat("%1/%2", tmpdir, AutoInstallRules::hostid );
+        map pxe = Profile::Flat["pxe"]:$[];
+        string server = pxe["tftp-server"]:"";
+        if (server!="" && pxe["pxe_localboot"]:false)
+        {
+            y2milestone("putting pxe local boot file on server :%1", server);
+            string config = pxe["pxelinux-config"]:"";
+            string dir = pxe["pxelinux-dir"]:"pxelinux.cfg";
+            if (config == "")
+            {
+                config = "DEFAULT linux\nLABEL linux\n  localboot 0";
+            }
+
+            SCR::Write(.target.string, hexfile,  config);
+
+            return TFTP::Put(server, dir + "/" + AutoInstallRules::hostid,
+                hexfile );
+        }
+        return true;
+    }
 
 //EOF
 }

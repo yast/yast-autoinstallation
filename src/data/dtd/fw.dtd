@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!ENTITY % y2_firewall "fw_allow_fw_traceroute|fw_autoprotect_services|fw_dev_ext|fw_dev_int|fw_log_accept_all|fw_log_accept_crit|fw_log_drop_all|fw_log_drop_crit|fw_masq_nets|fw_masquerade|fw_protect_from_internal|fw_route|fw_services_ext_tcp|start_firewall" >
+<!ENTITY % y2_firewall
+"fw_allow_fw_traceroute|fw_autoprotect_services|fw_dev_ext|fw_dev_int|fw_ipsec_trust|fw_log_accept_all|fw_log_accept_crit|fw_log_drop_all|fw_log_drop_crit|fw_masq_nets|fw_masquerade|fw_protect_from_internal|fw_route|fw_services_ext_tcp|fw_services_ext_udp|fw_services_int_ip|start_firewall" >
 <!ELEMENT firewall (%y2_firewall;)* >
 
 <!ELEMENT fw_allow_fw_traceroute ( #PCDATA ) >
@@ -28,6 +29,9 @@
 <!ELEMENT fw_route ( #PCDATA ) >
 
 <!ELEMENT fw_services_ext_tcp ( #PCDATA ) >
+<!ELEMENT fw_ipsec_trust ( #PCDATA ) >
+<!ELEMENT fw_services_ext_udp ( #PCDATA ) >
+<!ELEMENT fw_services_int_ip ( #PCDATA ) >
 
 
 <!ELEMENT start_firewall ( #PCDATA ) >

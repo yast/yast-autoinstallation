@@ -26,6 +26,11 @@
     import "Misc";
     import "Storage";
     import "AutoinstConfig";
+    import "StorageDevices";
+    import "Storage";
+    import "Partitions";
+    import "Report";
+
     include "autoinstall/xml.ycp";
 
     global map Profile = $[];
@@ -101,12 +106,11 @@
      */
     global define list Partitioning()``{
 	Mode::config = false;
-	import "Storage";
-	import "Partitions";
+        StorageDevices::InitDone();
 	map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
 	StorageMap = Storage::GetFsysType(StorageMap);
-        StorageMap=filter(string d, map p, StorageMap, ``((d!="/dev/evms")));
+        StorageMap=filter(string d, map p, StorageMap, ``(!issubstring(d, "/dev/evms")));
 	y2debug("Storagemap %1", StorageMap);
 
 	list drives = maplist(string k, map v, StorageMap, ``{
@@ -136,11 +140,41 @@
 		    new_pe["region"] = pe["region"]:[];
 		    new_pe["size"] = sformat("%1", units_to_size(pe["region"]:[]));
 		}
-		if (haskey(pe,"used_fs"))
+                // LVM Group
+		if (haskey(pe,"lvm_group") && pe["lvm_group"]:"" != "")
+		{
+		    new_pe["lvm_group"] = pe["lvm_group"]:"";
+		}
+
+                // LV
+		if (pe["fstype"]:"" == "LV" )
+		{
+		    new_pe["lv_name"] = pe["nr"]:"";
+		}
+
+                // Used Filesystem
+                // Raid devices get the filesystem lying on them as
+                // detected_fs!
+		if (haskey(pe,"used_fs") && pe["fsid"]:0 != 253)
 		{
 		    new_pe["filesystem"] = pe["used_fs"]:`reiser;
+                    new_pe["format"] = pe["format"]:true;
 		}
-		if (haskey(pe,"nr"))
+
+                // Raid Name
+                if (haskey(pe, "raid_name"))
+                {
+                    new_pe["raid_name"] = pe["raid_name"]:"/dev/md0";
+                }
+
+                // Raid Type (raid or spare)
+                if (haskey(pe, "raid_type") && k !="/dev/md")
+                {
+                    new_pe["raid_type"] = pe["raid_type"]:"raid";
+                }
+
+
+		if (haskey(pe,"nr") && pe["fstype"]:"" != "LV")
 		{
 		    if (!skipwin)
 		    {
@@ -149,7 +183,18 @@
 		    }
 		    new_pe["partition_nr"] = pe["nr"]:0;
 		}
-	        new_pe["mount"] = pe["mount"]:"";
+                if (pe["mount"]:"" != "")
+                {
+	            new_pe["mount"] = pe["mount"]:"";
+                }
+                if (k == "/dev/md")
+                {
+                    map raid_options = $[];
+                    raid_options["persistent_superblock"] =
+                            pe["persistent_superblock"]:false;
+                    raid_options["raid_type"] = pe["raid_type"]:"raid0";
+                    new_pe["raid_options"] = raid_options;
+                }
 
 		if (!skipwin) {
 		    partitions=add(partitions,new_pe);
@@ -159,7 +204,17 @@
 
 	    map drive = $[];
 	    drive["partitions"]	= partitions;
-	    drive["device"]	= k;
+            drive["device"]	= k;
+            if (haskey(v,"is_lvm_vg") && v["is_lvm_vg"]:false)
+            {
+                drive["is_lvm_vg"] = true;
+                drive["pesize"] = sformat("%1M",
+                        v["cyl_size"]:1 / (1024 * 1024) );
+            }
+            if (haskey(v,"lvm2") && v["lvm2"]:false)
+            {
+                drive["lvm2"] = true;
+            }
 
 	    if (size(partitions) > 0 )
 	    {
@@ -256,7 +311,8 @@
      * General options
      * @return map general options
      */
-    global define map General() ``{
+    global define map General()
+        ``{
 	import "Language";
 	import "Mode";
 	Mode::config = false;
@@ -286,7 +342,7 @@
 	    hwclock = "-u";
 	    y2debug("Assuming UTC");
 	}
-	string hwc 	    = Misc::SysconfigRead(.sysconfig.clock.HWCLOCK, hwclock);
+	string hwc   = Misc::SysconfigRead(.sysconfig.clock.HWCLOCK, hwclock);
 	if (hwc == "--localtime")
 	{
 	    clock["hwclock"] = "localtime";
@@ -304,6 +360,10 @@
 	map mouse = $[];
 	mouse["id"]	    = Misc::SysconfigRead(.sysconfig.mouse.YAST_MOUSE, "probe" );
 	general["mouse"]    = mouse;
+        map mode = $[];
+        mode["confirm"] = false;
+        general["mode"] = mode;
+
 	Mode::config = true;
 	return general;
     }
@@ -450,6 +510,7 @@
 	}
 
 	Profile::Flat["general"] = General();
+        Profile::Flat["report"] = Report::Export();
 	y2debug("b4 prepare: %1", Profile::Flat );
 	Profile::Prepare();
 	return;

@@ -4,47 +4,65 @@
 # $Id$
 #
 
-SUBDIRS = autodocs images entities bin components examples autoyast2
+SUBDIRS = autodocs images entities bin components examples xsl
 
 xml_file = autoyast.xml
-style_file = autoyast.dsl
 xml_files =  $(wildcard *.xml) 
 
+CATALOG="./catalog.xml"
+XSLTPROC="/usr/bin/xsltproc"
+IMAGES=/usr/share/xml/docbook/stylesheet/nwalsh/current/images
+STYLESHEETS=/usr/share/xml/docbook/stylesheet/nwalsh/current
+BUILD=build
 
 
-EXTRA_DIST = $(xml_files) $(style_file)
+EXTRA_DIST = $(xml_files) $(wildcard *.xsl) $(wildcard *.css)
 
 CLEANFILES = *.dvi *.aux *.tex *.log *.bak *.out\
-  .html.sum; autoyast.junk profile.dtd.xml elements \
+  .html.sum autoyast.junk profile.dtd.xml elements \
   elements.xml elements.ent db2html.* profile autoyast.ps*		\
   profile.dtd.xml examples.ent components.ent .ps.sum  autoyast.out autoyast.pdf \
-  images.ent img
+  images.ent 
 
 
+all: html
 
 components: components.ent
 	bin/components.sh noref > components.ent
 examples: examples.ent
 	bin/examples.sh > examples.ent
 
-date:
-	date > systemdate
+chunks: $(xml_files) examples components 
+	XML_CATALOG_FILES=$(CATALOG) \
+	xsltproc \
+	-stringparam base.dir "$(BUILD)/" \
+	--xinclude \
+	chunks.xsl \
+	autoyast.xml
 
-pdf: $(xml_files) examples components images
-		if test -e .ps.sum; then \
-			oldsum="`cat .ps.sum`"; \
-		fi;\
-		sum ./$(xml_file) > .ps.sum; \
-		newsum="`cat .pdf.sum`"; \
-		if ! test "$$oldsum" = "$$newsum" || ! test -f autoyast.pdf; then \
-			db2pdf  $(xml_file); \
-		fi;
+html: builddir chunks style stylesheet-images webimages
 
-html:  $(xml_files) examples components images
-		rm -rf autoyast; \
-		db2html  $(xml_file); \
-		mkdir -p autoyast/img; \
-		cp  img/*.png autoyast/img; 
+builddir: 
+	mkdir -p $(BUILD)
+	@make -r -C images/WEB -f makefile.ent ima
+
+style:
+	cp style.css $(BUILD)
+
+webimages:
+	mkdir -p build/img
+	cp -a images/WEB/*png build/img
+
+stylesheet-images:
+	cp -a $(IMAGES) $(BUILD)
+
+autoyast.fo: print.xsl $(xml_files) examples components images
+	XML_CATALOG_FILES=$(CATALOG) \
+	$(XSLTPROC) --output autoyast.fo --xinclude  print.xsl  autoyast.xml
+
+
+pdf: autoyast.fo
+	fop autoyast.fo autoyast.pdf
 
 
 .PHONY: images examples.ent components.ent 
@@ -85,3 +103,9 @@ images: images/EPS/* images/PNG/*
 		fi; \
 	done
 	@make -r -C img  ima
+
+
+install-data-local:
+	install -d -m 755 $(DESTDIR)/@docdir@/html
+	cp -a build/* $(DESTDIR)/@docdir@/html
+

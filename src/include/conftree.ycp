@@ -104,31 +104,14 @@
 
     any resetModule(string resource)
     {
-        resource = Y2ModuleConfig::getResource(resource);
+        y2debug("resource: %1", resource);
         map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
 	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
 
-        string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
-        string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
-        list MergeTypes = splitstring(tomergetypes, ",");
-        if (size(tomerge) > 0 )
-        {
-            any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-            integer i = 0;
-            foreach( string res, splitstring(tomerge, ",") , ``{
-                    if ( MergeTypes[i]:"map" == "map")
-                    Profile::Flat[res] = $[];
-                    else
-                    Profile::Flat[res] = [];
-                    i = i + 1;
-                    });
-        }
-        else
-        {
-            Profile::Flat[resource]  =  Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-        }
-
-        Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
+        string profile_resource = Y2ModuleConfig::getResource(resource);
+        Profile::Flat[profile_resource]  = Call::Function(module_auto,
+                ["Reset",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
+        y2debug("After Reset: %1", Profile::Flat );
         return `next;
     }
 
@@ -143,7 +126,8 @@
 	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
         y2debug("module_auto: %1", module_auto );
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
-        any seq = Call::Function(module_auto, ["Change", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
+        any seq = Call::Function(module_auto, ["Change",
+                Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
 
         y2debug("Change response: %1", seq);
         if (seq == `accept || seq == `next || seq == `finish)
@@ -194,10 +178,7 @@
         map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
         y2debug("resource Map: %1", resourceMap);
 
-	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
-
 	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
-
 	// Import Data
 	Call::Function(module_auto, ["Import", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
         // Show Summary
@@ -365,7 +346,9 @@
             map event = UI::WaitForEvent();
             ret = event["ID"]:nil;
             if (ret == `wizardTree)
+            {
                 ret = UI::QueryWidget(`id(`wizardTree), `CurrentItem);
+            }
             y2debug("INPUT: %1", ret);
 
             if (ret == `configure)
@@ -444,7 +427,7 @@
             }
             else if (ret == "menu_open") // OPEN
             {
-                any filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load."));
+                any filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Select a file to load."));
                 if (filename != "" && filename != nil)
                 {
                     AutoinstConfig::currentFile = (string)filename;
@@ -454,8 +437,29 @@
                     string base = (string) select(pathComponents, size(pathComponents) -1, "default");
                     Profile::ReadXML((string)filename);
                 }
-                if (UI::WidgetExists(`id(`class_source))) {
+                if (UI::WidgetExists(`id(`class_source)))
+                {
                     ShowSource();
+                }
+                else
+                {
+                    tree_item = Wizard::QueryTreeItem();
+                    string group=groupName(tree_item);
+                    string modulename=moduleName(tree_item);
+
+                    contents = `Empty();
+
+                    if (group!="" )
+                    {
+                        contents = modules(group);
+                        Wizard::SetContents(_("Available modules"),
+                                contents, AutoinstConfig::MainHelp(), true , true);
+                        Wizard::SetTitleIcon(Icons[group]:tolower(group));
+                    }
+                    else if (modulename!="")
+                    {
+                        module_contents(modulename);
+                    }
                 }
                 ret = `menu_open;
             }

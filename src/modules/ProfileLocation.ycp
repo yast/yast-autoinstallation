@@ -54,23 +54,16 @@
 
 	if ( filename != "" )
 	{
-	    y2milestone("File=%1", filename);
-	    while (true)
-	    {
-		ret = Get(AutoinstConfig::scheme,
-			  AutoinstConfig::host,
-			  AutoinstConfig::filepath,
-			  localfile
-			  );
-		if (ret)
-		{
-		    break;
-		}
-		else
-		{
-                    return false;
-		}
-	    }
+            y2milestone("File=%1", filename);
+            ret = Get(AutoinstConfig::scheme,
+                    AutoinstConfig::host,
+                    AutoinstConfig::filepath,
+                    localfile
+                    );
+            if (!ret)
+            {
+                return false;
+            }
 	}
 	else
 	{
@@ -105,53 +98,25 @@
 	    SCR::Execute(.target.remove, AutoinstConfig::local_rules_file );
 	}
 
-
 	boolean process_rules = true;
 	boolean try_default_rules = false;
-
-	if ( AutoInstallRules::userrules )
+	if ( AutoInstallRules::userrules)
 	{
 	    y2milestone("Reading Rules File");
 	    AutoInstallRules::Read();
-
+            // returns false if no rules have matched
 	    ret = AutoInstallRules::GetRules();
-	    if (!ret && filename == "")
-	    {
-		boolean first = true;
-		process_rules = false;
-		while (true)
-		{
-		    if (!first)
-		    {
-			filename = basename(AutoinstConfig::filepath);
-			y2milestone("filename: %1", filename);
-			if ( filename != "")
-			{
-			    ret = Get(AutoinstConfig::scheme,
-				      AutoinstConfig::host,
-				      AutoinstConfig::filepath,
-				      localfile);
-			}
-		    }
-		    first = false;
-
-		    if (ret)
-		    {
-			break;
-		    }
-		    else
-		    {
-                        return false;
-		    }
-
-		}
-	    }
+            if (!ret)
+            {
+                try_default_rules = true;
+            }
 	}
 	else
 	{
 		try_default_rules = true;
 	}
 
+        // Hex IP, MAC Address.
 	if (try_default_rules)
 	{
 	    y2milestone("Creating default Rules");
@@ -166,30 +131,10 @@
 		AutoInstallRules::CreateFile( filename );
 	    }
 	    ret = AutoInstallRules::GetRules();
-	    if (!ret)
-	    {
-		boolean first = true;
-		process_rules = false;
-		while (true)
-		{
-		    if (!first)
-		    {
-			ret = Get(AutoinstConfig::scheme,
-				  AutoinstConfig::host,
-				  AutoinstConfig::filepath,
-				  localfile);
-		    }
-		    first = false;
-		    if (ret)
-		    {
-			break;
-		    }
-		    else
-		    {
-                        return false;
-		    }
-		}
-	    }
+            if (!ret)
+            {
+                return false;
+            }
 	}
 
 	if (process_rules)

@@ -51,7 +51,9 @@
 	toks["scheme"] = Scheme;
 	toks["host"]   = Host;
         if (regexpsub(Path, "(.*)//(.*)", "\\1\/\\2")!= nil)
+        {
             Path = regexpsub(Path, "(.*)//(.*)", "\\1\/\\2");
+        }
 	toks["path"]   = Path;
         string full_url = URL::Build(toks);
 	if ( Scheme == "http" )

@@ -293,7 +293,7 @@ must begin with letter, and must be
         import "Report";
 
 
-        string caption = _("Importing Kickstart file");
+        string caption = _("Importing Kickstart file...");
         y2debug("Importing Kickstart data");
         Wizard::CreateDialog();
         term contents = `Label (_("Initializing ..."));
@@ -308,7 +308,7 @@ must begin with letter, and must be
                 _("Read Kickstart file"),
                 _("Import data"),
                 ], [
-                _("Reading Kickstart file"),
+                _("Reading Kickstart file..."),
                 // progress step
                 _("Importing data..."),
                 // progress step
@@ -320,7 +320,7 @@ must begin with letter, and must be
 
         Progress::NextStage();
         any filename = nil;
-        filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a kickstart file."));
+        filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Select a kickstart file."));
         if (filename == nil || filename == "")
         {
             Wizard::CloseDialog();
@@ -408,7 +408,7 @@ the configuration files are read and converted.
 		host = (string)UI::QueryWidget(`id(`table), `CurrentItem);
 		if (host != nil && host != "")
 		{
-                   Popup::ShowFeedback(_("Reading Alice configuration files."), _("This may take a while. Please wait..."));
+                   Popup::ShowFeedback(_("Reading Alice configuration files..."), _("This may take a while. Please wait..."));
 
 		    boolean aliceret = Alice::createAliceConf(host);
 		    if (!aliceret)
@@ -460,7 +460,7 @@ the configuration files are read and converted.
                 `RichText(`id(`richtext), ""),
                 `LogView(`id(`log), "", 5, 100)
                 );
-	Wizard::SetContents(_("Check Profile Validity"),
+	Wizard::SetContents(_("Check profile validity"),
                 contents, HELPS["valid"]:"", true, true);
         y2milestone("Checking validity");
         UI::ChangeWidget(`id(`abort), `Enabled, false);
@@ -472,7 +472,7 @@ the configuration files are read and converted.
         Profile::Save(file);
 
         string summary = "";
-        summary = Summary::AddHeader(summary, _("Checking XML without DTD Validation"));
+        summary = Summary::AddHeader(summary, _("Checking XML without DTD validation..."));
         UI::ChangeWidget(`id(`richtext),`Value, summary);
         string scrret = xml_validate(file);
         if (scrret == "")
@@ -487,7 +487,7 @@ the configuration files are read and converted.
         // Update
         UpdateValidDialog(summary, scrret );
         sleep(1000);
-        summary = Summary::AddHeader(summary, _("Checking XML with DTD Validation"));
+        summary = Summary::AddHeader(summary, _("Checking XML with DTD validation..."));
         UI::ChangeWidget(`id(`richtext), `Value , summary);
         scrret = dtd_validate(file);
         if (scrret == "")

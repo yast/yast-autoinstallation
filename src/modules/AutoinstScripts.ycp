@@ -17,6 +17,7 @@
     import "Summary";
     import "URL";
     import "Installation";
+    import "Service";
 
     include "autoinstall/io.ycp";
 
@@ -32,6 +33,10 @@
     // Chroot scripts
     //
     global list<map> chroot = [];
+    //
+    // Chroot scripts
+    //
+    global list<map> init = [];
 
     //
     // Merged scripts
@@ -63,6 +68,12 @@
 					     return p;
 					 })
 		       );
+	result = (list<map>)union(result,	maplist (map p, init,
+					 ``{
+					     p = add(p,"type","init-scripts");
+					     return p;
+					 })
+		       );
 	return result;
     }
 
@@ -88,6 +99,7 @@
 	pre = [];
 	post = [];
 	chroot = [];
+	init = [];
 	y2milestone("Merged %1", merged);
 	// split
 
@@ -96,6 +108,8 @@
 		pre = add(pre,s);
 	    else if (s["type"]:"" == "post-scripts")
 		post = add(post,s);
+	    else if (s["type"]:"" == "init-scripts")
+		init = add(init,s);
 	    else if (s["type"]:"" == "chroot-scripts")
 		chroot = add(chroot,s);
 	});
@@ -125,6 +139,12 @@
                       "location":p["location"]:""
 		    ]);
 	});
+	list<map> exinit =  maplist (map p, init, ``{
+	    return ($["filename":p["filename"]:"",
+		      "source":p["source"]:"",
+                      "location":p["location"]:""
+		    ]);
+	});
 	map<string, list> result = $[];
 	if (size(expre) > 0 )
 	    result["pre-scripts"] = expre;
@@ -132,6 +152,8 @@
 	    result["post-scripts"] = expost;
 	if (size(exchroot) > 0 )
 	    result["chroot-scripts"] = exchroot;
+	if (size(exinit) > 0 )
+	    result["init-scripts"] = exinit;
 
 	return result;
 
@@ -148,6 +170,7 @@
     global define boolean Import(map s)
 	``{
 	pre = s["pre-scripts"]:[];
+	init = s["init-scripts"]:[];
 	post = s["post-scripts"]:[];
 	chroot = s["chroot-scripts"]:[];
 	merged = mergeScripts();
@@ -291,7 +314,7 @@
      * @param boolean if script should be executed in chroot env.
      * @return boolean true on success
      */
-    global define boolean Write( string type , boolean chrooted)
+    global define boolean Write( string type , boolean special)
 	``{
 
 	list<map> scripts = [];
@@ -299,17 +322,25 @@
 	{
 	    scripts = pre;
 	}
-	else if ( type == "chroot-scripts" && !chrooted)
+        else if (type == "init-scripts")
+	{
+	    scripts = init;
+	}
+	else if ( type == "chroot-scripts" && !special)
 	{
 	    scripts = filter(map s, chroot, ``(!s["chrooted"]:false));
 	}
-	else if ( type == "chroot-scripts" && chrooted)
+	else if ( type == "chroot-scripts" && special)
 	{
 	    scripts = filter(map s, chroot, ``(s["chrooted"]:false));
 	}
-	else if (type == "post-scripts")
+	else if (type == "post-scripts" && !special)
 	{
-	    scripts = post;
+	    scripts = filter(map s, post, ``(!s["network_needed"]:false));
+	}
+	else if (type == "post-scripts" && special)
+	{
+	    scripts = filter(map s, post, ``(s["network_needed"]:false));
 	}
 	else
 	{
@@ -331,11 +362,11 @@
 	}
 	else if (type == "chroot-scripts")
 	{
-	    tmpdirString = sformat("%1%2", (chrooted) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir);
-	    SCR::Execute (.target.mkdir, (chrooted) ? AutoinstConfig::scripts_dir : tmpdirString);
+	    tmpdirString = sformat("%1%2", (special) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir);
+	    SCR::Execute (.target.mkdir, (special) ? AutoinstConfig::scripts_dir : tmpdirString);
 
-	    current_logdir = sformat("%1%2", (chrooted) ? "" : AutoinstConfig::destdir, AutoinstConfig::logs_dir);
-	    SCR::Execute (.target.mkdir,  (chrooted) ? AutoinstConfig::logs_dir : current_logdir);
+	    current_logdir = sformat("%1%2", (special) ? "" : AutoinstConfig::destdir, AutoinstConfig::logs_dir);
+	    SCR::Execute (.target.mkdir,  (special) ? AutoinstConfig::logs_dir : current_logdir);
 	}
 	else
 	{
@@ -369,9 +400,25 @@
 	            SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
                 }
 	    }
+            else if (type == "init-scripts")
+	    {
+		scriptPath = sformat("%1/%2",  AutoinstConfig::initscripts_dir,  scriptName);
+		y2milestone("Writing init script into %1", scriptPath);
+                if (s["location"]:""!="")
+                {
+                    y2debug("getting script: %1", s["location"]:"" );
+                    if (!GetURL(s["location"]:"", scriptPath ) )
+                    {
+                       y2error("script %1 could not be retrieved", s["location"]:"");
+                    }
+                } else {
+	            SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
+                }
+                Service::Enable("autoyast");
+	    }
 	    else if (type == "chroot-scripts")
 	    {
-		scriptPath = sformat("%1%2/%3", (chrooted) ? "/" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
+		scriptPath = sformat("%1%2/%3", (special) ? "/" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
 		y2milestone("Writing chroot script into %1", scriptPath);
                 if (s["location"]:""!="")
                 {
@@ -402,28 +449,31 @@
                 }
 	    }
 
-	    // string message =  sformat(_("Executing user supplied script: %1"), scriptName);
-	    string executionString = "";
-	    if (scriptInterpreter == "shell")
-	    {
-		executionString = sformat("/bin/sh -x %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
-		SCR::Execute (.target.bash, executionString);
-	    }
-	    else if (scriptInterpreter == "perl")
-	    {
-		executionString = sformat("/usr/bin/perl %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
-		SCR::Execute (.target.bash,executionString);
-	    }
-	    else if (scriptInterpreter == "python")
-	    {
-		executionString = sformat("/usr/bin/python %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
-		SCR::Execute (.target.bash,executionString);
-	    }
-	    else
-	    {
-		y2error("Unknown interpreter: %1", scriptInterpreter);
-	    }
-	    y2milestone("Script Execution command: %1", executionString );
+            if (type != "init-scripts")
+            {
+                // string message =  sformat(_("Executing user supplied script: %1"), scriptName);
+                string executionString = "";
+                if (scriptInterpreter == "shell")
+                {
+                    executionString = sformat("/bin/sh -x %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+                    SCR::Execute (.target.bash, executionString);
+                }
+                else if (scriptInterpreter == "perl")
+                {
+                    executionString = sformat("/usr/bin/perl %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+                    SCR::Execute (.target.bash,executionString);
+                }
+                else if (scriptInterpreter == "python")
+                {
+                    executionString = sformat("/usr/bin/python %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+                    SCR::Execute (.target.bash,executionString);
+                }
+                else
+                {
+                    y2error("Unknown interpreter: %1", scriptInterpreter);
+                }
+                y2milestone("Script Execution command: %1", executionString );
+            }
 	});
 
 	return true;

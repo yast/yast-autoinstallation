@@ -22,6 +22,10 @@
     include "partitioning/lvm_lv_lib.ycp";
 
 
+
+    global boolean ZeroNewPartitions = true;
+
+
     global list ConfiguredDevices = [];
 
 
@@ -430,7 +434,10 @@
      */
     global define boolean Write () ``{
 
-        Storage::ZeroNewPartitions = true;
+        if (ZeroNewPartitions)
+            Storage::ZeroNewPartitions = true;
+        else
+            Storage::ZeroNewPartitions = false;
         boolean error = false;
 
 

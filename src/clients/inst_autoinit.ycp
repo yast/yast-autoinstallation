@@ -34,11 +34,11 @@ Please wait while the system is prepared for autoinstallation.</p>
 ");
     list<string> progress_stages =
 	[
-	 _("Probe Hardware"),
+	 _("Probe hardware"),
 	 _("Retrieve & Read Control File"),
 	 _("Process Profiles and Rules"),
 	 _("Parse control file"),
-	 _("Set up Language")
+	 _("Set up language")
 	 ];
 
 
@@ -50,7 +50,7 @@ Please wait while the system is prepared for autoinstallation.</p>
 		  [],
 		  help_text );
     Progress::NextStage();
-    Progress::Title(_("Probing Hardware"));
+    Progress::Title(_("Probing hardware..."));
     WFM::CallFunction("inst_startup", [] );
 
     if(UI::PollInput() == `abort)
@@ -154,7 +154,7 @@ control file and try again.
     // Set it in the Language module.
     //
     Progress::NextStep();
-    Progress::Title(_("Configuring Language"));
+    Progress::Title(_("Configuring language..."));
     Language::Set( language );
 
     //

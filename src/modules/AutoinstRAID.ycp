@@ -42,7 +42,7 @@
 
 	targetMap	= Storage::GetTargetMap();
 	ExistingRAID	= filter(string k,map v, targetMap, ``(k == "/dev/md"));
-	y2debug("Existing RAID: %1", ExistingRAID );
+	y2milestone("Existing RAID: %1", ExistingRAID );
 
 	if (size(ExistingRAID) > 0 )
 	{
@@ -128,7 +128,7 @@
      * @return boolean
      */
     global define boolean Write()
-	``{
+        ``{
 
 	list<map> RaidList =  maplist ( map device, raid["/dev/md", "partitions"]:[],  ``{
 
@@ -142,7 +142,7 @@
 
 		    if ( use == "all" && dev == md["device"]:"" )
 		    {
-			 md["delete"] = true;
+                        md["delete"] = true;
 		    }
 		    return (md);
 		});
@@ -170,10 +170,10 @@
 	    }
 
 
-        if (!haskey(options, "raid_type"))
-        {
-           options["raid_type"] = raid_type;
-        }
+	    if (!haskey(options, "raid_type"))
+	    {
+		options["raid_type"] = raid_type;
+	    }
 
 	    string sel_chunksize = options["chunk_size"]:"";
 
@@ -235,13 +235,13 @@
 	});
 
 
-        map<string, map> tg = Storage::GetTargetMap();
+	map<string, map> tg = Storage::GetTargetMap();
 	RaidList= maplist( map part, RaidList,
-		 ``({
-		     integer len = raid_size_byte( tg, part);
-		     part["region"] = [0, len / (1024 * 1024)];
-		     return( part );
-		 }));
+			   ``({
+			       integer len = raid_size_byte( tg, part);
+			       part["region"] = [0, len / (1024 * 1024)];
+			       return( part );
+			   }));
 
 	list allraid = [];
 
@@ -261,7 +261,7 @@
 			   "cyl_size" : 1048576,                    // const 1MB
 			   "name" : "Linux Software RAID",
 			   "partitions" : allraid,
-			 ]
+			   ]
 	];
 	y2milestone("RaidMap: %1", RaidMap);
 

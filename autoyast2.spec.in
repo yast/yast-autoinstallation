@@ -1,5 +1,5 @@
 @HEADER-COMMENT@
-# neededforbuild yast2-devel-packages yast2 yast2-installation yast2-xml yast2-transfer yast2-storage yast2-country yast2-mouse yast2-bootloader yast2-packager yast2-x11 yast2-update
+# neededforbuild yast2-devel-packages yast2 yast2-installation yast2-xml yast2-transfer yast2-storage yast2-country yast2-mouse yast2-bootloader yast2-packager yast2-x11 yast2-update libxml2 libxslt docbook-xsl-stylesheets docbook_4
 
 @HEADER@
 Requires:	yast2-core yast2-xml libxslt
@@ -21,7 +21,7 @@ Summary:	YaST2 - Auto-Installation
 %package installation
 Version:	@VERSION@
 Summary:	YaST2 - Auto-Installation: Installation Modules
-Group:		YaST2
+Group:		System/YaST
 Requires:	yast2-xml yast2-core
 Requires:	yast2-transfer
 Provides:	yast2-trans-autoinst
@@ -32,7 +32,7 @@ Obsoletes:	yast2-trans-autoinst
 %package utils
 Version:	@VERSION@
 Summary:	YaST2 - Auto-Installation: Utilities
-Group:		YaST2
+Group:		System/YaST
 %description utils
 -
 
@@ -50,6 +50,7 @@ done
 install -d -m 700 $RPM_BUILD_ROOT/etc/autoinstall
 # Installation files
 install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/init.d
 install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/logs
 install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/files
 install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/cache
@@ -138,6 +139,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 %dir /usr/share/autoinstall/modules
 /usr/share/autoinstall/dtd/*
 /usr/share/autoinstall/rng/*
+/etc/init.d/autoyast
 
 %dir /usr/share/autoinstall/xslt
 /usr/share/autoinstall/xslt/merge.xslt
@@ -157,7 +159,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 @moduledir@/Y2ModuleConfig.y*
 @moduledir@/Profile.y*
 @moduledir@/AutoinstFile.y*
-@moduledir@/AutoinstCompat.y*
 @moduledir@/AutoinstConfig.y*
 @moduledir@/AutoinstSoftware.y*
 @moduledir@/AutoinstLVM.y*
@@ -180,6 +181,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
 %dir /var/adm/autoinstall/
 %dir /var/adm/autoinstall/scripts
+%dir /var/adm/autoinstall/init.d
 %dir /var/adm/autoinstall/logs
 %dir /var/adm/autoinstall/files
 %dir /var/adm/autoinstall/cache

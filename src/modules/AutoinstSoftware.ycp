@@ -208,6 +208,16 @@
 	    }
 	}
 
+	if (haskey(Profile::Flat, "inetd")) {
+		map conf = Profile::Flat["inetd"]:$[];
+		if (conf["netd_service"]:`none == `xinetd )
+			allpackages = (list<string>) union(allpackages,
+                                ["xinetd"]);
+                else
+			allpackages = (list<string>) union(allpackages,
+                                ["inetd"]);
+
+	}
 
 	if (haskey(Profile::Flat, "nis")) {
 		map conf = Profile::Flat["nis"]:$[];
@@ -222,8 +232,12 @@
                         allpackages = add (allpackages, pkg);
                     }
                 }
-
 	}
+
+        if (haskey(Profile::Flat, "security")) {
+            allpackages = (list<string>) union(allpackages,
+                    ["yast2-security"]);
+        }
 
 	if (haskey(Profile::Flat, "ldap")) {
 		map ldapclient = Profile::Flat["ldap"]:$[];
@@ -339,7 +353,7 @@ this message can be ignored."));
 
 
 	list<string> autoinstPacks = autoinstPackages ();
-	y2debug("Packages selected in autoinstall mode: %1", autoinstPacks);
+	y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
 
 	if (size(autoinstPacks) > 0 )
 	{
@@ -401,10 +415,10 @@ this message can be ignored."));
      * @param list calculated post packages
      * @return void
      */
-    global define void addPostPackages(list<string> calcpost) ``{	
+    global define void addPostPackages(list<string> calcpost) ``{
 	post_packages = (list<string>)toset(union(calcpost,post_packages));
 	return;
     }
-    
+
     //EOF
 }
