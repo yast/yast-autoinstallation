@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT activate (#PCDATA)>
+<!ATTLIST activate
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT bootloader (activate?, kernel_parameters?, lba_support?, linear?, location?)>
+<!ELEMENT clock (hwclock, timezone)>
+<!ELEMENT confirm (#PCDATA)>
+<!ATTLIST confirm
+	config:type CDATA #REQUIRED
+>
+<!-- <!ELEMENT default (#PCDATA)> -->
+<!ELEMENT errors (log, show, timeout)>
+<!ELEMENT forceboot (#PCDATA)>
+<!ATTLIST forceboot
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT general (clock, keyboard, language, mode, mouse)>
+<!ELEMENT hwclock (#PCDATA)>
+<!ELEMENT id (#PCDATA)>
+<!ELEMENT interactive_boot (#PCDATA)>
+<!ATTLIST interactive_boot
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT kernel_parameters (#PCDATA)>
+<!ELEMENT keyboard (keymap)>
+<!ELEMENT keymap (#PCDATA)>
+<!ELEMENT language (#PCDATA)>
+<!ELEMENT lba_support (#PCDATA)>
+<!ATTLIST lba_support
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT linear (#PCDATA)>
+<!ATTLIST linear
+	config:type CDATA #REQUIRED
+>
+<!-- <!ELEMENT location (#PCDATA)> -->
+<!ELEMENT log (#PCDATA)>
+<!ATTLIST log
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT messages (log, show, timeout)>
+<!ELEMENT mode (confirm, forceboot, interactive_boot, reboot)>
+<!ELEMENT mouse (id)>
+<!ELEMENT reboot (#PCDATA)>
+<!ATTLIST reboot
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT report (errors, messages, warnings)>
+<!ELEMENT runlevels (default?, services?)>
+<!ELEMENT service (service_name, service_status?, service_start?, service_stop?)>
+<!ELEMENT service_name (#PCDATA)>
+<!ELEMENT service_status (#PCDATA)>
+<!ELEMENT service_start (#PCDATA)>
+<!ELEMENT service_stop EMPTY>
+<!ELEMENT services (service)>
+<!ATTLIST services
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT show (#PCDATA)>
+<!ATTLIST show
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT timeout (#PCDATA)>
+<!ATTLIST timeout
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT timezone (#PCDATA)>
+<!ELEMENT warnings (log, show, timeout)>

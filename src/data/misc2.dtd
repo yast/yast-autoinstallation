@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT chunk_size (#PCDATA)>
+<!ELEMENT raid_device (device_name, parity_algorithm, persistent_superblock, raid_level, filesystem_id, chunk_size, mount, format, filesystem)>
+<!-- <!ELEMENT filesystem (#PCDATA)>
+<!ATTLIST filesystem
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT filesystem_id (#PCDATA)>
+<!ATTLIST filesystem_id
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT format (#PCDATA)>
+<!ATTLIST format
+	config:type CDATA #REQUIRED
+>
+-->
+<!ELEMENT inetd (inetd_services, start_inetd)>
+<!ELEMENT inetd_service (service_name, service_status)>
+<!ELEMENT inetd_services (inetd_service)>
+<!ATTLIST inetd_services
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT logical_volumes (lv)>
+<!ATTLIST logical_volumes
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT lv (lv_name, lv_size, lv_fs, lv_mount)>
+<!ELEMENT lv_fs (#PCDATA)>
+<!ELEMENT lv_mount (#PCDATA)>
+<!ELEMENT lv_name (#PCDATA)>
+<!ELEMENT lv_size (#PCDATA)>
+<!ELEMENT lvm (lvm_group)>
+<!ATTLIST lvm
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT lvm_group (lvm_name, pesize, logical_volumes)>
+<!ELEMENT lvm_name (#PCDATA)>
+<!-- <!ELEMENT mount (#PCDATA)> -->
+<!ELEMENT parity_algorithm (#PCDATA)>
+<!ELEMENT persistent_superblock (#PCDATA)>
+<!ELEMENT pesize (#PCDATA)>
+<!ELEMENT raid (raid_device+)>
+<!ATTLIST raid
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT device_name (#PCDATA)>
+<!ELEMENT raid_level (#PCDATA)>
+<!ELEMENT start_inetd (#PCDATA)>
+<!ATTLIST start_inetd
+	config:type CDATA #REQUIRED
+>

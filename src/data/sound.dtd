@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT LOAD_ALSA_SEQ (#PCDATA)>
+<!ELEMENT Master (#PCDATA)>
+<!ATTLIST Master
+	config:type CDATA #REQUIRED
+>
+<!-- <!ELEMENT alias (#PCDATA)> : redefined -->
+<!ELEMENT autoinstall (#PCDATA)>
+<!ATTLIST autoinstall
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT model (#PCDATA)>
+<!-- <!ELEMENT module (#PCDATA)> : redefined -->
+<!ELEMENT module_conf (alias, model, module, options, unique_key)>
+<!ELEMENT modules_conf (module_conf+)>
+<!ATTLIST modules_conf
+	config:type CDATA #REQUIRED
+>
+<!-- <!ELEMENT options (snd_enable, snd_index)> -->
+<!ELEMENT rc_vars (LOAD_ALSA_SEQ)>
+<!ELEMENT snd_enable (#PCDATA)>
+<!ELEMENT snd_index (#PCDATA)>
+<!ELEMENT sound (autoinstall, modules_conf, rc_vars, volume_settings)>
+<!ELEMENT unique_key (#PCDATA)>
+<!ELEMENT volume_entry (Master)>
+<!ELEMENT volume_settings (volume_entry+)>
+<!ATTLIST volume_settings
+	config:type CDATA #REQUIRED
+>

@@ -157,6 +157,7 @@ be started at boot time and what display manager should be used.</p>
 	    {
 		any video_ret = CallFunction( `autoinst_monitor(settings ) );
 		y2milestone("video_ret %1", video_ret);
+		x11["monitor"] = video_ret;
 		Wizard::SetContents(caption,
 			    contents, help, true, true);
 		continue;
