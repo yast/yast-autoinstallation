@@ -283,13 +283,6 @@
 	    allpackages = add (allpackages, kernel);
 	}
 
-	if (haskey(Profile::Flat, "nis")) {
-		map nis = Profile::Flat["nis"]:$[];
-		if (nis["start_nis"]:false)
-			allpackages = add(allpackages, "ypbind");
-		if (nis["start_autofs"]:false)
-			allpackages = add(allpackages, "autofs");
-	}
 
 	if (haskey(Profile::Flat, "ldap")) {
 		map ldapclient = Profile::Flat["ldap"]:$[];
