@@ -124,17 +124,20 @@
 		if ((string) UI::QueryWidget(`id(`name),`Value) == "")
 		{
 		    Popup::Message(_("That name is already used. Select another name."));
+		    ret = `again;
 		    continue;
 		}
 		if (mode !=`edit && contains(classNames, UI::QueryWidget(`id(`name),`Value)))
 		{
 		    Popup::Message(_("That name is already used. Select another name."));
+		    ret = `again;
 		    continue;
 		}
 		string name = (string) UI::QueryWidget(`id(`name),`Value);
 		if (checkFileName(name) != 0 || name == "")
 		{
 		    Popup::Error(invalidFileName());
+		    ret = `again;
 		    continue;
 		}
 		map newClass = $[
@@ -624,6 +627,7 @@ file should belong.</p>
 
 		    Popup::Error(_("Select at least one class configuration.
 "));
+		    ret = `again;
 		    continue;
 		}
 
