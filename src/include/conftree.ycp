@@ -10,17 +10,18 @@
 
     textdomain "autoinst";
     import "HTML";
+    import "XML";
+    import "Alice";
     import "Call";
     import "Label";
     import "Installation";
     import "Report";
     import "Kickstart";
 
-    include "autoinstall/io.ycp";    
-    include "autoinstall/alice.ycp";
+    include "autoinstall/io.ycp";
     include "autoinstall/classes.ycp";
 
-    
+
     /**
      * Create a list to be used with the table widget
      * @param tree data
@@ -29,7 +30,7 @@
     define list CreateTableList( list MenuTreeData, string current)
 	``{
 	list menu_options = maplist(map e, MenuTreeData, ``{
-	
+
 	    if (size(e["children"]:[]) > 0 )
 	    {
 		string title=   e["title"]:"" ;
@@ -43,10 +44,10 @@
 		string entry = e["entry"]:"";
 		return `item(`id(entry), title ,( entry == current ));
 	    }
-	});	
+	});
 	return menu_options;
     }
-    
+
 
     /**
      * content_dialog()
@@ -375,7 +376,6 @@
 		    else if ( ret == `menu_alice)
 		    {
 			y2milestone("Importing ALICE data");
-			
 			// verify that needed packages are installed
 			import "Require";
 			import "Mode";
