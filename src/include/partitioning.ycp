@@ -537,7 +537,7 @@
 	list<map<string, any> > primaries = filter ( map<string, any> pentry, AutoPartitions,
 				  ``(
 				     ( pentry["partition_type"]:"none" == "primary"
-				       || pentry["partition_nr"]:99 < Partitions::MaxPrimary(label) )
+				       || pentry["partition_nr"]:99 <= Partitions::MaxPrimary(label) )
 				     && pentry["partition_id"]:-1 != 15
 				     && pentry["partition_id"]:-1 != 5
 				     && pentry["create"]:true
@@ -571,7 +571,7 @@
 				``( ! (
 				       (
 					pentry["partition_type"]:"none" == "primary"
-					|| pentry["partition_nr"]:99 < Partitions::MaxPrimary(label)
+					|| pentry["partition_nr"]:99 <= Partitions::MaxPrimary(label)
 					)
 				       &&  pentry["partition_id"]:-1 != 15
 				       &&  pentry["partition_id"]:-1 != 5

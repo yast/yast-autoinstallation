@@ -341,7 +341,7 @@ this message can be ignored."));
 
 	if (size(autoinstPacks) > 0 )
 	{
-	    Pkg::DoProvide(autoinstPacks);
+	    y2milestone("Installing individual packages: %1", Pkg::DoProvide(autoinstPacks) );
 	}
 
 
@@ -364,7 +364,7 @@ this message can be ignored."));
         list<string> pack = Storage::AddPackageList();
         if( size(pack)>0 )
         {
-            Pkg::DoProvide( pack );
+            y2milestone("Installing storage packages: %1", Pkg::DoProvide( pack ));
         }
 	//
 	// Solve dependencies
