@@ -48,30 +48,23 @@
                         )
                     );
 
-            symbol ret = `none;
             string uri = "";
-            repeat {
-                ret = (symbol)UI::UserInput();
+            while (true) {
+                symbol ret = (symbol)UI::UserInput();
 
-                if (ret == `abort)
+                if (ret == `abort && Popup::ConfirmAbort (`painless))
                 {
-                    if (Popup::ConfirmAbort(`painless))
-                    {
-                        return ("");
-                    }
-                    else
-                    {
+                    break;
+                }
+                else if (ret == `next)
+                {
+                    uri = (string)UI::QueryWidget(`id(`uri), `Value );
+                    if (uri == "")
                         continue;
-                    }
+                    else
+                        break;
                 }
-
-                uri = (string)UI::QueryWidget(`id(`uri), `Value );
-                if (uri == "")
-                {
-                    continue;
-                }
-
-            } until (ret == `retry  || ret == `abort);
+            }
 
             UI::CloseDialog();
             return uri;
