@@ -1,0 +1,341 @@
+/**
+ * File:	clients/autoinst_files.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Configuration File Settings
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Mode";
+    Mode::config = true;
+
+
+    import "Wizard";
+    import "Summary";
+
+    include "wizard/sequencer.ycp";
+
+    include "ui/common_messages.ycp";
+    include "ui/file_popups.ycp";
+
+
+    list args = WFM::Args ();
+
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( WFM::Args (0), list ) )
+    {
+	y2error ("Bad argument: %1", WFM::Args (0));
+	return false;
+    }
+
+    list settings = [];
+    {
+	integer i = 0;
+	while (i < size (WFM::Args()))
+	{
+	    if (is (WFM::Args (i), list) && nil != WFM::Args (i))	settings = WFM::Args (i);
+	    i = i + 1;
+	}
+    }
+
+    y2milestone("Imported: (%1)", settings);
+    list users = settings;
+
+    /**
+     * Set root password and primary user account.
+     *
+     */
+    
+    global define Authentication()
+	``{
+	symbol em = `des;
+	map primaryUser = $[];
+	map RootUser = $[];
+	foreach(map user, users,
+		``{
+	    if (user["username"]:"" == "root")
+	    {
+		RootUser = user;
+	    }
+	    else
+	    {
+		primaryUser = user;
+	    }
+	});
+	
+	string username = "";
+
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Frame(_("&Root Account"),
+			      `VSquash(
+				       `HBox(
+					     `HWeight(40, `TextEntry( `id(`password), _("Root &password:"), RootUser["user_password"]:"")),
+					     `HWeight(60,
+						      `Left(
+							    `Bottom(
+								    `CheckBox(`id(`encrypted1), _("Password is &crypted"), RootUser["encrypted"]:false))
+							    )
+						      )
+					     )
+				       )
+			      ),
+		       `VSpacing(),
+		       `Frame(_("&User Account"),
+			      `VSquash(
+				       `VBox(
+					     `HBox(
+						   `HWeight(40,`TextEntry( `id(`login), _("&User login:"), primaryUser["username"]:"")),
+
+						   `HWeight(60,`Empty())
+						   ),
+					     `HBox(
+						   `HWeight(40,`TextEntry( `id(`upassword), _("User pass&word:"), primaryUser["user_password"]:"")),
+						   `HWeight(60,
+							    `Left(
+								  `Bottom(
+									  `CheckBox(`id(`encrypted), _("Password is cr&ypted"), primaryUser["encrypted"]:false))
+								  )
+							    )
+						   )
+					     )
+				       )
+			      ),
+		       `VSpacing(1),
+		       `Frame(_("&Encryption"),
+			      `VSquash(
+				       `VBox(
+					     `ComboBox(`id(`encryption), _("&Encryption Method "),
+						       [
+							`item(`id(`des),_("DES"), true),
+							`item(`id(`md5),_("MD5")),
+							`item(`id(`blowfish), _("Blowfish"))
+							]
+						       )
+					     )
+				       )
+			      )
+		       )
+		 );
+	string help = _("<p>This dialog gives you the possibility to set the root password
+and additionally create the primary system user or the admin user to get you going after
+the installation is finished.</p>");
+
+	help = help + _("<p>Beside those two primary accounts, you can add more users with more
+options by editing the control file created using this package.</p>");
+
+	help = help + _("<h2>Encryption</h2>");
+	help = help + _("<P>Select the encryption method you want to use for the passwords. Passwords
+will be encrypted if a clear password is given to avoid having passwords stored in the control file in
+clear text</p>");
+
+	help = help + _("<b>IMPORTANT:</b><br>If you choose an encryption method other than the default (<b>DES</b>), make sure
+you also select this method in the <b>security configuration</b> to guarantee that all passwords on the system
+are encrypted the same way</p>");
+	
+	Wizard::SetContents(_("System Users"),
+			    contents, help, true, true);
+	any ret = nil;
+
+	
+	string rpassword =  "";
+	string upassword = "";
+	boolean renc = false;
+	boolean uenc = false;
+
+	repeat {
+	    ret = UI::UserInput();
+
+
+	    if ( ret ==`next )
+	    {
+		rpassword = UI::QueryWidget(`id(`password), `Value);
+		renc = UI::QueryWidget(`id(`encrypted1), `Value);
+
+		if (size (rpassword) < 5 && size (rpassword) > 1)
+		{
+		    // explain how a password has to be formed
+		    UI::MessagePopup(_("The password must have at least 5 characters.
+Please try again.
+  "));		  	
+		    continue;
+		}
+		any ret2 = findfirstnotof( rpassword, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|\?{[()]}" );
+
+		if ( ret2 != nil )
+		{
+		    UI::MessagePopup(_("The password may only contain the following characters:\n 0..9, a..z, A..Z, and any of \"#* ,.;:._-+!$%&/|\?{[()]}\".\nPlease try again."));		  		  
+		    continue;
+		}
+
+
+		upassword = UI::QueryWidget(`id(`upassword), `Value);
+		username = UI::QueryWidget(`id(`login), `Value);
+		uenc = UI::QueryWidget(`id(`encrypted), `Value);
+		em = UI::QueryWidget(`id(`encryption), `Value);
+
+		string valid_logname_chars  = "0123456789abcdefghijklmnopqrstuvwxyz";
+		string valid_password_chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|\?{[()]}";
+		if  ( (size( username ) < 2 || size( username ) > 8 ) && username != "")
+		{
+		    UI::MessagePopup(_("The user name must be between 2 and 8 characters in length.
+Please try again.
+"));		    		    
+		    continue;
+		}
+
+		string firstchar = substring(username, 0, 1);
+
+		if ( ( !(firstchar >= "a" && firstchar <= "z")
+		       || nil != findfirstnotof( username, valid_logname_chars ) ) && username != "")
+		{
+		    UI::MessagePopup(_("The user name may contain only
+lowercase letters and digits
+and must begin with a letter.
+Please try again.
+"));		    		    
+		    continue;
+		}
+
+	
+		if (size (upassword) < 5 && size (upassword) > 1)
+		{
+		    // explain how a password has to be formed
+		    UI::MessagePopup(_("The password must have at least 5 characters.
+Please try again.
+  "));		    		    
+		    continue;
+		}
+		ret2 = findfirstnotof( upassword, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|\?{[()]}" );
+
+		if ( ret2 != nil )
+		{
+		    UI::MessagePopup(_("The password may only contain the following characters:\n 0..9, a..z, A..Z, and any of \"#* ,.;:._-+!$%&/|\?{[()]}\".\nPlease try again."));		    		    
+		    continue;
+		}
+
+	    } 
+	    if (rpassword!="")
+	    {
+		change(RootUser,"user_password", (!renc) ?  cryptPassword(rpassword, em) : rpassword);
+		RootUser=add(RootUser,"encrypted",true);
+		RootUser=add(RootUser,"username","root");
+	    }
+	    if (username!="" )
+	    {
+		change(primaryUser,"username", username);
+		change(primaryUser,"user_password", (!uenc) ?  cryptPassword(upassword, em) : upassword);
+		primaryUser=add(primaryUser,"encrypted", true);
+	    }
+
+
+	} until ( ret == `next || ret == `back || ret == `abort);
+
+	// Root user
+	if (rpassword!="")
+	{
+	    users = filter(`u,users,``(u["username"]:"" != "root"));
+	    users = add(users,RootUser);
+
+	}
+	// Primary user
+	if (upassword!="")
+	{
+	    users = filter(`u , users,``(u["username"]:"" != username));
+	    users = add( users,primaryUser);
+	}
+	return ret;
+    }
+
+    define string cryptPassword(string pw, symbol em)
+	``{
+	string password = "";
+	if (em == `md5 )
+	{      
+	    password = cryptmd5 (pw);
+	}
+	else if (em == `blowfish )
+	{     
+	    password = cryptblowfish (pw);
+	}
+	else
+	{
+	    password = crypt (pw);
+	}
+	return password;
+    }
+
+
+    
+    define Summary()``{
+	import "Summary";
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Users"));
+	if (size(settings)>0)
+	{
+	    summary = Summary::AddLine(summary,_("Users configured"));
+	    foreach(`u, users, ``{
+		summary = Summary::OpenList(summary);
+		summary = Summary::AddListItem(summary,u["username"]:"");
+		summary = Summary::CloseList(summary);
+	    });
+	}
+	else
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	return summary;
+    }
+
+    define set_contents()
+	``{
+	term contents =
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), Summary()),
+		  `VSpacing(0.5),
+		  `HBox(
+			`PushButton(`id(`configure), _("&Configure System Users")),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			),
+		  `VSpacing(1)
+		  );
+	Wizard::SetContents(_("Users"),
+			    contents, "", true, true);
+
+	
+    }
+    set_contents();
+    any result = nil;
+    any ret = nil;
+    repeat {
+	ret = UI::UserInput();
+	if (ret == `configure)
+	{
+	    
+	    Wizard::CreateDialog ();	    
+	    result =  Authentication();
+	    UI::CloseDialog ();
+
+	    if (result == `next || result == `finish )
+	    {
+		settings = users;
+	    }
+	    set_contents();
+	}
+	else if ( ret == `reset)
+	{
+	    settings = [];	    
+	    set_contents();
+	}
+    } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
+
+    return [ret, settings];
+}    
+}
