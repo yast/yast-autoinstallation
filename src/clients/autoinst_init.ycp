@@ -15,12 +15,14 @@
 
     import "Installation";
     import "AutoInstall";
+    import "AutoinstConfig";
     import "ProfileLocation";
     import "AutoInstallRules";
     import "Progress";
     import "Report";
     import "Language";
-    import "Console";
+    import "Console";    
+    import "Profile";
 
     import "Label";
     import "Popup";
@@ -28,9 +30,9 @@
     include "autoinstall/autoinst_dialogs.ycp";
 
 
-    string help_text = UI(_("<p>
+    string help_text = _("<p>
 Please wait while the system is prepared for autoinstallation.</p>
-"));
+");
     list progress_stages =
 	[
 	 _("Retrieve & Read Control File"),
@@ -52,19 +54,21 @@ Please wait while the system is prepared for autoinstallation.</p>
 		  progress_stages,
 		  progress_descriptions,
 		  help_text );
-	symbol startret=	WFM::CallFunction(`inst_startup() );
+    WFM::CallFunction("inst_startup", [] );
 
     if(UI::PollInput() == `abort)
         if (Popup::ConfirmAbort (`painless))
             return `abort;
 
     Progress::NextStage();
-    Progress::Title(ProfileLocation::message);
+    Progress::Title(AutoinstConfig::message);
 
 
-	// Initialize Rules
-	AutoInstallRules::Init();
+    // Initialize Rules
+    AutoInstallRules::Init();
+    
     boolean ret = false;
+    
     if (!ProfileLocation::Process())
     {
 	y2error("Aborting...");
@@ -89,7 +93,7 @@ Please wait while the system is prepared for autoinstallation.</p>
             return `abort;
     Progress::NextStage();
 
-    if (! Profile::Read( AutoInstall::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
+    if (! Profile::Read( AutoinstConfig::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
     {
 	Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the
@@ -102,9 +106,9 @@ control file and try again.
     // Copy the control file for easy access by user to  a pre-defined
     // directory
 
-    SCR::Execute(.target.bash, sformat("cp %1 %2/autoinst.xml",  AutoInstall::xml_tmpfile, Profile::profile_dir));
+    SCR::Execute(.target.bash, sformat("cp %1 %2/autoinst.xml",  AutoinstConfig::xml_tmpfile, Profile::profile_dir));
 
-    AutoInstall::ProcessSpecialResources();
+    // AutoInstall::ProcessSpecialResources();
 
     boolean use_utf8 = true;		// utf8 is default
 

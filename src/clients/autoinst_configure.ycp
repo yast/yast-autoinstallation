@@ -33,10 +33,11 @@
      *
      * @param step_descr description of the step.
      */
-    define logStep( string step_descr ) ``{
-    current_step = current_step + 1;
-    UI::ChangeWidget( `id(`progress), `Value, current_step );
-    UI::ChangeWidget( `id(`log), `LastLine, step_descr + "\n" );
+    define void logStep( string step_descr ) ``{
+	current_step = current_step + 1;
+	UI::ChangeWidget( `id(`progress), `Value, current_step );
+	UI::ChangeWidget( `id(`log), `LastLine, step_descr + "\n" );
+	return;
     };
 
 
@@ -47,7 +48,7 @@ Please wait while the system is being configured.
 </p>");
 
 
-	integer max_steps = size(Y2ModuleConfig::ModuleMap) + 3;
+    integer max_steps = size(Y2ModuleConfig::ModuleMap) + 3;
     term contents = `VBox(
               `LogView(`id(`log), "", 10, 0 ),
 

@@ -9,6 +9,8 @@
     textdomain "autoinst";
     import "Label";
 
+
+    
     /**
      * Add or edit a file
      */
@@ -17,7 +19,7 @@
 
 	list newFiles = [];
 	boolean modified = false;
-	AutoinstFile::Files   = maplist (`file , AutoinstFile::Files, ``{
+	AutoinstFile::Files   = maplist (map file , AutoinstFile::Files, ``{
 	    // Edit
 	    if (file["file_path"]:"" == fileName)
 	    {
@@ -55,7 +57,7 @@
      */
     global define list  deleteFile(string fileName)
 	``{
-	list new =  filter(`s, AutoinstFile::Files, ``(lookup(s,"file_path","")!= fileName));
+	list new =  filter(map s , AutoinstFile::Files, ``(s["file_path"]:"" != fileName));
 	return  (new);
     }
 
@@ -64,19 +66,18 @@
      * Dialog for adding a file
      *
      */
-
-    global define addFileDialog(symbol mode , string name)
+    global define symbol addFileDialog( symbol mode , string name)
     ``{
 	map file = $[];
 	if (mode == `edit)
 	{
-	    list filtered_files = filter(`s, AutoinstFile::Files,``((lookup(s,"file_path","") == name)));
+	    list filtered_files = filter(map s, AutoinstFile::Files,``((s["file_path"]:""  == name)));
 	    if (size(filtered_files)>0)
 	    {
-		file = select(filtered_files,0,$[]);
+		file = filtered_files[0]:$[];
 	    }
 	}
-	y2milestone("files: %1", file);
+	
 	// help 1/2
 	string help =  _("<p>Using this dialog, copy the contents of the file and specify the final
 path on the installed system. YaST2 will copy this file to the specified location.</p>");
@@ -125,15 +126,15 @@ new permissions.
 
 	any ret = nil;
 	repeat {
-	    ret = UI::UserInput();
+	    ret = (symbol) UI::UserInput();
 	    if (ret == `next)
 	    {
-		string fileName = UI::QueryWidget(`id(`filename), `Value);
-		string permissions = UI::QueryWidget(`id(`perm), `Value);
-		string owner = UI::QueryWidget(`id(`owner), `Value);
-		string source = UI::QueryWidget(`id(`source), `Value);
+		string fileName = (string)UI::QueryWidget(`id(`filename), `Value);
+		string permissions = (string)UI::QueryWidget(`id(`perm), `Value);
+		string owner = (string)UI::QueryWidget(`id(`owner), `Value);
+		string source = (string)UI::QueryWidget(`id(`source), `Value);
 
-		if (source == "" || fileName == "")
+		if ( source == "" || fileName == "")
 		{
 		    Popup::Message(_("Provide at least the file
 name and the content of the file.
@@ -150,15 +151,17 @@ name and the content of the file.
 		string filename = UI::AskForExistingFile( "", "*.*", _("Select a file to load") );
 		if (filename != "")
 		{
-		    string source = SCR::Read(.target.string, filename);
+		    string source = (string) SCR::Read(.target.string, filename);
 		    UI::ChangeWidget(`id(`source), `Value, source);
 		    continue;
 		}
 	    }
 
 	} until (ret == `next || ret == `back );
+	
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
-	return ret;
+	
+	return (symbol) ret;
     }
 
 
@@ -167,9 +170,9 @@ name and the content of the file.
     /**
      * Summary of configuration
      */
-    global define dialog_contents() ``{
+    global define term dialog_contents() ``{
 
-	list allfiles = maplist(`s, AutoinstFile::Files,
+	list allfiles = maplist(map s, AutoinstFile::Files,
 				  ``{
 				      return (`item(`id(s["file_path"]:"Unknown"),  s["file_path"]:"Unknown" , s["file_owner"]:"", s["file_permissions"]:""));
 				  });
@@ -193,7 +196,7 @@ name and the content of the file.
     }
 
 
-    global define CustomFileDialog ()``{
+    global define symbol CustomFileDialog ()``{
 
 	string title = _("Add Complete Configuration Files");
 
@@ -211,18 +214,18 @@ and have an httpd.conf configuration file prepared.</p>
 	string select_msg = _("Select a file from the table first.");
 	any ret = nil;
 	repeat {
-	    ret = UI::UserInput();
+	    ret = (symbol) UI::UserInput();
 
 	    if (ret == `new)
 	    {
-		addFileDialog(ret , "" );
+		addFileDialog((symbol)ret , "" );
 	    }
 	    else if (ret == `edit)
 	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		string name = (string)UI::QueryWidget(`id(`table), `CurrentItem);
 		if (name != nil)
 		{
-		    addFileDialog(ret , name  );
+		    addFileDialog((symbol)ret , name  );
 		}
 		else
 		{
@@ -233,10 +236,10 @@ and have an httpd.conf configuration file prepared.</p>
 	    }
 	    else if (ret == `delete)
 	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil) {
+		string name = (string)UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil)
+		{
 		    AutoinstFile::Files = deleteFile(name);
-
 		}
 		else
 		{
@@ -250,7 +253,7 @@ and have an httpd.conf configuration file prepared.</p>
 
 	} until (ret == `back || ret == `next );
 
-	return ret;
+	return (symbol) ret;
     }
 
 

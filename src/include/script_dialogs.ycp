@@ -18,12 +18,17 @@
 
     textdomain "autoinst";
 
+    import "Popup";
+    import "AutoinstConfig";
+
+
+    
     /**
      * @return  script configuration dialog
      */
-    global define string script_dialog_contents()
+    global define term script_dialog_contents()
 	``{
-	list allscripts = maplist(`s, AutoinstScripts::merged,
+	list allscripts = maplist(map s, AutoinstScripts::merged,
 				  ``{
 				      return (`item(`id(s["filename"]:"Unknown"),
 						    s["filename"]:"Unknown",
@@ -49,76 +54,7 @@
 	return contents;
     }
 
-
-
-    /**
-     * Main dialog
-     * @return symbol
-     */
-    global define symbol ScriptsDialog()
-    ``{
-
-	string help = _("<p>
-By adding scripts to the autoinstallation process, customize the installation for
-your needs and take control in different stages of the installation.</p>
-");
-
-	string title = _("User Script Management");
-	Wizard::SetContents(title,
-			    script_dialog_contents(), help, true, true);
-
-	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-
-	    if (ret == `new)
-	    {
-		Wizard::CreateDialog();
-		ScriptDialog(ret , "" );
-		Wizard::CloseDialog();
-	    }
-	    else if (ret == `edit)
-	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil)
-		{
-		    Wizard::CreateDialog();
-		    ScriptDialog(ret , name  );
-		    Wizard::CloseDialog();
-		}
-		else
-		{
-		    Popup::Message(_("Select a script first."));
-		    continue;
-		}
-
-	    }
-	    else if (ret == `delete)
-	    {
-		string name = UI::QueryWidget(`id(`table), `CurrentItem);
-		if (name != nil) {
-		    AutoinstScripts::deleteScript(name);
-
-		}
-		else
-		{
-		    Popup::Message(_("Select a script first."));
-		    continue;
-		}
-	    }
-	    Wizard::SetContents(title,
-			    script_dialog_contents(), help, true, true);
-
-
-	} until (ret == `next || ret == `back  );
-
-	return ret;
-    }
-
-
-
+    
     /**
      * Dialog for adding/Editing  a script
      * @param mode `edit or `new
@@ -126,15 +62,15 @@ your needs and take control in different stages of the installation.</p>
      * @return symbol
      */
 
-    global define ScriptDialog(symbol mode , string name)
+    global define symbol ScriptDialog(symbol mode , string name)
     ``{
 	map script = $[];
 	if (mode == `edit)
 	{
-	    list filtered_scripts = filter(`s, AutoinstScripts::merged,``((lookup(s,"filename","") == name)));
+	    list filtered_scripts = filter(map s, AutoinstScripts::merged,``((s["filename"]:""  == name)));
 	    if (size(filtered_scripts)>0)
 	    {
-		script = select(filtered_scripts,0,$[]);
+		script = filtered_scripts[0]:$[];
 	    }
 	}
 
@@ -203,21 +139,20 @@ environment, choose the <i>chroot scripts</i> options.
 	Wizard::SetContents(title,
 			    contents, help, true, true);
 
-
 	if (mode == `edit)
 	{
 	    UI::ChangeWidget(`id(`filename), `Enabled, false);
 	}
 
-	any ret = nil;
+	symbol ret = `none;
 	repeat {
-	    ret = UI::UserInput();
+	    ret = (symbol)UI::UserInput();
 	    if (ret == `save) {
-		string scriptName = UI::QueryWidget(`id(`filename), `Value);
+		string scriptName = (string)UI::QueryWidget(`id(`filename), `Value);
 
-		string type = UI::QueryWidget(`id(`type), `Value);
-		string interpreter = UI::QueryWidget(`id(`interpreter), `Value);
-		string source = UI::QueryWidget(`id(`source), `Value);
+		string type = (string)UI::QueryWidget(`id(`type), `Value);
+		string interpreter = (string)UI::QueryWidget(`id(`interpreter), `Value);
+		string source = (string)UI::QueryWidget(`id(`source), `Value);
 
 		if (source == "" || scriptName == "")
 		{
@@ -227,8 +162,7 @@ name and the content of the script.
 		    continue;
 		}
 		else
-		{
-		    y2debug("Calling ConfigureScripts: %1, %2, %3, %4", scriptName, source, interpreter, type);
+		{		    
 		    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type);
 		}
 	    }
@@ -237,7 +171,7 @@ name and the content of the script.
 		string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
 		if (filename != "")
 		{
-		    string source = SCR::Read(.target.string, filename);
+		    string source = (string) SCR::Read(.target.string, filename);
 		    UI::ChangeWidget(`id(`source), `Value, source);
 		    continue;
 		}
@@ -247,6 +181,76 @@ name and the content of the script.
 	return ret;
 
     }
+
+
+
+
+    /**
+     * Main dialog
+     * @return symbol
+     */
+    global define symbol ScriptsDialog()
+    ``{
+
+	string help = _("<p>
+By adding scripts to the autoinstallation process, customize the installation for
+your needs and take control in different stages of the installation.</p>
+");
+
+	string title = _("User Script Management");
+	Wizard::SetContents(title,
+			    script_dialog_contents(), help, true, true);
+
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+
+	    if (ret == `new)
+	    {
+		Wizard::CreateDialog();
+		ScriptDialog((symbol) ret , "" );
+		Wizard::CloseDialog();
+	    }
+	    else if (ret == `edit)
+	    {
+		string name = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil)
+		{
+		    Wizard::CreateDialog();
+		    ScriptDialog((symbol) ret , name  );
+		    Wizard::CloseDialog();
+		}
+		else
+		{
+		    Popup::Message(_("Select a script first."));
+		    continue;
+		}
+
+	    }
+	    else if (ret == `delete)
+	    {
+		string name = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil) {
+		    AutoinstScripts::deleteScript(name);
+
+		}
+		else
+		{
+		    Popup::Message(_("Select a script first."));
+		    continue;
+		}
+	    }
+	    Wizard::SetContents(title,
+			    script_dialog_contents(), help, true, true);
+
+
+	} until (ret == `next || ret == `back  );
+
+	return (symbol) ret;
+    }
+
 
 
 

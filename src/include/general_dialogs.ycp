@@ -7,13 +7,207 @@
  * $Id$
  */
 {
+    /**
+     * Language
+     *
+     */
+    global define symbol LanguageDialog()
+	``{
+	import "Language";
+	string language = AutoinstGeneral::language;
+	
+	boolean use_utf8 = true;		// utf8 is default
+
+	if (!lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
+	{
+	    use_utf8 = false;		// fallback to ascii
+	}
+	
+	if (language=="")
+	{
+	    language = Language::language;
+	}
+	map languageselsort = mapmap(string lang_code, list lang_info, Language::Selection(),
+				     ``(
+					$[
+					 lang_info[1]:"":
+					 [lang_info[use_utf8?0:1]:"", lang_code]
+					 ]
+					)
+				     );
+
+	term languagesel =
+	    `SelectionBox(`id(`language), "",
+			  maplist (string name, list codelist, languageselsort,
+				   ``(
+				      `item(`id(codelist[1]:""), codelist[0]:"",
+					    (language == codelist[1]:"")
+					    )
+				      )	
+				   )
+			  );
 
 
-	import "Label";
 
+	term contents = `VBox(
+			   
+			      `HBox(
+				    `HWeight( 25, `HStretch() ),
+				    `HWeight( 50,
+					      `VBox (
+						     `Left( `Label ( _("Select your language:") ) ),
+						     languagesel
+						     )
+					      ),
+				    `HWeight( 25, `HStretch() )
+				    ),
+			      `VSpacing(2)
+			      );
+	string help_text =  _("<p>
+Choose the new <b>language</b> for your SuSE Linux system.
+</p>\n");
+
+
+	Wizard::SetContents( _("Language selection"), contents, help_text, true, true);
+	// Get the user input.
+	//
+
+	Wizard::ReplaceAbortButton(`Empty());
+	symbol ret = `none;
+	
+	UI::SetFocus(`id(`language));
+
+	repeat
+	    {
+		ret = (symbol)Wizard::UserInput();
+		if ( ret == `next || ret == `language )
+		{		 
+		    AutoinstGeneral::language = (string) UI::QueryWidget(`id(`language), `CurrentItem);		    
+		}
+	    }
+	until ( ret == `next || ret == `back || ret == `abort );
+	return ret;
+    }
+
+    /**
+     * Keyboard
+     */
+    global define symbol KeyboardDialog() ``{
+    
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	symbol result = (symbol)WFM::CallFunction( "inst_keyboard", [ true, true ] );
+	return result;	
+    }
+
+
+    /**
+     * Timezone
+     */    
+    global define symbol TimezoneDialog() ``{
+
+	string tz = AutoinstGeneral::Clock["timezone"]:"";
+	if ( tz == "")
+	{
+	    import "Misc";	    
+	    tz = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, "" );	   
+	    
+	    if ( tz == "")
+	    {		
+		tz = Timezone::GetTimezoneForLanguage(AutoinstGeneral::language, "en_US");
+	    }
+	    AutoinstGeneral::Clock["timezone"]  = tz;
+	}
+    
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	any result = WFM::CallFunction( `inst_timezone( true, true ) );	
+	return result;	
+    }
+
+
+
+    /**
+     * Mouse
+     */    
+    global define symbol MouseDialog() ``{
+    
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	any result = WFM::CallFunction( `inst_mouse( true, true ) );	
+	return result;	
+    }
+   
+    /**
+     * Main dialog
+     */    
+    global define  symbol ModeDialog() ``{
+
+
+	map mode 		= AutoinstGeneral::Mode;
+	boolean reboot 		= mode["reboot"]:false;
+	boolean forceboot	= mode["forceboot"]:false;
+	boolean confirm 	= mode["confirm"]:true;
+	
+	term contents =
+	    `Top(
+		 `VBox(
+		       `Left(`CheckBox(`id(`confirm), _("Confirm installation?"), confirm)),
+		       `Left(`CheckBox(`id(`reboot), _("Reboot after installation"), reboot)),
+		       `Left(`CheckBox(`id(`forceboot), _("Do not reboot after installation even if the system requires it"), forceboot))
+		       
+		       )
+		 );
+
+	string help_text = _("<P>
+The options in this dialog control the behaviour of the AutoYaST during Auto-Installation.
+</P>
+");
+			
+	Wizard::SetContents(_("Other Options"),
+			    contents, help_text, true , true);
+
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+	
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `next)
+	    {
+	
+		map m = $[];	
+		confirm = UI::QueryWidget(`id(`confirm), `Value);
+		reboot = UI::QueryWidget(`id(`reboot), `Value);
+		forceboot = UI::QueryWidget(`id(`forceboot), `Value);	
+
+		if (reboot && forceboot)
+		{
+		    Popup::Warning(_("You can not request rebooting the machine and
+force it not to boot at the same time.
+"));
+		    continue;
+		}
+		mode["reboot"] = reboot;
+		mode["forceboot"] = forceboot;
+		mode["confirm"] = confirm;
+		AutoinstGeneral::Mode = mode;
+	    }	    
+	} until (ret == `next || ret == `back);
+	y2milestone("ret: %1", ret);
+	return ret;
+    }
+
+ 
+   
+    /**
+     * Dialog for General Settings
+     *
+     */
     global define symbol generalSequence () ``{
-
-
 	map dialogs = $[
 			"language"	: ``(LanguageDialog()),
 			"keyboard"	: ``(KeyboardDialog()),
@@ -63,204 +257,6 @@
 	return ret;
 	
     }
-
-
-
-
-   /**
-     * Language
-     *
-     */
-    global define LanguageDialog()
-	``{
-
-	string language = AutoinstGeneral::Language;
-	
-	boolean use_utf8 = true;		// utf8 is default
-
-	if (!lookup (UI::GetDisplayInfo(), "HasFullUtf8Support", true))
-	{
-	    use_utf8 = false;		// fallback to ascii
-	}
-	
-	if (language=="")
-	{
-	    language = Language::language;
-	}
-	map languageselsort = mapmap(`lang_code, `lang_info, Language::Selection(),
-				     ``([lang_info[1]:"",	// ASCII value is the key
-					 [lang_info[use_utf8?0:1]:"", lang_code]
-					 ]));
-
-	term languagesel =
-	    `SelectionBox(`id(`language), "",
-			  maplist (`name, `codelist, languageselsort,
-				   ``(`item(`id(codelist[1]:""), codelist[0]:"",
-					    (language == codelist[1]:"")))));
-
-
-
-	term contents = `VBox(
-			   
-			      `HBox(
-				    `HWeight( 25, `HStretch() ),
-				    `HWeight( 50,
-					      `VBox (
-						     `Left( `Label ( _("Select your language:") ) ),
-						     languagesel
-						     )
-					      ),
-				    `HWeight( 25, `HStretch() )
-				    ),
-			      `VSpacing(2)
-			      );
-	string help_text =  _("<p>
-Choose the new <b>language</b> for your SuSE Linux system.
-</p>\n");
-
-
-	Wizard::SetContents( _("Language selection"), contents, help_text, true, true);
-	// Get the user input.
-	//
-
-	Wizard::ReplaceAbortButton(`Empty());
-	any ret = nil;
-	
-	UI::SetFocus(`id(`language));
-
-	repeat
-	    {
-		ret = Wizard::UserInput();
-		if ( ret == `next || ret == `language )
-		{		 
-		    AutoinstGeneral::Language = UI::QueryWidget(`id(`language), `CurrentItem);
-		    
-		}
-	    }
-	until ( ret == `next || ret == `back || ret == `abort );
-	return ret;
-    }
-
-
-    global define symbol KeyboardDialog() ``{
-    
-	// create the wizard dialog
-	//
-	Wizard::CreateDialog();
-	any result = WFM::CallFunction( `inst_keyboard( true, true ) );
-	return result;	
-    }
-
-
-
-    
-    global define symbol TimezoneDialog() ``{
-
-	string tz = AutoinstGeneral::Clock["timezone"]:"";
-	if ( tz == "")
-	{
-	    import "Misc";	    
-	    tz         = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, "" );	   
-	    
-	    if ( tz == "")
-	    {		
-		tz = Timezone::GetTimezoneForLanguage(AutoinstGeneral::Language, "en_US");
-	    }
-	    AutoinstGeneral::Clock["timezone"]  = tz;
-	}
-    
-	// create the wizard dialog
-	//
-	Wizard::CreateDialog();
-	any result = WFM::CallFunction( `inst_timezone( true, true ) );	
-	return result;	
-    }
-
-
-
-
-    
-    global define symbol MouseDialog() ``{
-    
-	// create the wizard dialog
-	//
-	Wizard::CreateDialog();
-	any result = WFM::CallFunction( `inst_mouse( true, true ) );	
-	return result;	
-    }
-
-
-
-
-    
-    /**
-     * Main dialog
-     */
-    
-    global define  symbol ModeDialog() ``{
-
-
-	map mode 		= AutoinstGeneral::Mode;
-	boolean reboot 		= mode["reboot"]:false;
-	boolean forceboot	= mode["forceboot"]:false;
-	boolean confirm 	= mode["confirm"]:true;
-	
-	term contents =
-	    `Top(
-		 `VBox(
-		       `Left(`CheckBox(`id(`confirm), _("Confirm installation?"), confirm)),
-		       `Left(`CheckBox(`id(`reboot), _("Reboot after installation"), reboot)),
-		       `Left(`CheckBox(`id(`forceboot), _("Do not reboot after installation even if the system requires it"), forceboot))
-		       
-		       )
-		 );
-
-
-	string help_text = _("<P>
-The options in this dialog control the behaviour of the AutoYaST during Auto-Installation.
-</P>
-");
-
-
-	
-	
-	
-	Wizard::SetContents(_("Other Options"),
-			    contents, help_text, true , true);
-
-	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
-
-	
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-	    if (ret == `next)
-	    {
-	
-		map m = $[];	
-		confirm = UI::QueryWidget(`id(`confirm), `Value);
-		reboot = UI::QueryWidget(`id(`reboot), `Value);
-		forceboot = UI::QueryWidget(`id(`forceboot), `Value);	
-
-		if (reboot && forceboot)
-		{
-		    Popup::Warning(_("You can not request rebooting the machine and
-force it not to boot at the same time.
-"));
-		    continue;
-		}
-		mode["reboot"] = reboot;
-		mode["forceboot"] = forceboot;
-		mode["confirm"] = confirm;
-		AutoinstGeneral::Mode = mode;
-	    }	    
-	} until (ret == `next || ret == `back);
-	y2milestone("ret: %1", ret);
-	return ret;
-    }
-
- 
 
 
 
