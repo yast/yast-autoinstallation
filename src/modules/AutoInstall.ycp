@@ -171,12 +171,10 @@
 	Report::Import(Profile::Flat["report"]:$[]);
 	X11 = Profile::Flat["x11"]:$[];
 
-	/*
-	if (size(X11) == 0 || !X11["configure_x11"]:false )
+	if ( (size(X11) == 0 || !X11["configure_x11"]:false ) && Mode::cont)
 	{
 	    Mode::x11_setup_needed = false;
 	}
-	*/
 
 	default_rl = Profile::Flat["runlevels", "default"]:"5";
 
@@ -193,7 +191,7 @@
 	import "BootCommon";
 
 	any ret = nil;
-	
+
 	// Bootloader::manual_location = true;
 	Bootloader = Profile::Flat["bootloader"]:$[];
 
