@@ -252,7 +252,70 @@
 
       <section>
 	<title>Advanced Partitioning features</title>
-
+	<section>
+	  <title>Mount Options</title>
+	  <para>
+	    Normally, a file system which is to be mounted is
+	    identified in <filename>/etc/fstab</filename> by the device name. This identification
+	    can be changed so the file system  is found by searching
+	    for a <acronym>UUID</acronym> or a volume label. Note that not all file systems can be mounted
+	    by <acronym>UUID</acronym> or a volume label. To specify how a
+	    partition is to be mounted, use the <emphasis>mountby</emphasis>
+	    property which has the <emphasis>symbol</emphasis> type. Possible
+	    options are:
+	  </para>
+	  <itemizedlist>
+	    <listitem>
+	      <para>device (default)</para>
+	    </listitem>
+	    <listitem>
+	      <para>label</para>
+	    </listitem>
+	    <listitem>
+	      <para>uuid</para>
+	    </listitem>
+	  </itemizedlist>
+	  <para>
+	    If you choose to mount the partition using a label, the name
+	    entered in the <emphasis>label</emphasis> property is used as the
+	    volume label. 
+	  </para>
+	  <para>
+	    Add any legal mount option allowed in the fourth field of
+	    <filename>/etc/fstab</filename>. Mutiple options are separated by commas.  Posssible fstab options:
+	  </para>
+	  <itemizedlist>
+	    <listitem>
+	      <para><emphasis>Mount Read-Only (ro):</emphasis> No writable access to the file system is possible. Default is false.</para>
+	    </listitem>
+	    <listitem>
+	      <para><emphasis>No access time (noatime):</emphasis> Access times are not updated when a file is read. Default is false.</para>
+	    </listitem>
+	    <listitem>
+	      <para><emphasis>Mountable by User (user):</emphasis> The file system may be mounted by an ordinary user. Default is false.</para>
+	    </listitem>
+	    <listitem>
+	      <para><emphasis>Data Journaling Mode (ordered | journal |
+		  writeback) :</emphasis> Specifies the journaling mode for
+		file data. journal -- All data is committed into the journal
+		prior to being written into the main file system. ordered --
+		All data is forced directly out to the main file system prior
+		to its metadata being committed to the journal. writeback --
+		Data ordering is not preserved.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para><emphasis>Access Control List (acl):</emphasis> Enable access control lists on the file system.</para>
+	    </listitem>
+	    <listitem>
+	      <para><emphasis>Extended User Attributes (user_xattr):</emphasis> Allow extended user attributes on the file system.</para>
+	    </listitem>
+	   
+	  </itemizedlist>
+ 
+	  &example.mountoptions;
+	</section>
+	
 	<section>
 	  <title>Creating Primary and Extended Partitions</title>
 	<para>
@@ -1090,26 +1153,26 @@ cd /usr/local/CDs/8.1/suse
       </section>
 
 
-      <section>
-	<title>System variable (Sysconfig)</title>
-	<para>
-	  Using the sysconfig resource, you will be able to define configuration
-	  variables in the sysconfig repository
-	  (<filename>/etc/sysconfig</filename>) directly. Using the sysconfig
-	  variables, you will beable to fine-tune many system components and
-	  environment variables exactly to your needs.
-	</para>
-        
-	<para>
-	Consult the handbook for more details about the many
-	  configuration options available in <filename>/etc/sysconfig</filename>
-	</para>
-	<para>
-	  The following example show how a variable can be set using the sysconfig
-	  resource.
-	</para>
-	&example.sysconfig;
-      </section>
+    <section>
+      <title>System variable (Sysconfig)</title>
+      <para>
+	Using the sysconfig resource, it is possible to define configuration
+	variables in the sysconfig repository
+	(<filename>/etc/sysconfig</filename>) directly. Sysconfig
+	variables, offer the possibility to fine-tune many system components and
+	environment variables exactly to your needs.
+      </para>
+      
+      <para>
+	Refer to  the handbook for more details about the many
+	configuration options available in <filename>/etc/sysconfig</filename>
+      </para>
+      <para>
+	The following example show how a variable can be set using the sysconfig
+	resource.
+      </para>
+      &example.sysconfig;
+    </section>
       
 
       <section>
