@@ -86,7 +86,8 @@
     global define string Summary() ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Drives"));
-	summary = Summary::AddLine( summary, sformat(_("Total of %1 drives"), size(drives)));
+	integer num = size(drives);
+	summary = Summary::AddLine( summary, sformat(_("Total of %1 drive", "Total of %1 drives", num), num));
 	summary = Summary::OpenList(summary);
 	foreach(map drive, drives, ``{
 	    summary = Summary::AddListItem(summary, drive["device"]:_("No specific device configured") );
@@ -110,6 +111,17 @@
 	import "Bootloader";
 	import "BootCommon";
 
+	
+	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
+	{
+	    Storage::DestroyLvmOnAllDisks();
+	}
+
+	
+	if ( raid[ 0, "destroy_old"]:false && !Mode::test)
+	{
+	    Storage::DestroyMdOnAllDisks();	   
+	}
 
 	map init_targetmap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", init_targetmap);
@@ -143,11 +155,7 @@
 
 	});
 
-	
-	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
-	{
-	    Storage::DestroyLvmOnAllDisks();
-	}
+
 
 	
 	y2milestone("New Auto-Install tagetMap: %1", targetMap);
@@ -235,7 +243,7 @@ Make sure the control file has the correct syntax and values.
 		 ``{
 	    if (data["initialize"]:false)
 	    {			    
-		integer zero_ret = InitDevice(device);
+		integer zero_ret = Storage::ZeroDevice( device );
 		y2milestone("Initializing device: %1 --> %2", device, zero_ret);		
 	    }		    
 	});
