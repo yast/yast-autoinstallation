@@ -72,6 +72,13 @@
     global string isoFile		= "";
 
     global integer totalPacs		= 0;
+
+
+    // Packages Source
+    global map sourceData = $[];
+    global map productData = $[];
+    global map mediaData = $[];
+    
     /**
      * Constructer
      *
@@ -90,6 +97,29 @@
 	return;
     }
 
+
+    global define initSource() ``{
+	
+	if (!AIConfig::PkdInitialized)
+	{
+	    string base_url = "dir://" + PackageRep;
+	    AIConfig::theSource = Pkg::SourceInit (base_url);
+	}
+	else
+	{
+	    y2milestone("Source already active");
+	}
+	// Base selection
+
+	sourceData 	= Pkg::SourceGeneralData(AIConfig::theSource);
+	productData 	= Pkg::SourceProductData(AIConfig::theSource);
+	mediaData 	= Pkg::SourceMediaData(AIConfig::theSource);
+
+	return;
+    }
+	    
+
+    
     /**
      * Set paraeters for mkisofs command
      *
@@ -108,21 +138,17 @@
 	{
 	    params = "-r -T -J -pad -no-emul-boot -boot-load-size 4 -boot-info-table";
 	}
-
-	suseDir = skeleton + "/suse";
+	string tmp_datadir = productData["datadir"]:"./suse";
+	string datadir = ( substring(tmp_datadir, 0, 1 ) == ".") ? substring(tmp_datadir, 1, size(tmp_datadir)) :   tmp_datadir;
+	y2milestone("Data dir: %1", datadir);
 	
-	bootDir = suseDir + "/images/boot";
+	suseDir = skeleton + datadir;
+	
+	bootDir = skeleton + "/boot/loader";
 
 	if (applicationID == "")
-	{
-	    string distident_cmd = sformat("fgrep DIST_IDENT %1/suse/setup/descr/info | awk -F' ' '{ printf  $2 } '", skeleton);
-	    map exec = SCR::Execute (.target.bash_output,distident_cmd);
-	    string tmp_distident = lookup (exec, "stdout", "");
-	
-	    if (tmp_distident != "")
-	    {
-		params = params + sformat(" -A %1", tmp_distident);
-	    }
+	{	  	   
+	    params = params + sformat(" -A %1", productData["label"]:"SuSE-Linux");	   
 	}
 	else
 	{
@@ -147,14 +173,14 @@
 	SCR::Execute(.target.mkdir, isotmp + "/iso");
 	string sortfile = isotmp + "/sortfile";
 
-	if (SCR::Read(.target.dir, suseDir)!=nil && SCR::Read(.target.dir, bootDir)!=nil )
+	if (SCR::Read(.target.dir, suseDir)!=nil && SCR::Read(.target.dir, bootDir)!= nil )
 	{	    
-	    string findstring = "find " + skeleton + "/suse/images/boot -printf \"%p 1\\n\" > " + sortfile;
+	    string findstring = "find " + bootDir + " -printf \"%p 1\\n\" > " + sortfile;
 	    integer ret = SCR::Execute (.target.bash, findstring);
 	    
-	    params = params + sformat(" -sort %1  -b suse/images/boot/isolinux.bin -c boot.cat", sortfile);
+	    params = params + sformat(" -sort %1  -b boot/loader/isolinux.bin -c boot.cat", sortfile);
 	    y2milestone("found boot image. Making CD bootable.");
-	    SCR::Execute(.target.mkdir, sformat("%1/iso/suse/images/boot", isotmp));
+	    SCR::Execute(.target.mkdir, sformat("%1/iso/boot/loader", isotmp));
 
 	}
 	else
@@ -180,9 +206,10 @@
 	
 	y2milestone("creating skeleton in %1", skelDir);
 	
-	SCR::Execute(.target.mkdir, skelDir + "/skeleton/suse");
-	commands= add(commands, sformat("/bin/cp -a %1/suse/images %2/skeleton/suse", sourceDir, skelDir));	
-	commands= add(commands, sformat("/bin/cp -a %1/suse/setup %2/skeleton/suse", sourceDir, skelDir));
+	SCR::Execute(.target.mkdir, sformat("%1/skeleton/%2", skelDir, productData["datadir"]:"./suse"));
+	commands= add(commands, sformat("/bin/cp -a %1/boot %2/skeleton", sourceDir, skelDir));
+	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/%1",  skelDir, productData["descrdir"]:"./suse/setup/descr"));
+	commands= add(commands, sformat("/bin/cp -a %1/%2 %3/skeleton/%4", sourceDir,  productData["descrdir"]:"./suse/setup/descr", skelDir,  productData["descrdir"]:"./suse/setup/descr"));
 	commands= add(commands, sformat("/bin/cp  %1/* %2/skeleton/", sourceDir, skelDir));
 	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/media.1",  skelDir));
 	commands= add(commands, sformat("/bin/cp %1/media.1/products   %2/skeleton/media.1/products",  sourceDir , skelDir));
@@ -197,7 +224,7 @@
 	SCR::Write(.target.string,   sformat("%1/skeleton/media.1/media",  skelDir),  readMedia());
 	list pacdirs = ["i386", "i586", "noarch"];
 	foreach(`dir, pacdirs, ``{
-	    string dirname =  sformat("%1/skeleton/suse/%2", skelDir, dir);
+	    string dirname =  sformat("%1/skeleton/%2/%3", skelDir, productData["datadir"]:"./suse", dir);
 	    SCR::Execute (.target.mkdir, dirname);
 	});
 	return success;
