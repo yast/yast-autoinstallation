@@ -70,7 +70,7 @@ Choose the new <b>language</b> for your SuSE Linux system.
 	// Get the user input.
 	//
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 	symbol ret = `none;
 
 	UI::SetFocus(`id(`language));
@@ -186,7 +186,7 @@ only for debugging purposes.
 	Wizard::SetContents(_("Other Options"),
 			    contents, help_text, true , true);
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
 	any ret = nil;
