@@ -11,6 +11,8 @@
     textdomain "autoinst";
 
     import "Label";
+    import "ISO";
+    import "Progress";
 
     /**
      * Compute packages needed for autoinstallation
@@ -110,7 +112,7 @@
     }
 
 
-    global define  getRpmPath(string pac, boolean full) ``{
+    global define  string  getRpmPath(string pac, boolean full) ``{
 
 	string dataDir	= ISO::productData["datadir"]:"./suse";
 
@@ -148,8 +150,8 @@
 	list failed = [];
 	foreach(string pac, selPacs, ``{
 
-	    integer pacsize = SCR::Read(.target.size, getRpmPath(pac, true));
-	    integer pacsize1 = SCR::Read(.target.size, getRpmPath(pac, false));
+	    integer pacsize = (integer)SCR::Read(.target.size, getRpmPath(pac, true));
+	    integer pacsize1 = (integer)SCR::Read(.target.size, getRpmPath(pac, false));
 	    if (pacsize == -1 && pacsize1 == -1)
 	    {
 		failed = add (failed, getRpmPath(pac, true));
@@ -216,7 +218,7 @@
      * ISO size dialog
      *
      */
-    global define isoSizeDialog(integer expectedSize, string filename)``{
+    global define void isoSizeDialog(integer expectedSize, string filename)``{
 
 	// heading
 	string headline = _("Creating ISO File...");
@@ -251,7 +253,8 @@
 
 
 
-	if (UI::HasSpecialWidget(`DownloadProgress)) {
+	if (UI::HasSpecialWidget(`DownloadProgress))
+	{
 	    UI::OpenDialog(
 			   contents
 			   );
@@ -260,10 +263,11 @@
 	}
 	else
 	{
+	    string iso_msg = headline;
 	    showFeedback(iso_msg);
 	    while (true) {
 		integer expect = expectedSize - 1000000;
-		integer isosize = SCR::Read(.target.size, ISO::isoFile);
+		integer isosize = (integer)SCR::Read(.target.size, ISO::isoFile);
 		if (isosize > expect) {
 		    break;
 		}
@@ -277,62 +281,12 @@
 
 
 
-    /**
-     * Sequence for ISO
-     */
-    global define symbol isoSequence () ``{
-
-	map iso_dlg =  $[
-			    "verify"	:	``(isoDialog()),
-			    "summary"	:	``(isoSummary()),
-			    "options"	:	``(isoOptions()),
-			    "create"	:	``(createISO() )
-	];
-
-	map sequence = $[
-			 "ws_start" 	: "options",
-			 "options"	: $[
-					    `next	: "verify",
-					    `abort	: `ws_finish
-			 ],
-			 "verify"	: $[
-					    `next	: "summary",
-					    `abort	: `ws_finish
-			 ],
-			 "summary"	: $[
-					    `next	: "create",
-					    `abort	: `ws_finish
-					    ],
-			 "create"	: $[
-					    `next	: `ws_finish,
-					    `abort	: `ws_finish
-					    ]
-
-	];
-	// Translators: dialog caption
-	string caption = _("Custom ISO Image");
-	term contents = `Label (_("Initializing ..."));
-
-	Wizard::CreateDialog ();
-	Wizard::SetContents ( caption,
-			      contents,
-			      "",
-			      true,
-			      true);
-
-
-	any ret = WizardSequencer (iso_dlg, sequence);
-
-	Wizard::CloseDialog ();
-	return ret;
-    }
-
 
 
     /**
      * ISO Options
      */
-    global define isoOptions()``{
+    global define symbol isoOptions()``{
 
 	// caption
 	string caption = _("ISO Options");
@@ -362,7 +316,7 @@ select any of the listed options.
 		ret = UI::UserInput();
 		if ( ret == `next)
 		{
-		    string f  = UI::QueryWidget(`id(`file), `Value);
+		    string f  = (string)UI::QueryWidget(`id(`file), `Value);
 		    if (   f == "" || f == nil)
 		    {
 			Popup::Error(invalidFileName());
@@ -373,7 +327,7 @@ select any of the listed options.
 
 	    }  until (ret == `next || ret == `back);
 
-	return ret;
+	return (symbol)ret;
     }
 
 
@@ -381,7 +335,7 @@ select any of the listed options.
      * ISO Summary
      */
 
-    global define isoSummary() ``{
+    global define symbol isoSummary() ``{
 	import "HTML";
 
 	// caption
@@ -416,14 +370,14 @@ press Next to continue.</p>
 	    {
 		ret = UI::UserInput();
 	    }  until (ret == `next || ret == `back || ret == `abort);
-	return ret;
+	return (symbol)ret;
     }
 
     /**
      * ISO creation Dialog
      *
      */
-    global define isoDialog()
+    global define symbol isoDialog()
 	``{
 
 	import "Progress";
@@ -495,12 +449,9 @@ Fix the problem and try again.</p>
 	repeat
 	    {
 		ret = UI::UserInput();
-
-
-
 	    }  until (ret == `next || ret == `back || ret == `abort);
 
-	return ret;
+	return (symbol)ret;
     }
 
 
@@ -509,15 +460,15 @@ Fix the problem and try again.</p>
      * Create ISO
      *
      */
-    global define createISO() ``{
+    global define symbol createISO() ``{
 
 	import "Progress";
 
 
-	string help = UI(_("<P>
+	string help = _("<P>
 Please wait while the directory structure for the new ISO file is created.
 </P>
-"));
+");
 	help = help + _("<p>Press <b>Next</b> to start creating the ISO file.</p>");
 
 
@@ -567,7 +518,7 @@ Please wait while the directory structure for the new ISO file is created.
 
 	Progress::NextStep();
 
-	if ( size(SCR::Read(.target.dir, AutoinstConfig::classDir) ) > 0 )
+	if ( size((list)SCR::Read(.target.dir, AutoinstConfig::classDir) ) > 0 )
 	{
 	    y2milestone("class dir exists...");
 	    SCR::Execute (.target.bash, sformat("cp -a %1 %2/skeleton/",   AutoinstConfig::classDir, ISO::skeletonDir ) );
@@ -590,14 +541,14 @@ Please wait while the directory structure for the new ISO file is created.
 	    string location = tok[3]:"noarch" + "/" + pacname;
 
 	    string localpath =  ISO::sourceDir + "/" + datadir + "/" + location;
-	    integer pacsize = SCR::Read(.target.size, localpath);
+	    integer pacsize = (integer) SCR::Read(.target.size, localpath);
 	    if (pacsize != -1)
 	    {
 		Progress::Title(sformat(_("Copying %1"),  pacname));
 		Progress::NextStep();
 		string dir = ISO::skeletonDir + "/skeleton/" + datadir + "/" + tok[3]:"noarch";
 
-		if (size(SCR::Read(.target.dir, dir)) == nil )
+		if (size((list)SCR::Read(.target.dir, dir)) == nil )
 		{
 		    SCR::Execute(.target.mkdir , dir);
 		}
@@ -627,8 +578,8 @@ Please wait while the directory structure for the new ISO file is created.
 		{
 		    string mkisofscmd =	ISO::createISOCmd(ISO::isoFile );
 		    y2milestone("command: %1",  mkisofscmd );
-
-		    string du = lookup(SCR::Execute(.target.bash_output, sformat("du -s -b %1/skeleton | awk -F' ' ' { printf $1 }'", ISO::skeletonDir )), "stdout", "");
+		    
+		    string du = lookup((map)SCR::Execute(.target.bash_output, sformat("du -s -b %1/skeleton | awk -F' ' ' { printf $1 }'", ISO::skeletonDir )), "stdout", "");
 		    integer fsSize = tointeger(du);
 		    y2milestone("size: %1" , fsSize);
 		    SCR::Execute (.target.bash_background,  mkisofscmd);
@@ -637,9 +588,59 @@ Please wait while the directory structure for the new ISO file is created.
 		}
 
 	    } until (ret == `next || ret == `back || ret == `abort);
-	return ret;
+	return (symbol)ret;
     }
 
+
+    /**
+     * Sequence for ISO
+     */
+    global define symbol isoSequence () ``{
+
+	map iso_dlg =  $[
+			    "verify"	:	``(isoDialog()),
+			    "summary"	:	``(isoSummary()),
+			    "options"	:	``(isoOptions()),
+			    "create"	:	``(createISO() )
+	];
+
+	map sequence = $[
+			 "ws_start" 	: "options",
+			 "options"	: $[
+					    `next	: "verify",
+					    `abort	: `ws_finish
+			 ],
+			 "verify"	: $[
+					    `next	: "summary",
+					    `abort	: `ws_finish
+			 ],
+			 "summary"	: $[
+					    `next	: "create",
+					    `abort	: `ws_finish
+					    ],
+			 "create"	: $[
+					    `next	: `ws_finish,
+					    `abort	: `ws_finish
+					    ]
+
+	];
+	// Translators: dialog caption
+	string caption = _("Custom ISO Image");
+	term contents = `Label (_("Initializing ..."));
+
+	Wizard::CreateDialog ();
+	Wizard::SetContents ( caption,
+			      contents,
+			      "",
+			      true,
+			      true);
+
+
+	any ret = WizardSequencer (iso_dlg, sequence);
+
+	Wizard::CloseDialog ();
+	return (symbol) ret;
+    }
 
 
 
