@@ -157,8 +157,7 @@
 			if (d["AutoinstPath"]:"configure" == "install")
 			{			    
 			    if (data!=eval(AIConfig::Install[resource]:$[]))
-			    {
-				y2milestone("config changed");
+			    {				
 				AIConfig::changed = true;
 			    }
 			    AIConfig::Install[resource] =  data;
@@ -171,7 +170,7 @@
 			    }
 			    AIConfig::Configure[resource] =  data;
 			}
-			y2milestone("New data for %1: %2", resource, data);
+			y2debug("New data for %1: %2", resource, data);
 		    } else {
 
 			if (d["AutoinstPath"]:"configure" == "install")
@@ -190,8 +189,7 @@
 			if (d["AutoinstPath"]:"configure" == "install")
 			{
 			    if (data!=AIConfig::Install[resource]:[])
-			    {
-				y2milestone("config changed");
+			    {				
 				AIConfig::changed = true;
 			    }
 			    AIConfig::Install[resource] =  data;
@@ -199,13 +197,12 @@
 			else
 			{
 			    if (data!=AIConfig::Configure[resource]:[])
-			    {
-				y2milestone("config changed");
+			    {				
 				AIConfig::changed = true;
 			    }
 			    AIConfig::Configure[resource] =  data;
 			}
-			y2milestone("New data for %1: %2", resource, data);
+			y2debug("New data for %1: %2", resource, data);
 		    }
 
 
@@ -216,16 +213,14 @@
 	    if (ret == `key) {
 		tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
 		if (tree_item == nil)
-		    tree_item = "Hardware";
-		y2milestone("item %1", tree_item);
+		    tree_item = "Hardware";		
 	    }
 	    if (ret  == nil)
 	    {
 		UI::ErrorPopup(_("Error while reading configuration data"));
 		ret = `back;
 		break;
-	    }
-	    y2milestone("Final ret %1", ret);
+	    }	    
 
 	} until ( ret == `next || ret == `back ||  (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 

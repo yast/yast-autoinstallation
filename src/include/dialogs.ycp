@@ -356,10 +356,11 @@ and templates, which contain class defintions and can be created using this dial
 	    y2milestone("selected file: %1, %2, %3", selected_file, type, ret);
 	    if (ret == `new && type != `templates)
 	    {
-		AIConfig::Profile = $[];
+		AIConfig::resetProfile();
+		y2milestone("prof: %1", AIConfig::Profile);
 		AIConfig::currentFile = NewFileName(  _("New Profile Name"), _("New Profile"));
 
-		if (AIConfig::currentFile!="")
+		if (AIConfig::currentFile != "")
 		{
 		    UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);
 		    UI::ChangeWidget(`id(`next), `Enabled, true);
@@ -562,14 +563,15 @@ to save the current profile.
 		    {
 			string filename = SaveFileAs(AIConfig::Repository + "/");
 
-			if (filename=="")
+			if (filename == "")
 			{
 			    continue;
 			}
 			else
 			{
-			    AIConfig::currentFile= filename;
+			    AIConfig::currentFile = filename;
 			}
+			
 			if (AIConfig::currentFile == "")
 			{
 			    UI::WarningPopup(_("Provide a file name

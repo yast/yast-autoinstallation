@@ -90,8 +90,11 @@
 	    {
 		UI::ChangeWidget(`id(`part), `Enabled, false);
 	    }
-	    
-	    list whatitem = splitstring(item,":");
+	    list whatitem = [];
+	    if(item!=nil)
+	    {		
+		whatitem = splitstring( item , ":");
+	    }
 
 	    if (ret == `table && size(whatitem) == 0)
 	    {
