@@ -32,6 +32,12 @@ Obsoletes:	yast2-trans-autoinst
 %description installation
 -
 
+%package utils
+Version:    @VERSION@
+Summary:    YaST2 Modules for inst-sys
+Group:      YaST2
+%description utils
+-
 
 @PREP@
 %setup -q -a 1
@@ -55,8 +61,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/rules
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/classes
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
-
-
 
 
 @CLEAN@
@@ -127,10 +131,8 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
 # additional files
 /usr/share/autoinstall/isolinux.cfg
-/usr/share/autoinstall/EXTRA_PROV
 
 /var/adm/fillup-templates/sysconfig.autoinstall
-@ybindir@/create_package_descr
 
 ############################################################################
 ############################################################################
@@ -192,3 +194,8 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 %dir /var/adm/autoinstall/cache
 %dir /var/lib/autoinstall
 %dir /var/lib/autoinstall/autoconf
+
+
+%files utils
+/usr/share/autoinstall/EXTRA_PROV
+/usr/bin/create_package_descr
