@@ -930,7 +930,8 @@
 	    <listitem>
 	      <para>
 		Use a pre-defined package base selection, i.e. Minimal, Minimal+X11,
-		default etc. in addition to several <emphasis>Add-on</emphasis> selections.
+		default etc. in addition to several <emphasis>Add-on</emphasis> selections. 
+		Check the first CD for available selections in <filename>suse/setup/desc/selections</filename>, depending on the product you are installing, some well-known selections might not be available.
 	      </para>
 	    </listitem>
 	    <listitem>
@@ -953,14 +954,12 @@
 	  </para>
 	  &example.software;
 	  <para>
-	    A list of possible pre-defined selections can be found on the first
-	    CD-ROM in the directory <filename>suse/setup/decr</filename>. You
-	    can install one base selection and additionally one or multiple 
+	    You can install one base selection and additionally one or multiple 
 	    add-on selections.
 	  </para>
 	  <para>
 	    When installing from a CD-ROM, needed packages from other CD-ROMs
-	    are installed after the initial booting of the
+	    are installed after the initial boot of the
 	    system in the so-called <emphasis>continue</emphasis> mode. If you
 	    are installing packages from multiple CD-ROMs, then
 	    auto-installation has to be interrupted for switching the
@@ -1031,14 +1030,15 @@
 	<example>
 	    <title>Creating package database</title>
 	    <screen>
-cd /usr/local/CDs/8.2/suse
-/usr/lib/YaST2/bin/create_package_descr  -d /usr/local/CDs/8.2/suse  -l english -l german -l czech
+cd /usr/local/CDs/LATEST/suse
+create_package_descr  -d /usr/local/CDs/LATEST/suse 
 	    </screen>
 	  </example>
 	  <para>
 	    In the above example, the directory
-	    <filename>/usr/local/CDs/8.2/suse</filename> contains the architecture
-	    dependent and independent packages, i.e. <emphasis>noarch</emphasis> and <emphasis>i586</emphasis>.
+	    <filename>/usr/local/CDs/LATEST/suse</filename> contains the architecture
+	    dependent and independent packages, i.e. <emphasis>noarch</emphasis> and <emphasis>i586</emphasis>. 
+		This might look different on other architectures.
 	  </para>
 	  <para>
 	    The advantage of this method is that you can keep an up-to-date
@@ -1046,6 +1046,15 @@ cd /usr/local/CDs/8.2/suse
 	    server). Additionally this method  makes the creation of custom CD-ROMs easier.
 	  </para>
 	</section>
+	<section>
+		<title>Kernel packages</title>
+		 <para>Kernel packages are not part of any selection. The required kernel
+		is determined during installation. If the kernel package is added to any selection
+		or to the individual package selection, installation will mostly fail due to conflicts.
+		</para>
+		<para>To force the installation of a specific kernel, use the <empahsis>kernel</emphasis> property. The following is an example forcing the installation of the default kernel. In this example this kernel will be installed in any case, even if an SMP or other kernel is required</para>
+
+	  &example.kernel;
       </section>
 
       <section id="CreateProfile.Services">
