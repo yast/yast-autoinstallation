@@ -96,7 +96,7 @@
 
     <section id="CreateProfile.Bootloader">
       <title>The Boot loader</title>
-      <para>The bootloader configuration in SuSE Linux 8.2 has undergone a
+      <para>Since SuSE Linux 8.2, the bootloader configuration has undergone a
 	major rework and now offers more features and configuration
 	possibilities.
       </para>
@@ -108,10 +108,10 @@
 	If the bootloader resource is not configured, the system will propose
 	best configuration depending on the partitioning plan. In some cases
 	you must  decide  where to to install the bootloader (the Master Boot Record or the first sector of
-	the<filename> /boot</filename> partition) and must specify some options.
+	the<filename> /boot</filename> partition) and must specify additional options for the bootloader to be installed correctly.
       </para>
       <para>
-	For example, t install the bootloader on the Linux root partition, add the value <emphasis>root</emphasis>
+	For example, install the bootloader on the Linux root partition, add the value <emphasis>root</emphasis>
 	to the <emphasis>location</emphasis> property.
       </para>
       <para>
@@ -134,8 +134,8 @@
 
 	  <para>
 	    For the automated partitioning to be completed, only the sizes and mount points of
-	    partitions are required. All other data needed for successful partitioning
-	    can be calculated during installation if not provided in the control file.
+	    partitions can be provided. All other data needed for successful partitioning
+	    can be calculated during installation if not provided in the control file. 
 	  </para>
 	  <para>
 	    If no partitions are defined and the specified drive is also the drive where
@@ -223,6 +223,16 @@
 	      </para>
 	    </listitem>
 	  </itemizedlist>
+<note>
+	<title>Improtant Notice</title>
+	<para>
+		The value provided in the<emphasis>use</emphasis> property determines how existing data and
+		partitions are treated. The value <emphasis>all</emphasis> means that ALL data on the disk will
+		be erased. Make backups and use the <emphasis>confirm</emphasis> property if you are going to
+        keep some partitions with important data. This is automated installation and no pop-ups will
+        notify you about partitions being deleted.
+	</para>
+</note>
 	  <para>	
 	    In case of the presence of multiple drives in the target system, all
 	    drives  should be identified with their device
@@ -240,13 +250,10 @@
 	    depending on the memory available and the type of the system.
 	  </para>
 	  <para>A fixed size can be given as shown below:</para>
-	  <formalpara>
-	    <title>Size</title>
 	    <para>
 	      <emphasis>1GB</emphasis> will create a partition with 1 GB size.<emphasis> 1500MB</emphasis> will create
 	      a partition which is 1.5 GB big.
 	    </para>
-	  </formalpara>
 	  &example.partitioning;
 
 	
@@ -332,7 +339,7 @@
 	  The properties <emphasis>partition_id</emphasis> and
 	  <emphasis>partition_type</emphasis> control such behavior. To
 	  specify the size in sectors, the list resource
-	  <emphasis>region</emphasis> can be used:
+	  <emphasis>region</emphasis> can be used.
 	</para>
 	&example.advancedPartitioning;
 	
@@ -346,7 +353,7 @@
 	  
 	  <para>
 	    The following example lets you create an extended partition with a
-	    custom size
+	    custom size.
 	  </para>
 	  <example>
 	    <title>
@@ -916,8 +923,8 @@
 	    Package Selections
 	  </title>
 	  <para>	
-	    You can install software on the new system using the following
-	    different ways:
+	    You can install software on the new system using the following methods;
+
 	  </para>
 	  <itemizedlist>
 	    <listitem>
