@@ -37,7 +37,16 @@
 	to a a detection of a special kernel architecture or if  a reboot was requested in
 	the control file. 
       </para>
-      
+      <note>
+	<title>Confirmation when partition tables are to be initialized</title>
+	<para>Note that when deleting LVM and RAID configurations on the
+	  target system, the confirmation screen comes up only after the partition
+	  data has been deleted. In case you are just testing, make sure you
+	  disable destorying LVM and RAID. Besides, the pre-scripts are also
+	  executed before the confirmation screen, so if you have critical
+	  scripts that might change the system, the confirmation screen might
+	  be too late.</para>
+      </note>
     </section>
     <section id="CreateProfile.Reporting">
       <title id="CreateProfile.Reporting.title">
@@ -844,24 +853,24 @@
 	    available in the repository and create the required package
 	    database.
 	  </para>
-	  <para>
-	    Creating a new package database is only needed if new RPMs
-	    (i.e. update RPMs) were added. To re-create the database, use the
-	    <command>/usr/lib/YaST2/bin/create_package_descr</command>
-	    command. For example, use this command line to create the package
-	    database for all languages. (When creating the database, all
-	    languages will be reset to English).
-	  </para>
-	  <example>
+	<para>
+	  Creating a new package database is only needed if new RPMs
+	  (i.e. update RPMs) were added. To re-create the database, use the
+	  <command>/usr/lib/YaST2/bin/create_package_descr</command>
+	  command. For example, use this command line to create the package
+	  database for all languages. (When creating the database, all
+	  languages will be reset to English).
+	</para>
+	<example>
 	    <title>Creating package database</title>
 	    <screen>
-cd /usr/local/CDs/8.1/suse
-/usr/lib/YaST2/bin/create_package_descr  -d /usr/local/CDs/8.1/suse  -l english -l german -l czech
+cd /usr/local/CDs/8.2/suse
+/usr/lib/YaST2/bin/create_package_descr  -d /usr/local/CDs/8.2/suse  -l english -l german -l czech
 	    </screen>
 	  </example>
 	  <para>
 	    In the above example, the directory
-	    <filename>/usr/local/CDs/8.1/suse</filename> contains the architecture
+	    <filename>/usr/local/CDs/8.2/suse</filename> contains the architecture
 	    dependent and independent packages, i.e. <emphasis>noarch</emphasis> and <emphasis>i586</emphasis>.
 	  </para>
 	  <para>
