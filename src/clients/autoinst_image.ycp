@@ -1,0 +1,45 @@
+{
+
+	import "Installation";
+    import "Progress";
+
+	string file = Installation::destdir +  "/suseroot.tgz";
+	string iface = "eth0";
+
+    string help_text = UI(_("<p>
+Please wait while the image is being retrieved.</p>
+"));
+    list progress_stages =
+	[
+	 _("Retrieve Image File"),
+	 _("Unpack files into System")
+	 ];
+
+    list progress_descriptions =
+	[
+	 _("Retrieving image file"),
+	 _("Unpacking mage file "),
+	 ];
+
+    Progress::New(
+		  _("Installing Image into System"),
+		  "",     // progress_title
+		  size( progress_stages ),	// progress bar length
+		  progress_stages,
+		  progress_descriptions,
+		  help_text );
+
+    Progress::NextStage();
+	string udprec = sformat("/usr/sbin/udp-receiver  --interface %1 --nosync --file %2 --log /tmp/udp-receiver.log ", iface,  file);
+	SCR::Execute(.target.bash, udprec);
+
+	string untar = sformat("tar -C %1 -zxpf %2", Installation::destdir, file);
+    Progress::NextStage();
+	SCR::Execute(.target.bash, untar);
+
+    Progress::Finish();
+
+	return `next;
+
+
+}
