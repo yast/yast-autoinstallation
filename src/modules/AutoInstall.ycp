@@ -106,7 +106,7 @@
     global string Mouse = "";
 
     // Hardware clock
-    global boolean UTC = false;
+    global string Hwclock = "";
 
     global map Bootloader = $[];
 
@@ -284,10 +284,15 @@
 	    else if (k == "clock" && is(v, map))
 	    {
 		Timezone = v["timezone"]:default_timezone;
-		if (v["utc"]:false) 
-		    UTC  = true;
-		else
-		    UTC  = false;
+		string hwc = v["hwclock"]:"";
+		if (hwc != "")
+		{
+		    if (hwc == "localtime")
+			Hwclock = "--localtime";
+		    else
+			Hwclock = "-u";
+		}
+	
 
 		if (size(v["ntp_servers"]:[])>0)
 		{
@@ -298,12 +303,13 @@
 		}
 		
 	    }
+	   
 	    else if (k == "hwclock") // compat
 	    {	
 		if (v == "localtime")
-		    UTC	= false;
-		else
-		    UTC	=  true;
+		    Hwclock = "--localtime";
+		else	
+		    Hwclock = "-u";
 	    }
 	    else if (k == "timezone") // compat
 	    {
