@@ -85,7 +85,7 @@
     }
 
     define void createSkelDir()``{
-	skelDir = "/tmp/iso_skeleton";
+	skelDir = tmpDir + "/iso_skeleton";
 	SCR::Execute(.target.mkdir, skelDir);
 	return;
     }
@@ -181,9 +181,12 @@
 	y2milestone("creating skeleton in %1", skelDir);
 	
 	SCR::Execute(.target.mkdir, skelDir + "/skeleton/suse");
-	commands= add(commands, sformat("cp -a %1/suse/images %2/skeleton/suse", sourceDir, skelDir));	
-	commands= add(commands, sformat("cp -a %1/suse/setup %2/skeleton/suse", sourceDir, skelDir));
-	commands= add(commands, sformat("cp  %1/.S* %2/skeleton/", sourceDir, skelDir));
+	commands= add(commands, sformat("/bin/cp -a %1/suse/images %2/skeleton/suse", sourceDir, skelDir));	
+	commands= add(commands, sformat("/bin/cp -a %1/suse/setup %2/skeleton/suse", sourceDir, skelDir));
+	commands= add(commands, sformat("/bin/cp  %1/* %2/skeleton/", sourceDir, skelDir));
+	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/media.1",  skelDir));
+	commands= add(commands, sformat("/bin/cp %1/media.1/products   %2/skeleton/media.1/products",  sourceDir , skelDir));
+	
 	foreach (`c, commands, ``{
 	    ret = SCR::Execute (.target.bash, c);
 	    if (ret != 0)
@@ -191,6 +194,7 @@
 		success= false;
 	    }
 	});
+	SCR::Write(.target.string,   sformat("%1/skeleton/media.1/media",  skelDir),  readMedia());
 	list pacdirs = ["i386", "i586", "noarch"];
 	foreach(`dir, pacdirs, ``{
 	    string dirname =  sformat("%1/skeleton/suse/%2", skelDir, dir);
@@ -199,5 +203,13 @@
 	return success;
     }
 
+    /**
+     * Parse media data
+     */
+    global define string readMedia() ``{
+	string media = SCR::Read(.target.string,  sourceDir + "/media.1/media");
+	list mediaData = splitstring(media, "\n");	
+	return (mergestring( [mediaData[0]:"",mediaData[1]:""] , "\n"));
+    }
  
 }
