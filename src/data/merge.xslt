@@ -12,7 +12,7 @@
                 xmlns:m="http://informatik.hu-berlin.de/merge"
                 exclude-result-prefixes="m">
 
-<xslt:output method="xml" cdata-section-elements="list source partitions YAST_INFO SYS_SW_SELLIST SYS_SW_ADDLIST SYS_PCMCIA_MODULES SYS_RC_CONFIG_VARS NET_IP_CONFIG SYS_PART_sda SYS_PART_sdb SYS_PART_sdc SYS_PART_sdd SYS_PART_hda SYS_PART_hdb SYS_PART_hdc SYS_PART_hdd USERLIST INETDLIST ETC_HOSTS MODULES_CONF GROUPLIST SYS_SW_AUXLIST ROUTES"/>
+<xslt:output method="xml" cdata-section-elements="list source file_contents YAST_INFO SYS_SW_SELLIST SYS_SW_ADDLIST SYS_PCMCIA_MODULES SYS_RC_CONFIG_VARS NET_IP_CONFIG SYS_PART_sda SYS_PART_sdb SYS_PART_sdc SYS_PART_sdd SYS_PART_hda SYS_PART_hdb SYS_PART_hdc SYS_PART_hdd USERLIST INETDLIST ETC_HOSTS MODULES_CONF GROUPLIST SYS_SW_AUXLIST ROUTES"/>
 
 <!-- Normalize the contents of text, comment, and processing-instruction
      nodes before comparing?

@@ -215,6 +215,8 @@
 	{
 	    toimport["loader_device"] = Bootloader["location"]:"mbr";
 	}
+
+	
 	if (haskey(Bootloader, "loader_type"))
 	{
 	    toimport["loader_type"] = Bootloader["loader_type"]:"grub";
@@ -258,7 +260,9 @@
 	Boot::Set();
 	*/
 
-	Bootloader::Import(toimport);
+	// Bootloader::Import(toimport);
+	Bootloader::Reset ();
+	Bootloader::Propose ();
     }
 
 

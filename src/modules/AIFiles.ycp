@@ -14,7 +14,9 @@
     global list Files = [];
 
 
-
+    /**
+     * Settings Summary
+     */
     global define string Summary() ``{
 
 	string summary = "";
@@ -34,16 +36,24 @@
 	return summary;
     }
 
+
+    /**
+     * Import Settings
+     */
     global define boolean Import (list settings) ``{
 	Files = settings;
 	return true;
     }
 
-
+    /**
+     * Export Settings
+     */
     global define list  Export () ``{
 	return Files;
     }
-
+    /**
+     * Write Settings
+     */
     global define boolean Write () ``{
 	if ( size( Files )==0 )
 	{
