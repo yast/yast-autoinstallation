@@ -144,19 +144,26 @@
 		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
 	    }
 
-	    if (!(boolean)SCR::Execute(.local.mount, [ Host + ":" + dirname(Path), mount_point, Installation::mountlog ], "-t nfs" ))
+	    if (!(boolean)WFM::Execute(.local.mount,
+                        [ Host + ":" + dirname(Path),
+                        mount_point,
+                        Installation::mountlog ]))
 	    {
 		y2warning("Mount failed");
 		return (false);
 	    }
 
-	    if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + " " + basename(Path) + " " + Localfile) == 0)
+            string copyCmd = "/bin/cp " + mount_point + "/" + basename(Path) +
+                " " + Localfile;
+            y2milestone("Copy Command: %1", copyCmd);
+	    if (WFM::Execute (.local.bash, copyCmd ) == 0)
 	    {
 		ok = true;
 	    }
 	    else
 	    {
-		y2error("Control file can't be found");
+		y2error("remote file %1 can't be retrieved",  mount_point + "/"
+                        + basename(Path));
 
 	    }
 
@@ -168,11 +175,11 @@
 	    import "StorageDevices";
 	    if (StorageDevices::FloppyReady())
 	    {
-		SCR::Execute(.local.mount, [StorageDevices::FloppyDevice, "/media/floppy"], "-t auto");
+		WFM::Execute(.local.mount, [StorageDevices::FloppyDevice, "/media/floppy"]);
 
 		if (WFM::Execute (.local.bash, "/bin/cp /media/floppy/" + Path + " " + Localfile) != 0)
 		{
-		    y2error("Control file can't be found");
+		    y2error("file  %1 can't be retrieved", "/media/floppy/" + Path );
 		}
 		else
 		{
@@ -185,12 +192,13 @@
 	{
 	    if ( Host != "" && Path != "")
 	    {
-		SCR::Execute(.local.mount, [sformat("/dev/%1", Host) ,
-                        mount_point], "-t auto");
+		WFM::Execute(.local.mount, [sformat("/dev/%1", Host) ,
+                        mount_point]);
 
 		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  Path + " " + Localfile) != 0 )
 		{
-		    y2error("Control file can't be found");
+		    y2error("file %1 can't be found",  mount_point +
+                            Path);
 		}
 		else
 		{
@@ -208,7 +216,7 @@
 	    }
 	    else
 	    {
-		y2error("Control file can't be found");
+		y2error("file %1 can't be found", Path );
 	    }
 	}
 	else
@@ -220,8 +228,11 @@
     }
 
 
-
-    boolean GetURL(string url, string target)  {
+    /**
+     * Get a file froma  given URL
+     */
+    boolean GetURL(string url, string target)
+    {
         AutoinstConfig::urltok=URL::Parse(url);
         map toks = AutoinstConfig::urltok;
         return Get(toks["scheme"]:"", toks["host"]:"", toks["path"]:"", target);
