@@ -232,14 +232,14 @@ more <b>add-on</b> selections and packages.
     }
     else if (func == "Change")
     {
-        any exp1 = AutoinstSoftware::Export();
 	ret  = packageSelector();
-        any exp2 = AutoinstSoftware::Export();
-        if (exp1!=exp2)
-            AutoinstSoftware::SetModified();
     }
     else if (func == "GetModified") {
 	ret  = AutoinstSoftware::GetModified() || PackageAI::GetModified();
+    }
+    else if (func == "SetModified") {
+	AutoinstSoftware::SetModified();
+        ret = true;
     }
     else if (func == "Export") {
 	ret = AutoinstSoftware::Export();

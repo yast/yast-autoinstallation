@@ -77,7 +77,8 @@
      * @param list mount points
      * @return string
      */
-    define string findMountpoint(string device, map p, list<map> mounts) ``{
+    define string findMountpoint(string device, map p, list<map> mounts)
+    {
 	string mountPoint = "";
 	foreach(map mount , mounts, ``{
 	    string m = sformat("%1%2", device ,  p["nr"]:nil);
@@ -94,7 +95,8 @@
      * @param list region
      * @return integer size
      */
-    define integer units_to_size (list region) ``{
+    define integer units_to_size (list region)
+    {
 	integer units = (integer) select(region,1,0);
 	return (units * bytes_per_unit)  -  bytes_per_unit + 1;
     };
@@ -104,7 +106,8 @@
      * Create a partition plan for the calling client
      * @return list partition plan
      */
-    global define list Partitioning()``{
+    global define list Partitioning()
+    {
 	Mode::config = false;
         StorageDevices::InitDone();
 	map<string, map> StorageMap = eval(Storage::GetTargetMap());
@@ -246,7 +249,8 @@
      *		"addons" -> list<string> addon selections
      *		"packages" -> list<string> user selected packages
      */
-    global define map<string, any > Software() ``{
+    global define map<string, any > Software()
+    {
 	boolean ret = Pkg::TargetInit("/", false);
 
 	base = Pkg::GetSelections(`installed, "base");
@@ -254,7 +258,6 @@
 	list<string> inst = Pkg::GetPackages(`installed, true);
 
 	Pkg::TargetFinish ();
-
 
 	string tmproot = AutoinstConfig::tmpDir;
 	SCR::Execute(.target.mkdir, tmproot + "/rootclone");
@@ -293,7 +296,8 @@
      * Bootloader options
      * @return map bootloader options
      */
-    global define map Bootloader()``{
+    global define map Bootloader()
+    {
 	map bootloader = $[];
 
 	boolean readret = (boolean)Call::Function("bootloader_auto", ["Read", $[] ]);
@@ -312,7 +316,7 @@
      * @return map general options
      */
     global define map General()
-        ``{
+    {
 	import "Language";
 	import "Mode";
 	Mode::config = false;
@@ -379,53 +383,14 @@
       * @return list
       */
      define boolean CommonClone(string resource, map resourceMap)
-	 ``{
+     {
 
 	 string data_type = resourceMap["X-SuSE-YaST-AutoInstDataType"]:"map";
-	 string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
-	 string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
-
 	 string auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"";
 	 resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:resource;
 
-	 boolean readret = false;
-
-	 map mergedResource = $[];
-	 if (size(tomerge) > 0 )
-	 {
-	     list MergeTypes = splitstring(tomergetypes, ",");
-	     list Merge = splitstring(tomerge, ",");
-
-	     boolean readret = (boolean)Call::Function(auto , ["Read", $[] ]);
-	     map result = (map)Call::Function(auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-	     y2debug("export result: %1", result);
-	     integer i = 0;
-	     foreach( string res, splitstring(tomerge, ",") , ``{
-		 if ( MergeTypes[i]:"map" == "map")
-		 {
-		     Profile::Flat[res] = result[res]:$[];
-
-		 }
-		 else
-		     Profile::Flat[res] = result[res]:[];
-
-		 y2debug("flat: %1", Profile::Flat);
-		 i = i + 1;
-	     });
-	 }
-	 else
-	 {
-	     if (data_type == "map")
-	     {
-		 readret = (boolean)Call::Function(auto , ["Read", $[] ]);
-		 Profile::Flat[resource]  = Call::Function(auto, ["Export", $[] ]) ;
-	     }
-	     else
-	     {
-		 readret = (boolean)Call::Function(auto , ["Read", [] ]);
-		 Profile::Flat[resource]  = Call::Function(auto, ["Export", [] ]) ;
-	     }
-	 }
+         Call::Function(auto , ["Read"]);
+         Call::Function(auto , ["SetModified"]);
 
 	 return true;
 
@@ -438,7 +403,7 @@
       * @return list list to be used in widgets
       */
      global define list createClonableList()
-	 ``{
+    {
 	 list items = [];
 	 foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
 	     y2debug("r: %1 => %2", def_resource, resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" );
@@ -468,7 +433,7 @@
      * @return void
      */
     global define void Process()
-	``{
+    {
 	y2debug("Additional resources: %1 %2", base, additional);
 	Profile::Reset();
 	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
@@ -485,11 +450,21 @@
 
 	});
 
-        Profile::Flat["partitioning"] = Partitioning();
-        Profile::Flat["software"] = Software();
-        Profile::Flat["bootloader"] = Bootloader();
-        Profile::Flat["general"] = General();
-        Profile::Flat["report"] = Report::Export();
+        Call::Function("storage_auto" , ["Import", Partitioning()]);
+        Call::Function("storage_auto" , ["SetModified"]);
+
+        Call::Function("software_auto" , ["Import", Software()]);
+        Call::Function("software_auto" , ["SetModified"]);
+
+        Call::Function("bootloader_auto" , ["Import", Bootloader()]);
+        Call::Function("bootloader_auto" , ["SetModified"]);
+
+        Call::Function("general_auto" , ["Import", General()]);
+        Call::Function("general_auto" , ["SetModified"]);
+
+        Call::Function("report_auto" , ["Import", Report::Export()]);
+        Call::Function("report_auto" , ["SetModified"]);
+
 	Profile::Prepare();
 	return;
     }
@@ -499,8 +474,8 @@
      * @param string outputFile Output file path
      * @return boolean true on success
      */
-    global define boolean Write(string outputFile)``{
-
+    global define boolean Write(string outputFile)
+    {
 	Process();
 	boolean ret =  Profile::Save( outputFile );
 	return ret;
