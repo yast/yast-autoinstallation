@@ -13,35 +13,7 @@
     include "autoinstall/helps.ycp";
 
 
-
     /**
-     * Show feedback message in a simple dialog.
-     * @param msg message to show
-     * @return void
-     **/
-    define void showFeedback( string msg ) ``{
-	if ( AutoinstConfig::popup_open )
-	{
-	    UI::CloseDialog();
-	}
-	UI::OpenDialog( `VBox( `Label( msg ) ) );
-	y2debug( msg );
-	AutoinstConfig::popup_open = true;
-    };
-
-
-    /**
-     * Close feedback dialog if it is open
-     * @return void
-     **/
-    define void clearFeedback() ``{
-	if ( AutoinstConfig::popup_open )
-	    UI::CloseDialog();
-	AutoinstConfig::popup_open = false;
-    };
-
-
-    /**     
      * Preferences Dialog
      * @return symbol
      */
@@ -204,6 +176,8 @@ must begin with letter, and must be
 
     /**
      * Popup for a new file name
+     * @param string caption
+     * @param string textentry
      * @return string new file name
      */
     define string NewFileName(string caption, string textentry)``{
@@ -238,7 +212,7 @@ must begin with letter, and must be
 		break;
 	    }
 	    else if (ret == `ok)
-	    {		
+	    {
 		f = (string)UI::QueryWidget (`id (`newname), `Value);
 		if (checkFileName(f) !=0 || f == "")
 		{
@@ -254,13 +228,11 @@ must begin with letter, and must be
 	return (ret == `ok)? f : "";
     }
 
-    
     /**
      * Clone running system
      * @return symbol
      */
     define symbol cloneSystem()``{
-	
 	import "AutoinstClone";
 	import "Profile";
 
@@ -287,7 +259,6 @@ must begin with letter, and must be
 	Wizard::ReplaceAbortButton(`Empty());
 
 	UI::ChangeWidget(`id(`next), `Label, Label::CreateButton());
-	
 	symbol ret = `none;
 	repeat
 	    {
@@ -296,12 +267,10 @@ must begin with letter, and must be
 		{
 		    AutoinstClone::base = (list)UI::QueryWidget( `id(`baseres), `SelectedItems );
 		    AutoinstClone::additional = (list)UI::QueryWidget( `id(`res), `SelectedItems );
-		    showFeedback( _("Collecting system data.
-Please wait...
-"));
+                    Popup::ShowFeedback( _("Collecting system data."), _("This may take a while..."));
 		    AutoinstClone::Process();
 		    Profile::changed = true;
-		    clearFeedback();
+                    Popup::ClearFeedback();
 
 		}
 	    } until (ret == `next || ret == `back);

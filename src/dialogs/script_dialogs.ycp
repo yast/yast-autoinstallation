@@ -22,11 +22,11 @@
     import "AutoinstConfig";
 
 
-    
+
     /**
      * @return  script configuration dialog
      */
-    global define term script_dialog_contents()
+    define term script_dialog_contents()
 	``{
 	list allscripts = maplist(map s, AutoinstScripts::merged,
 				  ``{
@@ -54,7 +54,7 @@
 	return contents;
     }
 
-    
+
     /**
      * Dialog for adding/Editing  a script
      * @param mode `edit or `new
@@ -62,7 +62,7 @@
      * @return symbol
      */
 
-    global define symbol ScriptDialog(symbol mode , string name)
+    define symbol ScriptDialog(symbol mode , string name)
     ``{
 	map script = $[];
 	if (mode == `edit)
@@ -98,7 +98,7 @@ environment, choose the <i>chroot scripts</i> options.
 <H3>Interpreter:</H3>
 <P>Pre-scripts can only be shell scripts. Do not use <i>Perl</i> or <i>Python</i> for pre-scripts.
 </P>
-");	
+");
 	string title = _("Script Editor");
 
 	term contents=
@@ -162,7 +162,7 @@ name and the content of the script.
 		    continue;
 		}
 		else
-		{		    
+		{
 		    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type);
 		}
 	    }
@@ -189,7 +189,7 @@ name and the content of the script.
      * Main dialog
      * @return symbol
      */
-    global define symbol ScriptsDialog()
+    define symbol ScriptsDialog()
     ``{
 
 	string help = _("<p>

@@ -23,13 +23,14 @@
     include "partitioning/custom_part_dialogs.ycp";
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_lib.ycp";
-    
+
     include "partitioning/partition_defines.ycp";
     include "autoinstall/helps.ycp";
-    
+
 
     /**
      * CheckIfMaxSet()
+     * @param string item
      * @return boolean
      */
     define boolean CheckIfMaxSet( string item )
@@ -42,10 +43,10 @@
 					map d, AutoinstStorage::AutoPartPlan,
 					``(item == d["device"]:"")), 0, $[]
 				 );
-	
+
 	list ps = drive["partitions"]:[];
 	foreach (map p, ps, ``{
-	    
+
 	    if (p["size"]:"" == "max")
 		exists = true;
 	});
@@ -55,9 +56,8 @@
 
 
     /**
-     * getTargets ()
-     * get target
-     * @return targets
+     * Get target
+     * @return map targets
      */
     define map getTargets () ``{
 	map auto_targets =  listmap (map d, AutoinstStorage::AutoPartPlan, ``{
@@ -66,7 +66,7 @@
 	});
 	return auto_targets;
     }
-    
+
     /*
      * Partition Dialog
      *
@@ -75,10 +75,10 @@
      * @return symbol
      */
     define symbol PartitionDialog (symbol mode, string item) ``{
-	
-	list partitioning =  AutoinstStorage::AutoPartPlan;	
+
+	list partitioning =  AutoinstStorage::AutoPartPlan;
 	list item_id = splitstring(item,":");
-	
+
 	map this_drive = $[];
 	string drive = "";
 	map new_val = $[];
@@ -109,7 +109,7 @@
 	new_val["fsid"] = new_val["partition_id"]:Partitions::fsid_native;
 	new_val["used_fs"] = new_val["filesystem"]:`reiser;
 
-	
+
 	list other_drives = filter(map d ,partitioning,``(lookup(d,"device","") != drive));
 
 	map file_systems 	= FileSystems::GetAllFileSystems(true, true);
@@ -209,7 +209,7 @@ needs. All fields are required.</P>
 					    `HBox(
 						  // popup create partition:
 						  `PushButton(`id(`ok),  Label::OKButton() ),
-						  
+
 						  // popup create partition:
 						  `PushButton(`id(`cancel),  Label::CancelButton() )
 						  )
@@ -258,7 +258,7 @@ needs. All fields are required.</P>
 	{
 
 	    ret = UI::UserInput();
-	    
+
 	    if (ret != `cancel) {
 		if ( UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max
 		     || UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto)
@@ -275,7 +275,7 @@ needs. All fields are required.</P>
 		{
 		    symbol filesystem  =  (symbol)UI::QueryWidget(`id(`fs), `Value);
 		    map selected_fs =  lookup( file_systems, filesystem , $[] );
-		    
+
 
 		    return_value     = add( return_value , "format",  true );
 		    return_value     = add( return_value , "filesystem", filesystem );
@@ -397,7 +397,7 @@ needs. All fields are required.</P>
 		{
 		    // Check if a partition already was configured with "max" size
 		    if (CheckIfMaxSet(drive) && mode != `edit)
-		    {			
+		    {
 			Popup::Error(_("No additional partitions can be added.
 The  last partition you have created ends at the disk boundaries
 due to usage of the \"max\" option."));
@@ -414,7 +414,7 @@ due to usage of the \"max\" option."));
 		    string partitionSize =  (string) UI::QueryWidget(`id(`partsize),   `Value);
 		    if (  partitionSize == "")
 		    {
-			Report::Warning(_("Enter the partition size."));			
+			Report::Warning(_("Enter the partition size."));
 			continue;
 		    }
 		    else
@@ -423,7 +423,7 @@ due to usage of the \"max\" option."));
 		    }
 		}
 
-		
+
 		if ((boolean)UI::QueryWidget(`id(`asprimary),  `Value))
 		{
 		    return_value= add(return_value, "partition_type" ,"primary");
@@ -489,7 +489,7 @@ due to usage of the \"max\" option."));
 		break;
 	    }
 
-	} 
+	}
 
 	UI::CloseDialog();
 
@@ -505,7 +505,7 @@ due to usage of the \"max\" option."));
 		partitions[tointeger(select(item_id,1,"")) - 1] = return_value;
 	    }
 	    this_drive["partitions"] = partitions;
-	    
+
 	    AutoinstStorage::AutoPartPlan=add(other_drives,this_drive);
 	}
 	return (symbol)ret;
@@ -712,7 +712,7 @@ Select or enter another device name.
 	any action = nil;
 
 	list drives_table = AutoinstStorage::Overview();
-	
+
 	term contents =
 	    `VBox(
 		  `Table(`id(`table), `opt(`notify, `immediate, `keepSorting),
@@ -726,19 +726,19 @@ Select or enter another device name.
 			`PushButton(`id(`delete), _("&Delete"))
 			)
 		  );
-	
+
 	Wizard::SetContents(_("Partition Plans"),
 			    contents , HELPS["drivedialog"]:"", true, true);
 
 	Wizard::ReplaceAbortButton(`Empty());
-	
+
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
-	
+
 	while (true)
 	{
 	    /*
 	    string item = (string)UI::QueryWidget(`id(`table), `CurrentItem);
-	    
+
 	    y2milestone("item: %1", item);
 	    if (item == nil )
 	    {
@@ -758,7 +758,7 @@ Select or enter another device name.
 	    ret = UI::UserInput();
 
 	    string item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
-	    
+
 	    list drives = AutoinstStorage::AutoPartPlan;
 	    list configured_drives = maplist(map c, drives, ``{
 		return(c["device"]:"");
@@ -774,15 +774,15 @@ Select or enter another device name.
 		UI::ChangeWidget(`id(`part), `Enabled, false);
 	    }
 
-	    
+
 	    list whatitem = [];
-	    
+
 	    if(item != nil)
 	    {
 		whatitem = splitstring( item , ":");
 	    }
 
-	    
+
 	    if (ret == `table && size (whatitem) == 0)
 	    {
 		UI::ChangeWidget(`id(`delete), `Enabled, true);
@@ -800,7 +800,7 @@ Select or enter another device name.
 		{
 		    // Check if a partition already was configured with "max" size
 		    if (CheckIfMaxSet((string)item))
-		    {			
+		    {
 			Popup::Error(_("No additional partitions can be added.
 The  last partition you have created ends at the disk boundaries
 due to usage of the \"max\" option."));
@@ -850,9 +850,9 @@ due to usage of the \"max\" option."));
 			       );
 		    drive= (string)select(item_id,0,"");
 		    list drive_partitions = this_drive["partitions"]:[];
-		    
+
 		    drive_partitions= remove(drive_partitions, tointeger(select(item_id,1,"")) - 1);
-		    
+
 		    this_drive["partitions"] =  drive_partitions;
 
 		    AutoinstStorage::AutoPartPlan= maplist(map d, partitioning,
@@ -868,7 +868,7 @@ due to usage of the \"max\" option."));
 					       });
 		}
 		else
-		{		    
+		{
 		    AutoinstStorage::AutoPartPlan = filter(map d,partitioning,``(d["device"]:"" != item));
 		}
 		    drives_table = AutoinstStorage::Overview();
@@ -878,20 +878,20 @@ due to usage of the \"max\" option."));
 	    {
 		break;
 	    }
-	    
-	
 
-	} 
-	
+
+
+	}
+
 	return (symbol)ret;
     }
 
 
 
- 
 
 
 
-    
+
+
 
 }
