@@ -4,7 +4,14 @@
 
 yncludedir = @yncludedir@/autoinstall
 
-ynclude_DATA = $(wildcard *.ycp)
+ynclude_DATA =  \
+    autopart.ycp \
+    classes.ycp \
+    conftree.ycp \
+    io.ycp \
+    wizards.ycp \
+    xml.ycp
+
 
 EXTRA_DIST =                    \
 	$(ynclude_DATA)
