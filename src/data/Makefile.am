@@ -11,6 +11,8 @@ miscdir = /usr/share/autoinstall/
 
 misc_DATA = \
 	isolinux.cfg \
+	options.msg \
+	message \
 	EXTRA_PROV
 
 ydata_DATA = \
