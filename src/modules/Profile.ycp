@@ -33,7 +33,7 @@
     // Configuration changes!
     global boolean changed = false;
 
-    global string profile_dir	= "/var/lib/autoinstall/tmp";
+    global string profile_dir	= "/tmp/profile";
     global string modified_profile = profile_dir + "/modified.xml";
 
 
@@ -53,12 +53,14 @@
      */
 
     global define void Profile ()
-    ``{
-	SCR::Execute(.target.mkdir, profile_dir);
-	 // setup profile XML parameters
-	 profileSetup();	 
-	 return;
-     }
+	``{
+	if (Mode::initial)
+	    SCR::Execute(.target.mkdir, profile_dir);
+	
+	// setup profile XML parameters
+	profileSetup();	 
+	return;
+    }
 
     /**
      * Import Profile
@@ -72,7 +74,7 @@
 	Flat = union( Configure, Install );
 	return;
     }
-      /**
+    /**
      * Prepare profile for saving and remove empty data structs
      * @return void
      */

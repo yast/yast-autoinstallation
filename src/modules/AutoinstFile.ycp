@@ -67,16 +67,20 @@
 
 	integer counter = 0;
 	boolean success = false;
+	
 	foreach(map file, Files,
 		``{
 	    if (file["file_contents"]:"" != "")
 	    {
 		string alternate_location = sformat("%1/%2", AutoInstall::files_dir, counter);
+		string alter_file = sformat("file_%1",  counter);
 		y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );
+		list t = splitstring( file["file_path"]:alternate_location, "/");
+		integer pos = size(t) - 1;
 		
-
+		// SCR::Write (.target.string, AutoInstall::var_dir + "/files" + t[pos]:alter_file, file["file_contents"]:"");
+		SCR::Write (.target.string,  file["file_path"]:alternate_location , file["file_contents"]:"");
 		
-		SCR::Write (.target.string, AutoInstall::var_dir + "/files", file["file_contents"]:"");
 		if (file["file_permissions"]:"" != "")
 		{
 		    SCR::Execute (.target.bash, sformat("chmod %1 %2", file["file_permissions"]:"",  file["file_path"]:alternate_location ));
@@ -126,7 +130,7 @@
 		    }
 		    y2milestone("Script Execution command: %1", executionString );
 		}
-		success = SCR::Execute (.target.bash, sformat("cp %1 %2", file["file_path"]:alternate_location, AutoInstall::files_dir));
+		success = ( SCR::Execute (.target.bash, sformat("cp %1 %2", file["file_path"]:alternate_location, AutoInstall::files_dir)) == 0 );
 	    }
 	    counter = counter + 1;
 	});
