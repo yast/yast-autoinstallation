@@ -98,7 +98,7 @@ path on the installed system. YaST2 will copy this file to the specified locatio
 	Wizard::SetContents(title,
 			    contents, help, true, true);
 
-	UI::ChangeWidget(`id(`accept), `Label, SaveButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, SaveButtonLabel());
 	if (mode == `edit)
 	{
 	    UI::ChangeWidget(`id(`filename), `Enabled, false);
@@ -107,7 +107,7 @@ path on the installed system. YaST2 will copy this file to the specified locatio
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
-	    if (ret == `accept)
+	    if (ret == `next)
 	    {
 		string fileName = UI::QueryWidget(`id(`filename), `Value);
 
@@ -136,8 +136,8 @@ name and the content of the file.
 		}
 	    }
 
-	} until (ret == `accept || ret == `cancel );
-	UI::ChangeWidget(`id(`accept), `Label, FinishButtonLabel());
+	} until (ret == `next || ret == `back );
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 	return ret;
     }
 
@@ -186,7 +186,8 @@ and have a httpd.conf configuration file prepared.</p>");
 	Wizard::SetContents(title,
 			    dialog_contents(), help, true, true);
 
-	UI::ChangeWidget(`id(`accept), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	Wizard::ReplaceAbortButton(`Empty());
 	string select_msg = _("Please Select a file from the table first.");
 	any ret = nil;
 	repeat {
@@ -229,7 +230,7 @@ and have a httpd.conf configuration file prepared.</p>");
 				dialog_contents(), help, true, true);
 
 
-	} until (ret == `cancel || ret == `accept );
+	} until (ret == `back || ret == `next );
 
 	return ret;
     }

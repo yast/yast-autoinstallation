@@ -13,6 +13,7 @@
     
     import "Partitions";
     import "Mode";
+    import "Summary";
     include "partitioning/partition_defines.ycp";
 
     
@@ -81,7 +82,15 @@
      */   
    
     global define string Summary() ``{
-	return "";
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Drives"));
+	summary = Summary::AddLine( summary, sformat(_("Total of %1 drives"), size(drives)));
+	summary = Summary::OpenList(summary);	
+	foreach(map drive, drives, ``{
+	    summary = Summary::AddListItem(summary, drive["device"]:_("No specific device configured") );
+	});
+	summary = Summary::CloseList(summary);
+	return summary;
     }
 
     
