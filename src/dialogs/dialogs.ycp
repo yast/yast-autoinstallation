@@ -463,8 +463,8 @@ the configuration files are read and converted.
 	Wizard::SetContents(_("Check profile validity"),
                 contents, HELPS["valid"]:"", true, true);
         y2milestone("Checking validity");
-        UI::ChangeWidget(`id(`abort), `Enabled, false);
-        UI::ChangeWidget(`id(`back), `Enabled, false);
+        Wizard::HideAbortButton();
+        Wizard::HideBackButton();
         UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
 

@@ -3,6 +3,6 @@
 #
 # $Id$
 #
-SUBDIRS = include modules data clients config dialogs
+SUBDIRS = include modules data clients config dialogs schema
 
 
