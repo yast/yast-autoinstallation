@@ -230,33 +230,40 @@
 	<para>The following example shows how this can be
 	  accomplished:</para>
 
-	<programlisting>
-	  mkdir -p SLES
-	  mkdir -p UL/{CD1,CD2,CD3}
-	  mkdir -p SP3/{CD1,CD2}
-	  mkdir -p yast
+      <programlisting>
+          mkdir -p SLES
+          mkdir -p UL/{CD1,CD2,CD3}
+          mkdir -p SP3/{CD1,CD2}
+          mkdir -p yast
 
-	  mount -o loop /archive/iso/SLES-8-x86-64-CD1.iso SLES
-	  mount -o loop /archive/iso/UnitedLinux-1.0-x86-64-CD1.iso UL/CD1
-	  mount -o loop /archive/iso/UnitedLinux-1.0-x86-64-CD2.iso UL/CD2
-	  mount -o loop /archive/iso/UnitedLinux-1.0-x86-64-CD3.iso UL/CD3
-	  mount -o loop /archive/iso/UnitedLinux-1.0-SP-3-x86-64-CD1.iso SP3/CD1
-	  mount -o loop /archive/iso/UnitedLinux-1.0-SP-3-x86-64-CD2.iso SP3/CD2
+          mount -o loop /archive/iso/SLES-8-x86-64-CD1.iso SLES
+          mount -o loop /archive/iso/UnitedLinux-1.0-x86-64-CD1.iso UL/CD1
+          mount -o loop /archive/iso/UnitedLinux-1.0-x86-64-CD2.iso UL/CD2
+          mount -o loop /archive/iso/UnitedLinux-1.0-x86-64-CD3.iso UL/CD3
+          mount -o loop /archive/iso/UnitedLinux-1.0-SP-3-x86-64-CD1.iso SP3/CD1
+          mount -o loop /archive/iso/UnitedLinux-1.0-SP-3-x86-64-CD2.iso SP3/CD2
 
-	  ln -sf SLES/boot
-	  ln -sf SLES/media.1
-	  ln -sf SP3/CD1/driverupdate
-	  ln -sf SP3/CD1/linux
+          ln -sf SLES/boot
+          ln -sf SLES/media.1
+          ln -sf SP3/CD1/driverupdate
+          ln -sf SP3/CD1/linux
+          ln -sf SLES/content 
 
-	  printf "/SP3\t/SP3" >  yast/order
-	  printf "/SLES\t/SLES" >>  yast/order
-	  printf "/UL/CD1\t/UL/CD1" >> yast/order
+          printf "/SP3/CD1\t/SP3/CD1\n" >  yast/order
+          printf "/SLES\t/SLES\n" >>  yast/order
+          printf "/UL/CD1\t/UL/CD1\n" >> yast/order
 
 
-	  printf "/UL/CD1\t/UL/CD1"  > yast/instorder
-	  printf "/SLES\t/SLES" >> yast/instorder
-	  printf "/SP3\t/SP3" >>  yast/instorder	    
-	</programlisting>
+          printf "/UL/CD1\n" > yast/instorder
+          printf "/SLES\n" >> yast/instorder
+          printf "/SP3/CD1\n" >>  yast/instorder 
+      </programlisting>
+      <para>NOTE that the symlinks in the root of the install server remain the
+          same for a different service pack. You still need the boot information from
+          SP3, and the pointers to media.1 and content from base SLES work
+          fine. (<ulink
+              url="http://lists2.suse.com/archive/suse-autoinstall/2004-Feb/0007.html">credits</ulink>)
+      </para>
       </answer>
     </qandaentry>
     <qandaentry>
