@@ -7,7 +7,6 @@
  * $Id$
  */
 {
-    
     module "AILinuxrc";
     textdomain "autoinst";
 
@@ -25,7 +24,6 @@
     global string netdevice = "";
     global string partition = "";
     global string domain = "";
-    
     global string nameserver = "";
     global string workdomain = "";
     global boolean textmode = false;
@@ -37,7 +35,6 @@
      * Constructor
      *
      */
-    
     define void AILinuxrc()``{
 	return;
     }
@@ -69,28 +66,28 @@
 	      "profile_port":ayport,
 	      "profile_location":ayserverdir,
 	      "info_file": createInfo()
-	    ];	
-	return toexport;	
+	    ];
+	return toexport;
     }
-    
+
     /**
      * Import data
      *
      */
     global define boolean Import(map settings) ``{
-	
+
 	if (size (settings) == 0)
 	{
 	    //Provide defaults for autoinstallation editing:
-	    //Leave empty.	    
+	    //Leave empty.
 	    return true;
 	}
 	Set(settings);
-	return true;	
+	return true;
     }
 
 
-    
+
     /**
      * Set data to a certain status
      *
@@ -116,15 +113,15 @@
 	language	= s["language"]:"";
 	keytable	= s["keytable"]:"";
     }
-    
+
     /**
      * Summary of configuration
      *
-     */    
+     */
     global define string Summary()``{
 
 
-	    
+
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Installation Method"));
 	summary = Summary::AddLine(summary, (method != "") ?
@@ -135,15 +132,15 @@
 	summary = Summary::AddHeader(summary, _("Initial Installation Keytable"));
 	summary = Summary::AddLine(summary, (keytable != "") ?
 				   keytable : Summary::NotConfigured());
-	
+
 	summary = Summary::AddHeader(summary, _("Installation Server"));
 	summary = Summary::AddLine(summary, (server != "") ?
 				   server : Summary::NotConfigured());
 	summary = Summary::AddHeader(summary, _("Installation Server Directory"));
 	summary = Summary::AddLine(summary, (serverdir != "") ?
-				   serverdir : Summary::NotConfigured());	
+				   serverdir : Summary::NotConfigured());
 
-	return summary;				   
+	return summary;
     }
 
 
@@ -175,12 +172,12 @@
 	      "gateway":gateway,
 	      "nameserver":nameserver,
 	      "domain":domain,
-	      "workdomain":workdomain,	    
-	      "partition":partition,	   	     
+	      "workdomain":workdomain,
+	      "partition":partition,
 	    ];
-	
 
-	
+
+
 	foreach(`k, `v, allKeywords, ``{
 	    if (allKeywords[k]:""!="")
 		content = content + sformat("%1: %2\n", k, allKeywords[k]:"");
@@ -191,14 +188,14 @@
 	if (textmode)
 	    content = content + "Textmode: 1\n";
 
-	
-	
+
+
 	content = content + "
 # end_linuxrc_conf
 # Do not remove the above comment
 #";
 	return content;
-	
+
     }
 
 }
