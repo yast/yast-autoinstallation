@@ -45,6 +45,9 @@
 			   "X-SuSE-YaST-AutoinstResource",
 			   "X-SuSE-YaST-AutoinstClient",			   
 			   "X-SuSE-YaST-Group",
+			   "X-SuSE-YaST-AutoinstPath",
+			   "X-SuSE-YaST-AutoinstMerge",
+			   "X-SuSE-YaST-AutoinstMergeTypes"
 			   ];
 	Desktop::Read();
 	map configurations = Desktop::Modules;
@@ -169,8 +172,12 @@
      * Get resource name
      */
     global define string getResource( string default_resource)
-	``{
-	return ModuleMap[default_resource, "X-SuSE-YaST-AutoinstResource"]:default_resource;
+	``{	
+	string ret = ModuleMap[default_resource, "X-SuSE-YaST-AutoinstResource"]:"";
+	if (ret == "")
+	    return default_resource;
+	else
+	    return ret;
     }
 
 
@@ -181,7 +188,9 @@
      */
     global define any getResourceData( map resourceMap, string resource) ``{
 
-	resource = resourceMap["X-SuSE-YaST-AutoinstResource"]:resource;
+	string tmp_resource = resourceMap["X-SuSE-YaST-AutoinstResource"]:"";
+	if (tmp_resource != "")
+	    resource = tmp_resource;
 
 	string data_type = resourceMap["X-SuSE-YaST-AutoinstDataType"]:"map";
 	string tomerge = resourceMap["X-SuSE-YaST-AutoinstMerge"]:"";

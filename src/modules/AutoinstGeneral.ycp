@@ -121,7 +121,7 @@
 
 
 	string hwclock = (Clock["hwclock"]:""  == "UTC") ?  _("UTC") : _("Local time");
-
+	
 
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Language"));
@@ -133,7 +133,7 @@
 				   keyboard_name : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Time Zone"));
-	summary = Summary::AddLine(summary, ( Clock["timezone"]:"" != "") ?
+	summary = Summary::AddLine(summary, ( Clock["timezone"]:"" != "" && Clock["timezone"]:"" != nil ) ?
 				   Clock["timezone"]:"" : Summary::NotConfigured());
 
 	summary = Summary::AddHeader(summary, _("Hardware clock"));

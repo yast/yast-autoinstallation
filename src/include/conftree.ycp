@@ -121,7 +121,7 @@
 		    }
 		}
 
-		y2debug("New Settings: %1", Profile::Flat);
+		y2milestone("New Settings: %1", Profile::Flat);
 		content_dialog( resource , resourceMap);
 	    }
 	    else if( ret == `reset)
@@ -539,20 +539,21 @@ were imported correctly.
 		    }
 		    else if (ret == `menu_source) // Show SOURCE
 		    {
-			y2milestone("Showing source...");
+			y2milestone("Showing source...: %1", Profile::current);
 			Profile::Prepare();
 			string source = XML::YCPToXMLString(`profile, Profile::current);
 			UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
-
 
 			term sourceView =
 			    `RichText( `id(`class_source ),
 				       `opt(`plainText),
 				       source
 				       );
+			
 			Wizard::SetContents(_("Source"),
 					    sourceView , "", true , true);
 			tree_item = "System";
+			
 		    }
 		    else if ( ret == `menu_tree) {
 			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
