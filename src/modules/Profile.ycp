@@ -10,7 +10,9 @@
     module "Profile";
     textdomain "autoinst";
     import "XML";
-	import "AutoInstall";
+    import "AutoInstall";
+    import "Y2ModuleConfig";
+    
     include "autoinstall/xml.ycp";
 
 
@@ -77,7 +79,7 @@
 	Configure = $[];
 	current = $[];
 	y2debug("FLAT: %1", Flat);
-	foreach(`p,`d, AutoInstall::ModuleMap, ``{
+	foreach(`p,`d, Y2ModuleConfig::ModuleMap, ``{
 
 	    // Set resource name, if not using default value
 	    string resource = d[p, "AutoinstResource"]:p;

@@ -12,16 +12,13 @@
     module "AutoInstall";
     textdomain "autoinst";
 
-	import "Profile";
+    import "Profile";
     import "Installation";
     import "Mode";
     import "Report";
     import "XML";
     import "X11Version";
-    import "Language";
     import "Bootloader";
-
-    include "autoinstall/io.ycp";
 
 
     // Main directory for data generated during installation
@@ -75,13 +72,7 @@
     global list configureKernelModules = [];
 
 
-    // Modules
-
-    global map GroupMap = $[];
-    global map ModuleMap = $[];
-
-
-
+  
     global boolean IgnorePkgErr = true;
     global map Bootloader = $[];
     
@@ -110,15 +101,6 @@
 	{
 	    y2milestone("Enabling Auto-Installation mode");
 	    Mode::autoinst = true;
-	}
-
-	// Read module configuration data (y2cc)
-	if (Mode::config || ( Mode::cont &&  Mode::autoinst))
-	{
-	    list MenuEntries = ReadMenuEntries();
-	    ModuleMap = select(MenuEntries,0,$[]);
-	    GroupMap = select(MenuEntries,1,$[]);
-	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
 
 
@@ -247,56 +229,6 @@
     }
 
 
-
-    /**
-     * Read module configuration files
-     * @return: map
-     */
-
-    define list ReadMenuEntries() ``{
-	list directory = SCR::Dir(.autoinst.menuentry.s);
-	map configurations = $[];
-	map groups = $[];
-	foreach (`i, directory, ``{
-	    path single_conf = add(.autoinst.menuentry.s, i);
-	    list configuration = SCR::Dir(single_conf);
-
-	    foreach(`s , configuration, ``{
-
-		string name = select(splitstring(s, " "), 1 , "");
-		string type = select(splitstring(s, " "), 0 , "");
-
-		path main_section = add(.autoinst.menuentry.v, i);
-		main_section = add(main_section, s);
-		list vals = SCR::Dir(main_section);
-		map values = $[];
-		foreach(`v, vals, ``{
-		    values[v]=SCR::Read(add(main_section,v));
-		});
-
-		if (type == "Y2Group")
-		{
-		    groups[name]=values;
-		}
-		else if (type == "Y2Module")
-		{
-		    if (values["Autoinst"]:"" == "configure" || values["Autoinst"]:"" == "all")
-		    {
-			string module_auto = "";
-			// determine name of client, if not default name
-			if (!haskey(values,"AutoClient"))
-			{
-			    string client =  name + "_auto";
-			    values["AutoClient"] = client;
-			}
-			configurations[name]=values;
-		    }
-		}
-	    });
-
-	});
-	return [configurations, groups];
-    }
 
 
     global define boolean Save()

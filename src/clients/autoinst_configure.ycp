@@ -18,6 +18,7 @@
     import "Product";
     import "Progress";
     import "Call";
+    import "Y2ModuleConfig";
 
 
     // Help text for last dialog of base installation
@@ -50,7 +51,7 @@ Please wait while the system is being configured.
 
     SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
 
-    Progress::NextStage();
+    // Progress::NextStage();
     string resource = "";
     string module_auto = "";
  
@@ -58,7 +59,7 @@ Please wait while the system is being configured.
     // make some adaptions
     if (haskey(Profile::Flat,"x11"))
     {
-	map x11conf = Profile::flat["x11"]:$[];
+	map x11conf = Profile::Flat["x11"]:$[];
 	if (haskey(x11conf, "start_x11"))
 	{
 	    boolean start_xdm = Profile::Flat["x11", "start_x11"]:false;
@@ -76,10 +77,10 @@ Please wait while the system is being configured.
     }
 
 
-    y2debug("Module map: %1", AutoInstall::ModuleMap);
+    y2debug("Module map: %1", Y2ModuleConfig::ModuleMap);
 
     y2milestone("Flat profile: %1", Profile::Flat);
-    foreach(`p,`d, AutoInstall::ModuleMap,
+    foreach(`p,`d, Y2ModuleConfig::ModuleMap,
 	    ``{
 
 	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write")
@@ -101,10 +102,11 @@ Please wait while the system is being configured.
 		module_auto = sformat("%1_auto", p);
 
 	    map result = $[];
-	    y2milestone("Writing configuration for %1", p);
+	   
 
 	    if (haskey(Profile::Flat , resource) )
 	    {
+		y2milestone("Writing configuration for %1", p);
 		string tomerge = d["AutoinstMerge"]:"";
 		string tomergetypes = d["AutoinstMergeTypes"]:"";
 		list MergeTypes = splitstring(tomergetypes, ",");
@@ -142,8 +144,6 @@ Please wait while the system is being configured.
     Progress::NextStage();
     AIScripts::Import(Profile::Flat["scripts"]:$[]);
     AIScripts::Write("post-scripts");
-
-
 
     Progress::Finish();
 
