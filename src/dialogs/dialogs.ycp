@@ -323,6 +323,7 @@ must begin with letter, and must be
         filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a kickstart file."));
         if (filename == nil || filename == "")
         {
+            Wizard::CloseDialog();
             return `abort;
         }
 
@@ -385,7 +386,10 @@ the configuration files are read and converted.
 
         boolean reqret = Require::RequireAndConflictTarget(["alice-compat"], [], pkgmsg );
         if (!reqret)
+        {
+            Wizard::CloseDialog();
             return `abort;
+        }
 
 	Wizard::SetContents(_("Hosts in Alice Repository"),
                 Alice::aliceHostList(), help, true, true);
