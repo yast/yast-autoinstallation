@@ -50,8 +50,8 @@ builddir:
 	cp -a $(IMAGES) $(BUILD)
 
 webimages:
-	mkdir -p build/img
-	cp -a images/WEB/*png build/img
+	mkdir -p $(BUILD)/img
+	cp -a images/WEB/*png $(BUILD)/img
 
 autoyast.fo: print.xsl $(xml_files) examples components images
 	XML_CATALOG_FILES=$(CATALOG) \
@@ -104,5 +104,5 @@ images: images/EPS/* images/PNG/*
 
 install-data-local:
 	install -d -m 755 $(DESTDIR)/@docdir@/html
-	cp -a build/* $(DESTDIR)/@docdir@/html
+	cp -a $(BUILD)/* $(DESTDIR)/@docdir@/html
 
