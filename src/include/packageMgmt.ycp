@@ -76,6 +76,11 @@
 	return packages;
     }
 
+
+    /**
+     * Set packages
+     */
+    
     global define boolean setPackages() ``{
 	import "AIConfig";
 
@@ -89,25 +94,31 @@
 	list packs  = _soft["packages"]:[];
 	string kernel = _soft["kernel"]:"";
 	
-	AIServer::initSource();
-	
-	if (base!="")
+	boolean src = AIServer::initSource();
+	if (src)
 	{
-	    Pkg::SetSelection(base);
-	}
+	    if (base!="")
+	    {
+		Pkg::SetSelection(base);
+	    }
+	    else
+	    {
+		Pkg::SetSelection("Minimal");
+	    }
 	
-	// Addons
-	if (size(addons) > 0 )
-	{
-	    foreach(`s, addons, ``{
-		Pkg::SetSelection(s);
-	    });
-	}
+	    // Addons
+	    if (size(addons) > 0 )
+	    {
+		foreach(`s, addons, ``{
+		    Pkg::SetSelection(s);
+		});
+	    }
 
-	Pkg::DoProvide(autoinstPackages(packs, kernel));
-	
-	return (Pkg::ActivateSelections());
-	
+	    Pkg::DoProvide(autoinstPackages(packs, kernel));
+	    Pkg::PkgSolve();
+	    return (Pkg::ActivateSelections());
+	}
+	return false;
     }
     
  
@@ -185,8 +196,7 @@ needed to create the ISO image.</p>
 		ret = UI::UserInput();
 
 		if (ret == `next)
-		{
-		    
+		{		    
 		    AIServer::sourceDir = UI::QueryWidget(`id(`susedir), `Value);
 		    string f = UI::QueryWidget(`id(`dest), `Value);
 		   
@@ -202,14 +212,19 @@ needed to create the ISO image.</p>
 	return ret;
     }
 
-
-
+    /**
+     * Create ISO
+     *
+     */
     global define createISO() ``{
 
 	import "Progress";
+	if (!setPackages())
+	{
+	    return `next;
+	}
 
-
-	setPackages();
+	
 	
 	string help = UI(_("<P>
 Please wait while the directory structure for the new ISO file is created.
@@ -235,6 +250,7 @@ Please wait while the directory structure for the new ISO file is created.
 
 	
 	list selPacs = Pkg::GetPackages (`selected,false);
+	
 	y2milestone ("install %1", selPacs);
 
 	

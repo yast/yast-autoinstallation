@@ -103,25 +103,28 @@
     /**
      *
      */
-    global define initSource() ``{
+    global define boolean initSource() ``{
 
 	list theSources = [];
 	if (!AIConfig::PkdInitialized)
-	{
-	    
-
-	    string grepCmd = sformat("grep \"^VERSION\" %1/content | cut -d' ' -f 2",  PackageRep);
+	{	    
+	    string grepCmd = sformat("grep \"^VERSION\" %1/content | cut -d' ' -f 2",  sourceDir);
 	    map out = SCR::Execute(.target.bash_output, grepCmd);
 	    list version_raw = splitstring(out["stdout"]:"",  "\n");
 	    string version = version_raw[0]:"";
-
+	    y2milestone("version :%1", version);
+	    if (version == "")
+	    {
+		y2error("Non-valid package repository..");
+		return false;
+	    }
 		
 	    theSources = Pkg::SourceStartCache (true);
 	    y2milestone("sources: %1", theSources);
 	    if (size (theSources) <= 0)
 	    {
 		y2error ("Pkg::SourceStartCache failed");
-		theSources = [];
+		theSources = [];		
 	    }
 	    else
 	    {
@@ -138,7 +141,7 @@
 	    
 	    if (AIConfig::theSource == -1) {
 		y2milestone("creating new source");
-		string base_url = "dir://" + PackageRep;
+		string base_url = "dir://" + sourceDir;
 		integer ret = Pkg::SourceCreate (base_url);
 		  
 		if (ret!=nil)
@@ -154,13 +157,15 @@
 	    y2milestone("Source already active");
 	}
 	
-	sourceData 	= Pkg::SourceGeneralData(AIConfig::theSource);
-	// y2milestone("source data %1", sourceData );
-	productData 	= Pkg::SourceProductData(AIConfig::theSource);
-	// y2milestone("prod data %1", productData );
+	sourceData 	= Pkg::SourceGeneralData(AIConfig::theSource);	
+	productData 	= Pkg::SourceProductData(AIConfig::theSource);	
 	mediaData 	= Pkg::SourceMediaData(AIConfig::theSource);
-	// y2milestone("media data %1", mediaData );
-	return;
+
+	
+	if (mediaData != nil && productData != nil && sourceData != nil )
+	    return true;
+	else
+	    return false;
     }
 	    
 
