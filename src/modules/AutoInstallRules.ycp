@@ -331,7 +331,12 @@
 
 	string tmpshell = "";
 	y2debug("Match type: %1", matchtype);
-	if (matchtype == "exact")
+        if (is( val, string) && (string)val == "*")
+        {
+            // match anything
+            tmpshell = tmpshell + sformat("\"1\" = \"1\" ", var,  val);
+        }
+        else if (matchtype == "exact")
 	{
 	    tmpshell = tmpshell + sformat("\"$%1\" = \"%2\" ", var,  val);
 	}
@@ -400,6 +405,7 @@
             if (new!="")
                 return new;
         }
+        y2milestone("val: %1", file);
         return file;
 
     }
@@ -460,7 +466,7 @@
 			string script_result = out["stdout"]:"";
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
-
+                        ATTR[rule] = script_result;
 			env[rule] = script_result;
 		    }
 		    else if ( rule == "domain" )
