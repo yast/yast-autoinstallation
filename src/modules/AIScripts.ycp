@@ -147,9 +147,13 @@
      * @param script name
      * @return modified list of scripts
      */
-    global define list  deleteScript(string scriptName)
+    global define void  deleteScript(string scriptName)
 	``{
-	return  ( filter(`s, merged, ``(lookup(s,"filename","")!= scriptName)));
+	y2milestone("merge: %1: %2", merged, scriptName);
+	list clean = filter(`s, merged, ``(s["filename"]:"" != scriptName));
+	y2milestone("clean :%1", clean);
+	merged = clean;
+	return;
     }
 
 
