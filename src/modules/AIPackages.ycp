@@ -46,8 +46,9 @@
 	    
 
 	string base_url = "dir://" + AIServer::PackageRep;
-	Pkg::TargetInit ("/", false);
-
+	
+	Pkg::SourceStartCache(true);
+	
 	list basesel = maplist(`s, Pkg::GetSelections(`all, "base") , ``{
 	    any data = Pkg::SelectionData(s);
 	    if (is(data , map)) {
