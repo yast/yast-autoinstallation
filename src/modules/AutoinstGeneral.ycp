@@ -1,6 +1,6 @@
 /**
  * File:	modules/AutoinstGeneral.ycp
- * Package: 	Autoyast 
+ * Package: 	Autoyast
  * Summary:	Configuration of general settings for autoyast
  * Authors:	Anas Nashif (nashif@suse.de)
  *
@@ -12,17 +12,17 @@
     textdomain "autoinst";
 
     import "AutoInstall";
-    import "Summary";    
-    import "Keyboard";        
+    import "Summary";
+    import "Keyboard";
     import "Mouse";
     import "Language";
-    import "Keyboard";    
+    import "Keyboard";
     import "Timezone";
     import "Misc";
     import "Profile";
-    
 
-    
+
+
     // Language
     global string Language = "";
 
@@ -39,16 +39,16 @@
     // Similar to interactive mode, without letting use change settings
     // Interactive mode implies confirmation as well..
     global boolean Confirm = true;
-    
+
     // Keyboard
     global map Keyboard = $[];
 
- 
+
     // Mouse, if not autoprobed
     global map  Mouse = $[];
 
 
-    global map Clock = $[];    
+    global map Clock = $[];
 
 
     global map Mode = $[];
@@ -58,22 +58,22 @@
      * Constructor
      */
     global define void AutoinstGeneral () ``{
-	
+
 	return;
     }
 
 
-    
+
     /**
      * Summary of configuration
      * @return string Formatted summary
-     */    
+     */
     global define string Summary()``{
 
-	string language_name 		= "";
-	string keyboard_name 		= "";
-	string mouse_name 		= "";
-			
+	string language_name		= "";
+	string keyboard_name		= "";
+	string mouse_name		= "";
+
 	if ( Mouse["id"]:"" != "" && Mouse["id"]:"" != "probe")
 	{
 	    Mouse::Set(Mouse["id"]:"");
@@ -89,7 +89,7 @@
 	    Language::Set(Language);
 	    language_name= Language::MakeProposal(false, false);
 	}
-	
+
 	if (Keyboard  != $[])
 	{
 	    Keyboard::current_kbd = "";
@@ -100,13 +100,13 @@
 
 
 	string hwclock = (Clock["hwclock"]:""  == "UTC") ?  _("UTC") : _("Local time");
-	    
-	
+
+
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Language"));
 	summary = Summary::AddLine(summary, (language_name != "") ?
 				   language_name : Summary::NotConfigured());
-	
+
 	summary = Summary::AddHeader(summary, _("Keyboard"));
 	summary = Summary::AddLine(summary, (keyboard_name != "") ?
 				   keyboard_name : Summary::NotConfigured());
@@ -121,51 +121,51 @@
 	summary = Summary::AddHeader(summary, _("Mouse"));
 	summary = Summary::AddLine(summary, (mouse_name != "") ?
 				   mouse_name : Summary::NotConfigured());
-	
+
 	summary = Summary::AddHeader(summary, _("Confirm installation?"));
 	summary = Summary::AddLine(summary, (Mode["confirm"]:false) ?
-				   _("Yes") : _("No"));	
+				   _("Yes") : _("No"));
 
 	summary = Summary::AddHeader(summary, _("Reboot after installation"));
 	summary = Summary::AddLine(summary, (Mode["reboot"]:false) ?
 				   _("Yes") : _("No"));
-	
+
 	summary = Summary::AddHeader(summary, _("Force Boot after Installation"));
 	summary = Summary::AddLine(summary, (Mode["forceboot"]:false) ?
 				   _("Yes") : _("No"));
 
-	
-	return summary;				   
+
+	return summary;
     }
 
     /**
      * Import Configuration
-     */ 
+     */
 
     global define boolean Import (map settings)
 	``{
 	Language = 	settings["language"]:"";
-	Keyboard =      settings["keyboard"]:$[];;	
+	Keyboard =      settings["keyboard"]:$[];;
 	Clock	=	settings["clock"]:$[];
 	Mouse = 	settings["mouse"]:$[];
 	Mode  = 	settings["mode"]:$[];
-	
+
 	return true;
     }
 
 
     /**
      * Export Configuration
-     */     
+     */
     global define boolean Export ()
 	``{
-	
+
 	map general = $[];
-	
+
 	general["language"] = Language ;
 	if (haskey(Keyboard, "keyboard_values") || Keyboard::ExpertSettingsChanged )
 	    Keyboard["keyboard_values"] = Keyboard::GetExpertValues();
-	
+
 	general["keyboard"] = Keyboard;
 	general["clock"] = Clock;
 	general["mouse"] = Mouse;
@@ -176,7 +176,7 @@
 
     /**
      * Write Configuration
-     */ 
+     */
 
     global define boolean Write() ``{
 	// Process();
@@ -184,11 +184,12 @@
 	AutoInstall::Confirm = Mode["confirm"]:true;
 	AutoInstall::interactive = Mode["confirm"]:true;;
 
-	
+
+	Keyboard::default_kbd = Keyboard["keymap"]:"";
 	Keyboard::SetConsole( Keyboard["keymap"]:"" );
 	Keyboard::SetX11( Keyboard["keymap"]:"" );
- 
-	// Timezone   	
+
+	// Timezone
 	if (Clock["timezone"]:"" != "")
 	{
 	    Timezone::Set( Clock["timezone"]:"", true );
@@ -196,17 +197,17 @@
 
 	// Hardware Clock
 	////////////////////////////////////////////////////////////////////////
-    
+
 	Timezone::hwclock =  (Clock["hwclock"]:"" == "UTC" || Clock["hwclock"]:"" == "GMT") ? "-u" : "--localtime";
 
 	// mouse
 	////////////////////////////////////////////////////////////////////////
-    	
+
 	if ( Mouse["id"]:"" != "probe" && Mouse["id"]:"" != "")
 	{
 	    Mouse::Set(Mouse["id"]:"");
 	}
-	
+
 
 	// Otherwise, try to find the mouse id from the DB using data supplied by user,
 	// at least the device is needed.

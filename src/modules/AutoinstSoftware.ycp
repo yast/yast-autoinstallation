@@ -22,6 +22,7 @@
     global list packages = [];
     global string kernel = "";
     global list post_packages = [];
+    global list remove_packages = [];
 
     global list forcedPackages = [];
 
@@ -49,6 +50,8 @@
 	packages = settings["packages"]:[];
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
+	remove_packages = settings["remove-packages"]:[];
+	
 	showErrors = settings["show_errors"]:true;
 	if (Mode::initial)
 	{
@@ -80,6 +83,9 @@
 	if (post_packages != [])
 	    s["post-packages"] = post_packages ;
 
+	if (remove_packages != [])
+	    s["remove-packages"] = remove_packages ;
+	
 	if (!showErrors)
 	    s["show_errors"] = false;
 
@@ -159,6 +165,7 @@
 	Pkg::SetLocale (Language::language);
 
 	Packages::Init(true);
+	
 	// Standard Packages
 	boolean retval = false;
 
@@ -175,9 +182,7 @@
 		``{
 	    if (!Pkg::SetSelection( s ))
 	    {
-
 		failed = add(failed, s);
-
 	    }
 	});
 
@@ -215,6 +220,20 @@
 	}
 
 	Pkg::DoProvide (Packages::ComputeSystemPackageList());
+
+
+	// Now remove all packages from remove-packages (Note: This is a workaround for bug # )
+	if (size(remove_packages) > 0 )
+	{
+	    foreach (`rp, remove_packages,
+		     ``{
+		Pkg::PkgNeutral(rp);	    
+	    });
+	    
+	    Pkg::DoRemove(remove_packages);
+	}
+
+	
 	Pkg::PkgSolve();
 
 
