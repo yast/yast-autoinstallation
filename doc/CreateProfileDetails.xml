@@ -30,11 +30,10 @@
 	By default, the auto-installation process has to be confirmed by the
 	user. The confirmation should be disabled if a fully unattended
 	installation is desired. This options is used to view and change the
-	settings on a target system before anything is changed and can be
+	settings on a target system before anything is committed and can be
 	used for debugging. It is set to <emphasis>true</emphasis> by default
-	to avoid recursive installs when the system schedules a reboot due
-	to a a detection of a special kernel architecture or if  a reboot was requested in
-	the control file. 
+	to avoid recursive installs when the system schedules a reboot after
+	initial system setup.
       </para>
       
     </section>
@@ -85,7 +84,7 @@
 	  <emphasis>report</emphasis> resource. Some critical messages concerning
 	  package installation and partitioning will still show up ignoring your
 	  settings in the <emphasis>report</emphasis> section. Mostly those
-	  message will have to be answered with <emphasis>Yes</emphasis> or <emphasis>No</emphasis>.
+	  messages will have to be answered with <emphasis>Yes</emphasis> or <emphasis>No</emphasis>.
 	</para>
       </note>
     </section>
@@ -100,7 +99,7 @@
 	possibilities.
       </para>
       <para>It is now possible to specify which bootloader needs to be
-	installed (GRUB or LILO) and it  is possible to specify sections and
+	installed (<emphasis>GRUB</emphasis> or <emphasis>LILO</emphasis>) and it  is possible to specify sections and
 	more bootloader options.
       </para>
       <para>
@@ -119,6 +118,13 @@
       </para>
       &example.bootloader;
       
+      <note>
+	<para>The bootloader configuration interface offers far more
+	  configuration options than one might need for a regular setup. The
+	  options described in the example above should be sufficient for most
+	  cases.
+	</para>
+      </note>
     </section>
 
     <section id="CreateProfile.Partitioning">
@@ -222,11 +228,18 @@
 	    </para>
 	  </listitem>
 	</itemizedlist>
+	<para>
+	  Repartitioning using only some of the existing partitions can be
+	  accomplished only if the region selected to be partitioned exists at
+	  the end of the device and only with neighboring partitions. This
+	  means that you cannot repartition a region which has in the middle a partition that
+	  should not be touched.
+	</para>
 	<note>
-	  <title>Improtant Notice</title>
+	  <title>Important Notice</title>
 	  <para>
 	    The value provided in the<emphasis>use</emphasis> property determines how existing data and
-	    partitions are treated. The value <emphasis>all</emphasis> means that ALL data on the disk will
+	    partitions are treated. The value <emphasis>all</emphasis> means that <emphasis>ALL</emphasis> data on the disk will
 	    be erased. Make backups and use the <emphasis>confirm</emphasis> property if you are going to
 	    keep some partitions with important data. This is automated installation and no pop-ups will
 	    notify you about partitions being deleted.
@@ -234,8 +247,7 @@
 	</note>
 	<para>	
 	  In case of the presence of multiple drives in the target system, all
-	  drives  should be identified with their device
-	  names and the way the partitioning should be performed.
+	  drives  should be identified with their device names and the way the partitioning should be performed.
 	</para>
 
 	<para>
@@ -250,8 +262,8 @@
 	</para>
 	<para>A fixed size can be given as shown below:</para>
 	<para>
-	  <emphasis>1GB</emphasis> will create a partition with 1 GB size.<emphasis> 1500MB</emphasis> will create
-	  a partition which is 1.5 GB big.
+	  <emphasis>1GB</emphasis> will create a partition with 1 GB size.
+	  <emphasis> 1500MB</emphasis> will create a partition which is 1.5 GB big.
 	</para>
 	&example.partitioning;
 
@@ -263,7 +275,7 @@
 	<section>
 	  <title>Mount Options</title>
 	  <para>
-	    Normally, a file system which is to be mounted is
+	    By default a file system which is to be mounted is
 	    identified in <filename>/etc/fstab</filename> by the device name. This identification
 	    can be changed so the file system  is found by searching
 	    for a <acronym>UUID</acronym> or a volume label. Note that not all file systems can be mounted
@@ -294,13 +306,20 @@
 	  </para>
 	  <itemizedlist>
 	    <listitem>
-	      <para><emphasis>Mount Read-Only (ro):</emphasis> No writable access to the file system is possible. Default is false.</para>
+	      <para><emphasis>Mount Read-Only (ro):</emphasis> No writable
+		access to the file system is possible. Default is false.</para>
+
 	    </listitem>
 	    <listitem>
-	      <para><emphasis>No access time (noatime):</emphasis> Access times are not updated when a file is read. Default is false.</para>
+	      <para><emphasis>No access time (noatime):</emphasis> Access times
+		are not updated when a file is read. Default is false.</para>
+
 	    </listitem>
 	    <listitem>
-	      <para><emphasis>Mountable by User (user):</emphasis> The file system may be mounted by an ordinary user. Default is false.</para>
+	      <para><emphasis>Mountable by User (user):</emphasis> The file
+		system may be mounted by an ordinary user. Default is
+		false.</para>
+
 	    </listitem>
 	    <listitem>
 	      <para>
@@ -338,7 +357,7 @@
 	    The properties <emphasis>partition_id</emphasis> and
 	    <emphasis>partition_type</emphasis> control such behavior. To
 	    specify the size in sectors, the list resource
-	    <emphasis>region</emphasis> can be used.
+	    <emphasis>region</emphasis> should be used.
 	  </para>
 	  &example.advancedPartitioning;
 	  
@@ -398,7 +417,9 @@
 
 	  <para>
 	    In this scenario and as shown in  figure <quote><link
-		linkend='partitioning-keep1' endterm="partitioning-keep1.title"/></quote> , &autoyast2; should not in any case create any new
+		linkend='partitioning-keep1'
+		endterm="partitioning-keep1.title"/></quote> , &autoyast2;
+	    should not in any case create any new
 	    partitions,  instead  it should search for certain partition types on the system and use
 	    them according to the partitioning plan in the control file. No
 	    partition numbers are given in this case, only the mount points and
@@ -408,8 +429,6 @@
 	  &example.autodetectpart;
 	</section>	
       </section>
-
-
 
 
 
@@ -456,7 +475,9 @@
 	  <listitem>	  
 	    <para>
 	      <emphasis>RAID 0:</emphasis> This level increases your disk performance.
-	      There is <emphasis>NO</emphasis> redundancy in this mode. If one of the drives crashes, data recovery will not be possible.
+	      There is <emphasis>NO</emphasis> redundancy in this mode. If one
+	      of the drives crashes, data recovery will not be possible.
+
 	    </para>
 	  </listitem>
 	  <listitem>
@@ -539,7 +560,7 @@
 	  Package Selections
 	</title>
 	<para>	
-	  You can install software on the new system using the following methods;
+	  You can install software on the new system using the following methods:
 	</para>
 	<itemizedlist>
 	  <listitem>
@@ -648,8 +669,8 @@
 	<example>
 	  <title>Creating package database</title>
 	  <screen>
-	    cd /usr/local/CDs/LATEST/suse
-	    create_package_descr  -d /usr/local/CDs/LATEST/suse 
+cd /usr/local/CDs/LATEST/suse
+create_package_descr  -d /usr/local/CDs/LATEST/suse 
 	  </screen>
 	</example>
 	<para>
@@ -660,7 +681,7 @@
 	</para>
 	<para>
 	  The advantage of this method is that you can keep an up-to-date
-	  repository with fixed and updated package (i.e. from &company-suse; ftp
+	  repository with fixed and updated package (i.e. from &company-suse; FTP
 	  server). Additionally this method  makes the creation of custom CD-ROMs easier.
 	</para>
       </section>
@@ -670,9 +691,32 @@
 	  is determined during installation. If the kernel package is added to any selection
 	  or to the individual package selection, installation will mostly fail due to conflicts.
 	</para>
-	<para>To force the installation of a specific kernel, use the <emphasis>kernel</emphasis> property. The following is an example forcing the installation of the default kernel. In this example this kernel will be installed in any case, even if an SMP or other kernel is required</para>
-
+	<para>
+	  To force the installation of a specific kernel, use the
+	  <emphasis>kernel</emphasis> property. The following is an example
+	  forcing the installation of the default kernel. In this example this
+	  kernel will be installed in any case, even if an SMP or other kernel
+	  is required</para>
 	&example.kernel;
+      </section>
+      <section>
+	<title>Removing automatically selected packages</title>
+	<para>
+	  Some packages are selected automatically either because of a
+	  dependency or because it available in a selection.
+	</para>
+	<para>
+	  Removing such packages might break the system consistency and it is
+	  not recommended to remove basic packages unless a replacement which
+	  provides same services is provided. Best example for this case are
+	  <acronym>MTA</acronym> packages. By default, <emphasis>postfix</emphasis>
+	  will be selected and installed. If you wish however to use another
+	  <acronym>MTA</acronym> like <emphasis>sendmail</emphasis>, then
+	  postfix can be removed from the list of selected package using a list
+	  in the software resource. The following example shows how this can be done:
+	  
+	</para>
+	&example.removesoft;
       </section>
     </section>
 
@@ -776,7 +820,6 @@
 	  server_args. After that, the basename of the first
 	  whitespace-sparated word is taken and these values are compared.
 	</para>
-	<para>FIXEME</para>
 
       </section>
       <section id="Configuration.Network.NIS">
@@ -971,8 +1014,15 @@
 	</listitem>
 	<listitem>
 	  <para>Chroot environment post-install scripts</para>
-	  <para>Chroot scripts are executed in the chroot environment before
-	    &yast2; boots for the first time and before the boot loader is installed.</para>
+	  <para>Chroot scripts are executed after all packages have been
+	    installed  before
+	    &yast2; boots for the first time and before the boot loader is
+	    installed. Although the name of this type of scripts might imply
+	    that the scripts executed in the chroot environment, the scripts
+	    are actually executed in the system before its mounted. To make any
+	    changes to the system, the prefix <emphasis>/mnt</emphasis> has to
+	    be used to any path.
+	  </para>
 	</listitem>
       </itemizedlist>
       <para>
