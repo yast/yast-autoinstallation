@@ -207,7 +207,7 @@
 	      <para>
 	      This option will lead to the deletion of existing Linux
 	      partitions. All other partitions (i.e. Windows) will be
-	      kept. Note that this works only if the linux partitions are at the end of the device.
+	      kept. Note that this works only if the Linux partitions are at the end of the device.
 	      
 	      </para>
 	    </listitem>
@@ -591,7 +591,7 @@
 	  created  will use all available space on this drive.
 	</para>
 	<para>
-	  Up to SuSE Linux 8.2 the LVM configuration was done in a seperate
+	  Up to SuSE Linux 8.2 the LVM configuration was done in a separate
 	  resource. This method for configuring LVM is still
 	  supported, however a new and easier way is introduced starting from
 	  this release which allows you to have the LVM configuration
@@ -754,7 +754,7 @@
 	  <acronym>RAID</acronym>  or if it should configured as a <emphasis>Spare</emphasis> device.
 	</para>
 	<para>
-	  Up to SuSE Linux 8.2 the raid configuration was done in a seperate
+	  Up to SuSE Linux 8.2 the raid configuration was done in a separate
 	  resource. This method for configuring raid devices is still
 	  supported, however a new and easier way is introduced starting from
 	  this release which allows the user to have the raid configuration
@@ -1055,7 +1055,7 @@ cd /usr/local/CDs/8.2/suse
 	  level of the system. Changes to the default run-level will take effect
 	  the next time you boot the system. After installation is completed,
 	  the system has run-level 5, which is  <emphasis>Full multiuser with
-	    network and xdm</emphasis>. If you have configured a system with no
+	    network and XDM</emphasis>. If you have configured a system with no
 	  X11, then it is recommended to reboot the system after the first stage
 	  using the <emphasis>reboot</emphasis> property in the <emphasis>general</emphasis> resource.
 
@@ -1135,9 +1135,9 @@ cd /usr/local/CDs/8.2/suse
 	</para>
 	<para>
 	  Service and protocol are matched literally. script is the base name
-	  of the config file: usually a file in /etc/xinetd.d, eg. "echo-udp",
+	  of the config file: usually a file in<filename> /etc/xinetd.d</filename>, for example "echo-udp",
 	  or "inetd.conf". For compatibility with 8.2, server is matched more
-	  loosely: if it is /usr/sbin/tcpd, the real server name is taken from
+	  loosely: if it is <filename>/usr/sbin/tcpd</filename>, the real server name is taken from
 	  server_args. After that, the basename of the first
 	  whitespace-sparated word is taken and these values are compared.
 	</para>
@@ -1199,7 +1199,7 @@ cd /usr/local/CDs/8.2/suse
 	    Mail Configuration (Sendmail or Postfix)
 	  </title>
 	  <para>
-	    For the mail configuration of the client This
+	    For the mail configuration of the client this
 	    module lets you create a detailed mail configuration. The module
 	  contains various options and it is recommended to use it at least for
 	  the initial configuration.
@@ -1289,14 +1289,14 @@ cd /usr/local/CDs/8.2/suse
 	<para>
 	  The root user and at least one normal user can be added during install
 	  using data supplied in the control file. User data and passwords
-	  (encrypted or clear text) are part of the <emphasis>configure</emphasis> resource in the
+	  (encrypted or in clear text) are part of the <emphasis>configure</emphasis> resource in the
 	  control file.
 	</para>     
 	<para>
 	  At least the root user should be configured during
 	  auto-installation, which will insure you will be able to login after
-	  installation is finished and of course it insure nobody else can login
-	  into the system (if password is not set).
+	  installation is finished and of course it will insure nobody else can login
+	  into the system (in case the password is not set).
 	</para> 
 	&example.users;
 	
@@ -1351,8 +1351,8 @@ cd /usr/local/CDs/8.2/suse
 	<para>
 	  After installation is finished, the scripts and the output logs can be
 	  found in the directory <filename>/var/adm/autoinstall</filename>. The
-	  scripts are located in <filename>scripts</filename> and the output log of the
-	  scripts is located in the <filename>log</filename> directory.
+	  scripts are located in <filename>scripts</filename> and the output logs of the
+	  scripts are located in the <filename>log</filename> directory.
 	</para>
 	<para>
 	  The log is the output resulting when executing the shell scripts using
@@ -1360,14 +1360,14 @@ cd /usr/local/CDs/8.2/suse
 	</para>
 	<screen>
 	  <![CDATA[
-	  /bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
+/bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
 	  ]]>
 	</screen>
       </section>
 
 
     <section>
-      <title>System variable (Sysconfig)</title>
+      <title>System variables (Sysconfig)</title>
       <para>
 	Using the sysconfig resource, it is possible to define configuration
 	variables in the sysconfig repository
@@ -1381,29 +1381,39 @@ cd /usr/local/CDs/8.2/suse
 	configuration options available in <filename>/etc/sysconfig</filename>
       </para>
       <para>
-	The following example show how a variable can be set using the sysconfig
+	The following example shows how a variable can be set using the sysconfig
 	resource.
       </para>
       &example.sysconfig;
     </section>
       
 
-      <section>
-	<title>Adding complete configurations</title>
-	<para>
-	  For many applications and services you might have prepared a
-	  configuration file which should be copied in a complete form to some
-	  location in the installed system. This is for example if you are
-	  installing  a web server and have a <emphasis>ready to go</emphasis>
-	  server configuration file (<filename>httpd.conf</filename>).
-	</para>
-	<para>
-	  Using this resource, you can embed the file into the control file by
-	  specifying the final path on the installed system. &yast2; will copy this
-	  file to the specified location.
-	</para>
-	&example.files;
-      </section>
+    <section>
+      <title>Adding complete configurations</title>
+      <para>
+	For many applications and services you might have prepared a
+	configuration file which should be copied in a complete form to some
+	location in the installed system. This is for example if you are
+	installing  a web server and have a <emphasis>ready to go</emphasis>
+	server configuration file (<filename>httpd.conf</filename>).
+      </para>
+      <para>
+	Using this resource, you can embed the file into the control file by
+	specifying the final path on the installed system. &yast2; will copy this
+	file to the specified location.
+      </para>
+      &example.files;
+
+      <para>
+	A more advanced example is shown below. This configuration will create
+	a file using the content supplied in <emphasis>file_contents</emphasis>
+	and will change the permissions and ownership of the file. After the
+	file has been copied to the system, a script is executed which can be
+	used to manipulate the file and prepare it for the environment of the client.
+      </para>
+      &example.filesadv;
+    </section>
+
 
     <section id="CreateProfile.Hardware">
       <title>
