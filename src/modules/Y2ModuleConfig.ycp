@@ -36,7 +36,7 @@
      * Read module configuration files
      * @return: map
      */
-    global define list ReadMenuEntries()
+    global define list ReadMenuEntries(list<string> modes)
     {
 	Desktop::AgentPath = .autoyast2.desktop;
 
@@ -62,7 +62,7 @@
 	map confs = $[];
 
 	foreach (string name , map values, configurations, ``{
-	    if (values["X-SuSE-YaST-AutoInst"]:"" == "configure" || values["X-SuSE-YaST-AutoInst"]:"" == "all")
+	    if (contains(modes, values["X-SuSE-YaST-AutoInst"]:""))
 	    {
 		string module_auto = "";
 		/* determine name of client, if not default name */
@@ -168,7 +168,13 @@
 	/* Read module configuration data (desktop files) */
 	if (!Stage::initial ())
 	{
-	    list MenuEntries = ReadMenuEntries();
+            list MenuEntries = [];
+            if (Mode::autoinst())
+            {
+                MenuEntries = ReadMenuEntries(["all", "write"]);
+            } else {
+                MenuEntries = ReadMenuEntries(["all", "configure"]);
+            }
 
 	    ModuleMap = MenuEntries[0]:$[];
 
