@@ -38,17 +38,6 @@
 					    )
 				      )
 				),
-		       /* not used
-		       `VSquash(
-				`HBox(
-				      `TextEntry(`id(`susedir), _("SuSE &Package Directory:"), AutoinstConfig::PackageRepository),
-				      `VBox(
-					    `VSpacing(),
-					    `Bottom(`PushButton(`id(`opensusedir), _("Select Dire&ctory")))
-					    )
-				      )
-				),
-		       */
 		       `VSquash(
 				`HBox(
 				      `TextEntry(`id(`alicedir), _("&Alice Repository:"), AutoinstConfig::AliceRepository),
@@ -82,7 +71,7 @@ contains all the packages.</p>
 
 	Wizard::ReplaceAbortButton(`Empty());
 	UI::ChangeWidget(`id(`next), `Label, Label::NextButton());
-	
+
 	boolean changed = false;
 	any ret = "";
 	repeat {
@@ -90,9 +79,8 @@ contains all the packages.</p>
 
 	    string new_rep = UI::QueryWidget(`id(`repository), `Value);
 	    string new_classdir = UI::QueryWidget(`id(`classdir), `Value);
-	    string new_susedir = UI::QueryWidget(`id(`susedir), `Value);
 	    string new_alicedir = UI::QueryWidget(`id(`alicedir), `Value);
-	    
+
 	    if (ret ==`opendir)
 	    {
 		new_rep = PopupDir(AutoinstConfig::Repository );
@@ -111,24 +99,15 @@ contains all the packages.</p>
 		}
 		continue;
 	    }
-	    else if (ret ==`opensusedir)
-	    {	
-		new_susedir = PopupDir( AutoinstConfig::PackageRepository  );
-		if (new_susedir != "")
-		{
-		    UI::ChangeWidget(`id(`susedir), `Value, new_susedir );
-		}
-		continue;
-	    }
 	    else if (ret ==`openalicedir)
-	    {	
+	    {
 		new_alicedir = PopupDir( AutoinstConfig::AliceRepository  );
 		if (new_alicedir != "")
 		{
 		    UI::ChangeWidget(`id(`alicedir), `Value, new_alicedir );
 		}
 		continue;
-	    }	    
+	    }
 	    else if ( ret == `next)
 	    {
 		if (AutoinstConfig::Repository != new_rep)
@@ -140,26 +119,20 @@ contains all the packages.</p>
 		{
 		    changed = true;
 		    AutoinstConfig::classDir = new_classdir;
-		}	   
-		if ( AutoinstConfig::PackageRepository!= new_susedir)
-		{
-		    changed = true;
-		    AutoinstConfig::PackageRepository = new_susedir;
 		}
-		
 		if ( AutoinstConfig::AliceRepository!= new_alicedir)
 		{
 		    changed = true;
 		    AutoinstConfig::AliceRepository = new_alicedir;
 		}
-	    }	   
+	    }
 
 	} until (ret == `back ||  ret == `next || contains(menuitems, ret));
-	
+
 	Wizard::RestoreScreenShotName ();
 	if ( changed  )
 	{
-	    AutoinstConfig::Save();	    
+	    AutoinstConfig::Save();
 	    changed =false;
 	}
 	return ret;
