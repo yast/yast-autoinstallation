@@ -12,45 +12,30 @@ my $ignored_packages = "";
 my $ignore_sources = "0";
 my $ignore_symlinks = "0";
 my $prefer_yastdescr = "0";
-my $extra_provides = "";
-
-sub usage {
-	 print "usage: create_package_descr\n";
-	 print "	[-d DATADIR1 [-d DATADIR2 [... ] ] ] (default cwd)\n";
-     print "	[-p PDB_DATA_DIR ]\n";
-	 print "	[-x EXTRA_PROV_FILE ]\n";
-	 print "	[-i IGNORE_DIR ] [-I IGNORE_FILE ]\n";
-	 print "	[-l LANG1 [-l LANG2 [... ] ]    (default english)\n";
-	 print "	[-o OUTPUT_DIR ]                (default cwd/setup/descr)\n";
-}
+my $add_licenses = "0";
 
 while ( $arg = shift ( @ARGV ) ) {
   if ( $arg eq "-d" ) { push @DATADIRS , shift @ARGV ; }
   elsif ( $arg eq "-l" ) { push @LANGUAGES , shift @ARGV ; }
-  elsif ( $arg eq "-h" ) { usage; exit; }
   elsif ( $arg eq "-p" ) { $pdb_data_dir = shift @ARGV ; }
   elsif ( $arg eq "-x" ) { $extra_provides = shift @ARGV ; }
   elsif ( $arg eq "-i" ) { $ignore_dir = shift @ARGV ; }
   elsif ( $arg eq "-I" ) { $ignore_file = shift @ARGV ; }
   elsif ( $arg eq "-o" ) { $output_dir = shift @ARGV ; }
+  elsif ( $arg eq "-Z" ) { $add_licenses = "1" ; }
   elsif ( $arg eq "-S" ) { $ignore_sources = "1"; }
   elsif ( $arg eq "-P" ) { $prefer_yastdescr = "1"; }
   elsif ( $arg eq "-L" ) { $ignore_symlinks = "1"; }
   else {
-	 usage;
+	 print "usage: create_package_descr\n";
+	 print "	[-d DATADIR1 [-d DATADIR2 [... ] ] ] (default cwd)\n";
+         print "	[-p PDB_DATA_DIR ]\n";
+	 print "	[-x EXTRA_PROV_FILE ]\n";
+	 print "	[-i IGNORE_DIR ] [-I IGNORE_FILE ]\n";
+	 print "	[-l LANG1 [-l LANG2 [... ] ]    (default english)\n";
+	 print "	[-o OUTPUT_DIR ]                (default cwd/setup/descr)\n";
 	 die ("unknown parameter\n");
   }
-}
-if ($extra_provides eq "")
-{
-    print 'EXTRA_PROV_FILE location missing. Call this script with 
-
-        -x <location to EXTRA_PROV file>. 
-
-The EXTRA_PROV is available on the first CD in the directory
-suse/setup/descr
-';
-    exit 1;
 }
 
 if ( $ignore_symlinks eq "1" ) {
@@ -63,13 +48,14 @@ push @DATADIRS , "." unless ( @DATADIRS );
 push @LANGUAGES , "english" unless ( @LANGUAGES );
 $output_dir = "./setup/descr/" unless ( $output_dir );
 
-print "using settings:\n";
+print "\n\nusing settings:\n";
 print "datadirs: ".join(",",@DATADIRS)."\n";
 print "languages: ".join(",",@LANGUAGES)."\n";
 print "output dir: $output_dir\n";
 if ( -d $pdb_data_dir ) {
   print "pdb data: $pdb_data_dir\n";
 } else {
+  print "$pdb_data_dir is not a directory: ignoring\n";
   $pdb_data_dir = "";
 }
 
@@ -132,27 +118,40 @@ $allcounter = 0;
 foreach $datapath (@DATADIRS) {
   $media_number++;
   open ( FIND, "find $datapath $with_links -name \"*.[rs]pm\" -maxdepth 2 -print | sort |" );
+  my @pkg_arr = ();
+  my @src_arr = ();
   while ( <FIND> ) {
-   #print "found $_\n";
+    chomp ( $_ );
+    if ( /\.spm$/ || /src\.rpm$/ ) {
+	push @src_arr, $_;
+    } else {
+	push @pkg_arr, $_;
+    }
+  }
+  close ( FIND );
+  foreach my $package (@pkg_arr,@src_arr) {
+   #print "found $package\n";
    $dotcounter++;
    $allcounter++;
    if ( $dotcounter == 10 ) {
       print ".";
       $dotcounter = 0;
    }
-   $filespec = $_;
+   $filespec = $package;
    chomp ( $filespec );
    $filespec =~ /\/([^\/]*)$/;
    $filename = $1;
    $filesize = stat($filespec)->size;
    # name, version, release, arch, obsolete, requires, provides,
    # conflicts, copyright, group, buildtime, size, sourcerpm
-   my %res = RPM::rpmq_many($_, 1000, 1001, 1002, 1022,
+   my %res = RPM::rpmq_many($package, 1000, 1001, 1002, 1022,
                         1090, 1114, 1115,
                         1047, 1112, 1113,
                         1049, 1048, 1050,
                         1054, 1053, 1055,
-                        1014, 1016, 1006, 1009, 1044,1004,1005);
+			1027, 1116, 1117, 1118, 1030, 1028, 1095, 1096,
+                        1014, 1016, 1006, 1009, 1044, 1004, 1005);
+
     my @depexcl = $res{1054};
     my @prereq = rpmq_add_req_flagsvers(\%res, 1049, 1048, 1050); # requires
     RPM::rpmq_add_flagsvers(\%res, 1047, 1112, 1113); # provides
@@ -164,9 +163,9 @@ foreach $datapath (@DATADIRS) {
       next;
    }
    $srcrpm = $res{1044}[0];
-   $srcrpm =~ s/^(.*)-([^-]*)-([^-]*)\.([^\.]*)\.rpm$/\1 \2 \3 \4/;
+   $srcrpm =~ s/^(.*)-([^-]*)-([^-]*)\.([^\.]*)\.rpm$/$1 $2 $3 $4/;
    if ( $res{1044}[0] ) {
-	@DULIST = RpmToDulist($filespec,"");
+	@DULIST = RpmToDulist(\%res, '');
 	$file_arch = $res{1022}[0];
    } else {
 	next if ( $ignore_sources eq "1" );
@@ -175,11 +174,15 @@ foreach $datapath (@DATADIRS) {
 		$file_arch = "src";
 	} else {
 		$file_arch = $filename;
-		$file_arch =~ s/^.*\.([^\.]*)\.rpm$/\1/;
+		$file_arch =~ s/^.*\.([^\.]*)\.rpm$/$1/;
 	}
-	@DULIST = RpmToDulist($filespec,"/usr/src/packages/");
+	@DULIST = RpmToDulist(\%res, 'usr/src/packages/');
    }
-   if ( $xprovlist{$rpm_name} ) {
+   if ( $xprovlist{"$rpm_name.$file_arch"} ) {
+     foreach $xprov (split('\s', $xprovlist{"$rpm_name.$file_arch"} )) {
+	push (@{$res{1047}},$xprov);
+     }
+   } elsif ( $xprovlist{$rpm_name} ) {
      foreach $xprov (split('\s', $xprovlist{$rpm_name} )) {
 	push (@{$res{1047}},$xprov);
      }
@@ -238,6 +241,13 @@ foreach $datapath (@DATADIRS) {
 					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{'english'}{$tag}});
 				}
 			}
+			if ( $add_licenses eq "1" ) {
+			    if ( $pacdata{$rpm_name}{$lang}{'confirmlic_yast'} ) {
+				WriteMEntry( $pkg_lang{$lang}, "Eul", @{$pacdata{$rpm_name}{$lang}{'confirmlic_yast'}});
+			    } elsif ( $pacdata{$rpm_name}{'english'}{'confirmlic_yast'} ) {
+				WriteMEntry( $pkg_lang{$lang}, "Eul", @{$pacdata{$rpm_name}{'english'}{'confirmlic_yast'}});
+			    }
+			}
 		} else {
 			foreach $tag (keys (%tag_short)) {
 				if ( $pacdata{$rpm_name}{$lang}{$tag} ) {
@@ -262,7 +272,6 @@ foreach $datapath (@DATADIRS) {
     WriteMEntry( $pkg_du, "Dir", @DULIST );
     $SEEN_PACKAGE{"$rpm_name $res{1001}[0] $res{1002}[0]"} = $file_arch;
   }
-  close ( FIND );
 }
 print " done\nprocessed $allcounter packages\n";
 if ( $ignored_packages ) {
@@ -329,8 +338,8 @@ sub ReadFileToHash {
     next if ( $_ =~ /^\#/ );
     next if ( $_ =~ /^\s$/ );
     local ($le,$ri) = split (/:/, $_, 2 );
-    $le =~ s/^\s*(.*)\s*$/\1/;
-    $ri =~ s/^\s*(.*)\s*$/\1/;
+    $le =~ s/^\s*(.*)\s*$/$1/;
+    $ri =~ s/^\s*(.*)\s*$/$1/;
     $temp{$le}=$ri;
   }
   close ($FH);
@@ -383,49 +392,111 @@ sub rpmq_add_req_flagsvers {
 }
 
 sub RpmToDulist {
-    local ($filename,$prefix) = @_;
-    local (%dirsize, %subdirsize, %dirnum, %subdirnum, @dulist);
-    local (%seen_node);
-    open ( FILES, "rpm -qp --qf '[%{FILEMODES:perms} %{FILESIZES} %{FILEDEVICES} %{FILEINODES} %{FILENAMES}\n]' $filename |") || die "cant open infile $filename";
-
-    while (<FILES>) {
-        # rights is not used, but start of $_ in the if below
-        ($rights , $size, $f_dev, $f_node, $name ) = split( ' ', $_ );
-        $size = int ( $size / 1024 ) + 1;
-        if ( $rights =~ /^\-/ ) {
-	    next if ( $seen_node{"$f_dev $f_node"} );
-	    $seen_node{"$f_dev $f_node"} = "yes";
-	    $name = $prefix.$name;
-            @path = split ( '/', $name );
-            pop ( @path );
-            $rpath = join('/',@path) ;
-            $dirsize{$rpath} += $size;
-            $dirnum{$rpath} += 1;
-            $subdirsize{$rpath} += 0;
-            $subdirnum{$rpath} += 0;
-            while (pop(@path)) {
-                $rpath = join('/',@path) ;
-                $subdirsize{$rpath} += $size;
-                $subdirnum{$rpath} += 1;
-            }
-        }
+  my $res = shift;
+  my $prefix = shift;
+  
+  if (!$res->{1027}) {
+    my @newfl = ();
+    my @di = @{$res->{1116} || []};
+    for (@{$res->{1117} || []}) {
+      my $di = shift @di;
+      push @newfl, $res->{1118}->[$di] . $_;
     }
-    close (FILES);
-
-    foreach $dir ( sort ( keys (%subdirsize) ) ) {
-        if ( $dirsize{$dir} || $subdirsize{$dir} ) {
-            $prdir = $dir;
-            $prdir =~ s/^\///;
-	    $curline = "$prdir/ ";
-	    $curline .= $dirsize{$dir} ? "$dirsize{$dir} " : "0 ";
-            $curline .= $subdirsize{$dir} ? "$subdirsize{$dir} " : "0 ";
-            $curline .= $dirnum{$dir} ? "$dirnum{$dir} " : "0 ";
-            $curline .= $subdirnum{$dir} ? "$subdirnum{$dir} " : "0 ";
-	    push @dulist, $curline;
-        }
+    $res->{1027} = [ @newfl ];
+  }
+  my @modes = @{$res->{1030} || []};
+  my @devs = @{$res->{1095} || []};
+  my @inos = @{$res->{1096} || []};
+  my @names = @{$res->{1027} || []};
+  my @sizes = @{$res->{1028} || []};
+  my %seen = ();
+  my %dirnum = ();
+  my %subdirnum = ();
+  my %dirsize = ();
+  my %subdirsize = ();
+  my ($name, $first);
+  for $name (@names) {
+    my $mode = shift @modes;
+    my $dev = shift @devs;
+    my $ino = shift @inos;
+    my $size = shift @sizes;
+    # check if regular file
+    next if ($mode & 0170000) != 0100000;
+    next if $seen{"$dev $ino"};
+    $seen{"$dev $ino"} = 1;
+    $name =~ s/^\///;
+    $name = "$prefix$name";
+    $first = 1;
+    $size = int ($size / 1024) + 1;
+    while ($name ne '') {
+      $name = '' unless $name =~ s/\/[^\/]*$//;
+      if ($first) {
+	$dirsize{"$name/"} += $size;
+	$dirnum{"$name/"} += 1;
+	$subdirsize{"$name/"} ||= 0;	# so we get all keys
+      } else {
+	$subdirsize{"$name/"} += $size;
+	$subdirnum{"$name/"} += 1;
+      }
+      $first = 0;
     }
-    return @dulist;
+  }
+  my @dulist = ();
+  for $name (sort keys %subdirsize) {
+    next unless $dirsize{$name} || $subdirsize{$name};
+    $dirsize{$name} ||= 0;
+    $subdirsize{$name} ||= 0;
+    $dirnum{$name} ||= 0;
+    $subdirnum{$name} ||= 0;
+    push @dulist, "$name $dirsize{$name} $subdirsize{$name} $dirnum{$name} $subdirnum{$name}";
+  }
+  return @dulist;
 }
+
+#sub RpmToDulist {
+#    local ($filename,$prefix) = @_;
+#    local (%dirsize, %subdirsize, %dirnum, %subdirnum, @dulist);
+#    local (%seen_node);
+#    open ( FILES, "rpm -qp --qf '[%{FILEMODES:perms} %{FILESIZES} %{FILEDEVICES} %{FILEINODES} %{FILENAMES}\n]' $filename |") || die "cant open infile $filename";
+#
+#    while (<FILES>) {
+#        # rights is not used, but start of $_ in the if below
+#        ($rights , $size, $f_dev, $f_node, $name ) = split( ' ', $_ );
+#        $size = int ( $size / 1024 ) + 1;
+#        if ( $rights =~ /^\-/ ) {
+#	    next if ( $seen_node{"$f_dev $f_node"} );
+#	    $seen_node{"$f_dev $f_node"} = "yes";
+#	    $name = $prefix.$name;
+#            @path = split ( '/', $name );
+#            pop ( @path );
+#            $rpath = join('/',@path) ;
+#            $dirsize{$rpath} += $size;
+#            $dirnum{$rpath} += 1;
+#            $subdirsize{$rpath} += 0;
+#            $subdirnum{$rpath} += 0;
+#            while (pop(@path)) {
+#                $rpath = join('/',@path) ;
+#                $subdirsize{$rpath} += $size;
+#                $subdirnum{$rpath} += 1;
+#            }
+#        }
+#    }
+#    close (FILES);
+#
+#    foreach $dir ( sort ( keys (%subdirsize) ) ) {
+#        if ( $dirsize{$dir} || $subdirsize{$dir} ) {
+#            $prdir = $dir;
+#            $prdir =~ s/^\///;
+#	    $curline = "$prdir/ ";
+#	    $curline .= $dirsize{$dir} ? "$dirsize{$dir} " : "0 ";
+#            $curline .= $subdirsize{$dir} ? "$subdirsize{$dir} " : "0 ";
+#            $curline .= $dirnum{$dir} ? "$dirnum{$dir} " : "0 ";
+#            $curline .= $subdirnum{$dir} ? "$subdirnum{$dir} " : "0 ";
+#	    push @dulist, $curline;
+#        }
+#    }
+#    return @dulist;
+#}
 
 ####################### copied from RPM.pm by mls #################################
 package RPM;
