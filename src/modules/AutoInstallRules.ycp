@@ -234,6 +234,21 @@
 			ismatch = true;
 			env[rule] = hostname;
 		    }
+		    else if ( rule == "custom1" ||  rule == "custom2" || rule == "custom3")
+		    {
+			string script = ruledef["script"]:"exit -1";
+			string tmpdir = SCR::Read( .target.tmpdir );
+			string scriptPath = sformat("%1/%2", tmpdir,  "rule_" + rule);
+			y2milestone("Writing pre script into %1", scriptPath);
+			SCR::Write(.target.string, scriptPath, script);
+			
+			map out = SCR::Execute (.target.bash_output, "/bin/sh " + scriptPath, $[]);
+			string script_result = out["stdout"]:"";
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			
+			env[rule] = script_result;
+		    }		    
 		    else if ( rule == "domain" )
 		    {
 			shellseg(ismatch, rule, match, op, matchtype);
@@ -283,7 +298,7 @@
 			    string var2 = sformat("disksize_device%1", i );
 			    shellseg(ismatch , var1 , disk[1]:"" , op, matchtype);
 			    ismatch = true;
-			    shellseg(ismatch, var2 , disk[0]:"" , op, "exact");
+			    shellseg(ismatch, var2 , disk[0]:"" , "and", "exact");
 			    env[var1] = dev["size"]:-1;
 			    env[var2] = dev["device"]:"";
 			    i = i + 1;
