@@ -5,9 +5,13 @@ textdomain "autoinst";
 import "Installation";
 import "Progress";
 import "Report";
+import "AutoinstImage";
 
-string file = Installation::destdir +  "/suseroot.tgz";
-string iface = "eth0";
+if (!AutoinstImage::enabled)
+    return `auto;
+
+string file = Installation::destdir +  "/" + AutoinstImage::image_name;
+string iface = AutoinstImage::iface;
 
 string help_text = _("<p>
 Please wait while the image is retrieved.</p>
@@ -44,6 +48,7 @@ string untar = sformat("tar -C %1 -zxpf %2", Installation::destdir, file);
 Progress::NextStage();
 SCR::Execute(.target.bash, untar);
 
+SCR::Execute(.target.remove, "/" + file );
 Progress::Finish();
 
 return `next;
