@@ -55,10 +55,12 @@ Please wait while the system is being configured.
               // Progress bar that displays overall progress in this dialog
               `ProgressBar(`id(`progress), _("Progress"), max_steps, 0 )
               );
+	Wizard::ReplaceButtonBox(Wizard::BackAbortInstallationNextButtonBox());
     Wizard::SetContents(
               // Dialog title for SuSEconfig dialog
               _("Configuring System according to auto-install settings"),
               contents, help_text, false, false);
+
     Wizard::DisableAbortButton();
 
 

@@ -59,22 +59,22 @@
 		    });
 		    Call::Function(module_auto, ["Import", result ]);
 		    any out = Call::Function(module_auto, ["Packages", result ]);
-			if (is(out, list))
-				packages = union(packages, out);
+			if (is(out, map))
+				packages = union(packages, out["install"]:[]);
 		}
 		else if (d["AutoinstDataType"]:"map" == "map")
 		{
 		    Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
 		    any out = Call::Function(module_auto, ["Packages", Profile::Flat[resource]:$[]  ]);
-			if (is(out, list))
-				packages = union(packages, out);
+			if (is(out, map))
+				packages = union(packages, out["install"]:[]);
 		}
 		else
 		{
 		    Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
 		    any out = Call::Function(module_auto, ["Packages",  Profile::Flat[resource]:[] ]);
 			if (is(out, list))
-				packages = union(packages, out);
+				packages = union(packages, out["install"]:[]);
 		}
 	    }
 	}
