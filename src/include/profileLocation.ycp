@@ -23,8 +23,8 @@
      * @return message descriping location
      */
 
-    global define ProtocolMessage(map Autoyast) ``{
-	string Protocol = lookup(Autoyast, "protocol", "default");
+    global define ProtocolMessage(map cmdLine) ``{
+	string Protocol = lookup(cmdLine, "scheme", "default");
 	string message = "";
 
 	if (Protocol == "floppy")
@@ -33,19 +33,19 @@
 	}
 	else if (Protocol == "tftp")
 	{
-	    message =  sformat ( _("Retrieving control file from TFTP server %1."),  lookup(Autoyast, "server", "unknown") );
+	    message =  sformat ( _("Retrieving control file from TFTP server %1."),  lookup(cmdLine, "server", "unknown") );
 	}
 	else if (Protocol == "nfs")
 	{
-	    message =  sformat ( _("Retrieving control file from NFS server %1."),  lookup(Autoyast, "server", "unknown") );
+	    message =  sformat ( _("Retrieving control file from NFS server %1."),  lookup(cmdLine, "server", "unknown") );
 	}
 	else if (Protocol == "http")
 	{
-	    message =  sformat ( _("Retrieving control file from HTTP server %1."),  lookup(Autoyast, "server", "unknown") );
+	    message =  sformat ( _("Retrieving control file from HTTP server %1."),  lookup(cmdLine, "server", "unknown") );
 	}
 	else if (Protocol == "file")
 	{
-	    message =  sformat ( _("Copying control file from file %1."),  lookup(Autoyast, "path", "unknown") );
+	    message =  sformat ( _("Copying control file from file %1."),  lookup(cmdLine, "path", "unknown") );
 	}
 	else if (Protocol == "default")
 	{
@@ -59,7 +59,7 @@
     }
 
 
-
+    
 
     /**
      * Retrieve the profile using TFTP
@@ -69,19 +69,25 @@
      * @example UseTFTP ($[<cmdline>], "/tmp/profile.xml")
      */
 
-    global define UseTFTP(map autoyast, string localfile)
+    global define UseTFTP(map cmdLine, string localfile)
 	``{
 	string ip = "";
-	string path_to_file = lookup(autoyast, "path","");
+	string path_to_file = lookup(cmdLine, "path","");
+	string server = cmdLine["server"]:"";
+	
 	map tftpmap = $[];
 	boolean ok = false;
 	tftpmap = add(tftpmap, "localfile", localfile);
+	
 	if (substring(path_to_file, size(path_to_file) -1) == "/")
 	{
 	    ip = Mode::installMap["ip"]:"";
 	    string tmp_hex_ip = ip2hex(ip);
-	    y2warning("Trying to load: %1%2", path_to_file, tmp_hex_ip );
-	    tftpmap = add(tftpmap, "serverstr", lookup(autoyast,"server","") + ":" + path_to_file + tmp_hex_ip);
+
+	   
+	    y2milestone("Trying to load: %1%2", path_to_file, tmp_hex_ip );
+	    tftpmap = add(tftpmap, "serverstr", server + ":" + path_to_file + tmp_hex_ip);
+	    
 	    if (SCR::Execute(.tftp,"get", tftpmap))
 	    {
 		y2milestone("tftp success");
@@ -92,8 +98,9 @@
 		while (size(tmp_hex_ip) != 1)
 		{
 		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size(tmp_hex_ip)-1);
-		    y2warning("Trying to load: %1%2", path_to_file, tmp_hex_ip );
-		    tftpmap = change(tftpmap, "serverstr", lookup(autoyast,"server","") + ":" + path_to_file + tmp_hex_ip);
+		    y2milestone("Trying to load: %1%2", path_to_file, tmp_hex_ip );
+		    
+		    tftpmap = change(tftpmap, "serverstr", server + ":" + path_to_file + tmp_hex_ip);
 		    if (SCR::Execute(.tftp, "get", tftpmap))
 		    {
 			y2milestone("tftp success");
@@ -104,7 +111,8 @@
 		if (!ok)
 		{
 		    y2warning("Trying to load: %1default", path_to_file);
-		    tftpmap = change(tftpmap, "serverstr", lookup(autoyast,"server","") + ":" + path_to_file + "default");
+		    
+		    tftpmap = change(tftpmap, "serverstr", server + ":" + path_to_file + "default");
 		    if (!SCR::Execute(.tftp, "get", tftpmap))
 		    {
 			y2error("Control file can't be found");
@@ -119,7 +127,7 @@
 	}
 	else
 	{
-	    tftpmap = add(tftpmap, "serverstr", lookup(autoyast,"server","") + ":" + path_to_file);
+	    tftpmap = add(tftpmap, "serverstr", server + ":" + path_to_file);
 	    if (SCR::Execute(.tftp, "get", tftpmap))
 	    {
 		ok = true;
@@ -134,45 +142,50 @@
 
     /**
      * Retrieve the profile using NFS
-     * @param autoyast Map with value of the autoyast keyword (command line)
+     * @param parameters Map with value of the autoyast keyword (command line)
      * @param localfile Location where the retrieved file should be copied
      * @return true for success
      * @example UseNFS ($[<cmdline>], "/tmp/profile.xml")
      */
 
-    global define UseNFS(map autoyast, string localfile)
+    global define UseNFS(map parameters, string localfile)
 	``{
-	string ip = "";
+	string ip = Mode::installMap["ip"]:"";
 	boolean ok = false;
-	string path_to_file = lookup(autoyast, "path","");
-	list basename = splitstring(path_to_file, "/");
+
+	string path_to_file = parameters["path"]:"";
+	list pathComp = splitstring(path_to_file, "/");
+
+	string server = parameters["server"]:"";
 	boolean is_directory = false;
 	string FileName = "";
 	string mount_dir = "";
-	if (select(basename, size(basename) -1, "XXX") == "")
+
+	if (select(pathComp, size(pathComp) -1, "none") == "")
 	{
 	    is_directory = true;
 	    mount_dir = path_to_file;
 	}
 	else
 	{
-	    FileName = select(basename, size(basename) -1,"XXX");
-	    basename = remove(basename, size(basename) -1);
-	    mount_dir = mergestring(basename, "/");
+	    FileName = select(pathComp, size(pathComp) -1,  "none");
+	    pathComp = remove(pathComp, size(pathComp) -1);
+	    mount_dir = mergestring(pathComp, "/");
 	}
-	y2debug("filename: %1", FileName);
-	y2debug("dir to mount: %1", mount_dir);
 
-	integer ret_from_shell =  SCR::Execute(.target.bash, "/bin/mount " + lookup(autoyast, "server","") + ":" + mount_dir +" /mnt -t nfs");
+	y2milestone("filename: %1", FileName);
+	y2milestone("dir to mount: %1", mount_dir);
+	
+
+	integer ret_from_shell =  SCR::Execute(.target.bash, "/bin/mount " + server + ":" + mount_dir +" /mnt -t nfs");
 	if (ret_from_shell != 0 )
-	{
-	    y2warning("Mount failed");
+	{	    
+	    y2warning("Mount failed");	    
 	    return (ok);
 	}
+
 	if (is_directory)
 	{
-	    ip = Mode::installMap["ip"]:"";
-
 	    string tmp_hex_ip = ip2hex(ip);
 	    if (size(tmp_hex_ip)==0)
 	    {
@@ -188,7 +201,7 @@
 	    {
 		while (size(tmp_hex_ip) != 1)
 		{
-		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size(tmp_hex_ip)-1);
+		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size( tmp_hex_ip) - 1 );
 		    y2warning("Trying to load: %1%2", path_to_file, tmp_hex_ip );
 		    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + tmp_hex_ip + " " + localfile) == 0)
 		    {
@@ -197,6 +210,7 @@
 			break;
 		    }
 		}
+		
 		if (!ok)
 		{
 		    y2warning("Trying to load: %1default", path_to_file);
@@ -204,6 +218,7 @@
 		    {
 			y2milestone("Autoinstall: nfs success");
 			ok = true;
+			   
 		    }
 		    else
 		    {
@@ -217,32 +232,36 @@
 	{
 	    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + FileName+ " " + localfile) == 0)
 	    {
-		ok = true;
+		ok = true;		   
 	    }
 	    else
 	    {
 		y2error("Control file can't be found");
+		    
 	    }
 	}
+	  
 	WFM::Execute(.local.bash, "/bin/umount /mnt");
 	return(ok);
     }
+    
 
     /**
      * Retrieve the profile from a floppy disk
-     * @param autoyast Map with value of the autoyast keyword (command line)
+     * @param parameters Map with value of the autoyast keyword (command line)
      * @param localfile Location where the retrieved file should be copied
      * @return true for success
      * @example UseFLOPPY ($[<cmdline>], "/tmp/profile.xml")
      */
 
-    global define UseFLOPPY(map autoyast, string localfile)
+    global define UseFLOPPY(map parameters, string localfile)
 	``{
 	boolean ok = false;
 	if (StorageDevices::FloppyReady())
 	{
 	    SCR::Execute(.target.mount, [StorageDevices::FloppyDevice, "/media/floppy"], "-t auto");
-	    if (SCR::Execute (.target.bash, "/bin/cp /media/floppy/" + lookup(autoyast, "path","") + " " + localfile) != 0) {
+	    
+	    if (SCR::Execute (.target.bash, "/bin/cp /media/floppy/" + parameters["path"]:"" + " " + localfile) != 0) {
 		y2error("Control file can't be found");
 	    }
 	    else
@@ -263,18 +282,19 @@
 
     /**
      * Retrieve the profile from a www server
-     * @param autoyast Map with value of the autoyast keyword (command line)
+     * @param parameters Map with value of the autoyast keyword (command line)
      * @param localfile Location where the retrieved file should be copied
      * @return true for success
      * @example UseHTTP ($[<cmdline>], "/tmp/profile.xml")
      */
 
-    global define UseHTTP(map autoyast, string localfile)
+    global define UseHTTP(map parameters, string localfile)
 	``{
 	string ip = "";
 	boolean ok = false;
-
-	string path_to_file = lookup(autoyast, "path","");
+	string server = parameters["path"]:"";
+	
+	string path_to_file = lookup(parameters, "path","");
 
 
 	boolean is_directory = false;
@@ -288,7 +308,7 @@
 	}
 	else
 	{
-	    http_dir = mergestring(basename, "/");
+	    http_dir = mergestring(FileName, "/");
 	}
 
 	y2milestone("filename: %1", FileName);
@@ -306,7 +326,7 @@
 		return false;
 	    }
 	    y2milestone("Trying to load: %1%2", path_to_file, tmp_hex_ip );
-	    string full_url = sformat("http://%1/%2/%3", lookup (autoyast, "server",""),  http_dir, tmp_hex_ip );
+	    string full_url = sformat("http://%1/%2/%3", server,  http_dir, tmp_hex_ip );
 	    if (lookup(SCR::Execute ( .http.getFile, full_url, localfile),"ok",false))
 	    {
 		y2milestone("copy from http success");
@@ -319,7 +339,7 @@
 		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size(tmp_hex_ip)-1);
 		    y2warning("Trying to load: %1%2", path_to_file, tmp_hex_ip );
 
-		    string full_url = sformat("http://%1/%2/%3", lookup (autoyast, "server",""),  http_dir, tmp_hex_ip );
+		    string full_url = sformat("http://%1/%2/%3", server ,  http_dir, tmp_hex_ip );
 		    if (lookup(SCR::Execute ( .http.getFile, full_url, localfile),"ok",false))
 		    {
 			y2milestone("Autoinstall: HTTP success");
@@ -330,7 +350,7 @@
 		if (!ok)
 		{
 		    y2warning("Trying to load: %1default", path_to_file);
-		    string full_url = sformat("http://%1/%2/default", lookup (autoyast, "server",""),  http_dir );
+		    string full_url = sformat("http://%1/%2/default", server ,  http_dir );
 		    if (lookup(SCR::Execute ( .http.getFile,full_url , localfile),"ok",false))
 		    {
 			y2milestone("Autoinstall: HTTP success");
@@ -346,7 +366,7 @@
 	}
 	else
 	{
-	    string full_url = sformat("http://%1/%2/%3", lookup (autoyast, "server",""),  http_dir ,  FileName);
+	    string full_url = sformat("http://%1/%2/%3", server ,  http_dir ,  FileName);
 	    if (lookup(SCR::Execute ( .http.getFile, full_url  , localfile),"ok",false))
 	    {
 		ok = true;
@@ -362,13 +382,13 @@
 
     /**
      * Retrieve the profile from a harddisk partition
-     * @param autoyast Map with value of the autoyast keyword (command line)
+     * @param parameters Map with value of the autoyast keyword (command line)
      * @param localfile Location where the retrieved file should be copied
      * @return true for success
      * @example UseHD ($[<cmdline>], "/tmp/profile.xml")
      */
 
-    global define UseHD(map autoyast, string localfile)
+    global define UseHD(map parameters, string localfile)
 	``{
 	boolean ok = false;
 	return(ok);

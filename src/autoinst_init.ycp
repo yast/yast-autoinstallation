@@ -56,23 +56,23 @@ Please wait while the system is being prepared for auto-installation.</p>"));
     boolean ret = false;
     while (true)
     {
-	map Autoyast = AutoInstall::ProfileLocation;
-	string protocol =  Autoyast["protocol"]:"";
+	map locationParams = AutoInstall::ProfileLocation;
+	string protocol =  locationParams["scheme"]:"";
 	string profile_location =  AutoInstall::xml_tmpfile;
 
 	if (protocol == "tftp")  // TFTP
 	{
-	    ret = UseTFTP(Autoyast, profile_location);
+	    ret = UseTFTP(locationParams, profile_location);
 	}
 	else if (protocol == "file" || protocol == "cdrom" )  // FILE or CDROM
 	{
-	    string file_path = sformat("%1/%2", Installation::sourcedir, lookup(Autoyast, "path",""));
+	    string file_path = sformat("%1/%2", Installation::sourcedir, locationParams["path"]:"");
 	    if (SCR::Read(.target.size, file_path)>0) {
-		string cpcmd = sformat("cp %1/%2 %3", Installation::sourcedir, lookup(Autoyast, "path",""), profile_location);
+		string cpcmd = sformat("cp %1/%2 %3", Installation::sourcedir, locationParams["path"]:"", profile_location);
 		y2milestone("copy profile: %1", cpcmd);
 		SCR::Execute(.target.bash, cpcmd);
 	    } else {
-		string cpcmd = sformat("cp %1 %2", lookup(Autoyast, "path",""), profile_location);
+		string cpcmd = sformat("cp %1 %2", locationParams["path"]:"", profile_location);
 		y2milestone("copy profile: %1", cpcmd);
 		SCR::Execute(.target.bash, cpcmd);
 	    }
@@ -88,15 +88,15 @@ Please wait while the system is being prepared for auto-installation.</p>"));
 	}
 	else if (protocol == "nfs")  // NFS
 	{
-	    ret = UseNFS(Autoyast, profile_location);
+	    ret = UseNFS(locationParams, profile_location);
 	}
 	else if (protocol == "http")  // HTTP
 	{
-	    ret = UseHTTP(Autoyast, profile_location);
+	    ret = UseHTTP(locationParams, profile_location);
 	}
 	else if (protocol == "floppy") // FLOPPY
 	{
-	    ret = UseFLOPPY(Autoyast, profile_location);
+	    ret = UseFLOPPY(locationParams, profile_location);
 	}
 	else if (protocol == "default") // DEFAULT
 	{
@@ -147,7 +147,7 @@ Please wait while the system is being prepared for auto-installation.</p>"));
 
     Progress::NextStage();
     
-    AutoInstall::ParseProfile();
+    AutoInstall::ProcessProfile();
 
 
     boolean use_utf8 = true;		// utf8 is default
@@ -173,9 +173,15 @@ Please wait while the system is being prepared for auto-installation.</p>"));
 
 
     y2milestone ("Autoinstall control file %1",  AutoInstall::Profile );
+    
     sleep(1000);
     Progress::Finish();
-
+    if ( AutoInstall::Profile == $[])
+    {
+	UI::ErrorPopup(_("Error occured while parsing the control file,
+please check the syntax of the control file and try again..."));
+	return `abort;
+    }
     
     return `next;
 }
