@@ -1,17 +1,17 @@
 /**
- * File: 	include/autoinstall/dialogs.ycp
- * Module: 	Auto-Installation Configuration System
+ * File:	include/autoinstall/dialogs.ycp
+ * Module:	Auto-Installation Configuration System
  * Summary:	This module handles the configuration for auto-installation
  * Authors:	Anas Nashif <nashif@suse.de>
  * $Id$
  */
 {
     textdomain "autoinst";
-    
+
     /**
      * Preferences Dialog
-     * 
-     */    
+     *
+     */
     global define Preferences()
 	``{
 	term contents =
@@ -24,7 +24,7 @@
 					    `Bottom(`PushButton(`id(`opendir), _("Select &Directory")))
 					    )
 				      )
-				),			      
+				),
 
 		       // `Left(`CheckBox(`id(`enable_classes), `opt(`notify), _("Use classes for multi-host configurations"), AIClass::enable)),
 
@@ -36,7 +36,7 @@
 					    `Bottom(`PushButton(`id(`openclassdir), _("Select &Directory")))
 					    )
 				      )
-				),			      
+				),
 		       `VSquash(
 				`HBox(
 				      `TextEntry(`id(`susedir), _("&SuSE Package Directory:"), AIServer::PackageRep),
@@ -62,7 +62,7 @@ all class files are stored</p>");
 the SuSE CDs. This directory must have a subdirectory called <b>suse</b> which
 contains all the packages.</p>");
 
-	
+
 	Wizard::SetContents(_("Preferences"),
 			    contents, help , true, true);
 
@@ -75,33 +75,33 @@ contains all the packages.</p>");
 	    string new_rep = UI::QueryWidget(`id(`repository), `Value);
 	    string new_classdir = UI::QueryWidget(`id(`classdir), `Value);
 	    string new_susedir = UI::QueryWidget(`id(`susedir), `Value);
-	    
-	   
+
+
 	    if (ret ==`opendir)
-	    {	
+	    {
 		new_rep = PopupDir(AIConfig::Repository);
 		if (AIConfig::Repository != new_rep) {
 		    changed = true;
 		    AIConfig::Repository = new_rep;
 		}
-		
+
 		if (AIConfig::Repository!="")
 		{
-		    UI::ChangeWidget(`id(`repository), `Value, AIConfig::Repository);	
+		    UI::ChangeWidget(`id(`repository), `Value, AIConfig::Repository);
 		}
 
 	    }
 	    else if (ret ==`openclassdir)
-	    {	
+	    {
 		new_classdir = PopupDir(AIClass::classDir);
 		if ( AIClass::classDir!= new_classdir) {
 		    changed = true;
 		    AIClass::classDir = new_classdir;
 		}
-		
+
 		if (AIClass::classDir!="")
 		{
-		    UI::ChangeWidget(`id(`classdir), `Value, AIClass::classDir);	
+		    UI::ChangeWidget(`id(`classdir), `Value, AIClass::classDir);
 		}
 
 	    }
@@ -114,15 +114,15 @@ contains all the packages.</p>");
 		    changed = true;
 		    AIServer::PackageRep = new_susedir;
 		}
-		
+
 		if (AIServer::PackageRep!="")
 		{
-		    UI::ChangeWidget(`id(`susedir), `Value, AIServer::PackageRep);	
+		    UI::ChangeWidget(`id(`susedir), `Value, AIServer::PackageRep);
 		}
 
-	    }	    
+	    }
 	    else if (ret == `key || ret==`next)
-	    {	
+	    {
 		if (AIConfig::Repository != new_rep) {
 		    changed = true;
 		    AIConfig::Repository = new_rep;
@@ -130,9 +130,9 @@ contains all the packages.</p>");
 		if (AIClass::classDir != new_classdir) {
 		    changed = true;
 		    AIClass::classDir = new_classdir;
-		}			
+		}
 	    }
-	    
+
 	    if ( AIServer::PackageRep!= new_susedir) {
 		changed = true;
 		AIServer::PackageRep = new_susedir;
@@ -146,18 +146,18 @@ contains all the packages.</p>");
 		AIConfig::Repository = new_rep;
 	    }
 
-	    
+
 	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-	
+
 	if (changed  ) {
 	    AIConfig::Save();
 	    AIClass::Save();
-	    changed =false;	    
+	    changed =false;
 	}
 	return ret;
     }
-    
-    
+
+
 
 
     /**
@@ -189,7 +189,7 @@ contains all the packages.</p>");
 		xmlfiles= add (xmlfiles,`item(`id(file), file));
 	    }
 	});
-	
+
 	term contents =
 	    `VBox(
 		  `Left(`HBox(
@@ -225,15 +225,15 @@ contains all the packages.</p>");
     }
 
 
-    
+
    /**
     * Dialog for saving control files
     * @return dialog contents
     */
-    
+
     global define FileListSave() ``{
 	string source = "";
-	term contents = 
+	term contents =
 	    `VBox(
 		  `Left(`HBox(
 			      `Label(_("Current Profile: ")),
@@ -241,19 +241,19 @@ contains all the packages.</p>");
 			      )
 			),
 		  `VSpacing(0.5),
-		  `RichText( `id(`class_source ), `opt(`plainText), 
+		  `RichText( `id(`class_source ), `opt(`plainText),
 			     source
 			     ),
-		     
+
 		  `VSpacing(0.5),
 		  `VBox(
 
 			`HBox(
-			      `PushButton(`id(`saveprofile), _("&Save")),				  
+			      `PushButton(`id(`saveprofile), _("&Save")),
 			      `PushButton(`id(`saveas), _("Save &As")),
 			      `PushButton(`id(`edit), _("&Edit"))
 			      )
-			    
+
 			),
 		  `VSpacing(0.5)
 		  );
@@ -261,7 +261,7 @@ contains all the packages.</p>");
     }
 
 
-    
+
     /**
      * Popup for a new file name
      * @return string new file name
@@ -277,7 +277,7 @@ contains all the packages.</p>");
 			//  _("&New Profile Name") _("New Profile")
 			// Translators: text entry label
 			`Left (`TextEntry (`id (`newname), textentry, "")),
-				
+
 			`VSpacing(0.2),
 			`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
 			      `PushButton(`id(`cancel), CancelButtonLabel())),
@@ -299,12 +299,12 @@ contains all the packages.</p>");
 	    }
 	    else if (ret == `ok)
 	    {
-			
+
 		f = UI::QueryWidget (`id (`newname), `Value);
 		if (checkFileName(f) !=0 || f == "") {
 		    UI::ErrorPopup(invalidFileName());
 		    continue;
-		}	
+		}
 		break;
 	    }
 	}
@@ -314,12 +314,12 @@ contains all the packages.</p>");
 	return (ret == `ok)? f : "";
     }
 
-    
-  
+
+
     /**
      * Main file dialog
      * @return symbol
-     */   
+     */
     global define symbol FileDialog()
 	``{
 	string title = _("File Management");
@@ -331,22 +331,22 @@ to load it or create a new Profile using the
 	help = help + _("<p>You can switch between complete control files, which are ready to be used
 and templates which contain class defintions and can be created using this dialog.</p>");
 
-	help = help + _("<p>Control file created from templates will be automatically copied into the
+	help = help + _("<p>Control files created from templates will be automatically copied into the
 <em>control file repository</em></p>");
 
 
-	
+
 	Wizard::SetContents(title,
 			    FileList(`ready), help, true, true);
-	
-	
+
+
 	symbol type = `ready;
-	any ret = "";	
+	any ret = "";
 	repeat {
 	    any selected_file = UI::QueryWidget(`id(`table), `CurrentItem);
-	    
+
 	    type =  UI::QueryWidget(`id(`type), `CurrentButton);
-	    
+
 	    if (selected_file == nil)
 	    {
 		UI::ChangeWidget(`id(`open), `Enabled, false);
@@ -361,31 +361,31 @@ and templates which contain class defintions and can be created using this dialo
 		}
 	    }
 
-	    
+
 	    if  (AIConfig::currentFile !="")
-	    {		
+	    {
 		UI::ChangeWidget(`id(`loaded), `Value, 	AIConfig::currentFile);
 	    }
 	    else if (size(AIConfig::Profile)>0)
 	    {
 		UI::ChangeWidget(`id(`next), `Enabled, true);
 	    }
-	    else 
+	    else
 	    {
 		UI::ChangeWidget(`id(`next), `Enabled, false);
-	    }	    
+	    }
 
-	    
+
 	    ret = UI::UserInput();
-	 	 	    
+
 	    y2milestone("selected file: %1, %2, %3", selected_file, type, ret);
 	    if (ret == `new && type != `templates)
 	    {
 		AIConfig::Profile = $[];
 		AIConfig::currentFile = NewFileName(  _("&New Profile Name"), _("New Profile"));
-		
+
 		if (AIConfig::currentFile!="")
-		{		
+		{
 		    UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);
 		    UI::ChangeWidget(`id(`next), `Enabled, true);
 		    ret = `open;
@@ -394,16 +394,16 @@ and templates which contain class defintions and can be created using this dialo
 		{
 		    continue;
 		}
-	    }	 
+	    }
 	    else if (ret == `open || (type ==`templates && ret == `new))
 	    {
 		y2milestone("Reading control file: %1", selected_file);
 		if (selected_file!=nil) {
 		    AIConfig::currentFile=selected_file;
-		  
+
 		    if (type == `templates)
 		    {
-			
+
 			AIConfig::ReadProfile(sformat("%1/%2", AIConfig::TemplateRepository,selected_file));
 			AIConfig::isTemplate = true;
 		    }
@@ -411,12 +411,13 @@ and templates which contain class defintions and can be created using this dialo
 		    {
 			AIConfig::ReadProfile(sformat("%1/%2", AIConfig::Repository,selected_file));
 		    }
-		}		
-		UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);		
+		}
+		UI::ChangeWidget(`id(`loaded), `Value, AIConfig::currentFile);
 	    }
 	    else if (ret == `delete)
 	    {
-		if (UI::QueryWidget(`id(`table), `CurrentItem) == nil) {
+		if (UI::QueryWidget(`id(`table), `CurrentItem) == nil)
+		{
 		    UI::WarningPopup(_("Please select a file first."));
 		    continue;
 		}
@@ -424,40 +425,40 @@ and templates which contain class defintions and can be created using this dialo
 		    SCR::Execute(.target.bash, "rm " + AIConfig::TemplateRepository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
 		else
 		    SCR::Execute(.target.bash, "rm " + AIConfig::Repository + "/" + UI::QueryWidget(`id(`table), `CurrentItem));
-		
+
 		Wizard::SetContents(title,
-				    FileList(type), help, true, true);	
+				    FileList(type), help, true, true);
 	    }
-	    
+
 	    if (type == `templates && ret == `new)
 	    {
 		any result =  processTemplate();
 	    }
 
-	    
+
 	    if (UI::QueryWidget(`id(`type), `CurrentButton) != type)
 	    {
 		if ( UI::QueryWidget(`id(`type), `CurrentButton) == `ready )
 		{
 		    Wizard::SetContents(title,
 					FileList(`ready), help, true, true);
-		
+
 		}
 		else if  (UI::QueryWidget(`id(`type), `CurrentButton) == `templates )
 		{
 		    Wizard::SetContents(title,
 					FileList(`templates), help, true, true);
-		    
+
 		}
 	    }
-	    
-	
-	     
+
+
+
 	} until (ret == `next ||
-		 ret == `open || 
+		 ret == `open ||
 		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 
-	
+
 	return ret;
     }
 
@@ -465,9 +466,9 @@ and templates which contain class defintions and can be created using this dialo
      * Save dialog
      *
      */
-    
+
     global define SaveDialog()
-	``{	
+	``{
 
 	string help = _("
 <P>Now you can save the configuration you have created. After
@@ -478,42 +479,42 @@ configurations.</P>");
 <P>Please check the syntax of the Profile before saving it. For more information
 about the syntax of the resulting <em>XML</em> file,
 consult the online documentation</p>");
-	    
 
 
-	
+
+
 	Wizard::SetContents(_("File Management"),
 			    FileListSave(), help, true, true);
 
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel);
-	
+
 	AIConfig::PrepProfile();
 	string source = XML::YCPToXMLString(`profile, AIConfig::Profile);
 	if (size(source)>0)
-	{	    
+	{
 	    UI::ChangeWidget(`id(`class_source ), `Value, source);
 	}
 	else
 	{
 	    UI::ChangeWidget(`id(`class_source ), `Value, "");
-	}				
-	any ret = nil;	
+	}
+	any ret = nil;
 	repeat
-	    {	    
+	    {
 		if  (AIConfig::currentFile !="")
-		{		
+		{
 		    UI::ChangeWidget(`id(`loaded), `Value, 	AIConfig::currentFile);
-		}	    	    	    
-		ret = UI::UserInput();	 	    
-	    
+		}
+		ret = UI::UserInput();
+
 		if (ret == `saveprofile || ret == `saveas)
 		{
 		    if (AIConfig::isTemplate) {
 			UI::MessagePopup(_("You are saving a control file with configured classes.
 This file will be saved in the templates directory."));
-			
+
 		    }
-		    
+
 		    if (ret == `saveas)
 		    {
 			string filename = "";
@@ -525,7 +526,7 @@ This file will be saved in the templates directory."));
 			{
 			     filename = SaveFileAs(AIConfig::TemplateRepository );
 			}
-			
+
 			y2debug("file name: %1", filename);
 			if (filename == "")
 			    continue;
@@ -533,22 +534,22 @@ This file will be saved in the templates directory."));
 			{
 			    UI::ErrorPopup(invalidFileName());
 			    continue;
-			}			   
+			}
 			else
 			{
 			    AIConfig::currentFile= filename;
 			}
-		    } 
-		
-	    
+		    }
+
+
 		    if (AIConfig::currentFile == "") {
 			UI::WarningPopup(_("You must provide a file name
 to be able to save the current profile!"));
 			continue;
 		    }
-		
+
 		    if (AIConfig::SaveProfile(AIConfig::currentFile))
-		    {	
+		    {
 			UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
 			AIConfig::changed=false;
 			continue;
@@ -557,16 +558,16 @@ to be able to save the current profile!"));
 		    {
 			UI::WarningPopup(_("Error occured while saving the file"));
 		    }
-		
+
 		}
-	  
+
 
 		if (ret == `next && AIConfig::changed)
 		{
 		    if (UI::YesNoHeadlinePopup(_("Configuration has been modifed"), _("Should the changes be saved?")))
-		    {	
+		    {
 			string filename = SaveFileAs(AIConfig::Repository + "/");
-		
+
 			if (filename=="")
 			{
 			    continue;
@@ -593,16 +594,16 @@ to be able to save the current profile!"));
 
 			AIConfig::changed=false;
 		    }
-	    
+
 		}
-	
-	    
-	    } until (ret == `edit || ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));			
+
+
+	    } until (ret == `edit || ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 
 	return ret;
     }
 
-    
+
     /**
      * Check validity of file name
      * @param string file name
@@ -614,7 +615,7 @@ to be able to save the current profile!"));
 	{
 	    return -1;
 	}
-      
+
         return 0;
     }
 
@@ -637,7 +638,7 @@ information from this machine.</p>");
 	string title = "Clone machine";
 
 	term contents = `Top(
-			     `VBox(				   
+			     `VBox(
 				   `RadioButtonGroup(`id(`rbg),
 						     `VBox(
 							   `Left(
@@ -648,7 +649,7 @@ information from this machine.</p>");
 								       `HStretch(),
 								       `TextEntry(`id(`result), _("&Name of resulting profile"), "clone.xml"),
 								       `HStretch()
-							    
+
 								       )
 								 ),
 							   `Left(
@@ -675,7 +676,7 @@ information from this machine.</p>");
 					 )
 				   )
 			     );
-	
+
 	Wizard::SetContents(title,
 			    contents, help, true, true);
 
@@ -687,7 +688,7 @@ information from this machine.</p>");
 	{
 	    UI::ChangeWidget(`id(`extra_loc), `Enabled, false);
 	}
-	
+
 	any ret = nil;
 	symbol action = nil;
 	repeat
@@ -695,7 +696,7 @@ information from this machine.</p>");
 		ret = UI::UserInput();
 
 		if (UI::QueryWidget(`id(`extra), `Value))
-		{		    
+		{
 		    UI::ChangeWidget(`id(`extra_loc), `Enabled, true);
 		}
 		else
@@ -712,13 +713,13 @@ information from this machine.</p>");
 please wait...."));
 		    AIClone::exportProfile();
 		    clearFeedback();
-		    
+
 		}
-	    } until (ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));			
+	    } until (ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 	if (ret == `next)
 	    return action;
-	
-	return ret;    
+
+	return ret;
     }
 
     /**
@@ -744,5 +745,5 @@ please wait...."));
 	    UI::CloseDialog();
 	popup_open = false;
     };
-    
+
 }

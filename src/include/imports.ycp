@@ -258,7 +258,13 @@ this may take a while, please wait...
 	``{	
 	map ycpin = XML::XMLToYCPFile(in);
 	y2milestone("Writing file as %1", out);
-	return XML::YCPToXMLFile(`alice, ycpin, out);
+
+	map sortedMap = $[];
+	list keys = toset(maplist(`k,`v, ycpin, ``(k)));
+	foreach(`k, keys, ``{
+	    sortedMap[k]=ycpin[k]:"";
+	});
+	return XML::YCPToXMLFile(`alice, sortedMap, out);
     }
     
     /**
