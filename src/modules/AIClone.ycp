@@ -20,17 +20,31 @@
     import "Mode";
     import "XML";
     import "Call";
+    import "Profile";
+
+    
     global map Profile = $[];
 
     include "autoinstall/xml.ycp";
 
     integer bytes_per_unit = 0;
 
+
+
+    // spceial reatment for base resources
+    global list base = [];
+
+    // aditional configuration resources o be cloned
+    global list additional = [];
+	
+
+    
     
     /**
      * Constructor
      */
     global define void AIClone()``{
+	
 	Mode::normal = true;
 	return;
     }
@@ -207,24 +221,6 @@
 
     };
 
-    /**
-     * Bootloader options
-     */
-    global define map Netowrking()``{
-	import "Lan";
-	map lan = $[];
-	
-
-	boolean readret = Call::Function("lan_auto", ["Read", $[] ]);
-	if (!readret)
-	{
-	    lan  = Call::Function("lan_auto", ["Result", $[] ]);
-	}
-		
-	return lan;
-
-    };
-
     
     /**
      * General options
@@ -279,152 +275,121 @@
 
 
 
-    define map Sound () ``{
-
-	import "Sound";
-	import "Joystick";
-
-	Sound::Read(``{});
-	Joystick::Read(``{});
-
-	map sound = Sound::Export();
-	return sound;
-    }
 
 
-    define map Printer() ``{
+     /**
+      * Clone a Resource
+      * @param resource name
+      * @return list 
+      */
+     define boolean CommonClone(string resource, map resMap) ``{
 
-	import "Printer";
+	 
+	 string data_type = resourceMap["AutoinstDataType"]:"map";
+	 string tomerge = resourceMap["AutoinstMerge"]:"";
+	 string tomergetypes = resourceMap["AutoinstMergeTypes"]:"";
 
-	Printer::Read();
+	 string auto = sformat("%1_auto", resource);
+	 resource = resourceMap["AutoinstResource"]:resource;
 
-	map printer = Printer::Export();
-	return printer;
+	 boolean readret = false;
+	 
+	 map mergedResource = $[];
+	 if (size(tomerge) > 0 )
+	 {
+	     list MergeTypes = splitstring(tomergetypes, ",");
+	     list Merge = splitstring(tomerge, ",");
+	     integer i = 0;
 
-    }
+	     boolean readret = Call::Function(auto , ["Read", $[] ]);
+	  
+	     
+	     foreach ( string res, Merge, ``{
+		 if ( MergeTypes[i]:"map" == "map") 
+		     Profile::Flat[res] =    Call::Function(auto, ["Result", $[] ]) ;
+		 else
+		     Profile::Flat[res] = Call::Function(auto, ["Result", [] ]) ;
+		 i = i + 1;
+	     });
+	     
+	 }
+	 else
+	 {
+	     if (data_type == "map")
+	     {
+		 readret = Call::Function(auto , ["Read", $[] ]);
+		 Profile::Flat[resource]  = Call::Function(auto, ["Result", $[] ]) ;
+	     }
+	     else
+	     {
+		 readret = Call::Function(auto , ["Read", [] ]);
+		 Profile::Flat[resource]  = Call::Function(auto, ["Result", [] ]) ;
+	     }
+	 }
 
-     define map Nis() ``{
-
-	import "Nis";
-
-	Nis::Read();
-
-	map nis = Nis::Export();
-	return nis;
-
-    }
-
-
-     define map NfsServer() ``{
-
-	 import "NfsServer";
-
-	 NfsServer::Read();
-
-	 map settings = NfsServer::Export();
-	 return settings;
-
-     }
-
-     define map Mail() ``{
-
-	 import "Mail";
-
-	 Mail::Read(``{});
-
-	 map settings = Mail::Export();
-	 return settings;
+	 return true;
 
      }
 
-     define map NfsClient() ``{
-
-	 import "Nfs";
-
-	 Nfs::Read(``{});
-
-	 map settings = Nfs::Export();
-	 return settings;
-
-     }
-
-
-
+   
 
     /**
      * Build the profile
      * @return map Profile
      */
-    global define void constructProfile(list what_to_clone)
+    global define void Process()
 	``{
-	map Install = $[];
-	map tmp_conf = $[];
-	map Configure = $[];
+	Profile::Reset();
+	foreach(string def_resource, map resourceMap, AutoInstall::ModuleMap, ``{
+	    // Set resource name, if not using default value
 
-	
-	foreach (string resource, what_to_clone, ``{
-	    if (resource == "auth")
+	    string resource = resourceMap[def_resource, "AutoinstResource"]:def_resource;
+
+	    if (contains(additional, resource))
 	    {
-		Configure["nis"] = Nis();
+		boolean ret = CommonClone(def_resource, resourceMap);
 	    }
-	    else if (resource == "networking")
-	    {		
-		Configure[resource] = Networking();
-	    }
-	    else if (resource == "sound")
-	    {		
-		Configure[resource] = Sound();
-	    }
-	    else if (resource == "printer")
-	    {		
-		Configure[resource] = Printer();
-	    }
-	    else if (resource == "nfs_server")
-	    {		
-		Configure[resource] = NfsServer();		
-	    }
-	    else if (resource == "nfs")
-	    {		
-		Configure[resource] = NfsClient();		
-	    }
-	    else if (resource == "mail")
-	    {		
-		Configure[resource] = Mail();		
-	    }
-	    else if (resource == "users")
-	    {		
-		Configure[resource] = root();		
-	    }
-	    else {
-		y2error("Unsupported resource");
-	    }	    
-	    
+
 	});
 
-	
-	Install["partitioning"] = Partitioning();
-	Install["software"] = Software();
-	Install["general"] = General();
-	Install["bootloader"] = Bootloader();
-	Profile["install"] = Install;
-	Profile["configure"] = Configure;
+	if (!contains(base, "partitioning"))
+	{
+	    Profile::Flat["partitioning"] = Partitioning();
+	}
+	else
+	{
+	    Profile::Flat["partitioning"] = [$["use":"all"]];
+	}
+
+	  
+	if (!contains(base, "software"))
+	{  
+	    Profile::Flat["software"] = Software();
+	}
+	else
+	{
+	    Profile::Flat["software"] = $["base":"default"]; 
+	}
+
+	if (!contains(base, "bootloader"))
+	{
+	    Profile::Flat["bootloader"] = Bootloader();
+	}
+
+	Profile::Flat["general"] = General();
+	Profile::Prepare();
 	return;
     }
 
     /**
      * Write the profile to a defined path
-     * @param outputFile Output file path
-     * @param what_to_clone What resources should be configured in addition to the default
+     * @param outputFile Output file path    
      * @return boolean true on success
      */
-    global define boolean writeProfile(string outputFile, list what_to_clone)``{
+    global define boolean Write(string outputFile)``{
 
-	profileSetup();
-	if (Profile == $[])
-	{
-	    constructProfile(what_to_clone);
-	}
-	boolean ret =  XML::YCPToXMLFile(`profile, Profile, outputFile);
+	Process();	
+	boolean ret =  Profile::Save( outputFile );
 	return ret;
     }
 
@@ -433,10 +398,12 @@
      * Export profile, Used only from within autoyast2
      * @return void
      */
-    global define void exportProfile(list what_to_clone)``{
+    global define map Export()
+	``{
+	
 	import "Profile";
-	constructProfile(what_to_clone);
-	Profile::Import(Profile);
+	Profile::Reset();
+	Process();	
 	return;
     }
 }

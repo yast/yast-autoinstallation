@@ -1,7 +1,7 @@
 /**
- * File:	modules/AIConfig.ycp
+ * File:	modules/Profile.ycp
  * Module:	Auto-Installation
- * Summary:	This module handles the configuration for auto-installation
+ * Summary:	Profile handling
  * Authors:	Anas Nashif <nashif@suse.de>
  *
  * $Id$
@@ -75,11 +75,11 @@
 	Install = $[];
 	Configure = $[];
 	current = $[];
-	y2milestone("FLAT: %1", Flat);
+	y2debug("FLAT: %1", Flat);
 	foreach(`p,`d, AutoInstall::ModuleMap, ``{
 	    
 	    // Set resource name, if not using default value
-	    string resource = AIConfig::getResource(p);
+	    string resource = d[p, "AutoinstResource"]:p;
 	    
 	    if ( size(Flat[resource]:$[]) != 0)
 	    {
@@ -127,6 +127,7 @@
 	
 	if ( Flat["lvm"]:[] != []  )
 	    Install["lvm"] = Flat["lvm"]:[]  ;
+	
 	if ( Flat["raid"]:[] != [] )
 	    Install["raid"] = Flat["raid"]:[];
 
@@ -163,7 +164,7 @@
 	current = $[];
 	Install = $[];
 	Configure = $[];
-	Flatt = $[];
+	Flat = $[];
 	return;
     }
 
