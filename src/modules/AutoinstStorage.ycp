@@ -126,13 +126,14 @@
             // Convert from Old Style
             if (haskey(d, "use"))
             {
-               y2milestone("converting from \"use\" to new style");
+               y2milestone("converting from \"use\" to new style: %1", device);
                if (d["use"]:"" == "free") {
                    d["prefer_remove"] = false;
                } else if (d["use"]:"" == "all" ) {
                    d["prefer_remove"] = true;
                } else if (d["use"]:"" == "linux" ) {
                    d["keep_partition_num"] = GetNoneLinuxPartitions(device);
+                   d["prefer_remove"] = true;
                } else {
 		    list<string> uselist = filter(string s,
 				splitstring(d["use"]:"", ","), ``(s!=""));

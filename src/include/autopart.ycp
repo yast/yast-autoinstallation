@@ -42,7 +42,7 @@ $Id$
                 l = filter(map p, l, ``(!contains( [`xfs, `ext2, `ext3, `jfs, `reiser],
                             p["used_fs"]:`unknown)));
                 l = filter(map p, l,
-                    ``(FileSystems::IsSystemMp( p["mount"]:"", false )));
+                    ``(!FileSystems::IsSystemMp( p["mount"]:"", false )));
                 if( size(l)>0 )
                 {
                     list<integer> ln =  maplist( map p, l, ``(p["nr"]:0));
