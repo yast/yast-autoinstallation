@@ -41,14 +41,19 @@
 	targetMap 	= Storage::GetTargetMap();
 	modify_targets	= Storage::GetModifyTargets();
 	ExistingLVM 	= filter(`k,`v, targetMap, ``(v["is_lvm_vg"]:false));
+	y2milestone("Existing LVM: %1", ExistingLVM);
 	ExistingVGs 	= maplist (`d, `g, ExistingLVM, ``{
 	    return (substring(d, 5) );
 	});
 
-	if (size(ExistingLVM) > 0 )
-	{
-	    OldAvailable = true;
-	}
+	y2milestone("Existing VGs: %1", ExistingVGs );
+	foreach (`v, ExistingVGs, ``{
+	    string dev = sformat("/dev/%1", v);
+	    if (size(ExistingLVM[dev,"partitions"]:[]) > 0 )
+	    {
+		OldAvailable = true;
+	    }
+	});
 	return;
     }
 

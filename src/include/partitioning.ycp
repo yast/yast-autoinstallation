@@ -955,6 +955,8 @@ to contain a minimal installation.");
     global define boolean autoLVM () ``{
 
 	import "AutoinstLVM";
+	import "Storage";
+	Storage::ZeroNewPartitions = true;
 	
 	foreach (string device, map volume_group, AutoinstStorage::lvm ,
 		 ``{
@@ -968,6 +970,8 @@ to contain a minimal installation.");
 
 	    if (AutoinstLVM::OldAvailable )
 	    {
+		Report::Message("Old LVM Available");
+		y2milestone("Old LVM available");
 		foreach(`vgdev, `vg, AutoinstLVM::ExistingLVM, ``{
 
 		    string vg = substring(vgdev, 5);
@@ -997,7 +1001,8 @@ to contain a minimal installation.");
 			list ExistingLVs = ExistingVG["partitions"]:[];
 			foreach(`lv, ExistingLVs, ``{
 			    AutoinstLVM::RemoveLV( vg, lv["nr"]:"");
-			});		
+			});
+			Report::Message(sformat("Removing %1", vg));
 			AutoinstLVM::RemoveVG( vg );
 		    }
 		    
@@ -1021,7 +1026,7 @@ to contain a minimal installation.");
 	    });
 
 	    new_volume["partitions"] = new_partitions;
-	    AutoinstLVM::Volumes["device"] = new_volume;	  
+	    AutoinstLVM::Volumes[device] = new_volume;	  
 		
 	});
 	    

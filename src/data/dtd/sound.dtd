@@ -50,12 +50,30 @@
 >
 <!-- <!ELEMENT options (snd_enable, snd_index)> -->
 <!ELEMENT ownppd (#PCDATA)>
-<!ELEMENT printcap (printcap_entry)>
+<!ELEMENT printcap (printcap_entry+)>
 <!ATTLIST printcap
 	config:type CDATA #REQUIRED
 >
-<!ELEMENT printcap_entry (accepting?, bannerend?, bannerstart?, comment?, config?, cups-state?, database?, device?, device_db?, device_id?, device_ieee?, info?, location?, lprng-state?, modelset_required?, name?, new?, ownppd?, state?, type?, unique_key?, unknown-state?, uri?, vendor?, vendor_db?, vendor_id?, vendor_ieee?)>
-<!ELEMENT printer (cups_installation?, database?, default?, printcap?, server_hostname?, spooler?)>
+<!ELEMENT printcap_entry (Uri?, accepting?, bannerend?, bannerstart?, comment?, config?, cups-state?, database?, device?, device_db?, device_id?, device_ieee?, ff?, info?, location?, lprng-state?, modelset_required?, name?, new?, options?, ownppd?, printers?, raw?, state?, type?, unique_key?, unknown-state?, uri?, vendor?, vendor_db?, vendor_id?, vendor_ieee?)> 
+<!-- <!ELEMENT printer (cups_installation?, database?, default?, printcap?, server_hostname?, spooler?)> -->
+
+<!ELEMENT job-sheets (#PCDATA)>
+<!ELEMENT ff (#PCDATA)>
+<!ATTLIST ff
+	config:type CDATA #REQUIRED
+>
+
+<!ELEMENT Uri (#PCDATA)>
+
+<!ELEMENT printers (printer+)>
+<!ATTLIST printers
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT raw (#PCDATA)>
+<!ATTLIST raw
+	config:type CDATA #REQUIRED
+>
+
 <!ELEMENT rc_vars (LOAD_ALSA_SEQ)>
 <!ELEMENT server_hostname EMPTY>
 <!ELEMENT snd_enable (#PCDATA)>

@@ -27,6 +27,7 @@
 %mail;
 
 <!ENTITY % optiontags "job-sheets|snd_enable|snd_index">
+<!ENTITY % printerstags "cups_installation|database|default|printcap|server_hostname|spooler">
 <!ENTITY % usertags "encrypted|user_password| username|forename| gid| grouplist| home| password_settings| shell| surname| uid ">
 <!ENTITY % lvmtags "lvm_name|pesize|logical_volumes">
 <!ENTITY % grouptags "gid| group_password| groupname| userlist">
@@ -36,13 +37,14 @@
 
 <!-- This is to solve conflict between diffeent resources having same tag -->
 <!ELEMENT options (#PCDATA | %optiontags;)* > 
+<!ELEMENT printer (#PCDATA | %printerstags;)* > 
 <!ELEMENT user (#PCDATA | %usertags;)* > 
 <!ELEMENT lvm_group (#PCDATA | %lvmtags;)* > 
 <!ELEMENT nis_server (#PCDATA | %nisservertags;)* >
 <!ELEMENT group (#PCDATA | %grouptags;)* >
 
-<!ELEMENT configure (firewall?, files?, groups?,inetd?, ldap?, mail?, networking?,   nfs_server?, nfs?, nis?, nisplus?,  nis_server?,printer?, runlevels?, scripts?, security?, sysconfig?, user_defaults?,  users?, x11?)>
-<!ELEMENT install ( bootloader?, classes?,general?, lvm?, partitioning?, raid?, report?, software? )>
+<!ELEMENT configure (firewall?, files?, groups?,inetd?, ldap?, mail?, networking?,   nfs?, nfs_server?,  nis?, nisplus?,  nis_server?,printer?, runlevels?, scripts?, security?, sound?,sysconfig?, user_defaults?,  users?, x11?)>
+<!ELEMENT install ( bootloader?, general?, lvm?, partitioning?, raid?, report?, software? )>
 <!ELEMENT profile (configure?, install?)>
 <!ATTLIST profile
 	xmlns CDATA #REQUIRED

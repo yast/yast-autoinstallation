@@ -246,7 +246,7 @@ Make sure the control file has the correct syntax and values.
 
 	foreach (string device, map data, targetMap,
 		 ``{
-	    if (data["initialize"]:false)
+	    if (data["initialize"]:false && !data["is_lvm_vg"]:false && data["device"]:"" != "/dev/md" )
 	    {
 		integer zero_ret = Storage::ZeroDevice( device );
 		y2milestone("Initializing device: %1 --> %2", device, zero_ret);
