@@ -16,7 +16,7 @@
     import "Installation";
     
     include "autoinstall/io.ycp";
-    include "readconfig.ycp";
+   
 
     global map GroupMap = $[];
     global map ModuleMap = $[];
@@ -94,11 +94,9 @@
         list grouplist = [];
         grouplist = SortGroups (Groups, maplist (string rawname, map group, Groups, ``(rawname)));
         
-        foreach (string rawname, grouplist,
-		 ``{
-	    
-	    string name    = ReadKey(Groups[rawname, "Textdomain"]:"base", "Name", Groups[rawname]:$[]);
-	    map MeunTreeEntry = $["entry":rawname, "title":name];
+        foreach (string name, grouplist,
+		 ``{	    	   
+	    map MeunTreeEntry = $["entry":name, "title":name];
 	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
         });
 
@@ -111,10 +109,8 @@
 	
 	CreateGroupTree(GroupMap);
 	
-	foreach(string m, map v, ModuleMap, ``{
-	    string domain = v["Textdomain"]:"base";
-	    string name = ReadKey (domain, "Name", v);
-	    
+	foreach(string m, map v, ModuleMap, ``{	    
+	    string name = v["Name"]:"";	    
 	    map menu_entry = $["entry":m, "title":name];
 	    list menu_list = [];
 	    if (haskey(v,"X-SuSE-YaST-Group")) {

@@ -12,21 +12,26 @@
     import "HTML";
     import "Call";
     import "Label";
+    import "Installation";
+    import "Report";
+    
+    include "autoinstall/io.ycp";
+    include "autoinstall/imports.ycp";
+    include "autoinstall/classes.ycp";
+    include "autoinstall/iso.ycp";
 
-    include "readconfig.ycp";
-
-
+    
     /**
      * Create a list to be used with the table widget
      * @param tree data
      * @return list
      */
 
-    global define CreateTableList( list MenuTreeData, string current)
+    global define list CreateTableList( list MenuTreeData, string current)
 	``{
-	list menu_options = maplist(`e, MenuTreeData,
+	list menu_options = maplist(map e, MenuTreeData,
 				    ``{
-					if ((e["children"]:[]>0))
+					if ((size(e["children"]:[]) > 0 ))
 					{
 					    list childrenlist = CreateTableList(e["children"]:[], current);
 					    return `item(`id(e["entry"]:""), e["title"]:"", ( e["entry"]:"" == current ) , childrenlist);
@@ -42,12 +47,12 @@
 
 
 
-    global define content_dialog( string resource, map resourceMap ) ``{
+    global define void content_dialog( string resource, map resourceMap, string module_auto ) ``{
 
-	string summary =  Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
+	string summary =  (string)Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
 	
-	string domain = resourceMap["Textdomain"]:"base";
-	string caption = ReadKey (domain, "Name", resourceMap);
+	
+	string caption = resourceMap["Name"]:"";
 	string buttonLabel = resourceMap["GenericName"]:"Configure";
 	term contents =
 	    `VBox(
@@ -64,6 +69,7 @@
 	Wizard::SetContents(
 			    caption,
 			    contents, "", true, true);
+	return;
     }
 
 
@@ -72,7 +78,7 @@
      * Module configuration dialog
      *
      */
-    global define module_contents(string resource, map resourceMap ) ``{
+    global define symbol module_contents(string resource, map resourceMap ) ``{
 	// y2milestone("FLAT a: %1", Profile::Flat);
 
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
@@ -81,7 +87,7 @@
 
 	// Import Data
 	Call::Function(module_auto, ["Import", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
-	content_dialog( resource , resourceMap);
+	content_dialog( resource , resourceMap, module_auto);
 
 	any ret= nil;
 
@@ -103,14 +109,14 @@
 		    {
 			any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 			integer i = 0;
-			foreach( string res, splitstring(tomerge, ",") , ``{
+			foreach( string res, (list)splitstring(tomerge, ",") , ``{
 			    if ( MergeTypes[i]:"map" == "map")
 			    {
-				Profile::Flat[res] = result[res]:$[];
+				Profile::Flat[res] = lookup( (map) result, "res", $[]);
 			    }
 			    else
 			    {
-				Profile::Flat[res] = result[res]:[];
+				Profile::Flat[res] = lookup( (map) result, res, [] );
 			    }
 			    i = i + 1;
 			});
@@ -122,7 +128,7 @@
 		}
 
 		y2milestone("New Settings: %1", Profile::Flat);
-		content_dialog( resource , resourceMap);
+		content_dialog( resource , resourceMap, module_auto);
 	    }
 	    else if( ret == `reset)
 	    {
@@ -134,7 +140,7 @@
 		    any result = Call::Function(module_auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		    integer i = 0;
 		    foreach( string res, splitstring(tomerge, ",") , ``{
-			if ( MergeType[i]:"map" == "map")
+			if ( MergeTypes[i]:"map" == "map")
 			    Profile::Flat[res] = $[];
 			else
 			    Profile::Flat[res] = [];
@@ -147,16 +153,16 @@
 		}
 
 		Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
-		content_dialog(resource,  resourceMap);
+		content_dialog(resource,  resourceMap, module_auto);
 	    }
 
 	    if ( original_settings != Y2ModuleConfig::getResourceData(resourceMap , resource) )
 	    {
 		Profile::changed = true;
 	    }	
-	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key || contains(menuitems, ret) );
+	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key ); // FIXME || contains(menuitems, ret) );
 
-	return ret;
+	      return (symbol)ret;
     }
 
 
@@ -182,10 +188,10 @@
     /**
      * Menu interface
      */
-    global define symbol ConfTree()
+    global define symbol ConfTree(list menuitems)
 	``{
 	Wizard::SetScreenShotName ("autoyast-conftree");
-	include "autoinstall/io.ycp";
+	
 	term image = Wizard::HeaderImage(false);
 	term menu =
 	    `VBox(
@@ -265,9 +271,9 @@
 		    foreach(string k , map v, Y2ModuleConfig::ModuleMap, ``{
 			if (v["X-SuSE-YaST-Group"]:"" == tree_item)
 			{
-			    string colored = HTML::Colorize( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k), "#8BC460");
+			    string colored = HTML::Colorize( HTML::Link(v["Name"]:"", k), "#8BC460");
 			    html = html + HTML::Heading(colored);
-			    html = html + HTML::Para(ReadKey(v["Textdomain"]:"", "GenericName", v));
+			    html = html + HTML::Para(v["GenericName"]:"");
 			}
 		    });
 
@@ -290,7 +296,7 @@
 
 			if (ret == `key)
 			{
-			    tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+			    tree_item = (string ) UI::QueryWidget(`id(`key), `CurrentItem);
 			    break;
 			}
 			else if (ret == `next || ret == `back || ret == `abort)
@@ -302,8 +308,7 @@
 			    break;
 			}
 			else
-			{
-			    tree_item = ret;
+			{			    
 			    break;
 			}
 		    }
@@ -322,7 +327,7 @@
 
 		if (ret == `key)
 		{
-		    tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+		    tree_item = (string) UI::QueryWidget(`id(`key), `CurrentItem);
 		    if (tree_item == nil)
 		    {
 			tree_item = "System";
@@ -361,7 +366,7 @@
 			Mode::config = true;
 			if (reqret )
 			{
-			    include "autoinstall/imports.ycp";
+			    
 			    Wizard::CreateDialog();
 			    aliceImportList();
 			    Wizard::CloseDialog();
@@ -371,7 +376,7 @@
 		    else if ( ret == `menu_classes)
 		    {
 			import "AutoinstClass";
-			include "autoinstall/classes.ycp";
+			
 			Wizard::CreateDialog();
 			ManageClasses();
 			Wizard::CloseDialog();
@@ -388,7 +393,7 @@
 		    else if ( ret == `menu_merge)
 		    {
 			import "AutoinstClass";
-			include "autoinstall/classes.ycp";
+			
 			Wizard::CreateDialog();
 			MergeDialog();
 			Wizard::CloseDialog();
@@ -396,7 +401,7 @@
 		    else if ( ret == `menu_iso)
 		    {
 			import "ISO";
-			include "autoinstall/iso.ycp";
+			
 			isoSequence();
 
 		    }
@@ -458,8 +463,7 @@
 			    
 			    list pathComponents = splitstring(  filename, "/");
 			    
-			    string base = select(pathComponents, size(pathComponents) -1, "default");
-			    
+			    string base = (string) select(pathComponents, size(pathComponents) -1, "default");			    
 			    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
 			    
 			    Profile::ReadXML(filename);
@@ -469,7 +473,7 @@
 		    else if (ret == `menu_kickstart)
 		    {
 			Wizard::CreateDialog();
-			include "autoinstall/imports.ycp";
+			
 			string head = _("Import Kickstart File");
 			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
 
@@ -527,7 +531,7 @@ were imported correctly.
 				Popup::Message(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
 				Profile::changed=false;
 				list pathComponents = splitstring(  filename, "/");
-				string base = select(pathComponents, size(pathComponents) -1, "default");
+				string base = (string) select(pathComponents, size(pathComponents) -1, "default");
 				UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
 			    }
 			    else
@@ -555,7 +559,7 @@ were imported correctly.
 
 		    }
 		    else if ( ret == `menu_tree) {
-			tree_item = UI::QueryWidget(`id(`key), `CurrentItem);
+			tree_item = (string) UI::QueryWidget(`id(`key), `CurrentItem);
 			if (tree_item == nil)
 			{
 			    tree_item = "System";
@@ -575,7 +579,7 @@ were imported correctly.
 
 	Wizard::RestoreHelp("");
 	Wizard::RestoreScreenShotName ();
-	return ret;
+	return (symbol)ret;
 
     }
 }
