@@ -23,27 +23,27 @@
     foreach(string p, map d, Y2ModuleConfig::ModuleMap,
 	    ``{
 
-	if (d["Autoinst"]:"" == "all" || d["Autoinst"]:"" == "write")
+	if (d["X-SuSE-YaST-AutoInst"]:"" == "all" || d["X-SuSE-YaST-AutoInst"]:"" == "write")
 	{
-	    if (haskey(d,"AutoinstResource"))
+	    if (haskey(d,"X-SuSE-YaST-AutoInstResource"))
 	    {
-		resource = d["AutoinstResource"]:"unknown";
+		resource = d["X-SuSE-YaST-AutoInstResource"]:"unknown";
 	    }
 	    else
 	    {
 		resource = p;
 	    }
 	    // determine name of client, if not default name
-	    if (haskey(d,"AutoClient"))
-		module_auto = d["AutoClient"]:"none";
+	    if (haskey(d,"X-SuSE-YaST-AutoClient"))
+		module_auto = d["X-SuSE-YaST-AutoClient"]:"none";
 	    else
 		module_auto = sformat("%1_auto", p);
 
 	    map result = $[];
 	    if (haskey(Profile::Flat , resource) )
 	    {
-		string tomerge = d["AutoinstMerge"]:"";
-		string tomergetypes = d["AutoinstMergeTypes"]:"";
+		string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+		string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
 		list MergeTypes = splitstring(tomergetypes, ",");
 
 		if (  size(tomerge) > 0 )
@@ -63,7 +63,7 @@
 			packages = (list<string>)union(packages, lookup((map ) out, "install", [] ));
 		    // Call::Function(module_auto, ["Reset", $[] ]);
 		}
-		else if (d["AutoinstDataType"]:"map" == "map")
+		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
 		{
 		    // Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
 		    any out = Call::Function(module_auto, ["Packages", Profile::Flat[resource]:$[]  ]);
