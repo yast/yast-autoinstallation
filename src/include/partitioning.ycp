@@ -15,7 +15,8 @@
     include "partitioning/auto_finish.ycp";
     include "partitioning/partition_defines.ycp";
     include "partitioning/size_calculations.ycp";
-
+    include "partitioning/raid_lib.ycp";
+    
     textdomain "autoinst";
     /**
      *  Determine how and where the partitions are added in autoinst mode
@@ -528,10 +529,13 @@ to contain a minimal installation.");
     }; // CreatePartitons
 
 
+
+    
+
     /**
-     * create a partition
+     * Create a partition
      * @param currentPartition partition data as specified in control file
-     * @return partition data ready for actuall work
+     * @return map partition data ready 
      */
 
     global define map addPartition(map currentPartition) ``{
@@ -541,6 +545,9 @@ to contain a minimal installation.");
 	    
 	    integer auto_fsid = currentPartition["partition_id"]:Partitions::fsid_native;	  
 	    string lvm_group = currentPartition["lvm_group"]:"";	    
+
+	    // Raid
+	    string raid_name = currentPartition["raid_name"]:"";
 	    
 	    // Partition Template
 	    map part =
@@ -568,7 +575,8 @@ to contain a minimal installation.");
 		    boot_part["used_fs"]:`fat16;
 		}
 	    }
-	    else if (mount_point == "/")	    {
+	    else if (mount_point == "/")
+	    {
 		root_region=region;
 		part["used_fs"] =  StringFS2Symbol(currentPartition["filesystem"]:"reiser");
 	    }
@@ -576,37 +584,109 @@ to contain a minimal installation.");
 	    {
 		Storage::SetLvmUse( true );
 		
-		part["used_fs"] =  `unknown;
-		part["fsid"]= 142;
-		part["format"] =  false;
-		part["lvm_group"] = lvm_group;
-		part["mount"] =  "";
-		part["fstype"] =  "Linux LVM";
+		part["used_fs"] 	=  `unknown;
+		part["fsid"]		=  Paritions::fsid_lvm;
+		part["format"] 		=  false;
+		part["lvm_group"] 	= lvm_group;
+		part["mount"] 		=  "";
+		part["fstype"] 		=  "Linux LVM";
 		
 		
 		CreateModifyMap(lvm_group, target_is + last_pnr);
 		
 		string lvmdev = sformat("/dev/%1", lvm_group);
-		if (AutoInstall::LvmVolumes[lvmdev]:$[] == $[]) {
+		
+		if (AutoInstall::LvmVolumes[lvmdev]:$[] == $[])
+		{
 		    CreateAutoLvmMap(lvm_group);
 		}
-		list mod = maplist(`k,`v, Storage::GetModifyTargets(), ``{
-		    return(v);
-		});
+		
+		list mod = maplist(`k,`v, Storage::GetModifyTargets(),
+				   ``{
+				       return(v);
+				   });
+		
 		integer count = 0;
-		map modmap = listmap(`k, sort(`x,`y, mod, ``(x["order"]:0 <= y["order"]:0)), ``{
-		    count = count + 1;
-		    return([count,k]);
-		});
+		map modmap = listmap(`k, sort(`x,`y, mod, ``(x["order"]:0 <= y["order"]:0)),
+				     ``{
+					 count = count + 1;
+					 return([count,k]);
+				     });
+		
 		Storage::SetModifyTargets(modmap);
 		
 	    }
+	    else if (raid_name != "")
+	    {
+		any nr = substring(raid_name, 7);
+	
+		part["raid_nb"]	= nr;
+	
+		part["used_fs"] 	= `unknown;
+		part["fsid"]		= Partitions::fsid_raid;
+		part["format"] 		= false;
+		part["raid_name"] 	= raid_name;
+
+		part["mount"] 		= "";
+		part["fstype"] 		= "Linux RAID";
+		part["raid_type"]	= currentPartition["raid_type"]:"raid";
+		// part["region"] 		= [0, raid_size_byte(Storage::GetTargetMap(), 
+	        //                                 part) / (1024 * 1024)];
+	    }
 	    else
 	    {
-		part["used_fs"] = StringFS2Symbol(p["filesystem"]:"reiser");
+		part["used_fs"] = StringFS2Symbol(  currentPartition["filesystem"]:"reiser");
 	    }
 	    return part;
     }
+
+
+    global define autoLVM() ``{
+	
+    }
+
+
+    
+    global define autoRAID()
+	``{
+	list RaidList =  maplist (map device, AutoInstall::RAID,
+				  ``{
+				      device["nr"] =tointeger(substring(device["name"]:"/dev/md0", 7));
+				      
+				      
+				      device["device"]		= Storage::GetDeviceName( "/dev/md", device["nr"]:0 );
+				      device["fsid"] 		= device["partition_id"]:Partitions::fsid_native;
+				      device["region"] 		= [0 , 1];
+				      device["create"] 		= true;
+				      device["status"] 		= "create";
+				      
+				      if (!haskey(device, "format"))
+				      {
+					  device["format"] 	= false;
+				      }
+				      
+				      symbol selected_fs 	= StringFS2Symbol(device["filesystem"]:"reiser");
+				      device["used_fs"] 	= selected_fs;
+				      device["type"]		= `sw_raid;
+				   
+				      return(device);
+				  });
+
+	map RaidMap = $[ "/dev/md" :
+			 $[
+			   "cyl_count" : 1,                         // typicall 1 
+			   "cyl_size" : 1048576,                    // const 1MB
+			   "name" : "Linux Software RAID",
+			   "partitions" : RaidList
+			   ]
+	];
+	y2milestone("RaidMap: %1", RaidMap);
+	
+	map new_targetMap = union(Storage::GetTargetMap(), RaidMap);
+	Storage::SetTargetMap(new_targetMap);
+	y2milestone("Targets: %1", Storage::GetTargetMap());
+    }
+
 
     
     /**
@@ -615,7 +695,8 @@ to contain a minimal installation.");
      * @param list region list
      * @return list new region
      */
-    global define calcRegion(map currentPartition, list region ) ``{
+    global define calcRegion(map currentPartition, list region )
+	``{
 	integer units = 0;
 	string psize = currentPartition["size"]:"";
 	string mount_point = currentPartition["mount"]:"";

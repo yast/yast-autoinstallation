@@ -800,12 +800,76 @@ SuSE package names and package groups."));
 	
 	profile["install"] = install;
 	profile["configure"] = configure;
+	AIConfig::changed = true;
 	y2milestone("Profile : %1", profile);
 	return profile;
 	
     }
 
+    global define map ks_users (map ksConfig)
+	``{
 
+	map ks_user =  ksConfig["users"]:$[];
+	list users = [];
+	map root = $[];
+	root["username"] = "root";
+	root["password"] = ks_user["password"]:"";
+	root["encrypted"] = (ks_user["iscrypted"]:0 == 1);
+
+	users = add(users, root);
+	return users;
+	
+	
+    }
+
+    global define map kx_x11(map ksConfig)
+	``{
+	if (ksConfig["skipx"]:0 != 1 && haskey(ksConfig,"xconfig"))
+	{
+	    map x11 = $[];
+	    map ks_x = ksConfig["xconfig"]:$[];
+
+	    if (haskey(ks_x, "depth"))
+		x11["color_depth"] = ks_x["depth"]:0;
+	    
+	    if (haskey(ks_x, "resolution"))
+		x11["resolution"] = ks_x["resolution"]:"";
+
+	    if (haskey(ks_x, "startxonboot"))
+		x11["startxonboot"] = ks_x["startxonboot"]:"";
+
+	    if (haskey(ks_x, "defaultdesktop"))
+		x11["default_desktop"] = ks_x["defaultdesktop"]:"";
+
+	    map monitor = $[];
+	    if (haskey(ks_x, "vsync") || ks_x["monitor"]:"")
+	    {
+		
+		map display = $[];
+		list hsync = splitstring(ks_x["hsync"]:"", "-");
+		list vsync = splitstring(ks_x["vsync"]:"", "-");
+		display["min_hsync"] = select(hsync,0,"");
+		display["min_vsync"] = select(vsync,0,"");
+		display["max_hsync"] = select(hsync,1,"");
+		display["max_vsync"] = select(vsync,1,"");
+		monitor["monitor_vendor"] = select(splitstring(ks_x["monitor"]:"", " "), 0 , "");
+		monitor["monitor_device"] = select(splitstring(ks_x["monitor"]:"", " "), 1 , "");
+		monitor["display"] = display;
+		
+	    }
+	    if (size(monitor) > 0 )
+	    {
+		x11["monitor"] = monitor;
+	    }
+	    x11["configure_x11"] = true;
+	    return x11;
+	}
+	else
+	{
+	    return $[];
+	}
+    }
+    
     global define map ks_general(map ksConfig)
 	``{
 	map general = $[];
@@ -832,7 +896,8 @@ SuSE package names and package groups."));
 	    map ks_mouse 	= ksConfig["mouse"]:$[];
 	    mouse["device"] 	= ks_mouse["device"]:"";
 	    mouse["xemu3"]	= ( ks_mouse["emulthree"]:0 == 1);
-	    if (ks_mouse["type"]:"" == "none") {
+	    if (ks_mouse["type"]:"" == "none")
+	    {
 		mouse["id"]	= "non";
 	    }
 	}
@@ -1043,7 +1108,7 @@ SuSE package names and package groups."));
 	    init["serverdir"] = nfs["dir"]:"";
 	}
 
-	if (ksConfig["text"]:0  == 1)
+	if (ksConfig["textmode"]:0  == 1)
 	{
 	    init["textmode"] = true;
 	}

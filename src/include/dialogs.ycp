@@ -492,9 +492,18 @@ consult the online documentation</p>");
 
 		if (ret == `saveprofile || ret == `saveas)
 		{
-		    if (AIConfig::isTemplate) {
-			UI::MessagePopup(_("You are saving a control file with configured classes.
-This file will be saved in the templates directory."));
+		    if (AIConfig::isTemplate)
+		    {
+			string header = _("Saving a control file with classes");
+			string message =  _("Should this control file be saved in the
+templates directory?");
+			
+			if (!UI::YesNoHeadlinePopup(header,message))
+			{
+			    y2milestone("not template");
+			    AIConfig::isTemplate = false;
+			    AIConfig::removeClasses();
+			}
 
 		    }
 

@@ -82,11 +82,15 @@
 	    });
 
 
-	    if (contains(configured_drives, item)) {
+	    if (contains(configured_drives, item))
+	    {
 		UI::ChangeWidget(`id(`part), `Enabled, true);
-	    } else {
+	    }
+	    else
+	    {
 		UI::ChangeWidget(`id(`part), `Enabled, false);
 	    }
+	    
 	    list whatitem = splitstring(item,":");
 
 	    if (ret == `table && size(whatitem) == 0)
@@ -113,10 +117,13 @@
 	    else if (ret == `edit)
 	    {
 		list item_id = splitstring(item,":");
-		if (size(item_id) >1) { //Partition
+		if (size(item_id) >1)
+		{ //Partition
 		    action = PartitionDialog(`edit, item);
 		    UI::ChangeWidget(`id(`table), `CurrentItem, select(item_id,0,""));
-		} else {
+		}
+		else
+		{
 		    action = DriveDialog(`edit, item );
 		}
 	    }
@@ -148,7 +155,8 @@
 			}
 		    });
 		}
-		else {
+		else
+		{
 		    drive = item;
 		    AIStorage::drives = filter(`d,partitioning,``(lookup(d,"device","") != drive));
 		}
