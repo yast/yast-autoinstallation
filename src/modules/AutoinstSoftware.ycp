@@ -18,7 +18,7 @@
     import "Packages";
     import "Report";
     import "Popup";
-    import "Report";    
+    import "Report";
     import "Language";
     import "Kernel";
     import "AutoinstConfig";
@@ -30,7 +30,7 @@
     global string base = "";
 
     // Add-on selections
-    global list addons = [];
+    global list<string> addons = [];
 
     // Individual packages
     global list<string> packages = [];
@@ -38,12 +38,12 @@
     // Kernel, force type of kernel to be installed
     global string kernel = "";
 
-    // Packages that should be installed in continue mode   
-    global list post_packages = [];
+    // Packages that should be installed in continue mode
+    global list<string> post_packages = [];
 
-    // Package that should be removed from list, and not installed    
+    // Package that should be removed from list, and not installed
     global list<string> remove_packages = [];
-        
+
 
     /**
      * Import()
@@ -68,7 +68,7 @@
      */
     global define void AutoinstSoftware() ``{
 	if ( Mode::cont )
-	{	    
+	{
 	    Import(Profile::Flat["software"]:$[]);
 	}
 
@@ -127,7 +127,7 @@
      * @param list of packages to remove
      * @return void
      */
-    global define void RemoveModulePackages (list module_packages) ``{
+    global define void RemoveModulePackages (list<string> module_packages) ``{
 	packages = filter(string p, packages, ``(!contains(module_packages,p)));
 	
 	Profile::Flat["software"] = Export();
@@ -167,12 +167,12 @@
      * Compute list of packages selected by user and other packages needed for important
      * configuration modules.
      * @return list of strings list of packages needed for autoinstallation
-     */    
+     */
     global define list<string> autoinstPackages()
 	``{
-	
+
 	list<string> allpackages = [];
-	
+
 	// the primary list of packages
 	allpackages = (list<string>) union (allpackages,  packages);
 
@@ -189,7 +189,7 @@
 	    {
 		y2warning ("%1 not available, using k_deflt", Kernel::kernel_packages);
 		allpackages = add (allpackages, "k_deflt");
-	    }	   
+	    }
 	}
 	else
 	{
@@ -201,7 +201,7 @@
 	    {
 		y2warning ("%1 not available, using k_deflt", Kernel::kernel_packages);
 		allpackages = add (allpackages, "k_deflt");
-	    }	   	    
+	    }
 	}
 
 
@@ -280,9 +280,9 @@
 If packages to install have been added individually, 
 this message can be ignored."));
 	}
-	
-	list failed = [];
-	
+
+	list<string> failed = [];
+
 	foreach(string s, toset(addons),
 		``{
 	    if (!Pkg::SetSelection( s ))
@@ -292,7 +292,7 @@ this message can be ignored."));
 	});
 
 	list<string> failed_again = [];
-	
+
 	if (size(failed) > 0 )
 	{
 	    foreach(string s, failed,
@@ -323,13 +323,13 @@ this message can be ignored."));
 	    Pkg::DoProvide(autoinstPacks);
 	}
 
-	
-	list computed_packages = Packages::ComputeSystemPackageList();
+
+	list<string> computed_packages = Packages::ComputeSystemPackageList();
 	y2debug("Computed list of packages: %1", computed_packages);
-	
+
 
 	//
-	// Now remove all packages listed in remove-packages 
+	// Now remove all packages listed in remove-packages
 	//
 	y2milestone("Packages to be removed: %1", remove_packages);
 	if (size(remove_packages) > 0 )
@@ -345,7 +345,7 @@ this message can be ignored."));
 	// Solve dependencies
 	//
 	Pkg::PkgSolve(false);
-	
+
 	SpaceCalculation::ShowPartitionWarning();
 	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",
 		     Pkg::GetSelections(`selected, "base"),
@@ -359,15 +359,15 @@ this message can be ignored."));
      * Initialize temporary target
      */
     global define void  pmInit() ``{
-	
+
 	string tmproot = AutoinstConfig::tmpDir;
-	
-	SCR::Execute(.target.mkdir, tmproot + "/root");	
+
+	SCR::Execute(.target.mkdir, tmproot + "/root");
 	Pkg::TargetInit( tmproot + "/root", true);
 	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
 	return;
     }
-    
+
 
     //EOF
 }
