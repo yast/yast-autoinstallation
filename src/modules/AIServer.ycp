@@ -82,8 +82,7 @@
     /**
      * Constructer
      *
-     **/
-    
+     **/    
     global define void AIServer()
 	``{
 	tmpDir = SCR::Read (.target.tmpdir);
@@ -91,13 +90,19 @@
 	return;
     }
 
+
+    /**
+     *
+     */
     define void createSkelDir()``{
 	skelDir = tmpDir + "/iso_skeleton";
 	SCR::Execute(.target.mkdir, skelDir);
 	return;
     }
 
-
+    /**
+     *
+     */
     global define initSource() ``{
 	
 	if (!AIConfig::PkdInitialized)
@@ -208,7 +213,7 @@
 	
 	SCR::Execute(.target.mkdir, sformat("%1/skeleton/%2", skelDir, productData["datadir"]:"./suse"));
 	commands= add(commands, sformat("/bin/cp -a %1/boot %2/skeleton", sourceDir, skelDir));
-	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/%1",  skelDir, productData["descrdir"]:"./suse/setup/descr"));
+	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/%2",  skelDir, productData["descrdir"]:"./suse/setup/descr"));
 	commands= add(commands, sformat("/bin/cp -a %1/%2 %3/skeleton/%4", sourceDir,  productData["descrdir"]:"./suse/setup/descr", skelDir,  productData["descrdir"]:"./suse/setup/descr"));
 	commands= add(commands, sformat("/bin/cp  %1/* %2/skeleton/", sourceDir, skelDir));
 	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/media.1",  skelDir));
@@ -235,8 +240,8 @@
      */
     global define string readMedia() ``{
 	string media = SCR::Read(.target.string,  sourceDir + "/media.1/media");
-	list mediaData = splitstring(media, "\n");	
-	return (mergestring( [mediaData[0]:"",mediaData[1]:""] , "\n"));
+	list media_data = splitstring(media, "\n");	
+	return (mergestring( [media_data[0]:"",media_data[1]:"", "1"] , "\n"));
     }
  
 }

@@ -41,11 +41,13 @@ install -d $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
 install -d $RPM_BUILD_ROOT/var/adm/autoinstall/logs
 install -d $RPM_BUILD_ROOT/var/adm/autoinstall/files
 install -d $RPM_BUILD_ROOT/var/adm/autoinstall/variables
+install -d $RPM_BUILD_ROOT/var/adm/autoinstall/cache
 
 # Repository
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/templates
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/classes
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 
 
 @CLEAN@
@@ -58,6 +60,7 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/classes
 %defattr(-,root,root)
 %dir @yncludedir@/autoinstall
 %dir /var/lib/autoinstall/repository
+%dir /var/lib/autoinstall/repository/templates
 %dir /var/lib/autoinstall/classes
 
 
@@ -147,4 +150,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/classes
 %dir /var/adm/autoinstall/logs
 %dir /var/adm/autoinstall/files
 %dir /var/adm/autoinstall/variables
+%dir /var/adm/autoinstall/cache
+%dir /var/lib/autoinstall/autoconf
 

@@ -21,44 +21,40 @@
 
     
     include "autoinstall/io.ycp";
-  
 
-
-    // Put all scripts and autoinstall data in this directory for later access
+   
+    // Main directory for data generated during installation
     //
-    global string dir = Installation::yast2dir + "/Autoinstall";
+    global string var_dir = "/var/adm/autoinstall";
 
-
+    // Cache directory
+    //
+    global string cache = var_dir + "/cache";
+    
     
     // Temporary directory for storing profile before installation starts
     //
     global string tmpdir = SCR::Read( .target.tmpdir );
 
-
     
     // Temporary file name for retrieved system profile
     //
-    global string xml_tmpfile = tmpdir + "/Autoinstall.xml";
-
+    global string xml_tmpfile = tmpdir + "/autoinst.xml";
 
     
     // Final location for retrieved system profile
     //
-    global string xml_file = Installation::yast2dir + "/Autoinstall.xml";
-
-
-    
-    // File with parsed data from system profile
-    //
-    string Profile_file = Installation::yast2dir + "/Autoinstall_data.ycp";
-
+    global string xml_file = cache + "/installedSystem.xml";
 
     
-    // Main directory for data generated during installation
+    // Parsed data from XML control in YCP format
     //
-    global string var_dir = "/var/adm/autoinstall";
+    string parsedControlFile = cache + "/autoinst.ycp";
 
 
+    // Direcotry for runtime operation data
+    global string runtime_dir = "/var/lib/autoinstall";
+    
     
     // Directory for the pre/post and chroot scripts
     //
@@ -86,10 +82,14 @@
     //
     global map Profile =  $[];
 
-    // Map with data from comman dline specifying profile location and protocol to use.
+    // Map with data from command line specifying profile location and protocol to use.
     //
     global map ProfileLocation = $[];
 
+
+    // Auto-Configuration mode
+    //
+    global boolean autoconf = false;
 
     // Parsed data to be used to set variables in other modules
     //////////////////////////////////////////////////////////////
@@ -170,43 +170,45 @@
     // Two main configuration resources
     map Install = $[];
     map Configure = $[];
+    
 
     list SysconfigVars = [];
 
     list forcedPackages = [];
 
     boolean parsed = false;
+    
     /**
      * Constructer
+     *
      */
-
     global define void AutoInstall()
 	``{
-
-	if (Mode::config || ( Mode::cont &&  Mode::autoinst))
-	{
-	    list MenuEntries = ReadMenuEntries();
-	    ModuleMap = select(MenuEntries,0,$[]);
-	    GroupMap = select(MenuEntries,1,$[]);
-	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
-	}
-
 	if (!Mode::config &&  ! ( Mode::cont && Restore() ))
 	{
-	    if ( SCR::Read(.target.size,xml_tmpfile) != -1  && size ( Profile ) == 0)
+	    if ( SCR::Read(.target.size, xml_tmpfile) != -1  && size ( Profile ) == 0)
 	    {
 		// Profile is available and it has not been parsed yet.
 		ProcessProfile();
 	    }
 	    // Just to be sure
 	    if (Mode::initial && Mode::autoinst)
+	    {
 		ParseCmdLine();
+	    }
 	}
 
 	if (Mode::cont && size ( Profile ) > 0)
 	{
 	    y2milestone("Enabling Auto-Installation mode");
 	    Mode::autoinst = true;
+	}
+	if (Mode::config || ( Mode::cont &&  Mode::autoinst))
+	{
+	    list MenuEntries = ReadMenuEntries();
+	    ModuleMap = select(MenuEntries,0,$[]);
+	    GroupMap = select(MenuEntries,1,$[]);
+	    y2milestone("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
 
 	return;
@@ -216,7 +218,6 @@
      * Parse profile and set some values
      *
      */
-
     global define boolean ProcessProfile()
 	``{
 	any ret = nil;
@@ -252,6 +253,107 @@
 
 
 
+    /**
+     * Restore the the current data from a file that has been saved before.
+     * @param	-
+     * @return  true	- Data base file found. Restore successful.
+     *		false	- No data base file found.
+     * @see	save()
+     */
+
+    global define boolean Restore()
+	``{
+	// First check if there are some other control files availabe
+	// for post-instaaltion only
+
+	string autoconf_file = runtime_dir + "/autoconf/autoconf.xml";
+	if ( SCR::Read(.target.size, autoconf_file) != -1 )
+	{
+	    y2milestone("XML Post installation data found: %1", autoconf_file );
+	    autoconf = true;
+	    xml_tmpfile = autoconf_file;
+	    boolean ret = ProcessProfile();
+	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, cache));	    
+	    return(ret);
+	}
+	else
+	{	
+	    Profile = SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
+	    if ( Profile == $[] )	// No saved data base.
+	    {
+		y2milestone( "No saved Autoinstall data found" );
+		return false;
+	    }
+	    else	// saved database found
+	    {
+		y2milestone( "Found and read saved autoinst data : <%1>", Profile );
+		y2milestone("Removing old data: %1", SCR::Execute(.target.remove, parsedControlFile));
+		return (ProcessProfile());
+	    }
+	}
+
+    }	// Restore()
+
+
+    /**
+     * Save the current data into a file to be read after a reboot.
+     * @param	-
+     * @return  -
+     * @see	Restore()
+     */
+    global define void Save()
+	``{
+
+	// Write parsed data to the system for later processing
+	y2milestone("Saving control file in YCP format");
+	SCR::Write( .target.ycp, parsedControlFile, Profile );	
+	return;
+    }
+
+
+    /**
+     * Return location of profile from command line.
+     * @return map with protocol, server, path
+     * @example autoyast=http://www.server.com/profiles/
+     */
+    global define boolean ParseCmdLine ()
+	``{
+	include "transfer/url.ycp";
+	map result = $[];
+	string cmdLine = "";	
+	any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
+	
+	if (autoinstall != nil && is(autoinstall,string))
+	{
+	    cmdLine = autoinstall;
+	    if (cmdLine == "default")
+	    {
+		result["scheme"]= "default";
+		ProfileLocation = result;
+		return true;
+	    }
+	    else
+	    {
+		result = parse_url (cmdLine);
+	    }
+	}
+
+
+	if (result["scheme"]:"" == "")
+	{
+	    // Autoinstall mode was not activated from command line.
+	    // There must be a floppy with an 'autoinst.xml' in order
+	    // to be able to reach this point, so we set floppy with
+	    // autoinst.xml as the control file.
+
+	    result = add(result, "scheme", "floppy");
+	    result = add(result, "path","/autoinst.xml");
+	}
+	ProfileLocation = result;
+	return true;;
+    }
+
+    
     /**
      * Parse and prepare fstab settings
      * 	<pre>fstab["/dev/pts"] = $["spec":"devpts", "file":"/dev/pts", "vfstype":"devpts",
@@ -790,101 +892,6 @@
 
 
     /**
-     * Restore the the current data from a file that has been saved before.
-     * @param	-
-     * @return  true	- Data base file found. Restore successful.
-     *		false	- No data base file found.
-     * @see	save()
-     */
-
-    global define boolean Restore()
-	``{
-	Profile = SCR::Read( .target.ycp, [Profile_file, $[]] );
-
-	if ( Profile == $[] )	// No saved data base.
-	{
-	    y2milestone( "No saved Autoinstall data found" );
-	    return false;
-	}
-	else	// saved database found
-	{
-	    y2milestone( "Found saved autoinst data : <%1>", Profile );
-	    return (ProcessProfile());
-	}
-
-    }	// Restore()
-
-
-
-
-    /**
-     * Save the current data into a file to be read after a reboot.
-     * @param	-
-     * @return  -
-     * @see	Restore()
-     */
-    global define void Save()
-	``{
-
-	if (size(SCR::Read  (.target.dir, tmpdir)) > 0 )
-	{
-	    if (SCR::Execute (.target.bash, "/bin/cp -a " + tmpdir + " " + dir) == 0)
-	    {
-		y2milestone("Copied temporary autoinstall files to %1", dir);
-	    }
-	}
-	// Write it to the file.
-	//
-	SCR::Write( .target.ycp, Profile_file, Profile );
-	return;
-    }	// save()
-
-
-
-
-    /**
-     * Return location of profile from command line.
-     * @return map with protocol, server, path
-     * @example autoyast=http://www.server.com/profiles/
-     */
-    global define boolean ParseCmdLine ()
-	``{
-	include "transfer/url.ycp";
-	map result = $[];
-	string cmdLine = "";	
-	any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
-	
-	if (autoinstall != nil && is(autoinstall,string))
-	{
-	    cmdLine = autoinstall;
-	    if (cmdLine == "default")
-	    {
-		result["scheme"]= "default";
-		ProfileLocation = result;
-		return true;
-	    }
-	    else
-	    {
-		result = parse_url (cmdLine);
-	    }
-	}
-
-
-	if (result["scheme"]:"" == "")
-	{
-	    // Autoinstall mode was not activated from command line.
-	    // There must be a floppy with an 'autoinst.xml' in order
-	    // to be able to reach this point, so we set floppy with
-	    // autoinst.xml as the control file.
-
-	    result = add(result, "scheme", "floppy");
-	    result = add(result, "path","/autoinst.xml");
-	}
-	ProfileLocation = result;
-	return true;;
-    }
-
-    /**
      * Copy custom configuration files to system.
      * @param void
      * @return void
@@ -1020,10 +1027,15 @@
 	}
     }
 
-
-    global define void copyPrescriptData () ``{
+    /** 
+     * Save misc autoinstallation data
+     */
+    global define void saveMiscData ()
+	``{
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AutoInstall::scripts_dir);
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AutoInstall::logs_dir);
+	
+	SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", xml_tmpfile ,  Installation::destdir ,  xml_file) );
     }
 
 }

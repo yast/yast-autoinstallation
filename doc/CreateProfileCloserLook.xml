@@ -416,12 +416,15 @@
 
    <raid config:type="list">
        <device>
-          <raid config:type="integer">md0</raid>
+          <raid_device config:type="integer">/dev/md0</raid_device>
           <parity_algorithm>left-asymmetric</parity_algorithm>
           <persistent_superblock>true</persistent_superblock>
           <raid_type>raid1</raid_type>
           <filesystem_id config:type="integer">131</filesystem_id>
-          <chunk_size config:type="integer">4</chunk_size>
+          <chunk_size>4</chunk_size>
+          <mount>/space</mount>
+          <format config:type="boolean">true</format>
+          <filesystem config:type="symbol">reiser</filesystem>
        </device>
     </raid>
 

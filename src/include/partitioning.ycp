@@ -834,10 +834,10 @@ to contain a minimal installation.");
 					  device["parity_algorithm"] = "left-symmetric";
 				      }
 
-				      device["nr"] =tointeger(substring(device["name"]:"/dev/md0", 7));
+				      device["nr"] =tointeger(substring(device["raid_device"]:"/dev/md0", 7));
 				      
 				      
-				      device["device"]		= Storage::GetDeviceName( "/dev/md", substring(device["raid"]:"md0", 2) );
+				      device["device"]		= device["raid_device"]:"/dev/md0";
 				      device["fsid"] 		= device["partition_id"]:Partitions::fsid_native;
 				      device["region"] 		= [0 , 1];
 				      device["create"] 		= true;
