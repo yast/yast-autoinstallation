@@ -12,7 +12,6 @@ client_DATA = \
 	autoinst_classes.ycp \
 	autoinst_files.ycp \
 	autoinst_configure.ycp \
-	autoinst_bootloader.ycp \
 	autoinst_general.ycp \
 	autoinst_scripts.ycp \
 	autoinst_monitor.ycp \

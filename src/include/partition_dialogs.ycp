@@ -344,7 +344,7 @@ needs. All fields are required.</P>
 		{
 		    string partitionSize =  UI::QueryWidget(`id(`partsize),   `Value);
 		    if (  partitionSize == "") {
-			Report::Warning(_("You have to enter the partition size."));
+			Report::Warning(_("Enter the partition size."));
 			continue;
 		    }
 		    else
@@ -583,7 +583,7 @@ For more information, consult the documentation.
 		    else
 		    {
 			UI::MessagePopup(_("This device is already configured.
-Please choose or enter another device name.
+Select or enter another device name.
 "));
 			continue;
 		    }
@@ -705,17 +705,19 @@ _("<p><tt>/dev/sda </tt>1st SCSI disk
 	 help_text = help_text + _("If no partitions are defined and the specified drive is also
 the drive where the root partition should reside, the following partitions are
 created automatically:");
-	 help_text = help_text + _(" <tt>/boot</tt>, <tt>swap</tt> and a root partition <tt>/</tt>.
-Sizes are calculated automatically");
+	 help_text = help_text + _(" <tt>/boot</tt>, <tt>swap</tt>, and a root partition <tt>/</tt>.
+Sizes are calculated automatically.
+");
 	 
 	 help_text = help_text + _("<p><b>Advanced Options</b></p>");
 	 
-	help_text = help_text + _("By default, AutoYaST2 will create an extended partition and adds all new partitions as logical devices. It is possible however to instruct AutoYaST2 to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in Mbytes.");
-	help_text = help_text + _("These options and other advanced options can't be configured using this
-interface, instead you should add them manually to the control file");
+	help_text = help_text + _("By default, AutoYaST2 will create an extended partition and adds all new partitions as logical devices. It is possible, however, to instruct AutoYaST2 to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in MBytes.");
+	help_text = help_text + _("These options and other advanced options cannot be configured using this
+interface.  Instead, you should add them manually to the control file
+");
 	
 	help_text = help_text + _("<p>
-For LVM and RAID setup, please consult the documentation and add the configuration
+For LVM and RAID setup, consult the documentation and add the configuration
 to an existing control file. You can only create unformatted LVM and RAID partitions as
 a preparation.
 </p>
@@ -783,7 +785,7 @@ a preparation.
 		}
 		else
 		{
-		    UI::MessagePopup(_("Please select a drive first."));
+		    UI::MessagePopup(_("Select a drive first."));
 		    continue;
 		}
 	    }

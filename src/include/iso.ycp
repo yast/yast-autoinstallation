@@ -101,10 +101,10 @@
 	string error_msg = "";
 	
 	if (base == "" && size(packs)<20) {
-	    error_msg = _("Base selection not defined!");
+	    error_msg = _("Base selection not defined.");
 	}
 	else if (size(software) == 0) {
-	    error_msg = _("Software resource not defined!");
+	    error_msg = _("Software resource not defined.");
 	}
 	return error_msg;
     }
@@ -125,7 +125,7 @@
 	    error_msg = _("Package database not found.");
 	}
 
-	Progress::Title(_("Checking for package availability"));
+	Progress::Title(_("Checking for package availability..."));
 	
 	list selPacs = Pkg::GetPackages (`selected , false);
 	list failed = [];
@@ -150,7 +150,7 @@
 	ISO::missing_packages = failed;
 	if (size(failed) > 0 )
 	{
-	    error_msg = sformat(_("%1 Packages not available."), size(failed));
+	    error_msg = sformat(_("%1 packages not available."), size(failed));
 	}
 
 	return error_msg;
@@ -206,7 +206,7 @@
      */
     global define isoSizeDialog(integer expectedSize, string filename)``{
 
-	string iso_msg = _("Please wait while the ISO file is being created...");
+	string iso_msg = _("Please wait while the ISO file is created...");
 	if (UI::HasSpecialWidget(`DownloadProgress)) {
 	    UI::OpenDialog(
 			   `VBox(
@@ -252,7 +252,7 @@
 			 
 	];
 	// Translators: dialog caption
-	string caption = _("Custom ISO image");
+	string caption = _("Custom ISO Image");
 	term contents = `Label (_("Initializing ..."));
 
 	Wizard::CreateDialog ();
@@ -276,14 +276,15 @@
      */
     global define isoOptions()``{
 	string caption = _("ISO Options");
-	string help= _("Enter the desired name of the ISO image to be created and
-select any of the listed options.");
+	string help= _("Enter the desired name of the ISO image to create and
+select any of the listed options.
+");
 	
 	term contents =
 	    `Top(
 		 `VBox(
 		       `HBox(
-			     `TextEntry(`id(`file), _("Save ISO &file as:"), ISO::isoFile)		
+			     `TextEntry(`id(`file), _("Save ISO &File as:"), ISO::isoFile)		
 			     )		      
 		       )
 		 );
@@ -321,7 +322,7 @@ select any of the listed options.");
     global define isoSummary() ``{
 	import "HTML";
 	string caption = _("ISO Summary");	
-	string html =  HTML::Heading(_("Package source"));
+	string html =  HTML::Heading(_("Package Source"));
 	html = html + HTML::Para(ISO::sourceDir);
 
 	html = html +  HTML::Heading(_("Packages"));
@@ -337,8 +338,9 @@ select any of the listed options.");
 	term contents =
 	    `RichText(html);
 
-	string help_text = _("<p>Please verify if the data in the summary box is correct and
-press next to continue</p>");
+	string help_text = _("<p>Verify if the data in the summary box is correct then
+press Next to continue</p>
+");
 	
 	Wizard::SetContentsButtons ( caption,
 				     contents,
@@ -364,18 +366,19 @@ press next to continue</p>");
 	
 	string caption = _("Custom CDs");
 
-	string help = _("<p>Please wait while the data and packages are being verified
-</p>");
-	help = help +  _("<p>In case there is something missing, the process will be aborted.
-Please fix the problem and try again.</p>
+	string help = _("<p>Please wait while the data and packages are verified...
+</p>
+");
+	help = help +  _("<p>If there is something missing, the process will be aborted.
+Fix the problem and try again.</p>
 ");
 
 	list progress_stages =
 	    [
-	     _("Setup package source"),	     
-	     _("Verify profile consistency"),
-	     _("Create package list"),
-	     _("Verify package availablity")
+	     _("Set up Package Source"),	     
+	     _("Verify Profile Consistency"),
+	     _("Create Package List"),
+	     _("Verify Package Availability")
 	     ];
 
 	list progress_descriptions =
@@ -383,11 +386,11 @@ Please fix the problem and try again.</p>
 	     _("Configuring package source..."),
 	     _("Verifying control file consistency..."),
 	     _("Creating package list..."),	     
-	     _("Verifying package availablity...")	   
+	     _("Verifying package availability...")	   
 	     ];
 	
 	Progress::New(
-		      _("Verify data for ISO image"),
+		      _("Verify Data for ISO Image"),
 		      "",     // progress_title
 		      size( progress_stages ),
 		      progress_stages,
@@ -447,17 +450,17 @@ Please fix the problem and try again.</p>
 	
 	
 	string help = UI(_("<P>
-Please wait while the directory structure for the new ISO file is being created.
+Please wait while the directory structure for the new ISO file is created.
 </P>
 "));
-	help = help + _("<p>Pressing <b>Next</b> will start creating the ISO file.</p>");
+	help = help + _("<p>Press <b>Next</b> to start creating the ISO file.</p>");
 
 
 	    
 	list progress_stages =
 	    [
 	     _("Create skeleton with essential files"),
-	     _("Save Control File in ISO directory"),
+	     _("Save Control File in ISO Directory"),
 	     _("Copy selected packages")
 	     ];
 
@@ -465,7 +468,7 @@ Please wait while the directory structure for the new ISO file is being created.
 	    [
 	     
 	     _("Creating skeleton with essential files"),
-	     _("Saving control file in ISO direcotry"),
+	     _("Saving control file in ISO directory..."),
 	     _("Copying selected packages")	   
 	     ];
 

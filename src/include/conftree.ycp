@@ -195,8 +195,8 @@
 					    `item(`id(`menu_saveas), _("Save &As")      ),
 					    `menu( _("Im&port") ,
 						   [
-						    `item(`id(`menu_alice), _("Import A&lice data")),
-						    `item(`id(`menu_kickstart), _("Import &Kickstart file"))
+						    `item(`id(`menu_alice), _("Import A&lice Data")),
+						    `item(`id(`menu_kickstart), _("Import &Kickstart File"))
 						    ]
 						   ),
 					    `menu( _("&Preferences"),
@@ -223,8 +223,8 @@
 					   ),
 			      `MenuButton( _("&Tools"),
 					   [
-					    `item(`id(`menu_iso), _("&Create ISO image")      ),
-					    `item(`id(`menu_clone), _("Clone t&his system")      )
+					    `item(`id(`menu_iso), _("&Create ISO Image")      ),
+					    `item(`id(`menu_clone), _("Clone T&his System")      )
 					    ]
 					   )			      		
 			      )
@@ -246,7 +246,7 @@
 	    {
 		if (size(AIConfig::GroupMap) == 0)
 		{
-		    UI::ErrorPopup(_("Error while reading configuration data"));
+		    UI::ErrorPopup(_("Error while reading configuration data."));
 		    ret = `next;
 		    break;
 		}
@@ -324,7 +324,7 @@
 		}
 		else if (ret  == nil)
 		{
-		    UI::ErrorPopup(_("Error while reading configuration data"));
+		    UI::ErrorPopup(_("Error while reading configuration data."));
 		    ret = `back;		
 		}
 		else if ( contains(menuitems,ret) )
@@ -392,7 +392,7 @@
 				current = AIConfig::currentFile;
 			
 			    symbol answer = UI::AnyQuestionPopup3(_("Control file changed."),
-								  sformat(_("Do you want to save the changes to %1?"), current),
+								  sformat(_("Save the changes to %1?"), current),
 								  UI::YesButtonLabel(),
 								  UI::NoButtonLabel(),
 								  UI::CancelButtonLabel(),
@@ -424,7 +424,7 @@
 		
 		    if (ret == `menu_open) // OPEN
 		    {
-			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open file") );
+			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Open File") );
 			if (filename!=nil)
 			{			
 			    y2milestone("file: %1", filename);
@@ -440,7 +440,7 @@
 		    {
 			Wizard::CreateDialog();	
 			include "autoinstall/imports.ycp";
-			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Import Kickstart file") );
+			string filename = UI::AskForExistingFile( AIConfig::Repository, "*", _("Import Kickstart File") );
 			if ( filename!=nil )
 			{
 			    map ksConfig = readKS(filename);
