@@ -14,7 +14,6 @@
     import "Mode";
     import "AutoinstConfig";
     import "Report";
- 
 
     //
     // Auto-Configuration mode
@@ -23,7 +22,6 @@
 
     global map X11 = $[];
 
-  
     /**
      * Read saved data in continue mode
      * @return boolean true on success
@@ -40,16 +38,14 @@
 	    y2milestone("XML Post installation data found: %1", AutoinstConfig::autoconf_file );
 	    autoconf = true;
 	    Profile::ReadXML (   AutoinstConfig::autoconf_file  );
-	    
 	    boolean ret = Profile::ReadXML(  AutoinstConfig::xml_tmpfile );
 	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", AutoinstConfig::autoconf_file, AutoinstConfig::cache));
-	   
 	    return (ret);
 	}
 	else
 	{
 	    boolean ret = Profile::ReadProfileStructure ( AutoinstConfig::parsedControlFile );
-	    if ( Profile::current == $[] || !ret )	
+	    if ( Profile::current == $[] || !ret )
 	    {
 		y2milestone( "No saved autoinstall data found" );
 		return (false);
@@ -72,7 +68,6 @@
      */
     global define void AutoInstall()
 	``{
-	
 	if (!Mode::config &&  ! ( Mode::cont && Continue() ))
 	{
 	    if ( SCR::Read(.target.size, AutoinstConfig::xml_tmpfile) != -1  && size ( Profile::current ) == 0)
@@ -96,7 +91,6 @@
 	return;
     }
 
-
     /**
      * Save configuration
      * @return: boolean true on success
@@ -107,7 +101,6 @@
 	return (Profile::SaveProfileStructure( AutoinstConfig::parsedControlFile ));
     }
 
-
-
+//EOF
 }
 
