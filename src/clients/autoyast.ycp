@@ -16,8 +16,8 @@
     import "Y2ModuleConfig";
     import "Label";
     import "AutoinstClass";
+    import "Sequencer";
 
-    include "wizard/sequencer.ycp";
 
     boolean popup_open = false;
     include "autoinstall/dialogs.ycp";
@@ -76,7 +76,7 @@
 				     Label::NextButton ());
 
 
-	symbol ret = (symbol)WizardSequencer (dialogs, sequence);
+        symbol ret = Sequencer::Run(dialogs, sequence);
 	UI::CloseDialog ();
 	return ret;
     }

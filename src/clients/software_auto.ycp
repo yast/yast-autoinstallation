@@ -17,7 +17,6 @@
     import "Report";
     import "AutoinstConfig";
     import "AutoinstSoftware";
-    include "wizard/sequencer.ycp";
     import "Label";
     include "autoinstall/dialogs.ycp";
 
@@ -40,7 +39,7 @@
 
     /**
      * Select packages
-     * @return symbol 
+     * @return symbol
      */
     define symbol packageSelector() ``{
 	string language = UI::GetLanguage(true);
@@ -53,9 +52,9 @@ more <b>add-on</b> selections and packages.
 ");
 	Pkg::TargetFinish ();
 	// AutoinstSoftware::pmInit();
-		
+
 	Pkg::SourceStartManager(true);
-	 
+
 	Wizard::CreateDialog();
 
 	Wizard::SetContents(title,
@@ -134,13 +133,8 @@ more <b>add-on</b> selections and packages.
 				  );
 
 	Wizard::SetContents(title, contents, helptext, true, true);
-	
-	
 	// UI::ChangeWidget(`id(`back), `Enabled, false);
-	
 	Wizard::ReplaceAbortButton(`Empty());
-	
-	
 	any ret = nil;
 	boolean error_found = false;
 	boolean selret = false;
@@ -152,8 +146,7 @@ more <b>add-on</b> selections and packages.
 		string base_selection = (string) UI::QueryWidget( `id(`baseconf),`CurrentButton );
 
 		// Inform the package manager on `next about the new (only about a NEW) selection
-		// or if the selection has changed			
-		    		
+		// or if the selection has changed
 		if (ret == `next)
 		{
 		    // set the new selection
@@ -162,27 +155,27 @@ more <b>add-on</b> selections and packages.
 		    {
 			foreach(string p, AutoinstSoftware::packages, ``{
 			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
-			});		
+			});
 		    }
-		}		
+		}
 		else if ( ret == `details )
 		{
 		    ret = `again;
-		    
+
 		    Pkg::SetSelection( base_selection );
-		    
+
 		    foreach(string addon, AutoinstSoftware::addons, ``{
 			Pkg::SetSelection( addon );
 		    });
 
-		    Pkg::ActivateSelections();	
+		    Pkg::ActivateSelections();
 		    if (size(AutoinstSoftware::packages ) > 0)
 		    {
 			foreach(string p, AutoinstSoftware::packages, ``{
 			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
-			});		
+			});
 		    }
-	
+
 		    while ( ret == `again )
 		    {
 			ret = (symbol)WFM::CallFunction( "inst_packages", [ true, true ] );
@@ -190,14 +183,14 @@ more <b>add-on</b> selections and packages.
 			if ( ret == `accept )
 			    ret = `next;
 		    }
-		}		
+		}
 	    }  until ( ret == `next  || ret == `back);
-	
+
 	Pkg::ActivateSelections();
 	y2milestone("blah 1");
 	list allpacs = Pkg::GetPackages(`selected, true);
 	y2milestone("All packages: %1 ( %2 )", allpacs, size(allpacs));
-	
+
 	list<string> seladd = [];
 	list<string> selbase = [];
 	if ( ret != `back )
@@ -235,7 +228,7 @@ more <b>add-on</b> selections and packages.
 	ret =  $[];
     }
     else if (func == "Change") {
-	ret  = packageSelector();	
+	ret  = packageSelector();
     }
     else if (func == "Export") {
 	ret = AutoinstSoftware::Export();
@@ -251,6 +244,6 @@ more <b>add-on</b> selections and packages.
     y2milestone("----------------------------------------");
 
     return ret;
-    
+
 /* Finish */
 }
