@@ -80,7 +80,7 @@
 	string remote = "";
 	if (substring(path_to_file, size(path_to_file) -1) == "/")
 	{
-	    ip = Mode::installMap["ip"]:"";
+	    ip = SCR::Read(.etc.install_inf.IP);
 	    string tmp_hex_ip = ip2hex(ip);
 
 	   
@@ -149,7 +149,7 @@
 
     global define UseNFS(map parameters, string localfile)
 	``{
-	string ip = Mode::installMap["ip"]:"";
+	string ip = SCR::Read(.etc.install_inf.IP);
 	boolean ok = false;
 
 	string path_to_file = parameters["path"]:"";
@@ -317,7 +317,7 @@
 	if (is_directory)
 	{
 
-	    ip = Mode::installMap["ip"]:"";
+	    ip = SCR::Read(.etc.install_inf.IP);
 	    y2milestone("my IP: %1", ip);
 	    string tmp_hex_ip = ip2hex(ip);
 	    if (size(tmp_hex_ip)==0)
