@@ -103,12 +103,12 @@
 
     /**
      * Racalculate sizes
-     * @param list region
+     * @param list<integer> region
      * @return void
      */
-    global define void recalculateSizes ( list<integer> region )
+    global define void recalculateSizes ( list<integer> thisregion )
         ``{
-            integer totalsize = size_of_region (region, bytes_per_unit);
+            integer totalsize = size_of_region (thisregion, bytes_per_unit);
 
             y2milestone("Total available space: %1", totalsize);
 
@@ -234,10 +234,10 @@
     /**
      * Calculate new Region
      * @param map partition map
-     * @param list region list
+     * @param list<integer> work region
      * @return list new region
      */
-    global define list<integer> calcRegion(map currentPartition, list<integer> region , list<integer> selected_region)
+    global define list<integer> calcRegion(map currentPartition,  list<integer> selected_region)
         ``{
             y2milestone("Region in=%1", region);
             integer units = 0;
@@ -305,14 +305,22 @@
     /**
      * Create a partition
      * @param currentPartition partition data as specified in control file
+     * @param list<integer> region
+     * @param symbol partition type
+     * @param integer last partition number
+     * @param list<integer> global region
      * @return map partition data ready
      */
 
-    global define map addPartition(map currentPartition, list<integer> region, symbol ptype, integer last_pnr, list<integer> selected_region) ``{
+    global define map addPartition(
+            map currentPartition,
+            symbol ptype,
+            integer last_pnr,
+            list<integer> selected_region) ``{
 
         string mount_point = currentPartition["mount"]:"";
 
-        region = calcRegion(currentPartition, region, selected_region);
+        region = calcRegion(currentPartition,  selected_region);
 
         integer auto_fsid = currentPartition["partition_id"]:Partitions::fsid_native;
 
@@ -473,8 +481,6 @@
             symbol ptype = `primary;
             integer last_pnr = 0;
 
-            list<integer> region = [0,0];
-
             if (selected_region[0]:0 != 0 )
             {
                 list old = filter (map pentry,
@@ -536,7 +542,8 @@
                         {
                         last_pnr = last_pnr + 1;
                         }
-                        map newPart = addPartition(p, region, ptype, last_pnr, selected_region);
+                        map newPart = addPartition(p,  ptype, last_pnr, selected_region);
+                        y2debug("new partition: %1", newPart );
                         tmp_p = union(tmp_p, [newPart]);
                         last_pnr = getLastPrimary(SortPartitions(tmp_p));
                         return (newPart);
@@ -617,7 +624,7 @@
 
                         if (extended_region == [] )
                         {
-                            extended_region = calcRegion(extended[0]:$[], region, selected_region);
+                            extended_region = calcRegion(extended[0]:$[],  selected_region);
                         }
                         region  = extended_region;
 
@@ -678,7 +685,7 @@
                     {
                     last_pnr = last_pnr + 1;
                     }
-                    map newPart = addPartition(p, region, ptype, last_pnr, selected_region);
+                    map newPart = addPartition(p,  ptype, last_pnr, selected_region);
                     last_pnr = last_pnr + 1;
                     return(newPart);
                     });
@@ -713,7 +720,6 @@
      *  AutoPartition ()
      *  Determine how and where the partitions are added in autoinst mode
      *  modifies targetMap with new partition list for the specified device
-     *  @param device name of the target drive
      *  @return true on success
      */
     global define boolean AutoPartition ()
@@ -731,8 +737,7 @@
             if (target == $[])
             {
                 Report::Error(_("The device configured in the control file does not
-                            exist on this system.
-                            "));
+exist on this system."));
                 return false;
             }
 
@@ -1121,7 +1126,6 @@
                         y2milestone ("Partitions to keep (old_partitions) : '%1'", old_partitions);
 
                         // Check selection for plausability
-
                         string reason = "";
                         list<integer> selected = [];
 
@@ -1130,6 +1134,7 @@
                             // consistency check: a condition for the installation is not fullfilled
                             // this condition is described within the reason
                             reason = _("The selected partitions are not contiguous.");
+                            y2milestone(reason);
                         }
                         else if (contains_extended (old_partitions) && creating_anything)
                         {
@@ -1143,7 +1148,8 @@
                                 // consistency check: a condition for the installation is not fullfilled
                                 // this condition is described within the reason
                                 reason = _("Too few partitions are marked for removal.
-                                        To install Linux, select more partitions to remove.");
+To install Linux, select more partitions to remove.");
+                                y2milestone(reason);
                             }
                             else if (size_of_region (selected , bytes_per_unit) < minimal_size  )
                             {
@@ -1151,7 +1157,7 @@
                                 // consistency check: a condition for the installation is not fullfilled
                                 // this condition is described within the reason
                                 reason = _("The selected partitions are not big
-                                        enough to contain a minimal installation.");
+enough to contain a minimal installation.");
                             }
                             else
                             {
@@ -1169,7 +1175,7 @@
                             // consistency check: a condition for the installation is not fullfilled
                             // this condition is described within the reason
                             reason = _("Too few partitions are marked for removal.
-                                    To install Linux, select more partitions to remove.");
+To install Linux, select more partitions to remove.");
                         }
                         else
                         {
@@ -1183,7 +1189,7 @@
                                 // consistency check: a condition for the installation is not fullfilled
                                 // this condition is described by the reason
                                 reason = _("The selected partitions are not big enough
-                                        to contain a minimal installation.");
+to contain a minimal installation.");
                             }
                             else
                             {

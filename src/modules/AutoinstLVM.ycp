@@ -12,21 +12,21 @@
     textdomain "autoinst";
 
     import "Storage";
-    import "AutoinstStorage";
     import "Report";
     import "Partitions";
     import "FileSystems";
 
     include "partitioning/lvm_pv_lib.ycp";
     include "partitioning/lvm_lib.ycp";
-    
-    include "partitioning/lvm_lv_lib.ycp";
-    // include "partitioning/lvm_ui_lib.ycp";     
-    // include "partitioning/lvm_ui_dialogs.ycp";        
-   
-    
 
-            
+    include "partitioning/lvm_lv_lib.ycp";
+    // include "partitioning/lvm_ui_lib.ycp";
+    // include "partitioning/lvm_ui_dialogs.ycp";
+
+
+
+    global list ConfiguredDevices = [];
+
     global map modify_targets = $[];
 
     global map ExistingLVM = $[];
@@ -46,10 +46,8 @@
 
     global map lvm = $[];
 
-   
 
 
-    
     /**
      * Constructor
      * @return void
@@ -218,7 +216,7 @@
 	];
 	modify_targets = addTargetModification( modify_targets, create_lv );
 
-	symbol lv_fs = AutoinstStorage::StringFS2Symbol( lv["filesystem"]:"ext2");
+	symbol lv_fs = lv["filesystem"]:`ext2;
 
 	return ($[
 		  "create"		: true,
@@ -247,7 +245,7 @@
      * @param string volume group name
      * @param map logical volume
      * @return void
-     */    
+     */
     global define map ResizeLV (string vgname, map lv) ``{
 
 	string lvsize_str	= lv["size"]:"";
@@ -280,7 +278,7 @@
 	];
 	modify_targets = addTargetModification( modify_targets, resize_lv );
 
-	symbol lv_fs = AutoinstStorage::StringFS2Symbol( lv["filesystem"]:"ext2");
+	symbol lv_fs =  lv["filesystem"]:`ext2;
 
 	return ($[
 		  "changed_size"	: true,
@@ -309,7 +307,7 @@
      * @param string volume group name
      * @param string logical volume
      * @return void
-     */    
+     */
     global define map KeepLV (string vgname, map lv) ``{
 
 	string lvsize_str   = lv["size"]:"";
@@ -355,7 +353,7 @@
 	map tm = $[];
 
 	foreach(string k, map v, targetMap, ``{
-	    if (contains(AutoinstStorage::ConfiguredDevices, k))
+	    if (contains(ConfiguredDevices, k))
 	    {
 		tm[k] = v;
 	    }
@@ -364,11 +362,11 @@
 
 	 y2milestone("targetMap= %1", targetMap);
 	 y2milestone("tm= %1", tm);
-	
+
 	list all_possible_pvs = filter( map part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname && !part["delete"]:false ));
 	list possible_pvs = filter( map part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
 
-	
+
 	 y2milestone("all pvs= %1", all_possible_pvs);
 	 y2milestone("possible pvs= %1", possible_pvs);
 
@@ -444,7 +442,7 @@
 						  });
 
 		    list lv_on_raid = filter(string dev, del_pvs_dev, ``(issubstring(dev, "/dev/md")));
-		    
+
 		    if ( use == "all" && vgn == vgname )
 		    {
 			delete = true;
@@ -472,11 +470,11 @@ physical volumes belonging to this group.
 			map ExistingVG = ExistingLVM[vgdev]:$[];
 
 			list ExistingLVs = ExistingVG["partitions"]:[];
-			
+
 			foreach(map lv, ExistingLVs, ``{
 			    RemoveLV( vg, lv["nr"]:"");
 			});
-			
+
 			RemoveVG( vg );
 		    }
 
@@ -555,6 +553,6 @@ physical volumes belonging to this group.
 
 	return true;
     }
-   
+
 }
 

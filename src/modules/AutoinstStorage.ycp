@@ -16,13 +16,15 @@
     import "FileSystems";
     import "Mode";
     import "Summary";
-    import "Report";  
+    import "Report";
     import "Storage";
     import "Partitions";
     import "Bootloader";
     import "BootCommon";
+    import "AutoinstLVM";
+    import "AutoinstRAID";
 
-   
+
     // Partition plan as parsed from control file
     global list AutoPartPlan = [];
 
@@ -34,9 +36,9 @@
 
 
     map PhysicalTargetMap = $[];
-    
+
     list PhysicalDrives = [];
-    
+
     list PhysicalDevices = [];
 
 
@@ -60,24 +62,26 @@
     list<integer> unused_region = [ 0, 0 ];
 
     integer minimal_size = 0;
-    
+
     integer bytes_per_unit = 0;
 
     string TargetDevice = "";
 
     integer	fsid_boot = 0;
-    
+
     integer	fsid_root = 0;
+
+    list<integer> region = [ 0, 0 ];
 
 
     string target_is = "";
-    
+
     list root_region = [];
 
-    include "partitioning/custom_part_dialogs.ycp";	    
+    include "partitioning/custom_part_dialogs.ycp";
     include "autoinstall/partitioning.ycp";
     include "autoinstall/autoinst_dialogs.ycp";
-  
+
     /**
      * Dump the settings to a map, for autoinstallation use.
      * @return list
@@ -134,7 +138,7 @@
 
 
 
-    /**  
+    /**
      * Preprocess partition plan and prepare for creating partitions.
      * @return void
      */
@@ -192,9 +196,9 @@
 
 	return;
     }
-    
 
-    /**    
+
+    /**
      * Create partition plan
      * @return boolean
      */
@@ -219,26 +223,28 @@
                                   ``{
                                       return(k);
                                   });
-
-	y2milestone("Drives=%1", alldrives);
+        y2debug("Physicaltm: %1", PhysicalTargetMap );
+        y2debug("PhysicalDrives: %1", PhysicalDrives );
+        y2debug("PhysicalDevices: %1", PhysicalDevices );
+	y2milestone("All Drives=%1", alldrives);
 
 	map FirstDrive = PhysicalDrives[0]:$[];
-	
+
 	string mbrDisk = FirstDrive["device"]:BootCommon::mbrDisk;
-	
+
 	y2milestone("MBR disk= %1", mbrDisk );
-	
+
 	Storage::SetPartDisk(mbrDisk);
-	
-	y2milestone("Drives: %1", AutoPartPlan);
+
+	y2milestone("AutoPartPlan= %1", AutoPartPlan);
 
 	boolean abort = false;
 
 	// Start the real work
-	
+
 	PreProcess();
 
-	y2milestone("New Auto-Install tagetMap=%1", AutoTargetMap);
+	y2milestone("New Auto-Install targetMap=%1", AutoTargetMap);
 	if ( AutoTargetMap == $[] || abort )
 	{
 	    // Something went really wrong..
@@ -263,7 +269,7 @@ Make sure the control file has the correct syntax and values.
 	});
 
 	if (DriveInitialized)
-	{	    
+	{
 	    y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
 	}
 
@@ -288,8 +294,9 @@ Make sure the control file has the correct syntax and values.
 		return false;
 	    }
 	}
-	/*
 	AutoinstLVM::lvm   = filter(string k, map v, AutoinstStorage::AutoTargetMap, ``(v["is_lvm_vg"]:false));
+        AutoinstLVM::ConfiguredDevices = ConfiguredDevices;
+
 	AutoinstRAID::raid = filter(string k, map v, AutoinstStorage::AutoTargetMap, ``(k == "/dev/md"));
 
 	if ( size(AutoinstRAID::raid) != 0)
@@ -299,8 +306,8 @@ Make sure the control file has the correct syntax and values.
 	}
 	else
 	{
-	    
-	    AutoinstRAID::DeleteMDs();	    
+
+	    AutoinstRAID::DeleteMDs();
 	}
 
 
@@ -312,11 +319,10 @@ Make sure the control file has the correct syntax and values.
 		return false;
 	    }
 	}
-	*/
 	return true;
     }
 
-    
+
     /**
      * Initialize devices
      * @return void
@@ -363,7 +369,7 @@ Make sure the control file has the correct syntax and values.
 	return( output );
     }
 
-    
+
     /**
      * Build the id for a partition entry in the man table.
      * @parm disk_dev_name name of the devie e.g.: /dev/hda
@@ -375,7 +381,7 @@ Make sure the control file has the correct syntax and values.
         return (sformat( "%1:%2", disk_dev_name, nr));
     };
 
-    
+
     /**
      * Partitioning Overview
      * @return term
@@ -385,29 +391,29 @@ Make sure the control file has the correct syntax and values.
 
 	map allfs = FileSystems::GetAllFileSystems(true, true);
 	list drives_table = [];
-	
+
 	string id = "";
 	foreach(map d, AutoPartPlan,
 		``{
 	    id = d["device"]:"";
-	    term a = `item(`id(id), d["device"]:"", "", "", "", "", "" );	    
+	    term a = `item(`id(id), d["device"]:"", "", "", "", "", "" );
 
 	    drives_table = add (drives_table, a);
-	    
+
 	    list partitions = d["partitions"]:[];
 	    integer start_id = 1;
-	    
+
 	    if ( size (partitions) > 0 )
 	    {
 		foreach(map p, partitions, ``{
 		    id = build_id(d["device"]:"" , start_id );
-		    
+
 		    term b = `item(`id(id));
 		    b = add (b, "");
 
 		    b=add(b, p["mount"]:"" );
 		    b=add(b, p["size"]:"");
-		    		  		    		  
+
 		    if (!haskey(p, "filesystem_id"))
 		    {
 			b=add(b, Partitions::FsIdToString(p["partition_id"]:131));
@@ -416,12 +422,12 @@ Make sure the control file has the correct syntax and values.
 		    {
 			b=add(b, Partitions::FsIdToString(p["filesystem_id"]:131));
 		    }
-		    
+
 		    map fs = allfs[p["filesystem"]:`nothing]:$[];
 		    string fs_name = fs[`name]:"";
-		    
+
 		    b=add(b, fs_name);
-		    
+
 		    if ( size( p["region"]:[] ) > 0 )
 		    {
 			b=add(b, sformat("%1 - %2", select(p["region"]:[], 0 , 0), select(p["region"]:[], 1 , 0)));
@@ -437,13 +443,13 @@ Make sure the control file has the correct syntax and values.
 	    }
 
 	});
-	
+
 	integer entries = size(drives_table);
 	list reversed_table = [];
 	integer counter = entries;
-	
+
 	term tmp = `item(`id(`empty));
-	
+
 	while (counter != 0)
 	{
 	    reversed_table=add(reversed_table, select(drives_table, counter -1, tmp));
@@ -452,12 +458,12 @@ Make sure the control file has the correct syntax and values.
 	}
 	y2debug("table: %1", drives_table );
 	return drives_table;
-	
+
 
     }
 
-    
 
-    
+
+
 
 }
