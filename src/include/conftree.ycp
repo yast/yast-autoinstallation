@@ -26,25 +26,21 @@
      * @param tree data
      * @return list
      */
-
     global define list CreateTableList( list MenuTreeData, string current)
 	``{
-	list menu_options = maplist(map e, MenuTreeData,
-				    ``{
-					if ((size(e["children"]:[]) > 0 ))
-					{
-					    list childrenlist = CreateTableList(e["children"]:[], current);
-					    return `item(`id(e["entry"]:""), e["title"]:"", ( e["entry"]:"" == current ) , childrenlist);
-					}
-					else
-					{
-					    return `item(`id(e["entry"]:""),e["title"]:"",( e["entry"]:"" == current ));
-					}
-				    });
+	list menu_options = maplist(map e, MenuTreeData, ``{
+	    if ((size(e["children"]:[]) > 0 ))
+	    {
+		list childrenlist = CreateTableList(e["children"]:[], current);
+		return `item(`id(e["entry"]:""), e["title"]:"", ( e["entry"]:"" == current ) , childrenlist);
+	    }
+	    else
+	    {
+		return `item(`id(e["entry"]:""),e["title"]:"",( e["entry"]:"" == current ));
+	    }
+	});
 	return menu_options;
     }
-
-
 
 
     global define void content_dialog( string resource, map resourceMap, string module_auto ) ``{
@@ -78,7 +74,7 @@
      * Module configuration dialog
      *
      */
-    global define symbol module_contents(string resource, map resourceMap ) ``{
+    global define symbol module_contents(string resource, map resourceMap , list menuitems) ``{
 	// y2milestone("FLAT a: %1", Profile::Flat);
 
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
@@ -160,9 +156,9 @@
 	    {
 		Profile::changed = true;
 	    }	
-	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key ); // FIXME || contains(menuitems, ret) );
+	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key || contains(menuitems, ret) );
 
-	      return (symbol)ret;
+	return (symbol)ret;
     }
 
 
@@ -193,7 +189,8 @@
 	Wizard::SetScreenShotName ("autoyast-conftree");
 	y2milestone("dd: %1", menuitems);
 	
-	term image = Wizard::HeaderImage(false);
+	term image = Wizard::HeaderImage(false);					       
+	
 	term menu =
 	    `VBox(
 		  image,
@@ -248,10 +245,12 @@
 
 	UI::ReplaceWidget(`id(`image) , menu);
 
+	// Default tree item
 	string tree_item = "System";
-
+	
 	CreateTreeWidget( tree_item);
-	UI::ChangeWidget(`id(`key), `CurrentItem, "System");
+	
+	UI::ChangeWidget(`id(`key), `CurrentItem, tree_item);
 
 
 	any ret = `key;
@@ -323,7 +322,7 @@
 			// Set resource name, if not using default value
 			string resource = Y2ModuleConfig::getResource(def_resource);
 			y2debug("Resource map: %1",  resourceMap );
-			ret = module_contents( resource , resourceMap);
+			ret = module_contents( resource , resourceMap, menuitems);
 		    }
 		});
 

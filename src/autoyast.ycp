@@ -44,35 +44,30 @@
 			     `mene_rules,
 			     `menu_merge
 			     ];
-
-
-
-    global map dialogs = $[
-			   "tree":``(   ConfTree(menuitems) )
-    ];
+    global map dialogs =
+	$[
+	  "tree":``(   ConfTree(menuitems) )
+	];
 
 
     /**
      * Whole configuration of autoyast
      * @return `back, `abort or `next
      */
-
     global define symbol AutoSequence () ``{
 
-	map sequence = $[
-			 "ws_start" : "tree",
-
-			 "tree":
-			 $[
-			   `exit	: `ws_finish
-			 ]
-	];
-
+	map sequence =
+	    $[
+	      "ws_start" : "tree",	      
+	      "tree":
+	      $[
+		`exit	: `ws_finish
+	      ]
+	    ];
 
 	// Translators: dialog caption
 	string caption = _("Autoinstall Configuration");
 	term contents = `Label (_("Initializing ..."));
-
 	Wizard::CreateDialog ();
 	Wizard::SetContentsButtons ( caption,
 				     contents,
@@ -82,14 +77,10 @@
 
 
 	any ret = WizardSequencer (dialogs, sequence);
-
 	UI::CloseDialog ();
 	return ret;
     }
 
-
-
     any ret = AutoSequence ();
-
     return ret;
 }
