@@ -34,28 +34,23 @@ Please wait while the system is prepared for autoinstallation.</p>
 ");
     list<string> progress_stages =
 	[
+	 _("Probe Hardware"),
 	 _("Retrieve & Read Control File"),
 	 _("Process Profiles and Rules"),
 	 _("Parse control file"),
-	 _("Set up reporting behaviour"),
 	 _("Set up Language")
 	 ];
 
-    list<string> progress_descriptions =
-	[
-	 _("Retrieving System Profile"),
-	 _("Processing Profiles and Rules"),
-	 _("Parsing control file"),
-	 _("Setting up Language")
-	 ];
 
     Progress::New(
 		  _("Preparing System for Automatic Installation"),
 		  "",     // progress_title
-		  size( progress_stages ),	// progress bar length
+		  7 ,	// progress bar length
 		  progress_stages,
-		  progress_descriptions,
+		  [],
 		  help_text );
+    Progress::NextStage();
+    Progress::Title(_("Probing Hardware"));
     WFM::CallFunction("inst_startup", [] );
 
     if(UI::PollInput() == `abort)
@@ -64,12 +59,12 @@ Please wait while the system is prepared for autoinstallation.</p>
 
 
     Progress::NextStage();
-    Progress::Title(AutoinstConfig::message);
-
-
     // Initialize Rules
+    Progress::Title(AutoinstConfig::message);
     AutoInstallRules::Init();
     boolean ret = false;
+    Progress::NextStep();
+    Progress::Title(_("Processing Profiles and Rules"));
     if (!ProfileLocation::Process())
     {
 	y2error("Aborting...");
@@ -97,7 +92,7 @@ Please wait while the system is prepared for autoinstallation.</p>
             return `abort;
 
     Progress::NextStage();
-
+    Progress::Title( _("Parsing control file"));
     if (! Profile::ReadXML( AutoinstConfig::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
     {
 	Popup::Error(_("Error while parsing the control file.
@@ -111,6 +106,7 @@ control file and try again.
 
 
     Progress::NextStage();
+    Progress::Title(_("Initial Configuration"));
     Report::Import(Profile::current["install", "report"]:$[]);
 
     //
@@ -133,7 +129,8 @@ control file and try again.
     //
     // Set it in the Language module.
     //
-    Progress::NextStage();
+    Progress::NextStep();
+    Progress::Title(_("Configuring Language"));
     Language::Set( language );
 
     //
