@@ -22,6 +22,7 @@
     import "AutoinstSoftware";
     import "BootCommon";
     import "Popup";
+    import "RunlevelEd";
 
     include "autoinstall/autoinst.ycp";
 
@@ -32,7 +33,8 @@
     _("Execute pre-install user scripts"),
     _("Create partition plans"),
     _("Configure Software selections"),
-    _("Configure Bootloader")
+    _("Configure Bootloader"),
+    _("Configure Runlevel")
         ];
 
     list<string> progress_descriptions =
@@ -41,7 +43,8 @@
     _("Executing pre-install user scripts..."),
     _("Creating partition plans..."),
     _("Configuring Software selections..."),
-    _("Configuring Bootloader...")
+    _("Configuring Bootloader..."),
+    _("Configuring Runlevel...")
         ];
 
     Progress::New(
@@ -145,6 +148,17 @@ Try again.
 
     BootCommon::getLoaderType(true);
     bootloaderSettings();
+
+    Progress::NextStage();
+    string rl = Profile::Flat["runlevel", "default"]:"";
+    if (rl!="")
+    {
+        RunlevelEd::default = rl;
+    }
+    else
+    {
+        RunlevelEd::default = (Arch::x11_setup_needed && Pkg::IsSelected ("XFree86") )? "5": "3";
+    }
 
     Progress::Finish();
 
