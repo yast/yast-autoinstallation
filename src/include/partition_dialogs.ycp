@@ -15,7 +15,8 @@
  */
 {
     textdomain "autoinst";
-    include "ui/common_popups.ycp";
+    import "Label";
+    import "Popup";
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_lib.ycp";
     include "partitioning/custom_part_dialogs.ycp";
@@ -157,9 +158,9 @@ needs. All fields are required.</P>
 					    `VStretch(),
 					    `HBox(
 						  // popup create partition:
-						  `PushButton(`id(`ok), `opt(`default),  Wizard::OKButtonLabel()   ),
+						  `PushButton(`id(`ok), `opt(`default),  Wizard::Label::OKButton()   ),
 						  // popup create partition:
-						  `PushButton(`id(`cancel),  Wizard::CancelButtonLabel() )
+						  `PushButton(`id(`cancel),  Wizard::Label::CancelButton() )
 						  )
 					    )
 				      ),
@@ -598,7 +599,7 @@ For more information, consult the documentation.
 		    }
 		    else
 		    {
-			UI::MessagePopup(_("This device is already configured.
+			Popup::Message(_("This device is already configured.
 Select or enter another device name.
 "));
 			continue;
@@ -743,7 +744,7 @@ a preparation.
 			    StorageDialogContents() , help_text, true, true);
 
 	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 	repeat {
 	    any item = UI::QueryWidget(`id(`table), `CurrentItem);
 
@@ -801,7 +802,7 @@ a preparation.
 		}
 		else
 		{
-		    UI::MessagePopup(_("Select a drive first."));
+		    Popup::Message(_("Select a drive first."));
 		    continue;
 		}
 	    }

@@ -11,6 +11,7 @@
     textdomain "autoinst";
     import "HTML";
     import "Call";
+	import "Label";
 
     include "readconfig.ycp";
 
@@ -252,7 +253,7 @@
 	    {
 		if (size(Y2ModuleConfig::GroupMap) == 0)
 		{
-		    UI::ErrorPopup(_("Error while reading configuration data."));
+		    Popup::Error(_("Error while reading configuration data."));
 		    ret = `next;
 		    break;
 		}
@@ -330,7 +331,7 @@
 		}
 		else if (ret  == nil)
 		{
-		    UI::ErrorPopup(_("Error while reading configuration data."));
+		    Popup::Error(_("Error while reading configuration data."));
 		    ret = `back;
 		}
 		else if ( contains(menuitems,ret) )
@@ -409,11 +410,11 @@
 			    else
 				current = AutoinstConfig::currentFile;
 
-			    symbol answer = UI::AnyQuestionPopup3(_("Control file changed."),
+			    symbol answer = Popup::AnyQuestion3(_("Control file changed."),
 								  sformat(_("Save the changes to %1?"), current),
-								  UI::YesButtonLabel(),
-								  UI::NoButtonLabel(),
-								  UI::CancelButtonLabel(),
+								  Label::YesButton(),
+								  Label::NoButton(),
+								  Label::CancelButton(),
 								  `focus_yes
 								  );
 			    if (answer == `no)
@@ -494,14 +495,14 @@ were imported correctly.
 
 			if ( Profile::Save( AutoinstConfig::currentFile ))
 			{
-			    UI::MessagePopup(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
+			    Popup::Message(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
 			    Profile::changed = false;
 			    if (exit_after)
 				ret = `next;
 			}
 			else
 			{
-			    UI::WarningPopup(_("An error occured while saving the file."));
+			    Popup::Warning(_("An error occured while saving the file."));
 			}
 
 		    }
@@ -515,7 +516,7 @@ were imported correctly.
 			    AutoinstConfig::currentFile = filename;
 			    if ( Profile::Save( AutoinstConfig::currentFile ))
 			    {
-				UI::MessagePopup(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
+				Popup::Message(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
 				Profile::changed=false;
 				list pathComponents = splitstring(  filename, "/");
 				string base = select(pathComponents, size(pathComponents) -1, "default");
@@ -523,7 +524,7 @@ were imported correctly.
 			    }
 			    else
 			    {
-				UI::WarningPopup(_("An error occured while saving the file."));
+				Popup::Warning(_("An error occured while saving the file."));
 			    }
 			}
 		    }

@@ -9,6 +9,7 @@
     textdomain "autoinst";
 
     include "ui/file_popups.ycp";
+	import "Label";
 
     /**
      * Preferences Dialog
@@ -80,7 +81,7 @@ contains all the packages.</p>
 			    contents, help , true, true);
 
 	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::NextButton());
 	
 	boolean changed = false;
 	any ret = "";
@@ -189,8 +190,8 @@ contains all the packages.</p>
 			`Left (`TextEntry (`id (`newname), textentry, "")),
 
 			`VSpacing(0.2),
-			`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
-			      `PushButton(`id(`cancel), CancelButtonLabel())),
+			`HBox(`PushButton(`id(`ok), `opt(`default), Label::OKButton()),
+			      `PushButton(`id(`cancel), Label::CancelButton())),
 			`VSpacing(0.2)
 			),
 		  `HSpacing(1)
@@ -213,7 +214,7 @@ contains all the packages.</p>
 		f = UI::QueryWidget (`id (`newname), `Value);
 		if (checkFileName(f) !=0 || f == "")
 		{
-		    UI::ErrorPopup(invalidFileName());
+		    Popup::Error(invalidFileName());
 		    continue;
 		}
 		break;

@@ -21,7 +21,7 @@
     import "Wizard";
     import "Directory";
 
-    include "ui/common_popups.ycp";
+    import "Popup";
     include "autoinstall/video_data_dialog.ycp";
 
 
@@ -546,7 +546,7 @@
 	    if ( current_vendor == "No X11" )
 	    {
 		// User is asked if he really wants to skip the configuration of X11.
-		if ( UI::ContinueCancelPopup( _("Are you sure you want to skip X11 configuration?") ) )
+		if ( Popup::ContinueCancel( _("Are you sure you want to skip X11 configuration?") ) )
 		{
 		    y2milestone("User skipped X configuration" );
 		    settings["configure_x11"] = false;
@@ -571,7 +571,7 @@
 		if ( ! IsNumber( min_hsync_string ) || size( min_hsync_string ) <= 0 )
 		{
 		    // A frequency value is not of type numerical. User must correct this.
-		    UI::MessagePopup(_("The minimum horizontal frequency is not a numerical value.
+		    Popup::Message(_("The minimum horizontal frequency is not a numerical value.
 Try again.
 "));
 		    SetFocusMinHsync();
@@ -581,7 +581,7 @@ Try again.
 		if ( ! IsNumber( max_hsync_string ) || size( max_hsync_string ) <= 0 )
 		{
 		    // A frequency value is not of type numerical. User must correct this.
-		    UI::MessagePopup(_("Maximum horizontal frequency is not a numerical value.\nPlease try again."));
+		    Popup::Message(_("Maximum horizontal frequency is not a numerical value.\nPlease try again."));
 		    SetFocusMaxHsync();
 		    continue;
 		}
@@ -589,7 +589,7 @@ Try again.
 		if ( ! IsNumber( min_vsync_string ) || size( min_vsync_string ) <= 0 )
 		{
 		    // A frequency value is not of type numerical. User must correct this.
-		    UI::MessagePopup(_("The minimum vertical frequency is not a numerical value.
+		    Popup::Message(_("The minimum vertical frequency is not a numerical value.
 Try again.
 "));
 		    SetFocusMinVsync();
@@ -599,7 +599,7 @@ Try again.
 		if ( ! IsNumber( max_vsync_string ) || size( max_vsync_string ) <= 0 )
 		{
 		    // A frequency value is not of type numerical. User must correct this.
-		    UI::MessagePopup(_("Maximum vertical frequency is not a numerical value.\nPlease try again."));
+		    Popup::Message(_("Maximum vertical frequency is not a numerical value.\nPlease try again."));
 		    SetFocusMaxVsync();
 		    continue;
 		}

@@ -17,7 +17,7 @@
     import "Kernel";
     import "Mode";
     import "Profile";
-    include "ui/common_messages.ycp";    
+    import "Label";    
     include "autoinstall/profileDialogs.ycp";
 
     global string remote_rules_location = "rules/rules.xml";
@@ -558,7 +558,7 @@
 
 	// Now check if there any classes defined in theis pre final control file
 	if (! Profile::Read( prefinal )) {
-	    UI::ErrorPopup(_("Error while parsing the control file.
+	    Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the
 control file and try again.
 "));

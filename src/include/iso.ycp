@@ -10,6 +10,7 @@
 {
     textdomain "autoinst";
 
+    import "Label";
 
     /**
      * Compute packages needed for autoinstallation
@@ -241,7 +242,7 @@
 						     `VSpacing(0.2),
 						     `DownloadProgress(ISO::isoFile, filename, expectedSize - 5000000),
 						     `HSquash(
-							      `PushButton(`id(`close), CloseButtonLabel())
+							      `PushButton(`id(`close), Label::CloseButton())
 							      ),
 						     `VSpacing(0.2)
 						     )
@@ -366,7 +367,7 @@ select any of the listed options.
 		    string f  = UI::QueryWidget(`id(`file), `Value);
 		    if (   f == "" || f == nil)
 		    {
-			UI::ErrorPopup(invalidFileName());
+			Popup::Error(invalidFileName());
 			continue;
 		    }
 		    ISO::isoFile = f;
@@ -410,8 +411,8 @@ press Next to continue.</p>
 	Wizard::SetContentsButtons ( caption,
 				     contents,
 				     help_text,
-				     BackButtonLabel (),
-				     NextButtonLabel ());
+				     Label::BackButton (),
+				     Label::NextButton ());
 	any ret = nil;
 	repeat
 	    {
@@ -472,7 +473,7 @@ Fix the problem and try again.</p>
 	Progress::NextStage();
 	string error_msg = checkProfile();
 	if (error_msg != "") {
-	    UI::ErrorPopup(error_msg);
+	    Popup::Error(error_msg);
 	    return `abort;
 	}
 
@@ -485,7 +486,7 @@ Fix the problem and try again.</p>
 	error_msg = checkPackageAvail();
 	if (error_msg != "")
 	{
-	    UI::ErrorPopup(error_msg);
+	    Popup::Error(error_msg);
 	}
 
 	Progress::Finish();
