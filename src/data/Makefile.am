@@ -4,6 +4,8 @@
 # $Id$
 #
 
+SUBDIRS = dtd rng
+
 xmldir = /usr/share/autoinstall/xslt
 miscdir = /usr/share/autoinstall/
 
