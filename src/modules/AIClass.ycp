@@ -20,7 +20,7 @@
     import "Summary";
     include "autoinstall/xml.ycp";
     
-    global string ClassDir = "/var/lib/autoinstall/classes";
+    global string classDir = "/var/lib/autoinstall/classes";
 
     global string ClassConf = "/etc/autoinstall";
 
@@ -31,7 +31,7 @@
 
     global list Classes = [];
 
-    global map ProfileFiles = $[];
+    global map controlFiles = $[];
 
     global boolean changed = false;
     // local
@@ -47,6 +47,8 @@
 
     global map Working = $[];
 
+    
+    global list currentProfile = [];
 
     
     /*
@@ -74,46 +76,53 @@
 	map result = select(filter(map c,  Profiles,
 				  ``(lookup(c,"name","")== name)),0,$[]);
 	
-	string profile_path = sformat("%1/%2/%3", ClassDir, result["class"]:"", result["name"]:"default");		
+	string profile_path = sformat("%1/%2/%3", classDir, result["class"]:"", result["name"]:"default");		
 	return profile_path;
     }
     
 
 
-    global define map MergeClasses(map Class,
+    global define map MergeClasses(map configuration,
 			       string base_profile,
 			       string resultFileName
 			       )
 	``{
 	string tmpdir = SCR::Read( .target.tmpdir );
-
+	
 	string MergeCommand = "/usr/bin/xsltproc --param replace \"'true'\" --param with ";	
-	MergeCommand = MergeCommand + "\"'" + base_profile + "'\"  ";
-	MergeCommand = MergeCommand + "--output " +  tmpdir + resultFileName + " ";
+	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"") + "'\"  ";
+	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
-	MergeCommand = MergeCommand + findPath(Class["name"]:"") + " ";	
-	y2milestone("Merge command: %1", MergeCommand);	
+	MergeCommand = MergeCommand +   base_profile + " ";
+	/*
+	string MergeCommand = "/usr/bin/mergeClasses ";
+	MergeCommand = MergeCommand + findPath(configuration["name"]:"") + " ";
+	MergeCommand = MergeCommand + "/usr/share/autoinstall/xslt/merge.xslt with=";
+	MergeCommand = MergeCommand + base_profile + " replace=true  > ";
+	MergeCommand = MergeCommand + tmpdir + resultFileName;
+	*/
+	
+	y2milestone("Merge command: %1", MergeCommand);
+	
 	map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
-	y2milestone("SAXON stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
+	y2milestone("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
 	return (out);	
     }
 
     
     
     /**
-     * Load()
-     *
-     * @return	void
-     *
-     * Load Configuration settings
+     * Load stored data in sysconfig
+     * @return	void          
      */
 
     global define void Load ()
     ``{	
-	string tmpClassDir = SCR::Read( .sysconfig.autoinstall.CLASS_DIR);
-	if (tmpClassDir != nil)
-	    ClassDir = tmpClassDir;
-	// ClassPath = sformat("%1/%2", ClassDir, ClassFile); 		
+	string tmpclassDir = SCR::Read( .sysconfig.autoinstall.CLASS_DIR);
+	if (tmpclassDir != nil)
+	{
+	    classDir = tmpclassDir;
+	}
 	return;
     }
 
@@ -125,32 +134,39 @@
 
     global define void Save ()
     ``{
-	// Write some sysconfig variables.
+	// Write sysconfig variables.
 	//
-
-	y2warning("Saving class information");	    
-	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, ClassDir );	
+	y2debug("Saving class information");	    
+	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir );	
 	return;
     }
 
 
-
-    global define void readClasses() ``{
+    /**
+     * Read classes
+     */
+    global define void readClasses()
+	``{
 	if (SCR::Read(.target.size, classPath) != -1)
 	{
+	    // TODO: use XML module
 	    map tmp = SCR::Read(.xml, classPath);
 	    Classes = tmp["classes"]:[];
 	}
 	return;
     }
 
-
+    /**
+     * Read configuration files
+     */
     global define void readProfiles()
 	``{
-	if (SCR::Read(.target.size,profileConfPath ) != -1) {
+	// TODO: use XML module
+	if (SCR::Read(.target.size, profileConfPath ) != -1) {
 	    map tmp = SCR::Read(.xml, profileConfPath);	
 	    Profiles = tmp["profiles"]:[];
 	}
+	y2milestone("Profiles: %1", Profiles);
 	return;
     }
     /**
@@ -161,7 +177,7 @@
 	``{
 	readClasses();
 	readProfiles();
-	ReadFiles();
+	readClassFiles();
 	return;
     }
 
@@ -169,15 +185,17 @@
      * Read files from class directories
      * @return void
      */    
-    global define void ReadFiles()
+    global define void readClassFiles()
 	``{
 	foreach(map class, Classes,
 		``{
-	    list files = SCR::Read(.target.dir, ClassDir + "/" + class["name"]:"xxx");
-	    ProfileFiles=add(ProfileFiles, class["name"]:"xxx" , files);
+	    list files = SCR::Read(.target.dir, classDir + "/" + class["name"]:"xxx");
+	    controlFiles=add(controlFiles, class["name"]:"xxx" , files);
 	});
 	return;
     }
+
+    
   
     /*
      * CreateClassDirs()
@@ -189,9 +207,9 @@
 
 	foreach(map class, Classes,
 		``{
-	    list dirs = SCR::Read(.target.dir, ClassDir);
+	    list dirs = SCR::Read(.target.dir, classDir);
 	    string name = lookup(class,"name","Unknown");
-	    string full_path = sformat("%1/%2", ClassDir, name);
+	    string full_path = sformat("%1/%2", classDir, name);
 	    if (contains(dirs, name))
 		return;
 
@@ -200,14 +218,15 @@
 	    {
 		y2error("Error while creating directory %1: %2", full_path, ret);
 	    }
-	    else {
+	    else
+	    {
 		y2milestone("directory created");
 	    }
 	});
 	return;
     }  
     
-    /*
+    /**
      * Save Class definitions
      *
      */
@@ -218,10 +237,14 @@
 	y2milestone("saving classes: %1", classPath);
 	return (XML::YCPToXMLFile(`class, tmp, classPath));	
     }
-    
+
+    /**
+     * Save configurations
+     *
+     */
     global define SaveProfiles()
 	``{
-	map tmp = $[ "profiles":Profiles];
+	map tmp = $["profiles":Profiles];
 	return (XML::YCPToXMLFile(`profileConf, tmp, profileConfPath));		
     }
 
@@ -229,7 +252,7 @@
 
 
     
-    global list currentProfile = [];
+ 
 
     
     
@@ -240,15 +263,7 @@
 	return true;
     }
 
-    
-    /* Export data
-      <classes>
-         <class>
-	  <name>blah</name>
-	  <conf>bar</conf>
-	 </class>
-      </classes>
-    */
+   
     
     global define list Export()
 	``{
