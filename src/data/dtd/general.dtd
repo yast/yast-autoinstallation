@@ -12,9 +12,13 @@
 
 <!ELEMENT language (#PCDATA)>
 
-<!ELEMENT mode (confirm, disable_abort?, disable_buttons?, forceboot?,  reboot?)>
+<!ELEMENT mode (confirm, disable_abort?, disable_buttons?, forceboot?, halt?, reboot?)>
 <!ELEMENT confirm (#PCDATA)>
 <!ATTLIST confirm
+	config:type CDATA #FIXED "boolean"
+>
+<!ELEMENT halt (#PCDATA)>
+<!ATTLIST halt
 	config:type CDATA #FIXED "boolean"
 >
 
