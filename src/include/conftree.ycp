@@ -129,9 +129,11 @@
       */
     any configureModule(string resource)
     {
-        resource = Y2ModuleConfig::getResource(resource);
         map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
+        resource = Y2ModuleConfig::getResource(resource);
+        y2debug("resource: %1", resource);
 	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
+        y2debug("module_auto: %1", module_auto );
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
         any seq = Call::Function(module_auto, ["Change", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
 
@@ -432,7 +434,7 @@
             {
                 tree_item = (string ) UI::QueryWidget(`id(`tree), `CurrentItem);
                 string modulename=moduleName(tree_item);
-                y2debug("configure module");
+                y2debug("configure module: %1", modulename);
                 if (modulename!="")
                 {
                     any configret = configureModule(modulename);
@@ -565,47 +567,6 @@
                 break;
             }
         }
-        /*
-
-
-
-
-		    else if (ret == `menu_source) // Show SOURCE
-		    {
-			y2milestone("Showing source...: %1", Profile::current);
-			Profile::Prepare();
-			string source = XML::YCPToXMLString(`profile, Profile::current);
-			UI::ReplaceWidget(`id(`rep_button_box), `VSpacing(0.6));
-
-			term sourceView =
-			    `RichText( `id(`class_source ),
-				       `opt(`plainText),
-				       source
-				       );
-
-			Wizard::SetContents(_("Source"),
-					    sourceView , "", true , true);
-			tree_item = "System";
-
-		    }
-		    else if ( ret == `menu_tree)
-		    {
-			tree_item = (string) UI::QueryWidget(`id(`key), `CurrentItem);
-			if (tree_item == nil)
-			{
-			    tree_item = "System";
-			}
-		    }
-		    else if (ret == `menu_new) // NEW
-		    {
-			Profile::Reset();
-			AutoinstConfig::currentFile = "";
-			UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
-		    }
-		}
-	    } until ( ret == `exit || ret == `cancel || ret == `back );
-
-        */
 	return (symbol)ret;
 
     }
