@@ -20,20 +20,13 @@
     import "Mode";
     import "XML";
 
-    // Relative location of extra package to suse directory
-    global string extraPackageLocation = "";
-
-    // FIXME
-    // Add non-SuSE package
-    global boolean add_extraPackages = true;
-
-
     global map Profile = $[];
 
     include "autoinstall/xml.ycp";
 
-
     integer bytes_per_unit = 0;
+
+    
     /**
      * Constructor
      */
@@ -60,6 +53,9 @@
     }
 
 
+    /**
+     * Find mount points in running system
+     */
     define string findMountpoint(string device, map p, list mounts) ``{
 	string mountPoint = "";
 	foreach(map mount , mounts, ``{
@@ -72,6 +68,9 @@
 	return mountPoint;
     }
 
+    /**
+     * Convert units to size
+     */
 
     define units_to_size (list region) ``{
 	integer units = select(region,1,0);
@@ -79,10 +78,9 @@
     };
 
 
-
-
-    
-
+    /**
+     * Clone network configuration
+     */
     global define map Network() ``{
 	import "Lan";
 	import "Progress";
@@ -183,8 +181,6 @@
 
 	    return drive;
 	});
-
-
 	Mode::config = true;
 	return drives;
     }
@@ -193,7 +189,6 @@
      * Return list of software packages of calling client
      * @return list list of installed software package
      */
-
     global define map Software()``{
 	import "Packages";
 
@@ -207,6 +202,7 @@
 
 	return software;
     }
+    
 
     /**
      * Bootloader options
@@ -231,7 +227,6 @@
     /**
      * General options
      */
-
     global define map General() ``{
 	import "Language";
 	import "Keyboard";
@@ -249,15 +244,13 @@
 	string hwclock = "";
 	if ( size( Storage::GetWinPrimPartitions( Storage::GetTargetMap() ) ) > 0 )
 	{
-	    // Win partitions present ==> assume local time.
-	    //
+	    // Win partitions present ==> assume local time.	    
 	    hwclock = "--localtime";
 	    y2milestone("Assuming local time");
 	}
 	else
 	{
-	    // No Win partitions ==> assume UTC.
-	    //
+	    // No Win partitions ==> assume UTC.	    
 	    hwclock = "-u";
 	    y2milestone("Assuming UTC");
 	}
@@ -279,7 +272,6 @@
 	map mouse = $[];
 	mouse["id"]	    = Misc::SysconfigRead(.sysconfig.mouse.YAST_MOUSE, "probe" );
 	general["mouse"]    = mouse;
-
 	return general;
     }
 
@@ -361,18 +353,51 @@
      * Build the profile
      * @return map Profile
      */
-    global define void constructProfile()
+    global define void constructProfile(list what_to_clone)
 	``{
 	map Install = $[];
+	map tmp_conf = $[];
 	map Configure = $[];
-	Configure["networking"] = Network();
-	Configure["sound"] = Sound();
-	Configure["printer"] = Printer();
-	Configure["nis"] = Nis();
-	Configure["nfs_server"] = NfsServer();
-	Configure["nfs"] = NfsClient();
-	Configure["mail"] = Mail();
-	Configure["users"] = root();
+
+	
+	foreach (string resource, what_to_clone, ``{
+	    if (resource == "auth")
+	    {
+		Configure["nis"] = Nis();
+	    }
+	    else if (resource == "networking")
+	    {		
+		Configure[resource] = Network();
+	    }
+	    else if (resource == "sound")
+	    {		
+		Configure[resource] = Sound();
+	    }
+	    else if (resource == "printer")
+	    {		
+		Configure[resource] = Printer();
+	    }
+	    else if (resource == "nfs_server")
+	    {		
+		Configure[resource] = NfsServer();		
+	    }
+	    else if (resource == "nfs")
+	    {		
+		Configure[resource] = NfsClient();		
+	    }
+	    else if (resource == "mail")
+	    {		
+		Configure[resource] = Mail();		
+	    }
+	    else if (resource == "users")
+	    {		
+		Configure[resource] = root();		
+	    }
+	    else {
+		y2error("Unsupported resource");
+	    }	    
+	    
+	});
 
 	
 	Install["partitioning"] = Partitioning();
@@ -384,33 +409,31 @@
 	return;
     }
 
-
-
-
-
-
     /**
      * Write the profile to a defined path
      * @param outputFile Output file path
+     * @param what_to_clone What resources should be configured in addition to the default
      * @return boolean true on success
      */
-    global define boolean writeProfile(string outputFile)``{
+    global define boolean writeProfile(string outputFile, list what_to_clone)``{
 
 	profileSetup();
 	if (Profile == $[])
-	    constructProfile();
+	{
+	    constructProfile(what_to_clone);
+	}
 	boolean ret =  XML::YCPToXMLFile(`profile, Profile, outputFile);
 	return ret;
     }
 
 
     /**
-     * Export profile, Used only from within CMS
+     * Export profile, Used only from within autoyast2
      * @return void
      */
-    global define void exportProfile()``{
+    global define void exportProfile(list what_to_clone)``{
 	import "Profile";
-	constructProfile();
+	constructProfile(what_to_clone);
 	Profile::Import(Profile);
 	return;
     }
