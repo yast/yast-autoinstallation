@@ -9,7 +9,47 @@
 {
     textdomain "autoinst";
 
-    
+
+    /**
+     * Auto Sequence
+     * @return symbol
+     */
+
+    global define symbol linuxrcAutoSequence() ``{
+	map dialogs = $[
+			"autoyast":	``(   autoyastOptions() ),
+			"linuxrc"	:	``(   linuxrcOptions() )
+	];
+
+
+	map sequence = $[
+			 "ws_start"	: "linuxrc",
+			 "linuxrc":
+			 $[
+			   `abort	: `abort,
+			   `next	: "autoyast",
+			   `back	: `back
+			 ],
+			 "autoyast"	:
+			 $[
+			   `abort	: `abort,
+			   `next	: `next,
+			   `back	: "linuxrc"
+			 ]
+	];
+	Wizard::CreateDialog ();
+	
+	Wizard::ReplaceAbortButton(`Empty());
+	any result =  WizardSequencer (dialogs, sequence);
+	UI::CloseDialog ();
+
+	return result;
+    }
+
+
+    /**
+     * Linxurc Options
+     */
 
     global define linuxrcOptions()``{
 
@@ -215,15 +255,19 @@ settings, such as the network and system environment.</P>
     }
 
 
-
+    /**
+     * Autoyast Options
+     *
+     */ 
     global define autoyastOptions ()``{
 	
 	string aymethod = eval(AutoinstLinuxrc::aymethod);
 	map ayMethods = $[
-			  "nfs"	: _("NFS"),
+			  "nfs"		: _("NFS"),
 			  "file"	: _("File"),			   
 			  "tftp"	: _("TFTP"),
-			  "http"	: _("HTTP")
+			  "http"	: _("HTTP"),
+			  "ftp"		: _("FTP")
 	];			
 
 
@@ -233,7 +277,7 @@ settings, such as the network and system environment.</P>
 	string help_text = _("<P>
 Use this dialog to enter the location of the <em>control file</em>. The <em>control file</em> can be
 located on the media directly accessible to the system (i.e., floppy, CD) or on the network and can
-be retrieved using several methods (HTTP, NFS, TFTP).</p>
+be retrieved using several methods (HTTP, NFS, TFTP or FTP).</p>
 ");
 	term contents =
 	    `Top(
@@ -258,6 +302,7 @@ be retrieved using several methods (HTTP, NFS, TFTP).</p>
     	Wizard::SetContents(_("Autoyast Options"),
 			    contents, help_text, true , true);
 
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 	any ret = nil;
 	
 	repeat {

@@ -31,6 +31,10 @@
 
     global string language = "";
     global string keytable = "";
+
+
+
+    
     /**
      * Constructor
      *
@@ -82,36 +86,36 @@
 	    //Leave empty.
 	    return true;
 	}
-	Set(settings);
+	method 		= settings["instmode"]:"";
+	server 		= settings["server"]:"";
+	serverdir	= settings["serverdir"]:"";
+	ip		= settings["ip"]:"";
+	netmask		= settings["netmask"]:"";
+	gateway		= settings["gateway"]:"";
+	textmode	= settings["textmode"]:false;
+	usedhcp		= settings["usedhcp"]:false;
+	port		= settings["port"]:"";
+	partition	= settings["partition"]:"";
+	nameserver	= settings["nameserver"]:"";
+	domain		= settings["domain"]:"";
+	workdomain	= settings["workdomain"]:"";
+	ayserver	= settings["profile_server"]:"";
+	aymethod	= settings["profile_protocol"]:"";
+	ayport		= settings["profile_port"]:"";
+	ayserverdir	= settings["profile_location"]:"";
+	language	= settings["language"]:"";
+	keytable	= settings["keytable"]:"";
 	return true;
     }
 
 
 
     /**
-     * Set data to a certain status
+     * Read Data
      *
      */
-    global define void Set(map s) ``{
-	method 		= s["instmode"]:"";
-	server 		= s["server"]:"";
-	serverdir	= s["serverdir"]:"";
-	ip		= s["ip"]:"";
-	netmask		= s["netmask"]:"";
-	gateway		= s["gateway"]:"";
-	textmode	= s["textmode"]:false;
-	usedhcp		= s["usedhcp"]:false;
-	port		= s["port"]:"";
-	partition	= s["partition"]:"";
-	nameserver	= s["nameserver"]:"";
-	domain		= s["domain"]:"";
-	workdomain	= s["workdomain"]:"";
-	ayserver	= s["profile_server"]:"";
-	aymethod	= s["profile_protocol"]:"";
-	ayport		= s["profile_port"]:"";
-	ayserverdir	= s["profile_location"]:"";
-	language	= s["language"]:"";
-	keytable	= s["keytable"]:"";
+    global define void Read() ``{
+	return;
     }
 
     /**

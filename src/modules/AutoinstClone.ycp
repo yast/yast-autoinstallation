@@ -232,9 +232,11 @@
 	import "Timezone";
 
 	map general = $[];
-	general["language"] = Misc::SysconfigRead(.sysconfig.language.DEFAULT_LANGUAGE, Language::language );
+	general["language"] = Language::language;
+	
 	map keyboard = $[];
-	keyboard["keymap"]  = Misc::SysconfigRead(.sysconfig.keyboard.YAST2_KBD,  Keyboard::GetKeyboardForLanguage( Language::language, "en_US") );
+	y2milestone("Current Keyboard: %1", Keyboard::current_kbd);
+	keyboard["keymap"]  = Keyboard::current_kbd;
 
 	general["keyboard"] = keyboard;
 	map clock = $[];
@@ -259,7 +261,7 @@
 	}
 	else if (hwc == "-u")
 	{
-	    clock["hwclock"] = "GMT";
+	    clock["hwclock"] = "UTC";
 	}
 	else
 	{
