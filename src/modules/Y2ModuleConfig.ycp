@@ -52,7 +52,7 @@
 		       "X-SuSE-YaST-AutoInstClonable"
 	];
 	Desktop::Read(Values);
-	map configurations = Desktop::Modules;
+	map<string,map> configurations = Desktop::Modules;
 
 	y2debug("%1", configurations );
 	map groups = Desktop::Groups;
@@ -84,7 +84,7 @@
      * Sort tree groups
      * @return list
      */
-    define list SortGroups (map GroupMap, list GroupList)
+    define list SortGroups (map GroupMap, list<string> GroupList)
 	``{
         return
 	    sort (string x, string y, GroupList,
