@@ -24,7 +24,7 @@
     import "Report";
     import "Popup";
     import "URL";
-  
+
     include "autoinstall/io.ycp";
 
     global boolean userrules = false;
@@ -53,7 +53,7 @@
 
     // Taken from smbios
     global string product_vendor = "";
-    
+
     // Taken from smbios
     global string board_vendor = "";
 
@@ -166,7 +166,7 @@
 	    {
 		string link = dev["value", "link"]:"";
 		list linktok = splitstring(link, " ");
-		list clean = filter(`tok, linktok, ``(tok != ""));
+		list clean = filter(string tok, linktok, ``(tok != ""));
 		y2debug("mac line: %1", clean);
 		tmpmac = clean[3]:"";
 	    }
