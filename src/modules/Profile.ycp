@@ -13,6 +13,7 @@
     import "Mode";
     import "AutoinstConfig";
     import "XML";
+    import "Popup";
 
     include "autoinstall/xml.ycp";
 
@@ -112,15 +113,13 @@
     }
 
 
-
     /**
      * Prepare Profile for saving and remove empty data structs
      * @return void
      */
     global define void Prepare()
 	``{
-	// y2debug("Modulemap: %1", ModuleMap );
-	y2debug("Flat: %1", Flat );
+        Popup::ShowFeedback(_("Collecting configuration data"), _("This may take a while"));
         Install = $[];
         Configure = $[];
         list<string> e = [];
@@ -129,72 +128,43 @@
 	    //
 	    // Set resource name, if not using default value
 	    //
-
 	    string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
 	    if (resource == "")
-	    {
 		resource = p;
-            }
-            y2debug("resource: %1", resource );
+
 	    string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+            string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
+            if ( (boolean) WFM::CallFunction(module_auto, ["GetModified"]))
+            {
+            any resource_data = WFM::CallFunction(module_auto, ["Export"]);
 
-	    integer s = 0;
-	    if ( tomerge == "") {
-		if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
-		{
-		    s = size(Flat[resource]:$[]);
-		}
-		else
-		{
-		    s = size(Flat[resource]:[]) ;
-		}
-	    }
+            integer s = 0;
+            if ( tomerge == "") {
+            if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
+            {
+            s = size((map)resource_data);
+            }
+            else
+            {
+                s = size((list)resource_data);
+            }
+            }
 
-	    if ( s != 0 || tomerge != "")
-	    {
-		if (d["X-SuSE-YaST-AutoInstPath"]:"" == "install")
-		{
-		    if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
-		    {
-			Install[resource] = Flat[resource]:$[];
-		    }
-		    else
-		    {
-			Install[resource] = Flat[resource]:[];
-		    }
-		}
-		else
-		{
-		    string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
-		    list MergeTypes = splitstring(tomergetypes, ",");
-		    if ( size(tomerge) > 0 )
-		    {
-			integer i = 0;
-			foreach( string res, splitstring(tomerge, ",") , ``{
-			    if ( MergeTypes[i]:"map" == "map" )
-			    {
-				if (Flat[res]:$[] != $[])
-				    Configure[res] = Flat[res]:$[];
-			    }
-			    else
-			    {
-				if ( Flat[res]:[] != [])
-				    Configure[res] = Flat[res]:[];
-			    }
-			    i = i + 1;
-			});
-		    }
-		    else if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
-		    {
-			Configure[resource] = Flat[resource]:$[];
-		    }
-		    else
-		    {
-			Configure[resource] = Flat[resource]:[];
-		    }
-		}
-            } else if (s == 0 ){
+            if ( s != 0 || tomerge != "")
+            {
+                if (d["X-SuSE-YaST-AutoInstPath"]:"" == "install")
+                {
+                    Install[resource] = resource_data;
+                }
+                else
+                {
+                    Configure[resource] = resource_data;
+                }
+            }
+            else if (s == 0 )
+            {
                 e=add(e, resource);
+            }
             }
 	});
 
@@ -219,6 +189,7 @@
 
 
 	Flat = (map<string, any>)union( Configure, Install );
+        Popup::ClearFeedback();
 	return;
 
     }

@@ -18,6 +18,8 @@
     import "AutoinstConfig";
     import "AutoinstSoftware";
     import "Label";
+    import "PackageAI";
+ 
     include "autoinstall/dialogs.ycp";
 
     any ret = nil;
@@ -56,7 +58,7 @@ more <b>add-on</b> selections and packages.
 	Pkg::SourceStartManager(true);
 
         Wizard::CreateDialog();
-        Wizard::SetDesktopIcon("sw_single");
+        Wizard::SetDesktopIcon("software");
 
 	Wizard::SetContents(title,
 			    `HVCenter(`Label(_("Reading package database..."))),
@@ -152,9 +154,9 @@ more <b>add-on</b> selections and packages.
 		{
 		    // set the new selection
 		    boolean pkgret = Pkg::SetSelection( base_selection );
-		    if (size(AutoinstSoftware::packages ) > 0)
+		    if (size(PackageAI::toinstall ) > 0)
 		    {
-			foreach(string p, AutoinstSoftware::packages, ``{
+			foreach(string p, PackageAI::toinstall, ``{
 			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
 			});
 		    }
@@ -170,9 +172,9 @@ more <b>add-on</b> selections and packages.
 		    });
 
 		    Pkg::ActivateSelections();
-		    if (size(AutoinstSoftware::packages ) > 0)
+		    if (size(PackageAI::toinstall) > 0)
 		    {
-			foreach(string p, AutoinstSoftware::packages, ``{
+			foreach(string p, PackageAI::toinstall, ``{
 			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
 			});
 		    }
@@ -207,7 +209,7 @@ more <b>add-on</b> selections and packages.
 
 
 
-	AutoinstSoftware::packages = Pkg::FilterPackages(false, false, true, true);
+        PackageAI::toinstall = Pkg::FilterPackages(false, false, true, true);
 	AutoinstSoftware::addons = seladd;
 	AutoinstSoftware::base =   selbase[0]:"";
 
@@ -228,8 +230,16 @@ more <b>add-on</b> selections and packages.
 	AutoinstSoftware::Import($[]);
 	ret =  $[];
     }
-    else if (func == "Change") {
+    else if (func == "Change")
+    {
+        any exp1 = AutoinstSoftware::Export();
 	ret  = packageSelector();
+        any exp2 = AutoinstSoftware::Export();
+        if (exp1!=exp2)
+            AutoinstSoftware::SetModified();
+    }
+    else if (func == "GetModified") {
+	ret  = AutoinstSoftware::GetModified() || PackageAI::GetModified();
     }
     else if (func == "Export") {
 	ret = AutoinstSoftware::Export();

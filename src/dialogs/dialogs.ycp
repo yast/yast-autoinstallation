@@ -247,14 +247,6 @@ must begin with letter, and must be
 	list items = AutoinstClone::createClonableList();
 	term contents =
 	    `VBox(
-		  `MultiSelectionBox( `id(`baseres), _("Basic Resources (Check to Create Settings):"),
-				      [
-				       `item(`id("partitioning"), _("Partitioning")),
-				       `item(`id("bootloader"),_("Boot Loader")),
-				       `item(`id("software"),_("Software"))
-				       ]
-				      ),
-		  `VSpacing(1),
 		  `MultiSelectionBox( `id(`res), _("Select Additional Resources:"),
 				      items
 				      )
@@ -271,7 +263,6 @@ must begin with letter, and must be
 		ret = (symbol)UI::UserInput();
 		if (ret ==`next)
 		{
-		    AutoinstClone::base = (list<string>)UI::QueryWidget( `id(`baseres), `SelectedItems );
 		    AutoinstClone::additional = (list<string>)UI::QueryWidget( `id(`res), `SelectedItems );
                     Popup::ShowFeedback( _("Collecting system data..."), _("This may take a while..."));
 		    AutoinstClone::Process();
