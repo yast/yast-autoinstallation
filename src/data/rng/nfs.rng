@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:config="http://www.suse.com/1.0/configns" ns="http://www.suse.com/1.0/yast2ns" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+	<define name="nfs">
+        <element name="nfs">
+		  <ref name="att.config"/>
+          <oneOrMore>
+            <element name="nfs_entry">
+              <element name="mount_point">
+                <text/>
+              </element>
+              <element name="nfs_options">
+                <data type="NCName"/>
+              </element>
+              <element name="server_path">
+                <text/>
+              </element>
+            </element>
+          </oneOrMore>
+        </element>
+	</define>
+</grammar>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:config="http://www.suse.com/1.0/configns" ns="http://www.suse.com/1.0/yast2ns" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <include href="nfs.rng"/>
+  <define name="install">
+    <element name="install">
+		<empty/>
+    </element>
+  </define>
+  <define name="att.config">
+    <attribute name="config:type">
+   		<choice>
+      		<value>list</value>
+      		<value>integer</value>
+      		<value>symbol</value>
+      		<value>boolean</value>
+  		</choice>
+        <data type="NCName"/>
+     </attribute>
+  </define>
+  <define name="configure">
+    <element name="configure">
+      <optional>
+        <ref name="nfs"/>
+      </optional>
+    </element>
+  </define>
+  <define name="profile">
+    <element name="profile">
+      <optional>
+        <ref name="configure"/>
+      </optional>
+      <optional>
+        <ref name="install"/>
+      </optional>
+    </element>
+  </define>
+  <start>
+      <ref name="profile"/>
+  </start>
+</grammar>
