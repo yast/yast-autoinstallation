@@ -13,7 +13,6 @@
 
     import "Mode";
     import "Label";
-   
     import "AutoinstConfig";
     import "Summary";
 
@@ -21,22 +20,20 @@
     //
     // Pre scripts
     //
-    global list pre = [];
-    
+    global list<map> pre = [];
     //
     // Post scripts
     //
-    global list post = [];
-    
+    global list<map> post = [];
     //
     // Chroot scripts
     //
-    global list chroot = [];
+    global list<map> chroot = [];
 
     //
     // Merged scripts
     //
-    global list merged = [];
+    global list<map> merged = [];
 
 
     /**
@@ -44,20 +41,20 @@
      * @param -
      * @return merged list
      */
-    define list mergeScripts () ``{
+    define list<map> mergeScripts () ``{
 
-	list result =	maplist (map p, pre,
+	list<map> result =	maplist (map p, pre,
 				 ``{
 				     p = add(p,"type","pre-scripts");
 				     return p;
 				 });
-	result = union(result, 	maplist (map p, post,
+	result = (list<map>)union(result,	maplist (map p, post,
 					 ``{
 					     p = add(p,"type","post-scripts");
 					     return p;
 					 })
 		       );
-	result = union(result, 	maplist (map p, chroot,
+	result = (list<map>)union(result,	maplist (map p, chroot,
 					 ``{
 					     p = add(p,"type","chroot-scripts");
 					     return p;
@@ -67,8 +64,6 @@
     }
 
 
-
-    
     /**
      * Constructor
      */
@@ -85,7 +80,7 @@
      * Dump the settings to a map, for autoinstallation use.
      * @return map
      */
-    global define map Export()
+    global define map<string, list> Export()
 	``{
 	pre = [];
 	post = [];
@@ -104,26 +99,26 @@
 
 
 	// clean
-	list expre =  maplist (map p, pre,  ``{
+	list<map> expre =  maplist (map p, pre,  ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
 		      "source":p["source"]:""
 		    ]);
 	});
-	list expost =  maplist (map p, post, ``{
+	list<map> expost =  maplist (map p, post, ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
 		      "source":p["source"]:""]
 		    );
 	});
-	list exchroot =  maplist (map p, chroot, ``{
+	list<map> exchroot =  maplist (map p, chroot, ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
 		      "source":p["source"]:"",
 		      "chrooted":p["chrooted"]:false
 		    ]);
 	});
-	map result = $[];
+	map<string, list> result = $[];
 	if (size(expre) > 0 )
 	    result["pre-scripts"] = expre;
 	if (size(expost) > 0 )
@@ -148,13 +143,16 @@
 	pre = s["pre-scripts"]:[];
 	post = s["post-scripts"]:[];
 	chroot = s["chroot-scripts"]:[];
-	
 	merged = mergeScripts();
 	return true;
     }
 
 
 
+    /**
+     * Return Summary
+     * @return string summary
+     */
     global define string Summary() ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Pre Scripts"));
@@ -204,11 +202,11 @@
     /**
      * delete a script from a list
      * @param script name
-     * @return modified list of scripts
+     * @return void
      */
     global define void  deleteScript(string scriptName)
-	``{	
-	list clean = filter(map s, merged, ``(s["filename"]:"" != scriptName));	
+	``{
+	list<map> clean = filter(map s, merged, ``(s["filename"]:"" != scriptName));
 	merged = clean;
 	return;
     }
@@ -221,11 +219,10 @@
      * @param source source of script
      * @param interpreter interpreter to be used with script
      * @param type type of script
-     * @return -
+     * @return void
      */
     global define void AddEditScript(string scriptName, string source, string interpreter, string type)
 	``{
-	list newScripts = [];
 	boolean modified = false;
 	merged = maplist (map script , merged, ``{
 	    // Edit
@@ -261,7 +258,7 @@
     /**
      * return type of script as formatted string
      * @param script type
-     * @return type as translated string
+     * @return string type as translated string
      */
     global define string typeString(string type)``{
 	if (type == "pre-scripts")
@@ -283,14 +280,14 @@
 
     /**
      * Execute pre scripts
-     * @param type of script
-     * @return true on success
+     * @param string type of script
+     * @param boolean if script should be executed in chroot env.
+     * @return boolean true on success
      */
-
     global define boolean Write( string type , boolean chrooted)
 	``{
 
-	list scripts = [];
+	list<map> scripts = [];
 	if (type == "pre-scripts")
 	{
 	    scripts = pre;

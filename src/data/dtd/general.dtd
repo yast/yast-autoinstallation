@@ -12,25 +12,29 @@
 
 <!ELEMENT language (#PCDATA)>
 
-<!ELEMENT mode (confirm?, disable_abort, forceboot?,  reboot?)>
+<!ELEMENT mode (confirm, disable_abort?, disable_buttons?, forceboot?,  reboot?)>
 <!ELEMENT confirm (#PCDATA)>
 <!ATTLIST confirm
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "boolean"
 >
 
 <!ELEMENT disable_abort (#PCDATA)>
 <!ATTLIST disable_abort
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "boolean"
+>
+<!ELEMENT disable_buttons (#PCDATA)>
+<!ATTLIST disable_buttons
+	config:type CDATA #FIXED "boolean"
 >
 
 <!-- <!ELEMENT default (#PCDATA)> -->
 <!ELEMENT forceboot (#PCDATA)>
 <!ATTLIST forceboot
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "boolean"
 >
 <!ELEMENT reboot (#PCDATA)>
 <!ATTLIST reboot
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "boolean"
 >
 
 <!ELEMENT mouse (id)>
