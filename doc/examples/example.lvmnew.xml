@@ -1,0 +1,51 @@
+	<example>
+	  <title>
+	    LVM Logical Volumes (New syntax)
+	  </title>
+	  <screen>
+<![CDATA[
+....
+ <partitioning config:type="list">
+     <drive>
+         <device>/dev/sda</device>         
+         <use>all</use>
+         <partitions config:type="list">
+            <partition>
+               <size>max</size>
+               <lvm_group>system</lvm_group>
+               <partition_type>primary</partition_type>
+            </partition>
+         </partitions>
+     </drive>
+     <drive>
+        <device>/dev/system</device>       
+        <is_lvm_vg config:type="boolean">true</is_lvm_vg>
+        <partitions config:type="list">
+            <partition>
+                <filesystem config:type="symbol">reiser</filesystem>
+                <lv_name>user_lv</lv_name>
+                <mount>/usr</mount>
+                <size>500mb</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">reiser</filesystem>
+                <lv_name>opt_lv</lv_name>
+                <mount>/opt</mount>
+                <size>1500mb</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">reiser</filesystem>
+                <lv_name>var_lv</lv_name>
+                <mount>/var</mount>
+                <size>200mb</size>
+            </partition>
+        </partitions>
+        <pesize>4M</pesize>
+        <use>all</use>
+     </drive>
+ </partitioning>
+.....
+....
+]]>
+	  </screen>
+	</example>

@@ -1,0 +1,29 @@
+	<example>
+	  <title>
+	    Create LVM Physical Volume
+	  </title>
+	  <para>
+	    The following example shows how to prepare for LVM in the
+	    <emphasis>partitioning</emphasis> resource:
+	  </para>
+	  <screen>
+<![CDATA[
+....
+<partitioning config:type="list">
+     <drive>
+         <device>/dev/sda</device>         
+         <use>all</use>
+         <partitions config:type="list">
+            <partition>
+               <size>max</size>
+               <lvm_group>system</lvm_group>
+               <partition_type>primary</partition_type>
+            </partition>
+         </partitions>
+     </drive>
+</partitioning>
+.....
+]]>
+	  </screen>
+
+	</example>

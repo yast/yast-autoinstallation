@@ -1,0 +1,56 @@
+	  <example>
+	    <title>
+	     Keeping partitions
+	    </title>
+	   
+	    
+	    <screen>
+<![CDATA[
+  <install>
+.....
+    <partitioning config:type="list">
+      <drive>
+        <device>/dev/hdc</device>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <mount>/</mount>
+            <partition_nr config:type="integer">1</partition_nr>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">false</format>
+            <partition_nr config:type="integer">2</partition_nr>
+            <mount>/space</mount>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <filesystem config:type="symbol">swap</filesystem>
+            <partition_nr config:type="integer">5</partition_nr>
+            <mount>swap</mount>
+          </partition>
+          <partition>
+            <format config:type="boolean">true</format>
+            <mount>/space2</mount>
+            <size>50mb</size>
+          </partition>
+          <partition>
+            <format config:type="boolean">true</format>
+            <mount>/space3</mount>
+            <size>max</size>
+          </partition>
+
+        </partitions>
+        <use>6</use>
+      </drive>
+
+    </partitioning>
+....
+  </install>
+
+]]>
+	    </screen>
+
+	  </example>
