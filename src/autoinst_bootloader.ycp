@@ -59,7 +59,7 @@
 				   ),
 			     `Left(
 				   `RadioButton( `id( "mbr" ), `opt(`notify),
-						 _("&Write LILO to the boot disk ('&MBR')"), loc == "mbr")
+						 _("&Write Bootloader to the boot disk ('&MBR')"), loc == "mbr")
 				   )
 			     );
     
@@ -74,7 +74,7 @@
 	buttons = add ( buttons,
 			`Left(
 			      `RadioButton( `id("boot"),`opt(`notify),
-					    _("Do &not use LILO (a different boot manager is required)"), loc == "other")
+					    _("Do &not use a linux bootloader (a different boot manager is required)"), loc == "other")
 			      )
 			);
 
@@ -92,7 +92,7 @@
 				       `Left(
 					     `Bottom(
 						     `RadioButton( `id("custom"),`opt(`notify),
-								   _("Write LILO to a  &partition:"), custom
+								   _("Write bootloader to a  &partition:"), custom
 								   )
 						     )
 					     ),
@@ -136,7 +136,7 @@
 							  `VSpacing(0.8),
 							  `Left(`CheckBox(
 									  `id( `activate ),
-									  _("Ac&tivate LILO partition"), AIBootloader::Settings["activate"]:false
+									  _("Ac&tivate bootloader partition"), AIBootloader::Settings["activate"]:false
 									  )
 								)
 							  )
