@@ -12,6 +12,7 @@
     import "Popup";
     import "Profile";
     import "Directory";
+    import "Y2ModuleConfig";
     include "autoinstall/helps.ycp";
 
     /**
@@ -39,15 +40,6 @@
 				      `VBox(
 					    `VSpacing(),
 					    `Bottom(`PushButton(`id(`openclassdir), _("Select &Directory")))
-					    )
-				      )
-				),
-		       `VSquash(
-				`HBox(
-				      `TextEntry(`id(`alicedir), _("&Alice Repository:"), AutoinstConfig::AliceRepository),
-				      `VBox(
-					    `VSpacing(),
-					    `Bottom(`PushButton(`id(`openalicedir), _("Select Director&y")))
 					    )
 				      )
 				)
@@ -83,7 +75,6 @@ contains all the packages.</p>
 
 	    string new_rep = (string)UI::QueryWidget(`id(`repository), `Value);
 	    string new_classdir = (string)UI::QueryWidget(`id(`classdir), `Value);
-	    string new_alicedir = (string)UI::QueryWidget(`id(`alicedir), `Value);
 
 	    if (ret ==`opendir)
 	    {
@@ -103,15 +94,6 @@ contains all the packages.</p>
 		}
 		continue;
 	    }
-	    else if (ret ==`openalicedir)
-	    {
-		new_alicedir = UI::AskForExistingDirectory( AutoinstConfig::AliceRepository , _("Select Directory") );
-		if (new_alicedir != "")
-		{
-		    UI::ChangeWidget(`id(`alicedir), `Value, new_alicedir );
-		}
-		continue;
-	    }
 	    else if ( ret == `next)
 	    {
 		if (AutoinstConfig::Repository != new_rep)
@@ -123,11 +105,6 @@ contains all the packages.</p>
 		{
 		    changed = true;
 		    AutoinstConfig::classDir = new_classdir;
-		}
-		if ( AutoinstConfig::AliceRepository!= new_alicedir)
-		{
-		    changed = true;
-		    AutoinstConfig::AliceRepository = new_alicedir;
 		}
 	    }
 
@@ -332,6 +309,27 @@ file and try again."));
         else
         {
             Profile::Import(ksay);
+
+        Popup::ShowFeedback(_("Reading configuration data"), _("This may take a while"));
+        foreach(string p, map d, Profile::ModuleMap, ``{
+                /* Set resource name, if not using default value */
+                string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
+                if (resource == "")
+                {
+                resource = p;
+                }
+                y2debug("resource: %1", resource );
+                string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+                string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
+                any rd = Y2ModuleConfig::getResourceData(d
+                    ,resource);
+                if (rd!=nil) {
+                WFM::CallFunction(module_auto, ["Import",
+                    rd]);
+                }
+                });
+        Popup::ClearFeedback();
+
             Report::Message(_("Kickstart file was imported.
 Check the imported syntax and make sure the package selection and partitioning
 were imported correctly."));
@@ -340,95 +338,11 @@ were imported correctly."));
         return `next;
     }
 
-    /**
-     * Alice Config
-     * @return symbol
-     */
-    define symbol aliceDialog()
-	``{
-        import "Alice";
-        import "Require";
-        import "Mode";
 
-	string help = _("<p>Using this dialog, select a
-host from the <b>ALICE</b> repository.</p>
-");
-	help = help +  _("<p>Using this feature, import <b>Alice</b> configuration
-files.</p>
-");
-	help = help + _("<p>System configuration in  <em>Alice</em> files may vary in their scope from what is offered
-in <b>AutoYaST</b>, so some limitations should be taken into consideration. A standard <em>Alice</em>
-configuration file with no special customization can, however, be imported without any loss of data.</p>
-");
-	help = help + _("<p>Converting <b>ALICE</b> data to use with the new autoinstallation
-system might take some time.  Be patient while
-the configuration files are read and converted.
-</p>
-");
-        Wizard::CreateDialog();
-        term contents = `Label (_("Initializing ..."));
-	Wizard::SetContents(_("Import Data from an Alice Repository"),
-                contents, "", false, false);
-        y2milestone("Importing ALICE data");
-
-        Mode::config = false;
-        // notification 1/2
-        string pkgmsg =  _("<p>The following package is needed for importing ALICE data:<b> %1</b></p>");
-        pkgmsg = pkgmsg + _("<p>Do you want to install it now?</p>");
-
-        boolean reqret = Require::RequireAndConflictTarget(["alice-compat"], [], pkgmsg );
-        if (!reqret)
-        {
-            Wizard::CloseDialog();
-            return `abort;
-        }
-
-	Wizard::SetContents(_("Hosts in Alice Repository"),
-                Alice::aliceHostList(), help, true, true);
-
-	Wizard::HideAbortButton();
-	Wizard::SetNextButton(`next, _("&Import") );
-
-
-	any ret = "";
-	string host = "";
-	repeat
-	    {
-	    ret = UI::UserInput();
-	    if (ret == `next)
-	    {
-		host = (string)UI::QueryWidget(`id(`table), `CurrentItem);
-		if (host != nil && host != "")
-		{
-                   Popup::ShowFeedback(_("Reading Alice configuration files..."), _("This may take a while. Please wait..."));
-
-		    boolean aliceret = Alice::createAliceConf(host);
-		    if (!aliceret)
-		    {
-			Popup::Error(_("Error while importing ALICE data"));
-                        Popup::ClearFeedback();
-			continue;
-		    }
-
-                    Alice::createProfile();
-		    Profile::Import(Alice::Result);
-                    Popup::ClearFeedback();
-		}
-	    }
-	} until (ret == `next || ret == `back );
-
-
-	Wizard::RestoreScreenShotName ();
-        Wizard::CloseDialog();
-	return (symbol)ret;
-    }
-
-
-
-    string dtd_validate(string file) {
+    map dtd_validate(string file) {
         string cmd = sformat("/usr/bin/xmllint -valid -noout %1", file );
         map o = (map)SCR::Execute(.target.bash_output, cmd);
-        return (o["stderr"]:"");
+        return (o);
     }
 
     map rng_validate(string file) {
@@ -493,7 +407,7 @@ the configuration files are read and converted.
         sleep(1000);
         summary = Summary::AddHeader(summary, _("Checking XML with DTD validation..."));
         UI::ChangeWidget(`id(`richtext), `Value , summary);
-        map valout = rng_validate(file);
+        map valout = dtd_validate(file);
 
         if (valout["exit"]:-1 == 0)
         {

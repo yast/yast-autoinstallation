@@ -27,9 +27,6 @@
     // Package Repository
     global string PackageRepository = "";
 
-    // Alice Repository
-    global string AliceRepository = "";
-
     // Classes
     global string classDir = "";
 
@@ -274,7 +271,6 @@
 	y2milestone("Saving configuration data");
 
 	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );
-	SCR::Write( .sysconfig.autoinstall.ALICE_REPOSITORY, AliceRepository );
 	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir);
 
 	return;
@@ -300,7 +296,6 @@
 	{
 	    // Load configuration data from /etc/sysconfig/autoinstall
 	    Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
-	    AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");
 	    classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );
 	    string tmp_dontmerge = Misc::SysconfigRead( .sysconfig.autoinstall.XSLT_DONTMERGE, "addon,conf" );
 
@@ -311,7 +306,11 @@
 	    {
 		Repository = "/var/lib/autoinstall/repository";
 	    }
-	}
+	} 
+        else if (Mode::test && Mode::normal)
+        {
+            local_rules_file = (string)WFM::Args(1);
+        }
 	return;
     }
 

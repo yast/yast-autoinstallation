@@ -13,6 +13,7 @@
     import "AutoinstStorage";
     import "Popup";
     import "Profile";
+    import "Y2ModuleConfig";
 
     include "autoinstall/xml.ycp";
 
@@ -744,11 +745,11 @@
 	install["bootloader"]	= Bootloader();
 	install["general"]	= General();
 
-	profile["install"]	= install;
-	profile["configure"]	= configure;
-	Profile::changed	= true;
+        profile["install"]	= install;
+        profile["configure"]	= configure;
+        Profile::changed	= true;
 
-	y2debug("Profile : %1", profile);
+        y2debug("Profile : %1", profile);
 	return profile;
     }
 
