@@ -51,10 +51,10 @@
 		  `RichText( `id(`summary), summary),		  
 		  `HBox(
 			// push button label
-			`PushButton(`id(`configure), _("Configur&e") ),
+			`PushButton(`id(`reset), _("Reset Confi&guration")),
 			`HStretch(),
-			// push button label
-			`PushButton(`id(`reset), _("Reset Confi&guration"))
+			// push button label			
+			`PushButton(`id(`configure), _("Configur&e") )
 			)
 		  );
 	// caption of lan auto configuration
@@ -111,6 +111,7 @@
 			Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		    }
 		}
+		
 		y2milestone("New Settings: %1", Profile::Flat);
 		content_dialog( resource , resourceMap);
 	    }

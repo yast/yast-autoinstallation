@@ -10,8 +10,7 @@
     import "AutoInstallRules";
     import "StorageDevices";
     import "Mode";
-    import "TFTP";
-    import "HTTP";
+ 
 
     
     global string message = "";
@@ -26,7 +25,6 @@
     global string directory =  "";
     string ip = "";
     string mac = "";
-
 
     
     /**
@@ -120,6 +118,10 @@
 	{
 	    message =  sformat ( _("Retrieving control file from HTTP server: %1."),  host );
 	}
+	else if (scheme == "ftp")
+	{
+	    message =  sformat ( _("Retrieving control file from FTP server: %1."),  host );
+	}	
 	else if (scheme == "file")
 	{
 	    message =  sformat ( _("Copying control file from file: %1."),  filepath);
@@ -250,6 +252,21 @@
 		return (false);
 	    }
 	}
+	if ( Scheme == "ftp" )
+	{
+	    import "FTP";
+	    string full_url = sformat("ftp://%1%2", Host ,  Path );
+	    map res = FTP::Get(full_url, Localfile);	    
+	    if (SCR::Read(.target.size, Localfile) > 0)
+	    {
+		return (true);
+	    }
+	    else
+	    {
+		y2error("Can't find URL: %1", full_url);
+		return (false);
+	    }
+	}	
 	else if (Scheme == "file")
 	{
 	    string file_path = sformat("%1/%2", Installation::sourcedir, filepath);
@@ -333,6 +350,7 @@
 	}
 	else if (Scheme == "tftp") // Device
 	{
+	    import "TFTP";
 	    if (TFTP::Get(host,  Path, Localfile ))
 	    {
 		ok = true;

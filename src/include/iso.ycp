@@ -264,6 +264,14 @@
 
 
     global define symbol isoSequence () ``{
+
+	map iso_dlg =  $[
+			    "verify"	:	``(isoDialog()),
+			    "summary"	:	``(isoSummary()),
+			    "options"	:	``(isoOptions()),
+			    "create"	:	``(createISO() )
+	];
+    
 	map sequence = $[
 			 "ws_start" 	: "options",
 			 "options"	: $[
