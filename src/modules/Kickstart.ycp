@@ -166,13 +166,6 @@
 
 	// Mode
 	map mode = $[];
-	if (haskey(ksConfig, "mode"))
-	{
-	    // mode["installation"]	= ( ksConfig["mode"]:"" == "install" );
-	    // mode["upgrade"]		= ( ksConfig["mode"]:"" == "upgrade" );
-
-	}
-	// mode["reboot"]		= ( ksConfig["reboot"]:0 == 1 );
 	mode["confirm"]	=  ( ksConfig["interactive"]:0 == 1 );
 	general["mode"] = mode;
 
@@ -225,7 +218,7 @@
 	y2milestone("KS Partitioning: %1", ksConfig["partitioning"]:$[]);
 	import "Partitions";
 
-	list drives = [];
+	list<map> drives = [];
 	list part1 = maplist(string k, map v, ksConfig["partitioning"]:$[],   ``{
 	    map drive = $[];
 	    if (haskey(v, "ondisk"))
@@ -287,15 +280,15 @@
 		string dev = sformat("/dev/%1", v["ondisk"]:"");
 		if ( dev  == d["device"]:"")
 		{
-		    list part 		= d["partitions"]:[];
-		    part 		= add ( part, partition );
+		    list<map> part		= d["partitions"]:[];
+		    part		= add ( part, partition );
 		    d["partitions"]	= sort(map x, map y, part, ``(x["order"]:-1 < y["order"]:-1 ));
 
 		}
 		else if ( d["device"]:"" == "")
 		{
-		    list part 		= d["partitions"]:[];
-		    part 		= add ( part, partition );
+		    list<map> part		= d["partitions"]:[];
+		    part		= add ( part, partition );
 		    d["partitions"]	= sort(map x, map y, part, ``(x["order"]:-1 < y["order"]:-1 ));
 		}
 		y2milestone("KS Drive: %1", d);
@@ -402,7 +395,7 @@
 	string gateway = "";
 
 	map routing = $[];
-	map rawNet = ksConfig["networking"]:$[];
+	map<string, map> rawNet = ksConfig["networking"]:$[];
 	list interfaces = maplist(string iface, map data, rawNet, ``{
 	    map interface = $[];
 	    if (data["bootproto"]:"" == "dhcp")
@@ -564,10 +557,10 @@
 	``{
 
 	map software = $[];
-	list all = ksConfig["packages"]:[];
+	list<string> all = ksConfig["packages"]:[];
 
 
-	map rhsel = $[
+	map<string, map> rhsel = $[
 		      "Core": $[
 				"base": "Minimal",
 				"addon": []
@@ -689,7 +682,7 @@
 
 	];
 
-	list selections = maplist(string s, filter(string s, all, ``(issubstring(s, "@"))), ``{
+	list<string> selections = maplist(string s, filter(string s, all, ``(issubstring(s, "@"))), ``{
 	    string sel1 = substring(s,1 ,size(s));
 	    string sel2 = substring(sel1, findfirstof(tolower(sel1), "0123456789abcdefghijklmnopqrstuvwxyz"), size(sel1));
 	    return(sel2);
@@ -709,10 +702,10 @@
 
 	y2milestone("bases: %1, addons: %2. pacakges: %3", bases, addons, selpacs);
 
-	list packages = filter(string s, all, ``(!issubstring(s, "@")));
+	list<string> packages = filter(string s, all, ``(!issubstring(s, "@")));
 	packages = filter(string s, packages, ``(!regexpmatch( s, "^-.*" )));
 
-	list nopackages =  maplist( string pac, filter(string s, all, ``(regexpmatch( s, "^-.*" ))), ``{
+	list<string> nopackages =  maplist( string pac, filter(string s, all, ``(regexpmatch( s, "^-.*" ))), ``{
 	    return(substring(pac, 1, size(pac)));
 	});
 
