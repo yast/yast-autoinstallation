@@ -4,29 +4,32 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
 software =
   element software {
-    addons?, base, kernel?, packages?, post-packages?, remove-packages?
+    addons?, 
+    base, 
+    kernel?, 
+    packages?, 
+    post-packages?, 
+    remove-packages?
   }
 addons =
   element addons {
     LIST,
-    addon+
+    element addon { text }+
   }
 base = element base { text }
-addon = element addon { text }
 kernel = element kernel { text }
 post-packages =
   element post-packages {
     LIST,
-    package+
+    element package {text}+
   }
 packages =
   element packages {
     LIST,
-    package+
+    element package {text}+
   }
 remove-packages =
   element remove-packages {
     LIST,
-    package+
+    element package {text}+
   }
-package = element package { text }
