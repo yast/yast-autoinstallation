@@ -606,7 +606,7 @@
 	    SCR::Execute (.target.mkdir, tmpdirString);
 
 	    current_logdir = sformat("%1/logs", tmpdirString);
-	    SCR::Execute (.target.mkdir, tmplogdir );
+	    SCR::Execute (.target.mkdir,  current_logdir);
 	}
 	else
 	{
@@ -623,11 +623,13 @@
 	    if (type == "pre-scripts")
 	    {
 		scriptPath = sformat("%1/%2/%3", tmpdir, type, scriptName);
+		y2milestone("Writing pre script into %1", scriptPath);
 		SCR::Write(.target.string, scriptPath, s["source"]:"echo Empty script!");
 	    }
 	    else
 	    {
 		scriptPath = sformat("%1/%2", scripts_dir, scriptName);
+		y2milestone("Writing  script into %1", scriptPath);
 		SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
 	    }
 
@@ -635,7 +637,7 @@
 	    string executionString = "";
 	    if (scriptInterpreter == "shell")
 	    {
-		executionString = sformat("/bin/sh -x %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+		executionString = sformat("/bin/sh -x %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);		
 		SCR::Execute (.target.bash, executionString);
 	    }
 	    else if (scriptInterpreter == "perl")
@@ -647,6 +649,7 @@
 	    {
 		y2error("Unknown interpreter: %1", scriptInterpreter);
 	    }
+	    y2milestone("Script Execution command: %1", executionString );
 	});
 
 	return;
