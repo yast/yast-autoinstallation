@@ -65,16 +65,16 @@
 	``{
 	string tmpdir = SCR::Read( .target.tmpdir );
 	string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'addon'\" --param with ";
-	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"") + "'\"  ";
+	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"", configuration["class"]:"") + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
 	MergeCommand = MergeCommand +   base_profile + " ";
 
 
-	y2debug("Merge command: %1", MergeCommand);
+	y2milestone("Merge command: %1", MergeCommand);
 
 	map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
-	y2debug("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
+	y2milestone("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
 	return (out);
     }
 
@@ -181,10 +181,10 @@
      * @return string profile Path
      *
      */
-    global define findPath(string name)
+    global define findPath(string name, string class)
 	``{
 	map result = select(filter(map c,  confs,
-				   ``(lookup(c,"name","")== name)),0,$[]);
+				   ``(c["name"]:"" == name && c["class"]:"" == class)),0,$[]);
 
 	string profile_path = sformat("%1/%2/%3", AutoinstConfig::classDir, result["class"]:"", result["name"]:"default");
 	return profile_path;
