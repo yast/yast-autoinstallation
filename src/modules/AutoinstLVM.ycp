@@ -357,7 +357,7 @@
 		       );
 	});
 
-	return( flatten(ret) );
+	return( (list)flatten(ret) );
     }
 
     /**
@@ -384,7 +384,7 @@
 	    if (AutoinstLVM::OldAvailable )
 	    {
 		y2milestone("Old LVM available");
-		foreach(string vgdev, map vg, ExistingLVM, ``{
+		foreach(string vgdev, string vg, ExistingLVM, ``{
 
 		    string vgn = substring(vgdev, 5);
 		    boolean delete = false;
@@ -423,9 +423,11 @@ physical volumes belonging to this group.
 			map ExistingVG = ExistingLVM[vgdev]:$[];
 
 			list ExistingLVs = ExistingVG["partitions"]:[];
+			
 			foreach(map lv, ExistingLVs, ``{
 			    RemoveLV( vg, lv["nr"]:"");
 			});
+			
 			RemoveVG( vg );
 		    }
 
@@ -469,7 +471,7 @@ physical volumes belonging to this group.
 	    list new_partitions = maplist(map lv,  volume_group["partitions"]:[], ``{
 
 		list lvlist =  ExistingLVM[device, "partitions"]:[];
-		map this_lv = select(filter(map p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
+		map this_lv = (map) select(filter(map p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
 
 		y2debug("This LV: %1", this_lv);
 

@@ -49,7 +49,7 @@
 	``{
 	map auto_targets =  listmap (map d, AutoinstStorage::AutoPartPlan, ``{
 	    string device = lookup(d,"device","");
-	    return([device,d]);
+	    return($[device:d]);
 	});
 	return auto_targets;
     }
@@ -472,7 +472,7 @@ needs. All fields are required.</P>
 	    change(this_drive,"partitions",partitions);
 	    AutoinstStorage::AutoPartPlan=add(other_drives,this_drive);
 	}
-	return ret;
+	return (symbol)ret;
     }
 
 
@@ -955,7 +955,8 @@ a preparation.
 	    }
 
 	} until (ret == `next  || ret == `back );
-	return ret;
+	
+	return (symbol)ret;
     }
 
 

@@ -20,6 +20,7 @@
     import "Popup";
     import "Report";    
     import "Language";
+    import "Kernel";
 
 
     global map Software = $[];
@@ -153,114 +154,6 @@
 
 	return summary;
     }
-
-
-
-    /**
-     * Configure software settings
-     * @param void
-     * @return boolean
-     */
-    global define boolean Write()
-	``{
-	boolean ok = true;
-	
-	Pkg::SetLocale (Language::language);
-
-	Packages::Init(true);
-		
-	string  base_selection = base;
-	
-	if (size(base_selection) > 0)
-	{
-	    if (! Pkg::SetSelection( base_selection ))
-	    {
-		y2error("Error while setting base selection: %1", base_selection);
-		Report::Error(sformat(_("Could not set base selection: %1"), base_selection));
-		return false;
-	    }
-	}
-	else
-	{
-	    Popup::Warning(_("Base selection is not configured in control file.
-If packages to install have been added individually, 
-this message can be ignored."));
-	}
-
-	
-	list failed = [];
-	
-	foreach(string s, toset(addons),
-		``{
-	    if (!Pkg::SetSelection( s ))
-	    {
-		failed = add(failed, s);
-	    }
-	});
-
-	list failed_again = [];
-	
-	if (size(failed) > 0 )
-	{
-	    foreach(string s, failed,
-		    ``{
-		if (!Pkg::SetSelection( s ))
-		{
-		    failed_again = add(failed_again, s);
-		}
-	    });
-	}
-	if (size(failed_again) > 0 )
-	{
-	    y2error("Error while setting-addon selection: %1", s);
-	    Report::Warning(_("Could not set add-on selections: %1"), mergestring(failed_again, ","));
-	}
-
-	if (!Pkg::ActivateSelections())
-	{
-	    return false;
-	}
-
-
-	list autoinstPacks = autoinstPackages ();
-	y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
-
-	if (size(autoinstPacks) > 0 )
-	{
-	    Pkg::DoProvide(autoinstPacks);
-	}
-
-	
-	list computed_packages = Packages::ComputeSystemPackageList();
-	y2milestone("Computed list of packages: %1", computed_packages);
-	
-
-	//
-	// Now remove all packages listed in remove-packages 
-	//
-	y2milestone("Packages to be removed: %1", remove_packages);
-	if (size(remove_packages) > 0 )
-	{
-	    foreach (string rp, remove_packages, ``{
-		Pkg::PkgNeutral(rp);
-	    });
-
-	    Pkg::DoRemove(remove_packages);
-	}
-
-	//
-	// Solve dependencies
-	//
-	Pkg::PkgSolve();
-	
-	SpaceCalculation::ShowPartitionWarning();
-	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",
-		     Pkg::GetSelections(`selected, "base"),
-		     Pkg::GetSelections(`selected, ""));
-
-	return (ok);
-    }
-
     /**
      * Compute list of packages selected by user and other packages needed for important
      * configuration modules.
@@ -344,6 +237,114 @@ this message can be ignored."));
 	
 	return allpackages;
     }
+
+
+
+    /**
+     * Configure software settings
+     * @param void
+     * @return boolean
+     */
+    global define boolean Write()
+	``{
+	boolean ok = true;
+	
+	Pkg::SetLocale (Language::language);
+
+	Packages::Init(true);
+		
+	string  base_selection = base;
+	
+	if (size(base_selection) > 0)
+	{
+	    if (! Pkg::SetSelection( base_selection ))
+	    {
+		y2error("Error while setting base selection: %1", base_selection);
+		Report::Error(sformat(_("Could not set base selection: %1"), base_selection));
+		return false;
+	    }
+	}
+	else
+	{
+	    Popup::Warning(_("Base selection is not configured in control file.
+If packages to install have been added individually, 
+this message can be ignored."));
+	}
+
+	
+	list failed = [];
+	
+	foreach(string s, toset(addons),
+		``{
+	    if (!Pkg::SetSelection( s ))
+	    {
+		failed = add(failed, s);
+	    }
+	});
+
+	list failed_again = [];
+	
+	if (size(failed) > 0 )
+	{
+	    foreach(string s, failed,
+		    ``{
+		if (!Pkg::SetSelection( s ))
+		{
+		    failed_again = add(failed_again, s);
+		}
+	    });
+	}
+	if (size(failed_again) > 0 )
+	{
+	    y2error("Error while setting-addon selection: %1",  mergestring(failed_again, ","));
+	    Report::Warning(sformat(_("Could not set add-on selections: %1"), mergestring(failed_again, ",")));
+	}
+
+	if (!Pkg::ActivateSelections())
+	{
+	    return false;
+	}
+
+
+	list autoinstPacks = autoinstPackages ();
+	y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
+
+	if (size(autoinstPacks) > 0 )
+	{
+	    Pkg::DoProvide(autoinstPacks);
+	}
+
+	
+	list computed_packages = Packages::ComputeSystemPackageList();
+	y2milestone("Computed list of packages: %1", computed_packages);
+	
+
+	//
+	// Now remove all packages listed in remove-packages 
+	//
+	y2milestone("Packages to be removed: %1", remove_packages);
+	if (size(remove_packages) > 0 )
+	{
+	    foreach (string rp, remove_packages, ``{
+		Pkg::PkgNeutral(rp);
+	    });
+
+	    Pkg::DoRemove(remove_packages);
+	}
+
+	//
+	// Solve dependencies
+	//
+	Pkg::PkgSolve();
+	
+	SpaceCalculation::ShowPartitionWarning();
+	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",
+		     Pkg::GetSelections(`selected, "base"),
+		     Pkg::GetSelections(`selected, ""));
+
+	return (ok);
+    }
+
 
     //EOF
 }
