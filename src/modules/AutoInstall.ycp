@@ -242,18 +242,7 @@
 
 
 	map Software = Install["software"]:$[];
-	
-	// .Minimal has no X11
-	if (Software["base"]:"" == "Minimal" || size(X11) == 0 || !X11["configure_x11"]:false   )
-	{
-	    y2milestone("Dont configure X11");
-	    X11Version::have_x11 = false;
-	}
-	else {
-	    y2milestone("Configure X11");
-	    X11Version::have_x11 = true;
-	}
-		
+
 	postPackageList();
 	
 	return true;
@@ -522,9 +511,10 @@
 	``{
 
 	boolean ret = false;
+	y2milestone("set Locale to %1", Language::language);
+	Pkg::SetLocale (Language::language);
 	
-	Packages::Init(true);
-	
+	Packages::Init(true);	
 	// Standard Packages
 	boolean retval = false;
 
