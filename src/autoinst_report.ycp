@@ -8,19 +8,19 @@
  */
 {
     textdomain "autoinst";
-    import "Mode";    
+    import "Mode";
     Mode::config = true;
 
-    
+
     import "Wizard";
     import "Summary";
     import "Report";
-    
+
     include "ui/common_messages.ycp";
 
-    
+
     list args = Args ();
- 
+
     if ( size (args) <= 0 )
     {
 	y2error ("Did not get the settings, probably some mistake...");
@@ -31,22 +31,22 @@
 	y2error ("Bad argument: %1", Args (0));
 	return false;
     }
- 
+
     map settings = $[];
     {
 	integer i = 0;
 	while (i < size (Args()))
 	{
-	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);	    
+	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);
 	    i = i + 1;
 	}
     }
-    
+
     y2milestone("Imported: (%1)", settings);
     Report::Import ( settings );
-          
+
     define set_contents()
-	``{	
+	``{
 	term contents =
 	    `VBox(
 		  `VSpacing(1),
@@ -63,19 +63,19 @@
 			    contents, "", true, true);
     }
 
-    
-    
+
+
     define symbol Reporting()
-	``{			
+	``{
 	map msg = settings["messages"]:$[];
 	map err = settings["errors"]:$[];
 	map war = settings["warnings"]:$[];
 
-    
+
 	term contents =
 	    `Top(
 		 `VBox(
-		       `VSpacing(2),		      
+		       `VSpacing(2),
 		       `VSquash(
 				`VBox(
 				      `Frame(_("Messages"),
@@ -93,7 +93,7 @@
 				      `Frame(_("Warnings"),
 					     `HBox(
 						   `HWeight(35,`CheckBox(`id(`warshow), _("Sh&ow warnings"), war["show"]:true)),
-						   `HWeight(35, `CheckBox(`id(`warlog), _("Log wa&rnings"), war["log"]:true)), 
+						   `HWeight(35, `CheckBox(`id(`warlog), _("Log wa&rnings"), war["log"]:true)),
 						   `HWeight(30,`VBox(
 								     `VSpacing(),
 								     `Bottom(`IntField(`id(`wartime), _("Timeout (in s&ec.)"), 0,100,war["timeout"]:10))
@@ -105,7 +105,7 @@
 				      `Frame(_("Errors"),
 					     `HBox(
 						   `HWeight(35,`CheckBox(`id(`errshow), _("Show error&s"), err["show"]:true)),
-						   `HWeight(35,`CheckBox(`id(`errlog), _("&Log errors"), err["log"]:true)),					 
+						   `HWeight(35,`CheckBox(`id(`errlog), _("&Log errors"), err["log"]:true)),
 						   `HWeight(30, `VBox(
 								      `VSpacing(),
 								      `Bottom(`IntField(`id(`errtime), _("Timeo&ut (in sec.)"), 0,100,err["timeout"]:10))
@@ -120,14 +120,14 @@
 
 	string help_text = _("<p>Depending on your experience, you can skip, log and show (with timeout)
 installations messages.</p> ");
-	
+
 	help_text = help_text + _("<p>It is recommended to show all  <b>messages</b> with timeout.
 Warning can be skipped in some places but should not be ignored.</p>");
-	
+
 	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
-	Wizard::SetContents(_("Messages and Logging"),	
+	Wizard::SetContents(_("Messages and Logging"),
 			    contents, help_text, true , true);
-    
+
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
@@ -141,19 +141,19 @@ Warning can be skipped in some places but should not be ignored.</p>");
 		err["timeout"] = UI::QueryWidget(`id(`errtime), `Value);
 		war["show"] = UI::QueryWidget(`id(`warshow), `Value);
 		war["log"] = UI::QueryWidget(`id(`warlog), `Value);
-		war["timeout"] = UI::QueryWidget(`id(`wartime), `Value);			     
-	    }	   
+		war["timeout"] = UI::QueryWidget(`id(`wartime), `Value);
+	    }
 	} until (ret == `next || ret == `key  || ret == `back);
-	
-	Report::Set($[	
+
+	Report::Set($[
 		      "messages": msg,
 		      "errors": err,
 		      "warnings": war
 		    ]);
     }
-    
 
-   
+
+
     set_contents();
     any result = nil;
     any ret = nil;
@@ -161,19 +161,19 @@ Warning can be skipped in some places but should not be ignored.</p>");
     repeat {
 	ret = UI::UserInput();
 	if (ret == `configure)
-	{	    
+	{
 	    Wizard::CreateDialog ();
 	    Wizard::ReplaceAbortButton(`Empty ());
-	    result =  Reporting();				
+	    result =  Reporting();
 	    UI::CloseDialog ();
-		
+
 	    if (result == `next || result == `finish)
-	    {		 
-		exported = Report::Export ();		    
+	    {
+		exported = Report::Export ();
 	    } else {
 		exported = settings;
 	    }
-				
+
 	    set_contents();
 	}
 	else if ( ret == `reset)
@@ -181,9 +181,9 @@ Warning can be skipped in some places but should not be ignored.</p>");
 	    exported = $[];
 	    Report::Set(exported);
 	    set_contents();
-	}		
-    } until (ret == `back || ret == `next || ret ==`key);   
-  
+	}
+    } until (ret == `back || ret == `next || ret ==`key || ret == `abort);
+
     return [ret, exported];
 }
 
