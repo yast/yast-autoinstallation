@@ -33,7 +33,7 @@
 
     global boolean PVsNotConfigured = false;
 
-    
+
     list region = [0,0];
     map targetMap = $[];
     integer pesize = 0;
@@ -48,15 +48,15 @@
 	targetMap 	= Storage::GetTargetMap();
 	modify_targets	= Storage::GetModifyTargets();
 	ExistingLVM 	= filter(`k,`v, targetMap, ``(v["is_lvm_vg"]:false));
-	
+
 	y2milestone("Existing LVM: %1", ExistingLVM);
-	
+
 	ExistingVGs 	= maplist (`d, `g, ExistingLVM, ``{
 	    return (substring(d, 5) );
 	});
 
 	y2milestone("Existing VGs: %1", ExistingVGs );
-	
+
 	foreach (`v, ExistingVGs, ``{
 	    string dev = sformat("/dev/%1", v);
 	    if (size(ExistingLVM[dev,"partitions"]:[]) > 0 )
@@ -222,13 +222,13 @@
 
 
 	region = [0, virtual_cyl_end ];
-	
+
 	map resize_lv = $[
 			      "use_module" : "lvm_ll",
 			      "type"       : "resize_lv",
 			      "name"       : lv_name,
 			      "size"       : bytes_of_part,
-			      "vgname"     : vgname			   
+			      "vgname"     : vgname
 	];
 	modify_targets = addTargetModification( modify_targets, resize_lv );
 
@@ -257,27 +257,28 @@
     };
     global define map KeepLV (string vgname, map lv) ``{
 
-	
+	string lvsize_str   = lv["size"]:"";
 	string lv_name		= lv["lv_name"]:"";
+
 	integer lvsize		= kmgt_str_to_byte(lvsize_str);
 
 
 
 	return ($[
-		  "create"		: false,		  		  
+		  "create"		: false,
 		  "fsid"		: 142,
 		  "fstype"		: "LV",
-		  "nr"			: lv_name,		
+		  "nr"			: lv_name,
 		  "mount"		: lv["mount"]:"" ,
 		  "used_fs"		: lv["used_fs"]:`reiser,
-		  "format"		: lv["format"]:false ,		
+		  "format"		: lv["format"]:false ,
 		  "type"		: `lvm,
 		  "device"		: "/dev/" + vgname + "/" + lv_name
 		]);
 
     };
 
-    
+
 
     global define void SetPESIZE (string pesize_str) ``{
 	pesize	=  pesize_str_to_byte( pesize_str );
@@ -290,25 +291,25 @@
      *	Return only those PVs on disks touched by the control file, dont add PVs of
      * 	unconfigured disks.
      */
-    
+
     global define list ExistingPVs ( string vgname )
 	``{
 	map tm = $[];
-	
-	foreach(`k, `v, targetMap, ``{	    
+
+	foreach(`k, `v, targetMap, ``{
 	    if (contains(AutoinstStorage::configured_devices, k))
 	    {
 		tm[k] = v;
 	    }
 	});
-	
-	
+
+
 	list all_possible_pvs = filter( `part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname ));
 	list possible_pvs = filter( `part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
-	
+
 	if (all_possible_pvs != possible_pvs)
 	    PVsNotConfigured = true;
-	
+
 	return (possible_pvs);
 
     }
