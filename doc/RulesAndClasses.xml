@@ -96,13 +96,13 @@
 	every rule. The rule used in this case is
 	<emphasis>disksize</emphasis>. After parsing the rules file, &yast2;
 	attempts to match the system being installed to the rules in the 
-	<filename>rules.xml</filename> file in order: first rule through the
+	<filename>rules.xml</filename> file in the following order: first rule through the
 	last rule. A rule match occurs when the system being installed matches
 	all of the system attributes defined in the rule. As soon as a system
 	matches a rule, the result resource is added to the
-	stack of profiles &autoyast; will be using to create the final
+	stack of profiles  &autoyast; will be using to create the final
 	profile.  The <emphasis>continue</emphasis> property tells &autoyast; if it should
-	continue with other rules or not. 
+        continue with other rules or not after a match has been found. 
       </para>
       <para>
 	If the first rule does not match,  next rule in the list is examined
@@ -119,7 +119,7 @@
       <para>
 	A rule must have at least one attribute to be matched. If you need
 	to check more attributes, i.e. memory or architectures, you can add
-	more attributes  the rule resource as shown in the next example.
+        more attributes in the rule resource as shown in the next example.
       </para>
       <example>
 	<title>
@@ -175,7 +175,7 @@
 	used with the <emphasis>autoyast</emphasis> keyword on boot time, so
 	if the client was booted using<emphasis> autoyast=http://10.10.0.1/profiles/</emphasis>,
 	&autoyast; will search for the rules file in 
-	http://10.10.0.1/profiles/rules/rules.xml.
+        <emphasis>http://10.10.0.1/profiles/rules/rules.xml</emphasis>.
       </para>
     </section>
     <section id="rulesstructure">
@@ -288,6 +288,26 @@
 		<entry>disksize</entry>
 		<entry>Drive device and size</entry>
 		<entry>All match types are available</entry>
+	      </row>
+	      <row>
+		<entry>product</entry>
+                <entry>The hardware product name as specified in SMBIOS</entry>
+		<entry>Exact match required</entry>
+	      </row>
+	      <row>
+		<entry>product_vendor</entry>
+                <entry>The hardware vendor as specified in SMBIOS</entry>
+		<entry>Exact match required</entry>
+	      </row>
+	      <row>
+		<entry>board</entry>
+                <entry>The system board name as specified in SMBIOS</entry>
+		<entry>Exact match required</entry>
+	      </row>
+	      <row>
+		<entry>board_vendor</entry>
+                <entry>The system board vendor as specified in SMBIOS</entry>
+		<entry>Exact match required</entry>
 	      </row>
 	      <row>
 		<entry>custom1-5</entry>
