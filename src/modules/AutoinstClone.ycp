@@ -18,7 +18,7 @@
 {
     module "AutoinstClone";
     import "Mode";
-    
+
     import "XML";
     import "Call";
     import "Profile";
@@ -39,15 +39,15 @@
 
     // aditional configuration resources o be cloned
     global list additional = [];
-	
 
-    
-    
+
+
+
     /**
      * Constructor
      */
     global define void AutoinstClone()``{
-	
+
 	Mode::normal = true;
 	return;
     }
@@ -56,7 +56,7 @@
     /**
      * Set root password
      */
-    
+
     define root() ``{
 	list shadow = SCR::Read(.etc.shadow);
 	map rootacct = select(filter(map acct, shadow, ``(acct["username"]:"" == "root")), 0 , $[]);
@@ -200,12 +200,12 @@
 	y2debug("installed packages %1", allInstalledPackages);
 
 	map software = $[];
-	software["packages"] = allInstalledPackages;
+	software["packages"] =  filter(`p, allInstalledPackages, ``(! regexpmatch(p, "k_.*")));
 	software["base"] = "Minimal";
 
 	return software;
     }
-    
+
 
     /**
      * Bootloader options
@@ -218,13 +218,13 @@
 	if (readret)
 	{
 	    bootloader = Call::Function("bootloader_auto", ["Export", $[] ]);
-	}		
+	}
 
 	return bootloader;
 
     };
 
-    
+
     /**
      * General options
      */
@@ -238,7 +238,7 @@
 
 	map general = $[];
 	general["language"] = Language::language;
-	
+
 	map keyboard = $[];
 	y2milestone("Current Keyboard: %1", Keyboard::default_kbd);
 	keyboard["keymap"]  = Keyboard::current_kbd;
@@ -249,13 +249,13 @@
 	string hwclock = "";
 	if ( size( Storage::GetWinPrimPartitions( Storage::GetTargetMap() ) ) > 0 )
 	{
-	    // Win partitions present ==> assume local time.	    
+	    // Win partitions present ==> assume local time.
 	    hwclock = "--localtime";
 	    y2milestone("Assuming local time");
 	}
 	else
 	{
-	    // No Win partitions ==> assume UTC.	    
+	    // No Win partitions ==> assume UTC.
 	    hwclock = "-u";
 	    y2milestone("Assuming UTC");
 	}
@@ -288,11 +288,11 @@
      /**
       * Clone a Resource
       * @param resource name
-      * @return list 
+      * @return list
       */
      define boolean CommonClone(string resource, map resMap) ``{
 
-	 
+
 	 string data_type = resourceMap["AutoinstDataType"]:"map";
 	 string tomerge = resourceMap["AutoinstMerge"]:"";
 	 string tomergetypes = resourceMap["AutoinstMergeTypes"]:"";
@@ -301,12 +301,12 @@
 	 resource = resourceMap["AutoinstResource"]:resource;
 
 	 boolean readret = false;
-	 
+
 	 map mergedResource = $[];
 	 if (size(tomerge) > 0 )
 	 {
 	     list MergeTypes = splitstring(tomergetypes, ",");
-	     list Merge = splitstring(tomerge, ",");	     
+	     list Merge = splitstring(tomerge, ",");
 
 	     boolean readret = Call::Function(auto , ["Read", $[] ]);
 	     any result = Call::Function(auto, ["Export",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
@@ -316,14 +316,14 @@
 		 if ( MergeTypes[i]:"map" == "map")
 		 {
 		     Profile::Flat[res] = result[res]:$[];
-		     
+
 		 }
 		 else
 		     Profile::Flat[res] = result[res]:[];
 
 		 y2debug("flat: %1", Profile::Flat);
 		 i = i + 1;
-	     });	     	   	     
+	     });
 	 }
 	 else
 	 {
@@ -343,7 +343,7 @@
 
      }
 
-   
+
 
     /**
      * Build the profile
@@ -355,7 +355,7 @@
 	Profile::Reset();
 	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
 	    // Set resource name, if not using default value
-	    
+
 	    string resource = resourceMap[def_resource, "AutoinstResource"]:def_resource;
 	    y2milestone("current resource: %1", resource);
 	    if (contains(additional, resource))
@@ -374,14 +374,14 @@
 	    Profile::Flat["partitioning"] = [$["use":"all"]];
 	}
 
-	  
+
 	if (!contains(base, "software"))
-	{  
+	{
 	    Profile::Flat["software"] = Software();
 	}
 	else
 	{
-	    Profile::Flat["software"] = $["base":"default"]; 
+	    Profile::Flat["software"] = $["base":"default"];
 	}
 
 	if (!contains(base, "bootloader"))
@@ -397,12 +397,12 @@
 
     /**
      * Write the profile to a defined path
-     * @param outputFile Output file path    
+     * @param outputFile Output file path
      * @return boolean true on success
      */
     global define boolean Write(string outputFile)``{
 
-	Process();	
+	Process();
 	boolean ret =  Profile::Save( outputFile );
 	return ret;
     }
@@ -414,10 +414,10 @@
      */
     global define map Export()
 	``{
-	
+
 	import "Profile";
 	Profile::Reset();
-	Process();	
+	Process();
 	return;
     }
 }

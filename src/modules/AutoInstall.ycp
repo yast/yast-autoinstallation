@@ -76,6 +76,8 @@
     global boolean IgnorePkgErr = false;
     global map Bootloader = $[];
 
+    // Default runlevel
+    global string default_rl = "5";
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Local variables
@@ -173,6 +175,8 @@
 	{
 	    Mode::x11_setup_needed = false;
 	}
+
+	default_rl = Profile::Flat["runlevels", "default"]:"5";
 
 	return true;
     }
