@@ -21,7 +21,7 @@
     import "XML";
     import "Call";
     import "Profile";
-
+    import "Y2ModuleConfig";
     
     global map Profile = $[];
 
@@ -340,7 +340,7 @@
     global define void Process()
 	``{
 	Profile::Reset();
-	foreach(string def_resource, map resourceMap, AutoInstall::ModuleMap, ``{
+	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
 	    // Set resource name, if not using default value
 
 	    string resource = resourceMap[def_resource, "AutoinstResource"]:def_resource;

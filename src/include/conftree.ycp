@@ -43,7 +43,7 @@
     
     global define content_dialog( string resource, map resourceMap ) ``{
 	
-	string summary =  Call::Function(module_auto, ["Summary", AIConfig::getResourceData(resourceMap , resource)]);
+	string summary =  Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
 	string caption = resourceMap["Name"]:"Configurtion";
 	string buttonLabel = resourceMap["Helptext"]:"Configure";
 	term contents =
@@ -72,12 +72,12 @@
     global define module_contents(string resource, map resourceMap ) ``{
 	// y2milestone("FLAT a: %1", Profile::Flat);
 	
-	any original_settings = AIConfig::getResourceData(resourceMap , resource);
+	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
 	
 	string module_auto = resourceMap["AutoClient"]:"none";
 
 	// Import Data
-	Call::Function(module_auto, ["Import", AIConfig::getResourceData(resourceMap ,resource)]);
+	Call::Function(module_auto, ["Import", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
 	content_dialog( resource , resourceMap);
 	
 	any ret= nil;
@@ -87,7 +87,7 @@
 	    
 	    if( ret == `configure )
 	    {
-		any seq = Call::Function(module_auto, ["Change", AIConfig::getResourceData(resourceMap ,resource)]);
+		any seq = Call::Function(module_auto, ["Change", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
 		y2milestone("Change response: %1", seq);
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
@@ -96,7 +96,7 @@
 		    list MergeTypes = splitstring(tomergetypes, ",");
 		    if (size(tomerge) > 0 )
 		    {
-			any result = Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+			any result = Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 			integer i = 0;
 			foreach( string res, splitstring(tomerge, ",") , ``{
 			    if ( MergeTypes[i]:"map" == "map") 
@@ -108,7 +108,7 @@
 		    }
 		    else
 		    {
-			Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+			Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		    }
 		}
 		y2milestone("New Settings: %1", Profile::Flat);
@@ -122,7 +122,7 @@
 		list MergeTypes = splitstring(tomergetypes, ",");
 		if (size(tomerge) > 0 )
 		{
-		    any result = Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+		    any result = Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		    integer i = 0;
 		    foreach( string res, splitstring(tomerge, ",") , ``{
 			if ( MergeType[i]:"map" == "map") 
@@ -134,14 +134,14 @@
 		}
 		else
 		{
-		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);
+		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		}
 		    
-		Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  AIConfig::getResourceData(resourceMap , resource) ]);
+		Profile::Flat[resource]  = Call::Function(module_auto, ["Reset",  Y2ModuleConfig::getResourceData(resourceMap , resource) ]);
 		content_dialog(resource,  resourceMap);		
 	    }
 	    
-	    if ( original_settings != AIConfig::getResourceData(resourceMap , resource) )
+	    if ( original_settings != Y2ModuleConfig::getResourceData(resourceMap , resource) )
 	    {				
 		Profile::changed = true;
 	    }	   	    	    	    
@@ -155,7 +155,7 @@
 
     global define void CreateTreeWidget() ``{
 
-	list menu_options = CreateTableList(AIConfig::MenuTreeData);
+	list menu_options = CreateTableList(Y2ModuleConfig::MenuTreeData);
 	Wizard::ReplaceButtonBox(`VSpacing(0.6));
 	UI::ReplaceWidget(`id(`helpSpace) ,
 			  `VBox(			
@@ -244,17 +244,17 @@
 
 	repeat
 	    {
-		if (size(AIConfig::GroupMap) == 0)
+		if (size(Y2ModuleConfig::GroupMap) == 0)
 		{
 		    UI::ErrorPopup(_("Error while reading configuration data."));
 		    ret = `next;
 		    break;
 		}
 	    
-		if (haskey(AIConfig::GroupMap, tree_item))
+		if (haskey(Y2ModuleConfig::GroupMap, tree_item))
 		{	
 		    string html = "";
-		    foreach(`k,`v, AIConfig::ModuleMap, ``{
+		    foreach(`k,`v, Y2ModuleConfig::ModuleMap, ``{
 			if (v["Group"]:"" == tree_item)
 			{								
 			    string colored = HTML::Colorize( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k), "#8BC460");
@@ -303,12 +303,12 @@
 
 		}
 	 
-		foreach(string def_resource, map resourceMap, AIConfig::ModuleMap, ``{
+		foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
 		
 		    if (tree_item == def_resource)
 		    {		  
 			// Set resource name, if not using default value
-			string resource = AIConfig::getResource(def_resource);
+			string resource = Y2ModuleConfig::getResource(def_resource);
 			y2milestone("Resource map: %1",  resourceMap );
 			ret = module_contents( resource , resourceMap);
 		    }

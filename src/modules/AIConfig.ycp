@@ -38,11 +38,7 @@
     global string currentFile = "";
      
   
-    // Modules
-       
-    global map GroupMap = $[];
-    global map ModuleMap = $[];
-
+ 
     /** 
      * MenuTreeData     
      * @return: list ofmodules
@@ -69,14 +65,7 @@
 	// Load configuration data from /etc/sysconfig/autoinstall
 	Load();
 
-	// Read y2cc entries
-	ModuleMap = AutoInstall::ModuleMap;
-	GroupMap = AutoInstall::GroupMap;
 
-	// construct the tree menu
-	ConstructMenu();
-	
-	y2debug("Modules: %1", ModuleMap);
 
 	// Set the defaults, just in case.
 	if (Repository == "" || Repository == nil )
@@ -121,108 +110,5 @@
 	return;
     }
 
-
-
-    
-    define void CreateGroupTree (map Groups)
-	``{
-	include "readconfig.ycp";
-        term groupwidget = `VBox ();
-        list grouplist = [];
-        grouplist = SortGroups (Groups, maplist (`rawname, `group, Groups, ``(rawname)));
-        string is_first = "";
-        foreach (`rawname, grouplist,
-		 ``{
-	    // string name    = Translate(Groups[rawname, "Name"]:"???");
-	    string name    = ReadKey(Groups[rawname, "Textdomain"]:"base", "Name", Groups[rawname]:$[]);
-	    map MeunTreeEntry = $["entry":rawname, "title":name];
-	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);	    
-        });
-	return;
-    }
-
-    
-    define SortGroups (map GroupMap, list GroupList)
-	``{
-        return
-	    sort (`x, `y, GroupList,
-		  ``{
-		string first = GroupMap[x, "SortKey"]:"";
-		string second = GroupMap[y, "SortKey"]:"";
-		return (first <= second);
-	    });
-    }
-
-
-    define list ConstructMenu() ``{
-	CreateGroupTree(GroupMap);
-	foreach(`m,`v, ModuleMap, ``{
-	    string name    = Translate(lookup(v, "Name", "unknown"));
-	    map menu_entry = $["entry":m, "title":name];
-	    list menu_list = [];
-	    if (haskey(v,"Group")) {
-		string parent = v["Group"]:"";
-		MenuTreeData = maplist (`k, MenuTreeData, ``{
-		    if (k["entry"]:"" == parent) {
-			list children = k["children"]:[];
-			children = add(children,menu_entry);
-			k["children"] = children;
-			return(k);
-		    }
-		    else {
-			return (k);
-		    }
-		});
-	    } else {
-		MenuTreeData=add(MenuTreeData,menu_entry);
-	    }
-	});
-    }
-
-    /**
-     * Get resource name
-     */
-
-    global define string getResource( string default_resource) ``{
-	return ModuleMap[default_resource, "AutoinstResource"]:default_resource;	
-    }
-
-    /**
-     * Get resource data
-     */
-
-    global define any getResourceData( map resourceMap, string resource) ``{
-
-
-	resource = resourceMap["AutoinstResource"]:resource;
-	
-	string data_type = resourceMap["AutoinstDataType"]:"map";
-	string tomerge = resourceMap["AutoinstMerge"]:"";
-	string tomergetypes = resourceMap["AutoinstMergeTypes"]:"";
-	
-	map mergedResource = $[];
-	if (size(tomerge) > 0 )
-	{
-	    list MergeTypes = splitstring(tomergetypes, ",");
-	    list Merge = splitstring(tomerge, ",");
-	    integer i = 0;
-	    foreach ( string res, Merge, ``{
-		if ( MergeTypes[i]:"map" == "map") 
-		    mergedResource[res] = eval(Profile::Flat[res]:$[]);	
-		else
-		    mergedResource[res] = eval(Profile::Flat[res]:[]);
-		i = i + 1;
-	    });
-	    return mergedResource;
-	}
-	else
-	{
-	    if (data_type == "map") 
-		return (eval(Profile::Flat[resource]:$[]));	
-	    else
-		return (eval(Profile::Flat[resource]:[]));
-	}
-		
-    }
    
 }
