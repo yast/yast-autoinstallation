@@ -77,6 +77,7 @@
 		file = select(filtered_files,0,$[]);
 	    }
 	}
+	y2milestone("files: %1", file);
 	// help 1/2
 	string help =  _("<p>Using this dialog, copy the contents of the file and specify the final
 path on the installed system. YaST2 will copy this file to the specified location.</p>");
@@ -87,7 +88,7 @@ Set the owner using the syntax <i>userid.groupid</i>.  Permissions can be a symb
 representation of changes to make or an octal  number  representing  the bit pattern for the
 new permissions.
 ");
-	
+
 
 	string title = _("Configuration File Editor");
 
@@ -99,9 +100,9 @@ new permissions.
 			`Empty()
 			),
 		  `HBox(
-			`TextEntry(`id(`owner), _("&Owner"), file["owner"]:""),
+			`TextEntry(`id(`owner), _("&Owner"), file["file_owner"]:""),
 			`HStretch(),
-			`TextEntry(`id(`perm), _("&Permissions"), file["permissions"]:"")
+			`TextEntry(`id(`perm), _("&Permissions"), file["file_permissions"]:"")
 			),
 		  `VSpacing(1),
 		  `HBox(

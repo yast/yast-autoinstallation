@@ -92,6 +92,7 @@
 	string base = software["base"]:"";
 	list addons = software["addons"]:[];
 	list packs  = software["packages"]:[];
+	list postpacks  = software["post-packages"]:[];
 	string kernel = software["kernel"]:"";
 
 
@@ -180,6 +181,7 @@
 	string base = _soft["base"]:"";
 	list addons = _soft["addons"]:[];
 	list packs  = _soft["packages"]:[];
+	list postpacks  = _soft["post-packages"]:[];
 	string kernel = _soft["kernel"]:"";
 
 
@@ -200,10 +202,12 @@
 	    });
 	}
 
+	packs = union(packs, postpacks);
 	Pkg::DoProvide(autoinstPackages(packs, kernel));
+	boolean ret = Pkg::ActivateSelections();
 	Pkg::PkgSolve();
 
-	return (Pkg::ActivateSelections());
+	return (ret);
 
     }
 
@@ -555,6 +559,10 @@ Please wait while the directory structure for the new ISO file is created.
 	Progress::NextStage();
 
 	string cpCmd = sformat("cp /usr/share/autoinstall/isolinux.cfg %1/skeleton/boot/loader", ISO::skeletonDir);
+	SCR::Execute (.target.bash, cpCmd);
+	cpCmd = sformat("cp /usr/share/autoinstall/message %1/skeleton/boot/loader", ISO::skeletonDir);
+	SCR::Execute (.target.bash, cpCmd);
+	cpCmd = sformat("cp /usr/share/autoinstall/options.msg %1/skeleton/boot/loader", ISO::skeletonDir);
 	SCR::Execute (.target.bash, cpCmd);
 
 	Progress::NextStep();

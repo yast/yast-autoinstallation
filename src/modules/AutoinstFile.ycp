@@ -67,7 +67,7 @@
 
 	integer counter = 0;
 	boolean success = false;
-	
+
 	foreach(map file, Files,
 		``{
 	    if (file["file_contents"]:"" != "")
@@ -77,10 +77,10 @@
 		y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );
 		list t = splitstring( file["file_path"]:alternate_location, "/");
 		integer pos = size(t) - 1;
-		
+
 		// SCR::Write (.target.string, AutoInstall::var_dir + "/files" + t[pos]:alter_file, file["file_contents"]:"");
 		SCR::Write (.target.string,  file["file_path"]:alternate_location , file["file_contents"]:"");
-		
+
 		if (file["file_permissions"]:"" != "")
 		{
 		    SCR::Execute (.target.bash, sformat("chmod %1 %2", file["file_permissions"]:"",  file["file_path"]:alternate_location ));
