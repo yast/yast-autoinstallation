@@ -74,9 +74,10 @@
 		string alternate_location = sformat("%1/%2", AutoInstall::files_dir, counter);
 		y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );
 		success = SCR::Write (.target.string, file["file_path"]:alternate_location, file["file_contents"]:"");
+		SCR::Write (.target.string, AutoInstall::var_dir + "/files", file["file_contents"]:"");
 		if (file["file_permissions"]:"" != "")
 		{
-		    SCR::Execute (.target.bash, sformat("chmod %1 %2", file["file_permissions"]:"",  file["file_path"]:alternate_location ));  
+		    SCR::Execute (.target.bash, sformat("chmod %1 %2", file["file_permissions"]:"",  file["file_path"]:alternate_location ));
 		}
 		if (file["file_owner"]:"" != "")
 		{
@@ -116,14 +117,13 @@
 		    {
 			executionString = sformat("/usr/bin/python %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
 			SCR::Execute (.target.bash,executionString);
-		    }	    
+		    }
 		    else
 		    {
 			y2error("Unknown interpreter: %1", scriptInterpreter);
 		    }
 		    y2milestone("Script Execution command: %1", executionString );
 		}
-		
 	    }
 	    counter = counter + 1;
 	});
