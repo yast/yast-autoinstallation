@@ -75,7 +75,7 @@
     define string findMountpoint(string device, map p, list<map> mounts) ``{
 	string mountPoint = "";
 	foreach(map mount , mounts, ``{
-	    string m = sformat("%1%2", device ,  p["nr"]:"");
+	    string m = sformat("%1%2", device ,  p["nr"]:nil);
 	    if (mount["spec"]:"" ==  m )
 	    {
 		mountPoint = mount["file"]:"";
@@ -106,8 +106,8 @@
 	map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
 	StorageMap = Storage::GetFsysType(StorageMap);
+        StorageMap=filter(string d, map p, StorageMap, ``((d!="/dev/evms")));
 	y2debug("Storagemap %1", StorageMap);
-	list<map> mounts = (list<map>) SCR::Read(.etc.fstab);
 
 	list drives = maplist(string k, map v, StorageMap, ``{
 	    bytes_per_unit = v["cyl_size"]:1;
@@ -149,10 +149,7 @@
 		    }
 		    new_pe["partition_nr"] = pe["nr"]:0;
 		}
-		string mountPoint = findMountpoint(k, pe, mounts);
-		if (mountPoint != "") {
-		    new_pe["mount"] = mountPoint;
-		}
+	        new_pe["mount"] = pe["mount"]:"";
 
 		if (!skipwin) {
 		    partitions=add(partitions,new_pe);
