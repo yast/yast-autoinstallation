@@ -87,7 +87,7 @@
     <section>
       <title>Run-time modules in <emphasis>auto</emphasis> mode</title>
       <para>
-	The &lt;module name&gt;_auto.ycp client accepts 2 argument:
+	The &lt;module name&gt;_auto.ycp client accepts 2 arguments:
     </para>
     <itemizedlist>
       <listitem>
@@ -149,6 +149,26 @@
     Returns the current configuration
     Calls &lt;Module&gt;::Export
 	</para>
+      </listitem>     
+      <listitem>
+	<para>
+	  <emphasis>Packages:</emphasis></para>
+	<para>
+	  Returns a map with two key/value pairs. First key is
+	  <emphasis>install</emphasis> which has a list as the value. the list
+	  contains packages that are needed for the service configured by the
+	  module to work. This can be a static list of packages or a dynamic
+	  list depending on the configuration. The second key is
+	  <emphasis>remove</emphasis> which contains packages that should be
+	  removed to avoid conflicts with other packages. the packages in
+	  <emphasis>remove</emphasis> are normally determined dynamically,
+	  depending on the configuration.
+	  
+	  </para>
+	<para>
+	  The function can either return a map directly or it can call a module
+	  function &lt;Module&gt;::AutoPackages().
+	</para>
       </listitem>      
     </itemizedlist>
   
@@ -209,11 +229,15 @@ else if (func == "Reset") {
 else if (func == "Change") {
     ret = XXPkgXXAutoSequence();
 }
+/* Return required packages */
+else if (func == "Packages") {
+    ret = XXPkgXX::AutoPackags();
+}
 /* Return actual state */
 else if (func == "Export") {
     ret = XXPkgXX::Export();
 }
-/* Write givven settings */
+/* Write given settings */
 else if (func == "Write") {
     import "Progress";
     XXPkgXX::write_only = true;
@@ -249,6 +273,33 @@ return ret;
     <para>The follwoing is the list of function that should be available with
       the modules to provide the functionality needed in the CMS.
     </para>
+    <refentry>
+      <refnamediv>
+	<refname>Packages()</refname>
+	<refpurpose>Return needed packages for module to work</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Description</title>
+	<para>
+	  This function return a map of lists which contain packages to be
+	  installed or removed during installation (second stage).	  
+	</para>
+
+      </refsect1>
+         
+      <refsect1>
+	<title>Returns</title>
+	<para>
+	  For example, the function can return the following structure:
+	</para>
+	<screen>
+$[
+   "install": ["pkg1", "pkg2"], 
+   "remove": ["pkg3"]
+]
+</screen>
+      </refsect1>
+    </refentry>
     <refentry>
       <refnamediv>
 	<refname>Import()</refname>
@@ -320,22 +371,18 @@ return ret;
 	  operation mode and should not be used to write configuration in
 	  auto-installation mode. Instead, use<emphasis> WriteOnly()</emphasis>
 	  or set the global variable <emphasis>write_only</emphasis> to true
-	  before writing.</para>
+	  before writing.
+	</para>
+	<para>
+	  during the write process, check for the global boolean variable
+	  <emphasis>write_only</emphasis> which should be used to prevent the
+	  module from restarting services and showing GUI components during
+	  autoinstallation which might interfere with the installation widgets.
+	</para>
+	
       </refsect1>
     </refentry>
-    <refentry>
-      <refnamediv>
-	<refname>WriteOnly()</refname>
-	<refpurpose>Only write/commit data, do not restart any services yet</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title></title>
-	<para>Write configuration only without restarting services or make the
-	  system use the new configuration. This is important in the so called
-	  <emphasis>continue mode</emphasis>, as services are started directly
-	  after the YaST2 has finished installation anyways.</para>
-      </refsect1>
-    </refentry>
+
   </section>
   <section>
     <title>Configuration file</title>
