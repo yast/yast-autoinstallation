@@ -6,8 +6,8 @@
 
 SUBDIRS = autodocs images entities bin components examples autoyast2
 
-xml_file = autoyast2.xml
-style_file = autoyast2.dsl
+xml_file = autoyast.xml
+style_file = autoyast.dsl
 xml_files =  $(wildcard *.xml) 
 
 
@@ -15,9 +15,9 @@ xml_files =  $(wildcard *.xml)
 EXTRA_DIST = $(xml_files) $(style_file)
 
 CLEANFILES = *.dvi *.aux *.tex *.log *.bak *.out\
-  .html.sum; autoyast2.junk profile.dtd.xml elements \
-  elements.xml elements.ent db2html.* profile autoyast2.ps*		\
-  profile.dtd.xml examples.ent components.ent .ps.sum  autoyast2.out autoyast2.pdf \
+  .html.sum; autoyast.junk profile.dtd.xml elements \
+  elements.xml elements.ent db2html.* profile autoyast.ps*		\
+  profile.dtd.xml examples.ent components.ent .ps.sum  autoyast.out autoyast.pdf \
   images.ent img
 
 
@@ -36,15 +36,15 @@ pdf: $(xml_files) examples components images
 		fi;\
 		sum ./$(xml_file) > .ps.sum; \
 		newsum="`cat .pdf.sum`"; \
-		if ! test "$$oldsum" = "$$newsum" || ! test -f autoyast2.pdf; then \
+		if ! test "$$oldsum" = "$$newsum" || ! test -f autoyast.pdf; then \
 			db2pdf  $(xml_file); \
 		fi;
 
 html:  $(xml_files) examples components images
-		rm -rf autoyast2; \
+		rm -rf autoyast; \
 		db2html  $(xml_file); \
-		mkdir -p autoyast2/img; \
-		cp  img/*.png autoyast2/img; 
+		mkdir -p autoyast/img; \
+		cp  img/*.png autoyast/img; 
 
 
 .PHONY: images examples.ent components.ent 
