@@ -17,10 +17,18 @@
         
     include "autoinstall/xml.ycp";
     include "autoinstall/io.ycp";
-  
+
+
+    
     
     // Profile Repository
     global string Repository = "";
+
+    // Package Repository
+    global string PackageRepository = "";
+
+    // Alice Repository
+    global string AliceRepository = "";    
 
     // Templates
     global string TemplateRepository = "";
@@ -41,6 +49,11 @@
      * @return: list ofmodules
      */
     global  list MenuTreeData =[];
+
+
+
+
+    global map generalSettings = $[];
     
     /**
      * Constructor
@@ -84,7 +97,9 @@
 
     global define void Load ()
     ``{
-	Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");	
+	Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
+	PackageRepository = Misc::SysconfigRead( .sysconfig.autoinstall.PACKAGE_REPOSITORY, "/tmp");
+	AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");
 	return;
     }
 
@@ -99,9 +114,10 @@
     ``{
 	// Write some sysconfig variables.
 	//
-	y2warning("Saving configuration data");
+	y2milestone("Saving configuration data");
 	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );
-	SCR::Write( .sysconfig.autoinstall.PACKAGE_REPOSITORY, AIServer::PackageRep );
+	SCR::Write( .sysconfig.autoinstall.PACKAGE_REPOSITORY, PackageRepository );
+	SCR::Write( .sysconfig.autoinstall.ALICE_REPOSITORY, AliceRepository );
 	return;
     }
 
@@ -110,7 +126,7 @@
     
     define void CreateGroupTree (map Groups)
     ``{
-	include "autoinstall/readconfig.ycp";
+	include "readconfig.ycp";
         term groupwidget = `VBox ();
         list grouplist = [];
         grouplist = SortGroups (Groups, maplist (`rawname, `group, Groups, ``(rawname)));

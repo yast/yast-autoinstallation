@@ -167,44 +167,40 @@
      * ISO creation Dialog
      *
      */
-    global define isoDialog()``{
+    global define isoDialog()
+	``{
+		
+	import "Progress";
 	
-	AIServer::nojoliet = true;
-	
-	term contents = `Top(
-			     `VBox(
-				   `VSquash(
-					    `HBox(
-						  `TextEntry(`id(`susedir), _("&SuSE Package Directory:"), AIServer::PackageRep),
-						  `VBox(
-							`VSpacing(),
-							`Bottom(`PushButton(`id(`opensusedir), _("Select &Directory")))
-							)
-						  )
-					    ),
-				   `VSquash(
-					    `TextEntry(`id(`dest), _("&Destination"), "")
-					    )				   
-				   )
-			     );
-	
-	string caption = _("Create Custom CD");
-	string help = _("<P>Enter the location of your copied CDs in
-the <em>SuSE Package Directory</em>
-field. This directory must contain the <b>suse</b> subdirectory, which contains
-the RPMS of one or all copied CDs.</p>
-");
-
-	help = help + _("<p>In the <em>Destination</em>, enter the name of the ISO file to create, such as
-<b>/tmp/suse.iso</b></p>
-");
-
-	help = help + _("<p>Pressing <b>Next</b> will create the directory structure
+	string caption = _("Custom CDs");
+		
+	string help =  _("<p>Pressing <b>Next</b> will create the directory structure
 needed to create the ISO image.</p>
 ");
 
+	list progress_stages =
+	    [
+	     _("Verify package source"),
+	     _("Verify profile consistency"),
+	     _("Verify package availablity")
+	     ];
+
+	list progress_descriptions =
+	    [
+	     _("Verifying package source..."),
+	     _("Verifying control file consistency..."),
+	     _("Verifying package availablity...")	   
+	     ];
 	
-  
+	Progress::New(
+		      _("Verify data for ISO image"),
+		      "",     // progress_title
+		      size( progress_stages ),
+		      progress_stages,
+		      progress_descriptions,
+		      help );
+
+	/*
 	Wizard::SetContentsButtons (caption,
 				    contents,
 				    help,
@@ -229,7 +225,9 @@ needed to create the ISO image.</p>
 		    AIServer::isoFile = f;
 		}
 
-	    }  until (ret == `next || ret == `back || ret == `abort);    
+	    }  until (ret == `next || ret == `back || ret == `abort);
+
+	*/
 	return ret;
     }
 
@@ -248,7 +246,7 @@ needed to create the ISO image.</p>
 	
 	
 	string help = UI(_("<P>
-Please wait while the directory structure for the new ISO file is created.
+Please wait while the directory structure for the new ISO file is being created.
 </P>
 "));
 	help = help + _("<p>Press <b>Next</b> to create the ISO file.</p>");
@@ -309,13 +307,13 @@ Please wait while the directory structure for the new ISO file is created.
 	string datadir = AIServer::productData["datadir"]:"./suse";
 	y2milestone ("datadir %1", datadir);	
 	foreach(`pac, selPacs, ``{
-	    // y2milestone("package: %1", pac);
+	    
 	    list tok = splitstring(pac, " ");
-	    //  "yast2-security 2.6.8 31 noarch";
+	    
 	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
 	    string location = tok[3]:"noarch" + "/" + pacname;
 	    
-	    string localpath =  AIServer::PackageRep + "/" + datadir + "/" + location;	    	  
+	    string localpath =  AIConfig::PackageRepository + "/" + datadir + "/" + location;	    	  
 	    integer pacsize = SCR::Read(.target.size, localpath);
 	    if (pacsize!=-1)
 	    {
@@ -338,6 +336,7 @@ Please wait while the directory structure for the new ISO file is created.
 
 	Progress::Title(_("ISO image directory ready"));
 	Progress::Finish();
+	
 	UI::ChangeWidget(`id(`next), `Enabled, true);	
 
 	any ret  = nil;

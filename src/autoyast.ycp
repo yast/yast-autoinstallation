@@ -39,9 +39,27 @@
     boolean popup_open = false;
     symbol ct = `single;
 
+
+
     
-    global map dialogs = $[
-			   "configurationType"	:	``(   configurationType() ),
+    list menuitems = [`menu_open,
+		      `menu_delete,
+		      `menu_save,
+		      `menu_saveas,
+		      `menu_alice,
+		      `menu_kickstart,
+		      `menu_new,
+		      `menu_iso,
+		      `menu_exit,
+		      `menu_source,
+		      `menu_tree,
+		      `menu_reps,
+		      `menu_general,
+		      `menu_clone
+    ];
+
+    
+    global map dialogs = $[			 
 			   "file"		:	``(   FileDialog() ),
 			   "tree"		:	``(   ConfTree() ),
 			   "profiles"		:	``(   ManageProfiles() ),
@@ -71,19 +89,7 @@
     global define symbol AutoSequence () ``{
 
 	map sequence = $[
-			 "ws_start" : "configurationType",
-			 "configurationType":
-			 $[
-			   `abort	: `abort,
-			   `single	: "file",
-			   `profiles	: "profiles",
-			   `pref	: "preferences",			   
-			   `clone	: "cloneSystem",			  
-			   `alice	: "alice",
-			   `kickstart   : "kickstart",
-			   `hostConf	: "hosts",
-			   `directmedia : "openProfile"
-			 ],
+			 "ws_start" : "tree",		
 			 "alice":
 			 $[
 			   `abort	: `abort,
@@ -91,24 +97,23 @@
 			 ],
 			 "aliceList":
 			 $[
-			   `abort	: `abort,
-			   `next	: "configurationType",
+			   `abort	: `abort,			  
 			   `save	: "save",
-			   `load	: "tree",
-			   `failed	: "configurationType"
+			   `load	: "tree"
+			  
 			 ],
 			 "hosts":
 			 $[
 			   `abort	: `abort,
-			   `next	: "configurationType"
+			   `next	: "tree"
 			 ],
 			 "kickstart":
 			 $[
 			   `abort	: `abort,
-			   `next	: "configurationType",
+			   `next	: "tree",
 			   `save	: "save",
 			   `load	: "tree",
-			   `failed	: "configurationType"
+			   `failed	: "tree"
 			 ],
 			 "cloneSystem":
 			 $[
@@ -128,7 +133,7 @@
 			 ],
 			 "createiso":
 			 $[
-			   `next	: "configurationType",
+			   `next	: "tree",
 			   `abort	: `abort
 			 ],			
 		
@@ -154,14 +159,8 @@
 			   `next	: "merge"
 			 ],
 			 "tree":
-			 $[
-			   `abort	: `abort,
-			   `single	: "save",
-			   `profiles	: "profile",
-			   `clone	: "save",
-			   `alice	: "save",
-			   `kickstart	: "save",
-			   `next	: "save"
+			 $[			
+			   `next	: `ws_finish
 			 ],
 			 "classes":
 			 $[
@@ -189,7 +188,7 @@
 			 "preferences":
 			 $[
 			   `abort	: `abort,
-			   `next	: "configurationType"
+			   `next	: "tree"
 			 ]
 	];
 
@@ -213,150 +212,7 @@
     }
 
 
-    /**
-     * Main dialog
-     * @return symbol
-     */
 
-    global define symbol configurationType()
-	``{
-	Wizard::SetScreenShotName ("autoyast-configurationType");
-	
-	y2milestone("type %1", ct);
-	// Translators: dialog caption
-	string caption = _("Autoinstallation Configuration System");
-	term contents =
-	    `VBox(
-		  `RadioButtonGroup (
-				     `id (`ctg),
-				     `VBox (
-					    `VSpacing (1),
-					    `Left(`Label(_("Profile Management"))),
-					    `VSpacing (0.5),
-					    `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`single),
-										`opt (`notify),
-										_("Create or Edit Configurati&ons"),
-										ct == `single)
-								  )
-							   )
-						  ),					  
-					    `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`profiles),
-										`opt (`notify),
-										_("&Create or Edit Classes"),
-										ct == `profiles)
-								  )
-							   )
-						  ),
-					    `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`clone),
-										`opt (`notify),
-										_("C&lone this machine"),
-										ct == `clone)
-								  )
-							   )
-						  ),
-					     `VSpacing (1),
-					    `Left(`Label(_("Media Management"))),
-					    `VSpacing (0.5),
-					  
-					    `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`directmedia),
-										`opt (`notify),
-										_("&Create ISO Image"),
-										ct == `directmedia)
-								  )
-							   )
-						  ),
-					 
-					    `VSpacing (1),
-					    `Left(`Label(_("Import data"))),
-					    `VSpacing (0.5),
-					    `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`alice),
-										`opt (`notify),
-										_("Import Alice confi&guration"),
-										ct == `alice)
-								  )
-							   )
-						  ),
-					    `HBox(
-						  `HWeight(10,
-							   `Empty()
-							   ),
-						  `HWeight(90,
-							   `Left (
-								  `RadioButton (`id (`kickstart),
-										`opt (`notify),
-										_("&Import Kickstart file"),
-										ct == `kickstart)
-								  )
-							   )
-						  ),
-					    `VStretch(),
-					    `PushButton(`id(`pref), _("&Preferences")),
-					    `VSpacing(1)
-					    )
-				     )
-
-		  );
-
-
-	
-	Wizard::SetContentsButtons (caption,
-				    contents,
-				    ConfigurationTypeHelp(),
-				    BackButtonLabel (),
-				    NextButtonLabel ());
-
-	// initPM();
-	any ret = nil;
-	while (true)
-	{
-	    ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
-
-	    ret = UI::UserInput ();
-	    if (ret == `back || ret == `pref || ret == `next  || (ret == `abort && UI::ReallyAbortPopup (Profile::changed)))
-	    {
-		break;
-	    }
-	}	
-
-	if (ret == `back   || ret == `abort || ret == `pref)
-	{
-	    return ret;
-	}
-	else
-	{
-	    return ct;
-	}
-    }
     any ret = AutoSequence ();
     Wizard::RestoreScreenShotName (); 
     return ret;

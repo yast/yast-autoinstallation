@@ -80,6 +80,24 @@ configuration files.
 
     }
 
+    global define kickstartHelp() ``{
+    	
+	string help = _("<p>Using this feature, you can import <b>Kickstart</b> configuration
+files.</p>
+");
+	help = help + _("<p>System configuration in a <em>Kickstart</em> file may vary in its scope from what is offered
+in <b>AutoYaST</b>, so some limitations should be taken into consideration. A standard <em>Kickstart</em>
+configuration file with no distribution-specific configuration options can still be imported without
+much loss of data.</p>
+");
+
+	help = help + _("<p>The main problem you will be facing when importing a <em>Kickstart</em> file
+is the different package and package selection names used. They must be adapted manually.</p>
+");
+
+	return help;
+    }
+    
 
 }
 
