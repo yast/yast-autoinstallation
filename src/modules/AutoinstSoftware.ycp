@@ -50,7 +50,8 @@
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
 	showErrors = settings["show_errors"]:true;
-	if (Mode::initial) {
+	if (Mode::initial)
+	{
 	    import "AutoInstall";
 	    AutoInstall::IgnorePkgErr = showErrors;
 	}
@@ -206,7 +207,7 @@
 	}
 
 	list extraPackages = calcExtraPackages ();
-	y2milestone("Packages selected in autoinstall mode: %1", extraPackages);
+	y2debug("Packages selected in autoinstall mode: %1", extraPackages);
 
 	if (size(extraPackages) > 0 )
 	{
@@ -282,11 +283,6 @@
 		allpackages = union(allpackages, ["yast2-nfs-server", "nfs-utils"]);
 	}
 
-	if (haskey(Profile::Flat, "inetd")) {
-		map inetd = Profile::Flat["inetd"]:$[];
-		if (inetd["start_inetd"]:false)
-			allpackages = add(allpackages, "inetd");
-	}
 
 	if (haskey(Profile::Flat, "nisplus")) {
 		map nisplus = Profile::Flat["nisplus"]:$[];
@@ -313,7 +309,7 @@
 	{
 	    allpackages = union(allpackages,extraPackages);
 	}
-	y2milestone("package list calculated for auto-installation: %1", allpackages);
+	y2debug("package list calculated for auto-installation: %1", allpackages);
 	return allpackages;
     }
 
