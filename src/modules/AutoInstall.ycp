@@ -88,6 +88,10 @@
     // Hard Reboot
     global boolean Reboot = false;
 
+    // Dont Hard Reboot
+    global boolean ForceBoot = false;
+
+    
     // Keyboard
     global string Keyboard = "";
 
@@ -315,7 +319,11 @@
 			    Mouse =  f;			
 			}
 		    });		 
-		} 				    		
+		}
+		else if (haskey(v, "probe"))
+		{
+		    
+		}
 	    }
 	    else if (k == "mouse" && is(v, string))
 	    {
@@ -326,7 +334,10 @@
 		Confirm = v["confirm"]:true;
 		interactive = v["interactive"]:true;
 		Reboot = v["reboot"]:false;
-		if (haskey(v, "interactive_boot")) {
+		ForceBoot =  v["forceboot"]:false;
+		
+		if (haskey(v, "interactive_boot"))
+		{
 		    string key = "PROMPT_FOR_CONFIRM";
 		    string val = (v["interactive_boot"]:false) ? "yes"  : "no";
 		    string file = "boot";
@@ -340,17 +351,8 @@
 	    else if (k == "confirm")
 	    {
 		Confirm = v;
-	    }
-	    else if (k == "encryption_method")
-	    {
-		Encryption = v;
-	    }
-	    else if (k == "encryption")
-	    {
-		Encryption = v["method"]:"des";
-	    }
+	    }	  
 	    		
-
 	});
 	
 	if (!Confirm)
