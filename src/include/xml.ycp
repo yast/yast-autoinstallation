@@ -84,21 +84,6 @@
 	XML::xmlCreateDoc(`class, doc);
     }
 
-    global define void profileFileSetup()
-	``{
-
-	map doc = $[];
-	doc["listEntries"] =	$[
-				  "profiles":"template"
-	];
-	doc["rootElement"] = "autoinstall";
-	doc["systemID"] = "/usr/share/YaST2/include/autoinstall/profiles.dtd";
-	doc["nameSpace"] = "http://www.suse.com/1.0/yast2ns";
-	doc["typeNamespace"] = "http://www.suse.com/1.0/configns";
-	XML::xmlCreateDoc(`profileConf, doc);
-    }
-
-
     global define void aliceXmlSetup()
 	``{
 

@@ -16,40 +16,32 @@
 
 {
     module "AIClass";
+    
+    import "AIConfig";
     import "XML";
     import "Summary";
     include "autoinstall/xml.ycp";
 
-    global string classDir = "/var/lib/autoinstall/classes";
+
+
+    
+    global string classDir = AIConfig::Repository + "/classes";
 
     global string ClassConf = "/etc/autoinstall";
 
-
-    global map Working = $[];
+    
 
     global list Profiles = [];
 
     global list Classes = [];
+    
+    global list confs = [];
 
-    global map controlFiles = $[];
-
-    global boolean changed = false;
-    // local
-
-    string class_file = "classes.xml";
-
-    string profile_file = "profiles.xml";
+    string class_file = "classes.xml";   
 
     string classPath = sformat("%1/%2", ClassConf, class_file);
-
-    string profileConfPath = sformat("%1/%2", ClassConf, profile_file);
-
-
-    global map Working = $[];
-
-
-    global list currentProfile = [];
-
+ 
+   
 
     /*
      * Constructor
@@ -58,27 +50,11 @@
 
     global define void AIClass()
 	``{
-	Load();
 	classSetup();
-	profileFileSetup();
+	Read();
 	return;
     }
 
-
-    /**
-     * find a profile path
-     * @param string profile name
-     * @return string profile Path
-     *
-     */
-    global define findPath(string name)
-	``{
-	map result = select(filter(map c,  Profiles,
-				  ``(lookup(c,"name","")== name)),0,$[]);
-
-	string profile_path = sformat("%1/%2/%3", classDir, result["class"]:"", result["name"]:"default");
-	return profile_path;
-    }
 
 
 
@@ -88,7 +64,7 @@
 			       )
 	``{
 	string tmpdir = SCR::Read( .target.tmpdir );
-	string MergeCommand = "/usr/bin/xsltproc --param replace \"'false'\" --param dontmerge \"'addon'\" --param with ";	
+	string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'addon'\" --param with ";	
 	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"") + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
@@ -105,167 +81,80 @@
 
 
     /**
-     * Load stored data in sysconfig
-     * @return	void
-     */
-
-    global define void Load ()
-    ``{
-	string tmpclassDir = SCR::Read( .sysconfig.autoinstall.CLASS_DIR);
-	if (tmpclassDir != nil)
-	{
-	    classDir = tmpclassDir;
-	}
-	return;
-    }
-
-
-    /**
-     * Save Configuration global settings
-     * @return	void
-     */
-
-    global define void Save ()
-    ``{
-	// Write sysconfig variables.
-	//
-	y2debug("Saving class information");
-	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir );
-	return;
-    }
-
-
-    /**
      * Read classes
      */
-    global define void readClasses()
+    global define void Read()
 	``{
 	if (SCR::Read(.target.size, classPath) != -1)
 	{
 	    // TODO: use XML module
-	    map tmp = SCR::Read(.xml, classPath);
-	    // y2debug("tmp %1", tmp["classes"]:[]);
+	    map tmp = SCR::Read(.xml, classPath);	    
 	    Classes = tmp["classes"]:[];
 	}
 	return;
     }
 
-    /**
-     * Read configuration files
-     */
-    global define void readProfiles()
-	``{
-	// TODO: use XML module
-	if (SCR::Read(.target.size, profileConfPath ) != -1)
-	{
-	    map tmp = SCR::Read(.xml, profileConfPath);
-	    Profiles = tmp["profiles"]:[];
-	}
-	y2debug("Profiles: %1", Profiles);
-	return;
-    }
-    /**
-     * Parse all configuration files an read directories
-     *
-     */
-    global define void Parse()
-	``{
-	readClasses();
-	readProfiles();
-	readClassFiles();
-	return;
-    }
 
+    
     /**
      * Read files from class directories
      * @return void
      */
-    global define void readClassFiles()
+    global define void Files()
 	``{
 	foreach(map class, Classes,
 		``{
 	    list files = SCR::Read(.target.dir, classDir + "/" + class["name"]:"xxx");
-	    controlFiles=add(controlFiles, class["name"]:"xxx" , files);
+	    y2milestone("Files in class %1: %2", class["name"]:"xxx", files);
+	    list tmp_confs = maplist(string file , files , ``{
+		map conf = $[];
+		conf["class"] =  class["name"]:"xxx";
+		conf["name"]  = file;
+		return (conf);		
+	    });
+	    confs = union(confs, tmp_confs);
 	});
 	return;
     }
 
 
-
-    /*
-     * CreateClassDirs()
-     *
-     */
-
-    global define CreateClassDirs()
-	``{
-
-	foreach(map class, Classes,
-		``{
-	    list dirs = SCR::Read(.target.dir, classDir);
-	    string name = lookup(class,"name","Unknown");
-	    string full_path = sformat("%1/%2", classDir, name);
-	    if (contains(dirs, name))
-		return;
-
-	    any ret = SCR::Execute (.target.mkdir, full_path);
-	    if (!ret)
-	    {
-		y2error("Error while creating directory %1: %2", full_path, ret);
-	    }
-	    else
-	    {
-		y2debug("directory created");
-	    }
-	});
-	return;
-    }
 
     /**
-     * Save Class definitions
-     *
+     * Save Class definitions     
      */
 
-    global define SaveClasses()
+    global define Save()
 	``{
 	map tmp = $[ "classes":Classes];
 	y2debug("saving classes: %1", classPath);
 	return (XML::YCPToXMLFile(`class, tmp, classPath));
     }
 
+
+
     /**
-     * Save configurations
-     *
-     */
-    global define SaveProfiles()
-	``{
-	map tmp = $["profiles":Profiles];
-	return (XML::YCPToXMLFile(`profileConf, tmp, profileConfPath));
-    }
-
-
-
-
-
-
-
-
+     * Import configuration     
+     */  
 
     global define boolean Import(list settings)
-	``{
-
-	Set(settings);
+	``{	
 	return true;
     }
 
-
+    /**
+     * Export configuration     
+     */ 
 
     global define list Export()
 	``{
-	list settings = currentProfile;
+	list settings = [];
 	return settings;
     }
 
+    /**
+     * Configuration Summary
+     */ 
+    
     global define string Summary() ``{
 	string summary = "";
 
@@ -279,8 +168,20 @@
 	return summary;
     }
 
-    global define void Set(list settings) ``{
-	currentProfile = settings;
-	return;
+    
+    /**
+     * find a profile path
+     * @param string profile name
+     * @return string profile Path
+     *
+     */
+    global define findPath(string name)
+	``{
+	map result = select(filter(map c,  confs,
+				   ``(lookup(c,"name","")== name)),0,$[]);
+
+	string profile_path = sformat("%1/%2/%3", AIConfig::classDir, result["class"]:"", result["name"]:"default");
+	return profile_path;
     }
+
 }

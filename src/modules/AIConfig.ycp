@@ -31,12 +31,9 @@
 
     // Alice Repository
     global string AliceRepository = "";    
-
-    // Templates
-    global string TemplateRepository = "";
 	
-
-        
+    global string classDir = "";
+            
     // Current file name
     global string currentFile = "";
      
@@ -86,10 +83,7 @@
 	{
 	    Repository = "/var/lib/autoinstall/repository";
 	}
-	if (TemplateRepository == "" || TemplateRepository == nil )
-	{
-	    TemplateRepository = Repository + "/templates";
-	}	
+	
 	return;	
     }
 
@@ -104,6 +98,7 @@
 	Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
 	PackageRepository = Misc::SysconfigRead( .sysconfig.autoinstall.PACKAGE_REPOSITORY, "/tmp");
 	AliceRepository  = Misc::SysconfigRead( .sysconfig.autoinstall.ALICE_REPOSITORY, "/tmp");
+	classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );
 	return;
     }
 
@@ -122,6 +117,7 @@
 	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );
 	SCR::Write( .sysconfig.autoinstall.PACKAGE_REPOSITORY, PackageRepository );
 	SCR::Write( .sysconfig.autoinstall.ALICE_REPOSITORY, AliceRepository );
+	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir);
 	return;
     }
 

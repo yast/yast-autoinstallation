@@ -20,42 +20,15 @@
     include "autoinstall/classes.ycp";
     include "ui/common_messages.ycp";    
 
-    list args = WFM::Args ();
-
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( WFM::Args (0), list ) )
-    {
-	y2error ("Bad argument: %1", WFM::Args (0));
-	return false;
-    }
-
-    list settings = [];
-    {
-	integer i = 0;
-	while (i < size (WFM::Args()))
-	{
-	    if (is (WFM::Args (i), list) && nil != WFM::Args (i))	settings = WFM::Args (i);
-	    i = i + 1;
-	}
-    }
-
-    y2milestone("Imported: (%1)", settings);
-    AIClass::Import ( settings );
 
 
     define classConfiguration() ``{
 	string title = _("Class Configuration");
-	string help = _("<p>Choose one or more of the listed classes to which the current control file should belong.
-Adding classes to a control file will automatically change the control file from a usable control file to a template.</p>
+	string help = _("<p>Choose one or more of the listed classes to which the current control
+file should belong.</p>
 ");
 
-	help = help + _("<p>Later, you will be able to generate an installable control file from this template by merging the
-classes.</p>
-");
+
 	
 	map profiles = $[];
 	if (size(AIClass::Classes) == 0 )							      
