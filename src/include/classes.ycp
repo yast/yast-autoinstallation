@@ -514,7 +514,7 @@ to perform a merge.
 		}
 
 		list sorted_profiles =  sort(map x, map y, filter(map c, toset(selected_profiles),``(c["profile"]:""!= "none")),
-					     ``(x["order"]:0<=y["order"]:0)
+					     ``(x["order"]:0<y["order"]:0)
 					     );
 		y2debug("Selected Profiles: %1", sorted_profiles);
 
