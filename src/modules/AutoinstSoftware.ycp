@@ -22,6 +22,8 @@
     import "Language";
     import "Kernel";
     import "AutoinstConfig";
+    import "ProductControl";
+    import "AutoinstImage";
 
     import "Require";
 
@@ -49,6 +51,11 @@
     global list<string> additional_locales = [];
 
 
+    string imagefile = "";
+    string iface = "";
+    boolean imaging = false;
+
+
     /**
      * Import data
      * @param settings settings to be imported
@@ -64,6 +71,13 @@
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
 	remove_packages = (list<string>)union ( settings["remove-packages"]:[], Require::RemoveModulePackages );
+
+
+        // Imaging
+        map<string, any> image = settings["software_images"]:$[];
+        imaging = image["enable_multicast_images"]:false;
+        imagefile = image["image_file"]:"";
+        iface = image["network_device"]:"";
 
 	return true;
     }
@@ -254,6 +268,19 @@
      */
     global define boolean Write()
 	``{
+
+        if (imaging)
+        {
+            if (imagefile!="") {
+                ProductControl::DisabledModules=add(ProductControl::DisabledModules, "kickoff");
+                ProductControl::DisabledModules=add(ProductControl::DisabledModules, "rpmcopy");
+                AutoinstImage::image_name = imagefile;
+                AutoinstImage::iface = iface;
+                AutoinstImage::enabled = true;
+                return true;
+            }
+        }
+
 	boolean ok = true;
 	Pkg::SetLocale (Language::language);
         additional_locales=add(additional_locales, Language::language );
