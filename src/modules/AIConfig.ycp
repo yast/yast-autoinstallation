@@ -154,6 +154,53 @@
 
     }
 
+
+
+    global define removeClasses() ``{
+	foreach(`p,`d, ModuleMap, ``{
+	    // Set resource name, if not using default value
+	    string resource = "";
+	    if (haskey(d,"AutoinstResource"))
+		resource = d["AutoinstResource"]:"unknown";
+	    else
+		resource = p;
+	    
+	    if (d["AutoinstPath"]:"" == "install") {		
+		if (size(Install[resource]:$[])==0 && haskey(Install, resource))
+		{		    
+		    Install=remove(Install,resource);
+		}	
+	    }
+	    else
+	    {		
+		if (size(Configure[resource]:$[])==0 && haskey(Configure, resource))
+		{		
+		    Configure=remove(Configure,resource);
+		}
+	
+	    }	
+	});
+
+	if ( size(Install["classes"]:[])>0)
+	{	    
+	    Install = remove(Install, "classes");
+	}
+
+	if (Install!= $[])
+	    Profile["install"] = Install;
+	else if (haskey(Profile,"install"))
+	    Profile=remove(Profile,"install");
+	
+	if (Configure!=$[])
+	    Profile["configure"] = Configure;
+	else if (haskey(Profile,"configure"))
+	    Profile=remove(Profile,"configure");
+	
+	return;	
+    }
+
+
+    
     /**
      * Reset profile to initial status
      * @return void
@@ -186,7 +233,9 @@
 	    }
 	}
 	else
+	{
 	    return (XML::YCPToXMLFile(`profile, Profile,  filePath));
+	}
     }
 
  

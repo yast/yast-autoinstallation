@@ -11,8 +11,7 @@
     module "AIStorage";
     textdomain "autoinst";
     include "partitioning/partition_defines.ycp";
-    
-
+    import "Partitions";
 
     global list drives = [];
 
@@ -24,7 +23,8 @@
      * @return void
      */
 
-    global define void Set()``{
+    global define void Set()
+	``{
 	return;
     }
 
@@ -32,8 +32,26 @@
      * Dump the settings to a map, for autoinstallation use.
      * @return map
      */
-    global define list Export()``{
-	return drives;
+    global define list Export()
+	``{
+	list clean_drives = maplist(`d, drives,
+				    ``{
+					list p = maplist(`part, d["partitions"]:[] ,
+							 ``{
+							     y2milestone("part :%1", part);
+							     if (haskey(part, "fsid")) {
+								 part = remove(part, "fsid");
+							     }
+							     if (haskey(part, "used_fs")) {
+								 part = remove(part, "used_fs");
+							     }
+							     return part;
+							 });
+					d["partitions"] = p;
+					return d;
+				    });
+	
+	return clean_drives;
     }
 
 
@@ -84,9 +102,13 @@
 		    b=add(b, lookup(p,"size", ""));
 		    // integer pid = tohexstring(p["partition_id"]:0) ;
 		    if (!haskey(p, "filesystem_id"))
-			b=add(b, UI::FsIdToString(p["partition_id"]:131));
+		    {
+			b=add(b, Partitions::FsIdToString(p["partition_id"]:131));
+		    }
 		    else
-			b=add(b, UI::FsIdToString(p["filesystem_id"]:131));
+		    {
+			b=add(b, Partitions::FsIdToString(p["filesystem_id"]:131));
+		    }
 
 		    
 		    if (lookup(p,"filesystem",`nothing) == `reiser)
