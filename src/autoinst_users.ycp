@@ -51,7 +51,7 @@
      * Set root password and primary user account.
      *
      */
-    
+
     global define Authentication()
 	``{
 	symbol em = `des;
@@ -68,7 +68,7 @@
 		primaryUser = user;
 	    }
 	});
-	
+
 	string username = "";
 
 	term contents =
@@ -139,12 +139,12 @@ clear text</p>");
 	help = help + _("<b>IMPORTANT:</b><br>If you choose an encryption method other than the default (<b>DES</b>), make sure
 you also select this method in the <b>security configuration</b> to guarantee that all passwords on the system
 are encrypted the same way</p>");
-	
+
 	Wizard::SetContents(_("System Users"),
 			    contents, help, true, true);
 	any ret = nil;
 
-	
+
 	string rpassword =  "";
 	string upassword = "";
 	boolean renc = false;
@@ -164,14 +164,14 @@ are encrypted the same way</p>");
 		    // explain how a password has to be formed
 		    UI::MessagePopup(_("The password must have at least 5 characters.
 Please try again.
-  "));		  	
+  "));
 		    continue;
 		}
 		any ret2 = findfirstnotof( rpassword, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|\?{[()]}" );
 
 		if ( ret2 != nil )
 		{
-		    UI::MessagePopup(_("The password may only contain the following characters:\n 0..9, a..z, A..Z, and any of \"#* ,.;:._-+!$%&/|\?{[()]}\".\nPlease try again."));		  		  
+		    UI::MessagePopup(_("The password may only contain the following characters:\n 0..9, a..z, A..Z, and any of \"#* ,.;:._-+!$%&/|\?{[()]}\".\nPlease try again."));
 		    continue;
 		}
 
@@ -187,7 +187,7 @@ Please try again.
 		{
 		    UI::MessagePopup(_("The user name must be between 2 and 8 characters in length.
 Please try again.
-"));		    		    
+"));
 		    continue;
 		}
 
@@ -200,28 +200,28 @@ Please try again.
 lowercase letters and digits
 and must begin with a letter.
 Please try again.
-"));		    		    
+"));
 		    continue;
 		}
 
-	
+
 		if (size (upassword) < 5 && size (upassword) > 1)
 		{
 		    // explain how a password has to be formed
 		    UI::MessagePopup(_("The password must have at least 5 characters.
 Please try again.
-  "));		    		    
+  "));
 		    continue;
 		}
 		ret2 = findfirstnotof( upassword, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|\?{[()]}" );
 
 		if ( ret2 != nil )
 		{
-		    UI::MessagePopup(_("The password may only contain the following characters:\n 0..9, a..z, A..Z, and any of \"#* ,.;:._-+!$%&/|\?{[()]}\".\nPlease try again."));		    		    
+		    UI::MessagePopup(_("The password may only contain the following characters:\n 0..9, a..z, A..Z, and any of \"#* ,.;:._-+!$%&/|\?{[()]}\".\nPlease try again."));
 		    continue;
 		}
 
-	    } 
+	    }
 	    if (rpassword!="")
 	    {
 		change(RootUser,"user_password", (!renc) ?  cryptPassword(rpassword, em) : rpassword);
@@ -258,11 +258,11 @@ Please try again.
 	``{
 	string password = "";
 	if (em == `md5 )
-	{      
+	{
 	    password = cryptmd5 (pw);
 	}
 	else if (em == `blowfish )
-	{     
+	{
 	    password = cryptblowfish (pw);
 	}
 	else
@@ -273,7 +273,7 @@ Please try again.
     }
 
 
-    
+
     define Summary()``{
 	import "Summary";
 	string summary = "";
@@ -309,7 +309,7 @@ Please try again.
 	Wizard::SetContents(_("Users"),
 			    contents, "", true, true);
 
-	
+
     }
     set_contents();
     any result = nil;
@@ -318,8 +318,8 @@ Please try again.
 	ret = UI::UserInput();
 	if (ret == `configure)
 	{
-	    
-	    Wizard::CreateDialog ();	    
+
+	    Wizard::CreateDialog ();
 	    result =  Authentication();
 	    UI::CloseDialog ();
 
@@ -331,11 +331,11 @@ Please try again.
 	}
 	else if ( ret == `reset)
 	{
-	    settings = [];	    
+	    settings = [];
 	    set_contents();
 	}
     } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
 
     return [ret, settings];
-}    
+}
 }
