@@ -208,7 +208,7 @@
 
 		string chunk_size = "4";
 		map options = md["raid_options"]:$[];
-		string raid_type	= options["raid_type"]:"raid1";
+		string raid_type	= options["raid_type"]:md["raid_type"]:"raid1";
 
 		if ( raid_type == "raid5" )
 		    chunk_size = "128";
@@ -226,7 +226,6 @@
 		    chunk_size = sel_chunksize;
 		    options["chunk_size"]	= chunk_size;
 		}
-
 
 		if(  raid_type == "raid5" && options["parity_algorithm"]:"" == "" )
 		    options["parity_algorithm"] = "left-symmetric";
