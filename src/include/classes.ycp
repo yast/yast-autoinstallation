@@ -473,7 +473,7 @@ script is used.</P>
 	list widgets = [ `merge, `empty, `current ];
 
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
-	UI::ChangeWidget(`id(`next), `Enabled, false);
+	Wizard::DisableNextButton();
 
 	any ret = nil;
 	repeat {
@@ -527,7 +527,7 @@ to perform a merge.
 		    MergeAll(sorted_profiles, base);
 		}
 
-		UI::ChangeWidget(`id(`next), `Enabled, true);
+		Wizard::EnableNextButton();
 	    }
 	} until  (ret == `next || ret == `back );
 
