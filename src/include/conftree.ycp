@@ -13,8 +13,6 @@
     import "Call";
 
     include "readconfig.ycp";
-
-
     
     
     /**
@@ -44,7 +42,7 @@
 
     
     global define content_dialog(map mod, any settings) ``{
-	string summary =  Call::Function(clientName, ["Summary", settings]);
+	string summary =  Call::Function(module_auto, ["Summary", settings]);
 	string caption = d["Name"]:"Configurtion";
 	string buttonLabel = d["Helptext"]:"Configure";
 	term contents =
@@ -64,31 +62,50 @@
 			    contents, "", true, true);
     }
 
-    global define module_contents(string clientName, map d, any settings ) ``{
+
+
+    /**
+     * Module configuration dialog
+     *
+     */
+    global define module_contents(map d, any settings ) ``{
+
+	any original_settings = settings;
 	
+	string module_auto = d["AutoClient"]:"none";	
 	content_dialog( d , settings);
 	any ret= nil;
+
+	
 	repeat {
 	    ret = UI::UserInput();
-	    if(ret == `configure)
+	    
+	    if( ret == `configure )
 	    {
-		any seq = Call::Function(clientName, ["Change", settings]);
+		any seq = Call::Function(module_auto, ["Change", settings]);
+		
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
-		    settings = Call::Function(clientName, ["Result", $[]]);
+		    settings = Call::Function(module_auto, ["Result", settings]);
 		}
-		y2milestone("settings: %1", settings);
+		y2milestone("New Settings: %1", settings);
 		content_dialog(d,settings);
 	    }
 	    else if( ret == `reset)
-	    {
-		Call::Function(clientName, ["Reset", $[]]);
-		content_dialog(d, $[]);
+	    {		
+		settings = Call::Function(module_auto, ["Reset", settings]);		
+		content_dialog( d , settings );
 	    }
-	    y2milestone("return %1", ret);
-	} until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key || contains(menuitems, ret) );
-
-	return [ ret, settings];
+	     
+	    if ( settings != original_settings )
+	    {				
+		Profile::changed = true;
+	    }  
+	    Profile::Flat[resource] =  settings;
+	    
+	} until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key || contains(menuitems, ret) );		
+	
+	return ret;
     }
 
 
@@ -236,100 +253,13 @@
 		if (tree_item == p)
 		{
 		    // Set resource name, if not using default value
-		    string resource = "";		    
-		    if (haskey(d,"AutoinstResource"))
-		    {
-			resource = d["AutoinstResource"]:"unknown";
-		    }
+		    string resource = AIConfig::getResource(p);		    
+		  		    		    
+		    string data_type = d["AutoinstDataType"]:"map";
+		    if ( data_type == "map")
+			ret = module_contents(d, Profile::Flat[resource]:$[]);
 		    else
-		    {
-			resource = p;
-		    }
-
-		    string module_auto = "";
-		    // determine name of client, if not default name
-		    if (haskey(d,"AutoClient"))
-		    {
-			module_auto = d["AutoClient"]:"none";
-		    }
-		    else
-		    {
-			module_auto = sformat("%1_auto", p);
-		    }
-		    list result = [];
-		    if (d["AutoinstDataType"]:"map" == "map")
-		    {
-			
-			
-			if (d["AutoinstPath"]:"configure" == "install")
-			{
-			    y2milestone("Calling external function with data = %1", Profile::Install[resource]:$[]);
-			    result = module_contents(module_auto, d, Profile::Install[resource]:$[]);			    
-			}
-			else
-			{
-			    y2milestone("Calling external function with data = %1", Profile::Configure[resource]:$[]);
-			    result = module_contents(module_auto, d, Profile::Configure[resource]:$[]);			    
-			}
-			ret = select(result,0,`none);
-			map data = select(result,1,$[]);			
-
-
-			if (d["AutoinstPath"]:"configure" == "install")
-			{			    
-			    if (data!=eval(Profile::Install[resource]:$[]))
-			    {				
-				Profile::changed = true;
-			    }
-			    Profile::Install[resource] =  data;
-			}
-			else
-			{
-			    if (data!=eval(Profile::Configure[resource]:$[]))
-			    {
-				Profile::changed = true;
-			    }	
-			    Profile::Configure[resource] =  data;
-			}
-			y2milestone("New data for %1: %2", resource, data);
-		    }
-		    else
-		    {
-
-			if (d["AutoinstPath"]:"configure" == "install")
-			{
-			    result = CallModule(module_auto, [Profile::Install[resource]:[]]);
-			}
-			else
-			{
-			    result = CallModule(module_auto, [Profile::Configure[resource]:[]]);
-			}
-
-			list data = select(result,1,[]);
-			ret = select(result,0,`empty);
-
-
-			if (d["AutoinstPath"]:"configure" == "install")
-			{
-			    if (data!=Profile::Install[resource]:[])
-			    {				
-				Profile::changed = true;
-			    }
-			    Profile::Install[resource] =  data;
-			}
-			else
-			{
-			    if (data != Profile::Configure[resource]:[])
-			    {				
-				Profile::changed = true;
-			    }
-			    Profile::Configure[resource] =  data;
-			}
-			y2milestone("New data for %1: %2", resource, data);
-		    }
-
-
-
+			ret = module_contents(d, Profile::Flat[resource]:[]);		   		    		    
 		}
 	    });
 
@@ -412,8 +342,7 @@
 			else
 			{
 			    continue;
-			}
-			
+			}			
 		    }
 		    else
 		    {

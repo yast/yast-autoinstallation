@@ -83,6 +83,76 @@
     }
 
 
+    global define string checkProfile() ``{
+	import "Profile";
+
+	map _prof = Profile::current;
+
+	map _conf = _prof["install"]:$[];
+	map _soft = _conf["software"]:$[];
+
+	string base = _soft["base"]:"";
+	list addons = _soft["addons"]:[];
+	list packs  = _soft["packages"]:[];
+	string kernel = _soft["kernel"]:"";
+
+
+	string error_msg = "";
+	
+	if (base == "" && size(packs)<20) {
+	    error_msg = _("Base selection not defined!");
+	}
+	else if (size(software) == 0) {
+	    error_msg = _("Software resource not defined!");
+	}
+	return error_msg;
+    }
+
+    global define string checkPackageAvail() ``{
+	 
+	string descrDir 	= ISO::productData["descrdir"]:"suse/setup/descr";
+	string dataDir 	= ISO::productData["datadir"]:"./suse";
+	string sourceDir 	= ISO::sourceDir;
+	string packDB 		= descrDir + "/packages";	 
+	Progress::Title(sformat(_("Checking for package database: %1"), packDB));
+
+	string error_msg = "";
+	if (SCR::Execute(.target.size, sourceDir + "/" + packDB) == -1 ) {
+	    error_msg = _("Package database not found.");
+	}
+
+	Progress::Title(_("Checking for package availability"));
+	
+	list selPacs = Pkg::GetPackages (`selected , false);
+	list failed = [];
+	foreach(`pac, selPacs, ``{
+	    
+	    list tok = splitstring( pac , " ");
+	    
+	    string pacname = tok[0]:"error" + "-" + tok[1]:"1.0"  + "-" + tok[2]:"0" + "." + tok[3]:"noarch" + ".rpm";
+	    string location = tok[3]:"noarch" + "/" + pacname;
+	    
+	    string localpath =  ISO::sourceDir + "/" + dataDir + "/" + location;	
+	    integer pacsize = SCR::Read(.target.size, localpath);
+	    
+	    if (pacsize == -1)
+	    {	
+		failed=add(failed, tok[0]:"Error");
+	    }
+	    
+	  
+	  
+	});
+	ISO::missing_packages = failed;
+	if (size(failed) > 0 )
+	{
+	    error_msg = sformat(_("%1 Packages not available."), size(failed));
+	}
+
+	return error_msg;
+    }
+    
+
     /**
      * Set packages
      */
@@ -132,16 +202,14 @@
      */
     global define isoSizeDialog(integer expectedSize, string filename)``{
 
-	string iso_msg = _("Please wait while the ISO file is created.");
+	string iso_msg = _("Please wait while the ISO file is being created...");
 	if (UI::HasSpecialWidget(`DownloadProgress)) {
 	    UI::OpenDialog(
 			   `VBox(
 				 `Heading(iso_msg),
-				 `DownloadProgress(ISO::isoFile, filename, expectedSize - 1000000),
-				 `HSpacing(50), // force width
-				 `PushButton(`opt(`default), CloseButtonLabel())
+				 `DownloadProgress(ISO::isoFile, filename, expectedSize - 1000000)								
 				 )
-			   );
+			   );	    
 	    UI::UserInput();
 	    UI::CloseDialog();
 	} else {
@@ -168,7 +236,8 @@
 					    `next	: "verify",					    
 			 ],
 			 "verify"	: $[
-					    `next	: "summary",					    
+					    `next	: "summary",
+					    `abort	: `ws_finish
 			 ],	
 			 "summary"	: $[
 					    `next	: "create" 
@@ -258,6 +327,13 @@
 
 	html = html +  HTML::Heading(_("Packages"));
 	html = html + HTML::Para(sformat("%1", size(Pkg::GetPackages(`selected, true))));
+
+	html = html +  HTML::Heading(_("Missing Packages"));
+	if (size(ISO::missing_packages) > 0 ) {
+	    html = html + HTML::List(ISO::missing_packages);
+	} else {
+	    html = html + HTML::Para(_("None"));
+	}
 	
 	term contents =
 	    `RichText(html);
@@ -321,12 +397,24 @@ needed to create the ISO image.</p>
 
 	
 	Progress::NextStage();	
+	string error_msg = checkProfile();
+	if (error_msg != "") {
+	    UI::ErrorPopup(error_msg);
+	    return `abort;
+	}
 	
+
 	Progress::NextStage();
 	success = setPackages();
 	
 	
 	Progress::NextStage();
+	error_msg = checkPackageAvail();	
+	if (error_msg != "")
+	{
+	    UI::ErrorPopup(error_msg);	    
+	}
+	
 	Progress::Finish();
 	
 	UI::ChangeWidget(`id(`next), `Enabled, true);
@@ -352,22 +440,20 @@ needed to create the ISO image.</p>
     global define createISO() ``{
 
 	import "Progress";
-
-
 	
 	
 	string help = UI(_("<P>
 Please wait while the directory structure for the new ISO file is being created.
 </P>
 "));
-	help = help + _("<p>Press <b>Next</b> to create the ISO file.</p>");
+	help = help + _("<p>Pressing <b>Next</b> will start creating the ISO file.</p>");
 
 
 	    
 	list progress_stages =
 	    [
 	     _("Create skeleton with essential files"),
-	     _("Saving Control File"),
+	     _("Save Control File in ISO directory"),
 	     _("Copy selected packages")
 	     ];
 
@@ -375,7 +461,7 @@ Please wait while the directory structure for the new ISO file is being created.
 	    [
 	     
 	     _("Creating skeleton with essential files"),
-	     _("Saving control file"),
+	     _("Saving control file in ISO direcotry"),
 	     _("Copying selected packages")	   
 	     ];
 
