@@ -18,14 +18,13 @@
 
 
     global list drives = [];
-
-    global list lvm = [];
-
-    global list raid = [];
+       
 
     global map targetMap = $[];
 
-    list raid_to_init = [];
+    global map lvm  = $[];
+    global map raid = $[];
+    
 
     
     /**
@@ -63,16 +62,9 @@
      */
     global define boolean Import(list settings)
 	``{
-	if (Mode::autoinst)
-	{
-	    drives = settings[0]:[];
-	    lvm = settings[1]:[];
-	    raid = settings[2]:[];
-	}
-	else
-	{
-	    drives = settings;
-	}
+
+	drives = settings;
+    
 	return;
     }
 
@@ -107,11 +99,12 @@
 	``{
 	import "Storage";
 	import "Partitions";
-	include "autoinstall/partitioning.ycp";
 	import "Bootloader";
 	import "BootCommon";
 
-	
+	include "autoinstall/partitioning.ycp";
+
+	/*
 	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
 	{
 	    Storage::DestroyLvmOnAllDisks();
@@ -123,42 +116,54 @@
 	    Storage::DestroyMdOnAllDisks();	   
 	}
 
+	*/
+
 	map init_targetmap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", init_targetmap);
+		
 	
-	boolean md_avail = false;
+	list alldrives = maplist( `k, `v, init_targetmap ,
+				  ``{				      
+				      return($["device":k, "size": v["cyl_size"]:0 ]);
+				  }
+				  );
 	
-	list alldrives = maplist( `k, `v, init_targetmap , ``{
-	    if (k == "/dev/md") md_avail = true;;				  
-	    return($["device":k, "size": v["cyl_size"]:0 ]);
-	});
 
+	map physical_targetmap = filter(`k, `v, init_targetmap , ``(Storage::IsRealDisk(k, v) ));
+	
+        list physical_drives = maplist( `k, `v, physical_targetmap ,
+                                  ``{
+                                      return($["device":k, "size": v["cyl_size"]:0 ]);
+                                  });
+	
 	
 	y2milestone("Drives=%1", alldrives);
-
-	Storage::SetPartDisk(lookup(select(alldrives,0,$[]),"device", BootCommon::mbrDisk));
-
+	string mbrDisk = lookup(select(physical_drives,0,$[]),"device", BootCommon::mbrDisk);
+	y2milestone("MBR disk= %1", mbrDisk );
+	Storage::SetPartDisk(mbrDisk);
+	
 	// Set devices if missing
+	
 	targetMap =  listmap (map drive, drives, ``{
 	    boolean first_set = false;
 	    string device = "";
+	    
 	    if (!first_set && drive["device"]:"" == "")
 	    {
 		device = Storage::GetPartDisk();
 		first_set = true;
-		return([device,drive]);
+		return ([device,drive]);
 	    }
 	    else if (drive["device"]:"" != "")
 	    {
-		return([drive["device"]:"",drive]);
+		return([drive["device"]:"", drive ]);
 	    }
 
 	});
 
 
-
+	y2milestone("New Auto-Install tagetMap=%1", targetMap);
 	
-	y2milestone("New Auto-Install tagetMap: %1", targetMap);
 	if ( targetMap == $[] )
 	{
 	    // Something went really wrong..
@@ -172,14 +177,12 @@ Make sure the control file has the correct syntax and values.
 	boolean init_done = false;
 	
 	foreach (string device, map data, targetMap,
-		 ``{	    
+		 ``{
+	    // FIXME: initialize LVM and RAID
+	    
 	    if (data["initialize"]:false)
 	    {
-		    map thisDevice = init_targetmap[device]:$[];
-		    foreach (map p, thisDevice["partitions"]:[], ``{
-			if (p["raid_name"]:"" != "" )
-			    raid_to_init = add( raid_to_init, p["raid_name"]:"" );
-		    });
+		    map thisDevice = init_targetmap[device]:$[];		 
 		    thisDevice["partitions"] = [];
 		    init_targetmap[device] = thisDevice;
 		    Storage::SetTargetMap(init_targetmap);
@@ -187,6 +190,7 @@ Make sure the control file has the correct syntax and values.
 	    }		    
 	});
 
+	/*
 	if (size(raid) > 0  && md_avail)
 	{
 	    y2milestone("init raid: %1", raid_to_init);
@@ -197,27 +201,42 @@ Make sure the control file has the correct syntax and values.
 	    tg["/dev/md"] = md;
 	    Storage::SetTargetMap(tg);
 	}
+	*/
+
+	
 	if (init_done)
 	{
 	    map afterinit_targetmap = Storage::GetTargetMap();
 	    y2milestone("Target map after initialzing disk: %1", afterinit_targetmap);
 	}
+
 	
 	if ( size(targetMap) > 0)
 	{
+	    
 	    boolean ok = true;
 	    foreach (string device, map data, targetMap,
 		     ``{
-		y2milestone("Creating partition plans for %1", device);
-		boolean ret = AutoPartition(device);
-		if (!ret)
-		    ok = false;
+		if ( Storage::IsRealDisk( device, data) )
+		{
+		    y2milestone("Creating partition plans for %1", device);
+		    boolean ret = AutoPartition(device);
+		    if (!ret)
+		    {
+			ok = false;
+		    }
+		}
 	    });
 	    if (!ok)
+	    {
 		return false;
+	    }
 	}
 
+	lvm 	= filter(`k,`v, AutoinstStorage::targetMap, ``(v["is_lvm_vg"]:false));
+	raid 	= filter(`k,`v, AutoinstStorage::targetMap, ``(k == "/dev/md"));
 
+	
 	if ( size(raid) != 0)
 	{
 	    autoRAID();
@@ -251,4 +270,33 @@ Make sure the control file has the correct syntax and values.
     }
 
 
+    /**
+     * StringFS2Symbol()
+     * @param any filesystem string
+     * @return symbol filesystem type
+     */
+    global define StringFS2Symbol (any fs) ``{
+	if (is(fs,symbol))
+	{
+	    return fs;
+	}
+
+	map filesystems =
+	    $[
+	      "ext2":	`ext2,
+	      "ext3":	`ext3,
+	      "reiser":	`reiser,
+	      "lvm":	`lvm,
+	      "raid":	`raid,
+	      "jfs":	`jfs,
+	      "fat32":	`fat32,
+	      "xfs":	`xfs,
+	      "fat16":	`fat16,
+	      "swap":	`swap
+	    ];
+	return filesystems[fs]:Partitions::default_fs;
+    }
+
+
+    
 }
