@@ -42,7 +42,7 @@
 	<itemizedlist>
 	  <listitem>
 	    <para>
-	      Lilo configuration: lilo device, lilo type (Tag <emphasis>&lt;bootloader&gt;</emphasis> )
+	      Bootloader configuration: bootloader device, bootloader location (Tag <emphasis>&lt;bootloader&gt;</emphasis> )
 	    </para>
 	  </listitem>	
 	  <listitem>
@@ -225,7 +225,7 @@
 	</screen>
       </example>
       <para>
-	Multiple instances of the same element must either be all named or
+	Multiple instances of the same element must either all be named or
 	all unnamed, mixes of named and unnamed elements of the same type
 	are not permitted. This restriction is specified in the &dtd;. The
 	&dtd; also restricts the use of the <emphasis>config:name</emphasis> attribute to elements
@@ -244,8 +244,7 @@
       </title>
       <para>
 	Global profile attributes are used to define meta-data on resources and
-	properties. Attributes are used to define timestamps, access control,
-	dynamic values and context switching. They are also used for naming and
+	properties. Attributes are used to define  context switching. They are also used for naming and
 	typing properties as shown in earlier sections
 	<footnote>
 	  <para>
@@ -267,35 +266,19 @@
 	There are no ordering constraints on attributes and no significance
 	should be interpreted from a specific ordering. 
       </para>
-      <sect3>
-	<title>
-	  Attribute Names
-	</title>
-	<para>
-	  The name of a resource or property element is used for addressing and
-	  distinguishing multiple instances of the same element. The name of an
-	  element can be defined using the <emphasis>config:name</emphasis> attribute. By default for
-	  single instance elements the name is the same as the element type. By
-	  default for multiple instance elements the name is the index position
-	  number of the element. An element can only be addressed by its
-	  specified name or by its generated index number, never by both. 
-	</para>
-      </sect3>
-      <sect3 id="profile.structure.attributes.types">
-	<title id="profile.structure.attributes.types.title">
-	  Attribute Type
-	</title>
-	<para>
-	  The type of an element is defined using the <emphasis>config:type</emphasis> attribute. The
-	  type of a resource element is always RESOURCE , although this can
-	  also be made explicit with this attribute (to ensure correct
-	  identification of an empty element for example when there is no &dtd;
-	  to refer to). A resource element cannot be any other type and this
-	  restriction is specified in the &dtd;. The type of a property element
-	  determines the interpretation of its literal value. The type of a
-	  property element defaults to <emphasis>STRING</emphasis> , as specified in the &dtd;. The
-	  full set of permissible types is specified in the &dtd;. 
-	</para>
-      </sect3>	  
+    
+    
+    <para>
+      The type of an element is defined using the <emphasis>config:type</emphasis> attribute. The
+      type of a resource element is always RESOURCE , although this can
+      also be made explicit with this attribute (to ensure correct
+      identification of an empty element for example when there is no &dtd;
+      to refer to). A resource element cannot be any other type and this
+      restriction is specified in the &dtd;. The type of a property element
+      determines the interpretation of its literal value. The type of a
+      property element defaults to <emphasis>STRING</emphasis> , as specified in the &dtd;. The
+      full set of permissible types is specified in the &dtd;. 
+    </para>
+     
     </sect2>
   </sect1>
