@@ -505,18 +505,19 @@
 	  </para>
 	  <para>
 	    When installing from a CDROM, needed packages from other CDROMs
-	    than the first are installed after the initial booting of the
+	    are installed after the initial booting of the
 	    system in the so-called <emphasis>continue</emphasis> mode. If you
 	    are installing packages from multiple CDROMs, then
 	    auto-installation has to be interrupted for switching the
 	    CDROMs. In the case of NFS installation, all packages are
-	    installed at first stage of the installation if the NFS repostiry
+	    installed at first stage of the installation only if the NFS repostiry
 	    is configured as a one medium.
 	  </para>
 	  <para>
-	    It is often required, that a package is installed in the
+	    It is often required, that a package should be installed in the
 	    <emphasis>continue</emphasis> mode, especially custom packages
-	    which may contain scripts for configuring the system.
+	    which may contain scripts for configuring the system. This can be
+	    done using the <emphasis>post-packages</emphasis> resource.
 	  </para>
 
 	</sect3>
@@ -558,9 +559,29 @@
 	    file. Instead you need to re-create the package database and update
 	    it with any new packages or new package versions in the source repository.
 	  </para>
-	  <para>A script is provided for this task which will query packages
+	  <para>
+	    A script is provided for this task which will query packages
 	    available in the repository and create the required package
 	    database.
+	  </para>
+	  <para>
+	    Creating a new package database is only needed if new RPMs
+	    (i.e. update RPMs) were added. To re-create the database, use the
+	    <command>/usr/lib/YaST2/bin/create_package_descr</command>
+	    command. For example, use this command line to create the package
+	    database for all languages. (When creating the database, all
+	    languages will be reset to english).
+	  </para>
+	  <example>
+	    <title>Creating package database</title>
+	    <screen>
+/usr/lib/YaST2/bin/create_package_descr  -d /work/CDs/8.1/suse  -l english -l german -l czech
+	    </screen>
+	  </example>
+	  <para>
+	    In the above example, the directory
+	    <filename>/work/CDs/8.1/suse</filename> contains the architecture
+	    dependent packages, i.e. <emphasis>noarch</emphasis> and <emphasis>i586</emphasis>.
 	  </para>
 	  <para>
 	    The advantage of this method is that you can keep an up-to-date
