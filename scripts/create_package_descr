@@ -5,13 +5,15 @@ use FileHandle;
 use strict 'refs';
 #use RPM;
 
-local (@DATADIRS,@LANGUAGES,%IGNORE,%SEEN_PACKAGE,%IGNORE_PACKAGE);
-my %lang_alias = ("czech"=>"cs","english"=>"en","french"=>"fr","german"=>"de","italian"=>"it","spanish"=>"es" );
+local (@DATADIRS,@LANGUAGES,%SEEN_PACKAGE,%IGNORE_PACKAGE);
+my %lang_alias = ("czech"=>"cs","english"=>"en","french"=>"fr","german"=>"de","italian"=>"it","spanish"=>"es","hungarian"=>"hu" );
+my %tag_short = ("description"=>"Des","notice"=>"Ins","delnotice"=>"Del");
 my $ignored_packages = "";
 my $ignore_sources = "0";
+my $ignore_symlinks = "0";
+my $prefer_yastdescr = "0";
 my $extra_provides = "/usr/share/autoinstall/EXTRA_PROV";
 
-$i = 0;
 while ( $arg = shift ( @ARGV ) ) {
   if ( $arg eq "-d" ) { push @DATADIRS , shift @ARGV ; }
   elsif ( $arg eq "-l" ) { push @LANGUAGES , shift @ARGV ; }
@@ -21,15 +23,24 @@ while ( $arg = shift ( @ARGV ) ) {
   elsif ( $arg eq "-I" ) { $ignore_file = shift @ARGV ; }
   elsif ( $arg eq "-o" ) { $output_dir = shift @ARGV ; }
   elsif ( $arg eq "-S" ) { $ignore_sources = "1"; }
+  elsif ( $arg eq "-P" ) { $prefer_yastdescr = "1"; }
+  elsif ( $arg eq "-L" ) { $ignore_symlinks = "1"; }
   else {
 	 print "usage: create_package_descr\n";
 	 print "	[-d DATADIR1 [-d DATADIR2 [... ] ] ] (default cwd)\n";
+         print "	[-p PDB_DATA_DIR ]\n";
 	 print "	[-x EXTRA_PROV_FILE ]\n";
 	 print "	[-i IGNORE_DIR ] [-I IGNORE_FILE ]\n";
 	 print "	[-l LANG1 [-l LANG2 [... ] ]    (default english)\n";
 	 print "	[-o OUTPUT_DIR ]                (default cwd/setup/descr)\n";
 	 die ("unknown parameter\n");
   }
+}
+
+if ( $ignore_symlinks eq "1" ) {
+  $with_links = "-type f";
+} else {
+  $with_links = "";
 }
 
 push @DATADIRS , "." unless ( @DATADIRS );
@@ -105,7 +116,7 @@ $dotcounter = 0;
 $allcounter = 0;
 foreach $datapath (@DATADIRS) {
   $media_number++;
-  open ( FIND, "find $datapath -name \"*.[rs]pm\" -maxdepth 2 -print | sort |" );
+  open ( FIND, "find $datapath $with_links -name \"*.[rs]pm\" -maxdepth 2 -print | sort |" );
   while ( <FIND> ) {
    #print "found $_\n";
    $dotcounter++;
@@ -145,8 +156,12 @@ foreach $datapath (@DATADIRS) {
    } else {
 	next if ( $ignore_sources eq "1" );
 	# has no source, so it is a source
-	$file_arch = $filename;
-	$file_arch =~ s/^.*\.([^\.]*)\.rpm$/\1/;
+	if ( $filename =~ /\.spm$/ ) {
+		$file_arch = "src";
+	} else {
+		$file_arch = $filename;
+		$file_arch =~ s/^.*\.([^\.]*)\.rpm$/\1/;
+	}
 	@DULIST = RpmToDulist($filespec,"/usr/src/packages/");
    }
    if ( $xprovlist{$rpm_name} ) {
@@ -168,8 +183,10 @@ foreach $datapath (@DATADIRS) {
     	WriteSEntry( $pkg_main, "Lic", $res{1014}[0] );
     	WriteSEntry( $pkg_main, "Src", $srcrpm );
 	WriteSEntry( $pkg_main, "Tim", $res{1006}[0] );
+        WriteSEntry( $pkg_main, "Loc", "$media_number $filename");
+    } else {
+        WriteSEntry( $pkg_main, "Loc", "$media_number $filename $file_arch");
     }
-    WriteSEntry( $pkg_main, "Loc", "$media_number $filename");
     WriteSEntry( $pkg_main, "Siz", "$filesize $res{1009}[0]" );
 	
     if ( $SEEN_PACKAGE{"$rpm_name $res{1001}[0] $res{1002}[0]"} ) {
@@ -178,16 +195,43 @@ foreach $datapath (@DATADIRS) {
     } else {
 	if ( $pdb_data_dir ) {
 	    delete $INC{"$pdb_data_dir/$rpm_name.pl"};
-	    require "$pdb_data_dir/$rpm_name.pl" if ( -f "$pdb_data_dir/$rpm_name.pl");
-
+	    if ( -f "$pdb_data_dir/$rpm_name.pl") {
+		require "$pdb_data_dir/$rpm_name.pl";
+	    } else {
+		# no pdb data for this package, use rpm summary
+		print "no pdb data for $rpm_name found\n";
+		$pacdata{$rpm_name}{'english'}{"label"} = "$res{1004}[0]";
+	    }
 	    WriteMEntry( $pkg_main, "Aut", @{$pacdata{$rpm_name}{"authorname"}} );
 	    foreach $lang (@LANGUAGES) {
 		WriteSeparator( $pkg_lang{$lang} );
 		WriteSEntry( $pkg_lang{$lang}, "Pkg", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $file_arch");
-		WriteSEntry( $pkg_lang{$lang}, "Sum", $pacdata{$rpm_name}{$lang}{"label"} );
-		WriteMEntry( $pkg_lang{$lang}, "Des", @{$pacdata{$rpm_name}{$lang}{"description"}});
-		WriteMEntry( $pkg_lang{$lang}, "Ins", @{$pacdata{$rpm_name}{$lang}{"notice"}});
-		WriteMEntry( $pkg_lang{$lang}, "Del", @{$pacdata{$rpm_name}{$lang}{"delnotice"}});
+		if ( $pacdata{$rpm_name}{$lang}{"label"} ) {
+		    WriteSEntry( $pkg_lang{$lang}, "Sum", $pacdata{$rpm_name}{$lang}{"label"} );
+		} else {
+		    WriteSEntry( $pkg_lang{$lang}, "Sum", $pacdata{$rpm_name}{'english'}{"label"} );
+		}
+		if ( $prefer_yastdescr eq "1" ) {
+			foreach $tag (keys (%tag_short)) {
+				if ( $pacdata{$rpm_name}{$lang}{$tag._yast} ) {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{$lang}{$tag._yast}});
+				} elsif ( $pacdata{$rpm_name}{$lang}{$tag} ) {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{$lang}{$tag}});
+				} elsif ( $pacdata{$rpm_name}{'english'}{$tag._yast} ) {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{'english'}{$tag._yast}});
+				} else {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{'english'}{$tag}});
+				}
+			}
+		} else {
+			foreach $tag (keys (%tag_short)) {
+				if ( $pacdata{$rpm_name}{$lang}{$tag} ) {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{$lang}{$tag}});
+				} else {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{'english'}{$tag}});
+				}
+			}
+		}
 	    }
 	} else {
 	    foreach $lang (@LANGUAGES) {
@@ -224,7 +268,7 @@ foreach $file ("packages","packages.DU") {
 foreach $lang (@LANGUAGES) {
     $file = "packages.$lang_alias{$lang}";
     print "$file ";
-    if ( $lang eq "czech" ) {
+    if ( $lang eq "czech" || $lang eq "hungarian" ) {
 	system ( "recode ISO-8859-2...UTF-8 $output_dir/$file" );
     } else {
 	system ( "recode ISO-8859-1...UTF-8 $output_dir/$file" );
@@ -326,12 +370,16 @@ sub rpmq_add_req_flagsvers {
 sub RpmToDulist {
     local ($filename,$prefix) = @_;
     local (%dirsize, %subdirsize, %dirnum, %subdirnum, @dulist);
+    local (%seen_node);
+    open ( FILES, "rpm -qp --qf '[%{FILEMODES:perms} %{FILESIZES} %{FILEDEVICES} %{FILEINODES} %{FILENAMES}\n]' $filename |") || die "cant open infile $filename";
 
-    open ( FILES , "rpm -qplv $filename |") || die "cant open infile $filename";
     while (<FILES>) {
-        ($rights , $owner, $group, $size, $month, $day, $time, $name ) = split( ' ', $_ );
+        # rights is not used, but start of $_ in the if below
+        ($rights , $size, $f_dev, $f_node, $name ) = split( ' ', $_ );
         $size = int ( $size / 1024 ) + 1;
-        if ( $_ =~ /^\-/ ) {
+        if ( $rights =~ /^\-/ ) {
+	    next if ( $seen_node{"$f_dev $f_node"} );
+	    $seen_node{"$f_dev $f_node"} = "yes";
 	    $name = $prefix.$name;
             @path = split ( '/', $name );
             pop ( @path );

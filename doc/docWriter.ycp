@@ -20,15 +20,15 @@
     define Edit (string element) ``{
 	map this_element = el[element]:$[];
 	string desc = this_element["description"]:"";
-	
+
 	string caption = _("Edit element");
 	term con =
 	    `HBox(
 		  `HSpacing(1),
 		  `VBox(
-			`VSpacing(0.2),			
+			`VSpacing(0.2),
 			`Heading (caption),
-		
+
 			`Left (`TextEntry (`id (`element), _("Element name"), element)),
 
 			`VSpacing(0.2),
@@ -51,7 +51,7 @@
 	    }
 	    else if (ret == `ok)
 	    {
-	
+
 		break;
 	    }
 	}
@@ -60,8 +60,8 @@
 
     }
 
-    
-    string basedir = "/bigdisk/work/devel/autoyast/source/autoinstallation/doc";
+
+    string basedir = "/home/nashif/Work/yast2-head/source/autoinstallation/doc";
     if (WFM::Args () > 0)
         basedir = WFM::Args (0);
     string purposeFile = basedir + "/purpose.xml";
@@ -70,7 +70,7 @@
     list elementfiles = maplist(`f, SCR::Read(.target.dir, elementDir) ,``{
 	return(select(splitstring(f,"."), 0 , ""));
     });
-    
+
 
     map el = Read( purposeFile );
     // y2milestone("elements %1", el);
@@ -82,7 +82,7 @@
 	purpose = mergestring(tmp_list2, " ");
 	string status = (contains(elementfiles, k)) ? "X" : "?";
 	cleanList = add(cleanList, k);
-	return (`item(`id(k), status, k, purpose));	
+	return (`item(`id(k), status, k, purpose));
     });
 
     list newElements = [];
@@ -94,12 +94,12 @@
     });
 
     list allElements = union(newElements, elements);
-    
+
     term contents = `Top(
 			 `VBox(
 			       `Table(`id(`table), `opt(`notify,`immediate), `header(_("Status"), _("Element"), _("Purpose")),
 				      allElements
-				      ),			       
+				      ),
 			       `HBox(
 				     `PushButton(`id(`new), NewButtonLabel()),
 				     `PushButton(`id(`edit), EditButtonLabel()),
@@ -107,7 +107,7 @@
 				     )
 			       )
 			 );
-		     
+
     Wizard::CreateDialog();
     Wizard::SetContents(_("DTD Elements"),
 			contents, "", true, true);
@@ -126,7 +126,7 @@
     } until (ret == `back || ret == `next || ret ==`key  || ret == `abort);
 
 
-    UI::CloseDialog ();		    
+    UI::CloseDialog ();
 
 
 }
