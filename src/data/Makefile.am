@@ -1,5 +1,5 @@
 #
-# Makefile.am for y2c_autoinst/src
+# Makefile.am for autoinstallation/src/data
 #
 # $Id$
 #
@@ -12,8 +12,6 @@ miscdir = /usr/share/autoinstall/
 misc_DATA = \
 	EXTRA_PROV
 
-#ydata_DATA = \
-#	monitors.ycp
 
 xml_DATA = \
     merge.xslt
@@ -21,4 +19,4 @@ xml_DATA = \
 fillupdir = /var/adm/fillup-templates/
 fillup_DATA = sysconfig.autoinstall
 
-EXTRA_DIST =  $(xml_DATA)  $(misc_DATA) $(fillup_DATA) #  $(ydata_DATA)
+EXTRA_DIST =  $(xml_DATA)  $(misc_DATA) $(fillup_DATA)  
