@@ -17,6 +17,13 @@
         
     include "autoinstall/xml.ycp";
     include "autoinstall/io.ycp";
+
+
+    global boolean PkdInitialized = false;
+
+    global integer theSource = -1;
+
+    
     // Profile Repository
     global string Repository = "";
 
@@ -297,8 +304,7 @@
 
     global define void Load ()
     ``{
-	Repository 		= Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
-	AIServer::PackageRep 	= Misc::SysconfigRead( .sysconfig.autoinstall.PACKAGE_REPOSITORY, "/");
+	Repository 		= Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");	
 	return;
     }
 

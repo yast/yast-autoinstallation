@@ -23,15 +23,7 @@
     global boolean PkdInitialized = false;
 
     // Tftp root directory
-    global string Tftpboot = "/tftpboot";
-
-    // Selections
-    global list Selections = [];
-
-    // Packages
-    global list morePackages = [];
-
-
+    global string Tftpboot = "/tftpboot";   
     
     // tmp dir
     global string tmpDir = "";
@@ -87,12 +79,16 @@
     
     global define void AIServer()
 	``{
-	skelDir = "/tmp/iso_skeleton";
-	SCR::Execute(.target.mkdir, skelDir);
 	tmpDir = SCR::Read (.target.tmpdir);
+	PackageRep = Misc::SysconfigRead( .sysconfig.autoinstall.PACKAGE_REPOSITORY, "/tmp");
 	return;
     }
 
+    define void createSkelDir()``{
+	skelDir = "/tmp/iso_skeleton";
+	SCR::Execute(.target.mkdir, skelDir);
+	return;
+    }
 
     /**
      * Set paraeters for mkisofs command
@@ -180,7 +176,7 @@
 	list commands = [];
 	integer ret = 0;
 	boolean success = true;
-	
+	createSkelDir();
 	
 	y2milestone("creating skeleton in %1", skelDir);
 	
