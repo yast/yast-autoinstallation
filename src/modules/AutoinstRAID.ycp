@@ -14,6 +14,7 @@
     import "Storage";
     import "Partitions";
     import "FileSystems";
+    import "AutoinstStorage";
 
     include "partitioning/partition_defines.ycp";
     include "partitioning/raid_lib.ycp";
@@ -21,11 +22,9 @@
 
     global map<string, map> ExistingRAID = $[];
 
-    global boolean OldAvailable = false;
+    global boolean old_available = false;
 
-    global map raid = $[];
-
-
+    map raid = $[];
 
     // Local variables
     list region = [0,0];
@@ -38,26 +37,39 @@
      * Constructor
      * @return void
      */
-    global define void AutoinstRAID () ``{
+    global define void AutoinstRAID () {
+        return;
+    }
 
-	targetMap	= Storage::GetTargetMap();
-	ExistingRAID	= filter(string k,map v, targetMap, ``(k == "/dev/md"));
+    /**
+     * Initialize
+     */
+    global boolean Init ()
+    {
+	raid   = filter(string k, map v,
+                AutoinstStorage::AutoTargetMap, ``(k  == "/dev/md"));
+	
+	if (size(raid) == 0)
+	{
+	    return false;
+	}
+
+	ExistingRAID	= filter(string k,map v, Storage::GetTargetMap(), ``(k == "/dev/md"));
 	y2milestone("Existing RAID: %1", ExistingRAID );
 
 	if (size(ExistingRAID) > 0 )
-	{
-	    OldAvailable = true;
-	}
-	return;
+	    old_available = true;
+
+	return true;
     }
 
     /**
      * Return existing MDs
      * @return list list of existing MDs
      */
-    global define list ExistingMDs ( string md )
-	``{
-	return(filter( map part, get_possible_rds( targetMap ),  ``( part["raid_name"]:"-1" == md )));
+    global define list ExistingMDs ( string md ) {
+	return(filter( map part, get_possible_rds( Storage::GetTargetMap() ),  
+                    ``( part["raid_name"]:"-1" == md )));
     }
 
 
@@ -65,10 +77,9 @@
      * Return deleted MDs
      * @return list list of deleted MDs
      */
-    global define list DeletedMDs ( string md )
-	``{
+    global define list DeletedMDs ( string md ) {
 	list<list<map> > ret = [];
-	foreach( string dev, map devmap, targetMap,
+	foreach( string dev, map devmap, Storage::GetTargetMap(),
 		 ``{
 	    ret = add( ret,
 		       filter( map part, devmap["partitions"]:[],
@@ -86,15 +97,14 @@
 	return( flatten(ret) );
     }
 
+
     /**
      * Delete MDs
      * @return list list of deleted MDs
      */
-    global define list DeleteMDs ()
-	``{
-	targetMap =  Storage::GetTargetMap();
+    global define list DeleteMDs () {
 	list to_bo_deleted = [];
-	foreach( string dev, map devmap, targetMap, ``{
+	foreach( string dev, map devmap, Storage::GetTargetMap(), ``{
 	    foreach( map part,  devmap["partitions"]:[], ``{
 		if (part["old_raid_name"]:"" != "" && part["delete"]:false)
 		{
@@ -105,9 +115,9 @@
 
 	y2milestone("mds to delete: %1", to_bo_deleted);
 
-	if (OldAvailable)
+	if (old_available)
 	{
-	    list<map> mds = targetMap["/dev/md","partitions"]:[];
+	    list<map> mds = Storage::GetTargetMap()["/dev/md","partitions"]:[];
 	    list<map> new_mds = maplist( map md, mds ,``{
 		if ( contains(to_bo_deleted, md["device"]:""))
 		{
@@ -123,41 +133,51 @@
 	}
     }
 
+
+
+    define boolean remove_possible_mds () {
+
+        boolean prefer_remove = raid["/dev/md", "prefer_remove"]:false;
+        if (old_available && prefer_remove)
+        {
+            list<map> existing_mds = ExistingRAID["/dev/md","partitions"]:[];
+            list<map> modified_mds = maplist( map md, existing_mds ,``{
+                    md["delete"] = true;
+                    return (md);
+                    });
+            map<string, any> allmds =  (map<string, any>)ExistingRAID["/dev/md"]:$[];
+            allmds["partitions"]	= modified_mds;
+            Storage::AddMainDev("/dev/md",  allmds );
+            // update our variable
+            ExistingRAID["/dev/md"] = allmds;
+        }
+        return true;
+    }
+
     /**
      * Create RAID Configuration
      * @return boolean
      */
-    global define boolean Write()
-        ``{
+    global define boolean Write() {
 
-	list<map> RaidList =  maplist ( map device, raid["/dev/md", "partitions"]:[],  ``{
+        remove_possible_mds ();
+        list<map> raid_partitions = raid["/dev/md", "partitions"]:[];
 
+	list<map> RaidList =  maplist ( map md, raid_partitions,  ``{
 	    string use	= raid["/dev/md","use"]:"none";
-	    string dev	= sformat("/dev/md%1", device["partition_nr"]:0);
+	    string dev	= sformat("/dev/md%1", md["partition_nr"]:0);
+	    md["device"]	= dev;
 
-	    if (OldAvailable)
+
+	    if (md["loop_fs"]:false || md["crypt_fs"]:false)
 	    {
-		list<map> mds = ExistingRAID["/dev/md","partitions"]:[];
-		list<map> new_mds = maplist( map md, mds ,``{
-
-		    if ( use == "all" && dev == md["device"]:"" )
-		    {
-                        md["delete"] = true;
-		    }
-		    return (md);
-		});
-		map allmds =  ExistingRAID["/dev/md"]:$[];
-		allmds["partitions"]	= new_mds;
-		ExistingRAID["/dev/md"] = allmds;
+		md["crypt_key"] =   Storage::AddCryptToClassified( md["crypt_key"]:"");
 	    }
+	    y2milestone("Working on %1", md);
 
-
-	    y2milestone("Working on %1", device);
-
-	    device["device"]	= dev;
 
 	    string chunk_size = "4";
-	    map options = device["raid_options"]:$[];
+	    map options = md["raid_options"]:$[];
 	    string raid_type	= options["raid_type"]:"raid1";
 
 	    if ( raid_type == "raid5" )
@@ -189,86 +209,87 @@
 		options["parity_algorithm"] = "left-symmetric";
 	    }
 
-	    device["nr"] = device["partition_nr"]:0;
+	    md["nr"] = md["partition_nr"]:0;
 
 
+            // LVM on RAID
 
-	    if (device["lvm_group"]:"" != "")
+	    if (md["lvm_group"]:"" != "")
 	    {
-		device["fsid"]		= Partitions::fsid_lvm;
+		md["fsid"]		= Partitions::fsid_lvm;
 	    }
 	    else
 	    {
-		device["fsid"]		= device["partition_id"]:Partitions::fsid_native;
+		md["fsid"]		= md["partition_id"]:Partitions::fsid_native;
 	    }
-	    device["region"]		= [0 , 1];
 
-	    if (!haskey(device, "create"))
+            
+	    md["region"]		= [0 , 1];
+
+	    if (!haskey(md, "create"))
 	    {
-		device["create"]	= true;
-		device["status"]	= "create";
+		md["create"]	= true;
+		md["status"]	= "create";
 	    }
 
-
-
-	    if (!haskey(device, "format"))
+	    if (!haskey(md, "format"))
 	    {
-		device["format"]	= false;
+		md["format"]	= false;
 	    }
 
-	    if (device["format"]:false)
+	    if (md["format"]:false)
 	    {
-		symbol selected_fs	= device["filesystem"]:`ext2;
-		device["used_fs"]	= selected_fs;
+		md["used_fs"]	= md["filesystem"]:`ext2;
 	    }
 
-	    device["type"]		= `sw_raid;
+	    md["type"]		= `sw_raid;
+            if (haskey(md, "raid_options"))
+                md=remove(md, "raid_options");
 
-
-	    if (device["loop_fs"]:false || device["crypt_fs"]:false)
-	    {
-		device["crypt_key"] =   Storage::AddCryptToClassified( device["crypt_key"]:"");
-	    }
-
-
-	    return (union(device, options));
+	    return (union(md, options));
 	});
 
 
-	map<string, map> tg = Storage::GetTargetMap();
-	RaidList= maplist( map part, RaidList,
+        // Adjust Sizes
+	RaidList= maplist( map md, RaidList,
 			   ``({
-			       integer len = raid_size_byte( tg, part);
-			       part["region"] = [0, len / (1024 * 1024)];
-			       return( part );
+			       integer len = raid_size_byte( Storage::GetTargetMap(), md);
+			       md["region"] = [0, len / (1024 * 1024)];
+			       return( md );
 			   }));
 
 	list allraid = [];
-
 	if (size (ExistingRAID["/dev/md","partitions"]:[]) > 0 )
 	{
-	    y2milestone("Existing RAID: %1", ExistingRAID);
 	    allraid = union (ExistingRAID["/dev/md", "partitions"]:[], RaidList );
 	}
 	else
 	{
 	    allraid =  RaidList;
 	}
+        y2milestone("All RAID: %1", allraid);
 
-	map RaidMap = $[ "/dev/md" :
-			 $[
-			   "cyl_count" : 1,                         // typicall 1
-			   "cyl_size" : 1048576,                    // const 1MB
-			   "name" : "Linux Software RAID",
-			   "partitions" : allraid,
-			   ]
-	];
+
+        map<string, any> RaidMap = 
+            $[
+            "cyl_count" : 1,                   
+            "cyl_size" : 1024 * 1024,         
+            "name" : Partitions::raid_name,
+            "partitions" : allraid,
+            ];
 	y2milestone("RaidMap: %1", RaidMap);
 
-	map new_targetMap = union(Storage::GetTargetMap(), RaidMap);
-	Storage::SetTargetMap(new_targetMap);
+        if (old_available)
+        {
+            RaidMap["whole_disk"] = true;
+            Storage::SetMainDev("/dev/md",  RaidMap );
+        }
+        else
+        {
+            RaidMap["whole_disk"] = true;
+            Storage::AddMainDev("/dev/md",  RaidMap );
+        }
 	y2milestone("Targets: %1", Storage::GetTargetMap());
-
 	return true;
     }
 

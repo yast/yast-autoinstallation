@@ -29,6 +29,8 @@
     import "Popup";
     import "RunlevelEd";
     import "Arch";
+    import "AutoinstLVM";
+    import "AutoinstRAID";
 
     include "bootloader/routines/routines.ycp";
     include "bootloader/routines/autoinstall.ycp";
@@ -80,6 +82,7 @@
     AutoinstGeneral::Write();
 
 
+
     if(UI::PollInput() == `abort)
 	if (Popup::ConfirmAbort (`painless))
 	    return `abort;
@@ -127,6 +130,15 @@ Try again.
 	y2error("Aborting...");
 	return `abort;
     }
+    if (AutoinstRAID::Init())
+    {
+        AutoinstRAID::Write();
+    }
+    if (AutoinstLVM::Init())
+    {
+        AutoinstLVM::Write();
+    }
+
 
 
     // Software
