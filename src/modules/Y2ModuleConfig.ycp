@@ -15,6 +15,8 @@
     import "Profile";
     import "Installation";
     import "Desktop";
+    import "Wizard";
+    import "Directory";
 
     // include "autoinstall/io.ycp";
 
@@ -292,5 +294,24 @@
 	return m;
 
     }
+    /**
+     */
+    global boolean SetDesktopIcon( string file )
+    {
+        string filename = sformat("%1/%2.desktop", Directory::desktopdir, file);
+        if (SCR::Read(.target.size, filename) < 0 )
+            filename = sformat("%1/%2.desktop",
+                    "/usr/share/autoinstall/modules", file);
+        path filepath = .autoyast2.desktop.v + filename + ."Desktop Entry".Icon;
+        string icon = (string) SCR::Read(filepath);
+        y2debug("icon: %1 (%2)", icon, filepath);
+
+        if (icon == nil)
+            return false;
+
+        Wizard::SetTitleIcon(icon);
+        return true;
+    }
+
 
 }

@@ -96,7 +96,8 @@
 	Wizard::SetContents(
 			    caption,
 			    contents, AutoinstConfig::MainHelp(), true, true);
-        Wizard::SetDesktopIcon(resource);
+        map Icons = $[];
+        Y2ModuleConfig::SetDesktopIcon(Icons[resource]:resource);
 	return;
     }
 
@@ -346,6 +347,9 @@
     any MainDialog()
 	``{
 
+        map Icons = $[];
+        Icons["Net_advanced"] = "network_advanced";
+
         string tree_item ="group@System";
         term contents = modules("System");
         Wizard::SetContents(_("Available modules"),
@@ -406,7 +410,7 @@
                     contents = modules(group);
                     Wizard::SetContents(_("Available modules"),
                         contents, AutoinstConfig::MainHelp(), true , true);
-                    Wizard::SetTitleIcon(tolower(group));
+                    Wizard::SetTitleIcon(Icons[group]:tolower(group));
                 }
                 else if (modulename!="")
                 {
@@ -430,7 +434,7 @@
                     contents = modules(group);
                     Wizard::SetContents(_("Available modules"),
                         contents, AutoinstConfig::MainHelp(), true , true);
-                    Wizard::SetTitleIcon(tolower(group));
+                    Wizard::SetTitleIcon(Icons["group"]:tolower(group));
                 }
                 else if (modulename!="")
                 {
