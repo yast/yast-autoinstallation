@@ -7,7 +7,7 @@
  */
 {
     textdomain "autoinst";
-    include "ui/common_messages.ycp";
+    import "Label";
     include "ui/file_popups.ycp";
 
     /**
@@ -99,7 +99,7 @@ path on the installed system. YaST2 will copy this file to the specified locatio
 	Wizard::SetContents(title,
 			    contents, help, true, true);
 
-	UI::ChangeWidget(`id(`next), `Label, SaveButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::SaveButton());
 	if (mode == `edit)
 	{
 	    UI::ChangeWidget(`id(`filename), `Enabled, false);
@@ -116,7 +116,7 @@ path on the installed system. YaST2 will copy this file to the specified locatio
 
 		if (source == "" || fileName == "")
 		{
-		    UI::MessagePopup(_("Provide at least the file
+		    Popup::Message(_("Provide at least the file
 name and the content of the file.
 "));
 		    continue;
@@ -138,7 +138,7 @@ name and the content of the file.
 	    }
 
 	} until (ret == `next || ret == `back );
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 	return ret;
     }
 
@@ -166,9 +166,9 @@ name and the content of the file.
 
 			  ),
 		  `HBox(
-			`PushButton(`id(`new),  NewButtonLabel()),
-			`PushButton(`id(`edit), EditButtonLabel()),
-			`PushButton(`id(`delete), DeleteButtonLabel())
+			`PushButton(`id(`new),  Label::NewButton()),
+			`PushButton(`id(`edit), Label::EditButton()),
+			`PushButton(`id(`delete), Label::DeleteButton())
 			)
 		  );
 	return contents;
@@ -188,7 +188,7 @@ and have an httpd.conf configuration file prepared.</p>
 	Wizard::SetContents(title,
 			    dialog_contents(), help, true, true);
 
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 	Wizard::ReplaceAbortButton(`Empty());
 	string select_msg = _("Select a file from the table first.");
 	any ret = nil;
@@ -210,7 +210,7 @@ and have an httpd.conf configuration file prepared.</p>
 		}
 		else
 		{
-		    UI::MessagePopup(select_msg);
+		    Popup::Message(select_msg);
 		    continue;
 		}
 
@@ -224,7 +224,7 @@ and have an httpd.conf configuration file prepared.</p>
 		}
 		else
 		{
-		    UI::MessagePopup(select_msg);
+		    Popup::Message(select_msg);
 		    continue;
 		}
 	    }

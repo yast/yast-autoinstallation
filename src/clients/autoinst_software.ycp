@@ -18,7 +18,7 @@
     import "Report";
     import "AutoinstSoftware";
     include "wizard/sequencer.ycp";
-    include "ui/common_messages.ycp";
+    import "Label";
     include "autoinstall/dialogs.ycp";
 
     any ret = nil;
@@ -131,7 +131,7 @@ more <b>add-on</b> selections and packages.
 
 	Wizard::SetContents(title, contents, helptext, true, true);
 
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel);
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton);
 	
 	// UI::ChangeWidget(`id(`back), `Enabled, false);
 	

@@ -43,9 +43,9 @@
 			  allscripts
 			  ),
 		  `HBox(
-			`PushButton(`id(`new),  NewButtonLabel()),
-			`PushButton(`id(`edit), EditButtonLabel()),
-			`PushButton(`id(`delete), DeleteButtonLabel())
+			`PushButton(`id(`new),  Label::NewButton()),
+			`PushButton(`id(`edit), Label::EditButton()),
+			`PushButton(`id(`delete), Label::DeleteButton())
 			)
 		  );
 	return contents;
@@ -70,7 +70,7 @@ your needs and take control in different stages of the installation.</p>
 			    script_dialog_contents(), help, true, true);
 
 	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
@@ -92,7 +92,7 @@ your needs and take control in different stages of the installation.</p>
 		}
 		else
 		{
-		    UI::MessagePopup(_("Select a script first."));
+		    Popup::Message(_("Select a script first."));
 		    continue;
 		}
 
@@ -106,7 +106,7 @@ your needs and take control in different stages of the installation.</p>
 		}
 		else
 		{
-		    UI::MessagePopup(_("Select a script first."));
+		    Popup::Message(_("Select a script first."));
 		    continue;
 		}
 	    }
@@ -140,21 +140,31 @@ your needs and take control in different stages of the installation.</p>
 	    }
 	}
 
+	// help 1/4
 	string help = _("
 <h3>Pre-Scripts</h3>
 <P>Add commands to run on the system  before the installation begins. </P>
 <h3>Post-Scripts</h3>
 ");
+	// help 2/4
 	help = help + _("
 <P>You can also add commands to execute on the system after the installation
 is completed. These scripts are run outside the chroot environment.
 </P>");
+	// help 3/4
 	help = help + _("
 <H3>Chroot Environment</H3>
 <P>For your postinstallation script to run inside the chroot
 environment, choose the <i>chroot scripts</i> options.
 </P>
 ");
+
+	// help 4/4
+	help = help + _("
+<H3>Interpreter:</H3>
+<P>Pre-scripts can only be shell scripts. Do not use <i>Perl</i> or <i>Python</i> for pre-scripts.
+</P>
+");	
 	string title = _("Script Editor");
 
 	term contents=
@@ -164,7 +174,9 @@ environment, choose the <i>chroot scripts</i> options.
 			`ComboBox( `id(`interpreter), _("&Interpreter"),
 				   [
 				    `item(`id("perl"), _("Perl"),(script["interpreter"]:"shell" == "perl")),
-				    `item(`id("shell"), _("Shell"),(script["interpreter"]:"shell" == "shell"))
+				    `item(`id("shell"), _("Shell"),(script["interpreter"]:"shell" == "shell")),
+				    `item(`id("shell"), _("Python"),(script["interpreter"]:"shell" == "python"))
+				    
 				    ]
 				   ),
 			`ComboBox( `id(`type), _("&Type"),
@@ -183,9 +195,9 @@ environment, choose the <i>chroot scripts</i> options.
 			),
 		  `VSpacing(1),
 		  `HBox(
-			`PushButton(`id(`save), SaveButtonLabel()),
+			`PushButton(`id(`save), Label::SaveButton()),
 			`PushButton(`id(`loadsource), _("&Load new source")),
-			`PushButton(`id(`cancel), CancelButtonLabel())
+			`PushButton(`id(`cancel), Label::CancelButton())
 
 			)
 		  );
@@ -212,7 +224,7 @@ environment, choose the <i>chroot scripts</i> options.
 
 		if (source == "" || scriptName == "")
 		{
-		    UI::MessagePopup(_("Provide at least the script
+		    Popup::Message(_("Provide at least the script
 name and the content of the script.
 "));
 		    continue;

@@ -47,8 +47,8 @@ on the command line.</p>"));
 					    `VSpacing(1),
 					    `VStretch(),
 					    `HBox(
-						  `PushButton(`id(`retry), `opt(`default),  RetryButtonLabel()   ),
-						  `PushButton(`id(`abort),  AbortButtonLabel() )
+						  `PushButton(`id(`retry), `opt(`default),  Label::RetryButton()   ),
+						  `PushButton(`id(`abort),  Label::AbortButton() )
 						  )
 					    ))
 			     )
@@ -121,11 +121,11 @@ on the command line.</p>"));
 			     `HSpacing(50),
 			     `HBox (
 				    `HSpacing(0.5),
-				    `LogView(`id(`log),  ErrorMsg()  , 10, 100 ),				    
+				    `LogView(`id(`log),  Label::ErrorMsg()  , 10, 100 ),				    
 				    `HSpacing(0.5)
 				    ),
 			     `VSpacing(0.2),
-			     `PushButton( `id(`ok), `opt(`default), OKButtonLabel() ),
+			     `PushButton( `id(`ok), `opt(`default), Label::OKButton() ),
 			     `VSpacing(0.5)
 			     )
 		       );

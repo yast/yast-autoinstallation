@@ -21,8 +21,8 @@
     import "Language";
     import "Console";
 
-    include "ui/common_messages.ycp";
-    include "ui/common_popups.ycp";
+    import "Label";
+    import "Popup";
 
     include "autoinstall/profileDialogs.ycp";
     // include "autoinstall/partitioning.ycp";
@@ -76,7 +76,7 @@ Please wait while the system is prepared for autoinstallation.</p>
     Progress::NextStage();
 
     if (! Profile::Read( AutoInstall::xml_tmpfile ) || Profile::current == $[] ) {
-	UI::ErrorPopup(_("Error while parsing the control file.
+	Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the
 control file and try again.
 "));

@@ -8,7 +8,7 @@
  */
 {
     textdomain "autoinst";
-
+	import "Label";
 
     /**
      * Dialog Contents
@@ -77,7 +77,7 @@ and when it is merged when creating a control file.
 	Wizard::SetContents(title,
 			    class_dialog_contents() , help, true, true);
 	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 	Wizard::ReplaceAbortButton(`Empty());
 	any ret = nil;
 	repeat
@@ -111,7 +111,7 @@ and when it is merged when creating a control file.
 		{
 		    if (class == nil)
 		    {
-			UI::MessagePopup(_("Select at least one class
+			Popup::Message(_("Select at least one class
 to edit.
 "));
 			continue;
@@ -127,7 +127,7 @@ to edit.
 		else if (ret ==`delete)
 		{
 		    if (class == nil) {
-			UI::MessagePopup(_("Select at least one class
+			Popup::Message(_("Select at least one class
 to delete.
 "));
 			continue;
@@ -192,8 +192,8 @@ to delete.
 						   lookup(class,"description","")),
 				    `VSpacing(1),
 				    `HBox(
-					  `PushButton(`id(`save), SaveButtonLabel()),
-					  `PushButton(`id(`cancel), CancelButtonLabel())
+					  `PushButton(`id(`save), Label::SaveButton()),
+					  `PushButton(`id(`cancel), Label::CancelButton())
 					  )
 				    ),
 			      `HSpacing(0.5)
@@ -210,18 +210,18 @@ to delete.
 	    {
 		if (UI::QueryWidget(`id(`name),`Value) == "")
 		{
-		    UI::MessagePopup(_("That name is already used. Select another name."));
+		    Popup::Message(_("That name is already used. Select another name."));
 		    continue;
 		}
 		if (mode !=`edit && contains(classNames, UI::QueryWidget(`id(`name),`Value)))
 		{
-		    UI::MessagePopup(_("That name is already used. Select another name."));
+		    Popup::Message(_("That name is already used. Select another name."));
 		    continue;
 		}
 		string name = UI::QueryWidget(`id(`name),`Value);
 		if (checkFileName(name) != 0 || name == "")
 		{
-		    UI::ErrorPopup(invalidFileName());
+		    Popup::Error(invalidFileName());
 		    continue;
 		}
 		map newClass = $[
@@ -357,7 +357,7 @@ script is used.</P>
 	Wizard::ReplaceAbortButton(`Empty());
 	list widgets = [ `merge, `empty, `current ];
 
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 	UI::ChangeWidget(`id(`next), `Enabled, false);
 
 	any ret = nil;
@@ -392,7 +392,7 @@ script is used.</P>
 		    if (base == `empty)
 			min = 2;
 
-		    UI::ErrorPopup(sformat(_("Select at least %1  configurations
+		    Popup::Error(sformat(_("Select at least %1  configurations
 to perform a merge.
 "), min));
 		    continue;
@@ -476,7 +476,7 @@ file should belong.</p>
 			    contents, help , true, true);
 
 	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
 
 	any ret = nil;
@@ -508,7 +508,7 @@ file should belong.</p>
 		if (n ==  0) {
 
 
-		    UI::ErrorPopup(_("Select at least one class configuration.
+		    Popup::Error(_("Select at least one class configuration.
 "));
 		    continue;
 		}
@@ -579,7 +579,7 @@ file should belong.</p>
 		    map xsltret = AutoinstClass::MergeClasses(profile,  tmpdir + "/base_profile.xml", "result.xml");
 		    if (xsltret["exit"]:-1 != 0 )
 		    {
-			UI::ErrorPopup(sformat(_("Merge failed:\n %1"), xsltret["stderr"]:"error"));
+			Popup::Error(sformat(_("Merge failed:\n %1"), xsltret["stderr"]:"error"));
 			error =  true;
 		    }
 		    XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");

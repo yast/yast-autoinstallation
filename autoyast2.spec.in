@@ -41,13 +41,12 @@ Obsoletes:	yast2-trans-autoinst
 @INSTALL@
 
 # Class conf
-install -d $RPM_BUILD_ROOT/etc/autoinstall
+install -d -m 700 $RPM_BUILD_ROOT/etc/autoinstall
 # Installation files
-install -d $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
-install -d $RPM_BUILD_ROOT/var/adm/autoinstall/logs
-install -d $RPM_BUILD_ROOT/var/adm/autoinstall/files
-install -d $RPM_BUILD_ROOT/var/adm/autoinstall/variables
-install -d $RPM_BUILD_ROOT/var/adm/autoinstall/cache
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/logs
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/files
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/cache
 
 # Repository
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository
@@ -183,7 +182,6 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 %dir /var/adm/autoinstall/scripts
 %dir /var/adm/autoinstall/logs
 %dir /var/adm/autoinstall/files
-%dir /var/adm/autoinstall/variables
 %dir /var/adm/autoinstall/cache
 %dir /var/lib/autoinstall/autoconf
 

@@ -9,7 +9,7 @@
 {
 
 
-
+	import "Label";
 
     global define symbol generalSequence () ``{
 
@@ -22,9 +22,8 @@
 			"mode"		: ``(ModeDialog())
 	];
 
-	
 	map sequence = $[
-			 "ws_start" 	: "language",
+			 "ws_start"	: "language",
 			 "language"	: $[
 					    `next	: "keyboard",
 					    `abort	: `abort
@@ -33,19 +32,18 @@
 					    `next	: "timezone",
 					    `abort	: `abort
 			 ],
-			 "timezone" 	: $[
+			 "timezone"	: $[
 					    `next	: "mouse",
 					    `abort	: `abort
 			 ],
-			 "mouse" 	: $[
+			 "mouse"	: $[
 					    `next	: "mode",
 					    `abort	: `abort
 			 ],
-			 "mode" 	: $[
+			 "mode"	: $[
 					    `next	: `finish
 			 ]
 	];
-			 
 	// Translators: dialog caption
 	string caption = _("General Settings");
 	term contents = `Label (_("Initializing ..."));
@@ -231,7 +229,7 @@ The options in this dialog control the behaviour of the AutoYaST during Auto-Ins
 			    contents, help_text, true , true);
 
 	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
 	
 	any ret = nil;
@@ -247,7 +245,7 @@ The options in this dialog control the behaviour of the AutoYaST during Auto-Ins
 
 		if (reboot && forceboot)
 		{
-		    UI::WarningPopup(_("You can not request rebooting the machine and
+		    Popup::Warning(_("You can not request rebooting the machine and
 force it not to boot at the same time.
 "));
 		    continue;

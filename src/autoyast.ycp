@@ -17,10 +17,9 @@
     import "ISO";
     import "Y2ModuleConfig";
     import "Summary";
+    import "Label";
+    
 
-
-    include "ui/common_popups.ycp";
-    include "ui/common_messages.ycp";
     include "wizard/sequencer.ycp";
 
 
@@ -82,8 +81,8 @@
 	Wizard::SetContentsButtons ( caption,
 				     contents,
 				     "",
-				     BackButtonLabel (),
-				     NextButtonLabel ());
+				     Label::BackButton (),
+				     Label::NextButton ());
 
 
 	any ret = WizardSequencer (dialogs, sequence);

@@ -196,7 +196,7 @@ settings, such as the network and system environment.</P>
 		if ( method != "smb" && method != "hd" && method!="cd") {
 		    
 		    if(!check_ip4(UI::QueryWidget(`id(`server), `Value))) {
-			UI::ErrorPopup(_("The IP address is incorrect"));
+			Popup::Error(_("The IP address is incorrect"));
 			UI::SetFocus(`id(`server));
 			continue;
 		    }
@@ -211,22 +211,22 @@ settings, such as the network and system environment.</P>
 		
 		if (!UI::QueryWidget(`id(`usedhcp), `Value)) {
 		    if(!check_ip4(UI::QueryWidget(`id(`ip), `Value))  && UI::QueryWidget(`id(`ip), `Value) != "") {
-			UI::ErrorPopup(_("The IP address is incorrect"));
+			Popup::Error(_("The IP address is incorrect"));
 			UI::SetFocus(`id(`ip));
 			continue;
 		    }
 		    if(!check_netmask(UI::QueryWidget(`id(`netmask), `Value)) && UI::QueryWidget(`id(`netmask), `Value) != "" ) {
-			UI::ErrorPopup(_("The subnet mask is incorrect"));
+			Popup::Error(_("The subnet mask is incorrect"));
 			UI::SetFocus(`id(`netmask));
 			continue;
 		    }
 		    if(!check_ip4(UI::QueryWidget(`id(`gateway), `Value)) && UI::QueryWidget(`id(`gateway), `Value) != "") {
-			UI::ErrorPopup(_("The IP address is incorrect"));
+			Popup::Error(_("The IP address is incorrect"));
 			UI::SetFocus(`id(`gateway));
 			continue;
 		    }
 		    if(!check_ip4(UI::QueryWidget(`id(`nameserver), `Value)) && UI::QueryWidget(`id(`nameserver), `Value) != "" ) {
-			UI::ErrorPopup(_("The IP address is incorrect"));
+			Popup::Error(_("The IP address is incorrect"));
 			UI::SetFocus(`id(`nameserver));
 			continue;
 		    }
@@ -302,7 +302,7 @@ be retrieved using several methods (HTTP, NFS, TFTP, or FTP).</p>
     	Wizard::SetContents(_("Autoyast Options"),
 			    contents, help_text, true , true);
 
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 	any ret = nil;
 	
 	repeat {
@@ -327,7 +327,7 @@ be retrieved using several methods (HTTP, NFS, TFTP, or FTP).</p>
 	    if (ret == `next) {
 		
 		if(!check_ip4(UI::QueryWidget(`id(`ayserver), `Value)) && aymethod != "file") {
-		    UI::ErrorPopup(_("The IP address is incorrect"));
+		    Popup::Error(_("The IP address is incorrect"));
 		    UI::SetFocus(`id(`server));
 		    continue;
 		}

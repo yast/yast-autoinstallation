@@ -12,7 +12,7 @@
     textdomain "autoinst";
     import "Mode";
     
-    include "ui/common_messages.ycp";
+    import "Label";
 
 
     global string tmpdir = SCR::Read( .target.tmpdir );
@@ -360,6 +360,11 @@
 		executionString = sformat("/usr/bin/perl %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
 		SCR::Execute (.target.bash,executionString);
 	    }
+	    else if (scriptInterpreter == "python")
+	    {
+		executionString = sformat("/usr/bin/python %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+		SCR::Execute (.target.bash,executionString);
+	    }	    
 	    else
 	    {
 		y2error("Unknown interpreter: %1", scriptInterpreter);

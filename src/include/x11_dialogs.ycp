@@ -10,7 +10,7 @@
 
 
     include "wizard/sequencer.ycp";
-    include "ui/common_messages.ycp";
+    import "Label";
 
     global define symbol X11AutoSequence () ``{
 
@@ -161,7 +161,7 @@ be started at boot time and what display manager should be used.</p>
 
 	
 	Wizard::ReplaceAbortButton(`Empty());
-	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
+	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
 	if (!x11_enabled) {
 	    UI::ChangeWidget(`id(`depth), `Enabled, false);
