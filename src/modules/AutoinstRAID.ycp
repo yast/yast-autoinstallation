@@ -14,6 +14,7 @@
     import "Storage";
     import "AutoinstStorage";
     import "Partitions";
+    import "FileSystems";
 
     include "partitioning/partition_defines.ycp";
     include "partitioning/raid_lib.ycp";
@@ -37,7 +38,7 @@
 	targetMap	= Storage::GetTargetMap();
 	y2milestone("Current TargetMap: %1", targetMap );
 
-	ExistingRAID	= filter(`k,`v, targetMap, ``(k == "/dev/md"));
+	ExistingRAID	= filter(string k,map v, targetMap, ``(k == "/dev/md"));
 	y2milestone("Existing RAID: %1", ExistingRAID );
 
 	if (size(ExistingRAID) > 0 )
@@ -50,7 +51,7 @@
 
     global define list ExistingMDs ( string md )
 	``{
-	return(filter( `part, get_possible_rds( targetMap ),  ``( part["raid_name"]:"-1" == md )));
+	return(filter( map part, get_possible_rds( targetMap ),  ``( part["raid_name"]:"-1" == md )));
     }
 
 
@@ -60,7 +61,7 @@
 	foreach( string dev, map devmap, targetMap,
 		 ``{
 	    ret = add( ret,
-		       filter( `part, devmap["partitions"]:[],
+		       filter( map part, devmap["partitions"]:[],
 			       ``(
 				  part["raid_name"]:"" == md
 				  &&
@@ -72,7 +73,7 @@
 		       );
 	});
 
-	return( flatten(ret) );
+	return((list)flatten(ret) );
     }
 
 
@@ -94,7 +95,7 @@
 	if (OldAvailable)
 	{
 	    list mds = targetMap["/dev/md","partitions"]:[];
-	    list new_mds = maplist( `md, mds ,``{
+	    list new_mds = maplist( map md, mds ,``{
 		if ( contains(to_bo_deleted, md["device"]:"")) 
 		{
 		    md["delete"] = true;
@@ -131,7 +132,7 @@
 	    if (OldAvailable)
 	    {
 		list mds = ExistingRAID["/dev/md","partitions"]:[];
-		list new_mds = maplist( `md, mds ,``{
+		list new_mds = maplist( map md, mds ,``{
 
 		    if ( use == "all" && dev == md["device"]:"" )
 		    {

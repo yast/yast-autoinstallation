@@ -8,15 +8,19 @@
  */
 {
     textdomain "autoinst";
-
+    import "AutoinstConfig";
+    import "Popup";
+    import "Profile";
+    include "autoinstall/xml.ycp";
+    
     /**
      * Generate control file list
      * @return file list
      */
-    global define aliceHostList()
+    global define term aliceHostList()
 	``{
 
-	list files = SCR::Read(.target.dir, AutoinstConfig::AliceRepository + "/info");
+	list files = (list)SCR::Read(.target.dir, AutoinstConfig::AliceRepository + "/info");
 	list extensions = ["sys.tcf" ];
 	list hosts = [];
 	string host = "";
@@ -54,10 +58,84 @@
 
 
 
+    global define boolean _cleanup(string in, string out)
+	``{
+	map ycpin = XML::XMLToYCPFile(in);
+	y2milestone("Writing file as %1", out);
 
-    global define aliceImportList()
+	map sortedMap = $[];
+	list keys = toset(maplist(`k,`v, ycpin, ``(k)));
+	foreach(string k, keys, ``{
+	    sortedMap[k]=ycpin[k]:"";
+	});
+	return XML::YCPToXMLFile(`alice, sortedMap, out);
+    }
+
+    
+    global define map mergeFiles(list files, string dir)
+	``{
+	
+	aliceXmlSetup();
+	integer cnt = 0;
+	string base = "";
+	foreach (string f, files, ``{
+	    if (f != "" ) {
+
+		string filename = sformat("%1/%2", dir, f);
+		y2milestone("Working on %1", filename);
+		base = sformat("%1/base.xml", dir);
+		if (cnt == 0)
+		{
+		    _cleanup(filename, base);
+		}
+		else
+		{
+
+		    string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'true'\" --param with ";
+		    MergeCommand = MergeCommand + "\"'" + filename + "'\"  ";
+		    MergeCommand = MergeCommand + "--output " +  dir + "/mergeOutput ";
+		    MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
+		    MergeCommand = MergeCommand +   base + " ";
+
+		    y2milestone("Merge command: %1", MergeCommand);
+
+		    map out = (map)SCR::Execute(.target.bash_output, MergeCommand, $[]);
+		    y2milestone("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
+		    _cleanup(sformat("%1/mergeOutput", dir), base);
+		}
+
+		cnt = cnt + 1;
+	    }
+
+	});
+	any ret = XML::XMLToYCPFile(base);
+
+	return (ret);
+    }
+
+
+
+    global define map createAliceConf(string host)
 	``{
 
+	string MakeinfoCommand = "alice make_info_file --yast2 ";
+	MakeinfoCommand = MakeinfoCommand + host;
+	map out = (map)SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR": AutoinstConfig::tmpDir , "ALICE_HOME":AutoinstConfig::AliceRepository]);
+	string filelist = (string)SCR::Read(.target.string, AutoinstConfig::tmpDir + "/filelist");
+	list files = splitstring(filelist, "\n");
+	y2milestone("files: %1", files);
+
+	map ret =  mergeFiles(files, AutoinstConfig::tmpDir);
+	SCR::Execute(.target.remove,  AutoinstConfig::tmpDir + "/filelist");
+	y2milestone("alice conf %1", ret);
+	return ret;
+    }
+
+
+    global define symbol aliceImportList()
+	``{
+
+	import "Wizard";
 	Wizard::SetScreenShotName ("autoyast-alice-2");
 
 	string help = _("<p>Using this dialog, select a
@@ -89,7 +167,7 @@ the configuration files are read and converted.
 	    ret = UI::UserInput();
 	    if (ret == `next)
 	    {
-		host = UI::QueryWidget(`id(`table), `CurrentItem);
+		host = (string)UI::QueryWidget(`id(`table), `CurrentItem);
 		if (host != nil && host != "")
 		{
 		    showFeedback(_("
@@ -98,7 +176,7 @@ This may take a while. Please wait...
 "));
 
 		    map aliceConf = $[];
-		    any aliceret = createAliceConf(host);
+		    map aliceret = createAliceConf(host);
 		    if (is(aliceret, map) && aliceret != $[])
 		    {
 			aliceConf = aliceret;
@@ -121,76 +199,6 @@ This may take a while. Please wait...
 	return ret;
     }
 
-    global define any createAliceConf(string host)
-	``{
-
-	string MakeinfoCommand = "alice make_info_file --yast2 ";
-	MakeinfoCommand = MakeinfoCommand + host;
-	map out = SCR::Execute(.target.bash_output, MakeinfoCommand, $["YAST2_TMPDIR": AutoinstConfig::tmpDir , "ALICE_HOME":AutoinstConfig::AliceRepository]);
-	string filelist = SCR::Read(.target.string, AutoinstConfig::tmpDir + "/filelist");
-	list files = splitstring(filelist, "\n");
-	y2milestone("files: %1", files);
-
-	any ret =  mergeFiles(files, AutoinstConfig::tmpDir);
-	SCR::Execute(.target.remove,  AutoinstConfig::tmpDir + "/filelist");
-	y2milestone("alice conf %1", ret);
-	return ret;
-    }
-
-    global define map mergeFiles(list files, string dir)
-	``{
-	include "autoinstall/xml.ycp";
-	aliceXmlSetup();
-	integer cnt = 0;
-	string base = "";
-	foreach (string f, files, ``{
-	    if (f != "" ) {
-
-		string filename = sformat("%1/%2", dir, f);
-		y2milestone("Working on %1", filename);
-		base = sformat("%1/base.xml", dir);
-		if (cnt == 0)
-		{
-		    _cleanup(filename, base);
-		}
-		else
-		{
-
-		    string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'true'\" --param with ";
-		    MergeCommand = MergeCommand + "\"'" + filename + "'\"  ";
-		    MergeCommand = MergeCommand + "--output " +  dir + "/mergeOutput ";
-		    MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
-		    MergeCommand = MergeCommand +   base + " ";
-
-		    y2milestone("Merge command: %1", MergeCommand);
-
-		    map out = SCR::Execute(.target.bash_output, MergeCommand, $[]);
-		    y2milestone("Merge stdout: %1, stderr: %2", out["stdout"]:"", out["stderr"]:"");
-		    _cleanup(sformat("%1/mergeOutput", dir), base);
-		}
-
-		cnt = cnt + 1;
-	    }
-
-	});
-	any ret = XML::XMLToYCPFile(base);
-
-	return (ret);
-    }
-
-
-    global define _cleanup(string in, string out)
-	``{
-	map ycpin = XML::XMLToYCPFile(in);
-	y2milestone("Writing file as %1", out);
-
-	map sortedMap = $[];
-	list keys = toset(maplist(`k,`v, ycpin, ``(k)));
-	foreach(string k, keys, ``{
-	    sortedMap[k]=ycpin[k]:"";
-	});
-	return XML::YCPToXMLFile(`alice, sortedMap, out);
-    }
 
     /**
      * Create the profile from Alice data
@@ -515,7 +523,7 @@ This may take a while. Please wait...
 	return users;
     }
 
-    global define aliceInit(map aliceConf, map networking)``{
+    global define map aliceInit(map aliceConf, map networking)``{
 	map init = $[];
 	y2milestone("networking %1", networking);
 	if ( aliceConf["SYS_BOOT_MODE"]:"" == "NET") {
@@ -788,7 +796,7 @@ This may take a while. Please wait...
      * @param any filesystem string
      * @return symbol filesystem type
      */
-    global define StringFS2Symbol(any fs)``{
+    global define  symbol StringFS2Symbol(any fs)``{
 	if (is(fs,symbol)) {
 	    return fs;
 	}
@@ -1066,7 +1074,7 @@ This may take a while. Please wait...
     /**
      * KS Authentication
      */
-    global define ks_auth(map ksConfig) ``{
+    global define list ks_auth(map ksConfig) ``{
 
 	map auth = ksConfig["auth"]:$[];
 
@@ -1112,7 +1120,7 @@ This may take a while. Please wait...
     /**
      * KS Bootloader
      */
-    global define ks_bootloader (map ksConfig) ``{
+    global define map ks_bootloader (map ksConfig) ``{
 
 	map bl = ksConfig["bootloader"]:$[];
 	map bootloader = $[];
@@ -1137,7 +1145,7 @@ This may take a while. Please wait...
     /**
      * KS Software
      */
-    global define ks_software (map ksConfig)
+    global define map  ks_software (map ksConfig)
 	``{
 
 	map software = $[];

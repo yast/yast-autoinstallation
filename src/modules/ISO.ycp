@@ -74,7 +74,7 @@
 	``{
 
 	skeletonDir = tmpDir + "/iso_skeleton";
-	return SCR::Execute(.target.mkdir, skeletonDir);
+	return (boolean)SCR::Execute(.target.mkdir, skeletonDir);
     }
 
 
@@ -136,7 +136,7 @@ a source, make sure it is enabled.
      * Set paraeters for mkisofs command
      *
      */
-    define initIsoParams ()
+    define void initIsoParams ()
 	``{
 
 
@@ -167,7 +167,7 @@ a source, make sure it is enabled.
 	    params = params + sformat(" -A \"%1\"", applicationID);
 	}
 
-
+	return;
     }
 
     /**
@@ -181,14 +181,14 @@ a source, make sure it is enabled.
 	initIsoParams ();
 	string skeleton = skeletonDir + "/skeleton";
 
-	string isotmp = SCR::Read (.target.tmpdir);
+	string isotmp = AutoinstConfig::tmpDir;
 	SCR::Execute(.target.mkdir, isotmp + "/iso");
 	string sortfile = isotmp + "/sortfile";
 
 	if (SCR::Read(.target.dir, suseDir)!=nil && SCR::Read(.target.dir, bootDir)!= nil )
 	{
 	    string findstring = "find " + bootDir + " -printf \"%p 1\\n\" > " + sortfile;
-	    integer ret = SCR::Execute (.target.bash, findstring);
+	    integer ret = (integer)SCR::Execute (.target.bash, findstring);
 
 	    params = params + sformat(" -sort %1  -b boot/loader/isolinux.bin -c boot.cat", sortfile);
 	    y2milestone("found boot image. Making CD bootable.");
@@ -209,7 +209,7 @@ a source, make sure it is enabled.
      * Create Skeleton
      *
      */
-    global define createISOSkeleton () ``{
+    global define boolean  createISOSkeleton () ``{
 
 	list commands = [];
 	integer ret = 0;
@@ -223,12 +223,12 @@ a source, make sure it is enabled.
 	string dataDir =   productData["datadir"]:"./suse";
 
 	y2milestone("creating skeleton in %1", skeletonDir);
-	success = SCR::Execute(.target.mkdir, sformat("%1/skeleton/%2", skeletonDir, dataDir));
+	success = (boolean)SCR::Execute(.target.mkdir, sformat("%1/skeleton/%2", skeletonDir, dataDir));
 	if (!success)
+	{
 	    return false;
-
-
-
+	}
+	
 	commands= add(commands, sformat("/bin/cp -a %1/boot %2/skeleton", sourceDir, skeletonDir));
 	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/%2",  skeletonDir, descrDir));
 	commands= add(commands, sformat("/bin/cp -a %1/%2/* %3/skeleton/%4", sourceDir,  descrDir, skeletonDir, descrDir));
@@ -239,7 +239,7 @@ a source, make sure it is enabled.
 	commands= add(commands, sformat("/bin/cp %1/media.1/products   %2/skeleton/media.1/products",  sourceDir , skeletonDir));
 
 	foreach (string c, commands, ``{
-	    ret = SCR::Execute (.target.bash, c);
+	    ret = (integer)SCR::Execute (.target.bash, c);
 	    if (ret != 0)
 	    {
 		success= false;
@@ -264,8 +264,9 @@ a source, make sure it is enabled.
     /**
      * Parse media data
      */
-    global define string readMedia() ``{
-	string media = SCR::Read(.target.string,  sourceDir + "/media.1/media");
+    global define string readMedia()
+	``{
+	string media = (string)SCR::Read(.target.string,  sourceDir + "/media.1/media");
 	list media_data = splitstring(media, "\n");
 	return (mergestring( [media_data[0]:"",media_data[1]:"", "1"] , "\n"));
     }

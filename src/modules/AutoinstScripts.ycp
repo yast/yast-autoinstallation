@@ -17,7 +17,7 @@
     import "Summary";
 
 
-    global string tmpdir = SCR::Read( .target.tmpdir );
+    global string tmpdir = (string)SCR::Read( .target.tmpdir );
 
     // Main directory for data generated during installation
     //
@@ -38,6 +38,37 @@
 
     global list merged = [];
 
+
+    /**
+     * merge all types of scripts into one single list
+     * @param -
+     * @return merged list
+     */
+    define list mergeScripts () ``{
+
+	list result =	maplist (map p, pre,
+				 ``{
+				     p = add(p,"type","pre-scripts");
+				     return p;
+				 });
+	result = union(result, 	maplist (map p, post,
+					 ``{
+					     p = add(p,"type","post-scripts");
+					     return p;
+					 })
+		       );
+	result = union(result, 	maplist (map p, chroot,
+					 ``{
+					     p = add(p,"type","chroot-scripts");
+					     return p;
+					 })
+		       );
+	return result;
+    }
+
+
+
+    
     /**
      * Constructor
      */
@@ -73,19 +104,19 @@
 
 
 	// clean
-	list expre =  maplist (`p, pre,  ``{
+	list expre =  maplist (map p, pre,  ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
 		      "source":p["source"]:""
 		    ]);
 	});
-	list expost =  maplist (`p, post, ``{
+	list expost =  maplist (map p, post, ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
 		      "source":p["source"]:""]
 		    );
 	});
-	list exchroot =  maplist (`p, chroot, ``{
+	list exchroot =  maplist (map p, chroot, ``{
 	    return ($["filename":p["filename"]:"",
 		      "interpreter": p["interpreter"]:"",
 		      "source":p["source"]:"",
@@ -176,10 +207,8 @@
      * @return modified list of scripts
      */
     global define void  deleteScript(string scriptName)
-	``{
-	y2milestone("merge: %1: %2", merged, scriptName);
-	list clean = filter(`s, merged, ``(s["filename"]:"" != scriptName));
-	y2milestone("clean :%1", clean);
+	``{	
+	list clean = filter(map s, merged, ``(s["filename"]:"" != scriptName));	
 	merged = clean;
 	return;
     }
@@ -198,7 +227,7 @@
 	``{
 	list newScripts = [];
 	boolean modified = false;
-	merged = maplist (`script , merged, ``{
+	merged = maplist (map script , merged, ``{
 	    // Edit
 	    if (script["filename"]:"" == scriptName)
 	    {
@@ -253,34 +282,6 @@
 
 
     /**
-     * merge all types of scripts into one single list
-     * @param -
-     * @return merged list
-     */
-    define list mergeScripts () ``{
-
-	list result =	maplist (`p, pre,
-				 ``{
-				     p = add(p,"type","pre-scripts");
-				     return p;
-				 });
-	result = union(result, 	maplist (`p, post,
-					 ``{
-					     p = add(p,"type","post-scripts");
-					     return p;
-					 })
-		       );
-	result = union(result, 	maplist (`p, chroot,
-					 ``{
-					     p = add(p,"type","chroot-scripts");
-					     return p;
-					 })
-		       );
-	return result;
-    }
-
-
-    /**
      * Execute pre scripts
      * @param type of script
      * @return true on success
@@ -296,11 +297,11 @@
 	}
 	else if ( type == "chroot-scripts" && !chrooted)
 	{
-	    scripts = filter(`s, chroot, ``(!s["chrooted"]:false));
+	    scripts = filter(map s, chroot, ``(!s["chrooted"]:false));
 	}
 	else if ( type == "chroot-scripts" && chrooted)
 	{
-	    scripts = filter(`s, chroot, ``(s["chrooted"]:false));
+	    scripts = filter(map s, chroot, ``(s["chrooted"]:false));
 	}
 	else if (type == "post-scripts")
 	{
