@@ -14,6 +14,7 @@
      */
     global define Preferences()
 	``{
+	Wizard::SetScreenShotName ("autoyast-preferences");
 	term contents =
 	    `Top(
 		 `VBox(
@@ -114,7 +115,7 @@ contains all the packages.</p>");
 
 
 	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-
+	Wizard::RestoreScreenShotName ();
 	if (changed  ) {
 	    AIConfig::Save();
 	    AIClass::Save();
@@ -296,6 +297,8 @@ contains all the packages.</p>");
      */
     global define symbol FileDialog()
 	``{
+	Wizard::SetScreenShotName ("autoyast-fileManagement");
+	
 	string title = _("File Management");
 	string help = _("
 <P>Please select one of the listed <em>Control Files</em> and use the <b>Edit</b> button
@@ -433,7 +436,7 @@ and templates which contain class defintions and can be created using this dialo
 		 ret == `open ||
 		 ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 
-
+	Wizard::RestoreScreenShotName ();
 	return ret;
     }
 
@@ -444,7 +447,7 @@ and templates which contain class defintions and can be created using this dialo
 
     global define SaveDialog()
 	``{
-
+	Wizard::SetScreenShotName ("autoyast-saveDialog");
 	string help = _("
 <P>Now you can save the configuration you have created. After
 saving the control file, you can continue editing and creating new
@@ -577,7 +580,7 @@ to be able to save the current profile!"));
 
 
 	    } until (ret == `edit || ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-
+	Wizard::RestoreScreenShotName ();
 	return ret;
     }
 
@@ -611,6 +614,7 @@ at most 127 characters long."));
 
 
     global define cloneSystem()``{
+	Wizard::SetScreenShotName ("autoyast-cloneSystem");
 	string help = _("<p>This will create a new profile by reading
 information from this machine.</p>");
 	string title = "Clone machine";
@@ -696,8 +700,10 @@ please wait...."));
 	    } until (ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
 	if (ret == `next)
 	    return action;
-
+	
+	Wizard::RestoreScreenShotName ();
 	return ret;
+	
     }
 
     /**

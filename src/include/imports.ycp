@@ -12,6 +12,7 @@
 
     global define aliceImportOptions()
 	``{
+	Wizard::SetScreenShotName ("autoyast-alice-1");
 	string title = _("Import Alice configuration");
 	string help = _("Help");
 
@@ -79,7 +80,8 @@
 		}
 		
 		
-	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));	
+	    } until  (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	Wizard::RestoreScreenShotName ();
 	return ret;
     }
     
@@ -87,7 +89,8 @@
      * Generate control file list
      * @return file list
      */
-    global define aliceHostList() ``{
+    global define aliceHostList()
+	``{
 	
 	list files = SCR::Read(.target.dir, AIServer::aliceRep + "/info");
 	list extensions = ["sys.tcf"	];
@@ -138,6 +141,9 @@
     
     global define aliceImportList()
 	``{
+
+	Wizard::SetScreenShotName ("autoyast-alice-2");
+	
 	string help = _("<p>Using this dialog you can select a
 host from the <b>ALICE</b> repository.</p>
 ");
@@ -194,6 +200,7 @@ this may take a while, please wait...
 		ret = AIServer::aliceOutput;
 	    }
 	}
+	Wizard::RestoreScreenShotName ();
 	return ret;
     }
 
@@ -620,6 +627,8 @@ this may take a while, please wait...
     
     global define kickstartImport()
 	``{
+	Wizard::SetScreenShotName ("autoyast-kickstart");
+	
 	string title = _("Import Kickstart files");
 	string help = _("<p>Using this feature, you can import <b>Kickstart</b> configuration
 files.</p>");
@@ -736,6 +745,7 @@ is the different package and package selection names used, those have to be adap
 	    }
 	}
 	return ret;
+	Wizard::RestoreScreenShotName ();
     }
 
 
