@@ -1,51 +1,48 @@
   <chapter>
     <title>Configuration and Installation Options</title>
     <para>
-	This section features the most important parts of a control file for
-	standard purposes. To have an idea about the other options available,
-	please consult the reference <!-- link --> or use the configuration
-	management system.     
+      This chapter introduces important parts of a control file for
+      standard purposes. To have an idea about the other options available,
+      consult the reference <!-- link --> or use the configuration
+      management system.     
+    </para>
+    <section id="CreateProfile.General">
+      <title>
+	General Options
+      </title>
+      <para>
+	This is a <emphasis>required</emphasis> section of the profile. General
+	options include all the settings related to the installation process and
+	the environment of the installed system. Among
+	others it inludes the following 4 properties which are required:
+	<emphasis>language</emphasis>,<emphasis> keyboard</emphasis>,<emphasis>
+	  clock</emphasis> and <emphasis>mouse</emphasis> almost for any
+	installation. If left out, default values will be used, which might not
+	be in one hand with what you want.
+	
       </para>
-      <section id="CreateProfile.General">
-	<title>
-	  General Options
-	</title>
-
-	<para>
-	  This is a <emphasis>required</emphasis> section of the profile. General
-	  options include all the settings related to the installation process and
-	  the environment of the installed system. This resource includes among
-	  other the following 4 properties which are required:
-	  <emphasis>language</emphasis>,<emphasis> keyboard</emphasis>,<emphasis>
-	    clock</emphasis> and <emphasis>mouse</emphasis> almost for any
-	  installation. If left out, default values will be used, which might not
-	  be in one hand with how you want the system to be installed.
-	  
-	</para>
-	&example.generalOptions;
-	<para>
-	  The <emphasis>reboot</emphasis> property in the <emphasis>mode</emphasis>
-	  resource is used to force a reboot after initial system setup and before
-	  the system is booted for the first time.
-	</para>
-	<para>
-	  By default, the auto-installation process has to be confirmed by the
-	  user. The confirmation should be disabled if a fully unattended
-	  installation is desired. This options is used to view and change the
-	  settings on a target system before anything is changed and can be
-	  used for debugging. It is set to <emphasis>true</emphasis> by default
-	  to avoid recursive installs when the system schedules a reboot due
-	  to a different kernel than the default or if  a reboot was requested in
-	  the control file. 
-	</para>
-	
-      </section>
-      <section id="CreateProfile.Reporting">
-	<title id="CreateProfile.Reporting.title">
-	  Reporting
-	</title>
-	
-
+      &example.generalOptions;
+      <para>
+	The <emphasis>reboot</emphasis> property in the <emphasis>mode</emphasis>
+	resource is used to force a reboot after initial system setup and before
+	the system is booted for the first time.
+      </para>
+      <para>
+	By default, the auto-installation process has to be confirmed by the
+	user. The confirmation should be disabled if a fully unattended
+	installation is desired. This options is used to view and change the
+	settings on a target system before anything is changed and can be
+	used for debugging. It is set to <emphasis>true</emphasis> by default
+	to avoid recursive installs when the system schedules a reboot due
+	to a a detection of a special kernel architecture or if  a reboot was requested in
+	the control file. 
+      </para>
+      
+    </section>
+    <section id="CreateProfile.Reporting">
+      <title id="CreateProfile.Reporting.title">
+	Reporting
+      </title>     
 	
 	<para>
 	  The <emphasis>report</emphasis> resource manages 3 types of pop-ups
@@ -76,7 +73,7 @@
 	  some places but should not be ignored.
 	</para>
 	<para>
-	  The default setting in auto-installation mode is to show all messages without logging and
+	  The default, the settings in auto-installation mode is to show all messages without logging and
 	  with a timeout of 10 seconds.
 	</para>
 
@@ -88,7 +85,8 @@
 	    Note that <emphasis>not</emphasis> all messages during installation are controlled by the
 	    <emphasis>report</emphasis> resource. Some critical messages concerning
 	    package installation and partitioning will still show up ignoring your
-	    settings in the <emphasis>report</emphasis> section.
+	    settings in the <emphasis>report</emphasis> section. Mostly those
+	  message will have to be answered with <emphasis>Yes</emphasis> or <emphasis>No</emphasis>.
 	  </para>
 	</note>
       </section>
@@ -97,7 +95,7 @@
 
 
       <section id="CreateProfile.Bootloader">
-	<title>The Boot loader</title>
+	<title>The Boot loader (FIXME)</title>
 	<para>
 	  If you do not want to install a boot loader, you have to specify this
 	  using the <emphasis>write_bootloader</emphasis> property (Boolean
@@ -133,7 +131,7 @@
 	  <para>
 	    For the automated partitioning to be completed, only the sizes and mount points of
 	    partitions are required. All other data needed for successful partitioning
-	    can be calculated during installation if not given in the control file.
+	    can be calculated during installation if not provided in the control file.
 	  </para>
 	  <para>
 	    If no partitions are defined and the specified drive is also the drive where
@@ -192,10 +190,13 @@
 		<emphasis>Reuse all available space</emphasis>
 	      </para>
 	      <para>
-		This option will lead to the deletion of existing partitions.
+		This option will lead to the deletion of all existing
+	      partitions (Linux and non-Linux partitions).
+
 	      </para>
 	    </listitem>
-	    <listitem> <!-- FIXME -->
+<!-- 
+	    <listitem>
 	      <para>
 		<emphasis>Reuse all available linux partitions</emphasis>
 	      </para>
@@ -204,6 +205,7 @@
 		partitions. All other partitions (i.e. Windows) will be kept.
 	      </para>
 	    </listitem>
+ FIXME -->
 	    <listitem>
 	      <para>
 		<emphasis>Reuse only specified partitions</emphasis>
@@ -244,43 +246,253 @@
 	
 	</section>
 
-	<section>
-	  <title>Advanced Partitioning features</title>
-	  <para>
-	    By default, &autoyast2; will create an extended partition and adds all
-	    new partitions as logical devices. It is possible however to
-	    instruct &autoyast2; to create a certain partition as a primary
-	    partition or as extended partition. Additionally, it is possible to
-	    specify the size of  a partition using sectors rather than size in Mbytes.
-	  </para>
-	  <para>
-	    The properties <emphasis>partition_id</emphasis> and
-	    <emphasis>partition_type</emphasis> control such behaviour. To
-	    specify the size in sectors, the list resource
-	    <emphasis>region</emphasis> should be used:
-	  </para>
-	  &example.advancedPartitioning;
-
-	</section>
+      <section>
+	<title>Advanced Partitioning features</title>
 
 	<section>
-	  <title>
-	    Logical Volume Manager (LVM)
-	  </title>
+	  <title>Creating Primary and Extended Partitions</title>
+	<para>
+	  By default, &autoyast2; will create an extended partition and will add all
+	  new partitions as logical devices. It is possible however to
+	  instruct &autoyast2; to create a certain partition as a primary
+	  partition or as extended partition. Additionally, it is possible to
+	  specify the size of  a partition using sectors rather than sizes in Mbytes.
+	</para>
+	<para>
+	  The properties <emphasis>partition_id</emphasis> and
+	  <emphasis>partition_type</emphasis> control such behaviour. To
+	  specify the size in sectors, the list resource
+	  <emphasis>region</emphasis> can be used:
+	</para>
+	&example.advancedPartitioning;
+	
 	  <para>
-	    To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
-	    normal partitioning method described above. 
+	    The last example is only usefull if you exactly know the
+	    boundaries of the partitions and it only makes sense  if you are creating
+	    an exact copy of  a system, for example when cloning.
+	  </para>
+	  
+	  <para>
+	    The following example lets you create an extended partition with a
+	    custom size
 	  </para>
 	  <example>
 	    <title>
-	      Create LVM Physical Volume
+	      Creating custom extended partitions
 	    </title>
-	    <para>
-	      The following example shows how to prepare for LVM in the
-	      <emphasis>partitioning</emphasis> 
-	      resource:
-	    </para>
+	   
+	    
 	    <screen>
+<![CDATA[
+  <install>
+.....
+    <partitioning config:type="list">
+      <drive>
+        <device>/dev/hdc</device>
+        <partitions config:type="list">
+          <partition>
+            <filesystem config:type="symbol">ext2</filesystem>
+            <mount>/boot</mount>
+            <partition_id config:type="integer">131</partition_id>
+            <partition_nr config:type="integer">2</partition_nr>
+            <size>50mb</size>
+          </partition>
+          <partition>
+            <mount>swap</mount>
+            <partition_id config:type="integer">130</partition_id>
+            <partition_nr config:type="integer">3</partition_nr>
+            <size>100mb</size>
+          </partition>
+          <partition>
+            <partition_id config:type="integer">15</partition_id>
+            <partition_nr config:type="integer">4</partition_nr>
+            <size>3000mb</size>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">ext2</filesystem>
+            <mount>/</mount>
+            <partition_id config:type="integer">131</partition_id>
+            <partition_nr config:type="integer">5</partition_nr>
+            <size>1gb</size>
+          </partition>
+        </partitions>
+        <use>free</use>
+      </drive>
+    </partitioning>
+....
+  </install>
+
+]]>
+	    </screen>
+
+	  </example>
+
+
+
+      </section>
+	<section>
+	  <title>Keeping Specific Partitions</title>
+	  <para>
+	    In some cases you might choose to keep some partitions untouched
+	    and only format some target partitions, rather than creating them from
+	    scratch. This might be the case of Linux installations have to
+	    co-exist with another operating system or if certain partitions
+	    contain data that you wish to keep untouched.
+	  </para>
+	  <para>
+	    Such scenarios require certain knowledge about the target systems
+	    and hard drives. Depending on the scanrio, you might need to know
+	    the exact partition table ofthe target hard drive with partition
+	    id's, sizes and numbers. With such data you can tell AutoYaST to
+	    keep certain partitions, format others and create new partitions if 
+	    needed.
+	  </para>
+
+	  <para>
+	    The following example will keep partitions 1,2 and 5 and delete
+	    partition 6 to create two new partitions. All kep partitions will
+	    be only formatted.
+	  </para>
+	  <example>
+	    <title>
+	     Keeping partitions
+	    </title>
+	   
+	    
+	    <screen>
+<![CDATA[
+  <install>
+.....
+    <partitioning config:type="list">
+      <drive>
+        <device>/dev/hdc</device>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <mount>/</mount>
+            <partition_nr config:type="integer">1</partition_nr>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">false</format>
+            <partition_nr config:type="integer">2</partition_nr>
+            <mount>/space</mount>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <filesystem config:type="symbol">swap</filesystem>
+            <partition_nr config:type="integer">5</partition_nr>
+            <mount>swap</mount>
+          </partition>
+          <partition>
+            <format config:type="boolean">true</format>
+            <mount>/space2</mount>
+            <size>50mb</size>
+          </partition>
+          <partition>
+            <format config:type="boolean">true</format>
+            <mount>/space3</mount>
+            <size>max</size>
+          </partition>
+
+        </partitions>
+        <use>6</use>
+      </drive>
+
+    </partitioning>
+....
+  </install>
+
+]]>
+	    </screen>
+
+	  </example>
+	  <para>
+	    The last example requires exact knowledge about the existing partition
+	    table and about the partition numbers of those partitions that
+	    should be kept. In some cases however, such data might be not
+	    available, especially in a mixed hardware environemnt with
+	    different hard drive types and configurations. The following
+	    scenario is for a system with a non-linux OS with a designated
+	    area for a linux installation.     
+	  </para>
+	  <figure id="partitioning-keep1">
+	    <title id="partitioning-keep1.title" >Keeping partitions</title>
+	    <mediaobject>&partitioning-keep1;</mediaobject>
+	  </figure>
+
+	  <para>
+	    In this scenario and as shown in  figure <quote><link
+		linkend='partitioning-keep1' endterm="partitioning-keep1.title"/></quote> , &autoyast2; should not in any case create any new
+	    partitions,  instead  it should search for certain partition types on the system and use
+	    them according to the partitioning plan in the control file. No
+	    partition numbers are given in this case, only the mount points and
+	    the partition types (Additional configuration data can be provided,
+	    for example file system options, encryption and filesystem type)
+	  </para>
+	  <example>
+	    <title>
+	      Auto-detection of partitions to be kept.
+	    </title>
+	   
+	    
+	    <screen>
+<![CDATA[
+  <install>
+.....
+    <partitioning config:type="list">
+      <drive>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <mount>/</mount>
+            <partition_id config:type="integer">131</partition_id>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <filesystem config:type="symbol">swap</filesystem>
+            <partition_id config:type="integer">130</partition_id>
+            <mount>swap</mount>
+          </partition>
+        </partitions>
+      </drive>
+    </partitioning>
+.....
+  </install>
+
+]]>
+	    </screen>
+
+	  </example>	 
+	</section>	
+      </section>
+
+
+
+
+
+      <section>
+	<title>
+	  Logical Volume Manager (LVM)
+	</title>
+	<para>
+	  To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
+	  normal partitioning method described above. 
+	</para>
+	<example>
+	  <title>
+	    Create LVM Physical Volume
+	  </title>
+	  <para>
+	    The following example shows how to prepare for LVM in the
+	    <emphasis>partitioning</emphasis> 
+	    resource:
+	  </para>
+	  <screen>
 <![CDATA[
 ....
 <partitioning config:type="list">
@@ -298,27 +510,27 @@
 </partitioning>
 .....
 ]]>
-	    </screen>
+	  </screen>
 
-	  </example>
-	  <para>
-	    The last example will create a non-formatted partition on device
-	    <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
-	    with the volume group <emphasis>system</emphasis>. The partition
-	    created  will use all available space on this drive.
-	  </para>
-	  <para>
-	    The logical volumes should be defined in the <emphasis>lvm</emphasis>
-	    resource. Currently it is not possible to configure LVM using the
-	    configuration system, instead it is required to
-	    add the resource manually as shown in the  following example.
-	  </para>
+	</example>
+	<para>
+	  The last example will create a non-formatted partition on device
+	  <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
+	  with the volume group <emphasis>system</emphasis>. The partition
+	  created  will use all available space on this drive.
+	</para>
+	<para>
+	  The logical volumes should be defined in the <emphasis>lvm</emphasis>
+	  resource. Currently it is not possible to configure LVM using the
+	  configuration system, instead it is required to
+	  add the resource manually as shown in the  following example.
+	</para>
 
-	  <example>
-	    <title>
-	      LVM Logical Volumes
-	    </title>
-	    <screen>
+	<example>
+	  <title>
+	    LVM Logical Volumes
+	  </title>
+	  <screen>
 <![CDATA[
 ....
   <lvm config:type="list">
@@ -349,60 +561,60 @@
   </lvm>
 .....
 ]]>
-	    </screen>
-	  </example>
-	</section>
+	  </screen>
+	</example>
+      </section>
 
-	<section>
-	  <title>Software RAID</title>
-	  <para>
-	    Using &autoyast;, you can create and assemble  software RAID devices. The
-	    supported RAID levels are the following:
-	  </para>
-	  <itemizedlist>
-	    <listitem>	  
-	      <para>
-		<emphasis>RAID 0:</emphasis> This level increases your disk performace.
-		There is <emphasis>NO</emphasis> redundancy in this mode. If one of the drives crashes, data recovery will not be possible.
-	      </para>
-	    </listitem>
-	    <listitem>
-	      <para>
-		<emphasis>RAID 1:</emphasis>This mode has the best redundancy. It can be
-		used with two or more disks. This mode maintains an exact copy of all data on all
-		disks. As long as at least one disk is still working, no data is lost. The partitions
-		used for this type of RAID should have approximately the same size.
-	      </para>
-	    </listitem>
+      <section>
+	<title>Software RAID</title>
+	<para>
+	  Using &autoyast;, you can create and assemble  software RAID devices. The
+	  supported RAID levels are the following:
+	</para>
+	<itemizedlist>
+	  <listitem>	  
+	    <para>
+	      <emphasis>RAID 0:</emphasis> This level increases your disk performace.
+	      There is <emphasis>NO</emphasis> redundancy in this mode. If one of the drives crashes, data recovery will not be possible.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      <emphasis>RAID 1:</emphasis>This mode has the best redundancy. It can be
+	      used with two or more disks. This mode maintains an exact copy of all data on all
+	      disks. As long as at least one disk is still working, no data is lost. The partitions
+	      used for this type of RAID should have approximately the same size.
+	    </para>
+	  </listitem>
 
-	    <listitem>
-	      <para>
-		<emphasis>RAID 5:</emphasis> This mode combines management of a larger number
-		of disks and still maintains some redundancy. This mode can be used on three disks or more.
-		If one disk fails, all data is still intact. If two disks fail simultaneously,
-		all data is lost.
-	      </para>	  
-	    </listitem>
-	    <listitem>
-	      <para>
-		<emphasis>Multipath:</emphasis>This mode allow access to the same physical device
-		over multiple controller for redundancy against a fault in a controller
-		card. This mode can be used with at least two devices.
-	      </para>
-	    </listitem>
-	  </itemizedlist>
-	  <para>
-	    As with LVM, you need to create all <emphasis><acronym>RAID</acronym></emphasis> partitions first and assign
-	    the partitions to the <acronym>RAID</acronym> device you want to create and you need to
-	    specify whether a partition or a device should be configured in the
-	    <acronym>RAID</acronym>  or if it should configured as a <emphasis>Spare</emphasis> device.
-	  </para>
-	  <para>
-	    The following example shows a simple RAID1 configuration:
-	  </para>
-	  <example>
-	    <title>RAID1 configuration</title>
-	    <screen>
+	  <listitem>
+	    <para>
+	      <emphasis>RAID 5:</emphasis> This mode combines management of a larger number
+	      of disks and still maintains some redundancy. This mode can be used on three disks or more.
+	      If one disk fails, all data is still intact. If two disks fail simultaneously,
+	      all data is lost.
+	    </para>	  
+	  </listitem>
+	  <listitem>
+	    <para>
+	      <emphasis>Multipath:</emphasis>This mode allow access to the same physical device
+	      over multiple controller for redundancy against a fault in a controller
+	      card. This mode can be used with at least two devices.
+	    </para>
+	  </listitem>
+	</itemizedlist>
+	<para>
+	  As with LVM, you need to create all <emphasis><acronym>RAID</acronym></emphasis> partitions first and assign
+	  the partitions to the <acronym>RAID</acronym> device you want to create and you need to
+	  specify whether a partition or a device should be configured in the
+	  <acronym>RAID</acronym>  or if it should configured as a <emphasis>Spare</emphasis> device.
+	</para>
+	<para>
+	  The following example shows a simple RAID1 configuration:
+	</para>
+	<example>
+	  <title>RAID1 configuration</title>
+	  <screen>
 <![CDATA[
 ....
    <partitioning config:type="list">
@@ -532,7 +744,7 @@
 	    &yast2; will not be able to read it.	  	  
 	  </para>
 	  <para>
-	    As an example for the selection file, please take a look at the files
+	    As an example for the selection file, take a look at the files
 	    available in the directory <filename>/suse/setup/descr/</filename> on
 	    the CD-ROMs.
 	  </para>
@@ -885,7 +1097,7 @@ cd /usr/local/CDs/8.1/suse
 	</para>
         
 	<para>
-	  Please consult the handbook for more details about the many
+	Consult the handbook for more details about the many
 	  configuration options available in <filename>/etc/sysconfig</filename>
 	</para>
 	<para>
