@@ -163,7 +163,7 @@
 
 	    if (psize == "auto")
 	    {
-		if (mount_point == "/boot")
+		if (mount_point == "/boot" || mount_point == "/boot/efi")
 		{
 		    realsize = size_of_boot;
 		}
@@ -186,7 +186,6 @@
 		    realsize = maxsize;
 		else
 		    realsize = tmp_size;
-		
 	    }
 	    else if (!region_active )
 	    {
@@ -284,9 +283,10 @@
 	}
 	else if (psize == "auto")
 	{
-	    if (mount_point == "/boot")
+	    if (mount_point == "/boot" || mount_point == "/boot/efi")
 	    {
 		units = size_to_units (size_of_boot, bytes_per_unit);
+                y2milestone("/boot/* size_of_boot: %1, bytes_per_unit: %2 , units: %3", size_of_boot, bytes_per_unit, units );
 	    }
 	    else if  (mount_point == "swap")
 	    {
@@ -385,6 +385,9 @@
         }
         else if (mount_point == "/boot" || mount_point == "/boot/efi")
         {
+            // Force /boot/efi on ia64, even if /boot is given on ia64
+            // (otherwise bootloader wont work)
+            part["mount"] = Partitions::BootMount();
             if (currentPartition["partition_id"]:0 != 0)
             {
                 part["fsid"] =  currentPartition["partition_id"]:0;
