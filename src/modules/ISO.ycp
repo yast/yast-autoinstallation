@@ -1,26 +1,14 @@
 /**
- * File:
- *	modules/ISO.ycp
- *
- * Module:
- *	ISO
- *
- * Summary:
- *	ISO creation
- *
- * Authors:
- *	Anas Nashif <nashif@suse.de>
- *
+ * File:	modules/ISO.ycp
+ * Module:	ISO
+ * Summary:	ISO creation
+ * Authors:	Anas Nashif <nashif@suse.de>
  * $Id$
  */
 {
     module "ISO";
     import "Misc";
     import "AIConfig";    
-
-
-
-
 
     ///////////////////////////////////////////////////////////////////////
     // Media
@@ -60,6 +48,9 @@
     string tmpDir = "";
 
     integer theSource = -1;
+
+
+    global list missing_packages  = [];
     
     /**
      * Constructer

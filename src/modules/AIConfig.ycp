@@ -21,7 +21,7 @@
     // tmp dir
     global string tmpDir = "";
 
-    
+    global any data = nil;
     
     // Profile Repository
     global string Repository = "";
@@ -183,5 +183,13 @@
 	});
     }
 
+    /**
+     * Get resource name
+     */
+
+    global define string getResource( string default_resource) ``{
+	return ModuleMap[default_resource, "AutoinstResource"]:default_resource;	
+    }
+    
  
 }

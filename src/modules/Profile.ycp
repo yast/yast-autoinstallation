@@ -17,6 +17,10 @@
     // The Complete current Profile
     global map current = $[];
 
+
+    // Flat control file with all resources on one level
+    global map Flat = $[];
+
     // the install portion of the XML configuration file
     global map Install = $[];
          
@@ -50,6 +54,7 @@
 	current  = profile;
 	Configure = profile["configure"]:$[];
 	Install = profile["install"]:$[];
+	Flat = union( Configure, Install );
 	return;
     }
       /**
@@ -57,40 +62,44 @@
      * @return void
      */
     global define void Prepare()``{
+
+	Install = $[];
+	Configure = $[];
+	current = $[];
 	
 	foreach(`p,`d, AutoInstall::ModuleMap, ``{
-	    // Set resource name, if not using default value
-	    string resource = "";
-	    if (haskey(d,"AutoinstResource"))
-		resource = d["AutoinstResource"]:"unknown";
-	    else
-		resource = p;
 	    
-	    if (d["AutoinstPath"]:"" == "install") {		
-		if (size(Install[resource]:$[])==0 && haskey(Install, resource))
-		{		    
-		    Install=remove(Install,resource);
-		}	
-	    }
-	    else
-	    {		
-		if (size(Configure[resource]:$[])==0 && haskey(Configure, resource))
-		{		
-		    Configure=remove(Configure,resource);
+	    // Set resource name, if not using default value
+	    string resource = AIConfig::getResource(p);
+	    
+	    if ( size(Flat[resource]:$[]) != 0)
+	    {		    
+		if (d["AutoinstPath"]:"" == "install")
+		{
+		    if ( d["AutoinstDataType"]:"map" == "map" )
+		    {
+			Install[resource] = Flat[resource]:$[];
+		    }
+		    else
+		    {
+			Configure[resource] = Flat[resource]:[];
+		    }
 		}
-	
-	    }	
+		else
+		{
+		    if ( d["AutoinstDataType"]:"map" == "map" )
+		    {
+			Install[resource] = Flat[resource]:$[];
+		    }
+		    else
+		    {
+			Configure[resource] = Flat[resource]:[];
+		    }		    
+		}
+	    }		  
 	});
 
-	if ( size(Install["classes"]:[])>0)
-	{	    
-	    isTemplate = true;
-	}
-	else
-	{	    
-	    isTemplate = false;
-	}
-
+	
 
 	if (Install != $[])
 	{
@@ -113,56 +122,7 @@
 
     }
 
-    
-    /**
-     * 
-     * Remove class resource from Profile
-     */
-
-    global define unclassify() ``{
-	foreach(`p,`d, ModuleMap, ``{
-	    // Set resource name, if not using default value
-	    string resource = "";
-	    if (haskey(d,"AutoinstResource"))
-		resource = d["AutoinstResource"]:"unknown";
-	    else
-		resource = p;
-	    
-	    if (d["AutoinstPath"]:"" == "install") {		
-		if (size(Install[resource]:$[])==0 && haskey(Install, resource))
-		{		    
-		    Install=remove(Install,resource);
-		}	
-	    }
-	    else
-	    {		
-		if (size(Configure[resource]:$[])==0 && haskey(Configure, resource))
-		{		
-		    Configure=remove(Configure,resource);
-		}
-	
-	    }	
-	});
-
-	if ( size(Install["classes"]:[])>0)
-	{	    
-	    Install = remove(Install, "classes");
-	}
-
-	if (Install!= $[])
-	    current["install"] = Install;
-	else if (haskey(current,"install"))
-	    current=remove(current,"install");
-	
-	if (Configure!=$[])
-	    current["configure"] = Configure;
-	else if (haskey(current,"configure"))
-	    current=remove(current,"configure");
-	
-	return;	
-    }
-
-
+   
     
     /**
      * Reset profile to initial status
@@ -172,6 +132,7 @@
 	current = $[];
 	Install = $[];
 	Configure = $[];
+	Flatt = $[];
 	return;
     }
 
@@ -188,14 +149,8 @@
 	y2milestone("Saving data (%1) to XML file %2", current, filePath);
 	
 	if (find(filePath, "/") == -1 )
-	{
-	    if (isTemplate) {
-		return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", TemplateRepository, filePath)));
-	    }
-	    else
-	    {
-		return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", Repository, filePath)));
-	    }
+	{	   
+	    return (XML::YCPToXMLFile(`profile, current, sformat("%1/%2", Repository, filePath)));
 	}
 	else
 	{
@@ -227,6 +182,7 @@
 	
 	Install = current["install"]:$[];
 	Configure = current["configure"]:$[];
+	Flat = union ( Install, Configure);
 	return;
     }
 
@@ -239,6 +195,7 @@
      */
     global define void Read (string filePath)
 	``{
+	
 	y2debug("Reading %1", filePath);
 	current = XML::XMLToYCPFile(filePath);
 	
@@ -246,7 +203,11 @@
 	
 	Install = current["install"]:$[];
 	Configure = current["configure"]:$[];
+	Flat = union ( Install, Configure );
+
+	
 	Compat();
+	
 	return;
     }
 
@@ -355,6 +316,8 @@
 	    Install["report"] = report;
 	    Configure["security"] = security;
 	    Configure["networking"] = net;
+
+	    Flat = union (Install, Configure);
 	    changed = true;
 	    
 	}		
