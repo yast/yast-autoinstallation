@@ -259,9 +259,9 @@
      * Simple dependency resolving
      * @return list<map>
      */
-    global define list<map> Deps ()
+    global define list<map> Deps (map<string,any>  dependencies)
     {
-	map<string, list<string> > deps = $[
+	map<string, any> deps = $[
 			"files": ["users"],
 			"users": ["security"],
 			"nfs":	 ["lan"],
@@ -271,6 +271,10 @@
 			"printer": ["lan"],
 			"firewall": ["lan"],
 			];
+        if (size(dependencies) > 0 )
+        {
+            deps=(map<string, any>)union(deps, dependencies );
+        }
 
 	list<map> m = [];
 	list done = [];
