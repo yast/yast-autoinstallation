@@ -13,12 +13,19 @@
 
     import "Summary";
 
+    global map Software = $[];
+    
     global string base = "";
     global list addons = [];
-    global list pacs = [];
+    global list packages = [];
     global string kernel = "";
+    global list post_packages = [];
     
+    global list forcedPackages = [];
 
+
+
+    
     /**
      * Import data
      * @param settings settings to be imported
@@ -26,10 +33,12 @@
      */
     global define boolean Import(map settings) ``{
 
+	Software = settings;
 	base = settings["base"]:"";
 	addons = settings["addons"]:[];
-	pacs = settings["packages"]:[];
+	packages = settings["packages"]:[];
 	kernel = settings["kernel"]:"";
+	post_packages = settings["post-packages"]:[];
     }
 
 
@@ -42,8 +51,9 @@
 	return eval($[
 		      "base" 		: base,
 		      "addons"		: addons,
-		      "packages" 	: pacs,
-		      "kernel"		: kernel
+		      "packages" 	: packages,
+		      "kernel"		: kernel,
+		      "post-packages"   : post_packages
 		    ]);
     }
     
@@ -70,9 +80,87 @@
 	    summary = Summary::AddLine(summary, Summary::NotConfigured());
 	}
 	summary = Summary::AddHeader(summary, _("Individualy selected Packages"));
-	summary = Summary::AddLine(summary, sformat("%1", size(pacs)));
+	summary = Summary::AddLine(summary, sformat("%1", size(packages)));
 
 	return summary;
     }    
 
+
+
+    
+
+
+    /**
+     * Configure software settings
+     * @param void
+     * @return boolean
+     */
+    global define boolean Write()
+	``{
+	boolean ok = true;
+	boolean ret = false;
+	
+	// y2milestone("set Locale to %1", Language::language);
+	Pkg::SetLocale (Language::language);
+	
+	Packages::Init(true);
+	// Standard Packages
+	boolean retval = false;
+		
+	string  base_selection = base;
+	if (! Pkg::SetSelection( base_selection ))
+	{
+	    y2error("Error while setting base selection: %1", base_selection);
+	    Report::Error(sformat(_("Could not set base selection: %1"), s));
+	    return false;
+	}
+
+	foreach(`s, toset(addons),
+		``{
+	    if (!Pkg::SetSelection( s ))
+	    {
+		y2error("Error while setting-addon selection: %1", s);
+		Report::Warning(sformat(_("Could not set add-on selection %1"), s));
+	    }
+	});
+
+	// single selected packages
+
+	if (!Pkg::ActivateSelections())
+	{
+	    return false;
+	}
+
+	list extraPackages = calcExtraPackages ();
+	y2milestone("Packages selected in autoinstall mode: %1", extraPackages);
+	
+	if (size(extraPackages) > 0 )
+	{
+	    Pkg::DoProvide(extraPackages);
+	}
+
+	Pkg::DoProvide (Packages::ComputeSystemPackageList());
+	Pkg::PkgSolve();
+
+
+	SpaceCalculation::ShowPartitionWarning();
+	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",  Pkg::GetSelections(`selected, "base"), Pkg::GetSelections(`selected, ""));
+
+	return (ok);
+    }
+
+
+    global define list calcExtraPackages ()
+	``{
+		
+	list extra_packages = union( packages , forcedPackages);
+	
+	if (kernel != "")
+	{
+	    extra_packages = add ( extra_packages , kernel);
+	}
+	return extra_packages;
+    }
+
+    
 }

@@ -16,7 +16,8 @@
     import "AutoInstall";
     import "Product";
     import "Progress";
-
+    import "Call";
+    
     include "autoinstall/misc_writes.ycp";
 
 
@@ -28,7 +29,6 @@ Please wait while the system is being configured.
     list progress_stages =
 	[
 			 _("Configure System"),
-			 _("Create user accounts and set root password"),
 			 _("Execute post-install user scripts")
 	];
 
@@ -36,7 +36,6 @@ Please wait while the system is being configured.
     list progress_descriptions =
 	[
 			 _("Configuring System..."),
-			 _("Creating user accounts and setting root password"),
 			 _("Executing post-install user scripts...")
 	];
 
@@ -54,17 +53,17 @@ Please wait while the system is being configured.
 
     Progress::NextStage();
     string resource = "";
-    string module_write = "";
-    boolean result = false;
+    string module_auto = "";
+ 
 
     // make some adaptions
-    if (haskey(configure,"x11"))
+    if (haskey(Profile::Flat,"x11"))
     {
-	map x11conf = configure["x11"]:$[];
+	map x11conf = Profile::flat["x11"]:$[];
 	if (haskey(x11conf, "start_x11"))
 	{
-	    boolean start_xdm = configure["x11", "start_x11"]:false;
-	    map runlevels = configure["runlevels"]:$[];
+	    boolean start_xdm = Profile::Flat["x11", "start_x11"]:false;
+	    map runlevels = Profile::Flat["runlevels"]:$[];
 	    if (start_xdm)
 	    {
 		runlevels["default"] = "5";
@@ -73,13 +72,14 @@ Please wait while the system is being configured.
 	    {
 		runlevels["default"] = "3";
 	    }
-	    configure["runlevels"] = runlevels;
+	    Profile::Flat["runlevels"] = runlevels;
 	}
     }
-    // Now we write additional data without a _write client, i.e. fstab
+  
 
 
     y2debug("Module map: %1", AutoInstall::ModuleMap);
+    
     foreach(`p,`d, AutoInstall::ModuleMap,
 	    ``{
 
@@ -97,77 +97,41 @@ Please wait while the system is being configured.
 
 	    // determine name of client, if not default name
 	    if (haskey(d,"WriteClient"))
-		module_write = d["WriteClient"]:"none";
+		module_auto = d["AutoClient"]:"none";
 	    else
-		module_write = sformat("%1_write", p);
+		module_auto = sformat("%1_auto", p);
 
-
+	    map result = $[];
 	    y2debug("Writing configuration for %1", d["Name"]:"");
-	    if (haskey(install, resource) || haskey(configure, resource) )
+	    if (haskey(Profile::Flat , resource) )
 	    {
-		if (d["AutoinstDataType"]:"map" == "map")
-		{
-		    if (d["AutoinstPath"]:"configure" == "install")
-			result = WFM::CallModule(module_write, [eval(install[resource]:$[])]);
-		    else
-			result = WFM::CallModule(module_write, [eval(configure[resource]:$[])]);
+		string tomerge = d["AutoinstMerge"]:"";
+		string tomergetypes = d["AutoinstMergeTypes"]:"";
+		list MergeTypes = splitstring(tomergetypes, ",");
+		if (size(tomerge) > 0 )
+		{		    
+		    integer i = 0;
+		    foreach( string res, splitstring(tomerge, ",") ,
+			     ``{
+			if ( MergeTypes[i]:"map" == "map") 
+			    result[res] = Profile::Flat[res]:$[];
+			else
+			    result[res] = Profile::Flat[res]:[];
+			i = i + 1;
+		    });
+		    Call::Function(module_auto, ["Write", result ]);
+		}
+		else if (d["AutoinstDataType"]:"map" == "map")
+		{		   
+		    Call::Function(module_auto, ["Write", Profile::Flat[resource]:$[]  ]);
 		}
 		else
 		{
-		    if (d["AutoinstPath"]:"configure" == "install")
-			result = WFM::CallModule(module_write, [install[resource]:[]]);
-		    else
-			result = WFM::CallModule(module_write, [configure[resource]:[]]);
+		    Call::Function(module_auto, ["Write",  Profile::Flat[resource]:[] ]);
 		}
 	    }
 	}
     });
-
-
-    Progress::NextStage();
-
-    // FIXME
-    /*
-    list users = configure["users"]:[];
-    if (size(users)>0)
-    {
-	import "Users";
-	if (UserDefs::encryption == `md5)
-	{
-	    Users::encryptionMethod = "md5";
-	}
-	else if (UserDefs::encryption == `blowfish)
-	{
-	    Users::encryptionMethod = "blowfish";
-	}
-
-        boolean set_root = false;
-        foreach (map user, users, ``{
-            if (user["username"]:"" == "root") {
-                set_root = true;
-				Users::rootPassword =  user["user_password"]:"";
-                if (!user["encrypted"]:false) {
-					Users::cryptRootPassword();
-                }
-
-            }
-        });
-        // Root password and user account
-        if (!Users::SetRootPassword())
-        {
-            // Error msg
-            y2error("Error while adding the root user");
-            Report::Error(_("The root password could not be set!
-You will not be able to login!
-"));
-        }
-
-        Progress::Title(_("Adding user accounts.."));
-        if (!(size(users) == 1 && set_root)) {
-            CallFunction(`users_write(users));
-        }
-    }
-    */
 
     Progress::NextStage();
     AIScripts::Write("post-scripts");

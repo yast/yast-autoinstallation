@@ -94,9 +94,11 @@ Please wait while the system is being prepared for autoinstallation.</p>
 	UI::ErrorPopup(_("Error while parsing the control file.
 Please check the log files for more details or fix the
 control file and try again.
-"));
+"));	
 	return `abort;
     }
+    
+    AutoInstall::ProcessSpecialResources();
 
     y2milestone ("Autoinstall control file %1",  Profile::current );
     

@@ -200,6 +200,14 @@
     global define boolean ReadYCP( string parsedControlFile )
 	``{
 	current = SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
+	if (current == $[])
+	{
+	    return false;
+	}
+	else
+	{
+	    return true;
+	}
     }
 
     
