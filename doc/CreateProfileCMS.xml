@@ -21,18 +21,60 @@
   <sect2>
     <title>Creating a new Profile</title>
     <para>
-      Apart from some exceptions, almost all resources of the control file can
+      With some exceptions, almost all resources of the control file can
       be configured using the configuration management system. The system
-      offers you much flexibility and the configuration of some resources is
-      the same one used to create configuration on a local system. New
+      offers you much flexibility and the configuration of some resources are
+      the same available in the &yast2; Control Center. New
       interfaces were created for special and complex configuration resources,
-      i.e. Partitioning and General options to make it easier for you o access
-      the infromation easy and fast. 
+      i.e. Partitioning and General options to make it easier for you to access
+      the infromation in an easy and fast way. 
     </para>
     <para>
-      Besides, using the &cms; guarantees that the resulting control file is
+      Furthermore, using the &cms; guarantees that the resulting control file is
       valid and can be used directly to start an automated installation.
     </para>
+
+    <sect3>
+      <title>Going through the Configuration Management System</title>
+      <para>
+	If you intend to create a new configuration, select the respective
+	option from the main screen of the &cms;. This will lead you to the
+	<emphasis>File management</emphasis> screen where you can start a new
+	or edit an existing configuration. The files shown on the screen by
+	default are complete configurations which can be used for
+	auto-installation without any change. These files are stored in the
+	main configuration repository. If you are using classes to
+	create you configuration, switch to the <emphasis>Templates</emphasis>
+	view. (Templates are stored in the <emphasis>templates</emphasis>
+	directory beneath the  configuration repository.
+      </para>
+      <para>To start with the configuration, select an existing file using the
+	<emphasis>edit</emphasis> button or start a new configuration by
+	clicking on the <emphasis>new</emphasis> button which will open a
+	pop-up asking for the new file name.
+	
+      </para>
+      <para>
+	This will lead you directly to the configuration options which can be
+	browsed in any desired order. You can choose to configure only those resources
+	you need. 
+      </para>
+      <figure id="autoyast-conftree">
+	<title id="autoyast-conftree.title" >Configuration Options</title>
+	<mediaobject>&autoyast-conftree;</mediaobject>
+      </figure>
+
+      <para>
+	Clicking on a configuration option will show a summary of the current
+	configuration. It is possible to reset a configuration resource at any
+	time. To configure a resource, click on the
+	<emphasis>configure</emphasis> button.
+      </para>
+      <figure id="cms-configuration-general-options">
+	<title id="cms-configuration-general-options.title" >General Options</title>
+	<mediaobject>&cms-configuration-general-options;</mediaobject>
+      </figure>   
+    </sect3>
   </sect2>
 
 
@@ -40,13 +82,16 @@
     <title>Import of Legacy and Foreign Configuration Files</title>
     <para>Using &autoyast2;, you can import ALICE configuration files from
       previous SuSE releases and foreign auto-installation systems
-      (Kickstart). Please consult the chapter dealing with these issues in this manual.
+      (Kickstart). Please consult the chapter dealing with these issues in this
+      manual.
+      </para>
   </sect2>
   <sect2 id="Classes">
     <title>
       Using Classes and Templates
     </title>
     <simplesect>
+      <title>Classes</title>
       <para>
 	Using the configuration management system, you can define a set of
 	classes. The class definition consists  of the following variable for each class:

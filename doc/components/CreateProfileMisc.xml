@@ -13,7 +13,7 @@
 	  </para>
 	  <para>
 	    Any new configuration options that will be added to &yast2; will be
-	    automatically available as auto-installation directives.
+	    automatically available as an auto-installation resource.
 	  </para>
  
       <sect3 id="CreateProfile.Hardware.Printer">
@@ -28,41 +28,38 @@
 	    of options offered by such modules.
 	  </para>
 	  <para>
-	    Using the configuration system will guarntee that the options
-	    provided are consisten. The following is an example of a
-	  confiuration section covering <emphasis>CUPS</emphasis> which was
+	    Using the configuration system will guarantee that the options
+	    provided are consistent. The following is an example of a
+	  configuration section which was
 	  created using the configuration system.
 	    </para>
 	  <example>
 	    <title>
-	      Printer configuration using CUPS
+	      Printer configuration 
 	    </title>
 	    <screen>
 <![CDATA[
  <configure>
 ....
-  <cups>
-   <classes config:type="list" />
-   <default>lp</default>
-   <printers config:type="list" >
     <printer>
-     <Accepting config:type="boolean" >true</Accepting>
-     <Info>Hewlett-Packard HP LaserJet 1100</Info>
-     <Location>Parallel printer on /dev/lp0</Location>
-     <Name>lp</Name>
-     <State>idle</State>
-     <Uri>parallel:/dev/lp0</Uri>
-     <bus>parallel</bus>
-     <dev_name>/dev/lp0</dev_name>
-     <device>HP LaserJet 1100</device>
-     <ppd>/usr/share/cups/model/laserjet.ppd</ppd>
-     <ppds/>    
-     <vendor>Hewlett-Packard</vendor>
+      <default>lp</default>
+      <printcap config:type="list">
+        <printcap_entry>
+          <cups-state>void</cups-state>
+          <ff config:type="boolean">true</ff>
+          <info></info>
+          <location></location>
+          <lprng-state>changed</lprng-state>
+          <name>lp</name>
+          <options>
+            <job-sheets>none,none</job-sheets>
+          </options>
+          <raw config:type="boolean">true</raw>
+          <type>yast2</type>
+          <uri>parallel:/dev/lp0</uri>
+        </printcap_entry>
+      </printcap>
     </printer>
-   </printers>
-   <server>10.10.1.1</server>
-   <type config:type="integer" >0</type>
-  </cups>
 ....
  </configure>
 ]]>
@@ -75,7 +72,7 @@
 	  Sound devices
 	</title>
 	<para>
-	  An example of a sound configuration created using the configuration
+	  An example of  sound configuration created using the configuration
 	  system is shown below.
 	</para>
 	<example>
@@ -86,26 +83,28 @@
 <![CDATA[
  <configure>
 ....
-  <sound>
-   <autoinstall config:type="boolean" >true</autoinstall>
-   <modules_conf config:type="list" >
-    <module_conf>
-     <alias>snd-card-0</alias>
-     <model>Dynasonix Pro, Dynasonix</model>
-     <module>snd-interwave</module>
-     <options>
-      <snd_enable>1</snd_enable>
-      <snd_index>0</snd_index>
-     </options>
-     <unique_key>uniq.virtual</unique_key>
-    </module_conf>
-   </modules_conf>
-   <rc_vars>
-    <LOAD_ALSA>yes</LOAD_ALSA>
-    <LOAD_ALSA_SEQ>yes</LOAD_ALSA_SEQ>
-   </rc_vars>
-   <volume_settings config:type="list" />
-  </sound>
+    <sound>
+      <autoinstall config:type="boolean">true</autoinstall>
+      <modules_conf config:type="list">
+        <module_conf>
+          <alias>snd-card-0</alias>
+          <model>M5451, ALI</model>
+          <module>snd-ali5451</module>
+          <options>
+            <snd_enable>1</snd_enable>
+            <snd_index>0</snd_index>
+            <snd_pcm_channels>32</snd_pcm_channels>
+          </options>
+          <unique_key>uniq.virtual</unique_key>
+        </module_conf>
+      </modules_conf>
+      <volume_settings config:type="list">
+        <listentry>
+          <Master config:type="integer">75</Master>
+        </listentry>
+      </volume_settings>
+    </sound>
+
 ....
  </configure>
 ]]>
@@ -113,3 +112,11 @@
 	</example>
       </sect3>
     </sect2>
+
+
+      <!--
+       Local Variables:
+       mode: xml
+       sgml-parent-document: ("autoyast2.xml" "book" "sect2")
+       End:
+      -->

@@ -343,10 +343,11 @@
 	  (string-append prefix (format-number (child-number nd) 
 					       (label-number-format nd))))
 	 ((equal? (gi nd) (normalize "sect2"))
-	  (string-append 
+	   (string-append 
 	   (element-label (ancestor (normalize "sect1") nd) force-label?)
 	   isep 
 	   (format-number (child-number nd) (label-number-format nd))))
+	 
 	 ((equal? (gi nd) (normalize "sect3"))
 	  "")
 	 ;; (string-append

@@ -302,11 +302,134 @@ cd -
 	</para>
       </simplesect>
     </sect2>
-
-
-
-    
   </sect1>
+  <sect1 id="Installation.process">
+    
+    <title>
+      The Auto-Installation Process
+    </title>
+    <para>
+      After the system has booted and the control file has been retrieved,
+      &yast2; performs configuration of the system according to the information
+      contained in the  control
+      file. All the configuration is summarized in a window that is shown by
+      default and should be deactivated if a full automatic installation is
+      needed.      
+    </para>
+    <para>
+      When reaching the point where the summary of the configuration is shown,
+      &yast2; has only probed hardware and prepared the system for
+      auto-installation, thus, nothing has been changed in the system yet, so
+      that in case of any error, the process still can be aborted.
+    </para>
+    
+ 
+    <para>
+      A system should be automatically install-able without the need to have
+      any graphic adaptor or monitor. Having a monitor attached to the
+      client machine is nevertheless recommended to follow the process and
+      to get feedback in case of any errors. Choosing between the Qt and the
+      Ncurses interfaces is possible. For headless
+      clients, system messages can be monitored using the serial console.
+    </para>
+    <simplesect id="Installation.Interface.X11">
+      <title>
+	X11 Interface
+      </title>
+      <para>
+	This is the  default interface while auto-installing. No special
+	variables are required to activate it.
+      </para>
+    </simplesect>
+    <simplesect id="Installation.Interface.SerialConsole">
+      <title>
+	Serial console
+      </title>
+      <para>
+	You can start installing a system using the serial console by adding
+	the keyword console (i.e. console=ttyS0) to the command line of the
+	kernel. This will start linuxrc in console mode and later in the
+	process, &yast2; also is started in serial console mode.
+      </para>
+    </simplesect>
+    <simplesect id="Installation.Interface.Ncurses">
+      <title>
+	Text based YaST2-Installation
+      </title>
+      <para>
+	This option can also be activated on the command line. This will start
+	YaST2 in <emphasis>Ncurses</emphasis> mode. To start &yast2; in text
+	mode, add <emphasis>textmode=1</emphasis> on the command line.
+      </para>
+      <para>
+	Starting &yast2; in text mode is recommended when installing  a client
+	with less than 64 MB or when X11 is not being configured at all,
+	especially on headless machines.
+      </para>
+    </simplesect>
+  </sect1>
+    <sect1>    
+    <title>
+      System Configuration 
+    </title>
+    <para>
+      The system configuration during auto-installation can be seen as the
+      most important part of the whole process. Customizing a system to your
+      environment needs is what makes an auto-installation system attractive,
+      not the installation part.
+    </para>
+    <para>
+      As you have seen in the previous chapters, almost anything can be
+      configured automatically on the target system. In addition to the
+      pre-defined directives, you can always  use post-scripts to change other
+      things in the system. Additionally you can change any system variables and
+      if required, copy complete configuration files into the target system.
+    </para>
+    <sect2>
+      <title>
+	Post-Install and System Configuration
+      </title>
+      <para>
+	The Post-Installation and the System Configuration are initiated directly after the last
+	package is installed in the target system  and is continued after the
+	system has booted for the first time.
+      </para>
+      <para>
+	Before the system is booted for the first time, &yast2; writes all data
+	collected during installation into the system and finally it writes the
+	boot loader in the specified location. In addition to these regular
+	tasks, which are also done when performing a regular installation, YaST2
+	executes the <emphasis>chroot-scripts</emphasis> as specified in the
+	control file. Note that these scripts are executed while the system is
+	still not mounted.
+      </para>      
+      <para>
+	If a different kernel than the default is installed, a hard reboot will
+	be required. A hard reboot can also be forced during auto-installation,
+	independent of the installed kernel. This can be accomplished using the
+	<emphasis>reboot</emphasis> property of the
+	<emphasis>general</emphasis> resource. (See <link
+	  linkend="CreateProfile.General">General Options</link>)
+      </para>
+    </sect2>
+    <sect2>
+      <title>System Customization</title>
+      <para>
+	Most of the system customization is done in the second stage of the
+	installation. &yast2; provides most of the important resources needed to
+	bring up  a system to a usable , general state. However, you may have
+	other requirements for the installed system. If the required
+	customizations can't be done using &yast2; resources, then the
+	post-install scripts can be used to accomplish this task.
+      </para>
+      <para>
+	You can define an unlimited number of custom scripts in the control
+	file either by editing the control file or by using the configuration
+	system.	
+      </para>      
+      </sect2>
+    </sect1>
+
 </chapter>
 
   <!--
