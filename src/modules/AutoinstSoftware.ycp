@@ -192,16 +192,8 @@
 	// in <packages>
 	if ( size(kernel) == 0)
 	{
-	    import "Kernel";
-	    if (Pkg::IsAvailable (Kernel::kernel_packages[0]:"kernel-default"))
-	    {
-		allpackages = (list<string>) union (allpackages, Kernel::kernel_packages);
-	    }
-	    else
-	    {
-		y2warning ("%1 not available, using kernel-default", Kernel::kernel_packages);
-		allpackages = add (allpackages, "kernel-default");
-	    }
+            string the_kernel = Packages::ComputeKernelPackage();
+	    allpackages = add (allpackages, the_kernel);
 	}
 	else
 	{
@@ -211,7 +203,7 @@
 	    }
 	    else
 	    {
-		y2warning ("%1 not available, using kernel-default", Kernel::kernel_packages);
+		y2warning ("%1 not available, using kernel-default", kernel);
 		allpackages = add (allpackages, "kernel-default");
 	    }
 	}
