@@ -1,20 +1,16 @@
-      <example>
-	<title>
-	  Netwrok configuration: Proxy
-	</title>
-	<screen>
-<![CDATA[
-<configure>
-...
+
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <configure>
     <proxy>
-       <http_proxy>proxy.example.com:3128</http_proxy>
-       <ftp_proxy>proxy.example.com:3128</ftp_proxy>
-       <no_proxy>localhost</no_proxy>
-       <proxy_user>user</proxy_user>
-       <proxy_password>password</proxy_password>
+      <enabled config:type="boolean">true</enabled>
+      <ftp_proxy>http://192.168.1.240:3128</ftp_proxy>
+      <http_proxy>http://192.168.1.240:3128</http_proxy>
+      <no_proxy>localhost</no_proxy>
+      <proxy_password>testpw</proxy_password>
+      <proxy_user>testuser</proxy_user>
     </proxy>
-...
-</configure>
-]]>
-	  </screen>
-	</example>
+  </configure>
+</profile>
+

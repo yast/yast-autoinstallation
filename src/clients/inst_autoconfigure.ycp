@@ -15,7 +15,6 @@
     import "Profile";
     import "AutoInstall";
     import "AutoinstScripts";
-    import "Product";
     import "Wizard";
     import "Call";
     import "Y2ModuleConfig";
@@ -163,13 +162,13 @@ Please wait while the system is being configured.
     });
 
     logStep( _("Executing Post-Scripts"));
-    AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
     AutoinstScripts::Write("post-scripts", false);
+    AutoinstScripts::Write("init-scripts", false);
 
 	// Just in case, remove this file to avoid reconfiguring...
     SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
 
-	logStep( _("Finishing Configuration") );
-	sleep(100);
+    logStep( _("Finishing Configuration") );
+    sleep(100);
     return `next;
 }

@@ -135,7 +135,7 @@
 	    {
 		resource = p;
             }
-            y2milestone("resource: %1", resource );
+            y2debug("resource: %1", resource );
 	    string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
 
 	    integer s = 0;
@@ -303,8 +303,10 @@
 	    new_lvm["pesize"]       = group["pesize"]:"";
 	    list partitions = maplist(map lv, group["logical_volumes"]:[], ``{
 
-		symbol lv_fs     = lv["lv_fs"]:`reiser;
-
+                symbol lv_fs = `reiser;
+		string lv_fs_tmp     = lv["lv_fs"]:"reiser";
+                term tfs = toterm(lv_fs_tmp);
+                lv_fs = (symbol)symbolof(tfs);
 
 		return( $[ "filesystem": lv_fs,
 			   "lv_name":    lv["lv_name"]:"",
@@ -312,9 +314,7 @@
 			   "size":   lv["lv_size"]:"",
 			   "stripes":    lv["stripes"]:1
 			]);
-
 	    });
-
 	    new_lvm["partitions"] = partitions;
 	    all_lvm = add (all_lvm, new_lvm);
 
@@ -372,7 +372,7 @@
 	    }
 	    if (haskey(r, "lvm_group"))
 	    {
-		ret["lvm_group"] = fs;
+		ret["lvm_group"] = r["lvm_group"]:"";
 	    }
 
 	    return (ret);
@@ -390,7 +390,7 @@
      * @param map configure section
      * @return map converted profile
      */
-    global define map Compat(map Install, map Configure) ``{
+    global define map<string, any> Compat(map Install, map Configure) ``{
 
 	// scripts
 	if ( haskey(Configure, "pre-scripts") ||
@@ -517,7 +517,7 @@
 	    d = (list<map>) union (d, new_lvm );
 	    Install["partitioning"] = d;
 	}
-	return ((map)union(Configure, Install));
+	return ((map<string, any>)union(Configure, Install));
     }
 
 
@@ -528,8 +528,6 @@
      */
     global define boolean ReadXML (string file)
 	``{
-	import "AutoinstCompat";
-
 	y2debug("Reading %1", file);
 	current = XML::XMLToYCPFile(file);
 
@@ -538,7 +536,7 @@
 	    return (false);
 	}
 	Import (current);
-	Flat = AutoinstCompat::Compat( Install, Configure);
+	Flat = Compat( Install, Configure);
 	return (true);
     }
 

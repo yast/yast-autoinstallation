@@ -97,7 +97,7 @@
 	config:type CDATA #FIXED "boolean"
 >
 <!ELEMENT pwd_srcdir (#PCDATA)>
-<!ELEMENT securenet (comment| hash| netmask| network?)>
+<!ELEMENT securenet (comment?, hash?, netmask?, network?)>
 <!ELEMENT securenets (securenet*)>
 <!ATTLIST securenets
 	config:type CDATA #FIXED "list"
@@ -121,17 +121,9 @@
 <!ATTLIST start_ypxfrd
 	config:type CDATA #FIXED "boolean"
 >
-<!ELEMENT surname (#PCDATA)>
 <!ELEMENT minuid (#PCDATA)>
 <!ATTLIST minuid
 	config:type CDATA #FIXED "integer"
->
-<!-- <!ELEMENT user (encrypted, forename, gid, grouplist, home, password_settings, shell, surname, uid, user_password, username)> -->
-<!ELEMENT user_password (#PCDATA)>
-<!ELEMENT username (#PCDATA)>
-<!ELEMENT users (user+)>
-<!ATTLIST users
-	config:type CDATA #FIXED "list"
 >
 <!ELEMENT warn (#PCDATA)>
 

@@ -127,11 +127,44 @@
 	  <row><entry>Exec: command</entry><entry>  run <emphasis>command</emphasis></entry></row>
 	  <row><entry>USBWait: 4</entry><entry>  wait 4 seconds after loading USB modules</entry></row> 
 	  <row><entry>Insmod: module params</entry><entry>  load this module</entry></row> 
+          <row><entry>Loghost: 10.10.0.22</entry><entry>Enable remove logging
+                  via syslog</entry></row> 
 	</tbody>
       </tgroup>
     </table>
+    
+  </section>
+  <section>
+    <title>Advanced Network Setup</title>
+    <para>The <emphasis>netsetup</emphasis> keyword allows advanced network
+      configurations and enables dialogs to setup the network where required.</para>
+    <itemizedlist>
+      <listitem>
+	<para>netsetup=1</para>
+	<para>the normal network setup questions</para>
+      </listitem>
+      <listitem>
+	<para>netsetup=xxx,yyy</para>
+	<para>just xxx and yyy</para>
+      </listitem>
+      <listitem>
+	<para> netsetup=+xxx,-yyy</para>
+	<para>default, additionally xxx, but not yyy</para>
+      </listitem>
+    </itemizedlist>
+    <para>
 
+      <emphasis>xxx</emphasis> could have the following values: dhcp, hostip,
+      gateway, netmask, nameserver. nameserverN asks for N nameservers
+      (max. 4).
+    </para>
+    <para>For example, the following can be entered on the command line:</para>
 
+    <screen>  
+
+netsetup=-dhcp,+nameserver3
+
+</screen>
   </section>
 
 </appendix>
@@ -139,6 +172,6 @@
   <!--
   Local Variables:
   mode: xml
-  sgml-parent-document: ("autoyast2.xml" "book" "sect1")
+  sgml-parent-document: ("autoyast.xml" "book" "sect1")
   End:
   -->

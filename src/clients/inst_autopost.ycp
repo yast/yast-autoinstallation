@@ -15,10 +15,17 @@
     import "Call";
     import "Y2ModuleConfig";
     import "AutoinstSoftware";
+    import "AutoinstScripts";
+    import "Report";
 
     list<string> packages = [];
     string resource = "";
     string module_auto = "";
+
+    if (Profile::Flat["report"]:$[] != $[])
+    {
+        Report::Import(Profile::Flat["report"]:$[]);
+    }
 
     foreach(string p, map d, Y2ModuleConfig::ModuleMap,
 	    ``{
@@ -47,5 +54,10 @@
 	}
     });
     AutoinstSoftware::addPostPackages(packages);
+
+    AutoinstScripts::Import(Profile::Flat["scripts"]:$[]);
+    AutoinstScripts::Write("post-scripts", true);
+
+
     return `auto;
 }

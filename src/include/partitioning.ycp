@@ -372,12 +372,13 @@
         {
             part["loop_fs"]  =    currentPartition["loop_fs"]:false;
             part["crypt_key"] =   Storage::AddCryptToClassified( currentPartition["crypt_key"]:"");
-            part["crypt"] =		currentPartition["crypt"]:"twofish256";
+            part["crypt"] =	currentPartition["crypt"]:"twofish256";
         }
 
 
 
         symbol tmpfs = currentPartition["filesystem"]:Partitions::DefaultBootFs();
+
         if (mount_point == "swap" || tmpfs == `swap)
         {
             part["fsid"] =  Partitions::fsid_swap;
@@ -420,13 +421,13 @@
         {
             any nr = substring(raid_name, 7);
 
-            part["used_fs"]		= `unknown;
-            part["fsid"]		= Partitions::fsid_raid;
-            part["format"]		= false;
+            part["used_fs"]	= `unknown;
+            part["fsid"]	= Partitions::fsid_raid;
+            part["format"]	= false;
             part["raid_name"]	= raid_name;
             part["raid_type"]   = currentPartition["raid_type"]:"raid";
-            part["mount"]		= "";
-            part["fstype"]		= "Linux RAID";
+            part["mount"]	= "";
+            part["fstype"]	= "Linux RAID";
 
         }
         else

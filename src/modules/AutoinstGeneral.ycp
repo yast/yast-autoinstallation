@@ -12,7 +12,7 @@
     textdomain "autoinst";
 
     import "AutoInstall";
-    import "AutoinstConfig";   
+    import "AutoinstConfig";
     import "Summary";
     import "Keyboard";
     import "Mouse";
@@ -22,18 +22,6 @@
     import "Misc";
     import "Profile";
 
-
-
-
-    //
-    // Dont Hard Reboot
-    //
-    global boolean ForceBoot = false;
-
-    //
-    // Show Reboot Message
-    //
-    global boolean RebootMsg = false;
 
     //
     // Show proposal and ask user for confirmation to go on with auto-installation
@@ -112,9 +100,7 @@
 	    keyboard_name = Keyboard::Name();
 	}
 
-
 	string hwclock = (Clock["hwclock"]:""  == "UTC") ?  _("UTC") : _("Local time");
-	
 
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Language"));
@@ -205,8 +191,9 @@
 	y2milestone("timezone -> %1", Clock["timezone"]:"" );
 
 	AutoinstConfig::Confirm = mode["confirm"]:true;
-        y2milestone("Confirm: %1", AutoinstConfig::Confirm );
 	AutoinstConfig::ForceBoot = mode["forceboot"]:false;
+	AutoinstConfig::Halt = mode["halt"]:false;
+	AutoinstConfig::RebootMsg = mode["rebootmsg"]:false;
 
 	Keyboard::default_kbd = keyboard["keymap"]:"";
 	Keyboard::SetConsole( keyboard["keymap"]:"" );

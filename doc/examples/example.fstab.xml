@@ -1,32 +1,21 @@
-	<example>
-	  <title>
-	    Reading existing <filename>/etc/fstab</filename>
-	  </title>
-	  <screen>
-<![CDATA[
-    <install>
-        <partitioning_advanced>
-            <fstab>
-                <!-- Read data from existing fstab. If multiple root partitions are
-                found, use the one specified below. Otherwise the first root
-                partition is taken -->
-                <!-- <root_partition>/dev/hda5</root_partition> -->
-                <use_existing_fstab config:type="boolean">true</use_existing_fstab>
-                <!-- all partitions found in fstab will be formatted and mounted
-                by default unless a partition is listed below with different
-                settings -->
-                <partitions config:type="list">
-                    <partition>
-                        <format config:type="boolean">false</format>
-                        <mount>/bootmirror</mount>
-                    </partition>
-                </partitions>
-            </fstab>
-        </partitioning_advanced>
 
-
-    </install>
-
-]]>
-	  </screen>
-	</example>
+  <install>
+    <partitioning_advanced>
+      <fstab>
+	<!-- Read data from existing fstab. If multiple root partitions are
+	found, use the one specified below. Otherwise the first root
+	partition is taken -->
+	<!-- <root_partition>/dev/hda5</root_partition> -->
+	<use_existing_fstab config:type="boolean">true</use_existing_fstab>
+	<!-- all partitions found in fstab will be formatted and mounted
+	by default unless a partition is listed below with different
+	settings -->
+	<partitions config:type="list">
+	  <partition>
+	    <format config:type="boolean">false</format>
+	    <mount>/bootmirror</mount>
+	  </partition>
+	</partitions>
+      </fstab>
+    </partitioning_advanced>
+  </install>

@@ -232,9 +232,9 @@
 	  </thead>	
 	  <tbody>
 	    <row><entry>autoyast=default</entry><entry>Default auto-installation option </entry></row>
-	    <row><entry>autoyast=file:/&lt;path&gt;</entry><entry>Looks for
+	    <row><entry>autoyast=file://&lt;path&gt;</entry><entry>Looks for
 		control  file in specified path (relative to source root
-		directory, i.e. <emphasis>file:/autoinst.xml</emphasis> if in
+		directory, i.e. <emphasis>file:///autoinst.xml</emphasis> if in
 		the top directory of a CD-ROM )</entry></row>
 	    
 	    <row>
@@ -247,7 +247,7 @@
 
 	    
 	    <row>
-	      <entry>autoyast=floppy:/&lt;path&gt;</entry>
+	      <entry>autoyast=floppy://&lt;path&gt;</entry>
 	      <entry>Looks for  control file in the floppy (Useful when booting
 		from CD)</entry>
 	    </row>
@@ -348,7 +348,7 @@
 	    <listitem>
 	      <para>
 		<emphasis>Floppy/CD-ROM</emphasis>: Control file accessible via the
-		<emphasis>autoyast=file:/..</emphasis> option.
+		<emphasis>autoyast=file://..</emphasis> option.
 	      </para>
 	    </listitem>
 	    <listitem>
@@ -365,7 +365,16 @@
 	</listitem>
 
       </itemizedlist>
-      
+
+      <note>
+	<title>Disabling netowrk and DHCP</title>
+	<para>To disable network during installations where network is not
+	  needed or not available, for example when auto-installing from
+	  CD-ROMs use the linuxrc option <emphasis>netsetup</emphasis> to
+	  set network configuration behavior. To disable network setup use
+	  <emphasis>netsetup=0</emphasis>  </para>
+      </note>
+  
 
       <para>
 	If <emphasis>autoyast=default</emphasis> is defined, &yast2; will look
@@ -629,6 +638,6 @@ autoyast: file:///info
       <!--
        Local Variables:
        mode: xml
-       sgml-parent-document: ("autoyast2.xml" "book" "chapter")
+       sgml-parent-document: ("autoyast.xml" "book" "chapter")
        End:
       --> 

@@ -7,12 +7,15 @@
 
 
 <!ELEMENT initial_sync ( #PCDATA ) >
+<!ELEMENT fudge_comment ( #PCDATA ) >
+<!ELEMENT fudge_options ( #PCDATA ) >
 <!ATTLIST initial_sync config:type CDATA #FIXED  "boolean" >
 
 
 <!ELEMENT param ( #PCDATA ) >
 
-<!ELEMENT peer ( address | create_symlink | device | initial_sync | param | type )* >
+<!ELEMENT peer ( address | comment | create_symlink | device | fudge_comment |
+        fudge_options| initial_sync | options | param | type)* >
 
 <!ELEMENT peers ( peer+ ) >
 <!ATTLIST peers config:type  CDATA #FIXED  "list" >
@@ -23,3 +26,5 @@
 
 <!ELEMENT start_in_chroot ( #PCDATA ) >
 <!ATTLIST start_in_chroot config:type  CDATA #FIXED  "boolean" >
+
+
