@@ -301,21 +301,23 @@
 							   )
 						  ),
 					     `VSpacing (1),
-					    `Left(`Label(_("Server Management"))),
+					    `Left(`Label(_("Media Management"))),
 					    `VSpacing (0.5),
+					    /*
 					    `HBox(
 						  `HWeight(10,
 							   `Empty()
 							   ),
 						  `HWeight(90,
 							   `Left (
-								  `RadioButton (`id (`prepServer),
+								  `RadioButton (`id (`server),
 										`opt (`notify),
 										_("Pr&epare Server"),
-										ct == `prepServer)
+										ct == `server)
 								  )
 							   )
 						  ),
+					    */
 					    `HBox(
 						  `HWeight(10,
 							   `Empty()
@@ -324,12 +326,26 @@
 							   `Left (
 								  `RadioButton (`id (`directmedia),
 										`opt (`notify),
-										_("&Media Management"),
+										_("&Create ISO Image"),
 										ct == `media)
 								  )
 							   )
 						  ),
-						   `VSpacing (1),
+					    `HBox(
+						  `HWeight(10,
+							   `Empty()
+							   ),
+						  `HWeight(90,
+							   `Left (
+								  `RadioButton (`id (`netboot),
+										`opt (`notify),
+										_("&Create Netboot Image"),
+										ct == `netboot)
+								  )
+							   )
+						  ),
+					    
+					    `VSpacing (1),
 					    `Left(`Label(_("Import data"))),
 					    `VSpacing (0.5),
 					    `HBox(

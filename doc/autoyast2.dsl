@@ -349,11 +349,11 @@
 	   (format-number (child-number nd) (label-number-format nd))))
 	 
 	 ((equal? (gi nd) (normalize "sect3"))
-	  "")
-	 ;; (string-append
-	 ;;  (element-label (ancestor (normalize "sect2") nd) force-label?)
-	 ;;  isep 
-	 ;;  (format-number (child-number nd) (label-number-format nd))))
+	  (string-append
+	   (element-label (ancestor (normalize "sect2") nd) force-label?)
+	   isep 
+	   (format-number (child-number nd) (label-number-format nd))))
+	  
 	 ((equal? (gi nd) (normalize "sect4"))
 	  (string-append
 	   (element-label (ancestor (normalize "sect3") nd) force-label?)
