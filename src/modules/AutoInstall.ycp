@@ -11,7 +11,8 @@
 
     module "AutoInstall";
     textdomain "autoinst";
-    
+
+	import "Profile";
     import "Installation";
     import "Mode";
     import "Report";
@@ -28,7 +29,7 @@
     global string var_dir = "/var/adm/autoinstall";
 
     // Cache directory
-    //    
+    //
     global string cache = var_dir + "/cache";
 
     // Temporary directory for storing profile before installation starts
@@ -50,7 +51,7 @@
     // Direcotry for runtime operation data
     global string runtime_dir = "/var/lib/autoinstall";
 
- 
+
     // Directory where copmlete configuration files are kept.
     //
     global string files_dir = var_dir + "/files";
@@ -69,7 +70,7 @@
 
     global map X11 = $[];
 
-    
+
     global list loadKernelModules = [];
     global list configureKernelModules = [];
 
@@ -80,13 +81,9 @@
     global map ModuleMap = $[];
 
 
-     //////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
     // Local variables
     /////////////////////////////////////////////////////////////////////////////////////////////
-
-    // Sysconfig variable already registered
-    // FIXME
-    list registered_list = [];
 
 
     /**
@@ -120,7 +117,7 @@
 	    y2debug("Modules: %1 , Groups: %2", ModuleMap, GroupMap);
 	}
 
-	
+
 	return;
     }
 
@@ -130,13 +127,13 @@
      * Read saved data in continue mode
      */
 
-    
+
     global define boolean Continue() ``{
-	
+
 	// First check if there are some other control files availabe
 	// i.e. for post-installation only
 	string autoconf_file = runtime_dir + "/autoconf/autoconf.xml";
-	
+
 	if ( SCR::Read(.target.size, autoconf_file) != -1 )
 	{
 	    y2milestone("XML Post installation data found: %1", autoconf_file );
@@ -144,10 +141,10 @@
 	    Profile::Read(  autoconf_file  );
 	    boolean ret = Profile::Read(  xml_tmpfile );
 	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, cache));
-	    		
-	    Profile = Profile::current;		
+
+	    Profile = Profile::current;
 	    ProcessSpecialResources();
-	    
+
 	    return (ret);
 	}
 	else
@@ -162,26 +159,26 @@
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
 		SCR::Execute(.target.remove, parsedControlFile);
-		
+
 		Profile = Profile::current;
-		
+
 		ProcessSpecialResources();
-		
+
 		return (true);
 	    }
 	}
-	
-	
+
+
     }
 
-    
+
     /**
      * Parse profile and set some values
      * @param true on success
      */
     global define boolean ProcessSpecialResources ()
 	``{
-			
+
 	Report::Set(Profile::Flat["report"]:$[]);
 	X11 = Profile::Flat["x11"]:$[];
 
@@ -189,7 +186,7 @@
 	{
 	    Mode::x11_setup_needed = false;
 	}
-	
+
 	return true;
     }
 
@@ -205,21 +202,21 @@
 
 
 	map toimport = $[];
-	
+
 	if (!issubstring(Bootloader["location"]:"mbr", "/dev/"))
 	{
 	    toimport["location"] = Bootloader["location"]:"mbr";
 	}
 	else
 	{
-	    toimport["loader_device"] = Bootloader["location"]:"mbr";	    
+	    toimport["loader_device"] = Bootloader["location"]:"mbr";
 	}
 	if (haskey(Bootloader, "loader_type"))
 	{
 	    toimport["loader_type"] = Bootloader["loader_type"]:"grub";
 	}
 
-	
+
 	/**
 	 * FIXEME
 	string parameters = Bootloader["kernel_parameters"]:"";
@@ -261,12 +258,12 @@
     }
 
 
-    
 
 
 
 
-    /**       
+
+    /**
      * Read module configuration files
      * @return: map
      */
@@ -280,7 +277,7 @@
 	    list configuration = SCR::Dir(single_conf);
 
 	    foreach(`s , configuration, ``{
-		
+
 		string name = select(splitstring(s, " "), 1 , "");
 		string type = select(splitstring(s, " "), 0 , "");
 
@@ -305,7 +302,7 @@
 			if (!haskey(values,"AutoClient"))
 			{
 			    string client =  name + "_auto";
-			    values["AutoClient"] = client;			
+			    values["AutoClient"] = client;
 			}
 			configurations[name]=values;
 		    }
@@ -321,7 +318,7 @@
 	``{
 	return (Profile::SaveYCP( parsedControlFile ));
     }
-    
+
 
 
     /**
@@ -331,10 +328,10 @@
 	``{
 	// Copy pre scripts to target system.
 	import "AIScripts";
-	AIScripts::Write("chroot-scripts");	
+	AIScripts::Write("chroot-scripts");
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/* " + Installation::destdir + AIScripts::scripts_dir);
 	SCR::Execute(.target.bash,"/bin/cp " +  AutoInstall::tmpdir + "/pre-scripts/logs/* " + Installation::destdir + AIScripts::logs_dir);
-	
+
 	SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", xml_tmpfile ,  Installation::destdir ,  xml_file) );
 
 	return;
@@ -344,17 +341,17 @@
      * Linuxrc Settings
      * @param: linuxrc map
      * @return modified linuxrc map
-     */ 
+     */
 
     global define map Linuxrc(map linuxrc) ``{
 	import "Bootloader";
 	import "AIgeneral";
-	
+
 	if (AIgeneral::ForceBoot && Mode::hardBoot)
 	{
-	    linuxrc["Root"] = Bootloader::getRootDevice ();	    
+	    linuxrc["Root"] = Bootloader::getRootDevice ();
 	}
-	
+
 	if (AIgeneral::Reboot && !Mode::hardBoot)
 	{
 	    linuxrc["Root"] = "reboot";
