@@ -34,6 +34,7 @@
 	    import "Profile";
 	    Import(Profile::current["software"]:$[]);
 	}
+	
     }
     
     /**
@@ -49,6 +50,7 @@
 	packages = settings["packages"]:[];
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
+	return true;
     }
 
 
@@ -58,13 +60,23 @@
      */
     global define map Export() ``{
 
-	return eval($[
-		      "base"		: base,
-		      "addons"		: addons,
-		      "packages"	: packages,
-		      "kernel"		: kernel,
-		      "post-packages"   : post_packages
-		    ]);
+	map s = $[];
+	if (base != "")
+	    s["base"] = base ;
+	if (kernel != "")
+	    s["kernel"] = kernel ;
+	
+	if (addons != [])
+	    s["addons"] = addons ;
+	
+	if (packages != [])
+	    s["packages"] = packages ;
+	
+	if (post_packages != [])
+	    s["post-packages"] = post_packages ;
+	
+	
+	return (s);
     }
 
 
@@ -73,12 +85,23 @@
      * @param list of packages to add
      * @return void
      */
-    global define void AddModulePackages(list module_packages) ``{
-	
-	forcedPackages = toset(union(forcedPackages,  module_packages));
+    global define void AddModulePackages(list module_packages) ``{	
+	packages = toset(union(packages,  module_packages));
 	return;
     }
+    
+    /**
+     * Remove packages not needed by modules, i.e. NIS, NFS etc.
+     * @param list of packages to remove
+     * @return void
+     */
+     
+    global define RemoveModulePackages (list module_packages) ``{
+	packages = filter(string p, packages, ``(!contains(module_packages,p)));
+    }
 
+
+    
     /**
      * Summary
      * @return Html formatted configuration summary
