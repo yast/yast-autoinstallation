@@ -428,7 +428,8 @@ autoyast=http://192.168.1.1/control-files/
 	    If that file is not found, it will remove one hex digit and try
 	    again. This action is repeated till the file with the correct name
 	    is found.  Ultimately, it will try looking for a file with the MAC
-	    address of the clients as the file name and if not found a file named 
+	    address of the clients as the file name (mac should have the
+	    following syntax: <emphasis>0080C8F6484C</emphasis>) and if not found a file named 
 	    <filename>default</filename> (in lower
 	    case).
 	  </para>
@@ -461,7 +462,7 @@ default
       <example>
 	<title>Determine HEX code for an IP address</title>
 	<screen>
-myhost # /usr/sbin/gethostip 10.10.0.1
+# /usr/sbin/gethostip 10.10.0.1
 10.10.0.1 10.10.0.1 0A0A0001
 	</screen>
       </example>

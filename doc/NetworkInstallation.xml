@@ -34,7 +34,7 @@
   </para>
   <itemizedlist>
     <listitem>
-      <para>A boot server on the same ethernet segment</para>
+      <para>A boot server on the same Ethernet segment</para>
     </listitem>
     <listitem>
       <para>An install server with the SuSE Linux OS</para>
@@ -102,7 +102,7 @@
 	<para>In the DHCP configuration, the filename parameter contains the name of the client kernel file.</para>
       </listitem>
       <listitem>
-	<para> The client kernel file needs to be processed by the mknbi program to correctly recognized by the ROM.</para>
+	  <para> The client kernel file needs to be processed by the <command>mknbi</command> program to correctly recognized by the ROM.</para>
       </listitem>
     </itemizedlist>
     <para>
@@ -112,7 +112,7 @@
       commonly used on networks to make IP address allocation and network
       administration easier. You'll only need to set this up if you use
       Etherboot or PXE. The second, TFTP, is a stripped down FTP protocol, commonly
-      used in bootloaders where a full FTP client would be too large. The
+      used in boot loaders where a full FTP client would be too large. The
       server machine (Boot server)  must run servers for at least TFTP, and DHCP too if you
       want to load an image off the network.
       </para>
@@ -133,11 +133,11 @@
 	Note that you'll need the Ethernet address of your client machine before
 	you can use this &dhcp; configuration. There are several ways to get this
 	information. If the client machine already has Linux installed, use
-	ifconfig and look for the <emphasis>HWaddr</emphasis> value. 
+	  <command>ifconfig</command> and look for the <emphasis>HWaddr</emphasis> value. 
       </para>
       <para>The PXE ROM will often show such information either in the
 	configuration screen or during an attempt to boot from the network. If
-	none of those work, use arpwatch or tcpdump on the server to watch the
+	  none of those work, use <command>arpwatch</command> or <command>tcpdump</command> on the server to watch the
 	network packets from the client as the client tries to network boot.
       </para>
     </section>
@@ -160,7 +160,7 @@ tftpd: read: Connection refused.
       </screen>
       <para>
 	To overcome this problem you can  use <emphasis>atftp</emphasis>
-	which is available as a package.   This &tftp; server can run as
+	which is available as a package.This &tftp; server can run as
 	stand-alone daemon.
       </para>
       <para>
@@ -169,7 +169,7 @@ tftpd: read: Connection refused.
       </para>
       
       <example>
-	<title>Tftpboot dir contents</title>
+	<title>Tftpboot directory contents</title>
 	<programlisting>
 /tftpboot/initrd     
           pxelinux.0
@@ -264,7 +264,7 @@ label linux
 	    The file <filename>pxelinux.0</filename> tries to read several configuration files. It uses
 	    the first one it finds. The filenames it looks for are determined
 	    by the IP address of the client it is running on. It converts the
-	    four decimal number parts of an IP address (they are devided by
+	    four decimal number parts of an IP address (they are divided by
 	    dots) into hexadecimal numbers and concatenates them. Example: IP
 	    address 192.168.0.11 gets converted into C0 A8 00 0B (without the
 	    spaces).
@@ -295,7 +295,7 @@ label linux
 	    which says: "Boot from local disk!" when the machine reboots after AutoYaST
 	    is done. (This process can be automated by monitoring the network or
 	    <emphasis>syslog</emphasis> for booting clients and removing the links
-	    with a script running in thr background)
+	    with a script running in the background)
 	  </para>	  
 
 	</section>
@@ -308,8 +308,8 @@ label linux
 	    source package which also can be found with SuSE Linux.
 	  </para>
 	  <para>
-	    To use etherboot with a boot EPROM, consult the etherboot
-	    documentation. The etherboot package contains pre-compiled images
+	    To use Etherboot with a boot EPROM, consult the Etherboot
+	    documentation. The Etherboot package contains pre-compiled images
 	    for boot EPROM and floppies.
 	  </para>
 	  <para>To create a bootable floppy for network installation copy the
@@ -322,7 +322,7 @@ cat /usr/lib/etherboot/dsk/&lt;NIC&gt; > /dev/fd0
 	    (N)etwork. Choose network. If  you haven't set up a DHCP server yet,
 	    it should hang - but at least Etherboot works.
 	  </para>
-	  <para>To boot using etherboot, you need to create the tagged image
+	  <para>To boot using Etherboot, you need to create the tagged image
 	    using <command>mknbi-linux</command> which is part of the
 	    <emphasis>mknbi</emphasis> package. Assuming you have copied the
 	    linux image and the initial ramdisk to a directory (images) below
@@ -390,7 +390,7 @@ $ /usr/sbin/grub --batch <<EOT
 	    </listitem>
 	  </orderedlist>
 	  <para>
-	    The file <filename>menu.list</filename> can have multiple enteries. the
+	    The file <filename>menu.list</filename> can have multiple entries. the
 	    following example shows different ways for booting the client over the network:
 	  </para>
 	  &example.grubmenu;
@@ -400,7 +400,7 @@ $ /usr/sbin/grub --batch <<EOT
 	      GRUB does not support all network interfaces and having all network
 	      interfaces enabled in the
 	      <filename>/usr/lib/grub/stage2.netboot</filename> might have some
-	      side effects when booting certains network devices.
+	      side effects when booting certain network devices.
 	    </para>
 	  </note>
       </section>		
@@ -421,7 +421,7 @@ $ /usr/sbin/grub --batch <<EOT
 	</formalpara>
 	<formalpara>
 	  <title>pxegrub</title>
-	  <para>This is another network boot image for the Preboot Execution
+	  <para>This is another network boot image for the Pre-boot Execution
 	    Environment used by several Netboot ROMs. This is identical to
 	    <emphasis>nbgrub</emphasis>, except for the format.</para>
 
@@ -464,104 +464,102 @@ $ /usr/sbin/grub --batch <<EOT
       prepared. In a full network installation, you  have only to turn the
       client on to initiate the auto-installation process.
     </para>
-    <section>
-      <title>Setting up an installation repository</title>
     
-      <para>
-	The installation server should export the  &company-suse;  Linux distribution's files
-	via &nfs;. Create a directory on a filesystem with enough free space
-	(several gigabytes) and copy the contents of the CD-ROMs into this
-	directory. This directory is then to be exported via
-	&nfs; (via an appropriate entry in
-	<filename>/etc/exports</filename>) or it should be made available via
-	other supported installation protocols like &http; and &ftp;. The following steps describe how to
-	create an installation repository:
-	
-      </para>
-      <para>
-	Login on the machine designated as installation server and create a
-	directory to hold the  &company-suse;  Linux distribution files,
-	i.e. <filename> /usr/local/SuSE/current</filename>. 
-      </para>
-      <para>
-	In our example <filename>/usr/local/SuSE/current</filename> is the base directory for the  &company-suse;  Linux
-	distribution. The location of this directory can be specified  in the <emphasis>info</emphasis> file or on
-	the command line of the kernel (see  below) using the
-	<emphasis>install</emphasis>
-	keyword. (i.e. <emphasis>install=nfs://192.168.1.1/usr/local/SuSE/current</emphasis>)
-      </para>
-      <para>
-	Now copy the files from  all CDs into the
-	<emphasis>current</emphasis> directory or just copy those CDs
-	required for the installation. Make sure that all packages needed for
-	the installation are copied. Use the following command to copy the CDs:
+    <para>
+      The installation server should export the  &company-suse;  Linux distribution's files
+      via &nfs;. Create a directory on a filesystem with enough free space
+      (several gigabytes) and copy the contents of the CD-ROMs into this
+      directory. This directory is then to be exported via
+      &nfs; (via an appropriate entry in
+      <filename>/etc/exports</filename>) or it should be made available via
+      other supported installation protocols like &http; and &ftp;. The following steps describe how to
+      create an installation repository:
+      
+    </para>
+    <para>
+      Login on the machine designated as installation server and create a
+      directory to hold the  &company-suse;  Linux distribution files,
+      i.e. <filename> /usr/local/SuSE/current</filename>. 
+    </para>
+    <para>
+      In our example <filename>/usr/local/SuSE/current</filename> is the base directory for the  &company-suse;  Linux
+      distribution. The location of this directory can be specified  in the <emphasis>info</emphasis> file or on
+      the command line of the kernel (see  below) using the
+      <emphasis>install</emphasis>
+      keyword. (i.e. <emphasis>install=nfs://192.168.1.1/usr/local/SuSE/current</emphasis>)
+    </para>
+    <para>
+      Now copy the files from  all CDs into the
+      <emphasis>current</emphasis> directory or just copy those CDs
+      required for the installation. Make sure that all packages needed for
+      the installation are copied. Use the following command to copy the CDs:
 
-      </para>
-      <screen>
+    </para>
+    <screen>
 mount /media/cdrom
 cd /media/cdrom && cp -va . /usr/local/SuSE/current ; cd -
 umount /media/cdrom
-      </screen>
-      <para>
-	Repeat this sequence for all other CDs. The directory
-	can have 2 different structures which can be used for installation:
-      </para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    The content of all CDs is copied into one directory and thus
-	    creating single directory structure with a
-	    subdirectory <emphasis>suse</emphasis> which included all the
-	    packages. This type of structure is recommended as it
-	    is easier to manage and will provide a true, single source
-	    installation medium.
-	  </para>
-	  <para>
-	    To make the directory look like a single medium for the client,
-	    it is possible to re-create  the package database available on the
-	    first CD using the script <command>create_package_descr</command>
-	    which is available in <filename>/usr/bin/</filename>. Install the
-	    package <emphasis>autoyast2-utils</emphasis> to make this script
-	    available on your system.
-	    
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Copy the CDs into subdirectories named after the CD number,
-	    i.e. CD1, CD2, etc.
-	  </para>
-	  <para>
-	    Using this structure you will still be able to perform &nfs;
-	    installations, but the single directories will be treated as if
-	    they were different mediums. 
-	  </para>
-	</listitem>
-      </itemizedlist>
-      <para>
-	After you have copied the CDs into the installation directory, make
-	sure it is exported via &nfs; or available using other installation
-	protocols. You can achieve this with &yast2;  using the
-	&nfs; server module.
-      </para>
-      <para>
-	Additionally, you need to make the following services  start every
-	time the system boots (Other installation protocls need different services).
-      </para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    nfsserver
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    portmap
-	  </para>
-	</listitem>
-      </itemizedlist>
+    </screen>
+    <para>
+      Repeat this sequence for all other CDs. The directory
+      can have 2 different structures which can be used for installation:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  The content of all CDs is copied into one directory and thus
+	  creating single directory structure with a
+	  subdirectory <emphasis>suse</emphasis> which included all the
+	  packages. This type of structure is recommended as it
+	  is easier to manage and will provide a true, single source
+	  installation medium.
+	</para>
+	<para>
+	  To make the directory look like a single medium for the client,
+	  it is possible to re-create  the package database available on the
+	  first CD using the script <command>create_package_descr</command>
+	  which is available in <filename>/usr/bin/</filename>. Install the
+	  package <emphasis>autoyast2-utils</emphasis> to make this script
+	  available on your system.
+	  
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Copy the CDs into sub-directories named after the CD number,
+	  i.e. CD1, CD2, etc.
+	</para>
+	<para>
+	  Using this structure you will still be able to perform &nfs;
+	  installations, but the single directories will be treated as if
+	  they were different mediums. 
+	</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      After you have copied the CDs into the installation directory, make
+      sure it is exported via &nfs; or available using other installation
+      protocols. You can achieve this with &yast2;  using the
+      &nfs; server module.
+    </para>
+    <para>
+      Additionally, you need to make the following services  start every
+      time the system boots (Other installation protocols need different services).
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  nfsserver
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  portmap
+	</para>
+      </listitem>
+    </itemizedlist>
     
-    </section>
+    
 
   </section>
 
@@ -574,7 +572,7 @@ umount /media/cdrom
       specified at the boot time of a client. To avoid supplying the
       profile name for every client, you can only define the directory of
       the control files. If a directory is specified, then the client tries
-      to load a file with a name matching it's IP address in hex
+      to load a file with a name matching it's IP address in HEX
       mode.  This has the advantage that you will be dealing with
       consistent file names rather than IPs as file names which might lead to
       some confusion.
