@@ -104,20 +104,6 @@
 
 	include "autoinstall/partitioning.ycp";
 
-	/*
-	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
-	{
-	    Storage::DestroyLvmOnAllDisks();
-	}
-
-	
-	if ( raid[ 0, "destroy_old"]:false && !Mode::test)
-	{
-	    Storage::DestroyMdOnAllDisks();	   
-	}
-
-	*/
-
 	map init_targetmap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", init_targetmap);
 		
@@ -138,21 +124,25 @@
 	
 	
 	y2milestone("Drives=%1", alldrives);
+	
 	string mbrDisk = lookup(select(physical_drives,0,$[]),"device", BootCommon::mbrDisk);
+	
 	y2milestone("MBR disk= %1", mbrDisk );
 	Storage::SetPartDisk(mbrDisk);
 	
 	// Set devices if missing
 	
+	y2milestone("Drives: %1", drives);
+	
 	targetMap =  listmap (map drive, drives, ``{
 	    boolean first_set = false;
 	    string device = "";
-	    
+	    y2milestone("Drive: %1", drive);
 	    if (!first_set && drive["device"]:"" == "")
 	    {
 		device = Storage::GetPartDisk();
 		first_set = true;
-		return ([device,drive]);
+		return ( [device , drive ] );
 	    }
 	    else if (drive["device"]:"" != "")
 	    {
@@ -177,9 +167,7 @@ Make sure the control file has the correct syntax and values.
 	boolean init_done = false;
 	
 	foreach (string device, map data, targetMap,
-		 ``{
-	    // FIXME: initialize LVM and RAID
-	    
+		 ``{	    	    
 	    if (data["initialize"]:false)
 	    {
 		    map thisDevice = init_targetmap[device]:$[];		 
@@ -190,18 +178,6 @@ Make sure the control file has the correct syntax and values.
 	    }		    
 	});
 
-	/*
-	if (size(raid) > 0  && md_avail)
-	{
-	    y2milestone("init raid: %1", raid_to_init);
-	    map tg =  Storage::GetTargetMap();
-	    map md = tg["/dev/md"]:$[];
-	    list mdlist = tg["/dev/md", "partitions"]:[];
-	    md["partitions"] = filter(map md_device, mdlist, ``((!contains(toset(raid_to_init), md_device["device"]:"") )));	    
-	    tg["/dev/md"] = md;
-	    Storage::SetTargetMap(tg);
-	}
-	*/
 
 	
 	if (init_done)
@@ -233,17 +209,20 @@ Make sure the control file has the correct syntax and values.
 	    }
 	}
 
+	
 	lvm 	= filter(`k,`v, AutoinstStorage::targetMap, ``(v["is_lvm_vg"]:false));
 	raid 	= filter(`k,`v, AutoinstStorage::targetMap, ``(k == "/dev/md"));
 
 	
 	if ( size(raid) != 0)
 	{
+	    y2milestone("Configuring RAID");
 	    autoRAID();
 	}
 
 	if ( size(lvm) != 0)
 	{
+	    y2milestone("Configuring LVM");
 	    autoLVM();
 	}
 
