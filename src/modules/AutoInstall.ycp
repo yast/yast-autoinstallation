@@ -115,8 +115,6 @@
     /**
      * Read saved data in continue mode
      */
-
-
     global define boolean Continue() ``{
 
 	// First check if there are some other control files availabe
@@ -167,19 +165,67 @@
      */
     global define boolean ProcessSpecialResources ()
 	``{
-
 	Report::Import(Profile::Flat["report"]:$[]);
-	X11 = Profile::Flat["x11"]:$[];
-
-	if ( (size(X11) == 0 || !X11["configure_x11"]:false ) && Mode::cont && !Y2ModuleConfig::x11_installed)
-	{
-	    Mode::x11_setup_needed = false;
-	}
-
-	default_rl = Profile::Flat["runlevels", "default"]:"5";
-
+	configureX11();
 	return true;
     }
+
+    /**
+     * Configure X11 and Runlevel settings
+     *
+     */
+
+    global define boolean configureX11 () ``{
+
+
+	map x11conf = Profile::Flat["x11"]:$[];
+	map runlevels = Profile::Flat["runlevels"]:$[];
+
+	if (Mode::initial && haskey(Profile::Flat,"x11"))
+	{
+	    // start_x11 set to true = runlevel = 5
+	    // If runlevel is set, then it overrides x11 settings.
+	    // If no x11 conf is given and no runlevel  is set, then runlevel => 3.
+
+		if (haskey(x11conf, "start_x11"))
+		{
+		    boolean start_xdm = Profile::Flat["x11", "start_x11"]:false;
+		    if (start_xdm)
+		    {
+			if (runlevels["default"]:"" == "" )
+			{
+			    default_rl = "5";
+			}
+		    }
+		    else
+		    {
+			if (runlevels["default"]:"" == "" )
+			{
+			    default_rl = 3;
+			}
+		    }
+		}
+	}
+	else if (Mode::initial)
+	{
+	    default_rl = runlevels["default"]:"3";
+	}
+	else if (Mode::cont)
+	{
+	    // Check if X11 package is installed.
+	    boolean x11_installed = Pkg::IsProvided("XFree86");
+	    if (!x11_installed)
+		x11_installed = Pkg::IsSelected ("XFree86");
+
+	    if ( size(X11) == 0 || !X11["configure_x11"]:false  || !x11_installed)
+	    {
+		y2milestone("x11 setup not needed");
+		Mode::x11_setup_needed = false;
+	    }
+	}
+
+    }
+
 
     /**
      * Configure bootloader settings
@@ -207,7 +253,7 @@
 	{
 	    foreach (`parameter, splitstring(parameters, " "),
 		     ``{
-		list param_value_list = splitstring (parameter, "=");		
+		list param_value_list = splitstring (parameter, "=");
 		if (size (param_value_list) > 0)
 		{
 		    Kernel::AddCmdLine (param_value_list[0]:"", param_value_list[1]:"");
@@ -223,7 +269,7 @@
 	foreach(map mod, Bootloader["initrd_modules"]:[], ``{
 	    if (mod["module"]:"" != "" )
 	    {
-		modlist = add(modlist, mod["module"]:"");	    
+		modlist = add(modlist, mod["module"]:"");
 		modsett = add(modsett, mod["module"]:"" , mod["module_args"]:"");
 	    }
 	});
@@ -232,9 +278,9 @@
 
 	// cleanup
 	if (haskey(Bootloader, "initrd_modules"))
-	    Bootloader = remove(Bootloader, "initrd_modules");	
+	    Bootloader = remove(Bootloader, "initrd_modules");
 
-	
+
 	y2debug ("Starting importing settings");
 	ret = Bootloader::Import(Bootloader);
 	y2debug ("Importing done, result %1", Bootloader::Export ());
@@ -249,7 +295,7 @@
 	    string gfxmenu = BootCommon::globals["gfxmenu"]:"";
 	    if (gfxmenu != "")
 		BootCommon::globals["gfxmenu"] = BootGRUB::file2grub (gfxmenu);
-	    
+
 	    BootCommon::sections = maplist (`s, BootCommon::sections, ``{
 		string initrd = s["initrd"]:"";
 		if (initrd != "" && substring(initrd, 0, 1) == "/")

@@ -29,25 +29,7 @@
     string resource = "";
     string module_auto = "";
 
-    // make some adaptions
-    if (haskey(Profile::Flat,"x11"))
-    {
-	map x11conf = Profile::Flat["x11"]:$[];
-	if (haskey(x11conf, "start_x11"))
-	{
-	    boolean start_xdm = Profile::Flat["x11", "start_x11"]:false;
-	    map runlevels = Profile::Flat["runlevels"]:$[];
-	    if (start_xdm)
-	    {
-		runlevels["default"] = "5";
-	    }
-	    else
-	    {
-		runlevels["default"] = "3";
-	    }
-	    Profile::Flat["runlevels"] = runlevels;
-	}
-    }
+
 
     /**
      * Display a step in the LogView widget and increment the progress bar.
@@ -76,17 +58,10 @@ Please wait while the system is being configured.
               // Progress bar that displays overall progress in this dialog
               `ProgressBar(`id(`progress), _("Progress"), max_steps, 0 )
               );
-    boolean back_ok = false;
-    boolean next_ok = false;
-    if (size (WFM::Args()) > 1)
-    {
-    back_ok = WFM::Args(0);
-    next_ok = WFM::Args(1);
-    }
     Wizard::SetContents(
               // Dialog title for SuSEconfig dialog
               _("Configuring System according to auto-install settings"),
-              contents, help_text, back_ok, next_ok);
+              contents, help_text, false, false);
     Wizard::DisableAbortButton();
 
 
