@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ENTITY % y2_drive "device| initialize| is_lvm_vg|lvm2| partitions| pesize| use" >
+<!ENTITY % y2_drive "device| initialize| is_lvm_vg|lvm2| partitions| pesize| use | keep_partition_id|keep_partition_nr| keep_partition_fsys|prefer_remove" >
 
 
 <!ELEMENT partitioning (drive+)>
@@ -9,6 +9,17 @@
 <!ELEMENT drive (device?, initialize?,  is_lvm_vg?, partitions?, pesize?, use?)>
 <!ELEMENT initialize (#PCDATA)>
 <!ATTLIST initialize
+	config:type CDATA #FIXED "boolean"
+>
+<!ELEMENT keep_partition_id (#PCDATA)>
+<!ELEMENT keep_partition_nr (#PCDATA)>
+<!ELEMENT keep_partition_fsys (#PCDATA)>
+<!ELEMENT usepart (#PCDATA)>
+<!ATTLIST usepart
+	config:type CDATA #FIXED "integer"
+>
+<!ELEMENT prefer_remove (#PCDATA)>
+<!ATTLIST prefer_remove
 	config:type CDATA #FIXED "boolean"
 >
 <!ATTLIST lvm2
@@ -23,7 +34,7 @@
 <!ATTLIST partitions
 	config:type CDATA #FIXED "list"
 >
-<!ENTITY % y2_partition "create| crypt| crypt_fs| crypt_key| filesystem| format| fs_options| fstopt| grow| label| loop_fs| lv_name| lvm_group| maxsize| mount| mountby| noauto| partition_id| partition_nr| partition_type| raid_name| raid_type| region| size">
+<!ENTITY % y2_partition "create| crypt| crypt_fs| crypt_key| filesystem| format| fs_options| fstopt| grow| label| loop_fs| lv_name| lvm_group| maxsize| mount| mountby| noauto| partition_id| partition_nr| partition_type| raid_name|raid_options| raid_type| region| size| usepart">
 
 <!ELEMENT partition (%y2_partition;)*>
 
