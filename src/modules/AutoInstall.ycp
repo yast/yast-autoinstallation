@@ -106,7 +106,7 @@
     global string Mouse = "";
 
     // Hardware clock
-    global string Hwclock = "";
+    global boolean UTC = "";
 
     global map Bootloader = $[];
 
@@ -285,11 +285,12 @@
 	    {
 		Timezone = v["timezone"]:default_timezone;
 		if (v["utc"]:false) 
-		    Hwclock 	=  "--localtime";
+		    UTC  = true;
 		else
-		    Hwclock 	=  "-u";
+		    UTC  = false;
 
-		if (size(v["ntp_servers"]:[])>0) {
+		if (size(v["ntp_servers"]:[])>0)
+		{
 		    string key = "XNTPD_INITIAL_NTPDATE";
 		    string val = mergestring(v["ntp_servers"]:[], " ");
 		    string file = "xntp";
@@ -300,9 +301,9 @@
 	    else if (k == "hwclock") // compat
 	    {	
 		if (v == "localtime")
-		    Hwclock 	=  "--localtime";
+		    UTC	= false;
 		else
-		    Hwclock 	=  "-u";
+		    UTC	=  true;
 	    }
 	    else if (k == "timezone") // compat
 	    {
