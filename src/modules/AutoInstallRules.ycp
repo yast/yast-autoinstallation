@@ -228,7 +228,7 @@
 	//
 
 	arch = Arch::architecture;
-	karch = Kernel::kernel_packages[0]:"k_deflt";
+	karch = Kernel::kernel_packages[0]:"kernel-default";
 
         ATTR["arch"] = arch;
         ATTR["karch"] = karch;
@@ -452,29 +452,26 @@
 		    string op = ruledef["operator"]:"and";
 		    string matchtype = ruledef["match_type"]:"exact";
 
-		    if ( rule == "hostname")
+                    list<string> easy_rules = [
+                    "hostname",
+                    "hostaddress",
+                    "installed_product_version",
+                    "installed_product",
+                    "domain",
+                    "network",
+                    "mac",
+                    "karch",
+                    "hostid",
+                    "arch",
+                    "board",
+                    "board_vendor",
+                    "product_vendor",
+                    "product" ];
+		    if ( contains(easy_rules, rule))
 		    {
 			shellseg(ismatch, rule, match, op, matchtype);
 			ismatch = true;
-			env[rule] = hostname;
-		    }
-		    else if ( rule == "hostaddress")
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = hostaddress;
-		    }
-		    else if ( rule == "installed_product_version")
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = installed_product_version;
-		    }
-		    else if ( rule == "installed_product")
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = installed_product;
+			env[rule] = ATTR[rule]:"";
 		    }
 		    else if ( rule == "custom1" ||  rule == "custom2" || rule == "custom3" ||  rule == "custom4" || rule == "custom5")
 		    {
@@ -492,24 +489,6 @@
 			ismatch = true;
                         ATTR[rule] = script_result;
 			env[rule] = script_result;
-		    }
-		    else if ( rule == "domain" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = domain;
-		    }
-		    else if ( rule == "network" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = network;
-		    }
-		    else if ( rule == "mac" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = mac;
 		    }
 		    else if ( rule == "linux" )
 		    {
@@ -547,49 +526,7 @@
 			ismatch = true;
 			env[rule] = haspcmcia;
 		    }
-		    else if ( rule == "karch" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = karch;
-		    }
-		    else if ( rule == "hostid" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = hostid;
-		    }
-		    else if ( rule == "arch" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = arch;
-		    }
-		    else if ( rule == "board" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = board;
-		    }
-		    else if ( rule == "board_vendor" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = board_vendor;
-		    }
-		    else if ( rule == "product_vendor" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = product_vendor;
-		    }
-		    else if ( rule == "product" )
-		    {
-			shellseg(ismatch, rule, match, op, matchtype);
-			ismatch = true;
-			env[rule] = product;
-		    }
-                   else if ( rule == "disksize" )
+                    else if ( rule == "disksize" )
                     {
                         list<string> disk = splitstring(match, " ");
 
