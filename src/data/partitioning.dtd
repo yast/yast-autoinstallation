@@ -10,6 +10,10 @@
 <!ATTLIST filesystem
 	config:type CDATA #REQUIRED
 >
+<!ELEMENT create (#PCDATA)>
+<!ATTLIST create
+	config:type CDATA #REQUIRED
+>
 <!ELEMENT format (#PCDATA)>
 <!ATTLIST format
 	config:type CDATA #REQUIRED
@@ -41,7 +45,7 @@
 >
 <!ELEMENT option_str (#PCDATA)>
 <!ELEMENT option_value (#PCDATA)>
-<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, label?, lvm_group?, mount, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?,size)>
+<!ELEMENT partition (crypt_fs?, crypt_key?, filesystem?, format?, fs_options?, fstopt?, label?, lvm_group?, mount, mountby?, partition_id?, partition_nr?, partition_type?, raid_name?, raid_type?,size, maxsize?, grow?, create?)>
 <!-- <!ELEMENT lvm_group (#PCDATA)> -->
 <!ELEMENT raid_name (#PCDATA)>
 <!ELEMENT raid_type (#PCDATA)>
@@ -63,4 +67,6 @@
 	config:type CDATA #REQUIRED
 >
 <!ELEMENT size (#PCDATA)>
+<!ELEMENT maxsize (#PCDATA)>
+<!ELEMENT grow (#PCDATA)>
 <!ELEMENT use (#PCDATA)>

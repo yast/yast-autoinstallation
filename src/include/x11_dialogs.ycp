@@ -210,7 +210,16 @@ be started at boot time and what display manager should be used.</p>
 
 		any default_dm	= UI::QueryWidget(`id(`dm), `Value);
 		if (is(default_dm, string))
+		{
 		    AutoinstX11::x11["display_manager"] =  default_dm;
+		    
+		    if (default_dm == "kdm")
+			AutoinstX11::x11["window_manager"] =  "kde";
+		    else if (default_dm == "gdm")
+			AutoinstX11::x11["window_manager"] =  "gnome";
+		    else if (default_dm == "xdm")
+			AutoinstX11::x11["window_manager"] =  "twm";
+		}
 
 		any enable_3d	= UI::QueryWidget(`id(`enable_3d), `Value);
 		if (is(enable_3d, boolean))
@@ -230,8 +239,7 @@ be started at boot time and what display manager should be used.</p>
 				    updateContents(), help, true, true);
 		continue;
 	    }
-
-	    y2milestone("ret=%1 ", ret);
+	    
 	} until (  ret ==`next || ret ==`back );
 
 
