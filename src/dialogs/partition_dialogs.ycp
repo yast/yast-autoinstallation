@@ -34,8 +34,7 @@
      * @return boolean
      */
     define boolean CheckIfMaxSet( string item )
-	``{
-
+    {
 	y2milestone("item %1", item);
 	boolean exists = false;
 	map drive = select(
@@ -59,7 +58,8 @@
      * Get target
      * @return map targets
      */
-    define map<string, map> getTargets () ``{
+    define map<string, map> getTargets ()
+    {
 	map<string, map> auto_targets =  listmap (map d, AutoinstStorage::AutoPartPlan, ``{
 	    string device = d["device"]:"";
 	    return ($[device:d]);
@@ -74,7 +74,8 @@
      * @param item item to edit
      * @return symbol
      */
-    define symbol PartitionDialog (symbol mode, string item) ``{
+    define symbol PartitionDialog (symbol mode, string item)
+    {
 
 	list<map> partitioning =  AutoinstStorage::AutoPartPlan;
 	list<string> item_id = splitstring(item,":");
@@ -706,7 +707,7 @@ Select or enter another device name.
      * @return symbol
      */
     define symbol StorageDialog()
-	``{
+    {
 
 	any ret = nil;
 	any action = nil;
@@ -887,12 +888,5 @@ due to use of the \"max\" option.
 	return (symbol)ret;
     }
 
-
-
-
-
-
-
-
-
+// EOF
 }

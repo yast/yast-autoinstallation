@@ -14,11 +14,11 @@
 
     /**
       * Shows a dialog when 'control file' can't be found
-      * @param string original
-      * @return string new
+      * @param original Original value 
+      * @return string new value
       */
     define string ProfileSourceDialog (string original)
-        ``{
+    {
             string helptext = _("<p>
 A profile for this machine could not be found or retrieved.
 Check that you entered the correct location
@@ -79,8 +79,8 @@ installation process and make sure the control files are accessible.</p>
      * Disk selection dialog
      * @return string device
      */
-    define string DiskSelection() ``{
-
+    define string DiskSelectionDialog()
+    {
         y2milestone("Selecting disk manually....");
         map<string, map> tm = Storage::GetTargetMap();
         term contents = `Dummy();

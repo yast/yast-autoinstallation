@@ -46,9 +46,6 @@
     // Partition plan as parsed from control file
     global list<map> AutoPartPlan = [];
 
-    // All configured devices
-    global list ConfiguredDevices = [];
-
     // Prepared target map from parsed data
     global map<string, map> AutoTargetMap = $[];
 
@@ -61,33 +58,40 @@
     // list of physical devices
     list PhysicalDevices = [];
 
+    // All configured devices
+    global list ConfiguredDevices = [];
 
+
+
+    // Those variables are needed by storage includes and modules.
+    //
+    
     // maximal number ofpartitions
-    integer max_partitions = 0;
+    integer     max_partitions = 0;
 
     // The number of possible primary partitions
-    integer max_primary = 0;
+    integer     max_primary = 0;
 
     // The partition number of the first logical partition
-    integer first_logical_nr = 0;
+    integer     first_logical_nr = 0;
 
     // How much to allocate for swap
-    integer size_of_swap	= 1024 * 1024 * Partitions::SwapSizeMb(0);
+    integer     size_of_swap	= 1024 * 1024 * Partitions::SwapSizeMb(0);
 
     // calculate size of the /boot partition
-    integer size_of_boot = Partitions::MinimalNeededBootsize();
+    integer     size_of_boot = Partitions::MinimalNeededBootsize();
 
     list<integer> full_region = [];
 
-    boolean can_do_auto = false;
+    boolean     can_do_auto = false;
 
     list<integer> unused_region = [ 0, 0 ];
 
-    integer minimal_size = 0;
+    integer     minimal_size = 0;
 
-    integer bytes_per_unit = 0;
+    integer     bytes_per_unit = 0;
 
-    string TargetDevice = "";
+    string      TargetDevice = "";
 
     integer	fsid_boot = 0;
 
@@ -96,9 +100,11 @@
     list<integer> region = [ 0, 0 ];
 
 
-    string target_is = "";
+    string      target_is = "";
 
-    list root_region = [];
+    list        root_region = [];
+
+
 
     /* default value of settings modified */
     global boolean modified = false;
@@ -108,7 +114,8 @@
      * Function sets internal variable, which indicates, that any
      * settings were modified, to "true"
      */
-    global define void SetModified () {
+    global define void SetModified ()
+    {
         y2milestone("SetModified");
         modified = true;
     }
@@ -117,10 +124,10 @@
      * Functions which returns if the settings were modified
      * @return boolean  settings were modified
      */
-    global define boolean GetModified () {
+    global define boolean GetModified ()
+    {
         return modified;
     }
-
 
 
     include "partitioning/custom_part_dialogs.ycp";
@@ -159,16 +166,20 @@
      * @param settings a list	[...]
      * @return	boolean success
      */
-    global define boolean Import(list<map> settings) ``{
+    global define boolean Import(list<map> settings)
+    {
 	AutoPartPlan = settings;
 	return true;
     }
+
+
     /**
      * Import Fstab data
-     * @param map
-     * @return	boolean success
+     * @param settings Settings Map
+     * @return	boolean true on success
      */
-    global define boolean ImportAdvanced(map settings) ``{
+    global define boolean ImportAdvanced(map settings)
+    {
         fstab = settings["fstab"]:$[];
         read_fstab = fstab["use_existing_fstab"]:false;
 
@@ -180,7 +191,8 @@
      * return Summary of configuration
      * @return  string configuration summary dialog
      */
-    global define string Summary() ``{
+    global define string Summary()
+    {
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Drives"));
 	integer num = size(AutoPartPlan);
@@ -196,19 +208,20 @@
 
 
     /**
-     * Preprocess partition plan and prepare for creating partitions.
+     * Pre-process partition plan and prepare for creating partitions.
      * @return void
      */
-    global define void PreProcess() ``{
-
+    define boolean PreProcess()
+    {
         boolean first_set = false;
 	AutoTargetMap =  listmap (map drive, AutoPartPlan, ``{
 	    string device = "";
 	    y2milestone("Working on drive: %1", drive);
 
-	    if (drive["device"]:"" == "ask"  && size(PhysicalDrives) > 1 )
+	    if (drive["device"]:"" == "ask"  
+                && size(PhysicalDrives) > 1 )
 	    {
-		string dev = DiskSelection();
+		string dev = DiskSelectionDialog();
 		if (dev != nil)
 		{
 		    first_set = true;
@@ -222,7 +235,10 @@
 		return  $[device: drive ];
 	    }
 
-	    if (!first_set && ( drive["device"]:"" == ""  || drive["device"]:"" == "ask"))
+	    if (!first_set 
+                && ( drive["device"]:"" == ""  
+                    || drive["device"]:"" == "ask")
+                )
 	    {
 		device = Storage::GetPartDisk();
 		first_set = true;
@@ -245,20 +261,24 @@
 
 	});
 
-	// Add MD devices as well
+	// FIXME: Add MD devices as well
 	if (haskey(AutoTargetMap, "/dev/md"))
 	{
 	    ConfiguredDevices=add(ConfiguredDevices, "/dev/md");
 	}
 
-        y2milestone("ConfiguredDevices: %1", ConfiguredDevices );
-	return;
+	if ( AutoTargetMap == $[] || AutoTargetMap == nil)
+            return false;
+        else
+	    return true;
     }
 
+    
     /**
      * Handle /etc/fstab usage
+     * @return boolean
      */
-    boolean handle_fstab()
+    define boolean handle_fstab()
     {
 
         if (!RootPart::didSearchForRootPartitions)
@@ -302,84 +322,89 @@ which root partition should be used.  Automatic installation not possible.
         return true;
     }
 
+
+
+    define void collectData()
+    {
+        map<string, map> tg = Storage::GetTargetMap();
+
+        return;
+    }
+
     /**
      * Create partition plan
      * @return boolean
      */
     global define boolean Write()
-	``{
+    {
+
+        // Import partitioning info from existing fstab
         if (read_fstab)
         {
             return (handle_fstab());
         }
 
 	map<string, map> InitialTargetMap = Storage::GetTargetMap();
-	y2milestone("Initial Target map: %1", InitialTargetMap);
+	y2debug("Initial Target map: %1", InitialTargetMap);
 
+        /*
 	list<map> alldrives = maplist( string k, map v, InitialTargetMap ,  ``{
 	    return($["device":k, "size": v["cyl_size"]:0 ]);
 	});
+        */
 
-	PhysicalTargetMap = filter(string k, map v, InitialTargetMap , ``(Storage::IsRealDisk(k, v) ));
+	PhysicalTargetMap = filter(string k, map v, InitialTargetMap , 
+                ``(Storage::IsRealDisk(k, v) ));
 
         PhysicalDrives = maplist( string k, map v, PhysicalTargetMap ,
-                                  ``{
-                                      return($["device":k, "size": v["cyl_size"]:0 ]);
-                                  });
+                ``{
+                    return($["device":k, "size": v["cyl_size"]:0 ]);
+                });
 
         PhysicalDevices = maplist( string k, map v, PhysicalTargetMap ,
-                                  ``{
-                                      return(k);
-                                  });
+                ``{
+                    return(k);
+                });
+
+
+
         y2debug("Physicaltm: %1", PhysicalTargetMap );
         y2debug("PhysicalDrives: %1", PhysicalDrives );
         y2debug("PhysicalDevices: %1", PhysicalDevices );
-	y2milestone("All Drives=%1", alldrives);
 
 	map FirstDrive = PhysicalDrives[0]:$[];
-
+        y2milestone("BootCommon::mbrDisk: %1", BootCommon::mbrDisk);
 	string mbrDisk = FirstDrive["device"]:BootCommon::mbrDisk;
-
-	y2milestone("MBR disk= %1", mbrDisk );
-
 	Storage::SetPartDisk(mbrDisk);
-
-	y2milestone("AutoPartPlan= %1", AutoPartPlan);
-
 	boolean abort = false;
 
 	// Start the real work
-
-	PreProcess();
-
-	y2milestone("New Auto-Install targetMap=%1", AutoTargetMap);
-	if ( AutoTargetMap == $[] || abort )
+	if ( !PreProcess() )
 	{
 	    // Something went really wrong..
-	    Report::Error(_("An error occurred while trying to create the partitioning plans.
-Make sure the control file has the correct syntax and values.
+	    Report::Error(_("An error occurred while trying to create
+the partitioning plans.
+Make sure the control file has the correct
+syntax and values.
 "));
 	    return false;
 	}
+	y2milestone("New Auto-Install targetMap=%1", AutoTargetMap);
 
 	// Initialize disks if needed
 	boolean DriveInitialized = false;
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
-	    if (data["initialize"]:false)
+	    if (data["initialize"]:false == true)
 	    {
-		    map thisDevice = InitialTargetMap[device]:$[];
-		    thisDevice["partitions"] = [];
-		    InitialTargetMap[device] = thisDevice;
-		    Storage::SetTargetMap(InitialTargetMap);
-		    DriveInitialized = true;
+	        map thisDevice = InitialTargetMap[device]:$[];
+		thisDevice["partitions"] = [];
+		InitialTargetMap[device] = thisDevice;
+		Storage::SetTargetMap(InitialTargetMap);
+		DriveInitialized = true;
+	        y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
 	    }
 	});
-
-	if (DriveInitialized)
-	{
-	    y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
-	}
 
 	if ( size(AutoTargetMap) > 0)
 	{
@@ -389,8 +414,7 @@ Make sure the control file has the correct syntax and values.
 		if ( Storage::IsRealDisk( device, data) )
 		{
 		    y2milestone("Creating partition plans for %1", device);
-		    TargetDevice = device;
-		    boolean ret = AutoPartition();
+		    boolean ret = AutoPartition(device);
 		    if (!ret)
 		    {
 			ok = false;
@@ -402,11 +426,15 @@ Make sure the control file has the correct syntax and values.
 		return false;
 	    }
 	}
+        
         AutoinstLVM::Init();
-	AutoinstLVM::lvm   = filter(string k, map v, AutoinstStorage::AutoTargetMap, ``(v["is_lvm_vg"]:false));
+	AutoinstLVM::lvm   = filter(string k, map v,
+                AutoinstStorage::AutoTargetMap, ``(v["is_lvm_vg"]:false));
+
         AutoinstLVM::ConfiguredDevices = ConfiguredDevices;
 
-	AutoinstRAID::raid = filter(string k, map v, AutoinstStorage::AutoTargetMap, ``(k == "/dev/md"));
+	AutoinstRAID::raid = filter(string k, map v, 
+                AutoinstStorage::AutoTargetMap, ``(k == "/dev/md"));
 
 	if ( size(AutoinstRAID::raid) != 0)
 	{
@@ -415,7 +443,6 @@ Make sure the control file has the correct syntax and values.
 	}
 	else
 	{
-
 	    AutoinstRAID::DeleteMDs();
 	}
 
@@ -436,10 +463,15 @@ Make sure the control file has the correct syntax and values.
      * Initialize devices
      * @return void
      */
-    global define void Initialize () ``{
+    global define void Initialize ()
+    {
+        // Called by inst_prepdisk.ycp
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
-	    if (data["initialize"]:false && !data["is_lvm_vg"]:false && data["device"]:"" != "/dev/md" )
+	    if (data["initialize"]:false && 
+                !data["is_lvm_vg"]:false && 
+                data["device"]:"" != "/dev/md" 
+                )
 	    {
 		integer zero_ret = Storage::ZeroDevice( device );
 		y2milestone("Initializing device: %1 --> %2", device, zero_ret);
@@ -452,10 +484,10 @@ Make sure the control file has the correct syntax and values.
 
     /**
      * Delete Software raid
-     * @return list
+     * @return list List of deleted MDs
      */
     global define list<map> DeletedMDs ( string vgname )
-	``{
+    {
 	map<string, map> tm = Storage::GetTargetMap();
 	list<list<map> >  ret = [];
 	foreach( string dev, map devmap, tm,
@@ -486,17 +518,17 @@ Make sure the control file has the correct syntax and values.
      * @return string e.g.: 01./dev/hda
      */
     define string  build_id(  string disk_dev_name , any nr )
-	``{
+    {
         return (sformat( "%1:%2", disk_dev_name, nr));
-    };
+    }
 
 
     /**
      * Partitioning Overview
-     * @return term
+     * @return list Overview
      */
     global define list Overview()
-	``{
+    {
 
 	map allfs = FileSystems::GetAllFileSystems(true, true);
 	list drives_table = [];
@@ -571,8 +603,5 @@ Make sure the control file has the correct syntax and values.
 
     }
 
-
-
-
-
+    // EOF
 }
