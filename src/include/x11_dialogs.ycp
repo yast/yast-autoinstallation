@@ -137,9 +137,9 @@
 
 
 
-
-
-
+    /**
+     * X11 Options
+     */
     global define x11Options()
 	``{
 
@@ -159,6 +159,9 @@ be started at boot time and what display manager should be used.</p>
 	Wizard::SetContents(caption,
 			    updateContents(), help, true, true);
 
+	
+	Wizard::ReplaceAbortButton(`Empty());
+	UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel());
 
 	if (!x11_enabled) {
 	    UI::ChangeWidget(`id(`depth), `Enabled, false);
@@ -229,7 +232,7 @@ be started at boot time and what display manager should be used.</p>
 	    }
 
 	    y2milestone("ret=%1 ", ret);
-	} until (  ret ==`next || ret ==`back || ret == `abort);
+	} until (  ret ==`next || ret ==`back );
 
 
 	return ret;

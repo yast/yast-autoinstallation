@@ -80,6 +80,7 @@ Please wait while the system is being configured.
     y2debug("Module map: %1", Y2ModuleConfig::ModuleMap);
 
     y2milestone("Flat profile: %1", Profile::Flat);
+    
     foreach(`p,`d, Y2ModuleConfig::ModuleMap,
 	    ``{
 
@@ -93,6 +94,7 @@ Please wait while the system is being configured.
 	    {
 		resource = p;
 	    }
+	    
 	    y2milestone("current resource: %1", resource);
 
 	    // determine name of client, if not default name
@@ -102,8 +104,8 @@ Please wait while the system is being configured.
 		module_auto = sformat("%1_auto", p);
 
 	    map result = $[];
-	   
-
+	  
+	    
 	    if (haskey(Profile::Flat , resource) )
 	    {
 		y2milestone("Writing configuration for %1", p);
