@@ -349,7 +349,7 @@
 	    else if ( contains(menuitems,ret) )
 	    {
 		y2milestone("MENU: %1", ret);
-
+		boolean exit_after = false;
 		if (ret == `menu_reps)
 		{
 		    Wizard::RestoreHelp("");
@@ -372,7 +372,43 @@
 		    ret = cloneSystem();		    
 		    CreateTreeWidget();		    
 		}
-
+		else if (ret == `menu_exit) // EXIT
+		{
+		    if (Profile::changed)
+		    {
+			string current = "";
+			if (AIConfig::currentFile == "")
+			    current = "Untitled";
+			else
+			    current = AIConfig::currentFile;
+			
+			symbol answer = UI::AnyQuestionPopup3(_("Control file changed."),
+							      sformat(_("Do you want to save the changes to %1?"), current),
+							      _("&Yes"),
+							      _("&No"),
+							      _("&Cancel"),
+							      `focus_yes
+							      );
+			if (answer == `no)
+			{
+			    ret = `next;
+			}
+			else if (answer == `yes)
+			{
+			    ret = `menu_save;
+			    exit_after = true;
+			}
+			else
+			{
+			    continue;
+			}
+			
+		    }
+		    else
+		    {
+			ret = `next;
+		    }
+		}
 		
 		
 		if (ret == `menu_open) // OPEN
@@ -399,18 +435,26 @@
 		}
 		else if (ret == `menu_save) // SAVE
 		{
-		    if (AIConfig::currentFile == "") {
+		    if (AIConfig::currentFile == "")
+		    {
 			string filename = UI::AskForSaveFileName( AIConfig::Repository, "*", "Save file" );
-			if (filename!=nil) {
+			if (filename != nil)
+			{
 			    AIConfig::currentFile = filename;
 			  
 			}
+			else
+			{
+			    continue;
+			}
 		    }
-		  					    
+		    
 		    if ( Profile::Save( AIConfig::currentFile ))
 		    {
 			UI::MessagePopup(sformat(_("File %1 was saved successfully."), AIConfig::currentFile));
-			Profile::changed=false;			
+			Profile::changed = false;
+			if (exit_after)
+			    ret = `next;
 		    }
 		    else
 		    {
@@ -461,10 +505,7 @@
 		    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), "Untitled"));
 		    	
 		}		
-		else if (ret == `menu_exit) // EXIT
-		{
-		    ret = `next;
-		}
+		
 	    }
 
 	} until ( ret == `next || ret == `back ||   (ret == `abort && UI::ReallyAbortPopup (Profile::changed)));
