@@ -86,7 +86,7 @@
 	    if( ret == `configure )
 	    {
 		any seq = Call::Function(module_auto, ["Change", AIConfig::getResourceData(resourceMap ,resource)]);
-		
+		y2milestone("Change response: %1", seq);
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
 		    Profile::Flat[resource]  =  Call::Function(module_auto, ["Result",  AIConfig::getResourceData(resourceMap , resource) ]);

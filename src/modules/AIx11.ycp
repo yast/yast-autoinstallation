@@ -1,0 +1,57 @@
+
+
+{
+
+    module "AIx11";
+    textdomain "autoinst";
+    
+    import "Summary";
+
+    
+    global map x11 = $[];
+
+
+    global define boolean Import (map settings) ``{
+	x11 = settings;
+	y2milestone("Imported: %1", x11);
+	return true;
+    }
+
+
+    global define boolean Export () ``{
+	y2milestone("Exported: %1", x11);
+	return x11;
+    }
+    
+    global define string Summary() ``{
+	string summary = "";
+	
+	map m = x11["monitor"]:$[];
+	any    current_vendor = m["monitor_vendor"]:"";
+	string current_model  = m["monitor_device"]:"";
+
+	map   d   = m["display"]:$[];
+
+
+	string monitor =  Summary::NotConfigured();
+
+	if (size(current_vendor) > 0)
+	{
+	    monitor =  sformat("%1   %2", current_vendor, current_model);
+	}
+
+	string horizontal = sformat("%1 - %2",  d["min_hsync"]:0 , d["max_hsync"]:0);
+	string vertical = sformat("%1 - %2",  d["min_vsync"]:0 , d["max_vsync"]:0);
+
+	summary = Summary::AddHeader(summary, _("Monitor"));
+	summary = Summary::AddLine(summary, monitor);
+	summary = Summary::AddHeader(summary, _("Horizontal frequency"));
+	summary = Summary::AddLine(summary, horizontal);
+	summary = Summary::AddHeader(summary, _("Vertical frequency"));
+	summary = Summary::AddLine(summary, vertical);
+
+	return summary;
+    }
+
+
+}
