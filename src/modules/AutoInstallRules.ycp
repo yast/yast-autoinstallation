@@ -565,27 +565,44 @@
 			ismatch = true;
 			env[rule] = product;
 		    }
+                   else if ( rule == "disksize" )
+                    {
+                        list<string> disk = splitstring(match, " ");
 
-		    else if ( rule == "disksize" )
-		    {
-			// [ $["device":"/dev/hda", "size":"100000"] ]
-			list<string> disk = splitstring(match, " ");
+                        integer i = 0;
+                        string t  = "";
+                        if (shell!="")
+                            t  = shell + sformat(" %1 ( ", (op == "and") ? "&&" : "||" );
+                        else
+                            t  = shell + sformat(" ( ");
+                        foreach(map<string, any> dev, disksize, ``{
+                            string var1 = sformat("disksize_size%1", i );
+                            string var2 = sformat("disksize_device%1", i );
 
-			// ["/dev/hda", "1000"]
+                            if (matchtype == "exact")
+                            {
+                            t = t + sformat(" [ \"$%1\" = \"%2\" -a \"$%3\" = \"%4\" ] ", var1, disk[1]:"" , var2, disk[0]:"");
+                            }
+                            else if (matchtype == "greater")
+                            {
+                            t = t + sformat(" [ \"$%1\" -gt \"%2\"  -a \"$%3\" = \"%4\" ] ", var1, disk[1]:"" , var2, disk[0]:"");
+                            }
+                            else if (matchtype == "lower")
+                            {
+                            t = t + sformat(" [ \"$%1\" -lt \"%2\" -a \"$%3\" = \"%4\" ] ", var1, disk[1]:"" , var2, disk[0]:"");
+                            }
 
-			integer i = 0;
-			foreach(map<string, any> dev, disksize, ``{
-			    string var1 = sformat("disksize_size%1", i );
-			    string var2 = sformat("disksize_device%1", i );
-			    shellseg(ismatch , var1 , disk[1]:"" , op, matchtype);
-			    ismatch = true;
-			    shellseg(ismatch, var2 , disk[0]:"" , "and", "exact");
-			    env[var1] = dev["size"]:-1;
-			    env[var2] = dev["device"]:"";
-			    i = i + 1;
-			    op = "or";
-			});
-		    }
+                            env[var1] = dev["size"]:-1;
+                            env[var2] = dev["device"]:"";
+                            i = i + 1;
+                            if ( size(disksize) > i )
+                            {
+                                t = t + " || ";
+                            }
+                        });
+                        t = t + " ) ";
+                        shell = t;
+                    }
 		    else if ( rule == "result" )
 		    {
 			if ( verifyrules() == 0 )
