@@ -73,7 +73,7 @@ contains all the packages.</p>
 	Wizard::SetContents(_("Preferences"),
 			    contents, help , true, true);
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 	UI::ChangeWidget(`id(`next), `Label, Label::NextButton());
 
 	boolean changed = false;
@@ -261,7 +261,7 @@ must begin with letter, and must be
 
 	Wizard::SetContents(title,
 			    contents, HELPS["clone"]:"", true, true);
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 
 	UI::ChangeWidget(`id(`next), `Label, Label::CreateButton());
 	symbol ret = `none;
@@ -389,7 +389,7 @@ the configuration files are read and converted.
 	Wizard::SetContents(_("Hosts in Alice Repository"),
                 Alice::aliceHostList(), help, true, true);
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 	UI::ChangeWidget(`id(`next), `Label, _("&Import"));
 
 

@@ -202,10 +202,10 @@ and when it is merged when creating a control file.
 	Wizard::SetContents(title,
 			    class_dialog_contents() , help, true, true);
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 	any ret = nil;
 	repeat
 	    {
@@ -469,7 +469,7 @@ script is used.</P>
 	Wizard::SetContents(title,
 			    contents, help , true, true);
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 	list widgets = [ `merge, `empty, `current ];
 
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
@@ -597,7 +597,7 @@ file should belong.</p>
 	Wizard::SetContents(title,
 			    contents, help , true, true);
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
 

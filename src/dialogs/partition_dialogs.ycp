@@ -610,7 +610,7 @@ For more information, consult the documentation.
 	Wizard::CreateDialog();
 	string help_text = _("Help");
 	Wizard::SetContents( title, contents, help, true , true );
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 
 
 	if (size(partitions)>0)
@@ -728,7 +728,7 @@ Select or enter another device name.
 	Wizard::SetContents(_("Partition Plans"),
 			    contents , HELPS["drivedialog"]:"", true, true);
 
-	Wizard::ReplaceAbortButton(`Empty());
+	Wizard::HideAbortButton();
 
 	UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
