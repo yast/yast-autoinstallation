@@ -23,6 +23,7 @@
     // Relative location of extra package to suse directory
     global string extraPackageLocation = "";
 
+    // FIXME
     // Add non-SuSE package
     global boolean add_extraPackages = true;
 
@@ -39,6 +40,23 @@
     global define void AIClone()``{
 	Mode::normal = true;
 	return;
+    }
+
+
+    /**
+     * Set root password
+     */
+    
+    define root() ``{
+	list shadow = SCR::Read(.etc.shadow);
+	map rootacct = select(filter(map acct, shadow, ``(acct["username"]:"" == "root")), 0 , $[]);
+	list users = [];
+	map rootacct_mod = $[];
+	rootacct_mod["user_password"] = rootacct["password"]:"";
+	rootacct_mod["encrypted"] = true;
+	rootacct_mod["username"] = "root";
+	users = add(users, rootacct_mod);
+	return users;
     }
 
 
@@ -62,19 +80,22 @@
 
 
 
+
+    
+
     global define map Network() ``{
 	import "Lan";
 	import "Progress";
 
 	Progress::off();
 	Lan::Read();
-      
+
 	Progress::on();
 	map lan = Lan::Export();
 	return lan;
 
     }
-    
+
     /**
      * Create a partition plan for the calling client
      * @return list partition plan
@@ -82,28 +103,51 @@
     global define list Partitioning()``{
 	Mode::config = false;
 	import "Storage";
+	import "Partitions";
 	map StorageMap = eval(Storage::GetTargetMap());
 
 	StorageMap = Storage::GetFsysType(StorageMap);
-	y2milestone("mmm %1", StorageMap);
+	y2milestone("Storagemap %1", StorageMap);
 	list mounts = SCR::Read(.etc.fstab);
 
 	list drives = maplist(`k,`v, StorageMap, ``{
 	    bytes_per_unit = v["cyl_size"]:1;
-
-	    list p = maplist(`pe, v["partitions"]:[], ``{
+	    list partitions = [];
+	    list winp = [];
+	    list usepartitions = [];
+	    foreach(`pe, v["partitions"]:[], ``{
 		map new_pe = $[];
-		if (haskey(pe,"fsid")) {
+		boolean skipwin = false;
+		if (haskey(pe,"fsid"))
+		{
+		    integer fsid = pe["fsid"]:131;
+		    list wintypes = union(Partitions::fsid_wintypes, Partitions::fsid_dostypes);
+		    list allwin = union(wintypes, Partitions::fsid_ntfstypes);
+		    if (contains(allwin, fsid))
+		    {
+			y2milestone("Windows partitions found: %1", fsid );
+			winp = add(winp, pe["nr"]:0);
+			skipwin = true;
+		    }
+
 		    new_pe["partition_id"] = pe["fsid"]:131;
 		}
-		if (haskey(pe,"region")) {
+		if (haskey(pe,"region"))
+		{
 		    new_pe["region"] = pe["region"]:[];
 		    new_pe["size"] = sformat("%1", units_to_size(pe["region"]:[]));
 		}
-		if (haskey(pe,"used_fs")) {
+		if (haskey(pe,"used_fs"))
+		{
 		    new_pe["filesystem"] = pe["used_fs"]:`reiser;
 		}
-		if (haskey(pe,"nr")) {
+		if (haskey(pe,"nr"))
+		{
+		    if (!skipwin)
+		    {
+			y2milestone("Adding partition to be used: %1",  pe["nr"]:0);
+			usepartitions = add(usepartitions, pe["nr"]:0);
+		    }
 		    new_pe["partition_nr"] = pe["nr"]:0;
 		}
 		string mountPoint = findMountpoint(k, pe, mounts);
@@ -111,21 +155,40 @@
 		    new_pe["mount"] = mountPoint;
 		}
 
-		return (new_pe);
+		if (!skipwin) {
+		    partitions=add(partitions,new_pe);
+		}
 	    });
+
+
 	    map drive = $[];
-	    drive["partitions"]	= p;
+	    drive["partitions"]	= partitions;
 	    drive["device"]	= k;
-	    if (size(p) > 0 )
+
+	    if (size(partitions) > 0 )
 	    {
-		drive["use"]	= "all";
+		if (size(winp) == 0 )
+		{
+		    drive["use"]	= "all";
+		}
+		else
+		{
+		    list up = [];
+		    foreach(integer i, usepartitions, ``{
+			up=add(up,sformat("%1", i));
+		    });
+		    drive["use"]	= mergestring(up, ",");
+		}
 	    }
 
 	    return drive;
 	});
+
+
 	Mode::config = true;
 	return drives;
     }
+
     /**
      * Return list of software packages of calling client
      * @return list list of installed software package
@@ -133,7 +196,7 @@
 
     global define map Software()``{
 	import "Packages";
-	
+
 	boolean ret = Pkg::TargetInit("/", false);
 	list allInstalledPackages = Pkg::GetPackages(`installed, true);
 	y2debug("installed packages %1", allInstalledPackages);
@@ -141,7 +204,7 @@
 	map software = $[];
 	software["packages"] = allInstalledPackages;
 	software["base"] = "Minimal";
-	
+
 	return software;
     }
 
@@ -179,7 +242,7 @@
 	general["language"] = Misc::SysconfigRead(.sysconfig.language.DEFAULT_LANGUAGE, Language::language );
 	map keyboard = $[];
 	keyboard["keymap"]  = Misc::SysconfigRead(.sysconfig.keyboard.YAST2_KBD,  Keyboard::GetKeyboardForLanguage( Language::language, "en_US") );
-	
+
 	general["keyboard"] = keyboard;
 	map clock = $[];
 	clock["timezone"]   = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, Timezone::timezone );
@@ -210,9 +273,9 @@
 	else
 	{
 	    clock["hwclock"] = "";
-	}	
+	}
 	general["clock"]    = clock;
-	
+
 	map mouse = $[];
 	mouse["id"]	    = Misc::SysconfigRead(.sysconfig.mouse.YAST_MOUSE, "probe" );
 	general["mouse"]    = mouse;
@@ -226,7 +289,7 @@
 
 	import "Sound";
 	import "Joystick";
-	
+
 	Sound::Read(``{});
 	Joystick::Read(``{});
 
@@ -243,7 +306,7 @@
 
 	map printer = Printer::Export();
 	return printer;
-	    
+
     }
 
      define map Nis() ``{
@@ -254,8 +317,8 @@
 
 	map nis = Nis::Export();
 	return nis;
-	    
-    }   
+
+    }
 
 
      define map NfsServer() ``{
@@ -266,7 +329,7 @@
 
 	 map settings = NfsServer::Export();
 	 return settings;
-	    
+
      }
 
      define map Mail() ``{
@@ -277,9 +340,9 @@
 
 	 map settings = Mail::Export();
 	 return settings;
-	    
+
      }
-      
+
      define map NfsClient() ``{
 
 	 import "Nfs";
@@ -288,19 +351,18 @@
 
 	 map settings = Nfs::Export();
 	 return settings;
-	    
+
      }
 
- 
 
-      
+
+
     /**
      * Build the profile
      * @return map Profile
      */
     global define void constructProfile()
 	``{
-	
 	map Install = $[];
 	map Configure = $[];
 	Configure["networking"] = Network();
@@ -310,6 +372,8 @@
 	Configure["nfs_server"] = NfsServer();
 	Configure["nfs"] = NfsClient();
 	Configure["mail"] = Mail();
+	Configure["users"] = root();
+
 	
 	Install["partitioning"] = Partitioning();
 	Install["software"] = Software();
@@ -322,7 +386,7 @@
 
 
 
-    
+
 
 
     /**
