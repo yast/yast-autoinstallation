@@ -880,11 +880,27 @@ to contain a minimal installation.");
 	}
 	else if (mount_point == "/boot")
 	{
-	    part["fsid"] =  fsid_boot;
-	    if (fsid_boot == Partitions::fsid_fat16)
+	    if (currentPartition["partition_id"]:0 != 0)
 	    {
-		// for ia64, /boot is FAT16
-		boot_part["used_fs"]:`fat16;
+		part["fsid"] =  currentPartition["partition_id"]:0;
+	    }
+	    else
+	    {
+		part["fsid"] =  fsid_boot;
+	    }
+
+	    symbol tmpfs = StringFS2Symbol(currentPartition["filesystem"]:"none");
+	    if (tmpfs != `none)
+	    {
+		part["used_fs"] = tmpfs;
+	    }
+	    else
+	    {
+		if (fsid_boot == Partitions::fsid_fat32)
+		{
+		    // for ia64, /boot is FAT32
+		    part["used_fs"]:`fat32;
+		}
 	    }
 	}
 	else if (mount_point == "/")
