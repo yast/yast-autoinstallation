@@ -3,7 +3,7 @@
 <!ELEMENT alias (#PCDATA | alias | comment | destinations)*>
 <!ELEMENT aliases (alias+)>
 <!ATTLIST aliases
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "list"
 >
 <!ELEMENT connection_type (#PCDATA)>
 <!ATTLIST connection_type
@@ -15,7 +15,7 @@
 <!ELEMENT domains (#PCDATA)>
 <!ELEMENT fetchmail (fetchmail_entry+)>
 <!ATTLIST fetchmail
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "list"
 >
 <!ELEMENT fetchmail_entry (local_user, password, protocol, remote_user, server)>
 <!ELEMENT from_header (#PCDATA)>
@@ -25,22 +25,22 @@
 >
 <!ELEMENT local_domains (domains)>
 <!ATTLIST local_domains
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "list"
 >
 <!ELEMENT local_user (#PCDATA)>
 <!ELEMENT mail (aliases?, connection_type, fetchmail?, from_header?, listen_remote?, local_domains?, masquerade_other_domains?, masquerade_users?, mta, outgoing_mail_server?, use_amavis?, virtual_users?)>
-<!ELEMENT masquerade_other_domains (domain)>
+<!ELEMENT masquerade_other_domains (domain+)>
 <!ATTLIST masquerade_other_domains
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "list"
 >
 <!ELEMENT masquerade_user (address, comment, user)>
 <!ELEMENT masquerade_users (masquerade_user+)>
 <!ATTLIST masquerade_users
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "list"
 >
 <!ELEMENT mta (#PCDATA)>
 <!ATTLIST mta
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "symbol"
 >
 <!ELEMENT outgoing_mail_server (#PCDATA)>
 <!ELEMENT password (#PCDATA)>
@@ -49,11 +49,11 @@
 <!ELEMENT server (#PCDATA)>
 <!ELEMENT use_amavis (#PCDATA)>
 <!ATTLIST use_amavis
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "boolean"
 >
 <!-- <!ELEMENT user (#PCDATA)> -->
 <!ELEMENT virtual_user (alias, comment, destinations)>
 <!ELEMENT virtual_users (virtual_user+)>
 <!ATTLIST virtual_users
-	config:type CDATA #REQUIRED
+	config:type CDATA #FIXED "list"
 >
