@@ -9,8 +9,8 @@
     <para>
       There are two methods for booting the client. The computer can boot from
       its network interface card (NIC) to receive the boot images via  &dhcp; /TFTP
-      or a suitable kernel as well as an initrd image is loaded from a
-      floppy or a customized boot-able CDROM. 
+      or a suitable kernel as well as an initrd image are loaded from a
+      floppy or a bootable CDROM. 
     </para>
     <sect2>
       <title>
@@ -18,25 +18,24 @@
       </title>
       <para>
 	For testing/rescue purposes or because the NIC does not have a PROM or PXE
-	the user can build a boot floppy to use with AutoYaST2. Using a floppy
+	you can build a boot floppy to use with &autoyast2;. Using a floppy
 	to initiate an auto-install process is limited due to the size of the
-	data a floppy can contain. However, it is still  possible to use
+	data a floppy can hold. However, it is still  possible to use
 	floppies when auto-installing a single, disconnected machine.
       </para>
       <para>
 	Floppies can be used to store the control file, especially when using
-	the original  &company-suse;  CDROMs for a single, disconnected machine. Using the
-	kernel command line, the user can specify the location of the control
+	the original  &company-suse;  CD-ROMs for a single, disconnected machine. Using the
+	kernel command line, you can specify the location of the control
 	file on the floppy. (See <quote><link linkend='BootFromFloppy'
 	    endterm="BootFromFloppy.title"></link></quote>)
       </para>
       <para>
-	Even without the special command line option
-	<emphasis>autoyast</emphasis>, it is still possible to initiate the
+	Even without specifying any command line options, it is still possible to initiate the
 	auto-install process by placing a control file on a floppy with a
-	special name. (<filename>autoinst.xml</filename>) &yast2; will check for
+	special, pre-defined file name. (<filename>autoinst.xml</filename>) &yast2; will check for
 	<filename>autoinst.xml</filename> upon startup and if it was found it
-	changes from interactive to automated installation.
+	will switch from interactive to automated installation.
       </para>
     </sect2>
     <sect2>
@@ -48,8 +47,8 @@
 	suitable than booting from floppy. In order to use this boot method,
 	the client's NIC needs a boot PROM that is able to communicate with a
 	 &dhcp;  server to receive communication-related configuration parameters
-	such as network addresses and which is capable of communicating with a
-	TFTP-server to get a boot image.
+	such as network addresses and which additionaly is capable of communicating with a
+	TFTP-server to get the boot image.
       </para>
       <itemizedlist>
 	<listitem>
@@ -61,8 +60,8 @@
 	    <ulink url="http://etherboot.sourceforge.net/">Etherboot</ulink> and
 	    <ulink url="http://www.han.de/~gero/netboot.html">netboot</ulink>
 	    are capable of creating a PROM  binary (which must still be programmed onto a PROM) and a
-	    corresponding "tagged" TFTP boot image which includes a bzImage (and
-	    an optional initrd.gz). Some tools exist that help test a boot PROM
+	    corresponding "tagged" TFTP boot image which includes a kernel and
+	    an initial ramdisk. Some tools exist that help test a boot PROM
 	    image, in fact the support utilities are pretty much common to both
 	    etherboot and netboot. 
 	  </para>	
@@ -73,10 +72,15 @@
 	  </para>
 	  <para>	  
 	    Another alternative  to etherboot and netboot is to use a PXE-compliant
-	    boot PROM. See the   
-	    <ulink url="http://developer.intel.com/ial/WfM/wfmspecs.htm">Intel's
-	      PXE specification</ulink> for more information.
+	    boot PROM.  PXE (Pre-boot Execution Environment) is a protocol
+	    designed by Intel that allows computers to boot through the
+	    network. PXE is stored in the ROM of new generation network
+	    cards. When the computer boots up, the BIOS loads the PXE ROM in
+	    the memory and executes it. A menu is displayed, allowing the
+	    computer to boot an operating system loaded through the
+	    network.
 	  </para>
+	  
 	</listitem>
       </itemizedlist>
     </sect2>
@@ -87,12 +91,10 @@
       Invoking the Auto-Installation process
     </title>
     <para>
-      Adding the command line variable autoyast will automatically tell
-      linuxrc that the running installation should be automated. <command>
-	Linuxrc </command> will
-      then start in automated mode  and will search for a
-      control file (info). Linuxrc searches for the it's control file, which
-      should be distinguished from the machine profile in the following
+      Adding the command line variable <emphasis>autoyast</emphasis> will make
+      <emphasis>linuxrc</emphasis> started in automated mode.
+      <command>Linuxrc</command> searches for a configuration file, which
+      should be distinguished from the main control file in the following
       places:
     </para>
     <itemizedlist>
@@ -105,10 +107,10 @@
       </listitem>
     </itemizedlist>
     <para>
-      The control file for <command>linuxrc</command> can contain the following keywords:
+      The configuration file used by <command>linuxrc</command> can contain the following keywords:
     </para>   
     
-    <table frame='all'>
+    <table frame='top'>
       <title>Keywords for <command>linuxrc</command></title>
       <tgroup cols='2'>
 	<thead>
@@ -162,29 +164,31 @@
     </para>
 
     <para>
-      The traditional <filename>info</filename> file should be used only in the
-      preparation phase and has the function of giving the client enough information to be able to
-      mount the  installation system. In most cases this file is not needed. Normally, the
-      <filename>info</filename> file is needed in special networking
-      environments where  &dhcp; / &bootp;  are not used or when special kernel modules
-      have to be loaded.      
+      The traditional <command>linuxrc</command> configuration file
+      (<filename>info</filename>) file 
+      should be used only in the  preparation phase and has the function of
+      giving the client enough information about the installation server and
+      the location of the sources. In most cases this file is not needed. It is however
+      needed in special network  environments where  &dhcp; / &bootp;  are not
+      used or when special kernel modules  have to be loaded.      
     </para>
     <para>
-      An alternative to supplying the mentioned keywords in the control file is
-      to pass them to <command>linuxrc</command> using the kernel command
-      line. All keys/variables combinations can now be passed this way. The
+      An alternative to supplying the mentioned keywords in the
+      <emphasis>info</emphasis> configuration file is
+      to pass these keywords to <command>linuxrc</command> using the kernel command
+      line. All keys/variables combinations can now be passed using this way. The
       command line can  for example also be set when creating network bootable
       images or it can be passed to the kernel using a specially configured
-       &dhcp;  server in combination with Etherboot or PXE.
+       &dhcp;  server in combination with Etherboot or &pxe;.
     </para>
     <para>	
       The format of the special  command line variable
-      <emphasis>autoyast</emphasis> can be used as seen in the
-      following table:	
+      <emphasis>autoyast</emphasis> can be used as illustrated in table  <quote><link
+	linkend="commandLineAutoYaST" endterm="commandLineAutoYaST.title"></link></quote>
     </para>
     
-    <table frame='all'>
-      <title>Command line variables for AutoYaST</title>
+    <table frame='top' id="commandLineAutoYaST">
+      <title id="commandLineAutoYaST.title">Command line variables for AutoYaST</title>
       <tgroup cols='2'>
 	<thead>	  
 	  <row>
@@ -213,7 +217,7 @@
     <para>
       Several scenarios for auto-installation are possible using different
       types of infrastructure and source media. The simplest way is by using
-      the source media from the  &company-suse;  Box. In this case the user has
+      the source media from the  &company-suse;  Box. In that case you have
       either a DVD with all  &company-suse;  packages or a set of CDs. To initiate the
       auto-installation process however, the auto-installation command line
       variable should be entered at system bootup and the control file should
@@ -227,7 +231,7 @@
 	  Using  &company-suse;  original CDs from  &company-suse;  Linux box:
 	</para>
 	<para>
-	  To use the original CDs, the user needs a media with the control
+	  To use the original CDs, you need a media with the control
 	  file, the control file can reside on the following locations:
 	</para>
 	<orderedlist>
@@ -251,18 +255,7 @@
 	      <emphasis>autoyast=tftp://..</emphasis> options.
 	    </para>
 	  </listitem>
-	  <!--
-	  <listitem>
-	    <para>
-	      <emphasis>Harddisk</emphasis>: Control file accessible via the
-	      <emphasis>autoyast=hd</emphasis> option. However, This option
-	      is unlikely to be usefull, unless the harddisk was
-	      partitioned and prepared for this task (In the case of auto-installation
-	      from harddisk).
-	    </para>
-	  </listitem>
--->
-
+	 
 	</orderedlist>	  
       </listitem>
       <listitem>
@@ -270,7 +263,7 @@
 	  Using 'self-made' CDs:
 	</para>
 	<para>
-	  In this case, the user can include the control file on the CD-ROM
+	  In this case, you can include the control file on the CD-ROM
 	  for easy access (using the <emphasis>autoyast=file://</emphasis>
 	  option) or use one of the above mentioned methods used with the 
 	  original  &company-suse;  CDs.
@@ -301,53 +294,10 @@
 	      <emphasis>autoyast=tftp://..</emphasis> options.
 	    </para>
 	  </listitem>
-	  <!--
-	  <listitem>
-	    <para>
-	      <emphasis>Harddisk</emphasis>: Control file accessible via the
-	      <emphasis>autoyast=hd</emphasis> option. However, This option
-	      is unlikely to be usefull, unless the harddisk was
-	      partitioned and prepared for this task (In the case of auto-installation
-	      from harddisk).
-	    </para>
-	  </listitem>
--->
+
 	</orderedlist>	  	 
       </listitem>
-<!--
-      <listitem>
-	<para>
-	  Using hard disk as source medium and Floppy, Network or CD-ROm for
-	  system bootup.
-	</para>
-	<para>
-	  Using this option is required when for  example doing OEM
-	  installations. The  &company-suse;  CDs are copied into a harddisk
-	  with the necessary configuration files to allow system
-	  auto-installtion upon system start.
-	</para>
-	<orderedlist>
-	  <listitem>
-	    <para>
-	      <emphasis>Floppy</emphasis>: Control file accessible via the
-	      <emphasis>autoyast=floppy://..</emphasis> option.
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      <emphasis>Network</emphasis>: Control file accessible via the
-	      <emphasis>autoyast=http://..</emphasis>,
-	      <emphasis>autoyast=nfs://..</emphasis> or
-	      <emphasis>autoyast=tftp://..</emphasis> options.
-	    </para>
-	  </listitem>	   
-	</orderedlist>	  	 
-	<para> 
-	  Otherwise, the control file is found using the
-	  <emphasis>autoyast=file://..</emphasis> option.
-	</para>
-      </listitem>
--->
+
     </itemizedlist>
     
     <sect2>
@@ -388,7 +338,7 @@
 	Control file on boot media 
       </title>
       <para>
-	The user should be able to
+	You should be able to
 	define the location of the control file using the file option which
 	indicates where the control file is located. Depending on the used
 	boot method, &yast2; will look for the control file using the
@@ -438,7 +388,7 @@
       </title>
       <para>
 	To use TFTP set the boot command line variable <emphasis>autoyast</emphasis>
-	with control file location  as described in table 4. <!-- TODO --> It is
+	with control file location using the tftp protocol.  It is
 	possible to specify the location of the control file using the following
 	methods:
       </para>

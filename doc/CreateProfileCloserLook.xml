@@ -1,5 +1,9 @@
 <sect1  id="CreateProfile.CloserLook">
   <title>Closer look on control file resources</title>
+  <para>
+    This section features the most important parts of a control file for
+standard purposes. 
+  </para>
     <sect2 id="CreateProfile.General">
       <title>
 	General Options
@@ -18,6 +22,11 @@
 	after initial system setup and before the system is booted for the
 	first time.
       </para>
+    <para>
+      Use the <emphasis>encryption_method</emphasis> property to setup the
+	encryption method you want to use on the target system. If not
+	set,<emphasis>DES</emphasis> is configured.
+      </para>
       <para>
 	<emphasis>DES</emphasis>, the Linux default method, works in all
 	network environments, but it restricts you to passwords no longer than
@@ -25,16 +34,6 @@
 	thus provides more security, but some network protocols don't support
 	this, and you may have problems with NIS.
       </para>
-      <para>
-	Use the <emphasis>encryption_method</emphasis> property to setup the
-	encryption method you want to use on the target system. If not
-	set,<emphasis>DES</emphasis> is configured.
-      </para>
-    </sect2>
-    <sect2 id="CreateProfile.Reporting">
-      <title id="CreateProfile.Reporting.title">
-	Reporting
-      </title>
       <para>
 	By default, the auto-installation process has to be confirmed by the
 	user. The confirmation should be disabled if a full unattended
@@ -44,6 +43,13 @@
 	to avoid recursive installs when the system has to reboot after
 	changing the kernel or if  a reboot was requested.
       </para>
+   
+    </sect2>
+    <sect2 id="CreateProfile.Reporting">
+      <title id="CreateProfile.Reporting.title">
+	Reporting
+      </title>
+    
 
     &example.reporting;
       <para>
@@ -74,14 +80,14 @@
 	some places but should not be ignored.
       </para>
       <para>
-	The default setting in
-	auto-installation mode is to show all messages without logging and
+	The default setting in	auto-installation mode is to show all messages without logging and
 	with a timeout of 10 seconds.
       </para>
 
-    <note><title>Critical system messages</title>
-
-
+    <note>
+      <title>
+	Critical system messages
+      </title>
       <para>
 	Note that not all messages during installation are controlled by the
       <emphasis>report</emphasis> resource. Some critical messages concerning
@@ -171,8 +177,8 @@
 	  </listitem>
 	</itemizedlist>
 	<para>
-	  Depending on the initial status of the drive and how it was partitioned
-	  before, it is possible to create the <emphasis>default</emphasis>
+	  Depending on the initial status of the drive and how it was
+	previously partitioned, it is possible to create the <emphasis>default</emphasis>
 	  partitioning in the following ways:
 	</para>
 	<itemizedlist>
@@ -246,8 +252,40 @@
 	To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
 	  normal partitioning method described above. 
 	</para>
-      &example.lvm;
+   	<example>
+	  <title>
+	    Create LVM Physical Volume
+	  </title>
+<para>
+The following example show
+	  how to prepare for LVM in the <emphasis>partitioning</emphasis> directive:
+</para>
+	  <screen>
+<![CDATA[
+....
+<partitioning config:type="list">
+     <drive>
+         <device>/dev/sda</device>         
+         <use>all</use>
+         <partitions config:type="list">
+            <partition>
+               <size>auto</size>
+               <lvm_group>system</lvm_group>
+            </partition>
+         </partitions>
+     </drive>
+</partitioning>
+.....
+]]>
+	  </screen>
 
+	</example>
+	<para>
+	  The last example will create a non-formatted partition on device
+	  <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
+	  with the volume group <emphasis>system</emphasis>. The partition
+	  created  will use all available space on this drive.
+	</para>
 	<para>
 	  The logical volumes should be defined in the <emphasis>lvm</emphasis>
 	  resource. Currently it is not possible to configure LVM using the configuration system, instead it is required to
@@ -292,10 +330,6 @@
 	  </screen>
 	</example>
       </sect3>
-
-
-
-
     </sect2>
 
 
@@ -321,12 +355,12 @@
 	  <listitem>
 	    <para>
 	      Custom package selection, i.e. package selection of an existing
-	      system using <emphasis>SITAR</emphasis> or similar tools.
+	    system using the <command>rpm</command> command or similar tools.
 	    </para>
 	  </listitem>
 	  <listitem>
 	    <para>
-	      Additional local packages, i.e. custom packages (non  &company-suse;  packages) 
+	      Additional local packages, i.e. external packages (non  &company-suse;  packages) 
 	      and packages for initial system setup and configuration.
 	    </para>
 	  </listitem>
@@ -345,8 +379,8 @@
       <note>	
 	<para>Selections might vary depending on the installed product.</para>
       </note>
-	<table frame='all' id="StandardSL">
-	  <title id="StandardSL.title">Standard Software Selections</title>
+	<table frame='top' id="StandardSL">
+	  <title id="StandardSL.title">Software selections</title>
 	  <tgroup cols='4'>
 	    <thead>
 	      <row>
@@ -356,8 +390,6 @@
 		<entry>Description</entry>	      
 	      </row>
 	    </thead>
-
-
 	    <tbody>
 
 	      <row>
@@ -392,12 +424,7 @@
 		<entry>Default system with Office</entry>
 	      </row>
 	    
-	      <row>
-		<entry>Games</entry>
-		<entry>Games</entry>
-		<entry>Add-on</entry>
-		<entry>Games</entry>
-	      </row>
+
 
 	      <row>
 		<entry>Gnome</entry>
@@ -435,12 +462,6 @@
 		<entry>Help & Support Documentation</entry>
 	      </row>
 
-	      <row>
-		<entry>All</entry>
-		<entry>zzz_Alles</entry>
-		<entry>Base</entry>
-		<entry>Everything</entry>
-	      </row>
 
 	    </tbody>
 	  </tgroup>
@@ -451,7 +472,7 @@
 	  Custom Package Selections
 	</title>
 	<para>	
-	  Beside the pre-defined selections, you can create custom selections
+	  In addition to the pre-defined selections, you can create custom selections
 	  by providing  a customized selection file in the selection
 	  directory. The selection files have a special format and any
 	  additional selection file must conform to this format, otherwise
@@ -478,14 +499,41 @@
 	  kernel packages must be compatible to the  &company-suse;  packages and must
 	  install the kernel files to the same locations.
 	</para>
-      &example.customSoftware2;
-
+     
+	<example>
+	  <title>
+	    Additional packages not delivered with  &company-suse; 
+	  </title>
+	  <screen>
+<![CDATA[
+....
+<software>
+    <extra_packages>
+         <package_location>
+            custom
+         </package_location>
+         <packages  config:type="list">
+            <package>atftp</package>
+         </packages>
+    </extra_packages>
+    <base>Minimal+X11</base>
+</software>
+....
+]]>
+	  </screen>
+	</example>
+	<para>
+	  Using the last example, packages in <emphasis>Minimal+X11</emphasis>
+	  will be installed in addition to some external, user defined packages
+	  which will be available in the directory <filename>custom</filename>.
+	  </para>
+      <note>
 	<para>
 	  The directory <filename>custom</filename> must reside under the
 	  <filename>suse</filename> tree.
 
 	</para>
-
+	</note>
       </sect3>
   </sect2>
 
@@ -515,7 +563,35 @@
 	Please specify the runlevels a service should run in using a space
 	delimited list of the runlevels as shown in the following example.
       </para>
-    &example.runlevels;
+         <example>
+	<title>
+	  Run-level Configuration
+	</title>
+	<screen>
+<![CDATA[
+<configure>
+....
+  <runlevels>
+   <default>3</default>
+   <services config:type="list" >
+   
+    <service>
+     <service_name>at</service_name>
+     <service_start>3 5</service_start>
+     <service_stop>2 3 5</service_stop>
+    </service>
+    <service>
+     <service_name>portmap</service_name>
+     <service_start>3 5</service_start>
+     <service_stop>2 3 5</service_stop>
+    </service>
+   </services>
+  </runlevels>
+....
+</configure>
+]]>
+	</screen>
+      </example>
       
     </sect2>
     <sect2 id="CreateProfile.Network">
@@ -527,17 +603,16 @@
 	<title>
 	  Network devices, DNS and Routing.
 	</title>
-	<para>
-	  "Network configuration is used to connect a single  &company-suse;  Linux
+      <para>
+	Network configuration is used to connect a single  &company-suse;  Linux
 	  workstation to an Ethernet-based LAN or to configure dial-up
 	  connection. More complex configuration (multiple network cards,
 	  routing, etc.) is now also provided. With this module it's possible to
-	  configure (set-up) Ethernet Controllers, Token-Ring Controllers, ISDN
-	  and modem. (Currently only LAN configuration is possible).
+	  configure (set-up) Ethernet Controllers and Token-Ring Controllers.
 	</para>
 	<para>
 	  To configure network settings and activate networking automatically,
-	  one global map is  used to store the whole network configuration.
+	  one global resource is  used to store the whole network configuration.
 	</para>
       &example.network;
       </sect3>
@@ -553,26 +628,26 @@
 	by using the <emphasis>list</emphasis> attribute (config:type="list").
       </para>
       &example.nis;
-      </sect3>
-      <sect3 id='Configuration.Network.NISplus'>
-	<title>
-	  NIS+
-	</title>
-	<para>
-	  If you activate NIS+, the data of the
-	  NIS+ Server will be added to <filename>/etc/hosts</filename>. Keyserv and the NIS+ cache manager
-	  will be started and the NSS and PAM configuration will be modified to use
-	  NIS+ and set the Secret Key of a user.
-	</para>
+    </sect3>
+    <sect3 id='Configuration.Network.NISplus'>
+      <title>
+	NIS+
+      </title>
+      <para>
+	If you activate NIS+, the data of the
+	NIS+ Server will be added to <filename>/etc/hosts</filename>. Keyserv and the NIS+ cache manager
+	will be started and the NSS and PAM configuration will be modified to use
+	NIS+ and set the Secret Key of a user.
+      </para>
       &example.nisplus;
-      </sect3>
-      <sect3 id="Configuration.Network.LDAP">
-	<title>
-	   &ldap;  client
-	</title>
-	<para>
-	  The installed machine can be set up as
-	  <emphasis>> &ldap;  client</emphasis> to authenticate  users with an
+    </sect3>
+    <sect3 id="Configuration.Network.LDAP">
+      <title>
+	&ldap;  client
+      </title>
+      <para>
+	The installed machine can be set up as
+	<emphasis>> &ldap;  client</emphasis> to authenticate  users with an
 	  Open &ldap;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
 	  and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
 	</para>
@@ -616,7 +691,7 @@
 	Using the features of this module, you will be able to change the local
 	security settings on the target system.	The local security settings
 	include the boot configuration, login settings, password settings, some
-	user creation settings, and file permissions.
+	user addition settings, and file permissions.
       </para>
       <para>
 	Configuring the security settings automatically corrosponds to the
@@ -678,7 +753,7 @@
       <para>
 	All  but the pre-install scripts can be written in either shell or
 	perl script language. When added to the control file manually, the
-	scripts have to be included in a CDATA element to avoid confusion with
+      scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
 	the file syntax and other tags defined in the file.
       </para>
     
@@ -704,50 +779,21 @@
     <sect2>
       <title>System variable (Sysconfig)</title>
       <para>
-	Rather than use a pre-defined module to set the system configuration
-	values in <filename>/etc/sysconfig</filename> (in 7.3 and earlier
-	<filename>/etc/rc.config</filename>), you can configure these variables
-	directly using the <filename>sysconfig</filename> resource.
+      Using the sysconfig resource, you will be able to define configuration
+      variables in the sysconfig repository
+      (<filename>/etc/sysconfig</filename>) directly. Using the sysconfig
+      variables, you will beable to fine-tune many system components and
+      environment variables exactly to your needs.
       </para>
-      <para>
-	The following is an example of the file that can be changed using the
-	sysconfig resource in the control file. A complete installation can
-	have more than those listed below. Some detailed configuration files
-	can be also found in subdirectories, i.e. the <emphasis>network</emphasis> configuration
-	files.
-      </para>
-      <example>
-	<title>Example of sysconfig files</title>
-	<para>
-	  <itemizedlist>
-	  <listitem><para>....</para></listitem>
-	  <listitem><para>language</para></listitem>
-	  <listitem><para>lvm</para></listitem>
-	  <listitem><para>mail</para></listitem>
-	  <listitem><para>mouse</para></listitem>
-	  <listitem><para>network</para></listitem>
-	  <listitem><para>news</para></listitem>
-	  <listitem><para>nfs-server</para></listitem>
-	  <listitem><para>onlineupdate</para></listitem>
-	  <listitem><para>printer</para></listitem>
-	  <listitem><para>proxy</para></listitem>
-	  <listitem><para>security</para></listitem>
-	  <listitem><para>sendmail</para></listitem>
-	  <listitem><para>sound</para></listitem>
-	  <listitem><para>ssh</para></listitem>
-	  <listitem><para>suseconfig</para></listitem>
-	  <listitem><para>susehelp</para></listitem>
-	  <listitem><para>....</para></listitem>
-	 
-	    
-	  </itemizedlist>
-	</para>
-      </example>
-      <para>
+        
+    <para>
 	Please consult the handbook for more details about the many
-	configuration options in the list files and other files that might be
-	installed with other packages.</para>
-    
+	configuration options available in <filename>/etc/sysconfig</filename>
+    </para>
+    <para>
+      The following example show how a variable can be set using the sysconfig
+      resource.
+      </para>
     &example.sysconfig;
     </sect2>
     
@@ -755,16 +801,16 @@
     <sect2>
       <title>Adding complete configurations</title>
       <para>
-	For many applications adn services you might have prepared a
+	For many applications and services you might have prepared a
 	configuration file which should be copied in a complete form to some
 	location in the installed system. This is for example if you are
 	installing  a web server and have a <emphasis>ready to go</emphasis>
-	configuration file <filename>httpd.conf</filename>.
+	server configuration file (<filename>httpd.conf</filename>).
       </para>
       <para>
 	Using this resource, you can embbed the file into the control file by
 	specifying the final path on the installed system. &yast2; will copy this
-	file for you on the specified location.
+	file to the specified location.
       </para>
     &example.files;
     </sect2>
