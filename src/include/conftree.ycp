@@ -90,7 +90,7 @@
 
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
 
-	string module_auto = resourceMap["X-SuSE-YaST-AutoinstClient"]:"none";
+	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
 
 	// Import Data
 	Call::Function(module_auto, ["Import", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
@@ -109,8 +109,8 @@
 
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
-		    string tomerge = resourceMap["X-SuSE-YaST-AutoinstMerge"]:"";
-		    string tomergetypes = resourceMap["X-SuSE-YaST-AutoinstMergeTypes"]:"";
+		    string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
+		    string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
 		    list MergeTypes = splitstring(tomergetypes, ",");
 		    if (size(tomerge) > 0 )
 		    {
@@ -139,8 +139,8 @@
 	    }
 	    else if( ret == `reset)
 	    {
-		string tomerge = resourceMap["X-SuSE-YaST-AutoinstMerge"]:"";
-		string tomergetypes = resourceMap["X-SuSE-YaST-AutoinstMergeTypes"]:"";
+		string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
+		string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
 		list MergeTypes = splitstring(tomergetypes, ",");
 		if (size(tomerge) > 0 )
 		{

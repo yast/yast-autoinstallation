@@ -324,12 +324,12 @@
      define boolean CommonClone(string resource, map resourceMap) ``{
 
 
-	 string data_type = resourceMap["X-SuSE-YaST-AutoinstDataType"]:"map";
-	 string tomerge = resourceMap["X-SuSE-YaST-AutoinstMerge"]:"";
-	 string tomergetypes = resourceMap["X-SuSE-YaST-AutoinstMergeTypes"]:"";
+	 string data_type = resourceMap["X-SuSE-YaST-AutoInstDataType"]:"map";
+	 string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
+	 string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
 
 	 string auto = sformat("%1_auto", resource);
-	 resource = resourceMap["X-SuSE-YaST-AutoinstResource"]:resource;
+	 resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:resource;
 
 	 boolean readret = false;
 
@@ -389,7 +389,7 @@
 	     if (clonable)
 	     {
 		 // Set resource name, if not using default value
-		 string resource = resourceMap["X-SuSE-YaST-AutoinstResource"]:"";
+		 string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
 		 string name = resourceMap["Name"]:"";
 		 if (resource != "")
 		 {
@@ -417,7 +417,7 @@
 	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
 	    
 	    // Set resource name, if not using default value
-	    string resource = resourceMap["X-SuSE-YaST-AutoinstResource"]:def_resource;
+	    string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:def_resource;
 	    y2milestone("current resource: %1", resource);
 	    if (contains(additional, resource))
 	    {
