@@ -240,7 +240,29 @@
 	      a parition which is 1.5 GB big.</para>
 	  </formalpara>
 	  &example.partitioning;
+
+	
 	</sect3>
+
+	<sect3>
+	  <title>Advanced Partitioning features</title>
+	  <para>
+	    By default, &autoyast2; will create an extended partition and adds all
+	    new partitions as logical devices. It is possible however to
+	    instruct &autoyast2; to create a certain partition as a primary
+	    partition or as extended partition. Additionally, it is possible to
+	    specify the size of  a partition using sectors rather than size in Mbytes.
+	  </para>
+	  <para>
+	    The properties <emphasis>partition_id</emphasis> and
+	    <emphasis>partition_type</emphasis> control such behaviour. To
+	    specify the size in sectors, the list resource
+	    <emphasis>region</emphasis> should be used:
+	  </para>
+	  &example.advancedPartitioning;
+
+	</sect3>
+
 	<sect3>
 	  <title>
 	    Logical Volume Manager (LVM)
@@ -306,8 +328,8 @@
       <logical_volumes config:type="list">
         <lv>
            <lv_name>usrlv</lv_name>
-	      <lv_size>500mb</lv_size>
-	      <lv_fs>reiser</lv_fs>
+              <lv_size>500mb</lv_size>
+              <lv_fs>reiser</lv_fs>
               <lv_mount>/usr</lv_mount>
            </lv>
            <lv>
@@ -388,7 +410,7 @@
         <device>/dev/hdc</device>
         <partitions config:type="list">
           <partition>
-            <filesystem_id config:type="integer">253</filesystem_id>
+            <partition_id config:type="integer">253</partition_id>
             <format config:type="boolean">false</format>
             <raid_name>/dev/md0</raid_name>
             <size>4gb</size>            
@@ -404,7 +426,7 @@
         <use>all</use>
         <partitions config:type="list">
           <partition>
-             <filesystem_id config:type="integer">253</filesystem_id>
+             <partition_id config:type="integer">253</partition_id>
              <format config:type="boolean">false</format>
              <raid_name>/dev/md0</raid_name>
              <raid_type>raid</raid_type>
@@ -416,9 +438,9 @@
 
    <raid config:type="list">
        <device>
-          <raid_device config:type="integer">/dev/md0</raid_device>
+          <raid_device>/dev/md0</raid_device>
           <parity_algorithm>left-asymmetric</parity_algorithm>
-          <persistent_superblock>true</persistent_superblock>
+          <persistent_superblock  config:type="boolean">true</persistent_superblock>
           <raid_type>raid1</raid_type>
           <filesystem_id config:type="integer">131</filesystem_id>
           <chunk_size>4</chunk_size>
@@ -480,6 +502,21 @@
 	    CD-ROM in the directory <filename>suse/setup/decr</filename>. You
 	    can install one base selection and additionaly one or multiple 
 	    add-on selections.
+	  </para>
+	  <para>
+	    When installing from a CDROM, needed packages from other CDROMs
+	    than the first are installed after the initial booting of the
+	    system in the so-called <emphasis>continue</emphasis> mode. If you
+	    are installing packages from multiple CDROMs, then
+	    auto-installation has to be interrupted for switching the
+	    CDROMs. In the case of NFS installation, all packages are
+	    installed at first stage of the installation if the NFS repostiry
+	    is configured as a one medium.
+	  </para>
+	  <para>
+	    It is often required, that a package is installed in the
+	    <emphasis>continue</emphasis> mode, especially custom packages
+	    which may contain scripts for configuring the system.
 	  </para>
 
 	</sect3>
