@@ -628,6 +628,7 @@
 
 	map Software = Install["software"]:$[];
 	list addons = Software["addons"]:[];
+	Kernel = Software["kernel"]:"";
 
 	string  base_selection = Software["base"]:"Minimal";
 	if (! Pkg::SetSelection( base_selection ))
@@ -968,13 +969,10 @@
 	if ( !contains(registered_list, path_path))
 	{
 	    y2debug("Registering %1", path_path);
-	    string tmp = SCR::Read(.target.tmpdir);
-	    if (tmp == nil || tmp == "") tmp = "/tmp";
-
+	    string tmp = SCR::Read(.target.tmpdir);	    
 	    tmp = tmp + "/_" + path_string + ".scr";
 
 	    string scrfile = path_string + "\n" + "`ag_ini( SysConfigFile(\"" + path_slash + "\"))\n";
-
 
 	    SCR::Write (.target.string, tmp, scrfile);
 	    SCR::RegisterAgent(path_path, tmp);

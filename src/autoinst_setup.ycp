@@ -37,7 +37,7 @@ Please wait while the system is prepared for autoinstallation.
 	 _("Configure Mouse"),
 	 _("Execute pre-install user scripts"),
 	 _("Create partition plans"),
-	 _("Configure Bootloader"),	 
+	 _("Configure Bootloader"),
 	 _("Configure Software selections")
 	 ];
 
@@ -48,8 +48,8 @@ Please wait while the system is prepared for autoinstallation.
 	 _("Configuring Mouse..."),
 	 _("Executing pre-install user scripts..."),
 	 _("Creating partition plans..."),
-	 _("Configuring Bootloader..."),	 
-	 _("Configuring Software selections...")
+	 _("Configuring Software selections..."),
+	 _("Configuring Bootloader...")
 	 ];
 
     Progress::New(
@@ -60,7 +60,7 @@ Please wait while the system is prepared for autoinstallation.
 		  progress_descriptions,
 		  help_text );
 
-    
+
     Progress::NextStage();
     // Additional Kernel modules
     ///////////////////////////////////////////////////////////////////////
@@ -154,13 +154,6 @@ Please wait while the system is prepared for autoinstallation.
     Progress::NextStage();
     AutoInstall::partitionSettings();
 
-    // Bootloader
-    /////////////////////////////////////////////////////////////////////////
-
-    Progress::NextStage();
-    AutoInstall::bootloaderSettings();
-
- 
     // Software
     //////////////////////////////////////////////////////////////////////////
     Progress::NextStage();
@@ -170,6 +163,12 @@ Please wait while the system is prepared for autoinstallation.
 Please try again!"));
 	return `abort;
     }
+
+    // Bootloader
+    /////////////////////////////////////////////////////////////////////////
+
+    Progress::NextStage();
+    AutoInstall::bootloaderSettings();
 
     Progress::Finish();
 

@@ -88,8 +88,7 @@
 			       )
 	``{
 	string tmpdir = SCR::Read( .target.tmpdir );
-
-	string MergeCommand = "/usr/bin/xsltproc --param replace \"'false'\" --param dontmerge \"'addon'\" --param dontmerge \"'package'\" --param with ";
+	string MergeCommand = "/usr/bin/xsltproc --param replace \"'false'\" --param dontmerge \"'addon'\" --param with ";	
 	MergeCommand = MergeCommand + "\"'" + findPath(configuration["name"]:"") + "'\"  ";
 	MergeCommand = MergeCommand + "--output " +  tmpdir + "/" + resultFileName + " ";
 	MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
