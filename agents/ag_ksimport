@@ -41,9 +41,10 @@ while ( <STDIN> )
 	my $inpackages = 0;
 	my $openedPost = 0;
 	my $openedPre = 0;
-	
+	my $counter = 0;
 	while (<KS>) {
 	   
+		
 	    if (!$inpre && !$inpost) {
 		chop;	
 	    } 
@@ -159,6 +160,7 @@ while ( <STDIN> )
 	    }
 
 	    elsif (m/^part.*/) {
+		$counter++;    
 		my $part = $_;	
 		
 		@ARGV = split(/ / , $part);	
@@ -179,7 +181,8 @@ while ( <STDIN> )
 			    'bytes-per-inode=i'
 
 			    );
-		$partitioning{$ARGV[1]} = \%h;
+		
+		$partitioning{$ARGV[1] . "_" . $counter} = \%h;
 	    }
 	    elsif (m/^raid\s.*/) 
 	    {
@@ -188,12 +191,13 @@ while ( <STDIN> )
 		@ARGV = split(/ / , $input);
 		my %h = ();
 		GetOptions (\%h,
-			    'level=s', 'device=s',
-			    'spares=s', 'fstype=s',
+			    'level=i', 'device=s',
+			    'spares=i', 'fstype=s',
 			    'noformat'
 			    );
 	
 		$raid{$ARGV[1]} = \%h;
+
 	    }
 	    elsif (m/^rootpw.*/) {
 		my $rootpw = $_;
@@ -372,7 +376,6 @@ while ( <STDIN> )
 		
 		$result{'xconfig'} = \%h;
 	    }	    
-	    
 	}
 	$result{'partitioning'} = \%partitioning;
 	$result{'raid'} = \%raid;
