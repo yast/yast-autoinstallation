@@ -1,4 +1,7 @@
-<sect1  id="CreateProfile.CloserLook">
+<chapter>
+<title>Configuration and Installation Options</title>
+
+<sect1  id="CreateProfile.Closerlook">
   <title>Closer look on control file resources</title>
   <para>
     This section features the most important parts of a control file for
@@ -678,6 +681,9 @@
       &example.mail;
     </sect3>
   </sect2>
+
+
+
   <sect2 id="CreateProfile.Security">
     <title>
       Security settings
@@ -694,24 +700,58 @@
       <emphasis>Custom Settings</emphasis> in the security module available in
       the running system which lets you create your own, customized
       configuration.
-    </para>           
-    <simplesec>
-    <title>Authentication</title><!-- TODO -->
-    <para>
-      Use the <emphasis>encryption</emphasis> property to setup the
-      encryption method you want to use on the target system. If not
-      set,<emphasis>DES</emphasis> is configured.
-    </para>
-    <para>
-      <emphasis>DES</emphasis>, the Linux default method, works in all
-      network environments, but it restricts you to passwords no longer than
-      eight characters. <emphasis>MD5</emphasis> allows longer passwords,
-      thus provides more security, but some network protocols don't support
-      this, and you may have problems with NIS.
-    </para>
-    </simplesec>
-
+    </para>      
+     
     &example.security;
+    <simplesect>
+      <title>Password Settings Options</title>
+      <para>
+	Change various password settings. These settings are mainly stored in the <filename>/etc/login.defs</filename> file.
+      </para>
+      <para>
+	Use this resource to activate one of  the <emphasis>encryption</emphasis> methods currently supported.
+	If notset, <emphasis>DES</emphasis> is configured.
+      </para>
+      <para>
+	<emphasis>DES</emphasis>, the Linux default method, works in all
+	network environments, but it restricts you to passwords no longer than
+	eight characters. <emphasis>MD5</emphasis> allows longer passwords,
+	thus provides more security, but some network protocols don't support
+	this, and you may have problems with NIS. <emphasis>Blowfish</emphasis>
+	is also supported.
+      </para>
+      <para>Additionally, you can setup the system to check for password
+	plausibility and length etc.</para>
+    </simplesect>
+    <simplesect>
+      <title>Boot Settings</title>
+      <para>
+	Use the security resource, you can change various boot settings.
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para><emphasis>How to interpret Ctrl + Alt + Del</emphasis></para>
+	    <para>When someone at the console has pressed the CTRL + ALT + DEL key combination, the system usually reboots. Sometimes it is desirable to ignore this event, for example, when the system serves as both workstation and server.</para>
+	  </listitem>
+	  <listitem>
+	    <para><emphasis>Shutdown behavior of KDM</emphasis></para>
+	    <para>Set who is allowed to shut down the machine from KDM.</para>
+	  </listitem>
+	</itemizedlist>
+
+    
+    </simplesect>
+    <simplesect>
+      <title>Login Settings</title>
+      <para>Change various login settings. These settings are mainly stored in the '/etc/login.defs' file.</para>
+    </simplesect>
+    <simplesect>
+      <title>New user settings (useradd settings)</title>
+      <para>Set the minimum and maximum possible user ID and set the minimum
+	and maximum possible group ID.
+      </para>
+    </simplesect>
+   
   </sect2>
 
 
@@ -829,9 +869,10 @@
   &CreateProfileMisc;
 
 </sect1>
+</chapter>
       <!--
        Local Variables:
        mode: xml
-       sgml-parent-document: ("autoyast2.xml" "book" "sect1")
+       sgml-parent-document: ("autoyast2.xml" "book" "chaper")
        End:
       -->

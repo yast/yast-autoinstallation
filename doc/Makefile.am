@@ -4,7 +4,7 @@
 # $Id$
 #
 
-SUBDIRS = autodocs images entities bin
+SUBDIRS = autodocs images entities bin components
 
 htmldir = @docdir@
 xml_file = autoyast2.xml
@@ -23,7 +23,7 @@ CLEANFILES = autoyast2.dvi autoyast2.aux autoyast2.tex autoyast2.log \
 elements = elements.xml elements.ent
 
 
-minimal: minimal-examples.ent minimal-compoenents html pdf
+minimal: date minimal-examples.ent minimal-compoenents html pdf
 
 minimal-examples.ent:
 	bin/examples.sh min > examples.ent
@@ -41,7 +41,9 @@ full-components:
 full-examples.ent:
 	bin/examples.sh > examples.ent
 
-all: full
+date:
+	date > systemdate
+all: date full
 
 install-data-am: $(xml_file)  
 	mkdir -p $(DESTDIR)$(docdir)/xml/images; \
