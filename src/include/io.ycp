@@ -9,7 +9,12 @@
 {
     textdomain "autoinst";
     import "URL";
+    import "FTP";
     import "Installation";
+    import "HTTP";
+    import "StorageDevices";
+    import "TFTP";
+
     /**
      * Basename
      * @param string path
@@ -64,7 +69,6 @@
 
 	if ( Scheme == "http" )
 	{
-	    import "HTTP";
 	    res = HTTP::Get(full_url, Localfile);
 	    if (res["code"]:0 == 200)
 	    {
@@ -78,9 +82,8 @@
 	}
 	if ( Scheme == "ftp" )
 	{
-	    import "FTP";
 	    res = FTP::Get(full_url, Localfile);
-	    if ( res["code"]:-1 == 0 && SCR::Read(.target.size, Localfile) > 0 )
+	    if ( ( res["code"]:-1 >= 200 || res["code"]:-1 < 300 ) && SCR::Read(.target.size, Localfile) > 0 )
 	    {
 		return (true);
 	    }
@@ -172,7 +175,6 @@
 	}
 	else if (Scheme == "floppy")
 	{
-	    import "StorageDevices";
 	    if (StorageDevices::FloppyReady())
 	    {
 		WFM::Execute(.local.mount, [StorageDevices::FloppyDevice, "/media/floppy"]);
@@ -209,7 +211,6 @@
 	}
 	else if (Scheme == "tftp") // Device
 	{
-	    import "TFTP";
 	    if (TFTP::Get( Host,  Path, Localfile ))
 	    {
 		ok = true;
