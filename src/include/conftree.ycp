@@ -102,6 +102,8 @@
 
     /**
      * Reset Configuration
+     * @param resource Resource
+     * @return any
      */
     any resetModule(string resource)
     {
@@ -345,6 +347,7 @@
             }
             else if (ret == `reset)
             {
+                Profile::prepare = true;
                 y2debug("reset");
                 tree_item = Wizard::QueryTreeItem();
                 string modulename=moduleName(tree_item);
@@ -419,19 +422,21 @@
                     Profile::ReadXML((string)filename);
                     Popup::ShowFeedback(_("Reading configuration data"), _("This may take a while"));
                     foreach(string p, map d, Profile::ModuleMap, ``{
-                            //
-                            // Set resource name, if not using default value
-                            //
+                            /* Set resource name, if not using default value */
                             string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
                             if (resource == "")
                             {
-                            resource = p;
+                                resource = p;
                             }
                             y2debug("resource: %1", resource );
                             string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
                             string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
-                            any resource_data = WFM::CallFunction(module_auto, ["Import",
-                                Y2ModuleConfig::getResourceData(d ,resource)]);
+                            any rd = Y2ModuleConfig::getResourceData(d
+                                ,resource);
+                            if (rd!=nil) {
+                            WFM::CallFunction(module_auto, ["Import",
+                                rd]);
+                            }
                             });
                     Popup::ClearFeedback();
 
