@@ -18,8 +18,9 @@
     include "partitioning/auto_part_ui.ycp";
     include "partitioning/lvm_ui_lib.ycp";
     include "partitioning/lvm_ui_dialogs.ycp";
-    include "partitioning/lvm_lib.ycp";
     include "partitioning/lvm_pv_lib.ycp";
+    include "partitioning/lvm_lib.ycp";
+  
     include "partitioning/lvm_lv_lib.ycp";
     include "partitioning/partition_defines.ycp";
 
@@ -398,8 +399,7 @@ exist on this system.
 
 		    // Mark for deletion
 		    pentry["delete"] =  to_be_deleted;
-
-
+		    
 		    if (!to_be_deleted)
 		    {
 			// Read extended partition if any logical partitions
@@ -416,6 +416,7 @@ exist on this system.
 		    }
 		    else
 		    {
+			pentry["raid_name"] = "";
 			selected_partitions = add (selected_partitions, pentry);
 		    }
 		    all_partitions = add (all_partitions, pentry);
@@ -961,7 +962,7 @@ to contain a minimal installation.");
 	    string use 		= volume_group["use"]:"none";
 	    string vgname	= substring(device, 5);
 	    list new_pvs	= AutoinstLVM::ExistingPVs(vgname);
-	    list new_pvs_dev 	= maplist(`pv, existing_pvs, ``{
+	    list new_pvs_dev 	= maplist(`pv, new_pvs, ``{
 		return(pv["device"]:"");
 	    });
 
@@ -971,7 +972,7 @@ to contain a minimal installation.");
 
 		    string vg = substring(vgdev, 5);
 		    boolean delete = false;
-		    list deleted_pvs = DeletedPVs(vg);
+		    list deleted_pvs = AutoinstLVM::DeletedPVs(vg);
 		    
 		    list del_pvs_dev 	= maplist(`pv, deleted_pvs, ``{
 			return(pv["device"]:"");
@@ -989,7 +990,7 @@ to contain a minimal installation.");
 			delete = true;
 		    }
 		    
-		    if ( delete)
+		    if ( delete )
 		    {
 			map ExistingVG = AutoinstLVM::ExistingLVM[vgdev]:$[];
 		
@@ -1041,10 +1042,29 @@ to contain a minimal installation.");
      */
     global define void autoRAID()
 	``{
-		
+	import "AutoinstRAID";
+	
 	list RaidList =  maplist ( map device, AutoinstStorage::raid["/dev/md", "partitions"]:[],  ``{
 
+	    string use 		= 	AutoinstStorage::raid["/dev/md","use"]:"none";
+	    
+	    string dev 		= 	sformat("/dev/md%1", device["partition_nr"]:0);
+	    
+	    if (AutoinstRAID::OldAvailable)
+	    {
+		foreach( `md, AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[], ``{
+		    
+		    if ( use == "all" && dev == md["device"]:"" )
+		    {			 			 
+			 md["delete"] = true;
+		    }
+		});
+	    }
+
+	    
 	    y2milestone("Working on %1", device);
+
+	    device["device"] 	= dev;
 	    
 	    string chunk_size = "4";
 	    string raid_level = "";
@@ -1083,7 +1103,7 @@ to contain a minimal installation.");
 	    device["nr"] = device["partition_nr"]:"0";
 
 
-	    device["device"]		= sformat("/dev/md%1", device["nr"]:0);
+	   
 	    device["fsid"]		= device["partition_id"]:Partitions::fsid_native;
 	    device["region"]		= [0 , 1];
 
@@ -1122,13 +1142,19 @@ to contain a minimal installation.");
 		     return( part );
 		 }));
 
-
+	list allraid = [];
+	
+	if (size (AutoinstRAID::ExistingRAID["/dev/md","partitions"]:[]) > 0 )
+	    allraid = union (AutoinstRAID::ExistingRAID["/dev/md", "partitions"]:[], RaidList );
+	else
+	    allraid =  RaidList;
+	
 	map RaidMap = $[ "/dev/md" :
 			 $[
 			   "cyl_count" : 1,                         // typicall 1
 			   "cyl_size" : 1048576,                    // const 1MB
 			   "name" : "Linux Software RAID",
-			   "partitions" : RaidList
+			   "partitions" : allraid,
 			 ]
 	];
 	y2milestone("RaidMap: %1", RaidMap);
