@@ -19,14 +19,14 @@
      */
 
     global define map Compat(map Install, map Configure) ``{
-	
+
 	// 8.0 -> 8.1
 
 	// scripts
 	if ( haskey(Configure, "pre-scripts") ||
 	    haskey(Configure, "post-scripts") ||
 	    haskey(Configure, "chroot-scripts")	    )
-	{	    
+	{
 	    list pre = Configure["pre-scripts"]:[];
 	    list post = Configure["post-scripts"]:[];
 	    list chroot = Configure["chroot-scripts"]:[];
@@ -41,10 +41,10 @@
 
 	    Configure["scripts"] = scripts;
 	}
-	
+
 	// general
 	boolean old = false;
-	
+
 	map general_options 	= Install["general"]:$[];
 	map security 		= Configure["security"]:$[];
 	map report		= Install["report"]:$[];
@@ -70,7 +70,7 @@
 	});
 
 	map new_general = $[];
-	
+
 	if (old)
 	{
 	    y2milestone("Old format, converting.....");
@@ -123,7 +123,7 @@
 	    Install["report"] = report;
 	    Configure["security"] = security;
 	    Configure["networking"] = net;
-	    
+
 	    changed = true;
 
 	}
@@ -139,7 +139,7 @@
 	    d =add (d, new_raid );
 	    Install["partitioning"] = d;
 	}
-	
+
 	// LVM
 	list old_lvm = Install["lvm"]:[];
 	if (size(old_lvm) > 0 )
@@ -148,12 +148,12 @@
 	    list d = Install["partitioning"]:[];
 	    d = union (d, new_lvm );
 	    Install["partitioning"] = d;
-	}	
+	}
 	return (union(Configure, Install));
     }
 
 
-    
+
     global define list convertLVM (list lvm_standalone ) ``{
 
 	list all_lvm = [];
@@ -194,21 +194,21 @@
 
    global define map convertRAID (list raid_standalone ) ``{
 
-       
+
 	map raid = $[];
 
 	raid["device"] 	= "/dev/md";
 	raid["use"]	= "all";
 
 
-	    
+
 	list partitions = maplist(`r, raid_standalone, ``{
 
 	    symbol fs = AutoinstStorage::StringFS2Symbol( r["filesystem"]:`reiser);
-	    
+
 
 	    map raid_options = $[];
-	    
+
 	    raid_options["chunk_size"]			= r["chunk_size"]:"";
 	    raid_options["raid_type"]			= r["raid_type"]:"raid1";
 	    raid_options["parity_algorithm"]		= r["parity_algorithm"]:"";
@@ -216,13 +216,13 @@
 
 	    integer nr = tointeger(substring(r["device_name"]:"/dev/md0", 7));
 
-	    
-	    
-	    map ret = $[			
+
+
+	    map ret = $[
 			 "raid_options"	: raid_options,
 			 "format"	: r["format"]:false,
 			 "partition_nr"	: nr
-		       		       
+
 	    ];
 
 	    if (haskey(r, "mount"))
@@ -238,16 +238,16 @@
 		ret["filesystem"] = fs;
 	    }
 
-	    return (ret);	    
+	    return (ret);
 
 	});
 	raid["partitions"]	= partitions;
-	
+
 	return (raid);
     }
 
 
 
 
-    
+
 }

@@ -70,19 +70,19 @@
 	    s["base"] = base ;
 	if (kernel != "")
 	    s["kernel"] = kernel ;
-	
+
 	if (addons != [])
 	    s["addons"] = addons ;
-	
+
 	if (packages != [])
 	    s["packages"] = packages ;
-	
+
 	if (post_packages != [])
 	    s["post-packages"] = post_packages ;
-	
+
 	if (!showErrors)
 	    s["show_errors"] = false;
-	
+
 	return (s);
     }
 
@@ -92,20 +92,20 @@
      * @param list of packages to add
      * @return void
      */
-    global define void AddModulePackages(list module_packages) ``{	
+    global define void AddModulePackages(list module_packages) ``{
 	packages = toset(union(packages,  module_packages));
 	// Update profile
 	import "Profile";
 	Profile::Flat["software"] = Export();
 	return;
     }
-    
+
     /**
      * Remove packages not needed by modules, i.e. NIS, NFS etc.
      * @param list of packages to remove
      * @return void
      */
-     
+
     global define void RemoveModulePackages (list module_packages) ``{
 	packages = filter(string p, packages, ``(!contains(module_packages,p)));
 	import "Profile";
@@ -114,7 +114,7 @@
     }
 
 
-    
+
     /**
      * Summary
      * @return Html formatted configuration summary
@@ -175,7 +175,7 @@
 		``{
 	    if (!Pkg::SetSelection( s ))
 	    {
-		
+
 		failed = add(failed, s);
 
 	    }
@@ -183,11 +183,11 @@
 
 	list failed_again = [];
 	if (size(failed) > 0 ) {
-	    
+
 	    foreach(`s, failed,
 		    ``{
 		if (!Pkg::SetSelection( s ))
-		{		
+		{
 		    failed_again = add(failed_again, s);
 		}
 	    });
@@ -198,7 +198,7 @@
 	    Report::Warning(_("Could not set add-on selections."));
 	}
 
-	
+
 	// single selected packages
 
 	if (!Pkg::ActivateSelections())
@@ -242,11 +242,11 @@
 
 
 
-    
+
     global define list autoinstPackages()
 	``{
 	import "Profile";
-	
+
 	list allpackages = [];
 
 	allpackages = union (allpackages, packages);

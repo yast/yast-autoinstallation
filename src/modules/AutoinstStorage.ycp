@@ -88,9 +88,6 @@
     }
 
 
-
-
-    
     /**
      * Create partition plans
      * @param void
@@ -122,7 +119,7 @@
                                   ``{
                                       return($["device":k, "size": v["cyl_size"]:0 ]);
                                   });
-	
+
         list physical_devices = maplist( `k, `v, physical_targetmap ,
                                   ``{
                                       return(k);
@@ -159,21 +156,21 @@
 		{
 		    configured_devices=add(configured_devices, device);
 		}
-		
+
 		return ( [device , drive ] );
 	    }
 
-	    
+
 	    if (!first_set && ( drive["device"]:"" == ""  || drive["device"]:"" == "ask"))
 	    {
 		device = Storage::GetPartDisk();
 		first_set = true;
-		
+
 		if (contains(physical_devices, device))
 		{
 		    configured_devices=add(configured_devices, device);
 		}
-		
+
 		return ( [device , drive ] );
 	    }
 	    else if (drive["device"]:"" != "")
@@ -182,14 +179,14 @@
 		{
 		    configured_devices=add(configured_devices, drive["device"]:"");
 		}
-		
+
 		return([drive["device"]:"", drive ]);
 	    }
 
 	});
 
 	// Add MD devices as well
-	
+
 	if (haskey(targetMap, "/dev/md"))
 	{
 	     configured_devices=add(configured_devices, "/dev/md");
@@ -429,7 +426,7 @@ are shown here. Select the hard disk on which to install SuSE Linux.
 
 
 
-    
+
     global define list DeletedMDs ( string vgname )
 	``{
 	map tm = Storage::GetTargetMap();
@@ -438,8 +435,8 @@ are shown here. Select the hard disk on which to install SuSE Linux.
 		 ``{
 	    ret = add( ret,
 		       filter( `part, devmap["partitions"]:[],
-			       ``(				 
-				  part["lvm_group"]:"" == vgname 
+			       ``(
+				  part["lvm_group"]:"" == vgname
 				  &&
 				  part["delete"]:false
 				  &&
