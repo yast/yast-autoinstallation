@@ -45,9 +45,8 @@
       <screen>
 <![CDATA[
 <?xml version="1.0"?>
-<![CDATA[
-<!DOCTYPE control_file SYSTEM
- "/usr/lib/YaST2/include/control-file.dtd">
+<!DOCTYPE profile SYSTEM
+ "/usr/share/autoinstall/dtd/profile.dtd">
  <profile
  xmlns="http://www.suse.de/1.0/cfns"
  xmlns:cfg="http://www.suse.de/1.0/cfgns">
@@ -110,8 +109,8 @@
       <screen>
 <![CDATA[
 <?xml version="1.0"?>
-<!DOCTYPE control_file SYSTEM
- "/usr/lib/YaST2/include/control-file.dtd">
+<!DOCTYPE profile SYSTEM
+ "/usr/share/autoinstall/dtd/profile.dtd">
  <profile
  xmlns="http://www.suse.de/1.0/cfns"
  xmlns:config="http://www.suse.de/1.0/cfgns">
@@ -201,7 +200,7 @@
       </para>
       <para>
 	A property element is either empty or contains a literal value. The
-	per-missible property elements and values in each resource element are
+	permissible property elements and values in each resource element are
 	specified in the &dtd;.
       </para>
       <para>
@@ -448,9 +447,9 @@
 <!DOCTYPE profile [ 
 <!ELEMENT profile (install)>
 <!ELEMENT install (partitioning)> 
-<!ELEMENT install (drive+)> 
-<!ELEMENT drive (name,partitions)> 
-<!ELEMENT name (#PCDATA)> 
+<!ELEMENT partitioning (drive+)> 
+<!ELEMENT drive (device,partitions)> 
+<!ELEMENT device (#PCDATA)> 
 <!ELEMENT partitions (partition*)> 
 <!ELEMENT partition (size,mount)> 
 <!ELEMENT size (#PCDATA)> 
