@@ -869,7 +869,10 @@ to contain a minimal installation.");
     global define calcRegion(map currentPartition, list region )
 	``{
 	integer units = 0;
-	string psize = currentPartition["size"]:"";
+	if ((currentPartition["region"]:[]) == 0 )
+	{	    
+	    string psize = currentPartition["size"]:"";
+	}
 	string mount_point = currentPartition["mount"]:"";
 	list autoRegion = currentPartition["region"]:[];
 	
