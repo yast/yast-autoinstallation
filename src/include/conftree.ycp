@@ -96,7 +96,6 @@
 	Wizard::SetContents(
 			    caption,
 			    contents, AutoinstConfig::MainHelp(), true, true);
-        // Wizard::SetTitleIcon(resource);
         Wizard::SetDesktopIcon(resource);
 	return;
     }
@@ -351,6 +350,7 @@
         term contents = modules("System");
         Wizard::SetContents(_("Available modules"),
                    contents, AutoinstConfig::MainHelp(), true , true);
+        Wizard::SetTitleIcon("system");
         Wizard::SelectTreeItem( tree_item );
 
 	any func_ret = "";
@@ -406,6 +406,7 @@
                     contents = modules(group);
                     Wizard::SetContents(_("Available modules"),
                         contents, AutoinstConfig::MainHelp(), true , true);
+                    Wizard::SetTitleIcon(tolower(group));
                 }
                 else if (modulename!="")
                 {
@@ -429,6 +430,7 @@
                     contents = modules(group);
                     Wizard::SetContents(_("Available modules"),
                         contents, AutoinstConfig::MainHelp(), true , true);
+                    Wizard::SetTitleIcon(tolower(group));
                 }
                 else if (modulename!="")
                 {
