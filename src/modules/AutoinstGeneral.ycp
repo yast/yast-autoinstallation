@@ -163,8 +163,9 @@
 	map general = $[];
 	
 	general["language"] = Language ;
-
-	Keyboard["keyboard_values"] = Keyboard::GetExpertValues();
+	if (haskey(Keyboard, "keyboard_values") || Keyboard::ExpertSettingsChanged )
+	    Keyboard["keyboard_values"] = Keyboard::GetExpertValues();
+	
 	general["keyboard"] = Keyboard;
 	general["clock"] = Clock;
 	general["mouse"] = Mouse;

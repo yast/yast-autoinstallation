@@ -276,6 +276,10 @@
     }
 
 
+
+    /**
+     * Sequence for ISO
+     */
     global define symbol isoSequence () ``{
 
 	map iso_dlg =  $[
@@ -289,16 +293,19 @@
 			 "ws_start" 	: "options",
 			 "options"	: $[
 					    `next	: "verify",
+					    `abort	: `ws_finish
 			 ],
 			 "verify"	: $[
 					    `next	: "summary",
 					    `abort	: `ws_finish
 			 ],
 			 "summary"	: $[
-					    `next	: "create"
+					    `next	: "create",
+					    `abort	: `ws_finish
 					    ],
 			 "create"	: $[
-					    `next	: `ws_finish
+					    `next	: `ws_finish,
+					    `abort	: `ws_finish
 					    ]
 
 	];

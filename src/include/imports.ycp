@@ -231,29 +231,35 @@ This may take a while. Please wait...
 	// SYS_LANGUAGE, SYS_KEYTABLE, SYS_TIMEZONE, SYS_MOUSE_DEVICE, SYS_HWC_GMT
 	string language = aliceConf["SYS_LANGUAGE"]:"english";
 	general["language"] = lang2iso[language]:"en_US";
+	
 	string keymap = aliceConf["SYS_KEYTABLE"]:"us";
-	general["keyboard"] = keymap2yast1[keymap]:"english-us";
-	general["timezone"] =  aliceConf["SYS_TIMEZONE"]:"CET";
+	general["keyboard"] = $[ "keymap" : keymap2yast1[keymap]:"english-us" ];
+	map clock = $[];
+	clock["timezone"] =  aliceConf["SYS_TIMEZONE"]:"CET" ;
 	if ( aliceConf["SYS_HWC_GMT"]:"no" == "yes")
-	    general["hwclock"] = "GMT";
+	    clock["hwclock"] = "GMT";
 	else
-	    general["hwclock"] = "localtime";
+	    clock["hwclock"] = "localtime";
 
+	general["clock"] = clock;
+	
 	map mice = Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
         y2debug("Mice %1", mice);
 	boolean found = false;
+	map mouse = $[];
 	foreach(`k,`v, mice, ``{
 	    map data = select(v,1,$[]);
 	    y2debug("yours %1, mine %2",  data["device"]:"", aliceConf["SYS_MOUSE_DEVICE"]:"none");
 	    if ( data["wheels"]:0 == 0 && data["device"]:"" == aliceConf["SYS_MOUSE_DEVICE"]:"none")
 	    {
-		general["mouse"] = k;
+		mouse["id"] = k;
 		found = true;
 	    }
 	});
 	if (!found)
-	    general["mouse"] = "probe";
+	    mouse["id"] = "probe";
 
+	general["mouse"] = mouse;
 
 
 	list drives = [];
@@ -276,6 +282,7 @@ This may take a while. Please wait...
 
 	install["init"] = aliceInit(aliceConf, 	configure["networking"]:$[]);
 	configure["users"] =  createAliceUsers(aliceConf);
+	
 	if (aliceConf["NETWORK_NIS_YPDOMAIN"]:"" != "")
 	    configure["nis"] =  createAliceNis(aliceConf);
 
@@ -372,9 +379,7 @@ This may take a while. Please wait...
 	{
 	    string SYS_SW_AUXLIST = aliceConf["SYS_SW_AUXLIST"]:"";
 	    map extra = $[];
-	    extra["packages"] = readSelection(SYS_SW_AUXLIST);
-	    extra["package_location"] = "custom";
-	    software["extra_packages"] = extra;
+	    extra["packages"] = toset ( union (readSelection(SYS_SW_AUXLIST), extra ) );
 	}
 	return software;
 
@@ -501,9 +506,12 @@ This may take a while. Please wait...
 	list users = [];
 	// root
 	map root = $[];
-	root["encrypted"] = true;
+	if ( aliceConf["SYS_ROOT_START_PWD"]:"" != "")
+	    root["encrypted"] = true;
+	else
+	    root["encrypted"] = false;
 	root["username"] = "root";
-	root["user_password"] =  aliceConf["SYS_ROOT_START_PWD"]:"";
+	root["user_password"] =  aliceConf["SYS_ROOT_START_PWD"]:"root";
 	users=add(users,root);
 
 	return users;
@@ -858,8 +866,11 @@ This may take a while. Please wait...
 	    partition["size"] = sformat("%1mb", v["size"]:-1);
 
 	    // Remove those later
-	    partition["maxsize"] = sformat("%1mb", v["maxsize"]:0);	   
-	    partition["grow"] =  ( v["grow"]:-1 == 1);
+	    if (v["maxsize"]:0 != 0 )
+		partition["maxsize"] =  sformat("%1mb", v["maxsize"]:0);
+
+	    if ( v["grow"]:-1 == 1 )
+		partition["grow"] =  true;
 	    
 	    foreach(`d, drives, ``{
 		string dev = sformat("/dev/%1", v["ondisk"]:"");
@@ -883,21 +894,12 @@ This may take a while. Please wait...
 	list newdrives = maplist(map drive, drives, ``{
 
 	    integer numpart = size(drive["partitions"]:[]);
-	    y2milestone("partitions: %1", numpart);
+	    y2milestone("partitions count: %1", numpart);
 	    boolean ismax = false;	    	    
-	    if ( drive["partitions", numpart -1 , "grow"]:false )
-	    {				
-		ismax = true;
-	    }
-	    integer i = 1;
+	    // clean up
 	    list dp = maplist(map p,  drive["partitions"]:[], ``{
-		if (i == numpart && ismax)
-		{
-		    p ["size"] = "max";
-		}
-		p = remove(p, "grow");
-		p = remove(p, "order");
-		i = i + 1;
+	
+		p = remove(p, "order");		
 		return(p);
 	    });
 
@@ -988,8 +990,8 @@ This may take a while. Please wait...
 	    if (data["bootproto"]:"" == "dhcp")
 	    {
 		interface["bootproto"] = "dhcp";
-		interrface["device"] = iface;
-		interrface["startmode"] = "onboot";
+		interface["device"] =  iface;
+		interface["startmode"] = "onboot";
 		init["usedhcp"] = true;
 	    }
 	    else

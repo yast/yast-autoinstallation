@@ -25,6 +25,7 @@
 
     global list forcedPackages = [];
 
+    global boolean showErrors = true;
 
     global define void AutoinstSoftware() ``{
 	if ( Mode::cont )
@@ -48,6 +49,11 @@
 	packages = settings["packages"]:[];
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
+	showErrors = settings["show_errors"]:true;
+	if (Mode::initial) {
+	    import "AutoInstall";
+	    AutoInstall::IgnorePkgErr = showErrors;
+	}
 	return true;
     }
 
@@ -73,6 +79,8 @@
 	if (post_packages != [])
 	    s["post-packages"] = post_packages ;
 	
+	if (!showErrors)
+	    s["show_errors"] = false;
 	
 	return (s);
     }
@@ -85,6 +93,9 @@
      */
     global define void AddModulePackages(list module_packages) ``{	
 	packages = toset(union(packages,  module_packages));
+	// Update profile
+	import "Profile";
+	Profile::Flat["software"] = Export();
 	return;
     }
     
@@ -94,8 +105,11 @@
      * @return void
      */
      
-    global define RemoveModulePackages (list module_packages) ``{
+    global define void RemoveModulePackages (list module_packages) ``{
 	packages = filter(string p, packages, ``(!contains(module_packages,p)));
+	import "Profile";
+	Profile::Flat["software"] = Export();
+	return;
     }
 
 
@@ -130,9 +144,6 @@
 
 
 
-
-
-
     /**
      * Configure software settings
      * @param void
@@ -158,15 +169,35 @@
 	    return false;
 	}
 
+	list failed = [];
 	foreach(`s, toset(addons),
 		``{
 	    if (!Pkg::SetSelection( s ))
 	    {
-		y2error("Error while setting-addon selection: %1", s);
-		Report::Warning(sformat(_("Could not set add-on selection %1"), s));
+		
+		failed = add(failed, s);
+
 	    }
 	});
 
+	list failed_again = [];
+	if (size(failed) > 0 ) {
+	    
+	    foreach(`s, failed,
+		    ``{
+		if (!Pkg::SetSelection( s ))
+		{		
+		    failed_again = add(failed_again, s);
+		}
+	    });
+	}
+	if (size(failed_again) > 0 )
+	{
+	    y2error("Error while setting-addon selection: %1", s);
+	    Report::Warning(_("Could not set add-on selections."));
+	}
+
+	
 	// single selected packages
 
 	if (!Pkg::ActivateSelections())

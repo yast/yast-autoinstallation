@@ -25,6 +25,16 @@
 
     global map targetMap = $[];
 
+
+
+
+
+
+
+
+
+
+    
     /**
      * Dump the settings to a map, for autoinstallation use.
      * @return map
@@ -111,7 +121,7 @@
 
 
 
-	if ( lvm[ 0, "destroy_old"]:false )
+	if ( lvm[ 0, "destroy_old"]:false && !Mode::test)
 	{
 	    Storage::DestroyLvmOnAllDisks();
 	}
@@ -121,7 +131,7 @@
 
 	list alldrives = maplist( `k, `v, init_targetmap ,
 			      ``{
-				  return($["device":k, "size": lookup(v,"cyl_size",0)]);
+				  return($["device":k, "size": v["cyl_size"]:0 ]);
 	});
 
 	y2milestone("Drives: %1, MBR disk: %2", alldrives , BootCommon::mbrDisk);

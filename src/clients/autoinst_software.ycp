@@ -153,17 +153,18 @@ more <b>add-on</b> selections and packages.
 		// or if the selection has changed
 
 		
-		if (size(AutoinstSoftware::packages ) > 0)
-		{
-			foreach(`p, AutoinstSoftware::packages, ``{
-			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
-			});		
-		}
+	
 		    		
 		if (ret == `next)
 		{
 		    // set the new selection
-		    boolean pkgret = Pkg::SetSelection( base_selection );		    
+		    boolean pkgret = Pkg::SetSelection( base_selection );
+		    if (size(AutoinstSoftware::packages ) > 0)
+		    {
+			foreach(`p, AutoinstSoftware::packages, ``{
+			    y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
+			});		
+		    }
 
 		}		
 		else if ( ret == `details )
