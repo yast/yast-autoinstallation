@@ -107,6 +107,16 @@
 	
 	boolean already_partitioned = false;	
 	boolean root_created = false;
+	string use = "";
+	if ( haskey(part_data, "use"))
+	{
+	    use= part_data["use"]:"";
+	}
+	else if ( haskey(part_data, "reuse"))
+	{
+	    use= part_data["reuse"]:"";
+	}
+
 
 	if ( (num_primary ( partitions ) > 0) || contains_extended ( partitions ) )
 	{
@@ -115,7 +125,7 @@
 	    // If there is an unpartitioned area on the disk, check if it should be used.
 	    // (this will automatically partition this area)
 	    
-	    if ( can_do_auto && (part_data["use"]:"" == "free"))
+	    if ( can_do_auto && use == "free")
 	    {
 		// Note: CreatePartitions changes targetMap
 		if (!partitions_defined
@@ -178,28 +188,30 @@
 	    list all_partitions = [];
 
 	    map extended_pentry = $[];
-
 	    
 	    list selpart = [];
-	    if (haskey(part_data, "use")
-		&& part_data["use"]:""!="all"
-		&& part_data["use"]:"" != "free")
+	    if (use!= "" && use != "all" && use != "free")
 	    {
-		list selected_partitions = splitstring(part_data["use"]:"", ",");
-		selpart = maplist (`p, selected_partitions, ``{
+		y2milestone("using only selected partitions");
+		list selected_partitions = [];
+		list tmp_selpart = splitstring(use, ",");
+
+		selpart = maplist (`p, tmp_selpart, ``{
 		    if  ( findfirstnotof( p, "0123456789") == nil  )
-		    {		
-			return(tointeger(p));		
-		    }		   
+		    {
+			return(tointeger(p));
+		    }
 		});
-		    
+
 	    }
+	    
+
 	    // now loop through partitions	    
 	    foreach (`pentry, partitions, ``{
 		symbol ptype = lookup (pentry, "type", `unknown);
 		if (ptype != `extended) {
 		    boolean selection = false;
-		    if (lookup(part_data,"use","") == "all")
+		    if (use == "all")
 		    {
 			selection = true;
 		    }
@@ -382,6 +394,19 @@ to contain a minimal installation.");
 	symbol ptype = `primary;
 	integer last_pnr = 0;		
 	list region = [ 0 , 0 ];
+	
+	list old = filter (`pentry,
+			   partitions,
+			   ``(!pentry ["delete"]:false)
+			   );
+
+	if (size(old) > 0 )
+	{
+	    map lastPart = select(old, size(old) -1 , $[]);
+	    region = [  select(lastPart["region"]:[], 0, 0) , select(lastPart["region"]:[], 1, 0) ];
+	}
+	
+	
 	list root_region = [ 0 , 0 ];
 	boolean empty_disk = (partitions == []);
 
@@ -631,9 +656,7 @@ to contain a minimal installation.");
 	    }
 	    else if (raid_name != "")
 	    {
-		any nr = substring(raid_name, 7);
-	
-		part["raid_nb"]	= nr;
+		any nr = substring(raid_name, 7);			
 	
 		part["used_fs"] 	= `unknown;
 		part["fsid"]		= Partitions::fsid_raid;
@@ -659,9 +682,6 @@ to contain a minimal installation.");
 
 
     global define autoLVM() ``{
-	
-
-
 	
 	map LvmVolumes = $[];
 	map tmap = Storage::GetTargetMap();
@@ -782,6 +802,23 @@ to contain a minimal installation.");
 	``{
 	list RaidList =  maplist (map device, AutoInstall::RAID,
 				  ``{
+
+				      string chunk_size = "4";
+				      string raid_type = device["raid_level"]:"raid1";
+				      if ( raid_type == "raid5" ) chunk_size = "128";
+				      if ( raid_type == "raid0" ) chunk_size = "32";
+				      string sel_chunksize = device["chunk_size"]:"";
+				      if ( sel_chunksize != "" )
+				      {
+					  chunk_size = sel_chunksize;
+				      }
+
+				      
+				      if(  raid_type == "raid5" && device["parity_algorithm"]:"" == "" )
+				      {
+					  device["parity_algorithm"] = "left-symmetric";
+				      }
+
 				      device["nr"] =tointeger(substring(device["name"]:"/dev/md0", 7));
 				      
 				      
@@ -791,13 +828,15 @@ to contain a minimal installation.");
 				      device["create"] 		= true;
 				      device["status"] 		= "create";
 				      device["raid_type"] 	= device["raid_level"]:"raid1";
+				      device["chunk_size"]	= chunk_size;
 				      
 				      if (!haskey(device, "format"))
 				      {
 					  device["format"] 	= false;
 				      }
 				      
-				      symbol selected_fs 	= StringFS2Symbol(device["filesystem"]:"reiser");
+				      symbol selected_fs 	= StringFS2Symbol(device["filesystem"]:"");				      
+				      
 				      device["used_fs"] 	= selected_fs;
 				      device["type"]		= `sw_raid;
 				   
@@ -807,7 +846,7 @@ to contain a minimal installation.");
 	map RaidMap = $[ "/dev/md" :
 			 $[
 			   "cyl_count" : 1,                         // typicall 1 
-			   "cyl_size" : 1048576,                    // const 1MB
+			   "cyl_size" : 1048576 * 2,                    // const 1MB
 			   "name" : "Linux Software RAID",
 			   "partitions" : RaidList
 			   ]
@@ -886,6 +925,7 @@ to contain a minimal installation.");
 	if (is(fs,symbol)) {
 	    return fs;
 	}
+
 	map filesystems =
 	    $[
 	      "ext2":	`ext2,
@@ -899,7 +939,7 @@ to contain a minimal installation.");
 	      "fat16":	`fat16,
 	      "swap":	`swap	
 	];
-	return filesystems[fs]:`ext2;	
+	return filesystems[fs]:Partitions::default_fs;	
   }
 
     global define integer InitDevice(string del_device)
