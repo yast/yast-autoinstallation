@@ -850,6 +850,7 @@ exist on this system."));
 		    if (!contains(lp, sformat("%1", target["partitions", s-1, "nr"]:0 ) )
 			|| !issubstring(seq,  mergestring(lp, ",") ) )
 		    {			
+                        // Error message
 			Report::Error(_("Linux Partitions to be used have to exist on the end of the device"));
 			return (false);
 		    }
