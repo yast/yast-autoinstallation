@@ -73,23 +73,26 @@
 	    string resource = AIConfig::getResource(p);
 	    
 	    if ( size(Flat[resource]:$[]) != 0)
-	    {		    
+	    {
+
 		if (d["AutoinstPath"]:"" == "install")
 		{
+		    y2milestone("Prepare: Configure");
 		    if ( d["AutoinstDataType"]:"map" == "map" )
 		    {
 			Install[resource] = Flat[resource]:$[];
 		    }
 		    else
 		    {
-			Configure[resource] = Flat[resource]:[];
+			Install[resource] = Flat[resource]:[];
 		    }
 		}
 		else
 		{
+		    y2milestone("Prepare: Configure");
 		    if ( d["AutoinstDataType"]:"map" == "map" )
 		    {
-			Install[resource] = Flat[resource]:$[];
+			Configure[resource] = Flat[resource]:$[];
 		    }
 		    else
 		    {
@@ -99,7 +102,6 @@
 	    }		  
 	});
 
-	
 
 	if (Install != $[])
 	{
