@@ -1,7 +1,7 @@
 #!/bin/sh
 # Anas Nashif <nashif@suse.de>
 #
-# Version 0.0.2
+# $Id$
 #
 
 
