@@ -78,7 +78,8 @@ Please wait while the system is being configured.
 
 
     y2debug("Module map: %1", AutoInstall::ModuleMap);
-    
+
+    y2milestone("Flat profile: %1", Profile::Flat);
     foreach(`p,`d, AutoInstall::ModuleMap,
 	    ``{
 
@@ -101,13 +102,14 @@ Please wait while the system is being configured.
 		module_auto = sformat("%1_auto", p);
 
 	    map result = $[];
-	    y2debug("Writing configuration for %1", d["Name"]:"");
+	    y2milestone("Writing configuration for %1", d["Name"]:"");
+	  
 	    if (haskey(Profile::Flat , resource) )
 	    {
 		string tomerge = d["AutoinstMerge"]:"";
 		string tomergetypes = d["AutoinstMergeTypes"]:"";
 		list MergeTypes = splitstring(tomergetypes, ",");
-		if (size(tomerge) > 0 )
+		if (  size(tomerge) > 0 )
 		{		    
 		    integer i = 0;
 		    foreach( string res, splitstring(tomerge, ",") ,
@@ -118,14 +120,20 @@ Please wait while the system is being configured.
 			    result[res] = Profile::Flat[res]:[];
 			i = i + 1;
 		    });
+		    y2milestone("Calling auto client with: %1", result);
+		    Call::Function(module_auto, ["Import", result ]);
 		    Call::Function(module_auto, ["Write", result ]);
 		}
 		else if (d["AutoinstDataType"]:"map" == "map")
-		{		   
+		{
+		    y2milestone("Calling auto client with: %1",  Profile::Flat[resource]:$[]);
+		    Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
 		    Call::Function(module_auto, ["Write", Profile::Flat[resource]:$[]  ]);
 		}
 		else
 		{
+		    y2milestone("Calling auto client with: %1",  Profile::Flat[resource]:[]);
+		    Call::Function(module_auto, ["Import",  Profile::Flat[resource]:[] ]);
 		    Call::Function(module_auto, ["Write",  Profile::Flat[resource]:[] ]);
 		}
 	    }
@@ -133,8 +141,11 @@ Please wait while the system is being configured.
     });
 
     Progress::NextStage();
+    AIScripts::Import(Profile::Flat["scripts"]:$[]);
     AIScripts::Write("post-scripts");
 
+
+		      
     Progress::Finish();
 
     return `next;

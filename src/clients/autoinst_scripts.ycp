@@ -8,12 +8,10 @@
  */
 {
     textdomain "autoinst";
-    import "Mode";
-    Mode::config = true;
-        
+
+    import "AIScripts";
     import "Wizard";
     import "Summary";
-    import "AIScripts";
 
     include "ui/common_messages.ycp";
     include "autoinstall/script_dialogs.ycp";
@@ -33,7 +31,7 @@
 
     if (func == "Import")
     {
-	ret = AIScripts::Import(param);	
+	ret = AIScripts::Import(param);
     }
     /* create a  summary*/
     else if (func == "Summary")
@@ -45,16 +43,16 @@
     {
 	AIScripts::Import($[]);
 	ret =  $[];
-    }	
+    }
     else if (func == "Change") {
 	Wizard::CreateDialog();
 	Wizard::RestoreHelp("");
-	Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());    
-	ret =ScriptsDialog();    
+	Wizard::ReplaceButtonBox(Wizard::CancelAcceptButtonBox());
+	ret =ScriptsDialog();
 	Wizard::CloseDialog();
     }
     else if (func == "Result")
-    {	
+    {
 	ret = AIScripts::Export();
     }
     /* unknown function */
@@ -68,10 +66,6 @@
     y2milestone("----------------------------------------");
 
     return ret;
-
-    
-    
-    
 }
 
 
