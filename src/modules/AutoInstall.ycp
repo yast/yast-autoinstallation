@@ -155,11 +155,6 @@
     // Kernel
     global string Kernel = "";
 
-    // Extra package to be added using inst_rpmcopy
-    global list install_list = [];
-
-    // post install package to be added using inst_rpmcopy
-    global list post_install_list = [];
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Local variables
@@ -495,27 +490,14 @@
 
     /**
      * Return post package list
-     * @return void
+     * @return list post packages
      */
-    global define  postPackageList() ``{
+    global define  list postPackageList() ``{
 	map Software = Install["software"]:$[];		
-	map extra = Software["extra_packages"]:$[];
-	
-	string extra_location = extra["package_location"]:"external";
-	
-	list post_packages = extra["post-packages"]:[];
-
-	if (size(post_packages) > 0)
-	{
-	    foreach(string p, post_packages,
-		    ``{
-		y2milestone("Adding %1 to post package list", p);
-		post_install_list=add(post_install_list, [extra_location + "/" + p, p, 2, false]);
-	    });
-	}
-
-	y2milestone("Additional non-SuSE post packages: %1",  post_install_list);
-	return;
+	list postPackages = Software["post-packages"]:$[];
+			
+	y2milestone("Post packages: %1",  postPackages);
+	return postPackages;
     }
     
     /**
@@ -525,8 +507,6 @@
     global define list packageList()``{
 	map Software = Install["software"]:$[];
 	list Packages = Software["packages"]:[];
-
-
 	return Packages;
     }
 
@@ -553,9 +533,12 @@
 	}
 
 	list Packages = union(Software["packages"]:[], forcedPackages);
-	/**
+	/*
 	if (Software["ignore_error_log"]:false)
+	{
 	    Report::YesNoErrors["packages"] = true;
+	}
+	
 	*/
 	if (size(Selections) > 1)
 	{
@@ -605,45 +588,6 @@
 
 	// And set the list in the package agent.
 	SCR::Execute(.package.setInstallSelection, package_list, true );
-
-
-
-
-	// Extra Packages location and custom kernel
-	map extra = Software["extra_packages"]:$[];
-
-	// Kernel TODO :Check if packages are actually available
-
-	string extra_location = extra["package_location"]:"external";
-	if (extra["kernel"]:"" != "")
-	{
-	    install_list = add(install_list,
-			       [extra_location + "/" + extra["kernel"]:"mykernel", "Custom Kernel", 1, false]);
-	}
-
-
-	// Extra Packages TODO :Check if packages are actually available
-	list extra_packages = extra["packages"]:[];
-	
-	if (size(extra_packages) > 0)
-	{
-	    foreach(string p, extra_packages,
-		    ``{
-		y2milestone("Adding %1 to package list", p);
-		install_list=add(install_list, [extra_location + "/" + p, p, 1, false]);
-	    });
-	}
-
-
-	y2milestone("Additional non-SuSE packages: %1",  install_list);	
-
-	Kernel = Software["kernel"]:"";
-	if (Kernel == "")
-	{
-	    if (extra["kernel"]:"" != "")
-		Kernel = extra["kernel"]:"";
-	}
-
 
         return;
     }
