@@ -42,14 +42,11 @@
 	else
 	{
 	    ret = Profile::ReadProfileStructure ( AutoinstConfig::parsedControlFile );
-	    if ( Profile::current == $[] || !ret )
-	    {
+	    if ( Profile::current == $[] || !ret ) {
 		y2milestone( "No saved autoinstall data found" );
 		return (false);
-	    }
-	    else
-	    {
-		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
+	    } else {
+		y2milestone( "Found and read saved autoinst data");
 		SCR::Execute(.target.remove, AutoinstConfig::parsedControlFile);
 		return (true);
 	    }
@@ -68,17 +65,12 @@
         if (Stage::cont ())
         {
             boolean ret = Continue();
-            if (ret && size ( Profile::current ) > 0)
-            {
+            if (ret && size ( Profile::current ) > 0) {
                 y2milestone("Enabling Auto-Installation mode");
                 Mode::SetMode("autoinstallation");
-            }
-            else {
-                if (Mode::autoinst ())
-                {
-                    y2milestone("No autoyast data found, switching back to manual installation");
-                    Mode::SetMode("installation");
-                }
+            } else if (Mode::autoinst ()) {
+                y2milestone("No autoyast data found, switching back to manual installation");
+                Mode::SetMode("installation");
             }
         }
         else if (Stage::initial ())

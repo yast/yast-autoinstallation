@@ -424,7 +424,7 @@
 
 		list<map> lvlist =  ExistingLVM[device, "partitions"]:[];
 
-		if (contains(volume_group["keep_lv"]:[], lv["nr"]:""))
+		if (contains(volume_group["keep_lv"]:[], lv["nr"]:"_error_"))
 		{
                     list<map> lvtokeep = filter(map p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:""));
 		    map this_lv = lvtokeep[0]:$[]; 

@@ -117,6 +117,7 @@
         if (!Flat["x11", "configure_x11"]:false)
             ProductControl::DisabledModules=add(ProductControl::DisabledModules, "x11");
 
+        y2milestone("Flat=%1", Flat );
 	return;
     }
 
@@ -282,14 +283,11 @@
     {
 	current = (map) SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
 	if (current == $[])
-	{
 	    return false;
-	}
 	else
-	{
 	    Import (current);
-	    return true;
-	}
+
+        return true;
     }
 
     /**

@@ -14,9 +14,7 @@
     import "RootPart";
     import "Partitions";
     import "FileSystems";
-    import "Mode";
     import "Summary";
-    import "Report";
     import "Storage";
     import "Partitions";  
     import "Popup";
@@ -118,6 +116,7 @@
             // Convert from Old Style
             if (haskey(d, "use"))
             {
+               y2milestone("converting from \"use\" to new style");
                if (d["use"]:"" == "free") {
                    d["prefer_remove"] = false;
                } else if (d["use"]:"" == "all" ) {
@@ -184,7 +183,6 @@
     {
 	AutoPartPlan = preprocess_partition_config(settings);
 	y2milestone("AutoPartPlan: %1", AutoPartPlan );
-
 
 	return true;
     }
@@ -261,14 +259,15 @@ which root partition should be used.  Automatic installation not possible.
 "));
             return false;
         }
-        else if ( haskey(RootPart::rootPartitions, rp) && RootPart::numberOfValidRootPartitions > 1)
+        else if ( haskey(RootPart::rootPartitions, rp) 
+                && RootPart::numberOfValidRootPartitions > 1)
         {
             RootPart::selectedRootPartition = rp;
         }
 
         RootPart::MountPartitions(RootPart::selectedRootPartition);
-        RootPart::UnmountPartitions ();
         RootPart::SetFormatPartitions (fstab_partitions);
+        RootPart::UnmountPartitions (true);
         return true;
     }
 
@@ -279,6 +278,11 @@ which root partition should be used.  Automatic installation not possible.
      * @return boolean
      */
     global define boolean Write() {
+
+        if (read_fstab)
+        {
+            return (handle_fstab());
+        }
 
 	// Find first disk
 	map <string, map> initial_target_map = Storage::GetTargetMap();
