@@ -16,19 +16,16 @@
     import "Report";
     import "Partitions";
     import "FileSystems";
-
-    /*
-    include "partitioning/partition_defines.ycp";
-    include "partitioning/lvm_ui_lib.ycp";
-    include "partitioning/lvm_pv_lib.ycp";    
-    include "partitioning/lvm_ui_dialogs.ycp";    
+         
     include "partitioning/lvm_lib.ycp";
+    include "partitioning/lvm_pv_lib.ycp";
     include "partitioning/lvm_lv_lib.ycp";
-    */
-
-    include "partitioning/lvm_lib.ycp";
-
+    include "partitioning/lvm_ui_lib.ycp";     
+    include "partitioning/lvm_ui_dialogs.ycp";        
+   
     
+
+            
     global map modify_targets = $[];
 
     global map ExistingLVM = $[];
@@ -48,7 +45,10 @@
 
     global map lvm = $[];
 
+   
 
+
+    
     /**
      * Constructor
      *
@@ -56,12 +56,12 @@
     global define void AutoinstLVM () ``{
 
 	targetMap		= Storage::GetTargetMap();
-	modify_targets	= Storage::GetModifyTargets();
-	ExistingLVM		= filter(`k,`v, targetMap, ``(v["is_lvm_vg"]:false));
+	modify_targets		= Storage::GetModifyTargets();
+	ExistingLVM		= filter(string k, map v, targetMap, ``(v["is_lvm_vg"]:false));
 
 	y2milestone("Existing LVM: %1", ExistingLVM);
 
-	ExistingVGs		= maplist (`d, `g, ExistingLVM, ``{
+	ExistingVGs		= maplist (string  d, map g, ExistingLVM, ``{
 	    return (substring(d, 5) );
 	});
 
@@ -130,7 +130,7 @@
     }
 
 
-    global define RemoveLV (string vgname, string lvname) ``{
+    global define void RemoveLV (string vgname, string lvname) ``{
 	map remove_lv = $[
 			      "use_module" : "lvm_ll",
 			      "type"       : "remove_lv",
@@ -139,10 +139,11 @@
 			      "target_map_entry":$[]
 	];
 	modify_targets = addTargetModification( modify_targets, remove_lv );
+	return;
     }
 
 
-    global define RemovePV (string vgname, string device) ``{
+    global define void RemovePV (string vgname, string device) ``{
 	map remove_pv = $[
 			  "use_module"	: "lvm_ll",
 			  "type"		: "remove_pv",
@@ -150,6 +151,7 @@
 			  "device"		: device
 	];
 	modify_targets = addTargetModification( modify_targets, remove_pv );
+	return;
     }
 
 
@@ -317,8 +319,8 @@
 	 y2milestone("targetMap= %1", targetMap);
 	 y2milestone("tm= %1", tm);
 	
-	list all_possible_pvs = filter( `part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname && !part["delete"]:false ));
-	list possible_pvs = filter( `part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
+	list all_possible_pvs = filter( map part, get_possible_pvs( targetMap ),  ``( part["lvm_group"]:"" == vgname && !part["delete"]:false ));
+	list possible_pvs = filter( map part, get_possible_pvs( tm ),  ``( part["lvm_group"]:"" == vgname ));
 
 	
 	 y2milestone("all pvs= %1", all_possible_pvs);
@@ -340,7 +342,7 @@
 	foreach( string dev, map devmap, targetMap,
 		 ``{
 	    ret = add( ret,
-		       filter( `part, devmap["partitions"]:[],
+		       filter( map part, devmap["partitions"]:[],
 			       ``(
 				  part["lvm_group"]:"" == vgname
 				  &&
@@ -374,7 +376,7 @@
 	    list SelectedPartitions = [];
 	    string vgname	= substring(device, 5);
 	    list new_pvs	= ExistingPVs(vgname);
-	    list new_pvs_dev	= maplist(`pv, new_pvs, ``{
+	    list new_pvs_dev	= maplist(map pv, new_pvs, ``{
 		return(pv["device"]:"");
 	    });
 
@@ -387,7 +389,7 @@
 		    boolean delete = false;
 		    list deleted_pvs = DeletedPVs(vgn);
 
-		    list del_pvs_dev = maplist(`pv, deleted_pvs,
+		    list del_pvs_dev = maplist(map pv, deleted_pvs,
 						  ``{
 						      return(pv["device"]:"");
 						  });
@@ -466,7 +468,7 @@ physical volumes belonging to this group.
 	    list new_partitions = maplist(map lv,  volume_group["partitions"]:[], ``{
 
 		list lvlist =  ExistingLVM[device, "partitions"]:[];
-		map this_lv = select(filter(`p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
+		map this_lv = select(filter(map p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:"")), 0, $[]);
 
 		y2debug("This LV: %1", this_lv);
 
@@ -506,11 +508,6 @@ physical volumes belonging to this group.
 
 	return true;
     }
-
-
-
-
-
-    
+   
 }
 
