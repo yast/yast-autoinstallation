@@ -23,9 +23,10 @@
 
 
     /**
+     * Script Configuration
      * @return  script configuration dialog
      */
-    define term script_dialog_contents()
+    term script_dialog_contents()
     {
 	list allscripts = maplist(map s, AutoinstScripts::merged,
 				  ``{
@@ -61,7 +62,7 @@
      * @return symbol
      */
 
-    define symbol ScriptDialog(symbol mode , string name)
+    symbol ScriptDialog(symbol mode , string name)
     {
 	map script = $[];
 	if (mode == `edit)
@@ -132,7 +133,8 @@ guarantee a fully configured system when running the scripts.
 	term contents=
 	    `VBox(
 		  `HBox(
-			`TextEntry(`id(`filename), _("&File Name"), lookup(script,"filename","")),
+			`TextEntry(`id(`filename), _("&File Name"),
+                            script["filename"]:""),
 			`ComboBox( `id(`interpreter), _("&Interpreter"),
 				   [
 				    `item(`id("perl"), _("Perl"),(script["interpreter"]:"shell" == "perl")),
