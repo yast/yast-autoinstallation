@@ -455,7 +455,8 @@ to contain a minimal installation.");
 		}
 		list extended = filter (`pentry, auto_partitions, ``((pentry["partition_type"]:"none" == "extended" || pentry["partition_id"]:0 == 5)));
 		list ext_region = [0,0];
-		if (size(extended) == 1) {
+		if (size(extended) == 1)
+		{
 		    y2debug("extended found");
 		    ext_region = lookup(select(extended,0,$[]),"region",[]);
 		    auto_partitions = filter(`pentry, auto_partitions, ``(!(pentry["partition_type"]:"none" == "extended")));
@@ -472,7 +473,8 @@ to contain a minimal installation.");
 				  "type":`extended,
 				  "fsid":ext_fsid,
 				  "nr":unused_primary_pnr,
-				  "region": ext_region
+				  "region": ext_region,
+				  "device": get_device_name(target_is, last_pnr)
 				]);
 		y2debug("Partitions including extended: %1", partitions);
 
@@ -549,7 +551,8 @@ to contain a minimal installation.");
 	      "fsid": auto_fsid,
 	      "nr":last_pnr,
 	      "region":region,
-	      "mount": mount_point
+	      "mount": mount_point,
+	      "device": get_device_name(target_is, last_pnr)
 	    ];
 
 	    if (mount_point == "swap" || StringFS2Symbol(p["filesystem"]:"") == `swap)
@@ -579,6 +582,7 @@ to contain a minimal installation.");
 		part["lvm_group"] = lvm_group;
 		part["mount"] =  "";
 		part["fstype"] =  "Linux LVM";
+		
 		
 		CreateModifyMap(lvm_group, target_is + last_pnr);
 		

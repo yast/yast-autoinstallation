@@ -28,43 +28,6 @@
     }
 
 
-    global define string createISOCmd(boolean nojoliet, string source , string dest )``{
-	string params = "";
-	string isotmp = SCR::Read (.target.tmpdir);
-	string sortfile = isotmp + "/sortfile";
-	if (nojoliet)
-	    params =  "-r -T -pad";
-	else
-	    params = "-r -T -J -pad";
-
-	string suseDir = source + "/suse";
-	string bootDir = suseDir + "/images/boot";
-	if (SCR::Read(.target.dir, suseDir)!=nil && SCR::Read(.target.dir, bootDir)!=nil )
-	{
-	    // map exec = SCR::Execute (.target.bash_output, "find /usr/lib/YaST2/clients -name \"*_auto.ycp\" -exec basename {} _auto.ycp \\;");
-	    string findstring = "find " + source + "/suse/images/boot -printf \"%p 1\\n\" > " + sortfile;
-	    SCR::Execute (.target.bash, findstring);
-	    params = params + sformat(" -sort %1 -no-emul-boot -boot-load-size 4 -boot-info-table -b suse/images/boot/isolinux.bin -c suse/images/boot.catalog", sortfile);
-	    y2milestone("found boot image. Making CD bootable.");
-	    SCR::Execute(.target.mkdir, sformat("%1/suse/images/boot", isotmp));
-
-	}
-	else
-	{
-	    y2milestone("found no boot image. No bootable CD.");
-	}
-	string distident_cmd = sformat("fgrep DIST_IDENT %1/suse/setup/descr/info | awk -F' ' '{ printf  $2 } '", source);
-	map exec = SCR::Execute (.target.bash_output,distident_cmd);
-	string distident = lookup (exec, "stdout", "");
-	if (distident != "") {
-	    params = params + sformat(" -A %1", distident);
-	}
-
-	string mkisofs = sformat("mkisofs -p \"Custom CD\" -P \"SuSE Linux AG\" %1 -o %2 %3 %4", params, dest, isotmp, source);
-	return mkisofs;
-    }
-
-
 
     /**
      * Go through resources and properties and set types accordingly

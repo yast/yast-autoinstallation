@@ -217,12 +217,20 @@ contains all the packages.</p>");
 			`HBox(
 			      `PushButton(`id(`saveprofile), _("&Save")),
 			      `PushButton(`id(`saveas), _("Save &As")),
-			      `PushButton(`id(`edit), _("&Edit"))
+			      `PushButton(`id(`edit), _("&Edit")),			      
+			      `HStretch(),
+			      `MenuButton(_("Optio&ns"),
+					  [
+					   `item(`id (`media), _("Crea&te ISO")),
+					   `item(`id (`netboot), _("Create Netboot Image"))
+				     
+					   ]
+					  )
 			      )
-
 			),
 		  `VSpacing(0.5)
 		  );
+	
 	return contents;
     }
 
@@ -491,7 +499,7 @@ This file will be saved in the templates directory."));
 			}
 			else
 			{
-			     filename = SaveFileAs(AIConfig::TemplateRepository );
+			    filename = SaveFileAs(AIConfig::TemplateRepository );
 			}
 
 			y2debug("file name: %1", filename);
@@ -527,9 +535,12 @@ to be able to save the current profile!"));
 		    }
 
 		}
-
-
-		if (ret == `next && AIConfig::changed)
+		else if (ret == `media)
+		{
+		    UI::ChangeWidget(`id(`next), `Label, NextButtonLabel);
+		    break;
+		}
+		else	if (ret == `next && AIConfig::changed)
 		{
 		    if (UI::YesNoHeadlinePopup(_("Configuration has been modifed"), _("Should the changes be saved?")))
 		    {

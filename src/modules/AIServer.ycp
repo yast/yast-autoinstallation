@@ -28,6 +28,11 @@
     // Selections
     global list Selections = [];
 
+    // Packages
+    global list morePackages = [];
+
+
+    
     // tmp dir
     global string tmpDir = "";
 
@@ -39,18 +44,164 @@
 
     global string aliceRep = "";
 
-    ///////////////////////////////////////////////////////////////////////
 
+
+    ///////////////////////////////////////////////////////////////////////    
     // Kickstart
-    ///////////////////////////////////////////////////////////////////////
-    
+    ///////////////////////////////////////////////////////////////////////    
     global symbol ksOutput = `load;
 
-    ///////////////////////////////////////////////////////////////////////
 
+
+    ///////////////////////////////////////////////////////////////////////
+    // Media
+    ///////////////////////////////////////////////////////////////////////    
+        
+    global boolean nojoliet 		= false;
+
+    global string params 		= "";
+
+    global string sourceDir 		= "";
     
-    global define void AIServer()``{
+    global string suseDir 		= "";
+
+    string bootDir 			= "";
+
+    global string applicationID		= "";
+
+    global string volumePreparer 	= "SuSE Linux AG";
+
+    global string volumeID		= "SU8100.001";
+
+    global string publisher 	 	= "SuSE Linux AG";
+
+    global string skelDir		= "";
+
+    global string isoFile		= "";
+
+    global integer totalPacs		= 0;
+    /**
+     * Constructer
+     *
+     **/
+    
+    global define void AIServer()
+	``{
+	skelDir = "/tmp/iso_skeleton";
+	SCR::Execute(.target.mkdir, skelDir);
 	tmpDir = SCR::Read (.target.tmpdir);
+	return;
     }
 
+
+    /**
+     * Set paraeters for mkisofs command
+     *
+     */
+    define initIsoParams ()
+	``{
+	
+
+	string skeleton = skelDir + "/skeleton";
+	
+	if (nojoliet)
+	{
+	    params =  "-r -T -pad -no-emul-boot -boot-load-size 4 -boot-info-table";
+	}
+	else
+	{
+	    params = "-r -T -J -pad -no-emul-boot -boot-load-size 4 -boot-info-table";
+	}
+
+	suseDir = skeleton + "/suse";
+	
+	bootDir = suseDir + "/images/boot";
+
+	if (applicationID == "")
+	{
+	    string distident_cmd = sformat("fgrep DIST_IDENT %1/suse/setup/descr/info | awk -F' ' '{ printf  $2 } '", skeleton);
+	    map exec = SCR::Execute (.target.bash_output,distident_cmd);
+	    string tmp_distident = lookup (exec, "stdout", "");
+	
+	    if (tmp_distident != "")
+	    {
+		params = params + sformat(" -A %1", tmp_distident);
+	    }
+	}
+	else
+	{
+	    params = params + sformat(" -A %1", applicationID);
+	}
+	
+
+    }
+
+    /**
+     * Construct mkisofs command    
+     * @param dest name of resulting ISO file
+     * @return string mkisofs command
+     */    
+    global define string createISOCmd (string dest )
+	``{
+	
+	initIsoParams ();
+	string skeleton = skelDir + "/skeleton";
+	
+	string isotmp = SCR::Read (.target.tmpdir);
+	SCR::Execute(.target.mkdir, isotmp + "/iso");
+	string sortfile = isotmp + "/sortfile";
+
+	if (SCR::Read(.target.dir, suseDir)!=nil && SCR::Read(.target.dir, bootDir)!=nil )
+	{	    
+	    string findstring = "find " + skeleton + "/suse/images/boot -printf \"%p 1\\n\" > " + sortfile;
+	    integer ret = SCR::Execute (.target.bash, findstring);
+	    
+	    params = params + sformat(" -sort %1  -b suse/images/boot/isolinux.bin -c boot.cat", sortfile);
+	    y2milestone("found boot image. Making CD bootable.");
+	    SCR::Execute(.target.mkdir, sformat("%1/iso/suse/images/boot", isotmp));
+
+	}
+	else
+	{
+	    y2milestone("found no boot image. No bootable CD will be created.");
+	    return "";
+	}
+	
+	string mkisofs = sformat("mkisofs -p \"%1\" -V\"%2\" -P \"%3\" %4 -o %5 %6/iso %7", volumePreparer, volumeID, publisher, params, dest, isotmp, skeleton);
+	return mkisofs;
+    }
+
+    /**
+     * Create Skeleton
+     *
+     */
+
+    global define createISOSkeleton () ``{
+	list commands = [];
+	integer ret = 0;
+	boolean success = true;
+	
+	
+	y2milestone("creating skeleton in %1", skelDir);
+	
+	SCR::Execute(.target.mkdir, skelDir + "/skeleton/suse");
+	commands= add(commands, sformat("cp -a %1/suse/images %2/skeleton/suse", sourceDir, skelDir));	
+	commands= add(commands, sformat("cp -a %1/suse/setup %2/skeleton/suse", sourceDir, skelDir));
+	commands= add(commands, sformat("cp  %1/.S* %2/skeleton/", sourceDir, skelDir));
+	foreach (`c, commands, ``{
+	    ret = SCR::Execute (.target.bash, c);
+	    if (ret != 0)
+	    {
+		success= false;
+	    }
+	});
+	list pacdirs = ["i386", "i586", "noarch"];
+	foreach(`dir, pacdirs, ``{
+	    string dirname =  sformat("%1/skeleton/suse/%2", skelDir, dir);
+	    SCR::Execute (.target.mkdir, dirname);
+	});
+	return success;
+    }
+
+ 
 }

@@ -26,43 +26,141 @@
     }
     
     /**
+     * Add a selection to the stack of selections
      *
      */
-    global define addSelection(string selection) ``{
-	if (contains(AIServer::Selections,selection)) {
+    global define addSelection(string selection)
+	``{
+	if (contains(AIServer::Selections,selection))
+	{
 	    return (filter(`s, AIServer::Selections,``(s!=selection)));
-	} else {
+	}
+	else
+	{
 	    return(add(AIServer::Selections,selection));
 	}
     }
 
+
+
+
     /**
+     * Compute packages needed for autoinstallation
+     * @return list(string)
+     */
+
+    global define list autoinstPackages(list packageList, string kernel )
+	``{
+	
+	map configure = AIConfig::Profile["configure"]:$[];
+	list packages = [];
+
+	packages = union (packages, packageList);
+
+	// In autoinst mode, a kernel might be external and not available
+	// in common.pkd
+	if (size(kernel)==0)
+	{
+	    packages =add (packages, "k_deflt");
+	}
+
+	if (haskey(configure, "nis")) {
+		map nis = configure["nis"]:$[];
+		if (nis["start_nis"]:false)
+			packages = add(packages, "ypbind");
+		if (nis["start_autofs"]:false)
+			packages = add(packages, "autofs");
+	}
+
+	if (haskey(configure, "ldapclient")) {
+		map ldapclient = configure["ldapclient"]:$[];
+		if (ldapclient["start_ldapclient"]:false)
+			packages = union(packages, ["pam_ldap","nss_ldap"]);
+	}
+
+
+	if (haskey(configure, "inetd")) {
+		map inetd = configure["inetd"]:$[];
+		if (inetd["start_inetd"]:false)
+			packages = add(packages, "inetd");
+	}
+
+	if (haskey(configure, "nisplus")) {
+		map nisplus = configure["nisplus"]:$[];
+		if (nisplus["start_nisplus"]:false)
+			packages = add(packages, "nis-utils");
+	}
+	if (haskey(configure, "mail")) {
+		map mail = configure["mail"]:$[];
+		if (mail["mta"]:`other == `postfix)
+		{
+			packages = add(packages, "postfix");
+			if (mail["use_amavis"]:false)
+				packages = add(packages, "amavis-postfix");
+		}
+		else if (mail["mta"]:`other == `sendmail)
+		{
+			packages = add(packages, "sendmail");
+			if (mail["use_amavis"]:false)
+				packages = add(packages, "amavis-sendmail");
+		}
+	}
+	y2milestone("package list needed during auto-installation: %1", packages);
+	return packages;
+    }    
+    /**
+     * Selection Manipulation and Management
      *
      */
-    global define SelectionInfo(boolean consistency)``{
+    global define SelectionInfo(boolean consistency)
+	``{
 	
 	list current_sel = AIServer::Selections;
 	y2milestone("current sel: %1", current_sel );
+
+	list packages = [];
 	if (size(current_sel) > 1) 
 	{
 	    integer sel = 1;	
-	    SCR::Execute(.package.selectSelInstall, select( current_sel,0,"" ),true );
-	    while (sel < size(current_sel) - 1) {
+	    SCR::Execute(.package.selectSelInstall, select( current_sel, 0 , "" ), true );
+	    while (sel < size(current_sel) - 1)
+	    {
 		SCR::Execute(.package.selectSelInstall, select( current_sel,sel,"" ),false );
 		sel = sel + 1;
 	    }
 	    SCR::Execute(.package.selectSelInstall, select( current_sel,size(current_sel)-1,"" ),false );
+	    packages = SCR::Read (.package.selPackages);
 	} 
 	else if (size(current_sel) == 1)
 	{
-	    SCR::Execute(.package.selectSelInstall, select( current_sel,0, "" ), true );
+	    SCR::Execute(.package.selectSelInstall, select( current_sel, 0, "" ), true );
+	    packages = SCR::Read (.package.selPackages);
+	}
+	else
+	{	    
+	    packages = [];
 	}
 	
-	list packages = SCR::Read (.package.selPackages);
 	
-	y2milestone("Packages: %1", packages);
-	SCR::Execute(.package.setInstallSelection, packages, false);
+	
+
+	list allPacs = toset(union( packages, AIServer::morePackages));
+	y2milestone("Packages: %1", allPacs);
+
+	AIServer::totalPacs = size(allPacs );
+	
+	SCR::Execute(.package.setInstallSelection, allPacs , true);
+	
+	map dep = SCR::Read(.package.selDependencies);	
+	map pacdep = SCR::Read(.package.dependencies);
+	// SCR::Execute(.package.setInstallSelection, union(allPacs,pacdep["ADD"]:[]) , true);
+	
+	y2milestone("depend %1", dep);
+	
+	y2milestone("pack depend %1", pacdep);
+	
 	list neededCDs = SCR::Read (.package.neededCDs);
+	
 	y2milestone("needed CDs: %1", neededCDs );
 	
 	integer CdSourceSize = 0;
@@ -109,7 +207,7 @@
 	summary = Summary::AddLine(summary, sformat(_("%1 Mb"), SourceSize / ( 1000 * 1000)));
 	
 	summary = Summary::AddHeader(summary, _("Packages"));
-	summary = Summary::AddLine(summary, sformat(_("%1 Packages will be installed"), size(packages)));
+	summary = Summary::AddLine(summary, sformat(_("%1 Packages will be installed"), size(allPacs)));
 	
 	summary = Summary::AddHeader(summary, _("Consistency Check"));
 	if (!consistency)
@@ -150,20 +248,39 @@
     
 
     /**
+     * Package Management
      *
      */
     global define packageManagement() ``{
 	import "Packages";
 	import "Installation";
 	import "Mode";
+	import "AIConfig";
 
+	map _prof = AIConfig::Profile;
+	
+	map _conf = _prof["install"]:$[];
+	map _soft = _conf["software"]:$[];
+
+	string base = _soft["base"]:"";
+	list addons = _soft["addons"]:[];
+	list packs  = _soft["packages"]:[];
+	string kernel = _soft["kernel"]:"";
+
+	AIServer::Selections = add(addons, base);
+	AIServer::morePackages = autoinstPackages(packs, kernel);
+
+	
+	y2milestone("Selections %1", AIServer::Selections);
 	Installation::destdir = "/mnt";
 	InstMedia::source_medium = true;
 	Installation::sourcedir = AIServer::PackageRep;
 	if (!AIServer::PkdInitialized)
 	{
+	    showFeedback(_("Please wait while the package database is being initialized...."));
 	    Packages::Init(false);
 	    AIServer::PkdInitialized=true;
+	    clearFeedback();
 	}
 
 
@@ -183,9 +300,17 @@
 		  );
 
 	string help = _("<P>
-Help</P>");
+This dialog shows the package selection you have made and gives you an idea about the
+expected size of the ISO file you are going to create.</P>");
 
+	help = help + _("<p>You can overwrite the package settings you have entered
+in the control file by selecting some new package groups</p>");
 
+	help = help + _("YaST2 automatically adds packages which are not included in
+you selection but will be needed to perform the installation</p>");
+
+	help = help + _("Use the <b>Consistency Check</b> to make sure all package
+are available</p>");
 
 	
 	Wizard::SetContents(_("Package Repository"),
@@ -199,6 +324,7 @@ Help</P>");
 	    {
 		sel = UI::QueryWidget(`id(`table), `CurrentItem);
 		AIServer::Selections=addSelection( sel);
+		
 		UI::ChangeWidget(`id(`table), `Items, CreateSelTable(toset(AIServer::Selections)));
 		UI::ChangeWidget(`id(`table), `CurrentItem, sel);
 		UI::ChangeWidget(`id(`summary), `Value, SelectionInfo(false));
@@ -217,6 +343,188 @@ Help</P>");
 	    
 	    y2milestone("ret: %1", ret);
 	} until (ret == `next ||  ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	return ret;
+    }
+
+    /**
+     * ISO size dialog
+     *
+     */
+    global define isoSizeDialog(integer expectedSize, string filename)``{
+	
+	UI::OpenDialog(
+		       `VBox(
+			     `Heading(_("Please wait while the ISO file is being created")),
+			     `DownloadProgress(AIServer::isoFile, filename, expectedSize - 1000000),
+			     `HSpacing(50), // force width
+			     `PushButton(`opt(`default), CloseButtonLabel())
+			     )
+		       );
+	UI::UserInput();
+	UI::CloseDialog();
+	return;
+    }
+
+    
+    /**
+     * ISO creation Dialog
+     *
+     */
+    global define isoDialog()``{
+	
+	AIServer::nojoliet = true;
+	
+	term contents = `Top(
+			     `VBox(
+				   `VSquash(
+					    `HBox(
+						  `TextEntry(`id(`susedir), _("&SuSE Package Directory:"), AIServer::PackageRep),
+						  `VBox(
+							`VSpacing(),
+							`Bottom(`PushButton(`id(`opensusedir), _("Select &Directory")))
+							)
+						  )
+					    ),
+				   `VSquash(
+					    `TextEntry(`id(`dest), _("&Destination"), "")
+					    )				   
+				   )
+			     );
+	
+	string caption = _("Create Custom CD");
+	string help = _("<P>Enter the locaion where you have copied you CDs in
+the <em>SuSE Package Directory</em>
+field. This directory must contain the <b>suse</b> subdirectory which contains
+the RPMS of either 1 CD or all copied CDs</p>");
+
+	help = help + _("<p>In the <em>Destination</em> enter the name of the ISO file to be created, i.e.
+<b>/tmp/suse.iso</b></p>");
+
+	help = help + _("<p>Pressing <b>next</b> will create the directory structure
+needed to create the ISO image</p>");
+
+	
+  
+	Wizard::SetContentsButtons (caption,
+				    contents,
+				    help,
+				    BackButtonLabel (),
+				    NextButtonLabel ());
+
+	any ret = nil;
+	repeat
+	    {
+		ret = UI::UserInput();
+
+		if (ret == `next)
+		{
+		    AIServer::sourceDir = UI::QueryWidget(`id(`susedir), `Value);
+		    AIServer::isoFile  = UI::QueryWidget(`id(`dest), `Value);
+		}
+
+	    }  until (ret == `next || ret == `back || ret == `abort);    
+	return ret;
+    }
+
+
+
+    global define createISO() ``{
+
+	import "Progress";
+
+	string help = UI(_("<P>
+Please wait while the directory structure for the new ISO file is being created.
+</P>"));
+	help = help + _("<p>Press <b>next</b> to create the ISO file</p>");
+
+
+	    
+	list progress_stages =
+	    [
+	     _("Create Skeleton with essential files"),
+	     _("Saving Control File"),
+	     _("Copy selection packages")
+	     ];
+
+	list progress_descriptions =
+	    [
+	     _("Creating Skeleton with essential files"),
+	     _("Saving control file"),
+	     _("Copying selection packages")	   
+	     ];
+
+
+
+	
+	Progress::New(
+		      _("Creating ISO image"),
+		      "",     // progress_title
+		      size( progress_stages ) + AIServer::totalPacs + 1,	// progress bar length
+		      progress_stages,
+		      progress_descriptions,
+		      help );
+
+	
+	Progress::NextStage();
+	AIServer::createISOSkeleton();
+
+	Progress::NextStage();
+	
+	string cpCmd = sformat("cp /usr/share/autoinstall/isolinux.cfg %1/skeleton/suse/images/boot/", AIServer::skelDir);
+	SCR::Execute (.target.bash, cpCmd);
+	
+	Progress::NextStep();
+	
+	string location = sformat("%1/skeleton/autoinst.xml", AIServer::skelDir);
+	AIConfig::SaveProfile(location);
+	
+	Progress::NextStage();	
+	
+	integer i = 0;
+	list neededCDs = SCR::Read (.package.neededCDs);
+	foreach(`cd, neededCDs, ``{
+	    if (cd != 0) {		
+		list cdlist = SCR::Read (.package.installSetCD, i);
+		foreach (`p, cdlist, ``{
+		    string pacPath = sformat("%1/suse/%2", AIServer::sourceDir ,select( p, 0, ""));
+		    integer pacsize = SCR::Read(.target.size, pacPath);
+		    if (pacsize!=-1)
+		    {
+			Progress::Title(sformat(_("Copying %1"),  select( p, 0, "")));
+			Progress::NextStep();
+			string cpCmd = sformat("cp %1 %2/skeleton/suse/%3", pacPath, AIServer::skelDir,  select( p, 0, ""));
+			any ret = SCR::Execute (.target.bash, cpCmd);
+			
+		    }
+		    
+		});
+		
+	    }	  
+	    i = i + 1;
+	});		
+	Progress::Title(_("ISO image directory ready"));
+	Progress::Finish();
+	UI::ChangeWidget(`id(`next), `Enabled, true);	
+
+	any ret  = nil;
+
+	repeat
+	    {
+		ret = UI::UserInput();	
+		if (ret == `next)
+		{
+		    string mkisofscmd =	AIServer::createISOCmd(AIServer::isoFile );
+		    y2milestone("command: %1",  mkisofscmd );
+		    
+		    string du = lookup(SCR::Execute(.target.bash_output, sformat("du -s -b %1/skeleton | awk -F' ' ' { printf $1 }'", AIServer::skelDir )), "stdout", "");
+		    integer fsSize = tointeger(du);
+		    y2milestone("size: %1" , fsSize);
+		    SCR::Execute (.target.bash_background,  mkisofscmd);
+		    isoSizeDialog(fsSize, AIServer::isoFile);
+
+		}
+	
+	    } until (ret == `next || ret == `back || ret == `abort);
 	return ret;
     }
 }

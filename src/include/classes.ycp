@@ -299,7 +299,7 @@ to which class it should belong</P>");
 	
 	list classes = maplist(map class , AIClass::Classes,
 			       ``{
-				   string pathtoClass = sformat("%1/%2", AIClass::classDir, lookup(class,"name","Unknown"));
+				   string pathtoClass = sformat("%1/%2", AIClass::classDir, lookup(class,"name",_("Unknown")));
 				   list classes_in_group = SCR::Read(.target.dir, pathtoClass);
 				   return (`item(
 						 `id(lookup(class,"name","xxx")),
@@ -314,7 +314,7 @@ to which class it should belong</P>");
 	term contents =	 
 	    `VBox(
 		  `VWeight(40, `Table( `id(`table), `opt (`notify, `immediate),
-				       `header("Class Name", "Order", "Configurations"),
+				       `header(_("Class Name"), _("Order"), _("Configurations")),
 				       classes			 
 				       )
 			   ),
@@ -339,7 +339,7 @@ to which class it should belong</P>");
     
     global define ManageClasses()
 	``{
-	string title = ("Classes");
+	string title = _("Classes");
 	
 	string help = _("<p>Use this screen to define the groups of classes
 you want to use in a multiple host environment.</p>");
@@ -374,7 +374,7 @@ is merged when joining several classes</p>");
 	    class =  UI::QueryWidget(`id(`table), `CurrentItem);
 	    map selected_class = select(filter(map c,  AIClass::Classes,``(lookup(c,"name","")== class)),0,$[]);  
 	    if (class!=nil)
-		UI::ChangeWidget(`id(`description), `Value, lookup(selected_class,"description","No Description"));
+		UI::ChangeWidget(`id(`description), `Value, lookup(selected_class,"description",_("No Description")));
 
 	    
 	    ret = UI::UserInput();
