@@ -1,0 +1,36 @@
+	  <example>
+	    <title>
+	      Auto-detection of partitions to be kept.
+	    </title>
+	   
+	    
+	    <screen>
+<![CDATA[
+  <install>
+.....
+    <partitioning config:type="list">
+      <drive>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <mount>/</mount>
+            <partition_id config:type="integer">131</partition_id>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">true</format>
+            <filesystem config:type="symbol">swap</filesystem>
+            <partition_id config:type="integer">130</partition_id>
+            <mount>swap</mount>
+          </partition>
+        </partitions>
+      </drive>
+    </partitioning>
+.....
+  </install>
+
+]]>
+	    </screen>
+
+	  </example>	 

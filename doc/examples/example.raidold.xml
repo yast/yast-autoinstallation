@@ -1,0 +1,55 @@
+	<example>
+	  <title>RAID1 configuration (Old Syntax)</title>
+	  <screen>
+<![CDATA[
+....
+   <partitioning config:type="list">
+      <drive>
+        <device>/dev/sda</device>
+        <partitions config:type="list">
+          <partition>
+            <partition_id config:type="integer">253</partition_id>
+            <format config:type="boolean">false</format>
+            <raid_name>/dev/md0</raid_name>
+            <raid_type>raid</raid_type>
+            <size>4gb</size>            
+          </partition>
+
+          <!-- Here come the regular partitions, i.e. / and swap -->        
+
+        </partitions>
+        <use>all</use>
+      </drive>
+      <drive>
+        <device>/dev/sdb</device>
+        <use>all</use>
+        <partitions config:type="list">
+          <partition>
+             <partition_id config:type="integer">253</partition_id>
+             <format config:type="boolean">false</format>
+             <raid_name>/dev/md0</raid_name>            
+             <raid_type>raid</raid_type>
+             <size>4gb</size>
+          </partition>
+         </partitions>
+       </drive>
+   </partitioning>
+
+   <raid config:type="list">
+       <raid_device>
+          <device_name>/dev/md0</device_name>
+          <parity_algorithm>left-asymmetric</parity_algorithm>
+          <persistent_superblock  config:type="boolean">true</persistent_superblock>
+          <raid_type>raid1</raid_type>
+          <partition_id config:type="integer">131</partition_id>
+          <chunk_size>4</chunk_size>
+          <mount>/space</mount>
+          <format config:type="boolean">true</format>
+          <filesystem config:type="symbol">reiser</filesystem>
+       </raid_device>
+    </raid>
+
+....
+]]>	  
+	    </screen>
+	  </example>

@@ -1,13 +1,12 @@
-  <chapter>
+  <chapter id="configuration">
     <title>Configuration and Installation Options</title>
     <para>
       This chapter introduces important parts of a control file for
       standard purposes. To have an idea about the other options available,
-      consult the reference <!-- link --> or use the configuration
-      management system.     
+      use the configuration management system.     
     </para>
     <section id="CreateProfile.General">
-      <title>
+      <title id="CreateProfile.General.title">
 	General Options
       </title>
       <para>
@@ -37,59 +36,59 @@
 	to a a detection of a special kernel architecture or if  a reboot was requested in
 	the control file. 
       </para>
-     
+      
     </section>
     <section id="CreateProfile.Reporting">
       <title id="CreateProfile.Reporting.title">
 	Reporting
       </title>     
-	
-	<para>
-	  The <emphasis>report</emphasis> resource manages 3 types of pop-ups
-	  that may appear during installation.
-	</para>
-	<itemizedlist>
-	  <listitem>
-	    <para>
-	      Pop up messages (Normally only non-critical, informative messages)
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      Warning messages (If something might go wrong)
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      Error messages (In the case of an error)
-	    </para>
-	  </listitem>
-	</itemizedlist>
-	&example.reporting;
-	<para>
-	  Depending on your experience, you can skip, log and show (with timeout)
-	  those messages. It is recommended to show all
-	  <emphasis>messages</emphasis> with timeout. Warnings can be skipped in
-	  some places but should not be ignored.
-	</para>
-	<para>
-	  The default, the settings in auto-installation mode is to show all messages without logging and
-	  with a timeout of 10 seconds.
-	</para>
-
-	<note>
-	  <title>
-	    Critical system messages
-	  </title>
+      
+      <para>
+	The <emphasis>report</emphasis> resource manages 3 types of pop-ups
+	that may appear during installation.
+      </para>
+      <itemizedlist>
+	<listitem>
 	  <para>
-	    Note that <emphasis>not</emphasis> all messages during installation are controlled by the
-	    <emphasis>report</emphasis> resource. Some critical messages concerning
-	    package installation and partitioning will still show up ignoring your
-	    settings in the <emphasis>report</emphasis> section. Mostly those
-	  message will have to be answered with <emphasis>Yes</emphasis> or <emphasis>No</emphasis>.
+	    Pop up messages (Normally only non-critical, informative messages)
 	  </para>
-	</note>
-      </section>
+	</listitem>
+	<listitem>
+	  <para>
+	    Warning messages (If something might go wrong)
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Error messages (In the case of an error)
+	  </para>
+	</listitem>
+      </itemizedlist>
+      &example.reporting;
+      <para>
+	Depending on your experience, you can skip, log and show (with timeout)
+	those messages. It is recommended to show all
+	<emphasis>messages</emphasis> with timeout. Warnings can be skipped in
+	some places but should not be ignored.
+      </para>
+      <para>
+	The default, the settings in auto-installation mode is to show all messages without logging and
+	with a timeout of 10 seconds.
+      </para>
+
+      <note>
+	<title>
+	  Critical system messages
+	</title>
+	<para>
+	  Note that <emphasis>not</emphasis> all messages during installation are controlled by the
+	  <emphasis>report</emphasis> resource. Some critical messages concerning
+	  package installation and partitioning will still show up ignoring your
+	  settings in the <emphasis>report</emphasis> section. Mostly those
+	  message will have to be answered with <emphasis>Yes</emphasis> or <emphasis>No</emphasis>.
+	</para>
+      </note>
+    </section>
 
 
 
@@ -122,139 +121,139 @@
       
     </section>
 
-      <section id="CreateProfile.Partitioning">
+    <section id="CreateProfile.Partitioning">
+      <title>
+	Partitioning
+      </title>
+
+      <section>
 	<title>
-	  Partitioning
+	  Automated Partitioning
 	</title>
 
-	<section>
-	  <title>
-	    Automated Partitioning
-	  </title>
-
-	  <para>
-	    For the automated partitioning to be completed, only the sizes and mount points of
-	    partitions can be provided. All other data needed for successful partitioning
-	    can be calculated during installation if not provided in the control file. 
-	  </para>
-	  <para>
-	    If no partitions are defined and the specified drive is also the drive where
-	    the root partition should reside, the following partitions are created
-	    automatically:
-	  </para>
-	  <itemizedlist>
-	    <listitem>
-	      <para>
-		<emphasis>/boot</emphasis>
-	      </para>
-	      <para>
-		Size of the <emphasis>/boot</emphasis> is determined by the
-		architecture of the target system.
-	      </para>
-	    </listitem>
-	    <listitem>
-	      <para>
-		<emphasis>swap</emphasis>
-	      </para>
-	      <para>
-		Size of the <emphasis>swap</emphasis> partitions is determined by the
-		amount of memory available in the system.
-	      </para>
-	    </listitem>
-	    <listitem>
-	      <para>
-		<emphasis>/</emphasis> (root partition)
-	      </para>
-	      <para>
-		Size of the <emphasis>/</emphasis> (root partition) is the space left
-		after creating <emphasis>swap</emphasis> and <emphasis>/boot</emphasis>.
-	      </para>
-	    </listitem>
-	  </itemizedlist>
+	<para>
+	  For the automated partitioning to be completed, only the sizes and mount points of
+	  partitions can be provided. All other data needed for successful partitioning
+	  can be calculated during installation if not provided in the control file. 
+	</para>
+	<para>
+	  If no partitions are defined and the specified drive is also the drive where
+	  the root partition should reside, the following partitions are created
+	  automatically:
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      <emphasis>/boot</emphasis>
+	    </para>
+	    <para>
+	      Size of the <emphasis>/boot</emphasis> is determined by the
+	      architecture of the target system.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      <emphasis>swap</emphasis>
+	    </para>
+	    <para>
+	      Size of the <emphasis>swap</emphasis> partitions is determined by the
+	      amount of memory available in the system.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      <emphasis>/</emphasis> (root partition)
+	    </para>
+	    <para>
+	      Size of the <emphasis>/</emphasis> (root partition) is the space left
+	      after creating <emphasis>swap</emphasis> and <emphasis>/boot</emphasis>.
+	    </para>
+	  </listitem>
+	</itemizedlist>
 	
-	  <para>
-	    Depending on the initial status of the drive and how it was
-	    previously partitioned, it is possible to create the <emphasis>default</emphasis>
-	    partitioning in the following ways:
-	     </para>
-	   <itemizedlist>
-	    <listitem>
-	      <para>
-		<emphasis>Use free space</emphasis>
-	      </para>
-	      <para>
-		If the drive is already partitioned, it is possible to create the
-		new partitions on the available space of the hard drive. This
-		requires the availability of enough space for all selected
-		package in addition to swap.
-	      </para>
-	    </listitem>
-	    <listitem>
-	      <para>
-		<emphasis>Reuse all available space</emphasis>
-	      </para>
-	      <para>
-		This option will lead to the deletion of all existing
+	<para>
+	  Depending on the initial status of the drive and how it was
+	  previously partitioned, it is possible to create the <emphasis>default</emphasis>
+	  partitioning in the following ways:
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      <emphasis>Use free space</emphasis>
+	    </para>
+	    <para>
+	      If the drive is already partitioned, it is possible to create the
+	      new partitions on the available space of the hard drive. This
+	      requires the availability of enough space for all selected
+	      package in addition to swap.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      <emphasis>Reuse all available space</emphasis>
+	    </para>
+	    <para>
+	      This option will lead to the deletion of all existing
 	      partitions (Linux and non-Linux partitions).
 
-	      </para>
-	    </listitem>
+	    </para>
+	  </listitem>
 
-	    <listitem>
-	      <para>
-		<emphasis>Reuse all available Linux partitions</emphasis>
-	      </para>
-	      <para>
+	  <listitem>
+	    <para>
+	      <emphasis>Reuse all available Linux partitions</emphasis>
+	    </para>
+	    <para>
 	      This option will lead to the deletion of existing Linux
 	      partitions. All other partitions (i.e. Windows) will be
 	      kept. Note that this works only if the Linux partitions are at the end of the device.
 	      
-	      </para>
-	    </listitem>
-
-	    <listitem>
-	      <para>
-		<emphasis>Reuse only specified partitions</emphasis>
-	      </para>
-	      <para>
-		This option will lead to the deletion of the specified partitions.
-		The selection of the partitions scheduled for deletion should be
-		started from the last available partition.
-	      </para>
-	    </listitem>
-	  </itemizedlist>
-<note>
-	<title>Improtant Notice</title>
-	<para>
-		The value provided in the<emphasis>use</emphasis> property determines how existing data and
-		partitions are treated. The value <emphasis>all</emphasis> means that ALL data on the disk will
-		be erased. Make backups and use the <emphasis>confirm</emphasis> property if you are going to
-        keep some partitions with important data. This is automated installation and no pop-ups will
-        notify you about partitions being deleted.
-	</para>
-</note>
-	  <para>	
-	    In case of the presence of multiple drives in the target system, all
-	    drives  should be identified with their device
-	    names and the way the partitioning should be performed.
-	  </para>
-
-	  <para>
-	    Partition sizes can be given in Gigabytes, Megabytes or can be set to
-	    a flexible value using the keywords <emphasis>auto</emphasis> and
-	    <emphasis>max</emphasis>. <emphasis>max</emphasis> is used to fill a
-	    partition to the maximal available space on a
-	    drive (Which mean that the partition should be the last one on the drive). 
-	    <emphasis>auto</emphasis> can be used to determine the size of
-	    a <emphasis>swap</emphasis> or <emphasis>boot</emphasis> partitions
-	    depending on the memory available and the type of the system.
-	  </para>
-	  <para>A fixed size can be given as shown below:</para>
-	    <para>
-	      <emphasis>1GB</emphasis> will create a partition with 1 GB size.<emphasis> 1500MB</emphasis> will create
-	      a partition which is 1.5 GB big.
 	    </para>
-	  &example.partitioning;
+	  </listitem>
+
+	  <listitem>
+	    <para>
+	      <emphasis>Reuse only specified partitions</emphasis>
+	    </para>
+	    <para>
+	      This option will lead to the deletion of the specified partitions.
+	      The selection of the partitions scheduled for deletion should be
+	      started from the last available partition.
+	    </para>
+	  </listitem>
+	</itemizedlist>
+	<note>
+	  <title>Improtant Notice</title>
+	  <para>
+	    The value provided in the<emphasis>use</emphasis> property determines how existing data and
+	    partitions are treated. The value <emphasis>all</emphasis> means that ALL data on the disk will
+	    be erased. Make backups and use the <emphasis>confirm</emphasis> property if you are going to
+	    keep some partitions with important data. This is automated installation and no pop-ups will
+	    notify you about partitions being deleted.
+	  </para>
+	</note>
+	<para>	
+	  In case of the presence of multiple drives in the target system, all
+	  drives  should be identified with their device
+	  names and the way the partitioning should be performed.
+	</para>
+
+	<para>
+	  Partition sizes can be given in Gigabytes, Megabytes or can be set to
+	  a flexible value using the keywords <emphasis>auto</emphasis> and
+	  <emphasis>max</emphasis>. <emphasis>max</emphasis> is used to fill a
+	  partition to the maximal available space on a
+	  drive (Which mean that the partition should be the last one on the drive). 
+	  <emphasis>auto</emphasis> can be used to determine the size of
+	  a <emphasis>swap</emphasis> or <emphasis>boot</emphasis> partitions
+	  depending on the memory available and the type of the system.
+	</para>
+	<para>A fixed size can be given as shown below:</para>
+	<para>
+	  <emphasis>1GB</emphasis> will create a partition with 1 GB size.<emphasis> 1500MB</emphasis> will create
+	  a partition which is 1.5 GB big.
+	</para>
+	&example.partitioning;
 
 	
       </section>
@@ -320,29 +319,29 @@
 	    <listitem>
 	      <para><emphasis>Extended User Attributes (user_xattr):</emphasis> Allow extended user attributes on the file system.</para>
 	    </listitem>
-	   
+	    
 	  </itemizedlist>
- 
+	  
 	  &example.mountoptions;
 	</section>
 	
 	<section>
 	  <title>Creating Primary and Extended Partitions</title>
-	<para>
-	  By default, &autoyast2; will create an extended partition and will add all
-	  new partitions as logical devices. It is possible however to
-	  instruct &autoyast2; to create a certain partition as a primary
-	  or as extended partition. Additionally, it is possible to
-	  specify the size of a partition using sectors instead of size in Mbytes.
-	</para>
-	<para>
-	  The properties <emphasis>partition_id</emphasis> and
-	  <emphasis>partition_type</emphasis> control such behavior. To
-	  specify the size in sectors, the list resource
-	  <emphasis>region</emphasis> can be used.
-	</para>
-	&example.advancedPartitioning;
-	
+	  <para>
+	    By default, &autoyast2; will create an extended partition and will add all
+	    new partitions as logical devices. It is possible however to
+	    instruct &autoyast2; to create a certain partition as a primary
+	    or as extended partition. Additionally, it is possible to
+	    specify the size of a partition using sectors instead of size in Mbytes.
+	  </para>
+	  <para>
+	    The properties <emphasis>partition_id</emphasis> and
+	    <emphasis>partition_type</emphasis> control such behavior. To
+	    specify the size in sectors, the list resource
+	    <emphasis>region</emphasis> can be used.
+	  </para>
+	  &example.advancedPartitioning;
+	  
 	  <para>
 	    The last example is only useful if you exactly know the
 	    boundaries of the partitions and it does only make sense if you are creating
@@ -355,60 +354,10 @@
 	    The following example lets you create an extended partition with a
 	    custom size.
 	  </para>
-	  <example>
-	    <title>
-	      Creating custom extended partitions
-	    </title>
-	   
-	    
-	    <screen>
-<![CDATA[
-  <install>
-.....
-    <partitioning config:type="list">
-      <drive>
-        <device>/dev/hdc</device>
-        <partitions config:type="list">
-          <partition>
-            <filesystem config:type="symbol">ext2</filesystem>
-            <mount>/boot</mount>
-            <partition_id config:type="integer">131</partition_id>
-            <partition_nr config:type="integer">2</partition_nr>
-            <size>50mb</size>
-          </partition>
-          <partition>
-            <mount>swap</mount>
-            <partition_id config:type="integer">130</partition_id>
-            <partition_nr config:type="integer">3</partition_nr>
-            <size>100mb</size>
-          </partition>
-          <partition>
-            <partition_id config:type="integer">15</partition_id>
-            <partition_nr config:type="integer">4</partition_nr>
-            <size>3000mb</size>
-          </partition>
-          <partition>
-            <filesystem config:type="symbol">ext2</filesystem>
-            <mount>/</mount>
-            <partition_id config:type="integer">131</partition_id>
-            <partition_nr config:type="integer">5</partition_nr>
-            <size>1gb</size>
-          </partition>
-        </partitions>
-        <use>free</use>
-      </drive>
-    </partitioning>
-....
-  </install>
-
-]]>
-	    </screen>
-
-	  </example>
+	  &example.customextended;
 
 
-
-      </section>
+	</section>
 	<section>
 	  <title>Keeping Specific Partitions</title>
 	  <para>
@@ -432,62 +381,7 @@
 	    partition 6 to create two new partitions. All kept partitions will
 	    be only formatted.
 	  </para>
-	  <example>
-	    <title>
-	     Keeping partitions
-	    </title>
-	   
-	    
-	    <screen>
-<![CDATA[
-  <install>
-.....
-    <partitioning config:type="list">
-      <drive>
-        <device>/dev/hdc</device>
-        <partitions config:type="list">
-          <partition>
-            <create config:type="boolean">false</create>
-            <format config:type="boolean">true</format>
-            <mount>/</mount>
-            <partition_nr config:type="integer">1</partition_nr>
-          </partition>
-          <partition>
-            <create config:type="boolean">false</create>
-            <format config:type="boolean">false</format>
-            <partition_nr config:type="integer">2</partition_nr>
-            <mount>/space</mount>
-          </partition>
-          <partition>
-            <create config:type="boolean">false</create>
-            <format config:type="boolean">true</format>
-            <filesystem config:type="symbol">swap</filesystem>
-            <partition_nr config:type="integer">5</partition_nr>
-            <mount>swap</mount>
-          </partition>
-          <partition>
-            <format config:type="boolean">true</format>
-            <mount>/space2</mount>
-            <size>50mb</size>
-          </partition>
-          <partition>
-            <format config:type="boolean">true</format>
-            <mount>/space3</mount>
-            <size>max</size>
-          </partition>
-
-        </partitions>
-        <use>6</use>
-      </drive>
-
-    </partitioning>
-....
-  </install>
-
-]]>
-	    </screen>
-
-	  </example>
+	  &example.keepingpart;
 	  <para>
 	    The last example requires exact knowledge about the existing partition
 	    table and about the partition numbers of those partitions that
@@ -511,42 +405,7 @@
 	    the partition types (Additional configuration data can be provided,
 	    for example file system options, encryption and filesystem type)
 	  </para>
-	  <example>
-	    <title>
-	      Auto-detection of partitions to be kept.
-	    </title>
-	   
-	    
-	    <screen>
-<![CDATA[
-  <install>
-.....
-    <partitioning config:type="list">
-      <drive>
-        <partitions config:type="list">
-          <partition>
-            <create config:type="boolean">false</create>
-            <format config:type="boolean">true</format>
-            <mount>/</mount>
-            <partition_id config:type="integer">131</partition_id>
-          </partition>
-          <partition>
-            <create config:type="boolean">false</create>
-            <format config:type="boolean">true</format>
-            <filesystem config:type="symbol">swap</filesystem>
-            <partition_id config:type="integer">130</partition_id>
-            <mount>swap</mount>
-          </partition>
-        </partitions>
-      </drive>
-    </partitioning>
-.....
-  </install>
-
-]]>
-	    </screen>
-
-	  </example>	 
+	  &example.autodetectpart;
 	</section>	
       </section>
 
@@ -562,35 +421,7 @@
 	  To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
 	  normal partitioning method described above. 
 	</para>
-	<example>
-	  <title>
-	    Create LVM Physical Volume
-	  </title>
-	  <para>
-	    The following example shows how to prepare for LVM in the
-	    <emphasis>partitioning</emphasis> resource:
-	  </para>
-	  <screen>
-<![CDATA[
-....
-<partitioning config:type="list">
-     <drive>
-         <device>/dev/sda</device>         
-         <use>all</use>
-         <partitions config:type="list">
-            <partition>
-               <size>max</size>
-               <lvm_group>system</lvm_group>
-               <partition_type>primary</partition_type>
-            </partition>
-         </partitions>
-     </drive>
-</partitioning>
-.....
-]]>
-	  </screen>
-
-	</example>
+	&example.lvmvolume;
 	<para>
 	  The last example will create a non-formatted partition on device
 	  <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
@@ -609,111 +440,10 @@
 	  add the resource manually as shown in the  following example.
 	</para>
 
-	<example>
-	  <title>
-	    LVM Logical Volumes (Old syntax)
-	  </title>
-	  <screen>
-<![CDATA[
-....
- <partitioning config:type="list">
-     <drive>
-         <device>/dev/sda</device>         
-         <use>all</use>
-         <partitions config:type="list">
-            <partition>
-               <size>max</size>
-               <lvm_group>system</lvm_group>
-               <partition_type>primary</partition_type>
-            </partition>
-         </partitions>
-     </drive>
- </partitioning>
-.....
-....
-  <lvm config:type="list">
-     <lvm_group>
-      <lvm_name>system</lvm_name>
-      <pesize>4M</pesize>
-      <logical_volumes config:type="list">
-        <lv>
-           <lv_name>usrlv</lv_name>
-              <lv_size>500mb</lv_size>
-              <lv_fs>reiser</lv_fs>
-              <lv_mount>/usr</lv_mount>
-           </lv>
-           <lv>
-              <lv_name>optlv</lv_name>
-              <lv_size>1500mb</lv_size>
-              <lv_fs>reiser</lv_fs>
-              <lv_mount>/opt</lv_mount>
-           </lv>
-           <lv>
-              <lv_name>varlv</lv_name>
-              <lv_size>200mb</lv_size>
-              <lv_fs>reiser</lv_fs>
-              <lv_mount>/var</lv_mount>
-           </lv>
-      </logical_volumes>
-   </lvm_group>
-  </lvm>
-.....
-]]>
-	  </screen>
-	</example>
+	&example.lvmold;
 	<para>Using the new method, the above configuration has the following syntax:</para>
 
-	<example>
-	  <title>
-	    LVM Logical Volumes (New syntax)
-	  </title>
-	  <screen>
-<![CDATA[
-....
- <partitioning config:type="list">
-     <drive>
-         <device>/dev/sda</device>         
-         <use>all</use>
-         <partitions config:type="list">
-            <partition>
-               <size>max</size>
-               <lvm_group>system</lvm_group>
-               <partition_type>primary</partition_type>
-            </partition>
-         </partitions>
-     </drive>
-     <drive>
-        <device>/dev/system</device>       
-        <is_lvm_vg config:type="boolean">true</is_lvm_vg>
-        <partitions config:type="list">
-            <partition>
-                <filesystem config:type="symbol">reiser</filesystem>
-                <lv_name>user_lv</lv_name>
-                <mount>/usr</mount>
-                <size>500mb</size>
-            </partition>
-            <partition>
-                <filesystem config:type="symbol">reiser</filesystem>
-                <lv_name>opt_lv</lv_name>
-                <mount>/opt</mount>
-                <size>1500mb</size>
-            </partition>
-            <partition>
-                <filesystem config:type="symbol">reiser</filesystem>
-                <lv_name>var_lv</lv_name>
-                <mount>/var</mount>
-                <size>200mb</size>
-            </partition>
-        </partitions>
-        <pesize>4M</pesize>
-        <use>all</use>
-     </drive>
- </partitioning>
-.....
-....
-]]>
-	  </screen>
-	</example>
+	&example.lvmnew;
       </section>
 
       <section>
@@ -770,124 +500,10 @@
 	<para>
 	  The following example shows a simple RAID1 configuration:
 	</para>
-	<example>
-	  <title>RAID1 configuration (Old configuration></title>
-	  <screen>
-<![CDATA[
-....
-   <partitioning config:type="list">
-      <drive>
-        <device>/dev/sda</device>
-        <partitions config:type="list">
-          <partition>
-            <partition_id config:type="integer">253</partition_id>
-            <format config:type="boolean">false</format>
-            <raid_name>/dev/md0</raid_name>
-            <raid_type>raid</raid_type>
-            <size>4gb</size>            
-          </partition>
-
-          <!-- Here come the regular partitions, i.e. / and swap -->        
-
-        </partitions>
-        <use>all</use>
-      </drive>
-      <drive>
-        <device>/dev/sdb</device>
-        <use>all</use>
-        <partitions config:type="list">
-          <partition>
-             <partition_id config:type="integer">253</partition_id>
-             <format config:type="boolean">false</format>
-             <raid_name>/dev/md0</raid_name>            
-             <raid_type>raid</raid_type>
-             <size>4gb</size>
-          </partition>
-         </partitions>
-       </drive>
-   </partitioning>
-
-   <raid config:type="list">
-       <raid_device>
-          <device_name>/dev/md0</device_name>
-          <parity_algorithm>left-asymmetric</parity_algorithm>
-          <persistent_superblock  config:type="boolean">true</persistent_superblock>
-          <raid_type>raid1</raid_type>
-          <partition_id config:type="integer">131</partition_id>
-          <chunk_size>4</chunk_size>
-          <mount>/space</mount>
-          <format config:type="boolean">true</format>
-          <filesystem config:type="symbol">reiser</filesystem>
-       </raid_device>
-    </raid>
-
-....
-]]>	  
-	    </screen>
-	  </example>
-
+	&example.raidold;
 	<para>Using the new method, the above configuration has the following syntax:</para>
 
-	<example>
-	  <title>RAID1 configuration (New configuration></title>
-	  <screen>
-<![CDATA[
-....
-   <partitioning config:type="list">
-      <drive>
-        <device>/dev/sda</device>
-        <partitions config:type="list">
-          <partition>
-            <partition_id config:type="integer">253</partition_id>
-            <format config:type="boolean">false</format>
-            <raid_name>/dev/md0</raid_name>
-            <raid_type>raid</raid_type>
-            <size>4gb</size>            
-          </partition>
-
-          <!-- Here come the regular partitions, i.e. / and swap -->        
-
-        </partitions>
-        <use>all</use>
-      </drive>
-      <drive>
-        <device>/dev/sdb</device>
-        <use>all</use>
-        <partitions config:type="list">
-          <partition>
-             <partition_id config:type="integer">253</partition_id>
-             <format config:type="boolean">false</format>
-             <raid_name>/dev/md0</raid_name>            
-             <raid_type>raid</raid_type>
-             <size>4gb</size>
-          </partition>
-         </partitions>
-      </drive>
-      <drive>
-         <device>/dev/md</device>
-         <partitions config:type="list">
-            <partition>
-                <raid_options>
-                    <parity_algorithm>left-asymmetric</parity_algorithm>
-                    <chunk_size>4</chunk_size>
-                    <raid_type>raid1</raid_type>
-                </raid_options>
-                <format config:type="boolean">true</format>
-                <filesystem config:type="symbol">reiser</filesystem>
-                <partition_id config:type="integer">131</partition_id>
-                <mount>/space</mount>
-                <partition_nr config:type="integer">0</partition_nr>
-            </partition>
-        </partitions>
-        <use>all</use>
-    </drive>
- 
-   </partitioning>
- 
-....
-]]>	  
-	    </screen>
-	  </example>
+	&example.raidnew;
 
 	<para>
 	  The following has to be taken into consideration when configuring
@@ -911,114 +527,117 @@
 
 
 
-	</section>
-      </section>      
-      <section id="CreateProfile.Software">
+      </section>
+    </section>      
+    <section id="CreateProfile.Software">
+      <title>
+	Software
+      </title>
+      
+      <section id="Software.Selections">
 	<title>
-	  Software
+	  Package Selections
 	</title>
+	<para>	
+	  You can install software on the new system using the following methods;
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      Use a pre-defined package base selection, i.e. Minimal, Minimal+X11,
+	      default etc. in addition to several <emphasis>Add-on</emphasis> selections. 
+	      Check the first CD for available selections in
+	      <filename>suse/setup/desc/selections</filename>, depending on the
+	      product you are installing, some well-known selections might not
+	      be available.
 
-	<section id="Software.Selections">
-	  <title>
-	    Package Selections
-	  </title>
-	  <para>	
-	    You can install software on the new system using the following methods;
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      Custom package selection, i.e. package selection of an existing
+	      system using the <command>rpm</command> command or similar tools.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      Additional local packages, i.e. external packages (non  &company-suse;  packages) 
+	      and packages for initial system setup and configuration.
+	    </para>
+	  </listitem>
+	</itemizedlist>
+	
+	<para>
+	  In the control file, packages and package selections are described as
+	  the following:
+	</para>
+	&example.software;
+	<para>
+	  You can install one base selection and additionally one or multiple 
+	  add-on selections.
+	</para>
+	<para>
+	  When installing from a CD-ROM, needed packages from other CD-ROMs
+	  are installed after the initial boot of the
+	  system in the so-called <emphasis>continue</emphasis> mode. If you
+	  are installing packages from multiple CD-ROMs, then
+	  auto-installation has to be interrupted for switching the
+	  CD-ROMs. In the case of NFS installation, all packages are
+	  installed at first stage of the installation only if the NFS repository
+	  is configured as a one medium.
+	</para>
+	<para>
+	  It is often required, that a package should be installed in the
+	  <emphasis>continue</emphasis> mode, especially custom packages
+	  which may contain scripts for configuring the system. This can be
+	  done using the <emphasis>post-packages</emphasis> resource.
+	</para>
 
-	  </para>
-	  <itemizedlist>
-	    <listitem>
-	      <para>
-		Use a pre-defined package base selection, i.e. Minimal, Minimal+X11,
-		default etc. in addition to several <emphasis>Add-on</emphasis> selections. 
-		Check the first CD for available selections in <filename>suse/setup/desc/selections</filename>, depending on the product you are installing, some well-known selections might not be available.
-	      </para>
-	    </listitem>
-	    <listitem>
-	      <para>
-		Custom package selection, i.e. package selection of an existing
-		system using the <command>rpm</command> command or similar tools.
-	      </para>
-	    </listitem>
-	    <listitem>
-	      <para>
-		Additional local packages, i.e. external packages (non  &company-suse;  packages) 
-		and packages for initial system setup and configuration.
-	      </para>
-	    </listitem>
-	  </itemizedlist>
-	  
-	  <para>
-	    In the control file, packages and package selections are described as
-	    the following:
-	  </para>
-	  &example.software;
-	  <para>
-	    You can install one base selection and additionally one or multiple 
-	    add-on selections.
-	  </para>
-	  <para>
-	    When installing from a CD-ROM, needed packages from other CD-ROMs
-	    are installed after the initial boot of the
-	    system in the so-called <emphasis>continue</emphasis> mode. If you
-	    are installing packages from multiple CD-ROMs, then
-	    auto-installation has to be interrupted for switching the
-	    CD-ROMs. In the case of NFS installation, all packages are
-	    installed at first stage of the installation only if the NFS repository
-	    is configured as a one medium.
-	  </para>
-	  <para>
-	    It is often required, that a package should be installed in the
-	    <emphasis>continue</emphasis> mode, especially custom packages
-	    which may contain scripts for configuring the system. This can be
-	    done using the <emphasis>post-packages</emphasis> resource.
-	  </para>
+      </section>
 
-	</section>
-
-	<section>
-	  <title>
-	    Custom Package Selections
-	  </title>
-	  <para>	
-	    In addition to the pre-defined selections, you can create custom selections
-	    by providing  a customized selection file in the selection
-	    directory. (<filename>suse/setup/descr</filename>) The selection files have a special format and any
-	    additional selection file must conform to this format, otherwise
-	    &yast2; will not be able to read it.	  	  
-	  </para>
-	  <para>
-	    As an example for the selection file, take a look at the files
-	    available in the directory <filename>/suse/setup/descr/</filename> on
-	    the CD-ROMs.
-	  </para>
-	  <para>
-	    After creating a selection file, you can add it to the configuration
-	    as described earlier in this section.
-	  </para>
-	  &example.customSoftware;
-	</section>
-	<section>
-	  <title>
-	    Installing additional and customized Packages
-	  </title>
-	  <para>
-	    In addition to the packages available for installation on the CD-ROMs,
-	    you can add external  packages including customized  kernels. Customized
-	    kernel packages must be compatible to the  &company-suse;  packages and must
-	    install the kernel files to the same locations.
-	  </para>
-	  <para>
-	    Unlike earlier versions, to install custom and external packages
-	    there is no need for a special resource in the control
-	    file. Instead you need to re-create the package database and update
-	    it with any new packages or new package versions in the source repository.
-	  </para>
-	  <para>
-	    A script is provided for this task which will query packages
-	    available in the repository and create the required package
-	    database.
-	  </para>
+      <section>
+	<title>
+	  Custom Package Selections
+	</title>
+	<para>	
+	  In addition to the pre-defined selections, you can create custom selections
+	  by providing  a customized selection file in the selection
+	  directory. (<filename>suse/setup/descr</filename>) The selection files have a special format and any
+	  additional selection file must conform to this format, otherwise
+	  &yast2; will not be able to read it.	  	  
+	</para>
+	<para>
+	  As an example for the selection file, take a look at the files
+	  available in the directory <filename>/suse/setup/descr/</filename> on
+	  the CD-ROMs.
+	</para>
+	<para>
+	  After creating a selection file, you can add it to the configuration
+	  as described earlier in this section.
+	</para>
+	&example.customSoftware;
+      </section>
+      <section>
+	<title>
+	  Installing additional and customized Packages
+	</title>
+	<para>
+	  In addition to the packages available for installation on the CD-ROMs,
+	  you can add external  packages including customized  kernels. Customized
+	  kernel packages must be compatible to the  &company-suse;  packages and must
+	  install the kernel files to the same locations.
+	</para>
+	<para>
+	  Unlike earlier versions, to install custom and external packages
+	  there is no need for a special resource in the control
+	  file. Instead you need to re-create the package database and update
+	  it with any new packages or new package versions in the source repository.
+	</para>
+	<para>
+	  A script is provided for this task which will query packages
+	  available in the repository and create the required package
+	  database.
+	</para>
 	<para>
 	  Creating a new package database is only needed if new RPMs
 	  (i.e. update RPMs) were added. To re-create the database, use the
@@ -1028,64 +647,65 @@
 	  languages will be reset to English).
 	</para>
 	<example>
-	    <title>Creating package database</title>
-	    <screen>
-cd /usr/local/CDs/LATEST/suse
-create_package_descr  -d /usr/local/CDs/LATEST/suse 
-	    </screen>
-	  </example>
-	  <para>
-	    In the above example, the directory
-	    <filename>/usr/local/CDs/LATEST/suse</filename> contains the architecture
-	    dependent and independent packages, i.e. <emphasis>noarch</emphasis> and <emphasis>i586</emphasis>. 
-		This might look different on other architectures.
-	  </para>
-	  <para>
-	    The advantage of this method is that you can keep an up-to-date
-	    repository with fixed and updated package (i.e. from &company-suse; ftp
-	    server). Additionally this method  makes the creation of custom CD-ROMs easier.
-	  </para>
-	</section>
-	<section>
-		<title>Kernel packages</title>
-		 <para>Kernel packages are not part of any selection. The required kernel
-		is determined during installation. If the kernel package is added to any selection
-		or to the individual package selection, installation will mostly fail due to conflicts.
-		</para>
-		<para>To force the installation of a specific kernel, use the <empahsis>kernel</emphasis> property. The following is an example forcing the installation of the default kernel. In this example this kernel will be installed in any case, even if an SMP or other kernel is required</para>
-
-	  &example.kernel;
+	  <title>Creating package database</title>
+	  <screen>
+	    cd /usr/local/CDs/LATEST/suse
+	    create_package_descr  -d /usr/local/CDs/LATEST/suse 
+	  </screen>
+	</example>
+	<para>
+	  In the above example, the directory
+	  <filename>/usr/local/CDs/LATEST/suse</filename> contains the architecture
+	  dependent and independent packages, i.e. <emphasis>noarch</emphasis> and <emphasis>i586</emphasis>. 
+	  This might look different on other architectures.
+	</para>
+	<para>
+	  The advantage of this method is that you can keep an up-to-date
+	  repository with fixed and updated package (i.e. from &company-suse; ftp
+	  server). Additionally this method  makes the creation of custom CD-ROMs easier.
+	</para>
       </section>
+      <section>
+	<title>Kernel packages</title>
+	<para>Kernel packages are not part of any selection. The required kernel
+	  is determined during installation. If the kernel package is added to any selection
+	  or to the individual package selection, installation will mostly fail due to conflicts.
+	</para>
+	<para>To force the installation of a specific kernel, use the <emphasis>kernel</emphasis> property. The following is an example forcing the installation of the default kernel. In this example this kernel will be installed in any case, even if an SMP or other kernel is required</para>
 
-      <section id="CreateProfile.Services">
-	<title>
-	  Services and Run-levels
-	</title>
-	<para>
-	  With the run-level resource you can set the default run-level and specify
-	  in detail which system services you want to be started in which
-	  run-level.
-	</para>
-	<para>
-	  The default property specifies the <emphasis>default</emphasis> run
-	  level of the system. Changes to the default run-level will take effect
-	  the next time you boot the system. After installation is completed,
-	  the system has run-level 5, which is  <emphasis>Full multiuser with
-	    network and XDM</emphasis>. If you have configured a system with no
-	  X11, then it is recommended to reboot the system after the first stage
-	  using the <emphasis>reboot</emphasis> property in the <emphasis>general</emphasis> resource.
-
-	</para>
-	<para>
-	  A service should run in using a space delimited list of the run-levels
-	  as shown in the  following example. An alternative to specifying the
-	  exact run-levels is to change the status of the service by either
-	  enabling or disabling it using the
-	  <emphasis>service_status</emphasis> property.
-	</para>
-	&example.runlevels;
-	
+	&example.kernel;
       </section>
+    </section>
+
+    <section id="CreateProfile.Services">
+      <title>
+	Services and Run-levels
+      </title>
+      <para>
+	With the run-level resource you can set the default run-level and specify
+	in detail which system services you want to be started in which
+	run-level.
+      </para>
+      <para>
+	The default property specifies the <emphasis>default</emphasis> run
+	level of the system. Changes to the default run-level will take effect
+	the next time you boot the system. After installation is completed,
+	the system has run-level 5, which is  <emphasis>Full multiuser with
+	  network and XDM</emphasis>. If you have configured a system with no
+	X11, then it is recommended to reboot the system after the first stage
+	using the <emphasis>reboot</emphasis> property in the <emphasis>general</emphasis> resource.
+
+      </para>
+      <para>
+	A service should run in using a space delimited list of the run-levels
+	as shown in the  following example. An alternative to specifying the
+	exact run-levels is to change the status of the service by either
+	enabling or disabling it using the
+	<emphasis>service_status</emphasis> property.
+      </para>
+      &example.runlevels;
+      
+    </section>
 
     <section id="CreateProfile.Network">
       <title>
@@ -1159,45 +779,45 @@ create_package_descr  -d /usr/local/CDs/LATEST/suse
 	</para>
 	<para>FIXEME</para>
 
-	</section>
-	<section id="Configuration.Network.NIS">
-	  <title>NIS</title>
-	  <para>
+      </section>
+      <section id="Configuration.Network.NIS">
+	<title>NIS</title>
+	<para>
 	  Using the <emphasis>nis</emphasis> resource, you can configure the target machine as a <emphasis>NIS
 	    client</emphasis>. The following example shows a detailed
 	  configuration using multiple domains.
-	  </para>
-	  &example.nis;
-	</section>
-	<section id="Configuration.Network.NISplus">
-	  <title>
-	    NIS+
-	  </title>
-	  <para>
-	    If you activate NIS+, the data of the
-	    NIS+ Server will be added to <filename>/etc/hosts</filename>. Keyserv and the NIS+ cache manager
-	    will be started and the NSS and PAM configuration will be modified to use
-	    NIS+ and set the Secret Key of a user.
-	  </para>
-	  &example.nisplus;
-	</section>
-	<section id="Configuration.Network.LDAP">
-	  <title>
-	    &ldap;  client
-	  </title>
-	  <para>
-	    The installed machine can be set up as an
-	    <emphasis>> &ldap;  client</emphasis> to authenticate  users with an
+	</para>
+	&example.nis;
+      </section>
+      <section id="Configuration.Network.NISplus">
+	<title>
+	  NIS+
+	</title>
+	<para>
+	  If you activate NIS+, the data of the
+	  NIS+ Server will be added to <filename>/etc/hosts</filename>. Keyserv and the NIS+ cache manager
+	  will be started and the NSS and PAM configuration will be modified to use
+	  NIS+ and set the Secret Key of a user.
+	</para>
+	&example.nisplus;
+      </section>
+      <section id="Configuration.Network.LDAP">
+	<title>
+	  &ldap;  client
+	</title>
+	<para>
+	  The installed machine can be set up as an
+	  <emphasis>> &ldap;  client</emphasis> to authenticate  users with an
 	  OpenLDAP;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
-	    and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
-	  </para>
-	  <para>
-	    If  &ldap;  is activated, <emphasis>NSS</emphasis> and <emphasis>PAM</emphasis>
-	    will be configured accordingly to use  &ldap;  for user authentication.
-	  </para>
-	  &example.ldapclient;
-	</section>
-	<section>
+	  and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
+	</para>
+	<para>
+	  If  &ldap;  is activated, <emphasis>NSS</emphasis> and <emphasis>PAM</emphasis>
+	  will be configured accordingly to use  &ldap;  for user authentication.
+	</para>
+	&example.ldapclient;
+      </section>
+      <section>
 	<title>
 	  NFS Client and Server
 	</title>
@@ -1209,129 +829,129 @@ create_package_descr  -d /usr/local/CDs/LATEST/suse
 	&example.nfs;
 	&example.nfsserver;
       </section>
-	
-	<section id='Configuration.Network.Sendmail'>
-	  <title>
-	    Mail Configuration (Sendmail or Postfix)
-	  </title>
-	  <para>
-	    For the mail configuration of the client this
-	    module lets you create a detailed mail configuration. The module
+      
+      <section id='Configuration.Network.Sendmail'>
+	<title>
+	  Mail Configuration (Sendmail or Postfix)
+	</title>
+	<para>
+	  For the mail configuration of the client this
+	  module lets you create a detailed mail configuration. The module
 	  contains various options and it is recommended to use it at least for
 	  the initial configuration.
 	  
-	  </para>
-	  &example.mail;
-	</section>
+	</para>
+	&example.mail;
       </section>
+    </section>
 
 
 
-      <section id="CreateProfile.Security">
-	<title>
-	  Security settings
-	</title>
-	
+    <section id="CreateProfile.Security">
+      <title>
+	Security settings
+      </title>
+      
+      <para>
+	Using the features of this module, you will be able to change the local
+	security settings on the target system. The local security settings
+	include the boot configuration, login settings, password settings,
+	user addition settings, and file permissions.
+      </para>
+      <para>
+	Configuring the security settings automatically corresponds to the
+	<emphasis>Custom Settings</emphasis> in the security module available in
+	the running system which lets you create your own, customized
+	configuration.
+      </para>      
+      
+      &example.security;
+      <section>
+	<title>Password Settings Options</title>
 	<para>
-	  Using the features of this module, you will be able to change the local
-	  security settings on the target system. The local security settings
-	  include the boot configuration, login settings, password settings,
-	  user addition settings, and file permissions.
+	  Change various password settings. These settings are mainly stored in the <filename>/etc/login.defs</filename> file.
 	</para>
 	<para>
-	  Configuring the security settings automatically corresponds to the
-	  <emphasis>Custom Settings</emphasis> in the security module available in
-	  the running system which lets you create your own, customized
-	  configuration.
-	</para>      
-	
-	&example.security;
-	<section>
-	  <title>Password Settings Options</title>
-	  <para>
-	    Change various password settings. These settings are mainly stored in the <filename>/etc/login.defs</filename> file.
-	  </para>
-	  <para>
-	    Use this resource to activate one of  the <emphasis>encryption</emphasis> methods currently supported.
-	    If not set, <emphasis>DES</emphasis> is configured.
-	  </para>
-	  <para>
-	    <emphasis>DES</emphasis>, the Linux default method, works in all
-	    network environments, but it restricts you to passwords no longer than
-	    eight characters. <emphasis>MD5</emphasis> allows longer passwords,
-	    thus provides more security, but some network protocols don't support
-	    this, and you may have problems with NIS. <emphasis>Blowfish</emphasis>
-	    is also supported.
-	  </para>
-	  <para>Additionally, you can setup the system to check for password
-	    plausibility and length etc.</para>
-	</section>
-	<section>
-	  <title>Boot Settings</title>
-	  <para>
-	    Use the security resource, you can change various boot settings.
-	  </para>
-	  <itemizedlist>
-	    <listitem>
-	      <para><emphasis>How to interpret Ctrl + Alt + Del</emphasis></para>
-	      <para>When someone at the console has pressed the CTRL + ALT + DEL key combination, the system usually reboots. Sometimes it is desirable to ignore this event, for example, when the system serves as both workstation and server.</para>
-	    </listitem>
-	    <listitem>
-	      <para><emphasis>Shutdown behavior of KDM</emphasis></para>
-	      <para>Set who is allowed to shut down the machine from KDM.</para>
-	    </listitem>
-	  </itemizedlist>
-
-	  
-	</section>
-	<section>
-	  <title>Login Settings</title>
-	  <para>Change various login settings. These settings are mainly stored in the '/etc/login.defs' file.</para>
-	</section>
-	<section>
-	  <title>New user settings (useradd settings)</title>
-	  <para>Set the minimum and maximum possible user ID and set the minimum
-	    and maximum possible group ID.
-	  </para>
-	</section>
-	
-      </section>
-
-
-      <section id="Configuration.Security.users">
-	<title>
-	  Users
-	</title>
+	  Use this resource to activate one of  the <emphasis>encryption</emphasis> methods currently supported.
+	  If not set, <emphasis>DES</emphasis> is configured.
+	</para>
 	<para>
-	  The root user and at least one normal user can be added during install
-	  using data supplied in the control file. User data and passwords
-	  (encrypted or in clear text) are part of the <emphasis>configure</emphasis> resource in the
-	  control file.
-	</para>     
-	<para>
-	  At least the root user should be configured during
-	  auto-installation, which will insure you will be able to login after
-	  installation is finished and of course it will insure nobody else can login
-	  into the system (in case the password is not set).
-	</para> 
-	&example.users;
-	
-
+	  <emphasis>DES</emphasis>, the Linux default method, works in all
+	  network environments, but it restricts you to passwords no longer than
+	  eight characters. <emphasis>MD5</emphasis> allows longer passwords,
+	  thus provides more security, but some network protocols don't support
+	  this, and you may have problems with NIS. <emphasis>Blowfish</emphasis>
+	  is also supported.
+	</para>
+	<para>Additionally, you can setup the system to check for password
+	  plausibility and length etc.</para>
       </section>
       <section>
-	<title>Custom user scripts</title>
+	<title>Boot Settings</title>
 	<para>
-	  By adding scripts to the auto-installation process you can customize the
-	  installation for your needs and take control in different stages of the
-	  installation.
-	</para>
-	<para>
-	  In the auto-installation process, three types of scripts can be executed:
+	  Use the security resource, you can change various boot settings.
 	</para>
 	<itemizedlist>
 	  <listitem>
-	    <para>Pre-Install Scripts</para>
-	    <para>
+	    <para><emphasis>How to interpret Ctrl + Alt + Del</emphasis></para>
+	    <para>When someone at the console has pressed the CTRL + ALT + DEL key combination, the system usually reboots. Sometimes it is desirable to ignore this event, for example, when the system serves as both workstation and server.</para>
+	  </listitem>
+	  <listitem>
+	    <para><emphasis>Shutdown behavior of KDM</emphasis></para>
+	    <para>Set who is allowed to shut down the machine from KDM.</para>
+	  </listitem>
+	</itemizedlist>
+
+	
+      </section>
+      <section>
+	<title>Login Settings</title>
+	<para>Change various login settings. These settings are mainly stored in the '/etc/login.defs' file.</para>
+      </section>
+      <section>
+	<title>New user settings (useradd settings)</title>
+	<para>Set the minimum and maximum possible user ID and set the minimum
+	  and maximum possible group ID.
+	</para>
+      </section>
+      
+    </section>
+
+
+    <section id="Configuration.Security.users">
+      <title>
+	Users
+      </title>
+      <para>
+	The root user and at least one normal user can be added during install
+	using data supplied in the control file. User data and passwords
+	(encrypted or in clear text) are part of the <emphasis>configure</emphasis> resource in the
+	control file.
+      </para>     
+      <para>
+	At least the root user should be configured during
+	auto-installation, which will insure you will be able to login after
+	installation is finished and of course it will insure nobody else can login
+	into the system (in case the password is not set).
+      </para> 
+      &example.users;
+      
+
+    </section>
+    <section id="createprofile.scripts">
+      <title>Custom user scripts</title>
+      <para>
+	By adding scripts to the auto-installation process you can customize the
+	installation for your needs and take control in different stages of the
+	installation.
+      </para>
+      <para>
+	In the auto-installation process, three types of scripts can be executed:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>Pre-Install Scripts</para>
+	  <para>
 	    Executed before &yast2; does any real change to the system
 	    (Before partitioning and package installation)	    
 	  </para>	  
@@ -1344,45 +964,45 @@ create_package_descr  -d /usr/local/CDs/LATEST/suse
 	      
 	    </para>
 	  </note>
-	  </listitem>
-	  <listitem>
-	    <para>Post-Install Scripts</para>
-	    <para>These scripts are executed after &yast2; has completed the
-	      installation and after it has booted the system the first time.</para>
-	  </listitem>
-	  <listitem>
-	    <para>Chroot environment post-install scripts</para>
-	    <para>Chroot scripts are executed in the chroot environment before
-	      &yast2; boots for the first time and before the boot loader is installed.</para>
-	  </listitem>
-	</itemizedlist>
-	<para>
-	  All  but the pre-install scripts can be written in either shell or
-	  perl script language. When added to the control file manually, the
-	  scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
-	  the file syntax and other tags defined in the control file.
-	</para>
-	
-	&example.scripts;
-	<para>
-	  After installation is finished, the scripts and the output logs can be
-	  found in the directory <filename>/var/adm/autoinstall</filename>. The
-	  scripts are located in <filename>scripts</filename> and the output logs of the
-	  scripts are located in the <filename>log</filename> directory.
-	</para>
-	<para>
-	  The log is the output resulting when executing the shell scripts using
-	  the following command:
-	</para>
-	<screen>
-	  <![CDATA[
-/bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
-	  ]]>
-	</screen>
-      </section>
+	</listitem>
+	<listitem>
+	  <para>Post-Install Scripts</para>
+	  <para>These scripts are executed after &yast2; has completed the
+	    installation and after it has booted the system the first time.</para>
+	</listitem>
+	<listitem>
+	  <para>Chroot environment post-install scripts</para>
+	  <para>Chroot scripts are executed in the chroot environment before
+	    &yast2; boots for the first time and before the boot loader is installed.</para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	All  but the pre-install scripts can be written in either shell or
+	perl script language. When added to the control file manually, the
+	scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
+	the file syntax and other tags defined in the control file.
+      </para>
+      
+      &example.scripts;
+      <para>
+	After installation is finished, the scripts and the output logs can be
+	found in the directory <filename>/var/adm/autoinstall</filename>. The
+	scripts are located in <filename>scripts</filename> and the output logs of the
+	scripts are located in the <filename>log</filename> directory.
+      </para>
+      <para>
+	The log is the output resulting when executing the shell scripts using
+	the following command:
+      </para>
+      <screen>
+	<![CDATA[
+	/bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
+	]]>
+      </screen>
+    </section>
 
 
-    <section>
+    <section id="createprofile.sysconfig">
       <title>System variables (Sysconfig)</title>
       <para>
 	Using the sysconfig resource, it is possible to define configuration
@@ -1402,9 +1022,9 @@ create_package_descr  -d /usr/local/CDs/LATEST/suse
       </para>
       &example.sysconfig;
     </section>
-      
+    
 
-    <section>
+    <section id="createprofile.completeconf">
       <title>Adding complete configurations</title>
       <para>
 	For many applications and services you might have prepared a
@@ -1435,69 +1055,38 @@ create_package_descr  -d /usr/local/CDs/LATEST/suse
       <title>
 	Miscellaneous hardware and system components
       </title>
-	  
-	  <para>
-	    In addition to the core component configuration, like network
-	    authentication and security, &autoyast;2 offers a wide range of
-	    hardware and system configuration which is available by default on
-	    any system installed manually and in an interactive way. For
-	    example, it is possible to configure printers, sound devices, TV
-	    cards and any other hardware components which have a module within YaST2.
-	  </para>
-	  <para>
-	    Any new configuration options that will be added to &yast2; will be
-	    automatically available as an auto-installation resource.
-	  </para>
- 
+      
+      <para>
+	In addition to the core component configuration, like network
+	authentication and security, &autoyast;2 offers a wide range of
+	hardware and system configuration which is available by default on
+	any system installed manually and in an interactive way. For
+	example, it is possible to configure printers, sound devices, TV
+	cards and any other hardware components which have a module within YaST2.
+      </para>
+      <para>
+	Any new configuration options that will be added to &yast2; will be
+	automatically available as an auto-installation resource.
+      </para>
+      
       <section id="CreateProfile.Hardware.Printer">
 	<title>
 	  Printer
 	</title>
 
-	  <para>
-	    Although Printer configuration, like other configurations can be
-	    done manually, it is recommended to use the Configuration System to
-	    create such a configuration because of the complexity and the range
-	    of options offered by such modules.
-	  </para>
-	  <para>
-	    Using the configuration system will guarantee that the options
-	    provided are consistent. The following is an example of a
+	<para>
+	  Although Printer configuration, like other configurations can be
+	  done manually, it is recommended to use the Configuration System to
+	  create such a configuration because of the complexity and the range
+	  of options offered by such modules.
+	</para>
+	<para>
+	  Using the configuration system will guarantee that the options
+	  provided are consistent. The following is an example of a
 	  configuration section which was
 	  created using the configuration system.
-	    </para>
-	  <example>
-	    <title>
-	      Printer configuration 
-	    </title>
-	    <screen>
-<![CDATA[
- <configure>
-....
-    <printer>
-      <default>lp</default>
-      <printcap config:type="list">
-        <printcap_entry>
-          <cups-state>void</cups-state>
-          <ff config:type="boolean">true</ff>
-          <info></info>
-          <location></location>
-          <lprng-state>changed</lprng-state>
-          <name>lp</name>
-          <options>
-            <job-sheets>none,none</job-sheets>
-          </options>
-          <raw config:type="boolean">true</raw>
-          <type>yast2</type>
-          <uri>parallel:/dev/lp0</uri>
-        </printcap_entry>
-      </printcap>
-    </printer>
-....
- </configure>
-]]>
-	    </screen>
-	  </example>
+	</para>
+	&example.printer;
       </section>
 
       <section id="CreateProfile.Hardware.Sound">
@@ -1508,48 +1097,15 @@ create_package_descr  -d /usr/local/CDs/LATEST/suse
 	  An example of  sound configuration created using the configuration
 	  system is shown below.
 	</para>
-	<example>
-	  <title>
-	    Sound configuration
-	  </title>
-	  <screen>
-<![CDATA[
- <configure>
-....
-    <sound>
-      <autoinstall config:type="boolean">true</autoinstall>
-      <modules_conf config:type="list">
-        <module_conf>
-          <alias>snd-card-0</alias>
-          <model>M5451, ALI</model>
-          <module>snd-ali5451</module>
-          <options>
-            <snd_enable>1</snd_enable>
-            <snd_index>0</snd_index>
-            <snd_pcm_channels>32</snd_pcm_channels>
-          </options>         
-        </module_conf>
-      </modules_conf>
-      <volume_settings config:type="list">
-        <listentry>
-          <Master config:type="integer">75</Master>
-        </listentry>
-      </volume_settings>
-    </sound>
-
-....
- </configure>
-]]>
-	  </screen>
-	</example>
+	&example.sound;
       </section>
     </section>
 
 
   </chapter>
-      <!--
-       Local Variables:
-       mode: xml
-       sgml-parent-document: ("autoyast2.xml" "book" "chaper")
-       End:
-      -->
+  <!--
+  Local Variables:
+  mode: xml
+  sgml-parent-document: ("autoyast2.xml" "book" "chaper")
+  End:
+  -->
