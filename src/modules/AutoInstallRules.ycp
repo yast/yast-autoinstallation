@@ -810,7 +810,8 @@ file without using classes."));
 	    tmp_hex_ip = substring(tmp_hex_ip, 0 , size ( tmp_hex_ip ) - 1 );
 	    tomerge = add(tomerge, tmp_hex_ip );
 	}
-	tomerge = add(tomerge, mac );
+	tomerge = add(tomerge, toupper(mac) );
+	tomerge = add(tomerge, tolower(mac) );
 	tomerge = add(tomerge, "default" );
 	y2milestone("Created default rules=%1", tomerge);
 	return;
