@@ -135,7 +135,7 @@ Please wait while the system is being configured.
 		    else
 			logStep( sformat (_("Not Configuring %1"), p));
 
-		    Call::Function(module_auto, ["Import", eval(result) ]);
+		    //Call::Function(module_auto, ["Import", eval(result) ]);
 		    Call::Function(module_auto, ["Write"]);
 		}
 		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
@@ -145,7 +145,7 @@ Please wait while the system is being configured.
 			logStep( sformat (_("Configuring %1"), p));
 		    else
 			logStep( sformat (_("Not Configuring %1"), p));
-		    Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
+		    //Call::Function(module_auto, ["Import", eval(Profile::Flat[resource]:$[])   ]);
 		    Call::Function(module_auto, ["Write"]);
 		}
 		else
@@ -156,20 +156,18 @@ Please wait while the system is being configured.
 			logStep( sformat (_("Not Configuring %1"), p));
 
 		    y2milestone("Calling auto client with: %1",  eval(Profile::Flat[resource]:[]));
-		    Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
+		    //Call::Function(module_auto, ["Import",  eval(Profile::Flat[resource]:[]) ]);
 		    Call::Function(module_auto, ["Write"]);
 		}
             }
             else
             {
-                //logStep( sformat (_("Skipping %1"), p));
                 current_step = current_step + 1;
                 UI::ChangeWidget( `id(`progress), `Value, current_step );
             }
 	}
 	else
         {
-	    //logStep( sformat (_("Skipping %1"), p));
 	    current_step = current_step + 1;
 	    UI::ChangeWidget( `id(`progress), `Value, current_step );
 	}
