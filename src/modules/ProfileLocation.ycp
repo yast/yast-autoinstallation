@@ -28,6 +28,7 @@
     global string filepath = "";
     global string host = "";
     global string directory =  "";
+	global string port = "";
 
 
 	global string user = "";
@@ -337,13 +338,18 @@
 	{
 	    import "HTTP";
 	    string full_url = "";
+		string port_str = "";
+		if (port!= "")
+		{
+			port_str = sformat(":%1", port);
+		}
 		if (user!= ""  && pass != "")
 		{
-			full_url = sformat("http://%1%2", Host ,  Path );
+			full_url = sformat("http://%1%2", Host , port_str,  Path );
 		}
 		else
 		{
-			full_url = sformat("http://%1:%2@%3%4", user, pass, Host ,  Path );
+			full_url = sformat("http://%1:%2@%3%4%s", user, pass, Host , port_str,  Path );
 		}
 
 	    map res = HTTP::Get(full_url, Localfile);

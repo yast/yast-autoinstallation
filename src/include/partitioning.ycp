@@ -4,7 +4,6 @@
  * Authors:             Anas Nashif <nashif@suse.de>
  * Purpose:		functions for partitioning in autoinst mode
  *
- *
  * $Id$
  */
 
@@ -184,12 +183,13 @@ exist on this system.
 		    return (false);
 		}
 
-
+		/*
 		if (!SaneRegionLimits( unused_region, partitions) )
 		{
 		    Report::Error(no_space_reason);
 		    return (false);
 		}
+		*/
 
 		rewrite_settings (partitions, target, driveMap);
 		auto_undefine ();
@@ -246,7 +246,7 @@ exist on this system.
 	    
 	    boolean StrictMode = false;
 
-	    list AutoPartitions = maplist (map part , AutoinstStorage::AutoTargetMap[TargetDevice, "partitions"]:[],
+	    list AutoPartitions = maplist (map part , AutoTarget["partitions"]:[],
 		     ``{
 		if ( haskey(part, "create") && !part["create"]:true  && part["partition_nr"]:-1 != -1 )
 		{
@@ -509,12 +509,14 @@ to contain a minimal installation.");
 		else
 		{
 		    partitions = CreatePartitions (all_partitions, selected, target["label"]:"" );
+		    /*
 		    if (!SaneRegionLimits( selected, partitions) )
 		    {
 			Report::Error(no_space_reason);
 			ok = false;
 			break;
 		    }
+		    */
 		}
 		y2milestone("Final partitions %1", partitions);
 		rewrite_settings (partitions, target, driveMap);
@@ -682,7 +684,7 @@ to contain a minimal installation.");
 		return (newPart);
 	    });
 	    last_pnr = last_pnr - 1;
-	    partitions = union(partitions , PrimaryAutoPartitions);
+	    partitions = SortPartitions (union(partitions , PrimaryAutoPartitions));
 	}
 
 	// Filter primaries
