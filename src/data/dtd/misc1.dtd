@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT addon (#PCDATA)>
+<!ELEMENT kernel (#PCDATA)>
+<!ELEMENT addons (addon+)>
+<!ATTLIST addons
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT base (#PCDATA)>
+<!ELEMENT chroot-scripts (script+)>
+<!ATTLIST chroot-scripts
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT file (file_contents, file_path)>
+<!ELEMENT file_contents (#PCDATA)>
+<!ELEMENT file_path (#PCDATA)>
+<!ELEMENT filename (#PCDATA)>
+<!ELEMENT files (file+)>
+<!ATTLIST files
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT interpreter (#PCDATA)>
+<!ELEMENT package (#PCDATA)>
+<!ELEMENT post-packages (package+)>
+<!ATTLIST post-packages
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT packages (package+)>
+<!ATTLIST packages
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT post-scripts (script+)>
+<!ATTLIST post-scripts
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT pre-scripts (script+)>
+<!ATTLIST pre-scripts
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT script (filename, interpreter, source)>
+<!ELEMENT scripts (chroot-scripts?, post-scripts?, pre-scripts?)>
+<!ELEMENT software (addons?, base, packages?, post-packages?, kernel?)>
+<!ELEMENT source (#PCDATA)>
+<!ELEMENT sysconfig (sysconfig_entry+)>
+<!ATTLIST sysconfig
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT sysconfig_entry (sysconfig_key, sysconfig_path, sysconfig_value)>
+<!ELEMENT sysconfig_key (#PCDATA)>
+<!ELEMENT sysconfig_path (#PCDATA)>
+<!ELEMENT sysconfig_value (#PCDATA)>

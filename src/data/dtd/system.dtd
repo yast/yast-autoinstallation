@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT bootloader (initrd_modules?, loader_device, loader_type, location, specific?, write_settings?)>
+<!ELEMENT write_settings EMPTY>
+
+<!ELEMENT __order__ (order_entry+)>
+<!ATTLIST __order__
+    config:type CDATA #REQUIRED
+>
+
+<!ELEMENT order_entry (#PCDATA)>
+<!ELEMENT initrd_modules (initrd_module+)>
+<!ATTLIST initrd_modules
+    config:type CDATA #REQUIRED
+>
+<!ELEMENT initrd_module (module, module_args)>
+<!ELEMENT module_args (#PCDATA)>
+
+<!ELEMENT loader_device (#PCDATA)>
+<!ELEMENT loader_type (#PCDATA)>
+<!ELEMENT specific (activate, device_map, global, grub_conf, repl_mbr, sections)>
+<!ELEMENT activate (#PCDATA)>
+<!ATTLIST activate
+    config:type CDATA #REQUIRED
+>
+<!ELEMENT device_map (device_map_entry+)>
+<!ATTLIST device_map
+    config:type CDATA #REQUIRED
+>
+<!ELEMENT device_map_entry (device+)>
+<!ATTLIST device_map_entry
+    config:type CDATA #REQUIRED
+>
+<!ELEMENT global (__order__, color, default, gfxmenu, timeout)>
+<!ELEMENT color (#PCDATA)>
+<!ELEMENT chainloader (#PCDATA)>
+
+
+
+<!ELEMENT clock (hwclock, timezone)>
+<!ELEMENT gfxmenu (#PCDATA)>
+<!ELEMENT grub_conf (addr, device, discswitch, menu, root, s2prefix, stage1, stage2)>
+<!ELEMENT addr (#PCDATA)>
+<!ELEMENT default (#PCDATA)>
+<!ATTLIST default
+    config:type CDATA #IMPLIED
+>
+<!ELEMENT discswitch (#PCDATA)>
+<!ATTLIST discswitch
+    config:type CDATA #REQUIRED
+>
+<!ELEMENT menu (#PCDATA)>
+<!ELEMENT merge_group (#PCDATA)>
+<!ATTLIST merge_group
+    config:type CDATA #REQUIRED
+>
+
+<!ELEMENT root (#PCDATA)>
+
+<!ELEMENT s2prefix (#PCDATA)>
+<!ELEMENT stage1 (#PCDATA)>
+<!ELEMENT stage2 (#PCDATA)>
+<!ELEMENT repl_mbr (#PCDATA)>
+<!ATTLIST repl_mbr
+    config:type CDATA #REQUIRED
+>
+<!ATTLIST sections
+    config:type CDATA #REQUIRED
+>
+
+<!ELEMENT sections (section+)>
+<!ELEMENT section (__order__, initrd?, kernel?, chainloader?, root?, title)>
+<!ELEMENT initrd (#PCDATA)>
+<!ELEMENT title (#PCDATA)>
+
+
+
+<!ELEMENT confirm (#PCDATA)>
+<!ATTLIST confirm
+	config:type CDATA #REQUIRED
+>
+<!-- <!ELEMENT default (#PCDATA)> -->
+<!ELEMENT errors (log, show, timeout)>
+<!ELEMENT forceboot (#PCDATA)>
+<!ATTLIST forceboot
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT general (clock, keyboard, language, mode?, mouse)>
+<!ELEMENT hwclock (#PCDATA)>
+<!ELEMENT id (#PCDATA)>
+<!ELEMENT interactive_boot (#PCDATA)>
+<!ATTLIST interactive_boot
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT kernel_parameters (#PCDATA)>
+<!ELEMENT keyboard (keymap)>
+<!ELEMENT keymap (#PCDATA)>
+<!ELEMENT language (#PCDATA)>
+<!ELEMENT lba_support (#PCDATA)>
+<!ATTLIST lba_support
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT linear (#PCDATA)>
+<!ATTLIST linear
+	config:type CDATA #REQUIRED
+>
+<!-- <!ELEMENT location (#PCDATA)> -->
+<!ELEMENT log (#PCDATA)>
+<!ATTLIST log
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT messages (log, show, timeout)>
+<!ELEMENT mode (confirm?, forceboot?, interactive_boot?, reboot?)>
+<!ELEMENT mouse (id)>
+<!ELEMENT reboot (#PCDATA)>
+<!ATTLIST reboot
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT report (errors, messages, warnings)>
+<!ELEMENT runlevels (default?, services?)>
+<!ELEMENT service (service_name, service_status?, service_start?, service_stop?)>
+<!ELEMENT service_name (#PCDATA)>
+<!ELEMENT service_status (#PCDATA)>
+<!ELEMENT service_start (#PCDATA)>
+<!ELEMENT service_stop (#PCDATA)>
+<!ELEMENT services (service+)>
+<!ATTLIST services
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT show (#PCDATA)>
+<!ATTLIST show
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT timeout (#PCDATA)>
+<!ATTLIST timeout
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT timezone (#PCDATA)>
+<!ELEMENT warnings (log, show, timeout)>

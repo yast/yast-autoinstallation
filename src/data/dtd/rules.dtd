@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XML Spy v4.3 U (http://www.xmlspy.com) by test (test) -->
+<!ELEMENT autoinstall (rules)>
+<!ATTLIST autoinstall
+	xmlns CDATA #REQUIRED
+	xmlns:config CDATA #REQUIRED
+>
+<!ELEMENT continue (#PCDATA)>
+<!ATTLIST continue
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT custom1 (operator?, script, match, match_type?)>
+<!ELEMENT custom2 (operator?, script, match, match_type?)>
+<!ELEMENT custom3 (operator?, script, match, match_type?)>
+<!ELEMENT custom4 (operator?, script, match, match_type?)>
+<!ELEMENT custom5 (operator?, script, match, match_type?)>
+<!ELEMENT disksize (operator?, match, match_type?)>
+<!ELEMENT hostadress (operator?, match, match_type?)>
+<!ELEMENT domain (operator?, match, match_type?)>
+<!ELEMENT network (operator?, match, match_type?)>
+<!ELEMENT mac (operator?, match, match_type?)>
+<!ELEMENT linux (operator?, match, match_type?)>
+<!ELEMENT others (operator?, match, match_type?)>
+<!ELEMENT xserver (operator?, match, match_type?)>
+<!ELEMENT memsize (operator?, match, match_type?)>
+<!ELEMENT totaldisk (operator?, match, match_type?)>
+<!ELEMENT haspcmcia (operator?, match, match_type?)>
+<!ELEMENT hostid (operator?, match, match_type?)>
+<!ELEMENT arch (operator?, match, match_type?)>
+<!ELEMENT karch (operator?, match, match_type?)>
+<!ELEMENT match (#PCDATA)>
+<!ELEMENT match_type (#PCDATA)>
+<!ELEMENT operator (#PCDATA)>
+<!ELEMENT profile (#PCDATA)>
+<!ELEMENT result (profile, continue)>
+<!ELEMENT rule (arch?, custom1?, custom2?, custom3?, custom4?, custom5?, disksize?, domain?, haspcmcia?, hostid?, hostadress?, karch?, linux?, mac?, memsize?, network?, others?, totaldisk?, xserver?, result)>
+<!ELEMENT rules (rule+)>
+<!ATTLIST rules
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT script (#PCDATA)>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT nis (nis_broadcast?, nis_broken_server?, nis_by_dhcp?, nis_domain, nis_local_only?, nis_options?, nis_other_domains?, nis_servers, start_autofs, start_nis)>
+<!ELEMENT nis_broadcast (#PCDATA)>
+<!ATTLIST nis_broadcast
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_broken_server (#PCDATA)>
+<!ATTLIST nis_broken_server
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_domain (#PCDATA)>
+<!ELEMENT nis_local_only (#PCDATA)>
+<!ATTLIST nis_local_only
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_options (#PCDATA)>
+<!ELEMENT nis_other_domain (nis_broadcast?, nis_domain, nis_servers)>
+<!ELEMENT nis_other_domains (nis_other_domain*)>
+<!ATTLIST nis_other_domains
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT nis_servers (nis_server+)>
+<!ATTLIST nis_servers
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT start_autofs (#PCDATA)>
+<!ATTLIST start_autofs
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT start_nis (#PCDATA)>
+<!ATTLIST start_nis
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT comment (#PCDATA)>
+<!ELEMENT flag (#PCDATA)>
+<!ELEMENT forename (#PCDATA)>
+<!ELEMENT gid (#PCDATA)>
+<!ATTLIST gid
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT grouplist (#PCDATA)>
+<!ELEMENT hash (#PCDATA)>
+<!ELEMENT home (#PCDATA)>
+<!ELEMENT inact (#PCDATA)>
+<!ELEMENT last_change (#PCDATA)>
+<!ELEMENT maps_to_serve (nis_map+)>
+<!ATTLIST maps_to_serve
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT max (#PCDATA)>
+<!ELEMENT merge_passwd (#PCDATA)>
+<!ATTLIST merge_passwd
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT min (#PCDATA)>
+<!ELEMENT nis_map (#PCDATA)>
+<!-- <!ELEMENT nis_server (domain, maps_to_serve, merge_group, merge_passwd, nopush, pwd_chfn, pwd_chsh, pwd_srcdir, securenets, server_type, slaves, start_ypbind, start_yppasswdd, start_ypxfrd)> -->
+<!ELEMENT nopush (#PCDATA)>
+<!ATTLIST nopush
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT password_settings (expire, flag, inact, last_change, max, min, warn)>
+<!ELEMENT pwd_chfn (#PCDATA)>
+<!ATTLIST pwd_chfn
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT pwd_chsh (#PCDATA)>
+<!ATTLIST pwd_chsh
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT pwd_srcdir (#PCDATA)>
+<!ELEMENT securenet (comment?, hash?, netmask?, network?)>
+<!ELEMENT securenets (securenet+)>
+<!ATTLIST securenets
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT server_type (#PCDATA)>
+<!ELEMENT shell (#PCDATA)>
+<!ELEMENT slave (#PCDATA)>
+<!ELEMENT slaves (slave+)>
+<!ATTLIST slaves
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT start_ypbind (#PCDATA)>
+<!ATTLIST start_ypbind
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT start_yppasswdd (#PCDATA)>
+<!ATTLIST start_yppasswdd
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT start_ypxfrd (#PCDATA)>
+<!ATTLIST start_ypxfrd
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT surname (#PCDATA)>
+<!ELEMENT uid (#PCDATA)>
+<!ATTLIST uid
+	config:type CDATA #REQUIRED
+>
+<!-- <!ELEMENT user (encrypted, forename, gid, grouplist, home, password_settings, shell, surname, uid, user_password, username)> -->
+<!ELEMENT user_password (#PCDATA)>
+<!ELEMENT username (#PCDATA)>
+<!ELEMENT users (user+)>
+<!ATTLIST users
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT warn (#PCDATA)>
+
+
+
+<!ELEMENT nis_by_dhcp (#PCDATA)>
+<!ATTLIST nis_by_dhcp
+	config:type CDATA #REQUIRED
+>

@@ -11,9 +11,11 @@
 <!ENTITY % system SYSTEM "system.dtd">
 <!ENTITY % security SYSTEM "security.dtd">
 <!ENTITY % x11 SYSTEM "x11.dtd">
+<!ENTITY % fw SYSTEM "fw.dtd">
 
 %sound;
 %x11;
+%fw;
 %network_advanced;
 %security;
 %system;
@@ -26,8 +28,10 @@
 %mail;
 
 <!ENTITY % optiontags "job-sheets|snd_enable|snd_index">
-<!ENTITY % usertags "encrypted|user_password| username|forename| gid| grouplist| home| shell| surname| uid">
+<!ENTITY % usertags "encrypted|user_password| username|forename| gid| grouplist| home| password_settings| shell| surname| uid ">
 <!ENTITY % lvmtags "lvm_name|pesize|logical_volumes">
+<!ENTITY % grouptags "gid| group_password| groupname| userlist">
+<!ENTITY % nisservertags "domain| maps_to_serve| merge_group| merge_passwd| nopush| pwd_chfn| pwd_chsh| pwd_srcdir| securenets| server_type| slaves| start_ypbind| start_yppasswdd| start_ypxfrd">
 
 
 
@@ -35,8 +39,10 @@
 <!ELEMENT options (#PCDATA | %optiontags;)* > 
 <!ELEMENT user (#PCDATA | %usertags;)* > 
 <!ELEMENT lvm_group (#PCDATA | %lvmtags;)* > 
+<!ELEMENT nis_server (#PCDATA | %nisservertags;)* >
+<!ELEMENT group (#PCDATA | %grouptags;)* >
 
-<!ELEMENT configure (files?, inetd?, ldap?, mail?, networking?,  nfs?, nfs_server?, nis?, nisplus?,  printer?, runlevels?, scripts?, security?, sysconfig?,  users?, x11?)>
+<!ELEMENT configure (firewall?, files?, groups?,inetd?, ldap?, mail?, networking?,   nfs_server?, nfs?, nis?, nisplus?,  nis_server?,printer?, runlevels?, scripts?, security?, sysconfig?, user_defaults?,  users?, x11?)>
 <!ELEMENT install ( bootloader?, general?, lvm?, partitioning?, raid?, report?, software? )>
 <!ELEMENT profile (configure?, install?)>
 <!ATTLIST profile
