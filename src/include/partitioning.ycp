@@ -514,6 +514,10 @@ to contain a minimal installation.");
 	y2milestone("initial partition list: %1", partitions);
 	y2milestone("selected region: %1", selected_region);
 
+
+	// FIXME
+	recalculateSizes(selected_region);
+	
 	partitions = filter (`pentry,
 			     partitions,
 			     ``(lookup (pentry, "type", `unknown) != `free)
@@ -859,6 +863,10 @@ to contain a minimal installation.");
     }
 
 
+
+    /**
+     * LVM configuration
+     */
     global define autoLVM() ``{
 
 	map LvmVolumes = $[];
@@ -1037,6 +1045,68 @@ to contain a minimal installation.");
     }
 
 
+    global define void recalculateSizes ( list region )
+	``{
+	integer totalsize = size_of_region (region);
+	y2milestone("Total available space: %1", totalsize);
+	
+	// Get new partitions as specified in control file
+	list tmp_auto_partitions =  AutoinstStorage::targetMap[target_is, "partitions"]:[];
+
+	list auto_partitions = filter (`pentry,
+				       tmp_auto_partitions ,
+				       ``(!pentry["kept"]:false )
+				       );
+	string psize = "";
+	integer realsize = 0;
+	integer maxsize = 0;
+	boolean grow = false;
+	integer min = 0;
+	integer max = 0;
+
+	boolean grow_possible  = true;
+	
+	foreach(map part, auto_partitions, ``{	    
+	    if (size(part["region"]:[]) == 0 )
+	    {
+		psize = part["size"]:"";
+		maxsize =  part["maxsize"]:"";
+		grow =  part["grow"]:false;
+	    }
+	    else
+	    {
+		 grow_possible  = false;
+	    }
+	    
+	    if ( psize != "" && psize!="auto" && psize != "max" )
+	    {
+		realsize = kmgt_str_to_byte(psize);	    
+	    }
+
+	    min = realsize + min;
+	    max = max + maxsize;
+	});
+
+	if (min < totalsize) {
+	    y2milestone("Using default sizes possible");
+	}
+	else
+	{
+	    y2milestone("Not enough space for default size!");
+	}
+
+	if (max < totalsize) {
+	    y2milestone("Using maximal growabe  sizes possible");
+	}
+	else
+	{
+	    y2milestone("Grow not possible");
+	}
+
+	
+	return;
+    }
+    
 
     /**
      * Caclculate new Region
@@ -1056,7 +1126,7 @@ to contain a minimal installation.");
 	string mount_point = currentPartition["mount"]:"";
 	list autoRegion = currentPartition["region"]:[];
 
-	if (psize!= "" && psize!="auto" && psize != "max")
+	if ( psize != "" && psize!="auto" && psize != "max" )
 	{
 	    units = size_to_units(kmgt_str_to_byte(psize));
 	    if (units == 0)
@@ -1082,15 +1152,15 @@ to contain a minimal installation.");
 	{
 	    units = end_of_region (selected_region) - end_of_region (region);
 	}
-	else if (psize == "" && size(autoRegion)>0)
+	else if ( psize == ""  &&  size(autoRegion) > 0 )
 	{
 	    return autoRegion;
 	}
 
 
-	if (select(region,1, -1)==0)
+	if ( region[1]:-1 == 0 )
 	{
-	    region = [select(selected_region, 0, 0), units];
+	    region = [ selected_region[0]:0 , units];
 	}
 	else
 	{
@@ -1099,6 +1169,8 @@ to contain a minimal installation.");
 	return region;
     }
 
+
+    
     /**
      * StringFS2Symbol()
      * @param any filesystem string
@@ -1126,6 +1198,10 @@ to contain a minimal installation.");
 	return filesystems[fs]:Partitions::default_fs;
     }
 
+
+    /**
+     * Initialize device
+     */
     global define integer InitDevice(string del_device)
 	``{
 

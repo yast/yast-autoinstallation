@@ -870,6 +870,12 @@ This may take a while. Please wait...
 		    d["partitions"]	= sort(`x, `y, part, ``(x["order"]:-1 < y["order"]:-1 ));
 		    
 		}
+		else if ( d["device"]:"" == "")
+		{
+		    list part 		= d["partitions"]:[];
+		    part 		= add ( part, partition );
+		    d["partitions"]	= sort(`x, `y, part, ``(x["order"]:-1 < y["order"]:-1 ));		    
+		}
 		y2milestone("KS Drive: %1", d);
 	    });
 	});
@@ -917,6 +923,20 @@ This may take a while. Please wait...
 		drive["use"] = "linux";
 		else if (clearpart["initlabel"]:-1 == 1)
 		drive["initialize"] = true;
+	    }
+	    else if (devicetok == "" &&  clearpart["drives"]:"" != "")
+	    {
+		list alldrives = splitstring( clearpart["drives"]:"", ",");
+		if (size(alldrives) == 1 )
+		{
+		    drive["device"] = sformat("/dev/%1", alldrives[0]:"");
+		    if (clearpart["all"]:-1 == 1)
+			drive["use"] = "all";
+		    else if (clearpart["linux"]:-1 == 1)
+			drive["use"] = "linux";
+		    else if (clearpart["initlabel"]:-1 == 1)
+			drive["initialize"] = true;		    
+		}
 	    }
 	    
 	    drive["partitions"] = dp;
@@ -1122,12 +1142,161 @@ This may take a while. Please wait...
 
 	map software = $[];
 	list all = ksConfig["packages"]:[];
-	list selections = filter(`s, all, ``(issubstring(s, "@")));
+
+	    
+	map rhsel = $[
+		      "Core": $[
+				"base": "Minimal",
+				"addon": []
+		      ],
+		      "Base": $[
+				"base": "Minimal",
+				"addon": []
+		      ],	
+		      "Printing Support": $[
+				"base": "Minimal",
+				"addon": [],
+				"packages": ["a2ps", "ghostscript-mini", "hp-officeJet", "yast2-printer", "cups-client", "cups", "cups-libs", "cups-drivers"]
+		      ],
+		      "Cups": $[
+				"base": "Minimal",
+				"addon": [],
+				"packages":  ["cups-client", "cups", "cups-libs", "cups-drivers"]
+		      ],	
+		      "X Window System": $[
+				"base": "Minimal+X11",
+				"addon": [],
+				"packages": []
+		      ],
+		      "Dialup Networking Support":  $[
+				"base": "Minimal",
+				"addon": [],
+				"packages": ["ppp", "minicom", "wvdial", "i4l-base", "i4lfirm", "i4l-isdnlog"]
+		      ],
+		      "GNOME Desktop Environment":
+		      $[
+				"base": "Minimal+X11",
+				"addon": ["Gnome"],
+				"packages": []
+		      ],
+		      "KDE Desktop Environment": 
+		      $[
+				"base": "Minimal+X11",
+				"addon": ["Kde-Desktop"],
+				"packages": []
+		      ],
+		      "Graphical Internet":
+		      $[
+			"base": "Minimal+X11",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "Text-based Internet":
+		      $[
+			"base": "Minimal",
+			"addon": ["Network"],
+			"packages": []
+		      ],		      
+		      "Sound and Video":
+		      $[
+			"base": "Minimal+X11",
+			"addon": ["Multimedia", "Basis-Sound"],
+			"packages": []
+		      ],
+		      "Graphics":
+		            $[
+			      "base": "Minimal+X11",
+			      "addon": [],
+			      "packages": [ "ImageMagick", "xsane", "gimp", "netpbm", "dia", "gtkam" ]
+		      ],
+		      "Office/Productivity":
+		      $[
+			"base": "Minimal+X11",
+			"addon": ["Office"],
+			"packages": []
+		      ],
+		      "Mail Server":
+		      $[
+			"base": "Minimal",
+			"addon": ["postfix", "imap", "mailman", "spamassassin", "squirrelmail", "squirrelmail-plugins" ],
+			"packages": []
+		      ],
+		      "Network Servers":
+		      $[
+			"base": "Minimal",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "News Server":
+		      $[
+			"base": "Minimal",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "Windows File Server":
+		      $[
+			"base": "Minimal",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "Web Server":
+		      $[
+			"base": "Minimal",
+			"addon": ["LAMP"],
+			"packages": []
+		      ],
+		      "Games and Entertainment":
+		      $[
+			"base": "Minimal",
+			"addon": ["Games"],
+			"packages": []
+		      ],
+		      "Development Tools":
+		          $[
+			"base": "Minimal",
+			"addon": ["Basis-Devel"],
+			"packages": []
+		      ],
+		      "Development Libraries":
+		      $[
+			"base": "Minimal",
+			"addon": ["Advanced-Devel"],
+			"packages": []
+		      ]
+		      
+	];
+
+	list selections = maplist(string s, filter(`s, all, ``(issubstring(s, "@"))), ``{
+	    string sel1 = substring(s,1 ,size(s));
+	    string sel2 = substring(sel1, findfirstof(tolower(sel1), "0123456789abcdefghijklmnopqrstuvwxyz"), size(sel1));
+	    return(sel2);
+	});
+
+	y2milestone("RH Selections: %1", selections);
+	list bases = [];
+	list addons = [];
+	list selpacs = [];
+	foreach(string sel, selections, ``{
+	    map currentsel = rhsel[sel]:$[];
+	    y2milestone("current sel: %1", currentsel);
+	    bases = add(bases, currentsel["base"]:"");
+	    addons = toset(union(addons, currentsel["addon"]:[]));
+	    selpacs = toset(union(selpacs, currentsel["packages"]:[]));
+	});
+
+	y2milestone("bases: %1, addons: %2. pacakges: %3", bases, addons, selpacs);
+	
 	list packages = filter(`s, all, ``(!issubstring(s, "@")));
-	list nopackages =  filter(`s, all, ``(regexpmatch( s, "^-.*" )));
+	packages = filter(`s, packages, ``(!regexpmatch( s, "^-.*" )));
+	
+	list nopackages =  maplist( string pac, filter(`s, all, ``(regexpmatch( s, "^-.*" ))), ``{
+	    return(substring(pac, 1, size(pac)));
+	});
+	
 	software["base"] = "Minimal";
-	software["packages"] = packages;
-	software["nopackages"] = nopackages;
+	software["addons"] = addons;
+	software["packages"] = toset(union(filter(string pac, packages, ``(pac!="")), selpacs));
+	software["nopackages"] = filter(string pac, nopackages, ``(pac!=""));
 
 
 	return software;

@@ -49,10 +49,13 @@ while ( <STDIN> )
 		chop;	
 	    } 
 
-	    if ($inpackages && !m/^\%pre/ &&  !m/^\%post/) 
+	    if ($inpackages && !m/^\%pre/ &&  !m/^\%post/ ) 
 	    {			
-		my $input = $_;	
-		push (@packages	, $input);
+		if ( !m/^#/ )
+		    {
+			my $input = $_;	
+			push (@packages	, $input);
+		    }
 	    }
 	    elsif ($inpre && !m/^\%pre/ &&!m/^\%packages/) 
 	    {		
@@ -106,7 +109,7 @@ while ( <STDIN> )
 	    {
 		$result{'mode'} = "install";
 	    }
-	    elsif (m/^lang/) 
+	    elsif (m/^lang /) 
 	    {
 		my @argv = split (/ /);
 		$result{'language'} = $argv[1];
@@ -122,8 +125,16 @@ while ( <STDIN> )
 	    }
 	    elsif (m/^langsupport/) 
 	    {
-		my @argv = split (/ /);
-		$result{'langsupport'} = $argv[1];
+		my $langsupport = $_;		
+		@ARGV = split(/ / , $langsupport);
+		my %h = ();
+		GetOptions (\%h,
+			    'default=s');
+		
+		my %l = %h;
+		$l{'langs'} = $ARGV[1];
+		$result{'langsupport'} = \%l;
+	
 	    }
 
 	    elsif (m/^keyboard/) 
