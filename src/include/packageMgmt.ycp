@@ -17,7 +17,17 @@
      */
     global define list CreateSelTable(list selected) ``{
 	
-	list Selections = SCR::Read(.package.selGroups);		
+	list Selections = maplist(`s, Pkg::GetSelections(`all) , ``{
+		any data = Pkg::SelectionData(s);
+		if (is(data , map)) {
+		    return ([s, data["summary"]:"", data["category"]:"base"]);
+		}
+		else
+		{
+		    return ([]);
+		}
+	    });
+		
 	
 	list ui_sel = maplist(list sel, Selections, ``{
 	    return (`item(`id(select(sel,0,"None")), contains(selected,select(sel,0,"None")) ? "s" : "", select(sel,0,"None"), select(sel,1,"None"), select(sel,2,"None")));

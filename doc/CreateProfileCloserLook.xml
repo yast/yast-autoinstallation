@@ -1,264 +1,264 @@
-<chapter>
-<title>Configuration and Installation Options</title>
+  <chapter>
+    <title>Configuration and Installation Options</title>
 
-<sect1  id="CreateProfile.Closerlook">
-  <title>Closer look on control file resources</title>
-  <para>
-    This section features the most important parts of a control file for
-    standard purposes. To have an idea about the other options available,
-    please consult the reference <!-- link --> and use the configuration
-    management system.
-  </para>
-  <sect2 id="CreateProfile.General">
-    <title>
-      General Options
-    </title>
+    <sect1  id="CreateProfile.Closerlook">
+      <title>Closer look on control file resources</title>
+      <para>
+	This section features the most important parts of a control file for
+	standard purposes. To have an idea about the other options available,
+	please consult the reference <!-- link --> or use the configuration
+	management system.
+      </para>
+      <sect2 id="CreateProfile.General">
+	<title>
+	  General Options
+	</title>
 
-    <para>
-      This is a <emphasis>required</emphasis> section of the profile. General
-      options include all the settings related to the installation process and
-      the environment of the installed system. This resource includes among
-      other the following 4 properties which are required:
-      <emphasis>language</emphasis>,<emphasis> keyboard</emphasis>,<emphasis>
-	clock</emphasis> and <emphasis>mouse</emphasis> almost for any
-      installation. If left out, default values will be used, which might not
-      be in one hand with how you want the system to be installed.
-      
-    </para>
-    &example.generalOptions;
-    <para>
-      The <emphasis>reboot</emphasis> property in the <emphasis>mode</emphasis>
-      resource is used to force a reboot after initial system setup and before the system is booted for the
-      first time.
-    </para>
-    <para>
-      By default, the auto-installation process has to be confirmed by the
-      user. The confirmation should be disabled if a fully unattended
-      installation is desired. This options is used to view and change the
-      settings on a target system before anything is changed and can be
-      used for debugging. It is set to <emphasis>true</emphasis> by default
-      to avoid recursive installs when the system schedules a reboot due
-      to a different kernel than the default or if  a reboot was requested in
-      the control file. 
-    </para>
-    
-  </sect2>
-  <sect2 id="CreateProfile.Reporting">
-    <title id="CreateProfile.Reporting.title">
-      Reporting
-    </title>
-    
+	<para>
+	  This is a <emphasis>required</emphasis> section of the profile. General
+	  options include all the settings related to the installation process and
+	  the environment of the installed system. This resource includes among
+	  other the following 4 properties which are required:
+	  <emphasis>language</emphasis>,<emphasis> keyboard</emphasis>,<emphasis>
+	    clock</emphasis> and <emphasis>mouse</emphasis> almost for any
+	  installation. If left out, default values will be used, which might not
+	  be in one hand with how you want the system to be installed.
+	  
+	</para>
+	&example.generalOptions;
+	<para>
+	  The <emphasis>reboot</emphasis> property in the <emphasis>mode</emphasis>
+	  resource is used to force a reboot after initial system setup and before
+	  the system is booted for the first time.
+	</para>
+	<para>
+	  By default, the auto-installation process has to be confirmed by the
+	  user. The confirmation should be disabled if a fully unattended
+	  installation is desired. This options is used to view and change the
+	  settings on a target system before anything is changed and can be
+	  used for debugging. It is set to <emphasis>true</emphasis> by default
+	  to avoid recursive installs when the system schedules a reboot due
+	  to a different kernel than the default or if  a reboot was requested in
+	  the control file. 
+	</para>
+	
+      </sect2>
+      <sect2 id="CreateProfile.Reporting">
+	<title id="CreateProfile.Reporting.title">
+	  Reporting
+	</title>
+	
 
 	
-    <para>
-      The <emphasis>report</emphasis> resource manages 3 types of pop-ups
-      that may appear during installation.
-    </para>
-    <itemizedlist>
-      <listitem>
 	<para>
-	  Pop up messages (Normally only non-critical, informative messages)
-	</para>
-      </listitem>
-      <listitem>
-	<para>
-	  Warning messages (If something might go wrong)
-	</para>
-      </listitem>
-      <listitem>
-	<para>
-	  Error messages (In the case of an error)
-	</para>
-      </listitem>
-    </itemizedlist>
-&example.reporting;
-    <para>
-      Depending on your experience, you can skip, log and show (with timeout)
-      those messages. It is recommended to show all
-      <emphasis>messages</emphasis> with timeout. Warnings can be skipped in
-      some places but should not be ignored.
-    </para>
-    <para>
-      The default setting in auto-installation mode is to show all messages without logging and
-      with a timeout of 10 seconds.
-    </para>
-
-    <note>
-      <title>
-	Critical system messages
-      </title>
-      <para>
-	    Note that <emphasis>not</emphasis> all messages during installation are controlled by the
-	<emphasis>report</emphasis> resource. Some critical messages concerning
-	package installation and partitioning will still show up ignoring your
-	settings in the <emphasis>report</emphasis> section.
-      </para>
-    </note>
-  </sect2>
-
-
-
-
-    <sect2 id="CreateProfile.Bootloader">
-      <title>The Boot loader</title>
-      <para>
-	If you do not want to install a boot loader, you have to specify this
-	using the <emphasis>write_bootloader</emphasis> property (Boolean
-	  value). In this case make sure you create a boot disk or have
-	another way to boot your system (such as a third-party boot loader). Note
-	that the default setting is to write the bootloader
-      </para>
-      <para>
-	If you choose to install a boot loader, you must  decide  where to to
-	install it (the Master Boot Record or the first sector of
-      the<filename> /boot</filename> partition). 
-      </para>
-      <para>
-	You can pass  special parameters to the kernel to be used when the
-	system boots, enter these parameters using the kernel parameters property. Additionally,
-	you can choose whether you want to use
-      <emphasis>linear</emphasis> mode and whether you want to force the use of <emphasis>lba32</emphasis> mode.
-      </para>
-    &example.bootloader;
-      
-    </sect2>
-
-    <sect2 id="CreateProfile.Partitioning">
-      <title>
-	Partitioning
-      </title>
-
-      <sect3>
-	<title>
-	  Automated Partitioning
-	</title>
-
-	<para>
-	  For the automated partitioning to be completed, only the sizes and mount points of
-	  partitions are needed. All other data needed for successful partitioning
-	  is calculated during installation if left out.
-	</para>
-	<para>
-	  If no partitions are defined and the specified drive is also the drive where
-	  the root partition should reside, the following partitions are created
-	  automatically:
+	  The <emphasis>report</emphasis> resource manages 3 types of pop-ups
+	  that may appear during installation.
 	</para>
 	<itemizedlist>
 	  <listitem>
 	    <para>
-	      <emphasis>/boot</emphasis>
-	    </para>
-	    <para>
-	      Size of the <emphasis>/boot</emphasis> is determined by the
-	      architecture of the target system.
+	      Pop up messages (Normally only non-critical, informative messages)
 	    </para>
 	  </listitem>
 	  <listitem>
 	    <para>
-	      <emphasis>swap</emphasis>
-	    </para>
-	    <para>
-	      Size of the <emphasis>swap</emphasis> partitions is determined by the
-	      amount of memory available in the system.
+	      Warning messages (If something might go wrong)
 	    </para>
 	  </listitem>
 	  <listitem>
 	    <para>
-	      <emphasis>/</emphasis> (root partition)
-	    </para>
-	    <para>
-	      Size of the <emphasis>/</emphasis> (root partition) is the space left
-	      after creating <emphasis>swap</emphasis> and <emphasis>/boot</emphasis>.
+	      Error messages (In the case of an error)
 	    </para>
 	  </listitem>
 	</itemizedlist>
+	&example.reporting;
 	<para>
-	  Depending on the initial status of the drive and how it was
-	previously partitioned, it is possible to create the <emphasis>default</emphasis>
-	  partitioning in the following ways:
+	  Depending on your experience, you can skip, log and show (with timeout)
+	  those messages. It is recommended to show all
+	  <emphasis>messages</emphasis> with timeout. Warnings can be skipped in
+	  some places but should not be ignored.
 	</para>
-	<itemizedlist>
-	  <listitem>
-	    <para>
-	      <emphasis>Use free space</emphasis>
-	    </para>
-	    <para>
-	      If the drive is already partitioned, it is possible to create the
-	      new partitions on the available space of the hard drive. This
-	      requires the availability of enough space for all selected
-	      package in addition to swap.
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      <emphasis>Reuse all available space</emphasis>
-	    </para>
-	    <para>
-	      This option will lead to the deletion of existing partitions.
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      <emphasis>Reuse all available linux partitions</emphasis>
-	    </para>
-	    <para>
-	      This option will lead to the deletion of existing linux
-	      partitions. All other partitions (i.e. Windows) will be kept.
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      <emphasis>Reuse only specified partitions</emphasis>
-	    </para>
-	    <para>
-	      This option will lead to the deletion of the specified partitions.
-	      The selection of the partitions scheduled for deletion should be
-	      started from the last available partition.
-	    </para>
-	  </listitem>
-	</itemizedlist>
-	<para>	
-	  In case of the presence of multiple drives in the target system, all
-	  drives  should be identified with their device
-	  names and with additional information related to the above mentioned behavior.
+	<para>
+	  The default setting in auto-installation mode is to show all messages without logging and
+	  with a timeout of 10 seconds.
 	</para>
 
-	<para>
-	  Partition sizes can be given in Gigabytes, Megabytes or can be set to
-	  a flexible value using the keywords <emphasis>auto</emphasis> and
-	  <emphasis>max</emphasis>. <emphasis>max</emphasis> is used to fill a
-	  partition to the maximal available space on a
-	  drive (Which mean that the partition is the last one on the drive). 
-	<emphasis>auto</emphasis> can be used to determine the size of
-	a <emphasis>swap</emphasis> or <emphasis>boot</emphasis> partitions
-	which depend on memory and the type of the system.
-	</para>
-	<para>A fixed size can be given as shown below:</para>
-	<formalpara>
-	  <title>Size</title>
-	  <para><emphasis>1gb</emphasis> will create a partition with 1 GB size.<emphasis> 1500mb</emphasis> will create
-	    a parition which is 1.5 GB big.</para>
-	</formalpara>
-      &example.partitioning;
-      </sect3>
-      <sect3>
-	<title>
-	  Logical Volume Manager (LVM)
-	</title>
-	<para>
-	To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
-	normal partitioning method described above. 
-	</para>
-   	<example>
+	<note>
 	  <title>
-	    Create LVM Physical Volume
+	    Critical system messages
 	  </title>
+	  <para>
+	    Note that <emphasis>not</emphasis> all messages during installation are controlled by the
+	    <emphasis>report</emphasis> resource. Some critical messages concerning
+	    package installation and partitioning will still show up ignoring your
+	    settings in the <emphasis>report</emphasis> section.
+	  </para>
+	</note>
+      </sect2>
+
+
+
+
+      <sect2 id="CreateProfile.Bootloader">
+	<title>The Boot loader</title>
 	<para>
-	  The following example shows how to prepare for LVM in the
-	  <emphasis>partitioning</emphasis> 
-	  resource:
+	  If you do not want to install a boot loader, you have to specify this
+	  using the <emphasis>write_bootloader</emphasis> property (Boolean
+	  value). In this case make sure you create a boot disk or have
+	  another way to boot your system (such as a third-party boot loader). Note
+	  that the default setting is to write the bootloader
 	</para>
-	<screen>
+	<para>
+	  If you choose to install a boot loader, you must  decide  where to to
+	  install it (the Master Boot Record or the first sector of
+	  the<filename> /boot</filename> partition). 
+	</para>
+	<para>
+	  You can pass  special parameters to the kernel to be used when the
+	  system boots, enter these parameters using the kernel parameters property. Additionally,
+	  you can choose whether you want to use
+	  <emphasis>linear</emphasis> mode and whether you want to force the use of <emphasis>lba32</emphasis> mode.
+	</para>
+	&example.bootloader;
+	
+      </sect2>
+
+      <sect2 id="CreateProfile.Partitioning">
+	<title>
+	  Partitioning
+	</title>
+
+	<sect3>
+	  <title>
+	    Automated Partitioning
+	  </title>
+
+	  <para>
+	    For the automated partitioning to be completed, only the sizes and mount points of
+	    partitions are needed. All other data needed for successful partitioning
+	    is calculated during installation if left out.
+	  </para>
+	  <para>
+	    If no partitions are defined and the specified drive is also the drive where
+	    the root partition should reside, the following partitions are created
+	    automatically:
+	  </para>
+	  <itemizedlist>
+	    <listitem>
+	      <para>
+		<emphasis>/boot</emphasis>
+	      </para>
+	      <para>
+		Size of the <emphasis>/boot</emphasis> is determined by the
+		architecture of the target system.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>swap</emphasis>
+	      </para>
+	      <para>
+		Size of the <emphasis>swap</emphasis> partitions is determined by the
+		amount of memory available in the system.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>/</emphasis> (root partition)
+	      </para>
+	      <para>
+		Size of the <emphasis>/</emphasis> (root partition) is the space left
+		after creating <emphasis>swap</emphasis> and <emphasis>/boot</emphasis>.
+	      </para>
+	    </listitem>
+	  </itemizedlist>
+	  <para>
+	    Depending on the initial status of the drive and how it was
+	    previously partitioned, it is possible to create the <emphasis>default</emphasis>
+	    partitioning in the following ways:
+	  </para>
+	  <itemizedlist>
+	    <listitem>
+	      <para>
+		<emphasis>Use free space</emphasis>
+	      </para>
+	      <para>
+		If the drive is already partitioned, it is possible to create the
+		new partitions on the available space of the hard drive. This
+		requires the availability of enough space for all selected
+		package in addition to swap.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>Reuse all available space</emphasis>
+	      </para>
+	      <para>
+		This option will lead to the deletion of existing partitions.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>Reuse all available linux partitions</emphasis>
+	      </para>
+	      <para>
+		This option will lead to the deletion of existing linux
+		partitions. All other partitions (i.e. Windows) will be kept.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>Reuse only specified partitions</emphasis>
+	      </para>
+	      <para>
+		This option will lead to the deletion of the specified partitions.
+		The selection of the partitions scheduled for deletion should be
+		started from the last available partition.
+	      </para>
+	    </listitem>
+	  </itemizedlist>
+	  <para>	
+	    In case of the presence of multiple drives in the target system, all
+	    drives  should be identified with their device
+	    names and with additional information related to the above mentioned behavior.
+	  </para>
+
+	  <para>
+	    Partition sizes can be given in Gigabytes, Megabytes or can be set to
+	    a flexible value using the keywords <emphasis>auto</emphasis> and
+	    <emphasis>max</emphasis>. <emphasis>max</emphasis> is used to fill a
+	    partition to the maximal available space on a
+	    drive (Which mean that the partition is the last one on the drive). 
+	    <emphasis>auto</emphasis> can be used to determine the size of
+	    a <emphasis>swap</emphasis> or <emphasis>boot</emphasis> partitions
+	    which depend on memory and the type of the system.
+	  </para>
+	  <para>A fixed size can be given as shown below:</para>
+	  <formalpara>
+	    <title>Size</title>
+	    <para><emphasis>1gb</emphasis> will create a partition with 1 GB size.<emphasis> 1500mb</emphasis> will create
+	      a parition which is 1.5 GB big.</para>
+	  </formalpara>
+	  &example.partitioning;
+	</sect3>
+	<sect3>
+	  <title>
+	    Logical Volume Manager (LVM)
+	  </title>
+	  <para>
+	    To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
+	    normal partitioning method described above. 
+	  </para>
+	  <example>
+	    <title>
+	      Create LVM Physical Volume
+	    </title>
+	    <para>
+	      The following example shows how to prepare for LVM in the
+	      <emphasis>partitioning</emphasis> 
+	      resource:
+	    </para>
+	    <screen>
 <![CDATA[
 ....
 <partitioning config:type="list">
@@ -276,27 +276,27 @@
 </partitioning>
 .....
 ]]>
-	</screen>
+	    </screen>
 
-      </example>
-      <para>
-	The last example will create a non-formatted partition on device
-	  <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
-	  with the volume group <emphasis>system</emphasis>. The partition
-	  created  will use all available space on this drive.
-	</para>
-	<para>
-	The logical volumes should be defined in the <emphasis>lvm</emphasis>
-	resource. Currently it is not possible to configure LVM using the
-	configuration system, instead it is required to
-	add the resource manually as shown in the  following example.
-      </para>
+	  </example>
+	  <para>
+	    The last example will create a non-formatted partition on device
+	    <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
+	    with the volume group <emphasis>system</emphasis>. The partition
+	    created  will use all available space on this drive.
+	  </para>
+	  <para>
+	    The logical volumes should be defined in the <emphasis>lvm</emphasis>
+	    resource. Currently it is not possible to configure LVM using the
+	    configuration system, instead it is required to
+	    add the resource manually as shown in the  following example.
+	  </para>
 
-      <example>
-	<title>
-	  LVM Logical Volumes
-	</title>
-	<screen>
+	  <example>
+	    <title>
+	      LVM Logical Volumes
+	    </title>
+	    <screen>
 <![CDATA[
 ....
   <lvm config:type="list">
@@ -327,60 +327,60 @@
   </lvm>
 .....
 ]]>
-	</screen>
-      </example>
-    </sect3>
+	    </screen>
+	  </example>
+	</sect3>
 
-    <sect3>
-      <title>Software RAID</title>
-      <para>
-	Using &autoyast;, you can create assemble  software RAID devices. The
-	supported RAID level are the following:
-      </para>
-      <itemizedlist>
-	<listitem>	  
+	<sect3>
+	  <title>Software RAID</title>
 	  <para>
-	    <emphasis>RAID 0:</emphasis> This level increases your disk performace.
-	    There is <emphasis>NO</emphasis> redundancy in this mode. If one of the drives crashes, data recovery will not be possible.
+	    Using &autoyast;, you can create assemble  software RAID devices. The
+	    supported RAID level are the following:
 	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    <emphasis>RAID 1:</emphasis>This mode has the best redundancy. It can be
-used with two or more disks. This mode maintains an exact copy of all data on all
-disks. As long as at least one disk is still working, no data is lost. The partitions
-used for this type of RAID should have approximately the same size.
-	  </para>
-	</listitem>
+	  <itemizedlist>
+	    <listitem>	  
+	      <para>
+		<emphasis>RAID 0:</emphasis> This level increases your disk performace.
+		There is <emphasis>NO</emphasis> redundancy in this mode. If one of the drives crashes, data recovery will not be possible.
+	      </para>
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>RAID 1:</emphasis>This mode has the best redundancy. It can be
+		used with two or more disks. This mode maintains an exact copy of all data on all
+		disks. As long as at least one disk is still working, no data is lost. The partitions
+		used for this type of RAID should have approximately the same size.
+	      </para>
+	    </listitem>
 
-	<listitem>
+	    <listitem>
+	      <para>
+		<emphasis>RAID 5:</emphasis> This mode combines management of a larger number
+		of disks and still maintains some redundancy. This mode can be used on three disks or more.
+		If one disk fails, all data is still intact. If two disks fail simultaneously,
+		all data is lost.
+	      </para>	  
+	    </listitem>
+	    <listitem>
+	      <para>
+		<emphasis>Multipath:</emphasis>This mode allow access to the same physical device
+		over multiple controller for redundancy against a fault in a controller
+		card. This mode can be used with at least two devices.
+	      </para>
+	    </listitem>
+	  </itemizedlist>
 	  <para>
-	    <emphasis>RAID 5:</emphasis> This mode combines management of a larger number
-of disks and still maintains some redundancy. This mode can be used on three disks or more.
-If one disk fails, all data is still intact. If two disks fail simultaneously,
-	    all data is lost.
-	  </para>	  
-	</listitem>
-	<listitem>
-	  <para>
-	    <emphasis>Multipath:</emphasis>This mode allow access to the same physical device
-	    over multiple controller for redundancy against a fault in a controller
-	    card. This mode can be used with at least two devices.
+	    As with LVM, you need to create the RAId partitions first and assign
+	    the partitions to the RAID device you want to create and you need to
+	    specify whether a partition or device should be configured in the RAID
+	    or if it should configured as a Spare device.
 	  </para>
-	</listitem>
-      </itemizedlist>
-      <para>
-	As with LVM, you need to create the RAId partitions first and assign
-	the partitions to the RAID device you want to create and you need to
-	specify whether a partition or device should be configured in the RAID
-	or if it should configured as a Spare device.
-      </para>
-      <para>
-	The following example shows a simple RAID1 configuration:
-      </para>
-      <example>
-	<title>RAID1 configuration</title>
-	<screen>
+	  <para>
+	    The following example shows a simple RAID1 configuration:
+	  </para>
+	  <example>
+	    <title>RAID1 configuration</title>
+	    <screen>
 <![CDATA[
 ....
    <partitioning config:type="list">
@@ -427,10 +427,10 @@ If one disk fails, all data is still intact. If two disks fail simultaneously,
 
 ....
 ]]>	  
-	</screen>
-      </example>
-    </sect3>
-  </sect2>
+	    </screen>
+	  </example>
+	</sect3>
+      </sect2>
       
 
       <sect2 id="CreateProfile.Software">
@@ -473,95 +473,12 @@ If one disk fails, all data is still intact. If two disks fail simultaneously,
 	  </para>
 	  &example.software;
 	  <para>
-	    A list of possible pre-defined selections is shown in the table
-	    below. You can choose one base selection in addition to one or multiple 
+	    A list of possible pre-defined selections can be found on the first
+	    CD-ROM in the directory <filename>suse/setup/decr</filename>. You
+	    can install one base selection and additionaly one or multiple 
 	    add-on selections.
 	  </para>
-	  <note>	
-	    <para>Selections might vary depending on the installed product. To
-	      find  a complete list of the selections, please check the
-	      directory <filename>suse/setup/descr</filename></para>
-	  </note>
-	  <table frame='top' id="StandardSL">
-	    <title id="StandardSL.title">Software selections</title>
-	    <tgroup cols='4'>
-	      <thead>
-		<row>
-		  <entry>Name</entry>
-		  <entry>YaST2 Value</entry>
-		  <entry>Type</entry>
-		  <entry>Description</entry>	      
-		</row>
-	      </thead>
-	      <tbody>
 
-		<row>
-		  <entry>Minimal+X11</entry>
-		  <entry>Minimal+X11</entry>
-		  <entry>Base</entry>
-		  <entry>Minimum graphical system (without KDE)</entry>
-		</row>
-
-		<row>
-		  <entry>Minimal</entry>
-		  <entry>Minimal</entry>
-		  <entry>Base</entry>
-		  <entry>Minimal System</entry>
-		</row>
-		<row>
-		  <entry>Development</entry>
-		  <entry>Linux-devel</entry>
-		  <entry>Add-on</entry>
-		  <entry>System with Development Tools</entry>
-		</row>
-		<row>
-		  <entry>Standard</entry>
-		  <entry>Standard</entry>
-		  <entry>Base</entry>
-		  <entry>Default system</entry>
-		</row>
-		<row>
-		  <entry>Default</entry>
-		  <entry>default</entry>
-		  <entry>Base</entry>
-		  <entry>Default system with Office</entry>
-		</row>
-		
-
-
-		<row>
-		  <entry>Gnome</entry>
-		  <entry>Gnome</entry>
-		  <entry>Add-on</entry>
-		  <entry>Gnome System</entry>
-		</row>
-
-		<row>
-		  <entry>Kde Desktop</entry>
-		  <entry>Kde-Desktop</entry>
-		  <entry>Add-on</entry>
-		  <entry>KDE Desktop Environment</entry>
-		</row>
-
-		<row>
-		  <entry>Kde</entry>
-		  <entry>Kde</entry>
-		  <entry>Add-on</entry>
-		  <entry>All of KDE</entry>
-		</row>
-
-
-		<row>
-		  <entry>SuSE-Documentation</entry>
-		  <entry>SuSE-Documentation</entry>
-		  <entry>Add-on</entry>
-		  <entry>Help & Support Documentation</entry>
-		</row>
-
-
-	      </tbody>
-	    </tgroup>
-	  </table>
 	</sect3>
 	<sect3>
 	  <title>
@@ -581,7 +498,7 @@ If one disk fails, all data is still intact. If two disks fail simultaneously,
 	  </para>
 	  <para>
 	    After creating a selection file, you can add it to the configuration
-	    as described above.
+	    as described earlier in this section.
 	  </para>
 	  &example.customSoftware;
 	</sect3>
@@ -595,12 +512,23 @@ If one disk fails, all data is still intact. If two disks fail simultaneously,
 	    kernel packages must be compatible to the  &company-suse;  packages and must
 	    install the kernel files to the same locations.
 	  </para>
-	  
+	  <para>
+	    Unlike earlier versions, to install custom and external packages
+	    there is no need for a special resource in the control
+	    file. Instead you need to re-create the package database and update
+	    it with any new packages or new package versions in the source repository.
+	  </para>
+	  <para>A script is provided for this task which will query packages
+	    available in the repository and create the required package
+	    database.
+	  </para>
+	  <para>
+	    The advantage of this method is that you can keep an up-to-date
+	    repository with fixed and updated package (i.e. from &companu-suse; ftp
+	    server). Additionally this method  makes the creation of custom CDs easier.
+	  </para>
 	</sect3>
       </sect2>
-
-
-
 
       <sect2 id="CreateProfile.Services">
 	<title>
@@ -652,288 +580,288 @@ If one disk fails, all data is still intact. If two disks fail simultaneously,
 ....
 </configure>
 ]]>
-	</screen>
-      </example>
-      
-    </sect2>
+	  </screen>
+	</example>
+	
+      </sect2>
 
-  <sect2 id="CreateProfile.Network">
-    <title>
-      Network configuration
-    </title>
+      <sect2 id="CreateProfile.Network">
+	<title>
+	  Network configuration
+	</title>
 
-    <sect3 id="Configuration.Network.Devices">
-      <title>
-	Network devices, DNS and Routing.
-      </title>
-      <para>
-	Network configuration is used to connect a single  &company-suse;  Linux
-	workstation to an Ethernet-based LAN or to configure dial-up
-	connection. More complex configuration (multiple network cards,
-	routing, etc.) is now also provided. With this module it's possible to
-	configure (set-up) Ethernet Controllers and Token-Ring Controllers.
-      </para>
-      <para>
-	To configure network settings and activate networking automatically,
-	one global resource is  used to store the whole network configuration.
-      </para>
-      &example.network;
-    </sect3>
-
-
-    <sect3 id="Configuration.Network.NIS">
-      <title>
-	NIS
-      </title>
-      <para>
-	The target machine can be set up as a
-	<emphasis>NIS client</emphasis>. You can specify multiple servers
-	by using the <emphasis>list</emphasis> attribute (config:type="list").
-      </para>
-      &example.nis;
-    </sect3>
-    <sect3 id='Configuration.Network.NISplus'>
-      <title>
-	NIS+
-      </title>
-      <para>
-	If you activate NIS+, the data of the
-	NIS+ Server will be added to <filename>/etc/hosts</filename>. Keyserv and the NIS+ cache manager
-	will be started and the NSS and PAM configuration will be modified to use
-	NIS+ and set the Secret Key of a user.
-      </para>
-      &example.nisplus;
-    </sect3>
-    <sect3 id="Configuration.Network.LDAP">
-      <title>
-	&ldap;  client
-      </title>
-      <para>
-	The installed machine can be set up as
-	<emphasis>> &ldap;  client</emphasis> to authenticate  users with an
-	Open &ldap;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
-	and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
-      </para>
-      <para>
-	If  &ldap;  is activated, <emphasis>NSS</emphasis> and <emphasis>PAM</emphasis>
-	will be configured accordingly to use  &ldap;  for user authentication.
-      </para>
-      &example.ldapclient;
-    </sect3>
-    <sect3>
-      <title>
-	NFS
-      </title>
-      <para>
-	Batch operation of NFS Client module is not programmed in (nfs_write
-	with options), but the already written routine, <command>nfs_client_save</command> can be
-	used for auto-installation and <filename>/etc/fstab</filename> configuration.
-      </para>
-      &example.nfs;
-    </sect3>
-    
-    <sect3 id='Configuration.Network.Sendmail'>
-      <title>
-	Mail Configuration (Sendmail or Postfix)
-      </title>
-      <para>
-	For the mail configuration of the client the existing module for
-	mail configuration available in the running system is used. This
-	module enables very sophisticated mail configuration and should be
-	used instead of editing the mail resource manually.
-      </para>
-      &example.mail;
-    </sect3>
-  </sect2>
+	<sect3 id="Configuration.Network.Devices">
+	  <title>
+	    Network devices, DNS and Routing.
+	  </title>
+	  <para>
+	    Network configuration is used to connect a single  &company-suse;  Linux
+	    workstation to an Ethernet-based LAN or to configure dial-up
+	    connection. More complex configuration (multiple network cards,
+	    routing, etc.) is now also provided. With this module it's possible to
+	    configure (set-up) Ethernet Controllers and Token-Ring Controllers.
+	  </para>
+	  <para>
+	    To configure network settings and activate networking automatically,
+	    one global resource is  used to store the whole network configuration.
+	  </para>
+	  &example.network;
+	</sect3>
 
 
+	<sect3 id="Configuration.Network.NIS">
+	  <title>
+	    NIS
+	  </title>
+	  <para>
+	    The target machine can be set up as a
+	    <emphasis>NIS client</emphasis>. You can specify multiple servers
+	    by using the <emphasis>list</emphasis> attribute (config:type="list").
+	  </para>
+	  &example.nis;
+	</sect3>
+	<sect3 id='Configuration.Network.NISplus'>
+	  <title>
+	    NIS+
+	  </title>
+	  <para>
+	    If you activate NIS+, the data of the
+	    NIS+ Server will be added to <filename>/etc/hosts</filename>. Keyserv and the NIS+ cache manager
+	    will be started and the NSS and PAM configuration will be modified to use
+	    NIS+ and set the Secret Key of a user.
+	  </para>
+	  &example.nisplus;
+	</sect3>
+	<sect3 id="Configuration.Network.LDAP">
+	  <title>
+	    &ldap;  client
+	  </title>
+	  <para>
+	    The installed machine can be set up as
+	    <emphasis>> &ldap;  client</emphasis> to authenticate  users with an
+	    Open &ldap;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
+	    and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
+	  </para>
+	  <para>
+	    If  &ldap;  is activated, <emphasis>NSS</emphasis> and <emphasis>PAM</emphasis>
+	    will be configured accordingly to use  &ldap;  for user authentication.
+	  </para>
+	  &example.ldapclient;
+	</sect3>
+	<sect3>
+	  <title>
+	    NFS
+	  </title>
+	  <para>
+	    Batch operation of NFS Client module is not programmed in (nfs_write
+	    with options), but the already written routine, <command>nfs_client_save</command> can be
+	    used for auto-installation and <filename>/etc/fstab</filename> configuration.
+	  </para>
+	  &example.nfs;
+	</sect3>
+	
+	<sect3 id='Configuration.Network.Sendmail'>
+	  <title>
+	    Mail Configuration (Sendmail or Postfix)
+	  </title>
+	  <para>
+	    For the mail configuration of the client the existing module for
+	    mail configuration available in the running system is used. This
+	    module enables very sophisticated mail configuration and should be
+	    used instead of editing the mail resource manually. 
+	  </para>
+	  &example.mail;
+	</sect3>
+      </sect2>
 
-  <sect2 id="CreateProfile.Security">
-    <title>
-      Security settings
-    </title>
-    
-    <para>
-      Using the features of this module, you will be able to change the local
-      security settings on the target system.	The local security settings
-      include the boot configuration, login settings, password settings,
-      user addition settings, and file permissions.
-    </para>
-    <para>
-      Configuring the security settings automatically corrosponds to the
-      <emphasis>Custom Settings</emphasis> in the security module available in
-      the running system which lets you create your own, customized
-      configuration.
-    </para>      
-     
-    &example.security;
-    <simplesect>
-      <title>Password Settings Options</title>
-      <para>
-	Change various password settings. These settings are mainly stored in the <filename>/etc/login.defs</filename> file.
-      </para>
-      <para>
-	Use this resource to activate one of  the <emphasis>encryption</emphasis> methods currently supported.
-	If notset, <emphasis>DES</emphasis> is configured.
-      </para>
-      <para>
-	<emphasis>DES</emphasis>, the Linux default method, works in all
-	network environments, but it restricts you to passwords no longer than
-	eight characters. <emphasis>MD5</emphasis> allows longer passwords,
-	thus provides more security, but some network protocols don't support
-	this, and you may have problems with NIS. <emphasis>Blowfish</emphasis>
-	is also supported.
-      </para>
-      <para>Additionally, you can setup the system to check for password
-	plausibility and length etc.</para>
-    </simplesect>
-    <simplesect>
-      <title>Boot Settings</title>
-      <para>
-	Use the security resource, you can change various boot settings.
+
+
+      <sect2 id="CreateProfile.Security">
+	<title>
+	  Security settings
+	</title>
+	
+	<para>
+	  Using the features of this module, you will be able to change the local
+	  security settings on the target system. The local security settings
+	  include the boot configuration, login settings, password settings,
+	  user addition settings, and file permissions.
+	</para>
+	<para>
+	  Configuring the security settings automatically corrosponds to the
+	  <emphasis>Custom Settings</emphasis> in the security module available in
+	  the running system which lets you create your own, customized
+	  configuration.
+	</para>      
+	
+	&example.security;
+	<simplesect>
+	  <title>Password Settings Options</title>
+	  <para>
+	    Change various password settings. These settings are mainly stored in the <filename>/etc/login.defs</filename> file.
+	  </para>
+	  <para>
+	    Use this resource to activate one of  the <emphasis>encryption</emphasis> methods currently supported.
+	    If notset, <emphasis>DES</emphasis> is configured.
+	  </para>
+	  <para>
+	    <emphasis>DES</emphasis>, the Linux default method, works in all
+	    network environments, but it restricts you to passwords no longer than
+	    eight characters. <emphasis>MD5</emphasis> allows longer passwords,
+	    thus provides more security, but some network protocols don't support
+	    this, and you may have problems with NIS. <emphasis>Blowfish</emphasis>
+	    is also supported.
+	  </para>
+	  <para>Additionally, you can setup the system to check for password
+	    plausibility and length etc.</para>
+	</simplesect>
+	<simplesect>
+	  <title>Boot Settings</title>
+	  <para>
+	    Use the security resource, you can change various boot settings.
+	  </para>
+	  <itemizedlist>
+	    <listitem>
+	      <para><emphasis>How to interpret Ctrl + Alt + Del</emphasis></para>
+	      <para>When someone at the console has pressed the CTRL + ALT + DEL key combination, the system usually reboots. Sometimes it is desirable to ignore this event, for example, when the system serves as both workstation and server.</para>
+	    </listitem>
+	    <listitem>
+	      <para><emphasis>Shutdown behavior of KDM</emphasis></para>
+	      <para>Set who is allowed to shut down the machine from KDM.</para>
+	    </listitem>
+	  </itemizedlist>
+
+	  
+	</simplesect>
+	<simplesect>
+	  <title>Login Settings</title>
+	  <para>Change various login settings. These settings are mainly stored in the '/etc/login.defs' file.</para>
+	</simplesect>
+	<simplesect>
+	  <title>New user settings (useradd settings)</title>
+	  <para>Set the minimum and maximum possible user ID and set the minimum
+	    and maximum possible group ID.
+	  </para>
+	</simplesect>
+	
+      </sect2>
+
+
+      <sect2 id="Configuration.Security.users">
+	<title>
+	  Users
+	</title>
+	<para>
+	  The root user and at least one normal user can be added during install
+	  using data supplied in the control file. User data and passwords
+	  (encrypted or clear text) are part of the <emphasis>configure</emphasis> resource in the
+	  control file.
+	</para>     
+	<para>
+	  At least the root user should be configured during
+	  auto-installation, which will insure you will be able to login after
+	  installation is finished and of course it insure nobody else can login
+	  into the system (if password is not set).
+	</para> 
+	&example.users;
+	
+
+      </sect2>
+      <sect2>
+	<title>Custom user scripts</title>
+	<para>
+	  By adding scripts to the auto-installation process you can customize the
+	  installation for your needs and take control in different stages of the
+	  installation.
+	</para>
+	<para>
+	  In the auto-installation process, three types of scripts can be executed:
 	</para>
 	<itemizedlist>
 	  <listitem>
-	    <para><emphasis>How to interpret Ctrl + Alt + Del</emphasis></para>
-	    <para>When someone at the console has pressed the CTRL + ALT + DEL key combination, the system usually reboots. Sometimes it is desirable to ignore this event, for example, when the system serves as both workstation and server.</para>
+	    <para>Pre-Install Scripts</para>
+	    <para>Executed before &yast2; does any real change of the system
+	      (Before partitioning and package installation)</para>	  
 	  </listitem>
 	  <listitem>
-	    <para><emphasis>Shutdown behavior of KDM</emphasis></para>
-	    <para>Set who is allowed to shut down the machine from KDM.</para>
+	    <para>Post-Install Scripts</para>
+	    <para>These scripts are executed after &yast2; has completed the
+	      installation and after it has booted the system the first time.</para>
+	  </listitem>
+	  <listitem>
+	    <para>Chroot environment post-install scripts</para>
+	    <para>Chroot scripts are executed in the chroot environment before
+	      &yast2; boots for the first time and before the boot loader is installed.</para>
 	  </listitem>
 	</itemizedlist>
-
-    
-    </simplesect>
-    <simplesect>
-      <title>Login Settings</title>
-      <para>Change various login settings. These settings are mainly stored in the '/etc/login.defs' file.</para>
-    </simplesect>
-    <simplesect>
-      <title>New user settings (useradd settings)</title>
-      <para>Set the minimum and maximum possible user ID and set the minimum
-	and maximum possible group ID.
-      </para>
-    </simplesect>
-   
-  </sect2>
-
-
-  <sect2 id="Configuration.Security.users">
-    <title>
-      Users
-    </title>
-    <para>
-      The root user and at least one normal user can be added during install
-      using data supplied in the control file. User data and passwords
-      (encrypted or clear text) are part of the <emphasis>configure</emphasis> resource in the
-      control file.
-    </para>     
-    <para>
-      At least the root user should be configured during
-      auto-installation, which will insure you will be able to login after
-      installation is finished and of course it insure nobody else can login
-      into the system (if password is not set).
-    </para> 
-    &example.users;
-    
-
-  </sect2>
-  <sect2>
-    <title>Custom user scripts</title>
-    <para>
-      By adding scripts to the auto-installation process you can customize the
-      installation for your needs and take control in different stages of the
-      installation.
-    </para>
-    <para>
-      In the auto-installation process, three types of scripts can be executed:
-    </para>
-    <itemizedlist>
-      <listitem>
-	<para>Pre-Install Scripts</para>
-	<para>Executed before &yast2; does any real change of the system
-	  (Before partitioning and package installation)</para>	  
-      </listitem>
-      <listitem>
-	<para>Post-Install Scripts</para>
-	<para>These scripts are executed after &yast2; has completed the
-	  installation and after it has booted the system the first time.</para>
-      </listitem>
-      <listitem>
-	<para>Chroot environment post-install scripts</para>
-	<para>Chroot scripts are executed in the chroot environment before
-	  &yast2; boots for the first time and before the boot loader is installed.</para>
-      </listitem>
-    </itemizedlist>
-    <para>
-      All  but the pre-install scripts can be written in either shell or
-      perl script language. When added to the control file manually, the
-      scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
-      the file syntax and other tags defined in the control file.
-    </para>
-    
-    &example.scripts;
-    <para>
-      After installation is finished, the scripts and the output logs can be
-      found in the directory <filename>/var/adm/autoinstall</filename>. The
-      scripts are located in <filename>scripts</filename> and the output log of the
-      scripts is located in the <filename>log</filename> directory.
-    </para>
-    <para>
-      The log is the output resulting when executing the shell scripts using
-      the following command:
-    </para>
-    <screen>
-<![CDATA[
-/bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
-]]>
-      </screen>
-    </sect2>
+	<para>
+	  All  but the pre-install scripts can be written in either shell or
+	  perl script language. When added to the control file manually, the
+	  scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
+	  the file syntax and other tags defined in the control file.
+	</para>
+	
+	&example.scripts;
+	<para>
+	  After installation is finished, the scripts and the output logs can be
+	  found in the directory <filename>/var/adm/autoinstall</filename>. The
+	  scripts are located in <filename>scripts</filename> and the output log of the
+	  scripts is located in the <filename>log</filename> directory.
+	</para>
+	<para>
+	  The log is the output resulting when executing the shell scripts using
+	  the following command:
+	</para>
+	<screen>
+	  <![CDATA[
+	  /bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
+	  ]]>
+	</screen>
+      </sect2>
 
 
-    <sect2>
-      <title>System variable (Sysconfig)</title>
-      <para>
-      Using the sysconfig resource, you will be able to define configuration
-      variables in the sysconfig repository
-      (<filename>/etc/sysconfig</filename>) directly. Using the sysconfig
-      variables, you will beable to fine-tune many system components and
-      environment variables exactly to your needs.
-      </para>
+      <sect2>
+	<title>System variable (Sysconfig)</title>
+	<para>
+	  Using the sysconfig resource, you will be able to define configuration
+	  variables in the sysconfig repository
+	  (<filename>/etc/sysconfig</filename>) directly. Using the sysconfig
+	  variables, you will beable to fine-tune many system components and
+	  environment variables exactly to your needs.
+	</para>
         
-    <para>
-	Please consult the handbook for more details about the many
-	configuration options available in <filename>/etc/sysconfig</filename>
-    </para>
-    <para>
-      The following example show how a variable can be set using the sysconfig
-      resource.
-      </para>
-    &example.sysconfig;
-    </sect2>
-    
+	<para>
+	  Please consult the handbook for more details about the many
+	  configuration options available in <filename>/etc/sysconfig</filename>
+	</para>
+	<para>
+	  The following example show how a variable can be set using the sysconfig
+	  resource.
+	</para>
+	&example.sysconfig;
+      </sect2>
+      
 
-    <sect2>
-    <title>Adding complete configurations</title>
-    <para>
-      For many applications and services you might have prepared a
-      configuration file which should be copied in a complete form to some
-      location in the installed system. This is for example if you are
-      installing  a web server and have a <emphasis>ready to go</emphasis>
-      server configuration file (<filename>httpd.conf</filename>).
-    </para>
-    <para>
-      Using this resource, you can embbed the file into the control file by
-      specifying the final path on the installed system. &yast2; will copy this
-      file to the specified location.
-    </para>
-    &example.files;
-  </sect2>
-  &CreateProfileMisc;
+      <sect2>
+	<title>Adding complete configurations</title>
+	<para>
+	  For many applications and services you might have prepared a
+	  configuration file which should be copied in a complete form to some
+	  location in the installed system. This is for example if you are
+	  installing  a web server and have a <emphasis>ready to go</emphasis>
+	  server configuration file (<filename>httpd.conf</filename>).
+	</para>
+	<para>
+	  Using this resource, you can embbed the file into the control file by
+	  specifying the final path on the installed system. &yast2; will copy this
+	  file to the specified location.
+	</para>
+	&example.files;
+      </sect2>
+      &CreateProfileMisc;
 
-</sect1>
-</chapter>
+    </sect1>
+  </chapter>
       <!--
        Local Variables:
        mode: xml

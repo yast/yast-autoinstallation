@@ -118,19 +118,15 @@
 	Mode::config = false;
 	Packages::Init(true);
 
-	map allInstalledPackages = SCR::Read(.package.packageList);
-
-	list foreignPackages = [];
+	// map allInstalledPackages = SCR::Read(.package.packageList);
+	
+	
 	list productPackages = [];
 	// now find out which package are original SuSE package from an
 	// official SuSE installation medium
 
 	foreach(`p,`v, allInstalledPackages, ``{
-	    if (v[1]:"" == "i" && v[2]:-1 == 0)
-	    {
-		foreignPackages = add(foreignPackages,p);
-	    }
-	    else if  (v[1]:"" == "i")
+	    if  (v[1]:"" == "i")
 	    {
 		productPackages = add(productPackages,p);
 	    }
@@ -138,13 +134,7 @@
 
 	map software = $[];
 	software["packages"] = productPackages;
-	if (add_extraPackages) {
-	    map extra_packages = $[];
-	    extra_packages["package_location"] = extraPackageLocation;
-	    extra_packages["packages"] = foreignPackages;
-	    software["extra_packages"] = extra_packages;
-	}
-	SCR::UnmountAgent(.package);
+	software["base"] = "Minimal";
 	Mode::config = true;
 	return software;
     }
