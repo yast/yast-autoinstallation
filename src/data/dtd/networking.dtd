@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+
 <!ELEMENT remote_ipaddr (#PCDATA)>
 <!ELEMENT bootproto (#PCDATA)>
 <!ELEMENT broadcast (#PCDATA)>
@@ -14,10 +16,12 @@
 	config:type CDATA #FIXED "boolean"
 >
 <!ENTITY % y2_dns "dhcp_hostname| dhcp_resolv| domain| hostname| nameservers| searchlist">
+<!ELEMENT dns (%y2_dns;)* >
+
 <!ELEMENT domain (#PCDATA)>
 <!ELEMENT gateway (#PCDATA)>
 <!ELEMENT hostname (#PCDATA)>
-<!ENTITY % y2_laninterface "remote_ipaddr| bootproto| broadcast| device| dhclient_set_down_link| ipaddr| mtu| netmask| network| startmode| wireless| wireless_essid| wireless_key| wireless_mode| wireless_nick| wireless_nwid">
+<!ENTITY % y2_laninterface "remote_ipaddr| bootproto| broadcast| device| dhclient_set_down_link| ipaddr| mtu| netmask| network| startmode| wireless| wireless_essid| wireless_key| wireless_mode| wireless_nick| wireless_nwid|wireless_bitrate|wireless_channel|wireless_frequency|wireless_power">
 <!ELEMENT interface (%y2_laninterface;)*>
 <!ELEMENT interfaces (interface+)>
 <!ATTLIST interfaces
@@ -42,7 +46,14 @@
 >
 <!ELEMENT netmask (#PCDATA)>
 <!ELEMENT network (#PCDATA)>
-<!ELEMENT networking (dns?, interfaces, modules?, routing?)>
+<!ELEMENT networking (dhcp_options?, dns?, interfaces, modules?, routing?)>
+
+<!ELEMENT dhcp_options (dhclient_additional_options?, dhclient_client_id?, dhclient_hostname_option?)>
+<!ELEMENT dhclient_additional_options (#PCDATA)>
+<!ELEMENT dhclient_client_id (#PCDATA)>
+<!ELEMENT dhclient_hostname_option (#PCDATA)>
+
+
 <!-- <!ELEMENT options (#PCDATA)> : redefined -->
 <!ELEMENT route (destination, device, gateway, netmask)>
 <!ELEMENT routes (route+)>
@@ -62,3 +73,7 @@
 <!ELEMENT wireless_mode (#PCDATA)>
 <!ELEMENT wireless_nick (#PCDATA)>
 <!ELEMENT wireless_nwid (#PCDATA)>
+<!ELEMENT wireless_bitrate (#PCDATA)>
+<!ELEMENT wireless_channel (#PCDATA)>
+<!ELEMENT wireless_frequency (#PCDATA)>
+<!ELEMENT wireless_power (#PCDATA)>
