@@ -49,6 +49,10 @@
 	{
 	    message =  sformat ( _("Copying control file from file %1."),  lookup(cmdLine, "path", "unknown") );
 	}
+	else if (Protocol == "device")
+	{
+	    message =  sformat ( _("Copying control file from device /dev/%1."),  lookup(cmdLine, "path", "unknown") );
+	}
 	else if (Protocol == "default")
 	{
 	    message =   _("Copying control file from default file.");
@@ -385,16 +389,34 @@
 
 
     /**
-     * Retrieve the profile from a harddisk partition
+     * Retrieve the profile from a harddisk/any device
      * @param parameters Map with value of the autoyast keyword (command line)
      * @param localfile Location where the retrieved file should be copied
      * @return true for success
-     * @example UseHD ($[<cmdline>], "/tmp/profile.xml")
+     * @example fetchFromDevice ($[<cmdline>], "/tmp/profile.xml")
      */
 
-    global define UseHD(map parameters, string localfile)
+    global define fetchFromDevice(map parameters, string localfile)
 	``{
 	boolean ok = false;
+	string device = parameters["host"]:"";
+	string path_to_file =  parameters["path"]:"";
+	
+	if (device != "" && path_to_file != "")
+	{
+	    SCR::Execute(.target.mount, [sformat("/dev/%1", device) , "/mnt"], "-t auto");
+	       
+	    if (SCR::Execute (.target.bash, "/bin/cp /mnt" +  path_to_file + " " + localfile) != 0)
+	    {
+		y2error("Control file can't be found");
+	    }
+	    else
+	    {
+		ok = true;
+	    }
+	    SCR::Execute(.target.umount, "/mnt");
+	}
+			 
 	return(ok);
     }
 

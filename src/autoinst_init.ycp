@@ -99,6 +99,10 @@ Please wait while the system is prepared for autoinstallation.</p>
 	{
 	    ret = UseFLOPPY(locationParams, profile_location);
 	}
+	else if (protocol == "device") // Device
+	{
+	    ret = fetchFromDevice (locationParams, profile_location);
+	}
 	else if (protocol == "default") // DEFAULT
 	{
 	    if (SCR::Read(.target.size, "/autoinst.xml") >0)
