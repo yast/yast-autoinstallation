@@ -150,9 +150,65 @@
 
 	// determine  location of lilo boot loader
 	term contents = `Top(`RadioButtonGroup(`id(`options), buttons) ) ;
+    //---------------------------------------------------------------
+
+    string helptext = _("<p>
+The boot manager can be installed in the following ways:
+</p>");
+
+    // custom bootloader help text, 2 of 9
+    helptext = helptext + _("<p>
+- In the <b>MBR</b> (the Master Boot Record).  This is recommended whenever SuSE Linux
+determines the system can be booted this way. The old MBR
+will be saved to disk as a precaution.
+</p>
+");
+
+
+    helptext = helptext + _("<p>
+- In the <b>/boot</b> partition.  Choose this option if you
+have installed several operating systems on your hard drive and want to
+continue using your old boot manager, such as <tt>loadlin</tt>. No changes
+will be made to the existing MBR.<br>
+The boot manager is always installed on the <b>/boot</b> partition.
+Configure your <b>other boot manager</b> to start SuSE Linux.
+</p>
+");
+
+    // custom bootloader help text, 5 of 9
+    helptext = helptext + _("<p>
+If you use this method, configure
+your other boot manager (e.g., <tt>loadlin</tt>) accordingly.
+</p>
+");
+
+    // custom bootloader help text, 6 of 9
+    helptext = helptext + _("<p>
+- In some <b>other</b> partition. Consider your system's restrictions
+when selecting this option.</p>
+");
+    helptext = helptext + _("<p>For example, most PCs have a BIOS limit that restricts booting to
+hard disk cylinders smaller than 1024. Depending on the boot manager used,
+you may or may not be able to boot from a logical partition.
+</p>");
+
+    // custom bootloader help text, 8 of 9
+    helptext = helptext + _("<p>
+Enter the device name of the partition (e.g., <tt>/dev/hda3</tt>,
+<tt>/dev/sdb</tt>) in the input field.
+</p>
+");
+
+    // custom bootloader help text, 9 of 9
+    helptext = helptext + _("<p>
+If your system requires additional <b>kernel boot parameters</b>,
+enter them in the corresponding input field. Most users will not need this.
+</p>");
+
+
 			 
 	Wizard::SetContents(caption,
-			    contents, "Help", true, true);
+			    contents, helptext, true, true);
 
 	any ret = "";
 	boolean has_error = false;
