@@ -21,11 +21,16 @@
 	
       </para>
       &example.generalOptions;
-      <para>
-	The <emphasis>reboot</emphasis> property in the <emphasis>mode</emphasis>
-	resource is used to force a reboot after initial system setup and before
-	the system is booted for the first time.
-      </para>
+      <warning>
+          <title>Warning</title>
+          <para>
+              The <emphasis>reboot</emphasis> property in the <emphasis>mode</emphasis>
+              resource was used to force a reboot after initial system setup and before
+              the system is booted for the first time. Currently after initial installation
+              all systems must boot, which makes this option obsolete
+
+          </para>
+      </warning>
       <para>
 	By default, the auto-installation process has to be confirmed by the
 	user. The confirmation should be disabled if a fully unattended
@@ -94,13 +99,17 @@
 
     <section id="CreateProfile.Bootloader">
       <title>The Boot loader</title>
-      <para>Since SuSE Linux 8.2, the bootloader configuration has undergone a
-	major rework and now offers more features and configuration
-	possibilities.
-      </para>
-      <para>It is now possible to specify which bootloader needs to be
-	installed (<emphasis>GRUB</emphasis> or <emphasis>LILO</emphasis>) and it  is possible to specify sections and
-	more bootloader options.
+      <warning>
+          <title>Bootloader Changes</title>
+          <para>Since SuSE Linux 8.2, the bootloader configuration has undergone a
+              major rework and now offers more features and configuration
+              possibilities.
+          </para>
+      </warning>
+      <para>
+          It is now possible to specify which bootloader needs to be
+          installed and it  is possible to specify sections and
+          more bootloader options.
       </para>
       <para>
 	If the bootloader resource is not configured, the system will propose
@@ -118,13 +127,13 @@
       </para>
       &example.bootloader;
       
-      <note>
-	<para>The bootloader configuration interface offers far more
+      <tip>
+	<para>The bootloader configuration interface offers more
 	  configuration options than one might need for a regular setup. The
 	  options described in the example above should be sufficient for most
 	  cases.
 	</para>
-      </note>
+      </tip>
     </section>
 
     <section id="CreateProfile.Partitioning">
@@ -449,7 +458,7 @@
 	  the desired root partition is configured in the control file. The
 	  following example illustrates how this option can be used:
 	</para>
-
+        &example.fstab;
       </section>
 
       <section>
@@ -620,16 +629,16 @@
 	<para>
 	  When installing from a CD-ROM, needed packages from other CD-ROMs
 	  are installed after the initial boot of the
-	  system in the so-called <emphasis>continue</emphasis> mode. If you
+          system in the second installation phase. If you
 	  are installing packages from multiple CD-ROMs, then
 	  auto-installation has to be interrupted for switching the
 	  CD-ROMs. In the case of NFS installation, all packages are
 	  installed at first stage of the installation only if the NFS repository
-	  is configured as a one medium.
+	  is configured as a single medium.
 	</para>
 	<para>
 	  It is often required, that a package should be installed in the
-	  <emphasis>continue</emphasis> mode, especially custom packages
+	  second phase, especially custom packages
 	  which may contain scripts for configuring the system. This can be
 	  done using the <emphasis>post-packages</emphasis> resource.
 	</para>
@@ -642,7 +651,7 @@
 	</title>
 	<para>	
 	  In addition to the pre-defined selections, you can create custom selections
-	  by providing  a customized selection file in the selection
+	  by providing  a selection file in the selection
 	  directory. (<filename>suse/setup/descr</filename>) The selection files have a special format and any
 	  additional selection file must conform to this format, otherwise
 	  &yast2; will not be able to read it.	  	  
