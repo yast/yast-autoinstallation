@@ -16,7 +16,10 @@
     
     global define RereadProfiles ()
 	``{
-	if (size(AIClass::Profiles) == 0) {
+
+	
+	if (size(AIClass::Profiles) == 0)
+	{
 	    AIClass::Parse();
 	}
 	
@@ -52,6 +55,7 @@
 		  `VSpacing(0.5)
 		  
 		  );
+	Wizard::RestoreScreenShotName ();
 	return contents;
     }
 
@@ -65,6 +69,8 @@
     
     global define ManageProfiles()
 	``{
+
+	Wizard::SetScreenShotName ("autoyast-classMgmt-1");
 	string title = _("Profile/Class Management ");
 	string help = _("<P>Use this interface to add and define new classes. A class contains several configuration
 which represent  a subset of a complete <em>control file</em>. When several classes are defined, they can
@@ -160,6 +166,7 @@ to be able to delete."));
 	  
 	    
 	    } until (ret == `next || ret == `key ||  ret ==`add || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
+	Wizard::RestoreScreenShotName ();
 	return ret;	
     }
 
@@ -173,6 +180,7 @@ to be able to delete."));
 
     global define Profile()
 	``{
+	Wizard::SetScreenShotName ("autoyast-classConf");
 	symbol mode = AIClass::Working["action"]:`nothing;
 	string name = AIClass::Working["profile"]:"";
 	y2milestone("Profile in work: %1", AIClass::Working);
@@ -237,13 +245,16 @@ to which class it should belong</P>");
 	    {
 	    ret = UI::UserInput();
  
-	    if (ret == `next ) {		
-		if (UI::QueryWidget(`id(`name),`Value) == "") {
+	    if (ret == `next )
+	    {		
+		if (UI::QueryWidget(`id(`name),`Value) == "")
+		{
 		    UI::MessagePopup(_("Please type a name for this configuration."));
 		    continue;
 		}
 		string newname = UI::QueryWidget(`id(`name),`Value);
-		if (checkFileName(newname) !=0) {
+		if (checkFileName(newname) !=0)
+		{
 		    UI::ErrorPopup(invalidFileName());
 		    continue;
 		}
@@ -283,7 +294,7 @@ to which class it should belong</P>");
 		}
 	    } 	 
 	} until (ret == `next || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed))  || ret == `back );
-		
+	Wizard::RestoreScreenShotName ();	
 	return ret;
     }
 
@@ -339,6 +350,7 @@ to which class it should belong</P>");
     
     global define ManageClasses()
 	``{
+	Wizard::SetScreenShotName ("autoyast-classMgmt-2");
 	string title = _("Classes");
 	
 	string help = _("<p>Use this screen to define the groups of classes
@@ -390,7 +402,8 @@ is merged when joining several classes</p>");
 	    if (ret == `new)
 	    {
 		any defret = AddEditClasses(ret, "");
-		if (defret != `cancel) {
+		if (defret != `cancel)
+		{
 		    AIClass::CreateClassDirs();
 		    Wizard::SetContents(title,
 					RereadClasses(), help, true, true);
@@ -430,7 +443,7 @@ to be able to delete something."));
 	    }     
 	    
 	} until (ret == `next || ret == `back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)));
-	
+	Wizard::RestoreScreenShotName ();
 	return ret;
  
     }
@@ -445,13 +458,15 @@ to be able to delete something."));
 
     global define AddEditClasses(symbol mode, string name)
 	``{
+	Wizard::SetScreenShotName ("autoyast-classEdit");
 	list classNames = maplist(map c,
 				     AIClass::Classes,
 				     ``(lookup(c,"name",""))
 				     );
 	
 	map class = $[];
-	if (mode == `edit) {	    
+	if (mode == `edit)
+	{	    
 	    class = select(filter(
 				     map c,
 				     AIClass::Classes,
@@ -525,6 +540,7 @@ to be able to delete something."));
 		y2milestone("Saved Class: %1", AIClass::Classes);
 	    } 
 	} until (ret == `save || ret == `cancel);
+	Wizard::RestoreScreenShotName ();
 	UI::CloseDialog();
 	
 	return ret;
@@ -583,7 +599,7 @@ to be able to delete something."));
 
     global define MergeDialog()
 	``{
-	
+	Wizard::SetScreenShotName ("autoyast-classMerge-1");
 	string title = _("Merge Classes");
 	map profiles = $[];
 
@@ -766,7 +782,7 @@ to be able to perform a merge"), min));
 		ret = `next;
 	    }	 
 	} until  (ret == `next || ret ==`back || (ret == `abort && UI::ReallyAbortPopup (AIConfig::changed)) );
-	
+	Wizard::RestoreScreenShotName ();
 	if (ret == `abort) {
 	    return ret;
 	}
@@ -884,6 +900,7 @@ to be able to perform a merge"), min));
 	}
 	SCR::Execute(.target.remove, "/tmp/autoinst_result.xml");
 	clearFeedback();
+	Wizard::RestoreScreenShotName ();
 	return true;
     }
     

@@ -225,7 +225,9 @@
      * @return symbol
      */
 
-    global define symbol configurationType()``{
+    global define symbol configurationType()
+	``{
+	Wizard::SetScreenShotName ("autoyast-configurationType");
 	symbol ct = AIConfig::config_type;
 	// Translators: dialog caption
 	string caption = _("Auto-Installation configuration System");
@@ -386,4 +388,5 @@
 	}
     }
     any ret = AutoSequence ();
+    Wizard::RestoreScreenShotName ();
 }

@@ -47,7 +47,7 @@
      */
     global define symbol ConfTree()
 	``{
-
+	Wizard::SetScreenShotName ("autoyast-conftree");
 	include "autoinstall/io.ycp";
 	include "autoinstall/help.ycp";	
 
@@ -232,6 +232,7 @@
 	UI::ChangeWidget(`id(`next), `Label, NextButtonLabel());
 	Wizard::RestoreHelp("");
 	Wizard::RestoreAbortButton();
+	Wizard::RestoreScreenShotName ();
 	if (ret != `back && ret != `abort)
 	{
 	    return AIConfig::config_type;
