@@ -43,17 +43,18 @@
 	Desktop::AgentPath = .autoyast2.desktop;
 
 	list<string> Values= [ "Name",
-		       "GenericName",
-		       "X-SuSE-YaST-AutoInst",
-		       "X-SuSE-YaST-AutoInstResource",
-		       "X-SuSE-YaST-AutoInstClient",
-		       "X-SuSE-YaST-Group",
-		       "X-SuSE-YaST-AutoInstPath",
-		       "X-SuSE-YaST-AutoInstMerge",
-		       "X-SuSE-YaST-AutoInstMergeTypes",
-		       "X-SuSE-YaST-AutoInstDataType",
-		       "X-SuSE-YaST-AutoInstClonable"
-	];
+			       "GenericName",
+			       "X-SuSE-YaST-AutoInst",
+			       "X-SuSE-YaST-AutoInstResource",
+			       "X-SuSE-YaST-AutoInstClient",
+			       "X-SuSE-YaST-Group",
+			       "X-SuSE-YaST-AutoInstPath",
+			       "X-SuSE-YaST-AutoInstMerge",
+			       "X-SuSE-YaST-AutoInstMergeTypes",
+			       "X-SuSE-YaST-AutoInstDataType",
+			       "X-SuSE-YaST-AutoInstClonable",
+			       "X-SuSE-YaST-AutoInstRequires"
+			       ];
 	Desktop::Read(Values);
 	map<string,map> configurations = Desktop::Modules;
 
@@ -259,54 +260,55 @@
      * Simple dependency resolving
      * @return list<map>
      */
-    global define list<map> Deps (map<string,any>  dependencies)
+    global define list<map> Deps ()
     {
-	map<string, any> deps = $[
-			"files": ["users"],
-			"users": ["security"],
-			"nfs":	 ["lan"],
-			"nfs_server": ["lan"],
-			"samba-server": ["lan"],
-			"samba-client": ["lan"],
-			"printer": ["lan"],
-			"firewall": ["lan"],
-			];
-        if (size(dependencies) > 0 )
-        {
-            deps=(map<string, any>)union(deps, dependencies );
-        }
+        map<string, any> deps = $[];
+        list<map> m = [];
+        list done = [];
+        foreach(string p, map d, ModuleMap,
+                ``{
+                if (haskey(d, "X-SuSE-YaST-AutoInstRequires") && d["X-SuSE-YaST-AutoInstRequires"]:"" != "")
+                {
+                list<string> req = splitstring(d["X-SuSE-YaST-AutoInstRequires"]:"", ", ");
+                req = filter(string r, req, ``(r!=""));
+                deps[p] = req;
+                }
 
-	list<map> m = [];
-	list done = [];
+                });
+        y2milestone("New dependencies: %1", deps);
 
-	foreach(string p, map d, ModuleMap,
-        ``{
+        foreach(string p, map d, ModuleMap,
+                ``{
+                y2debug("done: %1", done);
+                y2debug("Working on : %1", p );
+                if (!contains(done, p))
+                {
+                if (haskey(deps, p))
+                {
+                foreach(string r, deps[p]:[], ``{
+                    if (!contains(done, r)) {
+                    m = add(m, $["res":r, "data":ModuleMap[r]:$[]]);
+                    done = add(done, r);
+                    }
+                    });
+                m = add(m, $["res":p, "data":d]);
+                done = add(done, p);
+                }
+                else
+                {
+                m = add(m, $["res":p, "data":d]);
+                done = add(done, p);
+                }
+                }
+                });
 
-		if (!contains(done, p)) {
-		if (haskey(deps, p)) {
-			foreach(string r, deps[p]:[], ``{
-				if (!contains(done, r)) {
-				m = add(m, $["res":r, "data":ModuleMap[r]:$[]]);
-				done = add(done, r);
-				}
-			});
-			m = add(m, $["res":p, "data":d]);
-			done = add(done, p);
-		}
-		else {
-			m = add(m, $["res":p, "data":d]);
-			done = add(done, p);
-		}
-		}
-	});
-
-	return m;
-
+        return m;
     }
 
     /**
-     * SetDesktopIcon
-     *
+     * Set Desktop Icon
+     * @param file Desktop File 
+     * @return boolean
      */
     global boolean SetDesktopIcon( string file )
     {
