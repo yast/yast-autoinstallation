@@ -64,8 +64,28 @@
 	return message;
     }
 
+    /**
+     * Return MAC address of active device
+     */
 
-    
+    global define string getMAC() ``{
+	string mac = "";
+	list ifconfig = SCR::Read(.run.ifconfig);
+	string device  = SCR::Read (.etc.install_inf.Netdevice);
+	foreach(`dev, ifconfig, ``{
+	    if (dev["name"]:"" == device)
+	    {
+		string link = dev["value", "link"]:"";
+		list linktok = splitstring(link, " ");
+		list clean = filter(`tok, linktok, ``(tok != ""));
+		y2milestone("mac line: %1", clean);
+		mac = clean[3]:"";
+	    }
+
+	});
+	string cleanmac = deletechars(tolower(mac), ":");
+	return cleanmac;
+    }
 
     /**
      * Retrieve the profile using TFTP
@@ -87,10 +107,10 @@
 	    ip = SCR::Read(.etc.install_inf.IP);
 	    string tmp_hex_ip = ip2hex(ip);
 
-	   
+
 	    y2milestone("Trying to load: %1%2", path_to_file, tmp_hex_ip );
 	    remote = sformat("%1/%2",  path_to_file , tmp_hex_ip);
-	    
+
 	    if (TFTP::Get(server, remote, localfile))
 	    {
 		y2milestone("tftp success");
@@ -102,7 +122,7 @@
 		{
 		    tmp_hex_ip = substring(tmp_hex_ip, 0 , size(tmp_hex_ip)-1);
 		    y2milestone("Trying to load: %1%2", path_to_file, tmp_hex_ip );
-		    
+
 		    remote = sformat("%1/%2",  path_to_file , tmp_hex_ip);
 		    if (TFTP::Get(server, remote, localfile ))
 		    {
@@ -113,8 +133,25 @@
 		}
 		if (!ok)
 		{
+		    string mac = getMAC();
+		    y2warning("Trying to load: %1/%2", path_to_file, mac);
+
+		    tftpmap = change(tftpmap, "serverstr", server + ":" + path_to_file + mac);
+		    remote = sformat("%1/%2",  path_to_file, mac);
+		    if (!TFTP::Get(server, remote, localfile))
+		    {
+			y2error("Control file can't be found");
+		    }
+		    else
+		    {
+			y2milestone("tftp success");
+			ok = true;
+		    }
+		}
+		if (!ok)
+		{
 		    y2warning("Trying to load: %1default", path_to_file);
-		    
+
 		    tftpmap = change(tftpmap, "serverstr", server + ":" + path_to_file + "default");
 		    remote = sformat("%1/default",  path_to_file);
 		    if (!TFTP::Get(server, remote, localfile))
@@ -130,7 +167,7 @@
 	    }
 	}
 	else
-	{	    	    
+	{
 	    if (TFTP::Get(server,  path_to_file, localfile ))
 	    {
 		ok = true;
@@ -178,12 +215,12 @@
 
 	y2milestone("filename: %1", FileName);
 	y2milestone("dir to mount: %1", mount_dir);
-	
+
 
 	integer ret_from_shell =  SCR::Execute(.target.bash, "/bin/mount " + server + ":" + mount_dir +" /mnt -t nfs");
 	if (ret_from_shell != 0 )
-	{	    
-	    y2warning("Mount failed");	    
+	{
+	    y2warning("Mount failed");
 	    return (ok);
 	}
 
@@ -213,7 +250,21 @@
 			break;
 		    }
 		}
-		
+		if (!ok)
+		{
+		    string mac = getMAC();
+		    y2warning("Trying to load: %1/%2", path_to_file, mac);
+		    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + mac + " " + localfile) == 0)
+		    {
+			y2milestone("Autoinstall: nfs success");
+			ok = true;
+
+		    }
+		    else
+		    {
+			y2error("Control file can't be found");
+		    }
+		}
 		if (!ok)
 		{
 		    y2warning("Trying to load: %1default", path_to_file);
@@ -221,7 +272,7 @@
 		    {
 			y2milestone("Autoinstall: nfs success");
 			ok = true;
-			   
+
 		    }
 		    else
 		    {
@@ -235,19 +286,19 @@
 	{
 	    if (SCR::Execute (.target.bash, "/bin/cp /mnt/" + FileName+ " " + localfile) == 0)
 	    {
-		ok = true;		   
+		ok = true;
 	    }
 	    else
 	    {
 		y2error("Control file can't be found");
-		    
+
 	    }
 	}
-	  
+
 	WFM::Execute(.local.bash, "/bin/umount /mnt");
 	return(ok);
     }
-    
+
 
     /**
      * Retrieve the profile from a floppy disk
@@ -263,7 +314,7 @@
 	if (StorageDevices::FloppyReady())
 	{
 	    SCR::Execute(.target.mount, [StorageDevices::FloppyDevice, "/media/floppy"], "-t auto");
-	    
+
 	    if (SCR::Execute (.target.bash, "/bin/cp /media/floppy/" + parameters["path"]:"" + " " + localfile) != 0) {
 		y2error("Control file can't be found");
 	    }
@@ -296,7 +347,7 @@
 	string ip = "";
 	boolean ok = false;
 	string server = parameters["host"]:"";
-	
+
 	string path_to_file = lookup(parameters, "path","");
 	y2milestone("Path to remote control file: %1", path_to_file);
 
@@ -353,6 +404,23 @@
 			break;
 		    }
 		}
+
+		if (!ok)
+		{
+		    string mac = getMAC();
+		    y2warning("Trying to load: %1%2", path_to_file, mac);
+		    string full_url = sformat("http://%1%2/%3", server ,  http_dir , mac);
+		    res = HTTP::Get(full_url, localfile);
+		    if (res["code"]:0 == 200)
+		    {
+			y2milestone("Autoinstall: HTTP success");
+			ok = true;
+		    }
+		    else
+		    {
+			y2error("Control file can't be found");
+		    }
+		}
 		if (!ok)
 		{
 		    y2warning("Trying to load: %1default", path_to_file);
@@ -401,11 +469,11 @@
 	boolean ok = false;
 	string device = parameters["host"]:"";
 	string path_to_file =  parameters["path"]:"";
-	
+
 	if (device != "" && path_to_file != "")
 	{
 	    SCR::Execute(.target.mount, [sformat("/dev/%1", device) , "/mnt"], "-t auto");
-	       
+
 	    if (SCR::Execute (.target.bash, "/bin/cp /mnt" +  path_to_file + " " + localfile) != 0)
 	    {
 		y2error("Control file can't be found");
@@ -416,7 +484,7 @@
 	    }
 	    SCR::Execute(.target.umount, "/mnt");
 	}
-			 
+
 	return(ok);
     }
 
