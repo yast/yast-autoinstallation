@@ -104,9 +104,13 @@
 			integer i = 0;
 			foreach( string res, splitstring(tomerge, ",") , ``{
 			    if ( MergeTypes[i]:"map" == "map")
+			    {
 				Profile::Flat[res] = result[res]:$[];
+			    }
 			    else
+			    {
 				Profile::Flat[res] = result[res]:[];
+			    }
 			    i = i + 1;
 			});
 		    }
@@ -305,9 +309,7 @@
 			    tree_item = ret;
 			    break;
 			}
-
 		    }
-
 		}
 
 		foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
@@ -445,7 +447,7 @@
 		    {
 
 
-			string filename = PopupFile( AutoinstConfig::Repository);
+			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
 
 			if (filename != "")
 			{
@@ -463,7 +465,7 @@
 			Wizard::CreateDialog();
 			include "autoinstall/imports.ycp";
 			string head = _("Import Kickstart File");
-			string filename = PopupFile( AutoinstConfig::Repository);
+			string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*.*", _("Select a file to load"));
 
 			if ( filename != "" )
 			{
@@ -481,7 +483,7 @@ were imported correctly.
 			if (AutoinstConfig::currentFile == "")
 			{
 
-			    string filename = SaveFileAs( AutoinstConfig::Repository);
+			    string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
 			    if (filename !=  "" )
 			    {
 				AutoinstConfig::currentFile = filename;
@@ -509,7 +511,7 @@ were imported correctly.
 		    else if (ret == `menu_saveas) // SAVE AS
 		    {
 
-			string filename = SaveFileAs(AutoinstConfig::Repository);
+			string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
 			if ( filename != "" )
 			{
 			    y2milestone("filename: %1", filename );

@@ -4,7 +4,7 @@
 
   <article>
   <articleinfo>    
-    <title>AutoYaST2: SLES Network Installation</title>
+    <title>SLES Network Installation</title>
     <author>
       <firstname>Anas</firstname>
       <surname>Nashif</surname>
@@ -100,13 +100,13 @@
 	making it possible to combine several products on a single media.
       </para>
       <para>
-	At toplevel of a media, a directory <filename>/media.1/</filename> should exists.
+	At top-level of a media, a directory <filename>/media.1/</filename> should exists.
 	If it does not exist, the presence of the correct media can not be
 	verified. This may be convenient for an on-line media which just
 	provides a set of packages.
       </para>
       <para>
-	In this case, no verfication takes place. The numeric extension depends
+	In this case, no verification takes place. The numeric extension depends
 	on the media number in case of splitted medias. The first media has .1,
 	the second .2, and so on.
       </para>
@@ -124,7 +124,7 @@
 	  (cramfs based) root filesystem for YaST. This file contains the
 	  actual installer. The <filename>root</filename> file is fetched by
 	  <command>linuxrc</command> from the installation source and is
-	  mounted in the installtion environment. <command>Linuxrc</command>
+	  mounted in the installation environment. <command>Linuxrc</command>
 	  starts the installer from within this file.
 	</para>
 	<para>
@@ -236,7 +236,7 @@ SuSE Linux AG
 	<title>The contents files</title>
 	<para>
 	  This file resides inside the product directory as specified by the
-	  products file on the media. It contains all product-specfic data to
+	  products file on the media. It contains all product-specific data to
 	  describe and identify the contents of the product. If there was no
 	  products file, the product directory defaults to the root directory
 	  on the media.
@@ -380,9 +380,9 @@ TIMEZONE America/Los_Angeles
       the UnitedLinux media description standard.
     </para>
     <para>
-      In the source directory, copy all SLES and UL into seperate directories
+      In the source directory, copy all SLES and UL into separate directories
       (CDs can also be copied into one single directory, but to keep a clean
-      structure, CDs can be copied into seperate directories, i.e. using the
+      structure, CDs can be copied into separate directories, i.e. using the
       following scheme: UL/CD1, UL/CD2, UL/CD3 and SLES8.)
     </para>    
     <para>
@@ -404,7 +404,7 @@ TIMEZONE America/Los_Angeles
     <para>
       On the installer source create a <filename>yast/order</filename> as described above
       and enter the location of the description data and
-      packages. Alternativly, you can copy the description data of all sources to separate
+      packages. Alternatively, you can copy the description data of all sources to separate
       directories in the <filename>yast</filename> directory (This is the case
       on the SLES CD which contains the description data for UL to support
       multiple sources using CDs).
@@ -621,7 +621,7 @@ yast
 	located in the directory <filename>boot/loader</filename>.
       </para>
       <para>
-	If initialy  only the original packages from the released products are to
+	If initially  only the original packages from the released products are to
 	be installed, the steps described above can used with the following
 	changes:
       </para>
@@ -630,7 +630,7 @@ yast
 	  <para>
 	    The target system has to be booted using the kernels from the
 	    service pack CDs, i.e. by booting using the SP CD directly or by
-	    using a network bootable image built using the files
+	    using a network boot-able image built using the files
 	    from <filename>boot/loader</filename> on the SP CD.</para>
 	</listitem>
 	<listitem>
@@ -656,7 +656,7 @@ yast
 	  is not officially supported and some issues might arise.
 	</para>
 	<para>
-	  Using this mothod without paying attention to details, wrong
+	  Using this method without paying attention to details, wrong
 	  packages might get installed which  in all cases will not cause
 	  any harm, but the final installed system will have texts and instructions
 	  pointing to the wrong product.
@@ -707,7 +707,7 @@ yast
       </screen>
       <para>
 	The file <filename>order</filename> will determine the priority for
-	the packages to be installed. The service pack should have the heighest
+	the packages to be installed. The service pack should have the highest
 	priority as it holds all updated packages. It also should appear before
 	the SLES source because it holds updated SLES packages.
       </para>
@@ -720,9 +720,9 @@ yast
     </section>
 
     <section>
-      <title>SP3 Autoinstallation directly from SP CD image</title>
+      <title>SP3 Auto-installation directly from SP CD image</title>
       <para>
-	Another alternative to adding SP3 as an additional source exisit. This
+	Another alternative to adding SP3 as an additional source exist. This
 	requires executing a script at the end of the installation which mounts
 	a remote file system containing the image of the SP3 CD and calling the
 	update scripts available on the SP CD or calling any other script to
@@ -757,7 +757,7 @@ yast
 	  sources were used to install the system.	  
 	</para>
 	<para>
-	  If the system is being autoinstalled, the order of the product files
+	  If the system is being auto-installed, the order of the product files
 	  can be changed using  a post-install script, otherwise they have to
 	  be changed manually.
 	</para>

@@ -8,7 +8,6 @@
 {
     textdomain "autoinst";
     import "Label";
-    include "ui/file_popups.ycp";
 
     /**
      * Add or edit a file
@@ -148,7 +147,7 @@ name and the content of the file.
 	    }
 	    else if (ret == `loadsource)
 	    {
-		string filename = PopupFile( "/tmp/" );
+		string filename = UI::AskForExistingFile( "", "*.*", _("Select a file to load") );
 		if (filename != "")
 		{
 		    string source = SCR::Read(.target.string, filename);
@@ -216,9 +215,7 @@ and have an httpd.conf configuration file prepared.</p>
 
 	    if (ret == `new)
 	    {
-
 		addFileDialog(ret , "" );
-
 	    }
 	    else if (ret == `edit)
 	    {
