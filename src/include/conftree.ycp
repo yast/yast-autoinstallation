@@ -133,6 +133,8 @@
         if (seq == `accept || seq == `next || seq == `finish)
         {
 	    any new_settings = WFM::CallFunction(module_auto, ["Export"]);
+            y2debug("original=%1", original_settings);
+            y2debug("new=%1", new_settings);
             if (original_settings!=new_settings)
             {
                 WFM::CallFunction(module_auto, ["SetModified"]);
