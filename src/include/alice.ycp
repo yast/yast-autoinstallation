@@ -20,7 +20,7 @@
      * Generate control file list
      * @return file list
      */
-    global define term aliceHostList()
+    define term aliceHostList()
 	``{
 
 	list files = (list)SCR::Read(.target.dir, AutoinstConfig::AliceRepository + "/info");
@@ -61,7 +61,7 @@
 
 
 
-    global define boolean _cleanup(string in, string out)
+    define boolean _cleanup(string in, string out)
 	``{
 	map ycpin = XML::XMLToYCPFile(in);
 	y2milestone("Writing file as %1", out);
@@ -76,7 +76,7 @@
     }
 
     
-    global define map mergeFiles(list files, string dir)
+    define map mergeFiles(list files, string dir)
 	``{
 	
 	aliceXmlSetup();
@@ -119,7 +119,7 @@
 
 
 
-    global define map createAliceConf(string host)
+    define map createAliceConf(string host)
 	``{
 
 	string MakeinfoCommand = "alice make_info_file --yast2 ";
@@ -143,7 +143,7 @@
      * @param string partition
      * @return list  list of partitions
      */
-    global define list createAlicePartitions(string partitions)
+    define list createAlicePartitions(string partitions)
 	``{
 	SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_part", partitions);
 	list raw_part =  (list) SCR::Read(.tmp.alice.part);
@@ -194,7 +194,7 @@
      * @param string selection as string
      * @return list package selection list
      */
-    global define list readSelection(string selection) ``{
+    define list readSelection(string selection) ``{
 	SCR::Write(.target.string, "/var/lib/autoinstall/tmp/alice_software", "Toinstall:\n" + selection + "\nLlatsniot:\n");
 	list sel = filter(string p, (list) SCR::Read(.yast1sel.selection, "/var/lib/autoinstall/tmp/alice_software"), ``(p!=""));
 	SCR::Execute(.target.remove, "/var/lib/autoinstall/tmp/alice_software");
@@ -210,7 +210,7 @@
      * @return map  software map
      */
 
-    global define map createAliceSoftware(map aliceConf) ``{
+    define map createAliceSoftware(map aliceConf) ``{
 
 	map software= $[];
 	string base = "";
@@ -251,7 +251,7 @@
      * @param map aliceConf alice configuration
      * @return map  network map
      */
-    global define map createAliceNetwork(map aliceConf) ``{
+    define map createAliceNetwork(map aliceConf) ``{
 	 import "IP";
 	 string network =  aliceConf["NET_IP_CONFIG"]:"";
 	 string DNS_NAMESERVER = aliceConf["DNS_NAMESERVER"]:"";
@@ -333,7 +333,7 @@
      * @param map aliceConf alice configuration
      * @return map  NIS map
      */
-    global define map createAliceNis (map aliceConf) ``{
+    define map createAliceNis (map aliceConf) ``{
 	map nis = $[];
 	string nis_domain = aliceConf["NETWORK_NIS_YPDOMAIN"]:"";
 	list nis_servers = splitstring( aliceConf["NETWORK_NIS_YPSERVER"]:"", " ");
@@ -349,7 +349,7 @@
      * @param map aliceConf alice configuration
      * @return list  List of users
      */
-    global define list  createAliceUsers (map aliceConf) ``{
+    define list  createAliceUsers (map aliceConf) ``{
 	list users = [];
 	// root
 	map root = $[];
@@ -364,7 +364,7 @@
 	return users;
     }
 
-    global define map aliceInit(map aliceConf, map networking)``{
+    define map aliceInit(map aliceConf, map networking)``{
 	map init = $[];
 	y2milestone("networking %1", networking);
 	if ( aliceConf["SYS_BOOT_MODE"]:"" == "NET") {
@@ -415,7 +415,7 @@
      * @return map Profile
      */
 
-    global define map createProfile(map aliceConf)
+    define map createProfile(map aliceConf)
 	``{
 	import "Misc";
 	// General resource
@@ -511,7 +511,7 @@
 
     
 
-    global define symbol aliceImportList()
+    define symbol aliceImportList()
 	``{
 
 	import "Wizard";
@@ -558,7 +558,7 @@ This may take a while. Please wait...
 
 		    map aliceConf = $[];
 		    map aliceret = createAliceConf(host);
-		    if (is(aliceret, map) && aliceret != $[])
+		    if ( aliceret != $[])
 		    {
 			aliceConf = aliceret;
 		    }

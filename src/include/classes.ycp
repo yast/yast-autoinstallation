@@ -16,7 +16,7 @@
      * XML_cleanup()
      * @return boolean
      */
-    global define boolean XML_cleanup(string in, string out)
+    define boolean XML_cleanup(string in, string out)
 	``{
 	import "XML";
 	map ycpin = XML::XMLToYCPFile(in);
@@ -29,7 +29,7 @@
      * class_dialog_contents()
      * @return term
      */
-    global define term class_dialog_contents ()
+    define term class_dialog_contents ()
 	``{
 	list classes = maplist(map class , AutoinstClass::Classes,  ``{
 	    
@@ -72,7 +72,7 @@
      * @param symbol mode
      * @param symbol 
      */
-    global define symbol AddEditClasses(symbol mode, string name)
+    define symbol AddEditClasses(symbol mode, string name)
 	``{
 	list classNames = maplist(map c,
 				  AutoinstClass::Classes,
@@ -176,7 +176,7 @@
      * Manage Classes
      *
      */
-    global define symbol ManageClasses()
+    define symbol ManageClasses()
 	``{
 
 	string title = _("Classes");
@@ -277,7 +277,7 @@ to delete.
      * @param string class name
      * @return integer class order
      */
-    global define integer GetClassOrder(string name)``{
+    define integer GetClassOrder(string name)``{
 	integer order = 0;
 	foreach(map class, AutoinstClass::Classes, ``{
 	    if (class["name"]:"" == name)
@@ -292,7 +292,7 @@ to delete.
     /**
      * The merge operation
      */
-    global define boolean MergeAll(list selected_profiles, symbol base)
+    define boolean MergeAll(list selected_profiles, symbol base)
 	``{
 	import "Profile";
 	string tmpdir = AutoinstConfig::tmpDir;
@@ -374,7 +374,7 @@ to delete.
      *
      */
 
-    global define symbol MergeDialog()
+    define symbol MergeDialog()
 	``{
 	string title = _("Merge Classes");
 	map profiles = $[];
@@ -531,8 +531,7 @@ to perform a merge.
 
 
 
-    
-    global define symbol classConfiguration() ``{
+    define symbol classConfiguration() ``{
 
 	string title = _("Class Configuration");
 	string help = _("<p>Choose one or more of the listed classes to which the current control
