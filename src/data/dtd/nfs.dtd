@@ -1,0 +1,30 @@
+
+<!-- NFS Client -->
+<!ELEMENT nfs (nfs_entry+)>
+<!ATTLIST nfs config:type CDATA  #FIXED "list" >
+
+<!ENTITY % y2_nfs_client "mount_point|nfs_options|server_path" >
+<!ELEMENT nfs_entry (%y2_nfs_client;)*>
+<!ELEMENT mount_point (#PCDATA)>
+<!ELEMENT nfs_options (#PCDATA)>
+<!ELEMENT server_path (#PCDATA)>
+
+
+
+
+<!-- NFS Server -->
+
+<!ELEMENT nfs_server (nfs_exports, start_nfsserver)>
+<!ELEMENT nfs_exports (nfs_export+)>
+<!ATTLIST nfs_exports config:type CDATA  #FIXED "list" >
+<!ELEMENT nfs_export (allowed, mountpoint)>
+<!ELEMENT mountpoint (#PCDATA)>
+<!ELEMENT allowed (allowed_clients+)>
+<!ATTLIST allowed config:type CDATA  #FIXED "list" >
+<!ELEMENT allowed_clients (#PCDATA)>
+<!ELEMENT start_nfsserver (#PCDATA)>
+<!ATTLIST start_nfsserver config:type CDATA  #FIXED "boolean" >
+
+
+
+
