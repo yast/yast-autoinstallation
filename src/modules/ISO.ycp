@@ -1,0 +1,319 @@
+/**
+ * File:
+ *	modules/ISO.ycp
+ *
+ * Module:
+ *	ISO
+ *
+ * Summary:
+ *	ISO creation
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    module "ISO";
+    import "Misc";
+    import "AIConfig";    
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////
+    // Media
+    ///////////////////////////////////////////////////////////////////////
+
+    global boolean nojoliet		= false;
+
+    global string params		= "";
+
+    global string sourceDir		= "";
+
+    global string suseDir		= "";
+
+    string bootDir			= "";
+
+    global string applicationID		= "";
+
+    global string volumePreparer	= "SuSE Linux AG";
+
+    global string volumeID		= "SU8100.001";
+
+    global string publisher		= "SuSE Linux AG";
+
+    global string skeletonDir		= "";
+
+    global string isoFile		= "";
+
+    global integer totalPacs		= 0;
+
+
+    // Packages Source
+    global map sourceData = $[];
+    global map productData = $[];
+    global map mediaData = $[];
+    global boolean createdNewSource = false;
+
+    string tmpDir = "";
+
+    integer theSource = -1;
+    
+    /**
+     * Constructer
+     *
+     **/
+    global define void ISO()
+	``{
+	tmpDir = AIConfig::tmpDir;	
+	return;
+    }
+
+
+    /**
+     * Create skeleton directory
+     */
+    define boolean createSkelDir()
+	``{
+	
+	skeletonDir = tmpDir + "/iso_skeleton";
+	return SCR::Execute(.target.mkdir, skeletonDir);	
+    }
+
+    
+    /**
+     * initialize source
+     */
+    global define boolean initSource() ``{
+	string error_msg = _("
+No distribution source was found, please add a source using the
+source manager which is available in the control center. After adding
+a source, please make sure it is enabled.
+");
+	list theSources = [];
+	string base_url = "dir://" + sourceDir;
+
+	theSources = Pkg::SourceStartCache (false);
+	y2milestone("sources: %1", theSources);
+	if (size (theSources) > 0)
+	{	    
+	    foreach (integer source, theSources, ``{		
+		map sdata = Pkg::SourceMediaData(source);
+		y2milestone("Source Data %1", sdata);
+		theSource = source;
+	    });
+	}
+	else
+	{
+	    Report::Error(error_msg);
+	    return false;
+	}
+
+
+	sourceData	= 	Pkg::SourceGeneralData(theSource);
+	productData	= 	Pkg::SourceProductData(theSource);
+	mediaData	= 	Pkg::SourceMediaData(theSource);
+	y2milestone("Product Data: %1", productData);
+	y2milestone("Source Data: %1",  sourceData);
+	y2milestone("Media Data: %1", mediaData);
+
+
+
+	string url = sourceData["url"]:"";
+	map tok = parse_url(url);
+	sourceDir = tok["path"]:"";
+	
+	y2milestone("Source dir %1", sourceDir);
+
+	
+	if (mediaData != nil && productData != nil && sourceData != nil && sourceDir != "")
+	    return true;
+	else
+	    return false;
+    }
+
+
+
+    /**
+     * Set paraeters for mkisofs command
+     *
+     */
+    define initIsoParams ()
+	``{
+
+
+	string skeleton = skeletonDir + "/skeleton";
+
+	if (nojoliet)
+	{
+	    params =  "-r -T -pad -no-emul-boot -boot-load-size 4 -boot-info-table";
+	}
+	else
+	{
+	    params = "-r -T -J -pad -no-emul-boot -boot-load-size 4 -boot-info-table";
+	}
+	string tmp_datadir = productData["datadir"]:"./suse";
+	string datadir = ( substring(tmp_datadir, 0, 1 ) == ".") ? substring(tmp_datadir, 1, size(tmp_datadir)) :   tmp_datadir;
+	y2milestone("Data dir: %1", datadir);
+
+	suseDir = skeleton + datadir;
+
+	bootDir = skeleton + "/boot/loader";
+
+	if (applicationID == "")
+	{
+	    params = params + sformat(" -A \"%1\"", productData["label"]:"SuSE-Linux");
+	}
+	else
+	{
+	    params = params + sformat(" -A \"%1\"", applicationID);
+	}
+
+
+    }
+
+    /**
+     * Construct mkisofs command
+     * @param dest name of resulting ISO file
+     * @return string mkisofs command
+     */
+    global define string createISOCmd (string dest )
+	``{
+
+	initIsoParams ();
+	string skeleton = skeletonDir + "/skeleton";
+
+	string isotmp = SCR::Read (.target.tmpdir);
+	SCR::Execute(.target.mkdir, isotmp + "/iso");
+	string sortfile = isotmp + "/sortfile";
+
+	if (SCR::Read(.target.dir, suseDir)!=nil && SCR::Read(.target.dir, bootDir)!= nil )
+	{
+	    string findstring = "find " + bootDir + " -printf \"%p 1\\n\" > " + sortfile;
+	    integer ret = SCR::Execute (.target.bash, findstring);
+
+	    params = params + sformat(" -sort %1  -b boot/loader/isolinux.bin -c boot.cat", sortfile);
+	    y2milestone("found boot image. Making CD bootable.");
+	    SCR::Execute(.target.mkdir, sformat("%1/iso/boot/loader", isotmp));
+
+	}
+	else
+	{
+	    y2milestone("found no boot image. No bootable CD will be created.");
+	    return "";
+	}
+
+	string mkisofs = sformat("mkisofs -p \"%1\" -V\"%2\" -P \"%3\" %4 -o %5 %6/iso %7", volumePreparer, volumeID, publisher, params, dest, isotmp, skeleton);
+	return mkisofs;
+    }
+
+    /**
+     * Create Skeleton
+     *
+     */
+    global define createISOSkeleton () ``{
+	
+	list commands = [];
+	integer ret = 0;
+	boolean success = true;
+	
+	success = createSkelDir();
+	if (!success)
+	    return false;
+
+	string descrDir = productData["descrdir"]:"suse/setup/descr";
+	string dataDir =   productData["datadir"]:"./suse";
+	
+	y2milestone("creating skeleton in %1", skeletonDir);
+	success = SCR::Execute(.target.mkdir, sformat("%1/skeleton/%2", skeletonDir, dataDir));
+	if (!success)
+	    return false;
+
+
+	
+	commands= add(commands, sformat("/bin/cp -a %1/boot %2/skeleton", sourceDir, skeletonDir));
+	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/%2",  skeletonDir, descrDir));
+	commands= add(commands, sformat("/bin/cp -a %1/%2/* %3/skeleton/%4", sourceDir,  descrDir, skeletonDir, descrDir));
+	commands= add(commands, sformat("/bin/cp  %1/* %2/skeleton/", sourceDir, skeletonDir));
+	commands= add(commands, sformat("/bin/mkdir -p   %1/skeleton/media.1",  skeletonDir));
+	commands= add(commands, sformat("/bin/cp %1/media.1/products   %2/skeleton/media.1/products",  sourceDir , skeletonDir));
+
+	foreach (`c, commands, ``{
+	    ret = SCR::Execute (.target.bash, c);
+	    if (ret != 0)
+	    {
+		success= false;
+	    }
+	});
+	if (!success)
+	    return false;
+	
+	SCR::Write(.target.string,   sformat("%1/skeleton/media.1/media",  skeletonDir),  readMedia());
+	
+	list pacdirs = productData["architectures"]:["i686", "i586", "i486", "i386", "noarch"];
+	
+	foreach(`dir, pacdirs, ``{
+	    string dirname =  sformat("%1/skeleton/%2/%3", skeletonDir, dataDir, dir);
+	    SCR::Execute (.target.mkdir, dirname);
+	});
+	return success;
+    }
+
+
+    
+    /**
+     * Parse media data
+     */
+    global define string readMedia() ``{
+	string media = SCR::Read(.target.string,  sourceDir + "/media.1/media");
+	list media_data = splitstring(media, "\n");
+	return (mergestring( [media_data[0]:"",media_data[1]:"", "1"] , "\n"));
+    }
+
+
+
+
+
+
+
+
+
+    
+    global define map parse_url(string uri)
+	``{
+
+	map tokens = $[];
+	list rawtokens = regexptokenize (uri, "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+
+
+
+	/* no processing necessary on the scheme */
+	tokens["scheme"] = rawtokens[1]:"";
+
+	/* the path to the resource */
+	tokens["path"] = rawtokens[4]:"";
+
+	/* the query part */
+	tokens["query"] = rawtokens[6]:"";
+
+	/* the fragment */
+	tokens["fragment"] = rawtokens[8]:"";
+
+	/* extract the username, pass, and port from the hostname */
+	/* extract username:pass@host:port from regex results */
+	list userpass = regexptokenize (rawtokens[3]:"", "^(([^@:]+)(:([^@:]+))?@)?((\\[([^]]+)\\])|([^:@]+))(:([^:@]+))?");
+	tokens["user"] = userpass[1]:"";
+	tokens["pass"] = userpass[3]:"";
+	if (userpass[7]:"" == "")
+	    tokens["host"] =    userpass[6]:"";
+	else
+	    tokens["host"] = userpass[7]:"";
+	tokens["port"] = userpass[9]:"";
+	y2debug("tokens: %1", tokens);
+	return tokens;
+    }
+
+
+}
