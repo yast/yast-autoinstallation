@@ -8,10 +8,10 @@
 {
     textdomain "autoinst";
 
-    include "x11/video_data_dialog.ycp";
+    
 
     global define x11Options(map x11)
-    ``{
+	``{
 	string caption = _("X11 Configuration");
 	boolean x11_enabled = x11["configure_x11"]:false;
 		
@@ -24,20 +24,20 @@
 			      "depth"	: 8
 			    ],
 			      $[
-			      "desc"	:_("15 Bit / 32 K Colors (PPC)"),
-			      "depth"	: 15
+				"desc"	:_("15 Bit / 32 K Colors (PPC)"),
+				"depth"	: 15
 			      ],
 			      $[
-			      "desc"	:_("16 Bit / 64 K Colors"),
-			      "depth"	: 16
+				"desc"	:_("16 Bit / 64 K Colors"),
+				"depth"	: 16
 			      ],
 			      $[
-			      "desc"	:_("24 Bit / 16 M Colors"),
-			      "depth"	: 24
+				"desc"	:_("24 Bit / 16 M Colors"),
+				"depth"	: 24
 			      ],
 			      $[
-			      "desc"	:_("32 Bit / 16 M Colors"),
-			      "depth"	: 32
+				"desc"	:_("32 Bit / 16 M Colors"),
+				"depth"	: 32
 			      ]
 	];
 
@@ -74,9 +74,8 @@
 					   `CheckBox(
 						     `id(`start_x11),
 						     // This sets the runlevel to 5.
-						     _("&Start the X Window System on boot"),
-						     (AIConfig::Runlevels["default"]:"3" == "5"))
-					   ),
+						     _("&Start the X Window System on boot"), false						     
+					   )),
 				     `VSpacing(1),
 				     `HBox(
 					   `HWeight(50,
@@ -85,7 +84,7 @@
 							      color_depths
 							      )),
 					   `HSpacing(1),
-					   `HWeight(50,`ComboBox(`id(`resolution), _("&Resolution"),
+					   `HWeight(50,`ComboBox(`id(`resolution), _("Resol&ution"),
 								 resolutions
 								 )
 						    )
@@ -105,6 +104,9 @@
 					   )
 				     )
 			       ),
+		       `VStretch(),
+		       `PushButton(`id(`monitor), _("Configure Monit&or"))
+		       /*
 		       `VSquash(
 				`HBox(
 				      `HWeight( 1,
@@ -142,6 +144,7 @@
 						)
 				      )				     				    				     			       
 				)
+		       */
 		       )
 		 );
 	Wizard::SetContents(caption,
@@ -154,11 +157,14 @@
 	    UI::ChangeWidget(`id(`dm), `Enabled, false);
 	    UI::ChangeWidget(`id(`enable_3d), `Enabled, false);
 	    UI::ChangeWidget(`id(`start_x11), `Enabled, false);
+	    UI::ChangeWidget(`id(`monitor), `Enabled, false);
 	}
 
 	any ret = nil;
 	repeat {
 	    ret = UI::UserInput();
+
+	    
 	    if (UI::QueryWidget(`id(`enable_x11), `Value))
 	    {
 		UI::ChangeWidget(`id(`depth), `Enabled, true);
@@ -166,6 +172,7 @@
 		UI::ChangeWidget(`id(`dm), `Enabled, true);
 		UI::ChangeWidget(`id(`enable_3d), `Enabled, true);
 		UI::ChangeWidget(`id(`start_x11), `Enabled, true);
+		UI::ChangeWidget(`id(`monitor), `Enabled, true);
 	    }
 	    else
 	    {
@@ -174,10 +181,19 @@
 		UI::ChangeWidget(`id(`dm), `Enabled, false);
 		UI::ChangeWidget(`id(`enable_3d), `Enabled, false);
 		UI::ChangeWidget(`id(`start_x11), `Enabled, false);
+		UI::ChangeWidget(`id(`monitor), `Enabled, false);
 	    }
-	    if (ret == `key || ret ==`next)
+	    if (ret == `monitor)
 	    {
-		x11_enabled 	= UI::QueryWidget(`id(`enable_x11), `Value);
+		any video_ret = CallFunction( `autoinst_monitor(settings ) );
+		y2milestone("video_ret %1", video_ret);
+		Wizard::SetContents(caption,
+			    contents, _("TODO"), true, true);
+		continue;
+	    }
+	    else if (ret == `key || ret ==`next)
+	    {
+		x11["configure_x11"] 	= UI::QueryWidget(`id(`enable_x11), `Value);
 
 		any depth 	= UI::QueryWidget(`id(`depth), `Value);
 		if (is(depth, integer))
@@ -196,139 +212,22 @@
 		    x11=add(x11,"enable_3d", enable_3d);
 
 		any xdm	= UI::QueryWidget(`id(`start_x11), `Value);
+		if (is(default_dm, boolean))
+		    x11=add(x11,"start_x11", xdm);
+		
 		// TODO: Changes runlevel resource
+
+		
 	    }
 	  
 	} until ( ret == `key || ret ==`next || ret ==`back);
-
+	settings = x11;
 	return ret;
     }
 
 
-    global define monitorOptions(map x11)
-    ``{
-	string caption = _("Monitor Configuration");
-	term contents =
-	    `VBox(
-		  `RichText( `id(`mon),  MonitorDialogSummary()),
-		  `VSpacing(1),
-		  `HBox(
-			`PushButton(`id(`conf_monitor), _("&Configure Monitor")),
-			`HStretch(),
-			`PushButton(`id(`reset), _("&Reset Configuration"))
-			)
-
-		  );
-
-	term help =  `RichText (UI::X11VideoDataDialogHelpText());
-	Wizard::SetContents(caption,
-			    contents, help, true, true);
-
-	if (!x11["configure_x11"]: false)
-	    UI::ChangeWidget(`id(`conf_monitor), `Enabled, false);
-
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-	    if (ret == `conf_monitor)
-	    {
-		term save_button = `PushButton(`id(`next), SaveButtonLabel());
-		UI::ReplaceWidget(`id(`rep_finish), save_button);
-		UI::ReplaceWidget(`id(`rep_help),  `Empty(`id(`help)));
-		UI::ReplaceWidget(`id(`rep_abort),  `PushButton(`id(`abort), Wizard::AbortButtonLabel()));
-
-		term help =  `RichText (UI::X11VideoDataDialogHelpText());
-
-		UI::ReplaceWidget(`id(`tree_rp), help);
-
-		any video_ret = CallFunction( `inst_video_data( false, true ) );
-		UI::ReplaceWidget(`id(`rep_finish),`PushButton(`id(`next), Wizard::FinishButtonLabel()));
-		UI::ReplaceWidget(`id(`rep_abort),  `Empty(`id(`abort)));
-		UI::ReplaceWidget(`id(`rep_help),`PushButton(`id(`help), Wizard::HelpButtonLabel()));
-		UI::ReplaceWidget(`id(`tree_rp),
-				  `Tree( `id(`key),  `opt(`notify,`vstretch),  _("&Options"), CreateTableList(MenuTreeData())));
-		term new_contents =
-		    `VBox(
-			  `RichText( `id(`mon),  MonitorDialogSummary()),
-			  `VSpacing(1),
-			   `HBox(
-				 `PushButton(`id(`conf_monitor), _("&Configure Monitor")),
-				 `PushButton(`id(`reset), _("&Reset"))
-				 )
-			  );
-		Wizard::SetContents(_("Monitor Configuration"),
-					new_contents, "", true, true);
 
 
-		y2debug("Monitor %1", X11::get_monitor());
+	
 
-	    }
-	    else if (ret == `reset)
-	    {
-		remove(AIConfig::x11,"monitor");
-		X11::set_monitor($[]);
-		term new_contents =
-		    `VBox(
-			  `RichText( `id(`mon),  MonitorDialogSummary()),
-			  `VSpacing(1),
-			   `HBox(
-				 `PushButton(`id(`conf_monitor), _("&Configure Monitor")),
-				 `PushButton(`id(`reset), _("&Reset"))
-				 )
-			  );
-		Wizard::SetContents(_("Monitor Configuration"),
-					new_contents, "", true, true);
-		continue;
-	    }
-	   
-	} until ( ret == `key || ret ==`next || ret == `back);
-	return ret;
-
-    }
-
-
-/*
-    global define Summary() ``{
-	any    current_vendor = lookup( X11::get_monitor(), "vendor", "" );
-	string current_model  = lookup( X11::get_monitor(), "device", "" );
-
-	list   display_list   = lookup( X11::get_monitor(), "display", [] );
-
-	map display = $[];
-	if ( display_list != [] ) display = select( display_list, 0, $[] );
-
-	integer min_hsync = 0;
-	integer max_hsync = 0;
-	integer min_vsync = 0;
-	integer max_vsync = 0;
-
-	min_hsync = ceiling( lookup ( display, "min_hsync", 0 ) );
-	max_hsync = floor  ( lookup ( display, "max_hsync", 0 ) );
-	min_vsync = ceiling( lookup ( display, "min_vsync", 0 ) );
-	max_vsync = floor  ( lookup ( display, "max_vsync", 0 ) );
-
-
-
-
-	string summary = "";
-	string monitor =  Summary::NotConfigured();
-
-	if (size(current_vendor) > 0)
-	{
-	    monitor =  sformat("%1   %2", current_vendor, current_model);
-	}
-
-	string horizontal = sformat("%1 - %2",  min_hsync , max_hsync);
-	string vertical = sformat("%1 - %2",  min_vsync , max_vsync);
-	summary = Summary::AddHeader(summary, _("Monitor"));
-	summary = Summary::AddLine(summary, monitor);
-	summary = Summary::AddHeader(summary, _("Horizental frequency"));
-	summary = Summary::AddLine(summary, horizontal);
-	summary = Summary::AddHeader(summary, _("Vertical frequency"));
-	summary = Summary::AddLine(summary, vertical);
-
-	return summary;
-    }
-
-*/
 }

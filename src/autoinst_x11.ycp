@@ -50,13 +50,37 @@
     
     define Summary() ``{
 	string summary = "";
+	map m = settings["monitor"]:$[];
+	any    current_vendor = m["monitor_vendor"]:"";
+	string current_model  = m["monitor_device"]:"";
+
+	map   d   = m["display"]:$[];
+
+
+	string monitor =  Summary::NotConfigured();
+
+	if (size(current_vendor) > 0)
+	{
+	    monitor =  sformat("%1   %2", current_vendor, current_model);
+	}
+
+	string horizontal = sformat("%1 - %2",  d["min_hsync"]:0 , d["max_hsync"]:0);
+	string vertical = sformat("%1 - %2",  d["min_vsync"]:0 , d["max_vsync"]:0);
+	
+	summary = Summary::AddHeader(summary, _("Monitor"));
+	summary = Summary::AddLine(summary, monitor);
+	summary = Summary::AddHeader(summary, _("Horizental frequency"));
+	summary = Summary::AddLine(summary, horizontal);
+	summary = Summary::AddHeader(summary, _("Vertical frequency"));
+	summary = Summary::AddLine(summary, vertical);
+
 	return summary;
     }
 
     
     define set_contents()
 	``{
-	string caption = _("X11 Options");
+	string caption = _("Configure &X11 Options");
 	term contents =
 	    `VBox(
 		  `VSpacing(1),
@@ -65,11 +89,11 @@
 		  `HBox(
 			`PushButton(`id(`configure), caption),
 			`HStretch(),
-			`PushButton(`id(`reset), _("&Reset Configuration"))
+			`PushButton(`id(`reset), _("R&eset Configuration"))
 			),
 		  `VSpacing(1)
 		  );
-	Wizard::SetContents(caption,
+	Wizard::SetContents(_("X11 Options"),
 			    contents, "", true, true);
     }
     map dialogs = $[

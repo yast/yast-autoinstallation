@@ -1,0 +1,663 @@
+/**
+ *
+ * $Id$
+ *
+ * Module:		inst_video_data.ycp
+ *
+ * Author:		Thomas Roelz <tom@suse.de>
+ *			(some code partly recycled from old version from (schubi@suse.de)
+ *
+ * Purpose:		Let the user select a monitor from the monitor data base.
+ *			Additionally s/he may enter values for the frequencies
+ *			manually or even skip X11 configuration entirely.
+ *			Optionally read a monitor driver floppy
+ *			(originally intended for MS Windows).
+ *
+ *
+ */
+{
+    textdomain "autoinst";
+
+    import "Wizard";
+    import "Directory";
+
+    include "ui/common_popups.ycp";
+    include "autoinstall/video_data_dialog.ycp";
+
+
+    map settings = $[];
+
+   
+    list args = WFM::Args ();
+
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( WFM::Args (0), map ) )
+    {
+	y2error ("Bad argument: %1", WFM::Args (0));
+	return false;
+    }
+
+    {
+	integer i = 0;
+	while (i < size (WFM::Args()))
+	{
+	    if (is (WFM::Args (i), map) && nil != WFM::Args (i))	settings = WFM::Args (i);
+	    i = i + 1;
+	}
+    }
+
+    
+    //************************************************************************
+    // global variables
+    //*****************
+
+    string tmpdir = SCR::Read(.target.tmpdir);
+
+    // the pathes for the monitor db
+    //
+    string static_monitors  = Directory::datadir + "/monitors.ycp";	// factory default
+	
+    string min_hsync_string = "";
+    string max_hsync_string = "";
+    string min_vsync_string = "";
+    string max_vsync_string = "";
+
+    // This module never probes monitor data for itself. Instead it relies on those data
+    // being present in the X11 module. The module inst_choose_desktop.ycp has put
+    // them there if available. If not the user has to choose a monitor anyway.
+    // Get the relevant data from the monitor map
+    //
+    map monitor = settings["monitor"]:$[];
+    map display = monitor["display"]:$[];
+
+    
+    any    current_vendor = monitor["monitor_vendor"]:"" ;
+    string current_model  = monitor["monitor_device"]:"" ;
+   
+
+    integer min_hsync = 0;
+    integer max_hsync = 0;
+    integer min_vsync = 0;
+    integer max_vsync = 0;
+
+    // The monitor data base
+    //
+    list all_monitors = [];
+
+    // The lists to hold vendors and models when all_monitors is taken apart.
+    //
+    list vendors = [];
+    list models  = [];
+     
+
+    any ret = nil;
+
+    //*****************
+    // global variables
+    //************************************************************************
+
+    //************************************************************************
+    //************************************************************************
+    // function definitions
+    //*********************
+
+
+    // Since we don't use the maximum and minimum sync values in any case for safety reasons
+    // we can safely calculate with sync values rounded properly to integers. To do so we
+    // need functions to calculate the floor and ceiling of a number that might be float.
+    //
+    // round up a value given as integer or float to the next integer (ceiling).
+    // e.g.:
+    //		5.5  --->  6
+    //		5    --->  5
+    //
+    define ceiling( any value )
+	``{
+	if ( is( value, integer ) ) return( value );		// already integer
+
+	if ( is( value, float ) )				// is float
+	{
+	    if ( tofloat( tointeger( value ) ) == value )	// is whole-numbered
+		return( tointeger( value ) );			// return as is
+	    else						// not whole-numbered
+		return( tointeger( value ) + 1 );		// round up
+	}
+	else
+	{
+	    y2error( "ceiling(): parameter error: <%1> (only integer and float allowed)", value );
+	    return( nil );
+	}
+    }
+
+    
+    // Round down a value given as integer or float to the prev. integer (floor).
+    // e.g.:
+    //		5.5  --->  5
+    //		5    --->  5
+    //
+    define floor( any value )
+	``{
+	if ( is( value, integer ) ) return( value );		// already integer
+
+	if ( is( value, float ) )				// is float
+	{
+	    return( tointeger( value ) );			// round down
+	}
+	else
+	{
+	    y2error( "floor(): parameter error: <%1> (only integer and float allowed)", value );
+	    return( nil );
+	}
+    }
+
+ 
+    // Get a list of all monitor vendors from the monitor database.
+    // Add a special monitor list entry for users who don't want to install X11 at all.
+    // Returns a list of strings.
+    //
+    define get_vendors( list monitor_db )
+	``{
+	y2debug ("get_vendors (%1)", monitor_db);
+	// "No X11" here means no configuration of X11 (at most 10 characters)
+	return toset( maplist( `monitor, monitor_db, ``( lookup( monitor, `vendor, "" ))))  ;
+    }
+
+
+    // Get a list of all monitor models for a specified vendor from the monitor database.
+    // Returns a list of strings.
+    //
+    define get_models_for_vendor( string vendor, list monitor_db )
+	``{
+	list vendor_monitors = filter( `monitor, monitor_db, ``( lookup( monitor, `vendor, "" ) == vendor ) );
+	return toset( maplist( `monitor, vendor_monitors, ``( lookup( monitor, `model, "" ))) );
+    };
+
+
+    // Automagically update the frequency values for a specified model.
+    //
+    define update_frequency_for_model( string vendor, string model, list monitor_db )
+	``{
+	// Get the data record for this monitor
+	//
+	map monitor = find( `monitor, monitor_db,
+			    ``((lookup( monitor, `vendor, "" ) == vendor)
+			       && (lookup( monitor, `model, "" ) == model)) );
+
+	// Set all the input fields according to this monitor's data
+	// first, assign the value to a float. the monitor data may contain
+	// integer values, but tostring expects a float.
+
+	float fsyncval = tofloat( lookup( monitor, `min_hsync, 0.0 ) );
+	SetMinHsync (tostring( fsyncval, 1 ));
+	fsyncval = tofloat( lookup( monitor, `max_hsync, 0.0 ) );
+	SetMaxHsync (tostring( fsyncval, 1 ));
+	fsyncval = tofloat( lookup( monitor, `min_vsync, 0.0 ) );
+	SetMinVsync (tostring( fsyncval, 1 ));
+	fsyncval = tofloat( lookup( monitor, `max_vsync, 0.0 ) );
+	SetMaxVsync (tostring( fsyncval, 1 ));
+    }
+
+    // Automagically update the models list for a specified vendor.
+    // Select default first entry if unknown and update its sync values.
+    // Honor the special "No X11" entry.
+    // It is assumed that the given vendor is known i.e. is a member of the given monitor_db.
+    //
+    // ATTENTION: Changes global variable current_model (convenient here).
+    //
+    define change_vendor( string vendor, list monitor_db )
+	``{
+	if ( vendor == "No X11" )						// No X11 means no models to choose from
+	{
+	    ReplaceModels( [] );						// clear model list
+
+	    SetMinHsync( "" );							// clear input fields
+	    SetMaxHsync( "" );
+	    SetMinVsync( "" );
+	    SetMaxVsync( "" );
+
+	    current_model = "";							// no current model
+	}
+	else									// valid entry
+	{
+	    list models = get_models_for_vendor( vendor, monitor_db );		// get new models (may be [])
+	    y2milestone( "New Models: %1", models );
+
+	    ReplaceModels( models );						// display them
+
+	    if ( models != [] )							// there are models to be displayed
+	    {
+		if ( ! contains( models, current_model ) )			// current model is unknown
+		    current_model = select( models, 0, "" );			// default first entry
+
+		SetCurrentModel( current_model );				// select entry
+		update_frequency_for_model( vendor, current_model, monitor_db );// update sync values
+	    }
+	    else								// may be empty if vendor or model is unknown
+	    {
+		SetMinHsync( "" );						// clear input fields
+		SetMaxHsync( "" );
+		SetMinVsync( "" );
+		SetMaxVsync( "" );
+
+		current_model = "";						// no current model
+	    }
+	}
+    }
+
+    // Check if the number is in the format [+]<number>[kKmMgGtT]
+    // Returns true or false
+    define IsNumber( string input )
+	``{
+	integer n = 0;
+	while ( n < size( input ) )
+	{
+            string erg = filterchars( substring( input, n,1 ), "0123456789." );
+
+            if ( size( erg ) != 1 )
+            {
+		y2milestone("%1", n);
+		return( false );
+            }
+
+            n = n + 1;
+	}
+
+	return( true );
+    };
+
+    // Read the monitor db and get vendors and models lists.
+    // Optionally extend db with probed monitor.
+    //
+    // Convenience function altering global variables:
+    //   o all_monitors
+    //   o vendors
+    //   o models
+    //
+    // Relying on global variables to be set appropriate:
+    //   o current_vendor
+    //   o current_model
+    //
+    define get_vendors_and_models()
+	``{
+
+	// First Read the monitor description file.
+	// a list of records like this:
+	//
+	//	  $[
+	//	       vendor:		"EIZO",
+	//	       model:		"F563-T",
+	//	       min_hsync:	55.5,
+	//	       max_hsync:	160,
+	//	       min_vsync:	30.5,
+	//	       max_vsync:	86
+	//	   ]
+	//
+	all_monitors = SCR::Read( .target.ycp, [ static_monitors, nil ] );		// first try modified version
+
+	if ( all_monitors == nil )						// no hit
+	{
+	    all_monitors = SCR::Read( .target.ycp, [ static_monitors, [] ] );	// "factory db"
+	    y2milestone("Got factory monitor db");
+	}
+	else y2milestone("Got modified monitor db");
+	    
+	//SCR::Write( .dumpto.tmp.monitor_db, all_monitors );
+
+	// Then get a list of all the vendors in the monitor database as it is on disk.
+	//
+	vendors = get_vendors( all_monitors );
+	y2debug ("Vendors initial: %1", vendors );
+
+	// If the X11 module already contains monitor data try to use them.
+	//
+	// So we have sevaral cases to deal with:
+	//
+	// o The X11 module did not contain any monitor data (neither probed nor from an earlier run)
+	//   ==> Let the user choose a monitor from the monitor_db or enter values manually.
+	//
+	// o The X11 module does contain monitor data that can be found in the monitor_db.
+	//   This may result from an earlier run or from probing.
+	//   ==> Preselect this Monitor in the monitor_db displayed on screen.
+	//
+	// o The X11 module does contain monitor data but these can not be found in the monitor_db.
+	//   This may result from probing a monitor missing in the monitor_db.
+	//   Additionally these data may be only a partly hit if the vendor is known but the model isn't.
+	//   ==> Try to use as much information from the monitor data as possible. Add to the monitor_db those
+	//       data not already contained, i.e. invent a new entry.
+	//
+	// So the strategy is as follows:
+	//
+	// If there are monitor data in the X11 module.
+	//    If those data can _not_ be found in the monitor_db (vendor AND model).
+	//       Build and add an entry for those data in the monitor_db.
+	//    Select vendor and model in the GUI, update sync values (all this should now succeed in any case).
+	// Else (no monitor data present)
+	//    Display vendors and select 1st entry as default
+	//
+	if ( settings != $[] )	// monitor data present
+	{
+	    // if there has been freaky probing replace vendor and/or model with
+	    // something more expressive.
+	    //
+	    if ( monitor["monitor_vendor"]: ""  == "" )
+	    {
+		// monitor vendor not known
+		current_vendor = _("unknown vendor");
+		monitor["monitor_vendor"] = current_vendor ;
+	    }
+	    
+	    if ( monitor["device"]:""  == "" )
+	    {
+		// monitor model not known
+		current_model  = _("unknown model");
+		monitor["monitor_device"] = current_model;
+	    }
+	}
+    }
+
+    // Display current vendor, model and associated values if possible.
+    //
+    // Convenience function altering global variables:
+    //   o models
+    //   o current_vendor
+    //   o current_model
+    //
+    // Relying on global variables to be set appropriate:
+    //   o vendors
+    //   o current_vendor
+    //   o current_model
+    //   o all_monitors
+    //
+    define display_models_and_values()
+	``{
+	if ( contains( vendors, current_vendor ) )				// current vendor is known
+	{
+	    SetCurrentVendor( current_vendor );					// select current vendor
+	    change_vendor( current_vendor, all_monitors );			// display new models and select the right one
+	}
+	else									// current vendor is unknown
+	{
+	    current_vendor = select( vendors, 0, "" );				// default 1st entry
+	    if ( is( current_vendor, term ) )					// honor special "No X11" entry
+	    {
+		current_vendor = select( select( current_vendor, 0, "" ), 0, "" );	// `item(`id("No X11"), _("No X11"))
+	    }
+	    SetCurrentVendor( current_vendor );					// select current vendor
+	    change_vendor( current_vendor, all_monitors );			// display new models and select the right one
+	}
+    }
+
+    // Parse the given string assuming it is a "model" string containing VESA
+    // information formatted as e.g. "1024X768@75HZ". The values for width,
+    // height, and refresh are extracted and assigned to the X11 user_data struct
+    // along with a constant color depth of 8 bit (VESA) or 16 bit (LCD).
+    //
+    define store_VESA_LCD( string model, boolean is_VESA )
+	``{
+	integer currentWidth      = 0;
+	integer currentHeight     = 0;
+	integer currentFrequency  = 0;
+	integer currentColorDepth = 0;
+
+	if ( is_VESA )
+	    currentColorDepth = 8;	// VESA --> always
+	else
+	    currentColorDepth = 16;	// LCD  --> always
+
+	// First find resolution string within model string.
+	// E.g. "PANORAMIC SUPERWIDE 1024X768@75HZ" --> "1024X768@75HZ"
+	//
+	list res_list = splitstring( model, " " );
+
+	if ( size( res_list ) > 0 )
+	{
+	    string resolution = find(`res, res_list, ``( issubstring( res, "@") ));
+
+	    // 1. "1024X768@75HZ" --> "1024" and "768@75HZ"
+	    //
+	    list first = splitstring( resolution, "X");
+
+	    if ( size( first ) > 0 )
+	    {
+		currentWidth = tointeger( select( first, 0, "" ) );
+
+		// 2. "768@75HZ" --> "768" and "75HZ"
+		//
+		list second = splitstring( select( first, 1, "" ), "@" );
+
+		if ( size( second ) > 0 )
+		{
+		    currentHeight    = tointeger( select( second, 0, "" ) );
+		    currentFrequency = tointeger( select( second, 1, "" ) );
+		}
+	    }
+	}
+
+	// store the new values into the X11 user_data struct
+	//
+	map display = monitor["display"]:$[];
+	display["width"] 	= currentWidth;
+	display["height"] 	= currentHeight;
+	display["frequency"] 	= currentFrequency ;
+	settings["color_depth"] = currentColorDepth;
+    }
+
+
+    //*********************
+    // function definitions
+    //************************************************************************
+    //************************************************************************
+    // initial
+    //*********************
+
+    
+    min_hsync = ceiling( lookup( display, "min_hsync", 0 ) );
+    max_hsync = floor  ( lookup( display, "max_hsync", 0 ) );
+    min_vsync = ceiling( lookup( display, "min_vsync", 0 ) );
+    max_vsync = floor  ( lookup( display, "max_vsync", 0 ) );
+
+    // Read the monitor db and get vendors and models lists.
+    // Optionally extend db with probed monitor.
+    //
+    get_vendors_and_models();
+
+
+    //***************
+    // End of initial
+    //*******************************************************************************
+    //*******************************************************************************
+    // GUI
+    //****
+
+
+    // Now that the monitor_db may have been extended we can display the GUI
+    //
+    string help_text = UI::X11VideoDataDialogHelpText();
+
+    term contents = UI::X11VideoDataDialog( vendors, [] );
+    
+    Wizard::SetContents(
+			  // Title for monitor configuration dialog:
+			  // The user is prompted for vendor and model of his monitor.
+			  // He also has the option of entering video frequencies manually
+			  // or using a monitor driver disk.
+			  _("Configure Monitor"),
+			  contents,
+			  help_text,
+			  true , true);
+
+    // Now the dialog is on screen but nothing is selected. If there is a current monitor
+    // try to select it. If its values (vendor, model) are valid it should now be in the
+    // monitor_db in any case (either from start or having been added).
+    // If this is still impossible select the first vendor as default because X and NCURSES
+    // should have the same behaviour. Since NCURSES always selects the first item in the list
+    // this requires the internal data to be set appropriate.
+    // 
+    display_models_and_values();
+    
+
+
+    //***********
+    // End of GUI
+    //*******************************************************************************
+    //*******************************************************************************
+    // Event loop
+    //***********
+
+
+    // Get the users input and process it
+    //
+
+    repeat {
+	ret = UI::UserInput();
+
+	if ( ret == `vendors )	// New monitor vendor selected
+	{
+	    any new_vendor = GetCurrentVendor();		// Get the currently selected monitor vendor
+
+	    if ( new_vendor != current_vendor )			// do it if different
+	    {
+		current_vendor = new_vendor;
+		change_vendor( current_vendor, all_monitors );	// display new models and select 1st
+	    }
+	    // UI::SetFocus (`id(`models));	Commented out since this is not usable without mouse
+	}
+	else if ( ret == `models )	// New monitor model selected
+	{
+	    string new_model = GetCurrentModel();		// Get the currently selected model
+
+	    if ( new_model != current_model )			// do it if different
+	    {
+		current_model = new_model;
+		update_frequency_for_model( current_vendor, current_model, all_monitors );   // update sync values
+	    }
+	    // UI::SetFocus (`id(`next));	Commented out since this is not usable without mouse
+	}
+
+	else if ( ret == `next ) // user wants to exit dialog
+	{
+	    // If the current vendor is "No X11" the user doesn't want X to be configured.
+	    // Display a Warning Popup to ask if this is what s/he really wants.
+	    //
+	    if ( current_vendor == "No X11" )
+	    {
+		// User is asked if he really wants to skip the configuration of X11.
+		if ( UI::ContinueCancelPopup( _("Are you sure you want to skip X11 configuration?") ) )
+		{
+		    y2milestone("User skipped X configuration" );
+		    settings["configure_x11"] = false;
+		    ret = `no_x11;	// exit module and skip X configuration
+		}
+		else
+		{
+		    continue;		// accept further input
+		}
+	    }
+	    else	// valid monitor/display selected
+	    {
+		// get values from the input fields
+		//
+		min_hsync_string = GetMinHsync();
+		max_hsync_string = GetMaxHsync();
+		min_vsync_string = GetMinVsync();
+		max_vsync_string = GetMaxVsync();
+
+		// Check the content in the input fields. All input must be valid.
+		//
+		if ( ! IsNumber( min_hsync_string ) || size( min_hsync_string ) <= 0 )
+		{
+		    // A frequency value is not of type numerical. User must correct this.
+		    UI::MessagePopup(_("The minimum horizontal frequency is not a numerical value.
+Try again.
+"));
+		    SetFocusMinHsync();
+		    continue;
+		}
+
+		if ( ! IsNumber( max_hsync_string ) || size( max_hsync_string ) <= 0 )
+		{
+		    // A frequency value is not of type numerical. User must correct this.
+		    UI::MessagePopup(_("Maximum horizontal frequency is not a numerical value.\nPlease try again."));
+		    SetFocusMaxHsync();
+		    continue;
+		}
+
+		if ( ! IsNumber( min_vsync_string ) || size( min_vsync_string ) <= 0 )
+		{
+		    // A frequency value is not of type numerical. User must correct this.
+		    UI::MessagePopup(_("The minimum vertical frequency is not a numerical value.
+Try again.
+"));
+		    SetFocusMinVsync();
+		    continue;
+		}
+
+		if ( ! IsNumber( max_vsync_string ) || size( max_vsync_string ) <= 0 )
+		{
+		    // A frequency value is not of type numerical. User must correct this.
+		    UI::MessagePopup(_("Maximum vertical frequency is not a numerical value.\nPlease try again."));
+		    SetFocusMaxVsync();
+		    continue;
+		}
+
+		// Reaching this point means all values have passed the test.
+		// ==> use these values and save them into the X11 monitor struct.
+		// The values are _merged_ into the existing display and monitor
+		// data structs replacing the values that might already exist.
+		// This way any other data contained therein is preseved.
+		//
+		min_hsync = ceiling( tofloat( min_hsync_string ) );
+		max_hsync = floor  ( tofloat( max_hsync_string ) );
+		min_vsync = ceiling( tofloat( min_vsync_string ) );
+		max_vsync = floor  ( tofloat( max_vsync_string ) );
+
+		change ( display, "min_hsync", min_hsync );
+		change ( display, "max_hsync", max_hsync );
+		change ( display, "max_vsync", max_vsync );
+		change ( display, "min_vsync", min_vsync );
+		
+
+	
+
+		// Add those values
+		//
+		monitor["display"] =  display;
+		monitor["monitor_device"] =  current_model;
+		monitor["monitor_vendor"] = current_vendor;
+
+		// Special handling for LCD and VESA entries:
+		// Parse model string and store values into monitor.
+		//
+		if ( current_vendor == " VESA" )	// " VESA" with blank!
+		{
+		    store_VESA_LCD( current_model, true );	// VESA
+		    
+		}
+		else if ( current_vendor == " LCD" )	// " LCD" with blank!
+		{
+		    store_VESA_LCD( current_model, false );	// LCD
+		    
+		}
+	
+
+		y2milestone("Monitor settings after manual selection: %1", settings );
+	    }
+	}
+    } until ( ret == `next || ret == `back || ret == `no_x11 || ret == `abort);
+
+    //***********
+    // Event loop
+    //*******************************************************************************
+
+   
+    return settings;
+    
+}
+
+
+// - EOF -
+

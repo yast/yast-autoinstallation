@@ -17,6 +17,7 @@ client_DATA = \
 	autoinst_bootloader.ycp \
 	autoinst_general.ycp \
 	autoinst_scripts.ycp \
+	autoinst_monitor.ycp \
 	autoinst_storage.ycp \
 	autoinst_software.ycp \
 	autoinst_report.ycp
