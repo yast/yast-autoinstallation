@@ -466,7 +466,7 @@
 	map<string, list> mice = (map<string, list>) Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
         y2debug("Mice %1", mice);
 	boolean found = false;
-	map<string, list> mouse = $[];
+	map<string, string> mouse = $[];
 	foreach(string k,list v, mice, ``{
 	    map data = (map) select(v,1,$[]);
 	    y2debug("yours %1, mine %2",  data["device"]:"", aliceConf["SYS_MOUSE_DEVICE"]:"none");
@@ -484,9 +484,11 @@
 
 	list drives = [];
 	map newDrive = $[];
-	foreach(string k, string v, aliceConf , ``{
+	foreach(string k, any av, aliceConf , ``{
+	    if (!is (av, string)) continue;
 	    if (issubstring(k, "SYS_PART"))
 	    {
+		string v = tostring (av);
 		string device =  "/dev/" + select(splitstring(k,"_"), 2, "");
 		list partitions  = createAlicePartitions(v);
 		y2milestone("Partitions for %1: %2", device , partitions );
