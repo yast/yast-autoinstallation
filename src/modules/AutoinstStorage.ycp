@@ -26,36 +26,39 @@
 
 
     // Partition plan as parsed from control file
-    global list AutoPartPlan = [];
+    global list<map> AutoPartPlan = [];
 
     // All configured devices
     global list ConfiguredDevices = [];
 
     // Prepared target map from parsed data
-    global map AutoTargetMap = $[];
+    global map<string, map> AutoTargetMap = $[];
 
+    // Map of only physical devices
+    map<string, map> PhysicalTargetMap = $[];
 
-    map PhysicalTargetMap = $[];
-
+    // List of physical drives
     list PhysicalDrives = [];
 
+    // list of physical devices
     list PhysicalDevices = [];
 
 
+    // maximal number ofpartitions
     integer max_partitions = 0;
 
     // The number of possible primary partitions
     integer max_primary = 0;
 
     // The partition number of the first logical partition
-    integer first_logical_nr = 0; 
-    
+    integer first_logical_nr = 0;
+
     // How much to allocate for swap
     integer size_of_swap	= 1024 * 1024 * Partitions::SwapSizeMb(0);
 
     // calculate size of the /boot partition
     integer size_of_boot = Partitions::MinimalNeededBootsize();
-    
+
     list<integer> full_region = [];
 
     boolean can_do_auto = false;
@@ -87,9 +90,9 @@
      * Dump the settings to a map, for autoinstallation use.
      * @return list
      */
-    global define list Export()
+    global define list<map> Export()
 	``{
-	list clean_drives = maplist(map d,  AutoPartPlan, ``{
+	list<map> clean_drives = maplist(map d,  AutoPartPlan, ``{
 	    list p = maplist(map part, d["partitions"]:[] , ``{
 		if (haskey(part, "fsid"))
 		{
@@ -115,7 +118,7 @@
      * @param settings a list	[...]
      * @return	boolean success
      */
-    global define boolean Import(list settings)	``{
+    global define boolean Import(list<map> settings)	``{
 	AutoPartPlan = settings;
 	return true;
     }
@@ -206,10 +209,10 @@
     global define boolean Write()
 	``{
 
-	map InitialTargetMap = Storage::GetTargetMap();
+	map<string, map> InitialTargetMap = Storage::GetTargetMap();
 	y2milestone("Initial Target map: %1", InitialTargetMap);
 
-	list alldrives = maplist( string k, map v, InitialTargetMap ,  ``{
+	list<map> alldrives = maplist( string k, map v, InitialTargetMap ,  ``{
 	    return($["device":k, "size": v["cyl_size"]:0 ]);
 	});
 
@@ -348,7 +351,7 @@ Make sure the control file has the correct syntax and values.
      */
     global define list<map> DeletedMDs ( string vgname )
 	``{
-	map tm = Storage::GetTargetMap();
+	map<string, map> tm = Storage::GetTargetMap();
 	list<list<map> >  ret = [];
 	foreach( string dev, map devmap, tm,
 		 ``{
@@ -401,7 +404,7 @@ Make sure the control file has the correct syntax and values.
 
 	    drives_table = add (drives_table, a);
 
-	    list partitions = d["partitions"]:[];
+	    list<map> partitions = d["partitions"]:[];
 	    integer start_id = 1;
 
 	    if ( size (partitions) > 0 )
