@@ -42,8 +42,7 @@
 					    `abort	: `abort
 			 ],
 			 "mode" 	: $[
-					    `next	: `next,
-					    `abort	: `abort
+					    `next	: `ws_finish
 			 ]
 	];
 			 
@@ -259,7 +258,7 @@ force it not to boot at the same time.
 		AutoinstGeneral::Mode = mode;
 	    }	    
 	} until (ret == `next || ret == `back);
-
+	y2milestone("ret: %1", ret);
 	return ret;
     }
 
