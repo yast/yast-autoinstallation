@@ -539,7 +539,7 @@ Make sure the control file has the correct syntax and values.
 
 		    if ( size( p["region"]:[] ) > 0 )
 		    {
-			b=add(b, sformat("%1 - %2", select(p["region"]:[], 0 , 0), select(p["region"]:[], 1 , 0)));
+			b=add(b, sformat("%1 - %2", p["region",0]:0, p["region",1]:0));
 		    }
 		    else
 		    {
@@ -561,7 +561,7 @@ Make sure the control file has the correct syntax and values.
 
 	while (counter != 0)
 	{
-	    reversed_table=add(reversed_table, select(drives_table, counter -1, tmp));
+	    reversed_table=add(reversed_table, drives_table[counter -1]:tmp);
 	    counter = counter - 1;
 
 	}

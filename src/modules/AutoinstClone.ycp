@@ -97,7 +97,7 @@
      */
     define integer units_to_size (list region)
     {
-	integer units = (integer) select(region,1,0);
+	integer units = (integer) region[1]:0;
 	return (units * bytes_per_unit)  -  bytes_per_unit + 1;
     };
 
