@@ -15,7 +15,7 @@
 
     global define ProfileSourceDlg (map parameters)
 	``{
-	list supported_protocol = ["HTTP","NFS", "TFTP", "CDROM", "Floppy", "File", "Device"];
+	list supported_protocol = ["HTTP","NFS", "TFTP", "Floppy", "File", "Device"];
 	list protocols = maplist(`p, supported_protocol, ``{
 	    if (tolower(p) == parameters["scheme"]:"") {
 		return (`item(`id(tolower(p)), p , true));
@@ -57,7 +57,8 @@ on the command line.</p>"));
 	string server = "";
 	string Path = "";
 
-	if (parameters["scheme"]:"" == "file" || parameters["scheme"]:"" == "cdrom") {
+	if (parameters["scheme"]:"" == "file" || parameters["scheme"]:"" == "floppy" || parameters["scheme"]:"" == "cdrom")
+	{
 	    UI::ChangeWidget(`id(`server), `Enabled, false);
 	    UI::SetFocus(`id(`Path));
 	}
@@ -65,8 +66,12 @@ on the command line.</p>"));
 	{
 	    UI::SetFocus(`id(`server));
 	}
+
+	
 	repeat {
 	    ret = UI::UserInput();
+	 
+	    
 	    if (ret == `abort)
 	    {
 		if (CallFunction(`inst_confirm_abort(`painless)))
@@ -74,22 +79,26 @@ on the command line.</p>"));
 		else
 		    continue;
 	    }
+	    
 	    string protocol =  UI::QueryWidget(`id(`protocol), `Value );
+	 
 	    if (
-		     protocol == "NFS" ||
-		     protocol == "TFTP" ||
-		     protocol == "CDROM" ||
-		     protocol == "HTTP" ||
-		     protocol == "Device"
+		     protocol == "nfs" ||
+		     protocol == "tftp" ||		    
+		     protocol == "http" ||
+		     protocol == "device"
 		     )
 	    {
+		UI::ChangeWidget(`id(`server), `Enabled, true);
 		parameters["scheme"] = tolower(protocol);
 	    }
-	    else if (protocol == "File" || protocol == "Floppy")
+	    else if (protocol == "file" || protocol == "floppy")
 	    {
 		parameters["scheme"] = tolower(protocol);
 		UI::ChangeWidget(`id(`server), `Enabled, false);
 	    }
+
+	    
 	    server = UI::QueryWidget(`id(`server), `Value );
 	    Path = UI::QueryWidget(`id(`Path), `Value );
 	} until (ret == `retry  || ret == `abort);
@@ -97,6 +106,8 @@ on the command line.</p>"));
 	parameters["host"]	= server;
 	parameters["path"] 	= Path;
 	AutoInstall::ProfileLocation = parameters;
+
+	y2milestone("location : %1", AutoInstall::ProfileLocation);
 	UI::CloseDialog();
 	return `next;
     }
