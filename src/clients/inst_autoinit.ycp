@@ -21,10 +21,9 @@
     import "Progress";
     import "Report";
     import "Language";
-    import "Console";    
+    import "Console";
     import "Profile";
 
-    import "Label";
     import "Popup";
 
     include "autoinstall/autoinst_dialogs.ycp";
@@ -37,14 +36,17 @@ Please wait while the system is prepared for autoinstallation.</p>
 	[
 	 _("Retrieve & Read Control File"),
 	 _("Process Profiles and Rules"),
-	 _("Parse control file")
+	 _("Parse control file"),
+	 _("Set up reporting behaviour"),
+	 _("Set up Language")
 	 ];
 
     list progress_descriptions =
 	[
 	 _("Retrieving System Profile"),
 	 _("Processing Profiles and Rules"),
-	 _("Parsing control file")
+	 _("Parsing control file"),
+	 _("Setting up Language")
 	 ];
 
     Progress::New(
@@ -60,16 +62,14 @@ Please wait while the system is prepared for autoinstallation.</p>
         if (Popup::ConfirmAbort (`painless))
             return `abort;
 
-    
+
     Progress::NextStage();
     Progress::Title(AutoinstConfig::message);
 
 
     // Initialize Rules
     AutoInstallRules::Init();
-    
     boolean ret = false;
-    
     if (!ProfileLocation::Process())
     {
 	y2error("Aborting...");
@@ -82,12 +82,12 @@ Please wait while the system is prepared for autoinstallation.</p>
     if(UI::PollInput() == `abort)
         if (Popup::ConfirmAbort (`painless))
             return `abort;
-    
+
     Progress::NextStage();
 
     //
     // Set reporting behaviour to default, changed later if required
-    //    
+    //
     Report::LogMessages(true);
     Report::LogErrors(true);
     Report::LogWarnings(true);
@@ -95,7 +95,7 @@ Please wait while the system is prepared for autoinstallation.</p>
     if(UI::PollInput() == `abort)
         if (Popup::ConfirmAbort (`painless))
             return `abort;
-    
+
     Progress::NextStage();
 
     if (! Profile::ReadXML( AutoinstConfig::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
@@ -106,12 +106,13 @@ control file and try again.
 "));
 	return `abort;
     }
-    
+
     y2debug ("Autoinstall control file %1",  Profile::current );
 
 
+    Progress::NextStage();
     Report::Import(Profile::current["install", "report"]:$[]);
-    
+
     //
     // Copy the control file for easy access by user to  a pre-defined
     // directory
@@ -132,9 +133,9 @@ control file and try again.
     //
     // Set it in the Language module.
     //
+    Progress::NextStage();
     Language::Set( language );
 
-    
     //
     // Set Console font
     //

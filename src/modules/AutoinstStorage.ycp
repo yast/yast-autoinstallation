@@ -48,13 +48,14 @@
     integer max_primary = 0;
 
     // The partition number of the first logical partition
-    integer first_logical_nr = 0;
+    integer first_logical_nr = 0; 
+    
+    // How much to allocate for swap
+    integer size_of_swap	= 1024 * 1024 * Partitions::SwapSizeMb(0);
 
-    // size of the /boot partition
-    integer size_of_boot = 0;
-
-    integer size_of_swap = 0 ;
-
+    // calculate size of the /boot partition
+    integer size_of_boot = Partitions::MinimalNeededBootsize();
+    
     list<integer> full_region = [];
 
     boolean can_do_auto = false;

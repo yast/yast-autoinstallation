@@ -22,7 +22,6 @@
 
     foreach(string p, map d, Y2ModuleConfig::ModuleMap,
 	    ``{
-
 	if (d["X-SuSE-YaST-AutoInst"]:"" == "all" || d["X-SuSE-YaST-AutoInst"]:"" == "write")
 	{
 	    if (haskey(d,"X-SuSE-YaST-AutoInstResource") &&
@@ -40,52 +39,13 @@
 	    else
 		module_auto = sformat("%1_auto", p);
 
-	    map result = $[];
 	    if (haskey(Profile::Flat , resource) )
 	    {
-		string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
-		string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
-		list MergeTypes = splitstring(tomergetypes, ",");
-
-		if (  size(tomerge) > 0 )
-		{
-		    integer i = 0;
-		    foreach( string res, (list)splitstring(tomerge, ",") ,
-			     ``{
-			if ( MergeTypes[i]:"map" == "map")
-			    result[res] = Profile::Flat[res]:$[];
-			else
-			    result[res] = Profile::Flat[res]:[];
-			i = i + 1;
-		    });
-		    // Call::Function(module_auto, ["Import", result ]);
-		    any out = Call::Function(module_auto, ["Packages", result ]);
-		    if (is(out, map))
-			packages = (list<string>)union(packages, lookup((map ) out, "install", [] ));
-		    // Call::Function(module_auto, ["Reset", $[] ]);
-		}
-		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
-		{
-		    // Call::Function(module_auto, ["Import", Profile::Flat[resource]:$[]   ]);
-		    any out = Call::Function(module_auto, ["Packages", Profile::Flat[resource]:$[]  ]);
-			if (is(out, map))
-			    packages = (list<string>)union(packages, lookup ((map) out, "install", [] ));
-			// Call::Function(module_auto, ["Reset", $[] ]);
-		}
-		else
-		{
-		    map out = (map) Call::Function(module_auto, ["Packages",  Profile::Flat[resource]:[] ]);
-			if (is(out, list))
-                        {
-			    packages = (list<string>) union(packages, (list<string>)out["install"]:[]);
-                        }
-		}
+	        map out = Call::Function(module_auto, ["Packages" ]);
+	        packages = (list<string>) union(packages, out["install"]:[]);
 	    }
 	}
     });
-    list<string> post = AutoinstSoftware::post_packages;
-    AutoinstSoftware::post_packages = (list<string>)toset(union(post,packages));
-
+    AutoinstSoftware::addPostPackages(packages);
     return `auto;
-
 }

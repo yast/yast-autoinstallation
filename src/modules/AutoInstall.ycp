@@ -19,8 +19,7 @@
     // Auto-Configuration mode
     //
     global boolean autoconf = false;
-
-    global map X11 = $[];
+    
 
     /**
      * Read saved data in continue mode
@@ -54,8 +53,7 @@
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
 		SCR::Execute(.target.remove, AutoinstConfig::parsedControlFile);
-
-		X11 = Profile::Flat["x11"]:$[];
+		
 		return (true);
 	    }
 	}
@@ -91,16 +89,36 @@
 	return;
     }
 
+    
     /**
      * Save configuration
      * @return: boolean true on success
      */
-
-    global define boolean Save()
-	``{
+    global define boolean Save() ``{
+	
 	return (Profile::SaveProfileStructure( AutoinstConfig::parsedControlFile ));
     }
 
+    
+    /**
+     * Finish Auto-Installation by saving misc files
+     * @param string destdir
+     * @return void
+     */
+    global define void Finish ( string destdir )
+        ``{
+              
+            SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir + "/pre-scripts/* " + destdir + AutoinstConfig::scripts_dir);
+            SCR::Execute(.target.bash, "/bin/cp " +  AutoinstConfig::tmpDir + "/pre-scripts/logs/* " + destdir + AutoinstConfig::logs_dir);
+
+            SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3", AutoinstConfig::xml_tmpfile ,  destdir ,  AutoinstConfig::xml_file) );
+            SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",   destdir ,  AutoinstConfig::xml_file) );
+
+            return;
+        }
+
+ 
+   
 //EOF
 }
 

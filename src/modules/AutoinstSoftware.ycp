@@ -359,5 +359,15 @@ this message can be ignored."));
     }
 
 
+    /**
+     * Add post packages
+     * @param list calculated post packages
+     * @return void
+     */
+    global define void addPostPackages(list<string> calcpost) ``{	
+	post_packages = (list<string>)toset(union(calcpost,post_packages));
+	return;
+    }
+    
     //EOF
 }
