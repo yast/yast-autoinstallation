@@ -17,7 +17,7 @@
 
     include "ui/common_messages.ycp";
     include "autoinstall/reporting_dialogs.ycp";
-    
+
     y2milestone("----------------------------------------");
     y2milestone("Report auto started");
 
@@ -40,13 +40,13 @@
      * return string
      */
     if (func == "Import") {
-	ret = Report::Import(param);	
+	ret = Report::Import(param);
     }
     /**
      * Create a summary
      * return string
      */
-    else if(func == "Summary") {	
+    else if(func == "Summary") {
 	ret =  Report::Summary();
     }
     /**
@@ -74,7 +74,7 @@
     else if (func == "Result") {
 	ret = Report::Export();
     }
-      
+
     /* unknown function */
     else {
 	y2error("unknown function: %1", func);
@@ -88,7 +88,6 @@
     return ret;
 
     /* EOF */
-    
 }
 
 

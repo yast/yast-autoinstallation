@@ -272,21 +272,15 @@
      */
     global define isoOptions()``{
 	string caption = _("ISO Options");
-	string help= _("TODO");
+	string help= _("Enter the desired name of the ISO image to be created and
+select any of the listed options.");
 	
 	term contents =
 	    `Top(
 		 `VBox(
 		       `HBox(
 			     `TextEntry(`id(`file), _("Save ISO &file as:"), ISO::isoFile)		
-			     ),
-		       `Left(
-			     `ComboBox(`id(`media), _("&Media"), [
-								  `item(`id(`cdrom), _("CDROM")),
-								  `item(`id(`dvd), _("DVD") )
-				       ]
-				       )
-			     )
+			     )		      
 		       )
 		 );
 	
@@ -337,10 +331,13 @@
 	
 	term contents =
 	    `RichText(html);
+
+	string help_text = _("<p>Please verify if the data in the summary box is correct and
+press next to continue</p>");
 	
 	Wizard::SetContentsButtons ( caption,
 				     contents,
-				     "",
+				     help_text,
 				     BackButtonLabel (),
 				     NextButtonLabel ());
 	any ret = nil;
@@ -361,9 +358,11 @@
 	import "Progress";
 	
 	string caption = _("Custom CDs");
-		
-	string help =  _("<p>Pressing <b>Next</b> will create the directory structure
-needed to create the ISO image.</p>
+
+	string help = _("<p>Please wait while the data and packages are being verified
+</p>");
+	help = help +  _("<p>In case there is something missing, the process will be aborted.
+Please fix the problem and try again.</p>
 ");
 
 	list progress_stages =

@@ -2,52 +2,59 @@
   <title>
     Autoinstallation
   </title>
-  <sect1 id="Autoinstallation.collectInfo">
-    <title>Collect information</title>
-    <para>
-      You need to collect information about the machines your are going to
-      install. This includes among other things hardware data and network
-      information. 
-      Please make sure you know the following about the machines you want to install:
-    </para>
-    <itemizedlist>
-      <listitem>
-	<para>Hard disk types and sizes</para>	  
-      </listitem>
-      <listitem>
-	<para>Graphic interface and attached monitor if any</para>
-      </listitem>
-      <listitem>
-	<para>Network interface and MAC address if known (i.e. when using &dhcp;)</para>
-      </listitem>	
-    </itemizedlist>
-    <para>
-      With these parameters you are ready to go and create a profile of your systems
-      to control the auto-installation process.
-    </para>
-  </sect1>
-  <sect1 id="gettingStarted.createProfile">
-    <title>Create the control file</title>
-    <para>
-      To create a control file  you can either  use the configuration
-      system which covers most of the features of the auto-installation
-      system or you can use your favorite XML editor. In some cases you may need
-      to add some information manually after creating the control file with
-      the configuration system.
-    </para>     
+  <section>
+    <title>Preparation for Auto-Installation</title>
+    <section id="Autoinstallation.collectInfo">
+      <title>Collect information</title>
+      <para>
+	You need to collect information about the systems your are going to
+	install. This includes among other things hardware data and network
+	information. 
+	Please make sure you know the following about the machines you want to install:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>Hard disk types and sizes</para>	  
+	</listitem>
+	<listitem>
+	  <para>Graphic interface and attached monitor if any</para>
+	</listitem>
+	<listitem>
+	  <para>Network interface and MAC address if known (i.e. when using &dhcp;)</para>
+	</listitem>	
+      </itemizedlist>
+      <para>
+	With these parameters you are ready to go and create a profile of your systems
+	to control the auto-installation process.
+      </para>
+    </section>
+    <section id="gettingStarted.createProfile">
+      <title>Create the control file</title>
+      <para>
+	To create a control file  you can either  use the configuration
+	system which covers most of the features of the auto-installation
+	system or you can use your favorite XML editor. In some cases you may need
+	to add some information manually after creating the control file with
+	the configuration system.
+      </para>     
 
-  </sect1>
+    </section>
+  </section>
 
-  <sect1>
+
+
+
+
+  <section>
     <title>
-      Auto-installing a loose system
+      Auto-installing a Sinlge System
     </title>
     <para>
       The best way to auto-install a system  without any network connections
-      is by using the standard CDs that come with the  &company-suse;  Linux box. Using the
-      CDs in combination with the a floppy disk can let you get started with
-      &autoyast2; very fast and without spending much time configuring server
-      and network environments.
+      is by using the standard CDs that come in the  &company-suse;  Linux box. Using the
+      CDs in combination with  a floppy disk  lets you getting started with
+      &autoyast2; very fast and without spending much time configuring
+      installation server  and network environments.
     </para>
     <para>
       As it will be discussed in the following chapters, you will need to prepare a
@@ -65,55 +72,76 @@
 mcopy autoinst.xml a:
     </screen>
 
-  </sect1>
-   <sect1>
-    <title>Choosing the right Boot Medium</title>
+  </section>
+
+
+
+
+  <section>
+    <title>Network Based Installation</title>       
+ 
     <para>
-      There are different methods for booting the client. The computer can boot from
-      its network interface card (NIC) to receive the boot images via  &dhcp; /TFTP
-      or a suitable kernel as well as an initrd image are loaded from a
-      floppy or a bootable CDROM. 
+      The installation method using AutoYaST provides a way to automatically
+      and identically install groups of systems. The first step when preparing
+      AutoYaST installations is deciding how you want the systems at your
+      site to be installed. For example, the following scenario would be ideal to
+      set up and perform automated installations:
     </para>
-    <sect2>
-      <title>
-	Booting from a floppy
-      </title>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  You need to install SuSE Linux on 50 new systems.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  The development department owns 30 out of the 50 new dual processor
+	  and SCSI systems, and its systems must be installed as clients with
+	  development software.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  The sales department owns 20 out of the 50 new, uni-processor IDE
+	  based systems and its systems must be installed as clients with end user
+	  software and office tools.
+	</para>
+      </listitem>
+    </itemizedlist>
+   
+    <section>
+      <title>Prerequisites</title>
+      <itemizedlist>
+	<listitem>
+	  <para>A boot server on the same ethernet segment</para>
+	</listitem>
+	<listitem>
+	  <para>An install server with the SuSE Linux OS</para>
+	</listitem>
+	<listitem>
+	  <para>An AutoYaST2 configuration server that defines rules and profiles.</para>
+	</listitem>
+      </itemizedlist>
+    </section>
+    <section>
+	<title>
+	  Boot Server
+	</title>
+	<para>
+	  The boot server is composed of DHCP or BOOTP  and tftp servers. In
+	  some cases the boot server has to be in the same network segment as
+	  the client due to the fact that DHCP or TFTP packets will not be
+	  forwarded across a router.	  
+	</para>
+ 
       <para>
-	For testing/rescue purposes or because the NIC does not have a PROM or PXE
-	you can build a boot floppy to use with &autoyast2;. Using a floppy
-	to initiate an auto-install process is limited due to the size of the
-	data a floppy can hold. However, it is still  possible to use
-	floppies when auto-installing a single, disconnected machine.
+	For administrative purposes, booting from a network card (NIC) is much more
+	flexible than booting from a floppy or other types of media. In order to use this boot method,
+	the client's NIC needs to have a boot PROM that is able to communicate with a
+	&dhcp; or BOOTP  server to receive  configuration parameters
+	such as network addresses and boot server location.
       </para>
-      <para>
-	Floppies can be used to store the control file, especially when using
-	the original  &company-suse;  CD-ROMs for a single, disconnected machine. Using the
-	kernel command line, you can specify the location of the control
-	file on the floppy. (See <quote><link linkend='BootFromFloppy'
-	    endterm="BootFromFloppy.title"></link></quote>)
-      </para>
-      <para>
-	Even without specifying any command line options, it is still possible to initiate the
-	auto-install process by placing a control file on a floppy with a
-	special, pre-defined file name. (<filename>autoinst.xml</filename>) &yast2; will check for
-	<filename>autoinst.xml</filename> upon startup and if it was found it
-	will switch from interactive to automated installation.
-      </para>
-    </sect2>
-    <sect2>
-      <title>Network installations</title>
-    
-      <para>
-	For administrative purposes, booting from network card (NIC) is much more
-	suitable than booting from a floppy. In order to use this boot method,
-	the client's NIC needs a boot PROM that is able to communicate with a
-	 &dhcp;  server to receive communication-related configuration parameters
-	such as network addresses and which additionaly is capable of communicating with a
-	TFTP-server to get the boot image.
-      </para>
-     
-      <para>
-	
+      <para>	
 	<ulink url="http://etherboot.sourceforge.net/">Etherboot</ulink> and
 	<ulink url="http://www.han.de/~gero/netboot.html">netboot</ulink>
 	are capable of creating a PROM  binary (which must still be programmed onto a PROM) and a
@@ -122,52 +150,55 @@ mcopy autoinst.xml a:
 	image, in fact the support utilities are pretty much common to both
 	etherboot and netboot. 
       </para>
-      
-      
-      
       <para>	  
-	Another alternative  to etherboot and netboot is to use a PXE-compliant
-	boot PROM.  PXE (Pre-boot Execution Environment) is a protocol
+	An alternative to etherboot and netboot is a PXE-compliant
+	  boot PROM.  <acronym>PXE</acronym> (Pre-boot Execution Environment) is a protocol
 	designed by Intel that allows computers to boot through the
-	network. PXE is stored in the ROM of new generation network
-	cards. When the computer boots up, the BIOS loads the PXE ROM in
-	the memory and executes it. A menu is displayed, allowing the
+	  network. <acronym>PXE</acronym> is stored in the ROM of new generation network
+	  cards. When the computer boots up, the BIOS loads the<acronym> PXE</acronym> ROM in
+	the memory and executes it. A menu can be displayed, allowing the
 	computer to boot an operating system loaded through the
 	network.
       </para>
       <para>
 	To install a client via Pre-Boot Execution Environment (&pxe;) you
-	don't need a &pxe; server! &pxe; uses a &bootp; request to get an IP
+	don't need a &pxe; server! &pxe; sends a &bootp; request to get an IP
 	address and other network information and a bootloader program to the
-	client. You can either use a &bootp; server for doing this or a &dhcp;
+	client. You can either use a &bootp; server or a &dhcp;
 	and &tftp; server.
       </para>
       <para>
-	In the following sections, you will find a description of how &dhcp;
-	and &tftp; should be setup to make &pxe; installations possible.
+	The following sections describe  how &dhcp;
+	and &tftp; should be setup to make a &pxe; based installation possible.
       </para>
-      <simplesect>
+
+
+
+      <section>
 	<title>DHCP</title>
-	<para>Install the &dhcp; server from ISC (http://www.isc.org/) by
+	<para>
+	  Install the &dhcp; server from ISC (http://www.isc.org/) by
 	  using the package available in the &company-suse; distribution. Configure
 	  the &dhcp; server parameter in
 	  <filename>/etc/sysconfig/dhcpd</filename> and make sure you have a
 	  working configuration file <filename>/etc/dhcpd.conf</filename>.
 	</para>
-      </simplesect>
-      <simplesect>
+      </section>
+
+
+      <section>
 	<title>PXE Bootloader</title>
 
 	<para>
-	  PXE can load a program into the client's memory and start it. The bootloader then loads its configuration file via
-	  TFTP from the the server defined in
+	  PXE can load a program into the client's memory and start it. The
+	  bootloader then loads its configuration file via  TFTP from the the server defined in
 	  <emphasis>next-server</emphasis> (in the<filename>
-	    dhcpd.conf</filename> file example above).
-
+	    dhcpd.conf</filename> file example above).	 
 	</para>
 
 	<para>
-	  The bootloader configuration file determines whether a client boots from its local hard disk or over the network.
+	  The bootloader configuration file determines whether a client boots
+	  from its local hard disk or over the network.
 	</para>
 	<para>
 	  Here are example configuration files for both cases:
@@ -231,10 +262,15 @@ label linux
 	  is done.
 	</para>	  
 
-      </simplesect>
-      <simplesect>
+      </section>
+
+
+      <section>
 	<title>TFTP</title>
-	<para>PXE requires a special TFTP server. Read <filename>pxelinux.doc</filename> from the already mentioned syslinux package for details.</para>
+	<para>PXE requires a special TFTP server. Read
+	  <filename>pxelinux.doc</filename> from the already mentioned syslinux
+	  package for details.</para>
+
 
 	<para>
 	  The inetd based TFTP server  cannot reliably handle much more
@@ -250,9 +286,6 @@ tftpd: read: Connection refused.
 	    which is available as a package.   This TFTP server can run as
 	    stand-alone daemon.
 	  </para>
-
-
-
 	  <para>
 	  The TFTP server directory <filename>/tftpboot</filename> should look like this:
 	  </para>
@@ -270,33 +303,37 @@ tftpd: read: Connection refused.
 	  <filename>linux</filename> and <filename>initrd</filename>.
 	</para>
 	
-      </simplesect>
-      <simplesect>
+      </section>
+
+
+
+      <section>
 	<title>Kernel and Initial Ramdisk</title>
-	<para>For network booting and other configurations, it is recommended to use the images available on every &company-suse;
-	  CD-ROM in the directory
+	<para>
+	  For network booting and other configurations, it is recommended to
+	  use the images available on every &company-suse; CD-ROM in the directory
 	  <filename>/suse/images/boot</filename>. The initial ramdisk
 	  (initrd) contains all kernel modules needed for successful
 	  installation. In special cases, you might need to build you own
 	  kernel or use special kernels available on the CD-ROM. 
 	</para>
-      </simplesect>
-   <simplesect>
-    <title>
-       &bootp;/&dhcp; Options
-    </title>
+      </section>
+
+
+      <section>
+	<title>
+	  &bootp;/&dhcp; Options
+	</title>
     
-    <para>
-      To allow the specification of the source media location when booting
-      over the network, another  &dhcp;  option can be used.The
-      <emphasis>root-path</emphasis> option as shown in the
-      next example.
-    </para>
-    <example>
-      <title>
-	<filename>/etc/dhcpd.conf</filename> with the <emphasis>root-path</emphasis> option
-      </title>
-      <screen>
+	<para>
+	  To allow the specification of the source media location when booting
+	  over the network,  <emphasis>root-path</emphasis> options of   &dhcp;   can be used.	 
+	</para>
+	<example>
+	  <title>
+	    <filename>/etc/dhcpd.conf</filename> with the <emphasis>root-path</emphasis> option
+	  </title>
+	  <screen>
 subnet 192.168.1.0 netmask 255.255.255.0 
 {
       range dynamic-bootp 192.168.1.100 192.168.1.110;
@@ -307,16 +344,16 @@ subnet 192.168.1.0 netmask 255.255.255.0
 	
       next-server 192.168.1.1; 
 }
-      </screen>
-    </example>
-    <para> 
-      One more example shows how the  &dhcp;  server can send an image to the
-      client, depending on the type of the requesting client (PXE or
-      Etherboot).
-    </para>
-    <example>
-      <title> &dhcp;  server configuration with PXE and Etherboot options</title>
-      <screen>
+	  </screen>
+	</example>
+	<para> 
+	  One more example shows how the  &dhcp;  server can send an image to the
+	  client, depending on the type of the requesting client (PXE or
+	  Etherboot).
+	</para>
+	<example>
+	  <title> &dhcp;  server configuration with PXE and Etherboot options</title>
+	  <screen>
 ddns-update-style none;
 allow bootp;
 allow booting;
@@ -357,714 +394,57 @@ group {
     }
 }
 	
-      </screen>
-      
-    </example>
-  </simplesect>     
-    </sect2>     
-    <sect2>
-      <title>Booting from CD-ROM</title>
-      	<para>
-	  You can use the original  &company-suse;  CD-ROMs in combination with other
-	  media, i.e. with a floppy to hold the control file or in combination
-	  with network where the control file can be located.
+	  </screen>      
+	  </example>
+
+	</section>
+
+      </section>
+
+
+      <section>
+	<title>Rule base auto-installation</title>
+
+	<para>
+	  After you decide how you want the systems at your site to be installed,
+	  the most important step when preparing automated installations is to
+	  create the essential files that are used during auto-installation: the
+	  rules.xml file  and a profile for
+	  each group of systems. The rules file is a xml based file that should contain 
+	  rules for each group of systems (or single systems) that you want to
+	  automatically install. A set of rules distinguish a group of systems based on
+	  one or more system attributes, and at the end it links each group to a profile, which
+	  is a XML based file that defines how the Linux software will be installed on
+	  each system in the group. Both the rules file and the profiles must be
+	  located in a user defined directory.
 	</para>
 	<para>
-	  It is also possible to create customized CD-ROMs to hold only the
-	  package you need in addition to the control file which also can be
-	  saved on the CD-ROM. This method requires creation of CD-ROMs
-	  every time you wish to change the configuration though.
-	</para>
-    </sect2>
-  </sect1>
-  <sect1>
-    <title>Installation Server Setup</title>
-    
-    <para>
-      User intervention depends much on how the server side of a network installation is
-      prepared. In a full network installation, you  have only to turn the
-      client on to initiate an auto-installation process. This can also be
-      automated using different technologies available today (Remote Power
-      Management) or by using	<ulink
-	url="http://www.scyld.com/expert/wake-on-lan.html">Wake-on-LAN</ulink> (WOL).
-    </para>
-    <sect2>
-      <title>Setting up an installation repository</title>
-      <para>
-	A system can be setup to serve as a configuration repository. The clients will access
-	the server resources in order to boot, install packages and so on. To
-	achieve this, various network services must be properly set up.
-      </para>
-      <para>
-	The installation server should export the  &company-suse;  Linux distribution's files
-	via &nfs;. Create a directory on a filesystem with enough free space
-	(several gigabytes) and copy the contents of the CDs into this
-	directory. This directory is then to be exported via
-	&nfs; (via an appropriate entry in
-	<filename>/etc/exports</filename>). The following steps describe how to
-	create an installation repository:
-	
-      </para>
-      <para>
-	Login on the machine designated as installation server and create a
-	directory to hold the  &company-suse;  Linux distribution files,
-	i.e. <filename> /usr/local/SuSE/current</filename>. 
-      </para>
-      <para>
-	In our example <filename>/usr/local/SuSE/current</filename> is the base directory for the  &company-suse;  Linux
-	distribution. The location of this directory can be specified  in the <emphasis>info</emphasis> file or on
-	the command line of the kernel (see  below) using the
-	<emphasis>install</emphasis>
-	keyword. (i.e. <emphasis>install=nfs://192.168.1.1/usr/local/SuSE/current</emphasis>)
-      </para>
-      <para>
-	Now copy the files from  all CDs into the
-	<emphasis>current</emphasis> directory or just copy those CDs
-	required for the installation. Make sure that all packages needed for
-	the installation are copied. Make sure the dot files in the root
-	directory of  the CD-ROM are
-	also copied, these files serve as identification of the installation
-	media. Use the following command to copy the CDs.
-
-      </para>
-      <screen>
-mount /cdrom
-cd /cdrom && cp -va . /usr/local/SuSE/current ; cd -
-umount /cdrom
-      </screen>
-      <para>
-	Repeat this sequence for all other CDs. The directory
-	can have 2 different structures which can be used for installation:
-      </para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    The contents of all CDs is copied into one directory and thus
-	    creating single directory structure with a
-	    subdirectory <emphasis>suse</emphasis> which included all the
-	    packages. This type of structure is recommended as it
-	    is easier to manage and will provide a true, single source
-	    installation medium.
-	  </para>
-	  <para>
-	    To make the directory look like a single medium for the client,
-	    it is possible to re-create  the package database available on the
-	    first CD using the script <command>create_package_descr</command>
-	    which is available in <filename>/usr/lib/YaST2/bin/</filename>.	   
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Copy the CDs into subdirectories named after the CD number,
-	    i.e. CD1, CD2, etc.
-	  </para>
-	  <para>
-	    Using this structure you will still be able to perform &nfs;
-	    installations, but the single directories will be treated as if
-	    they were different mediums. 
-	  </para>
-	</listitem>
-      </itemizedlist>
-      <para>
-	After you have copied the CDs into the installation directory, make
-	sure it is exported via &nfs;. You can do that using &yast2; by using the
-	&nfs; server module.
-      </para>
-      <para>
-	Additionally, you need to make the following services  start every
-	time the system boots.
-      </para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    nfsserver
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    portmap
-	  </para>
-	</listitem>
-      </itemizedlist>
-    </sect2>
-    <sect2>
-      <title>Setting up  a configuration repository</title>
-      <para>
-	A configuration repository holds the control files for multiple
-	machines. The control files can have any file names, which have to
-	specified at the boot time of a client. To avoid supplying the
-	profile name for every client, you can only define the directory of
-	the control files. If a directory is specified, then the client tries
-	to load a file with a name matching it's IP address in hex
-	mode. (See <link linkend="Invoking.HTTP"
-	  endterm="Invoking.HTTP.title"> </link>). This has the advantage that you will be dealing with
-	consistent file names rather than IPs as file names which might lead to
-	some confusion.
-      </para>
-      <para>
-	The configuration repository is the same directory you have to define
-	if you are using the configuration system for creating control files.
-      </para>
-      <simplesect>
-	<title>&http; Repository</title>
-	<para>
-	  To be able to use the &http; protocol to retrieve control file while
-	  auto-installing, you need a working &http; server on the server
-	  side. Install <emphasis>Apache</emphasis> or your favorite web
-	  server and enable it using &yast2;. Normally the the web server root
-	  directory resides in <filename>/usr/local/httpd/htdocs</filename>
-	  so you need to create a subdirectory below the root directory of
-	  the web server which will be your configuration repository.
-	</para>
-	
-      </simplesect>
-      <simplesect>
-	<title>&nfs; Repository</title>
-	<para>
-	  Create a directory and make it available via &nfs; to the clients by
-	  exporting it. This directory may for example be in the same place
-	  where you have copied the CDs. (i.e. <filename>/usr/local/SuSE</filename>)
-	</para>
-  </simplesect>
-      <simplesect>
-     
-	<title>&tftp; Repository</title>
-	<para>
-	  By default the &tftp; directory is available under
-	  <filename>/tftpboot</filename> which can also contain boot images
-	  if you are booting over network. Do not forget to enable tftp in
-	  the inetd configuration file
-	  (<filename>/etc/inetd.conf</filename>). <emphasis>Inetd</emphasis> configuration can be
-	  done using &yast2;.
-	</para>
-      </simplesect>
-    </sect2>
-  </sect1>
-  <sect1 id="Installation.process">
-    
-    <title>
-      The Auto-Installation Process
-    </title>
-    <para>
-      After the system has booted and the control file has been retrieved,
-      &yast2; performs configuration of the system according to the information
-      contained in the  control
-      file. All the configuration is summarized in a window that is shown by
-      default and should be deactivated if a full automatic installation is
-      needed.      
-    </para>
-    <para>
-      When reaching the point where the summary of the configuration is shown,
-      &yast2; has only probed hardware and prepared the system for
-      auto-installation, thus, nothing has been changed in the system yet, so
-      that in case of any error, the process still can be aborted.
-    </para>
-    
- 
-    <para>
-      A system should be automatically install-able without the need to have
-      any graphic adaptor or monitor. Having a monitor attached to the
-      client machine is nevertheless recommended to follow the process and
-      to get feedback in case of any errors. Choosing between the Qt and the
-      Ncurses interfaces is possible. For headless
-      clients, system messages can be monitored using the serial console.
-    </para>
-    <sect2 id="Installation.Interface.X11">
-      <title>
-	X11 Interface
-      </title>
-      <para>
-	This is the  default interface while auto-installing. No special
-	variables are required to activate it.
-      </para>
-    </sect2>
-    <sect2 id="Installation.Interface.SerialConsole">
-      <title>
-	Serial console
-      </title>
-      <para>
-	You can start installing a system using the serial console by adding
-	the keyword console (i.e. console=ttyS0) to the command line of the
-	kernel. This will start linuxrc in console mode and later in the
-	process, &yast2; also is started in serial console mode.
-      </para>
-    </sect2>
-    <sect2 id="Installation.Interface.Ncurses">
-      <title>
-	Text based YaST2-Installation
-      </title>
-      <para>
-	This option can also be activated on the command line. This will start
-	YaST2 in <emphasis>Ncurses</emphasis> mode. To start &yast2; in text
-	mode, add <emphasis>textmode=1</emphasis> on the command line.
-      </para>
-      <para>
-	Starting &yast2; in text mode is recommended when installing  a client
-	with less than 64 MB or when X11 is not being configured at all,
-	especially on headless machines.
-      </para>
-    </sect2>
-  </sect1>
-  <sect1 id='Invoking'>
-    <title>
-      Invoking the Auto-Installation process
-    </title>
-    <para>
-      Adding the command line variable <emphasis>autoyast</emphasis> will make
-      <emphasis>linuxrc</emphasis> started in automated mode.
-      <command>Linuxrc</command> searches for a configuration file, which
-      should be distinguished from the main control file in the following
-      places:
-    </para>
-    <itemizedlist>
-      <listitem>
-	<para>In the root directory of the initial ramdisk that you use to boot
-	  the system up</para>
-      </listitem>
-      <listitem>
-	<para>In the root directory of the floppy</para>
-      </listitem>
-    </itemizedlist>
-    <para>
-      The configuration file used by <command>linuxrc</command> can contain the following keywords:
-    </para>   
-    
-    <table frame='top'>
-      <title>Keywords for <command>linuxrc</command></title>
-      <tgroup cols='2'>
-	<thead>
-	  <row>
-	    <entry>Keyword</entry>
-	    <entry>Value</entry>
-	  </row>
-	</thead>
-	
-	
-	<tbody>
-	  	  
-	  <row><entry>netdevice</entry><entry>Which network device to use for
-	      network setup (Device used for  &bootp; / &dhcp;  requests)</entry></row> 
-	  <row><entry>server</entry><entry>Which server to contact for source directory (NFS Server)</entry></row>
-	  <row><entry>serverdir</entry><entry>Directory on NFS Server </entry></row>
-	  <row><entry>ip</entry><entry>When empty, client sends  &bootp;  request, otherwise client is configured with entered IP configuration.</entry></row>
-	  <row><entry>netmask</entry><entry>Netmask</entry></row>
-	  <row><entry>gateway</entry><entry>Gateway</entry></row>
-	  <row><entry>nameserver</entry><entry>Nameserver</entry></row>
-	  <row><entry>insmod</entry><entry>Kernel modules to load.</entry></row>
-	  <row>
-	    <entry>autoyast</entry>
-	    <entry>Location of the the control file to be used for the
-	      automatic installation, i.e
-	      <emphasis>autoyast=http://192.168.2.1/profiles/</emphasis></entry>
-
-	  </row>
-	  <row>
-	    <entry>install</entry>
-	    <entry>Location of the installation directory, i.e. <emphasis>install=nfs://192.168.2.1/CDs/</emphasis> </entry>
-	  </row>
-	  <row>
-	    <entry>instmode</entry>
-	    <entry>Installation mode, i.e. nfs, http etc. (Not needed if
-	      <emphasis>install</emphasis> is set)</entry>
-	  </row>
-	</tbody>
-      </tgroup>
-    </table>
-    
-    
-    
-    <para>
-      These variables and keywords will bring the system up to the point
-      where &yast2; can take over with the main control file. Currently, the
-      source medium is
-      automatically discovered, which in some cases makes it possible to
-      initiate the auto-install process without giving any instructions to
-      linuxrc.
-    </para>
-
-    <para>
-      The traditional <command>linuxrc</command> configuration file
-      (<filename>info</filename>) file 
-      should be used only in the  preparation phase and has the function of
-      giving the client enough information about the installation server and
-      the location of the sources. In most cases this file is not needed. It is however
-      needed in special network  environments where  &dhcp; / &bootp;  are not
-      used or when special kernel modules  have to be loaded.      
-    </para>
-    <para>
-      An alternative to supplying the mentioned keywords in the
-      <emphasis>info</emphasis> configuration file is
-      to pass these keywords to <command>linuxrc</command> using the kernel command
-      line. All keys/variables combinations can now be passed using this way. The
-      command line can  for example also be set when creating network bootable
-      images or it can be passed to the kernel using a specially configured
-       &dhcp;  server in combination with Etherboot or &pxe;.
-    </para>
-    <para>	
-      The format of the special  command line variable
-      <emphasis>autoyast</emphasis> can be used as illustrated in table  <quote><link
-	linkend="commandLineAutoYaST" endterm="commandLineAutoYaST.title"></link></quote>
-    </para>
-    
-    <table frame='top' id="commandLineAutoYaST">
-      <title id="commandLineAutoYaST.title">Command line variables for AutoYaST</title>
-      <tgroup cols='2'>
-	<thead>	  
-	  <row>
-	    <entry>
-	      Command line variable
-	    </entry><entry>Description</entry>
-	  </row>
-	</thead>	
-	<tbody>
-	  <row><entry>autoyast=default</entry><entry>Default auto-installation option </entry></row>
-	  <row><entry>autoyast=file:/&lt;path&gt;</entry><entry>Looks for
-	      control  file in specified path (relative to source root
-	      directory, i.e. <emphasis>file:/autoinst.xml</emphasis> if in
-	      the top directory of a CD-ROM )</entry></row>
-	 
-	  <row><entry>autoyast=device://&lt;device&gt;/&lt;file&gt;</entry><entry>Looks for control file on a storage device. (only device name needed without full path, i.e. /dev/sda1 is wrong, instead use sda1)</entry></row>
-	 
-	  <row><entry>autoyast=floppy:/&lt;path&gt;</entry><entry>Looks for
-	      control file in the floppy (Usefull when booting from CD)</entry></row>
-	  <row><entry>autoyast=nfs://&lt;server&gt;/&lt;path&gt;</entry><entry>Looks for control file on &lt;server&gt;</entry></row>
-	  <row><entry>autoyast=http://&lt;server&gt;/&lt;path&gt;</entry><entry>Retrieves the  control file  from a web server using the HTTP protocol.</entry></row>
-	  <row><entry>autoyast=tftp://&lt;server&gt;/&lt;path&gt;</entry><entry>Retrieve the control file with TFTP</entry></row>
-	</tbody>
-      </tgroup>
-    </table>
-    <para>
-      Several scenarios for auto-installation are possible using different
-      types of infrastructure and source media. The simplest way is by using
-      the source media from the  &company-suse;  Box. In that case you have
-      either a DVD with all  &company-suse;  packages or a set of CDs. To initiate the
-      auto-installation process however, the auto-installation command line
-      variable should be entered at system bootup and the control file should
-      be accessible to YaST2. The following list of scenarios explains how
-      the control file can be supplied and the setup needed for the
-      auto-installation process to be successful.
-    </para>
-    <itemizedlist>
-      <listitem>
-	<para>
-	  Using  &company-suse;  original CDs from  &company-suse;  Linux box:
+	  If more than one rule apply, the final profile for each group is generated
+	  on the fly using a merge script. The merging process is order based and
+	  later rules override data in earlier rules.
 	</para>
 	<para>
-	  To use the original CDs, you need a media with the control
-	  file, the control file can reside on the following locations:
+	  It is also possible to perform a standard installation without any
+	  rules. If the rules file is not found, system installation proceeds in the
+	  classic way by just using the supplied profile or by searching for the
+	  profile depending on the MAC or IP addresses of the system.     
 	</para>
-	<orderedlist>
-	  <listitem>
-	    <para>
-	      <emphasis>Floppy</emphasis>: Control file accessible via the
-	      <emphasis>autoyast=floppy</emphasis> option. &yast2; also searches
-	      upon startup for a file named
-	      <filename>autoinst.xml</filename>. If such a file is found, YaST2
-	      will switch into auto-installation mode even if no special
-	      command line variables were supplied. To use this option, create
-	      the control file and copy it to a pre-formatted floppy disk and
-	      start the installation as usual.
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      <emphasis>Network</emphasis>: Control file accessible via the
-	      <emphasis>autoyast=nfs://..</emphasis>,
-	      <emphasis>autoyast=http://..</emphasis> or
-	      <emphasis>autoyast=tftp://..</emphasis> options.
-	    </para>
-	  </listitem>
-	 
-	</orderedlist>	  
-      </listitem>
-      <listitem>
-	<para>	    
-	  Using 'self-made' CDs:
-	</para>
+
 	<para>
-	  In this case, you can include the control file on the CD-ROM
-	  for easy access (using the <emphasis>autoyast=file://</emphasis>
-	  option) or use one of the above mentioned methods used with the 
-	  original  &company-suse;  CDs.
+	  In the previous scenario, you would create a rules file with two different
+	  rules, one rule for the development and another rule for the sales
+	  department. For each rule, you could use different system parameters to
+	  distinguish the groups from one another: the development department has SMP
+	  and SCI  based systems and the sales group has IDE based systems. Each rule
+	  would also contain a link to an appropriate profile. For example, in the
+	  rule for the development department, you would add a link to the profile, called
+	  <filename>devel.xml</filename>, that you created for this department. And, in the rule
+	  for the sales department, you would add a link to the profile, called
+	  <filename>sales.xml</filename>, that you created for the sales department.
 	</para>
-      </listitem>
-      <listitem>
-	<para>
-	  Using NFS and Floppy, Network or CD-ROM for system bootup.
-	</para>
-	<para>
-	  This option is the most important one due to the fact that
-	  installations of PC farms are normally done using NFS servers and other
-	  network services like  &bootp; / &dhcp; . The control file can reside in
-	  the following places:	    
-	</para>
-	<orderedlist>
-	  <listitem>
-	    <para>
-	      <emphasis>Floppy/CD-ROM</emphasis>: Control file accessible via the
-	      <emphasis>autoyast=file:/..</emphasis> option.
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      <emphasis>Network</emphasis>: Control file accessible via the
-	      <emphasis>autoyast=http://..</emphasis>,
-	      <emphasis>autoyast=nfs://..</emphasis> or
-	      <emphasis>autoyast=tftp://..</emphasis> options.
-	    </para>
-	  </listitem>
-
-	</orderedlist>	  	 
-      </listitem>
-
-    </itemizedlist>
+    </section>
+  </section>
     
-    <sect2>
-      <title>
-	Default behavior
-      </title>
-      <para>
-	If <emphasis>autoyast=default</emphasis> is defined, &yast2; will look
-	for a file named <filename>autoinst.xml</filename> in
-	the following three places: 
-      </para>
-      <orderedlist>
-	<listitem>
-	  <para>
-	    The root directory of the floppy disk.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    The root directory of the installation medium.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    The root directory of the initial ram disk used to boot the system.
-	  </para>
-	</listitem>
-      </orderedlist>
-
-      <para>
-	This is the default which also matches the behavior of linuxrc
-	in earlier releases of  &company-suse;  Linux.
-      </para>
-    </sect2>                 
-    
-    <sect2 id="BootFromInstallMedia">
-      <title id="BootFromInstallMedia.title">
-	Control file on boot media 
-      </title>
-      <para>
-	You should be able to
-	define the location of the control file using the file option which
-	indicates where the control file is located. Depending on the used
-	boot method, &yast2; will look for the control file using the
-	specified path in the root directory of the initial ramdisk  (initrd). 
-      </para>
-
-    </sect2>
-    
-    <sect2>
-      <title>
-	Control file on a storage device
-      </title>
-      <para>
-	&yast2; can look for the control file on a storage device. This is
-	done after mounting the partition or the device to a temporary mount
-	point.
-      </para>
-    </sect2>
-        
-    <sect2 id="BootFromFloppy" >
-      <title  id="BootFromFloppy.title">
-	Control file on a Floppy
-      </title>
-      <para>
-	&yast2; looks for the control file on a Floppy in the specified
-	directory. This is particularly  usefull when booting using a CD-ROM 
-	to boot (Original  &company-suse;  CD-ROMs).
-      </para>
-    </sect2>
-    
-    
-    <sect2>
-      <title>
-	Control file on a NFS server
-      </title>
-      <para>
-	YaST2  looks for the control file on the NFS server specified on
-	the command line. In this case linuxrc will auto-probe the network
-	device and use  &dhcp;  to to configure the Ethernet device.
-      </para>
-    </sect2>
-
-    <sect2 id="Invoking.HTTP">
-      <title id="Invoking.HTTP.title">
-	Control file retrievable via HTTP.
-      </title>
-    
-      <para>
-	To use HTTP set the boot command line variable <emphasis>autoyast</emphasis>
-	with control file location using the <emphasis>http</emphasis> protocol.  It is
-	possible to specify the location of the control file using the following
-	methods:
-      </para>
-      <orderedlist numeration="arabic">
-	<listitem>
-	  <para>
-	    Specify the exact location of the control file:
-	    <screen>
-autoyast=http://192.168.1.1/control-files/client01.xml
-	    </screen>
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Specify a directory where several control files are located
-	  </para>
-	  <screen>
-autoyast=http://192.168.1.1/control-files/
-	  </screen>
-	  <para>
-	    In this case the relevant control file is retrieved using the hex digit
-	    representation of the IP as described below.
-	  </para>	    	    
-	</listitem>
-      </orderedlist>
-      <para>	
-	If only the pathprefix variable is defined, &yast2; will fetch the
-	control file from the HTTP server in the following way:
-      </para>
-      <orderedlist numeration="arabic">
-	<listitem>
-	  <para>
-	    First, it will search for the control file using its own IP address in
-	    upper case hexadecimal, e.g. <emphasis>192.0.2.91 -> C000025B</emphasis>.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    If that file is not found, it will remove one hex digit and try
-	    again. This action is repeated till the file with the correct name
-	    is found.  Ultimately, it will try looking for a file named <filename>default</filename> (in lower
-	    case).
-	  </para>
-	</listitem>
-      </orderedlist>
-      <para>
-	As an example, for 192.0.2.91, the HTTP client will try
-	<emphasis>C000025B</emphasis>, <emphasis>C000025</emphasis>,
-	<emphasis>C00002</emphasis>,<emphasis>C0000</emphasis>,
-	<emphasis>C000</emphasis>, <emphasis>C00</emphasis>,
-	<emphasis>C0</emphasis>, <emphasis>C</emphasis>, and
-	<emphasis>default</emphasis>, in that order. 
-      </para>
-      <para>
-	To determine the hex representation of the IP address of the client,
-	use the utility called <command>/usr/sbin/gethostip</command> available
-	with the <emphasis>syslinux</emphasis> package.
-      </para>
-      <example>
-	<title>Determine HEX code for an IP address</title>
-	<screen>
-myhost # /usr/sbin/gethostip 10.10.0.1
-10.10.0.1 10.10.0.1 0A0A0001
-	</screen>
-      </example>
-    </sect2>                    
-
-
-    
-    <sect2>
-      <title>
-	Control file retrievable via TFTP.
-      </title>
-      
-      <para>
-	This option is similar to the former one using HTTP.
-      </para>
-    </sect2>
-
-   <sect2>
-      <title>
-	Control file on a NFS server
-      </title>
-      <para>
-	YaST2 will looks for the control file on the NFS server specified on
-	the command line. In this case linuxrc will auto-probe the network
-	device and use  &dhcp;  to to configure the Ethernet device.
-      </para>
-      <para>
-	Note that the same behaviour dealing with hex IPs is also available
-	here (as with <emphasis>tftp</emphasis> and <emphasis>http</emphasis>).
-      </para>
-    </sect2>
-  </sect1>
-
-    <sect1>    
-    <title>
-      System Configuration 
-    </title>
-    <para>
-      The system configuration during auto-installation can be seen as the
-      most important part of the whole process. Customizing a system to your
-      environment needs is what makes an auto-installation system attractive,
-      not the installation part.
-    </para>
-    <para>
-      As you have seen in the previous chapters, almost anything can be
-      configured automatically on the target system. In addition to the
-      pre-defined directives, you can always  use post-scripts to change other
-      things in the system. Additionally you can change any system variables and
-      if required, copy complete configuration files into the target system.
-    </para>
-    <sect2>
-      <title>
-	Post-Install and System Configuration
-      </title>
-      <para>
-	The Post-Installation and the System Configuration are initiated directly after the last
-	package is installed in the target system  and is continued after the
-	system has booted for the first time.
-      </para>
-      <para>
-	Before the system is booted for the first time, &yast2; writes all data
-	collected during installation into the system and finally it writes the
-	boot loader in the specified location. In addition to these regular
-	tasks, which are also done when performing a regular installation, YaST2
-	executes the <emphasis>chroot-scripts</emphasis> as specified in the
-	control file. Note that these scripts are executed while the system is
-	still not mounted.
-      </para>      
-      <para>
-	If a different kernel than the default is installed, a hard reboot will
-	be required. A hard reboot can also be forced during auto-installation,
-	independent of the installed kernel. This can be accomplished using the
-	<emphasis>reboot</emphasis> property of the
-	<emphasis>general</emphasis> resource. (See <link
-	  linkend="CreateProfile.General">General Options</link>)
-      </para>
-    </sect2>
-    <sect2>
-      <title>System Customization</title>
-      <para>
-	Most of the system customization is done in the second stage of the
-	installation. &yast2; provides most of the important resources needed to
-	bring up  a system to a usable , general state. However, you may have
-	other requirements for the installed system. If the required
-	customizations can't be done using &yast2; resources, then the
-	post-install scripts can be used to accomplish this task.
-      </para>
-      <para>
-	You can define an unlimited number of custom scripts in the control
-	file either by editing the control file or by using the configuration
-	system.	
-      </para>      
-      </sect2>
-    </sect1>
-
 </chapter>
 
 

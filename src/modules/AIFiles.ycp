@@ -3,14 +3,34 @@
  */
 
 {
-
     module "AIFiles";
     textdomain "autoinst";
-
+    import "Summary";
 
     global list Files = [];
+
+
+
+    global define string Summary() ``{
+
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Configured files:"));
+	if (size( Files ) > 0)
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(map file, Files, ``{
+		summary = Summary::AddListItem(summary, file["file_path"]:"" );
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	else
+	{
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
+	return summary;
+    }
     
-    global define boolean Import (list settings;) ``{
+    global define boolean Import (list settings) ``{
 	Files = settings;
 	return true;
     }

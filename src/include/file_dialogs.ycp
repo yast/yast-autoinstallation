@@ -1,0 +1,239 @@
+/**
+ * File:	include/autoinstall/file_dialogs.ycp
+ * Summary:	Handle custom configuration dialogs
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    include "ui/common_messages.ycp";
+
+    /**
+     * Add or edit a file
+     */
+    global define void AddEditFile(string fileName, string source)
+	``{
+
+	list newFiles = [];
+	boolean modified = false;
+	AIFiles::Files   = maplist (`file , AIFiles::Files, ``{
+	    // Edit
+	    if (file["file_path"]:"" == fileName)
+	    {
+		map oldFile = $[];
+		oldFile=add(oldFile,"file_path", fileName);
+		oldFile=add(oldFile,"file_contents", source);
+		modified = true;
+		return oldFile;
+	    }
+	    else {
+		return file;
+	    }
+	});
+
+	if (!modified)
+	{
+	    map file = $[];
+	    file=add(file,"file_path", fileName);
+	    file=add(file,"file_contents", source);
+	    AIFiles::Files = add (  AIFiles::Files, file);
+	}
+	return;
+    }
+
+
+
+    /**
+     * delete a file from a list
+     * @param file name
+     * @return modified list of files
+     */
+    global define list  deleteFile(string fileName)
+	``{
+	list new =  filter(`s, AIFiles::Files, ``(lookup(s,"file_path","")!= fileName));
+	return  (new);
+    }
+
+
+    /**
+     * Dialog for adding a file
+     *
+     */
+
+    global define addFileDialog(symbol mode , string name)
+    ``{
+	map file = $[];
+	if (mode == `edit)
+	{
+	    list filtered_files = filter(`s, AIFiles::Files,``((lookup(s,"file_path","") == name)));
+	    if (size(filtered_files)>0)
+	    {
+		file = select(filtered_files,0,$[]);
+	    }
+	}
+	string help =  _("<p>Using this dialog, copy the contents of the file and specify the final
+path on the installed system. YaST2 will copy this file to the specified location.</p>");
+
+	string title = _("Configuration File Editor");
+
+	term contents=
+	    `VBox(
+		  `HBox(
+			`TextEntry(`id(`filename), _("&File Path"), file["file_path"]:""),
+			`HStretch(),
+			`Empty()
+			),
+		  `VSpacing(1),
+		  `HBox(
+			`MultiLineEdit(`id(`source), _("File So&urce"), file["file_contents"]:"")
+			),
+		  `VSpacing(1),
+		  `HBox(
+			`PushButton(`id(`loadsource), _("&Load new contents"))
+			)
+		  );
+
+
+	Wizard::SetContents(title,
+			    contents, help, true, true);
+
+	UI::ChangeWidget(`id(`accept), `Label, SaveButtonLabel());
+	if (mode == `edit)
+	{
+	    UI::ChangeWidget(`id(`filename), `Enabled, false);
+	}
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `accept)
+	    {
+		string fileName = UI::QueryWidget(`id(`filename), `Value);
+
+		string source = UI::QueryWidget(`id(`source), `Value);
+
+		if (source == "" || fileName == "")
+		{
+		    UI::MessagePopup(_("Provide at least the file
+name and the content of the file.
+"));
+		    continue;
+		}
+		else
+		{
+		    AddEditFile( fileName,source);
+		}
+	    }
+	    else if (ret == `loadsource)
+	    {
+		string filename = UI::AskForExistingFile( "", "*", _("Open file") );
+		if (filename!=nil)
+		{
+		    string source = SCR::Read(.target.string, filename);
+		    UI::ChangeWidget(`id(`source), `Value, source);
+		    continue;
+		}
+	    }
+
+	} until (ret == `accept || ret == `cancel );
+	UI::ChangeWidget(`id(`accept), `Label, FinishButtonLabel());
+	return ret;
+    }
+
+
+
+
+    /**
+     * Summary of configuration
+     */
+    global define dialog_contents() ``{
+
+	list allfiles = maplist(`s, AIFiles::Files,
+				  ``{
+				      return (`item(`id(s["file_path"]:"Unknown"),
+						    s["file_path"]:"Unknown" ));
+				  });
+	term contents =
+	    `VBox(
+		  `Left(
+			`Label(_("Available Files"))
+			),
+		  `Table( `id(`table), `opt(`notify),
+			  `header(_("File Path")),
+			  allfiles
+
+			  ),
+		  `HBox(
+			`PushButton(`id(`new),  NewButtonLabel()),
+			`PushButton(`id(`edit), EditButtonLabel()),
+			`PushButton(`id(`delete), DeleteButtonLabel())
+			)
+		  );
+	return contents;
+    }
+
+
+    global define CustomFileDialog ()``{
+
+	string title = _("Add Complete Configuration Files");
+
+	string help = _("<p>For many applications and services, you might have prepared
+a configuration file which should be copied in a complete form to a location in the
+installed system. For example, this is the case if you are installing a web server
+and have a httpd.conf configuration file prepared.</p>");
+
+	Wizard::SetContents(title,
+			    dialog_contents(), help, true, true);
+
+	UI::ChangeWidget(`id(`accept), `Label, FinishButtonLabel());
+	string select_msg = _("Please Select a file from the table first.");
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+
+	    if (ret == `new)
+	    {
+
+		addFileDialog(ret , "" );
+
+	    }
+	    else if (ret == `edit)
+	    {
+		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil)
+		{
+		    addFileDialog(ret , name  );
+		}
+		else
+		{
+		    UI::MessagePopup(select_msg);
+		    continue;
+		}
+
+	    }
+	    else if (ret == `delete)
+	    {
+		string name = UI::QueryWidget(`id(`table), `CurrentItem);
+		if (name != nil) {
+		    AIFiles::Files = deleteFile(name);
+
+		}
+		else
+		{
+		    UI::MessagePopup(select_msg);
+		    continue;
+		}
+	    }
+	    Wizard::SetContents(title,
+				dialog_contents(), help, true, true);
+
+
+	} until (ret == `cancel || ret == `accept );
+
+	return ret;
+    }
+
+
+
+}
