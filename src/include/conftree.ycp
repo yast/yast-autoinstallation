@@ -28,7 +28,7 @@
 				    ``{
 					if ((e["children"]:[]>0))
 					{
-					    list childrenlist = CreateTableList(lookup(e,"children",[]), current);
+					    list childrenlist = CreateTableList(e["children"]:[], current);
 					    return `item(`id(e["entry"]:""), e["title"]:"", ( e["entry"]:"" == current ) , childrenlist);
 					}
 					else
@@ -45,9 +45,10 @@
     global define content_dialog( string resource, map resourceMap ) ``{
 
 	string summary =  Call::Function(module_auto, ["Summary", Y2ModuleConfig::getResourceData(resourceMap , resource)]);
+	
 	string domain = resourceMap["Textdomain"]:"base";
 	string caption = ReadKey (domain, "Name", resourceMap);
-	string buttonLabel = resourceMap["Helptext"]:"Configure";
+	string buttonLabel = resourceMap["GenericName"]:"Configure";
 	term contents =
 	    `VBox(
 		  `RichText( `id(`summary), summary),
@@ -76,7 +77,7 @@
 
 	any original_settings = Y2ModuleConfig::getResourceData(resourceMap , resource);
 
-	string module_auto = resourceMap["AutoClient"]:"none";
+	string module_auto = resourceMap["X-SuSE-YaST-AutoinstClient"]:"none";
 
 	// Import Data
 	Call::Function(module_auto, ["Import", Y2ModuleConfig::getResourceData(resourceMap ,resource)]);
@@ -95,8 +96,8 @@
 
 		if (seq == `accept || seq == `next || seq == `finish)
 		{
-		    string tomerge = resourceMap["AutoinstMerge"]:"";
-		    string tomergetypes = resourceMap["AutoinstMergeTypes"]:"";
+		    string tomerge = resourceMap["X-SuSE-YaST-AutoinstMerge"]:"";
+		    string tomergetypes = resourceMap["X-SuSE-YaST-AutoinstMergeTypes"]:"";
 		    list MergeTypes = splitstring(tomergetypes, ",");
 		    if (size(tomerge) > 0 )
 		    {
@@ -125,9 +126,8 @@
 	    }
 	    else if( ret == `reset)
 	    {
-
-		string tomerge = resourceMap["AutoinstMerge"]:"";
-		string tomergetypes = resourceMap["AutoinstMergeTypes"]:"";
+		string tomerge = resourceMap["X-SuSE-YaST-AutoinstMerge"]:"";
+		string tomergetypes = resourceMap["X-SuSE-YaST-AutoinstMergeTypes"]:"";
 		list MergeTypes = splitstring(tomergetypes, ",");
 		if (size(tomerge) > 0 )
 		{
@@ -153,9 +153,7 @@
 	    if ( original_settings != Y2ModuleConfig::getResourceData(resourceMap , resource) )
 	    {
 		Profile::changed = true;
-	    }
-	    // y2milestone("FLAT b: %1", eval(Profile::Flat));
-
+	    }	
 	} until (ret == `back ||  ret == `abort || ret == `cancel || ret == `next || ret ==`key || contains(menuitems, ret) );
 
 	return ret;
@@ -266,11 +264,11 @@
 		{
 		    string html = "";
 		    foreach(string k , map v, Y2ModuleConfig::ModuleMap, ``{
-			if (v["Group"]:"" == tree_item)
+			if (v["X-SuSE-YaST-Group"]:"" == tree_item)
 			{
 			    string colored = HTML::Colorize( HTML::Link(ReadKey(v["Textdomain"]:"", "Name", v), k), "#8BC460");
 			    html = html + HTML::Heading(colored);
-			    html = html + HTML::Para(ReadKey(v["Textdomain"]:"", "Helptext", v));
+			    html = html + HTML::Para(ReadKey(v["Textdomain"]:"", "GenericName", v));
 			}
 		    });
 
@@ -353,6 +351,7 @@
 			// verify that needed packages are installed
 			import "Require";
 			import "Mode";
+			
 			Mode::config = false;
 			// notification 1/2
 			string pkgmsg =  _("<p>The following package is needed for importing ALICE data:<b> %1</b></p>");
@@ -408,9 +407,13 @@
 			{
 			    string current = "";
 			    if (AutoinstConfig::currentFile == "")
+			    {
 				current = "Untitled";
+			    }
 			    else
+			    {
 				current = AutoinstConfig::currentFile;
+			    }
 
 			    symbol answer = Popup::AnyQuestion3(_("Control file changed."),
 								  sformat(_("Save the changes to %1?"), current),
@@ -453,10 +456,14 @@
 			{
 			    y2milestone("file: %1", filename);
 			    AutoinstConfig::currentFile = filename;
+			    
 			    list pathComponents = splitstring(  filename, "/");
+			    
 			    string base = select(pathComponents, size(pathComponents) -1, "default");
+			    
 			    UI::ChangeWidget(`id(`key), `Label, sformat(_("Fi&le: %1"), base));
-			    Profile::Read(filename);
+			    
+			    Profile::ReadXML(filename);
 
 			}
 		    }
@@ -483,11 +490,10 @@ were imported correctly.
 			if (AutoinstConfig::currentFile == "")
 			{
 
-			    string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
-			    if (filename !=  "" )
+			    string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));			    
+			    if (filename !=  nil )
 			    {
 				AutoinstConfig::currentFile = filename;
-
 			    }
 			    else
 			    {
@@ -500,19 +506,20 @@ were imported correctly.
 			    Popup::Message(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
 			    Profile::changed = false;
 			    if (exit_after)
+			    {
 				ret = `next;
+			    }
 			}
 			else
 			{
 			    Popup::Warning(_("An error occured while saving the file."));
 			}
-
 		    }
 		    else if (ret == `menu_saveas) // SAVE AS
 		    {
 
 			string filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
-			if ( filename != "" )
+			if ( filename != nil )
 			{
 			    y2milestone("filename: %1", filename );
 			    AutoinstConfig::currentFile = filename;

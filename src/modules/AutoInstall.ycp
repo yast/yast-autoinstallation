@@ -14,13 +14,7 @@
     import "Mode";
     import "AutoinstConfig";
     import "Report";
-
-
-    //
-    // Parsed data from XML control in YCP format
-    //
-    string parsedControlFile = AutoinstConfig::cache + "/autoinst.ycp";
-    
+ 
 
     //
     // Auto-Configuration mode
@@ -28,7 +22,7 @@
     global boolean autoconf = false;
 
 
-    
+  
     /**
      * Read saved data in continue mode
      * @return boolean true on success
@@ -39,21 +33,21 @@
 	// First check if there are some other control files availabe
 	// i.e. for post-installation only
 	//
-	string autoconf_file = AutoinstConfig::runtime_dir + "/autoconf/autoconf.xml";
 
 	if ( SCR::Read(.target.size, autoconf_file) != -1 )
 	{
 	    y2milestone("XML Post installation data found: %1", autoconf_file );
 	    autoconf = true;
-	    Profile::Read(  autoconf_file  );
-	    boolean ret = Profile::Read(  AutoinstConfig::xml_tmpfile );
+	    Profile::Read(   AutoinstConfig::autoconf_file  );
+	    
+	    boolean ret = Profile::ReadXML(  AutoinstConfig::xml_tmpfile );
 	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2", autoconf_file, AutoinstConfig::cache));
 	   
 	    return (ret);
 	}
 	else
 	{
-	    boolean ret = Profile::ReadYCP ( parsedControlFile );
+	    boolean ret = Profile::ReadProfileStructure ( AutoinstConfig::parsedControlFile );
 	    if ( Profile::current == $[] || !ret )	
 	    {
 		y2milestone( "No saved autoinstall data found" );
@@ -62,7 +56,7 @@
 	    else
 	    {
 		y2milestone( "Found and read saved autoinst data : <%1>", Profile::current );
-		SCR::Execute(.target.remove, parsedControlFile);
+		SCR::Execute(.target.remove, AutoinstConfig::parsedControlFile);
 		
 		return (true);
 	    }
@@ -84,7 +78,7 @@
 		//
 		// Profile is available and it has not been parsed yet.
 		//
-		Profile::Read(  AutoinstConfig::xml_tmpfile );
+		Profile::ReadXML(  AutoinstConfig::xml_tmpfile );
 		Report::Import(Profile::Flat["report"]:$[]);
 	    }
 	}
@@ -108,7 +102,7 @@
 
     global define boolean Save()
 	``{
-	return (Profile::SaveYCP( parsedControlFile ));
+	return (Profile::SaveProfileStructure( parsedControlFile ));
     }
 
 
