@@ -3,7 +3,7 @@ STYLEDIR=./xsl
 TABSTYLE=./xsl/mine.xsl
 STYLESHEET=$(TABSTYLE)
 # Change the path in output-root to put your HTML output elsewhere
-DESTDIR=build
+DESTDIR=html
 STYLEOPT= --stringparam output-root $(DESTDIR)  --xinclude -stringparam admon.graphics 1
 
 .PHONY : clean 
@@ -24,10 +24,10 @@ depends: autolayout.xml
 	$(PROC) --output depends.tabular $(STYLEOPT) $(STYLEDIR)/makefile-dep.xsl $<
 
 sync:
-	rsync -avz -e ssh  build/* minkowski:~/public_html/autoinstall/
+	rsync -avz -e ssh  $(DESTDIR)/* minkowski:~/public_html/autoinstall/
 
 sync-intern:
-	rsync -avz -e ssh  build/* minkowski:~/Export/autoinstall/
+	rsync -avz -e ssh  $(DESTDIR)/* minkowski:~/Export/autoinstall/
 
 style: $(DESTDIR)/style/default.css
 
