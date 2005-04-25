@@ -77,6 +77,7 @@
     define map<string, map>  set_devices(list<map> storage_config ) {
 	
 	boolean first_set = false;
+        boolean failed = false;
 	map<string, map> auto_targetmap =  listmap (map drive, storage_config, ``{
 	    string device = "";
 	    y2milestone("Working on drive: %1", drive);
@@ -100,29 +101,39 @@
 		)
 	    {
 		device = Storage::GetPartDisk();
+                y2milestone("device: %1", device );
 		first_set = true;
-	
 		return $[device: drive ];
 	    }
 	    else if (drive["device"]:"" != "")
 	    {	
 		string dev = drive["device"]:"";
+                if (dev == "") {
+                    dev = "error";
+                    y2error("Missing device name in partitioning plan");
+                    failed = true;
+                }
+
 		return $[dev: drive ];
 	    }
 	    
 	});
 
-	 auto_targetmap =  mapmap (string device, map d, auto_targetmap, ``{
+        if (failed)
+            return nil;
+        
+	auto_targetmap =  mapmap (string device, map d, auto_targetmap, ``{
             // Convert from Old Style
             if (haskey(d, "use"))
             {
-               y2milestone("converting from \"use\" to new style");
+               y2milestone("converting from \"use\" to new style: %1", device);
                if (d["use"]:"" == "free") {
                    d["prefer_remove"] = false;
                } else if (d["use"]:"" == "all" ) {
                    d["prefer_remove"] = true;
                } else if (d["use"]:"" == "linux" ) {
                    d["keep_partition_num"] = GetNoneLinuxPartitions(device);
+                   d["prefer_remove"] = true;
                } else {
 		    list<string> uselist = filter(string s,
 				splitstring(d["use"]:"", ","), ``(s!=""));
@@ -135,17 +146,24 @@
                                 keeplist=add(keeplist,i);
                         });
                     y2milestone("keeplist: %1", keeplist);
+                    if (size(keeplist) == 0 )
+                        d["prefer_remove"] = true;
                }
             }
+            // see if <usepart> is used and add the partitions to <keep_partition_num>
+            foreach(map p, d["partitions"]:[], ``{
+                    if (p["usepart"]:-1 != -1 ){
+                        d["keep_partition_num"] = add(d["keep_partition_num"]:[], p["usepart"]:-1);
+                    }
+                    });
+            d["keep_partition_num"] = toset(d["keep_partition_num"]:[]);
+
             return($[device:d]);
             });
 
 	y2milestone("processed autoyast partition plan: %1", auto_targetmap );
 	return auto_targetmap;
-
     }
-
-
     
     /**
      * Dump the settings to a map, for autoinstallation use.
@@ -181,13 +199,11 @@
      */
     global define boolean Import(list<map> settings)
     {
-        if (Mode::autoinst())
-	    AutoPartPlan = preprocess_partition_config(settings);
+	AutoPartPlan = preprocess_partition_config(settings);
 	y2milestone("AutoPartPlan: %1", AutoPartPlan );
 
 	return true;
     }
-
 
     /**
      * Import Fstab data
@@ -220,8 +236,6 @@
 	summary = Summary::CloseList(summary);
 	return summary;
     }
-
-
 
     /**
      * Handle /etc/fstab usage
@@ -272,8 +286,6 @@ which root partition should be used.  Automatic installation not possible.
         return true;
     }
 
-
-
     /**
      * Create partition plan
      * @return boolean
@@ -281,9 +293,7 @@ which root partition should be used.  Automatic installation not possible.
     global define boolean Write() {
 
         if (read_fstab)
-        {
             return (handle_fstab());
-        }
 
 	// Find first disk
 	map <string, map> initial_target_map = Storage::GetTargetMap();
@@ -302,6 +312,9 @@ which root partition should be used.  Automatic installation not possible.
 	Storage::SetPartDisk(mbr_disk);
 	
 	AutoTargetMap =  set_devices(AutoPartPlan);
+        if (AutoTargetMap == nil || AutoTargetMap == $[])
+            return false;
+
 	y2milestone("AutoTargetMap: %1",  AutoTargetMap);
 	
 	// return list of available devices
