@@ -199,7 +199,11 @@
      */
     global define boolean Import(list<map> settings)
     {
-	AutoPartPlan = preprocess_partition_config(settings);
+        if (Mode::autoinst()) {
+    	    AutoPartPlan = preprocess_partition_config(settings);
+        } else {
+            AutoPartPlan = settings;
+        }
 	y2milestone("AutoPartPlan: %1", AutoPartPlan );
 
 	return true;
