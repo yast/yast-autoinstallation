@@ -42,7 +42,7 @@ $Id$
                 l = filter(map p, l, ``(!contains( [`xfs, `ext2, `ext3, `jfs, `reiser],
                             p["used_fs"]:`unknown)));
                 l = filter(map p, l,
-                    ``(FileSystems::IsSystemMp( p["mount"]:"", false )));
+                    ``(!FileSystems::IsSystemMp( p["mount"]:"", false )));
                 if( size(l)>0 )
                 {
                     list<integer> ln =  maplist( map p, l, ``(p["nr"]:0));
@@ -1083,8 +1083,9 @@ $Id$
 	    
 	    if( g["extended_possible"]:false &&
 		size(ps)+1>=size(g["free_pnr"]:[]) &&
-		size(filter(map up, (list<map>)ps, ``(up["partition_type"]:"none"
-					   == "primary")))  == 0 
+		size(filter(map up, (list<map>)ps, ``(
+                            up["partition_type"]:"none" == "primary" || 
+                            contains(lg["free_pnr"]:[], up["partition_nr"]:0) )))  == 0 
 		)
 	    {
 		y2milestone( "creating extended" );
@@ -1151,21 +1152,13 @@ $Id$
 		)
 	    {
 		map llg = (map) eval(lg);
-		if( e["exists"]:false )
-		{
-		    llg["gap",gindex,"cylinders"] = 0;
-		}
-		else
-		{
-		    llg["gap",gindex,"cylinders"] = 
-			llg["gap",gindex,"cylinders"]:0 - part["cylinders"]:0;
-		}
 
 		list addl = [ pindex ];
 		
                 // number of needed primaries by user
 		integer sp = size(filter(map up, (list<map>)ps,
-					 ``(up["partition_type"]:"none"  == "primary")));
+					 ``(up["partition_type"]:"none"  == "primary" ||
+                                             contains(llg["free_pnr"]:[], up["partition_nr"]:0))));
 
                 y2milestone("number of primaries requested: %1", sp );
 		integer cp = 0;
@@ -1173,11 +1166,8 @@ $Id$
 		    cp = cp + size(gg["created_primary"]:[]);
 		});
 
-                
 		boolean ex = false;
-
                 y2milestone("number of created primaries: %1", cp );
-
 	
 		// Extended
 		if( llg["extended_possible"]:false &&
@@ -1229,14 +1219,23 @@ $Id$
 
 		}
 		
-	
-
-		
 		if (!ex)
 		{
 		    llg["gap",gindex,"added"] = 
 			add( llg["gap",gindex,"added"]:[], addl );
 		}
+
+                if (!ex) {
+                    if( e["exists"]:false )
+                    {
+                        llg["gap",gindex,"cylinders"] = 0;
+                    }
+                    else
+                    {
+                        llg["gap",gindex,"cylinders"] = 
+                            llg["gap",gindex,"cylinders"]:0 - part["cylinders"]:0;
+                    }
+                }
 		
 		if( pindex+1 < size(ps) || ex )
 		{
@@ -1266,7 +1265,7 @@ $Id$
      */
     define map normalize_gaps( list ps, map g )
 	``{
-	y2milestone( "gap %1", g );
+	y2milestone( "normalize_gaps: gap %1", g );
 	integer gindex = 0;
 	integer pindex = 0;
 	foreach( map e, g["gap"]:[],
