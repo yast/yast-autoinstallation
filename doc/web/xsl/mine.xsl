@@ -92,7 +92,6 @@
       <xsl:call-template name="webpage.linkbar"/>
       <xsl:call-template name="webpage.footer"/>
 
-      <xsl:call-template name="webpage.validator"/>
 
     </body>
 

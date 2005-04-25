@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ENTITY % y2_drive "device| initialize| is_lvm_vg|lvm2| partitions| pesize| use" >
+<!ENTITY % y2_drive "device| initialize| is_lvm_vg|lvm2| partitions| pesize| use| keep_partition_fsys | keep_partition_id | keep_partition_num| prefer_remove  " >
 
 
 <!ELEMENT partitioning (drive+)>
 <!ATTLIST partitioning
 	config:type CDATA #FIXED "list"
 >
-<!ELEMENT drive (device?, initialize?,  is_lvm_vg?, partitions?, pesize?, use?)>
+<!ELEMENT drive (%y2_drive;)*>
 <!ELEMENT initialize (#PCDATA)>
 <!ATTLIST initialize
 	config:type CDATA #FIXED "boolean"
@@ -23,7 +23,9 @@
 <!ATTLIST partitions
 	config:type CDATA #FIXED "list"
 >
-<!ENTITY % y2_partition "create| crypt| crypt_fs| crypt_key| filesystem| format| fs_options| fstopt| grow| label| loop_fs| lv_name| lvm_group| maxsize| mount| mountby| noauto| partition_id| partition_nr| partition_type| raid_name| raid_type| region| size">
+<!ENTITY % y2_partition "create| crypt| crypt_fs| crypt_key| filesystem| format| fs_options| fstopt| grow| label| loop_fs| lv_name| lvm_group| maxsize| mount| mountby| noauto| partition_id| partition_nr| partition_type| raid_name| raid_type| region| size| ">
+
+<!ENTITY % y2_raid_options "raid_type|persistent_superblock">
 
 <!ELEMENT partition (%y2_partition;)*>
 
@@ -35,8 +37,20 @@
 <!ATTLIST create
 	config:type CDATA #FIXED "boolean"
 >
+<!ELEMENT raid_type (#PCDATA)>
+<!ELEMENT persistent_superblock (#PCDATA)>
+<!ATTLIST persistent_superblock
+	config:type CDATA #FIXED "boolean"
+>
 
 <!ELEMENT crypt (#PCDATA)>
+<!ELEMENT keep_partition_fsys (#PCDATA)>
+<!ELEMENT keep_partition_nr (#PCDATA)>
+<!ELEMENT keep_partition_id (#PCDATA)>
+<!ELEMENT prefer_remove (#PCDATA)>
+<!ATTLIST prefer_remove
+	config:type CDATA #FIXED "boolean"
+>
 <!ELEMENT crypt_fs (#PCDATA)>
 <!ATTLIST crypt_fs
 	config:type CDATA #FIXED "boolean"
