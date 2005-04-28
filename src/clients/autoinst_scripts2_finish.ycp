@@ -1,0 +1,61 @@
+/**
+ * File:
+ *  autoinst_scripts2_finish.ycp
+ *
+ * Module:
+ *  Step of base instalaltion finish
+ *
+ * Authors:
+ *  Jiri Srain <jsrain@suse.cz>
+ *
+ * $Id: printer_auto.ycp 20576 2004-12-15 15:00:18Z jsrain $
+ *
+ */
+
+{
+
+textdomain "autoinst";
+
+import "AutoinstScripts";
+
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    func = (string)WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map)WFM::Args(1);
+}
+
+y2milestone ("starting autoinst_scripts2_finish");
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+if (func == "Info")
+{
+    return (any)$[
+	"steps" : 1,
+	// progress step title
+	"title" : _("Executing autoinstall scripts in the installation environment..."),
+        "when" : [ `autoinst ],
+    ];
+}
+else if (func == "Write")
+{
+    AutoinstScripts::Write("chroot-scripts", true);
+}
+else
+{
+    y2error ("unknown function: %1", func);
+    ret = nil;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("autoinst_scripts2_finish finished");
+return ret;
+
+
+} /* EOF */
