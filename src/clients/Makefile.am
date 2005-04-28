@@ -16,7 +16,9 @@ client_DATA = \
     report_auto.ycp \
     scripts_auto.ycp \
     software_auto.ycp \
-    storage_auto.ycp
+    storage_auto.ycp		\
+	autoinst_scripts1_finish.ycp	\
+	autoinst_scripts2_finish.ycp
 
 
 EXTRA_DIST =                    \
