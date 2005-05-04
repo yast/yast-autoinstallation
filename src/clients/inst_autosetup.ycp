@@ -27,6 +27,7 @@
     import "Arch";
     import "AutoinstLVM";
     import "AutoinstRAID";
+    import "Storage";
 
     include "bootloader/routines/routines.ycp";
     include "bootloader/routines/autoinstall.ycp";
@@ -115,6 +116,10 @@ control file and try again.
 
 
     Progress::NextStage();
+    // we reread the partition table here (NOFOS CD)
+    // So, if we change the partitions in a prescript, the new
+    // partition table will be reread now
+    Storage::ReReadTargetMap();
     AutoinstStorage::Import(Profile::Flat["partitioning"]:[]);
     AutoinstStorage::ImportAdvanced(Profile::Flat["partitioning_advanced"]:$[]);
 
