@@ -177,17 +177,17 @@
 	{
 	    if (StorageDevices::FloppyReady())
 	    {
-		WFM::Execute(.local.mount, [StorageDevices::FloppyDevice, "/media/floppy"]);
+		WFM::Execute(.local.mount, [StorageDevices::FloppyDevice, mount_point]);
 
-		if (WFM::Execute (.local.bash, "/bin/cp /media/floppy/" + Path + " " + Localfile) != 0)
+		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + "/" + Path + " " + Localfile) != 0)
 		{
-		    y2error("file  %1 can't be retrieved", "/media/floppy/" + Path );
+		    y2error("file  %1 can't be retrieved", mount_point + "/" + Path );
 		}
 		else
 		{
 		    ok = true;
 		}
-		SCR::Execute(.target.umount, "/media/floppy");
+		SCR::Execute(.target.umount, mount_point);
 	    }
 	}
 	else if (Scheme == "device") // Device
