@@ -175,15 +175,15 @@ Try again.
     y2milestone("autoyast - configured runlevel: %1", rl);
     if (rl!="")
     {
-        RunlevelEd::default = rl;
+        RunlevelEd::default_runlevel = rl;
     }
     else
     {
-        RunlevelEd::default = (Installation::x11_setup_needed ()
+        RunlevelEd::default_runlevel = (Installation::x11_setup_needed ()
                 && Arch::x11_setup_needed ()
                 && Pkg::IsSelected ("xorg-x11") )? "5": "3";
     }
-    y2milestone("autoyast - setting runlevel to: %1", RunlevelEd::default);
+    y2milestone("autoyast - setting runlevel to: %1", RunlevelEd::default_runlevel);
 
     AutoInstall::PXELocalBoot();
 
