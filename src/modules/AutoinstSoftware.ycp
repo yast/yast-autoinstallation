@@ -79,7 +79,6 @@
      */
     global define boolean Import(map settings)
     {
-        SetModified();
 	Software = settings;
 	base = settings["base"]:"";
 	addons = settings["addons"]:[];
@@ -94,6 +93,10 @@
         map<string, any> image = settings["system_images"]:$[];
         imaging = image["enable_multicast_images"]:false;
         ft_module = image["module_name"]:"";
+        if (settings == $[])
+            modified = false;
+        else
+            modified = true;
 
 	return true;
     }
