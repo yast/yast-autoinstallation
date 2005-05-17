@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!ELEMENT remote_ipaddr (#PCDATA)>
+<!ELEMENT bootproto (#PCDATA)>
+<!ELEMENT broadcast (#PCDATA)>
+<!ELEMENT destination (#PCDATA)>
+<!ELEMENT device (#PCDATA)>
+<!ELEMENT dhclient_set_down_link (#PCDATA)>
+<!ELEMENT dhcp_hostname (#PCDATA)>
+<!ATTLIST dhcp_hostname
+	config:type CDATA #FIXED "boolean"
+>
+<!ELEMENT dhcp_resolv (#PCDATA)>
+<!ATTLIST dhcp_resolv
+	config:type CDATA #FIXED "boolean"
+>
+<!ENTITY % y2_dns "dhcp_hostname| dhcp_resolv| domain| hostname| nameservers| searchlist">
+<!ELEMENT dns (%y2_dns;)* >
+
+<!ELEMENT domain (#PCDATA)>
+<!ELEMENT gateway (#PCDATA)>
+<!ELEMENT hostname (#PCDATA)>
+<!ENTITY % y2_laninterface "remote_ipaddr| bootproto| broadcast| device|
+dhclient_set_down_link| ipaddr| mtu| name | netmask| network| startmode| wireless| wireless_auth_mode | 
+wireless_essid| wireless_key| wireless_key_0| wireless_key_1| wireless_key_2 | wireless_key_3 | wireless_key_length |  wireless_mode| wireless_nick| wireless_nwid|wireless_bitrate|wireless_channel|wireless_frequency|wireless_power|ifplugd_priority|usercontrol">
+<!ELEMENT interface (%y2_laninterface;)*>
+<!ELEMENT interfaces (interface+)>
+<!ATTLIST interfaces
+	config:type CDATA #FIXED "list"
+>
+<!ELEMENT ip_forward (#PCDATA)>
+<!ATTLIST ip_forward
+	config:type CDATA #FIXED "boolean"
+>
+<!ELEMENT ipaddr (#PCDATA)>
+<!ELEMENT usercontrol (#PCDATA)>
+<!ELEMENT mtu (#PCDATA)>
+<!ELEMENT ifplugd_priority (#PCDATA)>
+<!ELEMENT module (#PCDATA)>
+<!ELEMENT modules (module_entry+)>
+<!ATTLIST modules
+	config:type CDATA #FIXED "list"
+>
+<!ELEMENT module_entry (device, module?, options?)>
+<!ELEMENT nameserver (#PCDATA)>
+<!ELEMENT nameservers (nameserver+)>
+<!ATTLIST nameservers
+	config:type CDATA #FIXED "list"
+>
+<!ELEMENT netmask (#PCDATA)>
+<!ELEMENT network (#PCDATA)>
+<!ELEMENT networking (dhcp_options?, dns?, interfaces, modules?, routing?)>
+
+<!ELEMENT dhcp_options (dhclient_additional_options?, dhclient_client_id?, dhclient_hostname_option?)>
+<!ELEMENT dhclient_additional_options (#PCDATA)>
+<!ELEMENT dhclient_client_id (#PCDATA)>
+<!ELEMENT dhclient_hostname_option (#PCDATA)>
+
+
+<!-- <!ELEMENT options (#PCDATA)> : redefined -->
+<!ELEMENT route (destination, device, gateway, netmask)>
+<!ELEMENT routes (route+)>
+<!ATTLIST routes
+	config:type CDATA #FIXED "list"
+>
+<!ELEMENT routing (ip_forward?, routes?)>
+<!ELEMENT search (#PCDATA)>
+<!ELEMENT searchlist (search+)>
+<!ATTLIST searchlist
+	config:type CDATA #FIXED "list"
+>
+<!ELEMENT startmode (#PCDATA)>
+<!ELEMENT wireless (#PCDATA)>
+<!ELEMENT wireless_essid (#PCDATA)>
+<!ELEMENT wireless_key (#PCDATA)>
+<!ELEMENT wireless_key_1 (#PCDATA)>
+<!ELEMENT wireless_key_0 (#PCDATA)>
+<!ELEMENT wireless_key_2 (#PCDATA)>
+<!ELEMENT wireless_key_3 (#PCDATA)>
+<!ELEMENT wireless_key_length (#PCDATA)>
+<!ELEMENT wireless_mode (#PCDATA)>
+<!ELEMENT wireless_auth_mode (#PCDATA)>
+<!ELEMENT wireless_nick (#PCDATA)>
+<!ELEMENT wireless_nwid (#PCDATA)>
+<!ELEMENT wireless_bitrate (#PCDATA)>
+<!ELEMENT wireless_channel (#PCDATA)>
+<!ELEMENT wireless_frequency (#PCDATA)>
+<!ELEMENT wireless_power (#PCDATA)>

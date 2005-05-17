@@ -1,0 +1,854 @@
+/**
+ * File:	modules/AutoInstallRules.ycp
+ * Package:	Auto-installation
+ * Summary:	Process Auto-Installation Rules
+ * Author:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+
+    module "AutoInstallRules";
+    textdomain "autoinst";
+
+
+    import "Arch";
+    import "Stage";
+    import "Installation";
+    import "AutoinstConfig";
+    import "XML";
+    import "Storage";
+    import "Kernel";
+    import "Mode";
+    import "Profile";
+    import "Label";
+    import "Report";
+    import "Popup";
+    import "URL";
+    import "IP";
+    import "Product";
+
+    include "autoinstall/io.ycp";
+
+    global boolean userrules = false;
+
+    global symbol Behaviour = `many;
+
+    /////////////////////////////////////////////
+    // Pre-defined Rules
+    /////////////////////////////////////////////
+
+    // All system attributes;
+    map ATTR = $[];
+
+    global string installed_product = "";
+
+    global string installed_product_version = "";
+
+    global string hostname = "";
+
+    global string hostaddress = "";
+
+    global string network = "";
+
+    global string domain = "";
+
+    global string arch = "";
+
+    global string karch = "";
+
+    // Taken from smbios
+    global string product = "";
+
+    // Taken from smbios
+    global string product_vendor = "";
+
+    // Taken from smbios
+    global string board_vendor = "";
+
+    // Taken from smbios
+    global string board = "";
+
+    global integer memsize = 0;
+
+    global list<map<string, any> > disksize = [];
+
+    global integer totaldisk = 0;
+
+    global string hostid = "";
+
+    global string mac = "";
+
+    global integer linux = 0;
+
+    global integer others = 0;
+
+    global string xserver = "";
+
+    global string haspcmcia = "0";
+
+    /////////////////////////////////////////////
+    /////////////////////////////////////////////
+
+    global list NonLinuxPartitions = [];
+
+    global list LinuxPartitions = [];
+
+
+    global map<string, any> UserRules = $[];
+
+    // Local Variables
+    string shell = "";
+    map env = $[];
+
+    global list<string> tomerge = [];
+
+
+
+    /**
+     * Cleanup XML file from namespaces put by xslt
+     */
+    global define boolean XML_cleanup(string in, string out)
+	``{
+
+	map ycpin = XML::XMLToYCPFile(in);
+	y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin);
+	return XML::YCPToXMLFile(`profile, ycpin, out);
+    }
+
+
+    /**
+     * StdErrLog()
+     * Dialog for error messages
+     */
+    global define void StdErrLog( string stderr) ``{
+	UI::OpenDialog(
+		       `opt( `decorated ),
+		       `VBox(
+			     `VSpacing(0.5),
+			     `HSpacing(50),
+			     `HBox (
+				    `HSpacing(0.5),
+				    `LogView(`id(`log),  Label::ErrorMsg()  , 10, 100 ),
+				    `HSpacing(0.5)
+				    ),
+			     `VSpacing(0.2),
+			     `PushButton( `id(`ok), `opt(`default), Label::OKButton() ),
+			     `VSpacing(0.5)
+			     )
+		       );
+
+	UI::ChangeWidget(`id(`log),`Value, stderr);
+	UI::UserInput();
+	UI::CloseDialog();
+
+    };
+    /**
+     * getMAC()
+     * Return MAC address of active device
+     * @return string mac address
+     */
+    global define string getMAC()
+    {
+	string tmpmac = "";
+	if (Stage::initial ())
+	{
+	    tmpmac  = (string)SCR::Read (.etc.install_inf.HWAddr);
+	}
+	string cleanmac = deletechars((tmpmac!=nil)?tmpmac:"", ":");
+	return cleanmac;
+    }
+
+
+    /**
+     * Return host id (hex ip )
+     * @return string host ID
+     */
+    global define string getHostid ()
+    {
+	string hex = IP::ToHex(hostaddress);
+	return hex;
+    }
+
+
+    /**
+     * Probe all system data to build  a set of rules
+     * @return void
+     */
+    global define void ProbeRules ()
+    {
+
+	// SMBIOS Data
+	list bios = (list) SCR::Read(.probe.bios);
+
+	if (size(bios) != 1)
+	{
+	    y2warning("Warning: BIOS list size is %1", size(bios));
+	}
+
+	map biosinfo = (map)(bios[0]:$[]);
+	list<map> smbios = (list<map>)(biosinfo["smbios"]:[]);
+
+	map sysinfo = $[];
+	map boardinfo = $[];
+
+	foreach(map inf, smbios, ``{
+	    if (inf["type"]:"" == "sysinfo")
+	    {
+		sysinfo = inf;
+	    }
+	    else if (inf["type"]:"" == "boardinfo")
+	    {
+		boardinfo = inf;
+	    }
+	});
+
+	if (size(sysinfo) > 0)
+	{
+	    product = (string)(sysinfo["product"]:"default");
+	    product_vendor = (string)(sysinfo["manufacturer"]:"default");
+	}
+
+	if (size(boardinfo) > 0)
+	{
+	    board = (string)(boardinfo["product"]:"default");
+	    board_vendor = (string)(boardinfo["manufacturer"]:"default");
+	}
+
+        ATTR["product"] = product;
+        ATTR["product_vendor"] = product_vendor;
+        ATTR["board"] = board;
+        ATTR["board_vendor"] = board_vendor;
+
+	//
+	// Architecture
+	//
+
+	arch = Arch::architecture ();
+	karch = Kernel::GetPackages ()[0]:"kernel-default";
+
+        ATTR["arch"] = arch;
+        ATTR["karch"] = karch;
+
+	//
+	// Memory
+	//
+
+	integer memory = 0;
+	list memories = (list)SCR::Read(.probe.memory);
+	memory = memories[0,"resource","phys_mem",0,"range"]:0;
+	memsize =  memory / ( 1024 * 1024);
+        ATTR["memsize"] = memsize;
+
+	//
+	// Disk sizes
+	//
+
+	map<string,map> storage =  Storage::GetTargetMap();
+        map<string,map> PhysicalTargetMap = filter(string k, map v, storage ,
+                ``(Storage::IsRealDisk(k, v) ));
+	totaldisk = 0;
+	disksize = maplist( string k, map v,  PhysicalTargetMap,
+			    ``{
+				integer size_in_mb = v["cyl_size"]:0 * v["cyl_count"]:0 / ( 1024 * 1024 ) ;
+				totaldisk = totaldisk + size_in_mb;
+				return($["device":k, "size": size_in_mb]);
+			    });
+        y2debug("disksize: %1", disksize);
+	//
+	// MAC
+	//
+	mac = getMAC();
+        ATTR["mac"] = mac;
+
+	//
+	// Network
+	//
+	if (Stage::initial ())
+	{
+	    hostaddress  = (string)SCR::Read(.etc.install_inf.IP);
+	}
+	else
+	{
+	    hostaddress  = "192.168.1.1"; // FIXME
+	}
+        ATTR["hostaddress"] = hostaddress;
+
+	//
+	// Hostid (i.e. a8c00101);
+	//
+	hostid = getHostid();
+
+        ATTR["hostid"] = hostid;
+
+
+	hostname = (string)SCR::Read(.etc.install_inf.Hostname);
+        ATTR["hostname"] = hostname;
+	domain = (string)SCR::Read(.etc.install_inf.Domain);
+        ATTR["domain"] = domain;
+	network = (string)SCR::Read(.etc.install_inf.Network);
+        ATTR["network"] = network;
+	haspcmcia = (string)SCR::Read(.etc.install_inf.HasPCMCIA);
+        ATTR["haspcmcia"] = haspcmcia;
+	xserver = (string)SCR::Read(.etc.install_inf.XServer);
+        ATTR["xserver"] = xserver;
+
+	NonLinuxPartitions = Storage::GetForeignPrimary();
+	others = size(NonLinuxPartitions );
+
+	y2milestone ("Other primaries: %1", NonLinuxPartitions);
+
+	LinuxPartitions = Storage::GetOtherLinuxPartitions();
+	linux = size(LinuxPartitions);
+
+	y2milestone ("Other linux parts: %1",  LinuxPartitions);
+
+        installed_product = Product::name;
+        installed_product_version = Product::version;
+        ATTR["installed_product"] = installed_product;
+        ATTR["installed_product_version"] = installed_product_version;
+
+        y2milestone("Installing %1 %2", installed_product, installed_product_version);
+
+	return;
+    }
+
+
+
+
+    /**
+     * Create shell command for rule verification
+     * @param match
+     * @param var
+     * @param val
+     * @param op
+     * @param matchtype
+     * @return void
+     */
+    define void shellseg (boolean match, string var, any val, string op, string matchtype)
+    {
+	if (op == "and")
+	    op = " && ";
+	else if (op == "or")
+	    op = " || ";
+
+	string tmpshell = " ( [ ";
+	y2debug("Match type: %1", matchtype);
+        if (is( val, string) && (string)val == "*")
+        {
+            // match anything
+            tmpshell = tmpshell + "\"1\" = \"1\" ";
+        }
+        else if (matchtype == "exact")
+	{
+	    tmpshell = tmpshell + sformat("\"$%1\" = \"%2\" ", var,  val);
+	}
+	else if (matchtype == "greater")
+	{
+	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" ",  var,  val);
+	}
+	else if (matchtype == "lower")
+	{
+	    tmpshell = tmpshell + sformat("\"$%1\" -lt \"%2\" ",  var,  val);
+	}
+	else if (matchtype == "range")
+	{
+	    list<string> range =splitstring(tostring(val), "-");
+	    y2debug("Range: %1", range);
+	    tmpshell = tmpshell + sformat("\"$%1\" -gt \"%2\" -a \"$%1\" -lt \"%3\" ",  var,  range[0]:"0",  range[1]:"0");
+	}
+
+	if (match)
+	{
+	    shell = shell + sformat(" %1 %2 ] )", op, tmpshell);
+	}
+	else
+	{
+	    shell = tmpshell + " ] ) ";
+	}
+
+        y2debug("var: %1, val: %2", var, val);
+        y2debug("shell: %1", shell);
+        return;
+    }
+
+
+    /**
+     * Verify rules using the shell
+     * @return integer
+     */
+    define integer verifyrules ()
+    {
+
+	string script = sformat("if %1; then exit 0; else exit 1; fi", shell);
+	map ret = (map)SCR::Execute (.target.bash_output, script, env);
+
+	y2milestone("Bash return: %1 (%2) (%3)", script, ret, env);
+
+	return ret["exit"]:-1;
+    }
+
+    string SubVars(string file)
+    {
+        y2milestone("file: %1" , file);
+        string var = "";
+        any first = findfirstof(file, "@");
+        any last = findlastof(file, "@");
+        if (first!= nil && last!=nil)
+        {
+            integer ffirst = (integer) first + 1;
+            integer llast = (integer) last;
+            if (first!=last)
+            {
+                var = substring(file,ffirst  , llast - ffirst );
+            }
+        }
+        y2milestone("var: %1", var);
+        if (var!="")
+        {
+            string val = ATTR[var]:"";
+            string new = regexpsub(file,"(.*)@.*@(.*)",sformat("\\1%1\\2", val));
+            if (new!="")
+                return new;
+        }
+        y2milestone("val: %1", file);
+        return file;
+
+    }
+    /**
+     * Read rules file
+     * @return void
+     */
+    global define void Read()
+    {
+	UserRules = XML::XMLToYCPFile( AutoinstConfig::local_rules_file );
+
+	y2milestone("Rules: %1", UserRules);
+
+	list<map <string, map> > rulelist = UserRules["rules"]:[];
+	if (rulelist == nil)		// check result of implicit type conversion
+	{
+	    y2error ("Key 'rules' has wrong type");
+	    rulelist = [];
+	}
+
+	boolean ismatch = false;
+	boolean go_on = true;
+	foreach ( map<string, map> ruleset, rulelist, ``{
+	    y2debug("Ruleset: %1", ruleset);
+	    if (go_on) {
+		foreach(string rule, map ruledef, ruleset, ``{
+		    y2debug("Rule: %1", rule);
+		    y2debug("Ruledef: %1", ruledef);
+
+		    string match = ruledef["match"]:"undefined";
+
+		    string op = ruledef["operator"]:"and";
+		    string matchtype = ruledef["match_type"]:"exact";
+
+                    list<string> easy_rules = [
+                    "hostname",
+                    "hostaddress",
+                    "installed_product_version",
+                    "installed_product",
+                    "domain",
+                    "network",
+                    "mac",
+                    "karch",
+                    "hostid",
+                    "arch",
+                    "board",
+                    "board_vendor",
+                    "product_vendor",
+                    "product" ];
+		    if ( contains(easy_rules, rule))
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = ATTR[rule]:"";
+		    }
+		    else if ( rule == "custom1" ||  rule == "custom2" || rule == "custom3" ||  rule == "custom4" || rule == "custom5")
+		    {
+			string script = ruledef["script"]:"exit -1";
+			string tmpdir = AutoinstConfig::tmpDir;
+
+			string scriptPath = sformat("%1/%2", tmpdir,  "rule_" + rule);
+
+			y2milestone("Writing rule script into %1", scriptPath);
+			SCR::Write(.target.string, scriptPath, script);
+
+			map out = (map) SCR::Execute (.target.bash_output, "/bin/sh " + scriptPath, $[]);
+			string script_result = out["stdout"]:"";
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+                        ATTR[rule] = script_result;
+			env[rule] = script_result;
+		    }
+		    else if ( rule == "linux" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = linux;
+		    }
+		    else if ( rule == "others" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = others;
+		    }
+		    else if ( rule == "xserver" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = xserver;
+		    }
+		    else if ( rule == "memsize" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = memsize;
+		    }
+		    else if ( rule == "totaldisk" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = totaldisk;
+		    }
+		    else if ( rule == "haspcmcia" )
+		    {
+			shellseg(ismatch, rule, match, op, matchtype);
+			ismatch = true;
+			env[rule] = haspcmcia;
+		    }
+                    else if ( rule == "disksize" )
+                    {
+                        y2debug("creating rule check for disksize");
+                        list<string> disk = splitstring(match, " ");
+                        integer i = 0;
+                        string t  = "";
+                        if (shell != "" )
+                        {
+                            t  = shell + sformat(" %1 ( ", (op == "and") ? "&&" : "||" );
+                        }
+                        else
+                        {
+                            t  = shell + sformat(" ( ");
+                        }
+                        foreach(map<string, any> dev, disksize, {
+                            string var1 = sformat("disksize_size%1", i );
+                            string var2 = sformat("disksize_device%1", i );
+
+                            if (matchtype == "exact")
+                            {
+                            t = t + sformat(" [ \"$%1\" = \"%2\" -a \"$%3\" = \"%4\" ] ", var1, disk[1]:"" , var2, disk[0]:"");
+                            }
+                            else if (matchtype == "greater")
+                            {
+                            t = t + sformat(" [ \"$%1\" -gt \"%2\"  -a \"$%3\" = \"%4\" ] ", var1, disk[1]:"" , var2, disk[0]:"");
+                            }
+                            else if (matchtype == "lower")
+                            {
+                            t = t + sformat(" [ \"$%1\" -lt \"%2\" -a \"$%3\" = \"%4\" ] ", var1, disk[1]:"" , var2, disk[0]:"");
+                            }
+
+                            env[var1] = dev["size"]:-1;
+                            env[var2] = dev["device"]:"";
+                            i = i + 1;
+                            if ( size(disksize) > i )
+                            {
+                                t = t + " || ";
+                            }
+                        });
+                        t = t + " ) ";
+                        shell = t;
+                        y2debug("shell: %1", shell);
+			ismatch = true;
+                    }
+		    else if ( rule == "result" )
+		    {
+			if ( verifyrules() == 0 )
+			{
+                            string profile_name = ruledef["profile"]:"";
+                            profile_name = SubVars(profile_name);
+                            y2milestone("Final Profile name: %1", profile_name
+                                    );
+                            if (ruledef["match_with_base"]:true)
+                            {
+			        tomerge = add(tomerge, profile_name);
+                            }
+			    go_on = ruledef["continue"]:false;
+			}
+			else
+			{
+			    go_on = true;
+			}
+			shell = "";
+			ismatch = false;
+		    }
+
+		});
+	    }
+	});
+	return;
+    }
+
+
+
+    /**
+     * Return list of file to merge (Order matters)
+     * @return list list of files
+     */
+    global define list<string> Files ()
+    {
+	return tomerge;
+    }
+
+    /**
+     * Return list of file to merge (Order matters)
+     * @return boolean
+     */
+    global define boolean GetRules ()
+    {
+	y2milestone("Getting Rules: %1", tomerge);
+
+	string scheme = AutoinstConfig::scheme;
+	string host = AutoinstConfig::host;
+	string filepath = AutoinstConfig::filepath;
+	string directory = AutoinstConfig::directory;
+
+	list<string> valid = [];
+	boolean stop = false;
+	foreach(string file, tomerge,
+		``{
+	    if (!stop)
+	    {
+		string dir = dirname ( file );
+		if (dir != "")
+		{
+		    SCR::Execute(.target.mkdir, AutoinstConfig::local_rules_location + "/" + dir);
+		}
+
+		string localfile = AutoinstConfig::local_rules_location + "/" + file  ;
+		if (!Get( scheme, host, directory + "/" + file, localfile))
+		{
+		    y2error("Error while fetching file:  %1", directory + "/" + file);
+		}
+		else
+		{
+		    if (Behaviour == `one)
+		    {
+			stop = true;
+		    }
+
+		    valid = add(valid, file);
+
+		}
+	    }
+	});
+	tomerge = valid;
+	if (size ( tomerge ) == 0 )
+	{
+	    y2milestone("No files from rules found");
+	    return (false);
+	}
+	else
+	{
+	    return (true);
+	}
+    }
+
+
+    /**
+     * Merge Rule results
+     * @param result_profile the resulting control file path
+     * @return boolean true on success
+     */
+    global define boolean Merge (  string result_profile   )
+    {
+
+	string tmpdir = AutoinstConfig::tmpDir;
+	boolean ok = true;
+	boolean skip = false;
+        boolean error = false;
+
+	string base_profile  =  tmpdir + "/base_profile.xml";
+
+	foreach(string file, tomerge,
+		``{
+	    y2milestone("Working on file: %1", file);
+
+	    string current_profile = AutoinstConfig::local_rules_location + "/" + file;
+	    if (!skip)
+	    {
+		if (!XML_cleanup(current_profile,  tmpdir + "/base_profile.xml"))
+                {
+		    y2error("Error reading XML file");
+                    error = true;
+                }
+		skip = true;
+	    }
+	    else if (!error )
+	    {
+		string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'package, addon'\"  --param with ";
+		MergeCommand = MergeCommand + "\"'" + current_profile + "'\"  ";
+		MergeCommand = MergeCommand + "--output " +  tmpdir + "/result.xml";
+		MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
+		MergeCommand = MergeCommand +   base_profile + " ";
+
+		map xsltret = (map)SCR::Execute(.target.bash_output, MergeCommand);
+		y2milestone("Merge result: %1", xsltret);
+		if (xsltret["exit"]:-1 != 0 || xsltret["stderr"]:"" != "")
+		{
+		    y2error("Merge Failed");
+		    StdErrLog(xsltret["stderr"]:"");
+		    ok =  false;
+		}
+
+		XML_cleanup(tmpdir + "/result.xml",  tmpdir + "/base_profile.xml");
+
+	    }
+            else
+            {
+                y2error ("Error while merging control files");
+            }
+	});
+
+        if (error )
+        {
+            return !error;
+        }
+
+	SCR::Execute(.target.bash, "cp " +  tmpdir + "/base_profile.xml " + result_profile );
+
+	y2milestone("Ok=%1", ok);
+	return ok;
+    }
+
+
+    /**
+     * Process Rules
+     * @param string result_profile
+     * @return boolean
+     */
+    global define boolean Process(  string result_profile  )
+    {
+
+	boolean ok = true;
+	string tmpdir = AutoinstConfig::tmpDir;
+	string prefinal = AutoinstConfig::local_rules_location + "/prefinal_autoinst.xml" ;
+	if (!Merge (  prefinal ) )
+        {
+	    return false;
+        }
+
+	tomerge = [];
+
+
+	// Now check if there any classes defined in theis pre final control file
+	if (! Profile::ReadXML( prefinal ))
+	{
+	    Popup::Error(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+	    return false;
+	}
+	y2milestone("Checking classes...");
+	if ( haskey(Profile::current, "classes") )
+	{
+	    y2milestone("User defined classes available, processing....");
+	    list<map> classes = Profile::current["classes"]:[];
+	    foreach(map class, classes,
+		    ``{
+		tomerge = add(tomerge,  "classes/" + class["class_name"]:"none" + "/" + class["configuration"]:"none");
+	    });
+
+	    y2milestone("New files to process: %1", tomerge);
+	    Behaviour = `multiple;
+	    boolean ret  = GetRules();
+	    if (ret)
+	    {
+		tomerge = prepend(tomerge, "prefinal_autoinst.xml");
+		ok = Merge ( result_profile );
+	    }
+	    else
+	    {
+		Report::Error(_("
+User-defined classes could not be retrieved.  Make sure all classes 
+are defined correctly and available for this system via the network
+or locally. The system cannot be installed with the original control 
+file without using classes.
+"));
+
+		ok = false;
+		SCR::Execute(.target.bash, "cp " + prefinal + " "  + result_profile );
+	    }
+	}
+	else
+	{
+	    SCR::Execute(.target.bash, "cp " + prefinal + " "  + result_profile );
+	}
+	y2milestone("returns=%1", ok );
+	return ok;
+
+    }
+
+
+    /**
+     * Create default rule in case no rules file is available
+     * This adds a list of file starting from full hex ip representation to
+     * only the first letter. Then default and finally mac address.
+     * @return void
+     */
+    global define void CreateDefault()
+    {
+	Behaviour = `one;
+	string tmp_hex_ip = hostid;
+	tomerge = add(tomerge, tmp_hex_ip );
+	while (size(tmp_hex_ip) != 1)
+	{
+	    tmp_hex_ip = substring(tmp_hex_ip, 0 , size ( tmp_hex_ip ) - 1 );
+	    tomerge = add(tomerge, tmp_hex_ip );
+	}
+	tomerge = add(tomerge, toupper(mac) );
+	tomerge = add(tomerge, tolower(mac) );
+	tomerge = add(tomerge, "default" );
+	y2milestone("Created default rules=%1", tomerge);
+	return;
+    }
+
+   /**
+    * Create default rule in case no rules file is available (Only one file which is given by the user)
+    * @param filename file name
+    * @return void
+    */
+    global define void CreateFile(string filename) 
+    {
+	tomerge = add (tomerge, filename);
+	y2milestone("Created default rules: %1", tomerge);
+	return;
+    }
+    /**
+     * Constructor
+     *
+     */
+    global define void AutoInstallRules () ``{
+	return;
+    }
+
+
+    /**
+      * Initialize
+      */
+    global define void Init () ``{
+
+	if (Stage::initial () || Mode::test ())
+	{
+	    ProbeRules();
+	}
+
+	return;
+    }
+
+
+}

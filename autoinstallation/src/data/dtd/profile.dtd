@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ENTITY % networking SYSTEM "networking.dtd">
+<!ENTITY % nis SYSTEM "nis.dtd">
+<!ENTITY % ldap_client SYSTEM "ldap_client.dtd">
+<!ENTITY % nfs SYSTEM "nfs.dtd">
+<!ENTITY % mail SYSTEM "mail.dtd">
+<!ENTITY % partitioning SYSTEM "partitioning.dtd">
+<!ENTITY % printer SYSTEM "printer.dtd">
+<!ENTITY % sound SYSTEM "sound.dtd">
+<!ENTITY % lvm SYSTEM "lvm.dtd">
+<!ENTITY % inetd SYSTEM "inetd.dtd">
+<!ENTITY % users SYSTEM "users.dtd">
+<!ENTITY % raid SYSTEM "raid.dtd">
+<!ENTITY % security SYSTEM "security.dtd">
+<!ENTITY % x11 SYSTEM "x11.dtd">
+<!ENTITY % fw SYSTEM "fw.dtd">
+<!ENTITY % runlevel SYSTEM "runlevels.dtd">
+<!ENTITY % reporting SYSTEM "reporting.dtd">
+<!ENTITY % bootloader SYSTEM "bootloader.dtd">
+<!ENTITY % general SYSTEM "general.dtd">
+<!ENTITY % scripts SYSTEM "scripts.dtd">
+<!ENTITY % files SYSTEM "files.dtd">
+<!ENTITY % software SYSTEM "software.dtd">
+<!ENTITY % ntpclient SYSTEM "ntpclient.dtd">
+<!ENTITY % samba SYSTEM "samba.dtd">
+<!ENTITY % online_update SYSTEM "online_update.dtd">
+<!ENTITY % sysconfig SYSTEM "sysconfig.dtd">
+
+%online_update;
+%x11;
+%fw;
+%security;
+%partitioning;
+%networking;
+%ldap_client;
+%nis;
+%nfs;
+%mail;
+%bootloader;
+%general;
+%reporting;
+%runlevel;
+%software;
+%scripts;
+%files;
+%lvm;
+%raid;
+%inetd;
+%users;
+%ntpclient;
+%samba;
+%printer;
+%sound;
+%sysconfig;
+
+<!ENTITY % optiontags
+"job-sheets|enable|index|option|ac97_clock|ac97_quirk|joystick|isapnp">
+<!ENTITY % usertags "encrypted|user_password| username|fullname|gid| grouplist| home| password_settings| shell| uid ">
+<!ENTITY % lvmtags "lvm_name|pesize|logical_volumes">
+<!ENTITY % grouptags "gid| group_password| groupname| userlist">
+
+
+
+<!-- This is to solve conflict between diffeent resources having same tag -->
+<!ELEMENT options (#PCDATA | %optiontags;)* > 
+<!ATTLIST options config:type CDATA #IMPLIED >
+        
+<!ELEMENT user (#PCDATA | %usertags;)* > 
+<!ELEMENT lvm_group (#PCDATA | %lvmtags;)* > 
+<!ELEMENT group (#PCDATA | %grouptags;)* >
+
+
+
+<!ENTITY % y2_all "files| firewall|  groups|inetd| ldap| mail|
+networking|   nfs| nfs_server|  nis| nisplus|  nis_server| ntp-client|
+printer| proxy| runlevel| samba-client| samba-server|scripts| security| sound|
+sysconfig| tftp-server | user_defaults|  users| x11 | online_update|bootloader| classes| general| lvm| partitioning|partitioning_advanced| raid| report| software">
+<!ELEMENT profile (%y2_all;)*>
+<!ATTLIST profile
+	xmlns CDATA #REQUIRED
+	xmlns:config CDATA #REQUIRED
+>
+
+
+<!ELEMENT class (class_name, configuration)>
+<!ELEMENT classes (class+)>
+<!ATTLIST classes config:type CDATA #FIXED 'list' >
+<!ELEMENT class_name (#PCDATA)>
+<!ELEMENT configuration (#PCDATA)>
+
+
+
+
+<!ELEMENT tftp-server (start_tftpd, tftp_directory)>
+<!ELEMENT start_tftpd (#PCDATA)>
+<!ATTLIST start_tftpd config:type CDATA #FIXED 'boolean' >
+<!ELEMENT tftp_directory (#PCDATA)>
+
+
+<!ELEMENT proxy (enabled, ftp_proxy, http_proxy, no_proxy, proxy_password,
+        proxy_user)>
+<!ELEMENT enabled (#PCDATA)>
+<!ATTLIST enabled config:type CDATA #FIXED 'boolean' >
+<!ELEMENT ftp_proxy (#PCDATA)>
+<!ELEMENT http_proxy (#PCDATA)>
+<!ELEMENT no_proxy (#PCDATA)>
+<!ELEMENT proxy_password (#PCDATA)>
+<!ELEMENT proxy_user (#PCDATA)>
+
+
+

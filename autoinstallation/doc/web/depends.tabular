@@ -1,0 +1,18 @@
+website: html/documentation.html html/ref.html html/docs.html html/faq.html html/mailinglists.html html/about.html html/index.html html/multiplesource.html html/you.html 
+
+html/index.html: index.xml
+html/documentation.html: documentation.xml
+html/ref.html: ref.xml
+html/docs.html: docs.xml
+html/faq.html: faq.xml
+html/mailinglists.html: mailinglists.xml
+html/about.html: about.xml
+html/multiplesource.html: multiplesource.xml
+html/you.html: you.xml
+
+distclean: clean
+	rm -f autolayout.xml depends.tabular
+
+clean:
+	rm -f html/documentation.html html/ref.html html/docs.html html/faq.html html/mailinglists.html html/about.html html/index.html html/multiplesource.html html/you.html 
+

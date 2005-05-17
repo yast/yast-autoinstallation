@@ -1,0 +1,242 @@
+/**
+ * File:	include/autoinstall/io.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	I/O
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "URL";
+    import "FTP";
+    import "Installation";
+    import "HTTP";
+    import "StorageDevices";
+    import "TFTP";
+
+    /**
+     * Basename
+     * @param string path
+     * @return string  basename
+     */
+    define string basename (string filePath)
+	``{
+	list pathComponents = splitstring(filePath, "/");
+	string ret = pathComponents[size(pathComponents) -1 ]: "";
+	return ( ret );
+    }
+
+
+    /**
+     * Get directory name
+     * @param string path
+     * @return  string dirname
+     */
+    define string dirname (string filePath)
+	``{
+	   list pathComponents = splitstring(filePath, "/");
+	   string last = pathComponents[size(pathComponents) -1]:"";
+	   string ret = substring(filePath, 0 , size(filePath) - size(last));
+	   return (ret);
+    }
+
+
+    /**
+     * Get control files from different sources
+     * @return boolean true on success
+     */
+    define boolean Get(string Scheme,
+			      string Host,
+			      string Path,
+			      string Localfile)
+	``{
+	boolean ok = false;
+	map res = $[];
+	map toks =  AutoinstConfig::urltok;
+	toks["scheme"] = Scheme;
+	toks["host"]   = Host;
+        if (regexpsub(Path, "(.*)//(.*)", "\\1\/\\2")!= nil)
+        {
+            Path = regexpsub(Path, "(.*)//(.*)", "\\1\/\\2");
+        }
+	toks["path"]   = Path;
+        string full_url = URL::Build(toks);
+
+        string tmp_dir = (string)WFM::Read(.local.tmpdir, []);
+        string mount_point = tmp_dir + "/tmp_mount";
+        WFM::Execute(.local.mkdir, mount_point );
+
+	if ( Scheme == "http" )
+	{
+	    res = HTTP::Get(full_url, Localfile);
+	    if (res["code"]:0 == 200)
+	    {
+		return (true);
+	    }
+	    else
+	    {
+		y2error("Can't find URL: %1", full_url);
+		return (false);
+	    }
+	}
+	if ( Scheme == "ftp" )
+	{
+	    res = FTP::Get(full_url, Localfile);
+	    if ( ( res["code"]:-1 >= 200 || res["code"]:-1 < 300 ) && SCR::Read(.target.size, Localfile) > 0 )
+	    {
+		return (true);
+	    }
+	    else
+	    {
+		y2error("Can't find URL: %1", full_url);
+		return (false);
+	    }
+	}
+	else if (Scheme == "file")
+	{
+	    string file = sformat("%1/%2", Installation::sourcedir, Path);
+	    if (SCR::Read(.target.size, file) > 0 )
+	    {
+		string cpcmd = sformat("cp %1 %2", file, Localfile);
+		y2milestone("Copy profile: %1", cpcmd);
+		SCR::Execute(.target.bash, cpcmd);
+	    }
+	    else
+	    {
+		string cpcmd = sformat("cp %1 %2", Path , Localfile);
+		y2milestone("Copy profile: %1", cpcmd);
+		SCR::Execute(.target.bash, cpcmd);
+	    }
+
+	    if (SCR::Read(.target.size, Localfile) > 0 )
+	    {
+		ok = true;
+	    }
+	    else
+	    {
+		y2milestone("Trying to find file on installation media: %1", Installation::boot ());
+		if (Installation::boot () == "cd")
+		{
+		    string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
+		    if (!(boolean)WFM::Execute(.local.mount, ["/dev/" + cdrom,
+                                mount_point, Installation::mountlog] ))
+		    {
+			y2warning("Mount failed");
+		    }
+		    else
+		    {
+			string cpcmd = sformat("cp " + mount_point + "/%1 %2", Path , Localfile);
+			y2milestone("Copy profile: %1", cpcmd);
+			SCR::Execute(.target.bash, cpcmd);
+		    }
+		    WFM::Execute(.local.umount, mount_point);
+		    if (SCR::Read(.target.size, Localfile) > 0 )
+		    {
+			return (true);
+		    }
+		}
+
+		ok = false;
+	    }
+	}
+	else if (Scheme == "nfs")  // NFS
+	{
+	    if (Installation::boot () != "nfs")
+	    {
+		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
+	    }
+
+	    if (!(boolean)WFM::Execute(.local.mount,
+                        [ Host + ":" + dirname(Path),
+                        mount_point,
+                        Installation::mountlog ]))
+	    {
+		y2warning("Mount failed");
+		return (false);
+	    }
+
+            string copyCmd = "/bin/cp " + mount_point + "/" + basename(Path) +
+                " " + Localfile;
+            y2milestone("Copy Command: %1", copyCmd);
+	    if (WFM::Execute (.local.bash, copyCmd ) == 0)
+	    {
+		ok = true;
+	    }
+	    else
+	    {
+		y2error("remote file %1 can't be retrieved",  mount_point + "/"
+                        + basename(Path));
+
+	    }
+
+	    WFM::Execute(.local.umount, mount_point);
+
+	}
+	else if (Scheme == "floppy")
+	{
+	    if (StorageDevices::FloppyReady())
+	    {
+		WFM::Execute(.local.mount, [StorageDevices::FloppyDevice, mount_point]);
+
+		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + "/" + Path + " " + Localfile) != 0)
+		{
+		    y2error("file  %1 can't be retrieved", mount_point + "/" + Path );
+		}
+		else
+		{
+		    ok = true;
+		}
+		SCR::Execute(.target.umount, mount_point);
+	    }
+	}
+	else if (Scheme == "device") // Device
+	{
+	    if ( Host != "" && Path != "")
+	    {
+		WFM::Execute(.local.mount, [sformat("/dev/%1", Host) ,
+                        mount_point]);
+
+		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  Path + " " + Localfile) != 0 )
+		{
+		    y2error("file %1 can't be found",  mount_point +
+                            Path);
+		}
+		else
+		{
+		    ok = true;
+		}
+		WFM::Execute(.local.umount, mount_point);
+	    }
+	}
+	else if (Scheme == "tftp") // Device
+	{
+	    if (TFTP::Get( Host,  Path, Localfile ))
+	    {
+		ok = true;
+	    }
+	    else
+	    {
+		y2error("file %1 can't be found", Path );
+	    }
+	}
+	else
+	{
+	    y2error("Protocol not supported");
+	    ok = false;
+	}
+	return ( ok );
+    }
+
+
+    /**
+     * Get a file froma  given URL
+     */
+    boolean GetURL(string url, string target)
+    {
+        AutoinstConfig::urltok=URL::Parse(url);
+        map toks = AutoinstConfig::urltok;
+        return Get(toks["scheme"]:"", toks["host"]:"", toks["path"]:"", target);
+    }
+
+}

@@ -1,0 +1,161 @@
+/**
+ * File:	modules/AutoinstFile.ycp
+ * Package:	AutoYaST
+ * Authors:	Anas Nashif (nashif@suse.de)
+ * Summary:	Handle complete configuration file dumps
+ *
+ * $Id$
+ */
+{
+    module "AutoinstFile";
+    textdomain "autoinst";
+
+    import "AutoinstConfig";
+    import "Summary";
+
+
+    /* default value of settings modified */
+    global boolean modified = false;
+
+
+    /**
+     * Function sets internal variable, which indicates, that any
+     * settings were modified, to "true"
+     */
+    global define void SetModified () {
+        y2milestone("SetModified");
+        modified = true;
+    }
+
+    /**
+     * Functions which returns if the settings were modified
+     * @return boolean  settings were modified
+     */
+    global define boolean GetModified () {
+        return modified;
+    }
+
+    global list<map> Files = [];
+
+
+    /**
+     * Settings Summary
+     */
+    global define string Summary() ``{
+
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Configured Files:"));
+	if (size( Files ) > 0)
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(map file, Files, ``{
+		summary = Summary::AddListItem(summary, file["file_path"]:"" );
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	else
+	{
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
+	return summary;
+    }
+
+
+    /**
+     * Import Settings
+     */
+    global define boolean Import (list<map> settings) ``{
+	Files = settings;
+	return true;
+    }
+
+    /**
+     * Export Settings
+     */
+    global define list<map> Export () ``{
+	return Files;
+    }
+
+    /**
+     * Write Settings
+     */
+    global define boolean Write ()
+    {
+	import "AutoInstall";
+	y2milestone("Writing Files to the system");
+	if ( size( Files )==0 )
+	{
+	    return true;;
+	}
+
+	integer counter = 0;
+	boolean success = false;
+
+	foreach(map file, Files,
+		``{
+	    if (file["file_contents"]:"" != "")
+	    {
+		string alternate_location = sformat("%1/%2", AutoinstConfig::files_dir, counter);
+		string alter_file = sformat("file_%1",  counter);
+		y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );
+		list t = splitstring( file["file_path"]:alternate_location, "/");
+		integer pos = size(t) - 1;
+
+		// SCR::Write (.target.string, AutoInstall::var_dir + "/files" + t[pos]:alter_file, file["file_contents"]:"");
+		SCR::Write (.target.string,  file["file_path"]:alternate_location , file["file_contents"]:"");
+
+		if (file["file_permissions"]:"" != "")
+		{
+		    SCR::Execute (.target.bash, sformat("chmod %1 %2", file["file_permissions"]:"",  file["file_path"]:alternate_location ));
+		}
+		if (file["file_owner"]:"" != "")
+		{
+		    SCR::Execute (.target.bash, sformat("chown %1 %2", file["file_owner"]:"",  file["file_path"]:alternate_location ));
+		}
+
+		map script = file["file_script"]:$[];
+		if (script != $[])
+		{
+		    string current_logdir = AutoinstConfig::logs_dir;
+		    list name_tok = splitstring(file["file_path"]:alternate_location, "/");
+		    string scriptName = "";
+		    if (size(name_tok)>0)
+		    {
+			string name = name_tok[size(name_tok) - 1 ]:"";
+			scriptName = "script_" + name;
+		    }
+		    string scriptPath = sformat("%1/%2", AutoinstConfig::scripts_dir, scriptName);
+		    y2milestone("Writing (file)  script into %1", scriptPath);
+		    SCR::Write(.target.string,  scriptPath, script["source"]:"echo Empty script!");
+		    // string message =  sformat(_("Executing user supplied script: %1"), scriptName);
+
+		    string scriptInterpreter = script["interpreter"]:"shell";
+		    string executionString = "";
+		    if (scriptInterpreter == "shell")
+		    {
+			executionString = sformat("/bin/sh -x %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+			SCR::Execute (.target.bash, executionString);
+		    }
+		    else if (scriptInterpreter == "perl")
+		    {
+			executionString = sformat("/usr/bin/perl %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+			SCR::Execute (.target.bash,executionString);
+		    }
+		    else if (scriptInterpreter == "python")
+		    {
+			executionString = sformat("/usr/bin/python %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
+			SCR::Execute (.target.bash,executionString);
+		    }
+		    else
+		    {
+			y2error("Unknown interpreter: %1", scriptInterpreter);
+		    }
+		    y2milestone("Script Execution command: %1", executionString );
+		}
+		success = ( SCR::Execute (.target.bash, sformat("cp %1 %2", file["file_path"]:alternate_location, AutoinstConfig::files_dir)) == 0 );
+	    }
+	    counter = counter + 1;
+	});
+	return success;;
+    }
+}

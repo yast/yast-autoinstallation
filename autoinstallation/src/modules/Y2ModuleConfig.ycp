@@ -1,0 +1,334 @@
+/**
+ * File:	modules/Y2ModuleConfig.ycp
+ * Package:	Auto-installation
+ * Summary:	Read data from desktop files
+ * Author:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    module "Y2ModuleConfig";
+    textdomain "autoinst";
+
+    import "Mode";
+    import "Stage";
+    import "Profile";
+    import "Installation";
+    import "Desktop";
+    import "Wizard";
+    import "Directory";
+
+    // include "autoinstall/io.ycp";
+
+    global map<string, map> GroupMap = $[];
+    global map<string, map> ModuleMap = $[];
+
+    /**
+     * MenuTreeData
+     * @return: list of modules
+     */
+    global list<map> MenuTreeData =[];
+
+
+
+    /**
+     * Read module configuration files
+     * @return: map
+     */
+    list ReadMenuEntries(list<string> modes)
+    {
+	Desktop::AgentPath = .autoyast2.desktop;
+
+	list<string> Values= [ "Name",
+			       "GenericName",
+			       "X-SuSE-YaST-AutoInst",
+			       "X-SuSE-YaST-AutoInstResource",
+			       "X-SuSE-YaST-AutoInstClient",
+			       "X-SuSE-YaST-Group",
+			       "X-SuSE-YaST-AutoInstMerge",
+			       "X-SuSE-YaST-AutoInstMergeTypes",
+			       "X-SuSE-YaST-AutoInstDataType",
+			       "X-SuSE-YaST-AutoInstClonable",
+			       "X-SuSE-YaST-AutoInstRequires"
+			       ];
+	Desktop::Read(Values);
+	map<string,map> configurations = Desktop::Modules;
+
+	//y2debug("%1", configurations );
+	map groups = Desktop::Groups;
+
+	map confs = $[];
+
+	foreach (string name , map values, configurations, ``{
+	    if (contains(modes, values["X-SuSE-YaST-AutoInst"]:""))
+	    {
+		string module_auto = "";
+		/* determine name of client, if not default name */
+		if (!haskey(values,"X-SuSE-YaST-AutoInstClient") || values["X-SuSE-YaST-AutoInstClient"]:"" == "")
+		{
+		    string client =  name + "_auto";
+                    y2debug("client: %1", client);
+		    values["X-SuSE-YaST-AutoInstClient"] = client;
+		}
+		y2debug("name: %1 values: %2", name, values["X-SuSE-YaST-AutoInstClient"]:"" );
+		confs[name]=values;
+	    }
+	});
+	return [confs, groups];
+    }
+
+
+    /**
+     * Sort tree groups
+     * @param map<string, map> group map
+     * @param list<string> group list
+     * @return list
+     */
+    define list<string> SortGroups (map<string, map> GroupMap, list<string> GroupList)
+	``{
+        return
+	    sort (string x, string y, GroupList,
+		  ``{
+		string first = GroupMap[x, "SortKey"]:"";
+		string second = GroupMap[y, "SortKey"]:"";
+		return (first < second);
+	    });
+    }
+
+    /**
+     * Create group tree
+     * @param map<string, map> groups
+     * @return void
+     */
+    define void CreateGroupTree (map<string, map> Groups)
+	``{
+	//y2debug("Groups: %1", Groups);
+
+        list<string> grouplist = [];
+        grouplist = SortGroups (Groups, maplist (string rawname, map group, Groups, ``(rawname)));
+
+        foreach (string name, grouplist, ``{
+	    textdomain "base";
+	    string title = Desktop::Translate(Groups[name, "Name"]:name);
+	    textdomain "autoinst";
+
+	    map MeunTreeEntry = $[ "entry":name, "title":title ];
+	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
+        });
+
+	//y2debug("data: %1", MenuTreeData);
+	return;
+    }
+
+    /**
+     * Construct Menu Widget
+     * @return list
+     */
+    define list ConstructMenu() ``{
+
+	CreateGroupTree(GroupMap);
+
+	foreach(string m, map v, ModuleMap, ``{
+	    string name = v["Name"]:"";
+	    map menu_entry = $["entry":m, "title":name];
+	    list menu_list = [];
+	    if (haskey(v,"X-SuSE-YaST-Group"))
+	    {
+		string parent = v["X-SuSE-YaST-Group"]:"";
+		MenuTreeData = maplist (map k, MenuTreeData, ``{
+		    if (k["entry"]:"" == parent)
+                    {
+			list children = k["children"]:[];
+			children = add(children,menu_entry);
+			k["children"] = children;
+			return(k);
+		    }
+		    else {
+			return (k);
+		    }
+		});
+	    }
+	    else
+	    {
+		MenuTreeData = add(MenuTreeData,menu_entry);
+	    }
+	});
+	// y2debug("MenuTreeData: %1", MenuTreeData );
+    }
+
+
+    /**
+     * Y2ModuleConfig ()
+     * Constructor
+     */
+    global define void Y2ModuleConfig () ``{
+
+	/* Read module configuration data (desktop files) */
+	if (!Stage::initial ())
+	{
+            list MenuEntries = [];
+            if (Mode::autoinst())
+            {
+                MenuEntries = ReadMenuEntries(["all", "write"]);
+            } else {
+                MenuEntries = ReadMenuEntries(["all", "configure"]);
+            }
+
+	    ModuleMap = MenuEntries[0]:$[];
+
+	    Profile::ModuleMap = ModuleMap;
+
+	    GroupMap = MenuEntries[1]:$[];
+
+	}
+
+	if (Mode::config ())
+	{
+	    // construct the tree menu
+	    ConstructMenu();
+	}
+    }
+
+
+    /**
+     * Get resource name
+     * @param string resource
+     * @return string resource as defined in desktop file
+     */
+    global define string getResource( string default_resource)
+    {
+	string ret = ModuleMap[default_resource, "X-SuSE-YaST-AutoInstResource"]:"";
+	if (ret == "")
+	    return default_resource;
+	else
+	    return ret;
+    }
+
+    /**
+     * Get resource data
+     * @param resourceMap Resource Map
+     * @param resrouce the resource
+     * @return any Resource Data
+     */
+    global define any getResourceData( map resourceMap, string resource)
+    {
+	string tmp_resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
+	if (tmp_resource != "")
+	    resource = tmp_resource;
+
+	string data_type = resourceMap["X-SuSE-YaST-AutoInstDataType"]:"map";
+	string tomerge = resourceMap["X-SuSE-YaST-AutoInstMerge"]:"";
+	string tomergetypes = resourceMap["X-SuSE-YaST-AutoInstMergeTypes"]:"";
+
+	map mergedResource = $[];
+	if (size(tomerge) > 0 )
+	{
+	    list<string> MergeTypes = splitstring(tomergetypes, ",");
+	    list<string> Merge = splitstring(tomerge, ",");
+	    integer i = 0;
+	    foreach ( string res, Merge, ``{
+		if ( MergeTypes[i]:"map" == "map")
+		    mergedResource[res] = eval(Profile::current[res]:$[]);
+		else
+		    mergedResource[res] = eval(Profile::current[res]:[]);
+		i = i + 1;
+	    });
+            if (mergedResource==$[])
+                return nil;
+            else
+	        return mergedResource;
+	}
+	else
+	{
+	    if (data_type == "map")
+	    {
+                if (Profile::current[resource]:$[] == $[])
+                    return nil;
+                else
+		    return (eval(Profile::current[resource]:$[]));
+	    }
+	    else
+	    {
+                if (Profile::current[resource]:[] == [] )
+                    return nil;
+                else
+		    return (eval(Profile::current[resource]:[]));
+	    }
+	}
+
+    }
+
+    /**
+     * Simple dependency resolving
+     * @return list<map>
+     */
+    global define list<map> Deps ()
+    {
+        map<string, any> deps = $[];
+        list<map> m = [];
+        list done = [];
+        foreach(string p, map d, ModuleMap,
+                ``{
+                if (haskey(d, "X-SuSE-YaST-AutoInstRequires") && d["X-SuSE-YaST-AutoInstRequires"]:"" != "")
+                {
+                list<string> req = splitstring(d["X-SuSE-YaST-AutoInstRequires"]:"", ", ");
+                req = filter(string r, req, ``(r!=""));
+                deps[p] = req;
+                }
+
+                });
+        y2milestone("New dependencies: %1", deps);
+
+        foreach(string p, map d, ModuleMap,
+                ``{
+                y2debug("done: %1", done);
+                y2debug("Working on : %1", p );
+                if (!contains(done, p))
+                {
+                if (haskey(deps, p))
+                {
+                foreach(string r, deps[p]:[], ``{
+                    if (!contains(done, r)) {
+                    m = add(m, $["res":r, "data":ModuleMap[r]:$[]]);
+                    done = add(done, r);
+                    }
+                    });
+                m = add(m, $["res":p, "data":d]);
+                done = add(done, p);
+                }
+                else
+                {
+                m = add(m, $["res":p, "data":d]);
+                done = add(done, p);
+                }
+                }
+                });
+
+        return m;
+    }
+
+    /**
+     * Set Desktop Icon
+     * @param file Desktop File 
+     * @return boolean
+     */
+    global boolean SetDesktopIcon( string file )
+    {
+        string filename = sformat("%1/%2.desktop", Directory::desktopdir, file);
+        if (SCR::Read(.target.size, filename) < 0 )
+            filename = sformat("%1/%2.desktop",
+                    "/usr/share/autoinstall/modules", file);
+        path filepath = .autoyast2.desktop.v + filename + ."Desktop Entry".Icon;
+        string icon = (string) SCR::Read(filepath);
+        y2debug("icon: %1 (%2)", icon, filepath);
+
+        if (icon == nil)
+            return false;
+
+        Wizard::SetTitleIcon(icon);
+        return true;
+    }
+
+
+}

@@ -1,0 +1,272 @@
+/**
+ * File:	include/autoinstall/general_dialogs.ycp
+ * Package:	Auto-installation
+ * Summary:	General Settings
+ * Author:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "GetInstArgs";
+    /**
+     * Language
+     * @return symbol
+     */
+    define symbol LanguageDialog() {
+	import "Language";
+	string language = AutoinstGeneral::language;
+
+	boolean use_utf8 = true;		// utf8 is default
+
+        map ui = UI::GetDisplayInfo();
+	if (!ui["HasFullUtf8Support"]:true)
+	{
+	    use_utf8 = false;		// fallback to ascii
+	}
+
+	if (language=="")
+	{
+	    language = Language::language;
+	}
+	map<string, list> languageselsort = mapmap(string lang_code, list lang_info, Language::Selection(),
+				     ``{
+					string a = lang_info[1]:"xxx";
+					return(
+					$[ a: [lang_info[use_utf8?0:1]:"", lang_code] ]);
+					});
+
+	term languagesel =
+	    `SelectionBox(`id(`language), "",
+			  maplist (string name, list codelist, languageselsort,
+				   ``(
+				      `item(`id(codelist[1]:""), codelist[0]:"",
+					    (language == codelist[1]:"")
+					    )
+				      )
+				   )
+			  );
+
+
+
+	term contents = `VBox(
+
+			      `HBox(
+				    `HWeight( 25, `HStretch() ),
+				    `HWeight( 50,
+					      `VBox (
+						     `Left( `Label ( _("Select your language:") ) ),
+						     languagesel
+						     )
+					      ),
+				    `HWeight( 25, `HStretch() )
+				    ),
+			      `VSpacing(2)
+			      );
+	string help_text =  _("<p>
+Choose the new <b>language</b> for your &product; system.
+</p>\n");
+
+
+	Wizard::SetContents( _("Language selection"), contents, help_text, true, true);
+	// Get the user input.
+	//
+
+	Wizard::HideAbortButton();
+	symbol ret = `none;
+
+	UI::SetFocus(`id(`language));
+
+	repeat
+	    {
+		ret = (symbol)Wizard::UserInput();
+		if ( ret == `next || ret == `language )
+		{
+		    AutoinstGeneral::language = (string) UI::QueryWidget(`id(`language), `CurrentItem);
+		}
+	    }
+	until ( ret == `next || ret == `back || ret == `abort );
+	return ret;
+    }
+
+    /**
+     * Keyboard
+     * @return symbol
+     */
+    define symbol KeyboardDialog() ``{
+
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	symbol result = (symbol)WFM::CallFunction( "inst_keyboard", [ GetInstArgs::Buttons(true,true) ] );
+	return result;
+    }
+
+
+    /**
+     * Timezone
+     * @return symbol
+     */
+    define symbol TimezoneDialog() ``{
+	import "Timezone";
+
+	string tz = AutoinstGeneral::Clock["timezone"]:"";
+	if ( tz == "")
+	{
+	    import "Misc";
+	    tz = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, "" );
+
+	    if ( tz == "")
+	    {
+		tz = Timezone::GetTimezoneForLanguage(AutoinstGeneral::language, "en_US");
+	    }
+	    AutoinstGeneral::Clock["timezone"]  = tz;
+	}
+
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	any result = WFM::CallFunction( "inst_timezone", [ GetInstArgs::Buttons(true,true) ]);
+	return (symbol)result;
+    }
+
+
+
+    /**
+     * Mouse
+     * @return symbol
+     */
+    define symbol MouseDialog() ``{
+
+	// create the wizard dialog
+	//
+	Wizard::CreateDialog();
+	any result = WFM::CallFunction( "inst_mouse", [ GetInstArgs::Buttons(true,true) ] );
+	return (symbol)result;
+    }
+
+    /**
+     * Main dialog
+     * @return symbol
+     */
+    define  symbol ModeDialog() ``{
+
+
+	map mode		= AutoinstGeneral::mode;
+	boolean forceboot	= mode["forceboot"]:false;
+	boolean confirm	= mode["confirm"]:true;
+
+	term contents =
+	    `HVSquash(
+		 `VBox(
+		       `Left(`CheckBox(`id(`confirm), _("Con&firm installation?"), confirm)),
+		       `Left(`CheckBox(`id(`forceboot), _("Start System without Reboot"), forceboot))
+
+		       )
+		 );
+
+	string help_text = _("<P>
+The options in this dialog control the behavior of the AutoYaST during
+automatic installation.
+</P>
+");
+	help_text = help_text + _("<P>
+The installation confirmation option is selected by default
+to avoid unwanted installation. It stops the system
+during installation and shows a summary of requested operations in the
+usual proposal screen.  Uncheck this option to install automatically without interruption.
+</P>
+");
+	help_text = help_text + _("<P>
+By default, the system reboots after the initial phase of
+installation is completed. You can prevent the system from booting and continue
+directly into the installed system. This is not recommended and should be used
+only for debugging purposes.
+</P>
+");
+
+	Wizard::SetContents(_("Other Options"),
+			    contents, help_text, true , true);
+
+	Wizard::HideAbortButton();
+	Wizard::SetNextButton(`next, Label::FinishButton() );
+
+	any ret = nil;
+	repeat {
+	    ret = UI::UserInput();
+	    if (ret == `next)
+	    {
+
+		map m = $[];
+		confirm = (boolean)UI::QueryWidget(`id(`confirm), `Value);
+		forceboot = (boolean) UI::QueryWidget(`id(`forceboot), `Value);
+
+		mode["forceboot"] = forceboot;
+		mode["confirm"] = confirm;
+		AutoinstGeneral::mode = mode;
+	    }
+	} until (ret == `next || ret == `back);
+	return (symbol)ret;
+    }
+
+
+
+    /**
+     * Dialog for General Settings
+     * @return symbol
+     */
+    define symbol generalSequence ()
+    {
+	map dialogs = $[
+			"language"	: ``(LanguageDialog()),
+			"keyboard"	: ``(KeyboardDialog()),
+			"timezone"	: ``(TimezoneDialog()),
+			"mouse"		: ``(MouseDialog()),
+			"mode"		: ``(ModeDialog())
+	];
+
+	map sequence = $[
+			 "ws_start"	: "language",
+			 "language"	: $[
+					    `next	: "keyboard",
+					    `abort	: `abort
+			 ],
+			 "keyboard"	: $[
+					    `next	: "timezone",
+					    `abort	: `abort
+			 ],
+			 "timezone"	: $[
+					    `next	: "mouse",
+					    `abort	: `abort
+			 ],
+			 "mouse"	: $[
+					    `next	: "mode",
+					    `abort	: `abort
+			 ],
+			 "mode"	:         $[
+					    `next	: `finish
+			                   ]
+	                ];
+	// Translators: dialog caption
+	string caption = _("General Settings");
+	term contents = `Label (_("Initializing ..."));
+
+	Wizard::CreateDialog ();
+	Wizard::SetContents ( caption,
+			      contents,
+			      "",
+			      true,
+			      true);
+
+
+	any ret = Sequencer::Run(dialogs, sequence);
+
+	Wizard::CloseDialog ();
+	y2milestone(" generalSequence returns: %1", ret );
+	return (symbol)ret;
+
+    }
+
+
+
+}

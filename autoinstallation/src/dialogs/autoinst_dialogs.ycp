@@ -1,0 +1,191 @@
+/**
+ * File:	include/autoinstall/autoinst_dialogs.ycp
+ * Package:	Auto-installation
+ * Summary:	Define Profile file location
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    textdomain "autoinst";
+    import "Label";
+    import "Storage";
+
+    /**
+      * Shows a dialog when 'control file' can't be found
+      * @param original Original value 
+      * @return string new value
+      */
+    define string ProfileSourceDialog (string original)
+    {
+            string helptext = _("<p>
+A profile for this machine could not be found or retrieved.
+Check that you entered the correct location
+on the command line and try again. Because of this error, you
+can only enter a URL to a profile and not to a directory. If you
+are using rules or host name-based control files, restart the
+installation process and make sure the control files are accessible.</p>
+");
+            string title = _("System Profile Location");
+
+            UI::OpenDialog(`opt( `decorated ),
+                    `HBox(
+                        `HWeight(50, `RichText( helptext )),
+                        `HStretch(),
+                        `HSpacing(1),
+                        `HWeight(50,
+                            `VBox(
+                                `Heading( title),
+                                `VSpacing(1),
+                                `VStretch(),
+                                `Left(`TextEntry(`id(`uri), _("&Profile Location:"), original )),
+                                `VSpacing(1),
+                                `VStretch(),
+                                `HBox(
+                                    `PushButton(`id(`retry), `opt(`default),  Label::RetryButton()   ),
+                                    `PushButton(`id(`abort),  Label::AbortButton() )
+                                    )
+                                )
+                            )
+                        )
+                    );
+
+            string uri = "";
+            while (true) {
+                symbol ret = (symbol)UI::UserInput();
+
+                if (ret == `abort && Popup::ConfirmAbort (`painless))
+                {
+                    break;
+                }
+                else if (ret == `retry)
+                {
+                    uri = (string)UI::QueryWidget(`id(`uri), `Value );
+                    if (uri == "")
+                        continue;
+                    else
+                        break;
+                }
+            }
+
+            UI::CloseDialog();
+            return uri;
+        }
+
+
+
+    /**
+     * Disk selection dialog
+     * @return string device
+     */
+    define string DiskSelectionDialog()
+    {
+        y2milestone("Selecting disk manually....");
+        map<string, map> tm = Storage::GetTargetMap();
+        term contents = `Dummy();
+
+        if( size(tm) > 0)
+        {
+            term buttonbox = `VBox();
+
+            integer i = 0;
+            foreach( string tname, map tdata, tm,
+                    ``{
+                    if( Storage::IsRealDisk( tname, tdata ))
+                    {
+                    string tlinename = tdata["name"]:"?";
+                    string tline = "&" + (i+1) + ":    " + tlinename;
+                    boolean sel = Storage::GetPartDisk()==tname &&
+                    Storage::GetPartMode()!="CUSTOM";
+                    buttonbox = add( buttonbox,
+                        `Left(`RadioButton(`id(tname), tline, sel )));
+                    i = i + 1;
+                    }
+                    });
+
+            buttonbox = add(buttonbox, `VSpacing(0.8) );
+
+
+            // This dialog selects the target disk for the installation.
+            // Below this label, all targets are listed that can be used as
+            // installation target
+
+            // heading text
+            contents = `Frame( _("Choose a hard disk"),
+                    `RadioButtonGroup(`id(`options),
+                        `VBox( `VSpacing(0.4),
+                            `HSquash(buttonbox),
+                            `VSpacing(0.4)
+                            )
+                        )
+                    );
+        }
+        else
+        {
+
+            contents = `Label (_("No disks found."));
+        }
+
+        // There are several hard disks found. Linux is completely installed on
+        // one hard disk - this selection is done here
+        // "Preparing Hard Disk - Step 1" is the description of the dialog what to
+        // do while the following locale is the help description
+        // help part 1 of 1
+        string help_text = _("<p>
+All hard disks automatically detected on your system
+are shown here. Select the hard disk on which to install &product;.
+</p>");
+        term buttons = `HBox(
+                `PushButton(`id(`ok), `opt(`default), Label::OKButton() ),
+                `PushButton(`id(`abort), Label::AbortButton() )
+                );
+
+
+
+        term ask_device_dialog = `HBox(
+                `VSpacing( 15 ),       // force dialog height
+                `VBox(
+                    `HSpacing( 30 ), // force help text width
+                    `RichText( help_text )
+                    ),
+                `HSpacing( 3 ),
+                `VBox(
+                    `VSpacing( 1 ),
+                    `Heading(_("Hard Disk Selection") ),
+                    contents,
+                    `VStretch(),
+                    buttons
+
+                    ),
+                `HSpacing( 3 )
+                );
+
+        UI::OpenDialog(`opt(`decorated), ask_device_dialog);
+
+        any ret = nil;
+        string option = "";
+
+        repeat
+        {
+            ret = UI::UserInput();
+            y2milestone("ret=%1", ret);
+            if( ret == `ok )
+            {
+                option = (string) UI::QueryWidget(`id(`options), `CurrentButton);
+                y2milestone( "selected disk: %1", option );
+                if( option == nil )
+                {
+                    // there is a selection from that one option has to be
+                    // chosen - at the moment no option is chosen
+                    Popup::Message(_("Select one of the options to continue."));
+                    ret = nil;
+                }
+            }
+        } until ( ret == `ok || ret == `abort );
+
+        UI::CloseDialog();
+        return option;
+    }
+// EOF
+}

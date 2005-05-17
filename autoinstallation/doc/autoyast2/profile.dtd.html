@@ -1,0 +1,330 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;      The XML Document Type Definition (DTD)
+    </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="The Control File"
+HREF="profile.html"><LINK
+REL="PREVIOUS"
+TITLE="
+      Structure
+    "
+HREF="profile.structure.html"><LINK
+REL="NEXT"
+TITLE="Creating A Control File"
+HREF="createprofile.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="profile.structure.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 2. The Control File</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="createprofile.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="Profile.DTD"
+>2.4. The XML Document Type Definition (<ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>)</A
+></H1
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN180"
+>2.4.1. Introduction</A
+></H2
+><P
+>&#13;	
+	The purpose of a <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+> is to define the legal building blocks of an XML
+	document. It defines the document structure with a list of legal
+	elements. A <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+> can be declared inline in the XML document, or as an
+	external reference.
+      </P
+><P
+>&#13;	XML provides an application independent way of sharing data. With a
+	<ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>, the application can use a standard <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+> to verify that data that
+	the user supplies is valid. A "Valid" XML document is a "Well Formed"
+	XML document which conforms to the rules of a Document Type Definition
+	(<ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>).
+      </P
+><P
+>&#13;	In AutoYaST, a <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+> should is available to allow users to validate the
+	control files before the installation process is initiated. The <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>
+	can be also used with XML editors while editing the control file to
+	avoid later errors.
+      </P
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN192"
+>2.4.2. Example <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+></A
+></H2
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	    A <I
+CLASS="emphasis"
+>drive</I
+> resource containing a
+	    <I
+CLASS="emphasis"
+> device</I
+> property and a <I
+CLASS="emphasis"
+>partitions</I
+> property represented as a nested resource.
+	  </P
+></LI
+><LI
+><P
+>&#13;	    A <I
+CLASS="emphasis"
+>partitions</I
+> resource containing multiple instances of the <I
+CLASS="emphasis"
+>partition</I
+>
+	    property represented as a nested resource. 
+	  </P
+></LI
+><LI
+><P
+>&#13;	    A <I
+CLASS="emphasis"
+>partition</I
+> resource containing  a
+	    <I
+CLASS="emphasis"
+>size</I
+> property and a <I
+CLASS="emphasis"
+>mount</I
+> property. 
+	  </P
+></LI
+></UL
+><P
+>&#13;	Below is the XML for an example node view profile for the above tree which
+	includes a <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+> which validates it. 
+      </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN212"
+></A
+><P
+><B
+>Example 2-5. 
+	  Example <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>
+	</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;?xml version="1.0"?&#62; 
+&#60;!DOCTYPE profile [ 
+&#60;!ELEMENT profile (install)&#62;
+&#60;!ELEMENT install (partitioning)&#62; 
+&#60;!ELEMENT partitioning (drive+)&#62; 
+&#60;!ELEMENT drive (device,partitions)&#62; 
+&#60;!ELEMENT device (#PCDATA)&#62; 
+&#60;!ELEMENT partitions (partition*)&#62; 
+&#60;!ELEMENT partition (size,mount)&#62; 
+&#60;!ELEMENT size (#PCDATA)&#62; 
+&#60;!ELEMENT mount (#PCDATA)&#62;
+]&#62; 
+&#60;profile&#62; 
+.....
+  &#60;install&#62;
+    &#60;partitioning config:type="list"&#62;
+      &#60;drive&#62; 
+        &#60;device&#62;
+           /dev/hda
+        &#60;/device&#62; 
+        &#60;partitions&#62; 
+          &#60;partition&#62; 
+            &#60;size&#62;1000mb&#60;/size&#62; 
+            &#60;mount&#62;/&#60;/mount&#62; 
+          &#60;/partition&#62; 
+          &#60;partition&#62; 
+            &#60;size&#62;250mb&#60;/size&#62; 
+            &#60;mount&#62;/tmp&#60;/mount&#62; 
+          &#60;/partition&#62; 
+        &#60;/partitions&#62;
+      &#60;/drive&#62; 
+    &#60;/partitioning&#62;
+  &#60;/install&#62;
+.....
+&#60;/profile&#62; 
+
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="profile.structure.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="createprofile.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Structure</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="profile.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Creating A Control File</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

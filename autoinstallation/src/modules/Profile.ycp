@@ -1,0 +1,493 @@
+/**
+ * File:	modules/Profile.ycp
+ * Module:	Auto-Installation
+ * Summary:	Profile handling
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    module "Profile";
+    textdomain "autoinst";
+
+    import "Stage";
+    import "Mode";
+    import "AutoinstConfig";
+    import "XML";
+    import "Popup";
+    import "ProductControl";
+
+    include "autoinstall/xml.ycp";
+
+
+    // The Complete current Profile
+    global map<string,any> current = $[];
+
+    // defined in Y2ModuleConfig
+    global map<string, map> ModuleMap = $[];
+
+
+    global string Version = "";
+
+    string Description = "";
+
+    global boolean changed = false;
+
+    global boolean prepare = true;
+
+    /**
+     * Constructor
+     * @return void
+     */
+    global define void Profile ()
+    {
+	//
+	// setup profile XML parameters for writing
+	//
+	profileSetup();
+	if (Stage::initial ())
+	{
+	    SCR::Execute(.target.mkdir, AutoinstConfig::profile_dir);
+	}
+	return;
+    }
+
+
+    /**
+     * Detect Version
+     * @return string
+     */
+    define string DetectVersion() {
+	return "";
+    }
+
+    /**
+     * Read Profile properties and Version
+     * @param map Profile Properties
+     * @return void
+     */
+    global define void ReadProperties (map properties) {
+	Version = properties["version"]:"";
+	Description = properties["description"]:"";
+
+	if (Version != "3.0" || Version == "")
+	{
+	    Version = DetectVersion();
+	    if (Version == "")
+	    {
+		y2milestone("Can't detect Profile Version");
+		return;
+	    }
+	} else {
+	    y2milestone("AutoYaST Profile Version  %1 Detected.", Version);
+	}
+	return;
+    }
+
+
+
+    /**
+     * Import Profile
+     * @param map profile
+     * @return void
+     */
+    global define void Import(map<string, any> profile)
+    {
+	y2milestone("importing profile");
+	current  = profile;
+
+	ReadProperties(current["properties"]:$[]);
+
+        // old style
+        if (haskey(profile, "configure") || haskey(profile, "install")) {
+	    map _configure = profile["configure"]:$[];
+	    map _install = profile["install"]:$[];
+	    current = (map<string, any>)union( _configure, _install );
+        }
+
+        if (!current["x11", "configure_x11"]:false)
+            ProductControl::DisabledModules=add(ProductControl::DisabledModules, "x11");
+
+        y2milestone("Current Profile=%1", current );
+	return;
+    }
+
+
+    /**
+     * Prepare Profile for saving and remove empty data structs
+     * @return void
+     */
+    global define void Prepare()
+    {
+        if (!prepare)
+            return;
+
+        Popup::ShowFeedback(_("Collecting configuration data..."), 
+                _("This may take a while"));
+
+        list<string> e = [];
+
+	foreach(string p, map d, ModuleMap, {
+	    //
+	    // Set resource name, if not using default value
+	    //
+	    string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
+	    if (resource == "")
+		resource = p;
+
+	    string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+            string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
+            if ( (boolean) WFM::CallFunction(module_auto, ["GetModified"]))
+            {
+                any resource_data = WFM::CallFunction(module_auto, ["Export"]);
+
+                integer s = 0;
+                if ( tomerge == "") {
+                    if ( d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map" )
+                    {
+                        s = size((map)resource_data);
+                    }
+                    else
+                    {
+                        s = size((list)resource_data);
+                    }
+                }
+
+                if ( s != 0 || tomerge != "")
+                {
+
+                    if (size(tomerge) > 0 )
+                    {
+                        integer i = 0;
+                        string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
+                        list MergeTypes = splitstring(tomergetypes, ",");
+
+                        foreach( string res, (list<string>)splitstring(tomerge, ",") , ``{
+                            if ( MergeTypes[i]:"map" == "map")
+                            {
+                                map<string,any> rd = (map<string,any>)resource_data;
+                                current[res] = rd[res]:$[];
+                            } else {
+                                map<string,any> rd =(map<string,any>)resource_data;
+                                current[res] = rd[res]:[];
+                            }
+                            i = i + 1;
+                        });
+                    } else {
+                            current[resource] = resource_data;
+                    }
+                }
+                else if (s == 0 )
+                {
+                    e = add ( e, resource);
+                }
+            }
+	});
+
+
+        foreach(string k, any v, current, ``{
+                if (!haskey(current, k) && !contains(e, k ))
+                    current[k] = v;
+        });
+
+        Popup::ClearFeedback();
+        prepare = false;
+	return;
+
+    }
+
+    /**
+     * Reset profile to initial status
+     * @return void
+     */
+    global define void Reset ()
+    {
+	y2milestone("Resetting profile contents");
+	current = $[];
+	return;
+    }
+
+    /**
+     * Save YCP data into XML
+     * @param  path to file
+     * @return	boolean true on success
+     */
+    global define boolean Save (string file)
+    {
+	Prepare();
+	y2debug("Saving data (%1) to XML file %2", current, file);
+	return (XML::YCPToXMLFile(`profile, current,  file));
+    }
+
+
+    /**
+     * Save the current data into a file to be read after a reboot.
+     * @param	-
+     * @return  true on success
+     * @see	Restore()
+     */
+    global define boolean SaveProfileStructure ( string parsedControlFile)
+    {
+	y2milestone("Saving control file in YCP format");
+	return SCR::Write( .target.ycp, parsedControlFile, current );
+    }
+
+    /**
+     * Read YCP data as the control file
+     * @param ycp file
+     * @return boolean
+     */
+    global define boolean ReadProfileStructure ( string parsedControlFile )
+    {
+	current = (map<string,map>) SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
+	if (current == $[])
+	    return false;
+	else
+	    Import (current);
+
+        return true;
+    }
+
+    /**
+     * Provide Compatibility to older distributions.
+     * @param list lvm_standalone Stand alone LVM configuration
+     * @return list LVM configuration integrated into partitioning resource
+     */
+    global define list<map> convertLVM (list<map> lvm_standalone )
+    {
+	list<map> all_lvm = [];
+
+	foreach (map group, lvm_standalone, ``{
+	    map new_lvm = $[];
+	    string vg = group["lvm_name"]:"";
+
+	    new_lvm["device"]       = sformat("/dev/%1", vg );
+	    new_lvm["is_lvm_vg"]    = true;
+	    new_lvm["use"]      = "all";
+	    new_lvm["pesize"]       = group["pesize"]:"";
+	    list partitions = maplist(map lv, group["logical_volumes"]:[], ``{
+
+                symbol lv_fs = `reiser;
+		string lv_fs_tmp     = lv["lv_fs"]:"reiser";
+                term tfs = toterm(lv_fs_tmp);
+                lv_fs = (symbol)symbolof(tfs);
+
+		return( $[ "filesystem": lv_fs,
+			   "lv_name":    lv["lv_name"]:"",
+			   "mount":  lv["lv_mount"]:"",
+			   "size":   lv["lv_size"]:"",
+			   "stripes":    lv["stripes"]:1
+			]);
+	    });
+	    new_lvm["partitions"] = partitions;
+	    all_lvm = add (all_lvm, new_lvm);
+
+	});
+	y2milestone("Converted LVM: %1", all_lvm);
+
+	return (all_lvm);
+    }
+
+    /**
+     * Provide Compatibility to older distributions.
+     * @param list raid_standalone Stand alone RAID configuration
+     * @return map RAID configuration integrated into partitioning resource
+     */
+    global define map convertRAID (list<map> raid_standalone )
+    {
+	map raid = $[];
+
+	raid["device"]	= "/dev/md";
+	raid["use"]	= "all";
+
+	list partitions = maplist(map r, raid_standalone, ``{
+
+	    symbol fs =  r["filesystem"]:`reiser;
+
+
+	    map raid_options = $[];
+
+	    raid_options["chunk_size"]			= r["chunk_size"]:"";
+	    raid_options["raid_type"]			= r["raid_type"]:"raid1";
+	    raid_options["parity_algorithm"]		= r["parity_algorithm"]:"";
+	    raid_options["persistent_superblock"]	= r["persistent_superblock"]:false;
+
+	    integer nr = tointeger(substring(r["device_name"]:"/dev/md0", 7));
+
+
+
+	    map ret = $[
+			"raid_options"	: raid_options,
+			"format"	: r["format"]:false,
+			"partition_nr"	: nr
+
+	    ];
+
+	    if (haskey(r, "mount"))
+	    {
+		ret["mount"] = r["mount"]:"";
+	    }
+	    if (haskey(r, "partition_id"))
+	    {
+		ret["partition_id"] = r["partition_id"]:131;
+	    }
+	    if (haskey(r, "filesystem"))
+	    {
+		ret["filesystem"] = fs;
+	    }
+	    if (haskey(r, "lvm_group"))
+	    {
+		ret["lvm_group"] = r["lvm_group"]:"";
+	    }
+
+	    return (ret);
+
+	});
+	raid["partitions"]	= partitions;
+
+	return (raid);
+    }
+
+
+    /**
+     * General compatibility issues
+     * @param current profile
+     * @return map converted profile
+     */
+    define map<string, any> Compat(map<string, any> _current)
+    {
+	// scripts
+	if ( haskey(_current, "pre-scripts") ||
+	    haskey(_current, "post-scripts") ||
+	    haskey(_current, "chroot-scripts")	    )
+	{
+	    list pre = _current["pre-scripts"]:[];
+	    list post = _current["post-scripts"]:[];
+	    list chroot = _current["chroot-scripts"]:[];
+	    map scripts = $[
+			    "pre-scripts":pre,
+			    "post-scripts":post,
+			    "chroot-scripts":chroot
+	    ];
+	    _current = remove(_current, "pre-scripts");
+	    _current = remove(_current, "post-scripts");
+	    _current = remove(_current, "chroot-scripts");
+
+	    _current["scripts"] = scripts;
+	}
+
+	// general
+	boolean old = false;
+
+	map<string, any> general_options
+                                = _current["general"]:$[];
+	map security		= _current["security"]:$[];
+	map report		= _current["report"]:$[];
+
+	foreach(string k, any v, general_options , ``{
+	    if (k == "keyboard" && is(v, string))
+		old = true;
+	    else if (k == "mouse" && is(v, string))
+		old = true;
+	    else if (k == "encryption_method")
+		old = true;
+	    else if (k == "timezone" &&  is(v, string))
+		old = true;
+	});
+
+	map new_general = $[];
+
+	if (old) {
+	    y2milestone("Old format, converting.....");
+	    new_general["language"]	= general_options["language"]:"";
+	    map keyboard = $[];
+	    keyboard["keymap"]		= general_options["keyboard"]:"";
+	    new_general["keyboard"]	= keyboard;
+
+	    map clock = $[];
+	    clock["timezone"]		= general_options["timezone"]:"";
+	    if ( general_options["hwclock"]:"" == "localtime")
+	    {
+		clock["hwclock"] = "localtime";
+	    }
+	    else if  ( general_options["hwclock"]:""  == "GMT")
+	    {
+		clock["hwclock"] = "GMT";
+	    }
+	    new_general["clock"]	= clock;
+
+	    map mode = $[];
+	    if (haskey(general_options, "reboot")) {
+		mode["reboot"] =  general_options["reboot"]:false;
+	    }
+	    if (haskey(report, "confirm")) {
+		mode["confirm"]	= report["confirm"]:false;
+		report = remove(report, "confirm");
+	    }
+	    new_general["mode"]	= mode;
+
+
+	    if (haskey(general_options, "encryption_method"))
+	    {
+		security["encryption"] = general_options["encryption_method"]:"";
+	    }
+
+	    map net = _current["networking"]:$[];
+	    list<map<string, string> > ifaces = net["interfaces"]:[];
+
+	    list newifaces = maplist(map<string, string> iface , ifaces, ``{
+		map newiface = mapmap(string k, string v, iface, ``{
+		    return ($[tolower(k): v]);
+		});
+		return newiface;
+	    });
+
+	    net["interfaces"] =  newifaces;
+
+	    _current["general"] = new_general;
+	    _current["report"] = report;
+	    _current["security"] = security;
+	    _current["networking"] = net;
+	}
+
+	// RAID
+	list<map> old_raid = _current["raid"]:[];
+	if (size(old_raid) > 0 )
+	{
+	    map new_raid = convertRAID(old_raid);
+	    list d = _current["partitioning"]:[];
+	    d =add (d, new_raid );
+	    _current["partitioning"] = d;
+	}
+
+	// LVM
+	list<map> old_lvm = _current["lvm"]:[];
+	if (size(old_lvm) > 0 )
+	{
+	    list<map> new_lvm = convertLVM(old_lvm);
+	    list<map> d = _current["partitioning"]:[];
+	    d = (list<map>) union (d, new_lvm );
+	    _current["partitioning"] = d;
+	}
+	return _current;
+    }
+
+
+    /**
+     * Read XML into  YCP data
+     * @param  path to file
+     * @return	boolean
+     */
+    global define boolean ReadXML (string file) {
+	y2debug("Reading %1", file);
+	current = XML::XMLToYCPFile(file);
+
+	if ( current != $[]  && size(current) == 0 )
+	{
+	    return (false);
+	}
+	Import (current);
+	return (true);
+    }
+
+}

@@ -1,0 +1,136 @@
+
+  <chapter id="CreateProfile">
+  <title >Creating A Control File</title>
+
+  <section id="Autoinstallation.collectInfo">
+    <title>Collect information</title>
+    <para>
+      In order to create the control file, first you need to collect
+      information about the systems your are going to
+      install. This includes among other things hardware data and network
+      information. Make sure you know the following about the machines you want to install:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>Hard disk types and sizes</para>	  
+      </listitem>
+      <listitem>
+	<para>Graphic interface and attached monitor if any</para>
+      </listitem>
+      <listitem>
+	<para>Network interface and MAC address if known (i.e. when using &dhcp;)</para>
+      </listitem>	
+    </itemizedlist>
+    <para>
+      With these parameters you are ready to go and create a profile of your systems
+      to control the auto-installation process.
+    </para>
+  </section>
+  <section id="CreateProfile.CMS">
+    <title>
+      Using the Configuration Management System
+    </title>  
+    <para>
+      In order to create the control file for one or more computers, a configuration
+      interface based on &yast2; is provided. This system depends on existing modules
+      which are usually used to configure a computer in regular operation mode,
+      i.e. after &company-suse; Linux is installed.
+    </para>
+    <para>
+      The configuration management system lets you create control files easily and
+      additionally it lets you manage a repository of configurations for use
+      in a networked environment and with multiple clients.
+    </para>
+    <figure>
+      <title>Configuration System</title>
+      <mediaobject>&autoyast2-maindialog;</mediaobject>
+    </figure>
+    
+    <section>
+      <title>Creating a new Profile</title>
+      <para>
+	With some exceptions, almost all resources of the control file can
+	be configured using the configuration management system. The system
+	offers flexibility and  configuration of some resources is
+	identical to this  available in the &yast2; Control Center. In
+	addition to the existing and familiar modules new
+	interfaces were created for special and complex configurations,
+	for example for  partitioning, general options and software.	  
+      </para>
+      <para>
+	Furthermore, using the &cms; guarantees that the resulting control file is
+	valid and insures that it can be used directly to start  automated installation.
+      </para>
+      <para>
+	Make sure the configuration system is installed (package
+	<emphasis>autoyast2</emphasis>) and call it using the <emphasis>YaST2
+	  Control  Center</emphasis> or call it directly as root with the
+	following command (make sure the <emphasis>DISPLAY</emphasis> variable is set correctly to
+	start the graphical user interface instead of the text based one):
+      </para>
+      <screen>
+/sbin/yast2 autoyast
+      </screen>
+
+    </section>
+
+
+    <section>
+      <title>Import of Legacy and Foreign Configuration Files</title>
+
+      <para>
+	&autoyast2; offers the option  to  import <abbrev>ALICE</abbrev> configuration files from
+	previous SuSE releases and foreign auto-installation systems
+	(Kickstart). Consult the chapter dealing with these issues in this
+	manual.
+      </para>
+    </section>
+    
+  </section>
+
+  <section id="CreateProfile.Manual">
+    <title>Creating/Editing a Control File Manually</title>
+    <para>
+      If you edit the control file manually, make sure it  has a valid syntax. To
+      check the syntax, use some tools already available
+      on the distribution. For example to verify that the file is well
+      formed, use the utility <command>xmllint</command> available with the
+      <emphasis>libxml2</emphasis> package:     
+    </para>
+    <screen>
+xmllint &lt;control file&gt;
+    </screen>
+    <para>
+      If the control file is not well formed, i.e. if a tag is not closed,
+      <command>xmllint</command> will report about the errors.
+    </para>    
+    <para>
+      Before going on with the auto-installation, please fix any errors
+      resulting from such checks. The auto-installation process can't be
+      started with  an invalid and non-well formed control file.
+    </para>
+
+    <para>
+      You can use any XML editor  available on your system or use your
+      favorite text editor with XML support (i.e. Emacs, Vim). However, it is not quite
+      optimal to create the control file manually for large number of machines
+      and it should only be seen as an interface between the auto-installation
+      engine and the Configuration Management System (<abbrev>CMS</abbrev>).      
+    </para>
+    
+    <figure id="kxmleditor">
+      <title id="kxmleditor.title" >Editing the control file with <command>kxmledit</command></title>
+      <mediaobject>&kxmleditor;</mediaobject>
+    </figure>
+
+  </section>
+  
+
+  </chapter>
+
+      <!--
+       Local Variables:
+       mode: xml
+       sgml-parent-document: ("autoyast.xml" "book" "chapter")
+       End:
+      -->
