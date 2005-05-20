@@ -516,10 +516,19 @@
             else if (ret == "menu_new") // NEW
             {
                 Profile::Reset();
+                foreach(string p, map d, Profile::ModuleMap, {
+                    string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
+                    if (resource == "")
+                        resource = p;
+                    resetModule(resource);
+                });
                 AutoinstConfig::currentFile = "";
                 if (UI::WidgetExists(`id(`class_source))) {
                     ShowSource();
                 }
+                tree_item = Wizard::QueryTreeItem();
+                string modulename=moduleName(tree_item);
+                module_contents(modulename);
                 ret = `menu_new;
             }
             else if (ret == "menu_exit") // EXIT
