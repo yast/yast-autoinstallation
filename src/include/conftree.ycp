@@ -428,26 +428,33 @@
 
                     integer s = size(pathComponents) -1;
                     string base = pathComponents[s]:"default";
-                    Profile::ReadXML((string)filename);
-                    Popup::ShowFeedback(_("Reading configuration data"), _("This may take a while"));
-                    foreach(string p, map d, Profile::ModuleMap, ``{
-                            /* Set resource name, if not using default value */
-                            string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
-                            if (resource == "")
-                            {
-                                resource = p;
-                            }
-                            y2debug("resource: %1", resource );
-                            string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
-                            string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
-                            any rd = Y2ModuleConfig::getResourceData(d
-                                ,resource);
-                            if (rd!=nil) {
-                            WFM::CallFunction(module_auto, ["Import",
-                                rd]);
-                            }
-                            });
-                    Popup::ClearFeedback();
+                    boolean readOkay = Profile::ReadXML((string)filename);
+                    y2debug("Profile::ReadXML returned %1",readOkay);
+                    if( readOkay ) {
+                        Popup::ShowFeedback(_("Reading configuration data"), _("This may take a while"));
+                        foreach(string p, map d, Profile::ModuleMap, ``{
+                                /* Set resource name, if not using default value */
+                                string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
+                                if (resource == "")
+                                {
+                                    resource = p;
+                                }
+                                y2debug("resource: %1", resource );
+                                string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+                                string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
+                                any rd = Y2ModuleConfig::getResourceData(d
+                                    ,resource);
+                                if (rd!=nil) {
+                                WFM::CallFunction(module_auto, ["Import",
+                                    rd]);
+                                }
+                                });
+                        Popup::ClearFeedback();
+                    } else {
+                        /* opening/parsing the xml file failed */
+                        Popup::Error(_("An error occured while opening/parsing the XML file."));
+                        Profile::Reset();
+                    }
 
                 }
                 if (UI::WidgetExists(`id(`class_source)))
