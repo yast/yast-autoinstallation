@@ -1,0 +1,127 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+remote_ipaddr = element remote_ipaddr { text }
+bootproto = element bootproto { text }
+broadcast = element broadcast { text }
+destination = element destination { text }
+device = element device { text }
+dhclient_set_down_link = element dhclient_set_down_link { text }
+dhcp_hostname =
+  element dhcp_hostname { BOOLEAN }
+dhcp_resolv =
+  element dhcp_resolv { BOOLEAN }
+y2_dns =
+  dhcp_hostname
+  | dhcp_resolv
+  | domain
+  | hostname
+  | nameservers
+  | searchlist
+dns = element dns { y2_dns* }
+domain = element domain { text }
+gateway = element gateway { text }
+hostname = element hostname { text }
+y2_laninterface =
+  remote_ipaddr
+  | bootproto
+  | broadcast
+  | device
+  | dhclient_set_down_link
+  | ipaddr
+  | mtu
+  | name
+  | netmask
+  | network
+  | startmode
+  | wireless
+  | wireless_auth_mode
+  | wireless_essid
+  | wireless_key
+  | wireless_key_0
+  | wireless_key_1
+  | wireless_key_2
+  | wireless_key_3
+  | wireless_key_length
+  | wireless_mode
+  | wireless_nick
+  | wireless_nwid
+  | wireless_bitrate
+  | wireless_channel
+  | wireless_frequency
+  | wireless_power
+  | ifplugd_priority
+  | usercontrol
+interface = element interface { y2_laninterface* }
+interfaces =
+  element interfaces {
+    LIST,
+    interface+
+  }
+ip_forward =
+  element ip_forward { BOOLEAN }
+ipaddr = element ipaddr { text }
+usercontrol = element usercontrol { text }
+mtu = element mtu { text }
+ifplugd_priority = element ifplugd_priority { text }
+module = element module { text }
+modules =
+  element modules {
+    LIST,
+    module_entry+
+  }
+module_entry = element module_entry { device, module?, options? }
+nameserver = element nameserver { text }
+nameservers =
+  element nameservers {
+    LIST,
+    nameserver+
+  }
+netmask = element netmask { text }
+network = element network { text }
+networking =
+  element networking {
+    dhcp_options?, dns?, interfaces, modules?, routing?
+  }
+dhcp_options =
+  element dhcp_options {
+    dhclient_additional_options?,
+    dhclient_client_id?,
+    dhclient_hostname_option?
+  }
+dhclient_additional_options =
+  element dhclient_additional_options { text }
+dhclient_client_id = element dhclient_client_id { text }
+dhclient_hostname_option = element dhclient_hostname_option { text }
+# <!ELEMENT options (#PCDATA)> : redefined
+route = element route { destination, device, gateway, netmask }
+routes =
+  element routes {
+    LIST,
+    route+
+  }
+routing = element routing { ip_forward?, routes? }
+search = element search { text }
+searchlist =
+  element searchlist {
+    LIST,
+    search+
+  }
+startmode = element startmode { text }
+wireless = element wireless { text }
+wireless_essid = element wireless_essid { text }
+wireless_key = element wireless_key { text }
+wireless_key_1 = element wireless_key_1 { text }
+wireless_key_0 = element wireless_key_0 { text }
+wireless_key_2 = element wireless_key_2 { text }
+wireless_key_3 = element wireless_key_3 { text }
+wireless_key_length = element wireless_key_length { text }
+wireless_mode = element wireless_mode { text }
+wireless_auth_mode = element wireless_auth_mode { text }
+wireless_nick = element wireless_nick { text }
+wireless_nwid = element wireless_nwid { text }
+wireless_bitrate = element wireless_bitrate { text }
+wireless_channel = element wireless_channel { text }
+wireless_frequency = element wireless_frequency { text }
+wireless_power = element wireless_power { text }

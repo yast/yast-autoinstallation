@@ -1,0 +1,125 @@
+# NIS Client
+
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+y2_nisclient =
+  nis_broadcast
+  | nis_broken_server
+  | nis_by_dhcp
+  | nis_domain
+  | nis_domain_by_dhcp
+  | nis_local_only
+  | nis_options
+  | nis_other_domains
+  | nis_servers
+  | nis_servers_by_dhcp
+  | start_autofs
+  | start_nis
+nis = element nis { y2_nisclient* }
+nis_broadcast =
+  element nis_broadcast { BOOLEAN }
+nis_broken_server =
+  element nis_broken_server { BOOLEAN }
+nis_servers_by_dhcp =
+  element nis_servers_by_dhcp { BOOLEAN }
+nis_domain_by_dhcp =
+  element nis_domain_by_dhcp { BOOLEAN }
+nis_domain = element nis_domain { text }
+nis_local_only =
+  element nis_local_only { BOOLEAN }
+nis_options = element nis_options { text }
+y2_nis_other_domain = nis_broadcast | nis_domain | nis_servers
+nis_other_domain = element nis_other_domain { y2_nis_other_domain* }
+nis_other_domains =
+  element nis_other_domains {
+    LIST,
+    nis_other_domain*
+  }
+nis_servers =
+  element nis_servers {
+    LIST,
+    nis_server*
+  }
+start_autofs =
+  element start_autofs { BOOLEAN }
+start_nis =
+  element start_nis { BOOLEAN }
+# NIS Server
+y2_nisserver =
+  domain
+  | maps_to_serve
+  | merge_group
+  | merge_passwd
+  | nopush
+  | pwd_chfn
+  | pwd_chsh
+  | pwd_srcdir
+  | securenets
+  | server_type
+  | slaves
+  | start_ypbind
+  | start_yppasswdd
+  | start_ypxfrd
+  | mingid
+  | minuid
+comment = element comment { text }
+flag = element flag { text }
+forename = element forename { text }
+mingid =
+  element mingid { INTEGER }
+grouplist = element grouplist { text }
+hash = element hash { text }
+home = element home { text }
+inact = element inact { text }
+last_change = element last_change { text }
+maps_to_serve =
+  element maps_to_serve {
+    LIST,
+    nis_map*
+  }
+max = element max { text }
+merge_passwd =
+  element merge_passwd { BOOLEAN }
+merge_group =
+  element merge_group { BOOLEAN }
+min = element min { text }
+nis_map = element nis_map { text }
+nopush =
+  element nopush { BOOLEAN }
+y2_password_settings =
+  expire | flag | inact | last_change | max | min | warn
+password_settings = element password_settings { y2_password_settings* }
+pwd_chfn =
+  element pwd_chfn { BOOLEAN }
+pwd_chsh =
+  element pwd_chsh { BOOLEAN }
+pwd_srcdir = element pwd_srcdir { text }
+securenet = element securenet { comment?, hash?, netmask?, network? }
+securenets =
+  element securenets {
+    LIST,
+    securenet*
+  }
+server_type = element server_type { text }
+shell = element shell { text }
+slave = element slave { text }
+slaves =
+  element slaves {
+    LIST,
+    slave*
+  }
+start_ypbind =
+  element start_ypbind { BOOLEAN }
+start_yppasswdd =
+  element start_yppasswdd { BOOLEAN }
+start_ypxfrd =
+  element start_ypxfrd { BOOLEAN }
+minuid =
+  element minuid { INTEGER }
+warn = element warn { text }
+nis_by_dhcp =
+  element nis_by_dhcp { BOOLEAN }
+# Common
+nis_server = element nis_server { (text | y2_nisserver)* }

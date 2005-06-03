@@ -1,0 +1,54 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+bootloader =
+  element bootloader {
+    activate?,
+    global?,
+    initrd_modules?,
+    loader_device?,
+    loader_type?,
+    location?,
+    repl_mbr?,
+    sections?
+  }
+activate =
+  element activate { BOOLEAN }
+repl_mbr =
+  element repl_mbr { BOOLEAN }
+initrd_modules =
+  element initrd_modules {
+    LIST,
+    initrd_module+
+  }
+initrd_module = element initrd_module { module, module_args? }
+module_args = element module_args { text }
+loader_device = element loader_device { text }
+loader_type = element loader_type { text }
+# also for samba
+y2_global = winbind | workgroup
+global =
+  element global {
+    LIST,
+    (y2_global | global_entry*)*
+  }
+global_entry = element global_entry { key, value }
+key = element key { text }
+value =
+  element value {
+    attribute config:type { text }?,
+    text
+  }
+sections =
+  element sections {
+    LIST,
+    section+
+  }
+section =
+  element section {
+    LIST,
+    section_entry+
+  }
+section_entry = element section_entry { key, value }
+kernel_parameters = element kernel_parameters { text }

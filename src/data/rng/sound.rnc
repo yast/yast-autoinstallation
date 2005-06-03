@@ -1,0 +1,67 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+LOAD_ALSA_SEQ = element LOAD_ALSA_SEQ { text }
+module_conf =
+  element module_conf { alias?, model?, module?, options?, unique_key? }
+modules_conf =
+  element modules_conf {
+    attribute config:type { text },
+    module_conf*
+  }
+new =
+  element new {
+    attribute config:type { text },
+    text
+  }
+rc_vars = element rc_vars { LOAD_ALSA_SEQ }
+snd_enable = element snd_enable { text }
+snd_index = element snd_index { text }
+sound =
+  element sound {
+    configure_detected?, modules_conf?, rc_vars?, volume_settings?
+  }
+state = element state { text }
+unique_key = element unique_key { text }
+unknown-state = element unknown-state { text }
+volume_component_settings =
+  element volume_component_settings {
+    attribute config:type { text }?,
+    text
+  }
+volume_entry =
+  element volume_entry {
+    attribute config:type { text }?,
+    Headphone?,
+    Master?,
+    volume_component*
+  }
+Headphone =
+  element Headphone {
+    attribute config:type { text },
+    text
+  }
+Master =
+  element Master {
+    attribute config:type { text },
+    text
+  }
+volume_component =
+  element volume_component {
+    attribute config:type { text },
+    volume_component_settings*
+  }
+volume_settings =
+  element volume_settings {
+    attribute config:type { text },
+    volume_entry*
+  }
+configure_detected =
+  element configure_detected { BOOLEAN }
+ac97_clock = element ac97_clock { text }
+ac97_quirk = element ac97_quirk { text }
+enable = element enable { text }
+index = element index { text }
+isapnp = element isapnp { text }
+joystick = element joystick { text }
