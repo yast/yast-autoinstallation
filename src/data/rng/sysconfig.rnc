@@ -1,16 +1,9 @@
-default namespace = "http://www.suse.com/1.0/yast2ns"
-namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
-namespace config = "http://www.suse.com/1.0/configns"
-
 sysconfig =
   element sysconfig {
     LIST,
-    sysconfig_entry+
+    element sysconfig_entry {
+      element sysconfig_key { text }
+    & element sysconfig_path { text }
+    & element sysconfig_value { text }
+    }+
   }
-sysconfig_entry =
-  element sysconfig_entry {
-    sysconfig_key, sysconfig_path, sysconfig_value
-  }
-sysconfig_key = element sysconfig_key { text }
-sysconfig_path = element sysconfig_path { text }
-sysconfig_value = element sysconfig_value { text }

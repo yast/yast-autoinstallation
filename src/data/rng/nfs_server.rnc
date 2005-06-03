@@ -1,0 +1,12 @@
+# NFS Server
+nfs_server =
+  element nfs_server {
+    element nfs_exports { LIST, nfs_export+ }
+  & element start_nfsserver { BOOLEAN }?
+  }
+  
+nfs_export =
+  element nfs_export {
+    element mountpoint { text }
+  & element allowed { LIST, element allowed_clients { text }+ }
+  }

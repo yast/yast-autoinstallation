@@ -1,0 +1,76 @@
+# NIS Server
+y2_nisserver =
+  domain
+  | maps_to_serve
+  | merge_group
+  | merge_passwd
+  | nopush
+  | pwd_chfn
+  | pwd_chsh
+  | pwd_srcdir
+  | securenets
+  | server_type
+  | slaves
+  | start_ypbind
+  | start_yppasswdd
+  | start_ypxfrd
+  | mingid
+  | minuid
+comment = element comment { text }
+flag = element flag { text }
+forename = element forename { text }
+mingid =
+  element mingid { INTEGER }
+grouplist = element grouplist { text }
+hash = element hash { text }
+home = element home { text }
+inact = element inact { text }
+last_change = element last_change { text }
+maps_to_serve =
+  element maps_to_serve {
+    LIST,
+    nis_map*
+  }
+max = element max { text }
+merge_passwd =
+  element merge_passwd { BOOLEAN }
+merge_group =
+  element merge_group { BOOLEAN }
+min = element min { text }
+nis_map = element nis_map { text }
+nopush =
+  element nopush { BOOLEAN }
+y2_password_settings =
+  expire | flag | inact | last_change | max | min | warn
+password_settings = element password_settings { y2_password_settings* }
+pwd_chfn =
+  element pwd_chfn { BOOLEAN }
+pwd_chsh =
+  element pwd_chsh { BOOLEAN }
+pwd_srcdir = element pwd_srcdir { text }
+securenet = element securenet { comment?, hash?, netmask?, network? }
+securenets =
+  element securenets {
+    LIST,
+    securenet*
+  }
+server_type = element server_type { text }
+slave = element slave { text }
+slaves =
+  element slaves {
+    LIST,
+    slave*
+  }
+start_ypbind =
+  element start_ypbind { BOOLEAN }
+start_yppasswdd =
+  element start_yppasswdd { BOOLEAN }
+start_ypxfrd =
+  element start_ypxfrd { BOOLEAN }
+minuid =
+  element minuid { INTEGER }
+warn = element warn { text }
+nis_by_dhcp =
+  element nis_by_dhcp { BOOLEAN }
+# Common
+nis_server = element nis_server { y2_nisserver* }
