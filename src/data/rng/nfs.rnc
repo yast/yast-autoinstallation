@@ -1,33 +1,9 @@
-# NFS Client
-
-default namespace = "http://www.suse.com/1.0/yast2ns"
-namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
-namespace config = "http://www.suse.com/1.0/configns"
-
 nfs =
   element nfs {
     LIST,
-    nfs_entry+
+    element nfs_entry {
+      element server_path { text }
+    & element mount_point { text }
+    & element nfs_options { text }
+    }*
   }
-y2_nfs_client = mount_point | nfs_options | server_path
-nfs_entry = element nfs_entry { y2_nfs_client* }
-mount_point = element mount_point { text }
-nfs_options = element nfs_options { text }
-server_path = element server_path { text }
-# NFS Server
-nfs_server = element nfs_server { nfs_exports, start_nfsserver }
-nfs_exports =
-  element nfs_exports {
-    LIST,
-    nfs_export+
-  }
-nfs_export = element nfs_export { allowed, mountpoint }
-mountpoint = element mountpoint { text }
-allowed =
-  element allowed {
-    LIST,
-    allowed_clients+
-  }
-allowed_clients = element allowed_clients { text }
-start_nfsserver =
-  element start_nfsserver { BOOLEAN }
