@@ -1,6 +1,6 @@
 default namespace = "http://www.suse.com/1.0/yast2ns"
-namespace config = "http://www.suse.com/1.0/configns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
 
 partitioning =
   element partitioning {
@@ -13,6 +13,13 @@ drive =
   }
 initialize =
   element initialize { BOOLEAN }
+keep_partition_id = element keep_partition_id { text }
+keep_partition_nr = element keep_partition_nr { text }
+keep_partition_fsys = element keep_partition_fsys { text }
+usepart =
+  element usepart { INTEGER }
+prefer_remove =
+  element prefer_remove { BOOLEAN }
 is_lvm_vg =
   element is_lvm_vg { BOOLEAN }
 partitions =
@@ -42,9 +49,11 @@ y2_partition =
   | partition_nr
   | partition_type
   | raid_name
+  | raid_options
   | raid_type
   | region
   | size
+  | usepart
 partition = element partition { y2_partition* }
 noauto =
   element noauto { BOOLEAN }
@@ -84,6 +93,8 @@ opt_max_inode_space =
 opt_raid = element opt_raid { option_str, option_value }
 opt_reserved_blocks =
   element opt_reserved_blocks { option_str, option_value }
+raid_options =
+  element raid_options { chunk_size, parity_algorithm, raid_type }
 fstopt = element fstopt { text }
 grow =
   element grow { BOOLEAN }
