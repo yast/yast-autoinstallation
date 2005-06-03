@@ -4,8 +4,32 @@
 # $Id$
 #
 
-rngdir = $(prefix)/share/autoinstall/rng
+rncdir = $(prefix)/share/autoinstall/rnc
 
-rng_DATA = $(wildcard *.rng)
+rnc_DATA = \
+	bootloader.rnc \
+	fw.rnc \
+	inetd.rnc \
+	ldap_client.rnc \
+	lvm.rnc \
+	mail.rnc \
+	networking.rnc \
+	nfs.rnc \
+	nfs_server.rnc \
+	nis.rnc \
+	nis_server.rnc \
+	ntpclient.rnc \
+	online_update.rnc \
+	printer.rnc \
+	profile-misc.rnc \
+	raid.rnc \
+	reporting.rnc \
+	runlevels.rnc \
+	samba.rnc \
+	security.rnc \
+	sound.rnc \
+	sysconfig.rnc \
+	users.rnc \
+	x11.rnc
 
-EXTRA_DIST = $(rng_DATA) 
+EXTRA_DIST = $(rnc_DATA) 
