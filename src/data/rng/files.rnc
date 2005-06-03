@@ -1,0 +1,23 @@
+# <!ENTITY % y2_files_scripts "source|interpreter">
+
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+y2_files =
+  file_contents
+  | file_path
+  | file_permissions
+  | file_owner
+  | file_script
+files =
+  element files {
+    LIST,
+    file+
+  }
+file = element file { y2_files* }
+file_contents = element file_contents { text }
+file_path = element file_path { text }
+file_permissions = element file_permissions { text }
+file_owner = element file_owner { text }
+file_script = element file_script { interpreter, source }

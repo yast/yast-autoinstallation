@@ -1,0 +1,54 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+color_depth =
+  element color_depth { INTEGER }
+configure_x11 =
+  element configure_x11 { BOOLEAN }
+y2_display =
+  frequency
+  | bandwidth
+  | height
+  | max_hsync
+  | max_vsync
+  | min_hsync
+  | min_vsync
+  | width
+display = element display { y2_display* }
+display_manager = element display_manager { text }
+window_manager = element window_manager { text }
+frequency =
+  element frequency { INTEGER }
+enable_3d =
+  element enable_3d { BOOLEAN }
+max_hsync =
+  element max_hsync { INTEGER }
+max_vsync =
+  element max_vsync { INTEGER }
+height =
+  element height { INTEGER }
+width =
+  element width { INTEGER }
+bandwidth =
+  element bandwidth { INTEGER }
+min_hsync =
+  element min_hsync { INTEGER }
+min_vsync =
+  element min_vsync { INTEGER }
+monitor = element monitor { display, monitor_device, monitor_vendor }
+monitor_device = element monitor_device { text }
+monitor_vendor = element monitor_vendor { text }
+resolution = element resolution { text }
+start_x11 =
+  element start_x11 { BOOLEAN }
+y2_x11 =
+  color_depth
+  | configure_x11
+  | display_manager
+  | enable_3d
+  | window_manager
+  | monitor
+  | resolution
+  | start_x11
+x11 = element x11 { y2_x11* }
