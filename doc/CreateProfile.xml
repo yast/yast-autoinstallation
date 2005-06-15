@@ -124,7 +124,50 @@ xmllint &lt;control file&gt;
     </figure>
 
   </section>
-  
+
+  <section id="CreateProfile.XSLT">
+    <title>Creating a Profile (control file) via Script with XSLT</title>
+    <para>
+      For the case you have a template and just want to change a few things via script or command line,
+      you can use a XSLT processor like <emphasis>sablot</emphasis> for this. Lets say you have an autoyast profile
+      and you want to fillout the hostname via script for any reason (maybe because you have to do it
+      so often, you want to script it)
+    </para>
+    <para>
+      First you have to create an XSL file
+    </para>
+      <example>
+        <title>Example file for replacing hostname/domain by script</title>
+        <screen><xi:include href="examples/example.add_hostname.xsl" parse="text"
+                      xmlns:xi="http://www.w3.org/2001/XInclude"/>
+        </screen>
+      </example>
+    <para>
+      As you can see, this file expects the "hostname" and the "domain" as parameters from the user.
+      <screen>&lt;xsl:param name="hostname"/&gt;
+&lt;xsl:param name="domain"/&gt;</screen>
+      There will be a "copy" of those parameters in the "dns" section of the control file. That means,
+      if there already is a domain element in the dns section, you'll get a second one (no good).
+    </para>
+    <para>
+      If you want to create a new autoyast profile now from the template plus the XSL file, run the following command:
+      <screen>sabcmd add_hostname.xsl \$hostname=myHost \$domain=my.domain  template.xml</screen>
+      You'll get a filled out autoyast profile then on STDOUT.
+    </para>
+    <para>
+      If you have multiple XSL files you want to apply to a template, do it like this
+      <screen>
+        sabcmd add_hd_vg.xsl \$device=/dev/sda \$partition=p2 \$vg=system \
+        | sabcmd add_harddisk.xsl \$device=/dev/system \$lvm=true \
+        | sabcmd ....
+        | sabcmd add_hostname.xsl \$hostname=myHost \$domain=my.domain
+      </screen>
+      So you just pipe the output of each sabcmd to the next sabcmd.
+    </para>
+    <para>
+    For more information aout XSLT, go to the official webpage <ulink url="http://www.w3.org/TR/xslt">www.w3.org/TR/xslt</ulink>
+    </para>
+  </section>
 
   </chapter>
 
