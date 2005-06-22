@@ -1375,30 +1375,161 @@
       installation.
     </para>
     <para>
-      In the auto-installation process, three types of scripts can be executed:
+      In the auto-installation process, four types of scripts can be executed and they
+      will be described here in order of "appearance" during the installation.
     </para>
+    <para>
     <itemizedlist>
-      <listitem>
-	<para>Pre-Install Scripts</para>
+        <listitem><emphasis>pre-scripts</emphasis> (very early, before anything else really happened)</listitem>
+        <listitem><emphasis>chroot-scripts</emphasis> (after the package installation, before the first boot)</listitem>
+        <listitem><emphasis>post-scripts</emphasis> (during the first boot of the installed system, no services running)</listitem>
+        <listitem><emphasis>init-scripts</emphasis> (during the first boot of the installed system, all servies up and running)</listitem>
+    </itemizedlist>
+    </para>
+    <section id="pre-install.scripts">
+	<title>Pre-Install Scripts</title>
 	<para>
 	  Executed before &yast2; does any real change to the system
-	  (Before partitioning and package installation)	    
-	</para>	  
+	  (Before partitioning and package installation but after the hardware detection)
+	</para>
+    <para>
+      You can use the pre-script to modify your profile and let autoyast read it again.
+      If you want to do that, you can find your profile in "/tmp/profile/PROFILENAME.xml".
+      Do what you want to do with that file and store the modified version under
+      "/tmp/profile/modified.xml". Autoyast will read that modified script then again after
+      the pre-script is done.
+    </para>
 	<note><title>Pre-Install Scripts with confirmation</title>
 	  <para>
 	    Pre-scripts are executed at an early stage of the installation.
 	    This means if you have requested to confirm the installation, the 
 	    pre-scripts  will be executed before the confirmation screen
 	    shows up. (<emphasis>profile/install/general/mode/confirm</emphasis>)
-	    
 	  </para>
 	</note>
-      </listitem>
-      <listitem>
-	<para>Post-Install Scripts</para>
+      <para>
+        <table frame='top'>
+          <title>pre script XML representation</title>
+          <para>
+            The following elements must be between the &lt;pre-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;pre-scripts&gt; tags
+          </para>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...).
+                <para><screen>&lt;location&gt;http://10.10.0.1/myPreScript.sh&lt;/location&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing the pre script" &gt; /tmp/pre-script_out.txt 
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell and perl.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;myPreScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (pre-scripts) in this case</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </para>
+    </section>
+    <section id="chroot.scripts">
+    <title>Chroot environment scripts</title>
+	<para>Chroot scripts are executed after all packages have been
+	  installed. Actually chroot scripts are two differnt kind of script with
+      one name. You can execute chroot script before the installation chroots into
+      the installed system and configures the boot loader and you can execute a script
+      after the chroot into the installed system has happend (look at the "chrooted" parameter for that). Both types of scripts are
+      executed before yast2 boots for the first time.
+	</para>
+      <para>
+        <table frame='top'>
+          <title>chroot script XML representation</title>
+          <para>
+            The following elements must be between the &lt;chroot-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;chroot-scripts&gt; tags
+          </para>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...).
+                       <para>
+                <screen>&lt;location&gt;http://10.10.0.1/myChrootScript.sh&lt;/location&gt;</screen>
+                    </para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing the chroot script" &gt; /tmp/chroot_out.txt 
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>chrooted</entry>
+                <entry>this value can be true or false. "False" means that the installed system is still mounted at "/mnt" and no chrooting has happened till now. The bootloader is not installed too at that stage. "True" means, we did a chroot into /mnt, so we are now in the installed system. The bootloader is installed and if you want to change anything in the installed system, you don't have to use the "/mnt/" prefix anymore.
+                <para><screen>&lt;chrooted config:type="boolean"&gt;true&lt;/chrooted&gt;</screen></para></entry>
+                <entry>optional (the default is false)</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell and perl.and if you are in a chrooted=true condition, you can use python too if it's installed.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;myPreScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (pre-scripts) in this case</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </para>
+      </section>
+    <section id="post-insall.scripts">
+	<title>Post-Install Scripts</title>
 	<para>
 	  These scripts are executed after AutoYaST has completed the
-	  system configuration and after it has booted the system for the first time.	  
+	  system configuration and after it has booted the system for the first time.
 	</para>
 	<para>Starting from SLES9, network is not available during
 	  post-installation script execution. To access the network, network
@@ -1410,10 +1541,67 @@
 	  the system. To run network enabled post scripts, the boolean 
 	  property <emphasis>network_needed</emphasis> has to be set to true.
 	</para>
-
-      </listitem>
-      <listitem>
-	<para>Final Scripts</para>
+      <para>
+        <table frame='top'>
+          <title>post script XML representation</title>
+          <para>
+            The following elements must be between the &lt;post-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;post-scripts&gt; tags
+          </para>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...) but then you need a running network interface of course
+                       <para>
+                <screen>&lt;location&gt;http://10.10.0.1/myPostScript.sh&lt;/location&gt;</screen>
+                    </para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing the chroot script" &gt; /tmp/chroot_out.txt 
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>network_needed</entry>
+                <!-- FIXME: double check that. I'm very unsure if this is correct -->
+                <entry>this value can be true or false. On "false" the script will run after the yast modules like the user configuration and everything else are done. The network is configured but still not up and running. With this value on "true", the script runs before(!) all yast modules are configured. So there is no local user and no network is configured but the installation network is still up and running (of course only if you did a network installation).
+                <para><screen>&lt;network_needed config:type="boolean"&gt;true&lt;/network_needed&gt;</screen></para></entry>
+                <entry>optional (the default is false)</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell, perl and python if it's installed.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;myPostScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (post-scripts) in this case</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </para>
+    </section>
+    <section id="init.scripts">
+	<title>Init Scripts</title>
 	<note>
 	  <para>Available starting from SLES9 only.</para>
 	</note>
@@ -1425,47 +1613,68 @@
 	  process and after network has been intialized.
 	</para>
         <para>
-            Final scripts are configured using the tag <emphasis>init-scripts</emphasis> and 
+            Init scripts are configured using the tag <emphasis>init-scripts</emphasis> and 
             are run using the special purpose <emphasis>init.d</emphasis> script <filename>/etc/init.d/autoyast</filename>.
         </para>
-      </listitem>
-      <listitem>
-	<para>Chroot environment post-install scripts</para>
-	<para>Chroot scripts are executed after all packages have been
-	  installed  and before
-	  &yast2; boots for the first time and before the boot loader is
-	  installed. Although the name of this type of scripts might imply
-	  that the scripts executed in the chroot environment, the scripts
-	  are actually executed in the system before it was mounted. To make any
-	  changes to the system, the prefix <emphasis>/mnt</emphasis> has to
-	  be used to any path.
-	</para>
-	<para>
-	  It is also possible to run the <emphasis>chroot scripts</emphasis> in
-	  the installed system by adding the boolean element
-          <emphasis>chrooted</emphasis>. When run chrooted, the scripts are
-          executed later in the process than when not chrooted and after most
-          configuration operations have been completed in system, i.e. writing bootloader
-          configuration.
-	</para>
-      </listitem>
-    </itemizedlist>
-    <note>
-      <title>New Feature</title>
       <para>
-        It is now possible to have the scripts outside the control file. The
-        location of the control file can be specified using a URL similar to
-        the syntax used for referencing the location of the control file. The
-        location of the external script should be specified using the
-        <emphasis>location</emphasis> element.
+        <table frame='top'>
+          <title>init script XML representation</title>
+          <para>
+            The following elements must be between the &lt;init-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;init-scripts&gt; tags
+          </para>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...) but then you need a running network interface of course
+                       <para>
+                <screen>&lt;location&gt;http://10.10.0.1/myInitScript.sh&lt;/location&gt;</screen>
+                    </para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing the init script" &gt; /tmp/init_out.txt 
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell, perl and python if it's installed.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;mynitScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (init-scripts) in this case</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
       </para>
-    </note>
-
+    </section>
     <para>
       When added to the control file manually, the
       scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
       the file syntax and other tags defined in the control file.
     </para>
+    <section id="script_examples">
+    <title>Script example</title>
       <example>
 	<title>Post script configuration</title>
 	<screen>
@@ -1489,6 +1698,7 @@
       /bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
       ]]>
     </screen>
+    </section>
   </section>
 
 
