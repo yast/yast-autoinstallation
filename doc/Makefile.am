@@ -18,6 +18,8 @@ CLEANFILES = .html.sum  profile.dtd.xml elements \
   components.ent .ps.sum  autoyast.out autoyast.pdf \
   images.ent 
 
+STYLESHEET_CSS = default.css
+
 html_DATA = $(wildcard html/*.html) \
 	    html/index.html \
 	    html/yast2docs.css 
@@ -28,10 +30,18 @@ components: components.ent
 examples: examples.ent
 	bin/examples.sh > examples.ent
 
-html/index.html: autoyast.xml 
-	XML_CATALOG_FILES=@XML_CATALOG@\
-	@XSLTPROC@ --xinclude  @STYLESHEET_HTML@ \
-	$<
+html/index.html: autoyast.xml
+	XML_CATALOG_FILES=@XML_CATALOG@ \
+	time -p  @XSLTPROC@ --xinclude \
+	-stringparam chunk.fast '1' \
+	--stringparam html.stylesheet $(STYLESHEET_CSS) \
+	@STYLESHEET_HTML@ autoyast.xml
+					
+
+#html/index.html: autoyast.xml 
+#	XML_CATALOG_FILES=@XML_CATALOG@\
+#	@XSLTPROC@ --xinclude  @STYLESHEET_HTML@ \
+#	$<
 
 autoyast.fo: autoyast.xml
 	XML_CATALOG_FILES=@XML_CATALOG@ \
@@ -45,6 +55,7 @@ autoyast.xml: images.ent examples components
 
 html/yast2docs.css: html/index.html
 	cp @STYLESHEET_CSS@ html
+	cp web/default.css html
 	cp -a $(ydatadir)/docbook/images html
 
 
