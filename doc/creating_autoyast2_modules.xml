@@ -510,7 +510,7 @@ GenericName=Configure NIS client
      <refentry>
       <refnamediv>
 	<refname>X-SuSE-YaST-AutoInstRequires</refname>
-	<refpurpose>What modules a re required before this module is run. </refpurpose>
+	<refpurpose>What modules are required before this module is run. </refpurpose>
       </refnamediv>
       <refsect1>
 	<title>Values</title>
@@ -521,6 +521,41 @@ GenericName=Configure NIS client
 	<para></para>
       </refsect1>
     </refentry>   
+
+<!-- merging stuff -->
+
+    <refentry>
+      <refnamediv>
+	<refname>X-SuSE-YaST-AutoInstMerge</refname>
+	<refpurpose>Multiple sections in the profile can be handled by one module</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values</title>
+	<para>comma delimited list of sections to merge (see also X-SuSE-YaST-AutoInstMergeTypes)</para>
+	<para>The Users module for example handles also groups and user_defaults.</para>
+      </refsect1>
+      <refsect1>
+	<title>Default Value</title>
+	<para></para>
+      </refsect1>
+    </refentry>   
+    <refentry>
+      <refnamediv>
+	<refname>X-SuSE-YaST-AutoInstMergeTypes</refname>
+	<refpurpose>Which datatypes are the section of that will be merged to be handled by one module</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values</title>
+	<para>comma delimited list of datatypes (list or map) for the sections from X-SuSE-YaST-AutoInstMerge</para>
+      </refsect1>
+      <refsect1>
+	<title>Default Value</title>
+	<para></para>
+      </refsect1>
+    </refentry>   
+
+
+
   </section>
   <section>
     <title>Conventions for module Writers</title>
