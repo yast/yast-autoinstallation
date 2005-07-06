@@ -186,6 +186,120 @@
         <emphasis>http://10.10.0.1/profiles/rules/rules.xml</emphasis>.
       </para>
     </section>
+    <section id="customrules">
+        <title>Custom Rules</title>
+        <para>
+            If the attributes autoyast provides for rules are not enough for you,
+            you can use custom rules. Custom rules are more or less a shell script
+            you have to write has and whose output on STDOUT is being used to know
+            which autoyast profile should be fetched. STDERR will be ignored.
+        </para>
+        <para>
+            Here is an example for the use of a custom rules:
+        </para>
+        <para>
+            <screen>
+<rule>
+    <custom1>
+        <script>
+&lt;!CDATA[
+if grep -i intel /proc/cpuinfo > /dev/null; then
+echo -n "intel"
+else
+echo -n "non_intel"
+fi;
+]]&gt;
+        </script>
+        <match>*</match>
+        <match_type>exact</match_type>
+    </custom1>
+    <result>
+         <profile>@custom1@.xml</profile>
+         <continue config:type="boolean">true</continue>
+    </result>
+</rule>
+            </screen>
+        </para>
+        <para>
+            The script in this rule can echo either "intel" or "non_intel" to STDOUT (the
+            output of the grep command must be directed to /dev/null in this case).
+            Autoyast will catch that output and will fetch a file with the name "intel.xml"
+            or "non_intel.xml". This file can contain the autoyast profile part for the
+            software selection for example, in the case you want to do a different
+            software selection on intel hardware then on others. So the output of the rule
+            script will be filled into the two '@' characters, to determine the filename of
+            the profile to fetch.
+        </para>
+        <para>
+            The number of custom rules is limited to 5. So you can use custom1 to custom5.
+        </para>
+    </section>
+    <section id="matchtypes">
+        <title>Match Types for rules</title>
+        <para>
+            you can have three different match_types:
+        </para>
+        <para>
+            <itemizedlist>
+                <listitem>
+                    <para>
+                        exact - which is the default
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        greater
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        lower
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para>
+            "greater" and "lower" can be used for memsize or totaldisk for
+            example. They can match only on rules which return an integer value.
+        </para>
+    </section>
+    <section id="rulescombination">
+        <title>Combine Attributes</title>
+        <para>
+            It's possible to combine multiple attributes via a logical operator. So it's
+            possible to let a rule match if disksize is greater than 1GB or memsize
+            is exact 512MB (well, not the best example maybe).
+        </para>
+        <para>
+            You can do that with the "operator" element in the rules.xml file. Here is
+            an example:
+        </para>
+        <para>
+        <screen>
+<![CDATA[
+<rule>
+   <disksize>
+        <match>/dev/hda 1000</match>
+        <match_type>greater</match_type>
+   </disksize>
+   <memsize>	    
+        <match>256</match>
+        <match_type>greater</match_type>
+   </memsize>
+   <result>
+        <profile>machine2.xml</profile>
+        <continue config:type="boolean">false</continue>
+   </result>
+   <operator>or</operator>
+</rule>
+]]>
+        </screen>
+        </para>
+        <para>
+            Just "and" and "or" are possible operators and the default operator 
+            is "and".
+        </para>
+    </section>
     <section id="rulesstructure">
 	<title>Rules file structure</title>
 	<para>
@@ -228,12 +342,27 @@
 	    <tbody>
 	      <row>
 		<entry>hostaddress</entry>
-		<entry>IP address of host</entry>
+		<entry>IP address of the host</entry>
+		<entry>This attribute must always match exactly</entry>
+	      </row>
+	      <row>
+		<entry>hostname</entry>
+		<entry>The name of the host</entry>
 		<entry>This attribute must always match exactly</entry>
 	      </row>
 	      <row>
 		<entry>domain</entry>
 		<entry>Domain name of host</entry>
+		<entry>This attribute must always match exactly</entry>
+	      </row>
+	      <row>
+		<entry>installed_product</entry>
+		<entry>The name of the product that is getting installed. For example "SUSE LINUX"</entry>
+		<entry>This attribute must always match exactly</entry>
+	      </row>
+	      <row>
+		<entry>installed_product_version</entry>
+		<entry>The version of the product that is getting installed. For example "9.3"</entry>
 		<entry>This attribute must always match exactly</entry>
 	      </row>
 	    <row>
