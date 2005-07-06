@@ -199,16 +199,15 @@
         </para>
         <para>
             <screen>
+<![CDATA[
 <rule>
     <custom1>
         <script>
-&lt;!CDATA[
 if grep -i intel /proc/cpuinfo > /dev/null; then
 echo -n "intel"
 else
 echo -n "non_intel"
 fi;
-]]&gt;
         </script>
         <match>*</match>
         <match_type>exact</match_type>
@@ -218,6 +217,7 @@ fi;
          <continue config:type="boolean">true</continue>
     </result>
 </rule>
+]]>
             </screen>
         </para>
         <para>
@@ -226,8 +226,8 @@ fi;
             Autoyast will catch that output and will fetch a file with the name "intel.xml"
             or "non_intel.xml". This file can contain the autoyast profile part for the
             software selection for example, in the case you want to do a different
-            software selection on intel hardware then on others. So the output of the rule
-            script will be filled into the two '@' characters, to determine the filename of
+            software selection on intel hardware than on others. So the output of the rule
+            script will be filled between the two '@' characters, to determine the filename of
             the profile to fetch.
         </para>
         <para>
@@ -463,9 +463,33 @@ fi;
       You can assign a system to different classes which can be defined in the
       control file. Unlike rules, classes have to be configured in the control
       file and represent a configuration which is typical for a group of
-      systems. 
+      systems.
     </para>
-    
+    <para>
+      Here is an example of a class definition:
+    </para>
+    <para>
+        <screen>
+<![CDATA[
+<classes config:type="list">
+    <class>
+        <class_name>TrainingRoom</class_name>
+        <configuration>Software.xml</configuration>
+    </class>
+</classes>
+]]>
+        </screen>
+    </para>
+    <para>
+        The file Software.xml must be in the directory "classes/TrainingRoom/" then and
+        it will get fetched from the same place like the autoyast profile and the rules were
+        fetched from.
+    </para>
+    <para>
+        If you have multiple kind of profiles and those profiles share parts, it's recommended to
+        use classes for that. You just have to change the class and all profiles using that class
+        are fixed too. By the way, you can reach something similar by using XIncludes.
+    </para>
     <para>
       Using the configuration management system, you can define a set of
       classes. The class definition consists  of the following variable for each class:
