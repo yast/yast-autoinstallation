@@ -22,8 +22,7 @@ STYLESHEET_CSS = default.css
 
 html_DATA = $(wildcard html/*.html) \
 	    html/index.html \
-	    html/yast2docs.css \
-		webimages
+	    html/yast2docs.css
 
 components: components.ent
 	bin/components.sh noref > components.ent
