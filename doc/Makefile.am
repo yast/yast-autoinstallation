@@ -11,7 +11,7 @@ xml_file = autoyast.xml
 xml_files =  $(wildcard *.xml) 
 
 
-EXTRA_DIST = $(xml_files) $(wildcard *.xsl) 
+EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css
 
 CLEANFILES = .html.sum  profile.dtd.xml elements \
   elements.xml elements.ent profile.dtd.xml examples.ent\
