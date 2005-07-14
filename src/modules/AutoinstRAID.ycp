@@ -146,7 +146,9 @@
                     });
             map<string, any> allmds =  (map<string, any>)ExistingRAID["/dev/md"]:$[];
             allmds["partitions"]	= modified_mds;
-            Storage::AddMainDev("/dev/md",  allmds );
+	    map<string,map> tg = Storage::GetTargetMap();
+	    tg["/dev/md"] = allmds;
+	    Storage::SetTargetMap(tg);
             // update our variable
             ExistingRAID["/dev/md"] = allmds;
         }
@@ -168,24 +170,24 @@
 	    md["device"]	= dev;
 
 
-	    if (md["loop_fs"]:false || md["crypt_fs"]:false)
+	    if (md["enc_type"]:`none!=`none )
 	    {
-		md["crypt_key"] =   Storage::AddCryptToClassified( md["crypt_key"]:"");
+		Storage::SetCryptPwd( dev, md["crypt_key"]:"" );
 	    }
 	    y2milestone("Working on %1", md);
 
 
-	    string chunk_size = "4";
+	    integer chunk_size = 4;
 	    map options = md["raid_options"]:$[];
 	    string raid_type	= options["raid_type"]:"raid1";
 
 	    if ( raid_type == "raid5" )
 	    {
-		chunk_size = "128";
+		chunk_size = 128;
 	    }
 	    if ( raid_type == "raid0" )
 	    {
-		chunk_size = "32";
+		chunk_size = 32;
 	    }
 
 
@@ -194,9 +196,9 @@
 		options["raid_type"] = raid_type;
 	    }
 
-	    string sel_chunksize = options["chunk_size"]:"";
+	    integer sel_chunksize = options["chunk_size"]:0;
 
-	    if ( sel_chunksize != "" )
+	    if ( sel_chunksize != 0 )
 	    {
 		chunk_size = sel_chunksize;
 		options["chunk_size"]	= chunk_size;
@@ -205,25 +207,11 @@
 
 	    if(  raid_type == "raid5" && options["parity_algorithm"]:"" == "" )
 	    {
-		options["parity_algorithm"] = "left-symmetric";
+		options["parity_algorithm"] = "left_symmetric";
 	    }
 
 	    md["nr"] = md["partition_nr"]:0;
 
-
-            // LVM on RAID
-
-	    if (md["lvm_group"]:"" != "")
-	    {
-		md["fsid"]		= Partitions::fsid_lvm;
-	    }
-	    else
-	    {
-		md["fsid"]		= md["partition_id"]:Partitions::fsid_native;
-	    }
-
-            
-	    md["region"]		= [0 , 1];
 
 	    if (!haskey(md, "create"))
 	    {
@@ -248,15 +236,6 @@
 	    return (union(md, options));
 	});
 
-
-        // Adjust Sizes
-	RaidList= maplist( map md, RaidList,
-			   ``({
-			       integer len = raid_size_byte( Storage::GetTargetMap(), md);
-			       md["region"] = [0, len / (1024 * 1024)];
-			       return( md );
-			   }));
-
 	list allraid = [];
 	if (size (ExistingRAID["/dev/md","partitions"]:[]) > 0 )
 	{
@@ -271,23 +250,13 @@
 
         map<string, any> RaidMap = 
             $[
-            "cyl_count" : 1,                   
-            "cyl_size" : 1024 * 1024,         
-            "name" : Partitions::raid_name,
             "partitions" : allraid,
             ];
 	y2milestone("RaidMap: %1", RaidMap);
 
-        if (old_available)
-        {
-            RaidMap["whole_disk"] = true;
-            Storage::SetMainDev("/dev/md",  RaidMap );
-        }
-        else
-        {
-            RaidMap["whole_disk"] = true;
-            Storage::AddMainDev("/dev/md",  RaidMap );
-        }
+	map<string,map> tg = Storage::GetTargetMap();
+	tg["/dev/md"] = RaidMap;
+	Storage::SetTargetMap(tg);
 	y2milestone("Targets: %1", Storage::GetTargetMap());
 	return true;
     }

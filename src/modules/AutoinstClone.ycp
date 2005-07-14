@@ -112,12 +112,10 @@
         StorageDevices::InitDone();
 	map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
-	StorageMap = Storage::GetFsysType(StorageMap);
         StorageMap=filter(string d, map p, StorageMap, ``(!issubstring(d, "/dev/evms")));
 	y2debug("Storagemap %1", StorageMap);
 
 	list drives = maplist(string k, map v, StorageMap, ``{
-	    bytes_per_unit = v["cyl_size"]:1;
 	    list partitions = [];
 	    list winp = [];
 	    list<integer> usepartitions = [];
@@ -141,7 +139,7 @@
 		if (haskey(pe,"region"))
 		{
 		    new_pe["region"] = pe["region"]:[];
-		    new_pe["size"] = sformat("%1", units_to_size(pe["region"]:[]));
+		    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
 		}
                 // LVM Group
 		if (haskey(pe,"lvm_group") && pe["lvm_group"]:"" != "")
@@ -150,9 +148,9 @@
 		}
 
                 // LV
-		if (pe["fstype"]:"" == "LV" )
+		if (pe["type"]:`unknown == `lvm )
 		{
-		    new_pe["lv_name"] = pe["nr"]:"";
+		    new_pe["lv_name"] = pe["name"]:"";
 		}
 
                 // Used Filesystem
@@ -164,20 +162,7 @@
                     new_pe["format"] = pe["format"]:true;
 		}
 
-                // Raid Name
-                if (haskey(pe, "raid_name"))
-                {
-                    new_pe["raid_name"] = pe["raid_name"]:"/dev/md0";
-                }
-
-                // Raid Type (raid or spare)
-                if (haskey(pe, "raid_type") && k !="/dev/md")
-                {
-                    new_pe["raid_type"] = pe["raid_type"]:"raid";
-                }
-
-
-		if (haskey(pe,"nr") && pe["fstype"]:"" != "LV")
+		if (haskey(pe,"nr") && pe["type"]:`unknown != `lvm)
 		{
 		    if (!skipwin)
 		    {
@@ -208,11 +193,9 @@
 	    map drive = $[];
 	    drive["partitions"]	= partitions;
             drive["device"]	= k;
-            if (haskey(v,"is_lvm_vg") && v["is_lvm_vg"]:false)
+            if( v["type"]:`CT_UNKNOWN==`CT_LVM)
             {
-                drive["is_lvm_vg"] = true;
-                drive["pesize"] = sformat("%1M",
-                        v["cyl_size"]:1 / (1024 * 1024) );
+                drive["pesize"] = sformat("%1M", v["pesize"]:1 / 1024 );
             }
             if (haskey(v,"lvm2") && v["lvm2"]:false)
             {

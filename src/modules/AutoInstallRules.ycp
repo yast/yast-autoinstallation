@@ -246,11 +246,11 @@
 
 	map<string,map> storage =  Storage::GetTargetMap();
         map<string,map> PhysicalTargetMap = filter(string k, map v, storage ,
-                ``(Storage::IsRealDisk(k, v) ));
+                ``(Storage::IsRealDisk(v) ));
 	totaldisk = 0;
 	disksize = maplist( string k, map v,  PhysicalTargetMap,
 			    ``{
-				integer size_in_mb = v["cyl_size"]:0 * v["cyl_count"]:0 / ( 1024 * 1024 ) ;
+				integer size_in_mb = v["size_k"]:0 / 1024;
 				totaldisk = totaldisk + size_in_mb;
 				return($["device":k, "size": size_in_mb]);
 			    });
