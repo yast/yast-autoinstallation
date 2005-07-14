@@ -262,7 +262,6 @@
 	    string vg = group["lvm_name"]:"";
 
 	    new_lvm["device"]       = sformat("/dev/%1", vg );
-	    new_lvm["is_lvm_vg"]    = true;
 	    new_lvm["use"]      = "all";
 	    new_lvm["pesize"]       = group["pesize"]:"";
 	    list partitions = maplist(map lv, group["logical_volumes"]:[], ``{

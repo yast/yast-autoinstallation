@@ -32,7 +32,7 @@ $Id$
     list GetNoneLinuxPartitions(string device) {
         list ret = [];
         foreach ( string dev, map disk, Storage::GetTargetMap(), ``{
-                if( Storage::IsRealDisk( dev, disk )  && dev == device)
+                if( Storage::IsRealDisk( disk )  && dev == device)
                 {
                 list<map> l = (list<map>) filter( map p, disk["partitions"]:[],
                     ``(!p["delete"]:false &&
@@ -58,7 +58,7 @@ $Id$
     list<integer> GetAllPartitions(string device) {
         list<integer> ret = [];
         foreach ( string dev, map disk, Storage::GetTargetMap(), ``{
-                if( Storage::IsRealDisk( dev, disk )  && dev == device)
+                if( Storage::IsRealDisk( disk )  && dev == device)
                 {
                 list<integer> l = maplist( map p, disk["partitions"]:[],
                     ``(p["nr"]:0));
@@ -162,9 +162,9 @@ $Id$
 		if( partition["size"]:0 == -1 )
 		    partition["size"] = 0;
 
-		if (partition["lvm_group"]:""!="")
+		if (partition["used_by_type"]:`UB_NONE==`UB_LVM)
 	    	    partition["filesystem_id"] =  Partitions::fsid_lvm;
-		else if (partition["raid_name"]:""!="")
+		else if (partition["used_by_type"]:`UB_NONE==`UB_MD)
 		    partition["filesystem_id"] =  Partitions::fsid_raid;
 
 		partition["fsid"] = partition["filesystem_id"]:Partitions::fsid_native;
@@ -173,7 +173,7 @@ $Id$
 	        partitions = add( partitions, partition );
 	    });
 	
-	    if (!d["is_lvm_vg"]:false) {
+	    if (d["type"]:`CT_UNKNONW!=`CT_LVM) {
 		d["partitions"] = partitions;
 	    }
 	    return (d);
@@ -367,7 +367,7 @@ $Id$
   map conf = read_partition_config( pinfo_name() );
   map solutions = $[];
 
-  if( size(conf)>0 && Storage::IsRealDisk( dev, disk ))
+  if( size(conf)>0 && Storage::IsRealDisk( disk ))
   {
   y2milestone( "processing disk %1", dev );
   map tc = try_add_boot( conf, disk );
@@ -404,7 +404,7 @@ $Id$
 	    // return list of available devices
 	    list<string> ddev = maplist( string k, map e, 
 					 filter( string l, map f, targetmap, 
-						 ``(Storage::IsRealDisk( l, f ))), ``(k));
+						 ``(Storage::IsRealDisk( f ))), ``(k));
 	    // ["/dev/hda", "/dev/hdb"]
 	    y2milestone( "available disks (ddev) %1", ddev );
 	    map tc = $[];
@@ -768,7 +768,8 @@ $Id$
 			    || solution["partitions",pindex,"crypt_fs"]:false)
 			{
 			    p["loop_fs"]  =    	solution["partitions",pindex,"crypt_fs"]:false;
-			    p["crypt_key"] =   	Storage::AddCryptToClassified( solution["partitions",pindex,"crypt_key"]:"");
+			    Storage::SetCryptPwd( p["device"]:"",
+						  solution["partitions",pindex,"crypt_key"]:"" );
 			    p["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
 			}
 			
@@ -780,8 +781,6 @@ $Id$
 			}
 			if (solution["partitions",pindex,"lvm_group"]:"" != "")
 			{
-			    Storage::SetLvmUse( true );
-
 			    p["used_fs"]	=  `unknown;
 			    p["fsid"]		=  Partitions::fsid_lvm;
 			    p["format"]		=  false;
@@ -885,7 +884,8 @@ $Id$
 			|| solution["partitions",pindex,"crypt_fs"]:false)
 		    {
 			part["loop_fs"]  =    	solution["partitions",pindex,"crypt_fs"]:false;
-			part["crypt_key"] =   	Storage::AddCryptToClassified( solution["partitions",pindex,"crypt_key"]:"");
+			Storage::SetCryptPwd( part["device"]:"",
+			                      solution["partitions",pindex,"crypt_key"]:"" );
 			part["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
 		    }
 		    
@@ -898,8 +898,6 @@ $Id$
 		    part["fstype"] = Partitions::FsIdToString( fsid );
 		    if (solution["partitions",pindex,"lvm_group"]:"" != "")
 		    {
-			Storage::SetLvmUse( true );
-
 			part["used_fs"]	=  `unknown;
 			part["fsid"]		=  Partitions::fsid_lvm;
 			part["format"]		=  false;
@@ -1646,7 +1644,7 @@ $Id$
 	    if( Partitions::IsDosPartition( fsid ) ) 
 	    {
 		integer psize = (p["region",0]:0 + p["region",1]:1 - 1) * cyl_size;
-		win = FileSystems::GetFreeSpace( p["device"]:"", psize, `fat32, 
+		win = Storage::GetFreeSpace( p["device"]:"", psize, `fat32,
 						 false );
 		y2milestone( "win=%1", win );
 		if( win != nil && psize > 300*1024*1024 )

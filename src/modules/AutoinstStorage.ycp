@@ -326,7 +326,7 @@ which root partition should be used.  Automatic installation not possible.
 	// return list of available devices
 	list<string> disk_devices = maplist( string k, map e,
 					     filter( string l, map f, Storage::GetTargetMap(),
-						     ``(Storage::IsRealDisk( l, f ))), ``(k));
+						     ``(Storage::IsRealDisk( f ))), ``(k));
 
 	y2milestone("disk_devices: %1", disk_devices );
 
@@ -334,7 +334,7 @@ which root partition should be used.  Automatic installation not possible.
 	
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
-	    if ( Storage::IsRealDisk( device, data) )
+	    if ( Storage::IsRealDisk( data) )
 	    {
 		y2milestone("Creating partition plans for %1", device);
 		if (data["initialize"]:false == true)
@@ -370,12 +370,9 @@ which root partition should be used.  Automatic installation not possible.
     {        
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
-	    if (data["initialize"]:false && 
-                !data["is_lvm_vg"]:false && 
-                data["device"]:"" != "/dev/md" 
-                )
+	    if (data["initialize"]:false && data["type"]:`CT_UNKNOWN==`CT_DISK )
 	    {
-		integer zero_ret = Storage::ZeroDevice( device );
+		boolean zero_ret = Storage::DeletePartitionTable( device );
 		y2milestone("Initializing device: %1 --> %2", device, zero_ret);
 	    }
 	});
