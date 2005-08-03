@@ -297,6 +297,7 @@ which root partition should be used.  Automatic installation not possible.
      * @return boolean
      */
     global define boolean Write() {
+        Storage::SetRecursiveRemoval( true );
 
         if (read_fstab)
             return (handle_fstab());
