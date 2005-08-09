@@ -61,7 +61,8 @@
      * @return void
      */
     global define boolean Init () {
-
+    y2milestone("entering Init");
+    y2milestone("AutoTargetMap is %1",AutoinstStorage::AutoTargetMap);
 	lvm   = filter(string k, map v,
                 AutoinstStorage::AutoTargetMap, ``(v["type"]:`CT_UNKNOWN==`CT_LVM));
 	
@@ -71,7 +72,7 @@
 	}
 	
 	targetMap = Storage::GetTargetMap();
-	
+    y2milestone("GetTargetMap returns %1",targetMap);	
 	ExistingLVM	= filter(string k, map v, Storage::GetTargetMap(), ``(v["type"]:`CT_UNKNOWN==`CT_LVM));
 	
 	y2milestone("Existing LVM: %1", ExistingLVM);
@@ -186,7 +187,7 @@
      * @return void
      */
     global define map KeepLV (string vgname, map lv, map<string,map> targetMap  ) {
-             
+        y2milestone("entering KeepLV with %1 - %2 - %3",vgname,lv,targetMap);
         map modLV = $[
 		      "create"		: false,
 		      "region"		: lv["region"]:[],
@@ -213,11 +214,24 @@
      * @return list existing PVs
      */
     global define list<map> get_existing_pvs ( string vgname ) {
+        y2milestone("entering get_existing_pvs with %1",vgname);
 	map<string, map> tm = $[];	
 
+
 	foreach(string k, map v, AutoinstStorage::AutoTargetMap, ``{
-	    if (Storage::IsRealDisk( v ))
-		tm[k] = v;
+//	    if (Storage::IsRealDisk( v ))
+        y2milestone("AutoTargetMap = %1", v );
+        if ( v["type"]:`CT_UNKNOWN != `CT_LVM ) {
+    		tm[k] = v;
+            integer i = 0;
+            foreach( map p, v["partitions"]:[], ``{
+                if( haskey(p,"lvm_group") ) {
+                    tm[k,"partitions",i,"used_by_type"] = `UB_LVM;
+                    tm[k,"partitions",i,"used_by"]      = p["lvm_group"]:"";
+                }
+                i = i + 1;
+            });
+        }
 	    else if (k == "/dev/md")
 		tm[k] = v;
 		     
@@ -227,20 +241,11 @@
 	
 	// all possible PVs on all available devices
 	list<map> all_possible_pvs = filter( map part, get_possible_pvs( Storage::GetTargetMap() ),
-					     ``( part["lvm_group"]:"" == vgname && !part["delete"]:false ));
+					     ``( ((part["used_by"]:"" == vgname && part["used_by_type"]:`UB_NONE == `UB_LVM) || part["used_by_type"]:`UB_NONE == `UB_NONE) && !part["delete"]:false ));
 	
-	// all possible PVs on configured devices
-	list<map> possible_pvs = filter( map part, get_possible_pvs( tm ),
-					 ``( part["lvm_group"]:"" == vgname ));
-
 	y2milestone("all pvs= %1", all_possible_pvs);
-	y2milestone("possible pvs= %1", possible_pvs);
 
-	if (all_possible_pvs != possible_pvs)
-	{
-	    pvs_on_unconfigured = true;
-	}
-	// FIXME
+    // FIXME
 	return (all_possible_pvs);
     }
 
@@ -250,6 +255,7 @@
      * @return list<map> list of deleted PVs
      */
     global define list<map> get_deleted_pvs ( string vgname ) {
+        y2milestone("entering get_deleted_pvs with %1",vgname);
 	list<list<map> > ret = [];
 	foreach( string dev, map devmap, Storage::GetTargetMap(),
 		 ``{
@@ -275,7 +281,7 @@
      * @return boolean true on success
      */
     global define boolean Write () {
-
+    y2milestone("entering Write");
 	Storage::SetZeroNewPartitions(ZeroNewPartitions);
 	
 	list    lvm_vgs      	= get_vgs( targetMap );
@@ -286,13 +292,14 @@
 
         foreach (string device, map volume_group, lvm ,
 		 ``{
-	  
+	    y2milestone("volume_group is %1", volume_group);
 	    string 	use	= volume_group["use"]:"none";
 	    boolean 	lvm2	= volume_group["lvm2"]:true;
 	    		    
 	    string 	vgname	= substring(device, 5);
 	    current_vg = vgname;
 	   	
+	    list<map> 	new_pvs	= get_existing_pvs(vgname);
 
 	    if (volume_group["prefer_remove"]:false)
 	    {
@@ -306,15 +313,16 @@
 		
 		vg["vgname"] = vgname;
 		vg["pesize"] = volume_group["pesize"]:1;
-		vg["lvm2"]   = volume_group["lvm2"]:false;
-	    
+		vg["lvm2"]   = lvm2;
+        
 		map addVG = addVolumeGroup(vg, targetMap, [] );
+        y2milestone("addVolumeGroup returns %1",addVG);
 		targetMap = Storage::GetTargetMap();
+        y2milestone("Storage::GetTargetMap returns %1",targetMap);
 		lvm_vgs = get_vgs( targetMap );
 		current_vg      = addVG["vg"]:"none";
 	    }
 
-	    list<map> 	new_pvs	= get_existing_pvs(vgname);
 	    list<string> new_pvs_devices= maplist(map pv, new_pvs, ``{
 		return(pv["device"]:"");
 	    });
@@ -323,7 +331,8 @@
 	    foreach(map pv, new_pvs, ``{
 		if (pv["create"]:false)
 		{
-		    addPhysicalVolume(targetMap, pv["devkey"]:"", current_vg );
+            y2milestone("addPhysicalVolume %1 , %2",pv["device"]:"", current_vg );
+		    addPhysicalVolume(targetMap, pv["device"]:"", current_vg );
 		}
 	    });
 
@@ -341,7 +350,6 @@
 		    y2milestone("Keeping LV: %1", this_lv);			
 		    
 		    lv["used_fs"]	=	this_lv["used_fs"]:`reiser;
-		    lv["region"]	=	this_lv["region"]:[];
 
                     map lvret = $[];
                     if (lv["resize"]:false )
@@ -357,10 +365,10 @@
 				      "used_fs"		: this_lv["used_fs"]:`reiser,
 				      "format"		: lv["format"]:false ,
 				      "type"		: `lvm,
-				      "device"		: "/dev/" + current_vg + "/" + lv["nr"]:""
+				      "device"		: "/dev/" + current_vg + "/" + lv["name"]:""
                         ];
 			reslv["changed_size"] = true;		  
-                        Storage::ResizeVolume( "/dev/" + current_vg + "/" + lv["nr"]:"",
+                        Storage::ResizeVolume( "/dev/" + current_vg + "/" + lv["name"]:"",
 					       "/dev/" + current_vg,
 			                       lv["lv_size"]:0/1024 );
                     }
@@ -373,14 +381,12 @@
 		{
 		    lv["used_fs"] = lv["filesystem"]:`reiser;
 		    lv["create"] = true;		  
-		    lv["region"] = [0, (lv["lv_size"]:0 +volume_group["pesize"]:1-1)/volume_group["pesize"]:1 ];
-		    lv["size_bytes"] = lv["lv_size"]:0;
 		    lv["format"] = lv["format"]:true;
-		    lv["device"] = Storage::GetDeviceName( "/dev/"+current_vg, lv["nr"]:"");		
-		    
+            lv["device"] = "/dev/" + current_vg + "/" + lv["name"]:"";
+		    y2milestone("calling addLogicalVolume with lv = %1 and current_vg = %2",lv, current_vg);
 		    addLogicalVolume(lv, current_vg);
 		    targetMap = Storage::GetTargetMap();
-                  
+            y2milestone("Storage::GetTargetMap returns %1",targetMap);
 		}
 	
 	    });
