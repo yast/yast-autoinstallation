@@ -62,6 +62,22 @@
     }
 
     /**
+     * compatibility to new storage lib in 10.0
+     */
+    define void storageLibCompat() {
+        list<map> newPart = [];
+        foreach( map d, current["partitioning"]:[], {
+            if( haskey(d, "is_lvm_vg") && d["is_lvm_vg"]:false == true ) {
+                d = remove( d, "is_lvm_vg" );
+                d["type"] = `CT_LVM;
+            }
+            newPart = add( newPart, d );
+        });
+        y2milestone("partitioning is now %1",newPart);
+        current["partitioning"] = newPart;
+    }
+
+    /**
      * Read Profile properties and Version
      * @param map Profile Properties
      * @return void
@@ -107,6 +123,8 @@
 
         if (!current["x11", "configure_x11"]:false)
             ProductControl::DisabledModules=add(ProductControl::DisabledModules, "x11");
+
+        storageLibCompat(); // compatibility to new storage library (SL 10.0)
 
         y2milestone("Current Profile=%1", current );
 	return;

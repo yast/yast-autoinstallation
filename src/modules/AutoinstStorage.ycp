@@ -75,7 +75,7 @@
      * @return void
      */
     define map<string, map>  set_devices(list<map> storage_config ) {
-	
+    y2milestone("entering set_devices with %1",storage_config);	
 	boolean first_set = false;
         boolean failed = false;
 	map<string, map> auto_targetmap =  listmap (map drive, storage_config, ``{
@@ -173,6 +173,7 @@
      */
     global define list<map> Export()
     {
+        y2milestone("entering Export");
 	list<map> clean_drives = maplist(map d,  AutoPartPlan, ``{
 	    list p = maplist(map part, d["partitions"]:[] , ``{
 		if (haskey(part, "fsid"))
@@ -201,6 +202,7 @@
      */
     global define boolean Import(list<map> settings)
     {
+        y2milestone("entering Import with %1", settings);
         if (Mode::autoinst()) {
     	    AutoPartPlan = preprocess_partition_config(settings);
         } else {
@@ -218,6 +220,7 @@
      */
     global define boolean ImportAdvanced(map settings)
     {
+        y2milestone("entering ImportAdvanced with %1", settings);
         fstab = settings["fstab"]:$[];
         read_fstab = fstab["use_existing_fstab"]:false;
 
@@ -249,6 +252,7 @@
      */
     define boolean handle_fstab()
     {
+        y2milestone("entering handle_fstab");
 
         if (!RootPart::didSearchForRootPartitions)
         {
@@ -297,6 +301,7 @@ which root partition should be used.  Automatic installation not possible.
      * @return boolean
      */
     global define boolean Write() {
+        y2milestone("entering Write");
         Storage::SetRecursiveRemoval( true );
 
         if (read_fstab)
@@ -335,8 +340,9 @@ which root partition should be used.  Automatic installation not possible.
 	
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
-	    if ( Storage::IsRealDisk( data) )
-	    {
+	    if( data["type"]:`CT_UNKNOWN != `CT_LVM ) {
+//	    if ( Storage::IsRealDisk( data) )
+//	    {
 		y2milestone("Creating partition plans for %1", device);
 		if (data["initialize"]:false == true)
 		{
@@ -354,8 +360,10 @@ which root partition should be used.  Automatic installation not possible.
 		y2milestone("solutions: %1", sol);
 		map <string, map> tm = Storage::GetTargetMap();
 		tm[device] =    process_partition_data(device, sol);
+
 		Storage::SetTargetMap(tm);
-	    }
+//	    }
+	}
 	});
 
 	return result;
@@ -368,7 +376,8 @@ which root partition should be used.  Automatic installation not possible.
      * @return void
      */
     global define void Initialize ()
-    {        
+    {   
+        y2milestone("entering Initialize");
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
 	    if (data["initialize"]:false && data["type"]:`CT_UNKNOWN==`CT_DISK )
@@ -401,6 +410,7 @@ which root partition should be used.  Automatic installation not possible.
      */
     global define list Overview()
     {
+        y2milestone("entering Overview");
 
 	map allfs = FileSystems::GetAllFileSystems(true, true);
 	list drives_table = [];
