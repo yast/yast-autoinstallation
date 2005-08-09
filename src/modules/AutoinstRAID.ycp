@@ -23,6 +23,8 @@
 
     global boolean old_available = false;
 
+    
+
     map raid = $[];
 
     // Local variables
@@ -196,7 +198,7 @@
 		options["raid_type"] = raid_type;
 	    }
 
-	    integer sel_chunksize = options["chunk_size"]:0;
+	    integer sel_chunksize = tointeger(options["chunk_size"]:"0");
 
 	    if ( sel_chunksize != 0 )
 	    {
@@ -232,7 +234,7 @@
 	    md["type"]		= `sw_raid;
             if (haskey(md, "raid_options"))
                 md=remove(md, "raid_options");
-
+        md["devices"] = AutoinstStorage::raid2device[md["device"]:""]:[];
 	    return (union(md, options));
 	});
 
@@ -251,6 +253,7 @@
         map<string, any> RaidMap = 
             $[
             "partitions" : allraid,
+            "type"       : `CT_MD
             ];
 	y2milestone("RaidMap: %1", RaidMap);
 

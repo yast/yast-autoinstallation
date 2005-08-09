@@ -46,6 +46,8 @@
     /* default value of settings modified */
     global boolean modified = false;
 
+    global map<string,list> raid2device = $[];
+
     /**
      * Function sets internal variable, which indicates, that any
      * settings were modified, to "true"
@@ -166,7 +168,38 @@
 	y2milestone("processed autoyast partition plan: %1", auto_targetmap );
 	return auto_targetmap;
     }
-    
+
+    global define list GetRaidDevices (string dev, map<string,map> tm) {
+        list<map> ret = [];
+        foreach( string k, map d, tm, ``{
+            if( d["type"]:`CT_UNKNOWN == `CT_DISK ) {
+                list tmp = filter( map p, d["partitions"]:[],
+                                    ``( p["raid_name"]:"" == dev ) );
+                ret = (list<map>)union( ret, tmp );
+            }
+        });
+        list dlist = maplist( map p, ret, ``{ return p["device"]:""; } );
+        y2milestone("GetRaidDevices dlist = %1 and ret = %2", dlist, ret);
+        return dlist;
+    }
+
+    global define void SearchRaids (map<string,map> tm) {
+        raid2device = $[];
+        foreach( string k, map d, tm, ``{
+            if( d["type"]:`CT_UNKNOWN == `CT_DISK ) {
+                list<map> tmp = filter( map p, d["partitions"]:[],
+                                    ``( p["raid_name"]:"" != "" ) );
+                list<string> devMd = maplist( map p, tmp, ``{ return p["raid_name"]:""; } );
+                foreach( string dev, devMd, ``{
+                    if( ! haskey( raid2device, dev ) ) {
+                        raid2device[dev] = GetRaidDevices(dev,tm);
+                    }
+                });
+            }
+        });
+        y2milestone("SearchRaids raid2device = %1", raid2device);
+    }
+
     /**
      * Dump the settings to a map, for autoinstallation use.
      * @return list
@@ -340,9 +373,9 @@ which root partition should be used.  Automatic installation not possible.
 	
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
-	    if( data["type"]:`CT_UNKNOWN != `CT_LVM ) {
-//	    if ( Storage::IsRealDisk( data) )
-//	    {
+//	    if( data["type"]:`CT_UNKNOWN != `CT_LVM ) {
+	    if ( Storage::IsRealDisk( data) )
+	    {
 		y2milestone("Creating partition plans for %1", device);
 		if (data["initialize"]:false == true)
 		{
@@ -360,6 +393,8 @@ which root partition should be used.  Automatic installation not possible.
 		y2milestone("solutions: %1", sol);
 		map <string, map> tm = Storage::GetTargetMap();
 		tm[device] =    process_partition_data(device, sol);
+
+        SearchRaids(tm);
 
 		Storage::SetTargetMap(tm);
 //	    }
