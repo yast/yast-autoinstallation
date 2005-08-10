@@ -257,7 +257,7 @@
      */
     global define boolean ReadProfileStructure ( string parsedControlFile )
     {
-	current = (map<string,map>) SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
+	current = (map<string,any>) SCR::Read( .target.ycp, [ parsedControlFile, $[]] );
 	if (current == $[])
 	    return false;
 	else
