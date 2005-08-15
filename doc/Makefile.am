@@ -22,7 +22,8 @@ STYLESHEET_CSS = default.css
 
 html_DATA = $(wildcard html/*.html) \
 	    html/index.html \
-	    html/yast2docs.css
+	    html/yast2docs.css \
+		html/default.css
 
 components: components.ent
 	bin/components.sh noref > components.ent
@@ -55,10 +56,10 @@ autoyast.xml: images.ent examples components
 
 html/yast2docs.css: html/index.html
 	cp @STYLESHEET_CSS@ html
-	cp web/default.css html
 	cp -a $(ydatadir)/docbook/images html
 
-
+html/default.css: html/index.html
+	cp web/default.css html
 
 images.ent:
 	@make -r -C images/WEB -f makefile.ent ima
