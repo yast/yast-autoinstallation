@@ -58,7 +58,7 @@ html/yast2docs.css: html/index.html
 	cp @STYLESHEET_CSS@ html
 	cp -a $(ydatadir)/docbook/images html
 
-html/default.css: html/index.html
+html/default.css: html/index.html webimages
 	cp web/default.css html
 
 images.ent:
@@ -114,7 +114,7 @@ images: images/EPS/* images/PNG/*
 install-data-local:
 	install -d -m 755 $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
-	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
+	cp -a $(srcdir)/html/img $(DESTDIR)$(htmldir)
 
 
 clean-local:
