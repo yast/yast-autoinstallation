@@ -219,6 +219,13 @@
 		return part;
 	    });
 	    d["partitions"] = p;
+
+	    // this is to delete the dummy "auto" filled in by UI
+	    if( haskey(d,"device") && d["device"]:"" == "auto" ) {
+		d = remove(d, "device");
+		y2debug("device 'auto' dropped");
+		
+	    }
 	    return d;
 	});
 
@@ -239,6 +246,14 @@
         if (Mode::autoinst()) {
     	    AutoPartPlan = preprocess_partition_config(settings);
         } else {
+	    settings = maplist( map d, settings, ``{
+		if( ! haskey(d,"device") ) {
+		    // this is just to satisfy the UI
+		    d = add( d, "device", "auto" );
+                    y2debug("device 'auto' added");
+                }
+                return d;
+	    });
             AutoPartPlan = settings;
         }
 	y2milestone("AutoPartPlan: %1", AutoPartPlan );
