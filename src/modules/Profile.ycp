@@ -70,6 +70,10 @@
             if( haskey(d, "is_lvm_vg") && d["is_lvm_vg"]:false == true ) {
                 d = remove( d, "is_lvm_vg" );
                 d["type"] = `CT_LVM;
+            } else if( haskey(d, "device") && d["device"]:"" == "/dev/md" ) {
+                d["type"] = `CT_MD;
+            } else {
+                d["type"] = `CT_DISK;
             }
             newPart = add( newPart, d );
         });
