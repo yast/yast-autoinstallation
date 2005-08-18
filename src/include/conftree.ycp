@@ -80,6 +80,11 @@
 
 	string summary =  (string) WFM::CallFunction( module_auto, ["Summary"]);
 	string caption = resourceMap["Name"]:"";
+    string currentFile = AutoinstConfig::currentFile;
+    currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
+    if( size(currentFile) > 0 ) {
+        caption = caption + " - " + currentFile;
+    }
 	string buttonLabel = resourceMap["GenericName"]:"Configure";
 	term contents =
 	    `VBox(
@@ -381,7 +386,13 @@
                 if (group!="" )
                 {
                     contents = modules(group);
-                    Wizard::SetContents(_("Available modules"),
+                    string currentFile = AutoinstConfig::currentFile;
+                    string label = _("Available modules");
+                    if( size(currentFile) > 0 ) {
+                        currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
+                        label = label + " - " + currentFile;
+                    }
+                    Wizard::SetContents(label,
                         contents, AutoinstConfig::MainHelp(), true , true);
                     Wizard::SetTitleIcon(Icons[group]:tolower(group));
                 }
@@ -472,7 +483,13 @@
                     if (group!="" )
                     {
                         contents = modules(group);
-                        Wizard::SetContents(_("Available modules"),
+                        string caption = _("Available modules");
+                        string currentFile = AutoinstConfig::currentFile;
+                        currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
+                        if( size(currentFile) > 0 ) {
+                            caption = caption + " - " + currentFile;
+                        }
+                        Wizard::SetContents(caption,
                                 contents, AutoinstConfig::MainHelp(), true , true);
                         Wizard::SetTitleIcon(Icons[group]:tolower(group));
                     }
