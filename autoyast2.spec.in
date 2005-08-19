@@ -1,6 +1,5 @@
 @HEADER-COMMENT@
-# neededforbuild yast2-devel-packages yast2 yast2-installation yast2-transfer yast2-storage yast2-storage-lib yast2-country yast2-mouse yast2-bootloader yast2-packager yast2-x11 yast2-update libxml2 libxslt docbook-xsl-stylesheets docbook_4
-
+# neededforbuild yast2-devel-packages yast2 yast2-installation yast2-transfer yast2-storage yast2-storage-lib yast2-country yast2-mouse yast2-bootloader yast2-packager yast2-x11 yast2-update libxml2 libxslt docbook-xsl-stylesheets docbook_4 java2 update-alternatives jpackage-utils fop xorg-x11-libs 
 @HEADER@
 Requires:	yast2-core yast2-xml libxslt
 Requires:	autoyast2-installation = %{version}
@@ -41,6 +40,9 @@ Requires:       mkisofs
 @PREP@
 
 @BUILD@
+[ -n "$JAVA_HOME" ] && unset JAVA_HOME
+. /usr/share/java-utils/java-functions
+export JAVA_HOME
 
 @INSTALL@
 for d in `ls $RPM_BUILD_ROOT/usr/share/autoinstall/modules/*.desktop`; do

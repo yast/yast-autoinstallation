@@ -25,6 +25,8 @@ html_DATA = $(wildcard html/*.html) \
 	    html/yast2docs.css \
 		html/default.css
 
+doc_DATA = autoyast.pdf
+
 components: components.ent
 	bin/components.sh noref > components.ent
 
@@ -115,7 +117,6 @@ install-data-local:
 	install -d -m 755 $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/img $(DESTDIR)$(htmldir)
-
 
 clean-local:
 	rm -rf html
