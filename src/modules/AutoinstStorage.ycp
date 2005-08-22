@@ -388,16 +388,15 @@ which root partition should be used.  Automatic installation not possible.
 	
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
-//	    if( data["type"]:`CT_UNKNOWN != `CT_LVM ) {
 	    if ( Storage::IsRealDisk( data) )
 	    {
 		y2milestone("Creating partition plans for %1", device);
 		if (data["initialize"]:false == true)
 		{
-		    map thisDevice = initial_target_map[device]:$[];
-		    thisDevice["partitions"] = [];
-		    initial_target_map[device] = thisDevice;
-		    Storage::SetTargetMap(initial_target_map);		   
+		    //map thisDevice = initial_target_map[device]:$[];
+		    //thisDevice["partitions"] = [];
+            initial_target_map[device,"delete"] = true;
+            Storage::SetTargetMap(initial_target_map);
 		    y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
 		}		
 		
@@ -412,34 +411,11 @@ which root partition should be used.  Automatic installation not possible.
         SearchRaids(tm);
 
 		Storage::SetTargetMap(tm);
-//	    }
 	}
 	});
 
 	return result;
     }
-
-
-    /**
-     * Initialize devices
-     * Called by inst_prepdisk.ycp
-     * @return void
-     */
-    global define void Initialize ()
-    {   
-        y2milestone("entering Initialize");
-	foreach (string device, map data, AutoTargetMap,
-		 ``{
-	    if (data["initialize"]:false && data["type"]:`CT_UNKNOWN==`CT_DISK )
-	    {
-		boolean zero_ret = Storage::DeletePartitionTable( device );
-		y2milestone("Initializing device: %1 --> %2", device, zero_ret);
-	    }
-	});
-	return;
-    }
-
-
 
 
     /**
