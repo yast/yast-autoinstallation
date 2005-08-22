@@ -399,6 +399,25 @@
   <section>
     <title>Advanced Partitioning features</title>
     <section>
+      <title>Wipe out partition table</title>
+      <para>
+        In the most cases this is not needed because autoyast can delete partitions
+        one by one automatically but you have the option to let autoyast clear the partition table
+        instead of deleting the partitions individually.
+      </para>
+      <para>
+        if you go into the "drive" section, you can add
+        <screen>
+<![CDATA[
+<initialize config:"boolean">true</initialize>
+]]>
+</screen>
+        which tells Autoyast to delete the partition table before it starts to analyse the
+        actual partitioning and calculates it's partition plan. Of course this means, that you
+        can't keep any of your existing partitions.
+      </para>
+    </section>
+    <section>
       <title>Mount Options</title>
       <para>
 	By default a file system which is to be mounted is
