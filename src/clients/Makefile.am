@@ -18,7 +18,8 @@ client_DATA = \
     software_auto.ycp \
     storage_auto.ycp		\
 	autoinst_scripts1_finish.ycp	\
-	autoinst_scripts2_finish.ycp
+	autoinst_scripts2_finish.ycp \
+	ayast_probe.ycp
 
 
 EXTRA_DIST =                    \
