@@ -863,7 +863,7 @@ $Id$
 			 
 		    part["mount"] = mount;
 		    part["used_fs"] = 
-			solution["partitions",pindex,"filesystem"]:`reiser;		    
+			solution["partitions",pindex,"filesystem"]:((mount == "swap")?(`swap):(`reiser));
 		    value = solution["partitions",pindex,"fstopt"]:"";
 		    if( size(value)>0 )
 		    {
