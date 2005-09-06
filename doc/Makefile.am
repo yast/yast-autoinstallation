@@ -39,7 +39,16 @@ html/index.html: autoyast.xml
 	-stringparam chunk.fast '1' \
 	--stringparam html.stylesheet $(STYLESHEET_CSS) \
 	@STYLESHEET_HTML@ autoyast.xml
-					
+	XML_CATALOG_FILES=@XML_CATALOG@ \
+	time -p  @XSLTPROC@ --xinclude \
+	-stringparam base.dir 'html/devel/' \
+	-stringparam chunk.fast '1' \
+	--stringparam html.stylesheet $(STYLESHEET_CSS) \
+	@STYLESHEET_HTML@ creating_autoyast2_modules.xml
+	cd html/devel; \
+	ln -s ../default.css ./default.css; \
+	ln -s ../images ./images
+	cd ../..
 
 #html/index.html: autoyast.xml 
 #	XML_CATALOG_FILES=@XML_CATALOG@\
@@ -117,6 +126,7 @@ install-data-local:
 	install -d -m 755 $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/img $(DESTDIR)$(htmldir)
+	cp -a $(srcdir)/html/devel $(DESTDIR)$(htmldir)
 
 clean-local:
 	rm -rf html
