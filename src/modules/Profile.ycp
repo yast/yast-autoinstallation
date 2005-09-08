@@ -75,6 +75,18 @@
             } else {
                 d["type"] = `CT_DISK;
             }
+
+            // actually, this is not a compatibility hook for the new
+            // storage lib. It's a hook to be compatibel with the autoyast
+            // documentation for reusing partitions
+            //
+            d["partitions"] = maplist( map p, d["partitions"]:[], ``{
+                if( haskey(p, "create") && p["create"]:true == false &&
+                    haskey(p, "partition_nr") ) {
+                    p["usepart"] = p["partition_nr"]:0; // useless default
+                }
+                return p;
+            });
             newPart = add( newPart, d );
         });
         y2milestone("partitioning is now %1",newPart);
