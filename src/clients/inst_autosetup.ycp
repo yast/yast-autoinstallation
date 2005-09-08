@@ -27,6 +27,7 @@
     import "Arch";
     import "AutoinstLVM";
     import "AutoinstRAID";
+    import "Storage";
 
     include "bootloader/routines/autoinstall.ycp";
 
@@ -114,6 +115,10 @@ control file and try again.
 
 
     Progress::NextStage();
+    // if one modifies the partition table in a pre script, we will
+    // recognize this now
+    Storage::ReReadTargetMap();
+
     AutoinstStorage::Import(Profile::current["partitioning"]:[]);
     AutoinstStorage::ImportAdvanced(Profile::current["partitioning_advanced"]:$[]);
 
