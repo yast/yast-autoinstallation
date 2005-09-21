@@ -13,6 +13,8 @@
     import "Profile";
     import "Directory";
     import "Y2ModuleConfig";
+    import "Wizard";
+    import "AutoinstConfig";
     include "autoinstall/helps.ycp";
 
     /**
@@ -342,31 +344,10 @@ were imported correctly."));
     }
 
 
-    map dtd_validate(string file) {
-        string cmd = sformat("/usr/bin/xmllint -valid -noout %1", file );
-        map o = (map)SCR::Execute(.target.bash_output, cmd);
-        return (o);
-    }
-
-    map rng_validate(string file) {
-        string cmd = sformat("/usr/bin/xmllint --relaxng %1 -noout %2",
-                Directory::schemadir + "/autoyast/rng/profile.rng", file );
-        map o = (map)SCR::Execute(.target.bash_output, cmd);
-        y2debug("validation output: %1", o);
-        return o;
-    }
-
-    string xml_validate(string file) {
-        string cmd = sformat("/usr/bin/xmllint  -noout %1", file );
-        map o = (map)SCR::Execute(.target.bash_output, cmd);
-        return (o["stderr"]:"");
-    }
-
     void UpdateValidDialog(string summary, string log )
     {
         UI::ChangeWidget(`id(`richtext), `Value, summary);
         UI::ChangeWidget(`id(`log), `LastLine , log );
-        return;
     }
 
     /**
@@ -392,39 +373,47 @@ were imported correctly."));
         string file = AutoinstConfig::tmpDir + "/" + "valid.xml";
         Profile::Save(file);
 
+	string html_ok = HTML::Colorize(_("OK"), "green");
+	string html_ko = HTML::Colorize(_("Error"), "red");
         string summary = "";
-        summary = Summary::AddHeader(summary, _("Checking XML without DTD validation..."));
-        UI::ChangeWidget(`id(`richtext),`Value, summary);
-        string scrret = xml_validate(file);
-        if (scrret == "")
-        {
-            summary = summary + HTML::Colorize(_("OK"), "green");
-        }
-        else
-        {
-            summary = summary + HTML::Colorize(_("Error"), "Red");
-        }
 
-        // Update
-        UpdateValidDialog(summary, scrret );
-        sleep(1000);
-        summary = Summary::AddHeader(summary, _("Checking XML with DTD validation..."));
-        UI::ChangeWidget(`id(`richtext), `Value , summary);
-        map valout = dtd_validate(file);
+	// some of these can be commented out for the release
+	list<list> validators = [
+	    [
+		_("Checking XML without DTD validation..."),
+		"/usr/bin/xmllint --noout",
+		],
+	    [
+		_("Checking XML with DTD validation..."),
+		"/usr/bin/xmllint --noout --valid"
+		],
+	    [
+		_("Checking XML with RNG validation..."),
+		"/usr/bin/xmllint --noout --relaxng "
+		// was: /usr/share/autoinstall/rng/profile.rng
+		+ Directory::schemadir + "/autoyast/rng/profile.rng",
+		],
+	    [
+		_("Checking XML with RNC validation..."),
+		"/usr/bin/jing >&2 -c "
+		// only leftovers in /usr/share/autoinstall/rnc/profile.rnc
+		+ Directory::schemadir + "/autoyast/rnc/profile.rnc",
+		],
+	    ];
 
-        if (valout["exit"]:-1 == 0)
-        {
-            summary = summary + HTML::Colorize(_("OK"), "green");
-            UpdateValidDialog(summary, "" );
-        }
-        else
-        {
-            summary = summary + HTML::Colorize(_("Error"), "Red");
-            UpdateValidDialog(summary, valout["stderr"]:"" );
-        }
-        // Update
-        sleep(1000);
+	foreach (list i, validators, {
+	    string header = i[0]:"";
+	    string cmd = i[1]:"" + " " + file;
 
+	    summary = Summary::AddHeader (summary, header);
+	    UpdateValidDialog (summary, "\n" + cmd + "\n");
+
+	    map o = (map)SCR::Execute (.target.bash_output, cmd);
+	    y2debug("validation output: %1", o);
+
+	    summary = summary + (o["exit"]:1 == 0? html_ok: html_ko);
+	    UpdateValidDialog (summary, o["stderr"]:"");
+	});
 
         any ret = nil;
         while (true)
