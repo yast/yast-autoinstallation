@@ -14,7 +14,6 @@ rnc_DATA = \
 	lvm.rnc \
 	mail.rnc \
 	networking.rnc \
-	nfs_server.rnc \
 	nis.rnc \
 	nis_server.rnc \
 	ntpclient.rnc \
