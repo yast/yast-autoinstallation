@@ -4,6 +4,12 @@
 # $Id$
 #
 
+# THESE FILES ARE NOT USED
+# and should be moved to their respective modules,
+# see /usr/share/doc/packages/yast2-schema/yast2-schema
+
+# see also ../../schema
+
 rncdir = $(prefix)/share/autoinstall/rnc
 
 rnc_DATA = \
@@ -21,7 +27,6 @@ rnc_DATA = \
 	printer.rnc \
 	profile-misc.rnc \
 	raid.rnc \
-	reporting.rnc \
 	runlevels.rnc \
 	samba.rnc \
 	security.rnc \
