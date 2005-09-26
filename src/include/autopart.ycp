@@ -1133,6 +1133,17 @@ $Id$
 	y2milestone( "partitions %1", ps );
 	y2milestone( "gap %1", g );
 
+    // creation_needed indicates the case, that we do not
+    // create a single partition but are reusing some
+    boolean creation_needed = false;
+    foreach( map p, (list<map>)ps, ``{
+        if( p["create"]:true == true ) {
+            creation_needed = true;
+        }
+    });
+    y2milestone("creation is needed? %1",creation_needed);
+
+
 	map lg = (map) eval(g);
 	integer gindex = 0;
 	integer pindex = lg["procpart"]:0;
@@ -1145,7 +1156,7 @@ $Id$
 	    
 	    if( part["max_cyl"]:0 <= e["end"]:0 &&	
 		part["cylinders"]:0 <= e["cylinders"]:0 &&
-		(!e["extended"]:false && size(lg["free_pnr"]:[])>0 ||
+		(!e["extended"]:false && (size(lg["free_pnr"]:[])>0 || ! creation_needed ) ||
 		 e["extended"]:false && size(lg["ext_pnr"]:[])>0)
 		)
 	    {
