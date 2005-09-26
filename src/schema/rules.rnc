@@ -60,26 +60,24 @@ custom4        = element custom4         { match_text & match_type? & script }
 custom5        = element custom5         { match_text & match_type? & script }
 disksize       = element disksize        { match_text & match_type? }
 domain         = element domain          { match_text & match_type? }
-haspcmica      = element haspcmica       { match_int  & match_type? }
+haspcmica      = element haspcmica       { match_text & match_type? }
 hostaddress    = element hostaddress     { match_text & match_type? }
 hostid         = element hostid          { match_text & match_type? }
 karch          = element karch           { match_text & match_type? }
 linux          = element linux           { match_text & match_type? }
 mac            = element mac             { match_text & match_type? }
-memsize        = element memsize         { match_int  & match_type? }
+memsize        = element memsize         { match_text & match_type? }
 network        = element network         { match_text & match_type? }
 others         = element others          { match_text & match_type? }
 product        = element product         { match_text & match_type? }
 product_vendor = element product_vendor  { match_text & match_type? }
-totaldisk      = element totaldisk       { match_int  & match_type? }
+totaldisk      = element totaldisk       { match_text & match_type? }
 xserver        = element xserver         { match_text & match_type? }
 
 match_type =
 element match_type { "greater" | "exact" | "lower" | "range" }
 match_text =
 element match_text { text }
-match_int =
-element match_int { INTEGER }
 script =
 element script { text }
 
