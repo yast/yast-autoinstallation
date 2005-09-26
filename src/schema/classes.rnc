@@ -1,0 +1,29 @@
+#
+# this rnc describes the autoyast classes file syntax.
+# The classes are not part of the autoyast profile.
+# They are stored in separate files.
+#
+
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+
+classes =
+element classes {
+    LIST,
+    class*
+}
+
+class =
+element class {
+    class_name &
+    configuration
+}
+
+class_name =
+element class_name { text }
+configuration =
+element configuration { text }
+
+
