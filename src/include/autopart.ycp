@@ -767,10 +767,11 @@ $Id$
 			if (solution["partitions",pindex,"loop_fs"]:false
 			    || solution["partitions",pindex,"crypt_fs"]:false)
 			{
-			    p["loop_fs"]  =    	solution["partitions",pindex,"crypt_fs"]:false;
+			    //p["loop_fs"]  =	solution["partitions",pindex,"crypt_fs"]:false;
+                p["enc_type"] = solution["partitions",pindex,"enc_type"]:`twofish;
 			    Storage::SetCryptPwd( p["device"]:"",
 						  solution["partitions",pindex,"crypt_key"]:"" );
-			    p["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
+			    //p["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
 			}
 			
 			if( p["fsid"]:0 != fsid )
@@ -883,10 +884,11 @@ $Id$
 		    if (solution["partitions",pindex,"loop_fs"]:false
 			|| solution["partitions",pindex,"crypt_fs"]:false)
 		    {
-			part["loop_fs"]  =    	solution["partitions",pindex,"crypt_fs"]:false;
+			//part["loop_fs"]  =	solution["partitions",pindex,"crypt_fs"]:false;
+            part["enc_type"] = solution["partitions",pindex,"enc_type"]:`twofish;
 			Storage::SetCryptPwd( part["device"]:"",
 			                      solution["partitions",pindex,"crypt_key"]:"" );
-			part["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
+			//part["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
 		    }
 		    
 		    value = solution["partitions",pindex,"label"]:"";
