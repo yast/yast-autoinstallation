@@ -33,56 +33,12 @@ options =
 user = element user { (text | usertags)* }
 lvm_group = element lvm_group { (text | lvmtags)* }
 group = element group { (text | grouptags)* }
-y2_all =
-  files
-  | firewall
-  | groups
-  | inetd
-  | ldap
-  | mail
-  | networking
-  | nfs
-  | nfs_server
-  | nis
-  | nisplus
-  | nis_server
-  | ntp-client
-  | printer
-  | proxy
-  | runlevel
-  | samba-client
-  | samba-server
-  | scripts
-  | security
-  | sound
-  | sysconfig
-  | tftp-server
-  | user_defaults
-  | users
-  | x11
-  | online_update
-  | bootloader
-  | classes
-  | general
-  | lvm
-  | partitioning
-  | partitioning_advanced
-  | raid
-  | report
-  | software
-profile = element profile { y2_all* }
-class = element class { class_name, configuration }
-classes =
-  element classes {
-    LIST,
-    class+
-  }
-class_name = element class_name { text }
-configuration = element configuration { text }
+
 tftp-server = element tftp-server { start_tftpd, tftp_directory }
 start_tftpd =
   element start_tftpd { BOOLEAN }
 tftp_directory = element tftp_directory { text }
+
 proxy =
   element proxy {
     enabled, ftp_proxy, http_proxy, no_proxy, proxy_password, proxy_user
@@ -94,11 +50,14 @@ http_proxy = element http_proxy { text }
 no_proxy = element no_proxy { text }
 proxy_password = element proxy_password { text }
 proxy_user = element proxy_user { text }
+
 lvm2 |= notAllowed
 nisplus |= notAllowed
 partitioning_advanced |= notAllowed
 vendor_id |= notAllowed
-#start =
+
+# These elements are not referenced anywhere,
+# which is probably a bug:
 #  cups-state
 #  | snd_index
 #  | encryption
