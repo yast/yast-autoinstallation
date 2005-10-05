@@ -1,7 +1,7 @@
 #
 # Makefile.am for installation/scripts
 #
-startdir = /etc/init.d
+startdir = ${sysconfdir}/init.d
 bin_SCRIPTS =			\
 	create_package_descr	
 
