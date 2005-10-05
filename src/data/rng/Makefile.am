@@ -25,7 +25,6 @@ rnc_DATA = \
 	ntpclient.rnc \
 	online_update.rnc \
 	printer.rnc \
-	profile-misc.rnc \
 	raid.rnc \
 	runlevels.rnc \
 	samba.rnc \
