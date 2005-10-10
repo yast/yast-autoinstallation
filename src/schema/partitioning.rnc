@@ -9,7 +9,12 @@ partitioning =
   }
 drive =
   element drive {
-    device?, initialize?, is_lvm_vg?, partitions?, pesize?, use?
+    element device {text}? &
+    initialize? &
+    is_lvm_vg? &
+    partitions? &
+#    pesize? &
+    use?
   }
 initialize =
   element initialize { BOOLEAN }
@@ -39,8 +44,8 @@ y2_partition =
   | grow
   | label
   | loop_fs
-  | lv_name
-  | lvm_group
+#  | lv_name
+#  | lvm_group
   | maxsize
   | mount
   | mountby
@@ -49,7 +54,7 @@ y2_partition =
   | partition_nr
   | partition_type
   | raid_name
-  | raid_options
+#  | raid_options
   | raid_type
   | region
   | size
@@ -63,7 +68,6 @@ crypt = element crypt { text }
 crypt_fs =
   element crypt_fs { BOOLEAN }
 crypt_key = element crypt_key { text }
-# <!ELEMENT device (#PCDATA)>  : redefined
 filesystem =
   element filesystem { SYMBOL }
 format =
@@ -93,8 +97,9 @@ opt_max_inode_space =
 opt_raid = element opt_raid { option_str, option_value }
 opt_reserved_blocks =
   element opt_reserved_blocks { option_str, option_value }
-raid_options =
-  element raid_options { chunk_size, parity_algorithm, raid_type }
+# have to integrate raid first
+#raid_options =
+#  element raid_options { chunk_size, parity_algorithm, raid_type }
 fstopt = element fstopt { text }
 grow =
   element grow { BOOLEAN }
