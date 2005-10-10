@@ -14,79 +14,8 @@
      * @return symbol
      */
     define symbol LanguageDialog() {
-	import "Language";
-	string language = AutoinstGeneral::language;
-
-	boolean use_utf8 = true;		// utf8 is default
-
-        map ui = UI::GetDisplayInfo();
-	if (!ui["HasFullUtf8Support"]:true)
-	{
-	    use_utf8 = false;		// fallback to ascii
-	}
-
-	if (language=="")
-	{
-	    language = Language::language;
-	}
-	map<string, list> languageselsort = mapmap(string lang_code, list lang_info, Language::Selection(),
-				     ``{
-					string a = lang_info[1]:"xxx";
-					return(
-					$[ a: [lang_info[use_utf8?0:1]:"", lang_code] ]);
-					});
-
-	term languagesel =
-	    `SelectionBox(`id(`language), "",
-			  maplist (string name, list codelist, languageselsort,
-				   ``(
-				      `item(`id(codelist[1]:""), codelist[0]:"",
-					    (language == codelist[1]:"")
-					    )
-				      )
-				   )
-			  );
-
-
-
-	term contents = `VBox(
-
-			      `HBox(
-				    `HWeight( 25, `HStretch() ),
-				    `HWeight( 50,
-					      `VBox (
-						     `Left( `Label ( _("Select your language:") ) ),
-						     languagesel
-						     )
-					      ),
-				    `HWeight( 25, `HStretch() )
-				    ),
-			      `VSpacing(2)
-			      );
-	string help_text =  _("<p>
-Choose the new <b>language</b> for your &product; system.
-</p>\n");
-
-
-	Wizard::SetContents( _("Language selection"), contents, help_text, true, true);
-	// Get the user input.
-	//
-
-	Wizard::HideAbortButton();
-	symbol ret = `none;
-
-	UI::SetFocus(`id(`language));
-
-	repeat
-	    {
-		ret = (symbol)Wizard::UserInput();
-		if ( ret == `next || ret == `language )
-		{
-		    AutoinstGeneral::language = (string) UI::QueryWidget(`id(`language), `CurrentItem);
-		}
-	    }
-	until ( ret == `next || ret == `back || ret == `abort );
-	return ret;
+	return (symbol)
+	WFM::CallFunction( "language_auto", [ GetInstArgs::Buttons(true,true) ] );
     }
 
     /**
@@ -94,12 +23,8 @@ Choose the new <b>language</b> for your &product; system.
      * @return symbol
      */
     define symbol KeyboardDialog() ``{
-
-	// create the wizard dialog
-	//
-	Wizard::CreateDialog();
-	symbol result = (symbol)WFM::CallFunction( "inst_keyboard", [ GetInstArgs::Buttons(true,true) ] );
-	return result;
+	return (symbol)
+	WFM::CallFunction( "keyboard_auto", [ GetInstArgs::Buttons(true,true) ] );
     }
 
 
@@ -108,27 +33,8 @@ Choose the new <b>language</b> for your &product; system.
      * @return symbol
      */
     define symbol TimezoneDialog() ``{
-	import "Timezone";
-
-	string tz = AutoinstGeneral::Clock["timezone"]:"";
-	if ( tz == "")
-	{
-	    import "Misc";
-	    tz = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, "" );
-
-	    if ( tz == "")
-	    {
-		tz = Timezone::GetTimezoneForLanguage(AutoinstGeneral::language, "en_US");
-	    }
-	    AutoinstGeneral::Clock["timezone"]  = tz;
-	}
-
-	// create the wizard dialog
-	//
-	Wizard::CreateDialog();
-	any result = WFM::CallFunction( "inst_timezone", [ GetInstArgs::Buttons(true,true) ]);
-    Wizard::CloseDialog();
-	return (symbol)result;
+	return (symbol)
+	WFM::CallFunction( "timezone_auto", [ GetInstArgs::Buttons(true,true) ]);
     }
 
 
