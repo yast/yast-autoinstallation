@@ -131,7 +131,7 @@ control file and try again.
 
     Progress::NextStage();
     Progress::Title(_("Initial Configuration"));
-    Report::Import(Profile::current["install", "report"]:$[]);
+    Report::Import(Profile::current["report"]:$[]);
 
     //
     // Copy the control file for easy access by user to  a pre-defined
@@ -149,7 +149,7 @@ control file and try again.
 	use_utf8 = false;		// fallback to ascii
     }
 
-    string language = Profile::current["install","general","language"]:Language::language;
+    string language = Profile::current["general","language"]:Language::language;
 
     //
     // Set it in the Language module.
