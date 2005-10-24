@@ -254,6 +254,7 @@ to delete.
 			continue;
 		    }
 		    AutoinstClass::Classes = filter(map c,  AutoinstClass::Classes,``( c["name"]:""!=class) );
+            AutoinstClass::deletedClasses = add( AutoinstClass::deletedClasses, class );
 
 		    Wizard::SetContents(title,
 					class_dialog_contents(), help, true, true);

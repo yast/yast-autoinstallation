@@ -34,12 +34,13 @@
     global list Profiles = [];
 
     global list<map> Classes = [];
-
+    global list<string> deletedClasses = [];
     global list<map> confs = [];
 
     string class_file = "classes.xml";
 
-    string classPath = sformat("%1/%2", ClassConf, class_file);
+    //string classPath = sformat("%1/%2", ClassConf, class_file);
+    string classPath = sformat("%1/%2", AutoinstConfig::classDir, class_file);
 
 
 
@@ -64,17 +65,52 @@
      */
     global define void Read()
 	``{
-	if (SCR::Read(.target.size, classPath) != -1)
-	{
-	    // TODO: use XML module
-	    map tmp = (map)SCR::Read(.xml, classPath);
-	    Classes = tmp["classes"]:[];
-	}
-	return;
+        if (SCR::Read(.target.size, classPath) != -1)
+        {
+            // TODO: use XML module
+            map tmp = (map)SCR::Read(.xml, classPath);
+            Classes = tmp["classes"]:[];
+        } else {
+            Classes = [];
+        }
+        return;
     }
 
 
-    
+    /*
+        we are doing some compatibility fixes here and move
+        from one /etc/autoinstall/classes.xml to multiple
+        classes.xml files, one for each repository
+    */
+    global define void Compat() {
+        if( SCR::Read(.target.size, classPath) <= 0  &&
+            SCR::Read(.target.size, ClassConf + "/" + class_file) > 0 ) 
+        {
+            y2milestone("Compat: %1 not found but %2 exists",classPath,ClassConf + "/" + class_file);
+            map tmp = (map)SCR::Read(.xml, ClassConf + "/" + class_file);
+            list<map> oldClasses = tmp["classes"]:[];
+            list<map> newClasses = [];
+            foreach(map class, oldClasses, ``{
+                y2milestone("looking for %1",AutoinstConfig::classDir + "/" + class["name"]:"" );
+                if( SCR::Read(.target.dir, AutoinstConfig::classDir + "/" + class["name"]:"") != nil ) {
+                    newClasses = add( newClasses, class );
+                }
+            });
+            map tmp2 = $[ "classes":newClasses];
+            y2milestone("creating %1",tmp2);
+            XML::YCPToXMLFile(`class, tmp2, classPath);
+        }
+    }
+
+    global define void classDirChanged(string newdir) {
+        AutoinstConfig::classDir = newdir;
+        classDir = newdir;
+        classPath = sformat("%1/%2", AutoinstConfig::classDir, class_file);
+        Compat();
+        Read();
+        return;
+    }
+
     /*
      * Constructor
      * @return void
@@ -83,6 +119,7 @@
     global define void AutoinstClass()
 	``{
 	classSetup();
+    Compat();
 	Read();
 	return;
     }
@@ -156,11 +193,15 @@
      * Save Class definitions
      */
 
-    global define boolean Save()
-	``{
-	map tmp = $[ "classes":Classes];
-	y2debug("saving classes: %1", classPath);
-	return (XML::YCPToXMLFile(`class, tmp, classPath));
+    global define boolean Save() ``{
+        foreach( string c, deletedClasses, ``{
+            string toDel = sformat("/bin/rm -rf %1/%2",AutoinstConfig::classDir,c);
+            SCR::Execute (.target.bash, toDel);
+        });
+        deletedClasses = [];
+        map tmp = $[ "classes":Classes];
+        y2debug("saving classes: %1", classPath);
+        return (XML::YCPToXMLFile(`class, tmp, classPath));
     }
 
 
