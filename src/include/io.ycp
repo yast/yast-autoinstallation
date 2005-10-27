@@ -194,6 +194,22 @@
 	{
 	    if ( Host != "" && Path != "")
 	    {
+                /*
+                  sometimes we have devices like /dev/cciss/c1d0p5
+                  those "nested" devices will be catched here
+                  as long as we find a directory where we expect a device,
+                  we cut down the Path and enhance the Host (device name)
+                */
+                while( SCR::Read( .target.dir, "/dev/"+Host ) != nil ) {
+                        y2milestone("nested device found");
+                        list<string> l = splitstring( Path, "/" );
+                        Host = Host + "/" + l[0]:"";
+                        l = remove(l,0);
+                        Path = mergestring(l,"/");
+                        y2milestone("Host=%1 Path=%2",Host,Path);
+                }
+                // catching nested devices done
+
 		WFM::Execute(.local.mount, [sformat("/dev/%1", Host) ,
                         mount_point]);
 
