@@ -149,14 +149,15 @@ control file and try again.
 	use_utf8 = false;		// fallback to ascii
     }
 
-    string language = Profile::current["general","language"]:Language::language;
+    //string language = Profile::current["general","language"]:Language::language;
+    Language::Import( Profile::current["language"]:$[] );
 
     //
     // Set it in the Language module.
     //
     Progress::NextStep();
     Progress::Title(_("Configuring language..."));
-    Language::Set( language );
+    //Language::Set( language );
 
     //
     // Set Console font

@@ -94,6 +94,26 @@
     }
 
     /**
+     * compatibility to new language,keyboard and timezone client in 10.1
+     */
+    global define void generalCompat() {
+        if( haskey( current, "general" ) ) {
+            if( haskey( current["general"]:$[], "keyboard" ) ) {
+                current["keyboard"] = current["general","keyboard"]:$[];
+                current["general"] = remove( current["general"]:$[], "keyboard" );
+            }
+            if( haskey( current["general"]:$[], "language" ) ) {
+                current["language"] = $[ "language":current["general","language"]:"" ];
+                current["general"] = remove( current["general"]:$[], "language" );
+            }
+            if( haskey( current["general"]:$[], "clock" ) ) {
+                current["clock"] = current["general","clock"]:$[];
+                current["general"] = remove( current["general"]:$[], "clock" );
+            }
+        }
+    }
+
+    /**
      * Read Profile properties and Version
      * @param map Profile Properties
      * @return void
@@ -142,6 +162,7 @@
         //    ProductControl::DisabledModules=add(ProductControl::DisabledModules, "x11");
 
         storageLibCompat(); // compatibility to new storage library (SL 10.0)
+        generalCompat();    // compatibility to new language,keyboard and timezone (SL10.1)
 
         y2milestone("Current Profile=%1", current );
 	return;
