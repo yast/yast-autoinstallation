@@ -9,34 +9,6 @@
 {
     textdomain "autoinst";
     import "GetInstArgs";
-    /**
-     * Language
-     * @return symbol
-     */
-    define symbol LanguageDialog() {
-	return (symbol)
-	WFM::CallFunction( "language_auto", [ GetInstArgs::Buttons(true,true) ] );
-    }
-
-    /**
-     * Keyboard
-     * @return symbol
-     */
-    define symbol KeyboardDialog() ``{
-	return (symbol)
-	WFM::CallFunction( "keyboard_auto", [ GetInstArgs::Buttons(true,true) ] );
-    }
-
-
-    /**
-     * Timezone
-     * @return symbol
-     */
-    define symbol TimezoneDialog() ``{
-	return (symbol)
-	WFM::CallFunction( "timezone_auto", [ GetInstArgs::Buttons(true,true) ]);
-    }
-
 
 
     /**
@@ -125,27 +97,12 @@ only for debugging purposes.
     define symbol generalSequence ()
     {
 	map dialogs = $[
-			"language"	: ``(LanguageDialog()),
-			"keyboard"	: ``(KeyboardDialog()),
-			"timezone"	: ``(TimezoneDialog()),
 			"mouse"		: ``(MouseDialog()),
 			"mode"		: ``(ModeDialog())
 	];
 
 	map sequence = $[
-			 "ws_start"	: "language",
-			 "language"	: $[
-					    `next	: "keyboard",
-					    `abort	: `abort
-			 ],
-			 "keyboard"	: $[
-					    `next	: "timezone",
-					    `abort	: `abort
-			 ],
-			 "timezone"	: $[
-					    `next	: "mouse",
-					    `abort	: `abort
-			 ],
+			 "ws_start"	: "mouse",
 			 "mouse"	: $[
 					    `next	: "mode",
 					    `abort	: `abort
