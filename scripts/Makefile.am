@@ -3,7 +3,8 @@
 #
 startdir = ${sysconfdir}/init.d
 bin_SCRIPTS =			\
-	create_package_descr	
+	create_package_descr	\
+	create_update_source.sh
 
 start_SCRIPTS = autoyast
 
