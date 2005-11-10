@@ -694,12 +694,14 @@
 	    else if (!error )
 	    {
 		string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" ";
-                MergeCommand = MergeCommand + "--param dontmerge \"'package'\" ";
-                MergeCommand = MergeCommand + "--param dontmerge1 \"'addon'\"  ";
-                MergeCommand = MergeCommand + "--param dontmerge2 \"'user'\" ";
-                MergeCommand = MergeCommand + "--param dontmerge3 \"'partition'\" ";
-                MergeCommand = MergeCommand + "--param dontmerge4 \"'script'\" ";
-                MergeCommand = MergeCommand + "--param dontmerge5 \"'group'\" ";
+                string dontmerge_str = "";
+                integer i = 1;
+                foreach (string dm,  AutoinstConfig::dontmerge, ``{
+                    dontmerge_str = dontmerge_str + sformat(" --param dontmerge%1 \"'%2'\" ", i,  dm);
+                    i = i + 1;
+                });
+                MergeCommand = MergeCommand + dontmerge_str;
+
                 MergeCommand = MergeCommand + "--param with ";
 		MergeCommand = MergeCommand + "\"'" + current_profile + "'\"  ";
 		MergeCommand = MergeCommand + "--output " +  tmpdir + "/result.xml";
