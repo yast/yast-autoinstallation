@@ -14,7 +14,7 @@
 #
 # in the data directory (<source>/updates/suse)
 #
-# Anas Nashif <nashif@suse.de>
+# Anas Nashif
 #
 
 SOURCE=$1

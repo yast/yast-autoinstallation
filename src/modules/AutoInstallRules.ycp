@@ -693,7 +693,14 @@
 	    }
 	    else if (!error )
 	    {
-		string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" --param dontmerge \"'package'\" --param dontmerge1 \"'addon'\"  --param with ";
+		string MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" ";
+                MergeCommand = MergeCommand + "--param dontmerge \"'package'\" ";
+                MergeCommand = MergeCommand + "--param dontmerge1 \"'addon'\"  ";
+                MergeCommand = MergeCommand + "--param dontmerge2 \"'user'\" ";
+                MergeCommand = MergeCommand + "--param dontmerge3 \"'partition'\" ";
+                MergeCommand = MergeCommand + "--param dontmerge4 \"'script'\" ";
+                MergeCommand = MergeCommand + "--param dontmerge5 \"'group'\" ";
+                MergeCommand = MergeCommand + "--param with ";
 		MergeCommand = MergeCommand + "\"'" + current_profile + "'\"  ";
 		MergeCommand = MergeCommand + "--output " +  tmpdir + "/result.xml";
 		MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
