@@ -22,10 +22,95 @@
     import "Language";
     import "Console";
     import "Profile";
+    import "Arch";
+    import "Call";
 
     import "Popup";
 
     include "autoinstall/autoinst_dialogs.ycp";
+    define symbol processProfile() {
+        Progress::NextStage();
+        // Initialize Rules
+        Progress::Title(AutoinstConfig::message);
+        AutoInstallRules::Init();
+        boolean ret = false;
+        Progress::NextStep();
+        Progress::Title(_("Processing Profiles and Rules"));
+        while (true)
+        {
+            boolean r = ProfileLocation::Process();
+            if (r)
+            {
+                break;
+            }
+            else {
+                string newURI = ProfileSourceDialog(AutoinstConfig::OriginalURI);
+                if ( newURI == "")
+                {
+                    return `abort;
+                }
+                else
+                {
+                    AutoinstConfig::ParseCmdLine(newURI);
+                    AutoinstConfig::SetProtocolMessage();
+                    continue;
+                }
+            }
+        }
+
+        /*
+        if (!ProfileLocation::Process())
+        {
+	y2error("Aborting...");
+	return `abort;
+        }
+        */
+
+        sleep(1000);
+
+
+        if(UI::PollInput() == `abort)
+            if (Popup::ConfirmAbort (`painless))
+                return `abort;
+
+        Progress::NextStage();
+
+        //
+        // Set reporting behaviour to default, changed later if required
+        //
+        Report::LogMessages(true);
+        Report::LogErrors(true);
+        Report::LogWarnings(true);
+
+        if(UI::PollInput() == `abort)
+            if (Popup::ConfirmAbort (`painless))
+                return `abort;
+
+        Progress::NextStage();
+        Progress::Title( _("Parsing control file"));
+        if (! Profile::ReadXML( AutoinstConfig::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
+        {
+	Popup::Error(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+        return `abort;
+        }
+
+        y2debug ("Autoinstall control file %1",  Profile::current );
+
+
+        Progress::NextStage();
+        Progress::Title(_("Initial Configuration"));
+        Report::Import(Profile::current["report"]:$[]);
+
+        //
+        // Copy the control file for easy access by user to  a pre-defined
+        // directory
+        //
+        SCR::Execute(.target.bash, sformat("cp %1 %2/autoinst.xml",  AutoinstConfig::xml_tmpfile, AutoinstConfig::profile_dir));
+        return `ok;
+    }
 
     Console::Init ();
 
@@ -40,7 +125,7 @@ Please wait while the system is prepared for autoinstallation.</p>
 	 _("Parse control file"),
 	 _("Set up language")
 	 ];
-
+    boolean profileFetched = false;
 
     Progress::New(
 		  _("Preparing System for Automatic Installation"),
@@ -50,94 +135,42 @@ Please wait while the system is prepared for autoinstallation.</p>
 		  [],
 		  help_text );
     Progress::NextStage();
+    Progress::Title(_("pre probing stage"));
+    y2milestone("pre probing");
+
+    if( Arch::s390 () && AutoinstConfig::remoteProfile == true ) {
+        y2milestone("arch=s390 and remote_profile=true");
+        symbol ret = processProfile();
+        if( ret != `ok ) {
+            return ret;
+        }
+        y2milestone("processProfile=ok");
+        profileFetched = true;
+
+        // FIXME: the hardcoded stuff should be in the control.xml later
+        if( haskey(Profile::current["configure"]:$[], "dasd") ) {
+            y2milestone("dasd found");
+            Call::Function("dasd_auto", ["Import", Profile::current["configure","dasd"]:$[] ]);
+        }
+        if( haskey(Profile::current["configure"]:$[], "zfcp") ) {
+            y2milestone("zfcp found");
+            Call::Function("zfcp_auto", ["Import", Profile::current["configure","zfcp"]:$[] ]);
+        }
+    }
+
     Progress::Title(_("Probing hardware..."));
     WFM::CallFunction("inst_startup", [] );
 
-    if(UI::PollInput() == `abort)
-        if (Popup::ConfirmAbort (`painless))
-            return `abort;
-
-
-    Progress::NextStage();
-    // Initialize Rules
-    Progress::Title(AutoinstConfig::message);
-    AutoInstallRules::Init();
-    boolean ret = false;
-    Progress::NextStep();
-    Progress::Title(_("Processing Profiles and Rules"));
-    while (true)
-    {
-        boolean r = ProfileLocation::Process();
-        if (r)
-        {
-            break;
-        }
-        else {
-            string newURI = ProfileSourceDialog(AutoinstConfig::OriginalURI);
-            if ( newURI == "")
-            {
-                return `abort;
-            }
-            else
-            {
-                AutoinstConfig::ParseCmdLine(newURI);
-                AutoinstConfig::SetProtocolMessage();
-                continue;
-            }
+    if( ! profileFetched ) {
+        symbol ret = processProfile();
+        if( ret != `ok ) {
+            return ret;
         }
     }
 
-    /*
-    if (!ProfileLocation::Process())
-    {
-	y2error("Aborting...");
-	return `abort;
-    }
-    */
-
-    sleep(1000);
-
-
     if(UI::PollInput() == `abort)
         if (Popup::ConfirmAbort (`painless))
             return `abort;
-
-    Progress::NextStage();
-
-    //
-    // Set reporting behaviour to default, changed later if required
-    //
-    Report::LogMessages(true);
-    Report::LogErrors(true);
-    Report::LogWarnings(true);
-
-    if(UI::PollInput() == `abort)
-        if (Popup::ConfirmAbort (`painless))
-            return `abort;
-
-    Progress::NextStage();
-    Progress::Title( _("Parsing control file"));
-    if (! Profile::ReadXML( AutoinstConfig::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
-    {
-	Popup::Error(_("Error while parsing the control file.
-Check the log files for more details or fix the
-control file and try again.
-"));
-	return `abort;
-    }
-
-    y2debug ("Autoinstall control file %1",  Profile::current );
-
-
-    Progress::NextStage();
-    Progress::Title(_("Initial Configuration"));
-    Report::Import(Profile::current["report"]:$[]);
-
-    //
-    // Copy the control file for easy access by user to  a pre-defined
-    // directory
-    //
-    SCR::Execute(.target.bash, sformat("cp %1 %2/autoinst.xml",  AutoinstConfig::xml_tmpfile, AutoinstConfig::profile_dir));
 
     // AutoInstall::ProcessSpecialResources();
 
