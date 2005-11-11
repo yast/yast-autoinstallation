@@ -157,6 +157,14 @@
     //
     global boolean RebootMsg = false;
 
+
+    //
+    // remote profile (invented for pre-probing of s390)
+    // in case of a remote profile, the profile can be fetched
+    // before the probing stage DASD module can has run
+    //
+    global boolean remoteProfile = true;
+
     include "autoinstall/io.ycp";
 
 
@@ -206,6 +214,10 @@
 	port		= urltok["port"]:"";
 	user	        = urltok["user"]:"";
 	pass		= urltok["pass"]:"";
+
+        if( scheme == "default" || scheme == "file" || scheme == "floppy" ) {
+                remoteProfile = false;
+        }
         y2milestone("urltok = %1", urltok );
 	return true;;
     }
