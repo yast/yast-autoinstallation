@@ -1,0 +1,161 @@
+  <chapter id="introduction">
+    <title>Introduction</title>
+    
+    <para>
+      &autoyast2; is a system for installing one or more SuSE Linux systems
+      automatically and without user intervention. &autoyast2; installations
+      are performed using  a control file with installation and configuration
+      data. The control file can be created using the configuration insterface
+      of &autoyast2; and can be  provided to &yast2; during installation in
+      different ways.
+    </para>  
+
+    <section id="avail">
+      <title>Availability</title>
+      <para>
+	&autoyast2; is available with recent  &company-suse; products starting
+	from <emphasis>SuSE Linux 8.0</emphasis> and business products starting from 
+	<emphasis>SLES 8</emphasis>.
+      </para>
+      <para>Products prior to SuSE Linux 8.0 and business products based
+	on <emphasis>SLES 7</emphasis> have an auto-installation
+	system based on <emphasis>YaST1</emphasis>. A configuration management
+	system is provided by <emphasis>ALICE</emphasis> for these products.
+      </para>
+      <note>
+	<title>Updated documentation</title>
+	<para>Updated documentation can always be found at the following URL:
+	  <ulink url="http://yast2.suse.com/autoinstall/">http://yast2.suse.com/autoinstall/</ulink></para>
+      </note>
+    </section>
+
+
+    <section id="motiv">
+      <title>Motivation</title>
+      <para>
+	The <ulink url="http://www.linuxjournal.com/">Linux Journal</ulink>, in
+	an article in <ulink
+	  url="http://www.linuxjournal.com/categories.php?op=newindex&amp;catid=178">issue 78</ulink> writes:
+      </para>
+      <para>
+	<quote>
+	  A standard Linux installation asks many questions about what to
+	  install, what hardware to configure, how to configure the network
+	  interface, etc. Answering these questions once is informative and maybe
+	  even fun. But imagine a system engineer who has to set up a new Linux
+	  network with a large number of machines. Now, the same issues need to
+	  be addressed and the same questions answered repeatedly. This makes the
+	  task very inefficient, not to mention a source of irritation and
+	  boredom. Hence, a need arises to automate this parameter and option
+	  selection.</quote>
+      </para>
+      <para>
+	<quote>The thought of simply copying the hard disks naturally crosses one's
+	  mind. This can be done quickly, and all the necessary functions and
+	  software will be copied without option selection. However, the fact is
+	  that simple copying of hard disks causes the individual computers to
+	  become too similar. This, in turn, creates an altogether new mission of
+	  having to reconfigure the individual settings on each PC. For example,
+	  IP addresses for each machine will have to be reset. If this is not
+	  done properly, strange and inexplicable behavior results.</quote>
+      </para>
+
+      <para>
+	Regular installation of SuSE Linux is semi-automated by default. The user is
+	requested to select the necessary information at the beginning of the
+	installation (In most cases language only), &yast2; then  generates a
+	proposal for the underlying system depending on different factors and
+	system paramters. In
+	most cases, and especially for new systems, such a proposal  can be
+	used to install the system and provides a usable installation.
+      </para>
+      <para>
+	The steps following the proposal are fully automated and the user is only
+	prompted at the end of the installation to configure hardware and network services.
+      </para>
+      <para>
+	&autoyast2; can be used where no user intervention is required or
+	where customization is required. Using  a control file, &yast2;
+	prepares the system for a custom installation and avoids any
+	interaction with the user, unless specified in the file 
+	controling the installation.
+      </para>
+      <para>
+	&autoyast2; is not an automated GUI system. This means that in most
+	cases many screen will be skipped, i.e. you will never see the language
+	selection interface. &autoyast2; will simply pass the language
+	parameter to the sub-system without displaying any language related
+	interface.
+      </para>
+      
+       </section>
+
+    <section id="overviewandconcept">
+      <title>Overview and Concept</title>
+      <para>
+	Using &autoyast2;, multiple systems sharing the same environment and
+	similar but not necesserily  identical hardware performing similar
+	tasks can easily be installed in parallel and in a short time. A
+	configuration  file (referred to as "control  file") is created using
+	existing configuration resources. The control file can be easily
+	tailored for any specific environment. 
+      </para>
+      
+      
+      <para>
+	Unlike autoinstallation systems available with older &company-suse;
+	releases, &autoyast2; is fully integrated and provides various options for
+	installing and configuring a system. The main advantage over older
+	systems and other auto-installation systems is the possibility to configure a
+	computer by using existing modules and avoiding using custom scripts which
+	are normally executed at the end of the installation.
+      </para>
+
+      <para>
+      This document will guide you through the three steps of  auto-installation:
+    </para>
+    <itemizedlist>
+	<listitem>
+	  <para>
+	    Preparation: All relevant information about the target system are
+	    collected and turned into the appropriate directives of the control
+	    file. The control file is transferred onto the target system where
+	    its directives will be parsed and transformed to &yast2; conforming
+	    data. </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Installation:  follows the instructions given in the  control file and
+	    installs the base system.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Configuration:  &yast2; in addition to user-defined post-install
+	    scripts complete the system configuration
+	  </para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	The complete and  detailed process is illustrated in the following figure:
+      </para>
+      
+      <?anas-pagebreak?>
+      <figure id="process">
+	<title id="process.title">Auto-installation process</title>
+	<mediaobject>&autoyast-oview;</mediaobject>
+      </figure>
+    </section>
+
+    
+  </chapter>
+
+
+
+  <!--
+  Local Variables:
+  mode: xml
+  sgml-parent-document: ("autoyast.xml" "book" "book")
+  End:
+  -->
+

@@ -1,0 +1,280 @@
+<?xml version='1.0'?>
+<!DOCTYPE website PUBLIC "-//Norman Walsh//DTD Website V2.5.0//EN"
+"http://docbook.sourceforge.net/release/website/2.5.0/schema/dtd/website-full.dtd">
+
+<webpage id="faq" lang="en">
+
+    <head>
+        <title>Frequently Asked Questions</title>
+        <titleabbrev>FAQ</titleabbrev>
+        <summary>Frequently Asked Questions</summary>
+    </head>
+
+
+    <qandaset>
+        <?dbhtml toc="1" ?>  
+        <?dbhtml cellspacing="3px" cellpadding="3px" ?> 
+
+        <qandadiv>
+            <title >General/ Unsorted</title>
+
+            <qandaentry>
+                <question>
+                    <para>When is an auto-installation problem really  AutoYaST related?</para>
+                </question>
+                <answer>
+                    <para>If you have issues during auto-installing a client it does not
+                        always mean that it is autoyast related. AutoYaST relies on many
+                        general installation components and thus, some problems might be
+                        general installation problems. During auto-installation, almost all
+                        problems perior the start of yast2 are linuxrc related. For example,
+                        if the installation source can't be found, then you have to check the
+                        kernel command line variables, (i.e. install) which are used by
+                        linuxrc to fetch the installation image (boot/root).</para>
+
+                    <para>If yast2 starts and a problem occurs, most likely it is an
+                        autoyast issue and has to be reported as such. The control file is
+                        retrieved by yast2 and not by linuxrc as with releases perior to
+                        8.0.</para>
+
+                </answer>
+            </qandaentry>
+            <qandaentry>
+                <question>
+
+                    <para>How can I include external and remote files into the profile in
+                        runtime, i.e. during installation?</para>
+                </question>
+                <answer>
+                    <para>You can do that using XML XInclude. XInclude is an emerging W3C
+                        specification for building large XML documents out of multiple
+                        well-formed XML documents, independently of validation. Each piece
+                        can be a complete XML document, a fragmentary XML document, or a
+                        non-XML text document like a Java program or an e-mail message.
+                    </para>
+                    <para>
+                        XInclude reference external documents to be included with include
+                        elements in the http://www.w3.org/2001/XInclude namespace. The
+                        prefix xi is customary though not required. Each xi:include element
+                        has an href attribute that contains a URL pointing to the file to
+                        include. For example, if you want to have all scripts out of the
+                        main profile, you can have them on a remote machine or make them
+                        available on the machine being installed and reference them from
+                        within the control file. Note that the profile is parsed only once
+                        at the beginning of the installation, so the scripts have to be
+                        available during initial system and autoinstallation setup.
+                    </para>
+                    <para>
+                        The following is a section of a profile showing the scripts section:
+                    </para>
+
+                    <programlisting>
+                        <xi:include href="xinclude_scrips.xml" parse="text"
+                            xmlns:xi="http://www.w3.org/2003/XInclude"/>
+                    </programlisting>
+                    <para>On the remote side, which is in this case a web server, you
+                        will have the included version in a file
+                        <filename>chroot_sh.xml</filename> which will contain the missing
+                        portion you want to include, for example:</para>
+
+                    <programlisting>
+                        <xi:include href="xinclude_scrips_contents.xml" parse="text"
+                            xmlns:xi="http://www.w3.org/2003/XInclude"/>
+                    </programlisting>
+                    <para>
+                        When including complex portions of the control file, you have
+                        to pay attention to adding the namespace to the included file.</para>
+                </answer>
+            </qandaentry>
+
+            <qandaentry>
+                <question>
+                    <para >Is there any way to define IP ranges in rules?</para>
+                </question>
+
+                <answer>
+                    <para>
+                        Range is not supported for IPs. To make that happen with 9.0 however,
+                        you can always use you own script in the rules which you can
+                        match. For example I can use this rule to match the boardinfo of my old
+                        thinkpad:
+                    </para>
+
+
+                    <programlisting>
+                        <xi:include href="boardinfo.xml" parse="text"
+                            xmlns:xi="http://www.w3.org/2003/XInclude"/>
+                    </programlisting>
+
+
+
+
+                    <para>So you have to write a script that will output the latest segment of an IP and do a range checking, i,e, on 210-240.</para>
+
+                    <para>so it will result in something like that(not tested):</para>
+
+                    <programlisting>
+                        <xi:include href="networkrange.xml" parse="text"
+                            xmlns:xi="http://www.w3.org/2003/XInclude"/>
+                    </programlisting>
+
+                    <para>
+                        Of course you can add other rules such as these to match the subnet and the
+                        network, etc.
+                    </para>
+
+
+                </answer>
+            </qandaentry>
+
+            <qandaentry>
+                <question>
+                    <para>
+                        Do I really have to write all the scripts inside a profile? Is it not
+                        possible to just call an external script file? </para>
+                </question>
+
+                <answer>
+                    <para>
+                        Well, you can call an external script from the script themselves,
+                        however, you have to make the scripts available to the system somehow
+                        and the easiest solution is to include the scripts into the control
+                        file. 
+                    </para>
+                </answer>
+            </qandaentry>
+
+            <qandaentry>
+                <question>
+                    <para>Is there a length limit on the line of parameters passed to
+                        linuxrc using the boot menu (kernel command line)?</para>
+                </question>
+                <answer>
+                    <para>Yes, there is a limit, I am not sure what is it though (someone telling me it is 256).</para>
+
+                    <para>To avoid this, use an <emphasis>info</emphasis> file
+                        with all parameters. Make sure all the URLs to the
+                        installation source and to the profile are short. Use
+                        symlinks or aliases instead of specifying the complete
+                        path. Any keyword on the command line that is beyond
+                        the allowed length will be ommited.
+                    </para>
+                </answer>
+            </qandaentry>
+            <qandaentry>
+                <question>
+                    <para>How does YaST know a URL is actually a directory and
+                    not a file name?</para>
+                </question>
+                <answer>
+                    <para>To make YaST retrieve the control file from a
+                        directory, i.e. by naming the control file with the
+                        hex IP (for example C0A80103) and to make it default to
+                        a file named <filename>default</filename> in that
+                        directory, you have to add the trailing slash,
+                    </para>
+                    <example>
+                        <title>Path to a directory</title>
+                        <screen>
+autoyast=http://192.168.1.1/profiles/
+                        </screen>
+                    </example>
+                </answer>
+            </qandaentry>
+
+        </qandadiv>
+
+
+
+
+
+
+        <qandadiv>
+            <title>SuSE Linux Enterprise Server 8</title>
+
+            <qandaentry>
+                <question>
+                    <para>How to use updates and bug fixes during installation of SLES SP3?</para>
+                </question>
+                <answer>
+                    <para>All fixes are provided in the driverupdate image available with
+                        SP3. One has to make sure the file or the contents of the file
+                        (linux subdirectory) is available in the root of the source.</para>
+                </answer>
+            </qandaentry>
+
+            <qandaentry>
+                <question>
+                    <para>Is there a need to patch or update the GA root image ( boot/root on the CD) with SP3?</para>
+                </question>
+                <answer>
+                    <para>No, All fixes are already provided in the driverupdate file.</para>
+                </answer>
+            </qandaentry>
+            <qandaentry>
+                <question>
+                    <para>HTTP/FTP Installation does not work with SLES8 GA, whats wrong?</para>
+                </question>
+                <answer>
+                    <para>This is a known issue with SLES8 and is a general problem and
+                        not autoyast related. This is issue has been resolved with
+                        SP3. Make sure you have the driverupdate in the root of the source
+                        and boot using the kernel/initrd from SP3.</para>
+
+                </answer>
+            </qandaentry>
+            <qandaentry>
+                <question>
+                    <para>Is it possible to skip the license agreement for UL based
+                        products while setting up the system via autoinstall?</para>
+
+                </question>
+                <answer>
+                    <para> Use SLES8 SP3 kernel, initrd and driverupdate.</para>
+                </answer>
+            </qandaentry>
+
+            <!--
+            <qandaentry>
+                <question>
+                    <para>Can I create an installation source by loop mounting ISO images
+                        instead of copying them to the local disk?</para>
+                </question>
+                <answer>
+                    <para>Yes. It is possible only if you install using FTP or HTTP. For NFS
+                        Installations you have to use the user-space nfs server. (Kernel
+                        NFS would also work, but you have to create export enteries for
+                        every loop mount and then you have to mount them on the client individually)</para>
+                    <para>The following example shows how this can be
+                        accomplished:</para>
+
+                    <programlisting>
+                        <xi:include href="xinclude_multiplesource.xml" parse="text"
+                            xmlns:xi="http://www.w3.org/2003/XInclude"/>
+                    </programlisting>
+                    <para>NOTE that the symlinks in the root of the install server remain the
+                        same for a different service pack. You still need the boot information from
+                        SP3, and the pointers to media.1 and content from base SLES work
+                        fine. (<ulink
+                            url="http://lists2.suse.com/archive/suse-autoinstall/2004-Feb/0007.html">credits</ulink>)
+                    </para>
+                </answer>
+            </qandaentry>
+            -->
+            <qandaentry>
+                <question>
+                    <para>How do I update kernel modules during installation?</para>
+                </question>
+                <answer>
+                    <para>
+                        This is a general issue and can also be used when installing manually.
+                    </para>
+                    <para>The process of creating driver updates and adding new modules is
+                        described in the <ulink
+                            url="ftp://ftp.suse.com/pub/people/hvogel/Update-Media-HOWTO/Update-Media-HOWTO.html">Update Media Howto</ulink></para>
+                </answer>
+            </qandaentry>
+        </qandadiv>
+
+    </qandaset>
+</webpage>

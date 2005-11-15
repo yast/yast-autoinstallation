@@ -1,0 +1,18 @@
+# <!ELEMENT default (#PCDATA)>
+
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+report = element report { errors, messages, warnings, yesno_messages? }
+errors = element errors { log, show, timeout }
+yesno_messages = element yesno_messages { log, show, timeout }
+messages = element messages { log, show, timeout }
+warnings = element warnings { log, show, timeout }
+# <!ELEMENT location (#PCDATA)>
+log =
+  element log { BOOLEAN }
+show =
+  element show { BOOLEAN }
+timeout =
+  element timeout { INTEGER }

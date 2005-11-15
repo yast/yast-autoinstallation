@@ -1,0 +1,1101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>AutoYaST</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="NEXT"
+TITLE="Introduction"
+HREF="introduction.html"></HEAD
+><BODY
+CLASS="book"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="BOOK"
+><A
+NAME="AEN1"
+></A
+><DIV
+CLASS="TITLEPAGE"
+><H1
+CLASS="title"
+><A
+NAME="AEN2"
+>AutoYaST</A
+></H1
+><H2
+CLASS="subtitle"
+>Automatic Linux Installation and Configuration with
+      YaST2</H2
+><H3
+CLASS="author"
+><A
+NAME="AEN6"
+></A
+>Anas Nashif</H3
+><DIV
+CLASS="affiliation"
+><SPAN
+CLASS="jobtitle"
+>Concepts, Development and Documentation<BR></SPAN
+><SPAN
+CLASS="orgname"
+> <I
+CLASS="emphasis"
+>SuSE</I
+>  Linux AG<BR></SPAN
+></DIV
+><P
+CLASS="copyright"
+>Copyright &copy; 2003  <I
+CLASS="emphasis"
+>SuSE</I
+>  Linux AG</P
+><HR></DIV
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>1. <A
+HREF="introduction.html"
+>Introduction</A
+></DT
+><DD
+><DL
+><DT
+>1.1. <A
+HREF="introduction.html#avail"
+>Availability</A
+></DT
+><DT
+>1.2. <A
+HREF="motiv.html"
+>Motivation</A
+></DT
+><DT
+>1.3. <A
+HREF="overviewandconcept.html"
+>Overview and Concept</A
+></DT
+></DL
+></DD
+><DT
+>2. <A
+HREF="profile.html"
+>The Control File</A
+></DT
+><DD
+><DL
+><DT
+>2.1. <A
+HREF="profile.html#Profile.Intro"
+>Introduction</A
+></DT
+><DT
+>2.2. <A
+HREF="profile.format.html"
+>Format</A
+></DT
+><DT
+>2.3. <A
+HREF="profile.structure.html"
+>Structure</A
+></DT
+><DD
+><DL
+><DT
+>2.3.1. <A
+HREF="profile.structure.html#AEN140"
+>Resources and Properties</A
+></DT
+><DT
+>2.3.2. <A
+HREF="profile.structure.html#AEN148"
+>Nested Resources</A
+></DT
+><DT
+>2.3.3. <A
+HREF="profile.structure.html#AEN161"
+>Attributes</A
+></DT
+></DL
+></DD
+><DT
+>2.4. <A
+HREF="profile.dtd.html"
+>The XML Document Type Definition (<ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>)</A
+></DT
+><DD
+><DL
+><DT
+>2.4.1. <A
+HREF="profile.dtd.html#AEN180"
+>Introduction</A
+></DT
+><DT
+>2.4.2. <A
+HREF="profile.dtd.html#AEN192"
+>Example <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+></A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>3. <A
+HREF="createprofile.html"
+>Creating A Control File</A
+></DT
+><DD
+><DL
+><DT
+>3.1. <A
+HREF="createprofile.html#Autoinstallation.collectInfo"
+>Collect information</A
+></DT
+><DT
+>3.2. <A
+HREF="createprofile.cms.html"
+>Using the Configuration Management System</A
+></DT
+><DD
+><DL
+><DT
+>3.2.1. <A
+HREF="createprofile.cms.html#AEN243"
+>Creating a new Profile</A
+></DT
+><DT
+>3.2.2. <A
+HREF="createprofile.cms.html#AEN254"
+>Import of Legacy and Foreign Configuration Files</A
+></DT
+></DL
+></DD
+><DT
+>3.3. <A
+HREF="createprofile.manual.html"
+>Creating/Editing a Control File Manually</A
+></DT
+></DL
+></DD
+><DT
+>4. <A
+HREF="configuration.html"
+>Configuration and Installation Options</A
+></DT
+><DD
+><DL
+><DT
+>4.1. <A
+HREF="configuration.html#CreateProfile.General"
+>General Options</A
+></DT
+><DT
+>4.2. <A
+HREF="createprofile.reporting.html"
+>Reporting</A
+></DT
+><DT
+>4.3. <A
+HREF="createprofile.bootloader.html"
+>The Boot loader</A
+></DT
+><DT
+>4.4. <A
+HREF="createprofile.partitioning.html"
+>Partitioning</A
+></DT
+><DD
+><DL
+><DT
+>4.4.1. <A
+HREF="createprofile.partitioning.html#AEN354"
+>Automated Partitioning</A
+></DT
+><DT
+>4.4.2. <A
+HREF="createprofile.partitioning.html#AEN423"
+>Advanced Partitioning features</A
+></DT
+><DT
+>4.4.3. <A
+HREF="createprofile.partitioning.html#AEN507"
+>Using existing mount table (fstab)</A
+></DT
+><DT
+>4.4.4. <A
+HREF="createprofile.partitioning.html#AEN518"
+>Logical Volume Manager (LVM)</A
+></DT
+><DT
+>4.4.5. <A
+HREF="createprofile.partitioning.html#AEN541"
+>Software RAID</A
+></DT
+></DL
+></DD
+><DT
+>4.5. <A
+HREF="createprofile.software.html"
+>Software</A
+></DT
+><DD
+><DL
+><DT
+>4.5.1. <A
+HREF="createprofile.software.html#Software.Selections"
+>Package Selections</A
+></DT
+><DT
+>4.5.2. <A
+HREF="createprofile.software.html#AEN612"
+>Custom Package Selections</A
+></DT
+><DT
+>4.5.3. <A
+HREF="createprofile.software.html#AEN628"
+>Installing additional and customized Packages</A
+></DT
+><DT
+>4.5.4. <A
+HREF="createprofile.software.html#AEN645"
+>Kernel packages</A
+></DT
+><DT
+>4.5.5. <A
+HREF="createprofile.software.html#AEN653"
+>Removing automatically selected packages</A
+></DT
+></DL
+></DD
+><DT
+>4.6. <A
+HREF="createprofile.services.html"
+>Services and Run-levels</A
+></DT
+><DT
+>4.7. <A
+HREF="createprofile.network.html"
+>Network configuration</A
+></DT
+><DD
+><DL
+><DT
+>4.7.1. <A
+HREF="createprofile.network.html#Configuration.Network.Devices"
+>Network devices, DNS and Routing.</A
+></DT
+><DT
+>4.7.2. <A
+HREF="createprofile.network.html#Configuration.Network.Proxy"
+>Proxy</A
+></DT
+><DT
+>4.7.3. <A
+HREF="createprofile.network.html#Configuration.Network.Inetd"
+>(X)Inetd</A
+></DT
+><DT
+>4.7.4. <A
+HREF="createprofile.network.html#Configuration.Network.NIS"
+>NIS</A
+></DT
+><DT
+>4.7.5. <A
+HREF="createprofile.network.html#Configuration.Network.LDAP"
+><ACRONYM
+CLASS="acronym"
+>LDAP</ACRONYM
+>  client</A
+></DT
+><DT
+>4.7.6. <A
+HREF="createprofile.network.html#AEN733"
+>NFS Client and Server</A
+></DT
+><DT
+>4.7.7. <A
+HREF="createprofile.network.html#Configuration.Network.Sendmail"
+>Mail Configuration (Sendmail or Postfix)</A
+></DT
+></DL
+></DD
+><DT
+>4.8. <A
+HREF="createprofile.security.html"
+>Security settings</A
+></DT
+><DD
+><DL
+><DT
+>4.8.1. <A
+HREF="createprofile.security.html#AEN757"
+>Password Settings Options</A
+></DT
+><DT
+>4.8.2. <A
+HREF="createprofile.security.html#AEN769"
+>Boot Settings</A
+></DT
+><DT
+>4.8.3. <A
+HREF="createprofile.security.html#AEN781"
+>Login Settings</A
+></DT
+><DT
+>4.8.4. <A
+HREF="createprofile.security.html#AEN784"
+>New user settings (useradd settings)</A
+></DT
+></DL
+></DD
+><DT
+>4.9. <A
+HREF="configuration.x11.html"
+>Monitor and X11 Configuration</A
+></DT
+><DT
+>4.10. <A
+HREF="configuration.security.users.html"
+>Users</A
+></DT
+><DT
+>4.11. <A
+HREF="createprofile.scripts.html"
+>Custom user scripts</A
+></DT
+><DT
+>4.12. <A
+HREF="createprofile.sysconfig.html"
+>System variables (Sysconfig)</A
+></DT
+><DT
+>4.13. <A
+HREF="createprofile.completeconf.html"
+>Adding complete configurations</A
+></DT
+><DT
+>4.14. <A
+HREF="createprofile.hardware.html"
+>Miscellaneous hardware and system components</A
+></DT
+><DD
+><DL
+><DT
+>4.14.1. <A
+HREF="createprofile.hardware.html#CreateProfile.Hardware.Printer"
+>Printer</A
+></DT
+><DT
+>4.14.2. <A
+HREF="createprofile.hardware.html#CreateProfile.Hardware.Sound"
+>Sound devices</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>5. <A
+HREF="bootmanagement.html"
+>Network Based Installation</A
+></DT
+><DD
+><DL
+><DT
+>5.1. <A
+HREF="bootmanagement.html#AEN908"
+>Configuration Server</A
+></DT
+><DD
+><DL
+><DT
+>5.1.1. <A
+HREF="bootmanagement.html#AEN912"
+><ACRONYM
+CLASS="acronym"
+>HTTP</ACRONYM
+> Repository</A
+></DT
+><DT
+>5.1.2. <A
+HREF="bootmanagement.html#AEN921"
+><ACRONYM
+CLASS="acronym"
+>NFS</ACRONYM
+> Repository</A
+></DT
+><DT
+>5.1.3. <A
+HREF="bootmanagement.html#AEN927"
+><ACRONYM
+CLASS="acronym"
+>TFTP</ACRONYM
+> Repository</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>6. <A
+HREF="rulesandclass.html"
+>Rules and Classes</A
+></DT
+><DD
+><DL
+><DT
+>6.1. <A
+HREF="rulesandclass.html#rules"
+>Rule based auto-installation</A
+></DT
+><DD
+><DL
+><DT
+>6.1.1. <A
+HREF="rulesandclass.html#rulesfile"
+>Rules File explained</A
+></DT
+><DT
+>6.1.2. <A
+HREF="rulesandclass.html#rulesstructure"
+>Rules file structure</A
+></DT
+><DT
+>6.1.3. <A
+HREF="rulesandclass.html#ruleattributes"
+>Predefined System Attributes</A
+></DT
+></DL
+></DD
+><DT
+>6.2. <A
+HREF="classes.html"
+>Classes</A
+></DT
+><DT
+>6.3. <A
+HREF="mixinfrulesclasses.html"
+>Mixing Rules and Classes</A
+></DT
+></DL
+></DD
+><DT
+>7. <A
+HREF="invoking.html"
+>The Auto-Installation Process</A
+></DT
+><DD
+><DL
+><DT
+>7.1. <A
+HREF="invoking.html#Installation.process"
+>Introduction</A
+></DT
+><DD
+><DL
+><DT
+>7.1.1. <A
+HREF="invoking.html#Installation.Interface.X11"
+>X11 Interface</A
+></DT
+><DT
+>7.1.2. <A
+HREF="invoking.html#Installation.Interface.SerialConsole"
+>Serial console</A
+></DT
+><DT
+>7.1.3. <A
+HREF="invoking.html#Installation.Interface.Ncurses"
+>Text based YaST2-Installation</A
+></DT
+></DL
+></DD
+><DT
+>7.2. <A
+HREF="bootmedium.html"
+>Choosing the right Boot Medium</A
+></DT
+><DD
+><DL
+><DT
+>7.2.1. <A
+HREF="bootmedium.html#AEN1149"
+>Booting from a floppy</A
+></DT
+><DT
+>7.2.2. <A
+HREF="bootmedium.html#AEN1159"
+>Booting from CD-ROM</A
+></DT
+></DL
+></DD
+><DT
+>7.3. <A
+HREF="invoking_autoinst.html"
+>Invoking the Auto-Installation process</A
+></DT
+><DD
+><DL
+><DT
+>7.3.1. <A
+HREF="invoking_autoinst.html#AEN1166"
+>Command line Options</A
+></DT
+><DT
+>7.3.2. <A
+HREF="invoking_autoinst.html#autoinstall.singlesystem"
+>Auto-installing a Single System</A
+></DT
+><DT
+>7.3.3. <A
+HREF="invoking_autoinst.html#AEN1376"
+>Combining linuxrc <I
+CLASS="emphasis"
+>info</I
+> file with <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+> control file</A
+></DT
+></DL
+></DD
+><DT
+>7.4. <A
+HREF="system_configuration.html"
+>System Configuration</A
+></DT
+><DD
+><DL
+><DT
+>7.4.1. <A
+HREF="system_configuration.html#AEN1398"
+>Post-Install and System Configuration</A
+></DT
+><DT
+>7.4.2. <A
+HREF="system_configuration.html#AEN1408"
+>System Customization</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>8. <A
+HREF="migration.html"
+>Legacy and foreign Configuration formats</A
+></DT
+><DD
+><DL
+><DT
+>8.1. <A
+HREF="migration.html#migratefromyast1"
+>Migration from <ACRONYM
+CLASS="acronym"
+>YaST1</ACRONYM
+> and <ACRONYM
+CLASS="acronym"
+>ALICE</ACRONYM
+></A
+></DT
+><DD
+><DL
+><DT
+>8.1.1. <A
+HREF="migration.html#AEN1432"
+><ACRONYM
+CLASS="acronym"
+>ALICE</ACRONYM
+> modules</A
+></DT
+><DT
+>8.1.2. <A
+HREF="migration.html#AEN1548"
+>Other configuration options with <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+> and <ACRONYM
+CLASS="acronym"
+>ALICE</ACRONYM
+></A
+></DT
+></DL
+></DD
+><DT
+>8.2. <A
+HREF="importkickstart.html"
+>Redhat Kickstart</A
+></DT
+><DD
+><DL
+><DT
+>8.2.1. <A
+HREF="importkickstart.html#AEN1565"
+>Software selections and packages</A
+></DT
+><DT
+>8.2.2. <A
+HREF="importkickstart.html#AEN1568"
+>User scripts</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>A. <A
+HREF="handlingrules.html"
+>Handling Rules</A
+></DT
+><DT
+>B. <A
+HREF="appendix.linuxrc.html"
+>Advanced Linuxrc Options</A
+></DT
+><DD
+><DL
+><DT
+>B.1. <A
+HREF="appendix.linuxrc.html#AEN1589"
+>Passing parameters to Linuxrc</A
+></DT
+><DT
+>B.2. <A
+HREF="info_file_format.html"
+>'info' file format</A
+></DT
+></DL
+></DD
+></DL
+></DIV
+><DIV
+CLASS="LOT"
+><DL
+CLASS="LOT"
+><DT
+><B
+>List of Tables</B
+></DT
+><DT
+>6-1. <A
+HREF="rulesandclass.html#AEN999"
+>System Attributes</A
+></DT
+><DT
+>7-1. <A
+HREF="invoking_autoinst.html#AEN1181"
+>Keywords for <B
+CLASS="command"
+>linuxrc</B
+></A
+></DT
+><DT
+>7-2. <A
+HREF="invoking_autoinst.html#commandLineAutoYaST"
+>Command line variables for AutoYaST</A
+></DT
+><DT
+>8-1. <A
+HREF="migration.html#alice.modules"
+><ACRONYM
+CLASS="acronym"
+>ALICE</ACRONYM
+> vs. <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+> modules</A
+></DT
+><DT
+>B-1. <A
+HREF="info_file_format.html#AEN1610"
+>Advanced <B
+CLASS="command"
+>linuxrc</B
+> keywords</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="LOT"
+><DL
+CLASS="LOT"
+><DT
+><B
+>List of Figures</B
+></DT
+><DT
+>1-1. <A
+HREF="overviewandconcept.html#process"
+>Auto-installation process</A
+></DT
+><DT
+>3-1. <A
+HREF="createprofile.cms.html#AEN236"
+>Configuration System</A
+></DT
+><DT
+>3-2. <A
+HREF="createprofile.manual.html#kxmleditor"
+>Editing the control file with <B
+CLASS="command"
+>kxmledit</B
+></A
+></DT
+><DT
+>4-1. <A
+HREF="createprofile.partitioning.html#partitioning-keep1"
+>Keeping partitions</A
+></DT
+><DT
+>6-1. <A
+HREF="rulesandclass.html#rules_fig1"
+>Rules</A
+></DT
+><DT
+>6-2. <A
+HREF="classes.html#AEN1096"
+>Defining Classes</A
+></DT
+><DT
+>A-1. <A
+HREF="handlingrules.html#rulesflow"
+>Rules Retrieval Process</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="LOT"
+><DL
+CLASS="LOT"
+><DT
+><B
+>List of Examples</B
+></DT
+><DT
+>2-1. <A
+HREF="profile.format.html#AEN98"
+>XML Control File (Profile)</A
+></DT
+><DT
+>2-2. <A
+HREF="profile.structure.html#AEN104"
+>Control file container</A
+></DT
+><DT
+>2-3. <A
+HREF="profile.structure.html#AEN151"
+>Nested Resources</A
+></DT
+><DT
+>2-4. <A
+HREF="profile.structure.html#AEN158"
+>Nested Resources with type attributes</A
+></DT
+><DT
+>2-5. <A
+HREF="profile.dtd.html#AEN212"
+>Example <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+></A
+></DT
+><DT
+>4-1. <A
+HREF="configuration.html#AEN293"
+>General Options</A
+></DT
+><DT
+>4-2. <A
+HREF="createprofile.reporting.html#AEN314"
+>Reporting Behavior</A
+></DT
+><DT
+>4-3. <A
+HREF="createprofile.bootloader.html#AEN347"
+>Bootloader configuration</A
+></DT
+><DT
+>4-4. <A
+HREF="createprofile.partitioning.html#AEN415"
+>Automated partitioning</A
+></DT
+><DT
+>4-5. <A
+HREF="createprofile.partitioning.html#AEN420"
+>Detailed automated partitioning</A
+></DT
+><DT
+>4-6. <A
+HREF="createprofile.partitioning.html#AEN463"
+>Mount Options</A
+></DT
+><DT
+>4-7. <A
+HREF="createprofile.partitioning.html#AEN475"
+>Advanced Automated partitioning</A
+></DT
+><DT
+>4-8. <A
+HREF="createprofile.partitioning.html#AEN480"
+>Creating custom extended partitions</A
+></DT
+><DT
+>4-9. <A
+HREF="createprofile.partitioning.html#AEN489"
+>Keeping partitions</A
+></DT
+><DT
+>4-10. <A
+HREF="createprofile.partitioning.html#AEN504"
+>Auto-detection of partitions to be kept.</A
+></DT
+><DT
+>4-11. <A
+HREF="createprofile.partitioning.html#AEN514"
+>Reading existing <TT
+CLASS="filename"
+>/etc/fstab</TT
+></A
+></DT
+><DT
+>4-12. <A
+HREF="createprofile.partitioning.html#AEN522"
+>Create LVM Physical Volume</A
+></DT
+><DT
+>4-13. <A
+HREF="createprofile.partitioning.html#AEN534"
+>LVM Logical Volumes (Old syntax)</A
+></DT
+><DT
+>4-14. <A
+HREF="createprofile.partitioning.html#AEN538"
+>LVM Logical Volumes (New syntax)</A
+></DT
+><DT
+>4-15. <A
+HREF="createprofile.partitioning.html#AEN568"
+>RAID1 configuration (Old Syntax)</A
+></DT
+><DT
+>4-16. <A
+HREF="createprofile.partitioning.html#AEN572"
+>RAID1 configuration (New configuration&#62;</A
+></DT
+><DT
+>4-17. <A
+HREF="createprofile.software.html#AEN605"
+>Package selection in control file</A
+></DT
+><DT
+>4-18. <A
+HREF="createprofile.software.html#AEN620"
+>Customized Package selection</A
+></DT
+><DT
+>4-19. <A
+HREF="createprofile.software.html#AEN625"
+>Package selection file</A
+></DT
+><DT
+>4-20. <A
+HREF="createprofile.software.html#AEN636"
+>Creating package database</A
+></DT
+><DT
+>4-21. <A
+HREF="createprofile.software.html#AEN650"
+>Package selection in control file</A
+></DT
+><DT
+>4-22. <A
+HREF="createprofile.software.html#AEN661"
+>Package selection in control file</A
+></DT
+><DT
+>4-23. <A
+HREF="createprofile.services.html#AEN674"
+>Run-level Configuration</A
+></DT
+><DT
+>4-24. <A
+HREF="createprofile.network.html#AEN684"
+>Network configuration</A
+></DT
+><DT
+>4-25. <A
+HREF="createprofile.network.html#AEN695"
+>Netwrok configuration: Proxy</A
+></DT
+><DT
+>4-26. <A
+HREF="createprofile.network.html#AEN701"
+>Inetd Example</A
+></DT
+><DT
+>4-27. <A
+HREF="createprofile.network.html#AEN714"
+>Network configuration: NIS</A
+></DT
+><DT
+>4-28. <A
+HREF="createprofile.network.html#AEN729"
+>Network configuration:  <ACRONYM
+CLASS="acronym"
+>LDAP</ACRONYM
+>  client</A
+></DT
+><DT
+>4-29. <A
+HREF="createprofile.network.html#AEN736"
+>Network configuration: NFS client</A
+></DT
+><DT
+>4-30. <A
+HREF="createprofile.network.html#AEN739"
+>Network configuration: NFS server</A
+></DT
+><DT
+>4-31. <A
+HREF="createprofile.network.html#AEN745"
+>Mail Configuration</A
+></DT
+><DT
+>4-32. <A
+HREF="createprofile.security.html#AEN753"
+>Security configuration</A
+></DT
+><DT
+>4-33. <A
+HREF="configuration.x11.html#AEN790"
+>X11 and Monitor configuration</A
+></DT
+><DT
+>4-34. <A
+HREF="configuration.security.users.html#AEN801"
+>User configuration</A
+></DT
+><DT
+>4-35. <A
+HREF="createprofile.scripts.html#AEN833"
+>Post script configuration</A
+></DT
+><DT
+>4-36. <A
+HREF="createprofile.sysconfig.html#AEN850"
+>Sysconfig Configuration</A
+></DT
+><DT
+>4-37. <A
+HREF="createprofile.completeconf.html#AEN863"
+>Dumping files into the installed system</A
+></DT
+><DT
+>4-38. <A
+HREF="createprofile.completeconf.html#AEN868"
+>Dumping files into the installed system</A
+></DT
+><DT
+>4-39. <A
+HREF="createprofile.hardware.html#AEN881"
+>Printer configuration</A
+></DT
+><DT
+>4-40. <A
+HREF="createprofile.hardware.html#AEN887"
+>Sound configuration</A
+></DT
+><DT
+>6-1. <A
+HREF="rulesandclass.html#AEN955"
+>Simple rules file</A
+></DT
+><DT
+>6-2. <A
+HREF="rulesandclass.html#AEN972"
+>Simple rules file</A
+></DT
+><DT
+>7-1. <A
+HREF="invoking_autoinst.html#AEN1363"
+>Determine HEX code for an IP address</A
+></DT
+><DT
+>7-2. <A
+HREF="invoking_autoinst.html#AEN1387"
+>Linxurc options in the control file</A
+></DT
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="introduction.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Introduction</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

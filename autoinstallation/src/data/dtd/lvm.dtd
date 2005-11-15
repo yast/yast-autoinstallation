@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT lvm (lvm_group+)>
+<!ATTLIST lvm
+	config:type CDATA #REQUIRED
+>
+
+
+<!ELEMENT logical_volumes (lv+)>
+<!ATTLIST logical_volumes
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT lv ( lv_fs, lv_mount, lv_name, lv_size)>
+<!ELEMENT lv_fs (#PCDATA)>
+<!ATTLIST lv_fs
+	config:type CDATA #REQUIRED
+>
+
+<!ELEMENT lv_mount (#PCDATA)>
+<!ELEMENT lv_name (#PCDATA)>
+<!ELEMENT lvm_name (#PCDATA)>
+<!ELEMENT lv_size (#PCDATA)>
+<!-- <!ELEMENT mount (#PCDATA)> -->
+
+
+<!ELEMENT pesize (#PCDATA)>

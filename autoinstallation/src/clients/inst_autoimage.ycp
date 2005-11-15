@@ -1,0 +1,61 @@
+/**
+ * File:	clients/inst_autoimage.ycp
+ * Package:	Auto-installation
+ * Author:      Anas Nashif <nashif@suse.de>
+ * Summary:	Imaging
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "autoinst";
+
+import "Installation";
+import "Progress";
+import "Report";
+import "AutoinstImage";
+import "AutoinstSoftware";
+
+if (!AutoinstImage::enabled)
+    return `auto;
+
+
+
+string help_text = _("<p>
+Please wait while the image is retrieved.</p>
+");
+list<string> progress_stages =
+[
+ _("Retrieve Image File"),
+  _("Install image file")
+ ];
+
+ list<string> progress_descriptions =
+ [
+  _("Retrieving image file..."),
+  _("Installing image file...")
+  ];
+
+Progress::New(
+	      _("Installing image into system..."),
+	      "",     // progress_title
+	      size( progress_stages ),	// progress bar length
+	      progress_stages,
+	      progress_descriptions,
+	      help_text );
+
+Progress::NextStage();
+if (!AutoinstImage::Get(AutoinstSoftware::ft_module, Installation::destdir ))
+{
+    Report::Error(_("Error while retrieving image."));
+    return `abort;
+}
+
+
+Progress::Finish();
+
+return `next;
+
+
+}

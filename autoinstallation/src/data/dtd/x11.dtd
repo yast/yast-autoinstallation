@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT color_depth (#PCDATA)>
+<!ATTLIST color_depth
+	config:type CDATA #FIXED "integer"
+>
+<!ELEMENT configure_x11 (#PCDATA)>
+<!ATTLIST configure_x11
+	config:type CDATA #FIXED "boolean"
+>
+<!ENTITY % y2_display "frequency | bandwidth| height| max_hsync| max_vsync|
+                min_hsync| min_vsync| width" >
+
+<!ELEMENT display (%y2_display;)* >
+<!ELEMENT display_manager (#PCDATA)>
+<!ELEMENT window_manager (#PCDATA)>
+<!ELEMENT frequency (#PCDATA)>
+<!ATTLIST frequency
+	config:type CDATA #FIXED "integer"
+>
+<!ELEMENT enable_3d (#PCDATA)>
+<!ATTLIST enable_3d
+	config:type CDATA #FIXED "boolean"
+>
+<!ELEMENT max_hsync (#PCDATA)>
+<!ATTLIST max_hsync
+	config:type CDATA #FIXED "integer"
+>
+<!ELEMENT max_vsync (#PCDATA)>
+<!ATTLIST max_vsync
+	config:type CDATA #FIXED "integer"
+>
+<!ELEMENT height (#PCDATA)>
+<!ATTLIST height
+	config:type CDATA #FIXED "integer"
+>
+<!ELEMENT width (#PCDATA)>
+<!ATTLIST width
+	config:type CDATA #FIXED "integer"
+>
+
+<!ELEMENT bandwidth (#PCDATA)>
+<!ATTLIST bandwidth
+	config:type CDATA #FIXED "integer"
+>
+
+<!ELEMENT min_hsync (#PCDATA)>
+<!ATTLIST min_hsync
+	config:type CDATA #FIXED "integer"
+>
+<!ELEMENT min_vsync (#PCDATA)>
+<!ATTLIST min_vsync
+	config:type CDATA #FIXED "integer"
+>
+<!ELEMENT monitor (display, monitor_device, monitor_vendor)>
+<!ELEMENT monitor_device (#PCDATA)>
+<!ELEMENT monitor_vendor (#PCDATA)>
+<!ELEMENT resolution (#PCDATA)>
+<!ELEMENT start_x11 (#PCDATA)>
+<!ATTLIST start_x11
+	config:type CDATA #FIXED "boolean"
+>
+<!ENTITY % y2_x11 "color_depth| configure_x11| display_manager| enable_3d|
+window_manager| monitor| resolution| start_x11">
+<!ELEMENT x11 (%y2_x11;)* >

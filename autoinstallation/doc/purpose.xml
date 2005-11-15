@@ -1,0 +1,4032 @@
+<purposes>
+	<profile>
+		<purpose>The root element of the XML configuration file.</purpose>
+		<description><![CDATA[
+                      <para>
+                      The root element of the XML file contains all other configuration data.
+                      </para>
+                       <refsect2>
+                  <title>Type</title>
+                        <para>
+                        Resource
+            </para>
+                      </refsect2>
+                      ]]></description>
+	</profile>
+	<install>
+		<purpose>This main directive contains elements needed for core
+    system installation. This tag is deprecated since SUSE Linux 10.0</purpose>
+		<description><![CDATA[
+                      <para>
+                      Main directive for installation elements
+                      </para>
+                       <refsect2>
+                  <title>Type</title>
+                        <para>
+                        Resource
+            </para>
+                      </refsect2>
+                      ]]></description>
+	</install>
+	<general>
+		<purpose>General Options</purpose>
+		<description><![CDATA[
+                      <para>
+                        General Options
+                      </para>
+                       <refsect2>
+                  <title>Type</title>
+                        <para>
+                        Resource
+            </para>
+                      </refsect2>
+                      ]]></description>
+	</general>
+	<reboot>
+		<purpose>Reboot system before proceeding with
+    post-installation</purpose>
+		<description><![CDATA[
+                      <para>
+                        In case you have installed a new kernel or for other reasons,
+            you can reboot the installed system before the post-installation has been started.
+                      </para>
+                       <refsect2>
+                  <title>Type</title>
+                        <para>
+                        Property
+            </para>
+                      </refsect2>
+            <refsect2>
+            <title>Values</title>
+
+
+                        <screen>
+            true or false, default is false.
+          </screen>
+                      </refsect2>
+                      ]]></description>
+	</reboot>
+	<keyboard>
+		<purpose>Sets system keyboard type</purpose>
+		<description><![CDATA[
+                        <para>Sets system keyboard type</para>
+                        <refsect2><title>Type</title>
+                        <para>Property</para>
+
+                      </refsect2>
+                        <refsect2><title>Values</title>
+                        <para>
+                        Here's the list of available keyboards on i386 and Alpha
+          machines:
+            </para>
+                        <screen>
+      belgian, czech, czech-qwerty, danish, dutch, dvorak, english-
+      uk, english-us, finnish, french, french-ch, german, german-ch, greek,
+      hungarian, italian, japanese, norwegian, polish, portugese, portugese-br,
+      russian, slovak, slovak-qwerty, spanish, swedish, turkish
+
+                        </screen> </refsect2>
+ <refsect2><title>&alice; Compatibility</title>
+                        <para>This property is replaces the following tags in &alice;
+                        </para>
+      <itemizedlist>
+                  <listitem><para>&lt;SYS_KEYTABLE&gt;</para></listitem>
+      </itemizedlist>
+
+
+
+<para>Use the following table to convert key tables used with &yast1; to
+      &yast2; keyboards</para>
+          <table frame='all'>
+      <title>&yast1; to &yast2; conversion</title>
+      <tgroup cols='2'>
+	<thead>
+	  <row>
+	    <entry>YaST2</entry>
+	    <entry>YaST1</entry>
+	  </row>
+	</thead>
+
+
+	<tbody>
+        <row><entry>english-uk  </entry><entry> us</entry></row>
+    <row><entry>english-us  </entry><entry> us</entry></row>
+    <row><entry>german  </entry><entry> de-lat1-nd</entry></row>
+    <row><entry>german-ch   </entry><entry> de-lat1-nd</entry></row>
+    <row><entry>french  </entry><entry> fr-latin1</entry></row>
+    <row><entry>french-ch   </entry><entry> fr-latin1</entry></row>
+    <row><entry>italian </entry><entry> it</entry></row>
+    <row><entry>spanish </entry><entry> es</entry></row>
+    <row><entry>dutch       </entry><entry> nl</entry></row>
+    <row><entry>portugese   </entry><entry> pt2</entry></row>
+    <row><entry>portugese-br    </entry><entry> br-abnt2</entry></row>
+    <row><entry>hungarian   </entry><entry> hu</entry></row>
+    <row><entry>polish  </entry><entry> Pl02</entry></row>
+    <row><entry>greek       </entry><entry> gr</entry></row>
+    <row><entry>turkish </entry><entry> trq</entry></row>
+    <row><entry>russian </entry><entry> ru1</entry></row>
+    <row><entry>czech       </entry><entry> cz-lat2</entry></row>
+
+  	</tbody>
+      </tgroup>
+    </table>
+                      </refsect2>
+                        ]]></description>
+	</keyboard>
+	<language>
+		<purpose>Sets the language to use during installation</purpose>
+		<description><![CDATA[
+                        <para>
+                           Sets the language to use during installation and the language to install on the system.
+                      </para>
+                        <refsect2><title>Type</title>
+                        <para>
+                           Property
+                        </para>
+                      </refsect2>
+                        <refsect2><title>Values</title>
+                        <para> Valid language codes are the following
+
+                        </para>
+                        <screen>
+      cs_CZ, da_DK, en_US, fr_FR, de_DE, hu_HU, is_IS, it_IT,
+      ja_JP.eucJP, no_NO, ro_RO, sk_SK, sl_SI, sr_YU, es_ES,
+      ru_RU.KOI8-R, uk_UA.KOI8-U, sv_SE, tr_TR
+                         </screen>
+                      </refsect2>
+ <refsect2><title>&alice; Compatibility</title>
+                        <para>This property is replaces the following tags in &alice;
+                        </para>
+      <itemizedlist>
+                  <listitem><para>&lt;SYS_LANGUAGE&gt;</para></listitem>
+      </itemizedlist>
+
+
+
+                      </refsect2>
+                        ]]></description>
+	</language>
+	<timezone>
+		<purpose>Sets the Time zone</purpose>
+		<description><![CDATA[
+                        <para>
+                        Sets the Time zone
+                      </para>
+                        <refsect2><title>Type</title>
+                        <para>
+                         Property
+                        </para>
+                      </refsect2>
+                        <refsect2><title>Values</title>
+                        <para> Valid timezone codes are the following
+
+                        </para>
+                        <screen>
+      Africa/Algiers, Africa/Brazzaville, Africa/Cairo, Africa/Casablanca,
+      Africa/Ceuta, Africa/Dakar, Africa/Dar_es_Salaam, Africa/Djibouti,
+      Africa/Freetown, Africa/Johannesburg, Africa/Libreville, Africa/Monrovia,
+      Africa/Nairobi, Africa/Timbuktu, Africa/Tripoli, Africa/Tunis,
+      Africa/Windhoek, America/Asuncion, America/Barbados, America/Bogota,
+      America/Buenos_Aires, America/Caracas, America/Costa_Rica,
+      America/Dominica, America/El_Salvador, America/Grenada,
+      America/Guadeloupe, America/Guatemala, America/Lima, America/Managua,
+      America/Martinique, America/Panama, America/Puerto_Rico, America/Virgin,
+      Antarctica/South_Pole, Arctic/Longyearbyen, Asia/Bahrain, Asia/Bangkok,
+      Asia/Beirut, Asia/Brunei, Asia/Calcutta, Asia/Colombo, Asia/Damascus,
+      Asia/Dubai, Asia/Gaza, Asia/Jakarta, Asia/Katmandu, Asia/Kuala_Lumpur,
+      Asia/Kuwait, Asia/Macao, Asia/Manila, Asia/Qatar, Asia/Saigon,
+      Asia/Samarkand, Asia/Seoul, Asia/Shanghai, Asia/Singapore, Asia/Taipei,
+      Asia/Tashkent, Asia/Tokyo, Asia/Vladivostok, Asia/Yekaterinburg,
+      Atlantic/Azores, Atlantic/Bermuda, Atlantic/Reykjavik, Australia/ACT,
+      Australia/Adelaide, Australia/Canberra, Australia/Darwin,
+      Australia/Melbourne, Australia/NSW, Australia/North, Australia/Perth,
+      Australia/Queensland, Australia/South, Australia/Sydney,
+      Australia/Tasmania, Australia/West, Brazil/East, Brazil/West, CET,
+      CST6CDT, Canada/Atlantic, Canada/Central, Canada/East-Saskatchewan,
+      Canada/Eastern, Canada/Mountain, Canada/Newfoundland, Canada/Pacific,
+      Canada/Saskatchewan, Canada/Yukon, Chile/Continental, Chile/EasterIsland,
+      EET, EST, EST5EDT, Egypt, Etc/GMT, Etc/GMT+0, Etc/GMT+1, Etc/GMT+10,
+      Etc/GMT+11, Etc/GMT+12, Etc/GMT+2, Etc/GMT+3, Etc/GMT+4, Etc/GMT+5,
+      Etc/GMT+6, Etc/GMT+7, Etc/GMT+8, Etc/GMT+9, Etc/GMT-0, Etc/GMT-1,
+      Etc/GMT-10, Etc/GMT-11, Etc/GMT-12, Etc/GMT-13, Etc/GMT-14, Etc/GMT-2,
+      Etc/GMT-3, Etc/GMT-4, Etc/GMT-5, Etc/GMT-6, Etc/GMT-7, Etc/GMT-8,
+      Etc/GMT-9, Etc/GMT0, Etc/Greenwich, Etc/UCT, Etc/UTC, Etc/Universal,
+      Etc/Zulu, Europe/Amsterdam, Europe/Athens, Europe/Belfast,
+      Europe/Belgrade, Europe/Berlin, Europe/Bratislava, Europe/Brussels,
+      Europe/Bucharest, Europe/Budapest, Europe/Chisinau, Europe/Copenhagen,
+      Europe/Dublin, Europe/Gibraltar, Europe/Helsinki, Europe/Istanbul,
+      Europe/Kiev, Europe/Lisbon, Europe/Ljubljana, Europe/London,
+      Europe/Luxembourg, Europe/Madrid, Europe/Malta, Europe/Monaco,
+      Europe/Moscow, Europe/Oslo, Europe/Paris, Europe/Prague, Europe/Riga,
+      Europe/Rome, Europe/Sarajevo, Europe/Skopje, Europe/Sofia,
+      Europe/Stockholm, Europe/Tallinn, Europe/Tirane, Europe/Vaduz,
+      Europe/Vatican, Europe/Vienna, Europe/Vilnius, Europe/Warsaw,
+      Europe/Zagreb, Europe/Zurich, GMT, GMT+0, GMT-0, GMT0, Greenwich, HST,
+      Hongkong, Iceland, Israel, Jamaica, Japan, MET, MST, MST7MDT,
+      Mexico/BajaNorte, Mexico/BajaSur, Mexico/General, Mideast/Riyadh87,
+      Mideast/Riyadh88, Mideast/Riyadh89, NZ, NZ-CHAT, Navajo, PRC, PST8PDT,
+      Pacific/Fiji, Pacific/Galapagos, Pacific/Guadalcanal, Pacific/Guam,
+      Pacific/Midway, Pacific/Nauru, Pacific/Palau, Pacific/Pitcairn,
+      Pacific/Samoa, Pacific/Tahiti, Poland, Portugal, ROC, ROK, Singapore,
+      Turkey, UCT, US/Alaska, US/Aleutian, US/Arizona, US/Central,
+      US/East-Indiana, US/Eastern, US/Hawaii, US/Indiana-Starke, US/Michigan,
+      US/Mountain, US/Pacific, US/Samoa, UTC, Universal, W-SU, WET, Zulu
+
+                         </screen>
+                      </refsect2>
+      <refsect2><title>&alice; Compatibility</title>
+                        <para>This property is replaces the following tags in &alice;
+                        </para>
+      <itemizedlist>
+                  <listitem><para>&lt;SYS_TIMEZONE&gt;</para></listitem>
+      </itemizedlist>
+
+                      </refsect2>
+                        ]]></description>
+	</timezone>
+	<hwclock>
+		<purpose>Specify whether the hardware clock of your machine is
+    set to local time or GMT.</purpose>
+		<description><![CDATA[
+                        <para>
+                        Most PCs that also have other operating systems installed (such as Microsoft Windows) use local time.
+                  Machines that have only Linux installed should be set to Greenwich Mean Time (GMT).
+                  If you are unsure, use GMT.
+                      </para>
+                        <refsect2><title>Type</title>
+                        <para>
+                             Property
+                      </para>
+                      </refsect2>
+                        <refsect2><title>Values</title>
+                       <para>
+                  GMT or localtime
+                        </para>
+                      </refsect2>
+        <refsect2><title>&alice; Compatibility</title>
+                        <para>This property is replaces the following tags in &alice;
+                        </para>
+      <itemizedlist>
+                  <listitem><para>&lt;SYS_HWC_GMT&gt;</para></listitem>
+      </itemizedlist>
+
+                      </refsect2>
+                        ]]></description>
+	</hwclock>
+	<mouse>
+		<purpose>Choose the mouse type of the mouse attached to the
+    system</purpose>
+		<description><![CDATA[
+                        <para>
+                      Choose the mouse type of the mouse attached to the system
+                      </para>
+                        <refsect2><title>Type</title>
+                        <para>
+                             Property
+                      </para>
+                      </refsect2>
+                        <refsect2><title>Values</title>
+      <table frame='all'>
+      <title>Mouse Types and IDs</title>
+      <tgroup cols='2'>
+	<thead>
+	  <row>
+	    <entry>ID</entry>
+	    <entry>Type</entry>
+	  </row>
+	</thead>
+
+
+	<tbody>
+<row><entry>00_ps2</entry><entry>PS/2 mouse (Aux-port)</entry></row
+>
+
+<row><entry>01_ms0</entry><entry>Microsoft compatible serial mouse - (ttyS0 - COM1)</entry></row>
+
+<row><entry>02_ms</entry><entry>Microsoft compatible serial mouse - (ttyS1 - COM2)</entry></row>
+
+<row><entry>03_ms30</entry><entry>Microsoft Intellimouse - 3 buttons and wheel - (ttyS0 - COM1)</entry></row>
+
+<row><entry>04_ms3</entry><entry>Microsoft Intellimouse - 3 buttons and wheel - (ttyS1 - COM2)</entry></row>
+
+<row><entry>05_msc0</entry><entry>Mouse Systems serial mouse - (ttyS0 - COM1)</entry></row>
+
+<row><entry>06_msc</entry><entry>Mouse Systems serial mouse - (ttyS1 - COM2)</entry></row>
+
+<row><entry>07_mman0</entry><entry>Mouse Man protocol (serial Logitech mouse) - (ttyS0 - COM1)</entry></row>
+
+<row><entry>08_mman</entry><entry>Mouse Man protocol (serial Logitech mouse) - (ttyS1 - COM2)</entry></row>
+
+<row><entry>09_logi0</entry><entry>Old Logitech serial mouse (series 9) - (ttyS0 - COM1)</entry></row>
+
+<row><entry>10_logi</entry><entry>Old Logitech serial mouse (series 9) - (ttyS1 - COM2)</entry></row>
+
+<row><entry>11_busm</entry><entry>Logitech busmouse</entry></row>
+
+<row><entry>12_sun</entry><entry>Sun Mouse - (/dev/sunmouse)</entry></row>
+
+<row><entry>13_bare0</entry><entry>Oldest 2-button serial mouse - (ttyS0 - COM1)</entry></row>
+
+<row><entry>14_bare</entry><entry>Oldest 2-button serial mouse - (ttyS1 - COM2)</entry></row>
+
+<row><entry>15_mb</entry><entry>Microsoft busmouse</entry></row>
+
+<row><entry>16_bm</entry><entry>ATI XL busmouse</entry></row>
+
+<row><entry>17_pnp0</entry><entry>Plug-and-Play mice - (ttyS0 - COM1)</entry></row>
+
+<row><entry>18_pnp</entry><entry>Plug-and-Play mice - (ttyS1 - COM2)</entry></row>
+
+<row><entry>19_usb</entry><entry>USB mouse</entry></row>
+
+<row><entry>20_imps2</entry><entry>Intelli/Wheel mouse (Aux-port)</entry></row>
+
+<row><entry>21_imps2</entry><entry>Intelli/Wheel mouse (USB)</entry></row>
+
+<row><entry>non</entry><entry>NONE </entry></row>
+	</tbody>
+      </tgroup>
+    </table>
+
+
+                      </refsect2>
+                        ]]></description>
+	</mouse>
+	<configure>
+		<purpose>Data for post-configuration after the system has been
+    setup. This tag is deprecated since SUSE Linux 10.0</purpose>
+		<description><![CDATA[
+                      <para>
+                      Data for post-configuration after the system has been setup.
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Resource
+                        </para>
+                      </refsect2>
+                      ]]></description>
+	</configure>
+	<bootloader>
+		<purpose>Configure Bootloader (Lilo, ELILO etc.).</purpose>
+		<description><![CDATA[
+                      <para>
+                      The directive handles the bootloader configuration. Using the vootloader element, theuser can specify where lilo should be installed and whether some hardware dependent parameters should be activated.
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Resource
+            </para>
+                      </refsect2>
+                      ]]></description>
+	</bootloader>
+	<encrypted>
+		<purpose>Is the given password encrypted?</purpose>
+		<description><![CDATA[
+                      <para>
+                      Specify whether the given password is encrypted. If the
+            password is given in clear text, then it will be encrypted, otherwise it
+            will be kept as is.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+            </para>
+                      </refsect2>
+                  <refsect2><title>Values</title>
+                  <para>
+                  This element takes a boolean as a value. Possible values are <emphasis>true</emphasis> or  <emphasis>false</emphasis>.
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</encrypted>
+	<boot>
+		<purpose>Name of the device (e.g. a hard disk partition) that
+    contains the boot sector.</purpose>
+		<description><![CDATA[
+                      <para> See <emphasis>lilo.conf(5)</emphasis>
+                  <refsect2><title>Values</title>
+                  <para>
+                  a hard disk partition
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</boot>
+	<lba32>
+		<purpose>Generate 32-bit Logical Block Addresses instead of
+    sector/head/cylinder addresses.</purpose>
+		<description><![CDATA[
+                      <para> See <emphasis>lilo.conf(5)</emphasis>
+
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+                  <emphasis>boolean</emphasis>
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</lba32>
+	<menuscheme>
+		<purpose>Color scheme of the boot menu</purpose>
+		<description><![CDATA[
+                      <para> See <emphasis>lilo.conf(5)</emphasis>
+
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+                  &lt;color-scheme&gt;
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</menuscheme>
+	<message>
+		<purpose>specifies a file containing a message that is
+    displayed before the boot prompt.</purpose>
+		<description><![CDATA[
+                      <para> See <emphasis>lilo.conf(5)</emphasis>
+
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+                  message-file
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</message>
+	<prompt>
+		<purpose>The boot loader will issue the boot: prompt and wait
+    for user input before proceeding (see timeout TODO).</purpose>
+		<description><![CDATA[
+                      <para> See <emphasis>lilo.conf(5)</emphasis>
+
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+                  <emphasis>boolean</emphasis>
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</prompt>
+	<readonly>
+		<purpose>This specifies that the root file system should be
+    mounted read- only.</purpose>
+		<description><![CDATA[
+                      <para> See <emphasis>lilo.conf(5)</emphasis>
+
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+                  <emphasis>boolean</emphasis>
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</readonly>
+	<timeout>
+		<purpose>Sets the timeout for timed messages</purpose>
+		<description><![CDATA[
+                      <para>
+            Timeout before  a message disappears.
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+            Timeout in  seconds.
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</timeout>
+	<show>
+		<purpose>Show pop-up messages</purpose>
+		<description><![CDATA[
+                      <para>
+            Determine whether to show pop-up messages, warnings or erros.
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+            boolean
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</show>
+	<log>
+		<purpose>Log pop-up messages</purpose>
+		<description><![CDATA[
+                      <para>
+            Determine whether to log pop-up messages, warnings or erros.
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+            boolean
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</log>
+	<vga>
+		<purpose>This specifies the VGA text mode that should be
+    selected when booting.</purpose>
+		<description><![CDATA[
+                      <para> See <emphasis>lilo.conf(5)</emphasis>
+
+                      </para>
+                  <refsect2><title>Values</title>
+                  <itemizedlist>
+                  <listitem>
+                  <Para><emphasis>normal</emphasis>: select normal 80x25 text mode.</para>
+                  </listitem>
+                  <listitem>
+                  <Para><emphasis>extended (or ext)</emphasis>: select 80x50 text mode.</para>
+                  </listitem>
+                  <listitem>
+                  <Para><emphasis>ask</emphasis>:  stop and ask for user input (at boot time).</para>
+                  </listitem>
+                  <listitem>
+                  <Para><emphasis>&lt;number&gt;</emphasis>: use the corresponding
+                  text mode. A list of available modes  can be obtained by booting with <emphasis>>vga=ask</emphasis>
+                  and pressing [Enter].
+                  </para>
+                  </listitem>
+                  </itemizedlist>
+
+                  </refsect2>
+                      ]]></description>
+	</vga>
+	<lilo_password>
+		<purpose>Enables password authentification when
+    booting.</purpose>
+		<description><![CDATA[
+                      <para> See <emphasis>lilo.conf(5)</emphasis>
+
+                      </para>
+                  <refsect2><title>Values</title>
+                  <para>
+                  password
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</lilo_password>
+	<security>
+		<purpose>Security Options.</purpose>
+		<description><![CDATA[
+                      <para>
+                        Security Options
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Resource
+            </para>
+                      </refsect2>
+                      ]]></description>
+	</security>
+	<pass_max_len>
+		<purpose>Maximum kength for passwords</purpose>
+		<description><![CDATA[
+
+                       <refsect2><title>Type</title>
+                        <para>
+                          Property
+                        </para>
+                      </refsect2>
+                  <refsect2><title>Values</title>
+                  <para>
+      Integer
+                  </para>
+                        </refsect2>
+                      ]]></description>
+	</pass_max_len>
+	<root_login_remote>
+		<purpose>allow root logins from other machines</purpose>
+		<description><![CDATA[
+                      <para>
+                        If you want to allow root logins from other machines, set ROOT_LOGIN_REMOTE
+                        to "yes". (Logging in via ssh is not affected by this variable since SSH
+                        is seen as a safe login method).
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                          Property
+                        </para>
+                      </refsect2>
+                  <refsect2><title>Values</title>
+                  <para>
+                  yes or no
+                  </para>
+                        </refsect2>
+                      ]]></description>
+	</root_login_remote>
+	<console_shutdown>
+		<purpose>determines how ctrl-alt-del is handled.</purpose>
+		<description><![CDATA[
+                      <para>
+
+                  determines how ctrl-alt-del is handled.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  ignore, reboot or halt
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</console_shutdown>
+	<cwd_in_root_path>
+		<purpose>Do you want to have dot in root path?</purpose>
+		<description><![CDATA[
+                      <para>
+
+                   Do you want to have a dot in root path?  This is not recommended, but
+                  many people do prefer it (yes/no). The setting affects all system
+                  users (with uid < 100)
+
+                      </para>
+                       <refsect2>
+            <title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  yes or no
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</cwd_in_root_path>
+	<faillog_enab>
+		<purpose>Enable logging and display of /var/log/faillog login
+    failure info.</purpose>
+		<description><![CDATA[
+            <para>
+            Enable logging and display of <filename>/var/log/faillog</filename> login failure info.
+          </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  yes or no
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</faillog_enab>
+	<fail_delay>
+		<purpose>Delay in seconds before being allowed another attempt
+    after a login failure</purpose>
+		<description><![CDATA[
+                      <para>
+
+                  Delay in seconds before being allowed another attempt after a login failure
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  number representing seconds.
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</fail_delay>
+	<gid_max>
+		<purpose>Min/max values for automatic gid selection in
+    groupadd</purpose>
+		<description><![CDATA[
+                      <para>
+
+                      Min/max values for automatic gid selection in groupadd
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                      ]]></description>
+	</gid_max>
+	<gid_min>
+		<purpose>Min/max values for automatic gid selection in
+    groupadd</purpose>
+		<description><![CDATA[
+                      <para>
+
+                      Min/max values for automatic gid selection in groupadd
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                      ]]></description>
+	</gid_min>
+	<uid_max>
+		<purpose>Min/max values for automatic uid selection in
+    useradd</purpose>
+		<description><![CDATA[
+                      <para>
+
+                      Min/max values for automatic uid selection in useradd
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                      ]]></description>
+	</uid_max>
+	<uid_min>
+		<purpose>Min/max values for automatic uid selection in
+    useradd</purpose>
+		<description><![CDATA[
+                      <para>
+
+                      Min/max values for automatic uid selection in useradd
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                      ]]></description>
+	</uid_min>
+	<kdm_shutdown>
+		<purpose>who will be able to shutdown the system in
+    kdm</purpose>
+		<description><![CDATA[
+                      <para> Determines who will be able to shutdown the
+                  system in kdm.
+
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  "root", "all", "none", "local", "auto"
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</kdm_shutdown>
+	<lastlog_enab>
+		<purpose>Enable logging and display of /var/log/lastlog login
+    time info.</purpose>
+		<description><![CDATA[
+                      <para>
+                  Enable logging and display of /var/log/lastlog login time info.
+
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  yes or no
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</lastlog_enab>
+	<md5_support>
+		<purpose>Enable MD5 Support</purpose>
+		<description><![CDATA[
+                      <para>
+                  Activate MD5 encryption for passwords
+
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  yes or no
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</md5_support>
+	<obscure_changes_enab>
+		<purpose>Enable additional checks upon password
+    changes.</purpose>
+		<description><![CDATA[
+                      <para>
+
+                  Enable additional checks upon password changes.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  yes or no
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</obscure_changes_enab>
+	<passwd_use_cracklib>
+		<purpose>Use cracklib?</purpose>
+		<description><![CDATA[
+                      <para>
+
+                  Use Cracklib
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  yes or no
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</passwd_use_cracklib>
+	<pass_max_days>
+		<purpose>Maximum number of days a password may be
+    used.</purpose>
+		<description><![CDATA[
+                      <para>
+
+                  Maximum number of days a password may be used.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  Number
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</pass_max_days>
+	<pass_min_days>
+		<purpose>Minimum number of days allowed between password
+    changes.</purpose>
+		<description><![CDATA[
+                      <para>
+
+                   Minimum number of days allowed between password changes.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  Number
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</pass_min_days>
+	<pass_min_len>
+		<purpose>Minimum acceptable password length.</purpose>
+		<description><![CDATA[
+                      <para>
+
+
+                     Minimum acceptable password length.
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  Number
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</pass_min_len>
+	<pass_warn_age>
+		<purpose>Number of days warning given before a password
+    expires.</purpose>
+		<description><![CDATA[
+                      <para>
+
+                          Number of days warning given before a password expires.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+
+                  Number
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</pass_warn_age>
+	<permission_security>
+		<purpose>Permission Security configuration to use.</purpose>
+		<description><![CDATA[
+                      <para>
+
+                   &company-suse;  Linux contains two different configurations for
+                  chkstat. The differences can be found in <filename>/etc/permissions.secure</filename>
+                  and <filename>/etc/permissions.easy</filename>. If you create your own configuration
+                  (e.g. permissions.foo), you can enter the extension here as well.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+                  easy/secure local foo whateveryouwant
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</permission_security>
+	<run_updatedb_as>
+		<purpose>Which user should updatedb use to run?</purpose>
+		<description><![CDATA[
+                      <para>
+                  updatedb has a parameter "--localuser".
+                  It runs the "find" command as this user. Some people think this is a
+                  security hole if set to 'root' (because some directory information can
+                  be read which is normally protected). Others think it is useful to hold
+                  all files in the database.
+                  So if you want full information in locate db, set RUN_UPDATEDB_AS to root.
+                  If you want security use RUN_UPDATEDB_AS with nobody.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+                  user name
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</run_updatedb_as>
+	<activate>
+		<purpose>activate partition where LILO is installed</purpose>
+		<description><![CDATA[
+                      <para> activate partition where LILO is installed. Set this option to
+                  true to mark the partition as active. Usually this
+                  is not required, but, on some systems, the BIOS only boots from an active partition.
+
+                      </para>
+                       <refsect2><title>Type</title>
+                        <para>
+                        Property
+                        </para>
+                      </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+                  boolean: true or false
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</activate>
+	<linear>
+		<purpose>Use lilo&apos;s linear option</purpose>
+		<description><![CDATA[
+                  <para>
+                  Generate linear sector addresses instead of sector/head/cylinder
+                  addresses. Linear addresses are translated at run time and do not depend
+                  on disk geometry. When using `linear' with large disks,
+                  <command>/sbin/lilo</command> may  generate  references  to inaccessible
+                  disk areas, because 3D sector addresses are not known before boot
+                  time. 'lba32' avoids many of these pitfalls with its use of  packet
+                  addressing,  but  requires  a recent BIOS. (See man lilo.conf(5))
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+                  boolean: true or false
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</linear>
+	<location>
+		<purpose>Bootloader device location</purpose>
+		<description><![CDATA[
+                  <para>
+                  Sets the name of the device (e.g. a hard disk partition) that contains
+                  the boot sector. If <emphasis>mbr</emphasis> is given, lilo will be written on the MBR disk.
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+                  mbr, floppy or a partition device (or a hard drive device)
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</location>
+	<parameters>
+		<purpose>Bootloader device location</purpose>
+		<description><![CDATA[
+                  <para>
+
+                  Appends the options specified to the parameter line passed to the kernel.
+                  This is  typically  used  to specify parameters of hardware that can't be
+                  entirely auto-detected or for which probing may be dangerous.
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Values</title>
+                  <para>
+                  kernel parameters, i.e. "enableapic hdb=ide-scsi" (without the quotes)
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</parameters>
+	<confirm>
+		<purpose>Configure reporting and pop-ups</purpose>
+		<description><![CDATA[
+                  <para>
+                  Confirm installation before anything is done on the system. This is
+            to avoid any recrusive installations.
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+          <refsect2>
+                  <title>Values</title>
+                  <para>
+            boolean, true by default.
+
+                  </para>
+                  </refsect2>
+                      ]]></description>
+	</confirm>
+	<report>
+		<purpose>Configure reporting and pop-ups</purpose>
+		<description><![CDATA[
+                  <para>
+                  See <quote><link linkend='CreateProfile.Reporting' endterm="CreateProfile.Reporting.title"></link></quote>
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</report>
+	<messages>
+		<purpose>Configure message pop-ups</purpose>
+		<description><![CDATA[
+                  <para>
+                  See <quote><link linkend='CreateProfile.Reporting' endterm="CreateProfile.Reporting.title"></link></quote>
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</messages>
+	<errors>
+		<purpose>Configure error pop-ups</purpose>
+		<description><![CDATA[
+                  <para>
+                  See <quote><link linkend='CreateProfile.Reporting' endterm="CreateProfile.Reporting.title"></link></quote>
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</errors>
+	<warnings>
+		<purpose>Configure warning pop-ups</purpose>
+		<description><![CDATA[
+                  <para>
+                  See <quote><link linkend='CreateProfile.Reporting' endterm="CreateProfile.Reporting.title"></link></quote>
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</warnings>
+	<users>
+		<purpose>Add users to the system</purpose>
+		<description><![CDATA[
+                  <para>
+                  Using this resource, you will be able to add users to the system.
+                  This resource is also used to set the root password.
+
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</users>
+	<user>
+		<purpose>The user resource</purpose>
+		<description><![CDATA[
+                  <para>
+                  This  resource contains data about a single user that should be added to
+                  the system.
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</user>
+	<username>
+		<purpose>The user name, or login</purpose>
+		<description><![CDATA[
+                  <para>
+                  The user name, or login
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+               <refsect2><title>Value</title>
+                  <para>
+                  string,  use
+                  <emphasis>lowercase</emphasis> letters (no accented characters), digits, and <emphasis>._-</emphasis>
+                  User names have stricter restrictions than passwords!
+                </para>
+                </refsect2>
+                      ]]></description>
+	</username>
+	<user_password>
+		<purpose>The user password</purpose>
+		<description><![CDATA[
+                  <para>
+                  A password should have at least 5 characters and, as a rule, not contain any
+                  special characters (e.g., accented characters).
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+               <refsect2>
+                  <title>Value</title>
+                  <para>
+            valid password
+                 </para>
+                 </refsect2>
+                   ]]></description>
+	</user_password>
+	<home>
+		<purpose>home directory of the user</purpose>
+		<description><![CDATA[
+                   <para>The home directory of the user. Normally this is
+                   /home/username.
+
+                 </para>
+                   <refsect2>
+                   <title>Type</title>
+                   <para>
+                   Property
+                 </para>
+                 </refsect2>
+                   <refsect2>
+                   <title>Value</title>
+                   <para>
+                   string, example <filename>/home/nashif</filename>
+                 </para>
+                 </refsect2>
+                   ]]></description>
+	</home>
+	<forename>
+		<purpose>User forename</purpose>
+		<description><![CDATA[
+                   <para>
+                   User forename
+
+                 </para>
+                   <refsect2>
+                   <title>Type</title>
+                   <para>
+                   Property
+                 </para>
+                 </refsect2>
+                   <refsect2>
+                   <title>Value</title>
+                   <para>
+                   string
+                 </para>
+                 </refsect2>
+                   ]]></description>
+	</forename>
+	<surname>
+		<purpose>user surname</purpose>
+		<description><![CDATA[
+                   <para>
+                   User surname
+
+                 </para>
+                   <refsect2>
+                  <title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  string
+                </para>
+                </refsect2>
+                      ]]></description>
+	</surname>
+	<gid>
+		<purpose>Group ID(gid)</purpose>
+		<description><![CDATA[
+                  <para>
+                  In addition to its name, a group has to be assigned a numerical ID for its
+                  internal representation. These values are between 0 and a value defined
+                  in <filename>/etc/login.defs</filename>. Some of the IDs are already
+                  assigned during installation.
+
+
+                </para>
+                  <para>
+                 Leave empty if unsure, &yast2; will determine the value automatically.
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  string
+                </para>
+                </refsect2>
+                      ]]></description>
+	</gid>
+	<uid>
+		<purpose>User ID(uid)</purpose>
+		<description><![CDATA[
+                  <para>
+                  Each user is known to the system by a unique number,
+                  the "User ID". For normal users, you should use
+                  a UID bigger than the value defined in the system, because the smaller UIDs are used
+                  by the system for special purposes and pseudo logins.
+
+                </para>
+                  <para>
+                 Leave empty if unsure, &yast2; will determine the value automatically.
+                </para>
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  string
+                </para>
+                </refsect2>
+                      ]]></description>
+	</uid>
+	<shell>
+		<purpose>The login shell (command interpreter) for the
+    user.</purpose>
+		<description><![CDATA[
+                  <para>
+            Select one shell from the list of all shells installed
+            on your system.
+                </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  string
+                </para>
+                </refsect2>
+                      ]]></description>
+	</shell>
+	<grouplist>
+		<purpose>Additional group membership</purpose>
+		<description><![CDATA[
+                  <para>
+            All additional memberships in groups for the user.
+                </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  comma seprated values
+                </para>
+                </refsect2>
+                      ]]></description>
+	</grouplist>
+	<x11>
+		<purpose>X11 configuration</purpose>
+		<description><![CDATA[
+            <para>
+          configure the X11 system
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</x11>
+	<configure_x11>
+		<purpose>Activate X11 configuration</purpose>
+		<description><![CDATA[
+                  <para>
+            Activate X11 configuration
+                </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  boolean
+                </para>
+                </refsect2>
+                      ]]></description>
+	</configure_x11>
+	<min_hsync>
+		<purpose>Minimal horizontal frequency</purpose>
+		<description><![CDATA[
+                  <para>
+            The <emphasis>horizontal frequency</emphasis> (in kHz) specifies how many times
+      per second the monitor can write a horizontal scan line. This is a
+      hard limit of the monitor, independent of the screen resolution.
+                </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  integer
+                </para>
+                </refsect2>
+                      ]]></description>
+	</min_hsync>
+	<max_hsync>
+		<purpose>Maximal horizontal frequency</purpose>
+		<description><![CDATA[
+                  <para>
+            The <emphasis>horizontal frequency</emphasis> (in kHz) specifies how many times
+      per second the monitor can write a horizontal scan line. This is a
+      hard limit of the monitor, independent of the screen resolution.
+                </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  integer
+                </para>
+                </refsect2>
+                      ]]></description>
+	</max_hsync>
+	<max_vsync>
+		<purpose>Maximal vertical frequency</purpose>
+		<description><![CDATA[
+                  <para>
+           The <emphasis>vertical frequency</emphasis> (in Hz) specifies how many times per
+      second the image on the screen is refreshed. This value depends on the
+      screen resolution and the monitor's maximum horizontal frequency.
+                </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  integer
+                </para>
+                </refsect2>
+                      ]]></description>
+	</max_vsync>
+	<min_vsync>
+		<purpose>Minimal vertical frequency</purpose>
+		<description><![CDATA[
+                  <para>
+       The <emphasis>vertical frequency</emphasis> (in Hz) specifies how many times per
+      second the image on the screen is refreshed. This value depends on the
+      screen resolution and the monitor's maximum horizontal frequency.
+
+                </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  integer
+                </para>
+                </refsect2>
+                      ]]></description>
+	</min_vsync>
+	<color_depth>
+		<purpose>Color depth when configuring X11</purpose>
+		<description><![CDATA[
+            <para>
+            Color depth in bit.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  8, 15 (PPC), 16, 24, 32
+                </para>
+                </refsect2>
+                      ]]></description>
+	</color_depth>
+	<display_manager>
+		<purpose>Display Manager</purpose>
+		<description><![CDATA[
+            <para>
+            What display manager to install
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+                  string: kdm or gdm
+                </para>
+                </refsect2>
+                      ]]></description>
+	</display_manager>
+	<enable_3d>
+		<purpose>Enable 3D Support</purpose>
+		<description><![CDATA[
+            <para>
+            Enable 3D support for X11.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            boolean: true or false
+                </para>
+                </refsect2>
+                      ]]></description>
+	</enable_3d>
+	<resolution>
+		<purpose>X11 Resolution</purpose>
+		<description><![CDATA[
+            <para>
+            Configure X11 Resolution. &yast2; will by default add all lower resolution
+            up to the selected one.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            640x480, 800x600, 1024x768, 1152x864, 1280x960, 1280x1024, 1600x1200
+                </para>
+                </refsect2>
+                      ]]></description>
+	</resolution>
+	<monitor>
+		<purpose>Monitor configuration</purpose>
+		<description><![CDATA[
+            <para>
+            Monitor configuration
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</monitor>
+	<display>
+		<purpose>Display configuration and properties</purpose>
+		<description><![CDATA[
+            <para>
+            Display configuration and properties
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</display>
+	<monitor_device>
+		<purpose>Monitor device name</purpose>
+		<description><![CDATA[
+            <para>
+            Monitor device name
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</monitor_device>
+	<monitor_vendor>
+		<purpose>Monitor vendor name</purpose>
+		<description><![CDATA[
+            <para>
+            Monitor vendor name
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</monitor_vendor>
+	<mail>
+		<purpose>Mail Settings</purpose>
+		<description><![CDATA[
+            <para>
+            Configure Mail settings
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</mail>
+	<aliases>
+		<purpose>Configure mail aliases</purpose>
+		<description><![CDATA[
+            <para>
+            This table redirects mail delivered locally. Redirect it to another local
+            user (useful for system accounts, especially for root), to a remote
+            address, or to a list of addresses. See the aliases(5) manual page for a
+            description of advanced features.
+
+
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  List Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</aliases>
+	<mta>
+		<purpose>Mail transport agent to use</purpose>
+		<description><![CDATA[
+            <para>
+            Mail transport agent to use
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            string: sendmail or postfix
+                </para>
+                </refsect2>
+                      ]]></description>
+	</mta>
+	<alias_entry>
+		<purpose>An email alias entry</purpose>
+		<description><![CDATA[
+            <para>
+            A single mail alias entry
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Resource
+                </para>
+
+                      ]]></description>
+	</alias_entry>
+	<comment>
+		<purpose>A Comment</purpose>
+		<description><![CDATA[
+            <para>
+            A comment
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Shared Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            string
+                </para>
+                </refsect2>
+                      ]]></description>
+	</comment>
+	<alias>
+		<purpose>Alias for incoming mail redirection</purpose>
+		<description><![CDATA[
+            <para>
+            Alias for incoming mail redirection
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            string
+                </para>
+                </refsect2>
+                      ]]></description>
+	</alias>
+	<from_header>
+		<purpose>Email from header</purpose>
+		<description><![CDATA[
+            <para>
+            You may want the mail you sent to appear as if it originated from company.com instead of pc-042.company.com.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            string: domain name
+                </para>
+                </refsect2>
+                      ]]></description>
+	</from_header>
+	<local_domains>
+		<purpose>Local domains</purpose>
+		<description><![CDATA[
+            <para>
+            specify the domains for which the mail will be delivered locally. If you enter nothing, the local host name is assumed.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  List Property
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</local_domains>
+	<outgoing_mail_server>
+		<purpose>Outgoing mail server</purpose>
+		<description><![CDATA[
+            <para>
+            The outgoing mail server is generally intended for dial-up connections. Enter the Internet service provider's SMTP server, such as smtp.provider.com.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            string: valid smtp server name
+                </para>
+                </refsect2>
+                      ]]></description>
+	</outgoing_mail_server>
+	<use_amavis>
+		<purpose>Use a virus scanner (AMaViS).</purpose>
+		<description><![CDATA[
+            <para>
+            Use a virus scanner (AMaViS), amavis-sendmail or amavis-postfix must be installed.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            boolean: true or false
+                </para>
+                </refsect2>
+                      ]]></description>
+	</use_amavis>
+	<connection_type>
+		<purpose>Connection type of machine</purpose>
+		<description><![CDATA[
+            <para>
+          How are you connected to the Internet?
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+                  Property
+                </para>
+                </refsect2>
+                  <refsect2>
+                  <title>Value</title>
+                  <para>
+            string: permanent, dialup or none
+                </para>
+                </refsect2>
+                      ]]></description>
+	</connection_type>
+	<networking>
+		<purpose>Network configuration</purpose>
+		<description><![CDATA[
+            <para>
+            Configure interfaces, DNS and routing
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</networking>
+	<interfaces>
+		<purpose>Network interfaces</purpose>
+		<description><![CDATA[
+            <para>
+            A List of network interfaces available in the system.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</interfaces>
+	<interface>
+		<purpose>Configure a network interface</purpose>
+		<description><![CDATA[
+            <para>
+            Configure a network interface
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</interface>
+	<options>
+		<purpose>NIC kernel module options</purpose>
+		<description><![CDATA[
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</options>
+	<startmode>
+		<purpose>Boot mode of a network interface</purpose>
+		<description><![CDATA[
+            <para>
+            Configure the boot mode of a network interface. This property describes
+            the mode of the device setup, missing means "onboot"
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+            onboot|hotplug|manual
+                </para>
+                </refsect2>
+                      ]]></description>
+	</startmode>
+	<bootproto>
+		<purpose>Boot protocol of a network interface</purpose>
+		<description><![CDATA[
+            <para>
+            Configure the boot protocol of a network interface. This property describes
+            the setup protocol, if missing or "none", fixed address is used
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+           none|bootp|dhcp
+                </para>
+                </refsect2>
+                      ]]></description>
+	</bootproto>
+	<ipaddr>
+		<purpose>IP address v4.</purpose>
+		<description><![CDATA[
+            <para>
+           IP4 address
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+            valid ipv4 address
+                </para>
+                </refsect2>
+                      ]]></description>
+	</ipaddr>
+	<netmask>
+		<purpose>Configure network interface Netmask</purpose>
+		<description><![CDATA[
+            <para>
+            Configure network interface Netmas
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property (NETMASK)
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+            valid netmask, i.e. 255.255.255.0
+                </para>
+                </refsect2>
+                      ]]></description>
+	</netmask>
+	<network>
+		<purpose>Configure network interface Netmask</purpose>
+		<description><![CDATA[
+            <para>
+            Configure network interface Netmask
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+            valid netmask, i.e. 255.255.255.0
+                </para>
+                </refsect2>
+                      ]]></description>
+	</network>
+	<broadcast>
+		<purpose>Configure network interface broadcast</purpose>
+		<description><![CDATA[
+            <para>
+            Configure network interface broadcast
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+            valid broadcast value , i.e. 10.10.0.255
+                </para>
+                </refsect2>
+                      ]]></description>
+	</broadcast>
+	<device>
+		<purpose>Network device name or harddisk device</purpose>
+		<description><![CDATA[
+            <itemizedlist>
+            <listitem>
+            <para>
+            Network device name.
+          </para>
+            </listitem>
+            <listitem>
+            <para>
+            Harddisk device
+          </para>
+            </listitem>
+            </itemizedlist>
+
+            <refsect2><title>Type</title>
+                  <para>
+            Shared property
+                </para>
+                </refsect2>
+            <refsect2>
+            <title>Value</title>
+                  <para>
+            <emphasis>eth</emphasis> or <emphasis>tr</emphasis> with device number or
+            a valid hard disk device, i.e. <emphasis>/dev/hda</emphasis>
+                </para>
+                </refsect2>
+                      ]]></description>
+	</device>
+	<dns>
+		<purpose>DNS configuration</purpose>
+		<description><![CDATA[
+            <para>
+          configure DNS and hostname
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</dns>
+	<dhcp_hostname>
+		<purpose>Set hostname using  DHCP </purpose>
+		<description><![CDATA[
+            <para>
+            Set hostname using  DHCP
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+            boolean: true or false
+                </para>
+                </refsect2>
+                      ]]></description>
+	</dhcp_hostname>
+	<domain>
+		<purpose>Set domain name</purpose>
+		<description><![CDATA[
+            <para>
+            set domain name
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+            valid domain name
+                </para>
+                </refsect2>
+                      ]]></description>
+	</domain>
+	<hostname>
+		<purpose>Set hostname</purpose>
+		<description><![CDATA[
+            <para>
+            set hostname
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+            <refsect2><title>Value</title>
+                  <para>
+            valid host name
+                </para>
+                </refsect2>
+                      ]]></description>
+	</hostname>
+	<nameservers>
+		<purpose>Set the list of nameservers</purpose>
+		<description><![CDATA[
+            <para>
+            Configure a list of nameservers to be used
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</nameservers>
+	<nameserver>
+		<purpose>configure a nameserver</purpose>
+		<description><![CDATA[
+            <para>
+            Configure a  nameserver to be used
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+             <refsect2><title>Value</title>
+                  <para>
+            valid nameserver name
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</nameserver>
+	<searchlist>
+		<purpose>Set the DNS search list</purpose>
+		<description><![CDATA[
+            <para>
+            Configure a list of domains to search first
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</searchlist>
+	<search>
+		<purpose>configure a search entry</purpose>
+		<description><![CDATA[
+            <para>
+            Configure the domains to be searched
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+             <refsect2><title>Value</title>
+                  <para>
+            valid search entry (domain name)
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</search>
+	<routing>
+		<purpose>Routing configuration</purpose>
+		<description><![CDATA[
+            <para>
+          configure alist of routing destinations
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</routing>
+	<routes>
+		<purpose>A List of route entries</purpose>
+		<description><![CDATA[
+            <para>
+      Routing list
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</routes>
+	<route>
+		<purpose>A single route entry</purpose>
+		<description><![CDATA[
+            <para>
+      Add a route entry to the routing list.
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</route>
+	<destination>
+		<purpose>Destination for mail aliases or destination of a
+    routing entry</purpose>
+		<description><![CDATA[
+
+             <itemizedlist>
+            <listitem>
+            <para>
+            Routing entry destination
+          </para>
+            </listitem>
+               <listitem>
+            <para>
+            Destination of an alias for incoming mail.
+          </para>
+            </listitem>
+            </itemizedlist>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Shared Property
+                </para>
+                </refsect2>
+             <refsect2><title>Value</title>
+                  <para>
+            string
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</destination>
+	<software>
+		<purpose>Configure Software selections and packages</purpose>
+		<description><![CDATA[
+            <para>
+            Configure Software selections and packages
+          </para>
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</software>
+	<base>
+		<purpose>Configure base software selection</purpose>
+		<description><![CDATA[
+
+            <para>
+            Base software selection
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+             <refsect2><title>Value</title>
+                  <para>
+            A software selection name as described in table <link
+            linkend="StandardSL" endterm="StandardSL.title"></link>
+                </para>
+                </refsect2>
+ <refsect2><title>&alice; Compatibility</title>
+                        <para>This property is replaces the following tags in &alice;
+                        </para>
+      <itemizedlist>
+                  <listitem><para>&lt;SYS_SW_SELECTION&gt;</para><para>Only the
+    name of the selection is required. The extention <emphasis>.sel</emphasis>
+      should be ommited.</para></listitem>
+      </itemizedlist>
+
+                      </refsect2>
+
+                      ]]></description>
+	</base>
+	<addons>
+		<purpose>Configure add-on software selections</purpose>
+		<description><![CDATA[
+
+            <para>
+            Add-on software selection
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</addons>
+	<addon>
+		<purpose>Add-on software selection</purpose>
+		<description><![CDATA[
+
+            <para>
+            Add-on software selection
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+
+               <refsect2><title>Value</title>
+                  <para>
+            A software selection name as described in table <link
+            linkend="StandardSL" endterm="StandardSL.title"></link>
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</addon>
+	<packages>
+		<purpose>A list of packages to install</purpose>
+		<description><![CDATA[
+
+            <para>
+            A list of packages to install
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</packages>
+	<package>
+		<purpose>Packages that are not part of any selections and
+    custom packages</purpose>
+		<description><![CDATA[
+
+            <para>
+            Add Packages that are not part of any selections and custom packages.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+
+               <refsect2><title>Value</title>
+                  <para>
+          A package name available in in the package repository.
+                </para>
+                </refsect2>
+
+                      ]]></description>
+	</package>
+	<chroot-scripts>
+		<purpose>A list of post-install scripts (Chroot
+    environment)</purpose>
+		<description><![CDATA[
+
+            <para>
+            A list of scripts that get executed before the system boots for the first
+            time and before the actual system is mounted, hence chroot
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</chroot-scripts>
+	<pre-scripts>
+		<purpose>A list of pre-install scripts</purpose>
+		<description><![CDATA[
+
+            <para>
+            A list of scripts that get executed before the system is installed.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</pre-scripts>
+	<post-scripts>
+		<purpose>A list of post-install scripts</purpose>
+		<description><![CDATA[
+
+            <para>
+            A list of scripts that get executed after the system is installed.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</post-scripts>
+	<script>
+		<purpose>A custom shell or perl script </purpose>
+		<description><![CDATA[
+
+      <para>
+      Custom scripts can be executed in 3 different stages of the installation
+      to give the user maximum flexibility configuring the system.
+    </para>
+
+
+            <refsect2><title>Type</title>
+            <para>
+      Shared Resource
+          </para>
+          </refsect2>
+
+
+
+                ]]></description>
+	</script>
+	<source>
+		<purpose>Source of a custom shell or perl script</purpose>
+		<description><![CDATA[
+
+            <para>
+            Custom scripts can be executed in 3 different stages of the installation
+            to give the user maximum flexibility configuring the system.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            CDATA Property
+                </para>
+                </refsect2>
+          <refsect2><title>Value</title>
+                  <para>
+            Source code of a custom script. Source must be included in CDATA tags.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</source>
+	<filename>
+		<purpose>File name of a custom user script</purpose>
+		<description><![CDATA[
+
+            <para>
+            Name of the script file
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+          <refsect2><title>Value</title>
+                  <para>
+            Unique string
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</filename>
+	<interpreter>
+		<purpose>The interpreter to be used with a specific
+    script</purpose>
+		<description><![CDATA[
+
+            <para>
+            Perl scripts can only be used in post-install. Shell scripts can be used
+            throughout the entire installation.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+          <refsect2><title>Value</title>
+                  <para>
+            perl or shell
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</interpreter>
+	<partitioning>
+		<purpose>Resource controlling partitioning of hard
+    drives</purpose>
+		<description><![CDATA[
+
+            <para>
+            A List of drives with partition data and partitioning behaviour.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</partitioning>
+	<drive>
+		<purpose>Drive descriptions and partition plans</purpose>
+		<description><![CDATA[
+
+            <para>
+            A List of drives with partition data and partitioning behaviour.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</drive>
+	<partitions>
+		<purpose>List of partitions in a drive</purpose>
+		<description><![CDATA[
+
+            <para>
+            A List of partitions in a drive.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</partitions>
+	<use>
+		<purpose>Determine how to handle existing partitions on a
+    target drive</purpose>
+		<description><![CDATA[
+
+            <para>
+           Determine how to handle existing partitions on a target drive
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+          <refsect2><title>Value</title>
+                  <para>
+            all, free, or  a list of partition numbers to be used for the installation.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</use>
+	<partition>
+		<purpose>Partition data</purpose>
+		<description><![CDATA[
+
+            <para>
+            Partition data
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</partition>
+	<crypt_fs>
+		<purpose>Determine if a specific partition should be
+    encrypted</purpose>
+		<description><![CDATA[
+
+            <para>
+            Determine if a specific partition should be encrypted
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+          <refsect2><title>Value</title>
+                  <para>
+            boolean
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</crypt_fs>
+	<crypt_key>
+		<purpose>Crypt key for a crypted filesystem</purpose>
+		<description><![CDATA[
+
+            <para>
+            Set the crypt key for a file system.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+          <refsect2><title>Value</title>
+                  <para>
+            string
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</crypt_key>
+	<files>
+		<purpose>List of configuration files</purpose>
+		<description><![CDATA[
+
+            <para>
+            List of files tp be copied into the target system.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</files>
+	<config_file>
+		<purpose>Copy a complete configuration file to target
+    system</purpose>
+		<description><![CDATA[
+
+            <para>
+            This resource lets you define a configuration file to be copied or dumped
+            into the the target system.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</config_file>
+	<file_contents>
+		<purpose>Contents of a configuration file</purpose>
+		<description><![CDATA[
+
+            <para>
+            The source of a configuration file.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            CDATA Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+            Any data
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</file_contents>
+	<file_path>
+		<purpose>The location of the configuration file</purpose>
+		<description><![CDATA[
+
+            <para>
+            Define where to copy a configuration file in the target system.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+            String representing a path.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</file_path>
+	<runlevels>
+		<purpose>Configure runlevels and services</purpose>
+		<description><![CDATA[
+
+            <para>
+            Configure what runlevel should the system boot to and what services
+      should be started.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</runlevels>
+	<services>
+		<purpose>Configure services</purpose>
+		<description><![CDATA[
+
+            <para>
+            Configure  what services should be started.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+           List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</services>
+	<service>
+		<purpose>Configure service runlevels</purpose>
+		<description><![CDATA[
+
+            <para>
+            Configure  in what runlevels should  a services be started or stopped.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+      Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</service>
+	<default>
+		<purpose>Default Runlevel</purpose>
+		<description><![CDATA[
+
+            <para>
+      Define the default runlevel.
+          </para>
+      <para>As specifed in <filename>/etc/inittab</filename>, the following run
+      levels are possible</para>
+      <screen>
+# runlevel 0  is  System halt   (Do not use this for initdefault!)
+# runlevel 1  is  Single user mode
+# runlevel 2  is  Local multiuser without remote network (e.g. NFS)
+# runlevel 3  is  Full multiuser with network
+# runlevel 4  is  Not used
+# runlevel 5  is  Full multiuser with network and xdm
+# runlevel 6  is  System reboot (Do not use this for initdefault!)
+</screen>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      A number representing the runlevel.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</default>
+	<service_name>
+		<purpose>Service name</purpose>
+		<description><![CDATA[
+           <para>
+      Service name. Normally this is the name of  a script available in <filename>/etc/init.d</filename>.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      String, service must be available in <filename>/etc/init.d</filename>
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</service_name>
+	<service_start>
+		<purpose>Runlevels to start a service in</purpose>
+		<description><![CDATA[
+           <para>
+      A space seperated list of runlevels this service should be started in.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      String (Space seperated list of numbers)
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</service_start>
+	<service_stop>
+		<purpose>Runlevels to stop a service in</purpose>
+		<description><![CDATA[
+           <para>
+      A space seperated list of runlevels this service should be stopped in.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      String (Space seperated list of numbers)
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</service_stop>
+	<encryption_method>
+		<purpose>Encryption Method for passwords</purpose>
+		<description><![CDATA[
+           <para>
+	<emphasis>DES</emphasis>, the Linux default method, works in all
+	network environments, but it restricts you to passwords no longer than
+	eight characters. <emphasis>MD5</emphasis> allows longer passwords,
+	thus provides more security, but some network protocols don't support
+	this, and you may have problems with NIS.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      &des; or &md5;, default is &md5;
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</encryption_method>
+	<ldap>
+		<purpose>Authenticate users with an OpenLDAP server</purpose>
+		<description><![CDATA[
+           <para>
+	Using this resource, the target machine can be set up as a
+<emphasis>LDAP client</emphasis> to authenticate users with an OpenLDAP server.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+
+                      ]]></description>
+	</ldap>
+	<ldap_domain>
+		<purpose>LDAP search base</purpose>
+		<description><![CDATA[
+           <para>
+Enter the name of the search base (base DN, e.g, dc=mydomain,dc=com)
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      base DN, e.g, dc=mydomain,dc=com
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</ldap_domain>
+	<ldap_server>
+		<purpose>LDAP server</purpose>
+		<description><![CDATA[
+           <para>IP address of the LDAP server
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      IP address.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</ldap_server>
+	<ldap_v2>
+		<purpose>Use LDAP protocol version 2</purpose>
+		<description><![CDATA[
+           <para>Normally, the &ldap; version 3 protocol
+will be used. If you have a &ldap; server using protocol 2 (for example
+&openldap; v1), you should activate <emphasis>&ldap; Version 2</emphasis>
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      IP address.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</ldap_v2>
+	<start_ldap>
+		<purpose>Activate machine as LDAP client</purpose>
+		<description><![CDATA[
+
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Boolean
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</start_ldap>
+	<nis>
+		<purpose>Authenticate users with a NIS server</purpose>
+		<description><![CDATA[
+
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+
+                      ]]></description>
+	</nis>
+	<nfs>
+		<purpose>Configure NFS mounts</purpose>
+		<description><![CDATA[
+      <para>
+      Add NFS mounts
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+
+                      ]]></description>
+	</nfs>
+	<nfs_entry>
+		<purpose>Configure NFS mounts</purpose>
+		<description><![CDATA[
+      <para>
+      One &nfs; entry  to be added in thr <filename>/etc/fstab</filename> file.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+
+                      ]]></description>
+	</nfs_entry>
+	<nfs_options>
+		<purpose>NFS mount options</purpose>
+		<description><![CDATA[
+           <para>Options for a &nfs; entry as described in the
+      <emphasis>fstab(5)</emphasis> man page.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Valid options as described in <emphasis>fstab(5)</emphasis>
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</nfs_options>
+	<server_path>
+		<purpose>NFS server and path</purpose>
+		<description><![CDATA[
+
+
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Network path for the exported file system (i.e. 192.168.1.1:/exported)
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</server_path>
+	<nis_server>
+		<purpose>NIS server</purpose>
+		<description><![CDATA[
+           <para>&ip; address of the &nis; server
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      &ip; address.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</nis_server>
+	<nisplus_server>
+		<purpose>NIS+ server</purpose>
+		<description><![CDATA[
+           <para>&ip; address of the &nisplus; server
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      &ip; address.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</nisplus_server>
+	<nis_domain>
+		<purpose>NIS Domain</purpose>
+		<description><![CDATA[
+           <para>
+Enter the name of the &nis; domain, i.e. host.com
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Valid domain name
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</nis_domain>
+	<nis_servers>
+		<purpose>NIS server</purpose>
+		<description><![CDATA[
+           <para>&ip; addresses of the &nis; servers
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+
+                      ]]></description>
+	</nis_servers>
+	<start_autofs>
+		<purpose>Start Autofs</purpose>
+		<description><![CDATA[
+           <para>
+Automounter is a daemon that mounts directories automatically.
+It is assumed that its configuration files (auto.*) already exist,
+either locally or over &nis;.
+
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Boolean
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</start_autofs>
+	<start_nis>
+		<purpose>Activate machine as NIS client</purpose>
+		<description><![CDATA[
+
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Boolean
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</start_nis>
+	<nisplus_domain>
+		<purpose>NIS+ Domain</purpose>
+		<description><![CDATA[
+           <para>
+Enter the name of the &nisplus; domain, i.e. host.com
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Valid domain name
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</nisplus_domain>
+	<nisplus>
+		<purpose>NIS+ Domain Configuration</purpose>
+		<description><![CDATA[
+           <para>
+Configure client as &nisplus; client.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</nisplus>
+	<start_nisplus>
+		<purpose>Activate machine as NIS+ client</purpose>
+		<description><![CDATA[
+
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Boolean
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</start_nisplus>
+	<extra_packages>
+		<purpose>Packages that are not part of SuSE Linux</purpose>
+		<description><![CDATA[
+
+            <para>
+            This resource lets you add packages which are not part of &company-suse; Linux.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</extra_packages>
+	<kernel>
+		<purpose>Specify a kernel package different than the standard</purpose>
+		<description><![CDATA[
+           <para>
+      Specify a kernel package different than the standard
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      String (Package name without the .rpm extension)
+                </para>
+                </refsect2>
+            <refsect2><title>&alice; Compatibility</title>
+                        <para>This property is replaces the following tags in &alice;
+                        </para>
+      <itemizedlist>
+                  <listitem><para>&lt;SYS_INST_KERNEL&gt;</para></listitem>
+      </itemizedlist>
+
+                      </refsect2>
+
+
+                      ]]></description>
+	</kernel>
+	<package_location>
+		<purpose>Location of non-SuSE packages on installation medium</purpose>
+		<description><![CDATA[
+           <para>
+      Location of the extra package. This directory should be available in the
+      same directory where all other RPMs are, in <filename>suse</filename>
+      sub-directory of the installation root.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      String
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</package_location>
+	<filesystem>
+		<purpose>File system used for  a certain partition</purpose>
+		<description><![CDATA[
+           <para>
+      Define which type of filesystem should be used on a certain partition.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      reiser, jfs, xfs, ext2, ext3.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</filesystem>
+	<mount>
+		<purpose>Mount point for a partition</purpose>
+		<description><![CDATA[
+           <para>
+      Define the mount point of  a partition during installation.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Valid string representing a mountpoint (i.e. <filename>/local</filename>)
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</mount>
+	<size>
+		<purpose>Size of a partition</purpose>
+		<description><![CDATA[
+           <para>
+      Set the size of a partition.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Size in MB or GB, i.e. 1gb or 1500mb.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</size>
+	<mount_point>
+		<purpose>Mount point for a NFS entry</purpose>
+		<description><![CDATA[
+           <para>
+      Define the mount point of a NFS entry
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Valid string representing a mountpoint (i.e. <filename>/local</filename>)
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</mount_point>
+	<module>
+		<purpose>Kernel module of  a netwrok interface</purpose>
+		<description><![CDATA[
+           <para>
+      Kernel module of  a netwrok interface
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+       String representing a kernel module for a network interface.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</module>
+	<filesystem_id>
+		<purpose>File system ID used for  a certain partition</purpose>
+		<description><![CDATA[
+           <para>
+      Define which  filesystem ID should be used on a certain partition.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      The id f the file system as can be seen in <command>fdisk</command>
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</filesystem_id>
+	<format>
+		<purpose>Specify if  a certain partition should be formatted</purpose>
+		<description><![CDATA[
+           <para>Specify if  a certain partition should be formatted
+
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Boolean value
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</format>
+	<gateway>
+		<purpose>Gateway</purpose>
+		<description><![CDATA[
+           <para>
+      Configure a gateway for routing IP trafic
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      IP of  a gateway
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</gateway>
+	<sysconfig>
+		<purpose>Set Sysconfig variables</purpose>
+		<description><![CDATA[
+
+            <para>
+      Use this resource to set syscofnig variables in <filename>/etc/sysconfig</filename>
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</sysconfig>
+	<sysconfig_entry>
+		<purpose>Set a Sysconfig variable</purpose>
+		<description><![CDATA[
+
+            <para>
+      Use this resource to set syscofnig variable in <filename>/etc/sysconfig</filename>
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</sysconfig_entry>
+	<sysconfig_key>
+		<purpose>Sysconfig variable key</purpose>
+		<description><![CDATA[
+           <para>
+      The key of  a sysconfig variable or the variable itself
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Any variable defined in a sysconfig file in <filename>/etc/sysconfig</filename>
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</sysconfig_key>
+	<sysconfig_value>
+		<purpose>Sysconfig variable value</purpose>
+		<description><![CDATA[
+           <para>
+      The value of  a sysconfig variable
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Any value and according to specification defined in the sysconfig file.li
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</sysconfig_value>
+	<sysconfig_path>
+		<purpose>Sysconfig variable file path</purpose>
+		<description><![CDATA[
+           <para>
+      The path to a sysconfig file relative to <filename>/etc/sysconfig</filename>
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      File path relative to <filename>/etc/sysconfig</filename>
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</sysconfig_path>
+	<lvm>
+		<purpose>LVM Configuration</purpose>
+		<description><![CDATA[
+
+            <para>
+      Configure LVM
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</lvm>
+	<lvm_group>
+		<purpose>LVM Group</purpose>
+		<description><![CDATA[
+
+            <para>
+      Configure a LVM Group
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+      Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</lvm_group>
+	<logical_volumes>
+		<purpose>Add LVM Logical Volumes</purpose>
+		<description><![CDATA[
+
+            <para>
+      Configure LVM logical volumes.
+          </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+      List Resource
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</logical_volumes>
+	<lv>
+		<purpose>LVM Logical Volume data</purpose>
+		<description><![CDATA[
+           <para>
+      Logical Volume data
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Resource
+                </para>
+                </refsect2>
+
+
+
+
+                      ]]></description>
+	</lv>
+	<lv_fs>
+		<purpose>File system of a LVM logical volume</purpose>
+		<description><![CDATA[
+           <para>
+      File system to use on a LVM logical volume.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      One of the following: ext2, ext3, reiser, jfs or xfs
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</lv_fs>
+	<lv_mount>
+		<purpose>Mount point of a LVM logical volume</purpose>
+		<description><![CDATA[
+           <para>
+      Mount point of  a  LVM logical volume.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Valid mount point.
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</lv_mount>
+	<lv_name>
+		<purpose>Name of a LVM logical volume</purpose>
+		<description><![CDATA[
+           <para>
+      Name of  a  LVM logical volume.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Name of the volume, i.e. <emphasis>optlv</emphasis>
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</lv_name>
+	<lv_size>
+		<purpose>Size of a LVM logical volume</purpose>
+		<description><![CDATA[
+           <para>
+      Size of  a  LVM logical volume.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Size of the volume, i.e. <emphasis>2gb</emphasis> or <emphasis>1500mb</emphasis>
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</lv_size>
+	<lvm_name>
+		<purpose>Name of the LVM Group</purpose>
+		<description><![CDATA[
+           <para>
+      Name of  a  LVM Group.
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+              <refsect2><title>Value</title>
+                  <para>
+      Normally called <emphasis>System</emphasis>
+                </para>
+                </refsect2>
+
+
+
+                      ]]></description>
+	</lvm_name>
+	<pesize>
+		<purpose>LVM Physical Extent Size</purpose>
+		<description><![CDATA[
+           <para>
+      LVM Physical Extent Size
+      </para>
+
+
+                  <refsect2><title>Type</title>
+                  <para>
+            Property
+                </para>
+                </refsect2>
+
+
+
+
+                      ]]></description>
+	</pesize>
+</purposes>

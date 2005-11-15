@@ -1,0 +1,206 @@
+/**
+ * File:	clients/inst_autosetup.ycp
+ * Package:	Auto-installation
+ * Summary:	Setup and prepare system for auto-installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    textdomain "autoinst";
+
+    import "AutoinstConfig";
+    import "AutoInstall";
+    import "Installation";
+    import "Profile";
+    import "Progress";
+    import "Report";
+    import "AutoinstStorage";
+    import "AutoinstScripts";
+    import "AutoinstGeneral";
+    import "AutoinstSoftware";
+    import "Bootloader";
+    import "BootCommon";
+    import "Popup";
+    import "RunlevelEd";
+    import "Arch";
+    import "AutoinstLVM";
+    import "AutoinstRAID";
+    import "Storage";
+
+    include "bootloader/routines/autoinstall.ycp";
+
+    string help_text = _("<P>Please wait while the system is prepared for autoinstallation.</P>");
+    list<string> progress_stages =
+        [
+    _("Configure General Settings "),
+    _("Execute pre-install user scripts"),
+    _("Create partition plans"),
+    _("Configure Software selections"),
+    _("Configure Bootloader"),
+    _("Configure runlevel")
+        ];
+
+    list<string> progress_descriptions =
+        [
+    _("Configuring general settings..."),
+    _("Executing pre-install user scripts..."),
+    _("Creating partition plans..."),
+    _("Configuring Software selections..."),
+    _("Configuring Bootloader..."),
+    _("Configuring runlevel...")
+        ];
+
+    Progress::New(
+            _("Preparing System for Automated Installation"),
+            "",     // progress_title
+            size( progress_stages ),	// progress bar length
+            progress_stages,
+            progress_descriptions,
+            help_text );
+
+
+    if(UI::PollInput() == `abort)
+        if (Popup::ConfirmAbort (`painless))
+            return `abort;
+    Progress::NextStage();
+
+
+    // configure general settings
+
+
+
+
+
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
+
+    Progress::NextStage();
+
+    // Pre-Scripts
+    AutoinstScripts::Import(Profile::current["scripts"]:$[]);
+    AutoinstScripts::Write("pre-scripts", false);
+
+    // Reread Profile in case it was modified in pre-script
+    // User has to create the new profile in a pre-defined
+    // location for easy processing in pre-script.
+
+    if (SCR::Read(.target.size, AutoinstConfig::modified_profile) > 0 )
+    {
+	if (! Profile::ReadXML( AutoinstConfig::modified_profile ) || Profile::current == $[] )
+	{
+	    Popup::Error(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+	    return `abort;
+	}
+    }
+
+    //
+    // Partitioning and Storage
+    ////////////////////////////////////////////////////////////////////////
+
+    //
+    // Set Mouse and other workflow variables
+    //
+    AutoinstGeneral::Import(Profile::current["general"]:$[]);
+    y2milestone("general: %1", Profile::current["general"]:$[] );
+    AutoinstGeneral::Write();
+
+    // one can override the <confirm> option by the commandline parameter y2confirm
+    string tmp = (string)SCR::Read (.target.string, "/proc/cmdline");
+    if (tmp != nil && contains (splitstring (tmp, " \n"), "y2confirm")) {
+        AutoinstConfig::Confirm = true;
+        y2milestone("y2confirm found and confirm turned on");
+    }
+
+
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
+
+
+    Progress::NextStage();
+    // if one modifies the partition table in a pre script, we will
+    // recognize this now
+    Storage::ReReadTargetMap();
+
+    AutoinstStorage::Import(Profile::current["partitioning"]:[]);
+    AutoinstStorage::ImportAdvanced(Profile::current["partitioning_advanced"]:$[]);
+
+    if (!AutoinstStorage::Write())
+    {
+	Report::Error(_("Error while configuring partitions.
+Try again.
+"));
+	y2error("Aborting...");
+	return `abort;
+    }
+    if (AutoinstRAID::Init())
+    {
+        AutoinstRAID::Write();
+    }
+    if (AutoinstLVM::Init())
+    {
+        AutoinstLVM::Write();
+    }
+
+
+
+    // Software
+
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
+
+    Progress::NextStage();
+    AutoinstSoftware::Import( Profile::current["software"]:$[] );
+
+    if (!AutoinstSoftware::Write())
+    {
+	Report::Error(_("Error while configuring software selections.
+Try again.
+"));
+	y2error("Aborting...");
+	return `abort;
+    }
+
+    // Bootloader
+
+    if(UI::PollInput() == `abort)
+	if (Popup::ConfirmAbort (`painless))
+	    return `abort;
+    Progress::NextStage();
+
+    BootCommon::getLoaderType(true);
+    Bootloader::Import(AI2Export (Profile::current["bootloader"]:$[]));
+    BootCommon::DetectDisks ();
+    y2debug ("autoyast: Proposing - fix");
+    Bootloader::Propose ();
+    y2debug ("autoyast: Proposing done");
+
+
+    Progress::NextStage();
+    string rl = Profile::current["runlevel", "default"]:"";
+    y2milestone("autoyast - configured runlevel: %1", rl);
+    if (rl!="")
+    {
+        RunlevelEd::default_runlevel = rl;
+    }
+    else
+    {
+        RunlevelEd::default_runlevel = (Installation::x11_setup_needed ()
+                && Arch::x11_setup_needed ()
+                && Pkg::IsSelected ("xorg-x11") )? "5": "3";
+    }
+    y2milestone("autoyast - setting runlevel to: %1", RunlevelEd::default_runlevel);
+
+    AutoInstall::PXELocalBoot();
+
+    Progress::Finish();
+
+    return `next;
+}

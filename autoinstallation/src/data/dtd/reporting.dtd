@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- <!ELEMENT default (#PCDATA)> -->
+
+<!ELEMENT report (errors, messages, warnings, yesno_messages?)>
+
+<!ELEMENT errors (log, show, timeout)>
+<!ELEMENT yesno_messages (log, show, timeout)>
+<!ELEMENT messages (log, show, timeout)>
+<!ELEMENT warnings (log, show, timeout)>
+
+<!-- <!ELEMENT location (#PCDATA)> -->
+<!ELEMENT log (#PCDATA)>
+<!ATTLIST log
+	config:type CDATA #FIXED "boolean"
+>
+<!ELEMENT show (#PCDATA)>
+<!ATTLIST show
+	config:type CDATA #FIXED "boolean"
+>
+
+
+<!ELEMENT timeout (#PCDATA)>
+<!ATTLIST timeout
+	config:type CDATA #FIXED "integer"
+>
+
+
+

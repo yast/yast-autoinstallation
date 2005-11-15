@@ -1,0 +1,177 @@
+/**
+ * File:	clients/inst_autoconfigure.ycp
+ * Package:	Auto-installation
+ * Author:      Anas Nashif <nashif@suse.de>
+ * Summary:	This module finishes auto-installation and configures
+ *		the system as described in the profile file.
+ *
+ * $Id$
+ */
+
+{
+    textdomain "autoinst";
+
+    import "Profile";
+    import "AutoinstScripts";
+    import "Wizard";
+    import "Call";
+    import "Y2ModuleConfig";
+    import "Label";
+
+    integer current_step    = 0;    // Required by logStep()
+
+    string resource = "";
+    string module_auto = "";
+
+
+    /**
+     * Display a step in the LogView widget and increment the progress bar.
+     * Uses global variable 'current_step'.
+     *
+     * @param step_descr description of the step.
+     */
+    define void logStep( string step_descr )
+    {
+	current_step = current_step + 1;
+	UI::ChangeWidget( `id(`progress), `Value, current_step );
+	UI::ChangeWidget( `id(`log), `LastLine, step_descr + "\n" );
+        y2milestone("current step: %1", current_step);
+	return;
+    };
+
+
+
+    // Help text for last dialog of base installation
+    string help_text = _("<p>
+Please wait while the system is being configured.
+</p>");
+
+
+    integer max_steps = size(Y2ModuleConfig::ModuleMap) + 3;
+    y2milestone("max steps: %1", max_steps);
+    term contents = `VBox(
+              `LogView(`id(`log), "", 10, 0 ),
+
+              // Progress bar that displays overall progress in this dialog
+              `ProgressBar(`id(`progress), _("Progress"), max_steps, 0 )
+              );
+
+    Wizard::SetNextButton (`next,  Label::NextButton()  );
+    Wizard::SetBackButton (`back,  Label::BackButton()  );
+    Wizard::SetAbortButton(`abort, Label::AbortButton() );
+
+    Wizard::SetContents(
+              // Dialog title for autoyast dialog
+              _("Configuring System according to auto-install settings"),
+              contents, help_text, false, false);
+
+    Wizard::DisableAbortButton();
+
+
+
+    y2debug("Module map: %1", Y2ModuleConfig::ModuleMap);
+    y2debug("Current profile: %1", Profile::current);
+
+
+    list<map> deps =  Y2ModuleConfig::Deps();
+
+    y2milestone("Order: %1", maplist(map d, deps, ``(d["res"]:"")));
+
+    foreach(map r, deps,
+	    ``{
+	string p = r["res"]:"";
+	map d = r["data"]:$[];
+
+	if (d["X-SuSE-YaST-AutoInst"]:"" == "all" || d["X-SuSE-YaST-AutoInst"]:"" == "write")
+	{
+	    if (haskey(d,"X-SuSE-YaST-AutoInstResource") &&
+                d["X-SuSE-YaST-AutoInstResource"]:"" != "" )
+	    {
+		resource = d["X-SuSE-YaST-AutoInstResource"]:"unknown";
+	    }
+	    else
+	    {
+		resource = p;
+	    }
+	    y2milestone("current resource: %1", resource);
+
+	    // determine name of client, if not use default name
+	    if (haskey(d,"X-SuSE-YaST-AutoInstClient"))
+		module_auto = d["X-SuSE-YaST-AutoInstClient"]:"none";
+	    else
+		module_auto = sformat("%1_auto", p);
+
+	    map result = $[];
+	    if (haskey(Profile::current , resource) )
+	    {
+		y2milestone("Writing configuration for %1", p);
+		string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+		string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
+		list MergeTypes = splitstring(tomergetypes, ",");
+
+		if (  size(tomerge) > 0 )
+		{
+		    integer i = 0;
+		    foreach( string res, splitstring(tomerge, ",") ,
+			     ``{
+			if ( MergeTypes[i]:"map" == "map")
+			    result[res] = Profile::current[res]:$[];
+			else
+			    result[res] = Profile::current[res]:[];
+			i = i + 1;
+		    });
+		    y2milestone("Calling auto client with: %1", result);
+		    if (size(result) > 0 )
+			logStep( sformat (_("Configuring %1"), p));
+		    else
+			logStep( sformat (_("Not Configuring %1"), p));
+
+		    Call::Function(module_auto, ["Import", eval(result) ]);
+		    Call::Function(module_auto, ["Write"]);
+		}
+		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
+		{
+		    y2milestone("Calling auto client with: %1",  eval(Profile::current[resource]:$[]));
+		    if (size(Profile::current[resource]:$[]) > 0 )
+			logStep( sformat (_("Configuring %1"), p));
+		    else
+			logStep( sformat (_("Not Configuring %1"), p));
+		    //Call::Function(module_auto, ["Import", eval(Profile::current[resource]:$[])   ]);
+		    Call::Function(module_auto, ["Write"]);
+		}
+		else
+		{
+		    if (size(Profile::current[resource]:[]) > 0 )
+			logStep( sformat (_("Configuring %1"), p));
+		    else
+			logStep( sformat (_("Not Configuring %1"), p));
+
+		    y2milestone("Calling auto client with: %1",  eval(Profile::current[resource]:[]));
+		    //Call::Function(module_auto, ["Import",  eval(Profile::current[resource]:[]) ]);
+		    Call::Function(module_auto, ["Write"]);
+		}
+            }
+            else
+            {
+                current_step = current_step + 1;
+                UI::ChangeWidget( `id(`progress), `Value, current_step );
+            }
+	}
+	else
+        {
+	    current_step = current_step + 1;
+	    UI::ChangeWidget( `id(`progress), `Value, current_step );
+	}
+    });
+
+    logStep( _("Executing Post-Scripts"));
+    AutoinstScripts::Write("post-scripts", false);
+    AutoinstScripts::Write("init-scripts", false);
+
+    // Just in case, remove this file to avoid reconfiguring...
+    SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
+
+    logStep( _("Finishing Configuration") );
+
+    return `next;
+}

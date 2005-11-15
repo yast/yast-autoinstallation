@@ -1,0 +1,17 @@
+      <example>
+	<title>
+	  <filename>/etc/dhcpd.conf</filename> with the <emphasis>root-path</emphasis> option
+	</title>
+	<screen>
+subnet 192.168.1.0 netmask 255.255.255.0 
+{
+      range dynamic-bootp 192.168.1.100 192.168.1.110;
+      option broadcast-address 192.168.1.255;
+      option routers 192.168.1.1;
+      filename "vmlinuz.nbi";
+      option root-path "/tftpboot/CDs";
+	
+      next-server 192.168.1.1; 
+}
+	  </screen>
+	</example>

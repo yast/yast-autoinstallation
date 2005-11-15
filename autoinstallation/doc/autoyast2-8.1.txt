@@ -1,0 +1,100 @@
+Features:
+* Provide a defined Interface for creating custom script module in
+  post-install phase.
+
+  This should be similar to Alice user defined
+  modules (Shell scripts with access to configuration data and
+  pre-defined functions).
+  The Interface should provide access to a user-defined section
+  in the XML control file which can be used to extend the auto-installer
+  functionality by the user.
+ 
+  Status: not started
+  Completion expected: 2nd Half of June
+
+* Make the addition of new yast2 run-time modules easier:
+
+  When creating new run-time configuration modules, make the
+  AutoInstaller find those modules automatically without the need
+  to hardcode them in the autoinstaller source. Should make it easier
+  to integrate changes in run-time modules and ease maintaining of
+  the AutoInstaller with more modules.
+
+  Status: Completed in configuration system, started for post-install
+  Completion expected: 2nd Half of June
+
+* Use a more powerfull xml library for parsing and processing the control
+  file. In 8.0 , XML extensions of the Qt library are used. At is limited to
+  basic features.
+  For 8.1, libxm2 should be used, which is being used in many open-source 
+  projects and provides advanced XML features and supports much more standards
+
+  Status: Completed
+
+* Implement XML XInclude in XML agent
+  This allows inclusion of external entities, local and remote (over http). For
+  example it is usefull to include a subset of the configuration in run-time which
+  provides more flexibility when auto-installing different types of hardware.
+
+  Status: Completed
+
+* Advanced partitioning features:
+  Allow users to decide what types of partitions should be created (extended, primary..)
+  rather than rely on YaST2. Additionally, partitions size should be defined using 'regions'
+  instead of size in bytes.
+
+  Status: completed
+
+* Cloning
+  Create a control file from a running machine for the purpose of cloning
+
+  Status: 
+  Completion expected: 1st Half of June
+
+* Documentation for Handbooks (SLES!)
+  Update and make current docs shorter for handbook. Test and document complex scenarios, 
+  especially network installations
+
+  Completion expected: 1st Half of June
+
+* Automatic Upgrades
+  Upgrade an existing system, i.e. 8.0 -> 8.1
+
+  Completion expected: 1st Half of July
+
+* Create boot media for autoinstallation
+  Create boot media from an existing package repository, i.e. create bootable CDs, Floppy etc.
+
+  Status: started
+  Completion expected: 2nd Half of June
+
+* Front-End configuration
+  Configure a machine as an auto-installation server with packages and control
+  files repositories.
+
+  Status: started
+  Completion expected: 1st Half of July
+
+* Import Redhat kickstart files
+
+  Status: not started
+  Completion expected: 1st Half of July
+
+* Import Alice data
+  Read configuration data from Alice repository and convert to autoyast2 data and create
+  configuration/control files suitable for installation. 
+
+  status: started
+  Completion expected: 2nd Half of June
+
+
+* Make all relevant YaST2 modules autoinst aware
+  Relevant YaST2 configuration packages should be able to Export/Import data to the
+  Configuration system. A vast majority already cooperate with autoyast2. Remaining package
+  have to be adapted, i.e. firewall, users, lvm!
+
+  status: started
+  Completion expected: 1st Half of July
+
+
+ 

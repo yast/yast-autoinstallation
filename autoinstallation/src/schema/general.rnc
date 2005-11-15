@@ -1,0 +1,31 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace config = "http://www.suse.com/1.0/configns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+general = element general { clock, keyboard, language, mode?, mouse }
+clock = element clock { hwclock, timezone }
+hwclock = element hwclock { text }
+timezone = element timezone { text }
+keyboard = element keyboard { keymap }
+keymap = element keymap { text }
+language = element language { text }
+mode =
+  element mode {
+    confirm, disable_abort?, disable_buttons?, forceboot?, halt?, reboot?
+  }
+confirm =
+  element confirm { BOOLEAN }
+halt =
+  element halt { BOOLEAN }
+disable_abort =
+  element disable_abort { BOOLEAN }
+disable_buttons =
+  element disable_buttons { BOOLEAN }
+# <!ELEMENT default (#PCDATA)>
+forceboot =
+  element forceboot { BOOLEAN }
+reboot =
+  element reboot { BOOLEAN }
+mouse = element mouse { 
+    element id { text }
+    }

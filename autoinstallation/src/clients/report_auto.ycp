@@ -1,0 +1,188 @@
+/**
+ * File:	clients/autoinst_report.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Report
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+
+    import "Wizard";
+    import "Summary";
+    import "Report";
+
+    import "Label";
+
+    y2milestone("----------------------------------------");
+    y2milestone("Report auto started");
+
+    any ret = nil;
+    string func = "";
+    map param = $[];
+
+    /* Check arguments */
+    if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+	func = (string)WFM::Args(0);
+	if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	    param = (map)WFM::Args(1);
+    }
+    y2debug("func=%1", func);
+    y2debug("param=%1", param);
+
+    /**
+     * ReportingDialog()
+     * @return sumbol
+     */
+    define symbol ReportingDialog()
+	``{
+	map msg = Report::message_settings;
+	map err = Report::error_settings;
+	map war = Report::warning_settings;
+
+
+	term contents =
+	    `Top(
+		 `VBox(
+		       `VSpacing(2),
+		       `VSquash(
+				`VBox(
+				      `Frame(_("Messages"),
+					     `HBox(
+						   `HWeight(35,`CheckBox(`id(`msgshow), _("Sho&w messages"), msg["show"]:true)),
+						   `HWeight(35,`CheckBox(`id(`msglog), _("Lo&g messages"), msg["log"]:true)),
+						   `HWeight(30,`VBox(
+								     `VSpacing(),
+								     `Bottom(`IntField(`id(`msgtime), _("&Time-out (in sec.)"), 0,100, msg["timeout"]:10))
+								     )
+							    )
+						   )
+					     ),
+				      `VSpacing(1),
+				      `Frame(_("Warnings"),
+					     `HBox(
+						   `HWeight(35,`CheckBox(`id(`warshow), _("Sh&ow warnings"), war["show"]:true)),
+						   `HWeight(35, `CheckBox(`id(`warlog), _("Log wa&rnings"), war["log"]:true)),
+						   `HWeight(30,`VBox(
+								     `VSpacing(),
+								     `Bottom(`IntField(`id(`wartime), _("Time-out (in s&ec.)"), 0,100,war["timeout"]:10))
+								     )
+							    )
+						   )
+					     ),
+				      `VSpacing(1),
+				      `Frame(_("Errors"),
+					     `HBox(
+						   `HWeight(35,`CheckBox(`id(`errshow), _("Show error&s"), err["show"]:true)),
+						   `HWeight(35,`CheckBox(`id(`errlog), _("&Log errors"), err["log"]:true)),
+						   `HWeight(30, `VBox(
+								      `VSpacing(),
+								      `Bottom(`IntField(`id(`errtime), _("Time-o&ut (in sec.)"), 0,100,err["timeout"]:10))
+								      )
+							    )
+						   )
+					     )
+				      )
+				)
+		       )
+		 );
+
+	string help_text = _("<p>Depending on your experience, you can skip, log, and show (with time-out)
+installation messages.</p> 
+");
+
+	help_text = help_text + _("<p>It is recommended to show all  <b>messages</b> with time-out.
+Warnings can be skipped in some places, but should not be ignored.</p>
+");
+
+	Wizard::SetNextButton(`next, Label::FinishButton() );
+	Wizard::SetContents(_("Messages and Logging"),
+			    contents, help_text, true , true);
+
+	symbol ret = `none ;
+	repeat {
+	    ret = (symbol)UI::UserInput();
+	    if ( ret ==`next)
+	    {
+		msg["show"] = (boolean)UI::QueryWidget(`id(`msgshow), `Value);
+		msg["log"] = (boolean)UI::QueryWidget(`id(`msglog), `Value);
+		msg["timeout"] = (integer)UI::QueryWidget(`id(`msgtime), `Value);
+		err["show"] = (boolean)UI::QueryWidget(`id(`errshow), `Value);
+		err["log"] = (boolean)UI::QueryWidget(`id(`errlog), `Value);
+		err["timeout"] = (integer)UI::QueryWidget(`id(`errtime), `Value);
+		war["show"] = (boolean)UI::QueryWidget(`id(`warshow), `Value);
+		war["log"] = (boolean)UI::QueryWidget(`id(`warlog), `Value);
+		war["timeout"] = (integer)UI::QueryWidget(`id(`wartime), `Value);
+	    }
+	} until (ret == `next || ret == `back);
+
+	Report::Import($["messages":msg, "errors":err, "warnings":war]);
+	return (symbol)ret;
+    }
+
+
+
+    /**
+     * Create a summary
+     * return string
+     */
+    if (func == "Import") {
+	ret = Report::Import(param);
+    }
+    /**
+     * Create a summary
+     * return string
+     */
+    else if(func == "Summary") {
+	ret =  Report::Summary();
+    }
+    /**
+     * Reset configuration
+     * return map or list
+     */
+    else if (func == "Reset") {
+	Report::Import($[]);
+	ret = $[];
+    }
+    /**
+     * Change configuration
+     * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
+     */
+    else if (func == "Change") {
+        Wizard::CreateDialog();
+        Wizard::SetDesktopIcon("report");
+	Wizard::HideAbortButton();
+	ret = ReportingDialog();
+	Wizard::CloseDialog();
+    }
+    /**
+     * Return configuration data
+     * return map or list
+     */
+    else if (func == "Export") {
+	ret = Report::Export();
+    }
+    else if (func == "GetModified") {
+	ret = Report::GetModified();
+    }
+    else if (func == "SetModified") {
+        Report::SetModified();
+    }
+
+    /* unknown function */
+    else {
+	y2error("unknown function: %1", func);
+	ret =  false;
+    }
+
+    y2debug("ret=%1", ret);
+    y2milestone("Report auto finished");
+    y2milestone("----------------------------------------");
+
+    return ret;
+
+    /* EOF */
+}
+
+
