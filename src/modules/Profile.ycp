@@ -110,6 +110,13 @@
                 current["clock"] = current["general","clock"]:$[];
                 current["general"] = remove( current["general"]:$[], "clock" );
             }
+            if( haskey( current["software"]:$[], "additional_locales" ) ) {
+                if( ! haskey(current, "language") ) {
+                    current["language"] = $[];
+                }
+                current["language","languages"] = mergestring( current["software","additional_locales"]:[], "," );
+                current["software"] = remove( current["software"]:$[], "additional_locales" );
+            }
         }
     }
 
