@@ -182,15 +182,13 @@ Please wait while the system is prepared for autoinstallation.</p>
 	use_utf8 = false;		// fallback to ascii
     }
 
-    //string language = Profile::current["general","language"]:Language::language;
-    Language::Import( Profile::current["language"]:$[] );
 
     //
     // Set it in the Language module.
     //
     Progress::NextStep();
     Progress::Title(_("Configuring language..."));
-    //Language::Set( language );
+    Language::Import( Profile::current["language"]:$[] );
 
     //
     // Set Console font

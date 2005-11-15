@@ -18,7 +18,6 @@
     import "Packages";
     import "Popup";
     import "Report";
-    import "Language";
     import "Kernel";
     import "AutoinstConfig";
     import "ProductControl";
@@ -40,10 +39,6 @@
 
     // Packages that should be installed in continue mode
     global list<string> post_packages = [];
-
-    // Additional languages for packages
-    global list<string> additional_locales = [];
-
 
     global string ft_module = "";
 
@@ -82,7 +77,6 @@
 	Software = settings;
 	base = settings["base"]:"";
 	addons = settings["addons"]:[];
-	additional_locales = settings["additional_locales"]:[];
 
         PackageAI::toinstall  = settings["packages"]:[];
 	kernel = settings["kernel"]:"";
@@ -338,9 +332,6 @@
         }
 
 	boolean ok = true;
-	Pkg::SetLocale (Language::language);
-        additional_locales=add(additional_locales, Language::language );
-        Pkg::SetAdditionalLocales(toset(additional_locales));
 
 	Packages::Init(true);
 	string  base_selection = base;
