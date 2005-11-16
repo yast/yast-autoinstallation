@@ -1,0 +1,31 @@
+/**
+ * File:        clients/clone_system.ycp
+ * Package:     Auto-installation
+ * Author:      Uwe Gansert <ug@suse.de>
+ * Summary:     This client is clones some settings of the
+ *              system.
+ *
+ * Changes:     * initial - just do a simple clone
+ * $Id$
+ */
+
+{
+    import "AutoinstClone";
+    import "Profile";
+    import "XML";
+    import "Popup";
+    import "ProductControl";
+
+    textdomain "installation";
+
+    define void doClone () ``{
+        Popup::ShowFeedback( _("Please wait while cloning the system"), _("the resulting autoyast profile can be found in /root/autoinst.xml") );
+
+        AutoinstClone::additional = ProductControl::clone_modules;
+        AutoinstClone::Process();
+        XML::YCPToXMLFile(`profile, Profile::current,  "/root/autoinst.xml");
+        Popup::ClearFeedback();
+    }
+
+    doClone();
+}
