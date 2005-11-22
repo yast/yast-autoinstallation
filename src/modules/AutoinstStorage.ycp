@@ -184,7 +184,7 @@
     }
 
     global define void SearchRaids (map<string,map> tm) {
-        raid2device = $[];
+        //raid2device = $[];
         foreach( string k, map d, tm, ``{
             if( d["type"]:`CT_UNKNOWN == `CT_DISK ) {
                 list<map> tmp = filter( map p, d["partitions"]:[],
@@ -193,6 +193,10 @@
                 foreach( string dev, devMd, ``{
                     if( ! haskey( raid2device, dev ) ) {
                         raid2device[dev] = GetRaidDevices(dev,tm);
+                    } else {
+                        foreach( string k, (list<string>)GetRaidDevices(dev,tm), ``{
+                             raid2device[dev] = add(raid2device[dev]:[],k)
+                        });
                     }
                 });
             }
