@@ -385,20 +385,21 @@ which root partition should be used.  Automatic installation not possible.
 	y2milestone("disk_devices: %1", disk_devices );
 
 	boolean result = false;
-	
+
+        foreach (string device, map data, AutoTargetMap, ``{
+                if ( Storage::IsRealDisk( data) &&
+                     data["initialize"]:false == true) {
+                        initial_target_map[device,"delete"] = true;
+                        Storage::SetTargetMap(initial_target_map);
+                }
+        });
+        y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
+
 	foreach (string device, map data, AutoTargetMap,
 		 ``{
 	    if ( Storage::IsRealDisk( data) )
 	    {
 		y2milestone("Creating partition plans for %1", device);
-		if (data["initialize"]:false == true)
-		{
-		    //map thisDevice = initial_target_map[device]:$[];
-		    //thisDevice["partitions"] = [];
-            initial_target_map[device,"delete"] = true;
-            Storage::SetTargetMap(initial_target_map);
-		    y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
-		}		
 		
 		map sol = find_matching_disk([device], Storage::GetTargetMap(), data );	  
 		if (size(sol) > 0 )
