@@ -198,7 +198,9 @@ DEFAULT linux
 ]]>
         </screen>
        This will upload a new configuration for the actual machine to the tftp server short
-       before the first reboot happens.
+       before the first reboot happens. In most installations the TFTP daemon runs as user
+       "nobody". You have to make sure that that user has write permissions to the "pxelinux.cfg"
+       directory if you use that mechanism.
        So if your machine got the IP address "192.168.66.195" a file "C0A842C3" will
        be uploaded and if the machine reboots and will get the same IP address
        via DHCP again, the new configuration will be used that has the harddisc as
