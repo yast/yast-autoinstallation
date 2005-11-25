@@ -113,6 +113,103 @@
 	every time you wish to change the configuration though.
       </para>
     </section>
+
+    <section>
+      <title>Booting via PXE over the network</title>
+      <para>
+        Booting via PXE requires a DHCP and a TFTP server in your network. The computer
+        will boot then without a physical media like a boot floppy or CDROM.
+      </para>
+      <para>
+        Here is a small example of a "/srv/tftp/pxelinux.cfg/default" file:
+      <screen>
+default SLES9
+
+# install SLES9
+label SLES9
+  kernel linux_sles9
+    append initrd=initrd_sles9 install=.... autoyast=... language=de_DE
+
+# boot harddisc
+label hd·
+  LOCALBOOT 0
+      </screen>
+      </para>
+      <para>
+        Here is as a small example my "/etc/dhcp.conf" file:
+      <screen>
+option domain-name-servers 192.168.66.1;
+default-lease-time 600;
+max-lease-time 7200;
+ddns-update-style none; ddns-updates off;
+log-facility local7;
+option grub-menufile code 150 = text;
+option grub-menufile "(nd)/menu.lst";·
+subnet 192.168.66.0 netmask 255.255.255.0 {
+        range 192.168.66.100 192.168.66.200;
+        # PXE related stuff ...
+        #
+        # "next-server" defines the tftp server which will·
+        # serve the pxelinux image to the PXE clients.
+        next-server 192.168.66.1;
+        allow booting;
+        allow bootp;
+        option routers 192.168.66.1; # default gateway
+
+        #
+        # "filename" specifies the pxelinux image on the tftp server·
+        # which will be served to the PXE clients.
+        # The configured tftp server on 192.168.100.1 runs in a·
+        # "change-root jail" to /srv/tftpboot
+        filename "pxelinux.0";
+}
+      </screen>
+      </para>
+      <para>
+        A problem you might run into if you do installation via PXE is, that the
+        installation will run into an endless loop, because after the first reboot,
+        the machine is doing PXE boot again and will restart the installation instead
+        of booting from harddisc for the second stage of the installation.
+      </para>
+      <para>
+        This problem can be solved in different ways. One way is to use a http server
+        to provide the autoyast profile and instead of a static profile, a CGI script
+        on the webserver is run that provides the profile and then changes the TFTP server
+        configuration then for this special host, so that the next PXE boot from that
+        machine will be from harddisc by default.
+      </para>
+      <para>
+        Another way is to use autoyast to upload a new PXE boot configuration for that host.
+        That is done via autoyast profile like this:
+        <screen>
+          <![CDATA[
+      <pxe>
+       <pxe_localboot config:type="boolean">true</pxe_localboot>
+       <pxelinux-config>
+DEFAULT linux
+  LABEL linux
+  localboot 0
+
+
+       </pxelinux-config>
+       <tftp-server>192.168.66.1</tftp-server>
+       <pxelinux-dir>/pxelinux.cfg</pxelinux-dir>
+     </pxe>
+]]>
+        </screen>
+       This will upload a new configuration for the actual machine to the tftp server short
+       before the first reboot happens.
+       So if your machine got the IP address "192.168.66.195" a file "C0A842C3" will
+       be uploaded and if the machine reboots and will get the same IP address
+       via DHCP again, the new configuration will be used that has the harddisc as
+       a default boot media.
+      </para>
+      <para>
+       Of course this requires that the machine will get the same IP address again after the
+       reboot and if you want to do another autoinstallation for that machine, you have to
+       remove the file from the TFTP server.
+      </para>
+    </section>
   </section>
 
   <section id="invoking_autoinst">
