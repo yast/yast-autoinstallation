@@ -236,6 +236,60 @@
 	return clean_drives;
     }
 
+    /**
+     * if mountby is used, we will search for the matching
+     * partition here.
+     * @return list
+     */
+    global define list<map> mountBy(list<map> settings) {
+        map <string, map> tm = Storage::GetTargetMap();
+        y2milestone("Storage::GetTargetMap returns %1",tm);
+        settings = maplist( map d, settings, ``{
+            string device = d["device"]:"";
+            d["partitions"] = maplist( map p, d["partitions"]:[], ``{
+                string mountby = "";
+                if( haskey(p, "mountby") ) {
+                    if( p["mountby"]:`none == `label ) {
+                        mountby = "label";
+                    } else if( p["mountby"]:`none == `uuid ) {
+                        mountby = "uuid";
+                    } else {
+                        y2milestone("unknown mountby parameter '%1' will be ignored",p["mountby"]:`none);
+                    }
+                }
+                if( mountby != "" ) {
+                    string label = p[mountby]:"";
+                    y2milestone("mountby found for %1=%2 in part=%3",mountby,label,p);
+                    map target = tm[device]:$[];
+                    if( device == "" ) {
+                        y2milestone("searching for the device by %1",mountby);
+                        foreach( string deviceName, map tmp_target, tm, ``{
+                            foreach( map targetPart, tmp_target["partitions"]:[], ``{
+                                if( targetPart[mountby]:"" == label ) {
+                                    target = tmp_target;
+                                    device = deviceName;
+                                    y2milestone("device=%1 found",device);
+                                    break;
+                                }
+                            });
+                        });
+                    }
+                    foreach( map targetPart, target["partitions"]:[], ``{
+                        if( targetPart[mountby]:"" == label ) {
+                            y2milestone("%1 found in targetmap",mountby);
+                            d["device"] = device; //FIXME: for some reason this does not work
+                            p["partition_nr"] = targetPart["nr"]:0;
+                            p["usepart"] = targetPart["nr"]:0;
+                        }
+                    });
+                }
+                return p;
+            });
+            return d;
+        });
+        y2milestone("after mountBy settings=%1",settings);
+        return settings;
+    }
 
     /**
      * Get all the configuration from a map.
@@ -248,6 +302,7 @@
     {
         y2milestone("entering Import with %1", settings);
         if (Mode::autoinst()) {
+            settings = mountBy(settings);
     	    AutoPartPlan = preprocess_partition_config(settings);
         } else {
 	    settings = maplist( map d, settings, ``{
