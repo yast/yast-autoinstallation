@@ -159,7 +159,7 @@
     *
     */
     global boolean TurnOff () {
-        if( ! Profile::current["general","second_stage"]:true ) {
+        if( ! Profile::current["general","mode","second_stage"]:true ) {
             y2milestone("switching from autoinstallation to manual installation in second stage");
             SCR::Execute(.target.bash, "/bin/grep -v -i '^autoyast:' /etc/install.inf > /tmp/install.inf.new");
             SCR::Execute(.target.bash, "/bin/mv /tmp/install.inf.new /etc/install.inf");
