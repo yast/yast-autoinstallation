@@ -30,6 +30,7 @@
     import "Storage";
 
     include "bootloader/routines/autoinstall.ycp";
+    include "autoinstall/ask.ycp";
 
     string help_text = _("<P>Please wait while the system is prepared for autoinstallation.</P>");
     list<string> progress_stages =
@@ -102,6 +103,12 @@ control file and try again.
     //
     // Partitioning and Storage
     ////////////////////////////////////////////////////////////////////////
+
+
+    if( askDialog() ) {
+        // we might have modifed the profile in the ask-dialogs, so we save it again
+        Profile::SaveProfileStructure( AutoinstConfig::profile_dir + "/autoinst.xml" );
+    }
 
     //
     // Set Mouse and other workflow variables

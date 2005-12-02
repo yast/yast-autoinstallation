@@ -552,4 +552,51 @@
 	return (true);
     }
 
+
+    define map<string,any> setMValue( list<any> l, any v, map<string,any> m );
+    define list<any> setLValue( list<any> l, any v, list<any> m );
+
+
+    /*
+        setMValue together with setLValue are helper functions for
+        setElementyList
+    */
+    map<string,any> setMValue( list<any> l, any v, map<string,any> m ) {
+        string i = (string)l[0]:"";
+        list<any> tmp = remove(l,0);
+        if( size(tmp) > 0 ) {
+            if( is( tmp[0]:nil, string ) ) {
+                m[i] = setMValue( tmp, v, m[i]:$[] );
+            } else {
+                y2milestone("I'm in else");
+                m[i] = setLValue( tmp, v, m[i]:[] );
+            }
+        } else {
+            y2milestone("setting %1 to %2",i,v);
+            m[i] = v;
+        }
+        return m;
+    }
+
+    list<any> setLValue( list<any> l, any v, list<any> m ) {
+        integer i = (integer)l[0]:0;
+        list<any> tmp = remove(l,0);
+        if( is( tmp[0]:nil, string ) ) {
+            m[i] = setMValue( tmp, v, m[i]:$[] );
+        } else {
+            m[i] = setLValue( tmp, v, m[i]:[] );
+        }
+        return m;
+    }
+
+    /**
+     *  this function is a replacement for this code:
+     *      list<any> l = [ "key1",0,"key3" ]; 
+     *      m[ l ] = v;
+     *  @return map
+     */
+    global define map<string,any> setElementByList( list<any> l, any v, map<string,any> m ) {
+        m = setMValue( l, v, m );
+        return m;
+    }
 }
