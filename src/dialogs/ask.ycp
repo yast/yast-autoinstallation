@@ -31,11 +31,18 @@
             string question = ask["question"]:pathStr;
             string helptext = ask["help"]:"";
             string title    = ask["title"]:"";
+            list< map<string,any> > s  = ask["selection"]:[];
             mod = true;
 
             term dlg = `Dummy();
             if( type == "boolean" ) {
                 dlg = `CheckBox(`id(`entry), question );
+            } else if( type == "symbol" ) {
+                list<any> dummy = [];
+                foreach( map<string,any> e, s, ``{
+                    dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"") );
+                });
+                dlg = `ComboBox( `id(`entry), question, dummy );
             } else {
                 if( ask["password"]:false == true ) {
                     dlg = `VBox(
@@ -43,7 +50,15 @@
                              `Password(`id(`pw2), question)
                             );
                 } else {
-                    dlg = `TextEntry(`id(`entry), question, ask["default"]:"" );
+                    if( haskey( ask, "selection" ) ) {
+                        list<any> dummy = [];
+                        foreach( map<string,any> e, s, ``{
+                            dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"") );
+                        });
+                        dlg = `ComboBox( `id(`entry), question, dummy );
+                    } else {
+                        dlg = `TextEntry(`id(`entry), question, ask["default"]:"" );
+                    }
                 }
             }
 
