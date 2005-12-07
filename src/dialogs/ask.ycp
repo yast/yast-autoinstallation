@@ -36,11 +36,13 @@
 
             term dlg = `Dummy();
             if( type == "boolean" ) {
-                dlg = `CheckBox(`id(`entry), question );
+                boolean on=(ask["default"]:nil=="true")?(true):(false);
+                dlg = `CheckBox(`id(`entry), question,on );
             } else if( type == "symbol" ) {
                 list<any> dummy = [];
                 foreach( map<string,any> e, s, ``{
-                    dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"") );
+                    boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
+                    dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
                 });
                 dlg = `ComboBox( `id(`entry), question, dummy );
             } else {
@@ -53,7 +55,8 @@
                     if( haskey( ask, "selection" ) ) {
                         list<any> dummy = [];
                         foreach( map<string,any> e, s, ``{
-                            dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"") );
+                            boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
+                            dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"",on) );
                         });
                         dlg = `ComboBox( `id(`entry), question, dummy );
                     } else {
@@ -91,6 +94,9 @@
                 any ret = UI::UserInput();
                 if( ret == `ok ) {
                     any val = UI::QueryWidget(`id(`entry),  `Value);
+                    if( ask["type"]:"string" == "integer" ) {
+                        val = tointeger((string)val);
+                    }
                     if( ask["password"]:false == true ) {
                         string pass2 = (string)UI::QueryWidget(`id(`pw2),  `Value);
                         if( pass2 != (string)val ) {
