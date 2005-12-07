@@ -15,6 +15,11 @@
 # in the data directory (<source>/updates/suse)
 #
 # Anas Nashif
+# Uwe Gansert (uwe.gansert@suse.de)
+#
+# Version 20050712 (uwe.gansert@suse.de)
+#   - added missing $SOURCE for the copy of the EXTRA_PROV file
+#     thanx to Ian Grant
 #
 
 SOURCE=$1
@@ -114,7 +119,7 @@ done
 
 $ECHO mkdir -p $UPDATES/$DESCRDIR
 
-if [ -f "$DESCRDIR/EXTRA_PROV" ]; then
+if [ -f "$SOURCE/$DESCRDIR/EXTRA_PROV" ]; then
 	$ECHO cp $SOURCE/$DESCRDIR/EXTRA_PROV $UPDATES/$DESCRDIR
 else
 	echo "$DESCRDIR/EXTRA_PROV not found, trying to find it elsewhere..."
