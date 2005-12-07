@@ -17,7 +17,7 @@
 # Anas Nashif
 # Uwe Gansert (uwe.gansert@suse.de)
 #
-# Version 20050712 (uwe.gansert@suse.de)
+# Version 20051207 (uwe.gansert@suse.de)
 #   - added missing $SOURCE for the copy of the EXTRA_PROV file
 #     thanx to Ian Grant
 #
