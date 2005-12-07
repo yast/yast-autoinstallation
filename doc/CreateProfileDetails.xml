@@ -1859,6 +1859,12 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
                 <para><screen>&lt;question&gt;Enter the LDAP server&lt;/question&gt;</screen></para></entry>
                 <entry>The default value is the path to the element (the path often looks strange, so I recommend to enter a question)</entry>
               </row>
+                <entry>default</entry>
+                <entry>you can set a pre-selection for the user. A textentry will be filled out with this value,
+                       a checkbox will be "true" or "false" and a selection will have this default "value" pre-selected.
+                <para><screen>&lt;default&gt;dc=suse,dc=de&lt;/default&gt;</screen></para></entry>
+                <entry>optional</entry>
+              </row>
               <row>
                 <entry>help</entry>
                 <entry>An optional helptext that is shown on the left side of the question.
@@ -1873,7 +1879,8 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
               </row>
               <row>
                 <entry>type</entry>
-                <entry>the type of the element you want to change. Possible values are "symbol","boolean","string". The filesystem in
+                <entry>the type of the element you want to change. Possible values are "symbol","boolean","string" and "integer". 
+                       The filesystem in
                        the partition section is a symbol, while the "encrypted" element in the user configuration is a boolean.
                        You can see the type of that element if you look in your profile at the config:type="...." attribute.
                 <para><screen>&lt;type&gt;symbol&lt;/type&gt;</screen></para></entry>
@@ -1969,11 +1976,13 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
                       &lt;label&gt;LDAP for sales&lt;/label&gt;
               &lt;/entry&gt;
           &lt;/selection&gt;
+          &lt;default&gt;ldap2.mydom.de&lt;/default&gt;
       &lt;/ask&gt;
       &lt;ask&gt;
           &lt;path&gt;networking,dns,hostname&lt;/path&gt;
           &lt;question&gt;Enter Hostname&lt;/question&gt;
           &lt;stage&gt;initial&lt;/stage&gt;
+          &lt;default&gt;enter your hostname here&lt;/default&gt;
       &lt;/ask&gt;
       &lt;ask&gt;
           &lt;path&gt;partitioning,0,partitions,0,filesystem&lt;/path&gt;
