@@ -164,6 +164,8 @@ $Id$
 
 		if (partition["used_by_type"]:`UB_NONE==`UB_LVM)
 	    	    partition["filesystem_id"] =  Partitions::fsid_lvm;
+		else if (partition["used_by_type"]:`UB_NONE==`UB_EVMS)
+                    partition["filesystem_id"] =  Partitions::fsid_lvm;
 		else if (partition["used_by_type"]:`UB_NONE==`UB_MD)
 		    partition["filesystem_id"] =  Partitions::fsid_raid;
 
@@ -173,7 +175,7 @@ $Id$
 	        partitions = add( partitions, partition );
 	    });
 	
-	    if (d["type"]:`CT_UNKNONW!=`CT_LVM) {
+	    if (d["type"]:`CT_UNKNONW!=`CT_LVM && d["type"]:`CT_UNKNONW!=`CT_EVMS) {
 		d["partitions"] = partitions;
 	    }
 	    return (d);
@@ -788,6 +790,15 @@ $Id$
 			    p["lvm_group"]	=  solution["partitions",pindex,"lvm_group"]:"";
 			    p["mount"]		=  "";
 			    p["fstype"]		=  "Linux LVM";
+			} 
+			else if (solution["partitions",pindex,"evms_group"]:"" != "") {
+			    p["used_fs"]	=  `unknown;
+			    p["fsid"]		=  Partitions::fsid_lvm;
+			    p["format"]		=  false;
+                            string lvm          = (solution["partitions",pindex,"evms_group"]:true)?("lvm2"):("lvm");
+			    p["evms_group"]	=  "evms/"+lvm+"/"+solution["partitions",pindex,"evms_group"]:"";
+			    p["mount"]		=  "";
+			    p["fstype"]		=  "EVMS";
 			}
 			else if (solution["partitions",pindex,"raid_name"]:"" != "")
 			{			   
@@ -906,6 +917,14 @@ $Id$
 			part["lvm_group"]	=  solution["partitions",pindex,"lvm_group"]:"";
 			part["mount"]		=  "";
 			part["fstype"]		=  "Linux LVM";
+		    }
+		    else if (solution["partitions",pindex,"evms_group"]:"" != "") {
+			part["used_fs"]	=  `unknown;
+			part["fsid"]		=  Partitions::fsid_lvm;
+			part["format"]		=  false;
+			part["evms_group"]	=  solution["partitions",pindex,"evms_group"]:"";
+			part["mount"]		=  "";
+			part["fstype"]		=  "EVMS";
 		    }
 		    else if (solution["partitions",pindex,"raid_name"]:"" != "")
 		    {			   
