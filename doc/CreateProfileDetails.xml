@@ -708,9 +708,39 @@
     xmlns:xi="http://www.w3.org/2001/XInclude"/>
 	  </screen>
 	</example>
-   
+    <para>
+      With SUSE Linux 10.1 and all following versions, it's possible to set the <emphasis>size</emphasis> 
+      to <emphasis>max</emphasis> for the logical volumes. Of course, you can only use <emphasis>max</emphasis>
+      only for one(!) logical volumes. You can't have two logical volumes in one volume group with the 
+      <emphasis>size</emphasis> set to <emphasis>max</emphasis>
+    </para>
   </section>
 
+  <section>
+    <title>
+      Enterprise Volume Management System (EVMS)
+    </title>
+    <para>
+      Since SLES10 autoyast has EVMS support.
+    </para>
+    <para>
+      Using EVMS is quite similar to using LVM (see above). So switching from LVM to EVMS
+      is just a small change in the autoyast profile. All you have to do is to change the
+      "is_lvm_vg" element into "is_evms_vg" and the "lvm_group" element into "evms_group".
+    </para>
+    <para>
+      Using the LVM example from above for EVMS now looks like this:
+    </para>
+    <example>
+      <title>
+        EVMS Logical Volumes
+      </title>
+      <screen>
+<xi:include href="examples/example.evms.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+    </example>
+  </section>
   <section>
     <title>Software RAID</title>
     <para>
