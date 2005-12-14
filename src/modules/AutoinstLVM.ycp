@@ -374,7 +374,12 @@
 
             // calculating the "max" for logical volume
             map<string, map> tmp_tm = Storage::GetTargetMap();
-            integer freeSpace = tmp_tm[device,"size_k"]:0;
+            integer freeSpace = 0;
+            if( vmType == `CT_LVM ) {
+                freeSpace = tmp_tm[device,"size_k"]:0;
+            } else if( vmType == `CT_EVMS ) {
+                freeSpace = tmp_tm[ "/dev/evms/"+lvm_string+"/"+vgname, "size_k"]:0;
+            }
 
             foreach(map lv,  volume_group["partitions"]:[], ``{
                 freeSpace = freeSpace - lv["size_k"]:0;
