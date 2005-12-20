@@ -78,7 +78,18 @@
 	base = settings["base"]:"";
 	addons = settings["addons"]:[];
 
-        PackageAI::toinstall  = settings["packages"]:[];
+    string notFound = "";
+	Packages::Init(true);
+    foreach( string pack, settings["packages"]:[], ``{
+        if( ! Pkg::IsAvailable(pack) ) {
+            notFound = notFound + pack + "\n";
+        }
+    });
+    if( size(notFound) > 0 ) {
+        Report::Error( sformat("Packages not found on inst. source:\n %1", notFound));
+    }
+
+    PackageAI::toinstall  = settings["packages"]:[];
 	kernel = settings["kernel"]:"";
 	post_packages = settings["post-packages"]:[];
         PackageAI::toremove  =  settings["remove-packages"]:[];
