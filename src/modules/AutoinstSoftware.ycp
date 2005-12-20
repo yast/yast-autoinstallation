@@ -86,7 +86,9 @@
         }
     });
     if( size(notFound) > 0 ) {
-        Report::Error( sformat("Packages not found on inst. source:\n %1", notFound));
+        y2error("packages not found: %1",notFound);
+        // warning text during the installation. %1 is a list of package names
+        Report::Error( sformat(_("These packages could not be found on the installation source:\n%1"), notFound));
     }
 
     PackageAI::toinstall  = settings["packages"]:[];
