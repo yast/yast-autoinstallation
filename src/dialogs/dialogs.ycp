@@ -371,6 +371,7 @@ were imported correctly."));
 
 	string html_ok = HTML::Colorize(_("OK"), "green");
 	string html_ko = HTML::Colorize(_("Error"), "red");
+	string html_warn = HTML::Colorize(_("Warning"), "yellow");
         string summary = "";
 
 	// some of these can be commented out for the release
@@ -410,6 +411,30 @@ were imported correctly."));
 	    summary = summary + (o["exit"]:1 == 0? html_ok: html_ko);
 	    UpdateValidDialog (summary, o["stderr"]:"");
 	});
+
+        boolean logicOk = true;
+        boolean rootOk = false;
+        if( haskey(Profile::current, "users") ) {
+                foreach( map u, Profile::current["users"]:[], ``{
+                        if( u["username"]:"" == "root" && haskey(u,"user_password") ) {
+                                rootOk = true;
+                        }
+                });
+        }
+        // the autoyast interface can check if the profile is logical or if important stuff is missing
+        // the missing stuff is under the Label "Logic"
+        summary = Summary::AddHeader (summary, _("Logic") );
+        if( ! rootOk ) {
+                // the autoyast config frontend can check if a root password is configured
+                // and can warn the user if it is missing
+                summary = summary + html_warn + " " + _("no root password configured");
+                logicOk = false;
+        }
+
+        if( logicOk ) {
+            summary = summary + html_ok;
+        }
+        UpdateValidDialog (summary, "");
 
         any ret = nil;
         while (true)
