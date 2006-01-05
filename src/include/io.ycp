@@ -67,8 +67,9 @@
         string mount_point = tmp_dir + "/tmp_mount";
         WFM::Execute(.local.mkdir, mount_point );
 
-	if ( Scheme == "http" )
+	if ( Scheme == "http" || Scheme == "https" )
 	{
+        HTTP::easySSL( true );
 	    res = HTTP::Get(full_url, Localfile);
 	    if (res["code"]:0 == 200)
 	    {
