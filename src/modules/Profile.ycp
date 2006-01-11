@@ -548,6 +548,10 @@
 
 	if ( current != $[]  && size(current) == 0 )
 	{
+        // autoyast has read the autoyast configuration file but something went wrong
+        string message = _("The XML parser reported an error while parsing the autoyast profile. The error message is:\n");
+        message += XML::XMLError();
+        Popup::Error ( message );
 	    return (false);
 	}
 	Import (current);
