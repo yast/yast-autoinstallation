@@ -15,6 +15,8 @@
     import "StorageDevices";
     import "TFTP";
 
+    string GET_error = "";
+
     /**
      * Basename
      * @param string path
@@ -51,6 +53,7 @@
 			      string Path,
 			      string Localfile)
 	``{
+        GET_error = "";
 	boolean ok = false;
 	map res = $[];
 	map toks =  AutoinstConfig::urltok;
@@ -73,11 +76,14 @@
 	    res = HTTP::Get(full_url, Localfile);
 	    if (res["code"]:0 == 200)
 	    {
+                GET_error = "";
 		return (true);
 	    }
 	    else
 	    {
 		y2error("Can't find URL: %1", full_url);
+                // autoyast tried to read a file but had no success.
+                GET_error = sformat(_("Can't find URL '%1' via protocol HTTP(S). Server returned code %2"),full_url,res["code"]:0);
 		return (false);
 	    }
 	}
@@ -86,11 +92,14 @@
 	    res = FTP::Get(full_url, Localfile);
 	    if ( ( res["code"]:-1 >= 200 || res["code"]:-1 < 300 ) && SCR::Read(.target.size, Localfile) > 0 )
 	    {
+                GET_error = "";
 		return (true);
 	    }
 	    else
 	    {
 		y2error("Can't find URL: %1", full_url);
+                // autoyast tried to read a file but had no success.
+                GET_error = sformat(_("Can't find URL '%1' via protocol FTP. Server returned code %2"),full_url,res["code"]:0);
 		return (false);
 	    }
 	}
@@ -105,6 +114,7 @@
 	    }
 	    else
 	    {
+                GET_error = GET_error + sformat(_("reading file on %1/%2 failed.\n"), Installation::sourcedir, Path);
 		string cpcmd = sformat("cp %1 %2", Path , Localfile);
 		y2milestone("Copy profile: %1", cpcmd);
 		SCR::Execute(.target.bash, cpcmd);
@@ -112,10 +122,12 @@
 
 	    if (SCR::Read(.target.size, Localfile) > 0 )
 	    {
+                GET_error = "";
 		ok = true;
 	    }
 	    else
 	    {
+                GET_error = GET_error + sformat(_("reading file on %1 failed.\n"), Path);
 		y2milestone("Trying to find file on installation media: %1", Installation::boot ());
 		if (Installation::boot () == "cd")
 		{
@@ -123,6 +135,8 @@
 		    if (!(boolean)WFM::Execute(.local.mount, ["/dev/" + cdrom,
                                 mount_point, Installation::mountlog] ))
 		    {
+                        // autoyast tried to mount the CD but had no success.
+                        GET_error = GET_error + sformat(_("mounting of %1 failed.\n"), cdrom );
 			y2warning("Mount failed");
 		    }
 		    else
@@ -134,10 +148,12 @@
 		    WFM::Execute(.local.umount, mount_point);
 		    if (SCR::Read(.target.size, Localfile) > 0 )
 		    {
+                        GET_error = "";
 			return (true);
 		    }
 		}
-
+                // autoyast tried to read a file but had no success.
+                GET_error = GET_error + sformat(_("reading a file on CD failed. Path: %1/%2"),mount_point,Path);
 		ok = false;
 	    }
 	}
@@ -154,6 +170,8 @@
                         Installation::mountlog ]))
 	    {
 		y2warning("Mount failed");
+                // autoyast tried to mount a NFS directory which failed
+                GET_error = sformat(_("mounting of %1 failed."), Host + ":" + dirname(Path) );
 		return (false);
 	    }
 
@@ -162,10 +180,13 @@
             y2milestone("Copy Command: %1", copyCmd);
 	    if (WFM::Execute (.local.bash, copyCmd ) == 0)
 	    {
+                GET_error = "";
 		ok = true;
 	    }
 	    else
 	    {
+                // autoyast tried to copy a file via NFS which failed
+                GET_error = sformat(_("remote file %1 can't be retrieved"),  mount_point + "/"+ basename(Path) );
 		y2error("remote file %1 can't be retrieved",  mount_point + "/"
                         + basename(Path));
 
@@ -186,6 +207,7 @@
 		}
 		else
 		{
+                    GET_error = "";
 		    ok = true;
 		}
 		SCR::Execute(.target.umount, mount_point);
@@ -216,11 +238,13 @@
 
 		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  Path + " " + Localfile) != 0 )
 		{
-		    y2error("file %1 can't be found",  mount_point +
-                            Path);
+                    // autoyast tried to copy a file but that file can't be found
+                    GET_error = sformat(_("file %1 can't be found"),mount_point + Path);
+		    y2error("file %1 can't be found",  mount_point + Path);
 		}
 		else
 		{
+                    GET_error = "";
 		    ok = true;
 		}
 		WFM::Execute(.local.umount, mount_point);
@@ -230,15 +254,19 @@
 	{
 	    if (TFTP::Get( Host,  Path, Localfile ))
 	    {
+                GET_error = "";
 		ok = true;
 	    }
 	    else
 	    {
+                GET_error = sformat(_("Can't find URL '%1' via protocol TFTP."),Host+":"+Path);
 		y2error("file %1 can't be found", Path );
 	    }
 	}
 	else
 	{
+            // the user wanted autoyast to fetch it's profile via an unknown protocol
+            GET_error = sformat(_("Unknown protocol '%1'"),Scheme);
 	    y2error("Protocol not supported");
 	    ok = false;
 	}

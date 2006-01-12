@@ -62,6 +62,9 @@
                     );
             if (!ret)
             {
+                // autoyast hit an error while fetching it's config file
+                string error = _("An error occured while fetching the profile:\n");
+                Popup::Error( error + GET_error );
                 return false;
             }
 	}
