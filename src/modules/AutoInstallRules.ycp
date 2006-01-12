@@ -427,6 +427,10 @@
     {
 	UserRules = XML::XMLToYCPFile( AutoinstConfig::local_rules_file );
 
+        if( UserRules == nil ) {
+            string message = _("parsing the rules file failed. XML parser reports:\n");
+            Popup::Error( message + XML::XMLError() );
+        }
 	y2milestone("Rules: %1", UserRules);
 
 	list<map <string, map> > rulelist = UserRules["rules"]:[];
