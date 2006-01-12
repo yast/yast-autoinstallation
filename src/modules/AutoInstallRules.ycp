@@ -687,6 +687,9 @@
 		if (!XML_cleanup(current_profile,  tmpdir + "/base_profile.xml"))
                 {
 		    y2error("Error reading XML file");
+		    string message = _("The XML parser reported an error while parsing the autoyast profile. The error message is:\n");
+		    message = message + XML::XMLError();
+		    Popup::Error ( message );
                     error = true;
                 }
 		skip = true;
