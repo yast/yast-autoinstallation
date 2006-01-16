@@ -12,8 +12,9 @@ drive =
     element device {text}? &
     initialize? &
     is_lvm_vg? &
+    is_evms_vg? &
     partitions? &
-#    pesize? &
+    pesize? &
     use?
   }
 initialize =
@@ -27,6 +28,8 @@ prefer_remove =
   element prefer_remove { BOOLEAN }
 is_lvm_vg =
   element is_lvm_vg { BOOLEAN }
+is_evms_vg =
+  element is_evms_vg { BOOLEAN }
 partitions =
   element partitions {
     LIST,
@@ -44,8 +47,9 @@ y2_partition =
   | grow
   | label
   | loop_fs
-#  | lv_name
-#  | lvm_group
+  | lv_name
+  | lvm_group
+  | evms_group
   | maxsize
   | mount
   | mountby
@@ -113,7 +117,6 @@ option_blank =
   element option_blank { BOOLEAN }
 option_str = element option_str { text }
 option_value = element option_value { text }
-# <!ELEMENT lvm_group (#PCDATA)>
 raid_name = element raid_name { text }
 raid_type = element raid_type { text }
 partition_nr =
@@ -131,3 +134,8 @@ region_entry =
 size = element size { text }
 maxsize = element maxsize { text }
 use = element use { text }
+lv_name = element lv_name { text }
+lvm_group = element lvm_group { text }
+pesize = element pesize { text }
+evms_group = element evms_group { text }
+
