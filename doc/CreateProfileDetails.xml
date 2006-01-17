@@ -233,6 +233,87 @@
     </title>
 
     <section>
+        <title>drive configuration</title>
+          <para>
+          The following elements must be between the &lt;partitioning config:type="list"&gt;&lt;drive&gt; ... &lt;/drive&gt;&lt;/partitioning&gt; tags in the &lt;profile&gt; section.
+          </para>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>device</entry>
+                <entry>the device you want to configure in this section
+                  <para><screen>&lt;device&gt;/dev/hda&lt;/device&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast tries to guess the device.</entry>
+              </row>
+              <row>
+                <entry>initialize</entry>
+                <entry>if set to true, the partition table gets wiped out before autoyast starts the partition calculation
+<para><screen>&lt;initialize config:type="boolean"&gt;true&lt;/initialize&gt;</screen></para>
+</entry>
+                <entry>optional. The default is false.</entry>
+              </row>
+              <row>
+                <entry>is_lvm_vg</entry>
+                <entry>this tells autoyast that this device is not a physical device but a LVM volume group (see LVM configuration below)
+<para><screen>&lt;is_lvm_vg config:type="boolean"&gt;true&lt;/is_lvm_vg&gt;</screen></para>
+</entry>
+                <entry>must be true if this device is a LVM volume group. The default is false.</entry>
+              </row>
+              <row>
+                <entry>is_evms_vg</entry>
+                <entry>this tells autoyast that this device is not a physical device but an EVMS volume group (see EVMS configuration below)
+<para><screen>&lt;is_evms_vg config:type="boolean"&gt;true&lt;/is_evms_vg&gt;</screen></para>
+</entry>
+                <entry>must be true if this device is a EVMS volume group. The default is false.</entry>
+              </row>
+              <row>
+                <entry>partitions</entry>
+                <entry>this is a list of &lt;partition&gt; entries (see table below)
+<para><screen>&lt;partitions config:type="list"&gt;&lt;partition&gt;...&lt;/partition&gt;...&lt;/partitions&gt;</screen></para>
+</entry>
+                <entry>optional. If no partition is specified, autoyast will create it's own idea of a nice partitioning (see Automated Partitioning below).</entry>
+              </row>
+              <row>
+                <entry>pesize</entry>
+                <entry>this value makes only sense with LVM/EVMS.
+<para><screen>&lt;pesize&gt;8M&lt;/pesize&gt;</screen></para>
+</entry>
+                <entry>optional. Default is 4M for EVMS/LVM volume groups.</entry>
+              </row>
+              <row>
+                <entry>use</entry>
+                <entry>this parameter tells autoyast which strategy it shall use to partition the harddisc.
+<para>You can choose between:</para>
+<itemizedlist>
+<listitem>
+<para>all (uses the whole device while calculating the new partitioning)</para>
+</listitem>
+<listitem>
+<para>linux (only existing linux partitions are used)</para>
+</listitem>
+<listitem>
+<para>free (only unused space on the device gets used. No other partitions gets touched)</para>
+</listitem>
+<listitem>
+<para>1,2,3 (a list of comma seperated numbers that indicates the partition numbers to use)</para>
+</listitem>
+</itemizedlist>
+</entry>
+                <entry>this parameter should be provided</entry>
+              </row>
+            </tbody>
+          </tgroup>
+    </section>
+
+    <section>
       <title>
 	Automated Partitioning
       </title>
