@@ -251,7 +251,7 @@
                 <entry>the device you want to configure in this section
                   <para><screen>&lt;device&gt;/dev/hda&lt;/device&gt;</screen></para>
                 </entry>
-                <entry>optional. If left out, autoyast tries to guess the device.</entry>
+                <entry>optional. If left out, autoyast tries to guess the device. A RAID must always have "/dev/md" as device</entry>
               </row>
               <row>
                 <entry>initialize</entry>
@@ -313,6 +313,210 @@
           </tgroup>
     </section>
 
+    <section>
+        <title>partition configuration</title>
+          <para>
+          The following elements must be between the &lt;partitions config:type="list"&gt;&lt;partition&gt; ... &lt;/partition&gt;&lt;/partitions&gt; tags in the &lt;drive&gt; section.
+          </para>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>create</entry>
+                <entry>
+                  <para>
+                    the "create" tells autoyast if this partition must be created or if it's already existing
+                  </para>
+                  <para><screen>&lt;create config:type="boolean"&gt;false&lt;/create&gt;</screen></para>
+                </entry>
+                <entry>if set to false, there must be some information for autoyast which partition this is (like with partition_nr)</entry>
+              </row>
+              <row>
+                <entry>mount</entry>
+                <entry>
+                  <para>
+                    the mountpoint of this partition.
+                  </para>
+                  <para><screen>&lt;mount&gt;/&lt;/mount&gt;</screen></para>
+                  <para><screen>&lt;mount&gt;swap&lt;/mount&gt;</screen></para>
+                </entry>
+                <entry>you should have at least a root partition (/) and a swap partition</entry>
+              </row>
+              <row>
+                <entry>fstopt</entry>
+                <entry>
+                  <para>
+                    mount options for this partition
+                  </para>
+                  <para><screen>&lt;fstopt&gt;ro,noatime,user,data=ordered,acl,user_xattr&lt;/fstopt&gt;</screen></para>
+                </entry>
+                <entry>see "man mount" for the mountoptions you can use</entry>
+              </row>
+              <row>
+                <entry>label</entry>
+                <entry>
+                  <para>
+                    the label the partition has (useful for the "mountby" parameter - see below).
+                  </para>
+                  <para><screen>&lt;label&gt;mydata&lt;/label&gt;</screen></para>
+                </entry>
+                <entry>see "man e2label" for example.</entry>
+              </row>
+              <row>
+                <entry>uuid</entry>
+                <entry>
+                  <para>
+                    the uuid the partition has (only useful for the "mountby" parameter - see below).
+                  </para>
+                  <para><screen>&lt;uuid&gt;1b4e28ba-2fa1-11d2-883f-b9a761bde3fb&lt;/uuid&gt;</screen></para>
+                </entry>
+                <entry>see "man uuidgen"</entry>
+              </row>
+              <row>
+                <entry>size</entry>
+                <entry>
+                  <para>
+                    the size for the partition like 4G, 4500M, ... The /boot partition and the swap partition can have "auto" as
+                    size too, to let autoyast calculate a reasonable size for them. On partition can have the value "max" to fillup
+                    all available space. Of course, you can't have two partitions with the size value "max".
+                  </para>
+                  <para><screen>&lt;size&gt;10G&lt;/size&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>format</entry>
+                <entry>
+                  <para>
+                    shall autoyast format the partition?
+                  </para>
+                  <para><screen>&lt;format config:type="boolean"&gt;false&lt;/format&gt;</screen></para>
+                </entry>
+                <entry>if "create" is true, then it's very likely that this is true too</entry>
+              </row>
+              <row>
+                <entry>filesystem</entry>
+                <entry>
+                  <para>
+                    what filesystem is used on this partition?
+<itemizedlist>
+<listitem>
+<para>reiser (the default)</para>
+</listitem>
+<listitem>
+<para>ext2</para>
+</listitem>
+<listitem>
+<para>ext3</para>
+</listitem>
+<listitem>
+<para>xfs</para>
+</listitem>
+<listitem>
+<para>jfs</para>
+</listitem>
+</itemizedlist>
+                  </para>
+                  <para><screen>&lt;filesystem config:type="symbol"&gt;reiser&lt;/filesystem&gt;</screen></para>
+                </entry>
+                <entry>optional. The default is reiser</entry>
+              </row>
+              <row>
+                <entry>partition_nr</entry>
+                <entry>
+                  <para>
+                    the partition_nr this partition have/will have. If you have create=false, then you can tell
+                    autoyast which partition you mean by the partition_nr. You can force autoyast to create only
+                    primary partitions by configuring only partition numbers below 5.
+                  </para>
+                  <para><screen>&lt;partition_nr config:type="integer"&gt;2&lt;/partition_nr&gt;</screen></para>
+                </entry>
+                <entry>in most cases nr. 1-4 are primary partitions and 5-... are logical partitions</entry>
+              </row>
+              <row>
+                <entry>mountby</entry>
+                <entry>
+                  <para>
+                    instead of a partition number, you can tell autoyast to mount a partition by label or by uuid
+                  </para>
+                  <para><screen>&lt;mountby config:type="symbol"&gt;label&lt;/mountby&gt;</screen></para>
+                </entry>
+                <entry>see "label" and "uuid" documentation above</entry>
+              </row>
+              <row>
+                <entry>lv_name</entry>
+                <entry>
+                  <para>
+                    if this partition is in a logical volume in a volume group (LVM or EVMS)
+                    (see is_lvm_vg/is_evms_vg parameter in drive configuration) you
+                    must specifiy the logical volume name here.
+                  </para>
+                  <para><screen>&lt;lv_name&gt;opt_lv&lt;/lv_name&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>lvm_group</entry>
+                <entry>
+                  <para>
+                    if this is a physical partition that is used by (part of) a volume group (LVM), 
+                        you have to specify the name of the volume
+                    group here.
+                  </para>
+                  <para><screen>&lt;lvm_group&gt;system&lt;/lvm_group&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>evms_group</entry>
+                <entry>
+                  <para>
+                    if this physical partition is used by a volume group (EVMS), you have to specify the name of the volume
+                    group here.
+                  </para>
+                  <para><screen>&lt;evms_group&gt;system&lt;/evms_group&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>raid_name</entry>
+                <entry>
+                  <para>
+                    this physical volume is part of a RAID and the name of the raid is specified here.
+                  </para>
+                  <para><screen>&lt;raid_name&gt;/dev/md0&lt;/raid_name&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>raid_type</entry>
+                <entry>
+                  <para>
+                    this physical volume is part of a RAID and the type of the raid is specified here..
+                  </para>
+                  <para><screen>&lt;raid_name&gt;raid1&lt;/raid_name&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>raid_options</entry>
+                <entry>
+                  <para>
+                    this physical volume is part of a RAID and the type of the raid is specified here..
+                  </para>
+                  <para><screen>&lt;raid_options&gt; FIXME: NOT DOCUMENTED YET&lt;/raid_options&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </section>
     <section>
       <title>
 	Automated Partitioning
