@@ -508,11 +508,57 @@
                 <entry>raid_options</entry>
                 <entry>
                   <para>
-                    this physical volume is part of a RAID and the type of the raid is specified here..
+                    special options for the raid are specified here. See below.
                   </para>
-                  <para><screen>&lt;raid_options&gt; FIXME: NOT DOCUMENTED YET&lt;/raid_options&gt;</screen></para>
+                  <para><screen>&lt;raid_options&gt;...&lt;/raid_options&gt;</screen></para>
                 </entry>
                 <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </section>
+    <section>
+        <title>raid options</title>
+          <para>
+          The following elements must be between the &lt;partition&gt;&lt;raid_options&gt; ... &lt;/raid_options&gt;&lt;/partition&gt; tags.
+          </para>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>chunk_size</entry>
+                <entry>
+                  <para>
+                  </para>
+                  <para><screen>&lt;chunk_size&gt;4&lt;/chunk_size&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>parity_algorithm</entry>
+                <entry>
+                  <para>
+                    possible values are: left_asymmetric, left_symmetric, right_asymmetric, right_symmetric
+                  </para>
+                  <para><screen>&lt;parity_algorithm&gt;left_asymmetric&lt;/parity_algorithm&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>raid_type</entry>
+                <entry>
+                  <para>
+                    possible values are raid0,raid1 and raid5
+                  </para>
+                  <para><screen>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</screen></para>
+                </entry>
+                <entry>the default is raid1</entry>
               </row>
             </tbody>
           </tgroup>
