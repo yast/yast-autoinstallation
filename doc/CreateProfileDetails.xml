@@ -67,6 +67,21 @@
 	<para>In SLES 9, it is possible to halt the system after the initial
 	  installation phase using the boolean property <emphasis>halt</emphasis></para>
       </note>  
+     <note>
+	<title>Change starting from SUSE Linux 10.1/SLES10</title>
+	<para>
+	  The <emphasis>language</emphasis>, <emphasis>keyboard</emphasis> and
+      <emphasis>clock</emphasis> properties in the <emphasis>general</emphasis>
+	  resource were moved to the root (<emphasis>profile</emphasis>) element of
+      the autoyast profile. So don't use them in the general section anymore.
+	</para>
+    <para>
+      Since now you can use the <emphasis>second_stage</emphasis> property, which
+      can turn off autoyast after the first reboot. So the complete second stage is
+      a manual installation (default is true, which means that autoyast is doing a
+      complete installation).
+    </para>
+      </note>
     </section>
   <section id="CreateProfile.Reporting">
     <title id="CreateProfile.Reporting.title">
