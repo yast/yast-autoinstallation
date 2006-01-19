@@ -87,6 +87,16 @@
                     haskey(p, "partition_nr") ) {
                     p["usepart"] = p["partition_nr"]:0; // useless default
                 }
+                if( haskey(p, "partition_id") ) {
+                    // that's a bit strange. There is a naming mixup between
+                    // autoyast and the storage part of yast. Actually filesystem_id
+                    // does not make sense at all but in autoyast it is the
+                    // partition id (maybe that's because yast calls
+                    // the partition id "fsid" internally).
+                    // partition_id in the profile does not work at all, so we copy
+                    // that value to filesystem_id
+                    p["filesystem_id"] = p["partition_id"]:0;
+                }
                 return p;
             });
             newPart = add( newPart, d );
