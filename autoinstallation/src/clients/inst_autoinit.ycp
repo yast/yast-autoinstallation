@@ -1,0 +1,210 @@
+/**
+ * File:	clients/inst_autoinit.ycp
+ * Package:	Auto-installation
+ * Summary:	Parses XML Profile for automatic installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+    textdomain "autoinst";
+
+    import "Installation";
+    import "AutoInstall";
+    import "AutoinstConfig";
+    import "ProfileLocation";
+    import "AutoInstallRules";
+    import "Progress";
+    import "Report";
+    import "Language";
+    import "Console";
+    import "Profile";
+    import "Arch";
+    import "Call";
+
+    import "Popup";
+
+    include "autoinstall/autoinst_dialogs.ycp";
+    define symbol processProfile() {
+        Progress::NextStage();
+        // Initialize Rules
+        Progress::Title(AutoinstConfig::message);
+        AutoInstallRules::Init();
+        boolean ret = false;
+        Progress::NextStep();
+        Progress::Title(_("Processing Profiles and Rules"));
+        while (true)
+        {
+            boolean r = ProfileLocation::Process();
+            if (r)
+            {
+                break;
+            }
+            else {
+                string newURI = ProfileSourceDialog(AutoinstConfig::OriginalURI);
+                if ( newURI == "")
+                {
+                    return `abort;
+                }
+                else
+                {
+                    AutoinstConfig::ParseCmdLine(newURI);
+                    AutoinstConfig::SetProtocolMessage();
+                    continue;
+                }
+            }
+        }
+
+        /*
+        if (!ProfileLocation::Process())
+        {
+	y2error("Aborting...");
+	return `abort;
+        }
+        */
+
+        sleep(1000);
+
+
+        if(UI::PollInput() == `abort)
+            if (Popup::ConfirmAbort (`painless))
+                return `abort;
+
+        Progress::NextStage();
+
+        //
+        // Set reporting behaviour to default, changed later if required
+        //
+        Report::LogMessages(true);
+        Report::LogErrors(true);
+        Report::LogWarnings(true);
+
+        if(UI::PollInput() == `abort)
+            if (Popup::ConfirmAbort (`painless))
+                return `abort;
+
+        Progress::NextStage();
+        Progress::Title( _("Parsing control file"));
+        if (! Profile::ReadXML( AutoinstConfig::xml_tmpfile ) || Profile::current == $[]  || Profile::current == nil)
+        {
+	Popup::Error(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+        return `abort;
+        }
+
+        y2debug ("Autoinstall control file %1",  Profile::current );
+
+
+        Progress::NextStage();
+        Progress::Title(_("Initial Configuration"));
+        Report::Import(Profile::current["report"]:$[]);
+
+        //
+        // Copy the control file for easy access by user to  a pre-defined
+        // directory
+        //
+        SCR::Execute(.target.bash, sformat("cp %1 %2/autoinst.xml",  AutoinstConfig::xml_tmpfile, AutoinstConfig::profile_dir));
+        return `ok;
+    }
+
+    Console::Init ();
+
+    string help_text = _("<p>
+Please wait while the system is prepared for autoinstallation.</p>
+");
+    list<string> progress_stages =
+	[
+	 _("Probe hardware"),
+	 _("Retrieve & Read Control File"),
+	 _("Process Profiles and Rules"),
+	 _("Parse control file"),
+	 _("Set up language")
+	 ];
+    boolean profileFetched = false;
+
+    Progress::New(
+		  _("Preparing System for Automatic Installation"),
+		  "",     // progress_title
+		  7 ,	// progress bar length
+		  progress_stages,
+		  [],
+		  help_text );
+    Progress::NextStage();
+    Progress::Title(_("Preprobing stage"));
+    y2milestone("pre probing");
+
+    if( Arch::s390 () && AutoinstConfig::remoteProfile == true ) {
+        y2milestone("arch=s390 and remote_profile=true");
+        symbol ret = processProfile();
+        if( ret != `ok ) {
+            return ret;
+        }
+        y2milestone("processProfile=ok");
+        profileFetched = true;
+
+        // FIXME: the hardcoded stuff should be in the control.xml later
+        if( haskey(Profile::current["configure"]:$[], "dasd") ) {
+            y2milestone("dasd found");
+            Call::Function("dasd_auto", ["Import", Profile::current["configure","dasd"]:$[] ]);
+        }
+        if( haskey(Profile::current["configure"]:$[], "zfcp") ) {
+            y2milestone("zfcp found");
+            Call::Function("zfcp_auto", ["Import", Profile::current["configure","zfcp"]:$[] ]);
+        }
+    }
+
+    Progress::Title(_("Probing hardware..."));
+    WFM::CallFunction("inst_startup", [] );
+
+    if( ! profileFetched ) {
+        symbol ret = processProfile();
+        if( ret != `ok ) {
+            return ret;
+        }
+    }
+
+    if(UI::PollInput() == `abort)
+        if (Popup::ConfirmAbort (`painless))
+            return `abort;
+
+    // AutoInstall::ProcessSpecialResources();
+
+    boolean use_utf8 = true;		// utf8 is default
+
+    map displayinfo = UI::GetDisplayInfo();
+    if ( ! displayinfo["HasFullUtf8Support"]:true )
+    {
+	use_utf8 = false;		// fallback to ascii
+    }
+
+
+    //
+    // Set it in the Language module.
+    //
+    Progress::NextStep();
+    Progress::Title(_("Configuring language..."));
+    Language::Import( Profile::current["language"]:$[] );
+
+    //
+    // Set Console font
+    //
+    Installation::encoding = Console::SelectFont( Language::language );
+
+    if (displayinfo["HasFullUtf8Support"]:true)
+    {
+        Installation::encoding = "UTF-8";
+    }
+
+    UI::SetLanguage (Language::language, Installation::encoding);
+    WFM::SetLanguage (Language::language, "UTF-8");
+
+    sleep(1000);
+    Progress::Finish();
+
+    return `next;
+}

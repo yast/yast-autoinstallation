@@ -1,0 +1,126 @@
+/**
+ * File:        clients/ask.ycp
+ * Package:     Auto-installation
+ * Author:      Uwe Gansert <ug@suse.de>
+ * Summary:     ask for some values in the profile
+ *
+ * Changes:
+ * $Id$
+ */
+
+{
+    import "Profile";
+    import "UI";
+    import "Label";
+    import "Stage";
+    import "Popup";
+
+    define boolean askDialog() {
+        boolean mod = false;
+        foreach( map ask, filter( map m, Profile::current["general","ask-list"]:[], ``{
+                                        if( Stage::initial() && m["stage"]:"initial" == "initial" ) {
+                                            return true;
+                                        } else if( Stage::cont() && m["stage"]:"initial" == "cont" ) {
+                                            return true;
+                                        }
+                                        return false;
+                                    }), ``{
+            list<string> position = splitstring( ask["path"]:"", "," );
+            string pathStr  = ask["path"]:"";
+            string type     = ask["type"]:"";
+            string question = ask["question"]:pathStr;
+            string helptext = ask["help"]:"";
+            string title    = ask["title"]:"";
+            list< map<string,any> > s  = ask["selection"]:[];
+            mod = true;
+
+            term dlg = `Dummy();
+            if( type == "boolean" ) {
+                boolean on=(ask["default"]:nil=="true")?(true):(false);
+                dlg = `CheckBox(`id(`entry), question,on );
+            } else if( type == "symbol" ) {
+                list<any> dummy = [];
+                foreach( map<string,any> e, s, ``{
+                    boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
+                    dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
+                });
+                dlg = `ComboBox( `id(`entry), question, dummy );
+            } else {
+                if( ask["password"]:false == true ) {
+                    dlg = `VBox(
+                             `Password(`id(`entry), question),
+                             `Password(`id(`pw2), question)
+                            );
+                } else {
+                    if( haskey( ask, "selection" ) ) {
+                        list<any> dummy = [];
+                        foreach( map<string,any> e, s, ``{
+                            boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
+                            dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"",on) );
+                        });
+                        dlg = `ComboBox( `id(`entry), question, dummy );
+                    } else {
+                        dlg = `TextEntry(`id(`entry), question, ask["default"]:"" );
+                    }
+                }
+            }
+
+            UI::OpenDialog(
+                       `opt(`decorated  ),
+                       `HBox(
+                         `HWeight(30, `RichText( helptext )),
+                         `HStretch(),
+                         `HSpacing(1),
+                         `HWeight(70,
+                              `VBox(
+                                `Heading( title ),
+                                `VSpacing(1),
+                                `VStretch(),
+                                `HBox(
+                                  dlg
+                                  ),
+                                `VSpacing(1),
+                                `VStretch(),
+                                `HBox(
+                                  `PushButton(`id(`ok),  Label::OKButton() )
+                                  )
+                                )
+                              ),
+                         `HSpacing(1),
+                         `HStretch()
+                         )
+                       );
+            while (true) {
+                any ret = UI::UserInput();
+                if( ret == `ok ) {
+                    any val = UI::QueryWidget(`id(`entry),  `Value);
+                    if( ask["type"]:"string" == "integer" ) {
+                        val = tointeger((string)val);
+                    }
+                    if( ask["password"]:false == true ) {
+                        string pass2 = (string)UI::QueryWidget(`id(`pw2),  `Value);
+                        if( pass2 != (string)val ) {
+                            Popup::Error("The two passwords mismatch.");
+                            continue;
+                        }
+                    }
+                    y2milestone("question=%1 was answered with val=%2",question, val);
+                    list<any> pos = [];
+                    foreach( string p, position, ``{
+                        if( regexpmatch( p, "^[1,2,3,4,5,6,7,8,9,0]+$" ) ) {
+                            integer index = tointeger(p);
+                            pos = add(pos, index);
+                        } else {
+                            pos = add(pos, p);
+                        }
+                    });
+                    Profile::current = Profile::setElementByList( pos, val, Profile::current );
+                    break;
+                }
+            }
+            UI::CloseDialog();
+        });
+        return mod;
+    }
+}
+

@@ -1,0 +1,34 @@
+# <!ELEMENT group (gid, group_password, groupname, userlist)>
+
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+group_password = element group_password { text }
+groupname = element groupname { text }
+groups =
+  element groups {
+    attribute config:type { text },
+    group+
+  }
+userlist = element userlist { text }
+expire = element expire { text }
+inactive = element inactive { text }
+skel = element skel { text }
+user_defaults =
+  element user_defaults {
+    expire?, group?, home?, inactive?, shell?, skel?
+  }
+gid =
+  element gid { INTEGER }
+encrypted =
+  element encrypted { BOOLEAN }
+fullname = element fullname { text }
+user_password = element user_password { text }
+username = element username { text }
+uid = element uid { text }
+users =
+  element users {
+    LIST,
+    user*
+  }

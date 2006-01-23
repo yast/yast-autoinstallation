@@ -1,0 +1,575 @@
+/**
+ * File:	modules/AutoinstStorage.ycp
+ * Module:	Auto-Installation
+ * Summary:	Storage
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    module "AutoinstStorage";
+    textdomain "autoinst";
+
+    import "Storage";
+    import "RootPart";
+    import "Partitions";
+    import "FileSystems";
+    import "Summary";
+    import "Storage";
+    import "Partitions";  
+    import "Popup";
+
+
+
+    // Read existing fstab and format partitions, but dont create anything
+    // Use same mountpoints etc.
+    global boolean read_fstab = false;
+
+    // Fstab options
+    global map fstab = $[];
+
+    // Show warning for /boot on raid
+    global boolean BootRaidWarning = true;
+
+    // Show warning for /boot on lvm
+    global boolean BootLVMWarning = true;
+
+    // Show warning for /boot cyl <1024
+    global boolean BootCylWarning = true;
+
+    // Partition plan as parsed from control file
+    global list<map> AutoPartPlan = [];
+
+    // Prepared target map from parsed data
+    global map<string, map> AutoTargetMap = $[];
+
+    /* default value of settings modified */
+    global boolean modified = false;
+
+    global map<string,list> raid2device = $[];
+
+    /**
+     * Function sets internal variable, which indicates, that any
+     * settings were modified, to "true"
+     */
+    global define void SetModified ()
+    {
+        y2milestone("SetModified");
+        modified = true;
+    }
+
+    /**
+     * Functions which returns if the settings were modified
+     * @return boolean  settings were modified
+     */
+    global define boolean GetModified ()
+    {
+        return modified;
+    }
+
+
+    include "autoinstall/autopart.ycp";
+    include "autoinstall/autoinst_dialogs.ycp";
+
+
+    /**
+     * Pre-process partition plan and prepare for creating partitions.
+     * @return void
+     */
+    define map<string, map>  set_devices(list<map> storage_config ) {
+    y2milestone("entering set_devices with %1",storage_config);	
+	boolean first_set = false;
+        boolean failed = false;
+	map<string, map> auto_targetmap =  listmap (map drive, storage_config, ``{
+	    string device = "";
+	    y2milestone("Working on drive: %1", drive);
+
+	    // FIXME: Check if physical drives > 1
+	    if (drive["device"]:"" == "ask"  )
+	    {
+		string dev = DiskSelectionDialog();
+		if (dev != nil)
+		{
+		    first_set = true;
+		    device = dev;
+		}	
+
+		return  $[device: drive ];
+	    }
+
+	    if (!first_set 
+		&& ( drive["device"]:"" == ""  
+		     || drive["device"]:"" == "ask")
+		)
+	    {
+		device = Storage::GetPartDisk();
+                y2milestone("device: %1", device );
+		first_set = true;
+		return $[device: drive ];
+	    }
+	    else if (drive["device"]:"" != "")
+	    {	
+		string dev = drive["device"]:"";
+                if (dev == "") {
+                    dev = "error";
+                    y2error("Missing device name in partitioning plan");
+                    failed = true;
+                }
+
+		return $[dev: drive ];
+	    }
+	    
+	});
+
+        if (failed)
+            return nil;
+        
+	auto_targetmap =  mapmap (string device, map d, auto_targetmap, ``{
+            // Convert from Old Style
+            if (haskey(d, "use"))
+            {
+               y2milestone("converting from \"use\" to new style: %1", device);
+               if (d["use"]:"" == "free") {
+                   d["prefer_remove"] = false;
+               } else if (d["use"]:"" == "all" ) {
+                   d["prefer_remove"] = true;
+               } else if (d["use"]:"" == "linux" ) {
+                   d["keep_partition_num"] = GetNoneLinuxPartitions(device);
+                   d["prefer_remove"] = true;
+               } else {
+		    list<string> uselist = filter(string s,
+				splitstring(d["use"]:"", ","), ``(s!=""));
+                    y2milestone("uselist: %1", uselist);
+                    list<integer> keeplist = [];
+                    list<integer> all = GetAllPartitions(device);
+                    y2milestone("all list: %1", all);
+                    foreach(integer i , all, ``{
+                            if (!contains(uselist, sformat("%1", i)))
+                                keeplist=add(keeplist,i);
+                        });
+                    y2milestone("keeplist: %1", keeplist);
+                    d["keep_partition_num"] = keeplist;
+                    
+                    if (size(keeplist) > 0 )
+                        d["prefer_remove"] = true;
+               }
+            }
+            // see if <usepart> is used and add the partitions to <keep_partition_num>
+            foreach(map p, d["partitions"]:[], ``{
+                    if (p["usepart"]:-1 != -1 ){
+                        d["keep_partition_num"] = add(d["keep_partition_num"]:[], p["usepart"]:-1);
+                    }
+                    });
+            d["keep_partition_num"] = toset(d["keep_partition_num"]:[]);
+
+            return($[device:d]);
+            });
+
+	y2milestone("processed autoyast partition plan: %1", auto_targetmap );
+	return auto_targetmap;
+    }
+
+    global define list GetRaidDevices (string dev, map<string,map> tm) {
+        list<map> ret = [];
+        foreach( string k, map d, tm, ``{
+            if( d["type"]:`CT_UNKNOWN == `CT_DISK ) {
+                list tmp = filter( map p, d["partitions"]:[],
+                                    ``( p["raid_name"]:"" == dev ) );
+                ret = (list<map>)union( ret, tmp );
+            }
+        });
+        list dlist = maplist( map p, ret, ``{ return p["device"]:""; } );
+        y2milestone("GetRaidDevices dlist = %1 and ret = %2", dlist, ret);
+        return dlist;
+    }
+
+    global define void SearchRaids (map<string,map> tm) {
+        //raid2device = $[];
+        foreach( string k, map d, tm, ``{
+            if( d["type"]:`CT_UNKNOWN == `CT_DISK ) {
+                list<map> tmp = filter( map p, d["partitions"]:[],
+                                    ``( p["raid_name"]:"" != "" ) );
+                list<string> devMd = maplist( map p, tmp, ``{ return p["raid_name"]:""; } );
+                foreach( string dev, devMd, ``{
+                    if( ! haskey( raid2device, dev ) ) {
+                        raid2device[dev] = GetRaidDevices(dev,tm);
+                    } else {
+                        foreach( string k, (list<string>)GetRaidDevices(dev,tm), ``{
+                             raid2device[dev] = add(raid2device[dev]:[],k);
+                        });
+                    }
+                });
+            }
+        });
+        y2milestone("SearchRaids raid2device = %1", raid2device);
+    }
+
+    /**
+     * Dump the settings to a map, for autoinstallation use.
+     * @return list
+     */
+    global define list<map> Export()
+    {
+        y2milestone("entering Export");
+	list<map> clean_drives = maplist(map d,  AutoPartPlan, ``{
+	    list p = maplist(map part, d["partitions"]:[] , ``{
+		if (haskey(part, "fsid"))
+		{
+		    part = remove(part, "fsid");
+		}
+		if (haskey(part, "used_fs")) {
+		    part = remove(part, "used_fs");
+		}
+		return part;
+	    });
+	    d["partitions"] = p;
+
+	    // this is to delete the dummy "auto" filled in by UI
+	    if( haskey(d,"device") && d["device"]:"" == "auto" ) {
+		d = remove(d, "device");
+		y2debug("device 'auto' dropped");
+		
+	    }
+	    return d;
+	});
+
+	return clean_drives;
+    }
+
+    /**
+     * if mountby is used, we will search for the matching
+     * partition here.
+     * @return list
+     */
+    global define list<map> mountBy(list<map> settings) {
+        map <string, map> tm = Storage::GetTargetMap();
+        y2milestone("Storage::GetTargetMap returns %1",tm);
+        settings = maplist( map d, settings, ``{
+            string device = d["device"]:"";
+            d["partitions"] = maplist( map p, d["partitions"]:[], ``{
+                string mountby = "";
+                if( haskey(p, "mountby") ) {
+                    if( p["mountby"]:`none == `label ) {
+                        mountby = "label";
+                    } else if( p["mountby"]:`none == `uuid ) {
+                        mountby = "uuid";
+                    } else {
+                        y2milestone("unknown mountby parameter '%1' will be ignored",p["mountby"]:`none);
+                    }
+                }
+                if( mountby != "" ) {
+                    string label = p[mountby]:"";
+                    y2milestone("mountby found for %1=%2 in part=%3",mountby,label,p);
+                    map target = tm[device]:$[];
+                    if( device == "" ) {
+                        y2milestone("searching for the device by %1",mountby);
+                        foreach( string deviceName, map tmp_target, tm, ``{
+                            foreach( map targetPart, tmp_target["partitions"]:[], ``{
+                                if( targetPart[mountby]:"" == label ) {
+                                    target = tmp_target;
+                                    device = deviceName;
+                                    y2milestone("device=%1 found",device);
+                                    break;
+                                }
+                            });
+                        });
+                    }
+                    foreach( map targetPart, target["partitions"]:[], ``{
+                        if( targetPart[mountby]:"" == label ) {
+                            y2milestone("%1 found in targetmap",mountby);
+                            d["device"] = device; //FIXME: for some reason this does not work
+                            p["partition_nr"] = targetPart["nr"]:0;
+                            p["usepart"] = targetPart["nr"]:0;
+                        }
+                    });
+                }
+                return p;
+            });
+            return d;
+        });
+        y2milestone("after mountBy settings=%1",settings);
+        return settings;
+    }
+
+    /**
+     * Get all the configuration from a map.
+     * When called by inst_auto<module name> (preparing autoinstallation data)
+     * the list may be empty.
+     * @param settings a list	[...]
+     * @return	boolean success
+     */
+    global define boolean Import(list<map> settings)
+    {
+        y2milestone("entering Import with %1", settings);
+        if (Mode::autoinst()) {
+            settings = mountBy(settings);
+    	    AutoPartPlan = preprocess_partition_config(settings);
+        } else {
+	    settings = maplist( map d, settings, ``{
+		if( ! haskey(d,"device") ) {
+		    // this is just to satisfy the UI
+		    d = add( d, "device", "auto" );
+                    y2debug("device 'auto' added");
+                }
+                return d;
+	    });
+            AutoPartPlan = settings;
+        }
+	y2milestone("AutoPartPlan: %1", AutoPartPlan );
+
+	return true;
+    }
+
+    /**
+     * Import Fstab data
+     * @param settings Settings Map
+     * @return	boolean true on success
+     */
+    global define boolean ImportAdvanced(map settings)
+    {
+        y2milestone("entering ImportAdvanced with %1", settings);
+        fstab = settings["fstab"]:$[];
+        read_fstab = fstab["use_existing_fstab"]:false;
+
+        //AutoinstLVM::ZeroNewPartitions = settings["zero_new_partitions"]:true;
+	return true;
+    }
+
+    /**
+     * return Summary of configuration
+     * @return  string configuration summary dialog
+     */
+    global define string Summary()
+    {
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Drives"));
+	integer num = size(AutoPartPlan);
+	summary = Summary::AddLine( summary, sformat(_("Total of %1 drive", "Total of %1 drives", num), num));
+	summary = Summary::OpenList(summary);
+	foreach(map drive, AutoPartPlan, ``{
+	    summary = Summary::AddListItem(summary, drive["device"]:_("No specific device configured") );
+	});
+	summary = Summary::CloseList(summary);
+	return summary;
+    }
+
+    /**
+     * Handle /etc/fstab usage
+     * @return boolean
+     */
+    define boolean handle_fstab()
+    {
+        y2milestone("entering handle_fstab");
+
+        if (!RootPart::didSearchForRootPartitions)
+        {
+            UI::OpenDialog (`opt(`decorated ),
+                            `Label(_("Evaluating root partition. One moment please...")));
+            RootPart::FindRootPartitions ();
+            UI::CloseDialog ();
+        }
+
+        if (RootPart::numberOfValidRootPartitions == 0)
+        {
+            // a popup
+            Popup::Message(_("No Linux root partition found."));
+            return false;
+        }
+
+        // We must only change RootPart::selectedRootPartition if booting
+        // is inevitable.
+        string rp = fstab["root_partition"]:"";
+        list<map> fstab_partitions = fstab["partitions"]:[];
+
+        if (RootPart::numberOfValidRootPartitions == 1)
+        {
+            RootPart::SetSelectedToValid ();
+        }
+        else if ( rp == ""){
+            Popup::Message(_("Multiple root partitions found, but you did not configure
+which root partition should be used.  Automatic installation not possible.
+"));
+            return false;
+        }
+        else if ( haskey(RootPart::rootPartitions, rp) 
+                && RootPart::numberOfValidRootPartitions > 1)
+        {
+            RootPart::selectedRootPartition = rp;
+        }
+
+        RootPart::MountPartitions(RootPart::selectedRootPartition);
+        RootPart::SetFormatPartitions (fstab_partitions);
+        RootPart::UnmountPartitions (true);
+        return true;
+    }
+
+    /**
+     * Create partition plan
+     * @return boolean
+     */
+    global define boolean Write() {
+        y2milestone("entering Write");
+        Storage::SetRecursiveRemoval( true );
+
+        if (read_fstab)
+            return (handle_fstab());
+
+	// Find first disk
+	map <string, map> initial_target_map = Storage::GetTargetMap();
+	y2milestone("Target map: %1", initial_target_map );
+	
+	string mbr_disk = "";
+	foreach (string device, map disk, initial_target_map, ``{
+	    if (disk["bios_id"]:"" == "0x80")
+	    {
+		y2milestone ("disk with bios_id 0x80: %1", device);
+		mbr_disk = device;
+	    }
+	});
+	
+	y2milestone("mbr disk: %1", mbr_disk);
+	Storage::SetPartDisk(mbr_disk);
+	
+	AutoTargetMap =  set_devices(AutoPartPlan);
+        if (AutoTargetMap == nil || AutoTargetMap == $[])
+            return false;
+
+	y2milestone("AutoTargetMap: %1",  AutoTargetMap);
+	
+	// return list of available devices
+	list<string> disk_devices = maplist( string k, map e,
+					     filter( string l, map f, Storage::GetTargetMap(),
+						     ``(Storage::IsRealDisk( f ))), ``(k));
+
+	y2milestone("disk_devices: %1", disk_devices );
+
+	boolean result = false;
+
+        foreach (string device, map data, AutoTargetMap, ``{
+                if ( Storage::IsRealDisk( data) &&
+                     data["initialize"]:false == true) {
+                        initial_target_map[device,"delete"] = true;
+                        Storage::SetTargetMap(initial_target_map);
+                }
+        });
+        y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
+
+	foreach (string device, map data, AutoTargetMap,
+		 ``{
+	    if ( Storage::IsRealDisk( data) )
+	    {
+		y2milestone("Creating partition plans for %1", device);
+		
+		map sol = find_matching_disk([device], Storage::GetTargetMap(), data );	  
+		if (size(sol) > 0 )
+		    result = true;
+		    
+		y2milestone("solutions: %1", sol);
+		map <string, map> tm = Storage::GetTargetMap();
+		tm[device] =    process_partition_data(device, sol);
+
+        SearchRaids(tm);
+
+		Storage::SetTargetMap(tm);
+	}
+	});
+
+	return result;
+    }
+
+
+    /**
+     * Build the id for a partition entry in the man table.
+     * @parm disk_dev_name name of the devie e.g.: /dev/hda
+     * @parm nr number of the partition e.g.: 1
+     * @return string e.g.: 01./dev/hda
+     */
+    define string  build_id(  string disk_dev_name , any nr )
+    {
+        return (sformat( "%1:%2", disk_dev_name, nr));
+    }
+
+
+    /**
+     * Partitioning Overview
+     * @return list Overview
+     */
+    global define list Overview()
+    {
+        y2milestone("entering Overview");
+
+	map allfs = FileSystems::GetAllFileSystems(true, true);
+	list drives_table = [];
+
+	string id = "";
+	foreach(map d, AutoPartPlan,
+		``{
+	    id = d["device"]:"";
+	    term a = `item(`id(id), d["device"]:"", "", "", "", "", "" );
+
+	    drives_table = add (drives_table, a);
+
+	    list<map> partitions = d["partitions"]:[];
+	    integer start_id = 1;
+
+	    if ( size (partitions) > 0 )
+	    {
+		foreach(map p, partitions, ``{
+		    id = build_id(d["device"]:"" , start_id );
+
+		    term b = `item(`id(id));
+		    b = add (b, "");
+
+		    b=add(b, p["mount"]:"" );
+		    b=add(b, p["size"]:"");
+
+		    if (!haskey(p, "filesystem_id"))
+		    {
+			b=add(b, Partitions::FsIdToString(p["partition_id"]:131));
+		    }
+		    else
+		    {
+			b=add(b, Partitions::FsIdToString(p["filesystem_id"]:131));
+		    }
+
+		    map fs = allfs[p["filesystem"]:`nothing]:$[];
+		    string fs_name = fs[`name]:"";
+
+		    b=add(b, fs_name);
+
+		    if ( size( p["region"]:[] ) > 0 )
+		    {
+			b=add(b, sformat("%1 - %2", p["region",0]:0, p["region",1]:0));
+		    }
+		    else
+		    {
+			b=add(b, "");
+		    }
+
+		    drives_table = add(drives_table, b);
+		    start_id = start_id + 1;
+		});
+	    }
+
+	});
+
+	integer entries = size(drives_table);
+	list reversed_table = [];
+	integer counter = entries;
+
+	term tmp = `item(`id(`empty));
+
+	while (counter != 0)
+	{
+	    reversed_table=add(reversed_table, drives_table[counter -1]:tmp);
+	    counter = counter - 1;
+
+	}
+	y2debug("table: %1", drives_table );
+	return drives_table;
+
+
+    }
+
+    // EOF
+}

@@ -1,0 +1,306 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Network Based Installation</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="
+	Miscellaneous hardware and system components
+      "
+HREF="createprofile.hardware.html"><LINK
+REL="NEXT"
+TITLE="Rules and Classes"
+HREF="rulesandclass.html"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="createprofile.hardware.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="rulesandclass.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="Bootmanagement"
+></A
+>Chapter 5. Network Based Installation</H1
+><P
+>&#13;    The installation method using AutoYaST provides a way to automatically
+    and identically install groups of systems. The first step when preparing
+    AutoYaST installations is deciding how you want the systems at your
+    site to be installed. For example, the following scenario would be ideal to
+    set up and perform automated installations:
+  </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	You need to install SuSE Linux on 50 new systems.
+      </P
+></LI
+><LI
+><P
+>&#13;	The development department owns 30 out of the 50 new dual processor
+	and SCSI systems, and its systems must be installed as clients with
+	development software.
+      </P
+></LI
+><LI
+><P
+>&#13;	The sales department owns 20 out of the 50 new, uni-processor IDE
+	based systems and its systems must be installed as clients with end user
+	software and office tools.
+      </P
+></LI
+></UL
+><P
+>&#13;    Prerequisites:
+  </P
+><P
+></P
+><UL
+><LI
+><P
+>A boot server on the same Ethernet segment</P
+></LI
+><LI
+><P
+>An install server with the SuSE Linux OS</P
+></LI
+><LI
+><P
+>An AutoYaST configuration server that defines rules and profiles.</P
+></LI
+></UL
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="AEN908"
+>5.1. Configuration Server</A
+></H1
+><P
+>&#13;      A configuration repository holds the control files for multiple
+      machines. The control files can have any file names, which have to
+      specified at the boot time of a client. To avoid supplying the
+      profile name for every client, you can only define the directory of
+      the control files. If a directory is specified, then the client tries
+      to load a file with a name matching it's IP address in HEX
+      mode.  This has the advantage that you will be dealing with
+      consistent file names rather than IPs as file names which might lead to
+      some confusion.
+    </P
+><P
+>&#13;      The configuration repository is the same directory you have to define
+      if you are using the configuration system for creating control files.
+    </P
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN912"
+>5.1.1. <ACRONYM
+CLASS="acronym"
+>HTTP</ACRONYM
+> Repository</A
+></H2
+><P
+>&#13;	To be able to use the <ACRONYM
+CLASS="acronym"
+>HTTP</ACRONYM
+> protocol to retrieve control file while
+	auto-installing, you need a working <ACRONYM
+CLASS="acronym"
+>HTTP</ACRONYM
+> server on the server
+	side. Install <I
+CLASS="emphasis"
+>Apache</I
+> or your favorite web
+	server and enable it using <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+>. Normally the the web server root
+	directory resides in <TT
+CLASS="filename"
+>/srv/www/htdocs</TT
+>
+	so you need to create a subdirectory below the root directory of
+	the web server which will be your configuration repository.
+      </P
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN921"
+>5.1.2. <ACRONYM
+CLASS="acronym"
+>NFS</ACRONYM
+> Repository</A
+></H2
+><P
+>&#13;	Create a directory and make it available via <ACRONYM
+CLASS="acronym"
+>NFS</ACRONYM
+> to the clients by
+	exporting it. This directory may for example be in the same place
+	where you have copied the CDs. (i.e. <TT
+CLASS="filename"
+>/usr/local/SuSE</TT
+>)
+      </P
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN927"
+>5.1.3. <ACRONYM
+CLASS="acronym"
+>TFTP</ACRONYM
+> Repository</A
+></H2
+><P
+>&#13;	By default the <ACRONYM
+CLASS="acronym"
+>TFTP</ACRONYM
+> directory is available under
+	<TT
+CLASS="filename"
+>/tftpboot</TT
+> which can also contain boot images
+	if you are booting over network. Do not forget to enable TFTP in
+	the Inetd configuration file
+	(<TT
+CLASS="filename"
+>/etc/inetd.conf</TT
+>). <I
+CLASS="emphasis"
+>Inetd</I
+> configuration can be
+	done using <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+>.
+      </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="createprofile.hardware.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="rulesandclass.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Miscellaneous hardware and system components</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Rules and Classes</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

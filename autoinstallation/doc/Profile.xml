@@ -1,0 +1,472 @@
+
+<chapter id="Profile">
+  <title>The Control File</title>
+
+  <section id="Profile.Intro">
+    <title>
+      Introduction
+    </title>
+    
+    <para>
+      The control file is in most cases a  configuration description for a
+      single system. It consists of
+      sets of resources with properties including support for complex
+      structures representations such as lists, records,  trees and large
+      embedded or referenced objects.
+    </para>
+
+  </section>
+  <section id="Profile.Format">   
+    <title>
+      Format
+    </title>    
+    
+    <para>
+      The XML configuration format provides a consistent file structure, which is
+      easier to learn and remember when attempting to configure a new system.     
+    </para>
+    <para>
+      Using XML, you can eliminate (nearly) all of the configuration
+      file parsing and error handling - an external  XML parser can do that instead
+      - (especially if it is a validating parser). To make sure the control file is
+      well-formatted and that the syntax is valid, you can run the control file
+      through a validating parser before it is actually used for automatic
+      installation. This is especially required if you prefer to edit the
+      profile manually.
+    </para>
+    
+    <para>
+      The following example shows a control file in XML format:
+    </para>
+    <example><title>XML Control File (Profile)</title>
+      <screen>
+<![CDATA[
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM
+ "/usr/share/autoinstall/dtd/profile.dtd">
+ <profile
+ xmlns="http://www.suse.com/1.0/yast2ns"
+ xmlns:config="http://www.suse.com/1.0/configns">
+ <install> <!-- install is deprecated since SUSE Linux 10.0 -->
+   <partitioning  config:type="list">
+      <drive>
+         <device>/dev/hda</device>
+         <partitions config:type="list">
+           <partition>
+              <filesystem config:type="symbol">ext2</filesystem>
+              <size>520Mb</size>
+              <mount>/</mount>
+           </partition>
+           <partition>
+              <filesystem config:type="symbol">reiser</filesystem>
+              <size>1200Mb</size>
+              <mount>/data</mount>
+           </partition>
+         </partitions>
+      </drive>
+   </partitioning>
+ </install> <!-- install is deprecated since SUSE Linux 10.0 -->
+ <configure> <!-- configure is deprecated since SUSE Linux 10.0 -->
+   <scripts>
+    <pre-scripts>
+     <script> 
+        <interpreter>shell</interpreter>
+	<filename>start.sh</filename>
+         <source>
+]]>
+            &lt;![CDATA[
+#!/bin/sh 
+echo "Starting installation" 
+exit 0
+
+]]&gt;
+<![CDATA[
+         </source>
+     </script>  
+    </pre-scripts>
+   </scripts>
+ </configure> <!-- configure is deprecated since SUSE Linux 10.0 -->
+</profile>
+]]>
+
+      </screen>
+    </example>
+  </section>
+
+
+
+  <section id="Profile.Structure">
+    <title>
+      Structure
+    </title>
+    <para>
+      Below is an example of a basic control file container, the actual content
+      of which is explained later on in this chapter. 
+    </para>
+      
+    <example>
+      <title>Control file container</title>
+      <screen>
+<![CDATA[
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM
+ "/usr/share/autoinstall/dtd/profile.dtd">
+ <profile
+ xmlns="http://www.suse.com/1.0/yast2ns"
+ xmlns:config="http://www.suse.com/1.0/configns">
+ 
+<!-- RESOURCES -->
+
+</profile>
+]]>
+      </screen>
+    </example>
+    <para>
+      The profile element (root node) contains one or more distinct resource
+      elements. The permissible resource elements are specified in the
+      &dtd;. 
+    </para>
+    <para>
+      The root element in the control  file can for example contain the
+      following sub-keywords:
+    </para>              
+    <itemizedlist>
+      <listitem>
+	<para>
+	  installation	(Tag <emphasis>&lt;install&gt;</emphasis> this tag is deprecated since SUSE Linux 10.0 )
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      Bootloader configuration: bootloader device, bootloader location (Tag <emphasis>&lt;bootloader&gt;</emphasis> )
+	    </para>
+	  </listitem>	
+	  <listitem>
+	    <para>
+	      Partitioning: drives and partition plans (Tag <emphasis>&lt;partitioning&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      General: Installation instructions, including all variables related to
+	      the client i.e. display, languages, keyboard etc. (Tag <emphasis>&lt;general&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      Software:  Software and Package selections (Tag <emphasis>&lt;software&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	</itemizedlist>	            
+      </listitem>
+      <listitem>
+	<para>
+	  configuration	 (Tag <emphasis>&lt;configure&gt;</emphasis> this tag is deprecated since SUSE Linux 10.0 )
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      Network:  network configuration for the
+	      client and servers providing services to the target client (Tag <emphasis>&lt;networking&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      Users:  user administration, including first user and root. (Tag <emphasis>&lt;users&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      User scripts: (Tag <emphasis>&lt;scripts&gt;</emphasis> )
+	    </para>
+	  </listitem>
+	 
+
+	</itemizedlist>	  
+	</listitem>
+    </itemizedlist>
+    <section>
+      <title>
+	Resources and Properties
+      </title>
+      <para>
+	A resource element either contains multiple and distinct property and
+	resource elements or contains multiple instances of the same resource
+	element or is empty. The permissible content of a resource element is
+	specified in the &dtd;. 
+      </para>
+      <para>
+	A property element is either empty or contains a literal value. The
+	permissible property elements and values in each resource element are
+	specified in the &dtd;.
+      </para>
+      <para>
+	An element can be either a container of other elements (a resource) or
+	have a literal value (a property), it can never be both. This
+	restriction is specified in the &dtd;. A configuration component with
+	more than one value must either be represented as some kind of embedded
+	list in a property value or as a nested resource.
+      </para>
+    </section>
+    <section>
+      <title>
+	Nested Resources
+      </title>
+      <para>
+	Nested resource elements allow a tree like structure of configuration
+	components to be built to any level.  
+      </para>
+      <example> 
+	<title>
+	  Nested Resources
+	</title>
+	<screen>	 
+<![CDATA[
+...
+<drive> 
+  <device>/dev/hda</device> 
+  <partitions config:type="list"> 
+     <partition> 
+        <size>1000mb</size> 
+        <mount>/</mount> 
+     </partition> 
+     <partition> 
+        <size>250mb</size> 
+        <mount>/tmp</mount> 
+     </partition> 
+  </partitions> 
+</drive>
+....
+]]>
+	</screen>
+      </example>
+
+      <para>
+	In the example above the disk resource consists of a device property
+	and a partitions resource. The partitions resource contains multiple
+	instances of the partition resource. Each partition resource contains a
+	size and mount property.	
+      </para>
+      <para>
+	Although it is specified in the &dtd; that the partitions resource
+	contains multiple instances, it is still required to specify this to
+	avoid wrong data typing in &yast2;. Using the example above, imagine having  a
+	drive with only one partition. This will result in interpreting the
+	partition resource as a property. To avoid this the following syntax
+	must be used when defining multiple instances. For more information
+	about type attributes, see next section.
+      </para>
+      <example> 
+	<title>
+	  Nested Resources with type attributes
+	</title>
+	<screen>	 
+<![CDATA[
+...
+<drive> 
+  <device>/dev/hda</device> 
+  <partitions config:type="list"> 
+     <partition> 
+        <size>1000</size> 
+        <mount>/</mount> 
+     </partition> 
+     <partition> 
+        <size>250</size> 
+        <mount>/tmp</mount> 
+     </partition> 
+  </partitions> 
+</drive>
+....
+]]>
+	</screen>
+      </example>
+    </section>
+
+    <section>
+      <title>
+	Attributes
+      </title>
+      <para>
+	Global profile attributes are used to define meta-data on resources and
+	properties. Attributes are used to define  context switching. They are also used for naming and
+	typing properties as shown in earlier sectionons
+	<footnote>
+	  <para>
+	    Profile attributes are in a separate namespace so they don't have
+	    to be treated as reserved words in the default namespace. New ones
+	    can then be added without having to potentially alter existing
+	    profiles.
+	  </para>
+	</footnote>.
+      </para>
+      <para>
+	Profile attributes are defined in the configuration namespace and must
+	always be prefixed with <emphasis>config:</emphasis> . All profile attributes are
+	optional. Most can be used with both resource and property elements but
+	some can only be used with one type of element which is specified in
+	the &dtd;. 
+      </para>
+   
+    
+    <para>
+      The type of an element is defined using the <emphasis>config:type</emphasis> attribute. The
+      type of a resource element is always RESOURCE , although this can
+      also be made explicit with this attribute (to ensure correct
+      identification of an empty element for example when there is no &dtd;
+      to refer to). A resource element cannot be any other type and this
+      restriction is specified in the &dtd;. The type of a property element
+      determines the interpretation of its literal value. The type of a
+      property element defaults to <emphasis>STRING</emphasis> , as specified in the &dtd;. The
+      full set of permissible types is specified in the &dtd;. 
+    </para>
+     
+    </section>
+  </section>
+
+  <section id="Profile.DTD">
+    <title>
+      The XML Document Type Definition (&dtd;)
+    </title>
+    <section>
+      <title>
+	Introduction
+      </title>
+      <para>
+	
+	The purpose of a &dtd; is to define the legal building blocks of an XML
+	document. It defines the document structure with a list of legal
+	elements. A &dtd; can be declared inline in the XML document, or as an
+	external reference.
+      </para>
+      <para>
+	XML provides an application independent way of sharing data. With a
+	&dtd;, the application can use a standard &dtd; to verify that data that
+	the user supplies is valid. A "Valid" XML document is a "Well Formed"
+	XML document which conforms to the rules of a Document Type Definition
+	(&dtd;).
+      </para>
+      <para>
+	In AutoYaST, a &dtd; should is available to allow users to validate the
+	control files before the installation process is initiated. The &dtd;
+	can be also used with XML editors while editing the control file to
+	avoid later errors.
+      </para>
+      
+     </section>
+    <section>
+      <title>
+	Example &dtd; 
+      </title>
+
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    A <emphasis>drive</emphasis> resource containing a
+	    <emphasis> device</emphasis> property and a <emphasis>partitions</emphasis> property represented as a nested resource.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    A <emphasis>partitions</emphasis> resource containing multiple instances of the <emphasis>partition</emphasis>
+	    property represented as a nested resource. 
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    A <emphasis>partition</emphasis> resource containing  a
+	    <emphasis>size</emphasis> property and a <emphasis>mount</emphasis> property. 
+	  </para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	Below is the XML for an example node view profile for the above tree which
+	includes a &dtd; which validates it. 
+      </para>
+      <example>
+	<title>
+	  Example &dtd;
+	</title>
+	<screen>
+<![CDATA[
+<?xml version="1.0"?> 
+<!DOCTYPE profile [ 
+<!ELEMENT profile (install)>
+<!ELEMENT install (partitioning)> 
+<!ELEMENT partitioning (drive+)> 
+<!ELEMENT drive (device,partitions)> 
+<!ELEMENT device (#PCDATA)> 
+<!ELEMENT partitions (partition*)> 
+<!ELEMENT partition (size,mount)> 
+<!ELEMENT size (#PCDATA)> 
+<!ELEMENT mount (#PCDATA)>
+]> 
+<profile> 
+.....
+  <install>
+    <partitioning config:type="list">
+      <drive> 
+        <device>
+           /dev/hda
+        </device> 
+        <partitions> 
+          <partition> 
+            <size>1000mb</size> 
+            <mount>/</mount> 
+          </partition> 
+          <partition> 
+            <size>250mb</size> 
+            <mount>/tmp</mount> 
+          </partition> 
+        </partitions>
+      </drive> 
+    </partitioning>
+  </install>
+.....
+</profile> 
+]]>
+	</screen>
+      </example>
+    
+    </section>
+    
+    </section>
+
+
+</chapter>
+
+
+
+      <!--
+       Local Variables:
+       mode: xml
+       sgml-parent-document: ("autoyast.xml" "part" "chapter")
+       End:
+      -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

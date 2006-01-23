@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT printer (#PCDATA | default | printcap| cups_installation | server_hostname | spooler )*>
+
+
+<!ELEMENT config (#PCDATA)>
+<!ELEMENT default (#PCDATA)>
+<!ELEMENT create_remote_queue (#PCDATA)>
+<!ATTLIST create_remote_queue config:type CDATA #FIXED 'boolean' >
+<!ELEMENT accepting (#PCDATA)>
+<!ATTLIST accepting config:type CDATA #FIXED 'boolean' >
+<!ELEMENT cups-state (#PCDATA)>
+<!-- <!ELEMENT default (#PCDATA)> -->
+<!-- <!ELEMENT device (#PCDATA)>: redefined -->
+<!ELEMENT device_ieee (#PCDATA)>
+<!ELEMENT ff (#PCDATA)>
+<!ATTLIST ff config:type CDATA #FIXED 'boolean' >
+<!ELEMENT info (#PCDATA)>
+<!ELEMENT job-sheets (#PCDATA)>
+<!ELEMENT lprng-state (#PCDATA)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT ownppd (#PCDATA)>
+<!ELEMENT printcap (printcap_entry*)>
+<!ATTLIST printcap config:type CDATA #FIXED 'list' >
+<!ENTITY % y2_printcap_entry
+    "accepting|allowusers|bannerend|bannerstart|denyusers|ff|info|location|manufacturer|
+    model|name|nick|options|ppd_options|raw|state|uri">
+<!ELEMENT location (#PCDATA)>
+<!ELEMENT bannerstart (#PCDATA)>
+<!ELEMENT bannerend (#PCDATA)>
+<!ELEMENT manufacturer (#PCDATA)>
+<!ELEMENT model (#PCDATA)>
+<!ELEMENT nick (#PCDATA)>
+<!ELEMENT ppd_options (ppd_option*)>
+<!ATTLIST ppd_options config:type CDATA #FIXED 'list' >
+<!ELEMENT ppd_option (key,value)>
+
+<!ELEMENT denyusers (denyuser*)>
+<!ATTLIST denyusers config:type CDATA #FIXED 'list' >
+<!ELEMENT denyuser (#PCDATA)>
+
+<!ELEMENT allowusers (allowuser*)>
+<!ATTLIST allowusers config:type CDATA #FIXED 'list' >
+<!ELEMENT allowuser (#PCDATA)>
+<!ELEMENT printcap_entry (%y2_printcap_entry;)*>
+<!ELEMENT printers (printer+)>
+<!ATTLIST printers config:type CDATA #FIXED 'list' >
+<!ELEMENT cups_installation (#PCDATA)>
+<!ATTLIST cups_installation
+	config:type CDATA #FIXED "symbol"
+>
+<!ELEMENT raw (#PCDATA)>
+<!ATTLIST raw
+	config:type CDATA #REQUIRED
+>
+<!ELEMENT type (#PCDATA)>
+<!ELEMENT spooler (#PCDATA)>
+<!ELEMENT server_hostname (#PCDATA)>
+<!ELEMENT uri (#PCDATA)>

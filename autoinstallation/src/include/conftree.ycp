@@ -1,0 +1,609 @@
+/**
+ * File:		conftree.ycp
+ * Module:		Autoinstall
+ * Summary:		This module handles the configuration for auto-installation
+ * Authors:		Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+
+    textdomain "autoinst";
+    import "HTML";
+    import "XML";
+    import "Call";
+    import "Label";
+    import "Popup";
+    import "Wizard";
+    import "Report";
+    import "AutoinstConfig";
+    import "Profile";
+
+    list<map> Tree = [];
+
+    any SaveAs() {
+        any filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
+        if ( filename != nil && (string)filename!="")
+        {
+            AutoinstConfig::currentFile = (string)filename;
+            if ( Profile::Save( AutoinstConfig::currentFile ))
+            {
+                Popup::Message(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
+                Profile::changed=false;
+                list pathComponents = splitstring(  (string)filename, "/");
+                integer s = size(pathComponents) - 1;
+                string base = pathComponents[s]:"default";
+            }
+            else
+            {
+                Popup::Warning(_("An error occured while saving the file."));
+            }
+        }
+        return `next;
+    }
+
+
+
+    /**
+     * Create a list to be used with the table widget
+     * @param tree data
+     * @return list
+     */
+    define void CreateTreeList( list<map> MenuTreeData, string current ,
+            string parent)
+	``{
+	list<term> tree_items = maplist(map e, MenuTreeData, ``{
+
+	    if (size(e["children"]:[]) > 0 )
+	    {
+		string title=   e["title"]:"" ;
+		string entry = "group@" + e["entry"]:"";
+                Tree = Wizard::AddTreeItem( Tree, parent, title , entry );
+		CreateTreeList(e["children"]:[], current, entry);
+	    }
+	    else
+	    {
+		string title=   e["title"]:"" ;
+		string entry =  "module@" + e["entry"]:"";
+                Tree = Wizard::AddTreeItem( Tree, parent, title , entry );
+	    }
+	});
+        Wizard::CreateTree(Tree, "");
+    }
+
+
+    /**
+     * Module Summary dialog
+     * @return void
+     */
+    define void content_dialog( string resource, map resourceMap, string module_auto) ``{
+
+	string summary =  (string) WFM::CallFunction( module_auto, ["Summary"]);
+	string caption = resourceMap["Name"]:"";
+    string currentFile = AutoinstConfig::currentFile;
+    currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
+    if( size(currentFile) > 0 ) {
+        caption = caption + " - " + currentFile;
+    }
+	string buttonLabel = resourceMap["GenericName"]:"Configure";
+	term contents =
+	    `VBox(
+		  `RichText( `id(`summary), summary),
+		  `HBox(
+			// push button label
+			`PushButton(`id(`reset), _("Reset Confi&guration")),
+			`HStretch(),
+			// push button label
+			`PushButton(`id(`configure), _("Configur&e") )
+			)
+		  );
+	Wizard::SetContents(
+			    caption,
+			    contents, AutoinstConfig::MainHelp(), true, true);
+        map Icons = $[];
+        Y2ModuleConfig::SetDesktopIcon(Icons[resource]:resource);
+	return;
+    }
+
+
+    /**
+     * Reset Configuration
+     * @param resource Resource
+     * @return any
+     */
+    any resetModule(string resource)
+    {
+        y2debug("resource: %1", resource);
+        map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
+	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
+
+        string profile_resource = Y2ModuleConfig::getResource(resource);
+        WFM::CallFunction(module_auto, ["Reset"]);
+
+        return `next;
+    }
+
+    /**
+      * Configure module
+      */
+    any configureModule(string resource)
+    {
+        map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
+        resource = Y2ModuleConfig::getResource(resource);
+        y2debug("resource: %1", resource);
+
+	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
+        y2debug("module_auto: %1", module_auto );
+
+	any original_settings = WFM::CallFunction(module_auto, ["Export"]);
+        any seq = WFM::CallFunction(module_auto, ["Change"]);
+        y2debug("Change response: %1", seq);
+        if (seq == `accept || seq == `next || seq == `finish)
+        {
+	    any new_settings = WFM::CallFunction(module_auto, ["Export"]);
+            if (new_settings == nil)
+            {
+                Popup::Error(_("The module returned invalid data."));
+                WFM::CallFunction(module_auto, ["Import", original_settings]);
+                return `abort;
+            } else {
+                y2debug("original=%1", original_settings);
+                y2debug("new=%1", new_settings);
+                if (original_settings!=new_settings )
+                {
+                    WFM::CallFunction(module_auto, ["SetModified"]);
+                    Profile::changed = true;
+                    Profile::prepare = true;
+                }
+            }
+        } else {
+            WFM::CallFunction(module_auto, ["Import", original_settings]);
+        }
+        return (seq);
+    }
+
+
+    /**
+     * Module
+     * @param string resource
+     * @param map resource map
+     * @param list menu items
+     * Module configuration dialog
+     * @return symbol
+     */
+    define symbol module_contents(string resource)
+    {
+        map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
+	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
+
+        // Show Summary
+	content_dialog( resource , resourceMap, module_auto);
+
+	return `next;
+    }
+
+
+
+    /**
+     * Create tree widget
+     * @param string
+     * @return void
+     */
+    define void CreateTreeWidget(string current ) ``{
+
+	CreateTreeList(Y2ModuleConfig::MenuTreeData, current, "");
+	Wizard::HideNextButton();
+	Wizard::HideBackButton();
+	Wizard::HideAbortButton();
+
+	return;
+    }
+
+
+
+    /**
+     * @return menu term
+     */
+    define void  menus () 
+    {
+        list<map> Menu = [];
+        Menu = Wizard::AddMenu( Menu ,  _("&File"),        "file-menu" );
+        Menu = Wizard::AddMenu( Menu ,  _("&View"),        "view-menu" );
+        Menu = Wizard::AddMenu( Menu ,  _("&Classes"),        "class-menu" );
+        Menu = Wizard::AddMenu( Menu ,  _("&Tools"),        "tools-menu" );
+
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("&New"),
+                    "menu_new"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("&Open"),
+                    "menu_open"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("&Save"),
+                    "menu_save"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("Save &As"),
+                    "menu_saveas"      );
+        Menu = Wizard::AddSubMenu       ( Menu ,  "file-menu", _("Im&port"),
+                    "file-import"   );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-import", _("Import &Kickstart File"),
+                    "menu_kickstart"      );
+        Menu = Wizard::AddMenuEntry     ( Menu , "file-menu" , _("Settin&gs"),
+                "menu_settings" );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("E&xit"),
+                    "menu_exit"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("Configu&ration Tree"),
+                    "menu_tree"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("So&urce"),
+                    "menu_source"     );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "class-menu", _("Cla&sses"),
+                    "menu_classes"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "class-menu", _("Me&rge Classes"),
+                    "menu_merge"      );
+
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "tools-menu", _("Create Reference Pro&file"),
+                    "menu_clone"      );
+        Menu = Wizard::AddMenuEntry     ( Menu ,  "tools-menu", _("Check &Validity of Profile"),
+                    "menu_valid"      );
+        Wizard::CreateMenu(Menu);
+        return;
+    }
+
+    /**
+     * Get Group name
+     */
+    string groupName (string tree_item) {
+        list<string> tok = splitstring(tree_item, "@");
+        string type = tok[0]:"";
+        if (type == "group")
+            return tok[1]:"";
+        else
+            return "";
+    }
+
+    /**
+     * Get module name
+     */
+    string moduleName (string tree_item) {
+        list<string> tok = splitstring(tree_item, "@");
+        string type = tok[0]:"";
+        if (type == "module")
+            return tok[1]:"";
+        else
+            return "";
+    }
+
+    /**
+     * Return HTML list of available modules
+     * @param string
+     * @return term richtext window with modules listed and linked.
+     */
+    term modules (string tree_item) {
+        string html = "";
+        foreach(string k , map v, Y2ModuleConfig::ModuleMap, ``{
+                if (v["X-SuSE-YaST-Group"]:"" == tree_item)
+                {
+                string colored = HTML::Colorize( HTML::Link(v["Name"]:"", "module@"  + k), "#8BC460");
+                html = html + HTML::Heading(colored);
+                html = html + HTML::Para(v["GenericName"]:"");
+                }
+                });
+
+        if (html == "")
+        {
+            html = HTML::Heading(_("No modules available in this group."));
+        }
+        term contents = `RichText(html);
+        return contents;
+    }
+
+
+    /**
+     * Show Source
+     */
+    void ShowSource() {
+        Profile::Prepare();
+        string source = XML::YCPToXMLString(`profile, Profile::current);
+        term sourceView =
+            `RichText( `id(`class_source ),
+                    `opt(`plainText),
+                    source
+                    );
+
+        Wizard::SetTitleIcon("autoyast");
+        Wizard::SetContents(_("Source"),
+                sourceView , AutoinstConfig::MainHelp(), true , true);
+        return;
+    }
+
+    /**
+     * Menu interface
+     * @param list menu items
+     * @return symbol
+     */
+    any MainDialog()
+	``{
+
+        map Icons = $[];
+        Icons["Net_advanced"] = "network_advanced";
+
+        string tree_item ="group@System";
+        term contents = modules("System");
+        Wizard::SetContents(_("Available modules"),
+                   contents, AutoinstConfig::MainHelp(), true , true);
+        Wizard::SetTitleIcon("system");
+        Wizard::SelectTreeItem( tree_item );
+
+	any func_ret = "";
+        any ret = nil;
+
+        while(true)
+        {
+            map event = UI::WaitForEvent();
+            ret = event["ID"]:nil;
+            if (ret == `wizardTree)
+            {
+                ret = UI::QueryWidget(`id(`wizardTree), `CurrentItem);
+            }
+            y2debug("INPUT: %1", ret);
+            if (ret == `cancel)
+                ret = "menu_exit";
+
+            if (ret == `configure)
+            {
+                tree_item = Wizard::QueryTreeItem();
+                y2debug("tree item: %1", tree_item);
+                string modulename=moduleName(tree_item);
+                y2debug("configure module: %1", modulename);
+                if (modulename!="")
+                {
+                    any configret = configureModule(modulename);
+                    y2debug("configureModule ret : %1", configret);
+                    module_contents(modulename);
+                }
+            }
+            else if (ret == `reset)
+            {
+                Profile::prepare = true;
+                y2debug("reset");
+                tree_item = Wizard::QueryTreeItem();
+                string modulename=moduleName(tree_item);
+                y2debug("configure module");
+                if (modulename!="")
+                {
+                    any configret = resetModule(modulename);
+                    y2debug("configureModule ret : %1", configret);
+                    module_contents(modulename);
+                }
+            }
+            else if ( issubstring((string)ret,"module@") || issubstring((string)ret,"group@") )
+            {
+                tree_item = (string)ret;
+                y2debug("tree_item: %1", tree_item );
+                Wizard::SelectTreeItem( tree_item );
+
+                string group=groupName(tree_item);
+                string modulename=moduleName(tree_item);
+
+                contents = `Empty();
+
+                if (group!="" )
+                {
+                    contents = modules(group);
+                    string currentFile = AutoinstConfig::currentFile;
+                    string label = _("Available modules");
+                    if( size(currentFile) > 0 ) {
+                        currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
+                        label = label + " - " + currentFile;
+                    }
+                    Wizard::SetContents(label,
+                        contents, AutoinstConfig::MainHelp(), true , true);
+                    Wizard::SetTitleIcon(Icons[group]:tolower(group));
+                }
+                else if (modulename!="")
+                {
+                    module_contents(modulename);
+                }
+            }
+            else if (ret == "menu_tree") // source -> tree
+            {
+                y2debug("change to tree");
+                tree_item = Wizard::QueryTreeItem();
+                if (tree_item == "")
+                    tree_item = "group@System";
+                y2debug("tree_item: %1", tree_item );
+                string group=groupName(tree_item);
+                string modulename=moduleName(tree_item);
+
+                contents = `Empty();
+
+                if (group!="" )
+                {
+                    contents = modules(group);
+                    Wizard::SetContents(_("Available modules"),
+                        contents, AutoinstConfig::MainHelp(), true , true);
+                    Wizard::SetTitleIcon(Icons["group"]:tolower(group));
+                }
+                else if (modulename!="")
+                {
+                    module_contents(modulename);
+                }
+
+            }
+            else if (ret == "menu_open") // OPEN
+            {
+                any filename = UI::AskForExistingFile( AutoinstConfig::Repository,
+                        "*",
+                        _("Select a file to load."));
+                if (filename != "" && filename != nil)
+                {
+                    AutoinstConfig::currentFile = (string)filename;
+
+                    list pathComponents = splitstring(  (string)filename, "/");
+
+                    integer s = size(pathComponents) -1;
+                    string base = pathComponents[s]:"default";
+                    boolean readOkay = Profile::ReadXML((string)filename);
+                    y2debug("Profile::ReadXML returned %1",readOkay);
+                    if( readOkay ) {
+                        Popup::ShowFeedback(_("Reading configuration data"), _("This may take a while"));
+                        foreach(string p, map d, Profile::ModuleMap, ``{
+                                /* Set resource name, if not using default value */
+                                string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
+                                if (resource == "")
+                                {
+                                    resource = p;
+                                }
+                                y2debug("resource: %1", resource );
+                                string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+                                string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
+                                any rd = Y2ModuleConfig::getResourceData(d
+                                    ,resource);
+                                if (rd!=nil) {
+                                WFM::CallFunction(module_auto, ["Import",
+                                    rd]);
+                                }
+                                });
+                        Popup::ClearFeedback();
+                    } else {
+                        /* opening/parsing the xml file failed */
+                        Popup::Error(_("An error occured while opening/parsing the XML file."));
+                        Profile::Reset();
+                    }
+
+                }
+                if (UI::WidgetExists(`id(`class_source)))
+                {
+                    ShowSource();
+                }
+                else
+                {
+                    tree_item = Wizard::QueryTreeItem();
+                    string group=groupName(tree_item);
+                    string modulename=moduleName(tree_item);
+
+                    contents = `Empty();
+
+                    if (group!="" )
+                    {
+                        contents = modules(group);
+                        string caption = _("Available modules");
+                        string currentFile = AutoinstConfig::currentFile;
+                        currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
+                        if( size(currentFile) > 0 ) {
+                            caption = caption + " - " + currentFile;
+                        }
+                        Wizard::SetContents(caption,
+                                contents, AutoinstConfig::MainHelp(), true , true);
+                        Wizard::SetTitleIcon(Icons[group]:tolower(group));
+                    }
+                    else if (modulename!="")
+                    {
+                        module_contents(modulename);
+                    }
+                }
+                ret = `menu_open;
+            }
+            else if (ret == "menu_source") // Show SOURCE
+            {
+                ShowSource();
+                tree_item = "System";
+                ret = `menu_source;
+            }
+            else if (ret == "menu_save") // SAVE
+            {
+                if (AutoinstConfig::currentFile == "")
+                {
+                    any filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
+                    if (filename !=  nil )
+                    {
+                        AutoinstConfig::currentFile = (string)filename;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+
+                if ( Profile::Save( AutoinstConfig::currentFile ))
+                {
+                    Popup::Message(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
+                    Profile::changed = false;
+                }
+                else
+                {
+                    Popup::Warning(_("An error occured while saving the file."));
+                }
+                ret = `menu_save;
+            }
+            else if (ret == "menu_saveas") // SAVE AS
+            {
+                SaveAs();
+                ret = `menu_saveas;
+            }
+            else if (ret == "menu_new") // NEW
+            {
+                Profile::Reset();
+                foreach(string p, map d, Profile::ModuleMap, {
+                    string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
+                    if (resource == "")
+                        resource = p;
+                    resetModule(resource);
+                });
+                AutoinstConfig::currentFile = "";
+                if (UI::WidgetExists(`id(`class_source))) {
+                    ShowSource();
+                }
+                tree_item = Wizard::QueryTreeItem();
+                string modulename=moduleName(tree_item);
+                module_contents(modulename);
+                ret = `menu_new;
+            }
+            else if (ret == "menu_exit") // EXIT
+            {
+                ret = `menu_exit;
+                if (Profile::changed)
+                {
+                    string current = "";
+                    if (AutoinstConfig::currentFile == "")
+                    {
+                        current = "Untitled";
+                    }
+                    else
+                    {
+                        current = AutoinstConfig::currentFile;
+                    }
+
+                    symbol answer = Popup::AnyQuestion3(_("Control file changed."),
+                            sformat(_("Save the changes to %1?"), current),
+                            Label::YesButton(),
+                            Label::NoButton(),
+                            Label::CancelButton(),
+                            `focus_yes
+                            );
+                    if (answer == `no)
+                    {
+                        break;
+                    }
+                    else if (answer == `yes)
+                    {
+                        SaveAs();
+                        break;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                term s = toterm(ret);
+                ret = (symbol)symbolof(s);
+                break;
+            }
+        }
+	return (symbol)ret;
+
+    }
+}

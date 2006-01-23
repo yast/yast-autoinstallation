@@ -1,0 +1,486 @@
+/**
+ * File:
+ *   modules/AutoinstClone.ycp
+ *
+ * Package:
+ *   Autoinstallation Configuration System
+ *
+ * Summary:
+ *   Create a control file from an exisiting machine
+ *
+ * Authors:
+ *   Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ *
+ *
+ */
+{
+    module "AutoinstClone";
+    import "Mode";
+
+    import "XML";
+    import "Call";
+    import "Profile";
+    import "Y2ModuleConfig";
+    import "Misc";
+    import "Storage";
+    import "AutoinstConfig";
+    import "StorageDevices";
+    import "Storage";
+    import "Partitions";
+    import "Report";
+
+    include "autoinstall/xml.ycp";
+
+    global map Profile = $[];
+
+    integer bytes_per_unit = 0;
+
+
+    // spceial treatment for base resources
+    global list<string> base = [];
+
+    // aditional configuration resources o be cloned
+    global list<string> additional = [];
+
+
+    /**
+     * Constructor
+     */
+    global define void AutoinstClone()
+    {
+	Mode::SetMode ("normal");
+	return;
+    }
+
+    /**
+     * Set root password
+     */
+    define list root() ``{
+	list<map> shadow = (list<map>) SCR::Read(.etc.shadow);
+	map rootacct = (map) filter(map acct, shadow, ``(acct["username"]:"" == "root"))[0]:$[];
+	list users = [];
+	map rootacct_mod = $[];
+	rootacct_mod["user_password"] = rootacct["password"]:"";
+	rootacct_mod["encrypted"] = true;
+	rootacct_mod["username"] = "root";
+	users = add(users, rootacct_mod);
+	return users;
+    }
+
+
+    /**
+     * Find mount points in running system
+     * @param string device name
+     * @param map partition
+     * @param list mount points
+     * @return string
+     */
+    define string findMountpoint(string device, map p, list<map> mounts)
+    {
+	string mountPoint = "";
+	foreach(map mount , mounts, ``{
+	    string m = sformat("%1%2", device ,  p["nr"]:nil);
+	    if (mount["spec"]:"" ==  m )
+	    {
+		mountPoint = mount["file"]:"";
+	    }
+	});
+	return mountPoint;
+    }
+
+    /**
+     * Convert units to size
+     * @param list region
+     * @return integer size
+     */
+    define integer units_to_size (list region)
+    {
+	integer units = (integer) region[1]:0;
+	return (units * bytes_per_unit)  -  bytes_per_unit + 1;
+    };
+
+
+    /**
+     * Create a partition plan for the calling client
+     * @return list partition plan
+     */
+    global define list Partitioning()
+    {
+	Mode::SetMode("normal");
+        StorageDevices::InitDone();
+	map<string, map> StorageMap = eval(Storage::GetTargetMap());
+
+        StorageMap=filter(string d, map p, StorageMap, ``(!issubstring(d, "/dev/evms")));
+	y2debug("Storagemap %1", StorageMap);
+
+	list drives = maplist(string k, map v, StorageMap, ``{
+	    list partitions = [];
+	    list winp = [];
+	    list<integer> usepartitions = [];
+	    foreach(map pe, v["partitions"]:[], ``{
+		map new_pe = $[];
+		boolean skipwin = false;
+		if (haskey(pe,"fsid"))
+		{
+		    integer fsid = pe["fsid"]:131;
+		    list wintypes = union(Partitions::fsid_wintypes, Partitions::fsid_dostypes);
+		    list allwin = union(wintypes, Partitions::fsid_ntfstypes);
+		    if (contains(allwin, fsid))
+		    {
+			y2debug("Windows partitions found: %1", fsid );
+			winp = add(winp, pe["nr"]:0);
+			skipwin = true;
+		    }
+
+		    new_pe["partition_id"] = pe["fsid"]:131;
+		}
+		if (haskey(pe,"region"))
+		{
+		    new_pe["region"] = pe["region"]:[];
+		    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
+		}
+                // LVM Group
+		if (haskey(pe,"used_by_type") && pe["used_by_type"]:`nothing == `UB_LVM)
+		{
+		    new_pe["lvm_group"] = pe["used_by"]:"";
+		}
+
+                // LV
+		if (pe["type"]:`unknown == `lvm )
+		{
+		    new_pe["lv_name"] = pe["name"]:"";
+            new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
+		}
+		if (haskey(pe,"used_by_type") && pe["used_by_type"]:`nothing == `UB_MD)
+		{
+            new_pe["raid_name"] = "/dev/"+pe["used_by"]:"";
+		}
+
+                // Used Filesystem
+                // Raid devices get the filesystem lying on them as
+                // detected_fs!
+		if (haskey(pe,"used_fs") && pe["fsid"]:0 != 253)
+		{
+		    new_pe["filesystem"] = pe["used_fs"]:`reiser;
+                    new_pe["format"] = pe["format"]:true;
+		}
+
+		if (haskey(pe,"nr") && pe["type"]:`unknown != `lvm)
+		{
+		    if (!skipwin)
+		    {
+			y2debug("Adding partition to be used: %1",  pe["nr"]:0);
+			usepartitions = add(usepartitions, pe["nr"]:0);
+		    }
+		    new_pe["partition_nr"] = pe["nr"]:0;
+		}
+                if (pe["mount"]:"" != "")
+                {
+	            new_pe["mount"] = pe["mount"]:"";
+                }
+                if (k == "/dev/md")
+                {
+                    map raid_options = $[];
+                    raid_options["persistent_superblock"] =
+                            pe["persistent_superblock"]:false;
+                    raid_options["raid_type"] = pe["raid_type"]:"raid0";
+                    new_pe["raid_options"] = raid_options;
+                }
+
+		if (!skipwin && new_pe["partition_id"]:0 != 15 ) {
+		    partitions=add(partitions,new_pe);
+		}
+	    });
+
+
+	    map drive = $[];
+	    drive["partitions"]	= partitions;
+            drive["device"]	= k;
+            if( v["type"]:`CT_UNKNOWN==`CT_LVM)
+            {
+                drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
+                drive["is_lvm_vg"] = true;
+            }
+            if (haskey(v,"lvm2") && v["lvm2"]:false)
+            {
+                drive["lvm2"] = true;
+            }
+
+	    if (size(partitions) > 0 )
+	    {
+		if (size(winp) == 0 )
+		{
+		    drive["use"]	= "all";
+		}
+		else
+		{
+		    list<string> up = [];
+		    foreach(integer i, usepartitions, ``{
+			up = add (up, sformat("%1", i));
+		    });
+		    drive["use"]	= mergestring(up, ",");
+		}
+	    }
+
+	    return drive;
+	});
+	Mode::SetMode("autoinst_config");
+	return drives;
+    }
+
+
+    /**
+     * Return list of software packages of calling client
+     * @return map map of installed software package
+     *	"base" -> string (base selection)
+     *		"addons" -> list<string> addon selections
+     *		"packages" -> list<string> user selected packages
+     */
+    global define map<string, any > Software()
+    {
+	boolean ret = Pkg::TargetInit("/", false);
+
+	base = Pkg::GetSelections(`installed, "base");
+	list<string> addons =  Pkg::GetSelections(`installed, "addon");
+	list<string> inst = Pkg::GetPackages(`installed, true);
+
+	Pkg::TargetFinish ();
+
+	string tmproot = AutoinstConfig::tmpDir;
+	SCR::Execute(.target.mkdir, tmproot + "/rootclone");
+	Pkg::TargetInit( tmproot + "/rootclone", true);
+	y2debug("SourceStartCache: %1", Pkg::SourceStartCache(false));
+
+	Pkg::SourceStartManager(true);
+
+	Pkg::SetSelection( base[0]:"" );
+	foreach(string addon, addons, ``{
+	    Pkg::SetSelection( addon );
+        });
+
+	Pkg::ActivateSelections();
+
+	list<string> sel =  Pkg::GetPackages(`selected, true);
+	foreach(string p, inst, ``{
+	    if (!contains(sel, p))
+		Pkg::PkgInstall(p);
+	});
+
+	list<string> packages = Pkg::FilterPackages(false, false, true, true);
+	Pkg::TargetFinish ();
+	// Remove kernel packages
+	list<string> userpackages =  filter(string pkg, packages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml"));
+
+	map<string, any > software = $[];
+	software["base"] = base[0]:"";
+	software["addons"] = addons;
+	software["packages"] = userpackages;
+	return software;
+    }
+
+
+    /**
+     * Bootloader options
+     * @return map bootloader options
+     */
+    global define map Bootloader()
+    {
+	map bootloader = $[];
+
+	boolean readret = (boolean)Call::Function("bootloader_auto", ["Read", $[] ]);
+	if (readret)
+	{
+	    bootloader = (map)Call::Function("bootloader_auto", ["Export", $[] ]);
+	}
+
+	return bootloader;
+
+    };
+
+
+    /**
+     * General options
+     * @return map general options
+     */
+    global define map General()
+    {
+	import "Language";
+	import "Mode";
+	Mode::SetMode ("normal");
+	import "Keyboard";
+	import "Timezone";
+
+	map general = $[];
+	general["language"] = Language::language;
+
+	map keyboard = $[];
+	y2debug("Current Keyboard: %1", Keyboard::default_kbd);
+	keyboard["keymap"]  = Keyboard::current_kbd;
+
+	general["keyboard"] = keyboard;
+	map clock = $[];
+	clock["timezone"]   = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, Timezone::timezone );
+	string hwclock = "";
+	if ( size( Storage::GetWinPrimPartitions( Storage::GetTargetMap() ) ) > 0 )
+	{
+	    // Win partitions present ==> assume local time.
+	    hwclock = "--localtime";
+	    y2debug("Assuming local time");
+	}
+	else
+	{
+	    // No Win partitions ==> assume UTC.
+	    hwclock = "-u";
+	    y2debug("Assuming UTC");
+	}
+	string hwc   = Misc::SysconfigRead(.sysconfig.clock.HWCLOCK, hwclock);
+	if (hwc == "--localtime")
+	{
+	    clock["hwclock"] = "localtime";
+	}
+	else if (hwc == "-u")
+	{
+	    clock["hwclock"] = "UTC";
+	}
+	else
+	{
+	    clock["hwclock"] = "";
+	}
+	general["clock"]    = clock;
+
+	map mouse = $[];
+	mouse["id"]	    = Misc::SysconfigRead(.sysconfig.mouse.YAST_MOUSE, "probe" );
+	general["mouse"]    = mouse;
+        map mode = $[];
+        mode["confirm"] = false;
+        general["mode"] = mode;
+
+	Mode::SetMode ("autoinst_config");
+	return general;
+    }
+
+
+
+
+
+     /**
+      * Clone a Resource
+      * @param string resource
+      * @param map resource name
+      * @return list
+      */
+     define boolean CommonClone(string resource, map resourceMap)
+     {
+
+	 string data_type = resourceMap["X-SuSE-YaST-AutoInstDataType"]:"map";
+	 string auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"";
+	 resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:resource;
+
+         Call::Function(auto , ["Read"]);
+         Call::Function(auto , ["SetModified"]);
+
+	 return true;
+
+     }
+
+
+
+     /**
+      * Create a list of clonable resources
+      * @return list list to be used in widgets
+      */
+     global define list createClonableList()
+    {
+	 list items = [];
+	 foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
+	     y2debug("r: %1 => %2", def_resource, resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" );
+	     boolean clonable = ( resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" == "true" );
+	     if (clonable)
+	     {
+		 // Set resource name, if not using default value
+		 string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
+                 if (resource == "")
+                    resource = def_resource;
+		 string name = resourceMap["Name"]:"";
+		 if (resource != "")
+		 {
+		     items = add(items, `item(`id(resource), name ) );
+		 }
+		 else
+		 {
+		     items = add(items, `item(`id(def_resource), name ) );
+		 }
+	     }
+	 });
+	 return items;
+     }
+
+    /**
+     * Build the profile
+     * @return void
+     */
+    global define void Process()
+    {
+	y2debug("Additional resources: %1 %2", base, additional);
+	Profile::Reset();
+	foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
+
+	    // Set resource name, if not using default value
+	    string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
+            if (resource == "")
+                resource = def_resource;
+	    y2debug("current resource: %1", resource);
+	    if (contains(additional, resource))
+	    {
+		boolean ret = CommonClone(def_resource, resourceMap);
+	    }
+
+	});
+
+        Call::Function("storage_auto" , ["Import", Partitioning()]);
+        Call::Function("storage_auto" , ["SetModified"]);
+
+        Call::Function("software_auto" , ["Import", Software()]);
+        Call::Function("software_auto" , ["SetModified"]);
+
+        Call::Function("bootloader_auto" , ["Import", Bootloader()]);
+        Call::Function("bootloader_auto" , ["SetModified"]);
+
+        Call::Function("general_auto" , ["Import", General()]);
+        Call::Function("general_auto" , ["SetModified"]);
+
+        Call::Function("report_auto" , ["Import", Report::Export()]);
+        Call::Function("report_auto" , ["SetModified"]);
+
+	Profile::Prepare();
+	return;
+    }
+
+    /**
+     * Write the profile to a defined path
+     * @param string outputFile Output file path
+     * @return boolean true on success
+     */
+    global define boolean Write(string outputFile)
+    {
+	Process();
+	boolean ret =  Profile::Save( outputFile );
+	return ret;
+    }
+
+
+    /**
+     * Export profile, Used only from within autoyast2
+     * @return void
+     */
+    global define void Export()
+	``{
+
+	import "Profile";
+	Profile::Reset();
+	Process();
+	return;
+    }
+}

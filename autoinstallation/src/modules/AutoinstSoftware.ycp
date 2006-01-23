@@ -1,0 +1,472 @@
+/**
+ * File:	modules/AutoinstSoftware.ycp
+ * Package:	Autoyast
+ * Summary:	Software
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ *
+ */
+{
+    module "AutoinstSoftware";
+    textdomain "autoinst";
+
+    import "Profile";
+    import "Summary";
+    import "Stage";
+    import "SpaceCalculation";
+    import "Packages";
+    import "Popup";
+    import "Report";
+    import "Kernel";
+    import "AutoinstConfig";
+    import "ProductControl";
+    import "AutoinstImage";
+    import "Storage";
+
+    import "PackageAI";
+
+    global map Software = $[];
+
+    // Base selection
+    global string base = "";
+
+    // Add-on selections
+    global list<string> addons = [];
+
+    // Kernel, force type of kernel to be installed
+    global string kernel = "";
+
+    // Packages that should be installed in continue mode
+    global list<string> post_packages = [];
+
+    global string ft_module = "";
+
+    /* Enable Imaging */
+    boolean imaging = false;
+
+    /* default value of settings modified */
+    global boolean modified = false;
+
+    /**
+     * Function sets internal variable, which indicates, that any
+     * settings were modified, to "true"
+     */
+    global define void SetModified ()
+    {
+        modified = true;
+    }
+
+    /**
+     * Functions which returns if the settings were modified
+     * @return boolean  settings were modified
+     */
+    global define boolean GetModified ()
+    {
+        return modified;
+    }
+
+
+    /**
+     * Import data
+     * @param settings settings to be imported
+     * @return true on success
+     */
+    global define boolean Import(map settings)
+    {
+	Software = settings;
+	base = settings["base"]:"";
+	addons = settings["addons"]:[];
+
+    string notFound = "";
+	Packages::Init(true);
+    foreach( string pack, settings["packages"]:[], ``{
+        if( ! Pkg::IsAvailable(pack) ) {
+            notFound = notFound + pack + "\n";
+        }
+    });
+    if( size(notFound) > 0 ) {
+        y2error("packages not found: %1",notFound);
+        // warning text during the installation. %1 is a list of package names
+        Report::Error( sformat(_("These packages could not be found on the installation source:\n%1"), notFound));
+    }
+
+    PackageAI::toinstall  = settings["packages"]:[];
+	kernel = settings["kernel"]:"";
+	post_packages = settings["post-packages"]:[];
+        PackageAI::toremove  =  settings["remove-packages"]:[];
+
+        /* Imaging */
+        map<string, any> image = settings["system_images"]:$[];
+        imaging = image["enable_multicast_images"]:false;
+        ft_module = image["module_name"]:"";
+        if (settings == $[])
+            modified = false;
+        else
+            modified = true;
+
+	return true;
+    }
+
+    /**
+     * Constructer
+     */
+    global define void AutoinstSoftware()
+    {
+	if ( Stage::cont () )
+	{
+	    Import(Profile::current["software"]:$[]);
+	}
+        return;
+    }
+
+    /**
+     * Export data
+     * @return dumped settings (later acceptable by Import())
+     */
+    global define map Export()
+    {
+	map s = $[];
+	if (base != "")
+	    s["base"] = base ;
+	if (kernel != "")
+	    s["kernel"] = kernel ;
+
+	if (addons != [])
+	    s["addons"] = addons ;
+
+	if (PackageAI::toinstall != [])
+	    s["packages"] = PackageAI::toinstall;
+
+	if (post_packages != [])
+	    s["post-packages"] = post_packages ;
+
+	if (PackageAI::toremove != [])
+	    s["remove-packages"] = PackageAI::toremove;
+
+
+	return (s);
+    }
+
+
+    /**
+     * Add packages needed by modules, i.e. NIS, NFS etc.
+     * @param list of strings packages to add
+     * @return void
+     */
+    global define void AddModulePackages(list<string> module_packages)
+    {
+        PackageAI::toinstall = toset((list<string>)
+                union(PackageAI::toinstall,  module_packages));
+        //
+        // Update profile
+        //
+        Profile::current["software"] = Export();
+        return;
+    }
+
+    /**
+     * Remove packages not needed by modules, i.e. NIS, NFS etc.
+     * @param list of packages to remove
+     * @return void
+     */
+    global define void RemoveModulePackages (list<string> module_packages)
+    {
+        PackageAI::toinstall = filter(string p, PackageAI::toinstall, ``(!contains(module_packages,p)));
+	Profile::current["software"] = Export();
+	return;
+    }
+
+
+
+    /**
+     * Summary
+     * @return Html formatted configuration summary
+     */
+    global define string Summary()
+    {
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Base Selection"));
+	summary = Summary::AddLine(summary, (base != "") ?
+				   base : Summary::NotConfigured());
+	summary = Summary::AddHeader(summary, _("Add-on Selections"));
+	if (size( addons) > 0 )
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(string a, addons, ``{
+		summary = Summary::AddListItem(summary, a);
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	else
+	{
+	    summary = Summary::AddLine(summary, Summary::NotConfigured());
+	}
+	summary = Summary::AddHeader(summary, _("Individually Selected Packages"));
+	summary = Summary::AddLine(summary, sformat("%1",
+                    size(PackageAI::toinstall)));
+
+	summary = Summary::AddHeader(summary, _("Packages to Remove"));
+	summary = Summary::AddLine(summary, sformat("%1",
+                    size(PackageAI::toremove)));
+
+        if (kernel != "")
+        {
+	    summary = Summary::AddHeader(summary, _("Force Kernel Package"));
+	    summary = Summary::AddLine(summary, sformat("%1", kernel));
+        }
+	return summary;
+    }
+    /**
+     * Compute list of packages selected by user and other packages needed for important
+     * configuration modules.
+     * @return list of strings list of packages needed for autoinstallation
+     */
+    global define list<string> autoinstPackages()
+    {
+
+	list<string> allpackages = [];
+
+	// the primary list of packages
+	allpackages = (list<string>) union (allpackages,  PackageAI::toinstall);
+
+	// In autoinst mode, a kernel should not be  available
+	// in <packages>
+	if ( size(kernel) == 0)
+	{
+            list <string> kernel_pkgs = Kernel::ComputePackages ();
+	    allpackages = (list <string>) union (allpackages, kernel_pkgs);
+	}
+	else
+	{
+	    if (Pkg::IsAvailable (kernel))
+	    {
+		allpackages = add (allpackages, kernel);
+                string kernel_nongpl = kernel + "-nongpl";
+
+                if (Pkg::IsAvailable (kernel_nongpl))
+		    allpackages = add (allpackages, kernel_nongpl);
+	    }
+	    else
+	    {
+		y2warning ("%1 not available, using kernel-default", kernel);
+                list <string> kernel_pkgs = Kernel::ComputePackages ();
+	        allpackages = (list <string>) union (allpackages, kernel_pkgs);
+	    }
+	}
+
+	if (haskey(Profile::current, "inetd")) {
+		map conf = Profile::current["inetd"]:$[];
+		if (conf["netd_service"]:`none == `xinetd )
+			allpackages = (list<string>) union(allpackages,
+                                ["xinetd"]);
+                else
+			allpackages = (list<string>) union(allpackages,
+                                ["inetd"]);
+
+	}
+
+	if (haskey(Profile::current, "nis")) {
+		map conf = Profile::current["nis"]:$[];
+		if (conf["start_nis"]:false)
+			allpackages = (list<string>) union(allpackages, ["yast2-nis-client","ypbind"]);
+
+                if (conf["start_autofs"]:false)
+                {
+                    string pkg = "autofs4";
+                    allpackages = add (allpackages, pkg);
+                }
+	}
+
+        if (haskey(Profile::current, "security")) {
+            allpackages = (list<string>) union(allpackages,
+                    ["yast2-security"]);
+        }
+
+	if (haskey(Profile::current, "ldap")) {
+		map ldapclient = Profile::current["ldap"]:$[];
+		if (ldapclient["start_ldap"]:false)
+			allpackages = (list<string>) union(allpackages, ["pam_ldap","nss_ldap"]);
+                if (ldapclient["start_autofs"]:false)
+                {
+                    string pkg = "autofs4";
+                    allpackages = add (allpackages, pkg);
+                }
+	}
+
+	if (haskey(Profile::current, "nfs_server"))
+	{
+	    boolean start_nfsserver = Profile::current["nfs_server", "start_nfsserver"]:false;
+	    if (start_nfsserver)
+		allpackages = (list<string>) union(allpackages, ["yast2-nfs-server", "nfs-utils"]);
+	}
+
+
+	if (haskey(Profile::current, "mail")) {
+		map mail = Profile::current["mail"]:$[];
+		if (mail["mta"]:`other == `postfix)
+		{
+			allpackages = add(allpackages, "postfix");
+                        PackageAI::toremove = add(PackageAI::toremove, "sendmail");
+			if (mail["use_amavis"]:false)
+				allpackages = add(allpackages, "amavis-postfix");
+		}
+		else if (mail["mta"]:`other == `sendmail)
+		{
+			allpackages = add(allpackages, "sendmail");
+                        PackageAI::toremove = add(PackageAI::toremove, "postfix");
+
+			if (mail["use_amavis"]:false)
+				allpackages = add(allpackages, "amavis-sendmail");
+		}
+	}
+	return allpackages;
+    }
+
+
+
+    /**
+     * Configure software settings
+     * @param void
+     * @return boolean
+     */
+    global define boolean Write()
+    {
+
+        if (imaging)
+        {
+            if (ft_module!="")
+            {
+                ProductControl::DisabledModules=add(ProductControl::DisabledModules, "kickoff");
+                ProductControl::DisabledModules=add(ProductControl::DisabledModules, "rpmcopy");
+                AutoinstImage::enabled = true;
+                return true;
+            }
+        }
+
+	boolean ok = true;
+
+	Packages::Init(true);
+	string  base_selection = base;
+	if (size(base_selection) > 0)
+	{
+	    if (! Pkg::SetSelection( base_selection ))
+	    {
+		y2error("Error while setting base selection: %1", base_selection);
+		Report::Error(sformat(_("Could not set base selection: %1"), base_selection));
+		return false;
+	    }
+	}
+	else
+	{
+	    Popup::Warning(_("Base selection is not set in control file.
+If packages to install have been added individually, 
+this message can be ignored."));
+	}
+
+	list<string> failed = [];
+
+	foreach(string s, toset(addons),
+		``{
+	    if (!Pkg::SetSelection( s ))
+	    {
+		failed = add(failed, s);
+	    }
+	});
+
+	list<string> failed_again = [];
+
+	if (size(failed) > 0 )
+	{
+	    foreach(string s, failed,
+		    ``{
+		if (!Pkg::SetSelection( s ))
+		{
+		    failed_again = add(failed_again, s);
+		}
+	    });
+	}
+	if (size(failed_again) > 0 )
+	{
+	    y2error("Error while setting-addon selection: %1",  mergestring(failed_again, ","));
+	    Report::Warning(sformat(_("Could not set add-on selections: %1"), mergestring(failed_again, ",")));
+	}
+
+	if (!Pkg::ActivateSelections())
+	{
+	    return false;
+	}
+
+
+	list<string> autoinstPacks = autoinstPackages ();
+	y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
+
+	if (size(autoinstPacks) > 0 )
+	{
+	    y2milestone("Installing individual packages: %1", Pkg::DoProvide(autoinstPacks) );
+	}
+
+
+	list<string> computed_packages = Packages::ComputeSystemPackageList();
+	y2debug("Computed list of packages: %1", computed_packages);
+
+
+	//
+	// Now remove all packages listed in remove-packages
+	//
+	y2milestone("Packages to be removed: %1", PackageAI::toremove);
+	if (size(PackageAI::toremove) > 0 )
+	{
+	    foreach (string rp, PackageAI::toremove, ``{
+		Pkg::PkgNeutral(rp);
+	    });
+
+	    Pkg::DoRemove(PackageAI::toremove);
+	}
+        list<string> pack = Storage::AddPackageList();
+        if( size(pack)>0 )
+        {
+            y2milestone("Installing storage packages: %1", Pkg::DoProvide( pack ));
+        }
+	//
+	// Solve dependencies
+	//
+	Pkg::PkgSolve(false);
+
+	SpaceCalculation::ShowPartitionWarning();
+	y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",
+		     Pkg::GetSelections(`selected, "base"),
+		     Pkg::GetSelections(`selected, ""));
+
+	return (ok);
+    }
+
+
+    /**
+     * Initialize temporary target
+     */
+    global define void  pmInit()
+    {
+
+	string tmproot = AutoinstConfig::tmpDir;
+
+	SCR::Execute(.target.mkdir, tmproot + "/root");
+	Pkg::TargetInit( tmproot + "/root", true);
+	y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
+	return;
+    }
+
+
+    /**
+     * Add post packages
+     * @param list calculated post packages
+     * @return void
+     */
+    global define void addPostPackages(list<string> calcpost)
+    {
+	post_packages = (list<string>)toset(union(calcpost,post_packages));
+	return;
+    }
+
+    //EOF
+}

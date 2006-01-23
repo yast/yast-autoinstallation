@@ -1,0 +1,93 @@
+/**
+ * File:	clients/autoinst_storage.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Storage
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+textdomain "autoinst";
+
+
+y2milestone("----------------------------------------");
+y2milestone("Storage auto started");
+
+import "Wizard";
+import "AutoinstStorage";
+import "Storage";
+import "FileSystems";
+
+import "Label";
+include "autoinstall/partition_dialogs.ycp";
+
+
+
+any ret = nil;
+string func = "";
+list param = [];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
+{
+    func = (string)WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), list))
+    {
+	param = (list)WFM::Args(1);
+    }
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+
+
+/* Import Data*/
+if(func == "Import") {
+    ret = AutoinstStorage::Import ((list<map>)param);
+    if (ret == nil)
+    {
+        y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+        ret = false;
+    }
+}
+/* Create a  summary*/
+else if(func == "Summary") {
+    ret = AutoinstStorage::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    AutoinstStorage::Import([]);
+    ret = [];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("disk");
+    ret = StorageDialog();
+    Wizard::CloseDialog();
+}
+/* Return actual state */
+else if (func == "Export") {
+    ret = AutoinstStorage::Export();
+}
+/* Return true if modified */
+else if (func == "GetModified") {
+    ret = AutoinstStorage::GetModified();
+}
+else if (func == "SetModified") {
+    AutoinstStorage::SetModified();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("Storage auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
+}

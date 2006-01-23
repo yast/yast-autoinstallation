@@ -1,0 +1,178 @@
+
+<appendix id="appendix.linuxrc">
+  
+
+  <title id="appendix.linuxrc.title">Advanced Linuxrc Options</title>
+  
+
+  <para>
+
+    Linuxrc is a program used for setting up the kernel for installation
+    purposes. It allows the user to load modules, start an installed system, a
+    rescue system or an installation via YaST.
+  </para><para>
+    Linuxrc is designed to be as small as possible. Therefore, all needed
+    programs are linked directly into one binary. So there is no need for shared
+    libraries in the initdisk.
+  </para>
+  <note>
+    <para>
+      If you run Linuxrc on an installed system, it will work slightly
+      different as it tries not to destroy your installation. As a consequence you
+      cannot test all features this way.
+    </para>
+  </note>
+
+  <section>
+    <title>Passing parameters to Linuxrc</title>
+    <para>
+      Unless Linuxrc is in manual mode it will look for an 'info' file in these
+      locations: first <filename>/info</filename> on the floppy disk and if that does not
+      exsist for <filename>/info</filename> in the initrd. After that it parses the kernel
+      command line for parameters. You may change the 'info' file Linuxrc reads
+      using the <filename>info</filename> command line parameter. If you don't want
+      Linuxrc to read the kernel command line (say, because you need to give a
+      kernel parameter that accidentally is recognized by Linuxrc, too), use
+      <emphasis>linuxrc=nocmdline</emphasis>.
+    </para>
+    <para>
+      Independend if the above, Linuxrc will always look for and parse a file
+      <filename>/linuxrc.config</filename>. You can use this file to change default
+      values, if you need to. But in general, use the <filename>info</filename> file
+      instead. Note that <filename>/linuxrc.config</filename> is read before any 'info'
+      file and even in manual mode.
+
+    </para>
+  </section>
+  <section id="info_file_format">
+    <title>'info' file format</title>
+    <para>
+      Lines starting with '<emphasis>#</emphasis>' are comments, valid entries are of the form
+      <screen>
+	key: value
+      </screen>
+      Note that <emphasis>value</emphasis> extends to the end of the line and so may contain spaces.
+      <emphasis>key</emphasis> is matched case insensitive.
+    </para>
+    <para>
+      You can use the same key - value pairs on the kernel command line using the syntax
+      <interface>
+	key=value
+      </interface>
+      Lines that don't have the form described above are ignored.
+    </para>
+    <para>
+      Valid keys are (values given are just examples)
+    </para>
+
+    <table frame='top'>
+      <title>Advanced <command>linuxrc</command> keywords</title>
+      <tgroup cols='2'>
+	<thead>
+	  <row>
+	    <entry>Keyword/Value</entry>
+	    <entry>Description</entry>
+	  </row>
+	</thead>
+	
+	
+	<tbody>
+	  <row><entry>Language: de_DE</entry><entry>  set the language</entry></row> 
+	  <row><entry>Keytable: de-lat1-nd</entry><entry>  load this keytable</entry></row> 
+	  <row><entry>Display: Color|Mono|Alt</entry><entry>  set the menu color scheme</entry></row> 
+	  <row><entry>Install: nfs://server/install/8.0-i386</entry><entry>  install
+	      via NFS from <emphasis>server</emphasis> (note: you can give username, password etc. in the URL, too)  </entry></row> 
+	  <row><entry>InstMode: cd|hd|nfs|smb|ftp|http|tftp</entry><entry>  set installation mode</entry></row> 
+	  <row><entry>HostIP: 10.10.0.2</entry><entry>  the client ip address</entry></row> 
+	  <row><entry>Netmask: 255.255.0.0</entry><entry>  network mask</entry></row> 
+	  <row><entry>Gateway: 10.10.0.1</entry><entry>  gateway</entry></row> 
+	  <row><entry>Server: 10.10.0.1</entry><entry>  installation server address</entry></row> 
+	  <row><entry>Nameserver: 10.10.0.1</entry><entry>  nameserver</entry></row> 
+	  <row><entry>Proxy: 10.10.0.1</entry><entry>  proxy (either ftp or http)</entry></row> 
+	  <row><entry>ProxyPort: 10.10.0.1</entry><entry>  proxy port</entry></row> 
+	  <row><entry>Partition: hda1</entry><entry>  partition with install sources for hard disk install</entry></row> 
+	  <row><entry>Serverdir: /install/8.0-i386</entry><entry>  base directory of the installation sources</entry></row> 
+	  <row><entry>Netdevice: eth0</entry><entry>  network interface to use</entry></row> 
+	  <row><entry>BOOTPWait: 5</entry><entry>  sleep 5 seconds between network activation and starting bootp</entry></row> 
+	  <row><entry>BOOTPTimeout: 10</entry><entry>  10 seconds timeout for BOOTP requests</entry></row> 
+	  <row><entry>DHCPTimeout: 60</entry><entry>  60 seconds timeout for DHCP requests</entry></row> 
+	  <row><entry>TFTPTimeout: 10</entry><entry>  10 seconds timeout for TFTP connection</entry></row> 
+	  <row><entry>ForceRootimage: 0|1</entry><entry>  load the installation system into ramdisk</entry></row> 
+	  <row><entry>Textmode: 0|1</entry><entry>  start YaST in text mode</entry></row> 
+	  <row><entry>Username: name</entry><entry>  set user name (e.g. for FTP install)</entry></row> 
+	  <row><entry>Password: password</entry><entry>  set password (e.g. for FTP install)</entry></row> 
+	  <row><entry>WorkDomain: domain</entry><entry>  set work domain for SMB install</entry></row> 
+	  <row><entry>ForceInsmod: 0|1</entry><entry>  use '<emphasis>-f</emphasis>' option when running <emphasis>insmod</emphasis></entry></row>
+	  <row><entry>DHCP: 0|1</entry><entry>  start DHCP daemon <emphasis>now</emphasis>, but see <emphasis>UseDHCP</emphasis></entry></row>
+	  <row><entry>UseDHCP: 0|1</entry><entry>  use DHCP instead of BOOTP (DHCP is default)</entry></row> 
+	  <row><entry>MemLimit: 10000</entry><entry>  ask for swap if free memory drops below 10000 kB</entry></row> 
+	  <row><entry>MemYaST: 20000</entry><entry>  run YaST in text mode if free memory is below 20000 kB</entry></row> 
+	  <row><entry>MemYaSTText: 10000</entry><entry>  ask for swap before starting YaST if free memory is below 10000 kB</entry></row> 
+	  <row><entry>MemModules: 20000</entry><entry>  delete all modules before starting YaST if free memory is below 20000 kB</entry></row> 
+	  <row><entry>MemLoadImage: 50000</entry><entry>  load installation system into ramdisk if free memory is above 50000 kB</entry></row> 
+	  <row><entry>Manual: 0|1</entry><entry>  start Linuxrc in manual mode</entry></row> 
+	  <row><entry>NoPCMCIA: 0|1</entry><entry>  don't start card manager</entry></row> 
+	  <row><entry>Domain: zap.de</entry><entry>  set domain name (used for name server lookups)</entry></row> 
+	  <row><entry>RootImage: /suse/images/root</entry><entry>  installation system image</entry></row> 
+	  <row><entry>RescueImage: /suse/images/rescue</entry><entry>  rescue system image</entry></row> 
+	  <row><entry>InstallDir: /suse/inst-sys</entry><entry>  installation system</entry></row> 
+	  <row><entry>Rescue: 1|nfs://server/dir</entry><entry>  load rescue system; the URL variant specifies the location of the rescue image explicitly</entry></row> 
+	  <row><entry>AutoYaST: ftp://autoyastfile</entry><entry>  location of autoinstall file; activates autoinstall mode</entry></row> 
+	  <row><entry>VNC: 0|1</entry><entry>  setup VNC server</entry></row> 
+	  <row><entry>VNCPassword: password</entry><entry>  sets VNC server password</entry></row> 
+	  <row><entry>UseSSH: 0|1</entry><entry>  setup SSH server</entry></row> 
+	  <row><entry>SSHPassword: password</entry><entry>  sets SSH server password (this will not be the final root password!)</entry></row> 
+	  <row><entry>AddSwap: 0|3|/dev/hda5</entry><entry>  if 0, do never ask for swap; if the argument is a positive number <emphasis>n</emphasis>,
+	      activate the <emphasis>n</emphasis>'th swap partition; is the argument is a partition name,  activate this swap partition</entry></row> 
+	  <row><entry>Exec: command</entry><entry>  run <emphasis>command</emphasis></entry></row>
+	  <row><entry>USBWait: 4</entry><entry>  wait 4 seconds after loading USB modules</entry></row> 
+	  <row><entry>Insmod: module params</entry><entry>  load this module</entry></row> 
+          <row><entry>Loghost: 10.10.0.22</entry><entry>Enable remove logging
+                  via syslog</entry></row> 
+          <row><entry>y2confirm</entry><entry>overrides the confirm parameter in a profile and pops up the confirm proposal (available since SUSE Linux 10.1 / SLES10)</entry></row>
+	</tbody>
+      </tgroup>
+    </table>
+    
+  </section>
+  <section>
+    <title>Advanced Network Setup</title>
+    <para>The <emphasis>netsetup</emphasis> keyword allows advanced network
+      configurations and enables dialogs to setup the network where required.</para>
+    <itemizedlist>
+      <listitem>
+	<para>netsetup=1</para>
+	<para>the normal network setup questions</para>
+      </listitem>
+      <listitem>
+	<para>netsetup=xxx,yyy</para>
+	<para>just xxx and yyy</para>
+      </listitem>
+      <listitem>
+	<para> netsetup=+xxx,-yyy</para>
+	<para>default, additionally xxx, but not yyy</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+
+      <emphasis>xxx</emphasis> could have the following values: dhcp, hostip,
+      gateway, netmask, nameserver. nameserverN asks for N nameservers
+      (max. 4).
+    </para>
+    <para>For example, the following can be entered on the command line:</para>
+
+    <screen>  
+
+netsetup=-dhcp,+nameserver3
+
+</screen>
+  </section>
+
+</appendix>
+
+  <!--
+  Local Variables:
+  mode: xml
+  sgml-parent-document: ("autoyast.xml" "book" "sect1")
+  End:
+  -->

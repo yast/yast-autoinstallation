@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT ntp-client (configure_dhcp?, peers, start_at_boot, start_in_chroot? ) >
+
+<!ELEMENT create_symlink ( #PCDATA ) >
+<!ATTLIST create_symlink config:type  CDATA #FIXED  "boolean" >
+
+<!ELEMENT configure_dhcp ( #PCDATA ) >
+<!ATTLIST configure_dhcp config:type  CDATA #FIXED  "boolean" >
+
+<!ELEMENT initial_sync ( #PCDATA ) >
+<!ELEMENT fudge_comment ( #PCDATA ) >
+<!ELEMENT fudge_options ( #PCDATA ) >
+<!ATTLIST initial_sync config:type CDATA #FIXED  "boolean" >
+
+
+<!ELEMENT param ( #PCDATA ) >
+
+<!ELEMENT peer ( address | comment | create_symlink | device | fudge_comment |
+        fudge_options| initial_sync | options | param | type)* >
+
+<!ELEMENT peers ( peer+ ) >
+<!ATTLIST peers config:type  CDATA #FIXED  "list" >
+
+
+<!ELEMENT start_at_boot ( #PCDATA ) >
+<!ATTLIST start_at_boot config:type  CDATA #FIXED  "boolean" >
+
+<!ELEMENT start_in_chroot ( #PCDATA ) >
+<!ATTLIST start_in_chroot config:type  CDATA #FIXED  "boolean" >
+
+

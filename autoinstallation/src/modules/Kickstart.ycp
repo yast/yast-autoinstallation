@@ -1,0 +1,754 @@
+/**
+ * File:	modules/Kickstart.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary:	Imports older and foreign formats
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    module "Kickstart";
+    import "AutoinstConfig";
+    import "AutoinstStorage";
+    import "Popup";
+    import "Profile";
+    import "Y2ModuleConfig";
+    import "FileSystems";
+
+    include "autoinstall/xml.ycp";
+
+
+    map ksConfig = $[];
+
+    global string ksfile = "";
+
+    /**
+     * Constructor
+     */
+    global define void Kickstart() ``{
+	return;
+    }
+
+    /**
+     * Read a Kickstart file
+     * @return map kickstart configuration.
+     */
+    global define map Read()``{
+
+	ksConfig = (map) SCR::Read(.kickstart, ksfile);
+	SCR::UnmountAgent(.kickstart);
+
+	y2debug("Kickstart config raw: %1", ksConfig);
+	if (ksConfig == $[] || ksConfig == nil)
+	{
+	    return $[];
+	}
+    }
+
+    /**
+     * Users()
+     * Read KS Users (root)
+     * @return list user list
+     */
+    define list Users()
+	``{
+	map ks_user =  ksConfig["users"]:$[];
+	list users = [];
+	map root = $[];
+	root["username"] = "root";
+	root["user_password"] = ks_user["password"]:"";
+	root["encrypted"] = (ks_user["iscrypted"]:0 == 1);
+
+	users = add(users, root);
+	return users;
+    }
+
+    /**
+     * X11
+     * Read KS X11
+     * @return map x11 configuration
+     */
+    define map X11()
+	``{
+
+	if (ksConfig["skipx"]:0 != 1 && haskey(ksConfig,"xconfig"))
+	{
+	    map x11 = $[];
+	    map ks_x = ksConfig["xconfig"]:$[];
+
+	    if (haskey(ks_x, "depth"))
+		x11["color_depth"] = ks_x["depth"]:0;
+
+	    if (haskey(ks_x, "resolution"))
+		x11["resolution"] = ks_x["resolution"]:"";
+
+	    if (haskey(ks_x, "startxonboot"))
+		x11["startxonboot"] = ks_x["startxonboot"]:"";
+
+	    if (haskey(ks_x, "defaultdesktop"))
+		x11["default_desktop"] = ks_x["defaultdesktop"]:"";
+
+	    map monitor = $[];
+	    if (haskey(ks_x, "vsync") || ks_x["monitor"]:""!= "")
+	    {
+
+		map display = $[];
+		list hsync = splitstring(ks_x["hsync"]:"", "-");
+		list vsync = splitstring(ks_x["vsync"]:"", "-");
+		display["min_hsync"] = (string) hsync[0]:"";
+		display["min_vsync"] = (string) vsync[0]:"";
+		display["max_hsync"] = (string) hsync[1]:"";
+		display["max_vsync"] = (string) vsync[1]:"";
+                list<string> m = splitstring(ks_x["monitor"]:"", " ");
+		monitor["monitor_vendor"] = (string) m[0]:"";
+		monitor["monitor_device"] = (string) m[1]:"";
+		monitor["display"] = display;
+
+	    }
+	    if (size(monitor) > 0 )
+	    {
+		x11["monitor"] = monitor;
+	    }
+	    x11["configure_x11"] = true;
+	    return x11;
+	}
+	else
+	{
+	    return $[];
+	}
+    }
+
+    /**
+     * KS General
+     * @return map general configuration
+     */
+    define map General()
+	``{
+	map general = $[];
+
+	// Language
+	general["language"] = ksConfig["language"]:"";
+
+	// Keyboard
+	map keyboard = $[];
+	if (haskey( ksConfig , "keyboard"))
+	{
+	    import "Keyboard";
+	    map keyboards =  Keyboard::keymap2yast();
+	    keyboard["keymap"] = keyboards[ksConfig["keyboard"]:""]:"";
+	}
+
+	general["keyboard"] = keyboard;
+
+	// Mouse
+	map mouse = $[];
+
+	if(haskey(ksConfig, "mouse"))
+	{
+	    map ks_mouse	= ksConfig["mouse"]:$[];
+	    mouse["device"]	= ks_mouse["device"]:"";
+	    mouse["xemu3"]	= ( ks_mouse["emulthree"]:0 == 1);
+	    if (ks_mouse["type"]:"" == "none")
+	    {
+		mouse["id"]	= "non";
+	    }
+	}
+	general["mouse"] = mouse;
+
+	// Clock
+	map  clock = $[];
+	if (haskey(ksConfig, "timezone"))
+	{
+	    map ks_clock = ksConfig["timezone"]:$[];
+	    clock["timezone"]	= ks_clock["timezone"]:"";
+	    clock["hwclock"]	= ( ks_clock["utc"]:"" == "1" ) ? "GMT" : "localtime";
+	}
+	general["clock"] = clock;
+
+
+	// Mode
+	map mode = $[];
+	mode["confirm"]	=  ( ksConfig["interactive"]:0 == 1 );
+	general["mode"] = mode;
+
+
+	return general;
+
+    }
+
+    /**
+     * KS Scripts
+     * @return map
+     */
+    define map Scripts()
+	``{
+	map scripts = $[];
+	list postscripts = [];
+	list prescripts = [];
+
+	if (haskey(ksConfig, "post-script"))
+	{
+	    map script = $[];
+	    script["source"] = (string) SCR::Read(.target.string, ksConfig["post-script"]:"");
+	    map post = ksConfig["post"]:$[];
+	    script["interpreter"] = post["interpreter"]:"shell";
+	    script["filename"] = "kspost";
+	    postscripts = add(postscripts, script);
+	}
+	scripts["post-scripts"] =   postscripts;
+	if (haskey(ksConfig, "pre-script"))
+	{
+	    map script = $[];
+	    script["source"] = (string) SCR::Read(.target.string, ksConfig["pre-script"]:"");
+
+	    script["interpreter"] = "/bin/sh";
+	    script["filename"] = "kspre";
+	    prescripts = add(prescripts, script);
+	}
+	scripts["pre-scripts"] =   prescripts;
+	return scripts;
+    }
+
+
+
+
+    /**
+     * KS Partitioning
+     * @return list
+     */
+    define list Partitioning () ``{
+	y2milestone("KS Partitioning: %1", ksConfig["partitioning"]:$[]);
+	import "Partitions";
+
+	list<map> drives = [];
+	list part1 = maplist(string k, map v, ksConfig["partitioning"]:$[],   ``{
+	    map drive = $[];
+	    if (haskey(v, "ondisk"))
+	    {
+		drive["device"] = sformat("/dev/%1", v["ondisk"]:"");
+	    }
+	    drive["partitions"] = [];
+
+	    drives=add(drives, drive);
+	});
+
+	// sort and make unique entries
+	drives = toset(drives);
+	y2debug("Drives: %1", drives);
+	foreach(string k, map v, ksConfig["partitioning"]:$[],   ``{
+	    map partition = $[];
+	    list mountlist = splitstring(k, "_");
+	    string mount = mountlist[0]:"/data";
+	    integer order = tointeger(mountlist[1]:"0");
+
+	    string fstype = (mount == "swap") ? "swap" :  v["fstype"]:"";
+
+	    integer partition_id = Partitions::fsid_native;
+	    integer raiddevice = 0;
+
+	    if (regexpmatch(mount, "^raid\..*"))
+	    {
+		y2milestone("device: %1", mount);
+		partition_id =  Partitions::fsid_raid;
+		partition["partition_id"] = partition_id;
+		raiddevice = tointeger(substring(mount, 5, 1)) ;
+
+		partition["raid_name"] = sformat("/dev/md%1", raiddevice);
+		partition["format"] = false;
+
+	    }
+	    else
+	    {
+		partition["mount"] = mount;
+		partition["order"] = order;
+		partition["format"] = (v["noformat"]:"" == "" );
+		partition["filesystem"] = FileSystems::FsToSymbol(fstype);
+	    }
+
+	    partition["size"] = sformat("%1mb", v["size"]:"");
+
+	    // Remove those later
+	    if (v["maxsize"]:"" != "" )
+	    {
+		partition["maxsize"] =  sformat("%1mb", v["maxsize"]:"");
+	    }
+
+	    if ( v["grow"]:"" == "1" )
+	    {
+		partition["grow"] =  true;
+	    }
+
+	    drives = maplist(map d, drives, ``{
+		string dev = sformat("/dev/%1", v["ondisk"]:"");
+		if ( dev  == d["device"]:"")
+		{
+		    list<map> part		= d["partitions"]:[];
+		    part		= add ( part, partition );
+		    d["partitions"]	= sort(map x, map y, part, ``(x["order"]:-1 < y["order"]:-1 ));
+
+		}
+		else if ( d["device"]:"" == "")
+		{
+		    list<map> part		= d["partitions"]:[];
+		    part		= add ( part, partition );
+		    d["partitions"]	= sort(map x, map y, part, ``(x["order"]:-1 < y["order"]:-1 ));
+		}
+		y2milestone("KS Drive: %1", d);
+		return (d);
+	    });
+
+	});
+
+	list newdrives = maplist(map drive, drives, ``{
+
+	    integer numpart = size(drive["partitions"]:[]);
+	    y2milestone("partitions count: %1", numpart);
+	    boolean ismax = false;
+	    // clean up
+	    list dp = maplist(map p,  drive["partitions"]:[], ``{
+
+		p = remove(p, "order");
+		return(p);
+	    });
+
+	    map clearpart = ksConfig["clearpart"]:$[];
+            list<string> d = splitstring(drive["device"]:"","/");
+	    string devicetok = d[1]:"";
+	    if (devicetok != "" && clearpart["drives"]:"" != "")
+	    {
+		if (issubstring(clearpart["drives"]:"", devicetok))
+		{
+		    if (clearpart["all"]:-1 == 1)
+			drive["use"] = "all";
+		    else if (clearpart["linux"]:-1 == 1)
+			drive["use"] = "linux";
+		    else if (clearpart["initlabel"]:-1 == 1)
+			drive["initialize"] = true;
+		}
+	    }
+	    else if  ( clearpart["drives"]:"" == "" )
+	    {
+		if (clearpart["all"]:-1 == 1)
+		drive["use"] = "all";
+		else if (clearpart["linux"]:-1 == 1)
+		drive["use"] = "linux";
+		else if (clearpart["initlabel"]:-1 == 1)
+		drive["initialize"] = true;
+	    }
+	    else if (devicetok == "" &&  clearpart["drives"]:"" != "")
+	    {
+		list alldrives = splitstring( clearpart["drives"]:"", ",");
+		if (size(alldrives) == 1 )
+		{
+		    drive["device"] = sformat("/dev/%1", alldrives[0]:"");
+		    if (clearpart["all"]:"" == "1")
+		    {
+			drive["use"] = "all";
+		    }
+		    else if (clearpart["linux"]:"" == "1")
+		    {
+			drive["use"] = "linux";
+		    }
+		    else if (clearpart["initlabel"]:"" == "1")
+		    {
+			drive["initialize"] = true;
+		    }
+		}
+	    }
+
+	    drive["partitions"] = dp;
+	    return (drive);
+
+	});
+	y2milestone("Drives: %1", newdrives);
+	return newdrives;
+
+    }
+
+    /**
+     * KS RAID
+     * @return list
+     */
+    define list Raid ()
+	``{
+
+	list raid = maplist(string d, map data, ksConfig["raid"]:$[], ``{
+	    map r = $[];
+	    r["mount"]		= d;
+	    r["format"]	= (data["nofromat"]:0 == 1) ? false : true;
+	    r["name"]		= sformat("/dev/%1", data["device"]:"md0");
+	    r["raid_level"]	= sformat("raid%1", data["level"]:0);
+	    return (r);
+	});
+	return raid;
+    }
+
+
+    /**
+     * KS Network
+     * @return list
+     */
+    define list  Network () ``{
+	import "IP";
+	map init = $[];
+	map networking = $[];
+	map dns = $[];
+
+	list nameserver = [];
+	string gateway = "";
+
+	map routing = $[];
+	map<string, map> rawNet = ksConfig["networking"]:$[];
+	list interfaces = maplist(string iface, map data, rawNet, ``{
+	    map interface = $[];
+	    if (data["bootproto"]:"" == "dhcp")
+	    {
+		interface["bootproto"] = "dhcp";
+		interface["device"] =  iface;
+		interface["startmode"] = "onboot";
+		init["usedhcp"] = true;
+	    }
+	    else
+	    {
+		interface["device"] = iface;
+		interface["bootproto"] = "static";
+		interface["network"] =  IP::ComputeNetwork(data["ip"]:"",data["netmask"]:"");
+		interface["ipaddr"] = data["ip"]:"";
+		interface["netmask"] = data["netmask"]:"";
+		interface["startmode"] = "onboot";
+		interface["broadcast"] = IP::ComputeBroadcast(data["ip"]:"",data["netmask"]:"");
+
+		init["ip"] = data["ip"]:"";
+		init["nameserver"] = data["nameserver"]:"";
+		init["netmask"] = data["netmask"]:"";
+		init["gateway"] = data["gateway"]:"";
+		init["netdevice"] = data["device"]:"";
+		nameserver = [ data["nameserver"]:""];
+		gateway =  data["gateway"]:"";
+	    }
+	    return (interface);
+	});
+
+	list searchlist = [];
+
+	string hostname = "";
+	string domain = "";
+
+	dns["hostname"] = hostname;
+	dns["domain"] = domain;
+	dns["searchlist"] = searchlist;
+	dns["nameservers"] = nameserver;
+
+	list routes= [];
+	map route = $[];
+
+	if (gateway!="")
+	{
+	    route["destination"] = "default";
+	    route["device"] = "-";
+	    route["gateway"] = gateway;
+	    route["netmask"] = "-";
+	    routes=add(routes, route);
+	}
+	routing=add(routing, "routes", routes);
+	routing=add(routing,"ip_forwarding", false);
+
+	networking["interfaces"] = interfaces;
+	networking["dns"] = dns;
+	networking["routing"] = routing;
+
+
+	// init
+	if (haskey(ksConfig, "nfs"))
+	{
+	    map nfs = ksConfig["nfs"]:$[];
+	    init["instmode"] = "nfs";
+	    init["server"] = nfs["server"]:"";
+	    init["serverdir"] = nfs["dir"]:"";
+	}
+
+	if (ksConfig["textmode"]:0  == 1)
+	{
+	    init["textmode"] = true;
+	}
+
+	return [networking, init];
+    }
+
+
+    /**
+     * KS Authentication
+     * @return list
+     */
+    define list Authentication() ``{
+
+	map auth = ksConfig["auth"]:$[];
+
+	// NIS
+	map nis = $[];
+	map security = $[];
+	map ldap = $[];
+
+
+	if (auth["enablenis"]:0 == 1)
+	{
+	    nis["start_nis"] = true;
+	    if (haskey(auth, "nisdomain"))
+		nis["nis_domain"] = auth["nisdomain"]:"";
+	    if (haskey(auth, "nisserver"))
+	    {
+		list nisserver = [ auth["nisserver"]:"" ];
+		nis["nis_servers"] = nisserver;
+	    }
+	}
+
+	if (auth["enablemd5"]:"0" == "1")
+	{
+	    security["encryption"] = "md5";
+	}
+
+
+	if (auth["enableldapauth"]:"0" == "1")
+	{
+	    ldap["start_ldap"] = true;
+	    if (haskey(auth, "nisdomain"))
+		ldap["ldap_domain"] = auth["ldapbasedn"]:"";
+	    if (haskey(auth, "ldapserver"))
+		ldap["ldap_server"] = auth["ldapserver"]:"";
+	    if ((auth["enableldaptls"]:0 == 1))
+		ldap["ldap_tls"] = true;
+	}
+
+	return [nis, ldap, security];
+
+    }
+
+    /**
+     * KS Bootloader
+     * @return map
+     */
+    define map Bootloader () ``{
+
+	map bl = ksConfig["bootloader"]:$[];
+	map bootloader = $[];
+	if (bl["location"]:"" != "none")
+	{
+	    bootloader["location"] = bl["location"]:"";
+	}
+	else
+	{
+	    bootloader["write_bootloader"] = false;
+	}
+
+	bootloader["kernel_parameters"] = bl["append"]:"";
+	if (haskey(bl, "linear") || haskey(bl, "nolinear") )
+	{
+	    bootloader["linear"] = ( bl["linear"]:0 == 1  ||  bl["nolinear"]:0 != 1);
+	}
+	// FIXME
+	bootloader["lba_support"] = (bl["lba32"]:0 == 1);
+	return bootloader;
+    }
+
+
+
+    /**
+     * KS Software
+     * @return map
+     */
+    define map  Software ()
+	``{
+
+	map software = $[];
+	list<string> all = ksConfig["packages"]:[];
+
+
+	map<string, map> rhsel = $[
+		      "Core": $[
+				"base": "Minimal",
+				"addon": []
+		      ],
+		      "Base": $[
+				"base": "Minimal",
+				"addon": []
+		      ],
+		      "Printing Support": $[
+					    "base": "Minimal",
+					    "addon": [],
+					    "packages": ["a2ps", "ghostscript-mini", "hp-officeJet", "yast2-printer", "cups-client", "cups", "cups-libs", "cups-drivers"]
+		      ],
+		      "Cups": $[
+				"base": "Minimal",
+				"addon": [],
+				"packages":  ["cups-client", "cups", "cups-libs", "cups-drivers"]
+		      ],
+		      "X Window System": $[
+					   "base": "Minimal+X11",
+					   "addon": [],
+					   "packages": []
+		      ],
+		      "Dialup Networking Support":  $[
+						      "base": "Minimal",
+						      "addon": [],
+						      "packages": ["ppp", "minicom", "wvdial", "i4l-base", "i4lfirm", "i4l-isdnlog"]
+		      ],
+		      "GNOME Desktop Environment":
+		      $[
+			"base": "Minimal+X11",
+			"addon": ["Gnome"],
+			"packages": []
+		      ],
+		      "KDE Desktop Environment":
+		      $[
+			"base": "Minimal+X11",
+			"addon": ["Kde-Desktop"],
+			"packages": []
+		      ],
+		      "Graphical Internet":
+		      $[
+			"base": "Minimal+X11",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "Text-based Internet":
+		      $[
+			"base": "Minimal",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "Sound and Video":
+		      $[
+			"base": "Minimal+X11",
+			"addon": ["Multimedia", "Basis-Sound"],
+			"packages": []
+		      ],
+		      "Graphics":
+		      $[
+			"base": "Minimal+X11",
+			"addon": [],
+			"packages": [ "ImageMagick", "xsane", "gimp", "netpbm", "dia", "gtkam" ]
+		      ],
+		      "Office/Productivity":
+		      $[
+			"base": "Minimal+X11",
+			"addon": ["Office"],
+			"packages": []
+		      ],
+		      "Mail Server":
+		      $[
+			"base": "Minimal",
+			"addon": ["postfix", "imap", "mailman", "spamassassin", "squirrelmail", "squirrelmail-plugins" ],
+			"packages": []
+		      ],
+		      "Network Servers":
+		      $[
+			"base": "Minimal",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "News Server":
+		      $[
+			"base": "Minimal",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "Windows File Server":
+		      $[
+			"base": "Minimal",
+			"addon": ["Network"],
+			"packages": []
+		      ],
+		      "Web Server":
+		      $[
+			"base": "Minimal",
+			"addon": ["LAMP"],
+			"packages": []
+		      ],
+		      "Games and Entertainment":
+		      $[
+			"base": "Minimal",
+			"addon": ["Games"],
+			"packages": []
+		      ],
+		      "Development Tools":
+		      $[
+			"base": "Minimal",
+			"addon": ["Basis-Devel"],
+			"packages": []
+		      ],
+		      "Development Libraries":
+		      $[
+			"base": "Minimal",
+			"addon": ["Advanced-Devel"],
+			"packages": []
+		      ]
+
+	];
+
+	list<string> selections = maplist(string s, filter(string s, all, ``(issubstring(s, "@"))), ``{
+	    string sel1 = substring(s,1 ,size(s));
+	    string sel2 = substring(sel1, findfirstof(tolower(sel1), "0123456789abcdefghijklmnopqrstuvwxyz"), size(sel1));
+	    return(sel2);
+	});
+
+	y2milestone("RH Selections: %1", selections);
+	list bases = [];
+	list addons = [];
+	list selpacs = [];
+	foreach(string sel, selections, ``{
+	    map currentsel = rhsel[sel]:$[];
+	    y2milestone("current sel: %1", currentsel);
+	    bases = add(bases, currentsel["base"]:"");
+	    addons = toset(union(addons, currentsel["addon"]:[]));
+	    selpacs = toset(union(selpacs, currentsel["packages"]:[]));
+	});
+
+	y2milestone("bases: %1, addons: %2. pacakges: %3", bases, addons, selpacs);
+
+	list<string> packages = filter(string s, all, ``(!issubstring(s, "@")));
+	packages = filter(string s, packages, ``(!regexpmatch( s, "^-.*" )));
+
+	list<string> nopackages =  maplist( string pac, filter(string s, all, ``(regexpmatch( s, "^-.*" ))), ``{
+	    return(substring(pac, 1, size(pac)));
+	});
+
+	software["base"] = "Minimal";
+	software["addons"] = addons;
+	software["packages"] = toset(union(filter(string pac, packages, ``(pac!="")), selpacs));
+	software["remove-packages"] = filter(string pac, nopackages, ``(pac!=""));
+
+
+	return software;
+    }
+
+    /**
+     * Kickstart to AutoYaST main
+     * @return map
+     */
+    global define map<string, any> KS2AY() ``{
+
+	map<string, any> profile = $[];
+
+	// Scripts
+	profile["scripts"]	= Scripts();
+	profile["networking"] = (map) Network()[0]:$[];
+	profile["nis"]	= (map) Authentication()[0]:$[];
+	profile["ldap"]	= (map) Authentication()[1]:$[];
+	profile["security"]	= (map) Authentication()[2]:$[];
+	profile["users"]	=  Users ();
+
+	profile["init"]	= (map) Network()[1]:$[];
+	profile["software"]	= Software();
+	profile["partitioning"] = Partitioning();
+	profile["raid"]	= Raid();
+	profile["bootloader"]	= Bootloader();
+	profile["general"]	= General();
+
+        Profile::changed	= true;
+
+        y2debug("Profile : %1", profile);
+	return profile;
+    }
+
+}

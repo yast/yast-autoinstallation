@@ -1,0 +1,325 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;	Security settings
+      </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Configuration and Installation Options"
+HREF="configuration.html"><LINK
+REL="PREVIOUS"
+TITLE="
+	Network configuration
+      "
+HREF="createprofile.network.html"><LINK
+REL="NEXT"
+TITLE="
+	Monitor and X11 Configuration
+      "
+HREF="configuration.x11.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="createprofile.network.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 4. Configuration and Installation Options</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="configuration.x11.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="CreateProfile.Security"
+>4.8. Security settings</A
+></H1
+><P
+>&#13;	Using the features of this module, you will be able to change the local
+	security settings on the target system. The local security settings
+	include the boot configuration, login settings, password settings,
+	user addition settings, and file permissions.
+      </P
+><P
+>&#13;	Configuring the security settings automatically corresponds to the
+	<I
+CLASS="emphasis"
+>Custom Settings</I
+> in the security module available in
+	the running system which lets you create your own, customized
+	configuration.
+      </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN753"
+></A
+><P
+><B
+>Example 4-32. 
+	  Security configuration
+	</B
+></P
+><P
+>&#13;	  See the reference for the meaning and the possible values of the
+	  settings in the following example.
+	</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;configure&#62;
+...
+   &#60;security&#62;
+      &#60;console_shutdown&#62;ignore&#60;/console_shutdown&#62;
+      &#60;cwd_in_root_path&#62;no&#60;/cwd_in_root_path&#62;
+      &#60;displaymanager_remote_access&#62;no&#60;/displaymanager_remote_access&#62;
+      &#60;fail_delay&#62;3&#60;/fail_delay&#62;
+      &#60;faillog_enab&#62;yes&#60;/faillog_enab&#62;
+      &#60;gid_max&#62;60000&#60;/gid_max&#62;
+      &#60;gid_min&#62;101&#60;/gid_min&#62;
+      &#60;kdm_shutdown&#62;root&#60;/kdm_shutdown&#62;
+      &#60;lastlog_enab&#62;yes&#60;/lastlog_enab&#62;
+      &#60;encryption&#62;md5&#60;/encryption&#62;
+      &#60;obscure_checks_enab&#62;no&#60;/obscure_checks_enab&#62;
+      &#60;pass_max_days&#62;99999&#60;/pass_max_days&#62;
+      &#60;pass_max_len&#62;8&#60;/pass_max_len&#62;
+      &#60;pass_min_days&#62;1&#60;/pass_min_days&#62;
+      &#60;pass_min_len&#62;6&#60;/pass_min_len&#62;
+      &#60;pass_warn_age&#62;14&#60;/pass_warn_age&#62;
+      &#60;passwd_use_cracklib&#62;yes&#60;/passwd_use_cracklib&#62;
+      &#60;permission_security&#62;secure&#60;/permission_security&#62;
+      &#60;run_updatedb_as&#62;nobody&#60;/run_updatedb_as&#62;
+      &#60;uid_max&#62;60000&#60;/uid_max&#62;
+      &#60;uid_min&#62;500&#60;/uid_min&#62;
+  &#60;/security&#62;
+...
+&#60;/configure&#62;
+
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN757"
+>4.8.1. Password Settings Options</A
+></H2
+><P
+>&#13;	  Change various password settings. These settings are mainly stored in the <TT
+CLASS="filename"
+>/etc/login.defs</TT
+> file.
+	</P
+><P
+>&#13;	  Use this resource to activate one of  the <I
+CLASS="emphasis"
+>encryption</I
+> methods currently supported.
+	  If not set, <I
+CLASS="emphasis"
+>DES</I
+> is configured.
+	</P
+><P
+>&#13;	  <I
+CLASS="emphasis"
+>DES</I
+>, the Linux default method, works in all
+	  network environments, but it restricts you to passwords no longer than
+	  eight characters. <I
+CLASS="emphasis"
+>MD5</I
+> allows longer passwords,
+	  thus provides more security, but some network protocols don't support
+	  this, and you may have problems with NIS. <I
+CLASS="emphasis"
+>Blowfish</I
+>
+	  is also supported.
+	</P
+><P
+>Additionally, you can setup the system to check for password
+	  plausibility and length etc.</P
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN769"
+>4.8.2. Boot Settings</A
+></H2
+><P
+>&#13;	  Use the security resource, you can change various boot settings.
+	</P
+><P
+></P
+><UL
+><LI
+><P
+><I
+CLASS="emphasis"
+>How to interpret Ctrl + Alt + Del</I
+></P
+><P
+>When someone at the console has pressed the CTRL + ALT + DEL key combination, the system usually reboots. Sometimes it is desirable to ignore this event, for example, when the system serves as both workstation and server.</P
+></LI
+><LI
+><P
+><I
+CLASS="emphasis"
+>Shutdown behavior of KDM</I
+></P
+><P
+>Set who is allowed to shut down the machine from KDM.</P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN781"
+>4.8.3. Login Settings</A
+></H2
+><P
+>Change various login settings. These settings are mainly stored in the '/etc/login.defs' file.</P
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN784"
+>4.8.4. New user settings (useradd settings)</A
+></H2
+><P
+>Set the minimum and maximum possible user ID and set the minimum
+	  and maximum possible group ID.
+	</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="createprofile.network.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="configuration.x11.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Network configuration</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="configuration.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Monitor and X11 Configuration</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
