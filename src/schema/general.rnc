@@ -10,9 +10,9 @@ keyboard = element keyboard { keymap }
 keymap = element keymap { text }
 language = element language { text }
 ask-list = element ask-list { LIST, ask+ }
-ask = element { question?, default?, help?, title?, type?, password?, path, stage?, selection? }
+ask = element ask { question?, \default?, help?, title?, type?, password?, path, stage?, selection? }
 question = element question { text }
-default = element default { text }
+\default = element default { text }
 help = element help { text }
 title = element title { text }
 type = element type { "symbol" | "integer" | "boolean" | "string" }
@@ -24,7 +24,7 @@ entry = element entry { value, label }
 value = element value { text }
 label = element label { text }
 
-mode = element 
+mode =
   element mode {
     confirm, disable_abort?, disable_buttons?, forceboot?, halt?, reboot?, second_stage?
   }
@@ -36,7 +36,6 @@ disable_abort =
   element disable_abort { BOOLEAN }
 disable_buttons =
   element disable_buttons { BOOLEAN }
-# <!ELEMENT default (#PCDATA)>
 forceboot =
   element forceboot { BOOLEAN }
 reboot =
