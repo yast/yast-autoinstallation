@@ -26,31 +26,31 @@
      */
     global define boolean Continue()
     {
-	//
-	// First check if there are some other control files availabe
-	// i.e. for post-installation only
-	//
+        //
+        // First check if there are some other control files availabe
+        // i.e. for post-installation only
+        //
         boolean ret = false;
-	if ( SCR::Read(.target.size, AutoinstConfig::autoconf_file) != -1 )
-	{
-	    y2milestone("XML Post installation data found: %1", AutoinstConfig::autoconf_file );
-	    ret = Profile::ReadXML (   AutoinstConfig::autoconf_file  );
-	    SCR::Execute(.target.bash, sformat("/bin/mv %1 %2",
+        if ( SCR::Read(.target.size, AutoinstConfig::autoconf_file) != -1 )
+        {
+            y2milestone("XML Post installation data found: %1", AutoinstConfig::autoconf_file );
+            ret = Profile::ReadXML (   AutoinstConfig::autoconf_file  );
+            SCR::Execute(.target.bash, sformat("/bin/mv %1 %2",
                         AutoinstConfig::autoconf_file, AutoinstConfig::cache));
-	    return (ret);
-	}
-	else
-	{
-	    ret = Profile::ReadProfileStructure ( AutoinstConfig::parsedControlFile );
-	    if ( Profile::current == $[] || !ret ) {
-		y2milestone( "No saved autoinstall data found" );
-		return (false);
-	    } else {
-		y2milestone( "Found and read saved autoinst data");
-		SCR::Execute(.target.remove, AutoinstConfig::parsedControlFile);
-		return (true);
-	    }
-	}
+            return (ret);
+        }
+        else
+        {
+            ret = Profile::ReadProfileStructure ( AutoinstConfig::parsedControlFile );
+            if ( Profile::current == $[] || !ret ) {
+                y2milestone( "No saved autoinstall data found" );
+                return (false);
+            } else {
+                y2milestone( "Found and read saved autoinst data");
+                SCR::Execute(.target.remove, AutoinstConfig::parsedControlFile);
+                return (true);
+            }
+        }
 
         return false;
 
@@ -95,7 +95,7 @@
     global define boolean Save()
     {
         if (Mode::autoinst ())
-	    return (Profile::SaveProfileStructure( AutoinstConfig::parsedControlFile ));
+            return (Profile::SaveProfileStructure( AutoinstConfig::parsedControlFile ));
         else
             return true;
     }

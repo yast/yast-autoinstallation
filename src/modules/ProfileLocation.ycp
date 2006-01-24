@@ -29,8 +29,8 @@
      * @return void
      */
     global define void ProfileLocation ()
-	``{
-	return;
+        ``{
+        return;
     }
 
 
@@ -40,20 +40,20 @@
      */
     global define boolean Process() ``{
 
-	boolean ok = false;
-	boolean ret = false;
+        boolean ok = false;
+        boolean ret = false;
 
-	y2milestone("Path to remote control file: %1", AutoinstConfig::filepath);
+        y2milestone("Path to remote control file: %1", AutoinstConfig::filepath);
 
-	string localfile  =  AutoinstConfig::xml_tmpfile;
+        string localfile  =  AutoinstConfig::xml_tmpfile;
 
-	boolean is_directory = false;
+        boolean is_directory = false;
 
-	string filename = basename(AutoinstConfig::filepath);
+        string filename = basename(AutoinstConfig::filepath);
 
 
-	if ( filename != "" )
-	{
+        if ( filename != "" )
+        {
             y2milestone("File=%1", filename);
             ret = Get(AutoinstConfig::scheme,
                     AutoinstConfig::host,
@@ -67,24 +67,24 @@
                 Popup::Error( error + GET_error );
                 return false;
             }
-	}
-	else
-	{
-	    is_directory = true;
-	}
+        }
+        else
+        {
+            is_directory = true;
+        }
 
-	AutoinstConfig::directory = dirname(AutoinstConfig::filepath);
+        AutoinstConfig::directory = dirname(AutoinstConfig::filepath);
 
-	y2milestone("Dir=%1", AutoinstConfig::directory);
-	y2milestone("Fetching Rules File");
+        y2milestone("Dir=%1", AutoinstConfig::directory);
+        y2milestone("Fetching Rules File");
 
-	// Get rules file
+        // Get rules file
 
-	boolean mkdir = (boolean)SCR::Execute(.target.mkdir, AutoinstConfig::local_rules_location);
-	if (!mkdir)
-	{
-	    y2error("Error creating directory: %1", AutoinstConfig::local_rules_location );
-	}
+        boolean mkdir = (boolean)SCR::Execute(.target.mkdir, AutoinstConfig::local_rules_location);
+        if (!mkdir)
+        {
+            y2error("Error creating directory: %1", AutoinstConfig::local_rules_location );
+        }
 
         if (is_directory)
         {
@@ -98,63 +98,63 @@
             ret = false;
         }
 
-	if (ret)
-	{
-	    AutoInstallRules::userrules = true;
-	}
-	else
-	{
-	    AutoInstallRules::userrules = false;
-	    SCR::Execute(.target.remove, AutoinstConfig::local_rules_file );
-	}
+        if (ret)
+        {
+            AutoInstallRules::userrules = true;
+        }
+        else
+        {
+            AutoInstallRules::userrules = false;
+            SCR::Execute(.target.remove, AutoinstConfig::local_rules_file );
+        }
 
-	boolean process_rules = true;
-	boolean try_default_rules = false;
-	if ( AutoInstallRules::userrules)
-	{
-	    y2milestone("Reading Rules File");
-	    AutoInstallRules::Read();
+        boolean process_rules = true;
+        boolean try_default_rules = false;
+        if ( AutoInstallRules::userrules)
+        {
+            y2milestone("Reading Rules File");
+            AutoInstallRules::Read();
             // returns false if no rules have matched
-	    ret = AutoInstallRules::GetRules();
+            ret = AutoInstallRules::GetRules();
             if (!ret)
             {
                 try_default_rules = true;
             }
-	}
-	else
-	{
-		try_default_rules = true;
-	}
+        }
+        else
+        {
+                try_default_rules = true;
+        }
 
         // Hex IP, MAC Address.
-	if (try_default_rules)
-	{
-	    y2milestone("Creating default Rules");
-	    if (is_directory)
-	    {
-		// Create rules for hex ip and mac address
-		AutoInstallRules::CreateDefault();
-	    }
-	    else
-	    {
-		// Create rules for file
-		AutoInstallRules::CreateFile( filename );
-	    }
-	    ret = AutoInstallRules::GetRules();
+        if (try_default_rules)
+        {
+            y2milestone("Creating default Rules");
+            if (is_directory)
+            {
+                // Create rules for hex ip and mac address
+                AutoInstallRules::CreateDefault();
+            }
+            else
+            {
+                // Create rules for file
+                AutoInstallRules::CreateFile( filename );
+            }
+            ret = AutoInstallRules::GetRules();
             if (!ret)
             {
                 return false;
             }
-	}
+        }
 
-	if (process_rules)
-	{
-	    boolean rulesret = AutoInstallRules::Process( AutoinstConfig::xml_tmpfile);
-	    y2milestone("rulesret=%1", rulesret);
-	    return rulesret;
-	}
+        if (process_rules)
+        {
+            boolean rulesret = AutoInstallRules::Process( AutoinstConfig::xml_tmpfile);
+            y2milestone("rulesret=%1", rulesret);
+            return rulesret;
+        }
 
-	return true;
+        return true;
     }
 
 

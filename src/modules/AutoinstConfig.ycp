@@ -174,52 +174,52 @@
      * @example autoyast=http://www.server.com/profiles/
      */
     global define boolean ParseCmdLine (string autoinstall)
-	``{
-	import "URL";
+        ``{
+        import "URL";
 
-	map result = $[];
-	string cmdLine = "";
+        map result = $[];
+        string cmdLine = "";
 
-	if (size(autoinstall) > 0   )
-	{
-	    cmdLine = autoinstall;
-	    if (cmdLine == "default")
-	    {
-		result["scheme"] = "file";
-		result["path"]   = "/autoinst.xml";
-	    }
-	    else
-	    {
-		result = URL::Parse (cmdLine);
-		OriginalURI = cmdLine;
-	    }
-	}
+        if (size(autoinstall) > 0   )
+        {
+            cmdLine = autoinstall;
+            if (cmdLine == "default")
+            {
+                result["scheme"] = "file";
+                result["path"]   = "/autoinst.xml";
+            }
+            else
+            {
+                result = URL::Parse (cmdLine);
+                OriginalURI = cmdLine;
+            }
+        }
 
 
-	if (result["scheme"]:"" == "")
-	{
-	    // Autoinstall mode was not activated from command line.
-	    // There must be a floppy with an 'autoinst.xml' in order
-	    // to be able to reach this point, so we set floppy with
-	    // autoinst.xml as the control file.
+        if (result["scheme"]:"" == "")
+        {
+            // Autoinstall mode was not activated from command line.
+            // There must be a floppy with an 'autoinst.xml' in order
+            // to be able to reach this point, so we set floppy with
+            // autoinst.xml as the control file.
 
-	    result = add(result, "scheme", "floppy");
-	    result = add(result, "path","/autoinst.xml");
-	}
-	urltok = result;
+            result = add(result, "scheme", "floppy");
+            result = add(result, "path","/autoinst.xml");
+        }
+        urltok = result;
 
-	scheme		= urltok["scheme"]:"default";
-	host		= urltok["host"]:"";
-	filepath	= urltok["path"]:"";
-	port		= urltok["port"]:"";
-	user	        = urltok["user"]:"";
-	pass		= urltok["pass"]:"";
+        scheme		= urltok["scheme"]:"default";
+        host		= urltok["host"]:"";
+        filepath	= urltok["path"]:"";
+        port		= urltok["port"]:"";
+        user	        = urltok["user"]:"";
+        pass		= urltok["pass"]:"";
 
         if( scheme == "default" || scheme == "file" || scheme == "floppy" ) {
                 remoteProfile = false;
         }
         y2milestone("urltok = %1", urltok );
-	return true;;
+        return true;;
     }
 
 
@@ -231,43 +231,43 @@
 
     global define void SetProtocolMessage () ``{
 
-	if (scheme == "floppy")
-	{
-	    message =  _("Retrieving control file from floppy.");
-	}
-	else if (scheme == "tftp")
-	{
-	    message =  sformat ( _("Retrieving control file (%1) from TFTP server: %2."), filepath,  host );
-	}
-	else if (scheme == "nfs")
-	{
-	    message =  sformat ( _("Retrieving control file (%1) from NFS server: %2."), filepath, host );
-	}
-	else if (scheme == "http")
-	{
-	    message =  sformat ( _("Retrieving control file (%1) from HTTP server: %2."), filepath, host );
-	}
-	else if (scheme == "ftp")
-	{
-	    message =  sformat ( _("Retrieving control file (%1) from FTP server: %2."), filepath,  host );
-	}
-	else if (scheme == "file")
-	{
-	    message =  sformat ( _("Copying control file from file: %1."),  filepath);
-	}
-	else if (scheme == "device")
-	{
-	    message =  sformat ( _("Copying control file from device: /dev/%1."),  filepath );
-	}
-	else if (scheme == "default")
-	{
-	    message =   _("Copying control file from default location.");
-	}
-	else
-	{
-	    message =   _("Source unknown.");
-	}
-	return;
+        if (scheme == "floppy")
+        {
+            message =  _("Retrieving control file from floppy.");
+        }
+        else if (scheme == "tftp")
+        {
+            message =  sformat ( _("Retrieving control file (%1) from TFTP server: %2."), filepath,  host );
+        }
+        else if (scheme == "nfs")
+        {
+            message =  sformat ( _("Retrieving control file (%1) from NFS server: %2."), filepath, host );
+        }
+        else if (scheme == "http")
+        {
+            message =  sformat ( _("Retrieving control file (%1) from HTTP server: %2."), filepath, host );
+        }
+        else if (scheme == "ftp")
+        {
+            message =  sformat ( _("Retrieving control file (%1) from FTP server: %2."), filepath,  host );
+        }
+        else if (scheme == "file")
+        {
+            message =  sformat ( _("Copying control file from file: %1."),  filepath);
+        }
+        else if (scheme == "device")
+        {
+            message =  sformat ( _("Copying control file from device: /dev/%1."),  filepath );
+        }
+        else if (scheme == "default")
+        {
+            message =   _("Copying control file from default location.");
+        }
+        else
+        {
+            message =   _("Source unknown.");
+        }
+        return;
     }
 
 
@@ -276,14 +276,14 @@
      * @return	void
      */
     global define void Save ()
-	``{
-	// Write sysconfig variables.
-	y2milestone("Saving configuration data");
+        ``{
+        // Write sysconfig variables.
+        y2milestone("Saving configuration data");
 
-	SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );
-	SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir);
+        SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );
+        SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir);
 
-	return;
+        return;
     }
 
     /**
@@ -291,37 +291,37 @@
      * @return void
      */
     global define void AutoinstConfig ()
-	``{
-	if (Mode::autoinst ())
-	{
-	    any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
-	    if (autoinstall != nil && is ( autoinstall , string ) )
-	    {
-		ParseCmdLine((string) autoinstall);
+        ``{
+        if (Mode::autoinst ())
+        {
+            any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
+            if (autoinstall != nil && is ( autoinstall , string ) )
+            {
+                ParseCmdLine((string) autoinstall);
                 y2milestone("cmd line=%1", autoinstall );
                 SetProtocolMessage();
-	    }
-	}
-	else if (Mode::config () )
-	{
-	    // Load configuration data from /etc/sysconfig/autoinstall
-	    Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
-	    classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );
-	    string tmp_dontmerge = Misc::SysconfigRead( .sysconfig.autoinstall.XSLT_DONTMERGE, "addon,conf" );
+            }
+        }
+        else if (Mode::config () )
+        {
+            // Load configuration data from /etc/sysconfig/autoinstall
+            Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
+            classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );
+            string tmp_dontmerge = Misc::SysconfigRead( .sysconfig.autoinstall.XSLT_DONTMERGE, "addon,conf" );
 
-	    dontmerge = splitstring(tmp_dontmerge, ",");
+            dontmerge = splitstring(tmp_dontmerge, ",");
 
-	    // Set the defaults, just in case.
-	    if (Repository == "" || Repository == nil )
-	    {
-		Repository = "/var/lib/autoinstall/repository";
-	    }
-	} 
+            // Set the defaults, just in case.
+            if (Repository == "" || Repository == nil )
+            {
+                Repository = "/var/lib/autoinstall/repository";
+            }
+        } 
         else if (Mode::test () && Mode::normal ())
         {
             local_rules_file = (string)WFM::Args(1);
         }
-	return;
+        return;
     }
 
     global string MainHelp() {
