@@ -458,6 +458,27 @@
                 <entry>in most cases nr. 1-4 are primary partitions and 5-... are logical partitions</entry>
               </row>
               <row>
+                <entry>partition_id</entry>
+                <entry>
+                  <para>
+                        the partition_id configures the id of the partition. If you want something else than 131
+                        for linux partition or 130 for swap, you must configure that with partition_id.
+                  </para>
+                  <para><screen>&lt;partition_id config:type="integer"&gt;131&lt;/partition_id&gt;</screen></para>
+                </entry>
+                <entry>the default is 131 for linux partition. 130 for swap is set by autoyast itself too.</entry>
+              </row>
+              <row>
+                <entry>filesystem_id</entry>
+                <entry>
+                  <para>
+                        look at partition_id above. For historical reasons they represent the same.
+                  </para>
+                  <para><screen>&lt;filesystem_id config:type="integer"&gt;131&lt;/filesystem_id&gt;</screen></para>
+                </entry>
+                <entry>it's recommended to use partition_id instead.</entry>
+              </row>
+              <row>
                 <entry>mountby</entry>
                 <entry>
                   <para>
