@@ -83,7 +83,7 @@
 	    {
 		y2error("Can't find URL: %1", full_url);
                 // autoyast tried to read a file but had no success.
-                GET_error = sformat(_("Can't find URL '%1' via protocol HTTP(S). Server returned code %2"),full_url,res["code"]:0);
+                GET_error = sformat(_("Cannot find URL '%1' via protocol HTTP(S). Server returned code %2."),full_url,res["code"]:0);
 		return (false);
 	    }
 	}
@@ -99,7 +99,7 @@
 	    {
 		y2error("Can't find URL: %1", full_url);
                 // autoyast tried to read a file but had no success.
-                GET_error = sformat(_("Can't find URL '%1' via protocol FTP. Server returned code %2"),full_url,res["code"]:0);
+                GET_error = sformat(_("Cannot find URL '%1' via protocol FTP. Server returned code %2."),full_url,res["code"]:0);
 		return (false);
 	    }
 	}
@@ -114,7 +114,7 @@
 	    }
 	    else
 	    {
-                GET_error = GET_error + sformat(_("reading file on %1/%2 failed.\n"), Installation::sourcedir, Path);
+                GET_error = GET_error + sformat(_("Reading file on %1/%2 failed.\n"), Installation::sourcedir, Path);
 		string cpcmd = sformat("cp %1 %2", Path , Localfile);
 		y2milestone("Copy profile: %1", cpcmd);
 		SCR::Execute(.target.bash, cpcmd);
@@ -127,7 +127,7 @@
 	    }
 	    else
 	    {
-                GET_error = GET_error + sformat(_("reading file on %1 failed.\n"), Path);
+                GET_error = GET_error + sformat(_("Reading file on %1 failed.\n"), Path);
 		y2milestone("Trying to find file on installation media: %1", Installation::boot ());
 		if (Installation::boot () == "cd")
 		{
@@ -136,7 +136,7 @@
                                 mount_point, Installation::mountlog] ))
 		    {
                         // autoyast tried to mount the CD but had no success.
-                        GET_error = GET_error + sformat(_("mounting of %1 failed.\n"), cdrom );
+                        GET_error = GET_error + sformat(_("Mounting %1 failed."), cdrom );
 			y2warning("Mount failed");
 		    }
 		    else
@@ -153,7 +153,7 @@
 		    }
 		}
                 // autoyast tried to read a file but had no success.
-                GET_error = GET_error + sformat(_("reading a file on CD failed. Path: %1/%2"),mount_point,Path);
+                GET_error = GET_error + sformat(_("Reading a file on CD failed. Path: %1/%2."),mount_point,Path);
 		ok = false;
 	    }
 	}
@@ -171,7 +171,7 @@
 	    {
 		y2warning("Mount failed");
                 // autoyast tried to mount a NFS directory which failed
-                GET_error = sformat(_("mounting of %1 failed."), Host + ":" + dirname(Path) );
+                GET_error = sformat(_("Mounting %1 failed."), Host + ":" + dirname(Path) );
 		return (false);
 	    }
 
@@ -186,7 +186,7 @@
 	    else
 	    {
                 // autoyast tried to copy a file via NFS which failed
-                GET_error = sformat(_("remote file %1 can't be retrieved"),  mount_point + "/"+ basename(Path) );
+                GET_error = sformat(_("Remote file %1 cannot be retrieved"),  mount_point + "/"+ basename(Path) );
 		y2error("remote file %1 can't be retrieved",  mount_point + "/"
                         + basename(Path));
 
@@ -239,7 +239,7 @@
 		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  Path + " " + Localfile) != 0 )
 		{
                     // autoyast tried to copy a file but that file can't be found
-                    GET_error = sformat(_("file %1 can't be found"),mount_point + Path);
+                    GET_error = sformat(_("File %1 cannot be found"),mount_point + Path);
 		    y2error("file %1 can't be found",  mount_point + Path);
 		}
 		else
@@ -259,14 +259,14 @@
 	    }
 	    else
 	    {
-                GET_error = sformat(_("Can't find URL '%1' via protocol TFTP."),Host+":"+Path);
+                GET_error = sformat(_("Cannot find URL '%1' via protocol TFTP."),Host+":"+Path);
 		y2error("file %1 can't be found", Path );
 	    }
 	}
 	else
 	{
             // the user wanted autoyast to fetch it's profile via an unknown protocol
-            GET_error = sformat(_("Unknown protocol '%1'"),Scheme);
+            GET_error = sformat(_("Unknown protocol %1."),Scheme);
 	    y2error("Protocol not supported");
 	    ok = false;
 	}
