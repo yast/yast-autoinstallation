@@ -82,7 +82,7 @@
         // check for existing VM
         targetMap = Storage::GetTargetMap();
         y2milestone("GetTargetMap returns %1",targetMap);
-        //    ExistingLVM    = filter(string k, map v, Storage::GetTargetMap(), ``(v["type"]:`CT_UNKNOWN==`CT_LVM));
+        //ExistingLVM    = filter(string k, map v, Storage::GetTargetMap(), ``(v["type"]:`CT_UNKNOWN==`CT_LVM));
         ExistingLVM    = filter(string k, map v, Storage::GetTargetMap(), ``(v["type"]:`CT_UNKNOWN==vmType));
         ExistingVGs    = maplist (string  d, map g, ExistingLVM, ``{
             return (substring(d, 5) );
@@ -159,7 +159,7 @@
                     lv["type"] = `lvm;
                 } else if( vmType == `CT_EVMS ) {
                     lv["type"] = `evms;
-		    lv["evms_name"] = lv["lv_name"]:"";
+                    lv["evms_name"] = lv["lv_name"]:"";
                 }
                 lv["name"] = lv["lv_name"]:"";
                 return(lv);

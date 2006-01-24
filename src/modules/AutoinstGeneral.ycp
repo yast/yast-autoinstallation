@@ -90,71 +90,71 @@
      */
     global define string Summary()
     {
-	//string language_name		= "";
-	//string keyboard_name		= "";
-	string mouse_name		= "";
+        //string language_name		= "";
+        //string keyboard_name		= "";
+        string mouse_name		= "";
 
-	if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe")
-	{
-	    Mouse::Set(mouse["id"]:"");
-	    mouse_name = Mouse::MakeProposal(false, false);
-	}
-	else
-	{
-	    mouse_name = "probe";
-	}
-	string summary = "";
+        if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe")
+        {
+            Mouse::Set(mouse["id"]:"");
+            mouse_name = Mouse::MakeProposal(false, false);
+        }
+        else
+        {
+            mouse_name = "probe";
+        }
+        string summary = "";
 /*
-	if (language != "")
-	{
-	    Language::Set(language);
-	    language_name= Language::GetName ();
-	}
+        if (language != "")
+        {
+            Language::Set(language);
+            language_name= Language::GetName ();
+        }
 
-	if (keyboard  != $[])
-	{
-	    Keyboard::current_kbd = "";
-	    y2milestone("keymap: %1", keyboard["keymap"]:"");
-	    Keyboard::SetLanguage(keyboard["keymap"]:"");
-	    keyboard_name = Keyboard::Name();
-	}
+        if (keyboard  != $[])
+        {
+            Keyboard::current_kbd = "";
+            y2milestone("keymap: %1", keyboard["keymap"]:"");
+            Keyboard::SetLanguage(keyboard["keymap"]:"");
+            keyboard_name = Keyboard::Name();
+        }
 
-	string hwclock = (Clock["hwclock"]:""  == "UTC") ?  _("UTC") : _("Local time");
-	summary = Summary::AddHeader(summary, _("Language"));
-	summary = Summary::AddLine(summary, (language_name != "") ?
-				   language_name : Summary::NotConfigured());
+        string hwclock = (Clock["hwclock"]:""  == "UTC") ?  _("UTC") : _("Local time");
+        summary = Summary::AddHeader(summary, _("Language"));
+        summary = Summary::AddLine(summary, (language_name != "") ?
+                                   language_name : Summary::NotConfigured());
 
-	summary = Summary::AddHeader(summary, _("Keyboard"));
-	summary = Summary::AddLine(summary, (keyboard_name != "") ?
-				   keyboard_name : Summary::NotConfigured());
+        summary = Summary::AddHeader(summary, _("Keyboard"));
+        summary = Summary::AddLine(summary, (keyboard_name != "") ?
+                                   keyboard_name : Summary::NotConfigured());
 
-	summary = Summary::AddHeader(summary, _("Time Zone"));
-	summary = Summary::AddLine(summary, ( Clock["timezone"]:"" != "" && Clock["timezone"]:"" != nil ) ?
-				   Clock["timezone"]:"" : Summary::NotConfigured());
-	summary = Summary::AddHeader(summary, _("Hardware clock"));
-	summary = Summary::AddLine(summary,  hwclock );
+        summary = Summary::AddHeader(summary, _("Time Zone"));
+        summary = Summary::AddLine(summary, ( Clock["timezone"]:"" != "" && Clock["timezone"]:"" != nil ) ?
+                                   Clock["timezone"]:"" : Summary::NotConfigured());
+        summary = Summary::AddHeader(summary, _("Hardware clock"));
+        summary = Summary::AddLine(summary,  hwclock );
 */
 
-	summary = Summary::AddHeader(summary, _("Mouse"));
-	summary = Summary::AddLine(summary, (mouse_name != "") ?
-				   mouse_name : Summary::NotConfigured());
+        summary = Summary::AddHeader(summary, _("Mouse"));
+        summary = Summary::AddLine(summary, (mouse_name != "") ?
+                                   mouse_name : Summary::NotConfigured());
 
-	summary = Summary::AddHeader(summary, _("Confirm installation?"));
-	summary = Summary::AddLine(summary, (mode["confirm"]:true) ?
-				   _("Yes") : _("No"));
+        summary = Summary::AddHeader(summary, _("Confirm installation?"));
+        summary = Summary::AddLine(summary, (mode["confirm"]:true) ?
+                                   _("Yes") : _("No"));
 
         /*
-	summary = Summary::AddHeader(summary, _("Reboot after installation"));
-	summary = Summary::AddLine(summary, (mode["reboot"]:false) ?
-				   _("Yes") : _("No"));
+        summary = Summary::AddHeader(summary, _("Reboot after installation"));
+        summary = Summary::AddLine(summary, (mode["reboot"]:false) ?
+                                   _("Yes") : _("No"));
                                    */
 
-	summary = Summary::AddHeader(summary, _("Start System without Reboot"));
-	summary = Summary::AddLine(summary, (mode["forceboot"]:false) ?
-				   _("Yes") : _("No"));
+        summary = Summary::AddHeader(summary, _("Start System without Reboot"));
+        summary = Summary::AddLine(summary, (mode["forceboot"]:false) ?
+                                   _("Yes") : _("No"));
 
 
-	return summary;
+        return summary;
     }
 
     /**
@@ -204,62 +204,62 @@
      */
     global define boolean Write()
     {
-	//y2milestone("keymap -> %1", keyboard["keymap"]:"" );
-	//y2milestone("timezone -> %1", Clock["timezone"]:"" );
+        //y2milestone("keymap -> %1", keyboard["keymap"]:"" );
+        //y2milestone("timezone -> %1", Clock["timezone"]:"" );
 
-	AutoinstConfig::Confirm = mode["confirm"]:true;
-	AutoinstConfig::ForceBoot = mode["forceboot"]:false;
-	AutoinstConfig::Halt = mode["halt"]:false;
-	AutoinstConfig::RebootMsg = mode["rebootmsg"]:false;
+        AutoinstConfig::Confirm = mode["confirm"]:true;
+        AutoinstConfig::ForceBoot = mode["forceboot"]:false;
+        AutoinstConfig::Halt = mode["halt"]:false;
+        AutoinstConfig::RebootMsg = mode["rebootmsg"]:false;
 
         /*
-	Keyboard::default_kbd = keyboard["keymap"]:"";
-	Keyboard::SetConsole( keyboard["keymap"]:"" );
-	Keyboard::SetX11( keyboard["keymap"]:"" );
+        Keyboard::default_kbd = keyboard["keymap"]:"";
+        Keyboard::SetConsole( keyboard["keymap"]:"" );
+        Keyboard::SetX11( keyboard["keymap"]:"" );
 
-	//
-	// Timezone
-	//
-	if (Clock["timezone"]:"" != "")
-	{
-	    Timezone::Set( Clock["timezone"]:"", true );
-	}
+        //
+        // Timezone
+        //
+        if (Clock["timezone"]:"" != "")
+        {
+            Timezone::Set( Clock["timezone"]:"", true );
+        }
 
-	//
-	// Hardware Clock
-	//
+        //
+        // Hardware Clock
+        //
 
-	Timezone::hwclock =  (Clock["hwclock"]:"" == "UTC" || Clock["hwclock"]:"" == "GMT") ? "-u" : "--localtime";
+        Timezone::hwclock =  (Clock["hwclock"]:"" == "UTC" || Clock["hwclock"]:"" == "GMT") ? "-u" : "--localtime";
         */
 
-	//
-	// mouse
-	//
+        //
+        // mouse
+        //
 
-	if ( mouse["id"]:"" != "probe" && mouse["id"]:"" != "")
-	{
-	    Mouse::Set(mouse["id"]:"");
-	}
-	else if (haskey(mouse,"device"))
-	{
-	    //
-	    // Otherwise, try to find the mouse id from the DB using data supplied by user,
-	    // at least the device is needed.
-	    //
-	    string device = mouse["device"]:"none";
-	    integer wheels = mouse["wheels"]:0;
+        if ( mouse["id"]:"" != "probe" && mouse["id"]:"" != "")
+        {
+            Mouse::Set(mouse["id"]:"");
+        }
+        else if (haskey(mouse,"device"))
+        {
+            //
+            // Otherwise, try to find the mouse id from the DB using data supplied by user,
+            // at least the device is needed.
+            //
+            string device = mouse["device"]:"none";
+            integer wheels = mouse["wheels"]:0;
 
-	    map<string, list> mice = (map<string, list>)Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+            map<string, list> mice = (map<string, list>)Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
 
-	    foreach(string f,list g, mice, ``{
-		map data = g[1]:$[];
-		if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
-		{
-		    mouse["id"] =  f;
-		}
-	    });
-	     Mouse::Set(mouse["id"]:"");
-	}
+            foreach(string f,list g, mice, ``{
+                map data = g[1]:$[];
+                if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
+                {
+                    mouse["id"] =  f;
+                }
+            });
+             Mouse::Set(mouse["id"]:"");
+        }
     }
 
 }
