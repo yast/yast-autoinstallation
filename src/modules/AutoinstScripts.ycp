@@ -16,6 +16,7 @@
     import "Summary";
     import "URL";
     import "Service";
+    import "Popup";
 
     include "autoinstall/io.ycp";
 
@@ -489,24 +490,39 @@
             {
                 // string message =  sformat(_("Executing user supplied script: %1"), scriptName);
                 string executionString = "";
+                map<string,any> scriptOut = $[];
+                boolean showFeedback = s["feedback"]:false;
+
                 if (scriptInterpreter == "shell")
                 {
-                    executionString = sformat("/bin/sh -x %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
-                    SCR::Execute (.target.bash, executionString);
+                    string debug = ( s["debug"]:true ? "-x" : "" );
+                    executionString = sformat("/bin/sh %1 %2 ", debug, scriptPath);
+                    executionString = executionString + sformat("2>&1 | /usr/bin/tee %1/%2.log", current_logdir, scriptName);
+                    scriptOut = (map<string,any>)SCR::Execute (.target.bash_output, executionString);
                 }
                 else if (scriptInterpreter == "perl")
                 {
-                    executionString = sformat("/usr/bin/perl %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
-                    SCR::Execute (.target.bash,executionString);
+                    string debug = ( s["debug"]:true ? "-w" : "" );
+                    executionString = sformat("/usr/bin/perl %1 %2 ", debug, scriptPath);
+                    executionString = executionString + sformat("2>&1 | /usr/bin/tee %1/%2.log", current_logdir, scriptName);
+                    scriptOut = (map<string,any>)SCR::Execute (.target.bash_output,executionString);
                 }
                 else if (scriptInterpreter == "python")
                 {
-                    executionString = sformat("/usr/bin/python %1  2&> %2/%3.log", scriptPath, current_logdir, scriptName);
-                    SCR::Execute (.target.bash,executionString);
+                    executionString = sformat("/usr/bin/python %1 ", scriptPath);
+                    executionString = executionString + sformat("2>&1 | /usr/bin/tee %1/%2.log", current_logdir, scriptName);
+                    scriptOut = (map<string,any>)SCR::Execute (.target.bash_output,executionString);
                 }
                 else
                 {
                     y2error("Unknown interpreter: %1", scriptInterpreter);
+                }
+                string feedback = "";
+                if( showFeedback ) {
+                    feedback = scriptOut["stdout"]:"";
+                }
+                if( size(feedback) > 0 ) {
+                    Popup::LongText(type, `RichText(`opt(`plainText), feedback), 50, 20 );
                 }
                 y2milestone("Script Execution command: %1", executionString );
             }
