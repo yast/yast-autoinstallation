@@ -28,7 +28,7 @@ element pre-scripts {
 init-scripts =
 element init-scripts {
     LIST,
-    autoinstall-script+
+    autoinstall-init-script+
 }
 
 # script is overloaded
@@ -41,12 +41,21 @@ autoinstall-script = element script {
   feedback?
 }
 
+autoinstall-init-script = element script {
+  filename? &
+  interpreter? & 
+  element location { text }? &
+  source?
+}
+
 autoinstall-chroot-script = element script {
   chrooted? &
   filename? &
   interpreter? &
   element location { text }? &
-  source?
+  source? &
+  debug? &
+  feedback?
 }
 
 chrooted = element chrooted { BOOLEAN }
