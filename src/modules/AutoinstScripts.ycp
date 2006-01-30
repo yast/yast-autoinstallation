@@ -134,14 +134,19 @@
             return ($["filename":p["filename"]:"",
                       "interpreter": p["interpreter"]:"",
                       "source":p["source"]:"",
-                      "location":p["location"]:""
+                      "location":p["location"]:"",
+                      "feedback":p["feedback"]:false,
+                      "debug":p["debug"]:true
                     ]);
         });
         list<map> expost =  maplist (map p, post, ``{
             return ($["filename":p["filename"]:"",
                       "interpreter": p["interpreter"]:"",
                       "source":p["source"]:"",
-                      "location":p["location"]:""
+                      "location":p["location"]:"",
+                      "feedback":p["feedback"]:false,
+                      "debug":p["debug"]:true,
+                      "network_needed":p["network_needed"]:false
                       ]
                     );
         });
@@ -150,13 +155,16 @@
                       "interpreter": p["interpreter"]:"",
                       "source":p["source"]:"",
                       "chrooted":p["chrooted"]:false,
-                      "location":p["location"]:""
+                      "location":p["location"]:"",
+                      "feedback":p["feedback"]:false,
+                      "debug":p["debug"]:true
                     ]);
         });
         list<map> exinit =  maplist (map p, init, ``{
             return ($["filename":p["filename"]:"",
                       "source":p["source"]:"",
-                      "location":p["location"]:""
+                      "location":p["location"]:"",
+                      "debug":p["debug"]:true
                     ]);
         });
         map<string, list> result = $[];
@@ -278,7 +286,12 @@
     global define void AddEditScript(string scriptName,
             string source,
             string interpreter,
-            string type)
+            string type,
+            boolean chrooted,
+            boolean debug,
+            boolean feedback,
+            boolean network
+            )
     {
         boolean mod = false;
         merged = maplist (map script , merged, ``{
@@ -290,6 +303,11 @@
                 oldScript=add(oldScript,"source", source);
                 oldScript=add(oldScript,"interpreter", interpreter);
                 oldScript=add(oldScript,"type", type);
+                oldScript=add(oldScript,"chrooted", chrooted);
+                oldScript=add(oldScript,"debug",debug);
+                oldScript=add(oldScript,"feedback",feedback);
+                oldScript=add(oldScript,"network_needed",network);
+
                 mod = true;
                 return oldScript;
             }
@@ -305,6 +323,10 @@
             script=add(script,"source", source);
             script=add(script,"interpreter", interpreter);
             script=add(script,"type", type);
+            script=add(script,"chrooted", chrooted);
+            script=add(script,"debug",debug);
+            script=add(script,"feedback",feedback);
+            script=add(script,"network_needed",network);
 
             merged=add(merged,script);
         }
