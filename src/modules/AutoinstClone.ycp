@@ -138,7 +138,9 @@
                 }
                 if (haskey(pe,"region"))
                 {
-                    new_pe["region"] = pe["region"]:[];
+                    // don't clone the exact region.
+                    // I don't see any benefit in cloning that strict.
+                    //new_pe["region"] = pe["region"]:[];
                     new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
                 }
                 // LVM Group
