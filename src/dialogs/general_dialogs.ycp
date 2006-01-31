@@ -17,11 +17,11 @@
      */
     define symbol MouseDialog() ``{
 
-	// create the wizard dialog
-	//
-	Wizard::CreateDialog();
-	any result = WFM::CallFunction( "inst_mouse", [ GetInstArgs::Buttons(true,true) ] );
-	return (symbol)result;
+        // create the wizard dialog
+        //
+        Wizard::CreateDialog();
+        any result = WFM::CallFunction( "inst_mouse", [ GetInstArgs::Buttons(true,true) ] );
+        return (symbol)result;
     }
 
     /**
@@ -31,61 +31,58 @@
     define  symbol ModeDialog() ``{
 
 
-	map mode		= AutoinstGeneral::mode;
-	boolean forceboot	= mode["forceboot"]:false;
-	boolean confirm	= mode["confirm"]:true;
+        map mode		= AutoinstGeneral::mode;
+        boolean confirm	= mode["confirm"]:true;
+        boolean second_stage	= mode["second_stage"]:true;
 
-	term contents =
-	    `HVSquash(
-		 `VBox(
-		       `Left(`CheckBox(`id(`confirm), _("Con&firm installation?"), confirm)),
-		       `Left(`CheckBox(`id(`forceboot), _("Start System without Reboot"), forceboot))
+        term contents =
+            `HVSquash(
+                 `VBox(
+                       `Left(`CheckBox(`id(`confirm), _("Con&firm installation?"), confirm)),
+                       `Left(`CheckBox(`id(`second_stage), _("Autoyast second stage"), second_stage))
+                       )
+                 );
 
-		       )
-		 );
-
-	string help_text = _("<P>
+        string help_text = _("<P>
 The options in this dialog control the behavior of the AutoYaST during
 automatic installation.
 </P>
 ");
-	help_text = help_text + _("<P>
+        help_text = help_text + _("<P>
 The installation confirmation option is selected by default
 to avoid unwanted installation. It stops the system
 during installation and shows a summary of requested operations in the
 usual proposal screen.  Uncheck this option to install automatically without interruption.
 </P>
 ");
-	help_text = help_text + _("<P>
-By default, the system reboots after the initial phase of
-installation is completed. You can prevent the system from booting and continue
-directly into the installed system. This is not recommended and should be used
-only for debugging purposes.
+        help_text = help_text + _("<P>
+If you turn off the second stage of autoyast, the installation will continue in manual mode
+after the first reboot (after package installation).
 </P>
 ");
 
-	Wizard::SetContents(_("Other Options"),
-			    contents, help_text, true , true);
+        Wizard::SetContents(_("Other Options"),
+                            contents, help_text, true , true);
 
-	Wizard::HideAbortButton();
-	Wizard::SetNextButton(`next, Label::FinishButton() );
+        Wizard::HideAbortButton();
+        Wizard::SetNextButton(`next, Label::FinishButton() );
 
-	any ret = nil;
-	repeat {
-	    ret = UI::UserInput();
-	    if (ret == `next)
-	    {
+        any ret = nil;
+        repeat {
+            ret = UI::UserInput();
+            if (ret == `next)
+            {
 
-		map m = $[];
-		confirm = (boolean)UI::QueryWidget(`id(`confirm), `Value);
-		forceboot = (boolean) UI::QueryWidget(`id(`forceboot), `Value);
+                map m = $[];
+                confirm = (boolean)UI::QueryWidget(`id(`confirm), `Value);
+                second_stage = (boolean) UI::QueryWidget(`id(`second_stage), `Value);
 
-		mode["forceboot"] = forceboot;
-		mode["confirm"] = confirm;
-		AutoinstGeneral::mode = mode;
-	    }
-	} until (ret == `next || ret == `back);
-	return (symbol)ret;
+                mode["second_stage"] = second_stage;
+                mode["confirm"] = confirm;
+                AutoinstGeneral::mode = mode;
+            }
+        } until (ret == `next || ret == `back);
+        return (symbol)ret;
     }
 
 
@@ -96,38 +93,38 @@ only for debugging purposes.
      */
     define symbol generalSequence ()
     {
-	map dialogs = $[
-			"mouse"		: ``(MouseDialog()),
-			"mode"		: ``(ModeDialog())
-	];
+        map dialogs = $[
+                        "mouse"		: ``(MouseDialog()),
+                        "mode"		: ``(ModeDialog())
+        ];
 
-	map sequence = $[
-			 "ws_start"	: "mouse",
-			 "mouse"	: $[
-					    `next	: "mode",
-					    `abort	: `abort
-			 ],
-			 "mode"	:         $[
-					    `next	: `finish
-			                   ]
-	                ];
-	// Translators: dialog caption
-	string caption = _("General Settings");
-	term contents = `Label (_("Initializing ..."));
+        map sequence = $[
+                         "ws_start"	: "mouse",
+                         "mouse"	: $[
+                                            `next	: "mode",
+                                            `abort	: `abort
+                         ],
+                         "mode"	:         $[
+                                            `next	: `finish
+                                           ]
+                        ];
+        // Translators: dialog caption
+        string caption = _("General Settings");
+        term contents = `Label (_("Initializing ..."));
 
-	Wizard::CreateDialog ();
-	Wizard::SetContents ( caption,
-			      contents,
-			      "",
-			      true,
-			      true);
+        Wizard::CreateDialog ();
+        Wizard::SetContents ( caption,
+                              contents,
+                              "",
+                              true,
+                              true);
 
 
-	any ret = Sequencer::Run(dialogs, sequence);
+        any ret = Sequencer::Run(dialogs, sequence);
 
-	Wizard::CloseDialog ();
-	y2milestone(" generalSequence returns: %1", ret );
-	return (symbol)ret;
+        Wizard::CloseDialog ();
+        y2milestone(" generalSequence returns: %1", ret );
+        return (symbol)ret;
 
     }
 
