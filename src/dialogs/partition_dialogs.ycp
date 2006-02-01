@@ -108,6 +108,12 @@
         new_val["fsid"] = new_val["partition_id"]:Partitions::fsid_native;
         new_val["used_fs"] = new_val["filesystem"]:`reiser;
 
+        list<string> vgs = [];
+        foreach( map d, partitioning, ``{
+            if( d["is_lvm_vg"]:false == true || d["is_evms_vg"]:false == true ) {
+                vgs = add(vgs, substring( d["device"]:"", 5 ) );
+            }
+        });
 
         list<map> other_drives = filter (map d, partitioning, ``(d["device"]:"" != drive));
 
@@ -120,6 +126,7 @@
         boolean format		=  new_val["format"]:false;
 
         string partition_type	= new_val["partition_type"]:"";
+        string lv_name          = new_val["lv_name"]:"";
 
         symbol last_option_fs	= new_val["filesystem"]:`ext2;
         map fs_options          = new_val["fs_options"]:$[];
@@ -130,6 +137,9 @@
         string helptext = _("
 <P>Enter the partition information according to your
 needs. If you want to reuse an existing partition, you have to enter the partition number of the existing partition that shall be reused (counting starts with partition number 1) and no size.</P>
+<p>
+For partitions that are part of a volume group (not the logical partitions inside a volume group), you have to set the partition id to 0x8e and choose the volume group then. Of course you need to create a volume group before.
+</p>
 <P>For more information, refer to the online documentation.
 </P>
 ");
@@ -181,8 +191,14 @@ needs. If you want to reuse an existing partition, you have to enter the partiti
                              `VSpacing(0.5),
                              `Left(
                                    `CheckBox(`id(`asprimary), _("Create as a Primary Partition"), ( (partition_type =="primary") ? true : false) )
-                                   )
-
+                                   ),
+                             `VSpacing(1),
+                             `Left(
+                                 `ComboBox( `id(`vg), _("Choose the Volume Group"), vgs )
+                                 ),
+                             `Left(
+                                 `TextEntry( `id(`lv_name), _("Choose a name for the logical volume"), lv_name )
+                                 )
                              )
                        ),
                   `VSpacing(1),
@@ -259,6 +275,16 @@ needs. If you want to reuse an existing partition, you have to enter the partiti
 
         ChangeExistingSymbolsState( set_false, false);
         UI::ChangeWidget(`id(`partition_nr), `ValidChars, "0123456789");
+        if( substring( (string)UI::QueryWidget( `id(`fsid_point), `Value), 0, 4 ) == "0x8E" ) {
+            UI::ChangeWidget(`id(`vg), `Enabled, true);
+            UI::ChangeWidget(`id(`mount_point), `Value, "");
+            UI::ChangeWidget(`id(`mount_point), `Enabled, false);
+        } else {
+            UI::ChangeWidget(`id(`vg), `Enabled, false);
+        }
+        if( this_drive["is_lvm_vg"]:false == false && this_drive["is_evms_vg"]:false == false ) {
+            UI::ChangeWidget(`id(`lv_name), `Enabled, false);
+        }
 
         while (true)
         {
@@ -267,6 +293,16 @@ needs. If you want to reuse an existing partition, you have to enter the partiti
 
             if (ret != `cancel)
             {
+                if( ret == `fsid_point ) {
+                    if( substring( (string)UI::QueryWidget(`id(`fsid_point), `Value), 0, 4 ) == "0x8E" ) {
+                        UI::ChangeWidget(`id(`vg), `Enabled, true);
+                        UI::ChangeWidget(`id(`mount_point), `Value, "");
+                        UI::ChangeWidget(`id(`mount_point), `Enabled, false); // FIXME: does not work. Don't know why
+                    } else {
+                        UI::ChangeWidget(`id(`vg), `Enabled, false);
+                        UI::ChangeWidget( `mount_point, `Enabled, true );
+                    }
+                }
                 if ( UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max
                      || UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto)
                 {
@@ -481,6 +517,22 @@ due to use of the \"max\" option.
                     continue;
                 }
 
+                if( (boolean)UI::QueryWidget(`id(`vg), `Enabled) ) {
+                    string vg = (string)UI::QueryWidget(`id(`vg), `Value);
+                    list<map> partitioning =  AutoinstStorage::AutoPartPlan;
+                    foreach( map d, partitioning, ``{
+                        if( d["is_lvm_vg"]:false == true && d["device"]:"" == "/dev/"+vg ) {
+                            return_value = add( return_value, "lvm_group", vg );
+                        } else if( d["is_evms_vg"]:false == true && d["device"]:"" == "/dev/"+vg ) {
+                            return_value = add( return_value, "evms_group", vg );
+                        }
+                    });
+                }
+
+                if( (boolean)UI::QueryWidget(`id(`lv_name), `Enabled) ) {
+                    return_value = add( return_value, "lv_name", (string)UI::QueryWidget(`id(`lv_name), `Value) );
+                }
+
                 // crypto settings
                 boolean crypt_fs = (boolean)UI::QueryWidget(`id(`crypt_fs), `Value );
                 return_value = add( return_value, "crypt_fs", crypt_fs );
@@ -535,6 +587,128 @@ due to use of the \"max\" option.
         return (symbol)ret;
     }
 
+    /*
+     * Create VG dialog
+     * @param mode mode of operation
+     * @param item item to edit
+     * @return symbol
+     */
+    define symbol VGDialog(symbol mode, string item)
+        ``{
+
+        string vg_name = "";
+        if ( size(item) > 0 ) {
+            vg_name = item;
+        }
+
+        list<map> drives = AutoinstStorage::AutoPartPlan;
+        list configured_vgs = [];
+        map current_drive = $[];
+        boolean is_evms_vg = false;
+        boolean is_lvm_vg  = false;
+        foreach( map d, drives, ``{
+            if( d["is_evms_group"]:false == true )
+                configured_vgs = add(configured_vgs, d["device"]:"");
+            else if( d["is_lvm_group"]:false == true )
+                configured_vgs = add(configured_vgs, d["device"]:"");
+            if( d["device"]:"" == vg_name ) {
+                current_drive = d;
+                if( d["is_lvm_vg"]:false == true ) {
+                    is_lvm_vg = true;
+                } else if( d["is_evms_vg"]:false == true ) {
+                    is_evms_vg = true;
+                }
+            }
+        });
+        map drive = $[];
+        string help = _("
+<P>
+Create/Edit your volume groups here. After that, you must assign physical partition(s) to this volume group in the partition dialog of a physical harddisc. Set the partition id to 0x8e for those partitions there.
+</P>
+");
+        string title = _("Configure Volume Groups");
+        term contents =
+            `Top(
+                 `VBox(
+                       `Left(
+                             `TextEntry(`id(`vg_name), `opt(`editable), _("&Volume Group"), vg_name )
+                             ),
+                       `VSpacing(1),
+                       `RadioButtonGroup( `id(`bgroup2),
+                                          `VBox(
+                                                `Left(`RadioButton(`id(`is_evms_vg),`opt(`notify),
+                                                                   "&EVMS Volume Group", is_evms_vg
+                                                                   )
+                                                      ),
+                                                `Left(`RadioButton(`id(`is_lvm_vg), `opt(`notify),
+                                                                   "&LVM Volume Group", is_lvm_vg
+                                                                   )
+                                                      )
+                                                )
+                                          )
+                       )
+                 );
+
+
+        Wizard::CreateDialog();
+        string help_text = _("Help");
+        Wizard::SetContents( title, contents, help, true , true );
+        Wizard::HideAbortButton();
+
+        any ret = nil;
+        repeat {
+            ret = UI::UserInput();
+
+            if (ret == `next)
+            {
+                string vg_name = (string) UI::QueryWidget(`id(`vg_name),`Value);
+                symbol vg_type = (symbol) UI::QueryWidget(`id(`bgroup2), `CurrentButton);
+                if (mode == `create)
+                {
+                    if (!contains(configured_vgs,"/dev/"+vg_name)) {
+                        drive=add(drive, "use","all");
+                        if( vg_type == `is_evms_vg )
+                            drive=add(drive, "is_evms_vg",true);
+                        else
+                            drive=add(drive, "is_lvm_vg",true);
+                        drive=add(drive, "pesize","4M");
+                        drive=add(drive, "device","/dev/"+vg_name);
+
+                        drives=add(drives,drive);
+                        AutoinstStorage::AutoPartPlan = drives;
+                    }
+                    else
+                    {
+                        Popup::Message(_("This volume group is already configured.
+Select or enter another name.
+"));
+                        continue;
+                    }
+                } else {
+                    //remove current drive from list
+                    drives=filter(map d, drives,``(d["device"]:"" != vg_name));
+
+                    if ( (symbol)UI::QueryWidget(`id(`bgroup2), `CurrentButton) == `is_evms_vg ) {
+                        current_drive["is_evms_vg"] = true;
+                        if( haskey(current_drive, "is_lvm_vg") )
+                            current_drive = remove(current_drive, "is_lvm_vg");
+                    } else {
+                        current_drive["is_lvm_vg"] = true;
+                        if( haskey(current_drive, "is_evms_vg") )
+                            current_drive = remove(current_drive, "is_evms_vg");
+                    }
+                    current_drive["use"] = "all";
+                    current_drive["device"] = vg_name;
+                    drives=add(drives,current_drive);
+                    AutoinstStorage::AutoPartPlan = drives;
+                }
+            }
+        } until (ret == `next || ret ==`abort || ret == `back);
+        Wizard::CloseDialog();
+        return (symbol)ret;
+
+
+    }
 
 
     /*
@@ -745,6 +919,7 @@ Select or enter another device name.
                          ),
                   `HBox(
                         `PushButton(`id(`drive), _("Add Dri&ve")),
+                        `PushButton(`id(`addVG), _("Add Volume Group")),
                         `PushButton(`id(`part), _("Add &Partition")),
                         `PushButton(`id(`edit), _("&Edit")),
                         `PushButton(`id(`delete), _("&Delete"))
@@ -801,25 +976,22 @@ Select or enter another device name.
 
             list whatitem = [];
 
-            if(item != nil)
-            {
+            if(item != nil) {
                 whatitem = splitstring( item , ":");
             }
 
-
-            if (ret == `table && size (whatitem) == 0)
-            {
+            if (ret == `table && size (whatitem) == 0) {
                 UI::ChangeWidget(`id(`delete), `Enabled, true);
                 UI::ChangeWidget(`id(`edit), `Enabled, true);
-            }
-            else if (ret == `drive)
-            {
+            } else if (ret == `drive) {
                 action = DriveDialog(`create, "" );
                 drives_table = AutoinstStorage::Overview();
                 UI::ChangeWidget(`id(`table), `Items, drives_table);
-            }
-            else if  (ret == `part)
-            {
+            } else if (ret == `addVG) {
+                action = VGDialog(`create, "" );
+                drives_table = AutoinstStorage::Overview();
+                UI::ChangeWidget(`id(`table), `Items, drives_table);
+            } else if  (ret == `part) {
                 if (item != nil)
                 {
                     // Check if a partition already was configured with "max" size
@@ -846,15 +1018,21 @@ due to use of the \"max\" option.
             else if (ret == `edit)
             {
                 list item_id = splitstring(item,":");
-                if (size(item_id) >1)
-                { //Partition
+                if (size(item_id) >1) { //Partition
                     action = PartitionDialog(`edit, item);
                     UI::ChangeWidget(`id(`table), `CurrentItem, item_id[0]:"");
                     UI::ChangeWidget(`id(`part), `Enabled, true);
-                }
-                else
-                {
-                    action = DriveDialog(`edit, (string) item );
+                } else {
+                    list<map> partitioning =  AutoinstStorage::AutoPartPlan;
+                    map this_drive = $[];
+                    this_drive = select (filter (map d, partitioning,
+                              ``(d["device"]:"" == item_id[0]:"")), 0, $[] );
+                    if( this_drive["is_lvm_vg"]:false == true ||
+                        this_drive["is_evms_vg"]:false == true ) {
+                        action = VGDialog(`edit, (string) item );
+                    } else {
+                        action = DriveDialog(`edit, (string) item );
+                    }
                 }
                 drives_table = AutoinstStorage::Overview();
                 UI::ChangeWidget(`id(`table), `Items, drives_table);
