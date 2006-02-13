@@ -1,7 +1,7 @@
 #
 # Makefile.am for y2c_autoinst/src
 #
-# $Id: Makefile.am 15516 2004-03-05 15:40:36Z nashif $
+# $Id$
 #
 controldir = $(yast2dir)/control
 
