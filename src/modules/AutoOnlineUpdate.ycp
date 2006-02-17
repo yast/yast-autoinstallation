@@ -1,0 +1,284 @@
+/**
+ * File:	modules/AutoOnlineUpdate.ycp
+ * Package:	Configuration of AutoOnlineUpdate
+ * Summary:	Data for configuration of AutoOnlineUpdate, input and output functions.
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of AutoOnlineUpdate.
+ * Input and output routines.
+ */
+
+{
+
+module "AutoOnlineUpdate";
+textdomain "online-update";
+
+import "Report";
+import "Summary";
+import "Mode";
+
+
+/**
+ * Random time for autoyast to prevent DOS
+ */
+global boolean random_time = false;
+
+/**
+ * Timing of automated updates: daily, weekly
+ */
+global symbol timing = `weekly;
+
+/**
+ * Write only, used during autoinstallation.
+ * Don't run services and SuSEconfig, it's all done at one place.
+ */
+global boolean write_only = false;
+
+/**
+ * time of execution (minute)
+ */
+global integer minute = -1;
+
+/**
+ * time of execution (hour)
+ */
+global integer hour = -1;
+
+
+global integer day = -1;
+
+/**
+ * online_update options
+ */
+global string options = "";
+
+/**
+ * Only get patches
+ */
+global boolean autoget = false;
+
+/**
+ * Skip patches with pre-install information
+ */
+global boolean skipPre = true;
+
+/**
+ * Auto update enabled
+ */
+global boolean enabled = false;
+
+/**
+ * Location of the cron file
+ */
+global string cronfile = "/etc/cron.d/yast2-online-update";
+
+
+
+/* default value of settings modified */
+global boolean modified = false;
+
+
+/**
+ * Function sets internal variable, which indicates, that any
+ * settings were modified, to "true"
+ */
+global define void SetModified () {
+    y2milestone("SetModified");
+    modified = true;
+}
+
+/**
+ * Functions which returns if the settings were modified
+ * @return boolean  settings were modified
+ */
+global define boolean GetModified () {
+    return modified;
+}
+
+
+global list<string> days =
+    [
+    _("Sunday"),
+    _("Monday"),
+    _("Tuesday"),
+    _("Wednesday"),
+    _("Thursday"),
+    _("Friday"),
+    _("Saturday")
+        ];
+
+/**
+ * Read all AutoOnlineUpdate settings
+ * @return true on success
+ */
+global define boolean Read()
+{
+
+    options = (string)SCR::Read( .sysconfig.onlineupdate.CMDLINE_OPTIONS );
+
+
+    string cronjob = "";
+    if (SCR::Read(.target.size, cronfile)!= -1 )
+    {
+        cronjob = (string)SCR::Read( .target.string, cronfile );
+    }
+
+    if ( size( cronjob ) > 0 ) {
+        enabled = true;
+        string h  = regexpsub( cronjob, "[0-9]+ ([0-9]+) ", "\\1" );
+        string m = regexpsub( cronjob, "([0-9]+) ([0-9]+) ", "\\1" );
+        string d = regexpsub( cronjob, "[0-9*]+ [0-9*]+ [0-9*]+ [0-9*]+ ([0-9*]+)", "\\1" );
+        hour = tointeger( h );
+        minute = tointeger( m );
+        if (d != "*")
+            day = tointeger( d );
+        else
+            day = -1;
+	/*
+        if ( regexpmatch( cronjob, "-P" ) ) skipPre = true; FIXME
+	*/
+        if ( regexpmatch( cronjob, "-d" ) ) autoget = true;
+    }
+    else
+    {
+        enabled = false;
+        srandom();
+        if ( hour == -1 ) hour = random( 24 );
+        if ( minute == -1 ) minute = random( 60 );
+    }
+    y2milestone("hour: %1, minutes: %2", hour, minute );
+    return true;
+}
+
+
+/**
+ * Write all AutoOnlineUpdate settings
+ * @return true on success
+ */
+global define boolean Write()
+{
+
+    string cronjob = "";
+    if (timing == `weekly && day >= 0 && day <= 7) {
+        cronjob = sformat( "%1 %2 * * %3 root rug %4", minute, hour,
+                day, options );
+    } else {
+        cronjob = sformat( "%1 %2 * * * root rug %3", minute, hour,
+                options );
+    }
+    if ( autoget ) cronjob = cronjob + " -d";
+//    if ( skipPre ) cronjob = cronjob + " -P"; FIXME not clear yet
+    cronjob = cronjob + "\n";
+    SCR::Write( .target.string, cronfile, cronjob );
+    return true;
+}
+
+/**
+ * Get all AutoOnlineUpdate settings from the first parameter
+ * (For use by autoinstallation.)
+ * @param settings The YCP structure to be imported.
+ * @return boolean True on success
+ */
+global define boolean Import (map settings)
+{
+    hour = settings["update_time", "hour"]:-1;
+    day = settings["update_time", "day"]:-1;
+    minute = settings["update_time", "minute"]:-1;
+    timing = (settings["update_time", "timing"]:"" == "weekly")?`weekly:`daily;
+    autoget = settings["autoget"]:false;
+    skipPre = settings["skipPre"]:false;
+    enabled = settings["enable_autoupdate"]:false;
+    random_time = settings["update_time", "random_time"]:false;
+
+    if (random_time && Mode::autoinst())
+    {
+        srandom();
+        hour = random( 24 );
+        minute = random( 60 );
+    }
+    return true;
+}
+
+/**
+ * Dump the AutoOnlineUpdate settings to a single map
+ * (For use by autoinstallation.)
+ * @return map Dumped settings (later acceptable by Import ())
+ */
+global define map Export ()
+{
+    map settings = $[];
+    map update_time = $[];
+    update_time["hour"] = hour;
+    update_time["minute"] = minute;
+    update_time["day"] = day;
+    update_time["random_time"] = random_time;
+    update_time["timing"] = (timing == `weekly)? "weekly":"daily";
+    settings["update_time"] = update_time;
+    settings["autoget"] = autoget;
+    settings["skipPre"] = skipPre;
+    settings["enable_autoupdate"] = enabled;
+
+    return settings;
+}
+
+/**
+ * Create a textual summary and a list of unconfigured cards
+ * @return summary of the current configuration
+ */
+global define string Summary()
+{
+    // translators: Configuration summary text for autoyast
+    string summary = "";
+
+    string nc = Summary::NotConfigured ();
+    summary = Summary::AddHeader(summary, _("Scheduled Online Update Enabled"));
+    summary = Summary::AddLine(summary, enabled ? _("Yes") : _("No") );
+
+
+    string hour_str = (hour>9) ? sformat("%1", hour) : sformat("0%1", hour);
+    string minute_str = (minute>9) ? sformat("%1", minute) : sformat("0%1", minute);
+
+    string when = "";
+    if (timing == `daily)
+        when = _("Daily");
+    else
+        when = sformat(("Weekly %1"), days[day]:"");
+    string timestr = "";
+
+    if (!random_time)
+    {
+        timestr = sformat(_("%1 at %2:%3"), when ,hour_str, minute_str);
+    }
+    else
+    {
+        timestr = sformat(_("%1 at a Random Time"), when);
+    }
+
+    summary = Summary::AddHeader(summary, _("Time of Scheduled Online Update"));
+    summary = Summary::AddLine(summary, ( (hour!=-1 && minute!= -1 && enabled) ||
+                random_time ) ? timestr  : nc );
+
+    summary = Summary::AddHeader(summary, _("Only Download Patches"));
+    summary = Summary::AddLine(summary, autoget ? _("Yes") : _("No") );
+    summary = Summary::AddHeader(summary, _("Skip packages with preinstall information?"));
+    summary = Summary::AddLine(summary, skipPre ? _("Yes") : _("No") );
+
+    return summary;
+}
+
+
+/**
+ * Return packages needed to be installed and removed during
+ * Autoinstallation to insure module has all needed software
+ * installed.
+ * @return map with 2 lists.
+ */
+global define map AutoPackages()
+{
+    return $[ "install":[], "remove":[] ];
+}
+
+/* EOF */
+}
