@@ -1,8 +1,9 @@
 /**
- * File:	clients/inst_autosetup.ycp
- * Package:	Auto-installation
- * Summary:	Setup and prepare system for auto-installation
- * Authors:	Anas Nashif <nashif@suse.de>
+ * File:    clients/inst_autosetup.ycp
+ * Package: Auto-installation
+ * Summary: Setup and prepare system for auto-installation
+ * Authors: Anas Nashif <nashif@suse.de>
+ *          Uwe Gansert <ug@suse.de>
  *
  * $Id$
  */
@@ -28,6 +29,8 @@
     import "AutoinstLVM";
     import "AutoinstRAID";
     import "Storage";
+    import "Timezone";
+    import "Keyboard";
 
     include "bootloader/routines/autoinstall.ycp";
     include "autoinstall/ask.ycp";
@@ -117,6 +120,12 @@ control file and try again.
     AutoinstGeneral::Import(Profile::current["general"]:$[]);
     y2milestone("general: %1", Profile::current["general"]:$[] );
     AutoinstGeneral::Write();
+
+    if( haskey( Profile::current, "timezone" ) )
+        Timezone::Import(Profile::current["timezone"]:$[]);
+    if( haskey( Profile::current, "keyboard" ) )
+        Keyboard::Import(Profile::current["keyboard"]:$[]);
+
 
     // one can override the <confirm> option by the commandline parameter y2confirm
     string tmp = (string)SCR::Read (.target.string, "/proc/cmdline");
