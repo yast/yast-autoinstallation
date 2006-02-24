@@ -1,0 +1,201 @@
+@HEADER-COMMENT@
+
+@HEADER@
+BuildRequires:	fop java2-devel-packages yast2-devel-packages yast2-mouse yast2-transfer yast2-update yast2-bootloader xorg-x11-libs
+Requires:	yast2-core yast2-xml libxslt
+Requires:	autoyast2-installation = %{version}
+Requires:       yast2-schema
+Provides:	yast2-module-autoinst yast2-config-autoinst
+Obsoletes:	yast2-module-autoinst yast2-config-autoinst
+Provides:	yast2-lib-autoinst
+Obsoletes:	yast2-lib-autoinst
+PreReq:		%insserv_prereq %fillup_prereq
+
+BuildArchitectures:	noarch
+
+Summary:	YaST2 - Auto-Installation
+
+%description
+-
+
+
+%package installation
+Version:	@VERSION@
+Summary:	YaST2 - Auto-Installation: Installation Modules
+Group:		System/YaST
+Requires:	yast2-xml yast2-core
+Requires:	yast2-transfer
+Provides:	yast2-trans-autoinst
+Obsoletes:	yast2-trans-autoinst
+%description installation
+-
+
+%package utils
+Version:	@VERSION@
+Summary:	YaST2 - Auto-Installation: Utilities
+Group:		System/YaST
+Requires:       mkisofs
+%description utils
+-
+
+@PREP@
+
+@BUILD@
+[ -n "$JAVA_HOME" ] && unset JAVA_HOME
+. /usr/share/java-utils/java-functions
+export JAVA_HOME
+
+@INSTALL@
+for d in `ls $RPM_BUILD_ROOT/usr/share/autoinstall/modules/*.desktop`; do
+    %suse_update_desktop_file $d
+done
+
+# Class conf
+install -d -m 700 $RPM_BUILD_ROOT/etc/autoinstall
+# Installation files
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/init.d
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/logs
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/files
+install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/cache
+
+# Repository
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/templates
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/rules
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/classes
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
+install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
+
+@CLEAN@
+
+%post
+%{fillup_only -n autoinstall}
+
+
+%files
+%defattr(-,root,root)
+%dir /etc/autoinstall
+%dir @yncludedir@/autoinstall
+%dir /var/lib/autoinstall/repository
+%dir /var/lib/autoinstall/repository/templates
+%dir /var/lib/autoinstall/repository/rules
+%dir /var/lib/autoinstall/repository/classes
+%dir /var/lib/autoinstall/tmp
+%doc @docdir@
+
+
+@desktopdir@/autoyast.desktop
+/usr/share/autoinstall/modules/*.desktop
+@yncludedir@/autoinstall/classes.ycp
+@yncludedir@/autoinstall/conftree.ycp
+@yncludedir@/autoinstall/dialogs.ycp
+@yncludedir@/autoinstall/partition_dialogs.ycp
+@yncludedir@/autoinstall/script_dialogs.ycp
+@yncludedir@/autoinstall/general_dialogs.ycp
+@yncludedir@/autoinstall/wizards.ycp
+@yncludedir@/autoinstall/helps.ycp
+/usr/share/YaST2/schema/autoyast/rnc/*.rnc
+/usr/share/autoinstall/rnc
+
+@clientdir@/general_auto.ycp
+@clientdir@/report_auto.ycp
+@clientdir@/classes_auto.ycp
+@clientdir@/scripts_auto.ycp
+@clientdir@/software_auto.ycp
+@clientdir@/storage_auto.ycp
+@clientdir@/autoyast.ycp
+@clientdir@/clone_system.ycp
+
+@scrconfdir@/cfg_flamethrower.scr
+@scrconfdir@/ksimport.scr
+
+
+@moduledir@/AutoinstClass.y*
+@moduledir@/Kickstart.y*
+@agentdir@/ag_ksimport
+
+
+
+# additional files
+
+@fillupdir@/sysconfig.autoinstall
+
+############################################################################
+############################################################################
+####
+#### installation
+####
+############################################################################
+############################################################################
+
+%files installation
+%defattr(-,root,root)
+@scrconfdir@/autoinstall.scr
+@scrconfdir@/cfg_autoinstall.scr
+# DTD files
+%dir /usr/share/autoinstall
+%dir /usr/share/autoinstall/dtd
+%dir /usr/share/autoinstall/modules
+/usr/share/autoinstall/dtd/*
+/etc/init.d/autoyast
+
+%dir /usr/share/autoinstall/xslt
+/usr/share/autoinstall/xslt/merge.xslt
+# config file
+
+@moduledir@/AutoinstClone.y*
+%dir @yncludedir@/autoinstall
+@yncludedir@/autoinstall/autopart.ycp
+@yncludedir@/autoinstall/io.ycp
+@yncludedir@/autoinstall/autoinst_dialogs.ycp
+/usr/share/YaST2/control/*.xml
+
+@moduledir@/AutoInstall.y*
+@moduledir@/AutoinstScripts.y*
+@moduledir@/AutoinstGeneral.y*
+@moduledir@/AutoinstImage.y*
+@moduledir@/Y2ModuleConfig.y*
+@moduledir@/Profile.y*
+@moduledir@/AutoinstFile.y*
+@moduledir@/AutoinstConfig.y*
+@moduledir@/AutoinstSoftware.y*
+@moduledir@/AutoinstLVM.y*
+@moduledir@/AutoinstRAID.y*
+@moduledir@/AutoinstStorage.y*
+@moduledir@/AutoInstallRules.y*
+@moduledir@/ProfileLocation.y*
+@moduledir@/OnlineUpdateDialogs.y*
+@moduledir@/AutoOnlineUpdate.y*
+
+#clients
+@clientdir@/inst_autoinit.ycp
+@clientdir@/inst_autoimage.ycp
+@clientdir@/inst_autosetup.ycp
+@clientdir@/inst_autoconfigure.ycp
+@clientdir@/inst_autopost.ycp
+@clientdir@/files_auto.ycp
+@clientdir@/autoinst_test_clone.ycp
+@clientdir@/autoinst_test_stage.ycp
+@clientdir@/autoinst_scripts1_finish.ycp
+@clientdir@/autoinst_scripts2_finish.ycp
+@clientdir@/ayast_probe.ycp
+@clientdir@/online_update_auto.ycp
+@yncludedir@/autoinstall/xml.ycp
+@yncludedir@/autoinstall/ask.ycp
+
+
+%dir /var/adm/autoinstall/
+%dir /var/adm/autoinstall/scripts
+%dir /var/adm/autoinstall/init.d
+%dir /var/adm/autoinstall/logs
+%dir /var/adm/autoinstall/files
+%dir /var/adm/autoinstall/cache
+%dir /var/lib/autoinstall
+%dir /var/lib/autoinstall/autoconf
+
+
+%files utils
+%defattr(-,root,root)
+/usr/bin/create_package_descr
+/usr/bin/create_update_source.sh

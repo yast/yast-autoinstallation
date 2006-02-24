@@ -1,0 +1,103 @@
+#
+# this rnc describes the autoyast rules syntax.
+# The rules file is always named "rules.xml" in
+# the directory "rules/".
+# The rules are not part of the autoyast profile.
+# It's a seperate file.
+#
+
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+include "common.rnc"
+
+autoinstall =
+element autoinstall {
+    rules
+}
+
+rules =
+element rules {
+    LIST,
+    rule*
+}
+
+rule =
+element rule {
+    y2_match_to+ &
+    result &
+    operator?
+}
+
+y2_match_to =
+    arch
+    | board
+    | board_vendor
+    | custom1
+    | custom2
+    | custom3
+    | custom4
+    | custom5
+    | disksize
+    | domain
+    | haspcmica
+    | hostaddress
+    | hostid
+    | karch
+    | linux
+    | mac
+    | memsize
+    | network
+    | others
+    | product
+    | product_vendor
+    | totaldisk
+    | xserver
+
+arch           = element arch            { match_text & match_type? }
+board          = element board           { match_text & match_type? }
+board_vendor   = element board_vendor    { match_text & match_type? }
+custom1        = element custom1         { match_text & match_type? & script }
+custom2        = element custom2         { match_text & match_type? & script }
+custom3        = element custom3         { match_text & match_type? & script }
+custom4        = element custom4         { match_text & match_type? & script }
+custom5        = element custom5         { match_text & match_type? & script }
+disksize       = element disksize        { match_text & match_type? }
+domain         = element domain          { match_text & match_type? }
+haspcmica      = element haspcmica       { match_text & match_type? }
+hostaddress    = element hostaddress     { match_text & match_type? }
+hostid         = element hostid          { match_text & match_type? }
+karch          = element karch           { match_text & match_type? }
+linux          = element linux           { match_text & match_type? }
+mac            = element mac             { match_text & match_type? }
+memsize        = element memsize         { match_text & match_type? }
+network        = element network         { match_text & match_type? }
+others         = element others          { match_text & match_type? }
+product        = element product         { match_text & match_type? }
+product_vendor = element product_vendor  { match_text & match_type? }
+totaldisk      = element totaldisk       { match_text & match_type? }
+xserver        = element xserver         { match_text & match_type? }
+
+match_type =
+element match_type { "greater" | "exact" | "lower" | "range" | "regex" }
+match_text =
+element match { text }
+script =
+element script { text }
+
+result =
+element result {
+    profile &
+    continue?
+}
+
+profile =
+element profile { text }
+continue =
+element continue { BOOLEAN }
+
+operator =
+element operator { "or" | "and" }
+
+start = autoinstall

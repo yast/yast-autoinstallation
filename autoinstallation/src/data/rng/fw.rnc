@@ -1,0 +1,41 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+y2_firewall =
+  fw_allow_fw_traceroute
+  | fw_autoprotect_services
+  | fw_dev_ext
+  | fw_dev_int
+  | fw_ipsec_trust
+  | fw_log_accept_all
+  | fw_log_accept_crit
+  | fw_log_drop_all
+  | fw_log_drop_crit
+  | fw_masq_nets
+  | fw_masquerade
+  | fw_protect_from_internal
+  | fw_route
+  | fw_services_ext_tcp
+  | fw_services_ext_udp
+  | fw_services_int_ip
+  | start_firewall
+firewall = element firewall { y2_firewall* }
+fw_allow_fw_traceroute = element fw_allow_fw_traceroute { text }
+fw_autoprotect_services = element fw_autoprotect_services { text }
+fw_dev_ext = element fw_dev_ext { text }
+fw_dev_int = element fw_dev_int { text }
+fw_log_accept_all = element fw_log_accept_all { text }
+fw_log_accept_crit = element fw_log_accept_crit { text }
+fw_log_drop_all = element fw_log_drop_all { text }
+fw_log_drop_crit = element fw_log_drop_crit { text }
+fw_masq_nets = element fw_masq_nets { text }
+fw_masquerade = element fw_masquerade { text }
+fw_protect_from_internal = element fw_protect_from_internal { text }
+fw_route = element fw_route { text }
+fw_services_ext_tcp = element fw_services_ext_tcp { text }
+fw_ipsec_trust = element fw_ipsec_trust { text }
+fw_services_ext_udp = element fw_services_ext_udp { text }
+fw_services_int_ip = element fw_services_int_ip { text }
+start_firewall =
+  element start_firewall { BOOLEAN }

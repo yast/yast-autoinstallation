@@ -1,0 +1,286 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;	Reporting
+      </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Configuration and Installation Options"
+HREF="configuration.html"><LINK
+REL="PREVIOUS"
+TITLE="Configuration and Installation Options"
+HREF="configuration.html"><LINK
+REL="NEXT"
+TITLE="The Boot loader"
+HREF="createprofile.bootloader.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="configuration.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 4. Configuration and Installation Options</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="createprofile.bootloader.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="CreateProfile.Reporting"
+>4.2. Reporting</A
+></H1
+><P
+>&#13;	The <I
+CLASS="emphasis"
+>report</I
+> resource manages 3 types of pop-ups
+	that may appear during installation.
+      </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	    Pop up messages (Normally only non-critical, informative messages)
+	  </P
+></LI
+><LI
+><P
+>&#13;	    Warning messages (If something might go wrong)
+	  </P
+></LI
+><LI
+><P
+>&#13;	    Error messages (In the case of an error)
+	  </P
+></LI
+></UL
+><DIV
+CLASS="example"
+><A
+NAME="AEN314"
+></A
+><P
+><B
+>Example 4-2. Reporting Behavior</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+    &#60;install&#62;
+...
+       &#60;report&#62;    
+            &#60;messages&#62;
+                &#60;show config:type="boolean"&#62;true&#60;/show&#62;
+                &#60;timeout config:type="integer"&#62;10&#60;/timeout&#62;
+                &#60;log config:type="boolean"&#62;true&#60;/log&#62;
+            &#60;/messages&#62;
+            &#60;errors&#62;
+                &#60;show config:type="boolean"&#62;true&#60;/show&#62;
+                &#60;timeout config:type="integer"&#62;10&#60;/timeout&#62;
+                &#60;log config:type="boolean"&#62;true&#60;/log&#62;
+            &#60;/errors&#62;
+            &#60;warnings&#62;
+                &#60;show config:type="boolean"&#62;true&#60;/show&#62;
+                &#60;timeout config:type="integer"&#62;10&#60;/timeout&#62;
+                &#60;log config:type="boolean"&#62;true&#60;/log&#62;
+            &#60;/warnings&#62;
+       &#60;/report&#62;
+...
+    &#60;/install&#62;
+
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	Depending on your experience, you can skip, log and show (with timeout)
+	those messages. It is recommended to show all
+	<I
+CLASS="emphasis"
+>messages</I
+> with timeout. Warnings can be skipped in
+	some places but should not be ignored.
+      </P
+><P
+>&#13;	The default, the settings in auto-installation mode is to show all messages without logging and
+	with a timeout of 10 seconds.
+      </P
+><DIV
+CLASS="note"
+><P
+></P
+><TABLE
+CLASS="note"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="./stylesheet-images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TH
+ALIGN="LEFT"
+VALIGN="CENTER"
+><B
+>Critical system messages</B
+></TH
+></TR
+><TR
+><TD
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;	  Note that <I
+CLASS="emphasis"
+>not</I
+> all messages during installation are controlled by the
+	  <I
+CLASS="emphasis"
+>report</I
+> resource. Some critical messages concerning
+	  package installation and partitioning will still show up ignoring your
+	  settings in the <I
+CLASS="emphasis"
+>report</I
+> section. Mostly those
+	  messages will have to be answered with <I
+CLASS="emphasis"
+>Yes</I
+> or <I
+CLASS="emphasis"
+>No</I
+>.
+	</P
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="configuration.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="createprofile.bootloader.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Configuration and Installation Options</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="configuration.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>The Boot loader</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,32 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+samba-client = element samba-client { global }
+# <!ELEMENT global (winbind? , workgroup?)>
+winbind =
+  element winbind { BOOLEAN }
+workgroup = element workgroup { text }
+samba-server =
+  element samba-server {
+    client, global, role, service, shares, trusteddomains, version
+  }
+role = element role { text }
+client = element client { global }
+version = element version { text }
+shares =
+  element shares {
+    LIST,
+    share*
+  }
+trusteddomains =
+  element trusteddomains {
+    LIST,
+    trusteddomain*
+  }
+trusteddomain = element trusteddomain { domain, password }
+y2_share = options | share
+share = element share { (text | y2_share)* }
+option = element option { key, value? }
+# <!ELEMENT options  (option*)>
+# <!ELEMENT key  (#PCDATA)>

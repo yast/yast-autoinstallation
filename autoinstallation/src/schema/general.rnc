@@ -1,0 +1,47 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace config = "http://www.suse.com/1.0/configns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+general = element general { clock?, keyboard?, language?, mode?, mouse?, ask-list? }
+clock = element clock { hwclock, timezone }
+hwclock = element hwclock { text }
+timezone = element timezone { text }
+keyboard = element keyboard { keymap }
+keymap = element keymap { text }
+language = element language { text }
+ask-list = element ask-list { LIST, ask+ }
+ask = element ask { question?, \default?, help?, title?, type?, password?, path, stage?, selection? }
+question = element question { text }
+\default = element default { text }
+help = element help { text }
+title = element title { text }
+type = element type { "symbol" | "integer" | "boolean" | "string" }
+password = element password { BOOLEAN }
+path = element path { text }
+stage = element stage { "cont" | "initial" }
+selection = element selection { LIST, entry+ }
+entry = element entry { value, label }
+value = element value { text }
+label = element label { text }
+
+mode =
+  element mode {
+    confirm, disable_abort?, disable_buttons?, forceboot?, halt?, reboot?, second_stage?
+  }
+confirm =
+  element confirm { BOOLEAN }
+halt =
+  element halt { BOOLEAN }
+disable_abort =
+  element disable_abort { BOOLEAN }
+disable_buttons =
+  element disable_buttons { BOOLEAN }
+forceboot =
+  element forceboot { BOOLEAN }
+reboot =
+  element reboot { BOOLEAN }
+second_stage =
+  element second_stage { BOOLEAN }
+mouse = element mouse { 
+    element id { text }
+    }

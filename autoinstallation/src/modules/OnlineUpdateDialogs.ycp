@@ -1,0 +1,587 @@
+/**
+   Summary: YOU dialogs
+   Authors: Cornelius Schumacher <cschum@suse.de>
+*/
+
+{
+    module "OnlineUpdateDialogs";
+
+    textdomain "autoinst";
+
+    import "Label";
+    import "Popup";
+    import "AutoOnlineUpdate";
+    import "Mode";
+    import "Wizard";
+
+    global define symbol SetupAutomatic()
+    {
+	// dialog header
+	string heading = _("Automatic Online Update Setup");
+
+	// help text
+	string txt = _("Automatic update is executed by a daily cronjob. 
+A network connection must be available when
+the update takes place.");
+
+
+        integer c = 0;
+        list<term> days_as_items = maplist(string d, AutoOnlineUpdate::days, ``{
+                    term i = `item(`id(c), d );
+                    c = c + 1;
+                    return i;
+                });
+
+	if (!Mode::config())
+	{
+	    AutoOnlineUpdate::Read();
+	}
+	boolean enabled = AutoOnlineUpdate::enabled;
+	boolean autoget = AutoOnlineUpdate::autoget;
+        boolean skipPre = AutoOnlineUpdate::skipPre;
+	integer minute = AutoOnlineUpdate::minute;
+	integer hour = AutoOnlineUpdate::hour;
+	integer day = AutoOnlineUpdate::day;
+
+	symbol timing = AutoOnlineUpdate::timing;
+        boolean random_time = AutoOnlineUpdate::random_time;
+
+	term head = `VBox(
+			  `VSpacing( 0.2 ),
+			  `Heading( heading ),
+			  `VSpacing( 0.2 ),
+			  `Label( txt ),
+			  `VSpacing( 0.6 )
+			  );
+
+        term random_dialog =
+            `HBox(
+                    `HStretch(),
+                    `CheckBox(`id(`random),
+                        `opt(`notify),
+                        _("Set Random Time"),
+                        random_time),
+                    `HStretch()
+                 );
+        if (!Mode::config())
+	{
+            random_dialog = `Empty();
+        }
+
+	term content = `VBox(
+	    `HBox(
+		`HSpacing( 0.8 ),
+		`Left(
+		     `CheckBox( `id( `enable ), `opt( `notify ),
+			// checkbox label
+			_("Enable Automatic Update"), enabled )
+		)
+	    ),
+	    `VSpacing( 0.2 ),
+	    `HBox(
+		`HSpacing( 0.8 ),
+		`Left(
+		    `Frame( `id( `settings ), "", `VBox(
+			`HBox(
+			    `HSpacing( 0.8 ),
+			    `Left(`Label( `id( `crontime ),
+				// label text
+				_("Time when update is performed:") )
+			    ),
+			    `HSpacing( 0.8 )
+			),
+			`HBox(
+			    `HStretch(),
+			    // IntField label
+			    `IntField( `id( `hour ), _("Hour"), 0, 23, hour ),
+			    // IntField label
+			    `IntField(`id(`minute),_("Minute"), 0, 59, minute ),
+			    // combobox label
+			    `ComboBox(`id(`day), _("Day:"), days_as_items),
+			    `HStretch()
+			),
+                        random_dialog,
+			`VSpacing( 0.2 ),
+			`RadioButtonGroup(`id(`timing), `VBox(
+			    `HBox(
+				`HSpacing( 0.8 ),
+				`Left(`RadioButton(`id(`daily), `opt(`notify),
+				    // radibutton label
+				    _("Daily"), timing == `daily)
+				),
+				`HSpacing( 0.8 )
+			    ),
+			    `HBox(
+				`HSpacing( 0.8 ),
+				`Left(`RadioButton(`id(`weekly),`opt(`notify),
+				    // radibutton label
+				    _("Weekly"), timing == `weekly)
+				),
+				`HSpacing( 0.8 )
+			    )
+			)),
+			`VSpacing( 0.2 ),
+                        `VBox(
+			    `HBox(
+				`HSpacing( 0.8 ),
+				`Left(`CheckBox( `id( `autoget ),
+				    // checkbox label
+				    _("Only Download Patches"), autoget )
+				),
+				`HSpacing( 0.8 )
+			    ),
+                            `HBox(
+				`HSpacing( 0.8 ),
+				`Left (`CheckBox( `id( `skipPre),
+				    // checkbox label
+				  _("Skip Patches with Preinstall Information"),
+				    skipPre)
+				),
+				`HSpacing( 0.8 )
+			    )
+			),
+			`VSpacing( 0.5 )
+		    ))
+		),
+		`HSpacing( 0.8 )
+	    ),
+	    `VSpacing( 0.2 )
+	);
+
+	term buttons =  `HBox(
+			      `PushButton( `id( `next ), Label::OKButton() ),
+			      `PushButton( `id( `abort ), Label::CancelButton() )
+			      );
+
+	term dlg_contents = `HVCenter( content);
+	Wizard::CreateDialog();
+	Wizard::SetDesktopIcon("online_update");
+	Wizard::SetContentsButtons(heading, dlg_contents, txt,
+	    Label::BackButton(), Label::FinishButton());
+
+
+	UI::ChangeWidget( `id( `autoget ), `Enabled, enabled );
+        UI::ChangeWidget( `id( `skipPre ), `Enabled, enabled );
+	UI::ChangeWidget( `id( `timing ), `Enabled, enabled );
+	UI::ChangeWidget( `id( `day ), `Enabled, enabled );
+	UI::ChangeWidget( `id( `crontime ), `Enabled, enabled );
+        if (UI::WidgetExists(`id(`random)))
+        {
+	    UI::ChangeWidget( `id( `random ), `Enabled, enabled );
+        }
+
+	symbol ret = `enable;
+	boolean enable_days = false;
+
+	repeat {
+	    enabled = (boolean)UI::QueryWidget( `id( `enable ), `Value );
+	    enable_days = UI::QueryWidget( `id( `timing
+                                                ), `CurrentButton ) == `weekly;
+
+	    if ( ret == `enable )
+	    {
+		UI::ChangeWidget( `id( `autoget ), `Enabled, enabled );
+		UI::ChangeWidget( `id( `skipPre ), `Enabled, enabled );
+		UI::ChangeWidget( `id( `crontime ), `Enabled, enabled );
+		UI::ChangeWidget( `id( `timing ), `Enabled, enabled );
+		UI::ChangeWidget( `id( `hour ), `Enabled, enabled &&
+                        !AutoOnlineUpdate::random_time);
+		UI::ChangeWidget( `id( `minute ), `Enabled, enabled &&
+                        !AutoOnlineUpdate::random_time);
+		UI::ChangeWidget( `id( `day ), `Enabled, enabled && enable_days);
+		if (day != -1)
+		    UI::ChangeWidget( `id( `day ), `Value, day );
+                if (UI::WidgetExists(`id(`random)))
+		    UI::ChangeWidget( `id( `random ), `Enabled, enabled );
+	    }
+
+	    ret = (symbol)UI::UserInput();
+
+	    if (ret == `random)
+            {
+		boolean enable_random =
+		    (boolean)UI::QueryWidget( `id( `random ), `Value );
+                UI::ChangeWidget( `id( `hour ), `Enabled, !enable_random );
+                UI::ChangeWidget( `id( `minute ), `Enabled, !enable_random );
+            }
+
+	    if (ret == `daily)
+	    {
+		UI::ChangeWidget( `id( `day ),
+				  `Enabled, false);
+	    }
+            else if (ret == `weekly)
+            {
+		UI::ChangeWidget( `id( `day ),
+				  `Enabled, true);
+	    }
+
+	    if (  ret == `next) {
+		if ( enabled )
+		{
+		    AutoOnlineUpdate::minute = (integer)UI::QueryWidget( `id( `minute ), `Value );
+		    AutoOnlineUpdate::hour = (integer)UI::QueryWidget( `id( `hour ), `Value );
+		    AutoOnlineUpdate::autoget = (boolean)UI::QueryWidget( `id( `autoget ), `Value );
+		    AutoOnlineUpdate::skipPre = (boolean)UI::QueryWidget( `id( `skipPre ), `Value );
+		    AutoOnlineUpdate::day = (integer)UI::QueryWidget( `id(`day ), `Value );
+		    AutoOnlineUpdate::timing =	(symbol)UI::QueryWidget(`id(`timing), `CurrentButton );
+
+                    if (UI::WidgetExists(`id(`random)))
+		        AutoOnlineUpdate::random_time =
+                            (boolean)UI::QueryWidget(`id(`random), `Value );
+		    AutoOnlineUpdate::enabled = true;
+		    AutoOnlineUpdate::modified = true;
+		    if (!Mode::config())
+		    {
+			AutoOnlineUpdate::Write();
+		    }
+		}
+		else
+		{
+                    AutoOnlineUpdate::enabled = false;
+		    SCR::Execute( .target.remove, AutoOnlineUpdate::cronfile );
+		}
+	    }
+	} until ( ret == `next || ret == `abort  || ret == `back );
+
+	UI::CloseDialog();
+	return ret;
+    }
+
+
+    define any ErrorPopupGeneric( string message, string details,
+				  symbol type )
+	``{
+
+	if ( size( details ) == 0 ) details = _("No details available.");
+
+	string detailsStringOn = _("&Details <<");
+	string detailsStringOff = _("&Details >>");
+
+	term detailsButton = `PushButton( `id( `details ), detailsStringOff );
+
+	string heading = _("Error");
+
+	term buttons = nil;
+	if ( type == `skip ) {
+	    buttons = `HBox(
+			    detailsButton,
+			    `PushButton( `id( `tryagain ), _("Try again") ),
+			    `PushButton( `id( `skip ), _("Skip Patch") ),
+			    `PushButton( `id( `all ), _("Skip All") ),
+			    `PushButton( `id( `abort ), _("Abort Update") )
+			    );
+	} else if ( type == `ignore ) {
+	    buttons = `HBox(
+			    detailsButton,
+			    `PushButton( `id( `ok ), Label::IgnoreButton() ),
+			    `PushButton( `id( `abort ), _("Abort Update") )
+			    );
+	} else if ( type == `ignorewarning ) {
+	    heading = _("Warning");
+	    buttons = `HBox(
+			    detailsButton,
+			    `PushButton( `id( `retry ), Label::RetryButton() ),
+			    `PushButton( `id( `ok ), Label::IgnoreButton() ),
+			    `PushButton( `id( `abort ), _("Abort Update") )
+			    );
+	} else {
+	    buttons = `HBox(
+			    detailsButton,
+			    `PushButton( `id( `ok ), Label::OKButton() )
+			    );
+	}
+
+	UI::OpenDialog( `opt( `decorated ),
+			`VBox(
+			      `HBox( `HSpacing( 0.5 ), `Left( `Heading( heading ) ) ),
+			      `VSpacing( 0.2 ),
+			      `Label( message ),
+			      `ReplacePoint( `id( `rp ), `Empty() ),
+			      buttons
+			      )
+			);
+
+	any ret = nil;
+	boolean showDetails = false;
+
+	while( ret != `ok && ret != `tryagain && ret != `all &&
+	       ret != `abort && ret != `skip && ret != `retry ) {
+	    ret = UI::UserInput();
+
+	    if ( ret == `details ) {
+		if ( showDetails ) {
+		    UI::ReplaceWidget( `id( `rp ), `Empty() );
+		    UI::ChangeWidget( `id( `details ), `Label, detailsStringOff );
+		} else {
+		    UI::ReplaceWidget( `id( `rp ), `HBox( `HSpacing( 0.5 ),
+							  `HWeight( 1, `RichText(`opt(`plainText), details ) ),
+							  `HSpacing( 0.5 ) )
+				       );
+		    UI::ChangeWidget( `id( `details ), `Label, detailsStringOn );
+		}
+		showDetails = !showDetails;
+	    }
+	}
+
+	UI::CloseDialog();
+
+	if ( type != `plain ) {
+	    return ret;
+	} else {
+	    if ( ret ==  `ok ) return true;
+	    else return false;
+	}
+    }
+
+    global define symbol IgnoreWarningPopup( string message, string details )
+	``{
+	return (symbol)ErrorPopupGeneric( message, details, `ignorewarning );
+    }
+
+    global define symbol IgnorePopup( string message, string details )
+	``{
+	return (symbol)ErrorPopupGeneric( message, details, `ignore );
+    }
+
+    global define symbol SkipPopup( string message, string details )
+	``{
+	return (symbol)ErrorPopupGeneric( message, details, `skip );
+    }
+
+    global define symbol ErrorPopup( string message, string details )
+	``{
+	return (symbol)ErrorPopupGeneric( message, details, `plain );
+    }
+
+    //  ConfirmAbortUpdate has same layout as/but different text than ConfirmAbort
+    global define boolean ConfirmAbortUpdate( symbol how_to )
+	``{
+	string what_will_happen = "";
+
+	if ( how_to == `painless )
+	{
+	    // Warning text for aborting the update before a patch is installed
+	    what_will_happen = _("If you abort the installation now, no patch will be installed.
+Your installation will remain untouched.
+");
+	}
+	else if ( how_to == `incomplete )
+	{
+	    // Warning text for aborting if some patches are installed, some not
+	    what_will_happen = _("Patch download and installation in progress.
+If you abort the installation now, the update is incomplete.
+Repeat the update, including the download, if desired.
+");
+	}
+	else if ( how_to == `unusable )
+	{
+	    // Warning text for aborting an installation during the install process
+	    what_will_happen = _("If you abort the installation now,
+at least one patch is not installed correctly.
+You will need to do the update again.");
+	}
+	else if ( how_to == `suseconfig )
+	{
+	    // Warning text for aborting an installation without running SuSEconfig
+	    what_will_happen = _("If you abort the installation now, SuSEconfig will
+not be run. The patches have been installed
+correctly, but without running SuSEconfig
+some of them might not work as expected.");
+	}
+	else
+	{
+	    y2warning("Unknown symbol for what will happen when aborting - please correct in calling module" );
+	}
+
+	UI::OpenDialog(
+		       `opt(`decorated),
+		       `HBox(
+			     `HSpacing(1),
+			     `VBox(
+				   `VSpacing(0.2),
+				   `HCenter(
+					    `HSquash(
+						     `VBox(
+							   // Confirm user request to abort installation
+							   `Left( `Label( _("Really abort YaST Online Update?") ) ),
+							   `Left( `Label( what_will_happen ) )
+							   )
+						     )
+					    ),
+				   `HBox(
+					 // Button that will really abort the installation
+					 `PushButton(`id(`really_abort), _("&Abort Update") ),
+					 `HStretch(),
+
+					 // Button that will continue with the installation
+					 `PushButton(`id(`continue), `opt(`default), _("&Continue Update") )
+					 ),
+				   `VSpacing(0.2)
+				   ),
+			     `HSpacing(1)
+			     )
+		       );
+
+	any ret = UI::UserInput();
+	UI::CloseDialog();
+
+	return (ret == `really_abort);
+    };
+
+    global define boolean DisplayMsgYou( string message, string header, string yes_button, string no_button )
+	``{
+	UI::OpenDialog(
+		       `opt(`decorated),
+		       `HBox(
+			     `HSpacing(1),
+			     `VBox(
+				   `Left(`Heading( header)),
+				   `VSpacing(0.2),
+				   `Label(message),
+				   `HBox(`PushButton(`id(`yes), yes_button ),
+					 `PushButton(`id(`no), `opt(`default), no_button )),
+				   `VSpacing(0.2)
+				   ),
+			     `HSpacing(1)
+			     )
+		       );
+	any ret = UI::UserInput();
+	UI::CloseDialog();
+	return (ret == `yes);
+    };
+
+
+    global define boolean DisplayMsgYouOk( string message, string header, string ok_button )
+	``{
+	UI::OpenDialog(
+		       `opt(`decorated),
+		       `HBox(
+			     `HSpacing(1),
+			     `VBox(
+				   `Left(`Heading( header)),
+				   `VSpacing(0.2),
+				   `Label(message),
+				   `HBox(`PushButton(`id(`ok), `opt(`default), ok_button )),
+				   `VSpacing(0.2)
+				   ),
+			     `HSpacing(1)
+			     )
+		       );
+	any ret = UI::UserInput();
+	UI::CloseDialog();
+	return (ret == `ok);
+    };
+
+    global define boolean MessagePopup( list<map> patches, boolean pre )
+	``{
+	string message = "";
+	string details = "";
+
+	integer i = 0;
+	while ( i < size( patches ) ) {
+
+	    map patch = patches[ i ]:$[];
+
+	    string name = patch[ "name" ]:"";
+	    string summary = patch[ "summary" ]:"";
+
+	    string info = "";
+	    if ( pre ) info = patch[ "preinformation" ]:"";
+	    else info = patch[ "postinformation" ]:"";
+
+	    string header = sformat( _("<b>Patch:</b> %1<br>"), name );
+	    header = header + sformat( _("<b>Summary:</b> %1<br>"), summary );
+
+	    message = message + header;
+	    message = message + "<pre>" + info + "</pre>";
+
+	    details = details + header;
+
+	    list<string> packages = patch[ "packages" ]:[];
+
+	    details = details + _("<b>Packages:</b>");
+
+	    details = details + "<ul>";
+
+	    foreach( string p, packages, ``{ details = details + "<li>" + p + "</li>"; } );
+
+	    details = details + "</ul>";
+
+	    i = i + 1;
+	}
+
+	string detailsStringOn = _("Patch &Details <<");
+	string detailsStringOff = _("Patch &Details >>");
+
+	term detailsButton = `PushButton( `id( `details ), detailsStringOff );
+
+	term detailsTerm = 
+	    `HBox( `HSpacing( 0.5 ),
+		   `HWeight( 1, `RichText( `opt(`plainText), details ) ),
+		   `HSpacing( 0.5 )
+		   );
+       
+	term buttons = nil;
+	if ( pre ) {
+	    buttons = `HBox(
+			    detailsButton,
+			    `PushButton( `id( `ok ), _("Install Patch") ),
+			    `PushButton( `id( `skip ), _("Skip Patch") )
+			    );
+	} else {
+	    buttons = `HBox(
+			    detailsButton,
+			    `PushButton( `id( `ok ), Label::OKButton() )
+			    );
+	}
+
+	integer w = 20;
+	integer h = 5;
+      
+	if ( size( message ) > 100 ) {
+	    w = 60;
+	    h = 15;
+	}
+
+	UI::OpenDialog( `opt( `decorated ),
+			`VBox(
+			      `HSpacing( w ),
+			      `VSpacing( 0.2 ),
+			      `HBox(
+				    `VSpacing( h ),
+				    `RichText( message )
+				    ),
+			      `ReplacePoint( `id( `rp ), `Empty() ),
+			      buttons
+			      )
+			);
+
+	symbol ret = nil;
+	boolean showDetails = false;
+
+	while( ret != `ok && ret != `skip ) {
+	    ret = (symbol)UI::UserInput();
+
+	    if ( ret == `details ) {
+		if ( showDetails ) {
+		    UI::ReplaceWidget( `id( `rp ), `Empty() );
+		    UI::ChangeWidget( `id( `details ), `Label, detailsStringOff );
+		} else {
+		    UI::ReplaceWidget( `id( `rp ), `HBox( `HSpacing( 0.5 ),
+							  `HWeight( 1, `RichText( details ) ),
+							  `HSpacing( 0.5 ) )
+				       );
+		    UI::ChangeWidget( `id( `details ), `Label, detailsStringOn );
+		}
+		showDetails = !showDetails;
+	    }
+	}
+
+	UI::CloseDialog();
+
+	if ( ret ==  `ok ) return true;
+	else return false;
+    }
+
+}

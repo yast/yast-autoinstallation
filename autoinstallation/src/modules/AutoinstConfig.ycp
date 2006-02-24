@@ -1,0 +1,349 @@
+/**
+ * File:	modules/AutoinstConfig.ycp
+ * Module:	Auto-Installation
+ * Summary:	This module handles the configuration for auto-installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    module "AutoinstConfig";
+    textdomain "autoinst";
+
+    import "Misc";
+    import "Mode";
+    import "Installation";
+    import "URL";
+
+    include "autoinstall/xml.ycp";
+
+
+
+
+
+    // Profile Repository
+    global string Repository = "";
+
+    // Package Repository
+    global string PackageRepository = "";
+
+    // Classes
+    global string classDir = "";
+
+    // Current file name
+    global string currentFile = "";
+
+    //
+    // Temporary directory for storing profile before installation starts
+    //
+    global string tmpDir = (string)SCR::Read( .target.tmpdir );
+
+    //
+    // Main directory for data generated during installation
+    //
+    global string var_dir = "/var/adm/autoinstall";
+
+    //
+    // Directory for the pre/post and chroot scripts
+    //
+    global string scripts_dir = var_dir + "/scripts";
+    global string initscripts_dir = var_dir + "/init.d";
+
+    //
+    // Directory where log files of pre/post and chroot scripts are kept
+    //
+    global string logs_dir = var_dir + "/logs";
+
+    //
+    // Destination dir
+    //
+    global string destdir = Installation::destdir;
+
+
+    //
+    // Cache directory
+    //
+    global string cache = var_dir + "/cache";
+
+    //
+    // Temporary file name for retrieved system profile
+    //
+    global string xml_tmpfile = tmpDir + "/autoinst.xml";
+
+    //
+    // Final location for retrieved system profile
+    //
+    global string xml_file = cache + "/installedSystem.xml";
+
+
+    //
+    // Direcotry for runtime operation data
+    //
+    global string runtime_dir = "/var/lib/autoinstall";
+
+    //
+    // Directory where complete configuration files are kept.
+    //
+    global string files_dir = var_dir + "/files";
+
+    //
+    // Directory to store profile for possible user manipulation.
+    //
+    global string profile_dir	= "/tmp/profile";
+
+    //
+    // The user  modified version of the Profile
+    //
+    global string modified_profile = profile_dir + "/modified.xml";
+
+
+    global string autoconf_file = runtime_dir + "/autoconf/autoconf.xml";
+
+    //
+    // Parsed data from XML control in YCP format
+    //
+    global string parsedControlFile = cache + "/autoinst.ycp";
+
+
+    global string remote_rules_location = "rules/rules.xml";
+    global string local_rules_location = tmpDir + "/rules";
+    global string local_rules_file = local_rules_location + "/rules.xml";
+
+   // Data from command line
+    global map urltok = $[];
+
+    global string scheme =  "";
+    global string host = "";
+    global string filepath = "";
+    global string directory = "";
+    global string port = "";
+    global string user = "";
+    global string pass = "";
+
+
+    //
+    // Default runlevel
+    //
+    global string default_rl = "5";
+
+
+    //
+    // Confirm installation
+    //
+    global boolean Confirm = true;
+
+
+    global string OriginalURI = "";
+
+    global string message = "";
+
+    // Class merging.
+    // lists not to be merged, instead they will be "added"
+    //
+    global list<string> dontmerge = ["package", "addon", "user", "partition", "script", "group"];
+
+    //
+    // Halt after initial phase
+    //
+    global boolean Halt = false;
+
+    //
+    // Dont Hard Reboot
+    //
+    global boolean ForceBoot = false;
+
+    //
+    // Show Reboot Message
+    //
+    global boolean RebootMsg = false;
+
+
+    //
+    // remote profile (invented for pre-probing of s390)
+    // in case of a remote profile, the profile can be fetched
+    // before the probing stage DASD module can has run
+    //
+    global boolean remoteProfile = true;
+
+    include "autoinstall/io.ycp";
+
+
+    /**
+     * Return location of profile from command line.
+     * @return map with protocol, server, path
+     * @example autoyast=http://www.server.com/profiles/
+     */
+    global define boolean ParseCmdLine (string autoinstall)
+        ``{
+        import "URL";
+
+        map result = $[];
+        string cmdLine = "";
+
+        if (size(autoinstall) > 0   )
+        {
+            cmdLine = autoinstall;
+            if (cmdLine == "default")
+            {
+                result["scheme"] = "file";
+                result["path"]   = "/autoinst.xml";
+            }
+            else
+            {
+                result = URL::Parse (cmdLine);
+                OriginalURI = cmdLine;
+            }
+        }
+
+
+        if (result["scheme"]:"" == "")
+        {
+            // Autoinstall mode was not activated from command line.
+            // There must be a floppy with an 'autoinst.xml' in order
+            // to be able to reach this point, so we set floppy with
+            // autoinst.xml as the control file.
+
+            result = add(result, "scheme", "floppy");
+            result = add(result, "path","/autoinst.xml");
+        }
+        urltok = result;
+
+        scheme		= urltok["scheme"]:"default";
+        host		= urltok["host"]:"";
+        filepath	= urltok["path"]:"";
+        port		= urltok["port"]:"";
+        user	        = urltok["user"]:"";
+        pass		= urltok["pass"]:"";
+
+        if( scheme == "default" || scheme == "file" || scheme == "floppy" ) {
+                remoteProfile = false;
+        }
+        y2milestone("urltok = %1", urltok );
+        return true;;
+    }
+
+
+
+    /**
+     * SetProtocolMessage ()
+     * @return void
+     */
+
+    global define void SetProtocolMessage () ``{
+
+        if (scheme == "floppy")
+        {
+            message =  _("Retrieving control file from floppy.");
+        }
+        else if (scheme == "tftp")
+        {
+            message =  sformat ( _("Retrieving control file (%1) from TFTP server: %2."), filepath,  host );
+        }
+        else if (scheme == "nfs")
+        {
+            message =  sformat ( _("Retrieving control file (%1) from NFS server: %2."), filepath, host );
+        }
+        else if (scheme == "http")
+        {
+            message =  sformat ( _("Retrieving control file (%1) from HTTP server: %2."), filepath, host );
+        }
+        else if (scheme == "ftp")
+        {
+            message =  sformat ( _("Retrieving control file (%1) from FTP server: %2."), filepath,  host );
+        }
+        else if (scheme == "file")
+        {
+            message =  sformat ( _("Copying control file from file: %1."),  filepath);
+        }
+        else if (scheme == "device")
+        {
+            message =  sformat ( _("Copying control file from device: /dev/%1."),  filepath );
+        }
+        else if (scheme == "default")
+        {
+            message =   _("Copying control file from default location.");
+        }
+        else
+        {
+            message =   _("Source unknown.");
+        }
+        return;
+    }
+
+
+    /**
+     * Save Configuration global settings
+     * @return	void
+     */
+    global define void Save ()
+        ``{
+        // Write sysconfig variables.
+        y2milestone("Saving configuration data");
+
+        SCR::Write( .sysconfig.autoinstall.REPOSITORY, Repository );
+        SCR::Write( .sysconfig.autoinstall.CLASS_DIR, classDir);
+
+        return;
+    }
+
+    /**
+     * Constructor
+     * @return void
+     */
+    global define void AutoinstConfig ()
+        ``{
+        if (Mode::autoinst ())
+        {
+            any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
+            if (autoinstall != nil && is ( autoinstall , string ) )
+            {
+                ParseCmdLine((string) autoinstall);
+                y2milestone("cmd line=%1", autoinstall );
+                SetProtocolMessage();
+            }
+        }
+        else if (Mode::config () )
+        {
+            // Load configuration data from /etc/sysconfig/autoinstall
+            Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
+            classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );
+            string tmp_dontmerge = Misc::SysconfigRead( .sysconfig.autoinstall.XSLT_DONTMERGE, "addon,conf" );
+
+            dontmerge = splitstring(tmp_dontmerge, ",");
+
+            // Set the defaults, just in case.
+            if (Repository == "" || Repository == nil )
+            {
+                Repository = "/var/lib/autoinstall/repository";
+            }
+        } 
+        else if (Mode::test () && Mode::normal ())
+        {
+            local_rules_file = (string)WFM::Args(1);
+        }
+        return;
+    }
+
+    global string MainHelp() {
+        string main_help = _("<h3>AutoYaST Configuration Management System</h3>
+<p>Almost all resources of the control file can be
+configured using the configuration management system.</p>
+")
+            +
+_("<p>Most of the modules used to create the configuration are identical to those available
+through the YaST2 Control Center. Instead of configuring this system, the data
+entered is collected and exported to the control file that can be used to
+install another system using AutoYaST.
+</p>
+")
+            +
+_("<p>In addition to the existing and familiar modules,
+new interfaces were created for special and complex configurations, including
+partitioning, general options, and software.</p>
+");
+        return  main_help;
+    }
+
+
+
+}

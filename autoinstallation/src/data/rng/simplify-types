@@ -1,0 +1,7 @@
+#! /usr/bin/perl -p
+# part of converting DTD to RNC
+BEGIN {undef $/;}
+
+s/ *\[ a:defaultValue = "(boolean|integer|symbol|list)" \]\n//g;
+s/attribute config:type { string "(boolean|integer|symbol|list)" }\?/\U$1\E/g;
+s/{\s+(BOOLEAN|INTEGER|SYMBOL),\s+text\s+}/{ $1 }/gs;

@@ -1,0 +1,456 @@
+/**
+ * File:	include/autoinstall/dialogs.ycp
+ * Module:	Auto-Installation Configuration System
+ * Summary:	This module handles the configuration for auto-installation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+
+    import "Label";
+    import "Popup";
+    import "Profile";
+    import "Directory";
+    import "Y2ModuleConfig";
+    import "Wizard";
+    import "AutoinstConfig";
+    import "AutoinstClass";
+    include "autoinstall/helps.ycp";
+
+    /**
+     * Preferences Dialog
+     * @return symbol
+     */
+    define symbol Settings()
+	``{
+        Wizard::CreateDialog();
+        Wizard::SetDesktopIcon("autoyast");
+	term contents =
+	    `HVSquash(
+		 `VBox(
+		       `VSquash(`HBox(
+				      `TextEntry(`id(`repository), _("&Profile Repository:"), AutoinstConfig::Repository),
+				      `VBox(
+					    `VSpacing(),
+					    `Bottom(`PushButton(`id(`opendir), _("&Select Directory")))
+					    )
+				      )
+				),
+		       `VSquash(`HBox(
+
+				      `TextEntry(`id(`classdir), _("&Class directory:"), AutoinstConfig::classDir),
+				      `VBox(
+					    `VSpacing(),
+					    `Bottom(`PushButton(`id(`openclassdir), _("Select &Directory")))
+					    )
+				      )
+				)
+		       )
+		 );
+
+
+	string help = _("<P>
+Enter the directory where all <em>control files</em> should be stored in
+the <b>Repository</b> field.</P>");
+
+	help = help + _("<P>If you are using the classes feature
+of Autoyast, also enter the class directory. This is where
+all class files are stored.</p>
+");
+
+	Wizard::SetContents(_("Settings"),
+			    contents, help , true, true);
+
+	Wizard::HideAbortButton();
+	Wizard::RestoreNextButton();
+
+	boolean changed = false;
+	symbol ret = `none;
+	repeat {
+	    ret = (symbol)UI::UserInput();
+
+	    string new_rep = (string)UI::QueryWidget(`id(`repository), `Value);
+	    string new_classdir = (string)UI::QueryWidget(`id(`classdir), `Value);
+
+	    if (ret ==`opendir)
+	    {
+		new_rep = UI::AskForExistingDirectory(AutoinstConfig::Repository , _("Select Directory"));
+		if (new_rep != "")
+		{
+		    UI::ChangeWidget(`id(`repository), `Value, new_rep);
+		}
+		continue;
+	    }
+	    else if (ret ==`openclassdir)
+	    {
+		new_classdir = UI::AskForExistingDirectory( AutoinstConfig::classDir, _("Select Directory"));
+		if (new_classdir != "")
+		{
+		    UI::ChangeWidget(`id(`classdir), `Value, new_classdir);
+		}
+		continue;
+	    }
+	    else if ( ret == `next)
+	    {
+		if (AutoinstConfig::Repository != new_rep)
+		{
+		    changed = true;
+		    AutoinstConfig::Repository = new_rep;
+		}
+		if (AutoinstConfig::classDir != new_classdir)
+		{
+		    changed = true;
+		    //AutoinstConfig::classDir = new_classdir;
+            AutoinstClass::classDirChanged(new_classdir);
+		}
+	    }
+
+	    } until (ret == `back ||  ret == `next);
+
+	Wizard::RestoreScreenShotName ();
+	if ( changed  )
+	{
+	    AutoinstConfig::Save();
+	    changed =false;
+	}
+        Wizard::CloseDialog();
+	return ret;
+    }
+
+
+
+
+    /**
+     * Check validity of file name
+     * @param string file name
+     * @return 0 if valid, -1 if not.
+     */
+    define integer checkFileName (string name) ``{
+        if (name != filterchars (name, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-")
+	    || size (name) > 127)
+	{
+	    return -1;
+	}
+
+        return 0;
+    }
+
+
+    /**
+     * Return a message about invalid file names
+     * @param -
+     * @return message
+     */
+    define string invalidFileName() ``{
+	return(_("Invalid file name.
+Names can only contain letters, numbers, and underscore,
+must begin with letter, and must be
+127 characters long or less.
+"));
+    }
+
+
+    /**
+     * Popup for a new file name
+     * @param string caption
+     * @param string textentry
+     * @return string new file name
+     */
+    define string NewFileName(string caption, string textentry)``{
+	term con =
+	    `HBox(
+		  `HSpacing(1),
+		  `VBox(
+			`VSpacing(0.2),
+			// Translators: popup dialog heading
+			`Heading (caption),
+			//  _("&New Profile Name") _("New Profile")
+			// Translators: text entry label
+			`Left (`TextEntry (`id (`newname), textentry, "")),
+
+			`VSpacing(0.2),
+			`HBox(`PushButton(`id(`ok), `opt(`default), Label::OKButton()),
+			      `PushButton(`id(`cancel), Label::CancelButton())),
+			`VSpacing(0.2)
+			),
+		  `HSpacing(1)
+		  );
+
+	UI::OpenDialog (`opt(`decorated), con);
+	UI::SetFocus (`id (`newname));
+	string f = "";
+	any ret = nil;
+	while (true)
+	{
+	    ret = UI::UserInput ();
+	    if (ret == `cancel)
+	    {
+		break;
+	    }
+	    else if (ret == `ok)
+	    {
+		f = (string)UI::QueryWidget (`id (`newname), `Value);
+		if (checkFileName(f) !=0 || f == "")
+		{
+		    Popup::Error(invalidFileName());
+		    continue;
+		}
+		break;
+	    }
+	}
+
+	UI::CloseDialog ();
+
+	return (ret == `ok)? f : "";
+    }
+
+    /**
+     * Clone running system
+     * @return symbol
+     */
+    define symbol cloneSystem()``{
+	import "AutoinstClone";
+	import "Profile";
+
+
+        Wizard::CreateDialog();
+        Wizard::SetDesktopIcon("groups");
+
+
+	// title
+	string title = _("Create a Reference Control File");
+	list items = AutoinstClone::createClonableList();
+	term contents =
+	    `VBox(
+		  `MultiSelectionBox( `id(`res), _("Select Additional Resources:"),
+				      items
+				      )
+		  );
+
+	Wizard::SetContents(title,
+			    contents, HELPS["clone"]:"", true, true);
+	Wizard::HideAbortButton();
+	Wizard::SetNextButton(`next, Label::CreateButton() );
+
+	symbol ret = `none;
+	repeat
+	    {
+		ret = (symbol)UI::UserInput();
+		if (ret ==`next)
+		{
+		    AutoinstClone::additional = (list<string>)UI::QueryWidget( `id(`res), `SelectedItems );
+                    Popup::ShowFeedback( _("Collecting system data..."), _("This may take a while..."));
+		    AutoinstClone::Process();
+		    Profile::changed = true;
+                    Popup::ClearFeedback();
+
+		}
+	    } until (ret == `next || ret == `back);
+        Wizard::CloseDialog();
+	return ret;
+    }
+
+
+
+    define symbol kickstartDialog() {
+
+        import "Progress";
+        import "Kickstart";
+        import "Report";
+
+
+        string caption = _("Importing Kickstart file...");
+        y2debug("Importing Kickstart data");
+        Wizard::CreateDialog();
+        term contents = `Label (_("Initializing ..."));
+	Wizard::SetContents(caption,
+                contents, HELPS["kickstart"]:"" , false, false);
+        integer steps = 2;
+        integer sl = 500;
+
+        // We do not set help text here, because it was set outside
+        Progress::New( caption,  "", steps, [
+                // progress stage
+                _("Read Kickstart file"),
+                _("Import data"),
+                ], [
+                _("Reading Kickstart file..."),
+                // progress step
+                _("Importing data..."),
+                // progress step
+                _("Finished")
+                ],
+                ""
+                );
+
+
+        Progress::NextStage();
+        any filename = nil;
+        filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Select a kickstart file."));
+        if (filename == nil || filename == "")
+        {
+            Wizard::CloseDialog();
+            return `abort;
+        }
+
+        Kickstart::ksfile = (string)filename;
+        Kickstart::Read();
+
+        Progress::NextStage();
+        map<string, any> ksay = Kickstart::KS2AY();
+        Progress::Finish();
+
+
+        if (ksay == $[])
+        {
+            Report::Error(_("Error while loading Kickstart file. Verify the syntax of
+file and try again."));
+        }
+        else
+        {
+            Profile::Import(ksay);
+
+        Popup::ShowFeedback(_("Reading configuration data"), _("This may take a while"));
+        foreach(string p, map d, Profile::ModuleMap, ``{
+                /* Set resource name, if not using default value */
+                string resource = d["X-SuSE-YaST-AutoInstResource"]:"";
+                if (resource == "")
+                {
+                resource = p;
+                }
+                y2debug("resource: %1", resource );
+                string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+                string module_auto =d["X-SuSE-YaST-AutoInstClient"]:"none";
+                any rd = Y2ModuleConfig::getResourceData(d
+                    ,resource);
+                if (rd!=nil) {
+                WFM::CallFunction(module_auto, ["Import",
+                    rd]);
+                }
+                });
+        Popup::ClearFeedback();
+
+            Report::Message(_("Kickstart file was imported.
+Check the imported syntax and make sure the package selection and partitioning
+were imported correctly."));
+        }
+        Wizard::CloseDialog();
+        return `next;
+    }
+
+
+    void UpdateValidDialog(string summary, string log )
+    {
+        UI::ChangeWidget(`id(`richtext), `Value, summary);
+        UI::ChangeWidget(`id(`log), `LastLine , log );
+    }
+
+    /**
+     * Validate Dialog
+     * @return symbol
+     */
+    symbol ValidDialog() {
+        import "Summary";
+        import "HTML";
+        Wizard::CreateDialog();
+        term contents = `VBox(
+                `RichText(`id(`richtext), ""),
+                `LogView(`id(`log), "", 5, 100)
+                );
+	Wizard::SetContents(_("Check profile validity"),
+                contents, HELPS["valid"]:"", true, true);
+        y2milestone("Checking validity");
+        Wizard::HideAbortButton();
+        Wizard::HideBackButton();
+        UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
+
+
+        string file = AutoinstConfig::tmpDir + "/" + "valid.xml";
+        Profile::Save(file);
+
+	string html_ok = HTML::Colorize(_("OK"), "green");
+	string html_ko = HTML::Colorize(_("Error"), "red");
+	string html_warn = HTML::Colorize(_("Warning"), "yellow");
+        string summary = "";
+
+	// some of these can be commented out for the release
+	list<list> validators = [
+	    [
+		_("Checking XML without DTD validation..."),
+		"/usr/bin/xmllint --noout",
+		],
+	    [
+		_("Checking XML with DTD validation..."),
+		"/usr/bin/xmllint --noout --valid"
+		],
+	    [
+		_("Checking XML with RNG validation..."),
+		"/usr/bin/xmllint --noout --relaxng "
+		// was: /usr/share/autoinstall/rng/profile.rng
+		+ Directory::schemadir + "/autoyast/rng/profile.rng",
+		],
+	    [
+		_("Checking XML with RNC validation..."),
+		"/usr/bin/jing >&2 -c "
+		// only leftovers in /usr/share/autoinstall/rnc/profile.rnc
+		+ Directory::schemadir + "/autoyast/rnc/profile.rnc",
+		],
+	    ];
+
+	foreach (list i, validators, {
+	    string header = i[0]:"";
+	    string cmd = i[1]:"" + " " + file;
+
+	    summary = Summary::AddHeader (summary, header);
+	    UpdateValidDialog (summary, "\n" + cmd + "\n");
+
+	    map o = (map)SCR::Execute (.target.bash_output, cmd);
+	    y2debug("validation output: %1", o);
+
+	    summary = summary + (o["exit"]:1 == 0? html_ok: html_ko);
+	    UpdateValidDialog (summary, o["stderr"]:"");
+	});
+
+        boolean logicOk = true;
+        boolean rootOk = false;
+        if( haskey(Profile::current, "users") ) {
+                foreach( map u, Profile::current["users"]:[], ``{
+                        if( u["username"]:"" == "root" && haskey(u,"user_password") ) {
+                                rootOk = true;
+                        }
+                });
+        }
+        // the autoyast interface can check if the profile is logical or if important stuff is missing
+        // the missing stuff is under the Label "Logic"
+        summary = Summary::AddHeader (summary, _("Logic") );
+        if( ! rootOk ) {
+                // the autoyast config frontend can check if a root password is configured
+                // and can warn the user if it is missing
+                summary = summary + html_warn + " " + _("No root password configured");
+                logicOk = false;
+        }
+
+        if( logicOk ) {
+            summary = summary + html_ok;
+        }
+        UpdateValidDialog (summary, "");
+
+        any ret = nil;
+        while (true)
+        {
+            ret = UI::UserInput();
+            if (ret == `next || ret == `back )
+            {
+                break;
+            } else if ( ret == `abort)
+            {
+                break;
+            }
+        }
+
+        Wizard::CloseDialog();
+        return (symbol)ret;
+    }
+
+}

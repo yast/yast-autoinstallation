@@ -1,0 +1,103 @@
+/**
+ * File:	clients/online_update_auto.ycp
+ * Package:	Configuration of online_update
+ * Summary:	Client for autoinstallation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
+ */
+
+/**
+ * @param function to execute
+ * @param map/list of online_update settings
+ * @return map edited settings, Summary or boolean on success depending on called function
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = WFM::CallFunction ("online_update_auto", [ "Summary", mm ]);
+ */
+
+{
+
+y2milestone("----------------------------------------");
+y2milestone("online_update auto started");
+
+import "AutoOnlineUpdate";
+import "Mode";
+import "Wizard";
+import "OnlineUpdateDialogs";
+import "Progress";
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
+{
+    func = (string)WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map) WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+/* Create a summary*/
+if(func == "Summary") {
+    ret = (string) AutoOnlineUpdate::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    AutoOnlineUpdate::Import($[]);
+    AutoOnlineUpdate::modified = false;
+    ret = $[];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    ret = OnlineUpdateDialogs::SetupAutomatic();
+}
+/* Import configuration */
+else if (func == "Import") {
+    ret = AutoOnlineUpdate::Import(param);
+}
+/* configuration modified? */
+else if (func == "GetModified") {
+    ret = AutoOnlineUpdate::GetModified();
+}
+/* Return actual state */
+else if (func == "Export") {
+    ret = AutoOnlineUpdate::Export();
+}
+/* Return needed packages */
+else if (func == "Packages") {
+    ret = AutoOnlineUpdate::AutoPackages();
+}
+/* Read current state */
+else if (func == "Read") {
+    Progress::off();
+    ret = AutoOnlineUpdate::Read();
+    Progress::on();
+}
+/* Write givven settings */
+else if (func == "Write") {
+    Progress::off();
+    AutoOnlineUpdate::write_only = true;
+    ret = AutoOnlineUpdate::Write();
+    Progress::on();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("online_update auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
+}

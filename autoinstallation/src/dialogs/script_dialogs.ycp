@@ -1,0 +1,353 @@
+/**
+ * File:
+ *	script_dialogs.ycp
+ *
+ * Module:
+ *	script_dialogs.ycp
+ *
+ * Summary:
+ *	This module handles the configuration for auto-installation
+ *
+ * Authors:
+ *	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+    textdomain "autoinst";
+
+    import "Popup";
+    import "AutoinstConfig";
+
+
+    /**
+     * Script Configuration
+     * @return  script configuration dialog
+     */
+    term script_dialog_contents()
+    {
+        list allscripts = maplist(map s, AutoinstScripts::merged,
+                                  ``{
+                                      return (`item(`id(s["filename"]:"Unknown"),
+                                                    s["filename"]:"Unknown",
+                                                    AutoinstScripts::typeString(s["type"]:""),
+                                                    s["interpreter"]:"Unknown")
+                                              );
+                                  });
+        term contents =
+            `VBox(
+                  `Left(
+                        `Label(_("Available Scripts"))
+                        ),
+                  `Table( `id(`table), `opt(`notify),
+                          `header(_("Script Name"), _("Type"), _("Interpreter")),
+                          allscripts
+                          ),
+                  `HBox(
+                        `PushButton(`id(`new),  Label::NewButton()),
+                        `PushButton(`id(`edit), Label::EditButton()),
+                        `PushButton(`id(`delete), Label::DeleteButton())
+                        )
+                  );
+        return contents;
+    }
+
+
+    /**
+     * Dialog for adding/Editing  a script
+     * @param mode `edit or `new
+     * @param name script name
+     * @return symbol
+     */
+
+    symbol ScriptDialog(symbol mode , string name)
+    {
+        map script = $[];
+        if (mode == `edit)
+        {
+            list filtered_scripts = filter(map s, AutoinstScripts::merged,``((s["filename"]:""  == name)));
+            if (size(filtered_scripts)>0)
+            {
+                script = filtered_scripts[0]:$[];
+            }
+        }
+
+        // help 1/6
+        string help = _("
+<h3>Preinstallation Scripts</h3>
+<P>Add commands to run on the system  before the installation begins. </P>
+");
+        // help 2/6
+        help = help + _("
+<h3>Postinstallation Scripts</h3>
+<P>You can also add commands to execute on the system after the installation
+is completed. These scripts are run outside the chroot environment.
+</P>");
+        // help 3/6
+        help = help + _("
+<H3>Chroot Scripts</H3>
+<P>For your postinstallation script to run inside the chroot
+environment, choose the <i>chroot scripts</i> options. Those scripts are
+run before the system reboots for the first time. By default, the chroot 
+scripts are run in the installation system. To access files in the installed 
+system, always use the mount point \"/mnt\" in your scripts.
+</P>
+");
+        // help 4/6
+        help = help + _("
+<p>It is possible to run chroot scripts in a later stage after
+the boot loader has been configured using the special boolean tag \"chrooted\".
+This runs the scripts in the installed system. 
+</p>
+");
+        // help 5/6
+        help = help + _("
+<H3>Init Scripts</H3>
+<P>These scripts are executed during the initial boot process and after
+YaST has finished configuring the system. The final scripts are executed 
+using a special <b>rc</b> script that is executed only once. 
+The final scripts are executed toward the end of the boot
+process and after network has been intialized.
+</P>
+");
+
+        // help 6/6
+        help = help + _("
+<H3>Interpreter:</H3>
+<P>Preinstallation scripts can only be shell scripts. Do not use <i>Perl</i> or 
+<i>Python</i> for preinstallation scripts.
+</P>
+");
+        help = help + _("
+<H3>Network Access:</H3>
+<P>While executing postinstallation scripts, the network is disabled and
+requires initialization in the scripts to make the network accessible. An
+alternative for postinstallation scripts with network is using init scripts, which
+guarantee a fully configured system when running the scripts. If you did an installation
+via network, you can use the \"Network\" option for the post-script too.
+</P>
+");
+        help = help + _("
+<H3>Feedback and Debug:</H3>
+<P>All scripts except the init-scripts can show STDOUT+STDERR in a popup box as feedback.
+If you turn on debugging, you'll get more output in the feedback dialog, that might help
+you to debug your script.</P>
+");
+
+        string title = _("Script Editor");
+
+        term contents=
+            `VBox(
+                  `HBox(
+                        `TextEntry(`id(`filename), _("&File Name"),
+                            script["filename"]:""),
+                        `ComboBox( `id(`interpreter), _("&Interpreter"),
+                                   [
+                                    `item(`id("perl"), _("Perl"),(script["interpreter"]:"shell" == "perl")),
+                                    `item(`id("shell"), _("Shell"),(script["interpreter"]:"shell" == "shell")),
+                                    `item(`id("shell"), _("Python"),(script["interpreter"]:"shell" == "python"))
+                                    ]
+                                   ),
+                        `ComboBox( `id(`type), `opt(`notify), _("&Type"),
+                                   [
+                                    `item(`id("pre-scripts"), "Pre", (script["type"]:""  == "pre-scripts")),
+                                    `item(`id("chroot-scripts"), "Chroot",(script["type"]:"" == "chroot-scripts")),
+                                    `item(`id("post-scripts"), "Post",(script["type"]:"" == "post-scripts")),
+                                    `item(`id("init-scripts"), "Init", (script["type"]:""  == "init-scripts"))
+                                    ]
+                                   ),
+                        `HStretch(),
+                        `Empty()
+                        ),
+                  `HBox(
+                                // a checkbox where you can choose if you want to see script-feedback output or not
+                                `CheckBox( `id( `feedback ), _("&Feedback"), ( script["feedback"]:false ) ),
+                                // a checkbox where you can choose if you want to see script-debug output or not
+                                `CheckBox( `id( `debug    ), _("&Debug"),    ( script["debug"]:true ) ),
+                                `CheckBox( `id( `chrooted ), "&Chrooted", ( script["chrooted"]:false ) ),
+                                // a checkbox where you can choose if you need to have network when the script is running
+                                `CheckBox( `id( `network ),  _("&Network"),  ( script["network_needed"]:false ) )
+                   ),
+                  `VSpacing(1),
+                  `HBox(
+                        `MultiLineEdit(`id(`source), _("S&cript Source"), script["source"]:"")
+                        ),
+                  `VSpacing(1),
+                  `HBox(
+                        `PushButton(`id(`save), Label::SaveButton()),
+                        `PushButton(`id(`loadsource), _("&Load new source")),
+                        `PushButton(`id(`cancel), Label::CancelButton())
+
+                        )
+                  );
+
+        Wizard::HideNextButton();
+        Wizard::HideBackButton();
+        Wizard::HideAbortButton();
+        Wizard::SetContents(title,
+                            contents, help, true, true);
+        string type = (string)UI::QueryWidget(`id(`type), `Value);
+        if( type == "pre-scripts" ) {
+                UI::ChangeWidget (`id(`chrooted), `Enabled, false);
+                UI::ChangeWidget (`id(`network), `Enabled, false);
+        } else if( type == "chroot-scripts" ) {
+                UI::ChangeWidget (`id(`network), `Enabled, false);
+        } else if( type == "post-scripts" ) {
+                UI::ChangeWidget (`id(`chrooted), `Enabled, false);
+        } else if( type == "init-scripts" ) {
+                UI::ChangeWidget (`id(`chrooted), `Enabled, false);
+                UI::ChangeWidget (`id(`network), `Enabled, false);
+                UI::ChangeWidget (`id(`feedback), `Enabled, false);
+        }
+
+        if (mode == `edit)
+        {
+            UI::ChangeWidget(`id(`filename), `Enabled, false);
+        }
+
+        symbol ret = `none;
+        repeat {
+            ret = (symbol)UI::UserInput();
+            if (ret == `save) {
+                string scriptName = (string)UI::QueryWidget(`id(`filename), `Value);
+
+                string type = (string)UI::QueryWidget(`id(`type), `Value);
+                string interpreter = (string)UI::QueryWidget(`id(`interpreter), `Value);
+                string source = (string)UI::QueryWidget(`id(`source), `Value);
+                boolean feedback = (boolean)UI::QueryWidget(`id(`feedback), `Value);
+                boolean debug    = (boolean)UI::QueryWidget(`id(`debug), `Value);
+                boolean chrooted = (boolean)UI::QueryWidget(`id(`chrooted), `Value);
+                boolean network  = (boolean)UI::QueryWidget(`id(`network),  `Value);
+
+                if (source == "" || scriptName == "")
+                {
+                    Popup::Message(_("Provide at least the script
+name and the content of the script.
+"));
+                    ret = `again;
+                    continue;
+                }
+                else
+                {
+                    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type, chrooted, debug, feedback, network);
+                }
+            }
+            else if (ret == `loadsource)
+            {
+                string filename = UI::AskForExistingFile( AutoinstConfig::Repository, "*", _("Select a file to load."));
+                if (filename != "")
+                {
+                    string source = (string) SCR::Read(.target.string, filename);
+                    UI::ChangeWidget(`id(`source), `Value, source);
+                    continue;
+                }
+            } else if( ret == `type ) {
+                string type = (string)UI::QueryWidget(`id(`type), `Value);
+                if( type == "init-scripts" ) {
+                        UI::ChangeWidget (`id(`feedback), `Enabled, false);
+                        UI::ChangeWidget (`id(`chrooted), `Enabled, false);
+                        UI::ChangeWidget (`id(`network),  `Enabled, false);
+                        UI::ChangeWidget (`id(`feedback), `Value, false);
+                        UI::ChangeWidget (`id(`chrooted), `Value, false);
+                        UI::ChangeWidget (`id(`network),  `Value, false);
+                } else if( type == "chroot-scripts" ) {
+                        UI::ChangeWidget (`id(`chrooted), `Enabled, true);
+                        UI::ChangeWidget (`id(`feedback), `Enabled, true);
+                        UI::ChangeWidget (`id(`network),  `Enabled, false);
+                        UI::ChangeWidget (`id(`network),  `Value, false);
+                } else if( type == "post-scripts" ) {
+                        UI::ChangeWidget (`id(`chrooted), `Enabled, false);
+                        UI::ChangeWidget (`id(`chrooted), `Value, false);
+                        UI::ChangeWidget (`id(`feedback), `Enabled, true);
+                        UI::ChangeWidget (`id(`network),  `Enabled, true);
+                } else if( type == "pre-scripts" ) {
+                        UI::ChangeWidget (`id(`chrooted), `Enabled, false);
+                        UI::ChangeWidget (`id(`chrooted), `Value, false);
+                        UI::ChangeWidget (`id(`feedback), `Enabled, true);
+                        UI::ChangeWidget (`id(`network),  `Value, false);
+                        UI::ChangeWidget (`id(`network),  `Enabled, false);
+                }
+            }
+
+        } until (ret == `save || ret == `cancel || ret == `back);
+        return ret;
+
+    }
+
+
+
+
+    /**
+     * Main dialog
+     * @return symbol
+     */
+    define symbol ScriptsDialog()
+    ``{
+
+        string help = _("<p>
+By adding scripts to the autoinstallation process, customize the installation for
+your needs and take control in different stages of the installation.</p>
+");
+
+        string title = _("User Script Management");
+        Wizard::SetContents(title,
+                            script_dialog_contents(), help, true, true);
+
+        Wizard::HideAbortButton();
+        Wizard::SetNextButton(`next, Label::FinishButton() );
+        any ret = nil;
+        repeat {
+            ret = UI::UserInput();
+
+            if (ret == `new)
+            {
+                Wizard::CreateDialog();
+                ScriptDialog((symbol) ret , "" );
+                Wizard::CloseDialog();
+            }
+            else if (ret == `edit)
+            {
+                string name = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+                if (name != nil)
+                {
+                    Wizard::CreateDialog();
+                    ScriptDialog((symbol) ret , name  );
+                    Wizard::CloseDialog();
+                }
+                else
+                {
+                    Popup::Message(_("Select a script first."));
+                    continue;
+                }
+
+            }
+            else if (ret == `delete)
+            {
+                string name = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+                if (name != nil) {
+                    AutoinstScripts::deleteScript(name);
+
+                }
+                else
+                {
+                    Popup::Message(_("Select a script first."));
+                    continue;
+                }
+            }
+            Wizard::SetContents(title,
+                            script_dialog_contents(), help, true, true);
+
+
+        } until (ret == `next || ret == `back  );
+
+        return (symbol) ret;
+    }
+
+
+
+
+
+
+}
