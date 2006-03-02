@@ -112,7 +112,7 @@
         StorageDevices::InitDone();
         map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
-        StorageMap=filter(string d, map p, StorageMap, ``(!issubstring(d, "/dev/evms")));
+        StorageMap=filter(string d, map p, StorageMap, ``(!issubstring(d, "/dev/evms") && size(p["partitions"]:[]) > 0));
         y2debug("Storagemap %1", StorageMap);
 
         list drives = maplist(string k, map v, StorageMap, ``{
