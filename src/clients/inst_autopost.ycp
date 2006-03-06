@@ -18,6 +18,7 @@
     import "AutoinstScripts";
     import "Report";
     import "Progress";
+    include "autoinstall/ask.ycp";
 
     y2milestone("Profile=%1", Profile::current );
 
@@ -61,6 +62,7 @@ Please wait while the system is prepared for autoinstallation.</p>
     Progress::NextStage();
     Progress::Title(_("Checking for required packages..."));
 
+    askDialog();
 
     y2milestone("Steps: %1", steps );
 
