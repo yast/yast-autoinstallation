@@ -33,6 +33,7 @@
 
     // Add-on selections
     global list<string> addons = [];
+    global list<string> patterns = [];
 
     // Kernel, force type of kernel to be installed
     global string kernel = "";
@@ -77,6 +78,7 @@
         Software = settings;
         base = settings["base"]:"";
         addons = settings["addons"]:[];
+        patterns = settings["patterns"]:[];
 
         string notFound = "";
         Packages::Init(true);
@@ -134,6 +136,9 @@
 
         if (addons != [])
             s["addons"] = addons ;
+
+        if( patterns != [])
+            s["patterns"] = patterns;
 
         if (PackageAI::toinstall != [])
             s["packages"] = PackageAI::toinstall;
@@ -350,25 +355,34 @@
         string  base_selection = base;
         if (size(base_selection) > 0)
         {
-            if (! Pkg::SetSelection( base_selection ))
+            if (! Pkg::ResolvableInstall( base_selection, `selection ))
             {
                 y2error("Error while setting base selection: %1", base_selection);
                 Report::Error(sformat(_("Could not set base selection: %1"), base_selection));
                 return false;
             }
         }
+/*
         else
         {
             Popup::Warning(_("Base selection is not set in control file.
 If packages to install have been added individually, 
 this message can be ignored."));
         }
-
+*/
         list<string> failed = [];
+
+        foreach(string p, toset(patterns),
+                ``{
+            if (! Pkg::ResolvableInstall( p, `pattern ) )
+            {
+                failed = add(failed, p);
+            }
+        });
 
         foreach(string s, toset(addons),
                 ``{
-            if (!Pkg::SetSelection( s ))
+            if (! Pkg::ResolvableInstall( s, `selection ))
             {
                 failed = add(failed, s);
             }
@@ -380,7 +394,7 @@ this message can be ignored."));
         {
             foreach(string s, failed,
                     ``{
-                if (!Pkg::SetSelection( s ))
+                if (!Pkg::ResolvableInstall( s, `selection ))
                 {
                     failed_again = add(failed_again, s);
                 }
@@ -388,15 +402,15 @@ this message can be ignored."));
         }
         if (size(failed_again) > 0 )
         {
-            y2error("Error while setting-addon selection: %1",  mergestring(failed_again, ","));
-            Report::Warning(sformat(_("Could not set add-on selections: %1"), mergestring(failed_again, ",")));
+            y2error("Error while setting-addon selection or pattern: %1",  mergestring(failed_again, ","));
+            Report::Warning(sformat(_("Could not set patterns/selections: %1"), mergestring(failed_again, ",")));
         }
-
+/*
         if (!Pkg::ActivateSelections())
         {
             return false;
         }
-
+*/
 
         list<string> autoinstPacks = autoinstPackages ();
         y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
