@@ -253,6 +253,14 @@
         base = Pkg::GetSelections(`installed, "base");
         list<string> addons =  Pkg::GetSelections(`installed, "addon");
         list<string> inst = Pkg::GetPackages(`installed, true);
+        list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
+        list<string> patterns = [];
+
+        foreach( map<string,any> m, all_patterns, ``{
+            if( m["status"]:`nothing == `installed )
+                patterns = add( patterns, m["name"]:"" );
+        });
+
 
         Pkg::TargetFinish ();
 
@@ -285,6 +293,7 @@
         software["base"] = base[0]:"";
         software["addons"] = addons;
         software["packages"] = userpackages;
+        software["patterns"] = patterns;
         return software;
     }
 
