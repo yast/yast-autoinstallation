@@ -136,9 +136,9 @@
 
         string helptext = _("
 <P>Enter the partition information according to your
-needs. If you want to reuse an existing partition, you have to enter the partition number of the existing partition that shall be reused (counting starts with partition number 1) and no size.</P>
+needs. To reuse an existing partition, enter the partition number of the existing partition to reuse (counting starts with partition number 1) and no size.</P>
 <p>
-For partitions that are part of a volume group (not the logical partitions inside a volume group), you have to set the partition id to 0x8e and choose the volume group then. Of course you need to create a volume group before.
+For partitions that are part of a volume group (not the logical partitions inside a volume group), set the partition ID to 0x8e then choose the volume group. The volume group must already be set up with AutoYaST.
 </p>
 <P>For more information, refer to the online documentation.
 </P>
@@ -160,7 +160,7 @@ For partitions that are part of a volume group (not the logical partitions insid
                             `HBox(
                                  `TextEntry(`id(`partsize), _("&Size"),
                                             (partition_size!="auto" && partition_size!="max") ? partition_size : "" ),
-                                 `TextEntry(`id(`partition_nr), _("&Partition Nr."), partition_nr )
+                                 `TextEntry(`id(`partition_nr), _("&Partition Number"), partition_nr )
                              ),
                              `RadioButtonGroup(`id(`sizeopt),
                                                `VBox(
@@ -194,10 +194,10 @@ For partitions that are part of a volume group (not the logical partitions insid
                                    ),
                              `VSpacing(1),
                              `Left(
-                                 `ComboBox( `id(`vg), _("Choose the Volume Group"), vgs )
+                                 `ComboBox( `id(`vg), _("Volume Group"), vgs )
                                  ),
                              `Left(
-                                 `TextEntry( `id(`lv_name), _("Choose a name for the logical volume"), lv_name )
+                                 `TextEntry( `id(`lv_name), _("Logical Volume Name"), lv_name )
                                  )
                              )
                        ),
@@ -465,7 +465,7 @@ due to use of the \"max\" option.
                     string partitionNr   =  (string) UI::QueryWidget(`id(`partition_nr),   `Value);
                     if (  partitionSize == "" && partitionNr == "" )
                     {
-                        Report::Warning(_("Enter the partition size or a partition nr."));
+                        Report::Warning(_("Enter the partition size or a partition number."));
                         continue;
                     }
                     else if( partitionSize != "" )
@@ -623,7 +623,7 @@ due to use of the \"max\" option.
         map drive = $[];
         string help = _("
 <P>
-Create/Edit your volume groups here. After that, you must assign physical partition(s) to this volume group in the partition dialog of a physical harddisc. Set the partition id to 0x8e for those partitions there.
+Create and edit your volume groups here. After that, assign physical partitions to this volume group in the partition dialog of a physical hard disk. Set the partition ID to 0x8e for those partitions.
 </P>
 ");
         string title = _("Configure Volume Groups");
