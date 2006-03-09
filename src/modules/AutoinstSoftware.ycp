@@ -191,21 +191,38 @@
     global define string Summary()
     {
         string summary = "";
-        summary = Summary::AddHeader(summary, _("Base Selection"));
-        summary = Summary::AddLine(summary, (base != "") ?
-                                   base : Summary::NotConfigured());
-        summary = Summary::AddHeader(summary, _("Add-on Selections"));
-        if (size( addons) > 0 )
-        {
-            summary = Summary::OpenList(summary);
-            foreach(string a, addons, ``{
-                summary = Summary::AddListItem(summary, a);
-            });
-            summary = Summary::CloseList(summary);
-        }
-        else
-        {
-            summary = Summary::AddLine(summary, Summary::NotConfigured());
+
+        if( size( Pkg::GetSelections( `available, "base" ) ) > 0 ) {
+            summary = Summary::AddHeader(summary, _("Base Selection"));
+            summary = Summary::AddLine(summary, (base != "") ?
+                                       base : Summary::NotConfigured());
+            summary = Summary::AddHeader(summary, _("Add-on Selections"));
+            if (size( addons) > 0 )
+            {
+                summary = Summary::OpenList(summary);
+                foreach(string a, addons, ``{
+                    summary = Summary::AddListItem(summary, a);
+                });
+                summary = Summary::CloseList(summary);
+            }
+            else
+            {
+                summary = Summary::AddLine(summary, Summary::NotConfigured());
+            }
+            } else {
+            summary = Summary::AddHeader(summary, _("Selected Patterns"));
+            if (size( patterns ) > 0 )
+            {
+                summary = Summary::OpenList(summary);
+                foreach(string a, patterns, ``{
+                    summary = Summary::AddListItem(summary, a);
+                });
+                summary = Summary::CloseList(summary);
+            }
+            else
+            {
+                summary = Summary::AddLine(summary, Summary::NotConfigured());
+            }
         }
         summary = Summary::AddHeader(summary, _("Individually Selected Packages"));
         summary = Summary::AddLine(summary, sformat("%1",
