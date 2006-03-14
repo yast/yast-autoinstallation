@@ -77,7 +77,7 @@ rc_reset
 case "$1" in
     start)
 	# Remember status and be verbose
-        for script in  `find $INITSCRIPT_DIR -type f`; do
+        for script in  `find $INITSCRIPT_DIR -type f |sort`; do
             echo -n "Executing AutoYaST script: $script"
             BASENAME=`basename $script`
             sh -x $script  2&> $LOG_DIR/$BASENAME.log
