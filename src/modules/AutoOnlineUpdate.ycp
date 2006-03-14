@@ -118,6 +118,7 @@ global define boolean Read()
 
     options = (string)SCR::Read( .sysconfig.onlineupdate.CMDLINE_OPTIONS );
 
+    if (options == nil) options = "";
 
     string cronjob = "";
     if (SCR::Read(.target.size, cronfile)!= -1 )
@@ -162,10 +163,10 @@ global define boolean Write()
 
     string cronjob = "";
     if (timing == `weekly && day >= 0 && day <= 7) {
-        cronjob = sformat( "%1 %2 * * %3 root rug %4", minute, hour,
+        cronjob = sformat( "%1 %2 * * %3 root rug up %4", minute, hour,
                 day, options );
     } else {
-        cronjob = sformat( "%1 %2 * * * root rug %3", minute, hour,
+        cronjob = sformat( "%1 %2 * * * root rug up %3", minute, hour,
                 options );
     }
     if ( autoget ) cronjob = cronjob + " -d";
