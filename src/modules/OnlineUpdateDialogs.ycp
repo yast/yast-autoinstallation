@@ -8,10 +8,11 @@
 
     textdomain "autoinst";
 
-    import "Label";
-    import "Popup";
     import "AutoOnlineUpdate";
+    import "Label";
     import "Mode";
+    import "Package";
+    import "Popup";
     import "Wizard";
 
     global define symbol SetupAutomatic()
@@ -219,6 +220,12 @@ the update takes place.");
 	    if (  ret == `next) {
 		if ( enabled )
 		{
+		    if (!Package::Install ("rug"))
+		    {
+			ret	= `enable;
+			UI::ChangeWidget( `id( `enable ), `Value, false);
+			continue;
+		    }
 		    AutoOnlineUpdate::minute = (integer)UI::QueryWidget( `id( `minute ), `Value );
 		    AutoOnlineUpdate::hour = (integer)UI::QueryWidget( `id( `hour ), `Value );
 		    AutoOnlineUpdate::autoget = (boolean)UI::QueryWidget( `id( `autoget ), `Value );
