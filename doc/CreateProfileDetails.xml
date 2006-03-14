@@ -1227,7 +1227,7 @@
     
     <section id="Software.Selections">
       <title>
-	Package Selections
+	Package Selections until SUSE Linux 10.1 (not SLES10)
       </title>
       <para>	
 	You can install software on the new system using a pre-defined package base selection, i.e. Minimal, Minimal+X11,
@@ -1273,6 +1273,33 @@
 	done using the <emphasis>post-packages</emphasis> resource.
       </para>
 
+    </section>
+
+    <section id="Software.Selections.sles10">
+      <title>
+	Package Selections with patterns (SLES10)
+      </title>
+      <para>
+      SLES10 no longer supports <emphasis>selections</emphasis> but uses 
+      <emphasis>patterns</emphasis> now. Autoyast is not be able to convert 
+      selections into patterns and so you have to do that on your own.
+      If you want to use a SLES9 autoyast profile to install a SLES10
+      server, you have to remove all <emphasis>addon</emphasis> entries and the
+      <emphasis>base</emphasis> entry. Patterns are configured like this:
+      </para>
+	<example>
+	  <title>
+	    Package selection in control file with patterns
+	  </title>
+	  <screen>
+<xi:include href="examples/example.software.patterns.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	  </screen>
+	</example>
+    <para>
+      As you can see, the <emphasis>packages</emphasis> section is still the same like on
+      a SLES9. Just the <emphasis>addon</emphasis> and <emphasis>base</emphasis> is gone.
+    </para>
     </section>
 
     <section>
