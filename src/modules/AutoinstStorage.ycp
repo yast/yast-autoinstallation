@@ -248,16 +248,23 @@
             string device = d["device"]:"";
             d["partitions"] = maplist( map p, d["partitions"]:[], ``{
                 string mountby = "";
+                boolean mountByIsList = false;
                 if( haskey(p, "mountby") ) {
                     if( p["mountby"]:`none == `label ) {
                         mountby = "label";
                     } else if( p["mountby"]:`none == `uuid ) {
                         mountby = "uuid";
+                    } else if( p["mountby"]:`none == `path ) {
+                        mountby = "udev_path";
+                    } else if( p["mountby"]:`none == `id ) {
+                        mountByIsList = true;
+                        mountby = "udev_id";
                     } else {
                         y2milestone("unknown mountby parameter '%1' will be ignored",p["mountby"]:`none);
                     }
                 }
-                if( mountby != "" ) {
+                /* reuse partition by "mountby" */
+                if( mountby != "" && p["create"]:true == false ) {
                     string label = p[mountby]:"";
                     y2milestone("mountby found for %1=%2 in part=%3",mountby,label,p);
                     map target = tm[device]:$[];
@@ -265,7 +272,7 @@
                         y2milestone("searching for the device by %1",mountby);
                         foreach( string deviceName, map tmp_target, tm, ``{
                             foreach( map targetPart, tmp_target["partitions"]:[], ``{
-                                if( targetPart[mountby]:"" == label ) {
+                                if( mountByIsList ? (contains(targetPart[mountby]:[], label)):(targetPart[mountby]:"" == label) ) {
                                     target = tmp_target;
                                     device = deviceName;
                                     y2milestone("device=%1 found",device);
@@ -275,7 +282,7 @@
                         });
                     }
                     foreach( map targetPart, target["partitions"]:[], ``{
-                        if( targetPart[mountby]:"" == label ) {
+                        if( mountByIsList ? (contains(targetPart[mountby]:[], label)):(targetPart[mountby]:"" == label) ) {
                             y2milestone("%1 found in targetmap",mountby);
                             d["device"] = device; //FIXME: for some reason this does not work
                             p["partition_nr"] = targetPart["nr"]:0;
