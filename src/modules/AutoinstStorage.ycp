@@ -340,9 +340,7 @@
     {
         y2milestone("entering Import with %1", settings);
         if (Mode::autoinst()) {
-            /* FIXME: activate when storage lib is ready
             settings = udev2dev(settings); 
-            */
             settings = mountBy(settings);
             AutoPartPlan = preprocess_partition_config(settings);
         } else {
