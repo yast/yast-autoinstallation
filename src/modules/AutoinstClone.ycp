@@ -127,7 +127,7 @@
                     integer fsid = pe["fsid"]:131;
                     list wintypes = union(Partitions::fsid_wintypes, Partitions::fsid_dostypes);
                     list allwin = union(wintypes, Partitions::fsid_ntfstypes);
-                    if (contains(allwin, fsid))
+                    if (contains(allwin, fsid) && ! issubstring(pe["mount"]:"", "/boot") )
                     {
                         y2debug("Windows partitions found: %1", fsid );
                         winp = add(winp, pe["nr"]:0);
