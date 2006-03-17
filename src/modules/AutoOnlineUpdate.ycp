@@ -137,9 +137,7 @@ global define boolean Read()
             day = tointeger( d );
         else
             day = -1;
-	/*
-        if ( regexpmatch( cronjob, "-P" ) ) skipPre = true; FIXME
-	*/
+        if ( regexpmatch( cronjob, "--skip-interactive" ) ) skipPre = true;
         if ( regexpmatch( cronjob, "-d" ) ) autoget = true;
     }
     else
@@ -163,14 +161,14 @@ global define boolean Write()
 
     string cronjob = "";
     if (timing == `weekly && day >= 0 && day <= 7) {
-        cronjob = sformat( "%1 %2 * * %3 root rug up %4", minute, hour,
+        cronjob = sformat( "%1 %2 * * %3 root rug up -t patch %4", minute, hour,
                 day, options );
     } else {
-        cronjob = sformat( "%1 %2 * * * root rug up %3", minute, hour,
+        cronjob = sformat( "%1 %2 * * * root rug up -t patch %3", minute, hour,
                 options );
     }
     if ( autoget ) cronjob = cronjob + " -d";
-//    if ( skipPre ) cronjob = cronjob + " -P"; FIXME not clear yet
+    if ( skipPre ) cronjob = cronjob + " --skip-interactive";
     cronjob = cronjob + "\n";
     SCR::Write( .target.string, cronfile, cronjob );
     return true;
