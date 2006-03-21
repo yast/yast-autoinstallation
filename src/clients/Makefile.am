@@ -20,8 +20,7 @@ client_DATA = \
 	autoinst_scripts1_finish.ycp	\
 	autoinst_scripts2_finish.ycp \
 	ayast_probe.ycp \
-	clone_system.ycp\
-    online_update_auto.ycp
+	clone_system.ycp
 
 
 EXTRA_DIST =                    \
