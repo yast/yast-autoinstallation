@@ -1,0 +1,543 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;      Structure
+    </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="The Control File"
+HREF="profile.html"><LINK
+REL="PREVIOUS"
+TITLE="
+      Format
+    "
+HREF="profile.format.html"><LINK
+REL="NEXT"
+TITLE="
+      The XML Document Type Definition (DTD)
+    "
+HREF="profile.dtd.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="profile.format.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 2. The Control File</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="profile.dtd.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="Profile.Structure"
+>2.3. Structure</A
+></H1
+><P
+>&#13;      Below is an example of a basic control file container, the actual content
+      of which is explained later on in this chapter. 
+    </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN104"
+></A
+><P
+><B
+>Example 2-2. Control file container</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;?xml version="1.0"?&#62;
+&#60;!DOCTYPE profile SYSTEM
+ "/usr/share/autoinstall/dtd/profile.dtd"&#62;
+ &#60;profile
+ xmlns="http://www.suse.com/1.0/yast2ns"
+ xmlns:cfg="http://www.suse.com/1.0/configns"&#62;
+ 
+&#60;!-- RESOURCES --&#62;
+&#60;/profile&#62;
+
+      </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;      The profile element (root node) contains one or more distinct resource
+      elements. The permissible resource elements are specified in the
+      <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>. 
+    </P
+><P
+>&#13;      The root element in the control  file can for example contain the
+      following sub-keywords:
+    </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	  installation	(Tag <I
+CLASS="emphasis"
+>&#60;install&#62;</I
+> )
+	</P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	      Bootloader configuration: bootloader device, bootloader location (Tag <I
+CLASS="emphasis"
+>&#60;bootloader&#62;</I
+> )
+	    </P
+></LI
+><LI
+><P
+>&#13;	      Partitioning: drives and partition plans (Tag <I
+CLASS="emphasis"
+>&#60;partitioning&#62;</I
+> )
+	    </P
+></LI
+><LI
+><P
+>&#13;	      General: Installation instructions, including all variables related to
+	      the client i.e. display, languages, keyboard etc. (Tag <I
+CLASS="emphasis"
+>&#60;general&#62;</I
+> )
+	    </P
+></LI
+><LI
+><P
+>&#13;	      Software:  Software and Package selections (Tag <I
+CLASS="emphasis"
+>&#60;software&#62;</I
+> )
+	    </P
+></LI
+></UL
+></LI
+><LI
+><P
+>&#13;	  configuration	 (Tag <I
+CLASS="emphasis"
+>&#60;configure&#62;</I
+> )     
+	</P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	      Network:  network configuration for the
+	      client and servers providing services to the target client (Tag <I
+CLASS="emphasis"
+>&#60;networking&#62;</I
+> )
+	    </P
+></LI
+><LI
+><P
+>&#13;	      Users:  user administration, including first user and root. (Tag <I
+CLASS="emphasis"
+>&#60;users&#62;</I
+> )
+	    </P
+></LI
+><LI
+><P
+>&#13;	      User scripts: (Tag <I
+CLASS="emphasis"
+>&#60;scripts&#62;</I
+> )
+	    </P
+></LI
+></UL
+></LI
+></UL
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN140"
+>2.3.1. Resources and Properties</A
+></H2
+><P
+>&#13;	A resource element either contains multiple and distinct property and
+	resource elements or contains multiple instances of the same resource
+	element or is empty. The permissible content of a resource element is
+	specified in the <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>. 
+      </P
+><P
+>&#13;	A property element is either empty or contains a literal value. The
+	permissible property elements and values in each resource element are
+	specified in the <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>.
+      </P
+><P
+>&#13;	An element can be either a container of other elements (a resource) or
+	have a literal value (a property), it can never be both. This
+	restriction is specified in the <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>. A configuration component with
+	more than one value must either be represented as some kind of embedded
+	list in a property value or as a nested resource.
+      </P
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN148"
+>2.3.2. Nested Resources</A
+></H2
+><P
+>&#13;	Nested resource elements allow a tree like structure of configuration
+	components to be built to any level.  
+      </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN151"
+></A
+><P
+><B
+>Example 2-3. 
+	  Nested Resources
+	</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>	 
+
+...
+&#60;drive&#62; 
+  &#60;device&#62;/dev/hda&#60;/device&#62; 
+  &#60;partitions config:type="list"&#62; 
+     &#60;partition&#62; 
+        &#60;size&#62;1000mb&#60;/size&#62; 
+        &#60;mount&#62;/&#60;/mount&#62; 
+     &#60;/partition&#62; 
+     &#60;partition&#62; 
+        &#60;size&#62;250mb&#60;/size&#62; 
+        &#60;mount&#62;/tmp&#60;/mount&#62; 
+     &#60;/partition&#62; 
+  &#60;/partitions&#62; 
+&#60;/drive&#62;
+....
+
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	In the example above the disk resource consists of a device property
+	and a partitions resource. The partitions resource contains multiple
+	instances of the partition resource. Each partition resource contains a
+	size and mount property.	
+      </P
+><P
+>&#13;	Although it is specified in the <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+> that the partitions resource
+	contains multiple instances, it is still required to specify this to
+	avoid wrong data typing in <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+>. Using the example above, imagine having  a
+	drive with only one partition. This will result in interpreting the
+	partition resource as a property. To avoid this the following syntax
+	must be used when defining multiple instances. For more information
+	about type attributes, see next section.
+      </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN158"
+></A
+><P
+><B
+>Example 2-4. 
+	  Nested Resources with type attributes
+	</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>	 
+
+...
+&#60;drive&#62; 
+  &#60;device&#62;/dev/hda&#60;/device&#62; 
+  &#60;partitions config:type="list"&#62; 
+     &#60;partition&#62; 
+        &#60;size&#62;1000&#60;/size&#62; 
+        &#60;mount&#62;/&#60;/mount&#62; 
+     &#60;/partition&#62; 
+     &#60;partition&#62; 
+        &#60;size&#62;250&#60;/size&#62; 
+        &#60;mount&#62;/tmp&#60;/mount&#62; 
+     &#60;/partition&#62; 
+  &#60;/partitions&#62; 
+&#60;/drive&#62;
+....
+
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN161"
+>2.3.3. Attributes</A
+></H2
+><P
+>&#13;	Global profile attributes are used to define meta-data on resources and
+	properties. Attributes are used to define  context switching. They are also used for naming and
+	typing properties as shown in earlier sectionons
+	<A
+NAME="AEN164"
+HREF="#FTN.AEN164"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+>.
+      </P
+><P
+>&#13;	Profile attributes are defined in the configuration namespace and must
+	always be prefixed with <I
+CLASS="emphasis"
+>config:</I
+> . All profile attributes are
+	optional. Most can be used with both resource and property elements but
+	some can only be used with one type of element which is specified in
+	the <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>. 
+      </P
+><P
+>&#13;	There are no ordering constraints on attributes and no significance
+	should be interpreted from a specific ordering. 
+      </P
+><P
+>&#13;      The type of an element is defined using the <I
+CLASS="emphasis"
+>config:type</I
+> attribute. The
+      type of a resource element is always RESOURCE , although this can
+      also be made explicit with this attribute (to ensure correct
+      identification of an empty element for example when there is no <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>
+      to refer to). A resource element cannot be any other type and this
+      restriction is specified in the <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>. The type of a property element
+      determines the interpretation of its literal value. The type of a
+      property element defaults to <I
+CLASS="emphasis"
+>STRING</I
+> , as specified in the <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>. The
+      full set of permissible types is specified in the <ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>. 
+    </P
+></DIV
+></DIV
+><H3
+CLASS="FOOTNOTES"
+>Notes</H3
+><TABLE
+BORDER="0"
+CLASS="FOOTNOTES"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="5%"
+><A
+NAME="FTN.AEN164"
+HREF="profile.structure.html#AEN164"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="95%"
+><P
+>&#13;	    Profile attributes are in a separate namespace so they don't have
+	    to be treated as reserved words in the default namespace. New ones
+	    can then be added without having to potentially alter existing
+	    profiles.
+	  </P
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="profile.format.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="profile.dtd.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Format</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="profile.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>The XML Document Type Definition (<ACRONYM
+CLASS="acronym"
+>DTD</ACRONYM
+>)</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

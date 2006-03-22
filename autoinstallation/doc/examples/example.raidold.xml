@@ -1,0 +1,48 @@
+
+
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/sda</device>
+      <partitions config:type="list">
+	<partition>
+	  <format config:type="boolean">false</format>
+	  <partition_id config:type="integer">253</partition_id>	  
+	  <raid_name>/dev/md0</raid_name>
+	  <raid_type>raid</raid_type>
+	  <size>4gb</size>            
+	</partition>
+
+	<!-- Here come the regular partitions, i.e. / and swap -->        
+
+      </partitions>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/sdb</device>
+      <use>all</use>
+      <partitions config:type="list">
+	<partition>
+	  <format config:type="boolean">false</format>
+	  <partition_id config:type="integer">253</partition_id>	  
+	  <raid_name>/dev/md0</raid_name>            
+	  <raid_type>raid</raid_type>
+	  <size>4gb</size>
+	</partition>
+      </partitions>
+    </drive>
+  </partitioning>
+
+  <raid config:type="list">
+    <raid_device>
+      <chunk_size>4</chunk_size>
+      <device_name>/dev/md0</device_name>
+      <filesystem config:type="symbol">reiser</filesystem>
+      <format config:type="boolean">true</format>      
+      <parity_algorithm>left-asymmetric</parity_algorithm>
+      <partition_id config:type="integer">131</partition_id> 
+      <persistent_superblock  config:type="boolean">true</persistent_superblock>                 
+      <mount>/space</mount>
+      <raid_type>raid1</raid_type>
+    </raid_device>
+  </raid>
+  

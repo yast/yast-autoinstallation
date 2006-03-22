@@ -1,0 +1,1642 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;	Partitioning
+      </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Configuration and Installation Options"
+HREF="configuration.html"><LINK
+REL="PREVIOUS"
+TITLE="The Boot loader"
+HREF="createprofile.bootloader.html"><LINK
+REL="NEXT"
+TITLE="
+	Software
+      "
+HREF="createprofile.software.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="createprofile.bootloader.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 4. Configuration and Installation Options</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="createprofile.software.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="CreateProfile.Partitioning"
+>4.4. Partitioning</A
+></H1
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN354"
+>4.4.1. Automated Partitioning</A
+></H2
+><P
+>&#13;	  For the automated partitioning to be completed, only the sizes and mount points of
+	  partitions can be provided. All other data needed for successful partitioning
+	  can be calculated during installation if not provided in the control file. 
+	</P
+><P
+>&#13;	  If no partitions are defined and the specified drive is also the drive where
+	  the root partition should reside, the following partitions are created
+	  automatically:
+	</P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>/boot</I
+>
+	    </P
+><P
+>&#13;	      Size of the <I
+CLASS="emphasis"
+>/boot</I
+> is determined by the
+	      architecture of the target system.
+	    </P
+></LI
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>swap</I
+>
+	    </P
+><P
+>&#13;	      Size of the <I
+CLASS="emphasis"
+>swap</I
+> partitions is determined by the
+	      amount of memory available in the system.
+	    </P
+></LI
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>/</I
+> (root partition)
+	    </P
+><P
+>&#13;	      Size of the <I
+CLASS="emphasis"
+>/</I
+> (root partition) is the space left
+	      after creating <I
+CLASS="emphasis"
+>swap</I
+> and <I
+CLASS="emphasis"
+>/boot</I
+>.
+	    </P
+></LI
+></UL
+><P
+>&#13;	  Depending on the initial status of the drive and how it was
+	  previously partitioned, it is possible to create the <I
+CLASS="emphasis"
+>default</I
+>
+	  partitioning in the following ways:
+	</P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>Use free space</I
+>
+	    </P
+><P
+>&#13;	      If the drive is already partitioned, it is possible to create the
+	      new partitions on the available space of the hard drive. This
+	      requires the availability of enough space for all selected
+	      package in addition to swap.
+	    </P
+></LI
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>Reuse all available space</I
+>
+	    </P
+><P
+>&#13;	      This option will lead to the deletion of all existing
+	      partitions (Linux and non-Linux partitions).
+
+	    </P
+></LI
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>Reuse all available Linux partitions</I
+>
+	    </P
+><P
+>&#13;	      This option will lead to the deletion of existing Linux
+	      partitions. All other partitions (i.e. Windows) will be
+	      kept. Note that this works only if the Linux partitions are at the end of the device.
+	      
+	    </P
+></LI
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>Reuse only specified partitions</I
+>
+	    </P
+><P
+>&#13;	      This option will lead to the deletion of the specified partitions.
+	      The selection of the partitions scheduled for deletion should be
+	      started from the last available partition.
+	    </P
+></LI
+></UL
+><P
+>&#13;	  Repartitioning using only some of the existing partitions can be
+	  accomplished only if the region selected to be partitioned exists at
+	  the end of the device and only with neighboring partitions. This
+	  means that you cannot repartition a region which has in the middle a partition that
+	  should not be touched.
+	</P
+><DIV
+CLASS="note"
+><P
+></P
+><TABLE
+CLASS="note"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="./stylesheet-images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TH
+ALIGN="LEFT"
+VALIGN="CENTER"
+><B
+>Important Notice</B
+></TH
+></TR
+><TR
+><TD
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;	    The value provided in the<I
+CLASS="emphasis"
+>use</I
+> property determines how existing data and
+	    partitions are treated. The value <I
+CLASS="emphasis"
+>all</I
+> means that <I
+CLASS="emphasis"
+>ALL</I
+> data on the disk will
+	    be erased. Make backups and use the <I
+CLASS="emphasis"
+>confirm</I
+> property if you are going to
+	    keep some partitions with important data. This is automated installation and no pop-ups will
+	    notify you about partitions being deleted.
+	  </P
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>	
+	  In case of the presence of multiple drives in the target system, all
+	  drives  should be identified with their device names and the way the partitioning should be performed.
+	</P
+><P
+>&#13;	  Partition sizes can be given in Gigabytes, Megabytes or can be set to
+	  a flexible value using the keywords <I
+CLASS="emphasis"
+>auto</I
+> and
+	  <I
+CLASS="emphasis"
+>max</I
+>. <I
+CLASS="emphasis"
+>max</I
+> is used to fill a
+	  partition to the maximal available space on a
+	  drive (Which mean that the partition should be the last one on the drive). 
+	  <I
+CLASS="emphasis"
+>auto</I
+> can be used to determine the size of
+	  a <I
+CLASS="emphasis"
+>swap</I
+> or <I
+CLASS="emphasis"
+>boot</I
+> partitions
+	  depending on the memory available and the type of the system.
+	</P
+><P
+>A fixed size can be given as shown below:</P
+><P
+>&#13;	  <I
+CLASS="emphasis"
+>1GB</I
+> will create a partition with 1 GB size.
+	  <I
+CLASS="emphasis"
+> 1500MB</I
+> will create a partition which is 1.5 GB big.
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN415"
+></A
+><P
+><B
+>Example 4-4. Automated partitioning</B
+></P
+><P
+>&#13;	  The following is an example of a single drive system, which is not
+	  pre-partitioned and should be automatically partitioned according to
+	  the described pre-defined partition plan:
+	</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+&#60;partitioning  config:type="list"&#62;
+     &#60;drive&#62;
+        &#60;device&#62;/dev/hda&#60;/device&#62;       
+        &#60;use&#62;all&#60;/use&#62;
+     &#60;/drive&#62;
+&#60;/partitioning&#62;
+.....
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	  A more detailed example shows how existing partitions  and
+	  multiple drives are handled.
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN420"
+></A
+><P
+><B
+>Example 4-5. Detailed automated partitioning</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+&#60;partitioning  config:type="list"&#62;
+     &#60;drive&#62;
+        &#60;device&#62;/dev/hda&#60;/device&#62;        
+        &#60;use&#62;free&#60;/use&#62;
+        &#60;partitions config:type="list"&#62;
+           &#60;partition&#62;
+              &#60;mount&#62;/&#60;/mount&#62;
+              &#60;size&#62;5gb&#60;/size&#62;
+           &#60;/partition&#62;
+           &#60;partition&#62;
+              &#60;mount&#62;swap&#60;/mount&#62;
+              &#60;size&#62;1gb&#60;/size&#62;
+           &#60;/partition&#62;
+        &#60;/partitions&#62;
+     &#60;/drive&#62;
+     &#60;drive&#62;
+        &#60;device&#62;/dev/hdb&#60;/device&#62;
+        &#60;use&#62;all&#60;/use&#62;
+        &#60;partitions config:type="list"&#62;
+           &#60;partition&#62;
+              &#60;mount&#62;/data1&#60;/mount&#62;
+              &#60;size&#62;15gb&#60;/size&#62;
+              &#60;filesystem  config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+           &#60;/partition&#62;
+           &#60;partition&#62;
+              &#60;mount&#62;/data2&#60;/mount&#62;
+              &#60;size&#62;auto&#60;/size&#62;
+              &#60;filesystem  config:type="symbol"&#62;jfs&#60;/filesystem&#62;
+           &#60;/partition&#62;
+        &#60;/partitions&#62;
+     &#60;/drive&#62;
+&#60;/partitioning&#62;
+.....
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN423"
+>4.4.2. Advanced Partitioning features</A
+></H2
+><DIV
+CLASS="section"
+><H3
+CLASS="section"
+><A
+NAME="AEN425"
+>4.4.2.1. Mount Options</A
+></H3
+><P
+>&#13;	    By default a file system which is to be mounted is
+	    identified in <TT
+CLASS="filename"
+>/etc/fstab</TT
+> by the device name. This identification
+	    can be changed so the file system  is found by searching
+	    for a <ACRONYM
+CLASS="acronym"
+>UUID</ACRONYM
+> or a volume label. Note that not all file systems can be mounted
+	    by <ACRONYM
+CLASS="acronym"
+>UUID</ACRONYM
+> or a volume label. To specify how a
+	    partition is to be mounted, use the <I
+CLASS="emphasis"
+>mountby</I
+>
+	    property which has the <I
+CLASS="emphasis"
+>symbol</I
+> type. Possible
+	    options are:
+	  </P
+><P
+></P
+><UL
+><LI
+><P
+>device (default)</P
+></LI
+><LI
+><P
+>label</P
+></LI
+><LI
+><P
+>UUID</P
+></LI
+></UL
+><P
+>&#13;	    If you choose to mount the partition using a label, the name
+	    entered in the <I
+CLASS="emphasis"
+>label</I
+> property is used as the
+	    volume label. 
+	  </P
+><P
+>&#13;	    Add any legal mount option allowed in the fourth field of
+	    <TT
+CLASS="filename"
+>/etc/fstab</TT
+>. Multiple options are separated by commas.  Possible fstab options:
+	  </P
+><P
+></P
+><UL
+><LI
+><P
+><I
+CLASS="emphasis"
+>Mount Read-Only (ro):</I
+> No writable
+		access to the file system is possible. Default is false.</P
+></LI
+><LI
+><P
+><I
+CLASS="emphasis"
+>No access time (noatime):</I
+> Access times
+		are not updated when a file is read. Default is false.</P
+></LI
+><LI
+><P
+><I
+CLASS="emphasis"
+>Mountable by User (user):</I
+> The file
+		system may be mounted by an ordinary user. Default is
+		false.</P
+></LI
+><LI
+><P
+>&#13;		<I
+CLASS="emphasis"
+>Data Journaling Mode (ordered | journal |
+		  writeback) :</I
+> Specifies the journaling mode for
+		file data. journal -- All data is committed into the journal
+		prior to being written into the main file system. ordered --
+		All data is forced directly out to the main file system prior
+		to its meta data being committed to the journal. writeback --
+		Data ordering is not preserved.
+	      </P
+></LI
+><LI
+><P
+><I
+CLASS="emphasis"
+>Access Control List (acl):</I
+> Enable access control lists on the file system.</P
+></LI
+><LI
+><P
+><I
+CLASS="emphasis"
+>Extended User Attributes (user_xattr):</I
+> Allow extended user attributes on the file system.</P
+></LI
+></UL
+><DIV
+CLASS="example"
+><A
+NAME="AEN463"
+></A
+><P
+><B
+>Example 4-6. Mount Options</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+
+       &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+            &#60;crypt_fs config:type="boolean"&#62;true&#60;/crypt_fs&#62;
+            &#60;crypt_key&#62;test12&#60;/crypt_key&#62;
+            &#60;filesystem config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+            &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+            &#60;fstopt&#62;ro,noatime,user,data=ordered,acl,user_xattr&#60;/fstopt&#62;
+            &#60;mount&#62;/local&#60;/mount&#62;
+            &#60;mountby config:type="symbol"&#62;uuid&#60;/mountby&#62;
+            &#60;partition_id config:type="integer"&#62;131&#60;/partition_id&#62;
+            &#60;size&#62;10gb&#60;/size&#62;
+          &#60;/partition&#62;
+        &#60;/partitions&#62;
+.....
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H3
+CLASS="section"
+><A
+NAME="AEN466"
+>4.4.2.2. Creating Primary and Extended Partitions</A
+></H3
+><P
+>&#13;	    By default, <ACRONYM
+CLASS="acronym"
+>AutoYaST</ACRONYM
+> will create an extended partition and will add all
+	    new partitions as logical devices. It is possible however to
+	    instruct <ACRONYM
+CLASS="acronym"
+>AutoYaST</ACRONYM
+> to create a certain partition as a primary
+	    or as extended partition. Additionally, it is possible to
+	    specify the size of a partition using sectors instead of size in Mbytes.
+	  </P
+><P
+>&#13;	    The properties <I
+CLASS="emphasis"
+>partition_id</I
+> and
+	    <I
+CLASS="emphasis"
+>partition_type</I
+> control such behavior. To
+	    specify the size in sectors, the list resource
+	    <I
+CLASS="emphasis"
+>region</I
+> should be used.
+	  </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN475"
+></A
+><P
+><B
+>Example 4-7. Advanced Automated partitioning</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+    &#60;partitioning config:type="list"&#62;
+      &#60;drive&#62;
+        &#60;device&#62;/dev/hdc&#60;/device&#62;
+        &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+            &#60;partition_id config:type="integer"&#62;5&#60;/partition_id&#62;
+            
+            &#60;region config:type="list"&#62;
+              &#60;region_entry config:type="integer"&#62;0&#60;/region_entry&#62;
+              &#60;region_entry config:type="integer"&#62;16858&#60;/region_entry&#62;
+            &#60;/region&#62;            
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;filesystem config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+            &#60;mount&#62;/&#60;/mount&#62;
+            &#60;partition_id config:type="integer"&#62;131&#60;/partition_id&#62;           
+            &#60;region config:type="list"&#62;
+              &#60;region_entry config:type="integer"&#62;0&#60;/region_entry&#62;
+              &#60;region_entry config:type="integer"&#62;2081&#60;/region_entry&#62;
+            &#60;/region&#62;           
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;mount&#62;swap&#60;/mount&#62;
+            &#60;partition_id config:type="integer"&#62;130&#60;/partition_id&#62;          
+            &#60;region config:type="list"&#62;
+              &#60;region_entry config:type="integer"&#62;2081&#60;/region_entry&#62;
+              &#60;region_entry config:type="integer"&#62;781&#60;/region_entry&#62;
+            &#60;/region&#62;
+            &#60;/partition&#62;
+        &#60;/partitions&#62;
+        &#60;use&#62;all&#60;/use&#62;
+      &#60;/drive&#62;
+&#60;/partitioning&#62;
+.....
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	    The last example is only useful if you exactly know the
+	    boundaries of the partitions and it does only make sense if you are creating
+	    an exact copy of  a system, for example when cloning. The first
+	    region entry in the list is the beginning of the region, the second
+	    represents the length of the region.
+	  </P
+><P
+>&#13;	    The following example lets you create an extended partition with a
+	    custom size.
+	  </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN480"
+></A
+><P
+><B
+>Example 4-8. 
+	      Creating custom extended partitions
+	    </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+  &#60;install&#62;
+.....
+    &#60;partitioning config:type="list"&#62;
+      &#60;drive&#62;
+        &#60;device&#62;/dev/hdc&#60;/device&#62;
+        &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+            &#60;filesystem config:type="symbol"&#62;ext2&#60;/filesystem&#62;
+            &#60;mount&#62;/boot&#60;/mount&#62;
+            &#60;partition_id config:type="integer"&#62;131&#60;/partition_id&#62;
+            &#60;partition_nr config:type="integer"&#62;2&#60;/partition_nr&#62;
+            &#60;size&#62;50mb&#60;/size&#62;
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;mount&#62;swap&#60;/mount&#62;
+            &#60;partition_id config:type="integer"&#62;130&#60;/partition_id&#62;
+            &#60;partition_nr config:type="integer"&#62;3&#60;/partition_nr&#62;
+            &#60;size&#62;100mb&#60;/size&#62;
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;partition_id config:type="integer"&#62;15&#60;/partition_id&#62;
+            &#60;partition_nr config:type="integer"&#62;4&#60;/partition_nr&#62;
+            &#60;size&#62;3000mb&#60;/size&#62;
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;filesystem config:type="symbol"&#62;ext2&#60;/filesystem&#62;
+            &#60;mount&#62;/&#60;/mount&#62;
+            &#60;partition_id config:type="integer"&#62;131&#60;/partition_id&#62;
+            &#60;partition_nr config:type="integer"&#62;5&#60;/partition_nr&#62;
+            &#60;size&#62;1gb&#60;/size&#62;
+          &#60;/partition&#62;
+        &#60;/partitions&#62;
+        &#60;use&#62;free&#60;/use&#62;
+      &#60;/drive&#62;
+    &#60;/partitioning&#62;
+....
+  &#60;/install&#62;
+
+
+	    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H3
+CLASS="section"
+><A
+NAME="AEN483"
+>4.4.2.3. Keeping Specific Partitions</A
+></H3
+><P
+>&#13;	    In some cases you might choose to keep some partitions untouched
+	    and only format some target partitions, rather than creating them from
+	    scratch. This might be the case of Linux installations have to
+	    co-exist with another operating system or if certain partitions
+	    contain data that you wish to keep untouched.
+	  </P
+><P
+>&#13;	    Such scenarios require certain knowledge about the target systems
+	    and hard drives. Depending on the scenario, you might need to know
+	    the exact partition table of the target hard drive with partition
+	    id's, sizes and numbers. With such data you can tell <ACRONYM
+CLASS="acronym"
+>AutoYaST</ACRONYM
+> to
+	    keep certain partitions, format others and create new partitions if 
+	    needed.
+	  </P
+><P
+>&#13;	    The following example will keep partitions 1, 2 and 5 and delete
+	    partition 6 to create two new partitions. All kept partitions will
+	    be only formatted.
+	  </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN489"
+></A
+><P
+><B
+>Example 4-9. 
+	     Keeping partitions
+	    </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+  &#60;install&#62;
+.....
+    &#60;partitioning config:type="list"&#62;
+      &#60;drive&#62;
+        &#60;device&#62;/dev/hdc&#60;/device&#62;
+        &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+            &#60;create config:type="boolean"&#62;false&#60;/create&#62;
+            &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+            &#60;mount&#62;/&#60;/mount&#62;
+            &#60;partition_nr config:type="integer"&#62;1&#60;/partition_nr&#62;
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;create config:type="boolean"&#62;false&#60;/create&#62;
+            &#60;format config:type="boolean"&#62;false&#60;/format&#62;
+            &#60;partition_nr config:type="integer"&#62;2&#60;/partition_nr&#62;
+            &#60;mount&#62;/space&#60;/mount&#62;
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;create config:type="boolean"&#62;false&#60;/create&#62;
+            &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+            &#60;filesystem config:type="symbol"&#62;swap&#60;/filesystem&#62;
+            &#60;partition_nr config:type="integer"&#62;5&#60;/partition_nr&#62;
+            &#60;mount&#62;swap&#60;/mount&#62;
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+            &#60;mount&#62;/space2&#60;/mount&#62;
+            &#60;size&#62;50mb&#60;/size&#62;
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+            &#60;mount&#62;/space3&#60;/mount&#62;
+            &#60;size&#62;max&#60;/size&#62;
+          &#60;/partition&#62;
+
+        &#60;/partitions&#62;
+        &#60;use&#62;6&#60;/use&#62;
+      &#60;/drive&#62;
+
+    &#60;/partitioning&#62;
+....
+  &#60;/install&#62;
+
+
+	    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	    The last example requires exact knowledge about the existing partition
+	    table and about the partition numbers of those partitions that
+	    should be kept. In some cases however, such data might be not
+	    available, especially in a mixed hardware environment with
+	    different hard drive types and configurations. The following
+	    scenario is for a system with a non-Linux OS with a designated
+	    area for a Linux installation.     
+	  </P
+><DIV
+CLASS="figure"
+><A
+NAME="partitioning-keep1"
+></A
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="img/partitioning-keep1.png"
+ALIGN="center"></P
+></DIV
+><P
+><B
+>Figure 4-1. Keeping partitions</B
+></P
+></DIV
+><P
+>&#13;	    In this scenario and as shown in  figure <SPAN
+CLASS="QUOTE"
+>"<A
+HREF="createprofile.partitioning.html#partitioning-keep1"
+><I
+>Keeping partitions</I
+></A
+>"</SPAN
+> , <ACRONYM
+CLASS="acronym"
+>AutoYaST</ACRONYM
+>
+	    should not in any case create any new
+	    partitions,  instead  it should search for certain partition types on the system and use
+	    them according to the partitioning plan in the control file. No
+	    partition numbers are given in this case, only the mount points and
+	    the partition types (Additional configuration data can be provided,
+	    for example file system options, encryption and filesystem type)
+	  </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN504"
+></A
+><P
+><B
+>Example 4-10. 
+	      Auto-detection of partitions to be kept.
+	    </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+  &#60;install&#62;
+.....
+    &#60;partitioning config:type="list"&#62;
+      &#60;drive&#62;
+        &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+            &#60;create config:type="boolean"&#62;false&#60;/create&#62;
+            &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+            &#60;mount&#62;/&#60;/mount&#62;
+            &#60;partition_id config:type="integer"&#62;131&#60;/partition_id&#62;
+          &#60;/partition&#62;
+          &#60;partition&#62;
+            &#60;create config:type="boolean"&#62;false&#60;/create&#62;
+            &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+            &#60;filesystem config:type="symbol"&#62;swap&#60;/filesystem&#62;
+            &#60;partition_id config:type="integer"&#62;130&#60;/partition_id&#62;
+            &#60;mount&#62;swap&#60;/mount&#62;
+          &#60;/partition&#62;
+        &#60;/partitions&#62;
+      &#60;/drive&#62;
+    &#60;/partitioning&#62;
+.....
+  &#60;/install&#62;
+
+
+	    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN507"
+>4.4.3. Using existing mount table (fstab)</A
+></H2
+><P
+>&#13;	  This option will allow the AutoYaST to use an existing
+	  <TT
+CLASS="filename"
+>/etc/fstab</TT
+> and use the partition data from
+	  from a previous installation. All partitions are kept and no new
+	  partitions are created. The found partitions will be formatted and
+	  mounted as specified in <TT
+CLASS="filename"
+>/etc/fstab</TT
+> found on a
+	  Linux root partition.
+	</P
+><P
+>&#13;	  Although the default behaviour is to format all partitions, it is
+	  also possible to leave some partitions untouched and only mount them,
+	  for example data partitions. If multiple installations are found on
+	  the system (multiple root partitions with different
+	  <I
+CLASS="emphasis"
+>fstab</I
+> files, the installation will abort, unless
+	  the desired root partition is configured in the control file. The
+	  following example illustrates how this option can be used:
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN514"
+></A
+><P
+><B
+>Example 4-11. 
+	    Reading existing <TT
+CLASS="filename"
+>/etc/fstab</TT
+>
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+    &#60;install&#62;
+        &#60;partitioning_advanced&#62;
+            &#60;fstab&#62;
+                &#60;!-- Read data from existing fstab. If multiple root partitions are
+                found, use the one specified below. Otherwise the first root
+                partition is taken --&#62;
+                &#60;!-- &#60;root_partition&#62;/dev/hda5&#60;/root_partition&#62; --&#62;
+                &#60;use_existing_fstab config:type="boolean"&#62;true&#60;/use_existing_fstab&#62;
+                &#60;!-- all partitions found in fstab will be formatted and mounted
+                by default unless a partition is listed below with different
+                settings --&#62;
+                &#60;partitions config:type="list"&#62;
+                    &#60;partition&#62;
+                        &#60;format config:type="boolean"&#62;false&#60;/format&#62;
+                        &#60;mount&#62;/bootmirror&#60;/mount&#62;
+                    &#60;/partition&#62;
+                &#60;/partitions&#62;
+            &#60;/fstab&#62;
+        &#60;/partitioning_advanced&#62;
+
+
+    &#60;/install&#62;
+
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN518"
+>4.4.4. Logical Volume Manager (LVM)</A
+></H2
+><P
+>&#13;	  To configure LVM, first you need to create a <I
+CLASS="emphasis"
+>physical volume</I
+> using the
+	  normal partitioning method described above. 
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN522"
+></A
+><P
+><B
+>Example 4-12. 
+	    Create LVM Physical Volume
+	  </B
+></P
+><P
+>&#13;	    The following example shows how to prepare for LVM in the
+	    <I
+CLASS="emphasis"
+>partitioning</I
+> resource:
+	  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+&#60;partitioning config:type="list"&#62;
+     &#60;drive&#62;
+         &#60;device&#62;/dev/sda&#60;/device&#62;         
+         &#60;use&#62;all&#60;/use&#62;
+         &#60;partitions config:type="list"&#62;
+            &#60;partition&#62;
+               &#60;size&#62;max&#60;/size&#62;
+               &#60;lvm_group&#62;system&#60;/lvm_group&#62;
+               &#60;partition_type&#62;primary&#60;/partition_type&#62;
+            &#60;/partition&#62;
+         &#60;/partitions&#62;
+     &#60;/drive&#62;
+&#60;/partitioning&#62;
+.....
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	  The last example will create a non-formatted partition on device
+	  <TT
+CLASS="filename"
+>/dev/sda1</TT
+> of the type <I
+CLASS="emphasis"
+>LVM</I
+> and
+	  with the volume group <I
+CLASS="emphasis"
+>system</I
+>. The partition
+	  created  will use all available space on this drive.
+	</P
+><P
+>&#13;	  Up to SuSE Linux 8.2 the LVM configuration was done in a separate
+	  resource. This method for configuring LVM is still
+	  supported, however a new and easier way is introduced starting from
+	  this release which allows you to have the LVM configuration
+	  directly in  the <I
+CLASS="emphasis"
+>partitioning</I
+> resource.
+	</P
+><P
+>Currently it is not possible to configure LVM using the
+	  configuration system, instead it is required to
+	  add the resource manually as shown in the  following example.
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN534"
+></A
+><P
+><B
+>Example 4-13. 
+	    LVM Logical Volumes (Old syntax)
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+ &#60;partitioning config:type="list"&#62;
+     &#60;drive&#62;
+         &#60;device&#62;/dev/sda&#60;/device&#62;         
+         &#60;use&#62;all&#60;/use&#62;
+         &#60;partitions config:type="list"&#62;
+            &#60;partition&#62;
+               &#60;size&#62;max&#60;/size&#62;
+               &#60;lvm_group&#62;system&#60;/lvm_group&#62;
+               &#60;partition_type&#62;primary&#60;/partition_type&#62;
+            &#60;/partition&#62;
+         &#60;/partitions&#62;
+     &#60;/drive&#62;
+ &#60;/partitioning&#62;
+.....
+....
+  &#60;lvm config:type="list"&#62;
+     &#60;lvm_group&#62;
+      &#60;lvm_name&#62;system&#60;/lvm_name&#62;
+      &#60;pesize&#62;4M&#60;/pesize&#62;
+      &#60;logical_volumes config:type="list"&#62;
+        &#60;lv&#62;
+           &#60;lv_name&#62;usrlv&#60;/lv_name&#62;
+              &#60;lv_size&#62;500mb&#60;/lv_size&#62;
+              &#60;lv_fs&#62;reiser&#60;/lv_fs&#62;
+              &#60;lv_mount&#62;/usr&#60;/lv_mount&#62;
+           &#60;/lv&#62;
+           &#60;lv&#62;
+              &#60;lv_name&#62;optlv&#60;/lv_name&#62;
+              &#60;lv_size&#62;1500mb&#60;/lv_size&#62;
+              &#60;lv_fs&#62;reiser&#60;/lv_fs&#62;
+              &#60;lv_mount&#62;/opt&#60;/lv_mount&#62;
+           &#60;/lv&#62;
+           &#60;lv&#62;
+              &#60;lv_name&#62;varlv&#60;/lv_name&#62;
+              &#60;lv_size&#62;200mb&#60;/lv_size&#62;
+              &#60;lv_fs&#62;reiser&#60;/lv_fs&#62;
+              &#60;lv_mount&#62;/var&#60;/lv_mount&#62;
+           &#60;/lv&#62;
+      &#60;/logical_volumes&#62;
+   &#60;/lvm_group&#62;
+  &#60;/lvm&#62;
+.....
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>Using the new method, the above configuration has the following syntax:</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN538"
+></A
+><P
+><B
+>Example 4-14. 
+	    LVM Logical Volumes (New syntax)
+	  </B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+ &#60;partitioning config:type="list"&#62;
+     &#60;drive&#62;
+         &#60;device&#62;/dev/sda&#60;/device&#62;         
+         &#60;use&#62;all&#60;/use&#62;
+         &#60;partitions config:type="list"&#62;
+            &#60;partition&#62;
+               &#60;size&#62;max&#60;/size&#62;
+               &#60;lvm_group&#62;system&#60;/lvm_group&#62;
+               &#60;partition_type&#62;primary&#60;/partition_type&#62;
+            &#60;/partition&#62;
+         &#60;/partitions&#62;
+     &#60;/drive&#62;
+     &#60;drive&#62;
+        &#60;device&#62;/dev/system&#60;/device&#62;       
+        &#60;is_lvm_vg config:type="boolean"&#62;true&#60;/is_lvm_vg&#62;
+        &#60;partitions config:type="list"&#62;
+            &#60;partition&#62;
+                &#60;filesystem config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+                &#60;lv_name&#62;user_lv&#60;/lv_name&#62;
+                &#60;mount&#62;/usr&#60;/mount&#62;
+                &#60;size&#62;500mb&#60;/size&#62;
+            &#60;/partition&#62;
+            &#60;partition&#62;
+                &#60;filesystem config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+                &#60;lv_name&#62;opt_lv&#60;/lv_name&#62;
+                &#60;mount&#62;/opt&#60;/mount&#62;
+                &#60;size&#62;1500mb&#60;/size&#62;
+            &#60;/partition&#62;
+            &#60;partition&#62;
+                &#60;filesystem config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+                &#60;lv_name&#62;var_lv&#60;/lv_name&#62;
+                &#60;mount&#62;/var&#60;/mount&#62;
+                &#60;size&#62;200mb&#60;/size&#62;
+            &#60;/partition&#62;
+        &#60;/partitions&#62;
+        &#60;pesize&#62;4M&#60;/pesize&#62;
+        &#60;use&#62;all&#60;/use&#62;
+     &#60;/drive&#62;
+ &#60;/partitioning&#62;
+.....
+....
+
+	  </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN541"
+>4.4.5. Software RAID</A
+></H2
+><P
+>&#13;	  Using <ACRONYM
+CLASS="acronym"
+>AutoYaST</ACRONYM
+>, you can create and assemble  software RAID devices. The
+	  supported RAID levels are the following:
+	</P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>RAID 0:</I
+> This level increases your disk performance.
+	      There is <I
+CLASS="emphasis"
+>NO</I
+> redundancy in this mode. If one
+	      of the drives crashes, data recovery will not be possible.
+
+	    </P
+></LI
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>RAID 1:</I
+>This mode has the best redundancy. It can be
+	      used with two or more disks. This mode maintains an exact copy of all data on all
+	      disks. As long as at least one disk is still working, no data is lost. The partitions
+	      used for this type of RAID should have approximately the same size.
+	    </P
+></LI
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>RAID 5:</I
+> This mode combines management of a larger number
+	      of disks and still maintains some redundancy. This mode can be used on three disks or more.
+	      If one disk fails, all data is still intact. If two disks fail simultaneously,
+	      all data is lost.
+	    </P
+></LI
+><LI
+><P
+>&#13;	      <I
+CLASS="emphasis"
+>Multipath:</I
+>This mode allow access to the same physical device
+	      over multiple controller for redundancy against a fault in a controller
+	      card. This mode can be used with at least two devices.
+	    </P
+></LI
+></UL
+><P
+>&#13;	  As with LVM, you need to create all <I
+CLASS="emphasis"
+><ACRONYM
+CLASS="acronym"
+>RAID</ACRONYM
+></I
+> partitions first and assign
+	  the partitions to the <ACRONYM
+CLASS="acronym"
+>RAID</ACRONYM
+> device you want to
+	  create and additionally you need to  specify whether a partition or a device should be configured in the
+	  <ACRONYM
+CLASS="acronym"
+>RAID</ACRONYM
+>  or if it should configured as a <I
+CLASS="emphasis"
+>Spare</I
+> device.
+	</P
+><P
+>&#13;	  Up to SuSE Linux 8.2 the raid configuration was done in a separate
+	  resource. This method for configuring raid devices is still
+	  supported, however a new and easier way is introduced starting from
+	  this release which allows the user to have the raid configuration
+	  directly in  the <I
+CLASS="emphasis"
+>partitioning</I
+> resource.
+	</P
+><P
+>&#13;	  The following example shows a simple RAID1 configuration:
+	</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN568"
+></A
+><P
+><B
+>Example 4-15. RAID1 configuration (Old Syntax)</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+   &#60;partitioning config:type="list"&#62;
+      &#60;drive&#62;
+        &#60;device&#62;/dev/sda&#60;/device&#62;
+        &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+            &#60;partition_id config:type="integer"&#62;253&#60;/partition_id&#62;
+            &#60;format config:type="boolean"&#62;false&#60;/format&#62;
+            &#60;raid_name&#62;/dev/md0&#60;/raid_name&#62;
+            &#60;raid_type&#62;raid&#60;/raid_type&#62;
+            &#60;size&#62;4gb&#60;/size&#62;            
+          &#60;/partition&#62;
+
+          &#60;!-- Here come the regular partitions, i.e. / and swap --&#62;        
+
+        &#60;/partitions&#62;
+        &#60;use&#62;all&#60;/use&#62;
+      &#60;/drive&#62;
+      &#60;drive&#62;
+        &#60;device&#62;/dev/sdb&#60;/device&#62;
+        &#60;use&#62;all&#60;/use&#62;
+        &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+             &#60;partition_id config:type="integer"&#62;253&#60;/partition_id&#62;
+             &#60;format config:type="boolean"&#62;false&#60;/format&#62;
+             &#60;raid_name&#62;/dev/md0&#60;/raid_name&#62;            
+             &#60;raid_type&#62;raid&#60;/raid_type&#62;
+             &#60;size&#62;4gb&#60;/size&#62;
+          &#60;/partition&#62;
+         &#60;/partitions&#62;
+       &#60;/drive&#62;
+   &#60;/partitioning&#62;
+
+   &#60;raid config:type="list"&#62;
+       &#60;raid_device&#62;
+          &#60;device_name&#62;/dev/md0&#60;/device_name&#62;
+          &#60;parity_algorithm&#62;left-asymmetric&#60;/parity_algorithm&#62;
+          &#60;persistent_superblock  config:type="boolean"&#62;true&#60;/persistent_superblock&#62;
+          &#60;raid_type&#62;raid1&#60;/raid_type&#62;
+          &#60;partition_id config:type="integer"&#62;131&#60;/partition_id&#62;
+          &#60;chunk_size&#62;4&#60;/chunk_size&#62;
+          &#60;mount&#62;/space&#60;/mount&#62;
+          &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+          &#60;filesystem config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+       &#60;/raid_device&#62;
+    &#60;/raid&#62;
+
+....
+	  
+	    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>Using the new method, the above configuration has the following syntax:</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN572"
+></A
+><P
+><B
+>Example 4-16. RAID1 configuration (New configuration&#62;</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+....
+   &#60;partitioning config:type="list"&#62;
+      &#60;drive&#62;
+        &#60;device&#62;/dev/sda&#60;/device&#62;
+        &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+            &#60;partition_id config:type="integer"&#62;253&#60;/partition_id&#62;
+            &#60;format config:type="boolean"&#62;false&#60;/format&#62;
+            &#60;raid_name&#62;/dev/md0&#60;/raid_name&#62;
+            &#60;raid_type&#62;raid&#60;/raid_type&#62;
+            &#60;size&#62;4gb&#60;/size&#62;            
+          &#60;/partition&#62;
+
+          &#60;!-- Here come the regular partitions, i.e. / and swap --&#62;        
+
+        &#60;/partitions&#62;
+        &#60;use&#62;all&#60;/use&#62;
+      &#60;/drive&#62;
+      &#60;drive&#62;
+        &#60;device&#62;/dev/sdb&#60;/device&#62;
+        &#60;use&#62;all&#60;/use&#62;
+        &#60;partitions config:type="list"&#62;
+          &#60;partition&#62;
+             &#60;partition_id config:type="integer"&#62;253&#60;/partition_id&#62;
+             &#60;format config:type="boolean"&#62;false&#60;/format&#62;
+             &#60;raid_name&#62;/dev/md0&#60;/raid_name&#62;            
+             &#60;raid_type&#62;raid&#60;/raid_type&#62;
+             &#60;size&#62;4gb&#60;/size&#62;
+          &#60;/partition&#62;
+         &#60;/partitions&#62;
+      &#60;/drive&#62;
+      &#60;drive&#62;
+         &#60;device&#62;/dev/md&#60;/device&#62;
+         &#60;partitions config:type="list"&#62;
+            &#60;partition&#62;
+                &#60;raid_options&#62;
+                    &#60;parity_algorithm&#62;left-asymmetric&#60;/parity_algorithm&#62;
+                    &#60;chunk_size&#62;4&#60;/chunk_size&#62;
+                    &#60;raid_type&#62;raid1&#60;/raid_type&#62;
+                &#60;/raid_options&#62;
+                &#60;format config:type="boolean"&#62;true&#60;/format&#62;
+                &#60;filesystem config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+                &#60;partition_id config:type="integer"&#62;131&#60;/partition_id&#62;
+                &#60;mount&#62;/space&#60;/mount&#62;
+                &#60;partition_nr config:type="integer"&#62;0&#60;/partition_nr&#62;
+            &#60;/partition&#62;
+        &#60;/partitions&#62;
+        &#60;use&#62;all&#60;/use&#62;
+    &#60;/drive&#62;
+ 
+   &#60;/partitioning&#62;
+ 
+....
+	  
+	    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	  The following has to be taken into consideration when configuring
+	  raid using the new syntax:
+	</P
+><P
+></P
+><UL
+><LI
+><P
+>The device for raid is always <I
+CLASS="emphasis"
+>/dev/md</I
+></P
+></LI
+><LI
+><P
+>The property <I
+CLASS="emphasis"
+>partition_nr</I
+> is used to
+	      determine the MD device number. if
+	      <I
+CLASS="emphasis"
+>partition_nr</I
+> is equal to 0, then
+	      <I
+CLASS="emphasis"
+>/dev/md0</I
+> is configured.</P
+></LI
+><LI
+><P
+>All RAID specific options are contained in the
+	      <I
+CLASS="emphasis"
+>raid_options</I
+> resource.</P
+></LI
+></UL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="createprofile.bootloader.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="createprofile.software.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>The Boot loader</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="configuration.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Software</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

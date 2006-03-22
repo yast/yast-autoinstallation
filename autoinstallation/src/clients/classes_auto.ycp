@@ -1,0 +1,79 @@
+/**
+ * File:	clients/autoinst_linuxrc.ycp
+ * Package:	Autoinstallation Configuration System
+ * Summary: 	Linuxrc Settings
+ * Authors:	Anas Nashif<nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Wizard";
+    import "Summary";
+    import "AutoinstClass";
+    import "AutoinstConfig";
+
+    import "Label";
+
+    include "autoinstall/dialogs.ycp";
+    include "autoinstall/classes.ycp";
+
+
+    any ret = nil;
+    string func = "";
+    list param = [];
+
+    /* Check arguments */
+    if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+	func = (string)WFM::Args(0);
+	if(size(WFM::Args()) > 1 && is(WFM::Args(1), list ))
+	{
+	    param = (list) WFM::Args(1);
+	}
+    }
+    y2debug("func=%1", func);
+    y2debug("param=%1", param);
+
+    if (func == "Import")
+    {
+	ret = AutoinstClass::Import ((list<map>) param);
+	if (ret == nil)
+	{
+	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+	    ret = false;
+	}
+    }
+    /* create a  summary*/
+    else if (func == "Summary") {
+	ret =  AutoinstClass::Summary();
+    }
+    else if (func == "Reset") {
+	AutoinstClass::Import([]);
+	ret = [];
+    }
+    else if (func == "Change") {
+        Wizard::CreateDialog();
+        Wizard::SetDesktopIcon("general");
+	ret =  classConfiguration();
+	Wizard::CloseDialog();
+	return ret;
+    }
+    else if (func == "Export") {
+	ret = AutoinstClass::Export();
+    }
+    /* unknown function */
+    else {
+	y2error("unknown function: %1", func);
+	ret =  false;
+    }
+
+    y2debug("ret=%1", ret);
+    y2milestone("General auto finished");
+    y2milestone("----------------------------------------");
+
+    return ret;
+
+/* EOF */
+
+
+}

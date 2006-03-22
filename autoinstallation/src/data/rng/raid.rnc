@@ -1,0 +1,24 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace config = "http://www.suse.com/1.0/configns"
+
+raid =
+  element raid {
+    attribute config:type { text },
+    raid_device+
+  }
+raid_device =
+  element raid_device {
+    chunk_size,
+    device_name,
+    filesystem,
+    format,
+    mount,
+    parity_algorithm,
+    persistent_superblock,
+    raid_level
+  }
+chunk_size = element chunk_size { text }
+device_name = element device_name { text }
+parity_algorithm = element parity_algorithm { text }
+persistent_superblock = element persistent_superblock { text }
+raid_level = element raid_level { text }

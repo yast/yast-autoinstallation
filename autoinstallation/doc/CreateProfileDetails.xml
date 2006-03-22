@@ -1,0 +1,2499 @@
+  <chapter id="configuration">
+    <title>Configuration and Installation Options</title>
+    <para>
+      This chapter introduces important parts of a control file for
+      standard purposes. To have an idea about the other options available,
+      use the configuration management system.     
+    </para>
+    <para>
+      Note that for some of the configuration options to work, additional
+      packages have to be installed, depending on the software selection you
+      have configured. If you choose to install <emphasis>Minimal</emphasis>
+      then some packages might be missing and those have to be added to the
+      individual package selection.
+    </para>
+    <para>
+      YaST will install packages required by YaST modules in the second phase
+      of the installation and before the post-installation phase of AutoYaST
+      has started, however if the YaST modules are not available in the
+      system, this will not happen. For example, no security settings will be
+      configured if <emphasis>yast2-security</emphasis> is not installed.
+    </para>
+    <section id="CreateProfile.General">
+      <title id="CreateProfile.General.title">
+	General Options
+      </title>
+      
+      <para>
+	This is a <emphasis>required</emphasis> section of the profile. General
+	options include all the settings related to the installation process and
+	the environment of the installed system. Among
+	others it includes the following 4 properties which are required:
+	<emphasis>language</emphasis>,<emphasis> keyboard</emphasis>,<emphasis>
+	  clock</emphasis> and <emphasis>mouse</emphasis> almost for any
+	installation. If left out, default values will be used, which might not
+	be in one hand with what you want.
+	
+      </para>
+      <example>
+	<title>General Options</title>
+	<screen>
+  <xi:include href="examples/example.generalOptions.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+	</screen>
+      </example>      
+
+  
+  <para>
+    By default, the auto-installation process has to be confirmed by the
+    user. The confirmation should be disabled if a fully unattended
+    installation is desired. This option is used to view and change the
+    settings on a target system before anything is committed and can be
+    used for debugging. It is set to <emphasis>true</emphasis> by default
+    to avoid recursive installs when the system schedules a reboot after
+    initial system setup.
+  </para>
+     <note>
+	<title>Change starting from SUSE Linux 9.1/SLES 9</title>
+	<para>
+	  The <emphasis>reboot</emphasis> property in the <emphasis>mode</emphasis>
+	  resource was used to force a reboot after initial system setup and before
+	  the system is booted for the first time. Currently after initial installation
+	  all systems must boot, which makes this option obsolete.
+	</para>	
+      </note>
+      <note>
+	<title>SLES9 Only Options</title>
+	<para>In SLES 9, it is possible to halt the system after the initial
+	  installation phase using the boolean property <emphasis>halt</emphasis></para>
+      </note>  
+     <note>
+	<title>Change starting from SUSE Linux 10.1/SLES10</title>
+	<para>
+	  The <emphasis>language</emphasis>, <emphasis>keyboard</emphasis> and
+      <emphasis>clock</emphasis> properties in the <emphasis>general</emphasis>
+	  resource were moved to the root (<emphasis>profile</emphasis>) element of
+      the autoyast profile. So don't use them in the general section anymore.
+	</para>
+    <para>
+      Since now you can use the <emphasis>second_stage</emphasis> property, which
+      can turn off autoyast after the first reboot. So the complete second stage is
+      a manual installation (default is true, which means that autoyast is doing a
+      complete installation).
+    </para>
+      </note>
+    </section>
+  <section id="CreateProfile.Reporting">
+    <title id="CreateProfile.Reporting.title">
+      Reporting
+    </title>     
+
+    <para>
+      The <emphasis>report</emphasis> resource manages 3 types of pop-ups
+      that may appear during installation.
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  Messages Popups (Usually non-critical, informative messages)
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Warning Popups (If something might go wrong)
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Error Popups (In the case of an error)
+	</para>
+      </listitem>
+    </itemizedlist>
+    <example>
+      <title>Reporting Behavior</title>
+      <screen>
+  <xi:include href="examples/example.reporting.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+	</screen>
+      </example>    
+
+  <para>
+    Depending on your experience, you can skip, log and show (with timeout)
+    those messages. It is recommended to show all
+    <emphasis>messages</emphasis> with timeout. Warnings can be skipped in
+    some places but should not be ignored.
+  </para>
+  <para>
+    By default, the settings in auto-installation mode is to show all messages without logging and
+    with a timeout of 10 seconds.
+  </para>
+    <warning>
+      <title>
+	Critical system messages
+      </title>
+      <para>
+	Note that <emphasis>not</emphasis> all messages during installation are controlled by the
+	<emphasis>report</emphasis> resource. Some critical messages concerning
+	package installation and partitioning will still show up ignoring your
+	settings in the <emphasis>report</emphasis> section. Mostly those
+	messages will have to be answered with <emphasis>Yes</emphasis> or <emphasis>No</emphasis>.
+      </para>
+    </warning>    
+  </section>
+
+
+
+
+  <section id="CreateProfile.Bootloader">
+    <title>The Boot loader</title>
+    <para>
+      It is now possible to specify which bootloader needs to be
+      installed and it  is possible to specify sections and
+      more bootloader options.
+    </para>
+    <para>
+      If the bootloader resource is not configured, the system will propose
+      best configuration depending on the partitioning scheme. In some cases
+      you must  decide  where to install the bootloader (the Master Boot Record or the first sector of
+      the <filename>/boot</filename> partition) and must specify additional
+      options for the bootloader to be installed correctly.
+    </para>
+    <note>
+      <title>Boot Partition on IA64 Systems</title>
+      <para>
+	The boot partition on <emphasis>IA64</emphasis> is
+	<emphasis>/boot/efi</emphasis> and is set to this value if only
+	<emphasis>/boot</emphasis> is configured in the control
+	file.
+      </para>
+    </note>  
+    <para>
+      Additionally, you can configure  special kernel and boot parameters, Kernel
+      parameters can be configured using the <emphasis>kernel_parameters</emphasis> property. 
+    </para>
+    <example>
+      <title>Bootloader configuration</title>
+      <screen>
+  <xi:include href="examples/example.bootloader.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	</screen>
+      </example>
+  
+  <para>
+    The <emphasis>global</emphasis> resource is used to configure additional
+    boot loader options. Note that bootloaders can have different configurable
+    options. Consult the documentation for the specific bootloader you want to
+    use before adding any options.
+  </para>
+  <para>
+    For example, to configure the serial console with
+    <emphasis>grub</emphasis>, you can add the following options:
+  </para>
+    <example>
+      <title>Serial console configuration with GRUB</title>
+      <screen>
+  <xi:include href="examples/example.bootloader1.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	</screen>
+      </example>
+  
+  <tip>
+    <para>
+      The bootloader configuration interface offers more
+      configuration options than one might need for a regular setup. The
+      options described in the example above should be sufficient for most
+      cases.
+    </para>
+  </tip>
+
+  <para>
+    In the current version, bootloader configuration also supports different
+    architectures and boards. The configuration of the bootloader can be done
+    offline using &autoyast;. For example, the bootloader configuration for 
+    PPC has the following additional options:
+    
+  </para>
+    <example>
+      <title>Bootloader configuration for PPC</title>
+      <screen>
+  <xi:include href="examples/example.bootloader2.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	</screen>
+      </example>
+  <para>Currently the following bootloaders can be configured offline using the
+  &autoyast; interface:</para>
+  <itemizedlist>
+    <listitem>
+      <para>LILO</para>
+    </listitem>
+    <listitem>
+      <para>GRUB</para>
+    </listitem>
+    <listitem>
+      <para>ELILO</para>
+    </listitem>
+    <listitem>
+      <para>zipl</para>
+    </listitem>
+    <listitem>
+      <para>yaboot</para>
+    </listitem>
+  </itemizedlist>
+
+  </section>
+
+  <section id="CreateProfile.Partitioning">
+    <title>
+      Partitioning
+    </title>
+
+    <section>
+        <title>drive configuration</title>
+          <para>
+          The following elements must be between the &lt;partitioning config:type="list"&gt;&lt;drive&gt; ... &lt;/drive&gt;&lt;/partitioning&gt; tags in the &lt;profile&gt; section.
+          </para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>device</entry>
+                <entry>the device you want to configure in this section
+                  <para><screen>&lt;device&gt;/dev/hda&lt;/device&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast tries to guess the device. A RAID must always have "/dev/md" as device</entry>
+              </row>
+              <row>
+                <entry>initialize</entry>
+                <entry>if set to true, the partition table gets wiped out before autoyast starts the partition calculation
+<para><screen>&lt;initialize config:type="boolean"&gt;true&lt;/initialize&gt;</screen></para>
+</entry>
+                <entry>optional. The default is false.</entry>
+              </row>
+              <row>
+                <entry>is_lvm_vg</entry>
+                <entry>this tells autoyast that this device is not a physical device but a LVM volume group (see LVM configuration below)
+<para><screen>&lt;is_lvm_vg config:type="boolean"&gt;true&lt;/is_lvm_vg&gt;</screen></para>
+</entry>
+                <entry>must be true if this device is a LVM volume group. The default is false.</entry>
+              </row>
+              <row>
+                <entry>is_evms_vg</entry>
+                <entry>this tells autoyast that this device is not a physical device but an EVMS volume group (see EVMS configuration below)
+<para><screen>&lt;is_evms_vg config:type="boolean"&gt;true&lt;/is_evms_vg&gt;</screen></para>
+</entry>
+                <entry>must be true if this device is a EVMS volume group. The default is false.</entry>
+              </row>
+              <row>
+                <entry>partitions</entry>
+                <entry>this is a list of &lt;partition&gt; entries (see table below)
+<para><screen>&lt;partitions config:type="list"&gt;&lt;partition&gt;...&lt;/partition&gt;...&lt;/partitions&gt;</screen></para>
+</entry>
+                <entry>optional. If no partition is specified, autoyast will create it's own idea of a nice partitioning (see Automated Partitioning below).</entry>
+              </row>
+              <row>
+                <entry>pesize</entry>
+                <entry>this value makes only sense with LVM/EVMS.
+<para><screen>&lt;pesize&gt;8M&lt;/pesize&gt;</screen></para>
+</entry>
+                <entry>optional. Default is 4M for EVMS/LVM volume groups.</entry>
+              </row>
+              <row>
+                <entry>use</entry>
+                <entry>this parameter tells autoyast which strategy it shall use to partition the harddisc.
+<para>You can choose between:</para>
+<itemizedlist>
+<listitem>
+<para>all (uses the whole device while calculating the new partitioning)</para>
+</listitem>
+<listitem>
+<para>linux (only existing linux partitions are used)</para>
+</listitem>
+<listitem>
+<para>free (only unused space on the device gets used. No other partitions gets touched)</para>
+</listitem>
+<listitem>
+<para>1,2,3 (a list of comma seperated numbers that indicates the partition numbers to use)</para>
+</listitem>
+</itemizedlist>
+</entry>
+                <entry>this parameter should be provided</entry>
+              </row>
+            </tbody>
+          </tgroup>
+          </table>
+    </section>
+
+    <section>
+        <title>partition configuration</title>
+          <para>
+          The following elements must be between the &lt;partitions config:type="list"&gt;&lt;partition&gt; ... &lt;/partition&gt;&lt;/partitions&gt; tags in the &lt;drive&gt; section.
+          </para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>create</entry>
+                <entry>
+                  <para>
+                    the "create" tells autoyast if this partition must be created or if it's already existing
+                  </para>
+                  <para><screen>&lt;create config:type="boolean"&gt;false&lt;/create&gt;</screen></para>
+                </entry>
+                <entry>if set to false, there must be some information for autoyast which partition this is (like with partition_nr)</entry>
+              </row>
+              <row>
+                <entry>mount</entry>
+                <entry>
+                  <para>
+                    the mountpoint of this partition.
+                  </para>
+                  <para><screen>&lt;mount&gt;/&lt;/mount&gt;</screen></para>
+                  <para><screen>&lt;mount&gt;swap&lt;/mount&gt;</screen></para>
+                </entry>
+                <entry>you should have at least a root partition (/) and a swap partition</entry>
+              </row>
+              <row>
+                <entry>fstopt</entry>
+                <entry>
+                  <para>
+                    mount options for this partition
+                  </para>
+                  <para><screen>&lt;fstopt&gt;ro,noatime,user,data=ordered,acl,user_xattr&lt;/fstopt&gt;</screen></para>
+                </entry>
+                <entry>see "man mount" for the mountoptions you can use</entry>
+              </row>
+              <row>
+                <entry>label</entry>
+                <entry>
+                  <para>
+                    the label the partition has (useful for the "mountby" parameter - see below).
+                  </para>
+                  <para><screen>&lt;label&gt;mydata&lt;/label&gt;</screen></para>
+                </entry>
+                <entry>see "man e2label" for example.</entry>
+              </row>
+              <row>
+                <entry>uuid</entry>
+                <entry>
+                  <para>
+                    the uuid the partition has (only useful for the "mountby" parameter - see below).
+                  </para>
+                  <para><screen>&lt;uuid&gt;1b4e28ba-2fa1-11d2-883f-b9a761bde3fb&lt;/uuid&gt;</screen></para>
+                </entry>
+                <entry>see "man uuidgen"</entry>
+              </row>
+              <row>
+                <entry>size</entry>
+                <entry>
+                  <para>
+                    the size for the partition like 4G, 4500M, ... The /boot partition and the swap partition can have "auto" as
+                    size too, to let autoyast calculate a reasonable size for them. On partition can have the value "max" to fillup
+                    all available space. Of course, you can't have two partitions with the size value "max".
+                  </para>
+                  <para><screen>&lt;size&gt;10G&lt;/size&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>format</entry>
+                <entry>
+                  <para>
+                    shall autoyast format the partition?
+                  </para>
+                  <para><screen>&lt;format config:type="boolean"&gt;false&lt;/format&gt;</screen></para>
+                </entry>
+                <entry>if "create" is true, then it's very likely that this is true too</entry>
+              </row>
+              <row>
+                <entry>filesystem</entry>
+                <entry>
+                  <para>
+                    what filesystem is used on this partition?
+<itemizedlist>
+<listitem>
+<para>reiser (the default)</para>
+</listitem>
+<listitem>
+<para>ext2</para>
+</listitem>
+<listitem>
+<para>ext3</para>
+</listitem>
+<listitem>
+<para>xfs</para>
+</listitem>
+<listitem>
+<para>jfs</para>
+</listitem>
+</itemizedlist>
+                  </para>
+                  <para><screen>&lt;filesystem config:type="symbol"&gt;reiser&lt;/filesystem&gt;</screen></para>
+                </entry>
+                <entry>optional. The default is reiser</entry>
+              </row>
+              <row>
+                <entry>partition_nr</entry>
+                <entry>
+                  <para>
+                    the partition_nr this partition have/will have. If you have create=false, then you can tell
+                    autoyast which partition you mean by the partition_nr. You can force autoyast to create only
+                    primary partitions by configuring only partition numbers below 5.
+                  </para>
+                  <para><screen>&lt;partition_nr config:type="integer"&gt;2&lt;/partition_nr&gt;</screen></para>
+                </entry>
+                <entry>in most cases nr. 1-4 are primary partitions and 5-... are logical partitions</entry>
+              </row>
+              <row>
+                <entry>partition_id</entry>
+                <entry>
+                  <para>
+                        the partition_id configures the id of the partition. If you want something else than 131
+                        for linux partition or 130 for swap, you must configure that with partition_id.
+                  </para>
+                  <para><screen>&lt;partition_id config:type="integer"&gt;131&lt;/partition_id&gt;</screen></para>
+                </entry>
+                <entry>the default is 131 for linux partition. 130 for swap is set by autoyast itself too.</entry>
+              </row>
+              <row>
+                <entry>filesystem_id</entry>
+                <entry>
+                  <para>
+                        look at partition_id above. For historical reasons they represent the same.
+                  </para>
+                  <para><screen>&lt;filesystem_id config:type="integer"&gt;131&lt;/filesystem_id&gt;</screen></para>
+                </entry>
+                <entry>since 10.1 and SLES10 it's recommended to use partition_id instead.</entry>
+              </row>
+              <row>
+                <entry>mountby</entry>
+                <entry>
+                  <para>
+                    instead of a partition number, you can tell autoyast to mount a partition by label or by uuid
+                  </para>
+                  <para><screen>&lt;mountby config:type="symbol"&gt;label&lt;/mountby&gt;</screen></para>
+                </entry>
+                <entry>see "label" and "uuid" documentation above</entry>
+              </row>
+              <row>
+                <entry>lv_name</entry>
+                <entry>
+                  <para>
+                    if this partition is in a logical volume in a volume group (LVM or EVMS)
+                    (see is_lvm_vg/is_evms_vg parameter in drive configuration) you
+                    must specifiy the logical volume name here.
+                  </para>
+                  <para><screen>&lt;lv_name&gt;opt_lv&lt;/lv_name&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>lvm_group</entry>
+                <entry>
+                  <para>
+                    if this is a physical partition that is used by (part of) a volume group (LVM), 
+                        you have to specify the name of the volume
+                    group here.
+                  </para>
+                  <para><screen>&lt;lvm_group&gt;system&lt;/lvm_group&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>evms_group</entry>
+                <entry>
+                  <para>
+                    if this physical partition is used by a volume group (EVMS), you have to specify the name of the volume
+                    group here.
+                  </para>
+                  <para><screen>&lt;evms_group&gt;system&lt;/evms_group&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>raid_name</entry>
+                <entry>
+                  <para>
+                    this physical volume is part of a RAID and the name of the raid is specified here.
+                  </para>
+                  <para><screen>&lt;raid_name&gt;/dev/md0&lt;/raid_name&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>raid_type</entry>
+                <entry>
+                  <para>
+                    this physical volume is part of a RAID and the type of the raid is specified here..
+                  </para>
+                  <para><screen>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>raid_options</entry>
+                <entry>
+                  <para>
+                    special options for the raid are specified here. See below.
+                  </para>
+                  <para><screen>&lt;raid_options&gt;...&lt;/raid_options&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+          </table>
+        </section>
+    <section>
+        <title>raid options</title>
+          <para>
+          The following elements must be between the &lt;partition&gt;&lt;raid_options&gt; ... &lt;/raid_options&gt;&lt;/partition&gt; tags.
+          </para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>chunk_size</entry>
+                <entry>
+                  <para>
+                  </para>
+                  <para><screen>&lt;chunk_size&gt;4&lt;/chunk_size&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>parity_algorithm</entry>
+                <entry>
+                  <para>
+                    possible values are: left_asymmetric, left_symmetric, right_asymmetric, right_symmetric
+                  </para>
+                  <para><screen>&lt;parity_algorithm&gt;left_asymmetric&lt;/parity_algorithm&gt;</screen></para>
+                </entry>
+                <entry></entry>
+              </row>
+              <row>
+                <entry>raid_type</entry>
+                <entry>
+                  <para>
+                    possible values are raid0,raid1 and raid5
+                  </para>
+                  <para><screen>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</screen></para>
+                </entry>
+                <entry>the default is raid1</entry>
+              </row>
+            </tbody>
+          </tgroup>
+         </table>
+        </section>
+    <section>
+      <title>
+	Automated Partitioning
+      </title>
+
+      <para>
+	For the automated partitioning to be completed, only the sizes and mount points of
+	partitions can be provided. All other data needed for successful partitioning
+	can be calculated during installation if they were not provided in the control file. 
+      </para>
+      <para>
+	If no partitions are defined and the specified drive is also the drive where
+	the root partition should be created, the following partitions are created
+	automatically:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    <emphasis>/boot</emphasis>
+	  </para>
+	  <para>
+	    Size of the <emphasis>/boot</emphasis> is determined by the
+	    architecture of the target system.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>swap</emphasis>
+	  </para>
+	  <para>
+	    Size of the <emphasis>swap</emphasis> partitions is determined by the
+	    amount of memory available in the system.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>/</emphasis> (root partition)
+	  </para>
+	  <para>
+	    Size of the <emphasis>/</emphasis> (root partition) is the space left
+	    after creating <emphasis>swap</emphasis> and <emphasis>/boot</emphasis>.
+	  </para>
+	</listitem>
+      </itemizedlist>
+      
+      <para>
+	Depending on the initial status of the drive and how it was
+	previously partitioned, it is possible to create the <emphasis>default</emphasis>
+	partitioning in the following ways:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    <emphasis>Use free space</emphasis>
+	  </para>
+	  <para>
+	    If the drive is already partitioned, it is possible to create the
+	    new partitions using the available space on the hard drive. This
+	    requires the availability of enough space for all selected
+	    packages in addition to swap.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>Reuse all available space</emphasis>
+	  </para>
+	  <para>
+	    This option will lead to the deletion of all existing
+	    partitions (Linux and non-Linux partitions).
+
+	  </para>
+	</listitem>
+
+	<listitem>
+	  <para>
+	    <emphasis>Reuse all available Linux partitions</emphasis>
+	  </para>
+	  <para>
+	    This option will lead to the deletion of existing Linux
+	    partitions. All other partitions (i.e. Windows) will be
+	    kept. Note that this works only if the Linux partitions are at the end of the device.
+	    
+	  </para>
+	</listitem>
+
+	<listitem>
+	  <para>
+	    <emphasis>Reuse only specified partitions</emphasis>
+	  </para>
+	  <para>
+	    This option will lead to the deletion of the specified partitions.
+	    The selection of the partitions scheduled for deletion should be
+	    started from the last available partition.
+	  </para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	Repartitioning using only some of the existing partitions can be
+	accomplished only if the region selected to be partitioned exists at
+	the end of the device and only with neighboring partitions. This
+	means that you cannot repartition a region which contains a partition that
+	should not be touched in the middle.
+      </para>
+
+      <caution>
+	<title>Important Notice</title>
+	<para>
+	  The value provided in the <emphasis>use</emphasis> property determines how existing data and
+	  partitions are treated. The value <emphasis>all</emphasis> means that
+	  <emphasis>ALL</emphasis> data on the disk will
+	  be erased. Make backups and use the <emphasis>confirm</emphasis>
+	  property if you are going to
+	  keep some partitions with important data. This is automated
+	  installation and no pop-ups will  notify you about partitions being deleted.
+	</para>
+      </caution>
+      <para>	
+	In case of the presence of multiple drives in the target system, all
+	drives must be identified with their device names and how the partitioning should be performed.
+      </para>
+
+      <para>
+	Partition sizes can be given in Gigabytes, Megabytes or can be set to
+	a flexible value using the keywords <emphasis>auto</emphasis> and
+	<emphasis>max</emphasis>. <emphasis>max</emphasis> is used to fill a
+	partition to the maximal available space on a
+	drive (Which mean that the partition should be the last one on the drive). 
+	<emphasis>auto</emphasis> can be used to determine the size of
+	a <emphasis>swap</emphasis> or <emphasis>boot</emphasis> partitions
+	depending on the memory available and the type of the system.
+      </para>
+      <para>A fixed size can be given as shown below:</para>
+      <para>
+	<emphasis>1GB</emphasis> will create a partition with 1 GB size.
+	<emphasis>1500MB</emphasis> will create a partition which is 1.5 GB big.
+      </para>
+      <example>
+	<title>Automated partitioning</title>
+	<para>
+	  The following is an example of a single drive system, which is not
+	  pre-partitioned and should be automatically partitioned according to
+	  the described pre-defined partition plan. If you leave the device out,
+      an autodetection of the device will happen. So you don't have to do
+      different profiles for /dev/sda or /dev/hda systems.
+	</para>
+	<screen>
+  <xi:include href="examples/example.partitioning.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
+	  </screen>
+	</example>
+  <para>
+    A more detailed example shows how existing partitions  and
+    multiple drives are handled.
+  </para>
+  <example>
+    <title>Detailed automated partitioning</title>
+    <screen>
+  <xi:include href="examples/example.partitioning2.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      	  </screen>
+	</example>
+    </section>
+
+  <section>
+    <title>Advanced Partitioning features</title>
+    <section>
+      <title>Wipe out partition table</title>
+      <para>
+        In the most cases this is not needed because autoyast can delete partitions
+        one by one automatically but you have the option to let autoyast clear the partition table
+        instead of deleting the partitions individually.
+      </para>
+      <para>
+        if you go into the "drive" section, you can add
+        <screen>
+<![CDATA[
+<initialize config:type="boolean">true</initialize>
+]]>
+</screen>
+        which tells Autoyast to delete the partition table before it starts to analyse the
+        actual partitioning and calculates it's partition plan. Of course this means, that you
+        can't keep any of your existing partitions.
+      </para>
+    </section>
+    <section>
+      <title>Mount Options</title>
+      <para>
+	By default a file system which is to be mounted is
+	identified in <filename>/etc/fstab</filename> by the device name. This identification
+	can be changed so the file system  is found by searching
+	for a <acronym>UUID</acronym> or a volume label. Note that not all file systems can be mounted
+	by <acronym>UUID</acronym> or a volume label. To specify how a
+	partition is to be mounted, use the <emphasis>mountby</emphasis>
+	property which has the <emphasis>symbol</emphasis> type. Possible
+	options are:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>device (default)</para>
+	</listitem>
+	<listitem>
+	  <para>label</para>
+	</listitem>
+	<listitem>
+	  <para>UUID</para>
+	</listitem>
+      </itemizedlist>
+      <para>
+	If you choose to mount the partition using a label, the name
+	entered in the <emphasis>label</emphasis> property is used as the
+	volume label. 
+      </para>
+      <para>
+	Add any legal mount option allowed in the fourth field of
+	<filename>/etc/fstab</filename>. Multiple options are separated by commas.  Possible fstab options:
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para><emphasis>Mount Read-Only (ro):</emphasis> No writable
+	    access to the file system is possible. Default is false.</para>
+
+	</listitem>
+	<listitem>
+	  <para><emphasis>No access time (noatime):</emphasis> Access times
+	    are not updated when a file is read. Default is false.</para>
+
+	</listitem>
+	<listitem>
+	  <para><emphasis>Mountable by User (user):</emphasis> The file
+	    system may be mounted by an ordinary user. Default is
+	    false.</para>
+
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>Data Journaling Mode (ordered | journal |
+	      writeback) :</emphasis> Specifies the journaling mode for
+	    file data. journal -- All data is committed into the journal
+	    prior to being written into the main file system. ordered --
+	    All data is forced directly out to the main file system prior
+	    to its meta data being committed to the journal. writeback --
+	    Data ordering is not preserved.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>Access Control List (acl):</emphasis> Enable access
+	    control lists on the file system.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    <emphasis>Extended User Attributes (user_xattr):</emphasis> Allow
+	    extended user attributes on the file system.
+	  </para>
+	</listitem>
+	
+      </itemizedlist>
+      <example>
+	<title>Mount Options</title>
+
+	<screen>
+	    <xi:include href="examples/example.mountoptions.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
+	</screen>
+      </example>
+    </section>
+    
+    <section>
+      <title>Creating Primary and Extended Partitions</title>
+      <para>
+	By default, &autoyast2; will create an extended partition and will add all
+	other new partitions as logical devices. It is possible however to
+	instruct &autoyast2; to create a certain partition as a primary
+	or as extended partition. Additionally, it is possible to
+	specify the size of a partition using sectors instead of the size in Mbytes.
+      </para>
+      <para>
+	The properties <emphasis>partition_id</emphasis> and
+	<emphasis>partition_type</emphasis> control such behavior. To
+	specify the size in sectors, the list resource
+	<emphasis>region</emphasis> can be used.
+    </para>
+    <example>
+      <title>Advanced Automated partitioning</title>
+      <screen>
+	    <xi:include href="examples/example.advancedPartitioning.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+    </example>
+  
+      <para>
+	The last example  only makes sense if you exactly know the
+	boundaries of the partitions and it does only make sense if you are creating
+	an exact copy of  a system, for example when cloning. The first
+	region entry in the list is the beginning of the region, the second
+	represents the length of the region.
+      </para>
+      
+      <para>
+	The following example lets you create an extended partition with a
+	custom size.
+      </para>
+	  <example>
+	    <title>
+	      Creating custom extended partitions
+	    </title>	   	    
+	    <screen>
+      	    <xi:include href="examples/example.customextended.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+  </example>
+
+
+    </section>
+    <section>
+      <title>Keeping Specific Partitions</title>
+      <para>
+	In some cases you might choose to keep some partitions untouched
+	and only format specific target partitions, rather than creating them from
+	scratch. This might be the case of Linux installations have to
+	co-exist with another operating system or if certain partitions
+	contain data that you wish to keep untouched.
+      </para>
+      <para>
+	Such scenarios require certain knowledge about the target systems
+	and hard drives. Depending on the scenario, you might need to know
+	the exact partition table of the target hard drive with partition
+	id's, sizes and numbers. With such data you can tell &autoyast; to
+	keep certain partitions, format others and create new partitions if 
+	needed.
+      </para>
+
+      <para>
+	The following example will keep partitions 1, 2 and 5 and delete
+	partition 6 to create two new partitions. All kept partitions will
+	be only formatted.
+      </para>
+    <example>
+      <title>
+	Keeping partitions
+      </title>	   	    
+      <screen>
+	    <xi:include href="examples/example.keepingpart.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+    </example>
+    <para>
+	The last example requires exact knowledge about the existing partition
+	table and about the partition numbers of those partitions that
+	should be kept. In some cases however, such data might be not
+	available, especially in a mixed hardware environment with
+	different hard drive types and configurations. The following
+	scenario is for a system with a non-Linux OS with a designated
+	area for a Linux installation.     
+      </para>
+      <figure id="partitioning-keep1">
+	<title id="partitioning-keep1.title" >Keeping partitions</title>
+	<mediaobject>&partitioning-keep1;</mediaobject>
+      </figure>
+
+      <para>
+	In this scenario and as shown in  figure <quote><link
+	    linkend='partitioning-keep1'
+	    endterm="partitioning-keep1.title"/></quote> , &autoyast2;
+	should not in any case create any new
+	partitions,  instead  it should search for certain partition types on the system and use
+	them according to the partitioning plan in the control file. No
+	partition numbers are given in this case, only the mount points and
+	the partition types (Additional configuration data can be provided,
+	for example file system options, encryption and filesystem type)
+      </para>
+  <example>
+    <title> Auto-detection of partitions to be kept.</title>
+    <screen>   <xi:include href="examples/example.autodetectpart.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
+  </example>
+    </section>	
+  </section>
+
+  <section>
+    <title>Using existing mount table (fstab)</title>
+    <note>
+      <title>New Feature</title>
+    </note>
+    <para>
+      This option will allow the AutoYaST to use an existing
+      <filename>/etc/fstab</filename> and use the partition data from
+      from a previous installation. All partitions are kept and no new
+      partitions are created. The found partitions will be formatted and
+      mounted as specified in <filename>/etc/fstab</filename> found on a
+      Linux root partition.
+    </para>
+    <para>
+      Although the default behaviour is to format all partitions, it is
+      also possible to leave some partitions untouched and only mount them,
+      for example data partitions. If multiple installations are found on
+      the system (multiple root partitions with different
+      <emphasis>fstab</emphasis> files, the installation will abort, unless
+      the desired root partition is configured in the control file. The
+      following example illustrates how this option can be used:
+    </para>
+    <example>
+      <title>
+	Reading existing <filename>/etc/fstab</filename>
+      </title>
+      <screen>
+  <xi:include href="examples/example.fstab.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+	</example>
+  </section>
+
+  <section>
+    <title>
+      Logical Volume Manager (LVM)
+    </title>
+    <para>
+      To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
+      normal partitioning method described above. 
+    </para>
+    <example>
+      <title>
+	Create LVM Physical Volume
+      </title>
+      <para>
+	The following example shows how to prepare for LVM in the
+	<emphasis>partitioning</emphasis> resource:
+      </para>
+      <screen>
+ <xi:include href="examples/example.lvmvolume.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+
+    </example>
+    <para>
+      The last example will create a non-formatted partition on device
+      <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
+      with the volume group <emphasis>system</emphasis>. The partition
+      created  will use all available space on this drive.
+    </para>
+  <note>
+    <para>
+      Up to SuSE Linux 8.2 the LVM configuration was done in a separate
+      resource. This method for configuring LVM is still
+      supported, however a new and easier way is now possible which allows you
+      to have the LVM configuration      
+      directly in  the <emphasis>partitioning</emphasis> resource.
+    </para>
+  </note>
+    <para>Currently it is not possible to configure LVM using the
+      configuration system, instead it is required to
+      add the resource manually as shown in the  following example:
+    </para>
+
+  	<example>
+	  <title>
+	    LVM Logical Volumes (Old syntax)
+	  </title>
+	  <screen>
+<xi:include href="examples/example.lvmold.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+  </example>
+    <para>Using the new method, the above configuration has the following syntax:</para>
+	<example>
+	  <title>
+	    LVM Logical Volumes (New syntax)
+	  </title>
+	  <screen>
+<xi:include href="examples/example.lvmnew.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	  </screen>
+	</example>
+    <para>
+      With SUSE Linux 10.1 and all following versions, it's possible to set the <emphasis>size</emphasis> 
+      to <emphasis>max</emphasis> for the logical volumes. Of course, you can only use <emphasis>max</emphasis>
+      only for one(!) logical volumes. You can't have two logical volumes in one volume group with the 
+      <emphasis>size</emphasis> set to <emphasis>max</emphasis>
+    </para>
+  </section>
+
+  <section>
+    <title>
+      Enterprise Volume Management System (EVMS)
+    </title>
+    <para>
+      Since SLES10 autoyast has EVMS support.
+    </para>
+    <para>
+      Using EVMS is quite similar to using LVM (see above). So switching from LVM to EVMS
+      is just a small change in the autoyast profile. All you have to do is to change the
+      "is_lvm_vg" element into "is_evms_vg" and the "lvm_group" element into "evms_group".
+    </para>
+    <para>
+      With autoyast it's not possible to mix LVM and EVMS.
+    </para>
+    <para>
+      Using the LVM example from above for EVMS now looks like this:
+    </para>
+    <example>
+      <title>
+        EVMS Logical Volumes
+      </title>
+      <screen>
+<xi:include href="examples/example.evms.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+    </example>
+  </section>
+  <section>
+    <title>Software RAID</title>
+    <para>
+      Using &autoyast;, you can create and assemble software RAID devices. The
+      supported RAID levels are the following:
+    </para>
+    <itemizedlist>
+      <listitem>	  
+	<para>
+	  <emphasis>RAID 0:</emphasis> This level increases your disk performance.
+	  There is <emphasis>NO</emphasis> redundancy in this mode. If one
+	  of the drives crashes, data recovery will not be possible.
+
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <emphasis>RAID 1:</emphasis>This mode has the best redundancy. It can be
+	  used with two or more disks. This mode maintains an exact copy of all data on all
+	  disks. As long as at least one disk is still working, no data is lost. The partitions
+	  used for this type of RAID should have approximately the same size.
+	</para>
+      </listitem>
+
+      <listitem>
+	<para>
+	  <emphasis>RAID 5:</emphasis> This mode combines management of a larger number
+	  of disks and still maintains some redundancy. This mode can be used on three disks or more.
+	  If one disk fails, all data is still intact. If two disks fail simultaneously,
+	  all data is lost.
+	</para>	  
+      </listitem>
+      <listitem>
+	<para>
+	  <emphasis>Multipath:</emphasis>This mode allow access to the same physical device
+	  over multiple controller for redundancy against a fault in a controller
+	  card. This mode can be used with at least two devices.
+	</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      As with LVM, you need to create all <emphasis><acronym>RAID</acronym></emphasis> partitions first and assign
+      the partitions to the <acronym>RAID</acronym> device you want to
+      create and additionally you need to  specify whether a partition or a device should be configured in the
+      <acronym>RAID</acronym>  or if it should configured as a <emphasis>Spare</emphasis> device.
+    </para>
+    <note>
+      <para>
+	Up to SuSE Linux 8.2 the raid configuration was done in a separate
+	resource. This method for configuring raid devices is still
+	supported, however a new and easier way is now possible 
+	which allows the user to have the raid configuration
+	directly in  the <emphasis>partitioning</emphasis> resource.
+      </para>
+    </note>
+    <para>
+      The following example shows a simple RAID1 configuration:
+    </para>
+  
+
+	<example>
+	  <title>RAID1 configuration (Old Syntax)</title>
+      <screen>
+<xi:include href="examples/example.raidold.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	    </screen>
+	  </example>
+
+    <para>Using the new method, the above configuration has the following syntax:</para>
+
+  	<example>
+	  <title>RAID1 configuration (New Syntax)</title>
+      <screen>
+<xi:include href="examples/example.raidnew.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	    </screen>
+	  </example>
+
+
+    <para>
+      The following has to be taken into consideration when configuring
+      raid using the new syntax:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>The device for raid is always <emphasis>/dev/md</emphasis></para>
+      </listitem>
+      <listitem>
+	<para>The property <emphasis>partition_nr</emphasis> is used to
+	  determine the MD device number. if
+	  <emphasis>partition_nr</emphasis> is equal to 0, then
+	  <emphasis>/dev/md0</emphasis> is configured.</para>	   
+      </listitem>
+      <listitem>
+	<para>All RAID specific options are contained in the
+	  <emphasis>raid_options</emphasis> resource.</para>
+      </listitem>
+    </itemizedlist>
+
+
+
+  </section>
+  </section>      
+  <section id="CreateProfile.Software">
+    <title>
+      Software
+    </title>
+    
+    <section id="Software.Selections">
+      <title>
+	Package Selections until SUSE Linux 10.1 (not SLES10)
+      </title>
+      <para>	
+	You can install software on the new system using a pre-defined package base selection, i.e. Minimal, Minimal+X11,
+	default etc. in addition to several <emphasis>Add-on</emphasis> selections. 
+	Check the first CD for available selections in
+	<filename>suse/setup/descr/selections</filename>, depending on the
+	product you are installing, some "well-known" selections might not
+	be available.
+      </para>
+      
+      
+      <para>
+	In the control file, packages and package selections are described as
+	the following:
+      </para>
+	<example>
+	  <title>
+	    Package selection in control file
+	  </title>
+	  <screen>
+<xi:include href="examples/example.software.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	  </screen>
+	</example>     
+      <para>
+	You can install one base selection and additionally one or multiple 
+	add-on selections.
+      </para>
+      <para>
+	When installing from a CD-ROM, needed packages from other CD-ROMs
+	are installed after the initial boot of the
+	system in the second installation phase. If you
+	are installing packages from multiple CD-ROMs, then
+	auto-installation has to be interrupted for switching the
+	CD-ROMs. In the case of NFS installation, all packages are
+	installed at first stage of the installation only if the NFS repository
+	is configured as a single medium.
+      </para>
+      <para>
+	It is often required, that a package should be installed in the
+	second phase, especially custom packages
+	which may contain scripts for configuring the system. This can be
+	done using the <emphasis>post-packages</emphasis> resource.
+      </para>
+
+    </section>
+
+    <section id="Software.Selections.sles10">
+      <title>
+	Package Selections with patterns (SLES10)
+      </title>
+      <para>
+      SLES10 no longer supports <emphasis>selections</emphasis> but uses 
+      <emphasis>patterns</emphasis> now. Autoyast is not be able to convert 
+      selections into patterns and so you have to do that on your own.
+      If you want to use a SLES9 autoyast profile to install a SLES10
+      server, you have to remove all <emphasis>addon</emphasis> entries and the
+      <emphasis>base</emphasis> entry. Patterns are configured like this:
+      </para>
+	<example>
+	  <title>
+	    Package selection in control file with patterns
+	  </title>
+	  <screen>
+<xi:include href="examples/example.software.patterns.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	  </screen>
+	</example>
+    <para>
+      As you can see, the <emphasis>packages</emphasis> section is still the same like on
+      a SLES9. Just the <emphasis>addon</emphasis> and <emphasis>base</emphasis> is gone.
+    </para>
+    </section>
+
+    <section>
+      <title>
+	Custom Package Selections
+      </title>
+      <para>	
+	In addition to the pre-defined selections, you can create custom selections
+	by providing  a selection file in the selection
+	directory. (<filename>suse/setup/descr</filename>) The selection files have a special format and any
+	additional selection file must conform to this format, otherwise
+	&yast2; will not be able to read it.	  	  
+      </para>
+      <para>
+	As an example for the selection file, take a look at the files
+	available in the directory <filename>/suse/setup/descr/</filename> on
+	the CD-ROMs.
+      </para>
+      <para>
+	After creating a selection file, you can add it to the configuration
+	as described earlier in this section. The selection name, for example
+      <emphasis>My.sel</emphasis> has to be added to the index files
+      <filename>selections</filename> and <filename>directory.yast</filename>
+      to make it visible to the installer.
+    </para>
+    <para>
+      The file <filename>My.sel</filename> should have the following format:
+    </para>
+    <example>
+      <title>
+	Customized Package selection
+	</title>
+	<screen>
+  <xi:include href="examples/example.customSoftware3.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+         </screen>
+        </example>
+  <para>To use the above selection, the following should be added in the
+    control file:</para>
+  <example>
+    <title>
+      Package selection file
+    </title>
+    <screen>
+  <xi:include href="examples/example.customSoftware.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+          </screen>
+        </example>
+
+      </section>
+  <section>
+    <title>
+      Installing additional and customized Packages
+    </title>
+    <para>
+      In addition to the packages available for installation on the CD-ROMs,
+      you can add external  packages including customized  kernels. Customized
+      kernel packages must be compatible to the  &company-suse;  packages and must
+      install the kernel files to the same locations.
+    </para>
+    <para>
+      Unlike earlier versions, to install custom and external packages
+      there is no need for a special resource in the control
+      file. Instead you need to re-create the package database and update
+      it with any new packages or new package versions in the source repository.
+    </para>
+    <para>
+      A script is provided for this task which will query packages
+      available in the repository and create the required package
+      database.
+    </para>    
+      
+    <para>
+      Creating a new package database is only needed if new RPMs
+      (i.e. update RPMs) were added. To re-create the database, use the
+      <command>/usr/bin/create_package_descr</command>
+      command. For example, use this command line to create the package
+      database. (When creating the database, all languages will be reset to English).
+    </para>
+    <example>
+      <title>Creating package database</title>
+      <screen>
+	cd /usr/local/CDs/LATEST/suse
+	create_package_descr  -x PATH_TO_EXTRA_PROV -d /usr/local/CDs/LATEST/suse 
+      </screen>
+    </example>
+    <note>
+      <title>Change starting from SUSE Linux 9.1/SLES 9</title>
+      <para>To provide extra dependencies which can not be extracted from the
+	rpm files, an extra file with missing dependencies is available in the
+	directory <filename>suse/setup/descr</filename>. The file
+	<filename>EXTRA_PROV</filename> can be used when recreating the package
+	database using the <emphasis>-x</emphasis> option.</para>
+    </note>
+    <para>
+      In the above example, the directory
+      <filename>/usr/local/CDs/LATEST/suse</filename> contains the architecture
+      dependent and independent packages, i.e. <emphasis>noarch</emphasis> and <emphasis>i586</emphasis>. 
+      This might look different on other architectures.
+    </para>
+    <para>
+      The advantage of this method is that you can keep an up-to-date
+      repository with fixed and updated package (i.e. from &company-suse; FTP
+      server). Additionally this method  makes the creation of custom CD-ROMs easier.
+    </para>
+  </section>
+  <section>
+    <title>Kernel packages</title>
+    <para>
+      Kernel packages are not part of any selection. The required kernel
+      is determined during installation. If the kernel package is added to any selection
+      or to the individual package selection, installation will mostly fail due to conflicts.
+    </para>
+    <para>
+      To force the installation of a specific kernel, use the
+      <emphasis>kernel</emphasis> property. The following is an example
+      forcing the installation of the default kernel. In this example this
+      kernel will be installed in any case, even if an SMP or other kernel
+      is required</para>
+   	<example>
+	  <title>
+	    Package selection in control file
+	  </title>
+	  <screen>
+<xi:include href="examples/example.kernel.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+	  </screen>
+	</example>
+  </section>
+  <section>
+    <title>Removing automatically selected packages</title>
+    <para>
+      Some packages are selected automatically either because of a
+      dependency or because it available in a selection.
+    </para>
+    <para>
+      Removing such packages might break the system consistency and it is
+      not recommended to remove basic packages unless a replacement which
+      provides same services is provided. Best example for this case are
+      <acronym>MTA</acronym> packages. By default, <emphasis>postfix</emphasis>
+      will be selected and installed. If you wish however to use another
+      <acronym>MTA</acronym> like <emphasis>sendmail</emphasis>, then
+      postfix can be removed from the list of selected package using a list
+      in the software resource. The following example shows how this can be done:
+      
+    </para>
+	<example>
+	  <title>
+	    Package selection in control file
+	  </title>
+	  <screen>
+<xi:include href="examples/example.removesoft.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+
+	  </screen>
+	</example>   
+  </section>
+    </section>
+
+  <section id="CreateProfile.Services">
+    <title>
+      Services and Run-levels
+    </title>
+    <para>
+      With the run-level resource you can set the default run-level and specify
+      in detail which system services you want to be started in which
+      run-level.
+    </para>
+    <para>
+      The default property specifies the <emphasis>default</emphasis> run
+      level of the system. Changes to the default run-level will take effect
+      the next time you boot the system. After installation is completed,
+      the system has run-level 5, which is  <emphasis>Full multiuser with
+	network and XDM</emphasis>. If you have configured a system with no
+      X11, then it is recommended to reboot the system after the first stage
+      using the <emphasis>reboot</emphasis> property in the <emphasis>general</emphasis> resource.
+
+    </para>
+    <para>
+      A service should run in using a space delimited list of the run-levels
+      as shown in the  following example. An alternative to specifying the
+      exact run-levels is to change the status of the service by either
+      enabling or disabling it using the
+      <emphasis>service_status</emphasis> property.
+    </para>
+    &example.runlevels;
+    
+  </section>
+
+  <section id="CreateProfile.Network">
+    <title>
+      Network configuration
+    </title>
+
+    <section id="Configuration.Network.Devices">
+      <title>
+	Network devices, DNS and Routing.
+      </title>
+      <para>
+	Network configuration is used to connect a single  &company-suse;  Linux
+	workstation to an Ethernet-based LAN or to configure dial-up
+	connection. More complex configuration (multiple network cards,
+	routing, etc.) is also provided. With this module it's possible to
+	configure and setup Ethernet Controllers and Token-Ring Controllers.
+      </para>
+      <para>
+	To configure network settings and activate networking automatically,
+	one global resource is used to store the whole network configuration.
+      </para>
+      
+      &example.network;
+    </section>
+
+    <section id="Configuration.Network.Proxy">
+      <title>
+	Proxy
+      </title>
+      <para>
+	Configure your Internet proxy (caching) settings using this
+	resource.
+      </para>
+      <para>
+	<emphasis>HTTP proxy</emphasis> is the name of the proxy server for your access to the world wide web (WWW).
+	<emphasis>FTP proxy</emphasis> is the name of the proxy server for your access to the file transfer services (FTP).
+	<emphasis>No proxy</emphasis> domains is a list of domains for
+	which the requests should be done directly without caching.
+      </para>
+      <para>
+	If you are using a proxy server with authorization, fill in Proxy user name and Proxy password.
+      </para>
+      <example>
+	<title>
+	  Netwrok configuration: Proxy
+	</title>
+	<screen>
+  <xi:include href="examples/example.proxy.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+	  </screen>
+	</example>
+
+      
+    </section>
+    <section id="Configuration.Network.Inetd">
+      <title>(X)Inetd </title>
+
+      <para>
+	The profile has elements to specify which superserver should be
+	used (netd_service), whether it should be enabled (netd_status) and
+	how the services should be configured (netd_conf).
+      </para>
+      <para>
+	A service description element has conceptually two parts: key and
+	non-key. When writing the configuration, services are matched using
+	the key fields and to the matching service, non-key fields are
+	applied. If no service matches, it is created. If more services
+	match, a warning is reported. The key fields are script, service,
+	protocol and server.
+      </para>
+      <para>
+	Service and protocol are matched literally. script is the base name
+	of the config file: usually a file in<filename> /etc/xinetd.d</filename>, for example "echo-udp",
+	or "inetd.conf". For compatibility with 8.2, server is matched more
+	loosely: if it is <filename>/usr/sbin/tcpd</filename>, the real server name is taken from
+	server_args. After that, the basename of the first
+	whitespace-sparated word is taken and these values are compared.
+      </para>
+      &example.inetd;
+
+    </section>
+    <section id="Configuration.Network.NIS">
+      <title>NIS</title>
+      <para>
+	Using the <emphasis>nis</emphasis> resource, you can configure the target machine as a <emphasis>NIS
+	  client</emphasis>. The following example shows a detailed
+	configuration using multiple domains.
+      </para>
+      &example.nis;
+    </section>
+    <!--
+    <section id="Configuration.Network.NISplus">
+    <title>
+    NIS+
+  </title>
+    <para>
+    If you activate NIS+, the data of the
+    NIS+ Server will be added to <filename>/etc/hosts</filename>. Keyserv and the NIS+ cache manager
+    will be started and the NSS and PAM configuration will be modified to use
+    NIS+ and set the Secret Key of a user.
+  </para>
+    &example.nisplus;
+  </section>
+    -->
+    <section id="Configuration.Network.LDAP">
+      <title>
+	&ldap;  client
+      </title>
+      <para>
+	The installed machine can be set up as an
+	<emphasis>> &ldap;  client</emphasis> to authenticate  users with an
+	OpenLDAP;  server. Required data are the name of the search base (base DN, e.g, dc=mydomain,dc=com)
+	and the IP address of the  &ldap;  server (e.g., 10.20.0.2).
+      </para>
+      <para>
+	If  &ldap;  is activated, <emphasis>NSS</emphasis> and <emphasis>PAM</emphasis>
+	will be configured accordingly to use  &ldap;  for user authentication.
+      </para>
+      &example.ldapclient;
+    </section>
+    <section>
+      <title>
+	NFS Client and Server
+      </title>
+      <para>
+	Configuration of a system as an NFS client or an NFS server is
+	possible and can be done using the configuration system. The
+	following example shows how both NFS client and server can be configured.
+      </para>
+       <example>
+          <title>
+            Network configuration: NFS client
+          </title>
+          <screen>
+
+  <xi:include href="examples/example.nfs.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+          </screen>
+</example>
+       <example>
+          <title>
+            Network configuration: NFS Server
+          </title>
+          <screen>
+
+        
+  <xi:include href="examples/example.nfsserver.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+          </screen>
+</example> 
+    </section>
+    
+    <section id='Configuration.Network.Ntp'>
+      <title>
+	NTP Client
+      </title>
+      <para>
+          Select whether to start the NTP daemon when booting the system. The NTP
+          daemon resolves host names when initializing. The first
+          synchronization of the clock is performed before the NTP daemon is
+          started. To use this host for initial synchronization configure the
+          property <emphasis>initial_sync</emphasis>.
+      </para>
+      <para>
+          To run NTP daemon in
+          chroot jail, set <emphasis>start_in_chroot</emphasis>. Starting any daemon
+          in a chroot jail is more secure and strongly recommended. 
+          To adjust NTP servers, peers, local clocks, and NTP broadcasting,
+          add the appropriate entry to the control file. an example of various
+          configuration options is shown below.
+      </para>
+       <example>
+          <title>
+            Network configuration: NTP Client
+          </title>
+          <screen>
+  <xi:include href="examples/example.ntp.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+          </screen>
+</example> 
+    </section>
+  </section>
+    <section id='Configuration.Network.Sendmail'>
+      <title>
+	Mail Configuration (Sendmail or Postfix)
+      </title>
+      <para>
+	For the mail configuration of the client this
+	module lets you create a detailed mail configuration. The module
+	contains various options and it is recommended to use it at least for
+	the initial configuration.
+	
+      </para>
+       <example>
+	  <title>Mail Configuration</title>
+          <screen>
+  <xi:include href="examples/example.mail.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+          </screen>
+</example> 
+    </section>
+
+
+
+  <section id="CreateProfile.Security">
+    <title>
+      Security settings
+    </title>
+    
+    <para>
+      Using the features of this module, you will be able to change the local
+      security settings on the target system. The local security settings
+      include the boot configuration, login settings, password settings,
+      user addition settings, and file permissions.
+    </para>
+    <para>
+      Configuring the security settings automatically corresponds to the
+      <emphasis>Custom Settings</emphasis> in the security module available in
+      the running system which lets you create your own, customized
+      configuration.
+    </para>      
+    
+    &example.security;
+    <section>
+      <title>Password Settings Options</title>
+      <para>
+	Change various password settings. These settings are mainly stored in the <filename>/etc/login.defs</filename> file.
+      </para>
+      <para>
+	Use this resource to activate one of  the <emphasis>encryption</emphasis> methods currently supported.
+	If not set, <emphasis>DES</emphasis> is configured.
+      </para>
+      <para>
+	<emphasis>DES</emphasis>, the Linux default method, works in all
+	network environments, but it restricts you to passwords no longer than
+	eight characters. <emphasis>MD5</emphasis> allows longer passwords,
+	thus provides more security, but some network protocols don't support
+	this, and you may have problems with NIS. <emphasis>Blowfish</emphasis>
+	is also supported.
+      </para>
+      <para>Additionally, you can setup the system to check for password
+	plausibility and length etc.</para>
+    </section>
+    <section>
+      <title>Boot Settings</title>
+      <para>
+	Use the security resource, you can change various boot settings.
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para><emphasis>How to interpret Ctrl + Alt + Del</emphasis></para>
+	  <para>When someone at the console has pressed the CTRL + ALT + DEL key combination, the system usually reboots. Sometimes it is desirable to ignore this event, for example, when the system serves as both workstation and server.</para>
+	</listitem>
+	<listitem>
+	  <para><emphasis>Shutdown behavior of KDM</emphasis></para>
+	  <para>Set who is allowed to shut down the machine from KDM.</para>
+	</listitem>
+      </itemizedlist>
+
+      
+    </section>
+    <section>
+      <title>Login Settings</title>
+      <para>Change various login settings. These settings are mainly stored in the '/etc/login.defs' file.</para>
+    </section>
+    <section>
+      <title>New user settings (useradd settings)</title>
+      <para>Set the minimum and maximum possible user ID and set the minimum
+	and maximum possible group ID.
+      </para>
+    </section>
+    
+  </section>
+
+  <section id="Configuration.X11">
+    <title>
+      Monitor and X11 Configuration
+    </title>
+    <para>
+      FIXME
+  </para>     
+
+  <example>
+      <title>
+          X11 and Monitor configuration
+      </title>
+      <screen>
+<xi:include href="examples/example.x11.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+      </screen>
+  </example>
+    
+
+  </section>
+
+  <section id="Configuration.Security.users">
+    <title>
+      Users
+    </title>
+    <para>
+      The root user and at least one normal user can be added during install
+      using data supplied in the control file. User data and passwords
+      (encrypted or in clear text) are part of the <emphasis>configure</emphasis> resource in the
+      control file.
+    </para>     
+    <para>
+      At least the root user should be configured during
+      auto-installation, which will insure you will be able to login after
+      installation is finished and of course it will insure nobody else can login
+      into the system (in case the password is not set).
+  </para> 
+  <para>The two users in the following example  are added during system
+      configuration.</para>
+
+  <example>
+      <title>
+          User configuration
+      </title>
+          <screen>
+              <xi:include href="examples/example.users.xml" parse="text"
+                  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+          </screen>
+      </example>
+      <para>
+          The last example shows the minimal information required for adding
+          users. More options are available for a more customized user account
+          management. The data in <filename>/etc/default/useradd</filename> is
+          used to determine the home directory of the user to be created in
+          addition to other parameters. 
+      </para>      
+  </section>
+  <section id="createprofile.scripts">
+    <title>Custom user scripts</title>
+    <para>
+      By adding scripts to the auto-installation process you can customize the
+      installation for your needs and take control in different stages of the
+      installation.
+    </para>
+    <para>
+      In the auto-installation process, four types of scripts can be executed and they
+      will be described here in order of "appearance" during the installation.
+    </para>
+    <para>
+    <itemizedlist>
+        <listitem><emphasis>pre-scripts</emphasis> (very early, before anything else really happened)</listitem>
+        <listitem><emphasis>chroot-scripts</emphasis> (after the package installation, before the first boot)</listitem>
+        <listitem><emphasis>post-scripts</emphasis> (during the first boot of the installed system, no services running)</listitem>
+        <listitem><emphasis>init-scripts</emphasis> (during the first boot of the installed system, all servies up and running)</listitem>
+    </itemizedlist>
+    </para>
+    <section id="pre-install.scripts">
+	<title>Pre-Install Scripts</title>
+	<para>
+	  Executed before &yast2; does any real change to the system
+	  (Before partitioning and package installation but after the hardware detection)
+	</para>
+    <para>
+      You can use the pre-script to modify your profile and let autoyast read it again.
+      If you want to do that, you can find your profile in "/tmp/profile/autoinst.xml".
+      Do what you want to do with that file and store the modified version in
+      "/tmp/profile/modified.xml". Autoyast will read that modified script then again after
+      the pre-script is done.
+    </para>
+    <para>
+      With SUSE Linux 10.0 and all following versions it's possible to change the partitioning with fdisk 
+      in your pre-script. With pre 10.0 versions of SUSE Linux (like SLES9), that was not possible.
+    </para>
+	<note><title>Pre-Install Scripts with confirmation</title>
+	  <para>
+	    Pre-scripts are executed at an early stage of the installation.
+	    This means if you have requested to confirm the installation, the 
+	    pre-scripts  will be executed before the confirmation screen
+	    shows up. (<emphasis>profile/install/general/mode/confirm</emphasis>)
+	  </para>
+	</note>
+          <para>
+            The following elements must be between the &lt;pre-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/pre-scripts&gt; tags
+          </para>
+      <para>
+        <table frame='top'>
+          <title>pre script XML representation</title>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...).
+                <para><screen>&lt;location&gt;http://10.10.0.1/myPreScript.sh&lt;/location&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing the pre script" &gt; /tmp/pre-script_out.txt 
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell and perl.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;myPreScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (pre-scripts) in this case</entry>
+              </row>
+              <row>
+                <entry>feedback</entry>
+                <entry>if this boolean is true, stdout and stderr of the script will be shown in a popup that the
+                       user has to confirm via ok-button. If stdout and stderr are empty, no popup is shown and so
+                       no confirmation is needed.
+                <para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></para></entry>
+                <entry>optional. The default is false. This option was invented with SL 10.1 / SLES10</entry>
+              </row>
+              <row>
+                <entry>debug</entry>
+                <entry>if this is true, every single line of a shell script is logged. Perl scripts are run with warnings
+                turned on.
+                <para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></para></entry>
+                <entry>optional. The default is true. This option was invented with SL 10.1 / SLES10</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </para>
+    </section>
+    <section id="chroot.scripts">
+    <title>Chroot environment scripts</title>
+	<para>Chroot scripts are executed after all packages have been
+	  installed. Actually chroot scripts are two differnt kind of script with
+      one name. You can execute chroot script before the installation chroots into
+      the installed system and configures the boot loader and you can execute a script
+      after the chroot into the installed system has happend (look at the "chrooted" parameter for that). Both types of scripts are
+      executed before yast2 boots for the first time.
+	</para>
+          <para>
+            The following elements must be between the &lt;chroot-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/chroot-scripts&gt; tags
+          </para>
+      <para>
+        <table frame='top'>
+          <title>chroot script XML representation</title>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...).
+                       <para>
+                <screen>&lt;location&gt;http://10.10.0.1/myChrootScript.sh&lt;/location&gt;</screen>
+                    </para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing the chroot script" &gt; /tmp/chroot_out.txt 
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>chrooted</entry>
+                <entry>this value can be true or false. "False" means that the installed system is still mounted at "/mnt" and no chrooting has happened till now. The bootloader is not installed too at that stage. "True" means, we did a chroot into /mnt, so we are now in the installed system. The bootloader is installed and if you want to change anything in the installed system, you don't have to use the "/mnt/" prefix anymore.
+                <para><screen>&lt;chrooted config:type="boolean"&gt;true&lt;/chrooted&gt;</screen></para></entry>
+                <entry>optional (the default is false)</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell and perl.and if you are in a chrooted=true condition, you can use python too if it's installed.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;myPreScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (pre-scripts) in this case</entry>
+              </row>
+              <row>
+                <entry>feedback</entry>
+                <entry>if this boolean is true, stdout and stderr of the script will be shown in a popup that the
+                       user has to confirm via ok-button. If stdout and stderr are empty, no popup is shown and so
+                       no confirmation is needed.
+                <para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></para></entry>
+                <entry>optional. The default is false. This option was invented with SL 10.1 / SLES10</entry>
+              </row>
+              <row>
+                <entry>debug</entry>
+                <entry>if this is true, every single line of a shell script is logged. Perl scripts are run with warnings
+                turned on.
+                <para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></para></entry>
+                <entry>optional. The default is true. This option was invented with SL 10.1 / SLES10</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </para>
+      </section>
+    <section id="post-insall.scripts">
+	<title>Post-Install Scripts</title>
+	<para>
+	  These scripts are executed after AutoYaST has completed the
+	  system configuration and after it has booted the system for the first time.
+	</para>
+	<para>Starting from SLES9, network is not available during
+	  post-installation script execution. To access the network, network
+	  device has to be configured in the script.
+	</para>
+	<para>
+	  It is possible to execute the post scripts in an earlier phase while
+	  the installation network is still up and before AutoYaST configures
+	  the system. To run network enabled post scripts, the boolean 
+	  property <emphasis>network_needed</emphasis> has to be set to true.
+	</para>
+          <para>
+            The following elements must be between the &lt;post-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/post-scripts&gt; tags
+          </para>
+      <para>
+        <table frame='top'>
+          <title>post script XML representation</title>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...) but then you need a running network interface of course
+                       <para>
+                <screen>&lt;location&gt;http://10.10.0.1/myPostScript.sh&lt;/location&gt;</screen>
+                    </para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing the chroot script" &gt; /tmp/chroot_out.txt 
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>network_needed</entry>
+                <!-- FIXME: double check that. I'm very unsure if this is correct -->
+                <entry>this value can be true or false. On "false" the script will run after the yast modules like the user configuration and everything else are done. The network is configured but still not up and running. With this value on "true", the script runs before(!) all yast modules are configured. So there is no local user and no network is configured but the installation network is still up and running (of course only if you did a network installation).
+                <para><screen>&lt;network_needed config:type="boolean"&gt;true&lt;/network_needed&gt;</screen></para></entry>
+                <entry>optional (the default is false)</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell, perl and python if it's installed.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;myPostScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (post-scripts) in this case</entry>
+              </row>
+              <row>
+                <entry>feedback</entry>
+                <entry>if this boolean is true, stdout and stderr of the script will be shown in a popup that the
+                       user has to confirm via ok-button. If stdout and stderr are empty, no popup is shown and so
+                       no confirmation is needed.
+                <para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></para></entry>
+                <entry>optional. The default is false. This option was invented with SL 10.1 / SLES10</entry>
+              </row>
+              <row>
+                <entry>debug</entry>
+                <entry>if this is true, every single line of a shell script is logged. Perl scripts are run with warnings
+                turned on.
+                <para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></para></entry>
+                <entry>optional. The default is true. This option was invented with SL 10.1 / SLES10</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </para>
+    </section>
+    <section id="init.scripts">
+	<title>Init Scripts</title>
+	<note>
+	  <para>Available starting from SLES9 only.</para>
+	</note>
+	<para>
+	  These scripts are executed during the initial boot process and after
+	  &yast2; has finished. The final scripts are executed using a special
+	  <emphasis>init.d</emphasis> script which is executed only
+	  once. The final scripts are executed toward the end of the boot
+	  process and after network has been intialized.
+	</para>
+        <para>
+            Init scripts are configured using the tag <emphasis>init-scripts</emphasis> and 
+            are run using the special purpose <emphasis>init.d</emphasis> script <filename>/etc/init.d/autoyast</filename>.
+        </para>
+          <para>
+            The following elements must be between the &lt;init-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/init-scripts&gt; tags
+          </para>
+      <para>
+        <table frame='top'>
+          <title>init script XML representation</title>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...) but then you need a running network interface of course
+                       <para>
+                <screen>&lt;location&gt;http://10.10.0.1/myInitScript.sh&lt;/location&gt;</screen>
+                    </para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing the init script" &gt; /tmp/init_out.txt 
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell, perl and python if it's installed.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;mynitScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (init-scripts) in this case</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </para>
+    </section>
+    <para>
+      When added to the control file manually, the
+      scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
+      the file syntax and other tags defined in the control file.
+    </para>
+    <section id="script_examples">
+    <title>Script example</title>
+      <example>
+	<title>Post script configuration</title>
+	<screen>
+    <xi:include href="examples/example.scripts.xml" parse="text"
+        xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+	</screen>
+      </example>
+    <para>
+      After installation is finished, the scripts and the output logs can be
+      found in the directory <filename>/var/adm/autoinstall</filename>. The
+      scripts are located in <filename>scripts</filename> and the output logs of the
+      scripts are located in the <filename>log</filename> directory.
+    </para>
+    <para>
+      The log is the output resulting when executing the shell scripts using
+      the following command:
+    </para>
+    <screen>
+      <![CDATA[
+      /bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
+      ]]>
+    </screen>
+    </section>
+  </section>
+
+
+  <section id="createprofile.sysconfig">
+    <title>System variables (Sysconfig)</title>
+    <para>
+      Using the sysconfig resource, it is possible to define configuration
+      variables in the sysconfig repository
+      (<filename>/etc/sysconfig</filename>) directly. Sysconfig
+      variables, offer the possibility to fine-tune many system components and
+      environment variables exactly to your needs.
+    </para>
+    
+    <para>
+      Refer to  the handbook for more details about the many
+      configuration options available in <filename>/etc/sysconfig</filename>
+    </para>
+    <para>
+      The following example shows how a variable can be set using the sysconfig
+      resource.
+    </para>
+    &example.sysconfig;
+  </section>
+  
+
+  <section id="createprofile.completeconf">
+    <title>Adding complete configurations</title>
+    <para>
+      For many applications and services you might have prepared a
+      configuration file which should be copied in a complete form to some
+      location in the installed system. This is for example if you are
+      installing  a web server and have a <emphasis>ready to go</emphasis>
+      server configuration file (<filename>httpd.conf</filename>).
+    </para>
+    <para>
+      Using this resource, you can embed the file into the control file by
+      specifying the final path on the installed system. &yast2; will copy this
+      file to the specified location.
+    </para>
+    &example.files;
+
+    <para>
+      A more advanced example is shown below. This configuration will create
+      a file using the content supplied in <emphasis>file_contents</emphasis>
+      and will change the permissions and ownership of the file. After the
+      file has been copied to the system, a script is executed which can be
+      used to manipulate the file and prepare it for the environment of the client.
+    </para>
+    &example.filesadv;
+  </section>
+
+
+  <section id="CreateProfile.Hardware">
+    <title>
+      Miscellaneous hardware and system components
+    </title>
+    
+    <para>
+      In addition to the core component configuration, like network
+      authentication and security, &autoyast;2 offers a wide range of
+      hardware and system configuration which is available by default on
+      any system installed manually and in an interactive way. For
+      example, it is possible to configure printers, sound devices, TV
+      cards and any other hardware components which have a module within YaST2.
+    </para>
+    <para>
+      Any new configuration options that will be added to &yast2; will be
+      automatically available as an auto-installation resource.
+    </para>
+    
+    <section id="CreateProfile.Hardware.Printer">
+      <title>
+	Printer
+      </title>
+
+      <para>
+	Although Printer configuration, like other configurations can be
+	done manually, it is recommended to use the Configuration System to
+	create such a configuration because of the complexity and the range
+	of options offered by such modules.
+      </para>
+      <para>
+	Using the configuration system will guarantee that the options
+	provided are consistent. The following is an example of a
+	configuration section which was
+	created using the configuration system.
+      </para>
+      &example.printer;
+    </section>
+
+    <section id="CreateProfile.Hardware.Sound">
+      <title>
+	Sound devices
+      </title>
+      <para>
+	An example of  sound configuration created using the configuration
+	system is shown below.
+      </para>
+      &example.sound;
+    </section>
+  </section>
+
+  <section id="CreateProfile.Ask">
+    <title>
+      Ask the user for values during installation
+    </title>
+
+    <para>
+        This feature is only available since SUSE Linux 10.1 and SLES10.
+    </para>
+    <para>
+        You have the option to let the user decide the values of specific
+        parts of the profile during the installation. If you use that feature,
+        a popup will come up during the installation and will ask the user to
+        enter a specific part of the profile. So if you want a full auto installation
+        but you want the user to set the password of the local account, you can do
+        this via the <emphasis>ask</emphasis> directive in the profile.
+    </para>
+          <para>
+            The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt; ... &lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section.
+          </para>
+    <para>
+        <table frame='top'>
+          <title>XML representation</title>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>question</entry>
+                <entry>The question you want to ask the user.
+                <para><screen>&lt;question&gt;Enter the LDAP server&lt;/question&gt;</screen></para></entry>
+                <entry>The default value is the path to the element (the path often looks strange, so I recommend to enter a question)</entry>
+              </row>
+              <row>
+                <entry>default</entry>
+                <entry>you can set a pre-selection for the user. A textentry will be filled out with this value,
+                       a checkbox will be "true" or "false" and a selection will have this default "value" pre-selected.
+                <para><screen>&lt;default&gt;dc=suse,dc=de&lt;/default&gt;</screen></para></entry>
+                <entry>optional</entry>
+              </row>
+              <row>
+                <entry>help</entry>
+                <entry>An optional helptext that is shown on the left side of the question.
+                <para><screen>&lt;help&gt;Enter the LDAP server address.&lt;/help&gt;</screen></para></entry>
+                <entry>optional</entry>
+              </row>
+              <row>
+                <entry>title</entry>
+                <entry>An optional title that is shown above the question.
+                <para><screen>&lt;title&gt;LDAP server&lt;/title&gt;</screen></para></entry>
+                <entry>optional</entry>
+              </row>
+              <row>
+                <entry>type</entry>
+                <entry>the type of the element you want to change. Possible values are "symbol","boolean","string" and "integer". 
+                       The filesystem in
+                       the partition section is a symbol, while the "encrypted" element in the user configuration is a boolean.
+                       You can see the type of that element if you look in your profile at the config:type="...." attribute.
+                <para><screen>&lt;type&gt;symbol&lt;/type&gt;</screen></para></entry>
+                <entry>optional. The defaul is string. If type is "symbol" you must provide the selection element too (see below)</entry>
+              </row>
+              <row>
+                <entry>password</entry>
+                <entry>if this boolean is set to "true", a password dialog pops up instead of a simple text entry. Setting this
+                       to "true" makes only sense if "type" is string.
+                <para><screen>&lt;password config:type="boolean"&gt;true&lt;/password&gt;</screen></para></entry>
+                <entry>optional. The default is "false"</entry>
+              </row>
+              <row>
+                <entry>path</entry>
+                <entry>The path to the element in the profile. It's a comma seperated list of elements that describes the
+                       path to the element you want to change. For example, the ldap server element can be found in the profile
+                       in the &lt;ldap&gt;&lt;ldap_server&gt; section. So if you want to change that value, you have to set the
+                       path to "ldap,ldap_server". If you want to change the password of the first user in the profile, you have to
+                       set the path to "users,0,user_password". The "0" indicates the first user in the &lt;users config:type="list"&gt;
+                       list of users in the profile. The path can never end with a number (that's not a restriction, it can't be
+                       a number if you think about it).
+                <para><screen>&lt;path&gt;networking,dns,hostname&lt;/path&gt;</screen></para></entry>
+                <entry>you must provide this information</entry>
+              </row>
+              <row>
+                <entry>password</entry>
+                <entry>if this boolean is set to "true", a password dialog pops up instead of a simple text entry. Setting this
+                       to "true" makes only sense if "type" is string.
+                <para><screen>&lt;password config:type="boolean"&gt;true&lt;/password&gt;</screen></para></entry>
+                <entry>optional. The default is "false"</entry>
+              </row>
+              <row>
+                <entry>stage</entry>
+                <entry>stage configures the installation stage where the question pops up. You can set this value to "cont" or
+                       "initial". "initial" means the popup comes up very early in the installation, short after the pre-script
+                       has run. "cont" means, that the dialog with the question comes after the first reboot, when the system
+                       boots for the very first time. Questions you answer during the "inital" stage, will write their answer
+                       into the profile on the harddisk. You should know that if you enter cleartext passwords during "initial".
+                       Of course it does not make sense to ask for a filesystem to use in the "cont" phase. The harddisk is already
+                       partitioned at that stage and the question will have no effect.
+                <para><screen>&lt;stage&gt;cont&lt;/stage&gt;</screen></para></entry>
+                <entry>optional. The default is "initial"</entry>
+              </row>
+              <row>
+                <entry>selection</entry>
+                <entry>the selection element contains a list of &lt;entry&gt; elements. Each entry represents a possible option
+                       for the user to choose. So the user can't enter a value in a textfield, but he can choose from a list
+                       of values.
+                <para><screen>
+&lt;selection config:type="list"&gt;
+  &lt;entry&gt;
+    &lt;value&gt;
+        reiser
+    &lt;/value&gt;
+    &lt;label&gt;
+        Reiser Filesystem
+    &lt;/label&gt;
+  &lt;/entry&gt;
+  &lt;entry&gt;
+    &lt;value&gt;
+        ext3
+    &lt;/value&gt;
+    &lt;label&gt;
+        Extended3 Filesystem
+    &lt;/label&gt;
+  &lt;/entry&gt;
+&lt;/selection&gt;</screen></para></entry>
+                <entry>optional for type=string, not possible for type=boolean and a must have for type=symbol</entry>
+              </row>
+            </tbody>
+          </tgroup>
+
+        </table>
+    </para>
+    <para>
+      Below you can see an example of the usage of the "ask" feature.
+    </para>
+    <para>
+      <screen>
+&lt;general&gt;
+  &lt;ask-list config:type=&quot;list&quot;&gt;
+      &lt;ask&gt;
+          &lt;path&gt;ldap,ldap_server&lt;/path&gt;
+          &lt;stage&gt;cont&lt;/stage&gt;
+          &lt;help&gt;choose your server depending on your department&lt;/help&gt;
+          &lt;selection config:type=&quot;list&quot;&gt;
+              &lt;entry&gt;
+                      &lt;value&gt;ldap1.mydom.de&lt;/value&gt;
+                      &lt;label&gt;LDAP for development&lt;/label&gt;
+              &lt;/entry&gt;
+              &lt;entry&gt;
+                      &lt;value&gt;ldap2.mydom.de&lt;/value&gt;
+                      &lt;label&gt;LDAP for sales&lt;/label&gt;
+              &lt;/entry&gt;
+          &lt;/selection&gt;
+          &lt;default&gt;ldap2.mydom.de&lt;/default&gt;
+      &lt;/ask&gt;
+      &lt;ask&gt;
+          &lt;path&gt;networking,dns,hostname&lt;/path&gt;
+          &lt;question&gt;Enter Hostname&lt;/question&gt;
+          &lt;stage&gt;initial&lt;/stage&gt;
+          &lt;default&gt;enter your hostname here&lt;/default&gt;
+      &lt;/ask&gt;
+      &lt;ask&gt;
+          &lt;path&gt;partitioning,0,partitions,0,filesystem&lt;/path&gt;
+          &lt;question&gt;Filesystem&lt;/question&gt;
+          &lt;type&gt;symbol&lt;/type&gt;
+          &lt;selection config:type=&quot;list&quot;&gt;
+              &lt;entry&gt;
+                      &lt;value config:type=&quot;symbol&quot;&gt;reiser&lt;/value&gt;
+                      &lt;label&gt;default Filesystem (recommended)&lt;/label&gt;
+              &lt;/entry&gt;
+              &lt;entry&gt;
+                      &lt;value config:type=&quot;symbol&quot;&gt;ext3&lt;/value&gt;
+                      &lt;label&gt;Fallback Filesystem&lt;/label&gt;
+              &lt;/entry&gt;
+          &lt;/selection&gt;
+
+      &lt;/ask&gt;
+  &lt;/ask-list&gt;
+  ...
+&lt;/general&gt;
+</screen>
+</para>
+  </section>
+
+  </chapter>
+  <!--
+  Local Variables:
+  mode: xml
+  sgml-parent-document: ("autoyast.xml" "book" "chaper")
+  End:
+  -->

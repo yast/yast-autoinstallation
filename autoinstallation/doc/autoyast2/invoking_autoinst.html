@@ -1,0 +1,993 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;      Invoking the Auto-Installation process
+    </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="The Auto-Installation Process"
+HREF="invoking.html"><LINK
+REL="PREVIOUS"
+TITLE="Choosing the right Boot Medium"
+HREF="bootmedium.html"><LINK
+REL="NEXT"
+TITLE="
+      System Configuration 
+    "
+HREF="system_configuration.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="bootmedium.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 7. The Auto-Installation Process</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="system_configuration.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="invoking_autoinst"
+>7.3. Invoking the Auto-Installation process</A
+></H1
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN1166"
+>7.3.1. Command line Options</A
+></H2
+><P
+>&#13;	Adding the command line variable <I
+CLASS="emphasis"
+>autoyast</I
+> will make
+	<I
+CLASS="emphasis"
+>linuxrc</I
+> start  in automated mode.
+	<B
+CLASS="command"
+>Linuxrc</B
+> searches for a configuration file, which
+	should be distinguished from the main control file in the following
+	places:
+      </P
+><P
+></P
+><UL
+><LI
+><P
+>In the root directory of the initial ram-disk used for booting
+	    the system up</P
+></LI
+><LI
+><P
+>In the root directory of the floppy</P
+></LI
+></UL
+><P
+>&#13;	The configuration file used by <B
+CLASS="command"
+>linuxrc</B
+> can have the
+	following keywords (for a detailed description of how linuxrc works and
+	other keywords, see <SPAN
+CLASS="QUOTE"
+>"<A
+HREF="appendix.linuxrc.html"
+><I
+>Advanced Linuxrc Options</I
+></A
+>"</SPAN
+> ):
+      </P
+><DIV
+CLASS="table"
+><A
+NAME="AEN1181"
+></A
+><P
+><B
+>Table 7-1. Keywords for <B
+CLASS="command"
+>linuxrc</B
+></B
+></P
+><TABLE
+BORDER="1"
+BGCOLOR="#E0E0E0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+>Keyword</TH
+><TH
+>Value</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>netdevice</TD
+><TD
+>Which network device to use for
+		network setup (Device used for  <ACRONYM
+CLASS="acronym"
+>BOOTP</ACRONYM
+> / <ACRONYM
+CLASS="acronym"
+>DHCP</ACRONYM
+>  requests)</TD
+></TR
+><TR
+><TD
+>server</TD
+><TD
+>Which server to contact for source directory (NFS Server)</TD
+></TR
+><TR
+><TD
+>serverdir</TD
+><TD
+>Directory on NFS Server </TD
+></TR
+><TR
+><TD
+>hostip</TD
+><TD
+>When empty, client sends  <ACRONYM
+CLASS="acronym"
+>BOOTP</ACRONYM
+>  request, otherwise client is configured with entered IP configuration.</TD
+></TR
+><TR
+><TD
+>netmask</TD
+><TD
+>Netmask</TD
+></TR
+><TR
+><TD
+>gateway</TD
+><TD
+>Gateway</TD
+></TR
+><TR
+><TD
+>nameserver</TD
+><TD
+>Nameserver</TD
+></TR
+><TR
+><TD
+>insmod</TD
+><TD
+>Kernel modules to load.</TD
+></TR
+><TR
+><TD
+>autoyast</TD
+><TD
+>Location of the the control file to be used for the
+		automatic installation, i.e
+		<I
+CLASS="emphasis"
+>autoyast=http://192.168.2.1/profiles/</I
+></TD
+></TR
+><TR
+><TD
+>install</TD
+><TD
+>Location of the installation directory, i.e. <I
+CLASS="emphasis"
+>install=nfs://192.168.2.1/CDs/</I
+> </TD
+></TR
+><TR
+><TD
+>instmode</TD
+><TD
+>Installation mode, i.e. nfs, http etc. (Not needed if
+		<I
+CLASS="emphasis"
+>install</I
+> is set)</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>&#13;	These variables and keywords will bring the system up to the point
+	where <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+> can take over with the main control file. Currently, the
+	source medium is
+	automatically discovered, which in some cases makes it possible to
+	initiate the auto-install process without giving any instructions to
+	linuxrc.
+      </P
+><P
+>&#13;	The traditional <B
+CLASS="command"
+>linuxrc</B
+> configuration file
+	(<TT
+CLASS="filename"
+>info</TT
+>) 
+	should be used only in the  preparation phase and has the function of
+	giving the client enough information about the installation server and
+	the location of the sources. In most cases this file is not needed; it is however
+	needed in special network  environments where  <ACRONYM
+CLASS="acronym"
+>DHCP</ACRONYM
+> / <ACRONYM
+CLASS="acronym"
+>BOOTP</ACRONYM
+>  are not
+	used or when special kernel modules  have to be loaded.      
+      </P
+><P
+>&#13;	All linuxrc keywords 
+	can be passed to <B
+CLASS="command"
+>linuxrc</B
+> using the kernel command
+	line.  The   command line can  for example also be set when creating network boot-able
+	images or it can be passed to the kernel using a specially configured
+	<ACRONYM
+CLASS="acronym"
+>DHCP</ACRONYM
+>  server in combination with Etherboot or <ACRONYM
+CLASS="acronym"
+>PXE</ACRONYM
+>.
+      </P
+><P
+>	
+	The format of the special  command line variable
+	<I
+CLASS="emphasis"
+>autoyast</I
+> can be used as described in table  <SPAN
+CLASS="QUOTE"
+>"<A
+HREF="invoking_autoinst.html#commandLineAutoYaST"
+><I
+>Command line variables for AutoYaST</I
+></A
+>"</SPAN
+>
+      </P
+><DIV
+CLASS="table"
+><A
+NAME="commandLineAutoYaST"
+></A
+><P
+><B
+>Table 7-2. Command line variables for AutoYaST</B
+></P
+><TABLE
+BORDER="1"
+BGCOLOR="#E0E0E0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+>&#13;		Command line variable
+	      </TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>autoyast=default</TD
+><TD
+>Default auto-installation option </TD
+></TR
+><TR
+><TD
+>autoyast=file:/&#60;path&#62;</TD
+><TD
+>Looks for
+		control  file in specified path (relative to source root
+		directory, i.e. <I
+CLASS="emphasis"
+>file:/autoinst.xml</I
+> if in
+		the top directory of a CD-ROM )</TD
+></TR
+><TR
+><TD
+>&#13;		autoyast=device://&#60;device&#62;/&#60;file&#62;</TD
+><TD
+>Looks
+		for control file on a storage device. (only device name needed
+		without full path, i.e. /dev/sda1 is wrong, instead use sda1)
+	      </TD
+></TR
+><TR
+><TD
+>autoyast=floppy:/&#60;path&#62;</TD
+><TD
+>Looks for  control file in the floppy (Useful when booting
+		from CD)</TD
+></TR
+><TR
+><TD
+>autoyast=nfs://&#60;server&#62;/&#60;path&#62;</TD
+><TD
+>Looks for control file on &#60;server&#62; </TD
+></TR
+><TR
+><TD
+>autoyast=http://&#60;server&#62;/&#60;path&#62;</TD
+><TD
+>Retrieves the  control file  from a web server using the HTTP protocol.</TD
+></TR
+><TR
+><TD
+>autoyast=tftp://&#60;server&#62;/&#60;path&#62;</TD
+><TD
+>Retrieve the control file with TFTP</TD
+></TR
+><TR
+><TD
+>autoyast=ftp://&#60;server&#62;/&#60;path&#62;</TD
+><TD
+>Retrieve the control file with FTP</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>&#13;	Several scenarios for auto-installation are possible using different
+	types of infrastructure and source media. The simplest way is by using
+	the source media from the  <I
+CLASS="emphasis"
+>SuSE</I
+>  Box. In that case you have
+	either a DVD with all  <I
+CLASS="emphasis"
+>SuSE</I
+>  packages or a set of CD-ROMs. To initiate the
+	auto-installation process however, the auto-installation command line
+	variable should be entered at system boot-up and the control file should
+	be accessible to YaST2. The following list of scenarios explains how
+	the control file can be supplied and the setup needed for the
+	auto-installation process to be successful.
+      </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;	    Using  <I
+CLASS="emphasis"
+>SuSE</I
+>  original CD-ROMs from  <I
+CLASS="emphasis"
+>SuSE</I
+>  Linux box:
+	  </P
+><P
+>&#13;	    To use the original CD-ROMs, you need a media with the control
+	    file, the control file can reside on the following locations:
+	  </P
+><P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>&#13;		<I
+CLASS="emphasis"
+>Floppy</I
+>: Control file accessible via the
+		<I
+CLASS="emphasis"
+>autoyast=floppy</I
+> option. <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+> also searches
+		upon startup for a file named
+		<TT
+CLASS="filename"
+>autoinst.xml</TT
+>. If such a file is found, YaST2
+		will switch into auto-installation mode even if no special
+		command line variables were supplied.  (See <SPAN
+CLASS="QUOTE"
+>"<A
+HREF="invoking_autoinst.html#autoinstall.singlesystem"
+><I
+>Auto-installing a Single System</I
+></A
+>"</SPAN
+> )
+	      </P
+></LI
+><LI
+><P
+>&#13;		<I
+CLASS="emphasis"
+>Network</I
+>: Control file accessible via the
+		<I
+CLASS="emphasis"
+>autoyast=nfs://..</I
+>,
+		<I
+CLASS="emphasis"
+>autoyast=ftp://..</I
+>
+		<I
+CLASS="emphasis"
+>autoyast=http://..</I
+> or
+		<I
+CLASS="emphasis"
+>autoyast=tftp://..</I
+> options.
+	      </P
+></LI
+></OL
+></LI
+><LI
+><P
+>	    
+	    Using 'self-made' CD-ROMs:
+	  </P
+><P
+>&#13;	    In this case, you can include the control file on the CD-ROM
+	    for easy access (using the <I
+CLASS="emphasis"
+>autoyast=file://</I
+>
+	    option) or use one of the above mentioned methods used with the 
+            original  <I
+CLASS="emphasis"
+>SuSE</I
+>  CD-ROMs. 
+        </P
+><P
+>&#13;            Using CD-ROMs for autoinstallation, it is required to instruct the
+            installer to use the CD-ROM for installation and not try to find
+            the installation files on the network. This can be accomplished by
+            adding the <I
+CLASS="emphasis"
+>instmode=cd</I
+> option to the kernel
+            command line (this can be done by adding the option to the
+            isolinux.cfg file on the CD). 
+        </P
+></LI
+><LI
+><P
+>&#13;	    Using NFS and Floppy, Network or CD-ROM for system boot-up.
+	  </P
+><P
+>&#13;	    This option is the most important one due to the fact that
+	    installations of PC farms are normally done using NFS servers and other
+	    network services like  <ACRONYM
+CLASS="acronym"
+>BOOTP</ACRONYM
+> / <ACRONYM
+CLASS="acronym"
+>DHCP</ACRONYM
+> . The control file can reside in
+	    the following places:	    
+	  </P
+><P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>&#13;		<I
+CLASS="emphasis"
+>Floppy/CD-ROM</I
+>: Control file accessible via the
+		<I
+CLASS="emphasis"
+>autoyast=file:/..</I
+> option.
+	      </P
+></LI
+><LI
+><P
+>&#13;		<I
+CLASS="emphasis"
+>Network</I
+>: Control file accessible via the
+		<I
+CLASS="emphasis"
+>autoyast=http://..</I
+>,
+		<I
+CLASS="emphasis"
+>autoyast=ftp://..</I
+>,
+		<I
+CLASS="emphasis"
+>autoyast=nfs://..</I
+> or
+		<I
+CLASS="emphasis"
+>autoyast=tftp://..</I
+> options.
+	      </P
+></LI
+></OL
+></LI
+></UL
+><P
+>&#13;	If <I
+CLASS="emphasis"
+>autoyast=default</I
+> is defined, <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+> will look
+	for a file named <TT
+CLASS="filename"
+>autoinst.xml</TT
+> in
+	the following three places: 
+      </P
+><P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>&#13;	    The root directory of the floppy disk.
+	  </P
+></LI
+><LI
+><P
+>&#13;	    The root directory of the installation medium.
+	  </P
+></LI
+><LI
+><P
+>&#13;	    The root directory of the initial ram disk used to boot the system.
+	  </P
+></LI
+></OL
+><P
+>&#13;	With all autoyast invocation options, excluding
+	<I
+CLASS="emphasis"
+>default</I
+>, it is possible to specify the location of
+	the control file in the following ways:
+      </P
+><P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>&#13;	    Specify the exact location of the control file:
+	    <TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;autoyast=http://192.168.1.1/control-files/client01.xml
+	    </PRE
+></TD
+></TR
+></TABLE
+>
+	  </P
+></LI
+><LI
+><P
+>&#13;	    Specify a directory where several control files are located
+	  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;autoyast=http://192.168.1.1/control-files/
+	  </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;	    In this case the relevant control file is retrieved using the hex digit
+	    representation of the IP as described below.
+	  </P
+></LI
+></OL
+><P
+>	
+	If only the path prefix variable is defined, <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+> will fetch the
+	control file from the specified location in the following way:
+      </P
+><P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>&#13;	    First, it will search for the control file using its own IP address in
+	    upper case hexadecimal, e.g. <I
+CLASS="emphasis"
+>192.0.2.91 -&#62; C000025B</I
+>.
+	  </P
+></LI
+><LI
+><P
+>&#13;	    If that file is not found, it will remove one hex digit and try
+	    again. This action is repeated till the file with the correct name
+	    is found.  Ultimately, it will try looking for a file with the MAC
+	    address of the clients as the file name (mac should have the
+	    following syntax: <I
+CLASS="emphasis"
+>0080C8F6484C</I
+>) and if not found a file named 
+	    <TT
+CLASS="filename"
+>default</TT
+> (in lower
+	    case).
+	  </P
+></LI
+></OL
+><P
+>&#13;      As an example, for 192.0.2.91, the HTTP client will try:
+      </P
+><P
+CLASS="literallayout"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+C000025B<br>
+C000025<br>
+C00002<br>
+C0000<br>
+C000<br>
+C00<br>
+C0<br>
+C<br>
+0080C8F6484C<br>
+default<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      in that order. 
+      </P
+><P
+>&#13;	To determine the hex representation of the IP address of the client,
+	use the utility called <B
+CLASS="command"
+>/usr/sbin/gethostip</B
+> available
+	with the <I
+CLASS="emphasis"
+>syslinux</I
+> package.
+      </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN1363"
+></A
+><P
+><B
+>Example 7-1. Determine HEX code for an IP address</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;# /usr/sbin/gethostip 10.10.0.1
+10.10.0.1 10.10.0.1 0A0A0001
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="autoinstall.singlesystem"
+>7.3.2. Auto-installing a Single System</A
+></H2
+><P
+>&#13;	The easiest way to auto-install a system  without any network connection
+	is by using the standard CD-ROMs that come in the  <I
+CLASS="emphasis"
+>SuSE</I
+>  Linux box. Using the
+	CD-ROMs in combination with  a floppy disk  lets you getting started with
+	<ACRONYM
+CLASS="acronym"
+>AutoYaST</ACRONYM
+> very fast and without spending much time configuring
+	installation server  and network environments.
+      </P
+><P
+>&#13;	Create the control file and
+	name it <TT
+CLASS="filename"
+>autoinst.xml</TT
+>. Copy the file
+	<TT
+CLASS="filename"
+>autoinst.xml</TT
+> to a floppy by either mounting the
+	floppy or by using the <I
+CLASS="emphasis"
+>mtools</I
+>.
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;mcopy autoinst.xml a:
+      </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="AEN1376"
+>7.3.3. Combining linuxrc <I
+CLASS="emphasis"
+>info</I
+> file with <ACRONYM
+CLASS="acronym"
+>YaST2</ACRONYM
+> control file</A
+></H2
+><P
+>&#13;	If you choose to pass information to  <I
+CLASS="emphasis"
+>linuxrc</I
+> using
+	the <I
+CLASS="emphasis"
+>info</I
+> file, it is possible to integrate the
+	keywords in the XML control file. In the case the file has to be
+	accessible to linuxrc and has to be named <I
+CLASS="emphasis"
+>info</I
+>.
+      </P
+><P
+>&#13;	Linuxrc will look for a string (<I
+CLASS="emphasis"
+>start_linuxrc_conf</I
+>
+	in the control file which represents the
+	beginning of the file. If it is found, it will parse the content starting
+	from that string and will finish when the string
+	<I
+CLASS="emphasis"
+>end_linuxrc_conf</I
+> is found. The options are stored in
+	the control file in the following way:
+      </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN1387"
+></A
+><P
+><B
+>Example 7-2. 
+	  Linxurc options in the control file
+	</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;	  
+....
+  &#60;install&#62;
+....
+    &#60;init&#62;
+      &#60;info_file&#62;
+&#60;![CDATA[
+#
+# Don't remove the following line:
+# start_linuxrc_conf
+#
+install: nfs://192.168.1.1/CDs/full-i386
+textmode: 1
+autoyast: file:///info
+
+# end_linuxrc_conf
+# Do not remove the above comment
+#
+]]&#62;
+
+      &#60;/info_file&#62;
+    &#60;/init&#62;
+......
+  &#60;/install&#62;
+....
+
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	Note that the autoyast keyword must point to the same file, i.e. if it
+	is on a floppy, then the protocol <I
+CLASS="emphasis"
+>floppy</I
+> has to be
+	used. In other cases where the <I
+CLASS="emphasis"
+>info</I
+> file is stored
+	in the initial ram-disk, the <I
+CLASS="emphasis"
+>file</I
+> option has to be used.
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="bootmedium.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="system_configuration.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Choosing the right Boot Medium</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="invoking.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>System Configuration</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,102 @@
+/**
+ * File:		wizards.ycp
+ * Module:		Autoinstall
+ * Summary:		This module handles the configuration for auto-installation
+ * Authors:		Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Wizard";
+    import "Label";
+    include "autoinstall/classes.ycp";
+    include "autoinstall/dialogs.ycp";
+
+
+    /**
+     * Whole configuration of autoyast
+     * @return `back, `abort or `next
+     */
+    any AutoSequence () ``{
+
+        map dialogs =
+            $[
+            "main":       ``(MainDialog() ),
+            "settings":  ``(Settings() ),
+            "kickstart"     :   ``(kickstartDialog() ),
+            "clone"     :   ``(cloneSystem() ),
+            "classes"     :   ``(ManageClasses() ),
+            "merge"     :   ``(MergeDialog() ),
+            "valid"     :   ``(ValidDialog() )
+            ];
+
+
+            map sequence =
+                $[ "ws_start" : "main",
+            "main":
+                $[
+                `menu_exit	: `ws_finish,
+                `menu_settings       : "settings",
+                `menu_kickstart : "kickstart",
+                `menu_merge : "merge",
+                `menu_classes : "classes",
+                `menu_clone : "clone",
+                `menu_valid : "valid",
+                ],
+            "merge":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "valid":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "classes":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "clone":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "kickstart":
+                $[
+                `next       : "main",
+                `abort       : "main",
+                `back       : "main"
+                ],
+            "settings":
+                $[
+                `next       : "main",
+                `back       : "main"
+                ]
+            ];
+
+        // Translators: dialog caption
+        string caption = _("Autoinstall Configuration");
+        term contents = `Label (_("Initializing ..."));
+        Wizard::CreateTreeDialog();
+	string tree_item = "System";
+        Wizard::SetContentsButtons ( caption,
+                contents,
+                AutoinstConfig::MainHelp(),
+                Label::BackButton (),
+                Label::NextButton ());
+
+	CreateTreeWidget( tree_item);
+        menus();
+
+        symbol ret = Sequencer::Run(dialogs, sequence);
+        UI::CloseDialog ();
+        return ret;
+    }
+}

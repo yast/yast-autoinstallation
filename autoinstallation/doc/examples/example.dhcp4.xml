@@ -1,0 +1,21 @@
+<example>
+  <title>Grub image via DHCP</title>
+<screen>
+option domain-name "example.org";
+option domain-name-servers 10.0.0.1;
+option T150 code 150 = string;
+
+
+subnet 10.0.0.0 netmask 255.255.255.0 {
+	range 10.0.0.128 10.0.0.192;
+	option routers 10.0.0.1;
+	option broadcast-address 10.0.0.255;
+
+	# GRUB network boot stuff
+	filename "/tftpboot/nbgrub";
+	server-name "10.0.0.1";
+        option T150 "(nd)/tftpboot/menu.lst";
+}
+
+</screen>
+</example>

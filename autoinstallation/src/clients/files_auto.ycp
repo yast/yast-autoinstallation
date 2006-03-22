@@ -1,0 +1,357 @@
+/**
+ * File:	clients/autoinst_files.ycp
+ * Package:	Configuration of XXpkgXX
+ * Summary:	Client for autoinstallation
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
+ */
+
+/**
+ * @param function to execute
+ * @param list of file settings
+ * @return map edited settings, Summary or boolean on success depending on called function
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = WFM::CallFunction ("autoinst_files", [ "Summary", mm ]);
+ */
+
+{
+
+textdomain "autoinst";
+
+y2milestone("----------------------------------------");
+y2milestone("Files auto started");
+
+import "AutoinstFile";
+import "Wizard";
+import "Popup";
+import "Label";
+
+
+/**
+ * Add or edit a file
+ */
+define void AddEditFile(string fileName, string source, string permissions, string owner)
+	``{
+
+		list newFiles = [];
+		boolean modified = false;
+		AutoinstFile::Files   = maplist (map file , AutoinstFile::Files, ``{
+				// Edit
+				if (file["file_path"]:"" == fileName)
+				{
+				map oldFile = $[];
+				oldFile=add(oldFile,"file_path", fileName);
+				oldFile=add(oldFile,"file_contents", source);
+				oldFile=add(oldFile,"file_permissions", permissions);
+				oldFile=add(oldFile,"file_owner", owner);
+				modified = true;
+				return oldFile;
+				}
+				else {
+				return file;
+				}
+				});
+
+		if (!modified)
+		{
+			map file = $[];
+			file=add(file,"file_path", fileName);
+			file=add(file,"file_contents", source);
+			file=add(file,"file_permissions", permissions);
+			file=add(file,"file_owner", owner);
+			AutoinstFile::Files = add (  AutoinstFile::Files, file);
+		}
+		return;
+	}
+
+
+
+/**
+ * delete a file from a list
+ * @param file name
+ * @return modified list of files
+ */
+define list<map>  deleteFile(string fileName)
+	``{
+		list<map> new =  filter(map s , AutoinstFile::Files, ``(s["file_path"]:"" != fileName));
+		return  (new);
+	}
+
+
+/**
+ * Dialog for adding a file
+ *
+ */
+define symbol addFileDialog( symbol mode , string name)
+	``{
+		map file = $[];
+		if (mode == `edit)
+		{
+			list filtered_files = filter(map s, AutoinstFile::Files,``((s["file_path"]:""  == name)));
+			if (size(filtered_files)>0)
+			{
+				file = filtered_files[0]:$[];
+			}
+		}
+
+		// help 1/2
+		string help =  _("<p>Using this dialog, copy the contents of the file and specify the final
+path on the installed system. YaST2 will copy this file to the specified location.</p>");
+
+		// help 2/2
+		help = help + _("<p>To protect copied files, set the owner and the permissions of the files.
+Set the owner using the syntax <i>userid:groupid</i>.  Permissions can be a symbolic
+representation of changes to make or an octal  number  representing  the bit pattern for the
+new permissions.</p>"); 
+
+		string title = _("Configuration File Editor");
+
+		term contents=
+			`VBox(
+					`HBox(
+						`TextEntry(`id(`filename), _("&File Path"), file["file_path"]:""),
+						`HStretch(),
+						`Empty()
+						),
+					`HBox(
+						`TextEntry(`id(`owner), _("&Owner"), file["file_owner"]:""),
+						`HStretch(),
+						`TextEntry(`id(`perm), _("&Permissions"), file["file_permissions"]:"")
+						),
+					`VSpacing(1),
+					`HBox(
+						`MultiLineEdit(`id(`source), _("File So&urce"), file["file_contents"]:"")
+						),
+					`VSpacing(1),
+					`HBox(
+						`PushButton(`id(`loadsource), _("&Load new contents"))
+						)
+				 );
+
+
+		Wizard::SetContents(title,
+				contents, help, true, true);
+
+		Wizard::SetNextButton(`next, Label::SaveButton() );
+		if (mode == `edit)
+		{
+			UI::ChangeWidget(`id(`filename), `Enabled, false);
+		}
+
+		any ret = nil;
+		repeat {
+			ret = (symbol) UI::UserInput();
+			if (ret == `next)
+			{
+				string fileName = (string)UI::QueryWidget(`id(`filename), `Value);
+				string permissions = (string)UI::QueryWidget(`id(`perm), `Value);
+				string owner = (string)UI::QueryWidget(`id(`owner), `Value);
+				string source = (string)UI::QueryWidget(`id(`source), `Value);
+
+				if ( source == "" || fileName == "")
+				{
+					Popup::Message(_("Provide at least the file
+name and the contents of the file.
+"));
+					ret = `again;
+					continue;
+				}
+				else
+				{
+					AddEditFile( fileName,source, permissions, owner);
+				}
+			}
+			else if (ret == `loadsource)
+			{
+				string filename = UI::AskForExistingFile( "", "*", _("Select a file to load.") );
+				if (filename != "")
+				{
+					string source = (string) SCR::Read(.target.string, filename);
+					UI::ChangeWidget(`id(`source), `Value, source);
+					continue;
+				}
+			}
+
+		} until (ret == `next || ret == `back );
+		Wizard::SetNextButton(`next, Label::FinishButton() );
+		return (symbol) ret;
+	}
+
+
+
+
+/**
+ * Summary of configuration
+ */
+define term dialog_contents() ``{
+
+	list allfiles = maplist(map s, AutoinstFile::Files,
+			``{
+			return (`item(`id(s["file_path"]:"Unknown"),  s["file_path"]:"Unknown" , s["file_owner"]:"", s["file_permissions"]:""));
+			});
+	term contents =
+		`VBox(
+				`Left(
+					`Label(_("Available Files"))
+					),
+				`Table( `id(`table), `opt(`notify),
+					`header(_("File Path"), _("Owner"), _("Permissions")),
+					allfiles
+
+					),
+				`HBox(
+					`PushButton(`id(`new),  Label::NewButton()),
+					`PushButton(`id(`edit), Label::EditButton()),
+					`PushButton(`id(`delete), Label::DeleteButton())
+					)
+			 );
+	return contents;
+}
+
+
+define symbol CustomFileDialog ()``{
+
+	string title = _("Add Complete Configuration Files");
+
+	string help = _("<p>For many applications and services, you might have prepared
+a configuration file that should be copied in a complete form to a location in the
+installed system. For example, this is the case if you are installing a web server
+and have an httpd.conf configuration file prepared.</p>");
+
+	Wizard::SetContents(title,
+			dialog_contents(), help, true, true);
+
+	Wizard::SetNextButton(`next, Label::FinishButton() );
+	Wizard::HideAbortButton();
+	string select_msg = _("Select a file from the table first.");
+	any ret = nil;
+	repeat {
+		ret = (symbol) UI::UserInput();
+
+		if (ret == `new)
+		{
+			addFileDialog((symbol)ret , "" );
+		}
+		else if (ret == `edit)
+		{
+			string name = (string)UI::QueryWidget(`id(`table), `CurrentItem);
+			if (name != nil)
+			{
+				addFileDialog((symbol)ret , name  );
+			}
+			else
+			{
+				Popup::Message(select_msg);
+				continue;
+			}
+
+		}
+		else if (ret == `delete)
+		{
+			string name = (string)UI::QueryWidget(`id(`table), `CurrentItem);
+			if (name != nil)
+			{
+				AutoinstFile::Files = deleteFile(name);
+			}
+			else
+			{
+				Popup::Message(select_msg);
+				continue;
+			}
+		}
+		Wizard::SetContents(title,
+				dialog_contents(), help, true, true);
+
+
+	} until (ret == `back || ret == `next );
+
+	return (symbol) ret;
+}
+
+
+any ret = nil;
+string func = "";
+list param = [];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
+{
+    func = (string) WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), list))
+	param = (list) WFM::Args(1);
+}
+
+
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+
+
+/* Import Data*/
+if(func == "Import") {
+    ret = AutoinstFile::Import((list<map>)param);
+	if (ret == nil)
+	{
+	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+	    ret = false;
+	}
+}
+/* Create a  summary*/
+else if(func == "Summary") {
+    ret = AutoinstFile::Summary();
+	if (ret == nil)
+	{
+	    y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
+	    ret = false;
+	}
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    AutoinstFile::Import([]);
+    ret = [];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("autoyast2");
+    ret = CustomFileDialog();
+    Wizard::CloseDialog();
+}
+else if (func == "Packages") {
+	ret = $[];
+}
+/* Return actual state */
+else if (func == "Export") {
+    ret = AutoinstFile::Export();
+}
+/* Write givven settings */
+else if (func == "Write") {
+    ret = AutoinstFile::Write();
+}
+else if (func == "GetModified")
+{
+    ret = AutoinstFile::GetModified();
+}
+else if (func == "SetModified")
+{
+    AutoinstFile::SetModified();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("Files auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
+}

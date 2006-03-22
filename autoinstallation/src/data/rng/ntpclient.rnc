@@ -1,0 +1,39 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+ntp-client =
+  element ntp-client {
+    configure_dhcp?, peers, start_at_boot, start_in_chroot?
+  }
+create_symlink =
+  element create_symlink { BOOLEAN }
+configure_dhcp =
+  element configure_dhcp { BOOLEAN }
+initial_sync =
+  element initial_sync { BOOLEAN }
+fudge_comment = element fudge_comment { text }
+fudge_options = element fudge_options { text }
+param = element param { text }
+peer =
+  element peer {
+    (address
+     | comment
+     | create_symlink
+     | device
+     | fudge_comment
+     | fudge_options
+     | initial_sync
+     | options
+     | param
+     | type)*
+  }
+peers =
+  element peers {
+    LIST,
+    peer+
+  }
+start_at_boot =
+  element start_at_boot { BOOLEAN }
+start_in_chroot =
+  element start_in_chroot { BOOLEAN }
