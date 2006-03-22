@@ -133,8 +133,11 @@
                         winp = add(winp, pe["nr"]:0);
                         skipwin = true;
                     }
-
-                    new_pe["partition_id"] = pe["fsid"]:131;
+                    if( contains(allwin, fsid) && issubstring(pe["mount"]:"", "/boot") ) {
+                        new_pe["partition_id"] = 259;
+                    } else {
+                        new_pe["partition_id"] = pe["fsid"]:131;
+                    }
                 }
                 if (haskey(pe,"region"))
                 {
