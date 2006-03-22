@@ -31,6 +31,8 @@
     include "autoinstall/io.ycp";
 
     global boolean userrules = false;
+    global boolean dontmergeIsDefault = true;
+    global list<string> dontmergeBackup = [];
 
     global symbol Behaviour = `many;
 
@@ -577,6 +579,16 @@
                             {
                                 tomerge = add(tomerge, profile_name);
                             }
+                            // backdoor for merging problems.
+                            if( haskey(ruledef, "dont_merge") ) {
+                                if( dontmergeIsDefault ) {
+                                    dontmergeBackup = AutoinstConfig::dontmerge;
+                                    AutoinstConfig::dontmerge = [];
+                                }
+                                AutoinstConfig::dontmerge = (list<string>)union( AutoinstConfig::dontmerge, ruledef["dont_merge"]:[] );
+                                dontmergeIsDefault = false;
+                                y2milestone("user defined dont_merge for rules found. dontmerge is %1", AutoinstConfig::dontmerge);
+                            }
                             go_on = ruledef["continue"]:false;
                         }
                         else
@@ -722,6 +734,8 @@
         SCR::Execute(.target.bash, "cp " +  tmpdir + "/base_profile.xml " + result_profile );
 
         y2milestone("Ok=%1", ok);
+        dontmergeIsDefault = true;
+        AutoinstConfig::dontmerge = dontmergeBackup;
         return ok;
     }
 
@@ -761,6 +775,15 @@ control file and try again.
             list<map> classes = Profile::current["classes"]:[];
             foreach(map class, classes,
                     ``{
+                // backdoor for merging problems.
+                if( haskey(class, "dont_merge") ) {
+                    if( dontmergeIsDefault )
+                        AutoinstConfig::dontmerge = [];
+                    AutoinstConfig::dontmerge = (list<string>)union( AutoinstConfig::dontmerge, class["dont_merge"]:[] );
+                    dontmergeIsDefault = false;
+                    y2milestone("user defined dont_merge for class found. dontmerge is %1", AutoinstConfig::dontmerge);
+                }
+
                 tomerge = add(tomerge,  "classes/" + class["class_name"]:"none" + "/" + class["configuration"]:"none");
             });
 
