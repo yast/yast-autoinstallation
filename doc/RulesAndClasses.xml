@@ -237,7 +237,7 @@ fi;
     <section id="matchtypes">
         <title>Match Types for rules</title>
         <para>
-            you can have four different match_types:
+            you can have five different match_types:
         </para>
         <para>
             <itemizedlist>
@@ -594,6 +594,128 @@ fi;
       is parsed and the presence of class definitions is checked. If classes
       are defined, then the class files are retrieved from the original
       repository and a new merge process is initiated.
+    </para>
+  </section>
+  <section id="merging">
+    <title>The merging process of Rules and Classes</title>
+    <para>
+      With classes and with rules, multiple XML files get merged to one resulting
+      XML file. This process of merging is often confusing for people, because
+      it behaves different than one would expect.
+    </para>
+    <para>
+      Let's take a look at two XML parts that we want to merge:
+    </para>
+    <para>
+      <screen>
+&lt;partitioning config:type=&quot;list&quot;&gt;
+    &lt;drive&gt;
+        &lt;partitions config:type=&quot;list&quot;&gt;
+            &lt;partition&gt;
+                &lt;filesystem config:type=&quot;symbol&quot;&gt;swap&lt;/filesystem&gt;
+                &lt;format config:type=&quot;boolean&quot;&gt;true&lt;/format&gt;
+                &lt;mount&gt;swap&lt;/mount&gt;
+                &lt;partition_id config:type=&quot;integer&quot;&gt;130&lt;/partition_id&gt;
+                &lt;size&gt;2000mb&lt;/size&gt;
+            &lt;/partition&gt;
+            &lt;partition&gt;
+                &lt;filesystem config:type=&quot;symbol&quot;&gt;xfs&lt;/filesystem&gt;
+                &lt;partition_type&gt;primary&lt;/partition_type&gt;
+                &lt;size&gt;4Gb&lt;/size&gt;
+                &lt;mount&gt;/data&lt;/mount&gt;
+            &lt;/partition&gt;
+        &lt;/partitions&gt;
+    &lt;/drive&gt;
+&lt;/partitioning&gt;
+      </screen>
+    </para>
+    <para>
+      <screen>
+&lt;partitioning config:type=&quot;list&quot;&gt;
+  &lt;drive&gt;
+    &lt;initialize config:type=&quot;boolean&quot;&gt;false&lt;/initialize&gt;
+    &lt;partitions config:type=&quot;list&quot;&gt;
+         &lt;partition&gt;
+           &lt;format config:type=&quot;boolean&quot;&gt;true&lt;/format&gt;
+           &lt;filesystem config:type=&quot;symbol&quot;&gt;xfs&lt;/filesystem&gt;
+           &lt;mount&gt;/&lt;/mount&gt;
+           &lt;partition_id config:type=&quot;integer&quot;&gt;131&lt;/partition_id&gt;
+           &lt;partition_type&gt;primary&lt;/partition_type&gt;
+           &lt;size&gt;max&lt;/size&gt;
+         &lt;/partition&gt;
+    &lt;/partitions&gt;
+    &lt;use&gt;all&lt;/use&gt;
+  &lt;/drive&gt;
+&lt;/partitioning&gt;
+      </screen>
+    </para>
+    <para>
+      What you would expect is, that you'll end up in a profile with 3 partitions.
+      That is not the case. You'll end up with two partitions and the first partition
+      is a mixup of the swap and the root partition. Stuff that is configured in both
+      partitions, like <emphasis>mount</emphasis> or <emphasis>size</emphasis>, will 
+      be used from the second file.
+      Stuff that only exists in the first or second partition, will be copied to the
+      merged partition too.
+    </para>
+    <para>
+      Sometimes this is what you want, but sometimes this is not what you want. Actually,
+      in my example above, this is both. You don't want a second <emphasis>drive</emphasis>
+      right? You want the two drives to be merged into one but for partitions you want three seperate
+      ones.
+      So how can you achieve what you want? In this example, how do you get three partitions but still
+      one drive?
+    </para>
+    <para>
+      <note>For SLES9/SUSE Linux 10.0 and earlier versions</note> you can only use a trick. It's
+      not official supported by autoyast and more a workaround than a nice solution. For each partition
+      in one file, add an attribute to the partition like this:
+    </para>
+    <para>
+      <screen>
+&lt;partition dontmerge=&quot;1&quot;&gt;
+...
+&lt;/partitions&gt;
+      </screen>
+    </para>
+    <para>
+      The trick is, that the merge script will not detect the partitions as the same element type because of the
+      new attribute. If you have more files, it might be needed to to add more attributes like <emphasis>dontmerge="2"</emphasis>.
+    </para>
+    <para>
+      <note>For SLES10/SUSE Linux 10.1 and later</note>
+      you can use the <emphasis>dont_merge</emphasis> element in the rules or classes file
+      like this:
+    </para>
+    <para>
+      <screen>
+&lt;classes config:type=&quot;list&quot;&gt;
+    &lt;class&gt;
+        &lt;class_name&gt;swap&lt;/class_name&gt;
+        &lt;configuration&gt;largeswap.xml&lt;/configuration&gt;
+        &lt;dont_merge config:type=&quot;list&quot;&gt;
+            &lt;element&gt;partition&lt;/element&gt;
+        &lt;/dont_merge&gt;
+    &lt;/class&gt;
+&lt;/classes&gt;
+      </screen>
+    </para>
+    <para>
+      <screen>
+&lt;rule&gt;
+    &lt;board_vendor&gt;
+        &lt;match&gt;ntel&lt;/match&gt;
+        &lt;match_type&gt;regex&lt;/match_type&gt;
+    &lt;/board_vendor&gt;
+    &lt;result&gt;
+        &lt;profile&gt;classes/largeswap.xml&lt;/profile&gt;
+        &lt;continue config:type=&quot;boolean&quot;&gt;true&lt;/continue&gt;
+        &lt;dont_merge config:type=&quot;list&quot;&gt;
+          &lt;element&gt;partition&lt;/element&gt;
+        &lt;/dont_merge&gt;
+    &lt;/result&gt;
+&lt;/rule&gt;
+      </screen>
     </para>
   </section>
 </chapter>
