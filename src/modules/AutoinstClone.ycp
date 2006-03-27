@@ -139,6 +139,9 @@
                         new_pe["partition_id"] = pe["fsid"]:131;
                     }
                 }
+                if( haskey(pe,"type") && pe["type"]:`x == `primary ) {
+                    new_pe["type"] = `primary; // can we always copy that element?
+                }
                 if (haskey(pe,"region"))
                 {
                     // don't clone the exact region.
