@@ -329,6 +329,54 @@
         return settings;
     }
 
+    global define list<map> checkSizes(list<map> settings) {
+        y2milestone("entering checkSizes with %1",settings);
+        map <string, map> tm = Storage::GetTargetMap();
+        y2milestone("targetmap = %1",tm);
+
+        settings = maplist( map d, settings, ``{
+            if( d["type"]:`x == `CT_DISK ) {
+                integer sizeByCyl = 0;
+                integer usedSize = 0;
+                integer max = 0;
+                integer cyl_size = 0;
+                foreach( string device, map v, tm, ``{
+                    if( device == d["device"]:"" ) {
+                        sizeByCyl = v["cyl_count"]:0 * v["cyl_size"]:0;
+                        cyl_size = v["cyl_size"]:0;
+                        y2milestone("device found in tm. sizeByCyl=%1",sizeByCyl);
+                    }
+                });
+                if( sizeByCyl == 0 ) {
+                    y2milestone("not found");
+                    return d;
+                }
+                foreach(map pe, d["partitions"]:[], ``{
+                    usedSize = usedSize + pe["size"]:0;
+                    if( pe["size"]:0 > max )
+                        max = pe["size"]:0;
+                });
+                if( usedSize > sizeByCyl ) {
+                    y2milestone("usedSize too big: %1",usedSize);
+                    d["partitions"] = maplist( map pe, d["partitions"]:[], ``{
+                        integer s = pe["size"]:0;
+                        if( s == max ) {
+                            y2milestone("shrinking %1",pe);
+                            s = s - ((usedSize - sizeByCyl)/cyl_size+1)*cyl_size;
+                            usedSize = usedSize - s;
+                            y2milestone("shrinking to %1",s);
+                            pe["size"] = s;
+                        }
+                        return pe;
+                    });
+                }
+            }
+            return d;
+        });
+        y2milestone("after checkSizes %1",settings);
+        return settings;
+    }
+
     /**
      * Get all the configuration from a map.
      * When called by inst_auto<module name> (preparing autoinstallation data)
@@ -340,9 +388,10 @@
     {
         y2milestone("entering Import with %1", settings);
         if (Mode::autoinst()) {
-            settings = udev2dev(settings); 
+            settings = udev2dev(settings);
             settings = mountBy(settings);
             AutoPartPlan = preprocess_partition_config(settings);
+            AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
             settings = maplist( map d, settings, ``{
                 if( ! haskey(d,"device") ) {
