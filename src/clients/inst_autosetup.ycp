@@ -114,10 +114,6 @@ control file and try again.
     askDialog();
     Call::Function("add-on_auto", ["Import", Profile::current["add-on"]:$[]] );
     Call::Function("add-on_auto", ["Write"]);
-    /* FIXME: this breaks autoinstallation but is needed for addon support.
-    if( ProductControl::RunFrom ( ProductControl::CurrentStep () + 1, true) == `next )
-        return `finish;
-        */
 
     //
     // Set Mouse and other workflow variables
@@ -224,5 +220,8 @@ Try again.
     AutoInstall::TurnOff();
     Progress::Finish();
 
-    return `next;
+    symbol ret = ProductControl::RunFrom ( ProductControl::CurrentStep () + 1, true);
+    if (ret == `next)
+	return `finish;
+    return ret;
 }
