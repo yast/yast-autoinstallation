@@ -433,14 +433,19 @@
                         lv["device"] = "/dev/" + current_vg + "/" + lv["name"]:"";
                     } else if( vmType == `CT_EVMS ) {
                         // FIXME: is lv["device"] needed at all here?
-                        lv["device"] = "/dev/evms/"+lvm_string+"/"+current_vg+"/"+lv["name"]:"";
+                        lv["device"] = "/dev/evms/"+lvm_string+"/"+vgname+"/"+lv["name"]:"";
                     }
                     if( vmType == `CT_LVM ) {
                         addLogicalVolume(lv, current_vg); // FIXME: will not work for EVMS
                         y2milestone("calling addLogicalVolume with lv = %1 and current_vg = %2",lv, current_vg);
                     } else if( vmType == `CT_EVMS ) {
                         y2milestone("Storage::CreateEvmsVolume %1/%2",lvm_string,vgname);
+                        y2milestone("lv = %1",lv);
                         Storage::CreateEvmsVolume(lvm_string+"/"+vgname,lv["name"]:"",lv["size_k"]:0,lv["stripes"]:1);
+                        Storage::ChangeVolumeProperties(lv);
+                        if( lv["stripesize"]:0 > 0 )
+                            Storage::ChangeEvmsStripeSize( lvm_string+"/"+vgname, lv["name"]:"",
+                                                                           lv["stripesize"]:0 );
                     }
                     targetMap = Storage::GetTargetMap();
                     y2milestone("Storage::GetTargetMap returns %1",targetMap);
