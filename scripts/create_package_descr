@@ -121,7 +121,7 @@ $dotcounter = 0;
 $allcounter = 0;
 foreach $datapath (@DATADIRS) {
   $media_number++;
-  open ( FIND, "find $datapath $with_links -name \"*.[rs]pm\" -maxdepth 2 -print | sort |" );
+  open ( FIND, "find $datapath $with_links -maxdepth 2 -name \"*.[rs]pm\" -print | sort |" );
   my @pkg_arr = ();
   my @src_arr = ();
   while ( <FIND> ) {
