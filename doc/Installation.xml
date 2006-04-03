@@ -128,12 +128,17 @@ default SLES9
 # install SLES9
 label SLES9
   kernel linux_sles9
-    append initrd=initrd_sles9 install=.... autoyast=... language=de_DE
+    append initrd=initrd_sles9 vga=0x0314 install=.... autoyast=... language=de_DE
 
 # boot harddisc
 label hd·
   LOCALBOOT 0
       </screen>
+      </para>
+      <para>
+        It's recommended to add the vga=... parameter with a valid value for graphical
+        installations, to trigger an installation with the frame buffer device instead
+        of the vesa driver or ncurses mode.
       </para>
       <para>
         Here is as a small example my "/etc/dhcp.conf" file:
