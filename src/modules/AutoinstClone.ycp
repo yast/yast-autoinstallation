@@ -114,6 +114,7 @@
 
         StorageMap=filter(string d, map p, StorageMap, ``( d != "/dev/evms" && size(p["partitions"]:[]) > 0));
         y2debug("Storagemap %1", StorageMap);
+        list evms_vgs = [];
 
         list drives = maplist(string k, map v, StorageMap, ``{
             list partitions = [];
@@ -226,7 +227,9 @@
                 drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
                 drive["is_evms_vg"] = true;
                 integer index = findlastof( drive["device"]:"", "/" );
-                drive["device"] = "/dev"+substring(drive["device"]:"", index);
+                string vg_name = substring(drive["device"]:"", index);
+                drive["device"] = "/dev"+vg_name;
+                evms_vgs = add( evms_vgs, "/dev"+vg_name );
             }
             if (haskey(v,"lvm2") && v["lvm2"]:false)
             {
@@ -248,8 +251,13 @@
                     drive["use"]	= mergestring(up, ",");
                 }
             }
-
             return drive;
+        });
+        drives = filter( map v, (list<map>)drives, ``{
+            if( ! (contains( evms_vgs, v["device"]:"") && v["is_lvm_vg"]:false) )
+                return true;
+            y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
+            return false;
         });
         Mode::SetMode("autoinst_config");
         return drives;
