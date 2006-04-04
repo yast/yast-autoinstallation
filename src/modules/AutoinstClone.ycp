@@ -112,7 +112,7 @@
         StorageDevices::InitDone();
         map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
-        StorageMap=filter(string d, map p, StorageMap, ``(!issubstring(d, "/dev/evms") && size(p["partitions"]:[]) > 0));
+        StorageMap=filter(string d, map p, StorageMap, ``( d != "/dev/evms" && size(p["partitions"]:[]) > 0));
         y2debug("Storagemap %1", StorageMap);
 
         list drives = maplist(string k, map v, StorageMap, ``{
@@ -161,8 +161,14 @@
                     new_pe["lvm_group"] = pe["used_by"]:"";
                 }
 
+                // EVMS Group
+                if (haskey(pe,"used_by_type") && pe["used_by_type"]:`nothing == `UB_EVMS) {
+                    integer index = findlastof( pe["used_by"]:"", "/" );
+                    new_pe["evms_group"] = substring( pe["used_by"]:"", index+1);
+                }
+
                 // LV
-                if (pe["type"]:`unknown == `lvm )
+                if (pe["type"]:`unknown == `lvm || pe["type"]:`unknown == `evms )
                 {
                     new_pe["lv_name"] = pe["name"]:"";
                     new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
@@ -216,6 +222,11 @@
             {
                 drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
                 drive["is_lvm_vg"] = true;
+            } else if( v["type"]:`CT_UNKNOWN==`CT_EVMS ) {
+                drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
+                drive["is_evms_vg"] = true;
+                integer index = findlastof( drive["device"]:"", "/" );
+                drive["device"] = "/dev"+substring(drive["device"]:"", index);
             }
             if (haskey(v,"lvm2") && v["lvm2"]:false)
             {
