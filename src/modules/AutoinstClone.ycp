@@ -309,15 +309,39 @@
                 Pkg::PkgInstall(p);
         });
 
+        /* FIXME: if this would work, it would be the better solution
+        foreach(string p, patterns, ``{
+            Pkg::ResolvableInstall( p, `pattern );
+        });
+        Pkg::PkgSolve(false);
+        */
+
         list<string> packages = Pkg::FilterPackages(false, false, true, true);
         Pkg::TargetFinish ();
         // Remove kernel packages
-        list<string> userpackages =  filter(string pkg, packages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml"));
+        list<string> userpackages =  packages;
 
+        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
+        list<string> patternPackages = [];
+        foreach( string tmp_pattern, patterns, ``{
+            list<map<string,any> > xpattern = filter( map<string,any> p, all_xpatterns, ``( p["name"]:"" == tmp_pattern ) );
+            map<string,any> found = xpattern[0]:$[];
+            foreach( map<string,any> d, found["dependencies"]:[], ``{
+                if( d["res_kind"]:"" == "package" )
+                    patternPackages = add(patternPackages, d["name"]:"");
+            });
+        });
         map<string, any > software = $[];
+        if( size(patterns) > 0 ) {
+            foreach(string p, inst, ``{
+                if (!contains(patternPackages, p))
+                    userpackages = add( userpackages, p );
+            });
+        }
+
         software["base"] = base[0]:"";
         software["addons"] = addons;
-        software["packages"] = userpackages;
+        software["packages"] = filter(string pkg, userpackages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml"));
         software["patterns"] = patterns;
         return software;
     }
