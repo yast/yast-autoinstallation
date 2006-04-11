@@ -123,6 +123,12 @@
             foreach(map pe, v["partitions"]:[], ``{
                 map new_pe = $[];
                 boolean skipwin = false;
+                if (haskey(pe,"enc_type")) {
+                    new_pe["enc_type"] = pe["enc_type"]:`twofish;
+                    new_pe["crypt_key"] = "ENTER KEY HERE";
+                    new_pe["loop_fs"] = true;
+                    new_pe["crypt_fs"] = true;
+                }
                 if (haskey(pe,"fsid"))
                 {
                     integer fsid = pe["fsid"]:131;
