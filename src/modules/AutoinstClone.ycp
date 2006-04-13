@@ -286,6 +286,8 @@
         list<string> inst = Pkg::GetPackages(`installed, true);
         list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
         list<string> patterns = [];
+        list<string> selections = addons;
+        selections = add(selections, base[0]:"");
 
         foreach( map<string,any> m, all_patterns, ``{
             if( m["status"]:`nothing == `installed )
@@ -309,11 +311,13 @@
 
         Pkg::ActivateSelections();
 
+        /*
         list<string> sel =  Pkg::GetPackages(`selected, true);
         foreach(string p, inst, ``{
             if (!contains(sel, p))
                 Pkg::PkgInstall(p);
         });
+        */
 
         /* FIXME: if this would work, it would be the better solution
         foreach(string p, patterns, ``{
@@ -341,6 +345,23 @@
         if( size(patterns) > 0 ) {
             foreach(string p, inst, ``{
                 if (!contains(patternPackages, p))
+                    userpackages = add( userpackages, p );
+            });
+        }
+
+        list<map<string,any> > all_xselections = Pkg::ResolvableDependencies ("", `selection, "");
+        list<string> selectionPackages = [];
+        foreach( string tmp_selection, selections, ``{
+            list<map<string,any> > xselection = filter( map<string,any> p, all_xselections, ``( p["name"]:"" == tmp_selection ) );
+            map<string,any> found = xselection[0]:$[];
+            foreach( map<string,any> d, found["dependencies"]:[], ``{
+                if( d["res_kind"]:"" == "package" )
+                    selectionPackages = add(selectionPackages, d["name"]:"");
+            });
+        });
+        if( size(selections) > 0 ) {
+            foreach(string p, inst, ``{
+                if (!contains(selectionPackages, p))
                     userpackages = add( userpackages, p );
             });
         }
