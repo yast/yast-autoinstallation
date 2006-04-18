@@ -17,6 +17,9 @@
 # Anas Nashif
 # Uwe Gansert (uwe.gansert@suse.de)
 #
+# Version 20060418 (uwe.gansert@suse.de)
+#   - added support for add-on products of SLES10/SL10.1
+#
 # Version 20051207 (uwe.gansert@suse.de)
 #   - added missing $SOURCE for the copy of the EXTRA_PROV file
 #     thanx to Ian Grant
@@ -134,7 +137,9 @@ $ECHO mkdir -p $UPDATES/media.1
 	echo 1
 } > $UPDATES/media.1/media
 
-
+{
+    echo "/ $DISTPRODUCT-$NAME"
+} > $UPDATES/media.1/products
 
 if [ -x /usr/bin/create_package_descr ]; then
 	create_package_descr -x $UPDATES/$DESCRDIR/EXTRA_PROV -d $UPDATES/$DATADIR \
