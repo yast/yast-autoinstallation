@@ -82,6 +82,7 @@
 
         string notFound = "";
         Packages::Init(true);
+        Packages::InitializeAddOnProducts();
         foreach( string pack, settings["packages"]:[], ``{
             if( ! Pkg::IsAvailable(pack) ) {
                 notFound = notFound + pack + "\n";
