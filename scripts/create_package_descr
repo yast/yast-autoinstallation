@@ -5,6 +5,26 @@ use FileHandle;
 use strict 'refs';
 #use RPMQ;		# FIXME: a local copy of RPM.pm is here.
 
+sub filter_weak {
+  my ($r, $tn, $tf) = @_;
+  my @tf = @{$r->{$tf} || []};
+  my @res;
+  for (@{$r->{$tn}}) {
+    push @res, $_ unless (shift @tf) & 0x8000000;
+  }
+  return @res;
+}
+
+sub filter_strong {
+  my ($r, $tn, $tf) = @_;
+  my @tf = @{$r->{$tf} || []};
+  my @res;
+  for (@{$r->{$tn}}) {
+    push @res, $_ if (shift @tf) & 0x8000000;
+  }
+  return @res;
+}
+
 local (@DATADIRS,@LANGUAGES,%SEEN_PACKAGE,%IGNORE_PACKAGE);
 my %lang_alias = ("czech"=>"cs","english"=>"en","french"=>"fr","german"=>"de","italian"=>"it","spanish"=>"es","hungarian"=>"hu" );
 my %tag_short = ("description"=>"Des","notice"=>"Ins","delnotice"=>"Del");
@@ -13,6 +33,7 @@ my $ignore_sources = "0";
 my $ignore_symlinks = "0";
 my $prefer_yastdescr = "0";
 my $add_licenses = "0";
+my $do_checksums = "0";
 
 while ( $arg = shift ( @ARGV ) ) {
   if ( $arg eq "-d" ) { push @DATADIRS , shift @ARGV ; }
@@ -26,6 +47,7 @@ while ( $arg = shift ( @ARGV ) ) {
   elsif ( $arg eq "-S" ) { $ignore_sources = "1"; }
   elsif ( $arg eq "-P" ) { $prefer_yastdescr = "1"; }
   elsif ( $arg eq "-L" ) { $ignore_symlinks = "1"; }
+  elsif ( $arg eq "-C" ) { $do_checksums = "1"; }
   else {
 	 print "usage: create_package_descr\n";
 	 print "	[-d DATADIR1 [-d DATADIR2 [... ] ] ] (default cwd)\n";
@@ -38,6 +60,7 @@ while ( $arg = shift ( @ARGV ) ) {
 	 print "	[-S ]                           (ignore_sources)\n";
 	 print "	[-P ]                           (prefer_yastdescr)\n";
 	 print "	[-L ]                           (ignore_symlinks)\n";
+	 print "	[-C ]                           (do_checksums)\n";
 	 die ("unknown parameter\n");
   }
 }
@@ -153,19 +176,26 @@ foreach $datapath (@DATADIRS) {
                         1047, 1112, 1113,
                         1049, 1048, 1050,
                         1054, 1053, 1055,
+			1156, 1157, 1158,
+			1159, 1160, 1161,
 			1027, 1116, 1117, 1118, 1030, 1028, 1095, 1096,
                         1014, 1016, 1006, 1009, 1044, 1004, 1005);
 
-    my @depexcl = $res{1054};
-    my @prereq = rpmq_add_req_flagsvers(\%res, 1049, 1048, 1050); # requires
-    RPM::rpmq_add_flagsvers(\%res, 1047, 1112, 1113); # provides
-    RPM::rpmq_add_flagsvers(\%res, 1090, 1114, 1115); # obsoletes
-    RPM::rpmq_add_flagsvers(\%res, 1054, 1053, 1055); # conflicts
+   my @depexcl = $res{1054};
+   my @prereq = rpmq_add_req_flagsvers(\%res, 1049, 1048, 1050); # requires
+   RPM::rpmq_add_flagsvers(\%res, 1047, 1112, 1113); # provides
+   RPM::rpmq_add_flagsvers(\%res, 1090, 1114, 1115); # obsoletes
+   RPM::rpmq_add_flagsvers(\%res, 1054, 1053, 1055); # conflicts
+   RPM::rpmq_add_flagsvers(\%res, 1156, 1158, 1157); # suggests
+   RPM::rpmq_add_flagsvers(\%res, 1159, 1161, 1160); # enhances
    $rpm_name = $res{1000}[0];
    if ( $IGNORE_PACKAGE{$rpm_name} && $IGNORE_PACKAGE{$rpm_name} eq "yes" ) {
       $ignored_packages .= " $rpm_name";
       next;
    }
+   my $checksum = "";
+   my $dummy = "";
+   ($checksum,$dummy) = split('\s+',`sha1sum $package`) if ($do_checksums eq "1");
    $srcrpm = $res{1044}[0];
    $srcrpm =~ s/^(.*)-([^-]*)-([^-]*)\.([^\.]*)\.rpm$/$1 $2 $3 $4/;
    if ( $res{1044}[0] ) {
@@ -196,6 +226,7 @@ foreach $datapath (@DATADIRS) {
 
     WriteSeparator( $pkg_main );
     WriteSEntry( $pkg_main, "Pkg", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $file_arch");
+    WriteSEntry( $pkg_main, "Cks", "SHA1 $checksum") if ($checksum);
     if ( $res{1044}[0] ) {
     	# has src, so it's a binary package
     	WriteMEntry( $pkg_main, "Req", @{$res{1049}} );
@@ -203,6 +234,10 @@ foreach $datapath (@DATADIRS) {
     	WriteMEntry( $pkg_main, "Prv", @{$res{1047}} );
     	WriteMEntry( $pkg_main, "Con", @{$res{1054}} );
     	WriteMEntry( $pkg_main, "Obs", @{$res{1090}} );
+    	WriteMEntry( $pkg_main, "Rec", filter_strong(\%res, 1156, 1158));
+    	WriteMEntry( $pkg_main, "Sug", filter_weak(\%res, 1156, 1158));
+    	WriteMEntry( $pkg_main, "Sup", filter_strong(\%res, 1159, 1161));
+    	WriteMEntry( $pkg_main, "Enh", filter_weak(\%res, 1159, 1161));
     	WriteSEntry( $pkg_main, "Grp", $res{1016}[0] );
     	WriteSEntry( $pkg_main, "Lic", $res{1014}[0] );
     	WriteSEntry( $pkg_main, "Src", $srcrpm );
@@ -218,48 +253,59 @@ foreach $datapath (@DATADIRS) {
 	WriteSEntry( $pkg_main, "Shr", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $found_in");
     } else {
 	if ( $pdb_data_dir ) {
-	    delete $INC{"$pdb_data_dir/$rpm_name.pl"};
-	    if ( -f "$pdb_data_dir/$rpm_name.pl") {
-		require "$pdb_data_dir/$rpm_name.pl";
+	    my $pac_rpm_name = $rpm_name;
+	    $pac_rpm_name =~ s/-debuginfo//;
+	    $pac_rpm_name =~ s/-kmp-[^-]*$/-KMP/;
+	    delete $INC{"$pdb_data_dir/$pac_rpm_name.pl"};
+	    if ( -f "$pdb_data_dir/$pac_rpm_name.pl") {
+		require "$pdb_data_dir/$pac_rpm_name.pl";
 	    } else {
 		# no pdb data for this package, use rpm summary
-		print "no pdb data for $rpm_name found\n";
-		$pacdata{$rpm_name}{'english'}{"label"} = "$res{1004}[0]";
+		print "no pdb data for $pac_rpm_name found\n";
+		$pacdata{$pac_rpm_name}{'english'}{"label"} = "$res{1004}[0]";
 	    }
-	    WriteMEntry( $pkg_main, "Aut", @{$pacdata{$rpm_name}{"authorname"}} );
+	    if ( $pacdata{$pac_rpm_name}{'english'}{"label"} =~ /\n/ ) {
+		warn ("newline in summary for package $pac_rpm_name\n");
+		$pacdata{$pac_rpm_name}{'english'}{"label"} =~ s/\n/ /g;
+	    }
+	    WriteMEntry( $pkg_main, "Aut", @{$pacdata{$pac_rpm_name}{"authorname"}} );
 	    foreach $lang (@LANGUAGES) {
 		WriteSeparator( $pkg_lang{$lang} );
 		WriteSEntry( $pkg_lang{$lang}, "Pkg", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $file_arch");
-		if ( $pacdata{$rpm_name}{$lang}{"label"} ) {
-		    WriteSEntry( $pkg_lang{$lang}, "Sum", $pacdata{$rpm_name}{$lang}{"label"} );
+		if ( $pacdata{$pac_rpm_name}{$lang}{"label"} ) {
+		    if ( $pacdata{$pac_rpm_name}{$lang}{"label"} =~ /\n/ ) {
+			warn ("newline in $lang summary for package $pac_rpm_name\n");
+			$pacdata{$pac_rpm_name}{$lang}{"label"} =~ s/\n/ /g;
+		    }
+		    WriteSEntry( $pkg_lang{$lang}, "Sum", $pacdata{$pac_rpm_name}{$lang}{"label"} );
 		} else {
-		    WriteSEntry( $pkg_lang{$lang}, "Sum", $pacdata{$rpm_name}{'english'}{"label"} );
+		    WriteSEntry( $pkg_lang{$lang}, "Sum", $pacdata{$pac_rpm_name}{'english'}{"label"} );
 		}
 		if ( $prefer_yastdescr eq "1" ) {
 			foreach $tag (keys (%tag_short)) {
-				if ( $pacdata{$rpm_name}{$lang}{$tag._yast} ) {
-					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{$lang}{$tag._yast}});
-				} elsif ( $pacdata{$rpm_name}{$lang}{$tag} ) {
-					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{$lang}{$tag}});
-				} elsif ( $pacdata{$rpm_name}{'english'}{$tag._yast} ) {
-					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{'english'}{$tag._yast}});
+				if ( $pacdata{$pac_rpm_name}{$lang}{$tag._yast} ) {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$pac_rpm_name}{$lang}{$tag._yast}});
+				} elsif ( $pacdata{$pac_rpm_name}{$lang}{$tag} ) {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$pac_rpm_name}{$lang}{$tag}});
+				} elsif ( $pacdata{$pac_rpm_name}{'english'}{$tag._yast} ) {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$pac_rpm_name}{'english'}{$tag._yast}});
 				} else {
-					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{'english'}{$tag}});
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$pac_rpm_name}{'english'}{$tag}});
 				}
 			}
 			if ( $add_licenses eq "1" ) {
-			    if ( $pacdata{$rpm_name}{$lang}{'confirmlic_yast'} ) {
-				WriteMEntry( $pkg_lang{$lang}, "Eul", @{$pacdata{$rpm_name}{$lang}{'confirmlic_yast'}});
-			    } elsif ( $pacdata{$rpm_name}{'english'}{'confirmlic_yast'} ) {
-				WriteMEntry( $pkg_lang{$lang}, "Eul", @{$pacdata{$rpm_name}{'english'}{'confirmlic_yast'}});
+			    if ( $pacdata{$pac_rpm_name}{$lang}{'confirmlic_yast'} ) {
+				WriteMEntry( $pkg_lang{$lang}, "Eul", @{$pacdata{$pac_rpm_name}{$lang}{'confirmlic_yast'}});
+			    } elsif ( $pacdata{$pac_rpm_name}{'english'}{'confirmlic_yast'} ) {
+				WriteMEntry( $pkg_lang{$lang}, "Eul", @{$pacdata{$pac_rpm_name}{'english'}{'confirmlic_yast'}});
 			    }
 			}
 		} else {
 			foreach $tag (keys (%tag_short)) {
-				if ( $pacdata{$rpm_name}{$lang}{$tag} ) {
-					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{$lang}{$tag}});
+				if ( $pacdata{$pac_rpm_name}{$lang}{$tag} ) {
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$pac_rpm_name}{$lang}{$tag}});
 				} else {
-					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$rpm_name}{'english'}{$tag}});
+					WriteMEntry( $pkg_lang{$lang}, $tag_short{$tag}, @{$pacdata{$pac_rpm_name}{'english'}{$tag}});
 				}
 			}
 		}
@@ -276,7 +322,7 @@ foreach $datapath (@DATADIRS) {
     WriteSeparator( $pkg_du );
     WriteSEntry( $pkg_du, "Pkg", "$res{1000}[0] $res{1001}[0] $res{1002}[0] $file_arch");
     WriteMEntry( $pkg_du, "Dir", @DULIST );
-    $SEEN_PACKAGE{"$rpm_name $res{1001}[0] $res{1002}[0]"} = $file_arch;
+    $SEEN_PACKAGE{"$rpm_name $res{1001}[0] $res{1002}[0]"} = $file_arch unless $SEEN_PACKAGE{"$rpm_name $res{1001}[0] $res{1002}[0]"};
   }
 }
 print " done\nprocessed $allcounter packages\n";
