@@ -351,9 +351,10 @@ $Id$
             pb["mount"] = Partitions::BootMount();
             pb["size"] = Partitions::MinimalNeededBootsize();
             pb["fsys"] = Partitions::DefaultBootFs();
+            pb["filesystem"] = Partitions::DefaultBootFs();
             pb["id"] = Partitions::FsidBoot();
             pb["auto_added"] = true;
-            pb["max_cyl"] = Partitions::BootCyl();
+            //pb["max_cyl"] = Partitions::BootCyl();
             tc["partitions"] = add( tc["partitions"]:[], pb );
             y2milestone( "boot added automagically pb %1", pb );
         }
