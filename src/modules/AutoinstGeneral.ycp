@@ -21,7 +21,7 @@
     import "Timezone";
     import "Misc";
     import "Profile";
-
+    import "Pkg";
 
     //
     // Show proposal and ask user for confirmation to go on with auto-installation
@@ -55,6 +55,7 @@
     //
     global map mode = $[];
 
+    global map signature_handling = $[];
 
     /**
      * Constructor
@@ -134,6 +135,7 @@
         //Clock	=	settings["clock"]:$[];
         mouse =	        settings["mouse"]:$[];
         mode  =	        settings["mode"]:$[];
+        signature_handling = settings["signature-handling"]:$[];
         return true;
     }
 
@@ -158,6 +160,7 @@
         */
         general["mouse"] = mouse;
         general["mode"] = mode;
+        general["signature-handling"] = signature_handling;
         return general;
     }
 
@@ -201,6 +204,31 @@
             });
              Mouse::Set(mouse["id"]:"");
         }
+        y2milestone("signature-handling is %1",signature_handling);
+        if( haskey(signature_handling, "accept_unsigned_file" ) )
+            Pkg::CallbackAcceptUnsignedFile( 
+                signature_handling["accept_unsigned_file"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "accept_file_without_checksum" ) )
+            Pkg::CallbackAcceptFileWithoutChecksum( 
+                signature_handling["accept_file_without_checksum"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "accept_verification_failed") )
+            Pkg::CallbackAcceptVerificationFailed( 
+                signature_handling["accept_verification_failed"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "trusted_key_added") )
+            Pkg::CallbackTrustedKeyAdded( 
+                signature_handling["trusted_key_added"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "trusted_key_removed") )
+            Pkg::CallbackTrustedKeyRemoved( 
+                signature_handling["trusted_key_removed"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "accept_unknown_gpg_key") )
+            Pkg::CallbackAcceptUnknownGpgKey( 
+                signature_handling["accept_unknown_gpg_key"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
     }
 
 }
