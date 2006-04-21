@@ -13,9 +13,16 @@
 #	 	/usr/bin/create_package_descr -x setup/descr/EXTRA_PROV \
 #
 # in the data directory (<source>/updates/suse)
+# after that do "cd setup/descr" and then:
+# for i in *; do echo -n "META SHA1 "; sha1sum $i|awk '{ORS=""; print $1}'; echo -n " "; basename $i; done
+# copy the output to the end of the updates/content file
+#
 #
 # Anas Nashif
 # Uwe Gansert (uwe.gansert@suse.de)
+#
+# Version 20060420 (uwe.gansert@suse.de)
+#   - suppress META SHA1 lines in the content file
 #
 # Version 20060418 (uwe.gansert@suse.de)
 #   - added support for add-on products of SLES10/SL10.1
@@ -89,6 +96,11 @@ if [ -f $SOURCE/content ] ; then
                         ;;
                 DISTVERSION)
                         DISTVERSION=$VALUE
+                        ;;
+                META)
+                        if ! [[ "$VALUE" =~ "SHA1" ]]; then
+                            echo $KEY $VALUE
+                        fi;
                         ;;
                 ARCH.*)
                         if test -z "$ARCH"; then 
