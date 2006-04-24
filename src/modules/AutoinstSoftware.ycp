@@ -23,6 +23,7 @@
     import "ProductControl";
     import "AutoinstImage";
     import "Storage";
+    import "Mode";
 
     import "PackageAI";
 
@@ -116,8 +117,9 @@
      */
     global define void AutoinstSoftware()
     {
-        if ( Stage::cont () )
+        if ( Stage::cont () && Mode::autoinst ())
         {
+	    Pkg::TargetInit ("/", false);
             Import(Profile::current["software"]:$[]);
         }
         return;
