@@ -11,6 +11,7 @@
     module "AutoinstGeneral";
     textdomain "autoinst";
 
+    import "Stage";
     import "AutoInstall";
     import "AutoinstConfig";
     import "Summary";
@@ -57,13 +58,6 @@
 
     global map signature_handling = $[];
 
-    /**
-     * Constructor
-     */
-    global define void AutoinstGeneral ()
-    {
-        return;
-    }
 
     /* default value of settings modified */
     global boolean modified = false;
@@ -237,6 +231,20 @@
              Mouse::Set(mouse["id"]:"");
         }
         SetSignatureHandling();
+    }
+
+    /**
+     * Constructor
+     */
+    global define void AutoinstGeneral ()
+    {
+        if( Stage::cont () ) {
+            // FIXME: wrong position for this
+            if (Profile::current["general"]:$[] != $[])
+                Import(Profile::current["general"]:$[]);
+            SetSignatureHandling();
+        }
+        return;
     }
 
 }
