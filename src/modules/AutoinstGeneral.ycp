@@ -164,6 +164,38 @@
         return general;
     }
 
+    /**
+     * set the sigature handling
+     * @return void
+     */
+    global define void SetSignatureHandling() {
+        y2milestone("signature-handling is %1",signature_handling);
+        if( haskey(signature_handling, "accept_unsigned_file" ) )
+            Pkg::CallbackAcceptUnsignedFile( 
+                signature_handling["accept_unsigned_file"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "accept_file_without_checksum" ) )
+            Pkg::CallbackAcceptFileWithoutChecksum( 
+                signature_handling["accept_file_without_checksum"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "accept_verification_failed") )
+            Pkg::CallbackAcceptVerificationFailed( 
+                signature_handling["accept_verification_failed"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "trusted_key_added") )
+            Pkg::CallbackTrustedKeyAdded( 
+                signature_handling["trusted_key_added"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "trusted_key_removed") )
+            Pkg::CallbackTrustedKeyRemoved( 
+                signature_handling["trusted_key_removed"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+        if( haskey(signature_handling, "accept_unknown_gpg_key") )
+            Pkg::CallbackAcceptUnknownGpgKey( 
+                signature_handling["accept_unknown_gpg_key"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
+
+    }
 
     /**
      * Write General  Configuration
@@ -204,31 +236,8 @@
             });
              Mouse::Set(mouse["id"]:"");
         }
-        y2milestone("signature-handling is %1",signature_handling);
-        if( haskey(signature_handling, "accept_unsigned_file" ) )
-            Pkg::CallbackAcceptUnsignedFile( 
-                signature_handling["accept_unsigned_file"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
-            );
-        if( haskey(signature_handling, "accept_file_without_checksum" ) )
-            Pkg::CallbackAcceptFileWithoutChecksum( 
-                signature_handling["accept_file_without_checksum"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
-            );
-        if( haskey(signature_handling, "accept_verification_failed") )
-            Pkg::CallbackAcceptVerificationFailed( 
-                signature_handling["accept_verification_failed"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
-            );
-        if( haskey(signature_handling, "trusted_key_added") )
-            Pkg::CallbackTrustedKeyAdded( 
-                signature_handling["trusted_key_added"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
-            );
-        if( haskey(signature_handling, "trusted_key_removed") )
-            Pkg::CallbackTrustedKeyRemoved( 
-                signature_handling["trusted_key_removed"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
-            );
-        if( haskey(signature_handling, "accept_unknown_gpg_key") )
-            Pkg::CallbackAcceptUnknownGpgKey( 
-                signature_handling["accept_unknown_gpg_key"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
-            );
+        SetSignatureHandling();
     }
 
 }
+

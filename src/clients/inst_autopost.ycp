@@ -16,6 +16,7 @@
     import "Y2ModuleConfig";
     import "AutoinstSoftware";
     import "AutoinstScripts";
+    import "AutoinstGeneral";
     import "Report";
     import "Progress";
     include "autoinstall/ask.ycp";
@@ -63,6 +64,13 @@ Please wait while the system is prepared for autoinstallation.</p>
     Progress::Title(_("Checking for required packages..."));
 
     askDialog();
+    if (Profile::current["general"]:$[] != $[])
+        AutoinstGeneral::Import(Profile::current["general"]:$[]);
+    AutoinstGeneral::SetSignatureHandling();
+    if( haskey( Profile::current, "add-on" ) ) {
+        Call::Function("add-on_auto", ["Import", Profile::current["add-on"]:$[]] );
+        Call::Function("add-on_auto", ["Write"]);
+    }
 
     y2milestone("Steps: %1", steps );
 
