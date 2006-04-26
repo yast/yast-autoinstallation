@@ -1405,6 +1405,64 @@
       repository with fixed and updated package (i.e. from &company-suse; FTP
       server). Additionally this method  makes the creation of custom CD-ROMs easier.
     </para>
+    <note>
+        <title>Change starting from SUSE Linux 10.1/SLES 10</title>
+        <para>
+        YaST checks the signatures of files on the installation source now. If a <emphasis>content</emphasis> file is
+        not signed, during a manual installation YaST asks the user what to do. During an autoinstallation, the
+        installation source gets rejected silently.
+        </para>
+    </note>
+    <para>
+        If you want to use unsigned installation sources with autoyast, you can turn of the checks with the following
+        configuration in your autoyast profile (part of the <emphasis>general</emphasis> section.
+    </para>
+          <para>
+          The following elements must be between the &lt;general&gt;&lt;signature-handling&gt; ... &lt;/signature-handling&gt;&lt;/general&gt; tags.
+          </para>
+    <para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>accept_unsigned_file</entry>
+                <entry>the installer will accept unsigned files like the content file
+                  <para><screen>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>accept_file_without_checksum</entry>
+                <entry>the installer will accept files without a checksum in the content file
+                  <para><screen>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>accept_verification_failed</entry>
+                <entry>the installer will accept files where the verification of the signature failed. So the file was signed but the check failed.
+                  <para><screen>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>accept_unknown_gpg_key</entry>
+                <entry>the installer will accept and import new gpg keys on the installation source in it's database.
+                  <para><screen>&lt;accept_unknown_gpg_key config:type="boolean"&gt;true&lt;/accept_unknown_gpg_key&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+    </para>
   </section>
   <section>
     <title>Kernel packages</title>
