@@ -85,7 +85,7 @@
         Packages::Init(true);
         Packages::InitializeAddOnProducts();
         foreach( string pack, settings["packages"]:[], ``{
-            if( ! Pkg::IsAvailable(pack) ) {
+            if( ! Pkg::IsAvailable(pack) && Stage::initial() ) {
                 notFound = notFound + pack + "\n";
             }
         });

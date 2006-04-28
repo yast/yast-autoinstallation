@@ -285,9 +285,11 @@
         list<string> addons =  Pkg::GetSelections(`installed, "addon");
         list<string> inst = Pkg::GetPackages(`installed, true);
         list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
+        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
         list<string> patterns = [];
         list<string> selections = addons;
-        selections = add(selections, base[0]:"");
+        if( size(base[0]:"") > 0 )
+            selections = add(selections, base[0]:"");
 
         foreach( map<string,any> m, all_patterns, ``{
             if( m["status"]:`nothing == `installed )
@@ -331,7 +333,6 @@
         // Remove kernel packages
         list<string> userpackages =  packages;
 
-        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
         list<string> patternPackages = [];
         foreach( string tmp_pattern, patterns, ``{
             list<map<string,any> > xpattern = filter( map<string,any> p, all_xpatterns, ``( p["name"]:"" == tmp_pattern ) );
