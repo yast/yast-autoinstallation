@@ -286,6 +286,7 @@
         list<string> inst = Pkg::GetPackages(`installed, true);
         list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
         list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
+        list<map<string,any> > all_xselections = Pkg::ResolvableDependencies ("", `selection, "");
         list<string> patterns = [];
         list<string> selections = addons;
         if( size(base[0]:"") > 0 )
@@ -350,7 +351,6 @@
             });
         }
 
-        list<map<string,any> > all_xselections = Pkg::ResolvableDependencies ("", `selection, "");
         list<string> selectionPackages = [];
         foreach( string tmp_selection, selections, ``{
             list<map<string,any> > xselection = filter( map<string,any> p, all_xselections, ``( p["name"]:"" == tmp_selection ) );
