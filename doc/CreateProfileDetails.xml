@@ -1412,6 +1412,36 @@
     <note>
         <title>Change starting from SUSE Linux 10.1/SLES 10</title>
         <para>
+        With SLES10/SL10.1, the concept of adding own RPMs to an installation source has changed.
+        The <emphasis>yast/order</emphasis> and <emphasis>yast/instorder</emphasis> is no longer supported. Neither
+        by AutoYaST nor by YaST. To add own RPMs to an installation source (that includes add-on products like the
+        SDK) you have to add a file <emphasis>add_on_products</emphasis> to the CD1 of the main product.
+        <screen>
+media_url [path_on_media [product_1 [product_2 [....]]]
+        </screen>
+        media_url is URL of the media itself
+        path_on_media is path of the catalog on the media. If not present, / (root) is assumed
+        product_1 and following are the names for products, which should be marked for installation. If no product is mentioned, all products found on the media are selected for installation.
+        For example:
+        <screen>
+http://192.168.66.6/SLES10/sdk/CD1
+http://192.168.66.6/SLES10/CD1/updates
+        </screen>
+        Besides that <emphasis>add_on_products</emphasis> file, you can use the autoyast profile to specify add-on products. For example:
+        <screen>
+&lt;add-on&gt;
+ &lt;add_on_products config:type=&quot;list&quot;&gt;
+   &lt;listentry&gt;
+     &lt;media_url&gt;http://192.168.66.6/SLES10/CD1/updates&lt;/media_url&gt;
+     &lt;product&gt;SuSE-Linux-Updates&lt;/product&gt;
+     &lt;product_dir&gt;/&lt;/product_dir&gt;
+   &lt;/listentry&gt;
+ &lt;/add_on_products&gt;
+&lt;/add-on&gt;
+        </screen>
+        With that entry in the autoyast profile, the <emphasis>add_on_products</emphasis> file is not necessary.
+        </para>
+        <para>
         YaST checks the signatures of files on the installation source now. If a <emphasis>content</emphasis> file is
         not signed, during a manual installation YaST asks the user what to do. During an autoinstallation, the
         installation source gets rejected silently.
