@@ -50,7 +50,10 @@ Select one of the following <b>base</b> selections and click <i>Detailed<i> to a
 more <b>add-on</b> selections and packages.
 </p>
 ");
-        Pkg::TargetFinish ();
+        //Pkg::TargetFinish ();
+        Pkg::CallbackAcceptFileWithoutChecksum("AutoInstall::callbackTrue");
+        Pkg::CallbackAcceptUnsignedFile("AutoInstall::callbackTrue");
+        Pkg::TargetInit("/", false);
         // AutoinstSoftware::pmInit();
 
         Pkg::SourceStartManager(true);
