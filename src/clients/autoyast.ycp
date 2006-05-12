@@ -17,7 +17,7 @@
     import "Label";
     import "Sequencer";
     import "Popup";
-
+    import "AddOnProduct";
 
     include "autoinstall/dialogs.ycp";
     include "autoinstall/conftree.ycp";
@@ -33,5 +33,6 @@
     }
 
     symbol ret = (symbol)AutoSequence ();
+    AddOnProduct::CleanModeConfigSources();
     return ret;
 }
