@@ -145,6 +145,11 @@
                     } else {
                         new_pe["partition_id"] = pe["fsid"]:131;
                     }
+                    // PPC boot (/boot is just an indicator)
+                    if( pe["fsid"]:0 == 65 ) {
+                        new_pe["mount"] = "/boot";
+                        new_pe["format"] = false;
+                    }
                 }
                 if( haskey(pe,"type") && pe["type"]:`x == `primary ) {
                     new_pe["partition_type"] = "primary"; // can we always copy that element?
