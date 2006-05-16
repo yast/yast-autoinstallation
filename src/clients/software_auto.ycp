@@ -187,7 +187,9 @@ more <b>add-on</b> selections and packages.
                     else if ( ret == `details )
                     {
                         ret = `again;
-
+                        Pkg::PkgReset();
+                        list base_selections = Pkg::GetSelections (`installed, "base");
+                        Pkg::ClearSelection(base_selections[0]:"");
                         Pkg::SetSelection( base_selection );
 
                         foreach(string addon, AutoinstSoftware::addons, ``{
@@ -224,7 +226,7 @@ more <b>add-on</b> selections and packages.
         {
             y2milestone("available patterns %1",Pkg::ResolvableProperties ("", `pattern, "") );
             foreach( map<string,any> p, Pkg::ResolvableProperties ("", `pattern, ""), ``{
-                if( p["status"]:`nothing == `selected )
+                if( p["status"]:`nothing == `selected || p["status"]:`nothing == `installed )
                    patadd = add(patadd, p["name"]:"");
             });
             seladd =  Pkg::GetSelections(`selected, "");
