@@ -1,0 +1,338 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>The Boot loader</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Configuration and Installation Options"
+HREF="configuration.html"><LINK
+REL="PREVIOUS"
+TITLE="
+	Reporting
+      "
+HREF="createprofile.reporting.html"><LINK
+REL="NEXT"
+TITLE="
+	Partitioning
+      "
+HREF="createprofile.partitioning.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="createprofile.reporting.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 4. Configuration and Installation Options</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="createprofile.partitioning.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="CreateProfile.Bootloader"
+>4.3. The Boot loader</A
+></H1
+><DIV
+CLASS="warning"
+><P
+></P
+><TABLE
+CLASS="warning"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="./stylesheet-images/warning.gif"
+HSPACE="5"
+ALT="Warning"></TD
+><TH
+ALIGN="LEFT"
+VALIGN="CENTER"
+><B
+>Bootloader Changes</B
+></TH
+></TR
+><TR
+><TD
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>Since SuSE Linux 8.2, the bootloader configuration has undergone a
+                major rework and now offers more features and configuration
+                possibilities.
+            </P
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;            It is now possible to specify which bootloader needs to be
+            installed and it  is possible to specify sections and
+            more bootloader options.
+        </P
+><P
+>&#13;            If the bootloader resource is not configured, the system will propose
+            best configuration depending on the partitioning plan. In some cases
+            you must  decide  where to to install the bootloader (the Master Boot Record or the first sector of
+            the<TT
+CLASS="filename"
+> /boot</TT
+> partition) and must specify additional options for the bootloader to be installed correctly.
+        </P
+><DIV
+CLASS="note"
+><P
+></P
+><TABLE
+CLASS="note"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="./stylesheet-images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TH
+ALIGN="LEFT"
+VALIGN="CENTER"
+><B
+>Boot Partition on IA64 Systems</B
+></TH
+></TR
+><TR
+><TD
+>&nbsp;</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>The boot partition on <I
+CLASS="emphasis"
+>IA64</I
+> is
+                <I
+CLASS="emphasis"
+>/boot/efi</I
+> and is set to this value if only
+                <I
+CLASS="emphasis"
+>/boot</I
+> is configured in the control
+                file.
+            </P
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;            For example, install the bootloader on the Linux root partition, add the value <I
+CLASS="emphasis"
+>root</I
+>
+            to the <I
+CLASS="emphasis"
+>location</I
+> property.
+        </P
+><P
+>&#13;            You can pass  special parameters to the kernel to be used when the
+            system boots, enter these parameters using the <I
+CLASS="emphasis"
+>kernel_parameters</I
+> property. 
+        </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN347"
+></A
+><P
+><B
+>Example 4-3. Bootloader configuration</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+    &#60;install&#62;
+...
+         &#60;bootloader&#62;             
+             &#60;location&#62;mbr&#60;/location&#62;
+             &#60;loader_type&#62;grub&#60;/loader_type&#62;
+             &#60;loader_device&#62;/dev/hda&#60;/loader_device&#62;
+             &#60;kernel_parameters&#62;foo=bar bar=foo&#60;/kernel_parameters&#62;
+             &#60;initrd_modules  config:type="list" &#62;
+                 &#60;module_entry&#62;
+                     &#60;module&#62;aic7xxx&#60;/module&#62;
+                     &#60;module_args/&#62;
+                 &#60;/module_entry&#62;
+             &#60;/initrd_modules&#62;
+         &#60;/bootloader&#62;
+...
+    &#60;/install&#62;
+
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="tip"
+><P
+></P
+><TABLE
+CLASS="tip"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="./stylesheet-images/tip.gif"
+HSPACE="5"
+ALT="Tip"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>The bootloader configuration interface offers more
+	  configuration options than one might need for a regular setup. The
+	  options described in the example above should be sufficient for most
+	  cases.
+	</P
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="createprofile.reporting.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="createprofile.partitioning.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Reporting</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="configuration.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Partitioning</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

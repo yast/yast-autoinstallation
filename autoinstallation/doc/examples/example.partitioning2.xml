@@ -1,0 +1,32 @@
+<partitioning  config:type="list">
+  <drive>
+    <device>/dev/hda</device>            
+    <partitions config:type="list">
+      <partition>
+	<mount>/</mount>
+	<size>5gb</size>
+      </partition>
+      <partition>
+	<mount>swap</mount>
+	<size>1gb</size>
+      </partition>
+    </partitions>
+  </drive>
+  <drive>
+    <device>/dev/hdb</device>
+    <use>all</use>
+    <partitions config:type="list">
+      <partition>
+	<filesystem  config:type="symbol">reiser</filesystem>
+	<mount>/data1</mount>
+	<size>15gb</size>	
+      </partition>
+      <partition>
+	<filesystem  config:type="symbol">jfs</filesystem>
+	<mount>/data2</mount>
+	<size>auto</size>	
+      </partition>
+    </partitions>
+    <use>free</use>
+  </drive>
+</partitioning>

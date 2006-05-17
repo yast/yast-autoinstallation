@@ -1,0 +1,173 @@
+/**
+ * File:	clients/autoinst_post.ycp
+ * Package:	Auto-installation
+ * Author:      Anas Nashif <nashif@suse.de>
+ * Summary:	This module finishes auto-installation and configures
+ *		the system as described in the profile file.
+ *
+ * $Id$
+ */
+
+{
+    textdomain "autoinst";
+    import "Profile";
+    import "AutoInstall";
+    import "AutoinstGeneral";
+    import "Call";
+    import "Y2ModuleConfig";
+    import "AutoinstSoftware";
+    import "AutoinstScripts";
+    import "Report";
+    import "Progress";
+    include "autoinstall/ask.ycp";
+
+    y2milestone("Profile=%1", Profile::current );
+
+    define void Step (string s) {
+        Progress::NextStep();
+        Progress::Title(sformat(_("Checking for packages required for %1..."), s));
+        return;
+    }
+
+    list<string> packages = [];
+    string resource = "";
+    string module_auto = "";
+
+    if (Profile::current["report"]:$[] != $[])
+        Report::Import(Profile::current["report"]:$[]);
+
+
+    string help_text = _("<p>
+Please wait while the system is prepared for autoinstallation.</p>
+");
+    list<string> progress_stages =
+	[
+	 _("Install required packages"),
+	 ];
+
+    integer steps = size(filter(string p, map d, Y2ModuleConfig::ModuleMap, ``( 
+	(d["X-SuSE-YaST-AutoInst"]:"" == "all" || 
+         d["X-SuSE-YaST-AutoInst"]:"" == "write") &&
+        haskey(Profile::current, d["X-SuSE-YaST-AutoInstResource"]:p)  )));
+
+
+    steps = steps + 3;
+
+    Progress::New(
+		  _("Preparing System for Automatic Installation"),
+		  "",     // progress_title
+		  steps ,	// progress bar length
+		  progress_stages,
+		  [],
+		  help_text );
+    Progress::NextStage();
+    Progress::Title(_("Checking for required packages..."));
+
+    askDialog();
+    /* FIXME: too late here, even though it would be the better place */
+    /*
+    if (Profile::current["general"]:$[] != $[])
+        AutoinstGeneral::Import(Profile::current["general"]:$[]);
+    AutoinstGeneral::SetSignatureHandling();
+    */
+    if( haskey( Profile::current, "add-on" ) ) {
+        Call::Function("add-on_auto", ["Import", Profile::current["add-on"]:$[]] );
+        Call::Function("add-on_auto", ["Write"]);
+    }
+
+    y2milestone("Steps: %1", steps );
+
+    foreach(string p, map d, Y2ModuleConfig::ModuleMap,
+	    ``{
+
+	if (d["X-SuSE-YaST-AutoInst"]:"" == "all"
+            || d["X-SuSE-YaST-AutoInst"]:"" == "write")
+	{
+	    if (haskey(d,"X-SuSE-YaST-AutoInstResource") &&
+                d["X-SuSE-YaST-AutoInstResource"]:"" != "" )
+		resource = d["X-SuSE-YaST-AutoInstResource"]:"unknown";
+	    else
+		resource = p;
+
+	    y2milestone("current resource: %1", resource);
+
+	    // determine name of client, if not use default name
+	    if (haskey(d,"X-SuSE-YaST-AutoInstClient"))
+		module_auto = d["X-SuSE-YaST-AutoInstClient"]:"none";
+	    else
+		module_auto = sformat("%1_auto", p);
+
+	    map result = $[];
+
+	    if (haskey(Profile::current , resource) )
+	    {
+		y2milestone("Importing configuration for %1", p);
+		string tomerge = d["X-SuSE-YaST-AutoInstMerge"]:"";
+		string tomergetypes = d["X-SuSE-YaST-AutoInstMergeTypes"]:"";
+		list MergeTypes = splitstring(tomergetypes, ",");
+
+		if (  size(tomerge) > 0 )
+		{
+		    integer i = 0;
+		    foreach( string res, splitstring(tomerge, ",") ,
+			     ``{
+			if ( MergeTypes[i]:"map" == "map")
+			    result[res] = Profile::current[res]:$[];
+			else
+			    result[res] = Profile::current[res]:[];
+			i = i + 1;
+		    });
+		    y2milestone("Calling auto client with: %1", result);
+		    if (size(result) > 0 )
+                    {
+                        Step(p);
+		        Call::Function(module_auto, ["Import", eval(result) ]);
+	                map out = (map)Call::Function(module_auto, ["Packages" ]);
+	                packages = (list<string>) union(packages, out["install"]:[]);
+                    }
+		}
+		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
+		{
+		    y2milestone("Calling auto client with: %1",  eval(Profile::current[resource]:$[]));
+		    if (size(Profile::current[resource]:$[]) > 0 )
+                    {
+                        Step(p);
+		        Call::Function(module_auto, ["Import", eval(Profile::current[resource]:$[])   ]);
+	                map out = (map)Call::Function(module_auto, ["Packages" ]);
+	                packages = (list<string>) union(packages, out["install"]:[]);
+                    }
+		}
+		else
+		{
+		    if (size(Profile::current[resource]:[]) > 0 )
+                    {
+                        Step(p);
+		        Call::Function(module_auto, ["Import",  eval(Profile::current[resource]:[]) ]);
+	                map out = (map)Call::Function(module_auto, ["Packages" ]);
+	                packages = (list<string>) union(packages, out["install"]:[]);
+                    }
+		}
+            }
+        }
+    });
+
+    // Add all found packages
+    Progress::NextStep();
+    Progress::Title(_("Adding found packages..."));
+    AutoinstSoftware::addPostPackages(packages);
+
+    // Run early network scripts
+    Progress::NextStep();
+    Progress::Title(_("Running scripts..."));
+    AutoinstScripts::Import(Profile::current["scripts"]:$[]);
+    AutoinstScripts::Write("post-scripts", true);
+
+
+    // Finish
+    Progress::NextStage();
+    Progress::Finish();
+
+    y2milestone("Finished required package collection");
+
+    return `auto;
+}

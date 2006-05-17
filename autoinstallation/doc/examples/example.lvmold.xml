@@ -1,0 +1,41 @@
+
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/sda</device>              
+      <partitions config:type="list">
+	<partition>	
+	  <lvm_group>system</lvm_group>
+	  <partition_type>primary</partition_type>
+	  <size>max</size>
+	</partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
+
+  <lvm config:type="list">
+    <lvm_group>
+      <lvm_name>system</lvm_name>     
+      <logical_volumes config:type="list">
+        <lv>
+	  <lv_fs>reiser</lv_fs>
+	  <lv_mount>/usr</lv_mount>
+	  <lv_name>usrlv</lv_name>
+	  <lv_size>500mb</lv_size>	  	  
+	</lv>
+	<lv> 
+	  <lv_fs>reiser</lv_fs>
+	  <lv_mount>/opt</lv_mount>
+	  <lv_name>optlv</lv_name>
+	  <lv_size>1500mb</lv_size>	 	  
+	</lv>
+	<lv> 
+	  <lv_fs>reiser</lv_fs>
+	  <lv_mount>/var</lv_mount>
+	  <lv_name>varlv</lv_name>
+	  <lv_size>200mb</lv_size>	 	  
+	</lv>
+      </logical_volumes>
+      <pesize>4M</pesize>
+    </lvm_group>
+  </lvm>

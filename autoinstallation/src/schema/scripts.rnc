@@ -1,0 +1,66 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace config = "http://www.suse.com/1.0/configns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+scripts =
+element scripts { 
+  chroot-scripts? &
+  post-scripts? &
+  pre-scripts? &
+  init-scripts?
+}
+
+chroot-scripts =
+element chroot-scripts {
+    LIST,
+    autoinstall-chroot-script+
+}
+post-scripts =
+element post-scripts {
+    LIST,
+    autoinstall-script+
+}
+pre-scripts =
+element pre-scripts {
+    LIST,
+    autoinstall-script+
+}
+init-scripts =
+element init-scripts {
+    LIST,
+    autoinstall-init-script+
+}
+
+# script is overloaded
+autoinstall-script = element script {
+  filename? &
+  interpreter? & 
+  element location { text }? &
+  source? &
+  debug? &
+  feedback?
+}
+
+autoinstall-init-script = element script {
+  filename? &
+  interpreter? & 
+  element location { text }? &
+  source?
+}
+
+autoinstall-chroot-script = element script {
+  chrooted? &
+  filename? &
+  interpreter? &
+  element location { text }? &
+  source? &
+  debug? &
+  feedback?
+}
+
+chrooted = element chrooted { BOOLEAN }
+debug = element debug { BOOLEAN }
+feedback = element feedback { BOOLEAN }
+filename = element filename { text }
+interpreter = element interpreter { text }
+source = element source { text }

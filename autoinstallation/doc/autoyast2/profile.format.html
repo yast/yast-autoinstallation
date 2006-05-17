@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;      Format
+    </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="The Control File"
+HREF="profile.html"><LINK
+REL="PREVIOUS"
+TITLE="The Control File"
+HREF="profile.html"><LINK
+REL="NEXT"
+TITLE="
+      Structure
+    "
+HREF="profile.structure.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="profile.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 2. The Control File</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="profile.structure.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="Profile.Format"
+>2.2. Format</A
+></H1
+><P
+>&#13;      The XML configuration format provides a consistent file structure, which is
+      easier to learn and remember when attempting to configure a new system.     
+    </P
+><P
+>&#13;      Using XML, you can eliminate (nearly) all of the configuration
+      file parsing and error handling - an external  XML parser can do that instead
+      - (especially if it is a validating parser). To make sure the control file is
+      well-formatted and that the syntax is valid, you can run the control file
+      through a validating parser before it is actually used for automatic
+      installation. This is especially required if you prefer to edit the
+      profile manually.
+    </P
+><P
+>&#13;      The following example shows a control file in XML format:
+    </P
+><DIV
+CLASS="example"
+><A
+NAME="AEN98"
+></A
+><P
+><B
+>Example 2-1. XML Control File (Profile)</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;?xml version="1.0"?&#62;
+&#60;!DOCTYPE profile SYSTEM
+ "/usr/share/autoinstall/dtd/profile.dtd"&#62;
+ &#60;profile
+ xmlns="http://www.suse.com/1.0/yast2ns"
+ xmlns:cfg="http://www.suse.com/1.0/configns"&#62;
+ &#60;install&#62;
+   &#60;partitioning  config:type="list"&#62;
+      &#60;drive&#62;
+         &#60;device&#62;/dev/hda&#60;/device&#62;
+         &#60;partitions config:type="list"&#62;
+           &#60;partition&#62;
+              &#60;filesystem config:type="symbol"&#62;ext2&#60;/filesystem&#62;
+              &#60;size&#62;520Mb&#60;/size&#62;
+              &#60;mount&#62;/&#60;/mount&#62;
+           &#60;/partition&#62;
+           &#60;partition&#62;
+              &#60;filesystem config:type="symbol"&#62;reiser&#60;/filesystem&#62;
+              &#60;size&#62;1200Mb&#60;/size&#62;
+              &#60;mount&#62;/data&#60;/mount&#62;
+           &#60;/partition&#62;
+         &#60;/partitions&#62;
+      &#60;/drive&#62;
+   &#60;/partitioning&#62;
+ &#60;/install&#62;
+ &#60;configure&#62;  
+   &#60;scripts&#62;
+    &#60;pre-scripts&#62;
+     &#60;script&#62; 
+        &#60;interpreter&#62;shell&#60;/interpreter&#62;
+	&#60;filename&#62;start.sh&#60;/filename&#62;
+         &#60;source&#62;
+
+            &#60;![CDATA[
+#!/bin/sh 
+echo "Starting installation" 
+exit 0
+
+]]&#62;
+
+         &#60;/source&#62;
+     &#60;/script&#62;  
+    &#60;/pre-scripts&#62;
+   &#60;/scripts&#62;
+ &#60;/configure&#62;
+&#60;/profile&#62;
+
+
+      </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="profile.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="profile.structure.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>The Control File</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="profile.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Structure</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

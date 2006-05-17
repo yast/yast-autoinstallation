@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>&#13;	Users
+      </TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="AutoYaST"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Configuration and Installation Options"
+HREF="configuration.html"><LINK
+REL="PREVIOUS"
+TITLE="
+	Monitor and X11 Configuration
+      "
+HREF="configuration.x11.html"><LINK
+REL="NEXT"
+TITLE="Custom user scripts"
+HREF="createprofile.scripts.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>AutoYaST: Automatic Linux Installation and Configuration with
+      YaST2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="configuration.x11.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 4. Configuration and Installation Options</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="createprofile.scripts.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="section"
+><H1
+CLASS="section"
+><A
+NAME="Configuration.Security.users"
+>4.10. Users</A
+></H1
+><P
+>&#13;	The root user and at least one normal user can be added during install
+	using data supplied in the control file. User data and passwords
+	(encrypted or in clear text) are part of the <I
+CLASS="emphasis"
+>configure</I
+> resource in the
+	control file.
+      </P
+><P
+>&#13;	At least the root user should be configured during
+	auto-installation, which will insure you will be able to login after
+	installation is finished and of course it will insure nobody else can login
+	into the system (in case the password is not set).
+      </P
+><P
+>&#13;The two users in the following example  are added during system
+	configuration.</P
+><DIV
+CLASS="example"
+><A
+NAME="AEN801"
+></A
+><P
+><B
+>Example 4-34. 
+	  User configuration
+	</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="screen"
+>&#13;
+&#60;configure&#62;
+...
+   &#60;users config:type="list"&#62;
+      &#60;user&#62;
+         &#60;username&#62;root&#60;/username&#62;
+         &#60;user_password&#62;password&#60;/user_password&#62;
+         &#60;encrypted config:type="boolean"&#62;true&#60;/encrypted&#62;
+         &#60;forename/&#62;
+         &#60;surname/&#62;
+      &#60;/user&#62;
+      &#60;user&#62;
+         &#60;username&#62;nashif&#60;/username&#62;
+         &#60;user_password&#62;password&#60;/user_password&#62;
+         &#60;encrypted config:type="boolean"&#62;true&#60;/encrypted&#62;
+         &#60;forename&#62;Anas&#60;/forename&#62;
+         &#60;surname&#62;Nashif&#60;/surname&#62;	  	
+      &#60;/user&#62;
+   &#60;/users&#62;
+...
+&#60;/configure&#62;
+
+	</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>&#13;	The last example shows the minimal information required for adding
+	users. More options are available for a more customized user account
+	management. The data in <TT
+CLASS="filename"
+>/etc/default/useradd</TT
+> is
+	used to determine the home directory of the user to be created in
+	addition to other parameters. 
+      </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="configuration.x11.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="createprofile.scripts.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Monitor and X11 Configuration</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="configuration.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Custom user scripts</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,23 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+runlevel = element runlevel { \default?, services? }
+service =
+  element service {
+    BOOLEAN,
+    (text
+     | service_name
+     | service_status
+     | service_start
+     | service_stop)*
+  }
+service_name = element service_name { text }
+service_status = element service_status { text }
+service_start = element service_start { text }
+service_stop = element service_stop { text }
+services =
+  element services {
+    LIST,
+    service+
+  }

@@ -1,0 +1,21 @@
+
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <configure>
+    <ntp-client>
+      <configure_dhcp config:type="boolean">false</configure_dhcp>
+      <peers config:type="list">
+        <peer>
+          <address>ntp1.example.com</address>
+          <initial_sync config:type="boolean">true</initial_sync>
+          <options></options>
+          <type>server</type>
+        </peer>
+      </peers>
+      <start_at_boot config:type="boolean">true</start_at_boot>
+      <start_in_chroot config:type="boolean">true</start_in_chroot>
+    </ntp-client>
+  </configure>
+</profile>
+

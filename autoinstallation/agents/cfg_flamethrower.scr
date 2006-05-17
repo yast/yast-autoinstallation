@@ -1,0 +1,34 @@
+#
+
+.etc.flamethrower
+
+`ag_ini(
+  `IniAgent("/etc/flamethrower/flamethrower.conf",
+    $[
+      "options" : [ "global_values",
+                    "line_can_continue"
+                ],
+      "comments": [ "^[ \t]*#.*$", "#.*", "^[ \t]*$", "^[ \t]*;[^;]+.*$" ],
+      "sections" : [
+        $[
+        "begin" : [ "^[ \t]*\\[[ \t]*(.*[^ \t])[ \t]*\\][ \t]*", "[%s]" ],
+        ],
+        $[
+	// this is a special type for commenting out the values
+        "begin" : [ "^[ \t]*;;[ \t]*\\[[ \t]*(.*[^ \t])[ \t]*\\][ \t]*", ";; [%s]" ],
+      ],
+      ],
+      // we need to exclude ; because of the second matching rule
+      "params" : [
+        $[
+        "match" : [ "^[ \t]*([^=;]*[^ \t;=])[ \t]*=[ \t]*(.*[^ \t]|)[ \t]*$" , "   %s = %s"],
+      ],
+        $[
+	// this is a special type for commenting out the values
+        "match" : [ "^[ \t]*;;[ \t]*([^=]*[^ \t=])[ \t]*=[ \t]*(.*[^ \t]|)[ \t]*$" , ";;   %s = %s"],
+      ],
+    ],
+    ]
+  )
+)
+

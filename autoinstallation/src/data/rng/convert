@@ -1,0 +1,9 @@
+#! /bin/sh -x
+# take the current dtd and convert it to rnc (or rny)
+# before handing off to individual maintainers
+
+TRANG=trang
+#TRANG=trangj
+
+$TRANG -i inline-attlist -i xmlns=http://www.suse.com/1.0/yast2ns -i xmlns:config=http://www.suse.com/1.0/configns ../dtd/profile.dtd profile.rnc
+perl -i.pre simplify-types *.rnc

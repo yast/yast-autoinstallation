@@ -1,0 +1,71 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+
+console_shutdown = element console_shutdown { text }
+cwd_in_root_path = element cwd_in_root_path { text }
+cwd_in_user_path = element cwd_in_user_path { text }
+cracklib_dict_path = element cracklib_dict_path { text }
+displaymanager_remote_access =
+  element displaymanager_remote_access { text }
+enable_sysrq = element enable_sysrq { text }
+encryption = element encryption { text }
+passwd_encryption = element passwd_encryption { text }
+fail_delay = element fail_delay { text }
+faillog_enab = element faillog_enab { text }
+faillog_auth = element faillog_auth { text }
+gid_max = element gid_max { text }
+gid_min = element gid_min { text }
+kdm_shutdown = element kdm_shutdown { text }
+lastlog_enab = element lastlog_enab { text }
+obscure_checks_enab = element obscure_checks_enab { text }
+pass_max_days = element pass_max_days { text }
+pass_max_len = element pass_max_len { text }
+pass_min_days = element pass_min_days { text }
+pass_min_len = element pass_min_len { text }
+pass_warn_age = element pass_warn_age { text }
+passwd_use_cracklib = element passwd_use_cracklib { text }
+permission_security = element permission_security { text }
+run_updatedb_as = element run_updatedb_as { text }
+uid_max = element uid_max { text }
+uid_min = element uid_min { text }
+system_gid_max = element system_gid_max { text }
+system_gid_min = element system_gid_min { text }
+system_uid_max = element system_uid_max { text }
+system_uid_min = element system_uid_min { text }
+useradd_cmd = element useradd_cmd { text }
+userdel_postcmd = element userdel_postcmd { text }
+userdel_precmd = element userdel_precmd { text }
+group_encryption = element group_encryption { text }
+y2_security =
+  console_shutdown
+  | cracklib_dict_path
+  | cwd_in_root_path
+  | cwd_in_user_path
+  | displaymanager_remote_access
+  | enable_sysrq
+  | passwd_encryption
+  | fail_delay
+  | faillog_enab
+  | gid_max
+  | gid_min
+  | kdm_shutdown
+  | lastlog_enab
+  | obscure_checks_enab
+  | pass_max_days
+  | pass_max_len
+  | pass_min_days
+  | pass_min_len
+  | pass_warn_age
+  | passwd_use_cracklib
+  | permission_security
+  | run_updatedb_as
+  | system_gid_max
+  | system_gid_min
+  | system_uid_max
+  | system_uid_min
+  | uid_max
+  | uid_min
+  | useradd_cmd
+  | userdel_postcmd
+  | userdel_precmd
+  | group_encryption
+security = element security { y2_security* }

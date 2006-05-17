@@ -1,0 +1,38 @@
+/**
+ * File:	clients/autoyast.ycp
+ * Summary:	Main file for client call
+ * Authors:	Anas Nashif <nashif@suse.de>
+ *
+ * $Id$
+ */
+{
+    textdomain "autoinst";
+    import "Wizard";
+    import "Mode";
+    Mode::SetMode("autoinst_config");
+
+    import "Profile";
+    import "AutoinstConfig";
+    import "Y2ModuleConfig";
+    import "Label";
+    import "Sequencer";
+    import "Popup";
+    import "AddOnProduct";
+
+    include "autoinstall/dialogs.ycp";
+    include "autoinstall/conftree.ycp";
+    include "autoinstall/wizards.ycp";
+
+
+    if (size(Y2ModuleConfig::GroupMap) == 0)
+    {
+        Wizard::CreateDialog();
+        Popup::Error(_("Error while reading configuration data."));
+        Wizard::CloseDialog();
+        return `abort;
+    }
+
+    symbol ret = (symbol)AutoSequence ();
+    AddOnProduct::CleanModeConfigSources();
+    return ret;
+}

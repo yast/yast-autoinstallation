@@ -1,0 +1,81 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+optiontags =
+  job-sheets
+  | enable
+  | index
+  | option
+  | ac97_clock
+  | ac97_quirk
+  | joystick
+  | isapnp
+usertags =
+  encrypted
+  | user_password
+  | username
+  | fullname
+  | gid
+  | grouplist
+  | home
+  | password_settings
+  | shell
+  | uid
+lvmtags = lvm_name | pesize | logical_volumes
+grouptags = gid | group_password | groupname | userlist
+# This is to solve conflict between diffeent resources having same tag
+options =
+  element options {
+    attribute config:type { text }?,
+    (text | optiontags)*
+  }
+user = element user { (text | usertags)* }
+lvm_group = element lvm_group { (text | lvmtags)* }
+group = element group { (text | grouptags)* }
+
+tftp-server = element tftp-server { start_tftpd, tftp_directory }
+start_tftpd =
+  element start_tftpd { BOOLEAN }
+tftp_directory = element tftp_directory { text }
+
+proxy =
+  element proxy {
+    enabled, ftp_proxy, http_proxy, no_proxy, proxy_password, proxy_user
+  }
+enabled =
+  element enabled { BOOLEAN }
+ftp_proxy = element ftp_proxy { text }
+http_proxy = element http_proxy { text }
+no_proxy = element no_proxy { text }
+proxy_password = element proxy_password { text }
+proxy_user = element proxy_user { text }
+
+lvm2 |= notAllowed
+nisplus |= notAllowed
+partitioning_advanced |= notAllowed
+vendor_id |= notAllowed
+
+# These elements are not referenced anywhere,
+# which is probably a bug:
+#  cups-state
+#  | snd_index
+#  | encryption
+#  | profile
+#  | unknown-state
+#  | keep_partition_id
+#  | printers
+#  | kernel_parameters
+#  | start_inetd
+#  | lprng-state
+#  | keep_partition_fsys
+#  | forename
+#  | ownppd
+#  | device_ieee
+#  | prefer_remove
+#  | config
+#  | keep_partition_nr
+#  | create_remote_queue
+#  | faillog_auth
+#  | snd_enable
+#  | new
