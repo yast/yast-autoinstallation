@@ -374,16 +374,21 @@
             // calculating the "max" for logical volume
             map<string, map> tmp_tm = Storage::GetTargetMap();
             integer freeSpace = 0;
+            integer buffer = 0;
             if( vmType == `CT_LVM ) {
                 freeSpace = tmp_tm[device,"size_k"]:0;
+                buffer = tmp_tm[device,"cyl_size"]:0;
             } else if( vmType == `CT_EVMS ) {
                 freeSpace = tmp_tm[ "/dev/evms/"+lvm_string+"/"+vgname, "size_k"]:0;
+                buffer =    tmp_tm[ "/dev/evms/"+lvm_string+"/"+vgname, "cyl_size"]:0;
             }
+            buffer = (buffer * 2) / 1024;
 
             foreach(map lv,  volume_group["partitions"]:[], ``{
                 freeSpace = freeSpace - lv["size_k"]:0;
                 y2milestone("freeSpace = %1",freeSpace);
             });
+            freeSpace = freeSpace - buffer; // that's a buffer for rounding errors with cylinder boundaries
 
             foreach(map lv,  volume_group["partitions"]:[], ``{
                 if( lv["size_k"]:0 == 0 && freeSpace > 0 ) {
