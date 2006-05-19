@@ -180,6 +180,11 @@
         //if (!current["x11", "configure_x11"]:false)
         //    ProductControl::DisabledModules=add(ProductControl::DisabledModules, "x11");
 
+        // raise the network immediately after configuring it
+        if( haskey(current, "networking") && ! haskey(current["networking"]:$[], "start_immediately") ) {
+            current["networking","start_immediately"] = true;
+            y2milestone("start_immediately set to true");
+        }
         storageLibCompat(); // compatibility to new storage library (SL 10.0)
         generalCompat();    // compatibility to new language,keyboard and timezone (SL10.1)
 
