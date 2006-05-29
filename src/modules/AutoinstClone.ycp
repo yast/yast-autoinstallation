@@ -113,7 +113,7 @@
         map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
         StorageMap=filter(string d, map p, StorageMap, ``( d != "/dev/evms" && size(p["partitions"]:[]) > 0));
-        y2debug("Storagemap %1", StorageMap);
+        y2milestone("Storagemap %1", StorageMap);
         list evms_vgs = [];
 
         list drives = maplist(string k, map v, StorageMap, ``{
