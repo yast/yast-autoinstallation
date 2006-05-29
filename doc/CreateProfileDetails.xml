@@ -156,11 +156,19 @@
       more bootloader options.
     </para>
     <para>
-      If the bootloader resource is not configured, the system will propose
-      best configuration depending on the partitioning scheme. In some cases
-      you must  decide  where to install the bootloader (the Master Boot Record or the first sector of
-      the <filename>/boot</filename> partition) and must specify additional
-      options for the bootloader to be installed correctly.
+      If the bootloader resource is not configured at all, the system will
+      propose a configuration based on the partitioning scheme. If no global
+      variables are configured, the system will propose a configuration for the
+      global variables based on the partitioning scheme. Similarly, if no
+      sections are configured, the system will propose a section configuration.
+      No changes or additions will be made to existing global variables or
+      existing sections.
+    </para>
+    <para>
+      In some cases you must  decide  where to install the bootloader (the
+      Master Boot Record or the first sector of the <filename>/boot</filename>
+      partition) and must specify additional options for the bootloader to be
+      installed correctly.
     </para>
     <note>
       <title>Boot Partition on IA64 Systems</title>
