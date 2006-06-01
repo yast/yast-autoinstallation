@@ -356,6 +356,8 @@ $Id$
             pb["filesystem_id"] = Partitions::FsidBoot();
             pb["id"] = Partitions::FsidBoot(); // FIXME: might be useless
             pb["auto_added"] = true;
+            pb["type"] = `primary;
+            pb["nr"] = 1;
             //pb["max_cyl"] = Partitions::BootCyl();
             tc["partitions"] = add( tc["partitions"]:[], pb );
             y2milestone( "boot added automagically pb %1", pb );
