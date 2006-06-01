@@ -352,7 +352,8 @@ $Id$
             pb["size"] = Partitions::MinimalNeededBootsize();
             pb["fsys"] = Partitions::DefaultBootFs();
             pb["filesystem"] = Partitions::DefaultBootFs();
-            pb["id"] = Partitions::FsidBoot();
+            pb["fsid"] = Partitions::FsidBoot();
+            pb["id"] = Partitions::FsidBoot(); // FIXME: might be useless
             pb["auto_added"] = true;
             //pb["max_cyl"] = Partitions::BootCyl();
             tc["partitions"] = add( tc["partitions"]:[], pb );
