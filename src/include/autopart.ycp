@@ -339,7 +339,7 @@ $Id$
     define map try_add_boot( map conf, map disk ) {
         boolean boot = 
             size(filter( map e, conf["partitions"]:[], 
-                         ``(e["mount"]:""==Partitions::BootMount()))) > 0;
+                         ``(e["mount"]:""==Partitions::BootMount() || (e["partition_id"]:0 == Partitions::FsidBoot() && Partitions::FsidBoot() != 131 ) ))) > 0;
         boolean root = size(filter( map e, conf["partitions"]:[], 
                                     ``(e["mount"]:""=="/"))) > 0;
         map tc = (map) eval(conf);
@@ -348,9 +348,11 @@ $Id$
              Arch::ia64 () || Arch::ppc () || Arch::sparc ()) )
         {
             map pb = $[];
-            pb["mount"] = Partitions::BootMount();
+            if( ! Arch::ppc () ) {
+                pb["mount"] = Partitions::BootMount();
+                pb["fsys"] = Partitions::DefaultBootFs();
+            }
             pb["size"] = Partitions::MinimalNeededBootsize();
-            pb["fsys"] = Partitions::DefaultBootFs();
             pb["filesystem"] = Partitions::DefaultBootFs();
             pb["fsid"] = Partitions::FsidBoot(); // FIXME: might be useless
             pb["filesystem_id"] = Partitions::FsidBoot();
