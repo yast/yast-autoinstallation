@@ -188,6 +188,10 @@
             Pkg::CallbackAcceptUnknownGpgKey( 
                 signature_handling["accept_unknown_gpg_key"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
             );
+        if( haskey(signature_handling, "import_gpg_key") )
+            Pkg::CallbackImportGpgKey( 
+                signature_handling["import_gpg_key"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
 
     }
 
