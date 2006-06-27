@@ -110,7 +110,7 @@
 
         list<string> vgs = [];
         foreach( map d, partitioning, ``{
-            if( d["is_lvm_vg"]:false == true || d["is_evms_vg"]:false == true ) {
+            if( d["type"]:`x == `CT_LVM || d["type"]:`x == `CT_EVMS ) {
                 vgs = add(vgs, substring( d["device"]:"", 5 ) );
             }
         });
@@ -282,7 +282,7 @@ For partitions that are part of a volume group (not the logical partitions insid
         } else {
             UI::ChangeWidget(`id(`vg), `Enabled, false);
         }
-        if( this_drive["is_lvm_vg"]:false == false && this_drive["is_evms_vg"]:false == false ) {
+        if( this_drive["type"]:`x != `CT_LVM && this_drive["type"]:`x != `CT_EVMS ) {
             UI::ChangeWidget(`id(`lv_name), `Enabled, false);
         }
 
@@ -521,9 +521,9 @@ due to use of the \"max\" option.
                     string vg = (string)UI::QueryWidget(`id(`vg), `Value);
                     list<map> partitioning =  AutoinstStorage::AutoPartPlan;
                     foreach( map d, partitioning, ``{
-                        if( d["is_lvm_vg"]:false == true && d["device"]:"" == "/dev/"+vg ) {
+                        if( d["type"]:`x == `CT_LVM && d["device"]:"" == "/dev/"+vg ) {
                             return_value = add( return_value, "lvm_group", vg );
-                        } else if( d["is_evms_vg"]:false == true && d["device"]:"" == "/dev/"+vg ) {
+                        } else if( d["type"]:`x == `CT_EVMS && d["device"]:"" == "/dev/"+vg ) {
                             return_value = add( return_value, "evms_group", vg );
                         }
                     });
@@ -607,15 +607,15 @@ due to use of the \"max\" option.
         boolean is_evms_vg = false;
         boolean is_lvm_vg  = false;
         foreach( map d, drives, ``{
-            if( d["is_evms_group"]:false == true )
+            if( d["type"]:`x == `CT_EVMS )
                 configured_vgs = add(configured_vgs, d["device"]:"");
-            else if( d["is_lvm_group"]:false == true )
+            else if( d["type"]:`x == `CT_LVM )
                 configured_vgs = add(configured_vgs, d["device"]:"");
             if( d["device"]:"" == vg_name ) {
                 current_drive = d;
-                if( d["is_lvm_vg"]:false == true ) {
+                if( d["type"]:`x == `CT_LVM ) {
                     is_lvm_vg = true;
-                } else if( d["is_evms_vg"]:false == true ) {
+                } else if( d["type"]:`x == `CT_EVMS ) {
                     is_evms_vg = true;
                 }
             }
@@ -668,9 +668,9 @@ Create and edit your volume groups here. After that, assign physical partitions 
                     if (!contains(configured_vgs,"/dev/"+vg_name)) {
                         drive=add(drive, "use","all");
                         if( vg_type == `is_evms_vg )
-                            drive=add(drive, "is_evms_vg",true);
+                            drive=add(drive, "type",`CT_EVMS);
                         else
-                            drive=add(drive, "is_lvm_vg",true);
+                            drive=add(drive, "type",`CT_LVM);
                         drive=add(drive, "pesize","4M");
                         drive=add(drive, "device","/dev/"+vg_name);
 
@@ -689,13 +689,9 @@ Select or enter another name.
                     drives=filter(map d, drives,``(d["device"]:"" != vg_name));
 
                     if ( (symbol)UI::QueryWidget(`id(`bgroup2), `CurrentButton) == `is_evms_vg ) {
-                        current_drive["is_evms_vg"] = true;
-                        if( haskey(current_drive, "is_lvm_vg") )
-                            current_drive = remove(current_drive, "is_lvm_vg");
+                        current_drive["type"] = `CT_EVMS;
                     } else {
-                        current_drive["is_lvm_vg"] = true;
-                        if( haskey(current_drive, "is_evms_vg") )
-                            current_drive = remove(current_drive, "is_evms_vg");
+                        current_drive["type"] = `CT_LVM;
                     }
                     current_drive["use"] = "all";
                     current_drive["device"] = vg_name;
@@ -1027,8 +1023,8 @@ due to use of the \"max\" option.
                     map this_drive = $[];
                     this_drive = select (filter (map d, partitioning,
                               ``(d["device"]:"" == item_id[0]:"")), 0, $[] );
-                    if( this_drive["is_lvm_vg"]:false == true ||
-                        this_drive["is_evms_vg"]:false == true ) {
+                    if( this_drive["type"]:`x == `CT_LVM ||
+                        this_drive["type"]:`x == `CT_EVMS ) {
                         action = VGDialog(`edit, (string) item );
                     } else {
                         action = DriveDialog(`edit, (string) item );

@@ -233,10 +233,10 @@
             if( v["type"]:`CT_UNKNOWN==`CT_LVM)
             {
                 drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
-                drive["is_lvm_vg"] = true;
+                drive["type"] = v["type"];
             } else if( v["type"]:`CT_UNKNOWN==`CT_EVMS ) {
                 drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
-                drive["is_evms_vg"] = true;
+                drive["type"] = v["type"];
                 integer index = findlastof( drive["device"]:"", "/" );
                 string vg_name = substring(drive["device"]:"", index);
                 drive["device"] = "/dev"+vg_name;
@@ -265,7 +265,7 @@
             return drive;
         });
         drives = filter( map v, (list<map>)drives, ``{
-            if( ! (contains( evms_vgs, v["device"]:"") && v["is_lvm_vg"]:false) )
+            if( ! (contains( evms_vgs, v["device"]:"") && v["type"]:`x == `CT_LVM ) )
                 return true;
             y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
             return false;
