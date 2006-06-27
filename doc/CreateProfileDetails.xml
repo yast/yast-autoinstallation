@@ -290,17 +290,17 @@
               </row>
               <row>
                 <entry>is_lvm_vg</entry>
-                <entry>this tells autoyast that this device is not a physical device but a LVM volume group (see LVM configuration below)
+                <entry>This tells autoyast that this device is not a physical device but a LVM volume group (see LVM configuration below)
 <para><screen>&lt;is_lvm_vg config:type="boolean"&gt;true&lt;/is_lvm_vg&gt;</screen></para>
 </entry>
-                <entry>must be true if this device is a LVM volume group. The default is false.</entry>
+                <entry>DEPRECATED since SLES10SP1 and SL10.2 - use <emphasis>type</emphasis> instead. Must be true if this device is a LVM volume group. The default is false.</entry>
               </row>
               <row>
                 <entry>is_evms_vg</entry>
                 <entry>this tells autoyast that this device is not a physical device but an EVMS volume group (see EVMS configuration below)
 <para><screen>&lt;is_evms_vg config:type="boolean"&gt;true&lt;/is_evms_vg&gt;</screen></para>
 </entry>
-                <entry>must be true if this device is a EVMS volume group. The default is false.</entry>
+                <entry>DEPRECATED since SLES10SP1 and SL10.2 - use <emphasis>type</emphasis> instead. Must be true if this device is an EVMS volume group. The default is false.</entry>
               </row>
               <row>
                 <entry>partitions</entry>
@@ -336,6 +336,27 @@
 </itemizedlist>
 </entry>
                 <entry>this parameter should be provided</entry>
+              </row>
+              <row>
+                <entry>type</entry>
+                <entry>this value describes the type of the <emphasis>drive</emphasis> and is a replacement for
+<emphasis>is_lvm_vg</emphasis> and <emphasis>is_evms_vg</emphasis> used in SLES10 and SL10.1
+<para>You can choose between:</para>
+<itemizedlist>
+<listitem>
+<para>CT_DISK for physical harddisks (default)</para>
+</listitem>
+<listitem>
+<para>CT_LVM for LVM volume groups</para>
+</listitem>
+<listitem>
+<para>CT_EVMS for EVMS volume groups</para>
+</listitem>
+</itemizedlist>
+
+<para><screen>&lt;type config:type="symbol"&gt;CT_LVM&lt;/type&gt;</screen></para>
+</entry>
+                <entry>optional. Default is CT_DISK for a normal physical harddisk.</entry>
               </row>
             </tbody>
           </tgroup>
@@ -1496,8 +1517,15 @@ http://192.168.66.6/SLES10/CD1/updates
               </row>
               <row>
                 <entry>accept_unknown_gpg_key</entry>
-                <entry>the installer will accept and import new gpg keys on the installation source in it's database.
+                <entry>the installer will accept new gpg keys on the installation source that are used to sign the content file for example
                   <para><screen>&lt;accept_unknown_gpg_key config:type="boolean"&gt;true&lt;/accept_unknown_gpg_key&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>import_gpg_key</entry>
+                <entry>the installer will accept and import new gpg keys on the installation source in it's database.
+                  <para><screen>&lt;import_gpg_key config:type="boolean"&gt;true&lt;/import_gpg_key&gt;</screen></para>
                 </entry>
                 <entry>optional. If left out, autoyast lets yast decide what to do</entry>
               </row>
