@@ -22,6 +22,7 @@
     include "autoinstall/ask.ycp";
 
     y2milestone("Profile=%1", Profile::current );
+    Report::Import(Profile::current["report"]:$[]);
 
     define void Step (string s) {
         Progress::NextStep();
