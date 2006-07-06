@@ -15,7 +15,7 @@ EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css
 
 CLEANFILES = .html.sum  profile.dtd.xml elements \
   elements.xml elements.ent profile.dtd.xml examples.ent\
-  components.ent .ps.sum  autoyast.out autoyast.pdf \
+  components.ent .ps.sum  autoyast.out autoyast.pdf autoyast.fo \
   images.ent 
 
 STYLESHEET_CSS = default.css
