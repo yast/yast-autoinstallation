@@ -233,8 +233,21 @@
                 }
                 // catching nested devices done
 
-		WFM::Execute(.local.mount, [sformat("/dev/%1", Host) ,
-                        mount_point]);
+        string mounts = (string)(SCR::Read (.target.string, "/etc/mtab"));
+        list<string> mount_list = splitstring( mounts, "\n" );
+        boolean already_mounted = false;
+        foreach( string m, mount_list, ``{
+            list<string>  entries = splitstring( m, " " );
+            if( entries[0]:"" == "/dev/"+Host ) {
+                already_mounted = true;
+                mount_point = entries[1]:"";
+                break;
+            }
+        });
+        y2milestone("already mounted=%1 mountpoint=%2",already_mounted,mount_point);
+        if( ! already_mounted )
+     		WFM::Execute(.local.mount, [sformat("/dev/%1", Host) ,
+                            mount_point]);
 
 		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  Path + " " + Localfile) != 0 )
 		{
@@ -247,7 +260,8 @@
                     GET_error = "";
 		    ok = true;
 		}
-		WFM::Execute(.local.umount, mount_point);
+        if( ! already_mounted )
+    		WFM::Execute(.local.umount, mount_point);
 	    }
 	}
 	else if (Scheme == "tftp") // Device
