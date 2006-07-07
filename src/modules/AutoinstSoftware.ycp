@@ -488,10 +488,11 @@ this message can be ignored."));
     global define void  pmInit()
     {
 
-        string tmproot = AutoinstConfig::tmpDir;
+//        string tmproot = AutoinstConfig::tmpDir;
 
-        SCR::Execute(.target.mkdir, tmproot + "/root");
-        Pkg::TargetInit( tmproot + "/root", true);
+//        SCR::Execute(.target.mkdir, tmproot + "/root");
+//        Pkg::TargetInit( tmproot + "/root", true);
+        Pkg::TargetInit( "/", true);
         y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
         return;
     }
