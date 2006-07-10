@@ -32,14 +32,27 @@
 
 
         map mode		= AutoinstGeneral::mode;
+        map signature_handling = AutoinstGeneral::signature_handling;
         boolean confirm	= mode["confirm"]:true;
         boolean second_stage	= mode["second_stage"]:true;
+
+        boolean accept_unsigned_file = signature_handling["accept_unsigned_file"]:false;
+        boolean accept_file_without_checksum = signature_handling["accept_file_without_checksum"]:false;
+        boolean accept_verification_failed = signature_handling["accept_verification_failed"]:false;
+        boolean accept_unknown_gpg_key = signature_handling["accept_unknown_gpg_key"]:false;
+        boolean import_gpg_key = signature_handling["import_gpg_key"]:false;
 
         term contents =
             `HVSquash(
                  `VBox(
                        `Left(`CheckBox(`id(`confirm), _("Con&firm installation?"), confirm)),
-                       `Left(`CheckBox(`id(`second_stage), _("AutoYaST Second Stage"), second_stage))
+                       `Left(`CheckBox(`id(`second_stage), _("AutoYaST Second Stage"), second_stage)),
+                       `Left(`Label( _("Signature Handling") )),
+                       `Left(`CheckBox(`id(`accept_unsigned_file), _("Accept &unsigned files"), accept_unsigned_file)),
+                       `Left(`CheckBox(`id(`accept_file_without_checksum), _("Accept files without a &checksum"), accept_file_without_checksum)),
+                       `Left(`CheckBox(`id(`accept_verification_failed), _("Accept failed &verifications"), accept_verification_failed)),
+                       `Left(`CheckBox(`id(`accept_unknown_gpg_key), _("Accept unknown &GPG Keys"), accept_unknown_gpg_key)),
+                       `Left(`CheckBox(`id(`import_gpg_key), _("Import &new GPG Keys"),import_gpg_key))
                        )
                  );
 
@@ -58,6 +71,11 @@ usual proposal screen.  Uncheck this option to install automatically without int
         help_text = help_text + _("<P>
 If you turn off the second stage of AutoYaST, the installation continues in manual mode
 after the first reboot (after package installation).
+</P>
+");
+
+        help_text = help_text + _("<P>
+For the signature handling, please read the AutoYaST documentation.
 </P>
 ");
 
@@ -80,6 +98,13 @@ after the first reboot (after package installation).
                 mode["second_stage"] = second_stage;
                 mode["confirm"] = confirm;
                 AutoinstGeneral::mode = mode;
+
+                signature_handling["accept_unsigned_file"] = (boolean)UI::QueryWidget(`id(`accept_unsigned_file), `Value);
+                signature_handling["accept_file_without_checksum"] = (boolean)UI::QueryWidget(`id(`accept_file_without_checksum), `Value);
+                signature_handling["accept_verification_failed"] = (boolean)UI::QueryWidget(`id(`accept_verification_failed), `Value);
+                signature_handling["accept_unknown_gpg_key"] = (boolean)UI::QueryWidget(`id(`accept_unknown_gpg_key), `Value);
+                signature_handling["import_gpg_key"] = (boolean)UI::QueryWidget(`id(`import_gpg_key), `Value);
+                AutoinstGeneral::signature_handling = signature_handling;
             }
         } until (ret == `next || ret == `back);
         return (symbol)ret;

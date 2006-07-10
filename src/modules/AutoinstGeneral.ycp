@@ -112,6 +112,17 @@
         summary = Summary::AddLine(summary, (mode["second_stage"]:true) ?
                                    _("Yes") : _("No"));
 
+        summary = Summary::AddHeader(summary, _("Signature Handling"));
+        summary = Summary::AddLine(summary, (AutoinstGeneral::signature_handling["accept_unsigned_file"]:false) ?
+                                   _("Accept unsigned files") : _("Don't accept unsigned files"));
+        summary = Summary::AddLine(summary, (AutoinstGeneral::signature_handling["accept_file_without_checksum"]:false) ?
+                                   _("Accept files without a checksum") : _("Don't accept files without a checksum"));
+        summary = Summary::AddLine(summary, (AutoinstGeneral::signature_handling["accept_verification_failed"]:false) ?
+                                   _("Accept failed verifications") : _("Don't accept failed verifications"));
+        summary = Summary::AddLine(summary, (AutoinstGeneral::signature_handling["accept_unknown_gpg_key"]:false) ?
+                                   _("Accept unknown GPG Keys") : _("Don't accept unknown GPG Keys"));
+        summary = Summary::AddLine(summary, (AutoinstGeneral::signature_handling["import_gpg_key"]:false) ?
+                                   _("Import new GPG Keys") : _("Don't import new GPG Keys"));
 
         return summary;
     }
