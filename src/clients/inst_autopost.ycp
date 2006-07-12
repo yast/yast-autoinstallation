@@ -71,10 +71,6 @@ Please wait while the system is prepared for autoinstallation.</p>
         AutoinstGeneral::Import(Profile::current["general"]:$[]);
     AutoinstGeneral::SetSignatureHandling();
     */
-    if( haskey( Profile::current, "add-on" ) ) {
-        Call::Function("add-on_auto", ["Import", Profile::current["add-on"]:$[]] );
-        Call::Function("add-on_auto", ["Write"]);
-    }
 
     y2milestone("Steps: %1", steps );
 
