@@ -514,7 +514,17 @@ which root partition should be used.  Automatic installation not possible.
                 mbr_disk = device;
             }
         });
-        
+
+        /* device guessing code enhanced */
+        if( mbr_disk == "" ) {
+            foreach (string device, map disk, initial_target_map, ``{
+                if( disk["type"]:`x == `CT_DISK ) {
+                    y2milestone ("first real disk is: %1", device);
+                    mbr_disk = device;
+                }
+            });
+        }
+
         y2milestone("mbr disk: %1", mbr_disk);
         Storage::SetPartDisk(mbr_disk);
         
