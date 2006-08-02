@@ -2061,8 +2061,8 @@ echo "Testing the pre script" &gt; /tmp/pre-script_out.txt
     </section>
     <section id="chroot.scripts">
     <title>Chroot environment scripts</title>
-	<para>Chroot scripts are executed after all packages have been
-	  installed. Actually chroot scripts are two differnt kind of script with
+	<para>Chroot scripts are executed before the machine reboots for the first time.
+	  Actually chroot scripts are two differnt kind of script with
       one name. You can execute chroot script before the installation chroots into
       the installed system and configures the boot loader and you can execute a script
       after the chroot into the installed system has happend (look at the "chrooted" parameter for that). Both types of scripts are
@@ -2281,12 +2281,6 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
 ]]&gt;
 &lt;/source&gt;</screen></para></entry>
                 <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
-              </row>
-              <row>
-                <entry>interpreter</entry>
-                <entry>the interpreter that must be used for the script. Supported options are shell, perl and python if it's installed.
-                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
-                <entry>optional (default is shell)</entry>
               </row>
               <row>
                 <entry>filename</entry>
