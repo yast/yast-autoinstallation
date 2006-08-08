@@ -358,15 +358,38 @@
                 return(pv["device"]:"");
             });
             y2milestone("Existing PVs: %1",  new_pvs );
-
+            map atm = AutoinstStorage::AutoTargetMap;
             foreach(map pv, new_pvs, ``{
                 if (pv["create"]:false) {
+                    boolean to_add = true;
                     if( vmType == `CT_LVM ) {
-                            y2milestone("addPhysicalVolume %1 , %2",pv["device"]:"", current_vg );
-                            addPhysicalVolume(targetMap, pv["device"]:"", current_vg );
+                            // exclude partitions that are NOT supposed to be in the LVM
+                            foreach( map atm_vol, atm[pv["maindev"]:"","partitions"]:[], ``{
+                                if( pv["nr"]:0 == atm_vol["partition_nr"]:-1 ) {
+                                    if( atm_vol["lvm_group"]:"" != current_vg ) {
+                                        y2milestone("do not add %1",atm_vol);
+                                        to_add = false;
+                                    }
+                                }
+                            });
+                            if( to_add ) {
+                                y2milestone("addPhysicalVolume %1 , %2",pv["device"]:"", current_vg );
+                                addPhysicalVolume(targetMap, pv["device"]:"", current_vg );
+                            }
                     } else if( vmType == `CT_EVMS ) {
-                            y2milestone("Storage::ExtendEvmsCo %1/%2",lvm_string,pv["device"]:"");
-                            Storage::ExtendEvmsCo(lvm_string+"/"+vgname, pv["device"]:"");
+                            // exclude partitions that are NOT supposed to be in the EVMS
+                            foreach( map atm_vol, atm[pv["maindev"]:"","partitions"]:[], ``{
+                                if( pv["nr"]:0 == atm_vol["partition_nr"]:-1 ) {
+                                    if( atm_vol["evms_group"]:"" != current_vg ) {
+                                        y2milestone("do not add %1",atm_vol);
+                                        to_add = false;
+                                    }
+                                }
+                            });
+                            if( to_add ) {
+                                y2milestone("Storage::ExtendEvmsCo %1/%2",lvm_string,pv["device"]:"");
+                                Storage::ExtendEvmsCo(lvm_string+"/"+vgname, pv["device"]:"");
+                            }
                     }
                 }
             });
