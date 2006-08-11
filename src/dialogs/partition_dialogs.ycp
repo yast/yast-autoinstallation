@@ -173,6 +173,13 @@ For partitions that are part of a volume group (not the logical partitions insid
                                                                         )
                                                            ),
                                                      `Left(
+                                                           `RadioButton(`id(`reuse),
+                                                                        `opt(`notify),
+                                                                        _("&Reuse Partition"),
+                                                                        (partition_size == "" && partition_nr != "")
+                                                                        )
+                                                           ),
+                                                     `Left(
                                                            `RadioButton(`id(`max),
                                                                         `opt(`notify),
                                                                         _("Fill to &maximum allowable space"),
@@ -304,7 +311,8 @@ For partitions that are part of a volume group (not the logical partitions insid
                     }
                 }
                 if ( UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max
-                     || UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto)
+                     || UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto
+                     || UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `reuse )
                 {
                     UI::ChangeWidget(`id(`partsize) , `Enabled, false);
                 }
@@ -463,9 +471,13 @@ due to use of the \"max\" option.
                 {
                     string partitionSize =  (string) UI::QueryWidget(`id(`partsize),   `Value);
                     string partitionNr   =  (string) UI::QueryWidget(`id(`partition_nr),   `Value);
-                    if (  partitionSize == "" && partitionNr == "" )
+                    if (  partitionSize == "" && partitionNr == "" && !(boolean)UI::QueryWidget(`id(`reuse), `Value) )
                     {
                         Report::Warning(_("Enter the partition size or a partition number."));
+                        continue;
+                    }
+                    else if( partitionNr == "" && (boolean)UI::QueryWidget(`id(`reuse), `Value) ) {
+                        Report::Warning(_("You want to reuse a partition. Please enter the partition number."));
                         continue;
                     }
                     else if( partitionSize != "" )
