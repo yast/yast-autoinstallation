@@ -338,6 +338,7 @@
         Pkg::TargetFinish ();
         // Remove kernel packages
         list<string> userpackages =  packages;
+        list<string> removepackages = [];
 
         list<string> patternPackages = [];
         foreach( string tmp_pattern, patterns, ``{
@@ -354,6 +355,10 @@
                 if (!contains(patternPackages, p))
                     userpackages = add( userpackages, p );
             });
+            foreach(string p, patternPackages, ``{
+                if (!contains(inst,p))
+                    removepackages = add( removepackages, p );
+            });
         }
 
         list<string> selectionPackages = [];
@@ -369,6 +374,10 @@
             foreach(string p, inst, ``{
                 if (!contains(selectionPackages, p))
                     userpackages = add( userpackages, p );
+            });
+            foreach(string p, selectionPackages, ``{
+                if (!contains(inst,p))
+                    removepackages = add( removepackages, p );
             });
         }
 
