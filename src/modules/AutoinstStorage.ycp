@@ -71,6 +71,33 @@
     include "autoinstall/autopart.ycp";
     include "autoinstall/autoinst_dialogs.ycp";
 
+    global define string find_first_disk() {
+        map <string, map> initial_target_map = Storage::GetTargetMap();
+        y2milestone("Target map: %1", initial_target_map );
+
+        string mbr_disk = "";
+        foreach (string device, map disk, initial_target_map, ``{
+            if (disk["bios_id"]:"" == "0x80")
+            {
+                y2milestone ("disk with bios_id 0x80: %1", device);
+                mbr_disk = device;
+            }
+        });
+
+        /* device guessing code enhanced */
+        if( mbr_disk == "" ) {
+            foreach (string device, map disk, initial_target_map, ``{
+                if( disk["type"]:`x == `CT_DISK ) {
+                    y2milestone ("first real disk is: %1", device);
+                    mbr_disk = device;
+                    break;
+                }
+            });
+        }
+
+        y2milestone("mbr disk: %1", mbr_disk);
+        return mbr_disk;
+    }
 
     /**
      * Pre-process partition plan and prepare for creating partitions.
@@ -307,7 +334,10 @@
         settings = maplist( map d, settings, ``{
             string device = d["device"]:"";
             string udev_string = "";
-            if( issubstring( device, "by-id" ) )
+            if( device == "" ) {
+                d["device"] = find_first_disk();
+                y2milestone("empty device in profile set to %1", d["device"]:"");
+            } else if( issubstring( device, "by-id" ) )
                 udev_string = "udev_id";
             else if( issubstring( device, "by-path" ) )
                 udev_string = "udev_path";
@@ -362,7 +392,7 @@
                         integer s = pe["size"]:0;
                         if( s == max ) {
                             y2milestone("shrinking %1",pe);
-                            s = s - ((usedSize - sizeByCyl)/cyl_size+1)*cyl_size;
+                            s = s - ((usedSize - sizeByCyl)/cyl_size+2)*cyl_size; // FIXME: why 2? 1 should be enough
                             usedSize = usedSize - s;
                             y2milestone("shrinking to %1",s);
                             pe["size"] = s;
@@ -377,6 +407,39 @@
         return settings;
     }
 
+    global define list<map> percent2size( list<map> settings ) {
+        map <string, map> tm = Storage::GetTargetMap();
+        settings = maplist( map d, settings, ``{
+            if( d["type"]:`x == `CT_DISK ) {
+                foreach( string device, map v, tm, ``{
+                    if( device == d["device"]:"" ) {
+                        d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
+                            if( issubstring( pe["size"]:"", "%") ) {
+                                string percentage = deletechars( pe["size"]:"", "%" );
+                                integer device_size = v["cyl_count"]:0 * v["cyl_size"]:0;
+                                pe["size"] = sformat("%1", device_size * tointeger(percentage) / 100);
+                                y2milestone("percentage %1 of %2 = %3",percentage,device,pe["size"]:"");
+                            }
+                            return pe;
+                        });
+                        break;
+                    }
+                });
+            } else if( d["type"]:`x == `CT_LVM || d["type"]:`x == `CT_EVMS ) {
+                d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
+                    if( issubstring( pe["size"]:"", "%") ) {
+                        pe["size"] = deletechars( pe["size"]:"", "%" ); // a size smalle than 101 will be treated as % later
+                    }
+                    return pe;
+                });
+            }
+            return d;
+        });
+        y2milestone("after percent2size = %1",settings);
+        return settings;
+    }
+
+
     /**
      * Get all the configuration from a map.
      * When called by inst_auto<module name> (preparing autoinstallation data)
@@ -390,6 +453,7 @@
         if (Mode::autoinst()) {
             settings = udev2dev(settings);
             settings = mountBy(settings);
+            settings = percent2size(settings);
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
@@ -491,6 +555,7 @@ which root partition should be used.  Automatic installation not possible.
         return true;
     }
 
+
     /**
      * Create partition plan
      * @return boolean
@@ -502,33 +567,11 @@ which root partition should be used.  Automatic installation not possible.
         if (read_fstab)
             return (handle_fstab());
 
-        // Find first disk
         map <string, map> initial_target_map = Storage::GetTargetMap();
         y2milestone("Target map: %1", initial_target_map );
-        
-        string mbr_disk = "";
-        foreach (string device, map disk, initial_target_map, ``{
-            if (disk["bios_id"]:"" == "0x80")
-            {
-                y2milestone ("disk with bios_id 0x80: %1", device);
-                mbr_disk = device;
-            }
-        });
 
-        /* device guessing code enhanced */
-        if( mbr_disk == "" ) {
-            foreach (string device, map disk, initial_target_map, ``{
-                if( disk["type"]:`x == `CT_DISK ) {
-                    y2milestone ("first real disk is: %1", device);
-                    mbr_disk = device;
-                    break;
-                }
-            });
-        }
+        Storage::SetPartDisk( find_first_disk() );
 
-        y2milestone("mbr disk: %1", mbr_disk);
-        Storage::SetPartDisk(mbr_disk);
-        
         AutoTargetMap =  set_devices(AutoPartPlan);
         if (AutoTargetMap == nil || AutoTargetMap == $[])
             return false;
