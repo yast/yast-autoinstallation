@@ -23,6 +23,8 @@
 
     include "partitioning/lvm_lv_lib.ycp";
 
+    include "partitioning/partition_defines.ycp";
+
     global symbol  vmType    = `CT_LVM;
 
     global boolean ZeroNewPartitions = true;
@@ -406,6 +408,17 @@
                 buffer =    tmp_tm[ "/dev/evms/"+lvm_string+"/"+vgname, "cyl_size"]:0;
             }
             buffer = (buffer * 2) / 1024;
+
+            volume_group["partitions"] = maplist( map lv, volume_group["partitions"]:[], ``{
+                integer s = kmgt_str_to_byte( lv["size"]:"10000" );
+                if( s <= 100 && s > 0 ) {
+                    // we assume percentage for this lv
+                    integer integer_k = freeSpace * tointeger(lv["size"]:"0") / 100;
+                    lv["size_k"] = integer_k;
+                    y2milestone("percentage for lv %1. Size_k is %2",lv,integer_k);
+                }
+                return lv;
+            });
 
             foreach(map lv,  volume_group["partitions"]:[], ``{
                 freeSpace = freeSpace - lv["size_k"]:0;
