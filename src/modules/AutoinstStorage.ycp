@@ -346,10 +346,16 @@
                 string wanted_udev = substring( device, index+1 );
                 foreach( string deviceName, map tmp_target, tm, ``{
                     y2milestone("searching for %1 on %2", wanted_udev, deviceName );
-                    foreach( string found_udev, tmp_target[udev_string]:[], ``{
+                    list<string> liste = [];
+                    if( udev_string == "udev_id" )
+                        liste = tmp_target[udev_string]:[];
+                    else
+                        liste = [ tmp_target[udev_string]:"" ];
+                    foreach( string found_udev, liste, ``{
                         if( found_udev == wanted_udev ) {
                             d["device"] = deviceName;
                             y2milestone("found mapping of %1 to %2",found_udev, deviceName);
+                            break;
                         }
                     });
                 });
