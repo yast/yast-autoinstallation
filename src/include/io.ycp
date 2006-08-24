@@ -90,7 +90,7 @@
 	if ( Scheme == "ftp" )
 	{
 	    res = FTP::Get(full_url, Localfile);
-	    if ( ( res["code"]:-1 >= 200 || res["code"]:-1 < 300 ) && SCR::Read(.target.size, Localfile) > 0 )
+	    if ( ( res["code"]:-1 >= 200 && res["code"]:-1 < 300 ) && SCR::Read(.target.size, Localfile) > 0 )
 	    {
                 GET_error = "";
 		return (true);
