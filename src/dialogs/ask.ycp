@@ -31,6 +31,7 @@
             string question = ask["question"]:pathStr;
             string helptext = ask["help"]:"";
             string title    = ask["title"]:"";
+            string file     = ask["file"]:"";
             list< map<string,any> > s  = ask["selection"]:[];
             mod = true;
 
@@ -114,7 +115,12 @@
                             pos = add(pos, p);
                         }
                     });
-                    Profile::current = Profile::setElementByList( pos, val, Profile::current );
+                    if( pathStr != "" )
+                        Profile::current = Profile::setElementByList( pos, val, Profile::current );
+                    if( file != "" ) {
+                        if( ! SCR::Write (.target.string, file, sformat("%1",val)) )
+                            y2milestone("writing answer to %1 failed",file);
+                    }
                     break;
                 }
             }
