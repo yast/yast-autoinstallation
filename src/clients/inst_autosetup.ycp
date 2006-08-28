@@ -103,7 +103,6 @@ control file and try again.
 "));
 	    return `abort;
 	}
-        AutoinstScripts::Import(Profile::current["scripts"]:$[]);
     }
 
     //
@@ -112,6 +111,8 @@ control file and try again.
 
 
     askDialog();
+    // reimport scripts, for the case <ask> has changed them
+    AutoinstScripts::Import(Profile::current["scripts"]:$[]);
     //
     // Set Mouse and other workflow variables
     //
