@@ -486,7 +486,7 @@
                 <entry>partition_nr</entry>
                 <entry>
                   <para>
-                    the partition_nr this partition have/will have. If you have create=false, then you can tell
+                    the partition_nr this partition has/will have. If you have set create=false, then you can tell
                     autoyast which partition you mean by the partition_nr. You can force autoyast to create only
                     primary partitions by configuring only partition numbers below 5.
                   </para>
@@ -1085,30 +1085,7 @@
       with the volume group <emphasis>system</emphasis>. The partition
       created  will use all available space on this drive.
     </para>
-  <note>
-    <para>
-      Up to SuSE Linux 8.2 the LVM configuration was done in a separate
-      resource. This method for configuring LVM is still
-      supported, however a new and easier way is now possible which allows you
-      to have the LVM configuration      
-      directly in  the <emphasis>partitioning</emphasis> resource.
-    </para>
-  </note>
-    <para>Currently it is not possible to configure LVM using the
-      configuration system, instead it is required to
-      add the resource manually as shown in the  following example:
-    </para>
 
-  	<example>
-	  <title>
-	    LVM Logical Volumes (Old syntax)
-	  </title>
-	  <screen>
-<xi:include href="examples/example.lvmold.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-      </screen>
-  </example>
-    <para>Using the new method, the above configuration has the following syntax:</para>
 	<example>
 	  <title>
 	    LVM Logical Volumes (New syntax)
@@ -1200,32 +1177,13 @@
       create and additionally you need to  specify whether a partition or a device should be configured in the
       <acronym>RAID</acronym>  or if it should configured as a <emphasis>Spare</emphasis> device.
     </para>
-    <note>
-      <para>
-	Up to SuSE Linux 8.2 the raid configuration was done in a separate
-	resource. This method for configuring raid devices is still
-	supported, however a new and easier way is now possible 
-	which allows the user to have the raid configuration
-	directly in  the <emphasis>partitioning</emphasis> resource.
-      </para>
-    </note>
     <para>
       The following example shows a simple RAID1 configuration:
     </para>
   
 
-	<example>
-	  <title>RAID1 configuration (Old Syntax)</title>
-      <screen>
-<xi:include href="examples/example.raidold.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	    </screen>
-	  </example>
-
-    <para>Using the new method, the above configuration has the following syntax:</para>
-
   	<example>
-	  <title>RAID1 configuration (New Syntax)</title>
+	  <title>RAID1 configuration</title>
       <screen>
 <xi:include href="examples/example.raidnew.xml" parse="text"
     xmlns:xi="http://www.w3.org/2001/XInclude"/>
@@ -1235,7 +1193,7 @@
 
     <para>
       The following has to be taken into consideration when configuring
-      raid using the new syntax:
+      raid:
     </para>
     <itemizedlist>
       <listitem>
@@ -1314,7 +1272,7 @@
 
     <section id="Software.Selections.sles10">
       <title>
-	Package Selections with patterns (SLES10)
+	Package Selections with patterns (SLES10 and SUSE Linux 10.2)
       </title>
       <para>
       SLES10 no longer supports <emphasis>selections</emphasis> but uses 
