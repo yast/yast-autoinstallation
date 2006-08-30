@@ -118,7 +118,7 @@
         list<map> other_drives = filter (map d, partitioning, ``(d["device"]:"" != drive));
 
         map<symbol, map<symbol, any> > file_systems = FileSystems::GetAllFileSystems(true, true);
-        boolean create		=  new_val["create"]:false;
+        boolean create		=  new_val["create"]:true;
         string  partition_size	=  new_val["size"]:"";
         string  partition_nr    =  tostring(new_val["partition_nr"]:-1);
         if( partition_nr == "-1" )
@@ -130,6 +130,9 @@
 
         symbol last_option_fs	= new_val["filesystem"]:`ext2;
         map fs_options          = new_val["fs_options"]:$[];
+
+        boolean resize          = new_val["resize"]:false;
+        boolean reuse           = !create;
 
         list<string> not_used_mountpoints = notUsedMountpoints( getTargets(),  file_systems[last_option_fs, `mountpoints]:[]);
 
@@ -176,7 +179,14 @@ For partitions that are part of a volume group (not the logical partitions insid
                                                            `RadioButton(`id(`reuse),
                                                                         `opt(`notify),
                                                                         _("&Reuse Partition"),
-                                                                        (partition_size == "" && partition_nr != "")
+                                                                        reuse
+                                                                        )
+                                                           ),
+                                                     `Left(
+                                                           `CheckBox(`id(`resize),
+                                                                        `opt(`notify),
+                                                                        _("R&esize Partition"),
+                                                                        resize
                                                                         )
                                                            ),
                                                      `Left(
@@ -292,6 +302,7 @@ For partitions that are part of a volume group (not the logical partitions insid
         if( this_drive["type"]:`x != `CT_LVM && this_drive["type"]:`x != `CT_EVMS ) {
             UI::ChangeWidget(`id(`lv_name), `Enabled, false);
         }
+        UI::ChangeWidget(`id(`resize), `Enabled, UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `reuse );
 
         while (true)
         {
@@ -300,6 +311,7 @@ For partitions that are part of a volume group (not the logical partitions insid
 
             if (ret != `cancel)
             {
+                UI::ChangeWidget(`id(`resize), `Enabled, UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `reuse );
                 if( ret == `fsid_point ) {
                     if( substring( (string)UI::QueryWidget(`id(`fsid_point), `Value), 0, 4 ) == "0x8E" ) {
                         UI::ChangeWidget(`id(`vg), `Enabled, true);
@@ -312,11 +324,14 @@ For partitions that are part of a volume group (not the logical partitions insid
                 }
                 if ( UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `max
                      || UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `auto
-                     || UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `reuse )
+                     || (UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `reuse && UI::QueryWidget(`id(`resize),  `Value) == false)
+                   )
                 {
                     UI::ChangeWidget(`id(`partsize) , `Enabled, false);
-                }
-                else
+                } else if( UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `reuse ) {
+                    UI::ChangeWidget(`id(`partsize) , `Enabled, true );
+                    UI::ChangeWidget(`id(`resize),    `Enabled, true );
+                } else
                 {
                     UI::ChangeWidget(`id(`partsize) , `Enabled, true);
                 }
@@ -563,6 +578,13 @@ due to use of the \"max\" option.
                         ret = `retry;
                         UI::ChangeWidget(`id(`crypt_fs), `Value, false);
                     }
+                }
+
+                if( UI::QueryWidget(`id(`resize), `Value) == true && (symbol) UI::QueryWidget(`id(`sizeopt),  `CurrentButton) == `reuse ) {
+                    return_value = add( return_value, "resize", true );
+                    return_value["create"] = false;
+                } else {
+                    return_value = add( return_value, "resize", false );
                 }
 
                 y2milestone("fs options: %1", fs_options);
