@@ -590,6 +590,23 @@
                 </entry>
                 <entry></entry>
               </row>
+              <row>
+                <entry>resize</entry>
+                <entry>
+                  <para>
+                    This parameter is available since SLES10 SP1 and OpenSUSE 10.2.
+                    This boolean must be true if an existing partition should be resized. In this case,
+                    you want to set <emphasis>create</emphasis> to <emphasis>false</emphasis> too and in
+                    most cases you don't want to <emphasis>format</emphasis> the partition. You need to
+                    tell autoyast the <emphasis>partition_nr</emphasis> and the <emphasis>size</emphasis>.
+                    The size can be in percentage of the original size or as a number of the new size, like
+                    <emphasis>800M</emphasis>. <emphasis>max</emphasis> and <emphasis>auto</emphasis> don't
+                    work as size here.
+                  </para>
+                  <para><screen>&lt;resize config:type="boolean"&gt;false&lt;/resize&gt;</screen></para>
+                </entry>
+                <entry>The resize only works with physical disks. Not with LVM/EVMS volumes.</entry>
+              </row>
             </tbody>
           </tgroup>
           </table>
