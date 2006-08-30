@@ -19,7 +19,7 @@
     import "Partitions";  
     import "Popup";
 
-
+    include "partitioning/partition_defines.ycp";
 
     // Read existing fstab and format partitions, but dont create anything
     // Use same mountpoints etc.
@@ -413,23 +413,52 @@
         return settings;
     }
 
+    global define list<map> region4resize( list<map> settings ) {
+        // the storage lib requires the region to be set
+        // we transform the size to the region here
+        map <string, map> tm = Storage::GetTargetMap();
+        settings = maplist( map d, settings, ``{
+            if( d["type"]:`x == `CT_DISK ) {
+                map realDisk = tm[ d["device"]:"" ]:$[];
+                integer index = 0;
+                d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
+                    if( pe["resize"]:false ) {
+                        integer currentCyl = realDisk["partitions",index,"region",1]:0;
+                        pe["region"] = realDisk["partitions",index,"region"]:[];
+                        if( issubstring( pe["size"]:"", "%") ) {
+                            string percentage = deletechars( pe["size"]:"", "%" );
+                            integer newCyl = currentCyl * tointeger(percentage) / 100;
+                            pe["region",1] = newCyl;
+                        } else {
+                            integer new_size = kmgt_str_to_byte( pe["size"]:"0" );
+                            integer newCyl = new_size/realDisk["cyl_size"]:1;
+                            pe["region",1] = newCyl;
+                        }
+                        y2milestone("resize partition nr %1 of %2 to region: %3", index, d["device"]:"", pe["region"]:[]);
+                    }
+                    index = index + 1;
+                    return pe;
+                });
+            }
+            return d;
+        });
+        y2milestone("after region4resize = %1",settings);
+        return settings;
+    }
+
     global define list<map> percent2size( list<map> settings ) {
         map <string, map> tm = Storage::GetTargetMap();
         settings = maplist( map d, settings, ``{
             if( d["type"]:`x == `CT_DISK ) {
-                foreach( string device, map v, tm, ``{
-                    if( device == d["device"]:"" ) {
-                        d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
-                            if( issubstring( pe["size"]:"", "%") ) {
-                                string percentage = deletechars( pe["size"]:"", "%" );
-                                integer device_size = v["cyl_count"]:0 * v["cyl_size"]:0;
-                                pe["size"] = sformat("%1", device_size * tointeger(percentage) / 100);
-                                y2milestone("percentage %1 of %2 = %3",percentage,device,pe["size"]:"");
-                            }
-                            return pe;
-                        });
-                        break;
+                map v = tm[ d["device"]:"" ]:$[];
+                d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
+                    if( issubstring( pe["size"]:"", "%") ) {
+                        string percentage = deletechars( pe["size"]:"", "%" );
+                        integer device_size = v["cyl_count"]:0 * v["cyl_size"]:0;
+                        pe["size"] = sformat("%1", device_size * tointeger(percentage) / 100);
+                        y2milestone("percentage %1 of %2 = %3",percentage,d["device"]:"",pe["size"]:"");
                     }
+                    return pe;
                 });
             } else if( d["type"]:`x == `CT_LVM || d["type"]:`x == `CT_EVMS ) {
                 d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
@@ -459,6 +488,7 @@
         if (Mode::autoinst()) {
             settings = udev2dev(settings);
             settings = mountBy(settings);
+            settings = region4resize(settings);
             settings = percent2size(settings);
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
@@ -617,7 +647,6 @@ which root partition should be used.  Automatic installation not possible.
                 tm[device] =    process_partition_data(device, sol);
 
         SearchRaids(tm);
-
                 Storage::SetTargetMap(tm);
         }
         });
