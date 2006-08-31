@@ -77,7 +77,7 @@ $Id$
     define list<map> preprocess_partition_config(list<map> xmlflex) {
         
         y2debug("xml input: %1", xmlflex );
-
+        map<string,any> tm = Storage::GetTargetMap();
         list<map>partitioning = maplist(map d, xmlflex, ``{
             
             foreach( string key, [ "keep_partition_id", "keep_partition_num"], ``{
@@ -748,6 +748,10 @@ $Id$
                     if( !p["delete"]:false && p["nr"]:0 == e["added",0,1]:0 )
                     {
                         p["format"] = solution["partitions",pindex,"format"]:true;
+                        if( solution["partitions",pindex,"resize"]:false == true ) {
+                            p["resize"] = true;
+                            p["region"] = solution["partitions",pindex,"region"]:[];
+                        }
                         p["mount"] = mount;
                         if (e["reuse"]:false)			    
                             p["used_fs"] = solution["partitions",pindex,"filesystem"]:p["detected_fs"]:`reiser;
