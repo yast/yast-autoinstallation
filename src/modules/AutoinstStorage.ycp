@@ -420,11 +420,10 @@
         settings = maplist( map d, settings, ``{
             if( d["type"]:`x == `CT_DISK ) {
                 map realDisk = tm[ d["device"]:"" ]:$[];
-                integer index = 0;
                 d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
                     if( pe["resize"]:false ) {
-                        integer currentCyl = realDisk["partitions",index,"region",1]:0;
-                        pe["region"] = realDisk["partitions",index,"region"]:[];
+                        integer currentCyl = realDisk["partitions",pe["partition_nr"]:1-1,"region",1]:0;
+                        pe["region"] = realDisk["partitions",pe["partition_nr"]:1-1,"region"]:[];
                         if( issubstring( pe["size"]:"", "%") ) {
                             string percentage = deletechars( pe["size"]:"", "%" );
                             integer newCyl = currentCyl * tointeger(percentage) / 100;
@@ -434,9 +433,8 @@
                             integer newCyl = new_size/realDisk["cyl_size"]:1;
                             pe["region",1] = newCyl;
                         }
-                        y2milestone("resize partition nr %1 of %2 to region: %3", index, d["device"]:"", pe["region"]:[]);
+                        y2milestone("resize partition nr %1 of %2 to region: %3", pe["partition_nr"]:1, d["device"]:"", pe["region"]:[]);
                     }
-                    index = index + 1;
                     return pe;
                 });
             }
