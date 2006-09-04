@@ -58,10 +58,12 @@ y2_partition =
   | partition_nr
   | partition_type
   | raid_name
+  | resize
 #  | raid_options
   | raid_type
   | region
   | size
+  | type
   | usepart
 partition = element partition { y2_partition* }
 noauto =
@@ -138,4 +140,6 @@ lv_name = element lv_name { text }
 lvm_group = element lvm_group { text }
 pesize = element pesize { text }
 evms_group = element evms_group { text }
+resize = element resize { BOOLEAN }
+type = element type { SYMBOL }
 
