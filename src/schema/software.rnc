@@ -9,12 +9,18 @@ software =
     kernel?, 
     packages?, 
     post-packages?, 
-    remove-packages?
+    remove-packages?,
+    patterns?
   }
 addons =
   element addons {
     LIST,
     element addon { text }+
+  }
+patterns =
+  element patterns {
+    LIST,
+    element pattern { text }+
   }
 base = element base { text }
 kernel = element kernel { text }
