@@ -2,7 +2,7 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace config = "http://www.suse.com/1.0/configns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
-general = element general { clock?, keyboard?, language?, mode?, mouse?, ask-list? }
+general = element general { clock?, keyboard?, language?, mode?, mouse?, ask-list?, signature-handling? }
 clock = element clock { hwclock, timezone }
 hwclock = element hwclock { text }
 timezone = element timezone { text }
@@ -10,7 +10,7 @@ keyboard = element keyboard { keymap }
 keymap = element keymap { text }
 language = element language { text }
 ask-list = element ask-list { LIST, ask+ }
-ask = element ask { question?, \default?, help?, title?, type?, password?, path, stage?, selection? }
+ask = element ask { question?, \default?, help?, title?, type?, password?, path, stage?, selection?, file? }
 question = element question { text }
 \default = element default { text }
 help = element help { text }
@@ -21,8 +21,16 @@ path = element path { text }
 stage = element stage { "cont" | "initial" }
 selection = element selection { LIST, entry+ }
 entry = element entry { value, label }
+file = element file { text }
 value = element value { text }
 label = element label { text }
+signature-handling = element signature-handling { accept_unsigned_file?, accept_file_without_checksum?, accept_verification_failed?, accept_unknown_gpg_key?, import_gpg_key? }
+accept_unsigned_file = element accept_unsigned_file { BOOLEAN }
+accept_file_without_checksum = element accept_file_without_checksum { BOOLEAN }
+accept_verification_failed = element accept_verification_failed { BOOLEAN }
+accept_unknown_gpg_key = element accept_unknown_gpg_key { BOOLEAN }
+import_gpg_key = element import_gpg_key { BOOLEAN }
+
 
 mode =
   element mode {
