@@ -2,15 +2,15 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace config = "http://www.suse.com/1.0/configns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
-general = element general { clock?, keyboard?, language?, mode?, mouse?, ask-list?, signature-handling? }
-clock = element clock { hwclock, timezone }
+general = element general { clock? & keyboard? & language? & mode? & mouse? & ask-list? & signature-handling? }
+clock = element clock { hwclock & timezone }
 hwclock = element hwclock { text }
 timezone = element timezone { text }
 keyboard = element keyboard { keymap }
 keymap = element keymap { text }
 language = element language { text }
 ask-list = element ask-list { LIST, ask+ }
-ask = element ask { ask_question?, ask_default?, ask_help?, ask_title?, ask_type?, ask_password?, ask_path, ask_stage?, ask_selection?, ask_file? }
+ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path & ask_stage? & ask_selection? & ask_file? }
 ask_question = element question { text }
 ask_default = element default { text }
 ask_help = element help { text }
@@ -20,11 +20,11 @@ ask_password = element password { BOOLEAN }
 ask_path = element path { text }
 ask_stage = element stage { "cont" | "initial" }
 ask_selection = element selection { LIST, ask_selection_entry+ }
-ask_selection_entry = element entry { ask_entry_value, ask_entry_label }
+ask_selection_entry = element entry { ask_entry_value & ask_entry_label }
 ask_file = element file { text }
 ask_entry_value = element value { text }
 ask_entry_label = element label { text }
-signature-handling = element signature-handling { accept_unsigned_file?, accept_file_without_checksum?, accept_verification_failed?, accept_unknown_gpg_key?, import_gpg_key? }
+signature-handling = element signature-handling { accept_unsigned_file? & accept_file_without_checksum? & accept_verification_failed? & accept_unknown_gpg_key? & import_gpg_key? }
 accept_unsigned_file = element accept_unsigned_file { BOOLEAN }
 accept_file_without_checksum = element accept_file_without_checksum { BOOLEAN }
 accept_verification_failed = element accept_verification_failed { BOOLEAN }
@@ -34,7 +34,7 @@ import_gpg_key = element import_gpg_key { BOOLEAN }
 
 mode =
   element mode {
-    confirm, disable_abort?, disable_buttons?, forceboot?, halt?, reboot?, second_stage?
+    confirm & disable_abort? & disable_buttons? & forceboot? & halt? & reboot? & second_stage?
   }
 confirm =
   element confirm { BOOLEAN }
