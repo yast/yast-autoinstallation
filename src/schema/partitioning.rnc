@@ -22,7 +22,7 @@ initialize =
 keep_partition_id = element keep_partition_id { text }
 keep_partition_nr = element keep_partition_nr { text }
 keep_partition_fsys = element keep_partition_fsys { text }
-usepart =
+part_usepart =
   element usepart { INTEGER }
 prefer_remove =
   element prefer_remove { BOOLEAN }
@@ -36,49 +36,49 @@ partitions =
     partition+
   }
 y2_partition =
-  create
-  | crypt
-  | crypt_fs
-  | crypt_key
-  | filesystem
-  | format
-  | fs_options
-  | fstopt
-  | grow
-  | label
-  | loop_fs
-  | lv_name
-  | lvm_group
-  | evms_group
-  | maxsize
-  | mount
-  | mountby
-  | noauto
-  | partition_id
-  | partition_nr
-  | partition_type
-  | raid_name
-  | resize
+  part_create
+  | part_crypt
+  | part_crypt_fs
+  | part_crypt_key
+  | part_filesystem
+  | part_format
+  | part_fs_options
+  | part_fstopt
+  | part_grow
+  | part_label
+  | part_loop_fs
+  | part_lv_name
+  | part_lvm_group
+  | part_evms_group
+  | part_maxsize
+  | part_mount
+  | part_mountby
+  | part_noauto
+  | part_partition_id
+  | part_partition_nr
+  | part_partition_type
+  | part_raid_name
+  | part_resize
 #  | raid_options
-  | raid_type
-  | region
-  | size
-  | type
-  | usepart
+  | part_raid_type
+  | part_region
+  | part_size
+  | part_type
+  | part_usepart
 partition = element partition { y2_partition* }
-noauto =
+part_noauto =
   element noauto { BOOLEAN }
-create =
+part_create =
   element create { BOOLEAN }
-crypt = element crypt { text }
-crypt_fs =
+part_crypt = element crypt { text }
+part_crypt_fs =
   element crypt_fs { BOOLEAN }
-crypt_key = element crypt_key { text }
-filesystem =
+part_crypt_key = element crypt_key { text }
+part_filesystem =
   element filesystem { SYMBOL }
-format =
+part_format =
   element format { BOOLEAN }
-fs_options =
+part_fs_options =
   element fs_options {
     opt_blocksize?,
     opt_block_size?,
@@ -106,40 +106,40 @@ opt_reserved_blocks =
 # have to integrate raid first
 #raid_options =
 #  element raid_options { chunk_size, parity_algorithm, raid_type }
-fstopt = element fstopt { text }
-grow =
+part_fstopt = element fstopt { text }
+part_grow =
   element grow { BOOLEAN }
-label = element label { attribute combine { "choice" }?, text }
-loop_fs =
+part_label = element label { text }
+part_loop_fs =
   element loop_fs { BOOLEAN }
-mount = element mount { text }
-mountby =
+part_mount = element mount { text }
+part_mountby =
   element mountby { SYMBOL }
 option_blank =
   element option_blank { BOOLEAN }
 option_str = element option_str { text }
 option_value = element option_value { text }
-raid_name = element raid_name { text }
-raid_type = element raid_type { text }
-partition_nr =
+part_raid_name = element raid_name { text }
+part_raid_type = element raid_type { text }
+part_partition_nr =
   element partition_nr { INTEGER }
-partition_type = element partition_type { text }
-partition_id =
+part_partition_type = element partition_type { text }
+part_partition_id =
   element partition_id { INTEGER }
-region =
+part_region =
   element region {
     LIST,
     region_entry+
   }
 region_entry =
   element region_entry { INTEGER }
-size = element size { text }
-maxsize = element maxsize { text }
+part_size = element size { text }
+part_maxsize = element maxsize { text }
 use = element use { text }
-lv_name = element lv_name { text }
-lvm_group = element lvm_group { text }
+part_lv_name = element lv_name { text }
+part_lvm_group = element lvm_group { text }
 pesize = element pesize { text }
-evms_group = element evms_group { text }
-resize = element resize { BOOLEAN }
-type = element type { SYMBOL }
+part_evms_group = element evms_group { text }
+part_resize = element resize { BOOLEAN }
+part_type = element type { SYMBOL }
 
