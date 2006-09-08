@@ -35,6 +35,7 @@
         map signature_handling = AutoinstGeneral::signature_handling;
         boolean confirm	= mode["confirm"]:true;
         boolean second_stage	= mode["second_stage"]:true;
+        boolean halt            = mode["halt"]:false;
 
         boolean accept_unsigned_file = signature_handling["accept_unsigned_file"]:false;
         boolean accept_file_without_checksum = signature_handling["accept_file_without_checksum"]:false;
@@ -47,6 +48,7 @@
                  `VBox(
                        `Left(`CheckBox(`id(`confirm), _("Con&firm installation?"), confirm)),
                        `Left(`CheckBox(`id(`second_stage), _("AutoYaST Second Stage"), second_stage)),
+                       `Left(`CheckBox(`id(`halt), _("Turn off the machine after first stage"), halt)),
                        `Left(`Label( _("Signature Handling") )),
                        `Left(`CheckBox(`id(`accept_unsigned_file), _("Accept &unsigned files"), accept_unsigned_file)),
                        `Left(`CheckBox(`id(`accept_file_without_checksum), _("Accept files without a &checksum"), accept_file_without_checksum)),
@@ -94,9 +96,11 @@ For the signature handling, please read the AutoYaST documentation.
                 map m = $[];
                 confirm = (boolean)UI::QueryWidget(`id(`confirm), `Value);
                 second_stage = (boolean) UI::QueryWidget(`id(`second_stage), `Value);
+                halt = (boolean) UI::QueryWidget(`id(`halt), `Value);
 
                 mode["second_stage"] = second_stage;
                 mode["confirm"] = confirm;
+                mode["halt"] = halt;
                 AutoinstGeneral::mode = mode;
 
                 signature_handling["accept_unsigned_file"] = (boolean)UI::QueryWidget(`id(`accept_unsigned_file), `Value);
