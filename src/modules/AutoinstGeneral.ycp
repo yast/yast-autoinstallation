@@ -112,6 +112,10 @@
         summary = Summary::AddLine(summary, (mode["second_stage"]:true) ?
                                    _("Yes") : _("No"));
 
+        summary = Summary::AddHeader(summary, _("Halt the machine after stage one"));
+        summary = Summary::AddLine(summary, (mode["halt"]:false) ?
+                                   _("Yes") : _("No"));
+
         summary = Summary::AddHeader(summary, _("Signature Handling"));
         summary = Summary::AddLine(summary, (AutoinstGeneral::signature_handling["accept_unsigned_file"]:false) ?
                                    _("Accept unsigned files") : _("Don't accept unsigned files"));
