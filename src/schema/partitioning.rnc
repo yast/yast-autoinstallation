@@ -20,7 +20,6 @@ drive =
 initialize =
   element initialize { BOOLEAN }
 keep_partition_id = element keep_partition_id { text }
-keep_partition_nr = element keep_partition_nr { text }
 keep_partition_fsys = element keep_partition_fsys { text }
 part_usepart =
   element usepart { INTEGER }
@@ -53,7 +52,6 @@ y2_partition =
   | part_maxsize
   | part_mount
   | part_mountby
-  | part_noauto
   | part_partition_id
   | part_partition_nr
   | part_partition_type
@@ -66,8 +64,6 @@ y2_partition =
   | part_type
   | part_usepart
 partition = element partition { y2_partition* }
-part_noauto =
-  element noauto { BOOLEAN }
 part_create =
   element create { BOOLEAN }
 part_crypt = element crypt { text }
