@@ -412,6 +412,7 @@ X-SuSE-YaST-AutoInst=all
 X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstClonable=true
+X-SuSE-YaST-AutoLogResource=true
 
 Icon=nis_client
 Exec=/sbin/yast2 nis
@@ -611,6 +612,21 @@ GenericName=Configure NIS client
       </refsect1>
     </refentry>
 
+    <refentry>
+      <refnamediv>
+	<refname>X-SuSE-YaST-AutoLogResource</refname>
+	<refpurpose>is the resource of your modul allowed to be logged (since SLES10SP1/10.2)</refpurpose>
+      </refnamediv>
+      <refsect1>
+	<title>Values</title>
+	<para>a boolean (true,false)</para>
+	<para>Do you allow autoyast to log the data of your resource into the logfile? The default is true but if you have sensible data like passwords, you might want to set this to false. That can always be overridden by Y2DEBUG=1</para>
+      </refsect1>
+      <refsect1>
+	<title>Default Value</title>
+	<para>true</para>
+      </refsect1>
+    </refentry>
 
   </section>
   <section>
