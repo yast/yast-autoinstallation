@@ -21,7 +21,7 @@
     import "Progress";
     include "autoinstall/ask.ycp";
 
-    y2milestone("Profile=%1", Profile::current );
+    y2debug("Profile=%1", Profile::current );
     Report::Import(Profile::current["report"]:$[]);
 
     define void Step (string s) {
@@ -114,7 +114,12 @@ Please wait while the system is prepared for autoinstallation.</p>
 			    result[res] = Profile::current[res]:[];
 			i = i + 1;
 		    });
-		    y2milestone("Calling auto client with: %1", result);
+            if( d["X-SuSE-YaST-AutoLogResource"]:"true" == "true" ) {
+    		    y2milestone("Calling auto client with: %1", result);
+            } else {
+                y2milestone("logging for resource %1 turned off",resource);
+                y2debug("Calling auto client with: %1", result);
+            }
 		    if (size(result) > 0 )
                     {
                         Step(p);
@@ -125,7 +130,12 @@ Please wait while the system is prepared for autoinstallation.</p>
 		}
 		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
 		{
-		    y2milestone("Calling auto client with: %1",  eval(Profile::current[resource]:$[]));
+            if( d["X-SuSE-YaST-AutoLogResource"]:"true" == "true" ) {
+    		    y2milestone("Calling auto client with: %1",  eval(Profile::current[resource]:$[]));
+            } else {
+                y2milestone("logging for resource %1 turned off",resource);
+                y2debug("Calling auto client with: %1",  eval(Profile::current[resource]:$[]));
+            }
 		    if (size(Profile::current[resource]:$[]) > 0 )
                     {
                         Step(p);

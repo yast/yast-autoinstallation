@@ -139,6 +139,7 @@
     global define boolean Import (map settings)
     {
         SetModified ();
+        y2milestone("General import: %1",settings);
         //language =	settings["language"]:"";
         //keyboard =      settings["keyboard"]:$[];;
         //Clock	=	settings["clock"]:$[];
@@ -178,7 +179,6 @@
      * @return void
      */
     global define void SetSignatureHandling() {
-        y2milestone("signature-handling is %1",signature_handling);
         if( haskey(signature_handling, "accept_unsigned_file" ) )
             Pkg::CallbackAcceptUnsignedFile( 
                 signature_handling["accept_unsigned_file"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
