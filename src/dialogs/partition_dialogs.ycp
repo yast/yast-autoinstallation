@@ -484,6 +484,7 @@ due to use of the \"max\" option.
                 }
                 else
                 {
+                    return_value = remove( return_value, "size" );
                     string partitionSize =  (string) UI::QueryWidget(`id(`partsize),   `Value);
                     string partitionNr   =  (string) UI::QueryWidget(`id(`partition_nr),   `Value);
                     if (  partitionSize == "" && partitionNr == "" && !(boolean)UI::QueryWidget(`id(`reuse), `Value) )
