@@ -37,6 +37,10 @@ wireless_essid| wireless_key| wireless_key_0| wireless_key_1| wireless_key_2 | w
 <!ELEMENT usercontrol (#PCDATA)>
 <!ELEMENT mtu (#PCDATA)>
 <!ELEMENT ifplugd_priority (#PCDATA)>
+<!ELEMENT managed (#PCDATA)>
+<!ATTLIST managed
+	config:type CDATA #FIXED "boolean"
+>
 <!ELEMENT module (#PCDATA)>
 <!ELEMENT modules (module_entry+)>
 <!ATTLIST modules
@@ -50,7 +54,7 @@ wireless_essid| wireless_key| wireless_key_0| wireless_key_1| wireless_key_2 | w
 >
 <!ELEMENT netmask (#PCDATA)>
 <!ELEMENT network (#PCDATA)>
-<!ELEMENT networking (dhcp_options?, dns?, interfaces, modules?, routing?)>
+<!ELEMENT networking (dhcp_options?, dns?, interfaces, managed?, modules?, routing?)>
 
 <!ELEMENT dhcp_options (dhclient_additional_options?, dhclient_client_id?, dhclient_hostname_option?)>
 <!ELEMENT dhclient_additional_options (#PCDATA)>
