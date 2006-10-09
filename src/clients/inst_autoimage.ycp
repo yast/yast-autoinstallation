@@ -17,7 +17,7 @@ import "Report";
 import "AutoinstImage";
 import "AutoinstSoftware";
 
-if (!AutoinstImage::enabled)
+if (!AutoinstSoftware::imaging)
     return `auto;
 
 
@@ -46,12 +46,15 @@ Progress::New(
 	      help_text );
 
 Progress::NextStage();
-if (!AutoinstImage::Get(AutoinstSoftware::ft_module, Installation::destdir ))
-{
-    Report::Error(_("Error while retrieving image."));
-    return `abort;
-}
 
+//if (!AutoinstImage::Get(AutoinstSoftware::ft_module, Installation::destdir ))
+//{
+//    Report::Error(_("Error while retrieving image."));
+//    return `abort;
+//}
+
+AutoinstImage::getScript();
+AutoinstImage::runScript();
 
 Progress::Finish();
 
