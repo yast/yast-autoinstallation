@@ -2,7 +2,7 @@
  * File:	modules/AutoinstImage.ycp
  * Package:	Auto-installation
  * Summary:	Process Auto-Installation Images
- * Author:	Anas Nashif <nashif@suse.de>
+ * Author:	Uwe Gansert <uwe.gansert@suse.de>
  *
  * $Id$
  */
@@ -12,132 +12,32 @@
     textdomain "autoinst";
 
     import "Progress";
+    import "AutoinstConfig";
+    import "URL";
+    import "AutoinstSoftware";
 
+    include "autoinstall/io.ycp";
 
-    global boolean enabled = false;
+    global define boolean getScript() {
+        boolean ret = false;
+        if( AutoinstSoftware::image["script_location"]:"" != "" ) {
+            map urltok = $[];
 
+            urltok = URL::Parse (AutoinstSoftware::image["script_location"]:"");
+            string scheme      = urltok["scheme"]:"default";
+            string host        = urltok["host"]:"";
+            string filepath    = urltok["path"]:"";
+            ret = Get(scheme,host,filepath, AutoinstConfig::scripts_dir+"/image.sh");
 
-    /*
-     * Port number where the Flamethrower configuration database can be
-     * found on the Flamethrower server.  (this is a udp-sender portbase
-     * entry)
-     */
-    string flamethrower_directory_portbase = "9000";
-
-    string tar_opts = "--overwrite -xp";
-
-    string udp_receiver_options = "";
-
-
-    string tmpname(string base, string tmpdir)
-    {
-        map bash = (map)SCR::Execute (.target.bash_output, "mktemp -t " + base + ".XXXXXXXXXX || exit 1 ", $["TMPDIR":tmpdir]);
-        string ret = bash["stdout"]:"";
-        ret = splitstring(ret,"\n")[0]:"";
-        SCR::Execute(.target.remove, ret);
-        return (ret);
-    }
-
-    global define boolean Client(
-            string interface,
-            string portbase,
-            string ttl,
-            boolean nosync,
-            boolean async,
-            string mcast_all_addr,
-            string dir,
-            string mod,
-            string tmp
-
-            ) {
-        if (interface == "" || portbase == "")
-            return false;
-        udp_receiver_options = "--interface " + interface;
-        udp_receiver_options = udp_receiver_options + " --portbase " + portbase;
-        if (ttl!="")
-            udp_receiver_options = udp_receiver_options + " --ttl " + ttl;
-        if (nosync)
-            udp_receiver_options = udp_receiver_options + " --nosync";
-
-        if (async)
-            udp_receiver_options = udp_receiver_options + " --async";
-
-        if (mcast_all_addr!= "")
-            udp_receiver_options = udp_receiver_options + " --mcast-all-addr " + mcast_all_addr;
-
-        string tarid = tmpname("multicast.tar", tmp);
-        string udp_cmd = sformat("udp-receiver %1 --file %2 2>/dev/null",
-                udp_receiver_options, tarid);
-        string tar_cmd = sformat("tar %1 -C %2 -f %3", tar_opts, dir, tarid);
-        y2debug("udp_cmd: %1", udp_cmd );
-        y2debug("tar_cmd: %1", tar_cmd );
-        if ((integer)SCR::Execute(.target.bash, udp_cmd)!= 0 )
-            return false;
-        if (UI::WidgetExists (`id (`pb)) && mod != "flamethrower_directory")
-            Progress::NextStage();
-        if ((integer)SCR::Execute(.target.bash, tar_cmd)!= 0 )
-            return false;
-
-        SCR::Execute(.target.remove, tarid);
-        return true;
-
-    }
-
-
-
-    global define list ListModules () {
-
-        string tmp = (string)SCR::Read(.target.tmpdir);
-        string dir = tmpname("flamethrower", tmp);
-        SCR::Execute(.target.mkdir, dir );
-        boolean ret = Client("eth0", flamethrower_directory_portbase, "", false, false, "", dir, "flamethrower_directory", tmp);
-        if (!ret)
-        {
-            y2error("Error running client");
-            return ([]);
+        } else if( AutoinstSoftware::image["script_source"]:"" != "" ) {
+            SCR::Write(.target.string,  AutoinstConfig::scripts_dir+"/image.sh", AutoinstSoftware::image["script_source"]:"");
+            ret = true;
         }
-        list<string> dir_contents = (list<string>)SCR::Read(.target.dir, dir);
-        dir_contents=filter(string m, dir_contents, ``(m!="" && m!="." && m!=".." && m!="flamethrower_directory"));
-        return dir_contents;
+        return ret;
     }
 
-
-
-    global define boolean Get (string Module, string targetdir) {
-        string portbase = flamethrower_directory_portbase;
-        boolean async = false;
-        string mcast_all_addr = "";
-        string ttl = "";
-        string expected_size = "0";
-
-
-        string tmp = (string)SCR::Read(.target.tmpdir);
-        string dir = tmpname("flamethrower", tmp);
-        SCR::Execute(.target.mkdir, dir );
-        boolean ret = Client("eth0", flamethrower_directory_portbase, "", false, false, "", dir, "flamethrower_directory", tmp);
-        if (!ret)
-            return ret;
-        string module_contents = (string)SCR::Read(.target.string, dir + "/" + Module );
-        list<string> lines = splitstring(module_contents, "\n");
-        foreach(string l , lines, ``{
-                list<string> keyval = splitstring(l, "=");
-                if (keyval[0]:"" == "PORTBASE")
-                    portbase = keyval[1]:"";
-                else if (keyval[0]:"" == "ASYNC" && keyval[1]:"" == "on")
-                    async = true;
-                else if (keyval[0]:"" == "TTL")
-                    ttl = keyval[1]:"";
-                else if (keyval[0]:"" == "MCAST_ALL_ADDR")
-                    mcast_all_addr = keyval[1]:"";
-                else if (keyval[0]:"" == "SIZE")
-                    expected_size = keyval[1]:"";
-                });
-
-        if (SCR::Read(.target.dir, targetdir) == nil )
-            SCR::Execute(.target.bash, "mkdir -p " + targetdir );
-
-        ret = Client("eth0", portbase, ttl, false, async, mcast_all_addr, targetdir, Module, targetdir);
-        return ret;
-
+    global define boolean runScript() {
+        SCR::Execute(.target.bash, "/bin/sh /tmp/image.sh" );
+        return true;
     }
 }
