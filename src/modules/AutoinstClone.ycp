@@ -233,10 +233,10 @@
             if( v["type"]:`CT_UNKNOWN==`CT_LVM)
             {
                 drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
-                drive["type"] = v["type"]:"";
+                drive["type"] = `CT_LVM;
             } else if( v["type"]:`CT_UNKNOWN==`CT_EVMS ) {
                 drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
-                drive["type"] = v["type"]:"";
+                drive["type"] = `CT_EVMS;
                 integer index = findlastof( drive["device"]:"", "/" );
                 string vg_name = substring(drive["device"]:"", index);
                 drive["device"] = "/dev"+vg_name;
