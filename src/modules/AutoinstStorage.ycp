@@ -413,6 +413,11 @@
         return settings;
     }
 
+    /*
+       the resize option in the storage lib requires the new size in the
+       "region" format. That format is hardly configureable by humans, so I
+       do the translation here
+    */
     global define list<map> region4resize( list<map> settings ) {
         // the storage lib requires the region to be set
         // we transform the size to the region here
@@ -444,6 +449,10 @@
         return settings;
     }
 
+    /*
+        the percentage must be calculated to an actual size.
+        This is done here
+    */
     global define list<map> percent2size( list<map> settings ) {
         map <string, map> tm = Storage::GetTargetMap();
         settings = maplist( map d, settings, ``{
@@ -472,6 +481,27 @@
         return settings;
     }
 
+    /*
+        if partition type is primary but not set in the profile, set it now
+    */
+    global define list<map> setPartitionType(list<map> settings) {
+        map <string, map> tm = Storage::GetTargetMap();
+        settings = maplist( map d, settings, ``{
+            if( d["type"]:`x == `CT_DISK ) {
+                integer mp = tm[ d["device"]:"xxx","max_primary" ]:0;
+                if( mp > 0 ) {
+                    d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
+                        if( haskey(pe, "partition_nr") && !haskey(pe,"partition_type") && pe["partition_nr"]:-1 <= mp )
+                            pe["partition_type"] = "primary";
+                        return pe;
+                    });
+                }
+            }
+            return d;
+        });
+        y2milestone("after setPartitionType = %1",settings);
+        return settings;
+    }
 
     /**
      * Get all the configuration from a map.
@@ -492,6 +522,7 @@
             settings = mountBy(settings);
             settings = region4resize(settings);
             settings = percent2size(settings);
+            settings = setPartitionType(settings);
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
