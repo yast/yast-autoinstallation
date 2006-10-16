@@ -32,6 +32,11 @@
         return `abort;
     }
 
+    Pkg::CallbackImportGpgKey("AutoInstall::callbackTrue");
+    Pkg::CallbackAcceptUnknownGpgKey("AutoInstall::callbackTrue");
+    Pkg::CallbackAcceptFileWithoutChecksum("AutoInstall::callbackTrue");
+    Pkg::CallbackAcceptUnsignedFile("AutoInstall::callbackTrue");
+
     symbol ret = (symbol)AutoSequence ();
     AddOnProduct::CleanModeConfigSources();
     return ret;
