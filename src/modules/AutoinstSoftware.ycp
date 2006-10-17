@@ -30,11 +30,7 @@
 
     global map<string, any> image = $[];
 
-    // Base selection
-    global string base = "";
-
-    // Add-on selections
-    global list<string> addons = [];
+    // patterns
     global list<string> patterns = [];
 
     // Kernel, force type of kernel to be installed
@@ -78,8 +74,6 @@
     global define boolean Import(map settings)
     {
         Software = settings;
-        base = settings["base"]:"";
-        addons = settings["addons"]:[];
         patterns = settings["patterns"]:[];
 
         string notFound = "";
@@ -138,13 +132,8 @@
     global define map Export()
     {
         map s = $[];
-        if (base != "")
-            s["base"] = base ;
         if (kernel != "")
             s["kernel"] = kernel ;
-
-        if (addons != [])
-            s["addons"] = addons ;
 
         if( patterns != [])
             s["patterns"] = patterns;
@@ -200,38 +189,19 @@
     global define string Summary()
     {
         string summary = "";
-
-        if( size( Pkg::GetSelections( `available, "base" ) ) > 0 ) {
-            summary = Summary::AddHeader(summary, _("Base Selection"));
-            summary = Summary::AddLine(summary, (base != "") ?
-                                       base : Summary::NotConfigured());
-            summary = Summary::AddHeader(summary, _("Add-on Selections"));
-            if (size( addons) > 0 )
-            {
-                summary = Summary::OpenList(summary);
-                foreach(string a, addons, ``{
-                    summary = Summary::AddListItem(summary, a);
-                });
-                summary = Summary::CloseList(summary);
-            }
-            else
-            {
-                summary = Summary::AddLine(summary, Summary::NotConfigured());
-            }
-            } else {
-            summary = Summary::AddHeader(summary, _("Selected Patterns"));
-            if (size( patterns ) > 0 )
-            {
-                summary = Summary::OpenList(summary);
-                foreach(string a, patterns, ``{
-                    summary = Summary::AddListItem(summary, a);
-                });
-                summary = Summary::CloseList(summary);
-            }
-            else
-            {
-                summary = Summary::AddLine(summary, Summary::NotConfigured());
-            }
+        
+        summary = Summary::AddHeader(summary, _("Selected Patterns"));
+        if (size( patterns ) > 0 )
+        {
+            summary = Summary::OpenList(summary);
+            foreach(string a, patterns, ``{
+                summary = Summary::AddListItem(summary, a);
+            });
+            summary = Summary::CloseList(summary);
+        }
+        else
+        {
+            summary = Summary::AddLine(summary, Summary::NotConfigured());
         }
         summary = Summary::AddHeader(summary, _("Individually Selected Packages"));
         summary = Summary::AddLine(summary, sformat("%1",
@@ -375,24 +345,6 @@
         boolean ok = true;
 
         Packages::Init(true);
-        string  base_selection = base;
-        if (size(base_selection) > 0)
-        {
-            if (! Pkg::ResolvableInstall( base_selection, `selection ))
-            {
-                y2error("Error while setting base selection: %1", base_selection);
-                Report::Error(sformat(_("Could not set base selection: %1"), base_selection));
-                return false;
-            }
-        }
-/*
-        else
-        {
-            Popup::Warning(_("Base selection is not set in control file.
-If packages to install have been added individually, 
-this message can be ignored."));
-        }
-*/
         list<string> failed = [];
 
         /* set SoftLock to avoid the installation of recommended patterns (#159466) */
@@ -408,37 +360,11 @@ this message can be ignored."));
             }
         });
 
-        foreach(string s, toset(addons),
-                ``{
-            if (! Pkg::ResolvableInstall( s, `selection ))
-            {
-                failed = add(failed, s);
-            }
-        });
-
-        list<string> failed_again = [];
-
         if (size(failed) > 0 )
         {
-            foreach(string s, failed,
-                    ``{
-                if (!Pkg::ResolvableInstall( s, `selection ))
-                {
-                    failed_again = add(failed_again, s);
-                }
-            });
+            y2error("Error while setting pattern: %1",  mergestring(failed, ","));
+            Report::Warning(sformat(_("Could not set patterns: %1."), mergestring(failed, ",")));
         }
-        if (size(failed_again) > 0 )
-        {
-            y2error("Error while setting-addon selection or pattern: %1",  mergestring(failed_again, ","));
-            Report::Warning(sformat(_("Could not set patterns or selections: %1."), mergestring(failed_again, ",")));
-        }
-/*
-        if (!Pkg::ActivateSelections())
-        {
-            return false;
-        }
-*/
 
         list<string> autoinstPacks = autoinstPackages ();
         y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
@@ -477,9 +403,6 @@ this message can be ignored."));
         Pkg::PkgSolve(false);
 
         SpaceCalculation::ShowPartitionWarning();
-        y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",
-                     Pkg::GetSelections(`selected, "base"),
-                     Pkg::GetSelections(`selected, ""));
 
         return (ok);
     }
