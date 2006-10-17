@@ -1572,6 +1572,21 @@ http://192.168.66.6/SLES10/CD1/updates
 	  </screen>
 	</example>   
   </section>
+  <section>
+    <title>Installing packages during stage 2</title>
+    <para>
+      if you want to install packages after the reboot during stage 2, instead of
+      during the normal installation process in stage 1, you can use the
+      <emphasis>post-packages</emphasis> element for that:
+    </para>
+        <screen>
+&lt;software&gt;
+  &lt;post-packages config:type=&quot;list&quot;&gt;
+    &lt;package&gt;yast2-cim&lt;/package&gt;
+  &lt;/post-packages&gt;
+&lt;/software&gt;
+        </screen>
+  </section>
     </section>
 
   <section id="CreateProfile.Services">
