@@ -278,9 +278,9 @@
     /**
      * Return list of software packages of calling client
      * @return map map of installed software package
-     *	"base" -> string (base selection)
-     *		"addons" -> list<string> addon selections
+     *		"patterns" -> list<string> addon selections
      *		"packages" -> list<string> user selected packages
+     *      "remove-packages" -> list<string> packages to remove
      */
     global define map<string, any > Software()
     {
@@ -325,7 +325,7 @@
             list<map<string,any> > xpattern = filter( map<string,any> p, all_xpatterns, ``( p["name"]:"" == tmp_pattern ) );
             map<string,any> found = xpattern[0]:$[];
             foreach( map<string,any> d, found["dependencies"]:[], ``{
-                if( d["res_kind"]:"" == "package" )
+                if( d["res_kind"]:"" == "package" && d["dep_kind"]:"" == "requires" )
                     patternPackages = add(patternPackages, d["name"]:"");
             });
         });
@@ -341,9 +341,9 @@
             });
         }
 
-        software["packages"] = filter(string pkg, userpackages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml"));
-        software["patterns"] = patterns;
-        software["remove-packages"] = removepackages;
+        software["packages"] = sort( filter(string pkg, userpackages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml")) );
+        software["patterns"] = sort( patterns );
+        software["remove-packages"] = sort( removepackages );
         return software;
     }
 
