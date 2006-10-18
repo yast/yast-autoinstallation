@@ -15,6 +15,7 @@ drive =
     is_evms_vg? &
     partitions? &
     pesize? &
+    device_type? &
     use?
   }
 initialize =
@@ -61,7 +62,6 @@ y2_partition =
   | part_raid_type
   | part_region
   | part_size
-  | part_type
   | part_usepart
 partition = element partition { y2_partition* }
 part_create =
@@ -137,5 +137,5 @@ part_lvm_group = element lvm_group { text }
 pesize = element pesize { text }
 part_evms_group = element evms_group { text }
 part_resize = element resize { BOOLEAN }
-part_type = element type { SYMBOL }
+device_type = element type { SYMBOL }
 
