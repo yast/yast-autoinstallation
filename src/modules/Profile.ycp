@@ -635,7 +635,7 @@
             [
             _("Checking XML with RNG validation..."),
             "/usr/bin/xmllint --noout --relaxng "
-            + Directory::schemadir + "/autoyast/rng/profile.rng",
+            + Directory::schemadir + "/autoyast/rng/profile.rng", ""
             ]
         ];
 
@@ -643,7 +643,7 @@
             validators = add( validators, [
             _("Checking XML with RNC validation..."),
             "/usr/bin/jing >&2 -c "
-            + Directory::schemadir + "/autoyast/rnc/profile.rnc",
+            + Directory::schemadir + "/autoyast/rnc/profile.rnc", "jing_sucks"
             ] );
         }
 
@@ -659,7 +659,7 @@
             summary = summary + cmd + "\n";
             summary = summary + o["stderr"]:"" + "\n";
             summary = summary + "\n";
-            if( o["exit"]:1 != 0 )
+            if( o["exit"]:1 != 0 || (i[2]:"" == "jing_sucks" && size(o["stderr"]:"") > 0 ) )
                     valid = false;
         });
         if( ! valid ) {
