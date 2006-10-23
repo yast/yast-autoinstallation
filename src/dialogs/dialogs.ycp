@@ -396,7 +396,7 @@ were imported correctly."));
 		_("Checking XML with RNC validation..."),
 		"/usr/bin/jing >&2 -c "
 		// only leftovers in /usr/share/autoinstall/rnc/profile.rnc
-		+ Directory::schemadir + "/autoyast/rnc/profile.rnc",
+		+ Directory::schemadir + "/autoyast/rnc/profile.rnc", "jing sucks"
 		],
 	    ];
 
@@ -409,8 +409,7 @@ were imported correctly."));
 
 	    map o = (map)SCR::Execute (.target.bash_output, cmd);
 	    y2debug("validation output: %1", o);
-
-	    summary = summary + (o["exit"]:1 == 0? html_ok: html_ko);
+	    summary = summary + ( (o["exit"]:1 != 0 || (i[2]:"" == "jing sucks" && size(o["stderr"]:"") > 0) )? html_ko: html_ok);
 	    UpdateValidDialog (summary, o["stderr"]:"");
 	});
 
