@@ -4,29 +4,59 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 namespace config = "http://www.suse.com/1.0/configns"
 
-group_password = element group_password { text }
-groupname = element groupname { text }
-groups =
+gr_groups =
   element groups {
-    attribute config:type { text },
-    group+
+    LIST,
+    gr_group*
   }
-userlist = element userlist { text }
-expire = element expire { text }
-inactive = element inactive { text }
-skel = element skel { text }
+gr_group = element group {
+    element group_password { text }? &
+    element groupname      { text }? &
+    element userlist       { text }?
+}
+
 user_defaults =
   element user_defaults {
-    expire?, group?, home?, inactive?, shell?, skel?
+    expire?, ud_group?, ud_groups?, home?, inactive?, shell?, skel?
   }
-gid =
-  element gid { INTEGER }
-encrypted =
-  element encrypted { BOOLEAN }
+expire = element expire { text }
+ud_group = element group { text }
+ud_groups = element groups { text }
+inactive = element inactive { text }
+shell = element shell { text }
+skel = element skel { text }
+user = element user {
+    encrypted? &
+    fullname? &
+    u_gid? &
+    home? &
+    shell? &
+    uid? &
+    user_password? &
+    username? &
+    u_group? &
+    u_groups? &
+    password_settings?
+}
+encrypted = element encrypted { BOOLEAN }
 fullname = element fullname { text }
+u_gid = element gid { text }
+home = element home { text }
 user_password = element user_password { text }
 username = element username { text }
 uid = element uid { text }
+u_group = element group { text }
+u_groups = element groups { text }
+
+password_settings = element password_settings {
+    element expire { text }? &
+    element flag   { text }? &
+    element inact  { text }? &
+    element max    { text }? &
+    element min    { text }? &
+    element warn   { text }?
+}
+
 users =
   element users {
     LIST,
