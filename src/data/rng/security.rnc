@@ -35,6 +35,8 @@ useradd_cmd = element useradd_cmd { text }
 userdel_postcmd = element userdel_postcmd { text }
 userdel_precmd = element userdel_precmd { text }
 group_encryption = element group_encryption { text }
+displaymanager_shutdown = element displaymanager_shutdown { text }
+passwd_remember_history = element passwd_remember_history { text }
 y2_security =
   console_shutdown
   | cracklib_dict_path
@@ -68,4 +70,6 @@ y2_security =
   | userdel_postcmd
   | userdel_precmd
   | group_encryption
+  | displaymanager_shutdown
+  | passwd_remember_history
 security = element security { y2_security* }
