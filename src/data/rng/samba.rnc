@@ -2,17 +2,34 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 namespace config = "http://www.suse.com/1.0/configns"
 
-samba-client = element samba-client { global }
-# <!ELEMENT global (winbind? , workgroup?)>
+samba-client = element samba-client { smb_client_global? & smb_client_ad? & smb_client_join? }
+smb_client_global = element global {
+    element guest_access { BOOLEAN }? &
+    element max_shares   { INTEGER }? &
+    element mkhomedir    { BOOLEAN }? &
+    element shares_group { text }? &
+    element winbind      { BOOLEAN }? &
+    element winbind_caching { BOOLEAN }? &
+    element workgroup    { text }?
+}
+smb_client_ad = element active_directory {
+    element kdc { text }?
+}
+smb_client_join = element join {
+    element password { text }? &
+    element user     { text }?
+}
+
 winbind =
   element winbind { BOOLEAN }
 workgroup = element workgroup { text }
-samba-server =
-  element samba-server {
-    client, global, role, service, shares, trusteddomains, version
-  }
+
+# FIXME:
+#samba-server =
+#  element samba-server {
+#    client, global, role, service, shares, trusteddomains, version
+#  }
 role = element role { text }
-client = element client { global }
 version = element version { text }
 shares =
   element shares {
@@ -24,9 +41,15 @@ trusteddomains =
     LIST,
     trusteddomain*
   }
-trusteddomain = element trusteddomain { domain, password }
-y2_share = options | share
+trusteddomain = element trusteddomain { trusteddomain_domain, trusteddomain_password }
+trusteddomain_domain   = element domain { text }
+trusteddomain_password = element password { text }
+y2_share = samba_options | share
+samba_options = element options {
+    LIST,
+    option*
+}
 share = element share { (text | y2_share)* }
-option = element option { key, value? }
-# <!ELEMENT options  (option*)>
-# <!ELEMENT key  (#PCDATA)>
+option = element option { samba_option_key, samba_option_val? }
+samba_option_key = element key { text }
+samba_option_val = element value { text }
