@@ -17,17 +17,23 @@ fudge_options = element fudge_options { text }
 param = element param { text }
 peer =
   element peer {
-    (address
-     | comment
+    (peer_address
+     | peer_comment
      | create_symlink
-     | device
+     | peer_device
      | fudge_comment
      | fudge_options
      | initial_sync
-     | options
+     | peer_options
      | param
-     | type)*
+     | peer_type)*
   }
+peer_type = element type { text }
+peer_options = element options { text }
+peer_device  = element device  { text }
+peer_comment = element comment { text }
+peer_address = element address { text }
+
 peers =
   element peers {
     LIST,
