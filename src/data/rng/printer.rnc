@@ -47,10 +47,10 @@ y2_printcap_entry =
   | model
   | name
   | nick
-  | options
+  | printcap_entry_options
   | ppd_options
   | raw
-  | state
+  | printcap_entry_state
   | uri
 location = element location { text }
 bannerstart = element bannerstart { text }
@@ -58,12 +58,16 @@ bannerend = element bannerend { text }
 manufacturer = element manufacturer { text }
 model = element model { text }
 nick = element nick { text }
+printcap_entry_state = element state { text }
+printcap_entry_options = element options { text }
 ppd_options =
   element ppd_options {
     LIST,
     ppd_option*
   }
-ppd_option = element ppd_option { key, value }
+ppd_option = element ppd_option { ppd_option_key, ppd_option_val }
+ppd_option_key = element key { text }
+ppd_option_val = element value { text }
 denyusers =
   element denyusers {
     LIST,
