@@ -14,13 +14,9 @@ rncdir = $(prefix)/share/autoinstall/rnc
 
 rnc_DATA = \
 	bootloader.rnc \
-	lvm.rnc \
 	mail.rnc \
-	ntpclient.rnc \
 	online_update.rnc \
 	printer.rnc \
-	raid.rnc \
-	runlevels.rnc \
 	samba.rnc \
 	sound.rnc \
 	sysconfig.rnc
