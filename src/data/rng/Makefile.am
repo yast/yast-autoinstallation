@@ -18,7 +18,6 @@ rnc_DATA = \
 	inetd.rnc \
 	ldap_client.rnc \
 	lvm.rnc \
-	mail.rnc \
 	nis.rnc \
 	nis_server.rnc \
 	ntpclient.rnc \
