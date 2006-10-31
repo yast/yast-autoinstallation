@@ -13,7 +13,6 @@
 rncdir = $(prefix)/share/autoinstall/rnc
 
 rnc_DATA = \
-	bootloader.rnc \
 	online_update.rnc \
 	printer.rnc \
 	samba.rnc \
