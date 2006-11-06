@@ -386,8 +386,8 @@
         if (size(PackageAI::toremove) > 0 )
         {
             foreach (string rp, PackageAI::toremove, ``{
-                //Pkg::PkgNeutral(rp);
-                Pkg::ResolvableSetSoftLock( rp, `package ); // FIXME: maybe better Pkg::PkgTaboo(rp) ?
+                //Pkg::ResolvableSetSoftLock( rp, `package ); // FIXME: maybe better Pkg::PkgTaboo(rp) ?
+                Pkg::PkgTaboo(rp);
             });
 
             Pkg::DoRemove(PackageAI::toremove);
