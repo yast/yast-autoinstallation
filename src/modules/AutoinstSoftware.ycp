@@ -458,7 +458,8 @@ this message can be ignored."));
         {
             foreach (string rp, PackageAI::toremove, ``{
                 //Pkg::PkgNeutral(rp);
-                Pkg::ResolvableSetSoftLock( rp, `package );
+                //Pkg::ResolvableSetSoftLock( rp, `package );
+                Pkg::PkgTaboo(rp);
             });
 
             Pkg::DoRemove(PackageAI::toremove);
