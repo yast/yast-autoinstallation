@@ -4,23 +4,25 @@ namespace config = "http://www.suse.com/1.0/configns"
 
 LOAD_ALSA_SEQ = element LOAD_ALSA_SEQ { text }
 module_conf =
-  element module_conf { alias?, model?, module?, options?, unique_key? }
+  element module_conf { snd_alias? & model? & snd_module? & snd_options? & unique_key? }
 modules_conf =
   element modules_conf {
-    attribute config:type { text },
     module_conf*
   }
 new =
   element new {
-    attribute config:type { text },
     text
   }
-rc_vars = element rc_vars { LOAD_ALSA_SEQ }
+snd_options = element options {
+    Anything*
+}
+
+rc_vars = element rc_vars { LOAD_ALSA_SEQ* }
 snd_enable = element snd_enable { text }
 snd_index = element snd_index { text }
 sound =
   element sound {
-    configure_detected?, modules_conf?, rc_vars?, volume_settings?
+    configure_detected? & modules_conf? & rc_vars? & volume_settings?
   }
 state = element state { text }
 unique_key = element unique_key { text }
@@ -32,29 +34,10 @@ volume_component_settings =
   }
 volume_entry =
   element volume_entry {
-    attribute config:type { text }?,
-    Headphone?,
-    Master?,
-    volume_component*
-  }
-Headphone =
-  element Headphone {
-    attribute config:type { text },
-    text
-  }
-Master =
-  element Master {
-    attribute config:type { text },
-    text
-  }
-volume_component =
-  element volume_component {
-    attribute config:type { text },
-    volume_component_settings*
+    Anything*
   }
 volume_settings =
   element volume_settings {
-    attribute config:type { text },
     volume_entry*
   }
 configure_detected =
@@ -65,3 +48,5 @@ enable = element enable { text }
 index = element index { text }
 isapnp = element isapnp { text }
 joystick = element joystick { text }
+snd_module = element module { text }
+snd_alias  = element alias  { text }
