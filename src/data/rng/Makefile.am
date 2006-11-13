@@ -14,7 +14,6 @@ rncdir = $(prefix)/share/autoinstall/rnc
 
 rnc_DATA = \
 	samba.rnc \
-	sound.rnc \
-	sysconfig.rnc
+	sound.rnc
 
 EXTRA_DIST = $(rnc_DATA) 
