@@ -75,7 +75,7 @@
                 d["type"] = `CT_MD;
             } else if( haskey(d, "is_evms_vg") && d["is_evms_vg"]:false == true ) {
                     d["type"] = `CT_EVMS;
-            } else {
+            } else if( ! haskey(d,"type") ) {
                 d["type"] = `CT_DISK;
             }
 
