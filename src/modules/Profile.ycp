@@ -638,8 +638,9 @@
             + Directory::schemadir + "/autoyast/rng/profile.rng", ""
             ]
         ];
-
-        if ( ! Stage::cont() ) {
+        Pkg::TargetInitialize("/");
+        Pkg::TargetLoad();
+        if ( ! Stage::cont() && Pkg::IsProvided("jing") ) {
             validators = add( validators, [
             _("Checking XML with RNC validation..."),
             "/usr/bin/jing >&2 -c "

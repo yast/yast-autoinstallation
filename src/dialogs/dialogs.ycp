@@ -391,14 +391,17 @@ were imported correctly."));
 		"/usr/bin/xmllint --noout --relaxng "
 		// was: /usr/share/autoinstall/rng/profile.rng
 		+ Directory::schemadir + "/autoyast/rng/profile.rng",
-		],
-	    [
-		_("Checking XML with RNC validation..."),
-		"/usr/bin/jing >&2 -c "
-		// only leftovers in /usr/share/autoinstall/rnc/profile.rnc
-		+ Directory::schemadir + "/autoyast/rnc/profile.rnc", "jing sucks"
-		],
+		]
 	    ];
+    Pkg::TargetInitialize("/");
+    Pkg::TargetLoad();
+    if( Pkg::IsProvided("jing") ) {
+        validators = add(validators, [
+                _("Checking XML with RNC validation..."),
+                "/usr/bin/jing >&2 -c "
+                + Directory::schemadir + "/autoyast/rnc/profile.rnc", "jing sucks"
+                ] );
+    }
 
 	foreach (list i, validators, {
 	    string header = i[0]:"";
