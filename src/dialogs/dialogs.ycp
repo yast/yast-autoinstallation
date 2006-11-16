@@ -16,6 +16,7 @@
     import "Wizard";
     import "AutoinstConfig";
     import "AutoinstClass";
+    import "PackageSystem";
     include "autoinstall/helps.ycp";
 
     /**
@@ -393,9 +394,7 @@ were imported correctly."));
 		+ Directory::schemadir + "/autoyast/rng/profile.rng",
 		]
 	    ];
-    Pkg::TargetInitialize("/");
-    Pkg::TargetLoad();
-    if( Pkg::IsProvided("jing") ) {
+    if( PackageSystem::Installed("jing") ) {
         validators = add(validators, [
                 _("Checking XML with RNC validation..."),
                 "/usr/bin/jing >&2 -c "
