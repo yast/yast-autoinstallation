@@ -19,10 +19,6 @@ drive =
     element use        { text }? &
     partitions?
   }
-keep_partition_id = element keep_partition_id { text }
-keep_partition_fsys = element keep_partition_fsys { text }
-part_usepart =
-  element usepart { INTEGER }
 prefer_remove =
   element prefer_remove { BOOLEAN }
 partitions =
@@ -55,7 +51,6 @@ y2_partition =
   | part_raid_type
   | part_region
   | part_size
-  | part_usepart
 partition = element partition { y2_partition* }
 part_create =
   element create { BOOLEAN }
@@ -114,7 +109,7 @@ part_raid_name = element raid_name { text }
 part_raid_type = element raid_type { text }
 part_partition_nr =
   element partition_nr { INTEGER }
-part_partition_type = element partition_type { text }
+part_partition_type = element partition_type { "primary" }
 part_partition_id =
   element partition_id { INTEGER }
 part_region =
