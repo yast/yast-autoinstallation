@@ -8,4 +8,5 @@ dtddir = $(prefix)/share/autoinstall/dtd
 
 dtd_DATA = $(wildcard *.dtd)
 
-EXTRA_DIST = $(dtd_DATA) 
+#EXTRA_DIST = $(dtd_DATA) 
+EXTRA_DIST = 
