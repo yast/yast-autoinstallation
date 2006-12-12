@@ -42,6 +42,7 @@ y2_partition =
   | part_evms_group
   | part_mount
   | part_mountby
+  | part_filesystem_id
   | part_partition_id
   | part_partition_nr
   | part_partition_type
@@ -112,6 +113,8 @@ part_partition_nr =
 part_partition_type = element partition_type { "primary" }
 part_partition_id =
   element partition_id { INTEGER }
+part_filesystem_id =
+  element filesystem_id { INTEGER }
 part_region =
   element region {
     LIST,
