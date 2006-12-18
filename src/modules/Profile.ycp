@@ -16,6 +16,8 @@
     import "XML";
     import "Popup";
     import "ProductControl";
+    import "Directory";
+    import "PackageSystem";
 
     include "autoinstall/xml.ycp";
 
@@ -74,7 +76,7 @@
                 d["type"] = `CT_MD;
             } else if( haskey(d, "is_evms_vg") && d["is_evms_vg"]:false == true ) {
                     d["type"] = `CT_EVMS;
-            } else {
+            } else if( ! haskey(d,"type") ) {
                 d["type"] = `CT_DISK;
             }
 
@@ -623,4 +625,47 @@
         m = setMValue( l, v, m );
         return m;
     }
+
+    global void checkProfile() {
+        string file = AutoinstConfig::tmpDir + "/" + "valid.xml";
+        Save(file);
+        string summary = "Some schema check failed!\nPlease attach your logfile to bug id 211014\n\n";
+        boolean valid = true;
+
+        list<list> validators = [
+            [
+            _("Checking XML with RNG validation..."),
+            "/usr/bin/xmllint --noout --relaxng "
+            + Directory::schemadir + "/autoyast/rng/profile.rng", ""
+            ]
+        ];
+        if ( ! Stage::cont() && PackageSystem::Installed("jing") ) {
+            validators = add( validators, [
+            _("Checking XML with RNC validation..."),
+            "/usr/bin/jing >&2 -c "
+            + Directory::schemadir + "/autoyast/rnc/profile.rnc", "jing_sucks"
+            ] );
+        }
+
+        foreach (list i, validators, {
+            string header = i[0]:"";
+            string cmd = i[1]:"" + " " + file;
+
+            summary = summary + header + "\n";
+
+            map o = (map)SCR::Execute (.target.bash_output, cmd);
+            y2debug("validation output: %1", o);
+
+            summary = summary + cmd + "\n";
+            summary = summary + o["stderr"]:"" + "\n";
+            summary = summary + "\n";
+            if( o["exit"]:1 != 0 || (i[2]:"" == "jing_sucks" && size(o["stderr"]:"") > 0 ) )
+                    valid = false;
+        });
+        if( ! valid ) {
+            Popup::Error(summary);
+            y2milestone("Profile check failed please attach the log to bug id 211014: %1",summary);
+        }
+    }
+
 }
