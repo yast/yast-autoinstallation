@@ -16,6 +16,7 @@
     import "Wizard";
     import "AutoinstConfig";
     import "AutoinstClass";
+    import "PackageSystem";
     include "autoinstall/helps.ycp";
 
     /**
@@ -377,26 +378,29 @@ were imported correctly."));
 	// some of these can be commented out for the release
 	list<list> validators = [
 	    [
-		_("Checking XML without DTD validation..."),
+		_("Checking XML without validation..."),
 		"/usr/bin/xmllint --noout",
 		],
+        /*
 	    [
 		_("Checking XML with DTD validation..."),
 		"/usr/bin/xmllint --noout --valid"
 		],
+        */
 	    [
 		_("Checking XML with RNG validation..."),
 		"/usr/bin/xmllint --noout --relaxng "
 		// was: /usr/share/autoinstall/rng/profile.rng
 		+ Directory::schemadir + "/autoyast/rng/profile.rng",
-		],
-	    [
-		_("Checking XML with RNC validation..."),
-		"/usr/bin/jing >&2 -c "
-		// only leftovers in /usr/share/autoinstall/rnc/profile.rnc
-		+ Directory::schemadir + "/autoyast/rnc/profile.rnc",
-		],
+		]
 	    ];
+    if( PackageSystem::Installed("jing") ) {
+        validators = add(validators, [
+                _("Checking XML with RNC validation..."),
+                "/usr/bin/jing >&2 -c "
+                + Directory::schemadir + "/autoyast/rnc/profile.rnc", "jing sucks"
+                ] );
+    }
 
 	foreach (list i, validators, {
 	    string header = i[0]:"";
@@ -407,8 +411,7 @@ were imported correctly."));
 
 	    map o = (map)SCR::Execute (.target.bash_output, cmd);
 	    y2debug("validation output: %1", o);
-
-	    summary = summary + (o["exit"]:1 == 0? html_ok: html_ko);
+	    summary = summary + ( (o["exit"]:1 != 0 || (i[2]:"" == "jing sucks" && size(o["stderr"]:"") > 0) )? html_ko: html_ok);
 	    UpdateValidDialog (summary, o["stderr"]:"");
 	});
 
