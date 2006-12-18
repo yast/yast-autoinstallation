@@ -9,26 +9,18 @@ partitioning =
   }
 drive =
   element drive {
-    element device {text}? &
-    initialize? &
-    is_lvm_vg? &
-    is_evms_vg? &
-    partitions? &
-    pesize? &
-    use?
+    element device     { text }? &
+    element initialize { BOOLEAN }? &
+    element is_lvm_vg  { BOOLEAN }? &
+    element is_evms_vg { BOOLEAN }? &
+    element lvm2       { BOOLEAN }? &
+    element pesize     { text }? &
+    element type       { SYMBOL }? &
+    element use        { text }? &
+    partitions?
   }
-initialize =
-  element initialize { BOOLEAN }
-keep_partition_id = element keep_partition_id { text }
-keep_partition_fsys = element keep_partition_fsys { text }
-part_usepart =
-  element usepart { INTEGER }
 prefer_remove =
   element prefer_remove { BOOLEAN }
-is_lvm_vg =
-  element is_lvm_vg { BOOLEAN }
-is_evms_vg =
-  element is_evms_vg { BOOLEAN }
 partitions =
   element partitions {
     LIST,
@@ -43,26 +35,23 @@ y2_partition =
   | part_format
   | part_fs_options
   | part_fstopt
-  | part_grow
   | part_label
   | part_loop_fs
   | part_lv_name
   | part_lvm_group
   | part_evms_group
-  | part_maxsize
   | part_mount
   | part_mountby
+  | part_filesystem_id
   | part_partition_id
   | part_partition_nr
   | part_partition_type
   | part_raid_name
   | part_resize
-#  | raid_options
+  | part_raid_options
   | part_raid_type
   | part_region
   | part_size
-  | part_type
-  | part_usepart
 partition = element partition { y2_partition* }
 part_create =
   element create { BOOLEAN }
@@ -99,12 +88,14 @@ opt_max_inode_space =
 opt_raid = element opt_raid { option_str, option_value }
 opt_reserved_blocks =
   element opt_reserved_blocks { option_str, option_value }
-# have to integrate raid first
-#raid_options =
-#  element raid_options { chunk_size, parity_algorithm, raid_type }
+
+part_raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? }
+persistent_superblock = element persistent_superblock { BOOLEAN }
+raid_type = element raid_type { text }
+chunk_size = element chunk_size { text }
+parity_algorithm = element parity_algorithm { text }
+
 part_fstopt = element fstopt { text }
-part_grow =
-  element grow { BOOLEAN }
 part_label = element label { text }
 part_loop_fs =
   element loop_fs { BOOLEAN }
@@ -119,9 +110,11 @@ part_raid_name = element raid_name { text }
 part_raid_type = element raid_type { text }
 part_partition_nr =
   element partition_nr { INTEGER }
-part_partition_type = element partition_type { text }
+part_partition_type = element partition_type { "primary" }
 part_partition_id =
   element partition_id { INTEGER }
+part_filesystem_id =
+  element filesystem_id { INTEGER }
 part_region =
   element region {
     LIST,
@@ -130,12 +123,8 @@ part_region =
 region_entry =
   element region_entry { INTEGER }
 part_size = element size { text }
-part_maxsize = element maxsize { text }
-use = element use { text }
 part_lv_name = element lv_name { text }
 part_lvm_group = element lvm_group { text }
-pesize = element pesize { text }
 part_evms_group = element evms_group { text }
 part_resize = element resize { BOOLEAN }
-part_type = element type { SYMBOL }
 
