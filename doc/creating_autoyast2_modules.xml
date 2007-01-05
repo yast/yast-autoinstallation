@@ -426,207 +426,253 @@ GenericName=Configure NIS client
     <para>In addition to the keywords from the last example, AutoYaST also evaluates
       the following keywords:</para>
 
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInst</refname>
-	<refpurpose>Is the module compatible with the
-	  AutoYaST and can Import/Export configurations?</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values:</title>
-	<para>
-	  <itemizedlist>
-	    <listitem>
-	      <para><emphasis>all</emphasis>: Full auto-installation support,
-		including  the AutoYaST interface and writing configurations
-		during autoinstall. </para>	
-	    </listitem>
-	    <listitem>
-	      <para><emphasis>write</emphasis>: Write only support. No
-		integration into AutoYaST interface. </para>	
-	    </listitem>     
-	    <listitem>
-	      <para><emphasis>configure</emphasis>: Configuration only support.
-		Normally used only with parts related to installation like
-		partitioning and general options which have no run-time module
-		with support for auto-installation. Data is written using the
-		common installation process and modules available in YaST2</para>
-	    </listitem>    
+    <itemizedlist>
+	<!-- <title>Desktop file Keywords</title> -->
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInst</emphasis>
+	    - Is the module compatible with the
+	    AutoYaST and can Import/Export configurations?</para>
+	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+	    	    <para><emphasis>all</emphasis>: Full auto-installation support,
+		    including  the AutoYaST interface and writing configurations
+		    during autoinstall. </para>	
+		</listitem>
+		<listitem>
+	    	    <para><emphasis>write</emphasis>: Write only support. No
+		    integration into AutoYaST interface. </para>	
+		</listitem>     
+		<listitem>
+	    	    <para><emphasis>configure</emphasis>: Configuration only support.
+		    Normally used only with parts related to installation like
+		    partitioning and general options which have no run-time module
+		    with support for auto-installation. Data is written using the
+		    common installation process and modules available in YaST2</para>
+		</listitem>    
+	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>
 
-	  </itemizedlist>  
-	</para>
-      </refsect1>
-    </refentry>
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstPath</refname>
-	<refpurpose>Path in the control file</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values:</title>
-	<para>	configure or install: All run-time configuration modules are
-	  contained in the <emphasis>configure</emphasis> resource. Only
-	  configuration data directly touching the installation of a system are
-	  contained in the <emphasis>install</emphasis> resource.</para>
-      </refsect1>
-    </refentry>
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstClient</refname>
-	<refpurpose>Name of the client to call</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>	Name of the client to be called by AutoYaST</para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para>&lt;module name&gt;_auto</para>
-      </refsect1>
-    </refentry>
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstDataType</refname>
-	<refpurpose>Data type of configuration section</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para><emphasis>map</emphasis> or <emphasis>list</emphasis></para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para>map</para>
-      </refsect1>
-    </refentry>
-     <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstResource</refname>
-	<refpurpose>Name of the resource in the Profile</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>string</para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para></para>
-      </refsect1>
-    </refentry>   
-     <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstRequires</refname>
-	<refpurpose>What modules are required before this module is run. </refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>comma delimited list of required modules</para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para></para>
-      </refsect1>
-    </refentry>   
+        <listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstPath</emphasis>
+	    - Path in the control file</para>
+    	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>configure or install: All run-time configuration modules are
+		    contained in the <emphasis>configure</emphasis> resource. Only
+		    configuration data directly touching the installation of a system are
+		    contained in the <emphasis>install</emphasis> resource.</para>
+		</listitem>
+    	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>
+
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstClient</emphasis>
+	    - Name of the client to call</para>
+	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>Name of the client to be called by AutoYaST</para>
+		</listitem>
+    	    </itemizedlist>
+    	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>&lt;module name&gt;_auto</para>
+		</listitem>
+    	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>
+
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstDataType</emphasis>
+	    - Data type of configuration section</para>
+    	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para><emphasis>map</emphasis> or <emphasis>list</emphasis></para>
+		</listitem>
+    	    </itemizedlist>
+    	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>map</para>
+		</listitem>
+    	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>
+
+        <listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstResource</emphasis>
+	    - Name of the resource in the Profile</para>
+    	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>string</para>
+		</listitem>
+    	    </itemizedlist>
+    	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>(empty)</para>
+		</listitem>
+    	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>   
+
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstRequires</emphasis>
+	    - What modules are required before this module is run. </para>
+	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>comma delimited list of required modules</para>
+		</listitem>
+	    </itemizedlist>
+	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>(empty list)</para>
+		</listitem>
+	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>   
 
 <!-- merging stuff -->
 
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstMerge</refname>
-	<refpurpose>Multiple sections in the profile can be handled by one module</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>comma delimited list of sections to merge (see also X-SuSE-YaST-AutoInstMergeTypes)</para>
-	<para>The Users module for example handles also groups and user_defaults.</para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para></para>
-      </refsect1>
-    </refentry>   
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstMergeTypes</refname>
-	<refpurpose>Which datatypes are the section of that will be merged to be handled by one module</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>comma delimited list of datatypes (list or map) for the sections from X-SuSE-YaST-AutoInstMerge</para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para></para>
-      </refsect1>
-    </refentry>   
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstMerge</emphasis>
+	    - Multiple sections in the profile can be handled by one module</para>
+	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>comma delimited list of sections to merge
+		    (see also X-SuSE-YaST-AutoInstMergeTypes)</para>
+		    <para>The Users module for example handles also
+		    groups and user_defaults.</para>
+		</listitem>
+    	    </itemizedlist>
+    	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>(empty)</para>
+		</listitem>
+    	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>   
+
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstMergeTypes</emphasis>
+	    - Which datatypes are the section of that will be merged to be
+	    handled by one module</para>
+    	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>comma delimited list of datatypes (list or map) for
+		    the sections from X-SuSE-YaST-AutoInstMerge</para>
+		</listitem>
+	    </itemizedlist>
+	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>(empty)</para>
+		</listitem>
+	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>   
 
 <!-- clone stuff -->
 
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstClonable</refname>
-	<refpurpose>is this module able to clone the actual system</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>a boolean (true,false)</para>
-	<para>If this is true, the module will appear in the list of modules you can choose from during the cloning of the actual system. Your module will Read() and Export() it's data from the actual system then.</para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para>false</para>
-      </refsect1>
-    </refentry>   
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstClonable</emphasis>
+	    - is this module able to clone the actual system</para>
+    	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>a boolean (true,false)</para>
+		    <para>If this is true, the module will appear in the list of
+		    modules you can choose from during the cloning of the actual
+		    system. Your module will Read() and Export() it's data from
+		    the actual system then.</para>
+		</listitem>
+	    </itemizedlist>
+    	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>false</para>
+		</listitem>
+	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>   
 
 <!-- schema stuff -->
 
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstSchema</refname>
-	<refpurpose>base name of schema file, including the rnc
-	extension (Relax NG compact syntax)</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>string</para>
-	<para></para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para></para>
-      </refsect1>
-    </refentry>
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstSchema</emphasis>
+	    - base name of schema file, including the rnc
+	    extension (Relax NG compact syntax)</para>
+    	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>string</para>
+		</listitem>
+    	    </itemizedlist>
+    	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>(empty)</para>
+		</listitem>
+    	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>
 
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoInstOptional</refname>
-	<refpurpose>is the element optional in the schema</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>a boolean (true,false)</para>
-	<para>Does this element has to appear in the profile? Unless you have a very basic module, this is always true.</para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para>true</para>
-      </refsect1>
-    </refentry>
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoInstOptional</emphasis>
+	    - is the element optional in the schema</para>
+	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>a boolean (true,false)</para>
+		    <para>Does this element has to appear in the profile?
+		    Unless you have a very basic module, this is always
+		    true.</para>
+		</listitem>
+    	    </itemizedlist>
+    	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>true</para>
+		</listitem>
+	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>
 
-    <refentry>
-      <refnamediv>
-	<refname>X-SuSE-YaST-AutoLogResource</refname>
-	<refpurpose>is the resource of your modul allowed to be logged (since SLES10SP1/10.2)</refpurpose>
-      </refnamediv>
-      <refsect1>
-	<title>Values</title>
-	<para>a boolean (true,false)</para>
-	<para>Do you allow autoyast to log the data of your resource into the logfile? The default is true but if you have sensible data like passwords, you might want to set this to false. That can always be overridden by Y2DEBUG=1</para>
-      </refsect1>
-      <refsect1>
-	<title>Default Value</title>
-	<para>true</para>
-      </refsect1>
-    </refentry>
+	<listitem>
+	    <para><emphasis>X-SuSE-YaST-AutoLogResource</emphasis>
+	    - is the resource of your modul allowed to be logged (since SLES10SP1/10.2)</para>
+    	    <itemizedlist>
+		<title>Values</title>
+		<listitem>
+		    <para>a boolean (true,false)</para>
+		    <para>Do you allow autoyast to log the data of your resource into the
+		    logfile? The default is true but if you have sensible data like
+		    passwords, you might want to set this to false. That can always be
+		    overridden by Y2DEBUG=1</para>
+		</listitem>
+	    </itemizedlist>
+	    <itemizedlist>
+		<title>Default Value</title>
+		<listitem>
+		    <para>true</para>
+		</listitem>
+	    </itemizedlist>
+	    <para>&nbsp;</para>
+	</listitem>
+
+    </itemizedlist>
 
   </section>
   <section>
