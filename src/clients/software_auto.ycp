@@ -92,6 +92,11 @@ more <b>add-on</b> selections and packages.
                     y2milestone("selecting package for installation: %1 -> %2", p, Pkg::PkgInstall(p));
                 });
             }
+            if (size(PackageAI::toremove) > 0) {
+                foreach(string p, PackageAI::toremove, ``{
+                    y2milestone("deselecting package for installation: %1 -> %2", p, Pkg::PkgTaboo(p));
+                });
+            }
             while ( ret == `again )
             {
                 ret = (symbol)WFM::CallFunction( "inst_packages", [ true, true ] );
@@ -240,6 +245,7 @@ more <b>add-on</b> selections and packages.
 
 
         PackageAI::toinstall = Pkg::FilterPackages(false, true, true, true);
+        PackageAI::toremove = Pkg::GetPackages(`taboo, true);
         AutoinstSoftware::addons = seladd;
         AutoinstSoftware::base =   selbase[0]:"";
         AutoinstSoftware::patterns = (list<string>)union( patadd, patadd); // FIXME: why are there double entries sometimes?
