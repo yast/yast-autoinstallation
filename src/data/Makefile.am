@@ -4,7 +4,7 @@
 # $Id$
 #
 
-SUBDIRS = dtd
+SUBDIRS =
 
 xmldir = $(prefix)/share/autoinstall/xslt
 
