@@ -1,0 +1,101 @@
+/**
+ * File:
+ * Package:     Auto-installation
+ * Author:      Uwe Gansert <ug@suse.de>
+ * Summary:
+ *
+ * Changes:     * initial
+   0.2:         * added Pkg::TargetInit
+   0.3:         * support for <post-packages>
+   0.4:         * support for the <ask> feature
+ * Version:     0.4
+ * $Id$
+
+   this client can be called from a running system,
+   to do the autoyast configuration.
+   You have to provide a profile and autoyast will
+   configure your system like in the profile.
+   Only stage2 configuration can be done.
+   yast2 ./ayast_setup.ycp setup filename=/tmp/my.xml
+
+ */
+
+{
+    textdomain "autoinst";
+    import "Profile";
+    import "Popup";
+    import "Wizard";
+    import "Mode";
+    import "CommandLine";
+    import "Stage";
+    import "AutoInstall";
+    import "AutoinstSoftware";
+
+    void openFile( map <string, any> options ) {
+        if( !Profile::ReadXML( options["filename"]:"" ) ) {
+            Popup::Error(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+        }
+    }
+
+
+    map cmdline = $[
+        "id"        : "ay-client",
+        // translators: command line help text for Samba client module
+        "help"      : _("autoyast"),
+        "actions"   : $[
+            "setup" :   $[ "handler":openFile, "help":"jo" ]
+        ],
+        "options"       : $[
+            "filename": $[
+                "type":"string",
+                "help":"no help"
+            ]
+        ],
+        "mappings"      : $[
+            "setup"  :   ["filename"]
+        ]
+    ];
+    if(!CommandLine::Init(cmdline, WFM::Args()))
+    {
+        y2error("Commandline init failed");
+        return false;
+    }
+    // command line options
+    /* Init variables */
+    string command = "";
+    list flags = [];
+    map<string,any> options = $[];
+    string exit = "";
+    list l = [];
+
+    while(!CommandLine::Done())
+    {
+        map m = CommandLine::Command();
+        command = m["command"]:"exit";
+        options = m["options"]:$[];
+
+        if( command == "setup" ) {
+            openFile(options);
+        } else {
+            /* maybe we got "exit" or "quit" */
+            if( !CommandLine::Done() ) {
+                CommandLine::Print("Unknown command (should not happen)");
+                continue;
+            }
+        }
+    }
+
+    AutoInstall::Save();
+    Wizard::CreateDialog();
+    Mode::SetMode("autoinstallation");
+    Stage::Set ("continue");
+    WFM::CallFunction("inst_autopost", []);
+    AutoinstSoftware::addPostPackages(Profile::current["software","post-packages"]:[]);
+    Pkg::TargetInit ("/", false);
+    WFM::CallFunction("inst_rpmcopy", []);
+    WFM::CallFunction("inst_autoconfigure", []);
+}
+
