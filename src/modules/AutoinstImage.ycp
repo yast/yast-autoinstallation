@@ -27,10 +27,10 @@
             string scheme      = urltok["scheme"]:"default";
             string host        = urltok["host"]:"";
             string filepath    = urltok["path"]:"";
-            ret = Get(scheme,host,filepath, AutoinstConfig::scripts_dir+"/image.sh");
+            ret = Get(scheme,host,filepath, "/tmp/image.sh");
 
         } else if( AutoinstSoftware::image["script_source"]:"" != "" ) {
-            SCR::Write(.target.string,  AutoinstConfig::scripts_dir+"/image.sh", AutoinstSoftware::image["script_source"]:"");
+            SCR::Write(.target.string,  "/tmp/image.sh", AutoinstSoftware::image["script_source"]:"");
             ret = true;
         }
         return ret;
