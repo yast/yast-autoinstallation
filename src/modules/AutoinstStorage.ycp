@@ -339,7 +339,6 @@
             string udev_string = "";
             if( device == "" ) {
                 d["device"] = find_first_disk(last_dev);
-                last_dev = d["device"]:"";
                 y2milestone("empty device in profile set to %1", d["device"]:"");
             } else if( issubstring( device, "by-id" ) )
                 udev_string = "udev_id";
@@ -364,6 +363,7 @@
                     });
                 });
             }
+            last_dev = d["device"]:"";
             return d;
         });
         return settings;
