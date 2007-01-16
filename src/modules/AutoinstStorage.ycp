@@ -71,24 +71,26 @@
     include "autoinstall/autopart.ycp";
     include "autoinstall/autoinst_dialogs.ycp";
 
-    global define string find_first_disk() {
+    global define string find_first_disk(string after) {
         map <string, map> initial_target_map = Storage::GetTargetMap();
         y2milestone("Target map: %1", initial_target_map );
 
         string mbr_disk = "";
-        foreach (string device, map disk, initial_target_map, ``{
-            if (disk["bios_id"]:"" == "0x80")
-            {
-                y2milestone ("disk with bios_id 0x80: %1", device);
-                mbr_disk = device;
-            }
-        });
+        if( after == "" ) {
+            foreach (string device, map disk, initial_target_map, ``{
+                if (disk["bios_id"]:"" == "0x80")
+                {
+                    mbr_disk = device;
+                }
+            });
+        }
 
         /* device guessing code enhanced */
         if( mbr_disk == "" ) {
             foreach (string device, map disk, initial_target_map, ``{
                 if( disk["type"]:`x == `CT_DISK ) {
-                    y2milestone ("first real disk is: %1", device);
+                    if( device == after )
+                        continue;
                     mbr_disk = device;
                     break;
                 }
@@ -331,11 +333,13 @@
     */
     global define list<map> udev2dev(list<map> settings) {
         map <string, map> tm = Storage::GetTargetMap();
+        string last_dev = "";
         settings = maplist( map d, settings, ``{
             string device = d["device"]:"";
             string udev_string = "";
             if( device == "" ) {
-                d["device"] = find_first_disk();
+                d["device"] = find_first_disk(last_dev);
+                last_dev = d["device"]:"";
                 y2milestone("empty device in profile set to %1", d["device"]:"");
             } else if( issubstring( device, "by-id" ) )
                 udev_string = "udev_id";
@@ -639,7 +643,7 @@ which root partition should be used.  Automatic installation not possible.
         map <string, map> initial_target_map = Storage::GetTargetMap();
         y2milestone("Target map: %1", initial_target_map );
 
-        Storage::SetPartDisk( find_first_disk() );
+        Storage::SetPartDisk( find_first_disk("") );
 
         AutoTargetMap =  set_devices(AutoPartPlan);
         if (AutoTargetMap == nil || AutoTargetMap == $[])
