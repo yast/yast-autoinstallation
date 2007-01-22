@@ -134,7 +134,8 @@
                     integer fsid = pe["fsid"]:131;
                     list wintypes = union(Partitions::fsid_wintypes, Partitions::fsid_dostypes);
                     list allwin = union(wintypes, Partitions::fsid_ntfstypes);
-                    if (contains(allwin, fsid) && ! issubstring(pe["mount"]:"", "/boot") )
+                    if (contains(allwin, fsid) && (!issubstring(pe["mount"]:"", "/boot") && !pe["boot"]:false) )
+//                    if (contains(allwin, fsid) && ! issubstring(pe["mount"]:"", "/boot") )
                     {
                         y2debug("Windows partitions found: %1", fsid );
                         winp = add(winp, pe["nr"]:0);
@@ -146,7 +147,7 @@
                         new_pe["partition_id"] = pe["fsid"]:131;
                     }
                     // PPC boot (/boot is just an indicator)
-                    if( pe["fsid"]:0 == 65 ) {
+                    if( pe["fsid"]:0 == 65 || pe["fsid"]:0 == 6  ) {
                         //new_pe["mount"] = "/boot";
                         new_pe["format"] = false;
                     }
