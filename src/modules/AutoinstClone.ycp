@@ -120,6 +120,7 @@
             list partitions = [];
             list winp = [];
             list<integer> usepartitions = [];
+            boolean no_create = false;
             foreach(map pe, v["partitions"]:[], ``{
                 map new_pe = $[];
                 boolean skipwin = false;
@@ -140,6 +141,9 @@
                         y2debug("Windows partitions found: %1", fsid );
                         winp = add(winp, pe["nr"]:0);
                         skipwin = true;
+                        if( size(partitions) > 0 ) {
+                            no_create = true;
+                        }
                     }
                     if( contains(allwin, fsid) && issubstring(pe["mount"]:"", "/boot") ) {
                         new_pe["partition_id"] = 259;
@@ -228,7 +232,15 @@
             });
 
 
+            // don't create partitions that are between windows partitions
+            // they must exist
             map drive = $[];
+            if( no_create ) {
+                partitions = maplist( map m, (list<map>)partitions, {
+                    m["create"] = false;
+                    return m;
+                });
+            }
             drive["partitions"]	= partitions;
             drive["device"]	= k;
             if( v["type"]:`CT_UNKNOWN==`CT_LVM)
