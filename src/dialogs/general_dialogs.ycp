@@ -110,7 +110,7 @@ For signature handling, read the AutoYaST documentation.
                 signature_handling["import_gpg_key"] = (boolean)UI::QueryWidget(`id(`import_gpg_key), `Value);
                 AutoinstGeneral::signature_handling = signature_handling;
             }
-        } until (ret == `next || ret == `back);
+        } until (ret == `next || ret == `back || ret == `cancel );
         return (symbol)ret;
     }
 
