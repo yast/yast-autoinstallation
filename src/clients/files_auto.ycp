@@ -177,7 +177,7 @@ name and the contents of the file.
 				}
 			}
 
-		} until (ret == `next || ret == `back );
+		} until (ret == `next || ret == `back || ret == `cancel );
 		Wizard::SetNextButton(`next, Label::FinishButton() );
 		return (symbol) ret;
 	}
@@ -268,7 +268,7 @@ and have an httpd.conf configuration file prepared.</p>");
 				dialog_contents(), help, true, true);
 
 
-	} until (ret == `back || ret == `next );
+	} until (ret == `back || ret == `next || ret == `cancel );
 
 	return (symbol) ret;
 }
