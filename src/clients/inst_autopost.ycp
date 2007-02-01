@@ -19,6 +19,7 @@
     import "AutoinstScripts";
     import "Report";
     import "Progress";
+    import "PackageSystem";
     include "autoinstall/ask.ycp";
 
     y2debug("Profile=%1", Profile::current );
@@ -161,6 +162,9 @@ Please wait while the system is prepared for autoinstallation.</p>
     // Add all found packages
     Progress::NextStep();
     Progress::Title(_("Adding found packages..."));
+    packages = filter( string p, packages, {
+        return !PackageSystem::Installed(p);
+    });
     AutoinstSoftware::addPostPackages(packages);
 
     // Run early network scripts
