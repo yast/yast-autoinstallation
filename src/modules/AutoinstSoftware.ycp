@@ -400,7 +400,9 @@
         //
         // Solve dependencies
         //
-        Pkg::PkgSolve(false);
+        if( !Pkg::PkgSolve(false) ) {
+            Report::Error( _("The package resolver run failed. Please check your software section in the autoyast profile.") );
+        }
 
         SpaceCalculation::ShowPartitionWarning();
 
