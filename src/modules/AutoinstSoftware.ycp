@@ -472,7 +472,9 @@ this message can be ignored."));
         //
         // Solve dependencies
         //
-        Pkg::PkgSolve(false);
+        if( !Pkg::PkgSolve(false) ) {
+            Report::Error( _("The package resolver run failed. Please check your software section in the autoyast profile.") );
+        }
 
         SpaceCalculation::ShowPartitionWarning();
         y2milestone( "INSTALLING Software Selection: base(%1), addon(%2)",
