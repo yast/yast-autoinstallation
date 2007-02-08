@@ -122,6 +122,8 @@
             list<integer> usepartitions = [];
             boolean no_create = false;
             foreach(map pe, v["partitions"]:[], ``{
+                if( pe["type"]:`x == `extended )
+                    continue;
                 map new_pe = $[];
                 boolean skipwin = false;
                 if (haskey(pe,"enc_type")) {
