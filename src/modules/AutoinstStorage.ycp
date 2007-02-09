@@ -472,6 +472,28 @@
         return settings;
     }
 
+    /*
+        if partition type is primary but not set in the profile, set it now
+        (solves #243505 too)
+    */
+    global define list<map> setPartitionType(list<map> settings) {
+        map <string, map> tm = Storage::GetTargetMap();
+        settings = maplist( map d, settings, ``{
+            if( d["type"]:`x == `CT_DISK ) {
+                integer mp = tm[ d["device"]:"xxx","max_primary" ]:0;
+                if( mp > 0 ) {
+                    d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
+                        if( haskey(pe, "partition_nr") && !haskey(pe,"partition_type") && pe["partition_nr"]:-1 <= mp )
+                            pe["partition_type"] = "primary";
+                        return pe;
+                    });
+                }
+            }
+            return d;
+        });
+        y2milestone("after setPartitionType = %1",settings);
+        return settings;
+    }
 
     /**
      * Get all the configuration from a map.
@@ -492,6 +514,7 @@
             settings = mountBy(settings);
             settings = region4resize(settings);
             settings = percent2size(settings);
+            settings = setPartitionType(settings);
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
