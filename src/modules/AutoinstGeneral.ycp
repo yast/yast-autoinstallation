@@ -207,7 +207,10 @@
             Pkg::CallbackImportGpgKey( 
                 signature_handling["import_gpg_key"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
             );
-
+        if( haskey(signature_handling, "accept_non_trusted_gpg_key") )
+            Pkg::CallbackAcceptNonTrustedGpgKey(
+                signature_handling["accept_non_trusted_gpg_key"]:false ? "AutoInstall::callbackTrue" : "AutoInstall::callbackFalse"
+            );
     }
 
     /**
