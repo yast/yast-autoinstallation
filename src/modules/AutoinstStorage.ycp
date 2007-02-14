@@ -18,6 +18,7 @@
     import "Storage";
     import "Partitions";  
     import "Popup";
+    import "Report";
 
     include "partitioning/partition_defines.ycp";
 
@@ -402,10 +403,15 @@
                         integer s = pe["size"]:0;
                         if( s == max ) {
                             y2milestone("shrinking %1",pe);
-                            s = s - ((usedSize - sizeByCyl)/cyl_size+2)*cyl_size; // FIXME: why 2? 1 should be enough
-                            usedSize = usedSize - s;
-                            y2milestone("shrinking to %1",s);
-                            pe["size"] = s;
+                            s = s - ((usedSize - sizeByCyl)/cyl_size+1+size(d["partitions"]:[]))*cyl_size; // 1 cyl buffer per partition
+                            if( s < 1 ) {
+                                Report::Error( sformat( _("The partition plan configured in your XML profile does not fit on the harddisk. %1MB missing"), (usedSize-sizeByCyl)/(1024*1024) ));
+                                break;
+                            } else {
+                                usedSize = usedSize - s;
+                                y2milestone("shrinking to %1",s);
+                                pe["size"] = s;
+                            }
                         }
                         return pe;
                     });
