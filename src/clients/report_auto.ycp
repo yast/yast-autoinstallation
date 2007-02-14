@@ -115,7 +115,7 @@ Warnings can be skipped in some places, but should not be ignored.</p>
 		war["log"] = (boolean)UI::QueryWidget(`id(`warlog), `Value);
 		war["timeout"] = (integer)UI::QueryWidget(`id(`wartime), `Value);
 	    }
-	} until (ret == `next || ret == `back);
+	} until (ret == `cancel || ret == `next || ret == `back);
 
 	Report::Import($["messages":msg, "errors":err, "warnings":war]);
 	return (symbol)ret;
