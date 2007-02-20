@@ -275,7 +275,7 @@ For partitions that are part of a volume group (not the logical partitions insid
         if( ! format )
         {
             set_false = union( set_false, [ `crypt_fs, `fs, `fs_options] );
-            if( create ) set_false = union( set_false, [`mount_point ] );
+//            if( create ) set_false = union( set_false, [`mount_point ] );
             if( pdisk_disk ) set_false = add( set_false, `fsid_point);
         }
         else
@@ -423,8 +423,8 @@ For partitions that are part of a volume group (not the logical partitions insid
                     list set_false = [ `crypt_fs, `fs, `fs_options];
                     // list set_false = [ `crypt_fs, `fs];
 
-                    if( create )  set_false = add( set_false, `mount_point );
-                    else          set_true  = add( set_true , `mount_point );
+//                    if( create )  set_false = add( set_false, `mount_point );
+//                    else          set_true  = add( set_true , `mount_point );
 
                     ChangeExistingSymbolsState( set_true  ,true );
                     ChangeExistingSymbolsState( set_false ,false );
