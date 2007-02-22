@@ -607,10 +607,15 @@
     list<any> setLValue( list<any> l, any v, list<any> m ) {
         integer i = (integer)l[0]:0;
         list<any> tmp = remove(l,0);
-        if( is( tmp[0]:nil, string ) ) {
-            m[i] = setMValue( tmp, v, m[i]:$[] );
+        if( size(tmp) > 0 ) {
+            if( is( tmp[0]:nil, string ) ) {
+                m[i] = setMValue( tmp, v, m[i]:$[] );
+            } else {
+                m[i] = setLValue( tmp, v, m[i]:[] );
+            }
         } else {
-            m[i] = setLValue( tmp, v, m[i]:[] );
+            y2milestone("setting %1 to %2",i,v);
+            m[i] = v;
         }
         return m;
     }
