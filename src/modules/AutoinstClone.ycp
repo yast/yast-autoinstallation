@@ -439,6 +439,15 @@
         mode["confirm"] = false;
         general["mode"] = mode;
 
+        general["signature-handling"] = $[ 
+            "accept_unsigned_file":true, 
+            "accept_file_without_checksum":true, 
+            "accept_unknown_gpg_key":true, 
+            "accept_verification_failed":false, 
+            "import_gpg_key":true,
+            "accept_non_trusted_gpg_key":true
+        ];
+
         Mode::SetMode ("autoinst_config");
         return general;
     }
