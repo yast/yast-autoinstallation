@@ -290,7 +290,7 @@
         drives = filter( map v, (list<map>)drives, ``{
             boolean keep = false;
             foreach( map p, (list<map>)v["partitions"]:[], ``{
-                if( p["mount"]:"" != "" ) {
+                if( p["mount"]:"" != "" || haskey(p,"lvm_group") || haskey(p,"evms_group") || haskey(p,"raid_name") ) {
                     keep = true;
                     break;
                 }
