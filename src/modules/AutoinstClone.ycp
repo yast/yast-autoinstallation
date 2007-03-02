@@ -124,6 +124,7 @@
                 if( pe["type"]:`x == `extended )
                     continue;
                 map new_pe = $[];
+                new_pe["create"] = true;
                 boolean skipwin = false;
                 if (haskey(pe,"enc_type")) {
                     new_pe["enc_type"] = pe["enc_type"]:`twofish;
@@ -273,6 +274,18 @@
             y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
             return false;
         });
+        /* remove drives with no mountpoint */
+        drives = filter( map v, (list<map>)drives, ``{
+            boolean keep = false;
+            foreach( map p, (list<map>)v["partitions"]:[], ``{
+                if( p["mount"]:"" != "" ) {
+                    keep = true;
+                    break;
+                }
+            });
+            return keep;
+        });
+
         Mode::SetMode("autoinst_config");
         return drives;
     }
