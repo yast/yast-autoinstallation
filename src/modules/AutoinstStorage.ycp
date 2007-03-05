@@ -49,6 +49,9 @@
 
     global map<string,list> raid2device = $[];
 
+    // some architectures need a boot partition. Do we have one?
+    global boolean planHasBoot = false;
+
     /**
      * Function sets internal variable, which indicates, that any
      * settings were modified, to "true"
@@ -674,6 +677,16 @@ which root partition should be used.  Automatic installation not possible.
                 }
         });
         y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
+
+        foreach (string device, map data, AutoTargetMap, ``{
+            if( size(filter( map e, data["partitions"]:[],
+                  ``(e["mount"]:""==Partitions::BootMount() || 
+                    (e["partition_id"]:0 == Partitions::FsidBoot() && Partitions::FsidBoot() != 131 ) ))) > 0 ) {
+                planHasBoot = true;
+                break;
+            }
+        });
+        y2milestone("plan has boot: %1", planHasBoot);
 
         foreach (string device, map data, AutoTargetMap,
                  ``{
