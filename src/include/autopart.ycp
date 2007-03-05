@@ -337,13 +337,10 @@ $Id$
 
 
     define map try_add_boot( map conf, map disk ) {
-        boolean boot = 
-            size(filter( map e, conf["partitions"]:[], 
-                         ``(e["mount"]:""==Partitions::BootMount() || (e["partition_id"]:0 == Partitions::FsidBoot() && Partitions::FsidBoot() != 131 ) ))) > 0;
         boolean root = size(filter( map e, conf["partitions"]:[], 
                                     ``(e["mount"]:""=="/"))) > 0;
         map tc = (map) eval(conf);
-        if( !boot && root &&
+        if( !planHasBoot && root &&
             (disk["cyl_count"]:0 > Partitions::BootCyl() ||
              Arch::ia64 () || Arch::ppc () || Arch::sparc ()) )
         {
