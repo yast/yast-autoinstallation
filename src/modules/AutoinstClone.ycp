@@ -119,6 +119,8 @@
         list drives = maplist(string k, map v, StorageMap, ``{
             list partitions = [];
             list winp = [];
+            list no_format = [ 65, 6, 222 ];
+            list no_create = [ 222 ];
             list<integer> usepartitions = [];
             boolean no_create = false;
             foreach(map pe, v["partitions"]:[], ``{
@@ -153,16 +155,15 @@
                     } else {
                         new_pe["partition_id"] = pe["fsid"]:131;
                     }
-                    // PPC boot (/boot is just an indicator)
-                    if( pe["fsid"]:0 == 65 || pe["fsid"]:0 == 6  ) {
-                        //new_pe["mount"] = "/boot";
+                    if( contains( no_format, pe["fsid"]:0 ) )
                         new_pe["format"] = false;
-                    }
+                    if( contains( no_create, pe["fsid"]:0 ) )
+                        new_pe["create"] = false;
                 }
                 if( haskey(pe,"type") && pe["type"]:`x == `primary ) {
                     new_pe["partition_type"] = "primary"; // can we always copy that element?
                 }
-                if (haskey(pe,"region"))
+                if (haskey(pe,"region") && new_pe["create"]:true == true )
                 {
                     // don't clone the exact region.
                     // I don't see any benefit in cloning that strict.
@@ -204,7 +205,7 @@
                 if (haskey(pe,"used_fs") && pe["fsid"]:0 != 253)
                 {
                     new_pe["filesystem"] = pe["used_fs"]:`reiser;
-                    new_pe["format"] = pe["format"]:true;
+                    new_pe["format"] = new_pe["format"]:pe["format"]:true;
                 }
 
                 if (haskey(pe,"nr") && pe["type"]:`unknown != `lvm)
