@@ -692,8 +692,8 @@ $Id$
                                           map mg = find_matching_partition_size(gap,p["usepart"]:0);
                                           if (mg != $[])
                                           {
-                                              p["cylinders"] = mg["cylinders"]:0;
-                                              p["size"] = mg["size"]:0;
+                                              //p["cylinders"] = mg["cylinders"]:0;
+                                              //p["size"] = mg["size"]:0;
                                               if (p["usepart"]:0< gap["max_primary"]:0)
                                               {
                                                   p["partition_type"] = "primary";						  
@@ -761,6 +761,42 @@ $Id$
     define map get_perfect_list( list ps, map g ) {
         y2milestone( "requested partitions  %1", ps );
         y2milestone( "calculated gaps %1", g );
+
+        foreach( map rp, (list<map>)ps, ``{
+            if( rp["resize"]:false ) {
+                integer new_cyl_size = 0;
+                integer cyl_size_change = 0;
+                integer old_end = 0;
+                g["gap"] = maplist( map gap, g["gap"]:[], ``{
+                    if( new_cyl_size != 0 ) {
+                        gap["cylinders"] = gap["cylinders"]:0 + cyl_size_change;
+                        gap["start"] = gap["start"]:0 - cyl_size_change;
+                        gap["size"] = gap["size"]:0 + cyl_size_change * g["cyl_size"]:0;
+                        y2milestone("changing gap because of a resize of a previous partition gap is now: cyl=%1 start=%2 size=%3", gap["cylinders"]:0, gap["start"]:0, gap["size"]:0 );
+                        new_cyl_size = 0;
+                    } else if( gap["nr"]:-1 == rp["partition_nr"]:-2 ) {
+                        new_cyl_size = rp["cylinders"]:0;
+                        cyl_size_change = gap["cylinders"]:0 - new_cyl_size;
+                        old_end = gap["end"]:0;
+                        y2milestone("partition resize cyl_size_change=%1",cyl_size_change);
+
+                        gap["cylinders"] = new_cyl_size;
+                        gap["size"] = gap["size"]:0 + cyl_size_change * g["cyl_size"]:0;
+                        y2milestone("changing gap to %1",gap);
+                    }
+                    return gap;
+                });
+                if( new_cyl_size != 0 ) {
+                    map new_gap = $[];
+                    new_gap["cylinders"] = cyl_size_change;
+                    new_gap["size"] = cyl_size_change * g["cyl_size"]:0;
+                    new_gap["start"] = old_end-cyl_size_change;
+                    new_gap["end"] = old_end;
+                    g["gap"] = add( g["gap"]:[], new_gap );
+                    y2milestone("added new gap after shrinking %1", new_gap);
+                }
+            }
+        });
 
         /**
           * If gaps are available
@@ -1441,7 +1477,7 @@ $Id$
                 entry["exists"] = true;
                 entry["reuse"] = true;
                 entry["nr"] = p["nr"]:0;
-                ret = add( ret, entry );		
+                ret = add( ret, entry );	
             }
             
             start = e+1;
