@@ -119,8 +119,8 @@
         list drives = maplist(string k, map v, StorageMap, ``{
             list partitions = [];
             list winp = [];
-            list no_format = [ 65, 6, 222 ];
-            list no_create = [ 222 ];
+            list no_format_list = [ 65, 6, 222 ];
+            list no_create_list = [ 222 ];
             list<integer> usepartitions = [];
             boolean no_create = false;
             foreach(map pe, v["partitions"]:[], ``{
@@ -155,9 +155,9 @@
                     } else {
                         new_pe["partition_id"] = pe["fsid"]:131;
                     }
-                    if( contains( no_format, pe["fsid"]:0 ) )
+                    if( contains( no_format_list, pe["fsid"]:0 ) )
                         new_pe["format"] = false;
-                    if( contains( no_create, pe["fsid"]:0 ) )
+                    if( contains( no_create_list, pe["fsid"]:0 ) )
                         new_pe["create"] = false;
                 }
                 if( haskey(pe,"type") && pe["type"]:`x == `primary ) {
