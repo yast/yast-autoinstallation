@@ -2,9 +2,9 @@
 
 @HEADER@
 BuildRequires:	fop java2-devel-packages yast2-mouse yast2-transfer yast2-update yast2-bootloader xorg-x11-libs yast2-devtools pkg-config libxslt perl-XML-Writer docbook-xsl-stylesheets sgml-skel yast2-testsuite update-desktop-files
-Requires:	yast2-core yast2-xml libxslt
+Requires:	yast2-core yast2-xml libxslt yast2-installation
 Requires:	autoyast2-installation = %{version}
-Requires:       yast2-schema
+Requires:   yast2-schema yast2 yast2-country yast2-storage
 Provides:	yast2-module-autoinst yast2-config-autoinst
 Obsoletes:	yast2-module-autoinst yast2-config-autoinst
 Provides:	yast2-lib-autoinst
@@ -23,8 +23,7 @@ Summary:	YaST2 - Auto-Installation
 Version:	@VERSION@
 Summary:	YaST2 - Auto-Installation: Installation Modules
 Group:		System/YaST
-Requires:	yast2-xml yast2-core
-Requires:	yast2-transfer
+Requires:	yast2-xml yast2-core yast2 yast2-country yast2-mouse yast2-packager yast2-storage yast2-transfer yast2-update
 Provides:	yast2-trans-autoinst
 Obsoletes:	yast2-trans-autoinst
 %description installation
