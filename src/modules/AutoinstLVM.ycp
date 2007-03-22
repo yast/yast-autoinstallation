@@ -236,35 +236,35 @@
      */
     global define list<map> get_existing_pvs ( string vgname ) {
         y2milestone("entering get_existing_pvs with %1",vgname);
-        map<string, map> tm = $[];    
+//        map<string, map> tm = $[];    
 
         symbol usedBy = `UB_LVM;
         foreach(string k, map v, AutoinstStorage::AutoTargetMap, ``{
 //        if (Storage::IsRealDisk( v ))
-            y2milestone("AutoTargetMap = %1", v );
+//            y2milestone("AutoTargetMap = %1", v );
 
             // FIXME: how about v["type"]:`CT_UNKNOWN == `CT_DISK
             if ( v["type"]:`CT_UNKNOWN != `CT_LVM && v["type"]:`CT_UNKNOWN != `CT_EVMS) {
-                tm[k] = v;
-                integer i = 0;
+//                tm[k] = v;
+//                integer i = 0;
                 foreach( map p, v["partitions"]:[], ``{
                     if( haskey(p,"lvm_group") ) {
-                        tm[k,"partitions",i,"used_by_type"] = `UB_LVM;
-                        tm[k,"partitions",i,"used_by"]      = p["lvm_group"]:"";
+//                        tm[k,"partitions",i,"used_by_type"] = `UB_LVM;
+//                        tm[k,"partitions",i,"used_by"]      = p["lvm_group"]:"";
                     } else if( haskey(p,"evms_group") ) {
-                        tm[k,"partitions",i,"used_by_type"] = `UB_EVMS;
-                        tm[k,"partitions",i,"used_by"]      = p["evms_group"]:"";
+//                        tm[k,"partitions",i,"used_by_type"] = `UB_EVMS;
+//                        tm[k,"partitions",i,"used_by"]      = p["evms_group"]:"";
                         usedBy = `UB_EVMS;
                     }
-                    i = i + 1;
+//                    i = i + 1;
                 });
             } else if (k == "/dev/md") {
                 // FIXME: will this ever be reached?
-                tm[k] = v;
+//                tm[k] = v;
             }
         });
 
-        y2milestone("tm: %1", tm);
+//        y2milestone("tm: %1", tm);
 
         // all possible PVs on all available devices
         list<map> all_possible_pvs = filter( map part, get_possible_pvs( Storage::GetTargetMap() ),
