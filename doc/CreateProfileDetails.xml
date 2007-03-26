@@ -2485,7 +2485,7 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
               </row>
               <row>
                 <entry>title</entry>
-                <entry>An optional title that is shown above the question.
+                <entry>An optional title that is shown above the questions.
                 <para><screen>&lt;title&gt;LDAP server&lt;/title&gt;</screen></para></entry>
                 <entry>optional</entry>
               </row>
@@ -2566,6 +2566,28 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
   &lt;/entry&gt;
 &lt;/selection&gt;</screen></para></entry>
                 <entry>optional for type=string, not possible for type=boolean and a must have for type=symbol</entry>
+              </row>
+              <row>
+                <entry>dialog (available since SL 10.3 not in SLES10 SP1)</entry>
+                <entry>Since OpenSUSE 10.3 you can have more than one question per dialog. To make that possible you have
+                to specifiy the dialog-id with an integer. All questions with the same dialog-id are on the same dialog.
+                The dialogs are sorted by the id too.
+                <para><screen>&lt;dialog config:type="integer"&gt;3&lt;/dialog&gt;</screen></para></entry>
+                <entry>optional</entry>
+              </row>
+              <row>
+                <entry>element (available since SL 10.3 not in SLES10 SP1)</entry>
+                <entry>Since OpenSUSE 10.3 you can have more than one question per dialog. To make that possible you have
+                to specifiy the element-id with an integer. The questions on a dialog are sorted by the id.
+                <para><screen>&lt;element config:type="integer"&gt;1&lt;/element&gt;</screen></para></entry>
+                <entry>optional (see dialog></entry>
+              </row>
+              <row>
+                <entry>frametitle (available since SL 10.3 not in SLES10 SP1)</entry>
+                <entry>Since OpenSUSE 10.3 you can have more than one question per dialog. Each question on a dialog has
+                a frame that can have a frametitle. A small caption for each question if you want so.
+                <para><screen>&lt;frametitle&gt;User data&lt;/frametitle&gt;</screen></para></entry>
+                <entry>optional (default is no frametitle)</entry>
               </row>
             </tbody>
           </tgroup>
