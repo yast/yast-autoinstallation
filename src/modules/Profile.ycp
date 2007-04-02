@@ -175,8 +175,10 @@
         if (haskey(profile, "configure") || haskey(profile, "install")) {
             map _configure = profile["configure"]:$[];
             map _install = profile["install"]:$[];
-            current = remove( current, "configure" );
-            current = remove( current, "install" );
+            if( haskey(profile, "configure") )
+                current = remove( current, "configure" );
+            if( haskey(profile, "install") )
+                current = remove( current, "install" );
             map tmp = (map<string, any>)union( _configure, _install );
             current = (map<string, any>)union( tmp, current );
         }
