@@ -157,6 +157,10 @@ Please wait while the system is prepared for autoinstallation.</p>
             Call::Function("zfcp_auto", ["Import", Profile::current["zfcp"]:$[] ]);
         }
     }
+    string tmp = (string)SCR::Read (.target.string, "/etc/install.inf");
+    if (tmp != nil && issubstring( tolower(tmp), "iscsi: 1" ) ) {
+        WFM::CallFunction("inst_iscsi-client", []);
+    }
 
     Progress::Title(_("Probing hardware..."));
     WFM::CallFunction("inst_startup", [] );
