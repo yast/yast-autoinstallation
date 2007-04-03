@@ -117,6 +117,7 @@
                     foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                         list<string> position = splitstring( ask["path"]:"", "," );
                         string file     = ask["file"]:"";
+                        map script      = ask["script"]:$[];
                         string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:0);
                         any val = UI::QueryWidget(`id(entry_id),  `Value);
                         if( ask["type"]:"string" == "integer" ) {
@@ -145,6 +146,32 @@
                             if( ! SCR::Write (.target.string, file, sformat("%1",val)) )
                                 y2milestone("writing answer to %1 failed",file);
                         }
+                        if( script != $[] ) {
+                            string scriptName = script["filename"]:"ask_script.sh";
+                            string scriptPath = sformat("%1/%2", AutoinstConfig::tmpDir, scriptName );
+                            SCR::Write(.target.string,  scriptPath, script["source"]:"echo 'no script'");
+                            string debug = ( script["debug"]:true ? "-x" : "" );
+                            string current_logdir = AutoinstConfig::logs_dir;
+                            if( Stage::initial() ) {
+                                current_logdir = sformat("%1/ask_scripts_log", AutoinstConfig::tmpDir);
+                                SCR::Execute (.target.mkdir, current_logdir);
+                            }
+                            string executionString = "";
+                            if( script["environment"]:false )
+                                executionString = sformat("VAL=\"%5\" /bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName, val);
+                            else
+                                executionString = sformat("/bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName );
+                            y2milestone("Script Execution command: %1", executionString );
+                            SCR::Execute (.target.bash, executionString);
+                            boolean showFeedback = script["feedback"]:false;
+                            string feedback = "";
+                            if( showFeedback ) {
+                                feedback = (string)SCR::Read(.target.string, current_logdir+"/"+scriptName+".log" );
+                            }
+                            if( size(feedback) > 0 ) {
+                                Popup::LongText("", `RichText(`opt(`plainText), feedback), 50, 20 );
+                            }
+                        };
                     });
                     break;
                 }

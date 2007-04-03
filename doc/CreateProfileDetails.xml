@@ -2589,6 +2589,62 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
                 <para><screen>&lt;frametitle&gt;User data&lt;/frametitle&gt;</screen></para></entry>
                 <entry>optional (default is no frametitle)</entry>
               </row>
+              <row>
+                <entry>script (available since SL 10.3 not in SLES10 SP1)</entry>
+                <entry>with 10.3 you can run scripts after a question has been answered (see the table below for detailed instructions about scripts)
+                <para><screen>&lt;script&gt;...&lt;/script&gt;</screen></para></entry>
+                <entry>optional (default is no script)</entry>
+              </row>
+            </tbody>
+          </tgroup>
+
+        </table>
+    </para>
+          <para>
+            The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt;&lt;script&gt;...&lt;/script&gt;...&lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section. It's available since 10.3 (not SLES10 SP1).
+          </para>
+    <para>
+        <table frame='top'>
+          <title>XML representation</title>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script
+                <para><screen>&lt;filename&gt;my_ask_script.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>default is ask_script.sh</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the source code of the script
+                <para><screen>&lt;source&gt;...&lt;/source&gt;</screen></para></entry>
+                <entry>this value is required. Otherwise nothing would be executed</entry>
+              </row>
+              <row>
+                <entry>environment</entry>
+                <entry>a boolean that passes the "value" of the answer to the question as an environment variable to the script. The variable is named "VAL".
+                <para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></para></entry>
+                <entry>optional (default is "false").</entry>
+              </row>
+              <row>
+                <entry>feedback</entry>
+                <entry>a boolean that turns on feedback for the script execution. That means that STDOUT will be shown in a popup box that must be confirmed after the script execution.
+                <para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></para></entry>
+                <entry>optional (default is "false").</entry>
+              </row>
+              <row>
+                <entry>debug</entry>
+                <entry>a boolean that turns on debugging for the script execution
+                <para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></para></entry>
+                <entry>optional (default is "false"). This value needs feedback to be turned on too.</entry>
+              </row>
             </tbody>
           </tgroup>
 
@@ -2644,6 +2700,45 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
 &lt;/general&gt;
 </screen>
 </para>
+<para>
+The following example is a nice way to choose between autoyast profiles. Autoyast will read the "modified.xml" file again after the ask-dialogs are done. So we can fetch a complete new profile.
+</para>
+<para>
+<screen>
+      &lt;ask&gt;
+        &lt;selection config:type=&quot;list&quot;&gt;
+            &lt;entry&gt;
+                    &lt;value&gt;part1.xml&lt;/value&gt;
+                    &lt;label&gt;Simple partitioning&lt;/label&gt;
+            &lt;/entry&gt;
+            &lt;entry&gt;
+                    &lt;value&gt;part2.xml&lt;/value&gt;
+                    &lt;label&gt;encrypted /tmp&lt;/label&gt;
+            &lt;/entry&gt;
+            &lt;entry&gt;
+                    &lt;value&gt;part3.xml&lt;/value&gt;
+                    &lt;label&gt;LVM&lt;/label&gt;
+            &lt;/entry&gt;
+        &lt;/selection&gt;
+        &lt;title&gt;XML Profile&lt;/title&gt;
+        &lt;question&gt;Choose a profile&lt;/question&gt;
+        &lt;stage&gt;initial&lt;/stage&gt;
+        &lt;default&gt;part1.xml&lt;/default&gt;
+        &lt;script&gt;
+            &lt;filename&gt;fetch.sh&lt;/filename&gt;
+            &lt;environment config:type=&quot;boolean&quot;&gt;true&lt;/environment&gt;
+            &lt;source&gt;&lt;![CDATA[
+wget http://10.10.0.162/$VAL -O /tmp/profile/modified.xml 2&gt;/dev/null
+]]&gt;
+            &lt;/source&gt;
+            &lt;debug config:type=&quot;boolean&quot;&gt;false&lt;/debug&gt;
+            &lt;feedback config:type=&quot;boolean&quot;&gt;false&lt;/feedback&gt;
+        &lt;/script&gt;
+      &lt;/ask&gt;
+</screen>
+</para>
+
+
   </section>
 
   </chapter>
