@@ -111,6 +111,19 @@ control file and try again.
 
 
     askDialog();
+
+    if (SCR::Read(.target.size, AutoinstConfig::modified_profile) > 0 )
+    {
+	if (! Profile::ReadXML( AutoinstConfig::modified_profile ) || Profile::current == $[] )
+	{
+	    Popup::Error(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+	    return `abort;
+	}
+    }
+
     // reimport scripts, for the case <ask> has changed them
     AutoinstScripts::Import(Profile::current["scripts"]:$[]);
     //
