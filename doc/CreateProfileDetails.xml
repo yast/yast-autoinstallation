@@ -1525,6 +1525,82 @@ http://192.168.66.6/SLES10/CD1/updates
           </tgroup>
         </table>
     </para>
+    <para>
+    Since openSUSE 10.3 it's possible to configure the signature handling for each add-on individually. The following elements must be between the
+    &lt;signature-handling&gt; section of the individual add-on.
+    </para>
+    <para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>accept_unsigned_file</entry>
+                <entry>the installer will accept unsigned files like the content file for this add-on product
+                  <para><screen>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>accept_file_without_checksum</entry>
+                <entry>the installer will accept files without a checksum in the content file for this add-on
+                  <para><screen>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>accept_verification_failed</entry>
+                <entry>the installer will accept files where the verification of the signature failed. So the file was signed but the check failed.
+                  <para><screen>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>accept_unknown_gpg_key</entry>
+                <entry>the installer will accept new gpg keys on the installation source that are used to sign the content file for example
+                  <para><screen>
+            &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
+             &lt;keys config:type=&quot;list&quot;&gt;
+               &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
+             &lt;/keys&gt;
+                  </screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>accept_non_trusted_gpg_key</entry>
+                <entry>This basically means, we know the key, but it is not trusted
+                  <para><screen>
+            &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
+             &lt;keys config:type=&quot;list&quot;&gt;
+               &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
+             &lt;/keys&gt;
+</screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>import_gpg_key</entry>
+                <entry>the installer will accept and import new gpg keys on the installation source in it's database.
+                  <para><screen>
+            &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
+             &lt;keys config:type=&quot;list&quot;&gt;
+               &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
+             &lt;/keys&gt;
+             </screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+    </para>
   </section>
   <section>
     <title>Kernel packages</title>
