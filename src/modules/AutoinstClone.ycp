@@ -122,6 +122,7 @@
             list no_format = [ 65, 6, 222 ];
             list no_create = [ 222 ];
             list<integer> usepartitions = [];
+            integer cyl_size = v["cyl_size"]:0;
             foreach(map pe, v["partitions"]:[], ``{
                 if( pe["type"]:`x == `extended )
                     continue;
@@ -164,7 +165,7 @@
                     // don't clone the exact region.
                     // I don't see any benefit in cloning that strict.
                     //new_pe["region"] = pe["region"]:[];
-                    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
+                    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024-cyl_size); // one cylinder buffer for #262535
                 }
                 if (haskey(pe,"label")) {
                     new_pe["label"] = pe["label"]:"";
