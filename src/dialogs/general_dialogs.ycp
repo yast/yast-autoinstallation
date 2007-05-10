@@ -55,7 +55,7 @@
                        `Left(`CheckBox(`id(`accept_file_without_checksum), _("Accept Files without a &Checksum"), accept_file_without_checksum)),
                        `Left(`CheckBox(`id(`accept_verification_failed), _("Accept Failed &Verifications"), accept_verification_failed)),
                        `Left(`CheckBox(`id(`accept_unknown_gpg_key), _("Accept Unknown &GPG Keys"), accept_unknown_gpg_key)),
-                       `Left(`CheckBox(`id(`accept_non_trusted_gpg_key), "Accept Non Trusted GPG Keys", accept_non_trusted_gpg_key)),
+                       `Left(`CheckBox(`id(`accept_non_trusted_gpg_key), _("Accept Non Trusted GPG Keys"), accept_non_trusted_gpg_key)),
                        `Left(`CheckBox(`id(`import_gpg_key), _("Import &New GPG Keys"),import_gpg_key))
                        )
                  );
@@ -87,7 +87,7 @@ For signature handling, read the AutoYaST documentation.
                             contents, help_text, true , true);
 
         Wizard::HideAbortButton();
-        Wizard::SetNextButton(`next, Label::FinishButton() );
+        Wizard::SetNextButton(`next, Label::NextButton() );
 
         any ret = nil;
         repeat {
@@ -117,6 +117,416 @@ For signature handling, read the AutoYaST documentation.
         return (symbol)ret;
     }
 
+    define list<map> newQuestion( string stage, integer dialog, list<map> askList, string title, map defaultValues ) {
+        symbol ret = `x;
+        list<term> selection = [];
+        integer selId = 0;
+        if( size( defaultValues["selection"]:[] ) > 0 ) {
+            foreach( map m, defaultValues["selection"]:[], ``{
+                selection = add( selection,  `item( `id(selId), m["label"]:"", m["value"]:"" ) );
+                selId = selId + 1;
+            });
+        }
+        selId = 0;
+
+        term contents =
+            `HVSquash(
+                 `VBox(
+                    `TextEntry( `id(`frametitle), _("Frametitle"), defaultValues["frametitle"]:"" ),
+                    `TextEntry( `id(`question), _("Question"), defaultValues["question"]:"" ),
+                    `TextEntry( `id(`defaultVal), _("Default"), defaultValues["default"]:"" ),
+                    `Left( `RadioButtonGroup( `id( `type ), `HBox( `RadioButton(`id( `t_text ), `opt(`notify,`immediate),"Text", defaultValues["type"]:"text" == "text"?true:false ),
+                                                            `RadioButton(`id( `t_symbol), `opt(`notify,`immediate),"Symbol", defaultValues["type"]:"text"=="symbol"?true:false ),
+                                                            `RadioButton(`id( `t_boolean), `opt(`notify,`immediate),"Boolean", defaultValues["type"]:"text"=="boolean"?true:false),
+                                                            `RadioButton(`id( `t_integer), `opt(`notify,`immediate),"Integer", defaultValues["type"]:"text"=="integer"?true:false) ) ) ),
+
+                    `Left( `CheckBox( `id(`password), _("Password"), defaultValues["password"]:false ) ),
+                    `TextEntry( `id(`path), _("Path"), defaultValues["path"]:"" ),
+                    `TextEntry( `id(`file), _("File"), defaultValues["file"]:"" ),
+                    `HBox(
+                      `MinSize( 10,5,
+                        `Table(
+                            `id(`selection),
+                            `header( "Label", _("Value") ),
+                            selection
+                        ) ),
+                        `VBox(
+                            `PushButton( `id( `delSelection ), `opt( `default, `hstretch ), _("Delete") )
+                        )
+                    ),
+                    `HBox(
+                        `TextEntry( `id(`selLabel), "Label", "" ),
+                        `TextEntry( `id(`selValue), _("Value"), "" ),
+                        `PushButton( `id( `addSelection ), `opt( `default, `hstretch ), _("Add") )
+                    ),
+                    `HBox(
+                        `PushButton( `id( `ok ), `opt( `default, `hstretch ), _("Ok") ),
+                        `PushButton( `id( `abort ), `opt( `default, `hstretch ), _("Abort") )
+                    )
+                       )
+                 );
+        string help_text = _("<P></P>");
+        UI::OpenDialog( `opt(`decorated  ), contents );
+        repeat {
+            ret = (symbol)UI::UserInput();
+            if( ret == `addSelection ) {
+                string label = (string)UI::QueryWidget(`id(`selLabel), `Value);
+                string val   = (string)UI::QueryWidget(`id(`selValue), `Value);
+                selection = add( selection, `item( `id(selId), label, val ) );
+                selId = selId + 1;
+                UI::ChangeWidget(`id(`selection), `Items, selection);
+            } else if( ret == `delSelection ) {
+                integer currSelId = (integer)UI::QueryWidget(`id(`selection), `CurrentItem);
+                selection = filter ( term s, selection, ``{
+                    list l = argsof(s);
+                    return ( l[0]:`id(-1) != `id(currSelId) );
+                });
+                UI::ChangeWidget(`id(`selection), `Items, selection);
+            } else if( ret == `ok ) {
+                integer max = -1;
+                foreach( map m, askList, ``{
+                    if( m["stage"]:"initial" == stage && m["dialog"]:0 == dialog && m["element"]:-1 > max )
+                        max = m["element"]:-1;
+                });
+                max = max + 1;
+                map newVal = $[ 
+                                "default":(string)UI::QueryWidget(`id(`defaultVal),`Value), 
+                                "title":title, 
+                                "stage":stage, 
+                                "dialog":dialog, 
+                                "element":defaultValues["element"]:max, 
+                                "question":(string)UI::QueryWidget(`id(`question), `Value) ];
+                if( (string)UI::QueryWidget(`id(`frametitle), `Value) != "" )
+                    newVal["frametitle"] = (string)UI::QueryWidget(`id(`frametitle), `Value);
+                if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_symbol )
+                    newVal["type"] = "symbol";
+                else if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_boolean )
+                    newVal["type"] = "boolean";
+                else if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_integer )
+                    newVal["type"] = "integer";
+                if( (string)UI::QueryWidget(`id(`path), `Value) != "" )
+                    newVal["path"] = (string)UI::QueryWidget(`id(`path), `Value);
+                if( (string)UI::QueryWidget(`id(`file), `Value) != "" )
+                    newVal["file"] = (string)UI::QueryWidget(`id(`file), `Value);
+                if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_text )
+                    newVal["password"] = (boolean)UI::QueryWidget(`id(`password), `Value);
+                if( size(selection) > 0 ) {
+                    list<map> r = [];
+                    foreach( term t, selection, ``{
+                        list l = argsof(t);
+                        r = add( r, $[ "label":l[1]:"", "value":l[2]:"" ] );
+                    });
+                    newVal["selection"] = r;
+                }
+                if( size(defaultValues) == 0 )
+                    askList = add( askList, newVal );
+                else {
+                    askList = maplist ( map d, askList, ``{
+                        if( d["stage"]:"initial" == stage && d["dialog"]:-1 == dialog && d["element"]:-1 == defaultValues["element"]:-1 )
+                            d = newVal;
+                        return d;
+                    });
+                }
+            }
+        } until (ret == `abort || ret == `ok);
+        UI::CloseDialog();
+
+        return askList;
+    }
+
+    define symbol askDialog () {
+        list<map> askList = (list<map>)AutoinstGeneral::askList;
+        string title = "";
+        string help = "";
+        list<term> dialogs = [];
+        list<term> questions = [];
+        map<integer,integer> elementCount = $[];
+
+        integer id_counter = 0;
+        askList = maplist ( map dialog, askList, ``{
+            id_counter = dialog["dialog"]:id_counter;
+            dialog["dialog"] = id_counter;
+            if( ! haskey( elementCount, id_counter ) ) {
+                elementCount[id_counter] = 0;
+            }
+            dialog["element"] = dialog["element"]:elementCount[id_counter]:-1;
+            elementCount[id_counter] = elementCount[id_counter]:-1 + 1;
+            id_counter = id_counter + 1;
+
+            return dialog;
+        });
+        askList = sort( map x, map y, askList, ``( x["dialog"]:-2 <  y["dialog"]:-1 ||
+                                                 ( x["dialog"]:-2 == y["dialog"]:-1 && x["element"]:-2 < y["element"]:-1 ) ) );
+        map<string,list> done = $[ "initial":[] ];
+        foreach ( map m, askList, ``{
+            if( m["stage"]:"initial" == "initial" && !contains( done["initial"]:[], m["dialog"]:-1 ) ) {
+                dialogs = add( dialogs, `item( `id(m["dialog"]:-1), m["title"]:"" ) );
+                if( title == "" ) {
+                    title = m["title"]:"";
+                    help  = m["help"]:"";
+                }
+                done["initial"] = add( done["initial"]:[], m["dialog"]:-1 );
+            }
+        });
+        list<map> d = filter( map dummy, askList, ``{ return dummy["dialog"]:-2 == askList[0,"dialog"]:0 && "initial" == dummy["stage"]:"initital"; });
+        foreach ( map m, d, ``{
+            id_counter = m["element"]:id_counter;
+            questions = add( questions, `item( `id(id_counter), m["question"]:"" ) );
+            id_counter = id_counter + 1;
+        });
+        term contents =
+            `HVSquash(
+                 `VBox(
+                    `RadioButtonGroup( `id( `stage ), `HBox( `RadioButton(`id( `stage_initial ), `opt(`notify,`immediate),_("1st Stage"), true ),
+                                                             `RadioButton(`id( `stage_cont ), `opt(`notify,`immediate),_("2nd Stage") ) ) ),
+                    `TextEntry( `id(`dialogTitle), _("Dialog Title"), title ),
+                    `MultiLineEdit( `id( `help ), _("Helptext"), help ),
+                    `HBox(
+                        `PushButton( `id( `addDialog ), `opt( `default, `hstretch ), _("Add to Dialoglist") ),
+                        `PushButton( `id( `applyDialog ), `opt( `default, `hstretch ), _("Apply Changes to Dialog") )
+                    ),
+                    `MinSize( 10,5,
+                    `Table(
+                        `id(`dialogs), `opt(`notify,`immediate),
+                        `header(_("Title") ),
+                        dialogs
+                    ) ),
+                    `HBox(
+                        `PushButton( `id( `deleteDialog ), `opt( `default, `hstretch ), _("delete Dialog") ),
+                        `PushButton( `id( `dialogUp ), `opt( `default, `hstretch ), _("Dialog up") ),
+                        `PushButton( `id( `dialogDown ), `opt( `default, `hstretch ), _("Dialog down") )
+                    ),
+                    `Label( _("Questions in Dialog") ),
+                    `MinSize( 10,5,
+                    `Table(
+                        `id(`questions),
+                        `header(_("Question") ),
+                        questions
+                    ) ),
+                    `HBox(
+                        `PushButton( `id( `addQuestion ), `opt( `default, `hstretch ), _("add Question") ),
+                        `PushButton( `id( `editQuestion ), `opt( `default, `hstretch ), _("edit Question") ),
+                        `PushButton( `id( `deleteQuestion ), `opt( `default, `hstretch ), _("delete Question") ),
+                        `PushButton( `id( `questionUp ), `opt( `default, `hstretch ), _("Question up") ),
+                        `PushButton( `id( `questionDown ), `opt( `default, `hstretch ), _("Question down") )
+                    )
+
+                       )
+                 );
+        string help_text = _("<P></P>");
+        Wizard::SetContents(_("ASK Options"),
+                            contents, help_text, true , true);
+
+        Wizard::HideAbortButton();
+        Wizard::SetNextButton(`next, Label::FinishButton() );
+
+        any ret = nil;
+        integer dialog_id = -1;
+        integer element_id = -1;
+        repeat {
+            if( size( (list)UI::QueryWidget(`id(`dialogs), `Items) ) == 0 ) {
+                UI::ChangeWidget(`id(`addQuestion) , `Enabled, false);
+                UI::ChangeWidget(`id(`editQuestion) , `Enabled, false);
+                UI::ChangeWidget(`id(`questionUp), `Enabled, false);
+                UI::ChangeWidget(`id(`deleteDialog), `Enabled, false);
+            } else {
+                UI::ChangeWidget(`id(`addQuestion) , `Enabled, true);
+                UI::ChangeWidget(`id(`editQuestion) , `Enabled, true);
+                UI::ChangeWidget(`id(`deleteDialog), `Enabled, true);
+            }
+            if( size( (list)UI::QueryWidget(`id(`questions),`Items) ) > 1 ) {
+                UI::ChangeWidget(`id(`questionUp), `Enabled, true);
+                UI::ChangeWidget(`id(`questionDown), `Enabled, true);
+                UI::ChangeWidget(`id(`deleteQuestion) , `Enabled, true);
+            } else {
+                UI::ChangeWidget(`id(`questionUp), `Enabled, false);
+                UI::ChangeWidget(`id(`questionDown), `Enabled, false);
+                UI::ChangeWidget(`id(`deleteQuestion), `Enabled, false);
+            }
+            if( size( (list)UI::QueryWidget(`id(`dialogs), `Items) ) > 1 ) {
+                UI::ChangeWidget(`id(`dialogUp), `Enabled, true);
+                UI::ChangeWidget(`id(`dialogDown), `Enabled, true);
+            } else {
+                UI::ChangeWidget(`id(`dialogUp), `Enabled, false);
+                UI::ChangeWidget(`id(`dialogDown), `Enabled, false);
+            }
+
+            ret = UI::UserInput();
+            string stage = "initial";
+            if( (symbol)UI::QueryWidget(`id(`stage), `CurrentButton) == `stage_cont )
+                stage = "cont";
+            integer id_counter = 0;
+            dialogs = [];
+            askList = maplist ( map dialog, askList, ``{
+                id_counter = dialog["dialog"]:id_counter;
+                if( dialog["stage"]:"initial" == stage )
+                    dialogs = add( dialogs, `item( `id(id_counter), dialog["title"]:"" ) );
+
+                return dialog;
+            });
+            if( ret == `addQuestion ) {
+                list l = argsof( dialogs[ (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem) ]:`empty() );
+                askList = newQuestion( stage, (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem), askList, l[1]:"", $[] );
+            } else if( ret == `editQuestion ) {
+                map m = $[];
+                foreach( map dummy, askList, ``{
+                    if( dummy["dialog"]:-1 == (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem) &&
+                        dummy["element"]:-2 == (integer)UI::QueryWidget(`id(`questions), `CurrentItem) )
+                        m = dummy;
+                });
+                list l = argsof( dialogs[ (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem) ]:`empty() );
+                askList = newQuestion( stage, (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem), askList, l[1]:"", m );
+            } else if( ret == `deleteQuestion ) {
+                dialog_id = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
+                element_id = (integer)UI::QueryWidget(`id(`questions), `CurrentItem);
+                askList = filter ( map dialog, askList, ``{
+                    return ( !(dialog["dialog"]:-1 == dialog_id && dialog["element"]:-1 == element_id) );
+                });
+            } else if( ret == `deleteDialog ) {
+                dialog_id = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
+                askList = filter ( map dialog, askList, ``{
+                    return ( dialog["dialog"]:-1 != dialog_id );
+                });
+            } else if( ret == `applyDialog ) {
+                askList = maplist ( map d, askList, ``{
+                    if( d["dialog"]:-1 == (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem) && d["stage"]:"initial" == stage ) {
+                        d["help"]  = (string)UI::QueryWidget(`id(`help), `Value);
+                        d["title"] = (string)UI::QueryWidget(`id(`dialogTitle), `Value);
+                        help = d["help"]:"";
+                    }
+                    return d;
+                });
+            } else if( ret == `dialogUp ) {
+                dialog_id = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
+                integer upperDialog = -10;
+                foreach( map dialog, askList, ``{
+                    if( dialog["dialog"]:-2 == dialog_id && dialog["stage"]:"initial" == stage )
+                        break;
+                    if( dialog["stage"]:"initial" == stage )
+                        upperDialog = dialog["dialog"]:-2;
+                });
+                askList = maplist ( map dialog, askList, ``{
+                    if( upperDialog != -10 && dialog["dialog"]:-1 == dialog_id && dialog["stage"]:"initial" == stage ) {
+                        dialog["dialog"] = upperDialog;
+                    } else if( dialog["dialog"]:-1 == upperDialog && dialog["stage"]:"initial" == stage )
+                        dialog["dialog"] = dialog_id;
+                    return dialog;
+                });
+                UI::ChangeWidget( `id(`dialogs), `CurrentItem, upperDialog );
+            } else if( ret == `dialogDown ) {
+                dialog_id = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
+                integer lowerDialog = -10;
+                boolean found = false;
+                foreach( map dialog, askList, ``{
+                    if( found && dialog["stage"]:"initial" == stage ) {
+                        lowerDialog = dialog["dialog"]:-2;
+                        break;
+                    }
+                    if( dialog["dialog"]:-2 == dialog_id )
+                        found = true;
+                });
+                askList = maplist ( map dialog, askList, ``{
+                    if( lowerDialog != -10 && dialog["dialog"]:-1 == dialog_id && dialog["stage"]:"initial" == stage ) {
+                        dialog["dialog"] = lowerDialog;
+                    } else if( dialog["dialog"]:-1 == lowerDialog && dialog["stage"]:"initial" == stage )
+                        dialog["dialog"] = dialog_id;
+                    return dialog;
+                });
+                UI::ChangeWidget( `id(`dialogs), `CurrentItem, lowerDialog );
+            } else if( ret == `questionUp ) {
+                dialog_id  = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
+                element_id = (integer)UI::QueryWidget(`id(`questions), `CurrentItem);
+                integer upper = -10;
+                foreach( map dialog, askList, ``{
+                    if( dialog_id == dialog["dialog"]:-1 && dialog["stage"]:"initial" == stage && dialog["element"]:-1 < element_id )
+                        upper = dialog["element"]:-1;
+                });
+                askList = maplist ( map dialog, askList, ``{
+                    if( dialog_id == dialog["dialog"]:-1 ) {
+                        if( upper != -10 && dialog["element"]:-1 == element_id && dialog["stage"]:"initial" == stage ) {
+                            dialog["element"] = upper;
+                        } else if( dialog["element"]:-1 == upper && dialog["stage"]:"initial" == stage )
+                            dialog["element"] = element_id;
+                    }
+                    return dialog;
+                });
+            } else if( ret == `questionDown ) {
+                dialog_id  = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
+                element_id = (integer)UI::QueryWidget(`id(`questions), `CurrentItem);
+                integer lower = -10;
+                boolean found = false;
+                foreach( map dialog, askList, ``{
+                    if( found && dialog["stage"]:"initial" == stage && dialog["dialog"]:-1 == dialog_id ) {
+                        lower = dialog["element"]:-2;
+                        break;
+                    }
+                    if( dialog["dialog"]:-2 == dialog_id && dialog["element"]:-2 == element_id )
+                        found = true;
+                });
+                askList = maplist ( map dialog, askList, ``{
+                    if( lower != -10 && dialog["dialog"]:-1 == dialog_id && dialog["stage"]:"initial" == stage && dialog["element"]:-1 == element_id ) {
+                        dialog["element"] = lower;
+                    } else if( dialog["dialog"]:-1 == dialog_id && dialog["stage"]:"initial" == stage && dialog["element"]:-1 == lower ) {
+                        dialog["element"] = element_id;
+                    }
+                    return dialog;
+                });
+            } else if( ret == `addDialog ) {
+                integer max = -1;
+                foreach( map m, askList, ``{
+                    if( m["stage"]:"initial" == stage && m["dialog"]:0 > max )
+                        max = m["dialog"]:0;
+                });
+                max = max + 1;
+                askList = add( askList, $[ "dialog":max,
+                                           "title":(string)UI::QueryWidget(`id(`dialogTitle), `Value),
+                                           "help":(string)UI::QueryWidget(`id(`help), `Value),
+                                           "question":"edit question",
+                                           "element":0,
+                                           "stage":stage
+                                           ]);
+            }
+            y2milestone("UWE %1",ret);
+            questions = [];
+            askList = sort( map x, map y, askList, ``( x["dialog"]:-2 <  y["dialog"]:-1 ||
+                                                     ( x["dialog"]:-2 == y["dialog"]:-1 && x["element"]:-2 < y["element"]:-1 ) ) );
+            dialogs = [];
+            map<string,list> done = $[ "initial":[], "cont":[] ];
+            foreach ( map m, askList, ``{
+                if( m["stage"]:"initial" == stage && !contains( done[stage]:[], m["dialog"]:-1 ) ) {
+                    dialogs = add( dialogs, `item( `id(m["dialog"]:-1), m["title"]:"" ) );
+                    done[stage] = add( done[stage]:[], m["dialog"]:-1 );
+                }
+            });
+            dialog_id = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
+            UI::ChangeWidget(`id(`dialogs), `Items, dialogs);
+            if( ret == `stage_cont || ret == `stage_initial ) {
+                UI::ChangeWidget(`id(`dialogs), `CurrentItem, 0);
+            } else {
+                UI::ChangeWidget(`id(`dialogs), `CurrentItem, dialog_id );
+            }
+            dialog_id = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
+            list<map> d = filter( map dummy, askList, ``{ return dummy["dialog"]:-2 == dialog_id && stage == dummy["stage"]:"initital"; });
+            d = sort( map x, map y, d, ``( x["element"]:-2 < y["element"]:-1 ) );
+            UI::ChangeWidget(`id(`dialogTitle), `Value, d[0,"title"]:"");
+            UI::ChangeWidget(`id(`help),  `Value, d[0,"help"]:"");
+            id_counter = 0;
+            foreach ( map m, d, ``{
+                id_counter = m["element"]:id_counter;
+                questions = add( questions, `item( `id(id_counter), m["question"]:"" ) );
+                id_counter = id_counter + 1;
+            });
+            UI::ChangeWidget(`id(`questions), `Items, questions);
+            UI::ChangeWidget(`id(`dialogs), `CurrentItem, dialog_id);
+
+            if (ret == `next)
+            {
+                AutoinstGeneral::askList = askList;
+            }
+        } until (ret == `next || ret == `back || ret == `cancel );
+        return (symbol)ret;
+    }
+
 
 
     /**
@@ -127,7 +537,8 @@ For signature handling, read the AutoYaST documentation.
     {
         map dialogs = $[
                         "mouse"		: ``(MouseDialog()),
-                        "mode"		: ``(ModeDialog())
+                        "mode"		: ``(ModeDialog()),
+                        "ask"       : ``(askDialog())
         ];
 
         map sequence = $[
@@ -137,7 +548,11 @@ For signature handling, read the AutoYaST documentation.
                                             `abort	: `abort
                          ],
                          "mode"	:         $[
-                                            `next	: `finish
+                                            `next	: "ask",
+                                            `abort  : `abort
+                                           ],
+                         "ask" :          $[
+                                            `next : `finish
                                            ]
                         ];
         // Translators: dialog caption
