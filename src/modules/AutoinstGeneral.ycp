@@ -58,6 +58,7 @@
 
     global map signature_handling = $[];
 
+    global list askList = [];
 
     /* default value of settings modified */
     global boolean modified = false;
@@ -140,12 +141,11 @@
     {
         SetModified ();
         y2milestone("General import: %1",settings);
-        //language =	settings["language"]:"";
-        //keyboard =      settings["keyboard"]:$[];;
-        //Clock	=	settings["clock"]:$[];
         mouse =	        settings["mouse"]:$[];
         mode  =	        settings["mode"]:$[];
         signature_handling = settings["signature-handling"]:$[];
+        askList = settings["ask-list"]:[];
+
         return true;
     }
 
@@ -171,6 +171,7 @@
         general["mouse"] = mouse;
         general["mode"] = mode;
         general["signature-handling"] = signature_handling;
+        general["ask-list"] = askList;
         return general;
     }
 
