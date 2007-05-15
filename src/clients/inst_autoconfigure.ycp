@@ -102,6 +102,15 @@ Please wait while the system is being configured.
 		module_auto = sformat("%1_auto", p);
 
 	    map result = $[];
+        /* remove the installation network if there is no networking section */
+        if( ! haskey(Profile::current, "networking") ) {
+            any l = SCR::Read (.target.dir, ["/etc/sysconfig/network", [] ]);
+            foreach( string s, (list<string>)l, ``{
+                if( issubstring( s, "ifcfg-" ) && !issubstring( s, "ifcfg-lo" ) ) {
+                    SCR::Execute(.target.remove, sformat("/etc/sysconfig/network/%1",s) );
+                }
+            });
+        }
 	    if (haskey(Profile::current , resource) )
 	    {
 		y2milestone("Writing configuration for %1", p);
