@@ -155,8 +155,8 @@ For signature handling, read the AutoYaST documentation.
                         )
                     ),
                     `HBox(
-                        `TextEntry( `id(`selLabel), "Label", "" ),
-                        `TextEntry( `id(`selValue), _("Value"), "" ),
+                        `TextEntry( `id(`selLabel), `opt(`notify,`immediate), "Label", "" ),
+                        `TextEntry( `id(`selValue), `opt(`notify,`immediate), _("Value"), "" ),
                         `PushButton( `id( `addSelection ), `opt( `default, `hstretch ), _("Add") )
                     ),
                     `HBox(
@@ -168,6 +168,17 @@ For signature handling, read the AutoYaST documentation.
         string help_text = _("<P></P>");
         UI::OpenDialog( `opt(`decorated  ), contents );
         repeat {
+            if( size( (list)UI::QueryWidget(`id(`selection), `Items) ) == 0 ) {
+                UI::ChangeWidget(`id(`delSelection) , `Enabled, false);
+            } else {
+                UI::ChangeWidget(`id(`delSelection) , `Enabled, true);
+            }
+            if( size( (string)UI::QueryWidget(`id(`selLabel), `Value) ) == 0 ||
+                size( (string)UI::QueryWidget(`id(`selValue), `Value) ) == 0 ) {
+                UI::ChangeWidget(`id(`addSelection) , `Enabled, false);
+            } else {
+                UI::ChangeWidget(`id(`addSelection) , `Enabled, true);
+            }
             ret = (symbol)UI::UserInput();
             if( ret == `addSelection ) {
                 string label = (string)UI::QueryWidget(`id(`selLabel), `Value);
@@ -194,7 +205,8 @@ For signature handling, read the AutoYaST documentation.
                                 "title":title, 
                                 "stage":stage, 
                                 "dialog":dialog, 
-                                "element":defaultValues["element"]:max, 
+                                "element":defaultValues["element"]:max,
+                                "script":defaultValues["script"]:"",
                                 "question":(string)UI::QueryWidget(`id(`question), `Value) ];
                 if( (string)UI::QueryWidget(`id(`frametitle), `Value) != "" )
                     newVal["frametitle"] = (string)UI::QueryWidget(`id(`frametitle), `Value);
