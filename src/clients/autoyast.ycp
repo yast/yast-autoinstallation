@@ -18,6 +18,7 @@
     import "Sequencer";
     import "Popup";
     import "AddOnProduct";
+    import "CommandLine";
 
     include "autoinstall/dialogs.ycp";
     include "autoinstall/conftree.ycp";
@@ -36,6 +37,63 @@
     Pkg::CallbackAcceptUnknownGpgKey("AutoInstall::callbackTrue");
     Pkg::CallbackAcceptFileWithoutChecksum("AutoInstall::callbackTrue");
     Pkg::CallbackAcceptUnsignedFile("AutoInstall::callbackTrue");
+
+    void openFile( map <string, any> options ) {
+        if( !Profile::ReadXML( options["filename"]:"" ) ) {
+            Popup::Error(_("Error while parsing the control file.
+Check the log files for more details or fix the
+control file and try again.
+"));
+        }
+    }
+
+
+    map cmdline = $[
+        "id"        : "autoyast2",
+        "help"      : _("autoyast"),
+        "actions"   : $[
+            "file" :   $[ "handler":openFile, "help":"sure" ]
+        ],
+        "options"       : $[
+            "filename": $[
+                "type":"string",
+                "help":"no help"
+            ]
+        ],
+        "mappings"      : $[
+            "file"  :   ["filename"]
+        ]
+    ];
+    if(!CommandLine::Init(cmdline, WFM::Args()))
+    {
+        y2error("Commandline init failed");
+        return (symbol)AutoSequence ();
+    }
+    // command line options
+    /* Init variables */
+    string command = "";
+    list flags = [];
+    map<string,any> options = $[];
+    string exit = "";
+    list l = [];
+
+    while(!CommandLine::Done())
+    {
+        map m = CommandLine::Command();
+        command = m["command"]:"exit";
+        options = m["options"]:$[];
+
+        if( command == "file" ) {
+            openFile(options);
+        } else {
+            /* maybe we got "exit" or "quit" */
+            if( !CommandLine::Done() ) {
+                CommandLine::Print("Unknown command (should not happen)");
+                continue;
+            }
+        }
+    }
+
 
     symbol ret = (symbol)AutoSequence ();
     AddOnProduct::CleanModeConfigSources();
