@@ -33,6 +33,8 @@
 
     global list<string> ExistingVGs = [];
 
+    global map<string, list<string> > keepLVM  = $[];
+    global map<string, list<string> > keepEVMS = $[];
 
     // LVM map as imported from Profile
     global map<string, map> lvm = $[]; 
@@ -90,8 +92,35 @@
             return (substring(d, 5) );
         });
 
-        y2milestone("Existing VGs: %1", ExistingVGs );
+        /* look for VGs to reuse */
+        foreach ( string k, map v, AutoinstStorage::AutoTargetMap, ``{
+            foreach ( map p, v["partitions"]:[], ``{
+                if( haskey( p, "lvm_group" ) && p["create"]:true == false ) {
+                    keepLVM[p["lvm_group"]:"x"] = [];
+                    if( !contains( ExistingVGs, p["lvm_group"]:"x" ) )
+                        Report::Error( sformat( _("can't reuse volume group %1. The volume group does not exist"), p["lvm_group"]:"x" ) );
+                    map atm = AutoinstStorage::AutoTargetMap;
+                    foreach ( map vg_p, atm["/dev/"+p["lvm_group"]:"x","partitions"]:[], ``{
+                        if( vg_p["create"]:true == false )
+                            keepLVM[p["lvm_group"]:"x"] = add( keepLVM[p["lvm_group"]:"x"]:[], vg_p["lv_name"]:"" );
+                    });
+                } else if( haskey( p, "evms_group" ) && p["create"]:true == false ) {
+                    keepEVMS[p["evms_group"]:"x"] = [];
+                    if( !contains( ExistingVGs, p["evms_group"]:"x" ) )
+                        Report::Error( sformat( _("can't reuse volume group %1. The volume group does not exist"), p["evms_group"]:"x" ) );
+                    map atm = AutoinstStorage::AutoTargetMap;
+                    foreach ( map vg_p, atm["/dev/"+p["evms_group"]:"x","partitions"]:[], ``{
+                        if( vg_p["create"]:true == false )
+                            keepLVM[p["lvm_group"]:"x"] = add( keepLVM[p["evms_group"]:"x"]:[], vg_p["lv_name"]:"" );
+                    });
+                }
+            });
+        });
+
+        y2milestone("Existing VGs: %1", ExistingVGs);
         y2milestone("Existing LVM: %1", ExistingLVM);
+        y2milestone("keep LVM: %1", keepLVM);
+        y2milestone("keep EVMS: %1", keepEVMS);
 
         symbol dropType = ( vmType == `CT_LVM ? `CT_EVMS : `CT_LVM );
 
@@ -185,16 +214,26 @@
         y2milestone("Existing LVs: %1", lvs);
 
         foreach(map lv, lvs, ``{
+            /*
             if (!contains(lvm["/dev/"+vgname, "keep_lv"]:[], lv["name"]:"")) {
                 removeLogicalVolume( "/dev/"+vgname,
                                      "/dev/"+vgname+"/"+lv["name"]:"" ); //FIXME: does removeLogicalVolume work for EVMS?
                 }
+        */
+            if (!contains(keepLVM[vgname]:[], lv["name"]:"")) {
+                removeLogicalVolume( "/dev/"+vgname,
+                                      "/dev/"+vgname+"/"+lv["name"]:"" ); //FIXME: does removeLogicalVolume work for EVMS?
+            }
             });
 
+/*
         if (size(lvm["/dev/"+vgname, "keep_lv"]:[]) == 0 &&
             ExistingLVM["/dev/" +vgname]:$[] != $[]) {
             removeVolumeGroup( vgname ); //FIXME: does removeVolumeGroup work for EVMS?
         }
+        */
+        if( ! haskey( keepLVM, vgname ) && ExistingLVM["/dev/" +vgname]:$[] != $[] )
+            removeVolumeGroup( vgname ); //FIXME: does removeVolumeGroup work for EVMS?
 
         return true;
     }
@@ -435,11 +474,15 @@
 
                 list<map> lvlist =  ExistingLVM[device, "partitions"]:[];
 
-                if (contains(volume_group["keep_lv"]:[], lv["nr"]:"_error_")) {
+//                if (contains(volume_group["keep_lv"]:[], lv["nr"]:"_error_")) {
+                if( contains(keepLVM[vgname]:[], lv["lv_name"]:"") ) {
                     list<map> lvtokeep = filter(map p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:""));
                     map this_lv = lvtokeep[0]:$[]; 
 
-                    y2milestone("Keeping LV: %1", this_lv);            
+                    y2milestone("Keeping LV: %1", this_lv);
+                    y2milestone("lv = %1",lv);
+
+                    lv["device"] = "/dev/"+vgname+"/"+lv["lv_name"]:"";
 
                     lv["used_fs"]    =    this_lv["used_fs"]:`reiser;
 
