@@ -111,7 +111,7 @@
                     map atm = AutoinstStorage::AutoTargetMap;
                     foreach ( map vg_p, atm["/dev/"+p["evms_group"]:"x","partitions"]:[], ``{
                         if( vg_p["create"]:true == false )
-                            keepLVM[p["lvm_group"]:"x"] = add( keepLVM[p["evms_group"]:"x"]:[], vg_p["lv_name"]:"" );
+                            keepEVMS[p["evms_group"]:"x"] = add( keepEVMS[p["evms_group"]:"x"]:[], vg_p["lv_name"]:"" );
                     });
                 }
             });
@@ -147,6 +147,7 @@
 
         // Process data
         lvm = mapmap(string device, map disk, lvm, ``{
+/*
             foreach( string key, ["keep_lv"], ``{
                 list num = [];
                 list<string> nlist = splitstring(disk[key]:"", ",");
@@ -155,7 +156,6 @@
                 });
                 disk[key] = num;
             });
-
             list fsys = [];
             list<string> nlist = splitstring( disk["keep_lv_fsys"]:"" , "," );
             foreach( string n, nlist, ``{
@@ -165,6 +165,7 @@
                 }
             });
             disk["keep_lv_fsys"] = fsys;
+*/
             disk["pesize"] = pesize_str_to_byte(disk["pesize"]:"4M");
 
             string     vgname    = substring(device, 5);
