@@ -215,24 +215,23 @@
         y2milestone("Existing LVs: %1", lvs);
 
         foreach(map lv, lvs, ``{
-            /*
+/*
             if (!contains(lvm["/dev/"+vgname, "keep_lv"]:[], lv["name"]:"")) {
                 removeLogicalVolume( "/dev/"+vgname,
                                      "/dev/"+vgname+"/"+lv["name"]:"" ); //FIXME: does removeLogicalVolume work for EVMS?
                 }
-        */
+*/
             if (!contains(keepLVM[vgname]:[], lv["name"]:"")) {
-                removeLogicalVolume( "/dev/"+vgname,
-                                      "/dev/"+vgname+"/"+lv["name"]:"" ); //FIXME: does removeLogicalVolume work for EVMS?
+                Storage::DeleteDevice("","/dev/"+vgname+"/"+lv["name"]:"" ); // works for EVMS too
             }
-            });
+        });
 
 /*
         if (size(lvm["/dev/"+vgname, "keep_lv"]:[]) == 0 &&
             ExistingLVM["/dev/" +vgname]:$[] != $[]) {
             removeVolumeGroup( vgname ); //FIXME: does removeVolumeGroup work for EVMS?
         }
-        */
+*/
         if( ! haskey( keepLVM, vgname ) && ExistingLVM["/dev/" +vgname]:$[] != $[] )
             removeVolumeGroup( vgname ); //FIXME: does removeVolumeGroup work for EVMS?
 
