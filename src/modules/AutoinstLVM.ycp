@@ -222,7 +222,10 @@
                 }
 */
             if (!contains(keepLVM[vgname]:[], lv["name"]:"")) {
-                Storage::DeleteDevice("","/dev/"+vgname+"/"+lv["name"]:"" ); // works for EVMS too
+                Storage::DeleteDevice("","/dev/"+vgname+"/"+lv["name"]:"" );
+            }
+            if (!contains(keepEVMS[vgname]:[], lv["name"]:"")) {
+                Storage::DeleteDevice("","/dev/evms/lvm2/"+vgname+"/"+lv["name"]:"" );
             }
         });
 
