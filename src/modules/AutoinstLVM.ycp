@@ -372,6 +372,7 @@
             current_vg = vgname;
 
             list<map>     new_pvs    = get_existing_pvs(vgname);
+            integer pesize = volume_group["pesize"]:1;
 
             if (volume_group["prefer_remove"]:false) {
                 remove_possible_volumes(vgname);
@@ -381,7 +382,7 @@
 
             if (size(volume_group["keep_lv"]:[]) == 0 ) {
                 vg["vgname"] = vgname;
-                vg["pesize"] = volume_group["pesize"]:1;
+                vg["pesize"] = volume_group["pesize"]:4194304;
                 vg["lvm2"]   = lvm2;
                 map addVG = $[];
                 if( vmType == `CT_LVM ) {
@@ -474,6 +475,9 @@
                     lv["size_k"] = freeSpace;
                     lv["size"]   = sformat("%1K",freeSpace);
                 }
+                y2milestone("size_k before rounding %1",lv["size_k"]:0);
+                lv["size_k"] = (integer)( (lv["size_k"]:0*1024) / pesize ) * pesize / 1024; // rounding
+                y2milestone("size_k after rounding %1",lv["size_k"]:0);
 
                 list<map> lvlist =  ExistingLVM[device, "partitions"]:[];
 
