@@ -692,8 +692,10 @@ $Id$
                                           map mg = find_matching_partition_size(gap,p["usepart"]:0);
                                           if (mg != $[])
                                           {
-                                              //p["cylinders"] = mg["cylinders"]:0;
-                                              //p["size"] = mg["size"]:0;
+                                              /* need next two lines because of #284102 */
+                                              /* FIXME: check problems with resizing */
+                                              p["cylinders"] = mg["cylinders"]:0;
+                                              p["size"] = mg["size"]:0;
                                               if (p["usepart"]:0< gap["max_primary"]:0)
                                               {
                                                   p["partition_type"] = "primary";						  
