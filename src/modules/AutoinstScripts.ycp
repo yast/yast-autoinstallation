@@ -517,6 +517,11 @@
                 string executionString = "";
                 boolean showFeedback = s["feedback"]:false;
 
+                if( type == "chroot-scripts" && special ) {
+                    // no AutoinstConfig::destdir in path for chrooted scripts
+                    scriptPath = sformat("%1/%2",AutoinstConfig::scripts_dir, scriptName);
+                }
+
                 if (scriptInterpreter == "shell")
                 {
                     string debug = ( s["debug"]:true ? "-x" : "" );
