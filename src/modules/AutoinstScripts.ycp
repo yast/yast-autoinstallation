@@ -419,11 +419,19 @@
         }
         else if (type == "chroot-scripts")
         {
-            tmpdirString = sformat("%1%2", AutoinstConfig::destdir,  AutoinstConfig::scripts_dir);
-            SCR::Execute (.target.mkdir, tmpdirString);
+            if( !special ) {
+                tmpdirString = sformat("%1%2", AutoinstConfig::destdir,  AutoinstConfig::scripts_dir);
+                SCR::Execute (.target.mkdir, tmpdirString);
 
-            current_logdir = sformat("%1%2", AutoinstConfig::destdir, AutoinstConfig::logs_dir);
-            SCR::Execute (.target.mkdir, current_logdir);
+                current_logdir = sformat("%1%2", AutoinstConfig::destdir, AutoinstConfig::logs_dir);
+                SCR::Execute (.target.mkdir, current_logdir);
+            } else {
+                tmpdirString = sformat("%1",  AutoinstConfig::scripts_dir);
+                SCR::Execute (.target.mkdir, tmpdirString);
+
+                current_logdir = sformat("%1", AutoinstConfig::logs_dir);
+                SCR::Execute (.target.mkdir, current_logdir);
+            }
         }
         else
         {
@@ -479,8 +487,14 @@
             {
                 //scriptPath = sformat("%1%2/%3", (special) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
 
-                // write always to /mnt/....
-                scriptPath = sformat("%1%2/%3",AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
+                map toks = URL::Parse(s["location"]:"");
+                if( toks["scheme"]:"" == "nfs" || !special ) {
+                    scriptPath = sformat("%1%2/%3",AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
+                } else {
+                    scriptPath = sformat("%1/%2",AutoinstConfig::scripts_dir,  scriptName);
+                }
+
+
                 y2milestone("Writing chroot script into %1", scriptPath);
                 if (s["location"]:""!="")
                 {
@@ -490,6 +504,9 @@
                     }
                 } else {
                     SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
+                }
+                if( special && toks["scheme"]:"" == "nfs" ) {
+                    scriptPath = substring (scriptPath, 4); // cut off the /mnt for later execution
                 }
             }
             else
@@ -517,21 +534,25 @@
                 string executionString = "";
                 boolean showFeedback = s["feedback"]:false;
 
+
                 if (scriptInterpreter == "shell")
                 {
                     string debug = ( s["debug"]:true ? "-x" : "" );
                     executionString = sformat("/bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName);
+                    y2milestone("Script Execution command: %1", executionString );
                     SCR::Execute (.target.bash, executionString);
                 }
                 else if (scriptInterpreter == "perl")
                 {
                     string debug = ( s["debug"]:true ? "-w" : "" );
                     executionString = sformat("/usr/bin/perl %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName);
+                    y2milestone("Script Execution command: %1", executionString );
                     SCR::Execute (.target.bash, executionString);
                 }
                 else if (scriptInterpreter == "python")
                 {
                     executionString = sformat("/usr/bin/python %1 2&> %2/%3.log ", scriptPath, current_logdir, scriptName );
+                    y2milestone("Script Execution command: %1", executionString );
                     SCR::Execute (.target.bash, executionString);
                 }
                 else
@@ -545,7 +566,6 @@
                 if( size(feedback) > 0 ) {
                     Popup::LongText(type, `RichText(`opt(`plainText), feedback), 50, 20 );
                 }
-                y2milestone("Script Execution command: %1", executionString );
             }
         });
 
