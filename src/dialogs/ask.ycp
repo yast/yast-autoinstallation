@@ -17,69 +17,89 @@
 
     define boolean askDialog() {
         boolean mod = false;
-        foreach( map ask, filter( map m, Profile::current["general","ask-list"]:[], ``{
-                                        if( Stage::initial() && m["stage"]:"initial" == "initial" ) {
-                                            return true;
-                                        } else if( Stage::cont() && m["stage"]:"initial" == "cont" ) {
-                                            return true;
-                                        }
-                                        return false;
-                                    }), ``{
-            list<string> position = splitstring( ask["path"]:"", "," );
-            string pathStr  = ask["path"]:"";
-            string type     = ask["type"]:"";
-            string question = ask["question"]:pathStr;
-            string helptext = ask["help"]:"";
-            string title    = ask["title"]:"";
-            string file     = ask["file"]:"";
-            list< map<string,any> > s  = ask["selection"]:[];
-            mod = true;
 
-            term dlg = `Dummy();
-            if( type == "boolean" ) {
-                boolean on=(ask["default"]:nil=="true")?(true):(false);
-                dlg = `CheckBox(`id(`entry), question,on );
-            } else if( type == "symbol" ) {
-                list<any> dummy = [];
-                foreach( map<string,any> e, s, ``{
-                    boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
-                    dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
-                });
-                dlg = `ComboBox( `id(`entry), question, dummy );
-            } else {
-                if( ask["password"]:false == true ) {
-                    dlg = `VBox(
-                             `Password(`id(`entry), question),
-                             `Password(`id(`pw2), question)
-                            );
+        map<integer,list> dialogs = $[];
+        list<integer> keys = [];
+        integer dialog_cnt = 0;
+
+        foreach( map ask, sort( map x, map y, Profile::current["general","ask-list"]:[], ``( x["element"]:0 < y["element"]:0 ) ), ``{
+            if( (Stage::initial() && ask["stage"]:"initial" == "initial") ||
+                (Stage::cont()    && ask["stage"]:"initial" == "cont")
+            ) {
+                dialogs[ask["dialog"]:dialog_cnt] = add( dialogs[ask["dialog"]:dialog_cnt]:[], ask );
+                if( ! contains( keys, ask["dialog"]:dialog_cnt ) )
+                    keys = add( keys, ask["dialog"]:dialog_cnt );
+                if( ! haskey( ask, "dialog" ) )
+                    dialog_cnt = dialog_cnt + 1;
+            }
+        });
+
+        foreach( integer dialog_nr, sort( keys ), ``{
+            string helptext = "";
+            string title    = "";
+            term dialog_term = `VBox();
+            term help_term = `Empty();
+            term title_term = `Empty();
+            foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
+                string pathStr  = ask["path"]:"";
+                string type     = ask["type"]:"";
+                string question = ask["question"]:pathStr;
+                string frametitle = ask["frametitle"]:"";
+                string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:0);
+                list< map<string,any> > s  = ask["selection"]:[];
+                helptext = helptext + ask["help"]:"";
+                title    = ask["title"]:"";
+                mod = true;
+
+                term dlg = `Dummy();
+                if( type == "boolean" ) {
+                    boolean on=(ask["default"]:nil=="true")?(true):(false);
+                    dlg = `Left( `Frame ( frametitle, `CheckBox(`id(entry_id), question,on ) ) );
+                } else if( type == "symbol" ) {
+                    list<any> dummy = [];
+                    foreach( map<string,any> e, s, ``{
+                        boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
+                        dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
+                    });
+                    dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), question, dummy ) ) );
                 } else {
-                    if( haskey( ask, "selection" ) ) {
-                        list<any> dummy = [];
-                        foreach( map<string,any> e, s, ``{
-                            boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
-                            dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"",on) );
-                        });
-                        dlg = `ComboBox( `id(`entry), question, dummy );
+                    if( ask["password"]:false == true ) {
+                        dlg = `Left( `Frame ( frametitle, `VBox(
+                                 `Password(`id(entry_id), question),
+                                 `Password(`id(`pass2), question)
+                                ) ) );
                     } else {
-                        dlg = `TextEntry(`id(`entry), question, ask["default"]:"" );
+                        if( haskey( ask, "selection" ) ) {
+                            list<any> dummy = [];
+                            foreach( map<string,any> e, s, ``{
+                                boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
+                                dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"",on) );
+                            });
+                            dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), question, dummy ) ) );
+                        } else {
+                            dlg = `Left( `Frame ( frametitle, `TextEntry(`id(entry_id), question, ask["default"]:"" ) ) );
+                        }
                     }
                 }
-            }
-
+                dialog_term = add( dialog_term, dlg );
+                dialog_term = add( dialog_term, `VSpacing(1) );
+            });
+            if( helptext != "" )
+                help_term = `HWeight(30, `RichText( helptext ));
+            if( title != "" )
+                title_term = `Heading( title );
             UI::OpenDialog(
                        `opt(`decorated  ),
                        `HBox(
-                         `HWeight(30, `RichText( helptext )),
+                         help_term,
                          `HStretch(),
                          `HSpacing(1),
                          `HWeight(70,
                               `VBox(
-                                `Heading( title ),
+                                title_term,
                                 `VSpacing(1),
                                 `VStretch(),
-                                `HBox(
-                                  dlg
-                                  ),
+                                 dialog_term,
                                 `VSpacing(1),
                                 `VStretch(),
                                 `HBox(
@@ -94,33 +114,38 @@
             while (true) {
                 any ret = UI::UserInput();
                 if( ret == `ok ) {
-                    any val = UI::QueryWidget(`id(`entry),  `Value);
-                    if( ask["type"]:"string" == "integer" ) {
-                        val = tointeger((string)val);
-                    }
-                    if( ask["password"]:false == true ) {
-                        string pass2 = (string)UI::QueryWidget(`id(`pw2),  `Value);
-                        if( pass2 != (string)val ) {
-                            Popup::Error("The two passwords mismatch.");
-                            continue;
+                    foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
+                        list<string> position = splitstring( ask["path"]:"", "," );
+                        string file     = ask["file"]:"";
+                        string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:0);
+                        any val = UI::QueryWidget(`id(entry_id),  `Value);
+                        if( ask["type"]:"string" == "integer" ) {
+                            val = tointeger((string)val);
                         }
-                    }
-                    y2milestone("question=%1 was answered with val=%2",question, val);
-                    list<any> pos = [];
-                    foreach( string p, position, ``{
-                        if( regexpmatch( p, "^[1,2,3,4,5,6,7,8,9,0]+$" ) ) {
-                            integer index = tointeger(p);
-                            pos = add(pos, index);
-                        } else {
-                            pos = add(pos, p);
+                        if( ask["password"]:false == true ) {
+                            string pass2 = (string)UI::QueryWidget(`id(`pass2),  `Value);
+                            if( pass2 != (string)val ) {
+                                Popup::Error("The two passwords mismatch.");
+                                continue;
+                            }
+                        }
+                        y2milestone("question=%1 was answered with val=%2",ask["question"]:"", val);
+                        list<any> pos = [];
+                        foreach( string p, position, ``{
+                            if( regexpmatch( p, "^[1,2,3,4,5,6,7,8,9,0]+$" ) ) {
+                                integer index = tointeger(p);
+                                pos = add(pos, index);
+                            } else {
+                                pos = add(pos, p);
+                            }
+                        });
+                        if( ask["path"]:"" != "" )
+                            Profile::current = Profile::setElementByList( pos, val, Profile::current );
+                        if( file != "" ) {
+                            if( ! SCR::Write (.target.string, file, sformat("%1",val)) )
+                                y2milestone("writing answer to %1 failed",file);
                         }
                     });
-                    if( pathStr != "" )
-                        Profile::current = Profile::setElementByList( pos, val, Profile::current );
-                    if( file != "" ) {
-                        if( ! SCR::Write (.target.string, file, sformat("%1",val)) )
-                            y2milestone("writing answer to %1 failed",file);
-                    }
                     break;
                 }
             }
