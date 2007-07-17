@@ -25,7 +25,7 @@ html_DATA = $(wildcard html/*.html) \
 	    html/yast2docs.css \
 		html/default.css
 
-doc_DATA = autoyast.pdf
+#doc_DATA = autoyast.pdf
 
 components: components.ent
 	bin/components.sh noref > components.ent
