@@ -40,6 +40,16 @@
     };
 
 
+    define void removeNetwork() {
+        any l = SCR::Read (.target.dir, ["/etc/sysconfig/network", [] ]);
+        foreach( string s, (list<string>)l, ``{
+            if( issubstring( s, "ifcfg-" ) && !issubstring( s, "ifcfg-lo" ) ) {
+                y2milestone("removing installation network: /etc/sysconfig/network/%1",s);
+                SCR::Execute(.target.remove, sformat("/etc/sysconfig/network/%1",s) );
+            }
+        });
+        return;
+    }
 
     // Help text for last dialog of base installation
     string help_text = _("<p>
@@ -77,6 +87,13 @@ Please wait while the system is being configured.
 
     y2milestone("Order: %1", maplist(map d, deps, ``(d["res"]:"")));
 
+    if (!haskey(Profile::current , "networking") ) {
+        // FIXME: ayast_setup needs an exception
+        removeNetwork(); // no networking section -> no network
+    } else if( Profile::current["networking","keep_install_network"]:false == false ) {
+        removeNetwork(); // networking section without keeping the install network
+    }
+
     foreach(map r, deps,
 	    ``{
 	string p = r["res"]:"";
@@ -102,13 +119,6 @@ Please wait while the system is being configured.
 		module_auto = sformat("%1_auto", p);
 
 	    map result = $[];
-        /* remove the installation network */
-        any l = SCR::Read (.target.dir, ["/etc/sysconfig/network", [] ]);
-        foreach( string s, (list<string>)l, ``{
-            if( issubstring( s, "ifcfg-" ) && !issubstring( s, "ifcfg-lo" ) ) {
-                SCR::Execute(.target.remove, sformat("/etc/sysconfig/network/%1",s) );
-            }
-        });
 	    if (haskey(Profile::current , resource) )
 	    {
 		y2milestone("Writing configuration for %1", p);
