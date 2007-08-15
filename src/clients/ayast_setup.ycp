@@ -8,7 +8,9 @@
    0.2:         * added Pkg::TargetInit
    0.3:         * support for <post-packages>
    0.4:         * support for the <ask> feature
- * Version:     0.4
+   0.5:         * support for the new "keep install network"
+                  feature of 10.3
+ * Version:     0.5
  * $Id$
 
    this client can be called from a running system,
@@ -94,6 +96,13 @@ control file and try again.
     Stage::Set ("continue");
     WFM::CallFunction("inst_autopost", []);
     AutoinstSoftware::addPostPackages(Profile::current["software","post-packages"]:[]);
+
+    // the following is needed since 10.3
+    // otherwise the already configured network gets removed
+    if( !haskey(Profile::current, "networking") ) {
+        Profile::current = add( Profile::current, "networking", $[ "keep_install_network":true ] );
+    }
+
     Pkg::TargetInit ("/", false);
     WFM::CallFunction("inst_rpmcopy", []);
     WFM::CallFunction("inst_autoconfigure", []);
