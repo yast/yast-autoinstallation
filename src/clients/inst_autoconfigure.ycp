@@ -88,7 +88,6 @@ Please wait while the system is being configured.
     y2milestone("Order: %1", maplist(map d, deps, ``(d["res"]:"")));
 
     if (!haskey(Profile::current , "networking") ) {
-        // FIXME: ayast_setup needs an exception
         removeNetwork(); // no networking section -> no network
     } else if( Profile::current["networking","keep_install_network"]:false == false ) {
         removeNetwork(); // networking section without keeping the install network
