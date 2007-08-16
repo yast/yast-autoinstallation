@@ -82,7 +82,10 @@
 	string summary =  (string) WFM::CallFunction( module_auto, ["Summary"]);
 	string caption = resourceMap["Name"]:"";
     string currentFile = AutoinstConfig::currentFile;
-    currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
+    integer filenameIndex = findlastof(currentFile,"/");
+    if( filenameIndex != nil ) {
+        currentFile = substring( currentFile, filenameIndex+1 );
+    }
     if( size(currentFile) > 0 ) {
         caption = caption + " - " + currentFile;
     }
