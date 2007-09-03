@@ -71,6 +71,7 @@ control file and try again.
     map cmdline = $[
         "id"        : "autoyast2",
         "help"      : _("autoyast"),
+        "guihandler" : AutoSequence,
         "actions"   : $[
             "file" :   $[ "handler":openFile, "help":"file operations" ]
         ],
@@ -84,11 +85,8 @@ control file and try again.
             "file"  :   ["filename"]
         ]
     ];
-    if(!CommandLine::Init(cmdline, WFM::Args()))
-    {
-        y2error("Commandline init failed");
-        return (symbol)AutoSequence ();
-    }
+
+
     // command line options
     /* Init variables */
     string command = "";
@@ -97,25 +95,8 @@ control file and try again.
     string exit = "";
     list l = [];
 
-    while(!CommandLine::Done())
-    {
-        map m = CommandLine::Command();
-        command = m["command"]:"exit";
-        options = m["options"]:$[];
+    CommandLine::Run(cmdline);
 
-        if( command == "file" ) {
-            openFile(options);
-        } else {
-            /* maybe we got "exit" or "quit" */
-            if( !CommandLine::Done() ) {
-                CommandLine::Print("Unknown command (should not happen)");
-                continue;
-            }
-        }
-    }
-
-
-    symbol ret = (symbol)AutoSequence ();
     AddOnProduct::CleanModeConfigSources();
-    return ret;
+    return `exit;
 }
