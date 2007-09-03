@@ -33,6 +33,7 @@
     import "Keyboard";
     import "Call";
     import "ProductControl";
+    import "LanUdevAuto";
 
     include "bootloader/routines/autoinstall.ycp";
     include "autoinstall/ask.ycp";
@@ -223,6 +224,8 @@ Try again.
     Bootloader::Propose ();
     y2debug ("autoyast: Proposing done");
 
+
+    LanUdevAuto::Import(Profile::current["networking"]:$[]);
 
     Progress::NextStage();
     string rl = Profile::current["runlevel", "default"]:"";
