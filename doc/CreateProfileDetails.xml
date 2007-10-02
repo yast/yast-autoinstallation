@@ -938,53 +938,6 @@
     </section>
     
     <section>
-      <title>Creating Primary and Extended Partitions</title>
-      <para>
-	By default, &autoyast2; will create an extended partition and will add all
-	other new partitions as logical devices. It is possible however to
-	instruct &autoyast2; to create a certain partition as a primary
-	or as extended partition. Additionally, it is possible to
-	specify the size of a partition using sectors instead of the size in Mbytes.
-      </para>
-      <para>
-	The properties <emphasis>partition_id</emphasis> and
-	<emphasis>partition_type</emphasis> control such behavior. To
-	specify the size in sectors, the list resource
-	<emphasis>region</emphasis> can be used.
-    </para>
-    <example>
-      <title>Advanced Automated partitioning</title>
-      <screen>
-	    <xi:include href="examples/example.advancedPartitioning.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-      </screen>
-    </example>
-  
-      <para>
-	The last example  only makes sense if you exactly know the
-	boundaries of the partitions and it does only make sense if you are creating
-	an exact copy of  a system, for example when cloning. The first
-	region entry in the list is the beginning of the region, the second
-	represents the length of the region.
-      </para>
-      
-      <para>
-	The following example lets you create an extended partition with a
-	custom size.
-      </para>
-	  <example>
-	    <title>
-	      Creating custom extended partitions
-	    </title>	   	    
-	    <screen>
-      	    <xi:include href="examples/example.customextended.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-      </screen>
-  </example>
-
-
-    </section>
-    <section>
       <title>Keeping Specific Partitions</title>
       <para>
 	In some cases you might choose to keep some partitions untouched
