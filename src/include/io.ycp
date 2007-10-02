@@ -164,10 +164,8 @@
 		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
 	    }
 
-	    if (!(boolean)WFM::Execute(.local.mount,
-                        [ Host + ":" + dirname(Path),
-                        mount_point,
-                        Installation::mountlog ]))
+	    if (!(boolean)SCR::Execute(.target.mount,
+                        [ Host + ":" + dirname(Path), mount_point ], "-o nolock" ))
 	    {
 		y2warning("Mount failed");
                 // autoyast tried to mount a NFS directory which failed
