@@ -197,7 +197,7 @@
 	{
 	    if (StorageDevices::FloppyReady() && Scheme == "floppy")
 	    {
-		WFM::Execute(.local.mount, [StorageDevices::FloppyDevice, mount_point]);
+		WFM::Execute(.local.mount, [StorageDevices::FloppyDevice(), mount_point]);
 
 		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + "/" + Path + " " + Localfile) != 0)
 		{
