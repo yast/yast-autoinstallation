@@ -809,7 +809,8 @@ $Id$
                             p["used_fs"]	=  `unknown;
                             p["fsid"]		=  Partitions::fsid_lvm;
                             p["format"]		=  false;
-                            string lvm          = (solution["partitions",pindex,"evms_group"]:true)?("lvm2"):("lvm");
+//                            string lvm          = (solution["partitions",pindex,"evms_group"]:true)?("lvm2"):("lvm");
+                            string lvm      = "lvm2";
                             p["evms_group"]	=  "evms/"+lvm+"/"+solution["partitions",pindex,"evms_group"]:"";
                             p["mount"]		=  "";
                             p["fstype"]		=  "EVMS";
