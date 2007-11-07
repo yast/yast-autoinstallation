@@ -24,32 +24,15 @@
     import "Profile";
     import "Pkg";
 
+    // All shared data are in yast2.rpm to break cyclic dependencies
+    import "AutoinstData";
+
     //
     // Show proposal and ask user for confirmation to go on with auto-installation
     // Similar to interactive mode, without letting use change settings
     // Interactive mode implies confirmation as well..
     //
     global boolean Confirm = true;
-
-    //
-    // Keyboard
-    //
-    //global map keyboard = $[];
-
-    //
-    // Language
-    //
-    //global string language = "";
-
-    //
-    // Mouse, if not autoprobed
-    //
-    global map  mouse = $[];
-
-    //
-    // Clock Settings
-    //
-    //global map Clock = $[];
 
     //
     // Mode Settings
@@ -62,7 +45,6 @@
 
     /* default value of settings modified */
     global boolean modified = false;
-
 
     /**
      * Function sets internal variable, which indicates, that any
@@ -90,9 +72,9 @@
         //string keyboard_name		= "";
         string mouse_name		= "";
 
-        if ( mouse["id"]:"" != "" && mouse["id"]:"" != "probe")
+        if ( AutoinstData::mouse["id"]:"" != "" && AutoinstData::mouse["id"]:"" != "probe")
         {
-            Mouse::Set(mouse["id"]:"");
+            Mouse::Set(AutoinstData::mouse["id"]:"");
             mouse_name = Mouse::MakeProposal(false, false);
         }
         else
@@ -141,7 +123,7 @@
     {
         SetModified ();
         y2milestone("General import: %1",settings);
-        mouse =	        settings["mouse"]:$[];
+        AutoinstData::mouse = settings["mouse"]:$[];
         mode  =	        settings["mode"]:$[];
         signature_handling = settings["signature-handling"]:$[];
         askList = settings["ask-list"]:[];
@@ -168,7 +150,7 @@
         general["keyboard"] = keyboard;
         general["clock"] = Clock;
         */
-        general["mouse"] = mouse;
+        general["mouse"] = AutoinstData::mouse;
         general["mode"] = mode;
         general["signature-handling"] = signature_handling;
         general["ask-list"] = askList;
@@ -229,18 +211,18 @@
         // mouse
         //
 
-        if ( mouse["id"]:"" != "probe" && mouse["id"]:"" != "")
+        if ( AutoinstData::mouse["id"]:"" != "probe" && AutoinstData::mouse["id"]:"" != "")
         {
-            Mouse::Set(mouse["id"]:"");
+            Mouse::Set(AutoinstData::mouse["id"]:"");
         }
-        else if (haskey(mouse,"device"))
+        else if (haskey(AutoinstData::mouse,"device"))
         {
             //
             // Otherwise, try to find the mouse id from the DB using data supplied by user,
             // at least the device is needed.
             //
-            string device = mouse["device"]:"none";
-            integer wheels = mouse["wheels"]:0;
+            string device = AutoinstData::mouse["device"]:"none";
+            integer wheels = AutoinstData::mouse["wheels"]:0;
 
             map<string, list> mice = (map<string, list>)Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
 
@@ -248,10 +230,10 @@
                 map data = g[1]:$[];
                 if ( data["wheels"]:0 == wheels  && data["device"]:"" == device)
                 {
-                    mouse["id"] =  f;
+                    AutoinstData::mouse["id"] =  f;
                 }
             });
-             Mouse::Set(mouse["id"]:"");
+             Mouse::Set(AutoinstData::mouse["id"]:"");
         }
         SetSignatureHandling();
     }

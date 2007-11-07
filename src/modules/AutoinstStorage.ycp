@@ -20,6 +20,9 @@
     import "Popup";
     import "Report";
 
+    // All shared data are in yast2.rpm to break cyclic dependencies
+    import "AutoinstData";
+
     include "partitioning/partition_defines.ycp";
 
     // Read existing fstab and format partitions, but dont create anything
@@ -28,15 +31,6 @@
 
     // Fstab options
     global map fstab = $[];
-
-    // Show warning for /boot on raid
-    global boolean BootRaidWarning = true;
-
-    // Show warning for /boot on lvm
-    global boolean BootLVMWarning = true;
-
-    // Show warning for /boot cyl <1024
-    global boolean BootCylWarning = true;
 
     // Partition plan as parsed from control file
     global list<map> AutoPartPlan = [];

@@ -23,6 +23,9 @@ Summary:	YaST2 - Auto-Installation
 Version:	@VERSION@
 Summary:	YaST2 - Auto-Installation: Installation Modules
 Group:		System/YaST
+# Some variables were moved from AutoinstStorage, AutoinstGeneral, and AutoinstSoftware
+# to AutoinstData (yast2.rpm) to break cyclic dependencies.
+Requires:	yast2 >= 2.16.8
 Requires:	yast2-xml yast2-core yast2 yast2-country yast2-mouse yast2-packager yast2-storage yast2-transfer yast2-update
 Provides:	yast2-trans-autoinst
 Obsoletes:	yast2-trans-autoinst
