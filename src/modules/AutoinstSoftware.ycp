@@ -24,6 +24,9 @@
     import "Storage";
     import "Mode";
 
+    // All shared data are in yast2.rpm to break cyclic dependencies
+    import "AutoinstData";
+
     import "PackageAI";
 
     global map Software = $[];
@@ -37,7 +40,7 @@
     global string kernel = "";
 
     // Packages that should be installed in continue mode
-    global list<string> post_packages = [];
+    // AutoinstData::post_packages = [];
 
     global string ft_module = "";
 
@@ -92,7 +95,7 @@
 
         PackageAI::toinstall  = settings["packages"]:[];
         kernel = settings["kernel"]:"";
-        post_packages = settings["post-packages"]:[];
+        AutoinstData::post_packages = settings["post-packages"]:[];
         PackageAI::toremove  =  settings["remove-packages"]:[];
 
         /* Imaging */
@@ -141,8 +144,8 @@
         if (PackageAI::toinstall != [])
             s["packages"] = PackageAI::toinstall;
 
-        if (post_packages != [])
-            s["post-packages"] = post_packages ;
+        if (AutoinstData::post_packages != [])
+            s["post-packages"] = AutoinstData::post_packages ;
 
         if (PackageAI::toremove != [])
             s["remove-packages"] = PackageAI::toremove;
@@ -433,7 +436,7 @@
      */
     global define void addPostPackages(list<string> calcpost)
     {
-        post_packages = (list<string>)toset(union(calcpost,post_packages));
+        AutoinstData::post_packages = (list<string>)toset(union(calcpost,AutoinstData::post_packages));
         return;
     }
 
