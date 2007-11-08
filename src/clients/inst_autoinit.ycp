@@ -164,6 +164,7 @@ Please wait while the system is prepared for autoinstallation.</p>
 
     Progress::Title(_("Probing hardware..."));
     WFM::CallFunction("inst_startup", [] );
+    AutoInstallRules::ProbeRules();
 
     if( ! profileFetched ) {
         symbol ret = processProfile();
