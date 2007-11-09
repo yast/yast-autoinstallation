@@ -126,9 +126,14 @@
         }
 
         SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3",
-                    AutoinstConfig::xml_tmpfile ,  destdir ,  AutoinstConfig::xml_file) );
+                    "/tmp/profile/autoinst.xml" ,  destdir ,  AutoinstConfig::xml_file) );
         SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",
                     destdir ,  AutoinstConfig::xml_file) );
+
+        SCR::Execute(.target.bash, sformat("/bin/cp %1 %2%3",
+                    AutoinstConfig::profile_dir+"/pre-autoinst.xml" ,  destdir ,  AutoinstConfig::cache) );
+        SCR::Execute(.target.bash, sformat("/bin/chmod 700 %1%2",
+                    destdir ,  AutoinstConfig::cache+"/pre-autoinst.xml") );
 
         return;
     }
