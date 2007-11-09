@@ -2,13 +2,17 @@
 
 @HEADER@
 BuildRequires:	java2-devel-packages yast2-mouse yast2-transfer yast2-update yast2-bootloader xorg-x11-libs yast2-devtools pkg-config libxslt perl-XML-Writer docbook-xsl-stylesheets sgml-skel yast2-testsuite update-desktop-files
+BuildRequires:	yast2 >= 2.16.8
+
 Requires:	yast2-core yast2-xml libxslt yast2-installation
 Requires:	autoyast2-installation = %{version}
-Requires:   yast2-schema yast2 yast2-country yast2-storage
+Requires:	yast2-schema yast2 yast2-country yast2-storage
+
 Provides:	yast2-module-autoinst yast2-config-autoinst
 Obsoletes:	yast2-module-autoinst yast2-config-autoinst
 Provides:	yast2-lib-autoinst
 Obsoletes:	yast2-lib-autoinst
+
 PreReq:		%insserv_prereq %fillup_prereq
 
 BuildArchitectures:	noarch
