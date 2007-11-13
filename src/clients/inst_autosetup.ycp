@@ -48,7 +48,7 @@ control file and try again.
                 return `abort;
             }
             string cpcmd = sformat("mv %1 %2","/tmp/profile/autoinst.xml", "/tmp/profile/pre-autoinst.xml");
-            y2milestone("moving original profile: %1",cpcmd);
+            y2milestone("copy original profile: %1",cpcmd);
             SCR::Execute(.target.bash, cpcmd);
 
             cpcmd = sformat("mv %1 %2", AutoinstConfig::modified_profile, "/tmp/profile/autoinst.xml");

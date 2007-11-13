@@ -257,7 +257,7 @@
                 }
                 // catching nested devices done
 
-        string mounts = (string)(SCR::Read (.target.string, "/etc/mtab"));
+        string mounts = (string)(SCR::Read (.target.string, "/proc/mounts"));
         list<string> mount_list = splitstring( mounts, "\n" );
         boolean already_mounted = false;
         foreach( string m, mount_list, ``{
