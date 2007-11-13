@@ -49,6 +49,32 @@
 
         boolean is_directory = false;
 
+        if( AutoinstConfig::scheme == "relurl" ) {
+            // FIXME:
+            // file                  # local file
+
+            AutoinstConfig::scheme   = (string)SCR::Read(.etc.install_inf.InstMode);
+            if( AutoinstConfig::scheme == "hd" || AutoinstConfig::scheme == "harddisk" || AutoinstConfig::scheme == "disk" ) {
+                string part = (string)SCR::Read(.etc.install_inf.Partition);
+                AutoinstConfig::scheme = "device";
+                AutoinstConfig::host = part;
+                AutoinstConfig::filepath = (string)SCR::Read(.etc.install_inf.Serverdir) + "/" + AutoinstConfig::filepath;;
+            } else {
+                if( AutoinstConfig::scheme == "cd" || AutoinstConfig::scheme == "cdrom" ) {
+                    AutoinstConfig::scheme = "file";
+                }
+                if( size(AutoinstConfig::filepath) > 0 ) {
+                    AutoinstConfig::filepath = (string)SCR::Read(.etc.install_inf.Serverdir)+"/"+AutoinstConfig::host+"/"+AutoinstConfig::filepath;
+                } else {
+                    AutoinstConfig::filepath = (string)SCR::Read(.etc.install_inf.Serverdir)+"/"+AutoinstConfig::host;
+                }
+                if( (string)SCR::Read(.etc.install_inf.Server) != nil ) {
+                AutoinstConfig::host     = (string)SCR::Read(.etc.install_inf.Server);
+            }
+        }
+
+            y2milestone("relurl for profile changed to: %1://%2%3",AutoinstConfig::scheme, AutoinstConfig::host, AutoinstConfig::filepath);
+        }
         string filename = basename(AutoinstConfig::filepath);
 
 
