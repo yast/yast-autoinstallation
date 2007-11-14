@@ -162,16 +162,30 @@ Please wait while the system is prepared for autoinstallation.</p>
         WFM::CallFunction("inst_iscsi-client", []);
     }
 
-    Progress::Title(_("Probing hardware..."));
-    WFM::CallFunction("inst_startup", [] );
-    AutoInstallRules::ProbeRules();
-
     if( ! profileFetched ) {
         symbol ret = processProfile();
         if( ret != `ok ) {
             return ret;
         }
     }
+
+    if( haskey(Profile::current, "iscsi-client") ) {
+        y2milestone("iscsi-client found");
+        WFM::CallFunction("iscsi-client_auto", ["Import", Profile::current["iscsi-client"]:$[]] );
+    }
+
+    Progress::Title(_("Probing hardware..."));
+    WFM::CallFunction("inst_startup", [] );
+    AutoInstallRules::ProbeRules();
+
+/*
+    if( ! profileFetched ) {
+        symbol ret = processProfile();
+        if( ret != `ok ) {
+            return ret;
+        }
+    }
+*/
 
     if(UI::PollInput() == `abort)
         if (Popup::ConfirmAbort (`painless))
