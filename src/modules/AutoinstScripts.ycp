@@ -181,6 +181,20 @@
 
     }
 
+    global define list<map> Resolve_relurl( list<map> d ) {
+        d = maplist (map script , d, ``{
+            if( issubstring( script["location"]:"", "relurl://" ) ) {
+                string l = script["location"]:"";
+                l = substring ( l, 9 );
+                string newloc = AutoinstConfig::scheme + "://" + AutoinstConfig::host + "/" + AutoinstConfig::directory + l;
+                script["location"] = newloc;
+                y2milestone("changed relurl to %1 for script", newloc);
+            }
+            return script;
+        });
+
+        return d;
+    }
 
     /**
      * Get all the configuration from a map.
@@ -196,6 +210,12 @@
         init = s["init-scripts"]:[];
         post = s["post-scripts"]:[];
         chroot = s["chroot-scripts"]:[];
+
+        pre = Resolve_relurl(pre);
+        init = Resolve_relurl(init);
+        post = Resolve_relurl(post);
+        chroot = Resolve_relurl(chroot);
+
         merged = mergeScripts();
         y2debug("merged: %1", merged);
         return true;
