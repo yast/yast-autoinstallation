@@ -116,8 +116,10 @@
     {
         y2debug("resource: %1", resource);
         map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
-	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
-
+        string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
+        if( haskey( Profile::current, resource ) ) {
+            Profile::current = remove( Profile::current, resource );
+        }
         string profile_resource = Y2ModuleConfig::getResource(resource);
         WFM::CallFunction(module_auto, ["Reset"]);
 
