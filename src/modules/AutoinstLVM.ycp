@@ -89,9 +89,6 @@
         targetMap = Storage::GetTargetMap();
         y2milestone("GetTargetMap returns %1",targetMap);
         //ExistingLVM    = filter(string k, map v, Storage::GetTargetMap(), ``(v["type"]:`CT_UNKNOWN==`CT_LVM));
-        if( vmType == `CT_EVMS ) {
-            Storage::ActivateEvms();
-        }
 
         ExistingLVM    = filter(string k, map v, Storage::GetTargetMap(), ``(v["type"]:`CT_UNKNOWN==vmType));
 	if( haskey( ExistingLVM, "/dev/evms" ) ) {
