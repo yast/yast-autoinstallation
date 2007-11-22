@@ -88,6 +88,9 @@
         y2milestone("GetTargetMap returns %1",targetMap);
         //ExistingLVM    = filter(string k, map v, Storage::GetTargetMap(), ``(v["type"]:`CT_UNKNOWN==`CT_LVM));
         ExistingLVM    = filter(string k, map v, Storage::GetTargetMap(), ``(v["type"]:`CT_UNKNOWN==vmType));
+        if( haskey( ExistingLVM, "/dev/evms" ) ) {
+            ExistingLVM = remove( ExistingLVM, "/dev/evms" );
+        }
         ExistingVGs    = maplist (string  d, map g, ExistingLVM, ``{
             return (substring(d, 5) );
         });
@@ -482,14 +485,17 @@
                 list<map> lvlist =  ExistingLVM[device, "partitions"]:[];
 
 //                if (contains(volume_group["keep_lv"]:[], lv["nr"]:"_error_")) {
-                if( contains(keepLVM[vgname]:[], lv["lv_name"]:"") ) {
+                if( contains(keepLVM[vgname]:[], lv["lv_name"]:"") || contains(keepEVMS[vgname]:[], lv["lv_name"]:"") ) {
                     list<map> lvtokeep = filter(map p, lvlist, ``(p["nr"]:"" == lv["lv_name"]:""));
                     map this_lv = lvtokeep[0]:$[]; 
 
                     y2milestone("Keeping LV: %1", this_lv);
                     y2milestone("lv = %1",lv);
 
-                    lv["device"] = "/dev/"+vgname+"/"+lv["lv_name"]:"";
+                    if( vmType == `CT_LVM )
+                        lv["device"] = "/dev/"+vgname+"/"+lv["lv_name"]:"";
+                    else
+                        lv["device"] = "/dev/evms/lvm2/"+vgname+"/"+lv["lv_name"]:"";
 
                     lv["used_fs"]    =    this_lv["used_fs"]:`reiser;
 
@@ -505,8 +511,7 @@
                                       "mount"         : lv["mount"]:"" ,
                                       "used_fs"       : this_lv["used_fs"]:`reiser,
                                       "format"        : lv["format"]:false ,
-                                      "type"          : `lvm,
-                                      "device"        : "/dev/" + current_vg + "/" + lv["name"]:""
+                                      "device"        : lv["device"]:""
                                     ];
                         reslv["changed_size"] = true;
                         Storage::ResizeVolume( "/dev/" + current_vg + "/" + lv["name"]:"",
