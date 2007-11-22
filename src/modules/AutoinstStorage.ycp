@@ -504,6 +504,16 @@
         return settings;
     }
 
+    global void activateEVMS(list<map> settings) {
+        foreach( map d, settings, ``{
+            if( d["type"]:`x == `CT_EVMS ) {
+                y2milestone("activate EVMS");
+                Storage::ActivateEvms();
+            }
+        });
+        return;
+    }
+
     /**
      * Get all the configuration from a map.
      * When called by inst_auto<module name> (preparing autoinstallation data)
@@ -524,6 +534,7 @@
             settings = region4resize(settings);
             settings = percent2size(settings);
             settings = setPartitionType(settings);
+            activateEVMS(settings);
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
