@@ -124,6 +124,22 @@
                 current["timezone"] = current["general","clock"]:$[];
                 current["general"] = remove( current["general"]:$[], "clock" );
             }
+            if( current["general","mode","final_halt"]:false ) {
+                map script = $[ "filename":"zzz_halt", "source":"shutdown -h now" ];
+                if( ! haskey( current, "scripts" ) )
+                    current["scripts"] = $[];
+                if( ! haskey( current["scripts"]:$[], "init-scripts" ) )
+                    current["scripts","init-scripts"] = [];
+                current["scripts","init-scripts"] = add( current["scripts","init-scripts"]:[], script );
+            }
+            if( current["general","mode","final_reboot"]:false ) {
+                map script = $[ "filename":"zzz_reboot", "source":"shutdown -r now" ];
+                if( ! haskey( current, "scripts" ) )
+                    current["scripts"] = $[];
+                if( ! haskey( current["scripts"]:$[], "init-scripts" ) )
+                    current["scripts","init-scripts"] = [];
+                current["scripts","init-scripts"] = add( current["scripts","init-scripts"]:[], script );
+            }
             if( haskey( current["software"]:$[], "additional_locales" ) ) {
                 if( ! haskey(current, "language") ) {
                     current["language"] = $[];
