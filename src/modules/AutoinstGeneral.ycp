@@ -98,6 +98,15 @@
         summary = Summary::AddHeader(summary, _("Halting the machine after stage one"));
         summary = Summary::AddLine(summary, (mode["halt"]:false) ?
                                    _("Yes") : _("No"));
+        if( mode["final_halt"]:false == true ) {
+            summary = Summary::AddHeader(summary, _("Halting the machine after stage two"));
+            summary = Summary::AddLine(summary, _("Yes"));
+        }
+        if( mode["final_reboot"]:false == true ) {
+            summary = Summary::AddHeader(summary, _("Reboot the machine after stage two"));
+            summary = Summary::AddLine(summary, _("Yes"));
+        }
+
 
         summary = Summary::AddHeader(summary, _("Signature Handling"));
         summary = Summary::AddLine(summary, (AutoinstGeneral::signature_handling["accept_unsigned_file"]:false) ?

@@ -36,6 +36,8 @@
         boolean confirm	= mode["confirm"]:true;
         boolean second_stage	= mode["second_stage"]:true;
         boolean halt            = mode["halt"]:false;
+        boolean halt_second     = mode["final_halt"]:false;
+        boolean reboot_second   = mode["final_reboot"]:false;
 
         boolean accept_unsigned_file = signature_handling["accept_unsigned_file"]:false;
         boolean accept_file_without_checksum = signature_handling["accept_file_without_checksum"]:false;
@@ -50,6 +52,8 @@
                        `Left(`CheckBox(`id(`confirm), _("Con&firm installation?"), confirm)),
                        `Left(`CheckBox(`id(`second_stage), _("AutoYaST Second Stage"), second_stage)),
                        `Left(`CheckBox(`id(`halt), _("Turn Off the Machine after the First Stage"), halt)),
+                       `Left(`CheckBox(`id(`halt_second), _("Turn Off the Machine after the Second Stage"), halt_second)),
+                       `Left(`CheckBox(`id(`reboot_second), _("Reboot the Machine after the Second Stage"), reboot_second)),
                        `Left(`Label( _("Signature Handling") )),
                        `Left(`CheckBox(`id(`accept_unsigned_file), _("Accept &Unsigned Files"), accept_unsigned_file)),
                        `Left(`CheckBox(`id(`accept_file_without_checksum), _("Accept Files without a &Checksum"), accept_file_without_checksum)),
@@ -99,10 +103,14 @@ For signature handling, read the AutoYaST documentation.
                 confirm = (boolean)UI::QueryWidget(`id(`confirm), `Value);
                 second_stage = (boolean) UI::QueryWidget(`id(`second_stage), `Value);
                 halt = (boolean) UI::QueryWidget(`id(`halt), `Value);
+                halt_second = (boolean) UI::QueryWidget(`id(`halt_second), `Value);
+                reboot_second = (boolean) UI::QueryWidget(`id(`reboot_second),`Value);
 
                 mode["second_stage"] = second_stage;
                 mode["confirm"] = confirm;
                 mode["halt"] = halt;
+                mode["halt_second"] = halt_second;
+                mode["reboot_second"] = reboot_second;
                 AutoinstGeneral::mode = mode;
 
                 signature_handling["accept_unsigned_file"] = (boolean)UI::QueryWidget(`id(`accept_unsigned_file), `Value);
