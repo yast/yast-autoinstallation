@@ -318,8 +318,44 @@
     global define boolean Save (string file)
     {
         Prepare();
+        boolean ret = false;
         y2debug("Saving data (%1) to XML file %2", current, file);
-        return (XML::YCPToXMLFile(`profile, current,  file));
+        if( true || AutoinstConfig::ProfileEncrypted ) {
+            string xml = XML::YCPToXMLString(`profile, current);
+            if( size(xml) > 0 ) {
+                string p = "";
+                string q = "";
+                do {
+                    UI::OpenDialog(
+                               `VBox(
+                                     `Label("Encrypted AutoYaST profile. Please enter the password twice"),
+                                     `Password(`id(`password), ""),
+                                     `Password(`id(`password2), ""),
+                                     `PushButton(`id(`ok), "&OK")
+                                     )
+                                );
+                    any button = nil;
+                    repeat {
+                        button = UI::UserInput();
+                        p = (string) UI::QueryWidget(`id(`password), `Value);
+                        q = (string) UI::QueryWidget(`id(`password2), `Value);
+                    } until ( button == `ok );
+                    UI::CloseDialog();
+                } while( p != q );
+                string dir = (string)SCR::Read(.target.tmpdir);
+                string command = sformat("gpg2 -c --armor --batch --passphrase \"%1\" --output %2/encrypted_autoyast.xml",p,dir);
+                y2milestone("UWE %1", command);
+                SCR::Execute(.target.bash_input, command, xml);
+                if( SCR::Read(.target.size, dir+"/encrypted_autoyast.xml") > 0 ) {
+                    command = sformat( "mv %1/encrypted_autoyast.xml %2", dir, file );
+                    SCR::Execute(.target.bash, command, $[]);
+                    ret = true;
+                }
+            }
+        } else {
+            ret = XML::YCPToXMLFile(`profile, current,  file);
+        }
+        return ret;
     }
 
 
@@ -581,8 +617,34 @@
      * @return	boolean
      */
     global define boolean ReadXML (string file) {
-        y2debug("Reading %1", file);
-        current = XML::XMLToYCPFile(file);
+        string tmp = (string)SCR::Read (.target.string, file);
+        list<string> l = splitstring (tmp, "\n");
+        if( tmp != nil && l[0]:"" == "-----BEGIN PGP MESSAGE-----" ) {
+            map<string,any> out = $[];
+            while( out["stdout"]:"" == "" ) {
+                UI::OpenDialog(
+                           `VBox(
+                                 `Label("Encrypted AutoYaST profile. Please enter the correct password."),
+                                 `Password(`id(`password), ""),
+                                 `PushButton(`id(`ok), "&OK")
+                                 )
+                           );
+                string p = "";
+                any button = nil;
+                repeat {
+                    button = UI::UserInput();
+                    p = (string) UI::QueryWidget(`id(`password), `Value);
+                } until ( button == `ok );
+                UI::CloseDialog();
+                string command = sformat("gpg2 -d --batch --passphrase \"%1\" %2",p, file);
+                out = (map<string,any>)SCR::Execute(.target.bash_output, command, $[]);
+            }
+            current = XML::XMLToYCPString( out["stdout"]:"" );
+            AutoinstConfig::ProfileEncrypted = true;
+        } else {
+            y2debug("Reading %1", file);
+            current = XML::XMLToYCPFile(file);
+        }
 
         if ( current != $[]  && size(current) == 0 )
         {
@@ -612,7 +674,6 @@
             if( is( tmp[0]:nil, string ) ) {
                 m[i] = setMValue( tmp, v, m[i]:$[] );
             } else {
-                y2milestone("I'm in else");
                 m[i] = setLValue( tmp, v, m[i]:[] );
             }
         } else {
