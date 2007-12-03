@@ -29,7 +29,7 @@
             if ( Profile::Save( AutoinstConfig::currentFile ))
             {
                 Popup::Message(sformat(_("File %1 was saved successfully."), AutoinstConfig::currentFile));
-                Profile::checkProfile();
+//                Profile::checkProfile();
                 Profile::changed=false;
                 list pathComponents = splitstring(  (string)filename, "/");
                 integer s = size(pathComponents) - 1;
@@ -232,6 +232,8 @@
                     "menu_kickstart"      );
         Menu = Wizard::AddMenuEntry     ( Menu , "file-menu" , _("Settin&gs"),
                 "menu_settings" );
+        Menu = Wizard::AddMenuEntry     ( Menu , "file-menu" , AutoinstConfig::ProfileEncrypted ? _("change to decrypted"):_("change to encrypted"),
+                "change_encryption" );
         Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("E&xit"),
                     "menu_exit"      );
         Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("Configu&ration Tree"),
@@ -561,6 +563,11 @@
                 string modulename=moduleName(tree_item);
                 module_contents(modulename);
                 ret = `menu_new;
+            }
+            else if (ret == "change_encryption" ) {
+                AutoinstConfig::ProfileEncrypted = !AutoinstConfig::ProfileEncrypted;
+                Wizard::DeleteMenus(); // FIXME: sucks sucks sucks sucks sucks
+                menus();
             }
             else if (ret == "menu_exit") // EXIT
             {

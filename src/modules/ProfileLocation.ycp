@@ -93,6 +93,32 @@
                 Popup::Error( error + GET_error );
                 return false;
             }
+            string tmp = (string)SCR::Read (.target.string, localfile);
+            list<string> l = splitstring (tmp, "\n");
+            while ( tmp != nil && l[0]:"" == "-----BEGIN PGP MESSAGE-----" ) {
+                y2milestone("encrypted profile found");
+                UI::OpenDialog(
+                           `VBox(
+                                 `Label("Encrypted AutoYaST profile. Please enter the correct password."),
+                                 `Password(`id(`password), ""),
+                                 `PushButton(`id(`ok), "&OK")
+                                 )
+                           );
+                string p = "";
+                any button = nil;
+                repeat {
+                    button = UI::UserInput();
+                    p = (string) UI::QueryWidget(`id(`password), `Value);
+                } until ( button == `ok );
+                UI::CloseDialog();
+                SCR::Execute( .target.bash, sformat("gpg2 --batch --output \"/tmp/decrypt.xml\" --passphrase \"%1\" %2",p, localfile) );
+                if( SCR::Read (.target.size, "/tmp/decrypt.xml") > 0 ) {
+                    SCR::Execute( .target.bash, sformat("mv /tmp/decrypt.xml %1",localfile) );
+                    y2milestone("decrypted. Moving now /tmp/decrypt.xml to %1",localfile);
+                    tmp = (string)SCR::Read (.target.string, localfile);
+                    l = splitstring (tmp, "\n");
+                }
+            }
         }
         else
         {
@@ -149,7 +175,8 @@
         }
         else
         {
-                try_default_rules = true;
+//                try_default_rules = true;
+            try_default_rules = is_directory;
         }
 
         // Hex IP, MAC Address.
