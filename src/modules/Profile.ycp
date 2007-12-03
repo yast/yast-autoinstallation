@@ -320,7 +320,7 @@
         Prepare();
         boolean ret = false;
         y2debug("Saving data (%1) to XML file %2", current, file);
-        if( true || AutoinstConfig::ProfileEncrypted ) {
+        if( AutoinstConfig::ProfileEncrypted ) {
             string xml = XML::YCPToXMLString(`profile, current);
             if( size(xml) > 0 ) {
                 string p = "";
@@ -344,7 +344,6 @@
                 } while( p != q );
                 string dir = (string)SCR::Read(.target.tmpdir);
                 string command = sformat("gpg2 -c --armor --batch --passphrase \"%1\" --output %2/encrypted_autoyast.xml",p,dir);
-                y2milestone("UWE %1", command);
                 SCR::Execute(.target.bash_input, command, xml);
                 if( SCR::Read(.target.size, dir+"/encrypted_autoyast.xml") > 0 ) {
                     command = sformat( "mv %1/encrypted_autoyast.xml %2", dir, file );
