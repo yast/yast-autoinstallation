@@ -566,6 +566,7 @@
             }
             else if (ret == "change_encryption" ) {
                 AutoinstConfig::ProfileEncrypted = !AutoinstConfig::ProfileEncrypted;
+                AutoinstConfig::ProfilePassword = "";
                 Wizard::DeleteMenus(); // FIXME: sucks sucks sucks sucks sucks
                 menus();
             }
