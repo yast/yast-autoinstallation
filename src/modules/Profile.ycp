@@ -323,27 +323,31 @@
         if( AutoinstConfig::ProfileEncrypted ) {
             string xml = XML::YCPToXMLString(`profile, current);
             if( size(xml) > 0 ) {
-                string p = "";
-                string q = "";
-                do {
-                    UI::OpenDialog(
-                               `VBox(
-                                     `Label("Encrypted AutoYaST profile. Please enter the password twice"),
-                                     `Password(`id(`password), ""),
-                                     `Password(`id(`password2), ""),
-                                     `PushButton(`id(`ok), "&OK")
-                                     )
-                                );
-                    any button = nil;
-                    repeat {
-                        button = UI::UserInput();
-                        p = (string) UI::QueryWidget(`id(`password), `Value);
-                        q = (string) UI::QueryWidget(`id(`password2), `Value);
-                    } until ( button == `ok );
-                    UI::CloseDialog();
-                } while( p != q );
+                if( AutoinstConfig::ProfilePassword == "" ) {
+                    string p = "";
+                    string q = "";
+                    do {
+                        UI::OpenDialog(
+                                   `VBox(
+                                         `Label("Encrypted AutoYaST profile. Please enter the password twice"),
+                                         `Password(`id(`password), ""),
+                                         `Password(`id(`password2), ""),
+                                         `PushButton(`id(`ok), "&OK")
+                                         )
+                                    );
+                        any button = nil;
+                        repeat {
+                            button = UI::UserInput();
+                            p = (string) UI::QueryWidget(`id(`password), `Value);
+                            q = (string) UI::QueryWidget(`id(`password2), `Value);
+                        } until ( button == `ok );
+                        UI::CloseDialog();
+                    } while( p != q );
+                    AutoinstConfig::ProfilePassword = p;
+                }
                 string dir = (string)SCR::Read(.target.tmpdir);
-                string command = sformat("gpg2 -c --armor --batch --passphrase \"%1\" --output %2/encrypted_autoyast.xml",p,dir);
+                string command = sformat("gpg2 -c --armor --batch --passphrase \"%1\" --output %2/encrypted_autoyast.xml",
+                                            AutoinstConfig::ProfilePassword,dir);
                 SCR::Execute(.target.bash_input, command, xml);
                 if( SCR::Read(.target.size, dir+"/encrypted_autoyast.xml") > 0 ) {
                     command = sformat( "mv %1/encrypted_autoyast.xml %2", dir, file );
