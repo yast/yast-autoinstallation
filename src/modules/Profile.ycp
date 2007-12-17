@@ -644,6 +644,12 @@
             }
             current = XML::XMLToYCPString( out["stdout"]:"" );
             AutoinstConfig::ProfileEncrypted = true;
+
+            // FIXME: rethink and check for sanity of that!
+            // save decrypted profile for modifying pre-scripts
+            if( Stage::initial() )
+                //SCR::Write(.target.string, AutoinstConfig::profile_dir+"/autoinst.xml", out["stdout"]:"");
+                SCR::Write(.target.string, file, out["stdout"]:"");
         } else {
             y2debug("Reading %1", file);
             current = XML::XMLToYCPFile(file);
