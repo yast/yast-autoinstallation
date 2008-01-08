@@ -617,7 +617,7 @@ Experimental
     textdomain "autoinst";
 
     define map<string,string> splitParams( string s ) ``{
-        list<string> l = splitstring( s, ":" );
+        list<string> l = splitstring( s, "|" );
         map<string,string> ret = $[];
         l = remove( l, 0 );
         foreach( string element, l, ``{
@@ -647,14 +647,11 @@ Experimental
                 if( size(line) == 0 )
                     continue;
                 data["stdout"] = line;
+                y2milestone("working on line %1", line);
                 if( substring( data["stdout"]:"", 0, 8 ) == "__EXIT__" ) {
                     if ( widget == "radiobutton" ) {
                         vbox = add( vbox, `PushButton(`id(`ok),  Label::OKButton() ) );
-                        UI::OpenDialog(
-                            `RadioButtonGroup(`id(`rb),
-                            vbox
-                            )
-                        );
+                        UI::OpenDialog( `RadioButtonGroup(`id(`rb), vbox) );
                     }
                     if( ok_button == true ) {
                         UI::ChangeWidget(`id(`ok) , `Enabled, true);
@@ -662,6 +659,9 @@ Experimental
                         if( widget == "radiobutton" ) {
                             any val = UI::QueryWidget(`id(`rb), `CurrentButton);
                             SCR::Execute (.target.bash, sformat("echo \"%1\" > /tmp/ay_ipipe", val ), $[]);
+                        } else if( widget == "entry" ) {
+                            any val = UI::QueryWidget(`id(`ay_entry),  `Value);
+                            SCR::Execute (.target.bash, sformat("echo \"%1\" > /tmp/ay_ipipe", (string)(val) ), $[]);
                         }
                         ok_button = false;
                     }
@@ -690,13 +690,21 @@ Experimental
                     widget = "text";
                 } else if( substring( data["stdout"]:"", 0, 9 ) == "__ENTRY__" ) {
                     map<string,string> params = splitParams( data["stdout"]:"" );
-                    UI::OpenDialog(
-                                `VBox( `TextEntry( `id(`ay_entry), params["label"]:"", params["default"]:"" ), `PushButton(`id(`ok),  Label::OKButton() ) )
-                                );
-                    any ret = UI::UserInput();
-                    any val = UI::QueryWidget(`id(`ay_entry),  `Value);
-                    SCR::Execute (.target.bash, sformat("echo \"%1\" > /tmp/ay_ipipe", (string)(val) ), $[]);
+                    if( haskey( params, "description" ) ) {
+                        vbox = add( vbox, `HSpacing(40) );
+                        vbox = add( vbox, `RichText( params["description"]:"" ) );
+                    }
+                    vbox = add( vbox, `TextEntry( `id(`ay_entry), params["label"]:"", params["default"]:"" ) );
+                    vbox = add( vbox, `PushButton(`id(`ok),  Label::OKButton() ) );
+                    UI::OpenDialog( vbox );
+                    widget = "entry";
+                    ok_button = true;
                 } else if( substring( data["stdout"]:"", 0, 15 ) == "__RADIOBUTTON__" ) {
+                    map<string,string> params = splitParams( data["stdout"]:"" );
+                    if( haskey( params, "description" ) ) {
+                        vbox = add( vbox, `HSpacing(60) );
+                        vbox = add( vbox, `RichText( params["description"]:"" ) );
+                    }
                     widget = "radiobutton";
                     ok_button = true;
                 } else {
@@ -721,7 +729,5 @@ Experimental
     go();
     UI::CloseDialog();
 }
-
-
 
 */
