@@ -343,8 +343,14 @@
 
         while(true)
         {
-            map event = UI::WaitForEvent();
-            ret = event["ID"]:nil;
+            if( AutoinstConfig::runModule != "" ) {
+                ret = `configure;
+                Wizard::SelectTreeItem( "module@"+AutoinstConfig::runModule );
+            } else {
+                map event = UI::WaitForEvent();
+                ret = event["ID"]:nil;
+                AutoinstConfig::runModule = "";
+            }
             if (ret == `wizardTree)
             {
                 ret = UI::QueryWidget(`id(`wizardTree), `CurrentItem);
@@ -356,6 +362,7 @@
             if (ret == `configure)
             {
                 tree_item = Wizard::QueryTreeItem();
+                y2milestone("tree item: %1", tree_item);
                 y2debug("tree item: %1", tree_item);
                 string modulename=moduleName(tree_item);
                 y2debug("configure module: %1", modulename);

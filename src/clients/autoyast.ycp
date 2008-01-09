@@ -39,7 +39,7 @@
     Pkg::CallbackAcceptFileWithoutChecksum("AutoInstall::callbackTrue");
     Pkg::CallbackAcceptUnsignedFile("AutoInstall::callbackTrue");
 
-    void openFile( map <string, any> options ) {
+    define boolean openFile( map <string, string> options ) {
         if( !Profile::ReadXML( options["filename"]:"" ) ) {
             Popup::Error(_("Error while parsing the control file.
 Check the log files for more details or fix the
@@ -65,6 +65,14 @@ control file and try again.
                                 }
                                 });
                         Popup::ClearFeedback();
+                        AutoSequence ();
+                        return true;
+    }
+
+    define boolean runModule( map <string, string> options ) {
+        AutoinstConfig::runModule = options["modname"]:"";
+        AutoSequence ();
+        return true;
     }
 
 
@@ -73,16 +81,22 @@ control file and try again.
         "help"      : _("autoyast"),
         "guihandler" : AutoSequence,
         "actions"   : $[
-            "file" :   $[ "handler":openFile, "help":"file operations" ]
+            "file" :   $[ "handler":openFile, "help":"file operations" ],
+            "module":  $[ "handler":runModule, "help":"module specific operations" ]
         ],
         "options"       : $[
             "filename": $[
                 "type":"string",
                 "help":"filename=XML_PROFILE"
-            ]
+            ],
+            "modname": $[
+                "type":"string",
+                "help":"modname=AYAST_MODULE"
+                ]
         ],
         "mappings"      : $[
-            "file"  :   ["filename"]
+            "file"  :   ["filename"],
+            "module" :  ["modname"]
         ]
     ];
 
@@ -95,7 +109,9 @@ control file and try again.
     string exit = "";
     list l = [];
 
-    CommandLine::Run(cmdline);
+    any ret = nil;
+    ret = CommandLine::Run(cmdline);
+
 
     AddOnProduct::CleanModeConfigSources();
     return `exit;
