@@ -693,19 +693,27 @@ Experimental
                 {
                     string debug = ( s["debug"]:true ? "-w" : "" );
                     if( SCR::Read (.target.size, scriptPath+"-run" ) == -1 || s["rerun"]:false == true ) {
-                        executionString = sformat("/usr/bin/perl %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName);
-                        y2milestone("Script Execution command: %1", executionString );
-                        SCR::Execute (.target.bash, executionString);
-                        SCR::Execute (.target.bash, "/bin/touch $FILE", $["FILE":scriptPath+"-run"]);
+                        if( s["interactive"]:false == true ) {
+                            interactiveScript( "/usr/bin/perl", debug, scriptPath, current_logdir, scriptName );
+                        } else {
+                            executionString = sformat("/usr/bin/perl %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName);
+                            y2milestone("Script Execution command: %1", executionString );
+                            SCR::Execute (.target.bash, executionString);
+                            SCR::Execute (.target.bash, "/bin/touch $FILE", $["FILE":scriptPath+"-run"]);
+                        }
                     }
                 }
                 else if (scriptInterpreter == "python")
                 {
                     if( SCR::Read (.target.size, scriptPath+"-run" ) == -1 || s["rerun"]:false == true ) {
-                        executionString = sformat("/usr/bin/python %1 2&> %2/%3.log ", scriptPath, current_logdir, scriptName );
-                        y2milestone("Script Execution command: %1", executionString );
-                        SCR::Execute (.target.bash, executionString);
-                        SCR::Execute (.target.bash, "/bin/touch $FILE", $["FILE":scriptPath+"-run"]);
+                        if( s["interactive"]:false == true ) {
+                            interactiveScript( "/usr/bin/python", "", scriptPath, current_logdir, scriptName );
+                        } else {
+                            executionString = sformat("/usr/bin/python %1 2&> %2/%3.log ", scriptPath, current_logdir, scriptName );
+                            y2milestone("Script Execution command: %1", executionString );
+                            SCR::Execute (.target.bash, executionString);
+                            SCR::Execute (.target.bash, "/bin/touch $FILE", $["FILE":scriptPath+"-run"]);
+                        }
                     }
                 }
                 else
