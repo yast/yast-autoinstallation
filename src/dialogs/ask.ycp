@@ -137,6 +137,7 @@
             while (true) {
                 any ret = UI::UserInput();
                 if( ret == `ok ) {
+                    integer runAgain = 0;
                     foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                         list<string> position = splitstring( ask["path"]:"", "," );
                         string file     = ask["file"]:"";
@@ -185,7 +186,9 @@
                             else
                                 executionString = sformat("/bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName );
                             y2milestone("Script Execution command: %1", executionString );
-                            SCR::Execute (.target.bash, executionString);
+                            runAgain = (integer)SCR::Execute (.target.bash, executionString);
+                            if( script["rerun_on_error"]:false == false )
+                                runAgain = 0;
                             boolean showFeedback = script["feedback"]:false;
                             string feedback = "";
                             if( showFeedback ) {
@@ -196,7 +199,8 @@
                             }
                         };
                     });
-                    break;
+                    if( runAgain == 0 )
+                        break;
                 }
             }
             UI::CloseDialog();
