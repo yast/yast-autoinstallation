@@ -2780,6 +2780,35 @@ wget http://10.10.0.162/$VAL -O /tmp/profile/modified.xml 2&gt;/dev/null
         &lt;/script&gt;
       &lt;/ask&gt;
 </screen>
+<para>
+Since openSUSE 11.0 you can verify the answer of a question with a script like this:
+</para>
+<para>
+<screen>
+     &lt;ask&gt;
+          &lt;script&gt;
+            &lt;filename&gt;my.sh&lt;/filename&gt;
+            &lt;rerun_on_error config:type=&quot;boolean&quot;&gt;true&lt;/rerun_on_error&gt;
+            &lt;environment config:type=&quot;boolean&quot;&gt;true&lt;/environment&gt;
+            &lt;source&gt;&lt;![CDATA[
+if [ &quot;$VAL&quot; = &quot;myhost&quot; ]; then
+    echo &quot;Illegal Hostname!&quot;;
+    exit 1;
+fi
+exit 0
+]]&gt;
+            &lt;/source&gt;
+            &lt;debug config:type=&quot;boolean&quot;&gt;false&lt;/debug&gt;
+            &lt;feedback config:type=&quot;boolean&quot;&gt;true&lt;/feedback&gt;
+          &lt;/script&gt;
+          &lt;dialog config:type=&quot;integer&quot;&gt;0&lt;/dialog&gt;
+          &lt;element config:type=&quot;integer&quot;&gt;0&lt;/element&gt;
+          &lt;path&gt;networking,dns,hostname&lt;/path&gt;
+          &lt;question&gt;Enter Hostname&lt;/question&gt;
+          &lt;default&gt;enter your hostname here&lt;/default&gt;
+      &lt;/ask&gt;
+</screen>
+</para>
 </para>
 
 
