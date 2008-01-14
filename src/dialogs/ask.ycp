@@ -40,12 +40,14 @@
             term dialog_term = `VBox();
             term help_term = `Empty();
             term title_term = `Empty();
+            integer element_cnt = 0;
             foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                 string pathStr  = ask["path"]:"";
                 string type     = ask["type"]:"";
                 string question = ask["question"]:pathStr;
                 string frametitle = ask["frametitle"]:"";
-                string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:0);
+                string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:element_cnt);
+                element_cnt = element_cnt + 1;
                 list< map<string,any> > s  = ask["selection"]:[];
                 helptext = helptext + ask["help"]:"";
                 title    = ask["title"]:"";
@@ -138,11 +140,13 @@
                 any ret = UI::UserInput();
                 if( ret == `ok ) {
                     integer runAgain = 0;
+                    integer element_cnt = 0;
                     foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                         list<string> position = splitstring( ask["path"]:"", "," );
                         string file     = ask["file"]:"";
                         map script      = ask["script"]:$[];
-                        string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:0);
+                        string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:element_cnt);
+                        element_cnt = element_cnt + 1;
                         any val = UI::QueryWidget(`id(entry_id),  `Value);
                         if( ask["type"]:"string" == "integer" ) {
                             val = tointeger((string)val);
