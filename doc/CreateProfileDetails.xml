@@ -1276,54 +1276,6 @@
     </para>
     </section>
 
-    <section>
-      <title>
-	Custom Package Selections
-      </title>
-      <para>	
-	In addition to the pre-defined selections, you can create custom selections
-	by providing  a selection file in the selection
-	directory. (<filename>suse/setup/descr</filename>) The selection files have a special format and any
-	additional selection file must conform to this format, otherwise
-	&yast2; will not be able to read it.	  	  
-      </para>
-      <para>
-	As an example for the selection file, take a look at the files
-	available in the directory <filename>/suse/setup/descr/</filename> on
-	the CD-ROMs.
-      </para>
-      <para>
-	After creating a selection file, you can add it to the configuration
-	as described earlier in this section. The selection name, for example
-      <emphasis>My.sel</emphasis> has to be added to the index files
-      <filename>selections</filename> and <filename>directory.yast</filename>
-      to make it visible to the installer.
-    </para>
-    <para>
-      The file <filename>My.sel</filename> should have the following format:
-    </para>
-    <example>
-      <title>
-	Customized Package selection
-	</title>
-	<screen>
-  <xi:include href="examples/example.customSoftware3.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-         </screen>
-        </example>
-  <para>To use the above selection, the following should be added in the
-    control file:</para>
-  <example>
-    <title>
-      Package selection file
-    </title>
-    <screen>
-  <xi:include href="examples/example.customSoftware.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-          </screen>
-        </example>
-
-      </section>
   <section>
     <title>
       Installing additional and customized Packages
@@ -2552,6 +2504,12 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
                        set the path to "users,0,user_password". The "0" indicates the first user in the &lt;users config:type="list"&gt;
                        list of users in the profile.
                 <para><screen>&lt;path&gt;networking,dns,hostname&lt;/path&gt;</screen></para></entry>
+                <entry>this information is optional but you should at least provie <emphasis>path</emphasis> or <emphasis>file</emphasis></entry>
+              </row>
+              <row>
+                <entry>pathlist (available since openSUSE 11.0)</entry>
+                <entry>a list of <emphasis>path</emphasis> elements (see above)
+                <para><screen>&lt;pathlist&gt;&lt;path&gt;networking,dns,hostname&lt;/path&gt;&lt;path&gt;...&lt;/path&gt;</screen></para></entry>
                 <entry>this information is optional but you should at least provie <emphasis>path</emphasis> or <emphasis>file</emphasis></entry>
               </row>
               <row>

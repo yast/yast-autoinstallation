@@ -15,6 +15,19 @@
     import "Stage";
     import "Popup";
 
+    define list<any> path2pos( string pa ) {
+        list<any> pos = [];
+        foreach( string p, splitstring( pa, "," ), ``{
+            if( regexpmatch( p, "^[1,2,3,4,5,6,7,8,9,0]+$" ) ) {
+                integer index = tointeger(p);
+                pos = add(pos, index);
+            } else {
+                pos = add(pos, p);
+            }
+        });
+        return pos;
+    }
+
     define boolean askDialog() {
         boolean mod = false;
 
@@ -142,7 +155,6 @@
                     integer runAgain = 0;
                     integer element_cnt = 0;
                     foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
-                        list<string> position = splitstring( ask["path"]:"", "," );
                         string file     = ask["file"]:"";
                         map script      = ask["script"]:$[];
                         string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:element_cnt);
@@ -159,17 +171,15 @@
                             }
                         }
                         y2milestone("question=%1 was answered with val=%2",ask["question"]:"", val);
-                        list<any> pos = [];
-                        foreach( string p, position, ``{
-                            if( regexpmatch( p, "^[1,2,3,4,5,6,7,8,9,0]+$" ) ) {
-                                integer index = tointeger(p);
-                                pos = add(pos, index);
-                            } else {
-                                pos = add(pos, p);
-                            }
-                        });
+                        list<any> pos = path2pos( ask["path"]:"" );
                         if( ask["path"]:"" != "" )
                             Profile::current = Profile::setElementByList( pos, val, Profile::current );
+
+                        foreach( string p, ask["pathlist"]:[], ``{
+                            list<any> pos = path2pos( p );
+                            Profile::current = Profile::setElementByList( pos, val, Profile::current );
+                        });
+
                         if( file != "" ) {
                             if( ! SCR::Write (.target.string, file, sformat("%1",val)) )
                                 y2milestone("writing answer to %1 failed",file);
