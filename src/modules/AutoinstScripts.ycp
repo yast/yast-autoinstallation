@@ -433,10 +433,10 @@ Experimental
                         any ret = UI::UserInput();
                         if( widget == "radiobutton" ) {
                             any val = UI::QueryWidget(`id(`rb), `CurrentButton);
-                            SCR::Execute (.target.bash, sformat("echo \"%1\" > /tmp/ay_ipipe", val ), $[]);
+                            SCR::Execute (.target.bash, sformat("echo \"%1\" > /tmp/ay_ipipe", AutoinstConfig::ShellEscape((string)val) ), $[]);
                         } else if( widget == "entry" ) {
                             any val = UI::QueryWidget(`id(`ay_entry),  `Value);
-                            SCR::Execute (.target.bash, sformat("echo \"%1\" > /tmp/ay_ipipe", (string)(val) ), $[]);
+                            SCR::Execute (.target.bash, sformat("echo \"%1\" > /tmp/ay_ipipe", AutoinstConfig::ShellEscape((string)(val)) ), $[]);
                         }
                         ok_button = false;
                     }

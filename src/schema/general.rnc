@@ -4,7 +4,7 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
 general = element general { mode? & mouse? & ask-list? & signature-handling? }
 ask-list = element ask-list { LIST, ask* }
-ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_frametitle? & ask_script? }
+ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path? & ask_pathlist? & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_frametitle? & ask_script? }
 ask_question = element question { text }
 ask_default = element default { text }
 ask_help = element help { text }
@@ -21,6 +21,11 @@ ask_entry_label = element label { text }
 ask_dialog = element dialog { text }
 ask_element = element element { text }
 ask_frametitle = element frametitle { text }
+ask_pathlist =  element pathlist {
+    LIST,
+    ask_path*
+}
+
 
 signature-handling = element signature-handling { accept_unsigned_file? & accept_file_without_checksum? & accept_verification_failed? & accept_unknown_gpg_key? & import_gpg_key? & accept_non_trusted_gpg_key? }
 accept_unsigned_file = element accept_unsigned_file { BOOLEAN }

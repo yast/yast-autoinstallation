@@ -111,7 +111,7 @@
                     p = (string) UI::QueryWidget(`id(`password), `Value);
                 } until ( button == `ok );
                 UI::CloseDialog();
-                SCR::Execute( .target.bash, sformat("gpg2 --batch --output \"/tmp/decrypt.xml\" --passphrase \"%1\" %2",p, localfile) );
+                SCR::Execute( .target.bash, sformat("gpg2 --batch --output \"/tmp/decrypt.xml\" --passphrase \"%1\" %2",AutoinstConfig::ShellEscape(p), localfile) );
                 if( SCR::Read (.target.size, "/tmp/decrypt.xml") > 0 ) {
                     SCR::Execute( .target.bash, sformat("mv /tmp/decrypt.xml %1",localfile) );
                     y2milestone("decrypted. Moving now /tmp/decrypt.xml to %1",localfile);
