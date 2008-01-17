@@ -290,6 +290,24 @@
     }
 
     /**
+     * escape a string so it can be passed to a shell
+     * @return escaped string string
+     */
+    global define string ShellEscape( string s ) ``{
+        integer i = 0;
+        string res = "";
+
+        while( i<size(s) ) {
+            string c = substring(s, i, 1);
+            if( c == "\"" || c == "$" || c == "\\" )
+                c = "\\"+c;
+            res = res + c;
+            i = i + 1;
+        };
+        return res;
+    }
+
+    /**
      * Constructor
      * @return void
      */
