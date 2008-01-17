@@ -104,7 +104,7 @@
                 if( haskey( p, "lvm_group" ) && p["create"]:true == false ) {
                     keepLVM[p["lvm_group"]:"x"] = [];
                     if( !contains( ExistingVGs, p["lvm_group"]:"x" ) )
-                        Report::Error( sformat( _("can't reuse volume group %1. The volume group does not exist"), p["lvm_group"]:"x" ) );
+                        Report::Error( sformat( _("Cannot reuse volume group %1. The volume group does not exist."), p["lvm_group"]:"x" ) );
                     map atm = AutoinstStorage::AutoTargetMap;
                     foreach ( map vg_p, atm["/dev/"+p["lvm_group"]:"x","partitions"]:[], ``{
                         if( vg_p["create"]:true == false )
@@ -113,7 +113,7 @@
                 } else if( haskey( p, "evms_group" ) && p["create"]:true == false ) {
                     keepEVMS[p["evms_group"]:"x"] = [];
                     if( !contains( ExistingVGs, "evms/lvm2/"+p["evms_group"]:"x" ) )
-                        Report::Error( sformat( _("can't reuse volume group %1. The volume group does not exist"), p["evms_group"]:"x" ) );
+                        Report::Error( sformat( _("Cannot reuse volume group %1. The volume group does not exist."), p["evms_group"]:"x" ) );
                     map atm = AutoinstStorage::AutoTargetMap;
                     foreach ( map vg_p, atm["/dev/"+p["evms_group"]:"x","partitions"]:[], ``{
                         if( vg_p["create"]:true == false )
