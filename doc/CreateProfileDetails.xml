@@ -2660,7 +2660,12 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
 &lt;general&gt;
   &lt;ask-list config:type=&quot;list&quot;&gt;
       &lt;ask&gt;
-          &lt;path&gt;ldap,ldap_server&lt;/path&gt; &lt;!-- deprecated since openSUSE 11.0; use pathlist instead --&gt;
+          &lt;!-- deprecated since openSUSE 11.0; use pathlist instead
+          &lt;path&gt;ldap,ldap_server&lt;/path&gt;
+          --&gt;
+          &lt;pathlist config:type="list"&gt;
+              &lt;path&gt;ldap,ldap_server&lt;/path&gt;
+          &lt;/pathlist&gt;
           &lt;stage&gt;cont&lt;/stage&gt;
           &lt;help&gt;choose your server depending on your department&lt;/help&gt;
           &lt;selection config:type=&quot;list&quot;&gt;
@@ -2676,13 +2681,23 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
           &lt;default&gt;ldap2.mydom.de&lt;/default&gt;
       &lt;/ask&gt;
       &lt;ask&gt;
-          &lt;path&gt;networking,dns,hostname&lt;/path&gt; &lt;!-- deprecated since openSUSE 11.0; use pathlist instead --&gt;
+          &lt;!-- deprecated since openSUSE 11.0; use pathlist instead
+          &lt;path&gt;networking,dns,hostname&lt;/path&gt;
+          --&gt;
+          &lt;pathlist config:type="list"&gt;
+              &lt;path&gt;networking,dns,hostname&lt;/path&gt;
+          &lt;/pathlist&gt;
           &lt;question&gt;Enter Hostname&lt;/question&gt;
           &lt;stage&gt;initial&lt;/stage&gt;
           &lt;default&gt;enter your hostname here&lt;/default&gt;
       &lt;/ask&gt;
       &lt;ask&gt;
-          &lt;path&gt;partitioning,0,partitions,0,filesystem&lt;/path&gt; &lt;!-- deprecated since openSUSE 11.0; use pathlist instead --&gt;
+          &lt;!-- deprecated since openSUSE 11.0; use pathlist instead
+          &lt;path&gt;partitioning,0,partitions,0,filesystem&lt;/path&gt;
+          --&gt;
+          &lt;pathlist config:type="list"&gt;
+              &lt;path&gt;partitioning,0,partitions,0,filesystem&lt;/path&gt;
+          &lt;/pathlist&gt;
           &lt;question&gt;Filesystem&lt;/question&gt;
           &lt;type&gt;symbol&lt;/type&gt;
           &lt;selection config:type=&quot;list&quot;&gt;
@@ -2761,7 +2776,12 @@ exit 0
           &lt;/script&gt;
           &lt;dialog config:type=&quot;integer&quot;&gt;0&lt;/dialog&gt;
           &lt;element config:type=&quot;integer&quot;&gt;0&lt;/element&gt;
-          &lt;path&gt;networking,dns,hostname&lt;/path&gt;  &lt;!-- deprecated since openSUSE 11.0; use pathlist instead --&gt;
+          &lt;!-- deprecated since openSUSE 11.0; use pathlist instead
+          &lt;path&gt;networking,dns,hostname&lt;/path&gt;
+          --&gt;
+          &lt;pathlist config:type="list"&gt;
+              &lt;path&gt;networking,dns,hostname&lt;/path&gt;
+          &lt;/pathlist&gt;
           &lt;question&gt;Enter Hostname&lt;/question&gt;
           &lt;default&gt;enter your hostname here&lt;/default&gt;
       &lt;/ask&gt;
