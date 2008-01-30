@@ -196,7 +196,7 @@
                             }
                             string executionString = "";
                             if( script["environment"]:false )
-                                executionString = sformat("VAL=\"%5\" /bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName, val);
+                                executionString = sformat("VAL=\"%5\" /bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName, AutoinstConfig::ShellEscape(val));
                             else
                                 executionString = sformat("/bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName );
                             y2milestone("Script Execution command: %1", executionString );
