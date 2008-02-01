@@ -47,7 +47,23 @@
             }
         });
 
-        foreach( integer dialog_nr, sort( keys ), ``{
+        keys = sort( keys );
+
+        integer dialogCounter = 0;
+        integer dialog_nr = keys[dialogCounter]:-1;
+        integer jumpToDialog = -2;
+        if( SCR::Read(.target.size, "/tmp/next_dialog") > 0 ) {
+            string s = (string)(SCR::Read(.target.string, "/tmp/next_dialog"));
+            s = filterchars( s, "0123456789" );
+            jumpToDialog = tointeger(s);
+            SCR::Execute(.target.remove, "/tmp/next_dialog");
+            y2milestone("next_dialog file found. Set dialog to %1",jumpToDialog);
+        }
+        while( dialog_nr != -1 ) {
+//      foreach( integer dialog_nr, sort( keys ), ``{
+            y2milestone("dialog_nr = %1",dialog_nr);
+            y2milestone("dialogCounter = %1",dialogCounter);
+            y2milestone("jumpToDialog  %1",jumpToDialog);
             string helptext = "";
             string title    = "";
             term dialog_term = `VBox();
@@ -77,7 +93,7 @@
                 } else if( type == "symbol" ) {
                     list<any> dummy = [];
                     foreach( map<string,any> e, s, ``{
-                        boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
+                        boolean on=(e["value"]:`edge_of_dawn==ask["default"]:nil)?(true):(false);
                         dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
                     });
                     if( frametitle != "" ) {
@@ -196,7 +212,8 @@
                             }
                             string executionString = "";
                             if( script["environment"]:false )
-                                executionString = sformat("VAL=\"%5\" /bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName, AutoinstConfig::ShellEscape(val));
+                                executionString = sformat("VAL=\"%5\" /bin/sh %1 %2 2&> %3/%4.log ",
+                                    debug, scriptPath, current_logdir, scriptName, AutoinstConfig::ShellEscape((string)val));
                             else
                                 executionString = sformat("/bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName );
                             y2milestone("Script Execution command: %1", executionString );
@@ -211,6 +228,14 @@
                             if( size(feedback) > 0 ) {
                                 Popup::LongText("", `RichText(`opt(`plainText), feedback), 50, 20 );
                             }
+                            if( SCR::Read(.target.size, "/tmp/next_dialog") > 0 ) {
+                                string s = (string)(SCR::Read(.target.string, "/tmp/next_dialog"));
+                                s = filterchars( s, "-0123456789" );
+                                jumpToDialog = tointeger(s);
+                                SCR::Execute(.target.remove, "/tmp/next_dialog");
+                                y2milestone("next_dialog file found. Set dialog to %1",jumpToDialog);
+                            }
+
                         };
                     });
                     if( runAgain == 0 )
@@ -218,7 +243,26 @@
                 }
             }
             UI::CloseDialog();
-        });
+            if( jumpToDialog != -2 ) {
+                dialog_nr = jumpToDialog;
+                jumpToDialog = -2;
+                integer i = 0;
+                foreach( integer a, keys, ``{
+                    if( a == dialog_nr ) {
+                        dialogCounter = i;
+                        break;
+                    }
+                    i = i + 1;
+                });
+            } else {
+                dialogCounter = dialogCounter + 1;
+                dialog_nr = keys[dialogCounter]:-1;
+            }
+//        });
+            y2milestone("E dialog_nr = %1",dialog_nr);
+            y2milestone("E dialogCounter = %1",dialogCounter);
+            y2milestone("E jumpToDialog  %1",jumpToDialog);
+        };
         return mod;
     }
 }
