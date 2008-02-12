@@ -14,6 +14,7 @@
     import "Stage";
     Stage::Set( "initial" );
     import "AutoInstallRules";
+    import "Label";
     import "UI";
     AutoInstallRules::ProbeRules();
 
@@ -52,7 +53,7 @@
     UI::OpenDialog( `opt(`defaultsize),
                 `VBox(
                       `RichText( text ),
-                      `PushButton(`opt(`default), "&OK")
+                      `PushButton(`opt(`default), Label::OKButton())
                       )
              );
   UI::UserInput();

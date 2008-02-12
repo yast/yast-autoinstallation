@@ -14,6 +14,7 @@
     import "Mode";
     import "AutoinstConfig";
     import "XML";
+    import "Label";
     import "Popup";
     import "ProductControl";
     import "Directory";
@@ -329,10 +330,10 @@
                     do {
                         UI::OpenDialog(
                                    `VBox(
-                                         `Label("Encrypted AutoYaST profile. Please enter the password twice"),
+                                         `Label(_("Encrypted AutoYaST profile. Please enter the password twice")),
                                          `Password(`id(`password), ""),
                                          `Password(`id(`password2), ""),
-                                         `PushButton(`id(`ok), "&OK")
+                                         `PushButton(`id(`ok), Label::OKButton())
                                          )
                                     );
                         any button = nil;
@@ -627,9 +628,9 @@
             while( out["stdout"]:"" == "" ) {
                 UI::OpenDialog(
                            `VBox(
-                                 `Label("Encrypted AutoYaST profile. Please enter the correct password."),
+                                 `Label(_("Encrypted AutoYaST profile. Please enter the correct password.")),
                                  `Password(`id(`password), ""),
-                                 `PushButton(`id(`ok), "&OK")
+                                 `PushButton(`id(`ok), Label::OKButton())
                                  )
                            );
                 string p = "";
