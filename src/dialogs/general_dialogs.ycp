@@ -9,6 +9,7 @@
 {
     textdomain "autoinst";
     import "GetInstArgs";
+    import "Label";
 
 
     /**
@@ -159,17 +160,17 @@ For signature handling, read the AutoYaST documentation.
                             selection
                         ) ),
                         `VBox(
-                            `PushButton( `id( `delSelection ), `opt( `default, `hstretch ), _("Delete") )
+                            `PushButton( `id( `delSelection ), `opt( `default, `hstretch ), Label::DeleteButton() )
                         )
                     ),
                     `HBox(
-                        `TextEntry( `id(`selLabel), `opt(`notify,`immediate), "Label", "" ),
+                        `TextEntry( `id(`selLabel), `opt(`notify,`immediate), _("Label"), "" ),
                         `TextEntry( `id(`selValue), `opt(`notify,`immediate), _("Value"), "" ),
-                        `PushButton( `id( `addSelection ), `opt( `default, `hstretch ), _("Add") )
+                        `PushButton( `id( `addSelection ), `opt( `default, `hstretch ), Label::AddButton() )
                     ),
                     `HBox(
-                        `PushButton( `id( `ok ), `opt( `default, `hstretch ), _("Ok") ),
-                        `PushButton( `id( `abort ), `opt( `default, `hstretch ), _("Abort") )
+                        `PushButton( `id( `ok ), `opt( `default, `hstretch ), Label::OKButton() ),
+                        `PushButton( `id( `abort ), `opt( `default, `hstretch ), Label::AbortButton() )
                     )
                        )
                  );
