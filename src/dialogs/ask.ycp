@@ -54,7 +54,7 @@
         integer jumpToDialog = -2;
         if( SCR::Read(.target.size, "/tmp/next_dialog") > 0 ) {
             string s = (string)(SCR::Read(.target.string, "/tmp/next_dialog"));
-            s = filterchars( s, "0123456789" );
+            s = filterchars( s, "-0123456789" );
             jumpToDialog = tointeger(s);
             SCR::Execute(.target.remove, "/tmp/next_dialog");
             y2milestone("next_dialog file found. Set dialog to %1",jumpToDialog);
@@ -226,7 +226,7 @@
                                 feedback = (string)SCR::Read(.target.string, current_logdir+"/"+scriptName+".log" );
                             }
                             if( size(feedback) > 0 ) {
-                                Popup::LongText("", `RichText(`opt(`plainText), feedback), 50, 20 );
+                                Popup::LongText("", `RichText(`opt(`plainText), feedback), 40, 15 );
                             }
                             if( SCR::Read(.target.size, "/tmp/next_dialog") > 0 ) {
                                 string s = (string)(SCR::Read(.target.string, "/tmp/next_dialog"));
