@@ -84,6 +84,7 @@
         string notFound = "";
         Packages::Init(true);
         Packages::InitializeAddOnProducts();
+        kernel = settings["kernel"]:"";
         foreach( string pack, settings["packages"]:[], ``{
             if( ! Pkg::IsAvailable(pack) && Stage::initial() ) {
                 notFound = notFound + pack + "\n";
@@ -96,7 +97,6 @@
         }
 
         PackageAI::toinstall  = settings["packages"]:[];
-        kernel = settings["kernel"]:"";
         post_packages = settings["post-packages"]:[];
         PackageAI::toremove  =  settings["remove-packages"]:[];
 
@@ -449,6 +449,12 @@ this message can be ignored."));
         list<string> computed_packages = Packages::ComputeSystemPackageList();
         y2debug("Computed list of packages: %1", computed_packages);
 
+        foreach( string pack, computed_packages, ``{
+            if( size(kernel) > 0 && pack != kernel && search(pack, "kernel-") == 0 ) {
+                y2milestone("taboo for kernel %1",pack);
+                PackageAI::toremove = add( PackageAI::toremove, pack );
+            }
+        });
 
         //
         // Now remove all packages listed in remove-packages
