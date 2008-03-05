@@ -381,6 +381,13 @@
         list<string> computed_packages = Packages::ComputeSystemPackageList();
         y2debug("Computed list of packages: %1", computed_packages);
 
+        foreach( string pack, computed_packages, ``{
+            if( size(kernel) > 0 && pack != kernel && search(pack, "kernel-") == 0 ) {
+                y2milestone("taboo for kernel %1",pack);
+                PackageAI::toremove = add( PackageAI::toremove, pack );
+            }
+        });
+
 
         //
         // Now remove all packages listed in remove-packages
