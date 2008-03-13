@@ -76,6 +76,15 @@
         string mbr_disk = "";
         if( after == "" ) {
             foreach (string device, map disk, initial_target_map, ``{
+                if (disk["type"]:`jo == `CT_DMRAID)
+                {
+                    mbr_disk = device;
+                }
+            });
+        }
+
+        if( after == "" && mbr_disk == "" ) {
+            foreach (string device, map disk, initial_target_map, ``{
                 if (disk["bios_id"]:"" == "0x80")
                 {
                     mbr_disk = device;
@@ -95,7 +104,7 @@
             });
         }
 
-        y2milestone("mbr disk: %1", mbr_disk);
+        y2milestone("device detection: %1", mbr_disk);
         return mbr_disk;
     }
 
