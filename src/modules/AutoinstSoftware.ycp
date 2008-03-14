@@ -340,8 +340,8 @@
         if (imaging)
         {
             if( ! image["run_kickoff"]:false )
-                ProductControl::DisabledModules=add(ProductControl::DisabledModules, "kickoff");
-            ProductControl::DisabledModules=add(ProductControl::DisabledModules, "rpmcopy");
+                ProductControl::DisableModule ("kickoff");
+            ProductControl::DisableModule ("rpmcopy");
             return true;
         }
 
