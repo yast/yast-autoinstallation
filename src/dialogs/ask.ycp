@@ -34,6 +34,7 @@
         map<integer,list> dialogs = $[];
         list<integer> keys = [];
         integer dialog_cnt = 0;
+        list<integer> history = [];
 
         foreach( map ask, sort( map x, map y, Profile::current["general","ask-list"]:[], ``( x["element"]:0 < y["element"]:0 ) ), ``{
             if( (Stage::initial() && ask["stage"]:"initial" == "initial") ||
@@ -70,6 +71,7 @@
             term help_term = `Empty();
             term title_term = `Empty();
             integer element_cnt = 0;
+            history = add( history, dialog_nr );
             foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                 string pathStr  = ask["path"]:"";
                 string type     = ask["type"]:"";
@@ -142,6 +144,7 @@
                 help_term = `HWeight(30, `RichText( helptext ));
             if( title != "" )
                 title_term = `Heading( title );
+            term backButton = `PushButton(`id(`back),  Label::BackButton() );
             UI::OpenDialog(
                        `opt(`decorated  ),
                        `HBox(
@@ -157,6 +160,7 @@
                                 `VSpacing(1),
                                 `VStretch(),
                                 `HBox(
+                                  backButton,
                                   `PushButton(`id(`ok),  Label::OKButton() )
                                   )
                                 )
@@ -165,12 +169,14 @@
                          `HStretch()
                          )
                        );
+            if( size(history) < 2 )
+                UI::ChangeWidget(`id(`back) , `Enabled, false);
             while (true) {
                 any ret = UI::UserInput();
                 if( ret == `ok ) {
                     integer runAgain = 0;
                     integer element_cnt = 0;
-                    foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
+                    dialogs[dialog_nr] =  maplist( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                         string file     = ask["file"]:"";
                         map script      = ask["script"]:$[];
                         string entry_id = sformat("%1_%2",dialog_nr, ask["element"]:element_cnt);
@@ -187,6 +193,7 @@
                             }
                         }
                         y2milestone("question=%1 was answered with val=%2",ask["question"]:"", val);
+                        ask["default"] = val;
                         list<any> pos = path2pos( ask["path"]:"" );
                         if( ask["path"]:"" != "" )
                             Profile::current = Profile::setElementByList( pos, val, Profile::current );
@@ -237,9 +244,15 @@
                             }
 
                         };
+                        return ask;
                     });
                     if( runAgain == 0 )
                         break;
+                } else if( ret == `back ) {
+                    jumpToDialog = history[ size(history)-2 ]:0;
+                    history = remove( history, size(history)-1 );
+                    history = remove( history, size(history)-1 );
+                    break;
                 }
             }
             UI::CloseDialog();
