@@ -215,7 +215,7 @@
                 y2milestone("looking for %1 on USB", Path);
                 list<map> probe = (list<map>)SCR::Read(.probe.usb);
                 foreach( map d, probe, ``{
-                    if( haskey(d, "dev_name") ) {
+                    if( d["bus"]:"USB" == "SCSI" && haskey(d, "dev_name") ) {
                         integer i = 0;
                         string dev = d["dev_name"]:"";
                         while( SCR::Read(.target.lstat, dev) != $[] ) {
