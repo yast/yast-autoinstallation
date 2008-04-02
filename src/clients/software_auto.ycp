@@ -17,6 +17,7 @@
     import "AutoinstSoftware";
     import "Label";
     import "PackageAI";
+    import "AutoInstall";
  
     include "autoinstall/dialogs.ycp";
 
@@ -51,8 +52,9 @@ more <b>add-on</b> selections and packages.
 </p>
 ");
         //Pkg::TargetFinish ();
-        Pkg::CallbackAcceptFileWithoutChecksum("AutoInstall::callbackTrue");
-        Pkg::CallbackAcceptUnsignedFile("AutoInstall::callbackTrue");
+        Pkg::CallbackAcceptFileWithoutChecksum(AutoInstall::callbackTrue_boolean_string);
+        Pkg::CallbackAcceptUnsignedFile(AutoInstall::callbackTrue_boolean_string);
+
         Pkg::TargetInit("/", false);
         // AutoinstSoftware::pmInit();
 
