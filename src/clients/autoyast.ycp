@@ -20,6 +20,7 @@
     import "AddOnProduct";
     import "CommandLine";
     import "Y2ModuleConfig";
+    import "AutoInstall";
 
     include "autoinstall/dialogs.ycp";
     include "autoinstall/conftree.ycp";
@@ -34,10 +35,10 @@
         return `abort;
     }
 
-    Pkg::CallbackImportGpgKey("AutoInstall::callbackTrue");
-    Pkg::CallbackAcceptUnknownGpgKey("AutoInstall::callbackTrue");
-    Pkg::CallbackAcceptFileWithoutChecksum("AutoInstall::callbackTrue");
-    Pkg::CallbackAcceptUnsignedFile("AutoInstall::callbackTrue");
+    Pkg::CallbackImportGpgKey(AutoInstall::callbackTrue_boolean_map);
+    Pkg::CallbackAcceptUnknownGpgKey(AutoInstall::callbackTrue_boolean_string_string);
+    Pkg::CallbackAcceptFileWithoutChecksum(AutoInstall::callbackTrue_boolean_string);
+    Pkg::CallbackAcceptUnsignedFile(AutoInstall::callbackTrue_boolean_string);
 
     define boolean openFile( map <string, string> options ) {
         if( !Profile::ReadXML( options["filename"]:"" ) ) {

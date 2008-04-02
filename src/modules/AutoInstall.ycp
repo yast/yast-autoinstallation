@@ -20,11 +20,40 @@
 
     global boolean autoconf = false;
 
-    global define boolean callbackTrue() {
+    global define boolean callbackTrue_boolean_string(string dummy) {
         return true;
     }
 
-    global define boolean callbackFalse() {
+    global define boolean callbackFalse_boolean_string(string dummy) {
+        return false;
+    }
+
+    global define void callback_void_map(map<string,any> dummy_map) {
+        return;
+    }
+
+    global define boolean callbackTrue_boolean_map(map<string,any> dummy_map) {
+        return true;
+    }
+
+    global define boolean callbackFalse_boolean_map(map<string,any> dummy_map) {
+        return false;
+    }
+
+
+    global define boolean callbackTrue_boolean_string_map(string dummy, map<string,any> dummy_map) {
+        return true;
+    }
+
+    global define boolean callbackFalse_boolean_string_map(string dummy, map<string,any> dummy_map) {
+        return false;
+    }
+
+    global define boolean callbackTrue_boolean_string_string(string dummy1, string dummy2) {
+        return true;
+    }
+
+    global define boolean callbackFalse_boolean_string_string(string dummy1, string dummy2) {
         return false;
     }
 
