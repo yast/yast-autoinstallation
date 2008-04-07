@@ -108,6 +108,15 @@
         current["partitioning"] = newPart;
     }
 
+    define void softwareCompat() {
+        if( haskey( current, "software" ) ) {
+            // might lead to double entries but that's okay
+            current["software","packages"] = add( current["software","packages"]:[], "autoyast2-installation" );
+        } else {
+            current["software"] = $[ "packages":[ "autoyast2-installation" ] ];
+        }
+    }
+
     /**
      * compatibility to new language,keyboard and timezone client in 10.1
      */
@@ -211,6 +220,7 @@
         }
         storageLibCompat(); // compatibility to new storage library (SL 10.0)
         generalCompat();    // compatibility to new language,keyboard and timezone (SL10.1)
+        softwareCompat();
 
         y2debug("Current Profile=%1", current );
         return;
