@@ -23,6 +23,7 @@
     import "Misc";
     import "Profile";
     import "Pkg";
+    import "ProductFeatures";
 
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
@@ -212,7 +213,8 @@
     global define boolean Write()
     {
         AutoinstConfig::Confirm = mode["confirm"]:true;
-        AutoinstConfig::ForceBoot = mode["forceboot"]:false;
+        if( haskey( mode, "forceboot" ) )
+            ProductFeatures::SetBooleanFeature( "globals", "kexec_reboot", !mode["forceboot"]:false );
         AutoinstConfig::Halt = mode["halt"]:false;
         AutoinstConfig::RebootMsg = mode["rebootmsg"]:false;
 
