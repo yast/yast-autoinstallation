@@ -105,7 +105,7 @@
 	}
 	else if (Scheme == "file")
 	{
-	    string file = sformat("%1/%2", Installation::sourcedir, Path);
+	    string file = sformat("%1/%2", Installation::sourcedir, Path); // FIXME: I have doubts this will ever work. Too early.
 	    if (SCR::Read(.target.size, file) > 0 )
 	    {
 		string cpcmd = sformat("cp %1 %2", file, Localfile);
