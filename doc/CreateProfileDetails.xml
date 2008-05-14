@@ -1298,11 +1298,14 @@ http://192.168.66.6/SLES10/CD1/updates
      &lt;media_url&gt;http://192.168.66.6/SLES10/CD1/updates&lt;/media_url&gt;
      &lt;product&gt;SuSE-Linux-Updates&lt;/product&gt;
      &lt;product_dir&gt;/&lt;/product_dir&gt;
+     &lt;ask_on_error config:type="boolean"&gt;false&lt;/ask_on_error&gt; &lt;!-- available since openSUSE 11.0 --&gt;
    &lt;/listentry&gt;
  &lt;/add_on_products&gt;
 &lt;/add-on&gt;
         </screen>
         With that entry in the autoyast profile, the <emphasis>add_on_products</emphasis> file is not necessary.
+        Since openSUSE 11.0 AutoYaST can ask the user to make the add-on available intead of reporting a timed out error when the add-on can't be found at the given location. Set ask_on_error to true for that (the default is false).
+        Your add-on can be on a different CD/DVD than the installation source then.
         </para>
         <para>
         YaST checks the signatures of files on the installation source now. If a <emphasis>content</emphasis> file is
