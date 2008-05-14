@@ -17,7 +17,7 @@
 textdomain "autoinst";
 
 import "AutoinstScripts";
-
+import "AutoInstall";
 
 any ret = nil;
 string func = "";
@@ -46,6 +46,7 @@ if (func == "Info")
 else if (func == "Write")
 {
     AutoinstScripts::Write("chroot-scripts", true);
+    AutoInstall::PXELocalBoot();
 }
 else
 {
