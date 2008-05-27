@@ -346,6 +346,7 @@
             if( AutoinstConfig::runModule != "" ) {
                 ret = `configure;
                 Wizard::SelectTreeItem( "module@"+AutoinstConfig::runModule );
+                AutoinstConfig::runModule = "";
             } else {
                 map event = UI::WaitForEvent();
                 ret = event["ID"]:nil;
