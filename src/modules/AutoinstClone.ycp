@@ -305,6 +305,39 @@
         return drives;
     }
 
+    global define boolean isPatternFulfilled( string p ) {
+        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
+        list<string> inst = Pkg::GetPackages(`installed, true);
+        boolean ret = true;
+
+        foreach( map<string,any> dep, all_xpatterns, ``{
+            if( ret == true && dep["name"]:"" == p ) {
+                foreach( map<string,string> dep2, dep["dependencies"]:[], ``{
+                    if( dep2["dep_kind"]:"" == "requires" ) {
+                        if( dep2["res_kind"]:"" == "package" && !contains( inst, dep2["name"]:"" ) ) {
+                            ret = false;
+                            break;
+                        } else if( dep2["res_kind"]:"" == "pattern" && !isPatternFulfilled( dep2["name"]:"" ) ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                });
+            }
+        });
+        return ret;
+    }
+
+    global define list<string> getPatterns() {
+        list<string> ret = [];
+        list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
+
+        foreach( map<string,any> m, all_patterns, ``{
+            if( isPatternFulfilled( m["name"]:"" ) )
+                ret = add( ret, m["name"]:"" );
+        });
+        return ret;
+    }
 
     /**
      * Return list of software packages of calling client
@@ -315,18 +348,20 @@
      */
     global define map<string, any > Software()
     {
-        boolean ret = Pkg::TargetInit("/", false);
+//        boolean ret = Pkg::TargetInit("/", false);
+        Pkg::TargetInitialize ("/");
+        Pkg::TargetLoad();
+        Pkg::SourceStartManager (true);
 
         list<string> inst = Pkg::GetPackages(`installed, true);
         list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
         list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
         list<string> patterns = [];
 
-        foreach( map<string,any> m, all_patterns, ``{
-            if( m["status"]:`nothing == `installed )
-                patterns = add( patterns, m["name"]:"" );
-        });
-
+        // get all fulfilled patterns
+        // way too many will be fulfilled
+        // we will clean that up later
+        patterns = getPatterns();
 
         Pkg::TargetFinish ();
 
@@ -337,14 +372,6 @@
 
         Pkg::SourceStartManager(true);
 
-
-        /* FIXME: if this would work, it would be the better solution
-        foreach(string p, patterns, ``{
-            Pkg::ResolvableInstall( p, `pattern );
-        });
-        Pkg::PkgSolve(false);
-        */
-
         list<string> packages = Pkg::FilterPackages(false, false, true, true);
         Pkg::TargetFinish ();
         // Remove kernel packages
@@ -352,14 +379,24 @@
         list<string> removepackages = [];
 
         list<string> patternPackages = [];
+        list<string> new_p = [];
         foreach( string tmp_pattern, patterns, ``{
             list<map<string,any> > xpattern = filter( map<string,any> p, all_xpatterns, ``( p["name"]:"" == tmp_pattern ) );
             map<string,any> found = xpattern[0]:$[];
+            boolean req = false;
             foreach( map<string,any> d, found["dependencies"]:[], ``{
-                if( d["res_kind"]:"" == "package" && d["dep_kind"]:"" == "requires" )
+                if( d["res_kind"]:"" == "package" && d["dep_kind"]:"" == "requires" ) {
                     patternPackages = add(patternPackages, d["name"]:"");
+                    req = true;
+                }
             });
+            // workaround for our pattern design
+            if( req == true )
+                new_p = add( new_p, tmp_pattern );
         });
+        patterns = new_p;
+
+
         map<string, any > software = $[];
         if( size(patterns) > 0 ) {
             foreach(string p, inst, ``{
