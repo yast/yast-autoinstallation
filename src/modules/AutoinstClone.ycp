@@ -34,7 +34,8 @@
     include "autoinstall/xml.ycp";
 
     global map Profile = $[];
-
+    global list<string> inst = [];
+    global map<string,boolean> fulfilled_cache = $[];
     integer bytes_per_unit = 0;
 
 
@@ -306,9 +307,10 @@
     }
 
     global define boolean isPatternFulfilled( string p ) {
-        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
-        list<string> inst = Pkg::GetPackages(`installed, true);
         boolean ret = true;
+	if( haskey( fulfilled_cache, p ) )
+		return fulfilled_cache[p]:false;
+        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
 
         foreach( map<string,any> dep, all_xpatterns, ``{
             if( ret == true && dep["name"]:"" == p ) {
@@ -325,6 +327,7 @@
                 });
             }
         });
+	fulfilled_cache[p] = ret;
         return ret;
     }
 
@@ -333,7 +336,7 @@
         list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
 
         foreach( map<string,any> m, all_patterns, ``{
-            if( isPatternFulfilled( m["name"]:"" ) )
+            if( !contains(ret, m["name"]:"") && isPatternFulfilled( m["name"]:"" ) )
                 ret = add( ret, m["name"]:"" );
         });
         return ret;
@@ -353,7 +356,7 @@
         Pkg::TargetLoad();
         Pkg::SourceStartManager (true);
 
-        list<string> inst = Pkg::GetPackages(`installed, true);
+        inst = Pkg::GetPackages(`installed, true);
         list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
         list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
         list<string> patterns = [];
