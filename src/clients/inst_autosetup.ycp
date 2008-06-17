@@ -174,10 +174,18 @@ control file and try again.
     // recognize this now
     Storage::ReReadTargetMap();
 
-    AutoinstStorage::Import(Profile::current["partitioning"]:[]);
+
+    // No partitioning in the profile means yast2-storage proposal (hmmmm.....)
+    if( size(Profile::current["partitioning"]:[]) > 0 ) {
+        AutoinstStorage::Import(Profile::current["partitioning"]:[]);
+    } else {
+        Storage::SetTestsuite(true); // FIXME: *urgs*
+        WFM::CallFunction("inst_disk_proposal", [true, true]); // FIXME: fragile?
+        Storage::SetTestsuite(false); // *urgs* again
+    }
     AutoinstStorage::ImportAdvanced(Profile::current["partitioning_advanced"]:$[]);
 
-    if (!AutoinstStorage::Write())
+    if ( size(Profile::current["partitioning"]:[]) > 0 && !AutoinstStorage::Write())
     {
 	Report::Error(_("Error while configuring partitions.
 Try again.
