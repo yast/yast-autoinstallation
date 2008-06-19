@@ -1,0 +1,134 @@
+/**
+ * File:	include/tree.ycp
+ * Package:	Auto-installation/Partition
+ * Summary:     helper functions for dealing with tree widget
+ * Author:	Sven Schober (sschober@suse.de)
+ *
+ * $Id: tree.ycp 2805 2008-05-27 15:12:42Z sschober $
+ */
+{
+  include "autoinstall/common.ycp";
+
+  /* name of tree widget to be displayed (in storage dialog) */
+  define symbol sTree = `tree;
+  /* common way to refer to the tree widget id */
+  define term iTree = `id(sTree);
+
+  /**
+   * Set tree widget to tree represented by newTree
+   *
+   * @param newTree tree to display.
+   */
+  define void setTree( list<term> newTree ){
+    UI::ChangeWidget( iTree, `Items, newTree );
+  }
+
+  /**
+   * Get the currently selected tree item id string.
+   *
+   * @return Item id string that is currently selected.
+   */
+  define string currentTreeItem(){
+    return symbol2string( (symbol) UI::QueryWidget( iTree, `Value ));
+  }
+
+  /**
+   * Forward declaration as termContains() uses isContainedInTree()
+   */
+  define boolean isContainedInTree( symbol s, list<term> tree);
+
+  /**
+   * Searches through term t recursively looking for an arg of
+   * type string which is equal to s. This function is neccessary
+   * due to the nature trees are stored/represented in the tree
+   * widget.
+   *
+   * @param t The term to inspect.
+   * @param s The symbol to look for.
+   */
+  define boolean termContains( term t, symbol s ){
+    /* if term itself is named like s -> yes, contains */
+    if( s == symbolof( t )){
+      return true;
+    }
+    /* other wise inspect arguments */
+    list args = argsof( t );
+    boolean found = false;
+    foreach( any e, args, {
+      if( is( e, term) ){
+        found = termContains( (term) e, s );
+        if( found ){
+          break;
+        }
+      }
+      else if( is( e, list<term> ) ){
+	found = isContainedInTree( s, (list<term>)e );
+	if( found ){
+	  break;
+	}
+      }
+      else if( is( e, symbol ) &&
+               s == (symbol) e ){
+        found = true;
+        break;
+      }
+    });
+    return found;
+  }
+
+  /**
+   * Helper function to determin if item with id 's' exists in tree.
+   *
+   * @param s The id symbol to look for.
+   * @param tree The tree to search through.
+   * @return true if tree contains symbol, false otherwise.
+   */
+  define boolean isContainedInTree( symbol s, list<term> tree ){
+    boolean found = false;
+    foreach( term item, tree, {
+      if( termContains( item, s ) ){
+        found = true;
+        break;
+      }
+    });
+    return found;
+  }
+
+  /**
+   * Select item 'newItem' in tree.
+   *
+   * @return true if item exists in tree (and was selected), false
+   * otherwise
+   */
+  define boolean selectTreeItem( string newItem ){
+    symbol item = string2symbol( newItem );
+    list<term> allItems = [];
+    allItems = (list<term>)UI::QueryWidget( iTree, `Items );
+    if( isContainedInTree( item, allItems ) ){
+      UI::ChangeWidget( iTree, `CurrentItem, item );
+      return true;
+    }
+    y2warning( "Item '%1' not found in tree", item );
+    y2debug( "Tree was '%1'", allItems );
+    return false;
+  }
+
+  /**
+   * Wrapper function to create a new tree node
+   *
+   * @param reference Tree item id string (e.g. "part_2_0")
+   * @param name Tree node name, displayed in widget
+   * @param children list of child nodes
+   */
+  define term createTreeNode( string reference, string name, list<term> children ){
+    term result = `Empty();
+    if( 0 == size( children )){
+      result =  `item( `id(string2symbol(reference)), name );
+    }
+    else{
+      result = `item( `id(string2symbol(reference)), name, true, children );
+    }
+    y2milestone( "new node: '%1'", result );
+    return result;
+  }
+}
