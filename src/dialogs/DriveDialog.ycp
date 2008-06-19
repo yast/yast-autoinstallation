@@ -1,0 +1,195 @@
+/**
+ * File:
+ *	DriveDialog.ycp
+ *
+ * Module:
+ *	Partitioning
+ *
+ * Summary:
+ *	Display and handle drive dialog.
+ *
+ * Authors:
+ *	Sven Schober (sschober@suse.de)
+ *
+ * $Id: DriveDialog.ycp 2812 2008-06-05 12:49:30Z sschober $
+ */
+{
+  textdomain "autoinst";
+
+  include "autoinstall/common.ycp";
+  include "autoinstall/types.ycp";
+
+  import "Popup";
+
+  import "AutoinstPartPlan";
+  import "AutoinstDrive";
+
+  /**
+   * INTERNAL STUFF
+   */
+
+  /* local copy of current device the user wants to
+   * edit using this dialog
+   */
+  define DriveT currentDrive = $[];
+  define integer currentDriveIdx = 999;
+
+  define list<string> allDevices = [ "auto", "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/sda","/dev/sdb" ];
+  define list<string> reuseTypes = [ "all", "free", "linux" ];
+
+  define string driveDialogTitle = "Edit Drive";
+
+  define void enableReuse(any selected){
+    if( selected != nil && is(selected, symbol) ){
+      UI::ChangeWidget(`id(`cb_reuse), `Value, selected);
+    }
+    UI::ChangeWidget(`id(`cb_reuse), `Enabled, true);
+    if( UI::QueryWidget(`id(`rbg), `CurrentButton) != `rb_reuse ){
+      UI::ChangeWidget( `id(`rbg), `CurrentButton, `rb_reuse);
+    }
+  }
+
+  define void disableReuse(){
+    UI::ChangeWidget(`id(`cb_reuse), `Value, `all);
+    UI::ChangeWidget(`id(`cb_reuse), `Enabled, false);
+    if( UI::QueryWidget(`id(`rbg), `CurrentButton) != `rb_init ){
+      UI::ChangeWidget( `id(`rbg), `CurrentButton, `rb_init);
+    }
+  }
+
+  /**
+   * SYNCING GUI <-> DATA
+   */
+
+  define void updateGUI( string d ){
+    string drive = AutoinstPartPlan::getDrive( tointeger( d ) )["device"]:"";
+    UI::ChangeWidget( `id(`device), `Value, string2symbol(drive));
+    if( currentDrive["initialize"]:false == true ){
+      disableReuse();
+    }
+    else{
+      enableReuse( currentDrive["use"]:nil );
+    }
+  }
+
+  define DriveT updateData( DriveT drive ){
+    drive = AutoinstDrive::set(drive, "device",
+      symbol2string((symbol)UI::QueryWidget(`id(`device), `Value)));
+    if( UI::QueryWidget( `id(`rbg), `CurrentButton) == `rb_init ){
+      drive = AutoinstDrive::set(drive, "initialize", true );
+      drive = AutoinstDrive::set(drive, "use", `all);
+    }
+    else{
+      drive = AutoinstDrive::set(drive, "initialize", false);
+      drive = AutoinstDrive::set(drive, "use",UI::QueryWidget(`id(`cb_reuse), `Value));
+    }
+    return drive;
+  }
+
+  /**
+   * GENERAL DIALOG IFACE
+   */
+  define DriveT DriveLoad( integer driveIdx ){
+    DriveT drive = AutoinstPartPlan::getDrive( driveIdx );
+    y2milestone("loaded drive('%1'): '%2'", driveIdx, drive );
+    if( ! contains(allDevices,drive["device"]:"") ){
+      allDevices = add(allDevices, drive["device"]:"" );
+    }
+    return drive;
+  }
+
+  define void DriveStore(){
+    currentDrive = updateData( currentDrive );
+    AutoinstPartPlan::updateDrive( currentDrive );
+    y2milestone("updated drive('%1'): '%2'", currentDrive["device"]:"", currentDrive );
+  }
+
+  define void DriveCheck(){
+    currentDrive = updateData( currentDrive );
+    DriveT storedDrive = DriveLoad( currentDriveIdx );
+    if( ! AutoinstDrive::areEqual( currentDrive, storedDrive ) ){
+      if( Popup::YesNo( "Store unsaved changes to drive?" ) ){
+	AutoinstPartPlan::updateDrive( currentDrive );
+      }
+    }
+  }
+
+  define void DriveDisplay(){
+    string drive = stack[`which]:"";
+    y2milestone( "DriveDisplay('%1')", drive );
+    currentDriveIdx = tointeger( drive );
+    currentDrive = DriveLoad( currentDriveIdx );
+
+    term contents =
+      `VBox(
+	  `Heading( driveDialogTitle ),
+	  `HVCenter(
+	    `HVSquash(
+	      `VBox(
+	      `ComboBox( `id(`device),`opt(`editable), _("D&evice"), toItemList(allDevices)),
+	      `VSpacing(1),
+	      `RadioButtonGroup( `id(`rbg),
+		  `VBox(
+		    `Left(`RadioButton(`id(`rb_init), `opt(`notify), _("&Intialize drive"))),
+		    /* initially selected */
+		    `Left(`RadioButton(`id(`rb_reuse), `opt(`notify), "Re&use", true)),
+		    `ComboBox(`id(`cb_reuse), `opt(`editable), _("&Type"), toItemList(reuseTypes))
+		    )
+		),
+		`VSpacing(2),
+		`PushButton( `id(`apply),_("Apply"))
+	      )))
+	  );
+    UI::ReplaceWidget(`id(replacement_point), contents );
+    updateGUI( drive );
+  }
+
+  define void DriveEventHandler(){
+    y2milestone( "DriveEventHandler(): current event: '%1'", currentEvent);
+    if( is( currentEvent, map) ){
+      if( `rb_init == currentEvent["WidgetID"]:`Empty ){
+	/* initialize drive -> set reuse type to all and disable combobox */
+	disableReuse();
+	eventHandled();
+      }
+      else if( `rb_reuse == currentEvent["WidgetID"]:`Empty ){
+	/* reuse drive -> enable combobox */
+	enableReuse(nil);
+	eventHandled();
+      }
+    }
+  }
+
+  define void DriveDelete(){
+    string drive = stack[`which]:"";
+    y2milestone("DriveDelete('%1')", drive );
+    AutoinstPartPlan::removeDrive( tointeger( drive ) );
+  }
+
+  define void DriveNew(){
+    /*
+     * TODO: implement default name
+     */
+    string defaultDevice = "auto";
+    DriveT newDrive = AutoinstPartPlan::addDrive(AutoinstDrive::new(defaultDevice, `CT_DISK));
+    selectTreeItem(AutoinstDrive::getNodeReference(newDrive));
+    stack[`which] = tostring(newDrive["_id"]:999);
+    DriveDisplay();
+  }
+
+  /**
+   * INITIALIZE DIALOG
+   */
+  string driveType = "drive";
+  DialogT driveDialog = $[
+    `type	  :	    driveType,
+    `display	  :	    ``(DriveDisplay()),
+    `eventHandler :	    ``(DriveEventHandler()),
+    `store	  :	    ``(DriveStore()),
+    `new	  :	    ``(DriveNew()),
+    `delete	  :	    ``(DriveDelete()),
+    `check	  :	    ``(DriveCheck())
+      ];
+  y2milestone("adding drive dialog to dialog list.");
+  dialogs = add(dialogs, driveType, driveDialog);
+}
