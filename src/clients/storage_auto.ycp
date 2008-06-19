@@ -14,12 +14,14 @@ y2milestone("----------------------------------------");
 y2milestone("Storage auto started");
 
 import "Wizard";
-import "AutoinstStorage";
+/*import "AutoinstStorage";*/
+import "AutoinstPartPlan";
 import "Storage";
 import "FileSystems";
 
 import "Label";
-include "autoinstall/partition_dialogs.ycp";
+/* include "autoinstall/partition_dialogs.ycp"; */
+include "autoinstall/StorageDialog.ycp";
 
 
 
@@ -43,39 +45,38 @@ y2debug("param=%1", param);
 
 /* Import Data*/
 if(func == "Import") {
-    ret = AutoinstStorage::Import ((list<map>)param);
+    ret = AutoinstPartPlan::Import ((list<map>)param);
     if (ret == nil)
     {
         y2error ("Parameter to 'Import' is probably wrong, should be list of maps");
         ret = false;
     }
+  y2milestone("Import: %1",list<map> param );
 }
 /* Create a  summary*/
 else if(func == "Summary") {
-    ret = AutoinstStorage::Summary();
+    ret = AutoinstPartPlan::Summary();
 }
 /* Reset configuration */
 else if (func == "Reset") {
-    AutoinstStorage::Import([]);
+    AutoinstPartPlan::Reset();
     ret = [];
 }
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
-    Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("disk");
     ret = StorageDialog();
-    Wizard::CloseDialog();
+    UI::CloseDialog();
 }
 /* Return actual state */
 else if (func == "Export") {
-    ret = AutoinstStorage::Export();
+    ret = AutoinstPartPlan::Export();
 }
 /* Return true if modified */
 else if (func == "GetModified") {
-    ret = AutoinstStorage::GetModified();
+   ret = AutoinstPartPlan::GetModified();
 }
 else if (func == "SetModified") {
-    AutoinstStorage::SetModified();
+   AutoinstPartPlan::SetModified();
 }
 /* Unknown function */
 else {
