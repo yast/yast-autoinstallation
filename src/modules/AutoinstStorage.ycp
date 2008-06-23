@@ -285,6 +285,10 @@
             d["partitions"] = maplist( map p, d["partitions"]:[], ``{
                 string mountby = "";
                 boolean mountByIsList = false;
+                if( p["mount"]:"" == "swap" || p["filesystem"]:`none == `swap ) {
+                     p["mount"] = "swap";
+                     p["filesystem"] = `swap;
+                }
                 if( haskey(p, "mountby") ) {
                     if( p["mountby"]:`none == `label ) {
                         mountby = "label";
