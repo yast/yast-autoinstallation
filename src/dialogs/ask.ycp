@@ -139,6 +139,7 @@
             while (true) {
                 any ret = UI::UserInput();
                 if( ret == `ok ) {
+		    integer runAgain = 0;
                     integer element_cnt = 0;
                     foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                         list<string> position = splitstring( ask["path"]:"", "," );
@@ -153,7 +154,7 @@
                             string pass2 = (string)UI::QueryWidget(`id(`pass2),  `Value);
                             if( pass2 != (string)val ) {
                                 Popup::Error("The two passwords mismatch.");
-                                continue;
+                                runAgain = 1;
                             }
                         }
                         y2milestone("question=%1 was answered with val=%2",ask["question"]:"", val);
@@ -173,7 +174,8 @@
                                 y2milestone("writing answer to %1 failed",file);
                         }
                     });
-                    break;
+                    if( runAgain == 0 )
+                    	break;
                 }
             }
             UI::CloseDialog();
