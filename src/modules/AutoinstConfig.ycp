@@ -167,6 +167,14 @@
     // before the probing stage DASD module can has run
     //
     global boolean remoteProfile = true;
+    global list<string> Proposals = [];
+
+    global list<string> getProposalList() {
+	return Proposals;
+    }
+    global void setProposalList(list<string> l) {
+	Proposals = l;
+    }
 
     include "autoinstall/io.ycp";
 
