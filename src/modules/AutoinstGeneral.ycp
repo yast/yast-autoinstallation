@@ -44,6 +44,9 @@
 
     global list askList = [];
 
+//    global list<string> proposals = ["bootloader_proposal", "software_proposal", "country_simple_proposal", "timezone_proposal", "users_proposal", "runlevel_proposal", "hwinfo_proposal", "mouse_proposal", "deploying_proposal"];
+    global list<string> proposals = [];
+
     /* default value of settings modified */
     global boolean modified = false;
 
@@ -121,6 +124,11 @@
         summary = Summary::AddLine(summary, (AutoinstGeneral::signature_handling["import_gpg_key"]:false) ?
                                    _("Importing new GPG keys") : _("Not importing new GPG Keys"));
 
+	summary = Summary::AddHeader(summary, _("Proposals"));
+        foreach(string p, proposals, ``{
+		summary = Summary::AddLine(summary, p);
+	});
+
         return summary;
     }
 
@@ -137,6 +145,7 @@
         mode  =	        settings["mode"]:$[];
         signature_handling = settings["signature-handling"]:$[];
         askList = settings["ask-list"]:[];
+	proposals = settings["proposals"]:[];
 
         return true;
     }
@@ -164,6 +173,7 @@
         general["mode"] = mode;
         general["signature-handling"] = signature_handling;
         general["ask-list"] = askList;
+	general["proposals"] = proposals;
         return general;
     }
 
@@ -217,6 +227,7 @@
             ProductFeatures::SetBooleanFeature( "globals", "kexec_reboot", !mode["forceboot"]:false );
         AutoinstConfig::Halt = mode["halt"]:false;
         AutoinstConfig::RebootMsg = mode["rebootmsg"]:false;
+	AutoinstConfig::setProposalList( proposals );
 
         //
         // mouse
