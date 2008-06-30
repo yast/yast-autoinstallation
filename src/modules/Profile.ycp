@@ -115,6 +115,8 @@
         } else {
             current["software"] = $[ "packages":[ "autoyast2-installation" ] ];
         }
+        if( haskey( current, "files" ) )
+            current["software","packages"] = add( current["software","packages"]:[], "autoyast2" ); // without autoyast2, <files ...> does not work
     }
 
     /**
