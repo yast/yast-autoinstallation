@@ -18,6 +18,9 @@
     import "Report";
     import "AutoinstConfig";
     import "Profile";
+    import "Mode";
+    import "Stage";
+    import "AutoinstSoftware";
 
     list<map> Tree = [];
 
@@ -97,6 +100,7 @@
 			// push button label
 			`PushButton(`id(`reset), _("Reset Confi&guration")),
 			`HStretch(),
+            `PushButton(`id(`writeNow), _("Write to System") ),
 			// push button label
 			`PushButton(`id(`configure), _("Configur&e") )
 			)
@@ -234,6 +238,8 @@
                 "menu_settings" );
         Menu = Wizard::AddMenuEntry     ( Menu , "file-menu" , AutoinstConfig::ProfileEncrypted ? _("change to decrypted"):_("change to encrypted"),
                 "change_encryption" );
+         Menu = Wizard::AddMenuEntry     ( Menu , "file-menu" , _("Apply Profile to this System"),
+                "write_to_system");
         Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("E&xit"),
                     "menu_exit"      );
         Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("Configu&ration Tree"),
@@ -343,6 +349,7 @@
 
         while(true)
         {
+            UI::ChangeWidget(`id(`writeNow), `Enabled, !contains( AutoinstConfig::noWriteNow, moduleName(tree_item) ) );
             if( AutoinstConfig::runModule != "" ) {
                 ret = `configure;
                 Wizard::SelectTreeItem( "module@"+AutoinstConfig::runModule );
@@ -386,6 +393,20 @@
                     any configret = resetModule(modulename);
                     y2debug("configureModule ret : %1", configret);
                     module_contents(modulename);
+                }
+            }
+            else if ( ret == `writeNow )
+            {
+                string modulename=moduleName(tree_item);
+                if (modulename!="") {
+                    map d = Y2ModuleConfig::ModuleMap[modulename]:$[];
+                    string module_auto = "";
+                    if (haskey(d,"X-SuSE-YaST-AutoInstClient"))
+                        module_auto = d["X-SuSE-YaST-AutoInstClient"]:"none";
+                    else
+                        module_auto = sformat("%1_auto", modulename);
+                    if( Popup::YesNo( sformat( "Do you really want to apply the settings of the module '%1' to your current system?", modulename ) ))
+                        Call::Function(module_auto, ["Write"]);
                 }
             }
             else if ( issubstring((string)ret,"module@") || issubstring((string)ret,"group@") )
@@ -579,6 +600,29 @@
                 AutoinstConfig::ProfilePassword = "";
                 Wizard::DeleteMenus(); // FIXME: sucks sucks sucks sucks sucks
                 menus();
+            }
+            else if ( ret == "write_to_system" ) {
+                if( Popup::YesNo( "Do you really want to apply the settings of the profile to your current system?" )) {
+                    Profile::Prepare();
+                    string oldMode = Mode::mode();
+                    string oldStage = Stage::stage();
+                    Mode::SetMode("autoinstallation");
+                    Stage::Set ("continue");
+                    WFM::CallFunction("inst_autopost", []);
+                    AutoinstSoftware::addPostPackages(Profile::current["software","post-packages"]:[]);
+
+                    // the following is needed since 10.3
+                    // otherwise the already configured network gets removed
+                    if( !haskey(Profile::current, "networking") ) {
+                        Profile::current = add( Profile::current, "networking", $[ "keep_install_network":true ] );
+                    }
+
+                    Pkg::TargetInit ("/", false);
+                    WFM::CallFunction("inst_rpmcopy", []);
+                    WFM::CallFunction("inst_autoconfigure", []);
+                    Mode::SetMode(oldMode);
+                    Stage::Set(oldStage);
+                }
             }
             else if (ret == "menu_exit") // EXIT
             {
