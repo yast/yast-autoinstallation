@@ -145,6 +145,11 @@
     //
     global list<string> dontmerge = [];
 
+    // the "writo setting now" button is disabled for there modules
+    //
+    //
+    global list<string> noWriteNow = [];
+
     //
     // Halt after initial phase
     //
@@ -337,8 +342,10 @@
             Repository = Misc::SysconfigRead( .sysconfig.autoinstall.REPOSITORY, "/var/lib/autoinstall/repository/");
             classDir = Misc::SysconfigRead( .sysconfig.autoinstall.CLASS_DIR, Repository + "/classes" );
             string tmp_dontmerge = Misc::SysconfigRead( .sysconfig.autoinstall.XSLT_DONTMERGE, "addon,conf" );
+            string tmp_no_writenow = Misc::SysconfigRead( .sysconfig.autoinstall.FORBID_WRITENOW, "add-on,suse_register,partitioning,bootloader,general,report");
 
             dontmerge = splitstring(tmp_dontmerge, ",");
+            noWriteNow = splitstring(tmp_no_writenow, ",");
 
             // Set the defaults, just in case.
             if (Repository == "" || Repository == nil )
