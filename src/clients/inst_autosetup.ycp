@@ -168,6 +168,20 @@ control file and try again.
 	if (Popup::ConfirmAbort (`painless))
 	    return `abort;
 
+    // moved here from autoinit for fate #301193
+    // needs testing
+    if( Arch::s390 () && AutoinstConfig::remoteProfile == true ) {
+       y2milestone("arch=s390 and remote_profile=true");
+       if( haskey(Profile::current, "dasd") ) {
+            y2milestone("dasd found");
+            Call::Function("dasd_auto", ["Import", Profile::current["dasd"]:$[] ]);
+        }
+        if( haskey(Profile::current, "zfcp") ) {
+            y2milestone("zfcp found");
+            Call::Function("zfcp_auto", ["Import", Profile::current["zfcp"]:$[] ]);
+        }
+    }
+
 
     Progress::NextStage();
     // if one modifies the partition table in a pre script, we will

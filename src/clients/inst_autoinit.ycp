@@ -22,7 +22,7 @@
     import "Language";
     import "Console";
     import "Profile";
-    import "Arch";
+//    import "Arch";
     import "Call";
 
     import "Popup";
@@ -138,6 +138,9 @@ Please wait while the system is prepared for autoinstallation.</p>
     Progress::Title(_("Preprobing stage"));
     y2milestone("pre probing");
 
+/* // moved to autoset to fulfill fate #301193
+   // the DASD section in an autoyast profile can't be changed via pre-script
+   //
     if( Arch::s390 () && AutoinstConfig::remoteProfile == true ) {
         y2milestone("arch=s390 and remote_profile=true");
         symbol ret = processProfile();
@@ -157,6 +160,7 @@ Please wait while the system is prepared for autoinstallation.</p>
             Call::Function("zfcp_auto", ["Import", Profile::current["zfcp"]:$[] ]);
         }
     }
+*/
     string tmp = (string)SCR::Read (.target.string, "/etc/install.inf");
     if (tmp != nil && issubstring( tolower(tmp), "iscsi: 1" ) ) {
         WFM::CallFunction("inst_iscsi-client", []);
