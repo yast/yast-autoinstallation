@@ -182,7 +182,7 @@ Please wait while the system is being configured.
 
     /* online update */
     if( Profile::current["software","do_online_update"]:false == true ) {
-        symbol online_update_ret = (symbol)Call::Function("online_update_auto", ["Write"]);
+        symbol online_update_ret = (symbol)Call::Function("do_online_update_auto", ["Write"]);
         if( online_update_ret == `reboot ) {
             map script = $[ "filename":"zzz_reboot", "source":"shutdown -r now" ];
             AutoinstScripts::init = add( AutoinstScripts::init, script );
