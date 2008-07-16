@@ -1591,6 +1591,19 @@ http://192.168.66.6/SLES10/CD1/updates
 &lt;/software&gt;
         </screen>
   </section>
+  <section>
+    <title>Online update in stage2</title>
+    <para>
+      since openSUSE 11.1 you can do an online update at the end of the installation with the boolean
+      <emphasis>do_online_update</emphasis>.
+      Of course that makes only sense if you add an online update repository with the suse-register/customer-center section for example or in a post-script. If the online update repository was available in stage1 already via add-on section, then autoyast has already installed the latest packages available. If a kernel update is done via online-update, a reboot at the end of stage2 is triggered.
+    </para>
+        <screen>
+&lt;software&gt;
+  &lt;do_online_update config:type=&quot;boolean&quot;&gt;true&lt;/do_online_update&gt;
+&lt;/software&gt;
+        </screen>
+  </section>
     </section>
 
   <section id="CreateProfile.Services">
