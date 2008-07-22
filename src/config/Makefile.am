@@ -11,7 +11,8 @@ modconfig_DATA = \
 	report.desktop \
 	scripts.desktop \
 	software.desktop \
-	files.desktop
+	files.desktop	\
+	firstboot.desktop
 
 desktop_DATA = autoyast.desktop
 
