@@ -12,7 +12,6 @@ drive =
     element device     { text }? &
     element initialize { BOOLEAN }? &
     element is_lvm_vg  { BOOLEAN }? &
-    element is_evms_vg { BOOLEAN }? &
     element lvm2       { BOOLEAN }? &
     element pesize     { text }? &
     element type       { SYMBOL }? &
@@ -39,7 +38,6 @@ y2_partition =
   | part_loop_fs
   | part_lv_name
   | part_lvm_group
-  | part_evms_group
   | part_mount
   | part_mountby
   | part_filesystem_id
@@ -125,6 +123,5 @@ region_entry =
 part_size = element size { text }
 part_lv_name = element lv_name { text }
 part_lvm_group = element lvm_group { text }
-part_evms_group = element evms_group { text }
 part_resize = element resize { BOOLEAN }
 
