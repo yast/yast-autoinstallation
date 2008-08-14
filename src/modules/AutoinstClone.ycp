@@ -115,7 +115,7 @@
 
         StorageMap=filter(string d, map p, StorageMap, ``( d != "/dev/evms" && size(p["partitions"]:[]) > 0));
         y2milestone("Storagemap %1", StorageMap);
-        list evms_vgs = [];
+//        list evms_vgs = [];
 
         list drives = maplist(string k, map v, StorageMap, ``{
             list partitions = [];
@@ -187,14 +187,8 @@
                     new_pe["lvm_group"] = pe["used_by"]:"";
                 }
 
-                // EVMS Group
-                if (haskey(pe,"used_by_type") && pe["used_by_type"]:`nothing == `UB_EVMS) {
-                    integer index = findlastof( pe["used_by"]:"", "/" );
-                    new_pe["evms_group"] = substring( pe["used_by"]:"", index+1);
-                }
-
                 // LV
-                if (pe["type"]:`unknown == `lvm || pe["type"]:`unknown == `evms )
+                if (pe["type"]:`unknown == `lvm )
                 {
                     new_pe["lv_name"] = pe["name"]:"";
                     new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
@@ -256,13 +250,6 @@
             {
                 drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
                 drive["type"] = `CT_LVM;
-            } else if( v["type"]:`CT_UNKNOWN==`CT_EVMS ) {
-                drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
-                drive["type"] = `CT_EVMS;
-                integer index = findlastof( drive["device"]:"", "/" );
-                string vg_name = substring(drive["device"]:"", index);
-                drive["device"] = "/dev"+vg_name;
-                evms_vgs = add( evms_vgs, "/dev"+vg_name );
             }
             if (haskey(v,"lvm2") && v["lvm2"]:false)
             {
@@ -286,17 +273,17 @@
             }
             return drive;
         });
-        drives = filter( map v, (list<map>)drives, ``{
-            if( ! (contains( evms_vgs, v["device"]:"") && v["type"]:`x == `CT_LVM ) )
-                return true;
-            y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
-            return false;
-        });
+//        drives = filter( map v, (list<map>)drives, ``{
+//            if( ! (contains( evms_vgs, v["device"]:"") && v["type"]:`x == `CT_LVM ) )
+//                return true;
+//            y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
+//            return false;
+//        });
         /* remove drives with no mountpoint */
         drives = filter( map v, (list<map>)drives, ``{
             boolean keep = false;
             foreach( map p, (list<map>)v["partitions"]:[], ``{
-                if( p["mount"]:"" != "" || haskey(p,"lvm_group") || haskey(p,"evms_group") || haskey(p,"raid_name") ) {
+                if( p["mount"]:"" != "" || haskey(p,"lvm_group") || haskey(p,"raid_name") ) {
                     keep = true;
                     break;
                 }

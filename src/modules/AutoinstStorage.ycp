@@ -489,7 +489,7 @@
                     }
                     return pe;
                 });
-            } else if( d["type"]:`x == `CT_LVM || d["type"]:`x == `CT_EVMS ) {
+            } else if( d["type"]:`x == `CT_LVM ) {
                 d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
                     if( issubstring( pe["size"]:"", "%") ) {
                         pe["size"] = deletechars( pe["size"]:"", "%" ); // a size smalle than 101 will be treated as % later
@@ -525,15 +525,6 @@
         return settings;
     }
 
-    global void activateEVMS(list<map> settings) {
-        foreach( map d, settings, ``{
-            if( d["type"]:`x == `CT_EVMS ) {
-                y2milestone("activate EVMS");
-                Storage::ActivateEvms();
-            }
-        });
-        return;
-    }
 
     /**
      * Get all the configuration from a map.
@@ -555,7 +546,6 @@
             settings = region4resize(settings);
             settings = percent2size(settings);
             settings = setPartitionType(settings);
-            activateEVMS(settings);
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
