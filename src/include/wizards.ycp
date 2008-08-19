@@ -84,7 +84,7 @@
         // Translators: dialog caption
         string caption = _("Autoinstall Configuration");
         term contents = `Label (_("Initializing ..."));
-        Wizard::CreateTreeDialog();
+        Wizard::CreateDialog();
 	string tree_item = "System";
         Wizard::SetContentsButtons ( caption,
                 contents,
@@ -92,7 +92,7 @@
                 Label::BackButton (),
                 Label::NextButton ());
 
-	CreateTreeWidget( tree_item);
+	CreateDialog( tree_item);
         menus();
 
         symbol ret = Sequencer::Run(dialogs, sequence);

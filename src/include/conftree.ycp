@@ -22,7 +22,9 @@
     import "Stage";
     import "AutoinstSoftware";
 
-    list<map> Tree = [];
+    /* Stores the item list for popuplating the group selection box */
+    list<term> Groups = [];
+    map<string,string> cachedSummaries = $[];
 
     any SaveAs() {
         any filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
@@ -50,69 +52,51 @@
 
     /**
      * Create a list to be used with the table widget
-     * @param tree data
-     * @return list
+     * @param current String defining the currently selected item/group
+     * @return term The selection box widget.
      */
-    define void CreateTreeList( list<map> MenuTreeData, string current ,
-            string parent)
-	``{
-	list<term> tree_items = maplist(map e, MenuTreeData, ``{
-
-	    if (size(e["children"]:[]) > 0 )
-	    {
-		string title=   e["title"]:"" ;
-		string entry = "group@" + e["entry"]:"";
-                Tree = Wizard::AddTreeItem( Tree, parent, title , entry );
-		CreateTreeList(e["children"]:[], current, entry);
-	    }
-	    else
-	    {
-		string title=   e["title"]:"" ;
-		string entry =  "module@" + e["entry"]:"";
-                Tree = Wizard::AddTreeItem( Tree, parent, title , entry );
-	    }
-	});
-        Wizard::CreateTree(Tree, "");
+    define term CreateSelectionBox( string current ){
+      /* select the item identified by 'current' */
+      list<term> groups = maplist( term i, Groups, {
+	list args = argsof( i );
+	term id = args[0]:`Empty();
+	string title = args[1]:"";
+	if( id == `id( current ) ){
+	  return `item( id, title, true );
+	}
+	else{
+	  return i;
+	}
+      });
+      term selectionBox = `SelectionBox( `id(`wizardTree), `opt(`notify), "", groups );
+      return selectionBox;
     }
 
-
-    /**
-     * Module Summary dialog
-     * @return void
+    /*
+     * Wrapper functions for replacing tree wizard by a selection box.
      */
-    define void content_dialog( string resource, map resourceMap, string module_auto) ``{
-
-	string summary =  (string) WFM::CallFunction( module_auto, ["Summary"]);
-	string caption = resourceMap["Name"]:"";
-    string currentFile = AutoinstConfig::currentFile;
-    integer filenameIndex = findlastof(currentFile,"/");
-    if( filenameIndex != nil ) {
-        currentFile = substring( currentFile, filenameIndex+1 );
-    }
-    if( size(currentFile) > 0 ) {
-        caption = caption + " - " + currentFile;
-    }
-	string buttonLabel = resourceMap["GenericName"]:"Configure";
-	term contents =
-	    `VBox(
-		  `RichText( `id(`summary), summary),
-		  `HBox(
-			// push button label
-			`PushButton(`id(`reset), _("Reset Confi&guration")),
-			`HStretch(),
-            `PushButton(`id(`writeNow), _("Write to System") ),
-			// push button label
-			`PushButton(`id(`configure), _("Configur&e") )
-			)
-		  );
-	Wizard::SetContents(
-			    caption,
-			    contents, AutoinstConfig::MainHelp(), true, true);
-        map Icons = $[];
-        Y2ModuleConfig::SetDesktopIcon(Icons[resource]:resource);
-	return;
+    define void SelectTreeItem( string item ){
+      y2milestone( "Selecting %1", `id(item) );
+      UI::ChangeWidget( `id(`wizardTree), `CurrentItem, `id(item) );
     }
 
+    define string QueryTreeItem(){
+      return (string) UI::QueryWidget( `id(`wizardTree), `CurrentItem );
+    }
+
+    define void SetContents(  string title,  term contents,
+			      string help_text, boolean has_back,
+			      boolean has_next ){
+	string current = "System";
+	/* remember selected group */
+	if( UI::WidgetExists( `id(`wizardTree) )){
+	  current = (string) UI::QueryWidget(`id(`wizardTree),`CurrentItem);
+	}
+	/* add selection box */
+	contents = `HBox( `HWeight(25, CreateSelectionBox(current) ),
+			  `HWeight(75, contents ));
+	Wizard::SetContents( title, contents, help_text, has_back, has_next);
+    }
 
     /**
      * Reset Configuration
@@ -123,7 +107,7 @@
     {
         y2debug("resource: %1", resource);
         map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
-    	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
+	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
         if( haskey( Profile::current, resource ) ) {
             Profile::current = remove( Profile::current, resource );
         }
@@ -171,44 +155,6 @@
         }
         return (seq);
     }
-
-
-    /**
-     * Module
-     * @param string resource
-     * @param map resource map
-     * @param list menu items
-     * Module configuration dialog
-     * @return symbol
-     */
-    define symbol module_contents(string resource)
-    {
-        map resourceMap = Y2ModuleConfig::ModuleMap[resource]:$[];
-	string module_auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"none";
-
-        // Show Summary
-	content_dialog( resource , resourceMap, module_auto);
-
-	return `next;
-    }
-
-
-
-    /**
-     * Create tree widget
-     * @param string
-     * @return void
-     */
-    define void CreateTreeWidget(string current ) ``{
-
-	CreateTreeList(Y2ModuleConfig::MenuTreeData, current, "");
-	Wizard::HideNextButton();
-	Wizard::HideBackButton();
-	Wizard::HideAbortButton();
-
-	return;
-    }
-
 
 
     /**
@@ -284,28 +230,123 @@
     }
 
     /**
-     * Return HTML list of available modules
-     * @param string
-     * @return term richtext window with modules listed and linked.
+     * Return HTML list of available modules with summaries
+     *
+     * @param string group_name - group to display
+     * @param string module_name  - module to refresh. use:
+     *		      o "ALL" to refresh all
+     *		      o	"" or a non-existant module name to refresh non (use cache for all)
+     *		      o "<module nam> refresh that module
+     *
+     * @return term VBox widget containing:
+     *		      o	richtext window with modules listed and linked
+     *		      o three ComboBoxes for configuring, writing and resetting modules
      */
-    term modules (string tree_item) {
+    term modules (string group_name, string module_name) {
+	y2milestone( "group_name: %1", group_name );
         string html = "";
-        foreach(string k , map v, Y2ModuleConfig::ModuleMap, ``{
-                if (v["X-SuSE-YaST-Group"]:"" == tree_item)
-                {
-                string colored = HTML::Colorize( HTML::Link(v["Name"]:"", "module@"  + k), "#8BC460");
-                html = html + HTML::Heading(colored);
-                html = html + HTML::Para(v["GenericName"]:"");
-                }
-                });
+	list<term> moduleItems = [];
+	list<term> writeNowModules = [];
+	boolean useCache = true;
+	boolean feedBackVisible = false;
+	if( module_name == "ALL" ){
+	  useCache = false;
+	}
 
+        foreach(string k , map v, Y2ModuleConfig::ModuleMap, ``{
+	      if (v["X-SuSE-YaST-Group"]:"" == group_name)
+	      {
+		string typedModulename = "module@"  + k;
+                string colored = HTML::Colorize( HTML::Link(v["Name"]:"", typedModulename), "#8BC460");
+		term i = `item( `id(typedModulename), v["Name"]:"", false );
+		moduleItems = add( moduleItems, i );
+		if( !contains( AutoinstConfig::noWriteNow, k ) ){
+		  writeNowModules = add( writeNowModules, i );
+		}
+                html = html + "<li>" +HTML::Heading(colored);
+		string summary = cachedSummaries[k]:"";
+		if( useCache == true && module_name != k && summary != "" ){
+		  y2debug("Using cached summary for %1", k );
+		}
+		else{
+		  map resourceMap = Y2ModuleConfig::ModuleMap[k]:$[];
+		  if( resourceMap != $[] ){
+		    y2debug("Refreshing summary for %1", k );
+		    if( ! feedBackVisible ){
+		      Popup::ShowFeedback(_("Refreshing summary"),
+			    _("Please wait while summary information is gathered.") );
+		      feedBackVisible = true;
+		    }
+		    summary =  (string) WFM::CallFunction( resourceMap["X-SuSE-YaST-AutoInstClient"]:"none",
+							    ["Summary"]);
+		    if( nil == summary ){
+		      summary = "";
+		    }
+		    cachedSummaries[k] = summary;
+		  }
+		  else{
+		    summary = HTML::Para(v["GenericName"]:"");
+		  }
+		}
+		// add <UL> only if it's not already there
+		string summary_start = substring(summary,0,3);
+		if(summary_start != "<UL" && summary_start != "<ul"){
+		  summary = HTML::ListStart() + summary + HTML::ListEnd();
+		}
+		//y2milestone("Summary for %1: %2", k, summary);
+		html = html + summary;
+	      }
+	});
         if (html == "")
         {
             html = HTML::Heading(_("No modules available in this group."));
         }
-        term contents = `RichText(html);
+	term resetBox = `ComboBox( `id(`reset), `opt(`notify), "",
+			merge( [ `item(`id(`none), _("Reset..."), true) ], moduleItems ));
+
+	term writeBox = `ComboBox( `id(`writeNow), `opt(`notify), "",
+			merge( [ `item(`id(`none), _("Write to system..."), true) ], writeNowModules ));
+
+	term configureBox = `ComboBox( `id(`configure), `opt(`notify), "",
+			merge( [ `item(`id(`none), _("Configure..."), true) ], moduleItems ));
+        term contents =
+	    `VBox(
+		  `RichText( html ),
+		  `HBox(
+			configureBox,
+			writeBox,
+			`HStretch(),
+			resetBox
+			)
+		  );
+	if(feedBackVisible){
+	  Popup::ClearFeedback();
+	}
         return contents;
     }
+
+    /**
+     * Create the complete dialog (called in wizard.ycp)
+     * @param current Module to select.
+     * @return void
+     */
+    define void CreateDialog(string current ) ``{
+
+	Groups = maplist( map e, Y2ModuleConfig::MenuTreeData, {
+	  string title=   e["title"]:"" ;
+	  string entry = "group@" + e["entry"]:"";
+	  return `item(`id(entry), title );
+	});
+	SetContents(_("Available modules"),
+                   modules( current, "ALL" ), AutoinstConfig::MainHelp(), true , true);
+	Wizard::HideNextButton();
+	Wizard::HideBackButton();
+	Wizard::HideAbortButton();
+
+	return;
+    }
+
+
 
 
     /**
@@ -321,7 +362,7 @@
                     );
 
         Wizard::SetTitleIcon("autoyast");
-        Wizard::SetContents(_("Source"),
+        SetContents(_("Source"),
                 sourceView , AutoinstConfig::MainHelp(), true , true);
         return;
     }
@@ -338,10 +379,10 @@
         Icons["Net_advanced"] = "network_advanced";
 
         string tree_item ="group@System";
-        term contents = modules("System");
-        Wizard::SelectTreeItem( tree_item );
-        Wizard::SetContents(_("Available modules"),
-                   contents, AutoinstConfig::MainHelp(), true , true);
+        term contents = modules(groupName(tree_item), moduleName(tree_item));
+        SelectTreeItem( tree_item );
+	SetContents(_("Available modules"),
+	    contents, AutoinstConfig::MainHelp(), true , true);
         Wizard::SetTitleIcon("system");
 
 	any func_ret = "";
@@ -349,10 +390,9 @@
 
         while(true)
         {
-            UI::ChangeWidget(`id(`writeNow), `Enabled, !contains( AutoinstConfig::noWriteNow, moduleName(tree_item) ) );
             if( AutoinstConfig::runModule != "" ) {
                 ret = `configure;
-                Wizard::SelectTreeItem( "module@"+AutoinstConfig::runModule );
+                SelectTreeItem( "module@"+AutoinstConfig::runModule );
                 AutoinstConfig::runModule = "";
             } else {
                 map event = UI::WaitForEvent();
@@ -369,35 +409,43 @@
 
             if (ret == `configure)
             {
-                tree_item = Wizard::QueryTreeItem();
+                tree_item = QueryTreeItem();
                 y2milestone("tree item: %1", tree_item);
                 y2debug("tree item: %1", tree_item);
-                string modulename=moduleName(tree_item);
+                string group=groupName(tree_item);
+		string module_item = (string) UI::QueryWidget(`id(`configure), `Value);
+		string modulename = moduleName(module_item);
                 y2debug("configure module: %1", modulename);
                 if (modulename!="")
                 {
                     any configret = configureModule(modulename);
                     y2debug("configureModule ret : %1", configret);
-                    module_contents(modulename);
+		    SetContents(_("Available modules"),
+				modules(group, modulename), AutoinstConfig::MainHelp(), true , true);
+		    UI::ChangeWidget( `id(`configure), `Value, `none );
                 }
             }
             else if (ret == `reset)
             {
                 Profile::prepare = true;
                 y2debug("reset");
-                tree_item = Wizard::QueryTreeItem();
-                string modulename=moduleName(tree_item);
+                tree_item = QueryTreeItem();
+                string group=groupName(tree_item);
+		string module_item = (string) UI::QueryWidget(`id(`reset), `Value);
+                string modulename=moduleName(module_item);
                 y2debug("configure module");
                 if (modulename!="")
                 {
                     any configret = resetModule(modulename);
                     y2debug("configureModule ret : %1", configret);
-                    module_contents(modulename);
+		    SetContents(_("Available modules"),
+				modules(group, modulename), AutoinstConfig::MainHelp(), true , true);
+		    UI::ChangeWidget( `id(`reset), `Value, `none );
                 }
             }
             else if ( ret == `writeNow )
             {
-                string modulename=moduleName(tree_item);
+                string modulename=moduleName((string) UI::QueryWidget(`id(`writeNow), `Value) );
                 if (modulename!="") {
                     map d = Y2ModuleConfig::ModuleMap[modulename]:$[];
                     string module_auto = "";
@@ -408,12 +456,13 @@
                     if( Popup::YesNo( sformat( "Do you really want to apply the settings of the module '%1' to your current system?", modulename ) ))
                         Call::Function(module_auto, ["Write"]);
                 }
+		UI::ChangeWidget( `id(`writeNow), `Value, `none );
             }
             else if ( issubstring((string)ret,"module@") || issubstring((string)ret,"group@") )
             {
                 tree_item = (string)ret;
                 y2debug("tree_item: %1", tree_item );
-                Wizard::SelectTreeItem( tree_item );
+                SelectTreeItem( tree_item );
 
                 string group=groupName(tree_item);
                 string modulename=moduleName(tree_item);
@@ -422,26 +471,30 @@
 
                 if (group!="" )
                 {
-                    contents = modules(group);
+                    contents = modules(group, modulename);
                     string currentFile = AutoinstConfig::currentFile;
                     string label = _("Available modules");
                     if( size(currentFile) > 0 ) {
                         currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
                         label = label + " - " + currentFile;
                     }
-                    Wizard::SetContents(label,
+                    SetContents(label,
                         contents, AutoinstConfig::MainHelp(), true , true);
                     Wizard::SetTitleIcon(Icons[group]:tolower(group));
                 }
                 else if (modulename!="")
                 {
-                    module_contents(modulename);
+		    string group = groupName(QueryTreeItem());
+		    any configret = configureModule(modulename);
+		    y2debug("configureModule ret : %1", configret);
+		    SetContents(_("Available modules"),
+				modules(group, modulename), AutoinstConfig::MainHelp(), true , true);
                 }
             }
             else if (ret == "menu_tree") // source -> tree
             {
                 y2debug("change to tree");
-                tree_item = Wizard::QueryTreeItem();
+                tree_item = QueryTreeItem();
                 if (tree_item == "")
                     tree_item = "group@System";
                 y2debug("tree_item: %1", tree_item );
@@ -452,16 +505,11 @@
 
                 if (group!="" )
                 {
-                    contents = modules(group);
-                    Wizard::SetContents(_("Available modules"),
+                    contents = modules(group, modulename);
+                    SetContents(_("Available modules"),
                         contents, AutoinstConfig::MainHelp(), true , true);
                     Wizard::SetTitleIcon(Icons["group"]:tolower(group));
                 }
-                else if (modulename!="")
-                {
-                    module_contents(modulename);
-                }
-
             }
             else if (ret == "menu_open") // OPEN
             {
@@ -513,7 +561,7 @@
                 }
                 else
                 {
-                    tree_item = Wizard::QueryTreeItem();
+                    tree_item = QueryTreeItem();
                     string group=groupName(tree_item);
                     string modulename=moduleName(tree_item);
 
@@ -521,20 +569,16 @@
 
                     if (group!="" )
                     {
-                        contents = modules(group);
+                        contents = modules(group, modulename);
                         string caption = _("Available modules");
                         string currentFile = AutoinstConfig::currentFile;
                         currentFile = substring( currentFile, findlastof(currentFile,"/")+1 );
                         if( size(currentFile) > 0 ) {
                             caption = caption + " - " + currentFile;
                         }
-                        Wizard::SetContents(caption,
+                        SetContents(caption,
                                 contents, AutoinstConfig::MainHelp(), true , true);
                         Wizard::SetTitleIcon(Icons[group]:tolower(group));
-                    }
-                    else if (modulename!="")
-                    {
-                        module_contents(modulename);
                     }
                 }
                 ret = `menu_open;
@@ -590,9 +634,10 @@
                 if (UI::WidgetExists(`id(`class_source))) {
                     ShowSource();
                 }
-                tree_item = Wizard::QueryTreeItem();
-                string modulename=moduleName(tree_item);
-                module_contents(modulename);
+                tree_item = QueryTreeItem();
+                string group=groupName(tree_item);
+		SetContents(_("Available Modules"),
+                                modules(group, ""), AutoinstConfig::MainHelp(), true , true);
                 ret = `menu_new;
             }
             else if (ret == "change_encryption" ) {
