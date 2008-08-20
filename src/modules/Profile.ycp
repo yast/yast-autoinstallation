@@ -372,6 +372,29 @@
         return ret;
     }
 
+    /**
+     * Save sections of current profile to separate files
+     *
+     * @param dir - directory to store section xml files in
+     * @return	  - list of filenames
+     */
+    global define map<string,string> SaveSingleSections( string dir ){
+       Prepare();
+       y2milestone("Saving data (%1) to XML single files", current);
+       map<string,string> sectionFiles = $[];
+       foreach( string sectionName, any section, current, {
+	  string sectionFileName = dir + "/" + sectionName + ".xml";
+	  map<string,any> tmpProfile = $[ sectionName : section ];
+	  if(XML::YCPToXMLFile(`profile, tmpProfile, sectionFileName)){
+	    y2milestone( "Wrote section %1 to file %2", sectionName, sectionFileName );
+	    sectionFiles = add(sectionFiles, sectionName, sectionFileName);
+	  }
+	  else{
+	    y2error(sformat(_("Couldn't write section %1 to file %2"), sectionName, sectionFileName));
+	  }
+       });
+       return sectionFiles;
+    }
 
     /**
      * Save the current data into a file to be read after a reboot.
