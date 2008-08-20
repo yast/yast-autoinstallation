@@ -356,7 +356,7 @@ were imported correctly."));
         import "HTML";
         Wizard::CreateDialog();
         term contents = `VBox(
-                `RichText(`id(`richtext), ""),
+                `RichText(`id(`richtext),`opt(`autoScrollDown), ""),
                 `LogView(`id(`log), "", 5, 100)
                 );
 	Wizard::SetContents(_("Check profile validity"),
@@ -367,8 +367,10 @@ were imported correctly."));
         UI::ChangeWidget(`id(`next), `Label, Label::FinishButton());
 
 
-        string file = AutoinstConfig::tmpDir + "/" + "valid.xml";
-        Profile::Save(file);
+
+	map<string,string> sectionFiles =
+	    Profile::SaveSingleSections( AutoinstConfig::tmpDir );
+	y2debug( "Got section map: %1", sectionFiles );
 
 	string html_ok = HTML::Colorize(_("OK"), "green");
 	string html_ko = HTML::Colorize(_("Error"), "red");
@@ -377,10 +379,12 @@ were imported correctly."));
 
 	// some of these can be commented out for the release
 	list<list> validators = [
+	/*
 	    [
 		_("Checking XML without validation..."),
 		"/usr/bin/xmllint --noout",
 		],
+	*/
         /*
 	    [
 		_("Checking XML with DTD validation..."),
@@ -394,26 +398,44 @@ were imported correctly."));
 		+ Directory::schemadir + "/autoyast/rng/profile.rng",
 		]
 	    ];
-    if( PackageSystem::Installed("jing") ) {
-        validators = add(validators, [
-                _("Checking XML with RNC validation..."),
-                "/usr/bin/jing >&2 -c "
-                + Directory::schemadir + "/autoyast/rnc/profile.rnc", "jing sucks"
-                ] );
-    }
 
+	/* section wise validation */
 	foreach (list i, validators, {
 	    string header = i[0]:"";
-	    string cmd = i[1]:"" + " " + file;
-
 	    summary = Summary::AddHeader (summary, header);
-	    UpdateValidDialog (summary, "\n" + cmd + "\n");
+	    UpdateValidDialog (summary, "");
+	    summary = Summary::OpenList(summary);
+	    foreach(string section, string sectionFile, sectionFiles, {
+	      string cmd = i[1]:"" + " " + sectionFile;
+	      summary = summary + "<li>" + sformat(_("Section %1: "), section);
+	      UpdateValidDialog (summary, "\n" + cmd + "\n");
+	      map o = (map)SCR::Execute (.target.bash_output, cmd);
+	      y2debug("validation output: %1", o);
+	      summary = summary + ( (o["exit"]:1 != 0 || (i[2]:"" == "jing sucks" && size(o["stderr"]:"") > 0) )? html_ko: html_ok);
+	      UpdateValidDialog (summary, o["stderr"]:"");
+	    });
+	    summary = Summary::CloseList(summary);
+	});
 
+	/* jing validation -- validates complete xml profile */
+	if( PackageSystem::Installed("jing") ) {
+	  string complete_xml_file = AutoinstConfig::tmpDir + "/" + "valid.xml";
+	  Profile::Save(complete_xml_file);
+	  list validator = [
+	      _("Checking XML with RNC validation..."),
+	      "/usr/bin/jing >&2 -c "
+	      + Directory::schemadir + "/autoyast/rnc/profile.rnc", "jing sucks"
+	      ];
+	    string header = validator[0]:"";
+	    summary = Summary::AddHeader (summary, header);
+	    UpdateValidDialog (summary, "");
+	    string cmd = validator[1]:"" + " " + complete_xml_file;
+	    UpdateValidDialog (summary, "\n" + cmd + "\n");
 	    map o = (map)SCR::Execute (.target.bash_output, cmd);
 	    y2debug("validation output: %1", o);
-	    summary = summary + ( (o["exit"]:1 != 0 || (i[2]:"" == "jing sucks" && size(o["stderr"]:"") > 0) )? html_ko: html_ok);
+	    summary = summary + ( (o["exit"]:1 != 0 || (size(o["stderr"]:"") > 0) )? html_ko: html_ok);
 	    UpdateValidDialog (summary, o["stderr"]:"");
-	});
+	}
 
         boolean logicOk = true;
         boolean rootOk = false;
