@@ -7,6 +7,7 @@ software =
     kernel? &
     packages? &
     post-packages? &
+    post-patterns? &
     remove-packages? &
     patterns? &
     element do_online_update { BOOLEAN }?
@@ -21,6 +22,11 @@ post-packages =
   element post-packages {
     LIST,
     element package {text}+
+  }
+post-patterns =
+  element post-patterns {
+    LIST,
+    element pattern {text}+
   }
 packages =
   element packages {
