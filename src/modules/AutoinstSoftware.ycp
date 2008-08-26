@@ -305,7 +305,8 @@
             Report::Warning(sformat(_("Could not set patterns: %1."), mergestring(failed, ",")));
         }
 
-        list<string> autoinstPacks = autoinstPackages ();
+//        list<string> autoinstPacks = autoinstPackages ();
+        list<string> autoinstPacks = PackageAI::toinstall;
         y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
 
         if (size(autoinstPacks) > 0 )
