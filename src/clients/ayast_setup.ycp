@@ -24,6 +24,10 @@
 
 {
     textdomain "autoinst";
+
+    y2milestone("----------------------------------------");
+    y2milestone("ayast_setup started");
+
     import "Profile";
     import "Popup";
     import "Wizard";
@@ -33,78 +37,78 @@
     import "AutoInstall";
     import "AutoinstSoftware";
 
-    void openFile( map <string, any> options ) {
+    symbol GUI() {
+	Mode::SetUI("commandline");
+	CommandLine::Error(_("Empty parameter list"));
+	return `dummy;
+    }
+
+    void Setup() {
+
+        AutoInstall::Save();
+        Wizard::CreateDialog();
+        Mode::SetMode("autoinstallation");
+        Stage::Set ("continue");
+        WFM::CallFunction("inst_autopost", []);
+        AutoinstSoftware::addPostPackages(Profile::current["software","post-packages"]:[]);
+
+        // the following is needed since 10.3
+        // otherwise the already configured network gets removed
+        if( !haskey(Profile::current, "networking") ) {
+            Profile::current = add( Profile::current, "networking", $[ "keep_install_network":true ] );
+        }
+
+        Pkg::TargetInit ("/", false);
+        WFM::CallFunction("inst_rpmcopy", []);
+        WFM::CallFunction("inst_autoconfigure", []);
+
+    }
+
+    boolean openFile( map <string, any> options ) {
+	if ( options["filename"]:nil == nil ) {
+	    CommandLine::Error(_("Path to autoyast profile must be set"));
+	    return false;
+	}
+
         if( !Profile::ReadXML( options["filename"]:"" ) ) {
-            Popup::Error(_("Error while parsing the control file.
+	    Mode::SetUI("commandline");
+            CommandLine::Print(_("Error while parsing the control file.
 Check the log files for more details or fix the
 control file and try again.
 "));
+	    return false;
         }
+
+	Setup();
+	return true;
     }
 
 
     map cmdline = $[
-        "id"        : "ay-client",
-        // translators: command line help text for Samba client module
-        "help"      : _("autoyast"),
+        "id"        : "ayast_setup",
+        "help"      : _("Client for autoyast configuration on the running system"),
+	"guihandler": GUI,
         "actions"   : $[
-            "setup" :   $[ "handler":openFile, "help":"jo" ]
+            "setup" :   $[ 
+		"handler" : openFile, 
+		"help" : _("Configure the system using given autoyast profile"), 
+		"example" : "setup filename=/path/to/profile" ]
         ],
         "options"       : $[
             "filename": $[
-                "type":"string",
-                "help":"no help"
+                "type" : "string",
+                "help" : _("Path to autoyast profile")
             ]
         ],
         "mappings"      : $[
-            "setup"  :   ["filename"]
-        ]
-    ];
-    if(!CommandLine::Init(cmdline, WFM::Args()))
-    {
-        y2error("Commandline init failed");
-        return false;
-    }
-    // command line options
-    /* Init variables */
-    string command = "";
-    list flags = [];
-    map<string,any> options = $[];
-    string exit = "";
-    list l = [];
+		    "setup"  :   ["filename"]
+		]
+	    ];
 
-    while(!CommandLine::Done())
-    {
-        map m = CommandLine::Command();
-        command = m["command"]:"exit";
-        options = m["options"]:$[];
+    any ret = CommandLine::Run( cmdline );
 
-        if( command == "setup" ) {
-            openFile(options);
-        } else {
-            /* maybe we got "exit" or "quit" */
-            if( !CommandLine::Done() ) {
-                CommandLine::Print("Unknown command (should not happen)");
-                continue;
-            }
-        }
-    }
-
-    AutoInstall::Save();
-    Wizard::CreateDialog();
-    Mode::SetMode("autoinstallation");
-    Stage::Set ("continue");
-    WFM::CallFunction("inst_autopost", []);
-    AutoinstSoftware::addPostPackages(Profile::current["software","post-packages"]:[]);
-
-    // the following is needed since 10.3
-    // otherwise the already configured network gets removed
-    if( !haskey(Profile::current, "networking") ) {
-        Profile::current = add( Profile::current, "networking", $[ "keep_install_network":true ] );
-    }
-
-    Pkg::TargetInit ("/", false);
-    WFM::CallFunction("inst_rpmcopy", []);
-    WFM::CallFunction("inst_autoconfigure", []);
+    y2debug("ret = %1", ret);
+    y2milestone("----------------------------------------");
+    y2milestone("ayast_setup finished");
 }
 
