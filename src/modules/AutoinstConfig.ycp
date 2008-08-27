@@ -353,10 +353,12 @@
                 Repository = "/var/lib/autoinstall/repository";
             }
         } 
-        else if (Mode::test () && Mode::normal ())
+	//This probably gets never executed and it only breaks the commandline iface
+	//by Mode::test() call which instantiates UI
+        /*else if (Mode::test () && Mode::normal ())
         {
             local_rules_file = (string)WFM::Args(1);
-        }
+        }*/
         return;
     }
 
