@@ -58,6 +58,9 @@
     /**
      * Set root password
      */
+
+     /* useless */
+     /*
     define list root() ``{
         list<map> shadow = (list<map>) SCR::Read(.etc.shadow);
         map rootacct = (map) filter(map acct, shadow, ``(acct["username"]:"" == "root"))[0]:$[];
@@ -69,6 +72,7 @@
         users = add(users, rootacct_mod);
         return users;
     }
+    */
 
 
     /**
@@ -78,6 +82,8 @@
      * @param list mount points
      * @return string
      */
+     /* useless */
+     /*
     define string findMountpoint(string device, map p, list<map> mounts)
     {
         string mountPoint = "";
@@ -90,17 +96,21 @@
         });
         return mountPoint;
     }
+    */
 
     /**
      * Convert units to size
      * @param list region
      * @return integer size
      */
+     /* useless */
+     /*
     define integer units_to_size (list region)
     {
         integer units = (integer) region[1]:0;
         return (units * bytes_per_unit)  -  bytes_per_unit + 1;
     };
+    */
 
 
     /**
