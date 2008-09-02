@@ -85,14 +85,13 @@
         string caption = _("Autoinstall Configuration");
         term contents = `Label (_("Initializing ..."));
         Wizard::CreateDialog();
-	string tree_item = "System";
         Wizard::SetContentsButtons ( caption,
                 contents,
                 AutoinstConfig::MainHelp(),
                 Label::BackButton (),
                 Label::NextButton ());
 
-	CreateDialog( tree_item);
+	CreateDialog( "System", "general" );
         menus();
 
         symbol ret = Sequencer::Run(dialogs, sequence);
