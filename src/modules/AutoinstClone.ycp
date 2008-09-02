@@ -419,25 +419,6 @@
 
 
     /**
-     * Bootloader options
-     * @return map bootloader options
-     */
-    global define map Bootloader()
-    {
-        map bootloader = $[];
-
-        boolean readret = (boolean)Call::Function("bootloader_auto", ["Read", $[] ]);
-        if (readret)
-        {
-            bootloader = (map)Call::Function("bootloader_auto", ["Export", $[] ]);
-        }
-
-        return bootloader;
-
-    };
-
-
-    /**
      * General options
      * @return map general options
      */
@@ -591,9 +572,6 @@
 
         Call::Function("software_auto" , ["Import", Software()]);
         Call::Function("software_auto" , ["SetModified"]);
-
-        Call::Function("bootloader_auto" , ["Import", Bootloader()]);
-        Call::Function("bootloader_auto" , ["SetModified"]);
 
         Call::Function("general_auto" , ["Import", General()]);
         Call::Function("general_auto" , ["SetModified"]);
