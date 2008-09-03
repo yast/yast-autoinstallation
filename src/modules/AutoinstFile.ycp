@@ -106,6 +106,22 @@
                 SCR::Write (.target.string,  file["file_path"]:alternate_location , file["file_contents"]:"");
 
             } else if( file["file_location"]:"" != "" ) {
+                if( issubstring( file["file_location"]:"", "relurl://" ) ) {
+                    string l = file["file_location"]:"";
+                    l = substring ( l, 9 );
+                    string newloc = "";
+                    if( AutoinstConfig::scheme == "relurl" ) {
+                        y2milestone("autoyast profile was relurl too");
+                        newloc = (string)SCR::Read(.etc.install_inf.ayrelurl);
+                        map tok = URL::Parse(newloc);
+                        y2milestone("tok = %1", tok);
+                        newloc = tok["scheme"]:"" + "://" + tok["host"]:"" + "/" + dirname(tok["path"]:"") + l;
+                    } else {
+                        newloc = AutoinstConfig::scheme + "://" + AutoinstConfig::host + "/" + AutoinstConfig::directory + l;
+                    }
+                    file["file_location"] = newloc;
+                    y2milestone("changed relurl to %1 for file", newloc);
+                }
                 y2milestone("trying to get file from %1 storing in %2", file["file_location"]:"", file["file_path"]:alternate_location);
                 if (!GetURL(file["file_location"]:"", file["file_path"]:alternate_location ) ) {
                     y2error("file could not be retrieved");
