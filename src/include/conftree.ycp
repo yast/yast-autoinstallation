@@ -22,6 +22,7 @@
     import "Stage";
     import "Icon";
     import "AutoinstSoftware";
+    import "AutoinstClone";
 
     string title = _("Autoinstallation - Configuration");
 
@@ -190,7 +191,9 @@
       /* enable disable read button */
       map resourceMap = Y2ModuleConfig::ModuleMap[selectedModule]:$[];
       boolean clonable = resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" == "true";
-      if( ! clonable ){
+      if( ! clonable &&
+	  "software" != selectedModule &&
+	  "partitioning"  != selectedModule ){
 	UI::ChangeWidget(`id(`read), `Enabled, false );
       }
     }
@@ -263,10 +266,19 @@
     boolean readModule(string module_name){
       map resourceMap = Y2ModuleConfig::ModuleMap[module_name]:$[];
       string auto = resourceMap["X-SuSE-YaST-AutoInstClient"]:"";
-
-      Call::Function(auto , ["Read"]);
-      Call::Function(auto , ["SetModified"]);
-      Profile:prepare = true;
+      if( module_name == "software" ){
+	Call::Function("software_auto" , ["Import", AutoinstClone::Software()]);
+	Call::Function("software_auto" , ["SetModified"]);
+      }
+      else if( module_name == "partitioning" ){
+	Call::Function("storage_auto" , ["Import", AutoinstClone::Partitioning()]);
+	Call::Function("storage_auto" , ["SetModified"]);
+      }
+      else{
+	Call::Function(auto , ["Read"]);
+	Call::Function(auto , ["SetModified"]);
+      }
+      Profile::prepare = true;
       return true;
     }
     /**
