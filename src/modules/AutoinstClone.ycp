@@ -51,7 +51,7 @@
      */
     global define void AutoinstClone()
     {
-        Mode::SetMode ("normal");
+        //Mode::SetMode ("normal");
         return;
     }
 
@@ -524,7 +524,9 @@
          foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
              y2debug("r: %1 => %2", def_resource, resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" );
              boolean clonable = ( resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" == "true" );
-             if (clonable)
+             if ( clonable ||
+		  "partitioning" == def_resource || /* has no desktop file */
+		  "software" == def_resource ) /* has no desktop file */
              {
                  // Set resource name, if not using default value
                  string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
@@ -541,6 +543,11 @@
                  }
              }
          });
+	 /* sort items for nicer display */
+	 items = sort( term x, term y, (list<term>) items, {
+	    /* x[1] corresponds to name */
+	    return x[1]:"x" < y[1]:"y";
+	 });
          return items;
      }
 
@@ -560,18 +567,24 @@
             if (resource == "")
                 resource = def_resource;
             y2debug("current resource: %1", resource);
-            if (contains(additional, resource))
+            if (contains(additional, resource) &&
+	         "partitioning" != resource    && /* handled below */
+		 "software" != resource)	  /* handled below */
             {
                 boolean ret = CommonClone(def_resource, resourceMap);
             }
 
         });
 
-        Call::Function("storage_auto" , ["Import", Partitioning()]);
-        Call::Function("storage_auto" , ["SetModified"]);
+	if( contains(additional, "partitioning")){
+	  Call::Function("storage_auto" , ["Import", Partitioning()]);
+	  Call::Function("storage_auto" , ["SetModified"]);
+	}
 
-        Call::Function("software_auto" , ["Import", Software()]);
-        Call::Function("software_auto" , ["SetModified"]);
+	if( contains(additional, "software")){
+          Call::Function("software_auto" , ["Import", Software()]);
+          Call::Function("software_auto" , ["SetModified"]);
+	}
 
         Call::Function("general_auto" , ["Import", General()]);
         Call::Function("general_auto" , ["SetModified"]);
