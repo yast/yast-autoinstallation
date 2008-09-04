@@ -16,6 +16,7 @@
     import "Stage";
     import "SpaceCalculation";
     import "Packages";
+    import "Popup";
     import "Report";
     import "Kernel";
     import "AutoinstConfig";
@@ -48,6 +49,9 @@
 
     /* default value of settings modified */
     global boolean modified = false;
+
+    global list<string> inst = [];
+    global map<string,boolean> fulfilled_cache = $[];
 
     /**
      * Function sets internal variable, which indicates, that any
@@ -259,6 +263,71 @@
             }
         }
 
+        if (haskey(Profile::current, "inetd")) {
+                map conf = Profile::current["inetd"]:$[];
+                if (conf["netd_service"]:`none == `xinetd )
+                        allpackages = (list<string>) union(allpackages,
+                                ["xinetd"]);
+                else
+                        allpackages = (list<string>) union(allpackages,
+                                ["inetd"]);
+
+        }
+
+        if (haskey(Profile::current, "nis")) {
+                map conf = Profile::current["nis"]:$[];
+                if (conf["start_nis"]:false)
+                        allpackages = (list<string>) union(allpackages, ["yast2-nis-client","ypbind"]);
+
+                if (conf["start_autofs"]:false)
+                {
+                    string pkg = "autofs4";
+                    allpackages = add (allpackages, pkg);
+                }
+        }
+
+        if (haskey(Profile::current, "security")) {
+            allpackages = (list<string>) union(allpackages,
+                    ["yast2-security"]);
+        }
+
+        if (haskey(Profile::current, "ldap")) {
+                map ldapclient = Profile::current["ldap"]:$[];
+                if (ldapclient["start_ldap"]:false)
+                        allpackages = (list<string>) union(allpackages, ["pam_ldap","nss_ldap"]);
+                if (ldapclient["start_autofs"]:false)
+                {
+                    string pkg = "autofs4";
+                    allpackages = add (allpackages, pkg);
+                }
+        }
+
+        if (haskey(Profile::current, "nfs_server"))
+        {
+            boolean start_nfsserver = Profile::current["nfs_server", "start_nfsserver"]:false;
+            if (start_nfsserver)
+                allpackages = (list<string>) union(allpackages, ["yast2-nfs-server", "nfs-kernel-server"]);
+        }
+
+
+        if (haskey(Profile::current, "mail")) {
+                map mail = Profile::current["mail"]:$[];
+                if (mail["mta"]:`other == `postfix)
+                {
+                        allpackages = add(allpackages, "postfix");
+                        PackageAI::toremove = add(PackageAI::toremove, "sendmail");
+                        if (mail["use_amavis"]:false)
+                                allpackages = add(allpackages, "amavis-postfix");
+                }
+                else if (mail["mta"]:`other == `sendmail)
+                {
+                        allpackages = add(allpackages, "sendmail");
+                        PackageAI::toremove = add(PackageAI::toremove, "postfix");
+
+                        if (mail["use_amavis"]:false)
+                                allpackages = add(allpackages, "amavis-sendmail");
+                }
+        }
         return allpackages;
     }
 
@@ -381,6 +450,123 @@
     {
         AutoinstData::post_packages = (list<string>)toset(union(calcpost,AutoinstData::post_packages));
         return;
+    }
+ 
+    global define boolean isPatternFulfilled( string p ) {
+        boolean ret = true;
+	if( haskey( fulfilled_cache, p ) )
+		return fulfilled_cache[p]:false;
+        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
+
+        foreach( map<string,any> dep, all_xpatterns, ``{
+            if( ret == true && dep["name"]:"" == p ) {
+                foreach( map<string,string> dep2, dep["dependencies"]:[], ``{
+                    if( dep2["dep_kind"]:"" == "requires" ) {
+                        if( dep2["res_kind"]:"" == "package" && !contains( inst, dep2["name"]:"" ) ) {
+                            ret = false;
+                            break;
+                        } else if( dep2["res_kind"]:"" == "pattern" && !isPatternFulfilled( dep2["name"]:"" ) ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                });
+            }
+        });
+	fulfilled_cache[p] = ret;
+        return ret;
+    }
+
+    global define list<string> getPatterns() {
+        list<string> ret = [];
+        list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
+
+        foreach( map<string,any> m, all_patterns, ``{
+            if( !contains(ret, m["name"]:"") && isPatternFulfilled( m["name"]:"" ) )
+                ret = add( ret, m["name"]:"" );
+        });
+        return ret;
+    }
+
+
+    /**
+     * Return list of software packages of calling client
+     * @return map map of installed software package
+     *		"patterns" -> list<string> addon selections
+     *		"packages" -> list<string> user selected packages
+     *      "remove-packages" -> list<string> packages to remove
+     */
+    global define map<string, any > ReadHelper()
+    {
+//        boolean ret = Pkg::TargetInit("/", false);
+        Pkg::TargetInitialize ("/");
+        Pkg::TargetLoad();
+        Pkg::SourceStartManager (true);
+
+        inst = Pkg::GetPackages(`installed, true);
+        list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
+        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
+        list<string> patterns = [];
+
+        // get all fulfilled patterns
+        // way too many will be fulfilled
+        // we will clean that up later
+        patterns = getPatterns();
+
+        Pkg::TargetFinish ();
+
+        string tmproot = AutoinstConfig::tmpDir;
+        SCR::Execute(.target.mkdir, tmproot + "/rootclone");
+        Pkg::TargetInit( tmproot + "/rootclone", true);
+        y2debug("SourceStartCache: %1", Pkg::SourceStartCache(false));
+
+        Pkg::SourceStartManager(true);
+
+        list<string> packages = Pkg::FilterPackages(false, false, true, true);
+        Pkg::TargetFinish ();
+        // Remove kernel packages
+        list<string> userpackages =  packages;
+        list<string> removepackages = [];
+
+        list<string> patternPackages = [];
+        list<string> new_p = [];
+        foreach( string tmp_pattern, patterns, ``{
+            list<map<string,any> > xpattern = filter( map<string,any> p, all_xpatterns, ``( p["name"]:"" == tmp_pattern ) );
+            map<string,any> found = xpattern[0]:$[];
+            boolean req = false;
+            foreach( map<string,any> d, found["dependencies"]:[], ``{
+                if( d["res_kind"]:"" == "package" && d["dep_kind"]:"" == "requires" ) {
+                    patternPackages = add(patternPackages, d["name"]:"");
+                    req = true;
+                }
+            });
+            // workaround for our pattern design
+            if( req == true )
+                new_p = add( new_p, tmp_pattern );
+        });
+        patterns = new_p;
+
+
+        map<string, any > software = $[];
+        if( size(patterns) > 0 ) {
+            foreach(string p, inst, ``{
+                if (!contains(patternPackages, p))
+                    userpackages = add( userpackages, p );
+            });
+            foreach(string p, patternPackages, ``{
+                if (!contains(inst,p))
+                    removepackages = add( removepackages, p );
+            });
+        }
+
+        software["packages"] = sort( filter(string pkg, userpackages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml")) );
+        software["patterns"] = sort( patterns );
+        software["remove-packages"] = sort( removepackages );
+        return software;
+    }
+
+    global define boolean Read(){
+      return Import( ReadHelper() );
     }
 
     //EOF
