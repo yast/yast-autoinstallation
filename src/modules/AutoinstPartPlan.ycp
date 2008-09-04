@@ -19,6 +19,10 @@
   import "AutoinstPartition";
   import "Summary";
   import "Popup";
+  import "Mode";
+  import "StorageDevices";
+  import "Storage";
+  import "Partitions";
 
 
   /**
@@ -343,6 +347,200 @@
     }
   }
 
+
+    /**
+     * Create a partition plan for the calling client
+     * @return list partition plan
+     */
+    define list ReadHelper()
+    {
+        Mode::SetMode("normal");
+        StorageDevices::InitDone();
+        map<string, map> StorageMap = eval(Storage::GetTargetMap());
+
+        StorageMap=filter(string d, map p, StorageMap, ``( d != "/dev/evms" && size(p["partitions"]:[]) > 0));
+        y2milestone("Storagemap %1", StorageMap);
+//        list evms_vgs = [];
+
+        list drives = maplist(string k, map v, StorageMap, ``{
+            list partitions = [];
+            list winp = [];
+            list no_format_list = [ 65, 6, 222 ];
+            list no_create_list = [ 222 ];
+            list<integer> usepartitions = [];
+            integer cyl_size = v["cyl_size"]:0;
+            boolean no_create = false;
+            foreach(map pe, v["partitions"]:[], ``{
+                if( pe["type"]:`x == `extended )
+                    continue;
+                map new_pe = $[];
+                new_pe["create"] = true;
+                boolean skipwin = false;
+                if (haskey(pe,"enc_type")) {
+                    new_pe["enc_type"] = pe["enc_type"]:`twofish;
+                    new_pe["crypt_key"] = "ENTER KEY HERE";
+                    new_pe["loop_fs"] = true;
+                    new_pe["crypt_fs"] = true;
+                }
+                if (haskey(pe,"fsid"))
+                {
+                    integer fsid = pe["fsid"]:131;
+                    list wintypes = union(Partitions::fsid_wintypes, Partitions::fsid_dostypes);
+                    list allwin = union(wintypes, Partitions::fsid_ntfstypes);
+                    if (contains(allwin, fsid) && (!issubstring(pe["mount"]:"", "/boot") && !pe["boot"]:false) )
+//                    if (contains(allwin, fsid) && ! issubstring(pe["mount"]:"", "/boot") )
+                    {
+                        y2debug("Windows partitions found: %1", fsid );
+                        winp = add(winp, pe["nr"]:0);
+                        skipwin = true;
+                        if( size(partitions) > 0 ) {
+                            no_create = true;
+                        }
+                    }
+                    if( contains(allwin, fsid) && issubstring(pe["mount"]:"", "/boot") ) {
+                        new_pe["partition_id"] = 259;
+                    } else {
+                        new_pe["partition_id"] = pe["fsid"]:131;
+                    }
+                    if( contains( no_format_list, pe["fsid"]:0 ) )
+                        new_pe["format"] = false;
+                    if( contains( no_create_list, pe["fsid"]:0 ) )
+                        new_pe["create"] = false;
+                }
+                if( haskey(pe,"type") && pe["type"]:`x == `primary ) {
+                    new_pe["partition_type"] = "primary"; // can we always copy that element?
+                }
+                if (haskey(pe,"region") && new_pe["create"]:true == true )
+                {
+                    // don't clone the exact region.
+                    // I don't see any benefit in cloning that strict.
+                    //new_pe["region"] = pe["region"]:[];
+//                    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
+                    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024-cyl_size); // one cylinder buffer for #262535
+                    if( new_pe["size"]:0 < cyl_size ) // bnc#415005
+                        new_pe["size"] = cyl_size;
+                }
+                if (haskey(pe,"label")) {
+                    new_pe["label"] = pe["label"]:"";
+                }
+                if (haskey(pe,"mountby")) {
+                    new_pe["mountby"] = pe["mountby"]:`nomb;
+                }
+                // LVM Group
+                if (haskey(pe,"used_by_type") && pe["used_by_type"]:`nothing == `UB_LVM)
+                {
+                    new_pe["lvm_group"] = pe["used_by"]:"";
+                }
+
+                // LV
+                if (pe["type"]:`unknown == `lvm )
+                {
+                    new_pe["lv_name"] = pe["name"]:"";
+                    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
+                }
+                if (haskey(pe,"used_by_type") && pe["used_by_type"]:`nothing == `UB_MD)
+                {
+                    new_pe["raid_name"] = "/dev/"+pe["used_by"]:"";
+                }
+
+                // Used Filesystem
+                // Raid devices get the filesystem lying on them as
+                // detected_fs!
+                if (haskey(pe,"used_fs") && pe["fsid"]:0 != 253)
+                {
+                    new_pe["filesystem"] = pe["used_fs"]:`reiser;
+                    new_pe["format"] = new_pe["format"]:pe["format"]:true;
+                }
+
+                if (haskey(pe,"nr") && pe["type"]:`unknown != `lvm)
+                {
+                    if (!skipwin)
+                    {
+                        y2debug("Adding partition to be used: %1",  pe["nr"]:0);
+                        usepartitions = add(usepartitions, pe["nr"]:0);
+                    }
+                    new_pe["partition_nr"] = pe["nr"]:0;
+                }
+                if (pe["mount"]:"" != "")
+                {
+                    new_pe["mount"] = pe["mount"]:"";
+                }
+                if (k == "/dev/md")
+                {
+                    map raid_options = $[];
+                    raid_options["persistent_superblock"] =
+                            pe["persistent_superblock"]:false;
+                    raid_options["raid_type"] = pe["raid_type"]:"raid0";
+                    new_pe["raid_options"] = raid_options;
+                }
+
+                if (!skipwin && new_pe["partition_id"]:0 != 15 ) {
+                    partitions=add(partitions,new_pe);
+                }
+            });
+
+
+            // don't create partitions that are between windows partitions
+            // they must exist
+            map drive = $[];
+            if( no_create ) {
+                partitions = maplist( map m, (list<map>)partitions, {
+                    m["create"] = false;
+                    return m;
+                });
+            }
+            drive["partitions"]	= partitions;
+            drive["device"]	= k;
+            if( v["type"]:`CT_UNKNOWN==`CT_LVM)
+            {
+                drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
+                drive["type"] = `CT_LVM;
+            }
+            if (haskey(v,"lvm2") && v["lvm2"]:false)
+            {
+                drive["lvm2"] = true;
+            }
+
+            if (size(partitions) > 0 )
+            {
+                if (size(winp) == 0 )
+                {
+                    drive["use"]	= "all";
+                }
+                else
+                {
+                    list<string> up = [];
+                    foreach(integer i, usepartitions, ``{
+                        up = add (up, sformat("%1", i));
+                    });
+                    drive["use"]	= mergestring(up, ",");
+                }
+            }
+            return drive;
+        });
+//        drives = filter( map v, (list<map>)drives, ``{
+//            if( ! (contains( evms_vgs, v["device"]:"") && v["type"]:`x == `CT_LVM ) )
+//                return true;
+//            y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
+//            return false;
+//        });
+        /* remove drives with no mountpoint */
+        drives = filter( map v, (list<map>)drives, ``{
+            boolean keep = false;
+            foreach( map p, (list<map>)v["partitions"]:[], ``{
+                if( p["mount"]:"" != "" || haskey(p,"lvm_group") || haskey(p,"raid_name") ) {
+                    keep = true;
+                    break;
+                }
+            });
+            return keep;
+        });
+
+        Mode::SetMode("autoinst_config");
+        return drives;
+    }
+
+
   /**
    * PUBLIC INTERFACE
    */
@@ -398,6 +596,10 @@
 	  }
 	});
         return true;
+    }
+
+    global define boolean Read(){
+      return Import( (list<map>) ReadHelper());
     }
 
     /**
