@@ -96,11 +96,17 @@
       Wizard::HideBackButton();
       Wizard::HideAbortButton();
       return `HBox(
-		`PushButton( `id(`configure), "&Configure"),
-		`HSpacing(3),
-		`PushButton( `id(`read), "&Read"),
-		`PushButton( `id(`writeNow), "&Write"),
-		`PushButton( `id(`reset), "R&eset")
+		`HSpacing(1),
+		`VBox(
+		  `PushButton( `id(`read), "&Clone"),
+		  `PushButton( `id(`writeNow), "&Apply to system")
+		 ),
+		`HStretch(),
+		`VBox(
+		  `PushButton( `id(`configure), "&Edit"),
+		  `PushButton( `id(`reset), "Clea&r")
+		 ),
+		`HSpacing(1)
 	      );
     }
 
@@ -437,9 +443,6 @@
 	    else if( ret == `modules ){
 	      updateDetails();
 	    }
-            else if (ret == `cancel)
-                ret = "menu_exit";
-
             else if (ret == `configure)
             {
                 currentGroup = getGroup();
@@ -662,7 +665,7 @@
                     Stage::Set(oldStage);
                 }
             }
-            else if (ret == "menu_exit") // EXIT
+            else if (ret == "menu_exit" || `cancel == ret ) // EXIT
             {
                 ret = `menu_exit;
                 if (Profile::changed)
