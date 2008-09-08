@@ -187,7 +187,16 @@
             if( issubstring( script["location"]:"", "relurl://" ) ) {
                 string l = script["location"]:"";
                 l = substring ( l, 9 );
-                string newloc = AutoinstConfig::scheme + "://" + AutoinstConfig::host + "/" + AutoinstConfig::directory + l;
+                string newloc = "";
+                if( AutoinstConfig::scheme == "relurl" ) {
+                    y2milestone("autoyast profile was relurl too");
+                    newloc = (string)SCR::Read(.etc.install_inf.ayrelurl);
+                    map tok = URL::Parse(newloc);
+                    y2milestone("tok = %1", tok);
+                    newloc = tok["scheme"]:"" + "://" + tok["host"]:"" + "/" + dirname(tok["path"]:"") + l;
+                } else {
+                    newloc = AutoinstConfig::scheme + "://" + AutoinstConfig::host + "/" + AutoinstConfig::directory + l;
+                }
                 script["location"] = newloc;
                 y2milestone("changed relurl to %1 for script", newloc);
             }
