@@ -51,7 +51,7 @@
     global boolean modified = false;
 
     global list<string> inst = [];
-    global map<string,boolean> fulfilled_cache = $[];
+    global list<map<string,any> > all_xpatterns = [];
 
     /**
      * Function sets internal variable, which indicates, that any
@@ -451,43 +451,6 @@
         AutoinstData::post_packages = (list<string>)toset(union(calcpost,AutoinstData::post_packages));
         return;
     }
- 
-    global define boolean isPatternFulfilled( string p ) {
-        boolean ret = true;
-	if( haskey( fulfilled_cache, p ) )
-		return fulfilled_cache[p]:false;
-        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
-
-        foreach( map<string,any> dep, all_xpatterns, ``{
-            if( ret == true && dep["name"]:"" == p ) {
-                foreach( map<string,string> dep2, dep["dependencies"]:[], ``{
-                    if( dep2["dep_kind"]:"" == "requires" ) {
-                        if( dep2["res_kind"]:"" == "package" && !contains( inst, dep2["name"]:"" ) ) {
-                            ret = false;
-                            break;
-                        } else if( dep2["res_kind"]:"" == "pattern" && !isPatternFulfilled( dep2["name"]:"" ) ) {
-                            ret = false;
-                            break;
-                        }
-                    }
-                });
-            }
-        });
-	fulfilled_cache[p] = ret;
-        return ret;
-    }
-
-    global define list<string> getPatterns() {
-        list<string> ret = [];
-        list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
-
-        foreach( map<string,any> m, all_patterns, ``{
-            if( !contains(ret, m["name"]:"") && isPatternFulfilled( m["name"]:"" ) )
-                ret = add( ret, m["name"]:"" );
-        });
-        return ret;
-    }
-
 
     /**
      * Return list of software packages of calling client
@@ -498,21 +461,30 @@
      */
     global define map<string, any > ReadHelper()
     {
-//        boolean ret = Pkg::TargetInit("/", false);
-        Pkg::TargetInitialize ("/");
+        boolean ret = Pkg::TargetInit("/", false);
+//        Pkg::TargetInitialize ("/");
         Pkg::TargetLoad();
         Pkg::SourceStartManager (true);
+        Pkg::PkgSolve(false);
 
         inst = Pkg::GetPackages(`installed, true);
         list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
-        list<map<string,any> > all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
+        all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
         list<string> patterns = [];
+        list<string> visible_patterns = [];
 
-        // get all fulfilled patterns
-        // way too many will be fulfilled
-        // we will clean that up later
-        patterns = getPatterns();
-
+        list<map> patternsFullData = filter( map p, Pkg::ResolvableProperties("", `pattern, ""), ``{
+                boolean ret = false;
+                if( p["status"]:`none == `installed && p["user_visible"]:true == true ) {
+                        patterns = add( patterns, p["name"]:"no name" );
+                        visible_patterns = add( visible_patterns, p["name"]:"no name" );
+                        ret = true;
+                } else if( p["status"]:`none == `installed && p["user_visible"]:true == false ) {
+                        patterns = add( patterns, p["name"]:"no name" );
+                        ret = true;
+                }
+                return ret;
+        });
         Pkg::TargetFinish ();
 
         string tmproot = AutoinstConfig::tmpDir;
@@ -534,6 +506,7 @@
             list<map<string,any> > xpattern = filter( map<string,any> p, all_xpatterns, ``( p["name"]:"" == tmp_pattern ) );
             map<string,any> found = xpattern[0]:$[];
             boolean req = false;
+            // kick out hollow patterns (always fullfilled patterns)
             foreach( map<string,any> d, found["dependencies"]:[], ``{
                 if( d["res_kind"]:"" == "package" && d["dep_kind"]:"" == "requires" ) {
                     patternPackages = add(patternPackages, d["name"]:"");
@@ -541,6 +514,8 @@
                 }
             });
             // workaround for our pattern design
+            // a pattern with no requires at all is always fullfilled of course
+            // you can fullfill the games pattern with no games installed at all
             if( req == true )
                 new_p = add( new_p, tmp_pattern );
         });
@@ -560,7 +535,7 @@
         }
 
         software["packages"] = sort( filter(string pkg, userpackages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml")) );
-        software["patterns"] = sort( patterns );
+        software["patterns"] = sort( visible_patterns );
         software["remove-packages"] = sort( removepackages );
         return software;
     }
