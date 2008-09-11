@@ -235,6 +235,14 @@ Try again.
 	y2error("Aborting...");
 	return `abort;
     }
+    // fate #301321 - AutoYaST imaging support
+    // no generic images, just the ones the manual installation would use too, to speed up
+    // installation
+    //
+    // no check if section is available makes product default possible
+    Call::Function("deploy_image_auto", ["Import", Profile::current["deploy_image"]:$[] ]);
+    Call::Function("deploy_image_auto", ["Write" ]);
+
 
     // Bootloader
 
