@@ -442,12 +442,12 @@ $Id$
                             p["fs_options"] = mapvalue;
                         }
                         value = solution["partitions",pindex,"label"]:"";
+                        symbol mb = solution["partitions",pindex,"mountby"]:`no_mb;
+                        if( mb != `no_mb ) {
+                                p["mountby"] = mb;
+                        }
                         if( size(value)>0 )
                         {
-                            symbol mb = solution["partitions",pindex,"mountby"]:`no_mb;
-                            if( mb != `no_mb ) {
-                                    p["mountby"] = mb;
-                            }
                             p["label"] = value;
                         }
                 
