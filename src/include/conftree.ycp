@@ -681,31 +681,19 @@
                         current = AutoinstConfig::currentFile;
                     }
 
-                    symbol answer = Popup::AnyQuestion3(_("Control file changed."),
+                    boolean answer = Popup::AnyQuestion(_("Control file changed."),
                             sformat(_("Save the changes to %1?"), current),
                             Label::YesButton(),
                             Label::NoButton(),
                             Label::CancelButton(),
                             `focus_yes
                             );
-                    if (answer == `no)
-                    {
-                        break;
-                    }
-                    else if (answer == `yes)
+                    if (true == answer)
                     {
                         SaveAs();
-                        break;
-                    }
-                    else
-                    {
-                        continue;
                     }
                 }
-                else
-                {
-                    break;
-                }
+		break;
             }
             else
             {
