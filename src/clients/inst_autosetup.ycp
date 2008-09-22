@@ -192,12 +192,13 @@ control file and try again.
     // No partitioning in the profile means yast2-storage proposal (hmmmm.....)
     if( size(Profile::current["partitioning"]:[]) > 0 ) {
         AutoinstStorage::Import(Profile::current["partitioning"]:[]);
+    } else if( size(Profile::current["partitioning_advanced"]:$[]) > 0 ) {
+        AutoinstStorage::ImportAdvanced(Profile::current["partitioning_advanced"]:$[]);
     } else {
         Storage::SetTestsuite(true); // FIXME: *urgs*
         WFM::CallFunction("inst_disk_proposal", [true, true]); // FIXME: fragile?
         Storage::SetTestsuite(false); // *urgs* again
     }
-    AutoinstStorage::ImportAdvanced(Profile::current["partitioning_advanced"]:$[]);
 
     if ( size(Profile::current["partitioning"]:[]) > 0 && !AutoinstStorage::Write())
     {
