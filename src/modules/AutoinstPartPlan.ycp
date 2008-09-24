@@ -613,7 +613,29 @@
 	list<map> drives = maplist( DriveT drive, AutoPartPlan, {
 	  return AutoinstDrive::Export( drive );
 	});
-	return drives;
+
+        list<map> clean_drives = maplist(map d,  drives, ``{
+            list p = maplist(map part, d["partitions"]:[] , ``{
+                if (haskey(part, "fsid"))
+                {
+                    part = remove(part, "fsid");
+                }
+                if (haskey(part, "used_fs")) {
+                    part = remove(part, "used_fs");
+                }
+                return part;
+            });
+            d["partitions"] = p;
+            // this is to delete the dummy "auto" filled in by UI
+            if( haskey(d,"device") && d["device"]:"" == "auto" ) {
+                d = remove(d, "device");
+                y2milestone("device 'auto' dropped");
+
+            }
+            return d;
+        });
+
+	return clean_drives;
     }
 
     global define void Reset(){
