@@ -416,9 +416,10 @@
                     // I don't see any benefit in cloning that strict.
                     //new_pe["region"] = pe["region"]:[];
 //                    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
-                    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024-cyl_size); // one cylinder buffer for #262535
-                    if( new_pe["size"]:0 < cyl_size ) // bnc#415005
-                        new_pe["size"] = cyl_size;
+                    if( (pe["size_k"]:0*1024-cyl_size) < cyl_size ) // bnc#415005
+                        new_pe["size"] = sformat("%1",cyl_size);
+                    else
+                        new_pe["size"] = sformat("%1", pe["size_k"]:0*1024-cyl_size); // one cylinder buffer for #262535
                 }
                 if (haskey(pe,"label")) {
                     new_pe["label"] = pe["label"]:"";
