@@ -244,38 +244,6 @@
     }
 
     /**
-     * Dump the settings to a map, for autoinstallation use.
-     * @return list
-     */
-    global define list<map> Export()
-    {
-        y2milestone("entering Export");
-        list<map> clean_drives = maplist(map d,  AutoPartPlan, ``{
-            list p = maplist(map part, d["partitions"]:[] , ``{
-                if (haskey(part, "fsid"))
-                {
-                    part = remove(part, "fsid");
-                }
-                if (haskey(part, "used_fs")) {
-                    part = remove(part, "used_fs");
-                }
-                return part;
-            });
-            d["partitions"] = p;
-
-            // this is to delete the dummy "auto" filled in by UI
-            if( haskey(d,"device") && d["device"]:"" == "auto" ) {
-                d = remove(d, "device");
-                y2debug("device 'auto' dropped");
-                
-            }
-            return d;
-        });
-
-        return clean_drives;
-    }
-
-    /**
      * if mountby is used, we will search for the matching
      * partition here.
      * @return list
