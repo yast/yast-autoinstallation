@@ -184,7 +184,7 @@
     global define void SetSignatureHandling() {
         if( haskey(signature_handling, "accept_unsigned_file" ) )
             Pkg::CallbackAcceptUnsignedFile( 
-                signature_handling["accept_unsigned_file"]:false ? AutoInstall::callbackTrue_boolean_string : AutoInstall::callbackFalse_boolean_string
+                signature_handling["accept_unsigned_file"]:false ? AutoInstall::callbackTrue_boolean_string_integer : AutoInstall::callbackFalse_boolean_string_integer
             );
         if( haskey(signature_handling, "accept_file_without_checksum" ) )
             Pkg::CallbackAcceptFileWithoutChecksum( 
@@ -192,7 +192,7 @@
             );
         if( haskey(signature_handling, "accept_verification_failed") )
             Pkg::CallbackAcceptVerificationFailed( 
-                signature_handling["accept_verification_failed"]:false ? AutoInstall::callbackTrue_boolean_string_map : AutoInstall::callbackFalse_boolean_string_map
+                signature_handling["accept_verification_failed"]:false ? AutoInstall::callbackTrue_boolean_string_map_integer : AutoInstall::callbackFalse_boolean_string_map_integer
             );
         if( haskey(signature_handling, "trusted_key_added") )
             Pkg::CallbackTrustedKeyAdded(
@@ -204,11 +204,11 @@
             );
         if( haskey(signature_handling, "accept_unknown_gpg_key") )
             Pkg::CallbackAcceptUnknownGpgKey( 
-                signature_handling["accept_unknown_gpg_key"]:false ? AutoInstall::callbackTrue_boolean_string_string : AutoInstall::callbackFalse_boolean_string_string
+                signature_handling["accept_unknown_gpg_key"]:false ? AutoInstall::callbackTrue_boolean_string_string_integer : AutoInstall::callbackFalse_boolean_string_string_integer
             );
         if( haskey(signature_handling, "import_gpg_key") )
             Pkg::CallbackImportGpgKey( 
-                signature_handling["import_gpg_key"]:false ? AutoInstall::callbackTrue_boolean_map : AutoInstall::callbackFalse_boolean_map
+                signature_handling["import_gpg_key"]:false ? AutoInstall::callbackTrue_boolean_map_integer : AutoInstall::callbackFalse_boolean_map_integer
             );
         if( haskey(signature_handling, "accept_non_trusted_gpg_key") )
             Pkg::CallbackAcceptNonTrustedGpgKey(
