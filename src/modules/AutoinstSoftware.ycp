@@ -373,8 +373,11 @@
             Report::Warning(sformat(_("Could not set patterns: %1."), mergestring(failed, ",")));
         }
 
-//        list<string> autoinstPacks = autoinstPackages ();
-        list<string> autoinstPacks = PackageAI::toinstall;
+        list<string> autoinstPacks = autoinstPackages ();
+// FIXME: optimization for package list evaluation turned off because it optimized it
+//        into an unbootable state (no kernel) bnc#427731
+//
+//        list<string> autoinstPacks = PackageAI::toinstall;
         y2milestone("Packages selected in autoinstall mode: %1", autoinstPacks);
 
         if (size(autoinstPacks) > 0 )
