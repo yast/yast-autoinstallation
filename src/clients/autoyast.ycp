@@ -35,10 +35,10 @@
         return `abort;
     }
 
-    Pkg::CallbackImportGpgKey(AutoInstall::callbackTrue_boolean_map);
-    Pkg::CallbackAcceptUnknownGpgKey(AutoInstall::callbackTrue_boolean_string_string);
+    Pkg::CallbackImportGpgKey(AutoInstall::callbackTrue_boolean_map_integer);
+    Pkg::CallbackAcceptUnknownGpgKey(AutoInstall::callbackTrue_boolean_string_string_integer);
     Pkg::CallbackAcceptFileWithoutChecksum(AutoInstall::callbackTrue_boolean_string);
-    Pkg::CallbackAcceptUnsignedFile(AutoInstall::callbackTrue_boolean_string);
+    Pkg::CallbackAcceptUnsignedFile(AutoInstall::callbackTrue_boolean_string_integer);
 
     define boolean openFile( map <string, string> options ) {
         if( !Profile::ReadXML( options["filename"]:"" ) ) {
