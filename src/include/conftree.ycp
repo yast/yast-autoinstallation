@@ -98,13 +98,13 @@
       return `HBox(
 		`HSpacing(1),
 		`VBox(
-		  `PushButton( `id(`read), "&Clone"),
-		  `PushButton( `id(`writeNow), "&Apply to system")
+		  `PushButton( `id(`read), _("&Clone") ),
+		  `PushButton( `id(`writeNow), _("&Apply to system") )
 		 ),
 		`HStretch(),
 		`VBox(
-		  `PushButton( `id(`configure), "&Edit"),
-		  `PushButton( `id(`reset), "Clea&r")
+		  `PushButton( `id(`configure), _("&Edit")),
+		  `PushButton( `id(`reset), _("Clea&r"))
 		 ),
 		`HSpacing(1)
 	      );
@@ -687,7 +687,7 @@
                             Label::NoButton(),
                             Label::CancelButton(),
                             `focus_yes
-                            );
+                            ) == `yes;
                     if (true == answer)
                     {
                         SaveAs();
