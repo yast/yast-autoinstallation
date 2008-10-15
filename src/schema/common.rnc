@@ -1,0 +1,32 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace config = "http://www.suse.com/1.0/configns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+BOOLEAN =
+  (
+    attribute config:type { "boolean" },
+    ( "true" | "false" )
+  )
+
+INTEGER =
+  (
+    attribute config:type { "integer" },
+    xsd:integer
+  )
+
+SYMBOL =
+  (
+    attribute config:type { "symbol" },
+    text
+  )
+
+LIST =
+  attribute config:type { "list" }
+
+# this is useful for testing
+Anything =
+  (
+    attribute * { text }
+  | text
+  | element * { Anything }
+  )*
