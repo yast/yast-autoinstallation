@@ -114,9 +114,16 @@
         } else {
             current["software"] = $[ "packages":[ "autoyast2-installation" ] ];
         }
+
+        /* without autoyast2, <files ...> does not work */
         if( haskey( current, "files" ) )
-            current["software","packages"] = add( current["software","packages"]:[], "autoyast2" ); // without autoyast2, <files ...> does not work
-    }
+            current["software","packages"] = add( current["software","packages"]:[], "autoyast2" );
+
+        /* workaround for missing "REQUIRES" in content file to stay backward compatible */
+        /* FIXME: needs a more sophisticated or compatibility breaking solution after SLES11 */
+        if( size( current["software","patterns"]:[] ) == 0 )
+            current["software","patterns"] = add( current["software","patterns"]:[], [ "base" ] );
+     }
 
     /**
      * compatibility to new language,keyboard and timezone client in 10.1
