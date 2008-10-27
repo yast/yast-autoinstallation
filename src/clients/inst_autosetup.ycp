@@ -260,6 +260,9 @@ Try again.
     Bootloader::Propose ();
     y2debug ("autoyast: Proposing done");
 
+    // SLES only
+    if( haskey(Profile::current, "kdump") )
+        Call::Function("kdump_auto", ["Import", Profile::current["kdump"]:$[] ]);
 
     LanUdevAuto::Import(Profile::current["networking"]:$[]);
 
