@@ -20,6 +20,39 @@
       <proposals config:type="list">        <!-- since 11.1 -->
         <proposal>partitions_proposal</proposal>
       </proposals>
+      <wait>  <!-- sinc 11.1 / SLES11 -->
+          <pre-modules config:type="list">
+              <module>
+                  <name>networking</name>
+                  <sleep>
+                      <time config:type="integer">10</time>
+                      <feedback config:type="boolean">true</feedback>
+                  </sleep>
+                  <script>
+                      <source>
+                          sleep 5
+                      </source>
+                      <debug config:type="boolean">false</debug>
+                  </script>
+              </module>
+          </pre-modules>
+          <post-modules config:type="list">
+              <module>
+                  <name>networking</name>
+                  <sleep>
+                      <time config:type="integer">3</time>
+                      <feedback config:type="boolean">true</feedback>
+                  </sleep>
+                  <script>
+                      <source>
+                          sleep 7
+                      </source>
+                      <debug config:type="boolean">false</debug>
+                  </script>
+              </module>
+          </post-modules>
+      </wait>
+
     </general>
 
 
