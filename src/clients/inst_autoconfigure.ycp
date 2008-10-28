@@ -65,8 +65,9 @@
                 }
                 if( haskey( process, "script" ) ) {
                     string debug = ( process["script","debug"]:true ? "-x" : "" );
-                    string scriptName = sformat("%1-%2.log", stage,resource);
+                    string scriptName = sformat("%1-%2", stage,resource);
                     string scriptPath = sformat("%1/%2", AutoinstConfig::scripts_dir, scriptName);
+                    SCR::Write(.target.string,  scriptPath, process["script","source"]:"echo Empty script!");
                     string executionString = sformat("/bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, AutoinstConfig::logs_dir, scriptName );
                     SCR::Execute (.target.bash, executionString);
                 }
