@@ -10,6 +10,36 @@ general = element general {
     element proposals {
         LIST,
         element proposal { text }*
+    }? &
+    element wait {
+        element pre-modules {
+            LIST,
+            element module {
+                element name { text }? &
+                element sleep {
+                    element time { INTEGER }? &
+                    element feedback { BOOLEAN }?
+                }? &
+                element script {
+                    element debug { BOOLEAN }? &
+                    element source { text }?
+                }
+            }*
+        }? &
+        element post-modules {
+            LIST,
+            element module {
+                element name { text }? &
+                element sleep {
+                    element time { INTEGER }? &
+                    element feedback { BOOLEAN }?
+                }? &
+                element script {
+                    element debug { BOOLEAN }? &
+                    element source { text }?
+                }
+            }*
+        }?
     }?
 }
 ask-list = element ask-list { LIST, ask* }

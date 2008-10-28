@@ -13,6 +13,8 @@
 
     import "Profile";
     import "AutoinstScripts";
+    import "AutoinstConfig";
+    import "Popup";
     import "Wizard";
     import "Call";
     import "Y2ModuleConfig";
@@ -46,6 +48,28 @@
             if( issubstring( s, "ifcfg-" ) && !issubstring( s, "ifcfg-lo" ) ) {
                 y2milestone("removing installation network: /etc/sysconfig/network/%1",s);
                 SCR::Execute(.target.remove, sformat("/etc/sysconfig/network/%1",s) );
+            }
+        });
+        return;
+    }
+
+    define void processWait( string resource, string stage ) {
+        foreach( map process, Profile::current["general","wait",stage]:[], ``{
+            if( process["name"]:"" == resource ) {
+                if( haskey( process, "sleep" ) ) {
+                    if( process["sleep","feedback"]:false == true )
+                        Popup::ShowFeedback( "", sformat( _("processing resource %1"), resource));
+                    sleep( 1000*process["sleep","time"]:0 );
+                    if( process["sleep","feedback"]:false == true )
+                        Popup::ClearFeedback();
+                }
+                if( haskey( process, "script" ) ) {
+                    string debug = ( process["script","debug"]:true ? "-x" : "" );
+                    string scriptName = sformat("%1-%2.log", stage,resource);
+                    string scriptPath = sformat("%1/%2", AutoinstConfig::scripts_dir, scriptName);
+                    string executionString = sformat("/bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, AutoinstConfig::logs_dir, scriptName );
+                    SCR::Execute (.target.bash, executionString);
+                }
             }
         });
         return;
@@ -142,8 +166,10 @@ Please wait while the system is being configured.
 		    else
 			logStep( sformat (_("Not Configuring %1"), p));
 
+            processWait( p, "pre-modules" );
 		    Call::Function(module_auto, ["Import", eval(result) ]);
 		    Call::Function(module_auto, ["Write"]);
+            processWait( p, "post-modules" );
 		}
 		else if (d["X-SuSE-YaST-AutoInstDataType"]:"map" == "map")
 		{
@@ -153,7 +179,9 @@ Please wait while the system is being configured.
 		    else
 			logStep( sformat (_("Not Configuring %1"), p));
 		    //Call::Function(module_auto, ["Import", eval(Profile::current[resource]:$[])   ]);
+            processWait( resource, "pre-modules" );
 		    Call::Function(module_auto, ["Write"]);
+            processWait( resource, "post-modules" );
 		}
 		else
 		{
@@ -164,7 +192,9 @@ Please wait while the system is being configured.
 
 		    y2milestone("Calling auto client with: %1",  eval(Profile::current[resource]:[]));
 		    //Call::Function(module_auto, ["Import",  eval(Profile::current[resource]:[]) ]);
+            processWait( resource, "pre-modules" );
 		    Call::Function(module_auto, ["Write"]);
+            processWait( resource, "post-modules" );
 		}
             }
             else
@@ -182,7 +212,9 @@ Please wait while the system is being configured.
 
     /* online update */
     if( Profile::current["software","do_online_update"]:false == true ) {
+        processWait( "do_online_update", "pre-modules" );
         symbol online_update_ret = (symbol)Call::Function("do_online_update_auto", ["Write"]);
+        processWait( "do_online_update", "post-modules" );
         if( online_update_ret == `reboot ) {
             map script = $[ "filename":"zzz_reboot", "source":"shutdown -r now" ];
             AutoinstScripts::init = add( AutoinstScripts::init, script );
