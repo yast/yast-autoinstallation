@@ -484,7 +484,7 @@
             // don't create partitions that are between windows partitions
             // they must exist
             map drive = $[];
-            drive["type"] = v["type"]:`CT_MD;
+            drive["type"] = v["type"]:`CT_DISK;
             if( no_create ) {
                 partitions = maplist( map m, (list<map>)partitions, {
                     m["create"] = false;
