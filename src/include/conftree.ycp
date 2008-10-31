@@ -199,7 +199,8 @@
       boolean clonable = resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" == "true";
       if( ! clonable &&
 	  "software" != selectedModule &&
-	  "partitioning"  != selectedModule ){
+	  "partitioning"  != selectedModule &&
+      "bootloader"    != selectedModule ){
 	UI::ChangeWidget(`id(`read), `Enabled, false );
       }
     }
