@@ -34,6 +34,8 @@
     import "Call";
     import "ProductControl";
     import "LanUdevAuto";
+    import "Language";
+    import "Console";
 
     include "bootloader/routines/autoinstall.ycp";
     include "autoinstall/ask.ycp";
@@ -64,6 +66,7 @@ control file and try again.
         [
     _("Configure General Settings "),
     _("Execute pre-install user scripts"),
+    _("Set up language"),
     _("Create partition plans"),
     _("Configure Software selections"),
     _("Configure Bootloader"),
@@ -149,6 +152,37 @@ control file and try again.
         Call::Function("add-on_auto", ["Write"]);
     }
 
+    boolean use_utf8 = true;		// utf8 is default
+
+    map displayinfo = UI::GetDisplayInfo();
+    if ( ! displayinfo["HasFullUtf8Support"]:true )
+    {
+	use_utf8 = false;		// fallback to ascii
+    }
+
+
+    //
+    // Set it in the Language module.
+    //
+    Progress::NextStep();
+    Progress::Title(_("Configuring language..."));
+    y2milestone("UWE0 %1", Profile::current );
+    y2milestone("UWE %1", Profile::current["language"]:$[] );
+    Language::Import( Profile::current["language"]:$[] );
+
+    //
+    // Set Console font
+    //
+    y2milestone("UWE2 %1", Language::language );
+    Installation::encoding = Console::SelectFont( Language::language );
+
+    if (displayinfo["HasFullUtf8Support"]:true)
+    {
+        Installation::encoding = "UTF-8";
+    }
+
+    UI::SetLanguage (Language::language, Installation::encoding);
+    WFM::SetLanguage (Language::language, "UTF-8");
 
     if( haskey( Profile::current, "timezone" ) )
         Timezone::Import(Profile::current["timezone"]:$[]);
