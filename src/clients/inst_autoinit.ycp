@@ -19,11 +19,10 @@
     import "AutoInstallRules";
     import "Progress";
     import "Report";
-    import "Language";
-    import "Console";
     import "Profile";
 //    import "Arch";
     import "Call";
+    import "Console";
 
     import "Popup";
 
@@ -123,7 +122,6 @@ Please wait while the system is prepared for autoinstallation.</p>
 	 _("Retrieve & Read Control File"),
 	 _("Process Profiles and Rules"),
 	 _("Parse control file"),
-	 _("Set up language")
 	 ];
     boolean profileFetched = false;
 
@@ -191,34 +189,6 @@ Please wait while the system is prepared for autoinstallation.</p>
 
     // AutoInstall::ProcessSpecialResources();
 
-    boolean use_utf8 = true;		// utf8 is default
-
-    map displayinfo = UI::GetDisplayInfo();
-    if ( ! displayinfo["HasFullUtf8Support"]:true )
-    {
-	use_utf8 = false;		// fallback to ascii
-    }
-
-
-    //
-    // Set it in the Language module.
-    //
-    Progress::NextStep();
-    Progress::Title(_("Configuring language..."));
-    Language::Import( Profile::current["language"]:$[] );
-
-    //
-    // Set Console font
-    //
-    Installation::encoding = Console::SelectFont( Language::language );
-
-    if (displayinfo["HasFullUtf8Support"]:true)
-    {
-        Installation::encoding = "UTF-8";
-    }
-
-    UI::SetLanguage (Language::language, Installation::encoding);
-    WFM::SetLanguage (Language::language, "UTF-8");
 
     sleep(1000);
     Progress::Finish();
