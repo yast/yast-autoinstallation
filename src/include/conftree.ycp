@@ -481,7 +481,7 @@
                         module_auto = d["X-SuSE-YaST-AutoInstClient"]:"none";
                     else
                         module_auto = sformat("%1_auto", modulename);
-                    if( Popup::YesNo( sformat( "Do you really want to apply the settings of the module '%1' to your current system?", modulename ) ))
+                    if( Popup::YesNo( sformat( _("Do you really want to apply the settings of the module '%1' to your current system?"), modulename ) ))
                         Call::Function(module_auto, ["Write"]);
                 }
             }
@@ -645,7 +645,7 @@
                 menus();
             }
             else if ( ret == "write_to_system" ) {
-                if( Popup::YesNo( "Do you really want to apply the settings of the profile to your current system?" )) {
+                if( Popup::YesNo( _("Do you really want to apply the settings of the profile to your current system?") )) {
                     Profile::Prepare();
                     string oldMode = Mode::mode();
                     string oldStage = Stage::stage();
