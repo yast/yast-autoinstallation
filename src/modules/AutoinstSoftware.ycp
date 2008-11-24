@@ -354,10 +354,13 @@
         Packages::Init(true);
         list<string> failed = [];
 
-        /* set SoftLock to avoid the installation of recommended patterns (#159466) */
-        foreach( map<string,any> p, Pkg::ResolvableProperties ("", `pattern, ""), ``{
-            Pkg::ResolvableSetSoftLock( p["name"]:"", `pattern );
-        });
+        /* switch for recommended patterns installation (workaround for our very weird pattern design) */
+        if( Profile::current["software","install_recommended"]:false == false ) {
+            /* set SoftLock to avoid the installation of recommended patterns (#159466) */
+            foreach( map<string,any> p, Pkg::ResolvableProperties ("", `pattern, ""), ``{
+                Pkg::ResolvableSetSoftLock( p["name"]:"", `pattern );
+            });
+        }
 
         foreach(string p, toset(patterns),
                 ``{
