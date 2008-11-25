@@ -60,7 +60,7 @@
 	term item = `item( `id(k),`icon(v["Icon"]:""), v["Name"]:"", k == selectedGroup );
 	itemList = add(itemList, item );
       });
-      return `SelectionBox( `id(`groups), `opt(`notify),"Groups", itemList );
+      return `SelectionBox( `id(`groups), `opt(`notify), _("Groups"), itemList );
     }
 
     /**
@@ -84,7 +84,7 @@
 	  itemList = add( itemList, `item(`id("none"), "No modules available" ) );
 	}
       map resourceMap = Y2ModuleConfig::GroupMap[group_name]:$[];
-      return `SelectionBox(`id(`modules), `opt(`notify), resourceMap["Name"]:"" + " - Modules", itemList );
+      return `SelectionBox(`id(`modules), `opt(`notify), resourceMap["Name"]:"" + " - " + _("Modules"), itemList );
     }
 
     /* Creates an `HBox containing the buttons to be displayed below the summary column
@@ -122,7 +122,7 @@
       string summary =  (string) WFM::CallFunction( module_auto,["Summary"]);
       if( nil == summary )
 	summary = "";
-      return `VBox( `Left(`Label( resourceMap["Name"]:"" + " - Details" )),
+      return `VBox( `Left(`Label( resourceMap["Name"]:"" + " - " + _("Details") )),
 		    `RichText( summary ),
 		    buttons()
 		  );
