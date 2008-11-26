@@ -354,13 +354,10 @@
         Packages::Init(true);
         list<string> failed = [];
 
-        /* switch for recommended patterns installation (workaround for our very weird pattern design) */
-        if( Profile::current["software","install_recommended"]:false == false ) {
-            /* set SoftLock to avoid the installation of recommended patterns (#159466) */
-            foreach( map<string,any> p, Pkg::ResolvableProperties ("", `pattern, ""), ``{
-                Pkg::ResolvableSetSoftLock( p["name"]:"", `pattern );
-            });
-        }
+        /* set SoftLock to avoid the installation of recommended patterns (#159466) */
+        foreach( map<string,any> p, Pkg::ResolvableProperties ("", `pattern, ""), ``{
+            Pkg::ResolvableSetSoftLock( p["name"]:"", `pattern );
+        });
 
         foreach(string p, toset(patterns),
                 ``{
@@ -479,16 +476,14 @@
         list<string> patterns = [];
         list<string> visible_patterns = [];
 
-        list<map> patternsFullData = filter( map p, Pkg::ResolvableProperties("", `pattern, ""), ``{
+        list<map> patternsFullData = filter( map p, all_patterns, ``{
                 boolean ret = false;
-                if( p["status"]:`none == `installed && p["user_visible"]:true == true ) {
-                        patterns = add( patterns, p["name"]:"no name" );
-                        visible_patterns = add( visible_patterns, p["name"]:"no name" );
-                        ret = true;
-                } else if( p["status"]:`none == `installed && p["user_visible"]:true == false ) {
+		if( p["status"]:`none == `installed ) {
                         patterns = add( patterns, p["name"]:"no name" );
                         ret = true;
-                }
+	                if( p["user_visible"]:true == true )
+        	                visible_patterns = add( visible_patterns, p["name"]:"no name" );
+		}
                 return ret;
         });
         Pkg::TargetFinish ();
@@ -500,10 +495,9 @@
 
         Pkg::SourceStartManager(true);
 
-        list<string> packages = Pkg::FilterPackages(false, false, true, true);
+        list<string> userpackages = Pkg::FilterPackages(false, false, true, true);
         Pkg::TargetFinish ();
         // Remove kernel packages
-        list<string> userpackages =  packages;
         list<string> removepackages = [];
 
         list<string> patternPackages = [];
@@ -514,7 +508,7 @@
             boolean req = false;
             // kick out hollow patterns (always fullfilled patterns)
             foreach( map<string,any> d, found["dependencies"]:[], ``{
-                if( d["res_kind"]:"" == "package" && d["dep_kind"]:"" == "requires" ) {
+                if( d["res_kind"]:"" == "package" && (d["dep_kind"]:"" == "requires" || d["dep_kind"]:"" == "recommends") ) {
                     patternPackages = add(patternPackages, d["name"]:"");
                     req = true;
                 }
@@ -527,6 +521,28 @@
         });
         patterns = new_p;
 
+        list<string> patternPackagesTemp = patternPackages;
+        boolean run = false;
+        integer emergency_break = 0;
+        do {
+            run = false;
+            emergency_break = emergency_break + 1;
+            /* remove all packages that are pulled in by the resolver anyway */
+            list<string> tmp = [];
+            foreach( string ppackage, patternPackagesTemp, ``{
+                foreach( map<string,any> d, Pkg::ResolvableDependencies (ppackage, `package, ""), ``{
+                    foreach( map<string,any> dd, d["dependencies"]:[], ``{
+                        if( dd["res_kind"]:"" == "package" && (dd["dep_kind"]:"" == "requires" || dd["dep_kind"]:"" == "recommends") && !contains(patternPackages , dd["name"]:"") ) {
+                            patternPackages = add(patternPackages, dd["name"]:"");
+                            tmp = add(tmp, dd["name"]:"");
+                            run = true;
+                        }
+                    });
+                });
+            });
+            patternPackagesTemp = tmp;	
+            y2milestone("temp package list = %1", tmp);	
+        } while( run == true && emergency_break < 20 );
 
         map<string, any > software = $[];
         if( size(patterns) > 0 ) {
