@@ -166,8 +166,9 @@ $Id$
                         partition["filesystem_id"] =  Partitions::fsid_lvm;
                 else if (partition["used_by_type"]:`UB_NONE==`UB_MD)
                     partition["filesystem_id"] =  Partitions::fsid_raid;
-/* FIXME for reusing */
-                partition["fsid"] = partition["filesystem_id"]:Partitions::fsid_native;
+
+                if( haskey( partition, "filesystem_id" ) )
+                    partition["fsid"] = partition["filesystem_id"]:Partitions::fsid_native;
                 
                 y2debug("partition: %1", partition);
                 partitions = add( partitions, partition );
