@@ -15,5 +15,8 @@ control_DATA = \
 EXTRA_DIST =                    \
 	$(client_DATA) $(control_DATA)
 
+check-local:
+	xmllint --relaxng $(controldir)/control.rng --noout $(control_DATA)
+
 
 include $(top_srcdir)/Makefile.am.common
