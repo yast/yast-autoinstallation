@@ -481,7 +481,7 @@
 
         list<map> patternsFullData = filter( map p, all_patterns, ``{
                 boolean ret = false;
-		if( p["status"]:`none == `installed ) {
+		if( p["status"]:`none == `installed && !contains( patterns, p["name"]:"no name" ) ) {
                         patterns = add( patterns, p["name"]:"no name" );
                         ret = true;
 	                if( p["user_visible"]:true == true )
