@@ -70,7 +70,7 @@
 	    return false;
 	}
 
-        if( !Profile::ReadXML( options["filename"]:"" ) ) {
+        if( SCR::Read(.target.lstat, options["filename"]:"" ) == $[] || !Profile::ReadXML( options["filename"]:"" ) ) {
 	    Mode::SetUI("commandline");
             CommandLine::Print(_("Error while parsing the control file.
 Check the log files for more details or fix the
