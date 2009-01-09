@@ -108,8 +108,7 @@
     }
 
     define void softwareCompat() {
-        if( haskey( current, "software" ) ) {
-            // might lead to double entries but that's okay
+        if( haskey( current, "software" ) && !contains(current["software","packages"]:[], "autoyast2-installation") ) {
             current["software","packages"] = add( current["software","packages"]:[], "autoyast2-installation" );
         } else {
             current["software"] = $[ "packages":[ "autoyast2-installation" ] ];
