@@ -358,7 +358,7 @@
         StorageDevices::InitDone();
         map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
-        StorageMap=filter(string d, map p, StorageMap, ``( d != "/dev/evms" && size(p["partitions"]:[]) > 0));
+        StorageMap=filter(string d, map p, StorageMap, ``( d != "/dev/evms" && d != "/dev/nfs" && size(p["partitions"]:[]) > 0));
         y2milestone("Storagemap %1", StorageMap);
 //        list evms_vgs = [];
 
