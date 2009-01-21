@@ -25,6 +25,7 @@
     import "AutoinstClone";
 
     string title = _("Autoinstallation - Configuration");
+    boolean show_source = false;
 
     any SaveAs() {
         any filename = UI::AskForSaveFileName(AutoinstConfig::Repository,  "*", _("Save as..."));
@@ -355,10 +356,12 @@
                 "write_to_system");
         Menu = Wizard::AddMenuEntry     ( Menu ,  "file-menu", _("E&xit"),
                     "menu_exit"      );
-        Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("Configu&ration Tree"),
-                    "menu_tree"      );
-        Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("So&urce"),
-                    "menu_source"     );
+        if( show_source == true )
+            Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("Configu&ration Tree"),
+                        "menu_tree"      );
+        else
+            Menu = Wizard::AddMenuEntry     ( Menu ,  "view-menu", _("So&urce"),
+                        "menu_source"     );
         Menu = Wizard::AddMenuEntry     ( Menu ,  "class-menu", _("Cla&sses"),
                     "menu_classes"      );
         Menu = Wizard::AddMenuEntry     ( Menu ,  "class-menu", _("Me&rge Classes"),
@@ -502,6 +505,9 @@
             else if (ret == "menu_tree") // source -> tree
             {
                 y2debug("change to tree");
+                show_source = false;
+                Wizard::DeleteMenus(); // FIXME: sucks sucks sucks sucks sucks
+                menus();
 		CreateDialog(currentGroup, currentModule);
             }
             else if (ret == "menu_open") // OPEN
@@ -581,6 +587,9 @@
 		/* save previously selected group and module,
 		 * so we can restore them afterwards
 		 */
+                 show_source = true;
+                 Wizard::DeleteMenus(); // FIXME: sucks sucks sucks sucks sucks
+                 menus();
 		currentGroup = getGroup();
 		currentModule = getModule();
                 ShowSource();
