@@ -103,6 +103,12 @@
                     } else {
                         dlg = `Left( `ComboBox( `id(entry_id), question, dummy ) );
                     }
+                } else if( type == "static_text" ) {
+                    if( frametitle != "" ) {
+                        dlg = `Left( `Frame ( frametitle, `Label( `id(entry_id), ask["default"]:"" ) ) );
+                    } else {
+                        dlg = `Left( `Label( `id(entry_id), ask["default"]:"" ) );
+                    }
                 } else {
                     if( ask["password"]:false == true ) {
                         if( frametitle != "" ) {
