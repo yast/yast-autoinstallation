@@ -67,6 +67,8 @@
             y2milestone("jumpToDialog  %1",jumpToDialog);
             string helptext = "";
             string title    = "";
+            string back_label = Label::BackButton();
+            string ok_label = Label::OKButton();
             term dialog_term = `VBox();
             term help_term = `Empty();
             term title_term = `Empty();
@@ -82,6 +84,8 @@
                 list< map<string,any> > s  = ask["selection"]:[];
                 helptext = helptext + ask["help"]:"";
                 title    = ask["title"]:"";
+                back_label = ask["back_label"]:back_label;
+                ok_label   = ask["ok_label"]:ok_label;
                 mod = true;
 
                 term dlg = `Dummy();
@@ -150,7 +154,7 @@
                 help_term = `HWeight(30, `RichText( helptext ));
             if( title != "" )
                 title_term = `Heading( title );
-            term backButton = `PushButton(`id(`back),  Label::BackButton() );
+            term backButton = `PushButton(`id(`back),  back_label );
             UI::OpenDialog(
                        `opt(`decorated  ),
                        `HBox(
@@ -168,7 +172,7 @@
                                 `HBox(
                                   `HStretch(),
                                   backButton,
-                                  `PushButton(`id(`ok),  Label::OKButton() )
+                                  `PushButton(`id(`ok),  ok_label )
                                   )
                                 )
                               ),
