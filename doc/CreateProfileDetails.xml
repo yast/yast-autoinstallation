@@ -3153,7 +3153,7 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
               </row>
               <row>
                 <entry>file (available since SLES10 SP1 and SL 10.2)</entry>
-                <entry>you can store the answer to a question in a file, to use it in one of your scripts later.
+                <entry>you can store the answer to a question in a file, to use it in one of your scripts later. If you ask during stage=inital and you want to use the answer in stage2, then you have to copy the answer-file in a chroot script that is running as chrooted=false. Do it like this "cp /tmp/my_answer /mnt/tmp/". The reason for that is, that /tmp in stage1 is just in the RAM disk and will get lost after the reboot but the installed system is already mounted at /mnt/
                 <para><screen>&lt;file&gt;/tmp/answer_hostname&lt;/file&gt;</screen></para></entry>
                 <entry>this information is optional but you should at least provie <emphasis>path</emphasis> or <emphasis>file</emphasis></entry>
               </row>
