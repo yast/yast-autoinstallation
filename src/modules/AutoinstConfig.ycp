@@ -14,6 +14,7 @@
     import "Mode";
     import "Installation";
     import "URL";
+    import "SLP";
 
     include "autoinstall/xml.ycp";
 
@@ -199,13 +200,28 @@
         if (size(autoinstall) > 0   )
         {
             cmdLine = autoinstall;
-            if (cmdLine == "default")
-            {
+            if (cmdLine == "default") {
                 result["scheme"] = "file";
                 result["path"]   = "/autoinst.xml";
-            }
-            else
-            {
+            } else {
+                if( cmdLine == "slp" ) {
+                    list<map> slpData = SLP::FindSrvs( "autoyast", "");
+                    if( size(slpData) > 1 ) {
+                        list<any> dummy = [];
+                        foreach( map m, slpData, ``{
+                            dummy = add( dummy, `item( substring( m["srvurl"]:"", 17), false) );
+                        });
+                        term dlg = `Left( `ComboBox( `id(`choose), "Choose Profile", dummy ) );
+                        UI::OpenDialog( `VBox( dlg, `PushButton(`id(`ok),  "Ok" )) );
+                        UI::UserInput();
+                        cmdLine = (string)UI::QueryWidget(`id(`choose),  `Value);
+                        UI::CloseDialog ();
+                    } else if( size(slpData) == 1 ) {
+                        cmdLine = substring( slpData[0,"srvurl"]:"", 17);
+                    } else {
+                        cmdLine = "slp query for 'autoyast' failed";
+                    }
+                }
                 result = URL::Parse (cmdLine);
                 OriginalURI = cmdLine;
             }
