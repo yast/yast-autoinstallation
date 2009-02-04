@@ -115,7 +115,7 @@
         }
 
         /* without autoyast2, <files ...> does not work */
-        if( haskey( current, "files" ) )
+        if( haskey( current, "files" ) && !contains(current["software","packages"]:[], "autoyast2") )
             current["software","packages"] = add( current["software","packages"]:[], "autoyast2" );
 
         /* workaround for missing "REQUIRES" in content file to stay backward compatible */
