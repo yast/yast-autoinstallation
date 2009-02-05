@@ -108,11 +108,9 @@
     }
 
     define void softwareCompat() {
-        if( haskey( current, "software" ) && !contains(current["software","packages"]:[], "autoyast2-installation") ) {
+        current["software"] = current["software"]:$[];
+        if( !contains(current["software","packages"]:[], "autoyast2-installation") )
             current["software","packages"] = add( current["software","packages"]:[], "autoyast2-installation" );
-        } else {
-            current["software"] = $[ "packages":[ "autoyast2-installation" ] ];
-        }
 
         /* without autoyast2, <files ...> does not work */
         if( haskey( current, "files" ) && !contains(current["software","packages"]:[], "autoyast2") )

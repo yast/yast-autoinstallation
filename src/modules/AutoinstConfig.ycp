@@ -211,7 +211,7 @@
                         foreach( map m, slpData, ``{
                             dummy = add( dummy, `item( substring( m["srvurl"]:"", 17), false) );
                         });
-                        term dlg = `Left( `ComboBox( `id(`choose), "Choose Profile", dummy ) );
+                        term dlg = `Left( `ComboBox( `id(`choose), _("Choose Profile"), dummy ) );
                         UI::OpenDialog( `VBox( dlg, `PushButton(`id(`ok),  "Ok" )) );
                         UI::UserInput();
                         cmdLine = (string)UI::QueryWidget(`id(`choose),  `Value);
