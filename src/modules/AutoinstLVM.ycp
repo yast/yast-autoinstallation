@@ -125,7 +125,7 @@
                     y2milestone("swap slot size: %1", vgsize/1024*1024 );
                     lvsize = 1024*1024*Partitions::SwapSizeMb(vgsize/(1024*1024)); 
                 } else if (lvsize_str!= "") {
-                    lvsize = kmgt_str_to_byte(lvsize_str);
+                    lvsize = AutoinstStorage::humanStringToByte( lvsize_str, true );
                 }
 
                 lv["size_k"] = lvsize/1024;
@@ -263,7 +263,7 @@
             buffer = (buffer * 2) / 1024;
 
             volume_group["partitions"] = maplist( map lv, volume_group["partitions"]:[], ``{
-                integer s = kmgt_str_to_byte( lv["size"]:"10000" );
+                integer s = AutoinstStorage::humanStringToByte( lv["size"]:"10000", true );
                 if( s <= 100 && s > 0 ) {
                     // we assume percentage for this lv
                     integer integer_k = freeSpace * tointeger(lv["size"]:"0") / 100;
