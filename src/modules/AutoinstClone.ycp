@@ -220,11 +220,14 @@
 		  "software"     == def_resource || /* has no desktop file */
           "bootloader"   == def_resource )
              {
+                 string desktop_file = substring( resourceMap["X-SuSE-DocTeamID"]:"", 4 );
+                 string name = dpgettext("desktop_translations", "/usr/share/locale/", "Name("+desktop_file+".desktop): "+resourceMap["Name"]:"" );
+                 if( name == "Name("+desktop_file+".desktop): "+resourceMap["Name"]:"" )
+                     name = resourceMap["Name"]:"";
                  // Set resource name, if not using default value
                  string resource = resourceMap["X-SuSE-YaST-AutoInstResource"]:"";
                  if (resource == "")
                     resource = def_resource;
-                 string name = resourceMap["Name"]:"";
                  if (resource != "")
                  {
                      items = add(items, `item(`id(resource), name ) );
