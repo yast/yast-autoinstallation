@@ -111,9 +111,7 @@
         grouplist = SortGroups (Groups, maplist (string rawname, map group, Groups, ``(rawname)));
 
         foreach (string name, grouplist, ``{
-	    textdomain "base";
 	    string title = Desktop::Translate(Groups[name, "Name"]:name);
-	    textdomain "autoinst";
 
 	    map MeunTreeEntry = $[ "entry":name, "title":title ];
 	    MenuTreeData = add(MenuTreeData,MeunTreeEntry);
