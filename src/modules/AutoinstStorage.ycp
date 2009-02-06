@@ -19,6 +19,7 @@
     import "Partitions";  
     import "Popup";
     import "Report";
+    import "LibStorage";
 
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
@@ -65,6 +66,22 @@
         return modified;
     }
 
+    /**
+     * Wrapper function for the LibStorage call that can't be used directly
+     * in YCP
+     * @return integer
+     *
+     */
+    global define integer humanStringToByte( string s, boolean b ) {
+        integer result = -1;
+        if( size(s) == 0 )
+            s = "0b";
+        if( findfirstnotof( s, "1234567890" ) == nil )
+            s = s + "b";
+        if(! LibStorage::humanStringToByte( s, b, result ) )
+            y2milestone("LibStorage::humanStringToByte failed for %1", s);
+        return result;
+    }
 
     include "autoinstall/autopart.ycp";
     include "autoinstall/autoinst_dialogs.ycp";
@@ -425,7 +442,7 @@
                             integer newCyl = currentCyl * tointeger(percentage) / 100;
                             pe["region",1] = newCyl;
                         } else {
-                            integer new_size = kmgt_str_to_byte( pe["size"]:"0" );
+                            integer new_size = humanStringToByte( pe["size"]:"0", true );
                             integer newCyl = new_size/realDisk["cyl_size"]:1;
                             pe["region",1] = newCyl;
                         }

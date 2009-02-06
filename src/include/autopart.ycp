@@ -120,7 +120,7 @@ $Id$
                     ``{
                 if (haskey(partition, "maxsize"))
                 {
-                    partition["max"] = kmgt_str_to_byte(partition["maxsize"]:"");
+                    partition["max"] = AutoinstStorage::humanStringToByte(partition["maxsize"]:"", true );
                 } 
                     
                 if (partition["size"]:"" != "")
@@ -136,7 +136,7 @@ $Id$
                     }
                     else
                     {
-                        partition["size"] = kmgt_str_to_byte( s );
+                        partition["size"] = AutoinstStorage::humanStringToByte( s, true );
                     }
                 }
                     
