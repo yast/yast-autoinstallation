@@ -58,7 +58,11 @@
     term groups( string selectedGroup ){
       list<term> itemList = [];
       foreach(string k, map v,  Y2ModuleConfig::GroupMap, {
-	term item = `item( `id(k),`icon(v["Icon"]:""), v["Name"]:"", k == selectedGroup );
+          string desktop_file = substring( v["X-SuSE-DocTeamID"]:"", 4 );
+          string translation = dpgettext("desktop_translations", "/usr/share/locale/", "Name("+desktop_file+".desktop): "+v["Name"]:"" );
+          if( translation == "Name("+desktop_file+".desktop): "+v["Name"]:"" )
+              translation = v["Name"]:"";
+	term item = `item( `id(k),`icon(v["Icon"]:""), translation, k == selectedGroup );
 	itemList = add(itemList, item );
       });
       return `SelectionBox( `id(`groups), `opt(`notify), _("Groups"), itemList );
@@ -77,15 +81,18 @@
         foreach(string k , map v, Y2ModuleConfig::ModuleMap, ``{
 	  if (v["X-SuSE-YaST-Group"]:"" == group_name)
 	  {
-	    term item = `item( `id(k),`icon(v["Icon"]:""), v["Name"]:"", k == selectedModule );
+            string desktop_file = substring( v["X-SuSE-DocTeamID"]:"", 4 );
+            string translation = dpgettext("desktop_translations", "/usr/share/locale/", "Name("+desktop_file+".desktop): "+v["Name"]:"" );
+            if( translation == "Name("+desktop_file+".desktop): "+v["Name"]:"" )
+                translation = v["Name"]:"";
+            term item = `item( `id(k),`icon(v["Icon"]:""), translation, k == selectedModule );
 	    itemList = add(itemList, item );
 	  }
 	});
 	if( 0 == size(itemList) ){
-	  itemList = add( itemList, `item(`id("none"), "No modules available" ) );
+	  itemList = add( itemList, `item(`id("none"), _("No modules available") ) );
 	}
-      map resourceMap = Y2ModuleConfig::GroupMap[group_name]:$[];
-      return `SelectionBox(`id(`modules), `opt(`notify), resourceMap["Name"]:"" + " - " + _("Modules"), itemList );
+      return `SelectionBox(`id(`modules), `opt(`notify), _("Modules"), itemList );
     }
 
     /* Creates an `HBox containing the buttons to be displayed below the summary column
@@ -123,7 +130,7 @@
       string summary =  (string) WFM::CallFunction( module_auto,["Summary"]);
       if( nil == summary )
 	summary = "";
-      return `VBox( `Left(`Label( resourceMap["Name"]:"" + " - " + _("Details") )),
+      return `VBox( `Left(`Label( _("Details") )),
 		    `RichText( summary ),
 		    buttons()
 		  );
