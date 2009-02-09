@@ -359,7 +359,7 @@
                         } until ( button == `ok );
                         UI::CloseDialog();
                     } while( p != q );
-                    AutoinstConfig::ProfilePassword = p;
+                    AutoinstConfig::ProfilePassword = AutoinstConfig::ShellEscape((string)p);
                 }
                 string dir = (string)SCR::Read(.target.tmpdir);
                 string command = sformat("gpg2 -c --armor --batch --passphrase \"%1\" --output %2/encrypted_autoyast.xml",

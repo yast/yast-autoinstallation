@@ -69,9 +69,9 @@
                     AutoinstConfig::filepath = (string)SCR::Read(.etc.install_inf.Serverdir)+"/"+AutoinstConfig::host;
                 }
                 if( (string)SCR::Read(.etc.install_inf.Server) != nil ) {
-                AutoinstConfig::host     = (string)SCR::Read(.etc.install_inf.Server);
+                    AutoinstConfig::host     = (string)SCR::Read(.etc.install_inf.Server);
+                }
             }
-        }
 
             y2milestone("relurl for profile changed to: %1://%2%3",AutoinstConfig::scheme, AutoinstConfig::host, AutoinstConfig::filepath);
             SCR::Write ( .etc.install_inf.ayrelurl, sformat("%1://%2/%3",AutoinstConfig::scheme, AutoinstConfig::host, AutoinstConfig::filepath) );
