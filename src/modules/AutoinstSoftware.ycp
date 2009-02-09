@@ -263,71 +263,6 @@
             }
         }
 
-        if (haskey(Profile::current, "inetd")) {
-                map conf = Profile::current["inetd"]:$[];
-                if (conf["netd_service"]:`none == `xinetd )
-                        allpackages = (list<string>) union(allpackages,
-                                ["xinetd"]);
-                else
-                        allpackages = (list<string>) union(allpackages,
-                                ["inetd"]);
-
-        }
-
-        if (haskey(Profile::current, "nis")) {
-                map conf = Profile::current["nis"]:$[];
-                if (conf["start_nis"]:false)
-                        allpackages = (list<string>) union(allpackages, ["yast2-nis-client","ypbind"]);
-
-                if (conf["start_autofs"]:false)
-                {
-                    string pkg = "autofs4";
-                    allpackages = add (allpackages, pkg);
-                }
-        }
-
-        if (haskey(Profile::current, "security")) {
-            allpackages = (list<string>) union(allpackages,
-                    ["yast2-security"]);
-        }
-
-        if (haskey(Profile::current, "ldap")) {
-                map ldapclient = Profile::current["ldap"]:$[];
-                if (ldapclient["start_ldap"]:false)
-                        allpackages = (list<string>) union(allpackages, ["pam_ldap","nss_ldap"]);
-                if (ldapclient["start_autofs"]:false)
-                {
-                    string pkg = "autofs4";
-                    allpackages = add (allpackages, pkg);
-                }
-        }
-
-        if (haskey(Profile::current, "nfs_server"))
-        {
-            boolean start_nfsserver = Profile::current["nfs_server", "start_nfsserver"]:false;
-            if (start_nfsserver)
-                allpackages = (list<string>) union(allpackages, ["yast2-nfs-server", "nfs-kernel-server"]);
-        }
-
-
-        if (haskey(Profile::current, "mail")) {
-                map mail = Profile::current["mail"]:$[];
-                if (mail["mta"]:`other == `postfix)
-                {
-                        allpackages = add(allpackages, "postfix");
-                        PackageAI::toremove = add(PackageAI::toremove, "sendmail");
-                        if (mail["use_amavis"]:false)
-                                allpackages = add(allpackages, "amavis-postfix");
-                }
-                else if (mail["mta"]:`other == `sendmail)
-                {
-                        allpackages = add(allpackages, "sendmail");
-                        PackageAI::toremove = add(PackageAI::toremove, "postfix");
-
-                        if (mail["use_amavis"]:false)
-                                allpackages = add(allpackages, "amavis-sendmail");
-                }
-        }
         return allpackages;
     }
 
@@ -532,9 +467,14 @@
             emergency_break = emergency_break + 1;
             /* remove all packages that are pulled in by the resolver anyway */
             list<string> tmp = [];
+            patternPackagesTemp = toset( patternPackagesTemp );
+            y2milestone("patternPackagesTemp = %1", patternPackagesTemp);
             foreach( string ppackage, patternPackagesTemp, ``{
+                y2milestone("UWE1");
                 foreach( map<string,any> d, Pkg::ResolvableDependencies (ppackage, `package, ""), ``{
+                    y2milestone("UWE2");
                     foreach( map<string,any> dd, d["dependencies"]:[], ``{
+                        y2milestone("UWE3");
                         if( dd["res_kind"]:"" == "package" && (dd["dep_kind"]:"" == "requires" || dd["dep_kind"]:"" == "recommends") && !contains(patternPackages , dd["name"]:"") ) {
                             patternPackages = add(patternPackages, dd["name"]:"");
                             tmp = add(tmp, dd["name"]:"");
@@ -561,7 +501,7 @@
 
         software["packages"] = sort( filter(string pkg, userpackages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml")) );
         software["patterns"] = sort( visible_patterns );
-        software["remove-packages"] = sort( removepackages );
+        software["remove-packages"] = toset( removepackages );
         return software;
     }
 
