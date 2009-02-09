@@ -468,13 +468,9 @@
             /* remove all packages that are pulled in by the resolver anyway */
             list<string> tmp = [];
             patternPackagesTemp = toset( patternPackagesTemp );
-            y2milestone("patternPackagesTemp = %1", patternPackagesTemp);
             foreach( string ppackage, patternPackagesTemp, ``{
-                y2milestone("UWE1");
                 foreach( map<string,any> d, Pkg::ResolvableDependencies (ppackage, `package, ""), ``{
-                    y2milestone("UWE2");
                     foreach( map<string,any> dd, d["dependencies"]:[], ``{
-                        y2milestone("UWE3");
                         if( dd["res_kind"]:"" == "package" && (dd["dep_kind"]:"" == "requires" || dd["dep_kind"]:"" == "recommends") && !contains(patternPackages , dd["name"]:"") ) {
                             patternPackages = add(patternPackages, dd["name"]:"");
                             tmp = add(tmp, dd["name"]:"");
