@@ -19,7 +19,6 @@
     import "Partitions";  
     import "Popup";
     import "Report";
-    import "LibStorage";
 
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
@@ -78,8 +77,8 @@
             s = "0b";
         if( findfirstnotof( s, "1234567890" ) == nil )
             s = s + "b";
-        if(! LibStorage::humanStringToByte( s, b, result ) )
-            y2milestone("LibStorage::humanStringToByte failed for %1", s);
+        if(! Storage::HumanStringToByte( s, result ) )
+            y2milestone("Storage::humanStringToByte failed for %1", s);
         return result;
     }
 
