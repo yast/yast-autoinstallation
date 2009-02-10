@@ -111,7 +111,7 @@
 
         // Process data
         lvm = mapmap(string device, map disk, lvm, ``{
-            disk["pesize"] = pesize_str_to_byte(disk["pesize"]:"4M");
+            disk["pesize"] = AutoinstStorage::humanStringToByte(disk["pesize"]:"4M", true);
 
             string     vgname    = substring(device, 5);
             disk["partitions"]  = maplist(map lv, disk["partitions"]:[], ``{

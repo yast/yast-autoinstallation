@@ -72,14 +72,11 @@
      *
      */
     global define integer humanStringToByte( string s, boolean b ) {
-        integer result = -1;
         if( size(s) == 0 )
             s = "0b";
         if( findfirstnotof( s, "1234567890" ) == nil )
             s = s + "b";
-        if(! Storage::HumanStringToByte( s, result ) )
-            y2milestone("Storage::humanStringToByte failed for %1", s);
-        return result;
+        return Storage::ClassicStringToByte(s);
     }
 
     include "autoinstall/autopart.ycp";
