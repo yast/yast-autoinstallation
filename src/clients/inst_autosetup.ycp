@@ -166,14 +166,11 @@ control file and try again.
     //
     Progress::NextStep();
     Progress::Title(_("Configuring language..."));
-    y2milestone("UWE0 %1", Profile::current );
-    y2milestone("UWE %1", Profile::current["language"]:$[] );
     Language::Import( Profile::current["language"]:$[] );
 
     //
     // Set Console font
     //
-    y2milestone("UWE2 %1", Language::language );
     Installation::encoding = Console::SelectFont( Language::language );
 
     if (displayinfo["HasFullUtf8Support"]:true)
