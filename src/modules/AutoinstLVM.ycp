@@ -18,12 +18,7 @@
     import "AutoinstStorage";
     import "Label";
 
-    include "partitioning/lvm_pv_lib.ycp";
-    include "partitioning/lvm_lib.ycp";
-
     include "partitioning/lvm_lv_lib.ycp";
-
-    include "partitioning/partition_defines.ycp";
 
     global boolean ZeroNewPartitions = true;
 
@@ -158,7 +153,7 @@
         });
 
         if( ! haskey( keepLVM, vgname ) && ExistingLVM["/dev/" +vgname]:$[] != $[] )
-            removeVolumeGroup( vgname );
+	    Storage::DeleteLvmVg(vgname);
 
         return true;
     }
@@ -215,16 +210,10 @@
                 remove_possible_volumes(vgname);
             }
 
-            map vg = $[];
-
             if (size(volume_group["keep_lv"]:[]) == 0 ) {
-                vg["vgname"] = vgname;
-                vg["pesize"] = volume_group["pesize"]:4194304;
-                vg["lvm2"]   = lvm2;
-                map addVG = $[];
-                addVG = addVolumeGroup(vg, targetMap, [] );
-                current_vg      = addVG["vg"]:"none";
-                y2milestone("addVolumeGroup returns %1",addVG);
+		boolean ret = Storage::CreateLvmVg(vgname, volume_group["pesize"]:4194304, lvm2);
+                current_vg      = vgname;
+                y2milestone("CreateLvmVg returns %1", ret);
                 targetMap = Storage::GetTargetMap();
                 y2milestone("Storage::GetTargetMap returns %1",targetMap);
                 lvm_vgs = get_vgs( targetMap );
