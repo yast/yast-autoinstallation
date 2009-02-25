@@ -429,105 +429,6 @@
         return true;
     }
 
-    /**
-     * Provide Compatibility to older distributions.
-     * @param list lvm_standalone Stand alone LVM configuration
-     * @return list LVM configuration integrated into partitioning resource
-     */
-    global define list<map> convertLVM (list<map> lvm_standalone )
-    {
-        list<map> all_lvm = [];
-
-        foreach (map group, lvm_standalone, ``{
-            map new_lvm = $[];
-            string vg = group["lvm_name"]:"";
-
-            new_lvm["device"]       = sformat("/dev/%1", vg );
-            new_lvm["use"]      = "all";
-            new_lvm["pesize"]       = group["pesize"]:"";
-            list partitions = maplist(map lv, group["logical_volumes"]:[], ``{
-
-                symbol lv_fs = `reiser;
-                string lv_fs_tmp     = lv["lv_fs"]:"reiser";
-                term tfs = toterm(lv_fs_tmp);
-                lv_fs = (symbol)symbolof(tfs);
-
-                return( $[ "filesystem": lv_fs,
-                           "lv_name":    lv["lv_name"]:"",
-                           "mount":  lv["lv_mount"]:"",
-                           "size":   lv["lv_size"]:"",
-                           "stripes":    lv["stripes"]:1
-                        ]);
-            });
-            new_lvm["partitions"] = partitions;
-            all_lvm = add (all_lvm, new_lvm);
-
-        });
-        y2milestone("Converted LVM: %1", all_lvm);
-
-        return (all_lvm);
-    }
-
-    /**
-     * Provide Compatibility to older distributions.
-     * @param list raid_standalone Stand alone RAID configuration
-     * @return map RAID configuration integrated into partitioning resource
-     */
-    global define map convertRAID (list<map> raid_standalone )
-    {
-        map raid = $[];
-
-        raid["device"]	= "/dev/md";
-        raid["use"]	= "all";
-
-        list partitions = maplist(map r, raid_standalone, ``{
-
-            symbol fs =  r["filesystem"]:`reiser;
-
-
-            map raid_options = $[];
-
-            raid_options["chunk_size"]			= r["chunk_size"]:"";
-            raid_options["raid_type"]			= r["raid_type"]:"raid1";
-            raid_options["parity_algorithm"]		= r["parity_algorithm"]:"";
-            raid_options["persistent_superblock"]	= r["persistent_superblock"]:false;
-
-            integer nr = tointeger(substring(r["device_name"]:"/dev/md0", 7));
-
-
-
-            map ret = $[
-                        "raid_options"	: raid_options,
-                        "format"	: r["format"]:false,
-                        "partition_nr"	: nr
-
-            ];
-
-            if (haskey(r, "mount"))
-            {
-                ret["mount"] = r["mount"]:"";
-            }
-            if (haskey(r, "partition_id"))
-            {
-                ret["partition_id"] = r["partition_id"]:131;
-            }
-            if (haskey(r, "filesystem"))
-            {
-                ret["filesystem"] = fs;
-            }
-            if (haskey(r, "lvm_group"))
-            {
-                ret["lvm_group"] = r["lvm_group"]:"";
-            }
-
-            return (ret);
-
-        });
-        raid["partitions"]	= partitions;
-
-        return (raid);
-    }
-
 
     /**
      * General compatibility issues
@@ -630,25 +531,6 @@
             _current["networking"] = net;
         }
 
-        // RAID
-        list<map> old_raid = _current["raid"]:[];
-        if (size(old_raid) > 0 )
-        {
-            map new_raid = convertRAID(old_raid);
-            list d = _current["partitioning"]:[];
-            d =add (d, new_raid );
-            _current["partitioning"] = d;
-        }
-
-        // LVM
-        list<map> old_lvm = _current["lvm"]:[];
-        if (size(old_lvm) > 0 )
-        {
-            list<map> new_lvm = convertLVM(old_lvm);
-            list<map> d = _current["partitioning"]:[];
-            d = (list<map>) union (d, new_lvm );
-            _current["partitioning"] = d;
-        }
         return _current;
     }
 
