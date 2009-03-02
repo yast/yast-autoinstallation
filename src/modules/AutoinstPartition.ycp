@@ -43,6 +43,9 @@
     "resize"	: false,
     "lv_name"	: "",
     "lvm_group" : "",
+    "raid_name" : "",
+    "raid_type" : "",
+    "raid_options" : $[]
     ];
 
   define map<symbol,map> allfs = $[];
@@ -212,6 +215,13 @@
       }
       else if( "swap" == newPart["mount"]:"" ){
 	newPart = set( newPart, "partition_id", 130 );
+      }
+      if( haskey( part, "raid_name" ) ) {
+          newPart = set( newPart, "raid_name", part["raid_name"]:"" );
+          newPart = set( newPart, "raid_type", part["raid_type"]:"raid0" );
+      }
+      if( haskey( part, "raid_options" ) ) {
+          newPart = set( newPart, "raid_options", part["raid_options"]:$[] );
       }
       return newPart;
     }
