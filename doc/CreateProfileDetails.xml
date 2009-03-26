@@ -317,7 +317,34 @@
       <para>yaboot</para>
     </listitem>
   </itemizedlist>
-
+  <para>
+Here are some important options for handling the content of the MBR:
+<itemizedlist>
+  <listitem>
+    <para>&lt;boot_mbr&gt; means write GRUB stage1 to MBR (if it is true)</para>
+  </listitem>
+  <listitem>
+    <para>&lt;generic_mbr&gt; means write generic boot code to MBR (if it is true)</para>
+  </listitem>
+  <listitem>
+    <para>&lt;activate&gt; set boot flag to boot or root partition (if it is true) it depends on partitioning of disk and moinpoints</para>
+  </listitem>
+ </itemizedlist>
+If you want to disable the overwriting of the MBR set &lt;boot_mbr&gt; and &lt;generic_mbr&gt; to false:
+<screen>
+&lt;bootloader&gt;
+  ....
+   &lt;global&gt;
+      &lt;activate&gt;true&lt;/activate&gt;
+      &lt;generic_mbr&gt;false&lt;/generic_mbr&gt;
+      &lt;boot_mbr&gt;false&lt;/boot_mbr&gt;
+   &lt;/global&gt;
+  ....
+&lt;/bootloader&gt;
+</screen>
+If &lt;activate&gt; is true the boot flag is changed to the boot or root partition.
+If the boot partition is missing and root partition is on a logical partition, the boot flag will be set to extended partition.
+  </para>
   </section>
 
   <section id="CreateProfile.Partitioning">
