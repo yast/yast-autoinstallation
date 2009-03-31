@@ -1,9 +1,11 @@
 @HEADER-COMMENT@
 
 @HEADER@
-BuildRequires:	java2-devel-packages yast2-mouse yast2-transfer yast2-update yast2-bootloader xorg-x11-libs yast2-devtools pkg-config libxslt perl-XML-Writer docbook-xsl-stylesheets sgml-skel yast2-testsuite update-desktop-files yast2-country yast2-slp
+BuildRequires:	java2-devel-packages yast2-mouse yast2-transfer yast2-bootloader xorg-x11-libs yast2-devtools pkg-config libxslt perl-XML-Writer docbook-xsl-stylesheets sgml-skel yast2-testsuite update-desktop-files yast2-country yast2-slp
 # API for Disabled Modules (ProductControl)
 BuildRequires:	yast2 >= 2.16.36
+# After API cleanup
+BuildRequires:	yast2-update >= 2.18.3
 
 Requires:	yast2 >= 2.16.36
 Requires:	yast2-core yast2-xml libxslt
@@ -31,7 +33,9 @@ Summary:	YaST2 - Auto-Installation: Installation Modules
 Group:		System/YaST
 # API for Disabled Modules (ProductControl)
 Requires:	yast2 >= 2.16.36
-Requires:	yast2-xml yast2-core yast2 yast2-country yast2-mouse yast2-packager yast2-storage yast2-transfer yast2-update
+# After API cleanup
+Requires:	yast2-update >= 2.18.3
+Requires:	yast2-xml yast2-core yast2 yast2-country yast2-mouse yast2-packager yast2-storage yast2-transfer
 Provides:	yast2-trans-autoinst
 Obsoletes:	yast2-trans-autoinst
 %description installation

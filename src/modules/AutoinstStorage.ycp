@@ -578,6 +578,52 @@
         return summary;
     }
 
+    // Moved here from RootPart module (used just by this module)
+    global define boolean SetFormatPartitions (list<map> fstabpart)
+    {
+	// All storage devices
+        map <string, map> target_map = Storage::GetTargetMap ();
+
+	// all activated
+	list <map> tmp = filter (map e, RootPart::GetActivated(), {
+	    return (e[`type]:"" == "mount" || e[`type]:"" == "swap");
+	});
+
+	foreach (map e, tmp, {
+	    string mntpt = (e[`type]:"" == "swap")?("swap"):(e[`mntpt]:"");
+	    string part  = e[`device]:"";
+
+	    map p = $[];
+	    foreach (map pp, fstabpart, {
+		// mountpoint matches
+		if (pp["mount"]:"" == mntpt) {
+		    p = pp;
+		    break;
+		}
+	    });
+	    string mount_options = "";
+	    foreach (map entry, fstab, {
+		if( entry["file"]:"" == mntpt ) {
+			mount_options = entry["mntops"]:"";
+			break;
+		}
+	    });
+	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
+	    target_map = Storage::SetPartitionData (target_map, part, "format", p["format"]:false );
+	    target_map = Storage::SetPartitionData (target_map, part, "delete", false);
+	    target_map = Storage::SetPartitionData (target_map, part, "create", false);
+	    if( size(mount_options) > 0 && !haskey(p, "fstopt" ) )
+		    target_map = Storage::SetPartitionData (target_map, part, "fstopt", mount_options);
+	    if( haskey(p, "fstopt" ) )
+		    target_map = Storage::SetPartitionData (target_map, part, "fstopt", p["fstopt"]:"");
+            if( haskey( p, "mountby" ) )
+                target_map = Storage::SetPartitionData (target_map, part, "mountby", p["mountby"]:`device);
+	});
+
+        Storage::SetTargetMap (target_map);
+        return true;
+    }
+
     /**
      * Handle /etc/fstab usage
      * @return boolean
@@ -623,7 +669,7 @@ which root partition should be used.  Automatic installation not possible.
         }
 
         RootPart::MountPartitions(RootPart::selectedRootPartition);
-        RootPart::SetFormatPartitions (fstab_partitions);
+        SetFormatPartitions (fstab_partitions);
         RootPart::UnmountPartitions (true);
         return true;
     }
@@ -794,6 +840,8 @@ which root partition should be used.  Automatic installation not possible.
 
 
     }
+
+
 
     // EOF
 }
