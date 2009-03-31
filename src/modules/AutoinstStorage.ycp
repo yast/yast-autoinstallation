@@ -20,6 +20,7 @@
     import "Popup";
     import "Report";
     import "Mode";
+    import "Installation";
 
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
@@ -602,7 +603,7 @@
 		}
 	    });
 	    string mount_options = "";
-	    foreach (map entry, fstab, {
+	    foreach (map entry, (list <map>) Storage::ReadFstab (Installation::destdir), {
 		if( entry["file"]:"" == mntpt ) {
 			mount_options = entry["mntops"]:"";
 			break;
