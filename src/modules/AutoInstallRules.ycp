@@ -708,6 +708,7 @@
                 MergeCommand = MergeCommand + " /usr/share/autoinstall/xslt/merge.xslt ";
                 MergeCommand = MergeCommand +   base_profile + " ";
 
+                y2milestone("Merge command: %1", MergeCommand);
                 map xsltret = (map)SCR::Execute(.target.bash_output, MergeCommand);
                 y2milestone("Merge result: %1", xsltret);
                 if (xsltret["exit"]:-1 != 0 || xsltret["stderr"]:"" != "")
