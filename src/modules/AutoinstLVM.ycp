@@ -171,7 +171,7 @@
 
         // all possible PVs on all available devices
         list<map> all_possible_pvs = filter( map part, get_possible_pvs( Storage::GetTargetMap() ),
-                         ``( ((part["used_by"]:"" == vgname && part["used_by_type"]:`UB_NONE == usedBy ) || 
+                         ``( ((part["used_by_device"]:"" == vgname && part["used_by_type"]:`UB_NONE == usedBy ) || 
                               part["used_by_type"]:`UB_NONE == `UB_NONE) && !part["delete"]:false ));
 
         y2milestone("all pvs= %1", all_possible_pvs);
