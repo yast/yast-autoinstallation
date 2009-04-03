@@ -33,6 +33,10 @@
     /* Init scripts */
     global list<map> init = [];
 
+    /* postpart scripts */
+    global list<map> postpart = [];
+
+
     /* Merged scripts */
     global list<map> merged = [];
 
@@ -89,6 +93,12 @@
                                              return p;
                                          })
                        );
+        result = (list<map>)union(result,	maplist (map p, postpart,
+                                         ``{
+                                             p = add(p,"type","postpartitioning-scripts");
+                                             return p;
+                                         })
+                       );
         return result;
     }
 
@@ -115,6 +125,7 @@
         post = [];
         chroot = [];
         init = [];
+        postpart = [];
         y2milestone("Merged %1", merged);
 
         // split
@@ -127,6 +138,8 @@
                 init = add(init,s);
             else if (s["type"]:"" == "chroot-scripts")
                 chroot = add(chroot,s);
+            else if (s["type"]:"" == "postpartitioning-scripts")
+                postpart = add(postpart,s);
         });
 
 
@@ -168,6 +181,16 @@
                       "debug":p["debug"]:true
                     ]);
         });
+        list<map> expostpart =  maplist (map p, postpart, ``{
+            return ($["filename":p["filename"]:"",
+                      "interpreter": p["interpreter"]:"",
+                      "source":p["source"]:"",
+                      "location":p["location"]:"",
+                      "feedback":p["feedback"]:false,
+                      "debug":p["debug"]:true
+                    ]);
+        });
+
         map<string, list> result = $[];
         if (size(expre) > 0 )
             result["pre-scripts"] = expre;
@@ -177,6 +200,8 @@
             result["chroot-scripts"] = exchroot;
         if (size(exinit) > 0 )
             result["init-scripts"] = exinit;
+        if (size(expostpart) > 0 )
+            result["postpartitioning-scripts"] = expostpart;
 
         return result;
 
@@ -220,11 +245,13 @@
         init = s["init-scripts"]:[];
         post = s["post-scripts"]:[];
         chroot = s["chroot-scripts"]:[];
+        postpart = s["postpartitioning-scripts"]:[];
 
         pre = Resolve_relurl(pre);
         init = Resolve_relurl(init);
         post = Resolve_relurl(post);
         chroot = Resolve_relurl(chroot);
+        postpart = Resolve_relurl(postpart);
 
         merged = mergeScripts();
         y2debug("merged: %1", merged);
@@ -282,6 +309,19 @@
         {
             summary = Summary::OpenList(summary);
             foreach(map script, init, ``{
+                summary = Summary::AddListItem(summary, script["filename"]:"" );
+            });
+            summary = Summary::CloseList(summary);
+        }
+        else
+        {
+            summary = Summary::AddLine(summary, Summary::NotConfigured());
+        }
+        summary = Summary::AddHeader(summary, _("Postpartitioning Scripts"));
+        if (size( init) > 0 )
+        {
+            summary = Summary::OpenList(summary);
+            foreach(map script, postpart, ``{
                 summary = Summary::AddListItem(summary, script["filename"]:"" );
             });
             summary = Summary::CloseList(summary);
@@ -387,6 +427,10 @@
         else if (type == "chroot-scripts")
         {
             return _("Chroot");
+        }
+        else if (type == "postpartitioning-scripts")
+        {
+            return _("Postpartitioning");
         }
         return _("Unknown");
     }
@@ -549,6 +593,10 @@ Experimental
         {
             scripts = filter(map s, post, ``(s["network_needed"]:false));
         }
+        else if (type == "postpartitioning-scripts" )
+        {
+            scripts = postpart;
+        }
         else
         {
             y2error("Unsupported script type");
@@ -559,7 +607,7 @@ Experimental
         string tmpdirString = "";
         string current_logdir = "";
 
-        if (type == "pre-scripts")
+        if (type == "pre-scripts" || type == "postpartitioning-scripts")
         {
             tmpdirString = sformat("%1/%2", AutoinstConfig::tmpDir, type);
             SCR::Execute (.target.mkdir, tmpdirString);
@@ -600,12 +648,12 @@ Experimental
             }
             string scriptPath = "";
 
-            if (type == "pre-scripts")
+            if ( type == "pre-scripts" || type == "postpartitioning-scripts" )
             {
 //        y2milestone("doing /sbin/udevcontrol stop_exec_queue now to prevent trouble if one is doing partitioning in a pre-script");
 //        SCR::Execute( .target.bash, "/sbin/udevcontrol stop_exec_queue" );
                 scriptPath = sformat("%1/%2/%3", AutoinstConfig::tmpDir, type, scriptName);
-                y2milestone("Writing pre script into %1", scriptPath);
+                y2milestone("Writing %1 script into %2", type, scriptPath);
                 if (s["location"]:"" != "")
                 {
                     y2debug("getting script: %1", s["location"]:"" );
