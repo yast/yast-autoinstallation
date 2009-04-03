@@ -68,5 +68,18 @@ echo "Running pre-install script"
                     </source>
                 </script>
             </pre-scripts>
+            <postpartitioning-scripts config:type="list">
+                <script>
+                    <filename>postpart.sh</filename>
+                    <interpreter>shell</interpreter>
+                    <debug config:type="boolean">false</debug>
+                    <feedback config:type="boolean">true</feedback>
+                    <source><![CDATA[
+touch /mnt/testfile
+echo Hi
+]]>
+                    </source>
+                </script>
+            </postpartitioning-scripts>
         </scripts>
 </profile>

@@ -2051,12 +2051,13 @@ http://192.168.66.6/SLES10/CD1/updates
       installation.
     </para>
     <para>
-      In the auto-installation process, four types of scripts can be executed and they
+      In the auto-installation process, five types of scripts can be executed and they
       will be described here in order of "appearance" during the installation.
     </para>
     <para>
     <itemizedlist>
         <listitem><emphasis>pre-scripts</emphasis> (very early, before anything else really happened)</listitem>
+        <listitem><emphasis>postpartitioning-scripts</emphasis> (after partitioning and mounting to /mnt but before RPM installation - since openSUSE 11.2)</listitem>
         <listitem><emphasis>chroot-scripts</emphasis> (after the package installation, before the first boot)</listitem>
         <listitem><emphasis>post-scripts</emphasis> (during the first boot of the installed system, no services running)</listitem>
         <listitem><emphasis>init-scripts</emphasis> (during the first boot of the installed system, all servies up and running)</listitem>
@@ -2153,6 +2154,85 @@ echo "Testing the pre script" &gt; /tmp/pre-script_out.txt
         </table>
       </para>
     </section>
+
+    <section id="postpartitioning-install.scripts">
+	<title>Postpartitioning Scripts</title>
+	<note>
+	  <para>Available starting from openSUSE 11.2 only (not SLES11).</para>
+	</note>
+	<para>
+	  Executed after &yast2; did the partitioning and wrote the fstab. The empty system is mounted to /mnt already.
+      This type of script is available since openSUSE 11.2 (not SLES11).
+	</para>
+          <para>
+            The following elements must be between the &lt;postpartitioning-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/postpartitioning-sripts&gt; tags
+          </para>
+      <para>
+        <table frame='top'>
+          <title>postpartitioning script XML representation</title>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>location</entry>
+                <entry>you can define a location from where the script gets fetched.
+                       Locations can be the same like for the profile (http,ftp,nfs,...).
+                <para><screen>&lt;location&gt;http://10.10.0.1/myScript.sh&lt;/location&gt;</screen></para></entry>
+                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>source</entry>
+                <entry>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
+                to put the whole shell script into the XML profile, look at the location parameter.
+
+                <para><screen>&lt;source&gt;
+&lt;![CDATA[ 
+echo "Testing postpart script" &gt; /mnt/postpart_test.txt
+]]&gt;
+&lt;/source&gt;</screen></para></entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter that must be used for the script. Supported options are shell and perl.
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>optional (default is shell)</entry>
+              </row>
+              <row>
+                <entry>filename</entry>
+                <entry>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <para><screen>&lt;filename&gt;myScript5.sh&lt;/filename&gt;</screen></para></entry>
+                <entry>optional. The default is the type of the script (pre-scripts) in this case</entry>
+              </row>
+              <row>
+                <entry>feedback</entry>
+                <entry>if this boolean is true, stdout and stderr of the script will be shown in a popup that the
+                       user has to confirm via ok-button. If stdout and stderr are empty, no popup is shown and so
+                       no confirmation is needed.
+                <para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></para></entry>
+                <entry>optional. The default is false. This option was invented with SL 10.1 / SLES10</entry>
+              </row>
+              <row>
+                <entry>debug</entry>
+                <entry>if this is true, every single line of a shell script is logged. Perl scripts are run with warnings
+                turned on.
+                <para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></para></entry>
+                <entry>optional. The default is true. This option was invented with SL 10.1 / SLES10</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </para>
+    </section>
+
+
+
     <section id="chroot.scripts">
     <title>Chroot environment scripts</title>
 	<para>Chroot scripts are executed before the machine reboots for the first time.
