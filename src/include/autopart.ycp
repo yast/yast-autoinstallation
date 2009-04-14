@@ -402,7 +402,8 @@ $Id$
                 integer index = 0;
                 integer pindex = e["added",0,0]:0;
                 string mount = solution["partitions",pindex,"mount"]:"";
-                integer fsid = Partitions::fsid_native;
+//                integer fsid = Partitions::fsid_native;
+                integer fsid = disk["partitions",pindex,"fsid"]:Partitions::fsid_native;
                 if( mount == "swap" )
                 {
                     fsid = Partitions::fsid_swap;
@@ -421,7 +422,7 @@ $Id$
                             p["region"] = solution["partitions",pindex,"region"]:[];
                         }
                         p["mount"] = mount;
-                        if (e["reuse"]:false)			    
+                        if (e["reuse"]:false)
                             p["used_fs"] = solution["partitions",pindex,"filesystem"]:p["detected_fs"]:`ext3;
                         else
                             p["used_fs"] = solution["partitions",pindex,"filesystem"]:`ext3;
