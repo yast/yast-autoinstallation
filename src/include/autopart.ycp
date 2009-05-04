@@ -37,7 +37,7 @@ $Id$
                         !p["format"]:false &&
                         !Partitions::IsLinuxPartition(p["fsid"]:0)) );
 
-                l = filter(map p, l, ``(!contains( [`xfs, `ext2, `ext3, `jfs, `reiser],
+                l = filter(map p, l, ``(!contains( [`xfs, `ext2, `ext3, `ext4, `jfs, `reiser],
                             p["used_fs"]:`unknown)));
                 l = filter(map p, l,
                     ``(!FileSystems::IsSystemMp( p["mount"]:"", false )));
