@@ -1729,6 +1729,20 @@ http://192.168.66.6/SLES10/CD1/updates
 	routing, etc.) is also provided. With this module it's possible to
 	configure and setup Ethernet Controllers and Token-Ring Controllers.
       </para>
+      <title>
+        keep_install_network
+      </title>
+      <para>
+    In the networking section, when this option is set to true (default is false, this option is available since openSUSE 11.2 but not SLES11):
+    <screen>
+        &lt;keep_install_network config:type=&quot;boolean&quot;&gt;true&lt;/keep_install_network&gt;
+    </screen>
+    YaST will keep network settings created during installation (via Linuxrc) 
+    and/or merge it with network settings from the AutoYaST profile (if these are defined).
+    AutoYaST settings have higher priority than already present configuration files. 
+    YaST will write ifcfg-* files from profile without removing old ones. 
+    If there is none (or empty) dns and routing section, YaST will keep already present values. Otherwise settings from the profile will be applied.
+      </para>
       <para>
 	To configure network settings and activate networking automatically,
 	one global resource is used to store the whole network configuration.
