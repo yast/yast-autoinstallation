@@ -709,9 +709,10 @@ Experimental
             }
             else
             {
-                // disable all sources and finish target
-                Pkg::SourceFinishAll();
-                Pkg::TargetFinish();
+                // disable all sources and finish target - no clue what this is good for.
+                // triggers an error with post-script network_needed=true
+//                Pkg::SourceFinishAll();
+//                Pkg::TargetFinish();
 
                 scriptPath = sformat("%1/%2", AutoinstConfig::scripts_dir, scriptName);
                 y2milestone("Writing  script into %1", scriptPath);
