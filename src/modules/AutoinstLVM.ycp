@@ -224,6 +224,7 @@
             });
             y2milestone("Existing PVs: %1",  new_pvs );
             map atm = AutoinstStorage::AutoTargetMap;
+            integer smallest_physical = 0;
             foreach(map pv, new_pvs, ``{
                 if (pv["create"]:false) {
                     boolean to_add = true;
@@ -238,11 +239,12 @@
                     });
                     if( to_add ) {
                         y2milestone("addPhysicalVolume %1 , %2",pv["device"]:"", current_vg );
+			if( smallest_physical == 0 || pv["size_k"]:0 < smallest_physical )
+				smallest_physical = pv["size_k"]:0;
                         addPhysicalVolume(targetMap, pv["device"]:"", current_vg );
                     }
                 }
             });
-
             // calculating the "max" for logical volume
             map<string, map> tmp_tm = Storage::GetTargetMap();
             integer freeSpace = 0;
@@ -250,6 +252,7 @@
             freeSpace = tmp_tm[device,"size_k"]:0;
             buffer = tmp_tm[device,"cyl_size"]:0;
             buffer = (buffer * 2) / 1024;
+            integer max_counter = 0;
 
             volume_group["partitions"] = maplist( map lv, volume_group["partitions"]:[], ``{
                 integer s = AutoinstStorage::humanStringToByte( lv["size"]:"10000", true );
@@ -258,6 +261,8 @@
                     integer integer_k = freeSpace * tointeger(lv["size"]:"0") / 100;
                     lv["size_k"] = integer_k;
                     y2milestone("percentage for lv %1. Size_k is %2",lv,integer_k);
+                } else if( lv["size"]:"" == "max" && lv["stripes"]:0 <= 1 ) {
+                    max_counter = max_counter + 1;
                 }
                 return lv;
             });
@@ -271,8 +276,16 @@
             foreach(map lv,  volume_group["partitions"]:[], ``{
                 if( lv["size_k"]:0 == 0 && freeSpace > 0 ) {
                     // if "max" calculation is turned on for the LV
-                    lv["size_k"] = freeSpace;
-                    lv["size"]   = sformat("%1K",freeSpace);
+        	    if( lv["stripes"]:0 > 1 ) {
+                        lv["size_k"] = smallest_physical * lv["stripes"]:1;
+	                lv["size"]   = sformat("%1K",smallest_physical * lv["stripes"]:1);
+			freeSpace = freeSpace - lv["size_k"]:0;
+			smallest_physical = 0;
+        		y2milestone("max-config for striped LV found. Setting size to %1", lv["size"]:"0");
+                    } else {	
+                        lv["size_k"] = freeSpace / max_counter;
+                        lv["size"]   = sformat("%1K",freeSpace);
+                    }
                 }
                 y2milestone("size_k before rounding %1",lv["size_k"]:0);
                 lv["size_k"] = (integer)( (lv["size_k"]:0*1024) / pesize ) * pesize / 1024; // rounding
