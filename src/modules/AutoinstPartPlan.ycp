@@ -449,7 +449,7 @@
                 // detected_fs!
                 if (haskey(pe,"used_fs") && pe["fsid"]:0 != 253)
                 {
-                    new_pe["filesystem"] = pe["used_fs"]:`ext3;
+                    new_pe["filesystem"] = pe["used_fs"]:Partitions::DefaultFs();
                     new_pe["format"] = new_pe["format"]:pe["format"]:true;
                 }
 

@@ -7,6 +7,7 @@ $Id$
     textdomain "autoinst";
 
     import "FileSystems";
+    import "Partitions";
     import "Arch";
 
 
@@ -424,9 +425,9 @@ $Id$
                         }
                         p["mount"] = mount;
                         if (e["reuse"]:false)
-                            p["used_fs"] = solution["partitions",pindex,"filesystem"]:p["detected_fs"]:`ext3;
+                            p["used_fs"] = solution["partitions",pindex,"filesystem"]:p["detected_fs"]:Partitions::DefaultFs();
                         else
-                            p["used_fs"] = solution["partitions",pindex,"filesystem"]:`ext3;
+                            p["used_fs"] = solution["partitions",pindex,"filesystem"]:Partitions::DefaultFs();
                         
                         value = solution["partitions",pindex,"fstopt"]:"";
                         if( size(value)>0 )
@@ -557,7 +558,7 @@ $Id$
                             part["mountby"] = mb;
                     }
                     part["used_fs"] = 
-                        solution["partitions",pindex,"filesystem"]:((mount == "swap")?(`swap):(`ext3));
+                        solution["partitions",pindex,"filesystem"]:((mount == "swap")?(`swap):(Partitions::DefaultFs()));
                     value = solution["partitions",pindex,"fstopt"]:"";
                     if( size(value)>0 )
                     {

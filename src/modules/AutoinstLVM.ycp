@@ -301,7 +301,7 @@
                     y2milestone("lv = %1",lv);
 
                     lv["device"] = "/dev/"+vgname+"/"+lv["lv_name"]:"";
-                    lv["used_fs"]    =    this_lv["used_fs"]:`ext3;
+                    lv["used_fs"]    =    this_lv["used_fs"]:Partitions::DefaultFs();
 
                     map lvret = $[];
                     if (lv["resize"]:false ) {
@@ -313,7 +313,7 @@
                                       "fstype"        : "LV",
                                       "nr"            : lv["nr"]:"",
                                       "mount"         : lv["mount"]:"" ,
-                                      "used_fs"       : this_lv["used_fs"]:`ext3,
+                                      "used_fs"       : this_lv["used_fs"]:Partitions::DefaultFs(),
                                       "format"        : lv["format"]:false ,
                                       "device"        : lv["device"]:""
                                     ];
@@ -326,7 +326,7 @@
                     }
                     targetMap      = lvret["targets"]:targetMap;
                 } else if ( lv["create"]:true ) {
-                    lv["used_fs"] = lv["filesystem"]:`ext3;
+                    lv["used_fs"] = lv["filesystem"]:Partitions::DefaultFs();
                     lv["create"] = true;
                     lv["format"] = lv["format"]:true;
                     lv["device"] = "/dev/" + current_vg + "/" + lv["name"]:"";
