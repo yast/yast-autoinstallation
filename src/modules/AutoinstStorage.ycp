@@ -528,6 +528,7 @@
             settings = region4resize(settings);
             settings = percent2size(settings);
             settings = setPartitionType(settings);
+            AutoinstLVM::ZeroNewPartitions = settings["zero_new_partitions"]:true;
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
