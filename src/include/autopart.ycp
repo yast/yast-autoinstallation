@@ -215,6 +215,7 @@ $Id$
 
     /**
      * Find matching disk
+     * find_matching_disk( ["/dev/sda"], Storage::GetTargetMap(), AutoTargetMap["/dev/sda"] )
      */
     define map find_matching_disk( list<string> disks, map target, map conf )
         ``{
@@ -1479,7 +1480,7 @@ $Id$
     
     /**
      * Collect gap information
-     * 
+     * get_gap_info( Storage::GetTargetMap()["/dev/sda"], AutoTargetMap["/dev/sda"], false )
      */
     define map get_gap_info( map disk, map pd, boolean add_exist_linux )
         ``{
