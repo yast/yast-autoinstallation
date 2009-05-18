@@ -19,6 +19,7 @@
     import "Popup";
     import "String";
     import "AutoinstStorage";
+    import "Partitions";
 
     include "partitioning/custom_part_dialogs.ycp";
     include "partitioning/custom_part_helptexts.ycp";
@@ -101,13 +102,13 @@
             this_drive = select (filter (map d, partitioning,``(d["device"]:"" == item)),0,$[]);
             new_val = $[
                         "partition_id"	: 131,
-                        "filesystem"	: `ext3
+                        "filesystem"	: Partitions::DefaultFs()
             ];
             drive = item;
         }
 
         new_val["fsid"] = new_val["partition_id"]:Partitions::fsid_native;
-        new_val["used_fs"] = new_val["filesystem"]:`ext3;
+        new_val["used_fs"] = new_val["filesystem"]:Partitions::DefaultFs();
 
         list<string> vgs = [];
         foreach( map d, partitioning, ``{
