@@ -28,6 +28,7 @@
     // Read existing fstab and format partitions, but dont create anything
     // Use same mountpoints etc.
     global boolean read_fstab = false;
+    global boolean ZeroNewPartitions = true;
 
     // Fstab options
     global map fstab = $[];
@@ -528,7 +529,6 @@
             settings = region4resize(settings);
             settings = percent2size(settings);
             settings = setPartitionType(settings);
-            AutoinstLVM::ZeroNewPartitions = settings["zero_new_partitions"]:true;
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
@@ -734,6 +734,7 @@ which root partition should be used.  Automatic installation not possible.
 
             if ( Storage::IsRealDisk( data) )
             {
+                ZeroNewPartitions = data["zero_new_partitions"]:true; // that's not really nice. Just an undocumented fallback which should never be used
                 y2milestone("Creating partition plans for %1", device);
                 
                 map sol = find_matching_disk([device], Storage::GetTargetMap(), data );	  

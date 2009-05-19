@@ -20,7 +20,6 @@
 
     include "partitioning/lvm_lv_lib.ycp";
 
-    global boolean ZeroNewPartitions = true;
 
     global map<string, map> ExistingLVM = $[];
 
@@ -186,7 +185,7 @@
      */
     global define boolean Write () {
         y2milestone("entering Write");
-        Storage::SetZeroNewPartitions(ZeroNewPartitions);
+        Storage::SetZeroNewPartitions(AutoinstStorage::ZeroNewPartitions);
 
         list    lvm_vgs          = get_vgs( targetMap );
         string current_vg     = "";
