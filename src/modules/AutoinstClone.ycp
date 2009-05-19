@@ -115,50 +115,10 @@
      */
     global define map General()
     {
-        import "Language";
         import "Mode";
         Mode::SetMode ("normal");
-        import "Keyboard";
-        import "Timezone";
 
         map general = $[];
-        general["language"] = Language::language;
-
-        map keyboard = $[];
-        y2debug("Current Keyboard: %1", Keyboard::default_kbd);
-        keyboard["keymap"]  = Keyboard::current_kbd;
-
-        general["keyboard"] = keyboard;
-        map clock = $[];
-        clock["timezone"]   = Misc::SysconfigRead(.sysconfig.clock.TIMEZONE, Timezone::timezone );
-        string hwclock = "";
-        if ( size( Storage::GetWinPrimPartitions( Storage::GetTargetMap() ) ) > 0 )
-        {
-            // Win partitions present ==> assume local time.
-            hwclock = "--localtime";
-            y2debug("Assuming local time");
-        }
-        else
-        {
-            // No Win partitions ==> assume UTC.
-            hwclock = "-u";
-            y2debug("Assuming UTC");
-        }
-        string hwc   = Misc::SysconfigRead(.sysconfig.clock.HWCLOCK, hwclock);
-        if (hwc == "--localtime")
-        {
-            clock["hwclock"] = "localtime";
-        }
-        else if (hwc == "-u")
-        {
-            clock["hwclock"] = "UTC";
-        }
-        else
-        {
-            clock["hwclock"] = "";
-        }
-        general["clock"]    = clock;
-
         map mouse = $[];
         mouse["id"]	    = Misc::SysconfigRead(.sysconfig.mouse.YAST_MOUSE, "probe" );
         general["mouse"]    = mouse;
