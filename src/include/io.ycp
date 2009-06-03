@@ -193,6 +193,37 @@
 	    WFM::Execute(.local.umount, mount_point);
 
 	}
+	else if (Scheme == "cifs")  // CIFS
+	{
+	    if (!(boolean)SCR::Execute(.target.mount,
+                        [ "//" + Host + dirname(Path), mount_point ], "-t cifs -o guest,ro" ))
+	    {
+		y2warning("Mount failed");
+                // autoyast tried to mount a NFS directory which failed
+                GET_error = sformat(_("Mounting %1 failed."), "//" + Host + dirname(Path) );
+		return (false);
+	    }
+
+            string copyCmd = "/bin/cp " + mount_point + "/" + basename(Path) +
+                " " + Localfile;
+            y2milestone("Copy Command: %1", copyCmd);
+	    if (WFM::Execute (.local.bash, copyCmd ) == 0)
+	    {
+                GET_error = "";
+		ok = true;
+	    }
+	    else
+	    {
+                // autoyast tried to copy a file via NFS which failed
+                GET_error = sformat(_("Remote file %1 cannot be retrieved"),  mount_point + "/"+ basename(Path) );
+		y2error("remote file %1 can't be retrieved",  mount_point + "/"
+                        + basename(Path));
+
+	    }
+
+	    WFM::Execute(.local.umount, mount_point);
+
+	}
 	else if (Scheme == "floppy" || Scheme == "usb")
 	{
 	    if (StorageDevices::FloppyReady() && Scheme == "floppy")
