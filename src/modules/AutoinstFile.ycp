@@ -96,8 +96,10 @@
                 ``{
             string alternate_location = sformat("%1/%2", AutoinstConfig::files_dir, counter);
             string alter_file = sformat("file_%1",  counter);
-            if (file["file_contents"]:"" != "")
-            {
+            if( size(file["file_path"]:"dummy")-1 == findlastof(file["file_path"]:"", "/") ) {
+                // directory
+                SCR::Execute (.target.mkdir, file["file_path"]:alternate_location);
+            } else if (file["file_contents"]:"" != "") {
                 y2milestone("AutoInstall: Copying file %1",  file["file_path"]:alternate_location );
                 list t = splitstring( file["file_path"]:alternate_location, "/");
                 integer pos = size(t) - 1;
