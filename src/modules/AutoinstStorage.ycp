@@ -729,8 +729,10 @@ which root partition should be used.  Automatic installation not possible.
 
         foreach (string device, map data, AutoTargetMap,
                  ``{
-            if( !haskey( Storage::GetTargetMap(), device ) )
+            if( !haskey( Storage::GetTargetMap(), device ) ) {
+                Report::Error( sformat( _("device '%1' not found by storage backend"), device ) );
                 y2milestone("device %1 not found in TargetMap", device);
+            }
 
             if ( Storage::IsRealDisk( data) )
             {
