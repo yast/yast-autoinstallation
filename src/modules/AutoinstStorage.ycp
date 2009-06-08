@@ -284,7 +284,7 @@
                     } else if( p["mountby"]:`none == `id ) {
                         mountByIsList = true;
                         mountby = "udev_id";
-                    } else {
+                    } else if( p["mountby"]:`none != `device ) {
                         y2milestone("unknown mountby parameter '%1' will be ignored",p["mountby"]:`none);
                     }
                 }
