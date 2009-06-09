@@ -85,6 +85,47 @@
         string notFound = "";
         Packages::Init(true);
         Packages::InitializeAddOnProducts();
+        list<string> packagesAvailable = Pkg::GetPackages (`available, true);
+        list<string> patternsAvailable = [];
+        list<map<string,any> > allPatterns = Pkg::ResolvableDependencies ("", `pattern, "");
+        allPatterns = filter( map<string,any> m, allPatterns, ``{
+            if( m["user_visible"]:false )
+                patternsAvailable = add( patternsAvailable, m["name"]:"" );
+            return m["user_visible"]:false;
+        });
+
+        list<string> regexFound = [];
+        settings["packages"] = (list<string>)filter( string want_pack, (list<string>)settings["packages"]:[], ``{
+            if(  !issubstring( want_pack, "/" ) )
+                return true;
+            want_pack = deletechars( want_pack, "/" );
+            foreach( string pack, packagesAvailable, ``{
+                y2milestone("matching %1 against %2", pack, want_pack);
+                if( regexpmatch (pack, want_pack) ) {
+                    regexFound = add(regexFound, pack);
+                    y2milestone("match");
+                }
+            });
+            return false;
+        });
+        settings["packages"] = (list<string>)union( settings["packages"]:[], regexFound );
+
+        regexFound = [];
+        patterns = (list<string>)filter( string want_patt, patterns, ``{
+            if(  !issubstring( want_patt, "/" ) )
+                return true;
+            want_patt = deletechars( want_patt, "/" );
+            foreach( string patt, patternsAvailable, ``{
+                y2milestone("matching %1 against %2", patt, want_patt);
+                if( regexpmatch (patt, want_patt) ) {
+                    regexFound = add(regexFound, patt);
+                    y2milestone("match");
+                }
+            });
+            return false;
+        });
+        patterns = (list<string>)union( patterns, regexFound );
+
         foreach( string pack, settings["packages"]:[], ``{
             if( ! Pkg::IsAvailable(pack) && Stage::initial() ) {
                 notFound = notFound + pack + "\n";
