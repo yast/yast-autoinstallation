@@ -304,7 +304,7 @@
      		WFM::Execute(.local.mount, [sformat("/dev/%1", Host) ,
                             mount_point]);
 
-		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  Path + " " + Localfile) != 0 )
+		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  "/" + Path + " " + Localfile) != 0 )
 		{
                     // autoyast tried to copy a file but that file can't be found
                     GET_error = sformat(_("File %1 cannot be found"),mount_point + Path);
