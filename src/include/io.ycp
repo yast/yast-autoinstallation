@@ -247,8 +247,11 @@
                     if( d["bus"]:"USB" == "SCSI" && haskey(d, "dev_name") ) {
                         integer i = 0;
                         string dev = d["dev_name"]:"";
-                        while( SCR::Read(.target.lstat, dev) != $[] ) {
-                            WFM::Execute(.local.mount, [ dev, mount_point ]);
+                        while( SCR::Read(.target.lstat, dev) != $[] || i < 5 ) {
+                            if( !(boolean)WFM::Execute(.local.mount, [ dev, mount_point ]) ) {
+                                y2milestone("mount failed for %1", dev);
+                                continue;
+                            }
                             if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + "/" + Path + " " + Localfile) != 0) {
                                 y2milestone("not found on %1",dev);
                             } else {
