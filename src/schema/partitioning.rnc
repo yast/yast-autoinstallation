@@ -50,6 +50,8 @@ y2_partition =
   | part_raid_type
   | part_region
   | part_size
+  | part_stripes
+  | part_stripesize
 partition = element partition { y2_partition* }
 part_create =
   element create { BOOLEAN }
@@ -113,6 +115,10 @@ part_partition_id =
   element partition_id { INTEGER }
 part_filesystem_id =
   element filesystem_id { INTEGER }
+part_stripes =
+  element stripes { INTEGER }
+part_stripesize =
+  element stripesize { INTEGER }
 part_region =
   element region {
     LIST,
