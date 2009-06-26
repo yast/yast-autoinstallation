@@ -27,6 +27,7 @@
   define DriveT parentDrive = $[];
   define integer driveId = 0;
   define integer partitionIdx = 0;
+  define boolean dirty = false;
 
   define list<string>
     getAvailableMountPoints(){
@@ -84,7 +85,7 @@
   }
   define list<term>
     getVolgroups(){
-    return add( toItemList( AutoinstPartPlan::getAvailableVolgroups() ), `item(`id(`none),"<none>") );
+    return add( toItemList( AutoinstPartPlan::getAvailableVolgroups() ), `item(`id(`none),_("<none>")) );
   }
   define void enableMount(){
     UI::ChangeWidget(`id(`cbMountPoint), `Enabled, true );
@@ -108,6 +109,8 @@
       string mpString = "";
       string lvName = "";
       string lvmGroup = "";
+      integer stripes = 1;
+      integer stripesize = 0;
       integer partId = 131;
 
       any mpAny = UI::QueryWidget(`id(`cbMountPoint),`Value);
@@ -120,11 +123,13 @@
       if( isOnVolgroup() ){
 	/* LV */
 	lvName = (string) UI::QueryWidget( `id(`lvName), `Value );
-	if( "" == lvName ){
+        stripes = (integer) UI::QueryWidget( `id(`numberStripes), `Value );
+        stripesize = (integer) UI::QueryWidget( `id(`stripesize), `Value );
+	if( "" == lvName ) {
 	  Popup::Warning( _("Please provide a logical volume name.") );
 	}
-      }
-      else{
+      } else {
+        UI::ChangeWidget( `id(`striping), `Enabled, false );
 	if( (symbol) UI::QueryWidget(`id(`cbVolgroup), `Value) != `none ){
 	  /* PV */
 	  /* `/dev/system1 -> "system1" */
@@ -141,6 +146,13 @@
       part = AutoinstPartition::set( part, "mount",mpString);
       part = AutoinstPartition::set( part, "lvm_group",lvmGroup);
       part = AutoinstPartition::set( part, "lv_name",lvName);
+      if( stripes > 1 && stripesize > 0 && (boolean)UI::QueryWidget(`id(`striping), `Value) ) {
+        part = AutoinstPartition::set( part, "stripes", stripes );
+        part = AutoinstPartition::set( part, "stripesize", stripesize );
+      } else {
+        part = remove( part, "stripes" );
+        part = remove( part, "stripesize" );
+      }
 
       string unit = symbol2string((symbol)UI::QueryWidget(`id(`unit), `Value));
       string sizeVal = "";
@@ -201,7 +213,25 @@
 	    lvName = AutoinstPartition::getLVNameFor( mountPoint );
 	  }
 	  UI::ChangeWidget(`id(`lvName), `Value, lvName);
-	}
+          UI::ChangeWidget(`id(`stripesize), `Value, currentPartition["stripesize"]:0 );
+          UI::ChangeWidget(`id(`numberStripes), `Value, currentPartition["stripes"]:1 );
+          if( currentPartition["stripes"]:1 > 1 ) {
+                UI::ChangeWidget(`id(`striping), `Enabled, true );
+                UI::ChangeWidget(`id(`striping), `Value, true );
+                UI::ChangeWidget(`id(`numberStripes), `Enabled, true );
+                UI::ChangeWidget(`id(`stripesize), `Enabled, true );
+          } else {
+                UI::ChangeWidget(`id(`striping), `Enabled, true );
+                UI::ChangeWidget(`id(`striping), `Value, false );
+                UI::ChangeWidget(`id(`numberStripes), `Enabled, false );
+                UI::ChangeWidget(`id(`stripesize), `Enabled, false );
+          }
+	} else {
+                UI::ChangeWidget(`id(`striping), `Value, false );
+                UI::ChangeWidget(`id(`striping), `Enabled, false );
+                UI::ChangeWidget(`id(`numberStripes), `Enabled, false );
+                UI::ChangeWidget(`id(`stripesize), `Enabled, false );
+        }
 	UI::ChangeWidget(`id(`cbMountPoint), `Value, mountPoint );
       }
       if( 0 == size( getVolgroups() ) ){
@@ -310,8 +340,9 @@
 	currentPartition, driveId,partitionIdx);
     PartitionT storedPartition = PartitionLoad( driveId, partitionIdx );
 
-    if( ! AutoinstPartition::areEqual( currentPartition, storedPartition ) ){
+    if( ! AutoinstPartition::areEqual( currentPartition, storedPartition ) || dirty ){
       if( Popup::YesNo( _("Store unsaved changes to partition?") ) ){
+        dirty = false;
 	if( PartitionCheckSanity( currentPartition ) ){
 	  AutoinstPartPlan::updatePartition(driveId, partitionIdx, currentPartition );
 	}
@@ -364,7 +395,13 @@
 		  `Left(`CheckBox(`id(`resizePartition),`opt(`notify),_("Res&ize existing partition")))
 		  ) /* VBox */
 		),/* HBox */
-	      `VSpacing(1),
+                `VSpacing(1),
+                 `HBox( `CheckBox(`id(`striping), `opt(`notify), _("Activate Striping") ),
+                 `IntField(`id(`numberStripes),`opt(`notify),_("Number of Stripes"),1,9,1),
+                 `IntField(`id(`stripesize), `opt(`notify),_("Stripe size"),0,32,0),
+                 `HStretch()
+                ), /* HBox */
+          `VSpacing(1),
 	      `PushButton(`id(`advanced), _("Advan&ced")),
 	      `VSpacing(2),
 	      `PushButton( `id(`apply),_("Apply"))
@@ -374,7 +411,10 @@
     UI::ReplaceWidget(`id(replacement_point), contents );
     /* only numbers are allowed in size */
     UI::ChangeWidget(`id(`size), `ValidChars, "0123456789" );
-    updatePartitionDialogGUI();
+    UI::ChangeWidget(`id(`striping), `Enabled, isOnVolgroup() );
+    UI::ChangeWidget(`id(`numberStripes), `Enabled, (boolean)UI::QueryWidget( `id(`striping), `Value) );
+    UI::ChangeWidget(`id(`stripesize), `Enabled, (boolean)UI::QueryWidget( `id(`striping), `Value) );
+  updatePartitionDialogGUI();
   }
 
   define void PartitionNew(){
@@ -503,6 +543,12 @@
 	  UI::ChangeWidget(`id(`cbFileSystem), `Value, `swap );
 	  UI::ChangeWidget(`id(`cbFileSystem), `Enabled, false );
 	}
+      }
+      else if( event == `striping ) {
+        UI::ChangeWidget(`id(`numberStripes), `Value, 1 );
+        UI::ChangeWidget(`id(`numberStripes), `Enabled, (boolean)UI::QueryWidget( `id(`striping), `Value) );
+        UI::ChangeWidget(`id(`stripesize), `Enabled, (boolean)UI::QueryWidget( `id(`striping), `Value) );
+        dirty = true;
       }
     }
   }
