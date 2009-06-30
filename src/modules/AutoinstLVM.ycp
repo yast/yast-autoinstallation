@@ -376,6 +376,7 @@
             string     use    = volume_group["use"]:"none";
             boolean     lvm2    = volume_group["lvm2"]:true;
             string lvm_string = lvm2 ? "lvm2" : "lvm";
+            integer pesize = volume_group["pesize"]:1;
 
             string     vgname    = substring(device, 5);
             current_vg = vgname;
