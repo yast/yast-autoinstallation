@@ -199,6 +199,7 @@ DEFAULT linux
        </pxelinux-config>
        <tftp-server>192.168.66.1</tftp-server>
        <pxelinux-dir>/pxelinux.cfg</pxelinux-dir>
+       <filename>__MAC__</filename>   <!-- since openSUSE 11.2, not SLES11 -->
      </pxe>
 ]]>
         </screen>
@@ -215,6 +216,11 @@ DEFAULT linux
        Of course this requires that the machine will get the same IP address again after the
        reboot and if you want to do another autoinstallation for that machine, you have to
        remove the file from the TFTP server.
+      </para>
+      <para>
+       Since openSUSE 11.2 (not SLES11) you can configure the filename too that will be uploaded.
+       If you use the "magic" __MAC__ filename, the filename will be the mac address of your machine like this "01-08-00-27-79-49-ee".
+       A missing filename creates the IP address filename like in the past.
       </para>
     </section>
   </section>
