@@ -199,10 +199,16 @@
         string tmpdir = (string)SCR::Read(.target.tmpdir);
         string hexfile = sformat("%1/%2", tmpdir, AutoInstallRules::hostid );
         map pxe = Profile::current["pxe"]:$[];
+        string dest_file = pxe["filename"]:AutoInstallRules::hostid;
+        if( dest_file == "__MAC__" ) {
+            string mac = AutoInstallRules::mac;
+            dest_file = sformat ("01-%1-%2-%3-%4-%5-%6", substring(mac,0,2), substring(mac,2,2), substring(mac,4,2),
+                                                         substring(mac,6,2), substring(mac,8,2), substring(mac,10,2));
+        }
         string server = pxe["tftp-server"]:"";
         if (server!="" && pxe["pxe_localboot"]:false)
         {
-            y2milestone("putting pxe local boot file on server :%1", server);
+            y2milestone("putting pxe local boot file '%2' on server :%1", server, dest_file);
             string config = pxe["pxelinux-config"]:"";
             string dir = pxe["pxelinux-dir"]:"pxelinux.cfg";
             if (config == "")
@@ -212,8 +218,7 @@
 
             SCR::Write(.target.string, hexfile,  config);
 
-            return TFTP::Put(server, dir + "/" + AutoInstallRules::hostid,
-                hexfile );
+            return TFTP::Put(server, dir + "/" + dest_file, hexfile );
         }
         return true;
     }
