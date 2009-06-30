@@ -483,6 +483,9 @@
                     lv["size_k"] = freeSpace;
                     lv["size"]   = sformat("%1K",freeSpace);
                 }
+                y2milestone("size_k before rounding %1",lv["size_k"]:0);
+                lv["size_k"] = (integer)( (lv["size_k"]:0*1024) / pesize ) * pesize / 1024; // rounding
+                y2milestone("size_k after rounding %1",lv["size_k"]:0);
 
                 list<map> lvlist =  ExistingLVM[device, "partitions"]:[];
 
