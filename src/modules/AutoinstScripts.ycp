@@ -18,6 +18,7 @@
     import "Service";
     import "Popup";
     import "Label";
+    import "Report";
 
     include "autoinstall/io.ycp";
 
@@ -141,8 +142,7 @@
             else if (s["type"]:"" == "postpartitioning-scripts")
                 postpart = add(postpart,s);
         });
-
-
+        
         // clean
         list<map> expre =  maplist (map p, pre,  ``{
             return ($["filename":p["filename"]:"",
@@ -150,6 +150,7 @@
                       "source":p["source"]:"",
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
+                      "feedback_type":p["feedback_type"]:"",
                       "debug":p["debug"]:true
                     ]);
         });
@@ -159,6 +160,7 @@
                       "source":p["source"]:"",
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
+                      "feedback_type":p["feedback_type"]:"",
                       "debug":p["debug"]:true,
                       "network_needed":p["network_needed"]:false
                       ]
@@ -171,6 +173,7 @@
                       "chrooted":p["chrooted"]:false,
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
+                      "feedback_type":p["feedback_type"]:"",
                       "debug":p["debug"]:true
                     ]);
         });
@@ -187,6 +190,7 @@
                       "source":p["source"]:"",
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
+                      "feedback_type":p["feedback_type"]:"",
                       "debug":p["debug"]:true
                     ]);
         });
@@ -360,7 +364,8 @@
             boolean chrooted,
             boolean debug,
             boolean feedback,
-            boolean network
+            boolean network,
+            string feedback_type
             )
     {
         boolean mod = false;
@@ -377,6 +382,7 @@
                 oldScript=add(oldScript,"debug",debug);
                 oldScript=add(oldScript,"feedback",feedback);
                 oldScript=add(oldScript,"network_needed",network);
+                oldScript=add(oldScript,"feedback_type", feedback_type);
 
                 mod = true;
                 return oldScript;
@@ -397,6 +403,7 @@
             script=add(script,"debug",debug);
             script=add(script,"feedback",feedback);
             script=add(script,"network_needed",network);
+            script=add(script,"feedback_type", feedback_type);
 
             merged=add(merged,script);
         }
@@ -785,7 +792,15 @@ Experimental
                         feedback = (string)SCR::Read(.target.string, current_logdir+"/"+scriptName+".log" );
                     }
                     if( size(feedback) > 0 ) {
-                        Popup::LongText("", `RichText(`opt(`plainText), feedback), 50, 20 );
+                        if( s["feedback_type"]:"" == "" ) {
+                            Popup::LongText("", `RichText(`opt(`plainText), feedback), 50, 20 );
+                        } else if( s["feedback_type"]:"" == "message" ) {
+                            Report::Message( feedback );
+                        } else if( s["feedback_type"]:"" == "warning" ) {
+                            Report::Warning( feedback );
+                        } else if( s["feedback_type"]:"" == "error" ) {
+                            Report::Error( feedback );
+                        }
                     }
                 }
             }
