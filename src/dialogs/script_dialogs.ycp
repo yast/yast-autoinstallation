@@ -163,12 +163,22 @@ you to debug your script.</P>
                         ),
                   `HBox(
                                 // a checkbox where you can choose if you want to see script-feedback output or not
-                                `CheckBox( `id( `feedback ), _("&Feedback"), ( script["feedback"]:false ) ),
+                                `CheckBox( `id( `feedback ), `opt(`notify), _("&Feedback"), ( script["feedback"]:false ) ),
                                 // a checkbox where you can choose if you want to see script-debug output or not
                                 `CheckBox( `id( `debug    ), _("&Debug"),    ( script["debug"]:true ) ),
                                 `CheckBox( `id( `chrooted ), _("&Chrooted"), ( script["chrooted"]:false ) ),
                                 // a checkbox where you can choose if you need to have network when the script is running
                                 `CheckBox( `id( `network ),  _("&Network"),  ( script["network_needed"]:false ) )
+                   ),
+                  `HBox(
+                                // a checkbox where you can choose if you want to see script-feedback output or not
+                                `ComboBox( `id( `feedback_type ), _("&Feedback Type"), 
+                                            [ `item(`id(""), _("none"), (script["feedback_type"]:"" == "")),
+                                              `item(`id("message"), _("Message"), (script["feedback_type"]:"" == "message")),
+                                              `item(`id("warning"), _("Warning"), (script["feedback_type"]:"" == "warning")),
+                                              `item(`id("error")  , _("Error"),   (script["feedback_type"]:"" == "error"))
+                                              ]
+                                )
                    ),
                   `VSpacing(1),
                   `HBox(
@@ -202,6 +212,9 @@ you to debug your script.</P>
                 UI::ChangeWidget (`id(`feedback), `Enabled, false);
         }
 
+        if( !(boolean)UI::QueryWidget( `id(`feedback), `Value ) )
+            UI::ChangeWidget (`id(`feedback_type), `Enabled, false );
+
         if (mode == `edit)
         {
             UI::ChangeWidget(`id(`filename), `Enabled, false);
@@ -217,6 +230,7 @@ you to debug your script.</P>
                 string interpreter = (string)UI::QueryWidget(`id(`interpreter), `Value);
                 string source = (string)UI::QueryWidget(`id(`source), `Value);
                 boolean feedback = (boolean)UI::QueryWidget(`id(`feedback), `Value);
+                string  feedback_type = (string)UI::QueryWidget(`id(`feedback_type), `Value);
                 boolean debug    = (boolean)UI::QueryWidget(`id(`debug), `Value);
                 boolean chrooted = (boolean)UI::QueryWidget(`id(`chrooted), `Value);
                 boolean network  = (boolean)UI::QueryWidget(`id(`network),  `Value);
@@ -231,7 +245,7 @@ name and the content of the script.
                 }
                 else
                 {
-                    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type, chrooted, debug, feedback, network);
+                    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type, chrooted, debug, feedback, network, feedback_type);
                 }
             }
             else if (ret == `loadsource)
@@ -269,6 +283,9 @@ name and the content of the script.
                         UI::ChangeWidget (`id(`network),  `Value, false);
                         UI::ChangeWidget (`id(`network),  `Enabled, false);
                 }
+            } else if( ret == `feedback ) {
+                UI::ChangeWidget( `id(`feedback_type), `Enabled, (boolean)UI::QueryWidget( `id(`feedback), `Value ) );
+                UI::ChangeWidget( `id(`feedback_type), `Value, `id("no_type") );
             }
 
         } until (ret == `save || ret == `cancel || ret == `back);
