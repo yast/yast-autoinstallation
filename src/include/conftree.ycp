@@ -57,7 +57,15 @@
      */
     term groups( string selectedGroup ){
       list<term> itemList = [];
-      foreach(string k, map v,  Y2ModuleConfig::GroupMap, {
+      list<string> sortedGroups = maplist( string k, map v, Y2ModuleConfig::GroupMap, { return k; } ); // keys()
+      sortedGroups = sort( string a, string b, sortedGroups,
+                            ``{ integer aa = tointeger(Y2ModuleConfig::GroupMap[a, "SortKey"]:"500");
+                                integer bb = tointeger(Y2ModuleConfig::GroupMap[b, "SortKey"]:"500");
+                                return ( aa != bb ) ? (aa < bb):(a < b); // by "SortKey" or alphabetical
+                                });
+
+      foreach(string k, sortedGroups, {
+          map v = Y2ModuleConfig::GroupMap[k]:$[];
           string desktop_file = substring( v["X-SuSE-DocTeamID"]:"", 4 );
           string translation = dpgettext("desktop_translations", "/usr/share/locale/", "Name("+desktop_file+".desktop): "+v["Name"]:"" );
           if( translation == "Name("+desktop_file+".desktop): "+v["Name"]:"" )
