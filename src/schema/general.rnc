@@ -43,7 +43,7 @@ general = element general {
     }?
 }
 ask-list = element ask-list { LIST, ask* }
-ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path? & ask_pathlist? & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_frametitle? & ask_script? }
+ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path? & ask_pathlist? & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_frametitle? & ask_script? & ask_timeout? }
 ask_question = element question { text }
 ask_default = element default { text }
 ask_help = element help { text }
@@ -60,6 +60,7 @@ ask_entry_label = element label { text }
 ask_dialog = element dialog { text }
 ask_element = element element { text }
 ask_frametitle = element frametitle { text }
+ask_timeout = element timeout { INTEGER }
 ask_pathlist =  element pathlist {
     LIST,
     ask_path*
