@@ -73,6 +73,7 @@
             term help_term = `Empty();
             term title_term = `Empty();
             integer element_cnt = 0;
+            integer timeout = 0;
             history = add( history, dialog_nr );
             foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                 string pathStr  = ask["path"]:"";
@@ -86,15 +87,16 @@
                 title    = ask["title"]:"";
                 back_label = ask["back_label"]:back_label;
                 ok_label   = ask["ok_label"]:ok_label;
+                timeout = ask["timeout"]:0;
                 mod = true;
 
                 term dlg = `Dummy();
                 if( type == "boolean" ) {
                     boolean on=(ask["default"]:nil=="true")?(true):(false);
                     if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, `CheckBox(`id(entry_id), question,on ) ) );
+                        dlg = `Left( `Frame ( frametitle, `CheckBox(`id(entry_id), `opt(`notify), question,on ) ) );
                     } else {
-                        dlg = `Left( `CheckBox(`id(entry_id), question,on ) );
+                        dlg = `Left( `CheckBox(`id(entry_id), `opt(`notify), question,on ) );
                     }
                 } else if( type == "symbol" ) {
                     list<any> dummy = [];
@@ -103,9 +105,9 @@
                         dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
                     });
                     if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), question, dummy ) ) );
+                        dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), `opt(`notify), question, dummy ) ) );
                     } else {
-                        dlg = `Left( `ComboBox( `id(entry_id), question, dummy ) );
+                        dlg = `Left( `ComboBox( `id(entry_id), `opt(`notify), question, dummy ) );
                     }
                 } else if( type == "static_text" ) {
                     if( frametitle != "" ) {
@@ -117,13 +119,13 @@
                     if( ask["password"]:false == true ) {
                         if( frametitle != "" ) {
                             dlg = `Left( `Frame ( frametitle, `VBox(
-                                     `Password(`id(entry_id), question),
-                                     `Password(`id(`pass2), "")
+                                     `Password(`id(entry_id), `opt(`notify), question, ask["default"]:"" ),
+                                     `Password(`id(`pass2), `opt(`notify), "", ask["default"]:"" )
                                     ) ) );
                         } else {
                             dlg = `Left( `VBox(
-                                    `Password(`id(entry_id), question),
-                                    `Password(`id(`pass2), "")
+                                    `Password(`id(entry_id), `opt(`notify), question, ask["default"]:"" ),
+                                    `Password(`id(`pass2), `opt(`notify), "", ask["default"]:"" )
                                     ) );
                         }
                     } else {
@@ -134,15 +136,15 @@
                                 dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"",on) );
                             });
                             if( frametitle != "" ) {
-                                dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), question, dummy ) ) );
+                                dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), `opt(`notify), question, dummy ) ) );
                             } else {
-                                dlg = `Left( `ComboBox( `id(entry_id), question, dummy ) );
+                                dlg = `Left( `ComboBox( `id(entry_id), `opt(`notify), question, dummy ) );
                             }
                         } else {
                             if( frametitle != "" ) {
-                                dlg = `Left( `Frame ( frametitle, `TextEntry(`id(entry_id), question, ask["default"]:"" ) ) );
+                                dlg = `Left( `Frame ( frametitle, `TextEntry(`id(entry_id), `opt(`notify), question, ask["default"]:"" ) ) );
                             } else {
-                                dlg = `Left( `TextEntry(`id(entry_id), question, ask["default"]:"" ) );
+                                dlg = `Left( `TextEntry(`id(entry_id), `opt(`notify), question, ask["default"]:"" ) );
                             }
                         }
                     }
@@ -183,8 +185,12 @@
             if( size(history) < 2 )
                 UI::ChangeWidget(`id(`back) , `Enabled, false);
             while (true) {
-                any ret = UI::UserInput();
-                if( ret == `ok ) {
+                any ret = nil;
+                if( timeout == 0 )
+                    ret = UI::UserInput();
+                else
+                    ret = UI::TimeoutUserInput( timeout * 1000 );
+                if( ret == `ok || ret == `timeout ) {
                     integer runAgain = 0;
                     integer element_cnt = 0;
                     dialogs[dialog_nr] =  maplist( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
