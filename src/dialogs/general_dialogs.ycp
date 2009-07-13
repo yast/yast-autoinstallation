@@ -150,7 +150,7 @@ For signature handling, read the AutoYaST documentation.
                                                             `RadioButton(`id( `t_integer), `opt(`notify,`immediate),"Integer", defaultValues["type"]:"text"=="integer"?true:false) ) ) ),
 
                     `Left( `CheckBox( `id(`password), _("Password"), defaultValues["password"]:false ) ),
-                    `TextEntry( `id(`path), _("Path"), defaultValues["path"]:"" ),
+                    `TextEntry( `id(`path), _("Pathlist (separated by space)"),  mergestring( defaultValues["pathlist"]:[], " " ) ),
                     `TextEntry( `id(`file), _("File"), defaultValues["file"]:"" ),
                     `HBox(
                       `MinSize( 10,5,
@@ -225,8 +225,9 @@ For signature handling, read the AutoYaST documentation.
                     newVal["type"] = "boolean";
                 else if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_integer )
                     newVal["type"] = "integer";
-                if( (string)UI::QueryWidget(`id(`path), `Value) != "" )
-                    newVal["path"] = (string)UI::QueryWidget(`id(`path), `Value);
+                if( (string)UI::QueryWidget(`id(`path), `Value) != "" ) {
+                    newVal["pathlist"] = splitstring( (string)UI::QueryWidget(`id(`path), `Value), " ");
+                }
                 if( (string)UI::QueryWidget(`id(`file), `Value) != "" )
                     newVal["file"] = (string)UI::QueryWidget(`id(`file), `Value);
                 if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_text )
@@ -306,12 +307,7 @@ For signature handling, read the AutoYaST documentation.
                         `PushButton( `id( `addDialog ), `opt( `default, `hstretch ), _("Add to Dialog List") ),
                         `PushButton( `id( `applyDialog ), `opt( `default, `hstretch ), _("Apply changes to dialog") )
                     ),
-                    `MinSize( 10,5,
-                    `Table(
-                        `id(`dialogs), `opt(`notify,`immediate),
-                        `header(_("Title") ),
-                        dialogs
-                    ) ),
+                    `MinSize( 10, 5, `SelectionBox( `id(`dialogs), `opt(`notify,`immediate), _("Title"), dialogs ) ),
                     `HBox(
                         `PushButton( `id( `deleteDialog ), `opt( `default, `hstretch ), _("Delete Dialog") ),
                         `PushButton( `id( `dialogUp ), `opt( `default, `hstretch ), _("Dialog Up") ),
@@ -319,11 +315,11 @@ For signature handling, read the AutoYaST documentation.
                     ),
                     `Label( _("Questions in dialog") ),
                     `MinSize( 10,5,
-                    `Table(
+                    `SelectionBox( 
                         `id(`questions),
-                        `header(_("Question") ),
+                        _("Question"),
                         questions
-                    ) ),
+                        ) ),
                     `HBox(
                         `PushButton( `id( `addQuestion ), `opt( `default, `hstretch ), _("Add Question") ),
                         `PushButton( `id( `editQuestion ), `opt( `default, `hstretch ), _("Edit Question") ),
@@ -507,7 +503,6 @@ For signature handling, read the AutoYaST documentation.
                                            "stage":stage
                                            ]);
             }
-            y2milestone("UWE %1",ret);
             questions = [];
             askList = sort( map x, map y, askList, ``( x["dialog"]:-2 <  y["dialog"]:-1 ||
                                                      ( x["dialog"]:-2 == y["dialog"]:-1 && x["element"]:-2 < y["element"]:-1 ) ) );
