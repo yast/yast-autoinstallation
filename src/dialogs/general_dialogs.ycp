@@ -148,16 +148,18 @@ For signature handling, read the AutoYaST documentation.
                     `Left( `RadioButtonGroup( `id( `type ), `HBox( `RadioButton(`id( `t_text ), `opt(`notify,`immediate),"Text", defaultValues["type"]:"text" == "text"?true:false ),
                                                             `RadioButton(`id( `t_symbol), `opt(`notify,`immediate),"Symbol", defaultValues["type"]:"text"=="symbol"?true:false ),
                                                             `RadioButton(`id( `t_boolean), `opt(`notify,`immediate),"Boolean", defaultValues["type"]:"text"=="boolean"?true:false),
-                                                            `RadioButton(`id( `t_integer), `opt(`notify,`immediate),"Integer", defaultValues["type"]:"text"=="integer"?true:false) ) ) ),
-
-                    `Left( `CheckBox( `id(`password), _("Password"), defaultValues["password"]:false ) ),
+                                                            `RadioButton(`id( `t_integer), `opt(`notify,`immediate),"Integer", defaultValues["type"]:"text"=="integer"?true:false),
+                                                            `CheckBox( `id(`password), _("Password"), defaultValues["password"]:false ) )
+                                            )
+                    ),
                     `TextEntry( `id(`path), _("Pathlist for answers (multiple pathes are separated by space)"),  mergestring( defaultValues["pathlist"]:[], " " ) ),
                     `TextEntry( `id(`file), _("Store answer in this file"), defaultValues["file"]:"" ),
+                    `Label( _("Selection List for type 'Symbol'") ),
                     `HBox(
                       `MinSize( 10,5,
                         `Table(
                             `id(`selection),
-                            `header( "Label", _("Value") ),
+                            `header( _("Label"), _("Value") ),
                             selection
                         ) ),
                         `VBox(
