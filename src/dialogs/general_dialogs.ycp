@@ -144,15 +144,15 @@ For signature handling, read the AutoYaST documentation.
                     `TextEntry( `id(`frametitle), _("Frametitle"), defaultValues["frametitle"]:"" ),
                     `TextEntry( `id(`question), _("Question"), defaultValues["question"]:"" ),
                     `IntField(`id(`timeout),_("Timeout (zero means no timeout)"),0,999, defaultValues["timeout"]:0 ),
-                    `TextEntry( `id(`defaultVal), _("Default"), defaultValues["default"]:"" ),
+                    `TextEntry( `id(`defaultVal), "Default", defaultValues["default"]:"" ),
                     `Left( `RadioButtonGroup( `id( `type ), `HBox( `RadioButton(`id( `t_text ), `opt(`notify,`immediate),"Text", defaultValues["type"]:"text" == "text"?true:false ),
                                                             `RadioButton(`id( `t_symbol), `opt(`notify,`immediate),"Symbol", defaultValues["type"]:"text"=="symbol"?true:false ),
                                                             `RadioButton(`id( `t_boolean), `opt(`notify,`immediate),"Boolean", defaultValues["type"]:"text"=="boolean"?true:false),
                                                             `RadioButton(`id( `t_integer), `opt(`notify,`immediate),"Integer", defaultValues["type"]:"text"=="integer"?true:false) ) ) ),
 
                     `Left( `CheckBox( `id(`password), _("Password"), defaultValues["password"]:false ) ),
-                    `TextEntry( `id(`path), _("Pathlist (multiple pathes are separated by space)"),  mergestring( defaultValues["pathlist"]:[], " " ) ),
-                    `TextEntry( `id(`file), _("File"), defaultValues["file"]:"" ),
+                    `TextEntry( `id(`path), _("Pathlist for answers (multiple pathes are separated by space)"),  mergestring( defaultValues["pathlist"]:[], " " ) ),
+                    `TextEntry( `id(`file), _("Store answer in this file"), defaultValues["file"]:"" ),
                     `HBox(
                       `MinSize( 10,5,
                         `Table(
@@ -528,7 +528,7 @@ For signature handling, read the AutoYaST documentation.
                 askList = add( askList, $[ "dialog":max,
                                            "title":(string)UI::QueryWidget(`id(`dialogTitle), `Value),
                                            "help":(string)UI::QueryWidget(`id(`help), `Value),
-                                           "question":"edit question",
+                                           "question":_("Edit Question"),
                                            "element":0,
                                            "stage":stage
                                            ]);
