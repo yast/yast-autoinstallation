@@ -180,7 +180,15 @@ For signature handling, read the AutoYaST documentation.
         UI::ChangeWidget(`id(`selLabel), `Enabled, false );
         UI::ChangeWidget(`id(`selValue), `Enabled, false );
         UI::ChangeWidget(`id(`selection),`Enabled, false );
-        UI::ChangeWidget(`id(`password), `Enabled, true );
+        UI::ChangeWidget(`id(`password), `Enabled, false );
+
+        if( defaultValues["type"]:"text" == "text" ) {
+            UI::ChangeWidget(`id(`password), `Enabled, true );
+        } else if( defaultValues["type"]:"text" == "symbol" ) {
+            UI::ChangeWidget(`id(`selLabel), `Enabled, true );
+            UI::ChangeWidget(`id(`selValue), `Enabled, true );
+            UI::ChangeWidget(`id(`selection),`Enabled, true );
+        }
         repeat {
             if( size( (list)UI::QueryWidget(`id(`selection), `Items) ) == 0 ) {
                 UI::ChangeWidget(`id(`delSelection) , `Enabled, false);
