@@ -37,6 +37,8 @@
     import "AutoInstall";
     import "AutoinstSoftware";
 
+    boolean dopackages = true;
+
     symbol GUI() {
 	Mode::SetUI("commandline");
 	CommandLine::Error(_("Empty parameter list"));
@@ -58,8 +60,10 @@
             Profile::current = add( Profile::current, "networking", $[ "keep_install_network":true ] );
         }
 
-        Pkg::TargetInit ("/", false);
-        WFM::CallFunction("inst_rpmcopy", []);
+        if( dopackages ) {
+                Pkg::TargetInit ("/", false);
+                WFM::CallFunction("inst_rpmcopy", []);
+        }
         WFM::CallFunction("inst_autoconfigure", []);
 
     }
@@ -69,7 +73,8 @@
 	    CommandLine::Error(_("Path to autoyast profile must be set"));
 	    return false;
 	}
-
+        if( options["dopackages"]:"yes" == "no" )
+            dopackages = false;
         if( SCR::Read(.target.lstat, options["filename"]:"" ) == $[] || !Profile::ReadXML( options["filename"]:"" ) ) {
 	    Mode::SetUI("commandline");
             CommandLine::Print(_("Error while parsing the control file.
@@ -92,16 +97,21 @@ control file and try again.
             "setup" :   $[ 
 		"handler" : openFile, 
 		"help" : _("Configure the system using given autoyast profile"), 
-		"example" : "setup filename=/path/to/profile" ]
+		"example" : "setup filename=/path/to/profile dopackages=no" ]
         ],
         "options"       : $[
             "filename": $[
                 "type" : "string",
                 "help" : _("Path to autoyast profile")
+            ],
+            "dopackages": $[
+                "type" : "enum",
+                "typespec": ["yes", "no"],
+                "help" : _("enable/disable all package handling")
             ]
         ],
         "mappings"      : $[
-		    "setup"  :   ["filename"]
+		    "setup"  :   ["filename","dopackages"]
 		]
 	    ];
 
