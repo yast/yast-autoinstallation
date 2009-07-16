@@ -3409,11 +3409,51 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
                 <para><screen>&lt;timeout config:type="integer"&gt;30&lt;/timeout&gt;</screen></para></entry>
                 <entry>optional. A missing value is interpreted as 0 which means that there is no timeout</entry>
               </row>
+              <row>
+                <entry>default_value_script (available since openSUSE 11.2 but not in SLES11)</entry>
+                <entry>with 11.2 you can run scripts to set the default value for a question(see the table below for detailed instructions about default value scripts). It's useful if you can "calculate" a useful default value, especially in combination with the "timeout" option.
+                <para><screen>&lt;default_value_script&gt;...&lt;/default_value_script&gt;</screen></para></entry>
+                <entry>optional (default is no script)</entry>
+              </row>
             </tbody>
           </tgroup>
 
         </table>
     </para>
+
+          <para>
+            The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt;&lt;default_value_script&gt;...&lt;/default_value_script&gt;...&lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section. It's available since 11.2 (not SLES11).
+          </para>
+    <para>
+        <table frame='top'>
+          <title>XML representation</title>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Element</entry>
+                <entry>Description</entry>
+                <entry>Comment</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>source</entry>
+                <entry>the source code of the script. Whatever you echo to STDOUT will be used as default value for the ask-dialog. If your script has an exit code other than 0, the normal default element is used. Take care you echo with "echo -n" to suppress the '\n' and that you echo reasonable values and not "okay" for a boolean
+                <para><screen>&lt;source&gt;...&lt;/source&gt;</screen></para></entry>
+                <entry>this value is required. Otherwise nothing would be executed</entry>
+              </row>
+              <row>
+                <entry>interpreter</entry>
+                <entry>the interpreter to use
+                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry>default is shell (you can set "/bin/myinterpreter" as value too)</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+    </para>
+
+
           <para>
             The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt;&lt;script&gt;...&lt;/script&gt;...&lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section. It's available since 10.3 (not SLES10 SP1).
           </para>
