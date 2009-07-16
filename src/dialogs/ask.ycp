@@ -90,6 +90,21 @@
                 timeout = ask["timeout"]:0;
                 mod = true;
 
+                if( haskey( ask, "default_value_script" ) ) {
+                    string interpreter = ask["default_value_script", "interpreter"]:"shell";
+                    if( interpreter == "shell" )
+                        interpreter = "/bin/sh";
+                    else if( interpreter == "perl" )
+                        interpreter = "/usr/bin/perl";
+                    string scriptPath = sformat("%1/%2", AutoinstConfig::tmpDir,  "ask_default_value_script" );
+                    SCR::Write(.target.string, scriptPath, ask["default_value_script","source"]:"");
+                    map out = (map) SCR::Execute (.target.bash_output, interpreter + " " + scriptPath, $[]);
+                    y2debug("%1", out);
+                    if( out["exit"]:-1 == 0 )
+                        ask["default"] = out["stdout"]:ask["default"]:"";
+                    y2debug("default for '%1' is '%2' after script execution with exit code %3 (%4)", question, ask["default"]:"__undefined__", out["exit"]:-1, out["stderr"]:"");
+                }
+
                 term dlg = `Dummy();
                 if( type == "boolean" ) {
                     boolean on=(ask["default"]:nil=="true")?(true):(false);
