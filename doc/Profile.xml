@@ -42,8 +42,7 @@
       <screen>
 <![CDATA[
 <?xml version="1.0"?>
-<!DOCTYPE profile SYSTEM
- "/usr/share/autoinstall/dtd/profile.dtd">
+<!DOCTYPE profile>
  <profile
  xmlns="http://www.suse.com/1.0/yast2ns"
  xmlns:config="http://www.suse.com/1.0/configns">
@@ -109,8 +108,7 @@ exit 0
       <screen>
 <![CDATA[
 <?xml version="1.0"?>
-<!DOCTYPE profile SYSTEM
- "/usr/share/autoinstall/dtd/profile.dtd">
+<!DOCTYPE profile>
  <profile
  xmlns="http://www.suse.com/1.0/yast2ns"
  xmlns:config="http://www.suse.com/1.0/configns">
@@ -123,8 +121,7 @@ exit 0
     </example>
     <para>
       The profile element (root node) contains one or more distinct resource
-      elements. The permissible resource elements are specified in the
-      &dtd;. 
+      elements. The permissible resource elements are specified in the schema files
     </para>
     <section>
       <title>
@@ -134,17 +131,17 @@ exit 0
 	A resource element either contains multiple and distinct property and
 	resource elements or contains multiple instances of the same resource
 	element or is empty. The permissible content of a resource element is
-	specified in the &dtd;. 
+	specified in the schema files.
       </para>
       <para>
 	A property element is either empty or contains a literal value. The
 	permissible property elements and values in each resource element are
-	specified in the &dtd;.
+	specified in the schema files
       </para>
       <para>
 	An element can be either a container of other elements (a resource) or
 	have a literal value (a property), it can never be both. This
-	restriction is specified in the &dtd;. A configuration component with
+	restriction is specified in the schema files. A configuration component with
 	more than one value must either be represented as some kind of embedded
 	list in a property value or as a nested resource.
       </para>
@@ -189,7 +186,7 @@ exit 0
 	size and mount property.	
       </para>
       <para>
-	Although it is specified in the &dtd; that the partitions resource
+	Although it is specified in the schema files that the partitions resource
 	contains multiple instances, it is still required to specify this to
 	avoid wrong data typing in &yast2;. Using the example above, imagine having  a
 	drive with only one partition. This will result in interpreting the
@@ -245,7 +242,7 @@ exit 0
 	always be prefixed with <emphasis>config:</emphasis> . All profile attributes are
 	optional. Most can be used with both resource and property elements but
 	some can only be used with one type of element which is specified in
-	the &dtd;. 
+	the schema files. 
       </para>
    
     
@@ -253,12 +250,12 @@ exit 0
       The type of an element is defined using the <emphasis>config:type</emphasis> attribute. The
       type of a resource element is always RESOURCE , although this can
       also be made explicit with this attribute (to ensure correct
-      identification of an empty element for example when there is no &dtd;
+      identification of an empty element for example when there is no schema file
       to refer to). A resource element cannot be any other type and this
-      restriction is specified in the &dtd;. The type of a property element
+      restriction is specified in the schema file. The type of a property element
       determines the interpretation of its literal value. The type of a
-      property element defaults to <emphasis>STRING</emphasis> , as specified in the &dtd;. The
-      full set of permissible types is specified in the &dtd;. 
+      property element defaults to <emphasis>STRING</emphasis> , as specified in the schema file. The
+      full set of permissible types is specified in the schema file. 
     </para>
      
     </section>
