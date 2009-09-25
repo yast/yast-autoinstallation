@@ -424,9 +424,9 @@ $Id$
                         }
                         p["mount"] = mount;
                         if (e["reuse"]:false)			    
-                            p["used_fs"] = solution["partitions",pindex,"filesystem"]:p["detected_fs"]:`reiser;
+                            p["used_fs"] = solution["partitions",pindex,"filesystem"]:p["detected_fs"]:`ext3;
                         else
-                            p["used_fs"] = solution["partitions",pindex,"filesystem"]:`reiser;
+                            p["used_fs"] = solution["partitions",pindex,"filesystem"]:`ext3;
                         
                         value = solution["partitions",pindex,"fstopt"]:"";
                         if( size(value)>0 )
@@ -557,7 +557,7 @@ $Id$
                             part["mountby"] = mb;
                     }
                     part["used_fs"] = 
-                        solution["partitions",pindex,"filesystem"]:((mount == "swap")?(`swap):(`reiser));
+                        solution["partitions",pindex,"filesystem"]:((mount == "swap")?(`swap):(`ext3));
                     value = solution["partitions",pindex,"fstopt"]:"";
                     if( size(value)>0 )
                     {

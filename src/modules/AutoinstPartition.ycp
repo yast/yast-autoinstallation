@@ -42,7 +42,12 @@
     "mountby"	: `device,
     "resize"	: false,
     "lv_name"	: "",
+    "stripes"   : 1,
+    "stripesize" : 4,
     "lvm_group" : "",
+    "raid_name" : "",
+    "raid_type" : "",
+    "raid_options" : $[]
     ];
 
   define map<symbol,map> allfs = $[];
@@ -206,12 +211,25 @@
       newPart = set( newPart, "size", part["size"]:"" );
       newPart = set( newPart, "lv_name", part["lv_name"]:"" );
       newPart = set( newPart, "lvm_group", part["lvm_group"]:"" );
+      newPart = set( newPart, "stripes", part["stripes"]:1 );
+      newPart = set( newPart, "stripesize", part["stripesize"]:4 );
+      if( part["stripes"]:1 == 1 ) {
+        newPart = remove( newPart, "stripes" );
+        newPart = remove( newPart, "stripesize" );
+      }
       /* partition_id enforcement */
       if( haskey( part, "lvm_group" ) ){
 	newPart = set( newPart, "partition_id", 142 );
       }
       else if( "swap" == newPart["mount"]:"" ){
 	newPart = set( newPart, "partition_id", 130 );
+      }
+      if( haskey( part, "raid_name" ) ) {
+          newPart = set( newPart, "raid_name", part["raid_name"]:"" );
+          newPart = set( newPart, "raid_type", part["raid_type"]:"raid0" );
+      }
+      if( haskey( part, "raid_options" ) ) {
+          newPart = set( newPart, "raid_options", part["raid_options"]:$[] );
       }
       return newPart;
     }
