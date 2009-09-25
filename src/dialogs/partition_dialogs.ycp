@@ -102,13 +102,13 @@
             this_drive = select (filter (map d, partitioning,``(d["device"]:"" == item)),0,$[]);
             new_val = $[
                         "partition_id"	: 131,
-                        "filesystem"	: `reiser
+                        "filesystem"	: `ext3
             ];
             drive = item;
         }
 
         new_val["fsid"] = new_val["partition_id"]:Partitions::fsid_native;
-        new_val["used_fs"] = new_val["filesystem"]:`reiser;
+        new_val["used_fs"] = new_val["filesystem"]:`ext3;
 
         list<string> vgs = [];
         foreach( map d, partitioning, ``{

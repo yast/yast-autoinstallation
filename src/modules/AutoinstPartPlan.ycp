@@ -438,6 +438,10 @@
                 {
                     new_pe["lv_name"] = pe["name"]:"";
                     new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
+                    if( haskey( pe, "stripes" ) ) {
+                        new_pe["stripes"] = pe["stripes"]:0;
+                        new_pe["stripesize"] = pe["stripesize"]:4;
+                    }
                 }
                 if (haskey(pe,"used_by_type") && pe["used_by_type"]:`nothing == `UB_MD)
                 {
@@ -449,7 +453,7 @@
                 // detected_fs!
                 if (haskey(pe,"used_fs") && pe["fsid"]:0 != 253)
                 {
-                    new_pe["filesystem"] = pe["used_fs"]:`reiser;
+                    new_pe["filesystem"] = pe["used_fs"]:`ext3;
                     new_pe["format"] = new_pe["format"]:pe["format"]:true;
                 }
 
