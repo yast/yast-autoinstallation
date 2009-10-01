@@ -217,6 +217,10 @@
         newPart = remove( newPart, "stripes" );
         newPart = remove( newPart, "stripesize" );
       }
+      if( haskey( part, "fstopt" ) ) {
+        newPart = set( newPart, "fstopt", part["fstopt"]:"defaults" );
+      }
+
       /* partition_id enforcement */
       if( haskey( part, "lvm_group" ) ){
 	newPart = set( newPart, "partition_id", 142 );
