@@ -193,6 +193,9 @@
       newPart = set( newPart, "crypt_fs", part["crypt_fs"]:false);
       newPart = set( newPart, "crypt_key", part["crypt_key"]:"" );
       newPart = set( newPart, "format", part["format"]:true );
+      if( haskey( part, "fstopt" ) ) {
+        newPart = set( newPart, "fstopt", part["fstopt"]:"defaults" );
+      }
       if( haskey( part, "filesystem" ) ){
 	newPart = set( newPart, "filesystem", part["filesystem"]:`Empty );
 	newPart = set( newPart, "format", true);
