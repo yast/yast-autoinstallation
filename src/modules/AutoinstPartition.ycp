@@ -213,6 +213,9 @@
       newPart = set( newPart, "lvm_group", part["lvm_group"]:"" );
       newPart = set( newPart, "stripes", part["stripes"]:1 );
       newPart = set( newPart, "stripesize", part["stripesize"]:4 );
+      if( haskey( part, "fstopt" ) ) {
+          newPart = set( newPart, "fstopt", part["fstopt"]:"defaults" );
+      }
       if( part["stripes"]:1 == 1 ) {
         newPart = remove( newPart, "stripes" );
         newPart = remove( newPart, "stripesize" );
