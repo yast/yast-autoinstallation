@@ -466,7 +466,6 @@
                 // bnc#542331 (L3: AutoYaST clone module fails to set format option for non-formatted logical volumes)
                 if( pe["detected_fs"]:`known == `unknown ) {
                     new_pe["format"] = false;
-                    new_pe = remove( new_pe, "filesystem" );
                 }
 
                 if (haskey(pe,"nr") && pe["type"]:`unknown != `lvm)
