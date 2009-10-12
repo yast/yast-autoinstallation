@@ -75,7 +75,7 @@
     global define integer humanStringToByte( string s, boolean b ) {
         if( size(s) == 0 )
             s = "0b";
-        if( findfirstnotof( s, "1234567890" ) == nil )
+        if( findfirstof( s, "b" ) == nil )
             s = s + "b";
         return Storage::ClassicStringToByte(s);
     }
@@ -529,6 +529,14 @@
             settings = region4resize(settings);
             settings = percent2size(settings);
             settings = setPartitionType(settings);
+            settings = maplist( map d, settings, ``{
+                d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
+                    if( haskey( pe, "size" ) )
+                        pe["size"] = sformat("%1",humanStringToByte(pe["size"]:"", false));
+                    return pe;
+                });
+                return d;
+            });
             AutoPartPlan = preprocess_partition_config(settings);
             AutoPartPlan = checkSizes(AutoPartPlan);
         } else {
