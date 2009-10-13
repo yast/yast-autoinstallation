@@ -110,7 +110,7 @@ more <b>add-on</b> selections and packages.
         {
             y2milestone("available patterns %1",Pkg::ResolvableProperties ("", `pattern, "") );
             foreach( map<string,any> p, Pkg::ResolvableProperties ("", `pattern, ""), ``{
-                if( p["status"]:`nothing == `selected || p["status"]:`nothing == `installed )
+                if( p["status"]:`nothing == `selected )
                    patadd = add(patadd, p["name"]:"");
             });
         } else {
