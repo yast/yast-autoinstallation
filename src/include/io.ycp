@@ -251,6 +251,7 @@
                             if( !(boolean)WFM::Execute(.local.mount, [ dev, mount_point ]) ) {
                                 y2milestone("mount failed for %1", dev);
                                 i = i + 1;
+                                dev = d["dev_name"]:"" + sformat("%1",i);
                                 continue;
                             }
                             if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + "/" + Path + " " + Localfile) != 0) {
