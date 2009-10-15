@@ -15,6 +15,7 @@
     import "Installation";
     import "URL";
     import "SLP";
+    import "Stage";
 
     include "autoinstall/xml.ycp";
 
@@ -342,7 +343,7 @@
      */
     global define void AutoinstConfig ()
         ``{
-        if (Mode::autoinst ())
+        if (Mode::autoinst () && Stage::initial() )
         {
             any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
             if (autoinstall != nil && is ( autoinstall , string ) )
