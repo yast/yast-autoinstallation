@@ -661,9 +661,9 @@ Experimental
             }
             else
             {
-                // disable all sources and finish target
-                Pkg::SourceFinishAll();
-                Pkg::TargetFinish();
+                // makes post-scripts with network_needed=true throwing an error (bnc#553284)
+                //Pkg::SourceFinishAll();
+                //Pkg::TargetFinish();
 
                 scriptPath = sformat("%1/%2", AutoinstConfig::scripts_dir, scriptName);
                 y2milestone("Writing  script into %1", scriptPath);
