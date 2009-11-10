@@ -14,6 +14,7 @@
     import "HTTP";
     import "StorageDevices";
     import "TFTP";
+	import "AutoinstConfig";
 
     string GET_error = "";
 
@@ -122,39 +123,52 @@
 
 	    if (SCR::Read(.target.size, Localfile) > 0 )
 	    {
-                GET_error = "";
-		ok = true;
-	    }
-	    else
-	    {
-                GET_error = GET_error + sformat(_("Reading file on %1 failed.\n"), Path);
-		y2milestone("Trying to find file on installation media: %1", Installation::boot ());
-		if (Installation::boot () == "cd")
-		{
-		    string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
-		    if (!(boolean)WFM::Execute(.local.mount, ["/dev/" + cdrom,
-                                mount_point, Installation::mountlog] ))
-		    {
+            GET_error = "";
+            ok = true;
+	    } else {
+            GET_error = GET_error + sformat(_("Reading file on %1 failed.\n"), Path);
+            y2milestone("Trying to find file on installation media: %1", Installation::boot ());
+            if (Installation::boot () == "cd") {
+                string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
+                string cdrom_device = "/dev/"+cdrom;
+                string already_mounted = "grep "+cdrom_device+" /proc/mounts ;";
+                map am = (map) SCR::Execute (.target.bash_output, already_mounted);
+
+                if (am["exit"]:-1 == 0 && size (am["stdout"]:"") > 0) {
+                    y2warning ("%1 is already mounted, trying to bind mount...", cdrom_device);
+                    string cmd = "mount -v --bind `grep "+cdrom_device+" /proc/mounts |cut -f 2 -d \\ ` "+mount_point+";";
+                    map am1 = (map) SCR::Execute (.target.bash_output, cmd);
+                    if (am1["exit"]:-1 == 0) {
+                        ok=true;
+                    } else {
+                        y2warning ("can't bind mount %1 failing...", cdrom_device);
+                        ok = false;
+                    }
+
+                } else {
+                    if (!(boolean)WFM::Execute(.local.mount, [cdrom_device, mount_point, Installation::mountlog] )) {
                         // autoyast tried to mount the CD but had no success.
                         GET_error = GET_error + sformat(_("Mounting %1 failed."), cdrom );
-			y2warning("Mount failed");
-		    }
-		    else
-		    {
-			string cpcmd = sformat("cp " + mount_point + "/%1 %2", Path , Localfile);
-			y2milestone("Copy profile: %1", cpcmd);
-			SCR::Execute(.target.bash, cpcmd);
-		    }
-		    WFM::Execute(.local.umount, mount_point);
-		    if (SCR::Read(.target.size, Localfile) > 0 )
-		    {
+                        y2warning("Mount failed");
+                        ok=false;
+                    } else {
+                        ok=true;
+                    }
+                }
+                if (ok) {
+                    string cpcmd = sformat("cp " + mount_point + "/%1 %2", Path , Localfile);
+                    y2milestone("Copy profile: %1", cpcmd);
+                    SCR::Execute(.target.bash, cpcmd);
+                    WFM::Execute(.local.umount, mount_point);
+                    if (SCR::Read(.target.size, Localfile) > 0 ) {
                         GET_error = "";
-			return (true);
-		    }
-		}
-                // autoyast tried to read a file but had no success.
-                GET_error = GET_error + sformat(_("Reading a file on CD failed. Path: %1/%2."),mount_point,Path);
-		ok = false;
+                        return (true);
+                    }
+                }
+            }
+            // autoyast tried to read a file but had no success.
+            GET_error = GET_error + sformat(_("Reading a file on CD failed. Path: %1/%2."),mount_point,Path);
+            ok = false;
 	    }
 	}
 	else if (Scheme == "nfs")  // NFS
