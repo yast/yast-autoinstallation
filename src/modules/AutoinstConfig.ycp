@@ -209,13 +209,39 @@
                     list<map> slpData = SLP::FindSrvs( "autoyast", "");
                     if( size(slpData) > 1 ) {
                         list<any> dummy = [];
+                        map<string,string> comment2url = $[];
                         foreach( map m, slpData, ``{
-                            dummy = add( dummy, `item( substring( m["srvurl"]:"", 17), false) );
+                            list<string> attrList = SLP::FindAttrs(m["srvurl"]:"");
+                            if( size(attrList) > 0 ) {
+                                string url = substring( m["srvurl"]:"", 17);
+                                // FIXME: that's really lazy coding here but I allow only one attribute currently anyway
+                                //        so it's lazy but okay. No reason to be too strict here with the checks
+                                //        As soon as more than one attr is possible, I need to iterate over the attr list
+                                //
+                                string comment = attrList[0]:"";
+                                // The line above needs to be fixed when we have more attributes
+
+                                // comment will look like this: "(description=BLA BLA)"
+                                integer startComment = findfirstof( comment, "=");
+                                integer endComment   = findlastof( comment, ")");
+                                if( startComment != nil && endComment != nil && endComment-startComment-1 > 0 )
+                                    comment = substring( comment, startComment+1, endComment-startComment-1 );
+                                else
+                                    comment = "";
+                                if( size(comment) < 1 )
+                                    comment = sformat("bad description in SLP for %1", url);
+                                dummy = add( dummy, `item( comment, false) );
+                                comment2url[comment] = url;
+                            } else {
+                                string url = substring( m["srvurl"]:"", 17);
+                                dummy = add( dummy, `item( url, false) );
+                                comment2url[ url ] = url;
+                            }
                         });
                         term dlg = `Left( `ComboBox( `id(`choose), _("Choose Profile"), dummy ) );
                         UI::OpenDialog( `VBox( dlg, `PushButton(`id(`ok),  "Ok" )) );
                         UI::UserInput();
-                        cmdLine = (string)UI::QueryWidget(`id(`choose),  `Value);
+                        cmdLine = comment2url[ (string)UI::QueryWidget(`id(`choose),  `Value) ]:"";
                         UI::CloseDialog ();
                     } else if( size(slpData) == 1 ) {
                         cmdLine = substring( slpData[0,"srvurl"]:"", 17);
