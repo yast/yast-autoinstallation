@@ -15,18 +15,72 @@
     import "XML";
     import "Popup";
     import "ProductControl";
+    import "CommandLine";
+    import "Y2ModuleConfig";
+    import "Mode";
 
     textdomain "autoinst";
 
-    define void doClone () ``{
-        Popup::ShowFeedback( _("Cloning the system..."), _("The resulting autoyast profile can be found in /root/autoinst.xml.") );
-
-        AutoinstClone::additional = ProductControl::clone_modules;
-        AutoinstClone::Process();
-//        Profile::checkProfile();
-        XML::YCPToXMLFile(`profile, Profile::current,  "/root/autoinst.xml");
-        Popup::ClearFeedback();
+    symbol GUI() {
+        Mode::SetUI("commandline");
+        CommandLine::Error(_("Empty parameter list"));
+        return `dummy;
     }
 
-    doClone();
+    define boolean doClone ( map <string, any> options ) ``{
+        Popup::ShowFeedback( _("Cloning the system..."), _("The resulting autoyast profile can be found in /root/autoinst.xml.") );
+
+        if( options["clone"]:"" != "" ) {
+            AutoinstClone::additional = splitstring( options["clone"]:"", "," );
+        } else {
+            AutoinstClone::additional = ProductControl::clone_modules;
+        }
+        AutoinstClone::Process();
+        XML::YCPToXMLFile(`profile, Profile::current,  "/root/autoinst.xml");
+        Popup::ClearFeedback();
+        return true;
+    }
+
+    string moduleList = "";
+
+    foreach(string def_resource, map resourceMap, Y2ModuleConfig::ModuleMap, ``{
+        boolean clonable = ( resourceMap["X-SuSE-YaST-AutoInstClonable"]:"false" == "true" );
+        if( clonable || def_resource == "bootloader" || def_resource == "partitioning" || def_resource == "software" ) {
+            moduleList = sformat("%1 %2", moduleList, def_resource);
+        }
+    });
+
+    map cmdline = $[
+        "id"        : "clone_system",
+        "help"      : _("Client for creating an AutoYaST profile based on the currently running system"),
+        "guihandler": GUI,
+        "actions"   : $[
+            "modules" :   $[ 
+                            "handler" : doClone,
+                            "help" : sformat( _("known modules: %1"), moduleList ),
+                            "example" : "modules clone=software,partitioning" ]
+        ],
+        "options"       : $[
+            "clone": $[
+                "type" : "string",
+                "help" : _("comma separated list of modules to clone")
+            ]
+        ],
+        "mappings"      : $[
+		    "modules"  :   ["clone"]
+		]
+    ];
+
+
+    any ret = false;
+
+    if( size(WFM::Args()) == 0 )
+        doClone( $[] );
+    else
+        ret = CommandLine::Run( cmdline );
+    y2debug("ret = %1", ret);
+    y2milestone("----------------------------------------");
+    y2milestone("clone_system finished");
+
+//    doClone();
 }
