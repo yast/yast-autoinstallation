@@ -482,8 +482,146 @@ fi;
 	  </tgroup>
 	</table>
     </section>
+  <section id="rules_dialogs">
+    <title>Rules with Dialogs</title>
+    <para>
+        Since openSUSE 11.3 (not SLES11 SP1) you can use dialog popups where you can select which rules you want to match and which not by checkboxes.
+    </para>
+          <para>
+          The following elements must be between the &lt;rules config:type="list"&gt;&lt;rule&gt;&lt;dialog&gt; ... &lt;/dialog&gt;&lt;/rule&gt;&lt;/rules&gt; tags in the rules.xml file.
+          </para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>dialog_nr</entry>
+                <entry>all rules with the same dialog_nr are presented on the same popup dialog so the same dialog_nr can appear in multiple rules.
+                  <para><screen>&lt;dialog_nr config:type="integer"&gt;3&lt;/dialog_nr&gt;</screen></para>
+                </entry>
+                <entry>This element is optional and the default for a missing dialog_nr is always "0". If you have one popup only anyway, you don't need to specify the dialog_nr</entry>
+              </row>
+              <row>
+                <entry>element</entry>
+                <entry>each element needs a uniq id. Even if you have more than one dialog, you must not use the same id twice like an id "1" on dialog 1 and and id "1" on dialog 2. That's different than with &lt;ask&gt; dialogs, where you can have the same &lt;element&gt; id on multiple dialogs.
+                  <para><screen>&lt;element config:type="integer"&gt;3&lt;/element&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast adds his own id's internally but you can't use conflicts then (see below)</entry>
+              </row>
+              <row>
+                <entry>title</entry>
+                <entry>the caption of the popup dialog
+                  <para><screen>&lt;title&gt;Desktop Selection&lt;/title&gt;</screen></para>
+                </entry>
+                <entry>optional</entry>
+              </row>
+              <row>
+                <entry>question</entry>
+                <entry>the question text is shown in the popup behind the checkbox.
+                  <para><screen>&lt;question&gt;KDE Desktop&lt;/question&gt;</screen></para>
+                </entry>
+                <entry>optional. If you don't configure a text here, the name of the XML file that is triggered by this rule will be shown instead.</entry>
+              </row>
+              <row>
+                <entry>timeout</entry>
+                <entry>a timeout in seconds after which the dialog will automatically "press" the okay button. Useful for a non blocking installation in combination with rules-dialogs.
+                  <para><screen>&lt;timeout config:type="integer"&gt;30&lt;/timeout&gt;</screen></para>
+                </entry>
+                <entry>optional. A missing timeout will stop the installation process until the dialog is confirmed by the user.</entry>
+              </row>
+              <row>
+                <entry>conflicts</entry>
+                <entry>a list of element id's (rules) that conflict with this rule. If this rule matches or is selected by the user, all conflicting rules are deselected and disabled in the popup. Take care that you don't create deadlocks.
+                  <para><screen>&lt;conflicts config:type="list"&gt;
+  &lt;element config:type="integer"&gt;1&lt;/element&gt;
+  &lt;element config:type="integer"&gt;5&lt;/element&gt;
+  ...
+&lt;/conflicts&gt;</screen></para>
+                </entry>
+                <entry>optional</entry>
+              </row>
+            </tbody>
+          </tgroup>
+          </table>
+          <para>
+            Here is an example of how to use dialogs with rules:
+          </para>
+        <para>
+        <screen>
+<![CDATA[
+  <rules config:type="list">
+    <rule>
+        <custom1>
+            <script>
+echo -n 100
+            </script>
+           <match>100</match>
+           <match_type>exact</match_type>
+        </custom1>
+        <result>
+            <profile>rules/kde.xml</profile>
+            <continue config:type="boolean">true</continue>
+        </result>
+        <dialog>
+            <element config:type="integer">0</element>
+            <question>KDE Desktop</question>
+            <title>Desktop Selection</title>
+            <conflicts config:type="list">
+                <element config:type="integer">1</element>
+            </conflicts>
+            <dialog_nr config:type="integer">0</dialog_nr>
+        </dialog>
+    </rule>
+    <rule>
+        <custom1>
+            <script>
+echo -n 100
+            </script>
+           <match>101</match>
+           <match_type>exact</match_type>
+        </custom1>
+        <result>
+            <profile>rules/gnome.xml</profile>
+            <continue config:type="boolean">true</continue>
+        </result>
+        <dialog>
+            <element config:type="integer">1</element>
+            <dialog_nr config:type="integer">0</dialog_nr>
+            <question>Gnome Desktop</question>
+            <conflicts config:type="list">
+                <element config:type="integer">0</element>
+            </conflicts>
+        </dialog>
+    </rule>
+    <rule>
+        <custom1>
+            <script>
+echo -n 100
+            </script>
+           <match>100</match>
+           <match_type>exact</match_type>
+        </custom1>
+        <result>
+            <profile>rules/all_the_rest.xml</profile>
+            <continue config:type="boolean">false</continue>
+        </result>
+    </rule>
+  </rules>
+]]>
+        </screen>
+        </para>
   </section>
-  
+  </section>
+
+
+
+
   <section id="classes">
     <title>Classes</title>
     <para>
