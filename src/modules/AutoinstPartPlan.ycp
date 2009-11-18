@@ -460,6 +460,14 @@
                     new_pe["format"] = new_pe["format"]:pe["format"]:true;
                 }
 
+                // if the filesystem is unknown, we have detected_fs and no longer used_fs
+                // don't know why yast2-storage is having two keys for that.
+                // maybe it would be even okay to look only for "detected_fs" to set format to false
+                // bnc#542331 (L3: AutoYaST clone module fails to set format option for non-formatted logical volumes)
+                if( pe["detected_fs"]:`known == `unknown ) {
+                    new_pe["format"] = false;
+                }
+
                 if (haskey(pe,"nr") && pe["type"]:`unknown != `lvm)
                 {
                     if (!skipwin)
