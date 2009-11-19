@@ -640,7 +640,8 @@
                     element2file[element_nr] = file;
                     boolean on = ( contains(tomerge, file) ? true : false );
                     term button = `Left( `CheckBox(`id(element_nr), `opt(`notify), rule["dialog","question"]:file, on ) );
-                    timeout = rule["dialog","timeout"]:0;
+                    if( haskey( rule["dialog"]:$[], "timeout" ) )
+                        timeout = rule["dialog","timeout"]:0;
                     dialog_term = add( dialog_term, button );
                     element_nr = element_nr + 1;
                 }
