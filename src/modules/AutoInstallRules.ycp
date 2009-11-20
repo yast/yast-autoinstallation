@@ -105,6 +105,7 @@
 
     global list<string> tomerge = [];
 
+    map<integer,string> element2file = $[];
 
 
     /**
@@ -569,10 +570,12 @@
                     }
                     else if ( rule == "result" )
                     {
+                        string profile_name = ruledef["profile"]:"";
+                        profile_name = SubVars(profile_name);
+                        if( haskey( ruleset, "dialog" ) )
+                            element2file[ ruleset["dialog","element"]:0 ] = profile_name;
                         if ( verifyrules() == 0 )
                         {
-                            string profile_name = ruledef["profile"]:"";
-                            profile_name = SubVars(profile_name);
                             y2milestone("Final Profile name: %1", profile_name
                                     );
                             if (ruledef["match_with_base"]:true)
@@ -604,7 +607,7 @@
         });
 
         list<integer> dialogOrder = [];
-
+        y2milestone("element2file=%1", element2file);
         foreach( map<string, map> rule, rulelist, ``{
             if( haskey(rule, "dialog") && ! contains( dialogOrder, rule["dialog","dialog_nr"]:0 ) )
                 dialogOrder = add( dialogOrder, rule["dialog","dialog_nr"]:0 );
@@ -630,13 +633,11 @@
                 }
             });
 
-            map<integer,string> element2file = $[];
             foreach ( map<string, map> rule, rulelist, ``{
                 if( haskey( rule, "dialog" ) && rule["dialog","dialog_nr"]:0 == dialogNr ) {
                     element_nr = rule["dialog","element"]:element_nr;
                     title      = rule["dialog","title"]:title;
-                    string file = rule["result","profile"]:"";
-                    element2file[element_nr] = file;
+                    string file = element2file[element_nr]:"";
                     boolean on = ( contains(tomerge, file) ? true : false );
                     term button = `Left( `CheckBox(`id(element_nr), `opt(`notify), rule["dialog","question"]:file, on ) );
                     if( haskey( rule["dialog"]:$[], "timeout" ) )
