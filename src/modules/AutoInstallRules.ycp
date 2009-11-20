@@ -612,6 +612,7 @@
         dialogOrder = sort( dialogOrder );
 
         integer dialogIndex = 0;
+y2milestone("UWE UWE UWE");
         while( dialogIndex <= size(dialogOrder)-1 ) {
             integer dialogNr = dialogOrder[dialogIndex]:0;
             term dialog_term = `VBox();
@@ -631,7 +632,6 @@
             });
 
             map<integer,string> element2file = $[];
-
             foreach ( map<string, map> rule, rulelist, ``{
                 if( haskey( rule, "dialog" ) && rule["dialog","dialog_nr"]:0 == dialogNr ) {
                     element_nr = rule["dialog","element"]:element_nr;
@@ -686,7 +686,13 @@
                             string file = element2file[tointeger(ret)]:"";
                             tomerge = filter (string f , tomerge, { return file != f; });
                         }
-                        list<integer> conflicts = rulelist[tointeger(ret),"dialog","conflicts"]:[];
+                        list<integer> conflicts = [];
+                        foreach( map r, rulelist, { 
+                            if( r["dialog","element"]:-1 == tointeger(ret) ) {
+                                conflicts = r["dialog","conflicts"]:[];
+                                break;
+                            }
+                        });
                         foreach( integer element, conflicts, ``{
                             if( (boolean)(UI::QueryWidget(`id(ret),  `Value)) )
                                 conflictsCounter[element] = conflictsCounter[element]:0 + 1;
