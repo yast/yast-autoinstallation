@@ -624,7 +624,9 @@
             map<integer,integer> conflictsCounter = $[];
             foreach ( map<string, map> rule, rulelist, ``{
                 if( haskey( rule, "dialog" ) ) {
-                    string file = rule["result","profile"]:"";
+                    element_nr = rule["dialog","element"]:element_nr;
+                    string file = element2file[element_nr]:"";
+                    element_nr = element_nr + 1;
                     if( contains(tomerge, file) ) {
                         foreach( integer c, rule["dialog","conflicts"]:[], ``{
                             conflictsCounter[c] = conflictsCounter[c]:0 + 1;
