@@ -406,6 +406,8 @@ $Id$
                 string mount = solution["partitions",pindex,"mount"]:"";
 //                integer fsid = Partitions::fsid_native;
                 integer fsid = disk["partitions",pindex,"fsid"]:Partitions::fsid_native;
+                if( disk["partitions",pindex,"type"]:`primary != `primary )
+                    fsid = disk["partitions",pindex+1,"fsid"]:Partitions::fsid_native;
                 if( mount == "swap" )
                 {
                     fsid = Partitions::fsid_swap;
