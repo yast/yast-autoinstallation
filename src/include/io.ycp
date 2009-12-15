@@ -14,7 +14,7 @@
     import "HTTP";
     import "StorageDevices";
     import "TFTP";
-	import "AutoinstConfig";
+        import "AutoinstConfig";
 
     string GET_error = "";
 
@@ -24,10 +24,10 @@
      * @return string  basename
      */
     define string basename (string filePath)
-	``{
-	list pathComponents = splitstring(filePath, "/");
-	string ret = pathComponents[size(pathComponents) -1 ]: "";
-	return ( ret );
+        ``{
+        list pathComponents = splitstring(filePath, "/");
+        string ret = pathComponents[size(pathComponents) -1 ]: "";
+        return ( ret );
     }
 
 
@@ -37,11 +37,11 @@
      * @return  string dirname
      */
     define string dirname (string filePath)
-	``{
-	   list pathComponents = splitstring(filePath, "/");
-	   string last = pathComponents[size(pathComponents) -1]:"";
-	   string ret = substring(filePath, 0 , size(filePath) - size(last));
-	   return (ret);
+        ``{
+           list pathComponents = splitstring(filePath, "/");
+           string last = pathComponents[size(pathComponents) -1]:"";
+           string ret = substring(filePath, 0 , size(filePath) - size(last));
+           return (ret);
     }
 
 
@@ -50,82 +50,82 @@
      * @return boolean true on success
      */
     define boolean Get(string Scheme,
-			      string Host,
-			      string Path,
-			      string Localfile)
-	``{
+                              string Host,
+                              string Path,
+                              string Localfile)
+        ``{
         GET_error = "";
-	boolean ok = false;
-	map res = $[];
-	map toks =  AutoinstConfig::urltok;
-	toks["scheme"] = Scheme;
-	toks["host"]   = Host;
+        boolean ok = false;
+        map res = $[];
+        map toks =  AutoinstConfig::urltok;
+        toks["scheme"] = Scheme;
+        toks["host"]   = Host;
         if (regexpsub(Path, "(.*)//(.*)", "\\1\/\\2")!= nil)
         {
             Path = regexpsub(Path, "(.*)//(.*)", "\\1\/\\2");
         }
-	toks["path"]   = Path;
+        toks["path"]   = Path;
         string full_url = URL::Build(toks);
 
         string tmp_dir = (string)WFM::Read(.local.tmpdir, []);
         string mount_point = tmp_dir + "/tmp_mount";
         WFM::Execute(.local.mkdir, mount_point );
 
-	if ( Scheme == "http" || Scheme == "https" )
-	{
+        if ( Scheme == "http" || Scheme == "https" )
+        {
         HTTP::easySSL( true );
-	    res = HTTP::Get(full_url, Localfile);
-	    if (res["code"]:0 == 200)
-	    {
+            res = HTTP::Get(full_url, Localfile);
+            if (res["code"]:0 == 200)
+            {
                 GET_error = "";
-		return (true);
-	    }
-	    else
-	    {
-		y2error("Can't find URL: %1", full_url);
+                return (true);
+            }
+            else
+            {
+                y2error("Can't find URL: %1", full_url);
                 // autoyast tried to read a file but had no success.
                 GET_error = sformat(_("Cannot find URL '%1' via protocol HTTP(S). Server returned code %2."),full_url,res["code"]:0);
-		return (false);
-	    }
-	}
-	if ( Scheme == "ftp" )
-	{
-	    res = FTP::Get(full_url, Localfile);
-	    if ( ( res["code"]:-1 >= 200 && res["code"]:-1 < 300 ) && SCR::Read(.target.size, Localfile) > 0 )
-	    {
+                return (false);
+            }
+        }
+        if ( Scheme == "ftp" )
+        {
+            res = FTP::Get(full_url, Localfile);
+            if ( ( res["code"]:-1 >= 200 && res["code"]:-1 < 300 ) && SCR::Read(.target.size, Localfile) > 0 )
+            {
                 GET_error = "";
-		return (true);
-	    }
-	    else
-	    {
-		y2error("Can't find URL: %1", full_url);
+                return (true);
+            }
+            else
+            {
+                y2error("Can't find URL: %1", full_url);
                 // autoyast tried to read a file but had no success.
                 GET_error = sformat(_("Cannot find URL '%1' via protocol FTP. Server returned code %2."),full_url,res["code"]:0);
-		return (false);
-	    }
-	}
-	else if (Scheme == "file")
-	{
-	    string file = sformat("%1/%2", Installation::sourcedir, Path); // FIXME: I have doubts this will ever work. Too early.
-	    if (SCR::Read(.target.size, file) > 0 )
-	    {
-		string cpcmd = sformat("cp %1 %2", file, Localfile);
-		y2milestone("Copy profile: %1", cpcmd);
-		SCR::Execute(.target.bash, cpcmd);
-	    }
-	    else
-	    {
+                return (false);
+            }
+        }
+        else if (Scheme == "file")
+        {
+            string file = sformat("%1/%2", Installation::sourcedir, Path); // FIXME: I have doubts this will ever work. Too early.
+            if (SCR::Read(.target.size, file) > 0 )
+            {
+                string cpcmd = sformat("cp %1 %2", file, Localfile);
+                y2milestone("Copy profile: %1", cpcmd);
+                SCR::Execute(.target.bash, cpcmd);
+            }
+            else
+            {
                 GET_error = GET_error + sformat(_("Reading file on %1/%2 failed.\n"), Installation::sourcedir, Path);
-		string cpcmd = sformat("cp %1 %2", Path , Localfile);
-		y2milestone("Copy profile: %1", cpcmd);
-		SCR::Execute(.target.bash, cpcmd);
-	    }
+                string cpcmd = sformat("cp %1 %2", Path , Localfile);
+                y2milestone("Copy profile: %1", cpcmd);
+                SCR::Execute(.target.bash, cpcmd);
+            }
 
-	    if (SCR::Read(.target.size, Localfile) > 0 )
-	    {
+            if (SCR::Read(.target.size, Localfile) > 0 )
+            {
             GET_error = "";
             ok = true;
-	    } else {
+            } else {
             GET_error = GET_error + sformat(_("Reading file on %1 failed.\n"), Path);
             y2milestone("Trying to find file on installation media: %1", Installation::boot ());
             if (Installation::boot () == "cd") {
@@ -169,92 +169,92 @@
             // autoyast tried to read a file but had no success.
             GET_error = GET_error + sformat(_("Reading a file on CD failed. Path: %1/%2."),mount_point,Path);
             ok = false;
-	    }
-	}
-	else if (Scheme == "nfs")  // NFS
-	{
-	    if (Installation::boot () != "nfs")
-	    {
-		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
-	    }
+            }
+        }
+        else if (Scheme == "nfs")  // NFS
+        {
+            if (Installation::boot () != "nfs")
+            {
+                y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
+            }
 
-	    if( !(boolean)SCR::Execute(.target.mount, [ Host + ":" + dirname(Path), mount_point ], "-o nolock" ) &&
+            if( !(boolean)SCR::Execute(.target.mount, [ Host + ":" + dirname(Path), mount_point ], "-o nolock" ) &&
                 !(boolean)SCR::Execute(.target.mount, [ Host + ":" + dirname(Path), mount_point ], "-t nfs4" ) )
-	    {
-		y2warning("Mount failed");
+            {
+                y2warning("Mount failed");
                 // autoyast tried to mount a NFS directory which failed
                 GET_error = sformat(_("Mounting %1 failed."), Host + ":" + dirname(Path) );
-		return (false);
-	    }
+                return (false);
+            }
 
             string copyCmd = "/bin/cp " + mount_point + "/" + basename(Path) +
                 " " + Localfile;
             y2milestone("Copy Command: %1", copyCmd);
-	    if (WFM::Execute (.local.bash, copyCmd ) == 0)
-	    {
+            if (WFM::Execute (.local.bash, copyCmd ) == 0)
+            {
                 GET_error = "";
-		ok = true;
-	    }
-	    else
-	    {
+                ok = true;
+            }
+            else
+            {
                 // autoyast tried to copy a file via NFS which failed
                 GET_error = sformat(_("Remote file %1 cannot be retrieved"),  mount_point + "/"+ basename(Path) );
-		y2error("remote file %1 can't be retrieved",  mount_point + "/"
+                y2error("remote file %1 can't be retrieved",  mount_point + "/"
                         + basename(Path));
 
-	    }
+            }
 
-	    WFM::Execute(.local.umount, mount_point);
+            WFM::Execute(.local.umount, mount_point);
 
-	}
-	else if (Scheme == "cifs")  // CIFS
-	{
-	    if (!(boolean)SCR::Execute(.target.mount,
+        }
+        else if (Scheme == "cifs")  // CIFS
+        {
+            if (!(boolean)SCR::Execute(.target.mount,
                         [ "//" + Host + dirname(Path), mount_point ], "-t cifs -o guest,ro" ))
-	    {
-		y2warning("Mount failed");
+            {
+                y2warning("Mount failed");
                 // autoyast tried to mount a NFS directory which failed
                 GET_error = sformat(_("Mounting %1 failed."), "//" + Host + dirname(Path) );
-		return (false);
-	    }
+                return (false);
+            }
 
             string copyCmd = "/bin/cp " + mount_point + "/" + basename(Path) +
                 " " + Localfile;
             y2milestone("Copy Command: %1", copyCmd);
-	    if (WFM::Execute (.local.bash, copyCmd ) == 0)
-	    {
+            if (WFM::Execute (.local.bash, copyCmd ) == 0)
+            {
                 GET_error = "";
-		ok = true;
-	    }
-	    else
-	    {
+                ok = true;
+            }
+            else
+            {
                 // autoyast tried to copy a file via NFS which failed
                 GET_error = sformat(_("Remote file %1 cannot be retrieved"),  mount_point + "/"+ basename(Path) );
-		y2error("remote file %1 can't be retrieved",  mount_point + "/"
+                y2error("remote file %1 can't be retrieved",  mount_point + "/"
                         + basename(Path));
 
-	    }
+            }
 
-	    WFM::Execute(.local.umount, mount_point);
+            WFM::Execute(.local.umount, mount_point);
 
-	}
-	else if (Scheme == "floppy" || Scheme == "usb")
-	{
-	    if (StorageDevices::FloppyReady() && Scheme == "floppy")
-	    {
-		WFM::Execute(.local.mount, [StorageDevices::FloppyDevice(), mount_point]);
+        }
+        else if (Scheme == "floppy" || Scheme == "usb")
+        {
+            if (StorageDevices::FloppyReady() && Scheme == "floppy")
+            {
+                WFM::Execute(.local.mount, [StorageDevices::FloppyDevice(), mount_point]);
 
-		if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + "/" + Path + " " + Localfile) != 0)
-		{
-		    y2error("file  %1 can't be retrieved", mount_point + "/" + Path );
-		}
-		else
-		{
+                if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + "/" + Path + " " + Localfile) != 0)
+                {
+                    y2error("file  %1 can't be retrieved", mount_point + "/" + Path );
+                }
+                else
+                {
                     GET_error = "";
-		    ok = true;
-		}
-		SCR::Execute(.target.umount, mount_point);
-	    } else {
+                    ok = true;
+                }
+                SCR::Execute(.target.umount, mount_point);
+            } else {
                 y2milestone("looking for %1 on USB", Path);
                 list<map> probe = (list<map>)SCR::Read(.probe.usb);
                 foreach( map d, probe, ``{
@@ -286,11 +286,11 @@
                         break;
                 });
             }
-	}
-	else if (Scheme == "device") // Device
-	{
-	    if ( Path != "")
-	    {
+        }
+        else if (Scheme == "device") // Device
+        {
+            if ( Path != "")
+            {
             list<string> deviceList = [];
             if( Host == "" ) {
                 list<map> disks = (list<map>)SCR::Read(.probe.disk);
@@ -361,28 +361,28 @@
                     break;
             });
         }
-	}
-	else if (Scheme == "tftp") // Device
-	{
-	    if (TFTP::Get( Host,  Path, Localfile ))
-	    {
+        }
+        else if (Scheme == "tftp") // Device
+        {
+            if (TFTP::Get( Host,  Path, Localfile ))
+            {
                 GET_error = "";
-		ok = true;
-	    }
-	    else
-	    {
+                ok = true;
+            }
+            else
+            {
                 GET_error = sformat(_("Cannot find URL '%1' via protocol TFTP."),Host+":"+Path);
-		y2error("file %1 can't be found", Path );
-	    }
-	}
-	else
-	{
+                y2error("file %1 can't be found", Path );
+            }
+        }
+        else
+        {
             // the user wanted autoyast to fetch it's profile via an unknown protocol
             GET_error = sformat(_("Unknown protocol %1."),Scheme);
-	    y2error("Protocol not supported");
-	    ok = false;
-	}
-	return ( ok );
+            y2error("Protocol not supported");
+            ok = false;
+        }
+        return ( ok );
     }
 
 
