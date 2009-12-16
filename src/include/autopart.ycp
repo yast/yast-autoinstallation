@@ -461,7 +461,7 @@ $Id$
                         {
                             //p["loop_fs"]  =	solution["partitions",pindex,"crypt_fs"]:false;
                             p["enc_type"] = solution["partitions",pindex,"enc_type"]:`twofish;
-                            Storage::UpdateClassified( p["device"]:"",
+                            Storage::SetCryptPwd( p["device"]:"",
                                                   solution["partitions",pindex,"crypt_key"]:"" );
                             //p["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
                         }
@@ -582,7 +582,7 @@ $Id$
                     {
                         //part["loop_fs"]  =	solution["partitions",pindex,"crypt_fs"]:false;
             part["enc_type"] = solution["partitions",pindex,"enc_type"]:`twofish;
-                        Storage::UpdateClassified( part["device"]:"",
+                        Storage::SetCryptPwd( part["device"]:"",
                                               solution["partitions",pindex,"crypt_key"]:"" );
                         //part["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
                     }
