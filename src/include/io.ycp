@@ -217,7 +217,20 @@
                         integer i = 0;
                         string dev = d["dev_name"]:"";
                         while( SCR::Read(.target.lstat, dev) != $[] || i < 5 ) {
-                            if( !(boolean)WFM::Execute(.local.mount, [ dev, mount_point ]) ) {
+                            string mounts = (string)(SCR::Read (.target.string, "/proc/mounts"));
+                            list<string> mount_list = splitstring( mounts, "\n" );
+                            boolean already_mounted = false;
+                            foreach( string m, mount_list, ``{
+                                list<string>  entries = splitstring( m, " " );
+                                // FIXME: check for bind-mounted
+                                if( entries[0]:"" == dev ) {
+                                    already_mounted = true;
+                                    mount_point = entries[1]:"";
+                                    break;
+                                }
+                            });
+                            y2milestone("already mounted=%1 mountpoint=%2",already_mounted,mount_point);
+                            if( ! already_mounted && !(boolean)WFM::Execute(.local.mount, [ dev, mount_point ]) ) {
                                 y2milestone("mount failed for %1", dev);
                                 i = i + 1;
                                 dev = d["dev_name"]:"" + sformat("%1",i);
@@ -230,7 +243,8 @@
                                 GET_error = "";
                                 ok = true;
                             }
-                            SCR::Execute(.target.umount, mount_point);
+                            if( !already_mounted )
+                                SCR::Execute(.target.umount, mount_point);
                             if( ok == true )
                                 break;
                             i = i + 1;
