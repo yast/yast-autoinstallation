@@ -238,7 +238,8 @@
             WFM::Execute(.local.umount, mount_point);
 
         }
-        else if (Scheme == "floppy" || Scheme == "usb")
+//        else if (Scheme == "floppy" || Scheme == "usb")
+        else if (Scheme == "floppy")
         {
             if (StorageDevices::FloppyReady() && Scheme == "floppy")
             {
@@ -254,6 +255,8 @@
                     ok = true;
                 }
                 SCR::Execute(.target.umount, mount_point);
+            }
+            /*
             } else {
                 y2milestone("looking for %1 on USB", Path);
                 list<map> probe = (list<map>)SCR::Read(.probe.usb);
@@ -286,15 +289,19 @@
                         break;
                 });
             }
+            */
         }
-        else if (Scheme == "device") // Device
+        else if (Scheme == "device" || Scheme == "usb" ) // Device or USB
         {
             if ( Path != "")
             {
             list<string> deviceList = [];
             if( Host == "" ) {
-                list<map> disks = (list<map>)SCR::Read(.probe.disk);
+                list<map> disks =  (Scheme == "device") ? (list<map>)SCR::Read(.probe.disk) : (list<map>)SCR::Read(.probe.usb);
                 foreach( map m, disks, ``{
+                    if( Scheme == "usb" &&
+                        m["bus"]:"USB" != "SCSI" )
+                        continue;
                     if( haskey( m, "dev_name") ) {
                         integer i = 0;
                         string dev = m["dev_name"]:"";
