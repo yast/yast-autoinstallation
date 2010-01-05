@@ -305,6 +305,7 @@
                     if( haskey( m, "dev_name") ) {
                         integer i = 0;
                         string dev = m["dev_name"]:"";
+                        deviceList = add( deviceList, substring( dev, 5 ) ); // not uncommon for USB sticks to have no partition
                         do {
                             i = i + 1;
                             dev = m["dev_name"]:"" + sformat("%1",i);
@@ -346,9 +347,13 @@
                     }
                 });
                 y2milestone("already mounted=%1 mountpoint=%2",already_mounted,mount_point);
-                if( ! already_mounted )
-                    WFM::Execute(.local.mount, [sformat("/dev/%1", Host) ,
-                                    mount_point]);
+                if( ! already_mounted &&
+                    !(boolean)WFM::Execute(.local.mount, [sformat("/dev/%1", Host),
+                                    mount_point]) ) {
+                    y2milestone("%1 is not mounted and mount failed", sformat("/dev/%1", Host));
+                    GET_error = sformat(_("%1 is not mounted and mount failed"), sformat("/dev/%1", Host));
+                    continue;
+                }
 
                 if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  "/" + Path + " " + Localfile) != 0 )
                 {
