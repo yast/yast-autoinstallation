@@ -147,7 +147,7 @@
 
         foreach(map lv, lvs, ``{
             if (!contains(keepLVM[vgname]:[], lv["name"]:"")) {
-                Storage::DeleteDevice("","/dev/"+vgname+"/"+lv["name"]:"" );
+                Storage::DeleteDevice("/dev/"+vgname+"/"+lv["name"]:"");
             }
         });
 
