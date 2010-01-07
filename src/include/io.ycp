@@ -238,10 +238,9 @@
             WFM::Execute(.local.umount, mount_point);
 
         }
-//        else if (Scheme == "floppy" || Scheme == "usb")
         else if (Scheme == "floppy")
         {
-            if (StorageDevices::FloppyReady() && Scheme == "floppy")
+            if (StorageDevices::FloppyReady())
             {
                 WFM::Execute(.local.mount, [StorageDevices::FloppyDevice(), mount_point]);
 
@@ -256,40 +255,6 @@
                 }
                 SCR::Execute(.target.umount, mount_point);
             }
-            /*
-            } else {
-                y2milestone("looking for %1 on USB", Path);
-                list<map> probe = (list<map>)SCR::Read(.probe.usb);
-                foreach( map d, probe, ``{
-                    if( d["bus"]:"USB" == "SCSI" && haskey(d, "dev_name") ) {
-                        integer i = 0;
-                        string dev = d["dev_name"]:"";
-                        while( SCR::Read(.target.lstat, dev) != $[] || i < 5 ) {
-                            if( !(boolean)WFM::Execute(.local.mount, [ dev, mount_point ]) ) {
-                                y2milestone("mount failed for %1", dev);
-                                i = i + 1;
-                                dev = d["dev_name"]:"" + sformat("%1",i);
-                                continue;
-                            }
-                            if (WFM::Execute (.local.bash, "/bin/cp " + mount_point + "/" + Path + " " + Localfile) != 0) {
-                                y2milestone("not found on %1",dev);
-                            } else {
-                                y2milestone("found on %1", dev);
-                                GET_error = "";
-                                ok = true;
-                            }
-                            SCR::Execute(.target.umount, mount_point);
-                            if( ok == true )
-                                break;
-                            i = i + 1;
-                            dev = d["dev_name"]:"" + sformat("%1",i);
-                        }
-                    }
-                    if( ok == true )
-                        break;
-                });
-            }
-            */
         }
         else if (Scheme == "device" || Scheme == "usb" ) // Device or USB
         {
