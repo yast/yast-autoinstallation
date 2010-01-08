@@ -1393,8 +1393,7 @@ $Id$
             if( Partitions::IsDosPartition( fsid ) ) 
             {
                 integer psize = (p["region",0]:0 + p["region",1]:1 - 1) * cyl_size;
-                win = Storage::GetFreeSpace( p["device"]:"", psize, `fat32,
-                                                 false );
+                win = Storage::GetFreeSpace( p["device"]:"", `fat32, false );
                 y2milestone( "win=%1", win );
                 if( win != nil && psize > 300*1024*1024 )
                 {
