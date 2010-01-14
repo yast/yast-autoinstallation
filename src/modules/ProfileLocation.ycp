@@ -80,6 +80,12 @@
             y2milestone("searching label");
             foreach( string device, map v, Storage::GetTargetMap(), ``{
                 y2milestone("looking on %1", device);
+                if( v["label"]:"" == AutoinstConfig::host ) { // FIXME: does not work. Label was "msdos" while testing
+                    AutoinstConfig::scheme = "device";
+                    AutoinstConfig::host   = substring( device, 5 );
+                    y2milestone("found on %1", AutoinstConfig::host);
+                    break;
+                }
                 foreach( map p, v["partitions"]:[],  ``{
                     if( p["label"]:"" == AutoinstConfig::host ) {
                         AutoinstConfig::scheme = "device";
