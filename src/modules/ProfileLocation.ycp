@@ -76,6 +76,24 @@
             y2milestone("relurl for profile changed to: %1://%2%3",AutoinstConfig::scheme, AutoinstConfig::host, AutoinstConfig::filepath);
             SCR::Write ( .etc.install_inf.ayrelurl, sformat("%1://%2/%3",AutoinstConfig::scheme, AutoinstConfig::host, AutoinstConfig::filepath) );
             SCR::Write (.etc.install_inf, nil);
+        } else if( AutoinstConfig::scheme == "label" ) {
+            y2milestone("searching label");
+            foreach( string device, map v, Storage::GetTargetMap(), ``{
+                y2milestone("looking on %1", device);
+                foreach( map p, v["partitions"]:[],  ``{
+                    if( p["label"]:"" == AutoinstConfig::host ) {
+                        AutoinstConfig::scheme = "device";
+                        AutoinstConfig::host   = substring( p["device"]:device , 5 );
+                        y2milestone("found on %1", AutoinstConfig::host);
+                        break;
+                    }
+                    y2milestone("not found on %1", p["device"]:"hm?");
+                });
+                if( AutoinstConfig::scheme == "device" )
+                    break;
+            });
+            if( AutoinstConfig::scheme == "label" )
+                Popup::Error( _("label not found while looking for autoyast profile") );
         }
         string filename = basename(AutoinstConfig::filepath);
 
@@ -83,6 +101,7 @@
         if ( filename != "" )
         {
             y2milestone("File=%1", filename);
+            y2milestone("Get %1://%2/%3 to %4", AutoinstConfig::scheme, AutoinstConfig::host, AutoinstConfig::filepath, localfile);
             ret = Get(AutoinstConfig::scheme,
                     AutoinstConfig::host,
                     AutoinstConfig::filepath,
