@@ -217,6 +217,8 @@
                         any val = UI::QueryWidget(`id(entry_id),  `Value);
                         if( ask["type"]:"string" == "integer" ) {
                             val = tointeger((string)val);
+                        } else if( ask["type"]:"string" == "boolean" ) {
+                            val = ( (boolean)val ? "true" : "false" );
                         }
                         if( ask["password"]:false == true ) {
                             string pass2 = (string)UI::QueryWidget(`id(`pass2),  `Value);
