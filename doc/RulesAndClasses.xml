@@ -269,7 +269,7 @@ fi;
                 </listitem>
                 <listitem>
                     <para>
-                        regex (available since 10.1 and SLES10)
+                        regex (available since 10.1 and SLES10). It's a simple "=~" operator like in bash
                     </para>
                 </listitem>
             </itemizedlist>
@@ -853,6 +853,17 @@ echo -n 100
     &lt;/board_vendor&gt;
     &lt;result&gt;
         &lt;profile&gt;classes/largeswap.xml&lt;/profile&gt;
+        &lt;continue config:type=&quot;boolean&quot;&gt;true&lt;/continue&gt;
+        &lt;dont_merge config:type=&quot;list&quot;&gt;
+          &lt;element&gt;partition&lt;/element&gt;
+        &lt;/dont_merge&gt;
+    &lt;/result&gt;
+    &lt;board_vendor&gt;
+        &lt;match&gt;PowerEdge [12]850&lt;/match&gt;
+        &lt;match_type&gt;regex&lt;/match_type&gt;
+    &lt;/board_vendor&gt;
+    &lt;result&gt;
+        &lt;profile&gt;classes/smallswap.xml&lt;/profile&gt;
         &lt;continue config:type=&quot;boolean&quot;&gt;true&lt;/continue&gt;
         &lt;dont_merge config:type=&quot;list&quot;&gt;
           &lt;element&gt;partition&lt;/element&gt;
