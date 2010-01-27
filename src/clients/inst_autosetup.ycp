@@ -222,6 +222,7 @@ control file and try again.
     // recognize this now
     Storage::ReReadTargetMap();
 
+    Storage::SetImsmDriver( Profile::current["partitioning","imsmdriver"]:`IMSM_DMRAID ); // bnc#574270
 
     // No partitioning in the profile means yast2-storage proposal (hmmmm.....)
     if( size(Profile::current["partitioning"]:[]) > 0 ) {
