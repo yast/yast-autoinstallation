@@ -77,6 +77,7 @@
         if( after == "" ) {
             foreach (string device, map disk, initial_target_map, ``{
                 if (disk["type"]:`jo == `CT_DMRAID ||
+                    disk["type"]:`jo == `CT_MDPART ||
 		    disk["type"]:`jo == `CT_DMMULTIPATH)
                 {
                     mbr_disk = device;
