@@ -18,7 +18,8 @@
     import "Label";
     import "PackageAI";
     import "AutoInstall";
- 
+    import "SourceManager";
+
     include "autoinstall/dialogs.ycp";
 
     any ret = nil;
@@ -55,8 +56,55 @@ more <b>add-on</b> selections and packages.
         Pkg::CallbackAcceptFileWithoutChecksum(AutoInstall::callbackTrue_boolean_string);
         Pkg::CallbackAcceptUnsignedFile(AutoInstall::callbackTrue_boolean_string_integer);
 
-        Pkg::TargetInit("/", false);
+        string tmpdir = (string)SCR::Read(.target.tmpdir);
         // AutoinstSoftware::pmInit();
+
+        //string mainRepo = "http://10.10.0.162/SLES11/DVD1/";
+        //string mainRepo = "ftp://10.10.0.100/install/SLP/openSUSE-11.2/x86_64/DVD1/";
+        string mainRepo = AutoinstSoftware::instsource;
+        term contents = `VBox(
+          `HBox(
+            `VBox(
+                  `TextEntry(`id(`location), _("Location of the installation source"), mainRepo),
+                  `CheckBox(`id(`localSource), `opt(`notify), _("The inst-source of this system"), mainRepo == "" )
+             )
+          ),
+          `HBox(
+              `PushButton(`id(`ok),    "&OK"),
+              `PushButton(`id(`abort), "&Abort")
+              )
+          );
+        UI::OpenDialog( `opt(`decorated  ), contents );
+        UI::ChangeWidget(`id(`location) , `Enabled, mainRepo != "" );
+        boolean okay = false;
+        do {
+            any ret = nil;
+            ret = UI::UserInput();
+            if( ret == `ok ) {
+                if( (boolean)UI::QueryWidget(`id(`localSource),  `Value) ) {
+                    Pkg::TargetInit("/", false);
+                    okay = true;
+                } else {
+                    mainRepo = (string)UI::QueryWidget(`id(`location),  `Value);
+                    Pkg::TargetInit(tmpdir, false);
+                    if( SourceManager::createSource (mainRepo) == `ok )
+                        okay = true;
+                    else
+                        Popup::Error( _("using that installation source failed") );
+                }
+            } else if( ret == `abort ) {
+                UI::CloseDialog();
+                return `back;
+            } else if( ret == `localSource ) {
+                boolean localSource = (boolean)UI::QueryWidget(`id(`localSource),  `Value);
+                UI::ChangeWidget(`id(`location) , `Enabled, !localSource);
+                if( localSource )
+                    UI::ChangeWidget(`id(`location) , `Value, "");
+            }
+        } while( ! okay );
+        UI::CloseDialog();
+        AutoinstSoftware::instsource = mainRepo;
+
 
         Pkg::SourceStartManager(true);
 
@@ -68,7 +116,7 @@ more <b>add-on</b> selections and packages.
                             helptext, false, true);
         list<map<string,any> > patterns = Pkg::ResolvableProperties ("", `pattern, "");
         y2milestone("available patterns %1",patterns);
-        Pkg::TargetInit("/tmp", false); // don't copy the list of really installed packages (#231687)
+//        Pkg::TargetInit("/tmp", false); // don't copy the list of really installed packages (#231687)
         // Construct a box with radiobuttons for each software base configuration
         term baseconfs_box = `VBox();
 
