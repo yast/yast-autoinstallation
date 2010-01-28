@@ -53,6 +53,8 @@
     global list<string> inst = [];
     global list<map<string,any> > all_xpatterns = [];
 
+    global string instsource = "";
+
     /**
      * Function sets internal variable, which indicates, that any
      * settings were modified, to "true"
@@ -81,10 +83,16 @@
     {
         Software = settings;
         patterns = settings["patterns"]:[];
+        instsource = settings["instsource"]:"";
 
         string notFound = "";
+
+        /* what is this good for? disturbs the main-repo selection */
+        /*
         Packages::Init(true);
         Packages::InitializeAddOnProducts();
+        */
+
         list<string> packagesAvailable = Pkg::GetPackages (`available, true);
         list<string> patternsAvailable = [];
         list<map<string,any> > allPatterns = Pkg::ResolvableDependencies ("", `pattern, "");
@@ -195,6 +203,7 @@
         if (PackageAI::toremove != [])
             s["remove-packages"] = PackageAI::toremove;
 
+        s["instsource"] = instsource;
 
         return (s);
     }
