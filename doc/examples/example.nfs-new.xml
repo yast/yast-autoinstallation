@@ -1,0 +1,26 @@
+...  
+  <nfs>
+    <enable_nfs4 config:type="boolean">true</enable_nfs4>
+    <idmapd_domain>suse.cz</idmapd_domain>
+    <nfs_entries config:type="list">
+      <nfs_entry>
+        <mount_point>/home</mount_point>
+        <nfs_options>sec=krb5i,intr,rw</nfs_options>
+        <server_path>saurus.suse.cz:/home</server_path>
+        <vfstype>nfs4</vfstype>
+      </nfs_entry>
+      <nfs_entry>
+        <mount_point>/work</mount_point>
+        <nfs_options>defaults</nfs_options>
+        <server_path>bivoj.suse.cz:/work</server_path>
+        <vfstype>nfs</vfstype>
+      </nfs_entry>
+      <nfs_entry>
+        <mount_point>/mnt</mount_point>
+        <nfs_options>defaults</nfs_options>
+        <server_path>fallback.suse.cz:/srv/dist</server_path>
+        <vfstype>nfs</vfstype>
+      </nfs_entry>
+    </nfs_entries>
+  </nfs>
+...
