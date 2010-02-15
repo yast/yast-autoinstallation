@@ -65,8 +65,8 @@ more <b>add-on</b> selections and packages.
         term contents = `VBox(
           `HBox(
             `VBox(
-                  `TextEntry(`id(`location), _("Location of the installation source"), mainRepo),
-                  `CheckBox(`id(`localSource), `opt(`notify), _("The inst-source of this system"), mainRepo == "" )
+                  `TextEntry(`id(`location), `opt(`notify), _("Location of the installation source (like http://myhost/11.3/DVD1/)"), mainRepo),
+                  `CheckBox(`id(`localSource), `opt(`notify), _("The inst-source of this system (you can't create images if you choose this)"), mainRepo == "" )
              )
           ),
           `HBox(
@@ -79,6 +79,11 @@ more <b>add-on</b> selections and packages.
         boolean okay = false;
         do {
             any ret = nil;
+            if( size( (string)UI::QueryWidget(`id(`location),  `Value)) > 0 ) {
+                UI::ChangeWidget(`id(`localSource) , `Enabled, false);
+            } else {
+                UI::ChangeWidget(`id(`localSource) , `Enabled, true);
+            }
             ret = UI::UserInput();
             if( ret == `ok ) {
                 if( (boolean)UI::QueryWidget(`id(`localSource),  `Value) ) {
