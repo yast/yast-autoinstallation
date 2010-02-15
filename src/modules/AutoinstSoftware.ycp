@@ -23,6 +23,10 @@
     import "ProductControl";
     import "Storage";
     import "Mode";
+    import "Misc";
+    import "Directory";
+
+    include "autoinstall/io.ycp";
 
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
@@ -32,6 +36,7 @@
     global map Software = $[];
 
     global map<string, any> image = $[];
+    global string image_arch = "";
 
     // patterns
     global list<string> patterns = [];
@@ -54,6 +59,8 @@
     global list<map<string,any> > all_xpatterns = [];
 
     global string instsource = "";
+    global string isolinuxcfg = "";
+
 
     /**
      * Function sets internal variable, which indicates, that any
@@ -162,7 +169,7 @@
             modified = true;
         */
         image = settings["image"]:$[];
-        if( size(image) > 0 )
+        if( image["image_location"]:"" != "" && image["image_name"]:"" != "" )
             imaging=true;
 
         return true;
@@ -179,6 +186,206 @@
             Import(Profile::current["software"]:$[]);
         }
         return;
+    }
+
+    define string GetArchOfELF (string filename)
+    {
+        map bash_out = (map) SCR::Execute (.target.bash_output, Directory::ybindir +
+                       "/elf-arch " + filename);
+        if (bash_out["exit"]:1 != 0)
+            return "unknown";
+        return deletechars (bash_out["stdout"]:"unknown", "\n");
+    }
+
+
+    global define void createImage( string targetdir ) {
+        string rootdir = (string)SCR::Read(.target.tmpdir);
+        string zypperCall = "";
+        string outputRedirect = " 2>&1 >> /tmp/ay_image.log";
+        image["script_location"] = image["script_location"]:"file:///var/adm/autoinstall/fetch_image.sh";
+        image["script_params"]   = image["script_params"]:[ image["image_location"]:""+"/"+image["image_name"]:"image"+".tar.gz" ];
+
+        SCR::Execute (.target.bash, "rm -f /tmp/ay_image.log" );
+
+        // bind-mount devices
+        SCR::Execute (.target.mkdir, rootdir+"/dev" );
+        integer returnCode = (integer)SCR::Execute (.target.bash, sformat("touch /%1/dev/null", rootdir));
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("touch /%1/dev/zero", rootdir));
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("mount -o bind /dev/zero /%1/dev/zero", rootdir));
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("mount -o bind /dev/null /%1/dev/null", rootdir));
+
+        // Add Source:
+        // zypper --root /space/tmp/tmproot/ ar ftp://10.10.0.100/install/SLP/openSUSE-11.2/i386/DVD1/ main
+        zypperCall = sformat("ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive ar %2 main-source %3", rootdir, instsource, outputRedirect );
+        y2milestone("running %1", zypperCall );
+        returnCode = (integer)SCR::Execute (.target.bash, zypperCall);
+        if( returnCode != 0 && returnCode != 4 ) {
+             // 4 means "already exists"
+            Popup::Error( sformat( _("Adding repo %1 failed"), instsource) );
+        }
+
+        // Add add-ons
+        map addOnExport = (map)WFM::CallFunction("add-on_auto", ["Export"]);
+        list<map> addOns = addOnExport["add_on_products"]:[];
+        foreach( map addOn, addOns, ``{
+            zypperCall = sformat("ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive ar %2 %3 %4",
+                                  rootdir, addOn["media_url"]:"", addOn["product"]:"", outputRedirect );
+            returnCode = (integer)SCR::Execute (.target.bash, zypperCall);
+            if( returnCode != 0 && returnCode != 4 ) {
+                Popup::Error( sformat( _("Adding repo %1 failed"), addOn["product"]:"") );
+            }
+        });
+
+        // Install
+        zypperCall = sformat("ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive install --auto-agree-with-licenses ", rootdir);
+
+        string pattern = mergestring(patterns, " ");
+        Popup::ShowFeedback( "Creating Image - installing patterns", "");
+        y2milestone("installing %1", pattern);
+        returnCode = (integer)SCR::Execute (.target.bash, zypperCall+"-t pattern " + pattern + outputRedirect);
+        Popup::ClearFeedback();
+        if( returnCode != 0 ) {
+            Popup::Error( _("Image creation failed while pattern installation. Please check /tmp/ay_image.log") );
+        }
+
+        if( size(PackageAI::toinstall) > 0 ) {
+            string package = mergestring( PackageAI::toinstall, " ");
+            Popup::ShowFeedback( _("Creating Image - installing packages"), "");
+            returnCode = (integer)SCR::Execute (.target.bash, zypperCall+" " package + outputRedirect);
+            Popup::ClearFeedback();
+            if( returnCode != 0 ) {
+                Popup::Error( _("Image creation failed while package installation. Please check /tmp/ay_image.log") );
+            }
+        }
+
+        image_arch = GetArchOfELF( sformat("%1/bin/bash",rootdir) );
+        y2milestone("Image architecture = %1", image_arch);
+        if( targetdir == "" ) {
+            Popup::Message( _("in the next file dialog you have to choose the target directory to save the image") );
+            targetdir = UI::AskForExistingDirectory  ( "/", _("Store image to ...") );
+        }
+
+        // umount devices
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("umount /%1/dev/null", rootdir));
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("umount /%1/dev/zero", rootdir));
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("umount /%1/proc", rootdir));
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("rm -rf /%1/dev", rootdir));
+
+        // Compress image:
+        // tar cfz /srv/www/htdocs/image.tar.gz --exclude="proc*"  .
+        string tarCommand = sformat("tar cfvz %4/%3.tar.gz --exclude=\"./proc*\" --exclude=\"/%3.tar.gz\" -C %1 . %2", rootdir, outputRedirect, image["image_name"]:"", targetdir);
+        y2milestone("running %1", tarCommand);
+        Popup::Message( sformat( _("You can do changes to the image now in %1.\nIf you press the ok-button, the image will be compressed and can't be changed anymore."), rootdir ) );
+        Popup::ShowFeedback( "Compressing Image ...", "" );
+        returnCode = (integer)SCR::Execute (.target.bash, tarCommand);
+        Popup::ClearFeedback();
+        if( returnCode != 0 ) {
+            Popup::Error( sformat( _("Image compressing failed in '%1'. Please check /tmp/ay_image.log"), rootdir ) );
+        }
+        Popup::Message( _("Image created successfully") );
+
+    }
+
+    global define boolean copyFiles4ISO( string target ) {
+        boolean ret = true;
+        string copy = Misc::SysconfigRead( .sysconfig.autoinstall.COPY_FOR_ISO,
+                                           "/,/boot/,/boot/__ARCH__/,/boot/__ARCH__/loader/,/media.1/,/suse/setup/descr/");
+        list<string> copyList = splitstring(copy,",");
+
+        foreach( string source, copyList, ``{
+            if( issubstring( source, "__ARCH__" ) )
+                source = regexpsub( source, "(.*)__ARCH__(.*)", sformat("\\1%1\\2", image_arch) );
+            if( substring( source, size(source)-1 ) == "/" ) {
+                // copy a directory (ends with / in directory.yast)
+                SCR::Execute (.target.mkdir, target+"/"+source );
+                if( !GetURL( instsource+"/"+source+"directory.yast", "/tmp/directory.yast" ) ) {
+                    Popup::Error( sformat(_("can not get the directory.yast file at `%1`.\nYou can create that file with 'ls -F > directory.yast' if it's missing."), instsource+"/"+source));
+                    ret = false;
+                    break;
+                }
+                // directory.yast is our filelist
+                string files = (string)SCR::Read(.target.string, "/tmp/directory.yast");
+                list<string> filesInDir = splitstring( files, "\n" );
+                foreach( string file, filesInDir, ``{
+                    // don't copy subdirs. They have to be mentioned explicit. Copy only files from that dir.
+                    y2milestone("will get %1 from %2 to %3", file, instsource+"/"+source, target );
+                    if( size(file) > 0 && substring( file, size(file)-1 ) != "/" )
+                        if( !GetURL( instsource+"/"+source+file, target+"/"+source+"/"+file ) ) {
+                            Popup::Error( sformat(_("can not read '%1'. ISO creation failed"), instsource+"/"+source+file ) );
+                            ret = false;
+                            break;
+                        }
+                });
+            } else {
+                // copy a file
+                if( !GetURL( instsource+"/"+source, target+"/"+source ) ) {
+                    Popup::Error( sformat(_("can not read '%1'. ISO creation failed"), instsource+"/"+source) );
+                    ret = false;
+                    break;
+                }
+            }
+        });
+        // lets always copy an optional(!) driverupdate file. It's very unlikely that it's in directory.yast
+        GetURL( instsource+"/driverupdate", target+"/driverupdate" );
+        SCR::Execute (.target.bash, sformat("cp /var/adm/autoinstall/scripts/fetch_image.sh %1/",target) );
+        return ret;
+    }
+
+    global define void createISO() {
+        /* we will have the image.tar.gz and autoinst.xml on the root of the DVD/CD */
+        string isodir = "/tmp/ay_iso/";
+        SCR::Execute (.target.bash, sformat("rm -rf %1", isodir) );
+        SCR::Execute (.target.mkdir, isodir );
+        string outputRedirect = " 2>&1 >> /tmp/ay_image.log";
+        integer returnCode = 0;
+        createImage( isodir );
+
+        Popup::ShowFeedback( _("Preparing ISO Filestructure ..."), "" );
+        copyFiles4ISO( isodir );
+        Popup::ClearFeedback();
+
+        // prepare and save autoinst.xml
+        image["image_location"] = "file:///";
+        image["script_params"] = [ image["image_location"]:"" + "/" + image["image_name"]:"" + ".tar.gz" ];
+        image["script_location"] = "file:///fetch_image.sh";
+        Profile::Save( sformat("%1/autoinst.xml", isodir) );
+
+        // prepare and save isolinux.cfg boot menu of the media
+        isolinuxcfg = (string)SCR::Read(.target.string,  sformat("%1/boot/%2/loader/isolinux.cfg", isodir, image_arch));
+        list<string> lines = splitstring( isolinuxcfg, "\n" );
+        lines = maplist( string l, lines, { 
+            if( issubstring( l, " append " ) ) 
+                l = l + " autoyast=file:///autoinst.xml"; 
+            return l; 
+        });
+        isolinuxcfg = mergestring( lines, "\n" );
+
+        UI::OpenDialog(
+                       `opt( `decorated ),
+                       `VBox(
+                             `HBox( `VSpacing(14),
+                                    `MultiLineEdit(`id(`isolinuxcfg), _("boot config for the DVD"), isolinuxcfg )
+                             ),
+                             `PushButton( `id( `create_image ), `opt( `default, `hstretch ), _("Ok") ),
+                             `Label( sformat( _("You can do changes to the ISO now in %1, like adding a complete different AutoYaST XML file.\nIf you press the ok-button, the iso will be created."), isodir) )
+                        )
+                       );
+        UI::UserInput();
+        isolinuxcfg = (string)UI::QueryWidget(`isolinuxcfg, `Value);
+        UI::CloseDialog();
+        SCR::Write(.target.string,  sformat("%1/boot/%2/loader/isolinux.cfg", isodir, image_arch), isolinuxcfg);
+
+        // create the actual ISO file
+        Popup::ShowFeedback( _("Creating ISO File ..."), "" );
+        string cmd = sformat("mkisofs -o /tmp/%1.iso -R -b boot/%3/loader/isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table %2",image["image_name"]:"",isodir, image_arch);
+        y2milestone("executing %1", cmd + outputRedirect);
+        returnCode = (integer)SCR::Execute (.target.bash, cmd);
+        Popup::ClearFeedback();
+        if( returnCode != 0 ) {
+            Popup::Error( sformat("ISO creation failed in '%1'. Please check /tmp/ay_image.log", isodir ) );
+        } else {
+            Popup::Message( sformat(_("ISO successfully created at %1"), "/tmp/"+image["image_name"]:""+".iso" ) );
+        }
     }
 
     /**
@@ -204,6 +411,8 @@
             s["remove-packages"] = PackageAI::toremove;
 
         s["instsource"] = instsource;
+
+        s["image"] = image;
 
         return (s);
     }
@@ -426,7 +635,8 @@
 
 //        SCR::Execute(.target.mkdir, tmproot + "/root");
 //        Pkg::TargetInit( tmproot + "/root", true);
-        Pkg::TargetInit( "/", true);
+//        Pkg::TargetInit( "/", true);
+        Pkg::TargetInit( (string)SCR::Read(.target.tmpdir), true );
         y2milestone("SourceStartCache: %1", Pkg::SourceStartCache(false));
         return;
     }

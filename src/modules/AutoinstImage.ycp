@@ -36,8 +36,8 @@
         return ret;
     }
 
-    global define boolean runScript() {
-        SCR::Execute(.target.bash, "/bin/sh /tmp/image.sh" );
-        return true;
+    global define integer runScript() {
+        string params = mergestring( AutoinstSoftware::image["script_params"]:[], " " );
+        return (integer)SCR::Execute(.target.bash, sformat( "/bin/sh -x /tmp/image.sh %1 > /tmp/ayast_image.log 2>&1",params) );
     }
 }
