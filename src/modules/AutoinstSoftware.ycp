@@ -202,7 +202,7 @@
         string rootdir = (string)SCR::Read(.target.tmpdir);
         string zypperCall = "";
         string outputRedirect = " 2>&1 >> /tmp/ay_image.log";
-        image["script_location"] = image["script_location"]:"file:///var/adm/autoinstall/fetch_image.sh";
+        image["script_location"] = image["script_location"]:"file:///usr/lib/YaST2/bin//fetch_image.sh";
         image["script_params"]   = image["script_params"]:[ image["image_location"]:""+"/"+image["image_name"]:"image"+".tar.gz" ];
 
         SCR::Execute (.target.bash, "rm -f /tmp/ay_image.log" );
