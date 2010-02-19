@@ -749,6 +749,16 @@ $Id$
         y2milestone( "requested partitions  %1", ps );
         y2milestone( "calculated gaps %1", g );
 
+        ps = maplist( map partition, (list<map>)ps, ``{
+            if( partition["resize"]:false ) {
+                // this is a cylinder correction for resized partitions
+                // bnc#580842
+                partition["cylinders"] = partition["region",1]:0;
+                y2milestone("cylinder correction to %1", partition["cylinders"]:0);
+            }
+            return partition;
+        });
+
         foreach( map rp, (list<map>)ps, ``{
             if( rp["resize"]:false ) {
                 integer new_cyl_size = 0;
@@ -768,7 +778,9 @@ $Id$
                         y2milestone("partition resize cyl_size_change=%1",cyl_size_change);
 
                         gap["cylinders"] = new_cyl_size;
-                        gap["size"] = gap["size"]:0 + cyl_size_change * g["cyl_size"]:0;
+                        //gap["size"] = gap["size"]:0 + cyl_size_change * g["cyl_size"]:0;
+                        gap["size"] = new_cyl_size * g["cyl_size"]:0;
+                        gap["end"] = gap["start"]:0 + new_cyl_size - 1;
                         y2milestone("changing gap to %1",gap);
                     }
                     return gap;
