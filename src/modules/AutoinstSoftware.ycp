@@ -202,6 +202,7 @@
         string rootdir = (string)SCR::Read(.target.tmpdir);
         string zypperCall = "";
         string outputRedirect = " 2>&1 >> /tmp/ay_image.log";
+        boolean finalPopup = ( size(targetdir) == 0 );
         image["script_location"] = image["script_location"]:"file:///usr/lib/YaST2/bin//fetch_image.sh";
         image["script_params"]   = image["script_params"]:[ image["image_location"]:""+"/"+image["image_name"]:"image"+".tar.gz" ];
 
@@ -209,8 +210,7 @@
 
         // bind-mount devices
         SCR::Execute (.target.mkdir, rootdir+"/dev" );
-        integer returnCode = (integer)SCR::Execute (.target.bash, sformat("touch /%1/dev/null", rootdir));
-        returnCode = (integer)SCR::Execute (.target.bash, sformat("touch /%1/dev/zero", rootdir));
+        integer returnCode = (integer)SCR::Execute (.target.bash, sformat("touch /%1/dev/null %1/dev/zero", rootdir));
         returnCode = (integer)SCR::Execute (.target.bash, sformat("mount -o bind /dev/zero /%1/dev/zero", rootdir));
         returnCode = (integer)SCR::Execute (.target.bash, sformat("mount -o bind /dev/null /%1/dev/null", rootdir));
 
@@ -251,7 +251,7 @@
         if( size(PackageAI::toinstall) > 0 ) {
             string package = mergestring( PackageAI::toinstall, " ");
             Popup::ShowFeedback( _("Creating Image - installing packages"), "");
-            returnCode = (integer)SCR::Execute (.target.bash, zypperCall+" " package + outputRedirect);
+            returnCode = (integer)SCR::Execute (.target.bash, zypperCall+" "+package + outputRedirect);
             Popup::ClearFeedback();
             if( returnCode != 0 ) {
                 Popup::Error( _("Image creation failed while package installation. Please check /tmp/ay_image.log") );
@@ -261,28 +261,28 @@
         image_arch = GetArchOfELF( sformat("%1/bin/bash",rootdir) );
         y2milestone("Image architecture = %1", image_arch);
         if( targetdir == "" ) {
-            Popup::Message( _("in the next file dialog you have to choose the target directory to save the image") );
+//            Popup::Message( _("in the next file dialog you have to choose the target directory to save the image") );
             targetdir = UI::AskForExistingDirectory  ( "/", _("Store image to ...") );
         }
 
         // umount devices
-        returnCode = (integer)SCR::Execute (.target.bash, sformat("umount /%1/dev/null", rootdir));
-        returnCode = (integer)SCR::Execute (.target.bash, sformat("umount /%1/dev/zero", rootdir));
-        returnCode = (integer)SCR::Execute (.target.bash, sformat("umount /%1/proc", rootdir));
-        returnCode = (integer)SCR::Execute (.target.bash, sformat("rm -rf /%1/dev", rootdir));
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("umount %1/dev/null %1/dev/zero %1/proc", rootdir));
+        returnCode = (integer)SCR::Execute (.target.bash, sformat("rm -rf %1/dev", rootdir));
 
         // Compress image:
         // tar cfz /srv/www/htdocs/image.tar.gz --exclude="proc*"  .
-        string tarCommand = sformat("tar cfvz %4/%3.tar.gz --exclude=\"./proc*\" --exclude=\"/%3.tar.gz\" -C %1 . %2", rootdir, outputRedirect, image["image_name"]:"", targetdir);
+        string tarCommand = sformat("tar cfvz %4/%3.tar.gz --exclude=\"./proc*\" --exclude=\"/%3.tar.gz\" -C %1 . %2",
+                                    rootdir, outputRedirect, image["image_name"]:"", targetdir);
         y2milestone("running %1", tarCommand);
-        Popup::Message( sformat( _("You can do changes to the image now in %1.\nIf you press the ok-button, the image will be compressed and can't be changed anymore."), rootdir ) );
+        Popup::Message( sformat( _("You can do changes to the image now in %1/\nIf you press the ok-button, the image will be compressed and can't be changed anymore."), rootdir ) );
         Popup::ShowFeedback( "Compressing Image ...", "" );
         returnCode = (integer)SCR::Execute (.target.bash, tarCommand);
         Popup::ClearFeedback();
         if( returnCode != 0 ) {
             Popup::Error( sformat( _("Image compressing failed in '%1'. Please check /tmp/ay_image.log"), rootdir ) );
         }
-        Popup::Message( _("Image created successfully") );
+        if( finalPopup )
+            Popup::Message( _("Image created successfully") );
 
     }
 
@@ -376,8 +376,11 @@
         SCR::Write(.target.string,  sformat("%1/boot/%2/loader/isolinux.cfg", isodir, image_arch), isolinuxcfg);
 
         // create the actual ISO file
+//        Popup::Message( _("Please choose a place where you want to save the ISO file in the next dialog") );
+        string targetdir = UI::AskForExistingDirectory  ( "/", _("Store ISO image to ...") );
         Popup::ShowFeedback( _("Creating ISO File ..."), "" );
-        string cmd = sformat("mkisofs -o /tmp/%1.iso -R -b boot/%3/loader/isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table %2",image["image_name"]:"",isodir, image_arch);
+        string cmd = sformat("mkisofs -o %1/%2.iso -R -b boot/%3/loader/isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table %4",
+                              targetdir, image["image_name"]:"", image_arch, isodir);
         y2milestone("executing %1", cmd + outputRedirect);
         returnCode = (integer)SCR::Execute (.target.bash, cmd);
         Popup::ClearFeedback();
