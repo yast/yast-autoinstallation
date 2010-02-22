@@ -764,7 +764,9 @@ $Id$
                 integer new_cyl_size = 0;
                 integer cyl_size_change = 0;
                 integer old_end = 0;
+                integer new_end = 0;
                 g["gap"] = maplist( map gap, g["gap"]:[], ``{
+                    y2milestone("working on gap %1", gap);
                     if( new_cyl_size != 0 ) {
                         gap["cylinders"] = gap["cylinders"]:0 + cyl_size_change;
                         gap["start"] = gap["start"]:0 - cyl_size_change;
@@ -781,6 +783,7 @@ $Id$
                         //gap["size"] = gap["size"]:0 + cyl_size_change * g["cyl_size"]:0;
                         gap["size"] = new_cyl_size * g["cyl_size"]:0;
                         gap["end"] = gap["start"]:0 + new_cyl_size - 1;
+                        new_end = gap["end"]:0;
                         y2milestone("changing gap to %1",gap);
                     }
                     return gap;
@@ -789,8 +792,9 @@ $Id$
                     map new_gap = $[];
                     new_gap["cylinders"] = cyl_size_change;
                     new_gap["size"] = cyl_size_change * g["cyl_size"]:0;
-                    new_gap["start"] = old_end-cyl_size_change;
+                    new_gap["start"] = new_end + 1;
                     new_gap["end"] = old_end;
+                    new_gap["size"] = new_gap["end"]:0 - new_gap["start"]:0 + 1;
                     g["gap"] = add( g["gap"]:[], new_gap );
                     y2milestone("added new gap after shrinking %1", new_gap);
                 }
