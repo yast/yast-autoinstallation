@@ -37,7 +37,7 @@
   define list<string> allDevices = [ "auto", "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/sda","/dev/sdb" ];
   define list<string> reuseTypes = [ "all", "free", "linux" ];
 
-  define string driveDialogTitle = "Edit Drive";
+  define string driveDialogTitle = _("Edit Drive");
 
   define void enableReuse(any selected){
     if( selected != nil && is(selected, symbol) ){
@@ -132,7 +132,7 @@
 		  `VBox(
 		    `Left(`RadioButton(`id(`rb_init), `opt(`notify), _("&Intialize drive"))),
 		    /* initially selected */
-		    `Left(`RadioButton(`id(`rb_reuse), `opt(`notify), "Re&use", true)),
+		    `Left(`RadioButton(`id(`rb_reuse), `opt(`notify), _("Re&use"), true)),
 		    `ComboBox(`id(`cb_reuse), `opt(`editable), _("&Type"), toItemList(reuseTypes))
 		    )
 		),
