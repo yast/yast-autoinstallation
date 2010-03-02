@@ -36,6 +36,8 @@
     import "Stage";
     import "AutoInstall";
     import "AutoinstSoftware";
+    import "PackageSystem";
+    import "AutoinstData";
 
     symbol GUI() {
 	Mode::SetUI("commandline");
@@ -50,7 +52,14 @@
         Mode::SetMode("autoinstallation");
         Stage::Set ("continue");
         WFM::CallFunction("inst_autopost", []);
-        AutoinstSoftware::addPostPackages(Profile::current["software","post-packages"]:[]);
+
+        list<string> postPackages = Profile::current["software","post-packages"]:[];
+        postPackages = filter( string p, postPackages, {
+            return !PackageSystem::Installed(p);
+        });
+        AutoinstSoftware::addPostPackages(postPackages);
+
+        AutoinstData::post_patterns = Profile::current["software","post-patterns"]:[];
 
         // the following is needed since 10.3
         // otherwise the already configured network gets removed
