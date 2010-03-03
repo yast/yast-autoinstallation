@@ -219,15 +219,6 @@ control file and try again.
     // recognize this now
     Storage::ReReadTargetMap();
 
-/* too late for this
-    Storage::SetImsmDriver( `IMSM_DMRAID );
-    foreach( map drive, Profile::current["partitioning"]:[], ``{
-        if( haskey( drive, "imsmdriver" ) ) {
-            Storage::SetImsmDriver( drive["imsmdriver"]:`IMSM_DMRAID ); // bnc#574270
-        }
-    });
-*/
-
     // No partitioning in the profile means yast2-storage proposal (hmmmm.....)
     if( size(Profile::current["partitioning"]:[]) > 0 ) {
         AutoinstStorage::Import(Profile::current["partitioning"]:[]);
