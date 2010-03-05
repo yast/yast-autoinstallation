@@ -1,0 +1,55 @@
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"[
+
+<!ENTITY % images SYSTEM "images.ent">
+%images;
+
+<!ENTITY % entities SYSTEM "entities/en.ent">
+%entities;
+
+<!-- Examples -->
+<!ENTITY % examples SYSTEM "examples.ent">
+%examples;
+
+<!-- components -->
+<!ENTITY % components SYSTEM "components.ent">
+%components;
+
+]>
+  <section id="Configuration.Security.users">
+    <title>
+      Users
+    </title>
+    <para>
+      The root user and at least one normal user can be added during install
+      using data supplied in the control file. User data and passwords
+      (encrypted or in clear text) are part of the <emphasis>configure</emphasis> resource in the
+      control file.
+    </para>     
+    <para>
+      At least the root user should be configured during
+      auto-installation, which will insure you will be able to login after
+      installation is finished and of course it will insure nobody else can login
+      into the system (in case the password is not set).
+  </para> 
+  <para>The two users in the following example  are added during system
+      configuration.</para>
+
+  <example>
+      <title>
+          User configuration
+      </title>
+          <screen>
+              <xi:include href="examples/example.users.xml" parse="text"
+                  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+          </screen>
+      </example>
+      <para>
+          The last example shows the minimal information required for adding
+          users. More options are available for a more customized user account
+          management. The data in <filename>/etc/default/useradd</filename> is
+          used to determine the home directory of the user to be created in
+          addition to other parameters. 
+      </para>      
+  </section>
+

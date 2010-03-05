@@ -1,0 +1,413 @@
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"[
+
+<!ENTITY % images SYSTEM "images.ent">
+%images;
+
+<!ENTITY % entities SYSTEM "entities/en.ent">
+%entities;
+
+<!-- Examples -->
+<!ENTITY % examples SYSTEM "examples.ent">
+%examples;
+
+<!-- components -->
+<!ENTITY % components SYSTEM "components.ent">
+%components;
+
+]>
+
+<section id="CreateProfile.Software">
+    <title>
+      Software
+    </title>
+    
+    <section id="Software.Selections.sles10">
+      <title>
+	Package Selections with patterns
+      </title>
+      <para>
+      SLES10 no longer supports <emphasis>selections</emphasis> but uses 
+      <emphasis>patterns</emphasis> now. Autoyast is not be able to convert 
+      selections into patterns and so you have to do that on your own.
+      If you want to use a SLES9 autoyast profile to install a SLES10
+      server, you have to remove all <emphasis>addon</emphasis> entries and the
+      <emphasis>base</emphasis> entry. Patterns are configured like this:
+      </para>
+	<example>
+	  <title>
+	    Package selection in control file with patterns
+	  </title>
+	  <screen>
+<xi:include href="examples/example.software.patterns.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	  </screen>
+	</example>
+    <para>
+      As you can see, the <emphasis>packages</emphasis> section is still the same like on
+      a SLES9. Just the <emphasis>addon</emphasis> and <emphasis>base</emphasis> is gone.
+    </para>
+    </section>
+  <section>
+    <title>
+      Deploying Images
+    </title>
+    <para>
+      This feature is available since openSUSE 11.1 but not in SLES11.
+    </para>
+    <para>
+      Since openSUSE 11.0 you can choose to use images during installation to speed up the installation.
+      This is available in openSUSE 11.1 too. At then end, in the installed system, there is
+      no difference visible if you did an image or a single RPM installation.
+    </para>
+	<example>
+	  <title>
+	    Activating images deployment
+	  </title>
+	  <screen>
+<xi:include href="examples/example.software.images.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	  </screen>
+	</example>
+  </section>
+
+  <section>
+    <title>
+      Installing additional and customized Packages
+    </title>
+    <para>
+      In addition to the packages available for installation on the CD-ROMs,
+      you can add external  packages including customized  kernels. Customized
+      kernel packages must be compatible to the  &company-suse;  packages and must
+      install the kernel files to the same locations.
+    </para>
+    <para>
+      Unlike earlier versions, to install custom and external packages
+      there is no need for a special resource in the control
+      file. Instead you need to re-create the package database and update
+      it with any new packages or new package versions in the source repository.
+    </para>
+    <para>
+      A script is provided for this task which will query packages
+      available in the repository and create the required package
+      database.
+    </para>    
+      
+    <para>
+      Creating a new package database is only needed if new RPMs
+      (i.e. update RPMs) were added. To re-create the database, use the
+      <command>/usr/bin/create_package_descr</command>
+      command. For example, use this command line to create the package
+      database. (When creating the database, all languages will be reset to English).
+    </para>
+    <example>
+      <title>Creating package database</title>
+      <screen>
+	cd /usr/local/CDs/LATEST/suse
+	create_package_descr  -x PATH_TO_EXTRA_PROV -d /usr/local/CDs/LATEST/suse 
+      </screen>
+    </example>
+    <note>
+      <title>Change starting from SUSE Linux 9.1/SLES 9</title>
+      <para>To provide extra dependencies which can not be extracted from the
+	rpm files, an extra file with missing dependencies is available in the
+	directory <filename>suse/setup/descr</filename>. The file
+	<filename>EXTRA_PROV</filename> can be used when recreating the package
+	database using the <emphasis>-x</emphasis> option.</para>
+    </note>
+    <para>
+      In the above example, the directory
+      <filename>/usr/local/CDs/LATEST/suse</filename> contains the architecture
+      dependent and independent packages, i.e. <emphasis>noarch</emphasis> and <emphasis>i586</emphasis>. 
+      This might look different on other architectures.
+    </para>
+    <para>
+      The advantage of this method is that you can keep an up-to-date
+      repository with fixed and updated package (i.e. from &company-suse; FTP
+      server). Additionally this method  makes the creation of custom CD-ROMs easier.
+    </para>
+    <note>
+        <title>Change starting from SUSE Linux 10.1/SLES 10</title>
+        <para>
+        With SLES10/SL10.1, the concept of adding own RPMs to an installation source has changed.
+        The <emphasis>yast/order</emphasis> and <emphasis>yast/instorder</emphasis> is no longer supported. Neither
+        by AutoYaST nor by YaST. To add own RPMs to an installation source (that includes add-on products like the
+        SDK) you have to add a file <emphasis>add_on_products</emphasis> to the CD1 of the main product.
+        <screen>
+media_url [path_on_media [product_1 [product_2 [....]]]
+        </screen>
+        media_url is URL of the media itself
+        path_on_media is path of the catalog on the media. If not present, / (root) is assumed
+        product_1 and following are the names for products, which should be marked for installation. If no product is mentioned, all products found on the media are selected for installation.
+        For example:
+        <screen>
+http://192.168.66.6/SLES10/sdk/CD1
+http://192.168.66.6/SLES10/CD1/updates
+        </screen>
+        Besides that <emphasis>add_on_products</emphasis> file, you can use the autoyast profile to specify add-on products. For example:
+        <screen>
+&lt;add-on&gt;
+ &lt;add_on_products config:type=&quot;list&quot;&gt;
+   &lt;listentry&gt;
+     &lt;media_url&gt;http://192.168.66.6/SLES10/CD1/updates&lt;/media_url&gt;
+     &lt;product&gt;SuSE-Linux-Updates&lt;/product&gt;
+     &lt;product_dir&gt;/&lt;/product_dir&gt;
+     &lt;ask_on_error config:type="boolean"&gt;false&lt;/ask_on_error&gt; &lt;!-- available since openSUSE 11.0 --&gt;
+     &lt;name&gt;MyUpdates&lt;/name&gt; &lt;!-- available since openSUSE 11.1/SLES11 (bnc#433981) --&gt;
+   &lt;/listentry&gt;
+ &lt;/add_on_products&gt;
+&lt;/add-on&gt;
+        </screen>
+        With that entry in the autoyast profile, the <emphasis>add_on_products</emphasis> file is not necessary.
+        Since openSUSE 11.0 AutoYaST can ask the user to make the add-on available intead of reporting a timed out error when the add-on can't be found at the given location. Set ask_on_error to true for that (the default is false).
+        Your add-on can be on a different CD/DVD than the installation source then.
+        </para>
+        <para>
+        YaST checks the signatures of files on the installation source now. If a <emphasis>content</emphasis> file is
+        not signed, during a manual installation YaST asks the user what to do. During an autoinstallation, the
+        installation source gets rejected silently.
+        </para>
+    </note>
+    <para>
+        If you want to use unsigned installation sources with autoyast, you can turn of the checks with the following
+        configuration in your autoyast profile (part of the <emphasis>general</emphasis> section.
+    </para>
+          <para>
+          The following elements must be between the &lt;general&gt;&lt;signature-handling&gt; ... &lt;/signature-handling&gt;&lt;/general&gt; tags.
+          </para>
+    <para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>accept_unsigned_file</entry>
+                <entry>the installer will accept unsigned files like the content file
+                  <para><screen>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>accept_file_without_checksum</entry>
+                <entry>the installer will accept files without a checksum in the content file
+                  <para><screen>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>accept_verification_failed</entry>
+                <entry>the installer will accept files where the verification of the signature failed. So the file was signed but the check failed.
+                  <para><screen>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>accept_unknown_gpg_key</entry>
+                <entry>the installer will accept new gpg keys on the installation source that are used to sign the content file for example
+                  <para><screen>&lt;accept_unknown_gpg_key config:type="boolean"&gt;true&lt;/accept_unknown_gpg_key&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>accept_non_trusted_gpg_key</entry>
+                <entry>This basically means, we know the key, but it is not trusted
+                  <para><screen>&lt;accept_non_trusted_gpg_key config:type="boolean"&gt;true&lt;/accept_non_trusted_gpg_key&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+              <row>
+                <entry>import_gpg_key</entry>
+                <entry>the installer will accept and import new gpg keys on the installation source in it's database.
+                  <para><screen>&lt;import_gpg_key config:type="boolean"&gt;true&lt;/import_gpg_key&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, autoyast lets yast decide what to do</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+    </para>
+    <para>
+    Since openSUSE 10.3 it's possible to configure the signature handling for each add-on individually. The following elements must be between the
+    &lt;signature-handling&gt; section of the individual add-on.
+    </para>
+    <para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>accept_unsigned_file</entry>
+                <entry>the installer will accept unsigned files like the content file for this add-on product
+                  <para><screen>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>accept_file_without_checksum</entry>
+                <entry>the installer will accept files without a checksum in the content file for this add-on
+                  <para><screen>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>accept_verification_failed</entry>
+                <entry>the installer will accept files where the verification of the signature failed. So the file was signed but the check failed.
+                  <para><screen>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>accept_unknown_gpg_key</entry>
+                <entry>the installer will accept new gpg keys on the installation source that are used to sign the content file for example
+                  <para><screen>
+           &lt;accept_unknown_gpg_key&gt;
+            &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
+             &lt;keys config:type=&quot;list&quot;&gt;
+               &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
+             &lt;/keys&gt;
+           &lt;/accept_unknown_gpg_key&gt;
+                  </screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>accept_non_trusted_gpg_key</entry>
+                <entry>This basically means, we know the key, but it is not trusted
+                  <para><screen>
+           &lt;accept_non_trusted_gpg_key&gt;
+            &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
+             &lt;keys config:type=&quot;list&quot;&gt;
+               &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
+             &lt;/keys&gt;
+           &lt;/accept_non_trusted_gpg_key&gt;
+</screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+              <row>
+                <entry>import_gpg_key</entry>
+                <entry>the installer will accept and import new gpg keys on the installation source in it's database.
+                  <para><screen>
+           &lt;import_gpg_key&gt;
+            &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
+             &lt;keys config:type=&quot;list&quot;&gt;
+               &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
+             &lt;/keys&gt;
+           &lt;/import_gpg_key&gt;
+             </screen></para>
+                </entry>
+                <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+    </para>
+  </section>
+  <section>
+    <title>Kernel packages</title>
+    <para>
+      Kernel packages are not part of any selection. The required kernel
+      is determined during installation. If the kernel package is added to any selection
+      or to the individual package selection, installation will mostly fail due to conflicts.
+    </para>
+    <para>
+      To force the installation of a specific kernel, use the
+      <emphasis>kernel</emphasis> property. The following is an example
+      forcing the installation of the default kernel. In this example this
+      kernel will be installed in any case, even if an SMP or other kernel
+      is required</para>
+   	<example>
+	  <title>
+	    Package selection in control file
+	  </title>
+	  <screen>
+<xi:include href="examples/example.kernel.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+	  </screen>
+	</example>
+  </section>
+  <section>
+    <title>Removing automatically selected packages</title>
+    <para>
+      Some packages are selected automatically either because of a
+      dependency or because it available in a selection.
+    </para>
+    <para>
+      Removing such packages might break the system consistency and it is
+      not recommended to remove basic packages unless a replacement which
+      provides same services is provided. Best example for this case are
+      <acronym>MTA</acronym> packages. By default, <emphasis>postfix</emphasis>
+      will be selected and installed. If you wish however to use another
+      <acronym>MTA</acronym> like <emphasis>sendmail</emphasis>, then
+      postfix can be removed from the list of selected package using a list
+      in the software resource. The following example shows how this can be done:
+      
+    </para>
+	<example>
+	  <title>
+	    Package selection in control file
+	  </title>
+	  <screen>
+<xi:include href="examples/example.removesoft.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+
+	  </screen>
+	</example>   
+  </section>
+  <section>
+    <title>Installing packages during stage 2</title>
+    <para>
+      if you want to install packages after the reboot during stage 2, instead of
+      during the normal installation process in stage 1, you can use the
+      <emphasis>post-packages</emphasis> element for that:
+    </para>
+        <screen>
+&lt;software&gt;
+  &lt;post-packages config:type=&quot;list&quot;&gt;
+    &lt;package&gt;yast2-cim&lt;/package&gt;
+  &lt;/post-packages&gt;
+&lt;/software&gt;
+        </screen>
+  </section>
+  <section>
+    <para>
+      Since SLES11 and openSUSE 11.1 you can install patterns in stage 2 too.
+      use the <emphasis>post-patterns</emphasis> element for that:
+    </para>
+        <screen>
+&lt;software&gt;
+  &lt;post-patterns config:type=&quot;list&quot;&gt;
+    &lt;pattern&gt;apparmor&lt;/pattern&gt;
+  &lt;/post-patterns&gt;
+&lt;/software&gt;
+        </screen>
+  </section>
+  <section>
+    <title>Online update in stage2</title>
+    <para>
+      since openSUSE 11.1 you can do an online update at the end of the installation with the boolean
+      <emphasis>do_online_update</emphasis>.
+      Of course that makes only sense if you add an online update repository with the suse-register/customer-center section for example or in a post-script. If the online update repository was available in stage1 already via add-on section, then autoyast has already installed the latest packages available. If a kernel update is done via online-update, a reboot at the end of stage2 is triggered.
+    </para>
+        <screen>
+&lt;software&gt;
+  &lt;do_online_update config:type=&quot;boolean&quot;&gt;true&lt;/do_online_update&gt;
+&lt;/software&gt;
+        </screen>
+  </section>
+    </section>
+

@@ -1,0 +1,153 @@
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"[
+
+<!ENTITY % images SYSTEM "images.ent">
+%images;
+
+<!ENTITY % entities SYSTEM "entities/en.ent">
+%entities;
+
+<!-- Examples -->
+<!ENTITY % examples SYSTEM "examples.ent">
+%examples;
+
+<!-- components -->
+<!ENTITY % components SYSTEM "components.ent">
+%components;
+
+]>
+
+
+    <section id="CreateProfile.General">
+      <title id="CreateProfile.General.title">
+	General Options
+      </title>
+      
+      <para>
+	General
+	options include all the settings related to the installation process and
+	the environment of the installed system.
+      </para>
+      <example>
+	<title>General Options</title>
+	<screen>
+  <xi:include href="examples/example.generalOptions.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+	</screen>
+      </example>      
+
+  
+  <para>
+    By default, the auto-installation process has to be confirmed by the
+    user. The confirmation should be disabled if a fully unattended
+    installation is desired. This option is used to view and change the
+    settings on a target system before anything is committed and can be
+    used for debugging. It is set to <emphasis>true</emphasis> by default
+    to avoid recursive installs when the system schedules a reboot after
+    initial system setup.
+  </para>
+  <para>
+     With <emphasis>halt</emphasis> you make autoyast to turn off the machine
+     after all packages have been installed. So instead of the reboot into
+     stage two, the machine is turned off. The bootloader is alreay installed
+     and all your chroot scripts have run.
+  </para>
+  <para>
+     <emphasis>final_halt</emphasis> and <emphasis>final_reboot</emphasis> are new
+     with openSUSE 11.0 and SLES11. You can reboot or halt the machine,
+     when everything with installation and configuration is done, with that.
+  </para>
+    <para>
+      openSUSE 11.0 uses the kexec feature and does not reboot anymore between stage1 and stage2. With
+      the <emphasis>forceboot</emphasis> option you can force the reboot in case you need it for some
+      reason. true will reboot, false will not reboot and a missing <emphasis>forceboot</emphasis> option
+      uses the products default.
+    </para>
+    <para>
+      AutoYaST in openSUSE 11.1 allows you to configure the proposal screen with the &lt;proposals config:type="list"&gt;
+      option in the profile. All proposals that are listed in that section are shown in the proposal screen if you set the
+      <emphasis>confirm</emphasis> option to true.
+    </para>
+    <para>
+      This is the list of proposals for openSUSE 11.1 are (you can find that in the control.xml on the installation source too):
+    <itemizedlist>
+      <listitem>
+	<para>
+    partitions_proposal
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+    bootloader_proposal
+    </para>
+      </listitem>
+      <listitem>
+	<para>
+    country_simple_proposal
+    </para>
+      </listitem>
+      <listitem>
+	<para>
+    timezone_proposal
+    </para>
+      </listitem>
+      <listitem>
+	<para>
+    users_proposal
+    </para>
+      </listitem>
+      <listitem>
+	<para>
+    hwinfo_proposal
+    </para>
+      </listitem>
+      <listitem>
+	<para>
+    mouse_proposal
+    </para>
+      </listitem>
+      <listitem>
+	<para>
+    software_proposal
+    </para>
+      </listitem>
+      <listitem>
+	<para>
+    runlevel_proposal
+    </para>
+      </listitem>
+      <listitem>
+	<para>
+    deploying_proposal
+    </para>
+      </listitem>
+    </itemizedlist>
+    </para>
+    <para>
+        The wait section was invented with openSUSE 11.1 and SLES11. You can let AutoYaST sleep before and after each module during the second stage. 
+        You can run scripts and/or you can pass a value (in seconds) for AutoYaST to sleep. In the example above AutoYaST will sleep for 15 seconds (10+5) before
+        the network configuration happens and 10 seconds (3+7) after the network configuration is done. The scripts in the example don't really make a lot of sense
+        because you could pass that value as "time" value too but I think you get how scripts in the wait section work now.
+    </para>
+     <note>
+	<title>Change starting from SUSE Linux 10.1/SLES10</title>
+	<para>
+	  The <emphasis>language</emphasis>, <emphasis>keyboard</emphasis> and
+      <emphasis>clock</emphasis> properties in the <emphasis>general</emphasis>
+	  resource were moved to the root (<emphasis>profile</emphasis>) element of
+      the autoyast profile. So don't use them in the general section anymore.
+	</para>
+    <para>
+      Since now you can use the <emphasis>second_stage</emphasis> property, which
+      can turn off autoyast after the first reboot. So the complete second stage is
+      a manual installation (default is true, which means that autoyast is doing a
+      complete installation). Since openSUSE 11.0 you can set the boolean <emphasis>final_reboot</emphasis>
+      and <emphasis>final_halt</emphasis> to reboot/turn off the machine at the end of stage two.
+    </para>
+    <para>
+      For the signature-handling, please read the <emphasis>Software</emphasis> chapter
+      of this documentation.
+    </para>
+      </note>
+    </section>
+

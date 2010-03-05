@@ -1,0 +1,111 @@
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"[
+
+<!ENTITY % images SYSTEM "images.ent">
+%images;
+
+<!ENTITY % entities SYSTEM "entities/en.ent">
+%entities;
+
+<!-- Examples -->
+<!ENTITY % examples SYSTEM "examples.ent">
+%examples;
+
+<!-- components -->
+<!ENTITY % components SYSTEM "components.ent">
+%components;
+
+]>
+  <section id="CreateProfile.Network">
+    <title>
+      Network configuration
+    </title>
+
+    <section id="Configuration.Network.Devices">
+      <title>
+	Network devices, DNS and Routing.
+      </title>
+      <para>
+	Network configuration is used to connect a single  &company-suse;  Linux
+	workstation to an Ethernet-based LAN or to configure dial-up
+	connection. More complex configuration (multiple network cards,
+	routing, etc.) is also provided. With this module it's possible to
+	configure and setup Ethernet Controllers and Token-Ring Controllers.
+      </para>
+      <para>
+    In the networking section, when this option is set to true (default is false, this option is available since openSUSE 11.2 but not SLES11):
+    <screen>
+        &lt;keep_install_network config:type=&quot;boolean&quot;&gt;true&lt;/keep_install_network&gt;
+    </screen>
+    YaST will keep network settings created during installation (via Linuxrc) 
+    and/or merge it with network settings from the AutoYaST profile (if these are defined).
+    AutoYaST settings have higher priority than already present configuration files. 
+    YaST will write ifcfg-* files from profile without removing old ones. 
+    If there is none (or empty) dns and routing section, YaST will keep already present values. Otherwise settings from the profile will be applied.
+      </para>
+      <para>
+	To configure network settings and activate networking automatically,
+	one global resource is used to store the whole network configuration.
+      </para>
+      
+      &example.network;
+    </section>
+
+    <section id="Configuration.Network.Proxy">
+      <title>
+	Proxy
+      </title>
+      <para>
+	Configure your Internet proxy (caching) settings using this
+	resource.
+      </para>
+      <para>
+	<emphasis>HTTP proxy</emphasis> is the name of the proxy server for your access to the world wide web (WWW).
+	<emphasis>FTP proxy</emphasis> is the name of the proxy server for your access to the file transfer services (FTP).
+	<emphasis>No proxy</emphasis> domains is a list of domains for
+	which the requests should be done directly without caching.
+      </para>
+      <para>
+	If you are using a proxy server with authorization, fill in Proxy user name and Proxy password.
+      </para>
+      <example>
+	<title>
+	  Netwrok configuration: Proxy
+	</title>
+	<screen>
+  <xi:include href="examples/example.proxy.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+	  </screen>
+	</example>
+
+      
+    </section>
+    <section id="Configuration.Network.Inetd">
+      <title>(X)Inetd </title>
+
+      <para>
+	The profile has elements to specify which superserver should be
+	used (netd_service), whether it should be enabled (netd_status) and
+	how the services should be configured (netd_conf).
+      </para>
+      <para>
+	A service description element has conceptually two parts: key and
+	non-key. When writing the configuration, services are matched using
+	the key fields and to the matching service, non-key fields are
+	applied. If no service matches, it is created. If more services
+	match, a warning is reported. The key fields are script, service,
+	protocol and server.
+      </para>
+      <para>
+	Service and protocol are matched literally. script is the base name
+	of the config file: usually a file in<filename> /etc/xinetd.d</filename>, for example "echo-udp",
+	or "inetd.conf". For compatibility with 8.2, server is matched more
+	loosely: if it is <filename>/usr/sbin/tcpd</filename>, the real server name is taken from
+	server_args. After that, the basename of the first
+	whitespace-sparated word is taken and these values are compared.
+      </para>
+      &example.inetd;
+
+    </section>
+  </section>
+
