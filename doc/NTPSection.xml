@@ -1,0 +1,49 @@
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"[
+
+<!ENTITY % images SYSTEM "images.ent">
+%images;
+
+<!ENTITY % entities SYSTEM "entities/en.ent">
+%entities;
+
+<!-- Examples -->
+<!ENTITY % examples SYSTEM "examples.ent">
+%examples;
+
+<!-- components -->
+<!ENTITY % components SYSTEM "components.ent">
+%components;
+
+]>
+    
+    <section id='Configuration.Network.Ntp'>
+      <title>
+	NTP Client
+      </title>
+      <para>
+          Select whether to start the NTP daemon when booting the system. The NTP
+          daemon resolves host names when initializing. The first
+          synchronization of the clock is performed before the NTP daemon is
+          started. To use this host for initial synchronization configure the
+          property <emphasis>initial_sync</emphasis>.
+      </para>
+      <para>
+          To run NTP daemon in
+          chroot jail, set <emphasis>start_in_chroot</emphasis>. Starting any daemon
+          in a chroot jail is more secure and strongly recommended. 
+          To adjust NTP servers, peers, local clocks, and NTP broadcasting,
+          add the appropriate entry to the control file. an example of various
+          configuration options is shown below.
+      </para>
+       <example>
+          <title>
+            Network configuration: NTP Client
+          </title>
+          <screen>
+  <xi:include href="examples/example.ntp.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+          </screen>
+</example> 
+    </section>
+

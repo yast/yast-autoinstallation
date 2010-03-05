@@ -1,0 +1,90 @@
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"[
+
+<!ENTITY % images SYSTEM "images.ent">
+%images;
+
+<!ENTITY % entities SYSTEM "entities/en.ent">
+%entities;
+
+<!-- Examples -->
+<!ENTITY % examples SYSTEM "examples.ent">
+%examples;
+
+<!-- components -->
+<!ENTITY % components SYSTEM "components.ent">
+%components;
+
+]>
+
+
+  <section id="CreateProfile.Security">
+    <title>
+      Security settings
+    </title>
+    
+    <para>
+      Using the features of this module, you will be able to change the local
+      security settings on the target system. The local security settings
+      include the boot configuration, login settings, password settings,
+      user addition settings, and file permissions.
+    </para>
+    <para>
+      Configuring the security settings automatically corresponds to the
+      <emphasis>Custom Settings</emphasis> in the security module available in
+      the running system which lets you create your own, customized
+      configuration.
+    </para>      
+    
+    &example.security;
+    <section>
+      <title>Password Settings Options</title>
+      <para>
+	Change various password settings. These settings are mainly stored in the <filename>/etc/login.defs</filename> file.
+      </para>
+      <para>
+	Use this resource to activate one of  the <emphasis>encryption</emphasis> methods currently supported.
+	If not set, <emphasis>DES</emphasis> is configured.
+      </para>
+      <para>
+	<emphasis>DES</emphasis>, the Linux default method, works in all
+	network environments, but it restricts you to passwords no longer than
+	eight characters. <emphasis>MD5</emphasis> allows longer passwords,
+	thus provides more security, but some network protocols don't support
+	this, and you may have problems with NIS. <emphasis>Blowfish</emphasis>
+	is also supported.
+      </para>
+      <para>Additionally, you can setup the system to check for password
+	plausibility and length etc.</para>
+    </section>
+    <section>
+      <title>Boot Settings</title>
+      <para>
+	Use the security resource, you can change various boot settings.
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para><emphasis>How to interpret Ctrl + Alt + Del</emphasis></para>
+	  <para>When someone at the console has pressed the CTRL + ALT + DEL key combination, the system usually reboots. Sometimes it is desirable to ignore this event, for example, when the system serves as both workstation and server.</para>
+	</listitem>
+	<listitem>
+	  <para><emphasis>Shutdown behavior of KDM</emphasis></para>
+	  <para>Set who is allowed to shut down the machine from KDM.</para>
+	</listitem>
+      </itemizedlist>
+
+      
+    </section>
+    <section>
+      <title>Login Settings</title>
+      <para>Change various login settings. These settings are mainly stored in the '/etc/login.defs' file.</para>
+    </section>
+    <section>
+      <title>New user settings (useradd settings)</title>
+      <para>Set the minimum and maximum possible user ID and set the minimum
+	and maximum possible group ID.
+      </para>
+    </section>
+    
+  </section>
+
