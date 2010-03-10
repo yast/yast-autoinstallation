@@ -30,13 +30,9 @@
       </para>
       <example>
 	<title>General Options</title>
-	<screen>
-  <xi:include href="examples/example.generalOptions.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
-	</screen>
-      </example>      
-
-  
+    <para>
+        The mode section configures the behavior of AutoYaST when it comes to confirmation and rebooting. The following has to be in the &lt;general&gt;&lt;mode&gt; section
+    </para>
   <para>
     By default, the auto-installation process has to be confirmed by the
     user. The confirmation should be disabled if a fully unattended
@@ -63,6 +59,72 @@
       reason. true will reboot, false will not reboot and a missing <emphasis>forceboot</emphasis> option
       uses the products default.
     </para>
+    <para>
+          <table frame='top'>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>Attribute</entry>
+                <entry>Values</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+        <tbody>
+          <row>
+            <entry>confirm</entry>
+            <entry>if this boolean is set to "true" the installation stops at the confirmation screen (also called proposal screen) and has to be confirmed with the "install"-button.
+              <para><screen>&lt;confirm config:type="boolean"&gt;true&lt;/confirm&gt;</screen></para>
+            </entry>
+            <entry>optional. The default is true</entry>
+          </row>
+          <row>
+            <entry>halt</entry>
+            <entry>shut down the machine after the first stage. So if you turn it on again, the machine boots and the second stage of the autoinstallation starts
+              <para><screen>&lt;halt config:type="boolean"&gt;true&lt;/halt&gt;</screen></para>
+            </entry>
+            <entry>optional. The default is false</entry>
+          </row>
+          <row>
+            <entry>second_stage</entry>
+            <entry>this boolean configures if AutoYaST will run in the second stage too (after the partitioning, software and bootloader installation of the first stage). If you set this to false, a normal manual installation happens in the second stage.
+              <para><screen>&lt;second_stage config:type="boolean"&gt;true&lt;/second_stage&gt;</screen></para>
+            </entry>
+            <entry>optional. The default is true</entry>
+          </row>
+          <row>
+            <entry>final_reboot</entry>
+            <entry>if you set this to true, the machine will reboot at the very end of the installation (when everything is installed and configured at the end of the second stage)
+              <para><screen>&lt;final_reboot config:type="boolean"&gt;true&lt;/final_reboot&gt;</screen></para>
+            </entry>
+            <entry>optional. The default is false. It makes no sense to set this <emphasis>and</emphasis> final_halt to true. This options is available since openSUSE 11.0 and SLES11</entry>
+          </row>
+          <row>
+            <entry>final_halt</entry>
+            <entry>if you set this to true, the machine will shutdown at the very end of the installation (when everything is installed and configured at the end of the second stage)
+              <para><screen>&lt;final_halt config:type="boolean"&gt;true&lt;/final_halt&gt;</screen></para>
+            </entry>
+            <entry>optional. The default is false. It makes no sense to set this <emphasis>and</emphasis> final_reboot to true. This options is available since openSUSE 11.0 and SLES11</entry>
+          </row>
+          <row>
+            <entry>forceboot</entry>
+            <entry>Some openSUSE releases use kexec to avoid the reboot after the first stage. They immediately boot into the installed system. You can force a reboot with this
+              <para><screen>&lt;forceboot config:type="boolean"&gt;true&lt;/forceboot&gt;</screen></para>
+            </entry>
+            <entry>optional. The default is false.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+     </table>
+    </para>
+
+
+<screen>
+  <xi:include href="examples/example.generalOptions.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/>	  
+	</screen>
+      </example>      
+
+  
     <para>
       AutoYaST in openSUSE 11.1 allows you to configure the proposal screen with the &lt;proposals config:type="list"&gt;
       option in the profile. All proposals that are listed in that section are shown in the proposal screen if you set the
