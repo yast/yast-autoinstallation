@@ -73,7 +73,7 @@
 
         if ( Scheme == "http" || Scheme == "https" )
         {
-        HTTP::easySSL( true );
+            HTTP::easySSL( true );
             res = HTTP::Get(full_url, Localfile);
             if (res["code"]:0 == 200)
             {
@@ -123,52 +123,52 @@
 
             if (SCR::Read(.target.size, Localfile) > 0 )
             {
-            GET_error = "";
-            ok = true;
+                GET_error = "";
+                ok = true;
             } else {
-            GET_error = GET_error + sformat(_("Reading file on %1 failed.\n"), Path);
-            y2milestone("Trying to find file on installation media: %1", Installation::boot ());
-            if (Installation::boot () == "cd") {
-                string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
-                string cdrom_device = "/dev/"+cdrom;
-                string already_mounted = "grep "+cdrom_device+" /proc/mounts ;";
-                map am = (map) SCR::Execute (.target.bash_output, already_mounted);
+                GET_error = GET_error + sformat(_("Reading file on %1 failed.\n"), Path);
+                y2milestone("Trying to find file on installation media: %1", Installation::boot ());
+                if (Installation::boot () == "cd") {
+                    string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
+                    string cdrom_device = "/dev/"+cdrom;
+                    string already_mounted = "grep "+cdrom_device+" /proc/mounts ;";
+                    map am = (map) SCR::Execute (.target.bash_output, already_mounted);
 
-                if (am["exit"]:-1 == 0 && size (am["stdout"]:"") > 0) {
-                    y2warning ("%1 is already mounted, trying to bind mount...", cdrom_device);
-                    string cmd = "mount -v --bind `grep "+cdrom_device+" /proc/mounts |cut -f 2 -d \\ ` "+mount_point+";";
-                    map am1 = (map) SCR::Execute (.target.bash_output, cmd);
-                    if (am1["exit"]:-1 == 0) {
-                        ok=true;
+                    if (am["exit"]:-1 == 0 && size (am["stdout"]:"") > 0) {
+                        y2warning ("%1 is already mounted, trying to bind mount...", cdrom_device);
+                        string cmd = "mount -v --bind `grep "+cdrom_device+" /proc/mounts |cut -f 2 -d \\ ` "+mount_point+";";
+                        map am1 = (map) SCR::Execute (.target.bash_output, cmd);
+                        if (am1["exit"]:-1 == 0) {
+                            ok=true;
+                        } else {
+                            y2warning ("can't bind mount %1 failing...", cdrom_device);
+                            ok = false;
+                        }
+
                     } else {
-                        y2warning ("can't bind mount %1 failing...", cdrom_device);
-                        ok = false;
+                        if (!(boolean)WFM::Execute(.local.mount, [cdrom_device, mount_point, Installation::mountlog] )) {
+                            // autoyast tried to mount the CD but had no success.
+                            GET_error = GET_error + sformat(_("Mounting %1 failed."), cdrom );
+                            y2warning("Mount failed");
+                            ok=false;
+                        } else {
+                            ok=true;
+                        }
                     }
-
-                } else {
-                    if (!(boolean)WFM::Execute(.local.mount, [cdrom_device, mount_point, Installation::mountlog] )) {
-                        // autoyast tried to mount the CD but had no success.
-                        GET_error = GET_error + sformat(_("Mounting %1 failed."), cdrom );
-                        y2warning("Mount failed");
-                        ok=false;
-                    } else {
-                        ok=true;
+                    if (ok) {
+                        string cpcmd = sformat("cp " + mount_point + "/%1 %2", Path , Localfile);
+                        y2milestone("Copy profile: %1", cpcmd);
+                        SCR::Execute(.target.bash, cpcmd);
+                        WFM::Execute(.local.umount, mount_point);
+                        if (SCR::Read(.target.size, Localfile) > 0 ) {
+                            GET_error = "";
+                            return (true);
+                        }
                     }
                 }
-                if (ok) {
-                    string cpcmd = sformat("cp " + mount_point + "/%1 %2", Path , Localfile);
-                    y2milestone("Copy profile: %1", cpcmd);
-                    SCR::Execute(.target.bash, cpcmd);
-                    WFM::Execute(.local.umount, mount_point);
-                    if (SCR::Read(.target.size, Localfile) > 0 ) {
-                        GET_error = "";
-                        return (true);
-                    }
-                }
-            }
-            // autoyast tried to read a file but had no success.
-            GET_error = GET_error + sformat(_("Reading a file on CD failed. Path: %1/%2."),mount_point,Path);
-            ok = false;
+                // autoyast tried to read a file but had no success.
+                GET_error = GET_error + sformat(_("Reading a file on CD failed. Path: %1/%2."),mount_point,Path);
+                ok = false;
             }
         }
         else if (Scheme == "nfs")  // NFS
@@ -260,84 +260,84 @@
         {
             if ( Path != "")
             {
-            list<string> deviceList = [];
-            if( Host == "" ) {
-                list<map> disks =  (Scheme == "device") ? (list<map>)SCR::Read(.probe.disk) : (list<map>)SCR::Read(.probe.usb);
-                foreach( map m, disks, ``{
-                    if( Scheme == "usb" &&
-                        m["bus"]:"USB" != "SCSI" )
+                list<string> deviceList = [];
+                if( Host == "" ) {
+                    list<map> disks =  (Scheme == "device") ? (list<map>)SCR::Read(.probe.disk) : (list<map>)SCR::Read(.probe.usb);
+                    foreach( map m, disks, ``{
+                        if( Scheme == "usb" &&
+                            m["bus"]:"USB" != "SCSI" )
+                            continue;
+                        if( haskey( m, "dev_name") ) {
+                            integer i = 0;
+                            string dev = m["dev_name"]:"";
+                            deviceList = add( deviceList, substring( dev, 5 ) ); // not uncommon for USB sticks to have no partition
+                            do {
+                                i = i + 1;
+                                dev = m["dev_name"]:"" + sformat("%1",i);
+                                if( SCR::Read(.target.lstat, dev) != $[] )
+                                    deviceList = add( deviceList, substring( dev, 5 ) );
+                            } while( SCR::Read(.target.lstat, dev) != $[] || i < 5 );
+                        }
+                    });
+                    y2milestone("devices to look on: %1", deviceList);
+                } else {
+                    /*
+                      sometimes we have devices like /dev/cciss/c1d0p5
+                      those "nested" devices will be catched here
+                      as long as we find a directory where we expect a device,
+                      we cut down the Path and enhance the Host (device name)
+                    */
+                    while( SCR::Read( .target.dir, "/dev/"+Host ) != nil ) {
+                        y2milestone("nested device found");
+                        list<string> l = splitstring( Path, "/" );
+                        Host = Host + "/" + l[0]:"";
+                        l = remove(l,0);
+                        Path = mergestring(l,"/");
+                        y2milestone("Host=%1 Path=%2",Host,Path);
+                    }
+                    // catching nested devices done
+                    deviceList = [ Host ];
+                }
+                foreach( string Host, deviceList, ``{
+                    y2milestone("looking for profile on %1", Host);
+                    string mounts = (string)(SCR::Read (.target.string, "/proc/mounts"));
+                    list<string> mount_list = splitstring( mounts, "\n" );
+                    boolean already_mounted = false;
+                    foreach( string m, mount_list, ``{
+                        list<string>  entries = splitstring( m, " " );
+                        if( entries[0]:"" == "/dev/"+Host ) {
+                            already_mounted = true;
+                            mount_point = entries[1]:"";
+                            break;
+                        }
+                    });
+                    y2milestone("already mounted=%1 mountpoint=%2",already_mounted,mount_point);
+                    if( ! already_mounted &&
+                        !(boolean)WFM::Execute(.local.mount, [sformat("/dev/%1", Host),
+                                        mount_point]) ) {
+                        y2milestone("%1 is not mounted and mount failed", sformat("/dev/%1", Host));
+                        GET_error = sformat(_("%1 is not mounted and mount failed"), sformat("/dev/%1", Host));
                         continue;
-                    if( haskey( m, "dev_name") ) {
-                        integer i = 0;
-                        string dev = m["dev_name"]:"";
-                        deviceList = add( deviceList, substring( dev, 5 ) ); // not uncommon for USB sticks to have no partition
-                        do {
-                            i = i + 1;
-                            dev = m["dev_name"]:"" + sformat("%1",i);
-                            if( SCR::Read(.target.lstat, dev) != $[] )
-                                deviceList = add( deviceList, substring( dev, 5 ) );
-                        } while( SCR::Read(.target.lstat, dev) != $[] || i < 5 );
                     }
-                });
-                y2milestone("devices to look on: %1", deviceList);
-            } else {
-                /*
-                  sometimes we have devices like /dev/cciss/c1d0p5
-                  those "nested" devices will be catched here
-                  as long as we find a directory where we expect a device,
-                  we cut down the Path and enhance the Host (device name)
-                */
-                while( SCR::Read( .target.dir, "/dev/"+Host ) != nil ) {
-                    y2milestone("nested device found");
-                    list<string> l = splitstring( Path, "/" );
-                    Host = Host + "/" + l[0]:"";
-                    l = remove(l,0);
-                    Path = mergestring(l,"/");
-                    y2milestone("Host=%1 Path=%2",Host,Path);
-                }
-                // catching nested devices done
-                deviceList = [ Host ];
-            }
-            foreach( string Host, deviceList, ``{
-                y2milestone("looking for profile on %1", Host);
-                string mounts = (string)(SCR::Read (.target.string, "/proc/mounts"));
-                list<string> mount_list = splitstring( mounts, "\n" );
-                boolean already_mounted = false;
-                foreach( string m, mount_list, ``{
-                    list<string>  entries = splitstring( m, " " );
-                    if( entries[0]:"" == "/dev/"+Host ) {
-                        already_mounted = true;
-                        mount_point = entries[1]:"";
-                        break;
-                    }
-                });
-                y2milestone("already mounted=%1 mountpoint=%2",already_mounted,mount_point);
-                if( ! already_mounted &&
-                    !(boolean)WFM::Execute(.local.mount, [sformat("/dev/%1", Host),
-                                    mount_point]) ) {
-                    y2milestone("%1 is not mounted and mount failed", sformat("/dev/%1", Host));
-                    GET_error = sformat(_("%1 is not mounted and mount failed"), sformat("/dev/%1", Host));
-                    continue;
-                }
 
-                if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  "/" + Path + " " + Localfile) != 0 )
-                {
-                    // autoyast tried to copy a file but that file can't be found
-                    GET_error = sformat(_("File %1 cannot be found"),mount_point + Path);
-                    y2milestone("file %1 can't be found",  mount_point + Path);
-                }
-                else
-                {
-                    GET_error = "";
-                    ok = true;
-                    y2milestone("found");
-                }
-                if( ! already_mounted )
-                    WFM::Execute(.local.umount, mount_point);
-                if( ok == true )
-                    break;
-            });
-        }
+                    if (WFM::Execute (.local.bash, "/bin/cp " + mount_point +  "/" + Path + " " + Localfile) != 0 )
+                    {
+                        // autoyast tried to copy a file but that file can't be found
+                        GET_error = sformat(_("File %1 cannot be found"),mount_point + Path);
+                        y2milestone("file %1 can't be found",  mount_point + Path);
+                    }
+                    else
+                    {
+                        GET_error = "";
+                        ok = true;
+                        y2milestone("found");
+                    }
+                    if( ! already_mounted )
+                        WFM::Execute(.local.umount, mount_point);
+                    if( ok == true )
+                        break;
+                });
+            }
         }
         else if (Scheme == "tftp") // Device
         {
