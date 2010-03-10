@@ -182,7 +182,10 @@ you to debug your script.</P>
                    ),
                   `VSpacing(1),
                   `HBox(
-                        `MultiLineEdit(`id(`source), _("S&cript Source"), script["source"]:"")
+                        `TextEntry(`id(`location), `opt(`notify), _("Script Location"), script["location"]:"" )
+                       ),
+                  `HBox(
+                        `MultiLineEdit(`id(`source), `opt(`notify), _("S&cript Source"), script["source"]:"")
                         ),
                   `VSpacing(1),
                   `HBox(
@@ -212,6 +215,14 @@ you to debug your script.</P>
                 UI::ChangeWidget (`id(`feedback), `Enabled, false);
         }
 
+        if( size( (string)UI::QueryWidget( `id(`location), `Value ) ) > 0 ) {
+            UI::ChangeWidget (`id(`source), `Enabled, false );
+        } else {
+            UI::ChangeWidget (`id(`source), `Enabled, true );
+            if( size( (string)UI::QueryWidget( `id(`source), `Value ) ) > 0 )
+                UI::ChangeWidget(`id(`location), `Enabled, false );
+        }
+
         if( !(boolean)UI::QueryWidget( `id(`feedback), `Value ) )
             UI::ChangeWidget (`id(`feedback_type), `Enabled, false );
 
@@ -234,18 +245,19 @@ you to debug your script.</P>
                 boolean debug    = (boolean)UI::QueryWidget(`id(`debug), `Value);
                 boolean chrooted = (boolean)UI::QueryWidget(`id(`chrooted), `Value);
                 boolean network  = (boolean)UI::QueryWidget(`id(`network),  `Value);
+                string location = (string)UI::QueryWidget(`id(`location), `Value);
 
-                if (source == "" || scriptName == "")
+                if ( (source == "" && location == "" ) || scriptName == "")
                 {
                     Popup::Message(_("Provide at least the script
-name and the content of the script.
+name and the location or content of the script.
 "));
                     ret = `again;
                     continue;
                 }
                 else
                 {
-                    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type, chrooted, debug, feedback, network, feedback_type);
+                    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type, chrooted, debug, feedback, network, feedback_type, location);
                 }
             }
             else if (ret == `loadsource)
@@ -287,6 +299,15 @@ name and the content of the script.
                 UI::ChangeWidget( `id(`feedback_type), `Enabled, (boolean)UI::QueryWidget( `id(`feedback), `Value ) );
                 UI::ChangeWidget( `id(`feedback_type), `Value, `id("no_type") );
             }
+            if( size( (string)UI::QueryWidget( `id(`location), `Value ) ) > 0 ) {
+                UI::ChangeWidget (`id(`source), `Enabled, false );
+            } else {
+                UI::ChangeWidget (`id(`source), `Enabled, true );
+            }
+            if( size( (string)UI::QueryWidget( `id(`source), `Value ) ) > 0 )
+                UI::ChangeWidget(`id(`location), `Enabled, false );
+            else
+                UI::ChangeWidget(`id(`location), `Enabled, true );
 
         } until (ret == `save || ret == `cancel || ret == `back);
         return ret;

@@ -365,7 +365,8 @@
             boolean debug,
             boolean feedback,
             boolean network,
-            string feedback_type
+            string feedback_type,
+            string location
             )
     {
         boolean mod = false;
@@ -383,6 +384,7 @@
                 oldScript=add(oldScript,"feedback",feedback);
                 oldScript=add(oldScript,"network_needed",network);
                 oldScript=add(oldScript,"feedback_type", feedback_type);
+                oldScript=add(oldScript,"location", location);
 
                 mod = true;
                 return oldScript;
@@ -404,6 +406,7 @@
             script=add(script,"feedback",feedback);
             script=add(script,"network_needed",network);
             script=add(script,"feedback_type", feedback_type);
+            script=add(script,"location", location);
 
             merged=add(merged,script);
         }
