@@ -35,7 +35,7 @@ import "Label";
 /**
  * Add or edit a file
  */
-define void AddEditFile(string fileName, string source, string permissions, string owner)
+define void AddEditFile(string fileName, string source, string permissions, string owner, string location)
 	``{
 
 		list newFiles = [];
@@ -49,6 +49,7 @@ define void AddEditFile(string fileName, string source, string permissions, stri
 				oldFile=add(oldFile,"file_contents", source);
 				oldFile=add(oldFile,"file_permissions", permissions);
 				oldFile=add(oldFile,"file_owner", owner);
+                oldFile=add(oldFile,"file_location", location);
 				modified = true;
 				return oldFile;
 				}
@@ -64,6 +65,7 @@ define void AddEditFile(string fileName, string source, string permissions, stri
 			file=add(file,"file_contents", source);
 			file=add(file,"file_permissions", permissions);
 			file=add(file,"file_owner", owner);
+            file=add(file,"file_location", location);
 			AutoinstFile::Files = add (  AutoinstFile::Files, file);
 		}
 		return;
@@ -124,8 +126,9 @@ new permissions.</p>");
 						`TextEntry(`id(`perm), _("&Permissions"), file["file_permissions"]:"")
 						),
 					`VSpacing(1),
+                    `TextEntry(`id(`location), `opt(`notify), _("&Retrieve from"), file["file_location"]:""),
 					`HBox(
-						`MultiLineEdit(`id(`source), _("File So&urce"), file["file_contents"]:"")
+						`MultiLineEdit(`id(`source),`opt(`notify),  _("File So&urce"), file["file_contents"]:"")
 						),
 					`VSpacing(1),
 					`HBox(
@@ -138,13 +141,27 @@ new permissions.</p>");
 				contents, help, true, true);
 
 		Wizard::SetNextButton(`next, Label::SaveButton() );
+
+        /* why?
 		if (mode == `edit)
 		{
 			UI::ChangeWidget(`id(`filename), `Enabled, false);
 		}
+        */
 
 		any ret = nil;
 		repeat {
+            if( (string)UI::QueryWidget(`id(`location), `Value) != "" ) {
+                UI::ChangeWidget (`id(`source), `Enabled, false );
+            } else {
+                UI::ChangeWidget (`id(`source), `Enabled, true );
+                if( (string)UI::QueryWidget(`id(`source), `Value) != "" ) {
+                    UI::ChangeWidget (`id(`location), `Enabled, false );
+                    UI::ChangeWidget (`id(`location), `Value, "" );
+                } else {
+                    UI::ChangeWidget (`id(`location), `Enabled, true );
+                }
+            }
 			ret = (symbol) UI::UserInput();
 			if (ret == `next)
 			{
@@ -152,8 +169,9 @@ new permissions.</p>");
 				string permissions = (string)UI::QueryWidget(`id(`perm), `Value);
 				string owner = (string)UI::QueryWidget(`id(`owner), `Value);
 				string source = (string)UI::QueryWidget(`id(`source), `Value);
+                string location = (string)UI::QueryWidget(`id(`location), `Value);
 
-				if ( source == "" || fileName == "")
+				if ( (source == "" && location == "") || fileName == "")
 				{
 					Popup::Message(_("Provide at least the file
 name and the contents of the file.
@@ -163,7 +181,7 @@ name and the contents of the file.
 				}
 				else
 				{
-					AddEditFile( fileName,source, permissions, owner);
+					AddEditFile( fileName,source, permissions, owner, location);
 				}
 			}
 			else if (ret == `loadsource)
