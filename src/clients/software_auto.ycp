@@ -90,6 +90,8 @@ more <b>add-on</b> selections and packages.
                     Pkg::TargetInit("/", false);
                     okay = true;
                 } else {
+                    if( mainRepo != (string)UI::QueryWidget(`id(`location),  `Value) )
+                        Pkg::SourceFinishAll();
                     mainRepo = (string)UI::QueryWidget(`id(`location),  `Value);
                     Pkg::TargetInit(tmpdir, false);
                     if( SourceManager::createSource (mainRepo) == `ok )
