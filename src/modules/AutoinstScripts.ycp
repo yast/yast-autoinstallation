@@ -650,11 +650,13 @@ Experimental
         foreach( map s, scripts,
                  ``{
             string scriptInterpreter	= s["interpreter"]:"shell";
-            string scriptName = s["filename"]:type;
+            string scriptName = s["filename"]:"";
             if (scriptName=="")
             {
                 map t = URL::Parse(s["location"]:"");
                 scriptName=basename(t["path"]:"");
+                if( scriptName == "" )
+                    scriptName = type;
             }
             string scriptPath = "";
 
