@@ -337,7 +337,16 @@
             if( device == "" ) {
                 d["device"] = find_first_disk(last_dev);
                 y2milestone("empty device in profile set to %1", d["device"]:"");
-            } else if( issubstring( device, "by-id" ) )
+            }
+
+            // translation of by-id, by-path, ... device names.
+            // was handled in autoyast until openSUSE 11.3
+            map<string,any> deviceTranslation = $[];
+            if( Storage::GetContVolInfo( d["device"]:"", deviceTranslation ) )
+                d["device"] = deviceTranslation["vdevice"]:"";
+
+            /* old code for device mapping (by-id, by-path, ...)
+            else if( issubstring( device, "by-id" ) )
                 udev_string = "udev_id";
             else if( issubstring( device, "by-path" ) )
                 udev_string = "udev_path";
@@ -360,6 +369,9 @@
                     });
                 });
             }
+            */
+
+
             last_dev = d["device"]:"";
             return d;
         });
