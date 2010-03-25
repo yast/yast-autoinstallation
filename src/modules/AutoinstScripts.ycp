@@ -745,6 +745,9 @@ Experimental
                 string executionString = "";
                 boolean showFeedback = s["feedback"]:false;
 
+                if( s["notification"]:"" != "" )
+                    Popup::ShowFeedback( s["notification"]:"" );
+
                 if (scriptInterpreter == "shell")
                 {
                     string debug = ( s["debug"]:true ? "-x" : "" );
@@ -791,6 +794,9 @@ Experimental
                     y2error("Unknown interpreter: %1", scriptInterpreter);
                 }
                 string feedback = "";
+
+                if( s["notification"]:"" != "" )
+                    Popup::ClearFeedback();
 
                 if( executionString != "" ) {
                     if( showFeedback ) {
