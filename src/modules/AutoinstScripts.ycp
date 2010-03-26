@@ -148,6 +148,7 @@
             return ($["filename":p["filename"]:"",
                       "interpreter": p["interpreter"]:"",
                       "source":p["source"]:"",
+                      "notification":p["notification"]:"",
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
                       "feedback_type":p["feedback_type"]:"",
@@ -159,6 +160,7 @@
                       "interpreter": p["interpreter"]:"",
                       "source":p["source"]:"",
                       "location":p["location"]:"",
+                      "notification":p["notification"]:"",
                       "feedback":p["feedback"]:false,
                       "feedback_type":p["feedback_type"]:"",
                       "debug":p["debug"]:true,
@@ -171,6 +173,7 @@
                       "interpreter": p["interpreter"]:"",
                       "source":p["source"]:"",
                       "chrooted":p["chrooted"]:false,
+                      "notification":p["notification"]:"",
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
                       "feedback_type":p["feedback_type"]:"",
@@ -189,6 +192,7 @@
                       "interpreter": p["interpreter"]:"",
                       "source":p["source"]:"",
                       "location":p["location"]:"",
+                      "notification":p["notification"]:"",
                       "feedback":p["feedback"]:false,
                       "feedback_type":p["feedback_type"]:"",
                       "debug":p["debug"]:true
@@ -366,7 +370,8 @@
             boolean feedback,
             boolean network,
             string feedback_type,
-            string location
+            string location,
+            string notification
             )
     {
         boolean mod = false;
@@ -385,6 +390,7 @@
                 oldScript=add(oldScript,"network_needed",network);
                 oldScript=add(oldScript,"feedback_type", feedback_type);
                 oldScript=add(oldScript,"location", location);
+                oldScript=add(oldScript,"notification", notification);
 
                 mod = true;
                 return oldScript;
@@ -407,6 +413,7 @@
             script=add(script,"network_needed",network);
             script=add(script,"feedback_type", feedback_type);
             script=add(script,"location", location);
+            script=add(script,"notification", notification);
 
             merged=add(merged,script);
         }

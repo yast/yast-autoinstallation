@@ -182,6 +182,9 @@ you to debug your script.</P>
                    ),
                   `VSpacing(1),
                   `HBox(
+                        `TextEntry(`id(`notification), `opt(`notify), _("Text of the notification popup"), script["notification"]:"" )
+                       ),
+                  `HBox(
                         `TextEntry(`id(`location), `opt(`notify), _("Script Location"), script["location"]:"" )
                        ),
                   `HBox(
@@ -213,6 +216,7 @@ you to debug your script.</P>
                 UI::ChangeWidget (`id(`chrooted), `Enabled, false);
                 UI::ChangeWidget (`id(`network), `Enabled, false);
                 UI::ChangeWidget (`id(`feedback), `Enabled, false);
+                UI::ChangeWidget (`id(`notification), `Enabled, false);
         }
 
         if( size( (string)UI::QueryWidget( `id(`location), `Value ) ) > 0 ) {
@@ -246,6 +250,7 @@ you to debug your script.</P>
                 boolean chrooted = (boolean)UI::QueryWidget(`id(`chrooted), `Value);
                 boolean network  = (boolean)UI::QueryWidget(`id(`network),  `Value);
                 string location = (string)UI::QueryWidget(`id(`location), `Value);
+                string notification = (string)UI::QueryWidget(`id(`notification), `Value);
 
                 if ( (source == "" && location == "" ) || scriptName == "")
                 {
@@ -257,7 +262,7 @@ name and the location or content of the script.
                 }
                 else
                 {
-                    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type, chrooted, debug, feedback, network, feedback_type, location);
+                    AutoinstScripts::AddEditScript( scriptName, source, interpreter, type, chrooted, debug, feedback, network, feedback_type, location, notification);
                 }
             }
             else if (ret == `loadsource)
@@ -278,21 +283,25 @@ name and the location or content of the script.
                         UI::ChangeWidget (`id(`feedback), `Value, false);
                         UI::ChangeWidget (`id(`chrooted), `Value, false);
                         UI::ChangeWidget (`id(`network),  `Value, false);
+                        UI::ChangeWidget (`id(`notification), `Enabled, false);
                 } else if( type == "chroot-scripts" ) {
                         UI::ChangeWidget (`id(`chrooted), `Enabled, true);
                         UI::ChangeWidget (`id(`feedback), `Enabled, true);
                         UI::ChangeWidget (`id(`network),  `Enabled, false);
                         UI::ChangeWidget (`id(`network),  `Value, false);
+                        UI::ChangeWidget (`id(`notification), `Enabled, true);
                 } else if( type == "post-scripts" ) {
                         UI::ChangeWidget (`id(`chrooted), `Enabled, false);
                         UI::ChangeWidget (`id(`chrooted), `Value, false);
                         UI::ChangeWidget (`id(`feedback), `Enabled, true);
+                        UI::ChangeWidget (`id(`notification), `Enabled, true);
                         UI::ChangeWidget (`id(`network),  `Enabled, true);
                 } else if( type == "pre-scripts" ) {
                         UI::ChangeWidget (`id(`chrooted), `Enabled, false);
                         UI::ChangeWidget (`id(`chrooted), `Value, false);
                         UI::ChangeWidget (`id(`feedback), `Enabled, true);
                         UI::ChangeWidget (`id(`network),  `Value, false);
+                        UI::ChangeWidget (`id(`notification), `Enabled, true);
                         UI::ChangeWidget (`id(`network),  `Enabled, false);
                 }
             } else if( ret == `feedback ) {
