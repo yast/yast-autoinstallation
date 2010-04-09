@@ -83,7 +83,7 @@
         /* look for VGs to reuse */
         foreach ( string k, map v, AutoinstStorage::AutoTargetMap, ``{
             foreach ( map p, v["partitions"]:[], ``{
-                if( haskey( p, "lvm_group" ) && p["create"]:true == false ) {
+                if( haskey( p, "lvm_group" ) && p["create"]:true == false && p["format"]:true == false ) {
                     keepLVM[p["lvm_group"]:"x"] = [];
                     if( !contains( ExistingVGs, p["lvm_group"]:"x" ) )
                         Report::Error( sformat( _("Cannot reuse volume group %1. The volume group does not exist."), p["lvm_group"]:"x" ) );
@@ -236,8 +236,9 @@
             y2milestone("Existing PVs: %1",  new_pvs );
             map atm = AutoinstStorage::AutoTargetMap;
             foreach(map pv, new_pvs, ``{
+                boolean to_add = false;
                 if (pv["create"]:false) {
-                    boolean to_add = true;
+                    to_add = true;
                     // exclude partitions that are NOT supposed to be in the LVM
                     foreach( map atm_vol, atm[pv["maindev"]:"","partitions"]:[], ``{
                         if( pv["nr"]:0 == atm_vol["partition_nr"]:-1 ) {
@@ -247,10 +248,21 @@
                             }
                         }
                     });
-                    if( to_add ) {
-                        y2milestone("addPhysicalVolume %1 , %2",pv["device"]:"", current_vg );
-                        addPhysicalVolume(targetMap, pv["device"]:"", current_vg );
-                    }
+                } else {
+                    to_add = false;
+                    // exclude partitions that are NOT supposed to be in the LVM
+                    foreach( map atm_vol, atm[pv["maindev"]:"","partitions"]:[], ``{
+                        if( pv["nr"]:0 == atm_vol["partition_nr"]:-1 ) {
+                            if( atm_vol["lvm_group"]:"" == current_vg ) {
+                                y2milestone("add %1",atm_vol);
+                                to_add = true;
+                            }
+                        }
+                    });
+                }
+                if( to_add ) {
+                     y2milestone("addPhysicalVolume %1 , %2",pv["device"]:"", current_vg );
+                     addPhysicalVolume(targetMap, pv["device"]:"", current_vg );
                 }
             });
 
