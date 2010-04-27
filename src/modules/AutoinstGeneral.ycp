@@ -24,6 +24,7 @@
     import "Profile";
     import "Pkg";
     import "ProductFeatures";
+    import "Storage";
 
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
@@ -46,6 +47,8 @@
 
 //    global list<string> proposals = ["bootloader_proposal", "software_proposal", "country_simple_proposal", "timezone_proposal", "users_proposal", "runlevel_proposal", "hwinfo_proposal", "mouse_proposal", "deploying_proposal"];
     global list<string> proposals = [];
+
+    global map storage = $[];
 
     /* default value of settings modified */
     global boolean modified = false;
@@ -145,7 +148,8 @@
         mode  =	        settings["mode"]:$[];
         signature_handling = settings["signature-handling"]:$[];
         askList = settings["ask-list"]:[];
-	proposals = settings["proposals"]:[];
+        proposals = settings["proposals"]:[];
+        storage = settings["storage"]:$[];
 
         return true;
     }
@@ -159,21 +163,12 @@
     {
         map general = $[];
 
-        /*
-        general["language"] = language ;
-        if (haskey(keyboard, "keyboard_values") || Keyboard::ExpertSettingsChanged )
-        {
-            keyboard["keyboard_values"] = Keyboard::GetExpertValues();
-        }
-
-        general["keyboard"] = keyboard;
-        general["clock"] = Clock;
-        */
         general["mouse"] = AutoinstData::mouse;
         general["mode"] = mode;
         general["signature-handling"] = signature_handling;
         general["ask-list"] = askList;
-	general["proposals"] = proposals;
+        general["proposals"] = proposals;
+        general["storage"] = storage;
         return general;
     }
 
@@ -227,7 +222,15 @@
             ProductFeatures::SetBooleanFeature( "globals", "kexec_reboot", !mode["forceboot"]:false );
         AutoinstConfig::Halt = mode["halt"]:false;
         AutoinstConfig::RebootMsg = mode["rebootmsg"]:false;
-	AutoinstConfig::setProposalList( proposals );
+        AutoinstConfig::setProposalList( proposals );
+
+        // see bug #597723. Some machines can't boot with the new alignment that parted uses
+        // `align_cylinder == old behavior
+        // `align_optimal  == new behavior
+        if( haskey( storage, "partition_alignment" ) ) {
+            Storage::SetPartitionAlignment( storage["partition_alignment"]:`align_optimal );
+            y2milestone("alignment set to %1", storage["partition_alignment"]:`align_optimal);
+        }
 
         //
         // mouse
@@ -270,6 +273,9 @@
             if (Profile::current["general"]:$[] != $[])
                 Import(Profile::current["general"]:$[]);
             SetSignatureHandling();
+
+            // FIXME: seriously FIXME! We need a real Read() function
+            storage["partition_alignment"] = Storage::GetPartitionAlignment();
         }
         return;
     }

@@ -53,6 +53,20 @@
           </post-modules>
       </wait>
 
+      <!-- the storage section was invented with openSUSE 11.3 (not SLES11 SP1) -->
+      <storage>
+        <!--
+            partition_alignment:
+
+            `align_optimal  - That's the default. Partitions are aligned like the kernel suggests.
+                              This can lead to problem with some machines/bioses that are unable to boot with that
+                              alignment
+            `align_cylinder - that's the alignment like it was in pre-openSUSE 11.3 time for years. Partitions
+                              always start on a cylinder boundary
+        -->
+        <partition_alignment config:type="symbol">align_cylinder</partition_alignment>
+      </storage>
+
     </general>
 
 
