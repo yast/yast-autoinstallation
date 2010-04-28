@@ -25,6 +25,7 @@
     import "Pkg";
     import "ProductFeatures";
     import "Storage";
+    import "SignatureCheckCallbacks";
 
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
@@ -177,6 +178,20 @@
      * @return void
      */
     global define void SetSignatureHandling() {
+
+        // this will break compatibility a bit. A XML file without signature handling can
+        // block the installation now because we have the popups back
+        Pkg::CallbackAcceptUnsignedFile         (SignatureCheckCallbacks::AcceptUnsignedFile);
+        Pkg::CallbackAcceptFileWithoutChecksum  (SignatureCheckCallbacks::AcceptFileWithoutChecksum);
+        Pkg::CallbackAcceptVerificationFailed   (SignatureCheckCallbacks::AcceptVerificationFailed);
+        Pkg::CallbackTrustedKeyAdded            (SignatureCheckCallbacks::TrustedKeyAdded);
+        Pkg::CallbackAcceptUnknownGpgKey        (SignatureCheckCallbacks::AcceptUnknownGpgKey);
+        Pkg::CallbackImportGpgKey               (SignatureCheckCallbacks::ImportGpgKey);
+        Pkg::CallbackAcceptNonTrustedGpgKey (SignatureCheckCallbacks::TrustGpgKey);
+        Pkg::CallbackAcceptWrongDigest      (SignatureCheckCallbacks::AcceptWrongDigest);
+        Pkg::CallbackAcceptUnknownDigest    (SignatureCheckCallbacks::AcceptUnknownDigest);
+        Pkg::CallbackTrustedKeyRemoved      (SignatureCheckCallbacks::TrustedKeyRemoved);
+
         if( haskey(signature_handling, "accept_unsigned_file" ) )
             Pkg::CallbackAcceptUnsignedFile( 
                 signature_handling["accept_unsigned_file"]:false ? AutoInstall::callbackTrue_boolean_string_integer : AutoInstall::callbackFalse_boolean_string_integer
@@ -208,6 +223,14 @@
         if( haskey(signature_handling, "accept_non_trusted_gpg_key") )
             Pkg::CallbackAcceptNonTrustedGpgKey(
                 signature_handling["accept_non_trusted_gpg_key"]:false ? AutoInstall::callbackTrue_boolean_map : AutoInstall::callbackFalse_boolean_map
+            );
+        if( haskey(signature_handling, "accept_wrong_digest") )
+            Pkg::CallbackAcceptWrongDigest(
+                signature_handling["accept_wrong_digest":false ? AutoInstall::callbackTrue_boolean_string_string_string : AutoInstall::callbackFalse_boolean_string_string_string
+            );
+        if( haskey(signature_handling, "accept_unknown_digest") )
+            Pkg::CallbackAcceptWrongDigest(
+                signature_handling["accept_unknown_digest":false ? AutoInstall::callbackTrue_boolean_string_string : AutoInstall::callbackFalse_boolean_string_string
             );
     }
 
