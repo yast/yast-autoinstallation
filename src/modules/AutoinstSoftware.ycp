@@ -310,11 +310,12 @@
                     // don't copy subdirs. They have to be mentioned explicit. Copy only files from that dir.
                     y2milestone("will get %1 from %2 to %3", file, instsource+"/"+source, target );
                     if( size(file) > 0 && substring( file, size(file)-1 ) != "/" )
-                        if( !GetURL( instsource+"/"+source+file, target+"/"+source+"/"+file ) ) {
-                            Popup::Error( sformat(_("can not read '%1'. ISO creation failed"), instsource+"/"+source+file ) );
-                            ret = false;
-                            break;
+                        while( ret && !GetURL( instsource+"/"+source+file, target+"/"+source+"/"+file ) ) {
+                            if( !Popup::YesNo( sformat(_("can not read '%1'. ISO creation failed"), instsource+"/"+source+file ) ) )
+	                            ret = false;
                         }
+                    if( !ret )
+                        break;
                 });
             } else {
                 // copy a file
