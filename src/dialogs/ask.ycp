@@ -107,10 +107,11 @@
                 term dlg = `Dummy();
                 if( type == "boolean" ) {
                     boolean on=(ask["default"]:nil=="true")?(true):(false);
+                    term widget = `CheckBox(`id(entry_id), `opt(`notify), question,on );
                     if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, `CheckBox(`id(entry_id), `opt(`notify), question,on ) ) );
+                        dlg = `Left( `Frame ( frametitle, widget ) );
                     } else {
-                        dlg = `Left( `CheckBox(`id(entry_id), `opt(`notify), question,on ) );
+                        dlg = `Left( widget );
                     }
                 } else if( type == "symbol" ) {
                     list<any> dummy = [];
@@ -118,29 +119,27 @@
                         boolean on=(e["value"]:`edge_of_dawn==ask["default"]:nil)?(true):(false);
                         dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
                     });
+                    term widget = `ComboBox( `id(entry_id), `opt(`notify), question, dummy );
                     if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), `opt(`notify), question, dummy ) ) );
+                        dlg = `Left( `Frame ( frametitle, widget ) );
                     } else {
-                        dlg = `Left( `ComboBox( `id(entry_id), `opt(`notify), question, dummy ) );
+                        dlg = `Left( widget );
                     }
                 } else if( type == "static_text" ) {
+                    term widget = `Label( `id(entry_id), ask["default"]:"" );
                     if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, `Label( `id(entry_id), ask["default"]:"" ) ) );
+                        dlg = `Left( `Frame ( frametitle, widget ) );
                     } else {
-                        dlg = `Left( `Label( `id(entry_id), ask["default"]:"" ) );
+                        dlg = `Left( widget );
                     }
                 } else {
                     if( ask["password"]:false == true ) {
+                        term widget1 = `Password(`id(entry_id), `opt(`notify), question, ask["default"]:"" );
+                        term widget2 = `Password(`id(`pass2), `opt(`notify), "", ask["default"]:"" );
                         if( frametitle != "" ) {
-                            dlg = `Left( `Frame ( frametitle, `VBox(
-                                     `Password(`id(entry_id), `opt(`notify), question, ask["default"]:"" ),
-                                     `Password(`id(`pass2), `opt(`notify), "", ask["default"]:"" )
-                                    ) ) );
+                            dlg = `Left( `Frame ( frametitle, `VBox( widget1, widget2) ) );
                         } else {
-                            dlg = `Left( `VBox(
-                                    `Password(`id(entry_id), `opt(`notify), question, ask["default"]:"" ),
-                                    `Password(`id(`pass2), `opt(`notify), "", ask["default"]:"" )
-                                    ) );
+                            dlg = `Left( `VBox( widget1, widget2 ) );
                         }
                     } else {
                         if( haskey( ask, "selection" ) ) {
@@ -149,16 +148,18 @@
                                 boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
                                 dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"",on) );
                             });
+                            term widget = `ComboBox( `id(entry_id), `opt(`notify), question, dummy );
                             if( frametitle != "" ) {
-                                dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), `opt(`notify), question, dummy ) ) );
+                                dlg = `Left( `Frame ( frametitle, widget ) );
                             } else {
-                                dlg = `Left( `ComboBox( `id(entry_id), `opt(`notify), question, dummy ) );
+                                dlg = `Left( widget );
                             }
                         } else {
+                            term widget = `TextEntry(`id(entry_id), `opt(`notify), question, ask["default"]:"" );
                             if( frametitle != "" ) {
-                                dlg = `Left( `Frame ( frametitle, `TextEntry(`id(entry_id), `opt(`notify), question, ask["default"]:"" ) ) );
+                                dlg = `Left( `Frame ( frametitle, widget ) );
                             } else {
-                                dlg = `Left( `TextEntry(`id(entry_id), `opt(`notify), question, ask["default"]:"" ) );
+                                dlg = `Left( widget );
                             }
                         }
                     }
