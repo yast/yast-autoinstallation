@@ -28,6 +28,15 @@
         return pos;
     }
 
+    define term createWidget( term widget, string frametitle ) {
+        term ret = `Left( widget );
+
+        if( frametitle != "" )
+            ret = `Left( `Frame ( frametitle, widget ) );
+
+        return ret;
+    }
+
     define boolean askDialog() {
         boolean mod = false;
 
@@ -108,11 +117,7 @@
                 if( type == "boolean" ) {
                     boolean on=(ask["default"]:nil=="true")?(true):(false);
                     term widget = `CheckBox(`id(entry_id), `opt(`notify), question,on );
-                    if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, widget ) );
-                    } else {
-                        dlg = `Left( widget );
-                    }
+                    dlg = createWidget( widget, frametitle );
                 } else if( type == "symbol" ) {
                     list<any> dummy = [];
                     foreach( map<string,any> e, s, ``{
@@ -120,27 +125,15 @@
                         dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
                     });
                     term widget = `ComboBox( `id(entry_id), `opt(`notify), question, dummy );
-                    if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, widget ) );
-                    } else {
-                        dlg = `Left( widget );
-                    }
+                    dlg = createWidget( widget, frametitle );
                 } else if( type == "static_text" ) {
                     term widget = `Label( `id(entry_id), ask["default"]:"" );
-                    if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, widget ) );
-                    } else {
-                        dlg = `Left( widget );
-                    }
+                    dlg = createWidget( widget, frametitle );
                 } else {
                     if( ask["password"]:false == true ) {
                         term widget1 = `Password(`id(entry_id), `opt(`notify), question, ask["default"]:"" );
                         term widget2 = `Password(`id(`pass2), `opt(`notify), "", ask["default"]:"" );
-                        if( frametitle != "" ) {
-                            dlg = `Left( `Frame ( frametitle, `VBox( widget1, widget2) ) );
-                        } else {
-                            dlg = `Left( `VBox( widget1, widget2 ) );
-                        }
+                        dlg = createWidget( `VBox( widget1, widget2), frametitle );
                     } else {
                         if( haskey( ask, "selection" ) ) {
                             list<any> dummy = [];
@@ -149,18 +142,10 @@
                                 dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"",on) );
                             });
                             term widget = `ComboBox( `id(entry_id), `opt(`notify), question, dummy );
-                            if( frametitle != "" ) {
-                                dlg = `Left( `Frame ( frametitle, widget ) );
-                            } else {
-                                dlg = `Left( widget );
-                            }
+                            dlg = createWidget( widget, frametitle );
                         } else {
                             term widget = `TextEntry(`id(entry_id), `opt(`notify), question, ask["default"]:"" );
-                            if( frametitle != "" ) {
-                                dlg = `Left( `Frame ( frametitle, widget ) );
-                            } else {
-                                dlg = `Left( widget );
-                            }
+                            dlg = createWidget( widget, frametitle );
                         }
                     }
                 }
