@@ -31,9 +31,6 @@
     define term createWidget( term widget, string frametitle ) {
         term ret = `Left( widget );
 
-        if( frametitle != "" )
-            ret = `Left( `Frame ( frametitle, widget ) );
-
         return ret;
     }
 
@@ -83,6 +80,9 @@
             integer element_cnt = 0;
             integer timeout = 0;
             history = add( history, dialog_nr );
+            term frameBuffer = nil;
+            term frameBufferVBox = nil;
+            string frameBufferTitle = "";
             foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                 string pathStr  = ask["path"]:"";
                 string type     = ask["type"]:"";
@@ -149,9 +149,34 @@
                         }
                     }
                 }
-                dialog_term = add( dialog_term, dlg );
-                dialog_term = add( dialog_term, `VSpacing(1) );
+                if( frametitle != "" ) {
+                    if( frameBuffer == nil ) {
+                        frameBufferVBox = `VBox( dlg );
+                    } else {
+                        if( frametitle == frameBufferTitle ) {
+                            frameBufferVBox = add( frameBufferVBox, dlg );
+                        } else {
+                            dialog_term = add( dialog_term, frameBuffer );
+                            dialog_term = add( dialog_term, `VSpacing(1) );
+                            frameBufferVBox = `VBox( dlg );
+                        }
+                    }
+                    frameBuffer = `Frame( frametitle, frameBufferVBox );
+                    frameBufferTitle = frametitle;
+                } else {
+                    if( frameBuffer != nil ) {
+                        dialog_term = add( dialog_term, frameBuffer );
+                        dialog_term = add( dialog_term, `VSpacing(1) );
+                        frameBuffer = nil;
+                        frameBufferVBox = nil;
+                    }
+                    dialog_term = add( dialog_term, dlg );
+                    dialog_term = add( dialog_term, `VSpacing(1) );
+                }
             });
+            if( frameBuffer != nil )
+                dialog_term = add( dialog_term, frameBuffer );
+
             if( helptext != "" )
                 help_term = `HWeight(30, `RichText( helptext ));
             if( title != "" )
