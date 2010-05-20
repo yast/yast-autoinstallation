@@ -343,7 +343,7 @@
             // was handled in autoyast until openSUSE 11.3
             map<string,any> deviceTranslation = $[];
             if( Storage::GetContVolInfo( d["device"]:"", deviceTranslation ) )
-                d["device"] = deviceTranslation["vdevice"]:"";
+                d["device"] = deviceTranslation["cdevice"]:"";
 
             /* old code for device mapping (by-id, by-path, ...)
             else if( issubstring( device, "by-id" ) )
