@@ -549,7 +549,8 @@
                             pe["size"] = sformat( "%1", 1024*1024*Partitions::SwapSizeMb(0) );
                         else if( pe["size"]:"" == "auto" && pe["mount"]:"" == "/boot" )
                             pe["size"] = sformat( "%1", Partitions::MinimalNeededBootsize() );
-                        pe["size"] = sformat("%1",humanStringToByte(pe["size"]:"", false));
+                        if( pe["size"]:"" != "max" && pe["size"]:"" != "auto" )
+                            pe["size"] = sformat("%1",humanStringToByte(pe["size"]:"", false));
                     }
                     return pe;
                 });
