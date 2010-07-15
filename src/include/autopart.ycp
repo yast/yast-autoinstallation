@@ -906,7 +906,16 @@ $Id$
                  ``{
             y2milestone( "start: gap section  %1", e );
             
-            if( part["max_cyl"]:0 <= e["end"]:0 &&	
+            // speed up partitioning calculation (bnc#620212)
+            boolean reuseCondition = true;
+            if( part["create"]:true == false &&
+                (( haskey( part, "partition_nr" ) && part["partition_nr"]:0 != e["nr"]:0 )) ) {
+                        y2milestone("gap can't be used. %1 != %2", part["partition_nr"]:0, e["nr"]:0 );
+                        reuseCondition = false;
+                }
+
+            if( reuseCondition &&
+                part["max_cyl"]:0 <= e["end"]:0 &&	
                 part["cylinders"]:0 <= e["cylinders"]:0 &&
                 (!e["extended"]:false && (size(lg["free_pnr"]:[])>0 || ! creation_needed ) ||
                  e["extended"]:false && size(lg["ext_pnr"]:[])>0)
@@ -1241,12 +1250,14 @@ $Id$
             foreach( list p, e["added"]:[], 
                      ``{
                 index = p[0]:0;
+                /* bnc#613366 - an existing swap partition can accidently be reused
                 if( e["exists"]:false && ps[index,"mount"]:""=="swap" && 
                     e["swap"]:false )
                 {
                     ret = ret + 100;
                     y2milestone( "weight after swap reuse %1", ret );
                 }
+                */
                 if( ps[index,"want_cyl"]:0>0 )
                 {
                     integer diff = ps[index,"want_cyl"]:0 - p[2]:0;
