@@ -811,12 +811,18 @@ $Id$
           * extended is not possible and number of requested partitions is less than all
           * available primaries and logical slots )
           */
+
+/*
+        // FIXME: bnc#620212 - this test is buggy. Reusing more partitions than the hardware still could create will fail
+        // should be size(ps)-NUM_OF_REUSED
         if( size(g["gap"]:[])>0 &&
             ((g["extended_possible"]:false && 
 //            size(g["free_pnr"]:[])>0 &&             // reusing all 4 primaries will fail with this
               size(ps)+1 <= size(g["ext_pnr"]:[])+size(g["free_pnr"]:[])) ||
              (!g["extended_possible"]:false &&
               size(ps) <= size(g["ext_pnr"]:[])+size(g["free_pnr"]:[]))) )
+*/
+        if( size(g["gap"]:[])>0 )
         {
             map lg = (map) eval(g);
 
