@@ -641,6 +641,8 @@
 	    target_map = Storage::SetPartitionData (target_map, part, "format", p["format"]:false );
 	    target_map = Storage::SetPartitionData (target_map, part, "delete", false);
 	    target_map = Storage::SetPartitionData (target_map, part, "create", false);
+        if( haskey( p, "filesystem" ) )
+            target_map = Storage::SetPartitionData (target_map, part, "filesystem", p["filesystem"]:`ext4);
 	    if( size(mount_options) > 0 && !haskey(p, "fstopt" ) )
 		    target_map = Storage::SetPartitionData (target_map, part, "fstopt", mount_options);
 	    if( haskey(p, "fstopt" ) )
