@@ -19,6 +19,8 @@
     import "PackageAI";
     import "AutoInstall";
     import "SourceManager";
+    import "PackagesUI";
+    import "Popup";
 
     include "autoinstall/dialogs.ycp";
 
@@ -148,7 +150,7 @@ more <b>add-on</b> selections and packages.
             }
             while ( ret == `again )
             {
-                ret = (symbol)WFM::CallFunction( "inst_packages", [ true, true ] );
+		ret = PackagesUI::RunPackageSelector($["mode" : `searchMode]);
 
                 if ( ret == `accept )
                     ret = `next;
