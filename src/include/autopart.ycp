@@ -1135,12 +1135,16 @@ $Id$
           * extended is not possible and number of requested partitions is less than all
           * available primaries and logical slots )
           */
+
+	  /*
         if( size(g["gap"]:[])>0 &&
             ((g["extended_possible"]:false && 
 //            size(g["free_pnr"]:[])>0 &&             // reusing all 4 primaries will fail with this
               size(ps)+1 <= size(g["ext_pnr"]:[])+size(g["free_pnr"]:[])) ||
              (!g["extended_possible"]:false &&
               size(ps) <= size(g["ext_pnr"]:[])+size(g["free_pnr"]:[]))) )
+	*/
+	if( size(g["gap"]:[])>0 )
         {
             map lg = (map) eval(g);
 
@@ -1230,7 +1234,15 @@ $Id$
                  ``{
             y2milestone( "start: gap section  %1", e );
             
-            if( part["max_cyl"]:0 <= e["end"]:0 &&	
+            // speed up partitioning calculation (bnc#620212)
+            boolean reuseCondition = true;
+            if( part["create"]:true == false &&
+                (( haskey( part, "partition_nr" ) && part["partition_nr"]:0 != e["nr"]:0 )) ) {
+                y2milestone("gap can't be used. %1 != %2", part["partition_nr"]:0, e["nr"]:0 );
+                reuseCondition = false;
+            }
+            if( reuseCondition &&
+                part["max_cyl"]:0 <= e["end"]:0 &&	
                 part["cylinders"]:0 <= e["cylinders"]:0 &&
                 (!e["extended"]:false && (size(lg["free_pnr"]:[])>0 || ! creation_needed ) ||
                  e["extended"]:false && size(lg["ext_pnr"]:[])>0)
