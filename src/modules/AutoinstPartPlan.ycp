@@ -23,7 +23,7 @@
   import "StorageDevices";
   import "Storage";
   import "Partitions";
-
+  import "Arch";
 
   /**
    * The general idea with this moduls is that it manages a single
@@ -507,7 +507,12 @@
                 });
             }
             drive["partitions"]	= partitions;
-            drive["device"]	= k;
+            if( Arch::s390() ) {
+                drive["device"] = "/dev/disk/by-path/" + v["udev_path"]:k;
+                y2milestone("s390 found. Setting device to by-path: %1", drive["device"]:"");
+            } else {
+                drive["device"]	= k;
+            }
             if( v["type"]:`CT_UNKNOWN==`CT_LVM)
             {
                 drive["pesize"] = sformat("%1M", v["pesize"]:1 / (1024*1024) );
