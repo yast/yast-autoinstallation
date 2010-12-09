@@ -176,6 +176,10 @@
                 if (haskey(pe,"mountby")) {
                     new_pe["mountby"] = pe["mountby"]:`nomb;
                 }
+                if( haskey(pe,"fstopt") ) {
+                    new_pe["fstopt"] = pe["fstopt"]:"defaults";
+                }
+
                 // LVM Group
                 if (haskey(pe,"used_by_type") && pe["used_by_type"]:`nothing == `UB_LVM)
                 {
@@ -207,7 +211,9 @@
                     new_pe["filesystem"] = pe["used_fs"]:`reiser;
                     new_pe["format"] = new_pe["format"]:pe["format"]:true;
                 }
-
+                if( pe["detected_fs"]:`known == `unknown ) {
+                    new_pe["format"] = false;
+                }
                 if (haskey(pe,"nr") && pe["type"]:`unknown != `lvm)
                 {
                     if (!skipwin)
