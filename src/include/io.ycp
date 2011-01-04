@@ -313,7 +313,7 @@
                     });
                     y2milestone("already mounted=%1 mountpoint=%2",already_mounted,mount_point);
                     if( ! already_mounted &&
-                        !(boolean)WFM::Execute(.local.mount, [sformat("/dev/%1", Host),
+                        !(boolean)SCR::Execute(.target.mount, [sformat("/dev/%1", Host),
                                         mount_point], "-o noatime") ) {
                         y2milestone("%1 is not mounted and mount failed", sformat("/dev/%1", Host));
                         GET_error = sformat(_("%1 is not mounted and mount failed"), sformat("/dev/%1", Host));
