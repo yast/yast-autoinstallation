@@ -13,6 +13,8 @@ client_DATA = \
     inst_autoinit.ycp \
     inst_autopost.ycp \
     inst_autosetup.ycp \
+    inst_autosetup_upgrade.ycp \
+    inst_store_upgrade_software.ycp \
     report_auto.ycp \
     scripts_auto.ycp \
     software_auto.ycp \
