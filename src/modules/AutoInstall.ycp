@@ -162,7 +162,7 @@
      */
     global define boolean Save()
     {
-        if (Mode::autoinst ())
+        if (Mode::autoinst () || Mode::autoupgrade())
             return (Profile::SaveProfileStructure( AutoinstConfig::parsedControlFile ));
         else
             return true;
