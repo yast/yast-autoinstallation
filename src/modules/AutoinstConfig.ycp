@@ -165,6 +165,11 @@
     //
     global boolean RebootMsg = false;
 
+    //
+    // AutoYaST profile is stored in the root partition (for upgrade)
+    //
+    global boolean ProfileInRootPart = false;
+
 
     //
     // remote profile (invented for pre-probing of s390)
@@ -326,7 +331,7 @@
      */
     global define void AutoinstConfig ()
         ``{
-        if (Mode::autoinst ())
+        if (Mode::autoinst () || Mode::autoupgrade ())
         {
             any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
             if (autoinstall != nil && is ( autoinstall , string ) )
