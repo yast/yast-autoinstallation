@@ -244,7 +244,7 @@
 
             map drive = $[];
             drive["partitions"]	= partitions;
-            if( Arch::s390() ) {
+            if( Arch::s390() && v["type"]:`CT_DISK == `CT_DISK ) {
                 drive["device"] = "/dev/disk/by-path/" + v["udev_path"]:k;
                 y2milestone("s390 found. Setting device to by-path: %1", drive["device"]:"");
             } else {
