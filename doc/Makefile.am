@@ -25,7 +25,7 @@ html_DATA = $(wildcard html/*.html) \
 	    html/yast2docs.css \
 		html/default.css
 
-doc_DATA = autoyast.pdf
+#doc_DATA = autoyast.pdf
 
 components: components.ent
 	bin/components.sh noref > components.ent
@@ -51,7 +51,7 @@ html/index.html: autoyast.xml
 	cd ../..
 
 html/index.html: autoyast.xml 
-	XML_CATALOG_FILES=@XML_CATALOG@\
+	XML_CATALOG_FILES=@XML_CATALOG@ \
 	@XSLTPROC@ --xinclude  @STYLESHEET_HTML@ \
 	$<
 
@@ -60,11 +60,11 @@ html/index.html: autoyast.xml
 #	@XSLTPROC@ @XSLTPROC_FLAGS@ --xinclude \
 #	-o $@ @STYLESHEET_PDF@  $<
 
-autoyast.fo: autoyast.xml
-	saxon -o autoyast.fo autoyast.xml @STYLESHEET_PDF@
+#autoyast.fo: autoyast.xml
+#	saxon -o autoyast.fo autoyast.xml @STYLESHEET_PDF@
 
-autoyast.pdf: autoyast.fo
-	fop -q $< $@
+#autoyast.pdf: autoyast.fo
+#	fop -q $< $@
 
 autoyast.xml: images.ent examples components
 
