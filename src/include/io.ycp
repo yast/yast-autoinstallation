@@ -132,19 +132,25 @@
 		if (Installation::boot () == "cd")
 		{
 		    string cdrom = (string)SCR::Read (.etc.install_inf.Cdrom);
-		    if (!(boolean)WFM::Execute(.local.mount, ["/dev/" + cdrom,
-                                mount_point, Installation::mountlog] ))
-		    {
-                        // autoyast tried to mount the CD but had no success.
-                        GET_error = GET_error + sformat(_("Mounting %1 failed."), cdrom );
-			y2warning("Mount failed");
-		    }
-		    else
-		    {
-			string cpcmd = sformat("cp " + mount_point + "/%1 %2", Path , Localfile);
-			y2milestone("Copy profile: %1", cpcmd);
-			SCR::Execute(.target.bash, cpcmd);
-		    }
+                    integer try_again = 10;
+                    while( try_again > 0 ) {
+                        if (!(boolean)WFM::Execute(.local.mount, ["/dev/" + cdrom,
+                                    mount_point, Installation::mountlog] ))
+                        {
+                            // autoyast tried to mount the CD but had no success.
+                            GET_error = GET_error + sformat(_("Mounting %1 failed."), cdrom );
+                            y2warning("Mount failed");
+                            try_again = try_again - 1;
+                            sleep(3000);
+                        }
+                        else
+                        {
+                            string cpcmd = sformat("cp " + mount_point + "/%1 %2", Path , Localfile);
+                            y2milestone("Copy profile: %1", cpcmd);
+                            SCR::Execute(.target.bash, cpcmd);
+                            try_again = 0;
+                        }
+                    }
 		    WFM::Execute(.local.umount, mount_point);
 		    if (SCR::Read(.target.size, Localfile) > 0 )
 		    {
