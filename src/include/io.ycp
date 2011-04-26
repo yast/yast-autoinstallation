@@ -146,13 +146,19 @@
                         }
 
                     } else {
-                        if (!(boolean)WFM::Execute(.local.mount, [cdrom_device, mount_point, Installation::mountlog] )) {
-                            // autoyast tried to mount the CD but had no success.
-                            GET_error = GET_error + sformat(_("Mounting %1 failed."), cdrom );
-                            y2warning("Mount failed");
-                            ok=false;
-                        } else {
-                            ok=true;
+                        integer try_again = 10;
+                        while( try_again > 0 ) {
+                            if (!(boolean)WFM::Execute(.local.mount, [cdrom_device, mount_point, Installation::mountlog] )) {
+                                // autoyast tried to mount the CD but had no success.
+                                GET_error = GET_error + sformat(_("Mounting %1 failed."), cdrom );
+                                y2warning("Mount failed");
+                                ok=false;
+                                try_again = try_again - 1;
+                                sleep(3000);
+                            } else {
+                                ok=true;
+                                try_again = 0;
+                            }
                         }
                     }
                     if (ok) {
