@@ -80,17 +80,29 @@
             return (substring(d, 5) );
         });
 
+        /* we say keep all LVs where the keep_unknown_lv is set */
+        foreach ( string k, map v, ExistingLVM, ``{
+            string vgname = v["name"]:"";
+            foreach( map p, v["partitions"]:[], ``{
+                if( lvm["/dev/"+vgname,"keep_unknown_lv"]:false == true )
+                    keepLVM[vgname] = add( keepLVM[vgname]:[], p["lv_name"]:"" );
+            });
+        });
+
         /* look for VGs to reuse */
         foreach ( string k, map v, AutoinstStorage::AutoTargetMap, ``{
             foreach ( map p, v["partitions"]:[], ``{
                 if( haskey( p, "lvm_group" ) && p["create"]:true == false && p["format"]:true == false ) {
-                    keepLVM[p["lvm_group"]:"x"] = [];
                     if( !contains( ExistingVGs, p["lvm_group"]:"x" ) )
                         Report::Error( sformat( _("Cannot reuse volume group %1. The volume group does not exist."), p["lvm_group"]:"x" ) );
                     map atm = AutoinstStorage::AutoTargetMap;
                     foreach ( map vg_p, atm["/dev/"+p["lvm_group"]:"x","partitions"]:[], ``{
-                        if( vg_p["create"]:true == false )
-                            keepLVM[p["lvm_group"]:"x"] = add( keepLVM[p["lvm_group"]:"x"]:[], vg_p["lv_name"]:"" );
+                        string lvm_group = p["lvm_group"]:"x";
+                        // we know the LV now. So remove it from the keep-list for now
+                        keepLVM[lvm_group] = filter (string v, keepLVM[lvm_group]:[], { return ( v != vg_p["lv_name"]:"" ); });
+                        if( vg_p["create"]:true == false && !contains(keepLVM[lvm_group]:[], vg_p["lv_name"]:"") ) {
+                            keepLVM[lvm_group] = add( keepLVM[lvm_group]:[], vg_p["lv_name"]:"" );
+                        }
                     });
                 }
             });
