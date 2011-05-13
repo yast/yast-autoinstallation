@@ -94,7 +94,7 @@
                         string lvm_group = p["lvm_group"]:"x";
                         // we know the LV now. So remove it from the keep-list for now
                         keepLVM[lvm_group] = filter (string v, keepLVM[lvm_group]:[], { return ( v != vg_p["lv_name"]:"" ); });
-                        if( vg_p["create"]:true == false && !contains(keepLVM[lvm_group]:[], vg_p["lv_name"]:"") ) {
+                        if( vg_p["create"]:true == false ) {
                             keepLVM[lvm_group] = add( keepLVM[lvm_group]:[], vg_p["lv_name"]:"" );
                         }
                     });
