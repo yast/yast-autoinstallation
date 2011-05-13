@@ -146,6 +146,13 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 </entry>
                 <entry>optional and available since openSUSE 12.1 and SLES11 SP2. Default is to let yast decide what makes sense (msdos in most cases)</entry>
               </row>
+              <row>
+                <entry>keep_unknown_lv</entry>
+                <entry>This value only makes sense for type=CT_LVM drives. If you are reusing a LVG and you set this to true, all existing LVs in that VG won't be touched unless they are specified in the &lt;partitioning&gt; section. So you can keep existing LVs without need to specify them.
+<para><screen>&lt;keep_unknown_lv config:type="boolean"&gt;false&lt;/keep_unknown_lv&gt;</screen></para>
+</entry>
+                <entry>optional and available since openSUSE 12.1 and SLES11 SP2. The default is false</entry>
+              </row>
             </tbody>
           </tgroup>
           </table>
@@ -450,7 +457,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>parity_algorithm</entry>
                 <entry>
                   <para>
-                    possible values are: left_asymmetric, left_symmetric, right_asymmetric, right_symmetric
+                    possible values are: left_asymmetric, left_symmetric, right_asymmetric, right_symmetric and since SLES11 SP2 and openSUSE 12.1 you can use parity_first, parity_last, left_asymmetric_6, left_symmetric_6, right_asymmetric_6, right_symmetric_6, parity_first_6, n2, o2, f2, n3, o3, f3 for RAID6 and RAID10
                   </para>
                   <para><screen>&lt;parity_algorithm&gt;left_asymmetric&lt;/parity_algorithm&gt;</screen></para>
                 </entry>
