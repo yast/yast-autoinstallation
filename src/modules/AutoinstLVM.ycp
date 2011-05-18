@@ -123,7 +123,7 @@
 
         // Process data
         lvm = mapmap(string device, map disk, lvm, ``{
-            disk["pesize"] = pesize_str_to_byte(disk["pesize"]:"4M");
+            disk["pesize"] = AutoinstStorage::humanStringToByte(disk["pesize"]:"4M", true);
 
             string     vgname    = substring(device, 5);
             disk["partitions"]  = maplist(map lv, disk["partitions"]:[], ``{
@@ -137,7 +137,7 @@
                     y2milestone("swap slot size: %1", vgsize/1024*1024 );
                     lvsize = 1024*1024*Partitions::SwapSizeMb(vgsize/(1024*1024)); 
                 } else if (lvsize_str!= "") {
-                    lvsize = kmgt_str_to_byte(lvsize_str);
+                    lvsize = AutoinstStorage::humanStringToByte(lvsize_str,true);
                 }
 
                 lv["size_k"] = lvsize/1024;
@@ -165,12 +165,12 @@
 
         foreach(map lv, lvs, ``{
             if (!contains(keepLVM[vgname]:[], lv["name"]:"")) {
-                Storage::DeleteDevice("","/dev/"+vgname+"/"+lv["name"]:"" );
+                Storage::DeleteDevice("/dev/"+vgname+"/"+lv["name"]:"");
             }
         });
 
         if( ! haskey( keepLVM, vgname ) && ExistingLVM["/dev/" +vgname]:$[] != $[] )
-            removeVolumeGroup( vgname );
+            Storage::DeleteLvmVg(vgname);
 
         return true;
     }
@@ -230,13 +230,9 @@
             map vg = $[];
 
             if (size(volume_group["keep_lv"]:[]) == 0 ) {
-                vg["vgname"] = vgname;
-                vg["pesize"] = volume_group["pesize"]:4194304;
-                vg["lvm2"]   = lvm2;
-                map addVG = $[];
-                addVG = addVolumeGroup(vg, targetMap, [] );
-                current_vg      = addVG["vg"]:"none";
-                y2milestone("addVolumeGroup returns %1",addVG);
+		boolean ret = Storage::CreateLvmVg(vgname, volume_group["pesize"]:4194304, lvm2);
+                current_vg      = vgname;
+                y2milestone("CreateLvmVg returns %1", ret);
                 targetMap = Storage::GetTargetMap();
                 y2milestone("Storage::GetTargetMap returns %1",targetMap);
                 lvm_vgs = get_vgs( targetMap );
@@ -287,7 +283,7 @@
             buffer = (buffer * 2) / 1024;
 
             volume_group["partitions"] = maplist( map lv, volume_group["partitions"]:[], ``{
-                integer s = kmgt_str_to_byte( lv["size"]:"10000" );
+                integer s = AutoinstStorage::humanStringToByte( lv["size"]:"10000", true );
                 if( s <= 100 && s > 0 ) {
                     // we assume percentage for this lv
                     integer integer_k = freeSpace * tointeger(lv["size"]:"0") / 100;
