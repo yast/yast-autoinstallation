@@ -7,6 +7,7 @@ $Id$
     textdomain "autoinst";
 
     import "FileSystems";
+    import "Arch";
 
     include "partitioning/partition_defines.ycp";
 
@@ -120,7 +121,7 @@ $Id$
                     ``{
                 if (haskey(partition, "maxsize"))
                 {
-                    partition["max"] = kmgt_str_to_byte(partition["maxsize"]:"");
+                    partition["max"] = AutoinstStorage::humanStringToByte(partition["maxsize"]:"", true );
                 } 
                     
                 if (partition["size"]:"" != "")
@@ -136,7 +137,7 @@ $Id$
                     }
                     else
                     {
-                        partition["size"] = kmgt_str_to_byte( s );
+                        partition["size"] = AutoinstStorage::humanStringToByte( s, true );
                     }
                 }
                     
@@ -458,7 +459,7 @@ $Id$
                         {
                             //p["loop_fs"]  =	solution["partitions",pindex,"crypt_fs"]:false;
                             p["enc_type"] = solution["partitions",pindex,"enc_type"]:`twofish;
-                            Storage::UpdateClassified( p["device"]:"",
+                            Storage::SetCryptPwd( p["device"]:"",
                                                   solution["partitions",pindex,"crypt_key"]:"" );
                             //p["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
                         }
@@ -579,7 +580,7 @@ $Id$
                     {
                         //part["loop_fs"]  =	solution["partitions",pindex,"crypt_fs"]:false;
             part["enc_type"] = solution["partitions",pindex,"enc_type"]:`twofish;
-                        Storage::UpdateClassified( part["device"]:"",
+                        Storage::SetCryptPwd( part["device"]:"",
                                               solution["partitions",pindex,"crypt_key"]:"" );
                         //part["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
                     }
@@ -1405,8 +1406,7 @@ $Id$
             if( Partitions::IsDosPartition( fsid ) ) 
             {
                 integer psize = (p["region",0]:0 + p["region",1]:1 - 1) * cyl_size;
-                win = Storage::GetFreeSpace( p["device"]:"", psize, `fat32,
-                                                 false );
+                win = Storage::GetFreeSpace( p["device"]:"", `fat32, false );
                 y2milestone( "win=%1", win );
                 if( win != nil && psize > 300*1024*1024 )
                 {
