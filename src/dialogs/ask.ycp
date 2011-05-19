@@ -28,6 +28,12 @@
         return pos;
     }
 
+    define term createWidget( term widget, string frametitle ) {
+        term ret = `Left( widget );
+
+        return ret;
+    }
+
     define boolean askDialog() {
         boolean mod = false;
 
@@ -61,17 +67,22 @@
             y2milestone("next_dialog file found. Set dialog to %1",jumpToDialog);
         }
         while( dialog_nr != -1 ) {
-//      foreach( integer dialog_nr, sort( keys ), ``{
             y2milestone("dialog_nr = %1",dialog_nr);
             y2milestone("dialogCounter = %1",dialogCounter);
             y2milestone("jumpToDialog  %1",jumpToDialog);
             string helptext = "";
             string title    = "";
+            string back_label = Label::BackButton();
+            string ok_label = Label::OKButton();
             term dialog_term = `VBox();
             term help_term = `Empty();
             term title_term = `Empty();
             integer element_cnt = 0;
+            integer timeout = 0;
             history = add( history, dialog_nr );
+            term frameBuffer = nil;
+            term frameBufferVBox = nil;
+            string frameBufferTitle = "";
             foreach( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
                 string pathStr  = ask["path"]:"";
                 string type     = ask["type"]:"";
@@ -82,40 +93,47 @@
                 list< map<string,any> > s  = ask["selection"]:[];
                 helptext = helptext + ask["help"]:"";
                 title    = ask["title"]:"";
+                back_label = ask["back_label"]:back_label;
+                ok_label   = ask["ok_label"]:ok_label;
+                timeout = ask["timeout"]:0;
                 mod = true;
+
+                if( haskey( ask, "default_value_script" ) ) {
+                    string interpreter = ask["default_value_script", "interpreter"]:"shell";
+                    if( interpreter == "shell" )
+                        interpreter = "/bin/sh";
+                    else if( interpreter == "perl" )
+                        interpreter = "/usr/bin/perl";
+                    string scriptPath = sformat("%1/%2", AutoinstConfig::tmpDir,  "ask_default_value_script" );
+                    SCR::Write(.target.string, scriptPath, ask["default_value_script","source"]:"");
+                    map out = (map) SCR::Execute (.target.bash_output, interpreter + " " + scriptPath, $[]);
+                    y2debug("%1", out);
+                    if( out["exit"]:-1 == 0 )
+                        ask["default"] = out["stdout"]:ask["default"]:"";
+                    y2debug("default for '%1' is '%2' after script execution with exit code %3 (%4)", question, ask["default"]:"__undefined__", out["exit"]:-1, out["stderr"]:"");
+                }
 
                 term dlg = `Dummy();
                 if( type == "boolean" ) {
                     boolean on=(ask["default"]:nil=="true")?(true):(false);
-                    if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, `CheckBox(`id(entry_id), question,on ) ) );
-                    } else {
-                        dlg = `Left( `CheckBox(`id(entry_id), question,on ) );
-                    }
+                    term widget = `CheckBox(`id(entry_id), `opt(`notify), question,on );
+                    dlg = createWidget( widget, frametitle );
                 } else if( type == "symbol" ) {
                     list<any> dummy = [];
                     foreach( map<string,any> e, s, ``{
                         boolean on=(e["value"]:`edge_of_dawn==ask["default"]:nil)?(true):(false);
                         dummy = add( dummy, `item(`id(e["value"]:`none), e["label"]:"",on) );
                     });
-                    if( frametitle != "" ) {
-                        dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), question, dummy ) ) );
-                    } else {
-                        dlg = `Left( `ComboBox( `id(entry_id), question, dummy ) );
-                    }
+                    term widget = `ComboBox( `id(entry_id), `opt(`notify), question, dummy );
+                    dlg = createWidget( widget, frametitle );
+                } else if( type == "static_text" ) {
+                    term widget = `Label( `id(entry_id), ask["default"]:"" );
+                    dlg = createWidget( widget, frametitle );
                 } else {
                     if( ask["password"]:false == true ) {
-                        if( frametitle != "" ) {
-                            dlg = `Left( `Frame ( frametitle, `VBox(
-                                     `Password(`id(entry_id), question),
-                                     `Password(`id(`pass2), "")
-                                    ) ) );
-                        } else {
-                            dlg = `Left( `VBox(
-                                    `Password(`id(entry_id), question),
-                                    `Password(`id(`pass2), "")
-                                    ) );
-                        }
+                        term widget1 = `Password(`id(entry_id), `opt(`notify), question, ask["default"]:"" );
+                        term widget2 = `Password(`id(`pass2), `opt(`notify), "", ask["default"]:"" );
+                        dlg = createWidget( `VBox( widget1, widget2), frametitle );
                     } else {
                         if( haskey( ask, "selection" ) ) {
                             list<any> dummy = [];
@@ -123,28 +141,47 @@
                                 boolean on=(e["value"]:""==ask["default"]:nil)?(true):(false);
                                 dummy = add( dummy, `item(`id(e["value"]:""), e["label"]:"",on) );
                             });
-                            if( frametitle != "" ) {
-                                dlg = `Left( `Frame ( frametitle, `ComboBox( `id(entry_id), question, dummy ) ) );
-                            } else {
-                                dlg = `Left( `ComboBox( `id(entry_id), question, dummy ) );
-                            }
+                            term widget = `ComboBox( `id(entry_id), `opt(`notify), question, dummy );
+                            dlg = createWidget( widget, frametitle );
                         } else {
-                            if( frametitle != "" ) {
-                                dlg = `Left( `Frame ( frametitle, `TextEntry(`id(entry_id), question, ask["default"]:"" ) ) );
-                            } else {
-                                dlg = `Left( `TextEntry(`id(entry_id), question, ask["default"]:"" ) );
-                            }
+                            term widget = `TextEntry(`id(entry_id), `opt(`notify), question, ask["default"]:"" );
+                            dlg = createWidget( widget, frametitle );
                         }
                     }
                 }
-                dialog_term = add( dialog_term, dlg );
-                dialog_term = add( dialog_term, `VSpacing(1) );
+                if( frametitle != "" ) {
+                    if( frameBuffer == nil ) {
+                        frameBufferVBox = `VBox( dlg );
+                    } else {
+                        if( frametitle == frameBufferTitle ) {
+                            frameBufferVBox = add( frameBufferVBox, dlg );
+                        } else {
+                            dialog_term = add( dialog_term, frameBuffer );
+                            dialog_term = add( dialog_term, `VSpacing(1) );
+                            frameBufferVBox = `VBox( dlg );
+                        }
+                    }
+                    frameBuffer = `Frame( frametitle, frameBufferVBox );
+                    frameBufferTitle = frametitle;
+                } else {
+                    if( frameBuffer != nil ) {
+                        dialog_term = add( dialog_term, frameBuffer );
+                        dialog_term = add( dialog_term, `VSpacing(1) );
+                        frameBuffer = nil;
+                        frameBufferVBox = nil;
+                    }
+                    dialog_term = add( dialog_term, dlg );
+                    dialog_term = add( dialog_term, `VSpacing(1) );
+                }
             });
+            if( frameBuffer != nil )
+                dialog_term = add( dialog_term, frameBuffer );
+
             if( helptext != "" )
                 help_term = `HWeight(30, `RichText( helptext ));
             if( title != "" )
                 title_term = `Heading( title );
-            term backButton = `PushButton(`id(`back),  Label::BackButton() );
+            term backButton = `PushButton(`id(`back),  back_label );
             UI::OpenDialog(
                        `opt(`decorated  ),
                        `HBox(
@@ -162,7 +199,7 @@
                                 `HBox(
                                   `HStretch(),
                                   backButton,
-                                  `PushButton(`id(`ok),  Label::OKButton() )
+                                  `PushButton(`id(`ok),  ok_label )
                                   )
                                 )
                               ),
@@ -173,8 +210,13 @@
             if( size(history) < 2 )
                 UI::ChangeWidget(`id(`back) , `Enabled, false);
             while (true) {
-                any ret = UI::UserInput();
-                if( ret == `ok ) {
+                any ret = nil;
+                if( timeout == 0 )
+                    ret = UI::UserInput();
+                else
+                    ret = UI::TimeoutUserInput( timeout * 1000 );
+                timeout = 0;
+                if( ret == `ok || ret == `timeout ) {
                     integer runAgain = 0;
                     integer element_cnt = 0;
                     dialogs[dialog_nr] =  maplist( map ask, (list<map>)dialogs[dialog_nr]:[], ``{
@@ -185,8 +227,6 @@
                         any val = UI::QueryWidget(`id(entry_id),  `Value);
                         if( ask["type"]:"string" == "integer" ) {
                             val = tointeger((string)val);
-                        } else if( ask["type"]:"string" == "boolean" ) {
-                            val = ( (boolean)val ? "true" : "false" );
                         }
                         if( ask["password"]:false == true ) {
                             string pass2 = (string)UI::QueryWidget(`id(`pass2),  `Value);
@@ -207,8 +247,13 @@
                         });
 
                         if( file != "" ) {
-                            if( ! SCR::Write (.target.string, file, sformat("%1",val)) )
-                                y2milestone("writing answer to %1 failed",file);
+                            if( ask["type"]:"string" == "boolean" ) {
+                                if( ! SCR::Write (.target.string, file, sformat("%1", ( (boolean)val ? "true" : "false" ))))
+                                    y2milestone("writing answer to %1 failed",file);
+                            } else {
+                                if( ! SCR::Write (.target.string, file, sformat("%1",val)) )
+                                    y2milestone("writing answer to %1 failed",file);
+                            }
                         }
                         if( script != $[] ) {
                             string scriptName = script["filename"]:"ask_script.sh";
@@ -274,7 +319,6 @@
                 dialogCounter = dialogCounter + 1;
                 dialog_nr = keys[dialogCounter]:-1;
             }
-//        });
             y2milestone("E dialog_nr = %1",dialog_nr);
             y2milestone("E dialogCounter = %1",dialogCounter);
             y2milestone("E jumpToDialog  %1",jumpToDialog);
