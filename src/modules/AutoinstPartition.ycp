@@ -194,6 +194,9 @@
       parsePartition( map part ){
       PartitionT newPart = new( part["mount"]:"" );
       newPart = set( newPart, "mountby", part["mountby"]:`device );
+      if( haskey( part, "label" ) ) {
+          newPart = set( newPart, "label",   part["label"]:"" );
+      }
       newPart = set( newPart, "create", part["create"]:true );
       newPart = set( newPart, "crypt", part["crypt"]:"" );
       newPart = set( newPart, "crypt_fs", part["crypt_fs"]:false);
