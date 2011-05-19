@@ -136,11 +136,11 @@ control file and try again.
             return `abort;
         if( ret == `not_found )
             modified = false;
+        if (SCR::Read(.target.size, "/var/lib/YaST2/restart_yast") >= 0 ) {
+            return `restart_yast;
+        }
     } while( modified == true );
 
-    if (SCR::Read(.target.size, "/var/lib/YaST2/restart_yast") >= 0 ) {
-        return `restart_yast;
-    }
 
     // reimport scripts, for the case <ask> has changed them
     AutoinstScripts::Import(Profile::current["scripts"]:$[]);
