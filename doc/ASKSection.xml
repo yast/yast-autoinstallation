@@ -78,7 +78,7 @@
                        The filesystem in
                        the partition section is a symbol, while the "encrypted" element in the user configuration is a boolean.
                        You can see the type of that element if you look in your profile at the config:type="...." attribute.
-                       Since openSUSE 11.2 (not SLES11) you can use "static_text" as type too. A static_text is just a text that
+                       Since openSUSE 11.2 and SLES11-SP2 you can use "static_text" as type too. A static_text is just a text that
                        does not require any user input and can be used to show information if it's not wanted in the help text.
                 <para><screen>&lt;type&gt;symbol&lt;/type&gt;</screen></para></entry>
                 <entry>optional. The defaul is string. If type is "symbol" you must provide the selection element too (see below)</entry>
@@ -187,26 +187,26 @@
                 <entry>optional (default is no script)</entry>
               </row>
               <row>
-                <entry>ok_label (available in openSUSE 11.2 (not SLES11)</entry>
+                <entry>ok_label (available since openSUSE 11.2 / SLES11 SP2</entry>
                 <entry>You can change the Label on the "Ok" button. The last element that specifies the label for a dialog wins.
                 <para><screen>&lt;ok_label&gt;Finish&lt;/ok_label&gt;</screen></para></entry>
                 <entry>optional</entry>
               </row>
               <row>
-                <entry>back_label (available in openSUSE 11.2 (not SLES11)</entry>
+                <entry>back_label (available since openSUSE 11.2 / SLES11 SP2</entry>
                 <entry>You can change the Label on the "Back" button. The last element that specifies the label for a dialog wins.
                 <para><screen>&lt;back_label&gt;change values&lt;/back_label&gt;</screen></para></entry>
                 <entry>optional</entry>
               </row>
               <row>
-                <entry>timeout (available in openSUSE 11.2 (not SLES11)</entry>
+                <entry>timeout (available since openSUSE 11.2 / SLES11-SP2</entry>
                 <entry>You can specify an integer here that is used as timeout in seconds. If the user does not answer the question before the timeout, the default value is taken as answer. When the user touches/changes any widget in the dialog, the timeout is turned off and the dialog has to be confirmed by the ok-button.
                 <para><screen>&lt;timeout config:type="integer"&gt;30&lt;/timeout&gt;</screen></para></entry>
                 <entry>optional. A missing value is interpreted as 0 which means that there is no timeout</entry>
               </row>
               <row>
-                <entry>default_value_script (available since openSUSE 11.2 but not in SLES11)</entry>
-                <entry>with 11.2 you can run scripts to set the default value for a question(see the table below for detailed instructions about default value scripts). It's useful if you can "calculate" a useful default value, especially in combination with the "timeout" option.
+                <entry>default_value_script (available since openSUSE 11.2 / SLES11-SP2)</entry>
+                <entry>you can run scripts to set the default value for a question(see the table below for detailed instructions about default value scripts). It's useful if you can "calculate" a useful default value, especially in combination with the "timeout" option.
                 <para><screen>&lt;default_value_script&gt;...&lt;/default_value_script&gt;</screen></para></entry>
                 <entry>optional (default is no script)</entry>
               </row>
@@ -217,7 +217,7 @@
     </para>
 
           <para>
-            The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt;&lt;default_value_script&gt;...&lt;/default_value_script&gt;...&lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section. It's available since 11.2 (not SLES11).
+            The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt;&lt;default_value_script&gt;...&lt;/default_value_script&gt;...&lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section. It's available since 11.2 and SLES11-SP2
           </para>
     <para>
         <table frame='top'>
