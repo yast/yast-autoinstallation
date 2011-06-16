@@ -700,6 +700,27 @@ which root partition should be used.  Automatic installation not possible.
         }
         });
 
+	if( haskey(AutoTargetMap, "/dev/nfs") )
+	    {
+	    y2milestone( "nfs:%1", AutoTargetMap["/dev/nfs"]:$[] );
+	    foreach( map p, AutoTargetMap["/dev/nfs","partitions"]:[],
+		    ``{
+		    integer sizek = Storage::CheckNfsVolume( p["device"]:"", 
+		                                             p["fstopt"]:"",
+							     p["nfs4"]:false );
+		    y2milestone( "nfs size:%1", sizek );
+		    boolean ok = Storage::AddNfsVolume( p["device"]:"", p["fstopt"]:"",
+		                                        sizek, p["mount"]:"",
+							p["nfs4"]:false );
+		    y2milestone( "nfs ok:%1", ok );
+		    if( ok )
+			Storage::ChangeVolumeProperties( p );
+		    if( !result )
+			result = ok && p["mount"]:""=="/";
+		    });
+	    y2milestone( "nfs result:%1", result );
+	    }
+
         return result;
     }
 
