@@ -150,6 +150,12 @@ control file and try again.
     y2milestone("general: %1", Profile::current["general"]:$[] );
     AutoinstGeneral::Write();
 
+    if( Profile::current["networking", "setup_before_proposal"]:false ) {
+        y2milestone("Networking setup before the proposal");
+        Call::Function("lan_auto", ["Import", Profile::current["networking"]:$[]] );
+        Call::Function("lan_auto", ["Write"]);
+    }
+
     if( haskey( Profile::current, "add-on" ) ) {
         Call::Function("add-on_auto", ["Import", Profile::current["add-on"]:$[]] );
         Call::Function("add-on_auto", ["Write"]);
