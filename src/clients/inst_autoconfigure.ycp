@@ -205,10 +205,10 @@ Please wait while the system is being configured.
 		    else
 			logStep( sformat (_("Not Configuring %1"), p));
                     if( d["X-SuSE-YaST-AutoLogResource"]:"true" == "true" ) {
-                        y2milestone("Calling auto client with: %1", eval(Profile::current[resource]:$[]));
+                        y2milestone("Calling auto client with: %1", eval(Profile::current[resource]:[]));
                     } else {
                         y2milestone("logging for resource %1 turned off",resource);
-                        y2debug("Calling auto client with: %1", eval(Profile::current[resource]:$[]));
+                        y2debug("Calling auto client with: %1", eval(Profile::current[resource]:[]));
                     }
 		    //Call::Function(module_auto, ["Import",  eval(Profile::current[resource]:[]) ]);
             processWait( resource, "pre-modules" );
