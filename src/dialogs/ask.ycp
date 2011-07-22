@@ -266,11 +266,15 @@
                                 SCR::Execute (.target.mkdir, current_logdir);
                             }
                             string executionString = "";
-                            if( script["environment"]:false )
+                            if( script["environment"]:false ) {
+                                if( ask["type"]:"string" == "boolean" ) {
+                                    val = sformat("%1", ( (boolean)val ? "true" : "false" ));
+                                }
                                 executionString = sformat("VAL=\"%5\" /bin/sh %1 %2 2&> %3/%4.log ",
                                     debug, scriptPath, current_logdir, scriptName, AutoinstConfig::ShellEscape((string)val));
-                            else
+                            } else {
                                 executionString = sformat("/bin/sh %1 %2 2&> %3/%4.log ", debug, scriptPath, current_logdir, scriptName );
+                            }
                             y2milestone("Script Execution command: %1", executionString );
                             runAgain = runAgain + (integer)SCR::Execute (.target.bash, executionString);
                             if( script["rerun_on_error"]:false == false )
