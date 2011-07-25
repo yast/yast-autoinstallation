@@ -137,6 +137,7 @@
                       "source":p["source"]:"",
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
+                      "notification":p["notification"]:"",
                       "debug":p["debug"]:true
                     ]);
         });
@@ -147,6 +148,7 @@
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
                       "debug":p["debug"]:true,
+                      "notification":p["notification"]:"",
                       "network_needed":p["network_needed"]:false
                       ]
                     );
@@ -158,6 +160,7 @@
                       "chrooted":p["chrooted"]:false,
                       "location":p["location"]:"",
                       "feedback":p["feedback"]:false,
+                      "notification":p["notification"]:"",
                       "debug":p["debug"]:true
                     ]);
         });
@@ -317,6 +320,7 @@
             string source,
             string interpreter,
             string type,
+            string notification,
             boolean chrooted,
             boolean debug,
             boolean feedback,
@@ -337,6 +341,7 @@
                 oldScript=add(oldScript,"debug",debug);
                 oldScript=add(oldScript,"feedback",feedback);
                 oldScript=add(oldScript,"network_needed",network);
+                oldScript=add(oldScript,"notification", notification);
 
                 mod = true;
                 return oldScript;
@@ -357,6 +362,7 @@
             script=add(script,"debug",debug);
             script=add(script,"feedback",feedback);
             script=add(script,"network_needed",network);
+            script=add(script,"notification", notification);
 
             merged=add(merged,script);
         }
@@ -684,6 +690,9 @@ Experimental
                 string executionString = "";
                 boolean showFeedback = s["feedback"]:false;
 
+                if( s["notification"]:"" != "" )
+                    Popup::ShowFeedback( "", s["notification"]:"" );
+
                 if (scriptInterpreter == "shell")
                 {
                     string debug = ( s["debug"]:true ? "-x" : "" );
@@ -730,6 +739,9 @@ Experimental
                     y2error("Unknown interpreter: %1", scriptInterpreter);
                 }
                 string feedback = "";
+
+                if( s["notification"]:"" != "" )
+                    Popup::ClearFeedback();
 
                 if( executionString != "" ) {
                     if( showFeedback ) {
