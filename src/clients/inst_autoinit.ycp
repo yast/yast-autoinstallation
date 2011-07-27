@@ -194,6 +194,11 @@ Please wait while the system is prepared for autoinstallation.</p>
         WFM::CallFunction("iscsi-client_auto", ["Write"] );
     }
 
+    if( haskey(Profile::current, "fcoe-client") ) {
+        y2milestone("fcoe-client found");
+        WFM::CallFunction("fcoe-client_auto", ["Import", Profile::current["fcoe-client"]:$[]] );
+        WFM::CallFunction("fcoe-client_auto", ["Write"] );
+    }
 
 
     if(UI::PollInput() == `abort)
