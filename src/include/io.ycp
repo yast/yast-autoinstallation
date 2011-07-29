@@ -74,6 +74,12 @@
         if ( Scheme == "http" || Scheme == "https" )
         {
             HTTP::easySSL( true );
+            if (SCR::Read(.target.size, "/etc/ssl/clientcerts/client-cert.pem" ) > 0 ) {
+                HTTP::clientCertSSL( "/etc/ssl/clientcerts/client-cert.pem" );
+            }
+            if (SCR::Read(.target.size, "/etc/ssl/clientcerts/client-key.pem" ) > 0 ) {
+                HTTP::clientKeySSL( "/etc/ssl/clientcerts/client-key.pem" );
+            }
             res = HTTP::Get(full_url, Localfile);
             if (res["code"]:0 == 200)
             {
