@@ -25,11 +25,11 @@
         autoyast=http://10.10.0.1/profile/myprofile.xml
         autoyast=http://10.10.0.1/profile/rules/rules.xml
     </screen>
-    instead use
+    <para>instead use</para>
     <screen>
         autoyast=http://10.10.0.1/profile/
     </screen>
-    which will load http://10.10.0.1/profile/rules/rules.xml (the slash at the end is important)
+    <para>which will load http://10.10.0.1/profile/rules/rules.xml (the slash at the end is important)</para>
     <figure id="rules_fig1">
       <title id="rules_fig1.title" >Rules</title>
       <mediaobject>&rules;</mediaobject>
@@ -490,7 +490,7 @@ fi;
           <para>
           The following elements must be between the &lt;rules config:type="list"&gt;&lt;rule&gt;&lt;dialog&gt; ... &lt;/dialog&gt;&lt;/rule&gt;&lt;/rules&gt; tags in the rules.xml file.
           </para>
-          <table frame='top'>
+          <informaltable frame='top'>
           <tgroup cols="3">
             <thead>
               <row>
@@ -548,7 +548,7 @@ fi;
               </row>
             </tbody>
           </tgroup>
-          </table>
+          </informaltable>
           <para>
             Here is an example of how to use dialogs with rules:
           </para>
@@ -810,8 +810,13 @@ echo -n 100
       So how can you achieve what you want? In this example, how do you get three partitions but still
       one drive?
     </para>
-    <para>
-      <note>For SLES9/SUSE Linux 10.0 and earlier versions</note> you can only use a trick. It's
+    
+      <note>
+        <title>FIXME Title</title>
+        <para>For SLES9/SUSE Linux 10.0 and earlier versions</para>
+      </note>
+      
+      <para>you can only use a trick. It's
       not official supported by autoyast and more a workaround than a nice solution. For each partition
       in one file, add an attribute to the partition like this:
     </para>
@@ -826,13 +831,17 @@ echo -n 100
       The trick is, that the merge script will not detect the partitions as the same element type because of the
       new attribute. If you have more files, it might be needed to to add more attributes like <emphasis>dontmerge="2"</emphasis>.
     </para>
-    <para>
-      <note>For SLES10/SUSE Linux 10.1 and later</note>
-      you can use the <emphasis>dont_merge</emphasis> element in the rules or classes file
+   
+      <note>
+        <title>FIXME Title</title>
+        <para>For SLES10/SUSE Linux 10.1 and later</para>
+      </note>
+      
+      <para>you can use the <emphasis>dont_merge</emphasis> element in the rules or classes file
       like this:
     </para>
     <para>
-      <screen>
+       <screen>
 &lt;classes config:type=&quot;list&quot;&gt;
     &lt;class&gt;
         &lt;class_name&gt;swap&lt;/class_name&gt;
