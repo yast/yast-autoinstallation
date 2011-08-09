@@ -27,16 +27,16 @@
       In the auto-installation process, five types of scripts can be executed and they
       will be described here in order of "appearance" during the installation.
     </para>
-    <para>
-    <note>All scripts have to be in the &lt;scritps&gt; section.</note>
-    </para>
+     <remark>FIXME: Is this a title?</remark>
+    <para>All scripts have to be in the &lt;scritps&gt; section.</para>
+    
     <para>
     <itemizedlist>
-        <listitem><emphasis>pre-scripts</emphasis> (very early, before anything else really happened)</listitem>
-        <listitem><emphasis>postpartitioning-scripts</emphasis> (after partitioning and mounting to /mnt but before RPM installation - since openSUSE 11.2)</listitem>
-        <listitem><emphasis>chroot-scripts</emphasis> (after the package installation, before the first boot)</listitem>
-        <listitem><emphasis>post-scripts</emphasis> (during the first boot of the installed system, no services running)</listitem>
-        <listitem><emphasis>init-scripts</emphasis> (during the first boot of the installed system, all servies up and running)</listitem>
+        <listitem><para><emphasis>pre-scripts</emphasis> (very early, before anything else really happened)</para></listitem>
+        <listitem><para><emphasis>postpartitioning-scripts</emphasis> (after partitioning and mounting to /mnt but before RPM installation - since openSUSE 11.2)</para></listitem>
+        <listitem><para><emphasis>chroot-scripts</emphasis> (after the package installation, before the first boot)</para></listitem>
+        <listitem><para><emphasis>post-scripts</emphasis> (during the first boot of the installed system, no services running)</para></listitem>
+        <listitem><para><emphasis>init-scripts</emphasis> (during the first boot of the installed system, all servies up and running)</para></listitem>
     </itemizedlist>
     </para>
     <section id="pre-install.scripts">
@@ -513,12 +513,14 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
           </tgroup>
         </table>
       </para>
-    </section>
+
     <para>
       When added to the control file manually, the
       scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
       the file syntax and other tags defined in the control file.
     </para>
+    </section>
+    
     <section id="script_examples">
     <title>Script example</title>
       <example>
