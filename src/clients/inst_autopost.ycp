@@ -32,6 +32,27 @@
         return;
     }
 
+    /**
+     * Get directory name
+     * @param string path
+     * @return  string dirname
+     */
+    define string dirname (string filePath)
+    ``{
+       list pathComponents = splitstring(filePath, "/");
+       string last = pathComponents[size(pathComponents) -1]:"";
+       string ret = substring(filePath, 0 , size(filePath) - size(last));
+       return (ret);
+    }
+
+    any autoinstall = SCR::Read(.etc.install_inf.AutoYaST);
+    y2milestone("cmd line=%1", autoinstall );
+    if (autoinstall != nil && is ( autoinstall , string ) ) {
+        AutoinstConfig::ParseCmdLine((string)autoinstall);
+        AutoinstConfig::directory = dirname(AutoinstConfig::filepath);
+        y2milestone("dir = %1", AutoinstConfig::directory);
+    }
+
     list<string> packages = [];
     string resource = "";
     string module_auto = "";
