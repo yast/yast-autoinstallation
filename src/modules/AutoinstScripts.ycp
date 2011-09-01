@@ -582,7 +582,7 @@ Experimental
      */
     global define boolean Write( string type , boolean special)
     {
-        if (!Mode::autoinst ())
+        if (!Mode::autoinst () && !Mode::autoupgrade () )
             return true;
 
         list<map> scripts = [];
