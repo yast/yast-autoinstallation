@@ -290,7 +290,7 @@
                     }
                 }
                 /* reuse partition by "mountby" */
-                if( mountby != "" && p["create"]:true == false ) {
+                if( mountby != "" && p["create"]:true == false && !haskey(p, "partition_nr") ) {
                     string label = p[mountby]:"";
                     y2milestone("mountby found for %1=%2 in part=%3",mountby,label,p);
                     map target = tm[device]:$[];
