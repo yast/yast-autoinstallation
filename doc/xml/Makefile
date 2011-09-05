@@ -125,7 +125,7 @@ AWK = gawk
 CAT_ENTRY_END = -->
 CAT_ENTRY_START = <!--
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"autoyast2\" -DPACKAGE_TARNAME=\"autoyast2\" -DPACKAGE_VERSION=\"2.21.0\" -DPACKAGE_STRING=\"autoyast2\ 2.21.0\" -DPACKAGE_BUGREPORT=\"http://bugs.opensuse.org/\" -DPACKAGE_URL=\"\" -DPACKAGE=\"autoyast2\" -DVERSION=\"2.21.0\"
+DEFS = -DPACKAGE_NAME=\"autoyast2\" -DPACKAGE_TARNAME=\"autoyast2\" -DPACKAGE_VERSION=\"2.21.1\" -DPACKAGE_STRING=\"autoyast2\ 2.21.1\" -DPACKAGE_BUGREPORT=\"http://bugs.opensuse.org/\" -DPACKAGE_URL=\"\" -DPACKAGE=\"autoyast2\" -DVERSION=\"2.21.1\"
 DOCBOOK_ROOT = /usr/share/xml/docbook/stylesheet/nwalsh/current
 ECHO_C = 
 ECHO_N = -n
@@ -145,10 +145,10 @@ MKDIR_P = /bin/mkdir -p
 PACKAGE = autoyast2
 PACKAGE_BUGREPORT = http://bugs.opensuse.org/
 PACKAGE_NAME = autoyast2
-PACKAGE_STRING = autoyast2 2.21.0
+PACKAGE_STRING = autoyast2 2.21.1
 PACKAGE_TARNAME = autoyast2
 PACKAGE_URL = 
-PACKAGE_VERSION = 2.21.0
+PACKAGE_VERSION = 2.21.1
 PATH_SEPARATOR = :
 PKG_CONFIG_PATH = 
 RPMNAME = autoyast2
@@ -160,7 +160,7 @@ STYLESHEET_HTML = /usr/share/YaST2/data/docbook/stylesheets/customize-html.xsl
 STYLESHEET_PDF = /usr/share/YaST2/data/docbook/stylesheets/customize-fo.xsl
 STYLESHEET_YCPDOC = /usr/share/YaST2/data/docbook/stylesheets/ycpdoc.xsl
 STYLESHEET_YDOC = /usr/share/YaST2/data/docbook/stylesheets/ydoc.xsl
-VERSION = 2.21.0
+VERSION = 2.21.1
 XGETTEXT = /usr/bin/xgettext
 XML_CATALOG = /etc/xml/catalog
 XSLTPROC = /usr/bin/xsltproc
@@ -242,7 +242,7 @@ ystartupdir = ${prefix}/lib/YaST2
 SUBDIRS = 
 xml_file = autoyast.xml
 xml_files = $(wildcard *.xml) 
-EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css
+EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css images bin entities examples
 CLEANFILES = .html.sum  profile.dtd.xml elements \
   elements.xml elements.ent profile.dtd.xml examples.ent\
   components.ent .ps.sum  autoyast.out autoyast.pdf autoyast.fo \
@@ -670,7 +670,7 @@ html/default.css: html/index.html webimages
 
 images.ent:
 	@make -r -C images/WEB -f makefile.ent ima
-	mv ../images.ent .
+#	mv ../xml/images.ent .
 
 : images.ent chunks webimages
 

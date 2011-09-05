@@ -4,7 +4,7 @@
 # $Id$
 #
 
-SUBDIRS = xml autodocs images entities bin components examples xsl
+SUBDIRS = xml autodocs entities bin components examples xsl
 htmldir = $(docdir)/html
 
 

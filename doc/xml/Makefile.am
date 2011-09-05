@@ -11,7 +11,7 @@ xml_file = autoyast.xml
 xml_files =  $(wildcard *.xml) 
 
 
-EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css
+EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css images bin entities examples
 
 CLEANFILES = .html.sum  profile.dtd.xml elements \
   elements.xml elements.ent profile.dtd.xml examples.ent\
@@ -77,7 +77,7 @@ html/default.css: html/index.html webimages
 
 images.ent:
 	@make -r -C images/WEB -f makefile.ent ima
-	mv ../images.ent .
+#	mv ../xml/images.ent .
 
 : images.ent chunks webimages
 
