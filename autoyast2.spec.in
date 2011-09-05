@@ -3,7 +3,7 @@
 @HEADER@
 Group:	System/YaST
 License: GPL v2 or later
-BuildRequires:	java2-devel-packages yast2-mouse yast2-transfer yast2-bootloader xorg-x11-libs yast2-devtools pkg-config libxslt perl-XML-Writer docbook-xsl-stylesheets sgml-skel yast2-testsuite update-desktop-files yast2-country yast2-slp
+BuildRequires:	yast2-mouse yast2-transfer yast2-bootloader xorg-x11-libs yast2-devtools pkg-config libxslt perl-XML-Writer docbook-xsl-stylesheets sgml-skel yast2-testsuite update-desktop-files yast2-country yast2-slp
 # API for Disabled Modules (ProductControl)
 BuildRequires:	yast2 >= 2.16.36
 # After API cleanup
@@ -57,9 +57,6 @@ generated with the autoyast2 package.
 @PREP@
 
 @BUILD@
-[ -n "$JAVA_HOME" ] && unset JAVA_HOME
-. /usr/share/java-utils/java-functions
-export JAVA_HOME
 
 @INSTALL@
 for d in `ls $RPM_BUILD_ROOT/usr/share/autoinstall/modules/*.desktop`; do
