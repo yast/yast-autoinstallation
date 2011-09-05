@@ -4,14 +4,14 @@
 # $Id: Makefile.am 63765 2011-04-11 15:40:31Z ug $
 #
 
-SUBDIRS =
+SUBDIRS = images
 htmldir = $(docdir)/html
 
 xml_file = autoyast.xml
 xml_files =  $(wildcard *.xml) 
 
 
-EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css images bin entities examples
+EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css bin entities examples
 
 CLEANFILES = .html.sum  profile.dtd.xml elements \
   elements.xml elements.ent profile.dtd.xml examples.ent\
@@ -47,7 +47,6 @@ html/index.html: autoyast.xml
 	@STYLESHEET_HTML@ creating_autoyast2_modules.xml
 	cd html/devel; \
 	ln -s ../default.css ./default.css; \
-	ln -s ../images ./images
 	cd ../..
 
 html/index.html: autoyast.xml 
@@ -77,7 +76,6 @@ html/default.css: html/index.html webimages
 
 images.ent:
 	@make -r -C images/WEB -f makefile.ent ima
-#	mv ../xml/images.ent .
 
 : images.ent chunks webimages
 
@@ -87,7 +85,7 @@ webimages:
 	cp -a images/WEB/*png html/img
 
 
-.PHONY: images examples.ent components.ent 
+.PHONY: images examples.ent components.ent
 
 images: images/EPS/* images/PNG/* 
 	@if ! [ -e "img" ]; then \
@@ -130,7 +128,7 @@ install-data-local:
 	install -d -m 755 $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/img $(DESTDIR)$(htmldir)
-	cp -a $(srcdir)/html/devel $(DESTDIR)$(htmldir)
+#	cp -a $(srcdir)/html/devel $(DESTDIR)$(htmldir)
 
 clean-local:
 	rm -rf html
