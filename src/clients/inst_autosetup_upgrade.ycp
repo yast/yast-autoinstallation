@@ -323,47 +323,17 @@ control file and try again.
 		Update::SetDesktopPattern ();
             }
 
-            if (Update::onlyUpdateInstalled)                    // just consider already installed packages
-            {
-                Pkg::SetSelection ("");                         // -> don't select any additional selections
-            }
-            else if (Packages::using_patterns)
-            {
-                if (! ProductFeatures::GetBooleanFeature ("software",
-                    "only_update_installed"))
-                {
-                    foreach (string pat, Product::patterns, {
-                        y2milestone("Pre-select pattern %1", pat);
-                        Pkg::ResolvableInstall( pat, `pattern );
-                    });
-                }
+            if (!Update::onlyUpdateInstalled            // just consider already installed packages
+                && (!ProductFeatures::GetBooleanFeature ("software", "only_update_installed")))
+	    {
+		foreach (string pat, Product::patterns, {
+		    y2milestone("Pre-select pattern %1", pat);
+		    Pkg::ResolvableInstall( pat, `pattern );
+		});
+	    }
 
-            }
-            else                                                // update selections too
-            {
-                Pkg::SetSelection (Update::selected_selection); // -> set the base selection (minimal, default, ....)
-
-                if (!Update::manual_interaction)
-                {
-                    // now compare installed (old) selections against available (new) selections
-                    //  and set all selections which are installed (old) and available (new)
-                    //  as 'to be installed' -> UI will show "to be updated" for these selections
-
-                    list<string> available_addons = Pkg::GetSelections (`available, "");
-                    list<string> installed_addons = Pkg::GetSelections (`installed, "");
-
-                    foreach (string installed, installed_addons,
-                    {
-                        if (contains (available_addons, installed))     // we have a newer selection for an installed one
-                        {
-                            Pkg::SetSelection (installed);              // update this selection too (selection solving included)
-                        }
-                    });
-                }
-            }
 
             Packages::SelectProduct();
-            Pkg::ActivateSelections ();                                 // now go through all selected selections and select their packages
             // bnc #382208
 
             // bnc#582702 - do not select kernel on update, leave that on dependencies like 'zypper dup'
