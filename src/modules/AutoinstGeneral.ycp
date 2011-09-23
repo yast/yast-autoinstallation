@@ -187,7 +187,6 @@
         Pkg::CallbackTrustedKeyAdded            (SignatureCheckCallbacks::TrustedKeyAdded);
         Pkg::CallbackAcceptUnknownGpgKey        (SignatureCheckCallbacks::AcceptUnknownGpgKey);
         Pkg::CallbackImportGpgKey               (SignatureCheckCallbacks::ImportGpgKey);
-        Pkg::CallbackAcceptNonTrustedGpgKey (SignatureCheckCallbacks::TrustGpgKey);
         Pkg::CallbackAcceptWrongDigest      (SignatureCheckCallbacks::AcceptWrongDigest);
         Pkg::CallbackAcceptUnknownDigest    (SignatureCheckCallbacks::AcceptUnknownDigest);
         Pkg::CallbackTrustedKeyRemoved      (SignatureCheckCallbacks::TrustedKeyRemoved);
@@ -219,10 +218,6 @@
         if( haskey(signature_handling, "import_gpg_key") )
             Pkg::CallbackImportGpgKey( 
                 signature_handling["import_gpg_key"]:false ? AutoInstall::callbackTrue_boolean_map_integer : AutoInstall::callbackFalse_boolean_map_integer
-            );
-        if( haskey(signature_handling, "accept_non_trusted_gpg_key") )
-            Pkg::CallbackAcceptNonTrustedGpgKey(
-                signature_handling["accept_non_trusted_gpg_key"]:false ? AutoInstall::callbackTrue_boolean_map : AutoInstall::callbackFalse_boolean_map
             );
         if( haskey(signature_handling, "accept_wrong_digest") )
             Pkg::CallbackAcceptWrongDigest(
