@@ -296,12 +296,6 @@ control file and try again.
         {
             Update::did_init1 = true;
 
-            if (size (Pkg::ResolvableProperties ("", `pattern, "")) > 0)
-            {
-                y2milestone ("No base selection found, but patterns found...");
-                Packages::using_patterns = true;
-            }
-
             list<string> restore = [];
             list<map<string,any> > selected = Pkg::ResolvableProperties ("", `product, "");
             foreach (map<string,any> s, selected, {
