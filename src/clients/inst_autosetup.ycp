@@ -220,6 +220,8 @@ control file and try again.
             y2milestone("zfcp found");
             Call::Function("zfcp_auto", ["Import", Profile::current["zfcp"]:$[] ]);
         }
+        y2milestone("dasd/zfcp config read. Sleeping for 5 seconds to let disks settle");
+        sleep(5000);
     }
 
 
