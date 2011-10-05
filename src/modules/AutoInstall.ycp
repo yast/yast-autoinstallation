@@ -134,12 +134,19 @@
         {
             boolean ret = Continue();
             if (ret && size ( Profile::current ) > 0) {
-                y2milestone("Enabling Auto-Installation mode");
-                Mode::SetMode("autoinstallation");
+		if (Mode::autoupgrade()) {
+		    y2milestone ("AutoYaST upgrade mode already set, keeping it");
+		} else {
+                    y2milestone("Enabling Auto-Installation mode");
+                    Mode::SetMode("autoinstallation");
+		}
             } else if (Mode::autoinst ()) {
                 y2milestone("No autoyast data found, switching back to manual installation");
                 Mode::SetMode("installation");
-            }
+            } else if (Mode::autoupgrade ()) {
+                y2milestone("No autoyast data found, switching back to manual update");
+		Mode::SetMode("update");
+	    }
         }
         else if (Stage::initial ())
         {
