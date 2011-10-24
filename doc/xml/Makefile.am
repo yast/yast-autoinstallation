@@ -54,6 +54,29 @@ html/index.html: autoyast.xml
 	@XSLTPROC@ --xinclude  @STYLESHEET_HTML@ \
 	$<
 
+prep-daps-images:
+	mkdir -p ../images/src/png
+	cp images/PNG/*png ../images/src/png
+
+ay_bigfile_docbook.xml: prep-daps-images
+ay_bigfile_docbook.xml: autoyast.xml
+	{ head -n 3 $< ; \
+	XML_CATALOG_FILES=@XML_CATALOG@ \
+	xmllint --xinclude --noent --nocdata -o - $< \
+	  | awk 'BEGIN{b=0}; /^]>/ && b == 0 {b=1}; b == 1 {print}' \
+	  | sed 's|fileref=\"img/|fileref=\"|' ; } > $@
+
+ay_bigfile_novdoc.xml: prep-daps-images
+ay_bigfile_novdoc.xml: autoyast.xml
+	{ echo '<?xml version="1.0" encoding="UTF-8"?>'; \
+	  echo '<!DOCTYPE book PUBLIC "-//Novell//DTD NovDoc XML V1.0//EN" "novdocx.dtd"'; \
+	  echo '['; \
+	  echo '<!ENTITY % NOVDOC.DEACTIVATE.IDREF "INCLUDE">'; \
+	XML_CATALOG_FILES=@XML_CATALOG@ \
+	xmllint --xinclude --noent --nocdata -o - $< \
+	  | awk 'BEGIN{b=0}; /^]>/ && b == 0 {b=1}; b == 1 {print}' \
+	  | sed 's|fileref=\"img/|fileref=\"|' ; } > $@
+
 #autoyast.fo: autoyast.xml
 #	XML_CATALOG_FILES=@XML_CATALOG@ \
 #	@XSLTPROC@ @XSLTPROC_FLAGS@ --xinclude \
