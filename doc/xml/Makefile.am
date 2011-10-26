@@ -8,10 +8,11 @@ SUBDIRS = images
 htmldir = $(docdir)/html
 
 xml_file = autoyast.xml
-xml_files =  $(wildcard *.xml) 
+xml_files =  $(wildcard *.xml)
+daps_ent_files = entity-decl.ent network-decl.ent
 
-
-EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css bin entities examples
+EXTRA_DIST = $(xml_files) $(daps_ent_files) $(wildcard *.xsl) \
+  web/default.css bin entities examples
 
 CLEANFILES = .html.sum  profile.dtd.xml elements \
   elements.xml elements.ent profile.dtd.xml examples.ent\
