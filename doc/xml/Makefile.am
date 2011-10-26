@@ -16,7 +16,8 @@ EXTRA_DIST = $(xml_files) $(wildcard *.xsl) web/default.css bin entities example
 CLEANFILES = .html.sum  profile.dtd.xml elements \
   elements.xml elements.ent profile.dtd.xml examples.ent\
   components.ent .ps.sum  autoyast.out autoyast.pdf autoyast.fo \
-  images.ent 
+  images.ent \
+  ay_bigfile_docbook.xml ay_bigfile_novdoc.xml ay_bigfile.xml
 
 STYLESHEET_CSS = default.css
 
@@ -59,13 +60,32 @@ prep-daps-images:
 	cp images/PNG/*png ../images/src/png
 
 ay_bigfile_docbook.xml: prep-daps-images
+# Remove internal entity statements
 ay_bigfile_docbook.xml: autoyast.xml
 	{ head -n 3 $< ; \
 	XML_CATALOG_FILES=@XML_CATALOG@ \
 	xmllint --xinclude --noent --nocdata -o - $< \
 	  | awk 'BEGIN{b=0}; /^]>/ && b == 0 {b=1}; b == 1 {print}' \
-	  | sed 's|fileref=\"img/|fileref=\"|' ; } > $@
+	  | sed -e 's|fileref=\"img/|fileref=\"|' \
+	        -e 's|<acronym>|<phrase role=\"acronym\">|g' \
+	        -e 's|</acronym>|</phrase>|g' \
+	        -e 's|<caution>|<!-- role=\"caution\" --><note>|g' \
+	        -e 's|</caution>|</note>|g' \
+	        -e 's|<literallayout|<!-- role=\"literallayout\" --><screen|g' \
+	        -e 's|</literallayout>|</screen>|g' \
+	        -e 's|<orderedlist numeration=\"arabic\">|<!-- numeration=\"arabic\" --><orderedlist>|g' \
+		-e 's|title id=[^>]*|title|' \
+		-e 's|endterm=[^/]*||' \
+		-e 's|frame=\"top\"||g' \
+		-e "s|frame='top'||g" \
+		-e 's|revision=\"1\"||g' \
+		-e 's|align=\"center\"||' ; } > $@
 
+ay_bigfile.xml: ay_bigfile_docbook.xml
+	xsltproc --output $@ \
+	  /usr/share/susedoc/xslt/misc/db2novdoc.xsl $<
+
+# Not in use; use ay_bigfile.xml
 ay_bigfile_novdoc.xml: prep-daps-images
 ay_bigfile_novdoc.xml: autoyast.xml
 	{ echo '<?xml version="1.0" encoding="UTF-8"?>'; \

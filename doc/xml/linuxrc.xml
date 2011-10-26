@@ -35,7 +35,6 @@
       kernel parameter that accidentally is recognized by Linuxrc, too), use
       <emphasis>linuxrc=nocmdline</emphasis>.
     </para>
-    <para>
       <note>
         <title>Change starting from SUSE Linux 10.2</title>
         <para>
@@ -43,7 +42,6 @@
         explicit, like 'info=floppy:/info'.
         </para>
       </note>
-    </para>
     <para>
       Independent of the above, Linuxrc will always look for and parse a file
       <filename>/linuxrc.config</filename>. You can use this file to change default
@@ -57,17 +55,16 @@
     <title>'info' file format</title>
     <para>
       Lines starting with '<emphasis>#</emphasis>' are comments, valid entries are of the form
+    </para>
       <screen>
 	key: value
-      </screen>
+      </screen><para>
       Note that <emphasis>value</emphasis> extends to the end of the line and so may contain spaces.
       <emphasis>key</emphasis> is matched case insensitive.
     </para>
     <para>
       You can use the same key - value pairs on the kernel command line using the syntax
-      <interface>
-	key=value
-      </interface>
+      <literal>key=value</literal>.      
       Lines that don't have the form described above are ignored.
     </para>
     <para>

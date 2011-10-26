@@ -35,7 +35,7 @@
           <para>
             The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt; ... &lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section.
           </para>
-    <para>
+
         <table frame='top'>
           <title>XML representation</title>
           <tgroup cols="3">
@@ -49,95 +49,95 @@
             <tbody>
               <row>
                 <entry>question</entry>
-                <entry>The question you want to ask the user.
-                <para><screen>&lt;question&gt;Enter the LDAP server&lt;/question&gt;</screen></para></entry>
+                <entry><para>The question you want to ask the user.</para>
+                <screen>&lt;question&gt;Enter the LDAP server&lt;/question&gt;</screen></entry>
                 <entry>The default value is the path to the element (the path often looks strange, so I recommend to enter a question)</entry>
               </row>
               <row>
                 <entry>default</entry>
-                <entry>you can set a pre-selection for the user. A textentry will be filled out with this value,
+                <entry><para>you can set a pre-selection for the user. A textentry will be filled out with this value,
                        a checkbox will be "true" or "false" and a selection will have this default "value" pre-selected.
-                <para><screen>&lt;default&gt;dc=suse,dc=de&lt;/default&gt;</screen></para></entry>
+                       </para><screen>&lt;default&gt;dc=suse,dc=de&lt;/default&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>help</entry>
-                <entry>An optional helptext that is shown on the left side of the question.
-                <para><screen>&lt;help&gt;Enter the LDAP server address.&lt;/help&gt;</screen></para></entry>
+                <entry><para>An optional helptext that is shown on the left side of the question.
+                </para><screen>&lt;help&gt;Enter the LDAP server address.&lt;/help&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>title</entry>
-                <entry>An optional title that is shown above the questions.
-                <para><screen>&lt;title&gt;LDAP server&lt;/title&gt;</screen></para></entry>
+                <entry><para>An optional title that is shown above the questions.
+                </para><screen>&lt;title&gt;LDAP server&lt;/title&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>type</entry>
-                <entry>the type of the element you want to change. Possible values are "symbol","boolean","string" and "integer". 
+                <entry><para>the type of the element you want to change. Possible values are "symbol","boolean","string" and "integer". 
                        The filesystem in
                        the partition section is a symbol, while the "encrypted" element in the user configuration is a boolean.
                        You can see the type of that element if you look in your profile at the config:type="...." attribute.
                        Since openSUSE 11.2 and SLES11-SP2 you can use "static_text" as type too. A static_text is just a text that
                        does not require any user input and can be used to show information if it's not wanted in the help text.
-                <para><screen>&lt;type&gt;symbol&lt;/type&gt;</screen></para></entry>
+                       </para><screen>&lt;type&gt;symbol&lt;/type&gt;</screen></entry>
                 <entry>optional. The defaul is string. If type is "symbol" you must provide the selection element too (see below)</entry>
               </row>
               <row>
                 <entry>password</entry>
-                <entry>if this boolean is set to "true", a password dialog pops up instead of a simple text entry. Setting this
+                <entry><para>if this boolean is set to "true", a password dialog pops up instead of a simple text entry. Setting this
                        to "true" makes only sense if "type" is string.
-                <para><screen>&lt;password config:type="boolean"&gt;true&lt;/password&gt;</screen></para></entry>
+                       </para><screen>&lt;password config:type="boolean"&gt;true&lt;/password&gt;</screen></entry>
                 <entry>optional. The default is "false"</entry>
               </row>
               <row>
                 <entry>path (deprecated since openSUSE 11.0 - use pathlist)</entry>
-                <entry>The path to the element in the profile. It's a comma seperated list of elements that describes the
+                <entry><para>The path to the element in the profile. It's a comma seperated list of elements that describes the
                        path to the element you want to change. For example, the ldap server element can be found in the profile
                        in the &lt;ldap&gt;&lt;ldap_server&gt; section. So if you want to change that value, you have to set the
                        path to "ldap,ldap_server". If you want to change the password of the first user in the profile, you have to
                        set the path to "users,0,user_password". The "0" indicates the first user in the &lt;users config:type="list"&gt;
                        list of users in the profile.
-                <para><screen>&lt;path&gt;networking,dns,hostname&lt;/path&gt;</screen></para></entry>
+                       </para><screen>&lt;path&gt;networking,dns,hostname&lt;/path&gt;</screen></entry>
                 <entry>this information is optional but you should at least provie <emphasis>path</emphasis> or <emphasis>file</emphasis></entry>
               </row>
               <row>
-                <entry>pathlist (available since openSUSE 11.0 and replaces <emphasis>path</emphasis>)</entry>
-                <entry>a list of <emphasis>path</emphasis> elements (see above)
-                <para><screen>&lt;pathlist config:type="list"&gt;&lt;path&gt;networking,dns,hostname&lt;/path&gt;&lt;path&gt;...&lt;/path&gt;</screen></para></entry>
-                <entry>this information is optional but you should at least provie <emphasis>path</emphasis> or <emphasis>file</emphasis></entry>
+                <entry><para>pathlist (available since openSUSE 11.0 and replaces <emphasis>path</emphasis>)</para></entry>
+                <entry><para>a list of <emphasis>path</emphasis> elements (see above)
+                </para><screen>&lt;pathlist config:type="list"&gt;&lt;path&gt;networking,dns,hostname&lt;/path&gt;&lt;path&gt;...&lt;/path&gt;</screen></entry>
+                <entry><para>this information is optional but you should at least provie <emphasis>path</emphasis> or <emphasis>file</emphasis></para></entry>
               </row>
               <row>
                 <entry>file (available since SLES10 SP1 and SL 10.2)</entry>
-                <entry>you can store the answer to a question in a file, to use it in one of your scripts later. If you ask during stage=inital and you want to use the answer in stage2, then you have to copy the answer-file in a chroot script that is running as chrooted=false. Do it like this "cp /tmp/my_answer /mnt/tmp/". The reason for that is, that /tmp in stage1 is just in the RAM disk and will get lost after the reboot but the installed system is already mounted at /mnt/
-                <para><screen>&lt;file&gt;/tmp/answer_hostname&lt;/file&gt;</screen></para></entry>
-                <entry>this information is optional but you should at least provie <emphasis>path</emphasis> or <emphasis>file</emphasis></entry>
+                <entry><para>you can store the answer to a question in a file, to use it in one of your scripts later. If you ask during stage=inital and you want to use the answer in stage2, then you have to copy the answer-file in a chroot script that is running as chrooted=false. Do it like this "cp /tmp/my_answer /mnt/tmp/". The reason for that is, that /tmp in stage1 is just in the RAM disk and will get lost after the reboot but the installed system is already mounted at /mnt/
+                </para><screen>&lt;file&gt;/tmp/answer_hostname&lt;/file&gt;</screen></entry>
+                <entry><para>this information is optional but you should at least provie <emphasis>path</emphasis> or <emphasis>file</emphasis></para></entry>
               </row>
               <row>
                 <entry>password</entry>
-                <entry>if this boolean is set to "true", a password dialog pops up instead of a simple text entry. Setting this
+                <entry><para>if this boolean is set to "true", a password dialog pops up instead of a simple text entry. Setting this
                        to "true" makes only sense if "type" is string.
-                <para><screen>&lt;password config:type="boolean"&gt;true&lt;/password&gt;</screen></para></entry>
+                       </para><screen>&lt;password config:type="boolean"&gt;true&lt;/password&gt;</screen></entry>
                 <entry>optional. The default is "false"</entry>
               </row>
               <row>
                 <entry>stage</entry>
-                <entry>stage configures the installation stage where the question pops up. You can set this value to "cont" or
+                <entry><para>stage configures the installation stage where the question pops up. You can set this value to "cont" or
                        "initial". "initial" means the popup comes up very early in the installation, short after the pre-script
                        has run. "cont" means, that the dialog with the question comes after the first reboot, when the system
                        boots for the very first time. Questions you answer during the "inital" stage, will write their answer
                        into the profile on the harddisk. You should know that if you enter cleartext passwords during "initial".
                        Of course it does not make sense to ask for a filesystem to use in the "cont" phase. The harddisk is already
                        partitioned at that stage and the question will have no effect.
-                <para><screen>&lt;stage&gt;cont&lt;/stage&gt;</screen></para></entry>
+                       </para><screen>&lt;stage&gt;cont&lt;/stage&gt;</screen></entry>
                 <entry>optional. The default is "initial"</entry>
               </row>
               <row>
                 <entry>selection</entry>
-                <entry>the selection element contains a list of &lt;entry&gt; elements. Each entry represents a possible option
+                <entry><para>the selection element contains a list of &lt;entry&gt; elements. Each entry represents a possible option
                        for the user to choose. So the user can't enter a value in a textfield, but he can choose from a list
                        of values.
-                <para><screen>
+                       </para><screen>
 &lt;selection config:type="list"&gt;
   &lt;entry&gt;
     &lt;value&gt;
@@ -155,71 +155,69 @@
         Extended3 Filesystem
     &lt;/label&gt;
   &lt;/entry&gt;
-&lt;/selection&gt;</screen></para></entry>
+&lt;/selection&gt;</screen></entry>
                 <entry>optional for type=string, not possible for type=boolean and a must have for type=symbol</entry>
               </row>
               <row>
                 <entry>dialog (available since SL 10.3 and SLES10 SP2)</entry>
-                <entry>Since OpenSUSE 10.3 you can have more than one question per dialog. To make that possible you have
+                <entry><para>Since OpenSUSE 10.3 you can have more than one question per dialog. To make that possible you have
                 to specifiy the dialog-id with an integer. All questions with the same dialog-id are on the same dialog.
                 The dialogs are sorted by the id too.
-                <para><screen>&lt;dialog config:type="integer"&gt;3&lt;/dialog&gt;</screen></para></entry>
+                </para><screen>&lt;dialog config:type="integer"&gt;3&lt;/dialog&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>element (available since SL 10.3 and SLES10 SP2)</entry>
-                <entry>Since OpenSUSE 10.3 you can have more than one question per dialog. To make that possible you have
+                <entry><para>Since OpenSUSE 10.3 you can have more than one question per dialog. To make that possible you have
                 to specifiy the element-id with an integer. The questions on a dialog are sorted by the id.
-                <para><screen>&lt;element config:type="integer"&gt;1&lt;/element&gt;</screen></para></entry>
+                </para><screen>&lt;element config:type="integer"&gt;1&lt;/element&gt;</screen></entry>
                 <entry>optional (see dialog></entry>
               </row>
               <row>
                 <entry>frametitle (available since SL 10.3 and SLES10 SP2)</entry>
-                <entry>Since OpenSUSE 10.3 you can have more than one question per dialog. Each question on a dialog has
+                <entry><para>Since OpenSUSE 10.3 you can have more than one question per dialog. Each question on a dialog has
                 a frame that can have a frametitle. A small caption for each question if you want so. Since openSUSE 11.3 you can put multiple elements into one frame. They have to have the same frametitle then.
-                <para><screen>&lt;frametitle&gt;User data&lt;/frametitle&gt;</screen></para></entry>
+                </para><screen>&lt;frametitle&gt;User data&lt;/frametitle&gt;</screen></entry>
                 <entry>optional (default is no frametitle)</entry>
               </row>
               <row>
                 <entry>script (available since SL 10.3 not in SLES10 SP1)</entry>
-                <entry>with 10.3 you can run scripts after a question has been answered (see the table below for detailed instructions about scripts)
-                <para><screen>&lt;script&gt;...&lt;/script&gt;</screen></para></entry>
+                <entry><para>with 10.3 you can run scripts after a question has been answered (see the table below for detailed instructions about scripts)
+                </para><screen>&lt;script&gt;...&lt;/script&gt;</screen></entry>
                 <entry>optional (default is no script)</entry>
               </row>
               <row>
                 <entry>ok_label (available since openSUSE 11.2 / SLES11 SP2</entry>
-                <entry>You can change the Label on the "Ok" button. The last element that specifies the label for a dialog wins.
-                <para><screen>&lt;ok_label&gt;Finish&lt;/ok_label&gt;</screen></para></entry>
+                <entry><para>You can change the Label on the "Ok" button. The last element that specifies the label for a dialog wins.
+                </para><screen>&lt;ok_label&gt;Finish&lt;/ok_label&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>back_label (available since openSUSE 11.2 / SLES11 SP2</entry>
-                <entry>You can change the Label on the "Back" button. The last element that specifies the label for a dialog wins.
-                <para><screen>&lt;back_label&gt;change values&lt;/back_label&gt;</screen></para></entry>
+                <entry><para>You can change the Label on the "Back" button. The last element that specifies the label for a dialog wins.
+                </para><screen>&lt;back_label&gt;change values&lt;/back_label&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>timeout (available since openSUSE 11.2 / SLES11-SP2</entry>
-                <entry>You can specify an integer here that is used as timeout in seconds. If the user does not answer the question before the timeout, the default value is taken as answer. When the user touches/changes any widget in the dialog, the timeout is turned off and the dialog has to be confirmed by the ok-button.
-                <para><screen>&lt;timeout config:type="integer"&gt;30&lt;/timeout&gt;</screen></para></entry>
+                <entry><para>You can specify an integer here that is used as timeout in seconds. If the user does not answer the question before the timeout, the default value is taken as answer. When the user touches/changes any widget in the dialog, the timeout is turned off and the dialog has to be confirmed by the ok-button.
+                </para><screen>&lt;timeout config:type="integer"&gt;30&lt;/timeout&gt;</screen></entry>
                 <entry>optional. A missing value is interpreted as 0 which means that there is no timeout</entry>
               </row>
               <row>
                 <entry>default_value_script (available since openSUSE 11.2 / SLES11-SP2)</entry>
-                <entry>you can run scripts to set the default value for a question(see the table below for detailed instructions about default value scripts). It's useful if you can "calculate" a useful default value, especially in combination with the "timeout" option.
-                <para><screen>&lt;default_value_script&gt;...&lt;/default_value_script&gt;</screen></para></entry>
+                <entry><para>you can run scripts to set the default value for a question(see the table below for detailed instructions about default value scripts). It's useful if you can "calculate" a useful default value, especially in combination with the "timeout" option.
+                </para><screen>&lt;default_value_script&gt;...&lt;/default_value_script&gt;</screen></entry>
                 <entry>optional (default is no script)</entry>
               </row>
             </tbody>
           </tgroup>
 
         </table>
-    </para>
 
           <para>
             The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt;&lt;default_value_script&gt;...&lt;/default_value_script&gt;...&lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section. It's available since 11.2 and SLES11-SP2
           </para>
-    <para>
         <table frame='top'>
           <title>XML representation</title>
           <tgroup cols="3">
@@ -233,26 +231,24 @@
             <tbody>
               <row>
                 <entry>source</entry>
-                <entry>the source code of the script. Whatever you echo to STDOUT will be used as default value for the ask-dialog. If your script has an exit code other than 0, the normal default element is used. Take care you echo with "echo -n" to suppress the '\n' and that you echo reasonable values and not "okay" for a boolean
-                <para><screen>&lt;source&gt;...&lt;/source&gt;</screen></para></entry>
+                <entry><para>the source code of the script. Whatever you echo to STDOUT will be used as default value for the ask-dialog. If your script has an exit code other than 0, the normal default element is used. Take care you echo with "echo -n" to suppress the '\n' and that you echo reasonable values and not "okay" for a boolean
+                </para><screen>&lt;source&gt;...&lt;/source&gt;</screen></entry>
                 <entry>this value is required. Otherwise nothing would be executed</entry>
               </row>
               <row>
                 <entry>interpreter</entry>
-                <entry>the interpreter to use
-                <para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></para></entry>
+                <entry><para>the interpreter to use
+                </para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></entry>
                 <entry>default is shell (you can set "/bin/myinterpreter" as value too)</entry>
               </row>
             </tbody>
           </tgroup>
         </table>
-    </para>
 
 
           <para>
             The following elements must be between the &lt;ask-list config:type="list"&gt;&lt;ask&gt;&lt;script&gt;...&lt;/script&gt;...&lt;/ask&gt;&lt;/ask-list&gt; tags in the &lt;general&gt; section. It's available since 10.3 (not SLES10 SP1).
           </para>
-    <para>
         <table frame='top'>
           <title>XML representation</title>
           <tgroup cols="3">
@@ -266,44 +262,43 @@
             <tbody>
               <row>
                 <entry>filename</entry>
-                <entry>the filename of the script
-                <para><screen>&lt;filename&gt;my_ask_script.sh&lt;/filename&gt;</screen></para></entry>
+                <entry><para>the filename of the script
+                </para><screen>&lt;filename&gt;my_ask_script.sh&lt;/filename&gt;</screen></entry>
                 <entry>default is ask_script.sh</entry>
               </row>
               <row>
                 <entry>source</entry>
-                <entry>the source code of the script. Together with "rerun_on_error" on you check the value that was entered for sanity (since 11.0 only). Your script can create a file "/tmp/next_dialog" with a dialog id in it. That's the next dialog autoyast will raise then. A value of -1 terminates the ask sequence. If that file is not created, autoyast will run the dialogs in a normal order (since 11.0 only)
-                <para><screen>&lt;source&gt;...&lt;/source&gt;</screen></para></entry>
+                <entry><para>the source code of the script. Together with "rerun_on_error" on you check the value that was entered for sanity (since 11.0 only). Your script can create a file "/tmp/next_dialog" with a dialog id in it. That's the next dialog autoyast will raise then. A value of -1 terminates the ask sequence. If that file is not created, autoyast will run the dialogs in a normal order (since 11.0 only)
+                </para><screen>&lt;source&gt;...&lt;/source&gt;</screen></entry>
                 <entry>this value is required. Otherwise nothing would be executed</entry>
               </row>
               <row>
                 <entry>environment</entry>
-                <entry>a boolean that passes the "value" of the answer to the question as an environment variable to the script. The variable is named "VAL".
-                <para><screen>&lt;environment config:type="boolean"&gt;true&lt;/environment&gt;</screen></para></entry>
+                <entry><para>a boolean that passes the "value" of the answer to the question as an environment variable to the script. The variable is named "VAL".
+                </para><screen>&lt;environment config:type="boolean"&gt;true&lt;/environment&gt;</screen></entry>
                 <entry>optional (default is "false").</entry>
               </row>
               <row>
                 <entry>feedback</entry>
-                <entry>a boolean that turns on feedback for the script execution. That means that STDOUT will be shown in a popup box that must be confirmed after the script execution.
-                <para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></para></entry>
+                <entry><para>a boolean that turns on feedback for the script execution. That means that STDOUT will be shown in a popup box that must be confirmed after the script execution.
+                </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
                 <entry>optional (default is "false").</entry>
               </row>
               <row>
                 <entry>debug</entry>
-                <entry>a boolean that turns on debugging for the script execution
-                <para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></para></entry>
+                <entry><para>a boolean that turns on debugging for the script execution
+                </para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></entry>
                 <entry>optional (default is "true"). This value needs feedback to be turned on too.</entry>
               </row>
               <row>
                 <entry>rerun_on_error (available since openSUSE 11.0)</entry>
-                <entry>a boolean that keeps the dialog open until the script has an exit code of 0 (zero). So you can parse and check the answers the user gave in the script and popup an error with the "feedback" option.
-                <para><screen>&lt;rerun_on_error config:type="boolean"&gt;true&lt;/rerun_on_error&gt;</screen></para></entry>
+                <entry><para>a boolean that keeps the dialog open until the script has an exit code of 0 (zero). So you can parse and check the answers the user gave in the script and popup an error with the "feedback" option.
+                </para><screen>&lt;rerun_on_error config:type="boolean"&gt;true&lt;/rerun_on_error&gt;</screen></entry>
                 <entry>optional (default is "false"). This value should be used together with the feedback option.</entry>
               </row>
             </tbody>
           </tgroup>
         </table>
-    </para>
     <para>
       Below you can see an example of the usage of the "ask" feature.
     </para>
@@ -414,7 +409,7 @@ wget http://10.10.0.162/$VAL -O /tmp/profile/modified.xml 2&gt;/dev/null
 <para>
 Since openSUSE 11.0 you can verify the answer of a question with a script like this:
 </para>
-<para>
+
 <screen>
      &lt;ask&gt;
           &lt;script&gt;
@@ -444,9 +439,6 @@ exit 0
           &lt;default&gt;enter your hostname here&lt;/default&gt;
       &lt;/ask&gt;
 </screen>
-</para>
-
-
 
   </section>
 

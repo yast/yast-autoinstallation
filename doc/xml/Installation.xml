@@ -1,6 +1,8 @@
 
 <chapter id="Invoking">
   <title>The Auto-Installation Process</title>
+  <para>
+  </para>
   <section id="Installation.process">
     
     <title>
@@ -122,6 +124,7 @@
       </para>
       <para>
         Here is a small example of a "/srv/tftp/pxelinux.cfg/default" file:
+      </para>
       <screen>
 default SLES9
 
@@ -134,7 +137,6 @@ label SLES9
 label hd·
   LOCALBOOT 0
       </screen>
-      </para>
       <para>
         It's recommended to add the vga=... parameter with a valid value for graphical
         installations, to trigger an installation with the frame buffer device instead
@@ -142,6 +144,7 @@ label hd·
       </para>
       <para>
         Here is as a small example my "/etc/dhcp.conf" file:
+      </para>
       <screen>
 option domain-name-servers 192.168.66.1;
 default-lease-time 600;
@@ -169,7 +172,6 @@ subnet 192.168.66.0 netmask 255.255.255.0 {
         filename "pxelinux.0";
 }
       </screen>
-      </para>
       <para>
         A problem you might run into if you do installation via PXE is, that the
         installation will run into an endless loop, because after the first reboot,
@@ -186,6 +188,7 @@ subnet 192.168.66.0 netmask 255.255.255.0 {
       <para>
         Another way is to use autoyast to upload a new PXE boot configuration for that host.
         That is done via autoyast profile like this:
+      </para>
         <screen>
           <![CDATA[
       <pxe>
@@ -203,7 +206,8 @@ DEFAULT linux
      </pxe>
 ]]>
         </screen>
-       This will upload a new configuration for the actual machine to the tftp server short
+        <para>
+         This will upload a new configuration for the actual machine to the tftp server short
        before the first reboot happens. In most installations the TFTP daemon runs as user
        "nobody". You have to make sure that that user has write permissions to the "pxelinux.cfg"
        directory if you use that mechanism.
@@ -251,8 +255,8 @@ DEFAULT linux
       <para>
 	The configuration file used by <command>linuxrc</command> can have the
 	following keywords (for a detailed description of how linuxrc works and
-	other keywords, see <quote><link linkend='appendix.linuxrc'
-	    endterm="appendix.linuxrc.title"></link></quote> ):
+	other keywords, see <quote><xref linkend='appendix.linuxrc'
+	    endterm="appendix.linuxrc.title"></xref></quote> ):
       </para>   
       
       <table frame='top'>
@@ -331,8 +335,8 @@ DEFAULT linux
       </para>
       <para>	
 	The format of the special  command line variable
-	<emphasis>autoyast</emphasis> can be used as described in table  <quote><link
-	    linkend="commandLineAutoYaST" endterm="commandLineAutoYaST.title"></link></quote>
+	<emphasis>autoyast</emphasis> can be used as described in table  <quote><xref
+	    linkend="commandLineAutoYaST" endterm="commandLineAutoYaST.title"></xref></quote>
       </para>
       
       <table frame='top' id="commandLineAutoYaST">
@@ -439,9 +443,9 @@ DEFAULT linux
 		upon startup for a file named
 		<filename>autoinst.xml</filename>. If such a file is found, YaST2
 		will switch into auto-installation mode even if no special
-		command line variables were supplied.  (See <quote><link
+		command line variables were supplied.  (See <quote><xref
 		    linkend="autoinstall.singlesystem"
-		    endterm="autoinstall.singlesystem.title"></link></quote> )
+		    endterm="autoinstall.singlesystem.title"></xref></quote> )
 	      </para>
 	    </listitem>
 	    <listitem>
@@ -550,10 +554,10 @@ DEFAULT linux
 	<listitem>
 	  <para>
 	    Specify the exact location of the control file:
+          </para>
 	    <screen>
 autoyast=http://192.168.1.1/control-files/client01.xml
 	    </screen>
-	  </para>
 	</listitem>
 	<listitem>
 	  <para>

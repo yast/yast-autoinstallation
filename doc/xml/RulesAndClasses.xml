@@ -1,6 +1,8 @@
 
 <chapter id="rulesandclass">
     <title>Rules and Classes</title>
+    <para>
+    </para>
   <section id="rules">
     <title>Rule based auto-installation</title>
     <para>
@@ -203,7 +205,6 @@
         <para>
             Here is an example for the use of a custom rules:
         </para>
-        <para>
             <screen>
 <![CDATA[
 <rule>
@@ -225,7 +226,6 @@ fi;
 </rule>
 ]]>
             </screen>
-        </para>
         <para>
             The script in this rule can echo either "intel" or "non_intel" to STDOUT (the
             output of the grep command must be directed to /dev/null in this case).
@@ -245,7 +245,7 @@ fi;
         <para>
             you can have five different match_types:
         </para>
-        <para>
+
             <itemizedlist>
                 <listitem>
                     <para>
@@ -273,7 +273,7 @@ fi;
                     </para>
                 </listitem>
             </itemizedlist>
-        </para>
+
         <para>
             "greater" and "lower" can be used for memsize or totaldisk for
             example. They can match only on rules which return an integer value.
@@ -293,7 +293,7 @@ fi;
             You can do that with the "operator" element in the rules.xml file. Here is
             an example:
         </para>
-        <para>
+
         <screen>
 <![CDATA[
 <rule>
@@ -313,7 +313,7 @@ fi;
 </rule>
 ]]>
         </screen>
-        </para>
+
         <para>
             Just "and" and "or" are possible operators and the default operator 
             is "and".
@@ -351,8 +351,7 @@ fi;
     <para>
       If you are unsure about a value on your system, start an autoinstallation.
       If the proposal shows up, switch to the console via CTRL+ALT+F2 and run
-      <screen>/usr/lib/YaST2/bin/y2base ayast_probe ncurses
-      </screen>. It might help to to turn the confirmation on for this, so that
+      <command>/usr/lib/YaST2/bin/y2base ayast_probe ncurses</command>. It might help to to turn the confirmation on for this, so that
       the installation does not start in the background while you are watching the
       values. The textbox with the values is scrollable.
     </para>
@@ -400,8 +399,8 @@ fi;
 	      <row>
 		<entry>mac</entry>
 		<entry>MAC address of host</entry>
-		<entry>This attribute must always match exactly. (MAC addresses
-		to be matched should be  in the form <emphasis>0080c8f6484c</emphasis></entry>
+		<entry><para>This attribute must always match exactly. (MAC addresses
+		to be matched should be  in the form <emphasis>0080c8f6484c</emphasis></para></entry>
 	      </row>
 	      <row>
 		<entry>linux</entry>
@@ -502,48 +501,42 @@ fi;
             <tbody>
               <row>
                 <entry>dialog_nr</entry>
-                <entry>all rules with the same dialog_nr are presented on the same popup dialog so the same dialog_nr can appear in multiple rules.
-                  <para><screen>&lt;dialog_nr config:type="integer"&gt;3&lt;/dialog_nr&gt;</screen></para>
-                </entry>
+                <entry><para>all rules with the same dialog_nr are presented on the same popup dialog so the same dialog_nr can appear in multiple rules.
+                </para><screen>&lt;dialog_nr config:type="integer"&gt;3&lt;/dialog_nr&gt;</screen></entry>
                 <entry>This element is optional and the default for a missing dialog_nr is always "0". If you have one popup only anyway, you don't need to specify the dialog_nr</entry>
               </row>
               <row>
                 <entry>element</entry>
-                <entry>each element needs a uniq id. Even if you have more than one dialog, you must not use the same id twice like an id "1" on dialog 1 and and id "1" on dialog 2. That's different than with &lt;ask&gt; dialogs, where you can have the same &lt;element&gt; id on multiple dialogs.
-                  <para><screen>&lt;element config:type="integer"&gt;3&lt;/element&gt;</screen></para>
-                </entry>
+                <entry><para>each element needs a uniq id. Even if you have more than one dialog, you must not use the same id twice like an id "1" on dialog 1 and and id "1" on dialog 2. That's different than with &lt;ask&gt; dialogs, where you can have the same &lt;element&gt; id on multiple dialogs.
+                </para><screen>&lt;element config:type="integer"&gt;3&lt;/element&gt;</screen></entry>
                 <entry>optional. If left out, autoyast adds his own id's internally but you can't use conflicts then (see below)</entry>
               </row>
               <row>
                 <entry>title</entry>
-                <entry>the caption of the popup dialog
-                  <para><screen>&lt;title&gt;Desktop Selection&lt;/title&gt;</screen></para>
-                </entry>
+                <entry><para>the caption of the popup dialog
+                </para><screen>&lt;title&gt;Desktop Selection&lt;/title&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>question</entry>
-                <entry>the question text is shown in the popup behind the checkbox.
-                  <para><screen>&lt;question&gt;KDE Desktop&lt;/question&gt;</screen></para>
-                </entry>
+                <entry><para>the question text is shown in the popup behind the checkbox.
+                </para><screen>&lt;question&gt;KDE Desktop&lt;/question&gt;</screen></entry>
                 <entry>optional. If you don't configure a text here, the name of the XML file that is triggered by this rule will be shown instead.</entry>
               </row>
               <row>
                 <entry>timeout</entry>
-                <entry>a timeout in seconds after which the dialog will automatically "press" the okay button. Useful for a non blocking installation in combination with rules-dialogs.
-                  <para><screen>&lt;timeout config:type="integer"&gt;30&lt;/timeout&gt;</screen></para>
-                </entry>
+                <entry><para>a timeout in seconds after which the dialog will automatically "press" the okay button. Useful for a non blocking installation in combination with rules-dialogs.
+                </para><screen>&lt;timeout config:type="integer"&gt;30&lt;/timeout&gt;</screen></entry>
                 <entry>optional. A missing timeout will stop the installation process until the dialog is confirmed by the user.</entry>
               </row>
               <row>
                 <entry>conflicts</entry>
-                <entry>a list of element id's (rules) that conflict with this rule. If this rule matches or is selected by the user, all conflicting rules are deselected and disabled in the popup. Take care that you don't create deadlocks.
-                  <para><screen>&lt;conflicts config:type="list"&gt;
+                <entry><para>a list of element id's (rules) that conflict with this rule. If this rule matches or is selected by the user, all conflicting rules are deselected and disabled in the popup. Take care that you don't create deadlocks.
+                </para><screen>&lt;conflicts config:type="list"&gt;
   &lt;element config:type="integer"&gt;1&lt;/element&gt;
   &lt;element config:type="integer"&gt;5&lt;/element&gt;
   ...
-&lt;/conflicts&gt;</screen></para>
-                </entry>
+&lt;/conflicts&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
             </tbody>
@@ -552,7 +545,6 @@ fi;
           <para>
             Here is an example of how to use dialogs with rules:
           </para>
-        <para>
         <screen>
 <![CDATA[
   <rules config:type="list">
@@ -615,7 +607,6 @@ echo -n 100
   </rules>
 ]]>
         </screen>
-        </para>
   </section>
   </section>
 
@@ -633,7 +624,6 @@ echo -n 100
     <para>
       Here is an example of a class definition:
     </para>
-    <para>
         <screen>
 <![CDATA[
 <classes config:type="list">
@@ -644,7 +634,6 @@ echo -n 100
 </classes>
 ]]>
         </screen>
-    </para>
     <para>
         The file Software.xml must be in the directory "classes/TrainingRoom/" then and
         it will get fetched from the same place like the autoyast profile and the rules were
@@ -730,8 +719,8 @@ echo -n 100
       It is possible to mix rules and classes during an auto-installation
       session. For example you can identify a system using rules which contain
       class definitions in them. The process is described in the figures
-      <quote><link linkend='rulesflow'
-	  endterm="rulesflow.title"></link></quote>.
+      <quote><xref linkend='rulesflow'
+	  endterm="rulesflow.title"></xref></quote>.
     </para>
     <para>
       After retrieving the rules and merging them, the generated control file
@@ -750,7 +739,6 @@ echo -n 100
     <para>
       Let's take a look at two XML parts that we want to merge:
     </para>
-    <para>
       <screen>
 &lt;partitioning config:type=&quot;list&quot;&gt;
     &lt;drive&gt;
@@ -772,8 +760,7 @@ echo -n 100
     &lt;/drive&gt;
 &lt;/partitioning&gt;
       </screen>
-    </para>
-    <para>
+
       <screen>
 &lt;partitioning config:type=&quot;list&quot;&gt;
   &lt;drive&gt;
@@ -792,7 +779,7 @@ echo -n 100
   &lt;/drive&gt;
 &lt;/partitioning&gt;
       </screen>
-    </para>
+
     <para>
       What you would expect is, that you'll end up in a profile with 3 partitions.
       That is not the case. You'll end up with two partitions and the first partition
@@ -820,13 +807,13 @@ echo -n 100
       not official supported by autoyast and more a workaround than a nice solution. For each partition
       in one file, add an attribute to the partition like this:
     </para>
-    <para>
+
       <screen>
 &lt;partition dontmerge=&quot;1&quot;&gt;
 ...
 &lt;/partitions&gt;
       </screen>
-    </para>
+
     <para>
       The trick is, that the merge script will not detect the partitions as the same element type because of the
       new attribute. If you have more files, it might be needed to to add more attributes like <emphasis>dontmerge="2"</emphasis>.
@@ -840,7 +827,7 @@ echo -n 100
       <para>you can use the <emphasis>dont_merge</emphasis> element in the rules or classes file
       like this:
     </para>
-    <para>
+
        <screen>
 &lt;classes config:type=&quot;list&quot;&gt;
     &lt;class&gt;
@@ -852,8 +839,7 @@ echo -n 100
     &lt;/class&gt;
 &lt;/classes&gt;
       </screen>
-    </para>
-    <para>
+
       <screen>
 &lt;rule&gt;
     &lt;board_vendor&gt;
@@ -880,7 +866,7 @@ echo -n 100
     &lt;/result&gt;
 &lt;/rule&gt;
       </screen>
-    </para>
+
   </section>
 </chapter>
 
