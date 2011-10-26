@@ -45,49 +45,49 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
             <tbody>
               <row>
                 <entry>device</entry>
-                <entry>the device you want to configure in this section. Since SUSE Linux 10.1 and SLES10, you can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis>. With SLES10 SP1 and SUSE Linux 10.2, <emphasis>by-path</emphasis> is possible too like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.
-                  <para><screen>&lt;device&gt;/dev/hda&lt;/device&gt;</screen></para>
+                <entry><para>the device you want to configure in this section. Since SUSE Linux 10.1 and SLES10, you can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis>. With SLES10 SP1 and SUSE Linux 10.2, <emphasis>by-path</emphasis> is possible too like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.</para>
+                  <para><literal>&lt;device&gt;/dev/hda&lt;/device&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, autoyast tries to guess the device. A RAID must always have "/dev/md" as device</entry>
               </row>
               <row>
                 <entry>initialize</entry>
-                <entry>if set to true, the partition table gets wiped out before autoyast starts the partition calculation
-<para><screen>&lt;initialize config:type="boolean"&gt;true&lt;/initialize&gt;</screen></para>
+                <entry><para>if set to true, the partition table gets wiped out before autoyast starts the partition calculation</para>
+<para><literal>&lt;initialize config:type="boolean"&gt;true&lt;/initialize&gt;</literal></para>
 </entry>
                 <entry>optional. The default is false.</entry>
               </row>
               <row>
                 <entry>is_lvm_vg</entry>
-                <entry>This tells autoyast that this device is not a physical device but a LVM volume group (see LVM configuration below)
-<para><screen>&lt;is_lvm_vg config:type="boolean"&gt;true&lt;/is_lvm_vg&gt;</screen></para>
+                <entry><para>This tells autoyast that this device is not a physical device but a LVM volume group (see LVM configuration below)</para>
+<para><literal>&lt;is_lvm_vg config:type="boolean"&gt;true&lt;/is_lvm_vg&gt;</literal></para>
 </entry>
-                <entry>DEPRECATED since SLES10SP1 and SL10.2 - use <emphasis>type</emphasis> instead. Must be true if this device is a LVM volume group. The default is false.</entry>
+                <entry><para>DEPRECATED since SLES10SP1 and SL10.2 - use <emphasis>type</emphasis> instead. Must be true if this device is a LVM volume group. The default is false.</para></entry>
               </row>
               <row>
                 <entry>is_evms_vg</entry>
-                <entry>this tells autoyast that this device is not a physical device but an EVMS volume group (see EVMS configuration below)
-<para><screen>&lt;is_evms_vg config:type="boolean"&gt;true&lt;/is_evms_vg&gt;</screen></para>
+                <entry><para>this tells autoyast that this device is not a physical device but an EVMS volume group (see EVMS configuration below)</para>
+<para><literal>&lt;is_evms_vg config:type="boolean"&gt;true&lt;/is_evms_vg&gt;</literal></para>
 </entry>
-                <entry>DEPRECATED since SLES10SP1 and SL10.2 - use <emphasis>type</emphasis> instead. Must be true if this device is an EVMS volume group. The default is false.</entry>
+                <entry><para>DEPRECATED since SLES10SP1 and SL10.2 - use <emphasis>type</emphasis> instead. Must be true if this device is an EVMS volume group. The default is false.</para></entry>
               </row>
               <row>
                 <entry>partitions</entry>
-                <entry>this is a list of &lt;partition&gt; entries (see table below)
-<para><screen>&lt;partitions config:type="list"&gt;&lt;partition&gt;...&lt;/partition&gt;...&lt;/partitions&gt;</screen></para>
+                <entry><para>this is a list of &lt;partition&gt; entries (see table below)</para>
+<para><literal>&lt;partitions config:type="list"&gt;&lt;partition&gt;...&lt;/partition&gt;...&lt;/partitions&gt;</literal></para>
 </entry>
                 <entry>optional. If no partition is specified, autoyast will create it's own idea of a nice partitioning (see Automated Partitioning below).</entry>
               </row>
               <row>
                 <entry>pesize</entry>
-                <entry>this value makes only sense with LVM/EVMS.
-<para><screen>&lt;pesize&gt;8M&lt;/pesize&gt;</screen></para>
+                <entry><para>this value makes only sense with LVM/EVMS.</para>
+<para><literal>&lt;pesize&gt;8M&lt;/pesize&gt;</literal></para>
 </entry>
                 <entry>optional. Default is 4M for EVMS/LVM volume groups.</entry>
               </row>
               <row>
                 <entry>use</entry>
-                <entry>this parameter tells autoyast which strategy it shall use to partition the harddisc.
+                <entry><para>this parameter tells autoyast which strategy it shall use to partition the harddisc.</para>
 <para>You can choose between:</para>
 <itemizedlist>
 <listitem>
@@ -108,8 +108,8 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
               </row>
               <row>
                 <entry>type</entry>
-                <entry>this value describes the type of the <emphasis>drive</emphasis> and is a replacement for
-<emphasis>is_lvm_vg</emphasis> and <emphasis>is_evms_vg</emphasis> used in SLES10 and SL10.1
+                <entry><para>this value describes the type of the <emphasis>drive</emphasis> and is a replacement for
+<emphasis>is_lvm_vg</emphasis> and <emphasis>is_evms_vg</emphasis> used in SLES10 and SL10.1</para>
 <para>You can choose between:</para>
 <itemizedlist>
 <listitem>
@@ -123,13 +123,13 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 </listitem>
 </itemizedlist>
 
-<para><screen>&lt;type config:type="symbol"&gt;CT_LVM&lt;/type&gt;</screen></para>
+<para><literal>&lt;type config:type="symbol"&gt;CT_LVM&lt;/type&gt;</literal></para>
 </entry>
                 <entry>optional. Default is CT_DISK for a normal physical harddisk.</entry>
               </row>
               <row>
                 <entry>disklabel</entry>
-                <entry>this value describes the type of the partition table
+                <entry><para>this value describes the type of the partition table</para>
 <para>You can choose between:</para>
 <itemizedlist>
 <listitem>
@@ -140,14 +140,14 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 </listitem>
 </itemizedlist>
 
-<para><screen>&lt;disklabel&gt;gpt&lt;/disklabel&gt;</screen></para>
+<para><literal>&lt;disklabel&gt;gpt&lt;/disklabel&gt;</literal></para>
 </entry>
                 <entry>optional and available since openSUSE 12.1 and SLES11 SP2. Default is to let yast decide what makes sense (msdos in most cases)</entry>
               </row>
               <row>
                 <entry>keep_unknown_lv</entry>
-                <entry>This value only makes sense for type=CT_LVM drives. If you are reusing a LVG and you set this to true, all existing LVs in that VG won't be touched unless they are specified in the &lt;partitioning&gt; section. So you can keep existing LVs without need to specify them.
-<para><screen>&lt;keep_unknown_lv config:type="boolean"&gt;false&lt;/keep_unknown_lv&gt;</screen></para>
+                <entry><para>This value only makes sense for type=CT_LVM drives. If you are reusing a LVG and you set this to true, all existing LVs in that VG won't be touched unless they are specified in the &lt;partitioning&gt; section. So you can keep existing LVs without need to specify them.</para>
+<para><literal>&lt;keep_unknown_lv config:type="boolean"&gt;false&lt;/keep_unknown_lv&gt;</literal></para>
 </entry>
                 <entry>optional and available since openSUSE 12.1 and SLES11 SP2. The default is false</entry>
               </row>
@@ -177,7 +177,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     the "create" tells autoyast if this partition must be created or if it's already existing
                   </para>
-                  <para><screen>&lt;create config:type="boolean"&gt;false&lt;/create&gt;</screen></para>
+                  <para><literal>&lt;create config:type="boolean"&gt;false&lt;/create&gt;</literal></para>
                 </entry>
                 <entry>if set to false, there must be some information for autoyast which partition this is (like with partition_nr)</entry>
               </row>
@@ -187,8 +187,8 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     the mountpoint of this partition.
                   </para>
-                  <para><screen>&lt;mount&gt;/&lt;/mount&gt;</screen></para>
-                  <para><screen>&lt;mount&gt;swap&lt;/mount&gt;</screen></para>
+                  <para><literal>&lt;mount&gt;/&lt;/mount&gt;</literal></para>
+                  <para><literal>&lt;mount&gt;swap&lt;/mount&gt;</literal></para>
                 </entry>
                 <entry>you should have at least a root partition (/) and a swap partition</entry>
               </row>
@@ -198,7 +198,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     mount options for this partition
                   </para>
-                  <para><screen>&lt;fstopt&gt;ro,noatime,user,data=ordered,acl,user_xattr&lt;/fstopt&gt;</screen></para>
+                  <para><literal>&lt;fstopt&gt;ro,noatime,user,data=ordered,acl,user_xattr&lt;/fstopt&gt;</literal></para>
                 </entry>
                 <entry>see "man mount" for the mountoptions you can use</entry>
               </row>
@@ -208,7 +208,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     the label the partition has (useful for the "mountby" parameter - see below).
                   </para>
-                  <para><screen>&lt;label&gt;mydata&lt;/label&gt;</screen></para>
+                  <para><literal>&lt;label&gt;mydata&lt;/label&gt;</literal></para>
                 </entry>
                 <entry>see "man e2label" for example.</entry>
               </row>
@@ -218,7 +218,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     the uuid the partition has (only useful for the "mountby" parameter - see below).
                   </para>
-                  <para><screen>&lt;uuid&gt;1b4e28ba-2fa1-11d2-883f-b9a761bde3fb&lt;/uuid&gt;</screen></para>
+                  <para><literal>&lt;uuid&gt;1b4e28ba-2fa1-11d2-883f-b9a761bde3fb&lt;/uuid&gt;</literal></para>
                 </entry>
                 <entry>see "man uuidgen"</entry>
               </row>
@@ -234,7 +234,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                     with SUSE Linux 10.2 and SLES10 SP1, you can specify the the size in percentage. So 10% will use 10% of the size
                     of the harddisk/VG. You can mix auto,max,sizes and percentage like you want.
                   </para>
-                  <para><screen>&lt;size&gt;10G&lt;/size&gt;</screen></para>
+                  <para><literal>&lt;size&gt;10G&lt;/size&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -244,7 +244,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     shall autoyast format the partition?
                   </para>
-                  <para><screen>&lt;format config:type="boolean"&gt;false&lt;/format&gt;</screen></para>
+                  <para><literal>&lt;format config:type="boolean"&gt;false&lt;/format&gt;</literal></para>
                 </entry>
                 <entry>if "create" is true, then it's very likely that this is true too</entry>
               </row>
@@ -253,6 +253,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>
                   <para>
                     what filesystem is used on this partition?
+                  </para>
 <itemizedlist>
 <listitem>
 <para>reiser (the default)</para>
@@ -273,8 +274,8 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 <para>swap</para>
 </listitem>
 </itemizedlist>
-                  </para>
-                  <para><screen>&lt;filesystem config:type="symbol"&gt;reiser&lt;/filesystem&gt;</screen></para>
+
+                  <para><literal>&lt;filesystem config:type="symbol"&gt;reiser&lt;/filesystem&gt;</literal></para>
                 </entry>
                 <entry>optional. The default is reiser</entry>
               </row>
@@ -286,7 +287,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                     autoyast which partition you mean by the partition_nr. You can force autoyast to create only
                     primary partitions by configuring only partition numbers below 5.
                   </para>
-                  <para><screen>&lt;partition_nr config:type="integer"&gt;2&lt;/partition_nr&gt;</screen></para>
+                  <para><literal>&lt;partition_nr config:type="integer"&gt;2&lt;/partition_nr&gt;</literal></para>
                 </entry>
                 <entry>in most cases nr. 1-4 are primary partitions and 5-... are logical partitions</entry>
               </row>
@@ -297,7 +298,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                         the partition_id configures the id of the partition. If you want something else than 131
                         for linux partition or 130 for swap, you must configure that with partition_id.
                   </para>
-                  <para><screen>&lt;partition_id config:type="integer"&gt;131&lt;/partition_id&gt;</screen></para>
+                  <para><literal>&lt;partition_id config:type="integer"&gt;131&lt;/partition_id&gt;</literal></para>
                 </entry>
                 <entry>the default is 131 for linux partition. 130 for swap is set by autoyast itself too.</entry>
               </row>
@@ -307,7 +308,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                         look at partition_id above. For historical reasons they represent the same.
                   </para>
-                  <para><screen>&lt;filesystem_id config:type="integer"&gt;131&lt;/filesystem_id&gt;</screen></para>
+                  <para><literal>&lt;filesystem_id config:type="integer"&gt;131&lt;/filesystem_id&gt;</literal></para>
                 </entry>
                 <entry>since 10.1 and SLES10 it's recommended to use partition_id instead.</entry>
               </row>
@@ -317,7 +318,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     instead of a partition number, you can tell autoyast to mount a partition by label, uuid, path or id which are the udev path and udev id (see /dev/disk/...)
                   </para>
-                  <para><screen>&lt;mountby config:type="symbol"&gt;label&lt;/mountby&gt;</screen></para>
+                  <para><literal>&lt;mountby config:type="symbol"&gt;label&lt;/mountby&gt;</literal></para>
                 </entry>
                 <entry>see "label" and "uuid" documentation above</entry>
               </row>
@@ -329,7 +330,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                     (see is_lvm_vg/is_evms_vg parameter in drive configuration) you
                     must specifiy the logical volume name here.
                   </para>
-                  <para><screen>&lt;lv_name&gt;opt_lv&lt;/lv_name&gt;</screen></para>
+                  <para><literal>&lt;lv_name&gt;opt_lv&lt;/lv_name&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -339,7 +340,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     It's an integer that tells AutoYaST to do LVM striping. You can configure across how man devices you want to stripe
                   </para>
-                  <para><screen>&lt;stripes config:type="integer"&gt;2&lt;/stripes&gt;</screen></para>
+                  <para><literal>&lt;stripes config:type="integer"&gt;2&lt;/stripes&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -349,7 +350,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     It's an integer that tells AutoYaST the size of each block in kb
                   </para>
-                  <para><screen>&lt;stripesize config:type="integer"&gt;4&lt;/stripesize&gt;</screen></para>
+                  <para><literal>&lt;stripesize config:type="integer"&gt;4&lt;/stripesize&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -361,7 +362,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                         you have to specify the name of the volume
                     group here.
                   </para>
-                  <para><screen>&lt;lvm_group&gt;system&lt;/lvm_group&gt;</screen></para>
+                  <para><literal>&lt;lvm_group&gt;system&lt;/lvm_group&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -372,7 +373,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                     if this physical partition is used by a volume group (EVMS), you have to specify the name of the volume
                     group here.
                   </para>
-                  <para><screen>&lt;evms_group&gt;system&lt;/evms_group&gt;</screen></para>
+                  <para><literal>&lt;evms_group&gt;system&lt;/evms_group&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -382,7 +383,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     this physical volume is part of a RAID and the name of the raid is specified here.
                   </para>
-                  <para><screen>&lt;raid_name&gt;/dev/md0&lt;/raid_name&gt;</screen></para>
+                  <para><literal>&lt;raid_name&gt;/dev/md0&lt;/raid_name&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -392,7 +393,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     this physical volume is part of a RAID and the type of the raid is specified here..
                   </para>
-                  <para><screen>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</screen></para>
+                  <para><literal>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -402,7 +403,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     special options for the raid are specified here. See below.
                   </para>
-                  <para><screen>&lt;raid_options&gt;...&lt;/raid_options&gt;</screen></para>
+                  <para><literal>&lt;raid_options&gt;...&lt;/raid_options&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -419,7 +420,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                     <emphasis>800M</emphasis>. <emphasis>max</emphasis> and <emphasis>auto</emphasis> don't
                     work as size here.
                   </para>
-                  <para><screen>&lt;resize config:type="boolean"&gt;false&lt;/resize&gt;</screen></para>
+                  <para><literal>&lt;resize config:type="boolean"&gt;false&lt;/resize&gt;</literal></para>
                 </entry>
                 <entry>The resize only works with physical disks. Not with LVM/EVMS volumes.</entry>
               </row>
@@ -447,7 +448,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>
                   <para>
                   </para>
-                  <para><screen>&lt;chunk_size&gt;4&lt;/chunk_size&gt;</screen></para>
+                  <para><literal>&lt;chunk_size&gt;4&lt;/chunk_size&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -457,7 +458,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     possible values are: left_asymmetric, left_symmetric, right_asymmetric, right_symmetric and since SLES11 SP2 and openSUSE 12.1 you can use parity_first, parity_last, left_asymmetric_6, left_symmetric_6, right_asymmetric_6, right_symmetric_6, parity_first_6, n2, o2, f2, n3, o3, f3 for RAID6 and RAID10
                   </para>
-                  <para><screen>&lt;parity_algorithm&gt;left_asymmetric&lt;/parity_algorithm&gt;</screen></para>
+                  <para><literal>&lt;parity_algorithm&gt;left_asymmetric&lt;/parity_algorithm&gt;</literal></para>
                 </entry>
                 <entry></entry>
               </row>
@@ -467,7 +468,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                   <para>
                     possible values are raid0,raid1 and raid5
                   </para>
-                  <para><screen>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</screen></para>
+                  <para><literal>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</literal></para>
                 </entry>
                 <entry>the default is raid1</entry>
               </row>
@@ -650,15 +651,15 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
       </para>
       <para>
         if you go into the "drive" section, you can add
+      </para>
         <screen>
 <![CDATA[
 <initialize config:type="boolean">true</initialize>
 ]]>
 </screen>
-        which tells Autoyast to delete the partition table before it starts to analyse the
+<para>        which tells Autoyast to delete the partition table before it starts to analyse the
         actual partitioning and calculates it's partition plan. Of course this means, that you
-        can't keep any of your existing partitions.
-      </para>
+        can't keep any of your existing partitions.</para>
     </section>
     <section>
       <title>Mount Options</title>
@@ -792,9 +793,9 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
       </figure>
 
       <para>
-	In this scenario and as shown in  figure <quote><link
+	In this scenario and as shown in  figure <quote><xref
 	    linkend='partitioning-keep1'
-	    endterm="partitioning-keep1.title"/></quote> , &autoyast2;
+	    endterm="partitioning-keep1.title"/></quote>, &autoyast2;
 	should not in any case create any new
 	partitions,  instead  it should search for certain partition types on the system and use
 	them according to the partitioning plan in the control file. No

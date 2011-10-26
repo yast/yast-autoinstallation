@@ -96,7 +96,6 @@
         For the <emphasis>amount</emphasis> of memory, following values are recommended:
       </para>
 
-      <para>
         <table frame="top">
           <title>Recommended values for the reserved memory amount</title>
           <tgroup cols="2">
@@ -139,7 +138,6 @@
             </tbody>
           </tgroup>
         </table>
-      </para>
 
       <para>
         To make things even more complicated, there's a so-called <emphasis>extended
@@ -149,9 +147,7 @@
         on one machine. The syntax is:
       </para>
 
-      <para>
         <screen>BEGIN_RANGE_1-END_RANGE_1:AMOUNT_1,BEGIN_RANGE_2-END_RANGE_2:AMOUNT_2@OFFSET</screen>
-      </para>
 
       <para>
         In that syntax <literal>BEGIN_RANGE_1</literal> is the start of the first
@@ -168,7 +164,6 @@
         memory reservation:
       </para>
 
-      <para>
         <table frame='top'>
           <title>XML representation of the memory reservation settings</title>
           <tgroup cols="3">
@@ -182,20 +177,19 @@
             <tbody>
               <row>
                 <entry>add_crash_kernel</entry>
-                <entry>If the memory should be reserved, that basically enables or disables kdump.
-                  <para><screen>&lt;add_crash_kernel config:type="boolean"&gt;true&lt;/add_crash_kernel&gt;</screen></para></entry>
+                <entry><para>If the memory should be reserved, that basically enables or disables kdump.
+                </para><screen>&lt;add_crash_kernel config:type="boolean"&gt;true&lt;/add_crash_kernel&gt;</screen></entry>
                 <entry>required</entry>
               </row>
               <row>
                 <entry>crash_kernel</entry>
-                <entry>The syntax of the crashkernel command line as discussed above.
-                  <para><screen>&lt;crash_kernel&gt;256M:64M&lt;/crash_kernel&gt;</screen></para></entry>
+                <entry><para>The syntax of the crashkernel command line as discussed above.
+                </para><screen>&lt;crash_kernel&gt;256M:64M&lt;/crash_kernel&gt;</screen></entry>
                 <entry>required</entry>
               </row>
             </tbody>
           </tgroup>
         </table>
-      </para>
     </section>
     <!-- }}} -->
 
@@ -304,7 +298,6 @@
         <title>
           Summary
         </title>
-        <para>
           <table frame='top'>
             <title>XML representation of the dump target settings</title>
             <tgroup cols="3">
@@ -318,38 +311,37 @@
               <tbody>
                 <row>
                   <entry>KDUMP_SAVEDIR</entry>
-                  <entry>An URL that specifies the target to which the dump and related files will be saved.
-                    <para><screen>&lt;KDUMP_SAVEDRIR&gt;file:///var/crash/&lt;/KDUMP_SAVEDIR&gt;</screen></para></entry>
+                  <entry><para>An URL that specifies the target to which the dump and related files will be saved.
+                  </para><screen>&lt;KDUMP_SAVEDRIR&gt;file:///var/crash/&lt;/KDUMP_SAVEDIR&gt;</screen></entry>
                   <entry>required</entry>
                 </row>
                 <row>
                   <entry>KDUMP_COPY_KERNEL</entry>
-                  <entry>If not only the dump itself should be saved to <literal>KDUMP_SAVEDIR</literal> but
+                  <entry><para>If not only the dump itself should be saved to <literal>KDUMP_SAVEDIR</literal> but
                     also the kernel and its debugging information (if installed).
-                    <para><screen>&lt;KDUMP_COPY_KERNEL&gt;false&lt;/KDUMP_COPY_KERNEL&gt;</screen></para></entry>
+                    </para><screen>&lt;KDUMP_COPY_KERNEL&gt;false&lt;/KDUMP_COPY_KERNEL&gt;</screen></entry>
                   <entry>optional</entry>
                 </row>
                 <row>
                   <entry>KDUMP_FREE_DISK_SIZE</entry>
                   <entry>
-                    The number of megabytes that should always be free after saving the dump. If that
+                    <para>The number of megabytes that should always be free after saving the dump. If that
                     space would be below that value, the dump will not be copied.
-                    <para><screen>&lt;KDUMP_FREE_DISK_SIZE&gt;64&lt;/KDUMP_FREE_DISK_SIZE&gt;</screen></para></entry>
+                    </para><screen>&lt;KDUMP_FREE_DISK_SIZE&gt;64&lt;/KDUMP_FREE_DISK_SIZE&gt;</screen></entry>
                   <entry>optional</entry>
                 </row>
                 <row>
                   <entry>KDUMP_KEEP_OLD_DUMPS</entry>
                   <entry>
-                    The number of dumps that are kept (i.e., not deleted) if <literal>KDUMP_SAVEDIR</literal>
+                    <para>The number of dumps that are kept (i.e., not deleted) if <literal>KDUMP_SAVEDIR</literal>
                     points to a local directory. Specify 0 if you don't want to delete dumps at all and
                     specify -1 if all dumps (except the one that is just saved) should be deleted.
-                    <para><screen>&lt;KDUMP_KEEP_OLD_DUMPS&gt;4&lt;/KDUMP_KEEP_OLD_DUMPS&gt;</screen></para></entry>
+                    </para><screen>&lt;KDUMP_KEEP_OLD_DUMPS&gt;4&lt;/KDUMP_KEEP_OLD_DUMPS&gt;</screen></entry>
                   <entry>optional</entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
-        </para>
       </section>
       <!-- }}} -->
 
@@ -389,7 +381,6 @@
         That may be added in future.
       </para>
 
-      <para>
         <!-- {{{ Table: XML representation of the email notification settings -->
         <table frame='top'>
           <title>XML representation of the email notification settings</title>
@@ -404,49 +395,50 @@
             <tbody>
               <row>
                 <entry>KDUMP_NOTIFICATION_TO</entry>
-                <entry>Exactly one email address (and only an address) to which the mail
+                <entry>
+                 <para>
+                  Exactly one email address (and only an address) to which the mail
                   should be sent. Additional recipients can be specified in
                   <literal>KDUMP_NOTIFICATION_CC</literal>.
-                  <para><screen>&lt;KDUMP_NOTIFICATION_TO&gt;bwalle@suse.de&lt;/KDUMP_NOTIFICATION_TO&gt;</screen></para></entry>
+                  </para><screen>&lt;KDUMP_NOTIFICATION_TO&gt;bwalle@suse.de&lt;/KDUMP_NOTIFICATION_TO&gt;</screen></entry>
                 <entry>optional (email notification is disabled if empty)</entry>
               </row>
               <row>
                 <entry>KDUMP_NOTIFICATION_CC</entry>
-                <entry>Zero, one or more recipients that are in the Cc line of the notification mail.
-                  <para><screen>&lt;KDUMP_NOTIFICATION_CC&gt;spam@suse.de devnull@suse.de&lt;/KDUMP_NOTIFICATION_CC&gt;</screen></para></entry>
+                <entry><para>Zero, one or more recipients that are in the Cc line of the notification mail.
+                </para><screen>&lt;KDUMP_NOTIFICATION_CC&gt;spam@suse.de devnull@suse.de&lt;/KDUMP_NOTIFICATION_CC&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>KDUMP_SMTP_SERVER</entry>
-                <entry>
+                <entry><para>
                   Host name of the SMTP server that will be used for the mail delivery. Please note
                   that the SMTP authentication is supported (see <literal>KDUMP_SMTP_USER</literal>
                   and <literal>KDUMP_SMTP_PASSWORD</literal>) but TSL and SSL are <emphasis>not</emphasis>
                   supported.
-                  <para><screen>&lt;KDUMP_SMTP_SERVER&gt;email.suse.de&lt;/KDUMP_SMTP_SERVER&gt;</screen></para></entry>
+                  </para><screen>&lt;KDUMP_SMTP_SERVER&gt;email.suse.de&lt;/KDUMP_SMTP_SERVER&gt;</screen></entry>
                 <entry>optional (email notification is disabled if empty)</entry>
               </row>
               <row>
                 <entry>KDUMP_SMTP_USER</entry>
-                <entry>
+                <entry><para>
                   User name that is used together with <literal>KDUMP_SMTP_PASSWORD</literal>
                   for SMTP authentication.
-                  <para><screen>&lt;KDUMP_SMTP_USER&gt;bwalle&lt;/KDUMP_SMTP_USER&gt;</screen></para></entry>
+                  </para><screen>&lt;KDUMP_SMTP_USER&gt;bwalle&lt;/KDUMP_SMTP_USER&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>KDUMP_SMTP_PASSWORD</entry>
-                <entry>
+                <entry><para>
                   Password that is used together with <literal>KDUMP_SMTP_USER</literal>
                   for SMTP authentication.
-                  <para><screen>&lt;KDUMP_SMTP_PASSWORD&gt;geheim&lt;/KDUMP_SMTP_PASSWORD&gt;</screen></para></entry>
+                  </para><screen>&lt;KDUMP_SMTP_PASSWORD&gt;geheim&lt;/KDUMP_SMTP_PASSWORD&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
             </tbody>
           </tgroup>
         </table>
         <!-- }}} -->
-      </para>
     </section>
     <!-- }}} -->
     <!-- {{{ Kdump kernel settings -->
@@ -477,7 +469,6 @@
         and you want to specify the whole command line, set <literal>KDUMP_COMMANDLINE</literal>.
       </para>
 
-      <para>
         <!-- {{{ Table: XML representation of the kernel settings -->
         <table frame='top'>
           <title>XML representation of the kernel settings</title>
@@ -492,31 +483,30 @@
             <tbody>
               <row>
                 <entry>KDUMP_KERNELVER</entry>
-                <entry>Version string for the kernel that will be used for kdump. Leave it
+                <entry><para>Version string for the kernel that will be used for kdump. Leave it
                   empty to use the auto-detection mechanism (strongly recommended).
-                  <para><screen>&lt;KDUMP_KERNELVER&gt;2.6.27-default&lt;/KDUMP_KERNELVER&gt;</screen></para></entry>
+                  </para><screen>&lt;KDUMP_KERNELVER&gt;2.6.27-default&lt;/KDUMP_KERNELVER&gt;</screen></entry>
                 <entry>optional (auto-detection if empty)</entry>
               </row>
               <row>
                 <entry>KDUMP_COMMANDLINE_APPEND</entry>
-                <entry>Additional command line parameters for the kdump kernel.
-                  <para><screen>&lt;KDUMP_COMMANDLINE_APPEND&gt;console=ttyS0,57600&lt;/KDUMP_COMMANDLINE_APPEND&gt;</screen></para></entry>
+                <entry><para>Additional command line parameters for the kdump kernel.
+                </para><screen>&lt;KDUMP_COMMANDLINE_APPEND&gt;console=ttyS0,57600&lt;/KDUMP_COMMANDLINE_APPEND&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>KDUMP_COMMANDLINE</entry>
-                <entry>
+                <entry><para>
                   Overwrite the automatically generated kdump command line. Use with care.
                   Normally <literal>KDUMP_COMMANDLINE_APPEND</literal> is the setting you're
                   looking for.
-                  <para><screen>&lt;KDUMP_COMMANDLINE_APPEND&gt;root=/dev/sda5 maxcpus=1 irqpoll&lt;/KDUMP_COMMANDLINE&gt;</screen></para></entry>
+                  </para><screen>&lt;KDUMP_COMMANDLINE_APPEND&gt;root=/dev/sda5 maxcpus=1 irqpoll&lt;/KDUMP_COMMANDLINE&gt;</screen></entry>
                 <entry>optional (email notification is disabled if empty)</entry>
               </row>
             </tbody>
           </tgroup>
         </table>
         <!-- }}} -->
-      </para>
     </section>
     <!-- }}} -->
     <!-- {{{ Expert settings -->
@@ -525,7 +515,6 @@
         Expert settings
       </title>
 
-      <para>
         <!-- {{{ Table: XML representation of the expert settings -->
         <table frame='top'>
           <title>XML representation of the expert settings</title>
@@ -540,31 +529,30 @@
             <tbody>
               <row>
                 <entry>KDUMP_IMMEDIATE_REBOOT</entry>
-                <entry><literal>true</literal> if the system should be rebooted automatically
+                <entry><para><literal>true</literal> if the system should be rebooted automatically
                   after the dump has been saved, <literal>false</literal> otherwise. The default
                   is to reboot the system automatically.
-                  <para><screen>&lt;KDUMP_IMMEDIATE_REBOOT&gt;true&lt;/KDUMP_IMMEDIATE_REBOOT&gt;</screen></para></entry>
+                  </para><screen>&lt;KDUMP_IMMEDIATE_REBOOT&gt;true&lt;/KDUMP_IMMEDIATE_REBOOT&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>KDUMP_VERBOSE</entry>
-                <entry>Bitmask that specifies how to verbose the kdump process should be.
+                <entry><para>Bitmask that specifies how to verbose the kdump process should be.
                   Read kdump(5) for details.
-                  <para><screen>&lt;KDUMP_VERBOSE&gt;3&lt;/KDUMP_VERBOSE&gt;</screen></para></entry>
+                  </para><screen>&lt;KDUMP_VERBOSE&gt;3&lt;/KDUMP_VERBOSE&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
                 <entry>KEXEC_OPTIONS</entry>
-                <entry>Additional options that are passed to <application>kexec</application>
+                <entry><para>Additional options that are passed to <application>kexec</application>
                   when loading the kdump kernel. Normally empty.
-                  <para><screen>&lt;KEXEC_OPTIONS&gt;--noio&lt;/KEXEC_OPTIONS&gt;</screen></para></entry>
+                  </para><screen>&lt;KEXEC_OPTIONS&gt;--noio&lt;/KEXEC_OPTIONS&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
             </tbody>
           </tgroup>
         </table>
         <!-- }}} -->
-      </para>
 
     </section>
     <!-- }}} -->

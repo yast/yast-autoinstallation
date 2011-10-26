@@ -133,18 +133,22 @@
         The <emphasis>yast/order</emphasis> and <emphasis>yast/instorder</emphasis> is no longer supported. Neither
         by AutoYaST nor by YaST. To add own RPMs to an installation source (that includes add-on products like the
         SDK) you have to add a file <emphasis>add_on_products</emphasis> to the CD1 of the main product.
+        </para>
         <screen>
 media_url [path_on_media [product_1 [product_2 [....]]]
         </screen>
+<para>
         media_url is URL of the media itself
         path_on_media is path of the catalog on the media. If not present, / (root) is assumed
         product_1 and following are the names for products, which should be marked for installation. If no product is mentioned, all products found on the media are selected for installation.
         For example:
-        <screen>
+</para><screen>
 http://192.168.66.6/SLES10/sdk/CD1
 http://192.168.66.6/SLES10/CD1/updates
         </screen>
-        Besides that <emphasis>add_on_products</emphasis> file, you can use the autoyast profile to specify add-on products. For example:
+        <para>
+         Besides that <emphasis>add_on_products</emphasis> file, you can use the autoyast profile to specify add-on products. For example:
+        </para>
         <screen>
 &lt;add-on&gt;
  &lt;add_on_products config:type=&quot;list&quot;&gt;
@@ -158,7 +162,8 @@ http://192.168.66.6/SLES10/CD1/updates
  &lt;/add_on_products&gt;
 &lt;/add-on&gt;
         </screen>
-        With that entry in the autoyast profile, the <emphasis>add_on_products</emphasis> file is not necessary.
+        <para>
+         With that entry in the autoyast profile, the <emphasis>add_on_products</emphasis> file is not necessary.
         Since openSUSE 11.0 AutoYaST can ask the user to make the add-on available intead of reporting a timed out error when the add-on can't be found at the given location. Set ask_on_error to true for that (the default is false).
         Your add-on can be on a different CD/DVD than the installation source then.
         </para>
@@ -187,43 +192,43 @@ http://192.168.66.6/SLES10/CD1/updates
             <tbody>
               <row>
                 <entry>accept_unsigned_file</entry>
-                <entry>the installer will accept unsigned files like the content file
-                  <para><screen>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</screen></para>
+                <entry><para>the installer will accept unsigned files like the content file</para>
+                  <para><literal>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, autoyast lets yast decide what to do</entry>
               </row>
               <row>
                 <entry>accept_file_without_checksum</entry>
-                <entry>the installer will accept files without a checksum in the content file
-                  <para><screen>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</screen></para>
+                <entry><para>the installer will accept files without a checksum in the content file</para>
+                  <para><literal>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, autoyast lets yast decide what to do</entry>
               </row>
               <row>
                 <entry>accept_verification_failed</entry>
-                <entry>the installer will accept files where the verification of the signature failed. So the file was signed but the check failed.
-                  <para><screen>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</screen></para>
+                <entry><para>the installer will accept files where the verification of the signature failed. So the file was signed but the check failed.</para>
+                  <para><literal>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, autoyast lets yast decide what to do</entry>
               </row>
               <row>
                 <entry>accept_unknown_gpg_key</entry>
-                <entry>the installer will accept new gpg keys on the installation source that are used to sign the content file for example
-                  <para><screen>&lt;accept_unknown_gpg_key config:type="boolean"&gt;true&lt;/accept_unknown_gpg_key&gt;</screen></para>
+                <entry><para>the installer will accept new gpg keys on the installation source that are used to sign the content file for example</para>
+                  <para><literal>&lt;accept_unknown_gpg_key config:type="boolean"&gt;true&lt;/accept_unknown_gpg_key&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, autoyast lets yast decide what to do</entry>
               </row>
               <row>
                 <entry>accept_non_trusted_gpg_key</entry>
-                <entry>This basically means, we know the key, but it is not trusted
-                  <para><screen>&lt;accept_non_trusted_gpg_key config:type="boolean"&gt;true&lt;/accept_non_trusted_gpg_key&gt;</screen></para>
+                <entry><para>This basically means, we know the key, but it is not trusted</para>
+                  <para><literal>&lt;accept_non_trusted_gpg_key config:type="boolean"&gt;true&lt;/accept_non_trusted_gpg_key&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, autoyast lets yast decide what to do</entry>
               </row>
               <row>
                 <entry>import_gpg_key</entry>
-                <entry>the installer will accept and import new gpg keys on the installation source in it's database.
-                  <para><screen>&lt;import_gpg_key config:type="boolean"&gt;true&lt;/import_gpg_key&gt;</screen></para>
+                <entry><para>the installer will accept and import new gpg keys on the installation source in it's database.</para>
+                  <para><literal>&lt;import_gpg_key config:type="boolean"&gt;true&lt;/import_gpg_key&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, autoyast lets yast decide what to do</entry>
               </row>
@@ -248,64 +253,64 @@ http://192.168.66.6/SLES10/CD1/updates
             <tbody>
               <row>
                 <entry>accept_unsigned_file</entry>
-                <entry>the installer will accept unsigned files like the content file for this add-on product
-                  <para><screen>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</screen></para>
+                <entry><para>the installer will accept unsigned files like the content file for this add-on product</para>
+                  <para><literal>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>accept_file_without_checksum</entry>
-                <entry>the installer will accept files without a checksum in the content file for this add-on
-                  <para><screen>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</screen></para>
+                <entry><para>the installer will accept files without a checksum in the content file for this add-on</para>
+                  <para><literal>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>accept_verification_failed</entry>
-                <entry>the installer will accept files where the verification of the signature failed. So the file was signed but the check failed.
-                  <para><screen>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</screen></para>
+                <entry><para>the installer will accept files where the verification of the signature failed. So the file was signed but the check failed.</para>
+                  <para><literal>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</literal></para>
                 </entry>
                 <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>accept_unknown_gpg_key</entry>
-                <entry>the installer will accept new gpg keys on the installation source that are used to sign the content file for example
-                  <para><screen>
+                <entry><para>the installer will accept new gpg keys on the installation source that are used to sign the content file for example</para>
+                  <screen>
            &lt;accept_unknown_gpg_key&gt;
             &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
              &lt;keys config:type=&quot;list&quot;&gt;
                &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
              &lt;/keys&gt;
            &lt;/accept_unknown_gpg_key&gt;
-                  </screen></para>
+                  </screen>
                 </entry>
                 <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>accept_non_trusted_gpg_key</entry>
-                <entry>This basically means, we know the key, but it is not trusted
-                  <para><screen>
+                <entry><para>This basically means, we know the key, but it is not trusted</para>
+                  <screen>
            &lt;accept_non_trusted_gpg_key&gt;
             &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
              &lt;keys config:type=&quot;list&quot;&gt;
                &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
              &lt;/keys&gt;
            &lt;/accept_non_trusted_gpg_key&gt;
-</screen></para>
+</screen>
                 </entry>
                 <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>import_gpg_key</entry>
-                <entry>the installer will accept and import new gpg keys on the installation source in it's database.
-                  <para><screen>
+                <entry><para>the installer will accept and import new gpg keys on the installation source in it's database.</para>
+                  <screen>
            &lt;import_gpg_key&gt;
             &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
              &lt;keys config:type=&quot;list&quot;&gt;
                &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
              &lt;/keys&gt;
            &lt;/import_gpg_key&gt;
-             </screen></para>
+             </screen>
                 </entry>
                 <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
