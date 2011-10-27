@@ -1,4 +1,10 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//Novell//DTD NovDoc XML V1.0//EN" "novdocx.dtd"
+[
+<!ENTITY % NOVDOC.DEACTIVATE.IDREF "INCLUDE">
+<!ENTITY % entities SYSTEM "entity-decl.ent">
+%entities;
+]>
 <chapter id="Profile">
   <title>The Control File</title>
   <para>
@@ -9,10 +15,10 @@
     </title>
     
     <para>
-      The control file is in most cases a  configuration description for a
+      The control file is in most cases a configuration description for a
       single system. It consists of
       sets of resources with properties including support for complex
-      structures representations such as lists, records,  trees and large
+      structures representations such as lists, records, trees and large
       embedded or referenced objects.
     </para>
 
@@ -28,9 +34,9 @@
     </para>
     <para>
       Using XML, you can eliminate (nearly) all of the configuration
-      file parsing and error handling - an external  XML parser can do that instead
-      - (especially if it is a validating parser). To make sure the control file is
-      well-formatted and that the syntax is valid, you can run the control file
+      file parsing and error handling&mdash; an external XML parser can do that instead
+      (especially if it is a validating parser). To make sure the control file is
+      well-formatted and the syntax valid, you can run the control file
       through a validating parser before it is actually used for automatic
       installation. This is especially required if you prefer to edit the
       profile manually.
@@ -130,8 +136,8 @@ exit 0
       </title>
       <para>
 	A resource element either contains multiple and distinct property and
-	resource elements or contains multiple instances of the same resource
-	element or is empty. The permissible content of a resource element is
+	resource elements, or multiple instances of the same resource
+	element, or it is empty. The permissible content of a resource element is
 	specified in the schema files.
       </para>
       <para>
@@ -141,7 +147,7 @@ exit 0
       </para>
       <para>
 	An element can be either a container of other elements (a resource) or
-	have a literal value (a property), it can never be both. This
+	it has a literal value (a property); it can never be both. This
 	restriction is specified in the schema files. A configuration component with
 	more than one value must either be represented as some kind of embedded
 	list in a property value or as a nested resource.
@@ -152,7 +158,7 @@ exit 0
 	Nested Resources
       </title>
       <para>
-	Nested resource elements allow a tree like structure of configuration
+	Nested resource elements allow a tree-like structure of configuration
 	components to be built to any level.  
       </para>
       <example> 
@@ -187,17 +193,17 @@ exit 0
 	size and mount property.	
       </para>
       <para>
-	Although it is specified in the schema files that the partitions resource
-	contains multiple instances, it is still required to specify this to
-	avoid wrong data typing in &yast2;. Using the example above, imagine having  a
-	drive with only one partition. This will result in interpreting the
-	partition resource as a property. To avoid this the following syntax
+In the schema files is specified that the partitions resource
+	contains multiple instances, but it is still required to specify this to
+	avoid wrong data typing in &yast2;. Using the example above, if having a
+	drive with only one partition this would result in interpreting the
+	partition resource as a property. To avoid this, the following syntax
 	must be used when defining multiple instances. For more information
-	about type attributes, see next section.
+	about type attributes, see the next section.
       </para>
       <example> 
 	<title>
-	  Nested Resources with type attributes
+	  Nested Resources with Type Attributes
 	</title>
 	<screen>	 
 <![CDATA[
@@ -227,10 +233,10 @@ exit 0
       </title>
       <para>
 	Global profile attributes are used to define meta-data on resources and
-	properties. Attributes are used to define  context switching. They are also used for naming and
-	typing properties as shown in earlier sectionons.
+	properties. Attributes are used to define context switching. They are also used for naming and
+	typing properties as shown in the previous sections.
 
-	    Profile attributes are in a separate namespace so they don't have
+	    Profile attributes are in a separate namespace so they do not have
 	    to be treated as reserved words in the default namespace. New ones
 	    can then be added without having to potentially alter existing
 	    profiles.
@@ -242,17 +248,16 @@ exit 0
 	some can only be used with one type of element which is specified in
 	the schema files. 
       </para>
-   
-    
+     
     <para>
       The type of an element is defined using the <emphasis>config:type</emphasis> attribute. The
-      type of a resource element is always RESOURCE , although this can
+      type of a resource element is always RESOURCE, although this can
       also be made explicit with this attribute (to ensure correct
-      identification of an empty element for example when there is no schema file
+      identification of an empty element, for example, when there is no schema file
       to refer to). A resource element cannot be any other type and this
       restriction is specified in the schema file. The type of a property element
       determines the interpretation of its literal value. The type of a
-      property element defaults to <emphasis>STRING</emphasis> , as specified in the schema file. The
+      property element defaults to <emphasis>STRING</emphasis>, as specified in the schema file. The
       full set of permissible types is specified in the schema file. 
     </para>
      
@@ -273,7 +278,7 @@ A RELAX NG schema thus identifies a class of XML documents consisting of those d
 A RELAX NG schema is itself an XML document.
       </para>
       <para>
-        Verfify your autoyast XML file
+        Verfify your &ay; XML file
       </para>
         <screen>
 /usr/bin/xmllint --noout --relaxng /usr/share/YaST2/schema/autoyast/rng/profile.rng myAutoYaSTProfile.xml
@@ -284,14 +289,14 @@ A RELAX NG schema is itself an XML document.
 
 </chapter>
 
-
-
       <!--
        Local Variables:
        mode: xml
        sgml-parent-document: ("autoyast.xml" "part" "chapter")
        End:
       -->
+
+
 
 
 
