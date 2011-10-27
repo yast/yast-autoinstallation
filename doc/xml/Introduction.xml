@@ -1,26 +1,32 @@
-  <chapter id="introduction">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//Novell//DTD NovDoc XML V1.0//EN" "novdocx.dtd"
+[
+<!ENTITY % NOVDOC.DEACTIVATE.IDREF "INCLUDE">
+<!ENTITY % entities SYSTEM "entity-decl.ent">
+%entities;
+]> 
+<chapter id="introduction">
     <title>Introduction</title>
     
     <para>
-      &autoyast2; is a system for installing one or more SuSE Linux systems
-      automatically and without user intervention. &autoyast2; installations
-      are performed using  an autoyast profile with installation and configuration
+      &ay;2 is a system for installing one or more SUSE Linux systems
+      automatically and without user intervention. &ay;2; installations
+      are performed using  an &ay; profile with installation and configuration
       data. That profile can be created using the configuration insterface
-      of &autoyast2; and can be  provided to &yast2; during installation in
+      of &ay;2; and can be  provided to &yast;2 during installation in
       different ways.
     </para>  
 
     <section id="avail">
       <title>Availability</title>
       <para>
-	&autoyast2; is available with recent  &company-suse; products starting
-	from <emphasis>SuSE Linux 8.0</emphasis> and business products starting from 
-	<emphasis>SLES 8</emphasis>.
+	&ay;2; is available with recent SUSE products starting
+	from SUSE Linux 8.0 and business products starting from SLES 8.
       </para>
       <para>Products prior to SuSE Linux 8.0 and business products based
-	on <emphasis>SLES 7</emphasis> have an auto-installation
-	system based on <emphasis>YaST1</emphasis>. A configuration management
-	system is provided by <emphasis>ALICE</emphasis> for these products.
+	on SLES 7 have an auto-installation
+	system based on Y&yast;1. A configuration management
+	system is provided by ALICE for these products.
       </para>
       <note>
 	<title>Updated documentation</title>
@@ -63,7 +69,7 @@
       <para>
 	Regular installation of SuSE Linux is semi-automated by default. The user is
 	requested to select the necessary information at the beginning of the
-	installation (In most cases language only), &yast2; then  generates a
+	installation (In most cases language only), &yast;2 then  generates a
 	proposal for the underlying system depending on different factors and
 	system paramters. In
 	most cases, and especially for new systems, such a proposal  can be
@@ -74,16 +80,16 @@
 	prompted at the end of the installation to configure hardware and network services.
       </para>
       <para>
-	&autoyast2; can be used where no user intervention is required or
-	where customization is required. Using  an autoyast profile, &yast2;
+	&ay;2; can be used where no user intervention is required or
+	where customization is required. Using  an &ay; profile, &yast;2
 	prepares the system for a custom installation and avoids any
 	interaction with the user, unless specified in the file 
 	controling the installation.
       </para>
       <para>
-	&autoyast2; is not an automated GUI system. This means that in most
+	&ay;2; is not an automated GUI system. This means that in most
 	cases many screen will be skipped, i.e. you will never see the language
-	selection interface. &autoyast2; will simply pass the language
+	selection interface. &ay;2; will simply pass the language
 	parameter to the sub-system without displaying any language related
 	interface.
       </para>
@@ -93,18 +99,18 @@
     <section id="overviewandconcept">
       <title>Overview and Concept</title>
       <para>
-	Using &autoyast2;, multiple systems sharing the same environment and
-	similar but not necesserily  identical hardware performing similar
-	tasks can easily be installed in parallel and in a short time. A
-	configuration  file (referred to as "autoyast profile") is created using
+	Using &ay;2;, multiple systems sharing the same environment and
+	similar but not necesserily identical hardware and performing similar
+	tasks, can easily be installed in parallel and quickly. A
+	configuration file&mdash; referred to as "&ay; profile"&mdash; is created using
 	existing configuration resources. The profile file can be easily
 	tailored for any specific environment. 
       </para>
       
       
       <para>
-	Unlike autoinstallation systems available with older &company-suse;
-	releases, &autoyast2; is fully integrated and provides various options for
+	Unlike autoinstallation systems available with older SUSE
+	releases, &ay;2; is fully integrated and provides various options for
 	installing and configuring a system. The main advantage over older
 	systems and other auto-installation systems is the possibility to configure a
 	computer by using existing modules and avoiding using custom scripts which
@@ -112,7 +118,7 @@
       </para>
 
       <para>
-      This document will guide you through the three steps of  auto-installation:
+      This document will guide you through the three steps of auto-installation:
     </para>
     <itemizedlist>
 	<listitem>
@@ -120,30 +126,30 @@
 	    Preparation: All relevant information about the target system are
 	    collected and turned into the appropriate directives of the profile.
 	    The profile file is transferred onto the target system where
-	    its directives will be parsed and transformed to &yast2; conforming
+	    its directives will be parsed and transformed to &yast;2 conforming
 	    data. </para>
 	</listitem>
 	<listitem>
 	  <para>
-	    Installation:  follows the instructions given in the  profile and
+	    Installation: Follows the instructions given in the profile and
 	    installs the base system.
 	  </para>
 	</listitem>
 	<listitem>
 	  <para>
-	    Configuration:  &yast2; in addition to user-defined post-install
-	    scripts complete the system configuration
+	    Configuration: &yast;2 in addition to user-defined post-install
+	    scripts, complete the system configuration.
 	  </para>
 	</listitem>
       </itemizedlist>
       <para>
-	The complete and  detailed process is illustrated in the following figure:
+	The complete and detailed process is illustrated in the following figure:
       </para>
       
       <?anas-pagebreak?>
       <figure id="process">
 	<title id="process.title">Auto-installation process</title>
-	<mediaobject>&autoyast-oview;</mediaobject>
+	<mediaobject>&ay;-oview;</mediaobject>
       </figure>
     </section>
 
@@ -158,4 +164,6 @@
   sgml-parent-document: ("autoyast.xml" "book" "book")
   End:
   -->
+
+
 

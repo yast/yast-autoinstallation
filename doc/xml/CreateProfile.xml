@@ -1,25 +1,31 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//Novell//DTD NovDoc XML V1.0//EN" "novdocx.dtd"
+[
+<!ENTITY % NOVDOC.DEACTIVATE.IDREF "INCLUDE">
+<!ENTITY % entities SYSTEM "entity-decl.ent">
+%entities;
+]>
   <chapter id="CreateProfile">
   <title >Creating A Control File</title>
   <para>
   </para>
   <section id="Autoinstallation.collectInfo">
-    <title>Collect information</title>
+    <title>Collecting Information</title>
     <para>
-      In order to create the control file, first you need to collect
+      In order to create the control file, you need to collect
       information about the systems your are going to
-      install. This includes among other things hardware data and network
-      information. Make sure you know the following about the machines you want to install:
+      install. This includes hardware data and network
+      information among other things. Make sure you have the following information about the machines you want to install:
     </para>
     <itemizedlist>
       <listitem>
 	<para>Hard disk types and sizes</para>	  
       </listitem>
       <listitem>
-	<para>Graphic interface and attached monitor if any</para>
+	<para>Graphical interface and attached monitor, if any</para>
       </listitem>
       <listitem>
-	<para>Network interface and MAC address if known (i.e. when using &dhcp;)</para>
+	<para>Network interface and MAC address if known (for example, when using DHCP)</para>
       </listitem>	
     </itemizedlist>
     <para>
@@ -29,18 +35,18 @@
   </section>
   <section id="CreateProfile.CMS">
     <title>
-      Using the Configuration Management System
+      Using the Configuration Management System (CMS)
     </title>  
     <para>
       In order to create the control file for one or more computers, a configuration
-      interface based on &yast2; is provided. This system depends on existing modules
+      interface based on &yast;2 is provided. This system depends on existing modules
       which are usually used to configure a computer in regular operation mode,
-      i.e. after &company-suse; Linux is installed.
+      for example, after SUSE Linux is installed.
     </para>
     <para>
       The configuration management system lets you create control files easily and
-      additionally it lets you manage a repository of configurations for use
-      in a networked environment and with multiple clients.
+      lets you manage a repository of configurations for the use
+      in a networked environment with multiple clients.
     </para>
     <figure>
       <title>Configuration System</title>
@@ -48,24 +54,24 @@
     </figure>
     
     <section>
-      <title>Creating a new Profile</title>
+      <title>Creating a New Profile</title>
       <para>
 	With some exceptions, almost all resources of the control file can
 	be configured using the configuration management system. The system
-	offers flexibility and  configuration of some resources is
-	identical to this  available in the &yast2; Control Center. In
+	offers flexibility and the configuration of some resources is
+	identical to the one available in the &yast;2 Control Center. In
 	addition to the existing and familiar modules new
 	interfaces were created for special and complex configurations,
-	for example for  partitioning, general options and software.	  
+	for example for partitioning, general options and software.	  
       </para>
       <para>
-	Furthermore, using the &cms; guarantees that the resulting control file is
-	valid and insures that it can be used directly to start  automated installation.
+	Furthermore, using a CMS guarantees the validity of the resulting control file 
+	and its direct use for starting automated installation.
       </para>
       <para>
 	Make sure the configuration system is installed (package
 	<emphasis>autoyast2</emphasis>) and call it using the <emphasis>YaST2
-	  Control  Center</emphasis> or call it directly as root with the
+	  Control Center</emphasis> or as root with the
 	following command (make sure the <emphasis>DISPLAY</emphasis> variable is set correctly to
 	start the graphical user interface instead of the text based one):
       </para>
@@ -81,30 +87,29 @@
   <section id="CreateProfile.Manual">
     <title>Creating/Editing a Control File Manually</title>
     <para>
-      If you edit the control file manually, make sure it  has a valid syntax. To
-      check the syntax, use some tools already available
-      on the distribution. For example to verify that the file is well
-      formed, use the utility <command>xmllint</command> available with the
+      If editing the control file manually, make sure it has a valid syntax. To
+      check the syntax, use the tools already available
+      on the distribution. For example, to verify that the file is well-formed, use the utility <command>xmllint</command> available with the
       <emphasis>libxml2</emphasis> package:     
     </para>
     <screen>
 xmllint &lt;control file&gt;
     </screen>
     <para>
-      If the control file is not well formed, i.e. if a tag is not closed,
+      If the control file is not well formed, for example, if a tag is not closed,
       <command>xmllint</command> will report about the errors.
     </para>    
     <para>
-      Before going on with the auto-installation, please fix any errors
-      resulting from such checks. The auto-installation process can't be
-      started with  an invalid and non-well formed control file.
+      Before going on with the autoinstallation, fix any errors
+      resulting from such checks. The autoinstallation process cannot be
+      started with an invalid and not well-formed control file.
     </para>
 
     <para>
-      You can use any XML editor  available on your system or use your
-      favorite text editor with XML support (i.e. Emacs, Vim). However, it is not quite
-      optimal to create the control file manually for large number of machines
-      and it should only be seen as an interface between the auto-installation
+      You can use any XML editor available on your system or your
+      favorite text editor with XML support (for example, Emacs, Vim). However, it is not 
+      optimal to create the control file manually for a large number of machines
+      and it should only be seen as an interface between the autoinstallation
       engine and the Configuration Management System (<abbrev>CMS</abbrev>).      
     </para>
     
@@ -116,15 +121,14 @@ xmllint &lt;control file&gt;
   </section>
 
   <section id="CreateProfile.XSLT">
-    <title>Creating a Profile (control file) via Script with XSLT</title>
+    <title>Creating a Profile (Control File) via Script with XSLT</title>
     <para>
-      For the case you have a template and just want to change a few things via script or command line,
-      you can use a XSLT processor like <emphasis>sablot</emphasis> for this. Lets say you have an autoyast profile
-      and you want to fillout the hostname via script for any reason (maybe because you have to do it
-      so often, you want to script it)
+      If you have a template and want to change a few things via script or command line,
+      use an XSLT processor like <emphasis>sablot</emphasis>. For example, if you have an &ay; profile
+      and want to fillout the hostname via script for any reason (if doing this so often, you want to script it)
     </para>
     <para>
-      First you have to create an XSL file
+      First, create an XSL file
     </para>
       <example>
         <title>Example file for replacing hostname/domain by script</title>
@@ -133,21 +137,22 @@ xmllint &lt;control file&gt;
         </screen>
       </example>
     <para>
-      As you can see, this file expects the "hostname" and the "domain" as parameters from the user.
+      This file expects the "hostname" and the "domain" as parameters from the user.
     </para>
       <screen>&lt;xsl:param name="hostname"/&gt;
 &lt;xsl:param name="domain"/&gt;</screen>
-      <para>There will be a "copy" of those parameters in the "dns" section of the control file. That means,
-      if there already is a domain element in the dns section, you'll get a second one (no good).</para>
+      <para>There will be a copy of those parameters in the dns section of the control file. That means,
+      if there already is a domain element in the dns section, you will get a second one (no good).</para>
+    <remark>mdejmek: why is this no good? please explain</remark>
     <para>
-      If you want to create a new autoyast profile now from the template plus the XSL file, run the following command:
+      If you want to create a new &ay; profile now from the template plus the XSL file, run the following command:
     </para>
       <screen>sabcmd add_hostname.xsl \$hostname=myHost \$domain=my.domain  template.xml</screen>
       <para>
-      You'll get a filled out autoyast profile then on STDOUT.
+      You will get a filled out &ay; profile then on STDOUT.
     </para>
     <para>
-      If you have multiple XSL files you want to apply to a template, do it like this:
+      If you have multiple XSL files you want to apply to a template, do the following:
     </para>
       <screen>
         sabcmd add_hd_vg.xsl \$device=/dev/sda \$partition=p2 \$vg=system \
@@ -156,10 +161,10 @@ xmllint &lt;control file&gt;
         | sabcmd add_hostname.xsl \$hostname=myHost \$domain=my.domain
       </screen>
       <para>
-      So you just pipe the output of each sabcmd to the next sabcmd.
+      Pipe the output of each sabcmd to the next sabcmd.
     </para>
     <para>
-    For more information aout XSLT, go to the official webpage <ulink url="http://www.w3.org/TR/xslt">www.w3.org/TR/xslt</ulink>
+    For more information about XSLT, go to the official Web page <ulink url="http://www.w3.org/TR/xslt">www.w3.org/TR/xslt</ulink>
     </para>
   </section>
 
@@ -171,3 +176,4 @@ xmllint &lt;control file&gt;
        sgml-parent-document: ("autoyast.xml" "book" "chapter")
        End:
       -->
+
