@@ -14,6 +14,9 @@ pdf: xml/ay_bigfile.xml
 html: xml/ay_bigfile.xml
 	daps -e ENV-autoyast html
 
+pkgsrc: xml/ay_bigfile.xml
+	daps -e ENV-autoyast package-src
+
 html-debug: xml/ay_bigfile.xml
 	daps --debug -e ENV-autoyast html
 
