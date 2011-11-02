@@ -56,9 +56,10 @@ html/index.html: autoyast.xml
 	@XSLTPROC@ --xinclude  @STYLESHEET_HTML@ \
 	$<
 
+# was: images/PNG/*.png 
 prep-daps-images:
 	mkdir -p ../images/src/png
-	cp images/PNG/*png ../images/src/png
+	cp ../autoyast2/img/*.png ../images/src/png
 
 ay_bigfile_docbook.xml: prep-daps-images
 # Remove internal entity statements
