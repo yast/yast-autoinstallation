@@ -18,10 +18,10 @@
 ]>
 
 <section id="CreateProfile.Bootloader">
-    <title>The Boot loader</title>
-    <para>This documentation is for yast2-bootloader and is is valid for SLE11 and openSUSE 11.0+. For older versions please use the documentation that comes with your distribution in /usr/share/doc/packages/autoyast2/</para>
+    <title>The Boot Loader</title><remark>emap 2011-11-04: Please check my changes to 'original_name throughout. It made little sense. Search for: "windows" or other.</remark>
+    <para>This documentation is for yast2-bootloader <remark>emap 2011-11-04: Proper formatting, entity? Throughout the text.</remark> and applies to SLE11 and openSUSE 11.0+. For older versions, use the documentation that comes with your distribution in /usr/share/doc/packages/autoyast2/</para>
     <para>
-    General scope of autoyast profile only bootloader part.
+    General scope of &ay; profile only bootloader part.<remark>emap 2011-11-04: Unclear and incomplete sentence.</remark>
     </para>
     <screen>
 &lt;bootloader&gt;
@@ -43,7 +43,7 @@
 
     <section><title>Device map</title>
 <para>
-You can define devices and their order in device.map but it is not necessary. yast2-bootloader checks the devices during the installation and proposes a device.map by itself. It can happen that the order of the devices is wrong or you have defined a different order than it is in the BIOS (please take care about changes there. it can leads to unbootable system).
+You can define devices and their order in <filename>device.map</filename>, but it is not necessary. yast2-bootloader checks the devices during installation and proposes a device.map. It can happen that the order of the devices is wrong or you have defined a different order than the one set in the BIOS. Take care when you make changes there. The system might not boot afterwards.
 </para>
 <screen>
 &lt;device_map config:type=&quot;list&quot;&gt;
@@ -56,7 +56,7 @@ You can define devices and their order in device.map but it is not necessary. ya
     </section>
     <section><title>Globals</title>
     <para>
-    This is an important part where you can define where to install GRUB and also how the boot process will work. It is not necessary to define this part as mentioned before, yast2-bootloader proposes a configuration by itself and so this is optional. Usually the AutoYaST profile includes only this part and all other parts are added automatically during installation by yast2-bootloader. Unless you have some special needs, you don't have to specify the bootloader config in the XML file.
+    This is an important if optional part. Define here where to install GRUB and how the boot process will work. Again, yast2-bootloader proposes a configuration if you don't define one. Usually the &ay; profile includes only this part and all other parts are added automatically during installation by yast2-bootloader. Unless you have some special requirements, don't specify the bootloader config in the XML file.
     </para>
 <screen>
  &lt;global&gt;
@@ -81,7 +81,7 @@ You can define devices and their order in device.map but it is not necessary. ya
      <row>
        <entry>activate</entry>
        <entry>
-         <para>set boot flag on boot partition. The boot partition can be "/" if there is no separate /boot partition. If the boot partition is on logical partition, the boot flag is set to the extended partition.
+         <para>Set the boot flag on the boot partition. The boot partition can be "/" if there is no separate /boot partition. If the boot partition is on a logical partition, the boot flag is set to the extended partition.
          </para>
          <para><literal>&lt;activate&gt;true&lt;/activate&gt;</literal></para>
        </entry>
@@ -91,7 +91,7 @@ You can define devices and their order in device.map but it is not necessary. ya
        <entry>default</entry>
        <entry>
          <para>
-            name(title) of the default boot section from menu.lst
+            Name (title) of the default boot section from <filename>menu.lst</filename>.
          </para>
          <para><literal>&lt;default&gt;openSUSE 11.2 - 2.6.31.5-0.1&lt;/default&gt;</literal></para>
        </entry>
@@ -101,7 +101,7 @@ You can define devices and their order in device.map but it is not necessary. ya
        <entry>gfxmenu</entry>
        <entry>
          <para>
-            path to the graphical boot menu (/boot/message). 'none' means don't use graphical boot menu
+            Path to the graphical boot menu (/boot/message). Set to 'none' if you do not want to use a graphical boot menu.
          </para>
          <para><literal>&lt;gfxmenu&gt;(hd0,1)/boot/message&lt;/gfxmenu&gt;</literal></para>
        </entry>
@@ -111,7 +111,7 @@ You can define devices and their order in device.map but it is not necessary. ya
        <entry>timeout</entry>
        <entry>
          <para>
-            timeout in seconds for automatic booting the default boot section from menu.lst
+            The timeout in seconds for automatically booting the default boot section from <filename>menu.lst</filename>.
          </para>
          <para><literal>&lt;timeout config:type="integer"&gt;10&lt;/timeout&gt;</literal></para>
        </entry>
@@ -121,7 +121,7 @@ You can define devices and their order in device.map but it is not necessary. ya
        <entry>generic_mbr</entry>
        <entry>
          <para>
-            write generic boot code to MBR. (It is ignored if boot_mbr is set to true)
+            Write generic boot code to MBR, will be ignored if boot_mbr is set to "true".
          </para>
          <para><literal>&lt;generic_mbr&gt;false&lt;/generic_mbr&gt;</literal></para>
        </entry>
@@ -131,7 +131,7 @@ You can define devices and their order in device.map but it is not necessary. ya
        <entry>boot_mbr</entry>
        <entry>
          <para>
-            write GRUB to MBR of the first disk in the order (device.map include order of disks)
+            Write GRUB to MBR of the first disk in the order (device.map includes order of disks).
          </para>
          <para><literal>&lt;boot_mbr&gt;false&lt;/boot_mbr&gt;</literal></para>
        </entry>
@@ -141,7 +141,7 @@ You can define devices and their order in device.map but it is not necessary. ya
        <entry>boot_boot</entry>
        <entry>
          <para>
-            write GRUB to separate /boot partition (if separate /boot partition missing GRUB will be written to "/") 
+            Write GRUB to separate /boot partition. If no separate /boot partition exists, GRUB will be written to "/". 
          </para>
          <para><literal>&lt;boot_boot&gt;false&lt;/boot_boot&gt;</literal></para>
        </entry>
@@ -151,7 +151,7 @@ You can define devices and their order in device.map but it is not necessary. ya
        <entry>boot_root</entry>
        <entry>
          <para>
-            write GRUB to "/" partition 
+            Write GRUB to "/" partition.
          </para>
          <para><literal>&lt;boot_root&gt;false&lt;/boot_root&gt;</literal></para>
        </entry>
@@ -161,7 +161,7 @@ You can define devices and their order in device.map but it is not necessary. ya
        <entry>boot_extended</entry>
        <entry>
          <para>
-write GRUB to the extended partition (it is important if you want to use a generic boot code and the "boot" partition is logical) NOTE: if the boot partition is logical it should use boot_mbr (write GRUB to MBR) instead of generic_mbr.
+Write GRUB to the extended partition (important if you want to use a generic boot code and the "boot" partition is logical). NOTE: if the boot partition is logical, it should use boot_mbr (write GRUB to MBR) instead of generic_mbr.
          </para>
          <para><literal>&lt;boot_extended&gt;false&lt;/boot_extended&gt;</literal></para>
        </entry>
@@ -171,7 +171,7 @@ write GRUB to the extended partition (it is important if you want to use a gener
        <entry>boot_custom</entry>
        <entry>
          <para>
-            write GRUB to custom device.
+            Write GRUB to custom device.
          </para>
          <para><literal>&lt;boot_custom&gt;/dev/sda3&lt;/boot_custom&gt;</literal></para>
        </entry>
@@ -181,7 +181,7 @@ write GRUB to the extended partition (it is important if you want to use a gener
        <entry>trusted_grub</entry>
        <entry>
          <para>
-            use trusted GRUB instead of the classical GRUB (gfxmenu is deleted automatically if this option is true) please doesn't use trusted GRUB if your hardware doesn't support it.
+            Use trusted GRUB instead of the classical GRUB (gfxmenu is deleted automatically if this option is true). Do not use trusted GRUB if your hardware does not support it.
          </para>
          <para><literal>&lt;trusted_grub&gt;false&lt;/trusted_grub&gt;</literal></para>
        </entry>
@@ -191,7 +191,7 @@ write GRUB to the extended partition (it is important if you want to use a gener
        <entry>lines_cache_id</entry>
        <entry>
          <para>
-            internal option which means cache id for perl-Bootloader. Please don't use it or change it in a cloned XML file.
+            Internal option specifying the cache id for perl-Bootloader. Do not use or change it in a cloned XML file.
          </para>
          <para><literal></literal></para>
        </entry>
@@ -204,12 +204,12 @@ write GRUB to the extended partition (it is important if you want to use a gener
     </section>
     <section><title>Initrd modules </title>
 <para>
-    This is a list of initrd modules. It is not necessary to add this part it should be added automatically. Please don't modify it if you are not sure what the initrd modules are.
+    A list of initrd modules. Do not create your own list if you do not fully understand the impact. &ay; will take care of it for you. 
 </para>
     </section>
     <section><title>Loader Type</title>
     <para>
-        This part defines the type of the bootloader. It could be grub, lilo, ppc or elilo.
+        Define which boot loader to use: grub, lilo, ppc or elilo.
     </para>
     <screen>
 &lt;loader_type&gt;grub&lt;/loader_type&gt;
@@ -217,7 +217,7 @@ write GRUB to the extended partition (it is important if you want to use a gener
     </section>
     <section><title>Sections</title>
     <para>
-This includes the configuration of the boot sections in the menu.lst. This part is added by yast2-bootloader during installation automatically. It is good to know that yast2-bootloader deletes boot sections with no valid kernel and initrd path. It also deletes such boot sections.
+      The configuration of the boot sections in the menu.lst is added automatically here by yast2-bootloader during installation. yast2-bootloader deletes boot sections with no valid kernel and initrd path.
     </para>
 <screen>
    &lt;sections config:type=&quot;list&quot;&gt;
@@ -261,9 +261,9 @@ This includes the configuration of the boot sections in the menu.lst. This part 
 </section>
     <section><title>Options</title>
     <para>
-the options depend on the <emphasis>type</emphasis>.
+      Available options depend on the <emphasis>type</emphasis>.
     </para>
-    <section><title>Options for section type: image and xen</title>
+    <section><title>Options for Section Type: image and xen</title>
  <informaltable frame='top'>
  <tgroup cols="3">
    <thead>
@@ -278,7 +278,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>append</entry>
        <entry>
          <para>
-            list of kernel args but without(!) vga= and root=
+            List of kernel args but without(!) vga= and root=.
          </para>
          <para><literal>&lt;append&gt;splash=silent quiet showopts&lt;/append&gt;</literal></para>
        </entry>
@@ -288,7 +288,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>image</entry>
        <entry>
          <para>
-            path to the kernel
+            Path to the kernel.
          </para>
          <para><literal>&lt;image&gt;(hd0,0)/vmlinuz-2.6.31-10&lt;/image&gt;</literal></para>
        </entry>
@@ -298,7 +298,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>initrd</entry>
        <entry>
          <para>
-            path to the initrd
+            Path to the initrd.
          </para>
          <para><literal>&lt;initrd&gt;(hd0,0)/my-initrd&lt;/initrd&gt;</literal></para>
        </entry>
@@ -308,7 +308,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>lines_cache_id</entry>
        <entry>
          <para>
-            internal option which means cache id for perl-Bootloader. Please don't use it or change it in a cloned XML file.
+            Internal option specifying the cache id for perl-Bootloader. Do not use or change it in a cloned XML file.
          </para>
          <para><literal></literal></para>
        </entry>
@@ -318,7 +318,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>name</entry>
        <entry>
          <para>
-            name of section
+            Name of section.
          </para>
          <para><literal>&lt;name&gt;Productive System&lt;/name&gt;</literal></para>
        </entry>
@@ -328,7 +328,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>original_name</entry>
        <entry>
          <para>
-            internal name of section parsed by YaST from a comment in the config file. There are some rules for names and original_name helps to determine if boot section is linux or failsafe and for chainloader it helps to determine if it is windows or other linux/floppy etc. Please use simple original_name: linux, xen, windows, floppy etc.
+            Internal name of section parsed by &yast; from a comment in the configuration file. There are some rules for names, and original_name helps to determine if the boot section is "linux" or "failsafe". For chainloader it helps to determine if it is "windows" or other (linux, floppy, etc). Use a simple original_name: linux, xen, windows, floppy, etc.
          </para>
          <para><literal>&lt;original_name&gt;linux&lt;/original_name&gt;</literal></para>
        </entry>
@@ -338,7 +338,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>root</entry>
        <entry>
          <para>
-            location of the root partition ("/")
+            Location of the root partition ("/").
          </para>
          <para><literal>&lt;root&gt;/dev/mapper/sil_ajacccbhejai_part3&lt;/root&gt;</literal></para>
        </entry>
@@ -348,7 +348,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>type</entry>
        <entry>
          <para>
-            type of section it could (image/xen/other/menu) 
+            Type of section (image/xen/other/menu).
          </para>
          <para><literal>&lt;type&gt;xen&lt;/type&gt;</literal></para>
        </entry>
@@ -358,7 +358,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>vgamode</entry>
        <entry>
          <para>
-            kernel arg for vga (vga=)
+            Kernel arg for vga (vga=).
          </para>
          <para><literal>&lt;vgamode&gt;0x31a&lt;/vgamode&gt;</literal></para>
        </entry>
@@ -368,7 +368,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>xen</entry>
        <entry>
          <para>
-            path to xen.gz
+            Path to xen.gz.
          </para>
          <para><literal>&lt;xen&gt;(hd0,0)/xen.gz&lt;/xen&gt;</literal></para>
        </entry>
@@ -378,7 +378,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>xen_append</entry>
        <entry>
          <para>
-            kernel args for XEN
+            Kernel args for XEN.
          </para>
          <para><literal>&lt;xen_append&gt;&lt;/xen_append&gt;</literal></para>
        </entry>
@@ -388,7 +388,7 @@ the options depend on the <emphasis>type</emphasis>.
  </tgroup>
 </informaltable>
     </section>
-    <section><title>Options for section type: other (chainloader)</title>
+    <section><title>Options for Section Type: other (chainloader)</title>
  <informaltable frame='top'>
  <tgroup cols="3">
    <thead>
@@ -403,7 +403,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>lines_cache_id</entry>
        <entry>
          <para>
-            internal option which means cache id for perl-Bootloader. Please don't use it or change it in a cloned XML file.
+            Internal option specifying the cache id for perl-Bootloader. Do not use or change it in a cloned XML file.
          </para>
          <para><literal></literal></para>
        </entry>
@@ -413,7 +413,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>name</entry>
        <entry>
          <para>
-            name or title of section
+           Name or title of the section.
          </para>
          <para><literal>&lt;name&gt;Floppy&lt;/name&gt;</literal></para>
        </entry>
@@ -423,7 +423,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>original_name</entry>
        <entry>
          <para>
-            internal name of section parsed by YaST from a comment in the config file. There are some rules for names and original_name helps to determine if boot section is linux or failsafe and for chainloader it helps to determine if it is windows or other linux/floppy etc. Please use simple original_name: linux, xen, windows, floppy etc.
+            Internal name of the section parsed by &yast; from a comment in the configuration file. There are some rules for names and original_name helps to determine if the boot section is "linux" or "failsafe". For the chainloader it helps to determine if it is "windows" or other (linux, floppy, etc). Use a simple original_name: linux, xen, windows, floppy etc.
          </para>
          <para><literal>&lt;original_name&gt;linux&lt;/original_name&gt;</literal></para>
        </entry>
@@ -433,7 +433,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>type</entry>
        <entry>
          <para>
-            type of section it could (image/xen/other/menu) 
+           Type of section (image/xen/other/menu). 
          </para>
          <para><literal>&lt;type&gt;other&lt;/type&gt;</literal></para>
        </entry>
@@ -443,7 +443,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>blockoffset</entry>
        <entry>
          <para>
-            offset in chainloader (used only in grub) 
+            Offset in chainloader (used only in grub). 
          </para>
          <para><literal>&lt;blockoffset&gt;1&lt;/blockoffset&gt;</literal></para>
        </entry>
@@ -453,7 +453,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>chainloader</entry>
        <entry>
          <para>
-            partition part for chainloader (so chainloader+blockoffset get final chainloader item in grub)
+            Partition part for chainloader (so chainloader+blockoffset get final chainloader item in grub).<remark>emap 2011-11-04: Not sure what the parenthesis is supposed to say.</remark>
          </para>
          <para><literal>&lt;chainloader&gt;/dev/fd0&lt;/chainloader&gt;</literal></para>
        </entry>
@@ -463,7 +463,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>noverifyroot</entry>
        <entry>
          <para>
-            with/without checking root
+            With or without checking root. <remark>emap 2011-11-04: Awkward. Can someone make this clearer?</remark>
          </para>
          <para><literal>&lt;noverifyroot&gt;true&lt;/noverifyroot&gt;</literal></para>
        </entry>
@@ -473,7 +473,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>remap</entry>
        <entry>
          <para>
-            it is special for windows and it means remapping disk which makes the second disk the first e.g. map (hd0) (hd1) map (hd1) (hd0)
+            Windows-specific option for remapping hard disks, for example switch the first and second disk: map (hd0) (hd1) map (hd1) (hd0)
          </para>
          <para><literal>&lt;remap&gt;false&lt;/remap&gt;</literal></para>
        </entry>
@@ -483,7 +483,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>makeactive</entry>
        <entry>
          <para>
-            add the makeactive argument for chainloader section
+            Add the makeactive argument for the chainloader section.
          </para>
          <para><literal>&lt;makeactive&gt;false&lt;/makeactive&gt;</literal></para>
        </entry>
@@ -508,7 +508,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>lines_cache_id</entry>
        <entry>
          <para>
-            internal option which means cache id for perl-Bootloader. Please don't use it or change it in a cloned XML file.
+            Internal option specifying the cache id for perl-Bootloader. Do not use or change it in a cloned XML file.
          </para>
          <para><literal></literal></para>
        </entry>
@@ -518,7 +518,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>name</entry>
        <entry>
          <para>
-            name or title of section
+            Name or title of section.
          </para>
          <para><literal>&lt;name&gt;Floppy&lt;/name&gt;</literal></para>
        </entry>
@@ -528,7 +528,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>original_name</entry>
        <entry>
          <para>
-            internal name of section parsed by YaST from a comment in the config file. There are some rules for names and original_name helps to determine if boot section is linux or failsafe and for chainloader it helps to determine if it is windows or other linux/floppy etc. Please use simple original_name: linux, xen, windows, floppy etc.
+            Internal name of section parsed by YaST from a comment in the configuration file. There are some rules for names and original_name helps to determine if the boot section is "linux" or "failsafe". For the chainloader it helps to determine if it is "windows" or other (linux, floppy etc). Use a simple original_name: linux, xen, windows, floppy etc.
          </para>
          <para><literal>&lt;original_name&gt;linux&lt;/original_name&gt;</literal></para>
        </entry>
@@ -538,7 +538,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>type</entry>
        <entry>
          <para>
-            type of section it could (image/xen/other/menu) 
+            Type of section (image/xen/other/menu). 
          </para>
          <para><literal>&lt;type&gt;other&lt;/type&gt;</literal></para>
        </entry>
@@ -548,7 +548,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>configfile</entry>
        <entry>
          <para>
-            path to menu.lst config file
+            Path to menu.lst config file.
          </para>
          <para><literal>&lt;configfile&gt;1&lt;/configfile&gt;</literal></para>
        </entry>
@@ -558,7 +558,7 @@ the options depend on the <emphasis>type</emphasis>.
        <entry>root</entry>
        <entry>
          <para>
-            device name for loading menu.lst from other installation of linux
+            Device name for loading menu.lst from another installation of Linux.
          </para>
          <para><literal>&lt;root&gt;/dev/sda1&lt;/root&gt;</literal></para>
        </entry>
