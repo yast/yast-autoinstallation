@@ -4,7 +4,7 @@
 
   <article>
   <articleinfo>    
-    <title>AutoYaST Configuration Management System</title>
+    <title>&ay; Configuration Management System</title>
     <author>
       <firstname>Anas</firstname>
       <surname>Nashif</surname>
@@ -17,47 +17,45 @@
   <section>
     <title>Introduction</title>
     <para>
-      The plugin-like design has the following advantages:
+      The plugin-like design of &ay; has the following advantages:
     </para>
     <itemizedlist>
       <listitem>
 	<para>
-	  New Run-time module can be integrated automatically in AutoYaST,
-	  thus new features in YaST2 mean new features in the auto-installer.
+	  A new run-time module can be integrated automatically in &ay;.
+	  New features in &yast; mean new features in the auto-installer.
 	</para>		  
       </listitem> 
       <listitem>
 	<para>
-	  Only installed run-time modules are offered and used to autoinstall
-	  the system. This  allows the integration of speciality run-time modules which are
-	  only present on business products for example.
+	  Only installed run-time modules are offered and used to automatically install
+	  the system. This allows the integration of special run-time modules which are
+	  only present on business products, for example.
 	</para>
       </listitem>
       <listitem>
 	<para>
-	  Code which is relevant to one run-time configuration module is kept in one place
-	  instead of maintaining it in different modules.
+	  Code relevant to one run-time configuration module is kept in one place
+	  instead of maintaining it in different modules.<remark>emap 2011-11-05: This makes no sense. If the code is only relevant to one module, why should it be stored in different places?</remark>
 	</para>
       </listitem>
     </itemizedlist>      
   </section>
   <section>
-    <title>The run-time module interface in AutoYaST</title>
-    <para>The new interface (AKA _auto.ycp client) is similar to the proposal
+    <title>The Run-time Module Interface in &ay;</title>
+    <para>The new interface (aka _auto.ycp client) is similar to the &yast; proposal
       structure and consists of functions that can be accessed using arguments. All the dialog code has been moved to
-      autoyast to simplify the interface and to provide  a common user interface for
-      all modules appearing in the autoyast configuration system.
+      &ay; to simplify and align the user interface for all modules in the &ay; configuration system.
     </para>
     <para>
-      The interface of a run-time configuration module in AutoYaST has the follwoing
+      The interface of a run-time configuration module in &ay; has the follwoing
       components:	
     </para>
     <itemizedlist>
       <listitem>
 	<para>
-	  <emphasis>Summary Area,</emphasis>: Contains a summary of the consifguration with the
-	  values if available. If values where not configured, the phrase
-	  <emphasis>'Not configured yet'</emphasis> is used, which is available from the summary module.
+	  <emphasis>Summary Area</emphasis>: Contains a summary of the configuration with the respective settings. If values where not configured, the phrase
+	  <emphasis>'Not configured yet'</emphasis> is used.
 	</para>
       </listitem>
       <listitem>
@@ -69,47 +67,47 @@
       <listitem>
 	<para>
 	  <emphasis>Reset Button</emphasis>: A button for resetting the
-	  configuration data. This will delete only data in the running module.
+	  configuration data. This will only delete data in the running module.
 	</para>
       </listitem>
     </itemizedlist>
     <para>
-      The summary area is filled with data from the <emphasis>Summary</emphasis> function in the
-      module controling the configuration. (i.e
+      The data in the summary area is provided by the <emphasis>Summary</emphasis> function in the
+      module controlling the configuration (i.e
       <emphasis>NIS::Summary()</emphasis> in the NIS package).
     </para>      
   </section>
   <section>
-    <title>Run-time modules in <emphasis>auto</emphasis> mode</title>
+    <title>Run-time Modules in <emphasis>Auto</emphasis> Mode</title>
     <para>
-      The &lt;module name&gt;_auto.ycp client accepts 2 arguments:
+      The &lt;module name&gt;_auto.ycp client accepts two arguments:
     </para>
     <itemizedlist>
       <listitem>
 	<para>
-	  Function
+	  Function,
 	</para>
       </listitem>
       <listitem>
 	<para>
-	  Configuration Data
+	  Configuration Data.
 	</para>
       </listitem>      
     </itemizedlist>
-    <para>The following functions are needed to make any module work in AutoYaST:</para>
+    <para>The following functions are needed for any module to work in &ay;:</para>
     <itemizedlist>
       <listitem>
 	<para>
 	  <emphasis>Import:</emphasis></para>
 	<para>
-	  Import existing data into the module, usually done only once at the beginning.
+	  Imports existing data into the module, usually done only once at the beginning.
 	</para>
       </listitem>
       <listitem>
 	<para>
 	  <emphasis>Summary:</emphasis></para>
 	<para>
-	  To provide  a brief summary of the configuration.
+	  Provides a brief summary of the configuration.
 	  Calls &gt;Module&lt;::Summary()
 	</para>
       </listitem>
@@ -117,7 +115,7 @@
 	<para>
 	  <emphasis>Reset:</emphasis></para>
 	<para>
-	  Resets the configuration. It returns empty values but it also can return
+	  Resets the configuration. It returns empty values, but can also return
 	  default values, depending on the module.
 	</para>
       </listitem>
@@ -125,43 +123,40 @@
 	<para>
 	  <emphasis>Change:</emphasis></para>
 	<para>
-	  This function starts the widget sequence
+	  Starts the widget sequence.
 	</para>
       </listitem>
       <listitem>
 	<para>
 	  <emphasis>Write</emphasis></para>
 	<para>
-	  Write the configuration without displaying any widgets and popups and
-	  without restarting any services etc.
-	  Calls &lt;Module&gt;::Write (and sets &lt;Module&gt;::write_only true)
+	  Writes the configuration without displaying any widgets or popups
+	  and without restarting any services, etc.  Calls
+	  &lt;Module&gt;::Write (and sets &lt;Module&gt;::write_only true).
 	</para>
       </listitem>
       <listitem>
 	<para>
 	  <emphasis>Export:</emphasis></para>
 	<para>
-	  Returns the current configuration
-	  Calls &lt;Module&gt;::Export
+	  Returns the current configuration, calls &lt;Module&gt;::Export.
 	</para>
       </listitem>     
       <listitem>
 	<para>
 	  <emphasis>Packages:</emphasis></para>
 	<para>
-	  Returns a map with two key/value pairs. First key is
-	  <emphasis>install</emphasis> which has a list as the value. the list
+	  Returns a map with two key-value pairs. The first key is
+	  <emphasis>install</emphasis>, which has a list as value. The list
 	  contains packages that are needed for the service configured by the
 	  module to work. This can be a static list of packages or a dynamic
 	  list depending on the configuration. The second key is
-	  <emphasis>remove</emphasis> which contains packages that should be
-	  removed to avoid conflicts with other packages. the packages in
-	  <emphasis>remove</emphasis> are normally determined dynamically,
-	  depending on the configuration.
-	  
+	  <emphasis>remove</emphasis>. Its value contains packages that should
+	  be removed to avoid conflicts with other packages. These packages
+	  are normally determined dynamically, depending on the configuration.
 	</para>
 	<para>
-	  The function can either return a map directly or it can call a module
+	  The function can either return a map or it can call a module
 	  function &lt;Module&gt;::AutoPackages().
 	</para>
       </listitem>      
@@ -169,7 +164,7 @@
     
     <para>
       The following example shows &lt;module name&gt;_auto.ycp with the changes
-      needed for the new behaviour. 
+      needed for the new behavior. 
     </para>
     <example>
       <title>XXpkgXX_auto.ycp (XXpkgXX = module name)</title>
@@ -265,19 +260,19 @@
     </example>
   </section>
   <section>
-    <title>Module functions needed for Auto-Install</title>
-    <para>The follwoing is the list of function that should be available with
-      the modules to provide the functionality needed in the AutoYaST.
+    <title>Module Functions Needed for Auto-Install</title>
+    <para>The following functions should be available with
+      the modules to provide the functionality needed in &ay;.
     </para>
     <refentry>
       <refnamediv>
 	<refname>AutoPackages()</refname>
-	<refpurpose>Return needed packages for module to work</refpurpose>
+	<refpurpose>Returns needed packages for module to work.</refpurpose>
       </refnamediv>
       <refsect1>
 	<title>Description</title>
 	<para>
-	  This function return a map of lists which contain packages to be
+	  Returns a map of lists which contain packages to be
 	  installed or removed during installation (second stage).	  
 	</para>
 
@@ -286,7 +281,7 @@
       <refsect1>
 	<title>Returns</title>
 	<para>
-	  For example, the function can return the following structure:
+	  For example, this function can return the following structure:
 	</para>
 	<screen>
 	  $[
@@ -299,38 +294,39 @@
     <refentry>
       <refnamediv>
 	<refname>Import()</refname>
-	<refpurpose>Imports settings from arguments</refpurpose>
+	<refpurpose>Imports settings from arguments.</refpurpose>
       </refnamediv>
       <refsect1>
 	<title>Description</title>
-	<para>This function imports settings from arguments and sets the module
-	  variables. The <emphasis>Import</emphasis> function should bring the
-	  module to a state where the data imported is enough for the module to
-	  write (See Write()) a usable configuration.
+	<para>This function imports settings from arguments and sets the
+	module variables. The <emphasis>Import</emphasis> function should
+	provide sufficient data for the module to write (see Write()) a usable
+	configuration.
 	</para>
 
       </refsect1>
       
       <refsect1>
 	<title>Returns</title>
-	<para>Import() return false if some of the required keys are missing in the
-	  imported map. If the imported data is empty, it returns true and
-	  starts the module using default values.
+	<para>Import() returns "false" if some of the required keys are
+	missing in the imported map. If the imported data is empty, it returns
+	"true" and starts the module using default values.
 	</para>
       </refsect1>
     </refentry>
     <refentry>
       <refnamediv>
 	<refname>Export()</refname>
-	<refpurpose>Exports configured data to calling module</refpurpose>
+	<refpurpose>Exports configured data to the calling module.</refpurpose>
       </refnamediv>
       <refsect1>
 	<title>Description</title>
-	<para>Exports configured data to calling module. This function also
-	  converts the internal variables to unique and human readable
-	  variables which can be used in the control file needed for the
-	  auto-installation. It is not allowed to export <emphasis>maps</emphasis> with configured
-	  data as the keys. Configured data must be the value of a variable.</para>
+	<para>Exports configured data to the calling module. This function
+	also converts internal variables to unique and human readable
+	variables which can be used in the control file needed for the
+	auto-installation. Do not use configuration data as the key in a
+	key-value pair. The key of the pair must always contain the variable
+	name, rather than its contents.</para>
       </refsect1>
       <refsect1>
 	<title>Example</title>
@@ -359,21 +355,21 @@
     <refentry>
       <refnamediv>
 	<refname>Write()</refname>
-	<refpurpose>Write or commit configured or imported data</refpurpose>
+	<refpurpose>Writes or commits configured or imported data.</refpurpose>
       </refnamediv>
       <refsect1>
 	<title>Description</title>
-	<para>Commit configured data. This function is also used in normal
+	<para>Commits configured data. This function is also used in normal
 	  operation mode and should not be used to write configuration in
 	  auto-installation mode. Instead, use<emphasis> WriteOnly()</emphasis>
 	  or set the global variable <emphasis>write_only</emphasis> to true
 	  before writing.
 	</para>
 	<para>
-	  during the write process, check for the global boolean variable
-	  <emphasis>write_only</emphasis> which should be used to prevent the
+	  During the write process, check for the global boolean variable
+	  <emphasis>write_only</emphasis>, which should be used to prevent the
 	  module from restarting services and showing GUI components during
-	  autoinstallation which might interfere with the installation widgets.
+	  auto-install, which might interfere with the installation widgets.
 	</para>
 	
       </refsect1>
@@ -381,19 +377,19 @@
 
   </section>
   <section>
-    <title>Configuration file</title>
+    <title>Configuration File</title>
     
     <para>
-      When AutoYaST  is invoked, it  checks for the desktop files in
+      When &ay; is invoked, it checks for the desktop files in
       <filename>/usr/share/applications/YaST2</filename> and evaluates them to
-      later include them in the configuration interface. AutoYaST uses the same configuration file used for the YaST2
-      Control Center with some additional enhancements.
+      later include them in the configuration interface. &ay; uses the same
+      configuration file as the &yast; Control Center with some enhancements.
     </para>
     <para>
       The following is an example of the configuration file for the NIS module:
     </para>
     <example>
-      <title>Auto-Install Configuration file for NIS</title>
+      <title>Auto-Install Configuration File for NIS</title>
       <programlisting>
 [Desktop Entry]
 Type=Application
@@ -423,32 +419,32 @@ GenericName=Configure NIS client
 
       </programlisting>
     </example>
-    <para>In addition to the keywords from the last example, AutoYaST also evaluates
+    <para>In addition to the keywords in the example above, &ay; also evaluates
       the following keywords:</para>
 
     <itemizedlist>
 	<!-- <title>Desktop file Keywords</title> -->
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInst</emphasis>
-	    - Is the module compatible with the
-	    AutoYaST and can Import/Export configurations?</para>
+	    The &yast; module compatible with the &ay; version. Configurations can be imported and exported.</para>
 	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
 	    	    <para><emphasis>all</emphasis>: Full auto-installation support,
-		    including  the AutoYaST interface and writing configurations
-		    during autoinstall. </para>	
+		    including the &ay; interface and writing configurations
+		    during auto-install. </para>	
 		</listitem>
 		<listitem>
-	    	    <para><emphasis>write</emphasis>: Write only support. No
-		    integration into AutoYaST interface. </para>	
+	    	    <para><emphasis>write</emphasis>: Write-only support. No
+		    integration into the &ay; interface. </para>	
 		</listitem>     
 		<listitem>
-	    	    <para><emphasis>configure</emphasis>: Configuration only support.
-		    Normally used only with parts related to installation like
-		    partitioning and general options which have no run-time module
-		    with support for auto-installation. Data is written using the
-		    common installation process and modules available in YaST2</para>
+	    	    <para><emphasis>configure</emphasis>: Configuration-only
+	    	    support.  Normally used only with parts related to
+	    	    installation like partitioning and general options which
+	    	    have no run-time module with support for
+	    	    auto-install. Data is written using the common
+	    	    installation process and modules available in &yast;.</para>
 		</listitem>    
 	    </itemizedlist>
 	    <para>&nbsp;</para>
@@ -456,13 +452,13 @@ GenericName=Configure NIS client
 
         <listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstPath</emphasis>
-	    - Path in the control file</para>
+	     Path in the control file.</para>
     	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
 		    <para>configure or install: All run-time configuration modules are
 		    contained in the <emphasis>configure</emphasis> resource. Only
-		    configuration data directly touching the installation of a system are
+		    configuration data directly controlling the installation of a system are
 		    contained in the <emphasis>install</emphasis> resource.</para>
 		</listitem>
     	    </itemizedlist>
@@ -471,11 +467,11 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstClient</emphasis>
-	    - Name of the client to call</para>
+	     Name of the client to call.</para>
 	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
-		    <para>Name of the client to be called by AutoYaST</para>
+		    <para>Name of the client to be called by &ay;.</para>
 		</listitem>
     	    </itemizedlist>
     	    <itemizedlist>
@@ -489,7 +485,7 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstDataType</emphasis>
-	    - Data type of configuration section</para>
+	     Data type of configuration section.</para>
     	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
@@ -507,7 +503,7 @@ GenericName=Configure NIS client
 
         <listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstResource</emphasis>
-	    - Name of the resource in the Profile</para>
+	     Name of the resource in the profile.</para>
     	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
@@ -525,11 +521,11 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstRequires</emphasis>
-	    - What modules are required before this module is run. </para>
+	     List of modules required before this module is run. </para>
 	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
-		    <para>comma delimited list of required modules</para>
+		    <para>Comma-separated list of required modules.</para>
 		</listitem>
 	    </itemizedlist>
 	    <itemizedlist>
@@ -545,12 +541,12 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstMerge</emphasis>
-	    - Multiple sections in the profile can be handled by one module</para>
+	     Multiple sections in the profile to be handled by one module.</para>
 	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
-		    <para>comma delimited list of sections to merge
-		    (see also X-SuSE-YaST-AutoInstMergeTypes)</para>
+		    <para>Comma-separated list of sections to merge
+		    (see also X-SuSE-YaST-AutoInstMergeTypes).</para>
 		    <para>The Users module for example handles also
 		    groups and user_defaults.</para>
 		</listitem>
@@ -566,13 +562,12 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstMergeTypes</emphasis>
-	    - Which datatypes are the section of that will be merged to be
-	    handled by one module</para>
+	     Data types of the merged sections to be handled by one module.</para>
     	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
-		    <para>comma delimited list of datatypes (list or map) for
-		    the sections from X-SuSE-YaST-AutoInstMerge</para>
+		    <para>Comma-separated list of data types (list or map) for
+		    the sections specified in X-SuSE-YaST-AutoInstMerge.</para>
 		</listitem>
 	    </itemizedlist>
 	    <itemizedlist>
@@ -588,15 +583,15 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstClonable</emphasis>
-	    - is this module able to clone the actual system</para>
+	     Specify if this module is able to clone a system.</para>
     	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
-		    <para>a boolean (true,false)</para>
+		    <para>a boolean (true, false)</para>
 		    <para>If this is true, the module will appear in the list of
-		    modules you can choose from during the cloning of the actual
-		    system. Your module will Read() and Export() it's data from
-		    the actual system then.</para>
+		    modules you can choose from during the cloning of a
+		    system. The module will Read() and Export() its data from
+		    the actual system.</para>
 		</listitem>
 	    </itemizedlist>
     	    <itemizedlist>
@@ -612,8 +607,8 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstSchema</emphasis>
-	    - base name of schema file, including the rnc
-	    extension (Relax NG compact syntax)</para>
+	     Base name of the schema file, including the rnc
+	    extension (Relax NG compact syntax).</para>
     	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
@@ -631,14 +626,14 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoInstOptional</emphasis>
-	    - is the element optional in the schema</para>
+	     Specify if the element is optional in the schema.</para>
 	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
-		    <para>a boolean (true,false)</para>
-		    <para>Does this element has to appear in the profile?
-		    Unless you have a very basic module, this is always
-		    true.</para>
+		    <para>a boolean (true, false)</para>
+		    <para>Is this element mandatory or optional in the
+		    profile? Unless you have a very basic module, it is
+		    always optional and therefore "true".</para>
 		</listitem>
     	    </itemizedlist>
     	    <itemizedlist>
@@ -652,14 +647,14 @@ GenericName=Configure NIS client
 
 	<listitem>
 	    <para><emphasis>X-SuSE-YaST-AutoLogResource</emphasis>
-	    - is the resource of your modul allowed to be logged (since SLES10SP1/10.2)</para>
+	     Should the resource of your module be logged (since SLES10 SP1/10.2)?</para>
     	    <itemizedlist>
 		<title>Values</title>
 		<listitem>
-		    <para>a boolean (true,false)</para>
-		    <para>Do you allow autoyast to log the data of your resource into the
-		    logfile? The default is true but if you have sensible data like
-		    passwords, you might want to set this to false. That can always be
+		    <para>a boolean (true, false)</para> <para>Do want &ay; to
+		    log the data of your resource in the logfile? The default
+		    is "true", but if you have sensitive data like passwords,
+		    you may want to set this to "false". The setting can be
 		    overridden by Y2DEBUG=1</para>
 		</listitem>
 	    </itemizedlist>
@@ -676,77 +671,79 @@ GenericName=Configure NIS client
 
   </section>
   <section>
-    <title>Conventions for module Writers</title>
+    <title>Conventions for Module Writers</title>
     <section>
       <title>Exported Data</title>
       <itemizedlist>
 	<listitem>
 	  <para><emphasis>Type of exported data</emphasis>: </para>
-	  <para>Modules should only export data which is normally selected or
+	  <para>Modules should only export data which is selected or
 	    entered by the user in normal module operation. No computed or
 	    automatically probed data should be exported.</para>
 	</listitem>
 	<listitem>	  
 	  <para><emphasis>Use Namespaces</emphasis></para>
-	  <para>Exported variables should have a unique name when possible and
-	    when  general terminology is being used. To avoid conflicts and confusion,
-	    use a name space identifier with common words. For example, if  a
-	    module should export the variable name
-	    <emphasis>options</emphasis>, it is better to export<emphasis> &lt;module
-	      name&gt;.options</emphasis> to avoid confusion with other modules using
-	    <emphasis>options</emphasis>, which is very common in configurations.	    
+	  <para>Exported variables should have a unique name.<remark>emap 2011-11-05: Better use 'must' instead of 'should'?</remark>
+	    To avoid conflicts and confusion when using general terminology,
+	    add a name space identifier. For example, if a module should
+	    export a variable <emphasis>options</emphasis>, better use
+	    <emphasis> &lt;module name&gt;.options</emphasis> to avoid
+	    confusion with other modules using <emphasis>options</emphasis>,
+	    which is very common in configurations.
 	  </para>	  
 	</listitem>
 	<listitem>
 	  <para><emphasis>Lower case variables</emphasis></para>
-	  <para>To have a common and unified look of the control file, please
-	    use lower case variables when exporting the configuration data.</para>
+	  <para>To have a common and unified look of the control file when
+	  exporting the configuration data, please use lower case
+	  variables.</para>
 	</listitem>
 	<listitem>
 	  <para>The structure of the exported data should be readable and not
 	    unnecessarly complex.</para>
 	</listitem>
 	<listitem>
-	  <para>Avoid using configuration data as the key in a map key/value
+	  <para>Do not use configuration data as the key in a map key-value
 	    pair. The key of the pair must always contain the variable name,
-	    rather than it's contents</para>
+	    rather than its contents.</para>
 	</listitem>
       </itemizedlist>
       
     </section>    
 
     <section>
-      <title>YaST2 Module Types</title>
+      <title>&yast; Module Types</title>
       <para>
-	YaST2 configuration modules and in relation with AutoYaST can be put
+	&yast; configuration modules and their relation to &ay; can be divided
 	into three categories:	
       </para>      
       <orderedlist>
 	<listitem>
-	  <para>Simple modules which mormally only change sysconfig variable
-	    and have simple configuration data structure. (i.e. mail, nis,
-	    ldap, etc.)
+	  <para>Modules which only change sysconfig variables
+	    and have a simple configuration data structure (i.e. mail, nis,
+	    ldap, etc.).
 	  </para>
 	  <para>
-	    This category needs no special attention and is easy to integrate with
-	    the AutoYaST. 
+	    This category needs no special attention and is easy to integrate
+	    with &ay;.
 	  </para>
 	</listitem>
 	<listitem>
-	  <para>Simple modules dealing with hardware configuration (i.e. network,
-	    sound, printer etc.)
+	  <para>Simple modules dealing with hardware configuration
+	  (i.e. network, sound, printer etc.)
 	  </para>
 	  <para>
-	    These modules need to be able to
-	    read and autodetect hardware data during installation if no hardware
-	    data is specified in the control file. The behaviour of this type of
-	    modules up to 8.1 was to import data and write it wihtout actually
-	    reading anything from the system.
+	    These modules need to be able to auto-detect and read hardware
+	    data during installation if no hardware data is specified in the
+	    control file. The behavior of this type of modules up to SuSE
+	    Linux 8.1 was to import data and write it without actually reading
+	    anything from the system.<remark>emap 2011-11-05: Is this info
+	    about ancient behavior necessary after so many years?</remark>
 	  </para>
 	  <para>
 	    An additional step has to be added between the import and the
 	    write, where hardware data is read and imported into the module. In
-	    some case this is simply done by calling the Read function the module.
+	    some case this is simply done by calling the Read function of the module.<remark>emap 2011-11-05: I assume info gained while probing the actual hardware will override data specified in the control file. Should this be mentioned?</remark>
 	  </para>
 	</listitem>
 	<listitem>
@@ -755,38 +752,37 @@ GenericName=Configure NIS client
 	  </para>
 	  <para>
 	    This class of modules is much more complex and requires adaptation
-	    and special attention. AutoYaST expects that only new and modified
+	    and special attention. &ay; expects that only new and modified
 	    entries will be exported and not the whole configuration tree. For
-	    example when a user enables a service in inetd, only this service
-	    is exported. A user should be able to add new services which are
-	    not available in the default configuration file too.
+	    example, when a user enables a service in inetd, only this service
+	    is exported. A user should also be able to add new services which
+	    are not available in the default configuration file.
 	  </para>
 	</listitem>
       </orderedlist>           	
     </section>
     <section>
-      <title>Module behaviour</title>
+      <title>Module Behavior</title>
       <para>
-	In configuration mode for auto-installation, modules <emphasis>should
-	  not</emphasis>(configuration system is the machine where the control
-	file is being created):
+	Find below a list of common pitfalls. The configuration system is the machine where the control file is created. In configuration mode for auto-installation, modules <emphasis>should
+	  not</emphasis>:
 	<itemizedlist>
 	  <listitem>
-	    <para>Read any data from the configuration system</para>
+	    <para>read any data from the configuration system,</para>
 	  </listitem>
 	  <listitem>
-	    <para>Probe or detect hardware on the configuration system</para>
+	    <para>probe or detect hardware on the configuration system,</para>
 	  </listitem>
 	  <listitem>
-	    <para>Change configuration data on the configuration system</para>
+	    <para>change configuration data on the configuration system,</para>
 	  </listitem>
 	  <listitem>
-	    <para>Offer a link to other modules (i.e. calling the NIS module
-	      from the users module)</para>
+	    <para>link to other modules (i.e. calling the NIS module
+	      from the users module),</para>
 	  </listitem>
-
 	  <listitem>
-	    <para>Check if a needed package is installed on the configuration system.</para>
+	    <para>check if a needed package is installed on the configuration
+	    system.</para>
 	  </listitem>
 	  
 	</itemizedlist>
