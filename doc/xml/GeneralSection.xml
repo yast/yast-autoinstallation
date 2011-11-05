@@ -31,34 +31,37 @@
       <example>
 	<title>General Options</title>
     <para>
-        The mode section configures the behavior of AutoYaST when it comes to confirmation and rebooting. The following has to be in the &lt;general&gt;&lt;mode&gt; section
+        The mode section configures the behavior of &ay; with regard to confirmation and rebooting. The following has to be in the &lt;general&gt;&lt;mode&gt; section.
     </para>
-  <para>
-    By default, the auto-installation process has to be confirmed by the
-    user. The confirmation should be disabled if a fully unattended
-    installation is desired. This option is used to view and change the
-    settings on a target system before anything is committed and can be
-    used for debugging. It is set to <emphasis>true</emphasis> by default
-    to avoid recursive installs when the system schedules a reboot after
-    initial system setup.
+  <para><remark>emap 2011-11-05: variable name is not specified, I assume it's
+  'confirm' as in the commented table below.</remark> By default, the user
+  must confirm the auto-installation process. This option allows the user to
+  view and change the settings for a target system before they are committed
+  and can be used for debugging. <emphasis>confirm</emphasis> is set to "true"
+  by default to avoid recursive installs when the system schedules a reboot
+  after initial system setup. Only disable confirmation if you want to carry
+  out a fully unattended installation.
   </para>
   <para>
-     With <emphasis>halt</emphasis> you make autoyast to turn off the machine
-     after all packages have been installed. So instead of the reboot into
+     With <emphasis>halt</emphasis> you cause &ay; to shut down the machine
+     after all packages have been installed. Instead of a reboot into
      stage two, the machine is turned off. The bootloader is alreay installed
      and all your chroot scripts have run.
   </para>
   <para>
-     <emphasis>final_halt</emphasis> and <emphasis>final_reboot</emphasis> are new
-     with openSUSE 11.0 and SLES11. You can reboot or halt the machine,
-     when everything with installation and configuration is done, with that.
+     <emphasis>final_halt</emphasis> and <emphasis>final_reboot</emphasis>
+     have been introduced with openSUSE 11.0 and SLES11. You can reboot or
+     halt the machine after installation and configuration are finished at the
+     end of stage 2.
   </para>
     <para>
-      openSUSE 11.0 uses the kexec feature and does not reboot anymore between stage1 and stage2. With
-      the <emphasis>forceboot</emphasis> option you can force the reboot in case you need it for some
-      reason. true will reboot, false will not reboot and a missing <emphasis>forceboot</emphasis> option
-      uses the products default.
-    </para>
+      openSUSE 11.0 uses the kexec feature and does
+      not reboot anymore between stage1 and stage2. With the
+      <emphasis>forceboot</emphasis> option you can force the reboot in case
+      you need it for some reason. The value "true" will reboot, "false" will
+      not reboot and a missing <emphasis>forceboot</emphasis> option uses the
+      product's default.
+    </para><remark>emap 2011-11-05: Fixed some issues above according to the commented additional information in the table below.</remark>
 <!-- FIXME: not allowed inside of example
       <informaltable frame='top'>
           <tgroup cols="3">
@@ -72,45 +75,45 @@
         <tbody>
           <row>
             <entry>confirm</entry>
-            <entry>if this boolean is set to "true" the installation stops at the confirmation screen (also called proposal screen) and has to be confirmed with the "install"-button.
+            <entry>If this boolean is set to "true", the installation stops at the confirmation screen (also called proposal screen) and has to be confirmed with the "install" button.
               <para><screen>&lt;confirm config:type="boolean"&gt;true&lt;/confirm&gt;</screen></para>
             </entry>
-            <entry>optional. The default is true</entry>
+            <entry>Optional. The default is true.</entry>
           </row>
           <row>
             <entry>halt</entry>
-            <entry>shut down the machine after the first stage. So if you turn it on again, the machine boots and the second stage of the autoinstallation starts
+            <entry>Shuts down the machine after the first stage. So if you turn it on again, the machine boots and the second stage of the autoinstallation starts
               <para><screen>&lt;halt config:type="boolean"&gt;true&lt;/halt&gt;</screen></para>
             </entry>
-            <entry>optional. The default is false</entry>
+            <entry>Optional. The default is false.</entry>
           </row>
           <row>
             <entry>second_stage</entry>
-            <entry>this boolean configures if AutoYaST will run in the second stage too (after the partitioning, software and bootloader installation of the first stage). If you set this to false, a normal manual installation happens in the second stage.
+            <entry>This boolean determines if AutoYaST will run in the second stage too (after the partitioning, software and bootloader installation of the first stage). If you set this to "false", a normal manual installation happens in the second stage.
               <para><screen>&lt;second_stage config:type="boolean"&gt;true&lt;/second_stage&gt;</screen></para>
             </entry>
-            <entry>optional. The default is true</entry>
+            <entry>Optional. The default is true.</entry>
           </row>
           <row>
             <entry>final_reboot</entry>
-            <entry>if you set this to true, the machine will reboot at the very end of the installation (when everything is installed and configured at the end of the second stage)
+            <entry>If you set this to "true", the machine will reboot at the very end of the installation (when everything is installed and configured at the end of the second stage)
               <para><screen>&lt;final_reboot config:type="boolean"&gt;true&lt;/final_reboot&gt;</screen></para>
             </entry>
-            <entry>optional. The default is false. It makes no sense to set this <emphasis>and</emphasis> final_halt to true. This options is available since openSUSE 11.0 and SLES11</entry>
+            <entry>Optional. The default is false. It makes no sense to set this <emphasis>and</emphasis> final_halt to "true". This options is available since openSUSE 11.0 and SLES11.</entry>
           </row>
           <row>
             <entry>final_halt</entry>
-            <entry>if you set this to true, the machine will shutdown at the very end of the installation (when everything is installed and configured at the end of the second stage)
+            <entry>If you set this to "true", the machine will shutdown at the very end of the installation (when everything is installed and configured at the end of the second stage)
               <para><screen>&lt;final_halt config:type="boolean"&gt;true&lt;/final_halt&gt;</screen></para>
             </entry>
-            <entry>optional. The default is false. It makes no sense to set this <emphasis>and</emphasis> final_reboot to true. This options is available since openSUSE 11.0 and SLES11</entry>
+            <entry>Optional. The default is "false". It makes no sense to set this <emphasis>and</emphasis> final_reboot to "true". This options is available since openSUSE 11.0 and SLES11.</entry>
           </row>
           <row>
             <entry>forceboot</entry>
             <entry>Some openSUSE releases use kexec to avoid the reboot after the first stage. They immediately boot into the installed system. You can force a reboot with this
               <para><screen>&lt;forceboot config:type="boolean"&gt;true&lt;/forceboot&gt;</screen></para>
             </entry>
-            <entry>optional. The default is false.</entry>
+            <entry>Optional. The default is "false".</entry>
           </row>
         </tbody>
       </tgroup>
@@ -124,12 +127,12 @@
 
   
     <para>
-      AutoYaST in openSUSE 11.1 allows you to configure the proposal screen with the &lt;proposals config:type="list"&gt;
+      &ay; in openSUSE 11.1 allows you to configure the proposal screen with the &lt;proposals config:type="list"&gt;
       option in the profile. All proposals that are listed in that section are shown in the proposal screen if you set the
-      <emphasis>confirm</emphasis> option to true.
+      <emphasis>confirm</emphasis> option to "true".
     </para>
     <para>
-      This is the list of proposals for openSUSE 11.1 are (you can find that in the control.xml on the installation source too):
+      This is the proposal list openSUSE 11.1, which you can also find in the <filename>control.xml</filename> file on the installation source:
     </para>
     <itemizedlist>
       <listitem>
@@ -184,29 +187,34 @@
       </listitem>
     </itemizedlist>
     <para>
-        The wait section was invented with openSUSE 11.1 and SLES11. You can let AutoYaST sleep before and after each module during the second stage. 
-        You can run scripts and/or you can pass a value (in seconds) for AutoYaST to sleep. In the example above AutoYaST will sleep for 15 seconds (10+5) before
-        the network configuration happens and 10 seconds (3+7) after the network configuration is done. The scripts in the example don't really make a lot of sense
-        because you could pass that value as "time" value too but I think you get how scripts in the wait section work now.
+        The <emphasis>wait</emphasis> section has been introduced with openSUSE
+        11.1 and SLES11. You can let &ay; <command>sleep</command> before and
+        after each module run during the second stage.  You can run scripts
+        and/or pass a value (in seconds) for &ay; to sleep. In the example
+        above &ay; will sleep for 15 seconds (10+5) before the network
+        configuration starts and 10 seconds (3+7) after the network
+        configuration is done. The scripts in the example don't really make a
+        lot of sense because you could pass that value as "time" value
+        too. They are only used to show how scripts in the wait section
+        work now.
     </para>
      <note>
-	<title>Change starting from SUSE Linux 10.1/SLES10</title>
+	<title>Changes since SUSE Linux 10.1/SLES10</title>
 	<para>
 	  The <emphasis>language</emphasis>, <emphasis>keyboard</emphasis> and
-      <emphasis>clock</emphasis> properties in the <emphasis>general</emphasis>
-	  resource were moved to the root (<emphasis>profile</emphasis>) element of
-      the autoyast profile. So don't use them in the general section anymore.
+	  <emphasis>clock</emphasis> properties in the
+	  <emphasis>general</emphasis> resource were moved to the root
+	  (<emphasis>profile</emphasis>) element of the autoyast profile. Do
+	  not use them in the general section anymore.
 	</para>
     <para>
-      Since now you can use the <emphasis>second_stage</emphasis> property, which
-      can turn off autoyast after the first reboot. So the complete second stage is
-      a manual installation (default is true, which means that autoyast is doing a
-      complete installation). Since openSUSE 11.0 you can set the boolean <emphasis>final_reboot</emphasis>
-      and <emphasis>final_halt</emphasis> to reboot/turn off the machine at the end of stage two.
+      Now you can use the <emphasis>second_stage</emphasis> property to turn off &ay; after the first reboot (set to "false"). Then the complete second stage is a manual installation. Default is "true", which means &ay; is doing a
+      complete installation. Since openSUSE 11.0 you can set the boolean <emphasis>final_reboot</emphasis>
+      and <emphasis>final_halt</emphasis> to reboot or turn off the machine at the end of stage 2.
     </para>
     <para>
-      For the signature-handling, please read the <emphasis>Software</emphasis> chapter
-      of this documentation.
+      For signature handling, please read the <emphasis>Software</emphasis>
+      chapter of this documentation.<remark>emap 2011-11-05: Add proper ref?</remark>
     </para>
       </note>
     </section>
