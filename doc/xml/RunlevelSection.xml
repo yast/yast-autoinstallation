@@ -18,29 +18,29 @@
 ]>
   <section id="CreateProfile.Services">
     <title>
-      Services and Run-levels
+      Services and Runlevels
     </title>
     <para>
-      With the run-level resource you can set the default run-level and specify
+      With the runlevel resource you can set the default runlevel and specify
       in detail which system services you want to be started in which
       run-level.
     </para>
     <para>
-      The default property specifies the <emphasis>default</emphasis> run
-      level of the system. Changes to the default run-level will take effect
-      the next time you boot the system. After installation is completed,
-      the system has run-level 5, which is  <emphasis>Full multiuser with
-	network and XDM</emphasis>. If you have configured a system with no
-      X11, then it is recommended to reboot the system after the first stage
-      using the <emphasis>reboot</emphasis> property in the <emphasis>general</emphasis> resource.
-
+      The <emphasis>default</emphasis> property specifies the default runlevel
+      of the system. Changes to the default runlevel will take effect the next
+      time you boot the system. After the installation is completed, the
+      system runs in runlevel 5, which is <emphasis>full multiuser with
+      network and XDM</emphasis>. If you have configured a system with no X11,
+      it is recommended to reboot the system after stage 1, using the
+      <emphasis>reboot</emphasis> property in the <emphasis>general</emphasis>
+      resource.<remark>emap 2011-11-05: Something missing, like setting
+      "default" to runlevel 3?</remark>
     </para>
     <para>
-      A service should run in using a space delimited list of the run-levels
-      as shown in the  following example. An alternative to specifying the
-      exact run-levels is to change the status of the service by either
-      enabling or disabling it using the
-      <emphasis>service_status</emphasis> property.
+      Specify in which runlevels a service should run via a space separated
+      list of the runlevels, as shown in the following example. Alternatively
+      change the status of the service by either enabling or disabling it
+      using the <emphasis>service_status</emphasis> property.
     </para>
     &example.runlevels;
     
