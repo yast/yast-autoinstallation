@@ -21,13 +21,16 @@
     <title>Partitioning</title>
 
     <section>
-        <title>drive configuration</title>
+        <title>Drive Configuration</title>
     <warning>
       <title>
-    EVMS support dropped in openSUSE 11.1 and SLES11	
+    EVMS Support Dropped in openSUSE 11.1 and SLES11	
       </title>
       <para>
-since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the installation system. That means all support for EVMS in AutoYaST was dropped too. Alll EVMS documentation on this page is on valid for SLES10 (all service packs) and openSUSE versions prior openSUSE 11.1
+	Since openSUSE 11.1 and SLES11, EVMS is no longer supported in the
+	installation system. That means all support for EVMS in &ay; was
+	dropped as well. Alll EVMS documentation here is only valid for SLES10
+	(all service packs) and openSUSE versions prior to openSUSE 11.1.
       </para>
     </warning>
           <para>
@@ -45,111 +48,110 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
             <tbody>
               <row>
                 <entry>device</entry>
-                <entry><para>the device you want to configure in this section. Since SUSE Linux 10.1 and SLES10, you can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis>. With SLES10 SP1 and SUSE Linux 10.2, <emphasis>by-path</emphasis> is possible too like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.</para>
+                <entry><para>The device you want to configure in this section. Since SUSE Linux 10.1 and SLES10, you can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis>. With SLES10 SP1 and SUSE Linux 10.2, <emphasis>by-path</emphasis> is possible too, like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.</para>
                   <para><literal>&lt;device&gt;/dev/hda&lt;/device&gt;</literal></para>
                 </entry>
-                <entry>optional. If left out, autoyast tries to guess the device. A RAID must always have "/dev/md" as device</entry>
+                <entry>Optional. If left out, &ay; tries to guess the device. A RAID must always have "/dev/md" as device.</entry>
               </row>
               <row>
                 <entry>initialize</entry>
-                <entry><para>if set to true, the partition table gets wiped out before autoyast starts the partition calculation</para>
+                <entry><para>If set to "true", the partition table gets wiped out before &ay; starts the partition calculation.</para>
 <para><literal>&lt;initialize config:type="boolean"&gt;true&lt;/initialize&gt;</literal></para>
 </entry>
-                <entry>optional. The default is false.</entry>
+                <entry>Optional. The default is "false".</entry>
               </row>
               <row>
                 <entry>is_lvm_vg</entry>
-                <entry><para>This tells autoyast that this device is not a physical device but a LVM volume group (see LVM configuration below)</para>
+                <entry><para>Specifies if a device is not a physical device but a LVM volume group (see LVM configuration below).</para>
 <para><literal>&lt;is_lvm_vg config:type="boolean"&gt;true&lt;/is_lvm_vg&gt;</literal></para>
 </entry>
-                <entry><para>DEPRECATED since SLES10SP1 and SL10.2 - use <emphasis>type</emphasis> instead. Must be true if this device is a LVM volume group. The default is false.</para></entry>
+                <entry><para><emphasis>Deprecated</emphasis> since SLES10SP1 and SL10.2. Use <emphasis>type</emphasis> instead. Must be "true" if this device is a LVM volume group. The default is "false".</para></entry>
               </row>
               <row>
                 <entry>is_evms_vg</entry>
-                <entry><para>this tells autoyast that this device is not a physical device but an EVMS volume group (see EVMS configuration below)</para>
+                <entry><para>Specifies if a device is not a physical device but an EVMS volume group (see EVMS configuration below).</para>
 <para><literal>&lt;is_evms_vg config:type="boolean"&gt;true&lt;/is_evms_vg&gt;</literal></para>
 </entry>
-                <entry><para>DEPRECATED since SLES10SP1 and SL10.2 - use <emphasis>type</emphasis> instead. Must be true if this device is an EVMS volume group. The default is false.</para></entry>
+                <entry><para><emphasis>Deprecated</emphasis> since SLES10SP1 and SL10.2. Use <emphasis>type</emphasis> instead. Must be "true" if this device is an EVMS volume group. The default is "false".</para></entry>
               </row>
               <row>
                 <entry>partitions</entry>
-                <entry><para>this is a list of &lt;partition&gt; entries (see table below)</para>
+                <entry><para>A list of &lt;partition&gt; entries (see table below).</para>
 <para><literal>&lt;partitions config:type="list"&gt;&lt;partition&gt;...&lt;/partition&gt;...&lt;/partitions&gt;</literal></para>
 </entry>
-                <entry>optional. If no partition is specified, autoyast will create it's own idea of a nice partitioning (see Automated Partitioning below).</entry>
+                <entry>Optional. If no partitions are specified, &ay; will create a reasonable partitioning (see Automated Partitioning below).</entry>
               </row>
               <row>
                 <entry>pesize</entry>
-                <entry><para>this value makes only sense with LVM/EVMS.</para>
+                <entry><para>This value makes only sense with LVM/EVMS.</para>
 <para><literal>&lt;pesize&gt;8M&lt;/pesize&gt;</literal></para>
 </entry>
-                <entry>optional. Default is 4M for EVMS/LVM volume groups.</entry>
+                <entry>Optional. Default is 4M for EVMS/LVM volume groups.</entry>
               </row>
               <row>
                 <entry>use</entry>
-                <entry><para>this parameter tells autoyast which strategy it shall use to partition the harddisc.</para>
-<para>You can choose between:</para>
+                <entry><para>Specifies the strategy &ay; will use to partition the hard disk.</para>
+<para>Choose between:</para>
 <itemizedlist>
 <listitem>
-<para>all (uses the whole device while calculating the new partitioning)</para>
+<para>all (uses the whole device while calculating the new partitioning),</para>
 </listitem>
 <listitem>
-<para>linux (only existing linux partitions are used)</para>
+<para>linux (only existing linux partitions are used),</para>
 </listitem>
 <listitem>
-<para>free (only unused space on the device gets used. No other partitions gets touched)</para>
+<para>free (only unused space on the device is used, no other partitions are touched),</para>
 </listitem>
 <listitem>
-<para>1,2,3 (a list of comma seperated numbers that indicates the partition numbers to use)</para>
+<para>1,2,3 (a list of comma separated partition numbers to use).</para>
 </listitem>
 </itemizedlist>
 </entry>
-                <entry>this parameter should be provided</entry>
+                <entry>This parameter should be provided.</entry>
               </row>
               <row>
                 <entry>type</entry>
-                <entry><para>this value describes the type of the <emphasis>drive</emphasis> and is a replacement for
-<emphasis>is_lvm_vg</emphasis> and <emphasis>is_evms_vg</emphasis> used in SLES10 and SL10.1</para>
-<para>You can choose between:</para>
+                <entry><para>Specify the type of the <emphasis>drive</emphasis> (This parameter replaces <emphasis>is_lvm_vg</emphasis> and <emphasis>is_evms_vg</emphasis> in SLES10 and SL10.1)</para>
+<para>Choose between:</para>
 <itemizedlist>
 <listitem>
-<para>CT_DISK for physical harddisks (default)</para>
+<para>CT_DISK for physical hard disks (default),</para>
 </listitem>
 <listitem>
-<para>CT_LVM for LVM volume groups</para>
+<para>CT_LVM for LVM volume groups,</para>
 </listitem>
 <listitem>
-<para>CT_EVMS for EVMS volume groups</para>
+<para>CT_EVMS for EVMS volume groups.</para>
 </listitem>
 </itemizedlist>
 
 <para><literal>&lt;type config:type="symbol"&gt;CT_LVM&lt;/type&gt;</literal></para>
 </entry>
-                <entry>optional. Default is CT_DISK for a normal physical harddisk.</entry>
+                <entry>Optional. Default is CT_DISK for a normal physical hard disk.</entry>
               </row>
               <row>
                 <entry>disklabel</entry>
-                <entry><para>this value describes the type of the partition table</para>
-<para>You can choose between:</para>
+                <entry><para>Describes the type of the partition table.</para>
+<para>Choose between:</para>
 <itemizedlist>
 <listitem>
-<para>msdos</para>
+<para>msdos,</para>
 </listitem>
 <listitem>
-<para>gpt</para>
+<para>gpt.</para>
 </listitem>
 </itemizedlist>
 
 <para><literal>&lt;disklabel&gt;gpt&lt;/disklabel&gt;</literal></para>
 </entry>
-                <entry>optional and available since openSUSE 12.1 and SLES11 SP2. Default is to let yast decide what makes sense (msdos in most cases)</entry>
+                <entry>Optional and available since openSUSE 12.1 and SLES11 SP2. By default &yast; decides what makes sense (msdos in most cases).</entry>
               </row>
               <row>
                 <entry>keep_unknown_lv</entry>
-                <entry><para>This value only makes sense for type=CT_LVM drives. If you are reusing a LVG and you set this to true, all existing LVs in that VG won't be touched unless they are specified in the &lt;partitioning&gt; section. So you can keep existing LVs without need to specify them.</para>
+                <entry><para>This value only makes sense for type=CT_LVM drives. If you are reusing a LVG and you set this to "true", all existing LVs in that VG will not be touched unless they are specified in the &lt;partitioning&gt; section. So you can keep existing LVs without specifying them.</para>
 <para><literal>&lt;keep_unknown_lv config:type="boolean"&gt;false&lt;/keep_unknown_lv&gt;</literal></para>
 </entry>
-                <entry>optional and available since openSUSE 12.1 and SLES11 SP2. The default is false</entry>
+                <entry>Optional and available since openSUSE 12.1 and SLES11 SP2. The default is "false".</entry>
               </row>
             </tbody>
           </tgroup>
@@ -157,7 +159,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
     </section>
 
     <section>
-        <title>partition configuration</title>
+        <title>Partition Configuration</title>
           <para>
           The following elements must be between the &lt;partitions config:type="list"&gt;&lt;partition&gt; ... &lt;/partition&gt;&lt;/partitions&gt; tags in the &lt;drive&gt; section.
           </para>
@@ -175,64 +177,63 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>create</entry>
                 <entry>
                   <para>
-                    the "create" tells autoyast if this partition must be created or if it's already existing
+                    Specify if this partition must be created or if it already exists.
                   </para>
                   <para><literal>&lt;create config:type="boolean"&gt;false&lt;/create&gt;</literal></para>
                 </entry>
-                <entry>if set to false, there must be some information for autoyast which partition this is (like with partition_nr)</entry>
+                <entry>If set to "false", provide information for &ay; which partition this is (like with partition_nr).</entry>
               </row>
               <row>
                 <entry>mount</entry>
                 <entry>
                   <para>
-                    the mountpoint of this partition.
+                    The mountpoint of this partition.
                   </para>
                   <para><literal>&lt;mount&gt;/&lt;/mount&gt;</literal></para>
                   <para><literal>&lt;mount&gt;swap&lt;/mount&gt;</literal></para>
                 </entry>
-                <entry>you should have at least a root partition (/) and a swap partition</entry>
+                <entry>You should have at least a root partition (/) and a swap partition.</entry>
               </row>
               <row>
                 <entry>fstopt</entry>
                 <entry>
                   <para>
-                    mount options for this partition
+                    Mount options for this partition.
                   </para>
                   <para><literal>&lt;fstopt&gt;ro,noatime,user,data=ordered,acl,user_xattr&lt;/fstopt&gt;</literal></para>
                 </entry>
-                <entry>see "man mount" for the mountoptions you can use</entry>
+                <entry>See <command>man mount</command> for available mount options.</entry>
               </row>
               <row>
                 <entry>label</entry>
                 <entry>
                   <para>
-                    the label the partition has (useful for the "mountby" parameter - see below).
+                    The label of the partition (useful for the "mountby" parameter; see below).
                   </para>
                   <para><literal>&lt;label&gt;mydata&lt;/label&gt;</literal></para>
                 </entry>
-                <entry>see "man e2label" for example.</entry>
+                <entry>See <command>man e2label</command> for an example.</entry>
               </row>
               <row>
                 <entry>uuid</entry>
                 <entry>
                   <para>
-                    the uuid the partition has (only useful for the "mountby" parameter - see below).
+                    The uuid of the partition (only useful for the "mountby" parameter; see below).
                   </para>
                   <para><literal>&lt;uuid&gt;1b4e28ba-2fa1-11d2-883f-b9a761bde3fb&lt;/uuid&gt;</literal></para>
                 </entry>
-                <entry>see "man uuidgen"</entry>
+                <entry>See <command>man uuidgen</command>.</entry>
               </row>
               <row>
                 <entry>size</entry>
                 <entry>
                   <para>
-                    the size for the partition like 4G, 4500M, ... The /boot partition and the swap partition can have "auto" as
-                    size too, to let autoyast calculate a reasonable size for them. On partition can have the value "max" to fillup
-                    all available space.
+                    The size of the partition, e.g. 4G, 4500M, etc. The /boot partition and the swap partition can have "auto" as
+                    size. Then &ay; calculates a reasonable size. One partition can have the value "max" to use all remaining space.
                   </para>
                   <para>
-                    with SUSE Linux 10.2 and SLES10 SP1, you can specify the the size in percentage. So 10% will use 10% of the size
-                    of the harddisk/VG. You can mix auto,max,sizes and percentage like you want.
+                    With SUSE Linux 10.2 and SLES10 SP1, you can specify the the size in percentage. So 10% will use 10% of the size
+                    of the hard disk or VG. You can mix auto, max, size, and percentage as you like.
                   </para>
                   <para><literal>&lt;size&gt;10G&lt;/size&gt;</literal></para>
                 </entry>
@@ -242,94 +243,96 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>format</entry>
                 <entry>
                   <para>
-                    shall autoyast format the partition?
+                    Specify if &ay; should format the partition.
                   </para>
                   <para><literal>&lt;format config:type="boolean"&gt;false&lt;/format&gt;</literal></para>
                 </entry>
-                <entry>if "create" is true, then it's very likely that this is true too</entry>
+                <entry>If you set "create" to "true", then you likely want this is option set to "true" as well.</entry>
               </row>
               <row>
                 <entry>filesystem</entry>
                 <entry>
                   <para>
-                    what filesystem is used on this partition?
+                    Specify the filesystem to use on this partition:
                   </para>
 <itemizedlist>
 <listitem>
-<para>reiser (the default)</para>
+<para>reiser,</para><remark>emap 2011-11-05: Should 'reiser' read 'reiserfs'? I doubt reiserfs is still the default. Ext3? Then maybe add (default) there and move it to the top of the list.</remark>
 </listitem>
 <listitem>
-<para>ext2</para>
+<para>ext2,</para>
 </listitem>
 <listitem>
-<para>ext3</para>
+<para>ext3,</para>
 </listitem>
 <listitem>
-<para>xfs</para>
+<para>xfs,</para>
 </listitem>
 <listitem>
-<para>jfs</para>
+<para>jfs,</para>
 </listitem>
 <listitem>
-<para>swap</para>
+<para>swap.</para>
 </listitem>
 </itemizedlist>
 
                   <para><literal>&lt;filesystem config:type="symbol"&gt;reiser&lt;/filesystem&gt;</literal></para>
                 </entry>
-                <entry>optional. The default is reiser</entry>
+                <entry>Optional. The default is reiser</entry><remark>emap 2011-11-05: Fix this too.</remark>
               </row>
               <row>
                 <entry>partition_nr</entry>
                 <entry>
                   <para>
-                    the partition_nr this partition has/will have. If you have set create=false or if you use LVM, then you can tell
-                    autoyast which partition you mean by the partition_nr. You can force autoyast to create only
-                    primary partitions by configuring only partition numbers below 5.
+                    The partition number of this partition. If you have set
+                    create=false or if you use LVM, then you can specify the
+                    partition via partition_nr. You can force &ay; to only
+                    create primary partitions by assigning numbers below 5.
                   </para>
                   <para><literal>&lt;partition_nr config:type="integer"&gt;2&lt;/partition_nr&gt;</literal></para>
                 </entry>
-                <entry>in most cases nr. 1-4 are primary partitions and 5-... are logical partitions</entry>
+                <entry>In most cases, numbers 1 to 4 are primary partitions
+                while 5 and higher are logical partitions.</entry>
               </row>
               <row>
                 <entry>partition_id</entry>
                 <entry>
                   <para>
-                        the partition_id configures the id of the partition. If you want something else than 131
-                        for linux partition or 130 for swap, you must configure that with partition_id.
+                   The partition_id sets the id of the partition. If you want different identifiers than 131
+                        for Linux partition or 130 for swap, configure them with partition_id.
                   </para>
                   <para><literal>&lt;partition_id config:type="integer"&gt;131&lt;/partition_id&gt;</literal></para>
                 </entry>
-                <entry>the default is 131 for linux partition. 130 for swap is set by autoyast itself too.</entry>
+                <entry>The default is 131 for linux partition and 130 for swap.</entry>
               </row>
               <row>
                 <entry>filesystem_id</entry>
                 <entry>
                   <para>
-                        look at partition_id above. For historical reasons they represent the same.
+                   See partition_id above. For historical reasons they represent the same.
                   </para>
                   <para><literal>&lt;filesystem_id config:type="integer"&gt;131&lt;/filesystem_id&gt;</literal></para>
                 </entry>
-                <entry>since 10.1 and SLES10 it's recommended to use partition_id instead.</entry>
+                <entry>Since 10.1 and SLES10 it is recommended to use partition_id instead.</entry>
               </row>
               <row>
                 <entry>mountby</entry>
                 <entry>
                   <para>
-                    instead of a partition number, you can tell autoyast to mount a partition by label, uuid, path or id which are the udev path and udev id (see /dev/disk/...)
+                   Instead of a partition number, you can tell &ay; to mount a partition by label, uuid, path or id, which are the udev path and udev id (see /dev/disk/...).
                   </para>
                   <para><literal>&lt;mountby config:type="symbol"&gt;label&lt;/mountby&gt;</literal></para>
                 </entry>
-                <entry>see "label" and "uuid" documentation above</entry>
+                <entry>See "label" and "uuid" documentation above.</entry>
               </row>
               <row>
                 <entry>lv_name</entry>
                 <entry>
                   <para>
-                    if this partition is in a logical volume in a volume group (LVM or EVMS)
-                    (see is_lvm_vg/is_evms_vg parameter in drive configuration) you
-                    must specifiy the logical volume name here.
-                  </para>
+                    If this partition is in a logical volume in a volume group
+                    (LVM or EVMS) specify the logical volume name here (see
+                    is_lvm_vg or is_evms_vg parameter in drive configuration).
+                   </para>
                   <para><literal>&lt;lv_name&gt;opt_lv&lt;/lv_name&gt;</literal></para>
                 </entry>
                 <entry></entry>
@@ -338,7 +341,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>stripes</entry>
                 <entry>
                   <para>
-                    It's an integer that tells AutoYaST to do LVM striping. You can configure across how man devices you want to stripe
+                    An integer that configures LVM striping. Specify across how many devices you want to stripe (spread data).
                   </para>
                   <para><literal>&lt;stripes config:type="integer"&gt;2&lt;/stripes&gt;</literal></para>
                 </entry>
@@ -348,7 +351,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>stripesize</entry>
                 <entry>
                   <para>
-                    It's an integer that tells AutoYaST the size of each block in kb
+                    Specify the size of each block in kb.
                   </para>
                   <para><literal>&lt;stripesize config:type="integer"&gt;4&lt;/stripesize&gt;</literal></para>
                 </entry>
@@ -358,8 +361,8 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>lvm_group</entry>
                 <entry>
                   <para>
-                    if this is a physical partition that is used by (part of) a volume group (LVM), 
-                        you have to specify the name of the volume
+                    If this is a physical partition used by (part of) a volume
+                    group (LVM), you have to specify the name of the volume
                     group here.
                   </para>
                   <para><literal>&lt;lvm_group&gt;system&lt;/lvm_group&gt;</literal></para>
@@ -370,8 +373,9 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>evms_group</entry>
                 <entry>
                   <para>
-                    if this physical partition is used by a volume group (EVMS), you have to specify the name of the volume
-                    group here.
+                    If this physical partition is used by a volume group
+                    (EVMS), you have to specify the name of the volume group
+                    here.
                   </para>
                   <para><literal>&lt;evms_group&gt;system&lt;/evms_group&gt;</literal></para>
                 </entry>
@@ -381,7 +385,8 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>raid_name</entry>
                 <entry>
                   <para>
-                    this physical volume is part of a RAID and the name of the raid is specified here.
+                    If this physical volume is part of a RAID, specify the
+                    name of the RAID.
                   </para>
                   <para><literal>&lt;raid_name&gt;/dev/md0&lt;/raid_name&gt;</literal></para>
                 </entry>
@@ -391,7 +396,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>raid_type</entry>
                 <entry>
                   <para>
-                    this physical volume is part of a RAID and the type of the raid is specified here..
+                    Specify the type of the RAID.
                   </para>
                   <para><literal>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</literal></para>
                 </entry>
@@ -401,7 +406,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>raid_options</entry>
                 <entry>
                   <para>
-                    special options for the raid are specified here. See below.
+                    Specify RAID options, see below.
                   </para>
                   <para><literal>&lt;raid_options&gt;...&lt;/raid_options&gt;</literal></para>
                 </entry>
@@ -412,12 +417,12 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>
                   <para>
                     This parameter is available since SLES10 SP1 and OpenSUSE 10.2.
-                    This boolean must be true if an existing partition should be resized. In this case,
-                    you want to set <emphasis>create</emphasis> to <emphasis>false</emphasis> too and in
+                    This boolean must be "true" if an existing partition should be resized. In this case,
+                    you want to set <emphasis>create</emphasis> to <emphasis>false</emphasis> and in
                     most cases you don't want to <emphasis>format</emphasis> the partition. You need to
-                    tell autoyast the <emphasis>partition_nr</emphasis> and the <emphasis>size</emphasis>.
-                    The size can be in percentage of the original size or as a number of the new size, like
-                    <emphasis>800M</emphasis>. <emphasis>max</emphasis> and <emphasis>auto</emphasis> don't
+                    tell &ay; the <emphasis>partition_nr</emphasis> and the <emphasis>size</emphasis>.
+                    The size can be in percentage of the original size or a number, like
+                    <emphasis>800M</emphasis>. <emphasis>max</emphasis> and <emphasis>auto</emphasis> do not
                     work as size here.
                   </para>
                   <para><literal>&lt;resize config:type="boolean"&gt;false&lt;/resize&gt;</literal></para>
@@ -429,7 +434,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
           </informaltable>
         </section>
     <section>
-        <title>raid options</title>
+        <title>RAID Options</title>
           <para>
           The following elements must be between the &lt;partition&gt;&lt;raid_options&gt; ... &lt;/raid_options&gt;&lt;/partition&gt; tags.
           </para>
@@ -456,7 +461,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>parity_algorithm</entry>
                 <entry>
                   <para>
-                    possible values are: left_asymmetric, left_symmetric, right_asymmetric, right_symmetric and since SLES11 SP2 and openSUSE 12.1 you can use parity_first, parity_last, left_asymmetric_6, left_symmetric_6, right_asymmetric_6, right_symmetric_6, parity_first_6, n2, o2, f2, n3, o3, f3 for RAID6 and RAID10
+                    Possible values are: left_asymmetric, left_symmetric, right_asymmetric, right_symmetric. Since SLES11 SP2 and openSUSE 12.1 you can use: parity_first, parity_last, left_asymmetric_6, left_symmetric_6, right_asymmetric_6, right_symmetric_6, parity_first_6, n2, o2, f2, n3, o3, f3 for RAID6 and RAID10
                   </para>
                   <para><literal>&lt;parity_algorithm&gt;left_asymmetric&lt;/parity_algorithm&gt;</literal></para>
                 </entry>
@@ -466,11 +471,11 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
                 <entry>raid_type</entry>
                 <entry>
                   <para>
-                    possible values are raid0,raid1 and raid5
+                    Possible values are: raid0,raid1 and raid5.
                   </para>
                   <para><literal>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</literal></para>
                 </entry>
-                <entry>the default is raid1</entry>
+                <entry>The default is raid1.</entry>
               </row>
             </tbody>
           </tgroup>
@@ -482,14 +487,13 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
       </title>
 
       <para>
-	For the automated partitioning to be completed, only the sizes and mount points of
-	partitions can be provided. All other data needed for successful partitioning
-	can be calculated during installation if they were not provided in the control file. 
+	For automated partitioning, you only need to provide the sizes and
+	mount points of partitions. All other data needed for successful partitioning is calculated during installation&mdash;unless provided in the control file.
       </para>
       <para>
-	If no partitions are defined and the specified drive is also the drive where
-	the root partition should be created, the following partitions are created
-	automatically:
+	If no partitions are defined and the specified drive is also the drive
+	where the root partition should be created, the following partitions
+	are created automatically:
       </para>
       <itemizedlist>
 	<listitem>
@@ -497,8 +501,8 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	    <emphasis>/boot</emphasis>
 	  </para>
 	  <para>
-	    Size of the <emphasis>/boot</emphasis> is determined by the
-	    architecture of the target system.
+	    The size of the <emphasis>/boot</emphasis> partition is determined
+	    by the architecture of the target system.
 	  </para>
 	</listitem>
 	<listitem>
@@ -506,8 +510,8 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	    <emphasis>swap</emphasis>
 	  </para>
 	  <para>
-	    Size of the <emphasis>swap</emphasis> partitions is determined by the
-	    amount of memory available in the system.
+	    The size of the <emphasis>swap</emphasis> partition is determined
+	    by the amount of memory available in the system.
 	  </para>
 	</listitem>
 	<listitem>
@@ -515,8 +519,9 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	    <emphasis>/</emphasis> (root partition)
 	  </para>
 	  <para>
-	    Size of the <emphasis>/</emphasis> (root partition) is the space left
-	    after creating <emphasis>swap</emphasis> and <emphasis>/boot</emphasis>.
+	    The size of the root partition is determined by the space left
+	    after creating <emphasis>swap</emphasis> and
+	    <emphasis>/boot</emphasis>.
 	  </para>
 	</listitem>
       </itemizedlist>
@@ -533,7 +538,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	  </para>
 	  <para>
 	    If the drive is already partitioned, it is possible to create the
-	    new partitions using the available space on the hard drive. This
+	    new partitions using the free space on the hard drive. This
 	    requires the availability of enough space for all selected
 	    packages in addition to swap.
 	  </para>
@@ -543,8 +548,8 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	    <emphasis>Reuse all available space</emphasis>
 	  </para>
 	  <para>
-	    This option will lead to the deletion of all existing
-	    partitions (Linux and non-Linux partitions).
+	    Use this option to delete all existing
+	    partitions (Linux and non-Linux).
 
 	  </para>
 	</listitem>
@@ -554,11 +559,10 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	    <emphasis>Reuse all available Linux partitions</emphasis>
 	  </para>
 	  <para>
-	    This option will lead to the deletion of existing Linux
-	    partitions. All other partitions (i.e. Windows) will be
-	    kept. Note that this works only if the Linux partitions are at the end of the device.
-	    
-	  </para>
+	    This option deletes all existing Linux partitions. Other
+	    partitions (i.e. Windows) remain untouched. Note that this works
+	    only if the Linux partitions are at the end of the device.
+	   </para>
 	</listitem>
 
 	<listitem>
@@ -566,60 +570,57 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	    <emphasis>Reuse only specified partitions</emphasis>
 	  </para>
 	  <para>
-	    This option will lead to the deletion of the specified partitions.
-	    The selection of the partitions scheduled for deletion should be
-	    started from the last available partition.
+	    This option allows you to select specific partitions to delete.
+	    Start the selection with the last available partition.
 	  </para>
 	</listitem>
       </itemizedlist>
       <para>
-	Repartitioning using only some of the existing partitions can be
-	accomplished only if the region selected to be partitioned exists at
-	the end of the device and only with neighboring partitions. This
-	means that you cannot repartition a region which contains a partition that
-	should not be touched in the middle.
+	Repartitioning only works if the selected partitions are neighbors and
+	located at the end of the device.
       </para>
 
       <caution>
 	<title>Important Notice</title>
 	<para>
-	  The value provided in the <emphasis>use</emphasis> property determines how existing data and
-	  partitions are treated. The value <emphasis>all</emphasis> means that
-	  <emphasis>ALL</emphasis> data on the disk will
-	  be erased. Make backups and use the <emphasis>confirm</emphasis>
-	  property if you are going to
-	  keep some partitions with important data. This is automated
-	  installation and no pop-ups will  notify you about partitions being deleted.
+	  The value provided in the <emphasis>use</emphasis> property
+	  determines how existing data and partitions are treated. The value
+	  <emphasis>all</emphasis> means that <emphasis>ALL</emphasis> data on
+	  the disk will be erased. Make backups and use the
+	  <emphasis>confirm</emphasis> property if you are going to keep some
+	  partitions with important data. During automated installation,
+	  no popups will notify you about partitions being deleted.
 	</para>
       </caution>
       <para>	
-	In case of the presence of multiple drives in the target system, all
-	drives must be identified with their device names and how the partitioning should be performed.
+	If multiple drives are present in the target system, identify all
+	drives with their device names and specify how the partitioning should
+	be performed.
       </para>
 
       <para>
-	Partition sizes can be given in Gigabytes, Megabytes or can be set to
+	Partition sizes can be given in gigabytes, megabytes or can be set to
 	a flexible value using the keywords <emphasis>auto</emphasis> and
-	<emphasis>max</emphasis>. <emphasis>max</emphasis> is used to fill a
-	partition to the maximal available space on a
-	drive (Which mean that the partition should be the last one on the drive). 
-	<emphasis>auto</emphasis> can be used to determine the size of
-	a <emphasis>swap</emphasis> or <emphasis>boot</emphasis> partitions
-	depending on the memory available and the type of the system.
+	<emphasis>max</emphasis>. <emphasis>max</emphasis> uses all available
+	space on a drive, therefore should only be set for the last partition
+	on the drive. With <emphasis>auto</emphasis> the size of a
+	<emphasis>swap</emphasis> or <emphasis>boot</emphasis> partition is
+	determined automatically, depending on the memory available and the
+	type of the system.
       </para>
       <para>A fixed size can be given as shown below:</para>
       <para>
-	<emphasis>1GB</emphasis> will create a partition with 1 GB size.
-	<emphasis>1500MB</emphasis> will create a partition which is 1.5 GB big.
+	<emphasis>1GB</emphasis> will create a partition of the size 1 GB.
+	<emphasis>1500MB</emphasis> will create a partition of the size 1.5 GB.
       </para>
       <example>
-	<title>Automated partitioning</title>
+	<title>Automated Partitioning</title>
 	<para>
 	  The following is an example of a single drive system, which is not
 	  pre-partitioned and should be automatically partitioned according to
-	  the described pre-defined partition plan. If you leave the device out,
-      an autodetection of the device will happen. So you don't have to do
-      different profiles for /dev/sda or /dev/hda systems.
+	  the described pre-defined partition plan. If you do not specify the
+	  device, it will be automatically detected. You do not have to create
+	  different profiles for /dev/sda or /dev/hda systems.
 	</para>
 	<screen>
   <xi:include href="examples/example.partitioning.xml" parse="text"
@@ -628,11 +629,11 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	  </screen>
 	</example>
   <para>
-    A more detailed example shows how existing partitions  and
+    A more detailed example shows how existing partitions and
     multiple drives are handled.
   </para>
   <example>
-    <title>Detailed automated partitioning</title>
+    <title>Detailed Automated Partitioning</title>
     <screen>
   <xi:include href="examples/example.partitioning2.xml" parse="text"
     xmlns:xi="http://www.w3.org/2001/XInclude"/>
@@ -641,85 +642,90 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
     </section>
 
   <section>
-    <title>Advanced Partitioning features</title>
+    <title>Advanced Partitioning Features</title>
     <section>
-      <title>Wipe out partition table</title>
+      <title>Wipe out Partition Table</title>
       <para>
-        In the most cases this is not needed because autoyast can delete partitions
-        one by one automatically but you have the option to let autoyast clear the partition table
-        instead of deleting the partitions individually.
+        In most cases this is not needed because &ay; can delete partitions
+        one by one automatically, but you have the option to let &ay; clear
+        the partition table instead of deleting partitions individually.
       </para>
       <para>
-        if you go into the "drive" section, you can add
+        Go to the "drive" section and add:
       </para>
         <screen>
 <![CDATA[
 <initialize config:type="boolean">true</initialize>
 ]]>
 </screen>
-<para>        which tells Autoyast to delete the partition table before it starts to analyse the
-        actual partitioning and calculates it's partition plan. Of course this means, that you
-        can't keep any of your existing partitions.</para>
+<para> With this setting &ay; will delete the partition table before it starts
+to analyse the actual partitioning and calculates its partition plan. Of
+course this means, that you cannot keep any of your existing
+partitions.</para>
     </section>
     <section>
       <title>Mount Options</title>
       <para>
-	By default a file system which is to be mounted is
-	identified in <filename>/etc/fstab</filename> by the device name. This identification
-	can be changed so the file system  is found by searching
-	for a <acronym>UUID</acronym> or a volume label. Note that not all file systems can be mounted
-	by <acronym>UUID</acronym> or a volume label. To specify how a
-	partition is to be mounted, use the <emphasis>mountby</emphasis>
-	property which has the <emphasis>symbol</emphasis> type. Possible
-	options are:
+	By default a file system to be mounted is identified in
+	<filename>/etc/fstab</filename> by the device name. This
+	identification can be changed so the file system is found by searching
+	for a <acronym>UUID</acronym> or a volume label. Note that not all
+	file systems can be mounted by <acronym>UUID</acronym> or a volume
+	label. To specify how a partition is to be mounted, use the
+	<emphasis>mountby</emphasis> property which has the
+	<emphasis>symbol</emphasis> type. Possible options are:
       </para>
       <itemizedlist>
 	<listitem>
-	  <para>device (default)</para>
+	  <para>device (default),</para>
 	</listitem>
 	<listitem>
-	  <para>label</para>
+	  <para>label,</para>
 	</listitem>
 	<listitem>
-	  <para>UUID</para>
+	  <para>UUID.</para>
 	</listitem>
       </itemizedlist>
       <para>
 	If you choose to mount the partition using a label, the name
-	entered in the <emphasis>label</emphasis> property is used as the
+	entered for the <emphasis>label</emphasis> property is used as the
 	volume label. 
       </para>
       <para>
-	Add any legal mount option allowed in the fourth field of
-	<filename>/etc/fstab</filename>. Multiple options are separated by commas.  Possible fstab options:
+	Add any legal mount option in the fourth field of
+	<filename>/etc/fstab</filename>. Multiple options are separated by commas. Possible fstab options:
       </para>
       <itemizedlist>
 	<listitem>
-	  <para><emphasis>Mount Read-Only (ro):</emphasis> No writable
-	    access to the file system is possible. Default is false.</para>
-
+	  <para><emphasis>Mount read-only (ro):</emphasis> No write
+	    access to the file system. Default is "false".</para>
 	</listitem>
 	<listitem>
 	  <para><emphasis>No access time (noatime):</emphasis> Access times
-	    are not updated when a file is read. Default is false.</para>
-
+	    are not updated when a file is read. Default is "false".</para>
 	</listitem>
 	<listitem>
 	  <para><emphasis>Mountable by User (user):</emphasis> The file
-	    system may be mounted by an ordinary user. Default is
-	    false.</para>
-
+	    system can be mounted by a normal user. Default is
+	    "false".</para>
 	</listitem>
 	<listitem>
 	  <para>
-	    <emphasis>Data Journaling Mode (ordered | journal |
-	      writeback) :</emphasis> Specifies the journaling mode for
-	    file data. journal -- All data is committed into the journal
-	    prior to being written into the main file system. ordered --
-	    All data is forced directly out to the main file system prior
-	    to its meta data being committed to the journal. writeback --
-	    Data ordering is not preserved.
-	  </para>
+	    <emphasis>Data Journaling Mode (ordered, journal,
+	    writeback):</emphasis> Specifies the journaling mode for file
+	    data. </para> 
+	 <itemizedlist>
+	<listitem><emphasis>journal</emphasis>: All data is committed to the
+	journal prior to being written to the main file system.
+	</listitem>
+	<listitem><emphasis>ordered</emphasis>: All data is
+	    directly written to the main file system before its meta data is
+	    committed to the journal.
+	</listitem>
+	<listitem><emphasis>writeback</emphasis>: Data ordering is not
+	    preserved.
+	</listitem>
+	 </itemizedlist>
 	</listitem>
 	<listitem>
 	  <para>
@@ -749,25 +755,24 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
     <section>
       <title>Keeping Specific Partitions</title>
       <para>
-	In some cases you might choose to keep some partitions untouched
-	and only format specific target partitions, rather than creating them from
-	scratch. This might be the case of Linux installations have to
-	co-exist with another operating system or if certain partitions
-	contain data that you wish to keep untouched.
+	In some cases you may want to leave partitions untouched and only
+	format specific target partitions, rather than creating them from
+	scratch. For example, if different Linux installations coexist, or you
+	have another operating system installed, likely you do not want to
+	wipe these out. Or you may want to leave data partitions untouched.
       </para>
       <para>
 	Such scenarios require certain knowledge about the target systems
 	and hard drives. Depending on the scenario, you might need to know
 	the exact partition table of the target hard drive with partition
-	id's, sizes and numbers. With such data you can tell &autoyast; to
+	ids, sizes and numbers. With this data you can tell &ay; to
 	keep certain partitions, format others and create new partitions if 
 	needed.
       </para>
-
       <para>
 	The following example will keep partitions 1, 2 and 5 and delete
-	partition 6 to create two new partitions. All kept partitions will
-	be only formatted.
+	partition 6 to create two new partitions. All remaining partitions will
+	only be formatted.<remark>emap 2011-11-05: Not the best example for the scenarios two paras up with coexisting operating systems or data partitions. Who'd want to format those?</remark>
       </para>
     <example>
       <title>
@@ -779,9 +784,9 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
       </screen>
     </example>
     <para>
-	The last example requires exact knowledge about the existing partition
-	table and about the partition numbers of those partitions that
-	should be kept. In some cases however, such data might be not
+	The last example requires exact knowledge of the existing partition
+	table and the partition numbers of those partitions that
+	should be kept. In some cases however, such data may not be
 	available, especially in a mixed hardware environment with
 	different hard drive types and configurations. The following
 	scenario is for a system with a non-Linux OS with a designated
@@ -793,15 +798,14 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
       </figure>
 
       <para>
-	In this scenario and as shown in  figure <quote><xref
+	In this scenario, shown in  figure <quote><xref
 	    linkend='partitioning-keep1'
-	    endterm="partitioning-keep1.title"/></quote>, &autoyast2;
-	should not in any case create any new
-	partitions,  instead  it should search for certain partition types on the system and use
+	    endterm="partitioning-keep1.title"/></quote>, &ay;
+	will not create new partitions. Instead it searches for certain partition types on the system and uses
 	them according to the partitioning plan in the control file. No
 	partition numbers are given in this case, only the mount points and
-	the partition types (Additional configuration data can be provided,
-	for example file system options, encryption and filesystem type)
+	the partition types (additional configuration data can be provided,
+	for example file system options, encryption and filesystem type).
       </para>
   <example>
     <title> Auto-detection of partitions to be kept.</title>
@@ -812,15 +816,15 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
   </section>
 
   <section>
-    <title>Using existing mount table (fstab)</title>
+    <title>Using Existing Mount Table (fstab)</title>
     <note>
       <title>New Feature</title>
     <para>
-      This option will allow the AutoYaST to use an existing
+      This option will allow &ay; to use an existing
       <filename>/etc/fstab</filename> and use the partition data from
-      from a previous installation. All partitions are kept and no new
-      partitions are created. The found partitions will be formatted and
-      mounted as specified in <filename>/etc/fstab</filename> found on a
+      a previous installation. All partitions are kept and no new
+      partitions are created. The partitions will be formatted and
+      mounted as specified in <filename>/etc/fstab</filename> on a
       Linux root partition.
     </para>
       </note>
@@ -830,7 +834,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
       for example data partitions. If multiple installations are found on
       the system (multiple root partitions with different
       <emphasis>fstab</emphasis> files, the installation will abort, unless
-      the desired root partition is configured in the control file. The
+      the root partition is configured in the control file. The
       following example illustrates how this option can be used:
     </para>
     <example>
@@ -849,7 +853,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
       Logical Volume Manager (LVM)
     </title>
     <para>
-      To configure LVM, first you need to create a <emphasis>physical volume</emphasis> using the
+      To configure LVM, first create a <emphasis>physical volume</emphasis> using the
       normal partitioning method described above. 
     </para>
     <example>
@@ -867,12 +871,11 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 
     </example>
     <para>
-      The last example will create a non-formatted partition on device
+      In the last example, a non-formatted partition is created on device
       <filename>/dev/sda1</filename> of the type <emphasis>LVM</emphasis> and
-      with the volume group <emphasis>system</emphasis>. The partition
-      created  will use all available space on this drive.
+      with the volume group <emphasis>system</emphasis>. This partition
+      will use all space available on the drive.
     </para>
-
 	<example>
 	  <title>
 	    LVM Logical Volumes (New syntax)
@@ -883,30 +886,30 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 	  </screen>
 	</example>
     <para>
-      With SUSE Linux 10.1 and all following versions, it's possible to set the <emphasis>size</emphasis> 
+      With SUSE Linux 10.1 and all following versions, it is possible to set the <emphasis>size</emphasis> 
       to <emphasis>max</emphasis> for the logical volumes. Of course, you can only use <emphasis>max</emphasis>
-      only for one(!) logical volumes. You can't have two logical volumes in one volume group with the 
-      <emphasis>size</emphasis> set to <emphasis>max</emphasis>
+      for one(!) logical volume. You cannot set two logical volumes in one volume group to 
+      <emphasis>size</emphasis> <emphasis>max</emphasis>
     </para>
   </section>
 
   <section>
     <title>
-      Enterprise Volume Management System (EVMS) - SLES10 only!
+      Enterprise Volume Management System (EVMS) &mdash; SLES10 only!
     </title>
     <para>
-      SLES10 autoyast has EVMS support. SLES11 has not!
+      SLES10 &ay; has EVMS support. SLES11 has not!
     </para>
     <para>
-      Using EVMS is quite similar to using LVM (see above). So switching from LVM to EVMS
-      is just a small change in the autoyast profile. All you have to do is to change the
-      "is_lvm_vg" element into "is_evms_vg" and the "lvm_group" element into "evms_group".
+      Using EVMS is quite similar to using LVM (see above). Switching from LVM to EVMS
+      is just a small change in the &ay; profile. Change the
+      "is_lvm_vg" element to "is_evms_vg" and the "lvm_group" element to "evms_group".
     </para>
     <para>
-      With autoyast it's not possible to mix LVM and EVMS.
+      With &ay; it is not possible to mix LVM and EVMS.
     </para>
     <para>
-      Using the LVM example from above for EVMS now looks like this:
+      Using the LVM example from above for EVMS, looks like this:
     </para>
     <example>
       <title>
@@ -921,48 +924,52 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
   <section>
     <title>Software RAID</title>
     <para>
-      Using &autoyast;, you can create and assemble software RAID devices. The
+      Using &ay;, you can create and assemble software RAID devices. The
       supported RAID levels are the following:
     </para>
     <itemizedlist>
       <listitem>	  
 	<para>
 	  <emphasis>RAID 0:</emphasis> This level increases your disk performance.
-	  There is <emphasis>NO</emphasis> redundancy in this mode. If one
+	  There is <emphasis>no</emphasis> redundancy in this mode. If one
 	  of the drives crashes, data recovery will not be possible.
 
 	</para>
       </listitem>
       <listitem>
 	<para>
-	  <emphasis>RAID 1:</emphasis>This mode has the best redundancy. It can be
-	  used with two or more disks. This mode maintains an exact copy of all data on all
-	  disks. As long as at least one disk is still working, no data is lost. The partitions
-	  used for this type of RAID should have approximately the same size.
+	  <emphasis>RAID 1:</emphasis>This mode offers the best redundancy. It
+	  can be used with two or more disks. An exact copy of all data is
+	  maintained on all disks. As long as at least one disk is still
+	  working, no data is lost. The partitions used for this type of RAID
+	  should have approximately the same size.
 	</para>
       </listitem>
 
       <listitem>
 	<para>
-	  <emphasis>RAID 5:</emphasis> This mode combines management of a larger number
-	  of disks and still maintains some redundancy. This mode can be used on three disks or more.
-	  If one disk fails, all data is still intact. If two disks fail simultaneously,
-	  all data is lost.
+	  <emphasis>RAID 5:</emphasis> This mode combines management of a
+	  larger number of disks and still maintains some redundancy. This
+	  mode can be used on three disks or more.  If one disk fails, all
+	  data is still intact. If two disks fail simultaneously, all data is
+	  lost.<remark>emap 2011-11-05: Really all data is lost, although
+	  there are three or more disks?</remark>
 	</para>	  
       </listitem>
       <listitem>
 	<para>
-	  <emphasis>Multipath:</emphasis>This mode allow access to the same physical device
-	  over multiple controller for redundancy against a fault in a controller
-	  card. This mode can be used with at least two devices.
+	  <emphasis>Multipath:</emphasis>This mode allows access to the same
+	  physical device via multiple controllers for redundancy against a
+	  fault in a controller card. This mode can be used with at least two
+	  devices.
 	</para>
       </listitem>
     </itemizedlist>
     <para>
       As with LVM, you need to create all <emphasis><acronym>RAID</acronym></emphasis> partitions first and assign
       the partitions to the <acronym>RAID</acronym> device you want to
-      create and additionally you need to  specify whether a partition or a device should be configured in the
-      <acronym>RAID</acronym>  or if it should configured as a <emphasis>Spare</emphasis> device.
+      create. Additionally you need to specify whether a partition or a device should be configured in the
+      <acronym>RAID</acronym>  or if it should be configured as a <emphasis>Spare</emphasis> device.
     </para>
     <para>
       The following example shows a simple RAID1 configuration:
@@ -979,8 +986,7 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
 
 
     <para>
-      The following has to be taken into consideration when configuring
-      raid:
+      Consider the following when configuring raid:
     </para>
     <itemizedlist>
       <listitem>
@@ -988,12 +994,12 @@ since openSUSE 11.1 and SLES11 there is no longer support for EVMS in the instal
       </listitem>
       <listitem>
 	<para>The property <emphasis>partition_nr</emphasis> is used to
-	  determine the MD device number. if
+	  determine the MD device number. If
 	  <emphasis>partition_nr</emphasis> is equal to 0, then
 	  <emphasis>/dev/md0</emphasis> is configured.</para>	   
       </listitem>
       <listitem>
-	<para>All RAID specific options are contained in the
+	<para>All RAID-specific options are contained in the
 	  <emphasis>raid_options</emphasis> resource.</para>
       </listitem>
     </itemizedlist>
