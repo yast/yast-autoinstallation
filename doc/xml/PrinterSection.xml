@@ -22,10 +22,10 @@
 	Printer
       </title>
 <para>
-The YaST printer module was made anew from scratch for openSUSE 11.1 and SUSE Linux Enterprise Server/Desktop 11. Currently the AutoYaST support for printing is limited to basic settings how the CUPS printing system is used on a client workstation to print via network.
+The &yast; printer module has been rewritten from scratch for openSUSE 11.1 and SUSE Linux Enterprise Server/Desktop 11. Currently, &ay; support for printing is limited to basic settings for how the CUPS printing system is used on a client workstation to print via network.
 </para>
 <para>
-Currently there is no AutoYaST support to set up local print queues. In particular when a USB printer is connected to a client workstation it is no longer possible to have a predefined configuration because USB printers are no longer accessed via a generic USB device node like "/dev/usb/lp0" but via a model specific device URI like "usb://ACME/FunPrinter?serial=1a2b3c". There is a serial number included so that a USB printer device URI works only for one particular device. Usually it is not possible to know the correct USB device URI in advance because it is determined by the CUPS backend "usb" during runtime when the particular device is connected depending on the actual values which the printer reports via the USB.
+There is no &ay; support for setting up local print queues. In particular, when a USB printer is connected to a client workstation, it is no longer possible to have a predefined configuration, because USB printers are no longer accessed via a generic USB device node like "/dev/usb/lp0" but via a model-specific device URI like "usb://ACME/FunPrinter?serial=1a2b3c". There is a serial number included so that a USB printer device URI works only for one particular device. Usually it is not possible to know the correct USB device URI in advance, because it is determined by the CUPS backend "usb" during runtime when the particular device is connected, depending on the actual values which the printer reports via the USB.
 </para>
 <para>
 Intrinsic design of CUPS for printing in the network:
@@ -34,28 +34,28 @@ Intrinsic design of CUPS for printing in the network:
 The CUPS daemon process (cupsd) of a CUPS network print server sends information about its print queues to a list of IP addresses (host addresses and/or broadcast addresses).
 </para>
 <para>
-On client workstations (hosts that only send print jobs to servers) also a cupsd runs which listens to information from servers. There is a list of servers from which information is accepted. By default, information is accepted from all servers.
+On client workstations (hosts that only send print jobs to servers) a cupsd also runs and listens to information from servers. There is a list of servers from which information is accepted. By default, information is accepted from all servers.
 </para>
 <para>
-In this way, the queues of the server are available on the clients. Users on the clients can browse the queues on various servers. Therefore it is called "Browsing" and all what is to do on a client workstation to use CUPS in its default Browsing mode is to run the cupsd. The matching settings in the cupsd configuration file (/etc/cups/cupsd.conf) are "Browsing On" and "BrowseAllow all".
+The queues of the server are available on the clients. Users on the clients can browse the queues on various servers. Therefore it is called "Browsing". A client workstation only needs to run cupsd to use CUPS in its default Browsing mode. The matching settings in the cupsd configuration file (/etc/cups/cupsd.conf) are "Browsing On" and "BrowseAllow all".
 </para>
 <para>
-To limit from which CUPS servers browsing information is accepted, a setting like "BrowseAllow @LOCAL" accepts browsing information only from CUPS servers in the local network.
+If you want to limit from which CUPS servers browsing information is accepted, use "BrowseAllow". For example, "BrowseAllow @LOCAL" accepts browsing information only from CUPS servers in the local network.
 </para>
 <para>
-Multiple "BrowseAllow" entries like "BrowseAllow 192.168.100.1" and "BrowseAllow 192.168.200.0/255.255.255.0" can be used to accept browsing information only from particular hosts and/or networks.
+Multiple "BrowseAllow" entries like "BrowseAllow 192.168.100.1" and "BrowseAllow 192.168.200.0/255.255.255.0" can be used to accept browsing information only from particular hosts or networks.
 </para>
 <para>
-CUPS Browsing information is recieved via UDP port 631. You may have to check firewall settings accordingly.
+CUPS browsing information is received via UDP port 631. You may have to check firewall settings accordingly.
 </para>
 <para>
-Alternatively if there is only one single CUPS server in the network, there is no need to use CUPS Browsing and have a CUPS daemon running on each client workstation.
+Alternatively, if there is only one single CUPS server in the network, there is no need to use CUPS browsing and have a CUPS daemon running on each client workstation.
 </para>
 <para>
-Instead it is simpler to specify the CUPS server and access it directly by an entry like "ServerName 192.168.100.99" in /etc/cups/client.conf (only one such entry can be set). In this case the specified server is directly accessed so that a local running cupsd on a client workstation is no longer used so that it does no longer make sense to have it running.
+Instead it is simpler to specify the CUPS server and access it directly by an entry like "ServerName 192.168.100.99" in /etc/cups/client.conf (only one such entry can be set). A locally running cupsd on a client workstation is ignored. In this case it makes no sense to have it running.
 </para>
 <para>
-The following is an example of a configuration section. The &lt;cups_remote_server&gt; entry contains the value of a ServerName entry in /etc/cups/client.conf. The &lt;server_settings&gt; section contains all values of the cupsd configuration file (/etc/cups/cupsd.conf) so that a complete &lt;server_settings&gt; section is required to get a reasonable cupsd configuration installed.
+The following is an example of a configuration section. The &lt;cups_remote_server&gt; entry contains the value of a ServerName entry in /etc/cups/client.conf. The &lt;server_settings&gt; section contains all values of the cupsd configuration file (/etc/cups/cupsd.conf). A complete &lt;server_settings&gt; section is required to get a reasonable cupsd configuration installed.
 </para>
 
 
