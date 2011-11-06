@@ -17,58 +17,57 @@
 
 ]>
   <section id="createprofile.scripts">
-    <title>Custom user scripts</title>
+    <title>Custom User Scripts</title>
     <para>
       By adding scripts to the auto-installation process you can customize the
-      installation for your needs and take control in different stages of the
-      installation.
+      installation according to your needs and take control in different
+      stages of the installation.
     </para>
     <para>
       In the auto-installation process, five types of scripts can be executed and they
       will be described here in order of "appearance" during the installation.
     </para>
-     <remark>FIXME: Is this a title?</remark>
+     <remark>FIXME: Is this a title?</remark><remark>emap 2011-11-06: Don't think so.</remark>
     <para>All scripts have to be in the &lt;scritps&gt; section.</para>
-    
 
     <itemizedlist>
-        <listitem><para><emphasis>pre-scripts</emphasis> (very early, before anything else really happened)</para></listitem>
-        <listitem><para><emphasis>postpartitioning-scripts</emphasis> (after partitioning and mounting to /mnt but before RPM installation - since openSUSE 11.2)</para></listitem>
+        <listitem><para><emphasis>pre-scripts</emphasis> (very early, before anything else really happens)</para></listitem>
+        <listitem><para><emphasis>postpartitioning-scripts</emphasis> (after partitioning and mounting to /mnt but before RPM installation&mdash;since openSUSE 11.2)</para></listitem>
         <listitem><para><emphasis>chroot-scripts</emphasis> (after the package installation, before the first boot)</para></listitem>
         <listitem><para><emphasis>post-scripts</emphasis> (during the first boot of the installed system, no services running)</para></listitem>
-        <listitem><para><emphasis>init-scripts</emphasis> (during the first boot of the installed system, all servies up and running)</para></listitem>
+        <listitem><para><emphasis>init-scripts</emphasis> (during the first boot of the installed system, all services up and running)</para></listitem>
     </itemizedlist>
 
     <section id="pre-install.scripts">
 	<title>Pre-Install Scripts</title>
 	<para>
-	  Executed before &yast2; does any real change to the system
-	  (Before partitioning and package installation but after the hardware detection)
+	  Executed before &yast; does any real change to the system
+	  (before partitioning and package installation but after the hardware detection).
 	</para>
     <para>
-      You can use the pre-script to modify your profile and let autoyast read it again.
-      If you want to do that, you can find your profile in "/tmp/profile/autoinst.xml".
-      Do what you want to do with that file and store the modified version in
-      "/tmp/profile/modified.xml". Autoyast will read that modified script then again after
-      the pre-script is done.
+      You can use a pre-script to modify your profile and let &ay; reread it.
+      Find your profile in "/tmp/profile/autoinst.xml".  Adjust the file and
+      store the modified version in "/tmp/profile/modified.xml". &ay; will
+      read the modified file after the pre-script finishes.
     </para>
     <para>
-      With SUSE Linux 10.0 and all following versions it's possible to change the partitioning with fdisk 
-      in your pre-script. With pre 10.0 versions of SUSE Linux (like SLES9), that was not possible.
+      With SUSE Linux 10.0 and all later versions, it is possible to change
+      the partitioning with fdisk in your pre-script. With pre-10.0 versions
+      of SUSE Linux (like SLES9), this was not possible.
     </para>
-	<note><title>Pre-Install Scripts with confirmation</title>
+	<note><title>Pre-Install Scripts with Confirmation</title>
 	  <para>
 	    Pre-scripts are executed at an early stage of the installation.
 	    This means if you have requested to confirm the installation, the 
-	    pre-scripts  will be executed before the confirmation screen
-	    shows up. (<emphasis>profile/install/general/mode/confirm</emphasis>)
+	    pre-scripts will be executed before the confirmation screen
+	    shows up (<emphasis>profile/install/general/mode/confirm</emphasis>).
 	  </para>
 	</note>
           <para>
-            The following elements must be between the &lt;scripts&gt;&lt;pre-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/pre-scripts&gt;...&lt;/scripts&gt; tags
+            The following elements must be between the &lt;scripts&gt;&lt;pre-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/pre-scripts&gt;...&lt;/scripts&gt; tags.
           </para>
         <table frame='top'>
-          <title>pre script XML representation</title>
+          <title>Pre-script XML Representation</title>
           <tgroup cols="3">
             <thead>
               <row>
@@ -80,67 +79,68 @@
             <tbody>
               <row>
                 <entry>location</entry>
-                <entry><para>you can define a location from where the script gets fetched.
-                       Locations can be the same like for the profile (http,ftp,nfs,...).
+                <entry><para>Define a location from where the script gets fetched.
+                       Locations can be the same as for the profile (http, ftp, nfs, etc.).
                        </para><screen>&lt;location&gt;http://10.10.0.1/myPreScript.sh&lt;/location&gt;</screen></entry>
-                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>source</entry>
-                <entry><para>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
-                to put the whole shell script into the XML profile, look at the location parameter.</para>
+                <entry><para>The script itself (source code), encapsulated in
+                a CDATA tag. If you do not want to put the whole shell script
+                into the XML profile, refer to the location parameter.</para>
 
                 <screen>&lt;source&gt;
 &lt;![CDATA[ 
 echo "Testing the pre script" &gt; /tmp/pre-script_out.txt 
 ]]&gt;
 &lt;/source&gt;</screen></entry>
-                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>interpreter</entry>
-                <entry><para>the interpreter that must be used for the script. Supported options are shell and perl.
+                <entry><para>Specify the interpreter that must be used for the script. Supported options are shell and perl.
                 </para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></entry>
-                <entry>optional (default is shell)</entry>
+                <entry>Optional (default is "shell").</entry>
               </row>
               <row>
                 <entry>filename</entry>
-                <entry><para>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <entry><para>The filename of the script. It will be stored in a temporary directory under /tmp/...
                 </para><screen>&lt;filename&gt;myPreScript5.sh&lt;/filename&gt;</screen></entry>
-                <entry>optional. The default is the type of the script (pre-scripts) in this case. If you have more than one script, you should set the filename to a reasonable value</entry>
+                <entry>Optional. Default is the type of the script (pre-scripts in this case). If you have more than one script, you should set the filename to a reasonable value.<remark>emap 2011-11-06: Should this read: If you have more than one script, choose a reasonable filename? Or: select the correct file?</remark></entry>
               </row>
               <row>
                 <entry>feedback</entry>
-                <entry><para>if this boolean is true, stdout and stderr of the script will be shown in a popup that the
-                       user has to confirm via ok-button. If stdout and stderr are empty, no popup is shown and so
+                <entry><para>If this boolean is "true", stdout and stderr of the script will be shown in a popup, which the
+                       user has to confirm via the OK button. If stdout and stderr are empty, no popup is shown and therefore
                        no confirmation is needed.
                        </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
-                <entry>optional. The default is false. This option was invented with SL 10.1 / SLES10</entry>
+                <entry>Optional, default is "false". This option was introduced with SL 10.1/SLES10.</entry>
               </row>
               <row>
                 <entry>feedback_type</entry>
-                <entry><para>this can be "message", "warning", "error" and you can control the timeout of those popups with the &lt;report&gt; section.
+                <entry><para>This can be "message", "warning" or "error". Set the timeout for these popups in the &lt;report&gt; section.
                 </para><screen>&lt;feedback_type&gt;warning&lt;/feedback_type&gt;</screen></entry>
-                <entry>optional. If missing, an always blocking popup is used. This option was invited with openSUSE 11.2 (not SLES11)</entry>
+                <entry>Optional, if missing, an always blocking popup is used. This option was introduced with openSUSE 11.2 (not SLES11).</entry>
               </row>
               <row>
                 <entry>debug</entry>
-                <entry><para>if this is true, every single line of a shell script is logged. Perl scripts are run with warnings
+                <entry><para>If this is "true", every single line of a shell script is logged. Perl scripts are run with warnings
                 turned on.
                 </para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></entry>
-                <entry>optional. The default is true. This option was invented with SL 10.1 / SLES10</entry>
+                <entry>Optional, default is "true". This option was introduced with SL 10.1/SLES10.</entry>
               </row>
               <row>
                 <entry>notification</entry>
-                <entry><para>This text will be shown in a popup for the time the script is running in the background
-                </para><screen>&lt;notification&gt;Please wait while script is running ...&lt;/notification&gt;</screen></entry>
-                <entry>optional. If not configured, no notification popup will be shown. This option was invented with openSUSE 11.3/SLES11 SP2 (not SLES10)</entry>
+                <entry><para>This text will be shown in a popup for the time the script is running in the background.
+                </para><screen>&lt;notification&gt;Please wait while script is running...&lt;/notification&gt;</screen></entry>
+                <entry>Optional, if not configured, no notification popup will be shown. This option was introduced with openSUSE 11.3/SLES11 SP2 (not SLES10).</entry>
               </row>
               <row>
                 <entry>rerun</entry>
-                <entry><para>a script is only run once. So even if you use ayast_setup to run a XML file multiple times, the script is only run once. You can change that with this boolean.
+                <entry><para>A script is only run once. Even if you use ayast_setup to run a XML file multiple times, the script is only run once. Change this default behavior by setting this boolean to "true".
                 </para><screen>&lt;rerun config:type="boolean"&gt;true&lt;/rerun&gt;</screen></entry>
-                <entry>optional. The default is false which makes scripts only run one time</entry>
+                <entry>Optional, default is "false" (scripts only run once).</entry>
               </row>
             </tbody>
           </tgroup>
@@ -151,18 +151,17 @@ echo "Testing the pre script" &gt; /tmp/pre-script_out.txt
     <section id="postpartitioning-install.scripts">
 	<title>Postpartitioning Scripts</title>
 	<note>
-	  <para>Available starting from openSUSE 11.2 only (not SLES11).</para>
+	  <para>Available since openSUSE 11.2 only (not SLES11).</para>
 	</note>
 	<para>
-	  Executed after &yast2; did the partitioning and wrote the fstab. The empty system is mounted to /mnt already.
-      This type of script is available since openSUSE 11.2 (not SLES11).
+	  Executed after &yast; has done the partitioning and written the fstab. The empty system is mounted to /mnt already.
 	</para>
           <para>
             The following elements must be between the &lt;scripts&gt;&lt;postpartitioning-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/postpartitioning-scripts&gt;...&lt;/scripts&gt; tags
           </para>
 
         <table frame='top'>
-          <title>postpartitioning script XML representation</title>
+          <title>Postpartitioning Script XML Representation</title>
           <tgroup cols="3">
             <thead>
               <row>
@@ -174,67 +173,68 @@ echo "Testing the pre script" &gt; /tmp/pre-script_out.txt
             <tbody>
               <row>
                 <entry>location</entry>
-                <entry><para>you can define a location from where the script gets fetched.
-                       Locations can be the same like for the profile (http,ftp,nfs,...).
+                <entry><para>Define a location from where the script gets fetched.
+                       Locations can be the same as for the profile (http, ftp, nfs, etc.).
                        </para><screen>&lt;location&gt;http://10.10.0.1/myScript.sh&lt;/location&gt;</screen></entry>
-                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>source</entry>
-                <entry><para>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
-                to put the whole shell script into the XML profile, look at the location parameter.
+                <entry><para>The script itself (source code), encapsulated in
+                a CDATA tag. If you don't want to put the whole shell script
+                into the XML profile, refer to the location parameter.
 
                 </para><screen>&lt;source&gt;
 &lt;![CDATA[ 
 echo "Testing postpart script" &gt; /mnt/postpart_test.txt
 ]]&gt;
 &lt;/source&gt;</screen></entry>
-                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>interpreter</entry>
-                <entry><para>the interpreter that must be used for the script. Supported options are shell and perl.
+                <entry><para>The interpreter that must be used for the script. Supported options are shell and perl.
                 </para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></entry>
-                <entry>optional (default is shell)</entry>
+                <entry>Optional, default is "shell".</entry>
               </row>
               <row>
                 <entry>filename</entry>
-                <entry><para>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <entry><para>The filename of the script. It will be stored in a temporary directory under /tmp/...
                 </para><screen>&lt;filename&gt;myScript5.sh&lt;/filename&gt;</screen></entry>
-                <entry>optional. The default is the type of the script (postpartitioning-scripts in this case). If you have more than one script, you should set the filename to a reasonable value</entry>
+                <entry>Optional, default is the type of the script (postpartitioning-scripts in this case). If you have more than one script, set the filename to a reasonable value.<remark>emap 2011-11-06: Should this read: If you have more than one script, choose a reasonable filename? Or: select the correct file?</remark></entry>
               </row>
               <row>
                 <entry>feedback</entry>
-                <entry><para>if this boolean is true, stdout and stderr of the script will be shown in a popup that the
-                       user has to confirm via ok-button. If stdout and stderr are empty, no popup is shown and so
+                <entry><para>If this boolean is "true", stdout and stderr of the script will be shown in a popup, which the
+                       user has to confirm via the OK button. If stdout and stderr are empty, no popup is shown and therefore
                        no confirmation is needed.
                        </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
-                <entry>optional. The default is false. This option was invented with SL 10.1 / SLES10</entry>
+                <entry>Optional, the default is "false". This option was introduced with SL 10.1/SLES10.</entry>
               </row>
               <row>
                 <entry>feedback_type</entry>
-                <entry><para>this can be "message", "warning", "error" and you can control the timeout of those popups with the &lt;report&gt; section.
+                <entry><para>This can be "message", "warning" or "error". Set the timeout for these popups in the &lt;report&gt; section.
                 </para><screen>&lt;feedback_type&gt;warning&lt;/feedback_type&gt;</screen></entry>
-                <entry>optional. If missing, an always blocking popup is used. This option was invited with openSUSE 11.2 (not SLES11)</entry>
+                <entry>Optional, if missing, an always blocking popup is used. This option was introduced with openSUSE 11.2 (not SLES11).</entry>
               </row>
               <row>
                 <entry>debug</entry>
-                <entry><para>if this is true, every single line of a shell script is logged. Perl scripts are run with warnings
+                <entry><para>If this is "true", every single line of a shell script is logged. Perl scripts are run with warnings
                 turned on.
                 </para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></entry>
-                <entry>optional. The default is true. This option was invented with SL 10.1 / SLES10</entry>
+                <entry>Optional, default is "true". This option was added with SL 10.1/SLES10.</entry>
               </row>
               <row>
                 <entry>notification</entry>
-                <entry><para>This text will be shown in a popup for the time the script is running in the background
-                </para><screen>&lt;notification&gt;Please wait while script is running ...&lt;/notification&gt;</screen></entry>
-                <entry>optional. If not configured, no notification popup will be shown. This option was invented with openSUSE 11.3/SLES11 SP2 (not SLES10)</entry>
+                <entry><para>This text will be shown in a popup for the time the script is running in the background.
+                </para><screen>&lt;notification&gt;Please wait while script is running...&lt;/notification&gt;</screen></entry>
+                <entry>Optional, if not configured, no notification popup will be shown. This option was added with openSUSE 11.3/SLES11 SP2 (not SLES10).</entry>
               </row>
               <row>
                 <entry>rerun</entry>
-                <entry><para>a script is only run once. So even if you use ayast_setup to run a XML file multiple times, the script is only run once. You can change that with this boolean.
+                <entry><para>A script is only run once. Even if you use ayast_setup to run a XML file multiple times, the script is only run once. Set this boolean to "true" if you want to change this default behavior.
                 </para><screen>&lt;rerun config:type="boolean"&gt;true&lt;/rerun&gt;</screen></entry>
-                <entry>optional. The default is false which makes scripts only run one time</entry>
+                <entry>Optional, default is false (scripts only run once).</entry>
               </row>
             </tbody>
           </tgroup>
@@ -244,20 +244,17 @@ echo "Testing postpart script" &gt; /mnt/postpart_test.txt
 
 
     <section id="chroot.scripts">
-    <title>Chroot environment scripts</title>
-	<para>Chroot scripts are executed before the machine reboots for the first time.
-	  Actually chroot scripts are two differnt kind of script with
-      one name. You can execute chroot script before the installation chroots into
-      the installed system and configures the boot loader and you can execute a script
-      after the chroot into the installed system has happend (look at the "chrooted" parameter for that). Both types of scripts are
-      executed before yast2 boots for the first time.
+    <title>Chroot Environment Scripts</title>
+	<para>Chroot scripts are executed before the machine reboots for the first time. You can execute chroot scripts before the installation chroots into
+      the installed system and configures the boot loader or you can execute a script
+      after the chroot into the installed system has happened (look at the "chrooted" parameter for that). 
 	</para>
           <para>
             The following elements must be between the &lt;scripts&gt;&lt;chroot-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/chroot-scripts&gt;...&lt;/scripts&gt; tags
           </para>
 
         <table frame='top'>
-          <title>chroot script XML representation</title>
+          <title>Chroot Script XML Representation</title>
           <tgroup cols="3">
             <thead>
               <row>
@@ -269,74 +266,73 @@ echo "Testing postpart script" &gt; /mnt/postpart_test.txt
             <tbody>
               <row>
                 <entry>location</entry>
-                <entry><para>you can define a location from where the script gets fetched.
-                       Locations can be the same like for the profile (http,ftp,nfs,...).
+                <entry><para>Define a location from where the script gets fetched.
+                       Locations can be the same as for the profile (http, ftp, nfs, etc.).
                       </para>
                 <screen>&lt;location&gt;http://10.10.0.1/myChrootScript.sh&lt;/location&gt;</screen>
                     </entry>
-                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>source</entry>
-                <entry><para>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
-                to put the whole shell script into the XML profile, look at the location parameter.
-                </para><screen>&lt;source&gt;
-&lt;![CDATA[ 
-echo "Testing the chroot script" &gt; /tmp/chroot_out.txt 
-]]&gt;
-&lt;/source&gt;</screen></entry>
-                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry><para>The script itself (source code), encapsulated in
+                a CDATA tag. If you do not want to put the whole shell script
+                into the XML profile, use the location parameter.
+                </para><screen>&lt;source&gt; &lt;![CDATA[ echo "Testing the
+                chroot script" &gt; /tmp/chroot_out.txt ]]&gt;
+                &lt;/source&gt;</screen></entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>chrooted</entry>
-                <entry><para>this value can be true or false. "False" means that the installed system is still mounted at "/mnt" and no chrooting has happened till now. The bootloader is not installed too at that stage. "True" means, we did a chroot into /mnt, so we are now in the installed system. The bootloader is installed and if you want to change anything in the installed system, you don't have to use the "/mnt/" prefix anymore.
+                <entry><para>This value can be "true" or "false". If set to "false", the installed system remains mounted at "/mnt" and no chroot happens. The bootloader is not installed either at this stage. Set to "true" means, a chroot into /mnt is performed, where the installed system is mounted. The bootloader is installed, and if you want to change anything in the installed system, you don't have to use the "/mnt/" prefix anymore.
                 </para><screen>&lt;chrooted config:type="boolean"&gt;true&lt;/chrooted&gt;</screen></entry>
-                <entry>optional (the default is false)</entry>
+                <entry>Optional, default is "false".</entry>
               </row>
               <row>
                 <entry>interpreter</entry>
-                <entry><para>the interpreter that must be used for the script. Supported options are shell and perl.and if you are in a chrooted=true condition, you can use python too if it's installed.
+                <entry><para>The interpreter that must be used for the script. Supported options are shell and perl. If you are in a chrooted=true condition, you can also use python if installed.
                 </para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></entry>
-                <entry>optional (default is shell)</entry>
+                <entry>Optional, default is shell.</entry>
               </row>
               <row>
                 <entry>filename</entry>
-                <entry><para>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <entry><para>The filename of the script. It will be stored in a temporary directory under /tmp/...
                 </para><screen>&lt;filename&gt;myPreScript5.sh&lt;/filename&gt;</screen></entry>
-                <entry>optional. The default is the type of the script (chroot-scripts) in this case.  If you have more than one script, you should set the filename to a reasonable value</entry>
+                <entry>Optional, default is the type of the script (chroot-scripts in this case).  If you have more than one script, you should set the filename to a reasonable value.<remark>emap 2011-11-06: Should this read: If you have more than one script, choose a reasonable filename? Or: select the correct file?</remark></entry>
               </row>
               <row>
                 <entry>feedback</entry>
-                <entry><para>if this boolean is true, stdout and stderr of the script will be shown in a popup that the
-                       user has to confirm via ok-button. If stdout and stderr are empty, no popup is shown and so
+                <entry><para>If this boolean is "true", stdout and stderr of the script will be shown in a popup, which the
+                       user has to confirm via the OK button. If stdout and stderr are empty, no popup is shown and therefore
                        no confirmation is needed.
                        </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
-                <entry>optional. The default is false. This option was invented with SL 10.1 / SLES10</entry>
+                <entry>Optional, default is "false". This option was added with SL 10.1/SLES10.</entry>
               </row>
               <row>
                 <entry>feedback_type</entry>
-                <entry><para>this can be "message", "warning", "error" and you can control the timeout of those popups with the &lt;report&gt; section.
+                <entry><para>This can be "message", "warning" or "error". Set the timeout for these popups in the &lt;report&gt; section.
                 </para><screen>&lt;feedback_type&gt;warning&lt;/feedback_type&gt;</screen></entry>
-                <entry>optional. If missing, an always blocking popup is used. This option was invited with openSUSE 11.2 (not SLES11)</entry>
+                <entry>Optional, if missing, an always blocking popup is used. This option was introduced with openSUSE 11.2 (not SLES11).</entry>
               </row>
               <row>
                 <entry>debug</entry>
-                <entry><para>if this is true, every single line of a shell script is logged. Perl scripts are run with warnings
+                <entry><para>If this is true, every single line of a shell script is logged. Perl scripts are run with warnings
                 turned on.
                 </para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></entry>
-                <entry>optional. The default is true. This option was invented with SL 10.1 / SLES10</entry>
+                <entry>Optional, default is "true". This option was added with SL 10.1/SLES10.</entry>
               </row>
               <row>
                 <entry>notification</entry>
-                <entry><para>This text will be shown in a popup for the time the script is running in the background
-                </para><screen>&lt;notification&gt;Please wait while script is running ...&lt;/notification&gt;</screen></entry>
-                <entry>optional. If not configured, no notification popup will be shown. This option was invented with openSUSE 11.3/SLES11 SP2 (not SLES10)</entry>
+                <entry><para>This text will be shown in a popup for the time the script is running in the background.
+                </para><screen>&lt;notification&gt;Please wait while script is running...&lt;/notification&gt;</screen></entry>
+                <entry>Optional, if not configured, no notification popup will be shown. This option was added with openSUSE 11.3/SLES11 SP2 (not SLES10).</entry>
               </row>
               <row>
                 <entry>rerun</entry>
-                <entry><para>a script is only run once. So even if you use ayast_setup to run a XML file multiple times, the script is only run once. You can change that with this boolean.
+                <entry><para>A script is only run once. Even if you use ayast_setup to run a XML file multiple times, the script is only run once. You can change the default behavior by setting this boolean to "true".
                 </para><screen>&lt;rerun config:type="boolean"&gt;true&lt;/rerun&gt;</screen></entry>
-                <entry>optional. The default is false which makes scripts only run one time</entry>
+                <entry>Optional, default is "false" (scripts only run once).</entry>
               </row>
             </tbody>
           </tgroup>
@@ -346,21 +342,21 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
     <section id="post-insall.scripts">
 	<title>Post-Install Scripts</title>
 	<para>
-	  These scripts are executed after AutoYaST has completed the
+	  These scripts are executed after &ay; has completed the
 	  system configuration and after it has booted the system for the first time.
 	</para>
 	<para>
-	  It is possible to execute the post scripts in an earlier phase while
-	  the installation network is still up and before AutoYaST configures
-	  the system. To run network enabled post scripts, the boolean 
-	  property <emphasis>network_needed</emphasis> has to be set to true.
+	  It is possible to execute post scripts in an earlier phase while
+	  the installation network is still up and before &ay; configures
+	  the system. To run network-enabled post scripts, the boolean 
+	  property <emphasis>network_needed</emphasis> has to be set to "true".
 	</para>
           <para>
-            The following elements must be between the &lt;scripts&gt;&lt;post-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/post-scripts&gt;...&lt;/scripts&gt; tags
+            The following elements must be between the &lt;scripts&gt;&lt;post-scripts config:type="list"&gt;&lt;script&gt; ... &lt;/script&gt;&lt;/post-scripts&gt;...&lt;/scripts&gt; tags.
           </para>
 
         <table frame='top'>
-          <title>post script XML representation</title>
+          <title>Post Script XML Representation</title>
           <tgroup cols="3">
             <thead>
               <row>
@@ -372,75 +368,75 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
             <tbody>
               <row>
                 <entry>location</entry>
-                <entry><para>you can define a location from where the script gets fetched.
-                       Locations can be the same like for the profile (http,ftp,nfs,...) but then you need a running network interface of course
+                <entry><para>Define a location from where the script gets fetched.
+                       Locations can be the same as for the profile (http, ftp, nfs, etc.).
                       </para>
                 <screen>&lt;location&gt;http://10.10.0.1/myPostScript.sh&lt;/location&gt;</screen>
                     </entry>
-                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>source</entry>
-                <entry><para>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
-                to put the whole shell script into the XML profile, look at the location parameter.
+                <entry><para>The script itself (source code), encapsulated in a CDATA tag. If you do not want
+                to put the whole shell script into the XML profile, use the location parameter.
                 </para><screen>&lt;source&gt;
 &lt;![CDATA[ 
 echo "Testing the chroot script" &gt; /tmp/chroot_out.txt 
 ]]&gt;
 &lt;/source&gt;</screen></entry>
-                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>network_needed</entry>
                 <!-- FIXME: double check that. I'm very unsure if this is correct -->
-                <entry><para>this value can be true or false. On "false" the script will run after the yast modules like the user configuration and everything else are done. The network is configured but still not up and running. With this value on "true", the script runs before(!) all yast modules are configured. So there is no local user and no network is configured but the installation network is still up and running (of course only if you did a network installation).
+                <entry><para>This value can be "true" or "false". On "false" the script will run after the &yast; modules like the user configuration and everything else are done. The network is configured but not up and running yet. With this value set to "true", the script runs before all &yast; modules are configured. So there is no local user and no network is configured but the installation network is still up and running (if you did a network installation).
                 </para><screen>&lt;network_needed config:type="boolean"&gt;true&lt;/network_needed&gt;</screen></entry>
-                <entry>optional (the default is false)</entry>
+                <entry>Optional, default is "false".</entry>
               </row>
               <row>
                 <entry>interpreter</entry>
-                <entry><para>the interpreter that must be used for the script. Supported options are shell, perl and python if it's installed.
+                <entry><para>The interpreter that must be used for the script. Supported options are shell, perl and python if installed.
                 </para><screen>&lt;interpreter&gt;perl&lt;/interpreter&gt;</screen></entry>
-                <entry>optional (default is shell)</entry>
+                <entry>Optional, default is shell.</entry>
               </row>
               <row>
                 <entry>filename</entry>
-                <entry><para>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <entry><para>The filename of the script. It will be stored in a temporary directory under /tmp/...
                 </para><screen>&lt;filename&gt;myPostScript5.sh&lt;/filename&gt;</screen></entry>
-                <entry>optional. The default is the type of the script (post-scripts) in this case.  If you have more than one script, you should set the filename to a reasonable value</entry>
+                <entry>Optional, default is the type of the script (post-scripts in this case).  If you have more than one script, set the filename to a reasonable value.<remark>emap 2011-11-06: Should this read: If you have more than one script, choose a reasonable filename? Or: select the correct file?</remark></entry>
               </row>
               <row>
                 <entry>feedback</entry>
-                <entry><para>if this boolean is true, stdout and stderr of the script will be shown in a popup that the
-                       user has to confirm via ok-button. If stdout and stderr are empty, no popup is shown and so
+                <entry><para>If this boolean is "true", stdout and stderr of the script will be shown in a popup, which the
+                       user has to confirm via the OK button. If stdout and stderr are empty, no popup is shown and therefore
                        no confirmation is needed.
                        </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
-                <entry>optional. The default is false. This option was invented with SL 10.1 / SLES10</entry>
+                <entry>Optional, default is "false". This option was added with SL 10.1/SLES10.</entry>
               </row>
               <row>
                 <entry>feedback_type</entry>
-                <entry><para>this can be "message", "warning", "error" and you can control the timeout of those popups with the &lt;report&gt; section.
+                <entry><para>This can be "message", "warning" or "error". Set the timeout for these popups in the &lt;report&gt; section.
                 </para><screen>&lt;feedback_type&gt;warning&lt;/feedback_type&gt;</screen></entry>
-                <entry>optional. If missing, an always blocking popup is used. This option was invited with openSUSE 11.2 (not SLES11)</entry>
+                <entry>Optional, if missing, an always blocking popup is used. This option was added with openSUSE 11.2 (not SLES11).</entry>
               </row>
               <row>
                 <entry>debug</entry>
-                <entry><para>if this is true, every single line of a shell script is logged. Perl scripts are run with warnings
+                <entry><para>If this is "true", every single line of a shell script is logged. Perl scripts are run with warnings
                 turned on.
                 </para><screen>&lt;debug config:type="boolean"&gt;true&lt;/debug&gt;</screen></entry>
-                <entry>optional. The default is true. This option was invented with SL 10.1 / SLES10</entry>
+                <entry>Optional, default is "true". This option was added with SL 10.1/SLES10.</entry>
               </row>
               <row>
                 <entry>notification</entry>
-                <entry><para>This text will be shown in a popup for the time the script is running in the background
-                </para><screen>&lt;notification&gt;Please wait while script is running ...&lt;/notification&gt;</screen></entry>
-                <entry>optional. If not configured, no notification popup will be shown. This option was invented with openSUSE 11.3/SLES11 SP2 (not SLES10)</entry>
+                <entry><para>This text will be shown in a popup for the time the script is running in the background.
+                </para><screen>&lt;notification&gt;Please wait while script is running...&lt;/notification&gt;</screen></entry>
+                <entry>Optional, if not configured, no notification popup will be shown. This option was introduced with openSUSE 11.3/SLES11 SP2 (not SLES10).</entry>
               </row>
               <row>
                 <entry>rerun</entry>
-                <entry><para>a script is only run once. So even if you use ayast_setup to run a XML file multiple times, the script is only run once. You can change that with this boolean.
+                <entry><para>A script is only run once. Even if you use ayast_setup to run a XML file multiple times, the script is only run once. Change this default behavior by setting this boolean to "true".
                 </para><screen>&lt;rerun config:type="boolean"&gt;true&lt;/rerun&gt;</screen></entry>
-                <entry>optional. The default is false which makes scripts only run one time</entry>
+                <entry>Optional, default is "false" (scripts only run once).</entry>
               </row>
             </tbody>
           </tgroup>
@@ -450,11 +446,10 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
     <section id="init.scripts">
 	<title>Init Scripts</title>
 	<para>
-	  These scripts are executed during the initial boot process and after
-	  &yast2; has finished. The final scripts are executed using a special
-	  <emphasis>init.d</emphasis> script which is executed only
-	  once. The final scripts are executed toward the end of the boot
-	  process and after network has been intialized.
+	  These scripts are executed when &yast; has finished, during the
+	  initial boot process after the network has been initialized. These
+	  final scripts are executed using a special
+	  <emphasis>init.d</emphasis> script executed only once.
 	</para>
         <para>
             Init scripts are configured using the tag <emphasis>init-scripts</emphasis> and 
@@ -465,7 +460,7 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
           </para>
 
         <table frame='top'>
-          <title>init script XML representation</title>
+          <title>Init script XML representation</title>
           <tgroup cols="3">
             <thead>
               <row>
@@ -477,35 +472,35 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
             <tbody>
               <row>
                 <entry>location</entry>
-                <entry><para>you can define a location from where the script gets fetched.
-                       Locations can be the same like for the profile (http,ftp,nfs,...) but then you need a running network interface of course
+                <entry><para>Define a location from where the script gets fetched.
+                       Locations can be the same as for the profile (http, ftp, nfs, etc.).
                       </para>
                 <screen>&lt;location&gt;http://10.10.0.1/myInitScript.sh&lt;/location&gt;</screen>
                     </entry>
-                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>source</entry>
-                <entry><para>the script itself. The source code of the script if you want so. Encapsulated in a CDATA tag. If you don't want
-                to put the whole shell script into the XML profile, look at the location parameter.
+                <entry><para>The script itself (source code), encapsulated in a CDATA tag. If you do not want
+                to put the whole shell script into the XML profile, use the location parameter.
                 </para><screen>&lt;source&gt;
 &lt;![CDATA[ 
 echo "Testing the init script" &gt; /tmp/init_out.txt 
 ]]&gt;
 &lt;/source&gt;</screen></entry>
-                <entry>either &lt;location&gt; or &lt;source&gt; must be defined</entry>
+                <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>filename</entry>
-                <entry><para>the filename of the script. It will be stored in a temporary directory under /tmp/...
+                <entry><para>The filename of the script. It will be stored in a temporary directory under /tmp/...
                 </para><screen>&lt;filename&gt;mynitScript5.sh&lt;/filename&gt;</screen></entry>
-                <entry>optional. The default is the type of the script (init-scripts) in this case.  If you have more than one script, you should set the filename to a reasonable value</entry>
+                <entry>Optional, default is the type of the script (init-scripts in this case).  If you have more than one script, set the filename to a reasonable value.<remark>emap 2011-11-06: Should this read: If you have more than one script, choose a reasonable filename? Or: select the correct file?</remark></entry>
               </row>
               <row>
                 <entry>rerun</entry>
-                <entry><para>a script is only run once. So even if you use ayast_setup to run a XML file multiple times, the script is only run once. You can change that with this boolean.
+                <entry><para>A script is only run once. Even if you use ayast_setup to run a XML file multiple times, the script is only run once. Change this default behavior by setting this boolean to "true".
                 </para><screen>&lt;rerun config:type="boolean"&gt;true&lt;/rerun&gt;</screen></entry>
-                <entry>optional. The default is false which makes scripts only run one time</entry>
+                <entry>Optional, default is "false" (scripts only run once).</entry>
               </row>
             </tbody>
           </tgroup>
@@ -513,16 +508,16 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
 
 
     <para>
-      When added to the control file manually, the
-      scripts have to be included in a <emphasis>CDATA</emphasis> element to avoid confusion with
-      the file syntax and other tags defined in the control file.
+      When added to the control file manually, scripts have to be included in
+      a <emphasis>CDATA</emphasis> element to avoid confusion with the file
+      syntax and other tags defined in the control file.
     </para>
     </section>
     
     <section id="script_examples">
-    <title>Script example</title>
+    <title>Script Example</title>
       <example>
-	<title>Post script configuration</title>
+	<title>Post Script Configuration</title>
 	<screen>
     <xi:include href="examples/example.scripts.xml" parse="text"
         xmlns:xi="http://www.w3.org/2001/XInclude"/>
@@ -532,11 +527,11 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
     <para>
       After installation is finished, the scripts and the output logs can be
       found in the directory <filename>/var/adm/autoinstall</filename>. The
-      scripts are located in <filename>scripts</filename> and the output logs of the
-      scripts are located in the <filename>log</filename> directory.
+      scripts are located in the subdirectory <filename>scripts</filename> and
+      the output logs in the <filename>log</filename> directory.
     </para>
     <para>
-      The log is the output resulting when executing the shell scripts using
+      The log is the output when executing the shell scripts using
       the following command:
     </para>
     <screen>
