@@ -18,41 +18,41 @@
 ]>
 
   <section id="createprofile.completeconf">
-    <title>Adding complete configurations</title>
+    <title>Adding Complete Configurations</title>
     <para>
       For many applications and services you might have prepared a
-      configuration file which should be copied in a complete form to some
-      location in the installed system. This is for example if you are
-      installing  a web server and have a <emphasis>ready to go</emphasis>
+      configuration file which should be copied to the appropriate
+      location in the installed system, for example if you are
+      installing a web server and have a <emphasis>ready to go</emphasis>
       server configuration file (<filename>httpd.conf</filename>).
     </para>
     <para>
       Using this resource, you can embed the file into the control file by
-      specifying the final path on the installed system. &yast2; will copy this
+      specifying the final path on the installed system. &yast; will copy this
       file to the specified location.
     </para>
     <para>
       This feature requires the autoyast2 package to be installed. If the package is
-      missing, AutoYaST will silently ignore the <emphasis>files</emphasis> section.
-      Since openSUSE 11.1 and SLES11 AutoYaST will install the package on it's own if
-      it's missing.
+      missing, &ay; will silently ignore the <emphasis>files</emphasis> section.
+      Since openSUSE 11.1 and SLES11, &ay; will install the package automatically if
+      it is missing.
     </para>
     <para>
-      Since openSUSE 11.1 and SLES11 you can specify a <emphasis>file_location</emphasis>
-      where the file should be retrieved from, like an HTTP server for example. That would
-      look like this <emphasis>&lt;file_location&gt;http://my.server.site/issue&lt;/file_location&gt;</emphasis>
+      Since openSUSE 11.1 and SLES11, you can specify the <emphasis>file_location</emphasis>
+      where the file should be retrieved from. For an HTTP server this would
+      look like: <emphasis>&lt;file_location&gt;http://my.server.site/issue&lt;/file_location&gt;</emphasis>.
     </para>
     <para>
-      Since openSUSE 11.2 (not SLES11) you can create directories by specifying a file_path that ends with a slash.
+      Since openSUSE 11.2 (not SLES11), you can create directories by specifying a <emphasis>file_path</emphasis> that ends with a slash.
     </para>
     &example.files;
 
     <para>
-      A more advanced example is shown below. This configuration will create
-      a file using the content supplied in <emphasis>file_contents</emphasis>
-      and will change the permissions and ownership of the file. After the
-      file has been copied to the system, a script is executed which can be
-      used to manipulate the file and prepare it for the environment of the client.
+      A more advanced example is shown below. This configuration will create a
+      file using the content supplied in <emphasis>file_contents</emphasis>
+      and change the permissions and ownership of the file. After the file has
+      been copied to the system, a script is executed, which can be used to
+      manipulate the file and prepare it for the environment of the client.
     </para>
     &example.filesadv;
   </section>
