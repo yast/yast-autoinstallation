@@ -1,12 +1,10 @@
 <chapter id="Bootmanagement">
-  <title>Network Based Installation</title>        
+  <title>Network-based Installation</title>        
   <para>
-    The installation method using AutoYaST provides a way to automatically
-    and identically install groups of systems. The first step when preparing
-    AutoYaST installations is deciding how you want the systems at your
-    site to be installed. For example, the following scenario would be ideal to
-    set up and perform automated installations:
-
+    &ay; provides a method to automatically and identically install groups of
+    systems. The first step when preparing a &ay; installation is to decide how
+    you want to install the target systems. The following scenario is a good
+    example for how to set up and perform automated installations:
   </para>
   <itemizedlist>
     <listitem>
@@ -17,7 +15,7 @@
     <listitem>
       <para>
 	The development department owns 30 out of the 50 new dual processor
-	and SCSI systems, and its systems must be installed as clients with
+	and SCSI systems, and these systems must be installed as clients with
 	development software.
       </para>
     </listitem>
@@ -26,7 +24,7 @@
 	The sales department owns 20 out of the 50 new, uni-processor IDE
 	based systems and its systems must be installed as clients with end user
 	software and office tools.
-      </para>
+      </para><remark>emap 2011-11-07: What about the remaining new systems? Will they be needed in this example? If not better let R&D buy 30 new machines and Sales 20 new ones with different hardware. Um, reading to the end of this file, I wonder if we need this example at all? It's not being used to explain anything. It rather gets in the way. We don't even explain how the different hardware is handled.</remark>
     </listitem>
   </itemizedlist>
   
@@ -35,14 +33,14 @@
   </para>
   <itemizedlist>
     <listitem>
-      <para>A boot server on the same Ethernet segment</para>
+      <para>a boot server on the same Ethernet segment,</para>
     </listitem>
     <listitem>
-      <para>An install server with the SuSE Linux OS</para>
+      <para>an installation server with the SuSE Linux OS,</para><remark>emap 2011-11-07: Rather with the installation sources? </remark>
     </listitem>
     <listitem>
-      <para>An AutoYaST configuration server that defines rules and profiles.</para>
-    </listitem>
+      <para>an &ay; configuration server that defines rules and profiles.</para>
+    </listitem><remark>emap 2011-11-07: This is the first mention of a config server. Is it really needed?</remark>
   </itemizedlist>
   
   <!-- FIXME: Add info about boot server and installation server -->
@@ -51,38 +49,34 @@
     <title>Configuration Server</title>
     <para>
       A configuration repository holds the control files for multiple
-      machines. The control files can have any file names, which have to
-      specified at the boot time of a client. To avoid supplying the
-      profile name for every client, you can only define the directory of
-      the control files. If a directory is specified, then the client tries
-      to load a file with a name matching it's IP address in HEX
-      mode.  This has the advantage that you will be dealing with
-      consistent file names rather than IPs as file names which might lead to
-      some confusion.
+      machines. The control files can have any file names, which have to be
+      specified at the boot time of a target client. To avoid supplying the
+      profile name for every client, you can define the directory of the
+      control files. If a directory is specified, then the target client tries
+      to load a file with a name matching its IP address in HEX mode. This has
+      the advantage that you will be dealing with consistent file names rather
+      than IPs as file names which might lead to some confusion.<remark>emap 2011-11-07: Sounds like no dedicated server is needed, only a repository.</remark>
     </para>
     <para>
-      The configuration repository is the same directory you have to define
-      if you are using the configuration system for creating control files.
+      The configuration repository is the same directory you specify
+      when using the configuration system for creating control files.
     </para>
     <section>
       <title>&http; Repository</title>
       <para>
-	To be able to use the &http; protocol to retrieve control file while
+	To be able to use the &http; protocol to retrieve control files while
 	auto-installing, you need a working &http; server on the server
-	side. Install <emphasis>Apache</emphasis> or your favorite web
-	server and enable it using &yast2;. Normally the the web server root
-	directory resides in <filename>/srv/www/htdocs</filename>
-	so you need to create a subdirectory below the root directory of
-	the web server which will be your configuration repository.
+	side. Install <emphasis>Apache</emphasis> or your favorite web server
+	and enable it using &yast;. Normally the web server root directory
+	resides in <filename>/srv/www/htdocs</filename> so you need to create
+	a subdirectory which will serve your configuration repository.
       </para>
       
     </section>
     <section>
       <title>&nfs; Repository</title>
       <para>
-	Create a directory and make it available via &nfs; to the clients by
-	exporting it. This directory may for example be in the same place
-	where you have copied the CDs. (i.e. <filename>/usr/local/SuSE</filename>)
+	Create a directory and export it via &nfs; to the target clients. This directory may the same location where you have copied the CDs. (i.e. <filename>/usr/local/SuSE</filename>).<remark>emap 2011-11-07: Change CDs to installation source/repository?</remark>
       </para>
     </section>
     <section>	
@@ -93,7 +87,7 @@
 	if you are booting over network. Do not forget to enable TFTP in
 	the Inetd configuration file
 	(<filename>/etc/inetd.conf</filename>). <emphasis>Inetd</emphasis> configuration can be
-	done using &yast2;.
+	done via &yast2;.
       </para>
     </section>
   </section>
