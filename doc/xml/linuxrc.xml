@@ -18,7 +18,7 @@
   <note>
     <para>
       If you run Linuxrc on an installed system, it will work slightly
-      different as it tries not to destroy your installation. As a consequence you
+      differently so as not to destroy your installation. As a consequence you
       cannot test all features this way.
     </para>
   </note>
@@ -26,49 +26,49 @@
   <section>
     <title>Passing parameters to Linuxrc</title>
     <para>
-      Unless Linuxrc is in manual mode it will look for an 'info' file in these
+      Unless Linuxrc is in manual mode, it will look for an <filename>info</filename> file in these
       locations: first <filename>/info</filename> on the floppy disk and if that does not
-      exsist for <filename>/info</filename> in the initrd. After that it parses the kernel
-      command line for parameters. You may change the 'info' file Linuxrc reads
-      using the <filename>info</filename> command line parameter. If you don't want
-      Linuxrc to read the kernel command line (say, because you need to give a
-      kernel parameter that accidentally is recognized by Linuxrc, too), use
+      exist, for <filename>/info</filename> in the initrd. After that it parses the kernel
+      command line for parameters. You may change the <filename>info</filename> file Linuxrc reads by
+      setting the <filename>info</filename> command line parameter. If you do not want
+      Linuxrc to read the kernel command line (e.g. because you need to specify a
+      kernel parameter that Linuxrc recognizes as well), use
       <emphasis>linuxrc=nocmdline</emphasis>.
     </para>
       <note>
-        <title>Change starting from SUSE Linux 10.2</title>
+        <title>Change since SUSE Linux 10.2</title>
         <para>
-        The info file is no longer implicitly read. You have to make it
+        The <filename>info</filename> file is no longer implicitly read. You have to make it
         explicit, like 'info=floppy:/info'.
-        </para>
+        </para><remark>emap 2011-11-07: That means the opening para is only valid for older version. Better modify.</remark>
       </note>
     <para>
-      Independent of the above, Linuxrc will always look for and parse a file
-      <filename>/linuxrc.config</filename>. You can use this file to change default
-      values, if you need to. But in general, use the <filename>info</filename> file
-      instead. Note that <filename>/linuxrc.config</filename> is read before any 'info'
-      file and even in manual mode.
+      Linuxrc will always look for and parse a file
+      <filename>/linuxrc.config</filename>. Use this file to change default
+      values if you need to. In general, it is better to use the <filename>info</filename> file
+      instead. Note that <filename>/linuxrc.config</filename> is read before any <filename>info</filename>
+      file, even in manual mode.
 
     </para>
   </section>
   <section id="info_file_format">
-    <title>'info' file format</title>
+    <title><filename>info</filename> file format</title>
     <para>
-      Lines starting with '<emphasis>#</emphasis>' are comments, valid entries are of the form
+      Lines starting with '<emphasis>#</emphasis>' are comments, valid entries are of the form:
     </para>
       <screen>
 	key: value
       </screen><para>
-      Note that <emphasis>value</emphasis> extends to the end of the line and so may contain spaces.
+      Note that <emphasis>value</emphasis> extends to the end of the line and therefore may contain spaces.
       <emphasis>key</emphasis> is matched case insensitive.
     </para>
     <para>
-      You can use the same key - value pairs on the kernel command line using the syntax
+      You can use the same key-value pairs on the kernel command line using the syntax
       <literal>key=value</literal>.      
-      Lines that don't have the form described above are ignored.
+      Lines that do not have the form described above are ignored.
     </para>
     <para>
-      Valid keys are (values given are just examples)
+      The table below lists Valid keys. The given values are only examples.
     </para>
 
     <table frame='top'>
@@ -103,7 +103,7 @@
 	  <row><entry>BOOTPTimeout: 10</entry><entry>  10 seconds timeout for BOOTP requests</entry></row> 
 	  <row><entry>DHCPTimeout: 60</entry><entry>  60 seconds timeout for DHCP requests</entry></row> 
 	  <row><entry>TFTPTimeout: 10</entry><entry>  10 seconds timeout for TFTP connection</entry></row> 
-	  <row><entry>ForceRootimage: 0|1</entry><entry>  load the installation system into ramdisk</entry></row> 
+	  <row><entry>ForceRootimage: 0|1</entry><entry>  load the installation system into RAM disk</entry></row> 
 	  <row><entry>Textmode: 0|1</entry><entry>  start YaST in text mode</entry></row> 
 	  <row><entry>Username: name</entry><entry>  set user name (e.g. for FTP install)</entry></row> 
 	  <row><entry>Password: password</entry><entry>  set password (e.g. for FTP install)</entry></row> 
@@ -117,7 +117,7 @@
 	  <row><entry>MemModules: 20000</entry><entry>  delete all modules before starting YaST if free memory is below 20000 kB</entry></row> 
 	  <row><entry>MemLoadImage: 50000</entry><entry>  load installation system into ramdisk if free memory is above 50000 kB</entry></row> 
 	  <row><entry>Manual: 0|1</entry><entry>  start Linuxrc in manual mode</entry></row> 
-	  <row><entry>NoPCMCIA: 0|1</entry><entry>  don't start card manager</entry></row> 
+	  <row><entry>NoPCMCIA: 0|1</entry><entry>  do not start card manager</entry></row> 
 	  <row><entry>Domain: zap.de</entry><entry>  set domain name (used for name server lookups)</entry></row> 
 	  <row><entry>RootImage: /suse/images/root</entry><entry>  installation system image</entry></row> 
 	  <row><entry>RescueImage: /suse/images/rescue</entry><entry>  rescue system image</entry></row> 
@@ -128,14 +128,14 @@
 	  <row><entry>VNCPassword: password</entry><entry>  sets VNC server password</entry></row> 
 	  <row><entry>UseSSH: 0|1</entry><entry>  setup SSH server</entry></row> 
 	  <row><entry>SSHPassword: password</entry><entry>  sets SSH server password (this will not be the final root password!)</entry></row> 
-	  <row><entry>AddSwap: 0|3|/dev/hda5</entry><entry>  if 0, do never ask for swap; if the argument is a positive number <emphasis>n</emphasis>,
-	      activate the <emphasis>n</emphasis>'th swap partition; is the argument is a partition name,  activate this swap partition</entry></row> 
+	  <row><entry>AddSwap: 0|3|/dev/hda5</entry><entry>  if 0, never ask for swap; if the argument is a positive number <emphasis>n</emphasis>,
+	      activate the <emphasis>n</emphasis>'th swap partition; if the argument is a partition name, activate this swap partition</entry></row> 
 	  <row><entry>Exec: command</entry><entry>  run <emphasis>command</emphasis></entry></row>
 	  <row><entry>USBWait: 4</entry><entry>  wait 4 seconds after loading USB modules</entry></row> 
 	  <row><entry>Insmod: module params</entry><entry>  load this module</entry></row> 
           <row><entry>Loghost: 10.10.0.22</entry><entry>Enable remove logging
                   via syslog</entry></row> 
-          <row><entry>y2confirm</entry><entry>overrides the confirm parameter in a profile and pops up the confirm proposal (available since SUSE Linux 10.1 / SLES10)</entry></row>
+          <row><entry>y2confirm</entry><entry>overrides the confirm parameter in a profile and requests confirmation of installation proposal (available since SUSE Linux 10.1/SLES10)</entry></row>
 	</tbody>
       </tgroup>
     </table>
@@ -152,7 +152,7 @@
       </listitem>
       <listitem>
 	<para>netsetup=xxx,yyy</para>
-	<para>just xxx and yyy</para>
+	<para>only xxx and yyy</para>
       </listitem>
       <listitem>
 	<para> netsetup=+xxx,-yyy</para>
@@ -161,7 +161,7 @@
     </itemizedlist>
     <para>
 
-      <emphasis>xxx</emphasis> could have the following values: dhcp, hostip,
+      <emphasis>netsetup</emphasis> can have the following values: dhcp, hostip,
       gateway, netmask, nameserver. nameserverN asks for N nameservers
       (max. 4).
     </para>
