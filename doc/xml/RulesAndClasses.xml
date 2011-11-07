@@ -4,47 +4,48 @@
     <para>
     </para>
   <section id="rules">
-    <title>Rule based auto-installation</title>
+    <title>Rules-based Automatic Installation</title>
     <para>
       Rules offer the possibility to configure a system depending on system
-      attributes by merging multiple control file during installation. The
-      rules based installation is controlled by a rules file.
+      attributes by merging multiple control files during installation. The
+      rules-based installation is controlled by a rules file.
     </para>
     <para>
-      The rules file is an XML based file that contains
+      The rules file is an XML file containing
       rules for each group of systems (or single systems) that you want to
       automatically install. A set of rules distinguish a group of systems based on
-      one or more system attributes, after passing all rules, it links each
-      group of rules to a profile. Both the rules file and the profiles must be
+      one or more system attributes. After passing all rules, each
+      group of systems is linked to a profile. Both the rules file and the profiles must be
       located in a pre-defined and accessible location.
     </para>
     <para>
-        The rules file is retrieved only if no specific control is supplied
+        The rules file is retrieved only if no specific control file<remark>emap 2011-11-07: Should this read 'profile'?</remark> is supplied
         using the <emphasis>autoyast</emphasis> keyword. For example, if the
-        following is used, the rules file wont be evaluated:
+        following is used, the rules file will not be evaluated:
     </para>
     <screen>
         autoyast=http://10.10.0.1/profile/myprofile.xml
         autoyast=http://10.10.0.1/profile/rules/rules.xml
     </screen>
-    <para>instead use</para>
+    <para>Instead use:</para>
     <screen>
         autoyast=http://10.10.0.1/profile/
     </screen>
-    <para>which will load http://10.10.0.1/profile/rules/rules.xml (the slash at the end is important)</para>
+    <para>which will load http://10.10.0.1/profile/rules/rules.xml (the slash at the end of the directory name is important).</para>
     <figure id="rules_fig1">
       <title id="rules_fig1.title" >Rules</title>
       <mediaobject>&rules;</mediaobject>
     </figure>
     <para>
-      If more than one rule apply, the final profile for each group is generated
-      on the fly using a merge script. The merging process is based on the
-      order of the rules and later rules override configuration data in earlier rules.
+      If more than one rule applies, the final profile for each group is
+      generated on the fly using a merge script. The merging process is based
+      on the order of the rules and later rules override configuration data in
+      earlier rules.
     </para>
     <para>
       The use of  a rules file is optional. If the rules file is not found,
       system installation proceeds in the 
-      classic way by just using the supplied profile or by searching for the
+      classic way by only using the supplied profile or by searching for the
       profile depending on the <emphasis>MAC</emphasis> or the
       <emphasis>IP</emphasis> address of the system.     
     </para>
@@ -61,14 +62,14 @@
       for the sales department, you would add a link to the profile, called
       <filename>sales.xml</filename>, that you created for the sales department.
     </para>
--->
+--><remark>emap 2011-11-07: If the example is dropped here we better drop it in NetworkInstall.xml as well. </remark>
 
     <section id="rulesfile">
-      <title>Rules File explained</title>
+      <title>Rules File Explained</title>
    
       <example>
 	<title>
-	  Simple rules file
+	  Simple Rules File
 	</title>		
 
 	<para>
@@ -108,26 +109,23 @@
 
 	  </example>	 
       <para>
-	The last example defines 2 rules and provides a different profile for
+	The last example defines two rules and provides a different profile for
 	every rule. The rule used in this case is
-	<emphasis>disksize</emphasis>. After parsing the rules file, &yast2;
-	attempts to match the system being installed to the rules in the 
-	<filename>rules.xml</filename> file in the following order: first rule through the
-	last rule. A rule match occurs when the system being installed matches
-	all of the system attributes defined in the rule. As soon as a system
-	matches a rule, the result resource is added to the
-	stack of profiles  &autoyast; will be using to create the final
-	profile.  The <emphasis>continue</emphasis> property tells &autoyast; if it should
-        continue with other rules or not after a match has been found. 
+	<emphasis>disksize</emphasis>. After parsing the rules file, &yast;
+	attempts to match the target system with the rules in the 
+	<filename>rules.xml</filename> file. A rule match occurs when the target system matches	all system attributes defined in the rule. As soon as the system
+	matches a rule, the respective resource is added to the
+	stack of profiles  &ay; will use to create the final
+	profile.  The <emphasis>continue</emphasis> property tells &ay; whether it should continue with other rules after a match has been found. 
       </para>
       <para>
-	If the first rule does not match,  next rule in the list is examined
+	If the first rule does not match, the next rule in the list is examined
 	until a match is found.
       </para>
       <para>
 	Using the <emphasis>disksize</emphasis> attribute, you can
-	provide different configurations for different hard drives with
-	different size. First rule checks if the device
+	provide different configurations for systems with hard drives of
+	different sizes. The first rule checks if the device
 	<emphasis>/dev/hdc</emphasis> is available and if it is greater than 1
 	GB in size using the <emphasis>match</emphasis> property. 
       </para>
@@ -139,11 +137,11 @@
       </para>
       <example>
 	<title>
-	  Simple rules file
+	  Simple Rules File
 	</title>		
 
 	<para>
-	  The following simple example illustrates how the rules file is used
+	  The following example illustrates how the rules file is used
 	  to retrieve the configuration for a client with known hardware.
 	</para>
 	<screen>
@@ -187,9 +185,9 @@
 
       </example>	 
       <para>
-	The rules directory must be located in the same referenced directory
-	used with the <emphasis>autoyast</emphasis> keyword on boot time, so
-	if the client was booted using<emphasis> autoyast=http://10.10.0.1/profiles/</emphasis>,
+	The rules directory must be located in the same directory specified via
+	the <emphasis>autoyast</emphasis> keyword at boot time.
+	If the client was booted using<emphasis> autoyast=http://10.10.0.1/profiles/</emphasis>,
 	&autoyast; will search for the rules file in 
         <emphasis>http://10.10.0.1/profiles/rules/rules.xml</emphasis>.
       </para>
@@ -197,13 +195,13 @@
     <section id="customrules">
         <title>Custom Rules</title>
         <para>
-            If the attributes autoyast provides for rules are not enough for you,
-            you can use custom rules. Custom rules are more or less a shell script
-            you have to write has and whose output on STDOUT is being used to know
-            which autoyast profile should be fetched. STDERR will be ignored.
+            If the attributes &ay; provides for rules are not enough for your purposes,
+            use custom rules. Custom rules are more or less a shell script
+            you have to write.<remark>emap 2011-11-07: Is it a shell script or not?</remark> Its output to STDOUT specifies
+            which &ay; profile should be used. STDERR will be ignored.
         </para>
         <para>
-            Here is an example for the use of a custom rules:
+            Here is an example for the use of custom rules:
         </para>
             <screen>
 <![CDATA[
@@ -227,70 +225,71 @@ fi;
 ]]>
             </screen>
         <para>
-            The script in this rule can echo either "intel" or "non_intel" to STDOUT (the
-            output of the grep command must be directed to /dev/null in this case).
-            Autoyast will catch that output and will fetch a file with the name "intel.xml"
-            or "non_intel.xml". This file can contain the autoyast profile part for the
-            software selection for example, in the case you want to do a different
-            software selection on intel hardware than on others. So the output of the rule
-            script will be filled between the two '@' characters, to determine the filename of
-            the profile to fetch.
+            The script in this rule can echo either "intel" or "non_intel" to
+            STDOUT (the output of the grep command must be directed to
+            /dev/null in this case). The output of the rule script will be
+            filled between the two '@' characters, to determine the filename
+            of the profile to fetch. &ay; will read the output and fetch a
+            file with the name "intel.xml" or "non_intel.xml". This file can
+            contain the &ay; profile part for the software selection, for
+            example, in case you want a different software selection on intel
+            hardware than on others.
         </para>
         <para>
-            The number of custom rules is limited to 5. So you can use custom1 to custom5.
+            The number of custom rules is limited to five. So you can use custom1 to custom5.
         </para>
     </section>
     <section id="matchtypes">
-        <title>Match Types for rules</title>
+        <title>Match Types for Rules</title>
         <para>
-            you can have five different match_types:
+            You can use five different match_types:
         </para>
 
             <itemizedlist>
                 <listitem>
                     <para>
-                        exact - which is the default
+                        exact (default),
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        greater
+                        greater,
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        lower
+                        lower,
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        range
+                        range,
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        regex (available since 10.1 and SLES10). It's a simple "=~" operator like in bash
+                        regex (available since 10.1 and SLES10), a simple "=~" operator like in bash.
                     </para>
                 </listitem>
             </itemizedlist>
 
         <para>
             "greater" and "lower" can be used for memsize or totaldisk for
-            example. They can match only on rules which return an integer value.
+            example. They can match only with rules that return an integer value.
             A range is only possible for integer values too and has the form of
-            "value1-value2", for example "512-1024". regex can be used to match substrings
-            like "ntel" will match "Intel","intel" and "intelligent".
+            "value1-value2", for example "512-1024". "regex" can be used to match substrings
+            like "ntel" will match "Intel", "intel" and "intelligent".
         </para>
     </section>
     <section id="rulescombination">
         <title>Combine Attributes</title>
         <para>
-            It's possible to combine multiple attributes via a logical operator. So it's
+            Multiple attributes can be combined via a logical operator. It is
             possible to let a rule match if disksize is greater than 1GB or memsize
-            is exact 512MB (well, not the best example maybe).
+            is exactly 512MB.
         </para>
         <para>
-            You can do that with the "operator" element in the rules.xml file. Here is
+            You can do this with the "operator" element in the rules.xml file. Here is
             an example:
         </para>
 
@@ -320,24 +319,24 @@ fi;
         </para>
     </section>
     <section id="rulesstructure">
-	<title>Rules file structure</title>
+	<title>Rules File Structure</title>
 	<para>
-	  The <filename>rules.xml</filename> file must have:	  
+	  The <filename>rules.xml</filename> file must:	  
 	</para>
 	<itemizedlist>
 	  <listitem>
-	    <para>At least one rule</para>
+	    <para>have at least one rule,</para>
 	  </listitem>
 	  <listitem>
-	    <para>It must have the name <filename>rules.xml</filename></para>
+	    <para>have the name <filename>rules.xml</filename>,</para>
 	  </listitem>
 	  <listitem>
-	    <para>It must be located in the directory
-	      <emphasis>rules</emphasis> in the profile repository</para>
+	    <para>be located in the directory
+	      <emphasis>rules</emphasis> in the profile repository,</para>
 	  </listitem>
 
 	  <listitem>
-	    <para>At least one attribute to match in the rule</para>
+	    <para>and have at least one attribute to match in the rule.</para>
 	  </listitem>
 	</itemizedlist>
     </section>
@@ -349,11 +348,9 @@ fi;
 	  match in the rules file.
 	</para>
     <para>
-      If you are unsure about a value on your system, start an autoinstallation.
-      If the proposal shows up, switch to the console via CTRL+ALT+F2 and run
-      <command>/usr/lib/YaST2/bin/y2base ayast_probe ncurses</command>. It might help to to turn the confirmation on for this, so that
-      the installation does not start in the background while you are watching the
-      values. The textbox with the values is scrollable.
+      If you are unsure about a value on your system, start an auto-installation with "confirm" set to "true".
+      When the proposal shows up, switch to the console via CTRL+ALT+F2 and run
+      <command>/usr/lib/YaST2/bin/y2base ayast_probe ncurses</command>. The text box displaying the detected values can be scrolled.
     </para>
 	<table frame='top'>
 	  <title>System Attributes</title>
@@ -369,68 +366,68 @@ fi;
 	      <row>
 		<entry>hostaddress</entry>
 		<entry>IP address of the host</entry>
-		<entry>This attribute must always match exactly</entry>
+		<entry>This attribute must always match exactly.</entry>
 	      </row>
 	      <row>
 		<entry>hostname</entry>
 		<entry>The name of the host</entry>
-		<entry>This attribute must always match exactly</entry>
+		<entry>This attribute must always match exactly.</entry>
 	      </row>
 	      <row>
 		<entry>domain</entry>
 		<entry>Domain name of host</entry>
-		<entry>This attribute must always match exactly</entry>
+		<entry>This attribute must always match exactly.</entry>
 	      </row>
 	      <row>
 		<entry>installed_product</entry>
-		<entry>The name of the product that is getting installed. For example "SUSE LINUX"</entry>
-		<entry>This attribute must always match exactly</entry>
+		<entry>The name of the product to be installed.</entry>
+		<entry>This attribute must always match exactly.</entry>
 	      </row>
 	      <row>
 		<entry>installed_product_version</entry>
-		<entry>The version of the product that is getting installed. For example "9.3"</entry>
-		<entry>This attribute must always match exactly</entry>
+		<entry>The version of the product to be installed.</entry>
+		<entry>This attribute must always match exactly.</entry>
 	      </row>
 	    <row>
 		<entry>network</entry>
 		<entry>network address of host</entry>
-		<entry>This attribute must always match exactly</entry>
+		<entry>This attribute must always match exactly.</entry>
 	      </row>
 	      <row>
 		<entry>mac</entry>
 		<entry>MAC address of host</entry>
 		<entry><para>This attribute must always match exactly. (MAC addresses
-		to be matched should be  in the form <emphasis>0080c8f6484c</emphasis></para></entry>
+		should have the form <emphasis>0080c8f6484c</emphasis></para></entry>
 	      </row>
 	      <row>
 		<entry>linux</entry>
-		<entry>Number of installed Linux partitions on the system</entry>
-		<entry>This attribute can be 0 or more</entry>
+		<entry>Number of installed Linux partitions on the system</entry><remark>emap 2011-11-07: already installed or to be installed?</remark>
+		<entry>This attribute can be 0 or more.</entry>
 	      </row>
 	      <row>
 		<entry>others</entry>
 		<entry>Number of installed non-Linux partitions on the system</entry>
-		<entry>This attribute can be 0 or more</entry>
+		<entry>This attribute can be 0 or more.</entry>
 	      </row>
 	      <row>
 		<entry>xserver</entry>
 		<entry>X Server needed for graphic adapter</entry>
-		<entry>This attribute must always match exactly</entry>
+		<entry>This attribute must always match exactly.</entry>
 	      </row>
 	      <row>
 		<entry>memsize</entry>
 		<entry>Memory available on host in MByes</entry>
-		<entry>All match types are available</entry>
+		<entry>All match types are available.</entry>
 	      </row>
 	      <row>
 		<entry>totaldisk</entry>
 		<entry>Total disk space available on host in MBytes</entry>
-		<entry>All match types are available</entry>
+		<entry>All match types are available.</entry>
 	      </row>
 	      <row>
 		<entry>haspcmica</entry>
 		<entry>System has PCMCIA (i.e Laptops)</entry>
-		<entry>Exact match required, 1 for available PCMCIA or 0 for none</entry>
+		<entry>Exact match required, 1 for available PCMCIA or 0 for none.</entry>
 	      </row>
 	      <row>
 		<entry>hostid</entry>
@@ -450,7 +447,7 @@ fi;
 	      <row>
 		<entry>disksize</entry>
 		<entry>Drive device and size</entry>
-		<entry>All match types are available</entry>
+		<entry>All match types are available.</entry>
 	      </row>
 	      <row>
 		<entry>product</entry>
@@ -475,7 +472,7 @@ fi;
 	      <row>
 		<entry>custom1-5</entry>
 		<entry>Custom rules using shell scripts</entry>
-		<entry>All match types are available</entry>
+		<entry>All match types are available.</entry>
 	      </row>
 	    </tbody>
 	  </tgroup>
@@ -484,7 +481,7 @@ fi;
   <section id="rules_dialogs">
     <title>Rules with Dialogs</title>
     <para>
-        Since openSUSE 11.3 (not SLES11 SP1) you can use dialog popups where you can select which rules you want to match and which not by checkboxes.
+        Since openSUSE 11.3 (not SLES11 SP1) you can use dialog popups with checkboxes to select rules you want matched.
     </para>
           <para>
           The following elements must be between the &lt;rules config:type="list"&gt;&lt;rule&gt;&lt;dialog&gt; ... &lt;/dialog&gt;&lt;/rule&gt;&lt;/rules&gt; tags in the rules.xml file.
@@ -501,37 +498,37 @@ fi;
             <tbody>
               <row>
                 <entry>dialog_nr</entry>
-                <entry><para>all rules with the same dialog_nr are presented on the same popup dialog so the same dialog_nr can appear in multiple rules.
+                <entry><para>All rules with the same dialog_nr are presented in the same popup dialog. The same dialog_nr can appear in multiple rules.
                 </para><screen>&lt;dialog_nr config:type="integer"&gt;3&lt;/dialog_nr&gt;</screen></entry>
-                <entry>This element is optional and the default for a missing dialog_nr is always "0". If you have one popup only anyway, you don't need to specify the dialog_nr</entry>
+                <entry>This element is optional and the default for a missing dialog_nr is always "0". If want to use one popup for all rules, you don't need to specify the dialog_nr.</entry>
               </row>
               <row>
                 <entry>element</entry>
-                <entry><para>each element needs a uniq id. Even if you have more than one dialog, you must not use the same id twice like an id "1" on dialog 1 and and id "1" on dialog 2. That's different than with &lt;ask&gt; dialogs, where you can have the same &lt;element&gt; id on multiple dialogs.
+                <entry><para>Each element<remark>emap 2011-11-07: Rather each rule needs a unique element id?</remark> needs a unique id. Even if you have more than one dialog, you must not use the same id twice like an id "1" on dialog 1 and and id "1" on dialog 2. That's different than with &lt;ask&gt; dialogs, where you can have the same &lt;element&gt; id on multiple dialogs.<remark>emap 2011-11-07: Do we need to explain the ask-dialog here? It's distracting.</remark>
                 </para><screen>&lt;element config:type="integer"&gt;3&lt;/element&gt;</screen></entry>
-                <entry>optional. If left out, autoyast adds his own id's internally but you can't use conflicts then (see below)</entry>
+                <entry>Optional. If left out, &ay; adds his own ids internally. Then you cannot specify conflicting rules (see below).</entry>
               </row>
               <row>
                 <entry>title</entry>
-                <entry><para>the caption of the popup dialog
+                <entry><para>Caption of the popup dialog
                 </para><screen>&lt;title&gt;Desktop Selection&lt;/title&gt;</screen></entry>
-                <entry>optional</entry>
+                <entry>Optional</entry>
               </row>
               <row>
                 <entry>question</entry>
-                <entry><para>the question text is shown in the popup behind the checkbox.
+                <entry><para>Question shown in the popup behind the checkbox.
                 </para><screen>&lt;question&gt;KDE Desktop&lt;/question&gt;</screen></entry>
-                <entry>optional. If you don't configure a text here, the name of the XML file that is triggered by this rule will be shown instead.</entry>
+                <entry>Optional. If you don't configure a text here, the name of the XML file that is triggered by this rule will be shown instead.</entry>
               </row>
               <row>
                 <entry>timeout</entry>
-                <entry><para>a timeout in seconds after which the dialog will automatically "press" the okay button. Useful for a non blocking installation in combination with rules-dialogs.
+                <entry><para>Timeout in seconds after which the dialog will automatically "press" the okay button. Useful for a non-blocking installation in combination with rules dialogs.
                 </para><screen>&lt;timeout config:type="integer"&gt;30&lt;/timeout&gt;</screen></entry>
-                <entry>optional. A missing timeout will stop the installation process until the dialog is confirmed by the user.</entry>
+                <entry>Optional. A missing timeout will stop the installation process until the dialog is confirmed by the user.</entry>
               </row>
               <row>
                 <entry>conflicts</entry>
-                <entry><para>a list of element id's (rules) that conflict with this rule. If this rule matches or is selected by the user, all conflicting rules are deselected and disabled in the popup. Take care that you don't create deadlocks.
+                <entry><para>A list of element ids (rules) that conflict with this rule. If this rule matches or is selected by the user, all conflicting rules are deselected and disabled in the popup. Take care that you do not create deadlocks.
                 </para><screen>&lt;conflicts config:type="list"&gt;
   &lt;element config:type="integer"&gt;1&lt;/element&gt;
   &lt;element config:type="integer"&gt;5&lt;/element&gt;
@@ -616,10 +613,8 @@ echo -n 100
   <section id="classes">
     <title>Classes</title>
     <para>
-      You can assign a system to different classes which can be defined in the
-      control file. Unlike rules, classes have to be configured in the control
-      file and represent a configuration which is typical for a group of
-      systems.
+      Classes represent configurations for groups of target systems. Unlike
+      rules, classes have to be configured in the control file. Then classes can be assigned to target systems.
     </para>
     <para>
       Here is an example of a class definition:
@@ -635,33 +630,34 @@ echo -n 100
 ]]>
         </screen>
     <para>
-        The file Software.xml must be in the directory "classes/TrainingRoom/" then and
-        it will get fetched from the same place like the autoyast profile and the rules were
-        fetched from.
+     The file Software.xml must be in the directory "classes/TrainingRoom/"
+     then. It will get fetched from the same place the &ay; profile and rules
+     were fetched from.<remark>emap 2011-11-07: Doesn't make much sense. Does
+     this mean the directory "classes/TrainingRoom" containing Software.xml
+     needs to be in the same location as the ay profile and rules? </remark>
     </para>
     <para>
-        If you have multiple kind of profiles and those profiles share parts, it's recommended to
-        use classes for that. You just have to change the class and all profiles using that class
-        are fixed too. By the way, you can reach something similar by using XIncludes.
+     If you have multiple profiles and those profiles share parts, better
+     use classes for common parts. <!--You just have to change the class and all profiles using that class are fixed too.--><remark>emap 2011-11-07: Sentence doesn't make sense.</remark> You can also use XIncludes.
     </para>
     <para>
-      Using the configuration management system, you can define a set of
-      classes. The class definition consists  of the following variable for each class:
+      Using the configuration management system,<remark>emap 2011-11-07: Is this the same as the configuration system?</remark> you can define a set of
+      classes. A class definition consists of the following variables:
     </para>
     <itemizedlist>
       <listitem>
-	<para>	        
-	  Name: Class name
+	<para><remark>emap 2011-11-07: Should the following variables really be upper case?</remark>	        
+	  Name: class name
 	</para>
       </listitem>
       <listitem>
 	<para>	    
-	  Descriptions: Class description
+	  Descriptions:<remark>emap 2011-11-07: Really plural or rather: Description?</remark> class description
 	</para>
       </listitem>
       <listitem>
 	<para>	        
-	  Order: Order (or priority) of the class in the stack of migration
+	  Order: order (or priority) of the class in the stack of migration<remark>emap 2011-11-07: What migration?</remark>
 	</para>
       </listitem>
     </itemizedlist>
@@ -672,43 +668,43 @@ echo -n 100
     <para>
       You can create as many classes as you need, however it is
       recommended to keep the set of classes as small as possible to keep the
-      configuration system concise. As an example, the following set of
+      configuration system concise. For example, the following sets of
       classes can be used:
     </para>
     <itemizedlist>
       <listitem>
 	<para>
-	  site: Classes describing a physical location or site.
+	  site: classes describing a physical location or site,
 	</para>
       </listitem>
       <listitem>
 	<para>
-	  machine: Classes describing a type of machine or make
+	  machine: classes describing a type of machine,
 	</para>
       </listitem>
       <listitem>
 	<para>
-	  role: Classes describing the function of the machine to be
-	  installed
+	  role: classes describing the function of the machine,
 	</para>
       </listitem>
       <listitem>
 	<para>
-	  group: Classes describing a department or a group within a site
+	  group: classes describing a department or a group within a site
 	  or a location.
 	</para>
       </listitem>
     </itemizedlist>
 
     <para>
-      A  file saved in a class directory can have the same syntax and format as a
-      regular control file but  represents a subset of the configuration. For example,
-      to create a new control file  for a special computer with a specific network
-      interface, only the resource in the control file, which controls
-      the configuration of the network is needed. Having multiple network
-      types, you can merge the one needed for a special type of hardware
-      with other class files and create a new control file which suits
-      the system being installed.
+      A file<remark>emap 2011-11-07: What kind of file would that be? A class
+      file?</remark> saved in a class directory can have the same syntax and
+      format as a regular control file but represents a subset of the
+      configuration. For example, to create a new control file for a special
+      computer with a specific network interface, only the control file
+      resource which controls the configuration of the network is
+      needed. Having multiple network types, you can merge the one needed for
+      a special type of hardware with other class files and create a new
+      control file which suits the system being installed.<remark>emap 2011-11-07: Not very clear.</remark>
     </para>
 
   </section>
@@ -718,26 +714,26 @@ echo -n 100
     <para>
       It is possible to mix rules and classes during an auto-installation
       session. For example you can identify a system using rules which contain
-      class definitions in them. The process is described in the figures
+      class definitions in them. The process is described in the figure
       <quote><xref linkend='rulesflow'
 	  endterm="rulesflow.title"></xref></quote>.
     </para>
     <para>
       After retrieving the rules and merging them, the generated control file
-      is parsed and the presence of class definitions is checked. If classes
+      is parsed and checked for class definitions. If classes
       are defined, then the class files are retrieved from the original
       repository and a new merge process is initiated.
     </para>
   </section>
   <section id="merging">
-    <title>The merging process of Rules and Classes</title>
+    <title>The Merging of Rules and Classes</title>
     <para>
-      With classes and with rules, multiple XML files get merged to one resulting
+      With classes and with rules, multiple XML files get merged into one resulting
       XML file. This process of merging is often confusing for people, because
       it behaves different than one would expect.
     </para>
     <para>
-      Let's take a look at two XML parts that we want to merge:
+      For example, the following two XML parts should be merged:
     </para>
       <screen>
 &lt;partitioning config:type=&quot;list&quot;&gt;
@@ -781,31 +777,23 @@ echo -n 100
       </screen>
 
     <para>
-      What you would expect is, that you'll end up in a profile with 3 partitions.
-      That is not the case. You'll end up with two partitions and the first partition
-      is a mixup of the swap and the root partition. Stuff that is configured in both
-      partitions, like <emphasis>mount</emphasis> or <emphasis>size</emphasis>, will 
-      be used from the second file.
-      Stuff that only exists in the first or second partition, will be copied to the
-      merged partition too.
+      You might expect the profile to contain 3 partitions.  This is not the
+      case. You'll end up with two partitions and the first partition is a
+      mixup of the swap and the root partition. Settings configured in both
+      partitions, like <emphasis>mount</emphasis> or
+      <emphasis>size</emphasis>, will be used from the second file.  Settings
+      that only exist in the first or second partition, will be copied to the
+      merged partition too.<remark>emap 2011-11-07: A little confusing, why not put the merged file here.</remark>
     </para>
     <para>
-      Sometimes this is what you want, but sometimes this is not what you want. Actually,
-      in my example above, this is both. You don't want a second <emphasis>drive</emphasis>
-      right? You want the two drives to be merged into one but for partitions you want three seperate
-      ones.
-      So how can you achieve what you want? In this example, how do you get three partitions but still
-      one drive?
-    </para>
-    
-      <note>
-        <title>FIXME Title</title>
-        <para>For SLES9/SUSE Linux 10.0 and earlier versions</para>
+      In this example, you don't want a second <emphasis>drive</emphasis>. The two drives should be merged into one. With regard to partitions, three separate ones should be defined. 
+ <note>
+        <title>Workaround for SLES9/SL 10.0 and earlier</title>
+        <para>The following workaround only works for SLES9/SL 10.0 and earlier versions.</para>
       </note>
-      
-      <para>you can only use a trick. It's
-      not official supported by autoyast and more a workaround than a nice solution. For each partition
-      in one file, add an attribute to the partition like this:
+    </para>
+      <para>The following method is not officially supported by &ay;. For each
+      partition in one file, add an attribute to the partition:
     </para>
 
       <screen>
@@ -815,17 +803,15 @@ echo -n 100
       </screen>
 
     <para>
-      The trick is, that the merge script will not detect the partitions as the same element type because of the
-      new attribute. If you have more files, it might be needed to to add more attributes like <emphasis>dontmerge="2"</emphasis>.
+      Because of the new attribute, the merge script will not detect the partitions as the same element type. If you have more files, you may need to add more attributes like <emphasis>dontmerge="2"</emphasis>, etc.
     </para>
    
       <note>
-        <title>FIXME Title</title>
-        <para>For SLES10/SUSE Linux 10.1 and later</para>
+        <title>Solution for SLES 10/SL 10.1 and later</title>
+        <para>The following method solves the merging problem for SLES10, SUSE Linux 10.1 and later versions.</para>
       </note>
       
-      <para>you can use the <emphasis>dont_merge</emphasis> element in the rules or classes file
-      like this:
+      <para>Use the <emphasis>dont_merge</emphasis> element in the rules or class file:
     </para>
 
        <screen>
