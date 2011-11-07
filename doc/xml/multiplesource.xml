@@ -17,7 +17,7 @@
       The 'multiple source' approach of YaST gives a solution as it allows
       installation from several (package) sources. So a customer can start
       installing from the original UnitedLinux CDs, proceed with a product CD,
-      and end with a patch CD containing the latest security patches.
+      and end with a patch CD containing the latest security patches.<remark>emap 2011-11-07: I don't expect United Linux to be still supported. If the information in this appendix is still relevant, does it needs to be rewritten with out mention of UnitedLinux?</remark>
     </para>
     </section>
     <section>
@@ -27,16 +27,16 @@
 
       <section>
 	<title>
-	  The installer source
+	  The installation source
 	</title>
 	<para>
 	When starting the installation from a media (CD, DVD, NFS, ...), linuxrc looks
-	for a /boot/root file containing a complete (cramfs based) root-fs for
+	for a /boot/root file containing a complete (cramfs-based) root-fs for
 	YaST.</para>
 
 	<para>	Usually, this file is on the boot CD, but other installation types are
-	also supported by linuxrc. The information, where the /boot/root file
-	came from, is passed to YaST and defines the installer source. 
+	also supported by linuxrc. The information where the /boot/root file
+	came from is passed to YaST and defines the installation source. 
 	
 	</para>
 	<para>	YaST now looks at this installer source for a /yast/order file. If this
@@ -44,7 +44,7 @@
 	</para>
 	<para>	In this mode, the source description (information about the packages) is on
 	the installer source and the source data (the rpm packages itself) is
-	on separate media.
+	on a separate media.
 	</para>
 	<para>
 	  If the order file does not exist, YaST does not separate the source
