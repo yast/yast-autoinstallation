@@ -45,6 +45,7 @@ html/index.html: autoyast.xml
 	time -p  @XSLTPROC@ --xinclude \
 	-stringparam base.dir 'html/devel/' \
 	-stringparam chunk.fast '1' \
+	--stringparam show.comments '0' \
 	--stringparam html.stylesheet $(STYLESHEET_CSS) \
 	@STYLESHEET_HTML@ creating_autoyast2_modules.xml
 	cd html/devel; \
@@ -53,7 +54,9 @@ html/index.html: autoyast.xml
 
 html/index.html: autoyast.xml 
 	XML_CATALOG_FILES=@XML_CATALOG@ \
-	@XSLTPROC@ --xinclude  @STYLESHEET_HTML@ \
+	@XSLTPROC@ --xinclude \
+	--stringparam show.comments '0' \
+	@STYLESHEET_HTML@ \
 	$<
 
 # was: images/PNG/*.png 
