@@ -23,13 +23,11 @@
         using the <emphasis>autoyast</emphasis> keyword. For example, if the
         following is used, the rules file will not be evaluated:
     </para>
-    <screen>
-        autoyast=http://10.10.0.1/profile/myprofile.xml
-        autoyast=http://10.10.0.1/profile/rules/rules.xml
+    <screen>autoyast=http://10.10.0.1/profile/myprofile.xml
+autoyast=http://10.10.0.1/profile/rules/rules.xml
     </screen>
     <para>Instead use:</para>
-    <screen>
-        autoyast=http://10.10.0.1/profile/
+    <screen>autoyast=http://10.10.0.1/profile/
     </screen>
     <para>which will load http://10.10.0.1/profile/rules/rules.xml (the slash at the end of the directory name is important).</para>
     <figure id="rules_fig1">
@@ -76,8 +74,7 @@
 	  The following simple example illustrates how the rules file is used
 	  to retrieve the configuration for a client with known hardware.
 	</para>
-	<screen>
-<![CDATA[
+	<screen><![CDATA[
 <?xml version="1.0"?>
 <!DOCTYPE autoinstall>
 <autoinstall xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
@@ -144,8 +141,7 @@
 	  The following example illustrates how the rules file is used
 	  to retrieve the configuration for a client with known hardware.
 	</para>
-	<screen>
-<![CDATA[
+	<screen><![CDATA[
 <?xml version="1.0"?>
 <!DOCTYPE autoinstall> 
 <autoinstall xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
@@ -203,8 +199,7 @@
         <para>
             Here is an example for the use of custom rules:
         </para>
-            <screen>
-<![CDATA[
+            <screen><![CDATA[
 <rule>
     <custom1>
         <script>
@@ -293,8 +288,7 @@ fi;
             an example:
         </para>
 
-        <screen>
-<![CDATA[
+        <screen><![CDATA[
 <rule>
    <disksize>
         <match>/dev/hda 1000</match>
@@ -542,8 +536,7 @@ fi;
           <para>
             Here is an example of how to use dialogs with rules:
           </para>
-        <screen>
-<![CDATA[
+        <screen><![CDATA[
   <rules config:type="list">
     <rule>
         <custom1>
@@ -619,8 +612,7 @@ echo -n 100
     <para>
       Here is an example of a class definition:
     </para>
-        <screen>
-<![CDATA[
+        <screen><![CDATA[
 <classes config:type="list">
     <class>
         <class_name>TrainingRoom</class_name>
@@ -735,8 +727,7 @@ echo -n 100
     <para>
       For example, the following two XML parts should be merged:
     </para>
-      <screen>
-&lt;partitioning config:type=&quot;list&quot;&gt;
+      <screen>&lt;partitioning config:type=&quot;list&quot;&gt;
     &lt;drive&gt;
         &lt;partitions config:type=&quot;list&quot;&gt;
             &lt;partition&gt;
@@ -757,8 +748,7 @@ echo -n 100
 &lt;/partitioning&gt;
       </screen>
 
-      <screen>
-&lt;partitioning config:type=&quot;list&quot;&gt;
+      <screen>&lt;partitioning config:type=&quot;list&quot;&gt;
   &lt;drive&gt;
     &lt;initialize config:type=&quot;boolean&quot;&gt;false&lt;/initialize&gt;
     &lt;partitions config:type=&quot;list&quot;&gt;
@@ -796,8 +786,7 @@ echo -n 100
       partition in one file, add an attribute to the partition:
     </para>
 
-      <screen>
-&lt;partition dontmerge=&quot;1&quot;&gt;
+      <screen>&lt;partition dontmerge=&quot;1&quot;&gt;
 ...
 &lt;/partitions&gt;
       </screen>
@@ -814,8 +803,7 @@ echo -n 100
       <para>Use the <emphasis>dont_merge</emphasis> element in the rules or class file:
     </para>
 
-       <screen>
-&lt;classes config:type=&quot;list&quot;&gt;
+       <screen>&lt;classes config:type=&quot;list&quot;&gt;
     &lt;class&gt;
         &lt;class_name&gt;swap&lt;/class_name&gt;
         &lt;configuration&gt;largeswap.xml&lt;/configuration&gt;
@@ -826,8 +814,7 @@ echo -n 100
 &lt;/classes&gt;
       </screen>
 
-      <screen>
-&lt;rule&gt;
+      <screen>&lt;rule&gt;
     &lt;board_vendor&gt;
         &lt;match&gt;ntel&lt;/match&gt;
         &lt;match_type&gt;regex&lt;/match_type&gt;
@@ -856,9 +843,9 @@ echo -n 100
   </section>
 </chapter>
 
-      <!--
-       Local Variables:
-       mode: xml
-       sgml-parent-document: ("autoyast2.xml" "book" "chapter")
-       End:
-      -->
+<!--
+    Local Variables:
+    mode: xml
+    sgml-parent-document: ("autoyast2.xml" "book" "chapter")
+    End:
+-->
