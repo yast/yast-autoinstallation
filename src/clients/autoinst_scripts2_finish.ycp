@@ -46,6 +46,8 @@ if (func == "Info")
 else if (func == "Write")
 {
     AutoinstScripts::Write("chroot-scripts", true);
+    // systemd requires the init script to be written in 1st stage
+    AutoinstScripts::Write("init-scripts", false);
     AutoInstall::PXELocalBoot();
 }
 else
