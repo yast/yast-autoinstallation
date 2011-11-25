@@ -108,7 +108,9 @@
               <row>
                 <entry><para>pathlist (available since openSUSE 11.0 and replaces <emphasis>path</emphasis>)</para></entry>
                 <entry><para>A list of <emphasis>path</emphasis> elements (see above).
-                </para><screen>&lt;pathlist config:type="list"&gt;&lt;path&gt;networking,dns,hostname&lt;/path&gt;&lt;path&gt;...&lt;/path&gt;</screen></entry>
+                </para><screen>&lt;pathlist config:type="list"
+&gt;&lt;path&gt;networking,dns,hostname&lt;/path&gt;
+&lt;path&gt;...&lt;/path&gt;</screen></entry>
                 <entry><para>This information is optional but you should at least provide <emphasis>path</emphasis> or <emphasis>file</emphasis>.</para></entry>
               </row>
               <row>
@@ -141,8 +143,7 @@
                 <entry><para>The selection element contains a list of &lt;entry&gt; elements. Each entry represents a possible option
                        for the user to choose. The user cannot enter a value in a textfield, but he can choose from a list
                        of values.
-                       </para><screen>
-&lt;selection config:type="list"&gt;
+                       </para><screen>&lt;selection config:type="list"&gt;
   &lt;entry&gt;
     &lt;value&gt;
         reiser
@@ -306,8 +307,7 @@
       Below you can see an example of the usage of the "ask" feature.
     </para>
 
-      <screen>
-&lt;general&gt;
+      <screen>&lt;general&gt;
   &lt;ask-list config:type=&quot;list&quot;&gt;
       &lt;ask&gt;
           &lt;!-- deprecated since openSUSE 11.0; use pathlist instead
@@ -370,15 +370,13 @@ echo -n &quot;ldap1.mydom.de&quot;
       &lt;/ask&gt;
   &lt;/ask-list&gt;
   ...
-&lt;/general&gt;
-</screen>
+&lt;/general&gt;</screen>
 
 <para>
 The following example is a nice way to choose between &ay; profiles. &ay; will read the <filename>modified.xml</filename> file again after the ask-dialogs are done. This way you can fetch a complete new profile.
 </para>
 
-<screen>
-      &lt;ask&gt;
+<screen>&lt;ask&gt;
         &lt;selection config:type=&quot;list&quot;&gt;
             &lt;entry&gt;
                     &lt;value&gt;part1.xml&lt;/value&gt;
@@ -407,14 +405,12 @@ wget http://10.10.0.162/$VAL -O /tmp/profile/modified.xml 2&gt;/dev/null
             &lt;debug config:type=&quot;boolean&quot;&gt;false&lt;/debug&gt;
             &lt;feedback config:type=&quot;boolean&quot;&gt;false&lt;/feedback&gt;
         &lt;/script&gt;
-      &lt;/ask&gt;
-</screen>
+      &lt;/ask&gt;</screen>
 <para>
 Since openSUSE 11.0, you can verify the answer of a question with a script like this:
 </para>
 
-<screen>
-     &lt;ask&gt;
+<screen>&lt;ask&gt;
           &lt;script&gt;
             &lt;filename&gt;my.sh&lt;/filename&gt;
             &lt;rerun_on_error config:type=&quot;boolean&quot;&gt;true&lt;/rerun_on_error&gt;
@@ -440,8 +436,7 @@ exit 0
           &lt;/pathlist&gt;
           &lt;question&gt;Enter Hostname&lt;/question&gt;
           &lt;default&gt;enter your hostname here&lt;/default&gt;
-      &lt;/ask&gt;
-</screen>
+      &lt;/ask&gt;</screen>
 
   </section>
 

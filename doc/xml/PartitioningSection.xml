@@ -53,42 +53,48 @@
               <row>
                 <entry>device</entry>
                 <entry><para>The device you want to configure in this section. Since SUSE Linux 10.1 and SLES10, you can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis>. With SLES10 SP1 and SUSE Linux 10.2, <emphasis>by-path</emphasis> is possible too, like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.</para>
-                  <para><literal>&lt;device&gt;/dev/hda&lt;/device&gt;</literal></para>
+                  <screen>&lt;device&gt;/dev/hda&lt;/device&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, &ay; tries to guess the device. A RAID must always have "/dev/md" as device.</entry>
               </row>
               <row>
                 <entry>initialize</entry>
                 <entry><para>If set to "true", the partition table gets wiped out before &ay; starts the partition calculation.</para>
-<para><literal>&lt;initialize config:type="boolean"&gt;true&lt;/initialize&gt;</literal></para>
+<screen>&lt;initialize config:type="boolean"
+&gt;true&lt;/initialize&gt;</screen>
 </entry>
                 <entry>Optional. The default is "false".</entry>
               </row>
               <row>
                 <entry>is_lvm_vg</entry>
                 <entry><para>Specifies if a device is not a physical device but a LVM volume group (see LVM configuration below).</para>
-<para><literal>&lt;is_lvm_vg config:type="boolean"&gt;true&lt;/is_lvm_vg&gt;</literal></para>
+<screen>&lt;is_lvm_vg config:type="boolean"
+&gt;true&lt;/is_lvm_vg&gt;</screen>
 </entry>
                 <entry><para><emphasis>Deprecated</emphasis> since SLES10SP1 and SL10.2. Use <emphasis>type</emphasis> instead. Must be "true" if this device is a LVM volume group. The default is "false".</para></entry>
               </row>
               <row>
                 <entry>is_evms_vg</entry>
                 <entry><para>Specifies if a device is not a physical device but an EVMS volume group (see EVMS configuration below).</para>
-<para><literal>&lt;is_evms_vg config:type="boolean"&gt;true&lt;/is_evms_vg&gt;</literal></para>
+<screen>&lt;is_evms_vg config:type="boolean"
+&gt;true&lt;/is_evms_vg&gt;</screen>
 </entry>
                 <entry><para><emphasis>Deprecated</emphasis> since SLES10SP1 and SL10.2. Use <emphasis>type</emphasis> instead. Must be "true" if this device is an EVMS volume group. The default is "false".</para></entry>
               </row>
               <row>
                 <entry>partitions</entry>
                 <entry><para>A list of &lt;partition&gt; entries (see table below).</para>
-<para><literal>&lt;partitions config:type="list"&gt;&lt;partition&gt;...&lt;/partition&gt;...&lt;/partitions&gt;</literal></para>
+<screen>&lt;partitions config:type="list"&gt;
+  &lt;partition&gt;...&lt;/partition&gt;
+  ...
+&lt;/partitions&gt;</screen>
 </entry>
                 <entry>Optional. If no partitions are specified, &ay; will create a reasonable partitioning (see Automated Partitioning below).</entry>
               </row>
               <row>
                 <entry>pesize</entry>
                 <entry><para>This value makes only sense with LVM/EVMS.</para>
-<para><literal>&lt;pesize&gt;8M&lt;/pesize&gt;</literal></para>
+<screen>&lt;pesize&gt;8M&lt;/pesize&gt;</screen>
 </entry>
                 <entry>Optional. Default is 4M for EVMS/LVM volume groups.</entry>
               </row>
@@ -129,7 +135,7 @@
 </listitem>
 </itemizedlist>
 
-<para><literal>&lt;type config:type="symbol"&gt;CT_LVM&lt;/type&gt;</literal></para>
+<screen>&lt;type config:type="symbol"&gt;CT_LVM&lt;/type&gt;</screen>
 </entry>
                 <entry>Optional. Default is CT_DISK for a normal physical hard disk.</entry>
               </row>
@@ -146,14 +152,15 @@
 </listitem>
 </itemizedlist>
 
-<para><literal>&lt;disklabel&gt;gpt&lt;/disklabel&gt;</literal></para>
+<screen>&lt;disklabel&gt;gpt&lt;/disklabel&gt;</screen>
 </entry>
                 <entry>Optional and available since openSUSE 12.1 and SLES11 SP2. By default &yast; decides what makes sense (msdos in most cases).</entry>
               </row>
               <row>
                 <entry>keep_unknown_lv</entry>
                 <entry><para>This value only makes sense for type=CT_LVM drives. If you are reusing a LVG and you set this to "true", all existing LVs in that VG will not be touched unless they are specified in the &lt;partitioning&gt; section. So you can keep existing LVs without specifying them.</para>
-<para><literal>&lt;keep_unknown_lv config:type="boolean"&gt;false&lt;/keep_unknown_lv&gt;</literal></para>
+<screen>&lt;keep_unknown_lv config:type="boolean"
+&gt;false&lt;/keep_unknown_lv&gt;</screen>
 </entry>
                 <entry>Optional and available since openSUSE 12.1 and SLES11 SP2. The default is "false".</entry>
               </row>
@@ -183,7 +190,8 @@
                   <para>
                     Specify if this partition must be created or if it already exists.
                   </para>
-                  <para><literal>&lt;create config:type="boolean"&gt;false&lt;/create&gt;</literal></para>
+                  <screen>&lt;create config:type="boolean"
+&gt;false&lt;/create&gt;</screen>
                 </entry>
                 <entry>If set to "false", provide information for &ay; which partition this is (like with partition_nr).</entry>
               </row>
@@ -193,8 +201,8 @@
                   <para>
                     The mountpoint of this partition.
                   </para>
-                  <para><literal>&lt;mount&gt;/&lt;/mount&gt;</literal></para>
-                  <para><literal>&lt;mount&gt;swap&lt;/mount&gt;</literal></para>
+                  <screen>&lt;mount&gt;/&lt;/mount&gt;</screen>
+                  <screen>&lt;mount&gt;swap&lt;/mount&gt;</screen>
                 </entry>
                 <entry>You should have at least a root partition (/) and a swap partition.</entry>
               </row>
@@ -204,7 +212,8 @@
                   <para>
                     Mount options for this partition.
                   </para>
-                  <para><literal>&lt;fstopt&gt;ro,noatime,user,data=ordered,acl,user_xattr&lt;/fstopt&gt;</literal></para>
+                  <screen>&lt;fstopt
+&gt;ro,noatime,user,data=ordered,acl,user_xattr&lt;/fstopt&gt;</screen>
                 </entry>
                 <entry>See <command>man mount</command> for available mount options.</entry>
               </row>
@@ -214,7 +223,7 @@
                   <para>
                     The label of the partition (useful for the "mountby" parameter; see below).
                   </para>
-                  <para><literal>&lt;label&gt;mydata&lt;/label&gt;</literal></para>
+                  <screen>&lt;label&gt;mydata&lt;/label&gt;</screen>
                 </entry>
                 <entry>See <command>man e2label</command> for an example.</entry>
               </row>
@@ -224,7 +233,8 @@
                   <para>
                     The uuid of the partition (only useful for the "mountby" parameter; see below).
                   </para>
-                  <para><literal>&lt;uuid&gt;1b4e28ba-2fa1-11d2-883f-b9a761bde3fb&lt;/uuid&gt;</literal></para>
+                  <screen>&lt;uuid
+&gt;1b4e28ba-2fa1-11d2-883f-b9a761bde3fb&lt;/uuid&gt;</screen>
                 </entry>
                 <entry>See <command>man uuidgen</command>.</entry>
               </row>
@@ -239,7 +249,7 @@
                     With SUSE Linux 10.2 and SLES10 SP1, you can specify the the size in percentage. So 10% will use 10% of the size
                     of the hard disk or VG. You can mix auto, max, size, and percentage as you like.
                   </para>
-                  <para><literal>&lt;size&gt;10G&lt;/size&gt;</literal></para>
+                  <screen>&lt;size&gt;10G&lt;/size&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -249,7 +259,7 @@
                   <para>
                     Specify if &ay; should format the partition.
                   </para>
-                  <para><literal>&lt;format config:type="boolean"&gt;false&lt;/format&gt;</literal></para>
+                  <screen>&lt;format config:type="boolean"&gt;false&lt;/format&gt;</screen>
                 </entry>
                 <entry>If you set "create" to "true", then you likely want this is option set to "true" as well.</entry>
               </row>
@@ -280,7 +290,8 @@
 </listitem>
 </itemizedlist>
 
-                  <para><literal>&lt;filesystem config:type="symbol"&gt;reiser&lt;/filesystem&gt;</literal></para>
+                  <screen>&lt;filesystem config:type="symbol"
+&gt;reiser&lt;/filesystem&gt;</screen>
                 </entry>
                 <entry><para>Optional. The default is reiser<remark>emap 2011-11-05: Fix this too.</remark></para></entry>
               </row>
@@ -293,7 +304,8 @@
                     partition via partition_nr. You can force &ay; to only
                     create primary partitions by assigning numbers below 5.
                   </para>
-                  <para><literal>&lt;partition_nr config:type="integer"&gt;2&lt;/partition_nr&gt;</literal></para>
+                  <screen>&lt;partition_nr config:type="integer"
+&gt;2&lt;/partition_nr&gt;</screen>
                 </entry>
                 <entry>In most cases, numbers 1 to 4 are primary partitions
                 while 5 and higher are logical partitions.</entry>
@@ -305,7 +317,8 @@
                    The partition_id sets the id of the partition. If you want different identifiers than 131
                         for Linux partition or 130 for swap, configure them with partition_id.
                   </para>
-                  <para><literal>&lt;partition_id config:type="integer"&gt;131&lt;/partition_id&gt;</literal></para>
+                  <screen>&lt;partition_id config:type="integer"
+&gt;131&lt;/partition_id&gt;</screen>
                 </entry>
                 <entry>The default is 131 for linux partition and 130 for swap.</entry>
               </row>
@@ -315,7 +328,8 @@
                   <para>
                    See partition_id above. For historical reasons they represent the same.
                   </para>
-                  <para><literal>&lt;filesystem_id config:type="integer"&gt;131&lt;/filesystem_id&gt;</literal></para>
+                  <screen>&lt;filesystem_id config:type="integer"
+&gt;131&lt;/filesystem_id&gt;</screen>
                 </entry>
                 <entry>Since 10.1 and SLES10 it is recommended to use partition_id instead.</entry>
               </row>
@@ -325,7 +339,8 @@
                   <para>
                    Instead of a partition number, you can tell &ay; to mount a partition by label, uuid, path or id, which are the udev path and udev id (see /dev/disk/...).
                   </para>
-                  <para><literal>&lt;mountby config:type="symbol"&gt;label&lt;/mountby&gt;</literal></para>
+                  <screen>&lt;mountby config:type="symbol"
+&gt;label&lt;/mountby&gt;</screen>
                 </entry>
                 <entry>See "label" and "uuid" documentation above.</entry>
               </row>
@@ -337,7 +352,7 @@
                     (LVM or EVMS) specify the logical volume name here (see
                     is_lvm_vg or is_evms_vg parameter in drive configuration).
                    </para>
-                  <para><literal>&lt;lv_name&gt;opt_lv&lt;/lv_name&gt;</literal></para>
+                  <screen>&lt;lv_name&gt;opt_lv&lt;/lv_name&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -347,7 +362,7 @@
                   <para>
                     An integer that configures LVM striping. Specify across how many devices you want to stripe (spread data).
                   </para>
-                  <para><literal>&lt;stripes config:type="integer"&gt;2&lt;/stripes&gt;</literal></para>
+                  <screen>&lt;stripes config:type="integer"&gt;2&lt;/stripes&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -357,7 +372,8 @@
                   <para>
                     Specify the size of each block in kb.
                   </para>
-                  <para><literal>&lt;stripesize config:type="integer"&gt;4&lt;/stripesize&gt;</literal></para>
+                  <screen>&lt;stripesize config:type="integer"
+&gt;4&lt;/stripesize&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -369,7 +385,7 @@
                     group (LVM), you have to specify the name of the volume
                     group here.
                   </para>
-                  <para><literal>&lt;lvm_group&gt;system&lt;/lvm_group&gt;</literal></para>
+                  <screen>&lt;lvm_group&gt;system&lt;/lvm_group&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -381,7 +397,7 @@
                     (EVMS), you have to specify the name of the volume group
                     here.
                   </para>
-                  <para><literal>&lt;evms_group&gt;system&lt;/evms_group&gt;</literal></para>
+                  <screen>&lt;evms_group&gt;system&lt;/evms_group&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -392,7 +408,7 @@
                     If this physical volume is part of a RAID, specify the
                     name of the RAID.
                   </para>
-                  <para><literal>&lt;raid_name&gt;/dev/md0&lt;/raid_name&gt;</literal></para>
+                  <screen>&lt;raid_name&gt;/dev/md0&lt;/raid_name&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -402,7 +418,7 @@
                   <para>
                     Specify the type of the RAID.
                   </para>
-                  <para><literal>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</literal></para>
+                  <screen>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -412,7 +428,7 @@
                   <para>
                     Specify RAID options, see below.
                   </para>
-                  <para><literal>&lt;raid_options&gt;...&lt;/raid_options&gt;</literal></para>
+                  <screen>&lt;raid_options&gt;...&lt;/raid_options&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -429,7 +445,8 @@
                     <emphasis>800M</emphasis>. <emphasis>max</emphasis> and <emphasis>auto</emphasis> do not
                     work as size here.
                   </para>
-                  <para><literal>&lt;resize config:type="boolean"&gt;false&lt;/resize&gt;</literal></para>
+                  <screen>&lt;resize config:type="boolean"
+&gt;false&lt;/resize&gt;</screen>
                 </entry>
                 <entry>The resize only works with physical disks. Not with LVM/EVMS volumes.</entry>
               </row>
@@ -457,7 +474,7 @@
                 <entry>
                   <para>
                   </para>
-                  <para><literal>&lt;chunk_size&gt;4&lt;/chunk_size&gt;</literal></para>
+                  <screen>&lt;chunk_size&gt;4&lt;/chunk_size&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -467,7 +484,8 @@
                   <para>
                     Possible values are: left_asymmetric, left_symmetric, right_asymmetric, right_symmetric. Since SLES11 SP2 and openSUSE 12.1 you can use: parity_first, parity_last, left_asymmetric_6, left_symmetric_6, right_asymmetric_6, right_symmetric_6, parity_first_6, n2, o2, f2, n3, o3, f3 for RAID6 and RAID10
                   </para>
-                  <para><literal>&lt;parity_algorithm&gt;left_asymmetric&lt;/parity_algorithm&gt;</literal></para>
+                  <screen>&lt;parity_algorithm
+&gt;left_asymmetric&lt;/parity_algorithm&gt;</screen>
                 </entry>
                 <entry></entry>
               </row>
@@ -477,7 +495,7 @@
                   <para>
                     Possible values are: raid0,raid1 and raid5.
                   </para>
-                  <para><literal>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</literal></para>
+                  <screen>&lt;raid_type&gt;raid1&lt;/raid_type&gt;</screen>
                 </entry>
                 <entry>The default is raid1.</entry>
               </row>
@@ -626,11 +644,7 @@
 	  device, it will be automatically detected. You do not have to create
 	  different profiles for /dev/sda or /dev/hda systems.
 	</para>
-	<screen>
-  <xi:include href="examples/example.partitioning.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-  
-	  </screen>
+	<screen><xi:include href="examples/example.partitioning.xml" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	</example>
   <para>
     A more detailed example shows how existing partitions and
@@ -638,10 +652,8 @@
   </para>
   <example>
     <title>Detailed Automated Partitioning</title>
-    <screen>
-  <xi:include href="examples/example.partitioning2.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-      	  </screen>
+    <screen><xi:include href="examples/example.partitioning2.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	</example>
     </section>
 
@@ -657,11 +669,7 @@
       <para>
         Go to the "drive" section and add:
       </para>
-        <screen>
-<![CDATA[
-<initialize config:type="boolean">true</initialize>
-]]>
-</screen>
+        <screen><![CDATA[<initialize config:type="boolean">true</initialize>]]></screen>
 <para> With this setting &ay; will delete the partition table before it starts
 to analyse the actual partitioning and calculates its partition plan. Of
 course this means, that you cannot keep any of your existing
@@ -759,11 +767,7 @@ partitions.</para>
       <example>
 	<title>Mount Options</title>
 
-	<screen>
-	    <xi:include href="examples/example.mountoptions.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-  
-	</screen>
+	<screen><xi:include href="examples/example.mountoptions.xml" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
       </example>
     </section>
     
@@ -793,10 +797,8 @@ partitions.</para>
       <title>
 	Keeping partitions
       </title>	   	    
-      <screen>
-	    <xi:include href="examples/example.keepingpart.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-      </screen>
+      <screen><xi:include href="examples/example.keepingpart.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
     </example>
     <para>
 	The last example requires exact knowledge of the existing partition
@@ -856,10 +858,8 @@ partitions.</para>
       <title>
 	Reading existing <filename>/etc/fstab</filename>
       </title>
-      <screen>
-  <xi:include href="examples/example.fstab.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-      </screen>
+      <screen><xi:include href="examples/example.fstab.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	</example>
   </section>
 
@@ -879,10 +879,8 @@ partitions.</para>
 	The following example shows how to prepare for LVM in the
 	<emphasis>partitioning</emphasis> resource:
       </para>
-      <screen>
- <xi:include href="examples/example.lvmvolume.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-      </screen>
+      <screen><xi:include href="examples/example.lvmvolume.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 
     </example>
     <para>
@@ -895,10 +893,8 @@ partitions.</para>
 	  <title>
 	    LVM Logical Volumes (New syntax)
 	  </title>
-	  <screen>
-<xi:include href="examples/example.lvmnew.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	  </screen>
+	  <screen><xi:include href="examples/example.lvmnew.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	</example>
     <para>
       With SUSE Linux 10.1 and all following versions, it is possible to set the <emphasis>size</emphasis> 
@@ -930,10 +926,8 @@ partitions.</para>
       <title>
         EVMS Logical Volumes
       </title>
-      <screen>
-<xi:include href="examples/example.evms.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-      </screen>
+      <screen><xi:include href="examples/example.evms.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
     </example>
   </section>
   <section>
@@ -993,10 +987,8 @@ partitions.</para>
 
   	<example>
 	  <title>RAID1 configuration</title>
-      <screen>
-<xi:include href="examples/example.raidnew.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	    </screen>
+      <screen><xi:include href="examples/example.raidnew.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	  </example>
 
 

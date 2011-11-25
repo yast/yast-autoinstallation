@@ -24,11 +24,9 @@
         following is used, the rules file will not be evaluated:
     </para>
     <screen>autoyast=http://10.10.0.1/profile/myprofile.xml
-autoyast=http://10.10.0.1/profile/rules/rules.xml
-    </screen>
+autoyast=http://10.10.0.1/profile/rules/rules.xml</screen>
     <para>Instead use:</para>
-    <screen>autoyast=http://10.10.0.1/profile/
-    </screen>
+    <screen>autoyast=http://10.10.0.1/profile/</screen>
     <para>which will load http://10.10.0.1/profile/rules/rules.xml (the slash at the end of the directory name is important).</para>
     <figure id="rules_fig1">
       <title id="rules_fig1.title" >Rules</title>
@@ -74,8 +72,7 @@ autoyast=http://10.10.0.1/profile/rules/rules.xml
 	  The following simple example illustrates how the rules file is used
 	  to retrieve the configuration for a client with known hardware.
 	</para>
-	<screen><![CDATA[
-<?xml version="1.0"?>
+	<screen><![CDATA[<?xml version="1.0"?>
 <!DOCTYPE autoinstall>
 <autoinstall xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
   <rules config:type="list">
@@ -100,9 +97,7 @@ autoyast=http://10.10.0.1/profile/rules/rules.xml
         </result>
     </rule>
   </rules>
-</autoinstall>
-]]>
-	    </screen>
+</autoinstall>]]></screen>
 
 	  </example>	 
       <para>
@@ -141,8 +136,7 @@ autoyast=http://10.10.0.1/profile/rules/rules.xml
 	  The following example illustrates how the rules file is used
 	  to retrieve the configuration for a client with known hardware.
 	</para>
-	<screen><![CDATA[
-<?xml version="1.0"?>
+	<screen><![CDATA[<?xml version="1.0"?>
 <!DOCTYPE autoinstall> 
 <autoinstall xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
   <rules config:type="list">
@@ -175,9 +169,7 @@ autoyast=http://10.10.0.1/profile/rules/rules.xml
         </result>
     </rule>
   </rules>
-</autoinstall>
-]]>
-	</screen>
+</autoinstall>]]></screen>
 
       </example>	 
       <para>
@@ -199,8 +191,7 @@ autoyast=http://10.10.0.1/profile/rules/rules.xml
         <para>
             Here is an example for the use of custom rules:
         </para>
-            <screen><![CDATA[
-<rule>
+            <screen><![CDATA[<rule>
     <custom1>
         <script>
 if grep -i intel /proc/cpuinfo > /dev/null; then
@@ -216,9 +207,7 @@ fi;
          <profile>@custom1@.xml</profile>
          <continue config:type="boolean">true</continue>
     </result>
-</rule>
-]]>
-            </screen>
+</rule>]]></screen>
         <para>
             The script in this rule can echo either "intel" or "non_intel" to
             STDOUT (the output of the grep command must be directed to
@@ -288,8 +277,7 @@ fi;
             an example:
         </para>
 
-        <screen><![CDATA[
-<rule>
+        <screen><![CDATA[<rule>
    <disksize>
         <match>/dev/hda 1000</match>
         <match_type>greater</match_type>
@@ -303,9 +291,7 @@ fi;
         <continue config:type="boolean">false</continue>
    </result>
    <operator>or</operator>
-</rule>
-]]>
-        </screen>
+</rule>]]></screen>
 
         <para>
             Just "and" and "or" are possible operators and the default operator 
@@ -536,8 +522,7 @@ fi;
           <para>
             Here is an example of how to use dialogs with rules:
           </para>
-        <screen><![CDATA[
-  <rules config:type="list">
+        <screen><![CDATA[<rules config:type="list">
     <rule>
         <custom1>
             <script>
@@ -595,8 +580,7 @@ echo -n 100
         </result>
     </rule>
   </rules>
-]]>
-        </screen>
+]]></screen>
   </section>
   </section>
 
@@ -612,15 +596,12 @@ echo -n 100
     <para>
       Here is an example of a class definition:
     </para>
-        <screen><![CDATA[
-<classes config:type="list">
+        <screen><![CDATA[<classes config:type="list">
     <class>
         <class_name>TrainingRoom</class_name>
         <configuration>Software.xml</configuration>
     </class>
-</classes>
-]]>
-        </screen>
+</classes>]]></screen>
     <para>
      The file Software.xml must be in the directory "classes/TrainingRoom/"
      then. It will get fetched from the same place the &ay; profile and rules
@@ -745,8 +726,7 @@ echo -n 100
             &lt;/partition&gt;
         &lt;/partitions&gt;
     &lt;/drive&gt;
-&lt;/partitioning&gt;
-      </screen>
+&lt;/partitioning&gt;</screen>
 
       <screen>&lt;partitioning config:type=&quot;list&quot;&gt;
   &lt;drive&gt;
@@ -763,8 +743,7 @@ echo -n 100
     &lt;/partitions&gt;
     &lt;use&gt;all&lt;/use&gt;
   &lt;/drive&gt;
-&lt;/partitioning&gt;
-      </screen>
+&lt;/partitioning&gt;</screen>
 
     <para>
       You might expect the profile to contain 3 partitions.  This is not the
@@ -788,8 +767,7 @@ echo -n 100
 
       <screen>&lt;partition dontmerge=&quot;1&quot;&gt;
 ...
-&lt;/partitions&gt;
-      </screen>
+&lt;/partitions&gt;</screen>
 
     <para>
       Because of the new attribute, the merge script will not detect the partitions as the same element type. If you have more files, you may need to add more attributes like <emphasis>dontmerge="2"</emphasis>, etc.
@@ -811,8 +789,7 @@ echo -n 100
             &lt;element&gt;partition&lt;/element&gt;
         &lt;/dont_merge&gt;
     &lt;/class&gt;
-&lt;/classes&gt;
-      </screen>
+&lt;/classes&gt;</screen>
 
       <screen>&lt;rule&gt;
     &lt;board_vendor&gt;
@@ -837,8 +814,7 @@ echo -n 100
           &lt;element&gt;partition&lt;/element&gt;
         &lt;/dont_merge&gt;
     &lt;/result&gt;
-&lt;/rule&gt;
-      </screen>
+&lt;/rule&gt;</screen>
 
   </section>
 </chapter>

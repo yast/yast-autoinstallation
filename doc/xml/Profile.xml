@@ -39,9 +39,7 @@
       The following example shows a control file in XML format:
     </para>
     <example><title>XML Control File (Profile)</title>
-      <screen>
-<![CDATA[
-<?xml version="1.0"?>
+      <screen><![CDATA[<?xml version="1.0"?>
 <!DOCTYPE profile>
  <profile
  xmlns="http://www.suse.com/1.0/yast2ns"
@@ -85,10 +83,7 @@ exit 0
     </pre-scripts>
    </scripts>
  </configure> <!-- configure is deprecated since SUSE Linux 10.0 -->
-</profile>
-]]>
-
-      </screen>
+</profile>]]></screen>
     </example>
   </section>
 
@@ -105,9 +100,7 @@ exit 0
       
     <example>
       <title>Control file container</title>
-      <screen>
-<![CDATA[
-<?xml version="1.0"?>
+      <screen><![CDATA[<?xml version="1.0"?>
 <!DOCTYPE profile>
  <profile
  xmlns="http://www.suse.com/1.0/yast2ns"
@@ -115,9 +108,7 @@ exit 0
  
 <!-- RESOURCES -->
 
-</profile>
-]]>
-      </screen>
+</profile>]]></screen>
     </example>
     <para>
       The profile element (root node) contains one or more distinct resource
@@ -158,9 +149,7 @@ exit 0
 	<title>
 	  Nested Resources
 	</title>
-	<screen>	 
-<![CDATA[
-...
+	<screen><![CDATA[...
 <drive> 
   <device>/dev/hda</device> 
   <partitions config:type="list"> 
@@ -175,8 +164,7 @@ exit 0
   </partitions> 
 </drive>
 ....
-]]>
-	</screen>
+]]></screen>
       </example>
 
       <para>
@@ -198,9 +186,7 @@ In the schema files is specified that the partitions resource
 	<title>
 	  Nested Resources with Type Attributes
 	</title>
-	<screen>	 
-<![CDATA[
-...
+	<screen><![CDATA[...
 <drive> 
   <device>/dev/hda</device> 
   <partitions config:type="list"> 
@@ -214,9 +200,7 @@ In the schema files is specified that the partitions resource
      </partition> 
   </partitions> 
 </drive>
-....
-]]>
-	</screen>
+....]]></screen>
       </example>
     </section>
 
@@ -273,9 +257,7 @@ A RELAX NG schema is itself an XML document.
       <para>
         Verfify your &ay; XML file
       </para>
-        <screen>
-/usr/bin/xmllint --noout --relaxng /usr/share/YaST2/schema/autoyast/rng/profile.rng myAutoYaSTProfile.xml
-        </screen>
+        <screen>/usr/bin/xmllint --noout --relaxng /usr/share/YaST2/schema/autoyast/rng/profile.rng myAutoYaSTProfile.xml</screen>
      </section>
     </section>
 

@@ -315,14 +315,16 @@
                 <row>
                   <entry>KDUMP_SAVEDIR</entry>
                   <entry><para>An URL that specifies the target to which the dump and related files will be saved.
-                  </para><screen>&lt;KDUMP_SAVEDRIR&gt;file:///var/crash/&lt;/KDUMP_SAVEDIR&gt;</screen></entry>
+                  </para><screen>&lt;KDUMP_SAVEDRIR
+&gt;file:///var/crash/&lt;/KDUMP_SAVEDIR&gt;</screen></entry>
                   <entry>required</entry>
                 </row>
                 <row>
                   <entry>KDUMP_COPY_KERNEL</entry>
                   <entry><para>Set to "true", if not only the dump should be saved to <literal>KDUMP_SAVEDIR</literal> but
                     also the kernel and its debugging information (if installed).
-                    </para><screen>&lt;KDUMP_COPY_KERNEL&gt;false&lt;/KDUMP_COPY_KERNEL&gt;</screen></entry>
+                    </para><screen>&lt;KDUMP_COPY_KERNEL
+&gt;false&lt;/KDUMP_COPY_KERNEL&gt;</screen></entry>
                   <entry>optional</entry>
                 </row>
                 <row>
@@ -331,7 +333,8 @@
                     <para>Disk space in megabytes that must remain free after
                     saving the dump. If not enough space is available to write the dump and keep the required disk space free, the
                     dump will not be saved.
-                    </para><screen>&lt;KDUMP_FREE_DISK_SIZE&gt;64&lt;/KDUMP_FREE_DISK_SIZE&gt;</screen></entry>
+                    </para><screen>&lt;KDUMP_FREE_DISK_SIZE
+&gt;64&lt;/KDUMP_FREE_DISK_SIZE&gt;</screen></entry>
                   <entry>optional</entry>
                 </row>
                 <row>
@@ -339,7 +342,8 @@
                   <entry>
                     <para>The number of dumps that are kept (i.e., not deleted) if <literal>KDUMP_SAVEDIR</literal>
                     points to a local directory. Specify 0 if you do not want any dumps to be automatically deleted, specify -1 if all dumps except the current one should be deleted.
-                    </para><screen>&lt;KDUMP_KEEP_OLD_DUMPS&gt;4&lt;/KDUMP_KEEP_OLD_DUMPS&gt;</screen></entry>
+                    </para><screen>&lt;KDUMP_KEEP_OLD_DUMPS
+&gt;4&lt;/KDUMP_KEEP_OLD_DUMPS&gt;</screen></entry>
                   <entry>optional</entry>
                 </row>
               </tbody>
@@ -396,14 +400,16 @@
                   Exactly one email address to which the email
                   should be sent. Additional recipients can be specified in
                   <literal>KDUMP_NOTIFICATION_CC</literal>.
-                  </para><screen>&lt;KDUMP_NOTIFICATION_TO&gt;tux@example.com&lt;/KDUMP_NOTIFICATION_TO&gt;</screen><remark>emap 2011-11-06: Do we really want to use an actual email address here?</remark>
+                  </para><screen>&lt;KDUMP_NOTIFICATION_TO
+&gt;tux@example.com&lt;/KDUMP_NOTIFICATION_TO&gt;</screen><remark>emap 2011-11-06: Do we really want to use an actual email address here?</remark>
 <remark>ke 2011-11-09: no, use example.com</remark></entry>
                 <entry>optional (notification disabled if empty)</entry>
               </row>
               <row>
                 <entry>KDUMP_NOTIFICATION_CC</entry>
                 <entry><para>Zero, one or more recipients that are in the cc line of the notification email.
-                </para><screen>&lt;KDUMP_NOTIFICATION_CC&gt;spam@suse.de devnull@suse.de&lt;/KDUMP_NOTIFICATION_CC&gt;</screen></entry>
+                </para><screen>&lt;KDUMP_NOTIFICATION_CC
+&gt;spam@suse.de devnull@suse.de&lt;/KDUMP_NOTIFICATION_CC&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
@@ -411,7 +417,8 @@
                 <entry><para>
                   Host name of the SMTP server used for mail delivery. SMTP authentication is supported (see <literal>KDUMP_SMTP_USER</literal>
                   and <literal>KDUMP_SMTP_PASSWORD</literal>) but TSL and SSL are <emphasis>not</emphasis>.
-                  </para><screen>&lt;KDUMP_SMTP_SERVER&gt;email.suse.de&lt;/KDUMP_SMTP_SERVER&gt;</screen></entry>
+                  </para><screen>&lt;KDUMP_SMTP_SERVER
+&gt;email.suse.de&lt;/KDUMP_SMTP_SERVER&gt;</screen></entry>
                 <entry>optional (notification disabled if empty)</entry>
               </row>
               <row>
@@ -419,7 +426,8 @@
                 <entry><para>
                   User name used together with <literal>KDUMP_SMTP_PASSWORD</literal>
                   for SMTP authentication.
-                  </para><screen>&lt;KDUMP_SMTP_USER&gt;bwalle&lt;/KDUMP_SMTP_USER&gt;</screen></entry>
+                  </para><screen>&lt;KDUMP_SMTP_USER
+&gt;bwalle&lt;/KDUMP_SMTP_USER&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
@@ -427,7 +435,8 @@
                 <entry><para>
                   Password used together with <literal>KDUMP_SMTP_USER</literal>
                   for SMTP authentication.
-                  </para><screen>&lt;KDUMP_SMTP_PASSWORD&gt;geheim&lt;/KDUMP_SMTP_PASSWORD&gt;</screen></entry>
+                  </para><screen>&lt;KDUMP_SMTP_PASSWORD
+&gt;geheim&lt;/KDUMP_SMTP_PASSWORD&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
             </tbody>
@@ -479,13 +488,15 @@
                 <entry>KDUMP_KERNELVER</entry>
                 <entry><para>Version string for the kernel used for kdump. Leave it
                   empty to use the auto-detection mechanism (strongly recommended).
-                  </para><screen>&lt;KDUMP_KERNELVER&gt;2.6.27-default&lt;/KDUMP_KERNELVER&gt;</screen></entry>
+                  </para><screen>&lt;KDUMP_KERNELVER
+&gt;2.6.27-default&lt;/KDUMP_KERNELVER&gt;</screen></entry>
                 <entry>optional (auto-detection if empty)</entry>
               </row>
               <row>
                 <entry>KDUMP_COMMANDLINE_APPEND</entry>
                 <entry><para>Additional command line parameters for the kdump kernel.
-                </para><screen>&lt;KDUMP_COMMANDLINE_APPEND&gt;console=ttyS0,57600&lt;/KDUMP_COMMANDLINE_APPEND&gt;</screen></entry>
+                </para><screen>&lt;KDUMP_COMMANDLINE_APPEND
+&gt;console=ttyS0,57600&lt;/KDUMP_COMMANDLINE_APPEND&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>
@@ -493,7 +504,8 @@
                 <entry><para>
                   Overwrite the automatically generated kdump command line. Use with care.
                   In most cases, <literal>KDUMP_COMMANDLINE_APPEND</literal> should suffice.
-                  </para><screen>&lt;KDUMP_COMMANDLINE_APPEND&gt;root=/dev/sda5 maxcpus=1 irqpoll&lt;/KDUMP_COMMANDLINE&gt;</screen></entry>
+                  </para><screen>&lt;KDUMP_COMMANDLINE_APPEND
+&gt;root=/dev/sda5 maxcpus=1 irqpoll&lt;/KDUMP_COMMANDLINE&gt;</screen></entry>
                 <entry>optional<!-- (email notification disabled if empty)-->
 <remark>emap 2011-11-06: I don't think the email stuff belongs here.</remark></entry>
               </row>
@@ -526,7 +538,8 @@
                 <entry><para><literal>true</literal> if the system should be rebooted automatically
                   after the dump has been saved, <literal>false</literal> otherwise. The default
                   is to reboot the system automatically.
-                  </para><screen>&lt;KDUMP_IMMEDIATE_REBOOT&gt;true&lt;/KDUMP_IMMEDIATE_REBOOT&gt;</screen></entry>
+                  </para><screen>&lt;KDUMP_IMMEDIATE_REBOOT
+&gt;true&lt;/KDUMP_IMMEDIATE_REBOOT&gt;</screen></entry>
                 <entry>optional</entry>
               </row>
               <row>

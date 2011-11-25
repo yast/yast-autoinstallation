@@ -68,9 +68,7 @@
 	following command (make sure the <emphasis>DISPLAY</emphasis> variable is set correctly to
 	start the graphical user interface instead of the text based one):
       </para>
-      <screen>
-/sbin/yast2 autoyast
-      </screen>
+      <screen>/sbin/yast2 autoyast</screen>
 
     </section>
 
@@ -85,9 +83,7 @@
       on the distribution. For example, to verify that the file is well-formed, use the utility <command>xmllint</command> available with the
       <emphasis>libxml2</emphasis> package:     
     </para>
-    <screen>
-xmllint &lt;control file&gt;
-    </screen>
+    <screen>xmllint &lt;control file&gt;</screen>
     <para>
       If the control file is not well formed, for example, if a tag is not closed,
       <command>xmllint</command> will report about the errors.
@@ -125,9 +121,7 @@ xmllint &lt;control file&gt;
     </para>
       <example>
         <title>Example file for replacing hostname/domain by script</title>
-        <screen><xi:include href="examples/example.add_hostname.xsl" parse="text"
-                      xmlns:xi="http://www.w3.org/2001/XInclude"/>
-        </screen>
+        <screen><xi:include href="examples/example.add_hostname.xsl" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
       </example>
     <para>
       This file expects the "hostname" and the "domain" as parameters from the user.
@@ -147,12 +141,10 @@ xmllint &lt;control file&gt;
     <para>
       If you have multiple XSL files you want to apply to a template, do the following:
     </para>
-      <screen>
-        sabcmd add_hd_vg.xsl \$device=/dev/sda \$partition=p2 \$vg=system \
+      <screen>sabcmd add_hd_vg.xsl \$device=/dev/sda \$partition=p2 \$vg=system \
         | sabcmd add_harddisk.xsl \$device=/dev/system \$lvm=true \
         | sabcmd ....
-        | sabcmd add_hostname.xsl \$hostname=myHost \$domain=my.domain
-      </screen>
+        | sabcmd add_hostname.xsl \$hostname=myHost \$domain=my.domain</screen>
       <para>
       Pipe the output of each sabcmd to the next sabcmd.
     </para>

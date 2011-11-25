@@ -128,8 +128,7 @@
         Here is an example of a
         <filename>/srv/tftp/pxelinux.cfg/default</filename> file:
         </para><remark>emap 2011-11-07: Update the example to SLES11?</remark>
-      <screen>
-default SLES9
+      <screen>default SLES9
 
 # install SLES9
 label SLES9
@@ -138,8 +137,7 @@ label SLES9
 
 # boot harddisc
 label hd·
-  LOCALBOOT 0
-      </screen>
+  LOCALBOOT 0</screen>
       <para>
         We recommended you add the vga=... parameter with a valid value for graphical
         installations, to trigger an installation with the frame buffer device instead
@@ -148,8 +146,7 @@ label hd·
       <para>
         Here is as an example of a <filename>/etc/dhcp.conf</filename> file:
       </para>
-      <screen>
-option domain-name-servers 192.168.66.1;
+      <screen>option domain-name-servers 192.168.66.1;
 default-lease-time 600;
 max-lease-time 7200;
 ddns-update-style none; ddns-updates off;
@@ -173,8 +170,7 @@ subnet 192.168.66.0 netmask 255.255.255.0 {
         # The configured tftp server on 192.168.100.1 runs in a·
         # "change-root jail" to /srv/tftpboot
         filename "pxelinux.0";
-}
-      </screen>
+}</screen>
       <para>
         A problem you might run into if you do installation via PXE is that the
         installation will run into an endless loop, because after the first reboot,
@@ -191,9 +187,7 @@ subnet 192.168.66.0 netmask 255.255.255.0 {
       <para>
         Another way is to use &ay; to upload a new PXE boot configuration for the target host via the profile:
       </para>
-        <screen>
-          <![CDATA[
-      <pxe>
+        <screen><![CDATA[<pxe>
        <pxe_localboot config:type="boolean">true</pxe_localboot>
        <pxelinux-config>
 DEFAULT linux
@@ -206,8 +200,7 @@ DEFAULT linux
        <pxelinux-dir>/pxelinux.cfg</pxelinux-dir>
        <filename>__MAC__</filename>   <!-- since openSUSE 11.2, not SLES11 -->
      </pxe>
-]]>
-        </screen>
+]]></screen>
         <para>
          This entry will upload a new configuration for the target host to the tftp server shortly
        before the first reboot happens. In most installations the TFTP daemon runs as user
@@ -554,17 +547,13 @@ DEFAULT linux
 	  <para>
 	    Specify the exact location of the control file:
           </para>
-	    <screen>
-autoyast=http://192.168.1.1/control-files/client01.xml
-	    </screen>
+	    <screen>autoyast=http://192.168.1.1/control-files/client01.xml</screen>
 	</listitem>
 	<listitem>
 	  <para>
 	    Specify a directory where several control files are located:
 	  </para>
-	  <screen>
-autoyast=http://192.168.1.1/control-files/
-	  </screen>
+	  <screen>autoyast=http://192.168.1.1/control-files/</screen>
 	  <para>
 	    In this case the relevant control file is retrieved using the hex digit
 	    representation of the IP as described below.
@@ -620,10 +609,8 @@ default
       </para>
       <example>
 	<title>Determine HEX code for an IP address</title>
-	<screen>
-# /usr/sbin/gethostip 10.10.0.1
-10.10.0.1 10.10.0.1 0A0A0001
-	</screen>
+	<screen># /usr/sbin/gethostip 10.10.0.1
+10.10.0.1 10.10.0.1 0A0A0001</screen>
       </example>
 
 
@@ -646,8 +633,7 @@ default
 	<filename>autoinst.xml</filename> to a floppy by either mounting the
 	floppy or by using the <emphasis>mtools</emphasis>.
       </para>
-      <screen>mcopy autoinst.xml a:
-      </screen>
+      <screen>mcopy autoinst.xml a:</screen>
 <remark>emap 2011-11-07: This section should be merged with the previous one on auto-install with the original CDs and floppy, with all redundant information dropped.</remark>
     </section>
 
