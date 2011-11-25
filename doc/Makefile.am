@@ -4,21 +4,28 @@
 # $Id$
 #
 
-SUBDIRS = xml autodocs entities bin components examples xsl
-htmldir = $(docdir)/html
+#SUBDIRS = xml
+#htmldir = $(docdir)/html
+
+html_DATA = html
+doc_DATA = pdf
 
 
-pdf: xml/ay_bigfile.xml
-	daps -e ENV-autoyast pdf-color
+html:
+	$(MAKE) -C xml html
 
-html: xml/ay_bigfile.xml
-	daps -e ENV-autoyast html
+pdf:
+	$(MAKE) -C xml pdf
 
-pkgsrc: xml/ay_bigfile.xml
-	daps -e ENV-autoyast package-src
+pkgsrc:
+	$(MAKE) -C xml pkgsrc
 
-html-debug: xml/ay_bigfile.xml
-	daps --debug -e ENV-autoyast html
+html-debug:
+	$(MAKE) -C xml pkgsrc
 
-xml/ay_bigfile.xml:
-	cd xml; make ay_bigfile.xml
+bigfile:
+	$(MAKE) -C xml ay_bigfile.xml
+
+clean:
+	$(MAKE) -C xml clean
+	rm -rf build
