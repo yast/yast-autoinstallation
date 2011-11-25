@@ -113,19 +113,19 @@ while( <@files> ){
   
   if ($format eq 'PNG') {
   $entities .= "<!ENTITY $entity '
-  <imageobject> 
-    <imagedata fileref=\"img/".$entity.".png\"   revision=\"1\" format=\"".$format."\" align=\"center\"/>
+  <imageobject role=\"html\"> 
+    <imagedata fileref=\"".$entity.".png\"   revision=\"1\" format=\"PNG\" align=\"center\"/>
   </imageobject>
-  <imageobject> 
-    <imagedata fileref=\"img/".$entity.".png\"  revision=\"1\" format=\"PNG\" align=\"center\"/>
+  <imageobject role=\"fo\"> 
+    <imagedata fileref=\"".$entity.".png\"  revision=\"1\" format=\"".$format."\" width=\"75&#x25;\"/>
   </imageobject>' >\n";
   }else{
   $entities .= "<!ENTITY $entity '
-  <imageobject> 
-    <imagedata fileref=\"img/".$entity.".png\"  revision=\"1\" format=\"PNG\" align=\"center\"/>
+  <imageobject role=\"html\"> 
+    <imagedata fileref=\"".$entity.".png\"  revision=\"1\" format=\"PNG\" align=\"center\"/>
   </imageobject>
-  <imageobject> 
-    <imagedata fileref=\"img/".$entity.".png\"  revision=\"1\" format=\"PNG\" align=\"center\"/>
+  <imageobject role=\"fo\"> 
+    <imagedata fileref=\"".$entity.".png\"  revision=\"1\" format=\"PNG\" width=\"75&#x25;\"/>
   </imageobject>' >\n";
 
   }
