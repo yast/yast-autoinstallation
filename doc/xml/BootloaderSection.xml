@@ -27,8 +27,7 @@
     <para>
     General scope of &ay; profile only bootloader part.<remark>emap 2011-11-04: Unclear and incomplete sentence.</remark>
     </para>
-    <screen>
-&lt;bootloader&gt;
+    <screen>&lt;bootloader&gt;
    &lt;device_map config:type=&quot;list&quot;&gt;
     - info about order of devices in device.map
    &lt;/device_map&gt;
@@ -42,35 +41,30 @@
    &lt;sections config:type=&quot;list&quot;&gt;
    - bootloader sections in menu.lst
    &lt;/sections&gt;
- &lt;/bootloader&gt;
-</screen>
+ &lt;/bootloader&gt;</screen>
 
     <section><title>Device map</title>
 <para>
 You can define devices and their order in <filename>device.map</filename>, but it is not necessary. yast2-bootloader checks the devices during installation and proposes a device.map. It can happen that the order of the devices is wrong or you have defined a different order than the one set in the BIOS. Take care when you make changes there. The system might not boot afterwards.
 </para>
-<screen>
-&lt;device_map config:type=&quot;list&quot;&gt;
+<screen>&lt;device_map config:type=&quot;list&quot;&gt;
      &lt;device_map_entry&gt;
        &lt;firmware&gt;hd0&lt;/firmware&gt; &lt;!-- order of devices in target map  --&gt;
        &lt;linux&gt;/dev/disk/by-id/ata-ST3500418AS_6VM23FX0&lt;/linux&gt; &lt;!-- name of device (disk)  --&gt;
      &lt;/device_map_entry&gt;
-&lt;/device_map&gt;
-</screen>
+&lt;/device_map&gt;</screen>
     </section>
     <section><title>Globals</title>
     <para>
     This is an important if optional part. Define here where to install GRUB and how the boot process will work. Again, yast2-bootloader proposes a configuration if you don't define one. Usually the &ay; profile includes only this part and all other parts are added automatically during installation by yast2-bootloader. Unless you have some special requirements, don't specify the bootloader config in the XML file.
     </para>
-<screen>
- &lt;global&gt;
+<screen>&lt;global&gt;
      &lt;activate&gt;true&lt;/activate&gt;
      &lt;default&gt;openSUSE 11.2 - 2.6.31.5-0.1&lt;/default&gt;
      &lt;gfxmenu&gt;(hd0,1)/boot/message&lt;/gfxmenu&gt;
      &lt;lines_cache_id&gt;4&lt;/lines_cache_id&gt;
      &lt;timeout config:type=&quot;integer&quot;&gt;10&lt;/timeout&gt;
- &lt;/global&gt;
-</screen>
+ &lt;/global&gt;</screen>
 
  <informaltable frame='top'>
  <tgroup cols="3">
@@ -87,7 +81,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
        <entry>
          <para>Set the boot flag on the boot partition. The boot partition can be "/" if there is no separate /boot partition. If the boot partition is on a logical partition, the boot flag is set to the extended partition.
          </para>
-         <para><literal>&lt;activate&gt;true&lt;/activate&gt;</literal></para>
+         <screen>&lt;activate&gt;true&lt;/activate&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -97,7 +91,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
          <para>
             Name (title) of the default boot section from <filename>menu.lst</filename>.
          </para>
-         <para><literal>&lt;default&gt;openSUSE 11.2 - 2.6.31.5-0.1&lt;/default&gt;</literal></para>
+         <screen>&lt;default&gt;openSUSE 11.2 - 2.6.31.5-0.1&lt;/default&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -107,7 +101,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
          <para>
             Path to the graphical boot menu (/boot/message). Set to 'none' if you do not want to use a graphical boot menu.
          </para>
-         <para><literal>&lt;gfxmenu&gt;(hd0,1)/boot/message&lt;/gfxmenu&gt;</literal></para>
+         <screen>&lt;gfxmenu&gt;(hd0,1)/boot/message&lt;/gfxmenu&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -117,7 +111,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
          <para>
             The timeout in seconds for automatically booting the default boot section from <filename>menu.lst</filename>.
          </para>
-         <para><literal>&lt;timeout config:type="integer"&gt;10&lt;/timeout&gt;</literal></para>
+         <screen>&lt;timeout config:type="integer"&gt;10&lt;/timeout&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -127,7 +121,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
          <para>
             Write generic boot code to MBR, will be ignored if boot_mbr is set to "true".
          </para>
-         <para><literal>&lt;generic_mbr&gt;false&lt;/generic_mbr&gt;</literal></para>
+         <screen>&lt;generic_mbr&gt;false&lt;/generic_mbr&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -137,7 +131,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
          <para>
             Write GRUB to MBR of the first disk in the order (device.map includes order of disks).
          </para>
-         <para><literal>&lt;boot_mbr&gt;false&lt;/boot_mbr&gt;</literal></para>
+         <screen>&lt;boot_mbr&gt;false&lt;/boot_mbr&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -147,7 +141,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
          <para>
             Write GRUB to separate /boot partition. If no separate /boot partition exists, GRUB will be written to "/". 
          </para>
-         <para><literal>&lt;boot_boot&gt;false&lt;/boot_boot&gt;</literal></para>
+         <screen>&lt;boot_boot&gt;false&lt;/boot_boot&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -157,7 +151,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
          <para>
             Write GRUB to "/" partition.
          </para>
-         <para><literal>&lt;boot_root&gt;false&lt;/boot_root&gt;</literal></para>
+         <screen>&lt;boot_root&gt;false&lt;/boot_root&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -167,7 +161,7 @@ You can define devices and their order in <filename>device.map</filename>, but i
          <para>
 Write GRUB to the extended partition (important if you want to use a generic boot code and the "boot" partition is logical). NOTE: if the boot partition is logical, it should use boot_mbr (write GRUB to MBR) instead of generic_mbr.
          </para>
-         <para><literal>&lt;boot_extended&gt;false&lt;/boot_extended&gt;</literal></para>
+         <screen>&lt;boot_extended&gt;false&lt;/boot_extended&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -177,7 +171,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Write GRUB to custom device.
          </para>
-         <para><literal>&lt;boot_custom&gt;/dev/sda3&lt;/boot_custom&gt;</literal></para>
+         <screen>&lt;boot_custom&gt;/dev/sda3&lt;/boot_custom&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -187,7 +181,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Use trusted GRUB instead of the classical GRUB (gfxmenu is deleted automatically if this option is true). Do not use trusted GRUB if your hardware does not support it.
          </para>
-         <para><literal>&lt;trusted_grub&gt;false&lt;/trusted_grub&gt;</literal></para>
+         <screen>&lt;trusted_grub&gt;false&lt;/trusted_grub&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -197,7 +191,6 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Internal option specifying the cache id for perl-Bootloader. Do not use or change it in a cloned XML file.
          </para>
-         <para><literal></literal></para>
        </entry>
        <entry></entry>
      </row>
@@ -215,16 +208,13 @@ Write GRUB to the extended partition (important if you want to use a generic boo
     <para>
         Define which boot loader to use: grub, lilo, ppc or elilo.
     </para>
-    <screen>
-&lt;loader_type&gt;grub&lt;/loader_type&gt;
-    </screen>
+    <screen>&lt;loader_type&gt;grub&lt;/loader_type&gt;</screen>
     </section>
     <section><title>Sections</title>
     <para>
       The configuration of the boot sections in the menu.lst is added automatically here by yast2-bootloader during installation. yast2-bootloader deletes boot sections with no valid kernel and initrd path.
     </para>
-<screen>
-   &lt;sections config:type=&quot;list&quot;&gt;
+<screen>&lt;sections config:type=&quot;list&quot;&gt;
      &lt;section&gt;
        &lt;append&gt;resume=/dev/disk/by-id/raid-sil_ajacccbhejai-part2 splash=silent quiet showotps&lt;/append&gt;
        &lt;image&gt;(hd0,0)/vmlinuz-2.6.31-10-default&lt;/image&gt;
@@ -260,8 +250,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
        &lt;original_name&gt;floppy&lt;/original_name&gt;
        &lt;type&gt;other&lt;/type&gt;
      &lt;/section&gt;
-   &lt;/sections&gt;
-</screen>
+   &lt;/sections&gt;</screen>
 </section>
     <section><title>Options</title>
     <para>
@@ -284,7 +273,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             List of kernel args but without(!) vga= and root=.
          </para>
-         <para><literal>&lt;append&gt;splash=silent quiet showopts&lt;/append&gt;</literal></para>
+         <screen>&lt;append&gt;splash=silent quiet showopts&lt;/append&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -294,7 +283,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Path to the kernel.
          </para>
-         <para><literal>&lt;image&gt;(hd0,0)/vmlinuz-2.6.31-10&lt;/image&gt;</literal></para>
+         <screen>&lt;image&gt;(hd0,0)/vmlinuz-2.6.31-10&lt;/image&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -304,7 +293,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Path to the initrd.
          </para>
-         <para><literal>&lt;initrd&gt;(hd0,0)/my-initrd&lt;/initrd&gt;</literal></para>
+         <screen>&lt;initrd&gt;(hd0,0)/my-initrd&lt;/initrd&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -314,7 +303,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Internal option specifying the cache id for perl-Bootloader. Do not use or change it in a cloned XML file.
          </para>
-         <para><literal></literal></para>
+         <screen></screen>
        </entry>
        <entry></entry>
      </row>
@@ -324,7 +313,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Name of section.
          </para>
-         <para><literal>&lt;name&gt;Productive System&lt;/name&gt;</literal></para>
+         <screen>&lt;name&gt;Productive System&lt;/name&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -334,7 +323,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Internal name of section parsed by &yast; from a comment in the configuration file. There are some rules for names, and original_name helps to determine if the boot section is "linux" or "failsafe". For chainloader it helps to determine if it is "windows" or other (linux, floppy, etc). Use a simple original_name: linux, xen, windows, floppy, etc.
          </para>
-         <para><literal>&lt;original_name&gt;linux&lt;/original_name&gt;</literal></para>
+         <screen>&lt;original_name&gt;linux&lt;/original_name&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -344,7 +333,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Location of the root partition ("/").
          </para>
-         <para><literal>&lt;root&gt;/dev/mapper/sil_ajacccbhejai_part3&lt;/root&gt;</literal></para>
+         <screen>&lt;root&gt;/dev/mapper/sil_ajacccbhejai_part3&lt;/root&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -354,7 +343,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Type of section (image/xen/other/menu).
          </para>
-         <para><literal>&lt;type&gt;xen&lt;/type&gt;</literal></para>
+         <screen>&lt;type&gt;xen&lt;/type&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -364,7 +353,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Kernel arg for vga (vga=).
          </para>
-         <para><literal>&lt;vgamode&gt;0x31a&lt;/vgamode&gt;</literal></para>
+         <screen>&lt;vgamode&gt;0x31a&lt;/vgamode&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -374,7 +363,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Path to xen.gz.
          </para>
-         <para><literal>&lt;xen&gt;(hd0,0)/xen.gz&lt;/xen&gt;</literal></para>
+         <screen>&lt;xen&gt;(hd0,0)/xen.gz&lt;/xen&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -384,7 +373,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Kernel args for XEN.
          </para>
-         <para><literal>&lt;xen_append&gt;&lt;/xen_append&gt;</literal></para>
+         <screen>&lt;xen_append&gt;&lt;/xen_append&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -409,7 +398,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Internal option specifying the cache id for perl-Bootloader. Do not use or change it in a cloned XML file.
          </para>
-         <para><literal></literal></para>
+         <screen></screen>
        </entry>
        <entry></entry>
      </row>
@@ -419,7 +408,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
            Name or title of the section.
          </para>
-         <para><literal>&lt;name&gt;Floppy&lt;/name&gt;</literal></para>
+         <screen>&lt;name&gt;Floppy&lt;/name&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -429,7 +418,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Internal name of the section parsed by &yast; from a comment in the configuration file. There are some rules for names and original_name helps to determine if the boot section is "linux" or "failsafe". For the chainloader it helps to determine if it is "windows" or other (linux, floppy, etc). Use a simple original_name: linux, xen, windows, floppy etc.
          </para>
-         <para><literal>&lt;original_name&gt;linux&lt;/original_name&gt;</literal></para>
+         <screen>&lt;original_name&gt;linux&lt;/original_name&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -439,7 +428,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
            Type of section (image/xen/other/menu). 
          </para>
-         <para><literal>&lt;type&gt;other&lt;/type&gt;</literal></para>
+         <screen>&lt;type&gt;other&lt;/type&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -449,7 +438,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Offset in chainloader (used only in grub). 
          </para>
-         <para><literal>&lt;blockoffset&gt;1&lt;/blockoffset&gt;</literal></para>
+         <screen>&lt;blockoffset&gt;1&lt;/blockoffset&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -459,7 +448,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Partition part for chainloader (so chainloader+blockoffset get final chainloader item in grub).<remark>emap 2011-11-04: Not sure what the parenthesis is supposed to say.</remark>
          </para>
-         <para><literal>&lt;chainloader&gt;/dev/fd0&lt;/chainloader&gt;</literal></para>
+         <screen>&lt;chainloader&gt;/dev/fd0&lt;/chainloader&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -469,7 +458,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             With or without checking root. <remark>emap 2011-11-04: Awkward. Can someone make this clearer?</remark>
          </para>
-         <para><literal>&lt;noverifyroot&gt;true&lt;/noverifyroot&gt;</literal></para>
+         <screen>&lt;noverifyroot&gt;true&lt;/noverifyroot&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -479,7 +468,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Windows-specific option for remapping hard disks, for example switch the first and second disk: map (hd0) (hd1) map (hd1) (hd0)
          </para>
-         <para><literal>&lt;remap&gt;false&lt;/remap&gt;</literal></para>
+         <screen>&lt;remap&gt;false&lt;/remap&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -489,7 +478,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Add the makeactive argument for the chainloader section.
          </para>
-         <para><literal>&lt;makeactive&gt;false&lt;/makeactive&gt;</literal></para>
+         <screen>&lt;makeactive&gt;false&lt;/makeactive&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -514,7 +503,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Internal option specifying the cache id for perl-Bootloader. Do not use or change it in a cloned XML file.
          </para>
-         <para><literal></literal></para>
+         <screen></screen>
        </entry>
        <entry></entry>
      </row>
@@ -524,7 +513,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Name or title of section.
          </para>
-         <para><literal>&lt;name&gt;Floppy&lt;/name&gt;</literal></para>
+         <screen>&lt;name&gt;Floppy&lt;/name&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -534,7 +523,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Internal name of section parsed by YaST from a comment in the configuration file. There are some rules for names and original_name helps to determine if the boot section is "linux" or "failsafe". For the chainloader it helps to determine if it is "windows" or other (linux, floppy etc). Use a simple original_name: linux, xen, windows, floppy etc.
          </para>
-         <para><literal>&lt;original_name&gt;linux&lt;/original_name&gt;</literal></para>
+         <screen>&lt;original_name&gt;linux&lt;/original_name&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -544,7 +533,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Type of section (image/xen/other/menu). 
          </para>
-         <para><literal>&lt;type&gt;other&lt;/type&gt;</literal></para>
+         <screen>&lt;type&gt;other&lt;/type&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -554,7 +543,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Path to menu.lst config file.
          </para>
-         <para><literal>&lt;configfile&gt;1&lt;/configfile&gt;</literal></para>
+         <screen>&lt;configfile&gt;1&lt;/configfile&gt;</screen>
        </entry>
        <entry></entry>
      </row>
@@ -564,7 +553,7 @@ Write GRUB to the extended partition (important if you want to use a generic boo
          <para>
             Device name for loading menu.lst from another installation of Linux.
          </para>
-         <para><literal>&lt;root&gt;/dev/sda1&lt;/root&gt;</literal></para>
+         <screen>&lt;root&gt;/dev/sda1&lt;/root&gt;</screen>
        </entry>
        <entry></entry>
      </row>

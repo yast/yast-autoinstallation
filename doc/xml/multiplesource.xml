@@ -62,15 +62,13 @@
 	<para> The order file defines which sources are needed for installation and their priority for installation.
 	  A typical example for an order file is given here:
 	</para>
-<screen>
-# yast/order: priority of installation sources
+<screen># yast/order: priority of installation sources
 #
 # source-       product
 # description   path
 /yast/sles8     /sles8-i386/CD1
 /yast/ul        /unitedlinux-i386/CD1
-/               /
-</screen>
+/               /</screen>
 
 	<para> The order file is ASCII, line based, '#' at the beginning of a line denote a comment line.</para>
 
@@ -111,15 +109,13 @@ In the above example of the order file, note the last line being "/". This means
  
 
 	<para>A typical example for an instorder file is given here:</para>
-	<screen>
-# yast/instorder: order of installation sources
+	<screen># yast/instorder: order of installation sources
 #
 # install 'ul' before 'sles8'
 #
 /yast/ul
 /yast/sles8
-/
-</screen>
+/</screen>
       </section>
       <section>
 
@@ -141,8 +137,7 @@ In the above example of the order file, note the last line being "/". This means
  
 	  <para>In the 'order' example above, the 'order' directory structure
 	    looks as follows: </para>
-	  <screen>
-yast/
+	  <screen>yast/
   instorder                     # instorder file 
   order                         # order file
   ul/                           # product 'ul', placing it below yast isn't really needed
@@ -173,9 +168,7 @@ yast/
           packages.en
           packages.de
           ...
-          packages.pt
-
-</screen>
+          packages.pt</screen>
 
 
 
@@ -215,8 +208,7 @@ yast/
 	something suitable to your environment.
 	</para>
 
-	<screen>
-#!/bin/sh
+	<screen>#!/bin/sh
 
 instsource="/exports/sles8"
 #
@@ -313,9 +305,7 @@ EOF
 
 #
 # End
-#  
-
-	</screen>
+#</screen>
 	<note>
 	  <para>
 	    Fields of the order files have TAB as delimiter.

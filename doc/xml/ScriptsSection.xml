@@ -85,7 +85,10 @@
                 <entry>location</entry>
                 <entry><para>Define a location from where the script gets fetched.
                        Locations can be the same as for the profile (http, ftp, nfs, etc.).
-                       </para><screen>&lt;location&gt;http://10.10.0.1/myPreScript.sh&lt;/location&gt;</screen></entry>
+                       </para>
+       <screen>&lt;location
+&gt;http://10.10.0.1/myPreScript.sh&lt;/location&gt;</screen>
+      </entry>
                 <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
@@ -118,7 +121,8 @@ echo "Testing the pre script" &gt; /tmp/pre-script_out.txt
                 <entry><para>If this boolean is "true", stdout and stderr of the script will be shown in a popup, which the
                        user has to confirm via the OK button. If stdout and stderr are empty, no popup is shown and therefore
                        no confirmation is needed.
-                       </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
+                       </para><screen>&lt;feedback config:type="boolean"
+&gt;true&lt;/feedback&gt;</screen></entry>
                 <entry>Optional, default is "false". This option was introduced with SL 10.1/SLES10.</entry>
               </row>
               <row>
@@ -179,7 +183,8 @@ echo "Testing the pre script" &gt; /tmp/pre-script_out.txt
                 <entry>location</entry>
                 <entry><para>Define a location from where the script gets fetched.
                        Locations can be the same as for the profile (http, ftp, nfs, etc.).
-                       </para><screen>&lt;location&gt;http://10.10.0.1/myScript.sh&lt;/location&gt;</screen></entry>
+                       </para><screen>&lt;location
+&gt;http://10.10.0.1/myScript.sh&lt;/location&gt;</screen></entry>
                 <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
@@ -212,7 +217,8 @@ echo "Testing postpart script" &gt; /mnt/postpart_test.txt
                 <entry><para>If this boolean is "true", stdout and stderr of the script will be shown in a popup, which the
                        user has to confirm via the OK button. If stdout and stderr are empty, no popup is shown and therefore
                        no confirmation is needed.
-                       </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
+                       </para><screen>&lt;feedback config:type="boolean"
+&gt;true&lt;/feedback&gt;</screen></entry>
                 <entry>Optional, the default is "false". This option was introduced with SL 10.1/SLES10.</entry>
               </row>
               <row>
@@ -273,7 +279,8 @@ echo "Testing postpart script" &gt; /mnt/postpart_test.txt
                 <entry><para>Define a location from where the script gets fetched.
                        Locations can be the same as for the profile (http, ftp, nfs, etc.).
                       </para>
-                <screen>&lt;location&gt;http://10.10.0.1/myChrootScript.sh&lt;/location&gt;</screen>
+                <screen>&lt;location
+&gt;http://10.10.0.1/myChrootScript.sh&lt;/location&gt;</screen>
                     </entry>
                 <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
@@ -282,15 +289,20 @@ echo "Testing postpart script" &gt; /mnt/postpart_test.txt
                 <entry><para>The script itself (source code), encapsulated in
                 a CDATA tag. If you do not want to put the whole shell script
                 into the XML profile, use the location parameter.
-                </para><screen>&lt;source&gt; &lt;![CDATA[ echo "Testing the
-                chroot script" &gt; /tmp/chroot_out.txt ]]&gt;
-                &lt;/source&gt;</screen></entry>
+                </para>
+       <screen>&lt;source&gt;
+&lt;![CDATA[
+echo "Testing the chroot script" &gt;
+/tmp/chroot_out.txt
+]]&gt;
+&lt;/source&gt;</screen></entry>
                 <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
               <row>
                 <entry>chrooted</entry>
                 <entry><para>This value can be "true" or "false". If set to "false", the installed system remains mounted at "/mnt" and no chroot happens. The bootloader is not installed either at this stage. Set to "true" means, a chroot into /mnt is performed, where the installed system is mounted. The bootloader is installed, and if you want to change anything in the installed system, you don't have to use the "/mnt/" prefix anymore.
-                </para><screen>&lt;chrooted config:type="boolean"&gt;true&lt;/chrooted&gt;</screen></entry>
+                </para><screen>&lt;chrooted config:type="boolean"
+&gt;true&lt;/chrooted&gt;</screen></entry>
                 <entry>Optional, default is "false".</entry>
               </row>
               <row>
@@ -310,7 +322,8 @@ echo "Testing postpart script" &gt; /mnt/postpart_test.txt
                 <entry><para>If this boolean is "true", stdout and stderr of the script will be shown in a popup, which the
                        user has to confirm via the OK button. If stdout and stderr are empty, no popup is shown and therefore
                        no confirmation is needed.
-                       </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
+                       </para><screen>&lt;feedback config:type="boolean"
+&gt;true&lt;/feedback&gt;</screen></entry>
                 <entry>Optional, default is "false". This option was added with SL 10.1/SLES10.</entry>
               </row>
               <row>
@@ -375,7 +388,8 @@ echo "Testing postpart script" &gt; /mnt/postpart_test.txt
                 <entry><para>Define a location from where the script gets fetched.
                        Locations can be the same as for the profile (http, ftp, nfs, etc.).
                       </para>
-                <screen>&lt;location&gt;http://10.10.0.1/myPostScript.sh&lt;/location&gt;</screen>
+                <screen>&lt;location
+&gt;http://10.10.0.1/myPostScript.sh&lt;/location&gt;</screen>
                     </entry>
                 <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
@@ -385,7 +399,8 @@ echo "Testing postpart script" &gt; /mnt/postpart_test.txt
                 to put the whole shell script into the XML profile, use the location parameter.
                 </para><screen>&lt;source&gt;
 &lt;![CDATA[ 
-echo "Testing the chroot script" &gt; /tmp/chroot_out.txt 
+echo "Testing the chroot script" &gt;
+/tmp/chroot_out.txt 
 ]]&gt;
 &lt;/source&gt;</screen></entry>
                 <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
@@ -394,7 +409,8 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
                 <entry>network_needed</entry>
                 <!-- FIXME: double check that. I'm very unsure if this is correct -->
                 <entry><para>This value can be "true" or "false". On "false" the script will run after the &yast; modules like the user configuration and everything else are done. The network is configured but not up and running yet. With this value set to "true", the script runs before all &yast; modules are configured. So there is no local user and no network is configured but the installation network is still up and running (if you did a network installation).
-                </para><screen>&lt;network_needed config:type="boolean"&gt;true&lt;/network_needed&gt;</screen></entry>
+                </para><screen>&lt;network_needed config:type="boolean"
+&gt;true&lt;/network_needed&gt;</screen></entry>
                 <entry>Optional, default is "false".</entry>
               </row>
               <row>
@@ -414,7 +430,8 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
                 <entry><para>If this boolean is "true", stdout and stderr of the script will be shown in a popup, which the
                        user has to confirm via the OK button. If stdout and stderr are empty, no popup is shown and therefore
                        no confirmation is needed.
-                       </para><screen>&lt;feedback config:type="boolean"&gt;true&lt;/feedback&gt;</screen></entry>
+                       </para><screen>&lt;feedback config:type="boolean"
+&gt;true&lt;/feedback&gt;</screen></entry>
                 <entry>Optional, default is "false". This option was added with SL 10.1/SLES10.</entry>
               </row>
               <row>
@@ -479,7 +496,8 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
                 <entry><para>Define a location from where the script gets fetched.
                        Locations can be the same as for the profile (http, ftp, nfs, etc.).
                       </para>
-                <screen>&lt;location&gt;http://10.10.0.1/myInitScript.sh&lt;/location&gt;</screen>
+                <screen>&lt;location
+&gt;http://10.10.0.1/myInitScript.sh&lt;/location&gt;</screen>
                     </entry>
                 <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
               </row>
@@ -489,7 +507,8 @@ echo "Testing the chroot script" &gt; /tmp/chroot_out.txt
                 to put the whole shell script into the XML profile, use the location parameter.
                 </para><screen>&lt;source&gt;
 &lt;![CDATA[ 
-echo "Testing the init script" &gt; /tmp/init_out.txt 
+echo "Testing the init script" &gt;
+/tmp/init_out.txt 
 ]]&gt;
 &lt;/source&gt;</screen></entry>
                 <entry>Either &lt;location&gt; or &lt;source&gt; must be defined.</entry>
@@ -522,11 +541,8 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
     <title>Script Example</title>
       <example>
 	<title>Post Script Configuration</title>
-	<screen>
-    <xi:include href="examples/example.scripts.xml" parse="text"
-        xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-	</screen>
+	<screen><xi:include href="examples/example.scripts.xml" parse="text"
+        xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
       </example>
     <para>
       After installation is finished, the scripts and the output logs can be
@@ -538,11 +554,7 @@ echo "Testing the init script" &gt; /tmp/init_out.txt
       The log is the output when executing the shell scripts using
       the following command:
     </para>
-    <screen>
-      <![CDATA[
-      /bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log
-      ]]>
-    </screen>
+    <screen><![CDATA[/bin/sh -x <script_name> 2&> /var/adm/autoinstall/logs/<script_name>.log]]></screen>
     </section>
   </section>
 

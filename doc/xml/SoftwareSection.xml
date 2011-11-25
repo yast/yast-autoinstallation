@@ -41,10 +41,7 @@
 	  <title>
 	    Package Selection in Control File with Patterns
 	  </title>
-	  <screen>
-<xi:include href="examples/example.software.patterns.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	  </screen>
+	  <screen><xi:include href="examples/example.software.patterns.xml" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	</example>
     <para>
       The <emphasis>packages</emphasis> section is still the same as on a
@@ -67,10 +64,7 @@
 	  <title>
 	    Activating Image Deployment
 	  </title>
-	  <screen>
-<xi:include href="examples/example.software.images.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	  </screen>
+	  <screen><xi:include href="examples/example.software.images.xml" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	</example>
   </section>
 
@@ -98,10 +92,8 @@
     </para>
     <example>
       <title>Creating Package Database</title>
-      <screen>
-	cd /usr/local/CDs/LATEST/suse
-	create_package_descr  -x PATH_TO_EXTRA_PROV -d /usr/local/CDs/LATEST/suse 
-      </screen>
+      <screen>cd /usr/local/CDs/LATEST/suse
+	create_package_descr  -x PATH_TO_EXTRA_PROV -d /usr/local/CDs/LATEST/suse</screen>
     </example>
     <note>
       <title>Change starting with SUSE Linux 9.1/SLES 9</title>
@@ -133,23 +125,19 @@
         add-on products like the SDK), add a file
         <emphasis>add_on_products</emphasis> to CD1 of the main product.
         </para>
-        <screen>
-media_url [path_on_media [product_1 [product_2 [....]]]
-        </screen>
+        <screen>media_url [path_on_media [product_1 [product_2 [....]]]</screen>
 <para>
         media_url is the URL of the media, path_on_media is the path to the
         catalog on the media. If not present, / (root) is assumed.  product_1
         and following are the names of products, which should be marked for
         installation. If no product is specified, all products found on the
-        media are selected for installation. For example: </para><screen>
-        http://192.168.66.6/SLES10/sdk/CD1
-        http://192.168.66.6/SLES10/CD1/updates
-        </screen>
+        media are selected for installation. For example: </para>
+   <screen>http://192.168.66.6/SLES10/sdk/CD1
+        http://192.168.66.6/SLES10/CD1/updates</screen>
         <para>
          Besides the <emphasis>add_on_products</emphasis> file, you can use the &ay; profile to specify add-on products. For example:
         </para>
-        <screen>
-&lt;add-on&gt;
+        <screen>&lt;add-on&gt;
  &lt;add_on_products config:type=&quot;list&quot;&gt;
    &lt;listentry&gt;
      &lt;media_url&gt;http://192.168.66.6/SLES10/CD1/updates&lt;/media_url&gt;
@@ -159,8 +147,7 @@ media_url [path_on_media [product_1 [product_2 [....]]]
      &lt;name&gt;MyUpdates&lt;/name&gt; &lt;!-- available since openSUSE 11.1/SLES11 (bnc#433981) --&gt;
    &lt;/listentry&gt;
  &lt;/add_on_products&gt;
-&lt;/add-on&gt;
-        </screen>
+&lt;/add-on&gt;</screen>
         <para>
          With this entry in the &ay; profile, the <emphasis>add_on_products</emphasis> file is not necessary.
         Since openSUSE 11.0, &ay; can ask the user to make add-on products available instead of reporting a time-out error when an add-on product cannot be found at the given location. Set ask_on_error to "true" (the default is "false").
@@ -192,42 +179,48 @@ media_url [path_on_media [product_1 [product_2 [....]]]
               <row>
                 <entry>accept_unsigned_file</entry>
                 <entry><para>If set to "true", &ay; will accept unsigned files like the content file.</para>
-                  <para><literal>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</literal></para>
+                  <screen>&lt;accept_unsigned_file config:type="boolean"
+&gt;true&lt;/accept_unsigned_file&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, &ay; lets &yast; decide what to do.</entry><remark>emap 2011-11-05: Is this correct? How will YaST make the decision? Above we write that YaST will ask the user, but during auto-install the package will be rejected. So which is it?</remark>
               </row>
               <row>
                 <entry>accept_file_without_checksum</entry>
                 <entry><para>If set to "true", &ay; will accept files without a checksum in the content file.</para>
-                  <para><literal>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</literal></para>
+                  <screen>&lt;accept_file_without_checksum config:type="boolean"
+&gt;true&lt;/accept_file_without_checksum&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, &ay; lets &yast; decide what to do.</entry><remark>emap 2011-11-05: See my previous remark.</remark>
               </row>
               <row>
                 <entry>accept_verification_failed</entry>
                 <entry><para>If set to "true", &ay; will accept signed files even when the verification of the signature failed.</para>
-                  <para><literal>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</literal></para>
+                  <screen>&lt;accept_verification_failed config:type="boolean"
+&gt;true&lt;/accept_verification_failed&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, &ay; lets &yast; decide what to do.</entry><remark>emap 2011-11-05: Same here. Unless I'm just not getting it, please fix all other occurrences below.</remark>
               </row>
               <row>
                 <entry>accept_unknown_gpg_key</entry>
                 <entry><para>If set to "true", &ay; will accept new gpg keys on the installation source, for example the key used to sign the content file.</para>
-                  <para><literal>&lt;accept_unknown_gpg_key config:type="boolean"&gt;true&lt;/accept_unknown_gpg_key&gt;</literal></para>
+                  <screen>&lt;accept_unknown_gpg_key config:type="boolean"
+&gt;true&lt;/accept_unknown_gpg_key&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, &ay; lets &yast; decide what to do.</entry>
               </row>
               <row>
                 <entry>accept_non_trusted_gpg_key</entry>
                 <entry><para>This basically means, we know the key, but it is not trusted.</para>
-                  <para><literal>&lt;accept_non_trusted_gpg_key config:type="boolean"&gt;true&lt;/accept_non_trusted_gpg_key&gt;</literal></para>
+                  <screen>&lt;accept_non_trusted_gpg_key config:type="boolean"
+&gt;true&lt;/accept_non_trusted_gpg_key&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, &ay; lets &yast; decide what to do.</entry>
               </row>
               <row>
                 <entry>import_gpg_key</entry>
                 <entry><para>If set to "true", &ay; will accept and import new gpg keys on the installation source in its database.</para>
-                  <para><literal>&lt;import_gpg_key config:type="boolean"&gt;true&lt;/import_gpg_key&gt;</literal></para>
+                  <screen>&lt;import_gpg_key config:type="boolean"
+&gt;true&lt;/import_gpg_key&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, &ay; lets &yast; decide what to do.</entry>
               </row>
@@ -253,63 +246,60 @@ media_url [path_on_media [product_1 [product_2 [....]]]
               <row>
                 <entry>accept_unsigned_file</entry>
                 <entry><para>If set to "true", &ay; will accept unsigned files like the content file for this add-on product.</para>
-                  <para><literal>&lt;accept_unsigned_file config:type="boolean"&gt;true&lt;/accept_unsigned_file&gt;</literal></para>
+                  <screen>&lt;accept_unsigned_file config:type="boolean"
+&gt;true&lt;/accept_unsigned_file&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>accept_file_without_checksum</entry>
                 <entry><para>If set to "true", &ay; will accept files without a checksum in the content file for this add-on.</para>
-                  <para><literal>&lt;accept_file_without_checksum config:type="boolean"&gt;true&lt;/accept_file_without_checksum&gt;</literal></para>
+                  <screen>&lt;accept_file_without_checksum config:type="boolean"
+&gt;true&lt;/accept_file_without_checksum&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>accept_verification_failed</entry>
                 <entry><para>If set to "true", &ay; will accept signed files even when the verification of the signature fails.</para>
-                  <para><literal>&lt;accept_verification_failed config:type="boolean"&gt;true&lt;/accept_verification_failed&gt;</literal></para>
+                  <screen>&lt;accept_verification_failed config:type="boolean"
+&gt;true&lt;/accept_verification_failed&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>accept_unknown_gpg_key</entry>
                 <entry><para>If set to "true", &ay; will accept new gpg keys on the installation source, for example the key used to sign the content file.</para>
-                  <screen>
-           &lt;accept_unknown_gpg_key&gt;
+                  <screen>&lt;accept_unknown_gpg_key&gt;
             &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
              &lt;keys config:type=&quot;list&quot;&gt;
                &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
              &lt;/keys&gt;
-           &lt;/accept_unknown_gpg_key&gt;
-                  </screen>
+           &lt;/accept_unknown_gpg_key&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>accept_non_trusted_gpg_key</entry>
                 <entry><para>This basically means, we know the key, but it is not trusted.</para>
-                  <screen>
-           &lt;accept_non_trusted_gpg_key&gt;
+                  <screen>&lt;accept_non_trusted_gpg_key&gt;
             &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
              &lt;keys config:type=&quot;list&quot;&gt;
                &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
              &lt;/keys&gt;
-           &lt;/accept_non_trusted_gpg_key&gt;
-</screen>
+           &lt;/accept_non_trusted_gpg_key&gt;</screen>
                 </entry>
                 <entry>optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
               <row>
                 <entry>import_gpg_key</entry>
                 <entry><para>If set to "true", &ay; will accept and import new gpg keys on the installation source into its database.</para>
-                  <screen>
-           &lt;import_gpg_key&gt;
+                  <screen>&lt;import_gpg_key&gt;
             &lt;all config:type=&quot;boolean&quot;&gt;false&lt;/all&gt;
              &lt;keys config:type=&quot;list&quot;&gt;
                &lt;keyid&gt;3B3011B76B9D6523&lt;/keyid&gt;
              &lt;/keys&gt;
-           &lt;/import_gpg_key&gt;
-             </screen>
+           &lt;/import_gpg_key&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, the global signature-handing in the &lt;general&gt; section is used.</entry>
               </row>
@@ -334,11 +324,8 @@ media_url [path_on_media [product_1 [product_2 [....]]]
 	  <title>
 	    Package Selection in Control File<remark>emap 2011-11-05: Should this read: Kernel Selection in Control File?</remark>
 	  </title>
-	  <screen>
-<xi:include href="examples/example.kernel.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-	  </screen>
+	  <screen><xi:include href="examples/example.kernel.xml" parse="text"
+    xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	</example>
   </section>
   <section>
@@ -362,12 +349,7 @@ media_url [path_on_media [product_1 [product_2 [....]]]
 	  <title>
 	    Package Selection in Control File
 	  </title>
-	  <screen>
-<xi:include href="examples/example.removesoft.xml" parse="text"
-    xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-
-	  </screen>
+	  <screen><xi:include href="examples/example.removesoft.xml" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></screen>
 	</example>   
   </section>
   <section>
@@ -377,27 +359,23 @@ media_url [path_on_media [product_1 [product_2 [....]]]
       during the normal installation process in stage 1, you can use the
       <emphasis>post-packages</emphasis> element for that:
     </para>
-        <screen>
-&lt;software&gt;
+        <screen>&lt;software&gt;
   &lt;post-packages config:type=&quot;list&quot;&gt;
     &lt;package&gt;yast2-cim&lt;/package&gt;
   &lt;/post-packages&gt;
-&lt;/software&gt;
-        </screen>
+&lt;/software&gt;</screen>
   </section>
   <section>
-    <title>FIXME Title</title><remark>emap 2011-11-05: Just drawing attention to this fixme. How about: Installing Patterns in Stage 2</remark>
+    <title>Installing Patterns in Stage 2</title>
     <para>
       Since SLES11 and openSUSE 11.1, you can also install patterns in stage 2.
       Use the <emphasis>post-patterns</emphasis> element for that:
     </para>
-        <screen>
-&lt;software&gt;
+        <screen>&lt;software&gt;
   &lt;post-patterns config:type=&quot;list&quot;&gt;
     &lt;pattern&gt;apparmor&lt;/pattern&gt;
   &lt;/post-patterns&gt;
-&lt;/software&gt;
-        </screen>
+&lt;/software&gt;</screen>
   </section>
   <section>
     <title>Online Update in Stage 2</title>
@@ -405,11 +383,9 @@ media_url [path_on_media [product_1 [product_2 [....]]]
       Since openSUSE 11.1, you can perform an online update at the end of the installation. Set the boolean <emphasis>do_online_update</emphasis> to "true".
       Of course this makes only sense if you add an online update repository in the suse-register/customer-center section, for example, or in a post-script. If the online update repository was available in stage 1 already via add-on section, then &ay; has already installed the latest packages available. If a kernel update is done via online-update, a reboot at the end of stage 2 is triggered.
     </para>
-        <screen>
-&lt;software&gt;
+        <screen>&lt;software&gt;
   &lt;do_online_update config:type=&quot;boolean&quot;&gt;true&lt;/do_online_update&gt;
-&lt;/software&gt;
-        </screen>
+&lt;/software&gt;</screen>
   </section>
     </section>
 
