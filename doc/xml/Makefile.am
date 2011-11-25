@@ -22,10 +22,11 @@ CLEANFILES = .html.sum  profile.dtd.xml elements \
 
 STYLESHEET_CSS = default.css
 
-DAPS_BASE=$(shell readlink -f ..)
-
 html_DATA = html
 doc_DATA = pdf
+
+
+DAPS_BASE := $(shell readlink -f ..)
 
 #html_DATA = $(wildcard html/*.html) \
 #	    html/index.html \
@@ -37,16 +38,18 @@ doc_DATA = pdf
 .PHONY: pdf html pkgsrc html-debug entities
 
 html: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
-html: RESULTDIR=$(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) html-dir-name 2>/dev/null)
+html: RESULTDIR := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) html-dir-name 2>/dev/null)
 html:
 	daps -e ENV-autoyast --basedir=$(DAPS_BASE) html --static
 	rm -rf html && mkdir -p html
-	mv $(RESULTDIR)/* html
+	cp -a $(RESULTDIR)/* html
 
 pdf: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
-pdf: RESULTDIR=$(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) color-pdf-name 2>/dev/null)
+pdf: PDF_FILE := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) color-pdf-name 2>/dev/null)
 pdf:
 	daps -e ENV-autoyast --basedir=$(DAPS_BASE) pdf-color
+	mkdir -p pdf
+	cp -a $(PDF_FILE) pdf
 
 pkgsrc: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
 	daps -e ENV-autoyast --basedir=$(DAPS_BASE) package-src
@@ -101,9 +104,12 @@ ay_bigfile.xml: ay_bigfile_docbook.xml
 	xsltproc --output $@ \
 	  /usr/share/susedoc/xslt/misc/db2novdoc.xsl $<
 
+install-data-local: html pdf
+install-data-local: PDF_FILE := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) color-pdf-name 2>/dev/null)
 install-data-local:
 	install -d -m 755 $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/* $(DESTDIR)$(htmldir)
+	cp -a $(srcdir)/$(shell basename $(PDF_FILE)) $(docdir)
 #	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
 #	cp -a $(srcdir)/html/img $(DESTDIR)$(htmldir)
 #	cp -a $(srcdir)/html/devel $(DESTDIR)$(htmldir)
