@@ -336,29 +336,12 @@
                 d["device"] = find_first_disk(last_dev);
                 y2milestone("empty device in profile set to %1", d["device"]:"");
             }
-            else if( issubstring( device, "by-id" ) )
-                udev_string = "udev_id";
-            else if( issubstring( device, "by-path" ) )
-                udev_string = "udev_path";
-            if( udev_string != "" ) {
-                integer index = findlastof( device, "/" );
-                string wanted_udev = substring( device, index+1 );
-                foreach( string deviceName, map tmp_target, tm, ``{
-                    y2milestone("searching for %1 on %2", wanted_udev, deviceName );
-                    list<string> liste = [];
-                    if( udev_string == "udev_id" )
-                        liste = tmp_target[udev_string]:[];
-                    else
-                        liste = [ tmp_target[udev_string]:"" ];
-                    foreach( string found_udev, liste, ``{
-                        if( found_udev == wanted_udev ) {
-                            d["device"] = deviceName;
-                            y2milestone("found mapping of %1 to %2",found_udev, deviceName);
-                            break;
-                        }
-                    });
-                });
-            }
+            // translation of by-id, by-path, ... device names.
+            // was handled in autoyast until openSUSE 11.3
+            map<string,any> deviceTranslation = $[];
+            if( Storage::GetContVolInfo( d["device"]:"", deviceTranslation ) )
+                d["device"] = deviceTranslation["cdevice"]:"";
+
             last_dev = d["device"]:"";
             return d;
         });
