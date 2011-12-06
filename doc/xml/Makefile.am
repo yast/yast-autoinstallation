@@ -47,7 +47,7 @@ html:
 pdf: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
 pdf: PDF_FILE := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) color-pdf-name 2>/dev/null)
 pdf:
-	daps -e ENV-autoyast --basedir=$(DAPS_BASE) pdf-color
+	PDF_FILE=`daps -e ENV-autoyast --basedir=$(DAPS_BASE) pdf-color`
 	mkdir -p pdf
 	cp -a $(PDF_FILE) pdf
 
