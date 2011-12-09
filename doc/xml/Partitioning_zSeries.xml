@@ -1,0 +1,163 @@
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"[
+
+<!ENTITY % daps-entities SYSTEM "entity-decl.ent">
+<!ENTITY % daps-network-entities SYSTEM "network-decl.ent">
+%daps-entities;
+%daps-network-entities;
+<!ENTITY % images SYSTEM "images.ent">
+%images;
+
+<!ENTITY % entities SYSTEM "entities/en.ent">
+%entities;
+
+<!-- Examples -->
+<!ENTITY % examples SYSTEM "examples.ent">
+%examples;
+
+<!-- components -->
+<!ENTITY % components SYSTEM "components.ent">
+%components;
+
+]>
+
+<section>
+ <title>IBM &zseries; Specific Configuration</title>
+ <para/>
+ <section>
+  <title>Configuring DASD Disks</title>
+  <para>
+   The following elements must be between the
+  </para>
+  <screen>&lt;dasd>
+ &lt;devices config:type="list">
+  &lt;listentry>
+   ...
+  &lt;/listentry>
+ &lt;/devices>
+&lt;/dasd></screen>
+  <para>
+   tags in the &lt;profile> section. Each disk needs to be configured in a
+   separate &lt;listentry> ... &lt;/listentry> section.
+  </para>
+  <informaltable frame='top'>
+   <tgroup cols="3">
+    <thead>
+     <row>
+      <entry>Attribute</entry>
+      <entry>Values</entry>
+      <entry>Description</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>device</entry>
+      <entry>
+       <para><literal>DASD</literal> is the only value allowed</para>
+       <screen>&lt;device
+>DASD&lt;/dev_name></screen>
+      </entry>
+      <entry></entry>
+     </row>
+     <row>
+      <entry>dev_name</entry>
+      <entry>
+       <para>
+        The device (<literal>dasd<replaceable>n</replaceable></literal>)
+        you want to configure in this section.
+       </para>
+       <screen>&lt;dev_name
+>/dev/dasda&lt;/dev_name></screen>
+      </entry>
+      <entry>
+       <para>
+        Optional but recommended. If left out, &ay; tries to guess the
+        device.
+       </para>
+      </entry>
+     </row>
+     <row>
+      <entry>channel</entry>
+      <entry>
+       <para>
+        Channel by which the disk is accessed.
+       </para>
+       <screen>&lt;channel>0.0.0150&lt;/channel></screen>
+      </entry>
+      <entry><para>Mandatory.</para></entry>
+     </row>
+     <row>
+       <entry>diag</entry>
+       <entry>
+        <para>
+        Enable or disable the use of <literal>DIAG</literal>. Possible
+        values are <literal>true</literal> (enable) or
+        <literal>false</literal> (disable).
+       </para>
+       <screen>&lt;diag
+config:type="boolean">true&lt;/diag></screen>
+      </entry>
+      <entry><para>Optional.</para></entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </section>
+ <section>
+  <title>Configuring zFCP Disks</title>
+  <para>
+   The following elements must be between the
+  </para>
+  <screen>&lt;zfcp>
+ &lt;devices config:type="list">
+  &lt;listentry>
+   ...
+  &lt;/listentry>
+ &lt;/devices>
+&lt;/zfcp></screen>
+  <para>
+   tags in the &lt;profile> section. Each disk needs to be configured in a
+   separate &lt;listentry> ... &lt;/listentry> section.
+  </para>
+  <informaltable frame='top'>
+   <tgroup cols="3">
+    <thead>
+     <row>
+      <entry>Attribute</entry>
+      <entry>Values</entry>
+      <entry>Description</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>controller_id</entry>
+      <entry>
+       <para>Channel number</para>
+       <screen>&lt;controller_id
+>0.0.fc00&lt;/controller_id></screen>
+      </entry>
+      <entry></entry>
+     </row>
+     <row>
+      <entry>fcp_lun</entry>
+      <entry>
+       <para>Logical unit number</para>
+       <screen>&lt;fcp_lun
+>0x4010400400000000&lt;/fcp_lun></screen>
+      </entry>
+      <entry></entry>
+     </row>
+     <row>
+      <entry>wwpn</entry>
+      <entry>
+       <para>World wide port number</para>
+       <screen>&lt;wwpn
+>0x500507630510473a&lt;/wwpn></screen>
+      </entry>
+      <entry></entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </section>
+</section>
