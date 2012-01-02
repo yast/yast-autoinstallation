@@ -133,7 +133,7 @@
                     if( ask["password"]:false == true ) {
                         term widget1 = `Password(`id(entry_id), `opt(`notify), question, ask["default"]:"" );
                         term widget2 = `Password(`id(`pass2), `opt(`notify), "", ask["default"]:"" );
-                        dlg = createWidget( `VBox( widget1, widget2), frametitle );
+                        dlg = createWidget( `VBox( `MinWidth(40, widget1), `MinWidth(40, widget2) ), frametitle );
                     } else {
                         if( haskey( ask, "selection" ) ) {
                             list<any> dummy = [];
