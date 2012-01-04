@@ -12,6 +12,7 @@
 
 {
     import "Stage";
+    import "Storage";
     Stage::Set( "initial" );
     import "AutoInstallRules";
     import "Label";
@@ -50,6 +51,18 @@
         text = text + sformat("<tr><td>%1</td><td> = </td><td>%2<br></td></tr>",k,v);
     });
     text = text + "</table>";
+    text = text + "<h3>Storage Data</h3>";
+
+    map<string,map> tm = Storage::GetTargetMap();
+
+    foreach( string k, map v, tm, ``{
+        text = text + "<h2>" + k + "</h2><table>";
+        foreach( string key, any value, (map<string,any>)v, ``{
+            text = sformat("%1<tr><td>%2</td><td> = </td><td>%3<br></td></tr>", text, key, value);
+        });
+        text = text + "</table>";
+    });
+
     UI::OpenDialog( `opt(`defaultsize),
                 `VBox(
                       `RichText( text ),
