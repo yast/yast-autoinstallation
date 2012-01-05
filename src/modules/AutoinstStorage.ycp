@@ -351,33 +351,6 @@
             if( Storage::GetContVolInfo( d["device"]:"", deviceTranslation ) )
                 d["device"] = deviceTranslation["cdevice"]:"";
 
-            /* old code for device mapping (by-id, by-path, ...)
-            else if( issubstring( device, "by-id" ) )
-                udev_string = "udev_id";
-            else if( issubstring( device, "by-path" ) )
-                udev_string = "udev_path";
-            if( udev_string != "" ) {
-                integer index = findlastof( device, "/" );
-                string wanted_udev = substring( device, index+1 );
-                foreach( string deviceName, map tmp_target, tm, ``{
-                    y2milestone("searching for %1 on %2", wanted_udev, deviceName );
-                    list<string> liste = [];
-                    if( udev_string == "udev_id" )
-                        liste = tmp_target[udev_string]:[];
-                    else
-                        liste = [ tmp_target[udev_string]:"" ];
-                    foreach( string found_udev, liste, ``{
-                        if( found_udev == wanted_udev ) {
-                            d["device"] = deviceName;
-                            y2milestone("found mapping of %1 to %2",found_udev, deviceName);
-                            break;
-                        }
-                    });
-                });
-            }
-            */
-
-
             last_dev = d["device"]:"";
             return d;
         });
@@ -570,25 +543,15 @@
                 foreach (string device, map disk, initial_target_map, ``{
                     foreach( map<string,any> toSkip, drive["skip_list"]:[], ``{
                         string skipKey   = toSkip["skip_key"]:"__missing_key__";
-                        string skipType  = "";
 
-                        if( is(disk[skipKey]:nil, string) )
-                            skipType  = "string";
-                        else if( is(disk[skipKey]:nil, integer) )
-                            skipType = "integer";
-                        else if( is(disk[skipKey]:nil, symbol) )
-                            skipType = "symbol";
-                        else
-                            y2error("skipKey '%1' is of unknown type. Will be ignored.", skipKey);
-
-                        if( skipType == "string" ) {
+                        if( is(disk[skipKey]:nil, string) ) {
                             string skipValue = toSkip["skip_value"]:"__missing__";
                             if( disk[skipKey]:"__not_found__" == skipValue ) {
                                 tabooDevices = add( tabooDevices, device );
                                 y2milestone("%1 added to device taboo list (%2 == %3)", device, skipKey, skipValue);
                                 break;
                             }
-                        } else if( skipType == "integer" ) {
+                        } else if( is(disk[skipKey]:nil, integer) ) {
                             integer skipValue       = tointeger(toSkip["skip_value"]:"0");
                             boolean skipValueLess   = toSkip["skip_if_less_than"]:false;
                             boolean skipValueMore   = toSkip["skip_if_more_than"]:false;
@@ -605,13 +568,15 @@
                                 y2milestone("%1 added to device taboo list (%2 == %3)", device, skipKey, skipValue);
                                 break;
                             }
-                        } else if( skipType == "symbol" ) {
+                        } else if( is(disk[skipKey]:nil, symbol) ) {
                             string skipValue = toSkip["skip_value"]:"`nothing";
                             if( sformat("%1",disk[skipKey]:`nothing) == skipValue ) {
                                 tabooDevices = add( tabooDevices, device );
                                 y2milestone("%1 added to device taboo list (%2 == %3)", device, skipKey, skipValue);
                                 break;
                             }
+                        } else {
+                            y2error("skipKey '%1' is of unknown type. Will be ignored.", skipKey);
                         }
                     });
                 });
