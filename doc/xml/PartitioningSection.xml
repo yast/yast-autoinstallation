@@ -33,8 +33,8 @@
       <para>
 	Since openSUSE 11.1 and SLES11, EVMS is no longer supported in the
 	installation system. That means all support for EVMS in &ay; was
-	dropped as well. Alll EVMS documentation here is only valid for SLES10
-	(all service packs) and openSUSE versions prior to openSUSE 11.1.
+	dropped as well. All EVMS documentation here is only valid for SLES10
+	(all service packs)
       </para>
     </warning>
           <para>
@@ -52,7 +52,7 @@
             <tbody>
               <row>
                 <entry>device</entry>
-                <entry><para>The device you want to configure in this section. Since SUSE Linux 10.1 and SLES10, you can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis>. With SLES10 SP1 and SUSE Linux 10.2, <emphasis>by-path</emphasis> is possible too, like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.</para>
+                <entry><para>The device you want to configure in this section. You can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis> or <emphasis>by-path</emphasis>,like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.</para>
                   <screen>&lt;device&gt;/dev/hda&lt;/device&gt;</screen>
                 </entry>
                 <entry>Optional. If left out, &ay; tries to guess the device. A RAID must always have "/dev/md" as device.</entry>
@@ -65,6 +65,7 @@
 </entry>
                 <entry>Optional. The default is "false".</entry>
               </row>
+<!--
               <row>
                 <entry>is_lvm_vg</entry>
                 <entry><para>Specifies if a device is not a physical device but a LVM volume group (see LVM configuration below).</para>
@@ -81,6 +82,7 @@
 </entry>
                 <entry><para><emphasis>Deprecated</emphasis> since SLES10SP1 and SL10.2. Use <emphasis>type</emphasis> instead. Must be "true" if this device is an EVMS volume group. The default is "false".</para></entry>
               </row>
+-->
               <row>
                 <entry>partitions</entry>
                 <entry><para>A list of &lt;partition&gt; entries (see table below).</para>
@@ -121,7 +123,7 @@
               </row>
               <row>
                 <entry>type</entry>
-                <entry><para>Specify the type of the <emphasis>drive</emphasis> (This parameter replaces <emphasis>is_lvm_vg</emphasis> and <emphasis>is_evms_vg</emphasis> in SLES10 and SL10.1)</para>
+                <entry><para>Specify the type of the <emphasis>drive</emphasis></para>
 <para>Choose between:</para>
 <itemizedlist>
 <listitem>
@@ -246,7 +248,7 @@
                     size. Then &ay; calculates a reasonable size. One partition can have the value "max" to use all remaining space.
                   </para>
                   <para>
-                    With SUSE Linux 10.2 and SLES10 SP1, you can specify the the size in percentage. So 10% will use 10% of the size
+                    You can specify the the size in percentage. So 10% will use 10% of the size
                     of the hard disk or VG. You can mix auto, max, size, and percentage as you like.
                   </para>
                   <screen>&lt;size&gt;10G&lt;/size&gt;</screen>
@@ -322,6 +324,7 @@
                 </entry>
                 <entry>The default is 131 for linux partition and 130 for swap.</entry>
               </row>
+<!--
               <row>
                 <entry>filesystem_id</entry>
                 <entry>
@@ -333,6 +336,7 @@
                 </entry>
                 <entry>Since 10.1 and SLES10 it is recommended to use partition_id instead.</entry>
               </row>
+-->
               <row>
                 <entry>mountby</entry>
                 <entry>
@@ -436,7 +440,6 @@
                 <entry>resize</entry>
                 <entry>
                   <para>
-                    This parameter is available since SLES10 SP1 and OpenSUSE 10.2.
                     This boolean must be "true" if an existing partition should be resized. In this case,
                     you want to set <emphasis>create</emphasis> to <emphasis>false</emphasis> and in
                     most cases you don't want to <emphasis>format</emphasis> the partition. You need to
