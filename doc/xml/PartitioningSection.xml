@@ -52,10 +52,10 @@
             <tbody>
               <row>
                 <entry>device</entry>
-                <entry><para>The device you want to configure in this section. You can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis> or <emphasis>by-path</emphasis>,like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.</para>
+                <entry><para>The device you want to configure in this &lt;drive&gt; section. You can use persistent device names via id, like <emphasis>/dev/disk/by-id/ata-WDC_WD3200AAKS-75L9A0_WD-WMAV27368122</emphasis> or <emphasis>by-path</emphasis>,like <emphasis>/dev/disk/by-path/pci-0001:00:03.0-scsi-0:0:0:0</emphasis>.</para>
                   <screen>&lt;device&gt;/dev/hda&lt;/device&gt;</screen>
                 </entry>
-                <entry>Optional. If left out, &ay; tries to guess the device. A RAID must always have "/dev/md" as device.</entry>
+                <entry>Optional. If left out, &ay; tries to guess the device (on openSUSE 12.2 and SLES11 SP2 you can influess the guessing - see below this table for instructions on how to do that). A RAID must always have "/dev/md" as device.</entry>
               </row>
               <row>
                 <entry>initialize</entry>
@@ -169,8 +169,37 @@
             </tbody>
           </tgroup>
           </informaltable>
-    </section>
-
+    <para>Since openSUSE 12.2 and SLES11 SP2 you can influence the device-guessing of AutoYaST for the case that you don't specify a &lt;device&gt; entry on your own. Usually AutoYaST would use the first device it can find and that looks reasonable but you can configure to skip some devices like this:
+</para>
+<screen>
+&lt;partitioning config:type=&quot;list&quot;&gt;
+  &lt;drive&gt;
+    &lt;initialize config:type=&quot;boolean&quot;&gt;true&lt;/initialize&gt;
+    &lt;!-- the skip_list is optional and available since openSUSE 12.2 and SLES11 SP2 --&gt;
+    &lt;skip_list config:type=&quot;list&quot;&gt;
+      &lt;listentry&gt;
+        &lt;!-- skip devices that use the usb-storage driver --&gt;
+        &lt;skip_key&gt;driver&lt;/skip_key&gt;
+        &lt;skip_value&gt;usb-storage&lt;/skip_value&gt;
+      &lt;/listentry&gt;
+      &lt;listentry&gt;
+        &lt;!-- skip devices that are smaller than 1GB --&gt;
+        &lt;skip_key&gt;size_k&lt;/skip_key&gt;
+        &lt;skip_value&gt;1048576&lt;/skip_value&gt;
+        &lt;skip_if_less_than config:type=&quot;boolean&quot;&gt;true&lt;/skip_if_less_than&gt;
+      &lt;/listentry&gt;
+      &lt;listentry&gt;
+        &lt;!-- skip devices that are larger than 100GB --&gt;
+        &lt;skip_key&gt;size_k&lt;/skip_key&gt;
+        &lt;skip_value&gt;104857600&lt;/skip_value&gt;
+        &lt;skip_if_more_than config:type=&quot;boolean&quot;&gt;true&lt;/skip_if_more_than&gt;
+      &lt;/listentry&gt;
+    &lt;/skip_list&gt;
+    ...
+</screen><para>
+For a list of all possible &lt;skip_key&gt;, run "yast2 ayast_probe" on openSUSE 12.2 or SLES11SP2
+    </para>
+</section>
     <section>
         <title>Partition Configuration</title>
           <para>
