@@ -96,18 +96,18 @@
               </row>
               <row>
                 <entry>path (deprecated since openSUSE 11.0 - use pathlist)</entry>
-                <entry><para>The path to the element in the profile. It's a comma seperated list of elements that describes the
+                <entry><para>deprecated
+                       </para><screen>deprecated</screen></entry>
+                <entry>deprecated</entry>
+              </row>
+              <row>
+                <entry><para>pathlist (available since openSUSE 11.0 and replaces <emphasis>path</emphasis>)</para></entry>
+                <entry><para>A list of <emphasis>path</emphasis> elements. A path is a comma seperated list of elements that describes the
                        path to the element you want to change. For example, the ldap server element can be found in the profile
                        in the &lt;ldap&gt;&lt;ldap_server&gt; section. So if you want to change that value, you have to set the
                        path to "ldap,ldap_server". If you want to change the password of the first user in the profile, you have to
                        set the path to "users,0,user_password". The "0" indicates the first user in the &lt;users config:type="list"&gt;
                        list of users in the profile.
-                       </para><screen>&lt;path&gt;networking,dns,hostname&lt;/path&gt;</screen></entry>
-                <entry>This information is optional, but you should at least provide <emphasis>path</emphasis> or <emphasis>file</emphasis>.</entry>
-              </row>
-              <row>
-                <entry><para>pathlist (available since openSUSE 11.0 and replaces <emphasis>path</emphasis>)</para></entry>
-                <entry><para>A list of <emphasis>path</emphasis> elements (see above).
                 </para><screen>&lt;pathlist config:type="list"
 &gt;&lt;path&gt;networking,dns,hostname&lt;/path&gt;
 &lt;path&gt;...&lt;/path&gt;</screen></entry>
@@ -165,22 +165,22 @@
               </row>
               <row>
                 <entry>dialog (available since SL 10.3 and SLES10 SP2)</entry>
-                <entry><para>Since OpenSUSE 10.3, you can ask more than one question per dialog. To do so, specifiy the dialog-id with an integer. All questions with the same dialog-id belong to the same dialog.
+                <entry><para>you can ask more than one question per dialog. To do so, specifiy the dialog-id with an integer. All questions with the same dialog-id belong to the same dialog.
                 The dialogs are sorted by the id too.
                 </para><screen>&lt;dialog config:type="integer"&gt;3&lt;/dialog&gt;</screen></entry>
                 <entry>Optional.</entry>
               </row>
               <row>
                 <entry>element (available since SL 10.3 and SLES10 SP2)</entry>
-                <entry><para>Since OpenSUSE 10.3, you can have more than one question per dialog. To make that possible you have
+                <entry><para>you can have more than one question per dialog. To make that possible you have
                 to specifiy the element-id with an integer. The questions in a dialog are sorted by id.
                 </para><screen>&lt;element config:type="integer"&gt;1&lt;/element&gt;</screen></entry>
                 <entry>Optional (see dialog>.</entry>
               </row>
               <row>
                 <entry>frametitle (available since SL 10.3 and SLES10 SP2)</entry>
-                <entry><para>Since OpenSUSE 10.3, you can have more than one question per dialog. Each question on a dialog has
-                a frame that can have a frame title, a small caption for each question. Since openSUSE 11.3, you can put multiple elements into one frame. They have to have the same frame title.
+                <entry><para>you can have more than one question per dialog. Each question on a dialog has
+                a frame that can have a frame title, a small caption for each question. You can put multiple elements into one frame. They have to have the same frame title.
                 </para><screen>&lt;frametitle&gt;User data&lt;/frametitle&gt;</screen></entry>
                 <entry>Optional. Default is no frame title.</entry>
               </row>
@@ -295,7 +295,7 @@
                 <entry>Optional, default is "true". This value needs "feedback" to be turned on too.</entry>
               </row>
               <row>
-                <entry>rerun_on_error (available since openSUSE 11.0)</entry>
+                <entry>rerun_on_error</entry>
                 <entry><para>A boolean that keeps the dialog open until the script has an exit code of 0 (zero). So you can parse and check the answers the user gave in the script and display an error with the "feedback" option.
                 </para><screen>&lt;rerun_on_error config:type="boolean"&gt;true&lt;/rerun_on_error&gt;</screen></entry>
                 <entry>Optional, default is "false". This value should be used together with the feedback option.</entry>
@@ -407,7 +407,7 @@ wget http://10.10.0.162/$VAL -O /tmp/profile/modified.xml 2&gt;/dev/null
         &lt;/script&gt;
       &lt;/ask&gt;</screen>
 <para>
-Since openSUSE 11.0, you can verify the answer of a question with a script like this:
+you can verify the answer of a question with a script like this:
 </para>
 
 <screen>&lt;ask&gt;
