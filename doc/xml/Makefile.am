@@ -4,7 +4,7 @@
 # $Id: Makefile.am 63765 2011-04-11 15:40:31Z ug $
 #
 
-SUBDIRS = images
+SUBDIRS = images entities
 htmldir = $(docdir)/html
 
 xml_file = autoyast.xml
@@ -22,8 +22,8 @@ CLEANFILES = .html.sum  profile.dtd.xml elements \
 
 STYLESHEET_CSS = default.css
 
-html_DATA = html
-doc_DATA = pdf
+#html_DATA = html
+#doc_DATA = pdf
 
 
 DAPS_BASE := $(shell readlink -f ..)
@@ -35,21 +35,25 @@ DAPS_BASE := $(shell readlink -f ..)
 
 #doc_DATA = autoyast.pdf
 
-.PHONY: pdf html pkgsrc html-debug entities
+#.PHONY: pdf html pkgsrc html-debug entities
+.PHONY: html pkgsrc html-debug entities
 
 html: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
-html: RESULTDIR := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) html-dir-name 2>/dev/null)
+html: RESULTDIR="..//build/autoyast/html/autoyast"
+#html: RESULTDIR := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) html-dir-name 2>/dev/null)
 html:
 	daps -e ENV-autoyast --basedir=$(DAPS_BASE) html --static
 	rm -rf html && mkdir -p html
 	cp -a $(RESULTDIR)/* html
 
-pdf: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
-pdf: PDF_FILE := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) color-pdf-name 2>/dev/null)
-pdf:
-	daps -e ENV-autoyast --basedir=$(DAPS_BASE) pdf-color
-	mkdir -p pdf
-	cp -a $(PDF_FILE) pdf
+#pdf: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
+#pdf: PDF_FILE="..//build/autoyast/autoyast_en.pdf"
+#pdf: PDF_FILE := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) color-pdf-name 2>/dev/null)
+#pdf:
+#	daps -e ENV-autoyast --basedir=$(DAPS_BASE) pdf-color
+#	mkdir -p pdf
+#	echo "$(PDF_FILE) xxx"
+#	cp -a $(PDF_FILE) pdf
 
 pkgsrc: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
 	daps -e ENV-autoyast --basedir=$(DAPS_BASE) package-src
@@ -77,7 +81,6 @@ images.ent:
 # was: images/PNG/*.png 
 prep-daps-images:
 	mkdir -p ../images/src/png
-	cp -axu ../autoyast2/img/*.png ../images/src/png
 
 ay_bigfile_docbook.xml: autoyast.xml $(xml_files) prep-daps-images entities
 # Remove internal entity statements
@@ -102,14 +105,16 @@ ay_bigfile_docbook.xml: autoyast.xml $(xml_files) prep-daps-images entities
 
 ay_bigfile.xml: ay_bigfile_docbook.xml
 	xsltproc --output $@ \
-	  /usr/share/susedoc/xslt/misc/db2novdoc.xsl $<
+	  /usr/share/daps/xslt/misc/db2novdoc.xsl $<
 
-install-data-local: html pdf
-install-data-local: PDF_FILE := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) color-pdf-name 2>/dev/null)
+#install-data-local: html pdf
+install-data-local: html
+#install-data-local: PDF_FILE="..//build/autoyast/autoyast_en.pdf"
+#install-data-local: PDF_FILE := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) color-pdf-name 2>/dev/null)
 install-data-local:
 	install -d -m 755 $(DESTDIR)$(htmldir)
 	cp -a $(srcdir)/html/* $(DESTDIR)$(htmldir)
-	cp -a $(srcdir)/$(shell basename $(PDF_FILE)) $(docdir)
+#	cp -a $(srcdir)/$(shell basename $(PDF_FILE)) $(docdir)
 #	cp -a $(srcdir)/html/images $(DESTDIR)$(htmldir)
 #	cp -a $(srcdir)/html/img $(DESTDIR)$(htmldir)
 #	cp -a $(srcdir)/html/devel $(DESTDIR)$(htmldir)
