@@ -52,7 +52,6 @@ html:
 #pdf:
 #	daps -e ENV-autoyast --basedir=$(DAPS_BASE) pdf-color
 #	mkdir -p pdf
-#	echo "$(PDF_FILE) xxx"
 #	cp -a $(PDF_FILE) pdf
 
 pkgsrc: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
