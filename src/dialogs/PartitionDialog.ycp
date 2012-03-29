@@ -126,7 +126,7 @@
         stripes = (integer) UI::QueryWidget( `id(`numberStripes), `Value );
         stripesize = (integer) UI::QueryWidget( `id(`stripesize), `Value );
 	if( "" == lvName ) {
-	  Popup::Warning( _("Please provide a logical volume name.") );
+	  Popup::Warning( _("Provide a logical volume name.") );
 	}
       } else {
         UI::ChangeWidget( `id(`striping), `Enabled, false );
@@ -180,7 +180,9 @@
 			      (boolean) UI::QueryWidget(`id(`resizePartition),`Value));
       if( `keep == (symbol) UI::QueryWidget(`id(`cbFileSystem), `Value ) ){
 	if( ! reUse && lvmGroup == "" ){ /* for PV's its ok to have no fs */
-	  Popup::Warning( _("You selected to create the partition but you did not select a valid file system.\nPlease select a valid filesystem to continue.") );
+	  Popup::Warning( _("You selected to create the partition, but you did not select a valid file
+system. Select a valid filesystem to continue.
+") );
 	}
 	part = AutoinstPartition::set( part, "format", false);
 	part = AutoinstPartition::set( part, "filesystem",`Empty);
@@ -460,7 +462,7 @@
 	      UI::ChangeWidget(`id(`size), `Enabled, false);
 	    }
 	    else{
-	      Popup::Error(_("Size \"auto\" is only valid if mount point \"/boot\" or \"swap\" is selected"));
+	      Popup::Error(_("Size \"auto\" is only valid if mount point \"/boot\" or \"swap\" is selected."));
 	      UI::ChangeWidget(`id(`size), `Enabled, true);
 	      UI::ChangeWidget(`id(`unit), `Value, `GB );
 	    }

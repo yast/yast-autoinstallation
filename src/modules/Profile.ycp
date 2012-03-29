@@ -345,7 +345,7 @@
                     do {
                         UI::OpenDialog(
                                    `VBox(
-                                         `Label(_("Encrypted AutoYaST profile. Please enter the password twice")),
+                                         `Label(_("Encrypted AutoYaST profile. Enter the password twice.")),
                                          `Password(`id(`password), ""),
                                          `Password(`id(`password2), ""),
                                          `PushButton(`id(`ok), Label::OKButton())
@@ -395,7 +395,7 @@
 	    sectionFiles = add(sectionFiles, sectionName, sectionFileName);
 	  }
 	  else{
-	    y2error(sformat(_("Couldn't write section %1 to file %2"), sectionName, sectionFileName));
+	    y2error(sformat(_("Could not write section %1 to file %2."), sectionName, sectionFileName));
 	  }
        });
        return sectionFiles;
@@ -552,7 +552,7 @@
             while( out["stdout"]:"" == "" ) {
                 UI::OpenDialog(
                            `VBox(
-                                 `Label(_("Encrypted AutoYaST profile. Please enter the correct password.")),
+                                 `Label(_("Encrypted AutoYaST profile. Enter the correct password.")),
                                  `Password(`id(`password), ""),
                                  `PushButton(`id(`ok), Label::OKButton())
                                  )
