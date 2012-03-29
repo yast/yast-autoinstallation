@@ -45,6 +45,9 @@
     // some architectures need a boot partition. Do we have one?
     global boolean planHasBoot = false;
 
+    // list of devices to ignore when guessing devices
+    global list<string> tabooDevices = [];
+
     /**
      * Function sets internal variable, which indicates, that any
      * settings were modified, to "true"
@@ -88,9 +91,12 @@
         string mbr_disk = "";
         if( after == "" ) {
             foreach (string device, map disk, initial_target_map, ``{
-                if (disk["type"]:`jo == `CT_DMRAID ||
-                    disk["type"]:`jo == `CT_MDPART ||
-		    disk["type"]:`jo == `CT_DMMULTIPATH)
+                if (
+                    ( disk["type"]:`jo == `CT_DMRAID ||
+                      disk["type"]:`jo == `CT_MDPART ||
+                      disk["type"]:`jo == `CT_DMMULTIPATH ) &&
+                      !contains( tabooDevices, device )
+                    )
                 {
                     mbr_disk = device;
                 }
@@ -99,7 +105,7 @@
 
         if( after == "" && mbr_disk == "" ) {
             foreach (string device, map disk, initial_target_map, ``{
-                if (disk["bios_id"]:"" == "0x80")
+                if (disk["bios_id"]:"" == "0x80" && !contains( tabooDevices, device ) )
                 {
                     mbr_disk = device;
                 }
@@ -110,7 +116,7 @@
         if( mbr_disk == "" ) {
             foreach (string device, map disk, initial_target_map, ``{
                 if( disk["type"]:`x == `CT_DISK ) {
-                    if( device == after )
+                    if( device == after || contains( tabooDevices, device ) )
                         continue;
                     mbr_disk = device;
                     break;
@@ -507,6 +513,80 @@
                 d["partitions"] = sort( map x, map y, d["partitions"]:[], ``( x["partition_nr"]:99 < y["partition_nr"]:99 ));
                 return d;
             });
+
+            // fill tabooDevice list with devices to ignore
+            map <string, map> initial_target_map = Storage::GetTargetMap();
+            foreach ( map drive, settings, ``{
+                if( drive["device"]:"" != "" ) {
+                    // if <device> is set, it can not end in the taboo list
+                    continue;
+                }
+
+                /* XML example
+                <drive>
+                  <skip_list config:type="list">
+                    <listentry>
+                      <skip_key>driver</skip_key>
+                      <skip_value>usb-storage</skip_value>
+                    </listentry>
+                    <listentry>
+                      <skip_key>size_k</skip_key>
+                      <skip_value>1048576</skip_value>
+                      <skip_if_less_than config:type="boolean">true</skip_if_less_than>
+                    </listentry>
+                  </skip_list>
+                  ...
+                */
+                foreach (string device, map disk, initial_target_map, ``{
+                    foreach( map<string,any> toSkip, drive["skip_list"]:[], ``{
+                        string skipKey   = toSkip["skip_key"]:"__missing_key__";
+                        string skipType  = "";
+
+                        if( is(disk[skipKey]:nil, string) )
+                            skipType  = "string";
+                        else if( is(disk[skipKey]:nil, integer) )
+                            skipType = "integer";
+                        else if( is(disk[skipKey]:nil, symbol) )
+                            skipType = "symbol";
+                        else
+                            y2error("skipKey '%1' is of unknown type. Will be ignored.", skipKey);
+
+                        if( skipType == "string" ) {
+                            string skipValue = toSkip["skip_value"]:"__missing__";
+                            if( disk[skipKey]:"__not_found__" == skipValue ) {
+                                tabooDevices = add( tabooDevices, device );
+                                y2milestone("%1 added to device taboo list (%2 == %3)", device, skipKey, skipValue);
+                                break;
+                            }
+                        } else if( skipType == "integer" ) {
+                            integer skipValue       = tointeger(toSkip["skip_value"]:"0");
+                            boolean skipValueLess   = toSkip["skip_if_less_than"]:false;
+                            boolean skipValueMore   = toSkip["skip_if_more_than"]:false;
+                            boolean skipValueEqual  = toSkip["skip_if_equal"]:true;
+                            if( skipValueLess && disk[skipKey]:0 < skipValue ) {
+                                tabooDevices = add( tabooDevices, device );
+                                y2milestone("%1 added to device taboo list (%2 < %3)", device, disk[skipKey]:0, skipValue );
+                            } else if( skipValueMore && disk[skipKey]:0 > skipValue ) {
+                                tabooDevices = add( tabooDevices, device );
+                                y2milestone("%1 added to device taboo list (%2 > %3)", device, disk[skipKey]:0, skipValue );
+                            }
+                            if( skipValueEqual && disk[skipKey]:0 == skipValue ) {
+                                tabooDevices = add( tabooDevices, device );
+                                y2milestone("%1 added to device taboo list (%2 == %3)", device, skipKey, skipValue);
+                                break;
+                            }
+                        } else if( skipType == "symbol" ) {
+                            string skipValue = toSkip["skip_value"]:"`nothing";
+                            if( sformat("%1",disk[skipKey]:`nothing) == skipValue ) {
+                                tabooDevices = add( tabooDevices, device );
+                                y2milestone("%1 added to device taboo list (%2 == %3)", device, skipKey, skipValue);
+                                break;
+                            }
+                        }
+                    });
+                });
+            });
+
             settings = udev2dev(settings);
             settings = mountBy(settings);
             settings = region4resize(settings);
