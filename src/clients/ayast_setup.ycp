@@ -78,7 +78,7 @@
 
     boolean openFile( map <string, any> options ) {
 	if ( options["filename"]:nil == nil ) {
-	    CommandLine::Error(_("Path to autoyast profile must be set"));
+	    CommandLine::Error(_("Path to AutoYaST profile must be set."));
 	    return false;
 	}
         if( options["dopackages"]:"yes" == "no" )
@@ -99,18 +99,18 @@ control file and try again.
 
     map cmdline = $[
         "id"        : "ayast_setup",
-        "help"      : _("Client for autoyast configuration on the running system"),
+        "help"      : _("Client for AutoYaST configuration on the running system"),
 	"guihandler": GUI,
         "actions"   : $[
             "setup" :   $[ 
 		"handler" : openFile, 
-		"help" : _("Configure the system using given autoyast profile"), 
+		"help" : _("Configure the system using given AutoYaST profile"), 
 		"example" : "setup filename=/path/to/profile dopackages=no" ]
         ],
         "options"       : $[
             "filename": $[
                 "type" : "string",
-                "help" : _("Path to autoyast profile")
+                "help" : _("Path to AutoYaST profile")
             ],
             "dopackages": $[
                 "type" : "enum",
