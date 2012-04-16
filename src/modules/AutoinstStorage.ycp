@@ -786,6 +786,8 @@ which root partition should be used.  Automatic installation not possible.
                 if ( Storage::IsRealDisk( data) &&
                      data["initialize"]:false == true) {
                         initial_target_map[device,"delete"] = true;
+                        if( haskey( data, "disklabel" ))
+                            initial_target_map[device,"disklabel"] = data["disklabel"]:"msdos";
                         Storage::SetTargetMap(initial_target_map);
                 }
         });
