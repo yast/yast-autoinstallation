@@ -7,7 +7,8 @@ element scripts {
   chroot-scripts? &
   post-scripts? &
   pre-scripts? &
-  init-scripts?
+  init-scripts? &
+  postpartitioning-scripts?
 }
 
 chroot-scripts =
@@ -30,6 +31,12 @@ element init-scripts {
     LIST,
     autoinstall-init-script+
 }
+postpartitioning-scripts =
+element postpartitioning-scripts {
+    LIST,
+    autoinstall-script+
+}
+
 
 # script is overloaded
 autoinstall-script = element script {
