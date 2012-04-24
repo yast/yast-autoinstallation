@@ -3,7 +3,14 @@ namespace config = "http://www.suse.com/1.0/configns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
 general = element general { 
-    mode? & 
+    element mode {
+      element confirm       { BOOLEAN }? &
+      element halt          { BOOLEAN }? &
+      element second_stage  { BOOLEAN }? &
+      element final_halt    { BOOLEAN }? &
+      element final_reboot  { BOOLEAN }? &
+      element forceboot     { BOOLEAN }?
+    }
     mouse? & 
     ask-list? & 
     signature-handling? &
@@ -53,7 +60,6 @@ ask_help = element help { text }
 ask_title = element title { text }
 ask_type = element type { ( "symbol" | "integer" | "boolean" | "string" ) }
 ask_password = element password { BOOLEAN }
-ask_path = element path { text }
 ask_stage = element stage { "cont" | "initial" }
 ask_selection = element selection { LIST, ask_selection_entry+ }
 ask_selection_entry = element entry { ask_entry_value & ask_entry_label }
@@ -87,10 +93,6 @@ ask_script = element script {
     element rerun_on_error { BOOLEAN }?
 }
 
-mode =
-  element mode {
-    confirm? & halt? & second_stage? & final_halt? & final_reboot? & forceboot?
-  }
 confirm =
   element confirm { BOOLEAN }
 final_halt =
