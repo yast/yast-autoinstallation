@@ -19,7 +19,7 @@ element chroot-scripts {
 post-scripts =
 element post-scripts {
     LIST,
-    autoinstall-script+
+    autoinstall-post-script+
 }
 pre-scripts =
 element pre-scripts {
@@ -49,6 +49,17 @@ autoinstall-script = element script {
   element notification { text }?
 }
 
+autoinstall-post-script = element script {
+  filename? &
+  interpreter? & 
+  element location { text }? &
+  source? &
+  debug? &
+  feedback? &
+  element notification { text }? &
+  element network_needed { BOOLEAN }
+}
+
 autoinstall-init-script = element script {
   filename? &
   element location { text }? &
@@ -74,3 +85,4 @@ feedback_type = element feedback_type { text }
 filename = element filename { text }
 interpreter = element interpreter { text }
 source = element source { text }
+network_needed = element network_needed { BOOLEAN }
