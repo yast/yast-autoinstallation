@@ -232,7 +232,8 @@
     global define list GetRaidDevices (string dev, map<string,map> tm) {
         list<map> ret = [];
         foreach( string k, map d, tm, ``{
-            if( d["type"]:`CT_UNKNOWN == `CT_DISK ) {
+            if( d["type"]:`CT_UNKNOWN == `CT_DISK ||
+                d["type"]:`CT_UNKNOWN == `CT_DMMULTIPATH ) {
                 list tmp = filter( map p, d["partitions"]:[],
                                     ``( p["raid_name"]:"" == dev ) );
                 ret = (list<map>)union( ret, tmp );
@@ -246,7 +247,8 @@
     global define void SearchRaids (map<string,map> tm) {
         //raid2device = $[];
         foreach( string k, map d, tm, ``{
-            if( d["type"]:`CT_UNKNOWN == `CT_DISK ) {
+            if( d["type"]:`CT_UNKNOWN == `CT_DISK ||
+                d["type"]:`CT_UNKNOWN == `CT_DMMULTIPATH ) {
                 list<map> tmp = filter( map p, d["partitions"]:[],
                                     ``( p["raid_name"]:"" != "" ) );
                 list<string> devMd = maplist( map p, tmp, ``{ return p["raid_name"]:""; } );
