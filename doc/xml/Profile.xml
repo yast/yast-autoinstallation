@@ -142,8 +142,8 @@ exit 0
 	<screen><![CDATA[...
 <drive> 
   <device>/dev/hda</device> 
-  <partitions config:type="list"> 
-     <partition> 
+  <partitions> <!-- this is wrong, explanation below -->
+     <partition>
         <size>1000mb</size> 
         <mount>/</mount> 
      </partition> 
@@ -164,13 +164,7 @@ exit 0
 	size and mount property.	
       </para>
       <para>
-In the schema files is specified that the partitions resource
-	contains multiple instances, but it is still required to specify this to
-	avoid wrong data typing in &yast2;. Using the example above, if having a
-	drive with only one partition this would result in interpreting the
-	partition resource as a property. To avoid this, the following syntax
-	must be used when defining multiple instances. For more information
-	about type attributes, see the next section.
+The XML schema defines the partitions element as a resource supporting one or multiple partition element children. If only one partition resource is specified it is important to use the "config:type" attribute of the partitions element to indicate that the content is a resource, in this case a list. Using the partitions element with out specifying the type in this case will result in undefined behavior as &yast2; will improperly interpret the partitions resource as a property. The example below illustrates this use case.
       </para>
       <example> 
 	<title>
