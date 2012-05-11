@@ -104,7 +104,7 @@ ay_bigfile_docbook.xml: autoyast.xml $(xml_files) prep-daps-images entities
 
 ay_bigfile.xml: ay_bigfile_docbook.xml
 	xsltproc --output $@ \
-	  /usr/share/daps/xslt/misc/db2novdoc.xsl $<
+	  /usr/share/daps/daps-xslt/common/db2novdoc.xsl $<
 
 #install-data-local: html pdf
 install-data-local: html
