@@ -42,9 +42,10 @@ html: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
 html: RESULTDIR="..//build/autoyast/html/autoyast"
 #html: RESULTDIR := $(shell daps -e ENV-autoyast --basedir=$(DAPS_BASE) html-dir-name 2>/dev/null)
 html:
-	daps -e ENV-autoyast --basedir=$(DAPS_BASE) html --static
+	daps -e $(DAPS_BASE)/ENV-autoyast html --static
+#daps -e ENV-autoyast --basedir=$(DAPS_BASE) html --static
 	rm -rf html && mkdir -p html
-	cp -a $(RESULTDIR)/* html
+	cp -a $(DAPS_BASE)/build/ENV-autoyast/* html
 
 #pdf: $(xml_files) autoyast.xml prep-daps-images entities ay_bigfile.xml
 #pdf: PDF_FILE="..//build/autoyast/autoyast_en.pdf"
