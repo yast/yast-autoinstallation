@@ -89,11 +89,15 @@ opt_raid = element opt_raid { option_str, option_value }
 opt_reserved_blocks =
   element opt_reserved_blocks { option_str, option_value }
 
-part_raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? }
+part_raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? }
 persistent_superblock = element persistent_superblock { BOOLEAN }
 raid_type = element raid_type { text }
 chunk_size = element chunk_size { text }
 parity_algorithm = element parity_algorithm { text }
+device_order = element device_order {
+    LIST,
+    element device { text }*
+}
 
 part_fstopt = element fstopt { text }
 part_label = element label { text }

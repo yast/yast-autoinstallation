@@ -243,6 +243,34 @@
     }
 
     global define void SearchRaids (map<string,map> tm) {
+        map<string,boolean> already_mapped = $[];
+
+        /*
+           optional device order for the raid:
+           <device>/dev/md</device>
+           <partitions config:type="list">
+             <partition>
+               <raid_options>
+                 <device_order config:type="list">
+                    <device>/dev/sdc1</device>
+                    <device>/dev/sdb2</device>
+                 </device_order>
+               </raid_options>
+               ...
+        */
+        map d = AutoTargetMap["/dev/md"]:$[];
+        integer counter = 0;
+        foreach( map p, d["partitions"]:[], ``{
+            if( haskey(p, "raid_options") &&
+                p["raid_options","device_order"]:[] != [] ) {
+                counter = p["partition_nr"]:counter;
+                list<string> order = p["raid_options","device_order"]:[];
+                y2milestone("found device_order %1 in raidoptions for /dev/md%2", order, counter);
+                raid2device[ sformat("/dev/md%1",counter) ] = order;
+                already_mapped[ sformat("/dev/md%1",counter) ] = true;
+            }
+            counter = counter + 1;
+        });
         //raid2device = $[];
         foreach( string k, map d, tm, ``{
             if( d["type"]:`CT_UNKNOWN == `CT_DISK ||
@@ -251,6 +279,9 @@
                                     ``( p["raid_name"]:"" != "" ) );
                 list<string> devMd = maplist( map p, tmp, ``{ return p["raid_name"]:""; } );
                 foreach( string dev, devMd, ``{
+                    if( already_mapped[dev]:false == true ) {
+                        continue;
+                    }
                     if( ! haskey( raid2device, dev ) ) {
                         raid2device[dev] = GetRaidDevices(dev,tm);
                     } else {
