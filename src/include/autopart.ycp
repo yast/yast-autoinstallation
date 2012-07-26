@@ -29,6 +29,33 @@ $Id$
     integer cur_weight = -10000;
     map cur_gap = $[];
 
+global map AddSubvolData( map st_map, map xml_map )
+    {
+    map ret = st_map;
+    if( ret["used_fs"]:`unknown == `btrfs )
+        {
+        y2milestone( "AddSubvolData  st:%1", st_map );
+        y2milestone( "AddSubvolData xml:%1", xml_map );
+        if( haskey( xml_map, "subvolumes" ))
+            {
+            string sv_prep = "";
+            if( FileSystems::default_subvol!="" )
+                sv_prep = FileSystems::default_subvol + "/";
+            ret["subvol"] = maplist( string s, xml_map["subvolumes"]:[],
+                {
+                if( !isempty(sv_prep) && substring( s, 0, size(sv_prep))!=sv_prep )
+                    s = sv_prep+s;
+                return( $[ "name" : s, "create" : true ] );
+                });
+            }
+        if( haskey( ret, "subvolumes" ))
+            ret = remove( ret, "subvolumes" );
+        y2milestone( "AddSubvolData ret:%1", ret );
+        }
+    return( ret );
+    }
+
+
 
     list GetNoneLinuxPartitions(string device) {
         list ret = [];
@@ -428,6 +455,7 @@ $Id$
                             p["used_fs"] = solution["partitions",pindex,"filesystem"]:p["detected_fs"]:`ext3;
                         else
                             p["used_fs"] = solution["partitions",pindex,"filesystem"]:`ext3;
+                        p = AddSubvolData( p, solution["partitions",pindex]:$[] );
                         
                         value = solution["partitions",pindex,"fstopt"]:"";
                         if( size(value)>0 )
@@ -568,6 +596,7 @@ $Id$
                     {
                         part["fstopt"] = FileSystems::DefaultFstabOptions( part );
                     }
+                    part = AddSubvolData( part, solution["partitions",pindex]:$[] );
                     
                     mapvalue = solution["partitions",pindex,"fs_options"]:$[];
                     if( size(mapvalue)>0 )

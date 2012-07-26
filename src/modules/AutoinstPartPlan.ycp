@@ -23,6 +23,7 @@
   import "StorageDevices";
   import "Storage";
   import "Partitions";
+  import "FileSystems";
   import "Arch";
 
   /**
@@ -458,6 +459,18 @@
                 {
                     new_pe["filesystem"] = pe["used_fs"]:`ext3;
                     new_pe["format"] = new_pe["format"]:pe["format"]:true;
+                }
+
+                // Subvolumes
+                // Save possibly existing subvolumes
+                if( !isempty(pe["subvol"]:[])) 
+                {
+                    string defsub = "";
+                    if( !isempty(FileSystems::default_subvol) )
+                        defsub = FileSystems::default_subvol + "/";
+                    new_pe["subvolumes"] = maplist( map p, (list<map>)pe["subvol"]:[], 
+                                                    ``({return( substring(p["name"]:"",size(defsub)));}));
+                    new_pe["subvolumes"] = filter( string s, new_pe["subvolumes"]:[], ``(!isempty(s)));
                 }
 
                 // if the filesystem is unknown, we have detected_fs and no longer used_fs

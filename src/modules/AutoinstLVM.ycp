@@ -345,6 +345,7 @@
                     targetMap      = lvret["targets"]:targetMap;
                 } else if ( lv["create"]:true ) {
                     lv["used_fs"] = lv["filesystem"]:`ext3;
+                    lv = AutoinstStorage::AddSubvolData( lv, lv );
                     lv["create"] = true;
                     lv["format"] = lv["format"]:true;
                     lv["device"] = "/dev/" + current_vg + "/" + lv["name"]:"";
