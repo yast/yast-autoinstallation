@@ -378,6 +378,27 @@ For a list of all possible &lt;skip_key&gt;, run "yast2 ayast_probe" on openSUSE
                 <entry>See "label" and "uuid" documentation above. The default depends on YaST and is id in most cases. It was device in the past.</entry>
               </row>
               <row>
+                <entry>subvolumes</entry>
+                <entry>
+                  <para>
+                   List of subvolumes to create for a filesystem of type btrfs. This key only make sense for filesystems of type btrfs. If there is a default subvolume used for the distribution (like e.g. "@" in SLES11 SP2) the name of
+this default subvolume is automatically prepended to the names in this list.
+                  </para>
+                  <screen>&lt;subvolumes config:type="list"&gt;
+    &lt;path&gt;tmp&lt;/path&gt;
+    &lt;path&gt;opt&lt;/path&gt;
+    &lt;path&gt;srv&lt;/path&gt;
+    &lt;path&gt;var/crash&lt;/path&gt;
+    &lt;path&gt;var/lock&lt;/path&gt;
+    &lt;path&gt;var/run&lt;/path&gt;
+    &lt;path&gt;var/tmp&lt;/path&gt;
+    &lt;path&gt;var/spool&lt;/path&gt;
+    ...
+&lt;/subvolumes&gt;</screen>
+                </entry>
+                <entry>this key is available since openSUSE 12.3 and SLES11 SP3</entry>
+              </row>
+              <row>
                 <entry>lv_name</entry>
                 <entry>
                   <para>
@@ -538,12 +559,13 @@ For a list of all possible &lt;skip_key&gt;, run "yast2 ayast_probe" on openSUSE
                     this list contains the optional order of the physical devices
                   </para>
                   <screen>&lt;device_order config:type="list"&gt;
-&lt;device&gt;/dev/sdb2&lt;/device&gt;
-&lt;device&gt;/dev/sda1&lt;/device&gt;
-...
+   &lt;device&gt;/dev/sdb2&lt;/device&gt;
+   &lt;device&gt;/dev/sda1&lt;/device&gt;
+   ...
 &lt;/device_order&gt;</screen>
                 </entry>
                 <entry>this is optional and the default is alphabetical order</entry>
+                <entry>this key is available since openSUSE 12.2 and SLES11 SP3</entry>
               </row>
             </tbody>
           </tgroup>
