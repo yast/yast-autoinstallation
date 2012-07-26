@@ -47,7 +47,8 @@
     "lvm_group" : "",
     "raid_name" : "",
     "raid_type" : "",
-    "raid_options" : $[]
+    "raid_options" : $[],
+    "subvolumes" : []
     ];
 
   define map<symbol,map> allfs = $[];
@@ -206,6 +207,10 @@
 	newPart = set( newPart, "filesystem", part["filesystem"]:`Empty );
 	newPart = set( newPart, "format", true);
       }
+      if( !isempty( part["subvolumes"]:[] ))
+        newPart["subvolumes"] = part["subvolumes"]:[];
+      else 
+        newPart = remove( newPart, "subvolumes" );
       newPart = set( newPart, "loop_fs", part["loop_fs"]:false );
       newPart = set( newPart, "partition_id", part["partition_id"]:131 );
       if( haskey( part, "partition_nr" ) )
@@ -235,9 +240,10 @@
           newPart = set( newPart, "raid_name", part["raid_name"]:"" );
           newPart = set( newPart, "raid_type", part["raid_type"]:"raid0" );
       }
-      if( haskey( part, "raid_options" ) ) {
+      if( haskey( part, "raid_options" ) ) 
           newPart = set( newPart, "raid_options", part["raid_options"]:$[] );
-      }
+      else 
+          newPart = remove( newPart, "raid_options" );
       return newPart;
     }
 

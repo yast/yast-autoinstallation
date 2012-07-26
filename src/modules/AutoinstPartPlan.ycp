@@ -23,6 +23,7 @@
   import "StorageDevices";
   import "Storage";
   import "Partitions";
+  import "FileSystems";
   import "Arch";
 
   /**
@@ -460,6 +461,18 @@
                     new_pe["format"] = new_pe["format"]:pe["format"]:true;
                 }
 
+                // Subvolumes
+                // Save possibly existing subvolumes
+                if( !isempty(pe["subvol"]:[])) 
+                {
+                    string defsub = "";
+                    if( !isempty(FileSystems::default_subvol) )
+                        defsub = FileSystems::default_subvol + "/";
+                    new_pe["subvolumes"] = maplist( map p, (list<map>)pe["subvol"]:[], 
+                                                    ``({return( substring(p["name"]:"",size(defsub)));}));
+                    new_pe["subvolumes"] = filter( string s, new_pe["subvolumes"]:[], ``(!isempty(s)));
+                }
+
                 // if the filesystem is unknown, we have detected_fs and no longer used_fs
                 // don't know why yast2-storage is having two keys for that.
                 // maybe it would be even okay to look only for "detected_fs" to set format to false
@@ -487,6 +500,7 @@
                     raid_options["persistent_superblock"] =
                             pe["persistent_superblock"]:false;
                     raid_options["raid_type"] = pe["raid_type"]:"raid0";
+                    raid_options["device_order"] = pe["devices"]:[];
                     new_pe["raid_options"] = raid_options;
                 }
 
