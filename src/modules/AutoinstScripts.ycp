@@ -15,7 +15,6 @@
     import "AutoinstConfig";
     import "Summary";
     import "URL";
-    import "Service";
     import "Popup";
     import "Label";
     import "Report";
@@ -698,7 +697,8 @@ Experimental
                 } else {
                     SCR::Write(.target.string,  scriptPath, s["source"]:"echo Empty script!");
                 }
-                Service::Enable("autoyast");
+                // moved to 1st stage because of systemd
+                //Service::Enable("autoyast");
             }
             else if (type == "chroot-scripts")
             {

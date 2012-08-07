@@ -243,8 +243,7 @@ Please wait while the system is being configured.
     logStep( _("Executing Post-Scripts"));
     AutoinstScripts::Write("post-scripts", false);
 
-    // moved to 1st stage to fix issue with systemd
-    //AutoinstScripts::Write("init-scripts", false);
+    AutoinstScripts::Write("init-scripts", false);
 
     // Just in case, remove this file to avoid reconfiguring...
     SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
