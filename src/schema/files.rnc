@@ -6,6 +6,7 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
 y2_files =
   file_contents
+  | file_location
   | file_path
   | file_permissions
   | file_owner
@@ -16,6 +17,7 @@ files =
     element file { y2_files* }+
   }
 file_contents = element file_contents { text }
+file_location = element file_location { text }
 file_path = element file_path { text }
 file_permissions = element file_permissions { text }
 file_owner = element file_owner { text }
