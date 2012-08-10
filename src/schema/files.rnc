@@ -4,17 +4,16 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace config = "http://www.suse.com/1.0/configns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
-y2_files =
-  file_contents
+file_src = file_contents
   | file_location
-  | file_path
-  | file_permissions
+y2_files =
+  file_permissions
   | file_owner
   | file_script
 files =
   element files {
     LIST,
-    element file { y2_files* }+
+    element file { file_src? & file_path & y2_files* }+
   }
 file_contents = element file_contents { text }
 file_location = element file_location { text }
