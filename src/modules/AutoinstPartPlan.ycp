@@ -622,15 +622,20 @@
     {
         y2milestone("entering Import with %1", settings);
 	AutoPartPlan = [];
+        list IgnoreTypes = [ `CT_TMPFS, `CT_BTRFS ];
 	foreach( map drive, settings, {
-	  DriveT newDrive = AutoinstDrive::parseDrive( drive );
-	  if( AutoinstDrive::isDrive( newDrive ) ){
-	    AutoPartPlan = internalAddDrive( AutoPartPlan, newDrive );
-	  }
-	  else{
-	    y2error( "Couldn't construct DriveT from '%1'", drive );
-	  }
-	});
+          if( !contains( IgnoreTypes, drive["type"]:`CT_DISK ))
+            {
+            DriveT newDrive = AutoinstDrive::parseDrive( drive );
+            if( AutoinstDrive::isDrive( newDrive ) ){
+              AutoPartPlan = internalAddDrive( AutoPartPlan, newDrive );
+              }
+            else
+              y2error( "Couldn't construct DriveT from '%1'", drive );
+            }
+          else
+            y2milestone( "Ignoring Container type '%1'", drive["type"]:`CT_DISK );
+	  });
         return true;
     }
 
