@@ -80,7 +80,7 @@ case "$1" in
         for script in  `find $INITSCRIPT_DIR -type f |sort`; do
             echo -n "Executing AutoYaST script: $script"
             BASENAME=`basename $script`
-            sh -x $script  2> $LOG_DIR/$BASENAME.log
+            sh -x $script > $LOG_DIR/$BASENAME.log 2>&1
             mv $script $SCRIPT_DIR
 	    rc_status -v
         done
