@@ -48,7 +48,9 @@
     "raid_name" : "",
     "raid_type" : "",
     "raid_options" : $[],
-    "subvolumes" : []
+    "subvolumes" : [],
+    "pool" : false,
+    "used_pool" : ""
     ];
 
   define map<symbol,map> allfs = $[];
@@ -211,6 +213,14 @@
         newPart["subvolumes"] = part["subvolumes"]:[];
       else 
         newPart = remove( newPart, "subvolumes" );
+      if( !isempty( part["used_pool"]:""))
+        newPart["used_pool"] = part["used_pool"]:"";
+      else 
+        newPart = remove( newPart, "used_pool" );
+      if( part["pool"]:false )
+        newPart["pool"] = true;
+      else 
+        newPart = remove( newPart, "pool" );
       newPart = set( newPart, "loop_fs", part["loop_fs"]:false );
       newPart = set( newPart, "partition_id", part["partition_id"]:131 );
       if( haskey( part, "partition_nr" ) )

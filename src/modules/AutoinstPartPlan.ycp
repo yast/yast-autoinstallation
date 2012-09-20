@@ -473,6 +473,12 @@
                     new_pe["subvolumes"] = filter( string s, new_pe["subvolumes"]:[], ``(!isempty(s)));
                 }
 
+		// Handle thin stuff
+		if( pe["pool"]:false )
+		    new_pe["pool"] = true;
+		if( !isempty(pe["used_pool"]:"") )
+		    new_pe["used_pool"] = pe["used_pool"]:"";
+
                 // if the filesystem is unknown, we have detected_fs and no longer used_fs
                 // don't know why yast2-storage is having two keys for that.
                 // maybe it would be even okay to look only for "detected_fs" to set format to false
