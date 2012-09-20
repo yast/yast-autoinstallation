@@ -53,6 +53,9 @@ y2_partition =
   | part_size
   | part_stripes
   | part_stripesize
+  | part_pool
+  | part_used_pool
+
 partition = element partition { y2_partition* }
 part_create =
   element create { BOOLEAN }
@@ -124,6 +127,8 @@ part_stripes =
   element stripes { INTEGER }
 part_stripesize =
   element stripesize { INTEGER }
+part_pool = element pool { BOOLEAN }
+part_used_pool = element used_pool { text }
 part_region =
   element region {
     LIST,

@@ -444,6 +444,27 @@ this default subvolume is automatically prepended to the names in this list.
                 <entry></entry>
               </row>
               <row>
+                <entry>pool</entry>
+                <entry>
+                  <para>
+                   Boolean must be set to true if the LVM logical volume should be a LVM thin pool.
+                  </para>
+                  <screen>&lt;pool config:type="boolean"&gt;false&lt;/pool&gt;</screen>
+                </entry>
+                <entry>this key is available since openSUSE 12.3 and SLES11 SP3</entry>
+              </row>
+              <row>
+                <entry>used_pool</entry>
+                <entry>
+                  <para>
+                   The name of the LVM thin pool that is used as data store for this thin logical volume.
+		   If this is set to something nonempty, it implies that the volume is a so called thin logical volume.
+                  </para>
+                  <screen>&lt;used_pool&gt;my_thin_pool&lt;/used_pool&gt;</screen>
+                </entry>
+                <entry>this key is available since openSUSE 12.3 and SLES11 SP3</entry>
+              </row>
+              <row>
                 <entry>evms_group</entry>
                 <entry>
                   <para>
