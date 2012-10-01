@@ -170,6 +170,24 @@
         return hex;
     }
 
+    /**
+     * Return host name
+     * @return string host name
+     */
+    global define string getHostname()
+    {
+
+	map ret = (map)SCR::Execute(.target.bash_output, "/bin/hostname");
+	y2milestone("getHostname ret:%1", ret );
+        string name = "";
+	if( ret["exit"]:-1==0 )
+	    name = splitstring(ret["stdout"]:"","\n")[0]:"";
+	if( isempty(name) )
+	    name=(string)SCR::Read(.etc.install_inf.Hostname);
+	y2milestone("getHostname name:%1", name );
+        return name;
+    }
+
 
     /**
      * Probe all system data to build  a set of rules
@@ -281,9 +299,7 @@
 
         ATTR["hostid"] = hostid;
 
-
-        hostname = (string)SCR::Read(.etc.install_inf.Hostname);
-        ATTR["hostname"] = hostname;
+        ATTR["hostname"] = getHostname();
         domain = (string)SCR::Read(.etc.install_inf.Domain);
         ATTR["domain"] = domain;
         network = (string)SCR::Read(.etc.install_inf.Network);
@@ -309,6 +325,7 @@
         ATTR["installed_product_version"] = installed_product_version;
 
         y2milestone("Installing %1 %2", installed_product, installed_product_version);
+        y2milestone("ATTR=%1", ATTR );
 
         return;
     }
