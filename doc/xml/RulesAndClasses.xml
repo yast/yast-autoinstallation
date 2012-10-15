@@ -36,7 +36,8 @@ autoyast=http://10.10.0.1/profile/rules/rules.xml</screen>
       If more than one rule applies, the final profile for each group is
       generated on the fly using a merge script. The merging process is based
       on the order of the rules and later rules override configuration data in
-      earlier rules.
+      earlier rules. Note that the names of the top sections in the merged
+      xml files need to be in alphabetical order for the merge to succeed.
     </para>
     <para>
       The use of  a rules file is optional. If the rules file is not found,
@@ -703,7 +704,9 @@ echo -n 100
     <para>
       With classes and with rules, multiple XML files get merged into one resulting
       XML file. This process of merging is often confusing for people, because
-      it behaves different than one would expect.
+      it behaves different than one would expect. First of all it is important
+      to note that the names of the top sections in the merged xml files need 
+      to be in alphabetical order for the merge to succeed.
     </para>
     <para>
       For example, the following two XML parts should be merged:
