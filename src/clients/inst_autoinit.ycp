@@ -102,7 +102,10 @@ control file and try again.
 
         Progress::NextStage();
         Progress::Title(_("Initial Configuration"));
-        Report::Import(Profile::current["report"]:$[]);
+	map tmp = Profile::current["report"]:$[];
+	if( !haskey(tmp,"yesno_messages") )
+	    tmp["yesno_messages"] = tmp["errors"]:$[];
+        Report::Import(tmp);
 
         //
         // Copy the control file for easy access by user to  a pre-defined
