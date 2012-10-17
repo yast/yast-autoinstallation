@@ -9,6 +9,7 @@
 {
     textdomain "autoinst";
     import "URL";
+    import "String";
     import "FTP";
     import "Installation";
     import "HTTP";
@@ -383,6 +384,16 @@
         AutoinstConfig::urltok=URL::Parse(url);
         map toks = AutoinstConfig::urltok;
         return Get(toks["scheme"]:"", toks["host"]:"", toks["path"]:"", target);
+    }
+
+/** 
+ * Remove leading and trailing whitespace
+ */
+string CutWhitespace(string s)
+    {
+    string ret = String::CutRegexMatch( s, "^[ \n\t]+", false );
+    ret = String::CutRegexMatch( ret, "[ \n\t]+$", false );
+    return( ret );
     }
 
 }
