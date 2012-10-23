@@ -29,7 +29,7 @@ $Id$
     integer cur_weight = -10000;
     map cur_gap = $[];
 
-global map AddSubvolData( map st_map, map xml_map )
+map AddSubvolData( map st_map, map xml_map )
     {
     map ret = st_map;
     if( ret["used_fs"]:`unknown == `btrfs )
@@ -51,6 +51,17 @@ global map AddSubvolData( map st_map, map xml_map )
         if( haskey( ret, "subvolumes" ))
             ret = remove( ret, "subvolumes" );
         y2milestone( "AddSubvolData ret:%1", ret );
+        }
+    return( ret );
+    }
+
+global map AddFilesysData( map st_map, map xml_map )
+    {
+    map ret = AddSubvolData( st_map, xml_map );
+    if( ret["format"]:false && !isempty(xml_map["mkfs_options"]:""))
+        {
+	ret["mkfs_options"] = xml_map["mkfs_options"]:"";
+        y2milestone( "AddFilesysData mkfs_options:%1", ret["mkfs_options"]:"" );
         }
     return( ret );
     }
@@ -455,7 +466,7 @@ global map AddSubvolData( map st_map, map xml_map )
                             p["used_fs"] = solution["partitions",pindex,"filesystem"]:p["detected_fs"]:`ext3;
                         else
                             p["used_fs"] = solution["partitions",pindex,"filesystem"]:`ext3;
-                        p = AddSubvolData( p, solution["partitions",pindex]:$[] );
+                        p = AddFilesysData( p, solution["partitions",pindex]:$[] );
                         
                         value = solution["partitions",pindex,"fstopt"]:"";
                         if( size(value)>0 )
@@ -596,7 +607,7 @@ global map AddSubvolData( map st_map, map xml_map )
                     {
                         part["fstopt"] = FileSystems::DefaultFstabOptions( part );
                     }
-                    part = AddSubvolData( part, solution["partitions",pindex]:$[] );
+                    part = AddFilesysData( part, solution["partitions",pindex]:$[] );
                     
                     mapvalue = solution["partitions",pindex,"fs_options"]:$[];
                     if( size(mapvalue)>0 )

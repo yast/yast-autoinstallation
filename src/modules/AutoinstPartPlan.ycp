@@ -459,7 +459,10 @@
                 {
                     new_pe["filesystem"] = pe["used_fs"]:`ext3;
                     new_pe["format"] = new_pe["format"]:pe["format"]:true;
-                }
+		}
+                
+		if( new_pe["format"]:false && !isempty(pe["mkfs_options"]:""))
+		    new_pe["mkfs_options"] = pe["mkfs_options"]:"";
 
                 // Subvolumes
                 // Save possibly existing subvolumes
