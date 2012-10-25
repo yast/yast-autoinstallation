@@ -79,6 +79,8 @@
             term title_term = `Empty();
             integer element_cnt = 0;
             integer timeout = 0;
+	    integer min_width = 0;
+	    integer min_height = 0;
             history = add( history, dialog_nr );
             term frameBuffer = nil;
             term frameBufferVBox = nil;
@@ -98,6 +100,10 @@
                 timeout = ask["timeout"]:0;
                 mod = true;
 
+		if( ask["width"]:0 > min_width )
+		    min_width = ask["width"]:0;
+		if( ask["height"]:0 > min_height )
+		    min_height = ask["height"]:0;
                 if( haskey( ask, "default_value_script" ) ) {
                     string interpreter = ask["default_value_script", "interpreter"]:"shell";
                     if( interpreter == "shell" )
@@ -182,11 +188,8 @@
             if( title != "" )
                 title_term = `Heading( title );
             term backButton = `PushButton(`id(`back),  back_label );
-            UI::OpenDialog(
-                       `opt(`decorated  ),
-                       `HBox(
+	    term box = `HBox(
                          help_term,
-                         `HStretch(),
                          `HSpacing(1),
                          `HWeight(70,
                               `VBox(
@@ -203,10 +206,12 @@
                                   )
                                 )
                               ),
-                         `HSpacing(1),
-                         `HStretch()
-                         )
-                       );
+                         `HSpacing(1));
+	    if( min_width>0 )
+		box = `MinWidth( min_width, box );
+	    if( min_height>0 )
+		box = `MinHeight( min_height, box );
+            UI::OpenDialog( `opt(`decorated  ), box );
             if( size(history) < 2 )
                 UI::ChangeWidget(`id(`back) , `Enabled, false);
             while (true) {
