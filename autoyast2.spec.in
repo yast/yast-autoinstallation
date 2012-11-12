@@ -3,7 +3,8 @@
 @HEADER@
 Group:	System/YaST
 License:        GPL-2.0
-BuildRequires:	yast2-mouse yast2-transfer yast2-bootloader xorg-x11-libs yast2-devtools pkg-config libxslt perl-XML-Writer docbook-xsl-stylesheets sgml-skel yast2-testsuite update-desktop-files yast2-country yast2-slp daps python-xml suse-xsl-stylesheets
+Source1:        autoyast_en_html.tar.bz2
+BuildRequires:	yast2-mouse yast2-transfer yast2-bootloader xorg-x11-libs yast2-devtools pkg-config libxslt perl-XML-Writer yast2-testsuite update-desktop-files yast2-country yast2-slp python-xml  libxml2-tools
 # API for Disabled Modules (ProductControl)
 BuildRequires:	yast2 >= 2.16.36
 # After API cleanup
@@ -79,6 +80,12 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/rules
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/classes
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
+
+# Documentation
+install -d -m 755 $RPM_BUILD_ROOT/@docdir@/html
+tar xvpfC %{SOURCE1} $RPM_BUILD_ROOT/@docdir@/html
+mv $RPM_BUILD_ROOT/@docdir@/html/autoyast/* $RPM_BUILD_ROOT/@docdir@/html/
+rmdir $RPM_BUILD_ROOT/@docdir@/html/autoyast
 
 @CLEAN@
 
