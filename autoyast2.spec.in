@@ -81,6 +81,10 @@ install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/classes
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
 install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
 
+# Systemd Stuff
+mkdir -p $RPM_BUILD_ROOT/%{_unitdir}/
+install -m 644 scripts/autoyast-initscripts.service $RPM_BUILD_ROOT/%{_unitdir}/
+
 # Documentation
 install -d -m 755 $RPM_BUILD_ROOT/@docdir@/html
 tar xvpfC %{SOURCE1} $RPM_BUILD_ROOT/@docdir@/html
@@ -157,7 +161,9 @@ rmdir $RPM_BUILD_ROOT/@docdir@/html/autoyast
 #%dir /usr/share/autoinstall/dtd
 %dir /usr/share/autoinstall/modules
 #/usr/share/autoinstall/dtd/*
-/etc/init.d/autoyast
+
+# systemd service file
+%{_unitdir}/autoyast-initscripts.service
 
 %dir /usr/share/autoinstall/xslt
 /usr/share/autoinstall/xslt/merge.xslt
@@ -218,7 +224,7 @@ rmdir $RPM_BUILD_ROOT/@docdir@/html/autoyast
 
 # scripts
 @ybindir@/fetch_image.sh
-
+@ybindir@/autoyast-initscripts.sh
 
 %dir /var/adm/autoinstall/
 %dir /var/adm/autoinstall/scripts
