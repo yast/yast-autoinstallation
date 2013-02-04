@@ -848,12 +848,13 @@ global map AddFilesysData( map st_map, map xml_map )
           * extended is not possible and number of requested partitions is less than all
           * available primaries and logical slots )
           */
-        if( size(g["gap"]:[])>0 &&
-            ((g["extended_possible"]:false && 
-//            size(g["free_pnr"]:[])>0 &&             // reusing all 4 primaries will fail with this
-              size(ps)+1 <= size(g["ext_pnr"]:[])+size(g["free_pnr"]:[])) ||
-             (!g["extended_possible"]:false &&
-              size(ps) <= size(g["ext_pnr"]:[])+size(g["free_pnr"]:[]))) )
+	list new_ps = filter( map p, (list<map>)ps, ``(p["create"]:true));
+	integer free_pnr = size(g["free_pnr"]:[]);
+	if( g["extended_possible"]:false )
+	    free_pnr = free_pnr - 1 + size(g["ext_pnr"]:[]);
+	y2milestone( "get_perfect_list: size(ps):%1 size(new_ps):%2 sum_free:%3", 
+	             size(ps), size(new_ps), free_pnr );
+        if( size(g["gap"]:[])>0 && size(new_ps) <= free_pnr )
         {
             map lg = (map) eval(g);
 
@@ -953,10 +954,7 @@ global map AddFilesysData( map st_map, map xml_map )
 
             if( reuseCondition &&
                 part["max_cyl"]:0 <= e["end"]:0 &&	
-                part["cylinders"]:0 <= e["cylinders"]:0 &&
-                (!e["extended"]:false && (size(lg["free_pnr"]:[])>0 || ! creation_needed ) ||
-                 e["extended"]:false && size(lg["ext_pnr"]:[])>0)
-                )
+                part["cylinders"]:0 <= e["cylinders"]:0 )
             {
                 map llg = (map) eval(lg);
 
@@ -1618,6 +1616,8 @@ global map AddFilesysData( map st_map, map xml_map )
             }
             pnr = pnr + 1;
         }
+	if( isempty(free_pnr) )
+	    ret["extended_possible"] = false;
         ret["free_pnr"] = free_pnr;
         list<integer> ext_pnr = [ 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,
                                   25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,
