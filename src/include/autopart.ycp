@@ -540,9 +540,89 @@ global map AddFilesysData( map st_map, map xml_map )
             {
                 list region = [ e["start"]:0, e["end"]:0-e["start"]:0+1 ];
                 map part = $[];
-        
-                if( e["extended"]:false && e["created"]:0 > 0 && size(e["created_primary"]:[]) == 0)
+
+                if( e["extended"]:false && e["created"]:0>0 )
                 {
+		    while( e["added",0,1]:(disk["max_primary"]:4+1) <= 
+			   disk["max_primary"]:4 )
+			{
+			integer pindex = e["added",0,0]:0;
+			string mount = solution["partitions",pindex,"mount"]:"";
+			integer fsid = Partitions::fsid_native;
+			if( mount == "swap" )
+			    fsid = Partitions::fsid_swap;
+			part["format"] =  solution["partitions",pindex,"format"]:true;
+			if( solution["partitions",pindex,"filesystem_id"]:0 != 0 )
+			    {
+			    fsid = solution["partitions",pindex,"filesystem_id"]:0;
+			    if( !haskey( solution["partitions",pindex]:$[], "filesystem" ))
+				part["format"] = false;
+			    y2milestone( "partition id %1 format %2 part %3", fsid, 
+					 part["format"]:false, 
+					 solution["partitions",pindex]:$[] );
+			    }
+			part["create"] = true;
+			part["nr"] = e["created"]:0;
+			part["device"] = Storage::GetDeviceName( dev, part["nr"]:-1 );
+			part["region"] = region;
+			part["region",1] = e["added",0,2]:0;
+			region[0] = region[0]:0 + part["region",1]:0;
+			region[1] = region[1]:0 - part["region",1]:0;
+			part["type"] = `primary;
+			part["mount"] = mount;
+			symbol mb = solution["partitions",pindex,"mountby"]:`no_mb;
+			if( mb != `no_mb ) 
+			    part["mountby"] = mb;
+			part["used_fs"] = 
+			    solution["partitions",pindex,"filesystem"]:((mount == "swap")?(`swap):(Partitions::DefaultFs()));
+			value = solution["partitions",pindex,"fstopt"]:"";
+			if( size(value)>0 )
+			    part["fstopt"] = value;
+			else
+			    part["fstopt"] = FileSystems::DefaultFstabOptions( part );
+			part = AddFilesysData( part, solution["partitions",pindex]:$[] );
+			mapvalue = solution["partitions",pindex,"fs_options"]:$[];
+			if( size(mapvalue)>0 )
+			    part["fs_options"] = mapvalue;
+			
+			if (solution["partitions",pindex,"loop_fs"]:false
+			    || solution["partitions",pindex,"crypt_fs"]:false)
+			    {
+			    part["enc_type"] = solution["partitions",pindex,"enc_type"]:`twofish;
+			    Storage::SetCryptPwd( part["device"]:"",
+						  solution["partitions",pindex,"crypt_key"]:"" );
+			    }
+			
+			value = solution["partitions",pindex,"label"]:"";
+			if( size(value)>0 )
+			    part["label"] = value;
+			part["fsid"] = fsid;
+			part["fstype"] = Partitions::FsIdToString( fsid );
+			if (solution["partitions",pindex,"lvm_group"]:"" != "")
+			    {
+			    part["used_fs"] = `unknown;
+			    part["fsid"] = Partitions::fsid_lvm;
+			    part["format"] = false;
+			    part["lvm_group"] = solution["partitions",pindex,"lvm_group"]:"";
+			    part["mount"] = "";
+			    part["fstype"] = "Linux LVM";
+			    }
+			else if (solution["partitions",pindex,"raid_name"]:"" != "")
+			    {			   
+			    part["used_fs"] = `unknown;
+			    part["fsid"] = Partitions::fsid_raid;
+			    part["format"] = false;
+			    part["raid_name"] = solution["partitions",pindex,"raid_name"]:"";
+			    part["raid_type"] = solution["partitions",pindex,"raid_type"]:"raid";
+			    part["mount"] = "";
+			    part["fstype"] = "Linux RAID";
+			    }
+			y2milestone( "process_partition_data auto partition %1", part );
+			partitions = add( partitions, part );
+			e["created"] = e["added",0,1]:0;
+			e["added"] = remove( e["added"]:[], 0 );
+			part = $[];
+			}
                     part["create"] = true;
                     part["nr"] = e["created"]:0;
                     part["device"] = Storage::GetDeviceName( dev, part["nr"]:-1 );
@@ -550,6 +630,7 @@ global map AddFilesysData( map st_map, map xml_map )
                     part["type"] = `extended;
                     part["fsid"] = Partitions::fsid_extended_win;
                     part["fstype"] = Partitions::FsIdToString( part["fsid"]:0 );
+		    part["size_k"] = region[1]:0 * disk["cyl_size"]:0 / 1024;
                     y2milestone( "extended auto partition %1", part );
                     partitions = add( partitions, eval(part));
                 }
@@ -586,12 +667,6 @@ global map AddFilesysData( map st_map, map xml_map )
                     {
                         part["type"] = `logical;
                     }
-                    
-                    if(contains(e["created_primary"]:[],  a[1]:0 ))
-                    {
-                        part["type"] = `primary;
-                    }
-                         
                     part["mount"] = mount;
                     symbol mb = solution["partitions",pindex,"mountby"]:`no_mb;
                     if( mb != `no_mb ) {
@@ -851,13 +926,13 @@ global map AddFilesysData( map st_map, map xml_map )
           * available primaries and logical slots )
           */
 
-        list new_ps = filter( map p, (list<map>)ps, ``(p["create"]:true));
+        integer new_ps = size(filter( map p, (list<map>)ps, ``(p["create"]:true)));
         integer free_pnr = size(g["free_pnr"]:[]);
         if( g["extended_possible"]:false )
             free_pnr = free_pnr - 1 + size(g["ext_pnr"]:[]);
-        y2milestone( "get_perfect_list: size(ps):%1 size(new_ps):%2 sum_free:%3",
-                     size(ps), size(new_ps), free_pnr );
-        if( size(g["gap"]:[])>0 && size(new_ps) <= free_pnr )
+        y2milestone( "get_perfect_list: size(ps):%1 new_ps:%2 sum_free:%3",
+                     size(ps), new_ps, free_pnr );
+        if( size(g["gap"]:[])>0 && new_ps <= free_pnr )
         {
             map lg = (map) eval(g);
 
@@ -871,13 +946,16 @@ global map AddFilesysData( map st_map, map xml_map )
             lg["procpart"] = 0;
             
             list lp = (list) eval(ps);
-            
+
+	    integer add_prim = size(filter(map up, (list<map>)ps, ``(
+				    ((up["partition_type"]:"none" == "primary" || 
+				      contains(lg["free_pnr"]:[], up["partition_nr"]:0))&&
+				      up["create"]:true))));
+	    y2milestone( "get_perfect_list new_ps:%1 add_prim:%2 free_prim:%3", 
+	                 new_ps, add_prim, size(g["free_pnr"]:[]) );
             if( g["extended_possible"]:false &&
-                size(ps)+1>=size(g["free_pnr"]:[]) &&
-                size(filter(map up, (list<map>)ps, ``(
-                            up["partition_type"]:"none" == "primary" || 
-                            contains(lg["free_pnr"]:[], up["partition_nr"]:0) )))  == 0 
-                )
+                size(g["free_pnr"]:[])>0 &&
+                add_prim<size(g["free_pnr"]:[]) )
             {
                 y2milestone( "creating extended" );
                 integer index = 0;
@@ -889,12 +967,13 @@ global map AddFilesysData( map st_map, map xml_map )
                         gap["gap",index,"created"] = gap["free_pnr",0]:1;
                         gap["free_pnr"] = remove( gap["free_pnr"]:[1], 0 );
                         gap["gap",index,"extended"] = true;
+			gap["extended_possible"] = false;
                         add_part_recursive( ps, gap );
                     }
                     index = index+1;
                 });
             }
-            else
+            if( new_ps<=size(g["free_pnr"]:[])+size(g["ext_pnr"]:[]) )
             {
                 y2milestone( "not creating extended now" );		
                 add_part_recursive( ps, lg );
@@ -922,9 +1001,9 @@ global map AddFilesysData( map st_map, map xml_map )
      */
     define void add_part_recursive( list ps, map g )
         ``{
-        y2milestone( "partition index %1", g["procpart"]:0 );
-        y2milestone( "partitions %1", ps );
-        y2milestone( "gap %1", g );
+        y2milestone( "add_part_recursive partition index %1", g["procpart"]:0 );
+        y2milestone( "add_part_recursive partitions %1", ps );
+        y2milestone( "add_part_recursive gap %1", g );
 
     // creation_needed indicates the case, that we do not
     // create a single partition but are reusing some
@@ -934,7 +1013,7 @@ global map AddFilesysData( map st_map, map xml_map )
             creation_needed = true;
         }
     });
-    y2milestone("creation is needed? %1",creation_needed);
+    y2milestone("add_part_recursive creation is needed? %1",creation_needed);
 
 
         map lg = (map) eval(g);
@@ -945,7 +1024,7 @@ global map AddFilesysData( map st_map, map xml_map )
         y2milestone( "working on partition %1", part );
         foreach( map e, lg["gap"]:[], 
                  ``{
-            y2milestone( "start: gap section  %1", e );
+            y2milestone( "add_part_recursive start: gap section  %1", e );
             
             // speed up partitioning calculation (bnc#620212)
             boolean reuseCondition = true;
@@ -955,97 +1034,43 @@ global map AddFilesysData( map st_map, map xml_map )
                         reuseCondition = false;
                 }
 
+	    boolean primary = part["partition_type"]:"none" == "primary";
+
             if( reuseCondition &&
                 part["max_cyl"]:0 <= e["end"]:0 &&	
-                part["cylinders"]:0 <= e["cylinders"]:0 )
+                part["cylinders"]:0 <= e["cylinders"]:0 &&
+		(!creation_needed ||
+		 (!e["extended"]:false && size(lg["free_pnr"]:[])>0) ||
+		 (primary && e["created"]:0>0 && e["extended"]:false && size(lg["free_pnr"]:[])>0) ||
+		 (!primary && e["extended"]:false && size(lg["ext_pnr"]:[])>0)))
             {
                 map llg = (map) eval(lg);
-
+		if( e["exists"]:false )
+		    {
+		    llg["gap",gindex,"cylinders"] = 0;
+		    }
+		else
+		    {
+		    llg["gap",gindex,"cylinders"] =
+			llg["gap",gindex,"cylinders"]:0 - part["cylinders"]:0;
+		    }
                 list addl = [ pindex ];
+		if( e["exists"]:false || e["reuse"]:false )
+		    addl = add( addl, e["nr"]:0 );
+		else if( e["extended"]:false && !primary )
+		    {
+		    addl = add( addl, llg["ext_pnr",0]:5 );
+		    llg["ext_pnr"] = remove( llg["ext_pnr"]:[0], 0 );
+		    }
+		else
+		    {
+		    addl = add( addl, llg["free_pnr",0]:1 );
+		    llg["free_pnr"] = remove( llg["free_pnr"]:[0], 0 );
+		    }
+		llg["gap",gindex,"added"] =
+		    add( llg["gap",gindex,"added"]:[], addl );
                 
-                // number of needed primaries by user
-                integer sp = size(filter(map up, (list<map>)ps,
-                                         ``(up["partition_type"]:"none"  == "primary" ||
-                                             contains(llg["free_pnr"]:[], up["partition_nr"]:0))));
-
-                y2milestone("number of primaries requested: %1", sp );
-                integer cp = 0;
-                foreach(map gg, llg["gap"]:[], ``{
-                    cp = cp + size(gg["created_primary"]:[]);
-                });
-
-                boolean ex = false;
-                y2milestone("number of created primaries: %1", cp );
-        
-                // Extended
-                if( llg["extended_possible"]:false &&
-                    !e["extended"]:false &&
-                    size(ps)+1>=size(llg["free_pnr"]:[]) && // maybe not needed
-                    cp == sp  &&   sp  > 0    )
-                {
-                    y2milestone( "creating extended" );
-                                      
-                    map gap = (map) eval(lg);
-                    llg["gap",gindex,"created"] = llg["free_pnr",0]:1;
-                    llg["free_pnr"] = remove( llg["free_pnr"]:[1], 0 );
-                    llg["gap",gindex,"extended"] = true;
-                    // reset
-                    llg["procpart"] = pindex ;
-                    ex = true;
-                
-                }
-                // Logical
-                else if( e["extended"]:false ) // ||
-                    /*
-                         ( ps[pindex,"partition_type"]:"none" != "primary" &&
-                           ps[pindex,"partition_type"]:"none" != "extended")
-                         )
-                         */
-                {
-                    if (!e["reuse"]:false)
-                    {	
-                        addl = add( addl, llg["ext_pnr",0]:5 );
-                        llg["ext_pnr"] = remove( llg["ext_pnr"]:[0], 0 );
-                    } else {
-                        addl = add( addl, e["nr"]:0 );
-                    }
-                }
-                // Primary
-                else
-                {
-                    if (e["exists"]:false)
-                    {
-                        addl = add( addl, e["nr"]:0 );
-                        llg["gap",gindex,"created_primary"] = add(llg["gap",gindex,"created_primary"]:[],
-                                                                  e["nr"]:0 );
-                    } else {
-                        addl = add( addl, llg["free_pnr",0]:1 );
-                        llg["gap",gindex,"created_primary"] = add(llg["gap",gindex,"created_primary"]:[],
-                                                                  llg["free_pnr",0]:1 );
-                        llg["free_pnr"] = remove( llg["free_pnr"]:[0], 0 );
-                    }
-
-                }
-                
-                if (!ex)
-                {
-                    llg["gap",gindex,"added"] = 
-                        add( llg["gap",gindex,"added"]:[], addl );
-                }
-
-                if (!ex) {
-                    if( e["exists"]:false )
-                    {
-                        llg["gap",gindex,"cylinders"] = 0;
-                    }
-                    else
-                    {
-                        llg["gap",gindex,"cylinders"] = 
-                            llg["gap",gindex,"cylinders"]:0 - part["cylinders"]:0;
-                    }
-                }
-                
-                if( pindex+1 < size(ps) || ex )
+                if( pindex+1 < size(ps) )
                 {
                     add_part_recursive( ps, llg );
                 }
@@ -1053,7 +1078,7 @@ global map AddFilesysData( map st_map, map xml_map )
                 {
                     map ng = normalize_gaps(ps, llg);
                     integer val = do_weighting( ps, ng );
-                    y2milestone( "val %1 cur_weight %2 size %3", val, cur_weight, size(cur_gap));
+                    y2milestone( "add_part_recursive val %1 cur_weight %2 size %3", val, cur_weight, size(cur_gap));
                     if( val > cur_weight || size(cur_gap)==0 )
                     {
                         cur_weight = val;
@@ -1063,7 +1088,6 @@ global map AddFilesysData( map st_map, map xml_map )
             }
             gindex = gindex+1;
         });
-        
     };
 
 
@@ -1191,8 +1215,37 @@ global map AddFilesysData( map st_map, map xml_map )
             gindex = gindex + 1;
         });
         */
-        y2milestone( "gap %1", g );
-        return( g );
+    foreach( map e, g["gap"]:[],
+	``{
+	if( !e["exists"]:false && size(e["added"]:[])>1 )
+	    {
+	    y2milestone( "normalize_gaps old  added %1", e["added"]:[] );
+	    list nums = maplist( list l, e["added"]:[], ``(l[1]:-1));
+	    y2milestone( "normalize_gaps old nums %1", nums );
+	    list sdd = sort( list a, list b, e["added"]:[],
+			    ``({
+			    boolean ba = ps[a[0]:0,"partition_type"]:""=="primary";
+			    boolean bb = ps[b[0]:0,"partition_type"]:""=="primary";
+			    y2milestone( "ba:%1 bb:%2", ba, bb );
+			    if( ba&&!bb )
+				return( true );
+			    else
+				return( false );
+			    }));
+	    integer idx = 0;
+	    foreach( list e, (list<list>)sdd, 
+		``{
+		sdd[idx,1] = nums[idx]:0;
+		idx = idx+1;
+		});
+	    g["gap",gindex,"added"] = sdd;
+	    y2milestone( "normalize_gaps sort added %1", 
+			 g["gap",gindex,"added"]:[] );
+	    }
+	gindex = gindex + 1;
+	});
+    y2milestone( "normalize_gaps ret %1", g );
+    return( g );
     };
 
 
@@ -1252,7 +1305,7 @@ global map AddFilesysData( map st_map, map xml_map )
      */
     define integer do_weighting( list ps, map g )
         ``{
-        y2milestone( "gap %1", g["gap"]:[] );
+        y2milestone( "do_weighting gap %1", g["gap"]:[] );
         integer ret = 0;
         integer index = 0;
         if( cur_mode == `free )
@@ -1335,8 +1388,14 @@ global map AddFilesysData( map st_map, map xml_map )
                 y2milestone("weight (after rounding): %1", ret);
             }
             */
+	if( e["extended"]:false )
+	    {
+	    ret = ret-1;
+	    if( size(e["added"]:[])==0 )
+		ret = ret-100;
+	    }
         });
-        y2milestone( "weight:  %1", ret );
+        y2milestone( "do_weighting weight:  %1", ret );
         return( ret );
     };
 
