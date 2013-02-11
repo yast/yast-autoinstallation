@@ -11,6 +11,8 @@ LOG_DIR="/var/adm/autoinstall/logs"
 SCRIPT_DIR="/var/adm/autoinstall/scripts"
 INITSCRIPT_DIR="/var/adm/autoinstall/init.d"
 
+systemctl disable autoyast-initscripts.service
+
 if [ ! -d "$INITSCRIPT_DIR" ]; then
     exit 1
 fi
@@ -29,5 +31,3 @@ for script in  `find $INITSCRIPT_DIR -type f |sort`; do
     sh -x $script > $LOG_DIR/$BASENAME.log 2>&1
     mv $script $SCRIPT_DIR
 done
-
-systemctl disable autoyast-initscript.service

@@ -18,7 +18,6 @@ textdomain "autoinst";
 
 import "AutoinstScripts";
 import "AutoInstall";
-import "Service";
 
 any ret = nil;
 string func = "";
@@ -48,7 +47,11 @@ else if (func == "Write")
 {
     AutoinstScripts::Write("chroot-scripts", true);
     // systemd requires the init script to be activated in 1st stage
-    Service::Enable("autoyast");
+    string cmd = "systemctl enable autoyast-initscripts.service";
+    y2milestone("executing:%1", cmd );
+    map ret=(map)SCR::Execute( .target.bash_output, cmd );
+    y2milestone("calling ret:%1", ret );
+    //Service::Enable("autoyast");
     AutoInstall::PXELocalBoot();
 }
 else
