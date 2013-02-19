@@ -38,7 +38,7 @@
 	current_step = current_step + 1;
 	UI::ChangeWidget( `id(`progress), `Value, current_step );
 	UI::ChangeWidget( `id(`log), `LastLine, step_descr + "\n" );
-        y2milestone("current step: %1", current_step);
+        y2milestone("current step: %1 desc:%2", current_step, step_descr);
 	return;
     };
 
@@ -82,9 +82,12 @@
 Please wait while the system is being configured.
 </p>");
 
-
-    integer max_steps = size(Y2ModuleConfig::ModuleMap) + 3;
-    y2milestone("max steps: %1", max_steps);
+    y2milestone("Profile general,mode:%1", Profile::current["general","mode"]:$[] );
+    boolean need_systemd_isolate = true;
+    integer max_steps = size(Y2ModuleConfig::ModuleMap) + 4;
+    if( need_systemd_isolate )
+	max_steps = max_steps+1;
+    y2milestone("max steps: %1 need_isolate:%2", max_steps, need_systemd_isolate);
     term contents = `VBox(
               `LogView(`id(`log), "", 10, 0 ),
 
@@ -244,6 +247,45 @@ Please wait while the system is being configured.
     AutoinstScripts::Write("post-scripts", false);
 
     AutoinstScripts::Write("init-scripts", false);
+
+    if( need_systemd_isolate )
+	{
+	logStep( _("Activating systemd default target"));
+	#string cmd = "systemctl disable YaST2-Second-Stage.service; systemctl --ignore-dependencies isolate default.target";
+	string cmd = "systemctl --no-block --ignore-dependencies isolate default.target";
+	y2milestone("before calling \"%1\"", cmd );
+	map out = (map)SCR::Execute( .target.bash_output, cmd );
+	y2milestone("after  calling \"%1\"", cmd );
+	y2milestone("ret=%1", out );
+	integer st_time = time();
+	integer cur_time = st_time;
+	integer last_busy = st_time;
+	integer max_wait = Profile::current["general","mode","max_systemd_wait"]:30;
+	list<string> ser_ignore = [ "YaST2-Second-Stage.service", 
+	                            "autoyast-initscripts.service" ];
+	y2milestone("max_wait=%1 ser_ignore=%2", max_wait, ser_ignore );
+	cmd = "systemctl --full list-jobs";
+	while( (cur_time-st_time)<=max_wait && (cur_time-last_busy)<5 )
+	    {
+	    out = (map)SCR::Execute( .target.bash_output, cmd );
+	    y2milestone("ret exit:%1 stderr:%2", out["exit"]:-1, out["stderr"]:"" );
+	    list<string> sl = splitstring( out["stdout"]:"", "\n" );
+	    y2milestone("sl=%1", sl );
+	    list<list> ll = maplist( string s, sl, 
+	                             ``(filter( string e, 
+				                splitstring( s, " \t"),
+						``(!isempty(e)) )));
+	    ll = filter( list l, ll, ``(l[3]:""=="running"));
+	    integer cnt = size( filter( list l, ll,
+				        ``(!contains( ser_ignore, l[1]:"" ))));
+	    y2milestone("size ll=%1 ll:%2", cnt, ll );
+	    if( cnt>0 )
+		last_busy = cur_time;
+	    sleep( 500 );
+	    cur_time = time();
+	    y2milestone( "time:%1 idle:%2", cur_time-st_time, cur_time-last_busy );
+	    }
+	}
 
     // Just in case, remove this file to avoid reconfiguring...
     SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
