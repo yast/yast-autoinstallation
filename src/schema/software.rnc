@@ -10,8 +10,15 @@ software =
     post-patterns? &
     remove-packages? &
     patterns? &
+<<<<<<< HEAD
     element do_online_update { BOOLEAN }? &
     element instsource {text}?
+=======
+    remove-patterns? &
+    products? &
+    remove-products? &
+    element do_online_update { BOOLEAN }?
+>>>>>>> 3a33ab8... better pacakge/product deselection (unisntallation) handling (bnc#794403)
   }
 patterns =
   element patterns {
@@ -38,4 +45,19 @@ remove-packages =
   element remove-packages {
     LIST,
     element package {text}+
+  }
+remove-patterns =
+  element remove-patterns {
+    LIST,
+    element pattern {text}+
+  }
+products =
+  element products {
+    LIST,
+    element product {text}+
+  }
+remove-products =
+  element remove-products {
+    LIST,
+    element product {text}+
   }
