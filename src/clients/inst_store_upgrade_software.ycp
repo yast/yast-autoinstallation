@@ -13,6 +13,9 @@
 	return p["transact_by"]:nil == `user || p["transact_by"]:nil == `app_high;
     });
 
+    // note: does not matter if it is installed or to be installed, the resulting
+    // state is the same; similar for uninstallation (valid for all packages, patterns
+    // and products
     list<string> patterns_to_remove = [];
     list<string> patterns_to_install = maplist (map<string,any> p, patterns, {
 	if (p["status"]:nil == `selected || p["status"]:nil == `installed)

@@ -395,6 +395,7 @@ control file and try again.
             list<string> remove_packages = Profile::current["software","remove-packages"]:[];
             list<string> remove_patterns = Profile::current["software","remove-patterns"]:[];
             list<string> remove_products = Profile::current["software","remove-products"]:[];
+	    // neutralize first, otherwise the change may have no effect
 	    foreach (string p, remove_patterns, {
 		Pkg::ResolvableNeutral (p, `pattern, true);
 	    });
@@ -413,6 +414,7 @@ control file and try again.
 	    foreach (string p, products, {
 		Pkg::ResolvableNeutral (p, `product, true);
 	    });
+	    // now set the final status
 	    foreach (string p, remove_patterns, {
 		Pkg::ResolvableRemove (p, `pattern);
 	    });
