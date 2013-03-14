@@ -167,6 +167,10 @@ global map AddFilesysData( map st_map, map xml_map )
                     {
                         partition["size"] = -1;
                     }
+                    else if( tolower(s) == "suspend" )
+                    {
+                        partition["size"] = -2;
+                    }
                     else if( tolower(s) == "max" )
                     {
                         partition["size"] = 0;
@@ -177,9 +181,9 @@ global map AddFilesysData( map st_map, map xml_map )
                     }
                 }
                     
-                if( partition["size"]:0 == -1 && partition["mount"]:"" == "swap" )
+                if( partition["size"]:0<=-1 && partition["mount"]:"" == "swap" )
                 {
-                    partition["size"] = 1024*1024*Partitions::SwapSizeMb(0);
+                    partition["size"] = 1024*1024*Partitions::SwapSizeMb(0,(partition["size"]:0==-2));
                 }
             
                 if( partition["mount"]:"" == Partitions::BootMount() )

@@ -623,8 +623,9 @@
             settings = maplist( map d, settings, ``{
                 d["partitions"] = maplist(map pe, d["partitions"]:[], ``{
                     if( haskey( pe, "size" ) ) {
-                        if( pe["size"]:"" == "auto" && pe["mount"]:"" == "swap" )
-                            pe["size"] = sformat( "%1", 1024*1024*Partitions::SwapSizeMb(0) );
+                        if( (pe["size"]:""=="auto"||pe["size"]:""=="suspend") && 
+			    pe["mount"]:"" == "swap" )
+                            pe["size"] = sformat( "%1", 1024*1024*Partitions::SwapSizeMb(0,(pe["size"]:""=="suspend")) );
                         else if( pe["size"]:"" == "auto" && pe["mount"]:"" == "/boot" )
                             pe["size"] = sformat( "%1", Partitions::MinimalNeededBootsize() );
                         if( pe["size"]:"" != "max" && pe["size"]:"" != "auto" )

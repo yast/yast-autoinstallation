@@ -127,9 +127,11 @@
 
                 integer vgsize = targetMap[device,"size_k"]:0*1024;
 
-                if (lvsize_str == "auto" && mount_point == "swap") {
+                if ((lvsize_str == "auto"||lvsize_str == "suspend") && 
+		    mount_point == "swap") {
                     y2milestone("swap slot size: %1", vgsize/1024*1024 );
-                    lvsize = 1024*1024*Partitions::SwapSizeMb(vgsize/(1024*1024)); 
+                    lvsize = 1024*1024*Partitions::SwapSizeMb(vgsize/(1024*1024),
+		                                              (lvsize_str=="suspend")); 
                 } else if (lvsize_str!= "") {
                     lvsize = AutoinstStorage::humanStringToByte( lvsize_str, true );
                 }
