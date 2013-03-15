@@ -348,19 +348,47 @@ control file and try again.
 	    // this is new, (de)select stuff from the profile
             list<string> packages = Profile::current["software","packages"]:[];
             list<string> patterns = Profile::current["software","patterns"]:[];
+            list<string> products = Profile::current["software","products"]:[];
             list<string> remove_packages = Profile::current["software","remove-packages"]:[];
             list<string> remove_patterns = Profile::current["software","remove-patterns"]:[];
+            list<string> remove_products = Profile::current["software","remove-products"]:[];
+	    // neutralize first, otherwise the change may have no effect
+	    foreach (string p, remove_patterns, {
+		Pkg::ResolvableNeutral (p, `pattern, true);
+	    });
+	    foreach (string p, remove_packages, {
+		Pkg::ResolvableNeutral (p, `package, true);
+	    });
+	    foreach (string p, remove_products, {
+		Pkg::ResolvableNeutral (p, `product, true);
+	    });
+	    foreach (string p, patterns, {
+		Pkg::ResolvableNeutral (p, `pattern, true);
+	    });
+	    foreach (string p, packages, {
+		Pkg::ResolvableNeutral (p, `package, true);
+	    });
+	    foreach (string p, products, {
+		Pkg::ResolvableNeutral (p, `product, true);
+	    });
+	    // now set the final status
 	    foreach (string p, remove_patterns, {
 		Pkg::ResolvableRemove (p, `pattern);
 	    });
 	    foreach (string p, remove_packages, {
 		Pkg::ResolvableRemove (p, `package);
 	    });
+	    foreach (string p, remove_products, {
+		Pkg::ResolvableRemove (p, `product);
+	    });
 	    foreach (string p, patterns, {
 		Pkg::ResolvableInstall (p, `pattern);
 	    });
 	    foreach (string p, packages, {
 		Pkg::ResolvableInstall (p, `package);
+	    });
+	    foreach (string p, products, {
+		Pkg::ResolvableInstall (p, `product);
 	    });
 	    // old stuff again here
             if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
