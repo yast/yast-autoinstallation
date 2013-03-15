@@ -13,6 +13,9 @@
 	return p["transact_by"]:nil == `user || p["transact_by"]:nil == `app_high;
     });
 
+    // note: does not matter if it is installed or to be installed, the resulting
+    // state is the same; similar for uninstallation (valid for all packages, patterns
+    // and products
     list<string> patterns_to_remove = [];
     list<string> patterns_to_install = maplist (map<string,any> p, patterns, {
 	if (p["status"]:nil == `selected || p["status"]:nil == `installed)
@@ -47,11 +50,33 @@
     y2milestone ("Packages to install: %1", packages_to_install);
     y2milestone ("Packages to remove: %1", packages_to_remove);
 
+    // find out status of products
+    list<map<string,any> > products = Pkg::ResolvableProperties ("", `product, "");
+    products = filter (map<string,any> p, products, {
+	return p["transact_by"]:nil == `user || p["transact_by"]:nil == `app_high;
+    });
+
+    list<string> products_to_remove = [];
+    list<string> products_to_install = maplist (map<string,any> p, products, {
+	if (p["status"]:nil == `selected || p["status"]:nil == `installed)
+	    return p["name"]:"";
+	else if (p["status"]:nil == `removed || p["status"]:nil == `available)
+	    products_to_remove = add (products_to_remove, p["name"]:"");
+	return nil;
+    });
+    products_to_install = filter (string p, products_to_install, {
+	return p != nil;
+    });
+    y2milestone ("Products to install: %1", products_to_install);
+    y2milestone ("Products to remove: %1", products_to_remove);
+
     map software = $[
 	"packages": packages_to_install,
 	"patterns": patterns_to_install,
+	"products": products_to_install,
         "remove-packages": packages_to_remove,
         "remove-patterns": patterns_to_remove,
+        "remove-products": products_to_remove,
     ];
 
     Profile::current["software"] = software;

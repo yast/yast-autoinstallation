@@ -10,6 +10,9 @@ software =
     post-patterns? &
     remove-packages? &
     patterns? &
+    remove-patterns? &
+    products? &
+    remove-products? &
     element do_online_update { BOOLEAN }? &
     element instsource {text}?
   }
@@ -38,4 +41,19 @@ remove-packages =
   element remove-packages {
     LIST,
     element package {text}+
+  }
+remove-patterns =
+  element remove-patterns {
+    LIST,
+    element pattern {text}+
+  }
+products =
+  element products {
+    LIST,
+    element product {text}+
+  }
+remove-products =
+  element remove-products {
+    LIST,
+    element product {text}+
   }
