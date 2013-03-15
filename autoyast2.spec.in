@@ -26,7 +26,14 @@ BuildArchitectures:	noarch
 Summary:	YaST2 - Auto-Installation
 
 %description
--
+This package is intended for management of the control files and the
+AutoYaST2 configurations. This system should only be used by
+experienced system administrators. Warning: AutoYaST2 performs the
+installation without any user intervention, warnings, or confirmations
+(unless specified otherwise in the control file).
+
+This file contains YaST2-independent files needed to create
+installation sources.
 
 
 %package installation
@@ -39,7 +46,8 @@ Requires:	yast2-xml yast2-core yast2 yast2-country yast2-mouse yast2-packager ya
 Provides:	yast2-trans-autoinst
 Obsoletes:	yast2-trans-autoinst
 %description installation
--
+This package performs auto-installation relying on a control file
+generated with the autoyast2 package.
 
 @PREP@
 
