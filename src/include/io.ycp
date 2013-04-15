@@ -15,7 +15,8 @@
     import "HTTP";
     import "StorageDevices";
     import "TFTP";
-        import "AutoinstConfig";
+    import "AutoinstConfig";
+    import "Storage";
 
     string GET_error = "";
 
@@ -313,17 +314,8 @@
                 }
                 foreach( string Host, deviceList, ``{
                     y2milestone("looking for profile on %1", Host);
-                    string mounts = (string)(SCR::Read (.target.string, "/proc/mounts"));
-                    list<string> mount_list = splitstring( mounts, "\n" );
-                    boolean already_mounted = false;
-                    foreach( string m, mount_list, ``{
-                        list<string>  entries = splitstring( m, " " );
-                        if( entries[0]:"" == "/dev/"+Host ) {
-                            already_mounted = true;
-                            mount_point = entries[1]:"";
-                            break;
-                        }
-                    });
+		    mount_point = Storage::DeviceMounted("/dev/"+Host);
+		    boolean already_mounted = !isempty(mount_point);
                     y2milestone("already mounted=%1 mountpoint=%2",already_mounted,mount_point);
                     if( ! already_mounted &&
                         !(boolean)SCR::Execute(.target.mount, [sformat("/dev/%1", Host),
