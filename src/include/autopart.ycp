@@ -1389,6 +1389,8 @@ global map AddFilesysData( map st_map, map xml_map )
 	    if( size(e["added"]:[])==0 )
 		ret = ret-100;
 	    }
+	else if( size(g["free_pnr"]:[])<1 )
+	    ret = ret-10;
         });
         y2milestone( "do_weighting weight:  %1", ret );
         return( ret );
