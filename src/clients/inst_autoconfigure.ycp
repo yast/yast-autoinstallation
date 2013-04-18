@@ -77,6 +77,36 @@
         return;
     }
 
+void wait_systemd_finished( integer max_wait, list<string> ser_ignore )
+    {
+    y2milestone("wait_systemd_finished max_wait=%1 ser_ignore=%2", max_wait, ser_ignore );
+    integer st_time = time();
+    integer cur_time = st_time;
+    integer last_busy = st_time;
+    string cmd = "systemctl --full list-jobs";
+    while( (cur_time-st_time)<=max_wait && (cur_time-last_busy)<5 )
+	{
+	map out = (map)SCR::Execute( .target.bash_output, cmd );
+	y2milestone("wait_systemd_finished ret exit:%1 stderr:%2", out["exit"]:-1, out["stderr"]:"" );
+	list<string> sl = splitstring( out["stdout"]:"", "\n" );
+	y2milestone("sl=%1", sl );
+	list<list> ll = maplist( string s, sl, 
+				 ``(filter( string e, 
+					    splitstring( s, " \t"),
+					    ``(!isempty(e)) )));
+	ll = filter( list l, ll, ``(l[3]:""=="running"));
+	integer cnt = size( filter( list l, ll,
+				    ``(!contains( ser_ignore, l[1]:"" ))));
+	y2milestone("size ll=%1 ll:%2", cnt, ll );
+	if( cnt>0 )
+	    last_busy = cur_time;
+	sleep( 500 );
+	cur_time = time();
+	y2milestone( "wait_systemd_finished time:%1 idle:%2", cur_time-st_time, cur_time-last_busy );
+	}
+    y2milestone( "wait_systemd_finished waited time:%1", cur_time-st_time );
+    }
+
     // Help text for last dialog of base installation
     string help_text = _("<p>
 Please wait while the system is being configured.
@@ -248,43 +278,31 @@ Please wait while the system is being configured.
 
     AutoinstScripts::Write("init-scripts", false);
 
+    integer max_wait = Profile::current["general","mode","max_systemd_wait"]:30;
+    list<string> ser_ignore = [ "YaST2-Second-Stage.service", 
+				"autoyast-initscripts.service" ];
+
+    logStep( _("Restarting all running services"));
+    string cmd = "systemctl --type=service list-units | grep \" running \" | sed s/[[:space:]].*//";
+    map out = (map)SCR::Execute( .target.bash_output, cmd );
+    list<string> sl = splitstring( out["stdout"]:"", "\n" );
+    sl = filter( string s, sl, ``(!contains( ser_ignore, s )));
+    y2milestone("restarting services \"%1\"", sl );
+    cmd = "systemctl --no-block restart " + mergestring( sl, " " );
+    y2milestone("before calling \"%1\"", cmd );
+    out = (map)SCR::Execute( .target.bash_output, cmd );
+    y2milestone("after  calling \"%1\"", cmd );
+    wait_systemd_finished( max_wait, ser_ignore );
     if( need_systemd_isolate )
 	{
 	logStep( _("Activating systemd default target"));
 	#string cmd = "systemctl disable YaST2-Second-Stage.service; systemctl --ignore-dependencies isolate default.target";
-	string cmd = "systemctl --no-block --ignore-dependencies isolate default.target";
+	cmd = "systemctl --no-block --ignore-dependencies isolate default.target";
 	y2milestone("before calling \"%1\"", cmd );
-	map out = (map)SCR::Execute( .target.bash_output, cmd );
+	out = (map)SCR::Execute( .target.bash_output, cmd );
 	y2milestone("after  calling \"%1\"", cmd );
 	y2milestone("ret=%1", out );
-	integer st_time = time();
-	integer cur_time = st_time;
-	integer last_busy = st_time;
-	integer max_wait = Profile::current["general","mode","max_systemd_wait"]:30;
-	list<string> ser_ignore = [ "YaST2-Second-Stage.service", 
-	                            "autoyast-initscripts.service" ];
-	y2milestone("max_wait=%1 ser_ignore=%2", max_wait, ser_ignore );
-	cmd = "systemctl --full list-jobs";
-	while( (cur_time-st_time)<=max_wait && (cur_time-last_busy)<5 )
-	    {
-	    out = (map)SCR::Execute( .target.bash_output, cmd );
-	    y2milestone("ret exit:%1 stderr:%2", out["exit"]:-1, out["stderr"]:"" );
-	    list<string> sl = splitstring( out["stdout"]:"", "\n" );
-	    y2milestone("sl=%1", sl );
-	    list<list> ll = maplist( string s, sl, 
-	                             ``(filter( string e, 
-				                splitstring( s, " \t"),
-						``(!isempty(e)) )));
-	    ll = filter( list l, ll, ``(l[3]:""=="running"));
-	    integer cnt = size( filter( list l, ll,
-				        ``(!contains( ser_ignore, l[1]:"" ))));
-	    y2milestone("size ll=%1 ll:%2", cnt, ll );
-	    if( cnt>0 )
-		last_busy = cur_time;
-	    sleep( 500 );
-	    cur_time = time();
-	    y2milestone( "time:%1 idle:%2", cur_time-st_time, cur_time-last_busy );
-	    }
+	wait_systemd_finished( max_wait, ser_ignore );
 	}
 
     // Just in case, remove this file to avoid reconfiguring...
