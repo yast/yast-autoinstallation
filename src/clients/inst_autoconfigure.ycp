@@ -281,12 +281,16 @@ Please wait while the system is being configured.
     integer max_wait = Profile::current["general","mode","max_systemd_wait"]:30;
     list<string> ser_ignore = [ "YaST2-Second-Stage.service", 
 				"autoyast-initscripts.service" ];
+    list<string> ser_no_restart = [ "systemd-logind.service" ];
 
     logStep( _("Restarting all running services"));
     string cmd = "systemctl --type=service list-units | grep \" running \" | sed s/[[:space:]].*//";
     map out = (map)SCR::Execute( .target.bash_output, cmd );
-    list<string> sl = splitstring( out["stdout"]:"", "\n" );
-    sl = filter( string s, sl, ``(!contains( ser_ignore, s )));
+    list<string> sl = filter( string s, splitstring( out["stdout"]:"", "\n" ),
+                              ``(size(s)>0));
+    y2milestone("running services \"%1\"", sl );
+    sl = filter( string s, sl, 
+                 ``(!contains( union(ser_ignore,ser_no_restart), s )));
     y2milestone("restarting services \"%1\"", sl );
     cmd = "systemctl --no-block restart " + mergestring( sl, " " );
     y2milestone("before calling \"%1\"", cmd );
