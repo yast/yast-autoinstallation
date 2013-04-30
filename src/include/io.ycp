@@ -61,6 +61,7 @@
 	map toks =  AutoinstConfig::urltok;
 	toks["scheme"] = Scheme;
 	toks["host"]   = Host;
+	y2milestone( "Scheme:%1 Host:%2 Path:%3 Localfile:%4", Scheme, Host, Path, Localfile);
         if (regexpsub(Path, "(.*)//(.*)", "\\1\/\\2")!= nil)
         {
             Path = regexpsub(Path, "(.*)//(.*)", "\\1\/\\2");
@@ -231,9 +232,11 @@
                         integer i = 0;
                         string dev = d["dev_name"]:"";
                         while( SCR::Read(.target.lstat, dev) != $[] || i < 5 ) {
-			    mount_point = Storage::DeviceMounted(dev);
-                            boolean already_mounted = !isempty(mount_point);
-                            y2milestone("already mounted=%1 mountpoint=%2",already_mounted,mount_point);
+			    string mp = Storage::DeviceMounted(dev);
+                            boolean already_mounted = !isempty(mp);
+			    if( already_mounted )
+				mount_point=mp;
+                            y2milestone("already mounted=%1 mountpoint=%2 mp=%3",already_mounted,mount_point,mp);
                             if( ! already_mounted && !(boolean)WFM::Execute(.local.mount, [ dev, mount_point ]) ) {
                                 y2milestone("mount failed for %1", dev);
                                 i = i + 1;
