@@ -471,8 +471,14 @@
                     string defsub = "";
                     if( !isempty(FileSystems::default_subvol) )
                         defsub = FileSystems::default_subvol + "/";
-                    new_pe["subvolumes"] = maplist( map p, (list<map>)pe["subvol"]:[], 
-                                                    ``({return( substring(p["name"]:"",size(defsub)));}));
+                    new_pe["subvolumes"] = 
+			maplist( map p, (list<map>)pe["subvol"]:[], ``(
+			    {
+			    if( size(defsub)>0 && substring(p["name"]:"",0,size(defsub))==defsub )
+				return( substring(p["name"]:"",size(defsub)));
+			    else
+				return( p["name"]:"" );
+			    }));
                     new_pe["subvolumes"] = filter( string s, new_pe["subvolumes"]:[], ``(!isempty(s)));
                 }
 
