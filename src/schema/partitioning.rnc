@@ -55,6 +55,8 @@ y2_partition =
   | part_stripesize
   | part_pool
   | part_used_pool
+  | device_order
+  | subvolumes
 
 partition = element partition { y2_partition* }
 part_create =
@@ -101,6 +103,11 @@ parity_algorithm = element parity_algorithm { text }
 device_order = element device_order {
     LIST,
     element device { text }*
+}
+
+subvolumes = element subvolumes {
+    LIST,
+    element listentry { text }*
 }
 
 part_fstopt = element fstopt { text }
