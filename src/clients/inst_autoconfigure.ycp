@@ -43,14 +43,35 @@
     };
 
 
-    define void removeNetwork() {
+    define void removeNetwork( list<map> ilist ) {
+	import "NetworkInterfaces";
+	y2milestone( "removeNetwork ifaces:%1", ilist );
         any l = SCR::Read (.target.dir, ["/etc/sysconfig/network", [] ]);
+	list<string> netlist = [];
+	y2milestone( "removeNetwork list:%1", l );
         foreach( string s, (list<string>)l, ``{
             if( issubstring( s, "ifcfg-" ) && !issubstring( s, "ifcfg-lo" ) ) {
-                y2milestone("removing installation network: /etc/sysconfig/network/%1",s);
-                SCR::Execute(.target.remove, sformat("/etc/sysconfig/network/%1",s) );
+		if( substring( s, 0, 6 )=="ifcfg-" && s!="ifcfg-lo" )
+		    {
+		    string net = substring( s, 6 );
+		    list tmp = filter( map l, ilist, ``(l["device"]:""==net));
+		    if( isempty(tmp) )
+			{
+			y2milestone( "removeNetwork net:%1", net );
+			NetworkInterfaces::Delete( net );
+			netlist = add( netlist, net );
+			y2milestone("removing installation network: /etc/sysconfig/network/%1",s);
+			SCR::Execute(.target.remove, sformat("/etc/sysconfig/network/%1",s) );
+			}
+		    }
             }
         });
+	y2milestone( "removeNetwork netlist:%1", netlist );
+	if( !isempty(netlist) )
+	    {
+	    NetworkInterfaces::Commit();
+	    /*NetworkInterfaces::Write( ".*" );*/
+	    }
         return;
     }
 
@@ -116,9 +137,9 @@ Please wait while the system is being configured.
     // keep network on AutoYaST ugprade
     if (! Mode::autoupgrade()) {
 	if (!haskey(Profile::current , "networking") ) {
-            removeNetwork(); // no networking section -> no network
+            removeNetwork( [] ); // no networking section -> no network
 	} else if( Profile::current["networking","keep_install_network"]:false == false ) {
-            removeNetwork(); // networking section without keeping the install network
+            removeNetwork( Profile::current["networking","interfaces"]:[]); // networking section without keeping the install network
 	}
     }
 
