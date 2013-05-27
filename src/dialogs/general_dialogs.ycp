@@ -143,20 +143,23 @@ For signature handling, read the AutoYaST documentation.
                  `VBox(
                     `TextEntry( `id(`frametitle), _("Frametitle"), defaultValues["frametitle"]:"" ),
                     `TextEntry( `id(`question), _("Question"), defaultValues["question"]:"" ),
-                    `TextEntry( `id(`defaultVal), _("Default"), defaultValues["default"]:"" ),
+                    `IntField(`id(`timeout),_("Timeout (zero means no timeout)"),0,999, defaultValues["timeout"]:0 ),
+                    `TextEntry( `id(`defaultVal), "Default", defaultValues["default"]:"" ),
                     `Left( `RadioButtonGroup( `id( `type ), `HBox( `RadioButton(`id( `t_text ), `opt(`notify,`immediate),"Text", defaultValues["type"]:"text" == "text"?true:false ),
                                                             `RadioButton(`id( `t_symbol), `opt(`notify,`immediate),"Symbol", defaultValues["type"]:"text"=="symbol"?true:false ),
                                                             `RadioButton(`id( `t_boolean), `opt(`notify,`immediate),"Boolean", defaultValues["type"]:"text"=="boolean"?true:false),
-                                                            `RadioButton(`id( `t_integer), `opt(`notify,`immediate),"Integer", defaultValues["type"]:"text"=="integer"?true:false) ) ) ),
-
-                    `Left( `CheckBox( `id(`password), _("Password"), defaultValues["password"]:false ) ),
-                    `TextEntry( `id(`path), _("Path"), defaultValues["path"]:"" ),
-                    `TextEntry( `id(`file), _("File"), defaultValues["file"]:"" ),
+                                                            `RadioButton(`id( `t_integer), `opt(`notify,`immediate),"Integer", defaultValues["type"]:"text"=="integer"?true:false),
+                                                            `CheckBox( `id(`password), _("Password"), defaultValues["password"]:false ) )
+                                            )
+                    ),
+                    `TextEntry( `id(`path), _("Pathlist for answers (multiple paths are separated by space)"),  mergestring( defaultValues["pathlist"]:[], " " ) ),
+                    `TextEntry( `id(`file), _("Store answer in this file"), defaultValues["file"]:"" ),
+                    `Label( _("Selection List for type 'Symbol'") ),
                     `HBox(
                       `MinSize( 10,5,
                         `Table(
                             `id(`selection),
-                            `header( "Label", _("Value") ),
+                            `header( _("Label"), _("Value") ),
                             selection
                         ) ),
                         `VBox(
@@ -176,6 +179,18 @@ For signature handling, read the AutoYaST documentation.
                  );
         string help_text = _("<P></P>");
         UI::OpenDialog( `opt(`decorated  ), contents );
+        UI::ChangeWidget(`id(`selLabel), `Enabled, false );
+        UI::ChangeWidget(`id(`selValue), `Enabled, false );
+        UI::ChangeWidget(`id(`selection),`Enabled, false );
+        UI::ChangeWidget(`id(`password), `Enabled, false );
+
+        if( defaultValues["type"]:"text" == "text" ) {
+            UI::ChangeWidget(`id(`password), `Enabled, true );
+        } else if( defaultValues["type"]:"text" == "symbol" ) {
+            UI::ChangeWidget(`id(`selLabel), `Enabled, true );
+            UI::ChangeWidget(`id(`selValue), `Enabled, true );
+            UI::ChangeWidget(`id(`selection),`Enabled, true );
+        }
         repeat {
             if( size( (list)UI::QueryWidget(`id(`selection), `Items) ) == 0 ) {
                 UI::ChangeWidget(`id(`delSelection) , `Enabled, false);
@@ -195,6 +210,21 @@ For signature handling, read the AutoYaST documentation.
                 selection = add( selection, `item( `id(selId), label, val ) );
                 selId = selId + 1;
                 UI::ChangeWidget(`id(`selection), `Items, selection);
+            } else if( ret == `t_symbol ) {
+                    UI::ChangeWidget(`id(`selLabel), `Enabled, true );
+                    UI::ChangeWidget(`id(`selValue), `Enabled, true );
+                    UI::ChangeWidget(`id(`selection),`Enabled, true );
+                    UI::ChangeWidget(`id(`password), `Enabled, false );
+            } else if( ret == `t_text ) {
+                    UI::ChangeWidget(`id(`selLabel), `Enabled, false );
+                    UI::ChangeWidget(`id(`selValue), `Enabled, false );
+                    UI::ChangeWidget(`id(`selection),`Enabled, false );
+                    UI::ChangeWidget(`id(`password), `Enabled, true );
+            } else if( ret == `t_boolean || ret == `t_integer ) {
+                    UI::ChangeWidget(`id(`selLabel), `Enabled, false );
+                    UI::ChangeWidget(`id(`selValue), `Enabled, false );
+                    UI::ChangeWidget(`id(`selection),`Enabled, false );
+                    UI::ChangeWidget(`id(`password), `Enabled, false );
             } else if( ret == `delSelection ) {
                 integer currSelId = (integer)UI::QueryWidget(`id(`selection), `CurrentItem);
                 selection = filter ( term s, selection, ``{
@@ -219,14 +249,17 @@ For signature handling, read the AutoYaST documentation.
                                 "question":(string)UI::QueryWidget(`id(`question), `Value) ];
                 if( (string)UI::QueryWidget(`id(`frametitle), `Value) != "" )
                     newVal["frametitle"] = (string)UI::QueryWidget(`id(`frametitle), `Value);
+                if( (integer)UI::QueryWidget(`id(`timeout), `Value) != 0 )
+                    newVal["timeout"] = (integer)UI::QueryWidget(`id(`timeout), `Value);
                 if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_symbol )
                     newVal["type"] = "symbol";
                 else if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_boolean )
                     newVal["type"] = "boolean";
                 else if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_integer )
                     newVal["type"] = "integer";
-                if( (string)UI::QueryWidget(`id(`path), `Value) != "" )
-                    newVal["path"] = (string)UI::QueryWidget(`id(`path), `Value);
+                if( (string)UI::QueryWidget(`id(`path), `Value) != "" ) {
+                    newVal["pathlist"] = splitstring( (string)UI::QueryWidget(`id(`path), `Value), " ");
+                }
                 if( (string)UI::QueryWidget(`id(`file), `Value) != "" )
                     newVal["file"] = (string)UI::QueryWidget(`id(`file), `Value);
                 if( (symbol)UI::QueryWidget(`id(`type), `CurrentButton) == `t_text )
@@ -306,12 +339,7 @@ For signature handling, read the AutoYaST documentation.
                         `PushButton( `id( `addDialog ), `opt( `default, `hstretch ), _("Add to Dialog List") ),
                         `PushButton( `id( `applyDialog ), `opt( `default, `hstretch ), _("Apply changes to dialog") )
                     ),
-                    `MinSize( 10,5,
-                    `Table(
-                        `id(`dialogs), `opt(`notify,`immediate),
-                        `header(_("Title") ),
-                        dialogs
-                    ) ),
+                    `MinSize( 10, 5, `SelectionBox( `id(`dialogs), `opt(`notify,`immediate), _("Title"), dialogs ) ),
                     `HBox(
                         `PushButton( `id( `deleteDialog ), `opt( `default, `hstretch ), _("Delete Dialog") ),
                         `PushButton( `id( `dialogUp ), `opt( `default, `hstretch ), _("Dialog Up") ),
@@ -319,11 +347,11 @@ For signature handling, read the AutoYaST documentation.
                     ),
                     `Label( _("Questions in dialog") ),
                     `MinSize( 10,5,
-                    `Table(
+                    `SelectionBox( 
                         `id(`questions),
-                        `header(_("Question") ),
+                        _("Question"),
                         questions
-                    ) ),
+                        ) ),
                     `HBox(
                         `PushButton( `id( `addQuestion ), `opt( `default, `hstretch ), _("Add Question") ),
                         `PushButton( `id( `editQuestion ), `opt( `default, `hstretch ), _("Edit Question") ),
@@ -387,7 +415,9 @@ For signature handling, read the AutoYaST documentation.
             });
             if( ret == `addQuestion ) {
                 list l = argsof( dialogs[ (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem) ]:`empty() );
+		y2milestone( "ret=`addQuestion l:%1", l );
                 askList = newQuestion( stage, (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem), askList, l[1]:"", $[] );
+		y2milestone( "ret=`addQuestion askList:%1", askList );
             } else if( ret == `editQuestion ) {
                 map m = $[];
                 foreach( map dummy, askList, ``{
@@ -502,12 +532,11 @@ For signature handling, read the AutoYaST documentation.
                 askList = add( askList, $[ "dialog":max,
                                            "title":(string)UI::QueryWidget(`id(`dialogTitle), `Value),
                                            "help":(string)UI::QueryWidget(`id(`help), `Value),
-                                           "question":"edit question",
+                                           "question":_("Edit Question"),
                                            "element":0,
                                            "stage":stage
                                            ]);
             }
-            y2milestone("UWE %1",ret);
             questions = [];
             askList = sort( map x, map y, askList, ``( x["dialog"]:-2 <  y["dialog"]:-1 ||
                                                      ( x["dialog"]:-2 == y["dialog"]:-1 && x["element"]:-2 < y["element"]:-1 ) ) );
@@ -521,7 +550,7 @@ For signature handling, read the AutoYaST documentation.
             });
             dialog_id = (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem);
             UI::ChangeWidget(`id(`dialogs), `Items, dialogs);
-            if( ret == `stage_cont || ret == `stage_initial ) {
+            if( ret == `stage_cont || ret == `stage_initial || dialog_id == nil ) {
                 UI::ChangeWidget(`id(`dialogs), `CurrentItem, 0);
             } else {
                 UI::ChangeWidget(`id(`dialogs), `CurrentItem, dialog_id );
