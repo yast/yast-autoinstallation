@@ -334,7 +334,7 @@ For signature handling, read the AutoYaST documentation.
                     `RadioButtonGroup( `id( `stage ), `HBox( `RadioButton(`id( `stage_initial ), `opt(`notify,`immediate),_("1st Stage"), true ),
                                                              `RadioButton(`id( `stage_cont ), `opt(`notify,`immediate),_("2nd Stage") ) ) ),
                     `TextEntry( `id(`dialogTitle), _("Dialog Title"), title ),
-                    `MultiLineEdit( `id( `help ), _("Helptext"), help ),
+                    `MultiLineEdit( `id( `hlp ), _("Helptext"), help ),
                     `HBox(
                         `PushButton( `id( `addDialog ), `opt( `default, `hstretch ), _("Add to Dialog List") ),
                         `PushButton( `id( `applyDialog ), `opt( `default, `hstretch ), _("Apply changes to dialog") )
@@ -441,7 +441,7 @@ For signature handling, read the AutoYaST documentation.
             } else if( ret == `applyDialog ) {
                 askList = maplist ( map d, askList, ``{
                     if( d["dialog"]:-1 == (integer)UI::QueryWidget(`id(`dialogs), `CurrentItem) && d["stage"]:"initial" == stage ) {
-                        d["help"]  = (string)UI::QueryWidget(`id(`help), `Value);
+                        d["help"]  = (string)UI::QueryWidget(`id(`hlp), `Value);
                         d["title"] = (string)UI::QueryWidget(`id(`dialogTitle), `Value);
                         help = d["help"]:"";
                     }
@@ -531,7 +531,7 @@ For signature handling, read the AutoYaST documentation.
                 max = max + 1;
                 askList = add( askList, $[ "dialog":max,
                                            "title":(string)UI::QueryWidget(`id(`dialogTitle), `Value),
-                                           "help":(string)UI::QueryWidget(`id(`help), `Value),
+                                           "help":(string)UI::QueryWidget(`id(`hlp), `Value);
                                            "question":_("Edit Question"),
                                            "element":0,
                                            "stage":stage
@@ -559,7 +559,7 @@ For signature handling, read the AutoYaST documentation.
             list<map> d = filter( map dummy, askList, ``{ return dummy["dialog"]:-2 == dialog_id && stage == dummy["stage"]:"initital"; });
             d = sort( map x, map y, d, ``( x["element"]:-2 < y["element"]:-1 ) );
             UI::ChangeWidget(`id(`dialogTitle), `Value, d[0,"title"]:"");
-            UI::ChangeWidget(`id(`help),  `Value, d[0,"help"]:"");
+            UI::ChangeWidget(`id(`hlp),  `Value, d[0,"help"]:"");
             id_counter = 0;
             foreach ( map m, d, ``{
                 id_counter = m["element"]:id_counter;
