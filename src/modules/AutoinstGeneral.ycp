@@ -30,6 +30,8 @@
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
 
+    include "mouse/mouse_raw.ycp";
+
     //
     // Show proposal and ask user for confirmation to go on with auto-installation
     // Similar to interactive mode, without letting use change settings
@@ -267,7 +269,7 @@
             string device = AutoinstData::mouse["device"]:"none";
             integer wheels = AutoinstData::mouse["wheels"]:0;
 
-            map<string, list> mice = (map<string, list>)Misc::ReadAlternateFile ("mouse_db.ycp", "mouse_raw.ycp");
+            map<string, list> mice = get_mouse_db();
 
             foreach(string f,list g, mice, ``{
                 map data = g[1]:$[];
