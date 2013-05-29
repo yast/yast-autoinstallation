@@ -391,19 +391,28 @@ control file and try again.
 	    // this is new, (de)select stuff from the profile
             list<string> packages = Profile::current["software","packages"]:[];
             list<string> patterns = Profile::current["software","patterns"]:[];
+            list<string> products = Profile::current["software","products"]:[];
             list<string> remove_packages = Profile::current["software","remove-packages"]:[];
             list<string> remove_patterns = Profile::current["software","remove-patterns"]:[];
+            list<string> remove_products = Profile::current["software","remove-products"]:[];
 	    foreach (string p, remove_patterns, {
 		Pkg::ResolvableRemove (p, `pattern);
 	    });
 	    foreach (string p, remove_packages, {
 		Pkg::ResolvableRemove (p, `package);
+		Pkg::PkgTaboo (p);
+	    });
+	    foreach (string p, remove_products, {
+		Pkg::ResolvableRemove (p, `product);
 	    });
 	    foreach (string p, patterns, {
 		Pkg::ResolvableInstall (p, `pattern);
 	    });
 	    foreach (string p, packages, {
 		Pkg::ResolvableInstall (p, `package);
+	    });
+	    foreach (string p, products, {
+		Pkg::ResolvableInstall (p, `product);
 	    });
 	    // old stuff again here
             if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
