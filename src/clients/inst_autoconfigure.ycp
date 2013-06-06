@@ -42,9 +42,35 @@
 	return;
     };
 
+    string MatchInterface( string id )
+	{
+	string ret = id;
+	if( substring( id, 0, 7 )=="eth-id-" )
+	    {
+	    list<string> ls = splitstring( substring( id, 7 ), ":" );
+	    ls = maplist( string s, ls, ``((size(s)<2)?("0"+s):s));
+	    y2milestone( "MatchInterface ls:%1", ls );
+	    string cmd = sformat( "ifconfig | grep -i \"hwaddr.*%1\"", 
+	                          mergestring(ls,":"));
+	    map bo = (map)SCR::Execute(.target.bash_output, cmd);
+	    ls = splitstring( bo["stdout"]:"", "\n" );
+	    ls = filter( string s, splitstring( ls[0]:"", " \t" ), ``(!isempty(s)));
+	    if( !isempty(ls) && substring( ls[0]:"", 0, 3 )=="eth" )
+		ret = ls[0]:"";
+	    }
+	y2milestone( "MatchInterface id:%1 ret:%2", id, ret );
+	return( ret );
+	}
 
     define void removeNetwork( list<map> ilist ) {
 	import "NetworkInterfaces";
+	y2milestone( "removeNetwork ifaces:%1", ilist );
+	ilist = maplist( map i, ilist,
+	    {
+	    if( substring( i["device"]:"", 0, 7 )=="eth-id-" )
+		i["device"] = MatchInterface(i["device"]:"");
+	    return( i );
+	    });
 	y2milestone( "removeNetwork ifaces:%1", ilist );
         any l = SCR::Read (.target.dir, ["/etc/sysconfig/network", [] ]);
 	list<string> netlist = [];
