@@ -174,11 +174,6 @@
 	}
 	else if (Scheme == "nfs")  // NFS
 	{
-	    if (Installation::boot () != "nfs")
-	    {
-		y2milestone("Starting portmap: %1", SCR::Execute (.target.bash, "/sbin/portmap") );
-	    }
-
 	    if (!(boolean)SCR::Execute(.target.mount, [ Host + ":" + dirname(Path), mount_point ], "-o nolock" ) &&
                 !(boolean)SCR::Execute(.target.mount, [ Host + ":" + dirname(Path), mount_point ], "-t nfs4" ) )
 	    {
