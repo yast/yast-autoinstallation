@@ -72,7 +72,12 @@
 
         string tmp_dir = (string)WFM::Read(.local.tmpdir, []);
         string mount_point = tmp_dir + "/tmp_mount";
-        WFM::Execute(.local.mkdir, mount_point );
+        string mp_in_local = mount_point;
+	string chr = WFM::SCRGetName(WFM::SCRGetDefault());
+	if( search(chr,"chroot=/mnt:")==0 )
+	    mp_in_local = AutoinstConfig::destdir+mount_point;
+	y2milestone( "Chr:%3 TmpDir:%1 Mp:%2", tmp_dir, mp_in_local, chr );
+        WFM::Execute(.local.mkdir, mp_in_local );
 
         if ( Scheme == "http" || Scheme == "https" )
         {
@@ -197,7 +202,7 @@
                 return (false);
             }
 
-            string copyCmd = "/bin/cp " + mount_point + "/" + basename(Path) +
+            string copyCmd = "/bin/cp " + mp_in_local + "/" + basename(Path) +
                 " " + Localfile;
             y2milestone("Copy Command: %1", copyCmd);
             if (WFM::Execute (.local.bash, copyCmd ) == 0)
@@ -214,7 +219,7 @@
 
             }
 
-            WFM::Execute(.local.umount, mount_point);
+            SCR::Execute(.target.umount, mount_point);
 
         }
         else if (Scheme == "cifs")  // CIFS
@@ -228,7 +233,7 @@
                 return (false);
             }
 
-            string copyCmd = "/bin/cp " + mount_point + "/" + basename(Path) +
+            string copyCmd = "/bin/cp " + mp_in_local + "/" + basename(Path) +
                 " " + Localfile;
             y2milestone("Copy Command: %1", copyCmd);
             if (WFM::Execute (.local.bash, copyCmd ) == 0)
@@ -245,7 +250,7 @@
 
             }
 
-            WFM::Execute(.local.umount, mount_point);
+            SCR::Execute(.target.umount, mount_point);
 
         }
         else if (Scheme == "floppy")
@@ -362,6 +367,8 @@
             y2error("Protocol not supported");
             ok = false;
         }
+	if( !isempty(GET_error) )
+	    y2warning("GET_error:%1",GET_error);
         return ( ok );
     }
 
