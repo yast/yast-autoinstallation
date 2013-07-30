@@ -13,7 +13,5 @@ modconfig_DATA = \
 	software.desktop \
 	files.desktop
 
-desktop_DATA = autoyast.desktop
-
-EXTRA_DIST =  $(desktop_DATA) $(modconfig_DATA)
+EXTRA_DIST = $(modconfig_DATA)
 

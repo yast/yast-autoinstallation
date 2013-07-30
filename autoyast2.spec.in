@@ -27,6 +27,8 @@ PreReq:		%insserv_prereq %fillup_prereq
 
 BuildArchitectures:	noarch
 
+Requires:       yast2-ruby-bindings >= 1.0.0
+
 Summary:	YaST2 - Automated Installation
 
 %description
@@ -40,6 +42,8 @@ This file contains YaST2-independent files needed to create
 installation sources.
 
 %package installation
+Requires:       yast2-ruby-bindings >= 1.0.0
+
 Summary:	YaST2 - Auto Installation Modules
 Group:		System/YaST
 # API for Disabled Modules (ProductControl)
@@ -110,30 +114,30 @@ rmdir $RPM_BUILD_ROOT/@docdir@/html/autoyast
 
 @desktopdir@/autoyast.desktop
 /usr/share/autoinstall/modules/*.desktop
-@yncludedir@/autoinstall/classes.ycp
-@yncludedir@/autoinstall/conftree.ycp
-@yncludedir@/autoinstall/dialogs.ycp
-@yncludedir@/autoinstall/script_dialogs.ycp
-@yncludedir@/autoinstall/general_dialogs.ycp
-@yncludedir@/autoinstall/wizards.ycp
-@yncludedir@/autoinstall/helps.ycp
+@yncludedir@/autoinstall/classes.rb
+@yncludedir@/autoinstall/conftree.rb
+@yncludedir@/autoinstall/dialogs.rb
+@yncludedir@/autoinstall/script_dialogs.rb
+@yncludedir@/autoinstall/general_dialogs.rb
+@yncludedir@/autoinstall/wizards.rb
+@yncludedir@/autoinstall/helps.rb
 /usr/share/YaST2/schema/autoyast/rnc/*.rnc
 
-@clientdir@/general_auto.ycp
-@clientdir@/report_auto.ycp
-@clientdir@/classes_auto.ycp
-@clientdir@/scripts_auto.ycp
-@clientdir@/software_auto.ycp
-@clientdir@/storage_auto.ycp
-@clientdir@/autoyast.ycp
-@clientdir@/clone_system.ycp
-@clientdir@/ayast_setup.ycp
+@clientdir@/general_auto.rb
+@clientdir@/report_auto.rb
+@clientdir@/classes_auto.rb
+@clientdir@/scripts_auto.rb
+@clientdir@/software_auto.rb
+@clientdir@/storage_auto.rb
+@clientdir@/autoyast.rb
+@clientdir@/clone_system.rb
+@clientdir@/ayast_setup.rb
 
 @scrconfdir@/ksimport.scr
 
 
-@moduledir@/AutoinstClass.y*
-@moduledir@/Kickstart.y*
+@moduledir@/AutoinstClass.rb
+@moduledir@/Kickstart.rb
 @agentdir@/ag_ksimport
 
 
@@ -167,58 +171,58 @@ rmdir $RPM_BUILD_ROOT/@docdir@/html/autoyast
 /usr/share/autoinstall/xslt/merge.xslt
 # config file
 
-@moduledir@/AutoinstClone.y*
+@moduledir@/AutoinstClone.rb
 %dir @yncludedir@/autoinstall
-@yncludedir@/autoinstall/autopart.ycp
-@yncludedir@/autoinstall/io.ycp
-@yncludedir@/autoinstall/autoinst_dialogs.ycp
-@yncludedir@/autoinstall/AdvancedPartitionDialog.ycp
-@yncludedir@/autoinstall/DriveDialog.ycp
-@yncludedir@/autoinstall/PartitionDialog.ycp
-@yncludedir@/autoinstall/StorageDialog.ycp
-@yncludedir@/autoinstall/VolgroupDialog.ycp
-@yncludedir@/autoinstall/common.ycp
-@yncludedir@/autoinstall/tree.ycp
-@yncludedir@/autoinstall/types.ycp
+@yncludedir@/autoinstall/autopart.rb
+@yncludedir@/autoinstall/io.rb
+@yncludedir@/autoinstall/autoinst_dialogs.rb
+@yncludedir@/autoinstall/AdvancedPartitionDialog.rb
+@yncludedir@/autoinstall/DriveDialog.rb
+@yncludedir@/autoinstall/PartitionDialog.rb
+@yncludedir@/autoinstall/StorageDialog.rb
+@yncludedir@/autoinstall/VolgroupDialog.rb
+@yncludedir@/autoinstall/common.rb
+@yncludedir@/autoinstall/tree.rb
+@yncludedir@/autoinstall/types.rb
 
 /usr/share/YaST2/control/*.xml
 
-@moduledir@/AutoInstall.y*
-@moduledir@/AutoinstScripts.y*
-@moduledir@/AutoinstGeneral.y*
-@moduledir@/AutoinstImage.y*
-@moduledir@/Y2ModuleConfig.y*
-@moduledir@/Profile.y*
-@moduledir@/AutoinstFile.y*
-@moduledir@/AutoinstConfig.y*
-@moduledir@/AutoinstSoftware.y*
-@moduledir@/AutoinstLVM.y*
-@moduledir@/AutoinstRAID.y*
-@moduledir@/AutoinstStorage.y*
-@moduledir@/AutoInstallRules.y*
-@moduledir@/ProfileLocation.y*
-@moduledir@/AutoinstCommon.y*
-@moduledir@/AutoinstDrive.y*
-@moduledir@/AutoinstPartPlan.y*
-@moduledir@/AutoinstPartition.y*
+@moduledir@/AutoInstall.rb
+@moduledir@/AutoinstScripts.rb
+@moduledir@/AutoinstGeneral.rb
+@moduledir@/AutoinstImage.rb
+@moduledir@/Y2ModuleConfig.rb
+@moduledir@/Profile.rb
+@moduledir@/AutoinstFile.rb
+@moduledir@/AutoinstConfig.rb
+@moduledir@/AutoinstSoftware.rb
+@moduledir@/AutoinstLVM.rb
+@moduledir@/AutoinstRAID.rb
+@moduledir@/AutoinstStorage.rb
+@moduledir@/AutoInstallRules.rb
+@moduledir@/ProfileLocation.rb
+@moduledir@/AutoinstCommon.rb
+@moduledir@/AutoinstDrive.rb
+@moduledir@/AutoinstPartPlan.rb
+@moduledir@/AutoinstPartition.rb
 
 #clients
-@clientdir@/inst_autoinit.ycp
-@clientdir@/inst_autoimage.ycp
-@clientdir@/inst_autosetup.ycp
-@clientdir@/inst_autoconfigure.ycp
-@clientdir@/inst_autopost.ycp
-@clientdir@/files_auto.ycp
-@clientdir@/autoinst_test_clone.ycp
-@clientdir@/autoinst_test_stage.ycp
-@clientdir@/autoinst_scripts1_finish.ycp
-@clientdir@/autoinst_scripts2_finish.ycp
-@clientdir@/ayast_probe.ycp
-@clientdir@/inst_autosetup_upgrade.ycp
-@clientdir@/inst_store_upgrade_software.ycp
+@clientdir@/inst_autoinit.rb
+@clientdir@/inst_autoimage.rb
+@clientdir@/inst_autosetup.rb
+@clientdir@/inst_autoconfigure.rb
+@clientdir@/inst_autopost.rb
+@clientdir@/files_auto.rb
+@clientdir@/autoinst_test_clone.rb
+@clientdir@/autoinst_test_stage.rb
+@clientdir@/autoinst_scripts1_finish.rb
+@clientdir@/autoinst_scripts2_finish.rb
+@clientdir@/ayast_probe.rb
+@clientdir@/inst_autosetup_upgrade.rb
+@clientdir@/inst_store_upgrade_software.rb
 
-@yncludedir@/autoinstall/xml.ycp
-@yncludedir@/autoinstall/ask.ycp
+@yncludedir@/autoinstall/xml.rb
+@yncludedir@/autoinstall/ask.rb
 
 # scripts
 @ybindir@/fetch_image.sh
