@@ -207,6 +207,7 @@ module Yast
       Report.Import(tmp)
       AutoinstGeneral.Import(Profile.current.fetch("general",{}))
       AutoinstGeneral.SetSignatureHandling
+      AutoinstGeneral.SetMultipathing
 
       #
       # Copy the control file for easy access by user to  a pre-defined

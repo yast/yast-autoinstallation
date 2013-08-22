@@ -129,6 +129,13 @@ module Yast
         }
       )
       storage = {}
+      start_mp = false
+      Builtins.foreach(Storage.GetTargetMap) do |k, e|
+	start_mp = true if e.fetch("type",:CT_UNKNOWN)==:CT_DMMULTIPATH
+      end
+      if start_mp
+	@storage["start_multipath"] = true
+      end
       @storage["partition_alignment"] = Storage.GetPartitionAlignment
       general["storage"] = storage
       Mode.SetMode("autoinst_config")

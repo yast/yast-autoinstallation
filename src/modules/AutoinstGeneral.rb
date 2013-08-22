@@ -390,6 +390,14 @@ module Yast
       nil
     end
 
+    # set multipathing
+    # @return [void]
+    def SetMultipathing
+      val = @storage.fetch("start_multipath",false)
+      Builtins.y2milestone("SetMultipathing val:%1", val)
+      Storage.SetMultipathStartup(val)
+    end
+
     # Write General  Configuration
     # @return [Boolean] true on success
     def Write
@@ -413,6 +421,7 @@ module Yast
         Storage.SetPartitionAlignment(val)
         Builtins.y2milestone( "alignment set to %1", val )
       end
+      SetMultipathing()
 
       #
       # mouse
@@ -469,6 +478,7 @@ module Yast
     publish :function => :Import, :type => "boolean (map)"
     publish :function => :Export, :type => "map ()"
     publish :function => :SetSignatureHandling, :type => "void ()"
+    publish :function => :SetMultipathing, :type => "void ()"
     publish :function => :Write, :type => "boolean ()"
     publish :function => :AutoinstGeneral, :type => "void ()"
   end
