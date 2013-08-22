@@ -191,6 +191,7 @@ module Yast
     # Probe all system data to build  a set of rules
     # @return [void]
     def ProbeRules
+      return if @ATTR.size>0
       # SMBIOS Data
       bios = Convert.to_list(SCR.Read(path(".probe.bios")))
 
@@ -269,7 +270,6 @@ module Yast
       #
       # MAC
       #
-      @mac = getMAC
       Ops.set(@ATTR, "mac", @mac)
 
       #
@@ -285,8 +285,6 @@ module Yast
       #
       # Hostid (i.e. a8c00101);
       #
-      @hostid = getHostid
-
       Ops.set(@ATTR, "hostid", @hostid)
 
       Ops.set(@ATTR, "hostname", getHostname)
@@ -452,6 +450,7 @@ module Yast
 
       ismatch = false
       go_on = true
+      ProbeRules if !rulelist.empty?
       Builtins.foreach(rulelist) do |ruleset|
         Builtins.y2debug("Ruleset: %1", ruleset)
         Builtins.foreach(ruleset) do |rule, ruledef|
@@ -1097,16 +1096,11 @@ module Yast
     # Constructor
     #
     def AutoInstallRules
+      @mac = getMAC
+      @hostid = getHostid
       nil
     end
 
-
-    # Initialize
-    def Init
-      ProbeRules() if Stage.initial || Mode.test
-
-      nil
-    end
 
     publish :variable => :userrules, :type => "boolean"
     publish :variable => :dontmergeIsDefault, :type => "boolean"
@@ -1151,7 +1145,6 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
-    publish :function => :Init, :type => "void ()"
   end
 
   AutoInstallRules = AutoInstallRulesClass.new

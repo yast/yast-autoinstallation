@@ -17,6 +17,7 @@ module Yast
       Yast.import "Installation"
       Yast.import "AutoInstall"
       Yast.import "AutoinstConfig"
+      Yast.import "AutoinstGeneral"
       Yast.import "ProfileLocation"
       Yast.import "AutoInstallRules"
       Yast.import "Progress"
@@ -39,15 +40,15 @@ module Yast
       @progress_stages = [
         _("Probe hardware"),
         _("Retrieve & Read Control File"),
-        _("Process Profiles and Rules"),
-        _("Parse control file")
+        _("Parse control file"),
+        _("Initial Configuration"),
       ]
       @profileFetched = false
 
       Progress.New(
         _("Preparing System for Automatic Installation"),
         "", # progress_title
-        7, # progress bar length
+        6, # progress bar length
         @progress_stages,
         [],
         @help_text
@@ -85,12 +86,9 @@ module Yast
         WFM.CallFunction("inst_iscsi-client", [])
       end
 
+      Progress.NextStep
       Progress.Title(_("Probing hardware..."))
-
-      if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
-        WFM.CallFunction("inst_system_analysis", [])
-      end
-      AutoInstallRules.ProbeRules
+      Builtins.y2milestone("Probing hardware...")
 
       if !@profileFetched
         # if profile is defined, first read it, then probe hardware
@@ -104,6 +102,13 @@ module Yast
 
         @ret = processProfile
         return @ret if @ret != :ok
+      end
+
+      Builtins.sleep(1000)
+      Progress.Finish
+
+      if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
+        WFM.CallFunction("inst_system_analysis", [])
       end
 
       if Builtins.haskey(Profile.current, "iscsi-client")
@@ -129,21 +134,15 @@ module Yast
 
       # AutoInstall::ProcessSpecialResources();
 
-
-      Builtins.sleep(1000)
-      Progress.Finish
-
       :next
     end
 
     def processProfile
       Progress.NextStage
-      # Initialize Rules
+      Builtins.y2milestone("Starting processProfile msg:%1",AutoinstConfig.message)
       Progress.Title(AutoinstConfig.message)
-      AutoInstallRules.Init
       ret = false
       Progress.NextStep
-      Progress.Title(_("Processing Profiles and Rules"))
       while true
         r = ProfileLocation.Process
         if r
@@ -171,8 +170,6 @@ module Yast
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
-      Progress.NextStage
-
       #
       # Set reporting behaviour to default, changed later if required
       #
@@ -184,6 +181,7 @@ module Yast
 
       Progress.NextStage
       Progress.Title(_("Parsing control file"))
+      Builtins.y2milestone("Parsing control file")
       if !Profile.ReadXML(AutoinstConfig.xml_tmpfile) || Profile.current == {} ||
           Profile.current == nil
         Popup.Error(
@@ -201,11 +199,14 @@ module Yast
 
       Progress.NextStage
       Progress.Title(_("Initial Configuration"))
-      tmp = Ops.get_map(Profile.current, "report", {})
-      if !Builtins.haskey(tmp, "yesno_messages")
-        Ops.set(tmp, "yesno_messages", Ops.get_map(tmp, "errors", {}))
+      Builtins.y2milestone("Initial Configuration")
+      tmp = Profile.current.fetch("report",{})
+      if !tmp.has_key?( "yesno_messages" )
+        tmp["yesno_messages"] = tmp.fetch("errors",{})
       end
       Report.Import(tmp)
+      AutoinstGeneral.Import(Profile.current.fetch("general",{}))
+      AutoinstGeneral.SetSignatureHandling
 
       #
       # Copy the control file for easy access by user to  a pre-defined

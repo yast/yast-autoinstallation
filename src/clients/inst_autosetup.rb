@@ -47,8 +47,8 @@ module Yast
         "<P>Please wait while the system is prepared for autoinstallation.</P>"
       )
       @progress_stages = [
-        _("Configure General Settings "),
         _("Execute pre-install user scripts"),
+        _("Configure General Settings "),
         _("Set up language"),
         _("Create partition plans"),
         _("Configure Software selections"),
@@ -57,8 +57,8 @@ module Yast
       ]
 
       @progress_descriptions = [
-        _("Configuring general settings..."),
         _("Executing pre-install user scripts..."),
+        _("Configuring general settings..."),
         _("Setting up language..."),
         _("Creating partition plans..."),
         _("Configuring Software selections..."),
@@ -77,16 +77,7 @@ module Yast
 
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
-      Progress.NextStage
 
-
-      # configure general settings
-
-
-
-
-
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
       Progress.NextStage
 
@@ -99,6 +90,8 @@ module Yast
       # location for easy processing in pre-script.
 
       return :abort if readModified == :abort
+
+      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
       #
       # Partitioning and Storage
@@ -127,6 +120,9 @@ module Yast
       #
       # Set Mouse and other workflow variables
       #
+      Progress.NextStage
+
+      # configure general settings
       AutoinstGeneral.Import(Ops.get_map(Profile.current, "general", {}))
       Builtins.y2milestone(
         "general: %1",
@@ -148,6 +144,7 @@ module Yast
       end
 
       if Builtins.haskey(Profile.current, "add-on")
+	Progress.Title(_("Handling Add-On Products..."))
         Call.Function(
           "add-on_auto",
           ["Import", Ops.get_map(Profile.current, "add-on", {})]

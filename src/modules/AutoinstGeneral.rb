@@ -408,14 +408,10 @@ module Yast
       # see bug #597723. Some machines can't boot with the new alignment that parted uses
       # `align_cylinder == old behavior
       # `align_optimal  == new behavior
-      if Builtins.haskey(@storage, "partition_alignment")
-        Storage.SetPartitionAlignment(
-          Ops.get_symbol(@storage, "partition_alignment", :align_optimal)
-        )
-        Builtins.y2milestone(
-          "alignment set to %1",
-          Ops.get_symbol(@storage, "partition_alignment", :align_optimal)
-        )
+      if @storage.has_key?("partition_alignment")
+        val = @storage.fetch("partition_alignment",:align_optimal)
+        Storage.SetPartitionAlignment(val)
+        Builtins.y2milestone( "alignment set to %1", val )
       end
 
       #
@@ -457,10 +453,6 @@ module Yast
           Import(Ops.get_map(Profile.current, "general", {}))
         end
         SetSignatureHandling()
-
-        # FIXME: seriously FIXME! We need a real Read() function
-        Storage.InitLibstorage(false)
-        Ops.set(@storage, "partition_alignment", Storage.GetPartitionAlignment)
       end
       nil
     end
@@ -470,7 +462,6 @@ module Yast
     publish :variable => :signature_handling, :type => "map"
     publish :variable => :askList, :type => "list"
     publish :variable => :proposals, :type => "list <string>"
-    publish :variable => :storage, :type => "map"
     publish :variable => :modified, :type => "boolean"
     publish :function => :SetModified, :type => "void ()"
     publish :function => :GetModified, :type => "boolean ()"

@@ -128,7 +128,9 @@ module Yast
           "accept_non_trusted_gpg_key"   => true
         }
       )
-
+      storage = {}
+      @storage["partition_alignment"] = Storage.GetPartitionAlignment
+      general["storage"] = storage
       Mode.SetMode("autoinst_config")
       deep_copy(general)
     end
