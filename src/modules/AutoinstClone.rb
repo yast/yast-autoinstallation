@@ -134,9 +134,9 @@ module Yast
 	start_mp = true if e.fetch("type",:CT_UNKNOWN)==:CT_DMMULTIPATH
       end
       if start_mp
-	@storage["start_multipath"] = true
+	storage["start_multipath"] = true
       end
-      @storage["partition_alignment"] = Storage.GetPartitionAlignment
+      storage["partition_alignment"] = Storage.GetPartitionAlignment
       general["storage"] = storage
       Mode.SetMode("autoinst_config")
       deep_copy(general)
