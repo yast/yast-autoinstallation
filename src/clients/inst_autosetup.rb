@@ -118,7 +118,7 @@ module Yast
       # reimport scripts, for the case <ask> has changed them
       AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
       #
-      # Set Mouse and other workflow variables
+      # Set workflow variables
       #
       Progress.NextStage
 
