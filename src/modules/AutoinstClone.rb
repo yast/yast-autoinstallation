@@ -45,58 +45,6 @@ module Yast
       AutoinstClone()
     end
 
-    # Constructor
-    def AutoinstClone
-      #Mode::SetMode ("normal");
-      nil
-    end
-
-    # Set root password
-
-    # useless
-    #     define list root() ``{
-    #    list<map> shadow = (list<map>) SCR::Read(.etc.shadow);
-    #    map rootacct = (map) filter(map acct, shadow, ``(acct["username"]:"" == "root"))[0]:$[];
-    #    list users = [];
-    #    map rootacct_mod = $[];
-    #    rootacct_mod["user_password"] = rootacct["password"]:"";
-    #    rootacct_mod["encrypted"] = true;
-    #    rootacct_mod["username"] = "root";
-    #    users = add(users, rootacct_mod);
-    #    return users;
-    #     }
-
-
-    # Find mount points in running system
-    # @param string device name
-    # @param map partition
-    # @param list mount points
-    # @return [String]
-    # useless
-    #     define string findMountpoint(string device, map p, list<map> mounts)
-    #     {
-    #    string mountPoint = "";
-    #    foreach(map mount , mounts, ``{
-    #        string m = sformat("%1%2", device ,  p["nr"]:nil);
-    #        if (mount["spec"]:"" ==  m )
-    #        {
-    #            mountPoint = mount["file"]:"";
-    #        }
-    #    });
-    #    return mountPoint;
-    #     }
-
-    # Convert units to size
-    # @param list region
-    # @return [Fixnum] size
-    # useless
-    #     define integer units_to_size (list region)
-    #     {
-    #    integer units = (integer) region[1]:0;
-    #    return (units * bytes_per_unit)  -  bytes_per_unit + 1;
-    #     };
-
-
 
     # General options
     # @return [Hash] general options
@@ -105,45 +53,27 @@ module Yast
       Mode.SetMode("normal")
 
       general = {}
-      mouse = {}
-      Ops.set(
-        mouse,
-        "id",
-        Misc.SysconfigRead(path(".sysconfig.mouse.YAST_MOUSE"), "probe")
-      )
-      Ops.set(general, "mouse", mouse)
-      mode = {}
-      Ops.set(mode, "confirm", false)
-      Ops.set(general, "mode", mode)
 
-      Ops.set(
-        general,
-        "signature-handling",
-        {
-          "accept_unsigned_file"         => true,
-          "accept_file_without_checksum" => true,
-          "accept_unknown_gpg_key"       => true,
-          "accept_verification_failed"   => false,
-          "import_gpg_key"               => true,
-          "accept_non_trusted_gpg_key"   => true
-        }
-      )
-      storage = {}
-      start_mp = false
-      Builtins.foreach(Storage.GetTargetMap) do |k, e|
-	start_mp = true if e.fetch("type",:CT_UNKNOWN)==:CT_DMMULTIPATH
-      end
-      if start_mp
-	storage["start_multipath"] = true
-      end
-      storage["partition_alignment"] = Storage.GetPartitionAlignment
-      general["storage"] = storage
+      general["mode"] = { "confirm" => false }
+
+      general["signature-handling"] = {
+        "accept_unsigned_file"         => true,
+        "accept_file_without_checksum" => true,
+        "accept_unknown_gpg_key"       => true,
+        "accept_verification_failed"   => false,
+        "import_gpg_key"               => true,
+        "accept_non_trusted_gpg_key"   => true
+      }
+
+      general["storage"] = {
+        # Finds out whether 
+        "start_multipath" => target.detect{|k,e| e.fetch("type",:X)==:CT_DMMULTIPATH} ? true:false,
+        "partition_alignment" => Storage.GetPartitionAlignment,
+      }
+
       Mode.SetMode("autoinst_config")
-      deep_copy(general)
+      general
     end
-
-
-
 
 
     # Clone a Resource
