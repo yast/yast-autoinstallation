@@ -14,16 +14,6 @@ module Yast
       Yast.import "Label"
     end
 
-    # Mouse
-    # @return [Symbol]
-    def MouseDialog
-      # create the wizard dialog
-      #
-      Wizard.CreateDialog
-      result = WFM.CallFunction("inst_mouse", [GetInstArgs.Buttons(true, true)])
-      Convert.to_symbol(result)
-    end
-
     # Main dialog
     # @return [Symbol]
     def ModeDialog
@@ -1085,16 +1075,17 @@ module Yast
     # Dialog for General Settings
     # @return [Symbol]
     def generalSequence
-      dialogs = { "mouse" => lambda { MouseDialog() }, "mode" => lambda do
-        ModeDialog()
-      end, "ask" => lambda(
-      ) do
-        askDialog
-      end }
+      dialogs = {
+        "mode" => lambda do
+          ModeDialog()
+        end,
+        "ask" => lambda do
+          askDialog
+        end
+      }
 
       sequence = {
-        "ws_start" => "mouse",
-        "mouse"    => { :next => "mode", :abort => :abort },
+        "ws_start" => "mode",
         "mode"     => { :next => "ask", :abort => :abort },
         "ask"      => { :next => :finish }
       }
