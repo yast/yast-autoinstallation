@@ -387,8 +387,8 @@ module Yast
         @shell = Ops.add(tmpshell, "] ) ")
       end
 
-      Builtins.y2debug("var: %1, val: %2", var, val)
-      Builtins.y2debug("shell: %1", @shell)
+      Builtins.y2milestone("var: %1, val: %2", var, val)
+      Builtins.y2milestone("shell: %1", @shell)
       nil
     end
 
@@ -452,10 +452,17 @@ module Yast
       go_on = true
       ProbeRules if !rulelist.empty?
       Builtins.foreach(rulelist) do |ruleset|
-        Builtins.y2debug("Ruleset: %1", ruleset)
-        Builtins.foreach(ruleset) do |rule, ruledef|
-          Builtins.y2debug("Rule: %1", rule)
-          Builtins.y2debug("Ruledef: %1", ruledef)
+        Builtins.y2milestone("Ruleset: %1", ruleset)
+	rls = ruleset.keys
+	if( rls.include?("result"))
+	  rls.reject! {|r| r=="result"}
+	  rls.push("result")
+	end
+	Builtins.y2milestone("Orderes Rules: %1", rls)
+        Builtins.foreach(rls) do |rule|
+	  ruledef = ruleset.fetch( rule, {} )
+          Builtins.y2milestone("Rule: %1", rule)
+          Builtins.y2milestone("Ruledef: %1", ruledef)
           match = Ops.get_string(ruledef, "match", "undefined")
           op = Ops.get_string(ruledef, "operator", "and")
           matchtype = Ops.get_string(ruledef, "match_type", "exact")
