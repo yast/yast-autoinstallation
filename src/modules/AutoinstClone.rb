@@ -45,6 +45,11 @@ module Yast
       AutoinstClone()
     end
 
+    # Detects whether the current system uses multipath
+    # @return [Boolean] if in use
+    def multipath_in_use?
+      Storage.GetTargetMap.detect{|k,e| e.fetch("type",:X)==:CT_DMMULTIPATH} ? true:false
+    end
 
     # General options
     # @return [Hash] general options
@@ -66,8 +71,7 @@ module Yast
       }
 
       general["storage"] = {
-        # Finds out whether 
-        "start_multipath" => target.detect{|k,e| e.fetch("type",:X)==:CT_DMMULTIPATH} ? true:false,
+        "start_multipath" => multipath_in_use?,
         "partition_alignment" => Storage.GetPartitionAlignment,
       }
 
