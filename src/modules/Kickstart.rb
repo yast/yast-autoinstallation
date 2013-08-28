@@ -140,19 +140,6 @@ module Yast
 
       Ops.set(general, "keyboard", keyboard)
 
-      # Mouse
-      mouse = {}
-
-      if Builtins.haskey(@ksConfig, "mouse")
-        ks_mouse = Ops.get_map(@ksConfig, "mouse", {})
-        Ops.set(mouse, "device", Ops.get_string(ks_mouse, "device", ""))
-        Ops.set(mouse, "xemu3", Ops.get_integer(ks_mouse, "emulthree", 0) == 1)
-        if Ops.get_string(ks_mouse, "type", "") == "none"
-          Ops.set(mouse, "id", "non")
-        end
-      end
-      Ops.set(general, "mouse", mouse)
-
       # Clock
       clock = {}
       if Builtins.haskey(@ksConfig, "timezone")

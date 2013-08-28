@@ -19,7 +19,6 @@ module Yast
       Yast.import "AutoinstConfig"
       Yast.import "Summary"
       Yast.import "Keyboard"
-      Yast.import "Mouse"
       Yast.import "Language"
       Yast.import "Timezone"
       Yast.import "Misc"
@@ -30,8 +29,6 @@ module Yast
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
-
-      Yast.include self, "mouse/mouse_raw.rb"
 
       #
       # Show proposal and ask user for confirmation to go on with auto-installation
@@ -49,7 +46,7 @@ module Yast
 
       @askList = []
 
-      #    global list<string> proposals = ["bootloader_proposal", "software_proposal", "country_simple_proposal", "timezone_proposal", "users_proposal", "runlevel_proposal", "hwinfo_proposal", "mouse_proposal", "deploying_proposal"];
+      #    global list<string> proposals = ["bootloader_proposal", "software_proposal", "country_simple_proposal", "timezone_proposal", "users_proposal", "runlevel_proposal", "hwinfo_proposal", "deploying_proposal"];
       @proposals = []
 
       @storage = {}
@@ -78,22 +75,9 @@ module Yast
     def Summary
       #string language_name		= "";
       #string keyboard_name		= "";
-      mouse_name = ""
 
-      if Ops.get_string(AutoinstData.mouse, "id", "") != "" &&
-          Ops.get_string(AutoinstData.mouse, "id", "") != "probe"
-        Mouse.Set(Ops.get_string(AutoinstData.mouse, "id", ""))
-        mouse_name = Mouse.MakeProposal(false, false)
-      else
-        mouse_name = _("probe")
-      end
+
       summary = ""
-
-      summary = Summary.AddHeader(summary, _("Mouse"))
-      summary = Summary.AddLine(
-        summary,
-        mouse_name != "" ? mouse_name : Summary.NotConfigured
-      )
 
       summary = Summary.AddHeader(summary, _("Confirm installation?"))
       summary = Summary.AddLine(
@@ -186,7 +170,6 @@ module Yast
       settings = deep_copy(settings)
       SetModified()
       Builtins.y2milestone("General import: %1", settings)
-      AutoinstData.mouse = Ops.get_map(settings, "mouse", {})
       @mode = Ops.get_map(settings, "mode", {})
       @signature_handling = Ops.get_map(settings, "signature-handling", {})
       @askList = Ops.get_list(settings, "ask-list", [])
@@ -202,7 +185,6 @@ module Yast
     def Export
       general = {}
 
-      Ops.set(general, "mouse", AutoinstData.mouse)
       Ops.set(general, "mode", @mode)
       Ops.set(general, "signature-handling", @signature_handling)
       Ops.set(general, "ask-list", @askList)
@@ -421,34 +403,9 @@ module Yast
         Storage.SetPartitionAlignment(val)
         Builtins.y2milestone( "alignment set to %1", val )
       end
+
       SetMultipathing()
 
-      #
-      # mouse
-      #
-
-      if Ops.get_string(AutoinstData.mouse, "id", "") != "probe" &&
-          Ops.get_string(AutoinstData.mouse, "id", "") != ""
-        Mouse.Set(Ops.get_string(AutoinstData.mouse, "id", ""))
-      elsif Builtins.haskey(AutoinstData.mouse, "device")
-        #
-        # Otherwise, try to find the mouse id from the DB using data supplied by user,
-        # at least the device is needed.
-        #
-        device = Ops.get_string(AutoinstData.mouse, "device", "none")
-        wheels = Ops.get_integer(AutoinstData.mouse, "wheels", 0)
-
-        mice = get_mouse_db
-
-        Builtins.foreach(mice) do |f, g|
-          data = Ops.get_map(g, 1, {})
-          if Ops.get_integer(data, "wheels", 0) == wheels &&
-              Ops.get_string(data, "device", "") == device
-            Ops.set(AutoinstData.mouse, "id", f)
-          end
-        end
-        Mouse.Set(Ops.get_string(AutoinstData.mouse, "id", ""))
-      end
       SetSignatureHandling()
 
       nil
