@@ -604,8 +604,6 @@ module Yast
       Builtins.foreach(general_options) do |k, v|
         if k == "keyboard" && Ops.is_string?(v)
           old = true
-        elsif k == "mouse" && Ops.is_string?(v)
-          old = true
         elsif k == "encryption_method"
           old = true
         elsif k == "timezone" && Ops.is_string?(v)
