@@ -327,7 +327,7 @@ module Yast
       else
         RunlevelEd.default_runlevel = Installation.x11_setup_needed &&
           Arch.x11_setup_needed &&
-          Pkg.IsSelected("xorg-x11") ? "5" : "3"
+          Pkg.IsSelected("xorg-x11-server") ? "5" : "3"
       end
       Builtins.y2milestone(
         "autoyast - setting runlevel to: %1",
