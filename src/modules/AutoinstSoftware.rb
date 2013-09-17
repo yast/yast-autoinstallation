@@ -797,6 +797,7 @@ module Yast
       ok = true
 
       Packages.Init(true)
+      Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal })
       failed = []
 
       # switch for recommended patterns installation (workaround for our very weird pattern design)
