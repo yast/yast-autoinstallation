@@ -339,9 +339,12 @@ module Yast
       StorageDevices.InitDone
       _StorageMap = Builtins.eval(Storage.GetTargetMap)
 
-      _StorageMap = Builtins.filter(_StorageMap) do |d, p|
-        d != "/dev/evms" && d != "/dev/nfs" &&
-          Ops.greater_than(Builtins.size(Ops.get_list(p, "partitions", [])), 0)
+      _StorageMap = _StorageMap.select do |d, p|
+        ok = d != "/dev/evms" && d != "/dev/nfs"
+	if( ok && p.fetch("partitions", []).size==0 )
+	  ok = p.fetch("used_by_type",:UB_NONE)==:UB_LVM
+	end
+	ok
       end
       Builtins.y2milestone("Storagemap %1", _StorageMap)
       #        list evms_vgs = [];
@@ -600,6 +603,13 @@ module Yast
             deep_copy(m)
           end
         end
+	if( v.fetch("used_by_type",:UB_NONE)==:UB_LVM && partitions.empty? )
+	  partitions = [{ "partition_nr" => 0, "create" => false,
+	                  "lvm_group" => v.fetch("used_by_device", "")[5..-1],
+			  "size" => "max" }]
+	  Builtins.y2milestone( "lvm full disk v:%1", v )
+	  Builtins.y2milestone( "lvm full disk p:%1", partitions )
+	end
         Ops.set(drive, "partitions", partitions)
         if Arch.s390 && Ops.get_symbol(v, "type", :CT_DISK) == :CT_DISK
           Ops.set(

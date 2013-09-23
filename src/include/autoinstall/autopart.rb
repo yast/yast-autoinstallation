@@ -1320,7 +1320,7 @@ module Yast
       deep_copy(conf)
     end
     def get_perfect_list(ps, g)
-      ps = deep_copy(ps)
+      ps = ps.reject { |p| p.fetch("partition_nr",1)==0 }
       g = deep_copy(g)
       Builtins.y2milestone("requested partitions  %1", ps)
       Builtins.y2milestone("calculated gaps %1", g)
@@ -1470,8 +1470,7 @@ module Yast
         new_ps,
         free_pnr
       )
-      if Ops.greater_than(Builtins.size(Ops.get_list(g, "gap", [])), 0) &&
-          Ops.less_or_equal(new_ps, free_pnr)
+      if new_ps>0 && g.fetch("gap", []).size>0 && new_ps<=free_pnr 
         lg = Builtins.eval(g)
 
         # prepare local gap var
@@ -1502,12 +1501,10 @@ module Yast
           add_prim,
           Builtins.size(Ops.get_list(g, "free_pnr", []))
         )
-        if Ops.get_boolean(g, "extended_possible", false) &&
-            Ops.greater_than(Builtins.size(Ops.get_list(g, "free_pnr", [])), 0) &&
-            Ops.less_than(
-              add_prim,
-              Builtins.size(Ops.get_list(g, "free_pnr", []))
-            )
+        if g.fetch("extended_possible",false) &&
+           g.fetch("free_pnr",[]).size>0 &&
+	   add_prim<g.fetch("free_pnr",[]).size &&
+	   new_ps>add_prim
           Builtins.y2milestone("creating extended")
           index = 0
           Builtins.foreach(Ops.get_list(lg, "gap", [])) do |e|
@@ -1549,10 +1546,14 @@ module Yast
         end
       end
       ret = {}
-      if Ops.greater_than(Builtins.size(@cur_gap), 0)
-        Ops.set(ret, "weight", @cur_weight)
-        Ops.set(ret, "solution", Builtins.eval(@cur_gap))
-        Ops.set(ret, "partitions", Builtins.eval(ps))
+      if @cur_gap.size>0
+	ret["weight"] = @cur_weight
+        ret["solution"] = @cur_gap
+        ret["partitions"] = ps
+      elsif ps.size==0 
+	ret["weight"] = 0
+        ret["solution"] = []
+        ret["partitions"] = []
       end
       Builtins.y2milestone(
         "ret weight %1",
@@ -1873,41 +1874,11 @@ module Yast
       #     }
       #     gindex = gindex + 1;
       # });
-      Builtins.foreach(Ops.get_list(g, "gap", [])) do |e|
-        if !Ops.get_boolean(e, "exists", false) &&
-            Ops.greater_than(Builtins.size(Ops.get_list(e, "added", [])), 1)
-          Builtins.y2milestone(
-            "normalize_gaps old  added %1",
-            Ops.get_list(e, "added", [])
-          )
-          nums = Builtins.maplist(Ops.get_list(e, "added", [])) do |l|
-            Ops.get_integer(l, 1, -1)
-          end
-          Builtins.y2milestone("normalize_gaps old nums %1", nums)
-          sdd = Builtins.sort(Ops.get_list(e, "added", [])) do |a, b|
-            ba = Ops.get_string(
-              ps,
-              [Ops.get_integer(a, 0, 0), "partition_type"],
-              ""
-            ) == "primary"
-            bb = Ops.get_string(
-              ps,
-              [Ops.get_integer(b, 0, 0), "partition_type"],
-              ""
-            ) == "primary"
-            Builtins.y2milestone("ba:%1 bb:%2", ba, bb)
-            if ba && !bb
-              next true
-            else
-              next false
-            end
-          end
-          idx = 0
-          Builtins.foreach(
-            Convert.convert(sdd, :from => "list", :to => "list <list>")
-          ) do |e2|
-            Ops.set(sdd, [idx, 1], Ops.get_integer(nums, idx, 0))
-            idx = Ops.add(idx, 1)
+      Builtins.foreach(g.fetch("gap",[])) do |e|
+        if !e.fetch("exists",false) && e.fetch("added",[]).size>1
+          Builtins.y2milestone( "normalize_gaps old added %1", e.fetch("added",[]))
+          sdd = Builtins.sort(e.fetch("added",[])) do |a, b|
+	    a.fetch(1,0)<=b.fetch(1,0)
           end
           Ops.set(g, ["gap", gindex, "added"], sdd)
           Builtins.y2milestone(
@@ -1915,7 +1886,7 @@ module Yast
             Ops.get_list(g, ["gap", gindex, "added"], [])
           )
         end
-        gindex = Ops.add(gindex, 1)
+        gindex += 1
       end
       Builtins.y2milestone("normalize_gaps ret %1", g)
       deep_copy(g)

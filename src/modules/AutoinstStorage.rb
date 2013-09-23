@@ -1091,38 +1091,36 @@ module Yast
       Builtins.y2milestone("AutoTargetMap: %1", @AutoTargetMap)
 
       # return list of available devices
-      disk_devices = Builtins.maplist(Builtins.filter(Storage.GetTargetMap) do |l, f|
-        Storage.IsRealDisk(f)
-      end) { |k, e| k }
-
+      disk_devices = initial_target_map.select do |l, f|
+	Storage.IsRealDisk(f)
+	end.keys
       Builtins.y2milestone("disk_devices: %1", disk_devices)
 
       result = false
-
+      changed = false
       Builtins.foreach(@AutoTargetMap) do |device, data|
-        if Storage.IsRealDisk(data) &&
-            Ops.get_boolean(data, "initialize", false) == true
+        if Storage.IsRealDisk(data) && data.fetch("initialize", false)
           Ops.set(initial_target_map, [device, "delete"], true)
-          if Builtins.haskey(data, "disklabel")
+	  changed = true
+          if data.has_key?("disklabel")
             Ops.set(
               initial_target_map,
               [device, "disklabel"],
-              Ops.get_string(data, "disklabel", "msdos")
+	      data.fetch("disklabel", "msdos")
             )
           end
-          Storage.SetTargetMap(initial_target_map)
         end
       end
-      Builtins.y2milestone(
-        "Target map after initialzing disk: %1",
-        Storage.GetTargetMap
-      )
+      if changed
+	Storage.SetTargetMap(initial_target_map) if changed
+	Builtins.y2milestone( "Target map after initializing disk: %1", Storage.GetTargetMap)
+      end
 
       Builtins.foreach(@AutoTargetMap) do |device, data|
         if Ops.greater_than(
-            Builtins.size(Builtins.filter(Ops.get_list(data, "partitions", [])) do |e|
-              Ops.get_string(e, "mount", "") == Partitions.BootMount ||
-                Ops.get_integer(e, "partition_id", 0) == Partitions.FsidBoot &&
+            Builtins.size(Builtins.filter(data.fetch("partitions",[])) do |e|
+              e.fetch("mount","") == Partitions.BootMount ||
+                e.fetch("partition_id",0) == Partitions.FsidBoot &&
                   Partitions.FsidBoot != 131
             end),
             0
@@ -1133,9 +1131,10 @@ module Yast
       end
       Builtins.y2milestone("plan has boot: %1", @planHasBoot)
 
+      tm = Storage.GetTargetMap
+      changed = false
       Builtins.foreach(@AutoTargetMap) do |device, data|
-        if !Builtins.haskey(Storage.GetTargetMap, device) &&
-            Ops.get_symbol(data, "type", :CT_DISK) == :CT_DISK
+        if !tm.has_key?(device) && data.fetch("type",:CT_DISK)==:CT_DISK
           Report.Error(
             Builtins.sformat(
               _("device '%1' not found by storage backend"),
@@ -1145,24 +1144,22 @@ module Yast
           Builtins.y2milestone("device %1 not found in TargetMap", device)
         end
         if Storage.IsRealDisk(data)
-          @ZeroNewPartitions = Ops.get_boolean(
-            data,
-            "zero_new_partitions",
-            true
-          ) # that's not really nice. Just an undocumented fallback which should never be used
+          @ZeroNewPartitions = data.fetch("zero_new_partitions",true)
+          # that's not really nice. Just an undocumented fallback which should never be used
           Builtins.y2milestone("Creating partition plans for %1", device)
 
-          sol = find_matching_disk([device], Storage.GetTargetMap, data)
-          result = true if Ops.greater_than(Builtins.size(sol), 0)
+          sol = find_matching_disk([device], tm, data)
+          result = true if sol.size>0
 
           Builtins.y2milestone("solutions: %1", sol)
-          tm = Storage.GetTargetMap
-          Ops.set(tm, device, process_partition_data(device, sol))
-
+          Builtins.y2milestone("disk: %1", tm[device])
+	  tm[device] = process_partition_data(device, sol)
+	  changed = true
           SearchRaids(tm)
-          Storage.SetTargetMap(tm)
+          Builtins.y2milestone("disk: %1", tm[device])
         end
       end
+      Storage.SetTargetMap(tm) if changed
 
       if Builtins.haskey(@AutoTargetMap, "/dev/nfs")
         Builtins.y2milestone("nfs:%1", Ops.get(@AutoTargetMap, "/dev/nfs", {}))
