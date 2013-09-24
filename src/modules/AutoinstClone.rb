@@ -219,7 +219,6 @@ module Yast
     publish :variable => :Profile, :type => "map"
     publish :variable => :base, :type => "list <string>"
     publish :variable => :additional, :type => "list <string>"
-    publish :function => :AutoinstClone, :type => "void ()"
     publish :function => :General, :type => "map ()"
     publish :function => :createClonableList, :type => "list ()"
     publish :function => :Process, :type => "void ()"
