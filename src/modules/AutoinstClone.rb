@@ -42,7 +42,6 @@ module Yast
 
       # aditional configuration resources o be cloned
       @additional = []
-      AutoinstClone()
     end
 
     # Detects whether the current system uses multipath
