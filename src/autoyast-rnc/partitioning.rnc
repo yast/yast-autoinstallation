@@ -94,8 +94,9 @@ opt_max_inode_space =
 opt_raid = element opt_raid { option_str, option_value }
 opt_reserved_blocks =
   element opt_reserved_blocks { option_str, option_value }
+part_raid_name = element raid_name { text }
 
-part_raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? }
+part_raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? & part_raid_name? }
 persistent_superblock = element persistent_superblock { BOOLEAN }
 raid_type = element raid_type { text }
 chunk_size = element chunk_size { text }
@@ -121,7 +122,6 @@ option_blank =
   element option_blank { BOOLEAN }
 option_str = element option_str { text }
 option_value = element option_value { text }
-part_raid_name = element raid_name { text }
 part_raid_type = element raid_type { text }
 part_partition_nr =
   element partition_nr { INTEGER }

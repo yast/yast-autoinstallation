@@ -331,11 +331,6 @@ module Yast
           "raid_name",
           Ops.get_string(part, "raid_name", "")
         )
-        newPart = set(
-          newPart,
-          "raid_type",
-          Ops.get_string(part, "raid_type", "raid0")
-        )
       end
       if Builtins.haskey(part, "raid_options")
         newPart = set(

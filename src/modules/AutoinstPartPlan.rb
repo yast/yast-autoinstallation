@@ -570,22 +570,13 @@ module Yast
           end
           if k == "/dev/md"
             raid_options = {}
-            Ops.set(
-              raid_options,
-              "persistent_superblock",
-              Ops.get_boolean(pe, "persistent_superblock", false)
-            )
-            Ops.set(
-              raid_options,
-              "raid_type",
-              Ops.get_string(pe, "raid_type", "raid0")
-            )
-            Ops.set(
-              raid_options,
-              "device_order",
-              Ops.get_list(pe, "devices", [])
-            )
-            Ops.set(new_pe, "raid_options", raid_options)
+            raid_options["persistent_superblock"] = pe.fetch("persistent_superblock",false)
+            raid_options["raid_type"] = pe.fetch("raid_type", "raid0")
+            raid_options["device_order"] = pe.fetch("devices",[])
+	    if pe["device"].start_with?("/dev/md/")
+	      raid_options["raid_name"] = pe["device"]
+	    end
+            new_pe["raid_options"]=raid_options
           end
           if !skipwin && Ops.get_integer(new_pe, "partition_id", 0) != 15
             partitions = Builtins.add(partitions, new_pe)

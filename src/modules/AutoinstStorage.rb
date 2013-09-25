@@ -265,13 +265,15 @@ module Yast
             Ops.get_list(p, ["raid_options", "device_order"], []) != []
           counter = Ops.get_integer(p, "partition_nr", counter)
           order = Ops.get_list(p, ["raid_options", "device_order"], [])
+	  dev = "/dev/md"+counter.to_s;
+	  if p["raid_options"] && p["raid_options"].has_key?("raid_name") &&
+	     !p["raid_options"]["raid_name"].empty?
+	    dev = p["raid_options"]["raid_name"]
+	  end
           Builtins.y2milestone(
-            "found device_order %1 in raidoptions for /dev/md%2",
-            order,
-            counter
-          )
-          Ops.set(@raid2device, Builtins.sformat("/dev/md%1", counter), order)
-          Ops.set(already_mapped, Builtins.sformat("/dev/md%1", counter), true)
+            "found device_order %1 in raidoptions for %2", order, dev)
+	  @raid2device[dev] = order
+	  already_mapped[dev] = true
         end
         counter = Ops.add(counter, 1)
       end

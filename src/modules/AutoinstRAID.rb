@@ -169,11 +169,11 @@ module Yast
 
       _RaidList = Builtins.maplist(raid_partitions) do |md|
         use = Ops.get_string(@raid, ["/dev/md", "use"], "none")
-        dev = Builtins.sformat(
-          "/dev/md%1",
-          Ops.get_integer(md, "partition_nr", 0)
-        )
-        Ops.set(md, "device", dev)
+	dev = md.fetch("raid_options",{})["raid_name"]
+	if !dev || dev.empty?
+	  dev = "/dev/md"+md.fetch("partition_nr", 0).to_s
+	end
+        md["device"] = dev
         if Ops.get_symbol(md, "enc_type", :none) != :none
           Storage.SetCryptPwd(dev, Ops.get_string(md, "crypt_key", ""))
         end
