@@ -797,15 +797,13 @@ module Yast
       ok = true
 
       Packages.Init(true)
-      Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal })
+      sw_settings = Profile.current.fetch("software",{})
+      Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
+                           "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
       failed = []
 
       # switch for recommended patterns installation (workaround for our very weird pattern design)
-      if Ops.get_boolean(
-          Profile.current,
-          ["software", "install_recommended"],
-          false
-        ) == false
+      if sw_settings.fetch("install_recommended",false) == false
         # set SoftLock to avoid the installation of recommended patterns (#159466)
         Builtins.foreach(Pkg.ResolvableProperties("", :pattern, "")) do |p|
           Pkg.ResolvableSetSoftLock(Ops.get_string(p, "name", ""), :pattern)
