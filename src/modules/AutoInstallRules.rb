@@ -151,9 +151,14 @@ module Yast
     def getMAC
       tmpmac = ""
       if Stage.initial
-        tmpmac = Convert.to_string(SCR.Read(path(".etc.install_inf.HWAddr")))
+        cmd = 'ip link show | grep link/ether | head -1 | sed -e "s:^.*link/ether.::" -e "s: .*::"'
+        ret = SCR.Execute(path(".target.bash_output"), cmd )
+	Builtins.y2milestone("mac Addr ret:%1", ret)
+	tmpmac = ret.fetch("stdout","")
       end
-      cleanmac = Builtins.deletechars(tmpmac != nil ? tmpmac : "", ":")
+      Builtins.y2milestone("mac Addr tmp:%1", tmpmac)
+      cleanmac = Builtins.deletechars(tmpmac != nil ? tmpmac : "", ":\n")
+      Builtins.y2milestone("mac Addr mac:%1", cleanmac)
       cleanmac
     end
 
@@ -161,6 +166,11 @@ module Yast
     # Return host id (hex ip )
     # @return [String] host ID
     def getHostid
+      if Stage.initial
+        @hostaddress = Convert.to_string(SCR.Read(path(".etc.install_inf.IP")))
+      else
+        @hostaddress = "192.168.1.1" # FIXME
+      end
       hex = IP.ToHex(@hostaddress)
       hex
     end
@@ -275,11 +285,6 @@ module Yast
       #
       # Network
       #
-      if Stage.initial
-        @hostaddress = Convert.to_string(SCR.Read(path(".etc.install_inf.IP")))
-      else
-        @hostaddress = "192.168.1.1" # FIXME
-      end
       Ops.set(@ATTR, "hostaddress", @hostaddress)
 
       #
@@ -1105,6 +1110,7 @@ module Yast
     def AutoInstallRules
       @mac = getMAC
       @hostid = getHostid
+      Builtins.y2milestone("init mac:%1 histid:%2", @mac, @hostid)
       nil
     end
 
