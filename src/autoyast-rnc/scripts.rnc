@@ -75,8 +75,14 @@ autoinstall-chroot-script = element script {
   debug? &
   feedback? &
   feedback_type? &
+  param-list? &
   element notification { text }?
 }
+
+param-list = element param-list {
+  LIST,
+  element param { text }*
+  }
 
 chrooted = element chrooted { BOOLEAN }
 debug = element debug { BOOLEAN }

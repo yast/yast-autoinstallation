@@ -97,7 +97,8 @@ module Yast
           "proposals"                => "proposal",
           "net-udev"                 => "rule",
           "ask-list"                 => "ask",
-          "device_order"             => "device"
+          "device_order"             => "device",
+          "param-list"               => "param"
         }
       )
 

@@ -150,6 +150,7 @@ module Yast
           "location"      => Ops.get_string(p, "location", ""),
           "feedback"      => Ops.get_boolean(p, "feedback", false),
           "feedback_type" => Ops.get_string(p, "feedback_type", ""),
+	  "param-list"    => p.fetch("param-list",[]),
           "debug"         => Ops.get_boolean(p, "debug", true)
         }
       end
@@ -163,6 +164,7 @@ module Yast
           "feedback"       => Ops.get_boolean(p, "feedback", false),
           "feedback_type"  => Ops.get_string(p, "feedback_type", ""),
           "debug"          => Ops.get_boolean(p, "debug", true),
+	  "param-list"    => p.fetch("param-list",[]),
           "network_needed" => Ops.get_boolean(p, "network_needed", false)
         }
       end
@@ -176,6 +178,7 @@ module Yast
           "location"      => Ops.get_string(p, "location", ""),
           "feedback"      => Ops.get_boolean(p, "feedback", false),
           "feedback_type" => Ops.get_string(p, "feedback_type", ""),
+	  "param-list"    => p.fetch("param-list",[]),
           "debug"         => Ops.get_boolean(p, "debug", true)
         }
       end
@@ -196,6 +199,7 @@ module Yast
           "notification"  => Ops.get_string(p, "notification", ""),
           "feedback"      => Ops.get_boolean(p, "feedback", false),
           "feedback_type" => Ops.get_string(p, "feedback_type", ""),
+	  "param-list"    => p.fetch("param-list",[]),
           "debug"         => Ops.get_boolean(p, "debug", true)
         }
       end
@@ -496,7 +500,7 @@ module Yast
       deep_copy(ret)
     end
 
-    def interactiveScript(shell, debug, scriptPath, current_logdir, scriptName)
+    def interactiveScript(shell, debug, scriptPath, params, current_logdir, scriptName)
       data = {}
       widget = ""
       SCR.Execute(path(".target.remove"), "/tmp/ay_opipe")
@@ -504,10 +508,11 @@ module Yast
       SCR.Execute(path(".target.bash"), "mkfifo -m 660 /tmp/ay_opipe", {})
       SCR.Execute(path(".target.bash"), "mkfifo -m 660 /tmp/ay_ipipe", {})
       execute = Builtins.sformat(
-        "%1 %2 %3 2&> %4/%5.log ",
+        "%1 %2 %3 %4 2> %5/%6.log ",
         shell,
         debug,
         scriptPath,
+	params,
         current_logdir,
         scriptName
       )
@@ -749,6 +754,7 @@ module Yast
 
       Builtins.foreach(scripts) do |s|
         scriptInterpreter = Ops.get_string(s, "interpreter", "shell")
+	params = s.fetch("param-list",[]).join(" ")
         scriptName = Ops.get_string(s, "filename", "")
         if scriptName == ""
           t = URL.Parse(Ops.get_string(s, "location", ""))
@@ -894,14 +900,16 @@ module Yast
                   "/bin/sh",
                   debug,
                   scriptPath,
+		  params,
                   current_logdir,
                   scriptName
                 )
               else
                 executionString = Builtins.sformat(
-                  "/bin/sh %1 %2 2&> %3/%4.log ",
+                  "/bin/sh %1 %2 %3 &> %4/%5.log ",
                   debug,
                   scriptPath,
+		  params,
                   current_logdir,
                   scriptName
                 )
@@ -926,14 +934,16 @@ module Yast
                   "/usr/bin/perl",
                   debug,
                   scriptPath,
+		  params,
                   current_logdir,
                   scriptName
                 )
               else
                 executionString = Builtins.sformat(
-                  "/usr/bin/perl %1 %2 2&> %3/%4.log ",
+                  "/usr/bin/perl %1 %2 %3 &> %4/%5.log ",
                   debug,
                   scriptPath,
+		  params,
                   current_logdir,
                   scriptName
                 )
@@ -957,13 +967,15 @@ module Yast
                   "/usr/bin/python",
                   "",
                   scriptPath,
+		  params,
                   current_logdir,
                   scriptName
                 )
               else
                 executionString = Builtins.sformat(
-                  "/usr/bin/python %1 2&> %2/%3.log ",
+                  "/usr/bin/python %1 %2 &> %3/%4.log ",
                   scriptPath,
+		  params,
                   current_logdir,
                   scriptName
                 )
