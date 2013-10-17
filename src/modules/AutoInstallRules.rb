@@ -455,7 +455,7 @@ module Yast
 
       ismatch = false
       go_on = true
-      ProbeRules if !rulelist.empty?
+      AutoInstallRules.ProbeRules if !rulelist.empty?
       Builtins.foreach(rulelist) do |ruleset|
         Builtins.y2milestone("Ruleset: %1", ruleset)
 	rls = ruleset.keys
