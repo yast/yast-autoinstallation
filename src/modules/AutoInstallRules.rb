@@ -21,6 +21,7 @@ module Yast
       Yast.import "AutoinstConfig"
       Yast.import "XML"
       Yast.import "Storage"
+      Yast.import "StorageControllers"
       Yast.import "Kernel"
       Yast.import "Mode"
       Yast.import "Profile"
@@ -266,6 +267,7 @@ module Yast
       # Disk sizes
       #
 
+      StorageControllers.Initialize  # ugly hack, Storage.GetTargetMap should simply work without it
       storage = Storage.GetTargetMap
       _PhysicalTargetMap = Builtins.filter(storage) do |k, v|
         Storage.IsRealDisk(v)
@@ -276,7 +278,8 @@ module Yast
         @totaldisk = Ops.add(@totaldisk, size_in_mb)
         { "device" => k, "size" => size_in_mb }
       end
-      Builtins.y2debug("disksize: %1", @disksize)
+      Builtins.y2milestone("disksize: %1", @disksize)
+      Ops.set(@ATTR, "totaldisk", @totaldisk)
       #
       # MAC
       #
@@ -455,7 +458,7 @@ module Yast
 
       ismatch = false
       go_on = true
-      ProbeRules if !rulelist.empty?
+      AutoInstallRules.ProbeRules if !rulelist.empty?
       Builtins.foreach(rulelist) do |ruleset|
         Builtins.y2milestone("Ruleset: %1", ruleset)
 	rls = ruleset.keys
