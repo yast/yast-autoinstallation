@@ -27,7 +27,7 @@ module Yast
       Yast.import "Bootloader"
       Yast.import "BootCommon"
       Yast.import "Popup"
-      Yast.import "RunlevelEd"
+      Yast.import "SystemdTarget"
       Yast.import "Arch"
       Yast.import "AutoinstLVM"
       Yast.import "AutoinstRAID"
@@ -53,7 +53,7 @@ module Yast
         _("Create partition plans"),
         _("Configure Software selections"),
         _("Configure Bootloader"),
-        _("Configure runlevel")
+        _("Configure Systemd Default Target")
       ]
 
       @progress_descriptions = [
@@ -63,7 +63,7 @@ module Yast
         _("Creating partition plans..."),
         _("Configuring Software selections..."),
         _("Configuring Bootloader..."),
-        _("Configuring runlevel...")
+        _("Configuring Systemd Default Target...")
       ]
 
       Progress.New(
@@ -321,17 +321,17 @@ module Yast
 
       Progress.NextStage
       @rl = Ops.get_string(Profile.current, ["runlevel", "default"], "")
-      Builtins.y2milestone("autoyast - configured runlevel: %1", @rl)
-      if @rl != ""
-        RunlevelEd.default_runlevel = @rl
+      @default_target = Profile.current['default_target'].to_s
+      Builtins.y2milestone("autoyast - configured default target: #{default_target}")
+      if @default_target.empty?
+        SystemdTarget.default_target = @default_target
       else
-        RunlevelEd.default_runlevel = Installation.x11_setup_needed &&
+        SystemdTarget.default_target = Installation.x11_setup_needed &&
           Arch.x11_setup_needed &&
-          Pkg.IsSelected("xorg-x11-server") ? "5" : "3"
+          Pkg.IsSelected("xorg-x11-server") ? "graphical" : "multi-user"
       end
       Builtins.y2milestone(
-        "autoyast - setting runlevel to: %1",
-        RunlevelEd.default_runlevel
+        "autoyast - setting default target to: #{SystemdTarget.default_target}"
       )
 
       #    AutoInstall::PXELocalBoot();
