@@ -8,20 +8,17 @@
 #
 # $Id$
 module Yast
-  import "SystemdTarget"
+  import "AutoinstConfig"
 
   class InstAutosetupClient < Client
 
-    module Target
-      include SystemdTargetClass::BaseTargets
-    end
+    Target = AutoinstConfigClass::Target
 
     def main
       Yast.import "Pkg"
       Yast.import "UI"
       textdomain "autoinst"
 
-      Yast.import "AutoinstConfig"
       Yast.import "AutoInstall"
       Yast.import "Installation"
       Yast.import "Profile"

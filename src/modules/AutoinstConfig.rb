@@ -9,7 +9,14 @@
 require "yast"
 
 module Yast
+  import "SystemdTarget"
+
   class AutoinstConfigClass < Module
+
+    module Target
+      include SystemdTargetClass::BaseTargets
+    end
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -133,7 +140,7 @@ module Yast
       #
       # Default systemd target
       #
-      @default_target = "graphical"
+      @default_target = Target::GRAPHICAL
 
 
       #
