@@ -320,10 +320,9 @@ module Yast
       LanUdevAuto.Import(Ops.get_map(Profile.current, "networking", {}))
 
       Progress.NextStage
-      @rl = Ops.get_string(Profile.current, ["runlevel", "default"], "")
       @default_target = Profile.current['default_target'].to_s
       Builtins.y2milestone("autoyast - configured default target: #{default_target}")
-      if @default_target.empty?
+      if !@default_target.empty?
         SystemdTarget.default_target = @default_target
       else
         SystemdTarget.default_target = Installation.x11_setup_needed &&
