@@ -488,7 +488,6 @@ module Yast
     publish :variable => :port, :type => "string"
     publish :variable => :user, :type => "string"
     publish :variable => :pass, :type => "string"
-    publish :variable => :default_rl, :type => "string"
     publish :variable => :default_target, :type => "string"
     publish :variable => :Confirm, :type => "boolean"
     publish :variable => :OriginalURI, :type => "string"
