@@ -8,7 +8,14 @@
 #
 # $Id$
 module Yast
+  import "SystemdTarget"
+
   class InstAutosetupClient < Client
+
+    module Target
+      include SystemdTargetClass::BaseTargets
+    end
+
     def main
       Yast.import "Pkg"
       Yast.import "UI"
@@ -27,7 +34,6 @@ module Yast
       Yast.import "Bootloader"
       Yast.import "BootCommon"
       Yast.import "Popup"
-      Yast.import "SystemdTarget"
       Yast.import "Arch"
       Yast.import "AutoinstLVM"
       Yast.import "AutoinstRAID"
@@ -327,7 +333,7 @@ module Yast
       else
         SystemdTarget.default_target = Installation.x11_setup_needed &&
           Arch.x11_setup_needed &&
-          Pkg.IsSelected("xorg-x11-server") ? "graphical" : "multi-user"
+          Pkg.IsSelected("xorg-x11-server") ? Target::GRAPHICAL : Target::MULTIUSER
       end
       Builtins.y2milestone(
         "autoyast - setting default target to: #{SystemdTarget.default_target}"
