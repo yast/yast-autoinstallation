@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.0
+Version:        3.1.1
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -73,7 +73,7 @@ Requires:	yast2 >= 2.16.36
 # After API cleanup
 Requires:	yast2-update >= 2.18.3
 Requires:	yast2-xml yast2-core yast2 yast2-country yast2-packager yast2-storage yast2-slp yast2-bootloader yast2-ncurses
-Requires:	yast2-runlevel
+Requires:	yast2-services-manager
 Requires:	yast2-transfer >= 2.21.0
 Provides:	yast2-trans-autoinst
 Obsoletes:	yast2-trans-autoinst
