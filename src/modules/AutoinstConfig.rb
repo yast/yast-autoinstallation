@@ -9,7 +9,14 @@
 require "yast"
 
 module Yast
+  import "SystemdTarget"
+
   class AutoinstConfigClass < Module
+
+    module Target
+      include SystemdTargetClass::BaseTargets
+    end
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -131,9 +138,9 @@ module Yast
 
 
       #
-      # Default runlevel
+      # Default systemd target
       #
-      @default_rl = "5"
+      @default_target = Target::GRAPHICAL
 
 
       #
@@ -488,7 +495,7 @@ module Yast
     publish :variable => :port, :type => "string"
     publish :variable => :user, :type => "string"
     publish :variable => :pass, :type => "string"
-    publish :variable => :default_rl, :type => "string"
+    publish :variable => :default_target, :type => "string"
     publish :variable => :Confirm, :type => "boolean"
     publish :variable => :OriginalURI, :type => "string"
     publish :variable => :message, :type => "string"
