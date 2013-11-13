@@ -27,7 +27,6 @@ module Yast
       Yast.import "Bootloader"
       Yast.import "BootCommon"
       Yast.import "Popup"
-      Yast.import "RunlevelEd"
       Yast.import "Arch"
       Yast.import "AutoinstLVM"
       Yast.import "AutoinstRAID"
