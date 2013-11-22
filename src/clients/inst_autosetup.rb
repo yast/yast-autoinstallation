@@ -324,7 +324,7 @@ module Yast
 
       Progress.NextStage
       @default_target = Profile.current['default_target'].to_s
-      Builtins.y2milestone("autoyast - configured default target: #{default_target}")
+      Builtins.y2milestone("autoyast - configured default target: #{@default_target}")
       if !@default_target.empty?
         SystemdTarget.default_target = @default_target
       else
