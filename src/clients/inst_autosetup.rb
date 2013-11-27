@@ -278,6 +278,10 @@ module Yast
 
       Progress.NextStage
       AutoinstSoftware.Import(Ops.get_map(Profile.current, "software", {}))
+      keys = Profile.current.keys.select do |k| 
+        Profile.current[k].is_a?(Array)||Profile.current[k].is_a?(Hash)
+      end
+      AutoinstSoftware.AddYdepsFromProfile(keys)
 
       if !AutoinstSoftware.Write
         Report.Error(

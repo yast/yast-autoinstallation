@@ -62,6 +62,8 @@ module Yast
 
       @inst = []
       @all_xpatterns = []
+      @packagesAvailable = []
+      @patternsAvailable = []
 
       @instsource = ""
       @isolinuxcfg = ""
@@ -89,8 +91,8 @@ module Yast
     def Import(settings)
       settings = deep_copy(settings)
       @Software = deep_copy(settings)
-      @patterns = Ops.get_list(settings, "patterns", [])
-      @instsource = Ops.get_string(settings, "instsource", "")
+      @patterns = settings.fetch("patterns",[])
+      @instsource = settings.fetch("instsource","")
 
       notFound = ""
 
@@ -98,17 +100,14 @@ module Yast
       # Packages::Init(true);
       # Packages::InitializeAddOnProducts();
 
-      packagesAvailable = Pkg.GetPackages(:available, true)
-      patternsAvailable = []
+      @packagesAvailable = Pkg.GetPackages(:available, true)
+      @patternsAvailable = []
       allPatterns = Pkg.ResolvableDependencies("", :pattern, "")
       allPatterns = Builtins.filter(allPatterns) do |m|
-        if Ops.get_boolean(m, "user_visible", false)
-          patternsAvailable = Builtins.add(
-            patternsAvailable,
-            Ops.get_string(m, "name", "")
-          )
+        if m.fetch("user_visible",false)
+          @patternsAvailable.push( m.fetch("name","") )
         end
-        Ops.get_boolean(m, "user_visible", false)
+        m.fetch("user_visible",false)
       end
 
       regexFound = []
@@ -118,7 +117,7 @@ module Yast
         Builtins.filter(Ops.get_list(settings, "packages", [])) do |want_pack|
           next true if !Builtins.issubstring(want_pack, "/")
           want_pack = Builtins.deletechars(want_pack, "/")
-          Builtins.foreach(packagesAvailable) do |pack|
+          Builtins.foreach(@packagesAvailable) do |pack|
             Builtins.y2milestone("matching %1 against %2", pack, want_pack)
             if Builtins.regexpmatch(pack, want_pack)
               regexFound = Builtins.add(regexFound, pack)
@@ -175,11 +174,11 @@ module Yast
         )
       end
 
-      PackageAI.toinstall = Ops.get_list(settings, "packages", [])
-      @kernel = Ops.get_string(settings, "kernel", "")
-      AutoinstData.post_packages = Ops.get_list(settings, "post-packages", [])
-      AutoinstData.post_patterns = Ops.get_list(settings, "post-patterns", [])
-      PackageAI.toremove = Ops.get_list(settings, "remove-packages", [])
+      PackageAI.toinstall = settings.fetch("packages",[])
+      @kernel = settings.fetch("kernel","")
+      AutoinstData.post_packages = settings.fetch("post-packages", [])
+      AutoinstData.post_patterns = settings.fetch("post-patterns", [])
+      PackageAI.toremove = settings.fetch("remove-packages", [])
 
       # Imaging
       # map<string, any> image = settings["system_images"]:$[];
@@ -189,13 +188,33 @@ module Yast
       #     modified = false;
       # else
       #     modified = true;
-      @image = Ops.get_map(settings, "image", {})
-      if Ops.get_string(@image, "image_location", "") != "" &&
-          Ops.get_string(@image, "image_name", "") != ""
+      @image = settings.fetch("image",{})
+      if !@image.fetch("image_location","").empty? &&
+         !@image.fetch("image_name","").empty?
         @imaging = true
       end
-
       true
+    end
+
+    def AddYdepsFromProfile( entries )
+      Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
+      ign = [ "software", "partitioning", "general", "report", "scripts", "suse_register", 
+              "files", "bootloader", "add-on", "dasd", "zfcp", "timezone" ]
+      map = { "networking" => "yast2-network" }
+      entries.reject! { |e| ign.include?(e) }
+      Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
+      pkglist = []
+      entries.each do |e|
+        name = map.has_key?(e) ? map[e] : "yast2-"+e
+        Builtins.y2milestone("AddYdepsFromProfile name %1 from %2", name, e)
+        pkglist.push(name) if !pkglist.include?(name)
+      end
+      Builtins.y2milestone("AddYdepsFromProfile pkglist %1", pkglist)
+      pkglist.each do |p|
+        if( !PackageAI.toinstall.include?(p) && @packagesAvailable.include?(p) )
+          PackageAI.toinstall.push(p)
+        end
+      end
     end
 
     # Constructer
@@ -1080,6 +1099,7 @@ module Yast
     publish :function => :createISO, :type => "void ()"
     publish :function => :Export, :type => "map ()"
     publish :function => :AddModulePackages, :type => "void (list <string>)"
+    publish :function => :AddYdepsFromProfile, :type => "void (list <string>)"
     publish :function => :RemoveModulePackages, :type => "void (list <string>)"
     publish :function => :Summary, :type => "string ()"
     publish :function => :autoinstPackages, :type => "list <string> ()"
