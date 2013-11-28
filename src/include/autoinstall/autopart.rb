@@ -2077,11 +2077,22 @@ module Yast
         #     ret = ret - (e["cylinders"]:0 * g["cyl_size"]:1) / (1024*1024*1024);
         #     y2milestone("weight (after rounding): %1", ret);
         # }
-        if Ops.get_boolean(e, "extended", false)
-          ret = Ops.subtract(ret, 1)
-          if Builtins.size(Ops.get_list(e, "added", [])) == 0
-            ret = Ops.subtract(ret, 100)
+        if e.fetch("extended", false)
+          ret -= 1
+          ret -= 100 if e.fetch("added",[]).empty?
+        else
+          index=0
+          ps.each do |p|
+            if p.key?("partition_nr")
+              ad = e.fetch("added",[]).find { |li| li[0]==index }
+              if ad && ad[1]!=p["partition_nr"]
+                Builtins.y2milestone("do_weighting part num mismatch add:%1 ps:%2", ad, p)
+                ret -= 100
+              end
+            end
+            index += 1
           end
+          ret -=10 if g.fetch("free_pnr",[]).size<1
         end
       end
       Builtins.y2milestone("do_weighting weight:  %1", ret)
