@@ -333,10 +333,10 @@ module Yast
         @default_target = default_runlevel == 5 ? Target::GRAPHICAL : Target::MULTIUSER
         Builtins.y2milestone "Accepting runlevel '#{default_runlevel}' as default target '#{@default_target}'"
       else
-        @default_target = Profile.current['default_target']
+        @default_target = Profile.current['default_target'].to_s
       end
 
-      Builtins.y2milestone("autoyast - configured default target: #{@default_target}")
+      Builtins.y2milestone("autoyast - configured default target: '#{@default_target}'")
 
       if !@default_target.empty?
         SystemdTarget.default_target = @default_target
