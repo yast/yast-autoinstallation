@@ -331,7 +331,7 @@ module Yast
       if Profile.current['runlevel'] && Profile.current['runlevel']['default']
         default_runlevel = Profile.current['runlevel']['default'].to_i
         @default_target = default_runlevel == 5 ? Target::GRAPHICAL : Target::MULTIUSER
-        Builtins.y2milestone "Accepting runlevel '#{default_runlevel}' as default target '#{@default_target}'"
+        Builtins.y2milestone("Accepting runlevel '#{default_runlevel}' as default target '#{@default_target}'")
       else
         @default_target = Profile.current['default_target'].to_s
       end
