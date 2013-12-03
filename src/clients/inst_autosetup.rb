@@ -278,7 +278,7 @@ module Yast
 
       Progress.NextStage
       AutoinstSoftware.Import(Ops.get_map(Profile.current, "software", {}))
-      keys = Profile.current.keys.select do |k| 
+      keys = Profile.current.keys.select do |k|
         Profile.current[k].is_a?(Array)||Profile.current[k].is_a?(Hash)
       end
       AutoinstSoftware.AddYdepsFromProfile(keys)
@@ -327,8 +327,17 @@ module Yast
       LanUdevAuto.Import(Ops.get_map(Profile.current, "networking", {}))
 
       Progress.NextStage
-      @default_target = Profile.current['default_target'].to_s
+
+      if Profile.current['runlevel'] && Profile.current['runlevel']['default']
+        default_runlevel = Profile.current['runlevel']['default']
+        @default_target = default_runlevel == '5' ? Target::GRAPHICAL : Target::MULTIUSER
+        Builtins.y2milestone "Accepting runlevel '#{default_runlevel}' as default target '#{@default_target}'"
+      else
+        @default_target = Profile.current['default_target']
+      end
+
       Builtins.y2milestone("autoyast - configured default target: #{@default_target}")
+
       if !@default_target.empty?
         SystemdTarget.default_target = @default_target
       else
@@ -336,6 +345,7 @@ module Yast
           Arch.x11_setup_needed &&
           Pkg.IsSelected("xorg-x11-server") ? Target::GRAPHICAL : Target::MULTIUSER
       end
+
       Builtins.y2milestone(
         "autoyast - setting default target to: #{SystemdTarget.default_target}"
       )
