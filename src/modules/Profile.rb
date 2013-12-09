@@ -316,10 +316,6 @@ module Yast
         )
       end
 
-      # should not be needed anymore with new libsax
-      #if (!current["x11", "configure_x11"]:false)
-      #    ProductControl::DisableModule ("x11");
-
       # raise the network immediately after configuring it
       if Builtins.haskey(@current, "networking") &&
           !Builtins.haskey(
@@ -677,10 +673,6 @@ module Yast
     # @param  path to file
     # @return	[Boolean]
     def ReadXML(file)
-      # does not work here
-      #if ( !FileUtils::Exists( file ) )
-      #    return false;
-
       tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
       l = Builtins.splitstring(tmp, "\n")
       if tmp != nil && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
@@ -719,7 +711,6 @@ module Yast
         # FIXME: rethink and check for sanity of that!
         # save decrypted profile for modifying pre-scripts
         if Stage.initial
-          #SCR::Write(.target.string, AutoinstConfig::profile_dir+"/autoinst.xml", out["stdout"]:"");
           SCR.Write(
             path(".target.string"),
             file,
