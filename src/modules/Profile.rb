@@ -37,8 +37,6 @@ module Yast
 
       @Version = ""
 
-      @Description = ""
-
       @changed = false
 
       @prepare = true
@@ -274,7 +272,6 @@ module Yast
     def ReadProperties(properties)
       properties = deep_copy(properties)
       @Version = Ops.get_string(properties, "version", "")
-      @Description = Ops.get_string(properties, "description", "")
 
       if @Version != "3.0"
         Builtins.y2milestone("Wrong profile version '#{@Version}'")
