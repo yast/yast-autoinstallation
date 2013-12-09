@@ -59,12 +59,6 @@ module Yast
     end
 
 
-    # Detect Version
-    # @return [String]
-    def DetectVersion
-      ""
-    end
-
     # compatibility to new storage lib in 10.0
     def storageLibCompat
       newPart = []
@@ -282,16 +276,12 @@ module Yast
       @Version = Ops.get_string(properties, "version", "")
       @Description = Ops.get_string(properties, "description", "")
 
-      if @Version != "3.0" || @Version == ""
-        @Version = DetectVersion()
-        if @Version == ""
-          Builtins.y2milestone("Can't detect Profile Version")
-          return
-        end
+      if @Version != "3.0"
+        Builtins.y2milestone("Wrong profile version '#{@Version}'")
+        @Version = "" #WTF? why nulify when we don't know
       else
         Builtins.y2milestone("AutoYaST Profile Version  %1 Detected.", @Version)
       end
-      nil
     end
 
 
