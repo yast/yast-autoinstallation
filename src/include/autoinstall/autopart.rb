@@ -1452,25 +1452,18 @@ module Yast
       # extended is not possible and number of requested partitions is less than all
       # available primaries and logical slots )
 
-      new_ps = Builtins.size(
-        Builtins.filter(
-          Convert.convert(ps, :from => "list", :to => "list <map>")
-        ) { |p| Ops.get_boolean(p, "create", true) }
-      )
-      free_pnr = Builtins.size(Ops.get_list(g, "free_pnr", []))
-      if Ops.get_boolean(g, "extended_possible", false)
-        free_pnr = Ops.add(
-          Ops.subtract(free_pnr, 1),
-          Builtins.size(Ops.get_list(g, "ext_pnr", []))
-        )
+      new_ps = ps.count { |p| p.fetch("create", true) }
+      reuse_ps = ps.count { |p| p.fetch("partition_nr",0)==p.fetch("usepart",-1) }
+      free_pnr = g.fetch("free_pnr",[]).size
+      if g.fetch("extended_possible",false)
+        free_pnr -= 1
+        free_pnr += g.fetch("ext_pnr",[]).size
       end
       Builtins.y2milestone(
-        "get_perfect_list: size(ps):%1 new_ps:%2 sum_free:%3",
-        Builtins.size(ps),
-        new_ps,
-        free_pnr
+        "get_perfect_list: size(ps):%1 new_ps:%2 reuse_ps:%3 sum_free:%4",
+        ps.size, new_ps, reuse_ps, free_pnr
       )
-      if new_ps>0 && g.fetch("gap", []).size>0 && new_ps<=free_pnr 
+      if (new_ps>0||reuse_ps>0) && g.fetch("gap", []).size>0 && new_ps<=free_pnr 
         lg = Builtins.eval(g)
 
         # prepare local gap var
