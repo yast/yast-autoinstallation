@@ -35,8 +35,6 @@ module Yast
       @ModuleMap = {}
 
 
-      @Version = ""
-
       @changed = false
 
       @prepare = true
@@ -269,15 +267,12 @@ module Yast
     # Read Profile properties and Version
     # @param map Profile Properties
     # @return [void]
-    def ReadProperties(properties)
-      properties = deep_copy(properties)
-      @Version = Ops.get_string(properties, "version", "")
-
-      if @Version != "3.0"
-        Builtins.y2milestone("Wrong profile version '#{@Version}'")
-        @Version = "" #WTF? why nulify when we don't know
+    def check_version(properties)
+      version = properties["version"]
+      if version != "3.0"
+        Builtins.y2milestone("Wrong profile version '#{version}'")
       else
-        Builtins.y2milestone("AutoYaST Profile Version  %1 Detected.", @Version)
+        Builtins.y2milestone("AutoYaST Profile Version  %1 Detected.", version)
       end
     end
 
@@ -291,7 +286,7 @@ module Yast
       Builtins.y2milestone("importing profile")
       @current = deep_copy(profile)
 
-      ReadProperties(Ops.get_map(@current, "properties", {}))
+      check_version(Ops.get_map(@current, "properties", {}))
 
       # old style
       if Builtins.haskey(profile, "configure") ||
@@ -849,12 +844,8 @@ module Yast
 
     publish :variable => :current, :type => "map <string, any>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
-    publish :variable => :Version, :type => "string"
     publish :variable => :changed, :type => "boolean"
     publish :variable => :prepare, :type => "boolean"
-    publish :function => :Profile, :type => "void ()"
-    publish :function => :generalCompat, :type => "void ()"
-    publish :function => :ReadProperties, :type => "void (map)"
     publish :function => :Import, :type => "void (map <string, any>)"
     publish :function => :Prepare, :type => "void ()"
     publish :function => :Reset, :type => "void ()"
