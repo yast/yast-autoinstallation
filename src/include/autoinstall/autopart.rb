@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-# File:	modules/AutoinstStorage.ycp
+# File:	include/autoinstall/autpart.rb
 # Module:	Auto-Installation
 # Summary:	Storage
 # Authors:	Anas Nashif <nashif@suse.de>
