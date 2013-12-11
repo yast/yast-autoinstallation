@@ -27,7 +27,8 @@ Source0:        autoyast2-%{version}.tar.bz2
 Group:	System/YaST
 License:        GPL-2.0
 Source1:        autoyast_en_html.tar.bz2
-BuildRequires:	yast2-devtools update-desktop-files
+BuildRequires:	yast2-devtools >= 3.1.10
+BuildRequires:  update-desktop-files
 # /usr/share/YaST2/control/control.rng
 BuildRequires:  yast2-installation
 # xmllint
