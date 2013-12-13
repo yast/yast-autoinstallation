@@ -35,10 +35,6 @@ module Yast
       @ModuleMap = {}
 
 
-      @Version = ""
-
-      @Description = ""
-
       @changed = false
 
       @prepare = true
@@ -58,12 +54,6 @@ module Yast
       nil
     end
 
-
-    # Detect Version
-    # @return [String]
-    def DetectVersion
-      ""
-    end
 
     # compatibility to new storage lib in 10.0
     def storageLibCompat
@@ -277,21 +267,13 @@ module Yast
     # Read Profile properties and Version
     # @param map Profile Properties
     # @return [void]
-    def ReadProperties(properties)
-      properties = deep_copy(properties)
-      @Version = Ops.get_string(properties, "version", "")
-      @Description = Ops.get_string(properties, "description", "")
-
-      if @Version != "3.0" || @Version == ""
-        @Version = DetectVersion()
-        if @Version == ""
-          Builtins.y2milestone("Can't detect Profile Version")
-          return
-        end
+    def check_version(properties)
+      version = properties["version"]
+      if version != "3.0"
+        Builtins.y2milestone("Wrong profile version '#{version}'")
       else
-        Builtins.y2milestone("AutoYaST Profile Version  %1 Detected.", @Version)
+        Builtins.y2milestone("AutoYaST Profile Version  %1 Detected.", version)
       end
-      nil
     end
 
 
@@ -304,7 +286,7 @@ module Yast
       Builtins.y2milestone("importing profile")
       @current = deep_copy(profile)
 
-      ReadProperties(Ops.get_map(@current, "properties", {}))
+      check_version(Ops.get_map(@current, "properties", {}))
 
       # old style
       if Builtins.haskey(profile, "configure") ||
@@ -328,10 +310,6 @@ module Yast
           :to   => "map <string, any>"
         )
       end
-
-      # should not be needed anymore with new libsax
-      #if (!current["x11", "configure_x11"]:false)
-      #    ProductControl::DisableModule ("x11");
 
       # raise the network immediately after configuring it
       if Builtins.haskey(@current, "networking") &&
@@ -690,10 +668,6 @@ module Yast
     # @param  path to file
     # @return	[Boolean]
     def ReadXML(file)
-      # does not work here
-      #if ( !FileUtils::Exists( file ) )
-      #    return false;
-
       tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
       l = Builtins.splitstring(tmp, "\n")
       if tmp != nil && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
@@ -732,7 +706,6 @@ module Yast
         # FIXME: rethink and check for sanity of that!
         # save decrypted profile for modifying pre-scripts
         if Stage.initial
-          #SCR::Write(.target.string, AutoinstConfig::profile_dir+"/autoinst.xml", out["stdout"]:"");
           SCR.Write(
             path(".target.string"),
             file,
@@ -871,12 +844,8 @@ module Yast
 
     publish :variable => :current, :type => "map <string, any>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
-    publish :variable => :Version, :type => "string"
     publish :variable => :changed, :type => "boolean"
     publish :variable => :prepare, :type => "boolean"
-    publish :function => :Profile, :type => "void ()"
-    publish :function => :generalCompat, :type => "void ()"
-    publish :function => :ReadProperties, :type => "void (map)"
     publish :function => :Import, :type => "void (map <string, any>)"
     publish :function => :Prepare, :type => "void ()"
     publish :function => :Reset, :type => "void ()"
