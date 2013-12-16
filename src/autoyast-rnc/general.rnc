@@ -14,6 +14,7 @@ general = element general {
     }? &
     mouse? & 
     ask-list? & 
+    semi-automatic? &
     signature-handling? &
     element proposals {
         LIST,
@@ -78,6 +79,9 @@ ask_pathlist =  element pathlist {
     ask_path*
 }
 
+semi-automatic = element semi-automatic { LIST, semi-automatic-modules* }
+semi-automatic-modules = semi-automatic-networking?
+semi-automatic-networking = element networking { empty }
 
 signature-handling = element signature-handling { accept_unsigned_file? & accept_file_without_checksum? & accept_verification_failed? & accept_unknown_gpg_key? & import_gpg_key? & accept_non_trusted_gpg_key? }
 accept_unsigned_file = element accept_unsigned_file { BOOLEAN }
