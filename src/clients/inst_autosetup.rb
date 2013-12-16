@@ -139,6 +139,9 @@ module Yast
           "lan_auto",
           ["Import", Ops.get_map(Profile.current, "networking", {})]
         )
+        if Profile.current["semi-automatic"] && Profile.current["semi-automatic"].include("networking")
+          Call.function("inst_lan", ["enable_next" => true])
+        end
         Call.Function("lan_auto", ["Write"])
       end
 
