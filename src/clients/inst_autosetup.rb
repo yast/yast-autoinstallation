@@ -133,11 +133,7 @@ module Yast
       )
       AutoinstGeneral.Write
 
-      if Ops.get_boolean(
-          Profile.current,
-          ["networking", "setup_before_proposal"],
-          false
-        )
+      if Profile.current["networking"]
         Builtins.y2milestone("Networking setup before the proposal")
         Call.Function(
           "lan_auto",
