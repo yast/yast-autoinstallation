@@ -133,17 +133,22 @@ module Yast
       )
       AutoinstGeneral.Write
 
+      write_network = false
       if Profile.current["networking"]
         Builtins.y2milestone("Networking setup before the proposal")
         Call.Function(
           "lan_auto",
           ["Import", Ops.get_map(Profile.current, "networking", {})]
         )
-        if Profile.current["semi-automatic"] && Profile.current["semi-automatic"].include("networking")
-          Call.function("inst_lan", ["enable_next" => true])
-        end
-        Call.Function("lan_auto", ["Write"])
+        write_network = true
       end
+
+      if Profile.current["semi-automatic"] && Profile.current["semi-automatic"].include("networking")
+        Call.function("inst_lan", ["enable_next" => true])
+        write_network = true
+      end
+
+      Call.Function("lan_auto", ["Write"]) if write_network
 
       if Builtins.haskey(Profile.current, "add-on")
 	Progress.Title(_("Handling Add-On Products..."))
