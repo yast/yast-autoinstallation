@@ -98,7 +98,8 @@ module Yast
           "net-udev"                 => "rule",
           "ask-list"                 => "ask",
           "device_order"             => "device",
-          "param-list"               => "param"
+          "param-list"               => "param",
+          "semi-automatic"           => "module"
         }
       )
 
