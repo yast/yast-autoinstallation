@@ -1,7 +1,7 @@
 #
 # spec file for package autoyast2
 #
-# Copyright (c) 2012 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -23,36 +23,41 @@ Release:        0
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        autoyast2-%{version}.tar.bz2
 
-
-Group:	System/YaST
-License:        GPL-2.0
 Source1:        autoyast_en_html.tar.bz2
-BuildRequires:	yast2-devtools >= 3.1.15
 BuildRequires:  update-desktop-files
+BuildRequires:  yast2-devtools >= 3.1.15
 # control.rng
 BuildRequires:  yast2-installation-control
 # xmllint
 BuildRequires:  libxml2-tools
 
-Requires:	yast2 >= 2.16.36
-Requires:	yast2-core yast2-xml libxslt
-Requires:	autoyast2-installation = %{version}
-Requires:	yast2-schema yast2 yast2-country
-Requires:	yast2-storage >= 3.0.5
-Requires:	yast2-transfer >= 2.21.0
+Requires:       autoyast2-installation = %{version}
+Requires:       libxslt
+Requires:       yast2
+Requires:       yast2 >= 2.16.36
+Requires:       yast2-core
+Requires:       yast2-country
+Requires:       yast2-schema
+Requires:       yast2-storage >= 3.0.5
+Requires:       yast2-transfer >= 2.21.0
+Requires:       yast2-xml
 
-Provides:	yast2-module-autoinst yast2-config-autoinst
-Obsoletes:	yast2-module-autoinst yast2-config-autoinst
-Provides:	yast2-lib-autoinst
-Obsoletes:	yast2-lib-autoinst
+Provides:       yast2-config-autoinst
+Provides:       yast2-module-autoinst
+Obsoletes:      yast2-config-autoinst
+Obsoletes:      yast2-module-autoinst
+Provides:       yast2-lib-autoinst
+Obsoletes:      yast2-lib-autoinst
 
-PreReq:		%insserv_prereq %fillup_prereq
+PreReq:         %insserv_prereq %fillup_prereq
 
-BuildArchitectures:	noarch
+BuildArch:      noarch
 
 Requires:       yast2-ruby-bindings >= 1.0.0
 
-Summary:	YaST2 - Automated Installation
+Summary:        YaST2 - Automated Installation
+License:        GPL-2.0
+Group:          System/YaST
 
 %description
 This package is intended for management of the control files and the
@@ -67,17 +72,26 @@ installation sources.
 %package installation
 Requires:       yast2-ruby-bindings >= 1.0.0
 
-Summary:	YaST2 - Auto Installation Modules
-Group:		System/YaST
+Summary:        YaST2 - Auto Installation Modules
+Group:          System/YaST
 # API for Disabled Modules (ProductControl)
-Requires:	yast2 >= 2.16.36
+Requires:       yast2 >= 2.16.36
 # After API cleanup
-Requires:	yast2-update >= 2.18.3
-Requires:	yast2-xml yast2-core yast2 yast2-country yast2-packager yast2-storage yast2-slp yast2-bootloader yast2-ncurses
-Requires:	yast2-services-manager
-Requires:	yast2-transfer >= 2.21.0
-Provides:	yast2-trans-autoinst
-Obsoletes:	yast2-trans-autoinst
+Requires:       yast2
+Requires:       yast2-bootloader
+Requires:       yast2-core
+Requires:       yast2-country
+Requires:       yast2-ncurses
+Requires:       yast2-packager
+Requires:       yast2-services-manager
+Requires:       yast2-slp
+Requires:       yast2-storage
+Requires:       yast2-transfer >= 2.21.0
+Requires:       yast2-update >= 2.18.3
+Requires:       yast2-xml
+Provides:       yast2-trans-autoinst
+Obsoletes:      yast2-trans-autoinst
+
 %description installation
 This package performs auto-installation relying on a control file
 generated with the autoyast2 package.
@@ -120,7 +134,6 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 
 %post
 %{fillup_only -n autoinstall}
-
 
 %files
 %defattr(-,root,root)
@@ -169,12 +182,9 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %dir %{yast_agentdir}
 %{yast_agentdir}/ag_ksimport
 
-
-
 # additional files
 
 /var/adm/fillup-templates/sysconfig.autoinstall
-
 
 %files installation
 %defattr(-,root,root)
@@ -261,4 +271,4 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %dir /var/lib/autoinstall
 %dir /var/lib/autoinstall/autoconf
 
-
+%changelog
