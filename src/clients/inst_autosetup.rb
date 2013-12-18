@@ -143,8 +143,9 @@ module Yast
         write_network = true
       end
 
-      if Profile.current["semi-automatic"] && Profile.current["semi-automatic"].include("networking")
-        Call.function("inst_lan", ["enable_next" => true])
+      if Profile.current["general"]["semi-automatic"] && Profile.current["general"]["semi-automatic"].include?("networking")
+        Builtins.y2milestone("Networking manual setup")
+        Call.Function("inst_lan", ["enable_next" => true])
         write_network = true
       end
 
