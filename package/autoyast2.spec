@@ -31,6 +31,13 @@ BuildRequires:  yast2-installation-control
 # xmllint
 BuildRequires:  libxml2-tools
 
+# %%{_unitdir} macro definition is in a separate package since 13.1
+%if 0%{?suse_version} >= 1310
+BuildRequires:  systemd-rpm-macros
+%else
+BuildRequires:  systemd
+%endif
+
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
 Requires:       yast2
