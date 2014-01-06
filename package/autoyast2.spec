@@ -177,7 +177,6 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_clientdir}/software_auto.rb
 %{yast_clientdir}/storage_auto.rb
 %{yast_clientdir}/autoyast.rb
-%{yast_clientdir}/clone_system.rb
 %{yast_clientdir}/ayast_setup.rb
 
 %dir %{yast_scrconfdir}
@@ -261,6 +260,7 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_clientdir}/ayast_probe.rb
 %{yast_clientdir}/inst_autosetup_upgrade.rb
 %{yast_clientdir}/inst_store_upgrade_software.rb
+%{yast_clientdir}/clone_system.rb
 
 %{yast_yncludedir}/autoinstall/xml.rb
 %{yast_yncludedir}/autoinstall/ask.rb
