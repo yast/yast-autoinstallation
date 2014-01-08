@@ -134,7 +134,12 @@ module Yast
       AutoinstGeneral.Write
 
       write_network = false
-      if Profile.current["networking"]
+      semiauto_network = Profile.current["general"]["semi-automatic"] &&
+        Profile.current["general"]["semi-automatic"].include?("networking")
+
+      if Profile.current["networking"] &&
+          ( Profile.current["networking"]["setup_before_proposal"] ||
+            semiauto_network )
         Builtins.y2milestone("Networking setup before the proposal")
         Call.Function(
           "lan_auto",
@@ -143,7 +148,7 @@ module Yast
         write_network = true
       end
 
-      if Profile.current["general"]["semi-automatic"] && Profile.current["general"]["semi-automatic"].include?("networking")
+      if semiauto_network
         Builtins.y2milestone("Networking manual setup")
         Call.Function("inst_lan", ["enable_next" => true])
         write_network = true
