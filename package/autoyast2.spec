@@ -1,7 +1,7 @@
 #
 # spec file for package autoyast2
 #
-# Copyright (c) 2012 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -17,42 +17,54 @@
 
 
 Name:           autoyast2
-Version:        3.1.3
+Version:        3.1.5
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        autoyast2-%{version}.tar.bz2
 
-
-Group:	System/YaST
-License:        GPL-2.0
 Source1:        autoyast_en_html.tar.bz2
-BuildRequires:	yast2-devtools >= 3.1.10
 BuildRequires:  update-desktop-files
-# /usr/share/YaST2/control/control.rng
-BuildRequires:  yast2-installation
+BuildRequires:  yast2-devtools >= 3.1.15
+# control.rng
+BuildRequires:  yast2-installation-control
 # xmllint
 BuildRequires:  libxml2-tools
 
-Requires:	yast2 >= 2.16.36
-Requires:	yast2-core yast2-xml libxslt
-Requires:	autoyast2-installation = %{version}
-Requires:	yast2-schema yast2 yast2-country
-Requires:	yast2-storage >= 3.0.5
-Requires:	yast2-transfer >= 2.21.0
+# %%{_unitdir} macro definition is in a separate package since 13.1
+%if 0%{?suse_version} >= 1310
+BuildRequires:  systemd-rpm-macros
+%else
+BuildRequires:  systemd
+%endif
 
-Provides:	yast2-module-autoinst yast2-config-autoinst
-Obsoletes:	yast2-module-autoinst yast2-config-autoinst
-Provides:	yast2-lib-autoinst
-Obsoletes:	yast2-lib-autoinst
+Requires:       autoyast2-installation = %{version}
+Requires:       libxslt
+Requires:       yast2
+Requires:       yast2 >= 2.16.36
+Requires:       yast2-core
+Requires:       yast2-country
+Requires:       yast2-schema
+Requires:       yast2-storage >= 3.0.5
+Requires:       yast2-transfer >= 2.21.0
+Requires:       yast2-xml
 
-PreReq:		%insserv_prereq %fillup_prereq
+Provides:       yast2-config-autoinst
+Provides:       yast2-module-autoinst
+Obsoletes:      yast2-config-autoinst
+Obsoletes:      yast2-module-autoinst
+Provides:       yast2-lib-autoinst
+Obsoletes:      yast2-lib-autoinst
 
-BuildArchitectures:	noarch
+PreReq:         %insserv_prereq %fillup_prereq
+
+BuildArch:      noarch
 
 Requires:       yast2-ruby-bindings >= 1.0.0
 
-Summary:	YaST2 - Automated Installation
+Summary:        YaST2 - Automated Installation
+License:        GPL-2.0
+Group:          System/YaST
 
 %description
 This package is intended for management of the control files and the
@@ -67,17 +79,26 @@ installation sources.
 %package installation
 Requires:       yast2-ruby-bindings >= 1.0.0
 
-Summary:	YaST2 - Auto Installation Modules
-Group:		System/YaST
+Summary:        YaST2 - Auto Installation Modules
+Group:          System/YaST
 # API for Disabled Modules (ProductControl)
-Requires:	yast2 >= 2.16.36
+Requires:       yast2 >= 2.16.36
 # After API cleanup
-Requires:	yast2-update >= 2.18.3
-Requires:	yast2-xml yast2-core yast2 yast2-country yast2-packager yast2-storage yast2-slp yast2-bootloader yast2-ncurses
-Requires:	yast2-services-manager
-Requires:	yast2-transfer >= 2.21.0
-Provides:	yast2-trans-autoinst
-Obsoletes:	yast2-trans-autoinst
+Requires:       yast2
+Requires:       yast2-bootloader
+Requires:       yast2-core
+Requires:       yast2-country
+Requires:       yast2-ncurses
+Requires:       yast2-packager
+Requires:       yast2-services-manager
+Requires:       yast2-slp
+Requires:       yast2-storage
+Requires:       yast2-transfer >= 2.21.0
+Requires:       yast2-update >= 2.18.3
+Requires:       yast2-xml
+Provides:       yast2-trans-autoinst
+Obsoletes:      yast2-trans-autoinst
+
 %description installation
 This package performs auto-installation relying on a control file
 generated with the autoyast2 package.
@@ -86,29 +107,10 @@ generated with the autoyast2 package.
 %setup -n autoyast2-%{version}
 
 %build
-%{_prefix}/bin/y2tool y2autoconf
-%{_prefix}/bin/y2tool y2automake
-autoreconf --force --install
-
-export CFLAGS="$RPM_OPT_FLAGS -DNDEBUG"
-export CXXFLAGS="$RPM_OPT_FLAGS -DNDEBUG"
-
-./configure --libdir=%{_libdir} --prefix=%{_prefix} --mandir=%{_mandir}
-# V=1: verbose build in case we used AM_SILENT_RULES(yes)
-# so that RPM_OPT_FLAGS check works
-make %{?jobs:-j%jobs} V=1
+%yast_build
 
 %install
-make install DESTDIR="$RPM_BUILD_ROOT"
-[ -e "%{_prefix}/share/YaST2/data/devtools/NO_MAKE_CHECK" ] || Y2DIR="$RPM_BUILD_ROOT/usr/share/YaST2" make check DESTDIR="$RPM_BUILD_ROOT"
-for f in `find $RPM_BUILD_ROOT/%{_prefix}/share/applications/YaST2/ -name "*.desktop"` ; do
-    d=${f##*/}
-    %suse_update_desktop_file -d ycc_${d%.desktop} ${d%.desktop}
-done
-
-for d in `ls $RPM_BUILD_ROOT/usr/share/autoinstall/modules/*.desktop`; do
-    %suse_update_desktop_file $d
-done
+%yast_install
 
 # Class conf
 install -d -m 700 $RPM_BUILD_ROOT/etc/autoinstall
@@ -137,17 +139,13 @@ tar xvpfC %{SOURCE1} $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/htm
 mv $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast/* $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/
 rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 
-%clean
-rm -rf "$RPM_BUILD_ROOT"
-
 %post
 %{fillup_only -n autoinstall}
-
 
 %files
 %defattr(-,root,root)
 %dir /etc/autoinstall
-%dir /usr/share/YaST2/include/autoinstall
+%dir %{yast_yncludedir}/autoinstall
 %dir /var/lib/autoinstall/repository
 %dir /var/lib/autoinstall/repository/templates
 %dir /var/lib/autoinstall/repository/rules
@@ -155,46 +153,50 @@ rm -rf "$RPM_BUILD_ROOT"
 %dir /var/lib/autoinstall/tmp
 %doc %{_prefix}/share/doc/packages/autoyast2
 
-
-%{_prefix}/share/applications/YaST2/autoyast.desktop
+%dir %yast_desktopdir
+%{yast_desktopdir}/autoyast.desktop
 /usr/share/autoinstall/modules/*.desktop
-/usr/share/YaST2/include/autoinstall/classes.rb
-/usr/share/YaST2/include/autoinstall/conftree.rb
-/usr/share/YaST2/include/autoinstall/dialogs.rb
-/usr/share/YaST2/include/autoinstall/script_dialogs.rb
-/usr/share/YaST2/include/autoinstall/general_dialogs.rb
-/usr/share/YaST2/include/autoinstall/wizards.rb
-/usr/share/YaST2/include/autoinstall/helps.rb
-/usr/share/YaST2/schema/autoyast/rnc/*.rnc
+%dir %{yast_yncludedir}
+%{yast_yncludedir}/autoinstall/classes.rb
+%{yast_yncludedir}/autoinstall/conftree.rb
+%{yast_yncludedir}/autoinstall/dialogs.rb
+%{yast_yncludedir}/autoinstall/script_dialogs.rb
+%{yast_yncludedir}/autoinstall/general_dialogs.rb
+%{yast_yncludedir}/autoinstall/wizards.rb
+%{yast_yncludedir}/autoinstall/helps.rb
+%dir %{yast_schemadir}
+%dir %{yast_schemadir}/autoyast
+%dir %{yast_schemadir}/autoyast/rnc
+%{yast_schemadir}/autoyast/rnc/*.rnc
 
-/usr/share/YaST2/clients/general_auto.rb
-/usr/share/YaST2/clients/report_auto.rb
-/usr/share/YaST2/clients/classes_auto.rb
-/usr/share/YaST2/clients/scripts_auto.rb
-/usr/share/YaST2/clients/software_auto.rb
-/usr/share/YaST2/clients/storage_auto.rb
-/usr/share/YaST2/clients/autoyast.rb
-/usr/share/YaST2/clients/clone_system.rb
-/usr/share/YaST2/clients/ayast_setup.rb
+%dir %{yast_clientdir}
+%{yast_clientdir}/general_auto.rb
+%{yast_clientdir}/report_auto.rb
+%{yast_clientdir}/classes_auto.rb
+%{yast_clientdir}/scripts_auto.rb
+%{yast_clientdir}/software_auto.rb
+%{yast_clientdir}/storage_auto.rb
+%{yast_clientdir}/autoyast.rb
+%{yast_clientdir}/ayast_setup.rb
 
-/usr/share/YaST2/scrconf/ksimport.scr
+%dir %{yast_scrconfdir}
+%{yast_scrconfdir}/ksimport.scr
 
-
-/usr/share/YaST2/modules/AutoinstClass.rb
-/usr/share/YaST2/modules/Kickstart.rb
-/usr/lib/YaST2/servers_non_y2/ag_ksimport
-
-
+%dir %{yast_moduledir}
+%{yast_moduledir}/AutoinstClass.rb
+%{yast_moduledir}/Kickstart.rb
+%dir %{yast_agentdir}
+%{yast_agentdir}/ag_ksimport
 
 # additional files
 
 /var/adm/fillup-templates/sysconfig.autoinstall
 
-
 %files installation
 %defattr(-,root,root)
-/usr/share/YaST2/scrconf/autoinstall.scr
-/usr/share/YaST2/scrconf/cfg_autoinstall.scr
+%dir %{yast_scrconfdir}
+%{yast_scrconfdir}/autoinstall.scr
+%{yast_scrconfdir}/cfg_autoinstall.scr
 # DTD files
 %dir /usr/share/autoinstall
 #%dir /usr/share/autoinstall/dtd
@@ -208,58 +210,60 @@ rm -rf "$RPM_BUILD_ROOT"
 /usr/share/autoinstall/xslt/merge.xslt
 # config file
 
-/usr/share/YaST2/modules/AutoinstClone.rb
-%dir /usr/share/YaST2/include/autoinstall
-/usr/share/YaST2/include/autoinstall/autopart.rb
-/usr/share/YaST2/include/autoinstall/io.rb
-/usr/share/YaST2/include/autoinstall/autoinst_dialogs.rb
-/usr/share/YaST2/include/autoinstall/AdvancedPartitionDialog.rb
-/usr/share/YaST2/include/autoinstall/DriveDialog.rb
-/usr/share/YaST2/include/autoinstall/PartitionDialog.rb
-/usr/share/YaST2/include/autoinstall/StorageDialog.rb
-/usr/share/YaST2/include/autoinstall/VolgroupDialog.rb
-/usr/share/YaST2/include/autoinstall/common.rb
-/usr/share/YaST2/include/autoinstall/tree.rb
-/usr/share/YaST2/include/autoinstall/types.rb
+%dir %{yast_moduledir}
+%{yast_moduledir}/AutoinstClone.rb
+%dir %{yast_yncludedir}/autoinstall
+%{yast_yncludedir}/autoinstall/autopart.rb
+%{yast_yncludedir}/autoinstall/io.rb
+%{yast_yncludedir}/autoinstall/autoinst_dialogs.rb
+%{yast_yncludedir}/autoinstall/AdvancedPartitionDialog.rb
+%{yast_yncludedir}/autoinstall/DriveDialog.rb
+%{yast_yncludedir}/autoinstall/PartitionDialog.rb
+%{yast_yncludedir}/autoinstall/StorageDialog.rb
+%{yast_yncludedir}/autoinstall/VolgroupDialog.rb
+%{yast_yncludedir}/autoinstall/common.rb
+%{yast_yncludedir}/autoinstall/tree.rb
+%{yast_yncludedir}/autoinstall/types.rb
 
-/usr/share/YaST2/control/*.xml
+%{yast_controldir}/*.xml
 
-/usr/share/YaST2/modules/AutoInstall.rb
-/usr/share/YaST2/modules/AutoinstScripts.rb
-/usr/share/YaST2/modules/AutoinstGeneral.rb
-/usr/share/YaST2/modules/AutoinstImage.rb
-/usr/share/YaST2/modules/Y2ModuleConfig.rb
-/usr/share/YaST2/modules/Profile.rb
-/usr/share/YaST2/modules/AutoinstFile.rb
-/usr/share/YaST2/modules/AutoinstConfig.rb
-/usr/share/YaST2/modules/AutoinstSoftware.rb
-/usr/share/YaST2/modules/AutoinstLVM.rb
-/usr/share/YaST2/modules/AutoinstRAID.rb
-/usr/share/YaST2/modules/AutoinstStorage.rb
-/usr/share/YaST2/modules/AutoInstallRules.rb
-/usr/share/YaST2/modules/ProfileLocation.rb
-/usr/share/YaST2/modules/AutoinstCommon.rb
-/usr/share/YaST2/modules/AutoinstDrive.rb
-/usr/share/YaST2/modules/AutoinstPartPlan.rb
-/usr/share/YaST2/modules/AutoinstPartition.rb
+%{yast_moduledir}/AutoInstall.rb
+%{yast_moduledir}/AutoinstScripts.rb
+%{yast_moduledir}/AutoinstGeneral.rb
+%{yast_moduledir}/AutoinstImage.rb
+%{yast_moduledir}/Y2ModuleConfig.rb
+%{yast_moduledir}/Profile.rb
+%{yast_moduledir}/AutoinstFile.rb
+%{yast_moduledir}/AutoinstConfig.rb
+%{yast_moduledir}/AutoinstSoftware.rb
+%{yast_moduledir}/AutoinstLVM.rb
+%{yast_moduledir}/AutoinstRAID.rb
+%{yast_moduledir}/AutoinstStorage.rb
+%{yast_moduledir}/AutoInstallRules.rb
+%{yast_moduledir}/ProfileLocation.rb
+%{yast_moduledir}/AutoinstCommon.rb
+%{yast_moduledir}/AutoinstDrive.rb
+%{yast_moduledir}/AutoinstPartPlan.rb
+%{yast_moduledir}/AutoinstPartition.rb
 
 #clients
-/usr/share/YaST2/clients/inst_autoinit.rb
-/usr/share/YaST2/clients/inst_autoimage.rb
-/usr/share/YaST2/clients/inst_autosetup.rb
-/usr/share/YaST2/clients/inst_autoconfigure.rb
-/usr/share/YaST2/clients/inst_autopost.rb
-/usr/share/YaST2/clients/files_auto.rb
-/usr/share/YaST2/clients/autoinst_test_clone.rb
-/usr/share/YaST2/clients/autoinst_test_stage.rb
-/usr/share/YaST2/clients/autoinst_scripts1_finish.rb
-/usr/share/YaST2/clients/autoinst_scripts2_finish.rb
-/usr/share/YaST2/clients/ayast_probe.rb
-/usr/share/YaST2/clients/inst_autosetup_upgrade.rb
-/usr/share/YaST2/clients/inst_store_upgrade_software.rb
+%{yast_clientdir}/inst_autoinit.rb
+%{yast_clientdir}/inst_autoimage.rb
+%{yast_clientdir}/inst_autosetup.rb
+%{yast_clientdir}/inst_autoconfigure.rb
+%{yast_clientdir}/inst_autopost.rb
+%{yast_clientdir}/files_auto.rb
+%{yast_clientdir}/autoinst_test_clone.rb
+%{yast_clientdir}/autoinst_test_stage.rb
+%{yast_clientdir}/autoinst_scripts1_finish.rb
+%{yast_clientdir}/autoinst_scripts2_finish.rb
+%{yast_clientdir}/ayast_probe.rb
+%{yast_clientdir}/inst_autosetup_upgrade.rb
+%{yast_clientdir}/inst_store_upgrade_software.rb
+%{yast_clientdir}/clone_system.rb
 
-/usr/share/YaST2/include/autoinstall/xml.rb
-/usr/share/YaST2/include/autoinstall/ask.rb
+%{yast_yncludedir}/autoinstall/xml.rb
+%{yast_yncludedir}/autoinstall/ask.rb
 
 # scripts
 %{_prefix}/lib/YaST2/bin/fetch_image.sh
@@ -274,4 +278,4 @@ rm -rf "$RPM_BUILD_ROOT"
 %dir /var/lib/autoinstall
 %dir /var/lib/autoinstall/autoconf
 
-
+%changelog
