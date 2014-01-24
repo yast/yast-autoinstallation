@@ -239,39 +239,31 @@ module Yast
       # recognize this now
       Storage.ReReadTargetMap
 
+      if Profile.current["partitioning"] && !Profile.current["partitioning"].empty?
+        AutoinstStorage.Import(Profile.current["partitioning"])
+        write_storage = true
+      elsif Profile.current["partitioning_advanced"] && !Profile.current["partitioning_advanced"].empty?
+        AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
+        write_storage = true
       # No partitioning in the profile means yast2-storage proposal (hmmmm.....)
-      if Ops.greater_than(
-          Builtins.size(Ops.get_list(Profile.current, "partitioning", [])),
-          0
-        )
-        AutoinstStorage.Import(
-          Ops.get_list(Profile.current, "partitioning", [])
-        )
-      elsif Ops.greater_than(
-          Builtins.size(
-            Ops.get_map(Profile.current, "partitioning_advanced", {})
-          ),
-          0
-        )
-        AutoinstStorage.ImportAdvanced(
-          Ops.get_map(Profile.current, "partitioning_advanced", {})
-        )
       else
         Storage.SetTestsuite(true) # FIXME: *urgs*
         WFM.CallFunction("inst_disk_proposal", [true, true]) # FIXME: fragile?
         Storage.SetTestsuite(false) # *urgs* again
       end
 
-      if (Ops.greater_than(
-          Builtins.size(Ops.get_list(Profile.current, "partitioning", [])),
-          0
-        ) ||
-          Ops.greater_than(
-            Builtins.size(
-              Ops.get_map(Profile.current, "partitioning_advanced", {})
-            ),
-            0
-          )) &&
+      semiauto_partitions = Profile.current["general"]["semi-automatic"] &&
+        Profile.current["general"]["semi-automatic"].include?("partitioning")
+
+      if semiauto_partitions
+        Builtins.y2milestone("Partitioning manual setup")
+        # Yes, do not set Storage testsuite here as we want really GUI with proposal
+        Call.Function("inst_disk_proposal", ["enable_next" => true])
+        write_storage = true
+      end
+
+
+      if write_storage &&
           !AutoinstStorage.Write
         Report.Error(_("Error while configuring partitions.\nTry again.\n"))
         Builtins.y2error("Aborting...")
