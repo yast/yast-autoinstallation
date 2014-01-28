@@ -172,20 +172,24 @@ module Yast
       Profile.Reset
       Profile.prepare = true
       Mode.SetMode("autoinst_config")
-      Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
-        # Set resource name, if not using default value
-        resource = Ops.get_string(
-          resourceMap,
-          "X-SuSE-YaST-AutoInstResource",
-          ""
-        )
-        resource = def_resource if resource == ""
-        Builtins.y2debug("current resource: %1", resource)
-        if Builtins.contains(@additional, resource)
-          ret = CommonClone(def_resource, resourceMap)
+
+      # do not read settings from system in first stage, autoyast profile
+      # should contain only proposed and user modified values
+      if !Stage.initial
+        Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
+          # Set resource name, if not using default value
+          resource = Ops.get_string(
+            resourceMap,
+            "X-SuSE-YaST-AutoInstResource",
+            ""
+          )
+          resource = def_resource if resource == ""
+          Builtins.y2debug("current resource: %1", resource)
+          if Builtins.contains(@additional, resource)
+            ret = CommonClone(def_resource, resourceMap)
+          end
         end
       end
-
 
       Call.Function("general_auto", ["Import", General()])
       Call.Function("general_auto", ["SetModified"])
