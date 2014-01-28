@@ -158,20 +158,18 @@ module Yast
     # Constructor
     def Y2ModuleConfig
       # Read module configuration data (desktop files)
-      if !Stage.initial
-        _MenuEntries = []
-        if Mode.autoinst
-          _MenuEntries = ReadMenuEntries(["all", "write"])
-        else
-          _MenuEntries = ReadMenuEntries(["all", "configure"])
-        end
-
-        @ModuleMap = Ops.get_map(_MenuEntries, 0, {})
-
-        Profile.ModuleMap = deep_copy(@ModuleMap)
-
-        @GroupMap = Ops.get_map(_MenuEntries, 1, {})
+      _MenuEntries = []
+      if Mode.autoinst
+        _MenuEntries = ReadMenuEntries(["all", "write"])
+      else
+        _MenuEntries = ReadMenuEntries(["all", "configure"])
       end
+
+      @ModuleMap = Ops.get_map(_MenuEntries, 0, {})
+
+      Profile.ModuleMap = deep_copy(@ModuleMap)
+
+      @GroupMap = Ops.get_map(_MenuEntries, 1, {})
 
       if Mode.config
         # construct the tree menu
