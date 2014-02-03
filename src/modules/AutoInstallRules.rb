@@ -1083,19 +1083,17 @@ module Yast
     # @return [void]
     def CreateDefault
       @Behaviour = :one
-      tmp_hex_ip = @hostid
-      @tomerge = Builtins.add(@tomerge, tmp_hex_ip)
-      while Builtins.size(tmp_hex_ip) != 1
-        tmp_hex_ip = Builtins.substring(
-          tmp_hex_ip,
-          0,
-          Ops.subtract(Builtins.size(tmp_hex_ip), 1)
-        )
-        @tomerge = Builtins.add(@tomerge, tmp_hex_ip)
+      if @hostid
+        tmp_hex_ip = @hostid
+        @tomerge << tmp_hex_ip
+        while tmp_hex_ip.size > 1
+          tmp_hex_ip = tmp_hex_ip[0..-2]
+          @tomerge << tmp_hex_ip
+        end
       end
-      @tomerge = Builtins.add(@tomerge, Builtins.toupper(@mac))
-      @tomerge = Builtins.add(@tomerge, Builtins.tolower(@mac))
-      @tomerge = Builtins.add(@tomerge, "default")
+      @tomerge << Builtins.toupper(@mac)
+      @tomerge << Builtins.tolower(@mac)
+      @tomerge << "default"
       Builtins.y2milestone("Created default rules=%1", @tomerge)
       nil
     end
@@ -1113,7 +1111,7 @@ module Yast
     def AutoInstallRules
       @mac = getMAC
       @hostid = getHostid
-      Builtins.y2milestone("init mac:%1 histid:%2", @mac, @hostid)
+      Builtins.y2milestone("init mac:%1 hostid:%2", @mac, @hostid)
       nil
     end
 
