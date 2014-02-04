@@ -17,6 +17,7 @@ module Yast
       Yast.import "AutoinstConfig"
       Yast.import "AutoInstallRules"
       Yast.import "StorageDevices"
+      Yast.import "StorageControllers"
       Yast.import "Mode"
       Yast.import "Installation"
       Yast.import "Popup"
@@ -124,6 +125,8 @@ module Yast
         SCR.Write(path(".etc.install_inf"), nil)
       elsif AutoinstConfig.scheme == "label"
         Builtins.y2milestone("searching label")
+        # need to call this to force Storage stuff to initialize just now
+        StorageControllers.Initialize()
         Builtins.foreach(Storage.GetTargetMap) do |device, v|
           Builtins.y2milestone("looking on %1", device)
           if Ops.get_string(v, "label", "") == AutoinstConfig.host
