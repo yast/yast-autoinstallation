@@ -48,6 +48,7 @@ Requires:       yast2-schema
 Requires:       yast2-storage >= 3.0.5
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
+Requires:       yast2-slp
 
 Provides:       yast2-config-autoinst
 Provides:       yast2-module-autoinst
@@ -91,10 +92,12 @@ Requires:       yast2-country
 Requires:       yast2-ncurses
 Requires:       yast2-packager
 Requires:       yast2-services-manager
+Requires:       yast2-slp
 Requires:       yast2-storage
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-update >= 2.18.3
 Requires:       yast2-xml
+Requires:       yast2-slp
 Provides:       yast2-trans-autoinst
 Obsoletes:      yast2-trans-autoinst
 
