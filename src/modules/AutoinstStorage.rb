@@ -81,39 +81,45 @@ module Yast
       Storage.ClassicStringToByte(s)
     end
 
-    def find_first_disk(after)
-      initial_target_map = Storage.GetTargetMap
-      Builtins.y2milestone("Target map: %1", initial_target_map)
-
-      mbr_disk = ""
-      Builtins.foreach(initial_target_map) do |device, disk|
-        if (Ops.get_symbol(disk, "type", :jo) == :CT_DMRAID ||
-            Ops.get_symbol(disk, "type", :jo) == :CT_MDPART ||
-            Ops.get_symbol(disk, "type", :jo) == :CT_DMMULTIPATH) &&
-            !Builtins.contains(@tabooDevices, device)
-          mbr_disk = device
+    def find_next_disk( tm, after, ctype )
+      Builtins.y2milestone("find_next_disk after:\"%1\" ctype:%2", after, ctype);
+      used_disk = ""
+      meta_types = [ :CT_DMRAID, :CT_MDPART, :CT_DMMULTIPATH ]
+      all_types = meta_types.dup
+      all_types.push(:CT_DISK)
+      if after.empty? && !all_types.include?(ctype)
+        tm.each do |device, disk|
+          if meta_types.include?(disk.fetch("type",:jo)) &&
+             !@tabooDevices.include?(device)
+            used_disk = device
+          end
         end
-      end if after == ""
+      end
 
-      Builtins.foreach(initial_target_map) do |device, disk|
-        if Ops.get_string(disk, "bios_id", "") == "0x80" &&
-            !Builtins.contains(@tabooDevices, device)
-          mbr_disk = device
+      if after.empty? && used_disk.empty?
+        tm.each do |device, disk|
+          if disk["bios_id"]=="0x80" && !@tabooDevices.include?(device)
+            used_disk = device
+          end
         end
-      end if after == "" &&
-        mbr_disk == ""
+      end
 
       # device guessing code enhanced
-      Builtins.foreach(initial_target_map) do |device, disk|
-        if Ops.get_symbol(disk, "type", :x) == :CT_DISK
-          next if device == after || Builtins.contains(@tabooDevices, device)
-          mbr_disk = device
-          raise Break
+      if used_disk.empty?
+        ctype = :CT_DISK  if !all_types.include?(ctype)
+        disks = tm.select { |dev,disk| disk.fetch("type",:x)==ctype };
+        found = !disks.keys.include?(after)
+        disks.each do |device, disk|
+          next if !found && device != after 
+          found = true if device == after
+          next if device == after || @tabooDevices.include?(device)
+          used_disk = device
+          break
         end
-      end if mbr_disk == ""
+      end
 
-      Builtins.y2milestone("device detection: %1", mbr_disk)
-      mbr_disk
+      Builtins.y2milestone("find_next_disk device detection: %1", used_disk)
+      used_disk
     end
 
     # Pre-process partition plan and prepare for creating partitions.
@@ -274,34 +280,16 @@ module Yast
         counter = Ops.add(counter, 1)
       end
       #raid2device = $[];
-      Builtins.foreach(tm) do |k, d2|
-        if Ops.get_symbol(d2, "type", :CT_UNKNOWN) == :CT_DISK ||
-            Ops.get_symbol(d2, "type", :CT_UNKNOWN) == :CT_DMMULTIPATH
-          tmp = Builtins.filter(Ops.get_list(d2, "partitions", [])) do |p|
-            Ops.get_string(p, "raid_name", "") != ""
+      tm.each do |k, d2|
+        if d2.fetch("type",:CT_UNKNOWN) == :CT_DISK ||
+           d2.fetch("type",:CT_UNKNOWN) == :CT_DMMULTIPATH
+          tmp = d2.fetch("partitions",[]).select do |p| 
+            !p.fetch("raid_name","").empty?
           end
-          devMd = Builtins.maplist(tmp) do |p|
-            Ops.get_string(p, "raid_name", "")
-          end
-          Builtins.foreach(devMd) do |dev|
-            next if Ops.get(already_mapped, dev, false) == true
-            if !Builtins.haskey(@raid2device, dev)
-              Ops.set(@raid2device, dev, GetRaidDevices(dev, tm))
-            else
-              Builtins.foreach(
-                Convert.convert(
-                  GetRaidDevices(dev, tm),
-                  :from => "list",
-                  :to   => "list <string>"
-                )
-              ) do |k2|
-                Ops.set(
-                  @raid2device,
-                  dev,
-                  Builtins.add(Ops.get(@raid2device, dev, []), k2)
-                )
-              end
-            end
+          devMd = tmp.map { |p| p["raid_name"] }
+          devMd.each do |dev|
+            next if already_mapped[dev]
+            @raid2device[dev] = GetRaidDevices(dev, tm)
           end
         end
       end
@@ -414,11 +402,10 @@ module Yast
         device = Ops.get_string(d, "device", "")
         udev_string = ""
         if device == ""
-          Ops.set(d, "device", find_first_disk(last_dev))
+          dtyp = d.fetch("type",:CT_UNKNOWN)
+          d["device"] = find_next_disk(tm,last_dev,dtyp)
           Builtins.y2milestone(
-            "empty device in profile set to %1",
-            Ops.get_string(d, "device", "")
-          )
+            "empty device in profile set to %1", d["device"] )
         end
         # translation of by-id, by-path, ... device names.
         # was handled in autoyast until openSUSE 11.3
@@ -1081,7 +1068,7 @@ module Yast
       initial_target_map = Storage.GetTargetMap
       Builtins.y2milestone("Target map: %1", initial_target_map)
 
-      Storage.SetPartDisk(find_first_disk(""))
+      Storage.SetPartDisk(find_next_disk(initial_target_map,"",:CT_DISK))
 
       @AutoTargetMap = set_devices(@AutoPartPlan)
       return false if @AutoTargetMap == nil || @AutoTargetMap == {}
@@ -1288,7 +1275,7 @@ module Yast
     publish :function => :GetModified, :type => "boolean ()"
     publish :function => :humanStringToByte, :type => "integer (string, boolean)"
     publish :function => :AddFilesysData, :type => "map (map, map)"
-    publish :function => :find_first_disk, :type => "string (string)"
+    publish :function => :find_next_disk, :type => "string (map,string,symbol)"
     publish :function => :GetRaidDevices, :type => "list (string, map <string, map>)"
     publish :function => :SearchRaids, :type => "void (map <string, map>)"
     publish :function => :mountBy, :type => "list <map> (list <map>)"
