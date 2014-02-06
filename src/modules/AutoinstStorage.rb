@@ -225,20 +225,16 @@ module Yast
     def GetRaidDevices(dev, tm)
       tm = deep_copy(tm)
       ret = []
-      Builtins.foreach(tm) do |k, d|
-        if Ops.get_symbol(d, "type", :CT_UNKNOWN) == :CT_DISK ||
-            Ops.get_symbol(d, "type", :CT_UNKNOWN) == :CT_DMMULTIPATH
-          tmp = Builtins.filter(Ops.get_list(d, "partitions", [])) do |p|
-            Ops.get_string(p, "raid_name", "") == dev
+      tm.each do |k, d|
+        if d.fetch("type",:CT_UNKNOWN) == :CT_DISK ||
+           d.fetch("type",:CT_UNKNOWN) == :CT_DMMULTIPATH
+          tmp = d.fetch("partitions",[]).select do |p|
+            p["raid_name"]==dev
           end
-          ret = Convert.convert(
-            Builtins.union(ret, tmp),
-            :from => "list",
-            :to   => "list <map>"
-          )
+          ret.concat(tmp)
         end
       end
-      dlist = Builtins.maplist(ret) { |p| Ops.get_string(p, "device", "") }
+      dlist = ret.map { |p| p["device"] }
       Builtins.y2milestone("GetRaidDevices dlist = %1 and ret = %2", dlist, ret)
       deep_copy(dlist)
     end
