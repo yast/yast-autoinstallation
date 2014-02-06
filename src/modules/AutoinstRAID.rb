@@ -204,7 +204,7 @@ module Yast
         end
         Ops.set(md, "format", false) if !Builtins.haskey(md, "format")
         if Ops.get_boolean(md, "format", false)
-          Ops.set(md, "used_fs", Ops.get_symbol(md, "filesystem", :ext3))
+          Ops.set(md, "used_fs", Ops.get_symbol(md, "filesystem", Partitions.DefaultFs))
         end
         md = AutoinstStorage.AddFilesysData(md, md)
         Ops.set(md, "type", :sw_raid)

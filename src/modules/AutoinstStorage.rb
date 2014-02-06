@@ -81,15 +81,15 @@ module Yast
       Storage.ClassicStringToByte(s)
     end
 
+    META_TYPES = [ :CT_DMRAID, :CT_MDPART, :CT_DMMULTIPATH ]
+    ALL_TYPES = META_TYPES.dup.push(:CT_DISK)
+
     def find_next_disk( tm, after, ctype )
       Builtins.y2milestone("find_next_disk after:\"%1\" ctype:%2", after, ctype);
       used_disk = ""
-      meta_types = [ :CT_DMRAID, :CT_MDPART, :CT_DMMULTIPATH ]
-      all_types = meta_types.dup
-      all_types.push(:CT_DISK)
-      if after.empty? && !all_types.include?(ctype)
+      if after.empty? && !ALL_TYPES.include?(ctype)
         tm.each do |device, disk|
-          if meta_types.include?(disk.fetch("type",:jo)) &&
+          if META_TYPES.include?(disk.fetch("type")) &&
              !@tabooDevices.include?(device)
             used_disk = device
           end
@@ -106,8 +106,8 @@ module Yast
 
       # device guessing code enhanced
       if used_disk.empty?
-        ctype = :CT_DISK  if !all_types.include?(ctype)
-        disks = tm.select { |dev,disk| disk.fetch("type",:x)==ctype };
+        ctype = :CT_DISK  unless ALL_TYPES.include?(ctype)
+        disks = tm.select { |dev,disk| disk["type"]==ctype };
         found = !disks.keys.include?(after)
         disks.each do |device, disk|
           next if !found && device != after 
@@ -232,8 +232,7 @@ module Yast
       tm = deep_copy(tm)
       ret = []
       tm.each do |k, d|
-        if d.fetch("type",:CT_UNKNOWN) == :CT_DISK ||
-           d.fetch("type",:CT_UNKNOWN) == :CT_DMMULTIPATH
+        if [:CT_DISK,:CT_DMMULTIPATH].include?(d["type"])
           tmp = d.fetch("partitions",[]).select do |p|
             p["raid_name"]==dev
           end
@@ -281,8 +280,7 @@ module Yast
       end
       #raid2device = $[];
       tm.each do |k, d2|
-        if d2.fetch("type",:CT_UNKNOWN) == :CT_DISK ||
-           d2.fetch("type",:CT_UNKNOWN) == :CT_DMMULTIPATH
+        if [:CT_DISK,:CT_DMMULTIPATH].include?(d2["type"])
           tmp = d2.fetch("partitions",[]).select do |p| 
             !p.fetch("raid_name","").empty?
           end
