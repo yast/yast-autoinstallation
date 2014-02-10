@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.13
+Version:        3.1.14
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -90,7 +90,8 @@ Requires:       yast2-core
 Requires:       yast2-country
 Requires:       yast2-ncurses
 Requires:       yast2-packager
-Requires:       yast2-services-manager
+# SystemdTargetClass::BaseTargets
+Requires:       yast2-services-manager >= 0.0.13
 Requires:       yast2-slp
 Requires:       yast2-storage
 Requires:       yast2-transfer >= 2.21.0
