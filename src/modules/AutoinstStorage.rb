@@ -702,16 +702,9 @@ module Yast
       Builtins.y2milestone("entering Import with %1", settings)
       if Mode.autoinst
         settings = Builtins.maplist(settings) do |d|
-          Ops.set(
-            d,
-            "partitions",
-            Builtins.sort(Ops.get_list(d, "partitions", [])) do |x, y|
-              Ops.less_than(
-                Ops.get_integer(x, "partition_nr", 99),
-                Ops.get_integer(y, "partition_nr", 99)
-              )
-            end
-          )
+          d["partitions"] = d.fetch("partitions",[]).sort do |x, y|
+            x.fetch("partition_nr",99)<=>y.fetch("partition_nr",99)
+          end
           deep_copy(d)
         end
 
