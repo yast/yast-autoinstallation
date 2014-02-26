@@ -84,48 +84,55 @@
     include "autoinstall/autopart.ycp";
     include "autoinstall/autoinst_dialogs.ycp";
 
-    global define string find_first_disk(string after) {
-        map <string, map> initial_target_map = Storage::GetTargetMap();
-        y2milestone("Target map: %1", initial_target_map );
-
-        string mbr_disk = "";
-        if( after == "" ) {
-            foreach (string device, map disk, initial_target_map, ``{
-                if (
-                    ( disk["type"]:`jo == `CT_DMRAID ||
-                      disk["type"]:`jo == `CT_MDPART ||
-                      disk["type"]:`jo == `CT_DMMULTIPATH ) &&
-                      !contains( tabooDevices, device )
-                    )
+    global define string find_next_disk(map <string, map> tm,string after,symbol ctype) {
+        y2milestone("find_next_disk after:\"%1\" ctype:%2",after,ctype);
+        string used_disk = "";
+	list meta_types = [ `CT_DMRAID, `CT_MDPART, `CT_DMMULTIPATH ];
+	list all_types = meta_types;
+	all_types = add( all_types, `CT_DISK );
+        if( after == "" && !contains(all_types,ctype) ) {
+            foreach (string device, map disk, tm, ``{
+                if( contains( meta_types, disk["type"]:`jo ) &&
+		    !contains( tabooDevices, device ))
                 {
-                    mbr_disk = device;
+                    used_disk = device;
                 }
             });
         }
 
-        if( after == "" && mbr_disk == "" ) {
-            foreach (string device, map disk, initial_target_map, ``{
+        if( after == "" && used_disk == "" ) {
+            foreach (string device, map disk, tm, ``{
                 if (disk["bios_id"]:"" == "0x80" && !contains( tabooDevices, device ) )
                 {
-                    mbr_disk = device;
+                    used_disk = device;
                 }
             });
         }
 
         /* device guessing code enhanced */
-        if( mbr_disk == "" ) {
-            foreach (string device, map disk, initial_target_map, ``{
-                if( disk["type"]:`x == `CT_DISK ) {
-                    if( device == after || contains( tabooDevices, device ) )
-                        continue;
-                    mbr_disk = device;
-                    break;
-                }
+        if( used_disk == "" ) {
+	    ctype = contains(all_types,ctype) ? ctype : `CT_DISK;
+	    list<string> devs = 
+		maplist( string dev, map du,
+	                 filter( string s, map d, tm, 
+				 ``(d["type"]:`CT_NONE==ctype)),
+			 ``(dev));
+	    y2milestone("find_next_disk devs: %1", devs);
+	    boolean found = false;
+            foreach (string device, devs, ``{
+		if( !found && device != after )
+		    continue;
+		if( device == after )
+		    found = true;
+		if( device == after || contains( tabooDevices, device ) )
+		    continue;
+		used_disk = device;
+		break;
             });
         }
 
-        y2milestone("device detection: %1", mbr_disk);
-        return mbr_disk;
+        y2milestone("find_next_disk device detection: %1", used_disk);
+        return used_disk;
     }
 
     /**
@@ -367,19 +374,25 @@
     */
     global define list<map> udev2dev(list<map> settings) {
         map <string, map> tm = Storage::GetTargetMap();
+        y2milestone("Target map: %1", tm );
         string last_dev = "";
         settings = maplist( map d, settings, ``{
             string device = d["device"]:"";
             string udev_string = "";
             if( device == "" ) {
-                d["device"] = find_first_disk(last_dev);
+	        symbol dtyp = d["type"]:`CT_UNKNOWN;
+                d["device"] = find_next_disk(tm,last_dev,dtyp);
                 y2milestone("empty device in profile set to %1", d["device"]:"");
             }
             // translation of by-id, by-path, ... device names.
             // was handled in autoyast until openSUSE 11.3
             map<string,any> deviceTranslation = $[];
             if( Storage::GetContVolInfo( d["device"]:"", deviceTranslation ) )
+		{
+		y2milestone("translated %1 -> %2", d["device"]:"", 
+		            deviceTranslation["cdevice"]:"");
                 d["device"] = deviceTranslation["cdevice"]:"";
+		}
 
             last_dev = d["device"]:"";
             return d;
@@ -741,7 +754,7 @@ which root partition should be used.  Automatic installation not possible.
         map <string, map> initial_target_map = Storage::GetTargetMap();
         y2milestone("Target map: %1", initial_target_map );
 
-        Storage::SetPartDisk( find_first_disk("") );
+        Storage::SetPartDisk( find_next_disk(initial_target_map,"",`CT_DISK) );
 
         AutoTargetMap =  set_devices(AutoPartPlan);
         if (AutoTargetMap == nil || AutoTargetMap == $[])
