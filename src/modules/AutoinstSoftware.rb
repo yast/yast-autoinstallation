@@ -954,7 +954,6 @@ module Yast
       all_patterns = Pkg.ResolvableProperties("", :pattern, "")
       @all_xpatterns = Pkg.ResolvableDependencies("", :pattern, "")
       patterns = []
-      visible_patterns = []
 
       patternsFullData = Builtins.filter(all_patterns) do |p|
         ret2 = false
@@ -965,12 +964,6 @@ module Yast
             Ops.get_string(p, "name", "no name")
           )
           ret2 = true
-          if Ops.get_boolean(p, "user_visible", true) == true
-            visible_patterns = Builtins.add(
-              visible_patterns,
-              Ops.get_string(p, "name", "no name")
-            )
-          end
         end
         ret2
       end
@@ -1069,7 +1062,7 @@ module Yast
           !Builtins.regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml"
         end)
       )
-      Ops.set(software, "patterns", Builtins.sort(visible_patterns))
+      Ops.set(software, "patterns", Builtins.sort(patterns))
       Ops.set(software, "remove-packages", Builtins.toset(removepackages))
       deep_copy(software)
     end
