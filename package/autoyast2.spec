@@ -226,6 +226,7 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_yncludedir}/autoinstall/tree.rb
 %{yast_yncludedir}/autoinstall/types.rb
 
+%dir %{yast_controldir}
 %{yast_controldir}/*.xml
 
 %{yast_moduledir}/AutoInstall.rb
