@@ -477,15 +477,12 @@
         list<map<string,any> > all_patterns = Pkg::ResolvableProperties ("", `pattern, "");
         all_xpatterns = Pkg::ResolvableDependencies ("", `pattern, "");
         list<string> patterns = [];
-        list<string> visible_patterns = [];
 
         list<map> patternsFullData = filter( map p, all_patterns, ``{
                 boolean ret = false;
 		if( p["status"]:`none == `installed && !contains( patterns, p["name"]:"no name" ) ) {
                         patterns = add( patterns, p["name"]:"no name" );
                         ret = true;
-	                if( p["user_visible"]:true == true )
-        	                visible_patterns = add( visible_patterns, p["name"]:"no name" );
 		}
                 return ret;
         });
@@ -560,7 +557,7 @@
         }
 
         software["packages"] = sort( filter(string pkg, userpackages, ``(! regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml")) );
-        software["patterns"] = sort( visible_patterns );
+        software["patterns"] = sort( patterns );
         software["remove-packages"] = sort( removepackages );
         return software;
     }
