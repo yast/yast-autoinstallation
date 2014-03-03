@@ -134,8 +134,9 @@ module Yast
       AutoinstGeneral.Write
 
       write_network = false
-      semiauto_network = Profile.current["general"]["semi-automatic"] &&
-        Profile.current["general"]["semi-automatic"].include?("networking")
+      general_section = Profile.current["general"] || {}
+      semiauto_network = general_section["semi-automatic"] &&
+        general_section["semi-automatic"].include?("networking")
 
       if Profile.current["networking"] &&
           ( Profile.current["networking"]["setup_before_proposal"] ||
@@ -252,8 +253,8 @@ module Yast
         Storage.SetTestsuite(false) # *urgs* again
       end
 
-      semiauto_partitions = Profile.current["general"]["semi-automatic"] &&
-        Profile.current["general"]["semi-automatic"].include?("partitioning")
+      semiauto_partitions = general_section["semi-automatic"] &&
+        general_section["semi-automatic"].include?("partitioning")
 
       if semiauto_partitions
         Builtins.y2milestone("Partitioning manual setup")
