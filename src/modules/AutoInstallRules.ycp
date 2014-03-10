@@ -460,11 +460,21 @@
         boolean ismatch = false;
         boolean go_on = true;
         foreach ( map<string, map> ruleset, rulelist, ``{
-            y2debug("Ruleset: %1", ruleset);
+            y2milestone("Ruleset: %1", ruleset);
             if (go_on) {
-                foreach(string rule, map ruledef, ruleset, ``{
-                    y2debug("Rule: %1", rule);
-                    y2debug("Ruledef: %1", ruledef);
+                list<string> tmprl = maplist (string rule, map ruledef, ruleset, ``(rule));
+                y2milestone("tmprl:%1", tmprl);
+		if( contains( tmprl, "result" ))
+		    {
+		    tmprl = filter( string rule, tmprl, ``(rule!="result"));
+		    tmprl = add( tmprl, "result" );
+		    y2milestone("tmprl:%1", tmprl);
+		    }
+                foreach(string rule, tmprl, ``{
+                    y2milestone("Rule: %1", rule);
+
+		    map ruledef = ruleset[rule]:$[];
+                    y2milestone("Ruledef: %1", ruledef);
 
                     string match = ruledef["match"]:"undefined";
 
