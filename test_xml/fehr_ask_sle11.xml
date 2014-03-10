@@ -1,0 +1,276 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<configure>
+  <bootloader>
+    <global>
+      <generic_mbr>true</generic_mbr>
+      <timeout config:type="integer">8</timeout>
+      <gfxmenu>/boot/menu</gfxmenu>
+    </global>
+  </bootloader>
+  <firewall>
+    <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+    <FW_ALLOW_FW_BROADCAST_DMZ>no</FW_ALLOW_FW_BROADCAST_DMZ>
+    <FW_ALLOW_FW_BROADCAST_EXT>no</FW_ALLOW_FW_BROADCAST_EXT>
+    <FW_ALLOW_FW_BROADCAST_INT>no</FW_ALLOW_FW_BROADCAST_INT>
+    <FW_CONFIGURATIONS_DMZ>sshd</FW_CONFIGURATIONS_DMZ>
+    <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+    <FW_CONFIGURATIONS_INT>sshd</FW_CONFIGURATIONS_INT>
+    <FW_DEV_EXT>eth0</FW_DEV_EXT>
+    <FW_IGNORE_FW_BROADCAST_DMZ>no</FW_IGNORE_FW_BROADCAST_DMZ>
+    <FW_IGNORE_FW_BROADCAST_EXT>yes</FW_IGNORE_FW_BROADCAST_EXT>
+    <FW_IGNORE_FW_BROADCAST_INT>no</FW_IGNORE_FW_BROADCAST_INT>
+    <FW_IPSEC_TRUST>no</FW_IPSEC_TRUST>
+    <FW_LOAD_MODULES>nf_conntrack_netbios_ns</FW_LOAD_MODULES>
+    <FW_LOG_ACCEPT_ALL>no</FW_LOG_ACCEPT_ALL>
+    <FW_LOG_ACCEPT_CRIT>yes</FW_LOG_ACCEPT_CRIT>
+    <FW_LOG_DROP_ALL>no</FW_LOG_DROP_ALL>
+    <FW_LOG_DROP_CRIT>yes</FW_LOG_DROP_CRIT>
+    <FW_MASQUERADE>no</FW_MASQUERADE>
+    <FW_PROTECT_FROM_INT>no</FW_PROTECT_FROM_INT>
+    <FW_ROUTE>no</FW_ROUTE>
+    <enable_firewall config:type="boolean">false</enable_firewall>
+    <start_firewall config:type="boolean">false</start_firewall>
+  </firewall>
+  <general> 
+<!--
+  <ask-list config:type="list">
+      <listentry>
+        <dialog config:type="integer">0</dialog>
+        <element config:type="integer">0</element>
+        <help></help>
+        <question>Edit Question</question>
+        <stage>initial</stage>
+        <title>test</title>
+      </listentry>
+      <listentry>
+        <default></default>
+        <dialog config:type="integer">0</dialog>
+        <element config:type="integer">1</element>
+        <frametitle>test</frametitle>
+        <password config:type="boolean">false</password>
+        <pathlist config:type="list">
+          <path>networking,interfaces,0,ipaddr</path>
+        </pathlist>
+        <question>test</question>
+        <script/>
+        <stage>initial</stage>
+        <title>test</title>
+      </listentry>
+    </ask-list>
+-->
+    <signature-handling>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+    </signature-handling>
+    <mode>
+      <confirm config:type="boolean">true</confirm>
+      <final_reboot config:type="boolean">false</final_reboot>
+    </mode>
+  </general>
+  <networking>
+<!--
+    <keep_install_network config:type="boolean">true</keep_install_network>
+-->
+    <dhcp_options>
+      <dhclient_client_id></dhclient_client_id>
+      <dhclient_hostname_option>AUTO</dhclient_hostname_option>
+    </dhcp_options>
+    <dns>
+      <dhcp_hostname config:type="boolean">false</dhcp_hostname>
+      <domain>labs.blr.novell.com</domain>
+      <hostname>blr8-119-7</hostname>
+      <nameservers config:type="list">
+        <nameserver>164.99.201.201</nameserver>
+      </nameservers>
+      <resolv_conf_policy>auto</resolv_conf_policy>
+      <searchlist config:type="list">
+        <search>labs.blr.novell.com</search>
+      </searchlist>
+      <write_hostname config:type="boolean">false</write_hostname>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>static</bootproto>
+        <broadcast>10.120.255.255</broadcast>
+        <device>eth0</device>
+        <ipaddr>10.120.66.44</ipaddr>
+        <name>Ethernet Network Card</name>
+        <netmask>255.255.0.0</netmask>
+        <prefixlen>16</prefixlen>
+        <startmode>auto</startmode>
+      </interface>
+      <interface>
+        <aliases>
+          <alias2>
+            <IPADDR>127.0.0.2</IPADDR>
+            <NETMASK>255.0.0.0</NETMASK>
+            <PREFIXLEN>8</PREFIXLEN>
+          </alias2>
+        </aliases>
+        <broadcast>127.255.255.255</broadcast>
+        <device>lo</device>
+        <firewall>no</firewall>
+        <ipaddr>127.0.0.1</ipaddr>
+        <netmask>255.0.0.0</netmask>
+        <network>127.0.0.0</network>
+        <prefixlen>8</prefixlen>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+        <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+      <routes config:type="list">
+        <route>
+          <destination>default</destination>
+          <device>-</device>
+          <gateway>10.120.255.254</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+  </networking>
+  <report>
+    <errors>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </yesno_messages>
+  </report>
+  <runlevel>
+    <default>5</default>
+    <services config:type="list" >
+      <service>
+	<service_name>sshd</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>rpcbind</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>autofs</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>nfs</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>cups</service_name>
+	<service_status>disable</service_status>
+      </service>
+      <service>
+	<service_name>SuSEfirewall2</service_name>
+	<service_status>disable</service_status>
+      </service>
+    </services>
+  </runlevel>
+  <scripts>
+    <pre-scripts config:type="list">
+      <script>
+	<interpreter>shell</interpreter>
+	<source><![CDATA[
+echo -n `date` >> /tmp/ay_pre_script 
+echo " pre-script has run" >> /tmp/ay_pre_script
+if [ ! -f /etc/zypp/zypp.conf ]
+then
+    mkdir /etc/zypp
+    echo "[main]"                               > /etc/zypp/zypp.conf
+    echo "download.media_preference = volatile" >> /etc/zypp/zypp.conf
+    echo emil > /var/lib/YaST2/restart_yast
+fi
+	]]></source>
+      </script>
+    </pre-scripts>
+  </scripts>
+  <sound>
+    <autoinstall config:type="boolean">true</autoinstall>
+    <configure_detected config:type="boolean">true</configure_detected>
+  </sound>
+<!--
+  <suse_register>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data/>
+    <submit_hwdata config:type="boolean">true</submit_hwdata>
+    <submit_optional config:type="boolean">true</submit_optional>
+  </suse_register>
+-->
+  <timezone>
+    <hwclock>UTC</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+</configure>
+<install>
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/sdb</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+	<partition>
+	  <mount>swap</mount>
+	  <size>500M</size>
+	  <filesystem>swap</filesystem>
+	  <format config:type="boolean">true</format>
+<!--
+	  <fstopt config:type="symbol">pri=1</fstopt>
+-->
+	</partition>
+	<partition>
+	  <mount>/</mount>
+	  <size>max</size>
+	  <filesystem config:type="symbol">ext3</filesystem>
+	  <format config:type="boolean">true</format>
+	  </partition>
+<!--
+	<partition>
+	  <mount>/boot</mount>
+	    <size>200M</size>
+	    <filesystem>ext3</filesystem>
+	    <format config:type="boolean">true</format>
+	    <filesystem config:type="symbol">ext3</filesystem>
+	</partition>
+-->
+      </partitions>
+    </drive>
+  </partitioning>
+  <software>
+    <image/>
+    <instsource/>
+    <packages config:type="list">
+      <package>less</package>
+      <package>yast2-trans-en_US</package>
+    </packages>
+    <patterns config:type="list">
+      <pattern>Minimal</pattern>
+      <pattern>base</pattern>
+    </patterns>
+  </software>
+  <users config:type="list">
+    <user>
+      <user_password>rootpw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</install>
+</profile>

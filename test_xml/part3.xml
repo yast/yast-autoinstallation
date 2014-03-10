@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+LVM on hda+hdc
+-->
+
+  <general>
+   <signature-handling>
+<!--       <accept_unsigned_file config:type="boolean">true</accept_unsigned_file> -->
+<!--       <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum> -->
+<!--       <accept_verification_failed config:type="boolean">true</accept_verification_failed> -->
+<!--       <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key> -->
+<!--       <import_gpg_key         config:type="boolean">true</import_gpg_key> -->
+   </signature-handling>
+    <mode>
+    <confirm config:type="boolean">true</confirm>
+<!--    <forceboot config:type="boolean">false</forceboot> -->
+    <second_stage config:type="boolean">true</second_stage>
+    </mode>
+
+  </general>
+    <runlevel>
+      <default>3</default>
+    </runlevel>
+    <sound>
+      <autoinstall config:type="boolean">true</autoinstall>
+      <configure_detected config:type="boolean">true</configure_detected>
+    </sound>
+  <networking>
+    <dhcp_options>
+      <dhclient_additional_options></dhclient_additional_options>
+      <dhclient_client_id></dhclient_client_id>
+      <dhclient_hostname_option>AUTO</dhclient_hostname_option>
+    </dhcp_options>
+    <dns>
+      <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+      <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      <domain>site</domain>
+      <hostname>linux</hostname>
+      <nameservers config:type="list">
+        <nameserver>10.10.0.1</nameserver>
+      </nameservers>
+      <searchlist config:type="list">
+        <search>suse.de</search>
+      </searchlist>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>dhcp</bootproto>
+        <device>eth0</device>
+        <name>82801DB PRO/100 VE (LOM) Ethernet Controller</name>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+    </routing>
+  </networking>
+<software>
+      <patterns config:type="list">
+      <pattern>base</pattern>
+      </patterns>
+</software>
+<users config:type="list">
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+    </users>
+    <partitioning config:type="list">
+      <drive>
+<!--        <device>/dev/sda</device> -->
+        <initialize config:type="boolean">true</initialize>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">true</create>
+            <partition_type>primary</partition_type>
+            <size>200M</size>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <partition_nr config:type="integer">1</partition_nr>
+            <mount>/boot</mount>
+            <mountby config:type="symbol">device</mountby>
+          </partition>
+          <partition>
+<!--
+            <create config:type="boolean">false</create>
+            <format config:type="boolean">false</format>
+-->
+            <create config:type="boolean">true</create>
+            <format config:type="boolean">true</format>
+            <partition_nr config:type="integer">2</partition_nr>
+            <lvm_group>system</lvm_group>
+            <partition_type>primary</partition_type>
+            <partition_id config:type="integer">142</partition_id>
+            <size>max</size>
+          </partition>
+<!--
+          <partition>
+            <create config:type="boolean">false</create>
+            <partition_nr config:type="integer">3</partition_nr>
+            <lvm_group>system2</lvm_group>
+            <partition_type>primary</partition_type>
+            <size>3G</size>
+          </partition>
+-->
+        </partitions>
+        <use>all</use>
+      </drive>
+<!--
+      <drive>
+        <initialize config:type="boolean">true</initialize>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">true</create>
+            <format config:type="boolean">true</format>
+            <lvm_group>system</lvm_group>
+            <partition_id config:type="integer">142</partition_id>
+            <partition_type>primary</partition_type>
+            <partition_nr config:type="integer">1</partition_nr>
+            <size>2G</size>
+          </partition>
+          <partition>
+            <create config:type="boolean">false</create>
+            <partition_nr config:type="integer">2</partition_nr>
+            <lvm_group>system2</lvm_group>
+            <partition_type>primary</partition_type>
+            <size>2G</size>
+          </partition>
+        </partitions>
+        <use>all</use>
+      </drive>
+-->
+      <drive>
+        <device>/dev/system</device>
+        <initialize config:type="boolean">true</initialize>
+        <is_lvm_vg config:type="boolean">true</is_lvm_vg>
+        <type config:type="symbol">CT_LVM</type>
+         <keep_unknown_lv config:type="boolean">false</keep_unknown_lv>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">true</create>
+            <format config:type="boolean">true</format>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <lv_name>opt_lv</lv_name>
+            <mount>/</mount>
+            <size>3G</size>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <lv_name>xxx_lv</lv_name>
+            <mount>/xxx</mount>
+            <size>200M</size>
+          </partition>
+<!--
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <lv_name>user_lv</lv_name>
+            <mount>/usrx</mount>
+            <size>200M</size>
+          </partition>
+-->
+          <partition>
+            <filesystem config:type="symbol">swap</filesystem>
+            <lv_name>swap_lv</lv_name>
+            <mount>swap</mount>
+            <size>auto</size>
+          </partition>
+        </partitions>
+        <pesize>4M</pesize>
+        <use>all</use>
+      </drive>
+<!--
+      <drive>
+        <device>/dev/system2</device>
+        <initialize config:type="boolean">false</initialize>
+        <is_lvm_vg config:type="boolean">true</is_lvm_vg>
+        <type config:type="symbol">CT_LVM</type>
+        <partitions config:type="list">
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <lv_name>usery_lv</lv_name>
+            <mount>/usry</mount>
+            <size>300M</size>
+          </partition>
+        </partitions>
+        <pesize>4M</pesize>
+        <use>all</use>
+      </drive>
+-->
+    </partitioning>
+</profile>

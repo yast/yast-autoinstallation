@@ -1,0 +1,343 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <firewall>
+    <enable_firewall config:type="boolean">false</enable_firewall>
+    <start_firewall config:type="boolean">false</start_firewall>
+  </firewall>
+  <general>
+    <ask-list config:type="list">
+      <listentry>
+        <default>linux</default>
+        <dialog config:type="integer">0</dialog>
+        <element config:type="integer">1</element>
+        <file>/tmp/may_q_hostname</file>
+        <help>
+             &lt;p&gt;
+             Enter the server's (short) hostname, e.g. lxsap.
+             &lt;/p&gt;
+
+             </help>
+        <path>networking,dns,hostname</path>
+        <question>Enter Hostname</question>
+        <script>
+          <debug config:type="boolean">false</debug>
+          <environment config:type="boolean">true</environment>
+          <feedback config:type="boolean">true</feedback>
+          <filename>my_host.sh</filename>
+          <rerun_on_error config:type="boolean">true</rerun_on_error>
+          <source><![CDATA[
+function check_hostname() {
+        local host=$1
+
+        LC_ALL=POSIX
+
+        [ -z "$host" ] && echo "You need to provide a hostname." && return 1
+        [ "${#host}" -gt 13 ] && echo "The hostname cannot be longer than 13 chars. You entered '${#host}' chars." && return 1
+        [ -n "${host//[0-9A-Za-z-]/}" ] && echo "The hostname can only consist of an alphanumeric string and a hyphen ('-'). Found this: '${host//[0-9A-Za-z-]/}'." && return 1
+
+        return 0
+}
+check_hostname "$VAL"
+
+#if [ "$VAL" != "12345" ]; then
+#    echo "Illegal Hostname!";
+#    echo "please try again";
+#    exit 1;
+#fi
+#echo "2" > /tmp/next_dialog
+#exit 0
+
+            ]]></source>
+        </script>
+        <stage>initial</stage>
+      </listentry>
+      <listentry>
+        <default>example.com</default>
+        <dialog config:type="integer">0</dialog>
+        <element config:type="integer">2</element>
+        <help>
+             &lt;p&gt;
+             Enter your network domain, e.g. suse.de
+             &lt;/p&gt;
+
+             </help>
+        <path>networking,dns,domain</path>
+        <question>Enter domain name</question>
+        <stage>initial</stage>
+      </listentry>
+      <listentry>
+        <default>192.168.101.11</default>
+        <dialog config:type="integer">0</dialog>
+        <element config:type="integer">3</element>
+        <file>/tmp/may_q_ip_addr</file>
+        <help>
+              &lt;p&gt;Enter the server's new IP address for your network.&lt;/p&gt;
+
+              </help>
+        <path>networking,interfaces,0,ipaddr</path>
+        <question>Enter IP-Addr</question>
+        <script>
+          <debug config:type="boolean">false</debug>
+          <environment config:type="boolean">true</environment>
+          <feedback config:type="boolean">true</feedback>
+          <filename>my_ip.sh</filename>
+          <rerun_on_error config:type="boolean">true</rerun_on_error>
+          <source><![CDATA[
+function check_ip() {
+        local ip=$1 tmp
+
+        [ -z "$ip" ] && echo "You must provide a valid IP address!" && return 1
+        [ "${#ip}" -lt 7 ] && echo "Is this a valid IP address? You entered only '${#ip}' chars." && return 1
+        [ -n "${ip//[0-9.]/}" ] && echo "An IP address can only contain digits and dots ('.'). Found this: '${ip//[0-9.]/}'." && return 1
+        tmp="${ip//[0-9]/}"
+        [ "${#tmp}" -ne 3 ] && echo "An IP address can only contain 3 dots." && return 1
+
+        return 0
+}
+check_ip "$VAL"
+
+            ]]></source>
+        </script>
+        <stage>initial</stage>
+      </listentry>
+      <listentry>
+        <default>255.255.255.0</default>
+        <dialog config:type="integer">0</dialog>
+        <element config:type="integer">4</element>
+        <help>
+             &lt;p&gt;Enter the server's Netmask for your network.&lt;/p&gt;
+
+             </help>
+        <path>networking,interfaces,0,netmask</path>
+        <question>Enter Netmask</question>
+        <stage>initial</stage>
+        <title>Customize your network settings</title>
+      </listentry>
+      <listentry>
+        <default>example.com</default>
+        <dialog config:type="integer">1</dialog>
+        <element config:type="integer">1</element>
+        <help>
+             &lt;p&gt;Enter the DNS searchlist for your network - if necessary separated by a &lt;space&gt;.&lt;/p&gt;
+
+             </help>
+        <path>networking,dns,searchlist,0</path>
+        <question>Enter domain searchlist</question>
+        <stage>initial</stage>
+      </listentry>
+      <listentry>
+        <default>192.168.101.1</default>
+        <dialog config:type="integer">1</dialog>
+        <element config:type="integer">2</element>
+        <help>
+             &lt;p&gt;Enter the IP for the nameserver in your network.&lt;/p&gt;
+
+             </help>
+        <path>networking,dns,nameservers,0</path>
+        <question>Enter IP for nameserver</question>
+        <stage>initial</stage>
+      </listentry>
+      <listentry>
+        <default>192.168.101.2</default>
+        <dialog config:type="integer">1</dialog>
+        <element config:type="integer">3</element>
+        <help>
+             &lt;p&gt;Enter the default gateway for your network.&lt;/p&gt;
+
+</help>
+        <path>networking,routing,routes,0,gateway</path>
+        <question>Enter IP for default gateway</question>
+        <script>
+          <debug config:type="boolean">false</debug>
+          <environment config:type="boolean">true</environment>
+          <feedback config:type="boolean">true</feedback>
+          <filename>my_gw_ip.sh</filename>
+          <rerun_on_error config:type="boolean">true</rerun_on_error>
+          <source><![CDATA[
+function check_ip() {
+        local ip=$1 tmp
+
+        [ -z "$ip" ] && echo "You must provide a valid IP address!" && return 1
+        [ "${#ip}" -lt 7 ] && echo "Is this a valid IP address? You entered only '${#ip}' chars." && return 1
+        [ -n "${ip//[0-9.]/}" ] && echo "An IP address can only contain digits and dots ('.'). Found this: '${ip//[0-9.]/}'." && return 1
+        tmp="${ip//[0-9]/}"
+        [ "${#tmp}" -ne 3 ] && echo "An IP address can only contain 3 dots." && return 1
+
+        return 0
+}
+check_ip "$VAL"
+
+            ]]></source>
+        </script>
+        <stage>initial</stage>
+        <title>Complete your network settings</title>
+      </listentry>
+      <listentry>
+        <dialog config:type="integer">2</dialog>
+        <element config:type="integer">0</element>
+        <file>/tmp/may_q_masterpass</file>
+        <help>
+             &lt;p&gt;&lt;b&gt;Master password&lt;/b&gt;&lt;br&gt;Enter the system's master password (between &lt;b&gt;8&lt;/b&gt; and &lt;b&gt;9&lt;/b&gt; characters long).&lt;br&gt; This password will be used for the Linux &lt;b&gt;root&lt;/b&gt; user as well as for the SAP users. Consider changing it manually after the installation finished.&lt;/p&gt;
+
+</help>
+        <password config:type="boolean">true</password>
+        <path>users,0,user_password</path>
+        <question>Masterpassword (two times for confirmation)</question>
+        <script>
+          <debug config:type="boolean">false</debug>
+          <environment config:type="boolean">true</environment>
+          <feedback config:type="boolean">true</feedback>
+          <filename>my_pwd.sh</filename>
+          <rerun_on_error config:type="boolean">true</rerun_on_error>
+          <source><![CDATA[
+function check_masterpwd() {
+        local pwd=$1
+
+        [ -z "$pwd" ] && echo "You must provide a master password for your installation!" && return 1
+        [ "${#pwd}" -gt 9 ] && echo "The master password cannot be longer than 9 chars currently. You entered a ${#pwd} chars long password. Consider changing your passwords manually after the installation finished." && return 1
+        [ "${#pwd}" -lt 8 ] && echo "The master password cannot be shorter than 8 chars. You entered a ${#pwd} chars long password. Consider changing your passwords manually after the installation finished." && return 1
+        [ -n "${pwd//[0-9A-Za-z\$@_#]/}" ] && echo "The Password contains forbidden chars. Allowed are 0-9, A-Z, a-z and $ @ _ # but you're using: '${pwd//[0-9A-Za-z_@#!]/}'." && return 1
+        [ -z "${pwd//[A-Za-z\$@_#]/}" ] && echo "The Password must at least contain one numeric character 0-9." && return 1
+        [ "${pwd#[_]}" != "$pwd" ] && echo "The Password may not start with a '_'. You entered '${pwd}'." && return 1
+        [ "${pwd#[0-9]}" != "$pwd" ] && echo "The Password may not start with a numeric character. You entered '${pwd}'." && return 1
+
+        return 0
+}
+check_masterpwd "$VAL"
+
+              ]]></source>
+        </script>
+        <stage>initial</stage>
+      </listentry>
+      <listentry>
+        <default>___SHUTDOWN_DEFAULT___</default>
+        <dialog config:type="integer">2</dialog>
+        <element config:type="integer">1</element>
+        <help>
+             &lt;p&gt;Shutdown instead of booting into the system after software installation?&lt;/p&gt;
+
+</help>
+        <path>general,mode,halt</path>
+        <question>Shutdown the machine after software installation?</question>
+        <stage>initial</stage>
+        <title>Shutdown after Installation</title>
+        <type>boolean</type>
+      </listentry>
+    </ask-list>
+    <mode>
+      <confirm config:type="boolean">false</confirm>
+      <halt config:type="boolean">false</halt>
+    </mode>
+    <signature-handling>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <import_gpg_key config:type="boolean">true</import_gpg_key>
+    </signature-handling>
+  </general>
+  <networking>
+    <dns>
+<!-- <write_hostname config:type="boolean">true</write_hostname> -->
+      <domain>suse.de</domain>
+      <hostname>myhostname</hostname>
+      <nameservers config:type="list">
+        <nameserver>149.44.160.146</nameserver>
+      </nameservers>
+      <searchlist config:type="list">
+        <search>suse.de</search>
+      </searchlist>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>static</bootproto>
+        <device>eth0</device>
+        <ipaddr>192.168.1.1</ipaddr>
+        <netmask>255.255.255.0</netmask>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+      <routes config:type="list">
+        <route>
+          <destination>default</destination>
+          <device>-</device>
+          <gateway>192.168.101.1</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+  </networking>
+  <partitioning config:type="list">
+    <drive>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <runlevel>
+    <default>3</default>
+  </runlevel>
+  <scripts>
+    <chroot-scripts config:type="list">
+      <script>
+        <chrooted config:type="boolean">false</chrooted>
+        <filename>chrootScript_do4.sh</filename>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+cp /tmp/may_q* /mnt/tmp/
+cp /y2update/include/autoinstall/* /mnt/usr/share/YaST2/include/autoinstall/
+cp /y2update/modules/AutoinstConfig.* /mnt/usr/share/YaST2/modules/
+cp /etc/media-changer.xml /mnt/etc/
+
+             ]]></source>
+      </script>
+      <script>
+        <chrooted config:type="boolean">true</chrooted>
+        <filename>chrootScript_do.sh</filename>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+# replace grubmenu with customized string
+cp /boot/grub/menu.lst /boot/grub/menu.lst.org
+sed -e 's/SUSE Linux/SAP - SUSE Linux/' /boot/grub/menu.lst.org > /boot/grub/menu.lst
+
+             ]]></source>
+      </script>
+    </chroot-scripts>
+    <init-scripts config:type="list">
+      <script>
+        <filename>2_init_issue.sh</filename>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+LANG="en"
+esc="\033["
+IP=`/sbin/ifconfig eth0|grep Bcast|awk '{ print $2 }'|sed 's/addr://'`
+
+echo > /etc/issue
+echo -e "${esc}2J" >> /etc/issue
+echo "Welcome to SUSE Linux Enterprise Server 10 SP2 (x86_64) - Kernel \r (\l)." >> /etc/issue
+#echo -e "${esc}32;40;1mConnect to http://${IP} with your webbrowser ${esc}0m" >> /etc/issue
+echo >> /etc/issue
+
+             ]]></source>
+      </script>
+    </init-scripts>
+  </scripts>
+  <security>
+    <encryption>md5</encryption>
+  </security>
+  <software>
+    <patterns config:type="list">
+      <p>base</p>
+    </patterns>
+  </software>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">false</encrypted>
+      <user_password>a</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</profile>

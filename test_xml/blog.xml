@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+   <general>
+       <ask-list config:type="list">
+          <ask>
+             <dialog config:type="integer">0</dialog>
+             <type>static_text</type>
+             <default><![CDATA[a static text]]>
+            </default>
+          </ask>
+          <ask>
+             <dialog config:type="integer">1</dialog>
+             <type>static_text</type>
+             <default><![CDATA[
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. 
+Aenean commodo ligula eget dolor. Aenean massa. 
+Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+]]>
+            </default>
+          </ask>
+          <ask>
+             <dialog config:type="integer">1</dialog>
+             <question>to eat?</question>
+             <timeout config:type="integer">30</timeout>
+             <back_label>back to the drinks</back_label>
+             <ok_label>order now!</ok_label>
+             <default_value_script>
+	             <source><![CDATA[
+let time=`date +"%H"`
+if [ $time -le 12 ]; then 
+	echo -n "Croissant"
+else 
+	echo -n "Pizza"
+fi
+                  ]]></source>
+            </default_value_script>
+          </ask>
+       </ask-list>
+   </general>
+</profile>

@@ -1,0 +1,2427 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+  	@(#) profile_begin.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+<!--
+  	@(#) bootloader_ze32.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+  <add-on>
+    <add_on_products config:type="list">
+      <listentry>
+	<media_url>http://download.opensuse.org/update/12.3/</media_url>
+	<product>Updates</product>
+	<product_dir>/</product_dir>
+	<name>Update</name>
+	<ask_on_error config:type="boolean">true</ask_on_error>
+      </listentry>
+    </add_on_products>
+  </add-on>
+  <bootloader>
+    <activate>true</activate>
+    <global>
+      <activate>true</activate>
+      <boot_boot>false</boot_boot>
+      <boot_custom/>
+      <boot_extended>false</boot_extended>
+      <boot_mbr>true</boot_mbr>
+      <boot_root>false</boot_root>
+      <debug>false</debug>
+      <default>saved</default>
+      <generic_mbr>true</generic_mbr>
+      <gfxmenu>(hd0,0)/message</gfxmenu>
+      <hiddenmenu>false</hiddenmenu>
+      <lines_cache_id>3</lines_cache_id>
+      <timeout config:type="integer">8</timeout>
+      <trusted_grub>false</trusted_grub>
+    </global>
+    <loader_type>grub</loader_type>
+    <sections>
+      <section>
+        <append>resume=/dev/sda2 splash=silent showopts quiet crashkernel= </append>
+        <image>(hd0,0)/vmlinuz-3.7.10-1.11-desktop</image>
+        <initial>1</initial>
+        <initrd>(hd0,0)/initrd-3.7.10-1.11-desktop</initrd>
+        <lines_cache_id>0</lines_cache_id>
+        <name>openSUSE 12.3</name>
+        <original_name>linux</original_name>
+        <root>/dev/sda3</root>
+        <type>image</type>
+      </section>
+      <section>
+        <append>showopts apm=off noresume nosmp maxcpus=0 edd=off powersaved=off nohz=off highres=off processor.max_cstate=1 nomodeset x11failsafe apic</append>
+        <image>(hd0,0)/vmlinuz-3.7.10-1.11-desktop</image>
+        <initrd>(hd0,0)/initrd-3.7.10-1.11-desktop</initrd>
+        <lines_cache_id>1</lines_cache_id>
+        <name>Failsafe -- openSUSE 12.3</name>
+        <original_name>failsafe</original_name>
+        <root>/dev/sda3</root>
+        <type>image</type>
+        <vgamode>normal</vgamode>
+      </section>
+      <section>
+        <append>resume=/dev/sda2 splash=silent crashkernel= showopts apic</append>
+        <image>(hd0,0)/memtest.bin</image>
+        <lines_cache_id>2</lines_cache_id>
+        <name>Memory Test -- openSUSE 12.3</name>
+        <original_name>linux</original_name>
+        <root>/dev/sda3</root>
+        <type>image</type>
+        <vgamode>0x31a</vgamode>
+      </section>
+    </sections>
+  </bootloader>
+<!--
+  	@(#) general.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <general>
+    <mode>
+      <confirm config:type="boolean">true</confirm>
+      <final_reboot config:type="boolean">true</final_reboot>
+    </mode>
+    <mouse>
+      <id>probe</id>
+    </mouse>
+    <signature-handling>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <import_gpg_key config:type="boolean">true</import_gpg_key>
+    </signature-handling>
+</general>
+<scripts>
+    <chroot-scripts config:type="list">
+      <script>
+        <!-- FIXING BNC#801878 -->
+        <filename>chroot_bugfixing_801878.sh</filename>
+        <source><![CDATA[#!/bin/bash
+        #Fix ag_initscripts according to BNC#801878
+        sed -i 's/.*\(\/sbin\/runlevel.*\)/SYSTEMCTL_OPTIONS="" \1/' /mnt/usr/lib/YaST2/servers_non_y2/ag_initscripts]]>
+        </source>
+      </script>
+    </chroot-scripts>
+  </scripts>
+<!--
+  	@(#) groups.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <groups config:type="list">
+    <group>
+      <group_password>x</group_password>
+      <groupname>floppy</groupname>
+      <userlist>xalz,install,lade,marco,xmda,service,display,dxv</userlist>
+    </group>
+    <group>
+      <gid>17</gid>
+      <group_password>x</group_password>
+      <groupname>audio</groupname>
+      <userlist>pulse,xalz,install,lade,marco,xmda,service,display,dxv</userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>cdrom</groupname>
+      <userlist>xalz,install,lade,marco,xmda,service,display,dxv</userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>disk</groupname>
+      <userlist>xalz,install,lade,marco,xmda,service,display,dxv</userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>video</groupname>
+      <userlist>xalz,install,lade,marco,xmda,service,display,dxv</userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>dialout</groupname>
+      <userlist>xalz,install,lade,marco,xmda,service,display,dxv</userlist>
+    </group>
+    <group>
+      <gid>81</gid>
+      <group_password>x</group_password>
+      <groupname>alz</groupname>
+      <userlist>xalz,install,lade,marco,xmda,service,display,dxv</userlist>
+    </group>
+    <group>
+      <gid>99</gid>
+      <group_password>x</group_password>
+      <groupname>sw</groupname>
+      <userlist>xalz,install,lade,marco,xmda,service,display,dxv</userlist>
+    </group>
+  </groups>
+<!--
+  	@(#) inetd.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <inetd>
+    <last_created config:type="integer">0</last_created>
+    <netd_conf config:type="list">
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/chargen</iid>
+        <protocol>tcp</protocol>
+        <script>chargen</script>
+        <service>chargen</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/chargen-udp</iid>
+        <protocol>udp</protocol>
+        <script>chargen-udp</script>
+        <service>chargen</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/cups-lpd</iid>
+        <protocol>tcp</protocol>
+        <script>cups-lpd</script>
+        <server>/usr/lib/cups/daemon/cups-lpd</server>
+        <service>printer</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/daytime</iid>
+        <protocol>tcp</protocol>
+        <script>daytime</script>
+        <service>daytime</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/daytime-udp</iid>
+        <protocol>udp</protocol>
+        <script>daytime-udp</script>
+        <service>daytime</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/echo</iid>
+        <protocol>tcp</protocol>
+        <script>echo</script>
+        <service>echo</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/echo-udp</iid>
+        <protocol>udp</protocol>
+        <script>echo-udp</script>
+        <service>echo</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/netstat</iid>
+        <protocol>tcp</protocol>
+        <script>netstat</script>
+        <server>/bin/netstat</server>
+        <service>netstat</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">true</enabled>
+        <iid>1:/etc/xinetd.d/pure-ftpd</iid>
+        <protocol>tcp</protocol>
+        <script>pure-ftpd</script>
+        <server>/usr/sbin/pure-ftpd</server>
+        <service>ftp</service>
+      </conf>
+      <conf>
+        <comment> default: off
+	  description:
+ 	  Rexecd is the server for the rexec program. The server provides remote
+	  execution facilities with authentication based on user names and
+	  passwords.
+	</comment>
+        <iid>1:/etc/xinetd.d/rexec</iid>
+        <protocol>tcp</protocol>
+        <script>rexec</script>
+        <server>/usr/sbin/in.rexecd</server>
+        <service>exec</service>
+      </conf>
+      <conf>
+        <comment> default: off
+ 	  description:
+	  Rlogind is a server for the rlogin program. The server provides remote
+	  execution with authentication based on privileged port numbers from trusted
+	  host
+	</comment>
+        <iid>1:/etc/xinetd.d/rlogin</iid>
+        <protocol>tcp</protocol>
+        <script>rlogin</script>
+        <server>/usr/sbin/in.rlogind</server>
+        <service>login</service>
+      </conf>
+      <conf>
+        <comment> default: off
+	   description:
+	   The rshd server is a server for the rcmd(3) routine and,
+	   consequently, for the rsh(1) program. The server provides
+	   remote execution facilities with authentication based on
+	   privileged port numbers from trusted hosts.
+	</comment>
+        <iid>1:/etc/xinetd.d/rsh</iid>
+        <protocol>tcp</protocol>
+        <script>rsh</script>
+        <server>/usr/sbin/in.rshd</server>
+        <service>shell</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/rsync</iid>
+        <protocol>tcp</protocol>
+        <script>rsync</script>
+        <server>/usr/sbin/rsyncd</server>
+        <service>rsync</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/sane-port</iid>
+        <script>sane-port</script>
+        <server>/usr/sbin/saned</server>
+        <service>sane-port</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/servers</iid>
+        <protocol>tcp</protocol>
+        <script>servers</script>
+        <service>servers</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/services</iid>
+        <protocol>tcp</protocol>
+        <script>services</script>
+        <service>services</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/swat</iid>
+        <protocol>tcp</protocol>
+        <script>swat</script>
+        <server>/usr/sbin/swat</server>
+        <service>swat</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/systat</iid>
+        <protocol>tcp</protocol>
+        <script>systat</script>
+        <server>/bin/ps</server>
+        <service>systat</service>
+      </conf>
+      <conf>
+        <iid>1:/etc/xinetd.d/telnet</iid>
+        <protocol>tcp</protocol>
+        <script>telnet</script>
+        <server>/usr/sbin/in.telnetd</server>
+        <service>telnet</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">true</enabled>
+        <iid>1:/etc/xinetd.d/tftp</iid>
+        <protocol>udp</protocol>
+        <script>tftp</script>
+        <server>/usr/sbin/in.tftpd</server>
+        <server_args>-s /dump/latest</server_args>
+        <service>tftp</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/time</iid>
+        <protocol>tcp</protocol>
+        <script>time</script>
+        <service>time</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/time-udp</iid>
+        <protocol>udp</protocol>
+        <script>time-udp</script>
+        <service>time</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">true</enabled>
+        <iid>1:/etc/xinetd.d/vnc</iid>
+        <protocol>tcp</protocol>
+        <script>vnc</script>
+        <server>/usr/bin/Xvnc</server>
+        <server_args>-inetd -once -query localhost -geometry 1024x768 -depth 16</server_args>
+        <service>vnc1</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">true</enabled>
+        <iid>16:/etc/xinetd.d/vnc</iid>
+        <protocol>tcp</protocol>
+        <script>vnc</script>
+        <server>/usr/bin/Xvnc</server>
+        <server_args>-inetd -once -query localhost -geometry 1280x1024 -depth 16</server_args>
+        <service>vnc2</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">true</enabled>
+        <iid>31:/etc/xinetd.d/vnc</iid>
+        <protocol>tcp</protocol>
+        <script>vnc</script>
+        <server>/usr/bin/Xvnc</server>
+        <server_args>-inetd -once -query localhost -geometry 1600x1200 -depth 16</server_args>
+        <service>vnc3</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">true</enabled>
+        <iid>46:/etc/xinetd.d/vnc</iid>
+        <protocol>tcp</protocol>
+        <script>vnc</script>
+        <server>/usr/bin/vnc_inetd_httpd</server>
+        <service>vnchttpd1</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">true</enabled>
+        <iid>61:/etc/xinetd.d/vnc</iid>
+        <protocol>tcp</protocol>
+        <script>vnc</script>
+        <server>/usr/bin/vnc_inetd_httpd</server>
+        <service>vnchttpd2</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">true</enabled>
+        <iid>76:/etc/xinetd.d/vnc</iid>
+        <protocol>tcp</protocol>
+        <script>vnc</script>
+        <server>/usr/bin/vnc_inetd_httpd</server>
+        <service>vnchttpd3</service>
+      </conf>
+      <conf>
+        <enabled config:type="boolean">false</enabled>
+        <iid>1:/etc/xinetd.d/vsftpd</iid>
+        <protocol>tcp</protocol>
+        <script>vsftpd</script>
+        <server>/usr/sbin/vsftpd</server>
+        <service>ftp</service>
+      </conf>
+    </netd_conf>
+    <netd_status config:type="integer">0</netd_status>
+  </inetd>
+<!--
+  	@(#) keyboard.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <keyboard>
+    <keymap>english-us</keymap>
+  </keyboard>
+<!--
+  	@(#) language.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <language>
+    <language>en_US</language>
+    <languages>en_US</languages>
+  </language>
+<!--
+  	@(#) partitioning_ze32.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/sda</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <format config:type="boolean">true</format>
+	  <fstopt>noatime,defaults</fstopt>
+          <mount>/boot</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>1000m</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>swap</mount>
+          <partition_id config:type="integer">130</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>1gb</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <format config:type="boolean">true</format>
+	  <fstopt>noatime,defaults</fstopt>
+          <mount>/</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>10gb</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <format config:type="boolean">true</format>
+	  <fstopt>noatime,defaults</fstopt>
+          <mount>/node</mount>
+          <partition_nr config:type="integer">5</partition_nr>
+          <size>2gb</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <format config:type="boolean">true</format>
+	  <fstopt>noatime,defaults</fstopt>
+          <mount>/home</mount>
+          <partition_nr config:type="integer">6</partition_nr>
+          <size>2gb</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <format config:type="boolean">true</format>
+	  <fstopt>noatime,defaults</fstopt>
+          <mount>/var</mount>
+          <partition_nr config:type="integer">7</partition_nr>
+          <size>max</size>
+        </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
+<!--
+  	@(#) report.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <report>
+    <errors>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">0</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">0</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">0</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">0</timeout>
+    </yesno_messages>
+  </report>
+<!--
+  	@(#) networking.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <networking>
+    <dhcp_options>
+      <dhclient_additional_options></dhclient_additional_options>
+      <dhclient_client_id></dhclient_client_id>
+      <dhclient_hostname_option>AUTO</dhclient_hostname_option>
+    </dhcp_options>
+    <dns>
+      <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+      <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      <domain>site</domain>
+      <hostname>instalz11</hostname>
+      <write_hostname>true</write_hostname>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <device>eth0</device>
+        <bootproto>dhcp4</bootproto>
+	<prefixlen>16</prefixlen>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+    </routing>
+  </networking>
+<!--
+  	@(#) tftpserver.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <tftp-server>
+    <start_tftpd config:type="boolean">true</start_tftpd>
+    <tftp_directory>/dump/latest</tftp_directory>
+  </tftp-server>
+<!--
+  	@(#) samba-server.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <samba-server>
+    <service>Enabled</service>
+    <version>2.11</version>
+  </samba-server>
+  <software>
+    <packages config:type="list">
+      <package>rsh</package>
+      <package>kernel-pae</package>
+      <package>kernel-source</package>
+      <package>kernel-devel</package>
+      <package>DirectFB</package>
+      <package>DirectFB-Mesa</package>
+      <package>ImageMagick</package>
+      <package>LibVNCServer</package>
+      <package>binutils</package>
+      <package>linux-glibc-devel</package>
+      <package>glibc-devel</package>
+      <package>gcc47</package>
+      <package>gcc</package>
+      <package>Mesa</package>
+      <package>Mesa-libEGL1</package>
+      <package>Mesa-libGL1</package>
+      <package>Mesa-libGLESv2-2</package>
+      <package>Mesa-libglapi0</package>
+      <package>ModemManager</package>
+      <package>MozillaFirefox</package>
+      <package>MozillaFirefox-branding-openSUSE</package>
+      <package>NetworkManager</package>
+      <package>NetworkManager-kde4-libs</package>
+      <package>NetworkManager-openvpn</package>
+      <package>NetworkManager-openvpn-kde4</package>
+      <package>NetworkManager-pptp</package>
+      <package>NetworkManager-pptp-kde4</package>
+      <package>NetworkManager-vpnc</package>
+      <package>NetworkManager-vpnc-kde4</package>
+      <package>OpenPrintingPPDs</package>
+      <package>OpenPrintingPPDs-ghostscript</package>
+      <package>OpenPrintingPPDs-hpijs</package>
+      <package>OpenPrintingPPDs-postscript</package>
+      <package>PackageKit</package>
+      <package>PackageKit-backend-zypp</package>
+      <package>PackageKit-branding-openSUSE</package>
+      <package>PackageKit-browser-plugin</package>
+      <package>PackageKit-gstreamer-plugin</package>
+      <package>PackageKit-gtk3-module</package>
+      <package>SuSEfirewall2</package>
+      <package>a2ps</package>
+      <package>aaa_base</package>
+      <package>aaa_base-extras</package>
+      <package>acl</package>
+      <package>acpica</package>
+      <package>akonadi</package>
+      <package>akonadi-runtime</package>
+      <package>akregator</package>
+      <package>alsa</package>
+      <package>alsa-oss</package>
+      <package>alsa-plugins</package>
+      <package>alsa-plugins-pulse</package>
+      <package>alsa-utils</package>
+      <package>amarok</package>
+      <package>apache2-mod_php5</package>
+      <package>apache2-prefork</package>
+      <package>apache2</package>
+      <package>apache2-utils</package>
+      <package>apper</package>
+      <package>appmenu-qt</package>
+      <package>appres</package>
+      <package>ark</package>
+      <package>at</package>
+      <package>attr</package>
+      <package>augeas-lenses</package>
+      <package>autofs</package>
+      <package>autoyast2-installation</package>
+      <package>avahi</package>
+      <package>bash</package>
+      <package>bash-doc</package>
+      <package>bc</package>
+      <package>bdftopcf</package>
+      <package>bea-stax-api</package>
+      <package>beforelight</package>
+      <package>bind-libs</package>
+      <package>bind-utils</package>
+      <package>bitmap</package>
+      <package>bluedevil</package>
+      <package>bluedevil-lang</package>
+      <package>bluez</package>
+      <package>boost-license1_49_0</package>
+      <package>bootcycle</package>
+      <package>branding-openSUSE</package>
+      <package>bridge-utils</package>
+      <package>bundle-lang-common-en</package>
+      <package>bundle-lang-gnome-en</package>
+      <package>bundle-lang-kde-en</package>
+      <package>bzip2</package>
+      <package>ca-certificates</package>
+      <package>ca-certificates-mozilla</package>
+      <package>cantarell-fonts</package>
+      <package>cdrdao</package>
+      <package>cdrkit-cdrtools-compat</package>
+      <package>checkmedia</package>
+      <package>choqok</package>
+      <package>cifs-utils</package>
+      <package>cln</package>
+      <package>command-not-found</package>
+      <package>coreutils</package>
+      <package>cpio</package>
+      <package>cpp</package>
+      <package>cpp47</package>
+      <package>cracklib</package>
+      <package>cracklib-dict-full</package>
+      <package>crda</package>
+      <package>cron</package>
+      <package>cronie</package>
+      <package>cryptsetup</package>
+      <package>cryptsetup-mkinitrd</package>
+      <package>cups</package>
+      <package>cups-client</package>
+      <package>cups-libs</package>
+      <package>cups-pk-helper</package>
+      <package>curl</package>
+      <package>cyrus-sasl</package>
+      <package>cyrus-sasl-crammd5</package>
+      <package>cyrus-sasl-digestmd5</package>
+      <package>cyrus-sasl-gssapi</package>
+      <package>cyrus-sasl-plain</package>
+      <package>db-utils</package>
+      <package>dbus-1</package>
+      <package>dbus-1-glib</package>
+      <package>dbus-1-python</package>
+      <package>dbus-1-x11</package>
+      <package>dconf</package>
+      <package>dejavu-fonts</package>
+      <package>deltarpm</package>
+      <package>desktop-data-openSUSE</package>
+      <package>desktop-file-utils</package>
+      <package>desktop-translations</package>
+      <package>device-mapper</package>
+      <package>dhcp</package>
+      <package>dhcp-client</package>
+      <package>dhcpcd</package>
+      <package>dialog</package>
+      <package>diffutils</package>
+      <package>digikam</package>
+      <package>digikam-doc</package>
+      <package>dirmngr</package>
+      <package>dmidecode</package>
+      <package>dmraid</package>
+      <package>dmz-icon-theme-cursors</package>
+      <package>dnsmasq</package>
+      <package>dolphin</package>
+      <package>dos2unix</package>
+      <package>dosfstools</package>
+      <package>dvd+rw-tools</package>
+      <package>e2fsprogs</package>
+      <package>ed</package>
+      <package>editres</package>
+      <package>efont-unicode-bitmap-fonts</package>
+      <package>eject</package>
+      <package>elfutils</package>
+      <package>enblend-enfuse</package>
+      <package>enscript</package>
+      <package>ethtool</package>
+      <package>exiftool</package>
+      <package>expect</package>
+      <package>fbset</package>
+      <package>file</package>
+      <package>filesystem</package>
+      <package>fillup</package>
+      <package>findutils</package>
+      <package>finger</package>
+      <package>fontconfig</package>
+      <package>fonts-config</package>
+      <package>fonttosfnt</package>
+      <package>foomatic-filters</package>
+      <package>fribidi</package>
+      <package>fslsfonts</package>
+      <package>fstobdf</package>
+      <package>ft2demos</package>
+      <package>fuse</package>
+      <package>fvwm2</package>
+      <package>gawk</package>
+      <package>gconf-polkit</package>
+      <package>gconf2</package>
+      <package>gconf2-branding-openSUSE</package>
+      <package>gcr-data</package>
+      <package>gcr-prompter</package>
+      <package>gcr-viewer</package>
+      <package>gd</package>
+      <package>gdb</package>
+      <package>gdk-pixbuf-loader-libopenraw</package>
+      <package>gdk-pixbuf-loader-rsvg</package>
+      <package>gdk-pixbuf-query-loaders</package>
+      <package>gegl-0_2</package>
+      <package>genisoimage</package>
+      <package>gettext-runtime</package>
+      <package>gettext-tools</package>
+      <package>gfxboot</package>
+      <package>gfxboot-branding-openSUSE</package>
+      <package>ghostscript</package>
+      <package>ghostscript-fonts-other</package>
+      <package>ghostscript-fonts-std</package>
+      <package>ghostscript-x11</package>
+      <package>gimp</package>
+      <package>gimp-branding-openSUSE</package>
+      <package>gimp-help</package>
+      <package>gimp-help-browser</package>
+      <package>gimp-plugins-python</package>
+      <package>gio-branding-openSUSE</package>
+      <package>girepository-1_0</package>
+      <package>glamor</package>
+      <package>glib-networking</package>
+      <package>glib2-tools</package>
+      <package>glibc</package>
+      <package>glibc-extra</package>
+      <package>glibc-locale</package>
+      <package>gnome-icon-theme</package>
+      <package>gnome-icon-theme-extras</package>
+      <package>gnome-icon-theme-symbolic</package>
+      <package>gnome-keyring</package>
+      <package>gnome-keyring-pam</package>
+      <package>gnome-vfs2</package>
+      <package>gnu-unifont-bitmap-fonts</package>
+      <package>google-droid-fonts</package>
+      <package>gpart</package>
+      <package>gpg2</package>
+      <package>gpm</package>
+      <package>gptfdisk</package>
+      <package>grep</package>
+      <package>groff</package>
+      <package>groff-devx</package>
+      <package>grub</package>
+      <package>grub2</package>
+      <package>grub2-branding-openSUSE</package>
+      <package>grub2-efi</package>
+      <package>grub2-i386-efi</package>
+      <package>grub2-i386-pc</package>
+      <package>gsettings-backend-dconf</package>
+      <package>gsettings-desktop-schemas</package>
+      <package>gstreamer-0_10</package>
+      <package>gstreamer-0_10-plugin-gnomevfs</package>
+      <package>gstreamer-0_10-plugins-base</package>
+      <package>gstreamer-0_10-plugins-good</package>
+      <package>gstreamer-0_10-plugins-qt</package>
+      <package>gstreamer</package>
+      <package>gstreamer-plugins-base</package>
+      <package>gtk2-branding-openSUSE</package>
+      <package>gtk2-data</package>
+      <package>gtk2-engine-oxygen</package>
+      <package>gtk2-immodule-amharic</package>
+      <package>gtk2-immodule-inuktitut</package>
+      <package>gtk2-immodule-thai</package>
+      <package>gtk2-immodule-vietnamese</package>
+      <package>gtk2-metatheme-adwaita</package>
+      <package>gtk2-theme-oxygen</package>
+      <package>gtk2-theming-engine-adwaita</package>
+      <package>gtk2-tools</package>
+      <package>gtk3-branding-openSUSE</package>
+      <package>gtk3-data</package>
+      <package>gtk3-immodule-amharic</package>
+      <package>gtk3-immodule-inuktitut</package>
+      <package>gtk3-immodule-thai</package>
+      <package>gtk3-immodule-vietnamese</package>
+      <package>gtk3-metatheme-adwaita</package>
+      <package>gtk3-theming-engine-adwaita</package>
+      <package>gtk3-tools</package>
+      <package>gutenprint</package>
+      <package>gvfs</package>
+      <package>gvfs-backend-afc</package>
+      <package>gvfs-backends</package>
+      <package>gvfs-fuse</package>
+      <package>gwenview</package>
+      <package>gxditview</package>
+      <package>gzip</package>
+      <package>haveged</package>
+      <package>hdparm</package>
+      <package>hicolor-icon-theme</package>
+      <package>hicolor-icon-theme-branding-openSUSE</package>
+      <package>hplip</package>
+      <package>hplip-hpijs</package>
+      <package>hplip-sane</package>
+      <package>htdig</package>
+      <package>hugin</package>
+      <package>hunspell</package>
+      <package>hunspell-tools</package>
+      <package>hwinfo</package>
+      <package>iceauth</package>
+      <package>icedax</package>
+      <package>icedtea-web</package>
+      <package>icewm</package>
+      <package>icewm-lite</package>
+      <package>ico</package>
+      <package>ifplugd</package>
+      <package>info</package>
+      <package>info2html</package>
+      <package>initviocons</package>
+      <package>insserv-compat</package>
+      <package>intel-gpu-tools</package>
+      <package>intlfonts</package>
+      <package>intlfonts-euro-bitmap-fonts</package>
+      <package>iproute2</package>
+      <package>iptables</package>
+      <package>iputils</package>
+      <package>iso-codes</package>
+      <package>ispell</package>
+      <package>ispell-american</package>
+      <package>iw</package>
+      <package>java-1_7_0-openjdk</package>
+      <package>java-ca-certificates</package>
+      <package>jline</package>
+      <package>joe</package>
+      <package>jpackage-utils</package>
+      <package>k3b</package>
+      <package>kactivities4</package>
+      <package>kaddressbook</package>
+      <package>kaffeine</package>
+      <package>kbd</package>
+      <package>kcalc</package>
+      <package>kcharselect</package>
+      <package>kcm_gtk</package>
+      <package>kcolorchooser</package>
+      <package>kde4-filesystem</package>
+      <package>kde4-kgreeter-plugins</package>
+      <package>kde4-print-manager</package>
+      <package>kdeartwork4-screensaver</package>
+      <package>kdebase4-libkonq</package>
+      <package>kdebase4-nsplugin</package>
+      <package>kdebase4-openSUSE</package>
+      <package>kdebase4-runtime</package>
+      <package>kdebase4-runtime-branding-openSUSE</package>
+      <package>kdebase4-session</package>
+      <package>kdebase4-workspace</package>
+      <package>kdebase4-workspace-branding-openSUSE</package>
+      <package>kdebase4-workspace-ksysguardd</package>
+      <package>kdebase4-workspace-liboxygenstyle</package>
+      <package>kdebase4-workspace-plasma-calendar</package>
+      <package>kdegames4-carddecks-default</package>
+      <package>kdelibs4</package>
+      <package>kdelibs4-branding-openSUSE</package>
+      <package>kdelibs4-core</package>
+      <package>kdenetwork4-filesharing</package>
+      <package>kdepasswd</package>
+      <package>kdepim4</package>
+      <package>kdepim4-runtime</package>
+      <package>kdepimlibs4</package>
+      <package>kdialog</package>
+      <package>kdm</package>
+      <package>kdm-branding-openSUSE</package>
+      <package>kdnssd</package>
+      <package>keditbookmarks</package>
+      <package>kernel-firmware</package>
+      <package>kexec-tools</package>
+      <package>keyutils</package>
+      <package>kgamma</package>
+      <package>kget</package>
+      <package>kgpg</package>
+      <package>kio_audiocd</package>
+      <package>kio_iso</package>
+      <package>kio_kamera</package>
+      <package>kio_mtp</package>
+      <package>kipi-plugins</package>
+      <package>kipi-plugins-acquireimage</package>
+      <package>kipi-plugins-geolocation</package>
+      <package>klogd</package>
+      <package>kmag</package>
+      <package>kmahjongg</package>
+      <package>kmail</package>
+      <package>kmines</package>
+      <package>kmix</package>
+      <package>kmousetool</package>
+      <package>knotes</package>
+      <package>kompare</package>
+      <package>konqueror</package>
+      <package>konqueror-plugins</package>
+      <package>konsole</package>
+      <package>kontact</package>
+      <package>konversation</package>
+      <package>konversation-lang</package>
+      <package>kopete</package>
+      <package>korganizer</package>
+      <package>kpartx</package>
+      <package>kpat</package>
+      <package>krb5</package>
+      <package>krdc</package>
+      <package>kreversi</package>
+      <package>krfb</package>
+      <package>kruler</package>
+      <package>kscd</package>
+      <package>ksh</package>
+      <package>ksnapshot</package>
+      <package>ksplash-qml-branding-openSUSE</package>
+      <package>ksplashx-branding-openSUSE</package>
+      <package>ksshaskpass</package>
+      <package>ksudoku</package>
+      <package>ktorrent</package>
+      <package>kvkbd</package>
+      <package>kwalletmanager</package>
+      <package>kwebkitpart</package>
+      <package>kwin</package>
+      <package>kwrite</package>
+      <package>lbxproxy</package>
+      <package>lcms2</package>
+      <package>lensfun-data</package>
+      <package>less</package>
+      <package>libFLAC++6</package>
+      <package>libFLAC8</package>
+      <package>libFS6</package>
+      <package>libGLEW1_9</package>
+      <package>libGLU1</package>
+      <package>libHX28</package>
+      <package>libHalf7</package>
+      <package>libICE6</package>
+      <package>libIex7</package>
+      <package>libIlmImf7</package>
+      <package>libIlmThread7</package>
+      <package>libMagickCore5</package>
+      <package>libMagickWand5</package>
+      <package>libQtGLib-2_0-0</package>
+      <package>libQtGStreamer-0_10-0</package>
+      <package>libQtWebKit4</package>
+      <package>libSDL-1_2-0</package>
+      <package>libSDL_gfx13</package>
+      <package>libSM6</package>
+      <package>libX11-6</package>
+      <package>libX11-data</package>
+      <package>libX11-xcb1</package>
+      <package>libXRes1</package>
+      <package>libXTrap6</package>
+      <package>libXau6</package>
+      <package>libXaw7</package>
+      <package>libXcomposite1</package>
+      <package>libXcursor1</package>
+      <package>libXdamage1</package>
+      <package>libXdmcp6</package>
+      <package>libXext6</package>
+      <package>libXfixes3</package>
+      <package>libXfont1</package>
+      <package>libXfontcache1</package>
+      <package>libXft2</package>
+      <package>libXi6</package>
+      <package>libXinerama1</package>
+      <package>libXmu6</package>
+      <package>libXmuu1</package>
+      <package>libXp6</package>
+      <package>libXpm4</package>
+      <package>libXprintUtil1</package>
+      <package>libXrandr2</package>
+      <package>libXrender1</package>
+      <package>libXss1</package>
+      <package>libXt6</package>
+      <package>libXtst6</package>
+      <package>libXv1</package>
+      <package>libXvMC1</package>
+      <package>libXxf86dga1</package>
+      <package>libXxf86misc1</package>
+      <package>libXxf86vm1</package>
+      <package>libaa1</package>
+      <package>libacl1</package>
+      <package>libadns1</package>
+      <package>libaio1</package>
+      <package>libapr-util1</package>
+      <package>libapr1</package>
+      <package>libakonadi4</package>
+      <package>libakonadiprotocolinternals1</package>
+      <package>libao-plugins4</package>
+      <package>libao4</package>
+      <package>libarchive12</package>
+      <package>libasm1</package>
+      <package>libasound2</package>
+      <package>libaspell15</package>
+      <package>libassuan0</package>
+      <package>libatasmart4</package>
+      <package>libatk-1_0-0</package>
+      <package>libatk-bridge-2_0-0</package>
+      <package>libatm1</package>
+      <package>libatspi0</package>
+      <package>libattica0_4</package>
+      <package>libattr1</package>
+      <package>libaudit1</package>
+      <package>libaugeas0</package>
+      <package>libavahi-client3</package>
+      <package>libavahi-common3</package>
+      <package>libavahi-core7</package>
+      <package>libavahi-glib1</package>
+      <package>libavutil51</package>
+      <package>libbabl-0_1-0</package>
+      <package>libblas3</package>
+      <package>libblkid1</package>
+      <package>libblocxx6</package>
+      <package>libbluedevil1</package>
+      <package>libbluetooth3</package>
+      <package>libbluray1</package>
+      <package>libboost_date_time1_49_0</package>
+      <package>libboost_filesystem1_49_0</package>
+      <package>libboost_program_options1_49_0</package>
+      <package>libboost_regex1_49_0</package>
+      <package>libboost_signals1_49_0</package>
+      <package>libboost_system1_49_0</package>
+      <package>libboost_thread1_49_0</package>
+      <package>libbz2-1</package>
+      <package>libcairo-gobject2</package>
+      <package>libcairo2</package>
+      <package>libcanberra-gtk-module-common</package>
+      <package>libcanberra-gtk0</package>
+      <package>libcanberra-gtk2-module</package>
+      <package>libcanberra-gtk3-0</package>
+      <package>libcanberra-gtk3-module</package>
+      <package>libcanberra0</package>
+      <package>libcap-ng0</package>
+      <package>libcap2</package>
+      <package>libcdda_interface0</package>
+      <package>libcdda_paranoia0</package>
+      <package>libcdio14</package>
+      <package>libcdio_cdda1</package>
+      <package>libcdio_paranoia1</package>
+      <package>libcelt0-2</package>
+      <package>libchm0</package>
+      <package>libcloog0</package>
+      <package>libclucene2</package>
+      <package>libcolord1</package>
+      <package>libcom_err2</package>
+      <package>libcrack2</package>
+      <package>libcroco-0_6-3</package>
+      <package>libcryptsetup4</package>
+      <package>libcurl4</package>
+      <package>libdaemon0</package>
+      <package>libdb-4_8</package>
+      <package>libdbus-1-3</package>
+      <package>libdbusmenu-qt2</package>
+      <package>libdc1394-22</package>
+      <package>libdconf1</package>
+      <package>libdirectfb-1_6-0</package>
+      <package>libdiscid0</package>
+      <package>libdjvulibre21</package>
+      <package>libdmtx0</package>
+      <package>libdmx1</package>
+      <package>libdrm2</package>
+      <package>libdrm_intel1</package>
+      <package>libdrm_nouveau2</package>
+      <package>libdrm_radeon1</package>
+      <package>libdv4</package>
+      <package>libdvdread4</package>
+      <package>libdw1</package>
+      <package>libedit0</package>
+      <package>libelf0</package>
+      <package>libelf1</package>
+      <package>libenca0</package>
+      <package>libenchant1</package>
+      <package>libepub0</package>
+      <package>liberation-fonts</package>
+      <package>libestr0</package>
+      <package>libevent-2_0-5</package>
+      <package>libexif12</package>
+      <package>libexiv2-12</package>
+      <package>libexpat1</package>
+      <package>libext2fs2</package>
+      <package>libfam0</package>
+      <package>libffi4</package>
+      <package>libfftw3-3</package>
+      <package>libfontenc1</package>
+      <package>libfreebl3</package>
+      <package>libfreetype6</package>
+      <package>libfuse2</package>
+      <package>libgadu3</package>
+      <package>libgbm1</package>
+      <package>libgcc_s1</package>
+      <package>libgck-1-0</package>
+      <package>libgck-modules-gnome-keyring</package>
+      <package>libgcr-3-1</package>
+      <package>libgcrypt11</package>
+      <package>libgdbm4</package>
+      <package>libgdk_pixbuf-2_0-0</package>
+      <package>libgegl-0_2-0</package>
+      <package>libgeoclue0</package>
+      <package>libgfortran3</package>
+      <package>libgif4</package>
+      <package>libgimp-2_0-0</package>
+      <package>libgimpui-2_0-0</package>
+      <package>libgio-2_0-0</package>
+      <package>libgirepository-1_0-1</package>
+      <package>libglade-2_0-0</package>
+      <package>libgle3</package>
+      <package>libglib-2_0-0</package>
+      <package>libglut3</package>
+      <package>libgmodule-2_0-0</package>
+      <package>libgmp10</package>
+      <package>libgmpxx4</package>
+      <package>libgnome-keyring0</package>
+      <package>libgnutls28</package>
+      <package>libgobject-2_0-0</package>
+      <package>libgomp1</package>
+      <package>libgpg-error0</package>
+      <package>libgpgme11</package>
+      <package>libgphoto2-6</package>
+      <package>libgpod-tools</package>
+      <package>libgpod4</package>
+      <package>libgps20</package>
+      <package>libgrantlee_core0</package>
+      <package>libgrantlee_gui0</package>
+      <package>libgsm1</package>
+      <package>libgssglue1</package>
+      <package>libgstapp-0_10-0</package>
+      <package>libgstapp-1_0-0</package>
+      <package>libgstaudio-1_0-0</package>
+      <package>libgstinterfaces-0_10-0</package>
+      <package>libgstpbutils-1_0-0</package>
+      <package>libgstreamer-0_10-0</package>
+      <package>libgstreamer-1_0-0</package>
+      <package>libgstriff-1_0-0</package>
+      <package>libgsttag-1_0-0</package>
+      <package>libgstvideo-1_0-0</package>
+      <package>libgthread-2_0-0</package>
+      <package>libgtk-2_0-0</package>
+      <package>libgtk-3-0</package>
+      <package>libgudev-1_0-0</package>
+      <package>libgvfscommon0</package>
+      <package>libharfbuzz0</package>
+      <package>libhogweed2</package>
+      <package>libibus-1_0-0</package>
+      <package>libical0</package>
+      <package>libicu49</package>
+      <package>libidn11</package>
+      <package>libieee1284</package>
+      <package>libimobiledevice3</package>
+      <package>libiodbc3</package>
+      <package>libiptc0</package>
+      <package>libiso9660-8</package>
+      <package>libiw30</package>
+      <package>libjack0</package>
+      <package>libjasper1</package>
+      <package>libjavascriptcoregtk-1_0-0</package>
+      <package>libjavascriptcoregtk-3_0-0</package>
+      <package>libjbig2</package>
+      <package>libjpeg-turbo</package>
+      <package>libjpeg8</package>
+      <package>libjson0</package>
+      <package>libkactivities6</package>
+      <package>libkate1</package>
+      <package>libkcddb4</package>
+      <package>libkcompactdisc4</package>
+      <package>libkdcraw22</package>
+      <package>libkde4</package>
+      <package>libkdecore4</package>
+      <package>libkdegames</package>
+      <package>libkdegames6</package>
+      <package>libkdepim4</package>
+      <package>libkdepimlibs4</package>
+      <package>libkerfuffle4</package>
+      <package>libkexiv2-11</package>
+      <package>libkeyutils1</package>
+      <package>libkface1</package>
+      <package>libkgapi0</package>
+      <package>libkgeomap1</package>
+      <package>libkipi10</package>
+      <package>libkmahjongg</package>
+      <package>libkmahjongglib4</package>
+      <package>libkmod2</package>
+      <package>libkolab0</package>
+      <package>libkolabxml0</package>
+      <package>libkonq5</package>
+      <package>libksane0</package>
+      <package>libksba8</package>
+      <package>libksuseinstall1</package>
+      <package>libktexteditor</package>
+      <package>libktorrent5</package>
+      <package>libkvkontakte1</package>
+      <package>liblapack3</package>
+      <package>liblastfm1</package>
+      <package>liblazy1</package>
+      <package>liblbxutil1</package>
+      <package>liblcms1</package>
+      <package>liblcms2-2</package>
+      <package>libldap-2_4-2</package>
+      <package>libldapcpp1</package>
+      <package>liblensfun0</package>
+      <package>liblirc_client0</package>
+      <package>liblockdev1</package>
+      <package>libloudmouth-1-0</package>
+      <package>liblpsolve55-0</package>
+      <package>liblqr-1-0</package>
+      <package>libltdl7</package>
+      <package>liblua5_1</package>
+      <package>liblua5_2</package>
+      <package>liblzma5</package>
+      <package>liblzo2-2</package>
+      <package>libmagic-data</package>
+      <package>libmagic1</package>
+      <package>libmarblewidget15</package>
+      <package>libmeanwhile1</package>
+      <package>libmediastreamer1</package>
+      <package>libmediawiki1</package>
+      <package>libmicrohttpd10</package>
+      <package>libmjpegutils-2_0-0</package>
+      <package>libmms0</package>
+      <package>libmng1</package>
+      <package>libmnl0</package>
+      <package>libmodman1</package>
+      <package>libmodplug1</package>
+      <package>libmount1</package>
+      <package>libmozjs185-1_0</package>
+      <package>libmpc3</package>
+      <package>libmpcdec5</package>
+      <package>libmpfr4</package>
+      <package>libmsn0_3</package>
+      <package>libmspack0</package>
+      <package>libmtdev1</package>
+      <package>libmtp9</package>
+      <package>libmusicbrainz3-6</package>
+      <package>libmusicbrainz5-0</package>
+      <package>libmygpo-qt1</package>
+      <package>libmysqlclient18</package>
+      <package>libmysqld18</package>
+      <package>libncurses5</package>
+      <package>libncurses6</package>
+      <package>libneon27</package>
+      <package>libnepomukwidgets4</package>
+      <package>libnetfilter_conntrack3</package>
+      <package>libnetpbm11</package>
+      <package>libnettle4</package>
+      <package>libnfnetlink0</package>
+      <package>libnl-1_1</package>
+      <package>libnl-config</package>
+      <package>libnl3-200</package>
+      <package>libnm-glib-vpn1</package>
+      <package>libnm-glib4</package>
+      <package>libnm-util2</package>
+      <package>libnotify4</package>
+      <package>libnscd</package>
+      <package>libnsssharedhelper0</package>
+      <package>libntfs-3g83</package>
+      <package>libntrack-qt4-1</package>
+      <package>libntrack0</package>
+      <package>libogg0</package>
+      <package>liboggkate1</package>
+      <package>libopenal1</package>
+      <package>libopencv2_4</package>
+      <package>libopenjpeg1</package>
+      <package>libopenobex1</package>
+      <package>libopenraw1</package>
+      <package>libopenssl1_0_0</package>
+      <package>liborc-0_4-0</package>
+      <package>libortp8</package>
+      <package>libp11-kit0</package>
+      <package>libpackagekit-glib2-16</package>
+      <package>libpackagekit-qt2-5</package>
+      <package>libpango-1_0-0</package>
+      <package>libpano13-2</package>
+      <package>libparted0</package>
+      <package>libpcap1</package>
+      <package>libpci3</package>
+      <package>libpciaccess0</package>
+      <package>libpcre1</package>
+      <package>libpgf6</package>
+      <package>libphonon4</package>
+      <package>libpipeline1</package>
+      <package>libpixman-1-0</package>
+      <package>libpkcs11-helper1</package>
+      <package>libplist1</package>
+      <package>libply-boot-client2</package>
+      <package>libply-splash-core2</package>
+      <package>libply-splash-graphics2</package>
+      <package>libply2</package>
+      <package>libpng15-15</package>
+      <package>libpq5</package>
+      <package>libpolkit-qt-1-1</package>
+      <package>libpolkit0</package>
+      <package>libpoppler-glib8</package>
+      <package>libpoppler-qt4-4</package>
+      <package>libpoppler34</package>
+      <package>libpopt0</package>
+      <package>libppl9</package>
+      <package>libppl_c4</package>
+      <package>libpng12-0</package>
+      <package>libpng12-devel</package>
+      <package>libpng12-compat-devel</package>
+      <package>libprison0</package>
+      <package>libprocps1</package>
+      <package>libproxy1</package>
+      <package>libproxy1-config-gnome3</package>
+      <package>libproxy1-config-kde4</package>
+      <package>libproxy1-networkmanager</package>
+      <package>libproxy1-pacrunner-webkit</package>
+      <package>libpth20</package>
+      <package>libpulse-mainloop-glib0</package>
+      <package>libpulse0</package>
+      <package>libpyglib-gi-2_0-python0</package>
+      <package>libpython2_7-1_0</package>
+      <package>libqalculate5</package>
+      <package>libqca2</package>
+      <package>libqimageblitz4</package>
+      <package>libqjson0</package>
+      <package>libqoauth1</package>
+      <package>libqrencode3</package>
+      <package>libqt4</package>
+      <package>libqt4-qt3support</package>
+      <package>libqt4-sql</package>
+      <package>libqt4-sql-mysql</package>
+      <package>libqt4-sql-sqlite</package>
+      <package>libqt4-x11</package>
+      <package>libquadmath0</package>
+      <package>libquicktime0</package>
+      <package>libraptor2-0</package>
+      <package>librasqal3</package>
+      <package>libraw1394-11</package>
+      <package>librcc0</package>
+      <package>librcd0</package>
+      <package>libreadline6</package>
+      <package>libredland0</package>
+      <package>libreiserfs-0_3-0</package>
+      <package>libreoffice</package>
+      <package>libreoffice-base</package>
+      <package>libreoffice-base-drivers-mysql</package>
+      <package>libreoffice-base-extensions</package>
+      <package>libreoffice-branding-openSUSE</package>
+      <package>libreoffice-calc</package>
+      <package>libreoffice-calc-extensions</package>
+      <package>libreoffice-converter</package>
+      <package>libreoffice-draw</package>
+      <package>libreoffice-draw-extensions</package>
+      <package>libreoffice-filters-optional</package>
+      <package>libreoffice-help-en-US</package>
+      <package>libreoffice-hyphen</package>
+      <package>libreoffice-icon-theme-crystal</package>
+      <package>libreoffice-icon-theme-galaxy</package>
+      <package>libreoffice-icon-theme-hicontrast</package>
+      <package>libreoffice-icon-theme-oxygen</package>
+      <package>libreoffice-impress</package>
+      <package>libreoffice-impress-extensions</package>
+      <package>libreoffice-kde4</package>
+      <package>libreoffice-mailmerge</package>
+      <package>libreoffice-math</package>
+      <package>libreoffice-pyuno</package>
+      <package>libreoffice-templates-en</package>
+      <package>libreoffice-templates-labels-a4</package>
+      <package>libreoffice-templates-labels-letter</package>
+      <package>libreoffice-templates-presentation-layouts</package>
+      <package>libreoffice-thesaurus-en-US</package>
+      <package>libreoffice-writer</package>
+      <package>libreoffice-writer-extensions</package>
+      <package>librsvg-2-2</package>
+      <package>libsamplerate0</package>
+      <package>libsbc1</package>
+      <package>libschroedinger-1_0-0</package>
+      <package>libsecret-1-0</package>
+      <package>libselinux1</package>
+      <package>libsemanage1</package>
+      <package>libsensors4</package>
+      <package>libsepol1</package>
+      <package>libsmbclient0</package>
+      <package>libsmi</package>
+      <package>libsmi2</package>
+      <package>libsndfile1</package>
+      <package>libsnmp30</package>
+      <package>libsoftokn3</package>
+      <package>libsolv-tools</package>
+      <package>libsoprano4</package>
+      <package>libsoup-2_4-1</package>
+      <package>libsox2</package>
+      <package>libspandsp2</package>
+      <package>libspectre1</package>
+      <package>libspeex1</package>
+      <package>libspeexdsp1</package>
+      <package>libsqlite3-0</package>
+      <package>libssh2-1</package>
+      <package>libssh4</package>
+      <package>libstartup-notification-1-0</package>
+      <package>libstdc++6</package>
+      <package>libstorage4</package>
+      <package>libstrigi0</package>
+      <package>libstroke</package>
+      <package>libtag-extras1</package>
+      <package>libtag1</package>
+      <package>libtag_c0</package>
+      <package>libtalloc2</package>
+      <package>libtasn1</package>
+      <package>libtasn1-6</package>
+      <package>libtdb1</package>
+      <package>libtheora0</package>
+      <package>libtidy-0_99-0</package>
+      <package>libtiff5</package>
+      <package>libtirpc1</package>
+      <package>libudev1</package>
+      <package>libudisks2-0</package>
+      <package>libupower-glib1</package>
+      <package>libusb-0_1-4</package>
+      <package>libusb-1_0-0</package>
+      <package>libusbmuxd2</package>
+      <package>libustr-1_0-1</package>
+      <package>libuuid1</package>
+      <package>libv4l</package>
+      <package>libv4l1-0</package>
+      <package>libv4l2-0</package>
+      <package>libv4lconvert0</package>
+      <package>libvcdinfo0</package>
+      <package>libvisual</package>
+      <package>libvorbis0</package>
+      <package>libvorbisenc2</package>
+      <package>libvorbisfile3</package>
+      <package>libwavpack1</package>
+      <package>libwbclient0</package>
+      <package>libwebkitgtk-1_0-0</package>
+      <package>libwebp4</package>
+      <package>libwebrtc_audio_processing0</package>
+      <package>libwmf-0_2-7</package>
+      <package>libwpd-0_9-9</package>
+      <package>libwpg-0_2-2</package>
+      <package>libwps-0_2-2</package>
+      <package>libwrap0</package>
+      <package>libwx_baseu-2_8-0-stl</package>
+      <package>libwx_baseu_net-2_8-0-stl</package>
+      <package>libwx_baseu_xml-2_8-0-stl</package>
+      <package>libwx_gtk2u_adv-2_8-0-stl</package>
+      <package>libwx_gtk2u_aui-2_8-0-stl</package>
+      <package>libwx_gtk2u_core-2_8-0-stl</package>
+      <package>libwx_gtk2u_gl-2_8-0-stl</package>
+      <package>libwx_gtk2u_html-2_8-0-stl</package>
+      <package>libwx_gtk2u_xrc-2_8-0-stl</package>
+      <package>libx86-1</package>
+      <package>libx86emu1</package>
+      <package>libxatracker1</package>
+      <package>libxcb-damage0</package>
+      <package>libxcb-dri2-0</package>
+      <package>libxcb-glx0</package>
+      <package>libxcb-randr0</package>
+      <package>libxcb-render0</package>
+      <package>libxcb-shape0</package>
+      <package>libxcb-shm0</package>
+      <package>libxcb-util1</package>
+      <package>libxcb-xfixes0</package>
+      <package>libxcb-xv0</package>
+      <package>libxcb1</package>
+      <package>libxerces-c-3_1</package>
+      <package>libxine2</package>
+      <package>libxine2-pulse</package>
+      <package>libxkbfile1</package>
+      <package>libxmi0</package>
+      <package>libxml2-2</package>
+      <package>libxslt1</package>
+      <package>libxtables9</package>
+      <package>libyui-ncurses-pkg4</package>
+      <package>libyui-ncurses4</package>
+      <package>libyui-qt-pkg4</package>
+      <package>libyui-qt4</package>
+      <package>libyui4</package>
+      <package>libz1</package>
+      <package>libzio1</package>
+      <package>libzip2</package>
+      <package>libzypp</package>
+      <package>limal-nfs-server</package>
+      <package>limal-perl</package>
+      <package>limal</package>
+      <package>limal-nfs-server-perl</package>
+      <package>lirc</package>
+      <package>lirc-remotes</package>
+      <package>listres</package>
+      <package>lockdev</package>
+      <package>logrotate</package>
+      <package>lsb-release</package>
+      <package>lsof</package>
+      <package>lsscsi</package>
+      <package>luit</package>
+      <package>lukemftp</package>
+      <package>lvm2</package>
+      <package>mailx</package>
+      <package>make</package>
+      <package>man</package>
+      <package>man-pages</package>
+      <package>man-pages-posix</package>
+      <package>manufacturer-PPDs</package>
+      <package>marble</package>
+      <package>marble-data</package>
+      <package>marble-doc</package>
+      <package>mariadb</package>
+      <package>mariadb-client</package>
+      <package>mariadb-errormessages</package>
+      <package>master-boot-code</package>
+      <package>mdadm</package>
+      <package>media-player-info</package>
+      <package>memtest86+</package>
+      <package>metamail</package>
+      <package>metatheme-adwaita-common</package>
+      <package>microcode_ctl</package>
+      <package>mjpegtools</package>
+      <package>mkcomposecache</package>
+      <package>mkfontdir</package>
+      <package>mkfontscale</package>
+      <package>mkinitrd</package>
+      <package>mobile-broadband-provider-info</package>
+      <package>module-init-tools</package>
+      <package>moodbar</package>
+      <package>mozilla-kde4-integration</package>
+      <package>mozilla-nspr</package>
+      <package>mozilla-nss</package>
+      <package>mozilla-nss-certs</package>
+      <package>mpt-status</package>
+      <package>mtools</package>
+      <package>multipath-tools</package>
+      <package>myspell-american</package>
+      <package>ncurses-devel</package>
+      <package>ncurses-utils</package>
+      <package>nepomuk-core</package>
+      <package>net-tools</package>
+      <package>netcat-openbsd</package>
+      <package>netcfg</package>
+      <package>netpbm</package>
+      <package>nfs-kernel-server</package>
+      <package>nfs-client</package>
+      <package>nfsidmap</package>
+      <package>notification-daemon</package>
+      <package>nscd</package>
+      <package>nss-mdns</package>
+      <package>ntfs-3g</package>
+      <package>ntfsprogs</package>
+      <package>ntp</package>
+      <package>ntrack-libnl3_x</package>
+      <package>numlockx</package>
+      <package>obex-data-server</package>
+      <package>obexd</package>
+      <package>obexd-client</package>
+      <package>oclock</package>
+      <package>okular</package>
+      <package>openSUSE-build-key</package>
+      <package>openSUSE-release</package>
+      <package>openSUSE-release-dvd</package>
+      <package>openal-soft</package>
+      <package>openldap2-client</package>
+      <package>openslp</package>
+      <package>openssh</package>
+      <package>openssh-askpass</package>
+      <package>openssl</package>
+      <package>opensuse-manuals_en</package>
+      <package>openvpn</package>
+      <package>os-prober</package>
+      <package>oxygen-icon-theme</package>
+      <package>pam</package>
+      <package>pam-config</package>
+      <package>pango-tools</package>
+      <package>parallel-printer-support</package>
+      <package>parted</package>
+      <package>patch</package>
+      <package>patterns-openSUSE-base</package>
+      <package>pax</package>
+      <package>pciutils</package>
+      <package>pciutils-ids</package>
+      <package>perl</package>
+      <package>perl-Archive-Zip</package>
+      <package>perl-Bootloader</package>
+      <package>perl-Config-Crontab</package>
+      <package>perl-Crypt-SmbHash</package>
+      <package>perl-Digest-HMAC</package>
+      <package>perl-Digest-MD4</package>
+      <package>perl-Digest-SHA1</package>
+      <package>perl-File-RandomAccess</package>
+      <package>perl-HTML-Parser</package>
+      <package>perl-HTML-Tagset</package>
+      <package>perl-Image-ExifTool</package>
+      <package>perl-Net-DBus</package>
+      <package>perl-NetxAP</package>
+      <package>perl-Parse-RecDescent</package>
+      <package>perl-TermReadLine-Gnu</package>
+      <package>perl-X11-Protocol</package>
+      <package>perl-X500-DN</package>
+      <package>perl-XML-LibXML</package>
+      <package>perl-XML-NamespaceSupport</package>
+      <package>perl-XML-Parser</package>
+      <package>perl-XML-SAX</package>
+      <package>perl-XML-SAX-Base</package>
+      <package>perl-XML-Simple</package>
+      <package>perl-XML-Twig</package>
+      <package>perl-XML-XPath</package>
+      <package>perl-base</package>
+      <package>perl-gettext</package>
+      <package>permissions</package>
+      <package>phonon-backend-gstreamer-0_10</package>
+      <package>php5</package>
+      <package>php5-xmlwriter</package>
+      <package>php5-tokenizer</package>
+      <package>php5-pdo</package>
+      <package>php5-json</package>
+      <package>php5-iconv</package>
+      <package>php5-dom</package>
+      <package>php5-ctype</package>
+      <package>php5-sqlite</package>
+      <package>php5-xmlreader</package>
+      <package>pinentry</package>
+      <package>pinentry-qt4</package>
+      <package>pkcs11-helper</package>
+      <package>pkg-config</package>
+      <package>plasma-addons</package>
+      <package>plasma-addons-lancelot</package>
+      <package>plasma-addons-marble</package>
+      <package>plasmoid-folderview</package>
+      <package>plasmoid-networkmanagement</package>
+      <package>plasmoid-quickaccess</package>
+      <package>plymouth</package>
+      <package>plymouth-branding-openSUSE</package>
+      <package>plymouth-plugin-label</package>
+      <package>plymouth-plugin-script</package>
+      <package>plymouth-scripts</package>
+      <package>pm-profiler</package>
+      <package>pm-utils</package>
+      <package>polkit</package>
+      <package>polkit-default-privs</package>
+      <package>polkit-kde-agent-1</package>
+      <package>polkit-kde-kcmmodules-1</package>
+      <package>poppler-tools</package>
+      <package>postfix</package>
+      <package>ppp</package>
+      <package>pptp</package>
+      <package>prctl</package>
+      <package>procinfo</package>
+      <package>procmail</package>
+      <package>procps</package>
+      <package>providers</package>
+      <package>proxymngr</package>
+      <package>psmisc</package>
+      <package>ptools</package>
+      <package>pullin-flash-player</package>
+      <package>pulseaudio</package>
+      <package>pulseaudio-module-bluetooth</package>
+      <package>pulseaudio-module-jack</package>
+      <package>pulseaudio-module-lirc</package>
+      <package>pulseaudio-module-x11</package>
+      <package>pulseaudio-module-zeroconf</package>
+      <package>pulseaudio-utils</package>
+      <package>python</package>
+      <package>python-base</package>
+      <package>python-cairo</package>
+      <package>python-cups</package>
+      <package>python-cupshelpers</package>
+      <package>python-distribute</package>
+      <package>python-gnomekeyring</package>
+      <package>python-gobject</package>
+      <package>python-gobject-cairo</package>
+      <package>python-gobject2</package>
+      <package>python-gtk</package>
+      <package>python-kde4</package>
+      <package>python-kdebase4</package>
+      <package>python-libxml2</package>
+      <package>python-notify</package>
+      <package>python-numpy</package>
+      <package>python-pycurl</package>
+      <package>python-pyudev</package>
+      <package>python-qt4</package>
+      <package>python-satsolver</package>
+      <package>python-sip</package>
+      <package>python-smbc</package>
+      <package>python-xml</package>
+      <package>qt4-qtscript</package>
+      <package>rdesktop</package>
+      <package>readline-doc</package>
+      <package>recode</package>
+      <package>release-notes-openSUSE</package>
+      <package>rendercheck</package>
+      <package>rgb</package>
+      <package>rhino</package>
+      <package>rpcbind</package>
+      <package>rpm</package>
+      <package>rpm-build</package>
+      <package>rpm-python</package>
+      <package>rstart</package>
+      <package>rsync</package>
+      <package>rsyslog</package>
+      <package>rtkit</package>
+      <package>samba</package>
+      <package>samba-client</package>
+      <package>sane-backends</package>
+      <package>sane-backends-autoconfig</package>
+      <package>sash</package>
+      <package>sax2-tools</package>
+      <package>sbc</package>
+      <package>scout</package>
+      <package>screen</package>
+      <package>sed</package>
+      <package>sessreg</package>
+      <package>setserial</package>
+      <package>setxkbmap</package>
+      <package>sg3_utils</package>
+      <package>shadow</package>
+      <package>shared-desktop-ontologies</package>
+      <package>shared-mime-info</package>
+      <package>sharutils</package>
+      <package>sharutils-lang</package>
+      <package>showfont</package>
+      <package>site-config</package>
+      <package>skanlite</package>
+      <package>skanlite-doc</package>
+      <package>smartmontools</package>
+      <package>smp_utils</package>
+      <package>smproxy</package>
+      <package>snmp-mibs</package>
+      <package>soprano</package>
+      <package>soprano-backend-redland</package>
+      <package>soprano-backend-virtuoso</package>
+      <package>sound-theme-freedesktop</package>
+      <package>sox</package>
+      <package>splashy</package>
+      <package>splashy-branding-openSUSE</package>
+      <package>splashy-mkinitrd</package>
+      <package>sqlite2</package>
+      <package>sqlite3</package>
+      <package>strace</package>
+      <package>strigi</package>
+      <package>sudo</package>
+      <package>suse-module-tools</package>
+      <package>susegreeter-branding-openSUSE</package>
+      <package>susehelp</package>
+      <package>susehelp_en</package>
+      <package>suspend</package>
+      <package>sweeper</package>
+      <package>synaptiks</package>
+      <package>sysconfig</package>
+      <package>sysfsutils</package>
+      <package>syslinux</package>
+      <package>syslog-service</package>
+      <package>system-config-printer-applet</package>
+      <package>system-config-printer-common</package>
+      <package>system-config-printer-dbus-service</package>
+      <package>systemd-presets-branding-openSUSE</package>
+      <package>systemd-sysvinit</package>
+      <package>systemtap</package>
+      <package>systemtap-runtime</package>
+      <package>sysvinit-tools</package>
+      <package>tack</package>
+      <package>taglib</package>
+      <package>tar</package>
+      <package>tcl</package>
+      <package>tcpdump</package>
+      <package>tcsh</package>
+      <package>tcsh-lang</package>
+      <package>telnet</package>
+      <package>termcap</package>
+      <package>terminfo</package>
+      <package>terminfo-base</package>
+      <package>tightvnc</package>
+      <package>timezone</package>
+      <package>timezone-java</package>
+      <package>translation-update</package>
+      <package>tunctl</package>
+      <package>twm</package>
+      <package>udev</package>
+      <package>udev-configure-printer</package>
+      <package>udisks2</package>
+      <package>unzip</package>
+      <package>update-alternatives</package>
+      <package>update-desktop-files</package>
+      <package>upower</package>
+      <package>usb_modeswitch</package>
+      <package>usb_modeswitch-data</package>
+      <package>usbmuxd</package>
+      <package>usbutils</package>
+      <package>utempter</package>
+      <package>util-linux</package>
+      <package>vaapi-intel-driver</package>
+      <package>vcdimager</package>
+      <package>viewres</package>
+      <package>vim</package>
+      <package>vim-base</package>
+      <package>vim-data</package>
+      <package>virtuoso-drivers</package>
+      <package>virtuoso-server</package>
+      <package>vlan</package>
+      <package>vorbis-tools</package>
+      <package>vpnc</package>
+      <package>w3m</package>
+      <package>wallpaper-branding-openSUSE</package>
+      <package>wdiff</package>
+      <package>wget</package>
+      <package>wireless-regdb</package>
+      <package>wireless-tools</package>
+      <package>wodim</package>
+      <package>wol</package>
+      <package>words</package>
+      <package>wpa_supplicant</package>
+      <package>wxWidgets-lang</package>
+      <package>x11-tools</package>
+      <package>x11perf</package>
+      <package>xauth</package>
+      <package>xbacklight</package>
+      <package>xbiff</package>
+      <package>xbitmaps-devel</package>
+      <package>xcalc</package>
+      <package>xclipboard</package>
+      <package>xclock</package>
+      <package>xcmsdb</package>
+      <package>xcompmgr</package>
+      <package>xconsole</package>
+      <package>xcursor-themes</package>
+      <package>xcursorgen</package>
+      <package>xdbedizzy</package>
+      <package>xdg-menu</package>
+      <package>xdg-user-dirs</package>
+      <package>xdg-utils</package>
+      <package>xditview</package>
+      <package>xdm</package>
+      <package>xdmbgrd</package>
+      <package>xdpyinfo</package>
+      <package>xedit</package>
+      <package>xev</package>
+      <package>xeyes</package>
+      <package>xf86-input-evdev</package>
+      <package>xf86-input-joystick</package>
+      <package>xf86-input-keyboard</package>
+      <package>xf86-input-mouse</package>
+      <package>xf86-input-synaptics</package>
+      <package>xf86-input-vmmouse</package>
+      <package>xf86-input-void</package>
+      <package>xf86-input-wacom</package>
+      <package>xf86-video-ark</package>
+      <package>xf86-video-ast</package>
+      <package>xf86-video-ati</package>
+      <package>xf86-video-chips</package>
+      <package>xf86-video-cirrus</package>
+      <package>xf86-video-dummy</package>
+      <package>xf86-video-fbdev</package>
+      <package>xf86-video-geode</package>
+      <package>xf86-video-glint</package>
+      <package>xf86-video-i128</package>
+      <package>xf86-video-intel</package>
+      <package>xf86-video-mach64</package>
+      <package>xf86-video-mga</package>
+      <package>xf86-video-modesetting</package>
+      <package>xf86-video-neomagic</package>
+      <package>xf86-video-nv</package>
+      <package>xf86-video-qxl</package>
+      <package>xf86-video-r128</package>
+      <package>xf86-video-savage</package>
+      <package>xf86-video-siliconmotion</package>
+      <package>xf86-video-sis</package>
+      <package>xf86-video-sisusb</package>
+      <package>xf86-video-tdfx</package>
+      <package>xf86-video-tga</package>
+      <package>xf86-video-v4l</package>
+      <package>xf86-video-vesa</package>
+      <package>xf86-video-vmware</package>
+      <package>xf86-video-voodoo</package>
+      <package>xf86dga</package>
+      <package>xfd</package>
+      <package>xfindproxy</package>
+      <package>xfontsel</package>
+      <package>xfs</package>
+      <package>xfsinfo</package>
+      <package>xfwp</package>
+      <package>xgamma</package>
+      <package>xgc</package>
+      <package>xhost</package>
+      <package>xinetd</package>
+      <package>xinit</package>
+      <package>xinput</package>
+      <package>xkbcomp</package>
+      <package>xkbevd</package>
+      <package>xkbprint</package>
+      <package>xkbutils</package>
+      <package>xkeyboard-config</package>
+      <package>xkill</package>
+      <package>xli</package>
+      <package>xload</package>
+      <package>xlogo</package>
+      <package>xlsatoms</package>
+      <package>xlsclients</package>
+      <package>xlsfonts</package>
+      <package>xmag</package>
+      <package>xman</package>
+      <package>xmessage</package>
+      <package>xmlbeans</package>
+      <package>xmodmap</package>
+      <package>xmore</package>
+      <package>xorg-scripts</package>
+      <package>xorg-x11</package>
+      <package>xorg-x11-Xvnc</package>
+      <package>xorg-x11-driver-input</package>
+      <package>xorg-x11-driver-video</package>
+      <package>xorg-x11-driver-video-nouveau</package>
+      <package>xorg-x11-fonts</package>
+      <package>xorg-x11-fonts-core</package>
+      <package>xorg-x11-libX11-ccache</package>
+      <package>xorg-x11-server</package>
+      <package>xplsprinters</package>
+      <package>xpr</package>
+      <package>xprehashprinterlist</package>
+      <package>xprop</package>
+      <package>xrandr</package>
+      <package>xrdb</package>
+      <package>xrefresh</package>
+      <package>xrestop</package>
+      <package>xrx</package>
+      <package>xscope</package>
+      <package>xscreensaver-data-extra</package>
+      <package>xset</package>
+      <package>xsetmode</package>
+      <package>xsetpointer</package>
+      <package>xsetroot</package>
+      <package>xsm</package>
+      <package>xstdcmap</package>
+      <package>xterm</package>
+      <package>xtermset</package>
+      <package>xtrap</package>
+      <package>xvidtune</package>
+      <package>xvinfo</package>
+      <package>xwd</package>
+      <package>xwininfo</package>
+      <package>xwud</package>
+      <package>xz</package>
+      <package>yast2</package>
+      <package>yast2-add-on</package>
+      <package>yast2-backup</package>
+      <package>yast2-bootloader</package>
+      <package>yast2-branding-openSUSE</package>
+      <package>yast2-control-center</package>
+      <package>yast2-control-center-qt</package>
+      <package>yast2-core</package>
+      <package>yast2-country</package>
+      <package>yast2-country-data</package>
+      <package>yast2-dbus-client</package>
+      <package>yast2-firewall</package>
+      <package>yast2-hardware-detection</package>
+      <package>yast2-inetd</package>
+      <package>yast2-installation</package>
+      <package>yast2-irda</package>
+      <package>yast2-iscsi-client</package>
+      <package>yast2-kerberos-client</package>
+      <package>yast2-ldap</package>
+      <package>yast2-ldap-client</package>
+      <package>yast2-mail</package>
+      <package>yast2-metapackage-handler</package>
+      <package>yast2-mouse</package>
+      <package>yast2-network</package>
+      <package>yast2-nfs-client</package>
+      <package>yast2-nfs-common</package>
+      <package>yast2-nis-client</package>
+      <package>yast2-ntp-client</package>
+      <package>yast2-online-update</package>
+      <package>yast2-online-update-frontend</package>
+      <package>yast2-packager</package>
+      <package>yast2-packager-webpin</package>
+      <package>yast2-pam</package>
+      <package>yast2-perl-bindings</package>
+      <package>yast2-pkg-bindings</package>
+      <package>yast2-printer</package>
+      <package>yast2-proxy</package>
+      <package>yast2-qt-branding-openSUSE</package>
+      <package>yast2-restore</package>
+      <package>yast2-runlevel</package>
+      <package>yast2-samba-client</package>
+      <package>yast2-samba-server</package>
+      <package>yast2-scanner</package>
+      <package>yast2-security</package>
+      <package>yast2-slp</package>
+      <package>yast2-sound</package>
+      <package>yast2-storage</package>
+      <package>yast2-sudo</package>
+      <package>yast2-sysconfig</package>
+      <package>yast2-theme-openSUSE</package>
+      <package>yast2-theme-openSUSE-Oxygen</package>
+      <package>yast2-trans-en_US</package>
+      <package>yast2-trans-stats</package>
+      <package>yast2-transfer</package>
+      <package>yast2-tune</package>
+      <package>yast2-tv</package>
+      <package>yast2-update</package>
+      <package>yast2-users</package>
+      <package>yast2-vm</package>
+      <package>yast2-x11</package>
+      <package>yast2-xml</package>
+      <package>yast2-ycp-ui-bindings</package>
+      <package>yp-tools</package>
+      <package>ypbind</package>
+      <package>zip</package>
+      <package>zisofs-tools</package>
+      <package>zsh</package>
+      <package>zypper</package>
+      <package>zypper-aptitude</package>
+      <package>zypper-log</package>
+      <package>libcurl-devel</package>
+      <package>libXaw6</package>
+      <package>perl-Net-SSLeay</package>
+      <package>libpciaccess-devel</package>
+      <package>libXi-devel</package>
+      <package>gitk</package>
+      <package>fontconfig-devel</package>
+      <package>libXdamage-devel</package>
+      <package>libXprintAppUtil-devel</package>
+      <package>liboldX6</package>
+      <package>libjpeg8-devel</package>
+      <package>font-util</package>
+      <package>libXft-devel</package>
+      <package>libdmx-devel</package>
+      <package>libfontenc-devel</package>
+      <package>git-core</package>
+      <package>liboldX-devel</package>
+      <package>libserf-1-0</package>
+      <package>libstdc++-devel</package>
+      <package>readline-devel</package>
+      <package>sqlite3-devel</package>
+      <package>cvsps</package>
+      <package>perl-Authen-SASL</package>
+      <package>perl-Socket6</package>
+      <package>git-email</package>
+      <package>libxkbfile-devel</package>
+      <package>zlib-devel</package>
+      <package>libtiff-devel</package>
+      <package>libVncExt2</package>
+      <package>libFS-devel</package>
+      <package>flex</package>
+      <package>libXfontcache-devel</package>
+      <package>libXevie-devel</package>
+      <package>m4</package>
+      <package>libXxf86vm-devel</package>
+      <package>xcb-util-devel</package>
+      <package>libWindowsWM-devel</package>
+      <package>libXp-devel</package>
+      <package>git</package>
+      <package>libXcliplist-devel</package>
+      <package>libdrm-devel</package>
+      <package>makedepend</package>
+      <package>libXt-devel</package>
+      <package>libXcliplist1</package>
+      <package>libxkbui1</package>
+      <package>libXxf86dga-devel</package>
+      <package>libXinerama-devel</package>
+      <package>libxml2-tools</package>
+      <package>git-svn</package>
+      <package>libmysqlclient_r18</package>
+      <package>tk</package>
+      <package>libXxf86misc-devel</package>
+      <package>libstdc++47-devel</package>
+      <package>libXv-devel</package>
+      <package>libXaw8</package>
+      <package>libkms1</package>
+      <package>bison</package>
+      <package>Mesa-libEGL-devel</package>
+      <package>libXprintAppUtil1</package>
+      <package>perl-DBI</package>
+      <package>lndir</package>
+      <package>libXevie1</package>
+      <package>libXres-devel</package>
+      <package>git-cvs</package>
+      <package>libXcursor-devel</package>
+      <package>perl-MLDBM</package>
+      <package>perl-PlRPC</package>
+      <package>libSM-devel</package>
+      <package>perl-Clone</package>
+      <package>libXTrap-devel</package>
+      <package>libkms-devel</package>
+      <package>perl-Params-Util</package>
+      <package>libopenssl-devel</package>
+      <package>perl-Net-LibIDN</package>
+      <package>libXScrnSaver-devel</package>
+      <package>libXcomposite-devel</package>
+      <package>libxml2-devel</package>
+      <package>libXvMC-devel</package>
+      <package>libXmu-devel</package>
+      <package>libXfixes-devel</package>
+      <package>imake</package>
+      <package>freetype2-devel</package>
+      <package>libXtst-devel</package>
+      <package>libXpm-devel</package>
+      <package>libXprintUtil-devel</package>
+      <package>perl-DBD-SQLite</package>
+      <package>libXaw-devel</package>
+      <package>libICE-devel</package>
+      <package>Mesa-libGL-devel</package>
+      <package>liblbxutil-devel</package>
+      <package>libXext-devel</package>
+      <package>libWindowsWM7</package>
+      <package>xz-devel</package>
+      <package>libpixman-1-0-devel</package>
+      <package>git-web</package>
+      <package>libmysqlclient-devel</package>
+      <package>subversion</package>
+      <package>libXrender-devel</package>
+      <package>libXrandr-devel</package>
+      <package>libXdmcp-devel</package>
+      <package>cvs</package>
+      <package>nasm</package>
+      <package>subversion-perl</package>
+      <package>libXfont-devel</package>
+      <package>libxkbui-devel</package>
+      <package>git-gui</package>
+      <package>libvnc-devel</package>
+      <package>xtrans</package>
+      <package>gccmakedep</package>
+      <package>perl-Error</package>
+      <package>perl-SQL-Statement</package>
+      <package>perl-Net-Daemon</package>
+      <package>xorg-x11-util-devel</package>
+      <package>xorg-sgml-doctools</package>
+      <package>xorg-cf-files</package>
+      <package>xorg-x11-devel</package>
+      <package>perl-IO-Socket-SSL</package>
+      <package>perl-IO-Socket-INET6</package>
+      <package>perl-Net-SMTP-SSL</package>
+      <package>libXau-devel</package>
+      <package>libxcb-xevie0</package>
+      <package>libxcb-xinerama0</package>
+      <package>libxcb-record0</package>
+      <package>libxcb-xf86dri0</package>
+      <package>libxcb-res0</package>
+      <package>libxcb-devel</package>
+      <package>xorg-x11-proto-devel</package>
+      <package>libxcb-composite0</package>
+      <package>libxcb-screensaver0</package>
+      <package>libxcb-dpms0</package>
+      <package>libxcb-xvmc0</package>
+      <package>python-xcb-proto-devel</package>
+      <package>libxcb-xtest0</package>
+      <package>libX11-devel</package>
+      <package>libxcb-xprint0</package>
+      <package>libxcb-sync0</package>
+    </packages>
+    <post-packages config:type="list">
+      <package>rsh-server</package>
+      <package>tcpd</package>
+      <package>AdobeICCProfiles</package>
+      <package>aksusbd</package>
+      <package>bundle-lang-gnome-extras-en</package>
+      <package>gstreamer-0_10-fluendo-mp3</package>
+      <package>jitsi</package>
+      <package>kdeartwork4-wallpapers</package>
+      <package>kdeartwork4-wallpapers-weather</package>
+      <package>lha</package>
+      <package>luvcview</package>
+      <package>matthewlib-java</package>
+      <package>mjpg-streamer</package>
+      <package>openmotif</package>
+      <package>openmotif-libs</package>
+      <package>oxygen-icon-theme-large</package>
+      <package>poppler-data</package>
+      <package>pure-ftpd</package>
+      <package>systemd</package>
+      <package>telnet-server</package>
+      <package>unrar</package>
+    </post-packages>
+  </software>
+<!--
+  	@(#) sysconfig.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <sysconfig config:type="list">
+    <sysconfig_entry>
+      <sysconfig_key>INITRD_MODULES</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/kernel</sysconfig_path>
+      <sysconfig_value>pata_atiixp ahci ata_generic</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>DISPLAYMANAGER_KDM_THEME</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/displaymanager</sysconfig_path>
+      <sysconfig_value>marco</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>DISPLAYMANAGER_REMOTE_ACCESS</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/displaymanager</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>MAX_DAYS_IN_LONG_TMP</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/cron</sysconfig_path>
+      <sysconfig_value>21</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>MAX_DAYS_IN_TMP</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/cron</sysconfig_path>
+      <sysconfig_value>21</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>OWNER_TO_KEEP_IN_TMP</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/cron</sysconfig_path>
+      <sysconfig_value></sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>DHCPD_INTERFACE</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/dhcpd</sysconfig_path>
+      <sysconfig_value>eth0</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>MODULES_LOADED_ON_BOOT</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/kernel</sysconfig_path>
+      <sysconfig_value>nvram</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>NTPD_INITIAL_NTPDATE</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/ntp</sysconfig_path>
+      <sysconfig_value>AUTO-2</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>NTPD_ADJUST_CMOS_CLOCK</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/ntp</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>SPLASH</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/bootsplash</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>THEME</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/bootsplash</sysconfig_path>
+      <sysconfig_value>marco</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>DISPLAYMANAGER</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/displaymanager</sysconfig_path>
+      <sysconfig_value>kdm</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>WRITE_HOSTNAME_TO_HOSTS</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/network/dhcp</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+  </sysconfig>
+<!--
+  	@(#) user.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <users xmlns="http://www.suse.com/1.0/yast2ns" config:type="list" xmlns:config="http://www.suse.com/1.0/configns" >
+    <user xmlns="http://www.suse.com/1.0/yast2ns">
+      <encrypted xmlns="http://www.suse.com/1.0/yast2ns" config:type="boolean" xmlns:config="http://www.suse.com/1.0/configns">false</encrypted>
+      <user_password xmlns:config="http://www.suse.com/1.0/configns">emil12</user_password>
+      <username xmlns:config="http://www.suse.com/1.0/configns">root</username>
+    </user>
+    <user xmlns="http://www.suse.com/1.0/yast2ns">
+      <encrypted xmlns="http://www.suse.com/1.0/yast2ns" config:type="boolean" xmlns:config="http://www.suse.com/1.0/configns">true</encrypted>
+      <user_password xmlns:config="http://www.suse.com/1.0/configns">pw</user_password>
+      <username xmlns:config="http://www.suse.com/1.0/configns">marco</username>
+      <uid xmlns:config="http://www.suse.com/1.0/configns">500</uid>
+      <gid xmlns:config="http://www.suse.com/1.0/configns">81</gid>
+    </user>
+    <user xmlns="http://www.suse.com/1.0/yast2ns">
+      <encrypted xmlns="http://www.suse.com/1.0/yast2ns" config:type="boolean" xmlns:config="http://www.suse.com/1.0/configns">true</encrypted>
+      <user_password xmlns:config="http://www.suse.com/1.0/configns">pw</user_password>
+      <username xmlns:config="http://www.suse.com/1.0/configns">vispro</username>
+      <uid xmlns:config="http://www.suse.com/1.0/configns">1013</uid>
+      <gid xmlns:config="http://www.suse.com/1.0/configns">81</gid>
+    </user>
+  </users>
+<!--
+  	@(#) user_defaults.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <user_defaults>
+    <group>100</group>
+    <groups>alz,sw,video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+<!--
+  	@(#) runlevel.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <runlevel>
+    <default>5</default>
+    <services config:type="list" >
+      <service>
+        <service_name>apache2</service_name>
+        <service_start>3 5</service_start>
+      </service>
+      <service>
+        <service_name>atd</service_name>
+        <service_start>3 5</service_start>
+      </service>
+      <service>
+        <service_name>alsasound</service_name>
+        <service_start>disable</service_start>
+      </service>
+      <service>
+        <service_name>nfs</service_name>
+        <service_start>disable</service_start>
+      </service>
+      <service>
+        <service_name>nfsserver</service_name>
+        <service_start>3 5</service_start>
+      </service>
+      <service>
+        <service_name>nmb</service_name>
+        <service_start>3 5</service_start>
+      </service>
+      <service>
+        <service_name>postfix</service_name>
+        <service_start>disable</service_start>
+      </service>
+      <service>
+        <service_name>smb</service_name>
+        <service_start>3 5</service_start>
+      </service>
+      <service>
+        <service_name>sshd</service_name>
+        <service_start>3 5</service_start>
+      </service>
+      <service>
+        <service_name>smartd</service_name>
+        <service_start>3 5</service_start>
+      </service>
+    </services>
+  </runlevel>
+<!--
+  	@(#) x11_1280_1024.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+  <x11>
+    <color_depth config:type="integer">16</color_depth>
+    <configure_x11 config:type="boolean">true</configure_x11>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">false</enable_3d>
+    <monitor>
+      <monitor_device>1280X1024@60HZ</monitor_device>
+      <monitor_vendor>--&gt; VESA</monitor_vendor>
+    </monitor>
+    <resolution>1280x1024</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+<!--
+  	@(#) profile_end.xml %I% (%E%)
+  	@(#) source auf $p/alz/soft/dump/12.3
+  	created by ds, marco GmbH, Dachau
+-->
+
+
+</profile>

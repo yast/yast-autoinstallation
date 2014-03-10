@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+   <general>
+       <ask-list config:type="list">
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p>
+            Help 1
+             </p>
+]]>
+             </help>
+             <path>networking,dns,hostname</path>
+             <file>/tmp/ask_test_hostname</file>
+             <question>Enter Hostname</question>
+             <stage>cont</stage>
+             <default>linuxgrc</default>
+             <script>
+               <filename>ask_test.sh</filename>
+               <rerun_on_error config:type="boolean">true</rerun_on_error>
+               <environment config:type="boolean">true</environment>
+               <source><![CDATA[
+if [ "$VAL" = "myhost" ]; then
+    echo "Illegal Hostname!";
+    exit 1;
+fi
+exit 0
+]]>
+               </source>
+               <debug config:type="boolean">false</debug>
+               <feedback config:type="boolean">true</feedback>
+             </script>
+          </ask>
+          <ask>
+              <!-- deprecated since openSUSE 11.0; use pathlist instead
+              <path>partitioning,0,partitions,0,filesystem</path>
+              -->
+             <file>/tmp/ask_test_filesystem</file>
+              <pathlist config:type="list">
+                  <path>partitioning,0,partitions,0,filesystem</path>
+              </pathlist>
+              <question>Filesystem</question>
+              <type>symbol</type>
+              <selection config:type="list">
+                  <entry>
+                          <value config:type="symbol">reiser</value>
+                          <label>default Filesystem (recommended)</label>
+                  </entry>
+                  <entry>
+                          <value config:type="symbol">ext3</value>
+                          <label>Fallback Filesystem</label>
+                  </entry>
+              </selection>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">2</element>
+             <stage>cont</stage>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+             <p>
+            Help 2
+             </p>
+]]>
+             </help>
+             <file>/tmp/ask_test_password</file>
+             <password config:type="boolean">true</password>
+             <question>Enter Pasword</question>
+             <stage>cont</stage>
+             <default></default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">4</element>
+             <help><![CDATA[
+             <p>
+            Help 3
+             </p>
+]]>
+             </help>
+             <file>/tmp/ask_test_boolean</file>
+             <type>boolean</type>
+             <question>Boolean</question>
+             <stage>cont</stage>
+             <default>true</default>
+          </ask>
+       </ask-list>
+   </general>
+</profile>

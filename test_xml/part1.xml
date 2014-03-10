@@ -1,0 +1,526 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+use all
+-->
+<runlevel>
+ <default>3</default>
+ <services config:type="list">
+  <service>
+   <service_name>rpcbind</service_name>
+   <service_status>enable</service_status>
+  </service>
+ </services>
+</runlevel>
+
+  <firstboot>
+      <firstboot_enabled config:type="boolean">false</firstboot_enabled>
+  </firstboot>
+
+  <nis>
+    <nis_broadcast config:type="boolean">false</nis_broadcast>
+    <nis_broken_server config:type="boolean">false</nis_broken_server>
+    <nis_domain>suse.de</nis_domain>
+    <nis_local_only config:type="boolean">false</nis_local_only>
+    <nis_servers config:type="list">
+      <nis_server>10.10.0.1</nis_server>
+    </nis_servers>
+    <start_autofs config:type="boolean">true</start_autofs>
+    <start_nis config:type="boolean">false</start_nis>
+  </nis>
+
+<scripts>
+    <chroot-scripts config:type="list">
+      <script>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">true</debug>
+        <chrooted config:type="boolean">true</chrooted>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+#echo "rm /var/lib/YaST2/runme_at_boot" >> /etc/init.d/boot.local
+#touch /var/lib/YaST2/reconfig_system
+        ]]></source>
+      </script>
+    </chroot-scripts>
+    <init-scripts config:type="list">
+      <script>
+        <source><![CDATA[
+echo "init-script has run" > /tmp/ay_init_script
+]]></source>
+      </script>
+      <script>
+        <location>nfs://10.10.0.162/space/exports/init-script-test.sh</location>
+        <filename>remote-init</filename>
+      </script>
+    </init-scripts>
+    <pre-scripts config:type="list">
+      <script>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+echo "pre-script has run" > /tmp/ay_pre_script
+mkdir /etc/zypp
+echo "[main]
+solver.onlyRequires = true
+" >  /etc/zypp/zypp.conf
+/tmp/env >> /tmp/ay_pre_script
+]]></source>
+      </script>
+    </pre-scripts>
+    <post-scripts config:type="list">
+      <script>
+        <interpreter>shell</interpreter>
+        <network_needed config:type="boolean">true</network_needed>
+        <source><![CDATA[
+{
+    set -x
+    rpm -Uvh /tmp/yast2-network-2.17.170-0.5.7.i586.rpm
+    set +x
+} &>/tmp/update_autoyast.log
+]]></source>
+      </script>
+    </post-scripts>
+</scripts>
+<!--
+<add-on>
+  <add_on_products config:type="list">
+    <listentry>
+      <media_url>http://dist.suse.de/install/SLP/SLE-11-SP2-HA-RC3/i386/DVD1/</media_url>
+      <product>HA</product>
+      <product_dir>/</product_dir>
+      <name>HA</name>
+      <ask_on_error config:type="boolean">true</ask_on_error>
+    </listentry>
+  </add_on_products>
+</add-on>
+-->
+<!--
+      <pxe>
+       <pxe_localboot config:type="boolean">true</pxe_localboot>
+       <pxelinux-config>
+DEFAULT linux
+  LABEL linux
+  localboot 0
+
+
+       </pxelinux-config>
+       <tftp-server>10.10.0.162</tftp-server>
+       <pxelinux-dir>/pxelinux.cfg</pxelinux-dir>
+       <filename>__MAC__</filename>
+     </pxe>
+-->
+  <language>
+    <language>en_US</language>
+    <languages>de_DE</languages>
+  </language>
+  <keyboard>
+    <keyboard_values>
+      <capslock config:type="boolean">false</capslock>
+      <delay></delay>
+      <discaps config:type="boolean">false</discaps>
+      <numlock></numlock>
+      <rate></rate>
+      <scrlock config:type="boolean">false</scrlock>
+      <tty>tty1 tty2 tty3 tty4 tty5 tty6 tty8 tty9 tty10 tty11 tty12 tty13 tty14 tty15 tty16 tty17 tty18 tty19 tty20</tty>
+    </keyboard_values>
+  </keyboard>
+  <timezone>
+    <hwclock>localtime</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+  <!--
+  <customer_center>
+     <do_registration config:type="boolean">true</do_registration>
+     <smt_server>https://srv64.suse.de/center/regsvc</smt_server>
+     <register_regularly config:type="boolean">false</register_regularly>
+     <submit_hwdata config:type="boolean">true</submit_hwdata>
+     <submit_optional config:type="boolean">true</submit_optional>
+     <registration_data>
+        <regcode-sles>92163@NUE-EXT-SLES-61639323c2</regcode-sles>
+        <email>ug@novell.com</email>
+     </registration_data>
+  </customer_center>
+  -->
+<!--
+  <suse_register>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data>
+        <regcode-sles>92163@NUE-EXT-SLES-61639323c2</regcode-sles>
+        <email>ug@novell.com</email>
+    </registration_data>
+    <submit_hwdata config:type="boolean">true</submit_hwdata>
+    <submit_optional config:type="boolean">true</submit_optional>
+  </suse_register>
+  -->
+  <report>
+    <errors>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">5</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+  </report>
+  <!--
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">false</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">false</dhcp_resolv>
+        <domain>suse.de</domain>
+        <hostname>vbox-ug</hostname>
+        <nameservers config:type="list">
+          <nameserver>10.10.0.1</nameserver>
+          <nameserver>10.10.2.88</nameserver>
+        </nameservers>
+        <searchlist config:type="list">
+          <search>suse.de</search>
+          <search>arch.suse.de</search>
+          <search>nue.novell.com</search>
+        </searchlist>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>static</bootproto>
+          <broadcast>10.10.255.255</broadcast>
+          <device>eth0</device>
+          <ethtool_options>autoneg on</ethtool_options>
+          <ipaddr>10.10.2.199</ipaddr>
+          <netmask>255.255.0.0</netmask>
+          <network></network>
+          <startmode>onboot</startmode>
+        </interface>
+      </interfaces>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+        <routes config:type="list">
+          <route>
+            <destination>default</destination>
+            <device>-</device>
+            <gateway>10.10.0.8</gateway>
+            <netmask>-</netmask>
+          </route>
+        </routes>
+      </routing>
+    </networking>
+    -->
+<!--
+  <networking>
+    <dhcp_options>
+      <dhclient_client_id></dhclient_client_id>
+      <dhclient_hostname_option>AUTO</dhclient_hostname_option>
+    </dhcp_options>
+    <dns>
+      <dhcp_hostname config:type="boolean">false</dhcp_hostname>
+      <resolv_conf_policy>auto</resolv_conf_policy>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>dhcp</bootproto>
+        <device>eth0</device>
+        <prefixlen>16</prefixlen>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+    <net-udev config:type="list">
+      <rule>
+        <name>eth0</name>
+        <rule>ATTR{address}</rule>
+        <value>08:00:27:79:49:ee</value>
+      </rule>
+    </net-udev>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+    </routing>
+  </networking>
+-->
+  <networking>
+    <keep_install_network config:type="boolean">true</keep_install_network>
+  </networking>
+
+  <!--
+  <networking>
+    <dhcp_options>
+      <dhclient_additional_options></dhclient_additional_options>
+      <dhclient_client_id></dhclient_client_id>
+      <dhclient_hostname_option>AUTO</dhclient_hostname_option>
+    </dhcp_options>
+    <dns>
+      <dhcp_hostname config:type="boolean">false</dhcp_hostname>
+      <dhcp_resolv config:type="boolean">false</dhcp_resolv>
+      <domain>suse.de</domain>
+      <hostname>sevy</hostname>
+      <nameservers config:type="list">
+        <nameserver>10.10.0.1</nameserver>
+      </nameservers>
+      <searchlist config:type="list">
+        <search>suse.de</search>
+      </searchlist>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>static</bootproto>
+        <device>eth0</device>
+        <ipaddr>10.10.2.3</ipaddr>
+        <netmask>255.255.0.0</netmask>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+      <routes config:type="list">
+        <route>
+          <destination>default</destination>
+          <device>-</device>
+          <gateway>10.10.0.8</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+</networking>
+-->
+  <!--
+  <mail>
+    <aliases config:type="list">
+      <alias>
+        <alias>root</alias>
+        <destinations>root@suse.de</destinations>
+      </alias>
+    </aliases>
+    <connection_type config:type="symbol">permanent</connection_type>
+    <listen_remote config:type="boolean">false</listen_remote>
+    <mta config:type="symbol">postfix</mta>
+    <outgoing_mail_server>relay.suse.de</outgoing_mail_server>
+    <postfix_mda config:type="symbol">local</postfix_mda>
+    <use_amavis config:type="boolean">false</use_amavis>
+  </mail>
+  -->
+  <!--
+  <x11>
+    <color_depth config:type="integer">24</color_depth>
+    <configure_x11 config:type="boolean">true</configure_x11>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">false</enable_3d>
+    <monitor>
+      <display>
+        <max_hsync config:type="integer">61</max_hsync>
+        <max_vsync config:type="integer">75</max_vsync>
+        <min_hsync config:type="integer">30</min_hsync>
+        <min_vsync config:type="integer">43</min_vsync>
+      </display>
+      <monitor_device>1024X768@70HZ</monitor_device>
+      <monitor_vendor>-&gt; LCD</monitor_vendor>
+    </monitor>
+    <resolution>1024x768 (XGA)</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+  -->
+  <deploy_image>
+      <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <software>
+<!--    <install_recommended config:type="boolean">true</install_recommended> -->
+    <do_online_update config:type="boolean">true</do_online_update>
+    <kernel>kernel-default</kernel>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+<!--      <pattern>x11</pattern> -->
+    </patterns>
+    <packages config:type="list">
+      <package>apache2</package>
+      <package>less</package>
+      <package>zypper</package>
+      <package>yast2-runlevel</package>
+      <package>vim</package>
+      <package>nfs-client</package>
+
+      
+      <package>yast2-bootloader</package>
+      <package>yast2-ncurses</package>
+      <package>yast2-firstboot</package>
+    </packages>
+    <!--
+    <remove-packages config:type="list">
+    </remove-packages>
+    -->
+    <!--
+    <post-packages config:type="list">
+        <package>dnsmasq</package>
+    </post-packages>
+    -->
+  </software> 
+  <user_defaults>
+    <expire></expire>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">false</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+<!--      <user_password>pw</user_password> -->
+      <user_password>pw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+  <partitioning config:type="list">
+      <drive>
+        <use>all</use>
+        <initialize config:type="boolean">true</initialize>
+        <partitions config:type="list">
+          <partition>
+            <mount>/boot</mount>
+            <size>75mb</size>
+            <filesystem  config:type="symbol">ext3</filesystem>
+          </partition>
+          <partition>
+            <mount>swap</mount>
+            <size>1012mb</size>
+            <filesystem  config:type="symbol">swap</filesystem>
+          </partition>
+          <partition>
+            <mount>/</mount>
+            <size>max</size>
+          </partition>
+        </partitions>
+     </drive>
+    <!--
+    <drive>
+      <initialize config:type="boolean">true</initialize>
+      <use>all</use>
+    </drive>
+    -->
+  </partitioning>
+  <!--
+  <x11>
+    <color_depth config:type="integer">16</color_depth>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">false</enable_3d>
+    <monitor>
+      <display>
+        <max_hsync config:type="integer">82</max_hsync>
+        <max_vsync config:type="integer">60</max_vsync>
+        <min_hsync config:type="integer">30</min_hsync>
+        <min_vsync config:type="integer">30</min_vsync>
+      </display>
+      <monitor_device>1280X1024@60HZ</monitor_device>
+      <monitor_vendor>-&gt; LCD</monitor_vendor>
+    </monitor>
+    <resolution>1280x1024 (SXGA)</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+  -->
+  <general>
+  <!--
+  <wait>
+      <pre-modules config:type="list">
+          <module>
+              <name>networking</name>
+              <sleep>
+                  <time config:type="integer">10</time>
+                  <feedback config:type="boolean">true</feedback>
+              </sleep>
+              <script>
+                  <source>
+                      sleep 10
+                  </source>
+                  <debug config:type="boolean">true</debug>
+              </script>
+          </module>
+      </pre-modules>
+      <post-modules config:type="list">
+      </post-modules>
+  </wait>
+  -->
+  <!--
+   <signature-handling>
+       <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+       <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+       <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+       <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+       <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+       <import_gpg_key         config:type="boolean">true</import_gpg_key>
+   </signature-handling>
+   -->
+    <mode>
+        <forceboot config:type="boolean">true</forceboot>
+        <confirm config:type="boolean">false</confirm>
+        <second_stage config:type="boolean">true</second_stage>
+        <halt config:type="boolean">false</halt>
+    </mode>
+    <!--
+    <proposals config:type="list">
+      <proposal>country_simple_proposal</proposal>
+      <proposal>software_proposal</proposal>
+    </proposals>
+    -->
+  </general>
+  <!--
+  <kdump>
+    <add_crash_kernel config:type="boolean">true</add_crash_kernel>
+    <crash_kernel>256M-:64M</crash_kernel>
+    <general>
+      <KDUMP_COMMANDLINE></KDUMP_COMMANDLINE>
+      <KDUMP_COMMANDLINE_APPEND></KDUMP_COMMANDLINE_APPEND>
+      <KDUMP_COPY_KERNEL>true</KDUMP_COPY_KERNEL>
+      <KDUMP_DUMPFORMAT>compressed</KDUMP_DUMPFORMAT>
+      <KDUMP_DUMPLEVEL>1</KDUMP_DUMPLEVEL>
+      <KDUMP_FREE_DISK_SIZE>64</KDUMP_FREE_DISK_SIZE>
+      <KDUMP_IMMEDIATE_REBOOT>yes</KDUMP_IMMEDIATE_REBOOT>
+      <KDUMP_KEEP_OLD_DUMPS>5</KDUMP_KEEP_OLD_DUMPS>
+      <KDUMP_KERNELVER></KDUMP_KERNELVER>
+      <KDUMP_NOTIFICATION_CC></KDUMP_NOTIFICATION_CC>
+      <KDUMP_NOTIFICATION_TO>arch-admins@suse.de</KDUMP_NOTIFICATION_TO>
+      <KDUMP_RUNLEVEL>1</KDUMP_RUNLEVEL>
+      <KDUMP_SAVEDIR>ftp://stravinsky.suse.de/incoming/dumps</KDUMP_SAVEDIR>
+      <KDUMP_SMTP_PASSWORD></KDUMP_SMTP_PASSWORD>
+      <KDUMP_SMTP_SERVER>relay.suse.de</KDUMP_SMTP_SERVER>
+      <KDUMP_SMTP_USER></KDUMP_SMTP_USER>
+      <KDUMP_TRANSFER></KDUMP_TRANSFER>
+      <KDUMP_VERBOSE>15</KDUMP_VERBOSE>
+      <KEXEC_OPTIONS></KEXEC_OPTIONS>
+    </general>
+  </kdump>
+  -->
+  <files config:type="list">
+      <file>
+        <file_path>/tmp/uwe_bla</file_path>
+        <file_owner>uwe:users</file_owner>
+        <file_permissions>444</file_permissions>
+        <file_contents>
+
+<![CDATA[
+some content
+]]>
+
+       </file_contents>
+     </file>
+  </files>
+</profile>

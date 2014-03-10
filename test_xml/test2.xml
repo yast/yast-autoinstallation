@@ -1,0 +1,471 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<!--
+  ****************** Doku ************************************************
+  http://www.suse.de/~ug/autoyast_doc/
+  http://forgeftp.novell.com//yast/doc/SL10.0/autoinstall/index.html
+  ************************************************************************
+-->
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <!-- Bootloader {{{ -->
+  <bootloader>
+    <global>
+      <activate>false</activate>
+      <boot_boot>false</boot_boot>
+      <boot_extended>false</boot_extended>
+      <boot_mbr>false</boot_mbr>
+      <boot_root>true</boot_root>
+      <debug>false</debug>
+      <generic_mbr>false</generic_mbr>
+      <hiddenmenu>false</hiddenmenu>
+      <serial>--unit=0 --speed=57600</serial>
+      <terminal>--timeout=10 serial console</terminal>
+      <timeout config:type="integer">8</timeout>
+    </global>
+    <loader_type>grub</loader_type>
+    <sections config:type="list"/>
+  </bootloader>
+  <!-- }}} -->
+  <!-- Firewall {{{ -->
+  <firewall>
+    <FW_DEV_DMZ></FW_DEV_DMZ>
+    <FW_DEV_EXT></FW_DEV_EXT>
+    <FW_DEV_INT></FW_DEV_INT>
+    <enable_firewall config:type="boolean">false</enable_firewall>
+    <fw_allow_fw_traceroute>yes</fw_allow_fw_traceroute>
+    <fw_autoprotect_services>yes</fw_autoprotect_services>
+    <fw_dev_ext>auto</fw_dev_ext>
+    <fw_ipsec_trust>no</fw_ipsec_trust>
+    <fw_log_accept_all>no</fw_log_accept_all>
+    <fw_log_accept_crit>no</fw_log_accept_crit>
+    <fw_log_drop_all>no</fw_log_drop_all>
+    <fw_log_drop_crit>yes</fw_log_drop_crit>
+    <fw_masquerade>no</fw_masquerade>
+    <fw_protect_from_internal>yes</fw_protect_from_internal>
+    <fw_route>no</fw_route>
+    <fw_services_ext_tcp>ssh</fw_services_ext_tcp>
+    <fw_services_ext_udp>631</fw_services_ext_udp>
+    <fw_services_int_tcp>ssh</fw_services_int_tcp>
+    <fw_services_int_udp>631</fw_services_int_udp>
+    <start_firewall config:type="boolean">false</start_firewall>
+  </firewall>
+  <!-- }}} -->
+  <!-- General {{{ -->
+  <general>
+    <ask-list config:type="list"/>
+    <mode>
+      <confirm config:type="boolean">true</confirm>
+      <forceboot config:type="boolean">false</forceboot>
+    </mode>
+    <mouse>
+      <id>probe</id>
+    </mouse>
+    <signature-handling/>
+  </general>
+  <!-- }}} -->
+  <groups config:type="list"/>
+  <!-- Inetd {{{ -->
+  <inetd>
+    <last_created config:type="integer">0</last_created>
+    <netd_service config:type="symbol">none</netd_service>
+    <netd_status config:type="integer">-1</netd_status>
+  </inetd>
+  <!-- }}} -->
+  <!-- Keyboard {{{ -->
+  <keyboard>
+    <keymap>english-us</keymap>
+  </keyboard>
+  <!-- }}} -->
+  <!-- Language {{{ -->
+  <language>
+    <language>en_US</language>
+    <languages>en_US de_DE</languages>
+  </language>
+  <!-- }}} -->
+  <!-- Mail {{{ -->
+  <mail>
+    <aliases config:type="list">
+      <alias>
+        <alias>root</alias>
+        <destinations>root@suse.de</destinations>
+      </alias>
+    </aliases>
+    <connection_type config:type="symbol">permanent</connection_type>
+    <listen_remote config:type="boolean">false</listen_remote>
+    <mta config:type="symbol">postfix</mta>
+    <outgoing_mail_server>relay.suse.de</outgoing_mail_server>
+    <postfix_mda config:type="symbol">local</postfix_mda>
+    <use_amavis config:type="boolean">false</use_amavis>
+  </mail>
+  <!-- }}} -->
+  <!-- Networking {{{ -->
+  <networking>
+    <dhcp_options>
+      <dhclient_client_id></dhclient_client_id>
+      <dhclient_hostname_option>AUTO</dhclient_hostname_option>
+    </dhcp_options>
+    <dns>
+      <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+      <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      <domain>suse.de</domain>
+      <hostname>linux</hostname>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>autoip</bootproto>
+        <device>eth0</device>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+    </routing>
+  </networking>
+  <!-- }}} -->
+  <!-- NIS {{{ -->
+  <nis>
+    <nis_broadcast config:type="boolean">false</nis_broadcast>
+    <nis_broken_server config:type="boolean">false</nis_broken_server>
+    <nis_by_dhcp config:type="boolean">true</nis_by_dhcp>
+    <nis_domain>suse.de</nis_domain>
+    <nis_local_only config:type="boolean">false</nis_local_only>
+    <nis_other_domains config:type="list">
+      <nis_other_domain>
+        <nis_broadcast config:type="boolean">false</nis_broadcast>
+        <nis_domain>suse.de</nis_domain>
+        <nis_servers config:type="list">
+          <nis_server>149.44.160.146</nis_server>
+          <nis_server>149.44.160.50</nis_server>
+        </nis_servers>
+      </nis_other_domain>
+    </nis_other_domains>
+    <start_autofs config:type="boolean">true</start_autofs>
+    <start_nis config:type="boolean">true</start_nis>
+  </nis>
+  <!-- }}} -->
+  <!-- NTP {{{ -->
+  <ntp-client>
+    <configure_dhcp config:type="boolean">false</configure_dhcp>
+    <peers config:type="list">
+      <peer>
+        <address>time.novell.com</address>
+        <initial_sync config:type="boolean">true</initial_sync>
+        <type>peer</type>
+      </peer>
+    </peers>
+    <start_at_boot config:type="boolean">true</start_at_boot>
+    <start_in_chroot config:type="boolean">true</start_in_chroot>
+  </ntp-client>
+  <!-- }}} -->
+  <!-- Partitioning {{{ -->
+  <partitioning config:type="list">
+    <drive>
+      <initialize config:type="boolean">false</initialize>
+       <use>all</use>
+    </drive>
+  </partitioning>
+  <!-- }}} -->
+  <!-- Printer {{{ -->
+  <printer>
+    <cups_installation config:type="symbol">server</cups_installation>
+    <default></default>
+    <printcap config:type="list"/>
+    <server_hostname></server_hostname>
+    <spooler>cups</spooler>
+  </printer>
+  <!-- }}} -->
+  <!-- Proxy {{{ -->
+  <proxy>
+    <enabled config:type="boolean">true</enabled>
+    <ftp_proxy>http://proxy.suse.de:3128</ftp_proxy>
+    <http_proxy>http://proxy.suse.de:3128</http_proxy>
+    <https_proxy></https_proxy>
+    <no_proxy>localhost</no_proxy>
+    <proxy_password></proxy_password>
+    <proxy_user></proxy_user>
+  </proxy>
+  <!-- }}} -->
+  <!-- Report {{{ -->
+  <report>
+    <errors>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">5</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">5</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">5</timeout>
+    </yesno_messages>
+  </report>
+  <!-- }}} -->
+  <!-- Runlevel {{{ -->
+  <runlevel>
+    <default>3</default>
+    <services config:type="list">
+      <service>
+        <service_name>SuSEfirewall2_init</service_name>
+        <service_start>disable</service_start>
+      </service>
+      <service>
+        <service_name>SuSEfirewall2_setup</service_name>
+        <service_start>disable</service_start>
+      </service>
+      <service>
+        <service_name>nfs</service_name>
+        <service_start>disable</service_start>
+      </service>
+      <service>
+        <service_name>nscd</service_name>
+        <service_start>disable</service_start>
+      </service>
+    </services>
+  </runlevel>
+  <!-- }}} -->
+  <!-- Scripts {{{ -->
+  <scripts>
+    <chroot-scripts config:type="list">
+      <script>
+        <location>ftp://10.11.0.100/scripts/grubonce_outer.pl</location>
+        <interpreter>perl</interpreter>
+        <filename>activate_boot_partition_2</filename>
+        <chrooted config:type="boolean">true</chrooted>
+      </script>
+    </chroot-scripts>
+    <init-scripts config:type="list">
+      <script>
+        <debug config:type="boolean">false</debug>
+        <filename>01-manual_ifup.sh</filename>
+        <location></location>
+        <source><![CDATA[#!/bin/sh
+          echo "starting network..."
+          sleep 2
+          for dev in $(ls -d /sys/class/net/* | sed -e 's#/sys/class/net/##g' | grep ^eth) ; do
+            ifconfig $dev up
+            if [ $? == 0 ]; then
+              sleep 5
+              ethtool $dev | grep -e 'Link detected: yes' 2>&1 > /dev/null
+              if [ $? == 0 ]; then
+                echo BOOTPROTO='dhcp' > /etc/sysconfig/network/ifcfg-$dev
+                echo STARTMODE='auto' >> /etc/sysconfig/network/ifcfg-$dev
+                echo USERCONTROL='no' >>  /etc/sysconfig/network/ifcfg-$dev
+              else
+                rm -f /etc/sysconfig/network/ifcfg-$dev
+              fi
+            fi
+          done
+
+          rcnetwork restart
+          rcypbind restart
+          rcautofs restart
+          sed -i "s/linux.suse.de/$(hostname fqdn)/g" /etc/postfix/main.cf
+          rcpostfix restart
+        ]]>
+        </source>
+      </script>
+      <script>
+        <filename>02-install_scripts</filename>
+        <debug config:type="boolean">false</debug>
+        <location></location>
+        <source><![CDATA[#!/bin/sh
+          mkdir /tmp/scripts
+          cd /tmp/scripts
+          wget ftp://music.suse.de/scripts/after_install.sh
+          wget ftp://music.suse.de/scripts/firmwarekit_10.2.sh
+          sh after_install.sh
+          sh firmwarekit_10.2.sh
+          rm -fr /tmp/scripts
+        ]]>
+        </source>
+      </script>
+    </init-scripts>
+  </scripts>
+  <!-- }}} -->
+  <!-- Software {{{ -->
+  <software xmlns:config="http://www.suse.com/1.0/configns">
+    <patterns config:type="list">
+      <pattern>x11</pattern>
+      <pattern>base</pattern>
+      <pattern>yast2_basis</pattern>
+      <pattern>console</pattern>
+      <pattern>devel_C_C++</pattern>
+      <pattern>enhanced_base_opt</pattern>
+    </patterns>
+    <packages config:type="list">
+      <package>expect</package>
+      <package>nmap</package>
+      <package>tcpdump</package>
+      <package>findutils-locate</package>
+      <package>itcl</package>
+      <package>emacs-x11</package>
+      <package>perl-libwww-perl</package>
+      <package>gcc-c++</package>
+      <package>ncurses-devel</package>
+      <package>libnewt0_52</package> <!-- for firmwarekit -->
+    </packages>
+  </software>
+  <!-- }}} -->
+  <!-- Sound {{{ -->
+  <sound>
+    <configure_detected config:type="boolean">true</configure_detected>
+    <modules_conf config:type="list">
+      <module_conf>
+        <alias>snd-card-0</alias>
+        <unique_key>uniq.virtual</unique_key>
+      </module_conf>
+    </modules_conf>
+    <volume_settings config:type="list">
+      <volume_entry>
+        <Headphone config:type="integer">75</Headphone>
+        <Master config:type="integer">75</Master>
+      </volume_entry>
+    </volume_settings>
+  </sound>
+  <!-- }}} -->
+  <!-- Sysconfig {{{ -->
+  <sysconfig config:type="list">
+    <sysconfig_entry>
+      <sysconfig_key>CLEAR_TMP_DIRS_AT_BOOTUP</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/cron</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>DEFAULT_WM</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/windowmanager</sysconfig_path>
+      <sysconfig_value>kde</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>DHCLIENT_MODIFY_NIS_CONF</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/network/dhcp</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>DHCLIENT_MODIFY_NTP_CONF</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/network/dhcp</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>DISPLAYMANAGER_XSERVER_TCP_PORT_6000_OPEN</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/displaymanager</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>ENABLE_SYSRQ</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/sysctl</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>FW_ALLOW_FW_BROADCAST</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/SuSEfirewall2</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>FW_IGNORE_FW_BROADCAST</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/SuSEfirewall2</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>FW_IPv6</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/SuSEfirewall2</sysconfig_path>
+      <sysconfig_value>reject</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>FW_IPv6_REJECT_OUTGOING</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/SuSEfirewall2</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>HWCLOCK</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/clock</sysconfig_path>
+      <sysconfig_value>--localtime</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>MAX_DAYS_IN_TMP</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/cron</sysconfig_path>
+      <sysconfig_value>7</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>TMP_DIRS_TO_CLEAR</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/cron</sysconfig_path>
+      <sysconfig_value>/tmp /var/tmp</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>WIRELESS_ESSID</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/network/wireless</sysconfig_path>
+      <sysconfig_value>onenet</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>WIRELESS_MODE</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/network/wireless</sysconfig_path>
+      <sysconfig_value>managed</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>XNTPD_INITIAL_NTPDATE</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/xntp</sysconfig_path>
+      <sysconfig_value>AUTO-2</sysconfig_value>
+    </sysconfig_entry>
+  </sysconfig>
+  <!-- }}} -->
+  <!-- Timezone {{{ -->
+  <timezone>
+    <hwclock>localtime</hwclock>
+    <timezone>US/Mountain</timezone>
+  </timezone>
+  <!-- }}} -->
+  <!-- User defaults {{{ -->
+  <user_defaults>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <!-- }}} -->
+  <!-- Users {{{ -->
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+      <user_password>pw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+  <!-- }}} -->
+  <!-- X11 {{{ -->
+  <x11>
+    <color_depth config:type="integer">16</color_depth>
+    <configure_x11 config:type="boolean">true</configure_x11>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">false</enable_3d>
+    <monitor>
+      <display>
+        <frequency config:type="integer">60</frequency>
+        <height config:type="integer">768</height>
+        <width config:type="integer">1024</width>
+      </display>
+      <monitor_device>1024X768@60HZ</monitor_device>
+      <monitor_vendor>VESA</monitor_vendor>
+    </monitor>
+    <resolution>1024x768</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+  <!-- }}} -->
+</profile>
+<!-- vim: set sw=2 ts=2 et ft=xml fdm=marker: -->

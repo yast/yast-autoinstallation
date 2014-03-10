@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+use all
+-->
+<runlevel>
+ <default>3</default>
+ <services config:type="list">
+  <service>
+   <service_name>rpcbind</service_name>
+   <service_status>enable</service_status>
+  </service>
+ </services>
+</runlevel>
+
+  <firstboot>
+      <firstboot_enabled config:type="boolean">false</firstboot_enabled>
+  </firstboot>
+
+  <nis>
+    <nis_broadcast config:type="boolean">false</nis_broadcast>
+    <nis_broken_server config:type="boolean">false</nis_broken_server>
+    <nis_domain>suse.de</nis_domain>
+    <nis_local_only config:type="boolean">false</nis_local_only>
+    <nis_servers config:type="list">
+      <nis_server>10.10.0.1</nis_server>
+    </nis_servers>
+    <start_autofs config:type="boolean">true</start_autofs>
+    <start_nis config:type="boolean">false</start_nis>
+  </nis>
+
+<scripts>
+    <chroot-scripts config:type="list">
+<!--
+      <script>
+        <chrooted config:type="boolean">false</chrooted>
+        <filename>autoload</filename>
+      <source><![CDATA[
+echo "/sbin/modprobe" > /proc/sys/kernel/modprobe
+]]></source>
+      </script>
+-->
+      <script>
+        <location>nfs://10.120.4.28/space/exports/scripts/chroot_script_test.sh</location>
+        <chrooted config:type="boolean">false</chrooted>
+        <filename>mychroot</filename>
+      </script>
+      <script>
+        <location>nfs://10.120.4.28/space/exports/scripts/chroot_script_test2.sh</location>
+        <chrooted config:type="boolean">true</chrooted>
+        <filename>mychroot2</filename>
+      </script>
+    </chroot-scripts>
+    <init-scripts config:type="list">
+      <script>
+        <location>nfs://10.120.4.28/space/exports/init-script-test.sh</location>
+        <filename>remote-init</filename>
+      </script>
+      <script>
+        <location>nfs://10.120.4.28/space/exports/scripts/init_script_test2.sh</location>
+	<filename>myinit.sh</filename>
+      </script>
+    </init-scripts>
+    <postpartitioning-scripts config:type="list">
+      <script>
+        <location>nfs://10.120.4.28/space/exports/scripts/postpart_script_test.sh</location>
+      </script>
+    </postpartitioning-scripts>
+    <pre-scripts config:type="list">
+      <script>
+        <location>nfs://10.120.4.28/space/exports/scripts/pre_script_test.sh</location>
+	<filename>mypres.sh</filename>
+      </script>
+    </pre-scripts>
+<!--
+-->
+    <post-scripts config:type="list">
+      <script>
+        <location>nfs://10.120.4.28/space/exports/scripts/post_script_test.sh</location>
+	<network_needed config:type="boolean">false</network_needed>
+	<filename>mypost1.sh</filename>
+      </script>
+      <script>
+        <location>nfs://10.120.4.28/space/exports/scripts/post_script_test2.sh</location>
+	<network_needed config:type="boolean">true</network_needed>
+	<filename>mypost2.sh</filename>
+      </script>
+    </post-scripts>
+</scripts>
+  <language>
+    <language>en_US</language>
+    <languages>de_DE</languages>
+  </language>
+  <keyboard>
+    <keyboard_values>
+      <capslock config:type="boolean">false</capslock>
+      <delay></delay>
+      <discaps config:type="boolean">false</discaps>
+      <numlock></numlock>
+      <rate></rate>
+      <scrlock config:type="boolean">false</scrlock>
+      <tty>tty1 tty2 tty3 tty4 tty5 tty6 tty8 tty9 tty10 tty11 tty12 tty13 tty14 tty15 tty16 tty17 tty18 tty19 tty20</tty>
+    </keyboard_values>
+  </keyboard>
+  <timezone>
+    <hwclock>localtime</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+  <report>
+    <errors>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">5</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+  </report>
+  <networking>
+    <keep_install_network config:type="boolean">true</keep_install_network>
+  </networking>
+
+  <deploy_image>
+      <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <firewall>
+    <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+    <enable_firewall config:type="boolean">true</enable_firewall>
+    <start_firewall config:type="boolean">true</start_firewall>
+  </firewall>
+
+  <software>
+    <do_online_update config:type="boolean">true</do_online_update>
+    <kernel>kernel-default</kernel>
+    <patterns config:type="list">
+      <pattern>enhanced_base</pattern>
+    </patterns>
+    <packages config:type="list">
+      <package>apache2</package>
+      <package>less</package>
+      <package>zypper</package>
+      <package>yast2-runlevel</package>
+      <package>vim</package>
+      <package>nfs-client</package>
+      <package>yast2-bootloader</package>
+      <package>yast2-ncurses</package>
+    </packages>
+  </software> 
+  <user_defaults>
+    <expire></expire>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">false</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+      <user_password>pw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+  <partitioning config:type="list">
+      <drive>
+        <device>/dev/sdb</device>
+        <initialize config:type="boolean">true</initialize>
+        <partitions config:type="list">
+<!--
+-->
+          <partition>
+            <mount>/boot</mount>
+            <size>75mb</size>
+            <filesystem  config:type="symbol">ext3</filesystem>
+	    <partition_type>primary</partition_type>
+          </partition>
+          <partition>
+            <mount>swap</mount>
+            <size>1012mb</size>
+            <filesystem  config:type="symbol">swap</filesystem>
+	    <partition_type>primary</partition_type>
+          </partition>
+          <partition>
+            <mount>/home</mount>
+            <size>500mb</size>
+            <filesystem  config:type="symbol">ext3</filesystem>
+          </partition>
+          <partition>
+            <mount>/</mount>
+            <size>max</size>
+          </partition>
+        </partitions>
+     </drive>
+  </partitioning>
+  <general>
+    <mode>
+        <forceboot config:type="boolean">true</forceboot>
+        <confirm config:type="boolean">true</confirm>
+        <second_stage config:type="boolean">true</second_stage>
+	<final_reboot config:type="boolean">false</final_reboot>
+        <halt config:type="boolean">false</halt>
+    </mode>
+    <signature-handling>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+      <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+      <import_gpg_key config:type="boolean">true</import_gpg_key>
+    </signature-handling>
+  </general>
+  <files config:type="list">
+      <file>
+        <file_path>/tmp/uwe_bla</file_path>
+        <file_owner>uwe:users</file_owner>
+        <file_permissions>444</file_permissions>
+        <file_contents>
+
+<![CDATA[
+some content
+]]>
+
+       </file_contents>
+     </file>
+  </files>
+</profile>

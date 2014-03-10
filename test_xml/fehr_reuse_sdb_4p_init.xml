@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <configure>
+ <bootloader>
+    <global>
+      <generic_mbr>true</generic_mbr>
+      <timeout config:type="integer">8</timeout>
+      <gfxmenu>/boot/menu</gfxmenu>
+    </global>
+  </bootloader>
+  <timezone>
+    <hwclock>localtime</hwclock>
+    <timezone>America/Chicago</timezone>
+  </timezone>
+
+  <report>
+    <errors>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </yesno_messages>
+  </report>
+
+<general> 
+   <signature-handling>
+       <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+       <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+       <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+       <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+   </signature-handling>
+   <mode>
+     <confirm config:type="boolean">true</confirm>
+   </mode>
+</general>
+  <suse_register>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data/>
+    <submit_hwdata config:type="boolean">true</submit_hwdata>
+    <submit_optional config:type="boolean">true</submit_optional>
+  </suse_register>
+    <sound>
+      <autoinstall config:type="boolean">true</autoinstall>
+      <configure_detected config:type="boolean">true</configure_detected>
+    </sound>
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>
+          <name>Ethernet Network Card</name>
+          <startmode>auto</startmode>
+          <usercontrol>no</usercontrol>
+        </interface>
+      </interfaces>
+      <modules config:type="list">
+        <module_entry>
+          <device>static-0</device>
+          <module></module>
+          <options></options>
+        </module_entry>
+      </modules>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+      </routing>
+      <net-udev config:type="list">
+	<rule>
+	  <name>eth4</name>
+	  <rule>ATTR{address}</rule>
+	  <value>08:00:27:10:9f:d5</value>
+	</rule>
+      </net-udev>
+    </networking>
+  </configure>
+  <install>
+    <software>
+      <base>default</base>
+      <post-packages config:type="list">
+        <package>yast2-cim</package>
+      </post-packages>
+
+    </software>
+    <users config:type="list">
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+    </users>
+    <partitioning config:type= "list">
+      <drive>
+	<device>/dev/sdb</device>
+	<use>all</use>
+	<initialize config:type="boolean">true</initialize>
+	<use>all</use>
+	<partitions config:type= "list">
+	  <partition>
+	    <filesystem config:type= "symbol">ext3</filesystem>
+	    <mount>/tmp</mount>
+	    <size>300M</size>
+	    <partition_nr config:type= "integer">3</partition_nr>
+	  </partition>
+	  <partition>
+	    <filesystem config:type= "symbol">swap</filesystem>
+	    <mount>swap</mount>
+	    <size>500M</size>
+	    <partition_nr config:type= "integer">2</partition_nr>
+	  </partition>
+	  <partition>
+	    <filesystem config:type= "symbol">ext3</filesystem>
+	    <mount>/var</mount>
+	    <size>1G</size>
+	    <partition_nr config:type= "integer">4</partition_nr>
+	  </partition>
+	  <partition>
+	    <filesystem config:type= "symbol">ext3</filesystem>
+	    <mount>/</mount>
+	    <size>max</size>
+	    <partition_nr config:type= "integer">1</partition_nr>
+	  </partition>
+	</partitions>
+      </drive>
+    </partitioning>
+</install>
+</profile>

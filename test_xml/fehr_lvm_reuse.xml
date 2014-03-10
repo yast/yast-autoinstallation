@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+raid od hda+hdc
+-->
+
+  <configure>
+    <sound>
+      <autoinstall config:type="boolean">true</autoinstall>
+      <configure_detected config:type="boolean">true</configure_detected>
+    </sound>
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>
+          <name>Ethernet Network Card</name>
+          <startmode>auto</startmode>
+          <usercontrol>no</usercontrol>
+        </interface>
+      </interfaces>
+      <modules config:type="list">
+        <module_entry>
+          <device>static-0</device>
+          <module></module>
+          <options></options>
+        </module_entry>
+      </modules>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+      </routing>
+    </networking>
+  </configure>
+  <install>
+    <software>
+<!--      <base>default</base> -->
+    </software>
+    <users config:type="list">
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+    </users>
+    <partitioning config:type="list">
+      <drive>
+        <device>/dev/sdb</device>
+        <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">false</create>
+	    <partition_nr config:type="integer">1</partition_nr>
+	    <format config:type="boolean">true</format>
+	    <size>300M</size>
+	    <filesystem config:type="symbol">ext3</filesystem>
+	    <mount>/boot</mount>
+          </partition>
+          <partition>
+	    <create config:type="boolean">false</create>
+	    <partition_id config:type="integer">142</partition_id>
+	    <partition_nr config:type="integer">2</partition_nr>
+	    <lvm_group>system</lvm_group>
+	    <size>4G</size>
+          </partition>
+        </partitions>
+      </drive>
+      <drive>
+        <device>/dev/sdc</device>
+        <partitions config:type="list">
+          <partition>
+	    <create config:type="boolean">false</create>
+            <partition_type>primary</partition_type>
+	    <partition_id config:type="integer">142</partition_id>
+	    <partition_nr config:type="integer">1</partition_nr>
+            <size>5GB</size>
+            <lvm_group>system</lvm_group>
+          </partition>
+        </partitions>
+      </drive>
+      <drive>
+        <device>/dev/system</device>
+        <is_lvm_vg config:type="boolean">true</is_lvm_vg>
+        <type config:type="symbol">CT_LVM</type>
+        <keep_unknown_lv config:type="boolean">true</keep_unknown_lv>
+        <partitions config:type="list">
+          <partition>
+            <format config:type="boolean">true</format>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <lv_name>rootlv</lv_name>
+            <mount>/</mount>
+            <size>3G</size>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <lv_name>xxx_lv</lv_name>
+            <mount>/xxxx</mount>
+            <size>200M</size>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">swap</filesystem>
+            <lv_name>swap_lv</lv_name>
+            <mount>swap</mount>
+            <size>auto</size>
+          </partition>
+        </partitions>
+        <pesize>4M</pesize>
+        <use>all</use>
+      </drive>
+    </partitioning>
+  </install>
+</profile>

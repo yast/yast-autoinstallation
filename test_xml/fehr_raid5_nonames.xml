@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <deploy_image>
+    <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <general>
+    <ask-list config:type="list"/>
+    <mode>
+      <confirm config:type="boolean">true</confirm>
+      <final_halt config:type="boolean">false</final_halt>
+      <final_reboot config:type="boolean">false</final_reboot>
+      <halt config:type="boolean">false</halt>
+      <second_stage config:type="boolean">true</second_stage>
+    </mode>
+    <mouse>
+      <id>none</id>
+    </mouse>
+    <proposals config:type="list"/>
+    <signature-handling>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <import_gpg_key config:type="boolean">true</import_gpg_key>
+    </signature-handling>
+    <storage/>
+  </general>
+  <users config:type="list">
+      <user>
+         <username>root</username>
+         <forename/>
+         <surname/>
+      </user>
+  </users>
+  <networking>
+    <keep_install_network config:type="boolean">true</keep_install_network>
+    <dns>
+      <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+      <domain>virtual.cloud.suse.de</domain>
+      <resolv_conf_policy>auto</resolv_conf_policy>
+      <write_hostname config:type="boolean">false</write_hostname>
+    </dns>
+    <managed config:type="boolean">false</managed>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+    </routing>
+  </networking>
+  <partitioning config:type="list">
+        <drive>
+<!--
+-->
+	  <initialize config:type="boolean">true</initialize>
+          <type config:type="symbol">CT_DISK</type>
+          <partitions config:type="list">
+            <partition>
+              <mount>swap</mount>
+              <size>auto</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md0</raid_name>
+              <raid_type>raid</raid_type>
+              <size>200M</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md1</raid_name>
+              <raid_type>raid</raid_type>
+              <size>max</size>
+            </partition>
+          </partitions>
+          <use>all</use>
+        </drive>
+        <drive>
+<!--
+-->
+	  <initialize config:type="boolean">true</initialize>
+          <type config:type="symbol">CT_DISK</type>
+          <partitions config:type="list">
+            <partition>
+              <mount>swap</mount>
+              <size>auto</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md0</raid_name>
+              <raid_type>raid</raid_type>
+              <size>200M</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md1</raid_name>
+              <raid_type>raid</raid_type>
+              <size>max</size>
+            </partition>
+          </partitions>
+          <use>all</use>
+        </drive>
+        <drive>
+<!--
+-->
+	  <initialize config:type="boolean">true</initialize>
+          <type config:type="symbol">CT_DISK</type>
+          <partitions config:type="list">
+            <partition>
+              <mount>swap</mount>
+              <size>auto</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md0</raid_name>
+              <size>200M</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md1</raid_name>
+              <size>max</size>
+            </partition>
+          </partitions>
+          <use>all</use>
+        </drive>
+        <drive>
+<!--
+-->
+	  <initialize config:type="boolean">true</initialize>
+          <type config:type="symbol">CT_DISK</type>
+          <partitions config:type="list">
+            <partition>
+              <mount>swap</mount>
+              <size>auto</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md0</raid_name>
+              <size>200M</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md1</raid_name>
+              <size>max</size>
+            </partition>
+          </partitions>
+          <use>all</use>
+        </drive>
+        <drive>
+<!--
+-->
+	  <initialize config:type="boolean">true</initialize>
+          <type config:type="symbol">CT_DISK</type>
+          <partitions config:type="list">
+            <partition>
+              <mount>swap</mount>
+              <size>auto</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md0</raid_name>
+              <size>200M</size>
+            </partition>
+            <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md1</raid_name>
+              <size>max</size>
+            </partition>
+          </partitions>
+          <use>all</use>
+        </drive>
+      <drive>
+        <device>/dev/md</device>
+        <type config:type="symbol">CT_MD</type>
+        <initialize config:type="boolean">true</initialize>
+        <partitions config:type="list">
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <format config:type="boolean">true</format>
+            <mount>/boot</mount>
+            <partition_id config:type="integer">131</partition_id>
+            <partition_nr config:type="integer">0</partition_nr>
+            <raid_options>
+              <raid_type>raid1</raid_type>
+            </raid_options>
+          </partition>
+          <partition>
+            <format config:type="boolean">true</format>
+            <mount>/</mount>
+            <filesystem config:type="symbol">ext4</filesystem>
+            <partition_id config:type="integer">131</partition_id>
+            <partition_nr config:type="integer">1</partition_nr>
+            <raid_options>
+              <raid_type>raid5</raid_type>
+            </raid_options>
+          </partition>
+        </partitions>
+        <use>all</use>
+      </drive>
+  </partitioning>
+  <timezone>
+    <hwclock>UTC</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+  <software>
+    <packages config:type="list">
+      <package>autoyast2-installation</package>
+      <package>biosdevname</package>
+    </packages>
+    <patterns config:type="list">
+      <pattern>Minimal</pattern>
+      <pattern>base</pattern>
+    </patterns>
+  </software>
+</profile>

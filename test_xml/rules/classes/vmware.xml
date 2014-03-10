@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <software>
+    <packages config:type="list">
+      <package>tda-vmware-tools</package>
+      <package>emil-vmware-tools</package>
+      <package>emil2-vmware-tools</package>
+    </packages>
+  </software>
+  <configure>
+    <scripts>
+      <chroot-scripts config:type="list">
+        <script>
+          <chrooted config:type="boolean">true</chrooted>
+          <source><![CDATA[
+            chkconfig tda-vmware-tools on
+            service tda-vmware-tools configure
+          ]]></source>
+        </script>
+      </chroot-scripts>
+    </scripts>
+  </configure>
+</profile>

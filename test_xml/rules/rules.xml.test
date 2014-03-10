@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!DOCTYPE autoinstall SYSTEM "/usr/share/autoinstall/dtd/rules.dtd">
+<autoinstall xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <rules config:type="list">
+<rule>
+  <custom1>
+      <script>
+<![CDATA[
+echo -n 100
+]]>
+    </script>
+    <match>100</match>
+    <match_type>exact</match_type>
+  </custom1>
+  <result>
+    <profile>rules/kde.xml</profile>
+    <continue config:type="boolean">true</continue>
+  </result>
+  <dialog>
+    <element config:type="integer">0</element>
+    <question>KDE Desktop</question>
+    <title>Desktop Selection</title>
+    <conflicts config:type="list">
+      <element config:type="integer">1</element>
+    </conflicts>
+    <dialog_nr config:type="integer">0</dialog_nr>
+    <timeout config:type="integer">30</timeout>
+  </dialog>
+</rule>
+<rule>
+  <custom1>
+      <script>
+<![CDATA[
+echo -n 100
+]]>
+      </script>
+     <match>101</match>
+     <match_type>exact</match_type>
+  </custom1>
+  <result>
+    <profile>rules/gnome.xml</profile>
+    <continue config:type="boolean">true</continue>
+  </result>
+  <dialog>
+    <element config:type="integer">1</element>
+    <dialog_nr config:type="integer">0</dialog_nr>
+    <question>Gnome Desktop</question>
+    <conflicts config:type="list">
+      <element config:type="integer">0</element>
+    </conflicts>
+  </dialog>
+</rule>
+  </rules>
+</autoinstall>

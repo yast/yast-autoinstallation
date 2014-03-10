@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+    <scripts>
+        <post-scripts config:type="list">
+            <script>
+                <filename>save.sh</filename>
+                <network_needed config:type="boolean">true</network_needed>
+                <interpreter>shell</interpreter>
+                <debug config:type="boolean">true</debug>
+                <source>
+<![CDATA[
+cp /etc/sysconfig/network/routes /tmp/
+cp /etc/sysconfing/network/config /tmp/
+]]>
+
+                </source>
+            </script>
+            <script>
+                <filename>restore.sh</filename>
+                <network_needed config:type="boolean">false</network_needed>
+                <debug config:type="boolean">true</debug>
+                <interpreter>shell</interpreter>
+                <source>
+<![CDATA[
+mv /tmp/routes /etc/sysconfig/network/
+mv /tmp/config /etc/sysconfing/network/
+/sbin/netconfig update
+]]>
+
+                </source>
+            </script>
+        </post-scripts>
+  </scripts>
+</profile>

@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+raid od hda+hdc
+-->
+
+   <general>
+    <mode>
+    <confirm config:type="boolean">true</confirm>
+    <forceboot config:type="boolean">true</forceboot>
+    <second_stage config:type="boolean">true</second_stage>
+    </mode>
+  </general>
+    <sound>
+      <autoinstall config:type="boolean">true</autoinstall>
+      <configure_detected config:type="boolean">true</configure_detected>
+    </sound>
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>
+          <name>Ethernet Network Card</name>
+          <startmode>auto</startmode>
+          <usercontrol>no</usercontrol>
+        </interface>
+      </interfaces>
+      <modules config:type="list">
+        <module_entry>
+          <device>static-0</device>
+          <module></module>
+          <options></options>
+        </module_entry>
+      </modules>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+      </routing>
+    </networking>
+    <software>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+    </patterns>
+    </software>
+    <users config:type="list">
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+    </users>
+    <partitioning config:type="list">
+      <drive>
+<!--        <device>/dev/sda</device> -->
+        <partitions config:type="list">
+          <partition>
+            <format config:type="boolean">true</format>
+            <create config:type="boolean">true</create>
+            <partition_type>primary</partition_type>
+            <size>3GB</size>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <mount>/</mount>
+          </partition>
+          <partition>
+              <partition_id config:type="integer">253</partition_id>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md0</raid_name>
+              <raid_type>raid1</raid_type>
+              <size>1G</size>
+          </partition>
+        </partitions>
+        <use>all</use>
+      </drive>
+      <drive>
+          <partitions config:type="list">
+            <partition>
+                <partition_id config:type="integer">253</partition_id>
+                <format config:type="boolean">false</format>
+                <raid_name>/dev/md0</raid_name>
+                <raid_type>raid1</raid_type>
+                <size>1G</size>
+            </partition>
+          </partitions>
+          <use>all</use>
+      </drive>
+      <drive>
+        <device>/dev/md</device>
+        <partitions config:type="list">
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <format config:type="boolean">true</format>
+            <mount>/space</mount>
+            <partition_id config:type="integer">131</partition_id>     
+            <partition_nr config:type="integer">0</partition_nr>
+            <raid_options>
+              <chunk_size>4</chunk_size>
+              <raid_type>raid1</raid_type>
+            </raid_options>
+          </partition>
+        </partitions>
+        <use>all</use>
+      </drive>
+    </partitioning>
+</profile>
