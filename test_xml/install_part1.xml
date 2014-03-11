@@ -1,0 +1,601 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <deploy_image>
+    <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <general>
+    <ask-list config:type="list">
+      <listentry>
+        <help>Bitte das root-Passwort eingeben</help>
+        <password config:type="boolean">true</password>
+        <path>users,0,user_password</path>
+        <question>Passwort fuer root vergeben</question>
+        <stage>initial</stage>
+        <title>Passwortvergabe: root</title>
+      </listentry>
+    </ask-list>
+    <mode>
+      <confirm config:type="boolean">true</confirm>
+      <forceboot config:type="boolean">false</forceboot>
+      <second_stage config:type="boolean">true</second_stage>
+    </mode>
+    <signature-handling>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <import_gpg_key config:type="boolean">true</import_gpg_key>
+    </signature-handling>
+    <wait>
+      <post-modules config:type="list"/>
+      <pre-modules config:type="list">
+        <listentry>
+          <name>networking</name>
+          <script>
+            <debug config:type="boolean">true</debug>
+            <source><![CDATA[
+                      sleep 10
+                  ]]></source>
+          </script>
+          <sleep>
+            <feedback config:type="boolean">true</feedback>
+            <time config:type="integer">10</time>
+          </sleep>
+        </listentry>
+      </pre-modules>
+    </wait>
+  </general>
+  <groups config:type="list">
+    <group>
+      <group_password>x</group_password>
+      <groupname>users</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>floppy</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>bin</groupname>
+      <userlist>daemon</userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>xok</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>nobody</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>modem</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>lp</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>tty</groupname>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>postfix</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>nogroup</groupname>
+      <userlist>nobody</userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>maildrop</groupname>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>messagebus</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>video</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>sys</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>shadow</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>console</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>cdrom</groupname>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>haldaemon</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>trusted</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>dialout</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>wheel</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>www</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>games</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>disk</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>audio</groupname>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>suse-ncc</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>ftp</groupname>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>at</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>kmem</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>public</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>root</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>mail</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>daemon</groupname>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>ntp</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>uucp</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>man</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>utmp</groupname>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>news</groupname>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>sshd</groupname>
+    </group>
+  </groups>
+  <kdump>
+    <add_crash_kernel config:type="boolean">true</add_crash_kernel>
+    <crash_kernel>256M-:64M</crash_kernel>
+    <general>
+      <KDUMP_COPY_KERNEL>true</KDUMP_COPY_KERNEL>
+      <KDUMP_DUMPFORMAT>compressed</KDUMP_DUMPFORMAT>
+      <KDUMP_DUMPLEVEL>1</KDUMP_DUMPLEVEL>
+      <KDUMP_FREE_DISK_SIZE>64</KDUMP_FREE_DISK_SIZE>
+      <KDUMP_IMMEDIATE_REBOOT>yes</KDUMP_IMMEDIATE_REBOOT>
+      <KDUMP_KEEP_OLD_DUMPS>5</KDUMP_KEEP_OLD_DUMPS>
+      <KDUMP_NOTIFICATION_TO>arch-admins@suse.de</KDUMP_NOTIFICATION_TO>
+      <KDUMP_RUNLEVEL>1</KDUMP_RUNLEVEL>
+      <KDUMP_SAVEDIR>ftp://stravinsky.suse.de/incoming/dumps</KDUMP_SAVEDIR>
+      <KDUMP_SMTP_SERVER>relay.suse.de</KDUMP_SMTP_SERVER>
+      <KDUMP_VERBOSE>15</KDUMP_VERBOSE>
+    </general>
+  </kdump>
+  <keyboard>
+    <keyboard_values>
+      <capslock config:type="boolean">false</capslock>
+      <discaps config:type="boolean">false</discaps>
+      <scrlock config:type="boolean">false</scrlock>
+      <tty>tty1 tty2 tty3 tty4 tty5 tty6 tty8 tty9 tty10 tty11 tty12 tty13 tty14 tty15 tty16 tty17 tty18 tty19 tty20</tty>
+    </keyboard_values>
+  </keyboard>
+  <language>
+    <language>de_DE</language>
+    <languages>de_DE</languages>
+  </language>
+  <networking>
+    <dhcp_options>
+      <dhclient_hostname_option>AUTO</dhclient_hostname_option>
+    </dhcp_options>
+    <dns>
+      <dhcp_hostname config:type="boolean">false</dhcp_hostname>
+      <dhcp_resolv config:type="boolean">false</dhcp_resolv>
+      <domain>suse.de</domain>
+      <hostname>sevy</hostname>
+      <nameservers config:type="list">
+        <nameserver>10.10.0.1</nameserver>
+      </nameservers>
+      <searchlist config:type="list">
+        <search>suse.de</search>
+      </searchlist>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>static</bootproto>
+        <device>eth0</device>
+        <ipaddr>10.10.2.3</ipaddr>
+        <netmask>255.255.0.0</netmask>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+      <routes config:type="list">
+        <route>
+          <destination>default</destination>
+          <device>-</device>
+          <gateway>10.10.0.8</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+    <start_immediately config:type="boolean">true</start_immediately>
+  </networking>
+  <partitioning config:type="list">
+    <drive>
+      <initialize config:type="boolean">false</initialize>
+      <partitions config:type="list"/>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <report>
+    <errors>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </yesno_messages>
+  </report>
+  <scripts>
+    <post-scripts config:type="list">
+      <script>
+        <filename>chroot.sh</filename>
+        <interpreter>shell</interpreter>
+        <network_needed config:type="boolean">true</network_needed>
+        <source><![CDATA[
+echo "X-SuSE-YaST-AutoLogResource=false" >> /mnt/usr/share/applications/YaST2/users.desktop
+]]></source>
+      </script>
+    </post-scripts>
+  </scripts>
+  <software>
+    <do_online_update config:type="boolean">true</do_online_update>
+    <install_recommended config:type="boolean">true</install_recommended>
+    <packages config:type="list">
+      <package>autoyast2-installation</package>
+    </packages>
+    <patterns config:type="list">
+      <pattern>kde4</pattern>
+    </patterns>
+  </software>
+  <suse_register>
+    <do_registration config:type="boolean">true</do_registration>
+    <submit_hwdata config:type="boolean">true</submit_hwdata>
+    <submit_optional config:type="boolean">true</submit_optional>
+  </suse_register>
+  <timezone>
+    <hwclock>localtime</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+  <user_defaults>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">false</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+      <user_password>pw</user_password>
+      <username>root</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Games account</fullname>
+      <gid>100</gid>
+      <home>/var/games</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>12</uid>
+      <user_password>*</user_password>
+      <username>games</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>bin</fullname>
+      <gid>1</gid>
+      <home>/bin</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>1</uid>
+      <user_password>*</user_password>
+      <username>bin</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>nobody</fullname>
+      <gid>65533</gid>
+      <home>/var/lib/nobody</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>65534</uid>
+      <user_password>*</user_password>
+      <username>nobody</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Printing daemon</fullname>
+      <gid>7</gid>
+      <home>/var/spool/lpd</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>4</uid>
+      <user_password>*</user_password>
+      <username>lp</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Postfix Daemon</fullname>
+      <gid>51</gid>
+      <home>/var/spool/postfix</home>
+      <password_settings>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/false</shell>
+      <uid>51</uid>
+      <user_password>!</user_password>
+      <username>postfix</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Novell Customer Center User</fullname>
+      <gid>104</gid>
+      <home>/var/lib/YaST2/suse-ncc-fakehome</home>
+      <password_settings>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>102</uid>
+      <user_password>!</user_password>
+      <username>suse-ncc</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>FTP account</fullname>
+      <gid>49</gid>
+      <home>/srv/ftp</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>40</uid>
+      <user_password>*</user_password>
+      <username>ftp</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Batch jobs daemon</fullname>
+      <gid>25</gid>
+      <home>/var/spool/atjobs</home>
+      <password_settings>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>25</uid>
+      <user_password>!</user_password>
+      <username>at</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">false</encrypted>
+      <fullname>uwe fullname</fullname>
+      <gid>100</gid>
+      <home>/home/uwe</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>1000</uid>
+      <user_password>pw</user_password>
+      <username>uwe</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Mailer daemon</fullname>
+      <gid>12</gid>
+      <home>/var/spool/clientmqueue</home>
+      <password_settings/>
+      <shell>/bin/false</shell>
+      <uid>8</uid>
+      <user_password>*</user_password>
+      <username>mail</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Daemon</fullname>
+      <gid>2</gid>
+      <home>/sbin</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>2</uid>
+      <user_password>*</user_password>
+      <username>daemon</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>NTP daemon</fullname>
+      <gid>103</gid>
+      <home>/var/lib/ntp</home>
+      <password_settings>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/false</shell>
+      <uid>74</uid>
+      <user_password>!</user_password>
+      <username>ntp</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Unix-to-Unix CoPy system</fullname>
+      <gid>14</gid>
+      <home>/etc/uucp</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>10</uid>
+      <user_password>*</user_password>
+      <username>uucp</username>
+    </user>
+    <user>
+      <fullname>User for D-BUS</fullname>
+      <gid>101</gid>
+      <home>/var/run/dbus</home>
+      <shell>/bin/false</shell>
+      <uid>100</uid>
+      <username>messagebus</username>
+    </user>
+    <user>
+      <fullname>User for haldaemon</fullname>
+      <gid>102</gid>
+      <home>/var/run/hal</home>
+      <shell>/bin/false</shell>
+      <uid>101</uid>
+      <username>haldaemon</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>WWW daemon apache</fullname>
+      <gid>8</gid>
+      <home>/var/lib/wwwrun</home>
+      <password_settings/>
+      <shell>/bin/false</shell>
+      <uid>30</uid>
+      <user_password>*</user_password>
+      <username>wwwrun</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Manual pages viewer</fullname>
+      <gid>62</gid>
+      <home>/var/cache/man</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>13</uid>
+      <user_password>*</user_password>
+      <username>man</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>News system</fullname>
+      <gid>13</gid>
+      <home>/etc/news</home>
+      <password_settings/>
+      <shell>/bin/bash</shell>
+      <uid>9</uid>
+      <user_password>*</user_password>
+      <username>news</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>SSH daemon</fullname>
+      <gid>65</gid>
+      <home>/var/lib/sshd</home>
+      <password_settings>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/false</shell>
+      <uid>71</uid>
+      <user_password>!</user_password>
+      <username>sshd</username>
+    </user>
+  </users>
+  <x11>
+    <color_depth config:type="integer">16</color_depth>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">false</enable_3d>
+    <monitor>
+      <display>
+        <max_hsync config:type="integer">82</max_hsync>
+        <max_vsync config:type="integer">60</max_vsync>
+        <min_hsync config:type="integer">30</min_hsync>
+        <min_vsync config:type="integer">30</min_vsync>
+      </display>
+      <monitor_device>1280X1024@60HZ</monitor_device>
+      <monitor_vendor>--&gt; LCD</monitor_vendor>
+    </monitor>
+    <resolution>1280x1024 (SXGA)</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+</profile>

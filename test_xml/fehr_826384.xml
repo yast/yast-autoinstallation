@@ -1,0 +1,315 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<configure>
+  <bootloader>
+    <global>
+      <generic_mbr>true</generic_mbr>
+      <timeout config:type="integer">8</timeout>
+      <gfxmenu>/boot/menu</gfxmenu>
+    </global>
+  </bootloader>
+  <firewall>
+    <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+    <FW_ALLOW_FW_BROADCAST_DMZ>no</FW_ALLOW_FW_BROADCAST_DMZ>
+    <FW_ALLOW_FW_BROADCAST_EXT>no</FW_ALLOW_FW_BROADCAST_EXT>
+    <FW_ALLOW_FW_BROADCAST_INT>no</FW_ALLOW_FW_BROADCAST_INT>
+    <FW_CONFIGURATIONS_DMZ>sshd</FW_CONFIGURATIONS_DMZ>
+    <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+    <FW_CONFIGURATIONS_INT>sshd</FW_CONFIGURATIONS_INT>
+    <FW_DEV_EXT>eth0</FW_DEV_EXT>
+    <FW_IGNORE_FW_BROADCAST_DMZ>no</FW_IGNORE_FW_BROADCAST_DMZ>
+    <FW_IGNORE_FW_BROADCAST_EXT>yes</FW_IGNORE_FW_BROADCAST_EXT>
+    <FW_IGNORE_FW_BROADCAST_INT>no</FW_IGNORE_FW_BROADCAST_INT>
+    <FW_IPSEC_TRUST>no</FW_IPSEC_TRUST>
+    <FW_LOAD_MODULES>nf_conntrack_netbios_ns</FW_LOAD_MODULES>
+    <FW_LOG_ACCEPT_ALL>no</FW_LOG_ACCEPT_ALL>
+    <FW_LOG_ACCEPT_CRIT>yes</FW_LOG_ACCEPT_CRIT>
+    <FW_LOG_DROP_ALL>no</FW_LOG_DROP_ALL>
+    <FW_LOG_DROP_CRIT>yes</FW_LOG_DROP_CRIT>
+    <FW_MASQUERADE>no</FW_MASQUERADE>
+    <FW_PROTECT_FROM_INT>no</FW_PROTECT_FROM_INT>
+    <FW_ROUTE>no</FW_ROUTE>
+    <enable_firewall config:type="boolean">false</enable_firewall>
+    <start_firewall config:type="boolean">false</start_firewall>
+  </firewall>
+  <general> 
+    <signature-handling>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+    </signature-handling>
+    <mode>
+      <confirm config:type="boolean">true</confirm>
+      <final_reboot config:type="boolean">false</final_reboot>
+    </mode>
+  </general>
+  <networking>
+<!--
+    <keep_install_network config:type="boolean">true</keep_install_network>
+-->
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>dhcp</bootproto>
+        <device>eth-id-08:00:27:3d:0c:1d</device>
+        <startmode>onboot</startmode>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+        <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+      <routes config:type="list">
+        <route>
+          <destination>default</destination>
+          <device>-</device>
+          <gateway>10.120.255.254</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+  </networking>
+  <report>
+    <errors>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </yesno_messages>
+  </report>
+  <runlevel>
+    <default>5</default>
+    <services config:type="list" >
+      <service>
+	<service_name>sshd</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>rpcbind</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>autofs</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>nfs</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>cups</service_name>
+	<service_status>disable</service_status>
+      </service>
+      <service>
+	<service_name>SuSEfirewall2</service_name>
+	<service_status>disable</service_status>
+      </service>
+    </services>
+  </runlevel>
+  <sound>
+    <autoinstall config:type="boolean">true</autoinstall>
+    <configure_detected config:type="boolean">true</configure_detected>
+  </sound>
+<!--
+  <suse_register>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data/>
+    <submit_hwdata config:type="boolean">true</submit_hwdata>
+    <submit_optional config:type="boolean">true</submit_optional>
+  </suse_register>
+-->
+  <timezone>
+    <hwclock>UTC</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+</configure>
+<install>
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/sdb</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+	<partition>
+	  <mount>/boot</mount>
+	  <size>100M</size>
+	  <filesystem config:type="symbol">ext3</filesystem>
+	  <format config:type="boolean">true</format>
+	  <fstopt>acl,user_xattr</fstopt>
+	  <partition_id config:type="integer">131</partition_id>
+	  <partition_nr config:type="integer">1</partition_nr>
+	</partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">true</crypt_fs>
+          <crypt_key>pass1</crypt_key>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">true</loop_fs>
+          <lvm_group>vg00</lvm_group>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <size>max</size>
+        </partition>
+      </partitions>
+    </drive>
+    <drive>
+      <device>/dev/sdc</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">true</crypt_fs>
+          <crypt_key>pass2</crypt_key>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">true</loop_fs>
+          <lvm_group>vg01</lvm_group>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <size>max</size>
+        </partition>
+      </partitions>
+    </drive>
+    <drive>
+      <device>/dev/vg00</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>lv_root</lv_name>
+          <mount>/</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>1723858944</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>defaults</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>lv_swap</lv_name>
+          <mount>swap</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">130</partition_id>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>104857600</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>lv_tmp</lv_name>
+          <mount>/tmp</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>209715200</size>
+        </partition>
+      </partitions>
+      <pesize>4M</pesize>
+      <type config:type="symbol">CT_LVM</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/vg01</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>lv_home</lv_name>
+          <mount>/home</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>524288000</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>lv_usr</lv_name>
+          <mount>/usr</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>1094713344</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>lv_var</lv_name>
+          <mount>/var</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>524288000</size>
+        </partition>
+      </partitions>
+      <pesize>4M</pesize>
+      <type config:type="symbol">CT_LVM</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <software>
+    <image/>
+    <instsource/>
+    <packages config:type="list">
+      <package>less</package>
+      <package>yast2-trans-en_US</package>
+    </packages>
+    <patterns config:type="list">
+      <pattern>Minimal</pattern>
+      <pattern>base</pattern>
+    </patterns>
+  </software>
+  <users config:type="list">
+    <user>
+      <user_password>rootpw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</install>
+</profile>

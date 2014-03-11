@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <scripts>
+    <pre-scripts config:type="list">
+      <script>
+        <debug config:type="boolean">true</debug>
+        <filename>pre_script</filename>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+#echo "rm /var/lib/YaST2/runme_at_boot" >> /etc/init.d/boot.local
+echo "jo script was run" > /tmp/pre-script-works
+        ]]></source>
+      </script>
+    </pre-scripts>
+    <chroot-scripts config:type="list">
+      <script>
+        <debug config:type="boolean">true</debug>
+        <chrooted config:type="boolean">true</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <filename>chrooted_script</filename>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+#echo "rm /var/lib/YaST2/runme_at_boot" >> /etc/init.d/boot.local
+echo "jo chrooted script was run" > /tmp/chroot-works
+        ]]></source>
+      </script>
+      <script>
+        <debug config:type="boolean">true</debug>
+        <chrooted config:type="boolean">false</chrooted>
+        <filename>not_chrooted_script</filename>
+        <feedback config:type="boolean">true</feedback>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+#echo "rm /var/lib/YaST2/runme_at_boot" >> /etc/init.d/boot.local
+echo "jo pre-chroot script was run" > /tmp/pre-chroot-works
+        ]]></source>
+      </script>
+    </chroot-scripts>
+    <post-scripts config:type="list">
+      <script>
+        <debug config:type="boolean">true</debug>
+        <filename>post_script</filename>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+#echo "rm /var/lib/YaST2/runme_at_boot" >> /etc/init.d/boot.local
+echo "jo script was run" > /tmp/post-script-works
+        ]]></source>
+      </script>
+    </post-scripts>
+    <init-scripts config:type="list">
+      <script>
+        <debug config:type="boolean">true</debug>
+        <filename>init_script</filename>
+        <interpreter>shell</interpreter>
+        <source><![CDATA[
+#echo "rm /var/lib/YaST2/runme_at_boot" >> /etc/init.d/boot.local
+echo "jo script was run" > /tmp/init-script-works
+        ]]></source>
+      </script>
+    </init-scripts>
+  </scripts>
+  <upgrade>  
+    <only_installed_packages config:type="boolean">false</only_installed_packages>  
+    <stop_on_solver_conflict config:type="boolean">true</stop_on_solver_conflict>  
+  </upgrade>  
+  <!--
+<software>
+    <packages config:type="list">
+        <package>autoyast2-installation</package>
+        <package>apparmor-profile-editor</package>
+        <package>findutils-locate</package>
+        <package>nss_ldap</package>
+        <package>nss_ldap-32bit</package>
+        <package>pam_ldap</package>
+        <package>pam_ldap-32bit</package>
+        <package>pam_krb5</package>
+        <package>pam_krb5-32bit</package>
+        <package>krb5-client</package>
+        <package>libcap1</package>
+        <package>xorg-x11-xauth</package>
+        <package>sysstat</package>
+        <package>seccheck</package>
+        <package>sles-release</package>
+        <package>libstdc++33</package>
+        <package>libstdc++33-32bit</package>
+        <package>libstdc++43</package>
+        <package>libstdc++43-32bit</package>
+    </packages>
+    <patterns config:type="list">
+        <pattern>Minimal</pattern>
+        <pattern>apparmor</pattern>
+        <pattern>base</pattern>
+    </patterns>
+    <remove-packages config:type="list"/>
+    <remove-patterns config:type="list">
+        <pattern>gnome</pattern>
+        <pattern>x11</pattern>
+    </remove-patterns>
+</software>
+-->
+  <backup>  
+    <sysconfig config:type="boolean">true</sysconfig>  
+    <modified config:type="boolean">true</modified>  
+    <remove_old config:type="boolean">false</remove_old>  
+  </backup>  
+  <networking>  
+    <keep_install_network config:type="boolean">true</keep_install_network>  
+    <start_immediately config:type="boolean">true</start_immediately>  
+  </networking>
+</profile>

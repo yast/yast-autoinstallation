@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!DOCTYPE autoinstall SYSTEM "/usr/share/autoinstall/dtd/rules.dtd">
+<autoinstall xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <rules config:type="list">
+    <rule>
+      <hostname>
+	<match>*</match>
+	<match_type>exact</match_type>
+      </hostname>
+      <result>
+        <profile>software.xml</profile>
+        <dont_merge config:type="list">
+	  <element>package</element>
+	  <element>pattern</element>
+	</dont_merge>
+        <continue config:type="boolean">true</continue>
+      </result>
+    </rule>
+    <rule>
+       <custom1>
+         <script>
+echo -n "main"
+         </script>
+         <match>*</match>
+         <match_type>exact</match_type>
+       </custom1>
+       <result>
+         <profile>classes/main.xml</profile>
+         <continue config:type="boolean">true</continue>
+       </result>
+    </rule>
+    <rule>
+       <custom2>
+         <script>
+# Parse the cmdline for the build to figure out what netdevice to use
+# There may be multiple netdevice entries so grab the last one
+#for i in `cat /proc/cmdline`; do
+#    echo $i | grep -q netdevice=
+#    if [ $? -eq 0 ]; then
+#       device=`echo $i | cut -d= -f2`
+#    fi
+#done
+#echo -n $device
+echo -n eth0
+         </script>
+         <match>*</match>
+         <match_type>exact</match_type>
+       </custom2>
+       <result>
+         <profile>classes/@custom2@.xml</profile>
+         <continue config:type="boolean">true</continue>
+       </result>
+    </rule>
+    <rule>
+       <custom3>
+         <script>
+# Because we are looking for an exact match, the dmidecode actually returns
+# a \n at the end. We can either split the match tag onto two lines or remove
+# the newline. We remove the newline via the echo below
+#arg=`dmidecode -s system-manufacturer | cut -d, -f1`
+#echo -n $arg
+echo -n VMware
+         </script>
+         <match>VMware</match>
+         <match_type>exact</match_type>
+       </custom3>
+       <result>
+         <profile>classes/vmware.xml</profile>
+         <continue config:type="boolean">true</continue>
+       </result>
+    </rule>
+  </rules>
+</autoinstall>

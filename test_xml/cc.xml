@@ -1,0 +1,1883 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <audit-laf>
+    <auditd>
+      <action_mail_acct>root</action_mail_acct>
+      <admin_space_left>50</admin_space_left>
+      <admin_space_left_action>SINGLE</admin_space_left_action>
+      <disk_error_action>SINGLE</disk_error_action>
+      <disk_full_action>SINGLE</disk_full_action>
+      <disp_qos>lossy</disp_qos>
+      <!--dispatcher>/sbin/audispd</dispatcher-->
+      <flush>INCREMENTAL</flush>
+      <freq>20</freq>
+      <log_file>/var/log/audit/audit.log</log_file>
+      <log_format>RAW</log_format>
+      <max_log_file>5</max_log_file>
+      <max_log_file_action>ROTATE</max_log_file_action>
+      <name_format>NONE</name_format>
+      <num_logs>4</num_logs>
+      <space_left>75</space_left>
+      <space_left_action>SINGLE</space_left_action>
+    </auditd>
+    <rules></rules>
+  </audit-laf>
+  <bootloader>
+    <global>
+      <activate>true</activate>
+      <boot_boot>false</boot_boot>
+      <boot_extended>false</boot_extended>
+      <boot_mbr>true</boot_mbr>
+      <boot_root>false</boot_root>
+      <default>Linux</default>
+      <gfxmenu>/boot/message</gfxmenu>
+      <timeout config:type="integer">8</timeout>
+    </global>
+    <loader_type>grub</loader_type>
+    <sections config:type="list">
+      <section>
+        <append>splash=silent showopts audit=1 no-scroll fbcon=scrollback:0 intel_iommu=on</append>
+        <image>/boot/vmlinuz</image>
+        <initrd>/boot/initrd</initrd>
+        <name>Linux</name>
+        <noverifyroot>false</noverifyroot>
+        <original_name>linux</original_name>
+        <root></root>
+        <type>image</type>
+      </section>
+      <section>
+        <append>showopts ide=nodma apm=off noresume edd=off powersaved=off nohz=off highres=off processor.max_cstate=1 nomodeset  x11failsafe</append>
+        <image>/boot/vmlinuz</image>
+        <initrd>/boot/initrd</initrd>
+        <name>Failsafe</name>
+        <original_name>failsafe</original_name>
+        <root></root>
+        <type>image</type>
+      </section>
+    </sections>
+  </bootloader>
+  <deploy_image>
+    <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <general>
+    <ask-list config:type="list">
+      <!-- BEGIN Partition type question - DO NOT REMOVE COMMENT -->
+      <ask>
+        <title>Partitioning type</title>
+        <stage>initial</stage>
+        <type>boolean</type>
+        <dialog config:type="integer">1</dialog>
+        <pathlist config:type="list">
+          <path>partitioning,0,partitions,1,crypt_fs</path>
+        </pathlist>
+        <question>Full disk encryption (excluding /boot)</question>
+        <help>Please select whether the entire hard disk shall be encrypted using the dm-crypt mechanism with AES-128 with CBC using ESSIV and SHA-256 (aes-cbc-essiv:sha256). When selecting full-disk encryption, /boot will always remain unencrypted. In case individual partitions shall be encrypted, please choose the unencrypted partitioning schema and modify the partition definition in the next screen with the desired encryption settings.</help>
+        <script>
+          <environment config:type="boolean">true</environment>
+          <source>
+            <![CDATA[
+#!/bin/bash
+
+# $VAL contains the answer of the user set by autoyast
+# in the default case, we do nothing
+[ "$VAL" = "false" ] && {
+	# this statement tells yast to skip the next question which is the
+	# question around the encryption key
+	echo "3" > /tmp/next_dialog
+	exit
+}
+
+
+            ]]>
+          </source>
+          <filename>parttype</filename>
+          <debug config:type="boolean">false</debug>
+          <feedback config:type="boolean">false</feedback>
+        </script>
+      </ask>
+      <!-- END Partition type question - DO NOT REMOVE COMMENT -->
+      <ask>
+        <title>Encryption passphrase</title>
+        <question>Encryption passphrase</question>
+        <help>Please provide a passphrase that is used to protect the AES-128 key which performs the encryption operation. Note, only a strong passphrase using different character classes (small letter, capital leters, numbers, special characters) shall be used here.</help>
+        <stage>initial</stage>
+        <dialog config:type="integer">2</dialog>
+        <pathlist config:type="list">
+          <path>partitioning,0,partitions,1,crypt_key</path>
+        </pathlist>
+        <password config:type="boolean">true</password>
+      </ask>
+      <ask>
+        <title>Location of CC packages</title>
+        <question>Location of CC packages</question>
+        <help>Please provide the location of the CC package as well as potential updates which will be applied to the installation base. Provide an URI for the package location.</help>
+        <stage>initial</stage>
+        <dialog config:type="integer">3</dialog>
+        <script>
+          <environment config:type="boolean">true</environment>
+          <source>
+            <![CDATA[
+#!/bin/bash
+
+LOC="/tmp/cc-package-uri"
+
+$(echo "$VAL" | egrep -q "^http://") || \
+$(echo "$VAL" | egrep -q "^ftp://") || \
+$(echo "$VAL" | egrep -q "^file:///") && \
+{
+        echo "$VAL" > $LOC
+        exit 0
+}
+
+echo "FAILED: wrong URI format for package location provided: $VAL"
+echo "FAILED: only http://, ftp:// and file:/// supported"
+exit 1
+            ]]>
+          </source>
+          <filename>package-location</filename>
+          <rerun_on_error config:type="boolean">true</rerun_on_error>
+          <debug config:type="boolean">false</debug>
+          <feedback config:type="boolean">true</feedback>
+        </script>
+        <default>http://192.168.120.1:8080/SLES11</default>
+      </ask>
+    </ask-list>
+<!--
+    <ask-list config:type="list">
+      <listentry>
+        <default>sles</default>
+        <dialog config:type="integer">1</dialog>
+        <element config:type="integer">0</element>
+        <frametitle>Hostname</frametitle>
+        <help>Please provide networking information</help>
+        <pathlist config:type="list">
+          <path>networking,dns,hostname</path>
+        </pathlist>
+        <question>Hostname</question>
+        <stage>initial</stage>
+        <title>Network configuration</title>
+      </listentry>
+      <listentry>
+        <default>example.com</default>
+        <dialog config:type="integer">1</dialog>
+        <element config:type="integer">1</element>
+        <frametitle>Domain name</frametitle>
+        <help/>
+        <pathlist config:type="list">
+          <path>networking,dns,domain</path>
+        </pathlist>
+        <question>Hostname</question>
+        <stage>initial</stage>
+        <title>Network configuration</title>
+      </listentry>
+    </ask-list>
+-->
+    <mode>
+      <confirm config:type="boolean">true</confirm>
+      <final_halt config:type="boolean">false</final_halt>
+      <final_reboot config:type="boolean">false</final_reboot>
+      <halt config:type="boolean">false</halt>
+      <second_stage config:type="boolean">true</second_stage>
+    </mode>
+    <mouse>
+      <id>none</id>
+    </mouse>
+    <proposals config:type="list"/>
+    <signature-handling>
+      <accept_file_without_checksum config:type="boolean">false</accept_file_without_checksum>
+      <accept_unsigned_file config:type="boolean">false</accept_unsigned_file>
+      <accept_verification_failed config:type="boolean">false</accept_verification_failed>
+      <accept_non_trusted_gpg_key config:type="boolean">false</accept_non_trusted_gpg_key>
+      <accept_unknown_gpg_key config:type="boolean">false</accept_unknown_gpg_key>
+      <import_gpg_key config:type="boolean">false</import_gpg_key>
+    </signature-handling>
+  </general>
+  <partitioning config:type="list">
+    <drive>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/boot</mount>
+          <fstopt>acl,user_xattr,nodev,noexec,nosuid</fstopt>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>200M</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <format config:type="boolean">true</format>
+          <lvm_group>VolGroup00</lvm_group>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>max</size>
+        </partition>
+      </partitions>
+      <pesize></pesize>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/VolGroup00</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>home</lv_name>
+          <mount>/home</mount>
+          <fstopt>acl,user_xattr,nodev</fstopt>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>100M</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>var</lv_name>
+          <mount>/var</mount>
+          <fstopt>acl,user_xattr</fstopt>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>1G</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>varlogaudit</lv_name>
+          <mount>/var/log/audit</mount>
+          <fstopt>acl,user_xattr,nodev,noexec,nosuid</fstopt>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>100M</size>
+        </partition>
+        <!-- CC: we use a tmpfs /tmp
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>tmp</lv_name>
+          <mount>/tmp</mount>
+          <fstopt>acl,user_xattr,nodev,noexec,nosuid</fstopt>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">4</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>1G</size>
+        </partition>
+        -->
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>root</lv_name>
+          <mount>/</mount>
+          <fstopt>acl,user_xattr</fstopt>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">6</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>max</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>swap</lv_name>
+          <mount>swap</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">130</partition_id>
+          <partition_nr config:type="integer">5</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>100M</size>
+          <stripes config:type="integer">1</stripes>
+          <stripesize config:type="integer">4</stripesize>
+        </partition>
+      </partitions>
+      <pesize></pesize>
+      <type config:type="symbol">CT_LVM</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <runlevel>
+    <default>3</default>
+  </runlevel>
+  <security>
+    <console_shutdown>ignore</console_shutdown>
+    <cracklib_dict_path>/usr/lib/cracklib_dict</cracklib_dict_path>
+    <cwd_in_root_path>no</cwd_in_root_path>
+    <cwd_in_user_path>no</cwd_in_user_path>
+    <disable_restart_on_update>no</disable_restart_on_update>
+    <disable_stop_on_removal>no</disable_stop_on_removal>
+    <displaymanager_remote_access>no</displaymanager_remote_access>
+    <displaymanager_root_login_remote>no</displaymanager_root_login_remote>
+    <displaymanager_shutdown>root</displaymanager_shutdown>
+    <displaymanager_xserver_tcp_port_6000_open>no</displaymanager_xserver_tcp_port_6000_open>
+    <enable_sysrq>no</enable_sysrq>
+    <fail_delay>3</fail_delay>
+    <gid_max>60000</gid_max>
+    <gid_min>1000</gid_min>
+    <group_encryption>sha512</group_encryption>
+    <ip_forward>no</ip_forward>
+    <ip_tcp_syncookies>yes</ip_tcp_syncookies>
+    <ipv6_forward>no</ipv6_forward>
+    <lastlog_enab>yes</lastlog_enab>
+    <obscure_checks_enab>yes</obscure_checks_enab>
+    <pass_max_days>60</pass_max_days>
+    <pass_min_days>1</pass_min_days>
+    <pass_min_len>6</pass_min_len>
+    <pass_warn_age>7</pass_warn_age>
+    <passwd_encryption>sha512</passwd_encryption>
+    <encryption>sha512</encryption>
+    <passwd_remember_history>0</passwd_remember_history>
+    <passwd_use_cracklib>yes</passwd_use_cracklib>
+    <permission_security>secure</permission_security>
+    <run_updatedb_as>nobody</run_updatedb_as>
+    <runlevel3_extra_services>no</runlevel3_extra_services>
+    <runlevel3_mandatory_services>yes</runlevel3_mandatory_services>
+    <runlevel5_extra_services>no</runlevel5_extra_services>
+    <runlevel5_mandatory_services>yes</runlevel5_mandatory_services>
+    <smtpd_listen_remote>no</smtpd_listen_remote>
+    <syslog_on_no_error>yes</syslog_on_no_error>
+    <system_gid_max>499</system_gid_max>
+    <system_gid_min>100</system_gid_min>
+    <system_uid_max>499</system_uid_max>
+    <system_uid_min>100</system_uid_min>
+    <systohc>yes</systohc>
+    <uid_max>60000</uid_max>
+    <uid_min>1000</uid_min>
+    <useradd_cmd>/usr/sbin/useradd.local</useradd_cmd>
+    <userdel_postcmd>/usr/sbin/userdel-post.local</userdel_postcmd>
+    <userdel_precmd>/usr/sbin/userdel-pre.local</userdel_precmd>
+  </security>
+  <software>
+    <do_online_update config:type="boolean">false</do_online_update>
+    <packages config:type="list">
+      <!-- CC config: mandatory packages -->
+      <package>audit</package>
+      <package>autoyast2</package>
+      <package>autoyast2-installation</package>
+      <package>openssh</package>
+      <package>screen</package>
+      <package>star</package>
+      <package>sudo</package>
+      <package>yast2-firstboot</package>
+      <!--package>autoyast-eal4-config-sles11sp1</package-->
+
+      <!-- CC config: OSPP package virtualization -->
+      <package>kvm</package>
+      <package>libvirt</package>
+      <package>bridge-utils</package>
+      <package>virt-utils</package>
+      <package>vm-install</package>
+      <package>yast2-vm</package>
+      <package>ebtables</package>
+      
+
+      <!-- CC config: OSPP on advanced audit
+      <package>audit-audispd-plugins</package>
+      -->
+
+      <!-- CC config: optional packages -->
+      <package>man-pages-posix</package>
+      <package>man-pages-supplement</package>
+      <package>stunnel</package>
+
+      <!-- CC config: optional packages - development -->
+      
+    </packages>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+    </patterns>
+    <remove-packages  config:type="list">
+      <package>autofs</package>
+      <package>fuse</package>
+      <package>gvfs-fuse</package>
+      <package>libfuse2</package>
+<!--
+      <package>bind-libs</package>
+      <package>bind-utils</package>
+      <package>blt</package>
+      <package>cdrkit-cdrtools-compat</package>
+      <package>cifs-mount</package>
+      <package>convmv</package>
+      <package>crash</package>
+      <package>crash-sial</package>
+      <package>cryptconfig</package>
+      <package>delayacct-utils</package>
+      <package>deltarpm</package>
+      <package>desktop-translations</package>
+      <package>dmapi</package>
+      <package>dirmgr</package>
+      <package>expat</package>
+      <package>facter</package>
+      <package>fastjar</package>
+      <package>finger</package>
+      <package>FirmwareUpdateKit</package>
+      <package>gdb</package>
+      <package>genisoimage</package>
+      <package>gnome-icon-theme</package>
+      <package>gpm</package>
+      <package>icedax</package>
+      <package>icmpinfo</package>
+      <package>ifplugd</package>
+      <package>inst-source-utils</package>
+      <package>ivman</package>
+      <package>joe</package>
+      <package>libfprint0</package>
+      <package>libMagickCore1</package>
+      <package>libsnmp15</package>
+      <package>make</package>
+      <package>metamail</package>
+      <package>mutt</package>
+      <package>nscd</package>
+      <package>openct</package>
+      <package>openslp-server</package>
+      <package>OpenIPMI</package>
+      <package>opie</package>
+      <package>patch</package>
+      <package>pax</package>
+      <package>ppp</package>
+      <package>pptp</package>
+      <package>procmail</package>
+      <package>providers</package>
+      <package>puppet</package>
+      <package>python-tk</package>
+      <package>recode</package>
+      <package>rsh</package>
+      <package>snmp-mibs</package>
+      <package>syslinux</package>
+      <package>tcl</package>
+      <package>tk</package>
+      <package>w3m</package>
+      <package>wodim</package>
+      <package>yast2-dhcp-server</package>
+      <package>yast2-dns-server</package>
+      <package>yast2-fingerprint-reader</package>
+      <package>yast2-printer</package>
+      <package>yp-tools</package>
+      <package>zisofs-tools</package>
+
+      CC config: optional remove
+      <package>acpid</package>
+      <package>cpp</package>
+      <package>cpp43</package>
+      <package>cups-client</package>
+      <package>cups-libs</package>
+      <package>expect</package>
+      -->
+    </remove-packages>
+    <!--add-on>
+      <add_on_products config:type="list">
+        <listentry>
+          <media_url>http://192.168.120.1/SLES11/</media_url>
+          <product>SLES-CC-Updates</product>
+          <product_dir>/</product_dir>
+          <ask_on_error config:type="boolean">true</ask_on_error>
+          <name>SLES-CC-Updates</name>
+        </listentry>
+      </add_on_products>
+    </add-on-->
+  </software>
+  <sshd>
+    <config>
+      <AllowTcpForwarding config:type="list">
+        <listentry>yes</listentry>
+      </AllowTcpForwarding>
+      <Ciphers config:type="list">
+        <listentry>3des-cbc,aes128-cbc,aes128-ctr,aes192-cbc,aes192-ctr,aes256-cbc,aes256-ctr</listentry>
+      </Ciphers>
+      <Compression config:type="list">
+        <listentry>yes</listentry>
+      </Compression>
+      <MaxAuthTries config:type="list">
+        <listentry>5</listentry>
+      </MaxAuthTries>
+      <PermitRootLogin config:type="list">
+        <listentry>no</listentry>
+      </PermitRootLogin>
+      <PrintMotd config:type="list">
+        <listentry>yes</listentry>
+      </PrintMotd>
+      <Protocol config:type="list">
+        <listentry>2</listentry>
+      </Protocol>
+      <PubkeyAuthentication config:type="list">
+        <listentry>yes</listentry>
+      </PubkeyAuthentication>
+      <RSAAuthentication config:type="list">
+        <listentry>no</listentry>
+      </RSAAuthentication>
+      <X11Forwarding config:type="list">
+        <listentry>no</listentry>
+      </X11Forwarding>
+    </config>
+    <status config:type="boolean">false</status>
+  </sshd>
+  <sysconfig config:type="list" >
+    <sysconfig_entry>
+      <sysconfig_key>FIRSTBOOT_CONTROL_FILE</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/firstboot</sysconfig_path>
+      <sysconfig_value>/usr/share/autoyast-cc/support/firstboot.xml</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>FIRSTBOOT_WELCOME_DIR</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/firstboot</sysconfig_path>
+      <sysconfig_value>/usr/share/autoyast-cc/support</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>FIRSTBOOT_WELCOME_PATTERNS</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/firstboot</sysconfig_path>
+      <sysconfig_value>firstboot_welcome.txt</sysconfig_value>
+    </sysconfig_entry>
+  </sysconfig>
+  <scripts>
+    <chroot-scripts config:type="list">
+      <script>
+        <chrooted config:type="boolean">false</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">false</debug>
+        <notification>Please wait while installing additional packages ...</notification>
+	<!-- we need to include this script as the RPM installs the scripts -->
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+LOC="/tmp/cc-package-uri"
+
+[ ! -f "$LOC" ] && {
+	echo "FAILED: no URI for package location provided"
+	echo "FAILED: no CC packages will be installed"
+	exit 1
+}
+URI=$(cat $LOC)
+
+[ -z "$URI" ] && {
+	echo "FAILED: no URI for package location provided"
+	echo "FAILED: no CC packages will be installed"
+	exit 1
+}
+
+GET="cp"
+DST=""
+if [ $(echo "$URI" | grep -q "^http://") -o $(echo "$URI" | grep -q "^ftp://") ]; then
+	GET="wget"
+elif [ $(echo "$URI" | grep -q "^file:///") ]; then
+	GET="cp"
+	DST="."
+        #remove the file:// prefix (not the third slash!) for cp
+	URI=${URI##file://}
+else
+	echo "FAILED: wrong URI format for package location provided"
+	echo "FAILED: only http://, ftp:// and file:/// supported"
+	exit 1
+fi
+
+RPMS="
+autoyast-eal4-config-sles11sp2-0.4-1.noarch.rpm
+
+"
+
+[ ! -d /mnt/root ] && {
+	mkdir /mnt/root
+	chmod 700 /mnt/root
+}
+
+[ ! -d /mnt/root/rpms ] && mkdir /mnt/root/rpms
+
+cd /mnt/root/rpms
+for i in $RPMS; do
+	URI=${URI%%/}
+	$GET $URI/$i $DST
+done
+cd
+
+# this script is started outside of the chroot
+chroot /mnt rpm -Uhv /root/rpms/* 
+          ]]>
+        </source>
+        <filename>install-packages</filename>
+      </script>
+      <script>
+        <chrooted config:type="boolean">true</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">false</debug>
+        <notification>Please wait while screen is configured ...</notification>
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+#########################################
+
+. /usr/share/autoyast-cc/support/libcc
+
+#########################################
+# screenrc
+
+CFG="/etc/screenrc"
+[ ! -f "$CFG" ] && {
+	cc_echo "screen not installed - skipping configuration changes"
+	cc_exit 0
+}
+
+SCRADDON='
+#
+## CC Configuration START
+#
+# Prevent startup license message
+startup_message off
+#
+# No auditible bell
+vbell on
+#
+# The following line configures the inactivity threshold before activating
+# the screen saver. To enforce the screen saver, the screen command needs
+# to be executed, such as from /etc/profile - see
+# /etc/profile for an example on how to automatically start screen
+#
+# You MAY change that setting to any value
+#
+idle 600 lockscreen
+#
+# The following setting is optional and causes screen to terminate if it
+# receives a SIGHUP. This ensures that screen is terminated upon each
+# logout.
+#
+autodetach off
+#
+## CC configuration END
+'
+
+#########################################
+# shells
+
+PROFILE=/etc/profile
+CSHLOGIN=/etc/csh.login
+ADDONINIT='
+## CC Configuration START
+# 
+# This trap prevents the interruption of the execution of /etc/profile.
+# To prevent interruption of /etc/profile is particularly important for
+# ensuring that the screen saver is started (see the last lines of this
+# file).
+#
+trap "" 1 2 3 15
+#
+## CC configuration END
+'
+
+CSHADDONINIT='
+## CC Configuration START
+# 
+# This trap prevents the interruption of the execution of /etc/csh.login.
+# To prevent interruption of /etc/csh.login is particularly important for
+# ensuring that the screen saver is started (see the last lines of this
+# file).
+#
+onintr -
+#
+## CC configuration END
+'
+
+ADDON='
+#
+## CC Configuration START
+# 
+# Enable the following lines to enforce a screen saver for every
+# user after a given period of inactivity. The configuration of the
+# inactivity threshold is done in /etc/screenrc by modifying the
+# value in the line:
+#
+#	idle XXX lockscreen
+#
+# where XXX is the threshold value in seconds
+#
+# You MAY disable the screen functionality completely by commenting the
+# following out if the functionality of locking the screen is not desired.
+# If you disable screen here, make sure you also remove the trap command
+# at the beginning of this file.
+#
+# Note: waiting for 10 seconds allows the user to read the banner information
+#
+# if you want to prevent users to set their own threshold value, you
+# have to append the option "-c /dev/null" to the following call
+# which prevents the loading of ~/.screenrc
+SCREENEXEC="screen"
+# SCREENEXEC="screen -c /dev/null"
+#
+# The pipe directories for the screen operation must reside in the home
+# directories due to:
+# - screen is not SGID, preventing the use of a common directory
+# Note, that directory is automatically created by screen if it does not exist
+export SCREENDIR=$HOME/.screen
+if [ -t 0 ] ; then
+	case $0 in
+		/sbin/conf*)
+        ;;
+        *)
+		trap "exec $SCREENEXEC" 1 2 3 15
+		echo -n "Starting session in 10 seconds"
+		sleep 10
+		exec $SCREENEXEC
+	;;
+	esac
+fi
+#
+## CC configuration END
+'
+
+CSHADDON='
+#
+## CC Configuration START
+#
+# Enable the following lines to enforce a screen saver for every
+# user after a given period of inactivity. The configuration of the
+# inactivity threshold is done in /etc/screenrc by modifying the
+# value in the line:
+#
+#	idle XXX lockscreen
+#
+# where XXX is the threshold value in seconds
+#
+# You MAY disable the screen functionality completely by commenting the
+# following out if the functionality of locking the screen is not desired.
+# If you disable screen here, make sure you also remove the onintr command
+# at the beginning of this file.
+#
+# The pipe directories for the screen operation must reside in the home
+# directories due to:
+# - screen is not SGID, preventing the use of a common directory
+# Note, that directory is automatically created by screen if it does not exist
+setenv SCREENDIR $HOME/.screen
+#
+# Note: waiting for 10 seconds allows the user to read the banner information
+#
+if ($?loginsh && -w "`tty`") then
+	onintr -
+	echo -n "Starting session in 10 seconds"
+	sleep 10
+
+	# if you want to prevent users to set their own threshold value, you
+	# have to append the option "-c /dev/null" to the following call
+	# which prevents the loading of ~/.screenrc
+        exec screen
+endif
+#
+## CC configuration END
+'
+
+#############################################
+# actual work
+
+trap "rm -f $CFG.$$ $PROFILE.$$ $CSHLOGIN.$$" 0 1 2 3 15
+
+perl -ne 'print unless /CC Configuration START/../CC configuration END/' < $CFG >$CFG.$$
+printf "$SCRADDON\n" >> $CFG.$$
+cc_replace $CFG.$$ $CFG
+cc_echo "$CFG brought into CC evaluated configuration"
+
+printf "$ADDONINIT\n" > $PROFILE.$$
+perl -ne 'print unless /CC Configuration START/../CC configuration END/' < $PROFILE >> $PROFILE.$$
+printf "$ADDON\n" >> $PROFILE.$$
+cc_replace $PROFILE.$$ $PROFILE
+cc_echo "$PROFILE brought into CC evaluated configuration"
+
+printf "$CSHADDONINIT\n" > $CSHLOGIN.$$
+perl -ne 'print unless /CC Configuration START/../CC configuration END/' < $CSHLOGIN >> $CSHLOGIN.$$
+printf "$CSHADDON\n" >> $CSHLOGIN.$$
+cc_replace $CSHLOGIN.$$ $CSHLOGIN
+cc_echo "$CSHLOGIN brought into CC evaluated configuration"
+
+cc_exit 0
+          ]]>
+        </source>
+        <filename>screen</filename>
+      </script>
+      <script>
+        <chrooted config:type="boolean">true</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">false</debug>
+        <notification>Please wait while sshd is configured ...</notification>
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+#########################################
+
+. /usr/share/autoyast-cc/support/libcc
+
+#########################################
+
+CFG="/etc/sysconfig/ssh"
+[ ! -f "$CFG" ] && {
+	cc_echo "OpenSSH daemon not installed - skipping configuration changes"
+	cc_exit 0
+}
+
+ADDON='
+#
+## CC Configuration START
+#
+# Disable OpenSSL AES-NI support as the evaluation does not cover
+# the use of OpenSSL AES-NI due to resource constraints during the
+# evaluation.
+#
+# Note: the disabling is only required for:
+#     - sshd
+#     - ssh
+#     - ssh-keygen
+#
+# You MAY unset the following environment variable for any other application
+#
+OPENSSL_DISABLE_AESNI=1
+#
+## CC configuration END
+'
+
+#############################################
+# actual work
+
+trap "rm -f $CFG.$$" 0 1 2 3 15
+
+perl -ne 'print unless /CC Configuration START/../CC configuration END/' < $CFG >$CFG.$$
+printf "$ADDON\n" >> $CFG.$$
+cc_replace $CFG.$$ $CFG
+cc_echo "$CFG brought into CC evaluated configuration"
+
+cc_exit 0
+          ]]>
+        </source>
+        <filename>sysconfig-sshd</filename>
+      </script>
+      <script>
+        <chrooted config:type="boolean">true</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">false</debug>
+        <notification>Please wait while PAM is configured ...</notification>
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+. /usr/share/autoyast-cc/support/libcc
+
+###########################################
+# PAM configuration for CC configuration
+
+# password quality check is always performed
+pam-config -a --pwcheck --pwcheck-enforce_for_root --pwcheck-minlen=8 --pwcheck-tries=3 --pwcheck-remember=7 --pwcheck-nullok --pwcheck-cracklib || \
+	cc_exit $?
+cc_echo "pam_pwcheck.so configured for global service"
+
+# require auditd to be running for remote logins
+pam-config --service sshd -a --loginuid --loginuid-require_auditd || \
+	cc_exit $?
+cc_echo "pam_loginuid.so configured for service sshd"
+
+# we do not need the ConsoleKit connector
+pam-config --service login -d --ck_connector || \
+	cc_exit $?
+cc_echo "pam_ck_connector removed from service login"
+
+# This is the last step - nothing must come afterwards
+# we do not include su as this is restricted to the wheel group
+# we do not include sudo,passwd,vlock,... as they require your own password
+FILES="login sshd"
+
+for i in $FILES
+do
+	trapfiles="$trapfiles $i.$$"
+done
+trap "cd /etc/pam.d; rm -f $trapfiles" 0 1 2 3 15
+
+for file in $FILES
+do
+	foundauth=0
+	foundaccount=0
+	while read line
+	do
+		# we remove all pam_tally entries to allow that script
+		# to be called multiple times
+		echo $line | grep -q -v "pam_tally2.so" || continue
+		[ $(echo $line | cut -f1 -d" ") = "auth" ] && foundauth=1
+		[ $(echo $line | cut -f1 -d" ") = "account" ] && foundaccount=1
+
+		# we add the pam_tally2.so before the common-* includes
+		[ "$foundauth" = "1" -a $(echo $line | cut -f3 -d" ") = "common-auth" ] && {
+			foundauth=2
+			echo -e "auth\t required\tpam_tally2.so deny=5 onerr=fail" >> /etc/pam.d/$file.$$
+		}
+		[ "$foundaccount" = "1" -a $(echo $line | cut -f3 -d" ") = "common-account" ] && {
+			foundaccount=2
+			echo -e "account  required\tpam_tally2.so" >> /etc/pam.d/$file.$$
+		}
+		echo "$line" >> /etc/pam.d/$file.$$
+	done < /etc/pam.d/$file
+	# just as a savety
+	[ "$foundauth" = "1" ] && \
+		echo -e "auth\t  required\t pam_tally2.so deny=5 onerr=fail" >> /etc/pam.d/$file.$$
+	[ "$foundaccount" = "1" ] && \
+		echo -e "account  required\t pam_tally2.so" >> /etc/pam.d/$file.$$
+	cc_replace /etc/pam.d/$file.$$ /etc/pam.d/$file
+	cc_echo "pam_tally2.so configured for service $file"
+done
+
+cc_exit 0
+
+###########################################
+# alternate PAM configs that may be used instead of pam_pwcheck
+
+# Alternative history maintenance
+#pam-config -a --pwhistory --pwhistory-use_authtok --pwhistory-enforce_for_root --pwhistory-remember=7
+
+# Alternative cracklib config
+#pam-config -a --cracklib --cracklib-retry=3 --cracklib-difok=3 --cracklib-minlen=12 --cracklib-dcredit=-1 --cracklib-ucredit=-1 --cracklib-lcredit=-1 --cracklib-ocredit=-1
+
+
+
+          ]]>
+        </source>
+        <filename>cc-pam-config</filename>
+      </script>
+      <script>
+        <chrooted config:type="boolean">true</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">false</debug>
+        <notification>Please wait while UMASK is configured ...</notification>
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+. /usr/share/autoyast-cc/support/libcc
+
+trap "rm -f /etc/login.defs.$$" 0 1 2 3 15
+# setting umask to restrictive value
+# this setting is picked up by pam_umask
+cp -f /etc/login.defs /etc/login.defs.$$
+sed -i '/^UMASK/{s/022/077/;}' /etc/login.defs.$$
+cc_replace /etc/login.defs.$$ /etc/login.defs
+cc_echo "umask value restriction configured"
+
+cc_exit 0
+          ]]>
+        </source>
+        <filename>setumask</filename>
+      </script>
+      <script>
+        <chrooted config:type="boolean">true</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">false</debug>
+        <notification>Please wait while permissions are configured ...</notification>
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+. /usr/share/autoyast-cc/support/libcc
+
+# Files that are untouched (i.e. where the SUID bit is not removed)
+ALLOWED="
+/usr/sbin/postqueue
+/usr/sbin/postdrop
+/usr/sbin/utempter
+/usr/bin/newgrp
+/usr/bin/sudo
+/usr/bin/chsh
+/usr/bin/crontab
+/usr/bin/passwd
+/usr/bin/at
+/usr/bin/chage
+/usr/bin/expiry
+/usr/bin/chfn
+/bin/ping6
+/bin/su
+/bin/ping
+"
+
+# File system types to be searched...
+FSTYPES="ext2 ext3 ext4 rootfs btrfs xfs"
+
+###############################################
+
+#assemble the -fstypes option
+FS=""
+for i in $FSTYPES
+do
+	[ -n "$FS" ] && FS="$FS -o -fstype $i"
+	[ -z "$FS" ] && FS="-fstype $i"
+
+done
+
+#assemble the exclude files option
+FILES=""
+for i in $ALLOWED
+do
+	[ -n "$FILES" ] && FILES="$FILES -o -path $i"
+	[ -z "$FILES" ] && FILES="-path $i"
+done
+
+# remove S-bits
+output=$(find / \
+	-not \( $FS \) -prune -o \
+	-not \( $FILES \) \
+	-type f \( -perm +4000 -o -perm +2000 \) \
+	-print0 | \
+	xargs -0r chmod -v -s)
+
+OLDIFS=$IFS
+IFS=""
+cc_echo $output
+IFS=$OLDIFS
+
+# place su into wheel group
+chgrp -v wheel /bin/su
+chmod -v 4710 /bin/su
+cc_echo "/bin/su restricted to wheel group"
+cc_exit 0
+          ]]>
+        </source>
+        <filename>setpermissions</filename>
+      </script>
+      <script>
+        <chrooted config:type="boolean">true</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">false</debug>
+        <notification>Please wait while /etc/fstab is configured ...</notification>
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+. /usr/share/autoyast-cc/support/libcc
+
+FSTAB="/etc/fstab"
+
+IFS="
+"
+trap "rm -f $FSTAB.$$" 0 1 2 3 15
+tmpfound=0
+vartmpfound=0
+cgroupfound=0
+while read line
+do
+	[ $(echo $line | awk '{print $2}') = "/tmp" ] && tmpfound=1
+	[ $(echo $line | awk '{print $2}') = "/var/tmp" ] && vartmpfound=1
+	[ $(echo $line | awk '{print $3}') = "cgroup" ] && cgroupfound=1
+	echo $line >> $FSTAB.$$
+done < $FSTAB
+[ "$tmpfound" = "0" ] && \
+	echo "tmpfs                /tmp                 tmpfs      nodev,nosuid,noatime,mode=1777 0 0" >> $FSTAB.$$
+[ "$vartmpfound" = "0" ] && \
+	echo "tmpfs                /var/tmp             tmpfs      nodev,nosuid,noatime,mode=1777 0 0" >> $FSTAB.$$
+[ "$cgroupfound" = "0" ] && {
+	echo "none                 /cgroup              cgroup     defaults 0 0" >> $FSTAB.$$
+        [ ! -d /cgroup ] && mkdir /cgroup
+}
+cc_replace $FSTAB.$$ $FSTAB
+cc_exit 0
+          ]]>
+        </source>
+        <filename>config-fstab</filename>
+      </script>
+      <script>
+        <chrooted config:type="boolean">true</chrooted>
+        <feedback config:type="boolean">true</feedback>
+        <debug config:type="boolean">false</debug>
+        <notification>Please wait while service links are configured ...</notification>
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+. /usr/share/autoyast-cc/support/libcc
+
+# note, the logic below is a white-list approach which first
+# disables all services and then only enables those listed in
+# this variable
+
+# The following services must be enabled and we have an error if they
+# are not present
+REQUIRED="
+auditd			# audit daemon
+cron			# Vixie cron daemon
+earlysyslog		# Syslog daemon
+kbd			# Keyboard configuration
+haveged			# Daemon for generating more entropy
+network			# Network configuration
+#network-remotefs
+random			# RNG seed inserted into /dev/random
+syslog			# Syslog daemon
+"
+
+# The following services are allowed - i.e. if the service is present
+# and was enabled, we reenable it
+ALLOWED="
+acpid		# ACPI event handling daemon
+dbus		# DBUS daemon
+fbset		# Initial framebuffer setup
+haldaemon	# HAL which is needed by libvirtd
+irq_balancer	# configuration of IRQ balancing for SMP systems
+libvirtd	# libvirtd virtual machine manager
+microcode.ctl	# CPU microcode updater
+#nfs
+#nscd
+postfix		# local MTA
+#rpcbind
+#smartd
+splash		# Splash screen
+splash_early	# Splash screen
+sshd		# OpenSSH daemon
+SuSEfirewall2_init	# IPTables packet filter settings
+SuSEfirewall2_setup	# IPTables packet filter settings
+"
+
+# The following boot services must be enabled
+BOOTENABLED="
+boot.cgroup	# control group file system
+"
+
+######################################
+
+OLDIFS=$IFS
+IFS="
+"
+
+#Speed up process - remove comments
+tmpALLOWED=""
+tmpREQUIRED=""
+tmpBOOTENABLED=""
+for i in $ALLOWED
+do
+	[ "#" = ${i:0:1} ] && continue
+	i=$(echo $i | sed 's/#.*//')
+	tmpALLOWED="$tmpALLOWED $i"
+done
+for i in $REQUIRED
+do
+	[ "#" = ${i:0:1} ] && continue
+	i=$(echo $i | sed 's/#.*//')
+	tmpREQUIRED="$tmpREQUIRED $i"
+done
+for i in $BOOTENABLED
+do
+	[ "#" = ${i:0:1} ] && continue
+	i=$(echo $i | sed 's/#.*//')
+	tmpBOOTENABLED="$tmpBOOTENABLED $i"
+done
+
+
+IFS=$OLDIFS
+
+enabled=$(chkconfig --level 3 | cut -f1 -d" ")
+
+# Sanity check to verify that all required services are also present
+# on the system - exit with error code if one required service is not
+# found
+for i in $tmpREQUIRED
+do
+	found=0
+	for j in $enabled
+	do
+		[ "$i" = "$j" ] && {
+			found=1
+			break
+		}
+	done
+	[ "$found" = "0" ] && {
+		cc_echo "Required service $i not found"
+		cc_exit 1
+	}
+done
+
+# clear all runlevel links unless in ALLOWED or REQUIRED
+for i in $enabled
+do
+	# skip allowed services - we do not touch them
+	afound=0
+	rfound=0
+	for j in $tmpALLOWED
+	do
+		[ "$i" = "$j" ] && {
+			cc_echo "Leave service $i untouched"
+			afound=1
+			break
+		}
+	done
+	# if the current service matches one of the ALLOWED services
+	# forward to the next service name and leave the setting for
+	# the current service unchanged
+	[ "$afound" = "1" ] && continue
+
+	for j in $tmpREQUIRED
+	do
+		[ "$i" = "$j" ] && {
+			cc_echo "Turn on service $i"
+			rfound=1
+			break
+		}
+	done
+	# if the current service matches one of the REQUIRED services,
+	# enable it and forward to the next service name
+	[ "$rfound" = "1" ] && {
+		# We suppress error messages which can occur if you try to
+		# enable an already enabled vital system service
+		chkconfig --level 3 $i on >/dev/null 2>&1
+		[ "$?" = "0" ] || {
+			[ $(chkconfig --level 3 $i | awk '{print $2}') != "on" ] && \
+				cc_echo "WARNING: Could  not enable service $i"
+		}
+		continue
+	}
+
+	# Disable service as it is neither in ALLOWED or in REQUIRED
+	cc_echo "Disable service $i"
+	chkconfig --level 3 $i off || cc_exit $?
+done
+
+# Boot scripts are handled separately
+for i in $tmpBOOTENABLED;
+do
+	cc_echo "Enable Boot service $i"
+	chkconfig $i on || cc_exit $?
+done
+
+          ]]>
+        </source>
+        <filename>services</filename>
+      </script>
+    </chroot-scripts>
+    <post-scripts config:type="list">
+      <!-- This is the very last script -->
+      <script>
+        <feedback config:type="boolean">true</feedback>
+        <rerun config:type="boolean">true</rerun>
+        <debug config:type="boolean">false</debug>
+        <notification>Status of CC configuration scripts ...</notification>
+        <source>
+          <![CDATA[
+#!/bin/bash
+
+. /usr/share/autoyast-cc/support/libcc
+
+report_error
+          ]]>
+        </source>
+        <filename>checkerror</filename>
+      </script>
+    </post-scripts>
+  </scripts>
+  <files config:type="list">
+    <config_file>
+      <file_path>/etc/profile.d/cc-configuration.csh</file_path>
+      <file_contents>
+        <![CDATA[
+#
+# Configuration for CC compliance
+#
+# su alias, added for EAL4+ configuration
+alias su "echo Always use \'/bin/su -\' \(see \'Evaluated Configuration Guide\'\)"
+
+#
+# Disable OpenSSL AES-NI support as the evaluation does not cover
+# the use of OpenSSL AES-NI due to resource constraints during the
+# evaluation.
+#
+# Note: the disabling is only required for:
+#     - sshd
+#     - ssh
+#     - ssh-keygen
+#
+# You MAY unset the following environment variable for any other application
+#
+setenv OPENSSL_DISABLE_AESNI 1
+        ]]>
+      </file_contents>
+    </config_file>
+    <config_file>
+      <file_path>/etc/profile.d/cc-configuration.sh</file_path>
+      <file_contents>
+        <![CDATA[
+#
+# Configuration for CC compliance
+#
+# su alias, added for EAL4+ configuration
+alias su="echo \"Always use '/bin/su -' (see 'Evaluated Configuration Guide')\"; echo >/dev/null"
+#
+# Disable OpenSSL AES-NI support as the evaluation does not cover
+# the use of OpenSSL AES-NI due to resource constraints during the
+# evaluation.
+#
+# Note: the disabling is only required for:
+#     - sshd
+#     - ssh
+#     - ssh-keygen
+#
+# You MAY unset the following environment variable for any other application
+#
+export OPENSSL_DISABLE_AESNI=1
+readonly OPENSSL_DISABLE_AESNI
+
+        ]]>
+      </file_contents>
+    </config_file>
+    <config_file>
+      <file_path>/etc/libvirt/libvirtd.conf</file_path>
+      <file_contents>
+        <![CDATA[
+# Master libvirt daemon configuration file
+#
+# For further information consult http://libvirt.org/format.html
+#
+# NOTE: the tests/daemon-conf regression test script requires
+# that each "PARAMETER = VALUE" line in this file have the parameter
+# name just after a leading "#".
+
+#################################################################
+#
+# Network connectivity controls
+#
+
+# Flag listening for secure TLS connections on the public TCP/IP port.
+# NB, must pass the --listen flag to the libvirtd process for this to
+# have any effect.
+#
+# It is necessary to setup a CA and issue server certificates before
+# using this capability.
+#
+# This is disabled by default, uncomment this to enable it
+#listen_tls = 1
+
+# Listen for unencrypted TCP connections on the public TCP/IP port.
+# NB, must pass the --listen flag to the libvirtd process for this to
+# have any effect.
+#
+# Using the TCP socket requires SASL authentication by default. Only
+# SASL mechanisms which support data encryption are allowed. This is
+# DIGEST_MD5 and GSSAPI (Kerberos5)
+#
+# This is disabled by default, uncomment this to enable it.
+listen_tcp = 0
+
+
+
+# Override the port for accepting secure TLS connections
+# This can be a port number, or service name
+#
+#tls_port = "16514"
+
+# Override the port for accepting insecure TCP connections
+# This can be a port number, or service name
+#
+#tcp_port = "16509"
+
+
+# Override the default configuration which binds to all network
+# interfaces. This can be a numeric IPv4/6 address, or hostname
+#
+#listen_addr = "192.168.0.1"
+
+
+# Flag toggling mDNS advertizement of the libvirt service.
+#
+# Disabled by default.  To enable, ensure the Avahi daemon is
+# running and uncomment this flag.
+#mdns_adv = 1
+
+# Override the default mDNS advertizement name. This must be
+# unique on the immediate broadcast network.
+#
+# The default is "Virtualization Host HOSTNAME", where HOSTNAME
+# is subsituted for the short hostname of the machine (without domain)
+#
+#mdns_name = "Virtualization Host Joe Demo"
+
+
+#################################################################
+#
+# UNIX socket access controls
+#
+
+# Set the UNIX domain socket group ownership. This can be used to
+# allow a 'trusted' set of users access to management capabilities
+# without becoming root.
+#
+# This is restricted to 'root' by default.
+unix_sock_group = "libvirt"
+
+# Set the UNIX socket permissions for the R/O socket. This is used
+# for monitoring VM status only
+#
+# Default allows any user. If setting group ownership may want to
+# restrict this to:
+unix_sock_ro_perms = "0770"
+
+# Set the UNIX socket permissions for the R/W socket. This is used
+# for full management of VMs
+#
+# Default allows only root. If PolicyKit is enabled on the socket,
+# the default will change to allow everyone (eg, 0777)
+#
+# If not using PolicyKit and setting group ownership for access
+# control then you may want to relax this to:
+unix_sock_rw_perms = "0770"
+
+# Set the name of the directory in which sockets will be found/created.
+unix_sock_dir = "/var/run/libvirt"
+
+#################################################################
+#
+# Authentication.
+#
+#  - none: do not perform auth checks. If you can connect to the
+#          socket you are allowed. This is suitable if there are
+#          restrictions on connecting to the socket (eg, UNIX
+#          socket permissions), or if there is a lower layer in
+#          the network providing auth (eg, TLS/x509 certificates)
+#
+#  - sasl: use SASL infrastructure. The actual auth scheme is then
+#          controlled from /etc/sasl2/libvirt.conf. For the TCP
+#          socket only GSSAPI & DIGEST-MD5 mechanisms will be used.
+#          For non-TCP or TLS sockets,  any scheme is allowed.
+#
+#  - polkit: use PolicyKit to authenticate. This is only suitable
+#            for use on the UNIX sockets. The default policy will
+#            require a user to supply their own password to gain
+#            full read/write access (aka sudo like), while anyone
+#            is allowed read/only access.
+#
+# Set an authentication scheme for UNIX read-only sockets
+# By default socket permissions allow anyone to connect
+#
+# To restrict monitoring of domains you may wish to enable
+# an authentication mechanism here
+auth_unix_ro = "none"
+
+# Set an authentication scheme for UNIX read-write sockets
+# By default socket permissions only allow root. If PolicyKit
+# support was compiled into libvirt, the default will be to
+# use 'polkit' auth.
+#
+# If the unix_sock_rw_perms are changed you may wish to enable
+# an authentication mechanism here
+auth_unix_rw = "none"
+
+# Change the authentication scheme for TCP sockets.
+#
+# If you don't enable SASL, then all TCP traffic is cleartext.
+# Don't do this outside of a dev/test scenario. For real world
+# use, always enable SASL and use the GSSAPI or DIGEST-MD5
+# mechanism in /etc/sasl2/libvirt.conf
+#auth_tcp = "sasl"
+
+# Change the authentication scheme for TLS sockets.
+#
+# TLS sockets already have encryption provided by the TLS
+# layer, and limited authentication is done by certificates
+#
+# It is possible to make use of any SASL authentication
+# mechanism as well, by using 'sasl' for this option
+#auth_tls = "none"
+
+
+
+#################################################################
+#
+# TLS x509 certificate configuration
+#
+
+
+# Override the default server key file path
+#
+#key_file = "/etc/pki/libvirt/private/serverkey.pem"
+
+# Override the default server certificate file path
+#
+#cert_file = "/etc/pki/libvirt/servercert.pem"
+
+# Override the default CA certificate path
+#
+#ca_file = "/etc/pki/CA/cacert.pem"
+
+# Specify a certificate revocation list.
+#
+# Defaults to not using a CRL, uncomment to enable it
+#crl_file = "/etc/pki/CA/crl.pem"
+
+
+
+#################################################################
+#
+# Authorization controls
+#
+
+
+# Flag to disable verification of client certificates
+#
+# Client certificate verification is the primary authentication mechanism.
+# Any client which does not present a certificate signed by the CA
+# will be rejected.
+#
+# Default is to always verify. Uncommenting this will disable
+# verification - make sure an IP whitelist is set
+#tls_no_verify_certificate = 1
+
+
+# A whitelist of allowed x509  Distinguished Names
+# This list may contain wildcards such as
+#
+#    "C=GB,ST=London,L=London,O=Red Hat,CN=*"
+#
+# See the POSIX fnmatch function for the format of the wildcards.
+#
+# NB If this is an empty list, no client can connect, so comment out
+# entirely rather than using empty list to disable these checks
+#
+# By default, no DN's are checked
+#tls_allowed_dn_list = ["DN1", "DN2"]
+
+
+# A whitelist of allowed SASL usernames. The format for usernames
+# depends on the SASL authentication mechanism. Kerberos usernames
+# look like username@REALM
+#
+# This list may contain wildcards such as
+#
+#    "*@EXAMPLE.COM"
+#
+# See the POSIX fnmatch function for the format of the wildcards.
+#
+# NB If this is an empty list, no client can connect, so comment out
+# entirely rather than using empty list to disable these checks
+#
+# By default, no Username's are checked
+#sasl_allowed_username_list = ["joe@EXAMPLE.COM", "fred@EXAMPLE.COM" ]
+
+
+
+#################################################################
+#
+# Processing controls
+#
+
+# The maximum number of concurrent client connections to allow
+# over all sockets combined.
+#max_clients = 20
+
+
+# The minimum limit sets the number of workers to start up
+# initially. If the number of active clients exceeds this,
+# then more threads are spawned, upto max_workers limit.
+# Typically you'd want max_workers to equal maximum number
+# of clients allowed
+#min_workers = 5
+#max_workers = 20
+
+# Total global limit on concurrent RPC calls. Should be
+# at least as large as max_workers. Beyond this, RPC requests
+# will be read into memory and queued. This directly impact
+# memory usage, currently each request requires 256 KB of
+# memory. So by default upto 5 MB of memory is used
+#
+# XXX this isn't actually enforced yet, only the per-client
+# limit is used so far
+#max_requests = 20
+
+# Limit on concurrent requests from a single client
+# connection. To avoid one client monopolizing the server
+# this should be a small fraction of the global max_requests
+# and max_workers parameter
+#max_client_requests = 5
+
+#################################################################
+#
+# Logging controls
+#
+
+# Logging level: 4 errors, 3 warnings, 2 informations, 1 debug
+# basically 1 will log everything possible
+#log_level = 3
+
+# Logging filters:
+# A filter allows to select a different logging level for a given category
+# of logs
+# The format for a filter is:
+#    x:name
+#      where name is a match string e.g. remote or qemu
+# the x prefix is the minimal level where matching messages should be logged
+#    1: DEBUG
+#    2: INFO
+#    3: WARNING
+#    4: ERROR
+#
+# Multiple filter can be defined in a single @filters, they just need to be
+# separated by spaces.
+#
+# e.g:
+# log_filters="3:remote 4:event"
+# to only get warning or errors from the remote layer and only errors from
+# the event layer.
+
+# Logging outputs:
+# An output is one of the places to save logging informations
+# The format for an output can be:
+#    x:stderr
+#      output goes to stderr
+#    x:syslog:name
+#      use syslog for the output and use the given name as the ident
+#    x:file:file_path
+#      output to a file, with the given filepath
+# In all case the x prefix is the minimal level, acting as a filter
+#    1: DEBUG
+#    2: INFO
+#    3: WARNING
+#    4: ERROR
+#
+# Multiple output can be defined, they just need to be separated by spaces.
+# e.g.:
+# log_outputs="3:syslog:libvirtd"
+# to log all warnings and errors to syslog under the libvirtd ident
+        ]]>
+      </file_contents>
+    </config_file>
+    <config_file>
+      <file_path>/etc/libvirt/qemu.conf</file_path>
+      <file_contents>
+        <![CDATA[
+# Master configuration file for the QEMU driver.
+# All settings described here are optional - if omitted, sensible
+# defaults are used.
+
+# VNC is configured to listen on 127.0.0.1 by default.
+# To make it listen on all public interfaces, uncomment
+# this next option.
+#
+# NB, strong recommendation to enable TLS + x509 certificate
+# verification when allowing public access
+#
+# vnc_listen = "0.0.0.0"
+
+
+# Enable use of TLS encryption on the VNC server. This requires
+# a VNC client which supports the VeNCrypt protocol extension.
+# Examples include vinagre, virt-viewer, virt-manager and vencrypt
+# itself. UltraVNC, RealVNC, TightVNC do not support this
+#
+# It is necessary to setup CA and issue a server certificate
+# before enabling this.
+#
+# vnc_tls = 1
+
+
+# Use of TLS requires that x509 certificates be issued. The
+# default it to keep them in /etc/pki/libvirt-vnc. This directory
+# must contain
+#
+#  ca-cert.pem - the CA master certificate
+#  server-cert.pem - the server certificate signed with ca-cert.pem
+#  server-key.pem  - the server private key
+#
+# This option allows the certificate directory to be changed
+#
+# vnc_tls_x509_cert_dir = "/etc/pki/libvirt-vnc"
+
+
+# The default TLS configuration only uses certificates for the server
+# allowing the client to verify the server's identity and establish
+# and encrypted channel.
+#
+# It is possible to use x509 certificates for authentication too, by
+# issuing a x509 certificate to every client who needs to connect.
+#
+# Enabling this option will reject any client who does not have a
+# certificate signed by the CA in /etc/pki/libvirt-vnc/ca-cert.pem
+#
+# vnc_tls_x509_verify = 1
+
+
+# The default VNC password. Only 8 letters are significant for
+# VNC passwords. This parameter is only used if the per-domain
+# XML config does not already provide a password. To allow
+# access without passwords, leave this commented out. An empty
+# string will still enable passwords, but be rejected by QEMU
+# effectively preventing any use of VNC. Obviously change this
+# example here before you set this
+#
+# vnc_password = "XYZ12345"
+
+
+# Enable use of SASL encryption on the VNC server. This requires
+# a VNC client which supports the SASL protocol extension.
+# Examples include vinagre, virt-viewer and virt-manager
+# itself. UltraVNC, RealVNC, TightVNC do not support this
+#
+# It is necessary to configure /etc/sasl2/qemu.conf to choose
+# the desired SASL plugin (eg, GSSPI for Kerberos)
+#
+# vnc_sasl = 1
+
+
+# The default SASL configuration file is located in /etc/sasl2/
+# When running libvirtd unprivileged, it may be desirable to
+# override the configs in this location. Set this parameter to
+# point to the directory, and create a qemu.conf in that location
+#
+# vnc_sasl_dir = "/some/directory/sasl2"
+
+
+
+
+# The default security driver is SELinux. If SELinux is disabled
+# on the host, then the security driver will automatically disable
+# itself. If you wish to disable QEMU SELinux security driver while
+# leaving SELinux enabled for the host in general, then set this
+# to 'none' instead
+#
+security_driver = "apparmor"
+
+
+# The user ID for QEMU processes run by the system instance
+user = "qemu"
+
+# The group ID for QEMU processes run by the system instance
+group = "qemu"
+
+# Whether libvirt should dynamically change file ownership
+# to match the configured user/group above. Defaults to 1.
+# Set to 0 to disable file ownership changes.
+dynamic_ownership = 1
+
+
+# What cgroup controllers to make use of with QEMU guests
+#
+#  - 'cpu' - use for schedular tunables
+#  - 'devices' - use for device whitelisting
+#
+# NB, even if configured here, they won't be used unless
+# the adminsitrator has mounted cgroups. eg
+#
+#  mkdir /dev/cgroup
+#  mount -t cgroup -o devices,cpu none /dev/cgroup
+#
+# They can be mounted anywhere, and different controlers
+# can be mounted in different locations. libvirt will detect
+# where they are located.
+#
+# cgroup_controllers = [ "cpu", "devices" ]
+
+# This is the basic set of devices allowed / required by
+# all virtual machines.
+#
+# As well as this, any configured block backed disks,
+# all sound device, and all PTY devices are allowed.
+#
+# This will only need setting if newer QEMU suddenly
+# wants some device we don't already know a bout.
+#
+#cgroup_device_acl = [
+#    "/dev/null", "/dev/full", "/dev/zero",
+#    "/dev/random", "/dev/urandom",
+#    "/dev/ptmx", "/dev/kvm", "/dev/kqemu",
+#    "/dev/rtc", "/dev/hpet", "/dev/net/tun",
+#]
+
+# The default format for Qemu/KVM guest save images is raw; that is, the
+# memory from the domain is dumped out directly to a file.  If you have
+# guests with a large amount of memory, however, this can take up quite
+# a bit of space.  If you would like to compress the images while they
+# are being saved to disk, you can also set "lzop", "gzip", "bzip2", or "xz"
+# for save_image_format.  Note that this means you slow down the process of
+# saving a domain in order to save disk space; the list above is in descending
+# order by performance and ascending order by compression ratio.
+#
+# save_image_format = "raw"
+
+# If provided by the host and a hugetlbfs mount point is configured,
+# a guest may request huge page backing.  When this mount point is
+# unspecified here, determination of a host mount point in /proc/mounts
+# will be attempted.  Specifying an explicit mount overrides detection
+# of the same in /proc/mounts.  Setting the mount point to "" will
+# disable guest hugepage backing.
+#
+# NB, within this mount point, guests will create memory backing files
+# in a location of  $MOUNTPOINT/libvirt/qemu
+
+# hugetlbfs_mount = "/dev/hugepages"
+
+# mac_filter enables MAC addressed based filtering on bridge ports.
+# This currently requires ebtables to be installed.
+#
+# mac_filter = 1
+
+# By default, PCI devices below non-ACS switch are not allowed to be assigned
+# to guests. By setting relaxed_acs_check to 1 such devices will be allowed to
+# be assigned to guests.
+#
+# relaxed_acs_check = 1
+        ]]>
+      </file_contents>
+    </config_file>
+  </files>
+  <user_defaults>
+    <expire></expire>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">false</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+      <user_password>a</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</profile>

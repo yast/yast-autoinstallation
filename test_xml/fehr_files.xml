@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+use all
+-->
+<bootloader>
+  <global>
+    <generic_mbr>true</generic_mbr>
+    <timeout config:type="integer">8</timeout>
+    <gfxmenu>/boot/menu</gfxmenu>
+  </global>
+</bootloader>
+<firewall>
+  <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+  <FW_ALLOW_FW_BROADCAST_DMZ>no</FW_ALLOW_FW_BROADCAST_DMZ>
+  <FW_ALLOW_FW_BROADCAST_EXT>no</FW_ALLOW_FW_BROADCAST_EXT>
+  <FW_ALLOW_FW_BROADCAST_INT>no</FW_ALLOW_FW_BROADCAST_INT>
+  <FW_CONFIGURATIONS_DMZ>sshd</FW_CONFIGURATIONS_DMZ>
+  <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+  <FW_CONFIGURATIONS_INT>sshd</FW_CONFIGURATIONS_INT>
+  <FW_DEV_EXT>eth0</FW_DEV_EXT>
+  <FW_IGNORE_FW_BROADCAST_DMZ>no</FW_IGNORE_FW_BROADCAST_DMZ>
+  <FW_IGNORE_FW_BROADCAST_EXT>yes</FW_IGNORE_FW_BROADCAST_EXT>
+  <FW_IGNORE_FW_BROADCAST_INT>no</FW_IGNORE_FW_BROADCAST_INT>
+  <FW_IPSEC_TRUST>no</FW_IPSEC_TRUST>
+  <FW_LOAD_MODULES>nf_conntrack_netbios_ns</FW_LOAD_MODULES>
+  <FW_LOG_ACCEPT_ALL>no</FW_LOG_ACCEPT_ALL>
+  <FW_LOG_ACCEPT_CRIT>yes</FW_LOG_ACCEPT_CRIT>
+  <FW_LOG_DROP_ALL>no</FW_LOG_DROP_ALL>
+  <FW_LOG_DROP_CRIT>yes</FW_LOG_DROP_CRIT>
+  <FW_MASQUERADE>no</FW_MASQUERADE>
+  <FW_PROTECT_FROM_INT>no</FW_PROTECT_FROM_INT>
+  <FW_ROUTE>no</FW_ROUTE>
+  <enable_firewall config:type="boolean">false</enable_firewall>
+  <start_firewall config:type="boolean">false</start_firewall>
+</firewall>
+<networking>
+  <keep_install_network config:type="boolean">true</keep_install_network>
+</networking>
+<software>
+  <packages config:type="list">
+    <package>yast2-schema</package>
+  </packages>
+  <patterns config:type="list">
+    <pattern>enhanced_base</pattern>
+    <pattern>sw_management</pattern>
+    <pattern>yast2_install_wf</pattern>
+  </patterns>
+  <remove-packages config:type="list">
+    <package>sles-preparation-power_en</package>
+    <package>sles-preparation-zseries_en</package>
+    <package>s390-32</package>
+    <package>s390-tools</package>
+    <package>powerpc32</package>
+    <package>linux32</package>
+    <package>pfmon</package>
+    <package>pdisk</package>
+    <package>numactl</package>
+    <package>gnome2-SuSE</package>
+    <package>mDNSResponder</package>
+    <package>gnome2-SLES</package>
+    <package>evolution</package>
+  </remove-packages>
+</software>
+<users config:type="list">
+  <user>
+    <encrypted config:type="boolean">false</encrypted>
+    <fullname>uwe fullname</fullname>
+    <gid>100</gid>
+    <home>/home/uwe</home>
+    <password_settings>
+      <expire></expire>
+      <flag></flag>
+      <inact></inact>
+      <max></max>
+      <min></min>
+      <warn></warn>
+    </password_settings>
+    <shell>/bin/bash</shell>
+    <uid>1000</uid>
+    <user_password>pw</user_password>
+    <username>uwe</username>
+  </user>
+  <user>
+    <user_password>rootpw</user_password>
+    <username>root</username>
+  </user>
+</users>
+<files config:type="list">
+    <file>
+      <file_path>/tmp/uwe_bla</file_path>
+      <file_owner>uwe:users</file_owner>
+      <file_permissions>444</file_permissions>
+      <file_contents>
+<![CDATA[
+some content
+]]>
+     </file_contents>
+   </file>
+   <file>
+     <file_path>/etc/testconfig</file_path>
+     <file_owner>root:root</file_owner>
+     <file_permissions>640</file_permissions>
+     <file_contents>
+<![CDATA[
+a test config
+file
+1
+2
+3
+4
+
+]]>
+     </file_contents>
+   </file>
+   <file>
+     <file_path>/etc/someconf.conf</file_path>
+     <file_contents>
+<![CDATA[
+some content
+]]>
+     </file_contents>
+     <file_owner>uwe.users</file_owner>
+     <file_permissions>444</file_permissions>
+     <file_script>
+       <interpreter>shell</interpreter>
+<!--
+       <location>http://10.120.4.28/scripts/file_script.sh</location>
+-->
+       <source><![CDATA[
+#!/bin/sh
+
+echo "Testing file scripts" >> /etc/someconf.conf
+df >> /etc/someconf.conf
+cd /root
+ls >> /etc/someconf.conf
+]]></source>
+     </file_script>
+   </file>
+</files>
+
+
+</profile>
+
+
+
+

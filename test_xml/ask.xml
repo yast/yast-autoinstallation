@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+   <general>
+       <ask-list config:type="list">
+          <ask>
+<!--             <frametitle>frame1</frametitle> -->
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">0</element>
+             <help><![CDATA[
+             <p>
+            Help 1
+             </p>
+]]>
+             </help>
+             <path>networking,dns,hostname</path>
+             <file>/tmp/ask_test_hostname</file>
+             <question>Enter Hostname</question>
+             <stage>initial</stage>
+             <default>linuxgrc</default>
+             <script>
+               <filename>ask_test.sh</filename>
+               <rerun_on_error config:type="boolean">true</rerun_on_error>
+               <environment config:type="boolean">true</environment>
+               <source><![CDATA[
+if [ "$VAL" = "myhost" ]; then
+    echo "Illegal Hostname!";
+    exit 1;
+fi
+exit 0
+]]>
+               </source>
+               <debug config:type="boolean">false</debug>
+               <feedback config:type="boolean">true</feedback>
+             </script>
+          </ask>
+          <ask>
+             <question></question>
+             <type>static_text</type>
+             <dialog config:type="integer">1</dialog>
+             <element config:type="integer">1</element>
+             <default><![CDATA["I know a man who gave up smoking, drinking, sex,
+and rich food. He was healthy right up to the time
+he killed himself."
+
+Johnny Carson
+]]>
+            </default>
+          </ask>
+          <ask>
+             <file>/tmp/ask_test_filesystem</file>
+              <pathlist config:type="list">
+                  <path>partitioning,0,partitions,0,filesystem</path>
+              </pathlist>
+              <question>Filesystem</question>
+              <type>symbol</type>
+              <selection config:type="list">
+                  <entry>
+                          <value config:type="symbol">reiser</value>
+                          <label>default Filesystem (recommended)</label>
+                  </entry>
+                  <entry>
+                          <value config:type="symbol">ext3</value>
+                          <label>Fallback Filesystem</label>
+                  </entry>
+              </selection>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">3</element>
+             <stage>initial</stage>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">10</element>
+             <help><![CDATA[
+             <p>
+            Help 2
+             </p>
+]]>
+             </help>
+             <file>/tmp/ask_test_password</file>
+             <password config:type="boolean">true</password>
+             <question>Enter Password</question>
+             <stage>initial</stage>
+             <default></default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">5</element>
+             <help><![CDATA[
+             <p>
+            Help 3
+             </p>
+]]>
+             </help>
+             <file>/tmp/ask_test_boolean</file>
+             <type>boolean</type>
+             <question>Boolean</question>
+             <stage>initial</stage>
+             <default>true</default>
+          </ask>
+          <!--
+          <ask>
+              <question></question>
+              <back_label>Ruck Zuck zurück!</back_label>
+              <ok_label>Finish!</ok_label>
+              <type>static_text</type>
+             <dialog config:type="integer">1</dialog>
+             <element config:type="integer">2</element>
+             <stage>initial</stage>
+             <default><![CDATA[a static text
+this is the second line which is a bit longer than the first one to see 
+what happens with line breaks here ..... jo, lets see
+default]]>
+            </default>
+          </ask>
+          -->
+       </ask-list>
+   </general>
+</profile>

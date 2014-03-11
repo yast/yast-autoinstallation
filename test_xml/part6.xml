@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+LVM on software raid 1
+-->
+
+  <configure>
+   <general>
+    <mode>
+    <confirm config:type="boolean">true</confirm>
+    <forceboot config:type="boolean">true</forceboot>
+    <second_stage config:type="boolean">true</second_stage>
+    </mode>
+  </general>
+    <sound>
+      <autoinstall config:type="boolean">true</autoinstall>
+      <configure_detected config:type="boolean">true</configure_detected>
+    </sound>
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>
+          <name>Ethernet Network Card</name>
+          <startmode>auto</startmode>
+          <usercontrol>no</usercontrol>
+        </interface>
+      </interfaces>
+      <modules config:type="list">
+        <module_entry>
+          <device>static-0</device>
+          <module></module>
+          <options></options>
+        </module_entry>
+      </modules>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+      </routing>
+    </networking>
+  </configure>
+  <install>
+    <software>
+      <patterns config:type="list">
+      </patterns>
+    </software>
+    <users config:type="list">
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+    </users>
+    <partitioning config:type="list">
+      <drive>
+<!--        <device>/dev/sda</device> -->
+        <initialize config:type="boolean">true</initialize>
+        <partitions config:type="list">
+          <partition>
+            <partition_type>primary</partition_type>
+            <size>5GB</size>
+            <filesystem config:type="symbol">reiser</filesystem>
+            <mount>/</mount>
+          </partition>
+          <partition>
+              <partition_id config:type="integer">253</partition_id>
+            <partition_type>primary</partition_type>
+              <format config:type="boolean">false</format>
+              <raid_name>/dev/md0</raid_name>
+              <raid_type>raid1</raid_type>
+              <size>20G</size>
+          </partition>
+        </partitions>
+        <use>all</use>
+      </drive>
+      <drive>
+          <initialize config:type="boolean">true</initialize>
+<!--          <device>/dev/sdb</device> -->
+          <partitions config:type="list">
+            <partition>
+                <partition_id config:type="integer">253</partition_id>
+                <format config:type="boolean">false</format>
+                <raid_name>/dev/md0</raid_name>
+                <raid_type>raid1</raid_type>
+                <size>20G</size>
+            </partition>
+          </partitions>
+          <use>all</use>
+      </drive>
+      <drive>
+        <device>/dev/md</device>
+        <partitions config:type="list">
+          <partition>
+            <lvm_group>system</lvm_group>
+            <size>10G</size>
+            <raid_options>
+              <chunk_size>4</chunk_size>
+              <parity_algorithm>left-asymmetric</parity_algorithm>       
+              <raid_type>raid1</raid_type>
+            </raid_options>
+          </partition>
+        </partitions>
+        <use>all</use>
+      </drive>
+      <drive>
+        <device>/dev/system</device>
+        <is_lvm_vg config:type="boolean">true</is_lvm_vg>
+        <partitions config:type="list">
+          <partition>
+            <filesystem config:type="symbol">reiser</filesystem>
+            <lv_name>user_lv</lv_name>
+            <mount>/usr</mount>
+            <size>3GB</size>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">reiser</filesystem>
+            <lv_name>opt_lv</lv_name>
+            <mount>/opt</mount>
+            <size>max</size>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">swap</filesystem>
+            <lv_name>swap_lv</lv_name>
+            <mount>swap</mount>
+            <size>1G</size>
+          </partition>
+        </partitions>
+        <pesize>4M</pesize>
+        <use>all</use>
+      </drive>
+    </partitioning>
+  </install>
+</profile>

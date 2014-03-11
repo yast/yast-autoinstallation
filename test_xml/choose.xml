@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<general>
+    <ask-list config:type="list">
+      <ask>
+        <selection config:type="list">
+            <entry>
+                    <value>part1.xml</value>
+                    <label>Simple partitioning</label>
+            </entry>
+            <entry>
+                    <value>part2.xml</value>
+                    <label>encrypted /tmp</label>
+            </entry>
+            <entry>
+                    <value>part3.xml</value>
+                    <label>LVM</label>
+            </entry>
+            <entry>
+                    <value>classes.xml</value>
+                    <label>Classes Test</label>
+            </entry>
+        </selection>
+        <title>XML Profile</title>
+        <question>Choose a profile</question>
+        <stage>initial</stage>
+        <default>part1.xml</default>
+        <script>
+            <filename>fetch.sh</filename>
+            <environment config:type="boolean">true</environment>
+            <source><![CDATA[
+wget http://10.10.0.162/$VAL -O /tmp/profile/modified.xml 2>/dev/null
+]]>
+            </source>
+            <debug config:type="boolean">false</debug>
+            <feedback config:type="boolean">false</feedback>
+        </script>
+      </ask>
+    </ask-list>
+</general>
+</profile>

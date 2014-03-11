@@ -1,0 +1,929 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <files config:type="list">
+      <config_file>
+        <file_path>/usr/share/YaST2/clients/inst_sap.ycp</file_path>
+        <file_permissions>644</file_permissions>
+        <file_contents>
+<![CDATA[
+{
+    import "UI";
+    import "URL";
+    import "Popup";
+    import "Wizard";
+    import "Label";
+    textdomain "autoinst";
+
+    map result = $[];
+    string mountpoint = "/mnt";
+    string SAP_script = "sap_inst.sh";
+    string targetDir  = "/tmp";
+    string Localfile  = targetDir+"/"+SAP_script;
+    string dataFile   = targetDir+"/data";
+    boolean run = true;
+    string help_text = _("<p>
+Please wait while the system is being configured.
+</p>");
+
+
+    term contents = `VBox(
+              `TextEntry(`id(`location), "Location of SAP install media:", "device:///dev/cdrom"),
+              `HBox(
+                  `PushButton(`id(`ok),    "&OK"),
+                  `PushButton(`id(`abort), "&Abort")
+                  )
+              );
+
+    Wizard::SetNextButton (`next,  Label::NextButton()  );
+    Wizard::SetBackButton (`back,  Label::BackButton()  );
+    Wizard::SetAbortButton(`abort, Label::AbortButton() );
+
+    Wizard::SetContents(
+              // Dialog title for autoyast dialog
+              _("Configuring System according to auto-install settings"),
+              contents, help_text, false, false);
+
+    Wizard::DisableAbortButton();
+
+    while( run ) {
+        any button = nil;
+        button = UI::UserInput();
+        if( button == `abort )
+            break;
+        string location = (string) UI::QueryWidget(`id(`location), `Value);
+        result = URL::Parse (location);
+        if( result["scheme"]:"" == "device" ) {
+            if (!(boolean)WFM::Execute(.local.mount, [result["path"]:"/dev/cdrom", mountpoint]) ) {
+                y2warning("Mount failed");
+            } else {
+                string cpcmd = sformat("cp " + mountpoint + "/%1 %2", SAP_script , Localfile);
+                y2milestone("Copy SAP script: %1", cpcmd);
+                SCR::Execute(.target.bash, cpcmd);
+                WFM::Execute(.local.umount, mountpoint);
+                if( SCR::Read(.target.size, Localfile ) > 0 ) {
+                    run = false;
+                    string data = sformat("SCHEME=\"%1\"\n",result["scheme"]:"");
+                    data = data + sformat("FRAGMENT=\"%1\"\n", result["fragment"]:"");
+                    data = data + sformat("USER=\"%1\"\n", result["user"]:"");
+                    data = data + sformat("QUERY=\"%1\"\n", result["query"]:"");
+                    data = data + sformat("PORT=\"%1\"\n", result["port"]:"");
+                    data = data + sformat("MEDIA_PATH=\"%1\"\n", result["path"]:"");
+                    data = data + sformat("PASS=\"%1\"\n", result["pass"]:"");
+                    data = data + sformat("HOST=\"%1\"\n", result["host"]:"");
+                    SCR::Write(.target.string, dataFile, data);
+                } else {
+                    Popup::Error( sformat("%1 not found at location", SAP_script) );
+                }
+            }
+        } else {
+            Popup::Error ( "unsupported location" );
+        }
+    }
+    return `next;
+}
+]]>
+        </file_contents>
+      </config_file>
+  </files>
+   <runlevel>
+      <default>3</default>
+   </runlevel>
+   <general>
+       <signature-handling>
+          <accept_unsigned_file         config:type="boolean">true</accept_unsigned_file>
+          <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+          <accept_verification_failed   config:type="boolean">true</accept_verification_failed>
+          <accept_unknown_gpg_key       config:type="boolean">true</accept_unknown_gpg_key>
+          <import_gpg_key               config:type="boolean">true</import_gpg_key>
+          <accept_non_trusted_gpg_key   config:type="boolean">true</accept_non_trusted_gpg_key>
+       </signature-handling>
+       <mode>
+          <halt config:type="boolean">false</halt>
+          <confirm config:type="boolean">false</confirm>
+       </mode>
+       <ask-list config:type="list">
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p>
+             Enter the server's (short) hostname, e.g. lxsap.
+             </p>
+]]>
+             </help>
+             <path>networking,dns,hostname</path>
+             <question>Enter Hostname</question>
+             <stage>initial</stage>
+             <default>ls3197v2</default>
+          <script>
+            <filename>my_host.sh</filename>
+            <rerun_on_error config:type="boolean">true</rerun_on_error>
+            <environment config:type="boolean">true</environment>
+            <source><![CDATA[
+function check_hostname() {
+        local host=$1
+
+        LC_ALL=POSIX
+
+        [ -z "$host" ] && echo "You need to provide a hostname." && return 1
+        [ "${#host}" -gt 13 ] && echo "The hostname cannot be longer than 13 chars. You entered '${#host}' chars." && return 1
+        [ -n "${host//[0-9A-Za-z-]/}" ] && echo "The hostname can only consist of an alphanumeric string and a hyphen ('-'). Found this: '${host//[0-9A-Za-z-]/}'." && return 1
+
+        return 0
+}
+check_hostname "$VAL"
+
+#if [ "$VAL" != "12345" ]; then
+#    echo "Illegal Hostname!";
+#    echo "please try again";
+#    exit 1;
+#fi
+#echo "2" > /tmp/next_dialog
+#exit 0
+]]>
+            </source>
+            <debug config:type="boolean">false</debug>
+            <feedback config:type="boolean">true</feedback>
+          </script>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">2</element>
+             <help><![CDATA[
+             <p>
+             Enter your network domain, e.g. suse.de
+             </p>
+]]>
+             </help>
+             <path>networking,dns,domain</path>
+             <question>Enter domain name</question>
+             <stage>initial</stage>
+             <default>wdf.sap.corp</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+              <p>Enter the server's new IP address for your network.</p>
+]]>
+              </help>
+             <path>networking,interfaces,0,ipaddr</path>
+             <question>Enter IP-Addr</question>
+             <stage>initial</stage>
+             <default>10.20.88.192</default>
+          <script>
+            <filename>my_ip.sh</filename>
+            <rerun_on_error config:type="boolean">true</rerun_on_error>
+            <environment config:type="boolean">true</environment>
+            <source><![CDATA[
+function check_ip() {
+        local ip=$1 tmp
+
+        [ -z "$ip" ] && echo "You must provide a valid IP address!" && return 1
+        [ "${#ip}" -lt 7 ] && echo "Is this a valid IP address? You entered only '${#ip}' chars." && return 1
+        [ -n "${ip//[0-9.]/}" ] && echo "An IP address can only contain digits and dots ('.'). Found this: '${ip//[0-9.]/}'." && return 1
+        tmp="${ip//[0-9]/}"
+        [ "${#tmp}" -ne 3 ] && echo "An IP address can only contain 3 dots." && return 1
+
+        return 0
+}
+check_ip "$VAL"
+]]>
+            </source>
+            <debug config:type="boolean">false</debug>
+            <feedback config:type="boolean">true</feedback>
+          </script>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">4</element>
+             <help><![CDATA[
+             <p>Enter the server's Netmask for your network.</p>
+]]>
+             </help>
+             <path>networking,interfaces,0,netmask</path>
+             <question>Enter Netmask</question>
+             <stage>initial</stage>
+             <default>255.255.252.0</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">1</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p>Enter the DNS searchlist for your network - if necessary separated by a &lt;space&gt;.</p>
+]]>
+             </help>
+             <path>networking,dns,searchlist,0</path>
+             <question>Enter domain searchlist</question>
+             <stage>initial</stage>
+             <default>wdf.sap.corp</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">1</dialog>
+             <element config:type="integer">2</element>
+             <help><![CDATA[
+             <p>Enter the IP for the nameserver in your network.</p>
+]]>
+             </help>
+             <path>networking,dns,nameservers,0</path>
+             <question>Enter IP for nameserver</question>
+             <stage>initial</stage>
+             <default>10.17.121.30</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">1</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+             <p>Enter the default gateway for your network.</p>
+]]>
+</help>
+             <path>networking,routing,routes,0,gateway</path>
+             <question>Enter IP for default gateway</question>
+             <stage>initial</stage>
+             <default>10.20.88.1</default>
+          <script>
+            <filename>my_ip.sh</filename>
+            <rerun_on_error config:type="boolean">true</rerun_on_error>
+            <environment config:type="boolean">true</environment>
+            <source><![CDATA[
+function check_ip() {
+        local ip=$1 tmp
+
+        [ -z "$ip" ] && echo "You must provide a valid IP address!" && return 1
+        [ "${#ip}" -lt 7 ] && echo "Is this a valid IP address? You entered only '${#ip}' chars." && return 1
+        [ -n "${ip//[0-9.]/}" ] && echo "An IP address can only contain digits and dots ('.'). Found this: '${ip//[0-9.]/}'." && return 1
+        tmp="${ip//[0-9]/}"
+        [ "${#tmp}" -ne 3 ] && echo "An IP address can only contain 3 dots." && return 1
+
+        return 0
+}
+check_ip "$VAL"
+]]>
+            </source>
+            <debug config:type="boolean">false</debug>
+            <feedback config:type="boolean">true</feedback>
+          </script>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">0</element>
+             <help><![CDATA[
+             <p><b>SID (SAP System ID)</b><br>Enter the three letter SAP System ID.</p>
+]]>
+</help>
+             <file>/tmp/ay_q1</file>
+             <question>SID (SAP System ID)</question>
+             <stage>initial</stage>
+             <default>AIO</default>
+            <script>
+              <filename>my_sid.sh</filename>
+              <rerun_on_error config:type="boolean">true</rerun_on_error>
+              <environment config:type="boolean">true</environment>
+              <source><![CDATA[
+function check_sid() {
+        local sid=$1 reserved_sids rsid
+        reserved_sids="ADD ALL AND ANY ASC COM DBA END EPS FOR GID IBM INT \
+        KEY LOG MON NIX NOT OFF OMS RAW ROW SAP SET SGA SHG SID SQL SYS TMP \
+        UID USR VAR"
+
+        LC_ALL=POSIX
+
+        [ -z "$sid" ] && echo "You need to provide a SID." && return 1
+        [ "${#sid}" -ne 3 ] && echo "The SID needs to be exactly 3 chars. You entered '${sid}'." && return 1
+        [ "${sid#[0-9]}" != "$sid" ] && echo "The SID needs to start with a letter. You entered '${sid}'." && return 1
+        [ -n "${sid//[0-9A-Z]/}" ] && echo "The SID needs to be upper case. You entered '${sid}'." && return 1
+        for rsid in $reserved_sids; do
+                case $sid in
+                        $rsid)
+                                echo "The SID '${sid}' is reserved and cannot be used."
+                                return 1
+                                ;;
+                esac
+        done
+        return 0
+}
+check_sid "$VAL"
+]]>
+              </source>
+              <debug config:type="boolean">false</debug>
+              <feedback config:type="boolean">true</feedback>
+            </script>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p><b>Virtual Hostname</b><br>Enter the virtual hostname the SAP system should use internally.</p>
+]]>
+</help>
+             <file>/tmp/ay_q2</file>
+             <question>Virt. Hostname</question>
+             <stage>initial</stage>
+             <default>aiohost</default>
+          <script>
+            <filename>my_host.sh</filename>
+            <rerun_on_error config:type="boolean">true</rerun_on_error>
+            <environment config:type="boolean">true</environment>
+            <source><![CDATA[
+function check_hostname() {
+        local host=$1
+
+        LC_ALL=POSIX
+
+        [ -z "$host" ] && echo "You need to provide a hostname." && return 1
+        [ "${#host}" -gt 13 ] && echo "The hostname cannot be longer than 13 chars. You entered '${#host}' chars." && return 1
+        [ -n "${host//[0-9A-Za-z-]/}" ] && echo "The hostname can only consist of an alphanumeric string and a hyphen ('-'). Found this: '${host//[0-9A-Za-z-]/}'." && return 1
+
+        return 0
+}
+check_hostname "$VAL"
+]]>
+            </source>
+            <debug config:type="boolean">false</debug>
+            <feedback config:type="boolean">true</feedback>
+          </script>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">2</element>
+             <help><![CDATA[
+             <p><b>SAP Instance Number</b><br>Enter the SAP system's instance number.</p>
+]]>
+</help>
+             <file>/tmp/ay_q3</file>
+             <question>SAP Instance Number</question>
+             <stage>initial</stage>
+             <script>
+              <filename>my_ino.sh</filename>
+              <rerun_on_error config:type="boolean">true</rerun_on_error>
+              <environment config:type="boolean">true</environment>
+              <source><![CDATA[
+function check_instance_no() {
+        local ino=$1
+
+        LC_ALL=POSIX
+
+        [ -z "$ino" ] && echo "You need to provide a SAP Instance Number." && return 1
+        [ "${#ino}" -ne 2 ] && echo "The SAP Instance Number needs to be exactly 2 digits long. You entered '${ino}'." && return 1
+        [ -n "${ino//[0-9]/}" ] && echo "The SAP Instance Number can only contain digits. You entered '${ino}'." && return 1
+
+        return 0
+}
+check_instance_no "$VAL"
+]]>
+              </source>
+              <debug config:type="boolean">false</debug>
+              <feedback config:type="boolean">true</feedback>
+            </script>
+            <default>00</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+             <p><b>SAP Solution Manager Key</b><br>Enter the system's Solution Manager Key. <br>Use the entries for <b>SID</b>, <b>Instance Number</b> and <b>virtual hostname</b> you entered above to generate the key. <br>Please ensure to enter a valid Solution Manager key, otherwise the installation will abort afterwards.</p>
+]]>
+</help>
+             <file>/tmp/ay_q4</file>
+             <question>SAP SolManKey</question>
+             <stage>initial</stage>
+             <default></default>
+             <script>
+              <filename>my_sol.sh</filename>
+              <rerun_on_error config:type="boolean">true</rerun_on_error>
+              <environment config:type="boolean">true</environment>
+              <source><![CDATA[
+function check_solman_key() {
+        local sol=$1
+
+        LC_ALL=POSIX
+
+        [ -z "$sol" ] && echo "You must provide a SAP Solution Manager Key!" && return 1
+        [ "${#sol}" -ne 10 ] && echo "The SAP Instance Number needs to be exactly 10 chars long. You entered '${#sol}' chars." && return 1
+        [ -n "${sol//[0-9A-Z]/}" ] && echo "The SAP Solution Manager Key can only contain digits and uppercase letters. Found this: '${sol//[0-9A-Z]/}'." && return 1
+
+        return 0
+}
+check_solman_key "$VAL"
+]]>
+              </source>
+              <debug config:type="boolean">false</debug>
+              <feedback config:type="boolean">true</feedback>
+            </script>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">4</element>
+             <help><![CDATA[
+             <p><b>SAP Masterpassword</b><br>Enter the SAP system's master password (up to <b>9</b> characters).<br> You must set a master password to continue!</p>
+]]>
+</help>
+             <file>/tmp/ay_q5</file>
+             <question>Masterpassword</question>
+             <stage>initial</stage>
+             <default></default>
+             <script>
+              <filename>my_pwd.sh</filename>
+              <rerun_on_error config:type="boolean">true</rerun_on_error>
+              <environment config:type="boolean">true</environment>
+              <source><![CDATA[
+function check_masterpwd() {
+        local pwd=$1
+
+        [ -z "$pwd" ] && echo "You must provide a master password for your installation!" && return 1
+        [ "${#pwd}" -gt 9 ] && echo "The master password cannot be longer than 9 chars currently. You entered a ${#pwd} chars long password. Consider changing your passwords manually after the installation finished." && return 1
+        [ "${#pwd}" -lt 8 ] && echo "The master password cannot be shorter than 8 chars. You entered a ${#pwd} chars long password. Consider changing your passwords manually after the installation finished." && return 1
+
+        return 0
+}
+check_masterpwd "$VAL"
+]]>
+              </source>
+              <debug config:type="boolean">false</debug>
+              <feedback config:type="boolean">true</feedback>
+            </script>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">5</element>
+             <help><![CDATA[
+             <p><b>T-Shirt Size</b><br>Select one of the SAP system's T-Shirt sizes.</p>
+]]>
+</help>
+             <file>/tmp/ay_q6</file>
+             <question>System T-Shirt-Sizing</question>
+             <stage>initial</stage>
+             <selection config:type="list">
+               <entry>
+                 <value>S</value>
+                 <label>Configure the SAP system for a smaller footprint. (Laptop)</label>
+               </entry>
+               <entry>
+                 <value>M</value>
+                 <label>Configure the SAP system for a medium sized server.</label>
+               </entry>
+               <entry>
+                 <value>L</value>
+                 <label>Configure the SAP system for a larger server.</label>
+               </entry>
+               <entry>
+                 <value>XL</value>
+                 <label>Configure the SAP system for a pretty large server.</label>
+               </entry>
+             </selection>
+             <default>M</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">6</element>
+             <help><![CDATA[
+             <p><b>SAP Product ID</b><br>Select one of the Installation options below.</p>
+]]>
+</help>
+             <file>/tmp/ay_q7</file>
+             <question>Installation Type (Product ID)</question>
+             <stage>initial</stage>
+             <selection config:type="list">
+               <entry>
+                 <value>d0e24747</value>
+                 <label>d0e24747 - Installs a SAP system based on AS ABAP and AS Java on a single host (central system).</label>
+               </entry>
+               <entry>
+                 <value>d0e24749</value>
+                 <label>d0e24749 - Installs a SAP system based on AS Java on a single host (central system).</label>
+               </entry>
+               <entry>
+                 <value>d0e24751</value>
+                 <label>d0e24751 - Installs a SAP system based on AS ABAP on a single host (central system).</label>
+               </entry>
+             </selection>
+              <default>d0e24751</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">7</element>
+             <help><![CDATA[
+             <p><b>SAPINST Parameter Container</b><br>Choose one of the available parameter containers.</p>
+]]>
+</help>
+             <file>/tmp/ay_q8</file>
+             <question>SAPINST Parameter Container</question>
+             <stage>initial</stage>
+             <selection config:type="list">
+               <entry>
+                 <value>inifile.template_AIO_BL.xml</value>
+                 <label>Template for AllInOne BaseLine Installation</label>
+               </entry>
+             </selection>
+             <default>inifile.template_AIO_BL.xml</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">3</dialog>
+             <element config:type="integer">0</element>
+             <help><![CDATA[
+             <p><b>SAP Migration Key</b><br>Enter the SAP system's migration key.</p>
+]]>
+</help>
+             <file>/tmp/ay_q9</file>
+             <question>Migrationkey</question>
+             <stage>initial</stage>
+             <default>1G5ge5M50TL015qtdaQt0Qe4</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">3</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p><b>SAP DDIC User</b><br>Enter the password for user DDIC in Client 000 of the master system.</p>
+]]>
+</help>
+             <file>/tmp/ay_q10</file>
+             <question>DDIC password Client 000</question>
+             <stage>initial</stage>
+             <default>bestpractices1</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">3</dialog>
+             <element config:type="integer">2</element>
+             <help><![CDATA[
+             <p><b>DB Cache</b><br>Enter how much Data Cache the database should use during installation.<br>Leave this field empty for automatic default values.</p>
+]]>
+</help>
+             <file>/tmp/ay_q11</file>
+             <question>DB-Cache (MB)</question>
+             <stage>initial</stage>
+             <default></default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">3</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+             <p><b>MaxDB Log Mode</b><br>Select which Log Mode the MaxDB should use. Choose "Overwrite Mode" only for non-productive demo systems!</p>
+]]>
+</help>
+             <file>/tmp/ay_q12</file>
+             <question>MaxDB Log Mode</question>
+             <stage>initial</stage>
+             <selection config:type="list">
+               <entry>
+                 <value>0</value>
+                 <label>Overwrite Mode fot the Log Area (demo only)</label>
+               </entry>
+               <entry>
+                 <value>1</value>
+                 <label>Log Mode (normal)</label>
+               </entry>
+             </selection>
+             <default>1</default>
+          </ask>
+       </ask-list>
+   </general>
+  <partitioning config:type="list">
+    <drive>
+      <partitions config:type="list">
+        <partition>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/boot</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <size>auto</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <size>max</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>swap</mount>
+          <partition_id config:type="integer">130</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <size>___SWAP___</size>
+        </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
+   <software>
+       <patterns config:type="list">
+          <pattern>base</pattern>
+          <pattern>x11</pattern>
+       </patterns>
+       <packages config:type="list">
+         <package>sapinit</package>
+         <package>IBMJava2-AMD64-142-SDK</package>
+         <package>unrar</package>
+         <package>yast2-qt</package>
+         <package>qt3</package>
+         <package>cifs-mount</package>
+       </packages>
+   </software>
+   <users config:type="list">
+       <user>
+          <encrypted config:type="boolean">true</encrypted>
+          <user_password>pw</user_password>
+          <username>root</username>
+       </user>
+   </users>
+   <firewall>
+     <FW_DEV_DMZ></FW_DEV_DMZ>
+     <FW_DEV_EXT></FW_DEV_EXT>
+     <FW_DEV_INT></FW_DEV_INT>
+     <enable_firewall config:type="boolean">false</enable_firewall>
+     <start_firewall config:type="boolean">false</start_firewall>
+   </firewall>
+   <networking>
+       <dns>
+          <domain>suse.de</domain>
+          <hostname>myhostname</hostname>
+          <nameservers config:type="list">
+             <nameserver>149.44.160.146</nameserver>
+          </nameservers>
+          <searchlist config:type="list">
+             <search>suse.de</search>
+          </searchlist>
+       </dns>
+       <interfaces config:type="list">
+          <interface>
+             <bootproto>static</bootproto>
+             <device>eth0</device>
+             <ipaddr>192.168.1.1</ipaddr>
+             <netmask>255.255.255.0</netmask>
+             <startmode>auto</startmode>
+             <usercontrol>no</usercontrol>
+          </interface>
+<!--
+         <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>        
+          <startmode>onboot</startmode>
+        </interface>
+-->
+      </interfaces>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+        <routes config:type="list">
+          <route>
+            <destination>default</destination>
+            <device>-</device>
+            <gateway>149.44.171.254</gateway>
+            <netmask>-</netmask>
+          </route>
+        </routes>
+      </routing>
+   </networking>
+   <scripts>
+       <chroot-scripts config:type="list">
+          <script>
+             <chrooted config:type="boolean">false</chrooted>
+             <filename>chrootScript_do4.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+cp /tmp/ay_q* /mnt/tmp/
+]]>
+             </source>
+          </script>
+          <script>
+<!-- DEBUG
+<feedback config:type="boolean">true</feedback>
+<debug config:type="boolean">true</debug>
+-->
+             <chrooted config:type="boolean">true</chrooted>
+             <filename>chrootScript_do.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+# replace grubmenu with customized string
+cp /boot/grub/menu.lst /boot/grub/menu.lst.org
+sed -e 's/SUSE Linux/SAP - SUSE Linux/' /boot/grub/menu.lst.org > /boot/grub/menu.lst
+]]>
+             </source>
+          </script>
+       </chroot-scripts>
+    <pre-scripts config:type="list">
+      <script>
+      <feedback config:type="boolean">true</feedback>
+      <debug config:type="boolean">false</debug>
+      <source><![CDATA[
+function hdSize() {
+    device=""
+    let size=0
+
+    for I in `ls /sys/block`; do
+        # ignore 'ram' 'loop' and 'fd' (range == 1)
+        if [ -d /sys/block/$I -a \
+             -f /sys/block/$I/range -a \
+             -f /sys/block/$I/size ]; then
+            let range=`cat /sys/block/$I/range`
+            let size=`cat /sys/block/$I/size`
+            if [ "$range" -gt 1 -a "$size" -gt 0 ]; then
+                let size=$size/2;
+                device=$I;
+                break;
+            fi;
+        fi;
+    done
+
+    if [ $size -gt 180000000 ]; then
+        return 0
+    else
+        return 1
+    fi;
+}
+
+FEEDBACK=""
+MEM=`grep -i MemTotal /proc/meminfo | awk '{ print $2 }'`
+CPU=`uname -m`
+
+# 2GB of RAM required
+if ! grep nomemcheck /etc/install.inf > /dev/null; then
+    if [ "$MEM" -lt 1900000 ]; then
+        FEEDBACK="Installation requires at least 2GB of RAM\nbut only $(( ${MEM} / 1024 ))MB were detected.\nYou can override this check by passing\nnomemcheck to the kernel commandline."
+    fi;
+fi;
+
+# 64Bit CPU required
+if ! grep nocpucheck /etc/install.inf > /dev/null; then
+    if [ "$CPU" != "x86_64" ]; then
+        FEEDBACK="Installation requires a 64Bit CPU but\na $CPU CPU was detected.\nYou can override this check by passing\nnocpucheck to the kernel commandline."
+    fi;
+fi;
+
+if ! grep nohdcheck /etc/install.inf > /dev/null; then
+    if ! hdSize; then
+        FEEDBACK="Installation requires at least 180GB of disk space."
+    fi;
+fi;
+
+if [ "$FEEDBACK" != "" ]; then
+    echo -e $FEEDBACK
+    echo
+    echo "Installation terminates now!"
+fi;
+
+]]>
+      </source>
+    </script>
+    <script>
+      <feedback config:type="boolean">true</feedback>
+      <debug config:type="boolean">false</debug>
+      <source><![CDATA[
+function hdSize() {
+    device=""
+    let size=0
+
+    for I in `ls /sys/block`; do
+        # ignore 'ram' 'loop' and 'fd' (range == 1)
+        if [ -d /sys/block/$I -a \
+             -f /sys/block/$I/range -a \
+             -f /sys/block/$I/size ]; then
+            let range=`cat /sys/block/$I/range`
+            let size=`cat /sys/block/$I/size`
+            if [ "$range" -gt 1 -a "$size" -gt 0 ]; then
+                let size=$size/2;
+                device=$I;
+                break;
+            fi;
+        fi;
+    done
+
+    if [ $size -gt 180000000 ]; then
+        return 0
+    else
+        return 1
+    fi;
+}
+
+FEEDBACK=""
+MEM=`grep -i MemTotal /proc/meminfo | awk '{ print $2 }'`
+CPU=`uname -m`
+
+# 2GB of RAM required
+if ! grep nomemcheck /etc/install.inf > /dev/null; then
+  if [ "$MEM" -lt 1900000 ]; then
+      FEEDBACK="Installation requires at least 2GB of RAM."
+  fi;
+fi;
+
+# 64Bit CPU required
+
+if ! grep nocpucheck /etc/install.inf > /dev/null; then
+  if [ "$CPU" != "x86_64" ]; then
+      FEEDBACK="Installation requires a 64Bit CPU."
+  fi;
+fi;
+
+if ! grep nohdcheck /etc/install.inf > /dev/null; then
+    if ! hdSize; then
+        FEEDBACK="Installation requires at least 180GB of disk space."
+    fi;
+fi;
+
+if [ "$FEEDBACK" != "" ]; then
+    killall y2base
+fi;
+]]>
+      </source>
+    </script>
+    <script>
+      <feedback config:type="boolean">false</feedback>
+      <debug config:type="boolean">false</debug>
+      <source><![CDATA[
+main_memory_KB=`awk -F" " '{if (match ($1,"^MemTotal")) print $2}' /proc/meminfo`
+main_memory_MB=$(( ${main_memory_KB} / 1024 ))
+# rounding to full 1024 MegaBytes
+main_memory_MB=$(( ( $main_memory_MB + 1024 ) / 1024 * 1024 ))
+#SWAP=`grep MemTotal /proc/meminfo | awk '{ print $2 * 2 "kb" }'`
+# Swap should be twice as large as main memory
+SWAP="$(( $main_memory_MB * 2 )) MB"
+sed "s/___SWAP___/$SWAP/" /tmp/profile/autoinst.xml > /tmp/profile/modified.xml
+]]>
+      </source>
+    </script>
+    <script>
+      <feedback config:type="boolean">true</feedback>
+      <debug config:type="boolean">false</debug>
+      <source><![CDATA[
+echo "Attention!"
+echo
+echo "All data on the harddisk will be erased!"
+echo
+echo "Press ok to confirm and continue with the installation."
+echo "Or power down the machine if you are unsure."
+]]>
+      </source>
+    </script>
+   </pre-scripts>
+       <init-scripts config:type="list">
+          <script>
+             <filename>2_init_issue.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+LANG="en"
+esc="\033["
+IP=`/sbin/ifconfig eth0|grep Bcast|awk '{ print $2 }'|sed 's/addr://'`
+
+echo > /etc/issue
+echo -e "${esc}2J" >> /etc/issue
+echo "Welcome to SUSE Linux Enterprise Server 10 SP1 (x86_64) - Kernel \r (\l)." >> /etc/issue
+#echo -e "${esc}32;40;1mConnect to http://${IP} with your webbrowser ${esc}0m" >> /etc/issue
+echo >> /etc/issue
+]]>
+             </source>
+          </script>
+          <script>
+             <filename>3_init_sap.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+#!/bin/sh
+
+mount /dev/cdrom /mnt && echo "cdrom mounted"
+# TODO wozu?
+if [ -d /mnt/sap ]
+then
+ sleep 2
+else
+ # 2nd try
+ mount /dev/cdrom /mnt && echo "cdrom mounted"
+fi
+
+
+
+# Create symlink for ibm-java
+ln -s /opt/IBMJava2-amd64-142 /opt/java
+
+umount /mnt
+
+
+yast2 /tmp/media_change.ycp
+#rm -f /tmp/media_change.ycp
+/tmp/sap_inst.sh
+]]>
+             </source>
+          </script>
+       </init-scripts>
+   </scripts>
+</profile>

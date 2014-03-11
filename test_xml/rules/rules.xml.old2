@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<autoinstall xmlns="http://www.suse.com/1.0/yast2ns" 
+             xmlns:config="http://www.suse.com/1.0/configns">
+
+  <rules config:type="list">
+   <rule>
+      <custom1>
+        <script>
+<![CDATA[
+#!/bin/bash
+# configure hdisk partition
+#---------------------------------------
+# check hdisk for already installed linux
+# and take partition plan from there if true (keep)
+# or init partition table from scratch
+               
+
+echo -n "classes/disk/init/HD080.040.006"
+]]>
+        </script>
+        <match>*</match>
+        <match_type>exact</match_type>
+      </custom1>
+      <result>
+        <profile>@custom1@.xml</profile>
+        <continue config:type="boolean">true</continue>
+      </result>
+      <dialog>
+        <dialog_nr config:type="integer">0</dialog_nr>
+        <title>HDisk Partitioning</title>
+        <question>Autocheck for Partitiontable</question>
+        <element config:type="integer">10</element>
+        <conflicts config:type="list">
+          <element config:type="integer">11</element>
+        </conflicts>
+      </dialog>
+   </rule>
+
+
+
+
+
+   <rule>
+      <custom1>
+        <script>
+<![CDATA[
+#!/bin/bash
+# configure hdisk partition
+#---------------------------------------
+# check hdisk for already installed linux
+# and take partition plan from there if true (keep)
+# or init partition table from scratch
+               
+
+echo -n "jx"
+]]>
+        </script>
+        <match>*</match>
+        <match_type>exact</match_type>
+      </custom1>
+      <result>
+        <profile>@custom1@.xml</profile>
+        <continue config:type="boolean">true</continue>
+      </result>
+      <dialog>
+        <dialog_nr config:type="integer">0</dialog_nr>
+        <title>HDisk Partitioning</title>
+        <question>bl bla</question>
+        <element config:type="integer">12</element>
+        <!--
+        <conflicts config:type="list">
+          <element config:type="integer"></element>
+        </conflicts>
+        -->
+      </dialog>
+   </rule>
+
+
+
+
+
+
+
+   <rule>
+      <custom1>
+        <script>
+<![CDATA[
+#!/bin/bash
+# configure hdisk partition
+#---------------------------------------
+#---------------------------------------
+echo -n "jo"
+]]>
+        </script>
+        <match>NEVER_MATCH</match>
+        <match_type>exact</match_type>
+      </custom1>
+      <result>
+        <profile>@custom1@.xml</profile>
+        <continue config:type="boolean">true</continue>
+      </result>
+      <dialog>
+        <dialog_nr config:type="integer">0</dialog_nr>
+        <question>Force Init of Partitiontable</question>
+        <element config:type="integer">11</element>
+        <conflicts config:type="list">
+          <element config:type="integer">10</element>
+        </conflicts>
+      </dialog>
+   </rule>
+  </rules>
+
+</autoinstall>

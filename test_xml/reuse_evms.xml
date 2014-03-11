@@ -1,0 +1,330 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <configure>
+    <general>
+  <signature-handling>
+    <accept_unsigned_file         config:type="boolean">true</accept_unsigned_file>
+    <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+    <accept_verification_failed   config:type="boolean">true</accept_verification_failed>
+    <accept_unknown_gpg_key       config:type="boolean">true</accept_unknown_gpg_key>
+    <import_gpg_key               config:type="boolean">true</import_gpg_key>
+  </signature-handling>
+    </general>
+    <timezone>
+      <hwclock>localtime</hwclock>
+      <timezone>Europe/Zurich</timezone>
+    </timezone>
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>
+          <name>Ethernet Network Card</name>
+          <startmode>auto</startmode>
+          <usercontrol>no</usercontrol>
+        </interface>
+      </interfaces>
+      <modules config:type="list">
+        <module_entry>
+          <device>static-0</device>
+          <module></module>
+          <options></options>
+        </module_entry>
+      </modules>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+      </routing>
+    </networking>
+  </configure>
+  <install>
+    <users config:type="list">
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+    </users>
+    <software>
+<!--      <base>default</base> -->
+<!--          <base>Minimal</base> -->
+    </software>
+
+<!--
+<partitioning config:type="list">
+    <drive>
+      <device>/dev/system</device>
+      <lvm2 config:type="boolean">true</lvm2>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create> 
+          <filesystem config:type="symbol">reiser</filesystem> 
+          <format config:type="boolean">true</format> 
+          <lv_name>ibm</lv_name> 
+          <mount>/opt/ibm</mount> 
+          <mountby config:type="symbol">device</mountby> 
+          <size>1GB</size> 
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>opt_vol</lv_name>
+          <mount>/opt</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>1GB</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>root_vol</lv_name>
+          <mount>/</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>3221225472</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>swap_vol</lv_name>
+          <mount>swap</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>auto</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>usr_vol</lv_name>
+          <mount>/usr</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>3221225472</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>var_vol</lv_name>
+          <mount>/var</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>1073741824</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>txlog</lv_name>
+          <mount>/var/notesdata/txlog</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>1GB</size>
+        </partition>
+      </partitions>
+      <pesize>4M</pesize>
+      <type config:type="symbol">CT_EVMS</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/hda</device>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <evms_group>system</evms_group>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>30GB</size>
+        </partition>  
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/boot</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <size>1GB</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/install</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <size>15GB</size>
+        </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/notesdata</device>
+      <lvm2 config:type="boolean">true</lvm2>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create> 
+          <filesystem config:type="symbol">ext3</filesystem> 
+          <format config:type="boolean">true</format> 
+          <lv_name>notes_data_vol</lv_name> 
+          <mount>/var/notesdata</mount> 
+          <mountby config:type="symbol">device</mountby> 
+          <size>1GB</size> 
+        </partition>
+      </partitions>
+      <pesize>4M</pesize>
+      <type config:type="symbol">CT_EVMS</type>
+      <use>all</use>
+    </drive>
+     <drive>
+      <device>/dev/hdc</device>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <evms_group>notesdata</evms_group>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>3GB</size>
+        </partition>  
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  -->
+<partitioning config:type="list">
+    <drive>
+      <device>/dev/system</device>
+      <lvm2 config:type="boolean">true</lvm2>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create> 
+          <filesystem config:type="symbol">reiser</filesystem> 
+          <format config:type="boolean">true</format> 
+          <lv_name>ibm</lv_name> 
+          <mount>/opt/ibm</mount> 
+          <mountby config:type="symbol">device</mountby> 
+          <size>1GB</size> 
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>opt_vol</lv_name>
+          <mount>/opt</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>1GB</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>root_vol</lv_name>
+          <mount>/</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>3221225472</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>swap_vol</lv_name>
+          <mount>swap</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>auto</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>usr_vol</lv_name>
+          <mount>/usr</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>3221225472</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>var_vol</lv_name>
+          <mount>/var</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>1073741824</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>txlog</lv_name>
+          <mount>/var/notesdata/txlog</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>1GB</size>
+        </partition>
+      </partitions>
+      <pesize>4M</pesize>
+      <type config:type="symbol">CT_EVMS</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/hda</device>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <evms_group>system</evms_group>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>30GB</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">false</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/boot</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <size>1GB</size>
+        </partition>
+      </partitions>
+      <use>1,2</use>
+    </drive>
+    <drive>
+      <device>/dev/notesdata</device>
+      <lvm2 config:type="boolean">true</lvm2>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">false</create> 
+          <filesystem config:type="symbol">ext3</filesystem> 
+          <format config:type="boolean">true</format> 
+          <lv_name>notes_data_vol</lv_name> 
+          <mount>/var/notesdata</mount> 
+          <mountby config:type="symbol">device</mountby> 
+          <size>1GB</size> 
+        </partition>
+      </partitions>
+      <pesize>4M</pesize>
+      <type config:type="symbol">CT_EVMS</type>
+      <use>all</use>
+    </drive>
+     <drive>
+      <device>/dev/hdc</device>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">false</create>
+          <evms_group>notesdata</evms_group>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>3GB</size>
+        </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
+     </install>
+</profile>

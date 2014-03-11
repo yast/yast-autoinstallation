@@ -1,0 +1,243 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+use all
+-->
+<runlevel>
+ <default>3</default>
+ <services config:type="list">
+  <service>
+   <service_name>rpcbind</service_name>
+   <service_status>enable</service_status>
+  </service>
+ </services>
+</runlevel>
+  <bootloader>
+    <device_map config:type="list">
+      <device_map_entry>
+        <firmware>hd0</firmware>
+        <linux>/dev/sda</linux>
+      </device_map_entry>
+      <device_map_entry>
+        <firmware>hd1</firmware>
+        <linux>/dev/sdb</linux>
+      </device_map_entry>
+      <device_map_entry>
+        <firmware>hd2</firmware>
+        <linux>/dev/sdc</linux>
+      </device_map_entry>
+    </device_map>
+    <global>
+      <activate>true</activate>
+      <default>SUSE Linux Enterprise Server 11 SP2 - 3.0.13-0.27</default>
+      <generic_mbr>true</generic_mbr>
+      <gfxmenu>(hd0,1)/boot/message</gfxmenu>
+      <lines_cache_id>2</lines_cache_id>
+      <timeout config:type="integer">8</timeout>
+    </global>
+    <initrd_modules config:type="list">
+      <initrd_module>
+        <module>ahci</module>
+      </initrd_module>
+      <initrd_module>
+        <module>ata_piix</module>
+      </initrd_module>
+      <initrd_module>
+        <module>ata_generic</module>
+      </initrd_module>
+    </initrd_modules>
+    <loader_type>grub</loader_type>
+    <sections config:type="list">
+      <section>
+        <append>sshpasswd=emil resume=/dev/sda1 splash=silent showopts</append>
+        <image>(hd0,1)/boot/vmlinuz-3.0.13-0.27-default</image>
+        <initial>1</initial>
+        <initrd>(hd0,1)/boot/initrd-3.0.13-0.27-default</initrd>
+        <lines_cache_id>0</lines_cache_id>
+        <name>SUSE Linux Enterprise Server 11 SP2 - 3.0.13-0.27</name>
+        <original_name>linux</original_name>
+        <root>/dev/sdb7</root>
+        <type>image</type>
+        <vgamode>0x314</vgamode>
+      </section>
+    </sections>
+  </bootloader>
+
+  <firstboot>
+      <firstboot_enabled config:type="boolean">true</firstboot_enabled>
+  </firstboot>
+
+  <nis>
+    <nis_broadcast config:type="boolean">false</nis_broadcast>
+    <nis_broken_server config:type="boolean">false</nis_broken_server>
+    <nis_domain>suse.de</nis_domain>
+    <nis_local_only config:type="boolean">false</nis_local_only>
+    <nis_servers config:type="list">
+      <nis_server>10.10.0.1</nis_server>
+    </nis_servers>
+    <start_autofs config:type="boolean">true</start_autofs>
+    <start_nis config:type="boolean">false</start_nis>
+  </nis>
+
+<scripts>
+</scripts>
+<add-on>
+  <add_on_products config:type="list">
+    <listentry>
+      <media_url>http://dist.suse.de/install/SLP/SLE-11-SP2-HA-GM/i386/DVD1/?alias=HA_AL</media_url>
+      <product>HA</product>
+      <product_dir>/</product_dir>
+      <name>HA</name>
+      <ask_on_error config:type="boolean">true</ask_on_error>
+    </listentry>
+  </add_on_products>
+</add-on>
+  <language>
+    <language>en_US</language>
+    <languages>de_DE</languages>
+  </language>
+  <keyboard>
+    <keyboard_values>
+      <capslock config:type="boolean">false</capslock>
+      <delay></delay>
+      <discaps config:type="boolean">false</discaps>
+      <numlock></numlock>
+      <rate></rate>
+      <scrlock config:type="boolean">false</scrlock>
+      <tty>tty1 tty2 tty3 tty4 tty5 tty6 tty8 tty9 tty10 tty11 tty12 tty13 tty14 tty15 tty16 tty17 tty18 tty19 tty20</tty>
+    </keyboard_values>
+  </keyboard>
+  <timezone>
+    <hwclock>localtime</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+  <report>
+    <errors>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">5</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+  </report>
+  <networking>
+    <keep_install_network config:type="boolean">true</keep_install_network>
+  </networking>
+  <deploy_image>
+      <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <software>
+    <do_online_update config:type="boolean">true</do_online_update>
+    <kernel>kernel-default</kernel>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+    </patterns>
+    <packages config:type="list">
+      <package>apache2</package>
+      <package>less</package>
+      <package>zypper</package>
+      <package>yast2-runlevel</package>
+      <package>vim</package>
+      <package>nfs-client</package>
+      <package>yast2-bootloader</package>
+      <package>yast2-ncurses</package>
+      <package>yast2-firstboot</package>
+    </packages>
+  </software> 
+  <user_defaults>
+    <expire></expire>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">false</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+      <user_password>rootpw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+  <partitioning config:type="list">
+      <drive>
+        <use>all</use>
+        <device>/dev/sdb</device>
+        <initialize config:type="boolean">true</initialize>
+        <partitions config:type="list">
+          <partition>
+            <mount>/boot</mount>
+            <size>75mb</size>
+            <filesystem  config:type="symbol">ext3</filesystem>
+          </partition>
+          <partition>
+            <mount>swap</mount>
+            <size>1012mb</size>
+            <filesystem  config:type="symbol">swap</filesystem>
+          </partition>
+          <partition>
+            <mount>/</mount>
+            <size>max</size>
+          </partition>
+        </partitions>
+     </drive>
+  </partitioning>
+  <general>
+   <white-list config:type="list">
+    <listentry>emil1</listentry>
+    <listentry>emil2</listentry>
+    <listentry>hans</listentry>
+   </white-list>
+   <signature-handling>
+       <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+       <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+       <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+       <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+       <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+       <import_gpg_key         config:type="boolean">true</import_gpg_key>
+   </signature-handling>
+    <mode>
+        <forceboot config:type="boolean">true</forceboot>
+        <confirm config:type="boolean">true</confirm>
+        <second_stage config:type="boolean">true</second_stage>
+        <halt config:type="boolean">false</halt>
+    </mode>
+  </general>
+  <files config:type="list">
+      <file>
+        <file_path>/tmp/uwe_bla</file_path>
+        <file_owner>uwe:users</file_owner>
+        <file_permissions>444</file_permissions>
+        <file_contents>
+
+<![CDATA[
+some content
+]]>
+
+       </file_contents>
+     </file>
+  </files>
+</profile>

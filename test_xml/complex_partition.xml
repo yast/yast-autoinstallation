@@ -1,0 +1,449 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+    <scripts>
+      <chroot-scripts config:type="list">
+        <script>
+          <chrooted config:type="boolean">false</chrooted>
+          <filename>chrooted_script_first.sh</filename>
+                    <source><![CDATA[
+#!/bin/sh
+
+echo "Running script chrooted_script_first.sh" > /tmp/chrooted_script_first
+#sleep 10000000
+]]>
+                </source>
+          <interpreter>shell</interpreter>
+        </script>
+      </chroot-scripts>
+    </scripts>
+
+    <general>
+  <signature-handling>
+    <accept_unsigned_file         config:type="boolean">true</accept_unsigned_file>
+    <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+    <accept_verification_failed   config:type="boolean">true</accept_verification_failed>
+    <accept_unknown_gpg_key       config:type="boolean">true</accept_unknown_gpg_key>
+    <import_gpg_key               config:type="boolean">true</import_gpg_key>
+  </signature-handling>
+    </general>
+    <timezone>
+      <hwclock>localtime</hwclock>
+      <timezone>Europe/Zurich</timezone>
+    </timezone>
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>
+          <name>Ethernet Network Card</name>
+          <startmode>auto</startmode>
+          <usercontrol>no</usercontrol>
+        </interface>
+      </interfaces>
+      <modules config:type="list">
+        <module_entry>
+          <device>static-0</device>
+          <module></module>
+          <options></options>
+        </module_entry>
+      </modules>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+      </routing>
+    </networking>
+    <users config:type="list">
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+    </users>
+    <software>
+<!--      <base>default</base> -->
+    </software>
+
+
+
+    <!--
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/sda</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <partition_nr config:type="integer">1</partition_nr>
+          <size>100MB</size>
+          <mount>/boot</mount>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+        </partition>
+        <partition>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <raid_name>/dev/md0</raid_name>
+          <size>100MB</size>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+        </partition>
+        <partition>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">5</partition_nr>
+          <raid_name>/dev/md0</raid_name>
+          <size>3GB</size>
+        </partition>
+        <partition>
+          <partition_nr config:type="integer">6</partition_nr>
+          <partition_id config:type="integer">253</partition_id>
+          <raid_name>/dev/md1</raid_name>
+          <size>1GB</size>
+        </partition>
+        <partition>
+          <partition_nr config:type="integer">7</partition_nr>
+          <partition_id config:type="integer">253</partition_id>
+          <raid_name>/dev/md2</raid_name>
+          <size>3600MB</size>
+        </partition>
+        <partition>
+          <partition_nr config:type="integer">8</partition_nr>
+          <partition_id config:type="integer">253</partition_id>
+          <raid_name>/dev/md3</raid_name>
+          <size>600MB</size>
+        </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+    <drive>
+      <partitions config:type="list">
+        <partition>
+          <partition_nr config:type="integer">1</partition_nr>
+          <partition_id config:type="integer">253</partition_id>
+          <raid_name>/dev/md0</raid_name>
+          <size>3000mb</size>
+        </partition>
+        <partition>
+          <partition_nr config:type="integer">2</partition_nr>
+          <partition_id config:type="integer">253</partition_id>
+          <raid_name>/dev/md1</raid_name>
+          <size>1GB</size>
+        </partition>
+        <partition>
+          <partition_nr config:type="integer">3</partition_nr>
+          <partition_id config:type="integer">253</partition_id>
+          <raid_name>/dev/md2</raid_name>
+          <size>3600mb</size>
+        </partition>
+        <partition>
+          <partition_nr config:type="integer">4</partition_nr>
+          <partition_id config:type="integer">253</partition_id>
+          <raid_name>/dev/md3</raid_name>
+          <size>600mb</size>
+        </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/md</device>
+      <partitions config:type="list">
+        <partition>
+          <partition_nr config:type="integer">0</partition_nr>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <mount>/bootx</mount>
+          <raid_options>
+            <persistent_superblock config:type="boolean">false</persistent_superblock>
+            <raid_type>raid1</raid_type>
+          </raid_options>
+          <format config:type="boolean">true</format>
+        </partition>
+        <partition>
+          <partition_nr config:type="integer">1</partition_nr>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <mount>/swap</mount>
+          <raid_options>
+            <persistent_superblock config:type="boolean">false</persistent_superblock>
+            <raid_type>raid1</raid_type>
+          </raid_options>
+          <format config:type="boolean">true</format>
+        </partition>
+        <partition>
+          <partition_nr config:type="integer">2</partition_nr>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <mount>/</mount>
+          <raid_options>
+            <persistent_superblock config:type="boolean">false</persistent_superblock>
+            <raid_type>raid1</raid_type>
+          </raid_options>
+          <format config:type="boolean">true</format>
+        </partition>
+        <partition>
+          <format config:type="boolean">true</format>
+          <partition_nr config:type="integer">3</partition_nr>
+          <mount>/data</mount>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <raid_options>
+            <persistent_superblock config:type="boolean">false</persistent_superblock>
+            <raid_type>raid1</raid_type>
+          </raid_options>
+        </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
+-->
+
+
+<!-- cloned raid -->
+
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/md</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>defaults</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/bootx</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">0</partition_nr>
+          <raid_options>
+            <persistent_superblock config:type="boolean">false</persistent_superblock>
+            <raid_type>raid1</raid_type>
+          </raid_options>
+          <resize config:type="boolean">false</resize>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>defaults</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/swap</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <raid_options>
+            <persistent_superblock config:type="boolean">false</persistent_superblock>
+            <raid_type>raid1</raid_type>
+          </raid_options>
+          <resize config:type="boolean">false</resize>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>defaults</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <raid_options>
+            <persistent_superblock config:type="boolean">false</persistent_superblock>
+            <raid_type>raid1</raid_type>
+          </raid_options>
+          <resize config:type="boolean">false</resize>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>defaults</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/data</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <raid_options>
+            <persistent_superblock config:type="boolean">false</persistent_superblock>
+            <raid_type>raid1</raid_type>
+          </raid_options>
+          <resize config:type="boolean">false</resize>
+        </partition>
+      </partitions>
+      <pesize></pesize>
+      <type config:type="symbol">CT_MD</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/sda</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/boot</mount>
+          <mountby config:type="symbol">id</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <raid_options/>
+          <resize config:type="boolean">false</resize>
+          <size>98671104</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <raid_name>/dev/md0</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>98702848</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">5</partition_nr>
+          <raid_name>/dev/md0</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>3216051712</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">6</partition_nr>
+          <raid_name>/dev/md1</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>1069254144</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">7</partition_nr>
+          <raid_name>/dev/md2</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>3388783104</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">8</partition_nr>
+          <raid_name>/dev/md3</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>625089024</size>
+        </partition>
+      </partitions>
+      <pesize></pesize>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/sdb</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <raid_name>/dev/md0</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>3142024704</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <raid_name>/dev/md1</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>1069285888</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <raid_name>/dev/md2</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>3767177728</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">253</partition_id>
+          <partition_nr config:type="integer">4</partition_nr>
+          <raid_name>/dev/md3</raid_name>
+          <raid_options/>
+          <raid_type>raid0</raid_type>
+          <resize config:type="boolean">false</resize>
+          <size>625120768</size>
+        </partition>
+      </partitions>
+      <pesize></pesize>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+
+</profile>

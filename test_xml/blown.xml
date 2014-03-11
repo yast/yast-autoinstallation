@@ -1,0 +1,563 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <files config:type="list">
+      <config_file>
+        <file_path>/tmp/testfile</file_path>
+        <file_contents>
+<![CDATA[some content
+]]>
+       </file_contents>
+     </config_file>
+  </files>
+  <dns-server>
+    <allowed_interfaces config:type="list"/>
+    <chroot>0</chroot>
+    <logging config:type="list">
+      <listentry>
+        <key>channel</key>
+        <value>log_syslog { syslog; }</value>
+      </listentry>
+      <listentry>
+        <key>category</key>
+        <value>default { log_syslog; }</value>
+      </listentry>
+    </logging>
+    <options config:type="list">
+      <option>
+        <key>forwarders</key>
+        <value>{ 10.10.0.1; }</value>
+      </option>
+    </options>
+    <start_service>1</start_service>
+    <use_ldap>0</use_ldap>
+    <zones config:type="list">
+      <listentry>
+        <is_new>1</is_new>
+        <modified>1</modified>
+        <options config:type="list"/>
+        <records config:type="list">
+          <listentry>
+            <key>mydom.uwe.</key>
+            <type>MX</type>
+            <value>0 mail.mydom.uwe.</value>
+          </listentry>
+          <listentry>
+            <key>mydom.uwe.</key>
+            <type>NS</type>
+            <value>ns.mydom.uwe.</value>
+          </listentry>
+          <listentry>
+            <key>ns</key>
+            <type>A</type>
+            <value>192.168.67.1</value>
+          </listentry>
+        </records>
+        <soa>
+          <expiry>1w</expiry>
+          <mail>root.aaa.aaa.cc.</mail>
+          <minimum>1d</minimum>
+          <refresh>3h</refresh>
+          <retry>1h</retry>
+          <serial>2005082300</serial>
+          <server>aaa.aaa.cc.</server>
+          <zone>@</zone>
+        </soa>
+        <soa_modified>1</soa_modified>
+        <ttl>2d</ttl>
+        <type>master</type>
+        <update_actions config:type="list">
+          <listentry>
+            <key>mydom.uwe.</key>
+            <operation>add</operation>
+            <type>NS</type>
+            <value>ns.mydom.uwe.</value>
+          </listentry>
+          <listentry>
+            <key>mydom.uwe.</key>
+            <operation>add</operation>
+            <type>MX</type>
+            <value>0 mail.mydom.uwe.</value>
+          </listentry>
+          <listentry>
+            <key>mydom.uwe.</key>
+            <operation>add</operation>
+            <type>SOA</type>
+            <value>aaa.aaa.cc. root.aaa.aaa.cc. 2005082300 3h 1h 1w 1d </value>
+          </listentry>
+          <listentry>
+            <key>ns.mydom.uwe.</key>
+            <operation>add</operation>
+            <type>A</type>
+            <value>192.168.67.1</value>
+          </listentry>
+        </update_actions>
+        <zone>mydom.uwe</zone>
+      </listentry>
+      <listentry>
+        <is_new>1</is_new>
+        <modified>1</modified>
+        <options config:type="list"/>
+        <records config:type="list">
+          <listentry>
+            <key>67.168.192.in-addr.arpa.</key>
+            <type>NS</type>
+            <value>ns.mydom.uwe.</value>
+          </listentry>
+          <listentry>
+            <key>1</key>
+            <type>PTR</type>
+            <value>ns.mydom.uwe.</value>
+          </listentry>
+        </records>
+        <soa>
+          <expiry>1w</expiry>
+          <mail>root.aaa.aaa.cc.</mail>
+          <minimum>1d</minimum>
+          <refresh>3h</refresh>
+          <retry>1h</retry>
+          <serial>2005082300</serial>
+          <server>aaa.aaa.cc.</server>
+          <zone>@</zone>
+        </soa>
+        <soa_modified>1</soa_modified>
+        <ttl>2d</ttl>
+        <type>master</type>
+        <update_actions config:type="list">
+          <listentry>
+            <key>67.168.192.in-addr.arpa.</key>
+            <operation>add</operation>
+            <type>NS</type>
+            <value>ns.mydom.uwe.</value>
+          </listentry>
+          <listentry>
+            <key>67.168.192.in-addr.arpa.</key>
+            <operation>add</operation>
+            <type>SOA</type>
+            <value>aaa.aaa.cc. root.aaa.aaa.cc. 2005082300 3h 1h 1w 1d </value>
+          </listentry>
+          <listentry>
+            <key>1</key>
+            <operation>add</operation>
+            <type>PTR</type>
+            <value>ns.mydom.uwe.</value>
+          </listentry>
+        </update_actions>
+        <zone>67.168.192.in-addr.arpa</zone>
+      </listentry>
+    </zones>
+  </dns-server>
+  <general>
+    <clock>
+      <hwclock>localtime</hwclock>
+      <timezone>Europe/Berlin</timezone>
+    </clock>
+    <keyboard>
+      <keymap>german</keymap>
+    </keyboard>
+    <language>de_DE</language>
+    <mode>
+      <second_stage config:type="boolean">true</second_stage>
+      <confirm config:type="boolean">true</confirm>
+      <forceboot config:type="boolean">false</forceboot>
+    </mode>
+    <mouse>
+      <id>22_exps2</id>
+    </mouse>
+  </general>
+  <groups config:type="list">
+    <group>
+      <groupname>high_users</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <groupname>video</groupname>
+      <userlist>uwe</userlist>
+    </group>
+    <group>
+      <groupname>dialout</groupname>
+      <userlist>uwe</userlist>
+    </group>
+  </groups>
+  <http-server>
+    <Listen config:type="list">
+      <listentry>
+        <ADDRESS></ADDRESS>
+        <PORT>80</PORT>
+      </listentry>
+    </Listen>
+    <firewall config:type="boolean">false</firewall>
+    <hosts>
+      <default config:type="list">
+        <listentry>
+          <KEY>ServerName</KEY>
+          <VALUE>www.mydom.uwe</VALUE>
+        </listentry>
+        <listentry>
+          <KEY>ServerAdmin</KEY>
+          <VALUE>uwe@mydom.uwe</VALUE>
+        </listentry>
+        <listentry>
+          <KEY>DocumentRoot</KEY>
+          <VALUE>/srv/www/htdocs</VALUE>
+        </listentry>
+      </default>
+    </hosts>
+    <modules config:type="list">
+      <module_entry>
+        <change>enable</change>
+        <default>1</default>
+        <name>access</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>actions</name>
+      </module_entry>
+      <module_entry>
+        <change>enable</change>
+        <default>1</default>
+        <name>alias</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>auth</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>autoindex</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>cgi</name>
+      </module_entry>
+      <module_entry>
+        <change>enable</change>
+        <default>1</default>
+        <name>dir</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>include</name>
+      </module_entry>
+      <module_entry>
+        <change>enable</change>
+        <default>1</default>
+        <name>log_config</name>
+      </module_entry>
+      <module_entry>
+        <change>enable</change>
+        <default>1</default>
+        <name>mime</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>negotiation</name>
+      </module_entry>
+      <module_entry>
+        <change>enable</change>
+        <default>1</default>
+        <name>setenvif</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>status</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>userdir</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>asis</name>
+      </module_entry>
+      <module_entry>
+        <change>disable</change>
+        <default>1</default>
+        <name>imap</name>
+      </module_entry>
+    </modules>
+    <service config:type="boolean">true</service>
+    <version>2.9</version>
+  </http-server>
+  <inetd>
+    <last_created config:type="integer">0</last_created>
+    <netd_conf config:type="list">
+      <conf>
+        <protocol>tcp</protocol>
+        <script>vsftpd</script>
+        <server>/usr/sbin/vsftpd</server>
+        <service>ftp</service>
+      </conf>
+    </netd_conf>
+    <netd_status config:type="integer">0</netd_status>
+  </inetd>
+  <ldap>
+    <base_config_dn></base_config_dn>
+    <bind_dn></bind_dn>
+    <create_ldap config:type="boolean">false</create_ldap>
+    <file_server config:type="boolean">false</file_server>
+    <ldap_domain>dc=suse,dc=de</ldap_domain>
+    <ldap_server>ldap.suse.de</ldap_server>
+    <ldap_tls config:type="boolean">false</ldap_tls>
+    <ldap_v2 config:type="boolean">false</ldap_v2>
+    <member_attribute></member_attribute>
+    <nss_base_group></nss_base_group>
+    <nss_base_passwd></nss_base_passwd>
+    <nss_base_shadow></nss_base_shadow>
+    <pam_password></pam_password>
+    <start_autofs config:type="boolean">false</start_autofs>
+    <start_ldap config:type="boolean">false</start_ldap>
+  </ldap>
+  <networking>
+    <dns>
+      <dhcp_hostname config:type="boolean">false</dhcp_hostname>
+      <dhcp_resolv config:type="boolean">false</dhcp_resolv>
+      <domain>mydom.uwe</domain>
+      <hostname>ns</hostname>
+      <nameservers config:type="list">
+        <nameserver>127.0.0.1</nameserver>
+      </nameservers>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>dhcp</bootproto>
+        <device>eth0</device>
+        <name>Ethernet-Netzwerkkarte</name>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <modules config:type="list">
+      <module_entry>
+        <device>static-0</device>
+        <module></module>
+        <options></options>
+      </module_entry>
+    </modules>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+    </routing>
+  </networking>
+  <nfs config:type="list">
+    <nfs_entry>
+      <mount_point>/mnt</mount_point>
+      <nfs_options>defaults</nfs_options>
+      <server_path>192.168.66.1:/space/exports</server_path>
+    </nfs_entry>
+  </nfs>
+  <nfs_server>
+    <nfs_exports config:type="list">
+      <nfs_export>
+        <allowed config:type="list">
+          <allowed_clients>(ro,root_squash,sync)</allowed_clients>
+        </allowed>
+        <mountpoint>/usr/local</mountpoint>
+      </nfs_export>
+    </nfs_exports>
+    <start_nfsserver config:type="boolean">true</start_nfsserver>
+  </nfs_server>
+  <nis_server>
+    <domain>mydom.uwe</domain>
+    <maps_to_serve config:type="list">
+      <nis_map>group</nis_map>
+      <nis_map>passwd</nis_map>
+      <nis_map>shadow</nis_map>
+    </maps_to_serve>
+    <merge_group config:type="boolean">false</merge_group>
+    <merge_passwd config:type="boolean">false</merge_passwd>
+    <mingid config:type="integer">0</mingid>
+    <minuid config:type="integer">0</minuid>
+    <nopush config:type="boolean">true</nopush>
+    <pwd_chfn config:type="boolean">false</pwd_chfn>
+    <pwd_chsh config:type="boolean">false</pwd_chsh>
+    <pwd_srcdir>/etc</pwd_srcdir>
+    <securenets config:type="list"/>
+    <server_type>master</server_type>
+    <slaves config:type="list"/>
+    <start_ypbind config:type="boolean">false</start_ypbind>
+    <start_yppasswdd config:type="boolean">false</start_yppasswdd>
+    <start_ypxfrd config:type="boolean">false</start_ypxfrd>
+  </nis_server>
+  <ntp-client>
+    <configure_dhcp config:type="boolean">false</configure_dhcp>
+    <peers config:type="list">
+      <peer>
+        <address>ntp.suse.de</address>
+        <initial_sync config:type="boolean">true</initial_sync>
+        <options></options>
+        <type>server</type>
+      </peer>
+    </peers>
+    <start_at_boot config:type="boolean">true</start_at_boot>
+    <start_in_chroot config:type="boolean">true</start_in_chroot>
+  </ntp-client>
+  <partitioning config:type="list">
+    <drive>
+<!--
+      <device>/dev/hda</device>
+      <initialize config:type="boolean">false</initialize>
+      <partitions config:type="list">
+        <partition>
+          <crypt>twofish256</crypt>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>swap</mount>
+          <partition_id config:type="integer">130</partition_id>
+          <size>auto</size>
+        </partition>
+        <partition>
+          <crypt>twofish256</crypt>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/boot</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <size>auto</size>
+        </partition>
+        <partition>
+          <crypt>twofish256</crypt>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <size>10GB</size>
+        </partition>
+        <partition>
+          <crypt>twofish256</crypt>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/usr/local</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <size>max</size>
+        </partition>
+      </partitions>
+      -->
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <proxy>
+    <enabled config:type="boolean">true</enabled>
+    <ftp_proxy>http://proxy.suse.de</ftp_proxy>
+    <http_proxy>http://proxy.suse.de</http_proxy>
+    <https_proxy>http://proxy.suse.de</https_proxy>
+    <no_proxy></no_proxy>
+    <proxy_password></proxy_password>
+    <proxy_user></proxy_user>
+  </proxy>
+  <samba-server>
+    <accounts config:type="list"/>
+    <backend/>
+    <config config:type="list">
+      <listentry>
+        <name>global</name>
+      </listentry>
+      <listentry>
+        <name>MyShare</name>
+        <parameters>
+          <comment>MyShare Descr.</comment>
+          <inherit_acls>Yes</inherit_acls>
+          <path>/usr/local</path>
+          <read_only>Yes</read_only>
+        </parameters>
+      </listentry>
+    </config>
+    <service>Enabled</service>
+    <trustdom/>
+    <version>2.11</version>
+  </samba-server>
+  <scripts>
+    <post-scripts config:type="list">
+      <script>
+        <filename>myPost</filename>
+        <interpreter>shell</interpreter>
+        <location></location>
+        <source><![CDATA[echo "myPost has run" > /tmp/myPost_has_run
+]]></source>
+      </script>
+    </post-scripts>
+  </scripts>
+  <software>
+  <!--
+    <base>default</base>
+    -->
+    <addons config:type="list">
+      <addon>Min</addon>
+      <addon>X11</addon>
+    </addons>
+    <base>Minimal+X11</base>
+    <packages config:type="list">
+      <package>xinetd</package>
+      <package>vsftpd</package>
+      <package>ypserv</package>
+      <package>tftp</package>
+      <package>MozillaFirefox</package>
+    </packages>
+  </software>
+  <tftp-server>
+    <start_tftpd config:type="boolean">true</start_tftpd>
+    <tftp_directory>/srv/tftp</tftp_directory>
+  </tftp-server>
+  <user_defaults>
+    <expire></expire>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <user_password>pw</user_password>
+      <username>root</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Uwe Gansert</fullname>
+      <gid>100</gid>
+      <home>/home/uwe</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact>-1</inact>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>1000</uid>
+      <user_password>pw</user_password>
+      <username>uwe</username>
+    </user>
+  </users>
+  <x11>
+    <color_depth config:type="integer">16</color_depth>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">false</enable_3d>
+    <monitor>
+      <display>
+        <max_hsync config:type="integer">102</max_hsync>
+        <max_vsync config:type="integer">75</max_vsync>
+        <min_hsync config:type="integer">27</min_hsync>
+        <min_vsync config:type="integer">60</min_vsync>
+      </display>
+      <monitor_device>VISION MASTER 450</monitor_device>
+      <monitor_vendor>IIYAMA</monitor_vendor>
+    </monitor>
+    <resolution>1280x1024 (SXGA)</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+</profile>

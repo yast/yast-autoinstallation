@@ -1,0 +1,2077 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<add-on>
+  <add_on_products config:type="list">
+    <listentry>
+      <media_url>http://10.10.0.162/grc/sap</media_url>
+<!--      <media_url>dir:///mounts/extra/addon/DVD1/updates</media_url> -->
+      <product>SAP</product>
+      <product_dir>/</product_dir>
+    </listentry>
+  </add_on_products>
+</add-on>
+  <files config:type="list">
+      <config_file>
+        <file_path>/tmp/media_change.ycp</file_path>
+        <file_permissions>644</file_permissions>
+        <file_contents>
+<![CDATA[
+{
+    import "UI";
+    import "URL";
+    import "Popup";
+    textdomain "autoinst";
+
+    map result = $[];
+    string mountpoint = "/mnt";
+    string SAP_script = "sap_inst.sh";
+    string targetDir  = "/tmp";
+    string Localfile  = targetDir+"/"+SAP_script;
+    string dataFile   = targetDir+"/data";
+    boolean run = true;
+
+    UI::OpenDialog(
+        `VBox(
+              `TextEntry(`id(`location), "Location of SAP install media:", "device:///dev/cdrom"),
+              `HBox(
+                  `PushButton(`id(`ok),    "&OK"),
+                  `PushButton(`id(`abort), "&Abort")
+                  )
+              )
+    );
+    while( run ) {
+        any button = nil;
+        button = UI::UserInput();
+        if( button == `abort )
+            break;
+        string location = (string) UI::QueryWidget(`id(`location), `Value);
+        result = URL::Parse (location);
+        if( result["scheme"]:"" == "device" ) {
+            if (!(boolean)WFM::Execute(.local.mount, [result["path"]:"/dev/cdrom", mountpoint]) ) {
+                y2warning("Mount failed");
+            } else {
+                string cpcmd = sformat("cp " + mountpoint + "/%1 %2", SAP_script , Localfile);
+                y2milestone("Copy SAP script: %1", cpcmd);
+                SCR::Execute(.target.bash, cpcmd);
+                WFM::Execute(.local.umount, mountpoint);
+                if( SCR::Read(.target.size, Localfile ) > 0 ) {
+                    run = false;
+                    string data = sformat("SCHEME=\"%1\"\n",result["scheme"]:"");
+                    data = data + sformat("FRAGMENT=\"%1\"\n", result["fragment"]:"");
+                    data = data + sformat("USER=\"%1\"\n", result["user"]:"");
+                    data = data + sformat("QUERY=\"%1\"\n", result["query"]:"");
+                    data = data + sformat("PORT=\"%1\"\n", result["port"]:"");
+                    data = data + sformat("PATH=\"%1\"\n", result["path"]:"");
+                    data = data + sformat("PASS=\"%1\"\n", result["pass"]:"");
+                    data = data + sformat("HOST=\"%1\"\n", result["host"]:"");
+                    SCR::Write(.target.string, dataFile, data);
+                } else {
+                    Popup::Error( sformat("%1 not found at location", SAP_script) );
+                }
+            }
+        } else {
+            Popup::Error ( "unsupported location" );
+        }
+    }
+    UI::CloseDialog();
+}
+]]>
+        </file_contents>
+      </config_file>
+      <config_file>
+        <file_path>/etc/init.d/finalsplash</file_path>
+        <file_permissions>755</file_permissions>
+        <file_contents>
+<![CDATA[#! /bin/bash
+# Copyright (c) 1995-2000 SuSE GmbH Nuernberg, Germany.
+#
+# Author: Uwe Gansert <feedback@suse.de>
+#
+# /etc/init.d/finalsplash
+# /usr/sbin/rcfinalsplash
+#
+# System startup script for console splash screens
+#
+### BEGIN INIT INFO
+# Provides: finalsplash
+# Required-Start: $remote_fs cron
+# X-UnitedLinux-Should-Start: fbset
+# Required-Stop:
+# Default-Start:  1 2 3 5 S
+# Default-Stop:
+# Description:    Splash screen setup
+### END INIT INFO
+
+# Source SuSE config
+. /etc/rc.status
+
+# First reset status of this service
+rc_reset
+
+test -f /proc/splash -o "$1" = stop || exit 5
+
+case "$1" in
+    start)
+    #Author: Erik Hamera ehamera (at) suse (dot) cz
+    #Licence: GPL
+    WORKDIR="/var/lib/finalsplash"
+    export LANG=en
+    STRING="$(/sbin/ifconfig |tr '#' ' '|sed 's/^$/#/'|tr '#\n' '\n#'|grep '^eth0'|tr '#\n' '\n#'|grep 'inet addr:'|sed 's/.*inet addr:\([^ ]*\).*/\1/')"
+    EXECUTE='pnmcat -lr' #merge all files from lest to right togehether
+
+    while test "$STRING"; do
+            STR_OUT="${STRING:0:1}" #get the first character
+            STRING="${STRING/#$STR_OUT/}" #enshort whole string - cut the first character from it
+            #the character shouldn't be special. It has been tested for 0123456789.: only
+            EXECUTE="$EXECUTE $WORKDIR/_$STR_OUT.pnm" #assumes that there are _0.pnm, _1.pnm, ... _9.pnm, _..pnm, _:.pnm files.
+    done
+    `$EXECUTE > $WORKDIR/ip_tmp.pnm` #temporary file
+    splashv=`cat /proc/splash`
+    res="${splashv##*, }"
+    test "$splashv" != "$res" || exit 5
+    res="${res%)*}"
+    res=`fbresolution`
+    pnmpaste -replace $WORKDIR/ip_tmp.pnm 315 328 $WORKDIR/bcg/background-${res}.pnm | pnmtojpeg > $WORKDIR/background.jpg
+
+    clear
+    /sbin/splash -s -u 0 $WORKDIR/final.cfg
+    ;;
+    stop)
+    ;;
+    try-restart)
+        ## Stop the service and if this succeeds (i.e. the
+        ## service was running before), start it again.
+        ## Note: try-restart is not (yet) part of LSB (as of 0.7.5)
+        $0 status >/dev/null &&  $0 restart
+
+        # Remember status and be quiet
+        rc_status
+        ;;
+    restart)
+        ## Stop the service and regardless of whether it was
+        ## running or not, start it again.
+        $0 start
+
+        # Remember status and be quiet
+        rc_status
+        ;;
+    force-reload)
+        ## Signal the daemon to reload its config. Most daemons
+        ## do this on signal 1 (SIGHUP).
+        ## If it does not support it, restart.
+        $0 try-restart
+        rc_status
+        ;;
+    reload)
+        $0 try-restart
+        rc_status
+        ;;
+    status)
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status|try-restart|restart|force-reload|reload}"
+        exit 1
+        ;;
+esac
+rc_exit
+
+]]>
+       </file_contents>
+     </config_file>
+  </files>
+   <ca_mgm>
+     <CAName>GRC_Default_CA</CAName>
+     <ca_commonName>GRC default CA</ca_commonName>
+     <country>US</country>
+     <importCertificate config:type="boolean">false</importCertificate>
+     <locality></locality>
+     <organisation></organisation>
+     <organisationUnit></organisationUnit>
+     <password>admin</password>
+     <server_email>root@localhost</server_email>
+     <state></state>
+     <takeLocalServerName config:type="boolean">true</takeLocalServerName>
+   </ca_mgm>
+   <runlevel>
+      <default>3</default>
+   </runlevel>
+   <general>
+       <signature-handling>
+          <accept_unsigned_file         config:type="boolean">true</accept_unsigned_file>
+          <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+          <accept_verification_failed   config:type="boolean">true</accept_verification_failed>
+          <accept_unknown_gpg_key       config:type="boolean">true</accept_unknown_gpg_key>
+          <import_gpg_key               config:type="boolean">true</import_gpg_key>
+          <accept_non_trusted_gpg_key   config:type="boolean">true</accept_non_trusted_gpg_key>
+       </signature-handling>
+       <mode>
+          <halt config:type="boolean">false</halt>
+          <confirm config:type="boolean">false</confirm>
+       </mode>
+       <ask-list config:type="list">
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p>
+             Enter the server's hostname, e.g. lxsap.
+             </p>
+]]>
+             </help>
+             <path>networking,dns,hostname</path>
+             <question>Enter Hostname</question>
+             <stage>initial</stage>
+             <default>lxsap</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">2</element>
+             <help><![CDATA[
+             <p>
+             Enter your network domain, e.g. suse.de
+             </p>
+]]>
+             </help>
+             <path>networking,dns,domain</path>
+             <question>Enter domain name</question>
+             <stage>initial</stage>
+             <default>suse.de</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+              <p>Enter the server's new IP address for your network.</p>
+]]>
+              </help>
+             <path>networking,interfaces,0,ipaddr</path>
+             <question>Enter IP-Addr</question>
+             <stage>initial</stage>
+             <default>149.44.171.59</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">0</dialog>
+             <element config:type="integer">4</element>
+             <help><![CDATA[
+             <p>Enter the server's Netmask for your network.</p>
+]]>
+             </help>
+             <path>networking,interfaces,0,netmask</path>
+             <question>Enter Netmask</question>
+             <stage>initial</stage>
+             <default>255.255.254.0</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">1</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p>Enter the DNS searchlist for your network - if necessary separated by a <space>.</p>
+]]>
+             </help>
+             <path>networking,dns,searchlist,0</path>
+             <question>Enter domain searchlist</question>
+             <stage>initial</stage>
+             <default>suse.de</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">1</dialog>
+             <element config:type="integer">2</element>
+             <help><![CDATA[
+             <p>Enter the IP for the nameserver in your network.</p>
+]]>
+             </help>
+             <path>networking,dns,nameservers,0</path>
+             <question>Enter IP for nameserver</question>
+             <stage>initial</stage>
+             <default>149.44.160.146</default>
+          </ask>
+          <ask>
+             <title>Customize the automatic installation</title>
+             <dialog config:type="integer">1</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+             <p>Enter the default gateway for your network.</p>
+]]>
+</help>
+             <path>networking,routing,routes,0,gateway</path>
+             <question>Enter IP for default gateway</question>
+             <stage>initial</stage>
+             <default>149.44.171.254</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">0</element>
+             <help><![CDATA[
+             <p>Enter the three letter SAP System ID.<br>Leave this field empty to use default values.</p>
+]]>
+</help>
+             <file>/tmp/ay_q1</file>
+             <question>SID (SAP System ID)</question>
+             <stage>initial</stage>
+             <default>AIO</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p>Enter the virtual hostname the SAP system should use internally. <br>Leave this field empty to use default values.</p>
+]]>
+</help>
+             <file>/tmp/ay_q2</file>
+             <question>Virt. Hostname</question>
+             <stage>initial</stage>
+             <default>aiohost</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">2</element>
+             <help><![CDATA[
+             <p>Enter the SAP system's instance number. <br>Leave this field empty to use default values.</p>
+]]>
+</help>
+             <file>/tmp/ay_q3</file>
+             <question>SAP Instance Number</question>
+             <stage>initial</stage>
+             <default>00</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+             <p>Enter the system's Solution Manager Key. <br>Use the entries for SID, Instance Number and virtual hostname you entered above to generate the key. <br>Please ensure to enter a valid Solution Manager key, otherwise the installation will abort afterwards.</p>
+]]>
+</help>
+             <file>/tmp/ay_q4</file>
+             <question>SAP SolManKey</question>
+             <stage>initial</stage>
+             <default></default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">4</element>
+             <help><![CDATA[
+             <p>Enter the SAP system's master password. <br> You must set a master password to continue!</p>
+]]>
+</help>
+             <file>/tmp/ay_q5</file>
+             <question>Masterpasswort</question>
+             <stage>initial</stage>
+             <default></default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">2</dialog>
+             <element config:type="integer">5</element>
+             <help><![CDATA[
+             <p>Select one of the SAP system's T-Shirt sizes.</p>
+]]>
+</help>
+             <file>/tmp/ay_q6</file>
+             <question>System T-Shirt-Sizing</question>
+             <stage>initial</stage>
+             <default>M</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">3</dialog>
+             <element config:type="integer">0</element>
+             <help><![CDATA[
+             <p>Enter the SAP system's migration key. <br>Leave this field empty to use default values.</p>
+]]>
+</help>
+             <file>/tmp/ay_q7</file>
+             <question>Migrationkey</question>
+             <stage>initial</stage>
+             <default>1G5ge5M50TL015qtdaQt0Qe4</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">3</dialog>
+             <element config:type="integer">1</element>
+             <help><![CDATA[
+             <p>Enter the password for user DDIC in Client 000 of the master system. <br>Leave this field empty to use default values.</p>
+]]>
+</help>
+             <file>/tmp/ay_q8</file>
+             <question>DDIC password Client 000</question>
+             <stage>initial</stage>
+             <default>bestpractices1</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">3</dialog>
+             <element config:type="integer">2</element>
+             <help><![CDATA[
+             <p>Enter how much Data Cache the database should use. <br>Leave this field empty to use default values.</p>
+]]>
+</help>
+             <file>/tmp/ay_q9</file>
+             <question>DB-Cache (MB)</question>
+             <stage>initial</stage>
+             <default>2048</default>
+          </ask>
+          <ask>
+             <title>Customize the SAP installation</title>
+             <dialog config:type="integer">3</dialog>
+             <element config:type="integer">3</element>
+             <help><![CDATA[
+             <p>Enter how many parallel R3load jobs should be started to load the SAP system. <br>Leave this field empty to use default values.</p>
+]]>
+</help>
+             <file>/tmp/ay_q10</file>
+             <question>Parallel Load Jobs</question>
+             <stage>initial</stage>
+             <default><![CDATA[$(( `grep -c processor /proc/cpuinfo` + 2 ))]]></default>
+          </ask>
+       </ask-list>
+   </general>
+  <partitioning config:type="list">
+    <drive>
+      <partitions config:type="list">
+        <partition>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/boot</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <size>auto</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <size>max</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>swap</mount>
+          <partition_id config:type="integer">130</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <size>auto</size>
+        </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
+   <software>
+       <patterns config:type="list">
+          <pattern>base</pattern>
+          <pattern>sap-grc</pattern>
+       </patterns>
+       <packages config:type="list">
+<!--         <package>bootsplash-theme-SuSE-GRC</package> -->
+         <package>bootsplash-theme-SuSE-SAP</package>
+         <package>xorg-x11</package>
+         <package>sapinit</package>
+         <package>cifs-mount</package>
+         <package>yast2-ca-management</package>
+         <package>ant</package>
+         <package>ant-trax</package>
+         <package>cim-schema</package>
+         <package>expat-32bit</package>
+         <package>fontconfig-32bit</package>
+         <package>freetype2</package>
+         <package>jaf</package>
+         <package>jakarta-commons-beanutils</package>
+         <package>jakarta-commons-collections</package>
+         <package>jakarta-commons-daemon</package>
+         <package>jakarta-commons-dbcp</package>
+         <package>jakarta-commons-digester</package>
+         <package>jakarta-commons-el</package>
+         <package>jakarta-commons-fileupload</package>
+         <package>jakarta-commons-launcher</package>
+         <package>jakarta-commons-logging</package>
+         <package>jakarta-commons-modeler</package>
+         <package>jakarta-commons-pool</package>
+         <package>jakarta-commons-validator</package>
+         <package>jakarta-taglibs-standard</package>
+         <package>java-1_4_2-sun</package>
+         <package>java-1_4_2-sun-devel</package>
+         <package>javamail</package>
+         <package>jpackage-utils</package>
+         <package>jta</package>
+         <package>libapr1</package>
+         <package>libapr-util1</package>
+         <package>limal-runlevel</package>
+         <package>log4j</package>
+         <package>mx4j</package>
+         <package>openwbem</package>
+         <package>openwbem-base-providers</package>
+         <package>openwbem-xmlservice-providers</package>
+         <package>oro</package>
+         <package>regexp</package>
+         <package>servletapi5</package>
+         <package>sgml-skel</package>
+         <package>tomcat5</package>
+         <package>xalan-j2</package>
+         <package>xerces-j2</package>
+         <package>xml-commons</package>
+         <package>xml-commons-apis</package>
+         <package>xorg-x11-libs-32bit</package>
+         <package>zlib-32bit</package>
+         <package>owperlprovider</package>
+         <package>webCIM</package>
+         <package>webCIM-provider</package>
+         <package>netpbm</package>
+       </packages>
+   </software>
+   <users config:type="list">
+       <user>
+          <encrypted config:type="boolean">true</encrypted>
+          <user_password>pw</user_password>
+          <username>root</username>
+       </user>
+   </users>
+   <firewall>
+     <FW_DEV_DMZ></FW_DEV_DMZ>
+     <FW_DEV_EXT></FW_DEV_EXT>
+     <FW_DEV_INT></FW_DEV_INT>
+     <enable_firewall config:type="boolean">false</enable_firewall>
+     <start_firewall config:type="boolean">false</start_firewall>
+   </firewall>
+   <networking>
+       <dns>
+          <domain>suse.de</domain>
+          <hostname>myhostname</hostname>
+          <nameservers config:type="list">
+             <nameserver>149.44.160.146</nameserver>
+          </nameservers>
+          <searchlist config:type="list">
+             <search>suse.de</search>
+          </searchlist>
+       </dns>
+       <interfaces config:type="list">
+          <interface>
+             <bootproto>static</bootproto>
+             <device>eth0</device>
+             <ipaddr>192.168.1.1</ipaddr>
+             <netmask>255.255.255.0</netmask>
+             <startmode>auto</startmode>
+             <usercontrol>no</usercontrol>
+          </interface>
+<!--
+         <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>        
+          <startmode>onboot</startmode>
+        </interface>
+-->
+      </interfaces>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+        <routes config:type="list">
+          <route>
+            <destination>default</destination>
+            <device>-</device>
+            <gateway>149.44.171.254</gateway>
+            <netmask>-</netmask>
+          </route>
+        </routes>
+      </routing>
+   </networking>
+   <scripts>
+       <chroot-scripts config:type="list">
+          <script>
+             <chrooted config:type="boolean">false</chrooted>
+             <filename>chrootScript_do3.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+sed -i 's/^THEME=.*/THEME="SuSE-SAP"/' /mnt/etc/sysconfig/bootsplash
+]]>
+             </source>
+          </script>
+          <script>
+             <chrooted config:type="boolean">false</chrooted>
+             <filename>chrootScript_do4.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+cp /tmp/ay_q* /mnt/tmp/
+]]>
+             </source>
+          </script>
+          <script>
+             <chrooted config:type="boolean">true</chrooted>
+             <filename>chrootScript_do2.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+sed -i 's/^disable_splash/#disable_splash/' /usr/lib/YaST2/startup/Second-Stage/S08-start
+sed -i 's/^disable_splash/#disable_splash/' /usr/lib/YaST2/startup/YaST2.Second-Stage
+]]>
+             </source>
+          </script>
+          <script>
+<!-- DEBUG
+<feedback config:type="boolean">true</feedback>
+<debug config:type="boolean">true</debug>
+-->
+             <chrooted config:type="boolean">true</chrooted>
+             <filename>chrootScript_do.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+# replace grubmenu with customized string
+cp /boot/grub/menu.lst /boot/grub/menu.lst.org
+sed -e 's/SUSE Linux/SAP - SUSE Linux/' /boot/grub/menu.lst.org > /boot/grub/menu.lst
+]]>
+             </source>
+          </script>
+       </chroot-scripts>
+    <pre-scripts config:type="list">
+      <script>
+      <feedback config:type="boolean">true</feedback>
+      <debug config:type="boolean">false</debug>
+      <source><![CDATA[
+function hdSize() {
+    device=""
+    let size=0
+
+    for j in a b c d e f g h; do
+        for i in "hd$j" "sd$j"; do
+            if [ -d /sys/block/$i -a \
+                 -f /sys/block/$i/range -a \
+                 -f /sys/block/$i/size ]; then
+                let range=`cat /sys/block/$i/range`
+                let size=`cat /sys/block/$i/size`
+                if [ "$range" -gt 1 -a "$size" -gt 0 ]; then
+                    let size=$size/2;
+                    device=$i;
+                    break;
+                fi;
+            fi;
+        done
+        if [ "$device" != "" ]; then
+            break;
+        fi;
+    done
+    if [ $size -gt 19000000 ]; then
+        return 0
+    else
+        return 1
+    fi;
+}
+
+
+FEEDBACK=""
+MEM=`grep -i MemTotal /proc/meminfo | awk '{ print $2 }'`
+CPU=`uname -m`
+
+# 2GB of RAM required
+if ! grep nomemcheck /etc/install.inf > /dev/null; then
+    if [ "$MEM" -lt 1900000 ]; then
+        FEEDBACK="installation requires at least 2GB of RAM\nand only ${MEM}kb were detected.\nYou can override this check by passing\nnomemcheck to the kernel commandline."
+    fi;
+fi;
+
+# 64Bit CPU required
+if ! grep nocpucheck /etc/install.inf > /dev/null; then
+    if [ "$CPU" != "x86_64" ]; then
+        FEEDBACK="installation requires a 64Bit CPU but\na $CPU CPU was detected.\nYou can override this check by passing\nnocpucheck to the kernel commandline."
+    fi;
+fi;
+
+if ! grep nohdcheck /etc/install.inf > /dev/null; then
+    if ! hdSize; then
+        FEEDBACK="installation requires at least 20GB of disk space."
+    fi;
+fi;
+
+if [ "$FEEDBACK" != "" ]; then
+    echo -e $FEEDBACK
+    echo
+    echo "installation terminates now!"
+fi;
+
+]]>
+      </source>
+    </script>
+    <script>
+      <feedback config:type="boolean">true</feedback>
+      <debug config:type="boolean">false</debug>
+      <source><![CDATA[
+function hdSize() {
+    device=""
+    let size=0
+
+    for j in a b c d e f g h; do
+        for i in "hd$j" "sd$j"; do
+            if [ -d /sys/block/$i -a \
+                 -f /sys/block/$i/range -a \
+                 -f /sys/block/$i/size ]; then
+                let range=`cat /sys/block/$i/range`
+                let size=`cat /sys/block/$i/size`
+                if [ "$range" -gt 1 -a "$size" -gt 0 ]; then
+                    let size=$size/2;
+                    device=$i;
+                    break;
+                fi;
+            fi;
+        done
+        if [ "$device" != "" ]; then
+            break;
+        fi;
+    done
+    if [ $size -gt 19000000 ]; then
+        return 0
+    else
+        return 1
+    fi;
+}
+
+FEEDBACK=""
+MEM=`grep -i MemTotal /proc/meminfo | awk '{ print $2 }'`
+CPU=`uname -m`
+
+# 2GB of RAM required
+if ! grep nomemcheck /etc/install.inf > /dev/null; then
+  if [ "$MEM" -lt 1900000 ]; then
+      FEEDBACK="installation requires at least 2GB of RAM."
+  fi;
+fi;
+
+# 64Bit CPU required
+
+if ! grep nocpucheck /etc/install.inf > /dev/null; then
+  if [ "$CPU" != "x86_64" ]; then
+      FEEDBACK="installation requires a 64Bit CPU."
+  fi;
+fi;
+
+if ! grep nohdcheck /etc/install.inf > /dev/null; then
+    if ! hdSize; then
+        FEEDBACK="installation requires at least 20GB of disk space."
+    fi;
+fi;
+
+if [ "$FEEDBACK" != "" ]; then
+    killall y2base
+fi;
+]]>
+      </source>
+    </script>
+    <script>
+      <feedback config:type="boolean">true</feedback>
+      <debug config:type="boolean">false</debug>
+      <source><![CDATA[
+echo "Attention!"
+echo
+echo "all data on the harddisk will be erased!"
+echo
+echo "press ok to confirm"
+echo "or halt the machine if you are unsure."
+]]>
+      </source>
+    </script>
+   </pre-scripts>
+       <init-scripts config:type="list">
+          <script>
+             <filename>1_webUI.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+# create keystore for tomcat
+openssl pkcs12 -export -in /etc/ssl/servercerts/servercert.pem \
+ -inkey /etc/ssl/servercerts/serverkey.pem -out /etc/ssl/servercerts/servercert.p12\
+ -CAfile /etc/ssl/certs/YaST-CA.pem -passout pass:system
+
+chown tomcat.tomcat /etc/ssl/servercerts/servercert.p12
+chmod 600 /etc/ssl/servercerts/servercert.p12
+
+# add admin user with uid 0 == root but with no login permissions
+useradd --service files -r -o -u 0 -g 0 -s /bin/false -d /var/lib/admin admin
+mkdir -m0700 /var/lib/admin
+echo "admin" | passwd --stdin admin
+
+### disable SuSEconfig SORT_PASSWD_BY_UID feature.
+sed -i -e 's/^SORT_PASSWD_BY_UID.*/SORT_PASSWD_BY_UID="no"/' \
+       /etc/sysconfig/suseconfig
+### make sure, admin is first one in passwd file
+cp -a /etc/passwd /etc/passwd.old && ( \
+grep "^admin:" /etc/passwd.old && grep -v "^admin:" /etc/passwd.old \
+) > /etc/passwd.new && mv -f /etc/passwd.new /etc/passwd
+
+# configure SSL for tomcat
+cat > /etc/tomcat5/base/server.xml <<EOT
+<!-- Example Server Configuration File -->
+<!-- Note that component elements are nested corresponding to their
+     parent-child relationships with each other -->
+
+<!-- A "Server" is a singleton element that represents the entire JVM,
+     which may contain one or more "Service" instances.  The Server
+     listens for a shutdown command on the indicated port.
+
+     Note:  A "Server" is not itself a "Container", so you may not
+     define subcomponents such as "Valves" or "Loggers" at this level.
+ -->
+
+<Server port="8005" shutdown="SHUTDOWN" debug="0">
+
+
+  <!-- Comment these entries out to disable JMX MBeans support -->
+  <!-- You may also configure custom components (e.g. Valves/Realms) by 
+       including your own mbean-descriptor file(s), and setting the 
+       "descriptors" attribute to point to a ';' seperated list of paths
+       (in the ClassLoader sense) of files to add to the default list.
+       e.g. descriptors="/com/myfirm/mypackage/mbean-descriptor.xml"
+  -->
+  <Listener className="org.apache.catalina.mbeans.ServerLifecycleListener"
+            debug="0"/>
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener"
+            debug="0"/>
+
+  <!-- Global JNDI resources -->
+  <GlobalNamingResources>
+
+    <!-- Test entry for demonstration purposes -->
+    <Environment name="simpleValue" type="java.lang.Integer" value="30"/>
+
+    <!-- Editable user database that can also be used by
+         UserDatabaseRealm to authenticate users -->
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+       description="User database that can be updated and saved">
+    </Resource>
+    <ResourceParams name="UserDatabase">
+      <parameter>
+        <name>factory</name>
+        <value>org.apache.catalina.users.MemoryUserDatabaseFactory</value>
+      </parameter>
+      <parameter>
+        <name>pathname</name>
+        <value>conf/tomcat-users.xml</value>
+      </parameter>
+    </ResourceParams>
+
+  </GlobalNamingResources>
+
+  <!-- A "Service" is a collection of one or more "Connectors" that share
+       a single "Container" (and therefore the web applications visible
+       within that Container).  Normally, that Container is an "Engine",
+       but this is not required.
+
+       Note:  A "Service" is not itself a "Container", so you may not
+       define subcomponents such as "Valves" or "Loggers" at this level.
+   -->
+
+  <!-- Define the Tomcat Stand-Alone Service -->
+  <Service name="Catalina">
+
+    <!-- A "Connector" represents an endpoint by which requests are received
+         and responses are returned.  Each Connector passes requests on to the
+         associated "Container" (normally an Engine) for processing.
+
+         By default, a non-SSL HTTP/1.1 Connector is established on port 8080.
+         You can also enable an SSL HTTP/1.1 Connector on port 8443 by
+         following the instructions below and uncommenting the second Connector
+         entry.  SSL support requires the following steps (see the SSL Config
+         HOWTO in the Tomcat 5 documentation bundle for more detailed
+         instructions):
+         * If your JDK version 1.3 or prior, download and install JSSE 1.0.2 or
+           later, and put the JAR files into "$JAVA_HOME/jre/lib/ext".
+         * Execute:
+             %JAVA_HOME%\bin\keytool -genkey -alias tomcat -keyalg RSA (Windows)
+             $JAVA_HOME/bin/keytool -genkey -alias tomcat -keyalg RSA  (Unix)
+           with a password value of "changeit" for both the certificate and
+           the keystore itself.
+
+         By default, DNS lookups are enabled when a web application calls
+         request.getRemoteHost().  This can have an adverse impact on
+         performance, so you can disable it by setting the
+         "enableLookups" attribute to "false".  When DNS lookups are disabled,
+         request.getRemoteHost() will return the String version of the
+         IP address of the remote client.
+    -->
+
+    <!-- Define a non-SSL Coyote HTTP/1.1 Connector on port 8080 -->
+
+    <Connector port="8081"
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+               enableLookups="false" redirectPort="8443" acceptCount="100"
+               debug="0" connectionTimeout="20000" 
+               disableUploadTimeout="true" />
+
+    <!-- Note : To disable connection timeouts, set connectionTimeout value
+     to 0 -->
+	
+	<!-- Note : To use gzip compression you could set the following properties :
+	
+			   compression="on" 
+			   compressionMinSize="2048" 
+			   noCompressionUserAgents="gozilla, traviata" 
+			   compressableMimeType="text/html,text/xml"
+	-->
+
+    <!-- Define a SSL Coyote HTTP/1.1 Connector on port 8443 -->
+    
+    <Connector port="8443" 
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+               enableLookups="false" disableUploadTimeout="true"
+               acceptCount="100" debug="0" scheme="https" secure="true"
+               clientAuth="false" sslProtocol="TLS" 
+               keystoreFile="/etc/ssl/servercerts/servercert.p12"
+               keystoreType="PKCS12" keystorePass="system"/>
+   
+
+    <!-- Define a Coyote/JK2 AJP 1.3 Connector on port 8009 -->
+    <Connector port="8009" 
+               enableLookups="false" redirectPort="8443" debug="0"
+               protocol="AJP/1.3" />
+
+    <!-- Define a Proxied HTTP/1.1 Connector on port 8082 -->
+    <!-- See proxy documentation for more information about using this. -->
+    <!--
+    <Connector port="8082" 
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+               enableLookups="false"
+               acceptCount="100" debug="0" connectionTimeout="20000"
+               proxyPort="80" disableUploadTimeout="true" />
+    -->
+
+    <!-- An Engine represents the entry point (within Catalina) that processes
+         every request.  The Engine implementation for Tomcat stand alone
+         analyzes the HTTP headers included with the request, and passes them
+         on to the appropriate Host (virtual host). -->
+
+    <!-- You should set jvmRoute to support load-balancing via JK/JK2 ie :
+    <Engine name="Standalone" defaultHost="localhost" debug="0" jvmRoute="jvm1">         
+    --> 
+         
+    <!-- Define the top level container in our container hierarchy -->
+    <Engine name="Catalina" defaultHost="localhost" debug="0">
+
+      <!-- The request dumper valve dumps useful debugging information about
+           the request headers and cookies that were received, and the response
+           headers and cookies that were sent, for all requests received by
+           this instance of Tomcat.  If you care only about requests to a
+           particular virtual host, or a particular application, nest this
+           element inside the corresponding <Host> or <Context> entry instead.
+
+           For a similar mechanism that is portable to all Servlet 2.4
+           containers, check out the "RequestDumperFilter" Filter in the
+           example application (the source for this filter may be found in
+           "$CATALINA_HOME/webapps/examples/WEB-INF/classes/filters").
+
+           Request dumping is disabled by default.  Uncomment the following
+           element to enable it. -->
+      <!--
+      <Valve className="org.apache.catalina.valves.RequestDumperValve"/>
+      -->
+
+      <!-- Global logger unless overridden at lower levels -->
+      <Logger className="org.apache.catalina.logger.FileLogger"
+              prefix="catalina_log" suffix=".txt"
+              timestamp="false"/>
+
+      <!-- Because this Realm is here, an instance will be shared globally -->
+
+      <!-- This Realm uses the UserDatabase configured in the global JNDI
+           resources under the key "UserDatabase".  Any edits
+           that are performed against this UserDatabase are immediately
+           available for use by the Realm.  -->
+      <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+                 debug="0" resourceName="UserDatabase"/>
+
+      <!-- Comment out the old realm but leave here for now in case we
+           need to go back quickly -->
+      <!--
+      <Realm className="org.apache.catalina.realm.MemoryRealm" />
+      -->
+
+      <!-- Replace the above Realm with one of the following to get a Realm
+           stored in a database and accessed via JDBC -->
+
+      <!--
+      <Realm  className="org.apache.catalina.realm.JDBCRealm" debug="99"
+             driverName="org.gjt.mm.mysql.Driver"
+          connectionURL="jdbc:mysql://localhost/authority"
+         connectionName="test" connectionPassword="test"
+              userTable="users" userNameCol="user_name" userCredCol="user_pass"
+          userRoleTable="user_roles" roleNameCol="role_name" />
+      -->
+
+      <!--
+      <Realm  className="org.apache.catalina.realm.JDBCRealm" debug="99"
+             driverName="oracle.jdbc.driver.OracleDriver"
+          connectionURL="jdbc:oracle:thin:@ntserver:1521:ORCL"
+         connectionName="scott" connectionPassword="tiger"
+              userTable="users" userNameCol="user_name" userCredCol="user_pass"
+          userRoleTable="user_roles" roleNameCol="role_name" />
+      -->
+
+      <!--
+      <Realm  className="org.apache.catalina.realm.JDBCRealm" debug="99"
+             driverName="sun.jdbc.odbc.JdbcOdbcDriver"
+          connectionURL="jdbc:odbc:CATALINA"
+              userTable="users" userNameCol="user_name" userCredCol="user_pass"
+          userRoleTable="user_roles" roleNameCol="role_name" />
+      -->
+
+      <!-- Define the default virtual host
+           Note: XML Schema validation will not work with Xerces 2.2.
+       -->
+      <Host name="localhost" debug="0" appBase="webapps"
+       unpackWARs="true" autoDeploy="true"
+       xmlValidation="false" xmlNamespaceAware="false">
+
+        <!-- Defines a cluster for this node,
+             By defining this element, means that every manager will be changed.
+             So when running a cluster, only make sure that you have webapps in there
+             that need to be clustered and remove the other ones.
+             A cluster has the following parameters:
+
+             className = the fully qualified name of the cluster class
+
+             name = a descriptive name for your cluster, can be anything
+
+             debug = the debug level, higher means more output
+
+             mcastAddr = the multicast address, has to be the same for all the nodes
+
+             mcastPort = the multicast port, has to be the same for all the nodes
+             
+             mcastBindAddr = bind the multicast socket to a specific address
+             
+             mcastTTL = the multicast TTL if you want to limit your broadcast
+             
+             mcastSoTimeout = the multicast readtimeout 
+
+             mcastFrequency = the number of milliseconds in between sending a "I'm alive" heartbeat
+
+             mcastDropTime = the number a milliseconds before a node is considered "dead" if no heartbeat is received
+
+             tcpThreadCount = the number of threads to handle incoming replication requests, optimal would be the same amount of threads as nodes 
+
+             tcpListenAddress = the listen address (bind address) for TCP cluster request on this host, 
+                                in case of multiple ethernet cards.
+                                auto means that address becomes
+                                InetAddress.getLocalHost().getHostAddress()
+
+             tcpListenPort = the tcp listen port
+
+             tcpSelectorTimeout = the timeout (ms) for the Selector.select() method in case the OS
+                                  has a wakup bug in java.nio. Set to 0 for no timeout
+
+             printToScreen = true means that managers will also print to std.out
+
+             expireSessionsOnShutdown = true means that 
+
+             useDirtyFlag = true means that we only replicate a session after setAttribute,removeAttribute has been called.
+                            false means to replicate the session after each request.
+                            false means that replication would work for the following piece of code:
+                            <%
+                            HashMap map = (HashMap)session.getAttribute("map");
+                            map.put("key","value");
+                            %>
+             replicationMode = can be either 'pooled', 'synchronous' or 'asynchronous'.
+                               * Pooled means that the replication happens using several sockets in a synchronous way. Ie, the data gets replicated, then the request return. This is the same as the 'synchronous' setting except it uses a pool of sockets, hence it is multithreaded. This is the fastest and safest configuration. To use this, also increase the nr of tcp threads that you have dealing with replication.
+                               * Synchronous means that the thread that executes the request, is also the
+                               thread the replicates the data to the other nodes, and will not return until all
+                               nodes have received the information.
+                               * Asynchronous means that there is a specific 'sender' thread for each cluster node,
+                               so the request thread will queue the replication request into a "smart" queue,
+                               and then return to the client.
+                               The "smart" queue is a queue where when a session is added to the queue, and the same session
+                               already exists in the queue from a previous request, that session will be replaced
+                               in the queue instead of replicating two requests. This almost never happens, unless there is a 
+                               large network delay.
+        -->             
+        <!--
+            When configuring for clustering, you also add in a valve to catch all the requests
+            coming in, at the end of the request, the session may or may not be replicated.
+            A session is replicated if and only if all the conditions are met:
+            1. useDirtyFlag is true or setAttribute or removeAttribute has been called AND
+            2. a session exists (has been created)
+            3. the request is not trapped by the "filter" attribute
+
+            The filter attribute is to filter out requests that could not modify the session,
+            hence we don't replicate the session after the end of this request.
+            The filter is negative, ie, anything you put in the filter, you mean to filter out,
+            ie, no replication will be done on requests that match one of the filters.
+            The filter attribute is delimited by ;, so you can't escape out ; even if you wanted to.
+
+            filter=".*\.gif;.*\.js;" means that we will not replicate the session after requests with the URI
+            ending with .gif and .js are intercepted.
+            
+            The deployer element can be used to deploy apps cluster wide.
+            Currently the deployment only deploys/undeploys to working members in the cluster
+            so no WARs are copied upons startup of a broken node.
+            The deployer watches a directory (watchDir) for WAR files when watchEnabled="true"
+            When a new war file is added the war gets deployed to the local instance,
+            and then deployed to the other instances in the cluster.
+            When a war file is deleted from the watchDir the war is undeployed locally 
+            and cluster wide
+        -->
+        
+        <!--
+        <Cluster className="org.apache.catalina.cluster.tcp.SimpleTcpCluster"
+                 managerClassName="org.apache.catalina.cluster.session.DeltaManager"
+                 expireSessionsOnShutdown="false"
+                 useDirtyFlag="true">
+
+            <Membership 
+                className="org.apache.catalina.cluster.mcast.McastService"
+                mcastAddr="228.0.0.4"
+                mcastPort="45564"
+                mcastFrequency="500"
+                mcastDropTime="3000"/>
+
+            <Receiver 
+                className="org.apache.catalina.cluster.tcp.ReplicationListener"
+                tcpListenAddress="auto"
+                tcpListenPort="4001"
+                tcpSelectorTimeout="100"
+                tcpThreadCount="6"/>
+
+            <Sender
+                className="org.apache.catalina.cluster.tcp.ReplicationTransmitter"
+                replicationMode="pooled"/>
+
+            <Valve className="org.apache.catalina.cluster.tcp.ReplicationValve"
+                   filter=".*\.gif;.*\.js;.*\.jpg;.*\.htm;.*\.html;.*\.txt;"/>
+                   
+            <Deployer className="org.apache.catalina.cluster.deploy.FarmWarDeployer"
+                      tempDir="/tmp/war-temp/"
+                      deployDir="/tmp/war-deploy/"
+                      watchDir="/tmp/war-listen/"
+                      watchEnabled="false"/>
+        </Cluster>
+        -->        
+
+
+
+        <!-- Normally, users must authenticate themselves to each web app
+             individually.  Uncomment the following entry if you would like
+             a user to be authenticated the first time they encounter a
+             resource protected by a security constraint, and then have that
+             user identity maintained across *all* web applications contained
+             in this virtual host. -->
+        <!--
+        <Valve className="org.apache.catalina.authenticator.SingleSignOn"
+                   debug="0"/>
+        -->
+
+        <!-- Access log processes all requests for this virtual host.  By
+             default, log files are created in the "logs" directory relative to
+             $CATALINA_HOME.  If you wish, you can specify a different
+             directory with the "directory" attribute.  Specify either a relative
+             (to $CATALINA_HOME) or absolute path to the desired directory.
+        -->
+        <!--
+        <Valve className="org.apache.catalina.valves.AccessLogValve"
+                 directory="logs"  prefix="localhost_access_log." suffix=".txt"
+                 pattern="common" resolveHosts="false"/>
+        -->
+
+        <!-- Logger shared by all Contexts related to this virtual host.  By
+             default (when using FileLogger), log files are created in the "logs"
+             directory relative to $CATALINA_HOME.  If you wish, you can specify
+             a different directory with the "directory" attribute.  Specify either a
+             relative (to $CATALINA_HOME) or absolute path to the desired
+             directory.-->
+        <Logger className="org.apache.catalina.logger.FileLogger"
+                 directory="logs"  prefix="localhost_log" suffix=".txt"
+            timestamp="false"/>
+
+      </Host>
+
+    </Engine>
+
+  </Service>
+
+</Server>
+EOT
+
+# configure admin user in openwbem
+cat > /etc/openwbem/openwbem.conf <<EOT
+###############################################################################
+# owcimomd configuration file
+# Note:
+#  All lines that start with a '#' or a ';' character are ignored.
+#
+#  All of the options in this file are read by owcimomd at start up. The file
+#  will only be re-read on restart when a SIGHUP is received.
+#  The options that are prefixed with "owcimomd." are meant specifically for
+#  owcimomd.
+#  Other options are prefixed with an identifier of the component that is
+#  specifically interested in the options. For example the
+#  "cppprovifc.prov_location" option is meant specifically for the C++ provider
+#  interface. This option is read from the config file by owcimomd and
+#  made available to the C++ provider interface upon request.
+#  Config options may be specified more than once. If the value is singular,
+#  The last read option will take effect. If the value is plural, all values
+#  together will be in effect.
+###############################################################################
+
+################################################################################
+# For each directory specified, all the files contained in the directory will
+# be loaded and processed as additional config files.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# This option will be evaluated after the main config file is parsed, and so
+# additional directories specified in additional config files will not be 
+# examined.
+# The default is "/etc/openwbem/openwbem.conf.d"
+owcimomd.additional_config_files_dirs = /etc/openwbem/openwbem.conf.d
+
+################################################################################
+# If owcimomd.allow_anonymous is set to true, anonymous logins are allowed by
+# owcimomd, authentication is disabled, and no user name or password is required.
+# The default is false
+owcimomd.allow_anonymous = false
+
+################################################################################
+# log.main.type specifies the type of the main log used by owcimomd. If this
+# option is set to:
+# "syslog" - owcimomd will log all messages through the syslog interface
+#            (Recommended).
+# "null"   - logging will be disabled completely.
+# "file"   - log messages will be written to the file identified by the
+#            log.main.location config item.
+# The default is "syslog"
+log.main.type = syslog
+
+################################################################################
+# log.main.location specifies the location of the log file
+# (if the type == "file".)
+;log.main.location =
+
+################################################################################
+# An unsigned integer. The log file's maximum size in KB. 0 means unlimited.
+# The default is "0"
+;log.main.max_file_size = 0
+
+################################################################################
+# An unsigned integer. Determines how many backup files are kept before the
+# oldest is erased. If set to 0, no backup files will be made and the log file
+# will be truncated when it reaches max_file_size.
+# Default is "1"
+;log.main.max_backup_index = 1
+
+################################################################################
+# Determines whether each log messages is flushed to the log when it happens.
+# Set this option to false if you wish to increase logging performance.
+# This optional is only applicable to logs of type "file".
+# Default is "true"
+;log.main.flush = true
+
+################################################################################
+# A space delimited list of the components the log will output.
+# Components used in owcimomd:
+#   owcimomd
+#
+# Providers may use their own components.
+# "*" means all components.
+# The default is "*"
+log.main.components = *
+
+################################################################################
+# A space delimited list of the categories the log will output.
+# Categories used in owcimomd:
+#   FATAL
+#   ERROR
+#   INFO
+#   DEBUG
+#
+# "*" means all categories.
+# If specified in this item, the predefined categores are not treated as
+# levels, but as independent categories. No default is available, and if not
+# set, no categories will be logged, and the level config item will be used.
+;log.main.categories = *
+
+################################################################################
+# The log.main.level option specifies the level of logging. This can be
+# any one of the following:
+#   "FATAL" - Only fatal error messages are logged.
+#   "ERROR" - All error and fatal error messages are logged. This is the default.
+#   "INFO"  - All info, error and fatal error messages are logged
+#   "DEBUG" - All debug, info, error and fatal error messages are logged
+# If set, the log will output all predefined categories at and above the
+# specified level.
+# The default is "ERROR"
+log.main.level = ERROR
+
+################################################################################
+# Specifies the format of the log messages. Text mixed with printf() style
+# conversion specifiers.
+# Available conversion specifiers:
+# %c - The component (e.g. owcimomd)
+# %d - The date. May be followed by a date format specifier enclosed between
+#      braces. For example, %d{%H:%M:%S} or %d{%d %b %Y %H:%M:%S}. If no date
+#      format specifier is given then ISO8601 format is assumed.
+#      For more information of the date format specifiers, lookup the
+#      documentation for the strftime() function found in the <ctime> header.
+#      The only addition is %Q, which is the number of milliseconds.
+# %F - The file name
+# %l - The filename and line number. e.g. file.cpp(100)
+# %L - The line number
+# %M - The method name where the logging request was issued (only works on
+#      C++ compilers which support __PRETTY_FUNCTION__ or C99's __func__)
+# %m - The message
+# %e - The message as XML CDATA.
+# %n - The platform dependent line separator character (\n) or characters (\r\n)
+# %p - category, aka level, aka priority
+# %r - The number of milliseconds elapsed since the start of the application
+#      until the creation of the logging event
+# %t - Thread id
+# %% - %
+# \n - newline
+# \t - tab
+# \r - linefeed
+# \\ - \
+# \x<hexDigits> - The character represented in hexadecimal.
+#
+#   It is possible to change the minimum field width, the maximum field width
+# and justification. The optional format modifier is placed between the
+# percent sign and the conversion character.
+#   The first optional format modifier is the left justification flag which is
+# the minus (-) character. The optional minimum field width modifier follows.
+# It is an integer that represents the minimum number of characters to
+# output. If the data item requires fewer characters, it is padded with
+# spaces on either the left or the right, according to the justification
+# flag. If the data item is larger than the minimum field width, the field
+# is expanded to accommodate the data.
+#   The maximum field width modifier is designated by a period followed by a
+# decimal constant. If the data item is longer than the maximum field, then
+# the extra characters are removed from the beginning of the data item
+# (by default), or from the end if the left justification flag was specified.
+#
+# Examples:
+#   Log4j TTCC layout:
+#   "%r [%t] %-5p %c - %m"
+#
+#   Similar to TTCC, but with some fixed size fields:
+#   "%-6r [%15.15t] %-5p %30.30c - %m"
+#
+#   XML output conforming to log4j.dtd 1.2 which can be processed by Chainsaw.
+#   If used, this has to be on one line, it's split up here for readability.
+#   "<log4j:event logger="%c" timestamp="%d{%s%Q}" level="%p" thread="%t">
+#    <log4j:message>%e</log4j:message>
+#    <log4j:locationInfo class="" method="" file="%F" line="%L"/>
+#    </log4j:event>"
+#
+# The default is "[%t]%m"
+log.main.format = [%t]%m
+
+
+################################################################################
+# If owcimomd is run in debug mode, then the debug log will be active.
+log.debug.type = stderr
+log.debug.components = *
+log.debug.categories = *
+;log.debug.level = *
+log.debug.format = [%t] %m
+# Color version using ascii escape codes
+;log.debug.format = \x1b[1;37;40m[\x1b[1;31;40m%-.6t\x1b[1;37;40m]\x1b[1;32;40m %m\x1b[0;37;40m
+
+# More ascii colors:
+# red:        \x1b[1;31;40m
+# darkRed     \x1b[0;31;40m
+# green       \x1b[1;32;40m
+# darkGreen   \x1b[0;32;40m
+# yellow      \x1b[1;33;40m
+# darkYellow  \x1b[0;33;40m
+# blue        \x1b[1;34;40m
+# darkBlue    \x1b[0;34;40m
+# purple      \x1b[1;35;40m
+# darkPurple  \x1b[0;35;40m
+# cyan        \x1b[1;36;40m
+# darkCyan    \x1b[0;36;40m
+# white       \x1b[1;37;40m
+# darkWhite   \x1b[0;37;40m
+# gray        \x1b[0;37;40m
+# resetColor  \x1b[0;37;40m
+
+
+################################################################################
+# A space separated list of names for each additional log to configure.  For
+# each log name, the following config items will apply:
+# log.<log name>.components
+# log.<log name>.categories
+# log.<log name>.level
+# log.<log name>.format
+# log.<log name>.location
+# log.<log name>.max_file_size
+# log.<log name>.max_backup_index
+# log.<log name>.flush
+#
+# This is a multi-valued option. Whitespace is the separator.
+#
+;owcimomd.additional_logs =
+
+################################################################################
+# owcimomd.wql_lib specifies the location where the wql processor library
+# will be loaded from.
+# To disable WQL, either set this option to empty or comment it out.
+# The default is "/usr/lib64/libowwql.so"
+owcimomd.wql_lib = /usr/lib64/libowwql.so
+
+################################################################################
+# The owcimomd.dump_socket_io defines the directory where owcimomd will
+# dump all socket i/o to log files.  This is usefull for debugging HTTP
+# operations and XML.  The files will be called <dir>/owSockDumpIn and
+# <dir>/owSockDumpOut.  If this option is not set, or has an empty value,
+# dump files will not be used.  Warning: if this option is defined,
+# CIM operattions could take twice as long!
+;owcimomd.dump_socket_io = /tmp
+
+################################################################################
+# The owcimomd.debugflag specifies whether or not owcimomd will run in
+# debug mode. If this option is true, owcimomd will not detache from the
+# terminal and will send all logging to the terminal. While in this mode
+# owcimomd can be properly terminated by simply hitting Ctrl-C or sending it
+# a SIGTERM signal (SIGTERM also works if owcimomd.debugflag is false)
+# Also using the command line parameter -d turns on debug mode.
+;owcimomd.debugflag = false
+
+################################################################################
+# The authentication module to be used by owcimomd.  This should be a
+# an absolute path to the shared library containing the authentication module.
+owcimomd.authentication_module = /usr/lib64/openwbem/authentication/libpamauthentication.so
+
+################################################################################
+# The maximum number of classes that will be cached by the cimom.
+# The default is 128
+owcimomd.max_class_cache_size = 128
+
+################################################################################
+# A space delimited list of system users who are allowed to acces the CIMOM
+# The special value * to allow all users to authenticate (for instance, if
+# you choose to control access with ACLs instead).
+# This option is enforced for all authentication methods. If
+# owcimomd.allow_anonymous = true, it is not enforced.
+# This is a multi-valued option. Whitespace is the separator.
+# The default is *
+owcimomd.allowed_users = root admin
+
+################################################################################
+# If the simple authentication module is used, this needs to be the path to
+# the password file
+simple_auth.password_file = /etc/openwbem/simple_auth.passwd
+
+################################################################################
+# When this variable is set to true, the cimom will not attempt to
+# deliver indications.
+# The default is false
+owcimomd.disable_indications = false
+
+################################################################################
+# A space-separated list of namespaces where providers won't be registerd
+# for classes if no namespace was specified during provider self-registration.
+# If providers use self-registration, and don't specify a namespace (only 
+# a class name), they are registered for all namespaces in which the class
+# is present by default.  This option allows the specified namespaces to be 
+# excluded from this behavior.  
+# This is a multi-valued option. Whitespace is the separator.
+# Example: owcimomd.explicit_registration_namespaces = root/private root/cache
+;owcimomd.explicit_registration_namespaces = 
+
+################################################################################
+# owcimomd.ACL_superuser specifies the user name of the user that has access to
+# all CIM data in all namespaces maintained by the CIMOM. This user can be used
+# to administer the /root/security namespace which is where all ACL user rights
+# are stored. ACL processing is not enabled until the OpenWBEM_Acl1.0.mof file
+# has been imported.
+owcimomd.ACL_superuser = root
+
+################################################################################
+# owcimomd.request_handler_TTL specifies how many minutes the request
+# handlers will stay loaded after they are accessed.  If the value of this
+# option is -1, the request handlers will never be unloaded.
+# The default is 5
+owcimomd.request_handler_TTL = 5
+
+################################################################################
+# owcimomd.check_referential_integrity specifies whether the CIM Repository
+# will perform extra checks to help ensure referential integrity between
+# associations and propagated keys.  Since these checks can add overhead,
+# it is recommended to enable this option during development and debugging
+# and disable it in production if the overhead is too expensive.
+# The default is false
+owcimomd.check_referential_integrity = false
+
+################################################################################
+# owcimomd.polling_manager_max_threads specifies the maximum number of
+# concurrent threads that will be allowed to run by the polling manager.
+# This should only be a concern if the cimom has a lot of polled providers.
+# The default is 256
+owcimomd.polling_manager_max_threads = 256
+
+################################################################################
+# owcimomd.max_indication_export_threads specifies the maximum number of
+# concurrent threads to export indications that will be allowed to run by the
+# indication server.
+# This may need to be increased if a lot of indications are being exported.
+# The default is 30
+owcimomd.max_indication_export_threads = 30
+
+################################################################################
+# owcimomd.restart_on_error controls the use of the fatal signal handler.
+# If this option is set to true, if owcimomd receives a fatal signal
+# (SIGSEGV, SIGBUS, SIGILL, SIGFPE or SIGABRT) which may be caused by faulty
+# code, then it will restart itself.  Note that this feature is disabled if
+# the cimom is built in debug mode (OW_DEBUG is defined).
+# This feature helps to keep the cimom running in the case a buggy provider
+# (or the cimom itself) causes a fatal signal.
+# The default is true
+owcimomd.restart_on_error = true
+
+################################################################################
+# owcimomd.authorization_lib specifies the location the authorization
+# library will be loaded from.
+# There are 2 authorization interfaces, either one can work.
+# If this option is empty or commented out, no authorization module will be
+# used.
+;owcimomd.authorization_lib = /usr/lib64/openwbem/libowsimpleauthorizer.so
+
+################################################################################
+# owcimomd.authorization2_lib specifies the location the authorization
+# library will be loaded from.
+# There are 2 authorization interfaces, either one can work.
+# If this option is empty or commented out, no authorization module will be
+# used.
+;owcimomd.authorization2_lib = /usr/lib64/openwbem/libowsimpleauthorizer2.so
+
+################################################################################
+# owcimomd.interop_schema_namespace specifies the namespace which contains the
+# CIM Interop schema.
+# The default is root
+owcimomd.interop_schema_namespace = Interop
+
+################################################################################
+# If owcimomd.drop_root_privileges != "false", then owcimomd will run as the
+# user "owcimomd" instead of root.
+# The default is false
+owcimomd.drop_root_privileges = false
+
+################################################################################
+# cppprovifc.prov_TTL specifies how many minutes the C++ provider manager
+# will keep a provider in memory.  If a provider has not been accessed for
+# longer than this value, it will be unloaded and the memory associated with
+# it will be freed.  If the value of this option is -1, the providers will
+# never be unloaded.
+# The default is 5
+cppprovifc.prov_TTL = 5
+
+################################################################################
+# The remote provider interface uses a connection pool to re-use remote
+# connections. remoteprovifc.max_connections_per_url specifies the maximum
+# number of connections per url that will be pooled.  The value must be a
+# non-negative integer.
+# The default is 5
+remoteprovifc.max_connections_per_url = 5
+
+################################################################################
+# If OpenWBEM is built with zlib, it can use deflate compression in the HTTP
+# responses.  This option controls whether it will actually use it or not.
+# Performance tests on a 100Mbit lan have shown that enabling deflate is slower 
+# than if it is disabled.
+# The default is true
+http_server.enable_deflate = false
+
+################################################################################
+# http_server.listen_addresses option specifies the local addresses to listen
+# on.  The option is a space delimited list.  Each item is either a hostname
+# or an IP address.  The value 0.0.0.0 means to listen on all local addresses.
+# This is a multi-valued option. Whitespace is the separator.
+# The default is 0.0.0.0
+http_server.listen_addresses = 0.0.0.0
+
+################################################################################
+# http_server.http_port option specifies the port number owcimomd will listen
+# on for all HTTP communications.
+# Set this to -1 if you do not want to support HTTP connections (for
+# instance, you only want to support HTTPS connections).  If a value of 0
+# is given, a port will be dynamically assigned at run-time.
+# The default is 5988
+http_server.http_port = -1
+
+################################################################################
+# http_server.https_port specifies the port number owcimomd will listen on
+# for all HTTPS communications.
+# Set this to -1 if you do not want to support HTTPS connections.
+# If a value of 0 is given, a port will be dynamically assigned at run-time.
+# The default is 5989
+http_server.https_port = 5989
+
+################################################################################
+# http_server.max_connections specifies the maximum number of concurrent
+# connections owcimomd will handle.
+# The default is 30
+http_server.max_connections = 30
+
+################################################################################
+# http_server.SSL_cert specifies the location of the file that contains the
+# host's certificate that will be used by Open SSL for HTTPS communications.
+http_server.SSL_cert = /etc/openwbem/servercert.pem
+
+################################################################################
+# http_server.SSL_key specifies the location of the file that contains the
+# host's private key that will be used by Open SSL for HTTPS communications.
+# The default is the value of the http_server.SSL_cert option (meaning that
+# both the private key and the certificate are in the same file).
+http_server.SSL_key = /etc/openwbem/serverkey.pem
+
+################################################################################
+# Tell the http server to use Digest authentication
+# Digest will bypass the Basic authentication mechanism.
+# You must set up the digest password file using owdigestgenpass to use digest.
+# Digest doesn't use the authentication module specified by the
+# owcimomd.authentication_module config item.
+# If this option is true, then Basic will not be used.
+# If this option is false, then Basic will be used.
+# The default is true
+http_server.use_digest = false
+
+################################################################################
+# If the Digest authentication option is enabled, this needs to be the path to
+# the password file.
+http_server.digest_password_file = /etc/openwbem/digest_auth.passwd
+
+################################################################################
+# Tell the http server to allow local authentication
+# local authentication allows a local system user to authenticate without
+# supplying a password, instead relying on filesystem permissions.  This can
+# be enabled in conjunction with either http Basic or Digest.
+# The default is false
+http_server.allow_local_authentication = true
+
+################################################################################
+# Determines if the server should attempt to authenticate clients
+# with SSL Client Certificate verification.
+# disabled: no client certificate checking will take place.
+# optional: A trusted cert is authenticated (no HTTP auth necessary)
+#   An untrusted cert still passes the SSL handshake, but the client
+#   will have to pass HTTP authentication.
+# autoupdate: Same as optional, but previously unknown client certificates
+#   which pass HTTP authentication are added to the trust store, so that
+#   subsequent client connections with the same certificate won't
+#   require HTTP authentication.
+# required: A trusted cert is required for the the SSL handshake to
+#   succeed.
+# The default is disabled
+http_server.ssl_client_verification = disabled
+
+################################################################################
+# Specify the directory containing the OpenSSL trust store.
+# The default is "/etc/openwbem/truststore"
+http_server.ssl_trust_store = /etc/openwbem/truststore
+
+################################################################################
+# http_server.single_thread specifies whether or not owcimomd process connection
+# in a separate thread or in the same thread as the server. This option is
+# really only for debug purposes and should not be of any use to the
+# typical user.
+# The default is false
+http_server.single_thread = false
+
+################################################################################
+# http_server.use_UDS specifies whether the http server will listen on a
+# Unix Domain Socket.
+# The default is true
+http_server.use_UDS = true
+
+################################################################################
+# http_server.reuse_addr specifies whether the http server will set the
+# SO_REUSEADDR flag when it listens on a socket.  This is provided because some
+# Unix kernels have security problems when this option is set.
+# If this option is not turned on, you may not be able to immediately restart
+# the daemon because it can't listen on the port until the kernel releases it.
+# It's OK to use on current linux versions.  Definitely not on
+# OLD (kernel < 1.3.60) ones.
+# See http://monkey.org/openbsd/archive/misc/9601/msg00031.html
+# or just google for "bind() Security Problems"
+# If you specify interfaces to listen on other than 0.0.0.0 using the
+# http_server.listen_addresses option, then there is no security problem with
+# enabling this option.
+# The default is true
+http_server.reuse_addr = true
+
+################################################################################
+# http_server.timeout specifies the number of seconds that the server will use
+# as a timeout when communicting with clients. The value must be > 0.
+# The default is 300 (5 minutes).
+http_server.timeout = 300
+
+################################################################################
+# http.default_content_language specified the default content-laguage that
+# will be returned to an HTTP client when the accept-language header was used
+# on the request and a provider has not explicity set the content-language.
+# The default is en
+http_server.default_content_language = en
+
+################################################################################
+# slp.enable_advertisement controls whether the slp provider advertises with SLP
+# The default is true
+slp.enable_advertisement = true
+
+################################################################################
+# The following options will probably not need to be modified.
+################################################################################
+
+
+################################################################################
+# owcimomd.services_path Specifies the directory containing the services
+# shared libraries to be loaded by the CIMOM.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# You probably don't need to modify this option.
+# The default is "/usr/lib64/openwbem/services"
+owcimomd.services_path = /usr/lib64/openwbem/services
+
+################################################################################
+# owcimomd.request_handler_path Specifies the directory containing the
+# request handler shared libraries to be loaded by the CIMOM.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# You probably don't need to modify this option.
+# The default is "/usr/lib64/openwbem/requesthandlers"
+owcimomd.request_handler_path = /usr/lib64/openwbem/requesthandlers
+
+################################################################################
+# owcimomd.libexecdir specifies the locaction of the libexec directory.
+# Binaries that owcimomd relies on are expected to be in this directory.
+# You probably don't need to modify this option.
+# The default is "/usr/lib64/openwbem/bin/openwbem"
+owcimomd.libexecdir = /usr/lib64/openwbem/bin/openwbem
+
+################################################################################
+# owcimomd.owlibdir specifies the locaction of the lib directory.
+# Dynamically loaded libraries that owcimomd relies on are expected to be in
+# this directory.
+# You probably don't need to modify this option.
+# The default is "/usr/lib64/openwbem"
+owcimomd.owlibdir = /usr/lib64/openwbem
+
+################################################################################
+# owcimomd.datadir specifies the directory where owcimomd will place its data
+# file (repositories).
+# You probably don't need to modify this option.
+# The default is "/var/lib/openwbem"
+owcimomd.datadir = /var/lib/openwbem
+
+################################################################################
+# owcimomd.provider_ifc_libs specifies the locations where all the provider
+# interfaces will be loaded from. owcimomd assumes all shared libraries in
+# these directories are provider interfaces. If a shared library in this directory
+# does not support the provider interface api, it will be rejected.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# You probably don't need to modify this option.
+# The default is "/usr/lib64/openwbem/provifcs"
+owcimomd.provider_ifc_libs = /usr/lib64/openwbem/provifcs
+
+################################################################################
+# One of the provider interfaces provided with owcimomd is the C++ provider
+# interface. The cppprovifc.prov_location option specifies where the C++
+# provider interface will load it's providers from.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# You probably don't need to modify this option.
+# The default is "/usr/lib64/openwbem/c++providers"
+cppprovifc.prov_location = /usr/lib64/openwbem/c++providers:/opt/novell/lib64/openwbem/c++providers
+
+################################################################################
+# One of the provider interfaces provided with owcimomd is the OWBI1 provider
+# interface. The owbi1provifc.prov_location option specifies where the OWBI1
+# provider interface will load it's providers from.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# You probably don't need to modify this option.
+# The default is "/usr/lib64/openwbem/owbi1providers"
+owbi1provifc.prov_location = /usr/lib64/openwbem/owbi1providers
+
+################################################################################
+# owbi1provifc.prov_TTL specifies how many minutes the OWBI1 provider manager
+# will keep a provider in memory.  If a provider has not been accessed for
+# longer than this value, it will be unloaded and the memory associated with
+# it will be freed.  If the value of this option is -1, the providers will
+# never be unloaded.
+# The default is 5
+owbi1provifc.prov_TTL = 5
+
+################################################################################
+# http_server.uds_filename specifies the name of the unix domain socket the
+# http server will listen on.
+# You probably don't need to modify this option.
+# The default is /tmp/OW@LCL@APIIPC_72859_Xq47Bf_P9r761-5_J-7_Q
+http_server.uds_filename = /tmp/OW@LCL@APIIPC_72859_Xq47Bf_P9r761-5_J-7_Q
+
+################################################################################
+# One of the provider interfaces provided with owcimomd is the NPI provider
+# interface. The npiprovifc.prov_location option specifies where the NPI
+# provider interface will load it's providers from.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# The default is "/usr/lib64/openwbem/npiproviders"
+npiprovifc.prov_location = /usr/lib64/openwbem/npiproviders
+
+################################################################################
+# One of the provider interfaces provided with owcimomd is the CMPI provider
+# interface. The cmpiprovifc.prov_location option specifies where the CMPI
+# provider interface will load it's providers from.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# The default is "/usr/lib64/openwbem/cmpiproviders"
+cmpiprovifc.prov_location = /usr/lib64/cmpi:/usr/lib64/openwbem/cmpiproviders
+
+################################################################################
+# cmpiprovifc.prov_TTL specifies how many minutes the CMPI provider manager
+# will keep a provider in memory.  If a provider has not been accessed for
+# longer than this value, it will be unloaded and the memory associated with
+# it will be freed.  If the value of this option is -1, the providers will
+# never be unloaded.
+# The default is -1
+cmpiprovifc.prov_TTL = -1
+
+################################################################################
+# One of the provider interfaces provided with owcimomd is the perl provider
+# interface. The perlprovifc.prov_location option specifies where the perl
+# provider interface will load it's providers from.
+# This is a multi-valued option. ':' (windows) or ';' (POSIX) is the separator.
+# The default is "/usr/lib64/openwbem/perlproviders"
+perlprovifc.prov_location = /usr/lib64/openwbem/perlproviders
+
+################################################################################
+# The default built in provider interface is loaded and initialized by default.
+# Set this option to true to disable it.
+# The default is "false"
+owcimomd.disable_cpp_provider_interface = false
+
+################################################################################
+# Specify the location of the owcimomd pidfile
+# The default is "/var/run/owcimomd.pid"
+owcimomd.pidfile = /var/run/owcimomd.pid
+
+################################################################################
+# The following options are deprecated
+################################################################################
+
+
+################################################################################
+# This option is DEPRECATED.  Use owcimomd.allowed_users instead.
+# A space delimited list of system users who are allowed to access the CIMOM.
+# This option is only enforced by the pam authentication module, and has no
+# effect if you are not using http Basic authentication together with the
+# pam authentication module.
+# Set this value to * to allow all users to authenticate (for instance, if
+# you choose to control access with ACLs instead).
+pam.allowed_users = *
+
+################################################################################
+# THIS OPTION IS DEPRECATED - Use log.main.type and log.main.location instead.
+# owcimomd.log_location specifies the location of the log file that is
+# generated by owcimomd. If this option is set to syslog, owcimomd will log
+# all messages through the syslog interface (Recommended). If this option
+# is set to null, logging will be disabled completely.  If this option
+# is set to anything else, it is assumed it is an absolute path to a file
+# that owcimomd will write its log messages to.
+# The default is syslog
+;owcimomd.log_location = syslog
+
+################################################################################
+# THIS OPTION IS DEPRECATED - Use log.main.level or log.main.categories
+# The owcimomd.log_level option specifies the level of logging. This can be
+# any one of the following:
+#   "debug"    - All debug, info, error and fatalerror messages are logged
+#   "info"     - All info, error and fatalerror messages are logged
+#   "error"    - All error and fatalerror messages are logged. This is the default.
+#   "fatalerror" - Only fatalerror messages are logged.
+;owcimomd.log_level = error
+
+EOT
+
+# configure sshd - disalow root login with password
+cat > /etc/ssh/sshd_config <<EOT
+#	$OpenBSD: sshd_config,v 1.72 2005/07/25 11:59:40 markus Exp $
+
+# This is the sshd server system-wide configuration file.  See
+# sshd_config(5) for more information.
+
+# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+# The strategy used for options in the default sshd_config shipped with
+# OpenSSH is to specify options with their default value where
+# possible, but leave them commented.  Uncommented options change a
+# default value.
+
+#Port 22
+#Protocol 2,1
+#AddressFamily any
+#ListenAddress 0.0.0.0
+#ListenAddress ::
+
+# HostKey for protocol version 1
+#HostKey /etc/ssh/ssh_host_key
+# HostKeys for protocol version 2
+#HostKey /etc/ssh/ssh_host_rsa_key
+#HostKey /etc/ssh/ssh_host_dsa_key
+
+# Lifetime and size of ephemeral version 1 server key
+#KeyRegenerationInterval 1h
+#ServerKeyBits 768
+
+# Logging
+# obsoletes QuietMode and FascistLogging
+#SyslogFacility AUTH
+#LogLevel INFO
+
+# Authentication:
+
+#LoginGraceTime 2m
+PermitRootLogin without-password 
+#StrictModes yes
+#MaxAuthTries 6
+
+#RSAAuthentication yes
+#PubkeyAuthentication yes
+#AuthorizedKeysFile	.ssh/authorized_keys
+
+# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts
+#RhostsRSAAuthentication no
+# similar for protocol version 2
+#HostbasedAuthentication no
+# Change to yes if you don't trust ~/.ssh/known_hosts for
+# RhostsRSAAuthentication and HostbasedAuthentication
+#IgnoreUserKnownHosts no
+# Don't read the user's ~/.rhosts and ~/.shosts files
+#IgnoreRhosts yes
+
+# To disable tunneled clear text passwords, change to no here!
+PasswordAuthentication no
+#PermitEmptyPasswords no
+
+# Change to no to disable s/key passwords
+#ChallengeResponseAuthentication yes
+
+# Kerberos options
+#KerberosAuthentication no
+#KerberosOrLocalPasswd yes
+#KerberosTicketCleanup yes
+#KerberosGetAFSToken no
+
+# GSSAPI options
+#GSSAPIAuthentication no
+#GSSAPICleanupCredentials yes
+
+# Set this to 'yes' to enable support for the deprecated 'gssapi' authentication
+# mechanism to OpenSSH 3.8p1. The newer 'gssapi-with-mic' mechanism is included
+# in this release. The use of 'gssapi' is deprecated due to the presence of 
+# potential man-in-the-middle attacks, which 'gssapi-with-mic' is not susceptible to.
+#GSSAPIEnableMITMAttack no
+ 
+
+# Set this to 'yes' to enable PAM authentication, account processing, 
+# and session processing. If this is enabled, PAM authentication will 
+# be allowed through the ChallengeResponseAuthentication mechanism. 
+# Depending on your PAM configuration, this may bypass the setting of 
+# PasswordAuthentication, PermitEmptyPasswords, and 
+# "PermitRootLogin without-password". If you just want the PAM account and 
+# session checks to run without PAM authentication, then enable this but set 
+# ChallengeResponseAuthentication=no
+UsePAM yes
+
+#AllowTcpForwarding yes
+#GatewayPorts no
+X11Forwarding yes 
+#X11DisplayOffset 10
+#X11UseLocalhost yes
+#PrintMotd yes
+#PrintLastLog yes
+#TCPKeepAlive yes
+#UseLogin no
+#UsePrivilegeSeparation yes
+#PermitUserEnvironment no
+#Compression delayed
+#ClientAliveInterval 0
+#ClientAliveCountMax 3
+#UseDNS yes
+#PidFile /var/run/sshd.pid
+#MaxStartups 10
+
+# no default banner path
+#Banner /some/path
+
+# override default of no subsystems
+Subsystem	sftp	/usr/lib64/ssh/sftp-server
+
+# This enables accepting locale enviroment variables LC_* LANG, see sshd_config(5).
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES 
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT 
+AcceptEnv LC_IDENTIFICATION LC_ALL
+EOT
+
+# inserv and start additional required services
+insserv owcimomd
+insserv tomcat5
+insserv atd
+/etc/init.d/owcimomd restart
+/etc/init.d/tomcat5 restart
+/etc/init.d/atd restart
+/etc/init.d/sshd restart
+
+# never register on boot
+touch /var/lib/suseRegister/neverRegisterOnBoot
+
+# setup update repository
+/usr/bin/rug --quiet sa -t zypp http://deAooPqW:rFFtg362@beta1.suse.com/eRggTuwDllL/SLE_10_SP1_SAP/ SLE_10_SP1_SAP
+
+]]>
+             </source>
+          </script>
+          <script>
+             <filename>2_init_issue.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+LANG="en"
+esc="\033["
+IP=`/sbin/ifconfig eth0|grep Bcast|awk '{ print $2 }'|sed 's/addr://'`
+
+echo > /etc/issue
+echo -e "${esc}2J" >> /etc/issue
+echo "Welcome to SUSE Linux Enterprise Server 10 SP1 (x86_64) - Kernel \r (\l)." >> /etc/issue
+#echo -e "${esc}32;40;1mConnect to http://${IP} with your webbrowser ${esc}0m" >> /etc/issue
+echo >> /etc/issue
+]]>
+             </source>
+          </script>
+          <script>
+             <filename>3_init_sap.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+#!/bin/sh
+
+mount /dev/cdrom /mnt && echo "cdrom mounted"
+if [ -d /mnt/sap ]
+then
+ sleep 2
+else
+ # 2nd try
+ mount /dev/cdrom /mnt && echo "cdrom mounted"
+fi
+
+
+
+# Create symlink for ibm-java
+ln -s /opt/IBMJava2-amd64-142 /opt/java
+
+mkdir -p /var/lib/finalsplash
+tar xfvz /mnt/sap/finalsplash.tgz -C /var/lib/finalsplash
+ln -s /etc/init.d/finalsplash /sbin/rcfinalsplash
+#insserv finalsplash
+#/etc/init.d/finalsplash start
+umount /mnt
+
+
+yast2 /tmp/media_change.ycp
+#rm -f /tmp/media_change.ycp
+/tmp/sap_inst.sh
+]]>
+             </source>
+          </script>
+       </init-scripts>
+   </scripts>
+</profile>

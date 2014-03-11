@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!-- fehr_pre_script.xml
+use all
+-->
+<scripts>
+<pre-scripts config:type="list">
+  <script>
+    <debug config:type="boolean">true</debug>
+    <filename>pre_script</filename>
+    <interpreter>shell</interpreter>
+    <source><![CDATA[
+#!/bin/bash
+DISK=""
+for i in /sys/block/sd*
+do
+    SIZE=`cat $i/size`
+    if [ -z "$DISK" -a $SIZE -gt 20971520 -a $SIZE -lt 41943040 ] 
+    then 
+	DISK=/dev/`echo $i | sed "s:^.*/::"`
+    fi
+done
+[ -z "$DISK" ] && DISK=/dev/sda
+sed "/device.*dev.sdx/s:/dev/sdx:$DISK:" </tmp/profile/autoinst.xml >/tmp/profile/modified.xml
+       ]]></source>
+  </script>
+</pre-scripts>
+</scripts>
+<runlevel>
+ <default>3</default>
+</runlevel>
+<firstboot>
+  <firstboot_enabled config:type="boolean">false</firstboot_enabled>
+</firstboot>
+<language>
+  <language>en_US</language>
+  <languages>de_DE</languages>
+</language>
+<timezone>
+  <hwclock>localtime</hwclock>
+  <timezone>Europe/Berlin</timezone>
+</timezone>
+  <report>
+    <errors>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">5</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+  </report>
+  <networking>
+    <keep_install_network config:type="boolean">true</keep_install_network>
+  </networking>
+  <software>
+    <do_online_update config:type="boolean">true</do_online_update>
+    <kernel>kernel-default</kernel>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+    </patterns>
+    <packages config:type="list">
+      <package>apache2</package>
+      <package>less</package>
+      <package>zypper</package>
+      <package>yast2-runlevel</package>
+      <package>vim</package>
+      <package>nfs-client</package>
+      <package>yast2-bootloader</package>
+      <package>yast2-ncurses</package>
+      <package>yast2-firstboot</package>
+    </packages>
+  </software> 
+  <partitioning config:type="list">
+      <drive>
+        <use>all</use>
+        <device>/dev/sdx</device>
+        <initialize config:type="boolean">true</initialize>
+        <partitions config:type="list">
+          <partition>
+            <mount>/boot</mount>
+            <size>75mb</size>
+            <filesystem  config:type="symbol">ext3</filesystem>
+          </partition>
+          <partition>
+            <mount>swap</mount>
+            <size>1012mb</size>
+            <filesystem  config:type="symbol">swap</filesystem>
+          </partition>
+          <partition>
+            <mount>/</mount>
+            <size>max</size>
+	    <mkfs_options>-I 128</mkfs_options>
+            <filesystem  config:type="symbol">ext3</filesystem>
+          </partition>
+        </partitions>
+     </drive>
+  </partitioning>
+  <general>
+   <signature-handling>
+       <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+       <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+       <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+       <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+       <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+       <import_gpg_key         config:type="boolean">true</import_gpg_key>
+   </signature-handling>
+    <mode>
+        <forceboot config:type="boolean">true</forceboot>
+        <confirm config:type="boolean">true</confirm>
+        <second_stage config:type="boolean">true</second_stage>
+        <halt config:type="boolean">false</halt>
+    </mode>
+  </general>
+</profile>

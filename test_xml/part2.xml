@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+encrypted /tmp partition
+-->
+  <configure>
+  <bootloader>
+    <device_map config:type="list">
+      <device_map_entry>
+        <firmware>hd0</firmware>
+        <linux>/dev/sda</linux>
+      </device_map_entry>
+      <device_map_entry>
+        <firmware>hd1</firmware>
+        <linux>/dev/sdb</linux>
+      </device_map_entry>
+    </device_map>
+    <global>
+      <activate>true</activate>
+      <boot_root>true</boot_root>
+      <generic_mbr>true</generic_mbr>
+      <lines_cache_id>3</lines_cache_id>
+      <timeout config:type="integer">8</timeout>
+    </global>
+    <loader_type>grub</loader_type>
+  </bootloader>
+<!--
+ <bootloader>
+    <global>
+      <generic_mbr>true</generic_mbr>
+      <timeout config:type="integer">8</timeout>
+      <gfxmenu>/boot/menu</gfxmenu>
+    </global>
+  </bootloader>
+-->
+  <timezone>
+    <hwclock>localtime</hwclock>
+    <timezone>America/Chicago</timezone>
+  </timezone>
+
+  <report>
+    <errors>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </yesno_messages>
+  </report>
+
+<general> 
+   <signature-handling>
+       <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+       <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+       <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+       <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+   </signature-handling>
+   <mode>
+     <confirm config:type="boolean">true</confirm>
+   </mode>
+</general>
+  <suse_register>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data/>
+    <submit_hwdata config:type="boolean">true</submit_hwdata>
+    <submit_optional config:type="boolean">true</submit_optional>
+  </suse_register>
+    <sound>
+      <autoinstall config:type="boolean">true</autoinstall>
+      <configure_detected config:type="boolean">true</configure_detected>
+    </sound>
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>
+          <name>Ethernet Network Card</name>
+          <startmode>auto</startmode>
+          <usercontrol>no</usercontrol>
+        </interface>
+      </interfaces>
+      <modules config:type="list">
+        <module_entry>
+          <device>static-0</device>
+          <module></module>
+          <options></options>
+        </module_entry>
+      </modules>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+      </routing>
+    </networking>
+  </configure>
+  <install>
+    <software>
+<!--     <base>default</base> -->
+      <post-packages config:type="list">
+<!--        <package>yast2-cim</package> -->
+      </post-packages>
+
+    </software>
+    <users config:type="list">
+      <user>
+        <encrypted config:type="boolean">true</encrypted>
+        <user_password>pw</user_password>
+        <username>root</username>
+      </user>
+    </users>
+    <partitioning config:type="list">
+    <!--
+      <drive>
+        <device>/dev/hdc</device>
+        <partitions config:type="list">
+          <partition>
+            <partition_id config:type="integer">131</partition_id>
+            <partition_nr config:type="integer">1</partition_nr>
+            <size>19128192000</size>
+          </partition>
+        </partitions>
+        <use>all</use>
+      </drive>
+      -->
+      <drive>
+       <initialize config:type="boolean">true</initialize>
+       <device>/dev/sda</device>
+       <partitions config:type="list">
+         <partition>
+           <format config:type="boolean">true</format>
+           <mount>/</mount>
+           <filesystem config:type="symbol">ext2</filesystem>
+           <partition_nr config:type="integer">1</partition_nr>
+           <size>2G</size>
+           <mountby config:type="symbol">id</mountby>
+           <region config:type="list">
+                <r config:type="integer">100</r>
+                <r config:type="integer">250</r>
+           </region>
+         </partition>
+         <partition>
+           <mountby config:type="symbol">id</mountby>
+<!--           <filesystem config:type="symbol">swap</filesystem> -->
+           <format config:type="boolean">true</format>
+           <mount>/boot</mount>
+           <size>auto</size>
+           <partition_nr config:type="integer">2</partition_nr>
+         </partition>
+         <partition>
+           <crypt>twofish256</crypt>
+           <crypt_key>abc12345678901234567890</crypt_key>
+           <loop_fs config:type="boolean">true</loop_fs>
+           <mountby config:type="symbol">id</mountby>
+           <crypt_fs config:type="boolean">true</crypt_fs>
+           <filesystem config:type="symbol">ext2</filesystem>
+           <mount>/tmpx</mount>
+           <size>1G</size>
+           <partition_nr config:type="integer">5</partition_nr>
+         </partition>
+       </partitions>
+       <use>all</use>
+      </drive>
+      <!--
+      <drive>
+       <initialize config:type="boolean">false</initialize>
+       <device>/dev/hdc</device>
+       <partitions config:type="list">
+         <partition>
+           <format config:type="boolean">true</format>
+           <mount>/boot</mount>
+           <partition_id config:type="integer">131</partition_id>
+           <filesystem config:type="symbol">reiser</filesystem>
+           <partition_type>primary</partition_type>
+            <partition_nr config:type="integer">1</partition_nr>
+           <size>2G</size>
+         </partition>
+       </partitions>
+       <use>all</use>
+      </drive>
+      -->
+    </partitioning>
+</install>
+</profile>

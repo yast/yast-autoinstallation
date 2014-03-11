@@ -1,0 +1,227 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <bootloader>
+    <activate config:type="boolean">true</activate>
+    <global>
+      <embed_stage1.5 config:type="boolean">true</embed_stage1.5>
+      <gfxmenu>/boot/message</gfxmenu>
+      <lines_cache_id>0</lines_cache_id>
+      <prompt>1</prompt>
+      <stage1_dev>/dev/hda2</stage1_dev>
+      <timeout config:type="integer">8</timeout>
+    </global>
+    <initrd_modules config:type="list">
+      <initrd_module>
+        <module>piix</module>
+      </initrd_module>
+      <initrd_module>
+        <module>processor</module>
+      </initrd_module>
+      <initrd_module>
+        <module>thermal</module>
+      </initrd_module>
+      <initrd_module>
+        <module>fan</module>
+      </initrd_module>
+      <initrd_module>
+        <module>reiserfs</module>
+      </initrd_module>
+      <initrd_module>
+        <module>edd</module>
+      </initrd_module>
+    </initrd_modules>
+    <loader_device></loader_device>
+    <loader_type>grub</loader_type>
+    <location>boot</location>
+    <repl_mbr config:type="boolean">false</repl_mbr>
+    <sections config:type="list">
+      <section>
+        <append>insmod=e100 resume=/dev/hda1  splash=silent showopts</append>
+        <initial>1</initial>
+        <initrd>/boot/initrd</initrd>
+        <kernel>/boot/vmlinuz</kernel>
+        <lines_cache_id>1</lines_cache_id>
+        <name>SUSE Linux Enterprise Server 10</name>
+        <original_name>linux</original_name>
+        <root>/dev/hda2</root>
+        <type>image</type>
+        <vga>0x31a</vga>
+      </section>
+      <section>
+        <chainloader>/dev/fd0</chainloader>
+        <lines_cache_id>2</lines_cache_id>
+        <name>Diskette</name>
+        <original_name>floppy</original_name>
+        <sectors>1</sectors>
+        <type>chainloader</type>
+      </section>
+      <section>
+        <append>showopts ide=nodma apm=off acpi=off noresume nosmp noapic maxcpus=0 edd=off 3</append>
+        <initrd>/boot/initrd</initrd>
+        <kernel>/boot/vmlinuz</kernel>
+        <lines_cache_id>3</lines_cache_id>
+        <name>Failsafe -- SUSE Linux Enterprise Server 10</name>
+        <original_name>failsafe</original_name>
+        <root>/dev/hda2</root>
+        <type>image</type>
+        <vga>normal</vga>
+      </section>
+    </sections>
+  </bootloader>
+  <customer_center>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data>
+      <email>mc@suse.de</email>
+    </registration_data>
+    <submit_hwdata config:type="boolean">false</submit_hwdata>
+    <submit_optional config:type="boolean">false</submit_optional>
+  </customer_center>
+  <firewall>
+    <FW_DEV_DMZ></FW_DEV_DMZ>
+    <FW_DEV_EXT></FW_DEV_EXT>
+    <FW_DEV_INT></FW_DEV_INT>
+    <enable_firewall config:type="boolean">false</enable_firewall>
+    <start_firewall config:type="boolean">false</start_firewall>
+  </firewall>
+  <general>
+    <signature-handling>
+      <accept_unsigned_file         config:type="boolean">true</accept_unsigned_file>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_verification_failed   config:type="boolean">true</accept_verification_failed>
+      <accept_unknown_gpg_key       config:type="boolean">true</accept_unknown_gpg_key>
+      <import_gpg_key               config:type="boolean">true</import_gpg_key>
+    </signature-handling>
+    <mode>
+      <confirm config:type="boolean">false</confirm>
+    </mode>
+    <mouse>
+      <id>none</id>
+    </mouse>
+    <signature-handling/>
+  </general>
+  <groups config:type="list"/>
+  <language>
+    <language>de_DE</language>
+    <languages>de_DE</languages>
+  </language>
+  <networking>
+    <dhcp_options>
+      <dhclient_additional_options></dhclient_additional_options>
+      <dhclient_client_id></dhclient_client_id>
+      <dhclient_hostname_option>AUTO</dhclient_hostname_option>
+    </dhcp_options>
+    <dns>
+      <dhcp_hostname config:type="boolean">false</dhcp_hostname>
+      <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>dhcp</bootproto>
+        <device>eth0</device>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+    <modules config:type="list">
+      <module_entry>
+        <device>static-0</device>
+        <module></module>
+        <options></options>
+      </module_entry>
+    </modules>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+    </routing>
+  </networking>
+  <partitioning config:type="list">
+    <drive>
+      <partitions config:type="list">
+        <partition>
+          <filesystem config:type="symbol">swap</filesystem>
+          <filesystem_id config:type="integer">130</filesystem_id>
+          <format config:type="boolean">true</format>
+          <mount>swap</mount>
+          <partition_id config:type="integer">130</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>1595671552</size>
+        </partition>
+        <partition>
+          <filesystem config:type="symbol">reiser</filesystem>
+          <filesystem_id config:type="integer">131</filesystem_id>
+          <format config:type="boolean">true</format>
+          <mount>/</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <partition_type>primary</partition_type>
+          <size>8537840640</size>
+        </partition>
+      </partitions>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <report>
+    <errors>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">0</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">0</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">0</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">0</timeout>
+    </yesno_messages>
+  </report>
+  <software>
+    <patterns config:type="list">
+      <pattern>apparmor</pattern>
+      <pattern>base</pattern>
+      <pattern>print_server</pattern>
+    </patterns>
+  </software>
+  <timezone>
+    <hwclock>UTC</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+  <user_defaults>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+      <user_password>pw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</profile>

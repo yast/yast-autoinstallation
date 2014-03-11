@@ -1,0 +1,908 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<!--
+partitioning_advanced
+-->
+  <files config:type="list">
+    <file>
+    <!--
+      <file_contents><![CDATA[1
+2
+3
+4
+]]></file_contents>
+-->
+      <file_path>/bla</file_path>
+      <file_location>relurl://file_test.txt</file_location>
+    </file>
+  </files>
+  <runlevel>
+    <default>5</default>
+  </runlevel>
+  <!-- Sysconfig {{{ -->
+  <sysconfig config:type="list">
+  <sysconfig_entry>
+    <sysconfig_key>CONSOLE_FONT</sysconfig_key>
+    <sysconfig_path>/etc/sysconfig/console</sysconfig_path>
+    <sysconfig_value></sysconfig_value>
+   </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_path>/etc/sysconfig/sysctl</sysconfig_path>
+      <sysconfig_key>ENABLE_SYSRQ</sysconfig_key>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+  </sysconfig>
+  <!-- }}} -->
+   <scripts>
+       <chroot-scripts config:type="list">
+          <script>
+             <chrooted config:type="boolean">true</chrooted>
+             <filename>udev_config.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+]]>
+             </source>
+          </script>
+       </chroot-scripts>
+       <pre-scripts config:type="list">
+          <script>
+             <filename>ev_config.sh</filename>
+             <interpreter>shell</interpreter>
+             <source><![CDATA[
+mount > /tmp/jo
+]]>
+             </source>
+          </script>
+       </pre-scripts>
+       <post-scripts config:type="list">
+          <script>
+             <filename>jo_config.sh</filename>
+             <interpreter>shell</interpreter>
+             <location>relurl://test.sh</location>
+          </script>
+       </post-scripts>
+  </scripts>
+  <!--
+  <language>
+    <language>de_DE</language>
+    <languages>de_DE</languages>
+  </language>
+  -->
+  <keyboard>
+    <keyboard_values>
+      <capslock config:type="boolean">false</capslock>
+      <delay></delay>
+      <discaps config:type="boolean">false</discaps>
+      <numlock></numlock>
+      <rate></rate>
+      <scrlock config:type="boolean">false</scrlock>
+      <tty>tty1 tty2 tty3 tty4 tty5 tty6 tty8 tty9 tty10 tty11 tty12 tty13 tty14 tty15 tty16 tty17 tty18 tty19 tty20</tty>
+    </keyboard_values>
+  </keyboard>
+  <timezone>
+    <hwclock>localtime</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+<!--
+  <customer_center>
+     <do_registration config:type="boolean">true</do_registration>
+     <smt_server>https://srv64.suse.de/center/regsvc</smt_server>
+     <register_regularly config:type="boolean">false</register_regularly>
+     <submit_hwdata config:type="boolean">true</submit_hwdata>
+     <submit_optional config:type="boolean">true</submit_optional>
+  </customer_center>
+-->
+  <suse_register>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data/>
+    <submit_hwdata config:type="boolean">true</submit_hwdata>
+    <submit_optional config:type="boolean">true</submit_optional>
+  </suse_register>
+<!--
+<customer_center>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data>
+      <email>ug@suse.de</email>
+    </registration_data>
+    <submit_hwdata config:type="boolean">false</submit_hwdata>
+    <submit_optional config:type="boolean">false</submit_optional>
+  </customer_center>
+  -->
+  <add-on>
+    <add_on_products config:type="list">
+<!--
+       <listentry>
+         <ask_on_error config:type="boolean">true</ask_on_error>
+         <media_url>http://dist.suse.de/install/SLP/SLE-10-SP2-SDK-RC4/i386/DVD1/</media_url>
+         <product>SDK</product>
+         <product_dir>/</product_dir>
+       </listentry>
+     </add_on_products>
+-->
+<!--
+      <listentry>
+        <media_url>http://download.opensuse.org/update/11.0/</media_url>
+        <product>openSUSE-11.0-Updates</product>
+        <product_dir>/</product_dir>
+      </listentry>
+-->
+<!--
+      <listentry>
+        <media_url>http://download.opensuse.org/repositories/openSUSE:/Tools/openSUSE_11.0/</media_url>
+        <product>Tools-11.0</product>
+        <product_dir>/</product_dir>
+        <ask_on_error config:type="boolean">true</ask_on_error>
+        <signature-handling>
+
+
+
+
+		<accept_non_trusted_gpg_key>
+			<all config:type="boolean">false</all>
+			<keys config:type="list">
+				<keyid>85753AA5EEFEFDE9</keyid>
+			</keys>
+		</accept_non_trusted_gpg_key>
+-->
+<!--
+		<import_gpg_key>
+			<all config:type="boolean">false</all>
+			<keys config:type="list">
+				<keyid>85753AA5EEFEFDE9</keyid>
+			</keys>
+		</import_gpg_key>
+	</signature-handling>
+</listentry>
+-->
+
+
+
+
+
+<!--
+           <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+           <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+           <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+-->
+<!--
+           <accept_unknown_gpg_key>
+             <all config:type="boolean">false</all>
+             <keys config:type="list">
+               <keyid>85753AA5EEFEFDE9</keyid>
+             </keys>
+           </accept_unknown_gpg_key>
+-->
+<!--
+           <accept_non_trusted_gpg_key>
+             <all config:type="boolean">false</all>
+             <keys config:type="list">
+               <keyid>85753AA5EEFEFDE9</keyid>
+             </keys>
+           </accept_non_trusted_gpg_key>
+           <import_gpg_key>
+             <all config:type="boolean">false</all>
+           </import_gpg_key>
+        </signature-handling>
+      </listentry>
+-->
+    </add_on_products>
+  </add-on>
+  <report>
+    <errors>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">false</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </yesno_messages>
+  </report>
+    <networking>
+      <dns>
+        <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+        <dhcp_resolv config:type="boolean">true</dhcp_resolv>
+      </dns>
+      <interfaces config:type="list">
+        <interface>
+          <bootproto>dhcp</bootproto>
+          <device>eth0</device>
+          <name>Ethernet Network Card</name>
+          <startmode>auto</startmode>
+          <usercontrol>no</usercontrol>
+        </interface>
+      </interfaces>
+      <modules config:type="list">
+        <module_entry>
+          <device>static-0</device>
+          <module></module>
+          <options></options>
+        </module_entry>
+      </modules>
+      <routing>
+        <ip_forward config:type="boolean">false</ip_forward>
+      </routing>
+    </networking>
+    <!--
+    <networking>
+      <start_immediately config:type="boolean">false</start_immediately>
+      <keep_install_network config:type="boolean">true</keep_install_network>
+    </networking>
+    -->
+  <!--
+  <x11>
+    <color_depth config:type="integer">24</color_depth>
+    <configure_x11 config:type="boolean">true</configure_x11>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">false</enable_3d>
+    <monitor>
+      <display>
+        <max_hsync config:type="integer">61</max_hsync>
+        <max_vsync config:type="integer">75</max_vsync>
+        <min_hsync config:type="integer">30</min_hsync>
+        <min_vsync config:type="integer">43</min_vsync>
+      </display>
+      <monitor_device>1024X768@70HZ</monitor_device>
+      <monitor_vendor>-&gt; LCD</monitor_vendor>
+    </monitor>
+    <resolution>1024x768 (XGA)</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+-->
+  <deploy_image>
+      <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <software>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+    </patterns>
+    <post-patterns config:type="list">
+	<pattern>apparmor</pattern>
+    </post-patterns>
+  </software>
+  <!--
+    <software>
+    <patterns config:type="list">
+       <pattern>xen_server</pattern>
+    </patterns>
+    <packages config:type="list">
+    <kernel>kernel-xen</kernel>
+    </packages>
+    -->
+    <!-- <kernel>kernel-xen</kernel> -->
+    <!--
+    </software>
+    -->
+
+  <groups config:type="list">
+    <group>
+      <group_password>x</group_password>
+      <groupname>users</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>floppy</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>bin</groupname>
+      <userlist>daemon</userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>xok</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>nobody</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>modem</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>lp</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>tty</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>postfix</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>nogroup</groupname>
+      <userlist>nobody</userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>maildrop</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>messagebus</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>video</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>sys</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>shadow</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>console</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>cdrom</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>haldaemon</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>trusted</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>dialout</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>wheel</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>www</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>games</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>disk</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>audio</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>suse-ncc</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>ftp</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>at</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>kmem</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>public</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>root</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>mail</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>daemon</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>ntp</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>uucp</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>man</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>utmp</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>x</group_password>
+      <groupname>news</groupname>
+      <userlist></userlist>
+    </group>
+    <group>
+      <group_password>!</group_password>
+      <groupname>sshd</groupname>
+      <userlist></userlist>
+    </group>
+  </groups>
+  <user_defaults>
+    <expire></expire>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Games account</fullname>
+      <gid>100</gid>
+      <home>/var/games</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>12</uid>
+      <user_password>*</user_password>
+      <username>games</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>bin</fullname>
+      <gid>1</gid>
+      <home>/bin</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>1</uid>
+      <user_password>*</user_password>
+      <username>bin</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>nobody</fullname>
+      <gid>65533</gid>
+      <home>/var/lib/nobody</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>65534</uid>
+      <user_password>*</user_password>
+      <username>nobody</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Printing daemon</fullname>
+      <gid>7</gid>
+      <home>/var/spool/lpd</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>4</uid>
+      <user_password>*</user_password>
+      <username>lp</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Postfix Daemon</fullname>
+      <gid>51</gid>
+      <home>/var/spool/postfix</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/false</shell>
+      <uid>51</uid>
+      <user_password>!</user_password>
+      <username>postfix</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Novell Customer Center User</fullname>
+      <gid>104</gid>
+      <home>/var/lib/YaST2/suse-ncc-fakehome</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>102</uid>
+      <user_password>!</user_password>
+      <username>suse-ncc</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>FTP account</fullname>
+      <gid>49</gid>
+      <home>/srv/ftp</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>40</uid>
+      <user_password>*</user_password>
+      <username>ftp</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Batch jobs daemon</fullname>
+      <gid>25</gid>
+      <home>/var/spool/atjobs</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>25</uid>
+      <user_password>!</user_password>
+      <username>at</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+      <user_password>pw</user_password>
+      <username>root</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Mailer daemon</fullname>
+      <gid>12</gid>
+      <home>/var/spool/clientmqueue</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/false</shell>
+      <uid>8</uid>
+      <user_password>*</user_password>
+      <username>mail</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Daemon</fullname>
+      <gid>2</gid>
+      <home>/sbin</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>2</uid>
+      <user_password>*</user_password>
+      <username>daemon</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>NTP daemon</fullname>
+      <gid>103</gid>
+      <home>/var/lib/ntp</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/false</shell>
+      <uid>74</uid>
+      <user_password>!</user_password>
+      <username>ntp</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Unix-to-Unix CoPy system</fullname>
+      <gid>14</gid>
+      <home>/etc/uucp</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>10</uid>
+      <user_password>*</user_password>
+      <username>uucp</username>
+    </user>
+    <user>
+      <fullname>User for D-BUS</fullname>
+      <gid>101</gid>
+      <home>/var/run/dbus</home>
+      <shell>/bin/false</shell>
+      <uid>100</uid>
+      <username>messagebus</username>
+    </user>
+    <user>
+      <fullname>User for haldaemon</fullname>
+      <gid>102</gid>
+      <home>/var/run/hal</home>
+      <shell>/bin/false</shell>
+      <uid>101</uid>
+      <username>haldaemon</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>WWW daemon apache</fullname>
+      <gid>8</gid>
+      <home>/var/lib/wwwrun</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/false</shell>
+      <uid>30</uid>
+      <user_password>*</user_password>
+      <username>wwwrun</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>Manual pages viewer</fullname>
+      <gid>62</gid>
+      <home>/var/cache/man</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>13</uid>
+      <user_password>*</user_password>
+      <username>man</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>News system</fullname>
+      <gid>13</gid>
+      <home>/etc/news</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max></max>
+        <min></min>
+        <warn></warn>
+      </password_settings>
+      <shell>/bin/bash</shell>
+      <uid>9</uid>
+      <user_password>*</user_password>
+      <username>news</username>
+    </user>
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>SSH daemon</fullname>
+      <gid>65</gid>
+      <home>/var/lib/sshd</home>
+      <password_settings>
+        <expire></expire>
+        <flag></flag>
+        <inact></inact>
+        <max>99999</max>
+        <min>0</min>
+        <warn>7</warn>
+      </password_settings>
+      <shell>/bin/false</shell>
+      <uid>71</uid>
+      <user_password>!</user_password>
+      <username>sshd</username>
+    </user>
+  </users>
+  <!--
+  <partitioning config:type="list">
+    <drive>
+      <initialize config:type="boolean">false</initialize>
+
+      <use>all</use>
+    </drive>
+  </partitioning>
+  -->
+    <partitioning_advanced>
+      <fstab>
+        <use_existing_fstab config:type="boolean">true</use_existing_fstab>
+        <!--
+        <partitions config:type="list">
+          <partition>
+            <mount>/</mount>
+            <format config:type="boolean">true</format>
+          </partition>
+        </partitions>
+        -->
+        <!--
+        <partitions config:type="list">
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <mount>swap</mount>
+            <format config:type="boolean">true</format>
+            <mountby config:type="symbol">device</mountby>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <mount>/</mount>
+            <format config:type="boolean">true</format>
+            <mountby config:type="symbol">id</mountby>
+          </partition>
+          <partition>
+            <filesystem config:type="symbol">ext3</filesystem>
+            <mount>/tmpx</mount>
+            <format config:type="boolean">false</format>
+            <mountby config:type="symbol">id</mountby>
+            <fstopt>rw,noatime,user,data=ordered,acl,user_xattr</fstopt>
+          </partition>
+        </partitions>
+        -->
+      </fstab>
+    </partitioning_advanced>
+  <x11>
+    <color_depth config:type="integer">16</color_depth>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">false</enable_3d>
+    <monitor>
+      <display>
+        <max_hsync config:type="integer">82</max_hsync>
+        <max_vsync config:type="integer">60</max_vsync>
+        <min_hsync config:type="integer">30</min_hsync>
+        <min_vsync config:type="integer">30</min_vsync>
+      </display>
+      <monitor_device>1280X1024@60HZ</monitor_device>
+      <monitor_vendor>--&gt; LCD</monitor_vendor>
+    </monitor>
+    <resolution>1280x1024 (SXGA)</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+  <general>
+   <signature-handling> 
+       <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+       <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+       <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+       <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+       <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+       <import_gpg_key         config:type="boolean">true</import_gpg_key>
+   </signature-handling>
+<!--
+<signature-handling>
+<import_gpg_key config:type="boolean">true</import_gpg_key>
+</signature-handling>
+-->
+
+    <mode>
+    <confirm config:type="boolean">true</confirm>
+<!--    <forceboot config:type="boolean">true</forceboot> -->
+    <second_stage config:type="boolean">true</second_stage>
+    </mode>
+<!--
+    <proposals config:type="list">
+      <proposal>country_simple_proposal</proposal>
+      <proposal>software_proposal</proposal>
+    </proposals>
+-->
+  </general>
+</profile>

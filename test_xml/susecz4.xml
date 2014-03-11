@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <deploy_image>
+    <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <firewall>
+    <enable_firewall config:type="boolean">false</enable_firewall>
+  </firewall>
+  <kerberos>
+    <kerberos_client>
+      <ExpertSettings>
+        <clockskew>300</clockskew>
+        <forwardable>true</forwardable>
+        <minimum_uid>0</minimum_uid>
+        <proxiable>true</proxiable>
+        <renew_lifetime>28d</renew_lifetime>
+        <ticket_lifetime>7d</ticket_lifetime>
+      </ExpertSettings>
+      <clockskew>300</clockskew>
+      <default_domain>suse.cz</default_domain>
+      <default_realm>SUSE.CZ</default_realm>
+      <forwardable config:type="boolean">true</forwardable>
+      <ignore_unknown config:type="boolean">true</ignore_unknown>
+      <kdc_server>kdc.suse.cz</kdc_server>
+      <minimum_uid>0</minimum_uid>
+      <proxiable config:type="boolean">true</proxiable>
+      <renew_lifetime>28d</renew_lifetime>
+      <ssh_support config:type="boolean">true</ssh_support>
+      <ticket_lifetime>7d</ticket_lifetime>
+    </kerberos_client>
+    <pam_login>
+      <use_kerberos config:type="boolean">true</use_kerberos>
+    </pam_login>
+  </kerberos>
+  <ldap>
+    <base_config_dn></base_config_dn>
+    <bind_dn></bind_dn>
+    <create_ldap config:type="boolean">false</create_ldap>
+    <file_server config:type="boolean">false</file_server>
+    <ldap_domain>ou=users,dc=suse,dc=cz</ldap_domain>
+    <ldap_server>ldap.suse.cz</ldap_server>
+    <ldap_tls config:type="boolean">false</ldap_tls>
+    <ldap_v2 config:type="boolean">false</ldap_v2>
+    <login_enabled config:type="boolean">true</login_enabled>
+    <member_attribute>member</member_attribute>
+    <nss_base_group></nss_base_group>
+    <nss_base_passwd></nss_base_passwd>
+    <nss_base_shadow></nss_base_shadow>
+    <pam_password>crypt</pam_password>
+    <start_autofs config:type="boolean">false</start_autofs>
+    <start_ldap config:type="boolean">true</start_ldap>
+  </ldap>
+  <nfs config:type="list">
+    <nfs_entry>
+      <mount_point>/home</mount_point>
+      <nfs_options>sec=krb5p,intr,rw</nfs_options>
+      <server_path>saurus.suse.cz:/home</server_path>
+      <vfstype>nfs4</vfstype>
+    </nfs_entry>
+    <nfs_entry>
+      <mount_point>/cml</mount_point>
+      <nfs_options>defaults</nfs_options>
+      <server_path>cml.suse.cz:/cml</server_path>
+      <vfstype>nfs</vfstype>
+    </nfs_entry>
+    <nfs_entry>
+      <mount_point>/work</mount_point>
+      <nfs_options>defaults</nfs_options>
+      <server_path>bivoj.suse.cz:/work</server_path>
+      <vfstype>nfs</vfstype>
+    </nfs_entry>
+    <nfs_entry>
+      <mount_point>/czwork</mount_point>
+      <nfs_options>defaults</nfs_options>
+      <server_path>bivoj.suse.cz:/czwork</server_path>
+      <vfstype>nfs</vfstype>
+    </nfs_entry>
+  </nfs>
+  <ntp-client>
+    <ntp_policy>auto</ntp_policy>
+    <peers config:type="list">
+      <peer>
+        <address>ntp.suse.cz</address>
+        <initial_sync config:type="boolean">false</initial_sync>
+        <type>server</type>
+      </peer>
+    </peers>
+    <start_at_boot config:type="boolean">true</start_at_boot>
+    <start_in_chroot config:type="boolean">true</start_in_chroot>
+  </ntp-client>
+  <partitioning config:type="list"/>
+  <scripts>
+    <post-scripts config:type="list">
+      <script>
+        <debug config:type="boolean">true</debug>
+        <feedback config:type="boolean">true</feedback>
+        <filename>SaveKeytab</filename>
+        <interpreter>shell</interpreter>
+        <location></location>
+        <network_needed config:type="boolean">true</network_needed>
+        <source><![CDATA[/usr/bin/wget http://brontosaurus.suse.cz/cgi-bin/get-key.cgi -O /etc/krb5.keytab
+]]></source>
+      </script>
+      <script>
+        <debug config:type="boolean">true</debug>
+        <feedback config:type="boolean">true</feedback>
+        <filename>ModprobeGSS</filename>
+        <interpreter>shell</interpreter>
+        <location></location>
+        <network_needed config:type="boolean">true</network_needed>
+        <source><![CDATA[/sbin/modprobe rpcsec_gss_krb5
+]]></source>
+      </script>
+      <script>
+        <debug config:type="boolean">true</debug>
+        <feedback config:type="boolean">true</feedback>
+        <filename>RestartNFS</filename>
+        <interpreter>shell</interpreter>
+        <location></location>
+        <network_needed config:type="boolean">true</network_needed>
+        <source><![CDATA[/etc/init.d/nfs reload
+]]></source>
+      </script>
+    </post-scripts>
+  </scripts>
+  <software>
+    <packages config:type="list">
+      <package>autoyast2-installation</package>
+      <package>pam_ldap</package>
+      <package>nss_ldap</package>
+      <package>pam_ldap-32bit</package>
+      <package>nss_ldap-32bit</package>
+      <package>pam_krb5</package>
+      <package>krb5</package>
+      <package>krb5-client</package>
+      <package>pam_krb5-32bit</package>
+      <package>krb5-32bit</package>
+      <package>autoyast2-installation</package>
+    </packages>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+    </patterns>
+  </software>
+  <sysconfig config:type="list">
+    <sysconfig_entry>
+      <sysconfig_key>MODULES_LOADED_ON_BOOT</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/kernel</sysconfig_path>
+      <sysconfig_value>rpcsec_gss_krb5 auth_rpcgss</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>NFS_SECURITY_GSS</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/nfs</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+    <sysconfig_entry>
+      <sysconfig_key>NFS4_SUPPORT</sysconfig_key>
+      <sysconfig_path>/etc/sysconfig/nfs</sysconfig_path>
+      <sysconfig_value>yes</sysconfig_value>
+    </sysconfig_entry>
+  </sysconfig>
+</profile>
