@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.19
+Version:        3.1.20
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -90,7 +90,7 @@ Requires:       yast2-core
 Requires:       yast2-country
 Requires:       yast2-ncurses
 Requires:       yast2-packager
-# SystemdTargetClass::BaseTargets
+# ServicesManagerTargetClass::BaseTargets
 Requires:       yast2-services-manager >= 0.0.13
 Requires:       yast2-slp
 Requires:       yast2-storage

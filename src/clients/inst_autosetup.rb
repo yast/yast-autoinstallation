@@ -342,15 +342,15 @@ module Yast
       Builtins.y2milestone("autoyast - configured default target: '#{@default_target}'")
 
       if !@default_target.empty?
-        SystemdTarget.default_target = @default_target
+        ServicesManagerTarget.default_target = @default_target
       else
-        SystemdTarget.default_target = Installation.x11_setup_needed &&
+        ServicesManagerTarget.default_target = Installation.x11_setup_needed &&
           Arch.x11_setup_needed &&
           Pkg.IsSelected("xorg-x11-server") ? Target::GRAPHICAL : Target::MULTIUSER
       end
 
       Builtins.y2milestone(
-        "autoyast - setting default target to: #{SystemdTarget.default_target}"
+        "autoyast - setting default target to: #{ServicesManagerTarget.default_target}"
       )
 
       #    AutoInstall::PXELocalBoot();
