@@ -91,7 +91,7 @@ Requires:       yast2-country
 Requires:       yast2-ncurses
 Requires:       yast2-packager
 # ServicesManagerTargetClass::BaseTargets
-Requires:       yast2-services-manager >= 0.0.13
+Requires:       yast2-services-manager >= 3.1.10
 Requires:       yast2-slp
 Requires:       yast2-storage
 Requires:       yast2-transfer >= 2.21.0
