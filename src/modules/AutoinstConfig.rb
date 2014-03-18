@@ -9,12 +9,12 @@
 require "yast"
 
 module Yast
-  import "SystemdTarget"
+  import "ServicesManagerTarget"
 
   class AutoinstConfigClass < Module
 
     module Target
-      include SystemdTargetClass::BaseTargets
+      include ServicesManagerTargetClass::BaseTargets
     end
 
     def main
