@@ -220,17 +220,15 @@ module Yast
         Builtins.y2milestone("arch=s390 and remote_profile=true")
         if Builtins.haskey(Profile.current, "dasd")
           Builtins.y2milestone("dasd found")
-          Call.Function(
-            "dasd_auto",
-            ["Import", Ops.get_map(Profile.current, "dasd", {})]
-          )
+          if Call.Function("dasd_auto", ["Import", Ops.get_map(Profile.current, "dasd", {})])
+            Call.Function("dasd_auto", [ "Write" ])
+          end
         end
         if Builtins.haskey(Profile.current, "zfcp")
           Builtins.y2milestone("zfcp found")
-          Call.Function(
-            "zfcp_auto",
-            ["Import", Ops.get_map(Profile.current, "zfcp", {})]
-          )
+          if Call.Function("zfcp_auto", ["Import", Ops.get_map(Profile.current, "zfcp", {})])
+            Call.Function("zfcp_auto", [ "Write" ])
+          end
         end
       end
 
