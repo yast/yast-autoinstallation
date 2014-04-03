@@ -337,8 +337,7 @@ module Yast
         ls = Builtins.filter(Builtins.splitstring(Ops.get(ls, 0, ""), " \t")) do |s|
           !Builtins.isempty(s)
         end
-        if !Builtins.isempty(ls) &&
-            Builtins.substring(Ops.get(ls, 0, ""), 0, 3) == "eth"
+        if !Builtins.isempty(ls)
           ret = Ops.get(ls, 0, "")
         end
       end
