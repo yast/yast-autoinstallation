@@ -31,7 +31,8 @@ module Yast
         "partitions" => [], # list of partitions on this drive
         "type"       => :CT_DISK, # type of drive, see diskTypes below
         "use"        => :all, # `all, `linux, `free, or list of partition numbers to use
-        "pesize"     => ""
+        "pesize"     => "",
+        "disklabel"  => "msdos" # type of partition table (msdos or gpt)
       } # size of physical extents (currently no GUI support for this setting)
 
       # Every drive created gets an id.
@@ -356,6 +357,11 @@ module Yast
           Builtins.y2error("Couldn't construct PartitionT from '%1'", part)
         end
       end
+      newDrive = set(
+        newDrive,
+        "disklabel",
+        Ops.get_string(drive, "disklabel", "msdos")
+      )
       deep_copy(newDrive)
     end
 
