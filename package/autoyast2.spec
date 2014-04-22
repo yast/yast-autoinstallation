@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.23
+Version:        3.1.24
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -89,7 +89,8 @@ Requires:       yast2-bootloader
 Requires:       yast2-core
 Requires:       yast2-country
 Requires:       yast2-ncurses
-Requires:       yast2-packager
+# Packages.default_patterns
+Requires:       yast2-packager >= 3.1.10
 # ServicesManagerTargetClass::BaseTargets
 Requires:       yast2-services-manager >= 3.1.10
 Requires:       yast2-slp
