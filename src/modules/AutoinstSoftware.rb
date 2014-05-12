@@ -1069,7 +1069,7 @@ module Yast
     end
 
     # Return list of software packages, patterns which have been selected
-    # by the user and have to bee installed or removed.
+    # by the user and have to be installed or removed.
     # The evaluation will be called while the yast installation workflow.
     # @return [Hash] map of to be installed/removed packages/patterns
     #		"patterns" -> list<string> of selected patterns
