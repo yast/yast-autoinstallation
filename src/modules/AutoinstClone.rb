@@ -97,8 +97,16 @@ module Yast
         resource
       )
 
-      Call.Function(auto, ["Read"])
-      Call.Function(auto, ["SetModified"])
+      # Do not read settings from system in first stage, autoyast profile
+      # should contain only proposed and user modified values.
+      # Exception: Storage and software module have autoyast modules which are
+      #            defined in autoyast itself.
+      #            So, these modules have to be called.
+      if !Stage.initial ||
+        ["software_auto", "storage_auto"].include?(auto)
+        Call.Function(auto, ["Read"])
+        Call.Function(auto, ["SetModified"])
+      end
 
       true
     end
@@ -173,21 +181,17 @@ module Yast
       Profile.prepare = true
       Mode.SetMode("autoinst_config")
 
-      # do not read settings from system in first stage, autoyast profile
-      # should contain only proposed and user modified values
-      if !Stage.initial
-        Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
-          # Set resource name, if not using default value
-          resource = Ops.get_string(
-            resourceMap,
-            "X-SuSE-YaST-AutoInstResource",
-            ""
-          )
-          resource = def_resource if resource == ""
-          Builtins.y2debug("current resource: %1", resource)
-          if Builtins.contains(@additional, resource)
-            ret = CommonClone(def_resource, resourceMap)
-          end
+      Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
+        # Set resource name, if not using default value
+        resource = Ops.get_string(
+          resourceMap,
+          "X-SuSE-YaST-AutoInstResource",
+          ""
+        )
+        resource = def_resource if resource == ""
+        Builtins.y2debug("current resource: %1", resource)
+        if Builtins.contains(@additional, resource)
+          ret = CommonClone(def_resource, resourceMap)
         end
       end
 

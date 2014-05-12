@@ -939,6 +939,7 @@ module Yast
     end
 
     # Return list of software packages of calling client
+    # in the installed environment
     # @return [Hash] map of installed software package
     #		"patterns" -> list<string> addon selections
     #		"packages" -> list<string> user selected packages
@@ -1067,8 +1068,44 @@ module Yast
       deep_copy(software)
     end
 
+    # Return list of software packages, patterns which have been selected
+    # by the user and have to bee installed or removed.
+    # The evaluation will be called while the yast installation workflow.
+    # @return [Hash] map of to be installed/removed packages/patterns
+    #		"patterns" -> list<string> of selected patterns
+    #		"packages" -> list<string> user selected packages
+    #           "remove-packages" -> list<string> packages to remove
+    def read_initial_stage
+      install_patterns = Pkg.ResolvableProperties("", :pattern, "").collect do |pattern|
+        if pattern["status"] == :selected && pattern["transact_by"] == :user
+          pattern["name"]
+        end
+      end
+
+      install_packages = Pkg.FilterPackages(
+        solver_selected = false,
+        app_selected = false,
+        user_selected = true,
+        name_only = true)
+
+      remove_packages = Pkg.ResolvableProperties("", :package, "").collect do |package|
+        if package["transact_by"] == :user &&
+          (package["locked"] == true ||
+           package["status"] == :available) #weak lock
+          package["name"]
+        end
+      end
+
+      software = {}
+      software["packages"] = install_packages
+      software["patterns"] = install_patterns.compact
+      software["remove-packages"] = remove_packages.compact
+      Builtins.y2milestone("autoyast software selection: %1", software)
+      deep_copy(software)
+    end
+
     def Read
-      Import(ReadHelper())
+      Import((Stage.initial ? read_initial_stage() : ReadHelper()))
     end
 
     publish :variable => :Software, :type => "map"
