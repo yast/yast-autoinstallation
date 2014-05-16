@@ -105,8 +105,9 @@ module Yast
       if !Stage.initial ||
         ["software_auto", "storage_auto"].include?(auto)
         Call.Function(auto, ["Read"])
-        Call.Function(auto, ["SetModified"])
       end
+      # Flagging YAST module for export
+      Call.Function(auto, ["SetModified"])
 
       true
     end
