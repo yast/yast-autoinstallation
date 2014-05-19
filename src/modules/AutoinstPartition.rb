@@ -270,7 +270,16 @@ module Yast
         newPart = Builtins.remove(newPart, "mkfs_options")
       end
       if !Builtins.isempty(Ops.get_list(part, "subvolumes", []))
-        Ops.set(newPart, "subvolumes", Ops.get_list(part, "subvolumes", []))
+        subvolumes = part["subvolumes"] || []
+        subvolumes.collect! do |subvolume|
+          if subvolume.start_with?(".snapshots")
+            Builtins.y2milestone("Ignoring subvolume '%1'",subvolume)
+            nil
+          else
+            subvolume
+          end
+        end
+        Ops.set(newPart, "subvolumes", subvolumes.compact)
       else
         newPart = Builtins.remove(newPart, "subvolumes")
       end
