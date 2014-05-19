@@ -271,15 +271,9 @@ module Yast
       end
       if !Builtins.isempty(Ops.get_list(part, "subvolumes", []))
         subvolumes = part["subvolumes"] || []
-        subvolumes.collect! do |subvolume|
-          if subvolume.start_with?(".snapshots")
-            Builtins.y2milestone("Ignoring subvolume '%1'",subvolume)
-            nil
-          else
-            subvolume
-          end
-        end
-        Ops.set(newPart, "subvolumes", subvolumes.compact)
+        #Filtering out all snapper subvolumes
+        subvolumes.select! { |subvolume| !subvolume.start_with?(".snapshots") }
+        Ops.set(newPart, "subvolumes", subvolumes)
       else
         newPart = Builtins.remove(newPart, "subvolumes")
       end
