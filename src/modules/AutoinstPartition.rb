@@ -270,7 +270,8 @@ module Yast
         newPart = Builtins.remove(newPart, "mkfs_options")
       end
       if !Builtins.isempty(Ops.get_list(part, "subvolumes", []))
-        Ops.set(newPart, "subvolumes", Ops.get_list(part, "subvolumes", []))
+        #Filtering out all snapper subvolumes
+        newPart["subvolumes"] = part["subvolumes"].reject { |s| s.start_with?(".snapshots") }
       else
         newPart = Builtins.remove(newPart, "subvolumes")
       end
