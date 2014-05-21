@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.27
+Version:        3.1.28
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -45,7 +45,7 @@ Requires:       yast2 >= 2.16.36
 Requires:       yast2-core
 Requires:       yast2-country
 Requires:       yast2-schema
-Requires:       yast2-storage >= 3.0.5
+Requires:       yast2-storage >= 3.1.27
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
 
