@@ -1093,11 +1093,12 @@ module Yast
       end
 
       Builtins.foreach(@AutoTargetMap) do |device, data|
+	dlabel = data.fetch("label", "")
         if Ops.greater_than(
             Builtins.size(Builtins.filter(data.fetch("partitions",[])) do |e|
               e.fetch("mount","") == Partitions.BootMount ||
-                e.fetch("partition_id",0) == Partitions.FsidBoot &&
-                  Partitions.FsidBoot != 131
+                e.fetch("partition_id",0) == Partitions.FsidBoot(dlabel) &&
+                  Partitions.FsidBoot(dlabel) != 131
             end),
             0
           )

@@ -128,6 +128,7 @@ module Yast
       xmlflex = deep_copy(xmlflex)
       Builtins.y2debug("xml input: %1", xmlflex)
       tm = Storage.GetTargetMap
+      dlabel = xmlflex["disklabel"]
       partitioning = Builtins.maplist(xmlflex) do |d|
         Builtins.foreach(["keep_partition_id", "keep_partition_num"]) do |key|
           num = []
@@ -206,7 +207,7 @@ module Yast
             end
 
             if Ops.get_integer(partition, "filesystem_id", 0) == 0
-              Ops.set(partition, "filesystem_id", Partitions.FsidBoot)
+              Ops.set(partition, "filesystem_id", Partitions.FsidBoot(dlabel))
             end 
 
             #partition["max_cyl"] = Partitions::BootCyl();
@@ -246,6 +247,7 @@ module Yast
     def try_add_boot(conf, disk)
       conf = deep_copy(conf)
       disk = deep_copy(disk)
+      dlabel = disk.fetch("label", "")
       root = Ops.greater_than(
         Builtins.size(Builtins.filter(Ops.get_list(conf, "partitions", [])) do |e|
           Ops.get_string(e, "mount", "") == "/"
@@ -268,9 +270,9 @@ module Yast
         end
         Ops.set(pb, "size", Partitions.MinimalNeededBootsize)
         Ops.set(pb, "filesystem", Partitions.DefaultBootFs)
-        Ops.set(pb, "fsid", Partitions.FsidBoot) # FIXME: might be useless
-        Ops.set(pb, "filesystem_id", Partitions.FsidBoot)
-        Ops.set(pb, "id", Partitions.FsidBoot) # FIXME: might be useless
+        Ops.set(pb, "fsid", Partitions.FsidBoot(dlabel)) # FIXME: might be useless
+        Ops.set(pb, "filesystem_id", Partitions.FsidBoot(dlabel))
+        Ops.set(pb, "id", Partitions.FsidBoot(dlabel)) # FIXME: might be useless
         Ops.set(pb, "auto_added", true)
         Ops.set(pb, "type", :primary) # FIXME: might be useless
         Ops.set(pb, "partition_type", "primary")
