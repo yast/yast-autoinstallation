@@ -128,8 +128,8 @@ module Yast
       xmlflex = deep_copy(xmlflex)
       Builtins.y2debug("xml input: %1", xmlflex)
       tm = Storage.GetTargetMap
-      dlabel = xmlflex["disklabel"]
       partitioning = Builtins.maplist(xmlflex) do |d|
+        dlabel = d.fetch("disklabel", "msdos")
         Builtins.foreach(["keep_partition_id", "keep_partition_num"]) do |key|
           num = []
           nlist2 = Builtins.splitstring(Ops.get_string(d, key, ""), ",")
