@@ -342,6 +342,18 @@ module Yast
       else
         newPart = Builtins.remove(newPart, "raid_options")
       end
+
+      if part["partition_id"] == Partitions.fsid_bios_grub
+        # GRUB_BIOS partitions must not be formated
+        # with default filesystem btrfs. (bnc#876411)
+        # The other deleted entries would be useless in that case.
+        newPart.delete("filesystem")
+        newPart.delete("format")
+        newPart.delete("crypt_fs")
+        newPart.delete("loop_fs")
+        newPart.delete("mountby")
+      end
+
       deep_copy(newPart)
     end
 
