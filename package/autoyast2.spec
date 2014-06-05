@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.30
+Version:        3.1.31
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -113,6 +113,10 @@ generated with the autoyast2 package.
 
 %install
 %yast_install
+
+for d in `ls $RPM_BUILD_ROOT/usr/share/autoinstall/modules/*.desktop`; do
+    %suse_update_desktop_file $d
+done
 
 # Class conf
 install -d -m 700 $RPM_BUILD_ROOT/etc/autoinstall
