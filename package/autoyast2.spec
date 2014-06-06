@@ -114,7 +114,9 @@ generated with the autoyast2 package.
 %install
 %yast_install
 
-for d in `ls $RPM_BUILD_ROOT/usr/share/autoinstall/modules/*.desktop`; do
+# Do not *blindly* remove the suse_update_desktop_file calls here. It is
+# different from the code in the yast_install macro.
+for d in $RPM_BUILD_ROOT/usr/share/autoinstall/modules/*.desktop ; do
     %suse_update_desktop_file $d
 done
 
