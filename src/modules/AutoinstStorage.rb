@@ -705,6 +705,7 @@ module Yast
           d["partitions"] = d.fetch("partitions",[]).sort do |x, y|
             x.fetch("partition_nr",99)<=>y.fetch("partition_nr",99)
           end
+          d["enable_snapshots"] ||= true # snapshots are default
           deep_copy(d)
         end
 
@@ -1087,7 +1088,7 @@ module Yast
         end
       end
       if changed
-	Storage.SetTargetMap(initial_target_map) if changed
+	Storage.SetTargetMap(initial_target_map)
 	Builtins.y2milestone( "Target map after initializing disk: %1", Storage.GetTargetMap)
       end
 
@@ -1130,6 +1131,16 @@ module Yast
           Builtins.y2milestone("solutions: %1", sol)
           Builtins.y2milestone("disk: %1", tm[device])
 	  tm[device] = process_partition_data(device, sol)
+
+          if data["enable_snapshots"] && tm[device].has_key?("partitions")
+            tm[device]["partitions"].each do |partition|
+              if partition["mount"] == "/" && partition["used_fs"] == :btrfs
+                Builtins.y2debug("Enabling snapshots for \"/\"; device %1", data["device"])
+                partition["userdata"] = { "/" => "snapshots" }
+              end
+            end
+          end
+
 	  changed = true
           SearchRaids(tm)
           Builtins.y2milestone("disk: %1", tm[device])

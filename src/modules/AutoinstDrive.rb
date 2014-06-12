@@ -32,6 +32,7 @@ module Yast
         "type"       => :CT_DISK, # type of drive, see diskTypes below
         "use"        => :all, # `all, `linux, `free, or list of partition numbers to use
         "pesize"     => "",
+        "enable_snapshots" => true,
         "disklabel"  => "msdos" # type of partition table (msdos or gpt)
       } # size of physical extents (currently no GUI support for this setting)
 
