@@ -853,8 +853,7 @@ module Yast
                     Builtins.sformat("%1", Partitions.MinimalNeededBootsize)
                   )
                 end
-                if Ops.get_string(pe, "size", "") != "max" &&
-                    Ops.get_string(pe, "size", "") != "auto"
+                if !["max","auto"].include?(pe["size"].downcase)
                   Ops.set(
                     pe,
                     "size",
