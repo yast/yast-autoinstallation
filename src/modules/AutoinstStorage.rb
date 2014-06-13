@@ -10,6 +10,9 @@ require "yast"
 
 module Yast
   class AutoinstStorageClass < Module
+
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -705,6 +708,8 @@ module Yast
           d["partitions"] = d.fetch("partitions",[]).sort do |x, y|
             x.fetch("partition_nr",99)<=>y.fetch("partition_nr",99)
           end
+          # snapshots are default
+          d["enable_snapshots"] = true unless d.has_key?("enable_snapshots") 
           deep_copy(d)
         end
 
@@ -1087,7 +1092,7 @@ module Yast
         end
       end
       if changed
-	Storage.SetTargetMap(initial_target_map) if changed
+	Storage.SetTargetMap(initial_target_map)
 	Builtins.y2milestone( "Target map after initializing disk: %1", Storage.GetTargetMap)
       end
 
@@ -1130,6 +1135,15 @@ module Yast
           Builtins.y2milestone("solutions: %1", sol)
           Builtins.y2milestone("disk: %1", tm[device])
 	  tm[device] = process_partition_data(device, sol)
+
+          if data["enable_snapshots"] && tm[device].has_key?("partitions")
+            root_partition = tm[device]["partitions"].find{|p| p["mount"] == "/" && p["used_fs"] == :btrfs}
+            if root_partition
+              log.debug("Enabling snapshots for \"/\"; device #{data['device']}")
+              root_partition["userdata"] = { "/" => "snapshots" }
+            end
+          end
+
 	  changed = true
           SearchRaids(tm)
           Builtins.y2milestone("disk: %1", tm[device])
