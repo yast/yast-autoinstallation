@@ -705,7 +705,8 @@ module Yast
           d["partitions"] = d.fetch("partitions",[]).sort do |x, y|
             x.fetch("partition_nr",99)<=>y.fetch("partition_nr",99)
           end
-          d["enable_snapshots"] ||= true # snapshots are default
+          # snapshots are default
+          d["enable_snapshots"] = true unless d.has_key?("enable_snapshots") 
           deep_copy(d)
         end
 
