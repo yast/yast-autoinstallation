@@ -149,11 +149,8 @@ module Yast
               "AutoYaST upgrade mode already set, keeping it"
             )
           else
-            # The autoyast installation is in the second installation stage.
-            # So the target system has been booted.
-            # BNC#881378
-            Builtins.y2milestone("Enabling Auto-Installation config mode")
-            Mode.SetMode("autoinst_config")
+            Builtins.y2milestone("Enabling Auto-Installation mode")
+            Mode.SetMode("autoinstallation")
           end
         elsif Mode.autoinst
           Builtins.y2milestone(
