@@ -290,7 +290,7 @@ module Yast
 
         if !Update.OnlyUpdateInstalled
           Packages.default_patterns.each do |pattern|
-            log.info "Pre-select pattern #{pattern}: " << Pkg.ResolvableInstall(pattern, :pattern)
+            log.info "Pre-select pattern #{pattern}: #{Pkg.ResolvableInstall(pattern, :pattern)}"
           end
         end
 
