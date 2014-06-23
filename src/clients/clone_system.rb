@@ -37,44 +37,42 @@ module Yast
         end
       end
 
-      @cmdline = {
-        "id"         => "clone_system",
-        "help"       => _(
-          "Client for creating an AutoYaST profile based on the currently running system"
-        ),
-        "guihandler" => fun_ref(method(:GUI), "symbol ()"),
-        "actions"    => {
-          "modules" => {
-            "handler" => fun_ref(
-              method(:doClone),
-              "boolean (map <string, any>)"
-            ),
-            "help"    => Builtins.sformat(_("known modules: %1"), @moduleList),
-            "example" => "modules clone=software,partitioning"
-          }
-        },
-        "options"    => {
-          "clone" => {
-            "type" => "string",
-            "help" => _("comma separated list of modules to clone")
-          }
-        },
-        "mappings"   => { "modules" => ["clone"] }
-      }
-
-
-      @ret = true
-
-      if Builtins.size(WFM.Args) == 0
-        doClone({})
+      # if we get no argument or map of options we are not in command line
+      if [NilClass, Hash].any? { |c| WFM.Args.first.is_a?(c) }
+        params = WFM.Args.first || {}
+        doClone(params)
       else
-        @ret = CommandLine.Run(@cmdline)
-      end
-      Builtins.y2debug("ret = %1", @ret)
-      Builtins.y2milestone("----------------------------------------")
-      Builtins.y2milestone("clone_system finished") 
+        cmdline = {
+          "id"         => "clone_system",
+          "help"       => _(
+            "Client for creating an AutoYaST profile based on the currently running system"
+          ),
+          "guihandler" => fun_ref(method(:GUI), "symbol ()"),
+          "actions"    => {
+            "modules" => {
+              "handler" => fun_ref(
+                method(:doClone),
+                "boolean (map <string, any>)"
+              ),
+              "help"    => Builtins.sformat(_("known modules: %1"), @moduleList),
+              "example" => "modules clone=software,partitioning"
+            }
+          },
+          "options"    => {
+            "clone" => {
+              "type" => "string",
+              "help" => _("comma separated list of modules to clone")
+            }
+          },
+          "mappings"   => { "modules" => ["clone"] }
+        }
 
-      #    doClone();
+        ret = CommandLine.Run(cmdline)
+        Builtins.y2debug("ret = %1", ret)
+
+      end
+      Builtins.y2milestone("----------------------------------------")
+      Builtins.y2milestone("clone_system finished")
 
       nil
     end
@@ -86,10 +84,11 @@ module Yast
     end
 
     def doClone(options)
-      options = deep_copy(options)
+      target_path = options["target_path"] || "/root/autoinst.xml"
       Popup.ShowFeedback(
         _("Cloning the system..."),
-        _("The resulting autoyast profile can be found in /root/autoinst.xml.")
+        # TRANSLATORS: %s is path where profile can be found
+        _("The resulting autoyast profile can be found in %s.") % target_path
       )
 
       if Ops.get_string(options, "clone", "") != ""
@@ -101,7 +100,7 @@ module Yast
         AutoinstClone.additional = deep_copy(ProductControl.clone_modules)
       end
       AutoinstClone.Process
-      XML.YCPToXMLFile(:profile, Profile.current, "/root/autoinst.xml")
+      XML.YCPToXMLFile(:profile, Profile.current, target_path)
       Popup.ClearFeedback
       true
     end
