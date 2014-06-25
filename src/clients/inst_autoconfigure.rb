@@ -264,7 +264,6 @@ module Yast
         "YaST2-Second-Stage.service",
         "autoyast-initscripts.service"
       ]
-      @ser_no_restart = ["systemd-logind.service"]
 
       logStep(_("Restarting all running services"))
       @cmd = "systemctl --type=service list-units | grep \" running \" | sed s/[[:space:]].*//"
@@ -274,7 +273,7 @@ module Yast
       ) { |s| Ops.greater_than(Builtins.size(s), 0) }
       Builtins.y2milestone("running services \"%1\"", @sl)
       @sl = Builtins.filter(@sl) do |s|
-        !Builtins.contains(Builtins.union(@ser_ignore, @ser_no_restart), s)
+        !Builtins.contains(@ser_ignore, s)
       end
       Builtins.y2milestone("restarting services \"%1\"", @sl)
       @cmd = Ops.add(
