@@ -202,16 +202,23 @@ module Yast
               Ops.set(partition, "size", Partitions.MinimalNeededBootsize)
             end
 
-            if Ops.get_symbol(partition, "filesystem", :none) == :none
-              Ops.set(partition, "filesystem", Partitions.DefaultBootFs)
-            end
-
             if Ops.get_integer(partition, "filesystem_id", 0) == 0
               Ops.set(partition, "filesystem_id", Partitions.FsidBoot(dlabel))
             end 
 
             #partition["max_cyl"] = Partitions::BootCyl();
           end
+
+          #Setting default filesystem if it has not been a part of autoinst.xml
+          #Bug 880569
+          if !partition.has_key?("filesystem") || partition["filesystem"] == :none
+            if partition["mount"] == Partitions.BootMount
+              partition["filesystem"] = Partitions.DefaultBootFs
+            else
+              partition["filesystem"] = Partitions.DefaultFs
+            end
+          end
+
           if Ops.get_integer(partition, "size", 0) == -1
             Ops.set(partition, "size", 0)
           end
