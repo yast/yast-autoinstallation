@@ -197,6 +197,7 @@ module Yast
               )
             )
           end
+
           if Ops.get_string(partition, "mount", "") == Partitions.BootMount
             if Ops.get_integer(partition, "size", 0) == -1
               Ops.set(partition, "size", Partitions.MinimalNeededBootsize)
