@@ -212,13 +212,17 @@ module Yast
 
           #Setting default filesystem if it has not been a part of autoinst.xml
           #Bug 880569
-          if !partition.has_key?("filesystem") || partition["filesystem"] == :none
+          if (!partition.has_key?("filesystem") || partition["filesystem"] == :none) &&
+             partition["filesystem_id"] == Partitions.fsid_native #Set default filesystem for native FS only
             if partition["mount"] == Partitions.BootMount
               partition["filesystem"] = Partitions.DefaultBootFs
             else
               partition["filesystem"] = Partitions.DefaultFs
             end
           end
+
+          # Do not format BIOS Grup partitions
+          partition["format"] = false if partition["filesystem_id"] == Partitions.fsid_bios_grub
 
           if Ops.get_integer(partition, "size", 0) == -1
             Ops.set(partition, "size", 0)
