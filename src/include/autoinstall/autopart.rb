@@ -122,6 +122,11 @@ module Yast
       deep_copy(ret)
     end
 
+    def propose_default_fs?(partition)
+      (!partition.has_key?("filesystem") || partition["filesystem"] == :none) &&
+      partition["filesystem_id"] == Partitions.fsid_native #Set default filesystem for native FS only
+    end
+
     # Read partition data from XML control file
     # @return [Hash] flexible propsal map
     def preprocess_partition_config(xmlflex)
@@ -212,8 +217,7 @@ module Yast
 
           #Setting default filesystem if it has not been a part of autoinst.xml
           #Bug 880569
-          if (!partition.has_key?("filesystem") || partition["filesystem"] == :none) &&
-             partition["filesystem_id"] == Partitions.fsid_native #Set default filesystem for native FS only
+          if propose_default_fs?(partition)
             if partition["mount"] == Partitions.BootMount
               partition["filesystem"] = Partitions.DefaultBootFs
             else
