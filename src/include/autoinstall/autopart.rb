@@ -123,8 +123,11 @@ module Yast
     end
 
     def propose_default_fs?(partition)
-      (!partition.has_key?("filesystem") || partition["filesystem"] == :none) &&
-      partition["filesystem_id"] == Partitions.fsid_native #Set default filesystem for native FS only
+      valid_fsids = [Partitions.fsid_gpt_boot, Partitions.fsid_native]
+
+      (!partition.has_key?("filesystem") ||
+       partition["filesystem"] == :none) &&
+      valid_fsids.include?(partition["filesystem_id"])
     end
 
     # Read partition data from XML control file
