@@ -122,6 +122,14 @@ module Yast
       deep_copy(ret)
     end
 
+    def propose_default_fs?(partition)
+      valid_fsids = [Partitions.fsid_gpt_boot, Partitions.fsid_native]
+
+      (!partition.has_key?("filesystem") ||
+       partition["filesystem"] == :none) &&
+      valid_fsids.include?(partition["filesystem_id"])
+    end
+
     # Read partition data from XML control file
     # @return [Hash] flexible propsal map
     def preprocess_partition_config(xmlflex)
@@ -212,13 +220,16 @@ module Yast
 
           #Setting default filesystem if it has not been a part of autoinst.xml
           #Bug 880569
-          if !partition.has_key?("filesystem") || partition["filesystem"] == :none
+          if propose_default_fs?(partition)
             if partition["mount"] == Partitions.BootMount
               partition["filesystem"] = Partitions.DefaultBootFs
             else
               partition["filesystem"] = Partitions.DefaultFs
             end
           end
+
+          # Do not format BIOS Grup partitions
+          partition["format"] = false if partition["filesystem_id"] == Partitions.fsid_bios_grub
 
           if Ops.get_integer(partition, "size", 0) == -1
             Ops.set(partition, "size", 0)
