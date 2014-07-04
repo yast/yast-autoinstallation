@@ -286,19 +286,11 @@ module Yast
         newPart = Builtins.remove(newPart, "pool")
       end
       newPart = set(newPart, "loop_fs", Ops.get_boolean(part, "loop_fs", false))
-      newPart = set(
-        newPart,
-        "partition_id",
-        Ops.get_integer(part, "partition_id", 131)
-      )
-      if Builtins.haskey(part, "partition_nr")
-        newPart = set(
-          newPart,
-          "partition_nr",
-          Ops.get_integer(part, "partition_nr", 0)
-        )
+      if part.has_key?("partition_id")
+        newPart["partition_id"] = part["partition_id"]
       else
-        newPart = Builtins.remove(newPart, "partition_nr")
+        #removing default entry
+        newPart.delete("partition_id")
       end
       newPart = set(newPart, "size", Ops.get_string(part, "size", ""))
       newPart = set(newPart, "lv_name", Ops.get_string(part, "lv_name", ""))
@@ -352,6 +344,14 @@ module Yast
         newPart.delete("crypt_fs")
         newPart.delete("loop_fs")
         newPart.delete("mountby")
+      end
+
+      if part["filesystem"] == :tmpfs
+        # remove not needed entries for TMPFS
+        newPart.delete("partition_nr")
+        newPart.delete("resize")
+        newPart.delete("crypt_fs")
+        newPart.delete("loop_fs")
       end
 
       deep_copy(newPart)
