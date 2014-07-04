@@ -37,7 +37,7 @@ module Yast
 
       # Every drive created gets an id.
       @_id = 0
-      # List of allowd disk/drive types
+      # List of allowed disk/drive types
       @diskTypes = [:CT_DISK, :CT_LVM, :CT_MD, :CT_NFS, :CT_TMPFS]
     end
 
