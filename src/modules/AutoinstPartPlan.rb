@@ -361,6 +361,7 @@ module Yast
           next if Ops.get_symbol(pe, "type", :x) == :extended
           new_pe = {}
           Ops.set(new_pe, "create", true)
+          new_pe["ignore_fstab"] = pe["ignore_fstab"] if pe.has_key?("ignore_fstab")
           skipwin = false
           if Builtins.haskey(pe, "enc_type")
             Ops.set(
@@ -710,8 +711,18 @@ module Yast
     def Import(settings)
       settings = deep_copy(settings)
       Builtins.y2milestone("entering Import with %1", settings)
+
+      # Filter out all tmpfs that have not been defined by the user.
+      # User created entries are defined in the fstab only.
+      tmpfs_devices = settings.select { |device| device["type"] == :CT_TMPFS }
+      tmpfs_devices.each do |device|
+        if device["partitions"]
+          device["partitions"].delete_if { |partition| partition["ignore_fstab"] }
+        end
+      end
+
       @AutoPartPlan = []
-      _IgnoreTypes = [:CT_TMPFS, :CT_BTRFS]
+      _IgnoreTypes = [:CT_BTRFS]
       Builtins.foreach(settings) do |drive|
         if !Builtins.contains(
             _IgnoreTypes,

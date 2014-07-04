@@ -32,14 +32,13 @@ module Yast
         "type"       => :CT_DISK, # type of drive, see diskTypes below
         "use"        => :all, # `all, `linux, `free, or list of partition numbers to use
         "pesize"     => "",
-        "enable_snapshots" => true,
         "disklabel"  => "msdos" # type of partition table (msdos or gpt)
       } # size of physical extents (currently no GUI support for this setting)
 
       # Every drive created gets an id.
       @_id = 0
-      # List of allowd disk/drive types
-      @diskTypes = [:CT_DISK, :CT_LVM, :CT_MD, :CT_NFS]
+      # List of allowed disk/drive types
+      @diskTypes = [:CT_DISK, :CT_LVM, :CT_MD, :CT_NFS, :CT_TMPFS]
     end
 
     # Determine if type is a valid drive type.
@@ -358,11 +357,14 @@ module Yast
           Builtins.y2error("Couldn't construct PartitionT from '%1'", part)
         end
       end
-      newDrive = set(
-        newDrive,
-        "disklabel",
-        Ops.get_string(drive, "disklabel", "msdos")
-      )
+
+      if newDrive["type"] != :CT_TMPFS
+        newDrive["enable_snapshots"] = true # enable snapshot (default)
+        newDrive["disklabel"] = drive["disklabel"] if drive.has_key?("disklabel")
+      else
+        newDrive.delete("disklabel")
+      end
+
       deep_copy(newDrive)
     end
 

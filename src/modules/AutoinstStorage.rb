@@ -1151,6 +1151,17 @@ module Yast
       end
       Storage.SetTargetMap(tm) if changed
 
+      changed = false
+      tmpfs_device = @AutoTargetMap["/dev/tmpfs"]
+      if tmpfs_device && tmpfs_device.has_key?("partitions")
+        # Adding TMPFS
+        tmpfs_device["partitions"].each do |partition|
+          Storage.AddTmpfsVolume(partition["mount"], partition["fstopt"] || "")
+          changed = true
+        end
+      end
+      log.info("Target map after setting tmpfs: #{Storage.GetTargetMap}") if changed
+
       if Builtins.haskey(@AutoTargetMap, "/dev/nfs")
         Builtins.y2milestone("nfs:%1", Ops.get(@AutoTargetMap, "/dev/nfs", {}))
         Builtins.foreach(
