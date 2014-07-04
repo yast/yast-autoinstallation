@@ -359,7 +359,7 @@ module Yast
       end
 
       if newDrive["type"] != :CT_TMPFS
-        newDrive["enable_snapshots"] = true #enable snapshot (default)
+        newDrive["enable_snapshots"] = true # enable snapshot (default)
         newDrive["disklabel"] = drive["disklabel"] if drive.has_key?("disklabel")
       else
         newDrive.delete("disklabel")
