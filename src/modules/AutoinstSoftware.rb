@@ -1077,7 +1077,11 @@ module Yast
     #           "remove-packages" -> list<string> packages to remove
     def read_initial_stage
       install_patterns = Pkg.ResolvableProperties("", :pattern, "").collect do |pattern|
-        if pattern["status"] == :selected && pattern["transact_by"] == :user
+        # Do not take care about if the pattern has been selected by the user or the product
+        # definition, cause we need a base selection here for the future
+        # autoyast installation. (bnc#882886)
+        if pattern["user_visible"] &&
+          (pattern["status"] == :selected || pattern["status"] == :installed)
           pattern["name"]
         end
       end
