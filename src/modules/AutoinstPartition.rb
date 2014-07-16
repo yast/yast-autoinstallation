@@ -296,6 +296,8 @@ module Yast
       newPart = set(newPart, "lv_name", Ops.get_string(part, "lv_name", ""))
       newPart = set(newPart, "lvm_group", Ops.get_string(part, "lvm_group", ""))
       newPart = set(newPart, "stripes", Ops.get_integer(part, "stripes", 1))
+      # Set partition_nr too (if available) bnc#886808
+      newPart["partition_nr"] = part["partition_nr"] if part["partition_nr"]
       newPart = set(
         newPart,
         "stripesize",
