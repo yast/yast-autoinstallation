@@ -721,6 +721,14 @@ module Yast
         end
       end
 
+      # It makes no sense to have tmpfs devices which have no partitions.
+      # E.G. the partitions have been filtered cause they have not been defined
+      # by the user.
+      # (bnc#887318)
+      settings.delete_if { |device|
+        device["type"] == :CT_TMPFS && (!device["partitions"] || device["partitions"].empty? )
+      }
+
       @AutoPartPlan = []
       _IgnoreTypes = [:CT_BTRFS]
       Builtins.foreach(settings) do |drive|
