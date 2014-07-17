@@ -200,11 +200,14 @@ module Yast
       Progress.NextStage
       Progress.Title(_("Initial Configuration"))
       Builtins.y2milestone("Initial Configuration")
-      tmp = Profile.current.fetch("report",{})
-      if !tmp.has_key?( "yesno_messages" )
-        tmp["yesno_messages"] = tmp.fetch("errors",{})
+      report = Profile.current["report"]
+      if report && !report.has_key?( "yesno_messages" )
+        # Set "yesno_messages", but do not reset the other settings
+        # (bnc#887397)
+        report = Report.Export # getting all values
+        report["yesno_messages"] = report.fetch("errors",{})
+        Report.Import(report) # setting all values
       end
-      Report.Import(tmp)
       AutoinstGeneral.Import(Profile.current.fetch("general",{}))
       AutoinstGeneral.SetSignatureHandling
       AutoinstGeneral.SetMultipathing
