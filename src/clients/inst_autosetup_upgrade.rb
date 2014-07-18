@@ -51,13 +51,16 @@ module Yast
         _("Configure General Settings "),
         _("Execute pre-install user scripts"),
         _("Set up language"),
-        _("Configure Software selections")
+        _("Configure Software selections"),
+        _("Configure Bootloader")
       ]
 
       @progress_descriptions = [
         _("Configuring general settings..."),
         _("Executing pre-install user scripts..."),
-        _("Configuring Software selections...")
+        _("Setting up language..."),
+        _("Configuring Software selections..."),
+        _("Configuring Bootloader...")
       ]
 
       Progress.New(
@@ -378,6 +381,33 @@ module Yast
           end
         end
       end
+
+      #Bootloader
+      # FIXME: De-duplicate with inst_autosetup
+      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      Progress.NextStage
+
+      BootCommon.getLoaderType(true)
+      Bootloader.Import(
+        AI2Export(Ops.get_map(Profile.current, "bootloader", {}))
+      )
+      BootCommon.DetectDisks
+      Builtins.y2debug("autoyast: Proposing - fix")
+      Bootloader.Propose
+      Builtins.y2debug("autoyast: Proposing done")
+
+      # SLES only
+      # FIXME: really needed for upgrade?
+      if Builtins.haskey(Profile.current, "kdump")
+        Call.Function(
+          "kdump_auto",
+          ["Import", Ops.get_map(Profile.current, "kdump", {})]
+        )
+      end
+
+      # FIXME: really needed for upgrade?
+      LanUdevAuto.Import(Ops.get_map(Profile.current, "networking", {}))
+
 
       # Backup
       Builtins.y2internal("Backup: %1", Ops.get(Profile.current, "backup"))
