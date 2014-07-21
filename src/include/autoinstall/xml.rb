@@ -59,6 +59,9 @@ module Yast
           "masquerade_users"         => "masquerade_user",
           "virtual_users"            => "virtual_user",
           "services"                 => "service",
+          # services-manager -> (hash) services -> (list) enable/disable -> service
+          "enable"                   => "service",
+          "disable"                  => "service",
           "modules_conf"             => "module_conf",
           "interfaces"               => "interface",
           "routes"                   => "route",
