@@ -1,6 +1,6 @@
 /**
- * File:	yast2_desktop.scr
- * Summary:	Agent for reading/writing yast2 menuentries
+ * File:	autoinstall.scr
+ * Summary:	Agent for reading desktop files
  * Author:	Michal Svec <msvec@suse.cz>
  *			Anas Nashif <nashif@suse.de>
  * Access:	read / write
@@ -20,7 +20,7 @@
     `IniAgent( [ "/usr/share/applications/YaST2/*.desktop" , "/usr/share/autoinstall/modules/*.desktop" ],
 	$[
 	    "options"	: [ ],
-	    "comments"	: [ "^[ \t]*;.*", ";.*", "\\{[^}]*\\}", "^[ \t]*$" ],
+	    "comments"	: [ "^[ \t]*;.*", ";.*", "\\{[^}]*\\}", "^[ \t]*$", "^#[ \t].*" ],
 	    "sections"	: [
 		$[ "begin" : [
 		    "^[ \t]*\\[[ \t]*(.*[^ \t])[ \t]*\\][ \t]*",
