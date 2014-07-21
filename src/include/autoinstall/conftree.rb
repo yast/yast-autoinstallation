@@ -116,6 +116,9 @@ module Yast
       Builtins.y2milestone("group_name: %1", group_name)
       itemList = []
       Builtins.foreach(Y2ModuleConfig.ModuleMap) do |k, v|
+        # bnc #887115 comment #9: Desktop file is "hidden" and should not be shown at all
+        next if v["Hidden"] == "true"
+
         if Ops.get_string(v, "X-SuSE-YaST-Group", "") == group_name
           desktop_file = Builtins.substring(
             Ops.get_string(v, "X-SuSE-DocTeamID", ""),
@@ -216,7 +219,7 @@ module Yast
 
     # Set the group selection box to the specified YaST group.
     #
-    # @praram group_name YaST group to select.
+    # @param group_name YaST group to select.
     def setGroup(group_name)
       UI.ChangeWidget(Id(:groups), :CurrentItem, group_name)
       updateModules
@@ -238,6 +241,8 @@ module Yast
       Convert.to_string(UI.QueryWidget(Id(:modules), :CurrentItem))
     end
 
+    ALWAYS_CLONABLE_MODULES = ["software", "partitioning", "bootloader"]
+
     # Updates the action button activation status. (Some modules are not
     # clonable, some are not writeable).
     #
@@ -247,18 +252,13 @@ module Yast
       if Builtins.contains(AutoinstConfig.noWriteNow, selectedModule)
         UI.ChangeWidget(Id(:writeNow), :Enabled, false)
       end
-      # enable disable read button
-      resourceMap = Ops.get(Y2ModuleConfig.ModuleMap, selectedModule, {})
-      clonable = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstClonable",
-        "false"
-      ) == "true"
-      if !clonable && "software" != selectedModule &&
-          "partitioning" != selectedModule &&
-          "bootloader" != selectedModule
-        UI.ChangeWidget(Id(:read), :Enabled, false)
-      end
+
+      # set read button status
+      resourceMap = Y2ModuleConfig.ModuleMap.fetch(selectedModule, {})
+      clonable = resourceMap.fetch("X-SuSE-YaST-AutoInstClonable", "false") == "true"
+
+      clone_button_status = clonable || ALWAYS_CLONABLE_MODULES.include?(selectedModule)
+      UI.ChangeWidget(Id(:read), :Enabled, clone_button_status)
 
       nil
     end
