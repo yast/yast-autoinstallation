@@ -10,6 +10,9 @@
 # $Id$
 module Yast
   class CloneSystemClient < Client
+    # FIXME: unify with conftree.rb
+    ALWAYS_CLONABLE_MODULES = ["software", "partitioning", "bootloader"]
+
     def main
       Yast.import "AutoinstClone"
       Yast.import "Profile"
@@ -25,15 +28,10 @@ module Yast
       @moduleList = ""
 
       Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
-        clonable = Ops.get_string(
-          resourceMap,
-          "X-SuSE-YaST-AutoInstClonable",
-          "false"
-        ) == "true"
-        if clonable || def_resource == "bootloader" ||
-            def_resource == "partitioning" ||
-            def_resource == "software"
-          @moduleList = Builtins.sformat("%1 %2", @moduleList, def_resource)
+        clonable = resourceMap["X-SuSE-YaST-AutoInstClonable"] == "true"
+
+        if clonable || ALWAYS_CLONABLE_MODULES.include?(def_resource)
+          @moduleList << " " << def_resource
         end
       end
 
