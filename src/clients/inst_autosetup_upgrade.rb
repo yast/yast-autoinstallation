@@ -51,13 +51,16 @@ module Yast
         _("Configure General Settings "),
         _("Execute pre-install user scripts"),
         _("Set up language"),
-        _("Configure Software selections")
+        _("Configure Software selections"),
+        _("Configure Bootloader")
       ]
 
       @progress_descriptions = [
         _("Configuring general settings..."),
         _("Executing pre-install user scripts..."),
-        _("Configuring Software selections...")
+        _("Setting up language..."),
+        _("Configuring Software selections..."),
+        _("Configuring Bootloader...")
       ]
 
       Progress.New(
@@ -378,6 +381,44 @@ module Yast
           end
         end
       end
+
+      # Bootloader
+      # FIXME: De-duplicate with inst_autosetup
+      # Bootloader import / proposal is necessary to match changes done for manual
+      # upgrade, when new configuration is created instead of reusing old one, which
+      # cannot be converted from other bootloader configuration to GRUB2 format.
+      # Without this code, YaST sticks with previously installed bootloader even if
+      # it is not included in the new distro
+      #
+      # This fix was tested with AutoYaST profile as atached to bnc#885634 (*), as well as
+      # its alternative without specifying bootloader settings, in VirtualBox with
+      # single disk, updating patched SLES11-SP3 to SLES12 Beta10
+      # https://bugzilla.novell.com/show_bug.cgi?id=885634#c3
+
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+      Progress.NextStage
+
+      BootCommon.getLoaderType(true)
+      Bootloader.Import(
+        AI2Export(Ops.get_map(Profile.current, "bootloader", {}))
+      )
+      BootCommon.DetectDisks
+      Builtins.y2debug("autoyast: Proposing - fix")
+      Bootloader.Propose
+      Builtins.y2debug("autoyast: Proposing done")
+
+      # SLES only
+      # FIXME: really needed for upgrade?
+      if Builtins.haskey(Profile.current, "kdump")
+        Call.Function(
+          "kdump_auto",
+          ["Import", Ops.get_map(Profile.current, "kdump", {})]
+        )
+      end
+
+      # FIXME: really needed for upgrade?
+      LanUdevAuto.Import(Ops.get_map(Profile.current, "networking", {}))
+
 
       # Backup
       Builtins.y2internal("Backup: %1", Ops.get(Profile.current, "backup"))
