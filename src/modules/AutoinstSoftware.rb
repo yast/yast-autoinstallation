@@ -866,6 +866,7 @@ module Yast
 
       computed_packages = Packages.ComputeSystemPackageList
       Builtins.y2debug("Computed list of packages: %1", computed_packages)
+      Pkg.DoProvide(computed_packages)
 
       Builtins.foreach(computed_packages) do |pack2|
         if Ops.greater_than(Builtins.size(@kernel), 0) && pack2 != @kernel &&
