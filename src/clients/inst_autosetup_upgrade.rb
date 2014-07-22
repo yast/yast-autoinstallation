@@ -382,9 +382,9 @@ module Yast
         end
       end
 
-      #Bootloader
+      # Bootloader
       # FIXME: De-duplicate with inst_autosetup
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
       Progress.NextStage
 
       BootCommon.getLoaderType(true)
