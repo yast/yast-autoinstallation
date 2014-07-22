@@ -19,6 +19,8 @@ require "yast"
 
 module Yast
   class AutoinstCloneClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "Mode"
 
@@ -177,7 +179,7 @@ module Yast
     # Build the profile
     # @return [void]
     def Process
-      Builtins.y2debug("Additional resources: %1 %2", @base, @additional)
+      log.info "Base resources: #{@base} additional: #{@additional}"
       Profile.Reset
       Profile.prepare = true
       Mode.SetMode("autoinst_config")
@@ -190,9 +192,12 @@ module Yast
           ""
         )
         resource = def_resource if resource == ""
-        Builtins.y2debug("current resource: %1", resource)
-        if Builtins.contains(@additional, resource)
+
+        if @additional.include?(resource)
+          log.info "Now cloning: #{resource}"
+          time_start = Time.now
           ret = CommonClone(def_resource, resourceMap)
+          log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
         end
       end
 

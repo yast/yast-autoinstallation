@@ -42,6 +42,7 @@ module Yast
         "Name",
         "GenericName",
         "Icon",
+        "Hidden",
         "X-SuSE-YaST-AutoInst",
         "X-SuSE-YaST-AutoInstResource",
         "X-SuSE-YaST-AutoInstClient",
