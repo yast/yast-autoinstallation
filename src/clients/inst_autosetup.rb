@@ -273,6 +273,9 @@ module Yast
 
 
       # Bootloader
+      # The bootloader has to be called before software selection.
+      # So the software selection can take care about packages
+      # needed by the bootloader (bnc#876161)
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
       Progress.NextStage
