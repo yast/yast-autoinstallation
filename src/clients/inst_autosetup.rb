@@ -54,8 +54,8 @@ module Yast
         _("Configure General Settings "),
         _("Set up language"),
         _("Create partition plans"),
-        _("Configure Software selections"),
         _("Configure Bootloader"),
+        _("Configure Software selections"),
         _("Configure Systemd Default Target")
       ]
 
@@ -64,8 +64,8 @@ module Yast
         _("Configuring general settings..."),
         _("Setting up language..."),
         _("Creating partition plans..."),
-        _("Configuring Software selections..."),
         _("Configuring Bootloader..."),
+        _("Configuring Software selections..."),
         _("Configuring Systemd Default Target...")
       ]
 
@@ -272,6 +272,20 @@ module Yast
       AutoinstLVM.Write if AutoinstLVM.Init
 
 
+      # Bootloader
+
+      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      Progress.NextStage
+
+      BootCommon.getLoaderType(true)
+      Bootloader.Import(
+        AI2Export(Ops.get_map(Profile.current, "bootloader", {}))
+      )
+      BootCommon.DetectDisks
+      Builtins.y2debug("autoyast: Proposing - fix")
+      Bootloader.Propose
+      Builtins.y2debug("autoyast: Proposing done")
+
 
       # Software
 
@@ -302,20 +316,6 @@ module Yast
       )
       Call.Function("deploy_image_auto", ["Write"])
 
-
-      # Bootloader
-
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
-      Progress.NextStage
-
-      BootCommon.getLoaderType(true)
-      Bootloader.Import(
-        AI2Export(Ops.get_map(Profile.current, "bootloader", {}))
-      )
-      BootCommon.DetectDisks
-      Builtins.y2debug("autoyast: Proposing - fix")
-      Bootloader.Propose
-      Builtins.y2debug("autoyast: Proposing done")
 
       # SLES only
       if Builtins.haskey(Profile.current, "kdump")
