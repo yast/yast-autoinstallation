@@ -384,6 +384,17 @@ module Yast
 
       # Bootloader
       # FIXME: De-duplicate with inst_autosetup
+      # Bootloader import / proposal is necessary to match changes done for manual
+      # upgrade, when new configuration is created instead of reusing old one, which
+      # cannot be converted from other bootloader configuration to GRUB2 format.
+      # Without this code, YaST sticks with previously installed bootloader even if
+      # it is not included in the new distro
+      #
+      # This fix was tested with AutoYaST profile as atached to bnc#885634 (*), as well as
+      # its alternative without specifying bootloader settings, in VirtualBox with
+      # single disk, updating patched SLES11-SP3 to SLES12 Beta10
+      # https://bugzilla.novell.com/show_bug.cgi?id=885634#c3
+
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
       Progress.NextStage
 
