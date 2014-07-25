@@ -281,14 +281,10 @@ module Yast
       Progress.NextStage
 
       BootCommon.getLoaderType(true)
-      Bootloader.Import(
-        AI2Export(Ops.get_map(Profile.current, "bootloader", {}))
+      return :abort unless WFM.CallFunction(
+        "bootloader_auto",
+        ["Import", Ops.get_map(Profile.current, "bootloader", {})]
       )
-      BootCommon.DetectDisks
-      Builtins.y2debug("autoyast: Proposing - fix")
-      Bootloader.Propose
-      Builtins.y2debug("autoyast: Proposing done")
-
 
       # Software
 

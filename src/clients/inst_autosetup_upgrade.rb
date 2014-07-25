@@ -398,27 +398,20 @@ module Yast
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
       Progress.NextStage
 
+      # SCR not initialized on target prevents reading from system
       BootCommon.getLoaderType(true)
-      Bootloader.Import(
-        AI2Export(Ops.get_map(Profile.current, "bootloader", {}))
+      return :abort unless WFM.CallFunction(
+        "bootloader_auto",
+        ["Import", Ops.get_map(Profile.current, "bootloader", {})]
       )
-      BootCommon.DetectDisks
-      Builtins.y2debug("autoyast: Proposing - fix")
-      Bootloader.Propose
-      Builtins.y2debug("autoyast: Proposing done")
 
-      # SLES only
-      # FIXME: really needed for upgrade?
+      # SLES only, the only way to have kdump configured immediately after upgrade
       if Builtins.haskey(Profile.current, "kdump")
         Call.Function(
           "kdump_auto",
           ["Import", Ops.get_map(Profile.current, "kdump", {})]
         )
       end
-
-      # FIXME: really needed for upgrade?
-      LanUdevAuto.Import(Ops.get_map(Profile.current, "networking", {}))
-
 
       # Backup
       Builtins.y2internal("Backup: %1", Ops.get(Profile.current, "backup"))
