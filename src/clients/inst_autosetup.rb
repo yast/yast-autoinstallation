@@ -328,17 +328,22 @@ module Yast
 
       Progress.NextStage
 
-      if Profile.current['runlevel'] && Profile.current['runlevel']['default']
-        default_runlevel = Profile.current['runlevel']['default'].to_i
-        @default_target = default_runlevel == 5 ? Target::GRAPHICAL : Target::MULTIUSER
-        Builtins.y2milestone("Accepting runlevel '#{default_runlevel}' as default target '#{@default_target}'")
-      else
-        @default_target = Profile.current['default_target'].to_s
+      #still supporting old format "runlevel"
+      if Profile.current['runlevel']
+        if Profile.current['runlevel']['default']
+          default_runlevel = Profile.current['runlevel']['default'].to_i
+          @default_target = default_runlevel == 5 ? Target::GRAPHICAL : Target::MULTIUSER
+          Builtins.y2milestone("Accepting runlevel '#{default_runlevel}' as default target '#{@default_target}'")
+        elsif Profile.current['runlevel']['default_target']
+          @default_target = Profile.current['runlevel']['default_target'].to_s
+        end
+      elsif Profile.current['services-manager'] &&Profile.current['services-manager']['default_target']
+        @default_target = Profile.current['services-manager']['default_target'].to_s
       end
 
       Builtins.y2milestone("autoyast - configured default target: '#{@default_target}'")
 
-      if !@default_target.empty?
+      if @default_target && !@default_target.empty?
         ServicesManagerTarget.default_target = @default_target
       else
         ServicesManagerTarget.default_target = Installation.x11_setup_needed &&
