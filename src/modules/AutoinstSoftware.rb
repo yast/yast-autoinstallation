@@ -1050,12 +1050,18 @@ module Yast
             userpackages = Builtins.add(userpackages, p)
           end
         end
-        Builtins.foreach(patternPackages) do |p|
-          if !Builtins.contains(@inst, p)
-            removepackages = Builtins.add(removepackages, p)
-          end
-        end
       end
+      # Currently we do not have any information about user deleted packages in
+      # the installed system.
+      # In order to prevent a reinstallation we can take the locked packages at least.
+      # (bnc#888296)
+      removepackages = Pkg.ResolvableProperties("", :package, "").collect do |package|
+        if package["transact_by"] == :user &&
+          (package["locked"] == true ||
+           package["status"] == :available) #weak lock
+          package["name"]
+        end
+      end.compact
 
       Ops.set(
         software,
