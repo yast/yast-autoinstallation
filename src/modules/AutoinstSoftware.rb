@@ -939,6 +939,14 @@ module Yast
       nil
     end
 
+    def Locked_packages
+      locked_packages = Pkg.ResolvableProperties("", :package, "").select do |package|
+        # hard AND weak locks
+        package["transact_by"] == :user && (package["locked"] || package["status"] == :available)
+      end
+      locked_packages.map! {|p| p["name"] }
+    end
+
     # Return list of software packages of calling client
     # in the installed environment
     # @return [Hash] map of installed software package
@@ -1055,10 +1063,7 @@ module Yast
       # the installed system.
       # In order to prevent a reinstallation we can take the locked packages at least.
       # (bnc#888296)
-      removepackages = Pkg.ResolvableProperties("", :package, "").select do |package|
-        package["transact_by"] == :user && (package["locked"] == true || package["status"] == :available)
-      end
-      removepackages.map! {|p| p["name"] }
+      removepackages = self.Locked_packages
 
       Ops.set(
         software,
@@ -1096,13 +1101,7 @@ module Yast
         user_selected = true,
         name_only = true)
 
-      remove_packages = Pkg.ResolvableProperties("", :package, "").collect do |package|
-        if package["transact_by"] == :user &&
-          (package["locked"] == true ||
-           package["status"] == :available) #weak lock
-          package["name"]
-        end
-      end
+      remove_packages = self.Locked_packages
 
       software = {}
       software["packages"] = install_packages
