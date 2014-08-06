@@ -939,6 +939,14 @@ module Yast
       nil
     end
 
+    def locked_packages
+      packages = Pkg.ResolvableProperties("", :package, "").select do |package|
+        # hard AND soft locks
+        package["transact_by"] == :user && (package["locked"] || package["status"] == :available)
+      end
+      packages.map! {|p| p["name"] }
+    end
+
     # Return list of software packages of calling client
     # in the installed environment
     # @return [Hash] map of installed software package
@@ -981,7 +989,6 @@ module Yast
       userpackages = Pkg.FilterPackages(false, false, true, true)
       Pkg.TargetFinish
       # Remove kernel packages
-      removepackages = []
 
       patternPackages = []
       new_p = []
@@ -1050,11 +1057,6 @@ module Yast
             userpackages = Builtins.add(userpackages, p)
           end
         end
-        Builtins.foreach(patternPackages) do |p|
-          if !Builtins.contains(@inst, p)
-            removepackages = Builtins.add(removepackages, p)
-          end
-        end
       end
 
       Ops.set(
@@ -1065,7 +1067,11 @@ module Yast
         end)
       )
       Ops.set(software, "patterns", Builtins.sort(patterns))
-      Ops.set(software, "remove-packages", Builtins.toset(removepackages))
+      # Currently we do not have any information about user deleted packages in
+      # the installed system.
+      # In order to prevent a reinstallation we can take the locked packages at least.
+      # (bnc#888296)
+      software["remove-packages"] = locked_packages
       deep_copy(software)
     end
 
@@ -1093,18 +1099,10 @@ module Yast
         user_selected = true,
         name_only = true)
 
-      remove_packages = Pkg.ResolvableProperties("", :package, "").collect do |package|
-        if package["transact_by"] == :user &&
-          (package["locked"] == true ||
-           package["status"] == :available) #weak lock
-          package["name"]
-        end
-      end
-
       software = {}
       software["packages"] = install_packages
       software["patterns"] = install_patterns.compact
-      software["remove-packages"] = remove_packages.compact
+      software["remove-packages"] = locked_packages
       Builtins.y2milestone("autoyast software selection: %1", software)
       deep_copy(software)
     end
