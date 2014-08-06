@@ -1055,13 +1055,10 @@ module Yast
       # the installed system.
       # In order to prevent a reinstallation we can take the locked packages at least.
       # (bnc#888296)
-      removepackages = Pkg.ResolvableProperties("", :package, "").collect do |package|
-        if package["transact_by"] == :user &&
-          (package["locked"] == true ||
-           package["status"] == :available) #weak lock
-          package["name"]
-        end
-      end.compact
+      removepackages = Pkg.ResolvableProperties("", :package, "").select do |package|
+        package["transact_by"] == :user && (package["locked"] == true || package["status"] == :available)
+      end
+      removepackages.map! {|p| p["name"] }
 
       Ops.set(
         software,
