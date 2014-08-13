@@ -91,8 +91,7 @@ module Yast
       # directly. (bnc#888546)
       if Mode.normal && FileUtils.Exists(target_path)
         # TRANSLATORS: Warning that an already existing autoyast configuration file will be overwritten.
-        continue =  Popup.ContinueCancel(_("File %s exists! Really overwrite?") % target_path)
-        return false unless continue
+        return false unless Popup.ContinueCancel(_("File %s exists! Really overwrite?") % target_path)
       end
 
       Popup.ShowFeedback(
