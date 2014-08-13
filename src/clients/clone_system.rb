@@ -82,7 +82,14 @@ module Yast
     end
 
     def doClone(options)
-      target_path = options["target_path"] || "/root/autoinst.xml"
+      target_path = options["target_path"]
+
+      if !target_path || target_path == ""
+        # TRANSLATORS: Location of the generated AutoYaST configuration file on the system.
+        target_path = UI.AskForSaveFileName("/root","*.xml",_("Location of Stored AutoYAST Configuration"))
+      end
+      return unless target_path
+
       Popup.ShowFeedback(
         _("Cloning the system..."),
         # TRANSLATORS: %s is path where profile can be found
