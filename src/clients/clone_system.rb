@@ -85,7 +85,8 @@ module Yast
       target_path = options["target_path"]
 
       if !target_path || target_path == ""
-        target_path = UI.AskForSaveFileName("/root","*.xml",_("Location of Stored Configuration"))
+        # TRANSLATORS: Location of the generated AutoYaST configuration file on the system.
+        target_path = UI.AskForSaveFileName("/root","*.xml",_("Location of Stored AutoYAST Configuration"))
       end
       return unless target_path
 
