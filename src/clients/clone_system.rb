@@ -22,6 +22,7 @@ module Yast
       Yast.import "CommandLine"
       Yast.import "Y2ModuleConfig"
       Yast.import "Mode"
+      Yast.import "FileUtils"
 
       textdomain "autoinst"
 
@@ -83,6 +84,16 @@ module Yast
 
     def doClone(options)
       target_path = options["target_path"] || "/root/autoinst.xml"
+
+      # Autoyast overwriting an already existing config file.
+      # The warning is only needed while calling "yast clone_system". It is not
+      # needed in the installation workflow where it will be checked by the file selection box
+      # directly. (bnc#888546)
+      if Mode.normal && FileUtils.Exists(target_path)
+        # TRANSLATORS: Warning that an already existing autoyast configuration file will be overwritten.
+        return false unless Popup.ContinueCancel(_("File %s exists! Really overwrite?") % target_path)
+      end
+
       Popup.ShowFeedback(
         _("Cloning the system..."),
         # TRANSLATORS: %s is path where profile can be found
