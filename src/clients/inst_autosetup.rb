@@ -55,6 +55,7 @@ module Yast
         _("Set up language"),
         _("Create partition plans"),
         _("Configure Bootloader"),
+        _("Registration"),
         _("Configure Software selections"),
         _("Configure Systemd Default Target")
       ]
@@ -65,6 +66,7 @@ module Yast
         _("Setting up language..."),
         _("Creating partition plans..."),
         _("Configuring Bootloader..."),
+        _("Registering to SCC..."),
         _("Configuring Software selections..."),
         _("Configuring Systemd Default Target...")
       ]
@@ -285,6 +287,22 @@ module Yast
         "bootloader_auto",
         ["Import", Ops.get_map(Profile.current, "bootloader", {})]
       )
+
+      # Register to SCC
+
+      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      Progress.NextStage
+
+      if Profile.current["suse_register"]
+        return :abort unless WFM.CallFunction(
+          "scc_auto",
+          ["Import", Profile.current["suse_register"]]
+        )
+        return :abort unless WFM.CallFunction(
+          "scc_auto",
+          ["Write"]
+        )
+      end
 
       # Software
 
