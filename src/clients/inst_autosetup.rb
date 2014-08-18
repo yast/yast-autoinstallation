@@ -66,7 +66,7 @@ module Yast
         _("Setting up language..."),
         _("Creating partition plans..."),
         _("Configuring Bootloader..."),
-        _("Registering to SCC..."),
+        _("Registering to SUSE Customer Center..."),
         _("Configuring Software selections..."),
         _("Configuring Systemd Default Target...")
       ]
@@ -302,6 +302,9 @@ module Yast
           "scc_auto",
           ["Write"]
         )
+      elsif semiauto_network = general_section["semi-automatic"] &&
+        general_section["semi-automatic"].include?("scc")
+        Call.Function("inst_scc", ["enable_next" => true])
       end
 
       # Software
