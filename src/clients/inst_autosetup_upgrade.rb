@@ -228,8 +228,9 @@ module Yast
           "scc_auto",
           ["Write"]
         )
-      elsif semiauto_network = general_section["semi-automatic"] &&
-        general_section["semi-automatic"].include?("scc")
+      elsif general_section["semi-automatic"] &&
+          general_section["semi-automatic"].include?("scc")
+
         Call.Function("inst_scc", ["enable_next" => true])
       end
 
