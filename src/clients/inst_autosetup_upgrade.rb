@@ -51,6 +51,7 @@ module Yast
         _("Configure General Settings "),
         _("Execute pre-install user scripts"),
         _("Set up language"),
+        _("Registration"),
         _("Configure Software selections"),
         _("Configure Bootloader")
       ]
@@ -59,6 +60,7 @@ module Yast
         _("Configuring general settings..."),
         _("Executing pre-install user scripts..."),
         _("Setting up language..."),
+        _("Registering to SUSE Customer Center..."),
         _("Configuring Software selections..."),
         _("Configuring Bootloader...")
       ]
@@ -210,6 +212,25 @@ module Yast
         end
       end
 
+      # Register to SCC
+
+      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      Progress.NextStage
+
+      general_section = Profile.current["general"] || {}
+      if Profile.current["suse_register"]
+        return :abort unless WFM.CallFunction(
+          "scc_auto",
+          ["Import", Profile.current["suse_register"]]
+        )
+        return :abort unless WFM.CallFunction(
+          "scc_auto",
+          ["Write"]
+        )
+      elsif semiauto_network = general_section["semi-automatic"] &&
+        general_section["semi-automatic"].include?("scc")
+        Call.Function("inst_scc", ["enable_next" => true])
+      end
 
       # Software
 
