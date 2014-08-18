@@ -60,7 +60,7 @@ module Yast
         _("Configuring general settings..."),
         _("Executing pre-install user scripts..."),
         _("Setting up language..."),
-        _("Registering to SUSE Customer Center..."),
+        _("Registering the system..."),
         _("Configuring Software selections..."),
         _("Configuring Bootloader...")
       ]
@@ -212,7 +212,8 @@ module Yast
         end
       end
 
-      # Register to SCC
+      # Registration
+      # FIXME: There is a lot of duplicate code with inst_autosetup.
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
       Progress.NextStage

@@ -66,7 +66,7 @@ module Yast
         _("Setting up language..."),
         _("Creating partition plans..."),
         _("Configuring Bootloader..."),
-        _("Registering to SUSE Customer Center..."),
+        _("Registering the system..."),
         _("Configuring Software selections..."),
         _("Configuring Systemd Default Target...")
       ]
@@ -288,7 +288,8 @@ module Yast
         ["Import", Ops.get_map(Profile.current, "bootloader", {})]
       )
 
-      # Register to SCC
+      # Registration
+      # FIXME: There is a lot of duplicate code with inst_autoupgrade.
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
       Progress.NextStage
