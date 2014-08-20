@@ -823,7 +823,7 @@ module Yast
           toks = URL.Parse(Ops.get_string(s, "location", ""))
           # special == true ---> The script has to be installed into /mnt
           # because it will be called in a chroot environment.
-          # (bnc#889932)
+          # (bnc#889931)
           # FIXME: Find out why "nfs" has a special behavior.
           if special || toks["scheme"] == "nfs"
             scriptPath = Builtins.sformat(
