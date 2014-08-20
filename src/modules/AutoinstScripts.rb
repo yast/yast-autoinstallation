@@ -821,7 +821,11 @@ module Yast
           #scriptPath = sformat("%1%2/%3", (special) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
 
           toks = URL.Parse(Ops.get_string(s, "location", ""))
-          if Ops.get_string(toks, "scheme", "") == "nfs" || !special
+          # special == true ---> The script has to be installed into /mnt
+          # because it will be called in a chroot environment.
+          # (bnc#889931)
+          # FIXME: Find out why "nfs" has a special behavior.
+          if special || toks["scheme"] == "nfs"
             scriptPath = Builtins.sformat(
               "%1%2/%3",
               AutoinstConfig.destdir,
@@ -852,8 +856,8 @@ module Yast
               Ops.get_string(s, "source", "echo Empty script!")
             )
           end
-          if special && Ops.get_string(toks, "scheme", "") == "nfs"
-            scriptPath = Builtins.substring(scriptPath, 4) # cut off the /mnt for later execution
+          if special || toks["scheme"] == "nfs"
+            scriptPath = scriptPath[AutoinstConfig.destdir.length..-1] # cut off the e.g. /mnt for later execution
           end
         else
           # disable all sources and finish target - no clue what this is good for.
