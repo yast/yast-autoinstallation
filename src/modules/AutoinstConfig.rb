@@ -148,6 +148,8 @@ module Yast
       #
       @Confirm = true
 
+      # Running autoyast second_stage
+      @second_stage = true
 
       @OriginalURI = ""
 
@@ -497,6 +499,7 @@ module Yast
     publish :variable => :pass, :type => "string"
     publish :variable => :default_target, :type => "string"
     publish :variable => :Confirm, :type => "boolean"
+    publish :variable => :second_stage, :type => "boolean"
     publish :variable => :OriginalURI, :type => "string"
     publish :variable => :message, :type => "string"
     publish :variable => :dontmerge, :type => "list <string>"

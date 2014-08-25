@@ -301,30 +301,6 @@ module Yast
       true
     end
 
-    # Turn off the second stage of autoyast
-    #
-    def TurnOff
-      if !Ops.get_boolean(
-          Profile.current,
-          ["general", "mode", "second_stage"],
-          true
-        )
-        Builtins.y2milestone(
-          "switching from autoinstallation to manual installation in second stage"
-        )
-        SCR.Execute(
-          path(".target.bash"),
-          "/bin/grep -v -i '^autoyast:' /etc/install.inf > /tmp/install.inf.new"
-        )
-        SCR.Execute(
-          path(".target.bash"),
-          "/bin/mv /tmp/install.inf.new /etc/install.inf"
-        )
-      end
-
-      nil
-    end
-
     publish :variable => :autoconf, :type => "boolean"
     publish :function => :callbackTrue_boolean_string, :type => "boolean (string)"
     publish :function => :callbackFalse_boolean_string, :type => "boolean (string)"
@@ -348,7 +324,6 @@ module Yast
     publish :function => :Save, :type => "boolean ()"
     publish :function => :Finish, :type => "void (string)"
     publish :function => :PXELocalBoot, :type => "boolean ()"
-    publish :function => :TurnOff, :type => "boolean ()"
   end
 
   AutoInstall = AutoInstallClass.new
