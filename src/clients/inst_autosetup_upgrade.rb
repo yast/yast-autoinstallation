@@ -458,7 +458,6 @@ module Yast
         false
       )
 
-      AutoInstall.TurnOff
       Progress.Finish
 
       @ret = ProductControl.RunFrom(

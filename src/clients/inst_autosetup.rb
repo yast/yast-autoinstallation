@@ -379,7 +379,6 @@ module Yast
       )
 
       #    AutoInstall::PXELocalBoot();
-      AutoInstall.TurnOff
       Progress.Finish
 
       @ret = ProductControl.RunFrom(

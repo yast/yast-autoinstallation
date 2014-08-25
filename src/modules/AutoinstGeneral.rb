@@ -37,6 +37,9 @@ module Yast
       #
       @Confirm = true
 
+      # Running autoyast second_stage
+      @second_stage = true
+
       #
       # Mode Settings
       #
@@ -384,6 +387,7 @@ module Yast
     # @return [Boolean] true on success
     def Write
       AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
+      AutoinstConfig.second_stage = @mode["second_stage"] if @mode.has_key?("second_stage")
       if Builtins.haskey(@mode, "forceboot")
         ProductFeatures.SetBooleanFeature(
           "globals",
@@ -424,6 +428,7 @@ module Yast
     end
 
     publish :variable => :Confirm, :type => "boolean"
+    publish :variable => :second_stage, :type => "boolean"
     publish :variable => :mode, :type => "map"
     publish :variable => :signature_handling, :type => "map"
     publish :variable => :askList, :type => "list"
