@@ -189,8 +189,11 @@ module Yast
       # else
       #     modified = true;
       @image = settings.fetch("image",{})
-      if !@image.fetch("image_location","").empty? &&
-         !@image.fetch("image_name","").empty?
+
+      # image_location and image_name are not mandatory for
+      # extracting an image because it can be defined in the
+      # script too. So it will not be checked here.
+      if @image["script_location"] && !@image["script_location"].empty?
         @imaging = true
       end
       true
