@@ -206,8 +206,8 @@ module Yast
         # (bnc#887397)
         report = Report.Export # getting all values
         report["yesno_messages"] = report.fetch("errors",{})
-        Report.Import(report) # setting all values
       end
+      Report.Import(report) # setting all values
       AutoinstGeneral.Import(Profile.current.fetch("general",{}))
       AutoinstGeneral.SetSignatureHandling
       AutoinstGeneral.SetMultipathing
