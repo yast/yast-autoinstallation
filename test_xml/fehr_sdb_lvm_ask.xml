@@ -1,0 +1,331 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+<configure>
+  <bootloader>
+    <global>
+      <generic_mbr>true</generic_mbr>
+      <timeout config:type="integer">8</timeout>
+      <gfxmenu>/boot/menu</gfxmenu>
+    </global>
+  </bootloader>
+  <firewall>
+    <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+    <FW_ALLOW_FW_BROADCAST_DMZ>no</FW_ALLOW_FW_BROADCAST_DMZ>
+    <FW_ALLOW_FW_BROADCAST_EXT>no</FW_ALLOW_FW_BROADCAST_EXT>
+    <FW_ALLOW_FW_BROADCAST_INT>no</FW_ALLOW_FW_BROADCAST_INT>
+    <FW_CONFIGURATIONS_DMZ>sshd</FW_CONFIGURATIONS_DMZ>
+    <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
+    <FW_CONFIGURATIONS_INT>sshd</FW_CONFIGURATIONS_INT>
+    <FW_DEV_EXT>eth0</FW_DEV_EXT>
+    <FW_IGNORE_FW_BROADCAST_DMZ>no</FW_IGNORE_FW_BROADCAST_DMZ>
+    <FW_IGNORE_FW_BROADCAST_EXT>yes</FW_IGNORE_FW_BROADCAST_EXT>
+    <FW_IGNORE_FW_BROADCAST_INT>no</FW_IGNORE_FW_BROADCAST_INT>
+    <FW_IPSEC_TRUST>no</FW_IPSEC_TRUST>
+    <FW_LOAD_MODULES>nf_conntrack_netbios_ns</FW_LOAD_MODULES>
+    <FW_LOG_ACCEPT_ALL>no</FW_LOG_ACCEPT_ALL>
+    <FW_LOG_ACCEPT_CRIT>yes</FW_LOG_ACCEPT_CRIT>
+    <FW_LOG_DROP_ALL>no</FW_LOG_DROP_ALL>
+    <FW_LOG_DROP_CRIT>yes</FW_LOG_DROP_CRIT>
+    <FW_MASQUERADE>no</FW_MASQUERADE>
+    <FW_PROTECT_FROM_INT>no</FW_PROTECT_FROM_INT>
+    <FW_ROUTE>no</FW_ROUTE>
+    <enable_firewall config:type="boolean">false</enable_firewall>
+    <start_firewall config:type="boolean">false</start_firewall>
+  </firewall>
+  <general> 
+    <signature-handling>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+    </signature-handling>
+    <mode>
+      <confirm config:type="boolean">true</confirm>
+      <final_reboot config:type="boolean">false</final_reboot>
+    </mode>
+    <ask-list config:type="list">
+      <ask>
+	<dialog config:type="integer">0</dialog>
+	<element config:type="integer">0</element>
+	<title>VG name</title>
+	<question>Enter name of Volume group</question>
+	<stage>initial</stage>
+	<help>put some blabla here</help>
+	<password config:type="boolean">false</password>
+	<script>
+	  <environment config:type="boolean">true</environment>
+	  <source><![CDATA[
+sed -e s/VG_PLACEHOLDER/$VAL/ -e s/ask-list/disabled/ </tmp/profile/autoinst.xml >/tmp/profile/modified.xml
+]]>
+	  </source>
+	</script>
+      </ask>
+<!--
+      <ask>
+	<dialog config:type="integer">0</dialog>
+	<element config:type="integer">1</element>
+	<title>LV name 1</title>
+	<pathlist config:type="list">
+	  <path>partitioning,1,partitions,0,lv_name</path>
+	</pathlist>
+	<question>Enter name of logical volume</question>
+	<stage>initial</stage>
+	<help>put some blabla here</help>
+	<password config:type="boolean">false</password>
+      </ask>
+      <ask>
+	<dialog config:type="integer">0</dialog>
+	<element config:type="integer">2</element>
+	<title>LV name 2</title>
+	<pathlist config:type="list">
+	  <path>partitioning,1,partitions,1,lv_name</path>
+	</pathlist>
+	<question>Enter name of logical volume 2</question>
+	<stage>initial</stage>
+	<help>put some blabla here</help>
+	<password config:type="boolean">false</password>
+      </ask>
+      <ask>
+	<dialog config:type="integer">0</dialog>
+	<element config:type="integer">1</element>
+	<selection config:type="list">
+	  <entry>
+	    <value>local</value>
+	    <label>Local User Management</label>
+	  </entry>
+	  <entry>
+	    <label>Network User Management via NIS</label>
+	    <value>nis</value>
+	  </entry>
+	  <entry>
+	    <label>Only root user</label>
+	    <value>none</value>
+	  </entry>
+	</selection>
+	<default>local</default>
+	<script>
+	  <environment config:type="boolean">true</environment>
+	  <source><![CDATA[
+if [ "$VAL" = "local" ]; then
+echo -n "10" > /tmp/next_dialog
+elif [ "$VAL" = "nis" ]; then
+echo -n "20" > /tmp/next_dialog
+elif [ "$VAL" = "none" ]; then
+# -1 terminates the ask-dialog sequence
+echo -n "-1" > /tmp/next_dialog
+fi
+]]>
+	  </source>
+	</script>
+      </ask>
+      <ask>
+	<dialog config:type="integer">10</dialog>
+	<title>Local User</title>
+	<question>Password</question>
+	<pathlist config:type="list">
+	  <path>users,1,user_password</path>
+	</pathlist>
+	<password config:type="boolean">true</password>
+	<stage>initial</stage>
+	<help>enter local user data</help>
+	<password config:type="boolean">false</password>
+      </ask>
+-->
+    </ask-list> 
+  </general>
+  <networking>
+<!--
+    <keep_install_network config:type="boolean">true</keep_install_network>
+-->
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>dhcp</bootproto>
+        <device>eth-id-08:00:27:3d:0c:1d</device>
+        <startmode>onboot</startmode>
+      </interface>
+    </interfaces>
+    <managed config:type="boolean">false</managed>
+        <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+      <routes config:type="list">
+        <route>
+          <destination>default</destination>
+          <device>-</device>
+          <gateway>10.120.255.254</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+  </networking>
+  <report>
+    <errors>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </errors>
+    <messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </messages>
+    <warnings>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </warnings>
+    <yesno_messages>
+      <log config:type="boolean">true</log>
+      <show config:type="boolean">true</show>
+      <timeout config:type="integer">10</timeout>
+    </yesno_messages>
+  </report>
+  <runlevel>
+    <default>5</default>
+    <services config:type="list" >
+      <service>
+	<service_name>sshd</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>rpcbind</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>autofs</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>nfs</service_name>
+	<service_start>3 5</service_start>
+      </service>
+      <service>
+	<service_name>cups</service_name>
+	<service_status>disable</service_status>
+      </service>
+      <service>
+	<service_name>SuSEfirewall2</service_name>
+	<service_status>disable</service_status>
+      </service>
+    </services>
+  </runlevel>
+  <sound>
+    <autoinstall config:type="boolean">true</autoinstall>
+    <configure_detected config:type="boolean">true</configure_detected>
+  </sound>
+<!--
+  <suse_register>
+    <do_registration config:type="boolean">true</do_registration>
+    <registration_data/>
+    <submit_hwdata config:type="boolean">true</submit_hwdata>
+    <submit_optional config:type="boolean">true</submit_optional>
+  </suse_register>
+-->
+  <timezone>
+    <hwclock>UTC</hwclock>
+    <timezone>Europe/Berlin</timezone>
+  </timezone>
+</configure>
+<install>
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/sdb</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/boot</mount>
+          <size>256M</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <lvm_group>VG_PLACEHOLDER</lvm_group>
+          <size>max</size>
+        </partition>
+      </partitions>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/VG_PLACEHOLDER</device>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>swapvol</lv_name>
+          <mount>swap</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>auto</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>rootvol</lv_name>
+          <mount>/</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>4G</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>usrvol</lv_name>
+          <mount>/usr</mount>
+          <size>2G</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>tmpvol</lv_name>
+          <mount>/tmp</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>500M</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>homevol</lv_name>
+          <mount>/psa/home</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>128M</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <lv_name>optvol</lv_name>
+          <mount>/opt</mount>
+          <mountby config:type="symbol">device</mountby>
+          <size>130M</size>
+        </partition>
+      </partitions>
+      <type config:type="symbol">CT_LVM</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <software>
+    <image/>
+    <instsource/>
+    <packages config:type="list">
+      <package>less</package>
+      <package>yast2-trans-en_US</package>
+    </packages>
+    <patterns config:type="list">
+      <pattern>Minimal</pattern>
+      <pattern>base</pattern>
+    </patterns>
+  </software>
+  <users config:type="list">
+    <user>
+      <user_password>pw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</install>
+</profile>

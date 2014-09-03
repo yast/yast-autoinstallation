@@ -132,8 +132,11 @@
 <install>
   <partitioning config:type="list">
     <drive>
+<!--
       <device>/dev/sdb</device>
+-->
       <initialize config:type="boolean">true</initialize>
+      <disklabel>msdos</disklabel>
 <!--
       <disklabel>gpt</disklabel>
 -->
@@ -150,9 +153,19 @@
 	<partition>
 	  <mount>/</mount>
 	  <size>max</size>
-	  <filesystem config:type="symbol">ext4</filesystem>
 	  <format config:type="boolean">true</format>
-	  </partition>
+          <filesystem config:type="symbol">ext4</filesystem>
+<!--
+          <filesystem config:type="symbol">btrfs</filesystem>
+          <subvolumes config:type="list">
+            <listentry>boot</listentry>
+            <listentry>home</listentry>
+            <listentry>opt</listentry>
+            <listentry>tmp</listentry>
+            <listentry>var</listentry>
+          </subvolumes>
+-->
+        </partition>
 <!--
 	<partition>
 	  <mount>/boot</mount>
@@ -163,6 +176,9 @@
 	</partition>
 -->
       </partitions>
+<!--
+      <use>2,3,4</use>
+-->
     </drive>
   </partitioning>
   <software>
@@ -179,7 +195,7 @@
   </software>
   <users config:type="list">
     <user>
-      <user_password>rootpw</user_password>
+      <user_password>pw</user_password>
       <username>root</username>
     </user>
   </users>

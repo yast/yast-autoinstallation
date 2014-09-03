@@ -16,15 +16,9 @@
   </add-on>
 -->
   <bootloader>
-    <global>
-      <generic_mbr>true</generic_mbr>
-      <timeout config:type="integer">8</timeout>
-      <gfxmenu>/boot/menu</gfxmenu>
-    </global>
+    <loader_type>grub2</loader_type>
   </bootloader>
   <firewall>
-<!--
--->
     <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
     <FW_ALLOW_FW_BROADCAST_DMZ>no</FW_ALLOW_FW_BROADCAST_DMZ>
     <FW_ALLOW_FW_BROADCAST_EXT>no</FW_ALLOW_FW_BROADCAST_EXT>
@@ -32,7 +26,7 @@
     <FW_CONFIGURATIONS_DMZ>sshd</FW_CONFIGURATIONS_DMZ>
     <FW_CONFIGURATIONS_EXT>sshd</FW_CONFIGURATIONS_EXT>
     <FW_CONFIGURATIONS_INT>sshd</FW_CONFIGURATIONS_INT>
-    <FW_DEV_EXT>enp0s3</FW_DEV_EXT>
+    <FW_DEV_EXT>eth0</FW_DEV_EXT>
     <FW_IGNORE_FW_BROADCAST_DMZ>no</FW_IGNORE_FW_BROADCAST_DMZ>
     <FW_IGNORE_FW_BROADCAST_EXT>yes</FW_IGNORE_FW_BROADCAST_EXT>
     <FW_IGNORE_FW_BROADCAST_INT>no</FW_IGNORE_FW_BROADCAST_INT>
@@ -61,6 +55,9 @@
       <final_reboot config:type="boolean">false</final_reboot>
       <max_systemd_wait config:type="integer">345</max_systemd_wait>
     </mode>
+    <storage>
+      <start_multipath config:type="boolean">false</start_multipath>
+    </storage>
   </general>
   <networking>
     <keep_install_network config:type="boolean">true</keep_install_network>
@@ -122,14 +119,6 @@
   </sound>
   <scripts>
   </scripts>
-<!--
-  <suse_register>
-    <do_registration config:type="boolean">true</do_registration>
-    <registration_data/>
-    <submit_hwdata config:type="boolean">true</submit_hwdata>
-    <submit_optional config:type="boolean">true</submit_optional>
-  </suse_register>
--->
   <timezone>
     <hwclock>UTC</hwclock>
     <timezone>Europe/Berlin</timezone>
@@ -140,67 +129,111 @@
     <drive>
       <device>/dev/sdb</device>
       <initialize config:type="boolean">true</initialize>
-      <disklabel>msdos</disklabel>
-<!--
-      <disklabel>gpt</disklabel>
--->
       <partitions config:type="list">
-	<partition>
-	  <mount>swap</mount>
-	  <size>500M</size>
-	  <filesystem>swap</filesystem>
-	  <format config:type="boolean">true</format>
-	</partition>
-	<partition>
-	  <mount>/</mount>
-	  <size>max</size>
-	  <filesystem config:type="symbol">ext3</filesystem>
-	  <format config:type="boolean">true</format>
-<!--
--->
-<!--
-          <fstopt config:type="symbol">pri=1</fstopt>
--->
-	</partition>
-<!--
-	<partition>
-	  <mount>/boot</mount>
-	    <size>200M</size>
-	    <filesystem>ext3</filesystem>
-	    <format config:type="boolean">true</format>
-	    <filesystem config:type="symbol">ext3</filesystem>
-	</partition>
--->
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <mount>/boot</mount>
+          <partition_nr config:type="integer">1</partition_nr>
+          <size>187858432</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <lvm_group>system</lvm_group>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <size>max</size>
+        </partition>
       </partitions>
+      <pesize/>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/sdc</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">false</create>
+          <lvm_group>system</lvm_group>
+          <partition_nr config:type="integer">0</partition_nr>
+          <size>max</size>
+        </partition>
+      </partitions>
+      <pesize/>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/sdd</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">false</create>
+          <lvm_group>system</lvm_group>
+          <partition_nr config:type="integer">0</partition_nr>
+          <size>max</size>
+        </partition>
+      </partitions>
+      <pesize/>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+    <drive>
+      <device>/dev/system</device>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <lv_name>home</lv_name>
+          <mount>/home</mount>
+          <size>2147483648</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <lv_name>root</lv_name>
+          <mount>/</mount>
+          <size>4294967296</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>defaults</fstopt>
+          <lv_name>swap</lv_name>
+          <mount>swap</mount>
+          <size>1073741824</size>
+        </partition>
+      </partitions>
+      <pesize>4M</pesize>
+      <type config:type="symbol">CT_LVM</type>
+      <use>all</use>
     </drive>
   </partitioning>
   <software>
     <image/>
     <instsource/>
-<!--
-    <install_recommended config:type="boolean">false</install_recommended>
--->
     <packages config:type="list">
       <package>autoyast2</package>
       <package>autoyast2-installation</package>
-      <package>crda</package>
-      <package>cryptsetup-mkinitrd</package>
-      <package>grub2-branding-openSUSE</package>
       <package>kexec-tools</package>
       <package>libXmu6</package>
       <package>libnl-1_1</package>
       <package>libxslt-tools</package>
       <package>libxslt1</package>
-      <package>virtualbox-guest-kmp-default</package>
-      <package>virtualbox-guest-tools</package>
-      <package>virtualbox-guest-x11</package>
       <package>yast2-schema</package>
       <package>yast2-trans-en_US</package>
     </packages>
     <patterns config:type="list">
-      <pattern>enhanced_base</pattern>
-      <pattern>sw_management</pattern>
-      <pattern>yast2_install_wf</pattern>
     </patterns>
   </software>
   <users config:type="list">

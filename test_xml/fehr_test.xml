@@ -48,12 +48,15 @@
      <confirm config:type="boolean">true</confirm>
    </mode>
 </general>
+<!--
+
   <suse_register>
     <do_registration config:type="boolean">true</do_registration>
     <registration_data/>
     <submit_hwdata config:type="boolean">true</submit_hwdata>
     <submit_optional config:type="boolean">true</submit_optional>
   </suse_register>
+-->
     <sound>
       <autoinstall config:type="boolean">true</autoinstall>
       <configure_detected config:type="boolean">true</configure_detected>
@@ -99,56 +102,96 @@
         <username>root</username>
       </user>
     </users>
-    <partitioning config:type="list">
+  <partitioning config:type="list">
+    <drive>
+      <device>/dev/lsys</device>
+      <disklabel>msdos</disklabel>
+      <enable_snapshots config:type="boolean">true</enable_snapshots>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">xfs</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lv_name>lvall</lv_name>
+          <mount>/media/lvall</mount>
+          <mountby config:type="symbol">device</mountby>
+          <partition_nr config:type="integer">1</partition_nr>
+          <resize config:type="boolean">false</resize>
+          <size>max</size>
+        </partition>
+      </partitions>
+      <pesize>4M</pesize>
+      <type config:type="symbol">CT_LVM</type>
+      <use>all</use>
+    </drive>
     <drive>
       <device>/dev/sdb</device>
+      <disklabel>gpt</disklabel>
+      <enable_snapshots config:type="boolean">true</enable_snapshots>
       <initialize config:type="boolean">true</initialize>
-      <disklabel>msdos</disklabel>
-	<partitions config:type="list">
-	<partition>
-	<mount>swap</mount>
-	<size>3727M</size>
-	<filesystem>swap</filesystem>
-	<format config:type="boolean">true</format>
-	</partition>
-	<partition>
-	<mount>/</mount>
-	<size>max</size>
-	<filesystem config:type="symbol">btrfs</filesystem>
-	<format config:type="boolean">true</format>
-    <subvolumes config:type="list"> 
-        <path>var/tmp</path> 
-        <path>var/log</path> 
-        <path>var/spool</path> 
-        <path>tmp</path> 
-        <path>opt</path> 
-        <path>srv</path> 
-        <path>xyz_abcd</path> 
-    </subvolumes> 
-	</partition>
-	<partition>
-	<mount>/boot</mount>
-	<size>500M</size>
-	<filesystem>ext3</filesystem>
-	<format config:type="boolean">true</format>
-	<filesystem config:type="symbol">ext3</filesystem>
-	</partition>
-	<partition>
-	<mount>/emil</mount>
-	<size>1000M</size>
-	<filesystem>ext3</filesystem>
-	<format config:type="boolean">true</format>
-	<filesystem config:type="symbol">ext3</filesystem>
-	</partition>
-	<partition>
-	<mount>/fritz</mount>
-	<size>1500M</size>
-	<filesystem>ext3</filesystem>
-	<format config:type="boolean">true</format>
-	<filesystem config:type="symbol">ext3</filesystem>
-	</partition>
-	</partitions>
-	</drive>
-    </partitioning>
+      <partitions config:type="list">
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">vfat</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>umask=0002,utf8=true</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/boot/efi</mount>
+          <mountby config:type="symbol">uuid</mountby>
+          <partition_id config:type="integer">259</partition_id>
+          <partition_nr config:type="integer">1</partition_nr>
+          <resize config:type="boolean">false</resize>
+          <size>476216832</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>swap</mount>
+          <mountby config:type="symbol">uuid</mountby>
+          <partition_id config:type="integer">130</partition_id>
+          <partition_nr config:type="integer">2</partition_nr>
+          <resize config:type="boolean">false</resize>
+          <size>17173741056</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">ext4</filesystem>
+          <format config:type="boolean">true</format>
+          <fstopt>acl,user_xattr</fstopt>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/</mount>
+          <mountby config:type="symbol">uuid</mountby>
+          <partition_id config:type="integer">131</partition_id>
+          <partition_nr config:type="integer">3</partition_nr>
+          <resize config:type="boolean">false</resize>
+          <size>42949672960</size>
+        </partition>
+        <partition>
+          <create config:type="boolean">true</create>
+          <crypt_fs config:type="boolean">false</crypt_fs>
+          <filesystem config:type="symbol">btrfs</filesystem>
+          <format config:type="boolean">false</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <lvm_group>lsys</lvm_group>
+          <mountby config:type="symbol">device</mountby>
+          <partition_id config:type="integer">142</partition_id>
+          <partition_nr config:type="integer">4</partition_nr>
+          <resize config:type="boolean">false</resize>
+          <size>max</size>
+        </partition>
+      </partitions>
+      <pesize/>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
 </install>
 </profile>
