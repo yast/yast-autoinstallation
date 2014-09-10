@@ -177,8 +177,8 @@ module Yast
             "Trying to find file on installation media: %1",
             Installation.boot
           )
-          if Installation.boot == "cd"
-            cdrom = Convert.to_string(SCR.Read(path(".etc.install_inf.Cdrom")))
+          cdrom = Convert.to_string(SCR.Read(path(".etc.install_inf.Cdrom")))
+          if Installation.boot == "cd" && cdrom
             cdrom_device = Ops.add("/dev/", cdrom)
             already_mounted = Ops.add(
               Ops.add("grep ", cdrom_device),
