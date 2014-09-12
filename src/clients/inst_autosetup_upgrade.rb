@@ -164,8 +164,11 @@ module Yast
       if Builtins.haskey(Profile.current, "timezone")
         Timezone.Import(Ops.get_map(Profile.current, "timezone", {}))
       end
-      if Builtins.haskey(Profile.current, "keyboard")
-        Keyboard.Import(Ops.get_map(Profile.current, "keyboard", {}))
+      # bnc#891808: infer keyboard from language if needed
+      if Profile.current.has_key?("keyboard")
+        Keyboard.Import(Profile.current["keyboard"] || {}, :keyboard)
+      elsif Profile.current.has_key?("language")
+        Keyboard.Import(Profile.current["language"] || {}, :language)
       end
 
 
