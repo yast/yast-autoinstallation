@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.59
+Version:        3.1.60
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -43,7 +43,7 @@ Requires:       libxslt
 Requires:       yast2
 Requires:       yast2 >= 2.16.36
 Requires:       yast2-core
-Requires:       yast2-country
+Requires:       yast2-country >= 3.1.13
 Requires:       yast2-schema
 Requires:       yast2-storage >= 3.1.27
 Requires:       yast2-transfer >= 2.21.0
