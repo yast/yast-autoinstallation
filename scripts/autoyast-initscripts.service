@@ -7,6 +7,12 @@ Type=oneshot
 Environment=TERM=linux
 ExecStartPre=-/usr/bin/plymouth --hide-splash
 ExecStart=/usr/lib/YaST2/bin/autoyast-initscripts.sh
+# AutoYaST initscripts can block user login.
+# This will be done in modules/AutoinstScripts.rb by
+# checking the flag <no_user_login>.
+# The lock will be removed here.
+# (further information: man 5 nologin)
+ExecStartPost=-/usr/bin/rm /etc/nologin
 RemainAfterExit=yes
 TimeoutSec=0
 
