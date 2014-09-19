@@ -11,6 +11,7 @@ ExecStart=/usr/lib/YaST2/bin/autoyast-initscripts.sh
 # This will be done in modules/AutoinstScripts.rb by
 # checking the flag <no_user_login>.
 # The lock will be removed here.
+# (further information: man 5 nologin)
 ExecStartPost=-/usr/bin/rm /etc/nologin
 RemainAfterExit=yes
 TimeoutSec=0
