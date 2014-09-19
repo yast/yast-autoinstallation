@@ -824,7 +824,7 @@ module Yast
             log.info("Blocking user login while executing autoyast init scripts with message \"#{@no_user_login}\".")
             SCR.Write(
               path(".target.string"),
-              "etc/nologin",
+              "/etc/nologin",
               @no_user_login
             )
           end
