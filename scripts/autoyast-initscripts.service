@@ -7,6 +7,9 @@ Type=oneshot
 Environment=TERM=linux
 ExecStartPre=-/usr/bin/plymouth --hide-splash
 ExecStart=/usr/lib/YaST2/bin/autoyast-initscripts.sh
+# AutoYaST initscripts can block user login.
+# This lock will be removed here.
+ExecStartPost=-/usr/bin/rm /etc/nologin
 RemainAfterExit=yes
 TimeoutSec=0
 

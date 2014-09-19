@@ -10,6 +10,8 @@ require "yast"
 
 module Yast
   class AutoinstScriptsClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -35,6 +37,8 @@ module Yast
 
       # Init scripts
       @init = []
+      # No user login is possible While executing autoyast init scripts
+      @no_user_login = nil
 
       # postpart scripts
       @postpart = []
@@ -306,6 +310,7 @@ module Yast
       Builtins.y2debug("Calling AutoinstScripts::Import()")
       @pre = Ops.get_list(s, "pre-scripts", [])
       @init = Ops.get_list(s, "init-scripts", [])
+      @no_user_login = s["no_user_login"]
       @post = Ops.get_list(s, "post-scripts", [])
       @chroot = Ops.get_list(s, "chroot-scripts", [])
       @postpart = Ops.get_list(s, "postpartitioning-scripts", [])
@@ -815,8 +820,14 @@ module Yast
               Ops.get_string(s, "source", "echo Empty script!")
             )
           end 
-          # moved to 1st stage because of systemd
-          #Service::Enable("autoyast");
+          if @no_user_login
+            log.info("Blocking user login while executing autoyast init scripts with message \"#{@no_user_login}\".")
+            SCR.Write(
+              path(".target.string"),
+              "etc/nologin",
+              @no_user_login
+            )
+          end
         elsif type == "chroot-scripts"
           #scriptPath = sformat("%1%2/%3", (special) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
 
