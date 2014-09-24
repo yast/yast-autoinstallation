@@ -824,8 +824,14 @@ module Yast
           # special == true ---> The script has to be installed into /mnt
           # because it will be called in a chroot environment.
           # (bnc#889931)
+          # Add /mnt only if the script is getting via GetURL.
+          # In the other case SCR will do it via target setting.
+          # (bnc#897212)
+          #
           # FIXME: Find out why "nfs" has a special behavior.
-          if special || toks["scheme"] == "nfs"
+          if (special && s["location"] && !s["location"].empty?) ||
+            toks["scheme"] == "nfs"
+
             scriptPath = Builtins.sformat(
               "%1%2/%3",
               AutoinstConfig.destdir,
@@ -856,7 +862,9 @@ module Yast
               Ops.get_string(s, "source", "echo Empty script!")
             )
           end
-          if special || toks["scheme"] == "nfs"
+          if (special && s["location"] && !s["location"].empty?) ||
+            toks["scheme"] == "nfs"
+
             scriptPath = scriptPath[AutoinstConfig.destdir.length..-1] # cut off the e.g. /mnt for later execution
           end
         else
