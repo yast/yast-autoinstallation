@@ -950,6 +950,33 @@ module Yast
       packages.map! {|p| p["name"] }
     end
 
+    def install_packages
+      # user selected packages which have not been already installed
+      packages = Pkg.FilterPackages(
+        solver_selected = false,
+        app_selected = true,
+        user_selected = true,
+        name_only = true)
+
+      # user selected packages which have already been installed
+      installed_by_user = Pkg.GetPackages(:installed, true).select{ |pkg_name|
+        Pkg.PkgPropertiesAll(pkg_name).any? { |package| package["on_system_by_user"] }
+      }
+
+      # Filter out kernel and pattern packages
+      kernel_packages = Pkg.PkgQueryProvides("kernel").collect { |package|
+        package[0]
+      }.compact.uniq
+      pattern_packages = Pkg.PkgQueryProvides("pattern()").collect { |package|
+        package[0]
+      }.compact.uniq
+
+      (packages + installed_by_user).uniq.select{ |pkg_name|
+        !kernel_packages.include?(pkg_name) &&
+        !pattern_packages.include?(pkg_name)
+      }
+    end
+
     # Return list of software packages of calling client
     # in the installed environment
     # @return [Hash] map of installed software package
@@ -957,15 +984,14 @@ module Yast
     #		"packages" -> list<string> user selected packages
     #      "remove-packages" -> list<string> packages to remove
     def ReadHelper
-      ret = Pkg.TargetInit("/", false)
-      #        Pkg::TargetInitialize ("/");
+      Pkg.TargetInit("/", false)
       Pkg.TargetLoad
       Pkg.SourceStartManager(true)
       Pkg.PkgSolve(false)
 
-      @inst = Pkg.GetPackages(:installed, true)
       all_patterns = Pkg.ResolvableProperties("", :pattern, "")
       @all_xpatterns = Pkg.ResolvableDependencies("", :pattern, "")
+      to_install_packages = install_packages
       patterns = []
 
       patternsFullData = Builtins.filter(all_patterns) do |p|
@@ -988,10 +1014,7 @@ module Yast
       Builtins.y2debug("SourceStartCache: %1", Pkg.SourceStartCache(false))
 
       Pkg.SourceStartManager(true)
-
-      userpackages = Pkg.FilterPackages(false, false, true, true)
       Pkg.TargetFinish
-      # Remove kernel packages
 
       patternPackages = []
       new_p = []
@@ -1006,10 +1029,6 @@ module Yast
           if Ops.get_string(d, "res_kind", "") == "package" &&
               (Ops.get_string(d, "dep_kind", "") == "requires" ||
                 Ops.get_string(d, "dep_kind", "") == "recommends")
-            patternPackages = Builtins.add(
-              patternPackages,
-              Ops.get_string(d, "name", "")
-            )
             req = true
           end
         end
@@ -1020,61 +1039,17 @@ module Yast
       end
       patterns = deep_copy(new_p)
 
-      patternPackagesTemp = deep_copy(patternPackages)
-      run = false
-      emergency_break = 0
-      begin
-        run = false
-        emergency_break = Ops.add(emergency_break, 1)
-        # remove all packages that are pulled in by the resolver anyway
-        tmp = []
-        patternPackagesTemp = Builtins.toset(patternPackagesTemp)
-        Builtins.foreach(patternPackagesTemp) do |ppackage|
-          Builtins.foreach(Pkg.ResolvableDependencies(ppackage, :package, "")) do |d|
-            Builtins.foreach(Ops.get_list(d, "dependencies", [])) do |dd|
-              if Ops.get_string(dd, "res_kind", "") == "package" &&
-                  (Ops.get_string(dd, "dep_kind", "") == "requires" ||
-                    Ops.get_string(dd, "dep_kind", "") == "recommends") &&
-                  !Builtins.contains(
-                    patternPackages,
-                    Ops.get_string(dd, "name", "")
-                  )
-                patternPackages = Builtins.add(
-                  patternPackages,
-                  Ops.get_string(dd, "name", "")
-                )
-                tmp = Builtins.add(tmp, Ops.get_string(dd, "name", ""))
-                run = true
-              end
-            end
-          end
-        end
-        patternPackagesTemp = deep_copy(tmp)
-        Builtins.y2milestone("temp package list = %1", tmp)
-      end while run == true && Ops.less_than(emergency_break, 20)
-
       software = {}
-      if Ops.greater_than(Builtins.size(patterns), 0)
-        Builtins.foreach(@inst) do |p|
-          if !Builtins.contains(patternPackages, p)
-            userpackages = Builtins.add(userpackages, p)
-          end
-        end
-      end
 
-      Ops.set(
-        software,
-        "packages",
-        Builtins.sort(Builtins.filter(userpackages) do |pkg|
-          !Builtins.regexpmatch(pkg, "kernel-.*") || pkg == "kernel-uml"
-        end)
-      )
       Ops.set(software, "patterns", Builtins.sort(patterns))
       # Currently we do not have any information about user deleted packages in
       # the installed system.
       # In order to prevent a reinstallation we can take the locked packages at least.
       # (bnc#888296)
       software["remove-packages"] = locked_packages
+
+      software["packages"] = to_install_packages
+
       deep_copy(software)
     end
 
@@ -1095,12 +1070,6 @@ module Yast
           pattern["name"]
         end
       end
-
-      install_packages = Pkg.FilterPackages(
-        solver_selected = false,
-        app_selected = false,
-        user_selected = true,
-        name_only = true)
 
       software = {}
       software["packages"] = install_packages
