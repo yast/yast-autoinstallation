@@ -829,6 +829,7 @@ module Yast
           # (bnc#897212)
           #
           # FIXME: Find out why "nfs" has a special behavior.
+          #        Take another name for "s"
           if (special && s["location"] && !s["location"].empty?) ||
             toks["scheme"] == "nfs"
 
@@ -862,6 +863,7 @@ module Yast
               Ops.get_string(s, "source", "echo Empty script!")
             )
           end
+          # FIXME: That's duplicate code
           if (special && s["location"] && !s["location"].empty?) ||
             toks["scheme"] == "nfs"
 
