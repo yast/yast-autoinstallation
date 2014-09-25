@@ -960,7 +960,7 @@ module Yast
 
       # user selected packages which have already been installed
       installed_by_user = Pkg.GetPackages(:installed, true).select{ |pkg_name|
-        Pkg.PkgPropertiesAll(pkg_name).any? { |package| package["onsystem_by_user"] }
+        Pkg.PkgPropertiesAll(pkg_name).any? { |package| package["on_system_by_user"] }
       }
 
       # Filter out kernel and pattern packages
