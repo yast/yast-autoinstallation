@@ -772,7 +772,7 @@ which root partition should be used.  Automatic installation not possible.
         boolean result = false;
 
         foreach (string device, map data, AutoTargetMap, ``{
-                if ( Storage::IsRealDisk( data) &&
+                if ( Storage::IsPartitionable(data) &&
                      data["initialize"]:false == true) {
                         initial_target_map[device,"delete"] = true;
                         if( haskey( data, "disklabel" ))
@@ -794,7 +794,7 @@ which root partition should be used.  Automatic installation not possible.
 
         foreach (string device, map data, AutoTargetMap,
                  ``{
-            if ( Storage::IsRealDisk( data) )
+            if ( Storage::IsPartitionable(data) )
             {
                 y2milestone("Creating partition plans for %1", device);
                 
