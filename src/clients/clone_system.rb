@@ -11,7 +11,7 @@
 module Yast
   class CloneSystemClient < Client
     # FIXME: unify with conftree.rb
-    ALWAYS_CLONABLE_MODULES = ["software", "partitioning", "bootloader"]
+    ALWAYS_CLONABLE_MODULES = ["software", "partitioning", "bootloader"] unless defined? ALWAYS_CLONABLE_MODULES
 
     def main
       Yast.import "AutoinstClone"
