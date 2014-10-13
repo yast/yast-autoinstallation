@@ -1181,14 +1181,14 @@ module Yast
       end
 
       # split at the first comma, resulting in 2 parts at max.
-      parsed = distro.split(",", 2)
+      cpeid, name = distro.split(",", 2)
 
-      if parsed.size != 2
+      if !name
         log.warn "Cannot parse DISTRO value: #{distro}"
         return nil
       end
 
-      {"cpeid" => parsed[0], "name" => parsed[1]}
+      {"cpeid" => cpeid, "name" => name}
     end
 
     # parse CPE ID in URI syntax
@@ -1197,7 +1197,7 @@ module Yast
     # @return [Hash<String,String>] parsed values, the keys are "part", "vendor", "product",
     #   "version", "update", "edition", "lang", nil is returned for missing values
     def cpeid_map(cpeid)
-      return nil unless cpeid
+      return nil unless cpeid && cpeid.start_with?("cpe:/")
 
       # remove the "cpe:/" prefix
       raw_cpe = cpeid.sub(/^cpe:\//, "")

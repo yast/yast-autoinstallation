@@ -21,26 +21,51 @@ describe "Yast::AutoInstallRules" do
         "lang" => nil
       )
     end
+
+    it "parses Adv. mgmt module CPE ID" do
+      machinery_cpeid = "cpe:/o:suse:sle-module-adv-systems-management:12"
+      expect(subject.send(:cpeid_map, machinery_cpeid)).to eq(
+        "part" => "o",
+        "vendor" => "suse",
+        "product" => "sle-module-adv-systems-management",
+        "version" => "12",
+        "update" => nil,
+        "edition" => nil,
+        "lang" => nil
+      )
+    end
+
+    it "return nil when CPE ID is does not start with 'cpe:/'" do
+      expect(subject.send(:cpeid_map, "invalid")).to be_nil
+    end
   end
 
   describe "#distro_map" do
     it "returns CPEID and product name" do
-      expect(subject.send(:distro_map, "cpe:/o:suse:sles:12,SUSE Linux Enterprise Server 12")).
-        to eq({"cpeid" => "cpe:/o:suse:sles:12",
-          "name" => "SUSE Linux Enterprise Server 12"})
+      param = "cpe:/o:suse:sles:12,SUSE Linux Enterprise Server 12"
+      expected = {
+        "cpeid" => "cpe:/o:suse:sles:12",
+        "name" => "SUSE Linux Enterprise Server 12"
+      }
+
+      expect(subject.send(:distro_map, param)).to eq(expected)
     end
 
     it "returns product name with comma" do
-      expect(subject.send(:distro_map, "cpe:/o:suse:sles:12,SLES12, Mini edition")).
-        to eq({"cpeid" => "cpe:/o:suse:sles:12",
-          "name" => "SLES12, Mini edition"})
+      param = "cpe:/o:suse:sles:12,SLES12, Mini edition"
+      expected = {
+        "cpeid" => "cpe:/o:suse:sles:12",
+        "name" => "SLES12, Mini edition"
+      }
+
+      expect(subject.send(:distro_map, param)).to eq(expected)
     end
 
     it "returns nil if input is nil" do
       expect(subject.send(:distro_map, nil)).to be_nil
     end
 
-    it "returns nil if input is invalid" do
+    it "returns nil if the input does not contain comma" do
       expect(subject.send(:distro_map, "foo")).to be_nil
     end
   end
