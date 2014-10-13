@@ -319,11 +319,11 @@ module Yast
 
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
-      distro_str = SCR.Read(path(".content.distro"))
+      distro_str = SCR.Read(path(".content.DISTRO"))
       log.info "DISTRO: #{distro_str}"
 
       distro = distro_map(distro_str)
-      cpe = cpeid_map(distro["cpeid"])
+      cpe = distro ? cpeid_map(distro["cpeid"]) : {}
 
       @installed_product = distro["name"] || ""
       @installed_product_version = cpe["version"] || ""

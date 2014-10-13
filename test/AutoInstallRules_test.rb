@@ -62,7 +62,7 @@ describe "Yast::AutoInstallRules" do
       expect(Yast::Storage).to receive(:GetForeignPrimary)
       expect(Yast::Storage).to receive(:GetOtherLinuxPartitions)
 
-      expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".content.distro")).
+      expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".content.DISTRO")).
         and_return("cpe:/o:suse:sles:12,SUSE Linux Enterprise Server 12")
 
       subject.ProbeRules
