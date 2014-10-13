@@ -21,18 +21,6 @@ describe "Yast::AutoInstallRules" do
         "lang" => nil
       )
     end
-
-    it "keeps escaped ':' separator" do
-      expect(subject.send(:cpeid_map, "cpe:/o:suse:suse\\:sles:12")).to eq(
-        "part" => "o",
-        "vendor" => "suse",
-        "product" => "suse\\:sles",
-        "version" => "12",
-        "update" => nil,
-        "edition" => nil,
-        "lang" => nil
-      )
-    end
   end
 
   describe "#distro_map" do

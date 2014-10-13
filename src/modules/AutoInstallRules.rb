@@ -1171,7 +1171,7 @@ module Yast
 
     # Split CPE ID and distro label (separated by comma)
     # @param distro [String] "DISTRO" value from content file
-    # @return Hash<String,String> parsed value, map:
+    # @return [Hash<String,String>,nil] parsed value, map:
     #    {"name" => <string>, "cpeid" => <string> }
     #    or nil if the input value is invalid
     def distro_map(distro)
@@ -1194,7 +1194,7 @@ module Yast
     # parse CPE ID in URI syntax
     # @see http://csrc.nist.gov/publications/nistir/ir7695/NISTIR-7695-CPE-Naming.pdf
     # @param cpeid [String] e.g. "cpe:/o:suse:sles:12"
-    # @return [String] parsed values, the keys are "part", "vendor", "product",
+    # @return [Hash<String,String>] parsed values, the keys are "part", "vendor", "product",
     #   "version", "update", "edition", "lang", nil is returned for missing values
     def cpeid_map(cpeid)
       return nil unless cpeid
@@ -1202,9 +1202,7 @@ module Yast
       # remove the "cpe:/" prefix
       raw_cpe = cpeid.sub(/^cpe:\//, "")
 
-      # tricky regexp: ":" is a delimiter but ignore delimiter escaped by a backslash
-      # http://stackoverflow.com/questions/11164236/how-to-split-a-string-containing-both-delimiter-and-the-escaped-delimiter
-      parts = raw_cpe.split(/(?<!\\):/)
+      parts = raw_cpe.split(":")
 
       {
         "part"    => parts[0],
