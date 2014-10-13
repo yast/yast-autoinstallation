@@ -31,6 +31,11 @@ BuildRequires:  yast2-installation-control
 # xmllint
 BuildRequires:  libxml2-tools
 BuildRequires:  rubygem(rspec)
+BuildRequires:  yast2
+BuildRequires:  yast2-storage
+BuildRequires:  yast2-xml
+BuildRequires:  yast2-transfer
+BuildRequires:  yast2-services-manager
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
