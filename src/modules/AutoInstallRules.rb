@@ -10,6 +10,8 @@ require "yast"
 
 module Yast
   class AutoInstallRulesClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -317,17 +319,20 @@ module Yast
 
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
-      @installed_product = Product.name
-      @installed_product_version = Product.version
+      distro_str = SCR.Read(path(".content.distro"))
+      log.info "DISTRO: #{distro_str}"
+
+      distro = distro_map(distro_str)
+      cpe = cpeid_map(distro["cpeid"])
+
+      @installed_product = distro["name"] || ""
+      @installed_product_version = cpe["version"] || ""
       Ops.set(@ATTR, "installed_product", @installed_product)
       Ops.set(@ATTR, "installed_product_version", @installed_product_version)
 
-      Builtins.y2milestone(
-        "Installing %1 %2",
-        @installed_product,
-        @installed_product_version
-      )
-      Builtins.y2milestone("ATTR=%1", @ATTR)
+      log.info "Installing #{@installed_product.inspect}, " \
+        "version: #{@installed_product_version.inspect}"
+      log.info "ATTR=#{@ATTR}"
 
       nil
     end
@@ -1159,6 +1164,58 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
+
+    private
+
+    # TODO FIXME: share these functions (move to yast2?)
+
+    # Split CPE ID and distro label (separated by comma)
+    # @param distro [String] "DISTRO" value from content file
+    # @return Hash<String,String> parsed value, map:
+    #    {"name" => <string>, "cpeid" => <string> }
+    #    or nil if the input value is invalid
+    def distro_map(distro)
+      if !distro
+        log.warn "Received nil distro value"
+        return nil
+      end
+
+      # split at the first comma, resulting in 2 parts at max.
+      parsed = distro.split(",", 2)
+
+      if parsed.size != 2
+        log.warn "Cannot parse DISTRO value: #{distro}"
+        return nil
+      end
+
+      {"cpeid" => parsed[0], "name" => parsed[1]}
+    end
+
+    # parse CPE ID in URI syntax
+    # @see http://csrc.nist.gov/publications/nistir/ir7695/NISTIR-7695-CPE-Naming.pdf
+    # @param cpeid [String] e.g. "cpe:/o:suse:sles:12"
+    # @return [String] parsed values, the keys are "part", "vendor", "product",
+    #   "version", "update", "edition", "lang", nil is returned for missing values
+    def cpeid_map(cpeid)
+      return nil unless cpeid
+
+      # remove the "cpe:/" prefix
+      raw_cpe = cpeid.sub(/^cpe:\//, "")
+
+      # tricky regexp: ":" is a delimiter but ignore delimiter escaped by a backslash
+      # http://stackoverflow.com/questions/11164236/how-to-split-a-string-containing-both-delimiter-and-the-escaped-delimiter
+      parts = raw_cpe.split(/(?<!\\):/)
+
+      {
+        "part"    => parts[0],
+        "vendor"  => parts[1],
+        "product" => parts[2],
+        "version" => parts[3],
+        "update"  => parts[4],
+        "edition" => parts[5],
+        "lang"    => parts[6]
+      }
+    end
   end
 
   AutoInstallRules = AutoInstallRulesClass.new
