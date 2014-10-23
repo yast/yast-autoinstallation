@@ -1,0 +1,18 @@
+language: cpp
+compiler:
+    - gcc
+before_install:
+    - curl http://download.opensuse.org/repositories/YaST:/Head:/Travis/xUbuntu_12.04/Release.key | sudo apt-key add -
+    - echo "deb http://download.opensuse.org/repositories/YaST:/Head:/Travis/xUbuntu_12.04/ ./" | sudo tee -a /etc/apt/sources.list
+    - sudo apt-get update -q
+    - sudo apt-get install --no-install-recommends -y yast2-devtools yast2-testsuite yast2 yast2-storage
+      yast2-xml yast2-transfer yast2-services-manager yast2-installation-control
+    # disable rvm, use system Ruby
+    - rvm reset
+    - sudo gem install rspec:2.14.1
+script:
+    - make -f Makefile.cvs
+    - make
+    - sudo make install
+    - make check
+
