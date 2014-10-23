@@ -74,6 +74,7 @@ describe "Yast::AutoInstallRules" do
     it "reads installed product properties from content file" do
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.bios")).and_return([])
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.memory")).and_return([])
+      expect(Yast::Arch).to receive(:architecture).and_return("x86_64")
       expect(Yast::Kernel).to receive(:GetPackages).and_return([])
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/bin/hostname")
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.Domain"))
