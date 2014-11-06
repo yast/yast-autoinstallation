@@ -1,0 +1,15 @@
+language: cpp
+compiler:
+    - gcc
+before_install:
+      yast2-xml yast2-transfer yast2-services-manager yast2-installation-control
+    # disable rvm, use system Ruby
+    - rvm reset
+    - wget https://raw.githubusercontent.com/yast/yast-devtools/master/travis-tools/travis_setup.sh
+    - sh ./travis_setup.sh -p "yast2-devtools yast2-testsuite yast2 yast2-storage" -g rspec:2.14.1
+script:
+    - make -f Makefile.cvs
+    - make
+    - sudo make install
+    - make check
+
