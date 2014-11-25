@@ -680,26 +680,33 @@ module Yast
     def Summary
       summary = ""
       summary = Summary.AddHeader(summary, _("Drives"))
-      num = Builtins.size(@AutoPartPlan)
-      summary = Summary.AddLine(
-        summary,
-        Builtins.sformat(_("Total of %1 drive"), num)
-      )
-      summary = Summary.OpenList(summary)
-      Builtins.foreach(@AutoPartPlan) do |drive|
-        driveDesc = AutoinstDrive.getNodeName(drive, true)
-        summary = Summary.AddListItem(summary, driveDesc)
+      unless @AutoPartPlan.empty?
+        # We are counting real disks only
+        num = @AutoPartPlan.count{|drive| drive["type"] == :CT_DISK }
+        summary = Summary.AddLine(
+          summary,
+          Builtins.sformat(_("%1 drive(s) in total"), num)
+        )
         summary = Summary.OpenList(summary)
-        Builtins.foreach(Ops.get_list(drive, "partitions", [])) do |part|
-          summary = Summary.AddListItem(
-            summary,
-            AutoinstPartition.getPartitionDescription(part, true)
-          )
+        Builtins.foreach(@AutoPartPlan) do |drive|
+          driveDesc = AutoinstDrive.getNodeName(drive, true)
+          summary = Summary.AddListItem(summary, driveDesc)
+          summary = Summary.OpenList(summary)
+          Builtins.foreach(Ops.get_list(drive, "partitions", [])) do |part|
+            summary = Summary.AddListItem(
+              summary,
+              AutoinstPartition.getPartitionDescription(part, true)
+            )
+          end
+          summary = Summary.CloseList(summary)
+          summary = Summary.AddNewLine(summary)
         end
         summary = Summary.CloseList(summary)
-        summary = Summary.AddNewLine(summary)
+      else
+        summary = Summary.AddLine( summary,
+          _("Not yet cloned.")
+        )
       end
-      summary = Summary.CloseList(summary)
       summary
     end
 
