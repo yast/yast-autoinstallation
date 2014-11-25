@@ -377,6 +377,7 @@ module Yast
     end
 
     def PartitionCheck
+      unchangedPartition = @currentPartition
       @currentPartition = updatePartitionDialogData(@currentPartition)
       Builtins.y2milestone(
         "PartitionCheck():\n" +
@@ -386,9 +387,8 @@ module Yast
         @driveId,
         @partitionIdx
       )
-      storedPartition = PartitionLoad(@driveId, @partitionIdx)
 
-      if !AutoinstPartition.areEqual(@currentPartition, storedPartition) || @dirty
+      if !AutoinstPartition.areEqual(@currentPartition, unchangedPartition) || @dirty
         if Popup.YesNo(_("Store unsaved changes to partition?"))
           @dirty = false
           if PartitionCheckSanity(@currentPartition)
@@ -536,6 +536,9 @@ module Yast
       )
       updatePartitionDialogGUI
 
+      # Setting currentPartition to some default entries made by
+      # the UI design.
+      @currentPartition = updatePartitionDialogData(@currentPartition)
       nil
     end
 
