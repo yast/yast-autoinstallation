@@ -685,7 +685,7 @@ module Yast
         num = @AutoPartPlan.count{|drive| drive["type"] == :CT_DISK }
         summary = Summary.AddLine(
           summary,
-          Builtins.sformat(_("%1 drive(s) in total"), num)
+          (n_("%s drive in total", "%s drives in total", num) % num)
         )
         summary = Summary.OpenList(summary)
         Builtins.foreach(@AutoPartPlan) do |drive|
