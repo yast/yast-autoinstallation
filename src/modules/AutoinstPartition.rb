@@ -20,6 +20,7 @@ module Yast
       Yast.import "AutoinstCommon"
       Yast.import "Partitions"
       Yast.import "FileSystems"
+      Yast.import "Storage"
 
       textdomain "autoinst"
 
@@ -121,33 +122,32 @@ module Yast
       p = deep_copy(p)
       part_desc = Ops.get_string(p, "mount", "")
       if "" == part_desc
-        part_desc = Ops.get_string(p, "lvm_group", "")
-        if enableHTML
-          part_desc = Builtins.sformat(
-            "Physical volume for volume group &lt;<b>%1</b>&gt;",
-            part_desc
-          )
+        if p["lvm_group"] && !p["lvm_group"].empty?
+          part_desc = p["lvm_group"]
+          if enableHTML
+            part_desc = "Physical volume for volume group &lt;<b>#{part_desc}</b>&gt;"
+          else
+            part_desc = "<#{part_desc}>"
+          end
         else
-          part_desc = Builtins.sformat("<%1>", part_desc)
+          part_desc = "Physical volume"
         end
       else
         if enableHTML
-          part_desc = Builtins.sformat("<b>%1</b> Partition", part_desc)
+          part_desc = Builtins.sformat("<b>%1</b> partition", part_desc)
         end
       end
       if Ops.get_boolean(p, "create", false)
-        part_desc = Builtins.sformat(
-          "%1 with %2",
-          part_desc,
-          Ops.get_string(p, "size", "")
-        )
+        if p["size"] &&  !p["size"].empty?
+          part_desc += " with #{Storage.ByteToHumanString(p["size"].to_i)}"
+        end
       else
         if Ops.get_boolean(p, "resize", false)
           part_desc = Builtins.sformat(
             "%1 resize part.%2 to %3",
             part_desc,
             Ops.get_integer(p, "partition_nr", 999),
-            Ops.get_string(p, "size", "")
+            Storage.ByteToHumanString(p["size"].to_i)
           )
         else
           part_desc = Builtins.sformat(
@@ -258,6 +258,11 @@ module Yast
           Ops.get_symbol(part, "filesystem", :Empty)
         )
         newPart = set(newPart, "format", true)
+      elsif Mode.config
+        # We are in the autoyast configuration mode. So if the parsed
+        # system partitions do not have a filesystem entry (E.G. Raids)
+        # we are not using the default entry (Partitions.DefaultFs).
+        newPart["filesystem"] = :Empty
       end
       if Ops.get_boolean(newPart, "format", false) &&
           !Builtins.isempty(Ops.get_string(part, "mkfs_options", ""))
