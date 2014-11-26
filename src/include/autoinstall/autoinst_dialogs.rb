@@ -32,12 +32,13 @@ module Yast
       UI.OpenDialog(
         Opt(:decorated),
         HBox(
-          HWeight(50, RichText(helptext)),
+          HWeight(30, RichText(helptext)),
           HStretch(),
           HSpacing(1),
           HWeight(
-            50,
+            70,
             VBox(
+              HSpacing(80),
               Heading(title),
               VSpacing(1),
               VStretch(),
