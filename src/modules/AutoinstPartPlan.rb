@@ -681,7 +681,7 @@ module Yast
       summary = ""
       summary = Summary.AddHeader(summary, _("Drives"))
       unless @AutoPartPlan.empty?
-        # We are counting real disks only
+        # We are counting harddisks only (type CT_DISK)
         num = @AutoPartPlan.count{|drive| drive["type"] == :CT_DISK }
         summary = Summary.AddLine(
           summary,
