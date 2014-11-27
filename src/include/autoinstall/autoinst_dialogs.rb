@@ -32,16 +32,18 @@ module Yast
       UI.OpenDialog(
         Opt(:decorated),
         HBox(
-          HWeight(50, RichText(helptext)),
+          HWeight(30, RichText(helptext)),
           HStretch(),
           HSpacing(1),
           HWeight(
-            50,
+            70,
             VBox(
               Heading(title),
               VSpacing(1),
               VStretch(),
-              Left(TextEntry(Id(:uri), _("&Profile Location:"), original)),
+              MinWidth(60,
+                Left(TextEntry(Id(:uri), _("&Profile Location:"), original))
+              ),
               VSpacing(1),
               VStretch(),
               HBox(
