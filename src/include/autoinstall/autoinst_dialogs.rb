@@ -38,11 +38,12 @@ module Yast
           HWeight(
             70,
             VBox(
-              HSpacing(80),
               Heading(title),
               VSpacing(1),
               VStretch(),
-              Left(TextEntry(Id(:uri), _("&Profile Location:"), original)),
+              MinWidth(60,
+                Left(TextEntry(Id(:uri), _("&Profile Location:"), original))
+              ),
               VSpacing(1),
               VStretch(),
               HBox(
