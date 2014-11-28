@@ -533,6 +533,10 @@ module Yast
           if currentModule != ""
             configret = configureModule(currentModule)
             Builtins.y2debug("configureModule ret : %1", configret)
+            # Some configuration modules removes/exchange the menue bar.
+            # So we have to reset. (bnc#872711)
+            Wizard.DeleteMenus
+            menus
             CreateDialog(currentGroup, currentModule)
           end
         elsif ret == :reset
