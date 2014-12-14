@@ -14,29 +14,27 @@ if [ -f /tmp/fetch_image ]; then
     exit $?
 fi;
 
-# catch http, https, ftp and tftp
-if [[ "x$LOCATION" =~ ^x..?tp ]]; then
-    wget -O - $LOCATION 2>/dev/null | tar xfz - -C /mnt
-fi;
-
-if [[ "$LOCATION" =~ ^nfs ]]; then
-# FIXME
-    mkdir -p /tmp/image_mount
-fi;
-
-if [[ "x$LOCATION" =~ ^xfile ]]; then
-    LOCATION=`echo $LOCATION|sed 's|file://||'`;
-    if [ ! -e "$LOCATION" ]; then
-        DEVICE=`grep ^Device: /etc/install.inf | awk '{ print $2 }'`
-        mkdir -p /tmp/instsource
-        mount /dev/$DEVICE /tmp/instsource
-        tar xfz /tmp/instsource/$LOCATION -C /mnt
-        umount /tmp/instsource
-    else
-        tar xfz /tmp/instsource/$LOCATION -C /mnt
-    fi;
-fi;
-
+case "$LOCATION" in
+    # catch http, https, ftp and tftp
+    http:*|https:*|ftp:*|tftp:*)
+        wget -O - $LOCATION 2>/dev/null | tar xfz - -C /mnt
+        ;;
+    nfs:*)
+        # FIXME
+        mkdir -p /tmp/image_mount
+        ;;
+    file:*)
+        LOCATION=`echo $LOCATION|sed 's|file://||'`
+        if [ ! -e "$LOCATION" ]; then
+            DEVICE=`grep ^Device: /etc/install.inf | awk '{ print $2 }'`
+            mkdir -p /tmp/instsource
+            mount /dev/$DEVICE /tmp/instsource
+            tar xfz /tmp/instsource/$LOCATION -C /mnt
+            umount /tmp/instsource
+        else
+            tar xfz /tmp/instsource/$LOCATION -C /mnt
+        fi
+        ;;
+esac
 
 mv /tmp/fstab /mnt/etc
-
