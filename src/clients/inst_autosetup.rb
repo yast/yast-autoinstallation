@@ -358,8 +358,8 @@ module Yast
       if Profile.current.has_key? ('runlevel')
         # still supporting old format "runlevel"
         ServicesManager.import(Profile.current['runlevel'])
-      elsif Profile.current.has_key? ('services_manager')
-        ServicesManager.import(Profile.current['services_manager'])
+      elsif Profile.current.has_key? ('services-manager')
+        ServicesManager.import(Profile.current['services-manager'])
       end
       if !ServicesManagerTarget.default_target || ServicesManagerTarget.default_target.empty?
         # setting default_target due the defined environment
