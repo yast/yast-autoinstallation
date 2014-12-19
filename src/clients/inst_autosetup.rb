@@ -360,16 +360,11 @@ module Yast
         ServicesManager.import(Profile.current['runlevel'])
       elsif Profile.current.has_key? ('services-manager')
         ServicesManager.import(Profile.current['services-manager'])
+      else
+        # We will have to set default entries which are defined
+        # in the import call of ServicesManager
+        ServicesManager.import({})
       end
-      if !ServicesManagerTarget.default_target || ServicesManagerTarget.default_target.empty?
-        # setting default_target due the defined environment
-        ServicesManagerTarget.default_target = (Installation.x11_setup_needed &&
-          Arch.x11_setup_needed &&
-          Pkg.IsSelected("xorg-x11-server")) ? Target::GRAPHICAL : Target::MULTIUSER
-      end
-      Builtins.y2milestone(
-        "autoyast - setting default target to: #{ServicesManagerTarget.default_target}"
-      )
 
       Progress.Finish
 
