@@ -572,7 +572,12 @@ module Yast
                   modulename
                 )
               )
+              oldMode = Mode.mode
+              # The settings will be written in a running system.
+              # So we are switching to "normal" mode. (bnc#909223)
+              Mode.SetMode("normal")
               Call.Function(module_auto, ["Write"])
+              Mode.SetMode(oldMode)
             end
           end
         elsif ret == :read
