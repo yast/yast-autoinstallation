@@ -30,8 +30,10 @@ module Yast
       Yast.import "Mode"
       Yast.import "Misc"
       Yast.import "Directory"
+      Yast.import "Y2ModuleConfig"
 
       Yast.include self, "autoinstall/io.rb"
+      Yast.include Yast::Logger
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
@@ -201,16 +203,27 @@ module Yast
 
     def AddYdepsFromProfile( entries )
       Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
-      ign = [ "software", "partitioning", "general", "report", "scripts", "suse_register", 
-              "files", "bootloader", "add-on", "dasd", "zfcp", "timezone" ]
-      map = { "networking" => "yast2-network" }
-      entries.reject! { |e| ign.include?(e) }
-      Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
       pkglist = []
       entries.each do |e|
-        name = map.has_key?(e) ? map[e] : "yast2-"+e
-        Builtins.y2milestone("AddYdepsFromProfile name %1 from %2", name, e)
-        pkglist.push(name) if !pkglist.include?(name)
+        yast_modules = Y2ModuleConfig.ModuleMap.select {|module_name, entry|
+          module_name == e ||
+          entry["X-SuSE-YaST-AutoInstResource"] == e ||
+          (entry["X-SuSE-YaST-AutoInstMerge"] && entry["X-SuSE-YaST-AutoInstMerge"].split(",").include?(e))
+        }
+        if yast_modules.empty?
+          # taking default because no entry has been defined in the *.desktop file
+          provide = "application(YaST2/#{e}.desktop)"
+        else
+          provide = "application(YaST2/#{yast_modules.keys.first}.desktop)"
+        end
+        packages = Pkg.PkgQueryProvides( provide )
+        unless packages.empty?
+          name = packages[0][0]
+          log.info "AddYdepsFromProfile add package #{name} for entry #{e}"
+          pkglist.push(name) if !pkglist.include?(name)
+        else
+          log.info "No package provides: #{provide}"
+        end
       end
       Builtins.y2milestone("AddYdepsFromProfile pkglist %1", pkglist)
       pkglist.each do |p|
