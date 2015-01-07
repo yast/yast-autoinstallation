@@ -11,6 +11,7 @@ require "yast"
 
 module Yast
   class AutoinstSoftwareClass < Module
+    include Yast::Logger
     def main
       Yast.import "UI"
       Yast.import "Pkg"
@@ -33,7 +34,6 @@ module Yast
       Yast.import "Y2ModuleConfig"
 
       Yast.include self, "autoinstall/io.rb"
-      Yast.include Yast::Logger
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
@@ -205,17 +205,14 @@ module Yast
       Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
       pkglist = []
       entries.each do |e|
-        yast_modules = Y2ModuleConfig.ModuleMap.select {|module_name, entry|
+        yast_module, _entry = Y2ModuleConfig.ModuleMap.find do |module_name, entry|
           module_name == e ||
           entry["X-SuSE-YaST-AutoInstResource"] == e ||
           (entry["X-SuSE-YaST-AutoInstMerge"] && entry["X-SuSE-YaST-AutoInstMerge"].split(",").include?(e))
-        }
-        if yast_modules.empty?
-          # taking default because no entry has been defined in the *.desktop file
-          provide = "application(YaST2/#{e}.desktop)"
-        else
-          provide = "application(YaST2/#{yast_modules.keys.first}.desktop)"
         end
+        yast_module ||= e # if needed taking default because no entry has been defined in the *.desktop file
+        provide = "application(YaST2/#{yast_module}.desktop)"
+
         packages = Pkg.PkgQueryProvides( provide )
         unless packages.empty?
           name = packages[0][0]
