@@ -19,6 +19,7 @@ module Yast
       Yast.import "TFTP"
       Yast.import "AutoinstConfig"
       Yast.import "Storage"
+      Yast.import "InstURL"
 
       @GET_error = ""
     end
@@ -177,9 +178,11 @@ module Yast
             "Trying to find file on installation media: %1",
             Installation.boot
           )
-          cdrom = Convert.to_string(SCR.Read(path(".etc.install_inf.Cdrom")))
-          if Installation.boot == "cd" && cdrom
-            cdrom_device = Ops.add("/dev/", cdrom)
+          # The Cdrom entry in install.inf is obsolete. So we are using the
+          # entry which is defined in InstUrl module. (bnc#908271)
+          install_url = InstURL.installInf2Url("")
+          if Installation.boot == "cd" && install_url
+            cdrom_device = Builtins.regexpsub(install_url, "devices=(.*)$", "\\1")
             already_mounted = Ops.add(
               Ops.add("grep ", cdrom_device),
               " /proc/mounts ;"
