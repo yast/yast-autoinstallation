@@ -204,7 +204,7 @@ module Yast
     # Probe all system data to build  a set of rules
     # @return [void]
     def ProbeRules
-      return if !@ATTR || @ATTR.size>0
+      return if @ATTR.size>0
       # SMBIOS Data
       bios = Convert.to_list(SCR.Read(path(".probe.bios")))
 
