@@ -1079,7 +1079,7 @@ module Yast
       result = false
       changed = false
       Builtins.foreach(@AutoTargetMap) do |device, data|
-        if Storage.IsRealDisk(data) && data.fetch("initialize", false)
+        if Storage.IsPartitionable(data) && data.fetch("initialize", false)
           Ops.set(initial_target_map, [device, "delete"], true)
 	  changed = true
           if data.has_key?("disklabel")
@@ -1124,7 +1124,7 @@ module Yast
           )
           Builtins.y2milestone("device %1 not found in TargetMap", device)
         end
-        if Storage.IsRealDisk(data)
+        if Storage.IsPartitionable(data)
           @ZeroNewPartitions = data.fetch("zero_new_partitions",true)
           # that's not really nice. Just an undocumented fallback which should never be used
           Builtins.y2milestone("Creating partition plans for %1", device)
