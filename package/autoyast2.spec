@@ -36,6 +36,7 @@ BuildRequires:  yast2-storage
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
+BuildRequires:  yast2-packager
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
