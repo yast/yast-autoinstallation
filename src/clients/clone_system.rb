@@ -23,19 +23,28 @@ module Yast
       Yast.import "Y2ModuleConfig"
       Yast.import "Mode"
       Yast.import "FileUtils"
-      Yast.import "Stage"
       Yast.import "Report"
+      Yast.import "Installation"
 
       textdomain "autoinst"
 
       @moduleList = ""
 
-      if Mode.normal && Stage.normal && !PackageSystem.Installed("autoyast2")
-        ret = PackageSystem.InstallAll(["autoyast2"])
-        # The modules/clients has to be reloaded. That's why the user has to
-        # restart the export again.
-        Report.Message(_("Please restart the clone process.")) if ret
-        return
+      if Mode.normal
+        if !PackageSystem.Installed("autoyast2")
+          ret = PackageSystem.InstallAll(["autoyast2"])
+          # The modules/clients has to be reloaded. So the export
+          # will be restarted.
+          if ret
+            SCR.Execute(
+              path(".target.bash"),
+              Builtins.sformat("touch %1", Installation.restart_file)
+            )
+          end
+          return
+        else
+          SCR.Execute(path(".target.remove"), Installation.restart_file)
+        end
       end
 
       Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
