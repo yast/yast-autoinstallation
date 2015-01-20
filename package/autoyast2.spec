@@ -107,6 +107,7 @@ Requires:       yast2-update >= 2.18.3
 Requires:       yast2-xml
 Provides:       yast2-trans-autoinst
 Obsoletes:      yast2-trans-autoinst
+Recommends:     autoyast2
 
 %description installation
 This package performs auto-installation relying on a control file
