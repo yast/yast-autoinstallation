@@ -25,6 +25,7 @@ module Yast
       Yast.import "FileUtils"
       Yast.import "Report"
       Yast.import "Installation"
+      Yast.import "PackageSystem"
 
       textdomain "autoinst"
 
@@ -42,7 +43,7 @@ module Yast
             )
           end
           return
-        else
+        elsif FileUtils.Exists(Installation.restart_file)
           SCR.Execute(path(".target.remove"), Installation.restart_file)
         end
       end
