@@ -38,7 +38,7 @@ module Yast
           if ret
             SCR.Execute(
               path(".target.bash"),
-              Builtins.sformat("touch %1", Installation.restart_file)
+              "touch #{Installation.restart_file}"
             )
           end
           return
