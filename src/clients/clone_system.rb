@@ -23,10 +23,30 @@ module Yast
       Yast.import "Y2ModuleConfig"
       Yast.import "Mode"
       Yast.import "FileUtils"
+      Yast.import "Report"
+      Yast.import "Installation"
+      Yast.import "PackageSystem"
 
       textdomain "autoinst"
 
       @moduleList = ""
+
+      if Mode.normal
+        if !PackageSystem.Installed("autoyast2")
+          ret = PackageSystem.InstallAll(["autoyast2"])
+          # The modules/clients has to be reloaded. So the export
+          # will be restarted.
+          if ret
+            SCR.Execute(
+              path(".target.bash"),
+              "touch #{Installation.restart_file}"
+            )
+          end
+          return
+        elsif FileUtils.Exists(Installation.restart_file)
+          SCR.Execute(path(".target.remove"), Installation.restart_file)
+        end
+      end
 
       Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
         clonable = resourceMap["X-SuSE-YaST-AutoInstClonable"] == "true"

@@ -42,6 +42,7 @@ module Yast
       Yast.import "LanUdevAuto"
       Yast.import "Language"
       Yast.import "Console"
+      Yast.import "ServicesManager"
 
       Yast.include self, "bootloader/routines/autoinstall.rb"
       Yast.include self, "autoinstall/ask.rb"
@@ -356,34 +357,17 @@ module Yast
 
       Progress.NextStage
 
-      #still supporting old format "runlevel"
-      if Profile.current['runlevel']
-        if Profile.current['runlevel']['default']
-          default_runlevel = Profile.current['runlevel']['default'].to_i
-          @default_target = default_runlevel == 5 ? Target::GRAPHICAL : Target::MULTIUSER
-          Builtins.y2milestone("Accepting runlevel '#{default_runlevel}' as default target '#{@default_target}'")
-        elsif Profile.current['runlevel']['default_target']
-          @default_target = Profile.current['runlevel']['default_target'].to_s
-        end
-      elsif Profile.current['services-manager'] &&Profile.current['services-manager']['default_target']
-        @default_target = Profile.current['services-manager']['default_target'].to_s
-      end
-
-      Builtins.y2milestone("autoyast - configured default target: '#{@default_target}'")
-
-      if @default_target && !@default_target.empty?
-        ServicesManagerTarget.default_target = @default_target
+      if Profile.current.has_key? ('runlevel')
+        # still supporting old format "runlevel"
+        ServicesManager.import(Profile.current['runlevel'])
+      elsif Profile.current.has_key? ('services-manager')
+        ServicesManager.import(Profile.current['services-manager'])
       else
-        ServicesManagerTarget.default_target = Installation.x11_setup_needed &&
-          Arch.x11_setup_needed &&
-          Pkg.IsSelected("xorg-x11-server") ? Target::GRAPHICAL : Target::MULTIUSER
+        # We will have to set default entries which are defined
+        # in the import call of ServicesManager
+        ServicesManager.import({})
       end
 
-      Builtins.y2milestone(
-        "autoyast - setting default target to: #{ServicesManagerTarget.default_target}"
-      )
-
-      #    AutoInstall::PXELocalBoot();
       Progress.Finish
 
       @ret = ProductControl.RunFrom(
