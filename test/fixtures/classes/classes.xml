@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <general>
+    <mode>
+      <confirm xmlns:config="http://www.suse.com/1.0/configns" config:type="boolean">true</confirm>
+    </mode>
+  </general>
+  <networking>
+    <dns>
+      <dhcp_hostname xmlns:config="http://www.suse.com/1.0/configns" config:type="boolean">false</dhcp_hostname>
+      <domain>ltc.austin.ibm.com</domain>
+      <hostname>io-ravens</hostname>
+      <nameservers xmlns:config="http://www.suse.com/1.0/configns" config:type="list">
+        <nameserver>9.3.191.2</nameserver>
+      </nameservers>
+      <resolf_conf_policy>auto</resolf_conf_policy>
+      <searchlist>
+        <search>ltc.austin.ibm.com</search>
+      </searchlist>
+    </dns>
+    <interfaces xmlns:config="http://www.suse.com/1.0/configns" config:type="list">
+      <interface>
+        <bootproto>static</bootproto>
+        <device>eth-id-00:02:55:90:01:4E</device>
+        <ipaddr>9.3.191.71</ipaddr>
+        <netmask>255.255.255.0</netmask>
+        <startmode>boot</startmode>
+      </interface>
+      <interface>
+        <bootproto>static</bootproto>
+        <device>eth-id-00:0D:60:0A:7C:DE</device>
+        <ipaddr>10.1.191.71</ipaddr>
+        <netmask>255.0.0.0</netmask>
+        <startmode>boot</startmode>
+      </interface>
+    </interfaces>
+    <managed xmlns:config="http://www.suse.com/1.0/configns" config:type="boolean">false</managed>
+    <routing>
+      <ipforward xmlns:config="http://www.suse.com/1.0/configns" config:type="boolean">false</ipforward>
+      <routes xmlns:config="http://www.suse.com/1.0/configns" config:type="list">
+        <destination>default</destination>
+        <device>-</device>
+        <gateway>9.3.191.1</gateway>
+        <netmask/>
+      </routes>
+    </routing>
+  </networking>
+<classes xmlns:config="http://www.suse.com/1.0/configns" config:type="list">
+    <class>
+        <name>swap</name>
+            <configuration>largeswap.xml</configuration>
+
+<!--
+            <dont_merge config:type="list">
+              <element>partition</element>
+            </dont_merge>
+        <configuration>largeswap_noroot.xml</configuration> -->
+    </class>
+</classes>
+<!--
+   <partitioning config:type="list">
+    <drive>
+      <initialize config:type="boolean">false</initialize>
+       <partitions config:type="list">
+          <partition>
+            <create config:type="boolean">true</create>
+            <format config:type="boolean">true</format>
+            <mount>/</mount>
+            <partition_id config:type="integer">131</partition_id>
+          </partition>
+      </partitions>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  -->
+ <users xmlns:config="http://www.suse.com/1.0/configns" config:type="list">
+    <user>
+      <user_password>rootpw</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</profile>
+
