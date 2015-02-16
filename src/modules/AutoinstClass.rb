@@ -157,36 +157,21 @@ module Yast
     # @return [void]
     def Files
       @confs = []
-      Builtins.foreach(@Classes) do |_class|
-        files = Convert.convert(
-          SCR.Read(
-            path(".target.dir"),
-            Ops.add(
-              Ops.add(@classDir, "/"),
-              Ops.get_string(_class, "name", "xxx")
-            )
-          ),
-          :from => "any",
-          :to   => "list <string>"
-        )
-        if files != nil
-          Builtins.y2milestone(
-            "Files in class %1: %2",
-            Ops.get_string(_class, "name", "xxx"),
-            files
-          )
-          tmp_confs = Builtins.maplist(files) do |file|
-            conf = {}
-            Ops.set(conf, "class", Ops.get_string(_class, "name", "xxx"))
-            Ops.set(conf, "name", file)
+      @Classes.each do |_class|
+        _class_name = _class['name'] || 'xxx'
+        files_path = File.join(@classDir, _class_name)
+        files = Convert.convert(SCR.Read(path('.target.dir'), files_path),
+          :from => "any", :to   => "list <string>")
+
+        unless files.nil?
+          Builtins.y2milestone("Files in class %1: %2", _class_name, files)
+          new_confs = files.map do |file|
+            conf = { 'class' => _class_name, 'name' => file }
             deep_copy(conf)
           end
-          Builtins.y2milestone("Configurations: %1", tmp_confs)
-          @confs = Convert.convert(
-            Builtins.union(@confs, tmp_confs),
-            :from => "list",
-            :to   => "list <map>"
-          )
+
+          Builtins.y2milestone("Configurations: %1", new_confs)
+          @confs += new_confs
         end
       end
       Builtins.y2milestone("Configurations: %1", @confs)
