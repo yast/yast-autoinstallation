@@ -39,20 +39,10 @@ module Yast
     # find a profile path
     # @param string profile name
     # @return [String] profile Path
-    #
     def findPath(name, _class)
-      result = Ops.get(Builtins.filter(@confs) do |c|
-        Ops.get_string(c, "name", "") == name &&
-          Ops.get_string(c, "class", "") == _class
-      end, 0, {})
-
-      profile_path = Builtins.sformat(
-        "%1/%2/%3",
-        AutoinstConfig.classDir,
-        Ops.get_string(result, "class", ""),
-        Ops.get_string(result, "name", "default")
-      )
-      profile_path
+      result = @confs.find { |c| c['name'] == name && c['class'] == _class } || {}
+      result ||= { 'class' => '', 'name' => 'default' }
+      File.join(@classDir, result['class'], result['name'])
     end
 
 
