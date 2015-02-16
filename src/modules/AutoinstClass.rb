@@ -106,14 +106,17 @@ module Yast
       nil
     end
 
+    # Change the directory of classes definitions
+    #
+    # AutoinstConfig#classDir= is called to set the new value
+    # in the configuration.
+    #
+    # @param [String] Path of the new directory
+    # @return nil
     def classDirChanged(newdir)
       AutoinstConfig.classDir = newdir
       @classDir = newdir
-      @classPath = Builtins.sformat(
-        "%1/%2",
-        AutoinstConfig.classDir,
-        @class_file
-      )
+      @classPath = File.join(@classDir, @class_file)
       Compat()
       Read()
       nil
