@@ -18,35 +18,21 @@ require "yast"
 module Yast
   class AutoinstClassClass < Module
     def main
-
       Yast.import "AutoinstConfig"
       Yast.import "XML"
       Yast.import "Summary"
       Yast.include self, "autoinstall/xml.rb"
 
-
-
-
       @classDir = AutoinstConfig.classDir
-
       @ClassConf = "/etc/autoinstall"
-
       @profile_conf = []
-
       @Profiles = []
-
       @Classes = []
       @deletedClasses = []
       @confs = []
-
       @class_file = "classes.xml"
+      @classPath = File.join(@classDir, @class_file)
 
-      #string classPath = sformat("%1/%2", ClassConf, class_file);
-      @classPath = Builtins.sformat(
-        "%1/%2",
-        AutoinstConfig.classDir,
-        @class_file
-      )
       AutoinstClass()
     end
 
