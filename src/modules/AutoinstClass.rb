@@ -45,13 +45,12 @@ module Yast
       File.join(@classDir, result['class'], result['name'])
     end
 
-
     # Read classes
     def Read
       if SCR.Read(path(".target.size"), @classPath) != -1
         # TODO: use XML module
-        tmp = Convert.to_map(SCR.Read(path(".xml"), @classPath))
-        @Classes = Ops.get_list(tmp, "classes", [])
+        classes_map = Convert.to_map(SCR.Read(path(".xml"), @classPath))
+        @Classes = classes_map['classes'] || []
       else
         @Classes = []
       end
