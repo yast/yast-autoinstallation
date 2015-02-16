@@ -57,7 +57,6 @@ module Yast
       nil
     end
 
-
     #     we are doing some compatibility fixes here and move
     #     from one /etc/autoinstall/classes.xml to multiple
     #     classes.xml files, one for each repository
@@ -98,13 +97,8 @@ module Yast
       nil
     end
 
-
-
-
-
     # Merge Classes
     #
-
     def MergeClasses(configuration, base_profile, resultFileName)
       configuration = deep_copy(configuration)
       dontmerge_str = ""
@@ -159,10 +153,6 @@ module Yast
       deep_copy(out)
     end
 
-
-
-
-
     # Read files from class directories
     # @return [void]
     def Files
@@ -203,10 +193,7 @@ module Yast
       nil
     end
 
-
-
     # Save Class definitions
-
     def Save
       Builtins.foreach(@deletedClasses) do |c|
         toDel = Builtins.sformat(
@@ -223,9 +210,7 @@ module Yast
     end
 
 
-
     # Import configuration
-
     def Import(settings)
       settings = deep_copy(settings)
       @profile_conf = deep_copy(settings)
@@ -233,13 +218,11 @@ module Yast
     end
 
     # Export configuration
-
     def Export
       deep_copy(@profile_conf)
     end
 
     # Configuration Summary
-
     def Summary
       summary = ""
 
