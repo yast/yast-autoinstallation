@@ -62,47 +62,13 @@ module Yast
     #     from one /etc/autoinstall/classes.xml to multiple
     #     classes.xml files, one for each repository
     def Compat
-      if Ops.less_or_equal(SCR.Read(path(".target.size"), @classPath), 0) &&
-          Ops.greater_than(
-            SCR.Read(
-              path(".target.size"),
-              Ops.add(Ops.add(@ClassConf, "/"), @class_file)
-            ),
-            0
-          )
-        Builtins.y2milestone(
-          "Compat: %1 not found but %2 exists",
-          @classPath,
-          Ops.add(Ops.add(@ClassConf, "/"), @class_file)
-        )
-        tmp = Convert.to_map(
-          SCR.Read(path(".xml"), Ops.add(Ops.add(@ClassConf, "/"), @class_file))
-        )
-        oldClasses = Ops.get_list(tmp, "classes", [])
-        newClasses = []
-        Builtins.foreach(oldClasses) do |_class|
-          Builtins.y2milestone(
-            "looking for %1",
-            Ops.add(
-              Ops.add(AutoinstConfig.classDir, "/"),
-              Ops.get_string(_class, "name", "")
-            )
-          )
-          if SCR.Read(
-              path(".target.dir"),
-              Ops.add(
-                Ops.add(AutoinstConfig.classDir, "/"),
-                Ops.get_string(_class, "name", "")
-              )
-            ) != nil
-            newClasses = Builtins.add(newClasses, _class)
-          end
-        end
-        tmp2 = { "classes" => newClasses }
-        Builtins.y2milestone("creating %1", tmp2)
-        XML.YCPToXMLFile(:class, tmp2, @classPath)
+      if !class_file_exists? && compat_class_file_exists?
+        Builtins.y2milestone("Compat: %1 not found but %2 exists",
+                             @classPath, compact_class_file)
+        new_classes_map = { 'classes' => read_old_classes }
+        Builtins.y2milestone("creating %1", new_classes_map)
+        XML.YCPToXMLFile(:class, new_classes_map, @classPath)
       end
-
       nil
     end
 
@@ -309,6 +275,39 @@ module Yast
     publish :function => :Import, :type => "boolean (list <map>)"
     publish :function => :Export, :type => "list <map> ()"
     publish :function => :Summary, :type => "string ()"
+
+    # Checks if a classes.xml exists
+    # @return [true,false] Returns true when present (false otherwise).
+    def class_file_exists?
+      SCR.Read(path(".target.size"), @classPath) > 0
+    end
+
+    # Checks if an old classes.xml exists
+    # @return [true,false] Returns true when present (false otherwise).
+    # @see compact_class_file
+    def compat_class_file_exists?
+      SCR.Read(path(".target.size"), compact_class_file) > 0
+    end
+
+    # Returns the path of the old classes.xml file
+    # By default, it is called /etc/autoinstall/classes.xml.
+    # @return [String] Path to the old classes.xml file.
+    def compact_class_file
+      File.join(@ClassConf, @class_file)
+    end
+
+    # Builds a map of classes to import from /etc/autoinstall/classes.xml
+    # @return [Array<Hash>] Classes defined in the file.
+    def read_old_classes
+      old_classes_map = Convert.to_map(SCR.Read(path('.xml'), compact_class_file))
+      old_classes = old_classes_map['classes'] || []
+      old_classes.reduce([]) do |new_classes, _class|
+        _class_path = File.join(@classDir, _class['name'] || '')
+        Builtins.y2milestone("looking for %1", _class_path)
+        new_classes << _class unless SCR.Read(path(".target.dir"), _class_path).nil?
+        new_classes
+      end
+    end
   end
 
   AutoinstClass = AutoinstClassClass.new

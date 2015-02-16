@@ -11,6 +11,8 @@ describe "Yast::AutoinstClass" do
   let(:test_xml_dir) { File.join(root_path, 'test', 'fixtures')  }
   let(:class_dir) { File.join(test_xml_dir, 'classes') }
   let(:class_path) { File.join(class_dir, 'classes.xml') }
+  let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
+
 
   before(:each) do
     Yast.import "AutoinstConfig"
@@ -125,7 +127,6 @@ describe "Yast::AutoinstClass" do
     let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
 
     context 'when /etc/autoinstall/classes.xml exists' do
-
       around(:each) do |example|
         subject.ClassConf = faked_autoinstall_dir
         example.call
@@ -155,6 +156,67 @@ describe "Yast::AutoinstClass" do
           subject.Compat
         end
       end
+    end
+  end
+
+  describe '#class_file_exists?' do
+    context 'when a classes.xml exists in the repository' do
+      it 'returns true' do
+        expect(subject.class_file_exists?).to eq(true)
+      end
+    end
+
+    context 'when classes.xml does not exist in the repository' do
+      around(:each) do |example|
+        old_dir = subject.classDir
+        subject.classDirChanged(File.join(test_xml_dir, '..'))
+        example.call
+        subject.classDirChanged(old_dir)
+      end
+
+      it 'returns false' do
+        expect(subject.class_file_exists?).to be_false
+      end
+    end
+  end
+
+  describe '#compat_class_file_exists?' do
+    after(:each) do
+      subject.ClassConf = '/etc/autoinstall'
+    end
+
+    context 'when /etc/autoinstall/classes.xml exists' do
+      before(:each) do
+        subject.ClassConf = faked_autoinstall_dir
+      end
+
+      it 'returns true' do
+        expect(subject.compat_class_file_exists?).to be_true
+      end
+    end
+
+    context 'when /etc/autoinstall/classes.xml does not exist' do
+      before(:each) do
+        subject.ClassConf = File.join(test_xml_dir, '..')
+      end
+
+      it 'returns false' do
+        expect(subject.compat_class_file_exists?).to be_false
+      end
+    end
+  end
+
+  describe '#read_old_classes' do
+    around(:each) do |example|
+      subject.ClassConf = faked_autoinstall_dir
+      example.call
+      subject.ClassConf = '/etc/autoinstall'
+    end
+
+    it 'returns an array containig the classes' do
+      expect(subject.read_old_classes).to eq(
+        [{"configuration" => "largeswap.xml", "name" => "swap"}]
+      )
     end
   end
 end
