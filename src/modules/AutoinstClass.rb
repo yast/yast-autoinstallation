@@ -17,6 +17,8 @@ require "yast"
 
 module Yast
   class AutoinstClassClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "AutoinstConfig"
       Yast.import "XML"
@@ -62,10 +64,9 @@ module Yast
     #     classes.xml files, one for each repository
     def Compat
       if !class_file_exists? && compat_class_file_exists?
-        Builtins.y2milestone("Compat: %1 not found but %2 exists",
-                             @classPath, compact_class_file)
+        log.info("Compat: #{@classPath} no found but #{compat_class_file} exists")
         new_classes_map = { 'classes' => read_old_classes }
-        Builtins.y2milestone("creating %1", new_classes_map)
+        log.info("creating #{new_classes_map}")
         XML.YCPToXMLFile(:class, new_classes_map, @classPath)
       end
       nil
@@ -175,16 +176,16 @@ module Yast
 
         next if files.nil?
 
-        Builtins.y2milestone("Files in class %1: %2", _class_name, files)
+        log.info "Files in class #{_class_name}: #{files}"
         new_confs = files.map do |file|
           conf = { 'class' => _class_name, 'name' => file }
           deep_copy(conf)
         end
 
-        Builtins.y2milestone("Configurations: %1", new_confs)
+        log.info "Configurations: #{new_confs}"
         @confs += new_confs
       end
-      Builtins.y2milestone("Configurations: %1", @confs)
+      log.info "Configurations: #{@confs}"
       nil
     end
 
@@ -200,7 +201,7 @@ module Yast
       end
       @deletedClasses = []
       tmp = { "classes" => @Classes }
-      Builtins.y2debug("saving classes: %1", @classPath)
+      log.debug "saving classes: #{@classPath}"
       XML.YCPToXMLFile(:class, tmp, @classPath)
     end
 
@@ -262,26 +263,26 @@ module Yast
 
     # Checks if an old classes.xml exists
     # @return [true,false] Returns true when present (false otherwise).
-    # @see compact_class_file
+    # @see compat_class_file
     def compat_class_file_exists?
-      SCR.Read(path(".target.size"), compact_class_file) > 0
+      SCR.Read(path(".target.size"), compat_class_file) > 0
     end
 
     # Returns the path of the old classes.xml file
     # By default, it is called /etc/autoinstall/classes.xml.
     # @return [String] Path to the old classes.xml file.
-    def compact_class_file
+    def compat_class_file
       File.join(@ClassConf, @class_file)
     end
 
     # Builds a map of classes to import from /etc/autoinstall/classes.xml
     # @return [Array<Hash>] Classes defined in the file.
     def read_old_classes
-      old_classes_map = Convert.to_map(SCR.Read(path('.xml'), compact_class_file))
+      old_classes_map = Convert.to_map(SCR.Read(path('.xml'), compat_class_file))
       old_classes = old_classes_map['classes'] || []
       old_classes.each_with_object([]) do |class_, new_classes|
         class_path_ = File.join(@classDir, class_['name'] || '')
-        Builtins.y2milestone("looking for %1", class_path_)
+        log.info("looking for #{class_path_}")
         new_classes << class_ unless SCR.Read(path(".target.dir"), class_path_).nil?
       end
     end
