@@ -192,8 +192,8 @@ describe Yast::AutoinstClass do
     end
   end
 
-  describe '#changeDir' do
-    it 'sets the classes directory' do
+  describe '#class_dir=' do
+    it 'sets the classes definitions directory' do
       subject.class_dir = test_xml_dir
       expect(subject.classDir).to eq(test_xml_dir)
     end
