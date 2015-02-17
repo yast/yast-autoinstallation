@@ -255,6 +255,8 @@ module Yast
     publish :function => :Export, :type => "list <map> ()"
     publish :function => :Summary, :type => "string ()"
 
+    private
+
     # Checks if a classes.xml exists
     # @return [true,false] Returns true when present (false otherwise).
     def class_file_exists?

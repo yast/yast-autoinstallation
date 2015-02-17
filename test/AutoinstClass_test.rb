@@ -192,62 +192,6 @@ describe Yast::AutoinstClass do
     end
   end
 
-  describe '#class_file_exists?' do
-    context 'when a classes.xml exists in the repository' do
-      it 'returns true' do
-        expect(subject.class_file_exists?).to eq(true)
-      end
-    end
-
-    context 'when classes.xml does not exist in the repository' do
-      let(:class_dir) { test_xml_dir }
-
-      it 'returns false' do
-        expect(subject.class_file_exists?).to be_false
-      end
-    end
-  end
-
-  describe '#compat_class_file_exists?' do
-    after(:each) do
-      subject.ClassConf = '/etc/autoinstall'
-    end
-
-    context 'when /etc/autoinstall/classes.xml exists' do
-      before(:each) do
-        subject.ClassConf = faked_autoinstall_dir
-      end
-
-      it 'returns true' do
-        expect(subject.compat_class_file_exists?).to be_true
-      end
-    end
-
-    context 'when /etc/autoinstall/classes.xml does not exist' do
-      before(:each) do
-        subject.ClassConf = File.join(test_xml_dir, '..')
-      end
-
-      it 'returns false' do
-        expect(subject.compat_class_file_exists?).to be_false
-      end
-    end
-  end
-
-  describe '#read_old_classes' do
-    around(:each) do |example|
-      subject.ClassConf = faked_autoinstall_dir
-      example.call
-      subject.ClassConf = '/etc/autoinstall'
-    end
-
-    it 'returns an array containig the classes' do
-      expect(subject.read_old_classes).to eq(
-        [{"configuration" => "largeswap.xml", "name" => "swap"}]
-      )
-    end
-  end
-
   describe '#changeDir' do
     it 'sets the classes directory' do
       subject.class_dir = test_xml_dir
