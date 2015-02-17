@@ -45,6 +45,22 @@ describe Yast::AutoinstClass do
         expect(subject.Read).to be_nil
       end
     end
+
+    context 'when classes definition is empty or not valid XML' do
+      before(:each) do
+        allow(Yast::SCR).to receive(:Read).and_call_original
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new('.xml'), class_path).and_return(nil)
+      end
+
+      it 'set Classes to []' do
+        subject.Read
+        expect(subject.Classes).to eq([])
+      end
+
+      it 'returns nil' do
+        expect(subject.Read).to be_nil
+      end
+    end
   end
 
   describe '#Files' do

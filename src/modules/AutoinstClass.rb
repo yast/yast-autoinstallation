@@ -50,7 +50,7 @@ module Yast
       if SCR.Read(path(".target.size"), @classPath) != -1
         # TODO: use XML module
         classes_map = Convert.to_map(SCR.Read(path(".xml"), @classPath))
-        @Classes = classes_map['classes'] || []
+        @Classes = (classes_map && classes_map['classes']) || []
       else
         @Classes = []
       end
