@@ -41,8 +41,8 @@ module Yast
     # find a profile path
     # @param string profile name
     # @return [String] profile Path
-    def findPath(name, _class)
-      result = @confs.find { |c| c['name'] == name && c['class'] == _class }
+    def findPath(name, class_)
+      result = @confs.find { |c| c['name'] == name && c['class'] == class_ }
       result ||= { 'class' => '', 'name' => 'default' }
       File.join(@classDir, result['class'], result['name'])
     end
@@ -168,17 +168,17 @@ module Yast
     # @return [void]
     def Files
       @confs = []
-      @Classes.each do |_class|
-        _class_name = _class['name'] || 'xxx'
-        files_path = File.join(@classDir, _class_name)
+      @Classes.each do |class_|
+        class_name_ = class_['name'] || 'xxx'
+        files_path = File.join(@classDir, class_name_)
         files = Convert.convert(SCR.Read(path('.target.dir'), files_path),
           :from => "any", :to   => "list <string>")
 
         next if files.nil?
 
-        log.info "Files in class #{_class_name}: #{files}"
+        log.info "Files in class #{class_name_}: #{files}"
         new_confs = files.map do |file|
-          conf = { 'class' => _class_name, 'name' => file }
+          conf = { 'class' => class_name_, 'name' => file }
           deep_copy(conf)
         end
 
