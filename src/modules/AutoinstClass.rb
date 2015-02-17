@@ -64,9 +64,9 @@ module Yast
     #     classes.xml files, one for each repository
     def Compat
       if !class_file_exists? && compat_class_file_exists?
-        log.info("Compat: #{@classPath} no found but #{compat_class_file} exists")
+        log.info "Compat: #{@classPath} no found but #{compat_class_file} exists"
         new_classes_map = { 'classes' => read_old_classes }
-        log.info("creating #{new_classes_map}")
+        log.info "creating #{new_classes_map}"
         XML.YCPToXMLFile(:class, new_classes_map, @classPath)
       end
       nil
@@ -177,13 +177,9 @@ module Yast
         next if files.nil?
 
         log.info "Files in class #{class_name_}: #{files}"
-        new_confs = files.map do |file|
-          conf = { 'class' => class_name_, 'name' => file }
-          deep_copy(conf)
-        end
-
+        new_confs = files.map { |f| { 'class' => class_name_, 'name' => f  }  }
         log.info "Configurations: #{new_confs}"
-        @confs += new_confs
+        @confs.concat(new_confs)
       end
       log.info "Configurations: #{@confs}"
       nil
@@ -284,7 +280,7 @@ module Yast
       old_classes = old_classes_map['classes'] || []
       old_classes.each_with_object([]) do |class_, new_classes|
         class_path_ = File.join(@classDir, class_['name'] || '')
-        log.info("looking for #{class_path_}")
+        log.info "looking for #{class_path_}"
         new_classes << class_ unless SCR.Read(path(".target.dir"), class_path_).nil?
       end
     end
