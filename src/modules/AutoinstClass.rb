@@ -71,20 +71,30 @@ module Yast
       nil
     end
 
-    # Change the directory of classes definitions
-    #
-    # AutoinstConfig#classDir= is called to set the new value
-    # in the configuration.
+    # Change the directory and read the class definitions
     #
     # @param [String] Path of the new directory
     # @return nil
+    # @see class_dir=
     def classDirChanged(newdir)
-      AutoinstConfig.classDir = newdir
-      @classDir = newdir
-      @classPath = File.join(@classDir, @class_file)
+      self.class_dir = newdir
       Compat()
       Read()
       nil
+    end
+
+    # Change the directory of classes definitions.
+    #
+    # AutoinstConfig#classDir= is called to set the new value
+    # in the configuration. It does not check if the directory
+    # exists or is accessible.
+    #
+    # @return [String] path of the new directory.
+    def class_dir=(newdir)
+      AutoinstConfig.classDir = newdir
+      @classDir = newdir
+      @classPath = File.join(@classDir, @class_file)
+      newdir
     end
 
     # Constructor
@@ -163,16 +173,16 @@ module Yast
         files = Convert.convert(SCR.Read(path('.target.dir'), files_path),
           :from => "any", :to   => "list <string>")
 
-        unless files.nil?
-          Builtins.y2milestone("Files in class %1: %2", _class_name, files)
-          new_confs = files.map do |file|
-            conf = { 'class' => _class_name, 'name' => file }
-            deep_copy(conf)
-          end
+        next if files.nil?
 
-          Builtins.y2milestone("Configurations: %1", new_confs)
-          @confs += new_confs
+        Builtins.y2milestone("Files in class %1: %2", _class_name, files)
+        new_confs = files.map do |file|
+          conf = { 'class' => _class_name, 'name' => file }
+          deep_copy(conf)
         end
+
+        Builtins.y2milestone("Configurations: %1", new_confs)
+        @confs += new_confs
       end
       Builtins.y2milestone("Configurations: %1", @confs)
       nil
@@ -269,11 +279,10 @@ module Yast
     def read_old_classes
       old_classes_map = Convert.to_map(SCR.Read(path('.xml'), compact_class_file))
       old_classes = old_classes_map['classes'] || []
-      old_classes.reduce([]) do |new_classes, _class|
-        _class_path = File.join(@classDir, _class['name'] || '')
-        Builtins.y2milestone("looking for %1", _class_path)
-        new_classes << _class unless SCR.Read(path(".target.dir"), _class_path).nil?
-        new_classes
+      old_classes.each_with_object([]) do |class_, new_classes|
+        class_path_ = File.join(@classDir, class_['name'] || '')
+        Builtins.y2milestone("looking for %1", class_path_)
+        new_classes << class_ unless SCR.Read(path(".target.dir"), class_path_).nil?
       end
     end
   end

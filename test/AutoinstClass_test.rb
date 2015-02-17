@@ -5,7 +5,9 @@ ENV["Y2DIR"] = File.join(root_path, 'src')
 
 require "yast"
 
-describe "Yast::AutoinstClass" do
+Yast.import "AutoinstClass"
+
+describe Yast::AutoinstClass do
   subject { Yast::AutoinstClass }
 
   let(:test_xml_dir) { File.join(root_path, 'test', 'fixtures')  }
@@ -13,19 +15,15 @@ describe "Yast::AutoinstClass" do
   let(:class_path) { File.join(class_dir, 'classes.xml') }
   let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
 
-
   before(:each) do
-    Yast.import "AutoinstConfig"
-    allow(Yast::AutoinstConfig).to receive(:classDir).and_return(class_dir)
-    Yast.import "AutoinstClass"
+    subject.class_dir = class_dir
   end
 
   describe '#Read' do
     context 'when some class definition exists' do
       it 'read content into @Classes' do
         subject.Read
-        classes = subject.instance_variable_get(:@Classes)
-        expect(classes).to_not be_empty
+        expect(subject.Classes).to_not be_empty
       end
 
       it 'returns nil' do
@@ -57,8 +55,6 @@ describe "Yast::AutoinstClass" do
     context 'when some class definition exists' do
       it 'sets confs to an array containing classes configurations' do
         subject.Files
-        expect(subject.confs).to be_kind_of(Array)
-        expect(subject.confs).to_not be_empty
         expect(subject.confs).to match_array([
           { "class" => "swap", "name" => "largeswap.xml" },
           { "class" => "swap", "name" => "largeswap_noroot.xml" }
@@ -72,13 +68,13 @@ describe "Yast::AutoinstClass" do
       before(:each) do
         allow(Yast::SCR).to receive(:Read).
           with(Yast::Path.new('.target.dir'), swap_class_dir).and_return(directory_content)
-        subject.Files
       end
 
       context 'when directory does not exist' do
         let(:directory_content) { nil }
 
         it 'sets confs to an empty array' do
+          subject.Files
           expect(subject.confs).to be_kind_of(Array)
           expect(subject.confs).to be_empty
         end
@@ -88,6 +84,7 @@ describe "Yast::AutoinstClass" do
         let(:directory_content) { [] }
 
         it 'sets confs to an empty array' do
+          subject.Files
           expect(subject.confs).to be_kind_of(Array)
           expect(subject.confs).to be_empty
         end
@@ -167,12 +164,7 @@ describe "Yast::AutoinstClass" do
     end
 
     context 'when classes.xml does not exist in the repository' do
-      around(:each) do |example|
-        old_dir = subject.classDir
-        subject.classDirChanged(File.join(test_xml_dir, '..'))
-        example.call
-        subject.classDirChanged(old_dir)
-      end
+      let(:class_dir) { test_xml_dir }
 
       it 'returns false' do
         expect(subject.class_file_exists?).to be_false
@@ -217,6 +209,13 @@ describe "Yast::AutoinstClass" do
       expect(subject.read_old_classes).to eq(
         [{"configuration" => "largeswap.xml", "name" => "swap"}]
       )
+    end
+  end
+
+  describe '#changeDir' do
+    it 'sets the classes directory' do
+      subject.class_dir = test_xml_dir
+      expect(subject.classDir).to eq(test_xml_dir)
     end
   end
 end
