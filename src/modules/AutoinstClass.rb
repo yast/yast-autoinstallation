@@ -40,7 +40,7 @@ module Yast
     # @param string profile name
     # @return [String] profile Path
     def findPath(name, _class)
-      result = @confs.find { |c| c['name'] == name && c['class'] == _class } || {}
+      result = @confs.find { |c| c['name'] == name && c['class'] == _class }
       result ||= { 'class' => '', 'name' => 'default' }
       File.join(@classDir, result['class'], result['name'])
     end

@@ -113,10 +113,30 @@ describe Yast::AutoinstClass do
     let(:_class) { 'swap' }
     let(:name) { 'largeswap.xml' }
 
-    it 'returns classes directory + class name + configuration' do
-      subject.Read
+    before(:each) do |example|
       subject.Files
-      expect(subject.findPath(name, _class)).to eq(File.join(class_dir, _class, name))
+    end
+
+    context 'when class and configuration exists' do
+      it 'returns string with path to classes directory, class name and configuration' do
+        expect(subject.findPath(name, _class)).to eq(File.join(class_dir, _class, name))
+      end
+    end
+
+    context 'when class does not exist' do
+      let(:_class) { 'not-existent-class' }
+
+      it 'returns string with path to a default directory below the classes directory' do
+        expect(subject.findPath(name, _class)).to eq(File.join(class_dir, 'default'))
+      end
+    end
+
+    context 'when name does not exist' do
+      let(:name) { 'not-existent-name' }
+
+      it 'returns string with path to a default directory below the classes directory' do
+        expect(subject.findPath(name, _class)).to eq(File.join(class_dir, 'default'))
+      end
     end
   end
 
