@@ -17,131 +17,85 @@ require "yast"
 
 module Yast
   class AutoinstClassClass < Module
-    def main
+    include Yast::Logger
 
+    def main
       Yast.import "AutoinstConfig"
       Yast.import "XML"
       Yast.import "Summary"
       Yast.include self, "autoinstall/xml.rb"
 
-
-
-
       @classDir = AutoinstConfig.classDir
-
       @ClassConf = "/etc/autoinstall"
-
       @profile_conf = []
-
       @Profiles = []
-
       @Classes = []
       @deletedClasses = []
       @confs = []
-
       @class_file = "classes.xml"
+      @classPath = File.join(@classDir, @class_file)
 
-      #string classPath = sformat("%1/%2", ClassConf, class_file);
-      @classPath = Builtins.sformat(
-        "%1/%2",
-        AutoinstConfig.classDir,
-        @class_file
-      )
       AutoinstClass()
     end
 
     # find a profile path
     # @param string profile name
     # @return [String] profile Path
-    #
-    def findPath(name, _class)
-      result = Ops.get(Builtins.filter(@confs) do |c|
-        Ops.get_string(c, "name", "") == name &&
-          Ops.get_string(c, "class", "") == _class
-      end, 0, {})
-
-      profile_path = Builtins.sformat(
-        "%1/%2/%3",
-        AutoinstConfig.classDir,
-        Ops.get_string(result, "class", ""),
-        Ops.get_string(result, "name", "default")
-      )
-      profile_path
+    def findPath(name, class_)
+      result = @confs.find { |c| c['name'] == name && c['class'] == class_ }
+      result ||= { 'class' => '', 'name' => 'default' }
+      File.join(@classDir, result['class'], result['name'])
     end
-
 
     # Read classes
     def Read
       if SCR.Read(path(".target.size"), @classPath) != -1
         # TODO: use XML module
-        tmp = Convert.to_map(SCR.Read(path(".xml"), @classPath))
-        @Classes = Ops.get_list(tmp, "classes", [])
+        classes_map = Convert.to_map(SCR.Read(path(".xml"), @classPath))
+        @Classes = (classes_map && classes_map['classes']) || []
       else
         @Classes = []
       end
       nil
     end
 
-
     #     we are doing some compatibility fixes here and move
     #     from one /etc/autoinstall/classes.xml to multiple
     #     classes.xml files, one for each repository
     def Compat
-      if Ops.less_or_equal(SCR.Read(path(".target.size"), @classPath), 0) &&
-          Ops.greater_than(
-            SCR.Read(
-              path(".target.size"),
-              Ops.add(Ops.add(@ClassConf, "/"), @class_file)
-            ),
-            0
-          )
-        Builtins.y2milestone(
-          "Compat: %1 not found but %2 exists",
-          @classPath,
-          Ops.add(Ops.add(@ClassConf, "/"), @class_file)
-        )
-        tmp = Convert.to_map(
-          SCR.Read(path(".xml"), Ops.add(Ops.add(@ClassConf, "/"), @class_file))
-        )
-        oldClasses = Ops.get_list(tmp, "classes", [])
-        newClasses = []
-        Builtins.foreach(oldClasses) do |_class|
-          Builtins.y2milestone(
-            "looking for %1",
-            Ops.add(
-              Ops.add(AutoinstConfig.classDir, "/"),
-              Ops.get_string(_class, "name", "")
-            )
-          )
-          if SCR.Read(
-              path(".target.dir"),
-              Ops.add(
-                Ops.add(AutoinstConfig.classDir, "/"),
-                Ops.get_string(_class, "name", "")
-              )
-            ) != nil
-            newClasses = Builtins.add(newClasses, _class)
-          end
-        end
-        tmp2 = { "classes" => newClasses }
-        Builtins.y2milestone("creating %1", tmp2)
-        XML.YCPToXMLFile(:class, tmp2, @classPath)
+      if !class_file_exists? && compat_class_file_exists?
+        log.info "Compat: #{@classPath} no found but #{compat_class_file} exists"
+        new_classes_map = { 'classes' => read_old_classes }
+        log.info "creating #{new_classes_map}"
+        XML.YCPToXMLFile(:class, new_classes_map, @classPath)
       end
-
       nil
     end
 
+    # Change the directory and read the class definitions
+    #
+    # @param [String] Path of the new directory
+    # @return nil
+    # @see class_dir=
     def classDirChanged(newdir)
-      AutoinstConfig.classDir = newdir
-      @classDir = newdir
-      @classPath = Builtins.sformat(
-        "%1/%2",
-        AutoinstConfig.classDir,
-        @class_file
-      )
+      self.class_dir = newdir
       Compat()
       Read()
       nil
+    end
+
+    # Change the directory of classes definitions.
+    #
+    # AutoinstConfig#classDir= is called to set the new value
+    # in the configuration. It does not check if the directory
+    # exists or is accessible.
+    #
+    # @return [String] path of the new directory.
+    def class_dir=(newdir)
+      AutoinstConfig.classDir = newdir
+      @classDir = newdir
+      @classPath = File.join(@classDir, @class_file)
+      newdir
     end
 
     # Constructor
@@ -154,13 +108,8 @@ module Yast
       nil
     end
 
-
-
-
-
     # Merge Classes
     #
-
     def MergeClasses(configuration, base_profile, resultFileName)
       configuration = deep_copy(configuration)
       dontmerge_str = ""
@@ -215,54 +164,28 @@ module Yast
       deep_copy(out)
     end
 
-
-
-
-
     # Read files from class directories
     # @return [void]
     def Files
       @confs = []
-      Builtins.foreach(@Classes) do |_class|
-        files = Convert.convert(
-          SCR.Read(
-            path(".target.dir"),
-            Ops.add(
-              Ops.add(@classDir, "/"),
-              Ops.get_string(_class, "name", "xxx")
-            )
-          ),
-          :from => "any",
-          :to   => "list <string>"
-        )
-        if files != nil
-          Builtins.y2milestone(
-            "Files in class %1: %2",
-            Ops.get_string(_class, "name", "xxx"),
-            files
-          )
-          tmp_confs = Builtins.maplist(files) do |file|
-            conf = {}
-            Ops.set(conf, "class", Ops.get_string(_class, "name", "xxx"))
-            Ops.set(conf, "name", file)
-            deep_copy(conf)
-          end
-          Builtins.y2milestone("Configurations: %1", tmp_confs)
-          @confs = Convert.convert(
-            Builtins.union(@confs, tmp_confs),
-            :from => "list",
-            :to   => "list <map>"
-          )
-        end
+      @Classes.each do |class_|
+        class_name_ = class_['name'] || 'xxx'
+        files_path = File.join(@classDir, class_name_)
+        files = Convert.convert(SCR.Read(path('.target.dir'), files_path),
+          :from => "any", :to   => "list <string>")
+
+        next if files.nil?
+
+        log.info "Files in class #{class_name_}: #{files}"
+        new_confs = files.map { |f| { 'class' => class_name_, 'name' => f  }  }
+        log.info "Configurations: #{new_confs}"
+        @confs.concat(new_confs)
       end
-      Builtins.y2milestone("Configurations: %1", @confs)
+      log.info "Configurations: #{@confs}"
       nil
     end
 
-
-
     # Save Class definitions
-
     def Save
       Builtins.foreach(@deletedClasses) do |c|
         toDel = Builtins.sformat(
@@ -274,14 +197,12 @@ module Yast
       end
       @deletedClasses = []
       tmp = { "classes" => @Classes }
-      Builtins.y2debug("saving classes: %1", @classPath)
+      log.debug "saving classes: #{@classPath}"
       XML.YCPToXMLFile(:class, tmp, @classPath)
     end
 
 
-
     # Import configuration
-
     def Import(settings)
       settings = deep_copy(settings)
       @profile_conf = deep_copy(settings)
@@ -289,13 +210,11 @@ module Yast
     end
 
     # Export configuration
-
     def Export
       deep_copy(@profile_conf)
     end
 
     # Configuration Summary
-
     def Summary
       summary = ""
 
@@ -331,6 +250,40 @@ module Yast
     publish :function => :Import, :type => "boolean (list <map>)"
     publish :function => :Export, :type => "list <map> ()"
     publish :function => :Summary, :type => "string ()"
+
+    private
+
+    # Checks if a classes.xml exists
+    # @return [true,false] Returns true when present (false otherwise).
+    def class_file_exists?
+      SCR.Read(path(".target.size"), @classPath) > 0
+    end
+
+    # Checks if an old classes.xml exists
+    # @return [true,false] Returns true when present (false otherwise).
+    # @see compat_class_file
+    def compat_class_file_exists?
+      SCR.Read(path(".target.size"), compat_class_file) > 0
+    end
+
+    # Returns the path of the old classes.xml file
+    # By default, it is called /etc/autoinstall/classes.xml.
+    # @return [String] Path to the old classes.xml file.
+    def compat_class_file
+      File.join(@ClassConf, @class_file)
+    end
+
+    # Builds a map of classes to import from /etc/autoinstall/classes.xml
+    # @return [Array<Hash>] Classes defined in the file.
+    def read_old_classes
+      old_classes_map = Convert.to_map(SCR.Read(path('.xml'), compat_class_file))
+      old_classes = old_classes_map['classes'] || []
+      old_classes.each_with_object([]) do |class_, new_classes|
+        class_path_ = File.join(@classDir, class_['name'] || '')
+        log.info "looking for #{class_path_}"
+        new_classes << class_ unless SCR.Read(path(".target.dir"), class_path_).nil?
+      end
+    end
   end
 
   AutoinstClass = AutoinstClassClass.new
