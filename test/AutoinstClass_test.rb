@@ -198,4 +198,68 @@ describe Yast::AutoinstClass do
       expect(subject.classDir).to eq(test_xml_dir)
     end
   end
+
+  describe '#MergeClasses' do
+    let(:base_profile_path) { File.join('test', 'fixtures', 'profiles', 'partitions.xml') }
+    let(:tmp_dir) { File.join(root_path, 'tmp') }
+    let(:expected_xml) { File.read(expected_xml_path) }
+    let(:output_path) { File.join(tmp_dir, 'output.xml') }
+    let(:output_xml) { File.read(output_path) }
+    let(:dontmerge) { [] }
+    let(:xsltproc_command) {
+      "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
+      "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
+      "--output #{File.join(tmp_dir, "output.xml")}  " \
+      "/usr/share/autoinstall/xslt/merge.xslt test/fixtures/profiles/partitions.xml "
+    }
+
+    around(:each) do |example|
+      FileUtils.mkdir(tmp_dir) unless Dir.exist?(tmp_dir)
+      example.run
+      FileUtils.rm_rf(tmp_dir)
+    end
+
+    before(:each) do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
+      allow(Yast::AutoinstConfig).to receive(:dontmerge).and_return(dontmerge)
+      subject.Files
+    end
+
+    it 'executes xsltproc and returns a hash with info about the result' do
+      expect(Yast::SCR).to receive(:Execute).
+        with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+      out = subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+      expect(out).to eq({ 'exit' => 0, 'stderr' => '', 'stdout' => '' })
+    end
+
+    context 'when all elements must be merged' do
+      let(:expected_xml_path) { File.join(root_path, 'test', 'fixtures', 'output', 'partitions-merged.xml')  }
+
+      it 'merges elements from profile and configuration' do
+        expect(Yast::SCR).to receive(:Execute).
+          with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+        subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+        expect(output_xml).to eq(expected_xml)
+      end
+    end
+
+    context 'when some elements are not intended to be merged' do
+      let(:expected_xml_path) { File.join(root_path, 'test', 'fixtures', 'output', 'partitions-dontmerge.xml')  }
+      let(:dontmerge) { ['partition'] }
+      let(:xsltproc_command) {
+        "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
+        "--param dontmerge1 \"'partition'\"  " \
+        "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
+        "--output #{File.join(tmp_dir, "output.xml")}  " \
+        "/usr/share/autoinstall/xslt/merge.xslt test/fixtures/profiles/partitions.xml "
+      }
+
+      it 'does not merge those elements' do
+        expect(Yast::SCR).to receive(:Execute).
+          with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+        subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+        expect(output_xml).to eq(expected_xml)
+      end
+    end
+  end
 end
