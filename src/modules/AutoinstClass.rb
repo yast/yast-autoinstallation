@@ -20,6 +20,7 @@ module Yast
     include Yast::Logger
 
     def main
+
       Yast.import "AutoinstConfig"
       Yast.import "XML"
       Yast.import "Summary"
@@ -108,60 +109,23 @@ module Yast
       nil
     end
 
-    # Merge Classes
+    # Merge classes
     #
     def MergeClasses(configuration, base_profile, resultFileName)
-      configuration = deep_copy(configuration)
       dontmerge_str = ""
-      i = 1
-      Builtins.foreach(AutoinstConfig.dontmerge) do |dm|
-        dontmerge_str = Ops.add(
-          dontmerge_str,
-          Builtins.sformat(" --param dontmerge%1 \"'%2'\" ", i, dm)
-        )
-        i = Ops.add(i, 1)
+      AutoinstConfig.dontmerge.each_with_index do |dm, i|
+        dontmerge_str << " --param dontmerge#{i+1} \"'#{dm}'\" "
       end
-      tmpdir = AutoinstConfig.tmpDir
-      _MergeCommand = Builtins.sformat(
-        "/usr/bin/xsltproc --novalid --param replace \"'false'\" %1 --param with ",
-        dontmerge_str
-      )
+      merge_command =
+        "/usr/bin/xsltproc --novalid --param replace \"'false'\" #{dontmerge_str} --param with " \
+        "\"'#{findPath(configuration['name'], configuration['class'])}'\"  " \
+        "--output #{File.join(AutoinstConfig.tmpDir, resultFileName)}  " \
+        "/usr/share/autoinstall/xslt/merge.xslt #{base_profile} "
 
-      _MergeCommand = Ops.add(
-        Ops.add(
-          Ops.add(_MergeCommand, "\"'"),
-          findPath(
-            Ops.get_string(configuration, "name", ""),
-            Ops.get_string(configuration, "class", "")
-          )
-        ),
-        "'\"  "
-      )
-      _MergeCommand = Ops.add(
-        Ops.add(
-          Ops.add(Ops.add(Ops.add(_MergeCommand, "--output "), tmpdir), "/"),
-          resultFileName
-        ),
-        " "
-      )
-      _MergeCommand = Ops.add(
-        _MergeCommand,
-        " /usr/share/autoinstall/xslt/merge.xslt "
-      )
-      _MergeCommand = Ops.add(Ops.add(_MergeCommand, base_profile), " ")
-
-
-      Builtins.y2milestone("Merge command: %1", _MergeCommand)
-
-      out = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), _MergeCommand, {})
-      )
-      Builtins.y2milestone(
-        "Merge stdout: %1, stderr: %2",
-        Ops.get_string(out, "stdout", ""),
-        Ops.get_string(out, "stderr", "")
-      )
-      deep_copy(out)
+      log.info "Merge command: #{merge_command}"
+      out = SCR.Execute(path(".target.bash_output"), merge_command, {})
+      log.info "Merge stdout: #{out['stdout']}, stderr: #{out['stderr']}"
+      out
     end
 
     # Read files from class directories
