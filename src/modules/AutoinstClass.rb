@@ -46,9 +46,9 @@ module Yast
     # @param string profile name
     # @return [String] profile Path
     def findPath(name, class_)
-      result = @confs.find { |c| c['name'] == name && c['class'] == class_ }
-      result ||= { 'class' => '', 'name' => 'default' }
-      File.join(@classDir, result['class'], result['name'])
+      result = @confs.find { |c| c["name"] == name && c["class"] == class_ }
+      result ||= { "class" => "", "name" => "default" }
+      File.join(@classDir, result["class"], result["name"])
     end
 
     # Read classes
@@ -56,7 +56,7 @@ module Yast
       if SCR.Read(path(".target.size"), @classPath) != -1
         # TODO: use XML module
         classes_map = Convert.to_map(SCR.Read(path(".xml"), @classPath))
-        @Classes = (classes_map && classes_map['classes']) || []
+        @Classes = (classes_map && classes_map["classes"]) || []
       else
         @Classes = []
       end
@@ -69,7 +69,7 @@ module Yast
     def Compat
       if !class_file_exists? && compat_class_file_exists?
         log.info "Compat: #{@classPath} no found but #{compat_class_file} exists"
-        new_classes_map = { 'classes' => read_old_classes }
+        new_classes_map = { "classes" => read_old_classes }
         log.info "creating #{new_classes_map}"
         XML.YCPToXMLFile(:class, new_classes_map, @classPath)
       end
@@ -121,13 +121,13 @@ module Yast
       end
       merge_command =
         "/usr/bin/xsltproc --novalid --param replace \"'false'\" #{dontmerge_str} --param with " \
-        "\"'#{findPath(configuration['name'], configuration['class'])}'\"  " \
+        "\"'#{findPath(configuration["name"], configuration["class"])}'\"  " \
         "--output #{File.join(AutoinstConfig.tmpDir, resultFileName)}  " \
         "#{@merge_xslt_path} #{base_profile} "
 
       log.info "Merge command: #{merge_command}"
       out = SCR.Execute(path(".target.bash_output"), merge_command, {})
-      log.info "Merge stdout: #{out['stdout']}, stderr: #{out['stderr']}"
+      log.info "Merge stdout: #{out["stdout"]}, stderr: #{out["stderr"]}"
       out
     end
 
@@ -136,15 +136,15 @@ module Yast
     def Files
       @confs = []
       @Classes.each do |class_|
-        class_name_ = class_['name'] || 'xxx'
+        class_name_ = class_["name"] || "xxx"
         files_path = File.join(@classDir, class_name_)
-        files = Convert.convert(SCR.Read(path('.target.dir'), files_path),
+        files = Convert.convert(SCR.Read(path(".target.dir"), files_path),
           :from => "any", :to   => "list <string>")
 
         next if files.nil?
 
         log.info "Files in class #{class_name_}: #{files}"
-        new_confs = files.map { |f| { 'class' => class_name_, 'name' => f  }  }
+        new_confs = files.map { |f| { "class" => class_name_, "name" => f  }  }
         log.info "Configurations: #{new_confs}"
         @confs.concat(new_confs)
       end
@@ -184,8 +184,8 @@ module Yast
     def Summary
       summary = ""
       @profile_conf.each do |conf|
-        summary = Summary.AddHeader(summary, conf['class_name'] || 'None')
-        summary = Summary.AddLine(summary, conf['configuration'] || 'None')
+        summary = Summary.AddHeader(summary, conf["class_name"] || "None")
+        summary = Summary.AddLine(summary, conf["configuration"] || "None")
       end
       summary.empty? ? Summary.NotConfigured : summary
     end
@@ -234,10 +234,10 @@ module Yast
     # Builds a map of classes to import from /etc/autoinstall/classes.xml
     # @return [Array<Hash>] Classes defined in the file.
     def read_old_classes
-      old_classes_map = Convert.to_map(SCR.Read(path('.xml'), compat_class_file))
-      old_classes = old_classes_map['classes'] || []
+      old_classes_map = Convert.to_map(SCR.Read(path(".xml"), compat_class_file))
+      old_classes = old_classes_map["classes"] || []
       old_classes.each_with_object([]) do |class_, new_classes|
-        class_path_ = File.join(@classDir, class_['name'] || '')
+        class_path_ = File.join(@classDir, class_["name"] || "")
         log.info "looking for #{class_path_}"
         new_classes << class_ unless SCR.Read(path(".target.dir"), class_path_).nil?
       end
