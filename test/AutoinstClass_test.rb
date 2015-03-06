@@ -14,6 +14,7 @@ describe Yast::AutoinstClass do
   let(:class_dir) { File.join(test_xml_dir, 'classes') }
   let(:class_path) { File.join(class_dir, 'classes.xml') }
   let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
+  let(:settings) { [ { 'class_name' => 'swap', 'configuration' => 'largeswap.xml' } ] }
 
   before(:each) do
     subject.class_dir = class_dir
@@ -263,6 +264,108 @@ describe Yast::AutoinstClass do
           with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
         subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
         expect(output_xml).to eq(expected_xml)
+      end
+    end
+  end
+
+  describe '#Import' do
+    it 'sets profile_conf variable as a copy of the given settings' do
+      subject.Import(settings)
+      expect(subject.profile_conf).to eq(settings)
+      expect(subject.profile_conf).to_not equal(settings)
+    end
+
+    after(:each) do
+      subject.Import([])
+    end
+  end
+
+  describe '#Export' do
+    around(:each) do |example|
+      subject.Import(settings)
+      example.call
+      subject.Import([]) # reset settings
+    end
+
+    it 'returns a copy of profile_conf' do
+      exported = subject.Export
+      expect(exported).to eq(settings)
+      expect(exported).to_not equal(settings)
+    end
+  end
+
+  describe '#Summary' do
+    context 'when some settings are given' do
+      around(:each) do |example|
+        subject.Import(settings)
+        example.call
+        subject.Import([]) # reset settings
+      end
+
+      it 'returns a summary containing class names and configurations' do
+        expect(Yast::Summary).to receive(:AddHeader).with(anything, 'swap').
+          and_return('<h3>swap</h3>')
+        expect(Yast::Summary).to receive(:AddLine).with(anything, 'largeswap.xml').
+          and_return('<h3>swap</h3><p>largeswap.xml</p>')
+        expect(subject.Summary).to eq('<h3>swap</h3><p>largeswap.xml</p>')
+      end
+
+      context 'when no class name is given' do
+        let(:settings) { [ { 'configuration' => 'largeswap.xml' } ] }
+
+        it "'None' is used instead" do
+          expect(Yast::Summary).to receive(:AddHeader).with(anything, 'None').
+            and_return('<h3>None</h3>')
+          subject.Summary
+        end
+      end
+
+      context 'when no configuration is given' do
+        let(:settings) { [ { 'class_name' => 'swap' } ] }
+
+        it "'None' is used instead" do
+          expect(Yast::Summary).to receive(:AddLine).with(anything, 'None').
+            and_return('<h3>None</h3><p>largeswap.xml</p>')
+          subject.Summary
+        end
+      end
+    end
+
+    context 'when no settings are given' do
+      it 'returns an empty summary' do
+        expect(subject.Summary).to eq(Yast::Summary.NotConfigured)
+      end
+    end
+  end
+
+  describe '#Save' do
+    before(:each) do
+      subject.Read
+    end
+
+    it 'creates a classes.xml file in the new location' do
+      expect(Yast::XML).to receive(:YCPToXMLFile) do |type, data, path|
+        expect(type).to eq(:class)
+        expect(data['classes']).to be_kind_of(Array)
+        expect(path).to eq(File.join(class_dir, 'classes.xml'))
+      end
+      subject.Save
+    end
+
+    context 'when classes are marked for deletion' do
+      around(:each) do |example|
+        subject.deletedClasses = ['swap']
+        example.call
+        subject.deletedClasses = []
+      end
+
+      it 'deletes classes files' do
+        allow(Yast::XML).to receive(:YCPToXMLFile).with(any_args)
+        expect(Yast::SCR).to receive(:Execute).with(
+          Yast::Path.new('.target.bash'),
+          "/bin/rm -rf #{class_dir}/swap")
+
+        subject.Save
       end
     end
   end
