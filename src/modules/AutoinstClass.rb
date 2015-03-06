@@ -154,13 +154,9 @@ module Yast
 
     # Save Class definitions
     def Save
-      Builtins.foreach(@deletedClasses) do |c|
-        toDel = Builtins.sformat(
-          "/bin/rm -rf %1/%2",
-          AutoinstConfig.classDir,
-          c
-        )
-        SCR.Execute(path(".target.bash"), toDel)
+      @deletedClasses.each do |c|
+        to_del = "/bin/rm -rf #{File.join(AutoinstConfig.classDir, c)}"
+        SCR.Execute(path(".target.bash"), to_del)
       end
       @deletedClasses = []
       tmp = { "classes" => @Classes }
@@ -170,33 +166,28 @@ module Yast
 
 
     # Import configuration
+    # @params [Array<Hash>] settings Configuration
+    # @return true
     def Import(settings)
-      settings = deep_copy(settings)
       @profile_conf = deep_copy(settings)
       true
     end
 
     # Export configuration
+    # @return [Array<Hash>] Copy of the configuration
     def Export
       deep_copy(@profile_conf)
     end
 
-    # Configuration Summary
+    # Return configuration summary
+    # @return [String] Configuration summary
     def Summary
       summary = ""
-
-      Builtins.foreach(@profile_conf) do |c|
-        summary = Summary.AddHeader(
-          summary,
-          Ops.get_string(c, "class_name", "None")
-        )
-        summary = Summary.AddLine(
-          summary,
-          Ops.get_string(c, "configuration", "None")
-        )
+      @profile_conf.each do |conf|
+        summary = Summary.AddHeader(summary, conf['class_name'] || 'None')
+        summary = Summary.AddLine(summary, conf['configuration'] || 'None')
       end
-      return Summary.NotConfigured if Builtins.size(summary) == 0
-      summary
+      summary.empty? ? Summary.NotConfigured : summary
     end
 
     publish :variable => :classDir, :type => "string"
