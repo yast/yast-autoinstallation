@@ -19,6 +19,8 @@ module Yast
   class AutoinstClassClass < Module
     include Yast::Logger
 
+    attr_accessor :merge_xslt_path
+
     def main
 
       Yast.import "AutoinstConfig"
@@ -28,6 +30,7 @@ module Yast
 
       @classDir = AutoinstConfig.classDir
       @ClassConf = "/etc/autoinstall"
+      @merge_xslt_path = "/usr/share/autoinstall/xslt/merge.xslt"
       @profile_conf = []
       @Profiles = []
       @Classes = []
@@ -120,7 +123,7 @@ module Yast
         "/usr/bin/xsltproc --novalid --param replace \"'false'\" #{dontmerge_str} --param with " \
         "\"'#{findPath(configuration['name'], configuration['class'])}'\"  " \
         "--output #{File.join(AutoinstConfig.tmpDir, resultFileName)}  " \
-        "/usr/share/autoinstall/xslt/merge.xslt #{base_profile} "
+        "#{@merge_xslt_path} #{base_profile} "
 
       log.info "Merge command: #{merge_command}"
       out = SCR.Execute(path(".target.bash_output"), merge_command, {})

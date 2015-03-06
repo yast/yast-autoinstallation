@@ -206,17 +206,21 @@ describe Yast::AutoinstClass do
     let(:output_path) { File.join(tmp_dir, 'output.xml') }
     let(:output_xml) { File.read(output_path) }
     let(:dontmerge) { [] }
+    let(:merge_xslt_path) { File.join('xslt', 'merge.xslt') }
     let(:xsltproc_command) {
       "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
       "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
       "--output #{File.join(tmp_dir, "output.xml")}  " \
-      "/usr/share/autoinstall/xslt/merge.xslt test/fixtures/profiles/partitions.xml "
+      "#{merge_xslt_path} test/fixtures/profiles/partitions.xml "
     }
 
     around(:each) do |example|
       FileUtils.mkdir(tmp_dir) unless Dir.exist?(tmp_dir)
+      old_merge_xslt_path = subject.merge_xslt_path
+      subject.merge_xslt_path = merge_xslt_path
       example.run
       FileUtils.rm_rf(tmp_dir)
+      subject.merge_xslt_path = old_merge_xslt_path
     end
 
     before(:each) do
@@ -251,7 +255,7 @@ describe Yast::AutoinstClass do
         "--param dontmerge1 \"'partition'\"  " \
         "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
         "--output #{File.join(tmp_dir, "output.xml")}  " \
-        "/usr/share/autoinstall/xslt/merge.xslt test/fixtures/profiles/partitions.xml "
+        "#{merge_xslt_path} test/fixtures/profiles/partitions.xml "
       }
 
       it 'does not merge those elements' do
