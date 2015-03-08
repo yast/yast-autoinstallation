@@ -42,7 +42,7 @@ module Yast
       AutoinstClass()
     end
 
-    # find a profile path
+    # Finds a profile path
     # @param string profile name
     # @return [String] profile Path
     def findPath(name, class_)
@@ -51,7 +51,7 @@ module Yast
       File.join(@classDir, result["class"], result["name"])
     end
 
-    # Read classes
+    # Reads classes
     def Read
       if SCR.Read(path(".target.size"), @classPath) != -1
         # TODO: use XML module
@@ -68,7 +68,7 @@ module Yast
     #     classes.xml files, one for each repository
     def Compat
       if !class_file_exists? && compat_class_file_exists?
-        log.info "Compat: #{@classPath} no found but #{compat_class_file} exists"
+        log.info "Compat: #{@classPath} not found but #{compat_class_file} exists"
         new_classes_map = { "classes" => read_old_classes }
         log.info "creating #{new_classes_map}"
         XML.YCPToXMLFile(:class, new_classes_map, @classPath)
@@ -76,7 +76,7 @@ module Yast
       nil
     end
 
-    # Change the directory and read the class definitions
+    # Changes the directory and reads the class definitions
     #
     # @param [String] Path of the new directory
     # @return nil
@@ -88,7 +88,7 @@ module Yast
       nil
     end
 
-    # Change the directory of classes definitions.
+    # Changes the directory of classes definitions.
     #
     # AutoinstConfig#classDir= is called to set the new value
     # in the configuration. It does not check if the directory
@@ -125,13 +125,13 @@ module Yast
         "--output #{File.join(AutoinstConfig.tmpDir, resultFileName)}  " \
         "#{@merge_xslt_path} #{base_profile} "
 
-      log.info "Merge command: #{merge_command}"
       out = SCR.Execute(path(".target.bash_output"), merge_command, {})
+      log.info "Merge command: #{merge_command}"
       log.info "Merge stdout: #{out["stdout"]}, stderr: #{out["stderr"]}"
       out
     end
 
-    # Read files from class directories
+    # Reads files from class directories
     # @return [void]
     def Files
       @confs = []
@@ -152,7 +152,7 @@ module Yast
       nil
     end
 
-    # Save Class definitions
+    # Saves classes definitions
     def Save
       @deletedClasses.each do |c|
         to_del = "/bin/rm -rf #{File.join(AutoinstConfig.classDir, c)}"
@@ -165,7 +165,7 @@ module Yast
     end
 
 
-    # Import configuration
+    # Imports configuration
     # @params [Array<Hash>] settings Configuration
     # @return true
     def Import(settings)
@@ -173,13 +173,13 @@ module Yast
       true
     end
 
-    # Export configuration
+    # Exports configuration
     # @return [Array<Hash>] Copy of the configuration
     def Export
       deep_copy(@profile_conf)
     end
 
-    # Return configuration summary
+    # Builds the configuration summary
     # @return [String] Configuration summary
     def Summary
       summary = ""

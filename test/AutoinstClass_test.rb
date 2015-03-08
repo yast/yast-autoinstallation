@@ -216,7 +216,8 @@ describe Yast::AutoinstClass do
     }
 
     around(:each) do |example|
-      FileUtils.mkdir(tmp_dir) unless Dir.exist?(tmp_dir)
+      FileUtils.rm_rf(tmp_dir) if Dir.exist?(tmp_dir)
+      FileUtils.mkdir(tmp_dir)
       old_merge_xslt_path = subject.merge_xslt_path
       subject.merge_xslt_path = merge_xslt_path
       example.run
