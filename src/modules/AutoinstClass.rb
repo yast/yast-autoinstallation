@@ -235,7 +235,7 @@ module Yast
     # @return [Array<Hash>] Classes defined in the file.
     def read_old_classes
       old_classes_map = Convert.to_map(SCR.Read(path(".xml"), compat_class_file))
-      old_classes = old_classes_map["classes"] || []
+      old_classes = (old_classes_map && old_classes_map["classes"]) || []
       old_classes.each_with_object([]) do |class_, new_classes|
         class_path_ = File.join(@classDir, class_["name"] || "")
         log.info "looking for #{class_path_}"

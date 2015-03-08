@@ -13,7 +13,6 @@ describe Yast::AutoinstClass do
   let(:test_xml_dir) { File.join(root_path, 'test', 'fixtures')  }
   let(:class_dir) { File.join(test_xml_dir, 'classes') }
   let(:class_path) { File.join(class_dir, 'classes.xml') }
-  let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
   let(:settings) { [ { 'class_name' => 'swap', 'configuration' => 'largeswap.xml' } ] }
 
   before(:each) do
@@ -160,20 +159,27 @@ describe Yast::AutoinstClass do
   describe '#Compat' do
     let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
 
-    context 'when /etc/autoinstall/classes.xml exists' do
-      around(:each) do |example|
-        subject.ClassConf = faked_autoinstall_dir
-        example.call
-        subject.ClassConf = '/etc/autoinstall'
+    around(:each) do |example|
+      subject.ClassConf = faked_autoinstall_dir
+      example.call
+      subject.ClassConf = '/etc/autoinstall'
+    end
+
+    context 'when a classes.xml file exists in the new location' do
+      it 'does not overwrite classes.xml file' do
+        expect(Yast::XML).to_not receive(:YCPToXMLFile)
+        subject.Compat
+      end
+    end
+
+    context 'when a classes.xml file does not exist in the new location' do
+      before(:each) do
+        allow(Yast::SCR).to receive(:Read).and_call_original
+        allow(Yast::SCR).to receive(:Read).
+          with(Yast::Path.new('.target.size'), class_path).and_return(-1)
       end
 
-      context 'and a classes.xml file does not exist in the new location' do
-        before(:each) do
-          allow(Yast::SCR).to receive(:Read).and_call_original
-          allow(Yast::SCR).to receive(:Read).
-            with(Yast::Path.new('.target.size'), class_path).and_return(-1)
-        end
-
+      context 'and /etc/autoinstall/classes.xml exists' do
         it 'creates a classes.xml file in the new location' do
           expect(Yast::XML).to receive(:YCPToXMLFile) do |type, data, path|
             expect(type).to eq(:class)
@@ -184,9 +190,16 @@ describe Yast::AutoinstClass do
         end
       end
 
-      context 'and a classes.xml file exists in the new location' do
-        it 'does not create a classes.xml file' do
-          expect(Yast::XML).to_not receive(:YCPToXMLFile)
+      context 'and /etc/autoinstall/classes.xml is empty or not valid XML' do
+        before(:each) do
+          allow(Yast::SCR).to receive(:Read).
+            with(Yast::Path.new('.xml'), File.join(faked_autoinstall_dir, 'classes.xml')).
+            and_return(nil)
+        end
+
+        it 'creates a classes.xmlfile in the new location with no classes' do
+          expect(Yast::XML).to receive(:YCPToXMLFile).
+            with(:class, {"classes" => []}, File.join(class_dir, 'classes.xml'))
           subject.Compat
         end
       end
