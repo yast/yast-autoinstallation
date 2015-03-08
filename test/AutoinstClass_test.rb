@@ -228,14 +228,15 @@ describe Yast::AutoinstClass do
       "#{merge_xslt_path} test/fixtures/profiles/partitions.xml "
     }
 
+    before(:each) do
+      stub_const("Yast::AutoinstClassClass::MERGE_XSLT_PATH", merge_xslt_path)
+    end
+
     around(:each) do |example|
       FileUtils.rm_rf(tmp_dir) if Dir.exist?(tmp_dir)
       FileUtils.mkdir(tmp_dir)
-      old_merge_xslt_path = subject.merge_xslt_path
-      subject.merge_xslt_path = merge_xslt_path
       example.run
       FileUtils.rm_rf(tmp_dir)
-      subject.merge_xslt_path = old_merge_xslt_path
     end
 
     before(:each) do
