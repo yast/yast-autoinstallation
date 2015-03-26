@@ -42,7 +42,7 @@ module Yast
       @need_systemd_isolate = true
       final_restart_services = Ops.get_boolean(
         Profile.current,["general", "mode", "final_restart_services"], true)
-      @max_steps = Ops.add(Builtins.size(Y2ModuleConfig.ModuleMap), 3)
+      @max_steps = Y2ModuleConfig.ModuleMap.size + 3 # additional for scripting and finished message
       @max_steps = Ops.add(@max_steps, 1) if @need_systemd_isolate
       @max_steps += 1 if final_restart_services
       Builtins.y2milestone(
