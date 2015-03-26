@@ -40,8 +40,11 @@ module Yast
         Ops.get_map(Profile.current, ["general", "mode"], {})
       )
       @need_systemd_isolate = true
-      @max_steps = Ops.add(Builtins.size(Y2ModuleConfig.ModuleMap), 4)
+      final_restart_services = Ops.get_boolean(
+        Profile.current,["general", "mode", "final_restart_services"], true)
+      @max_steps = Ops.add(Builtins.size(Y2ModuleConfig.ModuleMap), 3)
       @max_steps = Ops.add(@max_steps, 1) if @need_systemd_isolate
+      @max_steps += 1 if final_restart_services
       Builtins.y2milestone(
         "max steps: %1 need_isolate:%2",
         @max_steps,
@@ -264,26 +267,29 @@ module Yast
         "YaST2-Second-Stage.service",
         "autoyast-initscripts.service"
       ]
-
-      logStep(_("Restarting all running services"))
-      @cmd = "systemctl --type=service list-units | grep \" running \" | sed s/[[:space:]].*//"
-      @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
-      @sl = Builtins.filter(
-        Builtins.splitstring(Ops.get_string(@out, "stdout", ""), "\n")
-      ) { |s| Ops.greater_than(Builtins.size(s), 0) }
-      Builtins.y2milestone("running services \"%1\"", @sl)
-      @sl = Builtins.filter(@sl) do |s|
-        !Builtins.contains(@ser_ignore, s)
+      if final_restart_services
+        logStep(_("Restarting all running services"))
+        @cmd = "systemctl --type=service list-units | grep \" running \" | sed s/[[:space:]].*//"
+        @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
+        @sl = Builtins.filter(
+          Builtins.splitstring(Ops.get_string(@out, "stdout", ""), "\n")
+        ) { |s| Ops.greater_than(Builtins.size(s), 0) }
+        Builtins.y2milestone("running services \"%1\"", @sl)
+        @sl = Builtins.filter(@sl) do |s|
+          !Builtins.contains(@ser_ignore, s)
+        end
+        Builtins.y2milestone("restarting services \"%1\"", @sl)
+        @cmd = Ops.add(
+          "systemctl --no-block restart ",
+          Builtins.mergestring(@sl, " ")
+        )
+        Builtins.y2milestone("before calling \"%1\"", @cmd)
+        @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
+        Builtins.y2milestone("after  calling \"%1\"", @cmd)
+        wait_systemd_finished(@max_wait, @ser_ignore)
+      else
+        Builtins.y2milestone("Do not restart all services (defined in autoyast.xml)")
       end
-      Builtins.y2milestone("restarting services \"%1\"", @sl)
-      @cmd = Ops.add(
-        "systemctl --no-block restart ",
-        Builtins.mergestring(@sl, " ")
-      )
-      Builtins.y2milestone("before calling \"%1\"", @cmd)
-      @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
-      Builtins.y2milestone("after  calling \"%1\"", @cmd)
-      wait_systemd_finished(@max_wait, @ser_ignore)
       if @need_systemd_isolate
         logStep(_("Activating systemd default target"))
         #string cmd = "systemctl disable YaST2-Second-Stage.service; systemctl --ignore-dependencies isolate default.target";
