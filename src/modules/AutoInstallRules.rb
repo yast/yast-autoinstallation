@@ -36,6 +36,15 @@ module Yast
 
       Yast.include self, "autoinstall/io.rb"
 
+      reset
+    end
+
+    # Reset the module's state
+    #
+    # @return nil
+    #
+    # @see #AutoInstallRules
+    def reset
       @userrules = false
       @dontmergeIsDefault = true
       @dontmergeBackup = []
@@ -50,19 +59,12 @@ module Yast
       @ATTR = {}
 
       @installed_product = ""
-
       @installed_product_version = ""
-
       @hostname = ""
-
       @hostaddress = ""
-
       @network = ""
-
       @domain = ""
-
       @arch = ""
-
       @karch = ""
 
       # Taken from smbios
@@ -78,31 +80,19 @@ module Yast
       @board = ""
 
       @memsize = 0
-
       @disksize = []
-
       @totaldisk = 0
-
       @hostid = ""
-
       @mac = ""
-
       @linux = 0
-
       @others = 0
-
       @xserver = ""
-
       @haspcmcia = "0"
 
       #///////////////////////////////////////////
       #///////////////////////////////////////////
-
       @NonLinuxPartitions = []
-
       @LinuxPartitions = []
-
-
       @UserRules = {}
 
       # Local Variables
@@ -110,7 +100,6 @@ module Yast
       @env = {}
 
       @tomerge = []
-
       @element2file = {}
       AutoInstallRules()
     end
@@ -322,8 +311,8 @@ module Yast
       distro_str = SCR.Read(path(".content.DISTRO"))
       log.info "DISTRO: #{distro_str}"
 
-      distro = distro_map(distro_str)
-      cpe = distro ? cpeid_map(distro["cpeid"]) : {}
+      distro = distro_map(distro_str) || {}
+      cpe = cpeid_map(distro["cpeid"]) || {}
 
       @installed_product = distro["name"] || ""
       @installed_product_version = cpe["version"] || ""
