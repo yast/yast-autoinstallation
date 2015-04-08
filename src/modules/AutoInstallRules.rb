@@ -37,12 +37,13 @@ module Yast
       Yast.include self, "autoinstall/io.rb"
 
       reset
-      AutoInstallRules()
     end
 
     # Reset the module's state
     #
     # @return nil
+    #
+    # @see #AutoInstallRules
     def reset
       @userrules = false
       @dontmergeIsDefault = true
@@ -100,7 +101,7 @@ module Yast
 
       @tomerge = []
       @element2file = {}
-      nil
+      AutoInstallRules()
     end
 
     # Cleanup XML file from namespaces put by xslt
