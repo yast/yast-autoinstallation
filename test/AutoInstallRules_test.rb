@@ -96,6 +96,21 @@ describe "Yast::AutoInstallRules" do
       expect(Yast::AutoInstallRules.installed_product).to eq("SUSE Linux Enterprise Server 12")
       expect(Yast::AutoInstallRules.installed_product_version).to eq("12")
     end
+
+    context "when .content.DISTRO is not found" do
+      before(:each) do
+        subject.reset
+        allow(Yast::SCR).to receive(:Read).with(any_args)
+      end
+
+      it 'set installed_product and installed_product_version to blank string' do
+        expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".content.DISTRO")).
+          and_return(nil)
+        subject.ProbeRules
+        expect(Yast::AutoInstallRules.installed_product).to eq('')
+        expect(Yast::AutoInstallRules.installed_product_version).to eq('')
+      end
+    end
   end
 
 end
