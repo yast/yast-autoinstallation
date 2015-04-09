@@ -4,6 +4,25 @@ YaST - The AutoYaST Framework
 [![Travis Build](https://travis-ci.org/yast/yast-autoinstallation.svg?branch=master)](https://travis-ci.org/yast/yast-autoinstallation)
 [![Jenkins Build](http://img.shields.io/jenkins/s/https/ci.opensuse.org/yast-autoinstallation-master.svg)](https://ci.opensuse.org/view/Yast/job/yast-autoinstallation-master/)
 
+
+Development
+===========
+
+This module is developed as part of YaST. See the
+[development documentation](http://yastgithubio.readthedocs.org/en/latest/development/).
+
+
+Getting the Sources
+===================
+
+To get the source code, clone the GitHub repository:
+
+    $ git clone https://github.com/yast/yast-autoinstallation.git
+
+If you want to contribute into the project you can
+[fork](https://help.github.com/articles/fork-a-repo/) the repository and clone your fork.
+
+
 Testing Environment
 ===================
 
@@ -37,3 +56,11 @@ or faster without rebooting but with possible side-effects:
   ```
   yast ayast_setup setup filename=/var/adm/autoinstall/cache/installedSystem.xml
   ```
+
+
+Contact
+=======
+
+If you have any question, feel free to ask at the [development mailing
+list](http://lists.opensuse.org/yast-devel/) or at the
+[#yast](https://webchat.freenode.net/?channels=%23yast) IRC channel on freenode.
