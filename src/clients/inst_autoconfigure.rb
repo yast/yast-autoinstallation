@@ -39,7 +39,8 @@ module Yast
         "Profile general,mode:%1",
         Ops.get_map(Profile.current, ["general", "mode"], {})
       )
-      @need_systemd_isolate = true
+      @need_systemd_isolate = Ops.get_boolean(
+        Profile.current,["general", "mode", "activate_systemd_default_target"], true)
       final_restart_services = Ops.get_boolean(
         Profile.current,["general", "mode", "final_restart_services"], true)
       @max_steps = Y2ModuleConfig.ModuleMap.size + 3 # additional for scripting and finished message
@@ -299,6 +300,8 @@ module Yast
         Builtins.y2milestone("after  calling \"%1\"", @cmd)
         Builtins.y2milestone("ret=%1", @out)
         wait_systemd_finished(@max_wait, @ser_ignore)
+      else
+        Builtins.y2milestone("Do not activate systemd default target (defined in autoyast.xml)")
       end
 
       # Just in case, remove this file to avoid reconfiguring...
