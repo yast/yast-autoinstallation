@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.74
+Version:        3.1.75
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -107,6 +107,7 @@ Requires:       yast2-update >= 2.18.3
 Requires:       yast2-xml
 Provides:       yast2-trans-autoinst
 Obsoletes:      yast2-trans-autoinst
+Requires:       plymouth
 
 %description installation
 This package performs auto-installation relying on a control file
