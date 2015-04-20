@@ -13,7 +13,7 @@ describe Yast::AutoinstClass do
   let(:test_xml_dir) { File.join(root_path, 'test', 'fixtures')  }
   let(:class_dir) { File.join(test_xml_dir, 'classes') }
   let(:class_path) { File.join(class_dir, 'classes.xml') }
-  let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
+  let(:settings) { [ { 'class_name' => 'swap', 'configuration' => 'largeswap.xml' } ] }
 
   before(:each) do
     subject.class_dir = class_dir
@@ -159,20 +159,27 @@ describe Yast::AutoinstClass do
   describe '#Compat' do
     let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
 
-    context 'when /etc/autoinstall/classes.xml exists' do
-      around(:each) do |example|
-        subject.ClassConf = faked_autoinstall_dir
-        example.call
-        subject.ClassConf = '/etc/autoinstall'
+    around(:each) do |example|
+      subject.ClassConf = faked_autoinstall_dir
+      example.call
+      subject.ClassConf = '/etc/autoinstall'
+    end
+
+    context 'when a classes.xml file exists in the new location' do
+      it 'does not overwrite classes.xml file' do
+        expect(Yast::XML).to_not receive(:YCPToXMLFile)
+        subject.Compat
+      end
+    end
+
+    context 'when a classes.xml file does not exist in the new location' do
+      before(:each) do
+        allow(Yast::SCR).to receive(:Read).and_call_original
+        allow(Yast::SCR).to receive(:Read).
+          with(Yast::Path.new('.target.size'), class_path).and_return(-1)
       end
 
-      context 'and a classes.xml file does not exist in the new location' do
-        before(:each) do
-          allow(Yast::SCR).to receive(:Read).and_call_original
-          allow(Yast::SCR).to receive(:Read).
-            with(Yast::Path.new('.target.size'), class_path).and_return(-1)
-        end
-
+      context 'and /etc/autoinstall/classes.xml exists' do
         it 'creates a classes.xml file in the new location' do
           expect(Yast::XML).to receive(:YCPToXMLFile) do |type, data, path|
             expect(type).to eq(:class)
@@ -183,9 +190,16 @@ describe Yast::AutoinstClass do
         end
       end
 
-      context 'and a classes.xml file exists in the new location' do
-        it 'does not create a classes.xml file' do
-          expect(Yast::XML).to_not receive(:YCPToXMLFile)
+      context 'and /etc/autoinstall/classes.xml is empty or not valid XML' do
+        before(:each) do
+          allow(Yast::SCR).to receive(:Read).
+            with(Yast::Path.new('.xml'), File.join(faked_autoinstall_dir, 'classes.xml')).
+            and_return(nil)
+        end
+
+        it 'creates a classes.xmlfile in the new location with no classes' do
+          expect(Yast::XML).to receive(:YCPToXMLFile).
+            with(:class, {"classes" => []}, File.join(class_dir, 'classes.xml'))
           subject.Compat
         end
       end
@@ -196,6 +210,178 @@ describe Yast::AutoinstClass do
     it 'sets the classes definitions directory' do
       subject.class_dir = test_xml_dir
       expect(subject.classDir).to eq(test_xml_dir)
+    end
+  end
+
+  describe '#MergeClasses' do
+    let(:base_profile_path) { File.join('test', 'fixtures', 'profiles', 'partitions.xml') }
+    let(:tmp_dir) { File.join(root_path, 'tmp') }
+    let(:expected_xml) { File.read(expected_xml_path) }
+    let(:output_path) { File.join(tmp_dir, 'output.xml') }
+    let(:output_xml) { File.read(output_path) }
+    let(:dontmerge) { [] }
+    let(:merge_xslt_path) { File.join('xslt', 'merge.xslt') }
+    let(:xsltproc_command) {
+      "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
+      "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
+      "--output #{File.join(tmp_dir, "output.xml")}  " \
+      "#{merge_xslt_path} test/fixtures/profiles/partitions.xml "
+    }
+
+    before(:each) do
+      stub_const("Yast::AutoinstClassClass::MERGE_XSLT_PATH", merge_xslt_path)
+    end
+
+    around(:each) do |example|
+      FileUtils.rm_rf(tmp_dir) if Dir.exist?(tmp_dir)
+      FileUtils.mkdir(tmp_dir)
+      example.run
+      FileUtils.rm_rf(tmp_dir)
+    end
+
+    before(:each) do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
+      allow(Yast::AutoinstConfig).to receive(:dontmerge).and_return(dontmerge)
+      subject.Files
+    end
+
+    it 'executes xsltproc and returns a hash with info about the result' do
+      expect(Yast::SCR).to receive(:Execute).
+        with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+      out = subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+      expect(out).to eq({ 'exit' => 0, 'stderr' => '', 'stdout' => '' })
+    end
+
+    context 'when all elements must be merged' do
+      let(:expected_xml_path) { File.join(root_path, 'test', 'fixtures', 'output', 'partitions-merged.xml')  }
+
+      it 'merges elements from profile and configuration' do
+        expect(Yast::SCR).to receive(:Execute).
+          with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+        subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+        expect(output_xml).to eq(expected_xml)
+      end
+    end
+
+    context 'when some elements are not intended to be merged' do
+      let(:expected_xml_path) { File.join(root_path, 'test', 'fixtures', 'output', 'partitions-dontmerge.xml')  }
+      let(:dontmerge) { ['partition'] }
+      let(:xsltproc_command) {
+        "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
+        "--param dontmerge1 \"'partition'\"  " \
+        "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
+        "--output #{File.join(tmp_dir, "output.xml")}  " \
+        "#{merge_xslt_path} test/fixtures/profiles/partitions.xml "
+      }
+
+      it 'does not merge those elements' do
+        expect(Yast::SCR).to receive(:Execute).
+          with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+        subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+        expect(output_xml).to eq(expected_xml)
+      end
+    end
+  end
+
+  describe '#Import' do
+    it 'sets profile_conf variable as a copy of the given settings' do
+      subject.Import(settings)
+      expect(subject.profile_conf).to eq(settings)
+      expect(subject.profile_conf).to_not equal(settings)
+    end
+
+    after(:each) do
+      subject.Import([])
+    end
+  end
+
+  describe '#Export' do
+    around(:each) do |example|
+      subject.Import(settings)
+      example.call
+      subject.Import([]) # reset settings
+    end
+
+    it 'returns a copy of profile_conf' do
+      exported = subject.Export
+      expect(exported).to eq(settings)
+      expect(exported).to_not equal(settings)
+    end
+  end
+
+  describe '#Summary' do
+    context 'when some settings are given' do
+      around(:each) do |example|
+        subject.Import(settings)
+        example.call
+        subject.Import([]) # reset settings
+      end
+
+      it 'returns a summary containing class names and configurations' do
+        expect(Yast::Summary).to receive(:AddHeader).with(anything, 'swap').
+          and_return('<h3>swap</h3>')
+        expect(Yast::Summary).to receive(:AddLine).with(anything, 'largeswap.xml').
+          and_return('<h3>swap</h3><p>largeswap.xml</p>')
+        expect(subject.Summary).to eq('<h3>swap</h3><p>largeswap.xml</p>')
+      end
+
+      context 'when no class name is given' do
+        let(:settings) { [ { 'configuration' => 'largeswap.xml' } ] }
+
+        it "'None' is used instead" do
+          expect(Yast::Summary).to receive(:AddHeader).with(anything, 'None').
+            and_return('<h3>None</h3>')
+          subject.Summary
+        end
+      end
+
+      context 'when no configuration is given' do
+        let(:settings) { [ { 'class_name' => 'swap' } ] }
+
+        it "'None' is used instead" do
+          expect(Yast::Summary).to receive(:AddLine).with(anything, 'None').
+            and_return('<h3>None</h3><p>largeswap.xml</p>')
+          subject.Summary
+        end
+      end
+    end
+
+    context 'when no settings are given' do
+      it 'returns an empty summary' do
+        expect(subject.Summary).to eq(Yast::Summary.NotConfigured)
+      end
+    end
+  end
+
+  describe '#Save' do
+    before(:each) do
+      subject.Read
+    end
+
+    it 'creates a classes.xml file in the new location' do
+      expect(Yast::XML).to receive(:YCPToXMLFile) do |type, data, path|
+        expect(type).to eq(:class)
+        expect(data['classes']).to be_kind_of(Array)
+        expect(path).to eq(File.join(class_dir, 'classes.xml'))
+      end
+      subject.Save
+    end
+
+    context 'when classes are marked for deletion' do
+      around(:each) do |example|
+        subject.deletedClasses = ['swap']
+        example.call
+        subject.deletedClasses = []
+      end
+
+      it 'deletes classes files' do
+        allow(Yast::XML).to receive(:YCPToXMLFile).with(any_args)
+        expect(Yast::SCR).to receive(:Execute).with(
+          Yast::Path.new('.target.bash'),
+          "/bin/rm -rf #{class_dir}/swap")
+
+        subject.Save
+      end
     end
   end
 end
