@@ -783,9 +783,10 @@ which root partition should be used.  Automatic installation not possible.
         y2milestone("Target map after initialzing disk: %1", Storage::GetTargetMap());
 
         foreach (string device, map data, AutoTargetMap, ``{
+            string dlabel = data["label"]:"";
             if( size(filter( map e, data["partitions"]:[],
-                  ``(e["mount"]:""==Partitions::BootMount() || 
-                    (e["partition_id"]:0 == Partitions::FsidBoot() && Partitions::FsidBoot() != 131 ) ))) > 0 ) {
+                  ``(e["mount"]:""==Partitions::BootMount() ||
+                    (e["partition_id"]:0 == Partitions::FsidBoot(dlabel) && Partitions::FsidBoot(dlabel) != 131 ) ))) > 0 ) {
                 planHasBoot = true;
                 break;
             }
