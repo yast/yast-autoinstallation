@@ -1,12 +1,10 @@
 #!/usr/bin/env rspec
 
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
-
-require "yast"
+require_relative "test_helper"
 
 Yast.import "AutoInstallRules"
 
-describe "Yast::AutoInstallRules" do
+describe Yast::AutoInstallRules do
   subject { Yast::AutoInstallRules }
 
   describe "#cpeid_map" do

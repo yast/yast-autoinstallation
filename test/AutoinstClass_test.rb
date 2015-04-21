@@ -1,15 +1,13 @@
 #!/usr/bin/env rspec
 
-root_path = File.expand_path('../..', __FILE__)
-ENV["Y2DIR"] = File.join(root_path, 'src')
-
-require "yast"
+require_relative "test_helper"
 
 Yast.import "AutoinstClass"
 
 describe Yast::AutoinstClass do
   subject { Yast::AutoinstClass }
 
+  let(:root_path) { File.expand_path('../..', __FILE__) }
   let(:test_xml_dir) { File.join(root_path, 'test', 'fixtures')  }
   let(:class_dir) { File.join(test_xml_dir, 'classes') }
   let(:class_path) { File.join(class_dir, 'classes.xml') }
