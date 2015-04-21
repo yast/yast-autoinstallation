@@ -1,12 +1,10 @@
 #!/usr/bin/env rspec
 
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
-
-require "yast"
+require_relative "test_helper"
 
 Yast.import "AutoInstallRules"
 
-describe "Yast::AutoInstallRules" do
+describe Yast::AutoInstallRules do
   subject { Yast::AutoInstallRules }
 
   describe "#cpeid_map" do
@@ -101,6 +99,7 @@ describe "Yast::AutoInstallRules" do
       before(:each) do
         subject.reset
         allow(Yast::SCR).to receive(:Read).with(any_args)
+        allow(Yast::Arch).to receive(:architecture).and_return("x86_64")
       end
 
       it 'set installed_product and installed_product_version to blank string' do
