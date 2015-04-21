@@ -118,7 +118,7 @@ global map AddFilesysData( map st_map, map xml_map )
         y2debug("xml input: %1", xmlflex );
         map<string,any> tm = Storage::GetTargetMap();
         list<map>partitioning = maplist(map d, xmlflex, ``{
-            
+            string dlabel = d["disklabel"]:"msdos";
             foreach( string key, [ "keep_partition_id", "keep_partition_num"], ``{
                 list num = [];
                 list<string> nlist = splitstring(d[key]:"", ",");
@@ -193,7 +193,7 @@ global map AddFilesysData( map st_map, map xml_map )
                         partition["filesystem"] = Partitions::DefaultBootFs();
 
                     if( partition["filesystem_id"]:0 == 0 )
-                        partition["filesystem_id"] = Partitions::FsidBoot();
+                        partition["filesystem_id"] = Partitions::FsidBoot(dlabel);
 
                     //partition["max_cyl"] = Partitions::BootCyl();
                 }
@@ -224,6 +224,7 @@ global map AddFilesysData( map st_map, map xml_map )
     }
 
     define map try_add_boot( map conf, map disk ) {
+        string dlabel = disk["label"]:"";
         boolean root = size(filter( map e, conf["partitions"]:[], 
                                     ``(e["mount"]:""=="/"))) > 0;
         map tc = (map) eval(conf);
@@ -238,9 +239,9 @@ global map AddFilesysData( map st_map, map xml_map )
             }
             pb["size"] = Partitions::MinimalNeededBootsize();
             pb["filesystem"] = Partitions::DefaultBootFs();
-            pb["fsid"] = Partitions::FsidBoot(); // FIXME: might be useless
-            pb["filesystem_id"] = Partitions::FsidBoot();
-            pb["id"] = Partitions::FsidBoot(); // FIXME: might be useless
+            pb["fsid"] = Partitions::FsidBoot(dlabel); // FIXME: might be useless
+            pb["filesystem_id"] = Partitions::FsidBoot(dlabel);
+            pb["id"] = Partitions::FsidBoot(dlabel); // FIXME: might be useless
             pb["auto_added"] = true;
             pb["type"] = `primary; // FIXME: might be useless
             pb["partition_type"] = "primary";
