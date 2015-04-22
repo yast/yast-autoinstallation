@@ -491,12 +491,14 @@ module Yast
                       executionString
                     )
                   end
-                  runAgain = Ops.add(
-                    runAgain,
-                    Convert.to_integer(
-                      SCR.Execute(path(".target.bash"), executionString)
+                  Popup.Feedback("", _("A user defined script is running. This may take a while.")) do
+                    runAgain = Ops.add(
+                      runAgain,
+                      Convert.to_integer(
+                        SCR.Execute(path(".target.bash"), executionString)
+                      )
                     )
-                  )
+                  end
                   if Ops.get_boolean(script, "rerun_on_error", false) == false
                     runAgain = 0
                   end

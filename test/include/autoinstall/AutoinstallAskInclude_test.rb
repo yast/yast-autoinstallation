@@ -237,6 +237,14 @@ describe "Yast::AutoinstallAskInclude" do
               client.askDialog
             end
           end
+
+          it "shows some feedback while script is running" do
+            message = "A user defined script is running. This may take a while."
+            allow(Yast::SCR).to receive(:Execute)
+            expect(Yast::Popup).to receive(:Feedback).
+              with("", client._(message))
+            client.askDialog
+          end
         end
 
         context "and more dialogs left" do
