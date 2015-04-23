@@ -521,7 +521,7 @@ module Yast
                     Popup.LongText(
                       "",
                       RichText(Opt(:plainText), feedback),
-                      40,
+                      70,
                       15
                     )
                   end
