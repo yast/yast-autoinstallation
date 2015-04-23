@@ -1,16 +1,14 @@
 #!/usr/bin/env rspec
 
-root_path = File.expand_path('../..', __FILE__)
-ENV["Y2DIR"] = File.join(root_path, 'src')
+require_relative "../../test_helper"
 
 require "yast"
-require_relative "../../../src/include/autoinstall/ask.rb"
-require_relative "../../../src/modules/Profile"
 
 describe "Yast::AutoinstallAskInclude" do
   module DummyYast
     class AutoinstallAskClient < Yast::Client
       def main
+        Yast.import "Profile"
         Yast.include self, "autoinstall/ask.rb"
       end
 
@@ -20,22 +18,22 @@ describe "Yast::AutoinstallAskInclude" do
     end
   end
 
-  let(:client) { DummyYast::AutoinstallAskClient.new }
-  let(:base_ask) do
-    { "type" => "string", "question" => "hostname?", "default" => "my.site.de",
-      "help" => "Some help", "dialog" => 0, "element" => 0,
-      "stage" => "initial" }
-  end
+  BASE_ASK = {
+    "type" => "string", "question" => "hostname?", "default" => "my.site.de",
+    "help" => "Some help", "dialog" => 0, "element" => 0,
+    "stage" => "initial" }
+
+  subject(:client) { DummyYast::AutoinstallAskClient.new }
   let(:profile) { { "general" => { "ask-list" => ask_list } } }
-  let(:result) { :ok }
+  let(:pressed_button) { :ok }
 
   describe "#askDialog" do
     let(:ask_list) { [ask] }
 
-    before(:each) do
+    before do
       allow(Yast::Profile).to receive(:current).and_return(profile)
       allow(Yast::Stage).to receive(:initial).and_return(true)
-      allow(Yast::UI).to receive(:UserInput).and_return(result)
+      allow(Yast::UI).to receive(:UserInput).and_return(pressed_button)
     end
 
     context "when ask-list is empty" do
@@ -49,94 +47,104 @@ describe "Yast::AutoinstallAskInclude" do
 
     describe "dialogs creation" do
       context "when the ask-list contains a question with type 'string'" do
-        let(:ask) { base_ask }
+        let(:ask) { BASE_ASK }
 
         it "creates a TextEntry widget" do
-          expect(Yast::UI).to receive(:OpenDialog).and_call_original
+          expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:TextEntry).
-            with(client.Id("0_0"), client.Opt(:notify), ask["question"], ask["default"]).
-            and_call_original
+            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"])
           client.askDialog
         end
       end
 
       context "when ask-list contains a question with type 'selection'" do
-        let(:ask) { base_ask.merge("selection" => items, "default" => "desktop") }
+        let(:ask) { BASE_ASK.merge("selection" => items, "default" => "desktop") }
         let(:items) {
           %w(desktop server).map { |i| { "value" => i, "label" => i.capitalize } }
         }
 
         it "creates a ComboBox widget" do
-          expect(Yast::UI).to receive(:OpenDialog).and_call_original
+          expect(Yast::UI).to receive(:OpenDialog)
           expected_options = [
-            client.Item(client.Id("desktop"), "Desktop", true),
-            client.Item(client.Id("server"), "Server", false)
+            Item(Id("desktop"), "Desktop", true),
+            Item(Id("server"), "Server", false)
           ]
           expect(client).to receive(:ComboBox).
-            with(client.Id("0_0"), client.Opt(:notify), ask["question"], expected_options).
-            and_call_original
+            with(Id("0_0"), Opt(:notify), ask["question"], expected_options)
           client.askDialog
         end
       end
 
       context "when ask-list contains a question with type 'password'" do
-        let(:ask) { base_ask.merge("password" => true) }
+        let(:ask) { BASE_ASK.merge("password" => true) }
 
         it "creates two Password widgets" do
-          expect(Yast::UI).to receive(:OpenDialog).and_call_original
+          expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:Password).
-            with(client.Id("0_0"), client.Opt(:notify), ask["question"], ask["default"]).
-            and_call_original
+            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"])
           expect(client).to receive(:Password).
-            with(client.Id(:pass2), client.Opt(:notify), "", ask["default"]).
-            and_call_original
+            with(Id(:pass2), Opt(:notify), "", ask["default"])
           client.askDialog
         end
       end
 
       context "when ask-list contains a question with type 'static_text'" do
-        let(:ask) { base_ask.merge("type" => "static_text") }
+        let(:ask) { BASE_ASK.merge("type" => "static_text") }
 
         it "creates a Label widget" do
-          expect(Yast::UI).to receive(:OpenDialog).and_call_original
+          expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:Label).
-            with(client.Id("0_0"), ask["default"]).
-            and_call_original
+            with(Id("0_0"), ask["default"])
           client.askDialog
         end
       end
 
       context "when ask-list contains question with type 'symbol'" do
         let(:ask) {
-          base_ask.merge("type" => "symbol", "default" => :desktop, "selection" => items)
+          BASE_ASK.merge("type" => "symbol", "default" => :desktop, "selection" => items)
         }
         let(:items) {
           %w(desktop server).map { |i| { "value" => i.to_sym, "label" => i.capitalize } }
         }
 
         it "creates a ComboBox widget" do
-          expect(Yast::UI).to receive(:OpenDialog).and_call_original
+          expect(Yast::UI).to receive(:OpenDialog)
           expected_options = [
-            client.Item(client.Id(:desktop), "Desktop", true),
-            client.Item(client.Id(:server), "Server", false)
+            Item(Id(:desktop), "Desktop", true),
+            Item(Id(:server), "Server", false)
           ]
           expect(client).to receive(:ComboBox).
-            with(client.Id("0_0"), client.Opt(:notify), ask["question"], expected_options).
-            and_call_original
+            with(Id("0_0"), Opt(:notify), ask["question"], expected_options)
           client.askDialog
         end
       end
 
       context "when ask-list contains a question with type 'boolean'" do
         let(:ask) do
-          base_ask.merge("type" => "boolean", "question" => "Register system?", "default" => "true")
+          BASE_ASK.merge("type" => "boolean", "question" => "Register system?", "default" => "true")
         end
 
         it "creates a CheckBox widget" do
-          expect(Yast::UI).to receive(:OpenDialog).and_call_original
+          expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:CheckBox).
-            with(client.Id("0_0"), client.Opt(:notify), ask["question"], true).
-            and_call_original
+            with(Id("0_0"), Opt(:notify), ask["question"], true)
+          client.askDialog
+        end
+      end
+
+      context "when ask-list contains more than one question" do
+        let(:string_ask) { BASE_ASK }
+        let(:boolean_ask) do
+          BASE_ASK.merge("type" => "boolean", "element" => 1, "default" => "true")
+        end
+        let(:ask_list) { [string_ask, boolean_ask] }
+
+        it "creates one widget for each one of them" do
+          expect(Yast::UI).to receive(:OpenDialog)
+          expect(client).to receive(:TextEntry).
+            with(Id("0_0"), Opt(:notify), string_ask["question"], string_ask["default"])
+          expect(client).to receive(:CheckBox).
+            with(Id("0_1"), Opt(:notify), boolean_ask["question"], true)
           client.askDialog
         end
       end
@@ -145,53 +153,52 @@ describe "Yast::AutoinstallAskInclude" do
     describe "dialogs actions" do
 
       context "when ok button is pressed" do
-        let(:result) { :ok }
-        let(:value) { "some-value" }
+        let(:pressed_button) { :ok }
+        let(:response) { "some-user-response" }
 
-        before(:each) do
+        before do
           allow(Yast::UI).to receive(:QueryWidget).
-            with(client.Id("0_0"), :Value).and_return(value)
+            with(Id("0_0"), :Value).and_return(response)
         end
 
-        context "and a path was specified" do
-          let(:ask) { base_ask.merge("path" => "users,0,gecos") }
+        context "when a path was specified" do
+          let(:ask) { BASE_ASK.merge("path" => "users,0,gecos") }
 
-          it "values are saved into the Profile at the specified path" do
+          it "response is saved into the Profile at the specified path" do
             expect(Yast::Profile).to receive(:setElementByList).
-              with(["users", 0, "gecos"], value, profile).
-              and_call_original
+              with(["users", 0, "gecos"], response, profile)
             client.askDialog
           end
         end
 
-        context "and a pathlist was specified" do
-          let(:ask) { base_ask.merge("pathlist" => ["users,1000,login", "groups,1000,name"]) }
+        context "when a pathlist was specified" do
+          let(:ask) { BASE_ASK.merge("pathlist" => ["users,1000,login", "groups,1000,name"]) }
 
-          it "saves value into Profile at the paths specified in the pathlist" do
+          it "saves response into Profile at the paths specified in the pathlist" do
             expect(Yast::Profile).to receive(:setElementByList).
-              with(["users", 1000, "login"], value, profile).and_call_original
+              with(["users", 1000, "login"], response, profile)
             expect(Yast::Profile).to receive(:setElementByList).
-              with(["groups", 1000, "name"], value, profile).and_call_original
+              with(["groups", 1000, "name"], response, profile)
             client.askDialog
           end
         end
 
-        context "and a file was specified" do
-          let(:file_path) { "/tmp/value" }
-          let(:ask) { base_ask.merge("file" => file_path) }
+        context "when a file was specified" do
+          let(:file_path) { "/tmp/response" }
+          let(:ask) { BASE_ASK.merge("file" => file_path) }
 
-          it "saves value in the file" do
+          it "saves the user answer in the file" do
             expect(Yast::SCR).to receive(:Write).
-              with(Yast::Path.new(".target.string"), file_path, value).
+              with(Yast::Path.new(".target.string"), file_path, response).
               and_return(true)
             client.askDialog
           end
 
-          context "and value is a boolean" do
-            let(:value) { true }
-            let(:ask) { base_ask.merge("type" => "boolean", "file" => file_path)}
+          context "when response is a boolean" do
+            let(:response) { true }
+            let(:ask) { BASE_ASK.merge("type" => "boolean", "file" => file_path)}
 
-            it "save the value in the file" do
+            it "converts the answer to a string and saves it in the file" do
               expect(Yast::SCR).to receive(:Write).
                 with(Yast::Path.new(".target.string"), file_path, "true").
                 and_return(true)
@@ -200,13 +207,13 @@ describe "Yast::AutoinstallAskInclude" do
           end
         end
 
-        context "and a script was specified" do
+        context "when a script was specified" do
           let(:script) { { "source" => "echo", "filename" => "test.sh" } }
-          let(:ask) { base_ask.merge("script" => script) }
+          let(:ask) { BASE_ASK.merge("script" => script) }
           let(:tmp_dir) { "/tmp" }
           let(:log_dir) { "/var/log/YaST2" }
 
-          before(:each) do
+          before do
             allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
             allow(Yast::AutoinstConfig).to receive(:logs_dir).
               and_return(log_dir)
@@ -218,8 +225,8 @@ describe "Yast::AutoinstallAskInclude" do
               with(Yast::Path.new(".target.mkdir"), File.join(tmp_dir, "ask_scripts_log"))
           end
 
-          context "when environment is not set" do
-            it "runs the script without passing the ask value" do
+          context "when 'environment' property is not set" do
+            it "runs the script without passing the ask response" do
               expect(Yast::SCR).to receive(:Execute).
                 with(Yast::Path.new(".target.bash"),
                      "/bin/sh -x /tmp/test.sh 2&> /tmp/ask_scripts_log/test.sh.log ")
@@ -227,13 +234,13 @@ describe "Yast::AutoinstallAskInclude" do
             end
           end
 
-          context "when environment is set" do
+          context "when 'environment' property is set" do
             let(:script) { { "source" => "echo", "filename" => "test.sh", "environment" => true } }
 
-            it "runs the script passing the ask value" do
+            it "runs the script passing the ask response" do
               expect(Yast::SCR).to receive(:Execute).
                 with(Yast::Path.new(".target.bash"),
-                     "VAL=\"some-value\" /bin/sh -x /tmp/test.sh 2&> /tmp/ask_scripts_log/test.sh.log ")
+                     "VAL=\"some-user-response\" /bin/sh -x /tmp/test.sh 2&> /tmp/ask_scripts_log/test.sh.log ")
               client.askDialog
             end
           end
@@ -247,8 +254,8 @@ describe "Yast::AutoinstallAskInclude" do
           end
         end
 
-        context "and more dialogs left" do
-          let(:ask_list) { [base_ask, base_ask.merge("dialog" => "1")] }
+        context "when more dialogs left" do
+          let(:ask_list) { [BASE_ASK, BASE_ASK.merge("dialog" => "1")] }
 
           it "next dialog is shown" do
             expect(Yast::UI).to receive(:UserInput).twice
@@ -256,19 +263,19 @@ describe "Yast::AutoinstallAskInclude" do
           end
         end
 
-        context "and no more dialogs left" do
-          let(:ask_list) { [base_ask] }
+        context "when no more dialogs left" do
+          let(:ask_list) { [BASE_ASK] }
 
-          it "terminates" do
+          it "finishes dialog processing and returns" do
             expect(Yast::UI).to receive(:UserInput).once
             client.askDialog
           end
         end
 
-        context "when /tmp/next_dialog contains a dialog id" do
-          let(:ask_list) { [base_ask, base_ask.merge("dialog" => 1), base_ask.merge("dialog" => 2)] }
+        context "when a value for 'next dialog' is set" do
+          let(:ask_list) { [BASE_ASK, BASE_ASK.merge("dialog" => 1), BASE_ASK.merge("dialog" => 2)] }
 
-          before(:each) do
+          before do
             expect(Yast::SCR).to receive(:Read).
               with(Yast::Path.new(".target.size"), "/tmp/next_dialog").
               and_return(1)
@@ -279,9 +286,9 @@ describe "Yast::AutoinstallAskInclude" do
 
           it "jumps to that dialog" do
             expect(Yast::UI).to_not receive(:QueryWidget).
-              with(client.Id("1_0"), :Value) # Skips dialog 1.
+              with(Id("1_0"), :Value) # Skips dialog 1.
             expect(Yast::UI).to receive(:QueryWidget).
-              with(client.Id("2_0"), :Value).and_return(value)
+              with(Id("2_0"), :Value)
             expect(Yast::UI).to receive(:UserInput).twice.and_return(:ok)
             client.askDialog
           end

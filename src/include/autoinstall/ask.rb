@@ -233,7 +233,7 @@ module Yast
                 Ops.get_string(ask, "default", "")
               )
               widget2 = Password(
-                Id(:pass2),
+                Id(:pass2), # FIXME: choose a better Id to avoid collisions
                 Opt(:notify),
                 "",
                 Ops.get_string(ask, "default", "")
@@ -456,7 +456,7 @@ module Yast
                     SCR.Execute(path(".target.mkdir"), current_logdir)
                   end
                   executionString = ""
-                  if Ops.get_boolean(script, "environment", false) # Why not pass the variable always?
+                  if Ops.get_boolean(script, "environment", false) # FIXME: why not pass the variable always?
                     if Ops.get_string(ask, "type", "string") == "boolean"
                       val = Builtins.sformat(
                         "%1",
