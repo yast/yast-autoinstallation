@@ -1,14 +1,17 @@
 #!/usr/bin/env rspec
 
-require_relative "../../test_helper"
+require_relative "../test_helper"
 
 require "yast"
+
+Yast.import "Profile"
+Yast.import "Stage"
+Yast.import "UI"
 
 describe "Yast::AutoinstallAskInclude" do
   module DummyYast
     class AutoinstallAskClient < Yast::Client
       def main
-        Yast.import "Profile"
         Yast.include self, "autoinstall/ask.rb"
       end
 
@@ -52,7 +55,8 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates a TextEntry widget" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:TextEntry).
-            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"])
+            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"]).
+            and_call_original
           client.askDialog
         end
       end
@@ -70,7 +74,8 @@ describe "Yast::AutoinstallAskInclude" do
             Item(Id("server"), "Server", false)
           ]
           expect(client).to receive(:ComboBox).
-            with(Id("0_0"), Opt(:notify), ask["question"], expected_options)
+            with(Id("0_0"), Opt(:notify), ask["question"], expected_options).
+            and_call_original
           client.askDialog
         end
       end
@@ -81,9 +86,11 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates two Password widgets" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:Password).
-            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"])
+            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"]).
+            and_call_original
           expect(client).to receive(:Password).
-            with(Id(:pass2), Opt(:notify), "", ask["default"])
+            with(Id(:pass2), Opt(:notify), "", ask["default"]).
+            and_call_original
           client.askDialog
         end
       end
@@ -94,7 +101,8 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates a Label widget" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:Label).
-            with(Id("0_0"), ask["default"])
+            with(Id("0_0"), ask["default"]).
+            and_call_original
           client.askDialog
         end
       end
@@ -114,7 +122,8 @@ describe "Yast::AutoinstallAskInclude" do
             Item(Id(:server), "Server", false)
           ]
           expect(client).to receive(:ComboBox).
-            with(Id("0_0"), Opt(:notify), ask["question"], expected_options)
+            with(Id("0_0"), Opt(:notify), ask["question"], expected_options).
+            and_call_original
           client.askDialog
         end
       end
@@ -127,7 +136,8 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates a CheckBox widget" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:CheckBox).
-            with(Id("0_0"), Opt(:notify), ask["question"], true)
+            with(Id("0_0"), Opt(:notify), ask["question"], true).
+            and_call_original
           client.askDialog
         end
       end
@@ -142,9 +152,11 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates one widget for each one of them" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:TextEntry).
-            with(Id("0_0"), Opt(:notify), string_ask["question"], string_ask["default"])
+            with(Id("0_0"), Opt(:notify), string_ask["question"], string_ask["default"]).
+            and_call_original
           expect(client).to receive(:CheckBox).
-            with(Id("0_1"), Opt(:notify), boolean_ask["question"], true)
+            with(Id("0_1"), Opt(:notify), boolean_ask["question"], true).
+            and_call_original
           client.askDialog
         end
       end
