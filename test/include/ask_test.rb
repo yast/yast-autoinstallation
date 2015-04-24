@@ -160,6 +160,21 @@ describe "Yast::AutoinstallAskInclude" do
           client.askDialog
         end
       end
+
+      context "when ask-list contains more than one password question" do
+        let(:first_pass_ask) { BASE_ASK.merge("password" => true)}
+        let(:second_pass_ask) { BASE_ASK.merge("password" => true, "element" => 1)}
+        let(:ask_list) { [first_pass_ask, second_pass_ask] }
+
+        it "creates two password widgets for each question without repeating the Ids" do
+          expect(Yast::UI).to receive(:OpenDialog)
+          ["0_0", "0_0_pass2", "0_1", "0_1_pass2"].each do |wid|
+            expect(client).to receive(:Password).
+              with(Id(wid), anything, anything, anything).and_call_original
+          end
+          client.askDialog
+        end
+      end
     end
 
     describe "dialogs actions" do
