@@ -89,7 +89,7 @@ describe "Yast::AutoinstallAskInclude" do
             with(Id("0_0"), Opt(:notify), ask["question"], ask["default"]).
             and_call_original
           expect(client).to receive(:Password).
-            with(Id(:pass2), Opt(:notify), "", ask["default"]).
+            with(Id("0_0_pass2"), Opt(:notify), "", ask["default"]).
             and_call_original
           client.askDialog
         end
@@ -214,6 +214,17 @@ describe "Yast::AutoinstallAskInclude" do
               expect(Yast::SCR).to receive(:Write).
                 with(Yast::Path.new(".target.string"), file_path, "true").
                 and_return(true)
+              client.askDialog
+            end
+          end
+
+          context "when asking for a 'password' and values don't match" do
+            let(:ask) { BASE_ASK.merge("password" => true) }
+
+            it "shows an error message and try run the dialog again" do
+              expect(Yast::UI).to receive(:QueryWidget).
+                with(Id("0_0_pass2"), :Value).and_return("some-other-thing", response)
+              expect(Yast::Popup).to receive(:Error).with("The two passwords mismatch.")
               client.askDialog
             end
           end

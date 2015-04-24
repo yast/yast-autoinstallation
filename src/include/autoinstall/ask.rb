@@ -233,7 +233,7 @@ module Yast
                 Ops.get_string(ask, "default", "")
               )
               widget2 = Password(
-                Id(:pass2), # FIXME: choose a better Id to avoid collisions
+                Id("#{entry_id}_pass2"),
                 Opt(:notify),
                 "",
                 Ops.get_string(ask, "default", "")
@@ -374,7 +374,7 @@ module Yast
                   val = Builtins.tointeger(Convert.to_string(val))
                 end
                 if Ops.get_boolean(ask, "password", false) == true
-                  pass2 = Convert.to_string(UI.QueryWidget(Id(:pass2), :Value))
+                  pass2 = Convert.to_string(UI.QueryWidget(Id("#{entry_id}_pass2"), :Value))
                   if pass2 != Convert.to_string(val)
                     Popup.Error("The two passwords mismatch.")
                     runAgain = 1 # Run the same dialog again.
