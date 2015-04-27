@@ -10,6 +10,11 @@ require "yast"
 
 module Yast
   class Y2ModuleConfigClass < Module
+    # Key for AutoYaST client name in desktop file
+    RESOURCE_NAME_KEY = "X-SuSE-YaST-AutoInstResource"
+
+    include Yast::Logger
+
     def main
       textdomain "autoinst"
 
@@ -44,7 +49,7 @@ module Yast
         "Icon",
         "Hidden",
         "X-SuSE-YaST-AutoInst",
-        "X-SuSE-YaST-AutoInstResource",
+        RESOURCE_NAME_KEY,
         "X-SuSE-YaST-AutoInstClient",
         "X-SuSE-YaST-Group",
         "X-SuSE-YaST-AutoInstMerge",
@@ -187,7 +192,7 @@ module Yast
     def getResource(default_resource)
       ret = Ops.get_string(
         @ModuleMap,
-        [default_resource, "X-SuSE-YaST-AutoInstResource"],
+        [default_resource, RESOURCE_NAME_KEY],
         ""
       )
       if ret == ""
@@ -205,7 +210,7 @@ module Yast
       resourceMap = deep_copy(resourceMap)
       tmp_resource = Ops.get_string(
         resourceMap,
-        "X-SuSE-YaST-AutoInstResource",
+        RESOURCE_NAME_KEY,
         ""
       )
       resource = tmp_resource if tmp_resource != ""
@@ -335,6 +340,24 @@ module Yast
       true
     end
 
+    # Returns list of profile sections that do not have any handler (AutoYaST client)
+    # assigned at the current system and are not handled by AutoYaST itself
+    #
+    # @return [Array<String>] of unknown profile sections
+    def unknown_profile_sections
+      profile_sections = Profile.current.keys
+
+      profile_handlers = @ModuleMap.map{
+        |name, desc|
+        desc[RESOURCE_NAME_KEY] || name
+      }
+
+      profile_sections.reject{
+        |section|
+        profile_handlers.include?(section)
+      } - Yast::ProfileClass::GENERIC_PROFILE_SECTIONS
+    end
+
     publish :variable => :GroupMap, :type => "map <string, map>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
     publish :variable => :MenuTreeData, :type => "list <map>"
@@ -343,6 +366,7 @@ module Yast
     publish :function => :getResourceData, :type => "any (map, string)"
     publish :function => :Deps, :type => "list <map> ()"
     publish :function => :SetDesktopIcon, :type => "boolean (string)"
+    publish :function => :unknown_profile_sections, :type => "list <string> ()"
   end
 
   Y2ModuleConfig = Y2ModuleConfigClass.new
