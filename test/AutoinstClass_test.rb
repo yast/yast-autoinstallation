@@ -219,6 +219,7 @@ describe Yast::AutoinstClass do
     let(:output_xml) { File.read(output_path) }
     let(:dontmerge) { [] }
     let(:merge_xslt_path) { File.join('xslt', 'merge.xslt') }
+    let(:conf_to_merge) { { "class" => "swap", "name" => "largeswap.xml" } }
     let(:xsltproc_command) {
       "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
       "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
@@ -246,7 +247,7 @@ describe Yast::AutoinstClass do
     it 'executes xsltproc and returns a hash with info about the result' do
       expect(Yast::SCR).to receive(:Execute).
         with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
-      out = subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+      out = subject.MergeClasses(conf_to_merge, base_profile_path, 'output.xml')
       expect(out).to eq({ 'exit' => 0, 'stderr' => '', 'stdout' => '' })
     end
 
@@ -256,7 +257,7 @@ describe Yast::AutoinstClass do
       it 'merges elements from profile and configuration' do
         expect(Yast::SCR).to receive(:Execute).
           with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
-        subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+        subject.MergeClasses(conf_to_merge, base_profile_path, 'output.xml')
         expect(output_xml).to eq(expected_xml)
       end
     end
@@ -275,7 +276,7 @@ describe Yast::AutoinstClass do
       it 'does not merge those elements' do
         expect(Yast::SCR).to receive(:Execute).
           with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
-        subject.MergeClasses(subject.confs[0], base_profile_path, 'output.xml')
+        subject.MergeClasses(conf_to_merge, base_profile_path, 'output.xml')
         expect(output_xml).to eq(expected_xml)
       end
     end
