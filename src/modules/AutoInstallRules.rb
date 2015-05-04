@@ -159,12 +159,18 @@ module Yast
     # @return [String] host ID
     def getHostid
       if Stage.initial
-        @hostaddress = Convert.to_string(SCR.Read(path(".etc.install_inf.IP")))
+        wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src")
+        if wicked_ret["exit"] == 0
+          stdout = wicked_ret["stdout"].split
+          @hostaddress = stdout[stdout.index("pref-src")+1]
+        else
+          log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
+          @hostaddress = nil
+        end
       else
         @hostaddress = "192.168.1.1" # FIXME
       end
-      hex = IP.ToHex(@hostaddress)
-      hex
+      IP.ToHex(@hostaddress)
     end
 
     # Return host name
