@@ -160,7 +160,7 @@ module Yast
     def getHostid
       if Stage.initial
         wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src")
-        if wicked_ret["exit"] == "0"
+        if wicked_ret["exit"] == 0
           stdout = wicked_ret["stdout"].split
           @hostaddress = stdout[stdout.index("pref-src")+1]
         else

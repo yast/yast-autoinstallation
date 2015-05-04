@@ -117,7 +117,7 @@ describe Yast::AutoInstallRules do
   describe "#Host ID" do
     let(:wicked_output_path) { File.join(root_path, 'test', 'fixtures', 'network', 'wicked_output')  }
     it "returns host IP in hex format (initial Stage)" do
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stdout"=>File.read(wicked_output_path), "exit"=>"0"})
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stdout"=>File.read(wicked_output_path), "exit"=>0})
       expect(Yast::Stage).to receive(:initial).and_return(true)
 
       expect(subject.getHostid).to eq("C0A864DA")
@@ -131,7 +131,7 @@ describe Yast::AutoInstallRules do
 
     it "returns nil if wicked does not find IP address" do
       expect(Yast::Stage).to receive(:initial).and_return(true)
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stderr"=>"error from wicked", "exit"=>"1"})
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stderr"=>"error from wicked", "exit"=>1})
 
 
       expect(subject.getHostid).to eq(nil)
