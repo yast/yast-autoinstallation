@@ -31,6 +31,16 @@ module Yast
       "user_defaults",
     ]
 
+    # Dropped YaST modules that used to provide AutoYaST functionality
+    # bsc#925381
+    OBSOLETE_PROFILE_SECTIONS = [
+      # FATE#316185: Drop YaST AutoFS module
+      "autofs",
+      # FATE#308682: Drop yast2-backup and yast2-restore modules
+      "restore",
+      "sshd",
+    ]
+
     def main
       Yast.import "UI"
       textdomain "autoinst"

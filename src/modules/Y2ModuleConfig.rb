@@ -340,11 +340,12 @@ module Yast
       true
     end
 
-    # Returns list of profile sections that do not have any handler (AutoYaST client)
-    # assigned at the current system and are not handled by AutoYaST itself
+    # Returns list of all profile sections from the current profile, including
+    # unsupported ones, that do not have any handler (AutoYaST client) assigned
+    # at the current system and are not handled by AutoYaST itself.
     #
     # @return [Array<String>] of unknown profile sections
-    def unknown_profile_sections
+    def unhandled_profile_sections
       profile_sections = Profile.current.keys
 
       profile_handlers = @ModuleMap.map{
@@ -358,6 +359,14 @@ module Yast
       } - Yast::ProfileClass::GENERIC_PROFILE_SECTIONS
     end
 
+    # Returns list of all profile sections from the current profile that are
+    # obsolete, e.g., we do not support them anymore.
+    #
+    # @return [Array<String>] of unsupported profile sections
+    def unsupported_profile_sections
+      unhandled_profile_sections & Yast::ProfileClass::OBSOLETE_PROFILE_SECTIONS
+    end
+
     publish :variable => :GroupMap, :type => "map <string, map>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
     publish :variable => :MenuTreeData, :type => "list <map>"
@@ -366,7 +375,8 @@ module Yast
     publish :function => :getResourceData, :type => "any (map, string)"
     publish :function => :Deps, :type => "list <map> ()"
     publish :function => :SetDesktopIcon, :type => "boolean (string)"
-    publish :function => :unknown_profile_sections, :type => "list <string> ()"
+    publish :function => :unhandled_profile_sections, :type => "list <string> ()"
+    publish :function => :unsupported_profile_sections, :type => "list <string> ()"
   end
 
   Y2ModuleConfig = Y2ModuleConfigClass.new

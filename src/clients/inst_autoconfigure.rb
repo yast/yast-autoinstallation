@@ -78,13 +78,33 @@ module Yast
       Builtins.y2debug("Module map: %1", Y2ModuleConfig.ModuleMap)
       Builtins.y2debug("Current profile: %1", Profile.current)
 
-      unknown_sections = Y2ModuleConfig.unknown_profile_sections
+      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
+      if unsupported_sections.any?
+        log.error "Could not process these unsupported profile sections: #{unsupported_sections}"
+        Report.LongError(
+          # TRANSLATORS: Error message, %s is replaced by newline-separated
+          # list of unsupported sections of the profile
+          # Do not translate words in brackets
+          _(
+            "These sections of AutoYaST profile are not supported anymore:\n\n%s\n\n" \
+            "Please, use, e.g., <scripts/> or <files/> to change the configuration."
+          ) % unsupported_sections.map{|section| "<#{section}/>"}.join("\n")
+        )
+      end
+
+      # Report only those that are 'not unsupported', these were already reported
+      unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections
       if unknown_sections.any?
-        log.error "Could not process these profile sections: #{unknown_sections}"
+        log.error "Could not process these unknown profile sections: #{unknown_sections}"
         Report.LongError(
           # TRANSLATORS: Error message, %s is replaced by newline-separated
           # list of unknown sections of the profile
-          _("These sections of AutoYaST profile cannot be processed on this system:\n%s") %
+          # Do not translate words in brackets
+          _(
+            "These sections of AutoYaST profile cannot be processed on this system:\n\n%s\n\n" \
+            "Maybe they were misspelled or your profile does not contain " \
+            "all the needed YaST packages in <software/> section."
+          ) %
             unknown_sections.map{|section| "<#{section}/>"}.join("\n")
         )
       end
