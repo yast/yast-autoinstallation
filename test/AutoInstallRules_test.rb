@@ -115,7 +115,7 @@ describe Yast::AutoInstallRules do
   end
 
   describe "#Host ID" do
-    let(:wicked_output_path) { File.join(root_path, 'test', 'fixtures', 'network', 'wicked_output')  }
+    let(:wicked_output_path) { File.join(root_path, 'test', 'fixtures', 'output', 'wicked_output')  }
     it "returns host IP in hex format (initial Stage)" do
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stdout"=>File.read(wicked_output_path), "exit"=>0})
       expect(Yast::Stage).to receive(:initial).and_return(true)
