@@ -119,21 +119,17 @@ describe Yast::AutoInstallRules do
     it "returns host IP in hex format (initial Stage)" do
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stdout"=>File.read(wicked_output_path), "exit"=>0})
       expect(Yast::Stage).to receive(:initial).and_return(true)
-
       expect(subject.getHostid).to eq("C0A864DA")
     end
 
     it "returns fix 192.168.1.1 in hex format (normal Stage)" do
       expect(Yast::Stage).to receive(:initial).and_return(false)
-
       expect(subject.getHostid).to eq("C0A80101")
     end
 
     it "returns nil if wicked does not find IP address" do
       expect(Yast::Stage).to receive(:initial).and_return(true)
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stderr"=>"error from wicked", "exit"=>1})
-
-
       expect(subject.getHostid).to eq(nil)
     end
 
