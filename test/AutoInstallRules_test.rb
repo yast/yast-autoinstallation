@@ -7,6 +7,8 @@ Yast.import "AutoInstallRules"
 describe Yast::AutoInstallRules do
   subject { Yast::AutoInstallRules }
 
+  let(:root_path) { File.expand_path('../..', __FILE__) }
+
   describe "#cpeid_map" do
     it "parses SLES12 CPE ID" do
       expect(subject.send(:cpeid_map, "cpe:/o:suse:sles:12")).to eq(
@@ -111,5 +113,23 @@ describe Yast::AutoInstallRules do
       end
     end
   end
+
+  describe "#Host ID" do
+    let(:wicked_output_path) { File.join(root_path, 'test', 'fixtures', 'network', 'wicked_output')  }
+    it "returns host IP in hex format (initial Stage)" do
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return(File.read(wicked_output_path))
+      expect(Yast::Stage).to receive(:initial).and_return(true)
+
+      expect(subject.getHostid).to eq("C0A864DA")
+    end
+
+    it "returns fix 192.168.1.1 in hex format (normal Stage)" do
+      expect(Yast::Stage).to receive(:initial).and_return(false)
+
+      expect(subject.getHostid).to eq("C0A80101")
+    end
+
+  end
+
 
 end
