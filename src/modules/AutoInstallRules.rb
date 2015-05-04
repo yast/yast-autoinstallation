@@ -163,6 +163,8 @@ module Yast
         if wicked_ret["exit"] == "0"
           stdout = wicked_ret["stdout"].split
           @hostaddress = stdout[stdout.index("pref-src")+1]
+        else
+          log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
         end
       else
         @hostaddress = "192.168.1.1" # FIXME
