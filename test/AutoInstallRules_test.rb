@@ -129,6 +129,14 @@ describe Yast::AutoInstallRules do
       expect(subject.getHostid).to eq("C0A80101")
     end
 
+    it "returns nil if wicked does not find IP address" do
+      expect(Yast::Stage).to receive(:initial).and_return(true)
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stderr"=>"error from wicked", "exit"=>"1"})
+
+
+      expect(subject.getHostid).to eq(nil)
+    end
+
   end
 
 
