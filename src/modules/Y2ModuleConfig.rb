@@ -10,6 +10,11 @@ require "yast"
 
 module Yast
   class Y2ModuleConfigClass < Module
+    # Key for AutoYaST client name in desktop file
+    RESOURCE_NAME_KEY = "X-SuSE-YaST-AutoInstResource"
+
+    include Yast::Logger
+
     def main
       textdomain "autoinst"
 
@@ -44,7 +49,7 @@ module Yast
         "Icon",
         "Hidden",
         "X-SuSE-YaST-AutoInst",
-        "X-SuSE-YaST-AutoInstResource",
+        RESOURCE_NAME_KEY,
         "X-SuSE-YaST-AutoInstClient",
         "X-SuSE-YaST-Group",
         "X-SuSE-YaST-AutoInstMerge",
@@ -187,7 +192,7 @@ module Yast
     def getResource(default_resource)
       ret = Ops.get_string(
         @ModuleMap,
-        [default_resource, "X-SuSE-YaST-AutoInstResource"],
+        [default_resource, RESOURCE_NAME_KEY],
         ""
       )
       if ret == ""
@@ -205,7 +210,7 @@ module Yast
       resourceMap = deep_copy(resourceMap)
       tmp_resource = Ops.get_string(
         resourceMap,
-        "X-SuSE-YaST-AutoInstResource",
+        RESOURCE_NAME_KEY,
         ""
       )
       resource = tmp_resource if tmp_resource != ""
@@ -335,6 +340,35 @@ module Yast
       true
     end
 
+    # Returns list of all profile sections from the current profile, including
+    # unsupported ones, that do not have any handler (AutoYaST client) assigned
+    # at the current system and are not handled by AutoYaST itself.
+    #
+    # @return [Array<String>] of unknown profile sections
+    def unhandled_profile_sections
+      profile_sections = Profile.current.keys
+
+      profile_handlers = @ModuleMap.map do |name, desc|
+        desc[RESOURCE_NAME_KEY] || name
+      end
+
+      profile_sections.reject! do |section|
+        profile_handlers.include?(section)
+      end
+
+      # Generic sections are handled by AutoYast itself and not mentioned
+      # in any desktop file
+      profile_sections - Yast::ProfileClass::GENERIC_PROFILE_SECTIONS
+    end
+
+    # Returns list of all profile sections from the current profile that are
+    # obsolete, e.g., we do not support them anymore.
+    #
+    # @return [Array<String>] of unsupported profile sections
+    def unsupported_profile_sections
+      unhandled_profile_sections & Yast::ProfileClass::OBSOLETE_PROFILE_SECTIONS
+    end
+
     publish :variable => :GroupMap, :type => "map <string, map>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
     publish :variable => :MenuTreeData, :type => "list <map>"
@@ -343,6 +377,8 @@ module Yast
     publish :function => :getResourceData, :type => "any (map, string)"
     publish :function => :Deps, :type => "list <map> ()"
     publish :function => :SetDesktopIcon, :type => "boolean (string)"
+    publish :function => :unhandled_profile_sections, :type => "list <string> ()"
+    publish :function => :unsupported_profile_sections, :type => "list <string> ()"
   end
 
   Y2ModuleConfig = Y2ModuleConfigClass.new

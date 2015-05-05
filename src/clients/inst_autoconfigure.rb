@@ -9,6 +9,8 @@
 # $Id$
 module Yast
   class InstAutoconfigureClient < Client
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -22,6 +24,7 @@ module Yast
       Yast.import "Y2ModuleConfig"
       Yast.import "Label"
       Yast.import "Mode"
+      Yast.import "Report"
 
       @current_step = 0 # Required by logStep()
 
@@ -72,11 +75,39 @@ module Yast
 
       Wizard.DisableAbortButton
 
-
-
       Builtins.y2debug("Module map: %1", Y2ModuleConfig.ModuleMap)
       Builtins.y2debug("Current profile: %1", Profile.current)
 
+      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
+      if unsupported_sections.any?
+        log.error "Could not process these unsupported profile sections: #{unsupported_sections}"
+        Report.LongError(
+          # TRANSLATORS: Error message, %s is replaced by newline-separated
+          # list of unsupported sections of the profile
+          # Do not translate words in brackets
+          _(
+            "These sections of AutoYaST profile are not supported anymore:\n\n%s\n\n" \
+            "Please, use, e.g., <scripts/> or <files/> to change the configuration."
+          ) % unsupported_sections.map{|section| "<#{section}/>"}.join("\n")
+        )
+      end
+
+      # Report only those that are 'not unsupported', these were already reported
+      unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections
+      if unknown_sections.any?
+        log.error "Could not process these unknown profile sections: #{unknown_sections}"
+        Report.LongError(
+          # TRANSLATORS: Error message, %s is replaced by newline-separated
+          # list of unknown sections of the profile
+          # Do not translate words in brackets
+          _(
+            "These sections of AutoYaST profile cannot be processed on this system:\n\n%s\n\n" \
+            "Maybe they were misspelled or your profile does not contain " \
+            "all the needed YaST packages in <software/> section."
+          ) %
+            unknown_sections.map{|section| "<#{section}/>"}.join("\n")
+        )
+      end
 
       @deps = Y2ModuleConfig.Deps
 
@@ -104,11 +135,11 @@ module Yast
         d = Ops.get_map(r, "data", {})
         if Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "all" ||
             Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "write"
-          if Builtins.haskey(d, "X-SuSE-YaST-AutoInstResource") &&
-              Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "") != ""
+          if Builtins.haskey(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY) &&
+              Ops.get_string(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY, "") != ""
             @resource = Ops.get_string(
               d,
-              "X-SuSE-YaST-AutoInstResource",
+              Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY,
               "unknown"
             )
           else

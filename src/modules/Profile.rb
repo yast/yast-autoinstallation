@@ -10,6 +10,37 @@ require "yast"
 
 module Yast
   class ProfileClass < Module
+    # All these sections are handled by AutoYaST (or Installer) itself,
+    # it doesn't use any external AutoYaST client for them
+    GENERIC_PROFILE_SECTIONS = [
+      # Bug: this is already in every auto-generated profile
+      "deploy_image",
+      # AutoYaST configuration - complete configuration files
+      "files",
+      # AutoYaST configuration - default values
+      "general",
+      # AutoYaST has its own partitioning
+      "partitioning",
+      # AutoYaST has its Preboot Execution Environment configuration
+      "pxe",
+      # AutoYaST configuration - pre and post-install scripts
+      "scripts",
+      # AutoYaST has also its own software selection
+      "software",
+      # Bug: This top-level entry belongs to users / groups
+      "user_defaults",
+    ]
+
+    # Dropped YaST modules that used to provide AutoYaST functionality
+    # bsc#925381
+    OBSOLETE_PROFILE_SECTIONS = [
+      # FATE#316185: Drop YaST AutoFS module
+      "autofs",
+      # FATE#308682: Drop yast2-backup and yast2-restore modules
+      "restore",
+      "sshd",
+    ]
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
