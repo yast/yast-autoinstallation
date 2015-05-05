@@ -7,14 +7,15 @@ Yast.import "AutoinstClass"
 describe Yast::AutoinstClass do
   subject { Yast::AutoinstClass }
 
-  let(:root_path) { File.expand_path('../..', __FILE__) }
-  let(:test_xml_dir) { File.join(root_path, 'test', 'fixtures')  }
-  let(:class_dir) { File.join(test_xml_dir, 'classes') }
-  let(:class_path) { File.join(class_dir, 'classes.xml') }
+  ROOT_PATH = File.expand_path('../..', __FILE__)
+  FIXTURES_PATH = File.join(ROOT_PATH, 'test', 'fixtures')
+  CLASS_DIR = File.join(FIXTURES_PATH, 'classes')
+  CLASS_PATH = File.join(CLASS_DIR, 'classes.xml')
+
   let(:settings) { [ { 'class_name' => 'swap', 'configuration' => 'largeswap.xml' } ] }
 
   before(:each) do
-    subject.class_dir = class_dir
+    subject.class_dir = CLASS_DIR
   end
 
   describe '#Read' do
@@ -31,7 +32,7 @@ describe Yast::AutoinstClass do
 
     context 'when classes definition file does not exist' do
       before(:each) do
-        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new('.target.size'), class_path).and_return(-1)
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new('.target.size'), CLASS_PATH).and_return(-1)
       end
 
       it 'sets Classes to []' do
@@ -47,7 +48,7 @@ describe Yast::AutoinstClass do
     context 'when classes definition is empty or not valid XML' do
       before(:each) do
         allow(Yast::SCR).to receive(:Read).and_call_original
-        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new('.xml'), class_path).and_return(nil)
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new('.xml'), CLASS_PATH).and_return(nil)
       end
 
       it 'set Classes to []' do
@@ -77,7 +78,7 @@ describe Yast::AutoinstClass do
     end
 
     context 'when classes definitions are not found' do
-      let(:swap_class_dir) { File.join(class_dir, 'swap') }
+      let(:swap_class_dir) { File.join(CLASS_DIR, 'swap') }
 
       before(:each) do
         allow(Yast::SCR).to receive(:Read).
@@ -107,13 +108,13 @@ describe Yast::AutoinstClass do
   end
 
   describe '#classDirChanged' do
-    let(:new_class_dir) { File.join(test_xml_dir, 'new_classes') }
+    let(:new_class_dir) { File.join(FIXTURES_PATH, 'new_classes') }
 
     after(:each) do
       # Restore original configuration after the test
-      allow(Yast::AutoinstConfig).to receive(:classDir=).with(class_dir).and_call_original
+      allow(Yast::AutoinstConfig).to receive(:classDir=).with(CLASS_DIR).and_call_original
       allow(subject).to receive(:Read)
-      subject.classDirChanged(class_dir)
+      subject.classDirChanged(CLASS_DIR)
     end
 
     it 'reads again the classes definitions' do
@@ -133,7 +134,7 @@ describe Yast::AutoinstClass do
 
     context 'when class and configuration exists' do
       it 'returns string with path to classes directory, class name and configuration' do
-        expect(subject.findPath(name, _class)).to eq(File.join(class_dir, _class, name))
+        expect(subject.findPath(name, _class)).to eq(File.join(CLASS_DIR, _class, name))
       end
     end
 
@@ -141,7 +142,7 @@ describe Yast::AutoinstClass do
       let(:_class) { 'not-existent-class' }
 
       it 'returns string with path to a default directory below the classes directory' do
-        expect(subject.findPath(name, _class)).to eq(File.join(class_dir, 'default'))
+        expect(subject.findPath(name, _class)).to eq(File.join(CLASS_DIR, 'default'))
       end
     end
 
@@ -149,13 +150,13 @@ describe Yast::AutoinstClass do
       let(:name) { 'not-existent-name' }
 
       it 'returns string with path to a default directory below the classes directory' do
-        expect(subject.findPath(name, _class)).to eq(File.join(class_dir, 'default'))
+        expect(subject.findPath(name, _class)).to eq(File.join(CLASS_DIR, 'default'))
       end
     end
   end
 
   describe '#Compat' do
-    let(:faked_autoinstall_dir) { File.join(test_xml_dir, 'etc', 'autoinstall') }
+    let(:faked_autoinstall_dir) { File.join(FIXTURES_PATH, 'etc', 'autoinstall') }
 
     around(:each) do |example|
       subject.ClassConf = faked_autoinstall_dir
@@ -174,7 +175,7 @@ describe Yast::AutoinstClass do
       before(:each) do
         allow(Yast::SCR).to receive(:Read).and_call_original
         allow(Yast::SCR).to receive(:Read).
-          with(Yast::Path.new('.target.size'), class_path).and_return(-1)
+          with(Yast::Path.new('.target.size'), CLASS_PATH).and_return(-1)
       end
 
       context 'and /etc/autoinstall/classes.xml exists' do
@@ -182,7 +183,7 @@ describe Yast::AutoinstClass do
           expect(Yast::XML).to receive(:YCPToXMLFile) do |type, data, path|
             expect(type).to eq(:class)
             expect(data['classes']).to be_kind_of(Array)
-            expect(path).to eq(File.join(class_dir, 'classes.xml'))
+            expect(path).to eq(File.join(CLASS_DIR, 'classes.xml'))
           end
           subject.Compat
         end
@@ -197,7 +198,7 @@ describe Yast::AutoinstClass do
 
         it 'creates a classes.xmlfile in the new location with no classes' do
           expect(Yast::XML).to receive(:YCPToXMLFile).
-            with(:class, {"classes" => []}, File.join(class_dir, 'classes.xml'))
+            with(:class, {"classes" => []}, File.join(CLASS_DIR, 'classes.xml'))
           subject.Compat
         end
       end
@@ -206,14 +207,14 @@ describe Yast::AutoinstClass do
 
   describe '#class_dir=' do
     it 'sets the classes definitions directory' do
-      subject.class_dir = test_xml_dir
-      expect(subject.classDir).to eq(test_xml_dir)
+      subject.class_dir = FIXTURES_PATH
+      expect(subject.classDir).to eq(FIXTURES_PATH)
     end
   end
 
   describe '#MergeClasses' do
-    let(:base_profile_path) { File.join('test', 'fixtures', 'profiles', 'partitions.xml') }
-    let(:tmp_dir) { File.join(root_path, 'tmp') }
+    let(:base_profile_path) { File.join(FIXTURES_PATH, 'profiles', 'partitions.xml') }
+    let(:tmp_dir) { File.join(ROOT_PATH, 'tmp') }
     let(:expected_xml) { File.read(expected_xml_path) }
     let(:output_path) { File.join(tmp_dir, 'output.xml') }
     let(:output_xml) { File.read(output_path) }
@@ -252,7 +253,7 @@ describe Yast::AutoinstClass do
     end
 
     context 'when all elements must be merged' do
-      let(:expected_xml_path) { File.join(root_path, 'test', 'fixtures', 'output', 'partitions-merged.xml')  }
+      let(:expected_xml_path) { File.join(ROOT_PATH, 'test', 'fixtures', 'output', 'partitions-merged.xml')  }
 
       it 'merges elements from profile and configuration' do
         expect(Yast::SCR).to receive(:Execute).
@@ -263,7 +264,7 @@ describe Yast::AutoinstClass do
     end
 
     context 'when some elements are not intended to be merged' do
-      let(:expected_xml_path) { File.join(root_path, 'test', 'fixtures', 'output', 'partitions-dontmerge.xml')  }
+      let(:expected_xml_path) { File.join(ROOT_PATH, 'test', 'fixtures', 'output', 'partitions-dontmerge.xml')  }
       let(:dontmerge) { ['partition'] }
       let(:xsltproc_command) {
         "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
@@ -361,7 +362,7 @@ describe Yast::AutoinstClass do
       expect(Yast::XML).to receive(:YCPToXMLFile) do |type, data, path|
         expect(type).to eq(:class)
         expect(data['classes']).to be_kind_of(Array)
-        expect(path).to eq(File.join(class_dir, 'classes.xml'))
+        expect(path).to eq(File.join(CLASS_DIR, 'classes.xml'))
       end
       subject.Save
     end
@@ -377,7 +378,7 @@ describe Yast::AutoinstClass do
         allow(Yast::XML).to receive(:YCPToXMLFile).with(any_args)
         expect(Yast::SCR).to receive(:Execute).with(
           Yast::Path.new('.target.bash'),
-          "/bin/rm -rf #{class_dir}/swap")
+          "/bin/rm -rf #{CLASS_DIR}/swap")
 
         subject.Save
       end
