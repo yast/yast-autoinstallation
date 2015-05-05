@@ -219,13 +219,13 @@ describe Yast::AutoinstClass do
     let(:output_path) { File.join(tmp_dir, 'output.xml') }
     let(:output_xml) { File.read(output_path) }
     let(:dontmerge) { [] }
-    let(:merge_xslt_path) { File.join('xslt', 'merge.xslt') }
+    let(:merge_xslt_path) { File.join(ROOT_PATH, 'xslt', 'merge.xslt') }
     let(:conf_to_merge) { { "class" => "swap", "name" => "largeswap.xml" } }
     let(:xsltproc_command) {
       "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
       "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
       "--output #{File.join(tmp_dir, "output.xml")}  " \
-      "#{merge_xslt_path} test/fixtures/profiles/partitions.xml "
+      "#{merge_xslt_path} #{base_profile_path} "
     }
 
     before(:each) do
@@ -271,7 +271,7 @@ describe Yast::AutoinstClass do
         "--param dontmerge1 \"'partition'\"  " \
         "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
         "--output #{File.join(tmp_dir, "output.xml")}  " \
-        "#{merge_xslt_path} test/fixtures/profiles/partitions.xml "
+        "#{merge_xslt_path} #{base_profile_path} "
       }
 
       it 'does not merge those elements' do
