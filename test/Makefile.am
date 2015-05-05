@@ -4,6 +4,7 @@
 
 TESTS = \
     AutoInstallRules_test.rb \
+    AutoinstClass_test.rb \
     Y2ModuleConfig_test.rb
 
 TEST_EXTENSIONS = .rb
