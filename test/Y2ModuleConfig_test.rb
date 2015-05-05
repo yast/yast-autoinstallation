@@ -7,12 +7,10 @@ Yast.import "Y2ModuleConfig"
 Yast.import "Desktop"
 Yast.import "Profile"
 
-include Yast::Logger
-
-FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
-DESKTOP_DATA = YAML::load_file(File.join(FIXTURES_PATH, 'desktop_files', 'desktops.yml'))
-
 describe Yast::Y2ModuleConfig do
+  FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
+  DESKTOP_DATA = YAML::load_file(File.join(FIXTURES_PATH, 'desktop_files', 'desktops.yml'))
+
   describe "#unhandled_profile_sections" do
     let(:profile_unhandled) { File.join(FIXTURES_PATH, 'profiles', 'unhandled_and_obsolete.xml') }
 

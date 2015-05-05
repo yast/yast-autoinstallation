@@ -348,15 +348,17 @@ module Yast
     def unhandled_profile_sections
       profile_sections = Profile.current.keys
 
-      profile_handlers = @ModuleMap.map{
-        |name, desc|
+      profile_handlers = @ModuleMap.map do |name, desc|
         desc[RESOURCE_NAME_KEY] || name
-      }
+      end
 
-      profile_sections.reject{
-        |section|
+      profile_sections.reject! do |section|
         profile_handlers.include?(section)
-      } - Yast::ProfileClass::GENERIC_PROFILE_SECTIONS
+      end
+
+      # Generic sections are handled by AutoYast itself and not mentioned
+      # in any desktop file
+      profile_sections - Yast::ProfileClass::GENERIC_PROFILE_SECTIONS
     end
 
     # Returns list of all profile sections from the current profile that are
