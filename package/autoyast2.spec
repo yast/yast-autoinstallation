@@ -32,7 +32,7 @@ BuildRequires:  yast2-installation-control
 BuildRequires:  libxml2-tools
 # xsltproc for AutoinstClass
 BuildRequires:  libxslt
-BuildRequires:  rubygem(rspec)
+BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2
 BuildRequires:  yast2-storage
 BuildRequires:  yast2-xml
