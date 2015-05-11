@@ -851,7 +851,8 @@ module Yast
                     )
                   )
                 elsif Ops.get_string(pe, "size", "") == "auto" &&
-                    Ops.get_string(pe, "mount", "") == "/boot"
+                      ( Ops.get_string(pe, "mount", "") == "/boot" ||
+                        Partitions.IsPrepPartitionid(pe.fetch("partition_id", 0) )
                   Ops.set(
                     pe,
                     "size",
