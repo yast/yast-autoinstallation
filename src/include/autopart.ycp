@@ -183,9 +183,10 @@ global map AddFilesysData( map st_map, map xml_map )
                 {
                     partition["size"] = 1024*1024*Partitions::SwapSizeMb(0);
                 }
-            
-                if( partition["mount"]:"" == Partitions::BootMount() )
-                {
+
+		if( partition["mount"]:"" == Partitions::BootMount() ||
+		    Partitions::IsPrepPartition(partition["partition_id"]:0) )
+		{
                     if( partition["size"]:0 == -1 )
                         partition["size"] = Partitions::MinimalNeededBootsize();
 
