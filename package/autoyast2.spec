@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.78
+Version:        3.1.79
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -32,7 +32,7 @@ BuildRequires:  yast2-installation-control
 BuildRequires:  libxml2-tools
 # xsltproc for AutoinstClass
 BuildRequires:  libxslt
-BuildRequires:  rubygem(rspec)
+BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2
 BuildRequires:  yast2-storage
 BuildRequires:  yast2-xml
