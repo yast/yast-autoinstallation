@@ -12,6 +12,7 @@ module Yast
   class Y2ModuleConfigClass < Module
     # Key for AutoYaST client name in desktop file
     RESOURCE_NAME_KEY = "X-SuSE-YaST-AutoInstResource"
+    RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
 
     include Yast::Logger
 
@@ -52,7 +53,7 @@ module Yast
         RESOURCE_NAME_KEY,
         "X-SuSE-YaST-AutoInstClient",
         "X-SuSE-YaST-Group",
-        "X-SuSE-YaST-AutoInstMerge",
+        RESOURCE_NAME_MERGE_KEYS,
         "X-SuSE-YaST-AutoInstMergeTypes",
         "X-SuSE-YaST-AutoInstDataType",
         "X-SuSE-YaST-AutoInstClonable",
@@ -220,7 +221,7 @@ module Yast
         "X-SuSE-YaST-AutoInstDataType",
         "map"
       )
-      tomerge = Ops.get_string(resourceMap, "X-SuSE-YaST-AutoInstMerge", "")
+      tomerge = Ops.get_string(resourceMap, RESOURCE_NAME_MERGE_KEYS, "")
       tomergetypes = Ops.get_string(
         resourceMap,
         "X-SuSE-YaST-AutoInstMergeTypes",
@@ -349,15 +350,30 @@ module Yast
       profile_sections = Profile.current.keys
 
       profile_handlers = @ModuleMap.map do |name, desc|
-        desc[RESOURCE_NAME_KEY] || name
+        if desc[RESOURCE_NAME_MERGE_KEYS]
+          # The YAST module has diffent AutoYaST sections (resources).
+          # e.g. Users has: users,groups,user_defaults,login_settings
+          desc[RESOURCE_NAME_MERGE_KEYS].split(",")
+        else
+          # Taking the resource name or the plain module name.
+          desc[RESOURCE_NAME_KEY] || name
+        end
       end
+      profile_handlers.flatten!
 
       profile_sections.reject! do |section|
         profile_handlers.include?(section)
       end
 
+      # Sections which are not handled in any desktop file but the
+      # corresponding clients/*_auto.rb file is available.
+      # e.g. user_defaults, report, general, files, scripts
+      profile_sections.reject! do |section|
+        WFM.ClientExists("#{section}_auto")
+      end
+
       # Generic sections are handled by AutoYast itself and not mentioned
-      # in any desktop file
+      # in any desktop or clients/*_auto.rb file.
       profile_sections - Yast::ProfileClass::GENERIC_PROFILE_SECTIONS
     end
 

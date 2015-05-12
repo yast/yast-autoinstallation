@@ -13,26 +13,10 @@ module Yast
     # All these sections are handled by AutoYaST (or Installer) itself,
     # it doesn't use any external AutoYaST client for them
     GENERIC_PROFILE_SECTIONS = [
-      # Booting is configured during the installation
-      "bootloader",
-      # Bug: this is already in every auto-generated profile
-      "deploy_image",
-      # AutoYaST configuration - complete configuration files
-      "files",
-      # AutoYaST configuration - default values
-      "general",
       # AutoYaST has its own partitioning
       "partitioning",
       # AutoYaST has its Preboot Execution Environment configuration
-      "pxe",
-      # Generic AutoYast settings
-      "report",
-      # AutoYaST configuration - pre and post-install scripts
-      "scripts",
-      # AutoYaST has also its own software selection
-      "software",
-      # Bug: This top-level entry belongs to users / groups
-      "user_defaults",
+      "pxe"
     ]
 
     # Dropped YaST modules that used to provide AutoYaST functionality
