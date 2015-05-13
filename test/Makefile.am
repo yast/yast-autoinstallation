@@ -5,7 +5,8 @@
 TESTS = \
     AutoInstallRules_test.rb \
     AutoinstClass_test.rb \
-    Y2ModuleConfig_test.rb
+    Y2ModuleConfig_test.rb \
+    include/ask_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec
