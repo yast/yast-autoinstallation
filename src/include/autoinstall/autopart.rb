@@ -130,6 +130,12 @@ module Yast
       valid_fsids.include?(partition["filesystem_id"])
     end
 
+    def raw_partition?(partition)
+      valid_fsids = [Partitions.fsid_bios_grub,
+                     Partitions.fsid_prep_chrp_boot,
+                     Partitions.fsid_gpt_prep]
+      valid_fsids.include?(partition["filesystem_id"])
+    end
     # Read partition data from XML control file
     # @return [Hash] flexible propsal map
     def preprocess_partition_config(xmlflex)
@@ -228,8 +234,8 @@ module Yast
             end
           end
 
-          # Do not format BIOS Grup partitions
-          partition["format"] = false if partition["filesystem_id"] == Partitions.fsid_bios_grub
+          # Do not format raw partitions
+          partition["format"] = false if raw_partition?(partition)
 
           if Ops.get_integer(partition, "size", 0) == -1
             Ops.set(partition, "size", 0)
@@ -292,6 +298,7 @@ module Yast
         Ops.set(pb, "fsid", Partitions.FsidBoot(dlabel)) # FIXME: might be useless
         Ops.set(pb, "filesystem_id", Partitions.FsidBoot(dlabel))
         Ops.set(pb, "id", Partitions.FsidBoot(dlabel)) # FIXME: might be useless
+        Ops.set(pb, "format", false) if raw_partition?(pb)
         Ops.set(pb, "auto_added", true)
         Ops.set(pb, "type", :primary) # FIXME: might be useless
         Ops.set(pb, "partition_type", "primary")
