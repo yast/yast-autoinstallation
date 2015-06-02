@@ -340,6 +340,9 @@ module Yast
 
       logStep(_("Finishing Configuration"))
 
+      # Invoke SnapshotsFinish client to perform snapshots (if needed)
+      WFM.CallFunction("snapshots_finish", ["Write"])
+
       :next
     end
 
