@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.82
+Version:        3.1.83
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -34,7 +34,7 @@ BuildRequires:  libxml2-tools
 BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2
-BuildRequires:  yast2-storage
+BuildRequires:  yast2-storage >= 3.1.59
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
@@ -54,7 +54,7 @@ Requires:       yast2 >= 2.16.36
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 Requires:       yast2-schema
-Requires:       yast2-storage >= 3.1.27
+Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
 
@@ -103,7 +103,7 @@ Requires:       yast2-packager >= 3.1.10
 # ServicesManagerTargetClass::BaseTargets
 Requires:       yast2-services-manager >= 3.1.10
 Requires:       yast2-slp
-Requires:       yast2-storage
+Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-update >= 2.18.3
 Requires:       yast2-xml
