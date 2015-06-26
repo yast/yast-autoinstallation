@@ -563,11 +563,11 @@ module Yast
 
       AutoinstStorage.AutoTargetMap.each do |device, data|
         target_map = Storage.GetTargetMap()
-        if target_map.has_key?(device) && data.fetch("type", :CT_DISK) == :CT_LVM
+        if target_map.has_key?(device) && data["type"] == :CT_LVM
           if data["enable_snapshots"] && target_map[device].has_key?("partitions")
-            root_partition = target_map[device]["partitions"].find {
+            root_partition = target_map[device]["partitions"].find do
               |p| p["mount"] == "/" && p["used_fs"] == :btrfs
-            }
+            end
             if root_partition
               log.info("Enabling snapshots for \"/\"; root_partition #{root_partition}")
               Storage.SetUserdata(root_partition["device"], { "/" => "snapshots" })
