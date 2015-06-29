@@ -4,12 +4,14 @@
 # Module:    Auto-Installation
 # Summary:    LVM
 # Authors:    Anas Nashif <nashif@suse.de>
-#
-# $Id$
+
 require "yast"
 
 module Yast
   class AutoinstLVMClass < Module
+
+    include Yast::Logger
+
     def main
       textdomain "autoinst"
 
@@ -280,7 +282,6 @@ module Yast
       current_vg = ""
 
       error = false
-
 
       Builtins.foreach(@lvm) do |device, volume_group|
         Builtins.y2milestone("volume_group is %1", volume_group)
@@ -559,6 +560,22 @@ module Yast
         end
       end
       Builtins.y2milestone("targetmap: %1", @targetMap)
+
+      AutoinstStorage.AutoTargetMap.each do |device, data|
+        target_map = Storage.GetTargetMap()
+        if target_map.has_key?(device) && data["type"] == :CT_LVM
+          if data["enable_snapshots"] && target_map[device].has_key?("partitions")
+            root_partition = target_map[device]["partitions"].find do
+              |p| p["mount"] == "/" && p["used_fs"] == :btrfs
+            end
+            if root_partition
+              log.info("Enabling snapshots for \"/\"; root_partition #{root_partition}")
+              Storage.SetUserdata(root_partition["device"], { "/" => "snapshots" })
+            end
+          end
+        end
+      end
+
       true
     end
 
