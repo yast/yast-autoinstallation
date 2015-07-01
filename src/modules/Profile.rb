@@ -16,7 +16,9 @@ module Yast
       # AutoYaST has its own partitioning
       "partitioning",
       # AutoYaST has its Preboot Execution Environment configuration
-      "pxe"
+      "pxe",
+      # Flags for setting the solver while the upgrade process with AutoYaST
+      "upgrade"
     ]
 
     # Dropped YaST modules that used to provide AutoYaST functionality
