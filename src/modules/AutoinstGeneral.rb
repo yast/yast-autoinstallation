@@ -26,6 +26,7 @@ module Yast
       Yast.import "ProductFeatures"
       Yast.import "Storage"
       Yast.import "SignatureCheckCallbacks"
+      Yast.import "Report"
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
@@ -383,6 +384,29 @@ module Yast
       Storage.SetMultipathStartup(val)
     end
 
+    # NTP syncing
+    def NtpSync
+      ntp_server = @mode["ntp_sync_time_before_installation"]
+      if ntp_server
+        Builtins.y2milestone("NTP syncing with #{ntp_server}")
+        Popup.ShowFeedback(
+          _("Syncing time..."),
+          # TRANSLATORS: %s is the name of the ntp server
+          _("Syncing time with %s.") % ntp_server
+        )
+        ret = SCR.Execute(path(".target.bash"), "/usr/sbin/sntp -t 2 -s #{ntp_server}")
+        if ret > 0
+          Report.Error(_("Time syncing failed."))
+        else
+          ret = SCR.Execute(path(".target.bash"), "/sbin/hwclock --systohc")
+          if ret > 0
+            Report.Error(_("Cannot update system time."))
+          end
+        end
+        Popup.ClearFeedback
+      end
+    end
+
     # Write General  Configuration
     # @return [Boolean] true on success
     def Write
@@ -411,6 +435,8 @@ module Yast
       SetMultipathing()
 
       SetSignatureHandling()
+
+      NtpSync()
 
       nil
     end
