@@ -17,10 +17,10 @@ describe Yast::AutoinstGeneral do
       Yast::AutoinstGeneral.Import(Yast::Profile.current["general"])
 
       expect(Yast::SCR).to receive(:Execute).with(
-        Yast::Path.new(".target.bash"),
+        path(".target.bash"),
         "/usr/sbin/sntp -t 2 -s #{Yast::AutoinstGeneral.mode["ntp_sync_time_before_installation"]}").and_return(0)
       expect(Yast::SCR).to receive(:Execute).with(
-        Yast::Path.new(".target.bash"),"/sbin/hwclock --systohc").and_return(0)
+        path(".target.bash"),"/sbin/hwclock --systohc").and_return(0)
 
       Yast::AutoinstGeneral.Write()
     end
@@ -30,7 +30,7 @@ describe Yast::AutoinstGeneral do
       Yast::AutoinstGeneral.Import(Yast::Profile.current["general"])
 
       expect(Yast::SCR).not_to receive(:Execute).with(
-        Yast::Path.new(".target.bash"),"/sbin/hwclock --systohc")
+        path(".target.bash"),"/sbin/hwclock --systohc")
 
       Yast::AutoinstGeneral.Write()
     end
