@@ -25,6 +25,8 @@
     import "Pkg";
     import "ProductFeatures";
     import "Storage";
+    import "Report";
+    import "Popup";
 
     // All shared data are in yast2.rpm to break cyclic dependencies
     import "AutoinstData";
@@ -221,6 +223,35 @@
             );
     }
 
+
+    /**
+     * NTP syncing
+     */
+    global define void NtpSync()
+    {
+        if( haskey( mode, "ntp_sync_time_before_installation" ))
+        {
+            string ntp_server = "";
+	    ntp_server = mode["ntp_sync_time_before_installation"]:"";
+            y2milestone("NTP syncing with %1", ntp_server);
+	    Popup::ShowFeedback(
+	        _("Syncing time..."),
+                /* TRANSLATORS: %1 is the name of the ntp server */
+                sformat(_("Syncing time with %1."), ntp_server));
+            if(SCR::Execute(.target.bash, sformat("/usr/sbin/ntpdate -b %1", ntp_server)) > 0)
+	    {
+	        Report::Error(_("Time syncing failed."));
+	    }
+            else
+	    {
+	        if(SCR::Execute(.target.bash, "/sbin/hwclock --systohc") > 0)
+		    Report::Error(_("Cannot update system time."));
+	    }
+	    Popup::ClearFeedback();
+	}
+    }
+
+
     /**
      * Write General  Configuration
      * @return boolean true on success
@@ -272,6 +303,8 @@
              Mouse::Set(AutoinstData::mouse["id"]:"");
         }
         SetSignatureHandling();
+
+        NtpSync();
     }
 
     /**
