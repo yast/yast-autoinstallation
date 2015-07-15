@@ -224,6 +224,16 @@
     }
 
 
+    # set multipathing
+    # @return void
+    global define void SetMultipathing()
+    {
+        boolean val = storage["start_multipath"]:false;
+        y2milestone("SetMultipathing val:%1", val);
+	Storage::SetMultipathStartup(val);
+    }
+
+
     /**
      * NTP syncing
      */
@@ -303,6 +313,8 @@
              Mouse::Set(AutoinstData::mouse["id"]:"");
         }
         SetSignatureHandling();
+
+        SetMultipathing();
 
         NtpSync();
     }
