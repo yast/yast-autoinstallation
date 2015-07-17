@@ -13,10 +13,5 @@ script:
     - make
     - sudo make install
     - make check
-    # explicitly check the RNC schema files for errors
-    # (the files are defined here, but converted in yast2-schema)
-    - find . -name "*.rnc" -exec trang -I rnc -O rng \{\} \{\}.rng \; 2> trang.log
-    # grep for "error" in the output, "trang" returns 0 exit status
-    # even on an error :-(
-    - grep -i -v -q error trang.log
+    - ./check_schema.sh
 
