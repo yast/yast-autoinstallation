@@ -32,6 +32,7 @@ module Yast
       Yast.import "Misc"
       Yast.import "Directory"
       Yast.import "Y2ModuleConfig"
+      Yast.import "PackageSystem"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -178,7 +179,8 @@ module Yast
 
       PackageAI.toinstall = settings.fetch("packages",[])
       @kernel = settings.fetch("kernel","")
-      AutoinstData.post_packages = settings.fetch("post-packages", [])
+
+      addPostPackages(settings.fetch("post-packages", []))
       AutoinstData.post_patterns = settings.fetch("post-patterns", [])
       PackageAI.toremove = settings.fetch("remove-packages", [])
 
@@ -943,6 +945,9 @@ module Yast
     # @param list calculated post packages
     # @return [void]
     def addPostPackages(calcpost)
+      # filter out already installed packages
+      calcpost.reject!{|p| PackageSystem.Installed(p)}
+
       calcpost = deep_copy(calcpost)
       AutoinstData.post_packages = Convert.convert(
         Builtins.toset(Builtins.union(calcpost, AutoinstData.post_packages)),
