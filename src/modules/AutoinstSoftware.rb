@@ -946,7 +946,7 @@ module Yast
     # @return [void]
     def addPostPackages(calcpost)
       # filter out already installed packages
-      calcpost.select!{|p| !PackageSystem.Installed(p)}
+      calcpost.reject!{|p| PackageSystem.Installed(p)}
 
       calcpost = deep_copy(calcpost)
       AutoinstData.post_packages = Convert.convert(

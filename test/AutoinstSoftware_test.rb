@@ -16,7 +16,7 @@ describe Yast::AutoinstSoftware do
 
   describe "post-software installation" do
 
-    it "installs packages only if the have not already been installed" do
+    it "installs packages only if they have not already been installed" do
       Yast::AutoinstData.post_packages = ["a2"]
       expect(Yast::PackageSystem).to receive(:Installed).with("a1").and_return(false)
       expect(Yast::PackageSystem).to receive(:Installed).with("a2").and_return(false)
