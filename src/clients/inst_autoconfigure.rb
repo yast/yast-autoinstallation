@@ -288,8 +288,6 @@ module Yast
       logStep(_("Executing Post-Scripts"))
       AutoinstScripts.Write("post-scripts", false)
 
-      AutoinstScripts.Write("init-scripts", false)
-
       @max_wait = Ops.get_integer(
         Profile.current,
         ["general", "mode", "max_systemd_wait"],
