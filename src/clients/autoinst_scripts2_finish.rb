@@ -48,7 +48,11 @@ module Yast
           "when"  => [:autoinst, :autoupg]
         }
       elsif @func == "Write"
+        # Calling chroot scripts
         AutoinstScripts.Write("chroot-scripts", true)
+
+        # Creating init scripts in for the autoyast-initscripts.service
+        AutoinstScripts.Write("init-scripts", false)
         # systemd requires the init script to be activated in 1st stage
         @cmd = "systemctl enable autoyast-initscripts.service"
         Builtins.y2milestone("executing:%1", @cmd)
