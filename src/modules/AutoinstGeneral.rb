@@ -55,6 +55,9 @@ module Yast
 
       @storage = {}
 
+      # S390
+      @cio_ignore = true
+
       # default value of settings modified
       @modified = false
       AutoinstGeneral()
@@ -175,6 +178,7 @@ module Yast
       SetModified()
       Builtins.y2milestone("General import: %1", settings)
       @mode = Ops.get_map(settings, "mode", {})
+      @cio_ignore = Ops.get_boolean(settings, "cio_ignore", true)
       @signature_handling = Ops.get_map(settings, "signature-handling", {})
       @askList = Ops.get_list(settings, "ask-list", [])
       @proposals = Ops.get_list(settings, "proposals", [])
@@ -411,6 +415,7 @@ module Yast
     # @return [Boolean] true on success
     def Write
       AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
+      AutoinstConfig.cio_ignore = @cio_ignore
       AutoinstConfig.second_stage = @mode["second_stage"] if @mode.has_key?("second_stage")
       if Builtins.haskey(@mode, "forceboot")
         ProductFeatures.SetBooleanFeature(
