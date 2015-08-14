@@ -27,6 +27,7 @@ module Yast
       Yast.import "Storage"
       Yast.import "SignatureCheckCallbacks"
       Yast.import "Report"
+      Yast.import "Arch"
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
@@ -198,6 +199,22 @@ module Yast
       Ops.set(general, "ask-list", @askList)
       Ops.set(general, "proposals", @proposals)
       Ops.set(general, "storage", @storage)
+
+      if Yast::Arch.s390
+        if Yast::Mode.installation
+          # Taking the selected value (selected by user or AutoYaST)
+          general["cio_ignore"] = @cio_ignore
+        else
+          # Trying to evalute the state from the installed system.
+          # Disabled if there are no active devices defined. (Call
+          # "cio_ignore -L", stored in /boot/zipl/active_devices.txt)
+          active_device_file = File.join(Yast::Installation.destdir,
+            "/boot/zipl/active_devices.txt")
+          general["cio_ignore"] = File.exists?(active_device_file) &&
+            File.stat(active_device_file).size > 0
+        end
+      end
+
       deep_copy(general)
     end
 
@@ -474,6 +491,7 @@ module Yast
     publish :function => :SetMultipathing, :type => "void ()"
     publish :function => :Write, :type => "boolean ()"
     publish :function => :AutoinstGeneral, :type => "void ()"
+
   end
 
   AutoinstGeneral = AutoinstGeneralClass.new
