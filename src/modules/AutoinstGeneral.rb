@@ -27,6 +27,7 @@ module Yast
       Yast.import "Storage"
       Yast.import "SignatureCheckCallbacks"
       Yast.import "Report"
+      Yast.import "Arch"
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
@@ -54,6 +55,9 @@ module Yast
       @proposals = []
 
       @storage = {}
+
+      # S390
+      @cio_ignore = true
 
       # default value of settings modified
       @modified = false
@@ -175,6 +179,7 @@ module Yast
       SetModified()
       Builtins.y2milestone("General import: %1", settings)
       @mode = Ops.get_map(settings, "mode", {})
+      @cio_ignore = Ops.get_boolean(settings, "cio_ignore", true)
       @signature_handling = Ops.get_map(settings, "signature-handling", {})
       @askList = Ops.get_list(settings, "ask-list", [])
       @proposals = Ops.get_list(settings, "proposals", [])
@@ -194,6 +199,22 @@ module Yast
       Ops.set(general, "ask-list", @askList)
       Ops.set(general, "proposals", @proposals)
       Ops.set(general, "storage", @storage)
+
+      if Yast::Arch.s390
+        if Yast::Mode.installation
+          # Taking the selected value (selected by user or AutoYaST)
+          general["cio_ignore"] = @cio_ignore
+        else
+          # Trying to evalute the state from the installed system.
+          # Disabled if there are no active devices defined. (Call
+          # "cio_ignore -L", stored in /boot/zipl/active_devices.txt)
+          active_device_file = File.join(Yast::Installation.destdir,
+            "/boot/zipl/active_devices.txt")
+          general["cio_ignore"] = File.exist?(active_device_file) &&
+            File.stat(active_device_file).size > 0
+        end
+      end
+
       deep_copy(general)
     end
 
@@ -411,6 +432,7 @@ module Yast
     # @return [Boolean] true on success
     def Write
       AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
+      AutoinstConfig.cio_ignore = @cio_ignore
       AutoinstConfig.second_stage = @mode["second_stage"] if @mode.has_key?("second_stage")
       if Builtins.haskey(@mode, "forceboot")
         ProductFeatures.SetBooleanFeature(
@@ -469,6 +491,7 @@ module Yast
     publish :function => :SetMultipathing, :type => "void ()"
     publish :function => :Write, :type => "boolean ()"
     publish :function => :AutoinstGeneral, :type => "void ()"
+
   end
 
   AutoinstGeneral = AutoinstGeneralClass.new

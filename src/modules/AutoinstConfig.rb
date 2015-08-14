@@ -148,6 +148,11 @@ module Yast
       #
       @Confirm = true
 
+      #
+      # S390
+      #
+      @cio_ignore = true
+
       # Running autoyast second_stage
       @second_stage = true
 
@@ -499,6 +504,7 @@ module Yast
     publish :variable => :pass, :type => "string"
     publish :variable => :default_target, :type => "string"
     publish :variable => :Confirm, :type => "boolean"
+    publish :variable => :cio_ignore, :type => "boolean"
     publish :variable => :second_stage, :type => "boolean"
     publish :variable => :OriginalURI, :type => "string"
     publish :variable => :message, :type => "string"
