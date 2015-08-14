@@ -210,7 +210,7 @@ module Yast
           # "cio_ignore -L", stored in /boot/zipl/active_devices.txt)
           active_device_file = File.join(Yast::Installation.destdir,
             "/boot/zipl/active_devices.txt")
-          general["cio_ignore"] = File.exists?(active_device_file) &&
+          general["cio_ignore"] = File.exist?(active_device_file) &&
             File.stat(active_device_file).size > 0
         end
       end
