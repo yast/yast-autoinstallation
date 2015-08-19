@@ -37,6 +37,7 @@ module Yast
           "initrd_modules"           => "initrd_module",
           "nfs_entries"              => "nfs_entry",
           "peers"                    => "peer",
+          "restricts"                => "restrict",
           "netd_conf"                => "conf",
           "raid"                     => "device",
           "hosts"                    => "hosts_entry",
