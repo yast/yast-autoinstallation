@@ -265,7 +265,10 @@ module Yast
       )
       @ser_ignore = [
         "YaST2-Second-Stage.service",
-        "autoyast-initscripts.service"
+        "autoyast-initscripts.service",
+        # Do not restart dbus. Otherwise some services will hang.
+        # bnc#937900
+        "dbus.service"
       ]
       if final_restart_services
         logStep(_("Restarting all running services"))
