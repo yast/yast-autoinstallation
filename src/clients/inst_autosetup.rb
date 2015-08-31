@@ -7,6 +7,7 @@
 #          Uwe Gansert <ug@suse.de>
 #
 # $Id$
+require "autoinstall/module_config_builder"
 module Yast
   import "AutoinstConfig"
 
@@ -43,6 +44,7 @@ module Yast
       Yast.import "Language"
       Yast.import "Console"
       Yast.import "ServicesManager"
+      Yast.import "Y2ModuleConfig"
 
       Yast.include self, "bootloader/routines/autoinstall.rb"
       Yast.include self, "autoinstall/ask.rb"
@@ -58,7 +60,8 @@ module Yast
         _("Configure Bootloader"),
         _("Registration"),
         _("Configure Software selections"),
-        _("Configure Systemd Default Target")
+        _("Configure Systemd Default Target"),
+        _("Configure users and groups")
       ]
 
       @progress_descriptions = [
@@ -69,7 +72,8 @@ module Yast
         _("Configuring Bootloader..."),
         _("Registering the system..."),
         _("Configuring Software selections..."),
-        _("Configuring Systemd Default Target...")
+        _("Configuring Systemd Default Target..."),
+        _("Importing users and groups configuration...")
       ]
 
       Progress.New(
@@ -176,7 +180,6 @@ module Yast
         @use_utf8 = false # fallback to ascii
       end
 
-
       #
       # Set it in the Language module.
       #
@@ -205,7 +208,6 @@ module Yast
       elsif Profile.current.has_key?("language")
         Keyboard.Import(Profile.current["language"] || {}, :language)
       end
-
 
       # one can override the <confirm> option by the commandline parameter y2confirm
       @tmp = Convert.to_string(
@@ -368,6 +370,12 @@ module Yast
         ServicesManager.import({})
       end
 
+      #
+      # Import users configuration from the profile
+      #
+      Progress.NextStage
+      autosetup_users
+
       Progress.Finish
 
       @ret = ProductControl.RunFrom(
@@ -412,6 +420,14 @@ module Yast
         return :found
       end
       :not_found
+    end
+
+    # Import Users configuration from profile
+    def autosetup_users
+      users_config = ModuleConfigBuilder.build(Y2ModuleConfig.getModuleConfig("users"), Profile.current)
+      if users_config
+        Call.Function("users_auto", ["Import", users_config])
+      end
     end
   end
 end

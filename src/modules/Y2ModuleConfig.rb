@@ -386,6 +386,12 @@ module Yast
       unhandled_profile_sections & Yast::ProfileClass::OBSOLETE_PROFILE_SECTIONS
     end
 
+    # Returns configuration for a given module
+    #
+    # @param [String] name Module name.
+    # @return [Hash] Module configuration using the same structure than
+    #                #Deps method (with "res" and "data" keys).
+    # @see #ReadMenuEntries
     def getModuleConfig(name)
       entries = ReadMenuEntries(MODES).first # entries, groups
       entry = entries.find { |k, v| k == name } # name, entry
