@@ -204,6 +204,8 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_moduledir}/Kickstart.rb
 %dir %{yast_agentdir}
 %{yast_agentdir}/ag_ksimport
+%dir %{yast_libdir}/autoinstall
+%{yast_libdir}/autoinstall/*.rb
 
 # additional files
 
