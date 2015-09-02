@@ -45,6 +45,7 @@ module Yast
       Yast.import "Directory"
       Yast.import "FileUtils"
       Yast.import "PackageSystem"
+      Yast.import "InstFunctions"
 
       Yast.include self, "autoinstall/xml.rb"
 
@@ -126,34 +127,15 @@ module Yast
 
     def softwareCompat
       Ops.set(@current, "software", Ops.get_map(@current, "software", {}))
-      if !Builtins.contains(
-          Ops.get_list(@current, ["software", "packages"], []),
-          "autoyast2-installation"
-        )
-        Ops.set(
-          @current,
-          ["software", "packages"],
-          Builtins.add(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2-installation"
-          )
-        )
-      end
 
-      # without autoyast2, <files ...> does not work
-      if Builtins.haskey(@current, "files") &&
-          !Builtins.contains(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2"
-          )
-        Ops.set(
-          @current,
-          ["software", "packages"],
-          Builtins.add(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2"
-          )
-        )
+      # We need to check if second stage was disabled in the profile itself
+      # because AutoinstConfig is not initialized at this point
+      # and InstFuntions#second_stage_required? depends on that module
+      # to check if 2nd stage is required (chicken-and-egg problem).
+      mode = @current.fetch("general", {}).fetch("mode", {})
+      second_stage_enabled = mode.has_key?("second_stage") ? mode["second_stage"] : true
+      if InstFunctions.second_stage_required? && second_stage_enabled
+        add_autoyast_packages
       end
 
       # workaround for missing "REQUIRES" in content file to stay backward compatible
@@ -304,7 +286,7 @@ module Yast
     # @return [void]
     def Import(profile)
       profile = deep_copy(profile)
-      Builtins.y2milestone("importing profile")
+      Builtins.y2milestone("importing profile=%1", profile)
       @current = deep_copy(profile)
 
       check_version(Ops.get_map(@current, "properties", {}))
@@ -864,6 +846,40 @@ module Yast
       end
 
       nil
+    end
+
+    private
+
+    def add_autoyast_packages
+      if !Builtins.contains(
+          Ops.get_list(@current, ["software", "packages"], []),
+          "autoyast2-installation"
+        )
+        Ops.set(
+          @current,
+          ["software", "packages"],
+          Builtins.add(
+            Ops.get_list(@current, ["software", "packages"], []),
+            "autoyast2-installation"
+          )
+        )
+      end
+
+      # without autoyast2, <files ...> does not work
+      if Builtins.haskey(@current, "files") &&
+          !Builtins.contains(
+            Ops.get_list(@current, ["software", "packages"], []),
+            "autoyast2"
+          )
+        Ops.set(
+          @current,
+          ["software", "packages"],
+          Builtins.add(
+            Ops.get_list(@current, ["software", "packages"], []),
+            "autoyast2"
+          )
+        )
+      end
     end
 
     publish :variable => :current, :type => "map <string, any>"

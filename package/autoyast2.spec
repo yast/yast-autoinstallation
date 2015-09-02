@@ -57,6 +57,7 @@ Requires:       yast2-schema
 Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
+Conflicts:      yast2-installation < 3.1.158
 
 Provides:       yast2-config-autoinst
 Provides:       yast2-module-autoinst
