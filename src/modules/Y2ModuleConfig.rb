@@ -389,7 +389,7 @@ module Yast
     # Returns configuration for a given module
     #
     # @param [String] name Module name.
-    # @return [Hash] Module configuration using the same structure than
+    # @return [Hash] Module configuration using the same structure as
     #                #Deps method (with "res" and "data" keys).
     # @see #ReadMenuEntries
     def getModuleConfig(name)
