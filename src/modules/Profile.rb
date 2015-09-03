@@ -289,7 +289,7 @@ module Yast
     # @return [void]
     def Import(profile)
       profile = deep_copy(profile)
-      Builtins.y2milestone("importing profile=%1", profile)
+      Builtins.y2milestone("importing profile")
       @current = deep_copy(profile)
 
       check_version(Ops.get_map(@current, "properties", {}))
