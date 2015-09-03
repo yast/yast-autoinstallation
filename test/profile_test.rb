@@ -33,7 +33,7 @@ describe Yast::Profile do
       context "and second stage is required" do
         it "adds 'autoyast2-installation' to packages list" do
           Yast::Profile.softwareCompat
-          expect(packages_list).to eq(["autoyast2-installation"])
+          expect(packages_list).to include("autoyast2-installation")
         end
       end
 
@@ -59,8 +59,8 @@ describe Yast::Profile do
       end
     end
 
-    context "when the 'files' section is present" do
-      let(:profile) { { "files" => [] } }
+    context "when some section handled by a client included in autoyast2 package is present" do
+      let(:profile) { { "scripts" => [] } }
 
       context "and second stage is required" do
         it "adds 'autoyast2' to packages list" do

@@ -31,6 +31,16 @@ module Yast
       "sshd",
     ]
 
+    # Sections that are handled by AutoYaST clients included in autoyast2 package.
+    AUTOYAST_CLIENTS = [
+      "files",
+      "general",
+      "partitioning",
+      "report",
+      "scripts",
+      "software"
+    ]
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -875,7 +885,7 @@ module Yast
       end
 
       # without autoyast2, <files ...> does not work
-      if Builtins.haskey(@current, "files") &&
+      if !(@current.keys & AUTOYAST_CLIENTS).empty? &&
           !Builtins.contains(
             Ops.get_list(@current, ["software", "packages"], []),
             "autoyast2"
