@@ -93,7 +93,7 @@ module Yast
       end
 
       # Report only those that are 'not unsupported', these were already reported
-      unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections - Profile.get_sections_from_skip_list
+      unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections
       if unknown_sections.any?
         log.error "Could not process these unknown profile sections: #{unknown_sections}"
         Report.LongError(

@@ -31,8 +31,6 @@ module Yast
       "sshd",
     ]
 
-    SKIP_LIST_PATH = "/var/lib/YaST2/profile_sections_to_skip"
-
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -47,7 +45,6 @@ module Yast
       Yast.import "Directory"
       Yast.import "FileUtils"
       Yast.import "PackageSystem"
-      Yast.import "Installation"
       Yast.import "InstFunctions"
 
       Yast.include self, "autoinstall/xml.rb"
@@ -849,41 +846,6 @@ module Yast
       end
 
       nil
-    end
-
-    # Adds a section to the 'skip list'
-    #
-    # The 'skip list' contains profile sections that were processed and should not be
-    # evaluated again on 2nd stage.
-    #
-    # @param [String,Array<String>] new_sections Sections to add.
-    # @return [Array<String>] Returns all sections that the list contains.
-    def add_sections_to_skip_list(new_sections)
-      sections = (get_sections_from_skip_list + Array(new_sections)).uniq
-      result = Yast::SCR.Write(Yast::Path.new(".target.string"), SKIP_LIST_PATH, sections.join("\n"))
-      raise "Could not write '#{sections.join(",")}' to skip list (#{SKIP_LIST_PATH})" unless result
-      sections
-    end
-
-    # Returns sections included in the 'skip list'
-    #
-    # @return [Array<String>] Returns all sections that the list contains.
-    # @see add_sections_to_skip_list
-    def get_sections_from_skip_list
-      content = Yast::SCR.Read(Yast::Path.new(".target.string"), SKIP_LIST_PATH)
-      content ? content.split("\n") : []
-    end
-
-    # Saves the 'skip list'
-    #
-    # It's intended to be used to copy 'skip list' to installed system, but a custom
-    # destination can also be specified.
-    #
-    # @param [String] dest Destination path.
-    # @see add_sections_to_skip_list
-    def save_skip_list(dest = nil)
-      dest ||= File.join(Installation.destdir, SKIP_LIST_PATH)
-      ::FileUtils.cp(SKIP_LIST_PATH, dest) if ::File.exist?(SKIP_LIST_PATH)
     end
 
     private
