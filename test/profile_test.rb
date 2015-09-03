@@ -180,4 +180,26 @@ describe Yast::Profile do
       Yast::Profile.Import(profile)
     end
   end
+
+  describe "#remove_sections" do
+    before do
+      Yast::Profile.Import("section1" => "val1", "section2" => "val2")
+    end
+
+    context "when a single section is given" do
+      it "removes that section" do
+        Yast::Profile.remove_sections("section1")
+        expect(Yast::Profile.current.keys).to_not include("section1")
+        expect(Yast::Profile.current.keys).to include("section2")
+      end
+    end
+
+    context "when multiple sections are given" do
+      it "removes every given section" do
+        Yast::Profile.remove_sections(%w(section1 section2))
+        expect(Yast::Profile.current.keys).to_not include("section1")
+        expect(Yast::Profile.current.keys).to_not include("section2")
+      end
+    end
+  end
 end
