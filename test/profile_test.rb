@@ -180,4 +180,119 @@ describe Yast::Profile do
       Yast::Profile.Import(profile)
     end
   end
+
+  describe "#add_sections_to_skip_list" do
+    context "when list is empty" do
+      before do
+        allow(Yast::Profile).to receive(:get_sections_from_skip_list).and_return([])
+      end
+
+      context "and an array is given" do
+        it "adds all sections to the skip list" do
+          expect(Yast::SCR).to receive(:Write)
+            .with(path(".target.string"), Yast::ProfileClass::SKIP_LIST_PATH, "section1\nsection2")
+            .and_return(true)
+          expect(Yast::Profile.add_sections_to_skip_list(%w(section1 section2)))
+            .to eq(%w(section1 section2))
+        end
+      end
+
+      context "and a single section is given" do
+        it "adds the section to the skip list" do
+          expect(Yast::SCR).to receive(:Write)
+            .with(path(".target.string"), Yast::ProfileClass::SKIP_LIST_PATH, "section1")
+            .and_return(true)
+          expect(Yast::Profile.add_sections_to_skip_list("section1"))
+            .to eq(["section1"])
+        end
+      end
+    end
+
+    context "when list is not empty" do
+      before do
+        allow(Yast::Profile).to receive(:get_sections_from_skip_list).and_return(["old_section"])
+      end
+
+      context "and an array is given" do
+        it "adds new sections to the skip list" do
+          expect(Yast::SCR).to receive(:Write)
+            .with(path(".target.string"), Yast::ProfileClass::SKIP_LIST_PATH, "old_section\nsection1\nsection2")
+            .and_return(true)
+          expect(Yast::Profile.add_sections_to_skip_list(%w(old_section section1 section2)))
+            .to eq(%w(old_section section1 section2))
+        end
+      end
+
+      context "and a single section is given" do
+        it "adds the section to the skip list" do
+          expect(Yast::SCR).to receive(:Write)
+            .with(path(".target.string"), Yast::ProfileClass::SKIP_LIST_PATH, "old_section\nsection1")
+            .and_return(true)
+          expect(Yast::Profile.add_sections_to_skip_list(%w(section1)))
+            .to eq(%w(old_section section1))
+        end
+      end
+    end
+
+    context "when the element could not be written" do
+      it "raises and exception" do
+        expect(Yast::SCR).to receive(:Write)
+          .with(path(".target.string"), Yast::ProfileClass::SKIP_LIST_PATH, "section1")
+          .and_return(false)
+          expect { Yast::Profile.add_sections_to_skip_list("section1") }.to raise_error
+      end
+    end
+  end
+
+  describe "#get_sections_from_skip_list" do
+    context "when skip list does not exist" do
+      it "returns and empty array" do
+        expect(Yast::SCR).to receive(:Read)
+          .with(path(".target.string"), Yast::ProfileClass::SKIP_LIST_PATH)
+          .and_return(nil)
+        expect(Yast::Profile.get_sections_from_skip_list).to eq([])
+      end
+    end
+
+    context "when skip list exists" do
+      it "returns all included sections" do
+        expect(Yast::SCR).to receive(:Read)
+          .with(path(".target.string"), Yast::ProfileClass::SKIP_LIST_PATH)
+          .and_return("section1\nsection2")
+        expect(Yast::Profile.get_sections_from_skip_list).to eq(%w(section1 section2))
+      end
+    end
+  end
+
+  describe "#save_skip_list" do
+    context "if skip list does not exists" do
+      it "does nothing" do
+        expect(::File).to receive(:exist?).with(Yast::ProfileClass::SKIP_LIST_PATH).and_return(false)
+        expect(::FileUtils).to_not receive(:cp)
+        Yast::Profile.save_skip_list
+      end
+    end
+
+    context "if skip list exists" do
+      before do
+        allow(::File).to receive(:exist?).with(Yast::ProfileClass::SKIP_LIST_PATH).and_return(true)
+      end
+
+      context "and no destination is given" do
+        it "saves to the default destination (Installation.destdir + SKIP_LIST_PATH)" do
+          expect(::FileUtils).to receive(:cp)
+            .with(Yast::ProfileClass::SKIP_LIST_PATH, File.join(Yast::Installation.destdir, Yast::ProfileClass::SKIP_LIST_PATH))
+          Yast::Profile.save_skip_list
+        end
+      end
+
+      context "and some destination is given" do
+        it "copy the file to given destination" do
+          expect(::FileUtils).to receive(:cp)
+            .with(Yast::ProfileClass::SKIP_LIST_PATH, "/some/destination")
+          Yast::Profile.save_skip_list("/some/destination")
+        end
+      end
+    end
+  end
 end

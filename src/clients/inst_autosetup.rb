@@ -426,6 +426,7 @@ module Yast
     def autosetup_users
       users_config = ModuleConfigBuilder.build(Y2ModuleConfig.getModuleConfig("users"), Profile.current)
       if users_config
+        Profile.add_sections_to_skip_list(users_config.keys)
         Call.Function("users_auto", ["Import", users_config])
       end
     end
