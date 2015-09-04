@@ -62,4 +62,34 @@ describe Yast::Y2ModuleConfig do
       )
     end
   end
+
+  describe "#getModuleConfig" do
+    let(:modules) do
+      [
+        # modules
+        { "add-on"     => { "Name" => "Add-On Products" },
+          "bootloader" => { "Name" => "Boot Loader" } },
+        # groups
+        {}
+      ]
+    end
+
+    before do
+      allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries).with(%w(all configure write))
+        .and_return(modules)
+    end
+
+    context "if the module is defined" do
+      it "returns module config" do
+        expect(Yast::Y2ModuleConfig.getModuleConfig("bootloader")).to eq(
+          "res" => "bootloader", "data" => { "Name" => "Boot Loader" })
+      end
+    end
+
+    context "if the module is undefined" do
+      it "returns nil" do
+        expect(Yast::Y2ModuleConfig.getModuleConfig("non-existant-module")).to be_nil
+      end
+    end
+  end
 end

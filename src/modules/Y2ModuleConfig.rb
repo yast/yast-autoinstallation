@@ -13,6 +13,7 @@ module Yast
     # Key for AutoYaST client name in desktop file
     RESOURCE_NAME_KEY = "X-SuSE-YaST-AutoInstResource"
     RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
+    MODES = %w(all configure write)
 
     include Yast::Logger
 
@@ -383,6 +384,22 @@ module Yast
     # @return [Array<String>] of unsupported profile sections
     def unsupported_profile_sections
       unhandled_profile_sections & Yast::ProfileClass::OBSOLETE_PROFILE_SECTIONS
+    end
+
+    # Returns configuration for a given module
+    #
+    # @param [String] name Module name.
+    # @return [Hash] Module configuration using the same structure as
+    #                #Deps method (with "res" and "data" keys).
+    # @see #ReadMenuEntries
+    def getModuleConfig(name)
+      entries = ReadMenuEntries(MODES).first # entries, groups
+      entry = entries.find { |k, v| k == name } # name, entry
+      if entry
+        { "res" => name, "data" => entry.last }
+      else
+        nil
+      end
     end
 
     publish :variable => :GroupMap, :type => "map <string, map>"

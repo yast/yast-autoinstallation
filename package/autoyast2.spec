@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.91
+Version:        3.1.92
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -57,6 +57,7 @@ Requires:       yast2-schema
 Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
+Conflicts:      yast2-installation < 3.1.158
 
 Provides:       yast2-config-autoinst
 Provides:       yast2-module-autoinst
@@ -204,6 +205,8 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_moduledir}/Kickstart.rb
 %dir %{yast_agentdir}
 %{yast_agentdir}/ag_ksimport
+%dir %{yast_libdir}/autoinstall
+%{yast_libdir}/autoinstall/*.rb
 
 # additional files
 

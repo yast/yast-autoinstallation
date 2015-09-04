@@ -70,6 +70,10 @@ ynclude_DATA = \
   include/autoinstall/helps.rb \
   include/autoinstall/general_dialogs.rb
 
+ylibdir = @ylibdir@/autoinstall
+ylib_DATA = \
+  lib/autoinstall/module_config_builder.rb
+
 scrconf_DATA = \
   scrconf/cfg_autoinstall.scr \
   scrconf/autoinstall.scr \
@@ -103,6 +107,6 @@ desktop_DATA = \
 fillup_DATA = \
   fillup/sysconfig.autoinstall
 
-EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(scrconf_DATA) $(agent_SCRIPTS) $(schemafiles_DATA) $(ybin_SCRIPTS) $(desktop_DATA) $(fillup_DATA)
+EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(scrconf_DATA) $(agent_SCRIPTS) $(schemafiles_DATA) $(ybin_SCRIPTS) $(desktop_DATA) $(fillup_DATA) $(ylib_DATA)
 
 include $(top_srcdir)/Makefile.am.common
