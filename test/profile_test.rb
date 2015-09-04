@@ -22,7 +22,7 @@ describe Yast::Profile do
   describe "#softwareCompat" do
     before do
       Yast::Profile.current = profile
-      allow(Yast::InstFunctions).to receive(:second_stage_required?).and_return(second_stage_required)
+      allow(Yast::AutoInstall).to receive(:second_stage_required?).and_return(second_stage_required)
     end
 
     let(:second_stage_required) { true }
