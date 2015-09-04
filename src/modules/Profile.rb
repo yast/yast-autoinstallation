@@ -55,7 +55,7 @@ module Yast
       Yast.import "Directory"
       Yast.import "FileUtils"
       Yast.import "PackageSystem"
-      Yast.import "InstFunctions"
+      Yast.import "AutoInstall"
 
       Yast.include self, "autoinstall/xml.rb"
 
@@ -144,7 +144,7 @@ module Yast
       # to check if 2nd stage is required (chicken-and-egg problem).
       mode = @current.fetch("general", {}).fetch("mode", {})
       second_stage_enabled = mode.has_key?("second_stage") ? mode["second_stage"] : true
-      if InstFunctions.second_stage_required? && second_stage_enabled
+      if AutoInstall.second_stage_required? && second_stage_enabled
         add_autoyast_packages
       end
 

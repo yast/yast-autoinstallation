@@ -45,7 +45,6 @@ module Yast
       Yast.import "Console"
       Yast.import "ServicesManager"
       Yast.import "Y2ModuleConfig"
-      Yast.import "InstFunctions"
 
       Yast.include self, "bootloader/routines/autoinstall.rb"
       Yast.include self, "autoinstall/ask.rb"
@@ -375,7 +374,7 @@ module Yast
 
       Progress.Finish
 
-      add_yast2_dependencies if InstFunctions.second_stage_required?
+      add_yast2_dependencies if AutoInstall.second_stage_required?
 
       @ret = ProductControl.RunFrom(
         Ops.add(ProductControl.CurrentStep, 1),
