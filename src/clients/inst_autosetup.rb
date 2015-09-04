@@ -45,6 +45,7 @@ module Yast
       Yast.import "Console"
       Yast.import "ServicesManager"
       Yast.import "Y2ModuleConfig"
+      Yast.import "InstFunctions"
 
       Yast.include self, "bootloader/routines/autoinstall.rb"
       Yast.include self, "autoinstall/ask.rb"
@@ -323,10 +324,6 @@ module Yast
 
       Progress.NextStage
       AutoinstSoftware.Import(Ops.get_map(Profile.current, "software", {}))
-      keys = Profile.current.keys.select do |k|
-        Profile.current[k].is_a?(Array)||Profile.current[k].is_a?(Hash)
-      end
-      AutoinstSoftware.AddYdepsFromProfile(keys)
 
       if !AutoinstSoftware.Write
         Report.Error(
@@ -377,6 +374,8 @@ module Yast
       autosetup_users
 
       Progress.Finish
+
+      add_yast2_dependencies if InstFunctions.second_stage_required?
 
       @ret = ProductControl.RunFrom(
         Ops.add(ProductControl.CurrentStep, 1),
@@ -429,6 +428,14 @@ module Yast
         Profile.remove_sections(users_config.keys)
         Call.Function("users_auto", ["Import", users_config])
       end
+    end
+
+    # Add YaST2 packages dependencies
+    def add_yast2_dependencies
+      keys = Profile.current.keys.select do |k|
+        Profile.current[k].is_a?(Array)||Profile.current[k].is_a?(Hash)
+      end
+      AutoinstSoftware.AddYdepsFromProfile(keys)
     end
   end
 end
