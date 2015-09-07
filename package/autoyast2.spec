@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.92
+Version:        3.1.93
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -266,6 +266,7 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_moduledir}/AutoinstDrive.rb
 %{yast_moduledir}/AutoinstPartPlan.rb
 %{yast_moduledir}/AutoinstPartition.rb
+%{yast_moduledir}/AutoinstFunctions.rb
 
 #clients
 %{yast_clientdir}/inst_autoinit.rb

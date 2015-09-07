@@ -21,7 +21,8 @@ module_DATA = \
   modules/AutoinstGeneral.rb \
   modules/AutoinstSoftware.rb \
   modules/AutoinstDrive.rb \
-  modules/AutoinstClass.rb
+  modules/AutoinstClass.rb \
+  modules/AutoinstFunctions.rb
 
 client_DATA = \
   clients/classes_auto.rb \
