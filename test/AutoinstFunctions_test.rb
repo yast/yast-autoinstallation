@@ -2,13 +2,13 @@
 
 require_relative "test_helper"
 
-Yast.import "AutoInstall"
+Yast.import "AutoinstFunctions"
 Yast.import "Stage"
 Yast.import "Mode"
 Yast.import "AutoinstConfig"
 
-describe Yast::AutoInstall do
-  subject { Yast::AutoInstall }
+describe Yast::AutoinstFunctions do
+  subject { Yast::AutoinstFunctions }
 
   let(:stage) { "initial" }
   let(:mode) { "autoinst" }
