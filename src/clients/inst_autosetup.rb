@@ -148,17 +148,31 @@ module Yast
 
       if Profile.current["networking"] &&
           ( Profile.current["networking"]["setup_before_proposal"] ||
-            semiauto_network )
-        Builtins.y2milestone("Networking setup before the proposal")
+            semiauto_network ||
+            !AutoinstConfig.second_stage()
+            )
+        Builtins.y2milestone(
+          "Importing Network settings from configuration file")
         Call.Function(
           "lan_auto",
           ["Import", Ops.get_map(Profile.current, "networking", {})]
         )
-        write_network = true
+        if Profile.current["networking"]["setup_before_proposal"]
+          Builtins.y2milestone("Networking setup before the proposal")
+          write_network = true
+        elsif !AutoinstConfig.second_stage()
+          # Second stage of installation will not be called but a
+          # network configuration is available. So this will be written
+          # while the general inst_finish process at the end of the
+          # first stage. But for the installation workflow the linuxrc
+          # network settings will be taken. (bnc#944942)
+          Builtins.y2milestone(
+            "Networking setup at the end of first installation stage")
+        end
       end
 
       if semiauto_network
-        Builtins.y2milestone("Networking manual setup")
+        Builtins.y2milestone("Networking manual setup before proposal")
         Call.Function("inst_lan", ["enable_next" => true])
         write_network = true
       end
