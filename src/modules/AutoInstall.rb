@@ -11,6 +11,8 @@ require "autoinstall/pkg_gpg_check_handler"
 
 module Yast
   class AutoInstallClass < Module
+    include Yast::Logger
+
     def main
       textdomain "autoinst"
 

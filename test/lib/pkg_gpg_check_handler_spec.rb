@@ -36,7 +36,7 @@ describe Yast::PkgGpgCheckHandler do
       end
 
       context "and unsigned packages are allowed" do
-        let(:signature_handling) { { "accept_unsigned_packages" => true } }
+        let(:signature_handling) { { "accept_unsigned_file" => true } }
 
         it "returns true" do
           expect(handler.accept?).to eq(true)
@@ -242,7 +242,7 @@ describe Yast::PkgGpgCheckHandler do
       let(:profile) do
         { "general" =>
           { "signature-handling" =>
-            { "accept_unsigned_packages" => true,
+            { "accept_unsigned_file" => true,
               "accept_unknown_gpg_key" => true } },
           "add-on" =>
             { "add_on_products" =>
