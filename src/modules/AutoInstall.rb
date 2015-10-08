@@ -7,6 +7,7 @@
 #
 # $Id$
 require "yast"
+require "autoinstall/pkg_gpg_check_handler"
 
 module Yast
   class AutoInstallClass < Module
@@ -301,6 +302,23 @@ module Yast
       true
     end
 
+    # Implement pkgGpgCheck callback
+    #
+    # @param [Hash] data Output from `pkgGpgCheck` callback.
+    # @options data [String] "CheckPackageResult" Check result code according to libzypp.
+    # @options data [String] "Package" Package's name.
+    # @options data [String] "Localpath" Path to RPM file.
+    # @options data [String] "RepoMediaUrl" Media URL.
+    #   (it should match `media_url` key in AutoYaST profile).
+    # @return [String] "I" if the package should be accepted; otherwise
+    #   a blank string is returned (so no decision is made).
+    def pkg_gpg_check(data)
+      log.debug("pkgGpgCheck data: #{data}")
+      accept = PkgGpgCheckHandler.new(data, Profile.current).accept?
+      log.info("PkgGpgCheckerHandler for #{data["Package"]} returned #{accept}")
+      accept ? "I" : ""
+    end
+
     publish :variable => :autoconf, :type => "boolean"
     publish :function => :callbackTrue_boolean_string, :type => "boolean (string)"
     publish :function => :callbackFalse_boolean_string, :type => "boolean (string)"
@@ -324,6 +342,8 @@ module Yast
     publish :function => :Save, :type => "boolean ()"
     publish :function => :Finish, :type => "void (string)"
     publish :function => :PXELocalBoot, :type => "boolean ()"
+    publish :function => :pkg_gpg_check, :type => "string (map)"
+
   end
 
   AutoInstall = AutoInstallClass.new

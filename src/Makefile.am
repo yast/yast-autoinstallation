@@ -70,6 +70,10 @@ ynclude_DATA = \
   include/autoinstall/helps.rb \
   include/autoinstall/general_dialogs.rb
 
+ylibdir = @ylibdir@/autoinstall
+ylib_DATA = \
+  lib/autoinstall/pkg_gpg_check_handler.rb
+
 scrconf_DATA = \
   scrconf/cfg_autoinstall.scr \
   scrconf/autoinstall.scr \

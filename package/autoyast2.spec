@@ -281,6 +281,9 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_yncludedir}/autoinstall/xml.rb
 %{yast_yncludedir}/autoinstall/ask.rb
 
+%dir %{yast_libdir}/autoinstall
+%{yast_libdir}/autoinstall/*.rb
+
 # scripts
 %{_prefix}/lib/YaST2/bin/fetch_image.sh
 %{_prefix}/lib/YaST2/bin/autoyast-initscripts.sh
