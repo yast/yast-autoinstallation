@@ -73,7 +73,8 @@ ynclude_DATA = \
 
 ylibdir = @ylibdir@/autoinstall
 ylib_DATA = \
-  lib/autoinstall/module_config_builder.rb
+  lib/autoinstall/module_config_builder.rb \
+  lib/autoinstall/pkg_gpg_check_handler.rb
 
 scrconf_DATA = \
   scrconf/cfg_autoinstall.scr \
