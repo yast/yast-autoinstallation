@@ -2,7 +2,9 @@
 # Makefile.am for autoinstallation/test
 #
 
-TESTS = AutoInstallRules_test.rb
+TESTS = \
+    AutoInstallRules_test.rb \
+    AutoInstall_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec
