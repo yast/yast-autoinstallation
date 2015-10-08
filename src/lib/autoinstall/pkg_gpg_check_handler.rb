@@ -3,6 +3,8 @@ module Yast
   # if the package is suitable for installation or not according to the
   # AutoYaST profile.
   class PkgGpgCheckHandler
+    include Yast::Logger
+
     # These are the check result values according to libzypp.
     # https://github.com/openSUSE/libzypp/blob/master/zypp/target/rpm/RpmDb.h
     CHK_OK         = 0 # Signature is OK
@@ -41,16 +43,22 @@ module Yast
     def accept?
       case result
       when CHK_OK
+        log.debug "Handling successful PGP checking"
         handle_ok
       when CHK_NOTFOUND
+        log.debug "Handling unsigned package"
         handle_unsigned
       when CHK_NOKEY
+        log.debug "Handling unknown PGP key"
         handle_unknown
       when CHK_FAIL
+        log.debug "Handling verification failure"
         handle_failed
       when CHK_NOTTRUSTED
+        log.debug "Handling non trusted PGP key"
         handle_nontrusted
       when CHK_ERROR
+        log.debug "Handling error"
         handle_error
       else
         raise "Unknown GPG check result for #{package}"
@@ -74,7 +82,7 @@ module Yast
     #
     # @return [Boolean] true if acceptable; otherwise false.
     def handle_unsigned
-      config["accept_unsigned_packages"] == true
+      config["accept_unsigned_file"] == true
     end
 
     # Handle the situation where verification failed
