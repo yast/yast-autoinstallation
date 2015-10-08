@@ -27,6 +27,7 @@ module Yast
       Yast.import "URL"
       Yast.import "SLP"
       Yast.import "Stage"
+      Yast.import "Label"
 
       Yast.include self, "autoinstall/xml.rb"
 
@@ -276,7 +277,7 @@ module Yast
                 end
               end
               dlg = Left(ComboBox(Id(:choose), _("Choose Profile"), dummy))
-              UI.OpenDialog(VBox(dlg, PushButton(Id(:ok), "Ok")))
+              UI.OpenDialog(VBox(dlg, PushButton(Id(:ok), Label.OKButton)))
               UI.UserInput
               cmdLine = Ops.get(
                 comment2url,

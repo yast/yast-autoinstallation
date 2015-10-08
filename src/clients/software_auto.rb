@@ -132,7 +132,7 @@ module Yast
             )
           )
         ),
-        HBox(PushButton(Id(:ok), "&OK"), PushButton(Id(:abort), "&Abort"))
+        HBox(PushButton(Id(:ok), Label.OKButton), PushButton(Id(:abort), Label.AbortButton))
       )
       UI.OpenDialog(Opt(:decorated), contents)
       UI.ChangeWidget(Id(:location), :Enabled, mainRepo != "")

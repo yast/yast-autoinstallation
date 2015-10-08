@@ -736,8 +736,8 @@ module Yast
               VSpacing(1),
               HBox(
                 HStretch(),
-                PushButton(Id(:back), "Back"),
-                PushButton(Id(:ok), "Okay")
+                PushButton(Id(:back), Label.BackButton),
+                PushButton(Id(:ok), Label.OKButton)
               )
             )
           )
