@@ -88,7 +88,7 @@ describe Yast::PkgGpgCheckHandler do
 
       before do
         cmd = format(Yast::PkgGpgCheckHandler::FIND_KEY_ID_CMD, data["Localpath"])
-        allow(Yast::SCR).to receive(:Execute).with(path(".target.bash_output"), cmd)
+        allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), cmd)
           .and_return(rpm_output)
       end
 
@@ -163,7 +163,7 @@ describe Yast::PkgGpgCheckHandler do
 
       before do
         cmd = format(Yast::PkgGpgCheckHandler::FIND_KEY_ID_CMD, data["Localpath"])
-        allow(Yast::SCR).to receive(:Execute).with(path(".target.bash_output"), cmd)
+        allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), cmd)
           .and_return(rpm_output)
       end
 
