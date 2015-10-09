@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.96
+Version:        3.1.97
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -205,8 +205,6 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_moduledir}/Kickstart.rb
 %dir %{yast_agentdir}
 %{yast_agentdir}/ag_ksimport
-%dir %{yast_libdir}/autoinstall
-%{yast_libdir}/autoinstall/*.rb
 
 # additional files
 
@@ -286,6 +284,9 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 
 %{yast_yncludedir}/autoinstall/xml.rb
 %{yast_yncludedir}/autoinstall/ask.rb
+
+%dir %{yast_libdir}/autoinstall
+%{yast_libdir}/autoinstall/*.rb
 
 # scripts
 %{_prefix}/lib/YaST2/bin/fetch_image.sh
