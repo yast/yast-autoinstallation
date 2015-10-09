@@ -278,6 +278,11 @@ module Yast
         )
       )
 
+      Pkg.CallbackPkgGpgCheck(
+        fun_ref(AutoInstall.method(:pkg_gpg_check),
+        "string (map)"
+      ))
+
       if Builtins.haskey(@signature_handling, "accept_unsigned_file")
         Pkg.CallbackAcceptUnsignedFile(
           Ops.get_boolean(@signature_handling, "accept_unsigned_file", false) ?

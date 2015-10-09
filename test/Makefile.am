@@ -4,9 +4,16 @@
 
 TESTS = \
     AutoInstallRules_test.rb \
+    AutoInstall_test.rb \
     AutoinstClass_test.rb \
+    AutoinstFunctions_test.rb \
+    AutoinstGeneral_test.rb \
+    AutoinstSoftware_test.rb \
+    profile_test.rb \
     Y2ModuleConfig_test.rb \
-    include/ask_test.rb
+    include/ask_test.rb \
+    lib/module_config_builder_test.rb \
+    lib/pkg_gpg_check_handler_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec
