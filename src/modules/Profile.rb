@@ -15,10 +15,13 @@ module Yast
     GENERIC_PROFILE_SECTIONS = [
       # AutoYaST has its own partitioning
       "partitioning",
+      "partitioning_advanced",
       # AutoYaST has its Preboot Execution Environment configuration
       "pxe",
       # Flags for setting the solver while the upgrade process with AutoYaST
-      "upgrade"
+      "upgrade",
+      # Flags for controlling the update backups (see Installation module)
+      "backup"
     ]
 
     # Dropped YaST modules that used to provide AutoYaST functionality
@@ -35,6 +38,10 @@ module Yast
     AUTOYAST_CLIENTS = [
       "files",
       "general",
+      # FIXME: Partitioning should probably not be here. There is no
+      # partitioning_auto client. Moreover, it looks pointless to enforce the
+      # installation of autoyast2 only because the <partitioning> section
+      # is in the profile. It will happen on 1st stage anyways.
       "partitioning",
       "report",
       "scripts",
