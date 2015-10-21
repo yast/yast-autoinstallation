@@ -160,7 +160,9 @@ module Yast
       )
 
       Builtins.foreach(Ops.get_list(settings, "packages", [])) do |pack|
-        if !Pkg.IsAvailable(pack) && Stage.initial
+        if Stage.initial &&  # We are in the first installation stage
+          !Mode.config   &&  # but not cloning system to autoinst.xml (bnc#901747)
+          !Pkg.IsAvailable(pack) # and package is NOT on installation medium
           notFound = Ops.add(Ops.add(notFound, pack), "\n")
         end
       end
