@@ -313,7 +313,7 @@ module Yast
         Builtins.y2milestone("running services \"%1\"", @sl)
 
         # Filtering out all services which must not to be restarted
-        @sel.select! {|s| !@ser_ignore.any?{|i| s.match(/#{i}/)}}
+        @sl.select! {|s| !@ser_ignore.any?{|i| s.match(/#{i}/)}}
 
         Builtins.y2milestone("restarting services \"%1\"", @sl)
         @cmd = Ops.add(
