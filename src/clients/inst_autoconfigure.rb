@@ -298,7 +298,10 @@ module Yast
         "autoyast-initscripts.service",
         # Do not restart dbus. Otherwise some services will hang.
         # bnc#937900
-        "dbus.service"
+        "dbus.service",
+        # Do not restart wickedd* services
+        # bnc#944349
+        "^wickedd"
       ]
       if final_restart_services
         logStep(_("Restarting all running services"))
@@ -308,9 +311,10 @@ module Yast
           Builtins.splitstring(Ops.get_string(@out, "stdout", ""), "\n")
         ) { |s| Ops.greater_than(Builtins.size(s), 0) }
         Builtins.y2milestone("running services \"%1\"", @sl)
-        @sl = Builtins.filter(@sl) do |s|
-          !Builtins.contains(@ser_ignore, s)
-        end
+
+        # Filtering out all services which must not to be restarted
+        @sl.select! {|s| !@ser_ignore.any?{|i| s.match(/#{i}/)}}
+
         Builtins.y2milestone("restarting services \"%1\"", @sl)
         @cmd = Ops.add(
           "systemctl --no-block restart ",
