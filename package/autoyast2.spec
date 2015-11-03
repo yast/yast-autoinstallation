@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.100
+Version:        3.1.101
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -57,6 +57,8 @@ Requires:       yast2-schema
 Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
+# pkgGpgCheck callback
+Requires:       yast2-pkg-bindings >= 3.1.31
 Conflicts:      yast2-installation < 3.1.158
 
 Provides:       yast2-config-autoinst
