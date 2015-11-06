@@ -18,7 +18,7 @@ describe Yast::AutoinstGeneral do
 
       expect(Yast::SCR).to receive(:Execute).with(
         path(".target.bash"),
-        "/usr/sbin/sntp -t 2 -s #{Yast::AutoinstGeneral.mode["ntp_sync_time_before_installation"]}").and_return(0)
+        "/usr/sbin/ntpdate -b #{Yast::AutoinstGeneral.mode["ntp_sync_time_before_installation"]}").and_return(0)
       expect(Yast::SCR).to receive(:Execute).with(
         path(".target.bash"),"/sbin/hwclock --systohc").and_return(0)
 
