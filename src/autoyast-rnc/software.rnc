@@ -13,6 +13,7 @@ software =
     remove-patterns? &
     products? &
     remove-products? &
+    image? &
     element do_online_update { BOOLEAN }? &
     element install_recommended { BOOLEAN }? &
     element instsource {text}?
@@ -57,4 +58,18 @@ remove-products =
   element remove-products {
     LIST,
     element product {text}+
+  }
+script_params =
+  element script_params {
+      LIST,
+      element listentry { text }
+  }
+
+image =
+  element image {
+    element image_location  { text }? &
+    element image_name      { text }? &
+    element script_location { text }? &
+    script_params? &
+    element run_kickoff     { BOOLEAN }?
   }
