@@ -337,8 +337,18 @@ module Yast
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
       Progress.NextStage
+
+      # Evaluating package and patterns selection.
+      # Selection will stored in PackageAI.
       AutoinstSoftware.Import(Ops.get_map(Profile.current, "software", {}))
 
+      # Add additional packages in order to run YAST modules which
+      # has been defined the AutoYaST configuration file.
+      # Selection will stored in PackageAI.
+      add_yast2_dependencies if AutoinstFunctions.second_stage_required?
+
+      # Adding selections (defined in PackageAI) to libzypp and solving
+      # package dependencies.
       if !AutoinstSoftware.Write
         Report.Error(
           _("Error while configuring software selections.\nTry again.\n")
@@ -388,8 +398,6 @@ module Yast
       autosetup_users
 
       Progress.Finish
-
-      add_yast2_dependencies if AutoinstFunctions.second_stage_required?
 
       @ret = ProductControl.RunFrom(
         Ops.add(ProductControl.CurrentStep, 1),
