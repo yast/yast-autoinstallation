@@ -1100,6 +1100,14 @@ module Yast
       Import((Stage.initial ? read_initial_stage() : ReadHelper()))
     end
 
+    def SavePackageSelection
+      @saved_package_selection = Read()
+    end
+
+    def SavedPackageSelection
+      @saved_package_selection
+    end
+
     publish :variable => :Software, :type => "map"
     publish :variable => :image, :type => "map <string, any>"
     publish :variable => :image_arch, :type => "string"
