@@ -301,7 +301,10 @@ module Yast
         "dbus.service",
         # Do not restart wickedd* services
         # bnc#944349
-        "^wickedd"
+        "^wickedd",
+        # Do not restart NetworkManager* services
+        # bnc#955260
+        "^NetworkManager"
       ]
       if final_restart_services
         logStep(_("Restarting all running services"))

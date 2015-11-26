@@ -52,7 +52,8 @@ module Yast
       elsif @func == "Import"
         @ret = AutoinstSoftware.Import(@param)
       elsif @func == "Read"
-        @ret = AutoinstSoftware.Read
+        # use the previously saved software selection if defined (bsc#956325)
+        @ret = AutoinstSoftware.SavedPackageSelection || AutoinstSoftware.Read
       elsif @func == "Reset"
         AutoinstSoftware.Import({})
         @ret = {}
