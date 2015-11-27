@@ -59,7 +59,7 @@ describe Yast::Y2ModuleConfig do
       Yast::Y2ModuleConfig.instance_variable_set("@ModuleMap", DESKTOP_DATA)
 
       expect(Yast::Y2ModuleConfig.unsupported_profile_sections.sort).to eq(
-        ["autofs", "restore", "sshd"].sort
+        ["autofs", "cobbler", "restore", "sshd"].sort
       )
     end
   end
