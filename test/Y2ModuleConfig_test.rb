@@ -31,7 +31,7 @@ describe Yast::Y2ModuleConfig do
     allow(Yast::WFM).to receive(:ClientExists).with("unknown_profile_item_2_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("partitioning_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("upgrade_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("cobber_auto").and_return(false)
+    allow(Yast::WFM).to receive(:ClientExists).with("cobbler_auto").and_return(false)
   end
 
   describe "#unhandled_profile_sections" do
@@ -43,7 +43,7 @@ describe Yast::Y2ModuleConfig do
 
       expect(Yast::Y2ModuleConfig.unhandled_profile_sections.sort).to eq(
         [
-          "audit-laf", "autofs", "ca_mgm", "cobber", "firstboot", "language", "restore",
+          "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "language", "restore",
           "runlevel", "sshd", "sysconfig", "unknown_profile_item_1",
           "unknown_profile_item_2"
         ].sort
