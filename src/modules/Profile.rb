@@ -32,6 +32,8 @@ module Yast
       # FATE#308682: Drop yast2-backup and yast2-restore modules
       "restore",
       "sshd",
+      # Defined in SUSE Manger but will not be used anymore. (bnc#955878)
+      "cobbler"
     ]
 
     # Sections that are handled by AutoYaST clients included in autoyast2 package.
