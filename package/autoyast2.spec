@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.106
+Version:        3.1.107
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -57,7 +57,7 @@ Requires:       yast2-schema
 Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
-Conflicts:      yast2-installation < 3.1.158
+Conflicts:      yast2-installation < 3.1.166
 
 Provides:       yast2-config-autoinst
 Provides:       yast2-module-autoinst
