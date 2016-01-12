@@ -794,7 +794,7 @@ module Yast
           scriptPath = Builtins.sformat(
             "%1%2/%3",
             AutoinstConfig.destdir,
-            AutoinstConfig.scripts_dir,
+            AutoinstConfig.initscripts_dir,
             scriptName
           )
           Builtins.y2milestone("Writing init script into %1", scriptPath)
