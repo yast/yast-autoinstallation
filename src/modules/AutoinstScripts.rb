@@ -792,7 +792,8 @@ module Yast
           end
         elsif type == "init-scripts"
           scriptPath = Builtins.sformat(
-            "%1/%2",
+            "%1%2/%3",
+            AutoinstConfig.destdir,
             AutoinstConfig.initscripts_dir,
             scriptName
           )
