@@ -797,7 +797,7 @@ module Yast
             scriptName
           )
           if Ops.get_string(s, "location", "") != ""
-            scriptName = AutoinstConfig.destdir + scriptName #bnc961320
+            scriptPath = AutoinstConfig.destdir + scriptPath #bnc961320
             Builtins.y2debug(
               "getting script: %1",
               Ops.get_string(s, "location", "")
