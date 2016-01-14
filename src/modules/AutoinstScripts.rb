@@ -792,13 +792,12 @@ module Yast
           end
         elsif type == "init-scripts"
           scriptPath = Builtins.sformat(
-            "%1%2/%3",
-            AutoinstConfig.destdir,
+            "%1/%2",
             AutoinstConfig.initscripts_dir,
             scriptName
           )
-          Builtins.y2milestone("Writing init script into %1", scriptPath)
           if Ops.get_string(s, "location", "") != ""
+            scriptName = AutoinstConfig.destdir + scriptName #bnc961320
             Builtins.y2debug(
               "getting script: %1",
               Ops.get_string(s, "location", "")
@@ -815,7 +814,8 @@ module Yast
               scriptPath,
               Ops.get_string(s, "source", "echo Empty script!")
             )
-          end 
+          end
+          Builtins.y2milestone("Writing init script into %1", scriptPath)
           # moved to 1st stage because of systemd
           #Service::Enable("autoyast");
         elsif type == "chroot-scripts"
