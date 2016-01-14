@@ -81,7 +81,7 @@ module Yast
       unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
       if unsupported_sections.any?
         log.error "Could not process these unsupported profile sections: #{unsupported_sections}"
-        Report.LongWarning(
+        Report.LongError(
           # TRANSLATORS: Error message, %s is replaced by newline-separated
           # list of unsupported sections of the profile
           # Do not translate words in brackets
