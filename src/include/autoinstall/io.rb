@@ -181,7 +181,8 @@ module Yast
           # The Cdrom entry in install.inf is obsolete. So we are using the
           # entry which is defined in InstUrl module. (bnc#908271)
           install_url = InstURL.installInf2Url("")
-          cdrom_device = install_url ? Builtins.regexpsub(install_url, "devices=(.*)$", "\\1") : ""
+          # Builtins.regexpsub can also return nil (bnc#959723)
+          cdrom_device = install_url ? (Builtins.regexpsub(install_url, "devices=(.*)$", "\\1") || "") : ""
           if Installation.boot == "cd" && !cdrom_device.empty?
             already_mounted = Ops.add(
               Ops.add("grep ", cdrom_device),
