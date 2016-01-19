@@ -466,13 +466,14 @@ module Yast
 	  rls.reject! {|r| r=="result"}
 	  rls.push("result")
 	end
+        op = Ops.get_string(ruleset, "operator", "and")
+        rls.reject! {|r| r=="op"}
 	Builtins.y2milestone("Orderes Rules: %1", rls)
         Builtins.foreach(rls) do |rule|
 	  ruledef = ruleset.fetch( rule, {} )
           Builtins.y2milestone("Rule: %1", rule)
           Builtins.y2milestone("Ruledef: %1", ruledef)
           match = Ops.get_string(ruledef, "match", "undefined")
-          op = Ops.get_string(ruledef, "operator", "and")
           matchtype = Ops.get_string(ruledef, "match_type", "exact")
           easy_rules = [
             "hostname",
@@ -822,7 +823,6 @@ module Yast
           @tomerge
         )
       end
-
       nil
     end
 
