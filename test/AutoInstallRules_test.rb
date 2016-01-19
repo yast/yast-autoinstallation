@@ -114,6 +114,67 @@ describe Yast::AutoInstallRules do
     end
   end
 
+  describe "#Rules XML" do
+    it "Reading rules with -or- operator" do
+      expect(Yast::XML).to receive(:XMLToYCPFile).and_return(
+        { "rules"=>[{
+            "hostaddress"=>{"match"=>"10.69.57.43",
+                            "match_type"=>"exact"},
+            "mac"=>{"match"=>"000c2903d288",
+                    "match_type"=>"exact"},
+            "operator"=>"or",
+            "result"=>{"profile"=>"machine12.xml"}}]
+         }
+      )
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
+       "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   ||   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       )
+      .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
+
+      subject.Read
+    end
+
+    it "Reading rules with -and- operator" do
+      expect(Yast::XML).to receive(:XMLToYCPFile).and_return(
+        { "rules"=>[{
+            "hostaddress"=>{"match"=>"10.69.57.43",
+                            "match_type"=>"exact"},
+            "mac"=>{"match"=>"000c2903d288",
+                    "match_type"=>"exact"},
+            "operator"=>"and",
+            "result"=>{"profile"=>"machine12.xml"}}]
+         }
+      )
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
+       "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       )
+      .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
+
+      subject.Read
+    end
+
+    it "Reading rules with default operator" do
+      expect(Yast::XML).to receive(:XMLToYCPFile).and_return(
+        { "rules"=>[{
+            "hostaddress"=>{"match"=>"10.69.57.43",
+                            "match_type"=>"exact"},
+            "mac"=>{"match"=>"000c2903d288",
+                    "match_type"=>"exact"},
+            "result"=>{"profile"=>"machine12.xml"}}]
+         }
+      )
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
+       "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       )
+      .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
+
+      subject.Read
+    end
+  end
+
   describe "#Host ID" do
     let(:wicked_output_path) { File.join(root_path, 'test', 'fixtures', 'output', 'wicked_output')  }
     it "returns host IP in hex format (initial Stage)" do
