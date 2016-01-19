@@ -21,7 +21,10 @@ module Yast
       # Flags for setting the solver while the upgrade process with AutoYaST
       "upgrade",
       # Flags for controlling the update backups (see Installation module)
-      "backup"
+      "backup",
+      # init section used by Kickstart and to pass additional arguments
+      # to Linuxrc (bsc#962526)
+      "init"
     ]
 
     # Dropped YaST modules that used to provide AutoYaST functionality
