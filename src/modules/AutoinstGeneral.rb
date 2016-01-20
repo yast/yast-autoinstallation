@@ -420,7 +420,7 @@ module Yast
           # TRANSLATORS: %s is the name of the ntp server
           _("Syncing time with %s.") % ntp_server
         )
-        ret = SCR.Execute(path(".target.bash"), "/usr/sbin/sntp -t 2 -s #{ntp_server}")
+        ret = SCR.Execute(path(".target.bash"), "/usr/sbin/sntp -t 2 -S #{ntp_server}")
         if ret > 0
           Report.Error(_("Time syncing failed."))
         else
