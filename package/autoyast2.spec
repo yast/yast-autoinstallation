@@ -58,12 +58,7 @@ Requires:       yast2-schema
 Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
-<<<<<<< HEAD
 Conflicts:      yast2-installation < 3.1.166
-=======
-Conflicts:      yast2-installation < 3.1.158
-Conflicts:      ntp < 4.2.8
->>>>>>> origin/SLE-12-SP1
 
 Provides:       yast2-config-autoinst
 Provides:       yast2-module-autoinst
