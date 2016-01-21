@@ -403,8 +403,11 @@ module Yast
                 lv,
                 integer_k
               )
-            elsif Ops.get_string(lv, "size", "") == "max" &&
+            elsif (Ops.get_string(lv, "size", "") == "max" || Ops.get_string(lv, "size", "") == "auto") &&
                 Ops.less_or_equal(Ops.get_integer(lv, "stripes", 0), 1)
+              # "auto" size does not make sense here. But we are switching to the "max" behaviour in order
+              # not to produce an error and to evaluate other useable settings. (bnc#962034)
+              Report.Warning( "Option \"auto\" is not supported with LVM. Taking \"max\" option instead.") if lv["size"] == "auto"
               max_counter = Ops.add(max_counter, 1)
             end
             deep_copy(lv)
