@@ -34,6 +34,7 @@ module Yast
       Yast.import "IP"
       Yast.import "Product"
       Yast.import "Hostname"
+      Yast.import "OSRelease"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -340,19 +341,13 @@ module Yast
 
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
-      distro_str = SCR.Read(path(".content.DISTRO"))
-      log.info "DISTRO: #{distro_str}"
-
-      distro = distro_map(distro_str) || {}
-      cpe = cpeid_map(distro["cpeid"]) || {}
-
-      @installed_product = distro["name"] || ""
-      @installed_product_version = cpe["version"] || ""
+      @installed_product = Yast::OSRelease.ReleaseName
+      @installed_product_version = Yast::OSRelease.ReleaseVersion
       Ops.set(@ATTR, "installed_product", @installed_product)
       Ops.set(@ATTR, "installed_product_version", @installed_product_version)
 
-      log.info "Installing #{@installed_product.inspect}, " \
-        "version: #{@installed_product_version.inspect}"
+      log.info "Installing #{@installed_product}, " \
+        "version: #{@installed_product_version}"
       log.info "ATTR=#{@ATTR}"
 
       nil
