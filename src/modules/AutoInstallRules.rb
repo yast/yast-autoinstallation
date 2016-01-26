@@ -33,6 +33,7 @@ module Yast
       Yast.import "URL"
       Yast.import "IP"
       Yast.import "Product"
+      Yast.import "Hostname"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -154,6 +155,31 @@ module Yast
       cleanmac
     end
 
+    # Return the network part of the hostaddress
+    #
+    # Unless is called during initial stage (Stage.initial),
+    # it always returns "192.168.1.0".
+    #
+    # @example
+    #   AutoInstallRules.getNetwork #=> "192.168.122.0"
+    #
+    # @return [String] Network part of the hostaddress
+    #
+    # @see hostaddress
+    def getNetwork
+      return "192.168.1.0" unless Stage.initial # FIXME
+      wicked_ret = SCR.Execute(path(".target.bash_output"),
+        "/usr/sbin/wicked show --verbose all")
+
+      # Regexp to fetch match the network address.
+      regexp = / ([\h:\.]+)\/\d+ dev.+pref-src #{hostaddress}/
+      if match = regexp.match(wicked_ret["stdout"])
+        match[1]
+      else
+        log.warn "Cannot find network address through wicked: #{wicked_ret}"
+        nil
+      end
+    end
 
     # Return host id (hex ip )
     # @return [String] host ID
@@ -293,9 +319,9 @@ module Yast
       Ops.set(@ATTR, "hostid", @hostid)
 
       Ops.set(@ATTR, "hostname", getHostname)
-      @domain = Convert.to_string(SCR.Read(path(".etc.install_inf.Domain")))
+      @domain = Hostname.CurrentDomain
       Ops.set(@ATTR, "domain", @domain)
-      @network = Convert.to_string(SCR.Read(path(".etc.install_inf.Network")))
+      @network = getNetwork
       Ops.set(@ATTR, "network", @network)
       @haspcmcia = Convert.to_string(
         SCR.Read(path(".etc.install_inf.HasPCMCIA"))
