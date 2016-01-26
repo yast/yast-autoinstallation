@@ -1180,56 +1180,6 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
-
-    private
-
-    # TODO FIXME: share these functions (move to yast2?)
-
-    # Split CPE ID and distro label (separated by comma)
-    # @param distro [String] "DISTRO" value from content file
-    # @return [Hash<String,String>,nil] parsed value, map:
-    #    {"name" => <string>, "cpeid" => <string> }
-    #    or nil if the input value is invalid
-    def distro_map(distro)
-      if !distro
-        log.warn "Received nil distro value"
-        return nil
-      end
-
-      # split at the first comma, resulting in 2 parts at max.
-      cpeid, name = distro.split(",", 2)
-
-      if !name
-        log.warn "Cannot parse DISTRO value: #{distro}"
-        return nil
-      end
-
-      {"cpeid" => cpeid, "name" => name}
-    end
-
-    # parse CPE ID in URI syntax
-    # @see http://csrc.nist.gov/publications/nistir/ir7695/NISTIR-7695-CPE-Naming.pdf
-    # @param cpeid [String] e.g. "cpe:/o:suse:sles:12"
-    # @return [Hash<String,String>] parsed values, the keys are "part", "vendor", "product",
-    #   "version", "update", "edition", "lang", nil is returned for missing values
-    def cpeid_map(cpeid)
-      return nil unless cpeid && cpeid.start_with?("cpe:/")
-
-      # remove the "cpe:/" prefix
-      raw_cpe = cpeid.sub(/^cpe:\//, "")
-
-      parts = raw_cpe.split(":")
-
-      {
-        "part"    => parts[0],
-        "vendor"  => parts[1],
-        "product" => parts[2],
-        "version" => parts[3],
-        "update"  => parts[4],
-        "edition" => parts[5],
-        "lang"    => parts[6]
-      }
-    end
   end
 
   AutoInstallRules = AutoInstallRulesClass.new
