@@ -328,7 +328,7 @@ module Yast
 
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
-      @installed_product = Yast::OSRelease.ReleaseName
+      @installed_product = Yast::OSRelease.ReleaseInformation
       @installed_product_version = Yast::OSRelease.ReleaseVersion
       Ops.set(@ATTR, "installed_product", @installed_product)
       Ops.set(@ATTR, "installed_product_version", @installed_product_version)

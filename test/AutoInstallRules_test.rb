@@ -26,7 +26,7 @@ describe "Yast::AutoInstallRules" do
       expect(Yast::Storage).to receive(:GetForeignPrimary)
       expect(Yast::Storage).to receive(:GetOtherLinuxPartitions)
 
-      expect(Yast::OSRelease).to receive(:ReleaseName).
+      expect(Yast::OSRelease).to receive(:ReleaseInformation).
         and_return("SUSE Linux Enterprise Server 12")
       expect(Yast::OSRelease).to receive(:ReleaseVersion).
         and_return("12")
