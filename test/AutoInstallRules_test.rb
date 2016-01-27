@@ -52,10 +52,10 @@ describe "Yast::AutoInstallRules" do
       expect(subject.getHostid).to eq(Yast::IP.ToHex("192.168.100.218"))
     end
 
-    it "returns fix 192.168.1.1 in hex format (normal Stage)" do
+    it "returns fix DEFAULT_IP in hex format (normal Stage)" do
       expect(Yast::Stage).to receive(:initial).and_return(false)
 
-      expect(subject.getHostid).to eq(Yast::IP.ToHex("192.168.1.1"))
+      expect(subject.getHostid).to eq(Yast::IP.ToHex(Yast::AutoInstallRulesClass::DEFAULT_IP))
     end
 
     it "returns nil if wicked does not find IP address" do
@@ -155,8 +155,8 @@ describe "Yast::AutoInstallRules" do
     context "not in initial stage" do
       let(:initial) { false }
 
-      it "returns fixed 192.168.1.0" do
-        expect(subject.getNetwork).to eq("192.168.1.0")
+      it "returns fixed DEFAULT_NETWORK" do
+        expect(subject.getNetwork).to eq(Yast::AutoInstallRulesClass::DEFAULT_NETWORK)
       end
     end
   end
