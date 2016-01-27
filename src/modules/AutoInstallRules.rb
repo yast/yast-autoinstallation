@@ -12,6 +12,10 @@ module Yast
   class AutoInstallRulesClass < Module
     include Yast::Logger
 
+    # FIXME: why this values?
+    DEFAULT_IP = "192.168.1.1"
+    DEFAULT_NETWORK = "192.168.1.0"
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -159,7 +163,7 @@ module Yast
     # Return the network part of the hostaddress
     #
     # Unless is called during initial stage (Stage.initial),
-    # it always returns "192.168.1.0".
+    # it always returns DEFAULT_NETWORK.
     #
     # @example
     #   AutoInstallRules.getNetwork #=> "192.168.122.0"
@@ -167,36 +171,19 @@ module Yast
     # @return [String] Network part of the hostaddress
     #
     # @see hostaddress
+    # @see get_network_from_wicked
     def getNetwork
-      return "192.168.1.0" unless Stage.initial # FIXME
-      wicked_ret = SCR.Execute(path(".target.bash_output"),
-        "/usr/sbin/wicked show --verbose all")
-
-      # Regexp to fetch match the network address.
-      regexp = / ([\h:\.]+)\/\d+ dev.+pref-src #{hostaddress}/
-      if match = regexp.match(wicked_ret["stdout"])
-        match[1]
-      else
-        log.warn "Cannot find network address through wicked: #{wicked_ret}"
-        nil
-      end
+      Stage.initial ? get_network_from_wicked : DEFAULT_NETWORK
     end
 
     # Return host id (hex ip )
+    #
+    # Unless is called during initial stage (Stage.initial),
+    # it always returns DEFAULT_IP.
+    #
     # @return [String] host ID
     def getHostid
-      if Stage.initial
-        wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src")
-        if wicked_ret["exit"] == 0
-          stdout = wicked_ret["stdout"].split
-          @hostaddress = stdout[stdout.index("pref-src")+1]
-        else
-          log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
-          @hostaddress = nil
-        end
-      else
-        @hostaddress = "192.168.1.1" # FIXME
-      end
+      @hostaddress = Stage.initial ? get_ip_from_wicked : DEFAULT_IP
       IP.ToHex(@hostaddress)
     end
 
@@ -1180,6 +1167,40 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
+  end
+
+  private
+
+  # Return the IP through wicked
+  #
+  # @return [String] IP address
+  def get_ip_from_wicked
+    wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src")
+    if wicked_ret["exit"] == 0
+      stdout = wicked_ret["stdout"].split
+      stdout[stdout.index("pref-src")+1]
+    else
+      log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
+      nil
+    end
+  end
+
+
+  # Return the network address through wicked
+  #
+  # @return [String] Network IP address
+  def get_network_from_wicked
+    wicked_ret = SCR.Execute(path(".target.bash_output"),
+                             "/usr/sbin/wicked show --verbose all")
+
+    # Regexp to fetch match the network address.
+    regexp = / ([\h:\.]+)\/\d+ dev.+pref-src #{hostaddress}/
+    if match = regexp.match(wicked_ret["stdout"])
+      match[1]
+    else
+      log.warn "Cannot find network address through wicked: #{wicked_ret}"
+      nil
+    end
   end
 
   AutoInstallRules = AutoInstallRulesClass.new
