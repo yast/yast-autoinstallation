@@ -44,8 +44,7 @@ module Yast
           "mac"                       => AutoInstallRules.mac,
           "linux"                     => AutoInstallRules.linux,
           "others"                    => AutoInstallRules.others,
-          "xserver"                   => AutoInstallRules.xserver,
-          "haspcmcia"                 => AutoInstallRules.haspcmcia
+          "xserver"                   => AutoInstallRules.xserver
         }
       @text = "<h3>Keys for rules</h3><table>"
       Builtins.foreach(@attrs) do |k, v|

@@ -80,7 +80,6 @@ describe Yast::AutoInstallRules do
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.Domain"))
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.Hostname"))
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.Network"))
-      expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.HasPCMCIA"))
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.XServer"))
 
       expect(Yast::StorageControllers).to receive(:Initialize)

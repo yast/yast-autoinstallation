@@ -87,7 +87,6 @@ module Yast
       @linux = 0
       @others = 0
       @xserver = ""
-      @haspcmcia = "0"
 
       #///////////////////////////////////////////
       #///////////////////////////////////////////
@@ -297,10 +296,6 @@ module Yast
       Ops.set(@ATTR, "domain", @domain)
       @network = Convert.to_string(SCR.Read(path(".etc.install_inf.Network")))
       Ops.set(@ATTR, "network", @network)
-      @haspcmcia = Convert.to_string(
-        SCR.Read(path(".etc.install_inf.HasPCMCIA"))
-      )
-      Ops.set(@ATTR, "haspcmcia", @haspcmcia)
       @xserver = Convert.to_string(SCR.Read(path(".etc.install_inf.XServer")))
       Ops.set(@ATTR, "xserver", @xserver)
 
@@ -542,10 +537,6 @@ module Yast
             shellseg(ismatch, rule, match, op, matchtype)
             ismatch = true
             Ops.set(@env, rule, @totaldisk)
-          elsif rule == "haspcmcia"
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@env, rule, @haspcmcia)
           elsif rule == "disksize"
             Builtins.y2debug("creating rule check for disksize")
             disk = Builtins.splitstring(match, " ")
@@ -1140,7 +1131,6 @@ module Yast
     publish :variable => :linux, :type => "integer"
     publish :variable => :others, :type => "integer"
     publish :variable => :xserver, :type => "string"
-    publish :variable => :haspcmcia, :type => "string"
     publish :variable => :NonLinuxPartitions, :type => "list"
     publish :variable => :LinuxPartitions, :type => "list"
     publish :variable => :UserRules, :type => "map <string, any>"
