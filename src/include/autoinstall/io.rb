@@ -65,7 +65,7 @@ module Yast
     def Get(_Scheme, _Host, _Path, _Localfile)
       @GET_error = ""
       ok = false
-      res = {}
+
       toks = deep_copy(AutoinstConfig.urltok)
       Ops.set(toks, "scheme", _Scheme)
       Ops.set(toks, "host", _Host)
@@ -460,7 +460,7 @@ module Yast
             # because of changes in autoyast startup this code is now
             # called much sooner (before Storage stuff is initialized)
             # call dummy method to trigger Storage initialization
-            dummy = Storage.GetUsedFs()
+            _dummy = Storage.GetUsedFs()
             mp = Storage.DeviceMounted(Ops.add("/dev/", _Host2))
             already_mounted = !Builtins.isempty(mp)
             mount_point = mp if already_mounted
