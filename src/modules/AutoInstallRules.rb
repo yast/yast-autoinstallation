@@ -12,10 +12,6 @@ module Yast
   class AutoInstallRulesClass < Module
     include Yast::Logger
 
-    # FIXME: why this values?
-    DEFAULT_IP = "192.168.1.1"
-    DEFAULT_NETWORK = "192.168.1.0"
-
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -161,9 +157,6 @@ module Yast
 
     # Return the network part of the hostaddress
     #
-    # Unless is called during initial stage (Stage.initial),
-    # it always returns DEFAULT_NETWORK.
-    #
     # @example
     #   AutoInstallRules.getNetwork #=> "192.168.122.0"
     #
@@ -172,18 +165,23 @@ module Yast
     # @see hostaddress
     # @see get_network_from_wicked
     def getNetwork
-      Stage.initial ? get_network_from_wicked : DEFAULT_NETWORK
+      ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
+
+      # Regexp to fetch match the network address.
+      regexp = /([\h:\.]+)\/\d+ .+src #{hostaddress}/
+      if ret = ip_route["stdout"][regexp, 1]
+        ret
+      else
+        log.warn "Cannot find network address through 'ip': #{ip_route}"
+        nil
+      end
     end
 
-    # Return host id (hex ip )
-    #
-    # Unless is called during initial stage (Stage.initial),
-    # it always returns DEFAULT_IP.
+    # Return host id (hex ip)
     #
     # @return [String] host ID
     def getHostid
-      @hostaddress = Stage.initial ? get_ip_from_wicked : DEFAULT_IP
-      IP.ToHex(@hostaddress)
+      IP.ToHex(hostaddress)
     end
 
     # Return host name
@@ -298,7 +296,7 @@ module Yast
       #
       # Network
       #
-      Ops.set(@ATTR, "hostaddress", @hostaddress)
+      Ops.set(@ATTR, "hostaddress", hostaddress)
 
       #
       # Hostid (i.e. a8c00101);
@@ -465,7 +463,7 @@ module Yast
       Builtins.foreach(rulelist) do |ruleset|
         Builtins.y2milestone("Ruleset: %1", ruleset)
         rls = ruleset.keys
-        if( rls.include?("result"))
+        if rls.include?("result")
           rls.reject! {|r| r=="result"}
           rls.push("result")
         end
@@ -1114,6 +1112,20 @@ module Yast
       nil
     end
 
+    # Return the IP through wicked
+    #
+    # @return [String] IP address
+    def hostaddress
+      return @hostaddress unless @hostaddress == ""
+      ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
+      regexp = /src ([\w.]+) \n/
+      if ret = ip_route["stdout"][regexp, 1]
+        ret
+      else
+        log.warn "Cannot evaluate IP address: #{ip_route}"
+        nil
+      end
+    end
 
     publish :variable => :userrules, :type => "boolean"
     publish :variable => :dontmergeIsDefault, :type => "boolean"
@@ -1122,7 +1134,6 @@ module Yast
     publish :variable => :installed_product, :type => "string"
     publish :variable => :installed_product_version, :type => "string"
     publish :variable => :hostname, :type => "string"
-    publish :variable => :hostaddress, :type => "string"
     publish :variable => :network, :type => "string"
     publish :variable => :domain, :type => "string"
     publish :variable => :arch, :type => "string"
@@ -1143,6 +1154,7 @@ module Yast
     publish :variable => :LinuxPartitions, :type => "list"
     publish :variable => :UserRules, :type => "map <string, any>"
     publish :variable => :tomerge, :type => "list <string>"
+    publish :function => :hostaddress, :type => "string ()"
     publish :function => :XML_cleanup, :type => "boolean (string, string)"
     publish :function => :StdErrLog, :type => "void (string)"
     publish :function => :getMAC, :type => "string ()"
@@ -1157,42 +1169,6 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
-
-  private
-
-    # Return the IP through wicked
-    #
-    # @return [String] IP address
-    def get_ip_from_wicked
-      wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all")
-      log.info("Wicked show: #{wicked_ret}")
-
-      # Regexp to match the network address.
-      regexp = / pref-src ([\h:\.]+)/
-      if ret = wicked_ret["stdout"][regexp, 1]
-        ret
-      else
-        log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
-        nil
-      end
-    end
-
-    # Return the network address through wicked
-    #
-    # @return [String] Network IP address
-    def get_network_from_wicked
-      wicked_ret = SCR.Execute(path(".target.bash_output"),
-                               "/usr/sbin/wicked show --verbose all")
-
-      # Regexp to match the network address.
-      regexp = / ([\h:\.]+)\/\d+ dev.+pref-src #{hostaddress}/
-      if ret = wicked_ret["stdout"][regexp, 1]
-        ret
-      else
-        log.warn "Cannot find network address through wicked: #{wicked_ret}"
-        nil
-      end
-    end
   end
 
   AutoInstallRules = AutoInstallRulesClass.new

@@ -17,7 +17,6 @@ describe Yast::AutoInstallRules do
       expect(Yast::Kernel).to receive(:GetPackages).and_return([])
       expect(subject).to receive(:getNetwork).and_return("192.168.1.0")
       expect(subject).to receive(:getHostname).and_return("myhost")
-      expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.HasPCMCIA"))
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.XServer"))
       expect(Yast::Hostname).to receive(:CurrentDomain).and_return("mydomain.lan")
 
@@ -39,30 +38,22 @@ describe Yast::AutoInstallRules do
   end
 
   describe "#getHostid" do
-    let(:wicked_output_path) do
-      File.join(root_path, "test", "fixtures", "network", "wicked_partial.out")
+    let(:ip_route_output_path) do
+      File.join(root_path, "test", "fixtures", "output", "ip_route.out")
     end
 
     it "returns host IP in hex format (initial Stage)" do
       expect(Yast::SCR).to receive(:Execute).
-        with(Yast::Path.new(".target.bash_output"), /wicked show/).
-        and_return("stdout" => File.read(wicked_output_path), "exit" => 0)
-      expect(Yast::Stage).to receive(:initial).and_return(true)
+        with(Yast::Path.new(".target.bash_output"), /ip route/).
+        and_return("stdout" => File.read(ip_route_output_path), "exit" => 0)
 
-      expect(subject.getHostid).to eq(Yast::IP.ToHex("192.168.100.218"))
+      expect(subject.getHostid).to eq(Yast::IP.ToHex("10.13.32.195"))
     end
 
-    it "returns fix DEFAULT_IP in hex format (normal Stage)" do
-      expect(Yast::Stage).to receive(:initial).and_return(false)
-
-      expect(subject.getHostid).to eq(Yast::IP.ToHex(Yast::AutoInstallRulesClass::DEFAULT_IP))
-    end
-
-    it "returns nil if wicked does not find IP address" do
-      expect(Yast::Stage).to receive(:initial).and_return(true)
+    it "returns nil if an error occurs finding the IP address" do
       expect(Yast::SCR).to receive(:Execute).
-        with(Yast::Path.new(".target.bash_output"), /wicked show/).
-        and_return("stderr" => "error from wicked", "stdout" => "", "exit" => 1)
+        with(Yast::Path.new(".target.bash_output"), /ip route/).
+        and_return("stdout" => "", "stderr" => "error from iputils", "exit" => 1)
 
       expect(subject.getHostid).to eq(nil)
     end
@@ -123,7 +114,7 @@ describe Yast::AutoInstallRules do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   ||   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       {"hostaddress" => subject.hostaddress, "mac"=>""}
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
@@ -143,7 +134,7 @@ describe Yast::AutoInstallRules do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       {"hostaddress" => subject.hostaddress, "mac"=>""}
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
@@ -162,7 +153,7 @@ describe Yast::AutoInstallRules do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       {"hostaddress" => subject.hostaddress, "mac"=>""}
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
@@ -171,53 +162,39 @@ describe Yast::AutoInstallRules do
   end
 
   describe "#getNetwork" do
+    let(:hostaddress) { "10.13.32.195" }
+    let(:initial) { true }
+    let(:ip_route_output) { { "stdout" => ip_route_content, "exit" => 0 } }
+    let(:ip_route_content) do
+      File.read(File.join(root_path, "test", "fixtures", "output", "ip_route.out"))
+    end
+
     before do
-      allow(Yast::Stage).to receive(:initial).and_return(initial)
+      allow(subject).to receive(:hostaddress).and_return(hostaddress)
+      allow(Yast::SCR).to receive(:Execute).
+        with(Yast::Path.new(".target.bash_output"), /ip route/).
+        and_return(ip_route_output)
     end
 
-    context "in initial stage" do
-      let(:hostaddress) { "10.163.2.8" }
-      let(:initial) { true }
-      let(:wicked_output) { { "stdout" => wicked_content, "exit" => 0 } }
-      let(:wicked_content) do
-        File.read(File.join(root_path, "test", "fixtures", "network", "wicked.out"))
-      end
-
-      before do
-        allow(subject).to receive(:hostaddress).and_return(hostaddress)
-        allow(Yast::SCR).to receive(:Execute).
-          with(Yast::Path.new(".target.bash_output"), /wicked show/).
-          and_return(wicked_output)
-      end
-
-      context "the host address is known to wicked" do
-        it "returns the network for the system's hostaddress" do
-          expect(subject.getNetwork).to eq("10.163.2.0")
-        end
-      end
-
-      context "the host address is unknown to wicked" do
-        let(:hostaddress) { "10.163.2.9" }
-
-        it "returns nil" do
-          expect(subject.getNetwork).to be_nil
-        end
-      end
-
-      context "wicked fails" do
-        let(:wicked_output) { { "stderr" => "some error from wicked", "stdout" => "", "exit" => 1 } }
-
-        it "returns nil" do
-          expect(subject.getNetwork).to be_nil
-        end
+    context "the host address is known to wicked" do
+      it "returns the network for the system's hostaddress" do
+        expect(subject.getNetwork).to eq("10.13.32.0")
       end
     end
 
-    context "not in initial stage" do
-      let(:initial) { false }
+    context "the host address is unknown" do
+      let(:hostaddress) { "10.163.2.9" }
 
-      it "returns fixed DEFAULT_NETWORK" do
-        expect(subject.getNetwork).to eq(Yast::AutoInstallRulesClass::DEFAULT_NETWORK)
+      it "returns nil" do
+        expect(subject.getNetwork).to be_nil
+      end
+    end
+
+    context "an error occurs finding the IP" do
+      let(:ip_route_output) { { "stderr" => "some error", "stdout" => "", "exit" => 1 } }
+
+      it "returns nil" do
+        expect(subject.getNetwork).to be_nil
       end
     end
   end
