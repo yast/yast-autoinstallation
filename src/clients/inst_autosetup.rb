@@ -40,12 +40,14 @@ module Yast
       Yast.import "Keyboard"
       Yast.import "Call"
       Yast.import "ProductControl"
+      Yast.import "ProductLicense"
       Yast.import "LanUdevAuto"
       Yast.import "Language"
       Yast.import "Console"
       Yast.import "ServicesManager"
       Yast.import "Y2ModuleConfig"
       Yast.import "AutoinstFunctions"
+      Yast.import "Wizard"
 
       Yast.include self, "bootloader/routines/autoinstall.rb"
       Yast.include self, "autoinstall/ask.rb"
@@ -62,7 +64,8 @@ module Yast
         _("Registration"),
         _("Configure Software selections"),
         _("Configure Systemd Default Target"),
-        _("Configure users and groups")
+        _("Configure users and groups"),
+        _("Confirm License")
       ]
 
       @progress_descriptions = [
@@ -74,7 +77,8 @@ module Yast
         _("Registering the system..."),
         _("Configuring Software selections..."),
         _("Configuring Systemd Default Target..."),
-        _("Importing users and groups configuration...")
+        _("Importing users and groups configuration..."),
+        _("Confirming License...")
       ]
 
       Progress.New(
@@ -396,6 +400,26 @@ module Yast
       #
       Progress.NextStage
       autosetup_users
+
+      #
+      # Checking Base Product licenses
+      #
+      Progress.NextStage
+      if Ops.get_boolean(general_section["mode"], "confirm_base_product_license", false)
+        Wizard.EnableAbortButton
+        result = ProductLicense.AskLicenseAgreement(nil,
+          "",
+          ProductLicense.license_patterns,
+          "abort",
+          # back button is disabled
+          false,
+          true,
+          true,
+          # unique id
+          Builtins.tostring(0)
+        )
+        return :abort if result == :abort
+      end
 
       Progress.Finish
 
