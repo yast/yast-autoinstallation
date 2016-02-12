@@ -405,7 +405,7 @@ module Yast
       # Checking Base Product licenses
       #
       Progress.NextStage
-      if Ops.get_boolean(general_section["mode"], "confirm_base_product_license", false)
+      if general_section["mode"].fetch( "confirm_base_product_license", false )
         Wizard.EnableAbortButton
         result = ProductLicense.AskLicenseAgreement(nil,
           "",
@@ -416,7 +416,7 @@ module Yast
           true,
           true,
           # unique id
-          Builtins.tostring(0)
+          "0"
         )
         return :abort if result == :abort
       end
