@@ -463,7 +463,7 @@ module Yast
             _dummy = Storage.GetUsedFs()
             mp = Storage.DeviceMounted(Ops.add("/dev/", _Host2))
             already_mounted = !Builtins.isempty(mp)
-            mount_point = mp if already_mounted
+            mp = mount_point unless already_mounted
             Builtins.y2milestone(
               "already mounted=%1 mountpoint=%2 mp=%3",
               already_mounted,
@@ -474,7 +474,7 @@ module Yast
                 !Convert.to_boolean(
                   SCR.Execute(
                     path(".target.mount"),
-                    [Builtins.sformat("/dev/%1", _Host2), mount_point],
+                    [Builtins.sformat("/dev/%1", _Host2), mp],
                     "-o noatime"
                   )
                 )
@@ -493,7 +493,7 @@ module Yast
                 Ops.add(
                   Ops.add(
                     Ops.add(
-                      Ops.add(Ops.add("/bin/cp ", mount_point), "/"),
+                      Ops.add(Ops.add("/bin/cp ", mp), "/"),
                       _Path
                     ),
                     " "
@@ -504,18 +504,18 @@ module Yast
               # autoyast tried to copy a file but that file can't be found
               @GET_error = Builtins.sformat(
                 _("File %1 cannot be found"),
-                Ops.add(mount_point, _Path)
+                Ops.add(mp, _Path)
               )
               Builtins.y2milestone(
                 "file %1 can't be found",
-                Ops.add(mount_point, _Path)
+                Ops.add(mp, _Path)
               )
             else
               @GET_error = ""
               ok = true
               Builtins.y2milestone("found")
             end
-            WFM.Execute(path(".local.umount"), mount_point) if !already_mounted
+            WFM.Execute(path(".local.umount"), mp) if !already_mounted
             raise Break if ok == true
           end
         end
