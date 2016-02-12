@@ -18,10 +18,24 @@ describe "Yast::AutoinstallIoInclude" do
     let(:mount_point) { "#{tmpdir}/tmp_mount" }
     let(:destdir) { "/destdir" }
 
-    def expect_copy(from, to, result)
+    def expect_copy_generic(from_chroot, from, to, result)
       expect(Yast::WFM).to receive(:Execute)
-        .with(path(".local.bash"), "/bin/cp #{from} #{to}")
+        .with(path(".local.bash"), "/bin/cp #{from_chroot}#{from} #{to}")
         .and_return(result ? 0 : 1)
+    end
+
+    def expect_copy(from, to, result)
+      expect_copy_generic(destdir, from, to, result)
+    end
+
+    # this is a bug similar to bsc#829265
+    def expect_copy_misrooted(from, to, result)
+      expect_copy_generic("", from, to, result)
+    end
+
+    # this is OK, not a bug
+    def expect_copy_premounted(from, to, result)
+      expect_copy_generic("", from, to, result)
     end
 
     def expect_mount_generic(local_or_target, device, mp, result, optstring)
@@ -107,7 +121,7 @@ describe "Yast::AutoinstallIoInclude" do
 
         it "checks + copies, successfully" do
           expect_mount_check("/dev/sdc4", "/already_mounted")
-          expect_copy("/already_mounted/mypath", localfile, true)
+          expect_copy_premounted("/already_mounted/mypath", localfile, true)
 
           expect(subject.Get(scheme, host, "mypath", localfile))
             .to eq(true)
@@ -115,7 +129,7 @@ describe "Yast::AutoinstallIoInclude" do
 
         it "checks + copies, failing" do
           expect_mount_check("/dev/sdc4", "/already_mounted")
-          expect_copy("/already_mounted/mypath", localfile, false)
+          expect_copy_premounted("/already_mounted/mypath", localfile, false)
 
           expect(subject.Get(scheme, host, "mypath", localfile))
             .to eq(false)
@@ -124,7 +138,7 @@ describe "Yast::AutoinstallIoInclude" do
         it "checks + mounts + copies + umounts, successfully" do
           expect_mount_check("/dev/sdc4", "")
           expect_mount("/dev/sdc4", mount_point, true, "-o noatime")
-          expect_copy("#{mount_point}/mypath", localfile, true)
+          expect_copy_misrooted("#{mount_point}/mypath", localfile, true)
           expect_umount_local(mount_point, true)
 
           expect(subject.Get(scheme, host, "mypath", localfile))
@@ -142,7 +156,7 @@ describe "Yast::AutoinstallIoInclude" do
         it "checks + mounts + copies(fails) + umounts" do
           expect_mount_check("/dev/sdc4", "")
           expect_mount("/dev/sdc4", mount_point, true, "-o noatime")
-          expect_copy("#{mount_point}/mypath", localfile, false)
+          expect_copy_misrooted("#{mount_point}/mypath", localfile, false)
           expect_umount_local(mount_point, true)
 
           expect(subject.Get(scheme, host, "mypath", localfile))
@@ -161,7 +175,7 @@ describe "Yast::AutoinstallIoInclude" do
           expect_is_directory?("/dev/disk/by-id/f00f", false)
 
           expect_mount_check("/dev/disk/by-id/f00f", "/already_mounted")
-          expect_copy("/already_mounted/mypath", localfile, true)
+          expect_copy_premounted("/already_mounted/mypath", localfile, true)
 
           expect(subject.Get(scheme, host, urlpath, localfile))
             .to eq(true)
@@ -220,11 +234,9 @@ describe "Yast::AutoinstallIoInclude" do
             end
 
             # sda1 fails, sda4 fails, sda5 succeeds
-            expect_copy("/mnt_sda1/mypath", localfile, false)
-            expect_copy("#{mount_point}/mypath", localfile, false)
-            expect_copy("#{mount_point}/mypath", localfile, true)
-            # if destdir is used properly, we should see
-            #  expect_copy("/destdir#{mount_point}/mypath", localfile, ...)
+            expect_copy_premounted("/mnt_sda1/mypath", localfile, false)
+            expect_copy_misrooted("#{mount_point}/mypath", localfile, false)
+            expect_copy_misrooted("#{mount_point}/mypath", localfile, true)
 
             mount_succeeded.each do |device, result|
               # if the MOUNT succeeded previously, now UMOUNT
@@ -286,7 +298,37 @@ describe "Yast::AutoinstallIoInclude" do
     end
     context "when scheme is 'nfs'" do
     end
+
     context "when scheme is 'cifs'" do
+      let(:scheme) { "cifs" }
+      let(:host) { "example.com" }
+      let(:urlpath) { "/foo/bar" }
+      let(:localfile) { "/localfile" }
+
+      it "fails if mount fails" do
+        expect_mount("//#{host}/foo/", mount_point, false, "-t cifs -o guest,ro,noatime")
+
+        expect(subject.Get(scheme, host, urlpath, localfile))
+          .to eq(false)
+      end
+
+      it "mounts, copies successfully, umounts" do
+        expect_mount("//#{host}/foo/", mount_point, true, "-t cifs -o guest,ro,noatime")
+        expect_copy(mount_point + "/bar", localfile, true)
+        expect_umount(mount_point, true)
+
+        expect(subject.Get(scheme, host, urlpath, localfile))
+          .to eq(true)
+      end
+
+      it "mounts, copies unsuccessfully, umounts" do
+        expect_mount("//#{host}/foo/", mount_point, true, "-t cifs -o guest,ro,noatime")
+        expect_copy(mount_point + "/bar", localfile, false)
+        expect_umount(mount_point, true)
+
+        expect(subject.Get(scheme, host, urlpath, localfile))
+          .to eq(false)
+      end
     end
 
     context "when scheme is 'tftp'" do
@@ -338,7 +380,7 @@ describe "Yast::AutoinstallIoInclude" do
 
         it "mounts, copies successfully, umounts" do
           expect_mount_local(device, mount_point, true)
-          expect_copy("#{mount_point}/#{urlpath}", localfile, true)
+          expect_copy_misrooted("#{mount_point}/#{urlpath}", localfile, true)
           expect_umount(mount_point, true)
 
           expect(subject.Get(scheme, host, urlpath, localfile))
@@ -347,7 +389,7 @@ describe "Yast::AutoinstallIoInclude" do
 
         it "mounts, copies unsuccessfully, umounts" do
           expect_mount_local(device, mount_point, true)
-          expect_copy("#{mount_point}/#{urlpath}", localfile, false)
+          expect_copy_misrooted("#{mount_point}/#{urlpath}", localfile, false)
           expect_umount(mount_point, true)
 
           expect(subject.Get(scheme, host, urlpath, localfile))
