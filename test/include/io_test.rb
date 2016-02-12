@@ -296,7 +296,58 @@ describe "Yast::AutoinstallIoInclude" do
     end
     context "when scheme is 'file'" do
     end
+
     context "when scheme is 'nfs'" do
+      let(:scheme) { "nfs" }
+      let(:host) { "example.com" }
+      let(:urlpath) { "/foo/bar" }
+      let(:localfile) { "/localfile" }
+
+      it "fails if mount fails twice" do
+        expect_mount("#{host}:/foo/", mount_point, false, "-o noatime,nolock")
+        expect_mount("#{host}:/foo/", mount_point, false, "-o noatime -t nfs4")
+
+        expect(subject.Get(scheme, host, urlpath, localfile))
+          .to eq(false)
+      end
+
+      it "mounts(1), copies successfully, umounts" do
+        expect_mount("#{host}:/foo/", mount_point, true, "-o noatime,nolock")
+        expect_copy(mount_point + "/bar", localfile, true)
+        expect_umount(mount_point, true)
+
+        expect(subject.Get(scheme, host, urlpath, localfile))
+          .to eq(true)
+      end
+
+      it "mounts(2), copies successfully, umounts" do
+        expect_mount("#{host}:/foo/", mount_point, false, "-o noatime,nolock")
+        expect_mount("#{host}:/foo/", mount_point, true, "-o noatime -t nfs4")
+        expect_copy(mount_point + "/bar", localfile, true)
+        expect_umount(mount_point, true)
+
+        expect(subject.Get(scheme, host, urlpath, localfile))
+          .to eq(true)
+      end
+
+      it "mounts(1), copies unsuccessfully, umounts" do
+        expect_mount("#{host}:/foo/", mount_point, true, "-o noatime,nolock")
+        expect_copy(mount_point + "/bar", localfile, false)
+        expect_umount(mount_point, true)
+
+        expect(subject.Get(scheme, host, urlpath, localfile))
+          .to eq(false)
+      end
+
+      it "mounts(2), copies unsuccessfully, umounts" do
+        expect_mount("#{host}:/foo/", mount_point, false, "-o noatime,nolock")
+        expect_mount("#{host}:/foo/", mount_point, true, "-o noatime -t nfs4")
+        expect_copy(mount_point + "/bar", localfile, false)
+        expect_umount(mount_point, true)
+
+        expect(subject.Get(scheme, host, urlpath, localfile))
+          .to eq(false)
+      end
     end
 
     context "when scheme is 'cifs'" do
