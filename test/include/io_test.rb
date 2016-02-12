@@ -179,15 +179,14 @@ describe "Yast::AutoinstallIoInclude" do
 
             # only up to sda5 because that is when we find the file
             mount_points = {
-              # device    => [prior mount point, temporary mount point]
-              "/dev/sda"  => ["",          "/tmp_dir/tmp_mount"],
-              "/dev/sda1" => ["/mnt_sda1", nil],
-              "/dev/sda4" => ["",          "/mnt_sda1"],
-              "/dev/sda5" => ["",          "/mnt_sda1"]
+              "/dev/sda"  => "",
+              "/dev/sda1" => "/mnt_sda1",
+              "/dev/sda4" => "",
+              "/dev/sda5" => "",
             }
 
             mount_points.each do |device, mp|
-              expect_mount_check(device, mp.first)
+              expect_mount_check(device, mp)
             end
 
             # only up to sda5 because that is when we find the file
@@ -198,21 +197,20 @@ describe "Yast::AutoinstallIoInclude" do
             }
 
             mount_succeeded.each do |device, result|
-              expect_mount(device, mount_points[device].last, result)
+              expect_mount(device, "/tmp_dir/tmp_mount", result)
             end
 
             # sda1 fails, sda4 fails, sda5 succeeds
             expect_copy("/mnt_sda1/mypath", localfile, 1)
-            expect_copy("/mnt_sda1/mypath", localfile, 1)
-            expect_copy("/mnt_sda1/mypath", localfile, 0)
-
-            # if mount points are not reused, we should see
-            #  expect_copy("/tmp_dir/tmp_mount/mypath", localfile, ...)
-            # and aditionally if destdir is used properly,
+            expect_copy("/tmp_dir/tmp_mount/mypath", localfile, 1)
+            expect_copy("/tmp_dir/tmp_mount/mypath", localfile, 0)
+            # if destdir is used properly, we should see
             #  expect_copy("/destdir/tmp_dir/tmp_mount/mypath", localfile, ...)
 
-            expect_umount("/mnt_sda1", true)
-            expect_umount("/mnt_sda1", true)
+            mount_succeeded.each do |device, result|
+              # if the MOUNT succeeded previously, now UMOUNT
+              expect_umount("/tmp_dir/tmp_mount", true) if result
+            end
 
             # DO IT, this is the call that needs all the above mocking
             expect(subject.Get(scheme, host, "mypath", localfile))
