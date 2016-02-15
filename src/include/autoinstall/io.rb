@@ -11,7 +11,6 @@ module Yast
     def initialize_autoinstall_io(include_target)
       textdomain "autoinst"
       Yast.import "URL"
-      Yast.import "String"
       Yast.import "FTP"
       Yast.import "Installation"
       Yast.import "HTTP"
@@ -553,13 +552,6 @@ module Yast
         Ops.get_string(toks, "path", ""),
         target
       )
-    end
-
-    # Remove leading and trailing whitespace
-    def CutWhitespace(s)
-      ret = String.CutRegexMatch(s, "^[ \n\t]+", false)
-      ret = String.CutRegexMatch(ret, "[ \n\t]+$", false)
-      ret
     end
   end
 end
