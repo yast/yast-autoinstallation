@@ -61,11 +61,37 @@ module Yast
 
     # Get control files from different sources
     # @return [Boolean] true on success
-    def Get(_Scheme, _Host, _Path, _Localfile)
+    def Get(scheme, host, urlpath, localfile)
+      get_file_from_url(scheme: scheme, host: host, urlpath: urlpath,
+                        localfile: localfile,
+                        urltok: AutoinstConfig.urltok,
+                        destdir: AutoinstConfig.destdir)
+    end
+
+    # Copy a file from a URL to a local path
+    # The URL allows autoyast-specific schemes:
+    # https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#Commandline.ay
+    #
+    # @param scheme    [String] cifs, nfs, device, usb, http, https, ...
+    # @param host      [String]
+    # @param urlpath   [String]
+    # @param localfile [String] destination filename
+    # @param urltok    [Hash{String => String}] same url as above, but better
+    # @param destdir   [String] chroot (with crazy juggling)
+    #
+    # @return [Boolean] true on success
+    def get_file_from_url(scheme:, host:, urlpath:, localfile:,
+                          urltok:, destdir:)
+      # adapt sane API to legacy implementation
+      _Scheme    = scheme
+      _Host      = host
+      _Path      = urlpath
+      _Localfile = localfile
+
       @GET_error = ""
       ok = false
       res = {}
-      toks = deep_copy(AutoinstConfig.urltok)
+      toks = deep_copy(urltok)
       Ops.set(toks, "scheme", _Scheme)
       Ops.set(toks, "host", _Host)
       Builtins.y2milestone(
@@ -86,7 +112,7 @@ module Yast
       mp_in_local = mount_point
       chr = WFM.SCRGetName(WFM.SCRGetDefault)
       if Builtins.search(chr, "chroot=/mnt:") == 0
-        mp_in_local = Ops.add(AutoinstConfig.destdir, mount_point)
+        mp_in_local = Ops.add(destdir, mount_point)
       end
       Builtins.y2milestone("Chr:%3 TmpDir:%1 Mp:%2", tmp_dir, mp_in_local, chr)
       WFM.Execute(path(".local.mkdir"), mp_in_local)
