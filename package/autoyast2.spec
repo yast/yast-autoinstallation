@@ -18,7 +18,7 @@
 
 Name:           autoyast2
 
-Version:        3.1.114
+Version:        3.1.115
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -40,6 +40,7 @@ BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
+BuildRequires:  yast2-update >= 3.1.36
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
@@ -107,7 +108,7 @@ Requires:       yast2-services-manager >= 3.1.10
 Requires:       yast2-slp
 Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
-Requires:       yast2-update >= 2.18.3
+Requires:       yast2-update >= 3.1.36
 Requires:       yast2-xml
 # pkgGpgCheck callback
 Requires:       yast2-pkg-bindings >= 3.1.31

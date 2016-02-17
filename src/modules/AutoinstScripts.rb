@@ -227,7 +227,7 @@ module Yast
     def Resolve_ws(script)
       script = deep_copy(script)
       if !Builtins.isempty(Ops.get_string(script, "location", ""))
-        l = CutWhitespace(Ops.get_string(script, "location", ""))
+        l = Ops.get_string(script, "location", "").strip
         if l != Ops.get_string(script, "location", "")
           Builtins.y2milestone(
             "changed script location to \"%1\" from \"%2\"",
