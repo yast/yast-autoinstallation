@@ -293,13 +293,21 @@ module Yast
         ["general", "mode", "max_systemd_wait"],
         30
       )
-      @ser_ignore = [
+
+@ser_ignore = [
         "YaST2-Second-Stage.service",
         "autoyast-initscripts.service",
         # Do not restart dbus. Otherwise some services will hang.
         # bnc#937900
-        "dbus.service"
+        "dbus.service",
+        # Do not restart wickedd* services
+        # bnc#944349
+        "^wickedd",
+        # Do not restart NetworkManager* services
+        # bnc#955260
+        "^NetworkManager"
       ]
+
       if final_restart_services
         logStep(_("Restarting all running services"))
         @cmd = "systemctl --type=service list-units | grep \" running \""
