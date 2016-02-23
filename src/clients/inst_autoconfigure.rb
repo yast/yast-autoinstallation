@@ -294,7 +294,7 @@ module Yast
         30
       )
 
-@ser_ignore = [
+      @ser_ignore = [
         "YaST2-Second-Stage.service",
         "autoyast-initscripts.service",
         # Do not restart dbus. Otherwise some services will hang.
