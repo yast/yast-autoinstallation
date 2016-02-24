@@ -71,6 +71,10 @@ describe Yast::AutoInstallRules do
   end
 
   describe "#ProbeRules" do
+    before(:each) do
+      subject.reset
+    end
+
     it "reads installed product properties from content file" do
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.bios")).and_return([])
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.memory")).and_return([])
@@ -98,7 +102,6 @@ describe Yast::AutoInstallRules do
 
     context "when .content.DISTRO is not found" do
       before(:each) do
-        subject.reset
         allow(Yast::SCR).to receive(:Read).with(any_args)
         allow(Yast::Arch).to receive(:architecture).and_return("x86_64")
       end
