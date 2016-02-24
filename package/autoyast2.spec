@@ -214,6 +214,7 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %dir %{yast_scrconfdir}
 %{yast_scrconfdir}/autoinstall.scr
 %{yast_scrconfdir}/cfg_autoinstall.scr
+%{yast_scrconfdir}/proc_uptime.scr
 # DTD files
 %dir /usr/share/autoinstall
 #%dir /usr/share/autoinstall/dtd

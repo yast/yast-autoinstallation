@@ -77,7 +77,8 @@ ylib_DATA = \
 scrconf_DATA = \
   scrconf/cfg_autoinstall.scr \
   scrconf/autoinstall.scr \
-  scrconf/ksimport.scr
+  scrconf/ksimport.scr \
+  scrconf/proc_uptime.scr
 
 agent_SCRIPTS = \
   servers_non_y2/ag_ksimport
