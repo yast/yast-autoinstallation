@@ -3,6 +3,7 @@
 require_relative "test_helper"
 
 Yast.import "AutoinstSoftware"
+Yast.import "AutoinstData"
 Yast.import "Profile"
 
 describe Yast::AutoinstSoftware do
