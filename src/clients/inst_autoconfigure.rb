@@ -503,7 +503,7 @@ module Yast
 
     # Determines the current uptime
     #
-    # @return [Float] Current uptime
+    # @return [Float] Current uptime in seconds
     def uptime
       Process.clock_gettime(Process::CLOCK_MONOTONIC)
     end
