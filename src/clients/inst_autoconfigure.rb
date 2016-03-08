@@ -458,7 +458,7 @@ module Yast
         max_wait,
         ser_ignore
       )
-      st_time = Builtins.time
+      st_time = uptime
       cur_time = st_time
       last_busy = st_time
       cmd = "systemctl --full list-jobs"
@@ -484,7 +484,7 @@ module Yast
         Builtins.y2milestone("size ll=%1 ll:%2", cnt, ll)
         last_busy = cur_time if Ops.greater_than(cnt, 0)
         Builtins.sleep(500)
-        cur_time = Builtins.time
+        cur_time = uptime
         Builtins.y2milestone(
           "wait_systemd_finished time:%1 idle:%2",
           Ops.subtract(cur_time, st_time),
@@ -497,6 +497,15 @@ module Yast
       )
 
       nil
+    end
+
+    private
+
+    # Determines the current uptime
+    #
+    # @return [Float] Current uptime in seconds
+    def uptime
+      Process.clock_gettime(Process::CLOCK_MONOTONIC)
     end
   end
 end
