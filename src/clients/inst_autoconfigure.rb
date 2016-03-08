@@ -501,10 +501,11 @@ module Yast
 
     private
 
+    # Determines the current uptime
+    #
+    # @return [Float] Current uptime
     def uptime
-      proc_uptime = SCR.Read(path(".proc.uptime"))
-      raise "Could not determine system's uptime" unless proc_uptime && proc_uptime["uptime"]
-      proc_uptime["uptime"]
+      Process.clock_gettime(Process::CLOCK_MONOTONIC)
     end
   end
 end
