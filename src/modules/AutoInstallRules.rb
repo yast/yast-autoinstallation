@@ -12,6 +12,10 @@ module Yast
   class AutoInstallRulesClass < Module
     include Yast::Logger
 
+    # FIXME: why this values?
+    DEFAULT_IP = "192.168.1.1"
+    DEFAULT_NETWORK = "192.168.1.0"
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -33,6 +37,8 @@ module Yast
       Yast.import "URL"
       Yast.import "IP"
       Yast.import "Product"
+      Yast.import "Hostname"
+      Yast.import "OSRelease"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -154,22 +160,30 @@ module Yast
       cleanmac
     end
 
+    # Return the network part of the hostaddress
+    #
+    # Unless is called during initial stage (Stage.initial),
+    # it always returns DEFAULT_NETWORK.
+    #
+    # @example
+    #   AutoInstallRules.getNetwork #=> "192.168.122.0"
+    #
+    # @return [String] Network part of the hostaddress
+    #
+    # @see hostaddress
+    # @see get_network_from_wicked
+    def getNetwork
+      Stage.initial ? get_network_from_wicked : DEFAULT_NETWORK
+    end
 
     # Return host id (hex ip )
+    #
+    # Unless is called during initial stage (Stage.initial),
+    # it always returns DEFAULT_IP.
+    #
     # @return [String] host ID
     def getHostid
-      if Stage.initial
-        wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src")
-        if wicked_ret["exit"] == 0
-          stdout = wicked_ret["stdout"].split
-          @hostaddress = stdout[stdout.index("pref-src")+1]
-        else
-          log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
-          @hostaddress = nil
-        end
-      else
-        @hostaddress = "192.168.1.1" # FIXME
-      end
+      @hostaddress = Stage.initial ? get_ip_from_wicked : DEFAULT_IP
       IP.ToHex(@hostaddress)
     end
 
@@ -293,9 +307,9 @@ module Yast
       Ops.set(@ATTR, "hostid", @hostid)
 
       Ops.set(@ATTR, "hostname", getHostname)
-      @domain = Convert.to_string(SCR.Read(path(".etc.install_inf.Domain")))
+      @domain = Hostname.CurrentDomain
       Ops.set(@ATTR, "domain", @domain)
-      @network = Convert.to_string(SCR.Read(path(".etc.install_inf.Network")))
+      @network = getNetwork
       Ops.set(@ATTR, "network", @network)
       @haspcmcia = Convert.to_string(
         SCR.Read(path(".etc.install_inf.HasPCMCIA"))
@@ -314,19 +328,13 @@ module Yast
 
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
-      distro_str = SCR.Read(path(".content.DISTRO"))
-      log.info "DISTRO: #{distro_str}"
-
-      distro = distro_map(distro_str) || {}
-      cpe = cpeid_map(distro["cpeid"]) || {}
-
-      @installed_product = distro["name"] || ""
-      @installed_product_version = cpe["version"] || ""
+      @installed_product = Yast::OSRelease.ReleaseInformation
+      @installed_product_version = Yast::OSRelease.ReleaseVersion
       Ops.set(@ATTR, "installed_product", @installed_product)
       Ops.set(@ATTR, "installed_product_version", @installed_product_version)
 
-      log.info "Installing #{@installed_product.inspect}, " \
-        "version: #{@installed_product_version.inspect}"
+      log.info "Installing #{@installed_product}, " \
+        "version: #{@installed_product_version}"
       log.info "ATTR=#{@ATTR}"
 
       nil
@@ -1159,55 +1167,39 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
+  end
 
-    private
+  private
 
-    # TODO FIXME: share these functions (move to yast2?)
-
-    # Split CPE ID and distro label (separated by comma)
-    # @param distro [String] "DISTRO" value from content file
-    # @return [Hash<String,String>,nil] parsed value, map:
-    #    {"name" => <string>, "cpeid" => <string> }
-    #    or nil if the input value is invalid
-    def distro_map(distro)
-      if !distro
-        log.warn "Received nil distro value"
-        return nil
-      end
-
-      # split at the first comma, resulting in 2 parts at max.
-      cpeid, name = distro.split(",", 2)
-
-      if !name
-        log.warn "Cannot parse DISTRO value: #{distro}"
-        return nil
-      end
-
-      {"cpeid" => cpeid, "name" => name}
+  # Return the IP through wicked
+  #
+  # @return [String] IP address
+  def get_ip_from_wicked
+    wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src")
+    if wicked_ret["exit"] == 0
+      stdout = wicked_ret["stdout"].split
+      stdout[stdout.index("pref-src")+1]
+    else
+      log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
+      nil
     end
+  end
 
-    # parse CPE ID in URI syntax
-    # @see http://csrc.nist.gov/publications/nistir/ir7695/NISTIR-7695-CPE-Naming.pdf
-    # @param cpeid [String] e.g. "cpe:/o:suse:sles:12"
-    # @return [Hash<String,String>] parsed values, the keys are "part", "vendor", "product",
-    #   "version", "update", "edition", "lang", nil is returned for missing values
-    def cpeid_map(cpeid)
-      return nil unless cpeid && cpeid.start_with?("cpe:/")
 
-      # remove the "cpe:/" prefix
-      raw_cpe = cpeid.sub(/^cpe:\//, "")
+  # Return the network address through wicked
+  #
+  # @return [String] Network IP address
+  def get_network_from_wicked
+    wicked_ret = SCR.Execute(path(".target.bash_output"),
+                             "/usr/sbin/wicked show --verbose all")
 
-      parts = raw_cpe.split(":")
-
-      {
-        "part"    => parts[0],
-        "vendor"  => parts[1],
-        "product" => parts[2],
-        "version" => parts[3],
-        "update"  => parts[4],
-        "edition" => parts[5],
-        "lang"    => parts[6]
-      }
+    # Regexp to fetch match the network address.
+    regexp = / ([\h:\.]+)\/\d+ dev.+pref-src #{hostaddress}/
+    if match = regexp.match(wicked_ret["stdout"])
+      match[1]
+    else
+      log.warn "Cannot find network address through wicked: #{wicked_ret}"
+      nil
     end
   end
 
