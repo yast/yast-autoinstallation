@@ -151,8 +151,8 @@ module Yast
       if Stage.initial
         cmd = 'ip link show | grep link/ether | head -1 | sed -e "s:^.*link/ether.::" -e "s: .*::"'
         ret = SCR.Execute(path(".target.bash_output"), cmd )
-	Builtins.y2milestone("mac Addr ret:%1", ret)
-	tmpmac = ret.fetch("stdout","")
+      Builtins.y2milestone("mac Addr ret:%1", ret)
+      tmpmac = ret.fetch("stdout","")
       end
       Builtins.y2milestone("mac Addr tmp:%1", tmpmac)
       cleanmac = Builtins.deletechars(tmpmac != nil ? tmpmac : "", ":\n")
@@ -469,16 +469,16 @@ module Yast
       AutoInstallRules.ProbeRules if !rulelist.empty?
       Builtins.foreach(rulelist) do |ruleset|
         Builtins.y2milestone("Ruleset: %1", ruleset)
-	rls = ruleset.keys
-	if( rls.include?("result"))
-	  rls.reject! {|r| r=="result"}
-	  rls.push("result")
-	end
+        rls = ruleset.keys
+        if( rls.include?("result"))
+          rls.reject! {|r| r=="result"}
+          rls.push("result")
+        end
         op = Ops.get_string(ruleset, "operator", "and")
         rls.reject! {|r| r=="op"}
-	Builtins.y2milestone("Orderes Rules: %1", rls)
+        Builtins.y2milestone("Orderes Rules: %1", rls)
         Builtins.foreach(rls) do |rule|
-	  ruledef = ruleset.fetch( rule, {} )
+          ruledef = ruleset.fetch( rule, {} )
           Builtins.y2milestone("Rule: %1", rule)
           Builtins.y2milestone("Ruledef: %1", ruledef)
           match = Ops.get_string(ruledef, "match", "undefined")
@@ -1167,42 +1167,41 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
-  end
 
-private
+  private
 
-  # Return the IP through wicked
-  #
-  # @return [String] IP address
-  def get_ip_from_wicked
-    wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all")
-    log.info("Wicked show: #{wicked_ret}")
+    # Return the IP through wicked
+    #
+    # @return [String] IP address
+    def get_ip_from_wicked
+      wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all")
+      log.info("Wicked show: #{wicked_ret}")
 
-    # Regexp to match the network address.
-    regexp = / pref-src ([\h:\.]+)/
-    if ret = wicked_ret["stdout"][regexp, 1]
-      ret
-    else
-      log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
-      nil
+      # Regexp to match the network address.
+      regexp = / pref-src ([\h:\.]+)/
+      if ret = wicked_ret["stdout"][regexp, 1]
+        ret
+      else
+        log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
+        nil
+      end
     end
-  end
 
+    # Return the network address through wicked
+    #
+    # @return [String] Network IP address
+    def get_network_from_wicked
+      wicked_ret = SCR.Execute(path(".target.bash_output"),
+                               "/usr/sbin/wicked show --verbose all")
 
-  # Return the network address through wicked
-  #
-  # @return [String] Network IP address
-  def get_network_from_wicked
-    wicked_ret = SCR.Execute(path(".target.bash_output"),
-                             "/usr/sbin/wicked show --verbose all")
-
-    # Regexp to match the network address.
-    regexp = / ([\h:\.]+)\/\d+ dev.+pref-src #{hostaddress}/
-    if ret = wicked_ret["stdout"][regexp, 1]
-      ret
-    else
-      log.warn "Cannot find network address through wicked: #{wicked_ret}"
-      nil
+      # Regexp to match the network address.
+      regexp = / ([\h:\.]+)\/\d+ dev.+pref-src #{hostaddress}/
+      if ret = wicked_ret["stdout"][regexp, 1]
+        ret
+      else
+        log.warn "Cannot find network address through wicked: #{wicked_ret}"
+        nil
+      end
     end
   end
 
