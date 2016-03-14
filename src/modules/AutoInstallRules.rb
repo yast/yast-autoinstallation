@@ -1169,16 +1169,19 @@ module Yast
     publish :function => :AutoInstallRules, :type => "void ()"
   end
 
-  private
+private
 
   # Return the IP through wicked
   #
   # @return [String] IP address
   def get_ip_from_wicked
-    wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src")
-    if wicked_ret["exit"] == 0
-      stdout = wicked_ret["stdout"].split
-      stdout[stdout.index("pref-src")+1]
+    wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all")
+    log.info("Wicked show: #{wicked_ret}")
+
+    # Regexp to match the network address.
+    regexp = / pref-src ([\h:\.]+)/
+    if ret = wicked_ret["stdout"][regexp, 1]
+      ret
     else
       log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
       nil
@@ -1193,10 +1196,10 @@ module Yast
     wicked_ret = SCR.Execute(path(".target.bash_output"),
                              "/usr/sbin/wicked show --verbose all")
 
-    # Regexp to fetch match the network address.
+    # Regexp to match the network address.
     regexp = / ([\h:\.]+)\/\d+ dev.+pref-src #{hostaddress}/
-    if match = regexp.match(wicked_ret["stdout"])
-      match[1]
+    if ret = wicked_ret["stdout"][regexp, 1]
+      ret
     else
       log.warn "Cannot find network address through wicked: #{wicked_ret}"
       nil
