@@ -33,6 +33,8 @@ module Yast
       Yast.import "URL"
       Yast.import "IP"
       Yast.import "Product"
+      Yast.import "Hostname"
+      Yast.import "OSRelease"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -61,7 +63,7 @@ module Yast
       @installed_product = ""
       @installed_product_version = ""
       @hostname = ""
-      @hostaddress = ""
+      @hostaddress = nil
       @network = ""
       @domain = ""
       @arch = ""
@@ -144,8 +146,8 @@ module Yast
       if Stage.initial
         cmd = 'ip link show | grep link/ether | head -1 | sed -e "s:^.*link/ether.::" -e "s: .*::"'
         ret = SCR.Execute(path(".target.bash_output"), cmd )
-	Builtins.y2milestone("mac Addr ret:%1", ret)
-	tmpmac = ret.fetch("stdout","")
+      Builtins.y2milestone("mac Addr ret:%1", ret)
+      tmpmac = ret.fetch("stdout","")
       end
       Builtins.y2milestone("mac Addr tmp:%1", tmpmac)
       cleanmac = Builtins.deletechars(tmpmac != nil ? tmpmac : "", ":\n")
@@ -153,23 +155,32 @@ module Yast
       cleanmac
     end
 
+    # Return the network part of the hostaddress
+    #
+    # @example
+    #   AutoInstallRules.getNetwork #=> "192.168.122.0"
+    #
+    # @return [String] Network part of the hostaddress
+    #
+    # @see hostaddress
+    def getNetwork
+      ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
 
-    # Return host id (hex ip )
+      # Regexp to fetch match the network address.
+      regexp = /([\h:\.]+)\/\d+ .+src #{hostaddress}/
+      if ret = ip_route["stdout"][regexp, 1]
+        ret
+      else
+        log.warn "Cannot find network address through 'ip': #{ip_route}"
+        nil
+      end
+    end
+
+    # Return host id (hex ip)
+    #
     # @return [String] host ID
     def getHostid
-      if Stage.initial
-        wicked_ret = SCR.Execute(path(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src")
-        if wicked_ret["exit"] == 0
-          stdout = wicked_ret["stdout"].split
-          @hostaddress = stdout[stdout.index("pref-src")+1]
-        else
-          log.warn "Cannot evaluate IP address with wicked: #{wicked_ret["stderr"]}"
-          @hostaddress = nil
-        end
-      else
-        @hostaddress = "192.168.1.1" # FIXME
-      end
-      IP.ToHex(@hostaddress)
+      IP.ToHex(hostaddress)
     end
 
     # Return host name
@@ -284,7 +295,7 @@ module Yast
       #
       # Network
       #
-      Ops.set(@ATTR, "hostaddress", @hostaddress)
+      Ops.set(@ATTR, "hostaddress", hostaddress)
 
       #
       # Hostid (i.e. a8c00101);
@@ -292,9 +303,9 @@ module Yast
       Ops.set(@ATTR, "hostid", @hostid)
 
       Ops.set(@ATTR, "hostname", getHostname)
-      @domain = Convert.to_string(SCR.Read(path(".etc.install_inf.Domain")))
+      @domain = Hostname.CurrentDomain
       Ops.set(@ATTR, "domain", @domain)
-      @network = Convert.to_string(SCR.Read(path(".etc.install_inf.Network")))
+      @network = getNetwork
       Ops.set(@ATTR, "network", @network)
       @xserver = Convert.to_string(SCR.Read(path(".etc.install_inf.XServer")))
       Ops.set(@ATTR, "xserver", @xserver)
@@ -309,19 +320,13 @@ module Yast
 
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
-      distro_str = SCR.Read(path(".content.DISTRO"))
-      log.info "DISTRO: #{distro_str}"
-
-      distro = distro_map(distro_str) || {}
-      cpe = cpeid_map(distro["cpeid"]) || {}
-
-      @installed_product = distro["name"] || ""
-      @installed_product_version = cpe["version"] || ""
+      @installed_product = Yast::OSRelease.ReleaseInformation
+      @installed_product_version = Yast::OSRelease.ReleaseVersion
       Ops.set(@ATTR, "installed_product", @installed_product)
       Ops.set(@ATTR, "installed_product_version", @installed_product_version)
 
-      log.info "Installing #{@installed_product.inspect}, " \
-        "version: #{@installed_product_version.inspect}"
+      log.info "Installing #{@installed_product}, " \
+        "version: #{@installed_product_version}"
       log.info "ATTR=#{@ATTR}"
 
       nil
@@ -456,16 +461,16 @@ module Yast
       AutoInstallRules.ProbeRules if !rulelist.empty?
       Builtins.foreach(rulelist) do |ruleset|
         Builtins.y2milestone("Ruleset: %1", ruleset)
-	rls = ruleset.keys
-	if( rls.include?("result"))
-	  rls.reject! {|r| r=="result"}
-	  rls.push("result")
-	end
+        rls = ruleset.keys
+        if rls.include?("result")
+          rls.reject! {|r| r=="result"}
+          rls.push("result")
+        end
         op = Ops.get_string(ruleset, "operator", "and")
         rls.reject! {|r| r=="op"}
-	Builtins.y2milestone("Orderes Rules: %1", rls)
+        Builtins.y2milestone("Orderes Rules: %1", rls)
         Builtins.foreach(rls) do |rule|
-	  ruledef = ruleset.fetch( rule, {} )
+          ruledef = ruleset.fetch( rule, {} )
           Builtins.y2milestone("Rule: %1", rule)
           Builtins.y2milestone("Ruledef: %1", ruledef)
           match = Ops.get_string(ruledef, "match", "undefined")
@@ -1106,6 +1111,20 @@ module Yast
       nil
     end
 
+    # Return the IP through iproute2 tools
+    #
+    # @return [String] IP address
+    def hostaddress
+      return @hostaddress unless @hostaddress.nil?
+      ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
+      regexp = /src ([\w.]+) \n/
+      if ret = ip_route["stdout"][regexp, 1]
+        ret
+      else
+        log.warn "Cannot evaluate IP address: #{ip_route}"
+        nil
+      end
+    end
 
     publish :variable => :userrules, :type => "boolean"
     publish :variable => :dontmergeIsDefault, :type => "boolean"
@@ -1114,7 +1133,6 @@ module Yast
     publish :variable => :installed_product, :type => "string"
     publish :variable => :installed_product_version, :type => "string"
     publish :variable => :hostname, :type => "string"
-    publish :variable => :hostaddress, :type => "string"
     publish :variable => :network, :type => "string"
     publish :variable => :domain, :type => "string"
     publish :variable => :arch, :type => "string"
@@ -1135,6 +1153,7 @@ module Yast
     publish :variable => :LinuxPartitions, :type => "list"
     publish :variable => :UserRules, :type => "map <string, any>"
     publish :variable => :tomerge, :type => "list <string>"
+    publish :function => :hostaddress, :type => "string ()"
     publish :function => :XML_cleanup, :type => "boolean (string, string)"
     publish :function => :StdErrLog, :type => "void (string)"
     publish :function => :getMAC, :type => "string ()"
@@ -1149,56 +1168,6 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
-
-    private
-
-    # TODO FIXME: share these functions (move to yast2?)
-
-    # Split CPE ID and distro label (separated by comma)
-    # @param distro [String] "DISTRO" value from content file
-    # @return [Hash<String,String>,nil] parsed value, map:
-    #    {"name" => <string>, "cpeid" => <string> }
-    #    or nil if the input value is invalid
-    def distro_map(distro)
-      if !distro
-        log.warn "Received nil distro value"
-        return nil
-      end
-
-      # split at the first comma, resulting in 2 parts at max.
-      cpeid, name = distro.split(",", 2)
-
-      if !name
-        log.warn "Cannot parse DISTRO value: #{distro}"
-        return nil
-      end
-
-      {"cpeid" => cpeid, "name" => name}
-    end
-
-    # parse CPE ID in URI syntax
-    # @see http://csrc.nist.gov/publications/nistir/ir7695/NISTIR-7695-CPE-Naming.pdf
-    # @param cpeid [String] e.g. "cpe:/o:suse:sles:12"
-    # @return [Hash<String,String>] parsed values, the keys are "part", "vendor", "product",
-    #   "version", "update", "edition", "lang", nil is returned for missing values
-    def cpeid_map(cpeid)
-      return nil unless cpeid && cpeid.start_with?("cpe:/")
-
-      # remove the "cpe:/" prefix
-      raw_cpe = cpeid.sub(/^cpe:\//, "")
-
-      parts = raw_cpe.split(":")
-
-      {
-        "part"    => parts[0],
-        "vendor"  => parts[1],
-        "product" => parts[2],
-        "version" => parts[3],
-        "update"  => parts[4],
-        "edition" => parts[5],
-        "lang"    => parts[6]
-      }
-    end
   end
 
   AutoInstallRules = AutoInstallRulesClass.new

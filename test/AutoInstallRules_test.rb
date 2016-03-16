@@ -9,109 +9,93 @@ describe Yast::AutoInstallRules do
 
   let(:root_path) { File.expand_path('../..', __FILE__) }
 
-  describe "#cpeid_map" do
-    it "parses SLES12 CPE ID" do
-      expect(subject.send(:cpeid_map, "cpe:/o:suse:sles:12")).to eq(
-        "part" => "o",
-        "vendor" => "suse",
-        "product" => "sles",
-        "version" => "12",
-        "update" => nil,
-        "edition" => nil,
-        "lang" => nil
-      )
-    end
-
-    it "parses Adv. mgmt module CPE ID" do
-      machinery_cpeid = "cpe:/o:suse:sle-module-adv-systems-management:12"
-      expect(subject.send(:cpeid_map, machinery_cpeid)).to eq(
-        "part" => "o",
-        "vendor" => "suse",
-        "product" => "sle-module-adv-systems-management",
-        "version" => "12",
-        "update" => nil,
-        "edition" => nil,
-        "lang" => nil
-      )
-    end
-
-    it "return nil when CPE ID is does not start with 'cpe:/'" do
-      expect(subject.send(:cpeid_map, "invalid")).to be_nil
-    end
-  end
-
-  describe "#distro_map" do
-    it "returns CPEID and product name" do
-      param = "cpe:/o:suse:sles:12,SUSE Linux Enterprise Server 12"
-      expected = {
-        "cpeid" => "cpe:/o:suse:sles:12",
-        "name" => "SUSE Linux Enterprise Server 12"
-      }
-
-      expect(subject.send(:distro_map, param)).to eq(expected)
-    end
-
-    it "returns product name with comma" do
-      param = "cpe:/o:suse:sles:12,SLES12, Mini edition"
-      expected = {
-        "cpeid" => "cpe:/o:suse:sles:12",
-        "name" => "SLES12, Mini edition"
-      }
-
-      expect(subject.send(:distro_map, param)).to eq(expected)
-    end
-
-    it "returns nil if input is nil" do
-      expect(subject.send(:distro_map, nil)).to be_nil
-    end
-
-    it "returns nil if the input does not contain comma" do
-      expect(subject.send(:distro_map, "foo")).to be_nil
-    end
-  end
-
   describe "#ProbeRules" do
-    before(:each) do
-      subject.reset
-    end
-
-    it "reads installed product properties from content file" do
+    it "detect system properties" do
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.bios")).and_return([])
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.memory")).and_return([])
       expect(Yast::Arch).to receive(:architecture).and_return("x86_64")
       expect(Yast::Kernel).to receive(:GetPackages).and_return([])
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/bin/hostname")
-      expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.Domain"))
-      expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.Hostname"))
-      expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.Network"))
+      expect(subject).to receive(:getNetwork).and_return("192.168.1.0")
+      expect(subject).to receive(:getHostname).and_return("myhost")
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.XServer"))
+      expect(Yast::Hostname).to receive(:CurrentDomain).and_return("mydomain.lan")
 
       expect(Yast::StorageControllers).to receive(:Initialize)
       expect(Yast::Storage).to receive(:GetTargetMap).and_return({})
       expect(Yast::Storage).to receive(:GetForeignPrimary)
       expect(Yast::Storage).to receive(:GetOtherLinuxPartitions)
 
-      expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".content.DISTRO")).
-        and_return("cpe:/o:suse:sles:12,SUSE Linux Enterprise Server 12")
+      expect(Yast::OSRelease).to receive(:ReleaseInformation).
+        and_return("SUSE Linux Enterprise Server 12")
+      expect(Yast::OSRelease).to receive(:ReleaseVersion).
+        and_return("12")
 
       subject.ProbeRules
 
       expect(Yast::AutoInstallRules.installed_product).to eq("SUSE Linux Enterprise Server 12")
       expect(Yast::AutoInstallRules.installed_product_version).to eq("12")
     end
+  end
 
-    context "when .content.DISTRO is not found" do
-      before(:each) do
-        allow(Yast::SCR).to receive(:Read).with(any_args)
-        allow(Yast::Arch).to receive(:architecture).and_return("x86_64")
+  describe "#getHostid" do
+    let(:ip_route_output_path) do
+      File.join(root_path, "test", "fixtures", "output", "ip_route.out")
+    end
+
+    it "returns host IP in hex format (initial Stage)" do
+      expect(Yast::SCR).to receive(:Execute).
+        with(Yast::Path.new(".target.bash_output"), /ip route/).
+        and_return("stdout" => File.read(ip_route_output_path), "exit" => 0)
+
+      expect(subject.getHostid).to eq(Yast::IP.ToHex("10.13.32.195"))
+    end
+
+    it "returns nil if an error occurs finding the IP address" do
+      expect(Yast::SCR).to receive(:Execute).
+        with(Yast::Path.new(".target.bash_output"), /ip route/).
+        and_return("stdout" => "", "stderr" => "error from iputils", "exit" => 1)
+
+      expect(subject.getHostid).to eq(nil)
+    end
+  end
+
+  describe "#getHostname" do
+    before do
+      allow(Yast::SCR).to receive(:Execute).
+        with(Yast::Path.new(".target.bash_output"), "/bin/hostname").
+        and_return(hostname_output)
+    end
+
+    context "/bin/hostname returns the hostname properly" do
+      let(:hostname_output) { { "stdout" => "myhost", "exit" => 0 } }
+
+      it "returns that hostname" do
+        expect(subject.getHostname).to eq("myhost")
+      end
+    end
+
+    context "/bin/hostname fails" do
+      let(:hostname_output) { { "stderr" => "error from hostname", "stdout" => "", "exit" => 1 } }
+
+      before do
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".etc.install_inf.Hostname"))
+          .and_return(inf_hostname)
       end
 
-      it 'set installed_product and installed_product_version to blank string' do
-        expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".content.DISTRO")).
-          and_return(nil)
-        subject.ProbeRules
-        expect(Yast::AutoInstallRules.installed_product).to eq('')
-        expect(Yast::AutoInstallRules.installed_product_version).to eq('')
+      context "and install.inf contains a Hostname" do
+        let(:inf_hostname) { "myhost" }
+
+        it "returns the name stored in install.inf" do
+          expect(subject.getHostname).to eq("myhost")
+        end
+      end
+
+      context "and install.inf does not contain a Hostname" do
+        let(:inf_hostname) { nil }
+
+        it "returns nil" do
+          expect(subject.getHostname).to eq(nil)
+        end
       end
     end
   end
@@ -130,7 +114,7 @@ describe Yast::AutoInstallRules do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   ||   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       {"hostaddress" => subject.hostaddress, "mac"=>""}
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
@@ -150,7 +134,7 @@ describe Yast::AutoInstallRules do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       {"hostaddress" => subject.hostaddress, "mac"=>""}
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
@@ -169,7 +153,7 @@ describe Yast::AutoInstallRules do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress"=>"192.168.1.1", "mac"=>""}
+       {"hostaddress" => subject.hostaddress, "mac"=>""}
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
@@ -177,26 +161,41 @@ describe Yast::AutoInstallRules do
     end
   end
 
-  describe "#Host ID" do
-    let(:wicked_output_path) { File.join(root_path, 'test', 'fixtures', 'output', 'wicked_output')  }
-    it "returns host IP in hex format (initial Stage)" do
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stdout"=>File.read(wicked_output_path), "exit"=>0})
-      expect(Yast::Stage).to receive(:initial).and_return(true)
-      expect(subject.getHostid).to eq("C0A864DA")
+  describe "#getNetwork" do
+    let(:hostaddress) { "10.13.32.195" }
+    let(:initial) { true }
+    let(:ip_route_output) { { "stdout" => ip_route_content, "exit" => 0 } }
+    let(:ip_route_content) do
+      File.read(File.join(root_path, "test", "fixtures", "output", "ip_route.out"))
     end
 
-    it "returns fix 192.168.1.1 in hex format (normal Stage)" do
-      expect(Yast::Stage).to receive(:initial).and_return(false)
-      expect(subject.getHostid).to eq("C0A80101")
+    before do
+      allow(subject).to receive(:hostaddress).and_return(hostaddress)
+      allow(Yast::SCR).to receive(:Execute).
+        with(Yast::Path.new(".target.bash_output"), /ip route/).
+        and_return(ip_route_output)
     end
 
-    it "returns nil if wicked does not find IP address" do
-      expect(Yast::Stage).to receive(:initial).and_return(true)
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), "/usr/sbin/wicked show --verbose all|grep pref-src").and_return({"stderr"=>"error from wicked", "exit"=>1})
-      expect(subject.getHostid).to eq(nil)
+    context "the host address is known to wicked" do
+      it "returns the network for the system's hostaddress" do
+        expect(subject.getNetwork).to eq("10.13.32.0")
+      end
     end
 
+    context "the host address is unknown" do
+      let(:hostaddress) { "10.163.2.9" }
+
+      it "returns nil" do
+        expect(subject.getNetwork).to be_nil
+      end
+    end
+
+    context "an error occurs finding the IP" do
+      let(:ip_route_output) { { "stderr" => "some error", "stdout" => "", "exit" => 1 } }
+
+      it "returns nil" do
+        expect(subject.getNetwork).to be_nil
+      end
+    end
   end
-
-
 end
