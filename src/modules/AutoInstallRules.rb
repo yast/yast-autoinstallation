@@ -63,7 +63,7 @@ module Yast
       @installed_product = ""
       @installed_product_version = ""
       @hostname = ""
-      @hostaddress = ""
+      @hostaddress = nil
       @network = ""
       @domain = ""
       @arch = ""
@@ -163,7 +163,6 @@ module Yast
     # @return [String] Network part of the hostaddress
     #
     # @see hostaddress
-    # @see get_network_from_wicked
     def getNetwork
       ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
 
@@ -1112,11 +1111,11 @@ module Yast
       nil
     end
 
-    # Return the IP through wicked
+    # Return the IP through iproute2 tools
     #
     # @return [String] IP address
     def hostaddress
-      return @hostaddress unless @hostaddress == ""
+      return @hostaddress unless @hostaddress.nil?
       ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
       regexp = /src ([\w.]+) \n/
       if ret = ip_route["stdout"][regexp, 1]
