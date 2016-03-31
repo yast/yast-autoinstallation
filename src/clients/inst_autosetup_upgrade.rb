@@ -37,7 +37,6 @@ module Yast
       Yast.import "Keyboard"
       Yast.import "Call"
       Yast.import "ProductControl"
-      Yast.import "LanUdevAuto"
       Yast.import "Language"
       Yast.import "Console"
 
