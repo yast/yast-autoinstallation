@@ -52,7 +52,7 @@ BuildRequires:  systemd
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
 Requires:       yast2
-Requires:       yast2 >= 3.1.182
+Requires:       yast2 >= 3.1.183
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 Requires:       yast2-schema
