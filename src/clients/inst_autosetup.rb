@@ -41,7 +41,6 @@ module Yast
       Yast.import "Call"
       Yast.import "ProductControl"
       Yast.import "ProductLicense"
-      Yast.import "LanUdevAuto"
       Yast.import "Language"
       Yast.import "Console"
       Yast.import "ServicesManager"
@@ -379,8 +378,6 @@ module Yast
           ["Import", Ops.get_map(Profile.current, "kdump", {})]
         )
       end
-
-      LanUdevAuto.Import(Ops.get_map(Profile.current, "networking", {}))
 
       Progress.NextStage
 
