@@ -30,7 +30,6 @@ module Yast
       Yast.import "AutoinstGeneral"
       Yast.import "AutoinstSoftware"
       Yast.import "Bootloader"
-      Yast.import "BootCommon"
       Yast.import "Popup"
       Yast.import "Arch"
       Yast.import "AutoinstLVM"
@@ -306,7 +305,6 @@ module Yast
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
       Progress.NextStage
 
-      BootCommon.getLoaderType(true)
       return :abort unless WFM.CallFunction(
         "bootloader_auto",
         ["Import", Ops.get_map(Profile.current, "bootloader", {})]
