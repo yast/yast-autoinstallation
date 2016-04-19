@@ -29,7 +29,6 @@ module Yast
       Yast.import "AutoinstScripts"
       Yast.import "AutoinstGeneral"
       Yast.import "AutoinstSoftware"
-      Yast.import "Bootloader"
       Yast.import "Popup"
       Yast.import "Arch"
       Yast.import "AutoinstLVM"
@@ -47,7 +46,6 @@ module Yast
       Yast.import "AutoinstFunctions"
       Yast.import "Wizard"
 
-      Yast.include self, "bootloader/routines/autoinstall.rb"
       Yast.include self, "autoinstall/ask.rb"
 
       @help_text = _(
