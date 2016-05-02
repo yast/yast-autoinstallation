@@ -315,14 +315,28 @@ module Yast
         Builtins.foreach(@restore) { |res| Pkg.ResolvableInstall(res, :product) }
         Update.SetDesktopPattern if !Update.onlyUpdateInstalled
 
+        # make sure the packages needed for accessing the installation repository
+        # are installed, e.g. "cifs-mount" for SMB or "nfs-client" for NFS repositories
+        Packages.sourceAccessPackages.each do |package|
+          Pkg::ResolvableInstall(package, :package)
+        end
+
+        Packages.SelectProduct
+
         if !Update.OnlyUpdateInstalled
           Packages.default_patterns.each do |pattern|
             result = Pkg.ResolvableInstall(pattern, :pattern)
             log.info "Pre-select pattern #{pattern}: #{result}"
           end
+
+          # preselect the default product patterns (FATE#320199)
+          # note: must be called *after* selecting the products
+          require "packager/product_patterns"
+          product_patterns = ProductPatterns.new
+          log.info "Selecting the default product patterns: #{product_patterns.names}"
+          product_patterns.select
         end
 
-        Packages.SelectProduct
 
         # bnc #382208
 
