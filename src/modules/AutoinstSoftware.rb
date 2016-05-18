@@ -833,6 +833,11 @@ module Yast
       ok = true
 
       Packages.Init(true)
+      # Resetting package selection of previous runs. This is needed
+      # because it could be that additional repositories 
+      # are available meanwhile. (bnc#979691)
+      Pkg.PkgApplReset
+
       sw_settings = Profile.current.fetch("software",{})
       Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
