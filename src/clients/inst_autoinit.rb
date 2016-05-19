@@ -9,6 +9,7 @@
 #
 module Yast
   class InstAutoinitClient < Client
+    include Yast::Logger
     def main
       Yast.import "UI"
 
