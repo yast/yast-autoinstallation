@@ -87,7 +87,7 @@ module Yast
       unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections
       if unknown_sections.any?
         log.error "Could not process these unknown profile sections: #{unknown_sections}"
-        Report.LongError(
+        Report.LongWarning(
           # TRANSLATORS: Error message, %s is replaced by newline-separated
           # list of unknown sections of the profile
           # Do not translate words in brackets
