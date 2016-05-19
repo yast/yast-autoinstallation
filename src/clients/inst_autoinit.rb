@@ -23,10 +23,10 @@ module Yast
       Yast.import "Progress"
       Yast.import "Report"
       Yast.import "Profile"
-      #    import "Arch";
       Yast.import "Call"
       Yast.import "Console"
       Yast.import "Mode"
+      Yast.import "Y2ModuleConfig"
 
       Yast.import "Popup"
 
@@ -196,6 +196,19 @@ module Yast
 
       Builtins.y2debug("Autoinstall control file %1", Profile.current)
 
+      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
+      if unsupported_sections.any?
+        log.error "Could not process these unsupported profile sections: #{unsupported_sections}"
+        Report.LongError(
+          # TRANSLATORS: Error message, %s is replaced by newline-separated
+          # list of unsupported sections of the profile
+          # Do not translate words in brackets
+          _(
+            "These sections of AutoYaST profile are not supported anymore:\n\n%s\n\n" \
+            "Please, use, e.g., <scripts/> or <files/> to change the configuration."
+          ) % unsupported_sections.map{|section| "<#{section}/>"}.join("\n")
+        )
+      end
 
       Progress.NextStage
       Progress.Title(_("Initial Configuration"))
