@@ -138,6 +138,28 @@ module Yast
       :next
     end
 
+  private
+
+    # Checking profile for unsupported sections.
+    def check_unsupported_profile_sections
+      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
+      if unsupported_sections.any?
+        log.error "Could not process these unsupported profile" \
+          "sections: #{unsupported_sections}"
+        Report.LongWarning(
+          # TRANSLATORS: Error message, %s is replaced by newline-separated
+          # list of unsupported sections of the profile
+          # Do not translate words in brackets
+          _(
+            "These sections of AutoYaST profile are not supported " \
+            "anymore:<br><br>%s<br><br>" \
+            "Please, use, e.g., &lt;scripts/&gt; or &lt;files/&gt;" \
+            " to change the configuration."
+          ) % unsupported_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>")
+        )
+      end
+    end
+
     def processProfile
       Progress.NextStage
       Builtins.y2milestone("Starting processProfile msg:%1",AutoinstConfig.message)
@@ -197,22 +219,8 @@ module Yast
 
       Builtins.y2debug("Autoinstall control file %1", Profile.current)
 
-      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
-      if unsupported_sections.any?
-        log.error "Could not process these unsupported profile" \
-          "sections: #{unsupported_sections}"
-        Report.LongWarning(
-          # TRANSLATORS: Error message, %s is replaced by newline-separated
-          # list of unsupported sections of the profile
-          # Do not translate words in brackets
-          _(
-            "These sections of AutoYaST profile are not supported " \
-            "anymore:<br><br>%s<br><br>" \
-            "Please, use, e.g., &lt;scripts/&gt; or &lt;files/&gt;" \
-            " to change the configuration."
-          ) % unsupported_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>")
-        )
-      end
+      # Checking profile for unsupported sections.
+      check_unsupported_profile_sections
 
       Progress.NextStage
       Progress.Title(_("Initial Configuration"))
