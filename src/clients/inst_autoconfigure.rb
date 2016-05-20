@@ -91,12 +91,14 @@ module Yast
           # TRANSLATORS: Error message, %s is replaced by newline-separated
           # list of unknown sections of the profile
           # Do not translate words in brackets
-          _(
-            "These sections of AutoYaST profile cannot be processed on this system:\n\n%s\n\n" \
-            "Maybe they were misspelled or your profile does not contain " \
-            "all the needed YaST packages in <software/> section."
-          ) %
-            unknown_sections.map{|section| "<#{section}/>"}.join("\n")
+          "<pre>" +
+            _(
+              "These sections of AutoYaST profile cannot be processed on this system:\n\n%s\n\n" \
+              "Maybe they were misspelled or your profile does not contain " \
+              "all the needed YaST packages in <software/> section."
+            ) %
+              unknown_sections.map{|section| "<#{section}/>"}.join("\n") +
+            "</pre>"
         )
       end
 
