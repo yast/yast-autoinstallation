@@ -97,7 +97,7 @@ module Yast
             "Maybe they were misspelled or your profile does not contain " \
             "all the needed YaST packages in &lt;software/&gt; section."
           ) %
-            unknown_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>") +
+            unknown_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>")
         )
       end
 
