@@ -199,17 +199,18 @@ module Yast
 
       unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
       if unsupported_sections.any?
-        log.error "Could not process these unsupported profile sections: #{unsupported_sections}"
+        log.error "Could not process these unsupported profile" \
+          "sections: #{unsupported_sections}"
         Report.LongWarning(
           # TRANSLATORS: Error message, %s is replaced by newline-separated
           # list of unsupported sections of the profile
           # Do not translate words in brackets
-          "<pre>" +
-            _(
-              "These sections of AutoYaST profile are not supported anymore:\n\n%s\n\n" \
-              "Please, use, e.g., <scripts/> or <files/> to change the configuration."
-            ) % unsupported_sections.map{|section| "<#{section}/>"}.join("\n") +
-            "</pre>"
+          _(
+            "These sections of AutoYaST profile are not supported " \
+            "anymore:<br><br>%s<br><br>" \
+            "Please, use, e.g., &lt;scripts/&gt; or &lt;files/&gt;" \
+            " to change the configuration."
+          ) % unsupported_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>")
         )
       end
 
