@@ -403,8 +403,8 @@ module Yast
       Progress.NextStage
       if Profile.current["ssh_import"]
         return :abort unless WFM.CallFunction(
-          "scc_auto",
-          ["Import", Profile.current["ssh_import_auto"]]
+          "ssh_import_auto",
+          ["Import", Profile.current["ssh_import"]]
         )
       end
 
