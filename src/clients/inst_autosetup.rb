@@ -61,6 +61,7 @@ module Yast
         _("Configure Software selections"),
         _("Configure Systemd Default Target"),
         _("Configure users and groups"),
+        _("Import SSH keys/settings"),
         _("Confirm License")
       ]
 
@@ -74,6 +75,7 @@ module Yast
         _("Configuring Software selections..."),
         _("Configuring Systemd Default Target..."),
         _("Importing users and groups configuration..."),
+        _("Importing SSH keys/settings..."),
         _("Confirming License...")
       ]
 
@@ -393,6 +395,18 @@ module Yast
       #
       Progress.NextStage
       autosetup_users
+
+      # 
+      # Import settings for copying SSH keys from a
+      # previous installation
+      #
+      Progress.NextStage
+      if Profile.current["ssh_import"]
+        return :abort unless WFM.CallFunction(
+          "scc_auto",
+          ["Import", Profile.current["ssh_import_auto"]]
+        )
+      end
 
       #
       # Checking Base Product licenses
