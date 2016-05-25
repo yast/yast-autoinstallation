@@ -394,14 +394,20 @@ module Yast
       # Import users configuration from the profile
       #
       Progress.NextStage
-      import_configuration( "users" )
+      autosetup_users
 
       # 
       # Import profile settings for copying SSH keys from a
       # previous installation
       #
       Progress.NextStage
-      import_configuration( "ssh_import" )
+      if Profile.current["ssh_import"]
+        Profile.remove_sections("ssh_import")
+        return :abort unless WFM.CallFunction(
+          "ssh_import_auto",
+          ["Import", Profile.current["ssh_import"]]
+        )
+      end
 
       #
       # Checking Base Product licenses
@@ -469,13 +475,14 @@ module Yast
       :not_found
     end
 
-    # Import configuration from profile for an given module
-    def import_configuration( module_name )
-      config = ModuleConfigBuilder.build(Y2ModuleConfig.getModuleConfig(module_name), Profile.current)
-      if config
-        Profile.remove_sections(config.keys)
-        Call.Function("#{module_name}_auto", ["Import", config])
-      end
+
+    # Import Users configuration from profile
+    def autosetup_users
+      users_config = ModuleConfigBuilder.build(Y2ModuleConfig.getModuleConfig("users"), Profile.current)
+      if users_config
+        Profile.remove_sections(users_config.keys)
+        Call.Function("users_auto", ["Import", users_config])
+     end
     end
 
     # Add YaST2 packages dependencies
