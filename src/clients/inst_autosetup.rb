@@ -402,10 +402,11 @@ module Yast
       #
       Progress.NextStage
       if Profile.current["ssh_import"]
+        config = Profile.current["ssh_import"]
         Profile.remove_sections("ssh_import")
         return :abort unless WFM.CallFunction(
           "ssh_import_auto",
-          ["Import", Profile.current["ssh_import"]]
+          ["Import", config]
         )
       end
 
