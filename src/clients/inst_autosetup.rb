@@ -61,6 +61,7 @@ module Yast
         _("Configure Software selections"),
         _("Configure Systemd Default Target"),
         _("Configure users and groups"),
+        _("Import SSH keys/settings"),
         _("Confirm License")
       ]
 
@@ -74,6 +75,7 @@ module Yast
         _("Configuring Software selections..."),
         _("Configuring Systemd Default Target..."),
         _("Importing users and groups configuration..."),
+        _("Importing SSH keys/settings..."),
         _("Confirming License...")
       ]
 
@@ -394,6 +396,20 @@ module Yast
       Progress.NextStage
       autosetup_users
 
+      # 
+      # Import profile settings for copying SSH keys from a
+      # previous installation
+      #
+      Progress.NextStage
+      if Profile.current["ssh_import"]
+        config = Profile.current["ssh_import"]
+        Profile.remove_sections("ssh_import")
+        return :abort unless WFM.CallFunction(
+          "ssh_import_auto",
+          ["Import", config]
+        )
+      end
+
       #
       # Checking Base Product licenses
       #
@@ -460,13 +476,14 @@ module Yast
       :not_found
     end
 
+
     # Import Users configuration from profile
     def autosetup_users
       users_config = ModuleConfigBuilder.build(Y2ModuleConfig.getModuleConfig("users"), Profile.current)
       if users_config
         Profile.remove_sections(users_config.keys)
         Call.Function("users_auto", ["Import", users_config])
-      end
+     end
     end
 
     # Add YaST2 packages dependencies

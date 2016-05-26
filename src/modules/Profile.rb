@@ -873,7 +873,7 @@ module Yast
     # Removes the given sections from the profile
     #
     # @param [String,Array<String>] keys Section names.
-    # @rerturn [Hash] The profile without the removed sections.
+    # @return [Hash] The profile without the removed sections.
     def remove_sections(sections)
       keys_to_delete = Array(sections)
       @current.delete_if { |k, v| keys_to_delete.include?(k) }
