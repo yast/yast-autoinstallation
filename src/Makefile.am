@@ -93,6 +93,7 @@ schemafiles_DATA = \
   autoyast-rnc/classes-use.rnc \
   autoyast-rnc/classes-decl.rnc \
   autoyast-rnc/software.rnc \
+  autoyast-rnc/ssh-import.rnc \
   autoyast-rnc/reporting.rnc \
   autoyast-rnc/partitioning.rnc \
   autoyast-rnc/profile-misc.rnc \
