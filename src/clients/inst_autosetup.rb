@@ -476,7 +476,6 @@ module Yast
       :not_found
     end
 
-
     # Import Users configuration from profile
     def autosetup_users
       users_config = ModuleConfigBuilder.build(Y2ModuleConfig.getModuleConfig("users"), Profile.current)
