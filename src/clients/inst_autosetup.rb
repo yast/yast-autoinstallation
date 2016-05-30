@@ -483,7 +483,7 @@ module Yast
       if users_config
         Profile.remove_sections(users_config.keys)
         Call.Function("users_auto", ["Import", users_config])
-     end
+      end
     end
 
     # Add YaST2 packages dependencies
