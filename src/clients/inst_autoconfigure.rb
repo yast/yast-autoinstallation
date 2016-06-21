@@ -114,7 +114,7 @@ module Yast
         elsif Ops.get_boolean(
             Profile.current,
             ["networking", "keep_install_network"],
-            false
+            true
           ) == false
           removeNetwork(
             Ops.get_list(Profile.current, ["networking", "interfaces"], [])
