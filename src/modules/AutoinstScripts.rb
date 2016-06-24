@@ -304,11 +304,12 @@ module Yast
     def Import(s)
       s = deep_copy(s)
       Builtins.y2debug("Calling AutoinstScripts::Import()")
-      @pre = Ops.get_list(s, "pre-scripts", [])
-      @init = Ops.get_list(s, "init-scripts", [])
-      @post = Ops.get_list(s, "post-scripts", [])
-      @chroot = Ops.get_list(s, "chroot-scripts", [])
-      @postpart = Ops.get_list(s, "postpartitioning-scripts", [])
+      # take only hash entries (bnc#986049)
+      @pre = s.fetch("pre-scripts", []).select { |h| h.is_a?(Hash) }
+      @init = s.fetch("init-scripts", []).select { |h| h.is_a?(Hash) }
+      @post = s.fetch("post-scripts", []).select { |h| h.is_a?(Hash) }
+      @chroot = s.fetch("chroot-scripts", []).select { |h| h.is_a?(Hash) }
+      @postpart = s.fetch("postpartitioning-scripts", []).select { |h| h.is_a?(Hash) }
 
       @pre = Resolve_location(@pre)
       @init = Resolve_location(@init)
