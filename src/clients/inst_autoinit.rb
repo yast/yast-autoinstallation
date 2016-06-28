@@ -105,7 +105,6 @@ module Yast
         return @ret if @ret != :ok
       end
 
-      Builtins.sleep(1000)
       Progress.Finish
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
@@ -187,8 +186,6 @@ module Yast
       # 	y2error("Aborting...");
       # 	return `abort;
       # }
-
-      Builtins.sleep(1000)
 
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
