@@ -58,28 +58,6 @@ module Yast
       Progress.Title(_("Preprobing stage"))
       Builtins.y2milestone("pre probing")
 
-      # // moved to autoset to fulfill fate #301193
-      #    // the DASD section in an autoyast profile can't be changed via pre-script
-      #    //
-      #     if( Arch::s390 () && AutoinstConfig::remoteProfile == true ) {
-      #         y2milestone("arch=s390 and remote_profile=true");
-      #         symbol ret = processProfile();
-      #         if( ret != `ok ) {
-      #             return ret;
-      #         }
-      #         y2milestone("processProfile=ok");
-      #         profileFetched = true;
-      #
-      #         // FIXME: the hardcoded stuff should be in the control.xml later
-      #         if( haskey(Profile::current, "dasd") ) {
-      #             y2milestone("dasd found");
-      #             Call::Function("dasd_auto", ["Import", Profile::current["dasd"]:$[] ]);
-      #         }
-      #         if( haskey(Profile::current, "zfcp") ) {
-      #             y2milestone("zfcp found");
-      #             Call::Function("zfcp_auto", ["Import", Profile::current["zfcp"]:$[] ]);
-      #         }
-      #     }
       @tmp = Convert.to_string(
         SCR.Read(path(".target.string"), "/etc/install.inf")
       )
@@ -132,8 +110,6 @@ module Yast
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
-      # AutoInstall::ProcessSpecialResources();
-
       :next
     end
 
@@ -180,13 +156,6 @@ module Yast
           end
         end
       end
-
-      # if (!ProfileLocation::Process())
-      # {
-      # 	y2error("Aborting...");
-      # 	return `abort;
-      # }
-
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
