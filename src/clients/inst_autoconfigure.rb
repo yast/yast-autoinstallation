@@ -271,7 +271,7 @@ module Yast
         if @online_update_ret == :reboot
           @script = {
             "filename" => "zzz_reboot",
-            "source"   => "chkconfig autoyast off\nshutdown -r now"
+            "source"   => "shutdown -r now"
           }
           AutoinstScripts.init = Builtins.add(AutoinstScripts.init, @script)
         end
