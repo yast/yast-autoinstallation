@@ -340,7 +340,12 @@ module Yast
       _StorageMap = Builtins.eval(Storage.GetTargetMap)
 
       _StorageMap = _StorageMap.select do |d, p|
-        ok = d != "/dev/evms" && d != "/dev/nfs"
+        ok = d != "/dev/evms"
+        if( ok && d == "/dev/nfs" && p["partitions"] != nil)
+          # Checking if the nfs partition has a root partition.
+          # If yes, it can be taken for the plan (bnc#986124)
+          ok = p["partitions"].any?{ |part| part["mount"] == "/" }
+        end
 	if( ok && p.fetch("partitions", []).size==0 )
 	  ok = p.fetch("used_by_type",:UB_NONE)==:UB_LVM
 	end
@@ -360,6 +365,17 @@ module Yast
         Builtins.foreach(Ops.get_list(v, "partitions", [])) do |pe|
           next if Ops.get_symbol(pe, "type", :x) == :extended
           new_pe = {}
+
+          # Handling nfs root partitions. (bnc#986124)
+          if pe["type"] == :nfs
+            new_pe["type"] = pe["type"]
+            new_pe["device"] = pe["device"]
+            new_pe["mount"] = pe["mount"]
+            new_pe["fstopt"] = pe["fstopt"]
+            partitions << new_pe
+          end
+          next if pe["type"] == :nfs
+
           Ops.set(new_pe, "create", true)
           new_pe["ignore_fstab"] = pe["ignore_fstab"] if pe.has_key?("ignore_fstab")
           skipwin = false
