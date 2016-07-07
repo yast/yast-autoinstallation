@@ -190,7 +190,7 @@ module Yast
         Call.Function("add-on_auto", ["Write"])
         # The entry "kexec_reboot" can be set by the AutoYaST configuration
         # file (general section) and should not be reset by any other
-        # product desciption file. So we set it here again.
+        # product description file. So we set it here again.
         # bnc#981434
         AutoinstGeneral.Write
       end
