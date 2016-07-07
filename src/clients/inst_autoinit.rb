@@ -150,6 +150,13 @@ module Yast
           if newURI == ""
             return :abort
           else
+            # Updating new URI in /etc/install.inf (bnc#963487)
+            # SCR.Write does not work in inst-sys here.
+            WFM.Execute(
+              path(".local.bash"),
+              "sed -i \'/AutoYaST:/c\AutoYaST: #{newURI}\' /etc/install.inf"
+            )
+
             AutoinstConfig.ParseCmdLine(newURI)
             AutoinstConfig.SetProtocolMessage
             next
