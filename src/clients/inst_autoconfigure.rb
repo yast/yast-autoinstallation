@@ -114,7 +114,7 @@ module Yast
         elsif Ops.get_boolean(
             Profile.current,
             ["networking", "keep_install_network"],
-            false
+            true
           ) == false
           removeNetwork(
             Ops.get_list(Profile.current, ["networking", "interfaces"], [])
@@ -271,7 +271,7 @@ module Yast
         if @online_update_ret == :reboot
           @script = {
             "filename" => "zzz_reboot",
-            "source"   => "chkconfig autoyast off\nshutdown -r now"
+            "source"   => "shutdown -r now"
           }
           AutoinstScripts.init = Builtins.add(AutoinstScripts.init, @script)
         end

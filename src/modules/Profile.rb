@@ -217,7 +217,7 @@ module Yast
         if Ops.get_boolean(@current, ["general", "mode", "final_halt"], false)
           script = {
             "filename" => "zzz_halt",
-            "source"   => "chkconfig autoyast off\nshutdown -h now"
+            "source"   => "shutdown -h now"
           }
           if !Builtins.haskey(@current, "scripts")
             Ops.set(@current, "scripts", {})
@@ -240,7 +240,7 @@ module Yast
         if Ops.get_boolean(@current, ["general", "mode", "final_reboot"], false)
           script = {
             "filename" => "zzz_reboot",
-            "source"   => "chkconfig autoyast off\nshutdown -r now"
+            "source"   => "shutdown -r now"
           }
           if !Builtins.haskey(@current, "scripts")
             Ops.set(@current, "scripts", {})

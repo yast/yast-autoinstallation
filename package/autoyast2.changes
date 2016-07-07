@@ -1,8 +1,64 @@
 -------------------------------------------------------------------
-Tue May 31 13:44:07 CEST 2016 - schubi@suse.de
+Wed Jul  6 17:56:38 CEST 2016 - schubi@suse.de
 
-- Fixed option "forceboot" in conjunction with kexec_reboot.
+- The entry "kexec_reboot" can be set by the AutoYaST configuration
+  file (general section) and should not be reset by any other
+  product description ("forceboot").
   (bnc#981434)
+- 3.1.137
+
+-------------------------------------------------------------------
+Wed Jul  6 16:56:38 CEST 2016 - schubi@suse.de
+
+- While AutoYaST installation the user can change the path of the
+  AutoYaST configuration file. Fix: This path will be updated in
+  /etc/install.inf too.
+  (bnc#963487)
+- 3.1.136
+
+-------------------------------------------------------------------
+Tue Jul  5 16:01:19 CEST 2016 - schubi@suse.de
+
+- System shutdown: Removed "autoyast" service shutdown.
+  It does not exist anymore. (bnc#986798)
+- 3.1.135
+
+-------------------------------------------------------------------
+Tue Jun 28 10:29:38 UTC 2016 - jreidinger@suse.com
+
+- Speed up installation (bnc#986649)
+- 3.1.134
+
+-------------------------------------------------------------------
+Tue Jun 21 06:16:12 UTC 2016 - igonzalezsosa@suse.com
+
+- Consider AutoYaST keep_install_network as set to 'true'
+  if it's not specified (bsc#984146)
+- Restore the keep_install_network default behavior present
+  in SLE 12 SP1 and openSUSE Leap 42.1
+- 3.1.133
+
+-------------------------------------------------------------------
+Mon Jun 20 15:31:07 CEST 2016 - schubi@suse.de
+
+- Fixing typo while reporting not supported modules.
+  (part of bnc#955878)
+- 3.1.132
+
+-------------------------------------------------------------------
+Mon Jun  6 10:34:08 UTC 2016 - igonzalezsosa@suse.com
+
+- Rename schema definition regarding SSH keys/configuration
+  so yast2-schema can find it correctly (fate#319624)
+- 3.1.131
+
+-------------------------------------------------------------------
+Fri Jun  3 15:22:02 UTC 2016 - igonzalezsosa@suse.com
+
+- Fix AutoYaST2 schema regarding SSH keys/configuration import
+  feature (fate#319624)
+- Stop generating autodocs (fate#320356)
+>>>>>>> master
 - 3.1.130
 
 -------------------------------------------------------------------
@@ -433,7 +489,7 @@ Tue May  5 15:05:18 CEST 2015 - locilka@suse.com
 Mon May  4 12:49:40 CEST 2015 - schubi@suse.de
 
 - Evaluate the correct host IP in order to read the proper
-  autoyast.xml file (bnc#928303, 908356, 916628)
+  autoyast.xml file (bnc#928303, bnc#908356, bnc#916628)
 - 3.1.75
 
 -------------------------------------------------------------------
