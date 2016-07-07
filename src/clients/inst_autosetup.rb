@@ -190,7 +190,7 @@ module Yast
         Call.Function("add-on_auto", ["Write"])
         # The entry "kexec_reboot" in the Product description can be set
         # by the AutoYaST configuration setting (general/forceboot) and should
-        # not be reset by any other Product desrciption file.
+        # not be reset by any other Product description file.
         # So we set it here again.
         # bnc#981434
         AutoinstGeneral.Write
