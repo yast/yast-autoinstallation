@@ -188,9 +188,10 @@ module Yast
           ["Import", Ops.get_map(Profile.current, "add-on", {})]
         )
         Call.Function("add-on_auto", ["Write"])
-        # The entry "kexec_reboot" can be set by the AutoYaST configuration
-        # file (general section) and should not be reset by any other
-        # product description file. So we set it here again.
+        # The entry "kexec_reboot" in the Product description can be set
+        # by the AutoYaST configuration setting (general/forceboot) and should
+        # not be reset by any other Product desrciption file.
+        # So we set it here again.
         # bnc#981434
         AutoinstGeneral.Write
       end
