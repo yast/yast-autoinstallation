@@ -193,7 +193,7 @@ module Yast
         # not be reset by any other Product description file.
         # So we set it here again.
         # bnc#981434
-        AutoinstGeneral.Write
+        AutoinstGeneral.SetRebootAfterFirstStage
       end
 
       @use_utf8 = true # utf8 is default
