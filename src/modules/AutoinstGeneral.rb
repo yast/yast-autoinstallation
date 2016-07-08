@@ -433,12 +433,12 @@ module Yast
       end
     end
 
-    # Write General  Configuration
-    # @return [Boolean] true on success
-    def Write
-      AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
-      AutoinstConfig.cio_ignore = @cio_ignore
-      AutoinstConfig.second_stage = @mode["second_stage"] if @mode.has_key?("second_stage")
+    # Set the "kexec_reboot" flag in the product
+    # description in order to force a reboot with
+    # kexec at the end of the first installation
+    # stage.
+    # @return [void]
+    def SetRebootAfterFirstStage
       if Builtins.haskey(@mode, "forceboot")
         ProductFeatures.SetBooleanFeature(
           "globals",
@@ -446,6 +446,15 @@ module Yast
           !Ops.get_boolean(@mode, "forceboot", false)
         )
       end
+    end
+
+    # Write General  Configuration
+    # @return [Boolean] true on success
+    def Write
+      AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
+      AutoinstConfig.cio_ignore = @cio_ignore
+      AutoinstConfig.second_stage = @mode["second_stage"] if @mode.has_key?("second_stage")
+      SetRebootAfterFirstStage()
       AutoinstConfig.Halt = Ops.get_boolean(@mode, "halt", false)
       AutoinstConfig.RebootMsg = Ops.get_boolean(@mode, "rebootmsg", false)
       AutoinstConfig.setProposalList(@proposals)
@@ -494,6 +503,7 @@ module Yast
     publish :function => :Export, :type => "map ()"
     publish :function => :SetSignatureHandling, :type => "void ()"
     publish :function => :SetMultipathing, :type => "void ()"
+    publish :function => :SetRebootAfterFirstStage, :type => "void ()"
     publish :function => :Write, :type => "boolean ()"
     publish :function => :AutoinstGeneral, :type => "void ()"
 
