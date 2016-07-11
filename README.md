@@ -11,6 +11,8 @@ Development
 This module is developed as part of YaST. See the
 [development documentation](http://yastgithubio.readthedocs.org/en/latest/development/).
 
+Have a look to the [AutoYaST Development Documentation](http://yastgithubio.readthedocs.io/en/latest/autoyast-development/) if you would like to implement AutoYaST support for your YaST module.
+
 
 Getting the Sources
 ===================
