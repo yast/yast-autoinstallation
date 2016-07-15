@@ -602,7 +602,8 @@ module Yast
         # they must exist
         drive = {}
         Ops.set(drive, "type", Ops.get_symbol(v, "type", :CT_DISK))
-        Ops.set(drive, "disklabel", Ops.get_string(v, "label", "msdos"))
+        # A disklabel for the container of NFS mounts is useless.
+        Ops.set(drive, "disklabel", Ops.get_string(v, "label", "msdos")) unless drive["type"] == :CT_NFS
         if no_create
           partitions = Builtins.maplist(
             Convert.convert(partitions, :from => "list", :to => "list <map>")

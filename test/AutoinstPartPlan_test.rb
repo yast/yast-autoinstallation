@@ -18,7 +18,7 @@ describe Yast::AutoinstPartPlan do
       expect(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
       expect(Yast::AutoinstPartPlan.Read).to eq(true)
       expect(Yast::AutoinstPartPlan.Export).to eq(
-         [{"type"=>:CT_NFS, "disklabel"=>"msdos", 
+         [{"type"=>:CT_NFS,
             "partitions"=>[{"type"=>:nfs,
               "device"=>"192.168.4.1:/srv/nfsroot/sles12sp1",
               "mount"=>"/",
