@@ -340,14 +340,18 @@ module Yast
       _StorageMap = Builtins.eval(Storage.GetTargetMap)
 
       _StorageMap = _StorageMap.select do |d, p|
-        ok = d != "/dev/evms" && d != "/dev/nfs"
+        ok = true
+        if( d == "/dev/nfs" && p["partitions"] != nil)
+          # Checking if /dev/nfs container has a root partition.
+          # If yes, it can be taken for the plan (bnc#986124)
+          ok = p["partitions"].any?{ |part| part["mount"] == "/" }
+        end
 	if( ok && p.fetch("partitions", []).size==0 )
 	  ok = p.fetch("used_by_type",:UB_NONE)==:UB_LVM
 	end
 	ok
       end
       Builtins.y2milestone("Storagemap %1", _StorageMap)
-      #        list evms_vgs = [];
 
       drives = Builtins.maplist(_StorageMap) do |k, v|
         partitions = []
@@ -360,6 +364,17 @@ module Yast
         Builtins.foreach(Ops.get_list(v, "partitions", [])) do |pe|
           next if Ops.get_symbol(pe, "type", :x) == :extended
           new_pe = {}
+
+          # Handling nfs root partitions. (bnc#986124)
+          if pe["type"] == :nfs
+            new_pe["type"] = pe["type"]
+            new_pe["device"] = pe["device"]
+            new_pe["mount"] = pe["mount"]
+            new_pe["fstopt"] = pe["fstopt"]
+            partitions << new_pe
+          end
+          next if pe["type"] == :nfs
+
           Ops.set(new_pe, "create", true)
           new_pe["ignore_fstab"] = pe["ignore_fstab"] if pe.has_key?("ignore_fstab")
           skipwin = false
@@ -587,7 +602,8 @@ module Yast
         # they must exist
         drive = {}
         Ops.set(drive, "type", Ops.get_symbol(v, "type", :CT_DISK))
-        Ops.set(drive, "disklabel", Ops.get_string(v, "label", "msdos"))
+        # A disklabel for the container of NFS mounts is useless.
+        Ops.set(drive, "disklabel", Ops.get_string(v, "label", "msdos")) unless drive["type"] == :CT_NFS
         if no_create
           partitions = Builtins.maplist(
             Convert.convert(partitions, :from => "list", :to => "list <map>")
@@ -644,13 +660,6 @@ module Yast
         end
         deep_copy(drive)
       end
-      #        drives = filter( map v, (list<map>)drives, ``{
-      #            if( ! (contains( evms_vgs, v["device"]:"") && v["type"]:`x == `CT_LVM ) )
-      #                return true;
-      #            y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
-      #            return false;
-      #        });
-      # remove drives with no mountpoint
       drives = Builtins.filter(
         Convert.convert(drives, :from => "list", :to => "list <map>")
       ) do |v|
