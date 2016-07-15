@@ -340,9 +340,9 @@ module Yast
       _StorageMap = Builtins.eval(Storage.GetTargetMap)
 
       _StorageMap = _StorageMap.select do |d, p|
-        ok = d != "/dev/evms"
-        if( ok && d == "/dev/nfs" && p["partitions"] != nil)
-          # Checking if the nfs partition has a root partition.
+        ok = true
+        if( d == "/dev/nfs" && p["partitions"] != nil)
+          # Checking if /dev/nfs container has a root partition.
           # If yes, it can be taken for the plan (bnc#986124)
           ok = p["partitions"].any?{ |part| part["mount"] == "/" }
         end
@@ -352,7 +352,6 @@ module Yast
 	ok
       end
       Builtins.y2milestone("Storagemap %1", _StorageMap)
-      #        list evms_vgs = [];
 
       drives = Builtins.maplist(_StorageMap) do |k, v|
         partitions = []
@@ -660,13 +659,6 @@ module Yast
         end
         deep_copy(drive)
       end
-      #        drives = filter( map v, (list<map>)drives, ``{
-      #            if( ! (contains( evms_vgs, v["device"]:"") && v["type"]:`x == `CT_LVM ) )
-      #                return true;
-      #            y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
-      #            return false;
-      #        });
-      # remove drives with no mountpoint
       drives = Builtins.filter(
         Convert.convert(drives, :from => "list", :to => "list <map>")
       ) do |v|
