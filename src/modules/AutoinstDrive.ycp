@@ -330,6 +330,12 @@
   */
   global define DriveT
     parseDrive( map drive ){
+    if( drive["type"] == `CT_NFS ){
+      # If it is a root nfs partition we do not need any additional
+      # conversation. (bnc#986124)
+      return drive;
+    }
+
     DriveT newDrive = new( "auto", drive["type"]:`CT_DISK );
     newDrive = set( newDrive, "device", drive["device"]:"auto" );
     newDrive = set( newDrive, "initialize", drive["initialize"]:true );
@@ -360,7 +366,9 @@
       /* get rid of id */
       map exportDrive = remove( drive, "_id" );
       /* translate e.g. `all to "all"  */
-      exportDrive["use"] = symbol2string( exportDrive["use"]:`Empty );
+      if( is( exportDrive["use"]:`Empty, symbol ) ){
+        exportDrive["use"] = symbol2string( exportDrive["use"]:`Empty );
+      }
       /* let AutoinstPartition do it's own filtering */
       exportDrive["partitions"] =
 	maplist( PartitionT part, exportDrive["partitions"]:[], {
