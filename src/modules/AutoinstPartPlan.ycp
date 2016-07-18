@@ -389,7 +389,7 @@
                 if( pe["type"]:`x == `extended )
                     continue;
                 map new_pe = $[];
-                // Handling nfs root partitions. (bnc#986124)
+                // Handling /dev/nfs containers (bnc#986124)
                 if( pe["type"]:`x == `nfs ) {
                   new_pe["type"] = pe["type"]:`nfs;
                   new_pe["device"] = pe["device"]:"";
