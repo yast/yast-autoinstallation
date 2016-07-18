@@ -337,6 +337,7 @@
     newDrive = set( newDrive, "use", string2symbol( drive["use"]:"all" ));
     newDrive = set( newDrive, "pesize", drive["pesize"]:"" );
     if( drive["type"]:`x == `CT_NFS ){
+      newDrive["initialize"] = false; // Do not initialize
       # If it is a root nfs partition we do not need any additional
       # partitions conversation. (bnc#986124)
       newDrive["partitions"] = drive["partitions"]:[];
