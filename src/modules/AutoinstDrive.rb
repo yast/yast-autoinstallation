@@ -332,6 +332,10 @@ module Yast
 
     def parseDrive(drive)
       drive = deep_copy(drive)
+      # If it is a root nfs partition we do not need any additional
+      # conversation. (bnc#986124)
+      return drive if drive["type"] == :CT_NFS
+
       newDrive = new("auto", Ops.get_symbol(drive, "type", :CT_DISK))
       newDrive = set(
         newDrive,
@@ -384,7 +388,7 @@ module Yast
         exportDrive,
         "use",
         symbol2string(Ops.get_symbol(exportDrive, "use", :Empty))
-      )
+      ) if exportDrive.fetch("use", :Empty).is_a?( Symbol )
       # let AutoinstPartition do it's own filtering
       Ops.set(
         exportDrive,
