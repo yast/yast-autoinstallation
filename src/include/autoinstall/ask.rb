@@ -9,6 +9,8 @@
 # $Id$
 module Yast
   module AutoinstallAskInclude
+    include Yast::Logger
+
     def initialize_autoinstall_ask(include_target)
       Yast.import "Profile"
       Yast.import "UI"
@@ -136,7 +138,7 @@ module Yast
           title = Ops.get_string(ask, "title", "")
           back_label = Ops.get_string(ask, "back_label", back_label)
           ok_label = Ops.get_string(ask, "ok_label", ok_label)
-          timeout = Ops.get_integer(ask, "timeout", 0)
+          timeout = ask["timeout"] if ask.key?("timeout")
           mod = true
           if Ops.greater_than(Ops.get_integer(ask, "width", 0), min_width)
             min_width = Ops.get_integer(ask, "width", 0)
@@ -219,7 +221,7 @@ module Yast
                 )
               )
             end
-            widget = ComboBox(Id(entry_id), Opt(:notify), question, dummy)
+            widget = ComboBox(Id(entry_id), Opt(:notify, :immediate), question, dummy)
             dlg = createWidget(widget, frametitle)
           elsif type == "static_text"
             widget = Label(Id(entry_id), Ops.get_string(ask, "default", ""))
@@ -228,13 +230,13 @@ module Yast
             if Ops.get_boolean(ask, "password", false) == true
               widget1 = Password(
                 Id(entry_id),
-                Opt(:notify),
+                Opt(:notify, :notifyContextMenu),
                 question,
                 Ops.get_string(ask, "default", "")
               )
               widget2 = Password(
                 Id("#{entry_id}_pass2"),
-                Opt(:notify),
+                Opt(:notify, :notifyContextMenu),
                 "",
                 Ops.get_string(ask, "default", "")
               )
@@ -259,9 +261,9 @@ module Yast
                 widget = ComboBox(Id(entry_id), Opt(:notify), question, dummy)
                 dlg = createWidget(widget, frametitle)
               else
-                widget = TextEntry(
+                widget = InputField(
                   Id(entry_id),
-                  Opt(:notify),
+                  Opt(:hstretch, :notify, :notifyContextMenu),
                   question,
                   Ops.get_string(ask, "default", "")
                 )
@@ -342,12 +344,18 @@ module Yast
         #
         while true
           ret = nil
+
           if timeout == 0
+            log.info "Waiting for user to enter their data"
             ret = UI.UserInput
           else
-            ret = UI.TimeoutUserInput(Ops.multiply(timeout, 1000))
+            log.info "Waiting #{timeout} sec for the user to enter their data"
+            # Timeout in profile is in seconds, UI counts with miliseconds
+            ret = UI.TimeoutUserInput(timeout * 1000)
+            # Stop the timeout now
+            timeout = 0
           end
-          timeout = 0
+
           if ret == :ok || ret == :timeout # Process users' input and save asks into dialogs hash.
             runAgain = 0
             element_cnt2 = 0
@@ -562,9 +570,13 @@ module Yast
               Ops.subtract(Builtins.size(history), 1)
             )
             break
+          else
+            log.info "User ret ignored: #{ret}"
           end
         end
+
         UI.CloseDialog
+
         if jumpToDialog != -2 # If we must jump to another dialog (as read on /tmp/next_dialog)
           dialog_nr = jumpToDialog
           jumpToDialog = -2
