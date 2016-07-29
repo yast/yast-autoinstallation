@@ -39,6 +39,44 @@ module Yast
       deep_copy(ret)
     end
 
+    # Function handles any user input in askDialog or timeouts if user did not
+    # give any input during the countdown
+    #
+    # @param [Integer] timeout in seconds
+    # @return [Symbol] any user input or :timeout in case of timeout
+    def handle_ask_dialog(timeout)
+      ret = nil
+
+      if timeout == 0
+        log.info "Waiting for user to enter their data"
+        ret = UI.UserInput
+      else
+        log.info "Waiting #{timeout} sec for the user to enter their data"
+        sec_till_timeout = timeout
+
+        while (sec_till_timeout > 0)
+          UI.ReplaceWidget(:stop_button, PushButton(Id(:stop_timeout), "#{Label.StopButton} (#{sec_till_timeout})"))
+          sec_till_timeout -= 1
+          ret = UI.TimeoutUserInput(1000)
+
+          # User has done something in UI - stop the timeout
+          if ret != :timeout
+            log.info "Countdown stopped by user"
+
+            if ret == :stop_timeout
+              UI.ChangeWidget(Id(:stop_timeout), :Enabled, false)
+              UI.SetFocus(:ok)
+            end
+
+            # leave the timeout-loop now
+            break
+          end
+        end
+      end
+
+      ret
+    end
+
     def askDialog
       mod = false
 
@@ -350,31 +388,9 @@ module Yast
         while true
           ret = nil
 
-          if timeout == 0
-            log.info "Waiting for user to enter their data"
-            ret = UI.UserInput
-          else
-            log.info "Waiting #{timeout} sec for the user to enter their data"
-            sec_till_timeout = timeout
-
-            while (sec_till_timeout > 0)
-              UI.ReplaceWidget(:stop_button, PushButton(Id(:stop_timeout), "#{Label.StopButton} (#{sec_till_timeout})"))
-              sec_till_timeout -= 1
-              ret = UI.TimeoutUserInput(1000)
-
-              # User has done something in UI - stop the timeout
-              if ret != :timeout
-                log.info "Countdown stopped by user"
-                timeout = 0
-                if ret == :stop_timeout
-                  UI.ChangeWidget(Id(:stop_timeout), :Enabled, false)
-                  UI.SetFocus(:ok)
-                end
-                # leave the timeout-loop now
-                break
-              end
-            end
-          end
+          ret = handle_ask_dialog(timeout)
+          # Any user action stops the timeout
+          timeout = 0 if ret != :timeout
 
           if ret == :ok || ret == :timeout # Process users' input and save asks into dialogs hash.
             runAgain = 0

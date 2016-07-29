@@ -54,8 +54,8 @@ describe "Yast::AutoinstallAskInclude" do
 
         it "creates a TextEntry widget" do
           expect(Yast::UI).to receive(:OpenDialog)
-          expect(client).to receive(:TextEntry).
-            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"]).
+          expect(client).to receive(:InputField).
+            with(Id("0_0"), Opt(:hstretch, :notify, :notifyContextMenu), ask["question"], ask["default"]).
             and_call_original
           client.askDialog
         end
@@ -86,10 +86,10 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates two Password widgets" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:Password).
-            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"]).
+            with(Id("0_0"), Opt(:notify, :notifyContextMenu), ask["question"], ask["default"]).
             and_call_original
           expect(client).to receive(:Password).
-            with(Id("0_0_pass2"), Opt(:notify), "", ask["default"]).
+            with(Id("0_0_pass2"), Opt(:notify, :notifyContextMenu), "", ask["default"]).
             and_call_original
           client.askDialog
         end
@@ -122,7 +122,7 @@ describe "Yast::AutoinstallAskInclude" do
             Item(Id(:server), "Server", false)
           ]
           expect(client).to receive(:ComboBox).
-            with(Id("0_0"), Opt(:notify), ask["question"], expected_options).
+            with(Id("0_0"), Opt(:notify, :immediate), ask["question"], expected_options).
             and_call_original
           client.askDialog
         end
@@ -151,8 +151,8 @@ describe "Yast::AutoinstallAskInclude" do
 
         it "creates one widget for each one of them" do
           expect(Yast::UI).to receive(:OpenDialog)
-          expect(client).to receive(:TextEntry).
-            with(Id("0_0"), Opt(:notify), string_ask["question"], string_ask["default"]).
+          expect(client).to receive(:InputField).
+            with(Id("0_0"), Opt(:hstretch, :notify, :notifyContextMenu), string_ask["question"], string_ask["default"]).
             and_call_original
           expect(client).to receive(:CheckBox).
             with(Id("0_1"), Opt(:notify), boolean_ask["question"], true).
