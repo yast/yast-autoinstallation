@@ -61,6 +61,40 @@ describe "Yast::AutoinstallAskInclude" do
         end
       end
 
+      context "when the ask-list contains a question with timeout=0" do
+        let(:ask) { BASE_ASK.merge("timeout" => 0) }
+
+        it "waits for user input infinitely" do
+          expect(Yast::UI).to receive(:OpenDialog)
+          expect(Yast::UI).to receive(:UserInput)
+          client.askDialog
+        end
+      end
+
+      context "when the ask-list contains a question with timeout>0" do
+        timeout_in_sec = 10
+        let(:ask) { BASE_ASK.merge("timeout" => timeout_in_sec) }
+
+        context "when user does not do anything" do
+          it "waits for user input with timeout and then time-outs" do
+            expect(Yast::UI).to receive(:OpenDialog)
+            expect(Yast::UI).to receive(:TimeoutUserInput).exactly(timeout_in_sec).times.and_return :timeout
+            client.askDialog
+          end
+        end
+
+        context "when user stops the execution manually" do
+          it "waits for user input with timeout and then stops and waits for user infinitely" do
+            expect(Yast::UI).to receive(:OpenDialog)
+            # user does some change in the third second
+            expect(Yast::UI).to receive(:TimeoutUserInput).exactly(3).times.and_return(:timeout, :timeout, :user_action)
+            # execution stops and wait for user to finish
+            expect(Yast::UI).to receive(:UserInput)
+            client.askDialog
+          end
+        end
+      end
+
       context "when ask-list contains a question with type 'selection'" do
         let(:ask) { BASE_ASK.merge("selection" => items, "default" => "desktop") }
         let(:items) {
