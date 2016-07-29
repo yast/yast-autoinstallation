@@ -327,7 +327,12 @@ module Yast
               dialog_term,
               VSpacing(1),
               VStretch(),
-              HBox(HStretch(), backButton, PushButton(Id(:ok), ok_label))
+              HBox(
+                HStretch(),
+                backButton,
+                ReplacePoint(Id(:stop_button), Empty()),
+                PushButton(Id(:ok), ok_label)
+              )
             )
           ),
           HSpacing(1)
@@ -350,10 +355,25 @@ module Yast
             ret = UI.UserInput
           else
             log.info "Waiting #{timeout} sec for the user to enter their data"
-            # Timeout in profile is in seconds, UI counts with miliseconds
-            ret = UI.TimeoutUserInput(timeout * 1000)
-            # Stop the timeout now
-            timeout = 0
+            sec_till_timeout = timeout
+
+            while (sec_till_timeout > 0)
+              UI.ReplaceWidget(:stop_button, PushButton(Id(:stop_timeout), "#{Label.StopButton} (#{sec_till_timeout})"))
+              sec_till_timeout -= 1
+              ret = UI.TimeoutUserInput(1000)
+
+              # User has done something in UI - stop the timeout
+              if ret != :timeout
+                log.info "Countdown stopped by user"
+                timeout = 0
+                if ret == :stop_timeout
+                  UI.ChangeWidget(Id(:stop_timeout), :Enabled, false)
+                  UI.SetFocus(:ok)
+                end
+                # leave the timeout-loop now
+                break
+              end
+            end
           end
 
           if ret == :ok || ret == :timeout # Process users' input and save asks into dialogs hash.
