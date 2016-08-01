@@ -9,6 +9,8 @@
 # $Id$
 module Yast
   module AutoinstallAskInclude
+    include Yast::Logger
+
     def initialize_autoinstall_ask(include_target)
       Yast.import "Profile"
       Yast.import "UI"
@@ -35,6 +37,44 @@ module Yast
       ret = Left(widget)
 
       deep_copy(ret)
+    end
+
+    # Function handles any user input in askDialog or timeouts if user did not
+    # give any input during the countdown
+    #
+    # @param [Integer] timeout in seconds
+    # @return [Symbol] any user input or :timeout in case of timeout
+    def user_input_with_countdown(timeout)
+      ret = nil
+
+      if timeout == 0
+        log.info "Waiting for user to enter their data"
+        ret = UI.UserInput
+      else
+        log.info "Waiting #{timeout} sec for the user to enter their data"
+        sec_till_timeout = timeout
+
+        while (sec_till_timeout > 0)
+          UI.ReplaceWidget(:stop_button, PushButton(Id(:stop_timeout), "#{Label.StopButton} (#{sec_till_timeout})"))
+          sec_till_timeout -= 1
+          ret = UI.TimeoutUserInput(1000)
+
+          # User has done something in UI - stop the timeout
+          if ret != :timeout
+            log.info "Countdown stopped by user"
+
+            if ret == :stop_timeout
+              UI.ChangeWidget(Id(:stop_timeout), :Enabled, false)
+              UI.SetFocus(:ok)
+            end
+
+            # leave the timeout-loop now
+            break
+          end
+        end
+      end
+
+      ret
     end
 
     def askDialog
@@ -219,7 +259,7 @@ module Yast
                 )
               )
             end
-            widget = ComboBox(Id(entry_id), Opt(:notify), question, dummy)
+            widget = ComboBox(Id(entry_id), Opt(:notify, :immediate), question, dummy)
             dlg = createWidget(widget, frametitle)
           elsif type == "static_text"
             widget = Label(Id(entry_id), Ops.get_string(ask, "default", ""))
@@ -228,13 +268,13 @@ module Yast
             if Ops.get_boolean(ask, "password", false) == true
               widget1 = Password(
                 Id(entry_id),
-                Opt(:notify),
+                Opt(:notify, :notifyContextMenu),
                 question,
                 Ops.get_string(ask, "default", "")
               )
               widget2 = Password(
                 Id("#{entry_id}_pass2"),
-                Opt(:notify),
+                Opt(:notify, :notifyContextMenu),
                 "",
                 Ops.get_string(ask, "default", "")
               )
@@ -259,9 +299,9 @@ module Yast
                 widget = ComboBox(Id(entry_id), Opt(:notify), question, dummy)
                 dlg = createWidget(widget, frametitle)
               else
-                widget = TextEntry(
+                widget = InputField(
                   Id(entry_id),
-                  Opt(:notify),
+                  Opt(:hstretch, :notify, :notifyContextMenu),
                   question,
                   Ops.get_string(ask, "default", "")
                 )
@@ -325,7 +365,12 @@ module Yast
               dialog_term,
               VSpacing(1),
               VStretch(),
-              HBox(HStretch(), backButton, PushButton(Id(:ok), ok_label))
+              HBox(
+                HStretch(),
+                backButton,
+                ReplacePoint(Id(:stop_button), Empty()),
+                PushButton(Id(:ok), ok_label)
+              )
             )
           ),
           HSpacing(1)
@@ -342,12 +387,11 @@ module Yast
         #
         while true
           ret = nil
-          if timeout == 0
-            ret = UI.UserInput
-          else
-            ret = UI.TimeoutUserInput(Ops.multiply(timeout, 1000))
-          end
-          timeout = 0
+
+          ret = user_input_with_countdown(timeout)
+          # Any user action stops the timeout
+          timeout = 0 if ret != :timeout
+
           if ret == :ok || ret == :timeout # Process users' input and save asks into dialogs hash.
             runAgain = 0
             element_cnt2 = 0
@@ -562,9 +606,13 @@ module Yast
               Ops.subtract(Builtins.size(history), 1)
             )
             break
+          else
+            log.info "User ret ignored: #{ret}"
           end
         end
+
         UI.CloseDialog
+
         if jumpToDialog != -2 # If we must jump to another dialog (as read on /tmp/next_dialog)
           dialog_nr = jumpToDialog
           jumpToDialog = -2

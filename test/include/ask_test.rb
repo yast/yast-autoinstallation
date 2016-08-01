@@ -54,10 +54,44 @@ describe "Yast::AutoinstallAskInclude" do
 
         it "creates a TextEntry widget" do
           expect(Yast::UI).to receive(:OpenDialog)
-          expect(client).to receive(:TextEntry).
-            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"]).
+          expect(client).to receive(:InputField).
+            with(Id("0_0"), Opt(:hstretch, :notify, :notifyContextMenu), ask["question"], ask["default"]).
             and_call_original
           client.askDialog
+        end
+      end
+
+      context "when the ask-list contains a question with timeout=0" do
+        let(:ask) { BASE_ASK.merge("timeout" => 0) }
+
+        it "waits for user input infinitely" do
+          expect(Yast::UI).to receive(:OpenDialog)
+          expect(Yast::UI).to receive(:UserInput)
+          client.askDialog
+        end
+      end
+
+      context "when the ask-list contains a question with timeout>0" do
+        timeout_in_sec = 10
+        let(:ask) { BASE_ASK.merge("timeout" => timeout_in_sec) }
+
+        context "when user does not do anything" do
+          it "waits for user input with timeout and then time-outs" do
+            expect(Yast::UI).to receive(:OpenDialog)
+            expect(Yast::UI).to receive(:TimeoutUserInput).exactly(timeout_in_sec).times.and_return :timeout
+            client.askDialog
+          end
+        end
+
+        context "when user stops the execution manually" do
+          it "waits for user input with timeout and then stops and waits for user infinitely" do
+            expect(Yast::UI).to receive(:OpenDialog)
+            # user does some change in the third second
+            expect(Yast::UI).to receive(:TimeoutUserInput).exactly(3).times.and_return(:timeout, :timeout, :user_action)
+            # execution stops and wait for user to finish
+            expect(Yast::UI).to receive(:UserInput)
+            client.askDialog
+          end
         end
       end
 
@@ -86,10 +120,10 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates two Password widgets" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:Password).
-            with(Id("0_0"), Opt(:notify), ask["question"], ask["default"]).
+            with(Id("0_0"), Opt(:notify, :notifyContextMenu), ask["question"], ask["default"]).
             and_call_original
           expect(client).to receive(:Password).
-            with(Id("0_0_pass2"), Opt(:notify), "", ask["default"]).
+            with(Id("0_0_pass2"), Opt(:notify, :notifyContextMenu), "", ask["default"]).
             and_call_original
           client.askDialog
         end
@@ -122,7 +156,7 @@ describe "Yast::AutoinstallAskInclude" do
             Item(Id(:server), "Server", false)
           ]
           expect(client).to receive(:ComboBox).
-            with(Id("0_0"), Opt(:notify), ask["question"], expected_options).
+            with(Id("0_0"), Opt(:notify, :immediate), ask["question"], expected_options).
             and_call_original
           client.askDialog
         end
@@ -151,8 +185,8 @@ describe "Yast::AutoinstallAskInclude" do
 
         it "creates one widget for each one of them" do
           expect(Yast::UI).to receive(:OpenDialog)
-          expect(client).to receive(:TextEntry).
-            with(Id("0_0"), Opt(:notify), string_ask["question"], string_ask["default"]).
+          expect(client).to receive(:InputField).
+            with(Id("0_0"), Opt(:hstretch, :notify, :notifyContextMenu), string_ask["question"], string_ask["default"]).
             and_call_original
           expect(client).to receive(:CheckBox).
             with(Id("0_1"), Opt(:notify), boolean_ask["question"], true).
