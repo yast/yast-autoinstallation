@@ -44,7 +44,7 @@ module Yast
     #
     # @param [Integer] timeout in seconds
     # @return [Symbol] any user input or :timeout in case of timeout
-    def handle_ask_dialog(timeout)
+    def user_input_with_countdown(timeout)
       ret = nil
 
       if timeout == 0
@@ -176,7 +176,7 @@ module Yast
           title = Ops.get_string(ask, "title", "")
           back_label = Ops.get_string(ask, "back_label", back_label)
           ok_label = Ops.get_string(ask, "ok_label", ok_label)
-          timeout = ask["timeout"] if ask.key?("timeout")
+          timeout = Ops.get_integer(ask, "timeout", 0)
           mod = true
           if Ops.greater_than(Ops.get_integer(ask, "width", 0), min_width)
             min_width = Ops.get_integer(ask, "width", 0)
@@ -388,7 +388,7 @@ module Yast
         while true
           ret = nil
 
-          ret = handle_ask_dialog(timeout)
+          ret = user_input_with_countdown(timeout)
           # Any user action stops the timeout
           timeout = 0 if ret != :timeout
 
