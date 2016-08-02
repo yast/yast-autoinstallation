@@ -12,6 +12,8 @@ module Yast
     include Yast::Logger
 
     def initialize_autoinstall_ask(include_target)
+      textdomain "autoinst"
+
       Yast.import "Profile"
       Yast.import "UI"
       Yast.import "Label"
