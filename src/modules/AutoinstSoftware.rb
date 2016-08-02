@@ -702,6 +702,12 @@ module Yast
 
       Ops.set(s, "image", @image)
 
+      # In the installed system the flag solver.onlyRequires in zypp.conf is
+      # set to true. This differs from the installation process. So we have
+      # to set "install_recommended" to true in order to reflect the
+      # installation process and cannot use the package bindings. (bnc#990494)
+      Ops.set(s, "install_recommended", true)
+
       deep_copy(s)
     end
 
