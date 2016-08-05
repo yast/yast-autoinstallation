@@ -232,6 +232,10 @@ module Yast
 
       slpData = SLP.FindSrvs("autoyast", "")
 
+      # SLP data returned by SLP server contain the service ID, colon
+      # and then the URL of that service
+      url_starts_at = "service.autoyast:".size
+
       # More providers to choose from
       if Ops.greater_than(Builtins.size(slpData), 1)
         dummy = []
@@ -240,7 +244,7 @@ module Yast
           attrList = SLP.FindAttrs(Ops.get_string(m, "srvurl", ""))
 
           if Ops.greater_than(Builtins.size(attrList), 0)
-            url = Builtins.substring(Ops.get_string(m, "srvurl", ""), 17)
+            url = Builtins.substring(Ops.get_string(m, "srvurl", ""), url_starts_at)
             # FIXME: that's really lazy coding here but I allow only one attribute currently anyway
             #        so it's lazy but okay. No reason to be too strict here with the checks
             #        As soon as more than one attr is possible, I need to iterate over the attr list
@@ -276,7 +280,7 @@ module Yast
             dummy = Builtins.add(dummy, Item(comment, false))
             Ops.set(comment2url, comment, url)
           else
-            url = Builtins.substring(Ops.get_string(m, "srvurl", ""), 17)
+            url = Builtins.substring(Ops.get_string(m, "srvurl", ""), url_starts_at)
             dummy = Builtins.add(dummy, Item(url, false))
             Ops.set(comment2url, url, url)
           end
@@ -315,8 +319,6 @@ module Yast
     # @param [String] AutoYast profile location as defined on commandline
     # @return [String] updated profile location
     def update_profile_location(profile_location)
-      profile_location = deep_copy(profile_location)
-
       if profile_location.nil? || profile_location == ""
         # FIXME: reevaluate this statement
         #
@@ -332,10 +334,9 @@ module Yast
         profile_location = "usb:///#{DEFAULT_PROFILE_NAME}"
       elsif profile_location == "slp"
         profile_location = find_slp_autoyast
-        return if profile_location.nil?
+      else
+        profile_location
       end
-
-      profile_location
     end
 
     # Processes location of the profile given as a parameter.
