@@ -6,6 +6,7 @@ TESTS = \
     AutoInstallRules_test.rb \
     AutoInstall_test.rb \
     AutoinstClass_test.rb \
+    AutoinstConfig_tests.rb \
     AutoinstFunctions_test.rb \
     AutoinstGeneral_test.rb \
     AutoinstSoftware_test.rb \
