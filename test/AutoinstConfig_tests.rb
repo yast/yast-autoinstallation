@@ -22,7 +22,7 @@ describe Yast::AutoinstConfig do
 
     context "when only one 'autoyast' provider returned by SLP" do
       let(:service_url) { "https://192.168.0.1/autoinst.xml" }
-      let(:slp_server_reply) { [{"srvurl" => "service:autoyast:#{service_url}" }] }
+      let(:slp_server_reply) { [{ "srvurl" => "service:autoyast:#{service_url}" }] }
 
       it "returns the service URL" do
         expect(subject.find_slp_autoyast).to eq(service_url)
@@ -101,12 +101,12 @@ describe Yast::AutoinstConfig do
       it "parses the given profile location and fill internal structures and returns boolean whether it succeded" do
         expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
 
-        expect(subject.scheme).to   eq("https")
-        expect(subject.host).to     eq("192.168.0.1")
+        expect(subject.scheme).to eq("https")
+        expect(subject.host).to eq("192.168.0.1")
         expect(subject.filepath).to eq("/path/auto-installation.xml")
-        expect(subject.port).to     eq("8080")
-        expect(subject.user).to     eq("moo")
-        expect(subject.pass).to     eq("woo")
+        expect(subject.port).to eq("8080")
+        expect(subject.user).to eq("moo")
+        expect(subject.pass).to eq("woo")
       end
     end
   end
