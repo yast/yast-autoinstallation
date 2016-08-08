@@ -46,6 +46,10 @@ module Yast
 
       # default value of settings modified
       @modified = false
+
+      # Devices which do not have any mount point, lvm_group or raid_name
+      @ignored_devices = []
+
     end
 
     # Function sets internal variable, which indicates, that any
@@ -660,6 +664,9 @@ module Yast
         end
         deep_copy(drive)
       end
+
+      @ignored_devices = []
+
       drives = Builtins.filter(
         Convert.convert(drives, :from => "list", :to => "list <map>")
       ) do |v|
@@ -672,8 +679,10 @@ module Yast
             raise Break
           end
         end
+        @ignored_devices << v["device"] unless keep
         keep
       end
+      Builtins.y2milestone("Ignored devices: #{@ignored_devices}")
 
       Mode.SetMode("autoinst_config")
       deep_copy(drives)
@@ -798,6 +807,16 @@ module Yast
           Builtins.y2milestone("device 'auto' dropped")
         end
         deep_copy(d)
+      end
+
+      # Adding ingored devices to partitioning section
+      unless @ignored_devices.empty?
+        ignore_device = {}
+        ignore_device["initialize"] = true
+        ignore_device["skip_list"] = @ignored_devices.collect do |dev|
+          {"skip_key" => "device", "skip_value" => dev}
+        end
+        clean_drives << ignore_device
       end
 
       deep_copy(clean_drives)
