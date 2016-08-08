@@ -43,8 +43,6 @@ describe Yast::AutoinstPartPlan do
           }
         ]
       )
-
-
     end
 
   end
