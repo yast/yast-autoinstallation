@@ -48,7 +48,10 @@ module Yast
       @modified = false
 
       # Devices which do not have any mount point, lvm_group or raid_name
-      @ignored_devices = []
+      # These devices will not be taken in the AutoYaSt configuration file
+      # but will be added to the skip_list in order not regarding it while
+      # next installation. (bnc#989392)
+      @skipped_devices = []
 
     end
 
@@ -665,7 +668,7 @@ module Yast
         deep_copy(drive)
       end
 
-      @ignored_devices = []
+      @skipped_devices = []
 
       drives = Builtins.filter(
         Convert.convert(drives, :from => "list", :to => "list <map>")
@@ -679,10 +682,10 @@ module Yast
             raise Break
           end
         end
-        @ignored_devices << v["device"] unless keep
+        @skipped_devices << v["device"] unless keep
         keep
       end
-      Builtins.y2milestone("Ignored devices: #{@ignored_devices}")
+      Builtins.y2milestone("Skipped devices: #{@skipped_devices}")
 
       Mode.SetMode("autoinst_config")
       deep_copy(drives)
@@ -809,14 +812,17 @@ module Yast
         deep_copy(d)
       end
 
-      # Adding ingored devices to partitioning section
-      unless @ignored_devices.empty?
-        ignore_device = {}
-        ignore_device["initialize"] = true
-        ignore_device["skip_list"] = @ignored_devices.collect do |dev|
+      # Adding skipped devices to partitioning section.
+      # These devices will not be taken in the AutoYaSt configuration file
+      # but will be added to the skip_list in order not regarding it while
+      # next installation. (bnc#989392)
+      unless @skipped_devices.empty?
+        skip_device = {}
+        skip_device["initialize"] = true
+        skip_device["skip_list"] = @skipped_devices.collect do |dev|
           {"skip_key" => "device", "skip_value" => dev}
         end
-        clean_drives << ignore_device
+        clean_drives << skip_device
       end
 
       deep_copy(clean_drives)
