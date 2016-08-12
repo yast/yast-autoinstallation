@@ -9,6 +9,7 @@ Yast.import "Profile"
 describe Yast::AutoinstPartPlan do
   FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
   let(:target_map_path) { File.join(FIXTURES_PATH, 'storage', "nfs_root.yml") }
+  let(:target_map_clone) { File.join(FIXTURES_PATH, 'storage', "target_clone.yml") }
 
   describe "#read partition target" do
 
@@ -26,6 +27,22 @@ describe Yast::AutoinstPartPlan do
             "device"=>"/dev/nfs", "use"=>"all"}
          ]
         )
+    end
+
+    it "ignoring not needed devices" do
+      target_map = YAML.load_file(target_map_clone)
+
+      expect(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
+      expect(Yast::AutoinstPartPlan.Read).to eq(true)
+      export = Yast::AutoinstPartPlan.Export.select { |d| d.key?("skip_list") }
+      expect(export).to eq(
+        [ { "initialize"=>true,
+            "skip_list"=>
+              [{"skip_key"=>"device", "skip_value"=>"/dev/sdb"},
+               {"skip_key"=>"device", "skip_value"=>"/dev/sde"}]
+          }
+        ]
+      )
     end
 
   end
