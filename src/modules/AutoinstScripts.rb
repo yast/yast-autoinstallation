@@ -65,6 +65,17 @@ module Yast
       @modified
     end
 
+    # Checking if the script has the right format
+    # @param [Hash] scripts section of the AutoYast configuration
+    # @param [String] kind of script (pre, post,..)
+    # @return [Array<String>] of scripts
+    def valid_scripts_for(tree, key)
+      tree.fetch(key, []).select do |h|
+        next true if h.is_a?(Hash)
+        log.warn "Cannot evaluate #{key}: #{h.inspect}"
+        false
+      end
+    end
 
     # merge all types of scripts into one single list
     # @param -
@@ -308,46 +319,11 @@ module Yast
       s = deep_copy(s)
       Builtins.y2debug("Calling AutoinstScripts::Import()")
       # take only hash entries (bnc#986049)
-      @pre = s.fetch("pre-scripts", []).select do |h|
-          if h.is_a?(Hash)
-            true
-          else
-            log.warn "Cannot evaluate pre-script: #{h}"
-            false
-          end
-        end
-      @init = s.fetch("init-scripts", []).select do |h|
-          if h.is_a?(Hash)
-            true
-          else
-            log.warn "Cannot evaluate init-script: #{h}"
-            false
-          end
-        end
-      @post = s.fetch("post-scripts", []).select do |h|
-          if h.is_a?(Hash)
-            true
-          else
-            log.warn "Cannot evaluate post-script: #{h}"
-            false
-          end
-        end
-      @chroot = s.fetch("chroot-scripts", []).select do |h|
-          if h.is_a?(Hash)
-            true
-          else
-            log.warn "Cannot evaluate chroot-script: #{h}"
-            false
-          end
-        end
-      @postpart = s.fetch("postpartitioning-scripts", []).select do |h|
-          if h.is_a?(Hash)
-            true
-          else
-            log.warn "Cannot evaluate postpartitioning-script: #{h}"
-            false
-          end
-        end
+      @pre = valid_scripts_for(s, "pre-scripts")
+      @init = valid_scripts_for(s, "init-scripts")
+      @post = valid_scripts_for(s, "post-scripts")
+      @chroot = valid_scripts_for(s, "chroot-scripts")
+      @postpart = valid_scripts_for(s, "postpartitioning-scripts")
 
       @pre = Resolve_location(@pre)
       @init = Resolve_location(@init)
