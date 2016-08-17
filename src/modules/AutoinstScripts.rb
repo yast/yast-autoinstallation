@@ -10,6 +10,9 @@ require "yast"
 
 module Yast
   class AutoinstScriptsClass < Module
+
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -305,11 +308,46 @@ module Yast
       s = deep_copy(s)
       Builtins.y2debug("Calling AutoinstScripts::Import()")
       # take only hash entries (bnc#986049)
-      @pre = s.fetch("pre-scripts", []).select { |h| h.is_a?(Hash) }
-      @init = s.fetch("init-scripts", []).select { |h| h.is_a?(Hash) }
-      @post = s.fetch("post-scripts", []).select { |h| h.is_a?(Hash) }
-      @chroot = s.fetch("chroot-scripts", []).select { |h| h.is_a?(Hash) }
-      @postpart = s.fetch("postpartitioning-scripts", []).select { |h| h.is_a?(Hash) }
+      @pre = s.fetch("pre-scripts", []).select do |h|
+          if h.is_a?(Hash)
+            true
+          else
+            log.warn "Cannot evaluate pre-script: #{h}"
+            false
+          end
+        end
+      @init = s.fetch("init-scripts", []).select do |h|
+          if h.is_a?(Hash)
+            true
+          else
+            log.warn "Cannot evaluate init-script: #{h}"
+            false
+          end
+        end
+      @post = s.fetch("post-scripts", []).select do |h|
+          if h.is_a?(Hash)
+            true
+          else
+            log.warn "Cannot evaluate post-script: #{h}"
+            false
+          end
+        end
+      @chroot = s.fetch("chroot-scripts", []).select do |h|
+          if h.is_a?(Hash)
+            true
+          else
+            log.warn "Cannot evaluate chroot-script: #{h}"
+            false
+          end
+        end
+      @postpart = s.fetch("postpartitioning-scripts", []).select do |h|
+          if h.is_a?(Hash)
+            true
+          else
+            log.warn "Cannot evaluate postpartitioning-script: #{h}"
+            false
+          end
+        end
 
       @pre = Resolve_location(@pre)
       @init = Resolve_location(@init)
