@@ -64,10 +64,6 @@ module Yast
       # return map or list
       elsif @func == "Export"
         @ret = Report.Export
-        # Set timeout for autoyast to 10 seconds (bnc#887397)
-        @ret["messages"]["timeout"] = 10 if @ret["messages"]["timeout"] <= 0
-        @ret["warnings"]["timeout"] = 10 if @ret["warnings"]["timeout"] <= 0
-        @ret["yesno_messages"]["timeout"] = 10 if @ret["yesno_messages"]["timeout"] <= 0
       elsif @func == "GetModified"
         @ret = Report.GetModified
       elsif @func == "SetModified"
