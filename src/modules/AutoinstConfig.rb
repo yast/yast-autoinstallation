@@ -17,6 +17,10 @@ module Yast
       include ServicesManagerTargetClass::BaseTargets
     end
 
+    DEFAULT_PROFILE_NAME = "autoinst.xml".freeze
+
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -28,6 +32,7 @@ module Yast
       Yast.import "SLP"
       Yast.import "Stage"
       Yast.import "Label"
+      Yast.import "Report"
 
       Yast.include self, "autoinstall/xml.rb"
 
@@ -214,114 +219,158 @@ module Yast
       nil
     end
 
+    # Searches for 'autoyast' via SLP and returns the full URL of
+    # the profile. If more providers are found, user is asked to
+    # select one.
+    #
+    # FIXME: This function has been intentionally left (almost) intact
+    # and needs refactoring
+    #
+    # @return [String] profile location or 'nil' if nothing is found
+    def find_slp_autoyast
+      profile_location = nil
 
-    # Return location of profile from command line.
-    # @return [Hash] with protocol, server, path
-    # @example autoyast=http://www.server.com/profiles/
-    def ParseCmdLine(autoinstall)
-      Yast.import "URL"
+      slpData = SLP.FindSrvs("autoyast", "")
 
-      result = {}
-      cmdLine = ""
+      # SLP data returned by SLP server contain the service ID, colon
+      # and then the URL of that service
+      url_starts_at = "service.autoyast:".size
 
-      if Ops.greater_than(Builtins.size(autoinstall), 0)
-        cmdLine = autoinstall
-        if cmdLine == "default"
-          Ops.set(result, "scheme", "file")
-          Ops.set(result, "path", "/autoinst.xml")
-        else
-          if cmdLine == "slp"
-            slpData = SLP.FindSrvs("autoyast", "")
-            if Ops.greater_than(Builtins.size(slpData), 1)
-              dummy = []
-              comment2url = {}
-              Builtins.foreach(slpData) do |m|
-                attrList = SLP.FindAttrs(Ops.get_string(m, "srvurl", ""))
-                if Ops.greater_than(Builtins.size(attrList), 0)
-                  url = Builtins.substring(Ops.get_string(m, "srvurl", ""), 17)
-                  # FIXME: that's really lazy coding here but I allow only one attribute currently anyway
-                  #        so it's lazy but okay. No reason to be too strict here with the checks
-                  #        As soon as more than one attr is possible, I need to iterate over the attr list
-                  #
-                  comment = Ops.get(attrList, 0, "")
-                  # The line above needs to be fixed when we have more attributes
+      # More providers to choose from
+      if Ops.greater_than(Builtins.size(slpData), 1)
+        dummy = []
+        comment2url = {}
+        Builtins.foreach(slpData) do |m|
+          attrList = SLP.FindAttrs(Ops.get_string(m, "srvurl", ""))
 
-                  # comment will look like this: "(description=BLA BLA)"
-                  startComment = Builtins.findfirstof(comment, "=")
-                  endComment = Builtins.findlastof(comment, ")")
-                  if startComment != nil && endComment != nil &&
-                      Ops.greater_than(
-                        Ops.subtract(Ops.subtract(endComment, startComment), 1),
-                        0
-                      )
-                    comment = Builtins.substring(
-                      comment,
-                      Ops.add(startComment, 1),
-                      Ops.subtract(Ops.subtract(endComment, startComment), 1)
-                    )
-                  else
-                    comment = ""
-                  end
-                  if Ops.less_than(Builtins.size(comment), 1)
-                    comment = Builtins.sformat(
-                      "bad description in SLP for %1",
-                      url
-                    )
-                  end
-                  dummy = Builtins.add(dummy, Item(comment, false))
-                  Ops.set(comment2url, comment, url)
-                else
-                  url = Builtins.substring(Ops.get_string(m, "srvurl", ""), 17)
-                  dummy = Builtins.add(dummy, Item(url, false))
-                  Ops.set(comment2url, url, url)
-                end
-              end
-              dlg = Left(ComboBox(Id(:choose), _("Choose Profile"), dummy))
-              UI.OpenDialog(VBox(dlg, PushButton(Id(:ok), Label.OKButton)))
-              UI.UserInput
-              cmdLine = Ops.get(
-                comment2url,
-                Convert.to_string(UI.QueryWidget(Id(:choose), :Value)),
-                ""
+          if Ops.greater_than(Builtins.size(attrList), 0)
+            url = Builtins.substring(Ops.get_string(m, "srvurl", ""), url_starts_at)
+            # FIXME: that's really lazy coding here but I allow only one attribute currently anyway
+            #        so it's lazy but okay. No reason to be too strict here with the checks
+            #        As soon as more than one attr is possible, I need to iterate over the attr list
+            #
+            comment = Ops.get(attrList, 0, "")
+            # The line above needs to be fixed when we have more attributes
+
+            # comment will look like this: "(description=BLA BLA)"
+            startComment = Builtins.findfirstof(comment, "=")
+            endComment = Builtins.findlastof(comment, ")")
+
+            if startComment != nil && endComment != nil &&
+              Ops.greater_than(
+                Ops.subtract(Ops.subtract(endComment, startComment), 1),
+                0
               )
-              UI.CloseDialog
-            elsif Builtins.size(slpData) == 1
-              cmdLine = Builtins.substring(
-                Ops.get_string(slpData, [0, "srvurl"], ""),
-                17
+              comment = Builtins.substring(
+                comment,
+                Ops.add(startComment, 1),
+                Ops.subtract(Ops.subtract(endComment, startComment), 1)
               )
             else
-              cmdLine = "slp query for 'autoyast' failed"
+              comment = ""
             end
+
+            if Ops.less_than(Builtins.size(comment), 1)
+              comment = Builtins.sformat(
+                "bad description in SLP for %1",
+                url
+              )
+            end
+
+            dummy = Builtins.add(dummy, Item(comment, false))
+            Ops.set(comment2url, comment, url)
+          else
+            url = Builtins.substring(Ops.get_string(m, "srvurl", ""), url_starts_at)
+            dummy = Builtins.add(dummy, Item(url, false))
+            Ops.set(comment2url, url, url)
           end
-          result = URL.Parse(cmdLine)
-          @OriginalURI = cmdLine
         end
+
+        dlg = Left(ComboBox(Id(:choose), _("Choose Profile"), dummy))
+
+        UI.OpenDialog(VBox(dlg, PushButton(Id(:ok), Label.OKButton)))
+        UI.UserInput
+
+        profile_location = Ops.get(
+          comment2url,
+          Convert.to_string(UI.QueryWidget(Id(:choose), :Value)),
+          ""
+        )
+
+        UI.CloseDialog
+
+      # just one provider
+      elsif Builtins.size(slpData) == 1
+        profile_location = Builtins.substring(
+          Ops.get_string(slpData, [0, "srvurl"], ""),
+          17
+        )
+
+      # Nothing returned by SLP query
+      else
+        log.error "slp query for 'autoyast' failed"
+        Report.Error(_("No 'autoyast' provider has been found via SLP."))
       end
 
+      profile_location
+    end
 
-      if Ops.get_string(result, "scheme", "") == ""
+    # Updates or extends the profile location according to defaults
+    # @param [String] AutoYast profile location as defined on commandline
+    # @return [String] updated profile location
+    def update_profile_location(profile_location)
+      if profile_location.nil? || profile_location == ""
+        # FIXME: reevaluate this statement
+        #
         # Autoinstall mode was not activated from command line.
         # There must be a floppy with an 'autoinst.xml' in order
         # to be able to reach this point, so we set floppy with
         # autoinst.xml as the control file.
-
-        result = Builtins.add(result, "scheme", "floppy")
-        result = Builtins.add(result, "path", "/autoinst.xml")
+        profile_location = "floppy:///#{DEFAULT_PROFILE_NAME}"
+      elsif profile_location == "default"
+        profile_location = "file:///#{DEFAULT_PROFILE_NAME}"
+      # bsc#987858: autoyast=usb checks for the default profile
+      elsif profile_location == "usb"
+        profile_location = "usb:///#{DEFAULT_PROFILE_NAME}"
+      elsif profile_location == "slp"
+        profile_location = find_slp_autoyast
+      else
+        profile_location
       end
-      @urltok = deep_copy(result)
+    end
 
-      @scheme = Ops.get_string(@urltok, "scheme", "default")
-      @host = Ops.get_string(@urltok, "host", "")
-      @filepath = Ops.get_string(@urltok, "path", "")
-      @port = Ops.get_string(@urltok, "port", "")
-      @user = Ops.get_string(@urltok, "user", "")
-      @pass = Ops.get_string(@urltok, "pass", "")
+    # Processes location of the profile given as a parameter.
+    # @param [String] AutoYast profile location as defined on commandline
+    # @example autoyast=http://www.server.com/profiles/
+    # Fills internal variables
+    def ParseCmdLine(profile_location)
 
-      if @scheme == "default" || @scheme == "file" || @scheme == "floppy"
-        @remoteProfile = false
+      log.info "AutoYast profile location #{profile_location}"
+
+      profile_location = update_profile_location(profile_location)
+      # There is no profile defined/found anywhere
+      return false if profile_location.nil?
+
+      parsed_url = URL.Parse(profile_location)
+
+      if parsed_url["scheme"].nil? || parsed_url["scheme"] == ""
+        Report.Error(_("Invalid AutoYaST profile URL\n%{url}") % {:url => profile_location})
+        return false
       end
-      Builtins.y2milestone("urltok = %1", @urltok)
+
+      @OriginalURI = profile_location
+      @urltok = deep_copy(parsed_url)
+
+      @scheme   = parsed_url["scheme"] || "default"
+      @host     = parsed_url["host"]   || ""
+      @filepath = parsed_url["path"]   || ""
+      @port     = parsed_url["port"]   || ""
+      @user     = parsed_url["user"]   || ""
+      @pass     = parsed_url["pass"]   || ""
+
+      @remoteProfile = !["default", "file", "floppy", "usb", "device"].include?(@scheme)
+
+      log.info "urltok = #{URL.HidePassword(profile_location)}"
       true
     end
 
