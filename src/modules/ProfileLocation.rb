@@ -20,7 +20,7 @@ module Yast
       Yast.import "StorageControllers"
       Yast.import "Mode"
       Yast.import "Installation"
-      Yast.import "Popup"
+      Yast.import "Report"
       Yast.import "Label"
       Yast.import "URL"
 
@@ -153,7 +153,7 @@ module Yast
           raise Break if AutoinstConfig.scheme == "device"
         end
         if AutoinstConfig.scheme == "label"
-          Popup.Error(_("label not found while looking for autoyast profile"))
+          Report.Error(_("label not found while looking for autoyast profile"))
         end
       end
       filename = basename(AutoinstConfig.filepath)
@@ -177,7 +177,7 @@ module Yast
         if !ret
           # autoyast hit an error while fetching it's config file
           error = _("An error occurred while fetching the profile:\n")
-          Popup.Error(Ops.add(error, @GET_error))
+          Report.Error(Ops.add(error, @GET_error))
           return false
         end
         tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
