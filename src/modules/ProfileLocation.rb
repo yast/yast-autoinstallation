@@ -20,7 +20,7 @@ module Yast
       Yast.import "StorageControllers"
       Yast.import "Mode"
       Yast.import "Installation"
-      Yast.import "Popup"
+      Yast.import "Report"
       Yast.import "Label"
       Yast.import "URL"
 

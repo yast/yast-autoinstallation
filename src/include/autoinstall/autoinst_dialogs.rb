@@ -12,6 +12,7 @@ module Yast
       textdomain "autoinst"
       Yast.import "Label"
       Yast.import "Storage"
+      Yast.import "Popup"
     end
 
     # Shows a dialog when 'control file' can't be found
