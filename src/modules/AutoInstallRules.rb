@@ -1111,14 +1111,17 @@ module Yast
       nil
     end
 
+    # Regexp to extract the IP from the routes table
+    HOSTADDRESS_REGEXP = /src ([\w.]+) /.freeze
+
     # Return the IP through iproute2 tools
     #
     # @return [String] IP address
     def hostaddress
       return @hostaddress unless @hostaddress.nil?
       ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
-      regexp = /src ([\w.]+) \n/
-      if ret = ip_route["stdout"][regexp, 1]
+      if ret = ip_route["stdout"][HOSTADDRESS_REGEXP, 1]
+        log.info "Found IP address: #{ret}"
         ret
       else
         log.warn "Cannot evaluate IP address: #{ip_route}"
