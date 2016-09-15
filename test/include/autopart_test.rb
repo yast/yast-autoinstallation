@@ -21,10 +21,10 @@ describe "Yast::AutoinstallAutopartInclude" do
       def initialize
         main
       end
-      def planHasBoot
+      def plan_has_boot_or_prep_partition
         @planHasBoot
       end
-      def planHasBoot=(v)
+      def plan_has_boot_or_prep_partition=(v)
         @planHasBoot = v
       end     
     end
@@ -34,7 +34,7 @@ describe "Yast::AutoinstallAutopartInclude" do
 
   describe "#autopart" do
 
-    describe "ppc partitioning" do   
+    context "ppc partitioning" do
       let(:target_map) { YAML.load_file(File.join(FIXTURES_PATH, 'storage', 'target_ppc.yml')) }
       let(:ay_device) { Yast::Profile.current['partitioning'].find {|x| x["device"] == checked_device} }
       before do
@@ -45,24 +45,25 @@ describe "Yast::AutoinstallAutopartInclude" do
         Yast::Profile.ReadXML(File.join(FIXTURES_PATH, 'profiles', 'ppc_partitions.xml'))
       end
 
-      context "AY configuration file has no /boot partition" do
+      context "AY configuration file has no prep partition" do
         before do
-          client.planHasBoot=false
+          client.plan_has_boot_or_prep_partition=false
         end
 
         context "checking device with root partition" do
           let(:checked_device) { "/dev/sdc" }
 
-          it "do not add an additional prep disk if it is a pwoernv system" do
+          it "do not add an additional prep partition if it is a powerpc system" do
             # bnc#989392
             allow(Yast::Arch).to receive(:board_powernv).and_return(true)
             ret = client.try_add_boot( ay_device, target_map[checked_device])
             expect(ret["partitions"].size).to eq(ay_device["partitions"].size)
           end
-          it "do add an additional prep disk if it is NOT a pwoernv system" do
+
+          it "adds an additional prep partition if it is NOT a powerpc system" do
             allow(Yast::Arch).to receive(:board_powernv).and_return(false)
             ret = client.try_add_boot( ay_device, target_map[checked_device])
-            expect(ret["partitions"].size).to eq(ay_device["partitions"].size+1)
+            expect(ret["partitions"].size).to eq(ay_device["partitions"].size + 1)
             # added disk has no mount point
             expect((ret["partitions"] - ay_device["partitions"]).first.key?("mount")).to eq(false)
             # added disk has no fsys
@@ -70,10 +71,10 @@ describe "Yast::AutoinstallAutopartInclude" do
           end
         end
 
-        context "checking device with NO root partition" do
+        context "checking device without root partition" do
           let(:checked_device) { "/dev/sdb" }
 
-          it "do not add an additional prep disk for ppc" do
+          it "do not add an additional prep partition for ppc" do
             allow(Yast::Arch).to receive(:board_powernv).and_return(false)
             ret = client.try_add_boot( ay_device, target_map[checked_device])
             expect(ret["partitions"].size).to eq(ay_device["partitions"].size)
@@ -81,25 +82,25 @@ describe "Yast::AutoinstallAutopartInclude" do
         end
       end
 
-      context "AY configuration file has a /boot partition" do
+      context "AY configuration file has a prep partition" do
         before do
-          client.planHasBoot=true
+          client.plan_has_boot_or_prep_partition=true
         end
 
         context "checking device with root partition" do
           let(:checked_device) { "/dev/sdc" }
 
-          it "do not add an additional prep disk if it is NOT a pwoernv system" do
+          it "do not add an additional prep partition if it is NOT a powerpc system" do
             allow(Yast::Arch).to receive(:board_powernv).and_return(false)
             ret = client.try_add_boot( ay_device, target_map[checked_device])
             expect(ret["partitions"].size).to eq(ay_device["partitions"].size)
           end
         end
 
-        context "checking device with NO root partition" do
+        context "checking device without root partition" do
           let(:checked_device) { "/dev/sdb" }
 
-          it "do not add an additional prep disk for ppc" do
+          it "do not add an additional prep partition for ppc" do
             allow(Yast::Arch).to receive(:board_powernv).and_return(false)
             ret = client.try_add_boot( ay_device, target_map[checked_device])
             expect(ret["partitions"].size).to eq(ay_device["partitions"].size)
