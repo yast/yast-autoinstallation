@@ -270,7 +270,6 @@ module Yast
     end
 
     def try_add_boot(conf, disk)
-      conf = deep_copy(conf)
       tc = Builtins.eval(conf)
       # If it is a ppc but not a baremetal Power8 system (powerNV).
       # powerNV do not have prep partition and do not need any because
