@@ -270,7 +270,12 @@ module Yast
     end
 
     def try_add_boot(conf, disk)
-      conf = deep_copy(conf)
+      tc = Builtins.eval(conf)
+      # If it is a ppc but not a baremetal Power8 system (powerNV).
+      # powerNV do not have prep partition and do not need any because
+      # they do not call grub2-install (bnc#989392).
+      return tc if Arch.ppc && Arch.board_powernv
+
       disk = deep_copy(disk)
       dlabel = disk.fetch("label", "")
       root = Ops.greater_than(
@@ -279,16 +284,13 @@ module Yast
         end),
         0
       )
-      tc = Builtins.eval(conf)
+
       if !@planHasBoot && root &&
-          (Ops.greater_than(
-            Ops.get_integer(disk, "cyl_count", 0),
-            Partitions.BootCyl
-          ) ||
-            Arch.ia64 ||
-            Arch.ppc ||
-            Arch.sparc)
+         (Ops.greater_than(
+           Ops.get_integer(disk, "cyl_count", 0),
+           Partitions.BootCyl) || Arch.ppc)
         pb = {}
+        # PPCs do not need /boot but prep partition only.
         if !Arch.ppc
           Ops.set(pb, "mount", Partitions.BootMount)
           Ops.set(pb, "fsys", Partitions.DefaultBootFs)
