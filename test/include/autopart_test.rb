@@ -90,7 +90,7 @@ describe "Yast::AutoinstallAutopartInclude" do
         context "checking device with root partition" do
           let(:checked_device) { "/dev/sdc" }
 
-          it "do not add an additional prep partition if it is NOT a powerpc system" do
+          it "do not add an additional prep partition if it is NOT a powernv system" do
             allow(Yast::Arch).to receive(:board_powernv).and_return(false)
             ret = client.try_add_boot( ay_device, target_map[checked_device])
             expect(ret["partitions"].size).to eq(ay_device["partitions"].size)
