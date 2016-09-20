@@ -45,6 +45,11 @@
    */
   define AutoinstPartPlanT AutoPartPlan = [];
 
+  /*
+   * Probed disk raids
+   */
+  define list<map> DiskRaids = [];
+
   /* default value of settings modified */
   define boolean modified = false;
 
@@ -349,6 +354,61 @@
   }
 
 
+
+  /**
+   * Software raids on multipath.
+   * The device names in the device order are mapped to e.g.
+   * /dev/dm-4. This is wrong for multipath devices which still need
+   * mapped devices like /dev/mapper/<number>_part2.
+   * So, we are switching back in order to write the correct
+   * AutoYaST settings. (bnc#996839)
+   */
+
+  define list map_device_order(list<string> devices)
+  {
+    list<string> mapped_devices = [];
+    foreach( string device, devices,
+	     ``{
+	       if( search( device, "/dev/dm-" ) == 0 )
+	       {
+		 // probe.disk_raid could be expensive. So we are
+		 // only probing if there is a dm device.
+		 if( size(DiskRaids) == 0 )
+		 {
+		   DiskRaids = (list<map>) SCR::Read(.probe.disk_raid);
+		   y2milestone("probed disk raids: %1", DiskRaids);
+		 }
+		 // Searching dev_names for /dev/dm-? device
+		 list<string> dev_names = [];
+		 foreach( map dm_device, DiskRaids,
+			  ``{
+			    if( dm_device["dev_name"]:"" == device )
+			    {
+			      dev_names = dm_device["dev_names"]:[];
+			      break;
+			    }
+			  });
+		 // Searching /dev/mapper/<number>
+		 foreach( string dev_name, dev_names,
+			  ``{
+			    if( search( dev_name, "/dev/mapper/" ) == 0 )
+			    {
+			      mapped_devices = add( mapped_devices, dev_name );
+			      break;
+			    }
+			  });
+	       }
+	     });
+    if( size(mapped_devices) > 0 )
+    {
+      y2milestone("mapped devices: %1 -> %2", devices, mapped_devices);
+      return( mapped_devices );
+    }
+    return( devices );
+  }
+
+
+
     /**
      * Create a partition plan for the calling client
      * @return list partition plan
@@ -515,7 +575,7 @@
                     raid_options["persistent_superblock"] =
                             pe["persistent_superblock"]:false;
                     raid_options["raid_type"] = pe["raid_type"]:"raid0";
-                    raid_options["device_order"] = pe["devices"]:[];
+                    raid_options["device_order"] = map_device_order(pe["devices"]:[]);
                     new_pe["raid_options"] = raid_options;
                 }
 

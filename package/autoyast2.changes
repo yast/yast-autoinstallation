@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Tue Sep 20 10:14:43 CEST 2016 - schubi@suse.de
+
+- Software raids on multipath:
+  The device names in the device order are mapped to e.g.
+  /dev/dm-4. This is wrong for multipath devices which still need
+  mapped devices like /dev/mapper/<number>_part2.
+  So, we are switching back in order to write the correct
+  AutoYaST settings. (bnc#996839)
+- version 2.17.80
+
+-------------------------------------------------------------------
 Wed Sep  9 13:10:11 CEST 2015 - schubi@suse.de
 
 - Evaluating partition device if the "device" name has not been set.
