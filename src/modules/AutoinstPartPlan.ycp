@@ -371,6 +371,8 @@
 	     ``{
 	       if( search( device, "/dev/dm-" ) == 0 )
 	       {
+		 // probe.disk_raid could be expensive. So we are
+		 // only probing if there is a dm device.
 		 if( size(DiskRaids) == 0 )
 		 {
 		   DiskRaids = (list<map>) SCR::Read(.probe.disk_raid);
