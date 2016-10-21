@@ -35,13 +35,8 @@ module Yast
           Ops.set(
             ret,
             "subvol",
-            Builtins.maplist(Ops.get_list(xml_map, "subvolumes", [])) do |s|
-              if !Builtins.isempty(sv_prep) &&
-                  Builtins.substring(s, 0, Builtins.size(sv_prep)) != sv_prep
-                s = Ops.add(sv_prep, s)
-              end
-              { "name" => s, "create" => true }
-            end
+            # Convert from "vol" or {"name" => "vol", "options" => "nocow" } to { "name" => "x", "nocow" => true}
+            xml_map.fetch("subvolumes", []).map { |s| import_subvolume(s, sv_prep) }
           )
         end
         if Builtins.haskey(ret, "subvolumes")
@@ -50,6 +45,36 @@ module Yast
         Builtins.y2milestone("AddSubvolData ret:%1", ret)
       end
       deep_copy(ret)
+    end
+
+    # Build a subvolume definition
+    #
+    # This method support two kind of subvolume specification:
+    #
+    # * just a name
+    # * or a hash containing a "name" and an optional "options" keys
+    #
+    # @param spec_or_name [Hash,String] Subvolume specification
+    # @param prefix       [String] Subvolume prefix (usually default subvolume + '/')
+    # @return [Hash] Internal representation of a subvolume
+    def import_subvolume(spec_or_name, prefix = "")
+      log.info "spec_or_name: #{spec_or_name.inspect}"
+      # Support strings or hashes
+      spec = spec_or_name.is_a?(::String) ? { "name" => spec_or_name } : spec_or_name
+
+      # Base information
+      subvolume = {
+        "name"   => spec["name"],
+        "create" => true
+      }
+      subvolume["name"].prepend(prefix) unless spec["name"].start_with?(prefix)
+
+      # Append options
+      options = spec.fetch("options", "").split(",").map(&:strip).map do |option|
+        key, value = option.split("=").map(&:strip)
+        [key, value.nil? ? true : value]
+      end
+      subvolume.merge(Hash[options])
     end
 
     def AddFilesysData(st_map, xml_map)

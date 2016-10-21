@@ -10,6 +10,8 @@ describe "Yast::AutoinstallAutopartInclude" do
 
   module DummyYast
     class AutoinstallAutopartClient < Yast::Client
+      include Yast::Logger
+
       def main
         Yast.include self, "autoinstall/autopart.rb"
         @planHasBoot=false
@@ -138,6 +140,20 @@ describe "Yast::AutoinstallAutopartInclude" do
         it "prepends the default subvolume" do
           new_target = client.AddSubvolData(target, "subvolumes" => ["home"])
           expect(new_target["subvol"]).to eq([{"name" => "@/home", "create" => true}])
+        end
+      end
+
+      context "when subvolumes specification contains options" do
+        let(:subvolumes) do
+          [ { "name" => "home" }, { "name" => "var/lib/pgsql", "options" => "nocow,opt1=val1"} ]
+        end
+
+        it "adds those options" do
+          new_target = client.AddSubvolData(target, "subvolumes" => subvolumes)
+          expect(new_target["subvol"]).to eq([
+              { "name" => "home", "create" => true },
+              { "name" => "var/lib/pgsql", "create" => true, "nocow" => true, "opt1" => "val1" }
+            ])
         end
       end
     end

@@ -7,9 +7,8 @@ Yast.import "AutoinstPartPlan"
 Yast.import "Profile"
 
 describe Yast::AutoinstPartPlan do
-  FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
-  let(:target_map_path) { File.join(FIXTURES_PATH, 'storage', "nfs_root.yml") }
-  let(:target_map_clone) { File.join(FIXTURES_PATH, 'storage', "target_clone.yml") }
+  let(:target_map_path) { File.join(FIXTURES_PATH, "storage", "nfs_root.yml") }
+  let(:target_map_clone) { File.join(FIXTURES_PATH, "storage", "target_clone.yml") }
 
   describe "#read partition target" do
 
@@ -44,7 +43,24 @@ describe Yast::AutoinstPartPlan do
         ]
       )
     end
-
   end
 
+  describe "#Export" do
+    let(:target_map) { YAML.load_file(target_map_clone) }
+    let(:default_subvol) { "@" }
+    let(:target_map_path) { File.join(FIXTURES_PATH, 'storage', "subvolumes.yml") }
+
+    before do
+      expect(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
+      stub_const("Yast::FileSystems", double("filesystems", default_subvol: default_subvol))
+      Yast::AutoinstPartPlan.Read
+    end
+
+    it "does not include snapshots" do
+      byebug
+      exported = Yast::AutoinstPartPlan.Export
+      expect(Yast::AutoinstPartPlan.Export).to eq([])
+    end
+
+  end
 end
