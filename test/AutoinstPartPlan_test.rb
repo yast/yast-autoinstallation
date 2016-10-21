@@ -46,9 +46,8 @@ describe Yast::AutoinstPartPlan do
   end
 
   describe "#Export" do
-    let(:target_map) { YAML.load_file(target_map_clone) }
+    let(:target_map) { YAML.load_file(File.join(FIXTURES_PATH, "storage", "subvolumes.yml")) }
     let(:default_subvol) { "@" }
-    let(:target_map_path) { File.join(FIXTURES_PATH, 'storage', "subvolumes.yml") }
 
     before do
       expect(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
@@ -56,11 +55,23 @@ describe Yast::AutoinstPartPlan do
       Yast::AutoinstPartPlan.Read
     end
 
-    it "does not include snapshots" do
-      byebug
+    it "includes found subvolumes" do
       exported = Yast::AutoinstPartPlan.Export
-      expect(Yast::AutoinstPartPlan.Export).to eq([])
+      subvolumes = exported.first["partitions"].first["subvolumes"]
+      expect(subvolumes).to eq([
+        "@",
+        "home",
+        "var/log",
+        "var/lib/pgsql",
+        "myvol"
+      ])
     end
 
+    it "does not include snapshots" do
+      exported = Yast::AutoinstPartPlan.Export
+      subvolumes = exported.first["partitions"].first["subvolumes"]
+      snapshots = subvolumes.select { |s| s.include?("snapshot") }
+      expect(snapshots).to be_empty
+    end
   end
 end
