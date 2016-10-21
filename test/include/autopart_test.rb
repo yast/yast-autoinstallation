@@ -1,8 +1,5 @@
 #!/usr/bin/env rspec
-
 require_relative "../test_helper"
-require "yaml"
-require "yast"
 
 Yast.import "Profile"
 Yast.import "Arch"
@@ -26,7 +23,7 @@ describe "Yast::AutoinstallAutopartInclude" do
       end
       def plan_has_boot_or_prep_partition=(v)
         @planHasBoot = v
-      end     
+      end
     end
   end
 
@@ -105,6 +102,42 @@ describe "Yast::AutoinstallAutopartInclude" do
             ret = client.try_add_boot( ay_device, target_map[checked_device])
             expect(ret["partitions"].size).to eq(ay_device["partitions"].size)
           end
+        end
+      end
+    end
+
+    describe "#AddSubvolData" do
+      before do
+        subject.main
+        stub_const("Yast::FileSystems", double("filesystems", default_subvol: default_subvol))
+      end
+
+      let(:default_subvol) { "" }
+
+      let(:target) do
+        {
+          "create" => true, "device" => "/dev/sda2", "format" => true, "fstopt" => "subvol=@",
+          "mount" => "/", "mountby" => :uuid, "nr" => 2, "region" => [94, 1733], "type" => :primary,
+          "used_fs" => :btrfs
+        }
+      end
+
+      context "when subvolumes specification are just names" do
+        it "adds subvolumes with default options" do
+          new_target = client.AddSubvolData(target, "subvolumes" => ["home", "var/lib/pgsql"])
+          expect(new_target["subvol"]).to eq([
+              {"name" => "home", "create" => true },
+              {"name" => "var/lib/pgsql", "create" => true}
+            ])
+        end
+      end
+
+      context "when a default subvolme is specified" do
+        let(:default_subvol) { "@" }
+
+        it "prepends the default subvolume" do
+          new_target = client.AddSubvolData(target, "subvolumes" => ["home"])
+          expect(new_target["subvol"]).to eq([{"name" => "@/home", "create" => true}])
         end
       end
     end
