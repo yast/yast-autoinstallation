@@ -530,30 +530,13 @@ module Yast
           end
           # Subvolumes
           # Save possibly existing subvolumes
-          if !Builtins.isempty(Ops.get_list(pe, "subvol", []))
+          if !pe.fetch("subvol", []).empty?
             defsub = ""
-            if !Builtins.isempty(FileSystems.default_subvol)
-              defsub = Ops.add(FileSystems.default_subvol, "/")
+            if !FileSystems.default_subvol.empty?
+              defsub = FileSystems.default_subvol + "/"
             end
-            Ops.set(
-              new_pe,
-              "subvolumes",
-              Builtins.maplist(Ops.get_list(pe, "subvol", [])) do |p|
-                if Ops.greater_than(Builtins.size(defsub), 0) &&
-                    Builtins.substring(
-                      Ops.get_string(p, "name", ""),
-                      0,
-                      Builtins.size(defsub)
-                    ) == defsub
-                  next Builtins.substring(
-                    Ops.get_string(p, "name", ""),
-                    Builtins.size(defsub)
-                  )
-                else
-                  next Ops.get_string(p, "name", "")
-                end
-              end
-            )
+            new_pe["subvolumes"] = pe.fetch("subvol", []).map { |s| export_subvolume(s, defsub) }
+
             Ops.set(
               new_pe,
               "subvolumes",
@@ -1101,6 +1084,19 @@ module Yast
         )
         return false
       end
+    end
+
+    # Build a subvolume specification from the current definition
+    #
+    # @param subvolume [Hash] Subvolume definition (internal storage layer definition)
+    # @param prefix    [String] Subvolume prefix (usually default subvolume + '/')
+    # @return [Hash] External representation of a subvolume (e.g. to be used by AutoYaST)
+    def export_subvolume(subvolume, prefix = "")
+      subvolume_spec = {
+        "name" => subvolume["name"].sub(/\A#{prefix}/, "")
+      }
+      subvolume_spec["options"] = "nocow" if subvolume["nocow"]
+      subvolume_spec
     end
 
     publish :function => :SetModified, :type => "void ()"

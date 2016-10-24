@@ -59,11 +59,11 @@ describe Yast::AutoinstPartPlan do
       exported = Yast::AutoinstPartPlan.Export
       subvolumes = exported.first["partitions"].first["subvolumes"]
       expect(subvolumes).to eq([
-        "@",
-        "home",
-        "var/log",
-        "var/lib/pgsql",
-        "myvol"
+        { "name" => "@" },
+        { "name" => "home" },
+        { "name" => "var/log" },
+        { "name" => "var/lib/pgsql" },
+        { "name" => "myvol", "options" => "nocow" },
       ])
     end
 
