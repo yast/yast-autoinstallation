@@ -14,6 +14,7 @@ module Yast
       Yast.import "UI"
       textdomain "autoinst"
 
+      Yast.include self, "autoinstall/autopart.rb"
       Yast.include self, "autoinstall/types.rb"
       Yast.include self, "autoinstall/common.rb"
       Yast.include self, "autoinstall/tree.rb"
@@ -1084,19 +1085,6 @@ module Yast
         )
         return false
       end
-    end
-
-    # Build a subvolume specification from the current definition
-    #
-    # @param subvolume [Hash] Subvolume definition (internal storage layer definition)
-    # @param prefix    [String] Subvolume prefix (usually default subvolume + '/')
-    # @return [Hash] External representation of a subvolume (e.g. to be used by AutoYaST)
-    def export_subvolume(subvolume, prefix = "")
-      subvolume_spec = {
-        "name" => subvolume["name"].sub(/\A#{prefix}/, "")
-      }
-      subvolume_spec["options"] = "nocow" if subvolume["nocow"]
-      subvolume_spec
     end
 
     publish :function => :SetModified, :type => "void ()"

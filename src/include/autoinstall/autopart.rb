@@ -47,9 +47,10 @@ module Yast
       deep_copy(ret)
     end
 
-    # Build a subvolume definition
+    # Build a subvolume representation from a definition
     #
-    # This method support two kind of subvolume specification:
+    # This method is suitable to import an AutoYaST profile.
+    # It supports two kind of subvolume specification:
     #
     # * just a name
     # * or a hash containing a "name" and an optional "options" keys
@@ -75,6 +76,21 @@ module Yast
         [key, value.nil? ? true : value]
       end
       subvolume.merge(Hash[options])
+    end
+
+    # Build a subvolume specification from the current definition
+    #
+    # The result is suitable to be used to generate an AutoYaST profile.
+    #
+    # @param subvolume [Hash] Subvolume definition (internal storage layer definition)
+    # @param prefix    [String] Subvolume prefix (usually default subvolume + '/')
+    # @return [Hash] External representation of a subvolume (e.g. to be used by AutoYaST)
+    def export_subvolume(subvolume, prefix = "")
+      subvolume_spec = {
+        "name" => subvolume["name"].sub(/\A#{prefix}/, "")
+      }
+      subvolume_spec["options"] = "nocow" if subvolume["nocow"]
+      subvolume_spec
     end
 
     def AddFilesysData(st_map, xml_map)
