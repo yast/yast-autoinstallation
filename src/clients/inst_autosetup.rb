@@ -269,6 +269,7 @@ module Yast
       # recognize this now
       Storage.ReReadTargetMap
 
+      AutoinstGeneral.set_btrfs_default_subvolume_name
       if Profile.current["partitioning"] && !Profile.current["partitioning"].empty?
         AutoinstStorage.Import(Profile.current["partitioning"])
         write_storage = true

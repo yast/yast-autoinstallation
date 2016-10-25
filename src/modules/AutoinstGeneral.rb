@@ -10,6 +10,8 @@ require "yast"
 
 module Yast
   class AutoinstGeneralClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "Pkg"
       textdomain "autoinst"
@@ -408,6 +410,16 @@ module Yast
       val = @storage.fetch("start_multipath",false)
       Builtins.y2milestone("SetMultipathing val:%1", val)
       Storage.SetMultipathStartup(val)
+    end
+
+    # Set Btrfs default subvolume name
+    #
+    # @return ["@",""] Default subvolume name to use.
+    def set_btrfs_default_subvolume_name
+      return unless Mode.autoinst && @storage.has_key?("btrfs_set_default_subvolume_name")
+      value = @storage["btrfs_set_default_subvolume_name"] ? "@" : ""
+      log.info "Setting default subvolume to: '#{value}'"
+      FileSystems.default_subvol = value
     end
 
     # NTP syncing

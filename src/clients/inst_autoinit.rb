@@ -202,6 +202,7 @@ module Yast
       AutoinstGeneral.Import(Profile.current.fetch("general",{}))
       AutoinstGeneral.SetSignatureHandling
       AutoinstGeneral.SetMultipathing
+      AutoinstGeneral.set_btrfs_default_subvolume_name
 
       #
       # Copy the control file for easy access by user to  a pre-defined
