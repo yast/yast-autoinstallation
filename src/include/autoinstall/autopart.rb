@@ -52,30 +52,25 @@ module Yast
     # This method is suitable to import an AutoYaST profile.
     # It supports two kind of subvolume specification:
     #
-    # * just a name
-    # * or a hash containing a "name" and an optional "options" keys
+    # * just a path
+    # * or a hash containing a "path" and an optional "copy_on_write"
+    #   key
     #
     # @param spec_or_name [Hash,String] Subvolume specification
     # @param prefix       [String] Subvolume prefix (usually default subvolume + '/')
     # @return [Hash] Internal representation of a subvolume
-    def import_subvolume(spec_or_name, prefix = "")
-      log.info "spec_or_name: #{spec_or_name.inspect}"
+    def import_subvolume(spec_or_path, prefix = "")
+      log.info "spec_or_name: #{spec_or_path.inspect}"
       # Support strings or hashes
-      spec = spec_or_name.is_a?(::String) ? { "name" => spec_or_name } : spec_or_name
-
-      # Base information
-      subvolume = {
-        "name"   => spec["name"],
+      name = spec_or_path.is_a?(::String) ? spec_or_path : spec_or_path["path"]
+      spec = {
+        "name" => name.start_with?(prefix) ? name : "#{prefix}#{name}",
         "create" => true
       }
-      subvolume["name"].prepend(prefix) unless spec["name"].start_with?(prefix)
-
-      # Append options
-      options = spec.fetch("options", "").split(",").map(&:strip).map do |option|
-        key, value = option.split("=").map(&:strip)
-        [key, value.nil? ? true : value]
+      if spec_or_path.is_a?(Hash) && spec_or_path.has_key?("copy_on_write")
+        spec["nocow"] = !spec_or_path["copy_on_write"]
       end
-      subvolume.merge(Hash[options])
+      spec
     end
 
     # Build a subvolume specification from the current definition
@@ -86,11 +81,11 @@ module Yast
     # @param prefix    [String] Subvolume prefix (usually default subvolume + '/')
     # @return [Hash] External representation of a subvolume (e.g. to be used by AutoYaST)
     def export_subvolume(subvolume, prefix = "")
-      subvolume_spec = {
-        "name" => subvolume["name"].sub(/\A#{prefix}/, "")
+      spec = {
+        "path" => subvolume["name"].sub(/\A#{prefix}/, "")
       }
-      subvolume_spec["options"] = "nocow" if subvolume["nocow"]
-      subvolume_spec
+      spec["copy_on_write"] = !subvolume["nocow"] if subvolume.has_key?("nocow")
+      spec
     end
 
     def AddFilesysData(st_map, xml_map)

@@ -125,7 +125,7 @@ describe "Yast::AutoinstallAutopartInclude" do
         }
       end
 
-      context "when subvolumes specification are just names" do
+      context "when subvolumes specification are just paths" do
         it "adds subvolumes with default options" do
           new_target = client.AddSubvolData(target, "subvolumes" => ["home", "var/lib/pgsql"])
           expect(new_target["subvol"]).to eq([
@@ -144,16 +144,16 @@ describe "Yast::AutoinstallAutopartInclude" do
         end
       end
 
-      context "when subvolumes specification contains options" do
+      context "when copy-on-write is defined" do
         let(:subvolumes) do
-          [ { "name" => "home" }, { "name" => "var/lib/pgsql", "options" => "nocow,opt1=val1"} ]
+          [ { "path" => "home" }, { "path" => "var/lib/pgsql", "copy_on_write" => false } ]
         end
 
-        it "adds those options" do
+        it "includes the 'nocow' option" do
           new_target = client.AddSubvolData(target, "subvolumes" => subvolumes)
           expect(new_target["subvol"]).to eq([
               { "name" => "home", "create" => true },
-              { "name" => "var/lib/pgsql", "create" => true, "nocow" => true, "opt1" => "val1" }
+              { "name" => "var/lib/pgsql", "create" => true, "nocow" => true }
             ])
         end
       end
