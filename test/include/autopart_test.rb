@@ -1,5 +1,6 @@
 #!/usr/bin/env rspec
 require_relative "../test_helper"
+require "yaml"
 
 Yast.import "Profile"
 Yast.import "Arch"
