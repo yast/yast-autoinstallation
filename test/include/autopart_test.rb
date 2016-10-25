@@ -157,6 +157,17 @@ describe "Yast::AutoinstallAutopartInclude" do
             ])
         end
       end
+
+      context "when path is not defined" do
+        let(:subvolumes) do
+          [ { "name" => "home" } ]
+        end
+
+        it "does not add the subvolume" do
+          new_target = client.AddSubvolData(target, "subvolumes" => subvolumes)
+          expect(new_target["subvol"]).to be_empty
+        end
+      end
     end
   end
 end

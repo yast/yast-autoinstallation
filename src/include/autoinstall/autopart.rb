@@ -36,7 +36,7 @@ module Yast
             ret,
             "subvol",
             # Convert from "vol" or {"name" => "vol", "options" => "nocow" } to { "name" => "x", "nocow" => true}
-            xml_map.fetch("subvolumes", []).map { |s| import_subvolume(s, sv_prep) }
+            xml_map.fetch("subvolumes", []).map { |s| import_subvolume(s, sv_prep) }.compact
           )
         end
         if Builtins.haskey(ret, "subvolumes")
@@ -58,15 +58,21 @@ module Yast
     #
     # @param spec_or_name [Hash,String] Subvolume specification
     # @param prefix       [String] Subvolume prefix (usually default subvolume + '/')
-    # @return [Hash] Internal representation of a subvolume
+    # @return [Hash,nil] Internal representation of a subvolume or nil if not valid
     def import_subvolume(spec_or_path, prefix = "")
-      log.info "spec_or_name: #{spec_or_path.inspect}"
       # Support strings or hashes
       name = spec_or_path.is_a?(::String) ? spec_or_path : spec_or_path["path"]
+
+      if name.nil?
+        log.info "Subvolume path/name is undefined: #{spec_or_path.inspect}"
+        return nil
+      end
+
       spec = {
         "name" => name.start_with?(prefix) ? name : "#{prefix}#{name}",
         "create" => true
       }
+
       if spec_or_path.is_a?(Hash) && spec_or_path.has_key?("copy_on_write")
         spec["nocow"] = !spec_or_path["copy_on_write"]
       end
