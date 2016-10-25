@@ -110,8 +110,18 @@ device_order = element device_order {
 
 subvolumes = element subvolumes {
     LIST,
-    element listentry { text }*
+    subvolume*
 }
+
+# by default, AutoYaST exports list entries as 'listentry'
+subvolume =
+  element subvolume { text } | element listentry { text } | subvolume_full
+
+subvolume_full =
+  element subvolume {
+    element path { text } &
+    element copy_on_write { BOOLEAN }?
+  }
 
 part_fstopt = element fstopt { text }
 part_label = element label { text }
