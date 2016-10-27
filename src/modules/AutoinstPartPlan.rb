@@ -7,6 +7,7 @@
 #
 # $Id: AutoinstPartPlan.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
+require "yast2/execute"
 
 module Yast
   class AutoinstPartPlanClass < Module
@@ -768,6 +769,36 @@ module Yast
       Import(
         Convert.convert(ReadHelper(), :from => "list", :to => "list <map>")
       )
+    end
+
+    # Try to find the default subvol for the installation
+    #
+    # * Root partition takes precedence
+    # * Not supported: more than 1 Btrfs filesystems, one using
+    #   a '@' default subvolume and the other using ''. In that case,
+    #   default_subvolume is set to product's default.
+    def find_btrfs_subvol_name_default
+      parts = Storage.GetTargetMap.map { |_k, d| d.fetch("partitions")  }.flatten.compact
+      btrfs_parts = parts.select { |p| p["used_fs"] == :btrfs }
+      default_subvol_names = btrfs_parts.reduce({}) do |memo, part|
+        memo[part["mount"]] = btrfs_subvol_name_for(part)
+        memo
+      end
+
+      # Root takes precedence
+      return default_subvol_names["/"] if default_subvol_names.has_key?("/")
+
+      # If all has the same default subvolume name
+      found_names = default_subvol_names.values.uniq
+      return found_names.first if found_names.size == 1
+
+      # If there're different values, fallback to product's default
+      btrfs_subvol_name_from_product
+    end
+
+    def btrfs_subvol_name_for(partition)
+      ret = Yast::Execute.on_target("btrfs", "subvol", "list", partition["mount"], stdout: :capture)
+      ret.split("\n").first =~ /.+ @\z/ ? "@" : ""
     end
 
     # Dump the settings to a map, for autoinstallation use.
