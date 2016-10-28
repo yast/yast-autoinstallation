@@ -200,6 +200,11 @@ module Yast
       Ops.set(general, "signature-handling", @signature_handling)
       Ops.set(general, "ask-list", @askList)
       Ops.set(general, "proposals", @proposals)
+
+      btrfs_set_default_subvol = btrfs_default_subvol_to_profile
+      unless btrfs_set_default_subvol.nil?
+        Ops.set(@storage, "btrfs_set_default_subvolume_name", btrfs_set_default_subvol)
+      end
       Ops.set(general, "storage", @storage)
 
       if Yast::Arch.s390
@@ -414,9 +419,14 @@ module Yast
 
     # Set Btrfs default subvolume name
     #
-    # @return ["@",""] Default subvolume name to use.
+    # Check "general/storage/btrfs_set_default_subvolume_name" in the profile.
+    # It does nothing if that element does not exist.
+    #
+    # @return ["@","",nil] Default subvolume name to use.
+    #
+    # @see FileSystems.default_subvol
     def set_btrfs_default_subvolume_name
-      return unless Mode.autoinst && @storage.has_key?("btrfs_set_default_subvolume_name")
+      return unless @storage.has_key?("btrfs_set_default_subvolume_name")
       value = @storage["btrfs_set_default_subvolume_name"] ? "@" : ""
       log.info "Setting default subvolume to: '#{value}'"
       FileSystems.default_subvol = value
@@ -500,6 +510,22 @@ module Yast
       end
       nil
     end
+
+  protected
+
+    # Return the value to use as 'btrfs_set_default_subvolume_name' in the profile
+    #
+    # In case it matches the product's default, it should not be exported.
+    #
+    # @return [Boolean,nil] Value to use (true or false). If nil, no value
+    #                       should be exported.
+    def btrfs_default_subvol_to_profile
+      if FileSystems.default_subvol != FileSystems.default_subvol_from_product
+        return FileSystems.default_subvol == "" ? false : true
+      end
+      nil
+    end
+
 
     publish :variable => :Confirm, :type => "boolean"
     publish :variable => :second_stage, :type => "boolean"
