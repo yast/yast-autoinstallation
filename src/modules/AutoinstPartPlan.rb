@@ -7,7 +7,6 @@
 #
 # $Id: AutoinstPartPlan.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
-require "yast2/execute"
 
 module Yast
   class AutoinstPartPlanClass < Module
