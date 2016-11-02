@@ -187,6 +187,10 @@ module Yast
       @proposals = Ops.get_list(settings, "proposals", [])
       @storage = Ops.get_map(settings, "storage", {})
 
+      SetSignatureHandling()
+      SetMultipathing()
+      set_btrfs_default_subvolume_name
+
       true
     end
 
