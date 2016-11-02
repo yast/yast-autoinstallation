@@ -35,7 +35,8 @@ module Yast
           Ops.set(
             ret,
             "subvol",
-            # Convert from "vol" or {"name" => "vol", "options" => "nocow" } to { "name" => "x", "nocow" => true}
+            # Convert from "vol" or {"name" => "vol", "copy_on_write" => false }
+            # to { "name" => "vol", "nocow" => true}
             xml_map.fetch("subvolumes", []).map { |s| import_subvolume(s, sv_prep) }.compact
           )
         end
