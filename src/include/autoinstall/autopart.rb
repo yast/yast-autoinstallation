@@ -91,7 +91,7 @@ module Yast
       spec = {
         "path" => subvolume["name"].sub(/\A#{prefix}/, "")
       }
-      spec["copy_on_write"] = !subvolume["nocow"] if subvolume.has_key?("nocow")
+      spec["copy_on_write"] = !subvolume["nocow"]
       spec
     end
 
