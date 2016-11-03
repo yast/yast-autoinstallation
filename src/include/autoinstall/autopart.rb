@@ -35,13 +35,9 @@ module Yast
           Ops.set(
             ret,
             "subvol",
-            Builtins.maplist(Ops.get_list(xml_map, "subvolumes", [])) do |s|
-              if !Builtins.isempty(sv_prep) &&
-                  Builtins.substring(s, 0, Builtins.size(sv_prep)) != sv_prep
-                s = Ops.add(sv_prep, s)
-              end
-              { "name" => s, "create" => true }
-            end
+            # Convert from "vol" or {"name" => "vol", "copy_on_write" => false }
+            # to { "name" => "vol", "nocow" => true}
+            xml_map.fetch("subvolumes", []).map { |s| import_subvolume(s, sv_prep) }.compact
           )
         end
         if Builtins.haskey(ret, "subvolumes")
@@ -50,6 +46,53 @@ module Yast
         Builtins.y2milestone("AddSubvolData ret:%1", ret)
       end
       deep_copy(ret)
+    end
+
+    # Build a subvolume representation from a definition
+    #
+    # This method is suitable to import an AutoYaST profile.
+    # It supports two kind of subvolume specification:
+    #
+    # * just a path
+    # * or a hash containing a "path" and an optional "copy_on_write"
+    #   key
+    #
+    # @param spec_or_name [Hash,String] Subvolume specification
+    # @param prefix       [String] Subvolume prefix (usually default subvolume + '/')
+    # @return [Hash,nil] Internal representation of a subvolume or nil if not valid
+    def import_subvolume(spec_or_path, prefix = "")
+      # Support strings or hashes
+      name = spec_or_path.is_a?(::String) ? spec_or_path : spec_or_path["path"]
+
+      if name.nil?
+        log.info "Subvolume path/name is undefined: #{spec_or_path.inspect}"
+        return nil
+      end
+
+      spec = {
+        "name" => name.start_with?(prefix) ? name : "#{prefix}#{name}",
+        "create" => true
+      }
+
+      if spec_or_path.is_a?(Hash) && spec_or_path.has_key?("copy_on_write")
+        spec["nocow"] = !spec_or_path["copy_on_write"]
+      end
+      spec
+    end
+
+    # Build a subvolume specification from the current definition
+    #
+    # The result is suitable to be used to generate an AutoYaST profile.
+    #
+    # @param subvolume [Hash] Subvolume definition (internal storage layer definition)
+    # @param prefix    [String] Subvolume prefix (usually default subvolume + '/')
+    # @return [Hash] External representation of a subvolume (e.g. to be used by AutoYaST)
+    def export_subvolume(subvolume, prefix = "")
+      spec = {
+        "path" => subvolume["name"].sub(/\A#{prefix}/, "")
+      }
+      spec["copy_on_write"] = !subvolume["nocow"]
+      spec
     end
 
     def AddFilesysData(st_map, xml_map)
