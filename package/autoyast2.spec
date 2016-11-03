@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.152
+Version:        3.2.0
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -34,7 +34,8 @@ BuildRequires:  libxml2-tools
 BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2
-BuildRequires:  yast2-storage >= 3.1.59
+# FileSystems.read_default_subvol_from_target
+BuildRequires:  yast2-storage >= 3.2.0
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
