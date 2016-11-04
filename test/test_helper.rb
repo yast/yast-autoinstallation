@@ -10,3 +10,4 @@ if ENV["COVERAGE"]
     "errors are raised in other YaST components."
 end
 
+FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')

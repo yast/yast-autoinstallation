@@ -1,0 +1,185 @@
+---
+"/dev/vda":
+  unique: KSbE.Fxp0d3BezAE
+  bus: None
+  device: "/dev/vda"
+  bios_id: '0x80'
+  driver: virtio-pci
+  driver_module: virtio_pci
+  partitions:
+  - device: "/dev/vda1"
+    name: vda1
+    used_by:
+    - type: :UB_BTRFS
+      device: 8e6e04a4-758f-4d43-bab8-6b3dca3d31e2
+    used_by_type: :UB_BTRFS
+    used_by_device: 8e6e04a4-758f-4d43-bab8-6b3dca3d31e2
+    size_k: 13925376
+    used_fs: :btrfs
+    detected_fs: :btrfs
+    fstopt: defaults
+    nr: 2
+    fsid: 131
+    fstype: Linux native
+    region:
+    - 93
+    - 1734
+    type: :primary
+    boot: true
+    subvol:
+    - name: "@"
+    - name: "@/.snapshots"
+    - name: "@/.snapshots/1/snapshot"
+    - name: "@/home"
+    - name: "@/var/log"
+    - name: "@/var/lib/pgsql"
+    - name: "@/myvol"
+      nocow: true
+    - name: "@/.snapshots/1/snapshot/var/lib/machines"
+    - name: "@/.snapshots/2/snapshot"
+    - name: "@/.snapshots/3/snapshot"
+    - name: "@/.snapshots/4/snapshot"
+    uuid: 8e6e04a4-758f-4d43-bab8-6b3dca3d31e2
+    mount: "/"
+    mountby: :uuid
+  size_k: 14680064
+  cyl_size: 8225280
+  cyl_count: 1827
+  sector_size: 512
+  label: msdos
+  name: vda
+  max_logical: 255
+  max_primary: 4
+  type: :CT_DISK
+  transport: :unknown
+  used_by_type: :UB_NONE
+  used_by_device: ''
+  dasd_format: 0
+  dasd_type: 0
+"/dev/vdb":
+  unique: KSbE.Fxp0d3BezAE
+  bus: None
+  device: "/dev/vdb"
+  bios_id: '0x80'
+  driver: virtio-pci
+  driver_module: virtio_pci
+  partitions:
+  - device: "/dev/vdb1"
+    name: vdb1
+    used_by_type: :UB_NONE
+    used_by_device: ''
+    size_k: 753664
+    used_fs: :swap
+    detected_fs: :swap
+    mount: swap
+    mountby: :uuid
+    fstopt: defaults
+    uuid: 3fc06e37-d6b6-4411-baf3-2920cdf19fa4
+    nr: 1
+    fsid: 130
+    fstype: Linux swap
+    region:
+    - 0
+    - 94
+    type: :primary
+  - device: "/dev/vdb2"
+    name: vdb2
+    used_by:
+    - type: :UB_BTRFS
+      device: 862e2cbf-0501-48a1-85a3-142bfe3ab51b
+    used_by_type: :UB_BTRFS
+    used_by_device: 862e2cbf-0501-48a1-85a3-142bfe3ab51b
+    size_k: 13925376
+    used_fs: :btrfs
+    detected_fs: :btrfs
+    fstopt: defaults
+    nr: 2
+    fsid: 131
+    fstype: Linux native
+    region:
+    - 93
+    - 1734
+    type: :primary
+    boot: true
+    subvol:
+    - name: shared
+    - name: www
+    uuid: 862e2cbf-0501-48a1-85a3-142bfe3ab51b
+    mount: "/srv"
+    mountby: :uuid
+  size_k: 14680064
+  cyl_size: 8225280
+  cyl_count: 1827
+  sector_size: 512
+  label: msdos
+  name: vdb
+  max_logical: 255
+  max_primary: 4
+  type: :CT_DISK
+  transport: :unknown
+  used_by_type: :UB_NONE
+  used_by_device: ''
+  dasd_format: 0
+  dasd_type: 0
+"/dev/btrfs":
+  device: "/dev/btrfs"
+  name: btrfs
+  used_by_type: :UB_NONE
+  used_by_device: ''
+  type: :CT_BTRFS
+  partitions: []
+"/dev/tmpfs":
+  device: "/dev/tmpfs"
+  name: tmpfs
+  used_by_type: :UB_NONE
+  used_by_device: ''
+  type: :CT_TMPFS
+  partitions:
+  - device: tmpfs
+    name: none
+    used_by_type: :UB_NONE
+    used_by_device: ''
+    size_k: 233312
+    used_fs: :tmpfs
+    detected_fs: :tmpfs
+    mount: "/dev/shm"
+    mountby: :uuid
+    ignore_fstab: true
+    type: :tmpfs
+    fstype: TMPFS
+  - device: tmpfs
+    name: none
+    used_by_type: :UB_NONE
+    used_by_device: ''
+    size_k: 233312
+    used_fs: :tmpfs
+    detected_fs: :tmpfs
+    mount: "/run"
+    mountby: :uuid
+    ignore_fstab: true
+    type: :tmpfs
+    fstype: TMPFS
+  - device: tmpfs
+    name: none
+    used_by_type: :UB_NONE
+    used_by_device: ''
+    size_k: 233312
+    used_fs: :tmpfs
+    detected_fs: :tmpfs
+    mount: "/sys/fs/cgroup"
+    mountby: :uuid
+    ignore_fstab: true
+    type: :tmpfs
+    fstype: TMPFS
+  - device: tmpfs
+    name: none
+    used_by_type: :UB_NONE
+    used_by_device: ''
+    size_k: 46664
+    used_fs: :tmpfs
+    detected_fs: :tmpfs
+    mount: "/run/user/0"
+    mountby: :uuid
+    ignore_fstab: true
+    type: :tmpfs
+    fstype: TMPFS
