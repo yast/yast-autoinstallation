@@ -367,9 +367,6 @@ module Yast
       e = []
 
       Builtins.foreach(@ModuleMap) do |p, d|
-        # bnc#887115 Hidden modules cannot be cloned
-        next if d["Hidden"] == "true"
-
         #
         # Set resource name, if not using default value
         #

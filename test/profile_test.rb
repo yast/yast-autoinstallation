@@ -263,9 +263,9 @@ describe Yast::Profile do
     context "when a module is 'hidden'" do
       let(:custom_module) { CUSTOM_MODULE.merge("Hidden" => "true") }
 
-      it "does not include the 'hidden' module" do
+      it "does includes the 'hidden' module" do
         subject.Prepare
-        expect(subject.current.keys).to_not include("custom")
+        expect(subject.current.keys).to include("custom")
       end
     end
 
