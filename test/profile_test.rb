@@ -3,6 +3,8 @@
 require_relative "test_helper"
 
 Yast.import "Profile"
+Yast.import "Y2ModuleConfig"
+Yast.import "AutoinstClone"
 
 describe Yast::Profile do
   subject { Yast::Profile }
@@ -199,6 +201,99 @@ describe Yast::Profile do
         Yast::Profile.remove_sections(%w(section1 section2))
         expect(Yast::Profile.current.keys).to_not include("section1")
         expect(Yast::Profile.current.keys).to_not include("section2")
+      end
+    end
+  end
+
+  describe "#Prepare" do
+    CUSTOM_MODULE = {
+      "Name" => "Custom module",
+      "X-SuSE-YaST-AutoInst" => "configure",
+      "X-SuSE-YaST-Group" => "System",
+      "X-SuSE-YaST-AutoInstClient" => "custom_auto"
+    }
+
+    let(:prepare) { true }
+    let(:general_module) do
+      {
+        "Name"=>"General Options",
+        "X-SuSE-YaST-AutoInst"=>"configure",
+        "X-SuSE-YaST-Group"=>"System",
+        "X-SuSE-YaST-AutoInstClient"=>"general_auto"
+      }
+    end
+    let(:custom_module) { CUSTOM_MODULE }
+    let(:custom_export) { { "key1" => "val1" } }
+    let(:module_map) { { "general" => general_module, "custom" => custom_module } }
+
+    before do
+      allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries)
+        .with(["all", "configure"]).and_return([module_map, {}])
+      allow(Yast::WFM).to receive(:CallFunction).and_call_original
+      allow(Yast::WFM).to receive(:CallFunction)
+        .with("custom_auto", ["GetModified"]).and_return(true)
+      allow(Yast::WFM).to receive(:CallFunction)
+        .with("custom_auto", ["Export"]).and_return(custom_export)
+      allow(Yast::AutoinstClone).to receive(:General)
+        .and_return("mode" => { "confirm" => false})
+
+      Yast::Y2ModuleConfig.main
+      Yast.import "AutoinstClone"
+      Yast::AutoinstClone.Process
+
+      subject.prepare = prepare
+    end
+
+    it "exports modules data into the current profile" do
+      subject.Prepare
+      expect(subject.current["general"]).to be_kind_of(Hash)
+      expect(subject.current["custom"]).to be_kind_of(Hash)
+    end
+
+    context "when preparation is not needed" do
+      let(:prepare) { false }
+
+      it "does not set the current profile" do
+        subject.Reset
+        subject.Prepare
+        expect(subject.current).to be_empty
+      end
+    end
+
+    context "when a module is 'hidden'" do
+      let(:custom_module) { CUSTOM_MODULE.merge("Hidden" => "true") }
+
+      it "does not include the 'hidden' module" do
+        subject.Prepare
+        expect(subject.current.keys).to_not include("custom")
+      end
+    end
+
+    context "when a module has elements to merge" do
+      let(:custom_module) do
+        CUSTOM_MODULE.merge(
+          "X-SuSE-YaST-AutoInstClient" => "custom_auto",
+          "X-SuSE-YaST-AutoInstMerge" => "users,defaults",
+          "X-SuSE-YaST-AutoInstMergeTypes" => "list,map"
+        )
+      end
+
+      it "adds each element into the current profile" do
+        subject.Prepare
+        expect(subject.current["users"]).to be_kind_of(Array)
+        expect(subject.current["defaults"]).to be_kind_of(Hash)
+      end
+    end
+
+    context "when a module uses an alternative resource name" do
+      let(:custom_module) do
+        CUSTOM_MODULE.merge("X-SuSE-YaST-AutoInstResource" => "alternative")
+      end
+
+      it "uses the alternative name" do
+        subject.Prepare
+        expect(subject.current).to include("alternative")
+        expect(subject.current).to_not include("custom")
       end
     end
   end
