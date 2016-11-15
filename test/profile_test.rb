@@ -190,15 +190,15 @@ describe Yast::Profile do
     end
 
     context "when the profile contains an aliased resource" do
-      before do
-        allow(Yast::Profile).to receive(:ModuleMap).and_return(module_map)
-      end
-
-      let(:module_map) { { "custom" => custom_module } }
       let(:custom_module) do
         CUSTOM_MODULE.merge(
           "X-SuSE-YaST-AutoInstResourceAliases" => "old_custom"
         )
+      end
+
+      before do
+        allow(Yast::Profile).to receive(:ModuleMap)
+          .and_return("custom" => custom_module)
       end
 
       context "and configuration for the resource is missing" do
@@ -218,6 +218,35 @@ describe Yast::Profile do
           Yast::Profile.Import(profile)
           expect(Yast::Profile.current.keys).to_not include("old_custom")
           expect(Yast::Profile.current["custom"]).to eq("dummy" => false)
+        end
+      end
+
+      context "and resource has also an alternate name" do
+        let(:profile) { { "old_custom" => { "dummy" => true } } }
+        let(:custom_module) do
+          CUSTOM_MODULE.merge(
+            "X-SuSE-YaST-AutoInstResource" => "new_custom",
+            "X-SuSE-YaST-AutoInstResourceAliases" => "old_custom"
+          )
+        end
+
+        it "uses the alternate name" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current["new_custom"]).to eq("dummy" => true)
+        end
+      end
+
+      context "and more than one aliased name is used" do
+        let(:profile) { { "other_alias" => { "dummy" => true } } }
+        let(:custom_module) do
+          CUSTOM_MODULE.merge(
+            "X-SuSE-YaST-AutoInstResourceAliases" => "other_alias,old_custom"
+            )
+        end
+
+        it "takes into account all aliases" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current["custom"]).to eq("dummy" => true)
         end
       end
     end
