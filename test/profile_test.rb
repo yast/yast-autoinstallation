@@ -7,6 +7,13 @@ Yast.import "Y2ModuleConfig"
 Yast.import "AutoinstClone"
 
 describe Yast::Profile do
+  CUSTOM_MODULE = {
+    "Name" => "Custom module",
+    "X-SuSE-YaST-AutoInst" => "configure",
+    "X-SuSE-YaST-Group" => "System",
+    "X-SuSE-YaST-AutoInstClient" => "custom_auto"
+  }
+
   subject { Yast::Profile }
 
   def items_list(items)
@@ -181,6 +188,39 @@ describe Yast::Profile do
       expect(Yast::Profile).to receive(:softwareCompat)
       Yast::Profile.Import(profile)
     end
+
+    context "when the profile contains an aliased resource" do
+      before do
+        allow(Yast::Profile).to receive(:ModuleMap).and_return(module_map)
+      end
+
+      let(:module_map) { { "custom" => custom_module } }
+      let(:custom_module) do
+        CUSTOM_MODULE.merge(
+          "X-SuSE-YaST-AutoInstResourceAliases" => "old_custom"
+        )
+      end
+
+      context "and configuration for the resource is missing" do
+        let(:profile) { { "old_custom" => { "dummy" => true } } }
+
+        it "reuses the aliased configuration" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current.keys).to_not include("old_custom")
+          expect(Yast::Profile.current["custom"]).to eq("dummy" => true)
+        end
+      end
+
+      context "and configuration for the resource is present" do
+        let(:profile) { { "old_custom" => { "dummy" => true }, "custom" => { "dummy" => false } } }
+
+        it "removes the aliased configuration" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current.keys).to_not include("old_custom")
+          expect(Yast::Profile.current["custom"]).to eq("dummy" => false)
+        end
+      end
+    end
   end
 
   describe "#remove_sections" do
@@ -206,13 +246,6 @@ describe Yast::Profile do
   end
 
   describe "#Prepare" do
-    CUSTOM_MODULE = {
-      "Name" => "Custom module",
-      "X-SuSE-YaST-AutoInst" => "configure",
-      "X-SuSE-YaST-Group" => "System",
-      "X-SuSE-YaST-AutoInstClient" => "custom_auto"
-    }
-
     let(:prepare) { true }
     let(:general_module) do
       {
@@ -263,7 +296,7 @@ describe Yast::Profile do
     context "when a module is 'hidden'" do
       let(:custom_module) { CUSTOM_MODULE.merge("Hidden" => "true") }
 
-      it "does includes the 'hidden' module" do
+      it "includes that module" do
         subject.Prepare
         expect(subject.current.keys).to include("custom")
       end

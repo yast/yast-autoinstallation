@@ -301,8 +301,6 @@ module Yast
       end
     end
 
-
-
     # Import Profile
     # @param [Hash{String => Object}] profile
     # @return [void]
@@ -345,6 +343,7 @@ module Yast
         Ops.set(@current, ["networking", "start_immediately"], true)
         Builtins.y2milestone("start_immediately set to true")
       end
+      merge_resource_aliases!
       storageLibCompat # compatibility to new storage library (SL 10.0)
       generalCompat # compatibility to new language,keyboard and timezone (SL10.1)
       softwareCompat
@@ -907,6 +906,39 @@ module Yast
             "autoyast2"
           )
         )
+      end
+    end
+
+    # Merge resource aliases in the profile
+    #
+    # When a resource is aliased, the configuration with the aliased name will
+    # be renamed to the new name. For example, if we have a
+    # services-manager.desktop file containing
+    # X-SuSE-YaST-AutoInstResourceAliases=runlevel, if a "runlevel" key is found
+    # in the profile, it will be renamed to "services-manager".
+    #
+    # The rename won't take place if a "services-manager" resource already exists.
+    #
+    # @see merge_aliases_map
+    def merge_resource_aliases!
+      resource_aliases_map.each do |alias_name, resource_name|
+        aliased_config = current.delete(alias_name)
+        next if current.has_key?(resource_name)
+        current[resource_name] = aliased_config
+      end
+    end
+
+    # Module aliases map
+    #
+    # @return [Hash] Map of resource aliases where the key is the alias and the
+    #                value is the resource ({alias => resource})
+    def resource_aliases_map
+      ModuleMap().each_with_object({}) do |resource, map|
+        name, def_resource = resource
+        next if def_resource["X-SuSE-YaST-AutoInstResourceAliases"].nil?
+        resource_name = def_resource["X-SuSE-YaST-AutoInstResource"] || name
+        aliases = def_resource["X-SuSE-YaST-AutoInstResourceAliases"].split(",").map(&:strip)
+        aliases.each { |a| map[a] = resource_name }
       end
     end
 
