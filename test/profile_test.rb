@@ -197,7 +197,7 @@ describe Yast::Profile do
       end
 
       before do
-        allow(Yast::Profile).to receive(:ModuleMap)
+        allow(Yast::Y2ModuleConfig).to receive(:ModuleMap)
           .and_return("custom" => custom_module)
       end
 

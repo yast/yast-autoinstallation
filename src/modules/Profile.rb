@@ -909,6 +909,8 @@ module Yast
       end
     end
 
+  protected
+
     # Merge resource aliases in the profile
     #
     # When a resource is aliased, the configuration with the aliased name will
@@ -930,16 +932,17 @@ module Yast
 
     # Module aliases map
     #
+    # This method delegates on Y2ModuleConfig#resource_aliases_map
+    # and exists just to avoid a circular dependency between
+    # Y2ModuleConfig and Profile (as the former depends on the latter).
+    #
     # @return [Hash] Map of resource aliases where the key is the alias and the
     #                value is the resource ({alias => resource})
+    #
+    # @see Y2ModuleConfig#resource_aliases_map
     def resource_aliases_map
-      ModuleMap().each_with_object({}) do |resource, map|
-        name, def_resource = resource
-        next if def_resource["X-SuSE-YaST-AutoInstResourceAliases"].nil?
-        resource_name = def_resource["X-SuSE-YaST-AutoInstResource"] || name
-        aliases = def_resource["X-SuSE-YaST-AutoInstResourceAliases"].split(",").map(&:strip)
-        aliases.each { |a| map[a] = resource_name }
-      end
+      Yast.import "Y2ModuleConfig"
+      Y2ModuleConfig.resource_aliases_map
     end
 
     publish :variable => :current, :type => "map <string, any>"
