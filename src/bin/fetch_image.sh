@@ -17,7 +17,7 @@ fi;
 case "$LOCATION" in
     # catch http, https, ftp and tftp
     http:*|https:*|ftp:*|tftp:*)
-        wget -O - $LOCATION 2>/dev/null | tar xfz - -C /mnt
+        wget --no-check-certificate -O - $LOCATION 2>/dev/null | tar xfz - -C /mnt
         ;;
     nfs:*)
         # FIXME
