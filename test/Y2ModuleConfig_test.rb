@@ -93,4 +93,47 @@ describe Yast::Y2ModuleConfig do
       end
     end
   end
+
+  describe "#resource_aliases_map" do
+    let(:module_map) { { "custom" => custom_module } }
+
+    before do
+      allow(subject).to receive(:ModuleMap).and_return(module_map)
+    end
+
+    context "when some module is aliased" do
+      let(:custom_module) do
+        { "Name" => "Custom module",
+          "X-SuSE-YaST-AutoInstResourceAliases" => "alias1,alias2" }
+      end
+
+      it "maps aliases to the resource" do
+        expect(subject.resource_aliases_map)
+          .to eq({ "alias1" => "custom", "alias2" => "custom" })
+      end
+    end
+
+    context "when some module is aliased and an alternative name was specified" do
+      let(:custom_module) do
+        { "Name" => "Custom module",
+          "X-SuSE-YaST-AutoInstResource" => "custom-resource",
+          "X-SuSE-YaST-AutoInstResourceAliases" => "alias1,alias2" }
+      end
+
+      it "maps aliases to the alternative resource name" do
+        expect(subject.resource_aliases_map)
+          .to eq({ "alias1" => "custom-resource", "alias2" => "custom-resource" })
+      end
+    end
+
+    context "when no module is aliased" do
+      let(:custom_module) do
+        { "Name" => "Custom module" }
+      end
+
+      it "returns an empty map" do
+        expect(subject.resource_aliases_map).to eq({})
+      end
+    end
+  end
 end

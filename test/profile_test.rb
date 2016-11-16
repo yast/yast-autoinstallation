@@ -3,8 +3,17 @@
 require_relative "test_helper"
 
 Yast.import "Profile"
+Yast.import "Y2ModuleConfig"
+Yast.import "AutoinstClone"
 
 describe Yast::Profile do
+  CUSTOM_MODULE = {
+    "Name" => "Custom module",
+    "X-SuSE-YaST-AutoInst" => "configure",
+    "X-SuSE-YaST-Group" => "System",
+    "X-SuSE-YaST-AutoInstClient" => "custom_auto"
+  }
+
   subject { Yast::Profile }
 
   def items_list(items)
@@ -179,6 +188,68 @@ describe Yast::Profile do
       expect(Yast::Profile).to receive(:softwareCompat)
       Yast::Profile.Import(profile)
     end
+
+    context "when the profile contains an aliased resource" do
+      let(:custom_module) do
+        CUSTOM_MODULE.merge(
+          "X-SuSE-YaST-AutoInstResourceAliases" => "old_custom"
+        )
+      end
+
+      before do
+        allow(Yast::Y2ModuleConfig).to receive(:ModuleMap)
+          .and_return("custom" => custom_module)
+      end
+
+      context "and configuration for the resource is missing" do
+        let(:profile) { { "old_custom" => { "dummy" => true } } }
+
+        it "reuses the aliased configuration" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current.keys).to_not include("old_custom")
+          expect(Yast::Profile.current["custom"]).to eq("dummy" => true)
+        end
+      end
+
+      context "and configuration for the resource is present" do
+        let(:profile) { { "old_custom" => { "dummy" => true }, "custom" => { "dummy" => false } } }
+
+        it "removes the aliased configuration" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current.keys).to_not include("old_custom")
+          expect(Yast::Profile.current["custom"]).to eq("dummy" => false)
+        end
+      end
+
+      context "and resource has also an alternate name" do
+        let(:profile) { { "old_custom" => { "dummy" => true } } }
+        let(:custom_module) do
+          CUSTOM_MODULE.merge(
+            "X-SuSE-YaST-AutoInstResource" => "new_custom",
+            "X-SuSE-YaST-AutoInstResourceAliases" => "old_custom"
+          )
+        end
+
+        it "uses the alternate name" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current["new_custom"]).to eq("dummy" => true)
+        end
+      end
+
+      context "and more than one aliased name is used" do
+        let(:profile) { { "other_alias" => { "dummy" => true } } }
+        let(:custom_module) do
+          CUSTOM_MODULE.merge(
+            "X-SuSE-YaST-AutoInstResourceAliases" => "other_alias,old_custom"
+            )
+        end
+
+        it "takes into account all aliases" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current["custom"]).to eq("dummy" => true)
+        end
+      end
+    end
   end
 
   describe "#remove_sections" do
@@ -199,6 +270,92 @@ describe Yast::Profile do
         Yast::Profile.remove_sections(%w(section1 section2))
         expect(Yast::Profile.current.keys).to_not include("section1")
         expect(Yast::Profile.current.keys).to_not include("section2")
+      end
+    end
+  end
+
+  describe "#Prepare" do
+    let(:prepare) { true }
+    let(:general_module) do
+      {
+        "Name"=>"General Options",
+        "X-SuSE-YaST-AutoInst"=>"configure",
+        "X-SuSE-YaST-Group"=>"System",
+        "X-SuSE-YaST-AutoInstClient"=>"general_auto"
+      }
+    end
+    let(:custom_module) { CUSTOM_MODULE }
+    let(:custom_export) { { "key1" => "val1" } }
+    let(:module_map) { { "general" => general_module, "custom" => custom_module } }
+
+    before do
+      allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries)
+        .with(["all", "configure"]).and_return([module_map, {}])
+      allow(Yast::WFM).to receive(:CallFunction).and_call_original
+      allow(Yast::WFM).to receive(:CallFunction)
+        .with("custom_auto", ["GetModified"]).and_return(true)
+      allow(Yast::WFM).to receive(:CallFunction)
+        .with("custom_auto", ["Export"]).and_return(custom_export)
+      allow(Yast::AutoinstClone).to receive(:General)
+        .and_return("mode" => { "confirm" => false})
+
+      Yast::Y2ModuleConfig.main
+      Yast.import "AutoinstClone"
+      Yast::AutoinstClone.Process
+
+      subject.prepare = prepare
+    end
+
+    it "exports modules data into the current profile" do
+      subject.Prepare
+      expect(subject.current["general"]).to be_kind_of(Hash)
+      expect(subject.current["custom"]).to be_kind_of(Hash)
+    end
+
+    context "when preparation is not needed" do
+      let(:prepare) { false }
+
+      it "does not set the current profile" do
+        subject.Reset
+        subject.Prepare
+        expect(subject.current).to be_empty
+      end
+    end
+
+    context "when a module is 'hidden'" do
+      let(:custom_module) { CUSTOM_MODULE.merge("Hidden" => "true") }
+
+      it "includes that module" do
+        subject.Prepare
+        expect(subject.current.keys).to include("custom")
+      end
+    end
+
+    context "when a module has elements to merge" do
+      let(:custom_module) do
+        CUSTOM_MODULE.merge(
+          "X-SuSE-YaST-AutoInstClient" => "custom_auto",
+          "X-SuSE-YaST-AutoInstMerge" => "users,defaults",
+          "X-SuSE-YaST-AutoInstMergeTypes" => "list,map"
+        )
+      end
+
+      it "adds each element into the current profile" do
+        subject.Prepare
+        expect(subject.current["users"]).to be_kind_of(Array)
+        expect(subject.current["defaults"]).to be_kind_of(Hash)
+      end
+    end
+
+    context "when a module uses an alternative resource name" do
+      let(:custom_module) do
+        CUSTOM_MODULE.merge("X-SuSE-YaST-AutoInstResource" => "alternative")
+      end
+
+      it "uses the alternative name" do
+        subject.Prepare
+        expect(subject.current).to include("alternative")
+        expect(subject.current).to_not include("custom")
       end
     end
   end
