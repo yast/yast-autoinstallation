@@ -301,8 +301,6 @@ module Yast
       end
     end
 
-
-
     # Import Profile
     # @param [Hash{String => Object}] profile
     # @return [void]
@@ -345,6 +343,7 @@ module Yast
         Ops.set(@current, ["networking", "start_immediately"], true)
         Builtins.y2milestone("start_immediately set to true")
       end
+      merge_resource_aliases!
       storageLibCompat # compatibility to new storage library (SL 10.0)
       generalCompat # compatibility to new language,keyboard and timezone (SL10.1)
       softwareCompat
@@ -367,9 +366,6 @@ module Yast
       e = []
 
       Builtins.foreach(@ModuleMap) do |p, d|
-        # bnc#887115 Hidden modules cannot be cloned
-        next if d["Hidden"] == "true"
-
         #
         # Set resource name, if not using default value
         #
@@ -911,6 +907,42 @@ module Yast
           )
         )
       end
+    end
+
+  protected
+
+    # Merge resource aliases in the profile
+    #
+    # When a resource is aliased, the configuration with the aliased name will
+    # be renamed to the new name. For example, if we have a
+    # services-manager.desktop file containing
+    # X-SuSE-YaST-AutoInstResourceAliases=runlevel, if a "runlevel" key is found
+    # in the profile, it will be renamed to "services-manager".
+    #
+    # The rename won't take place if a "services-manager" resource already exists.
+    #
+    # @see merge_aliases_map
+    def merge_resource_aliases!
+      resource_aliases_map.each do |alias_name, resource_name|
+        aliased_config = current.delete(alias_name)
+        next if current.has_key?(resource_name)
+        current[resource_name] = aliased_config
+      end
+    end
+
+    # Module aliases map
+    #
+    # This method delegates on Y2ModuleConfig#resource_aliases_map
+    # and exists just to avoid a circular dependency between
+    # Y2ModuleConfig and Profile (as the former depends on the latter).
+    #
+    # @return [Hash] Map of resource aliases where the key is the alias and the
+    #                value is the resource ({alias => resource})
+    #
+    # @see Y2ModuleConfig#resource_aliases_map
+    def resource_aliases_map
+      Yast.import "Y2ModuleConfig"
+      Y2ModuleConfig.resource_aliases_map
     end
 
     publish :variable => :current, :type => "map <string, any>"
