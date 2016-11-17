@@ -32,20 +32,20 @@ describe Yast::Y2ModuleConfig do
     allow(Yast::WFM).to receive(:ClientExists).with("partitioning_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("upgrade_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("cobbler_auto").and_return(false)
+    allow(Yast::WFM).to receive(:ClientExists).with("services-manager_auto").and_return(true)
   end
 
   describe "#unhandled_profile_sections" do
     let(:profile_unhandled) { File.join(FIXTURES_PATH, 'profiles', 'unhandled_and_obsolete.xml') }
 
     it "returns all unsupported and unknown profile sections" do
-      Yast::Profile.ReadXML(profile_unhandled)
       Yast::Y2ModuleConfig.instance_variable_set("@ModuleMap", DESKTOP_DATA)
+      Yast::Profile.ReadXML(profile_unhandled)
 
       expect(Yast::Y2ModuleConfig.unhandled_profile_sections.sort).to eq(
         [
           "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "language", "restore",
-          "runlevel", "sshd", "sysconfig", "unknown_profile_item_1",
-          "unknown_profile_item_2"
+          "sshd", "sysconfig", "unknown_profile_item_1", "unknown_profile_item_2"
         ].sort
       )
     end
