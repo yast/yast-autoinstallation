@@ -925,7 +925,7 @@ module Yast
     def merge_resource_aliases!
       resource_aliases_map.each do |alias_name, resource_name|
         aliased_config = current.delete(alias_name)
-        next if current.has_key?(resource_name)
+        next if aliased_config.nil? || current.has_key?(resource_name)
         current[resource_name] = aliased_config
       end
     end

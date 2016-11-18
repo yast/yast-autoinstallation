@@ -221,6 +221,16 @@ describe Yast::Profile do
         end
       end
 
+      context "and no configuration is present" do
+        let(:profile) { {} }
+
+        it "does not set any configuration for the resource" do
+          Yast::Profile.Import(profile)
+          expect(Yast::Profile.current.keys).to_not include("old_custom")
+          expect(Yast::Profile.current.keys).to_not include("custom")
+        end
+      end
+
       context "and resource has also an alternate name" do
         let(:profile) { { "old_custom" => { "dummy" => true } } }
         let(:custom_module) do
