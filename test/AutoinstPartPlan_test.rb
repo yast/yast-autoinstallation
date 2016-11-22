@@ -45,14 +45,11 @@ describe Yast::AutoinstPartPlan do
       expect(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
       expect(Yast::AutoinstPartPlan.Read).to eq(true)
       export = Yast::AutoinstPartPlan.Export.select { |d| d.key?("skip_list") }
-      expect(export).to eq(
-        [ { "initialize"=>true,
-            "skip_list"=>
-              [{"skip_key"=>"device", "skip_value"=>"/dev/sdb"},
-               {"skip_key"=>"device", "skip_value"=>"/dev/sde"}]
-          }
-        ]
-      )
+
+      expect(export[0]).to include("initialize" => true)
+      skip_list = export[0]["skip_list"]
+      expect(skip_list).to all(include("skip_key" => "device"))
+      expect(skip_list).to all(include("skip_value" => /\/dev\//))
     end
   end
 
