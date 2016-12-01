@@ -1137,11 +1137,17 @@ module Yast
           Builtins.y2milestone("disk: %1", tm[device])
 	  tm[device] = process_partition_data(device, sol)
 
-          if data["enable_snapshots"] && tm[device].has_key?("partitions")
-            root_partition = tm[device]["partitions"].find{|p| p["mount"] == "/" && p["used_fs"] == :btrfs}
-            if root_partition
+          root_partition = tm[device]["partitions"].find{|p| p["mount"] == "/" && p["used_fs"] == :btrfs}
+          if root_partition
+            if data["enable_snapshots"] && tm[device].has_key?("partitions")
               log.debug("Enabling snapshots for \"/\"; device #{data['device']}")
               root_partition["userdata"] = { "/" => "snapshots" }
+            end
+            if root_partition["subvol"].nil?
+              # Add default subvolumes if none is defined (bsc#1012328)
+              log.info "Adding default subvolumes to #{root_partition["device"]}"
+              root_index = tm[device]["partitions"].index(root_partition)
+              tm[device]["partitions"][root_index] = Storage.AddSubvolRoot(root_partition)
             end
           end
 
