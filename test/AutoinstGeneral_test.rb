@@ -15,6 +15,7 @@ describe Yast::AutoinstGeneral do
   end
 
   before do
+    allow(Yast).to receive(:import).and_call_original
     allow(Yast).to receive(:import).with("FileSystems").and_return(nil)
     stub_const("Yast::FileSystems", filesystems)
   end

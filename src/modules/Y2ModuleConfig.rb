@@ -13,6 +13,7 @@ module Yast
     # Key for AutoYaST client name in desktop file
     RESOURCE_NAME_KEY = "X-SuSE-YaST-AutoInstResource"
     RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
+    RESOURCE_ALIASES_NAME_KEY = "X-SuSE-YaST-AutoInstResourceAliases"
     MODES = %w(all configure write)
 
     include Yast::Logger
@@ -52,6 +53,7 @@ module Yast
         "Hidden",
         "X-SuSE-YaST-AutoInst",
         RESOURCE_NAME_KEY,
+        RESOURCE_ALIASES_NAME_KEY,
         "X-SuSE-YaST-AutoInstClient",
         "X-SuSE-YaST-Group",
         RESOURCE_NAME_MERGE_KEYS,
@@ -399,6 +401,20 @@ module Yast
         { "res" => name, "data" => entry.last }
       else
         nil
+      end
+    end
+
+    # Module aliases map
+    #
+    # @return [Hash] Map of resource aliases where the key is the alias and the
+    #                value is the resource ({alias => resource})
+    def resource_aliases_map
+      ModuleMap().each_with_object({}) do |resource, map|
+        name, def_resource = resource
+        next if def_resource[RESOURCE_ALIASES_NAME_KEY].nil?
+        resource_name = def_resource[RESOURCE_NAME_KEY] || name
+        aliases = def_resource[RESOURCE_ALIASES_NAME_KEY].split(",").map(&:strip)
+        aliases.each { |a| map[a] = resource_name }
       end
     end
 
