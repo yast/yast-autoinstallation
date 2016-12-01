@@ -32,20 +32,20 @@ describe Yast::Y2ModuleConfig do
     allow(Yast::WFM).to receive(:ClientExists).with("partitioning_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("upgrade_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("cobbler_auto").and_return(false)
+    allow(Yast::WFM).to receive(:ClientExists).with("services-manager_auto").and_return(true)
   end
 
   describe "#unhandled_profile_sections" do
     let(:profile_unhandled) { File.join(FIXTURES_PATH, 'profiles', 'unhandled_and_obsolete.xml') }
 
     it "returns all unsupported and unknown profile sections" do
-      Yast::Profile.ReadXML(profile_unhandled)
       Yast::Y2ModuleConfig.instance_variable_set("@ModuleMap", DESKTOP_DATA)
+      Yast::Profile.ReadXML(profile_unhandled)
 
       expect(Yast::Y2ModuleConfig.unhandled_profile_sections.sort).to eq(
         [
           "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "language", "restore",
-          "runlevel", "sshd", "sysconfig", "unknown_profile_item_1",
-          "unknown_profile_item_2"
+          "sshd", "sysconfig", "unknown_profile_item_1", "unknown_profile_item_2"
         ].sort
       )
     end
@@ -90,6 +90,49 @@ describe Yast::Y2ModuleConfig do
     context "if the module is undefined" do
       it "returns nil" do
         expect(Yast::Y2ModuleConfig.getModuleConfig("non-existant-module")).to be_nil
+      end
+    end
+  end
+
+  describe "#resource_aliases_map" do
+    let(:module_map) { { "custom" => custom_module } }
+
+    before do
+      allow(subject).to receive(:ModuleMap).and_return(module_map)
+    end
+
+    context "when some module is aliased" do
+      let(:custom_module) do
+        { "Name" => "Custom module",
+          "X-SuSE-YaST-AutoInstResourceAliases" => "alias1,alias2" }
+      end
+
+      it "maps aliases to the resource" do
+        expect(subject.resource_aliases_map)
+          .to eq({ "alias1" => "custom", "alias2" => "custom" })
+      end
+    end
+
+    context "when some module is aliased and an alternative name was specified" do
+      let(:custom_module) do
+        { "Name" => "Custom module",
+          "X-SuSE-YaST-AutoInstResource" => "custom-resource",
+          "X-SuSE-YaST-AutoInstResourceAliases" => "alias1,alias2" }
+      end
+
+      it "maps aliases to the alternative resource name" do
+        expect(subject.resource_aliases_map)
+          .to eq({ "alias1" => "custom-resource", "alias2" => "custom-resource" })
+      end
+    end
+
+    context "when no module is aliased" do
+      let(:custom_module) do
+        { "Name" => "Custom module" }
+      end
+
+      it "returns an empty map" do
+        expect(subject.resource_aliases_map).to eq({})
       end
     end
   end

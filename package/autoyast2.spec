@@ -17,8 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.151.2
-Release:        0
+Version:        3.1.151.3
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        autoyast2-%{version}.tar.bz2
@@ -179,6 +178,7 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 
 %dir %yast_desktopdir
 %{yast_desktopdir}/autoyast.desktop
+%{yast_desktopdir}/clone_system.desktop
 /usr/share/autoinstall/modules/*.desktop
 %dir %{yast_yncludedir}
 %{yast_yncludedir}/autoinstall/classes.rb
