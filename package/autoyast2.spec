@@ -18,6 +18,7 @@
 
 Name:           autoyast2
 Version:        3.1.151.3
+Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        autoyast2-%{version}.tar.bz2
