@@ -710,9 +710,9 @@ module Yast
       # OR: Each product (e.g. CASP) can set it in the control.xml file.
       s["install_recommended"] = true
       unless ProductFeatures.GetFeature("software",
-               "ay_clone_install_recommended_default").empty?
+               "clone_install_recommended_default").empty?
         s["install_recommended"] = ProductFeatures.GetBooleanFeature("software",
-                                     "ay_clone_install_recommended_default")
+                                     "clone_install_recommended_default")
       end
 
       deep_copy(s)
