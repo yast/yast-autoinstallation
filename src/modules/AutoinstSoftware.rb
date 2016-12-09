@@ -708,12 +708,10 @@ module Yast
       # to set "install_recommended" to true in order to reflect the
       # installation process and cannot use the package bindings. (bnc#990494)
       # OR: Each product (e.g. CASP) can set it in the control.xml file.
-      s["install_recommended"] = true
-      unless ProductFeatures.GetFeature("software",
-               "clone_install_recommended_default").empty?
-        s["install_recommended"] = ProductFeatures.GetBooleanFeature("software",
-                                     "clone_install_recommended_default")
-      end
+      rec = ProductFeatures.GetFeature("software",
+        "clone_install_recommended_default")
+      # rec can be an empty String too if it has not been set in control.xml
+      s["install_recommended"] = rec.is_a?(FalseClass) ? false : true
 
       deep_copy(s)
     end
