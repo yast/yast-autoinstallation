@@ -53,6 +53,9 @@ module Yast
 
         # Creating init scripts for the autoyast-initscripts.service
         AutoinstScripts.Write("init-scripts", false)
+        # Downloading post scripts for autoyast which will be called at the end
+        # of second installation stage.
+        AutoinstScripts.Write("post-scripts", true)
         # systemd requires the init script to be activated in 1st stage
         @cmd = "systemctl enable autoyast-initscripts.service"
         Builtins.y2milestone("executing:%1", @cmd)
