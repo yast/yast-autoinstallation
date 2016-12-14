@@ -215,13 +215,6 @@ module Yast
       @packages = Builtins.filter(@packages) { |p| !PackageSystem.Installed(p) }
       AutoinstSoftware.addPostPackages(@packages)
 
-      # Run early network scripts
-      Progress.NextStep
-      Progress.Title(_("Running scripts..."))
-      AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
-      AutoinstScripts.Write("post-scripts", true)
-
-
       # Finish
       Progress.NextStage
       Progress.Finish
