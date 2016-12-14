@@ -715,21 +715,14 @@ module Yast
         scripts = Builtins.filter(@chroot) do |s|
           Ops.get_boolean(s, "chrooted", false)
         end
-      elsif type == "post-scripts" && !special
-        scripts = Builtins.filter(@post) do |s|
-          !Ops.get_boolean(s, "network_needed", false)
-        end
-      elsif type == "post-scripts" && special
-        scripts = Builtins.filter(@post) do |s|
-          Ops.get_boolean(s, "network_needed", false)
-        end
+      elsif type == "post-scripts"
+        scripts = deep_copy(@post)
       elsif type == "postpartitioning-scripts"
         scripts = deep_copy(@postpart)
       else
         Builtins.y2error("Unsupported script type")
         return false
       end
-
 
       tmpdirString = ""
       current_logdir = ""
@@ -896,15 +889,22 @@ module Yast
             AutoinstConfig.scripts_dir,
             scriptName
           )
-          Builtins.y2milestone("Writing  script into %1", scriptPath)
           if Ops.get_string(s, "location", "") != ""
-            if !GetURL(Ops.get_string(s, "location", ""), scriptPath)
-              Builtins.y2error(
-                "script %1 could not be retrieved",
-                Ops.get_string(s, "location", "")
-              )
+            if special # downloading scripts for post-installation
+              scriptPath = AutoinstConfig.destdir + scriptPath
+              if !GetURL(Ops.get_string(s, "location", ""), scriptPath)
+                Builtins.y2error(
+                  "script %1 could not be retrieved",
+                  Ops.get_string(s, "location", "")
+                )
+              else
+                log.info("Script downlaoded to #{scriptPath}")
+              end
+            else
+              log.info("Using already downlaoded script #{scriptPath}")
             end
           else
+            log.info("Writing script into #{scriptPath}")
             SCR.Write(
               path(".target.string"),
               scriptPath,
@@ -912,7 +912,9 @@ module Yast
             )
           end
         end
-        if type != "init-scripts"
+        if type != "init-scripts" &&
+          !(type == "post-scripts" && special) # We are not in the first installation stage
+                                               # where post-scripts have been downloaded only.
           # string message =  sformat(_("Executing user supplied script: %1"), scriptName);
           executionString = ""
           showFeedback = Ops.get_boolean(s, "feedback", false)

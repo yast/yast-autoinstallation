@@ -278,6 +278,7 @@ module Yast
       end
 
       logStep(_("Executing Post-Scripts"))
+      AutoinstScripts.Import(Profile.current.fetch("scripts", {}))
       AutoinstScripts.Write("post-scripts", false)
 
       @max_wait = Ops.get_integer(
