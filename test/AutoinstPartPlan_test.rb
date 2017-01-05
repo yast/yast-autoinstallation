@@ -10,16 +10,6 @@ Yast.import "ProductFeatures"
 describe Yast::AutoinstPartPlan do
   let(:target_map_path) { File.join(FIXTURES_PATH, "storage", "nfs_root.yml") }
   let(:target_map_clone) { File.join(FIXTURES_PATH, "storage", "target_clone.yml") }
-  let(:default_subvol) { "@" }
-  let(:filesystems) do
-    double("filesystems",
-      default_subvol: default_subvol, read_default_subvol_from_target: default_subvol)
-  end
-
-  before do
-    allow(Yast).to receive(:import).with("FileSystems").and_return(nil)
-    stub_const("Yast::FileSystems", filesystems)
-  end
 
   describe "#read partition target" do
 
