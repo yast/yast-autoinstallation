@@ -11,3 +11,35 @@ if ENV["COVERAGE"]
 end
 
 FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
+
+# mock missing YaST modules, they are needed by an early import call
+module Yast
+  class FileSystemsClass
+    def default_subvol
+      "@"
+    end
+
+    def read_default_subvol_from_target
+      "@"
+    end
+
+    def GetAllFileSystems(_add_swap, _add_pseudo, _label)
+      {}
+    end
+  end
+  FileSystems = FileSystemsClass.new
+
+  class KeyboardClass
+    def dummy
+      true
+    end
+  end
+  Keyboard = KeyboardClass.new
+
+  class TimezoneClass
+    def dummy
+      true
+    end
+  end
+  Timezone = TimezoneClass.new
+end
