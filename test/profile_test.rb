@@ -318,10 +318,6 @@ describe Yast::Profile do
 
     it "exports modules data into the current profile" do
       subject.Prepare
-      # FIXME: subject.current returns: {"custom"=>{"key1"=>"val1"}, "general"=>false}
-      puts '-' * 30
-      puts subject.current.inspect
-      puts '-' * 30
       expect(subject.current["general"]).to be_kind_of(Hash)
       expect(subject.current["custom"]).to be_kind_of(Hash)
     end

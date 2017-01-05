@@ -23,6 +23,10 @@ module Yast
       "@"
     end
 
+    def default_subvol_from_product
+      "@"
+    end
+
     def GetAllFileSystems(_add_swap, _add_pseudo, _label)
       {}
     end
