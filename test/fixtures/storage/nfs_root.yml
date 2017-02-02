@@ -1,0 +1,63 @@
+---
+"/dev/nfs":
+  device: "/dev/nfs"
+  name: "nfs"
+  partitions:
+  - detected_fs: :nfs4
+    device: "192.168.4.1:/srv/nfsroot/sles12sp1"
+    fstopt: "minorversion=1"
+    fstype: "NFS"
+    mount: "/"
+    mountby: :device
+    name: "192.168.4.1:/srv/nfsroot/sles12sp1"
+    size_k: 41943040
+    type: :nfs
+    used_by_device: ""
+    used_by_type: :UB_NONE
+    used_fs: :nfs4
+  type: :CT_NFS
+  used_by_device: ""
+  used_by_type: :UB_NONE
+"/dev/tmpfs":
+  device: "/dev/tmpfs"
+  name: "tmpfs"
+  partitions:
+  - detected_fs: :tmpfs
+    device: "tmpfs"
+    fstype: "TMPFS"
+    ignore_fstab: true
+    mount: "/dev/shm"
+    mountby: :uuid
+    name: "none"
+    size_k: 1026484
+    type: :tmpfs
+    used_by_device: ""
+    used_by_type: :UB_NONE
+    used_fs: :tmpfs
+  - detected_fs: :tmpfs
+    device: "tmpfs"
+    fstype: "TMPFS"
+    ignore_fstab: true
+    mount: "/run"
+    mountby: :uuid
+    name: "none"
+    size_k: 1026484
+    type: :tmpfs
+    used_by_device: ""
+    used_by_type: :UB_NONE
+    used_fs: :tmpfs
+  - detected_fs: :tmpfs
+    device: "tmpfs"
+    fstype: "TMPFS"
+    ignore_fstab: true
+    mount: "/sys/fs/cgroup"
+    mountby: :uuid
+    name: "none"
+    size_k: 1026484
+    type: :tmpfs
+    used_by_device: ""
+    used_by_type: :UB_NONE
+    used_fs: :tmpfs
+  type: :CT_TMPFS
+  used_by_device: ""
+  used_by_type: :UB_NONE
