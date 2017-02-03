@@ -338,7 +338,7 @@
     if( drive["type"]:`x == `CT_NFS ) {
 	newDrive = set( newDrive, "initialize", false); // Do not initialize
 	// If it is a root nfs partition we do not need any additional
-        // partition conversation. (bnc#986124)
+        // partition conversion. (bnc#986124)
 	newDrive = set( newDrive, "partitions", drive["partitions"]:[]);
     } else {
 	foreach( map part, drive["partitions"]:[], {
