@@ -335,15 +335,21 @@
     newDrive = set( newDrive, "initialize", drive["initialize"]:true );
     newDrive = set( newDrive, "use", string2symbol( drive["use"]:"all" ));
     newDrive = set( newDrive, "pesize", drive["pesize"]:"" );
-    foreach( map part, drive["partitions"]:[], {
-      PartitionT newPart = AutoinstPartition::parsePartition( part );
-      if( AutoinstPartition::isPartition( newPart ) ){
-	newDrive = addPartition( newDrive, newPart );
-      }
-      else{
-	y2error("Couldn't construct PartitionT from '%1'", part );
-      }
-    });
+    if( drive["type"]:`x == `CT_NFS ) {
+	newDrive = set( newDrive, "initialize", false); // Do not initialize
+	// If it is a root nfs partition we do not need any additional
+        // partition conversation. (bnc#986124)
+	newDrive = set( newDrive, "partitions", drive["partitions"]:[]);
+    } else {
+	foreach( map part, drive["partitions"]:[], {
+		PartitionT newPart = AutoinstPartition::parsePartition( part );
+		if( AutoinstPartition::isPartition( newPart ) ){
+		    newDrive = addPartition( newDrive, newPart );
+		} else {
+		    y2error("Couldn't construct PartitionT from '%1'", part );
+		}
+	    });
+    }
     return newDrive;
   }
 
