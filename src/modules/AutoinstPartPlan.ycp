@@ -419,7 +419,23 @@
         StorageDevices::InitDone();
         map<string, map> StorageMap = eval(Storage::GetTargetMap());
 
-        StorageMap=filter(string d, map p, StorageMap, ``( d != "/dev/evms" && d != "/dev/nfs" && d != "/dev/tmpfs" && size(p["partitions"]:[]) > 0));
+        StorageMap=filter(string d, map p, StorageMap, ``{
+		boolean ok = ( d != "/dev/evms" &&
+			       d != "/dev/tmpfs" &&
+			       size(p["partitions"]:[]) > 0 );
+		if( ok && d == "/dev/nfs" ) {
+		    // Checking if /dev/nfs container has a root partition.
+		    // If yes, it can be taken for the plan (bnc#986124)
+		    ok = false;
+		    foreach(map part, p["partitions"]:[], ``{
+			    if( part["mount"]:"" == "/" ) {
+				ok = true;
+				break;
+			    }
+			});
+		}
+		return ok;
+	    });
         y2milestone("Storagemap %1", StorageMap);
 //        list evms_vgs = [];
 
@@ -435,6 +451,15 @@
                 if( pe["type"]:`x == `extended )
                     continue;
                 map new_pe = $[];
+                // Handling /dev/nfs containers (bnc#986124)
+                if( pe["type"]:`x == `nfs ) {
+		    new_pe["type"] = pe["type"]:`nfs;
+		    new_pe["device"] = pe["device"]:"";
+		    new_pe["mount"] = pe["mount"]:"";
+		    new_pe["fstopt"] = pe["fstopt"]:"";
+		    partitions = add(partitions,new_pe);
+		    continue;
+                }
                 new_pe["create"] = true;
                 boolean skipwin = false;
                 if (haskey(pe,"enc_type")) {
