@@ -39,7 +39,6 @@ BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
-BuildRequires:  yast2-update >= 3.1.36
 BuildRequires:  yast2-slp
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
@@ -55,7 +54,7 @@ Requires:       yast2
 Requires:       yast2 >= 3.1.183
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
-Requires:	      yast2-network >= 3.1.145
+Requires:       yast2-network >= 3.1.145
 Requires:       yast2-schema
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
@@ -107,7 +106,7 @@ Requires:       yast2-packager >= 3.1.10
 Requires:       yast2-services-manager >= 3.1.10
 Requires:       yast2-slp
 Requires:       yast2-transfer >= 2.21.0
-Requires:       yast2-update >= 3.1.36
+Requires:       yast2-update >= 2.18.3
 Requires:       yast2-xml
 # pkgGpgCheck callback
 Requires:       yast2-pkg-bindings >= 3.1.31
