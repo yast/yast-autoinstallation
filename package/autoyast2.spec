@@ -35,7 +35,6 @@ BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2
 # FileSystems.read_default_subvol_from_target
-BuildRequires:  yast2-storage >= 3.2.0
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
@@ -56,9 +55,8 @@ Requires:       yast2
 Requires:       yast2 >= 3.1.183
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
-Requires:	yast2-network >= 3.1.145
+Requires:	      yast2-network >= 3.1.145
 Requires:       yast2-schema
-Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
 Conflicts:      yast2-installation < 3.1.166
@@ -108,7 +106,6 @@ Requires:       yast2-packager >= 3.1.10
 # ServicesManagerTargetClass::BaseTargets
 Requires:       yast2-services-manager >= 3.1.10
 Requires:       yast2-slp
-Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-update >= 3.1.36
 Requires:       yast2-xml

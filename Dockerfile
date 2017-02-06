@@ -5,4 +5,3 @@ RUN zypper --gpg-auto-import-keys --non-interactive in --no-recommends \
   libxslt-tools \
   yast2-installation-control
 COPY . /usr/src/app
-
