@@ -388,11 +388,13 @@ module Yast
       if Profile.current.has_key? ('runlevel')
         # still supporting old format "runlevel"
         ServicesManager.import(Profile.current['runlevel'])
-        # Do not start it in second installation stage
+        # Do not start it in second installation stage again.
+        # Writing will be called in inst_finish.
         Profile.remove_sections("runlevel")
       elsif Profile.current.has_key? ('services-manager')
         ServicesManager.import(Profile.current['services-manager'])
-        # Do not start it in second installation stage
+        # Do not start it in second installation stage again.
+        # Writing will be called in inst_finish.
         Profile.remove_sections("services-manager")
       else
         # We will have to set default entries which are defined
