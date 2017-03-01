@@ -1,37 +1,34 @@
 Introduction
 ============
 
-This document tries to clarify some doubts and expectations related to AutoYast network
-configuration, specially will try to show how affect the `keep_install_network` option.
+This document tries to clarify some doubts and expectations related to AutoYaST network
+configuration, specially regarding the `keep_install_network` option.
 
-We put an special attemption to that flag because there was a bug in SP1 which always 
-saved the network configuration even with `keep_install_network=false`. When we fixed 
-the bug, users who were using a SP1 profile started reporting bugs for SP2.
+We put special attemption to that flag because there was a bug in SP1 which caused the
+ network configuration being saved always even with `keep_install_network=false`. After
+ the bug was fixed, users who were using a SP1 profile started reporting bugs for SP2.
 
 The current documentation explains that the network configuration is done during the second
-stage (imported from the profile) as we can see in the image below.
+stage (imported from the profile) as it can be seen in the image below.
 
 <p align="center">
   <img src="https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/images/autoyast-oview.png" />
 </p>
 
-Nevertheless, during the first stage we could need network so we are able to configure
-it for the running system via linuxrc deciding then if such configuration should be 
-copied from the inst-sys (this decision is made based on `keep_install_network` value).
+Nevertheless, during the first stage the network would be required. The configuration 
+can be copied to the installed system if `keep_install_network` is set to true.
 
 Let's go with some scenarios and examples...
 
 Scenarios
 =========
 
-First of all we are going to explain what happens during the **first stage**, and then what
-happens during the **second stage** if not avoided. You can also check the current documentation
-https://github.com/yast/yast-network/blob/master/doc/autoinstallation.md#introduction for AutoYast.
-
+First of all, what happens during the **first stage** will be explained, and then what 
+happens during the **second stage** if not skipped. 
 
 For the examples below consider this linuxrc options if not mentioned different ones:
 
-**LinuxRC options:** autoyast=http://..sle12_minimal.xml ifcfg=eth0=dhcp
+**Linuxrc options:** autoyast=http://....sle12_minimal.xml ifcfg=eth0=dhcp
 
 First Stage
 -----------
@@ -77,7 +74,7 @@ Enough theory by now, it's time to the examples:
   **Results:**
 
   With this configuration autoinit won't write anything because there is no networking section,
-  but as we have linuxrc network configuration the ifcfg-file exists in the running system.
+  but as linuxrc network configuration was given the ifcfg-file exists in the running system.
 
   ```xml
 # /etc/sysconfig/network/ifcfg-eth0 
@@ -90,15 +87,15 @@ DHCLIENT_SET_HOSTNAME='yes' ## THIS IS NOT PRESENT IN SP3 or SP2 versions with l
   udev rules and sysconfig network configuration files because by default `keep_net_config?` is
   considered as **true**.
 
-  And about DNS, as no network section is provided then it will write the proposed by 
-  NetworkAutoconfiguration. It's important to remark because in case of exists it won't
-  be written yet.
+  And about DNS, as no network section is provided, it will write the configuration proposed by 
+  NetworkAutoconfiguration. It's important to point it out because in case of exists it won't
+  be written.
   
 2. **Autoinstallation with `keep_install_network = true`**
 
-  If we just add the networking section with the `keep_install_network=true` the result should be 
-  the same as previously so just add a static configuration for the `eth0` interface, a default route
-  and DNS configuration.
+  In case that the networking section contains the `keep_install_network=true` the result should be 
+  the same as previously. The profile has been modified with a static configuration for the `eth0`
+  interface, a default route and with the addition of DNS configuration.
   
    ```xml
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
@@ -143,7 +140,7 @@ DHCLIENT
   But there is a difference in case of DNS. If the DNS subsection is present then it will not be 
   configured with the proposed one, wich means that for example `resolv.conf` does not exists yet.
   
-  Of course there is two special cases permited, the most common is with `setup_before_proposal` used
+  Of course there is two special cases permitted, the most common is with `setup_before_proposal` used
   to run the network configuration before the registration during the 1st stage and the other one
   is with a semi-automatic configuration but I will let it out of the scope of this document anyway
   you can see more about both [here](https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Register).
@@ -168,14 +165,13 @@ vikingo.suse.com
 
   But it will not create the resolv.conf 
   
-  In case of no **Second Stage** we could write the config from the profile as we do 
-  with setup_before_proposal ([code](https://github.com/yast/yast-autoinstallation/blob/fd73e52db5d6574351ac4596bfea4836e143ae8a/src/clients/inst_autosetup.rb#L165)]
-  and also write the DNS configuration (it was already commented in the code as we
-  can see [here](https://github.com/yast/yast-autoinstallation/blob/fd73e52db5d6574351ac4596bfea4836e143ae8a/src/clients/inst_autosetup.rb#L165)).
+  In case of no **Second Stage** the configuration could be written from the profile as 
+  it is done with the `setup_before_proposal` flag ([code](https://github.com/yast/yast-autoinstallation/blob/fd73e52db5d6574351ac4596bfea4836e143ae8a/src/clients/inst_autosetup.rb#L165)]
+  and also write the DNS configuration (it was already commented in the [code](https://github.com/yast/yast-autoinstallation/blob/fd73e52db5d6574351ac4596bfea4836e143ae8a/src/clients/inst_autosetup.rb#L165)).
   
 3. **Autoinstallation with `keep_install_network = false`**
 
-  We will use the same profile that above just modifying the `keep_install_network` setting it as **false**.
+  The profile used will be the same that above just modifying `keep_install_network` setting it as **false**.
   
   ```xml
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
@@ -237,8 +233,9 @@ linux.suse
   second one, setting keep_install_network to false will avoid copying the configuration.</quote>
 
   And regarding to post scripts (see this bug https://bugzilla.suse.com/show_bug.cgi?id=1014859), 
-  we have moved the download part from second stage to the first stage in this [PR](https://github.com/yast/yast-autoinstallation/pull/274) 
-  fixing the problem with post scripts and no network during the earlier part of the `second stage`.
+  the download part has been moved from second stage to the first stage in this [PR](https://github.com/yast/yast-autoinstallation/pull/274),
+  fixing the problem with post scripts and no network configuration during the earlier part of 
+  the `second stage`.
   
 Second Stage
 -----------------
@@ -281,7 +278,7 @@ And finally lan_auto will write our network config.</quote>
   
 2. **With `keep_install_network = true` (default)**
 
-   Taking in account that we launched the installation with this profile:
+   Taking in account that the installation was launched with this profile:
    
    ```xml
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
