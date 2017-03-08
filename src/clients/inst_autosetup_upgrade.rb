@@ -299,12 +299,6 @@ module Yast
       if !Update.did_init1
         Update.did_init1 = true
 
-        @restore = []
-        @selected = Pkg.ResolvableProperties("", :product, "")
-        Builtins.foreach(@selected) do |s|
-          @restore = Builtins.add(@restore, Ops.get_string(s, "name", ""))
-        end
-
         Pkg.PkgApplReset
 
         # bnc #300540
@@ -312,7 +306,6 @@ module Yast
         # Drops packages after PkgApplReset, not before (that would null that)
         Update.DropObsoletePackages
 
-        Builtins.foreach(@restore) { |res| Pkg.ResolvableInstall(res, :product) }
         Update.SetDesktopPattern if !Update.onlyUpdateInstalled
 
         # make sure the packages needed for accessing the installation repository
