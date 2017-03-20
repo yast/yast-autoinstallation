@@ -11,8 +11,6 @@ module Yast
     def initialize_autoinstall_autopart(include_target)
       textdomain "autoinst"
 
-      Yast.import "FileSystems"
-      Yast.import "Partitions"
       Yast.import "Arch"
 
       @cur_mode = :free
@@ -24,6 +22,8 @@ module Yast
       st_map = deep_copy(st_map)
       xml_map = deep_copy(xml_map)
       ret = deep_copy(st_map)
+log.error("FIXME : Missing storage call")
+=begin
       if Ops.get_symbol(ret, "used_fs", :unknown) == :btrfs
         Builtins.y2milestone("AddSubvolData  st:%1", st_map)
         Builtins.y2milestone("AddSubvolData xml:%1", xml_map)
@@ -45,6 +45,7 @@ module Yast
         end
         Builtins.y2milestone("AddSubvolData ret:%1", ret)
       end
+=end
       deep_copy(ret)
     end
 
@@ -118,6 +119,8 @@ module Yast
 
     def GetNoneLinuxPartitions(device)
       ret = []
+log.error("FIXME : Missing storage call")
+=begin
       Builtins.foreach(Storage.GetTargetMap) do |dev, disk|
         if Storage.IsRealDisk(disk) && dev == device
           l = Builtins.filter(Ops.get_list(disk, "partitions", [])) do |p|
@@ -141,6 +144,7 @@ module Yast
           end
         end
       end
+=end
       Builtins.y2milestone("GetNoneLinuxPartitions ret=%1", ret)
       deep_copy(ret)
     end
@@ -148,6 +152,8 @@ module Yast
 
     def GetAllPartitions(device)
       ret = []
+log.error("FIXME : Missing storage call")
+=begin
       Builtins.foreach(Storage.GetTargetMap) do |dev, disk|
         if Storage.IsRealDisk(disk) && dev == device
           l = Builtins.maplist(Ops.get_list(disk, "partitions", [])) do |p|
@@ -161,29 +167,41 @@ module Yast
           )
         end
       end
+=end
       Builtins.y2milestone("All Partitions ret=%1", ret)
       deep_copy(ret)
     end
 
     def propose_default_fs?(partition)
+log.error("FIXME : Missing storage call")
+=begin
       valid_fsids = [Partitions.fsid_gpt_boot, Partitions.fsid_native]
 
       (!partition.has_key?("filesystem") ||
        partition["filesystem"] == :none) &&
       valid_fsids.include?(partition["filesystem_id"])
+=end
+      false
     end
 
     def raw_partition?(partition)
+log.error("FIXME : Missing storage call")
+=begin
       valid_fsids = [Partitions.fsid_bios_grub,
                      Partitions.fsid_prep_chrp_boot,
                      Partitions.fsid_gpt_prep]
       valid_fsids.include?(partition["filesystem_id"])
+=end
+      false
     end
     # Read partition data from XML control file
     # @return [Hash] flexible propsal map
     def preprocess_partition_config(xmlflex)
       xmlflex = deep_copy(xmlflex)
       Builtins.y2debug("xml input: %1", xmlflex)
+log.error("FIXME : Missing storage call")
+=begin
+      log.error("FIXME : Missing storage call")
       tm = Storage.GetTargetMap
       partitioning = Builtins.maplist(xmlflex) do |d|
         dlabel = d.fetch("disklabel", "msdos")
@@ -307,7 +325,8 @@ module Yast
         end
         deep_copy(d)
       end
-
+=end
+      partitioning = {}
       Builtins.y2milestone("conf: %1", partitioning)
       deep_copy(partitioning)
     end
@@ -466,6 +485,8 @@ module Yast
       value = ""
       mapvalue = {}
       remove_boot = false
+log.error("FIXME : Missing storage call")
+=begin
       if Ops.greater_than(
           Builtins.size(
             Builtins.filter(Ops.get_list(solution, "partitions", [])) do |e|
@@ -719,6 +740,7 @@ module Yast
                     :twofish
                   )
                 )
+
                 Storage.SetCryptPwd(
                   Ops.get_string(p, "device", ""),
                   Ops.get_string(
@@ -854,10 +876,11 @@ module Yast
               end
               Ops.set(part, "create", true)
               Ops.set(part, "nr", Ops.get_integer(e, "created", 0))
+              log.error("FIXME : Missing storage call")
               Ops.set(
                 part,
                 "device",
-                Storage.GetDeviceName(dev, Ops.get_integer(part, "nr", -1))
+                "" # Storage.GetDeviceName(dev, Ops.get_integer(part, "nr", -1))
               )
               Ops.set(part, "region", region)
               Ops.set(
@@ -940,6 +963,7 @@ module Yast
                     :twofish
                   )
                 )
+
                 Storage.SetCryptPwd(
                   Ops.get_string(part, "device", ""),
                   Ops.get_string(
@@ -1023,10 +1047,11 @@ module Yast
             end
             Ops.set(part, "create", true)
             Ops.set(part, "nr", Ops.get_integer(e, "created", 0))
+            log.error("FIXME : Missing storage call")
             Ops.set(
               part,
               "device",
-              Storage.GetDeviceName(dev, Ops.get_integer(part, "nr", -1))
+              "" # Storage.GetDeviceName(dev, Ops.get_integer(part, "nr", -1))
             )
             Ops.set(part, "region", Builtins.eval(region))
             Ops.set(part, "type", :extended)
@@ -1090,10 +1115,11 @@ module Yast
             end
             Ops.set(part, "create", true)
             Ops.set(part, "nr", Ops.get_integer(a, 1, 0))
+            log.error("FIXME : Missing storage call")
             Ops.set(
               part,
               "device",
-              Storage.GetDeviceName(dev, Ops.get_integer(part, "nr", 0))
+              "" # Storage.GetDeviceName(dev, Ops.get_integer(part, "nr", 0))
             )
             Ops.set(region, 1, Ops.get_integer(a, 2, 0))
             Ops.set(part, "region", Builtins.eval(region))
@@ -1174,7 +1200,8 @@ module Yast
                   ["partitions", pindex, "crypt_key"],
                   ""
                 )
-              ) 
+              )
+
               #part["crypt"] =	solution["partitions",pindex,"crypt"]:"twofish256";
             end
             value = Ops.get_string(
@@ -1249,10 +1276,11 @@ module Yast
               ]
               Ops.set(part, "create", true)
               Ops.set(part, "nr", Ops.get_integer(e, "created", 0))
+              log.error("FIXME : Missing storage call")
               Ops.set(
                 part,
                 "device",
-                Storage.GetDeviceName(dev, Ops.get_integer(part, "nr", -1))
+                "" # Storage.GetDeviceName(dev, Ops.get_integer(part, "nr", -1))
               )
               Ops.set(part, "region", ext_region)
               Ops.set(part, "type", :extended)
@@ -1279,6 +1307,7 @@ module Yast
         "partitions",
         Builtins.union(Ops.get_list(disk, "partitions", []), partitions)
       )
+=end
       Builtins.y2milestone("disk %1", disk)
       deep_copy(disk)
     end
@@ -2264,11 +2293,12 @@ module Yast
               ),
               cyl_size
             )
-            win = Storage.GetFreeSpace(
-              Ops.get_string(p, "device", ""),
-              :fat32,
-              false
-            )
+            log.error("FIXME : Missing storage call")
+            win = 0 # Storage.GetFreeSpace(
+#              Ops.get_string(p, "device", ""),
+#              :fat32,
+#              false
+#            )
             Builtins.y2milestone("win=%1", win)
             if win != nil && Ops.greater_than(psize, 300 * 1024 * 1024)
               Ops.set(p, "winfo", win)

@@ -29,7 +29,6 @@ module Yast
       Yast.import "Profile"
       Yast.import "Y2ModuleConfig"
       Yast.import "Misc"
-      Yast.import "Storage"
       Yast.import "AutoinstConfig"
       Yast.import "Report"
 
@@ -49,7 +48,9 @@ module Yast
     # Detects whether the current system uses multipath
     # @return [Boolean] if in use
     def multipath_in_use?
-      Storage.GetTargetMap.detect{|k,e| e.fetch("type",:X)==:CT_DMMULTIPATH} ? true:false
+      log.error("FIXME : Missing storage call")
+      # Storage.GetTargetMap.detect{|k,e| e.fetch("type",:X)==:CT_DMMULTIPATH} ? true:false
+      false
     end
 
     # General options
@@ -70,10 +71,10 @@ module Yast
         "import_gpg_key"               => true,
         "accept_non_trusted_gpg_key"   => true
       }
-
+      log.error("FIXME : Missing storage call")
       general["storage"] = {
         "start_multipath" => multipath_in_use?,
-        "partition_alignment" => Storage.GetPartitionAlignment,
+        "partition_alignment" => "" # Storage.GetPartitionAlignment
       }
 
       Mode.SetMode("autoinst_config")

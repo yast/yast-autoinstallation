@@ -25,10 +25,6 @@ module Yast
       Yast.import "Summary"
       Yast.import "Popup"
       Yast.import "Mode"
-      Yast.import "StorageDevices"
-      Yast.import "Storage"
-      Yast.import "Partitions"
-      Yast.import "FileSystems"
       Yast.import "Arch"
 
       # The general idea with this moduls is that it manages a single
@@ -343,6 +339,7 @@ module Yast
     # Create a partition plan for the calling client
     # @return [Array] partition plan
     def ReadHelper
+=begin
       Mode.SetMode("normal")
       StorageDevices.InitDone
       _StorageMap = Builtins.eval(Storage.GetTargetMap)
@@ -674,6 +671,8 @@ module Yast
 
       Mode.SetMode("autoinst_config")
       deep_copy(drives)
+=end
+      {}
     end
 
 
@@ -766,9 +765,11 @@ module Yast
     end
 
     def Read
+=begin
       Import(
         Convert.convert(ReadHelper(), :from => "list", :to => "list <map>")
       )
+=end
     end
 
     # Dump the settings to a map, for autoinstallation use.

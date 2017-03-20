@@ -258,8 +258,6 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_moduledir}/AutoinstFile.rb
 %{yast_moduledir}/AutoinstConfig.rb
 %{yast_moduledir}/AutoinstSoftware.rb
-%{yast_moduledir}/AutoinstLVM.rb
-%{yast_moduledir}/AutoinstRAID.rb
 %{yast_moduledir}/AutoinstStorage.rb
 %{yast_moduledir}/AutoInstallRules.rb
 %{yast_moduledir}/ProfileLocation.rb

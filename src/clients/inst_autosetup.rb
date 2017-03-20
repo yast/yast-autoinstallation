@@ -12,6 +12,7 @@ module Yast
   import "AutoinstConfig"
 
   class InstAutosetupClient < Client
+    include Yast::Logger
 
     Target = AutoinstConfigClass::Target
 
@@ -31,9 +32,6 @@ module Yast
       Yast.import "AutoinstSoftware"
       Yast.import "Popup"
       Yast.import "Arch"
-      Yast.import "AutoinstLVM"
-      Yast.import "AutoinstRAID"
-      Yast.import "Storage"
       Yast.import "Timezone"
       Yast.import "Keyboard"
       Yast.import "Call"
@@ -267,19 +265,13 @@ module Yast
       Progress.NextStage
       # if one modifies the partition table in a pre script, we will
       # recognize this now
-      Storage.ReReadTargetMap
+      log.error("FIXME : Missing storage call")
+      # Storage.ReReadTargetMap
 
-      if Profile.current["partitioning"] && !Profile.current["partitioning"].empty?
-        AutoinstStorage.Import(Profile.current["partitioning"])
-        write_storage = true
-      elsif Profile.current["partitioning_advanced"] && !Profile.current["partitioning_advanced"].empty?
-        AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
-        write_storage = true
-      # No partitioning in the profile means yast2-storage proposal (hmmmm.....)
+      if Profile.current["partitioning_advanced"] && !Profile.current["partitioning_advanced"].empty?
+        write_storage = AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
       else
-        Storage.SetTestsuite(true) # FIXME: *urgs*
-        WFM.CallFunction("inst_disk_proposal", [true, true]) # FIXME: fragile?
-        Storage.SetTestsuite(false) # *urgs* again
+        write_storage = AutoinstStorage.Import(Profile.current["partitioning"])
       end
 
       semiauto_partitions = general_section["semi-automatic"] &&
@@ -299,9 +291,6 @@ module Yast
         Builtins.y2error("Aborting...")
         return :abort
       end
-      AutoinstRAID.Write if AutoinstRAID.Init
-      AutoinstLVM.Write if AutoinstLVM.Init
-
 
       # Bootloader
       # The bootloader has to be called before software selection.

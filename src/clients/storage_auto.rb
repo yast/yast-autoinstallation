@@ -8,6 +8,8 @@
 # $Id$
 module Yast
   class StorageAutoClient < Client
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -17,9 +19,7 @@ module Yast
       Builtins.y2milestone("Storage auto started")
 
       Yast.import "Wizard"
-      #import "AutoinstStorage";
       Yast.import "AutoinstPartPlan"
-      Yast.import "Storage"
       Yast.import "FileSystems"
 
       Yast.import "Label"
