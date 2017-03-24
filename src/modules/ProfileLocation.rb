@@ -16,8 +16,11 @@ module Yast
 
       Yast.import "AutoinstConfig"
       Yast.import "AutoInstallRules"
+# storage-ng
+=begin
       Yast.import "StorageDevices"
       Yast.import "StorageControllers"
+=end
       Yast.import "Mode"
       Yast.import "Installation"
       Yast.import "Report"
