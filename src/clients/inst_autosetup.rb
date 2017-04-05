@@ -383,14 +383,14 @@ module Yast
         )
       end
 
-      if Profile.current["configuration-management"]
+      if Profile.current["configuration_management"]
         return :abort unless WFM.CallFunction(
-          "configuration-management_auto",
-          ["Import", Profile.current["configuration-management"]]
+          "configuration_management_auto",
+          ["Import", Profile.current["configuration_management"]]
         )
         # Do not start it in second installation stage again.
         # Provisioning will already be called in the first stage.
-        Profile.remove_sections("configuration-management")
+        Profile.remove_sections("configuration_management")
       end
 
       Progress.NextStage
