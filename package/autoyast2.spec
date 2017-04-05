@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.1.151.4
+Version:        3.1.151.5
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -69,8 +69,6 @@ Obsoletes:      yast2-config-autoinst
 Obsoletes:      yast2-module-autoinst
 Provides:       yast2-lib-autoinst
 Obsoletes:      yast2-lib-autoinst
-
-PreReq:         %insserv_prereq %fillup_prereq
 
 BuildArch:      noarch
 
