@@ -115,10 +115,10 @@ subvolumes = element subvolumes {
 
 # by default, AutoYaST exports list entries as 'listentry'
 subvolume =
-  element subvolume { text } | element listentry { text } | subvolume_full
+  element (subvolume | listentry ) { text } | subvolume_full
 
 subvolume_full =
-  element subvolume {
+  element (subvolume | listentry) {
     element path { text } &
     # FATE#320342: add support to enable copy-on-write for Btrfs subvolumes
     element copy_on_write { BOOLEAN }?
