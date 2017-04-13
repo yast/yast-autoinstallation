@@ -322,6 +322,19 @@ module Yast
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
       Progress.NextStage
 
+      # The configuration_management has to be called before software selection.
+      # So the software selection can take care about packages
+      # needed by the configuration_management.
+      if Profile.current["configuration_management"]
+        return :abort unless WFM.CallFunction(
+          "configuration_management_auto",
+          ["Import", Profile.current["configuration_management"]]
+        )
+        # Do not start it in second installation stage again.
+        # Provisioning will already be called in the first stage.
+        Profile.remove_sections("configuration_management")
+      end
+
       if Profile.current["suse_register"]
         return :abort unless WFM.CallFunction(
           "scc_auto",
@@ -381,16 +394,6 @@ module Yast
           "kdump_auto",
           ["Import", Ops.get_map(Profile.current, "kdump", {})]
         )
-      end
-
-      if Profile.current["configuration_management"]
-        return :abort unless WFM.CallFunction(
-          "configuration_management_auto",
-          ["Import", Profile.current["configuration_management"]]
-        )
-        # Do not start it in second installation stage again.
-        # Provisioning will already be called in the first stage.
-        Profile.remove_sections("configuration_management")
       end
 
       Progress.NextStage
