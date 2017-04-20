@@ -11,6 +11,12 @@ module Yast
     def initialize_autoinstall_autoinst_dialogs(include_target)
       textdomain "autoinst"
       Yast.import "Label"
+
+# storage-ng
+=begin
+      Yast.import "Storage"
+=end
+
       Yast.import "Popup"
     end
 
