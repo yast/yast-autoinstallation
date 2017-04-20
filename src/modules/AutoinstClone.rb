@@ -48,6 +48,7 @@ module Yast
     # Detects whether the current system uses multipath
     # @return [Boolean] if in use
     def multipath_in_use?
+ # storage-ng
       log.error("FIXME : Missing storage call")
       # Storage.GetTargetMap.detect{|k,e| e.fetch("type",:X)==:CT_DMMULTIPATH} ? true:false
       false
@@ -71,6 +72,7 @@ module Yast
         "import_gpg_key"               => true,
         "accept_non_trusted_gpg_key"   => true
       }
+# storage-ng
       log.error("FIXME : Missing storage call")
       general["storage"] = {
         "start_multipath" => multipath_in_use?,

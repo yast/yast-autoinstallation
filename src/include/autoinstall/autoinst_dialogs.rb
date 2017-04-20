@@ -87,6 +87,7 @@ module Yast
     # @return [String] device
     def DiskSelectionDialog
       Builtins.y2milestone("Selecting disk manually....")
+# storage-ng
       log.error("FIXME : Missing storage call")
       tm = [] #Storage.GetTargetMap
       contents = Dummy()

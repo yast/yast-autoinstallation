@@ -423,6 +423,7 @@ module Yast
     def SetMultipathing
       val = @storage.fetch("start_multipath",false)
       Builtins.y2milestone("SetMultipathing val:%1", val)
+# storage-ng
       log.error("FIXME : Missing storage call")
 #     Storage.SetMultipathStartup(val)
     end
@@ -439,6 +440,7 @@ module Yast
       return unless @storage.has_key?("btrfs_set_default_subvolume_name")
       value = @storage["btrfs_set_default_subvolume_name"] ? "@" : ""
       log.info "Setting default subvolume to: '#{value}'"
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       FileSystems.default_subvol = value
@@ -499,6 +501,7 @@ log.error("FIXME : Missing storage call")
       # `align_optimal  == new behavior
       if @storage.has_key?("partition_alignment")
         val = @storage.fetch("partition_alignment",:align_optimal)
+# storage-ng
          log.error("FIXME : Missing storage call")
 #        Storage.SetPartitionAlignment(val)
         Builtins.y2milestone( "alignment set to %1", val )
@@ -534,6 +537,7 @@ log.error("FIXME : Missing storage call")
     # @return [Boolean,nil] Value to use (true or false). If nil, no value
     #                       should be exported.
     def btrfs_default_subvol_to_profile
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       if FileSystems.default_subvol != FileSystems.default_subvol_from_product

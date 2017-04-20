@@ -265,6 +265,7 @@ module Yast
       Progress.NextStage
       # if one modifies the partition table in a pre script, we will
       # recognize this now
+      # storage-ng
       log.error("FIXME : Missing storage call")
       # Storage.ReReadTargetMap
 

@@ -22,6 +22,7 @@ module Yast
       st_map = deep_copy(st_map)
       xml_map = deep_copy(xml_map)
       ret = deep_copy(st_map)
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       if Ops.get_symbol(ret, "used_fs", :unknown) == :btrfs
@@ -119,6 +120,7 @@ log.error("FIXME : Missing storage call")
 
     def GetNoneLinuxPartitions(device)
       ret = []
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       Builtins.foreach(Storage.GetTargetMap) do |dev, disk|
@@ -152,6 +154,7 @@ log.error("FIXME : Missing storage call")
 
     def GetAllPartitions(device)
       ret = []
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       Builtins.foreach(Storage.GetTargetMap) do |dev, disk|
@@ -173,6 +176,7 @@ log.error("FIXME : Missing storage call")
     end
 
     def propose_default_fs?(partition)
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       valid_fsids = [Partitions.fsid_gpt_boot, Partitions.fsid_native]
@@ -185,6 +189,7 @@ log.error("FIXME : Missing storage call")
     end
 
     def raw_partition?(partition)
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       valid_fsids = [Partitions.fsid_bios_grub,
@@ -199,6 +204,7 @@ log.error("FIXME : Missing storage call")
     def preprocess_partition_config(xmlflex)
       xmlflex = deep_copy(xmlflex)
       Builtins.y2debug("xml input: %1", xmlflex)
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       log.error("FIXME : Missing storage call")
@@ -485,6 +491,7 @@ log.error("FIXME : Missing storage call")
       value = ""
       mapvalue = {}
       remove_boot = false
+# storage-ng
 log.error("FIXME : Missing storage call")
 =begin
       if Ops.greater_than(
@@ -876,6 +883,7 @@ log.error("FIXME : Missing storage call")
               end
               Ops.set(part, "create", true)
               Ops.set(part, "nr", Ops.get_integer(e, "created", 0))
+# storage-ng
               log.error("FIXME : Missing storage call")
               Ops.set(
                 part,
@@ -1047,6 +1055,7 @@ log.error("FIXME : Missing storage call")
             end
             Ops.set(part, "create", true)
             Ops.set(part, "nr", Ops.get_integer(e, "created", 0))
+# storage-ng
             log.error("FIXME : Missing storage call")
             Ops.set(
               part,
@@ -1115,6 +1124,7 @@ log.error("FIXME : Missing storage call")
             end
             Ops.set(part, "create", true)
             Ops.set(part, "nr", Ops.get_integer(a, 1, 0))
+# storage-ng
             log.error("FIXME : Missing storage call")
             Ops.set(
               part,
@@ -1276,6 +1286,7 @@ log.error("FIXME : Missing storage call")
               ]
               Ops.set(part, "create", true)
               Ops.set(part, "nr", Ops.get_integer(e, "created", 0))
+# storage-ng
               log.error("FIXME : Missing storage call")
               Ops.set(
                 part,
@@ -2294,6 +2305,7 @@ log.error("FIXME : Missing storage call")
               cyl_size
             )
             log.error("FIXME : Missing storage call")
+# storage-ng
             win = 0 # Storage.GetFreeSpace(
 #              Ops.get_string(p, "device", ""),
 #              :fat32,

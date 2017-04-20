@@ -79,6 +79,7 @@ module Yast
     def humanStringToByte(s, b)
       s = "0b" if Builtins.size(s) == 0
       s = Ops.add(s, "b") if Builtins.findfirstof(s, "bB") == nil
+# storage-ng
       log.error("FIXME : Missing storage call")
       s #Storage.ClassicStringToByte(s)
     end

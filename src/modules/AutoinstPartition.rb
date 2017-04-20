@@ -140,12 +140,14 @@ module Yast
       end
       if Ops.get_boolean(p, "create", false)
         if p["size"] &&  !p["size"].empty?
+# storage-ng
           log.error("FIXME : Missing storage call")
 #          part_desc += " with #{Storage.ByteToHumanString(p["size"].to_i)}"
           part_desc += " with #{p["size"]}"
         end
       else
         if Ops.get_boolean(p, "resize", false)
+# storage-ng
           log.error("FIXME : Missing storage call")
           part_desc = Builtins.sformat(
             "%1 resize part.%2 to %3",

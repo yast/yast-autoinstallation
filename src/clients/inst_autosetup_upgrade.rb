@@ -203,6 +203,7 @@ module Yast
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
         # reread only if target system is not yet initialized (bnc#673033)
         log.error("FIXME : Missing storage call")
+# storage-ng
 #       Storage.ReReadTargetMap
         if :abort == WFM.CallFunction("inst_update_partition_auto", [])
           return :abort
