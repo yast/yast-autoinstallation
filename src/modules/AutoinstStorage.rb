@@ -197,6 +197,7 @@ module Yast
 
     # Moved here from RootPart module (used just by this module)
     def SetFormatPartitions(fstabpart)
+# storage-ng
 =begin
       fstabpart = deep_copy(fstabpart)
       # All storage devices

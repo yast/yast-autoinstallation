@@ -339,6 +339,7 @@ module Yast
     # Create a partition plan for the calling client
     # @return [Array] partition plan
     def ReadHelper
+# storage-ng
 =begin
       Mode.SetMode("normal")
       StorageDevices.InitDone
@@ -765,6 +766,7 @@ module Yast
     end
 
     def Read
+# storage-ng
 =begin
       Import(
         Convert.convert(ReadHelper(), :from => "list", :to => "list <map>")
