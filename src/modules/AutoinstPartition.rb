@@ -10,6 +10,8 @@ require "yast"
 
 module Yast
   class AutoinstPartitionClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
 
@@ -20,7 +22,6 @@ module Yast
       Yast.import "AutoinstCommon"
       Yast.import "Partitions"
       Yast.import "FileSystems"
-      Yast.import "Storage"
 
       textdomain "autoinst"
 
@@ -139,15 +140,21 @@ module Yast
       end
       if Ops.get_boolean(p, "create", false)
         if p["size"] &&  !p["size"].empty?
-          part_desc += " with #{Storage.ByteToHumanString(p["size"].to_i)}"
+# storage-ng
+          log.error("FIXME : Missing storage call")
+#          part_desc += " with #{Storage.ByteToHumanString(p["size"].to_i)}"
+          part_desc += " with #{p["size"]}"
         end
       else
         if Ops.get_boolean(p, "resize", false)
+# storage-ng
+          log.error("FIXME : Missing storage call")
           part_desc = Builtins.sformat(
             "%1 resize part.%2 to %3",
             part_desc,
             Ops.get_integer(p, "partition_nr", 999),
-            Storage.ByteToHumanString(p["size"].to_i)
+#            Storage.ByteToHumanString(p["size"].to_i)
+            p["size"]
           )
         else
           part_desc = Builtins.sformat(

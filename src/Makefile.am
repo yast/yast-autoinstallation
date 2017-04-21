@@ -10,9 +10,7 @@ module_DATA = \
   modules/AutoinstPartition.rb \
   modules/AutoinstClone.rb \
   modules/AutoinstImage.rb \
-  modules/AutoinstRAID.rb \
   modules/AutoinstConfig.rb \
-  modules/AutoinstLVM.rb \
   modules/Profile.rb \
   modules/AutoinstCommon.rb \
   modules/AutoinstFile.rb \

@@ -26,10 +26,12 @@ module Yast
       Yast.import "Misc"
       Yast.import "Profile"
       Yast.import "ProductFeatures"
+
 # storage-ng
 =begin
       Yast.import "Storage"
 =end
+
       Yast.import "SignatureCheckCallbacks"
       Yast.import "Report"
       Yast.import "Arch"
@@ -421,7 +423,9 @@ module Yast
     def SetMultipathing
       val = @storage.fetch("start_multipath",false)
       Builtins.y2milestone("SetMultipathing val:%1", val)
-      Storage.SetMultipathStartup(val)
+# storage-ng
+      log.error("FIXME : Missing storage call")
+#     Storage.SetMultipathStartup(val)
     end
 
     # Set Btrfs default subvolume name
@@ -436,7 +440,11 @@ module Yast
       return unless @storage.has_key?("btrfs_set_default_subvolume_name")
       value = @storage["btrfs_set_default_subvolume_name"] ? "@" : ""
       log.info "Setting default subvolume to: '#{value}'"
+# storage-ng
+log.error("FIXME : Missing storage call")
+=begin
       FileSystems.default_subvol = value
+=end
     end
 
     # NTP syncing
@@ -493,7 +501,9 @@ module Yast
       # `align_optimal  == new behavior
       if @storage.has_key?("partition_alignment")
         val = @storage.fetch("partition_alignment",:align_optimal)
-        Storage.SetPartitionAlignment(val)
+# storage-ng
+         log.error("FIXME : Missing storage call")
+#        Storage.SetPartitionAlignment(val)
         Builtins.y2milestone( "alignment set to %1", val )
       end
 
@@ -527,9 +537,13 @@ module Yast
     # @return [Boolean,nil] Value to use (true or false). If nil, no value
     #                       should be exported.
     def btrfs_default_subvol_to_profile
+# storage-ng
+log.error("FIXME : Missing storage call")
+=begin
       if FileSystems.default_subvol != FileSystems.default_subvol_from_product
         return FileSystems.default_subvol == "" ? false : true
       end
+=end
       nil
     end
 

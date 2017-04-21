@@ -28,9 +28,6 @@ module Yast
       Yast.import "AutoinstSoftware"
       Yast.import "Popup"
       Yast.import "Arch"
-      Yast.import "AutoinstLVM"
-      Yast.import "AutoinstRAID"
-      Yast.import "Storage"
       Yast.import "Timezone"
       Yast.import "Keyboard"
       Yast.import "Call"
@@ -205,7 +202,9 @@ module Yast
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
         # reread only if target system is not yet initialized (bnc#673033)
-        Storage.ReReadTargetMap
+        log.error("FIXME : Missing storage call")
+# storage-ng
+#       Storage.ReReadTargetMap
         if :abort == WFM.CallFunction("inst_update_partition_auto", [])
           return :abort
         end

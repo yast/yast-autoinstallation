@@ -11,10 +11,12 @@ module Yast
     def initialize_autoinstall_autoinst_dialogs(include_target)
       textdomain "autoinst"
       Yast.import "Label"
+
 # storage-ng
 =begin
       Yast.import "Storage"
 =end
+
       Yast.import "Popup"
     end
 
@@ -85,13 +87,17 @@ module Yast
     # @return [String] device
     def DiskSelectionDialog
       Builtins.y2milestone("Selecting disk manually....")
-      tm = Storage.GetTargetMap
+# storage-ng
+      log.error("FIXME : Missing storage call")
+      tm = [] #Storage.GetTargetMap
       contents = Dummy()
 
       if Ops.greater_than(Builtins.size(tm), 0)
         buttonbox = VBox()
 
         i = 0
+# storage-ng
+=begin
         Builtins.foreach(tm) do |tname, tdata|
           if Storage.IsRealDisk(tdata)
             tlinename = Ops.get_string(tdata, "name", "?")
@@ -108,6 +114,7 @@ module Yast
             i = Ops.add(i, 1)
           end
         end
+=end
 
         buttonbox = Builtins.add(buttonbox, VSpacing(0.8))
 
