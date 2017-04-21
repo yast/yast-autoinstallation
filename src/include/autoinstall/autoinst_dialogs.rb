@@ -96,6 +96,7 @@ module Yast
         buttonbox = VBox()
 
         i = 0
+# storage-ng
 =begin
         Builtins.foreach(tm) do |tname, tdata|
           if Storage.IsRealDisk(tdata)
