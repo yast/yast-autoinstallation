@@ -126,41 +126,28 @@ module Yast
     end
 
     # Get all the configuration from a map.
+    #
     # When called by inst_auto<module name> (preparing autoinstallation data)
     # the list may be empty.
-    # @param [Array<Hash>] settings a list	[...]
+    #
+    # @param  settings [Hash]        Profile settings
+    # @option settings [Hash]        "storage"      Settings to override the control.xml
+    # @option settings [Array<Hash>] "partitioning" List of drives (custom partitioning)
     # @return	[Boolean] success
     def Import(settings)
-      settings = deep_copy(settings)
-      Builtins.y2milestone("entering Import with %1", settings)
+      log.info "entering Import with #{settings.inspect}"
 
-      if !settings || settings.empty? || settings["proposal"]
-        # Storage proposal will be taken for
-        set = Y2Storage::ProposalSettings.new
-        if settings.is_a?(Hash) && settings["proposal"]
-          p = settings["proposal"]
-          set.use_lvm = p["use_lvm"] if p["use_lvm"]
-          set.root_filesystem_type = p["root_filesystem_type"] if p["root_filesystem_type"]
-          set.use_snapshots = p["use_snapshots"] if p["use_snapshots"]
-          set.use_separate_home = p["use_separate_home"] if p["use_separate_home"]
-          set.home_filesystem_type = p["home_filesystem_type"] if p["home_filesystem_type"]
-          set.enlarge_swap_for_suspend = p["enlarge_swap_for_suspend"] if p["enlarge_swap_for_suspend"]
-          set.root_device = p["root_device"] if p["root_device"]
-          set.candidate_devices = p["candidate_devices"] if p["candidate_devices"]
-          set.encryption_password = p["encryption_password"] if p["encryption_password"]
-        end
-        log.info "Calling storage proposal with #{set}"
-        proposal = Y2Storage::Proposal.new(settings: set)
-        proposal.propose
-        if proposal.proposed?
-          # Save to storage manager
-          log.info "Storing accepted proposal"
-          Y2Storage::StorageManager.instance.proposal = proposal
-          return true
-        end
-        return false
+      # Overlay storage configuration
+      storage_settings = settings.fetch("storage", nil)
+      Yast::ProductFeatures.SetOverlay("partitioning" => storage_settings) if storage_settings
+
+      # Initialize proposal if needed
+      if settings.fetch("partitioning", []).empty?
+        initialize_proposal
+      else
+        # TODO: AutoYaST customized partitioning
+        false
       end
-      false
     end
 
     # Import Fstab data
@@ -359,6 +346,25 @@ module Yast
     publish :function => :ImportAdvanced, :type => "boolean (map)"
     publish :function => :Summary, :type => "string ()"
     publish :function => :Write, :type => "boolean ()"
+
+  private
+
+    # Initialize partition proposal
+    #
+    # @return [Boolean] true if proposal was successfully created; false otherwise.
+    def initialize_proposal
+      log.info "Initializing a proposal"
+      proposal_settings = Y2Storage::ProposalSettings.new_for_current_product
+      proposal = Y2Storage::Proposal.new(settings: proposal_settings)
+      proposal.propose
+      if proposal.proposed?
+        log.info "Storing accepted proposal"
+        Y2Storage::StorageManager.instance.proposal = proposal
+        return true
+      end
+      false
+    end
+
   end
 
   AutoinstStorage = AutoinstStorageClass.new

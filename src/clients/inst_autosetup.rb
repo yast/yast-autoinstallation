@@ -272,7 +272,11 @@ module Yast
       if Profile.current["partitioning_advanced"] && !Profile.current["partitioning_advanced"].empty?
         write_storage = AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
       else
-        write_storage = AutoinstStorage.Import(Profile.current["partitioning"])
+        storage_settings = {
+          "partitioning" => Profile.current.fetch("partitioning", []),
+          "storage"      => Profile.current.fetch("general", {}).fetch("storage", {})
+        }
+        write_storage = AutoinstStorage.Import(storage_settings)
       end
 
       semiauto_partitions = general_section["semi-automatic"] &&
