@@ -53,6 +53,9 @@ module Yast
       # list of devices to ignore when guessing devices
       @tabooDevices = []
 
+      # general/storage settings
+      self.general_settings = {}
+
       Yast.include self, "autoinstall/autopart.rb"
       Yast.include self, "autoinstall/autoinst_dialogs.rb"
     end
@@ -137,10 +140,6 @@ module Yast
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
 
-      # Overlay storage configuration
-      storage_settings = settings.fetch("storage", nil)
-      Yast::ProductFeatures.SetOverlay("partitioning" => storage_settings) if storage_settings
-
       # Initialize proposal if needed
       if settings.fetch("partitioning", []).empty?
         initialize_proposal
@@ -148,6 +147,21 @@ module Yast
         # TODO: AutoYaST customized partitioning
         false
       end
+    end
+
+    # Import settings from the general/storage section
+    #
+    # @param settings [Hash] general/storage section settings
+    def import_general_settings(settings)
+      return if settings.nil?
+
+      self.general_settings = settings.clone
+
+      # Backward compatibility
+      general_settings["btrfs_default_subvolume"] = general_settings.delete("btrfs_set_default_subvolume_name")
+
+      Yast::ProductFeatures.SetOverlay("partitioning" => general_settings)
+      self.multipathing = general_settings.fetch("start_multipath", false)
     end
 
     # Import Fstab data
@@ -159,6 +173,11 @@ module Yast
       @fstab = Ops.get_map(settings, "fstab", {})
       @read_fstab = Ops.get_boolean(@fstab, "use_existing_fstab", false)
       true
+    end
+
+    # Export general settings
+    def export_general_settings
+      general_settings.reject { |key, value| value.nil? }
     end
 
     # return Summary of configuration
@@ -349,6 +368,8 @@ module Yast
 
   private
 
+    attr_accessor :general_settings
+
     # Initialize partition proposal
     #
     # @return [Boolean] true if proposal was successfully created; false otherwise.
@@ -365,6 +386,14 @@ module Yast
       false
     end
 
+    # set multipathing
+    # @return [void]
+    def multipathing=(value)
+      log.info "set_multipathing to '#{value}'"
+      # storage-ng
+      log.error("FIXME : Missing storage call")
+      #     Storage.SetMultipathStartup(val)
+    end
   end
 
   AutoinstStorage = AutoinstStorageClass.new

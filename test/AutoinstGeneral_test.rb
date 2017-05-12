@@ -89,7 +89,7 @@ describe "Yast::AutoinstGeneral" do
   describe "#Export" do
     let(:profile) do
       {
-        "storage"            => { "btrfs_set_default_subvolume_name" => "@" },
+        "storage"            => { "start_multipath" => true },
         "mode"               => { "confirm" => false },
         "signature-handling" => { "import_gpg_key" => true },
         "ask-list"           => ["ask1"],
@@ -104,6 +104,16 @@ describe "Yast::AutoinstGeneral" do
 
     it "exports storage settings" do
       expect(subject.Export).to include("storage" => profile["storage"])
+    end
+
+    context "when the old 'btrfs_set_default_subvolume_name' is used" do
+      let(:profile) do
+        { "storage" => { "btrfs_set_default_subvolume_name" => "@" } }
+      end
+
+      it "exports that option renamed to 'btrfs_default_subvolume'" do
+        expect(subject.Export).to include("storage" => { "btrfs_default_subvolume" => "@" })
+      end
     end
 
     it "exports mode settings" do
