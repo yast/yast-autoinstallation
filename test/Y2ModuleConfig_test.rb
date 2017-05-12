@@ -16,8 +16,7 @@ describe "Yast::Y2ModuleConfig" do
     skip("pending of storage-ng")
   end
 
-  FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
-  DESKTOP_DATA = YAML::load_file(File.join(FIXTURES_PATH, 'desktop_files', 'desktops.yml'))
+  DESKTOP_DATA = YAML::load_file(FIXTURES_PATH.join("desktop_files", "desktops.yml"))
 
   before do
     allow(Yast::WFM).to receive(:ClientExists).with("audit-laf_auto").and_return(false)

@@ -3,20 +3,12 @@
 require_relative "test_helper"
 
 # storage-ng
-=begin
 Yast.import "AutoinstGeneral"
 Yast.import "Profile"
-=end
 
 describe "Yast::AutoinstGeneral" do
-  # storage-ng
-  before :all do
-    skip("pending of storage-ng")
-  end
-
-  FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
-
   let(:default_subvol) { "@" }
+
   let(:filesystems) do
     double("filesystems",
       default_subvol: default_subvol, read_default_subvol_from_target: default_subvol)
@@ -29,8 +21,8 @@ describe "Yast::AutoinstGeneral" do
   end
 
   describe "#ntp syncing in Write call" do
-    let(:profile_sync) { File.join(FIXTURES_PATH, 'profiles', 'general_with_time_sync.xml') }
-    let(:profile_no_sync) { File.join(FIXTURES_PATH, 'profiles', 'general_without_time_sync.xml') }
+    let(:profile_sync) { FIXTURES_PATH.join("profiles", "general_with_time_sync.xml").to_s }
+    let(:profile_no_sync) { FIXTURES_PATH.join("profiles", "general_without_time_sync.xml").to_s }
 
     it "syncing hardware time if ntp server is set" do
       Yast::Profile.ReadXML(profile_sync)
@@ -38,9 +30,11 @@ describe "Yast::AutoinstGeneral" do
 
       expect(Yast::SCR).to receive(:Execute).with(
         path(".target.bash"),
-        "/usr/sbin/ntpdate -b #{Yast::AutoinstGeneral.mode["ntp_sync_time_before_installation"]}").and_return(0)
-      expect(Yast::SCR).to receive(:Execute).with(
-        path(".target.bash"),"/sbin/hwclock --systohc").and_return(0)
+        "/usr/sbin/ntpdate -b #{Yast::AutoinstGeneral.mode["ntp_sync_time_before_installation"]}"
+      ).and_return(0)
+
+      expect(Yast::SCR).to receive(:Execute).with(path(".target.bash"), "/sbin/hwclock --systohc")
+        .and_return(0)
 
       Yast::AutoinstGeneral.Write()
     end
@@ -49,12 +43,10 @@ describe "Yast::AutoinstGeneral" do
       Yast::Profile.ReadXML(profile_no_sync)
       Yast::AutoinstGeneral.Import(Yast::Profile.current["general"])
 
-      expect(Yast::SCR).not_to receive(:Execute).with(
-        path(".target.bash"),"/sbin/hwclock --systohc")
+      expect(Yast::SCR).not_to receive(:Execute)
+        .with(path(".target.bash"), "/sbin/hwclock --systohc")
 
       Yast::AutoinstGeneral.Write()
     end
-
   end
-
 end
