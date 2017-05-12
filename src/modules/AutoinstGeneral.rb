@@ -460,6 +460,7 @@ module Yast
       AutoinstConfig.Halt = Ops.get_boolean(@mode, "halt", false)
       AutoinstConfig.RebootMsg = Ops.get_boolean(@mode, "rebootmsg", false)
       AutoinstConfig.setProposalList(@proposals)
+      AutoinstStorage.Write
 
       # see bug #597723. Some machines can't boot with the new alignment that parted uses
       # `align_cylinder == old behavior

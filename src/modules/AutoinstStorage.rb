@@ -133,15 +133,13 @@ module Yast
     # When called by inst_auto<module name> (preparing autoinstallation data)
     # the list may be empty.
     #
-    # @param  settings [Hash]        Profile settings
-    # @option settings [Hash]        "storage"      Settings to override the control.xml
-    # @option settings [Array<Hash>] "partitioning" List of drives (custom partitioning)
+    # @param  settings [Hash]        Profile settings (list of drives for custom partitioning)
     # @return	[Boolean] success
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
 
       # Initialize proposal if needed
-      if settings.fetch("partitioning", []).empty?
+      if settings.nil? || settings.empty?
         initialize_proposal
       else
         # TODO: AutoYaST customized partitioning
@@ -151,6 +149,14 @@ module Yast
 
     # Import settings from the general/storage section
     #
+    # General settings are imported with a different method because:
+    #
+    # * It used to happen before with the old libstorage, so we'll
+    #   keep it until multipath support is implemented.
+    # * To do not modify Import list of parameters (we would need
+    #   to use a hash instead of a list of hashes) to retain backward
+    #   compatibility.
+    #
     # @param settings [Hash] general/storage section settings
     def import_general_settings(settings)
       return if settings.nil?
@@ -158,10 +164,15 @@ module Yast
       self.general_settings = settings.clone
 
       # Backward compatibility
-      general_settings["btrfs_default_subvolume"] = general_settings.delete("btrfs_set_default_subvolume_name")
+      if general_settings["btrfs_set_default_subvolume_name"]
+        general_settings["btrfs_default_subvolume"] = general_settings.delete("btrfs_set_default_subvolume_name")
+      end
 
+      # Override product settings from control file
       Yast::ProductFeatures.SetOverlay("partitioning" => general_settings)
-      self.multipathing = general_settings.fetch("start_multipath", false)
+
+      # Set multipathing
+      set_multipathing
     end
 
     # Import Fstab data
@@ -176,8 +187,11 @@ module Yast
     end
 
     # Export general settings
+    #
+    # @return [Hash] General settings
     def export_general_settings
-      general_settings.reject { |key, value| value.nil? }
+      # Do not export nil settings
+      general_settings.reject { |_key, value| value.nil? }
     end
 
     # return Summary of configuration
@@ -333,10 +347,8 @@ module Yast
     # Create partition plan
     # @return [Boolean]
     def Write
-      Builtins.y2milestone("entering Write")
-
+      set_multipathing
       return handle_fstab if @read_fstab
-
       true
     end
 
@@ -388,7 +400,8 @@ module Yast
 
     # set multipathing
     # @return [void]
-    def multipathing=(value)
+    def set_multipathing
+      value = general_settings.fetch("start_multipath", false)
       log.info "set_multipathing to '#{value}'"
       # storage-ng
       log.error("FIXME : Missing storage call")

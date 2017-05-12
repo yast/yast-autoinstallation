@@ -19,22 +19,8 @@ describe Yast::AutoinstStorage do
       allow(storage_manager).to receive(:proposal=)
     end
 
-    context "when storage settings are specified" do
-      let(:profile) do
-        { "storage" => { "proposal_lvm" => true } }
-      end
-
-      it "overrides control file values" do
-        expect(Yast::ProductFeatures).to receive(:SetOverlay)
-          .with("partitioning" => profile["storage"])
-        subject.Import(profile)
-      end
-    end
-
     context "when no partitioning plan is given" do
-      let(:profile) do
-        { "storage" => { "proposal_lvm" => true } }
-      end
+      let(:profile) { nil }
 
       it "sets a proposal" do
         expect(storage_manager).to receive(:proposal=).with(proposal)
@@ -63,9 +49,7 @@ describe Yast::AutoinstStorage do
     end
 
     context "when profile contains an empty set of partitions" do
-      let(:profile) do
-        { "partitions" => [] }
-      end
+      let(:profile) { [] }
 
       it "sets a proposal" do
         expect(storage_manager).to receive(:proposal=).with(proposal)
@@ -74,7 +58,7 @@ describe Yast::AutoinstStorage do
     end
 
     context "when a partition plan is given" do
-      let(:profile) { { "partitioning" => [{"device" => "/dev/sda"}] } }
+      let(:profile) { [{"device" => "/dev/sda"}] }
 
       it "does not build a proposal" do
         expect(Y2Storage::Proposal).to_not receive(:new)
