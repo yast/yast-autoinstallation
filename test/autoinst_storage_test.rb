@@ -58,7 +58,7 @@ describe Yast::AutoinstStorage do
     end
 
     context "when a partition plan is given" do
-      let(:profile) { [{"device" => "/dev/sda"}] }
+      let(:profile) { [{ "device" => "/dev/sda" }] }
 
       it "does not build a proposal" do
         expect(Y2Storage::Proposal).to_not receive(:new)

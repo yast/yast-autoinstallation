@@ -2,7 +2,6 @@
 
 require_relative "test_helper"
 
-# storage-ng
 Yast.import "AutoinstGeneral"
 Yast.import "Profile"
 
@@ -41,7 +40,7 @@ describe "Yast::AutoinstGeneral" do
     context "when no NTP server is set" do
       let(:profile) { {} }
 
-      it "does not sync hardware time if no ntp server is set" do
+      it "does not sync hardware time" do
         subject.Import(profile)
         expect(Yast::SCR).not_to receive(:Execute)
           .with(path(".target.bash"), /hwclock/)
@@ -97,7 +96,6 @@ describe "Yast::AutoinstGeneral" do
         "signature-handling" => { "import_gpg_key" => true },
         "ask-list"           => ["ask1"],
         "proposals"          => ["proposal1"]
-
       }
     end
 
