@@ -28,8 +28,7 @@ describe "Yast::AutoinstGeneral" do
         subject.Import(profile)
 
         expect(Yast::SCR).to receive(:Execute).with(
-          path(".target.bash"),
-          "/usr/sbin/ntpdate -b #{Yast::AutoinstGeneral.mode["ntp_sync_time_before_installation"]}"
+          path(".target.bash"), "/usr/sbin/ntpdate -b ntp.suse.de"
         ).and_return(0)
 
         expect(Yast::SCR).to receive(:Execute).with(path(".target.bash"), "/sbin/hwclock --systohc")
