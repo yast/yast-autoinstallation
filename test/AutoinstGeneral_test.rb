@@ -49,8 +49,8 @@ describe "Yast::AutoinstGeneral" do
         subject.Write()
       end
 
-      it "write storage settings" do
-        expect(Yast::AutoinstStorage).to receive(:Write)
+      it "sets multipath" do
+        expect(Yast::AutoinstStorage).to receive(:set_multipathing)
         subject.Write
       end
     end

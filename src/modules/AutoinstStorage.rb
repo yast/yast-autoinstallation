@@ -352,6 +352,16 @@ module Yast
       true
     end
 
+    # set multipathing
+    # @return [void]
+    def set_multipathing
+      value = general_settings.fetch("start_multipath", false)
+      log.info "set_multipathing to '#{value}'"
+      # storage-ng
+      log.error("FIXME : Missing storage call")
+      #     Storage.SetMultipathStartup(val)
+    end
+
     # Build the id for a partition entry in the man table.
     # @parm disk_dev_name name of the devie e.g.: /dev/hda
     # @parm nr number of the partition e.g.: 1
@@ -396,16 +406,6 @@ module Yast
         return true
       end
       false
-    end
-
-    # set multipathing
-    # @return [void]
-    def set_multipathing
-      value = general_settings.fetch("start_multipath", false)
-      log.info "set_multipathing to '#{value}'"
-      # storage-ng
-      log.error("FIXME : Missing storage call")
-      #     Storage.SetMultipathStartup(val)
     end
   end
 
