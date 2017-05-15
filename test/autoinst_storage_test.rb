@@ -33,7 +33,7 @@ describe Yast::AutoinstStorage do
 
       context "if proposal fails" do
         before do
-          allow(proposal).to receive(:proposed?).and_return(false)
+          allow(proposal).to receive(:propose).and_raise(Y2Storage::Proposal::Error)
         end
 
         it "does not set the proposal" do

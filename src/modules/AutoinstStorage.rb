@@ -400,11 +400,10 @@ module Yast
       proposal_settings = Y2Storage::ProposalSettings.new_for_current_product
       proposal = Y2Storage::Proposal.new(settings: proposal_settings)
       proposal.propose
-      if proposal.proposed?
-        log.info "Storing accepted proposal"
-        Y2Storage::StorageManager.instance.proposal = proposal
-        return true
-      end
+      log.info "Storing successful proposal"
+      Y2Storage::StorageManager.instance.proposal = proposal
+      true
+    rescue Y2Storage::Proposal::Error
       false
     end
   end
