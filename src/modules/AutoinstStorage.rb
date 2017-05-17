@@ -53,6 +53,9 @@ module Yast
       # list of devices to ignore when guessing devices
       @tabooDevices = []
 
+      # general/storage settings
+      self.general_settings = {}
+
       Yast.include self, "autoinstall/autopart.rb"
       Yast.include self, "autoinstall/autoinst_dialogs.rb"
     end
@@ -126,41 +129,50 @@ module Yast
     end
 
     # Get all the configuration from a map.
+    #
     # When called by inst_auto<module name> (preparing autoinstallation data)
     # the list may be empty.
-    # @param [Array<Hash>] settings a list	[...]
+    #
+    # @param  settings [Hash]        Profile settings (list of drives for custom partitioning)
     # @return	[Boolean] success
     def Import(settings)
-      settings = deep_copy(settings)
-      Builtins.y2milestone("entering Import with %1", settings)
+      log.info "entering Import with #{settings.inspect}"
 
-      if !settings || settings.empty? || settings["proposal"]
-        # Storage proposal will be taken for
-        set = Y2Storage::ProposalSettings.new
-        if settings.is_a?(Hash) && settings["proposal"]
-          p = settings["proposal"]
-          set.use_lvm = p["use_lvm"] if p["use_lvm"]
-          set.root_filesystem_type = p["root_filesystem_type"] if p["root_filesystem_type"]
-          set.use_snapshots = p["use_snapshots"] if p["use_snapshots"]
-          set.use_separate_home = p["use_separate_home"] if p["use_separate_home"]
-          set.home_filesystem_type = p["home_filesystem_type"] if p["home_filesystem_type"]
-          set.enlarge_swap_for_suspend = p["enlarge_swap_for_suspend"] if p["enlarge_swap_for_suspend"]
-          set.root_device = p["root_device"] if p["root_device"]
-          set.candidate_devices = p["candidate_devices"] if p["candidate_devices"]
-          set.encryption_password = p["encryption_password"] if p["encryption_password"]
-        end
-        log.info "Calling storage proposal with #{set}"
-        proposal = Y2Storage::Proposal.new(settings: set)
-        proposal.propose
-        if proposal.proposed?
-          # Save to storage manager
-          log.info "Storing accepted proposal"
-          Y2Storage::StorageManager.instance.proposal = proposal
-          return true
-        end
-        return false
+      # Initialize proposal if needed
+      if settings.nil? || settings.empty?
+        initialize_proposal
+      else
+        # TODO: AutoYaST customized partitioning
+        false
       end
-      false
+    end
+
+    # Import settings from the general/storage section
+    #
+    # General settings are imported with a different method because:
+    #
+    # * It used to happen before with the old libstorage, so we'll
+    #   keep it until multipath support is implemented.
+    # * To do not modify Import list of parameters (we would need
+    #   to use a hash instead of a list of hashes) to retain backward
+    #   compatibility.
+    #
+    # @param settings [Hash] general/storage section settings
+    def import_general_settings(settings)
+      return if settings.nil?
+
+      self.general_settings = settings.clone
+
+      # Backward compatibility
+      if general_settings["btrfs_set_default_subvolume_name"]
+        general_settings["btrfs_default_subvolume"] = general_settings.delete("btrfs_set_default_subvolume_name")
+      end
+
+      # Override product settings from control file
+      Yast::ProductFeatures.SetOverlay("partitioning" => general_settings)
+
+      # Set multipathing
+      set_multipathing
     end
 
     # Import Fstab data
@@ -172,6 +184,14 @@ module Yast
       @fstab = Ops.get_map(settings, "fstab", {})
       @read_fstab = Ops.get_boolean(@fstab, "use_existing_fstab", false)
       true
+    end
+
+    # Export general settings
+    #
+    # @return [Hash] General settings
+    def export_general_settings
+      # Do not export nil settings
+      general_settings.reject { |_key, value| value.nil? }
     end
 
     # return Summary of configuration
@@ -327,11 +347,19 @@ module Yast
     # Create partition plan
     # @return [Boolean]
     def Write
-      Builtins.y2milestone("entering Write")
-
+      set_multipathing
       return handle_fstab if @read_fstab
-
       true
+    end
+
+    # set multipathing
+    # @return [void]
+    def set_multipathing
+      value = general_settings.fetch("start_multipath", false)
+      log.info "set_multipathing to '#{value}'"
+      # storage-ng
+      log.error("FIXME : Missing storage call")
+      #     Storage.SetMultipathStartup(val)
     end
 
     # Build the id for a partition entry in the man table.
@@ -359,6 +387,25 @@ module Yast
     publish :function => :ImportAdvanced, :type => "boolean (map)"
     publish :function => :Summary, :type => "string ()"
     publish :function => :Write, :type => "boolean ()"
+
+  private
+
+    attr_accessor :general_settings
+
+    # Initialize partition proposal
+    #
+    # @return [Boolean] true if proposal was successfully created; false otherwise.
+    def initialize_proposal
+      log.info "Initializing a proposal"
+      proposal_settings = Y2Storage::ProposalSettings.new_for_current_product
+      proposal = Y2Storage::Proposal.new(settings: proposal_settings)
+      proposal.propose
+      log.info "Storing successful proposal"
+      Y2Storage::StorageManager.instance.proposal = proposal
+      true
+    rescue Y2Storage::Proposal::Error
+      false
+    end
   end
 
   AutoinstStorage = AutoinstStorageClass.new

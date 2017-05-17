@@ -15,8 +15,6 @@ describe "Yast::AutoinstallAutopartInclude" do
     skip("pending of storage-ng")
   end
   
-  FIXTURES_PATH = File.join(File.dirname(__FILE__), '../fixtures')
-
   module DummyYast
     class AutoinstallAutopartClient < Yast::Client
       include Yast::Logger

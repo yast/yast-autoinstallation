@@ -16,8 +16,8 @@ describe "Yast::AutoinstSoftware" do
   end
 
   subject { Yast::AutoinstSoftware }
-  FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
-  let(:profile) { File.join(FIXTURES_PATH, 'profiles', 'software.xml') }
+
+  let(:profile) { FIXTURES_PATH.join("profiles", "software.xml").to_s }
 
   before(:each) do
     Yast::Profile.ReadXML(profile)

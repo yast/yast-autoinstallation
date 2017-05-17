@@ -4,13 +4,14 @@ ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
 require "yast"
 require "yast/rspec"
 require "fileutils"
+require "pathname"
 
 if ENV["COVERAGE"]
   STDERR.puts "COVERAGE is disabled because when requiring some modules (like AutoinstPartition) "\
     "errors are raised in other YaST components."
 end
 
-FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
+FIXTURES_PATH = Pathname.new(File.dirname(__FILE__)).join("fixtures")
 
 # mock missing YaST modules, they are needed by an early import call
 module Yast

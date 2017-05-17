@@ -16,7 +16,6 @@ describe "Yast::AutoinstClass" do
   subject { Yast::AutoinstClass }
 
   ROOT_PATH = File.expand_path('../..', __FILE__)
-  FIXTURES_PATH = File.join(ROOT_PATH, 'test', 'fixtures')
   CLASS_DIR = File.join(FIXTURES_PATH, 'classes')
   CLASS_PATH = File.join(CLASS_DIR, 'classes.xml')
 
