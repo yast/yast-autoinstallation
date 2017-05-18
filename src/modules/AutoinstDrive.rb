@@ -19,6 +19,7 @@ module Yast
 
       Yast.import "AutoinstCommon"
       Yast.import "AutoinstPartition"
+      Yast.import "Mode"
 
       textdomain "autoinst"
 
@@ -363,7 +364,12 @@ module Yast
       end
 
       if newDrive["type"] != :CT_TMPFS
-        newDrive["enable_snapshots"] = true # enable snapshot (default)
+        if Mode.config && SCR.Execute(path(".target.bash"), "/usr/bin/snapper list") > 0
+          # Snapper returns an error if no snapshot has been defined.
+          newDrive["enable_snapshots"] = false
+        else
+          newDrive["enable_snapshots"] = true # enable snapshot (default)
+        end
         newDrive["disklabel"] = drive["disklabel"] if drive.has_key?("disklabel")
       else
         newDrive.delete("disklabel")
