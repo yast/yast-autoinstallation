@@ -8,6 +8,7 @@
 # $Id$
 require "yast"
 require "y2storage"
+require "y2storage/auto_inst_proposal"
 
 module Yast
   class AutoinstStorageClass < Module
@@ -139,10 +140,20 @@ module Yast
       log.info "entering Import with #{settings.inspect}"
 
       # Initialize proposal if needed
-      if settings.nil? || settings.empty?
-        initialize_proposal
-      else
-        # TODO: AutoYaST customized partitioning
+      proposal =
+        if settings.nil? || settings.empty?
+          guided_proposal
+        else
+          auto_inst_proposal(settings)
+        end
+
+      begin
+        proposal.propose
+        log.info "Storing successful proposal"
+        Y2Storage::StorageManager.instance.proposal = proposal
+        true
+      rescue Y2Storage::Error
+        log.warn "Proposal failed"
         false
       end
     end
@@ -395,16 +406,17 @@ module Yast
     # Initialize partition proposal
     #
     # @return [Boolean] true if proposal was successfully created; false otherwise.
-    def initialize_proposal
-      log.info "Initializing a proposal"
+    def guided_proposal
+      log.info "Initializing a guided proposal"
       proposal_settings = Y2Storage::ProposalSettings.new_for_current_product
-      proposal = Y2Storage::Proposal.new(settings: proposal_settings)
-      proposal.propose
-      log.info "Storing successful proposal"
-      Y2Storage::StorageManager.instance.proposal = proposal
-      true
-    rescue Y2Storage::Proposal::Error
-      false
+      Y2Storage::GuidedProposal.new(settings: proposal_settings)
+    end
+
+    def auto_inst_proposal(settings)
+      log.info "Initializing an autoinst proposal"
+      devicegraph = Y2Storage::StorageManager.instance.y2storage_probed
+      disk_analyzer = Y2Storage::DiskAnalyzer.new(devicegraph)
+      Y2Storage::AutoInstProposal.new(partitioning: settings, devicegraph: devicegraph, disk_analyzer: disk_analyzer)
     end
   end
 

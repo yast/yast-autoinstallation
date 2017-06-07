@@ -8,14 +8,19 @@ describe Yast::AutoinstStorage do
 
   describe "#Import" do
     let(:proposal_settings) { double("proposal_settings") }
-    let(:proposal) { double("proposal", propose: nil, proposed?: true) }
-    let(:storage_manager) { double("storage_manager") }
+    let(:guided_proposal) { instance_double(Y2Storage::GuidedProposal, propose: nil, proposed?: true) }
+    let(:auto_inst_proposal) { instance_double(Y2Storage::AutoInstProposal, propose: nil, proposed?: true) }
+    let(:devicegraph) { instance_double(Y2Storage::Devicegraph) }
+    let(:storage_manager) { double("storage_manager", y2storage_probed: devicegraph) }
+    let(:disk_analyzer) { instance_double(Y2Storage::DiskAnalyzer) }
 
     before do
       allow(Y2Storage::StorageManager).to receive(:instance)
         .and_return(storage_manager)
-      allow(Y2Storage::Proposal).to receive(:new)
-        .and_return(proposal)
+      allow(Y2Storage::GuidedProposal).to receive(:new)
+        .and_return(guided_proposal)
+      allow(Y2Storage::AutoInstProposal).to receive(:new)
+        .and_return(auto_inst_proposal)
       allow(storage_manager).to receive(:proposal=)
     end
 
@@ -23,7 +28,7 @@ describe Yast::AutoinstStorage do
       let(:profile) { nil }
 
       it "sets a proposal" do
-        expect(storage_manager).to receive(:proposal=).with(proposal)
+        expect(storage_manager).to receive(:proposal=).with(guided_proposal)
         subject.Import(profile)
       end
 
@@ -33,7 +38,7 @@ describe Yast::AutoinstStorage do
 
       context "if proposal fails" do
         before do
-          allow(proposal).to receive(:propose).and_raise(Y2Storage::Proposal::Error)
+          allow(guided_proposal).to receive(:propose).and_raise(Y2Storage::Error)
         end
 
         it "does not set the proposal" do
@@ -52,7 +57,7 @@ describe Yast::AutoinstStorage do
       let(:profile) { [] }
 
       it "sets a proposal" do
-        expect(storage_manager).to receive(:proposal=).with(proposal)
+        expect(storage_manager).to receive(:proposal=).with(guided_proposal)
         subject.Import(profile)
       end
     end
@@ -60,13 +65,21 @@ describe Yast::AutoinstStorage do
     context "when a partition plan is given" do
       let(:profile) { [{ "device" => "/dev/sda" }] }
 
-      it "does not build a proposal" do
-        expect(Y2Storage::Proposal).to_not receive(:new)
+      before do
+        allow(Y2Storage::AutoInstProposal).to receive(:new).and_return(auto_inst_proposal)
+        allow(Y2Storage::DiskAnalyzer).to receive(:new).with(devicegraph).and_return(disk_analyzer)
+      end
+
+      it "asks for a proposal" do
+        expect(Y2Storage::AutoInstProposal).to receive(:new)
+          .with(partitioning: profile, devicegraph: devicegraph, disk_analyzer: disk_analyzer)
+          .and_return(auto_inst_proposal)
+        expect(auto_inst_proposal).to receive(:propose)
         subject.Import(profile)
       end
 
-      it "returns false" do
-        expect(subject.Import(profile)).to eq(false)
+      it "returns true" do
+        expect(subject.Import(profile)).to eq(true)
       end
     end
   end
