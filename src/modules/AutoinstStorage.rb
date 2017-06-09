@@ -13,6 +13,9 @@ module Yast
 
     include Yast::Logger
 
+    # Report shrinking if it will be bigger than about 5 MBytes.
+    REPORT_DISK_SHRINKING_LIMIT = 5000000
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -504,6 +507,11 @@ module Yast
                   else
                     usedSize = Ops.subtract(usedSize, s)
                     Builtins.y2milestone("shrinking to %1", s)
+                    if (pe["size"] - s) > REPORT_DISK_SHRINKING_LIMIT
+                      Report.Warning(_("Requested partition size of %s on \"%s\" will be reduced to "\
+                        "%s in order to fit on disk.") % 
+                          [Storage.ByteToHumanString(pe["size"]), pe["mount"], Storage.ByteToHumanString(s)])
+                    end
                     Ops.set(pe, "size", s)
                   end
                 end
