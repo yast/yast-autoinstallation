@@ -510,9 +510,7 @@ module Yast
                     if (pe["size"] - s) > REPORT_DISK_SHRINKING_LIMIT
                       Report.Warning(_("Requested partition size of %s on \"%s\" will be reduced to "\
                         "%s in order to fit on disk.") % 
-                          Storage.ByteToHumanString(pe["size"]), 
-                          pe["mount"], 
-                          Storage.ByteToHumanString(s))
+                          [Storage.ByteToHumanString(pe["size"]), pe["mount"], Storage.ByteToHumanString(s)])
                     end
                     Ops.set(pe, "size", s)
                   end
