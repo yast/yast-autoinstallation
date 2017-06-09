@@ -504,6 +504,11 @@ module Yast
                   else
                     usedSize = Ops.subtract(usedSize, s)
                     Builtins.y2milestone("shrinking to %1", s)
+                    if (pe["size"] - s) > 5000000 # Report only shrinking bigger than about 5 MBytes
+                      Report.Warning(_("Requested partition size of #{Storage.ByteToHumanString(pe["size"])}"\
+                        " on \"#{pe["mount"]}\" will be reduced to "\
+                        "#{Storage.ByteToHumanString(s)} in order to fit on disk."))
+                    end
                     Ops.set(pe, "size", s)
                   end
                 end
