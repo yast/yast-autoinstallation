@@ -508,9 +508,11 @@ module Yast
                     usedSize = Ops.subtract(usedSize, s)
                     Builtins.y2milestone("shrinking to %1", s)
                     if (pe["size"] - s) > REPORT_DISK_SHRINKING_LIMIT
-                      Report.Warning(_("Requested partition size of #{Storage.ByteToHumanString(pe["size"])}"\
-                        " on \"#{pe["mount"]}\" will be reduced to "\
-                        "#{Storage.ByteToHumanString(s)} in order to fit on disk."))
+                      Report.Warning(_("Requested partition size of %s on \"%s\" will be reduced to "\
+                        "%s in order to fit on disk.") % 
+                          Storage.ByteToHumanString(pe["size"]), 
+                          pe["mount"], 
+                          Storage.ByteToHumanString(s))
                     end
                     Ops.set(pe, "size", s)
                   end
