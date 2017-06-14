@@ -1,7 +1,7 @@
 require "y2storage"
 require "y2storage/disk_analyzer"
 require "y2storage/guided_proposal"
-require "y2storage/auto_inst_proposal"
+require "y2storage/autoinst_proposal"
 
 module Y2Autoinstallation
   # Storage proposal for AutoYaST
@@ -54,17 +54,17 @@ module Y2Autoinstallation
       if partitioning.nil? || partitioning.empty?
         guided_proposal
       else
-        auto_inst_proposal(partitioning)
+        autoinst_proposal(partitioning)
       end
     end
 
-    # Return an AutoInstProposal according to the AutoYaST profile
+    # Return an AutoinstProposal according to the AutoYaST profile
     #
     # @param partitioning [Array<Hash>] Partitioning specification from AutoYaST profile
-    # @return [Y2Storage::AutoInstProposal]
-    def auto_inst_proposal(partitioning)
+    # @return [Y2Storage::AutoinstProposal]
+    def autoinst_proposal(partitioning)
       log.info "Initializing an autoinst proposal"
-      Y2Storage::AutoInstProposal.new(
+      Y2Storage::AutoinstProposal.new(
         partitioning:  partitioning,
         devicegraph:   devicegraph,
         disk_analyzer: disk_analyzer

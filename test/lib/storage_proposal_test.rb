@@ -9,7 +9,7 @@ describe Y2Autoinstallation::StorageProposal do
   describe "#propose" do
     let(:proposal_settings) { double("proposal_settings") }
     let(:guided_proposal) { instance_double(Y2Storage::GuidedProposal, propose: nil, proposed?: true) }
-    let(:auto_inst_proposal) { instance_double(Y2Storage::AutoInstProposal, propose: nil, proposed?: true) }
+    let(:autoinst_proposal) { instance_double(Y2Storage::AutoinstProposal, propose: nil, proposed?: true) }
     let(:devicegraph) { instance_double(Y2Storage::Devicegraph) }
     let(:storage_manager) { double("storage_manager", y2storage_probed: devicegraph) }
     let(:disk_analyzer) { instance_double(Y2Storage::DiskAnalyzer) }
@@ -19,8 +19,8 @@ describe Y2Autoinstallation::StorageProposal do
         .and_return(storage_manager)
       allow(Y2Storage::GuidedProposal).to receive(:new)
         .and_return(guided_proposal)
-      allow(Y2Storage::AutoInstProposal).to receive(:new)
-        .and_return(auto_inst_proposal)
+      allow(Y2Storage::AutoinstProposal).to receive(:new)
+        .and_return(autoinst_proposal)
       allow(storage_manager).to receive(:proposal=)
     end
 
@@ -66,15 +66,15 @@ describe Y2Autoinstallation::StorageProposal do
       let(:profile) { [{ "device" => "/dev/sda" }] }
 
       before do
-        allow(Y2Storage::AutoInstProposal).to receive(:new).and_return(auto_inst_proposal)
+        allow(Y2Storage::AutoinstProposal).to receive(:new).and_return(autoinst_proposal)
         allow(Y2Storage::DiskAnalyzer).to receive(:new).with(devicegraph).and_return(disk_analyzer)
       end
 
       it "asks for a proposal" do
-        expect(Y2Storage::AutoInstProposal).to receive(:new)
+        expect(Y2Storage::AutoinstProposal).to receive(:new)
           .with(partitioning: profile, devicegraph: devicegraph, disk_analyzer: disk_analyzer)
-          .and_return(auto_inst_proposal)
-        expect(auto_inst_proposal).to receive(:propose)
+          .and_return(autoinst_proposal)
+        expect(autoinst_proposal).to receive(:propose)
         storage_proposal.propose_and_store
       end
 
