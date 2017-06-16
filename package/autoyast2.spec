@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.3.2
+Version:        3.3.3
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -41,7 +41,7 @@ BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
-BuildRequires:  yast2-storage-ng
+BuildRequires:  yast2-storage-ng >= 0.1.19
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
@@ -60,7 +60,7 @@ Requires:       yast2-network >= 3.1.145
 Requires:       yast2-schema
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
-Requires:       yast2-storage-ng
+Requires:       yast2-storage-ng >= 0.1.19
 Conflicts:      yast2-installation < 3.1.166
 
 Provides:       yast2-config-autoinst
@@ -114,7 +114,7 @@ Requires:       yast2-update >= 3.3.0
 Requires:       yast2-xml
 # pkgGpgCheck callback
 Requires:       yast2-pkg-bindings >= 3.1.31
-Requires:       yast2-storage-ng
+Requires:       yast2-storage-ng >= 0.1.19
 Provides:       yast2-trans-autoinst
 Obsoletes:      yast2-trans-autoinst
 
