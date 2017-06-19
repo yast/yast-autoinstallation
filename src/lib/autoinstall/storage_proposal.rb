@@ -1,7 +1,4 @@
 require "y2storage"
-require "y2storage/disk_analyzer"
-require "y2storage/guided_proposal"
-require "y2storage/autoinst_proposal"
 
 module Y2Autoinstallation
   # Storage proposal for AutoYaST
@@ -13,7 +10,7 @@ module Y2Autoinstallation
   class StorageProposal
     include Yast::Logger
 
-    # @return [Y2Storage::Proposal] Y2Storage proposal instance
+    # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Y2Storage proposal instance
     attr_reader :proposal
 
     # Constructor
@@ -47,9 +44,14 @@ module Y2Autoinstallation
 
   private
 
-    # Initialize partition proposal
+    # Initialize the partition proposal
     #
-    # @return [Boolean] true if proposal was successfully created; false otherwise.
+    # It will depend different proposals depending on {partitioning}:
+    #
+    # * {Y2Storage::GuidedProposal} if {partitioning} is nil or empty;
+    # * {Y2Storage::AutoinstProposal} in any other case.
+    #
+    # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Proposal instance
     def build_proposal(partitioning)
       if partitioning.nil? || partitioning.empty?
         guided_proposal
@@ -77,19 +79,21 @@ module Y2Autoinstallation
     def guided_proposal
       log.info "Initializing a guided proposal"
       proposal_settings = Y2Storage::ProposalSettings.new_for_current_product
-      Y2Storage::GuidedProposal.new(settings: proposal_settings)
+      Y2Storage::GuidedProposal.new(
+        settings:      proposal_settings,
+        devicegraph:   devicegraph,
+        disk_analyzer: disk_analyzer
+      )
     end
 
     # Return a DiskAnalyzer for the proposal's devicegraph
     #
     # @return [Y2Storage::DiskAnalyzer]
     def disk_analyzer
-      @disk_analyzer ||= Y2Storage::DiskAnalyzer.new(devicegraph)
+      @disk_analyzer ||= Y2Storage::StorageManager.instance.probed_disk_analyzer
     end
 
     # Return the current devicegraph
-    #
-    # If no devicegraph was specified, the probed one will be used.
     #
     # @return [Y2Storage::Devicegraph]
     def devicegraph

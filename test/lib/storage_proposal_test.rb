@@ -6,28 +6,36 @@ require "autoinstall/storage_proposal"
 describe Y2Autoinstallation::StorageProposal do
   subject(:storage_proposal) { described_class.new(profile) }
 
-  describe "#propose" do
+  describe "#propose_and_store" do
     let(:proposal_settings) { double("proposal_settings") }
     let(:guided_proposal) { instance_double(Y2Storage::GuidedProposal, propose: nil, proposed?: true) }
     let(:autoinst_proposal) { instance_double(Y2Storage::AutoinstProposal, propose: nil, proposed?: true) }
     let(:devicegraph) { instance_double(Y2Storage::Devicegraph) }
-    let(:storage_manager) { double("storage_manager", y2storage_probed: devicegraph) }
     let(:disk_analyzer) { instance_double(Y2Storage::DiskAnalyzer) }
+    let(:storage_manager) do
+      double("storage_manager", y2storage_probed: devicegraph, probed_disk_analyzer: disk_analyzer)
+    end
 
     before do
       allow(Y2Storage::StorageManager).to receive(:instance)
         .and_return(storage_manager)
+      allow(Y2Storage::ProposalSettings).to receive(:new_for_current_product)
+        .and_return(proposal_settings)
       allow(Y2Storage::GuidedProposal).to receive(:new)
         .and_return(guided_proposal)
       allow(Y2Storage::AutoinstProposal).to receive(:new)
         .and_return(autoinst_proposal)
       allow(storage_manager).to receive(:proposal=)
+      allow(Y2Storage::AutoinstProposal).to receive(:new).and_return(autoinst_proposal)
+      allow(Y2Storage::DiskAnalyzer).to receive(:new).with(devicegraph).and_return(disk_analyzer)
     end
 
     context "when no partitioning plan is given" do
       let(:profile) { nil }
 
       it "sets a guided proposal" do
+        expect(Y2Storage::GuidedProposal).to receive(:new)
+          .with(settings: proposal_settings, devicegraph: devicegraph, disk_analyzer: disk_analyzer)
         expect(storage_manager).to receive(:proposal=).with(guided_proposal)
         storage_proposal.propose_and_store
       end
@@ -64,11 +72,6 @@ describe Y2Autoinstallation::StorageProposal do
 
     context "when a partition plan is given" do
       let(:profile) { [{ "device" => "/dev/sda" }] }
-
-      before do
-        allow(Y2Storage::AutoinstProposal).to receive(:new).and_return(autoinst_proposal)
-        allow(Y2Storage::DiskAnalyzer).to receive(:new).with(devicegraph).and_return(disk_analyzer)
-      end
 
       it "asks for a proposal" do
         expect(Y2Storage::AutoinstProposal).to receive(:new)
