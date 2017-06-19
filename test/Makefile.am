@@ -17,7 +17,8 @@ TESTS = \
     include/autopart_test.rb \
     include/ask_test.rb \
     lib/module_config_builder_test.rb \
-    lib/pkg_gpg_check_handler_test.rb
+    lib/pkg_gpg_check_handler_test.rb \
+    lib/storage_proposal_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec

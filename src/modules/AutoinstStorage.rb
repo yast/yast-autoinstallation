@@ -7,7 +7,7 @@
 #
 # $Id$
 require "yast"
-require "y2storage"
+require "autoinstall/storage_proposal"
 
 module Yast
   class AutoinstStorageClass < Module
@@ -138,13 +138,8 @@ module Yast
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
 
-      # Initialize proposal if needed
-      if settings.nil? || settings.empty?
-        initialize_proposal
-      else
-        # TODO: AutoYaST customized partitioning
-        false
-      end
+      proposal = Y2Autoinstallation::StorageProposal.new(settings)
+      proposal.propose_and_store
     end
 
     # Import settings from the general/storage section
@@ -391,21 +386,6 @@ module Yast
   private
 
     attr_accessor :general_settings
-
-    # Initialize partition proposal
-    #
-    # @return [Boolean] true if proposal was successfully created; false otherwise.
-    def initialize_proposal
-      log.info "Initializing a proposal"
-      proposal_settings = Y2Storage::ProposalSettings.new_for_current_product
-      proposal = Y2Storage::Proposal.new(settings: proposal_settings)
-      proposal.propose
-      log.info "Storing successful proposal"
-      Y2Storage::StorageManager.instance.proposal = proposal
-      true
-    rescue Y2Storage::Proposal::Error
-      false
-    end
   end
 
   AutoinstStorage = AutoinstStorageClass.new
