@@ -20,7 +20,6 @@ module Yast
 
       Yast.import "Wizard"
       Yast.import "AutoinstPartPlan"
-      Yast.import "FileSystems"
 
       Yast.import "Label"
       Yast.include self, "autoinstall/StorageDialog.rb"
