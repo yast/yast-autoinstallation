@@ -22,24 +22,17 @@ module Y2Autoinstallation
       @proposal = build_proposal(partitioning)
     end
 
-    # Perform the proposal
-    #
-    # It delegates on the Y2Storage proposal instance
-    def propose
-      proposal.propose
+    # Set the proposal on the StorageManager
+    def save
+      Y2Storage::StorageManager.instance.proposal = proposal
     end
 
-    # Propose and set the proposal on the StorageManager
+    # A proposal is failed when it has not devices after being proposed
+    # @see Y2Storage::Proposal::Base#failed?
     #
-    # @return [Boolean] true if operation was successful; false otherwise
-    def propose_and_store
-      propose
-      log.info "Storing successful proposal"
-      Y2Storage::StorageManager.instance.proposal = proposal
-      true
-    rescue Y2Storage::Error => e
-      log.warn "Proposal failed: #{e.inspect}"
-      false
+    # @return [Boolean] true if proposed and has not devices; false otherwise
+    def failed?
+      proposal.failed?
     end
 
   private
@@ -62,42 +55,31 @@ module Y2Autoinstallation
 
     # Return an AutoinstProposal according to the AutoYaST profile
     #
+    # @note A proposal is retured even when it is a failed one
+    #
     # @param partitioning [Array<Hash>] Partitioning specification from AutoYaST profile
     # @return [Y2Storage::AutoinstProposal]
     def autoinst_proposal(partitioning)
-      log.info "Initializing an autoinst proposal"
-      Y2Storage::AutoinstProposal.new(
-        partitioning:  partitioning,
-        devicegraph:   devicegraph,
-        disk_analyzer: disk_analyzer
-      )
+      log.info "Creating an autoinstall proposal"
+      proposal = Y2Storage::AutoinstProposal.new(partitioning:  partitioning)
+      proposal.propose
+      proposal
+    rescue Y2Storage::Error => e
+      log.warn "Autoinstall proposal failed: #{e.inspect}"
+      proposal
     end
 
     # Return a GuidedProposal according to product's proposal setting
     #
+    # Product's settings could be modified if there is no way to create a
+    # proposal with that settings.
+    #
+    # @see Y2Storage::GuidedProposal.initial
+    #
     # @return [Y2Storage::GuidedProposal]
     def guided_proposal
-      log.info "Initializing a guided proposal"
-      proposal_settings = Y2Storage::ProposalSettings.new_for_current_product
-      Y2Storage::GuidedProposal.new(
-        settings:      proposal_settings,
-        devicegraph:   devicegraph,
-        disk_analyzer: disk_analyzer
-      )
-    end
-
-    # Return a DiskAnalyzer for the proposal's devicegraph
-    #
-    # @return [Y2Storage::DiskAnalyzer]
-    def disk_analyzer
-      @disk_analyzer ||= Y2Storage::StorageManager.instance.probed_disk_analyzer
-    end
-
-    # Return the current devicegraph
-    #
-    # @return [Y2Storage::Devicegraph]
-    def devicegraph
-      @devicegraph ||= Y2Storage::StorageManager.instance.y2storage_probed
+      log.info "Creating a guided proposal"
+      Y2Storage::GuidedProposal.initial
     end
   end
 end
