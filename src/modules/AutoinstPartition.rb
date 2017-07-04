@@ -84,7 +84,7 @@ module Yast
       # Moreover, this offers all the known filesystems, not necessarily the
       # supported ones.
       @allfs = Y2Storage::Filesystems::Type.all.each_with_object({}) do |type, hash|
-        hash[type.to_sym] = {name: type.to_human_string, :fsid => type.to_i}
+        hash[type.to_sym] = {name: type.to_human_string, fsid: type.to_i}
       end
 =begin
       @allfs = FileSystems.GetAllFileSystems(true, true, "")
