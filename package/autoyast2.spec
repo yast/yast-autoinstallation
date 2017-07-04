@@ -41,7 +41,8 @@ BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
-BuildRequires:  yast2-storage-ng >= 0.1.20
+# Y2Storage::AutoinstProfile::PartitioningSection
+BuildRequires:  yast2-storage-ng >= 0.1.27
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
@@ -60,7 +61,8 @@ Requires:       yast2-network >= 3.1.145
 Requires:       yast2-schema
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
-Requires:       yast2-storage-ng >= 0.1.20
+# Y2Storage::AutoinstProfile::PartitioningSection
+Requires:       yast2-storage-ng >= 0.1.27
 Conflicts:      yast2-installation < 3.1.166
 
 Provides:       yast2-config-autoinst
