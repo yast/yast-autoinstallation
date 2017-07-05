@@ -30,7 +30,7 @@ module Y2Autoinstallation
     # A proposal is failed when it has not devices after being proposed
     # @see Y2Storage::Proposal::Base#failed?
     #
-    # @return [Boolean] true if proposed and has not devices; false otherwise
+    # @return [Boolean] true if proposed and has no devices; false otherwise
     def failed?
       proposal.failed?
     end
@@ -55,7 +55,7 @@ module Y2Autoinstallation
 
     # Return an AutoinstProposal according to the AutoYaST profile
     #
-    # @note A proposal is retured even when it is a failed one
+    # @note A proposal is returned even when it is a failed one
     #
     # @param partitioning [Array<Hash>] Partitioning specification from AutoYaST profile
     # @return [Y2Storage::AutoinstProposal]
@@ -72,7 +72,7 @@ module Y2Autoinstallation
     # Return a GuidedProposal according to product's proposal setting
     #
     # Product's settings could be modified if there is no way to create a
-    # proposal with that settings.
+    # proposal with those settings.
     #
     # @see Y2Storage::GuidedProposal.initial
     #

@@ -54,7 +54,7 @@ describe Y2Autoinstallation::StorageProposal do
   describe "#save" do
     let(:profile) { nil }
 
-    it "Sets the proposal on the StorageManager" do
+    it "sets the proposal on the StorageManager" do
       expect(storage_manager).to receive(:proposal=).with(guided_proposal)
       storage_proposal.save
     end
