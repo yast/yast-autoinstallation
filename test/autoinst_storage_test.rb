@@ -7,29 +7,37 @@ describe Yast::AutoinstStorage do
   subject { Yast::AutoinstStorage }
 
   describe "#Import" do
-    let(:storage_proposal) { instance_double(Y2Autoinstallation::StorageProposal) }
+    let(:storage_proposal) do
+      instance_double(Y2Autoinstallation::StorageProposal, failed?: failed)
+    end
+
+    let(:failed) { false }
 
     before do
       allow(Y2Autoinstallation::StorageProposal).to receive(:new)
         .and_return(storage_proposal)
+      allow(storage_proposal).to receive(:save)
     end
 
     it "creates a proposal" do
-      expect(storage_proposal).to receive(:propose_and_store)
-        .and_return(true)
+      expect(Y2Autoinstallation::StorageProposal).to receive(:new)
       subject.Import({})
     end
 
-    it "returns true if proposal succeeds" do
-      allow(storage_proposal).to receive(:propose_and_store)
-        .and_return(true)
-      expect(subject.Import({})).to eq(true)
+    context "when the proposal succeeds" do
+      let(:failed) { false }
+
+      it "returns true" do
+        expect(subject.Import({})).to eq(true)
+      end
     end
 
-    it "returns false if proposal fails" do
-      allow(storage_proposal).to receive(:propose_and_store)
-        .and_return(false)
-      expect(subject.Import({})).to eq(false)
+    context "when the proposal fails" do
+      let(:failed) { true }
+
+      it "returns false" do
+        expect(subject.Import({})).to eq(false)
+      end
     end
   end
 
