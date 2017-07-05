@@ -133,13 +133,20 @@ module Yast
     # When called by inst_auto<module name> (preparing autoinstallation data)
     # the list may be empty.
     #
-    # @param  settings [Hash]        Profile settings (list of drives for custom partitioning)
+    # @param  settings [Hash] Profile settings (list of drives for custom partitioning)
     # @return	[Boolean] success
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
-
       proposal = Y2Autoinstallation::StorageProposal.new(settings)
-      proposal.propose_and_store
+
+      if proposal.failed?
+        log.warn "Failed proposal: #{proposal.inspect}"
+        false
+      else
+        log.info "Saving successful proposal: #{proposal.inspect}"
+        proposal.save
+        true
+      end
     end
 
     # Import settings from the general/storage section
