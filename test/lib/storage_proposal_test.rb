@@ -59,4 +59,28 @@ describe Y2Autoinstallation::StorageProposal do
       storage_proposal.save
     end
   end
+
+  describe "#failed?" do
+    let(:profile) { nil }
+
+    before do
+      allow(guided_proposal).to receive(:failed?).and_return(failed)
+    end
+
+    context "when the proposal has failed" do
+      let(:failed) { true }
+
+      it "returns true" do
+        expect(storage_proposal.failed?).to be(true)
+      end
+    end
+
+    context "when the proposal is successful" do
+      let(:failed) { false }
+
+      it "returns false" do
+        expect(storage_proposal.failed?).to be(false)
+      end
+    end
+  end
 end
