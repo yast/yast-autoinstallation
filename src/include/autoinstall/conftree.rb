@@ -760,6 +760,12 @@ module Yast
             oldStage = Stage.stage
             Mode.SetMode("autoinstallation")
             Stage.Set("continue")
+
+            # As we are now in "autoinstallation" mode and accessing to the target
+            # system we have to set StorageDevices flag disks_valid to true.
+            # So InitLibstorage can scan valid disks. (bnc#1047809)
+            StorageDevices.InitDone
+
             WFM.CallFunction("inst_autopost", [])
             AutoinstSoftware.addPostPackages(
               Ops.get_list(Profile.current, ["software", "post-packages"], [])
