@@ -276,7 +276,9 @@ module Yast
       end
       if !Builtins.isempty(Ops.get_list(part, "subvolumes", []))
         #Filtering out all snapper subvolumes
-        newPart["subvolumes"] = part["subvolumes"].reject { |s| s.start_with?(".snapshots") }
+        newPart["subvolumes"] = part["subvolumes"].reject do |subvolume|
+          subvolume["path"].start_with?(".snapshots")
+        end
       else
         newPart = Builtins.remove(newPart, "subvolumes")
       end
