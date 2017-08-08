@@ -48,6 +48,10 @@ module Yast
         AutoinstConfig.filepath
       )
 
+      # Due to self-update this process could be called twice.
+      # So we have to initialize the stack again. (bnc#1051483)
+      AutoInstallRules.reset
+
       localfile = AutoinstConfig.xml_tmpfile
 
       is_directory = false
