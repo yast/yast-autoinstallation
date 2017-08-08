@@ -48,7 +48,7 @@ module Yast
         AutoinstConfig.filepath
       )
 
-      # Due the self-update this process could be called twice.
+      # Due to self-update this process could be called twice.
       # So we have to initialize the stack again. (bnc#1051483)
       AutoInstallRules.reset
 
