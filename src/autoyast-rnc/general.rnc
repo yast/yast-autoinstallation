@@ -64,7 +64,7 @@ general = element general {
     cio_ignore?
 }
 ask-list = element ask-list { LIST, ask* }
-ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path? & ask_pathlist? & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_frametitle? & ask_script? & ask_timeout? & ask_ok_label? & ask_back_label? }
+ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path? & ask_pathlist? & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_width? & ask_height? & ask_frametitle? & ask_script? & ask_timeout? & ask_ok_label? & ask_back_label? & ask_default_value_script? }
 ask_question = element question { text }
 ask_default = element default { text }
 ask_help = element help { text }
@@ -80,6 +80,8 @@ ask_entry_value = element value { text }
 ask_entry_label = element label { text }
 ask_dialog = element dialog { INTEGER }
 ask_element = element element { INTEGER }
+ask_width = element width { INTEGER }
+ask_height = element height { INTEGER }
 ask_frametitle = element frametitle { text }
 ask_timeout = element timeout { INTEGER }
 ask_pathlist =  element pathlist {
@@ -109,6 +111,10 @@ ask_script = element script {
     element feedback { BOOLEAN }? &
     element environment { BOOLEAN }? &
     element rerun_on_error { BOOLEAN }?
+}
+ask_default_value_script = element default_value_script {
+    element source { text } &
+    element interpreter { text }?
 }
 
 confirm =
