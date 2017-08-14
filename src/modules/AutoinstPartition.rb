@@ -478,6 +478,7 @@ module Yast
     #
     # @return [Y2Storage::Filesystems::Type]
     def default_root_fs_type
+      # FIXME: see note in method description
       Y2Storage::Filesystems::Type::BTRFS
     end
   end
