@@ -14,7 +14,6 @@ module Yast
     def main
       Yast.import "UI"
       Yast.import "Stage"
-      Yast.import "Storage"
       Stage.Set("initial")
       Yast.import "AutoInstallRules"
       Yast.import "Label"
@@ -56,25 +55,6 @@ module Yast
             v
           )
         )
-      end
-      @text = Ops.add(@text, "</table>")
-      @text = Ops.add(@text, "<h3>Storage Data</h3>")
-
-      @tm = Storage.GetTargetMap
-
-      Builtins.foreach(@tm) do |k, v|
-        @text = Ops.add(Ops.add(Ops.add(@text, "<h2>"), k), "</h2><table>")
-        Builtins.foreach(
-          Convert.convert(v, :from => "map", :to => "map <string, any>")
-        ) do |key, value|
-          @text = Builtins.sformat(
-            "%1<tr><td>%2</td><td> = </td><td>%3<br></td></tr>",
-            @text,
-            key,
-            value
-          )
-        end
-        @text = Ops.add(@text, "</table>")
       end
 
       UI.OpenDialog(

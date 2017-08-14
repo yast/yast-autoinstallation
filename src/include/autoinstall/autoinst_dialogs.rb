@@ -11,7 +11,6 @@ module Yast
     def initialize_autoinstall_autoinst_dialogs(include_target)
       textdomain "autoinst"
       Yast.import "Label"
-      Yast.import "Storage"
       Yast.import "Popup"
     end
 
@@ -82,28 +81,24 @@ module Yast
     # @return [String] device
     def DiskSelectionDialog
       Builtins.y2milestone("Selecting disk manually....")
-      tm = Storage.GetTargetMap
+      devicegraph = Y2Storage::StorageManager.instance.y2storage_probed
+      disks = devicegraph.disk_devices
       contents = Dummy()
 
-      if Ops.greater_than(Builtins.size(tm), 0)
+      if !disks.empty?
         buttonbox = VBox()
 
         i = 0
-        Builtins.foreach(tm) do |tname, tdata|
-          if Storage.IsRealDisk(tdata)
-            tlinename = Ops.get_string(tdata, "name", "?")
-            tline = Ops.add(
-              Ops.add(Ops.add("&", Ops.add(i, 1)), ":    "),
-              tlinename
-            )
-            sel = Storage.GetPartDisk == tname &&
-              Storage.GetPartMode != "CUSTOM"
-            buttonbox = Builtins.add(
-              buttonbox,
-              Left(RadioButton(Id(tname), tline, sel))
-            )
-            i = Ops.add(i, 1)
-          end
+        disks.each do |disk|
+          tline = "&#{i+1}:    #{disk.basename}"
+          # storage-ng
+          sel = false
+=begin
+          sel = Storage.GetPartDisk == tname &&
+            Storage.GetPartMode != "CUSTOM"
+=end
+          buttonbox << Left(RadioButton(Id(disk.name), tline, sel))
+          i += 1
         end
 
         buttonbox = Builtins.add(buttonbox, VSpacing(0.8))

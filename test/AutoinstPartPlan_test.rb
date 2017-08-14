@@ -3,11 +3,20 @@
 require_relative "test_helper"
 require "yaml"
 
+<<<<<<< HEAD
+# storage-ng
+=begin
 Yast.import "Profile"
 Yast.import "ProductFeatures"
 Yast.import "Storage"
+=end
 
 describe "Yast::AutoinstPartPlan" do
+  # storage-ng
+  before :all do
+    skip("pending on storage-ng")
+  end
+
   subject do
     # Postpone AutoinstPartPlan.main until it is needed.
     Yast.import "AutoinstPartPlan"
@@ -30,7 +39,6 @@ describe "Yast::AutoinstPartPlan" do
   end
 
   describe "#read partition target" do
-
     it "exporting nfs root partition" do
       target_map = YAML.load_file(target_map_path)
 

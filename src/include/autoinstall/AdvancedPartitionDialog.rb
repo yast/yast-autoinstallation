@@ -20,7 +20,10 @@ module Yast
       textdomain "autoinst"
 
       Yast.include include_target, "autoinstall/common.rb"
+# storage-ng
+=begin
       Yast.include include_target, "partitioning/custom_part_dialogs.rb"
+=end
 
       Yast.import "AutoinstPartPlan"
       Yast.import "AutoinstDrive"

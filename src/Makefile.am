@@ -10,9 +10,7 @@ module_DATA = \
   modules/AutoinstPartition.rb \
   modules/AutoinstClone.rb \
   modules/AutoinstImage.rb \
-  modules/AutoinstRAID.rb \
   modules/AutoinstConfig.rb \
-  modules/AutoinstLVM.rb \
   modules/Profile.rb \
   modules/AutoinstCommon.rb \
   modules/AutoinstFile.rb \
@@ -74,7 +72,8 @@ ynclude_DATA = \
 ylibdir = @ylibdir@/autoinstall
 ylib_DATA = \
   lib/autoinstall/module_config_builder.rb \
-  lib/autoinstall/pkg_gpg_check_handler.rb
+  lib/autoinstall/pkg_gpg_check_handler.rb \
+  lib/autoinstall/storage_proposal.rb
 
 scrconf_DATA = \
   scrconf/cfg_autoinstall.scr \

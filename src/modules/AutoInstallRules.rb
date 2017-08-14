@@ -22,8 +22,11 @@ module Yast
       Yast.import "Installation"
       Yast.import "AutoinstConfig"
       Yast.import "XML"
-      Yast.import "Storage"
-      Yast.import "StorageControllers"
+      # storage-ng
+=begin
+      # Yast.import "Storage"
+      # Yast.import "StorageControllers"
+=end
       Yast.import "Kernel"
       Yast.import "Mode"
       Yast.import "Profile"
@@ -274,6 +277,8 @@ module Yast
       # Disk sizes
       #
 
+      # storage-ng
+=begin
       StorageControllers.Initialize  # ugly hack, Storage.GetTargetMap should simply work without it
       storage = Storage.GetTargetMap
       _PhysicalTargetMap = Builtins.filter(storage) do |k, v|
@@ -285,6 +290,7 @@ module Yast
         @totaldisk = Ops.add(@totaldisk, size_in_mb)
         { "device" => k, "size" => size_in_mb }
       end
+=end
       Builtins.y2milestone("disksize: %1", @disksize)
       Ops.set(@ATTR, "totaldisk", @totaldisk)
       #
@@ -310,12 +316,18 @@ module Yast
       @xserver = Convert.to_string(SCR.Read(path(".etc.install_inf.XServer")))
       Ops.set(@ATTR, "xserver", @xserver)
 
+      # storage-ng
+=begin
       @NonLinuxPartitions = Storage.GetForeignPrimary
+=end
       @others = Builtins.size(@NonLinuxPartitions)
 
       Builtins.y2milestone("Other primaries: %1", @NonLinuxPartitions)
 
+      # storage-ng
+=begin
       @LinuxPartitions = Storage.GetOtherLinuxPartitions
+=end
       @linux = Builtins.size(@LinuxPartitions)
 
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)

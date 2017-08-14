@@ -7,9 +7,12 @@
 #
 # $Id: AutoinstPartition.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
+require "y2storage"
 
 module Yast
   class AutoinstPartitionClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
 
@@ -18,9 +21,6 @@ module Yast
       Yast.include self, "autoinstall/tree.rb"
 
       Yast.import "AutoinstCommon"
-      Yast.import "Partitions"
-      Yast.import "FileSystems"
-      Yast.import "Storage"
 
       textdomain "autoinst"
 
@@ -38,7 +38,7 @@ module Yast
         "uuid"         => "",
         "size"         => "10G",
         "format"       => true,
-        "filesystem"   => Partitions.DefaultFs,
+        "filesystem"   => default_root_fs_type.to_sym,
         "mkfs_options" => "",
         "partition_nr" => 1,
         "partition_id" => 131,
@@ -73,7 +73,22 @@ module Yast
     end
 
     def AutoinstPartition
+      # storage-ng
+      # GetAllFileSystems returns a hash with all kind of information (even
+      # widgets!). Even more, every entry is a mashup of information related to
+      # filesystems types and partition ids (both are often not clearly
+      # distinguised in the old libstorage).
+      #
+      # This is a simplyfication with just some values.
+      #
+      # Moreover, this offers all the known filesystems, not necessarily the
+      # supported ones.
+      @allfs = Y2Storage::Filesystems::Type.all.each_with_object({}) do |type, hash|
+        hash[type.to_sym] = {name: type.to_human_string, fsid: type.to_i}
+      end
+=begin
       @allfs = FileSystems.GetAllFileSystems(true, true, "")
+=end
 
       nil
     end
@@ -139,7 +154,7 @@ module Yast
       end
       if Ops.get_boolean(p, "create", false)
         if p["size"] &&  !p["size"].empty?
-          part_desc += " with #{Storage.ByteToHumanString(p["size"].to_i)}"
+          part_desc += " with #{Y2Storage::DiskSize.new(p["size"].to_i).to_human_string}"
         end
       else
         if Ops.get_boolean(p, "resize", false)
@@ -147,7 +162,7 @@ module Yast
             "%1 resize part.%2 to %3",
             part_desc,
             Ops.get_integer(p, "partition_nr", 999),
-            Storage.ByteToHumanString(p["size"].to_i)
+            Y2Storage::DiskSize.new(p["size"].to_i).to_human_string
           )
         else
           part_desc = Builtins.sformat(
@@ -160,7 +175,7 @@ module Yast
       part_desc = Builtins.sformat(
         "%1,%2",
         part_desc,
-        Partitions.FsIdToString(Ops.get_integer(p, "partition_id", 131))
+        Y2Storage::PartitionId.new_from_legacy(p.fetch("partition_id", 131)).to_s
       )
 
       fs = Ops.get(@allfs, Ops.get_symbol(p, "filesystem", :nothing), {})
@@ -261,7 +276,7 @@ module Yast
       elsif Mode.config
         # We are in the autoyast configuration mode. So if the parsed
         # system partitions do not have a filesystem entry (E.G. Raids)
-        # we are not using the default entry (Partitions.DefaultFs).
+        # we are not using the default entry.
         newPart["filesystem"] = :Empty
       end
       if Ops.get_boolean(newPart, "format", false) &&
@@ -344,7 +359,7 @@ module Yast
         newPart = Builtins.remove(newPart, "raid_options")
       end
 
-      if part["partition_id"] == Partitions.fsid_bios_grub
+      if part["partition_id"] == Y2Storage::PartitionId::BIOS_BOOT.to_i_legacy
         # GRUB_BIOS partitions must not be formated
         # with default filesystem btrfs. (bnc#876411)
         # The other deleted entries would be useless in that case.
@@ -449,6 +464,22 @@ module Yast
     publish :function => :getDefaultMountPoints, :type => "list <string> ()"
     publish :function => :getMaxPartitionNumber, :type => "integer ()"
     publish :function => :getLVNameFor, :type => "string (string)"
+
+  protected
+
+    # Default filesystem for root ("/")
+    #
+    # @note Although this can be considered somehow generic enough to live in
+    # Y2Storage::Filesystems::Type, it would first need several improvements.
+    # First of all, it's not configurable by product (Btrfs doesn't have to
+    # always be the default for "/") and it should accept any mount point (not
+    # necessarily "/") as argument, which would introduce more problems (the
+    # type for some mount points are debatable or product-based).
+    #
+    # @return [Y2Storage::Filesystems::Type]
+    def default_root_fs_type
+      Y2Storage::Filesystems::Type::BTRFS
+    end
   end
 
   AutoinstPartition = AutoinstPartitionClass.new

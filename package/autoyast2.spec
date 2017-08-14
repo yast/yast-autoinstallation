@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        3.3.3
+Version:        3.3.4
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -35,13 +35,14 @@ BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2
 # FileSystems.read_default_subvol_from_target
-BuildRequires:  yast2-storage >= 3.2.0
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
-BuildRequires:  yast2-update >= 3.1.36
+BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
+# Y2Storage::AutoinstProposal.new with proper default parameters
+BuildRequires:  yast2-storage-ng >= 0.1.28
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
@@ -56,11 +57,12 @@ Requires:       yast2
 Requires:       yast2 >= 3.1.183
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
-Requires:	yast2-network >= 3.1.145
+Requires:       yast2-network >= 3.1.145
 Requires:       yast2-schema
-Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
+# Y2Storage::AutoinstProposal.new with proper default parameters
+Requires:       yast2-storage-ng >= 0.1.28
 Conflicts:      yast2-installation < 3.1.166
 
 Provides:       yast2-config-autoinst
@@ -106,12 +108,13 @@ Requires:       yast2-packager >= 3.1.10
 # ServicesManagerTargetClass::BaseTargets
 Requires:       yast2-services-manager >= 3.1.10
 Requires:       yast2-slp
-Requires:       yast2-storage >= 3.1.59
 Requires:       yast2-transfer >= 2.21.0
-Requires:       yast2-update >= 3.1.36
+# storage-ng based version
+Requires:       yast2-update >= 3.3.0
 Requires:       yast2-xml
 # pkgGpgCheck callback
 Requires:       yast2-pkg-bindings >= 3.1.31
+Requires:       yast2-storage-ng >= 0.1.20
 Provides:       yast2-trans-autoinst
 Obsoletes:      yast2-trans-autoinst
 
@@ -260,8 +263,6 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_moduledir}/AutoinstFile.rb
 %{yast_moduledir}/AutoinstConfig.rb
 %{yast_moduledir}/AutoinstSoftware.rb
-%{yast_moduledir}/AutoinstLVM.rb
-%{yast_moduledir}/AutoinstRAID.rb
 %{yast_moduledir}/AutoinstStorage.rb
 %{yast_moduledir}/AutoInstallRules.rb
 %{yast_moduledir}/ProfileLocation.rb
