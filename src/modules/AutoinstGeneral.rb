@@ -19,6 +19,7 @@ module Yast
       Yast.import "Stage"
       Yast.import "AutoInstall"
       Yast.import "AutoinstConfig"
+      Yast.import "AutoinstStorage"
       Yast.import "Summary"
       Yast.import "Keyboard"
       Yast.import "Language"
@@ -26,7 +27,12 @@ module Yast
       Yast.import "Misc"
       Yast.import "Profile"
       Yast.import "ProductFeatures"
+
+# storage-ng
+=begin
       Yast.import "Storage"
+=end
+
       Yast.import "SignatureCheckCallbacks"
       Yast.import "Report"
       Yast.import "Arch"
@@ -180,16 +186,14 @@ module Yast
       settings = deep_copy(settings)
       SetModified()
       Builtins.y2milestone("General import: %1", settings)
-      @mode = Ops.get_map(settings, "mode", {})
-      @cio_ignore = Ops.get_boolean(settings, "cio_ignore", true)
-      @signature_handling = Ops.get_map(settings, "signature-handling", {})
-      @askList = Ops.get_list(settings, "ask-list", [])
-      @proposals = Ops.get_list(settings, "proposals", [])
-      @storage = Ops.get_map(settings, "storage", {})
+      @mode = settings.fetch("mode", {})
+      @cio_ignore = settings.fetch("cio_ignore", true)
+      @signature_handling = settings.fetch("signature-handling", {})
+      @askList = settings.fetch("ask-list", [])
+      @proposals = settings.fetch("proposals", [])
+      AutoinstStorage.import_general_settings(settings["storage"])
 
       SetSignatureHandling()
-      SetMultipathing()
-      set_btrfs_default_subvolume_name
 
       true
     end
@@ -198,18 +202,13 @@ module Yast
     # Export Configuration
     # @return [Hash]
     def Export
-      general = {}
-
-      Ops.set(general, "mode", @mode)
-      Ops.set(general, "signature-handling", @signature_handling)
-      Ops.set(general, "ask-list", @askList)
-      Ops.set(general, "proposals", @proposals)
-
-      btrfs_set_default_subvol = btrfs_default_subvol_to_profile
-      unless btrfs_set_default_subvol.nil?
-        Ops.set(@storage, "btrfs_set_default_subvolume_name", btrfs_set_default_subvol)
-      end
-      Ops.set(general, "storage", @storage)
+      general = {
+        "mode" => @mode,
+        "signature-handling" => @signature_handling,
+        "ask-list" => @askList,
+        "proposals" => @proposals,
+        "storage" => AutoinstStorage.export_general_settings
+      }
 
       if Yast::Arch.s390
         if Yast::Mode.installation
@@ -413,29 +412,6 @@ module Yast
       nil
     end
 
-    # set multipathing
-    # @return [void]
-    def SetMultipathing
-      val = @storage.fetch("start_multipath",false)
-      Builtins.y2milestone("SetMultipathing val:%1", val)
-      Storage.SetMultipathStartup(val)
-    end
-
-    # Set Btrfs default subvolume name
-    #
-    # Check "general/storage/btrfs_set_default_subvolume_name" in the profile.
-    # It does nothing if that element does not exist.
-    #
-    # @return ["@","",nil] Default subvolume name to use.
-    #
-    # @see FileSystems.default_subvol
-    def set_btrfs_default_subvolume_name
-      return unless @storage.has_key?("btrfs_set_default_subvolume_name")
-      value = @storage["btrfs_set_default_subvolume_name"] ? "@" : ""
-      log.info "Setting default subvolume to: '#{value}'"
-      FileSystems.default_subvol = value
-    end
-
     # NTP syncing
     def NtpSync
       ntp_server = @mode["ntp_sync_time_before_installation"]
@@ -490,11 +466,13 @@ module Yast
       # `align_optimal  == new behavior
       if @storage.has_key?("partition_alignment")
         val = @storage.fetch("partition_alignment",:align_optimal)
-        Storage.SetPartitionAlignment(val)
+# storage-ng
+         log.error("FIXME : Missing storage call")
+#        Storage.SetPartitionAlignment(val)
         Builtins.y2milestone( "alignment set to %1", val )
       end
 
-      SetMultipathing()
+      AutoinstStorage.set_multipathing
 
       SetSignatureHandling()
 
@@ -515,22 +493,6 @@ module Yast
       nil
     end
 
-  protected
-
-    # Return the value to use as 'btrfs_set_default_subvolume_name' in the profile
-    #
-    # In case it matches the product's default, it should not be exported.
-    #
-    # @return [Boolean,nil] Value to use (true or false). If nil, no value
-    #                       should be exported.
-    def btrfs_default_subvol_to_profile
-      if FileSystems.default_subvol != FileSystems.default_subvol_from_product
-        return FileSystems.default_subvol == "" ? false : true
-      end
-      nil
-    end
-
-
     publish :variable => :Confirm, :type => "boolean"
     publish :variable => :second_stage, :type => "boolean"
     publish :variable => :mode, :type => "map"
@@ -544,7 +506,6 @@ module Yast
     publish :function => :Import, :type => "boolean (map)"
     publish :function => :Export, :type => "map ()"
     publish :function => :SetSignatureHandling, :type => "void ()"
-    publish :function => :SetMultipathing, :type => "void ()"
     publish :function => :SetRebootAfterFirstStage, :type => "void ()"
     publish :function => :Write, :type => "boolean ()"
     publish :function => :AutoinstGeneral, :type => "void ()"

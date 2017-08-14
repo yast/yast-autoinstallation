@@ -2,13 +2,20 @@
 
 require_relative "test_helper"
 
+# storage-ng
+=begin
 Yast.import "AutoinstClass"
+=end
 
-describe Yast::AutoinstClass do
+describe "Yast::AutoinstClass" do
+  # storage-ng
+  before :all do
+    skip("pending of storage-ng")
+  end
+
   subject { Yast::AutoinstClass }
 
   ROOT_PATH = File.expand_path('../..', __FILE__)
-  FIXTURES_PATH = File.join(ROOT_PATH, 'test', 'fixtures')
   CLASS_DIR = File.join(FIXTURES_PATH, 'classes')
   CLASS_PATH = File.join(CLASS_DIR, 'classes.xml')
 

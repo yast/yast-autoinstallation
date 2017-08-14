@@ -1,4 +1,58 @@
 -------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - ancor@suse.com
+
+- Merged storage-ng branch (fate#318196).
+- Note: all changes below with this date belong to the merge.
+- 3.3.4
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - jlopez@suse.com
+
+- storage-ng: refac class StorageProposal and create a new guided
+  proposal by changing settings if it is necessary.
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - ancor@suse.com
+
+- Use the new storage-ng layer to export the current system to the
+  corresponding <partitioning> section of the AutoYaST profile
+  (fate#318196).
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - igonzalezsosa@suse.com
+
+- Add basic support for customized partitioning using the new
+  storage-ng layer. Currently, only plain partitions are supported
+  (bsc#1044697).
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - igonzalezsosa@suse.com
+
+- Allow overriding of product's storage partitioning options
+  (bsc#1039481)
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - ancor@suse.com
+
+- storage-ng: commented several Yast.import for the old storage
+  lib. Affected modules not adapted to storage-ng so far.
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - schubi@suse.de
+
+- storage-ng: Enable storage-ng proposal for AutoYaST installation.
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - jlopez@suse.com
+
+- storage-ng: fix AutoInstallRules to not use old storage lib.
+  Tests are commented. Removed dependency from (old) yast2-storage,
+  even if it breaks some functionality.
+- Removed yast2-update as build dependency and added before
+  version (2.18.3) as install dependency. It is only needed for
+  file_from_url.
+
+-------------------------------------------------------------------
 Tue Aug  8 11:25:47 CEST 2017 - schubi@suse.de
 
 - Classes/rules will be ignored: Due to self-update, the evaluation

@@ -4,6 +4,7 @@ ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
 require "yast"
 require "yast/rspec"
 require "fileutils"
+require "pathname"
 
 if ENV["COVERAGE"]
   require "simplecov"
@@ -25,7 +26,7 @@ if ENV["COVERAGE"]
   end
 end
 
-FIXTURES_PATH = File.join(File.dirname(__FILE__), 'fixtures')
+FIXTURES_PATH = Pathname.new(File.dirname(__FILE__)).join("fixtures")
 
 # mock missing YaST modules, they are needed by an early import call
 module Yast

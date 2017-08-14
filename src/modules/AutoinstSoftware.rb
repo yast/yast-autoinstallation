@@ -8,6 +8,7 @@
 # $Id$
 #
 require "yast"
+require "y2storage"
 
 module Yast
   class AutoinstSoftwareClass < Module
@@ -27,7 +28,6 @@ module Yast
       Yast.import "Kernel"
       Yast.import "AutoinstConfig"
       Yast.import "ProductControl"
-      Yast.import "Storage"
       Yast.import "Mode"
       Yast.import "Misc"
       Yast.import "Directory"
@@ -853,6 +853,12 @@ module Yast
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
       failed = []
 
+      # Add storage-related software packages (filesystem tools etc.) to the
+      # set of packages to be installed.
+      pkg_handler = Y2Storage::PackageHandler.new
+      pkg_handler.add_feature_packages(Y2Storage::StorageManager.instance.staging)
+      pkg_handler.set_proposal_packages
+
       # switch for recommended patterns installation (workaround for our very weird pattern design)
       if sw_settings.fetch("install_recommended",false) == false
         # set SoftLock to avoid the installation of recommended patterns (#159466)
@@ -895,7 +901,6 @@ module Yast
         )
       end
 
-
       computed_packages = Packages.ComputeSystemPackageList
       Builtins.y2debug("Computed list of packages: %1", computed_packages)
       Pkg.DoProvide(computed_packages)
@@ -907,7 +912,6 @@ module Yast
           PackageAI.toremove = Builtins.add(PackageAI.toremove, pack2)
         end
       end
-
 
       #
       # Now remove all packages listed in remove-packages
@@ -921,13 +925,7 @@ module Yast
 
         Pkg.DoRemove(PackageAI.toremove)
       end
-      pack = Storage.AddPackageList
-      if Ops.greater_than(Builtins.size(pack), 0)
-        Builtins.y2milestone(
-          "Installing storage packages: %1",
-          Pkg.DoProvide(pack)
-        )
-      end
+
       #
       # Solve dependencies
       #
