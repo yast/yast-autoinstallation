@@ -3,7 +3,6 @@
 require_relative "test_helper"
 require "yaml"
 
-<<<<<<< HEAD
 # storage-ng
 =begin
 Yast.import "Profile"
