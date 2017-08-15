@@ -257,6 +257,9 @@ module Yast
         end
       end
 
+      # Initialize scripts stack
+      AutoinstScripts.Import(Profile.current.fetch("scripts", {}))
+
       # online update
       if Ops.get_boolean(
           Profile.current,
@@ -278,8 +281,10 @@ module Yast
       end
 
       logStep(_("Executing Post-Scripts"))
-      AutoinstScripts.Import(Profile.current.fetch("scripts", {}))
       AutoinstScripts.Write("post-scripts", false)
+
+      logStep(_("Writing Init-Scripts"))
+      AutoinstScripts.Write("init-scripts", false)
 
       @max_wait = Ops.get_integer(
         Profile.current,
