@@ -34,7 +34,8 @@ BuildRequires:  libxml2-tools
 BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2
-BuildRequires:  yast2-storage >= 3.1.59
+# FileSystems.read_default_subvol_from_target
+BuildRequires:  yast2-storage >= 3.1.103.2
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
@@ -68,8 +69,6 @@ Obsoletes:      yast2-config-autoinst
 Obsoletes:      yast2-module-autoinst
 Provides:       yast2-lib-autoinst
 Obsoletes:      yast2-lib-autoinst
-
-PreReq:         %insserv_prereq %fillup_prereq
 
 BuildArch:      noarch
 

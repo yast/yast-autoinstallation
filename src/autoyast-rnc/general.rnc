@@ -26,7 +26,9 @@ general = element general {
     }? &
     element storage {
         element partition_alignment { SYMBOL }? &
-        element start_multipath { BOOLEAN }? 
+        element start_multipath { BOOLEAN }? &
+        # FATE#317775: support for arbitraty Btrfs subvolume structure
+        element btrfs_set_default_subvolume_name { BOOLEAN }?
     }? &
     element wait {
         element pre-modules {
