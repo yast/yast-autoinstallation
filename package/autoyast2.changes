@@ -3,6 +3,17 @@ Tue Aug 22 16:46:45 UTC 2017 - knut.anderssen@suse.com
 
 - Increased dependency on yast2-storage to 3.1.110 (or newer) after
   merged with CAASP.
+- Report shrinked partitions if there is not enough space.
+  (bnc#1039528)
+- Fix subvolumes schema definition (bsc#1013047)
+- removed dependency on insserv (bnc#1026027)
+- Cloning Software: install_recommended can be set by the
+  control.xml file (clone_install_recommended_default)
+  Default is true. (Fate#321764)
+- Add support to enable copy-on-write for Btrfs subvolumes
+  (FATE#320342)
+- Add support to omit the Btrfs default subvolume name
+  (FATE#317775)
 - 3.1.163
 
 -------------------------------------------------------------------
@@ -60,66 +71,40 @@ Wed Dec 14 15:32:06 CET 2016 - schubi@suse.de
 -------------------------------------------------------------------
 Wed Nov 30 09:30:26 UTC 2016 - igonzalezsosa@suse.com
 
-- Report shrinked partitions if there is not enough space.
-  (bnc#1039528)
-- 3.1.151.7
-
--------------------------------------------------------------------
-Thu Apr  6 08:42:24 UTC 2017 - igonzalezsosa@suse.com
-
-- Fix subvolumes schema definition (bsc#1013047)
-- 3.1.151.6
-
--------------------------------------------------------------------
-Wed Apr  5 06:53:55 UTC 2017 - mfilka@suse.com
-
-- bnc#1026027
-  - removed dependency on insserv
-- 3.1.151.5 
-
--------------------------------------------------------------------
-Wed Dec  7 12:54:27 CET 2016 - schubi@suse.de
-
-- Cloning Software: install_recommended can be set by the
-  control.xml file (clone_install_recommended_default)
-  Default is true. (Fate#321764)
-- 3.1.151.4
-
--------------------------------------------------------------------
-Thu Dec  1 08:42:33 UTC 2016 - schubi@suse.de
-
-- Adding missed desktop file for "clone_system" in order to show
-  it in the control center and command line calls.
-  (bnc#985621)
-- 3.1.151.3
-
--------------------------------------------------------------------
-Wed Nov 30 09:30:26 UTC 2016 - igonzalezsosa@suse.com
-
 - If Btrfs subvolumes are not specified, the default set
   is created (bsc#1012328)
-- Do not crash when services manager configuration is missing
-  (related to bsc#887115)
-- Hiding a module in its .desktop file (Hidden=true) won't prevent
-  it from being cloned anymore (bsc#1008301)
-- Add support to specify resource aliases using the key
-  X-SuSE-YaST-AutoInstResourceAliases in desktop files (related
-  to bsc#887115)
+- 3.1.156
 
 -------------------------------------------------------------------
 Tue Nov 22 15:23:44 UTC 2016 - igonzalezsosa@suse.com
 
 - Fix building on s390x (bsc#1011489)
-- 3.1.151.2
+- 3.1.155
 
 -------------------------------------------------------------------
-Mon Oct 24 09:04:25 UTC 2016 - igonzalezsosa@suse.com
+Fri Nov 18 10:00:25 UTC 2016 - igonzalezsosa@suse.com
 
-- Add support to enable copy-on-write for Btrfs subvolumes
-  (FATE#320342)
-- Add support to omit the Btrfs default subvolume name
-  (FATE#317775)
-- 3.1.151.1
+- Do not crash when services manager configuration is missing
+  (related to bsc#887115)
+- 3.1.154
+
+-------------------------------------------------------------------
+Mon Nov 14 13:22:49 UTC 2016 - igonzalezsosa@suse.com
+
+- Hiding a module in its .desktop file (Hidden=true) won't prevent
+  it from being cloned anymore (bsc#1008301)
+- Add support to specify resource aliases using the key
+  X-SuSE-YaST-AutoInstResourceAliases in desktop files (related
+  to bsc#887115)
+- 3.1.153
+
+-------------------------------------------------------------------
+Fri Sep 30 10:21:45 CEST 2016 - schubi@suse.de
+
+- Adding missed desktop file for "clone_system" in order to show
+  it in the control center and command line calls.
+  (bnc#985621)
+- 3.1.152
 
 -------------------------------------------------------------------
 Wed Sep 14 17:19:01 CEST 2016 - schubi@suse.de
