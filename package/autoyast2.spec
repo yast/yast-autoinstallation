@@ -58,7 +58,7 @@ Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 Requires:	yast2-network >= 3.1.145
 Requires:       yast2-schema
-Requires:       yast2-storage >= 3.1.59
+Requires:       yast2-storage >= 3.2.0
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
 Conflicts:      yast2-installation < 3.1.166
