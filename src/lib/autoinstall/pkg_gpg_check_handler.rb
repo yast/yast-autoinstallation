@@ -13,6 +13,7 @@ module Yast
     CHK_NOTTRUSTED = 3 # Signature is OK but key is not trusted
     CHK_NOKEY      = 4 # Public key is unavailable
     CHK_ERROR      = 5 # File does not exist or can't be open
+    CHK_NOSIG      = 6 # Signature is missing but digests are OK
 
     # This command will produce something which last line will be like:
     # DSA/SHA1, Mon 05 Oct 2015 04:24:50 PM WEST, Key ID 9b7d32f2d50582e6
@@ -45,7 +46,7 @@ module Yast
       when CHK_OK
         log.debug "Handling successful PGP checking"
         handle_ok
-      when CHK_NOTFOUND
+      when CHK_NOTFOUND, CHK_NOSIG
         log.debug "Handling unsigned package"
         handle_unsigned
       when CHK_NOKEY

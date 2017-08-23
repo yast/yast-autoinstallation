@@ -52,6 +52,32 @@ describe Yast::PkgGpgCheckHandler do
       end
     end
 
+    context "when package signature is not found but digests are valid" do
+      let(:result) { Yast::PkgGpgCheckHandler::CHK_NOSIG }
+
+      context "and is not specified whether unsigned packages are allowed or not" do
+        it "returns false" do
+          expect(handler.accept?).to eq(false)
+        end
+      end
+
+      context "and unsigned packages are allowed" do
+        let(:signature_handling) { { "accept_unsigned_file" => true } }
+
+        it "returns true" do
+          expect(handler.accept?).to eq(true)
+        end
+      end
+
+      context "and unsigned packages are not allowed" do
+        let(:signature_handling) { { "accept_unsigned_file" => false } }
+
+        it "returns false" do
+          expect(handler.accept?).to eq(false)
+        end
+      end
+    end
+
     context "when package signature failed" do
       let(:result) { Yast::PkgGpgCheckHandler::CHK_FAIL }
 
