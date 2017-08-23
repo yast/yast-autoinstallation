@@ -5,6 +5,9 @@ services:
 
 before_install:
   - docker build -t yast-autoyast-image .
+  # list the installed packages (just for easier debugging)
+  - docker run --rm -it yast-autoyast-image rpm -qa | sort
+
 script:
   # the "storage-ng-travis-ruby" script is included in the base yastdevel/storage-ng image
   # see https://github.com/yast/docker-storage-ng/blob/master/storage-ng-travis-ruby
