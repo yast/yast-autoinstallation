@@ -33,6 +33,7 @@ module Yast
       Yast.import "Directory"
       Yast.import "Y2ModuleConfig"
       Yast.import "PackageSystem"
+      Yast.import "ProductFeatures"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -706,7 +707,10 @@ module Yast
       # set to true. This differs from the installation process. So we have
       # to set "install_recommended" to true in order to reflect the
       # installation process and cannot use the package bindings. (bnc#990494)
-      Ops.set(s, "install_recommended", true)
+      # OR: Each product (e.g. CASP) can set it in the control.xml file.
+      rec = ProductFeatures.GetStringFeature("software",
+        "clone_install_recommended_default")
+      s["install_recommended"] = (rec == "no") ? false : true
 
       deep_copy(s)
     end
