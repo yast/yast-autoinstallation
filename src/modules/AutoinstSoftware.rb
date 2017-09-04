@@ -710,6 +710,7 @@ module Yast
         "clone_install_recommended_default"
       )
       s["install_recommended"] = rec != "no"
+      s["product"] = "LeanOS"
 
       s
     end
