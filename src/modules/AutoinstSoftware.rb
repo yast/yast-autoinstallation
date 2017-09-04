@@ -685,36 +685,34 @@ module Yast
     # @return dumped settings (later acceptable by Import())
     def Export
       s = {}
-      Ops.set(s, "kernel", @kernel) if @kernel != ""
+      s["kernel"] = @kernel if !@kernel.empty?
+      s["patterns"] = @patterns if !@patterns.empty?
 
-      Ops.set(s, "patterns", @patterns) if @patterns != []
+      pkg_toinstall = PackageAI.toinstall
+      s["packages"] = pkg_toinstall if !pkg_toinstall.empty?
 
-      Ops.set(s, "packages", PackageAI.toinstall) if PackageAI.toinstall != []
+      pkg_post = AutoinstData.post_packages
+      s["post-packages"] = pkg_post if !pkg_post.empty?
 
-      if AutoinstData.post_packages != []
-        Ops.set(s, "post-packages", AutoinstData.post_packages)
-      end
+      pkg_toremove = PackageAI.toremove
+      s["remove-packages"] = PackageAI.toremove if !pkg_toremove.empty?
 
-      if PackageAI.toremove != []
-        Ops.set(s, "remove-packages", PackageAI.toremove)
-      end
-
-      Ops.set(s, "instsource", @instsource)
-
-      Ops.set(s, "image", @image)
+      s["instsource"] = @instsource
+      s["image"] = @image
 
       # In the installed system the flag solver.onlyRequires in zypp.conf is
       # set to true. This differs from the installation process. So we have
       # to set "install_recommended" to true in order to reflect the
       # installation process and cannot use the package bindings. (bnc#990494)
       # OR: Each product (e.g. CASP) can set it in the control.xml file.
-      rec = ProductFeatures.GetStringFeature("software",
-        "clone_install_recommended_default")
+      rec = ProductFeatures.GetStringFeature(
+        "software",
+        "clone_install_recommended_default"
+      )
       s["install_recommended"] = rec != "no"
 
-      deep_copy(s)
+      s
     end
-
 
     # Add packages needed by modules, i.e. NIS, NFS etc.
     # @param list of strings packages to add
