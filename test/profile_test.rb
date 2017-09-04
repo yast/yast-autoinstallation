@@ -377,4 +377,13 @@ describe "Yast::Profile" do
       end
     end
   end
+
+  describe "#Export" do
+    it "puts product definition into the exported profile" do
+      profile = subject.Export
+
+      expect(profile).to have_key("software")
+      expect(profile["software"]["product"]).to eql "LeanOS"
+    end
+  end
 end
