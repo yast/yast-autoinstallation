@@ -710,7 +710,10 @@ module Yast
         "clone_install_recommended_default"
       )
       s["install_recommended"] = rec != "no"
-      s["product"] = "LeanOS"
+
+      products = Product.FindBaseProducts
+      raise "Found multiple base products" if products.size > 1
+      s["product"] = products.first["short_name"]
 
       s
     end
