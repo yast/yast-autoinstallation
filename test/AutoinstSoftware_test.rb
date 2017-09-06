@@ -30,10 +30,27 @@ describe "Yast::AutoinstSoftware" do
 
   describe "#Export" do
     it "puts product definition into the exported profile" do
+      expect(Yast::Product)
+        .to receive(:FindBaseProducts)
+        .and_return([{ "short_name" => "LeanOS" }])
+
       profile = subject.Export
 
       expect(profile).to have_key("product")
       expect(profile["product"]).to eql "LeanOS"
+    end
+
+    it "raises an error when multiple products were found" do
+      expect(Yast::Product)
+        .to receive(:FindBaseProducts)
+        .and_return(
+          [
+            { "short_name" => "LeanOS" },
+            { "short_name" => "AgileOS" }
+          ]
+        )
+
+        expect { subject.Export }.to raise_error(RuntimeError, "Found multiple base products")
     end
   end
 end
