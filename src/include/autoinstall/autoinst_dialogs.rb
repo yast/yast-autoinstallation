@@ -81,7 +81,7 @@ module Yast
     # @return [String] device
     def DiskSelectionDialog
       Builtins.y2milestone("Selecting disk manually....")
-      devicegraph = Y2Storage::StorageManager.instance.y2storage_probed
+      devicegraph = Y2Storage::StorageManager.instance.probed
       disks = devicegraph.disk_devices
       contents = Dummy()
 
