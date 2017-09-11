@@ -340,7 +340,7 @@ module Yast
     # Create a partition plan for the calling client
     # @return [Array] partition plan
     def ReadHelper
-      devicegraph = Y2Storage::StorageManager.instance.y2storage_probed
+      devicegraph = Y2Storage::StorageManager.instance.probed
       profile = Y2Storage::AutoinstProfile::PartitioningSection.new_from_storage(devicegraph)
       profile.to_hashes
     end
