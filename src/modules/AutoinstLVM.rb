@@ -12,6 +12,9 @@ module Yast
 
     include Yast::Logger
 
+    # Report shrinking if it will be bigger than about 20 MBytes.
+    REPORT_DISK_SHRINKING_LIMIT = 20000
+
     def main
       textdomain "autoinst"
 
@@ -413,10 +416,25 @@ module Yast
             deep_copy(lv)
           end
         )
+        partitions = []
         Builtins.foreach(Ops.get_list(volume_group, "partitions", [])) do |lv|
+          size_k = lv.fetch("size_k", 0)
+          if (size_k > freeSpace)
+            lv["size_k"] = freeSpace
+            Builtins.y2milestone("Requested partition size of %s on \"%s\" will be reduced to "\
+                "%s in order to fit on disk." %
+                [size_k, lv["mount"], freeSpace])
+            if (size_k - freeSpace) > REPORT_DISK_SHRINKING_LIMIT
+              Report.Warning(_("Requested partition size of %s on \"%s\" will be reduced to "\
+                "%s in order to fit on disk.") %
+                [Storage.KByteToHumanString(size_k), lv["mount"], Storage.KByteToHumanString(freeSpace)])
+            end
+          end
           freeSpace = Ops.subtract(freeSpace, Ops.get_integer(lv, "size_k", 0))
           Builtins.y2milestone("freeSpace = %1", freeSpace)
+          partitions << lv
         end
+        volume_group["partitions"] = partitions
         freeSpace = Ops.subtract(freeSpace, buffer) # that's a buffer for rounding errors with cylinder boundaries
         Builtins.foreach(Ops.get_list(volume_group, "partitions", [])) do |lv|
           if Ops.get_integer(lv, "size_k", 0) == 0 &&
