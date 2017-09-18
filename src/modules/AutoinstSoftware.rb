@@ -9,6 +9,7 @@
 #
 require "yast"
 require "y2storage"
+require "y2packager/product"
 
 module Yast
   class AutoinstSoftwareClass < Module
@@ -34,6 +35,7 @@ module Yast
       Yast.import "Y2ModuleConfig"
       Yast.import "PackageSystem"
       Yast.import "ProductFeatures"
+      Yast.import "WorkflowManager"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -98,9 +100,6 @@ module Yast
       @instsource = settings.fetch("instsource","")
 
       notFound = ""
-
-      product_name = settings.fetch("product", "")
-      select_product(product_name)
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
       @patternsAvailable = []
@@ -849,8 +848,12 @@ module Yast
       Pkg.PkgApplReset
 
       sw_settings = Profile.current.fetch("software",{})
+      product_name = sw_settings.fetch("product", "")
       Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
+
+      select_product(product_name)
+
       failed = []
 
       # Add storage-related software packages (filesystem tools etc.) to the
@@ -1159,8 +1162,19 @@ module Yast
     # @param [String] product's short name (e.g. SLES15)
     def select_product(product_name)
       log.info("AutoinstSoftware::select_product - product to select: #{product_name}")
-    end
 
+      base_products = Y2Packager::Product.available_base_products
+      product = base_products.find { |p| p.short_name == product_name }
+
+      if !product
+        log.info("AutoinstSoftware::select_product - no base product found")
+        return
+      end
+
+      log.info("AutoinstSoftware::select_product - available base product: #{product.inspect}")
+
+      product.select
+    end
   end
 
   AutoinstSoftware = AutoinstSoftwareClass.new

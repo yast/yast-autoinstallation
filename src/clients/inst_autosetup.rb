@@ -447,10 +447,8 @@ module Yast
 
       Progress.Finish
 
-      @ret = ProductControl.RunFrom(
-        Ops.add(ProductControl.CurrentStep, 1),
-        true
-      )
+      @ret = ProductControl.RunFrom(ProductControl.CurrentStep + 1, true)
+
       return :finish if @ret == :next
       @ret
     end
