@@ -88,7 +88,6 @@ module Yast
       @modified
     end
 
-
     # Import data
     # @param [Hash] settings settings to be imported
     # @return true on success
@@ -101,7 +100,7 @@ module Yast
       notFound = ""
 
       product_name = settings.fetch("product", "")
-      log.info("AutoinstSoftware::Import - product to select: #{product_name}")
+      select_product(product_name)
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
       @patternsAvailable = []
@@ -1152,6 +1151,16 @@ module Yast
     publish :function => :addPostPackages, :type => "void (list <string>)"
     publish :function => :ReadHelper, :type => "map <string, any> ()"
     publish :function => :Read, :type => "boolean ()"
+
+  private
+
+    # Selects product to install
+    #
+    # @param [String] product's short name (e.g. SLES15)
+    def select_product(product_name)
+      log.info("AutoinstSoftware::select_product - product to select: #{product_name}")
+    end
+
   end
 
   AutoinstSoftware = AutoinstSoftwareClass.new
