@@ -100,9 +100,8 @@ module Yast
 
       notFound = ""
 
-      # what is this good for? disturbs the main-repo selection
-      # Packages::Init(true);
-      # Packages::InitializeAddOnProducts();
+      product_name = settings.fetch("product", "")
+      log.info("AutoinstSoftware::Import - product to select: #{product_name}")
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
       @patternsAvailable = []
