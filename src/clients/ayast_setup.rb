@@ -126,6 +126,13 @@ module Yast
       end
       WFM.CallFunction("inst_autoconfigure", [])
 
+      # Restarting autoyast-initscripts.service in order to run
+      # init-scripts in the installed system.
+      cmd = "systemctl restart autoyast-initscripts.service"
+      Builtins.y2milestone("executing:%1", cmd)
+      ret = SCR.Execute(path(".target.bash_output"), cmd)
+      Builtins.y2milestone("calling ret:%1", ret)
+
       nil
     end
 
