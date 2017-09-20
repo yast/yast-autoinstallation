@@ -22,6 +22,8 @@
 #    yast2 ./ayast_setup.rb setup filename=/tmp/my.xml
 module Yast
   class AyastSetupClient < Client
+    include Yast::Logger
+
     def main
       Yast.import "Pkg"
       textdomain "autoinst"
@@ -129,10 +131,8 @@ module Yast
       # Restarting autoyast-initscripts.service in order to run
       # init-scripts in the installed system.
       cmd = "systemctl restart autoyast-initscripts.service"
-      Builtins.y2milestone("executing:%1", cmd)
       ret = SCR.Execute(path(".target.bash_output"), cmd)
-      Builtins.y2milestone("calling ret:%1", ret)
-
+      log.info "command \"#{cmd}\" returned #{ret}"
       nil
     end
 
