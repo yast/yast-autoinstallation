@@ -19,8 +19,24 @@ drive =
     element imsmdriver { SYMBOL }? &
     element disklabel  { text }? &
     element enable_snapshots { BOOLEAN }? &
+    skip_list? &
     partitions?
   }
+
+skip_list =
+  element skip_list {
+    LIST,
+    skip_entry*
+  }
+skip_entry = 
+  element listentry {
+    element skip_key	{ text } &
+    element skip_value	{ text } &
+    ( element skip_if_less_than { BOOLEAN }
+      | element skip_if_more_than { BOOLEAN } )? &
+    element skip_if_equal { BOOLEAN }?
+  }
+
 prefer_remove =
   element prefer_remove { BOOLEAN }
 partitions =
