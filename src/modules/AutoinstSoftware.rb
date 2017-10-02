@@ -1175,6 +1175,10 @@ module Yast
       log.info("AutoinstSoftware::select_product - available base product: #{product.inspect}")
 
       product.select
+
+      WorkflowManager.merge_product_workflow(product)
+
+      nil
     end
   end
 
