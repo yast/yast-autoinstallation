@@ -1159,6 +1159,9 @@ module Yast
 
     # Selects product to install
     #
+    # It picks a base product according to the given product name. When such product
+    # is found it also merges its workflow steps.
+    #
     # @param [String] product's short name (e.g. SLES15)
     def select_product(product_name)
       log.info("AutoinstSoftware::select_product - product to select: #{product_name}")
