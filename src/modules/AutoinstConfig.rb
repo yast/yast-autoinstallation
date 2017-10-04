@@ -162,6 +162,9 @@ module Yast
       # Running autoyast second_stage
       @second_stage = true
 
+      # Network is configured during the first stage before the proposal
+      @network_before_proposal = false
+
       @OriginalURI = ""
 
       @message = ""
@@ -556,6 +559,7 @@ module Yast
     publish :variable => :Confirm, :type => "boolean"
     publish :variable => :cio_ignore, :type => "boolean"
     publish :variable => :second_stage, :type => "boolean"
+    publish :variable => :network_before_proposal, :type => "boolean"
     publish :variable => :OriginalURI, :type => "string"
     publish :variable => :message, :type => "string"
     publish :variable => :dontmerge, :type => "list <string>"
