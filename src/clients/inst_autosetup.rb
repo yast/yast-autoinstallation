@@ -179,6 +179,7 @@ module Yast
         write_network = true
       end
 
+      AutoinstConfig.network_before_proposal = write_network
       Call.Function("lan_auto", ["Write"]) if write_network
 
       if Builtins.haskey(Profile.current, "add-on")
