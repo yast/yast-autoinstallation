@@ -143,7 +143,7 @@ module Yast
       )
       AutoinstGeneral.Write
 
-      write_network = false
+      AutoinstConfig.network_before_proposal = false
       general_section = Profile.current["general"] || {}
       semiauto_network = general_section["semi-automatic"] &&
         general_section["semi-automatic"].include?("networking")
@@ -153,15 +153,9 @@ module Yast
             semiauto_network ||
             !AutoinstConfig.second_stage()
             )
-        Builtins.y2milestone(
-          "Importing Network settings from configuration file")
-        Call.Function(
-          "lan_auto",
-          ["Import", Ops.get_map(Profile.current, "networking", {})]
-        )
         if Profile.current["networking"]["setup_before_proposal"]
           Builtins.y2milestone("Networking setup before the proposal")
-          write_network = true
+          AutoinstConfig.network_before_proposal = true
         elsif !AutoinstConfig.second_stage()
           # Second stage of installation will not be called but a
           # network configuration is available. So this will be written
@@ -171,15 +165,21 @@ module Yast
           Builtins.y2milestone(
             "Networking setup at the end of first installation stage")
         end
+        Builtins.y2milestone(
+          "Importing Network settings from configuration file")
+        Call.Function(
+          "lan_auto",
+          ["Import", Ops.get_map(Profile.current, "networking", {})]
+        )
       end
 
       if semiauto_network
         Builtins.y2milestone("Networking manual setup before proposal")
         Call.Function("inst_lan", ["enable_next" => true])
-        write_network = true
+        AutoinstConfig.network_before_proposal = true
       end
 
-      Call.Function("lan_auto", ["Write"]) if write_network
+      Call.Function("lan_auto", ["Write"]) if AutoinstConfig.network_before_proposal
 
       if Builtins.haskey(Profile.current, "add-on")
 	Progress.Title(_("Handling Add-On Products..."))
