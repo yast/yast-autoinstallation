@@ -334,8 +334,8 @@ module Yast
           "scc_auto",
           ["Write"]
         )
-	# failed relnotes download is not fatal, ignore ret code
-	WFM.CallFunction("inst_download_release_notes")
+        # failed relnotes download is not fatal, ignore ret code
+        WFM.CallFunction("inst_download_release_notes")
       elsif general_section["semi-automatic"] &&
           general_section["semi-automatic"].include?("scc")
 

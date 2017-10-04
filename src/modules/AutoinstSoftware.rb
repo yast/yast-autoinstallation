@@ -852,7 +852,7 @@ module Yast
       Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
 
-      select_product(product_name)
+      merge_product(select_product(product_name))
 
       failed = []
 
@@ -1155,8 +1155,6 @@ module Yast
     publish :function => :ReadHelper, :type => "map <string, any> ()"
     publish :function => :Read, :type => "boolean ()"
 
-  private
-
     # Selects product to install
     #
     # It picks a base product according to the given product name. When such product
@@ -1179,6 +1177,12 @@ module Yast
 
       product.select
 
+      product
+    end
+
+  private
+
+    def merge_product(product)
       WorkflowManager.merge_product_workflow(product)
 
       nil
