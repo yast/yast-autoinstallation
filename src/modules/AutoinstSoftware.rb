@@ -848,11 +848,10 @@ module Yast
       Pkg.PkgApplReset
 
       sw_settings = Profile.current.fetch("software",{})
-      product_name = sw_settings.fetch("product", "")
       Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
 
-      merge_product(select_product(product_name))
+      merge_product(AutoinstConfig.selected_product)
 
       failed = []
 
@@ -1155,34 +1154,11 @@ module Yast
     publish :function => :ReadHelper, :type => "map <string, any> ()"
     publish :function => :Read, :type => "boolean ()"
 
-    # Selects product to install
-    #
-    # It picks a base product according to the given product name. When such product
-    # is found it also merges its workflow steps.
-    #
-    # @param [String] product's short name (e.g. SLES15)
-    def select_product(product_name)
-      log.info("AutoinstSoftware::select_product - product to select: #{product_name}")
-
-      # try to find base product for installation according the profile
-      base_products = Y2Packager::Product.available_base_products
-      product = base_products.find { |p| p.short_name == product_name }
-
-      if !product
-        log.info("AutoinstSoftware::select_product - no base product found")
-        return
-      end
-
-      log.info("AutoinstSoftware::select_product - available base product: #{product.inspect}")
-
-      product.select
-
-      product
-    end
-
   private
 
     def merge_product(product)
+      product.select
+
       WorkflowManager.merge_product_workflow(product)
 
       nil

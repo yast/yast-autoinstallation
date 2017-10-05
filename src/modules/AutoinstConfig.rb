@@ -208,6 +208,11 @@ module Yast
       @remoteProfile = true
       @Proposals = []
 
+      #
+      # LeanOS: a base product explicitly selected by user in the profile
+      #
+      @selected_product = nil
+
       Yast.include self, "autoinstall/io.rb"
       AutoinstConfig()
     end
@@ -520,6 +525,38 @@ module Yast
             "partitioning, general options, and software.</p>\n"
         )
       main_help
+    end
+
+    # Reports name of base product as obtained from AY profile
+    #
+    # There are several ways how can base product be defined in the profile
+    # 1) explicitly
+    # 2) impllicitly according software selection
+    #
+    # @return [Y2Product] a base product or nil
+    def selected_product
+      return @selected_product if @selected_product
+
+      # magic for selecting base product according to the profile
+      # check if base product is defined explicitly in the profile
+      software = Profile.current.fetch("software", {})
+      base_products = Y2Packager::Product.available_base_products
+
+      # try to find base product for installation according the profile
+      product_name = software["product"]
+      return base_products.find { |p| p.short_name == product_name } if product_name
+
+      # try to find product according to patterns in profile
+      # searching for patterns like "sles-base-32bit"
+      products = base_products.select do |product|
+        software["patterns"].any? { |p| p =~ /#{product.name.downcase}-.*/ }
+      end
+      return products.first if products.size == 1
+
+      # last instance
+      return base_products.first if base_products.size == 1
+
+      @selected_product
     end
 
     publish :variable => :runModule, :type => "string"
