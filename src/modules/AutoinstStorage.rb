@@ -1152,10 +1152,23 @@ module Yast
               root_partition["userdata"] = { "/" => "snapshots" }
             end
             if root_partition["subvol"].nil?
-              # Add default subvolumes if none is defined (bsc#1012328)
-              log.info "Adding default subvolumes to #{root_partition["device"]}"
-              root_index = tm[device]["partitions"].index(root_partition)
-              tm[device]["partitions"][root_index] = Storage.AddSubvolRoot(root_partition)
+              # Add default subvolumes if the user has NOT explicit defined
+              # a root partition with btrfs in the AY configuration
+              # file for that device which does not have an subvolumes entry.
+              # (bsc#1012328, bnc1059617)
+              ay_config_root_partition = @AutoPartPlan.find do |d|
+                d["device"] == device &&
+                  d["partitions"] &&
+                  d["partitions"].any? { |p| p["mount"] = "/" && p["filesystem"] == :btrfs }
+              end
+              unless ay_config_root_partition
+                log.info "Adding default subvolumes to #{root_partition["device"]}"
+                root_index = tm[device]["partitions"].index(root_partition)
+                tm[device]["partitions"][root_index] = Storage.AddSubvolRoot(root_partition)
+              else
+                log.info "User has defined root partition (btrfs) with no subvolumes" \
+                  " for device #{root_partition["device"]}"
+              end
             end
           end
 
