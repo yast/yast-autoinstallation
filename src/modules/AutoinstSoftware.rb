@@ -1156,12 +1156,12 @@ module Yast
 
   private
 
+    # Selects given product (see Y2Packager::Product) and merges its workflow
     def merge_product(product)
+      log.info("AutoinstSoftware::merge_product - using product: #{product.name}")
       product.select
 
       WorkflowManager.merge_product_workflow(product)
-
-      nil
     end
   end
 
