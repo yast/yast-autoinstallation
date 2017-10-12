@@ -21,7 +21,6 @@ module Yast
       dialogs = {
         "main"      => lambda { MainDialog() },
         "settings"  => lambda { Settings() },
-        "kickstart" => lambda { kickstartDialog },
         "clone"     => lambda { cloneSystem },
         "classes"   => lambda { ManageClasses() },
         "merge"     => lambda { MergeDialog() },
@@ -34,7 +33,6 @@ module Yast
         "main"      => {
           :menu_exit      => :ws_finish,
           :menu_settings  => "settings",
-          :menu_kickstart => "kickstart",
           :menu_merge     => "merge",
           :menu_classes   => "classes",
           :menu_clone     => "clone",
@@ -44,7 +42,6 @@ module Yast
         "valid"     => { :next => "main", :abort => "main", :back => "main" },
         "classes"   => { :next => "main", :abort => "main", :back => "main" },
         "clone"     => { :next => "main", :abort => "main", :back => "main" },
-        "kickstart" => { :next => "main", :abort => "main", :back => "main" },
         "settings"  => { :next => "main", :back => "main" }
       }
 

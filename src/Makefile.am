@@ -4,7 +4,6 @@ module_DATA = \
   modules/AutoinstStorage.rb \
   modules/AutoinstPartPlan.rb \
   modules/AutoInstallRules.rb \
-  modules/Kickstart.rb \
   modules/Y2ModuleConfig.rb \
   modules/ProfileLocation.rb \
   modules/AutoinstPartition.rb \
@@ -77,11 +76,7 @@ ylib_DATA = \
 
 scrconf_DATA = \
   scrconf/cfg_autoinstall.scr \
-  scrconf/autoinstall.scr \
-  scrconf/ksimport.scr
-
-agent_SCRIPTS = \
-  servers_non_y2/ag_ksimport
+  scrconf/autoinstall.scr
 
 schemafilesdir = $(schemadir)/autoyast/rnc
 schemafiles_DATA = \
@@ -109,6 +104,6 @@ desktop_DATA = \
 fillup_DATA = \
   fillup/sysconfig.autoinstall
 
-EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(scrconf_DATA) $(agent_SCRIPTS) $(schemafiles_DATA) $(ybin_SCRIPTS) $(desktop_DATA) $(fillup_DATA) $(ylib_DATA)
+EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(scrconf_DATA) $(schemafiles_DATA) $(ybin_SCRIPTS) $(desktop_DATA) $(fillup_DATA) $(ylib_DATA)
 
 include $(top_srcdir)/Makefile.am.common

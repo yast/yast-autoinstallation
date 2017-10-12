@@ -391,13 +391,6 @@ module Yast
         _("Save &As"),
         "menu_saveas"
       )
-      _Menu = Wizard.AddSubMenu(_Menu, "file-menu", _("Im&port"), "file-import")
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
-        "file-import",
-        _("Import &Kickstart File"),
-        "menu_kickstart"
-      )
       _Menu = Wizard.AddMenuEntry(
         _Menu,
         "file-menu",

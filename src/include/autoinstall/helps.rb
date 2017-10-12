@@ -22,12 +22,6 @@ module Yast
           _(
             "<p>Load a profile first. Otherwise an empty file\nis validated.</p>\n"
           ),
-        "kickstart"   => _("<p><b><big>Importing Kickstart Files</big></b><br>") +
-          _(
-            "<p>To import a Kickstart file, enter the path to the configuration file. \n" +
-              "The imported data is loaded into the configuration management system \n" +
-              "to add more configuration options available with SUSE.</p>\n"
-          ),
         "clone"       => _(
           "<p>This tool creates a reference profile by reading\n" +
             "information from this system. Select the resources to read from this system\n" +
