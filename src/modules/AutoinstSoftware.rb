@@ -1158,6 +1158,8 @@ module Yast
 
     # Selects given product (see Y2Packager::Product) and merges its workflow
     def merge_product(product)
+      raise ArgumentError, "Base product expected" if !product
+
       log.info("AutoinstSoftware::merge_product - using product: #{product.name}")
       product.select
 
