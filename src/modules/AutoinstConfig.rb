@@ -543,7 +543,7 @@ module Yast
       base_products = Y2Packager::Product.available_base_products
 
       # try to find base product for installation according the profile
-      product_name = software["product"]
+      product_name = software.fetch("products", {})["product"]
       return base_products.find { |p| p.short_name == product_name } if product_name
 
       # try to find product according to patterns in profile
