@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        4.0.0
+Version:        4.0.1
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -205,14 +205,8 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_clientdir}/autoyast.rb
 %{yast_clientdir}/ayast_setup.rb
 
-%dir %{yast_scrconfdir}
-%{yast_scrconfdir}/ksimport.scr
-
 %dir %{yast_moduledir}
 %{yast_moduledir}/AutoinstClass.rb
-%{yast_moduledir}/Kickstart.rb
-%dir %{yast_agentdir}
-%{yast_agentdir}/ag_ksimport
 
 # additional files
 
