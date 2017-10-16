@@ -545,24 +545,26 @@ module Yast
 
       # try to find base product for installation according the profile
       product_name = software.fetch("products", {})["product"]
-      return base_products.find { |p| p.short_name == product_name } if product_name
+      return @selected_product = base_products.find do |p|
+        p.short_name == product_name
+      end if product_name
 
       # try to find base product according to patterns in profile
       # searching for patterns like "sles-base-32bit"
       products = base_products.select do |product|
         software["patterns"].any? { |p| p =~ /#{product.name.downcase}-.*/ }
       end
-      return products.first if products.size == 1
+      return @selected_product = products.first if products.size == 1
 
       # try to find base product according to packages selection in profile
       # searching for packages like "sles-release"
       products = base_products.select do |product|
         software["packages"].any? { |p| p =~ /#{product.name.downcase}-release/ }
       end
-      return products.first if products.size == 1
+      return @selected_product = products.first if products.size == 1
 
       # last instance
-      return base_products.first if base_products.size == 1
+      return @selected_product = base_products.first if base_products.size == 1
 
       # no product was identified
       nil
