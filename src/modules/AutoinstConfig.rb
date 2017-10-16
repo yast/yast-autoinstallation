@@ -659,7 +659,7 @@ module Yast
       software = profile.fetch("software", {})
 
       identify_product do |product|
-        software.fetch("patterns", {}).any? { |p| p =~ /#{product.name.downcase}-.*/ }
+        software.fetch("patterns", []).any? { |p| p =~ /#{product.name.downcase}-.*/ }
       end
     end
 
@@ -670,7 +670,7 @@ module Yast
       software = profile.fetch("software", {})
 
       identify_product do |product|
-        software.fetch("packages", {}).any? { |p| p =~ /#{product.name.downcase}-release/ }
+        software.fetch("packages", []).any? { |p| p =~ /#{product.name.downcase}-release/ }
       end
     end
 

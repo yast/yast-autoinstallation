@@ -2,16 +2,12 @@
 
 require_relative "test_helper"
 
-# storage-ng
-=begin
+require "y2packager/product"
+
 Yast.import "AutoinstConfig"
-=end
+Yast.import "Profile"
 
 describe "Yast::AutoinstConfig" do
-  # storage-ng
-  before :all do
-    skip("pending of storage-ng")
-  end
 
   subject { Yast::AutoinstConfig }
 
@@ -116,6 +112,75 @@ describe "Yast::AutoinstConfig" do
         expect(subject.user).to eq("moo")
         expect(subject.pass).to eq("woo")
       end
+    end
+  end
+
+  describe "#selected_product" do
+    def base_product(name, short_name)
+      Y2Packager::Product.new(name: name, short_name: short_name)
+    end
+
+    let(:selected_name) { "SLES15" }
+
+    before(:each) do
+      allow(Y2Packager::Product)
+        .to receive(:available_base_products)
+        .and_return(
+          [
+            base_product("SLES", selected_name),
+            base_product("SLED", "SLED15")
+          ]
+        )
+
+        # reset cache between tests
+        subject.instance_variable_set(:@selected_product, nil)
+    end
+
+    it "returns proper base product when explicitly selected in the profile and such base product exists on media" do
+      allow(Yast::Profile)
+        .to receive(:current)
+        .and_return("software" => { "products" => { "product" => selected_name } })
+
+      expect(subject.selected_product.short_name).to eql selected_name
+    end
+
+    it "returns nil when product is explicitly selected in the profile and such base product doesn't exist on media" do
+      allow(Yast::Profile)
+        .to receive(:current)
+        .and_return("software" => { "products" => { "product" => "Fedora" } })
+
+      expect(subject.selected_product).to be nil
+    end
+
+    it "returns base product identified by patterns in the profile if such base product exists on media" do
+      allow(Yast::Profile)
+        .to receive(:current)
+        .and_return("software" => { "patterns" => ["sles-base-32bit"] })
+
+      expect(subject.selected_product.short_name).to eql selected_name
+    end
+
+    it "returns base product identified by packages in the profile if such base product exists on media" do
+      allow(Yast::Profile)
+        .to receive(:current)
+        .and_return("software" => { "packages" => ["sles-release"] })
+
+      expect(subject.selected_product.short_name).to eql selected_name
+    end
+
+    it "returns base product if there is just one on media and product cannot be identified from profile" do
+      allow(Y2Packager::Product)
+        .to receive(:available_base_products)
+        .and_return(
+          [
+            base_product("SLED", "SLED15")
+          ]
+        )
+      allow(Yast::Profile)
+        .to receive(:current)
+        .and_return("software" => {})
+
+      expect(subject.selected_product.short_name).to eql "SLED15"
     end
   end
 end
