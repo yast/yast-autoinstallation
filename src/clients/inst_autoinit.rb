@@ -108,7 +108,6 @@ module Yast
       end
 
       if !AutoinstConfig.selected_product
-        log.error("No base product selected")
         Report.Error(_("No base product selected"))
 
         return :abort

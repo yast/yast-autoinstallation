@@ -540,34 +540,30 @@ module Yast
 
       # magic for selecting base product according to the profile
       # check if base product is defined explicitly in the profile
-      software = Profile.current.fetch("software", {})
-      base_products = Y2Packager::Product.available_base_products
 
-      # try to find base product for installation according the profile
-      product_name = software.fetch("products", {})["product"]
-      return @selected_product = base_products.find do |p|
-        p.short_name == product_name
-      end if product_name
+      # trying heuristics to identify a base product
+      profile = Profile.current
+      product = identify_product_by_selection(profile)
 
-      # try to find base product according to patterns in profile
-      # searching for patterns like "sles-base-32bit"
-      products = base_products.select do |product|
-        software["patterns"].any? { |p| p =~ /#{product.name.downcase}-.*/ }
+      # user asked for a product which is not available -> exit, not found
+      return nil if product.nil? && product_name(profile)
+
+      @selected_product = if product
+        log.info("selected_product - found explicitly defined base product: #{product.inspect}")
+        product
+      elsif (product = identify_product_by_patterns(profile))
+        log.info("selected_product - base product identified by patterns: #{product.inspect}")
+        product
+      elsif (product = identify_product_by_packages(profile))
+        log.info("selected_product - base product identified by packages: #{product.inspect}")
+        product
+      else
+        # last instance
+        base_products = Y2Packager::Product.available_base_products
+        base_products.first if base_products.size == 1
       end
-      return @selected_product = products.first if products.size == 1
 
-      # try to find base product according to packages selection in profile
-      # searching for packages like "sles-release"
-      products = base_products.select do |product|
-        software["packages"].any? { |p| p =~ /#{product.name.downcase}-release/ }
-      end
-      return @selected_product = products.first if products.size == 1
-
-      # last instance
-      return @selected_product = base_products.first if base_products.size == 1
-
-      # no product was identified
-      nil
+      @selected_product
     end
 
     publish :variable => :runModule, :type => "string"
@@ -626,6 +622,64 @@ module Yast
     publish :function => :ShellEscape, :type => "string (string)"
     publish :function => :AutoinstConfig, :type => "void ()"
     publish :function => :MainHelp, :type => "string ()"
+
+    private
+
+    # Reads first product name from the profile
+    #
+    # FIXME: Currently it returns first found product name. It should be no
+    # problem since this section was unused in AY installation so far.
+    #
+    # @param [Hash] AY profile
+    # @return [String] product name
+    def product_name(profile)
+      software = profile.fetch("software", {})
+      software.fetch("products", {})["product"]
+    end
+
+    # Tries to identify a base product according to the condition in block
+    #
+    # @return [Y2Packager::Product] a product if exactly one product matches
+    # the criteria, nil otherwise
+    def identify_product
+      base_products = Y2Packager::Product.available_base_products
+
+      products = base_products.select do |product|
+        yield(product)
+      end
+
+      return products.first if products.size == 1
+      nil
+    end
+
+    # Try to find base product according to patterns in profile
+    #
+    # searching for patterns like "sles-base-32bit"
+    def identify_product_by_patterns(profile)
+      software = profile.fetch("software", {})
+
+      identify_product do |product|
+        software.fetch("patterns", {}).any? { |p| p =~ /#{product.name.downcase}-.*/ }
+      end
+    end
+
+    # Try to find base product according to packages selection in profile
+    #
+    # searching for packages like "sles-release"
+    def identify_product_by_packages(profile)
+      software = profile.fetch("software", {})
+
+      identify_product do |product|
+        software.fetch("packages", {}).any? { |p| p =~ /#{product.name.downcase}-release/ }
+      end
+    end
+
+    # Try to identify base product using user's selection in profile
+    def identify_product_by_selection(profile)
+      identify_product do |product|
+        product.short_name == product_name(profile)
+      end
+    end
   end
 
   AutoinstConfig = AutoinstConfigClass.new
