@@ -527,13 +527,14 @@ module Yast
       main_help
     end
 
-    # Reports name of base product as obtained from AY profile
+    # Tryes to finds a base product if could be identified from the AY profile
     #
     # There are several ways how can base product be defined in the profile
     # 1) explicitly
-    # 2) impllicitly according software selection
+    # 2) impllicitly according to software selection
+    # 3) if not set explicitly and just one product is available on media - use it
     #
-    # @return [Y2Product] a base product or nil
+    # @return [Y2Packager::Product] a base product or nil
     def selected_product
       return @selected_product if @selected_product
 
@@ -556,7 +557,8 @@ module Yast
       # last instance
       return base_products.first if base_products.size == 1
 
-      @selected_product
+      # no product was identified
+      nil
     end
 
     publish :variable => :runModule, :type => "string"
