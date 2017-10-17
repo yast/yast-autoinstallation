@@ -626,13 +626,14 @@ module Yast
     # FIXME: Currently it returns first found product name. It should be no
     # problem since this section was unused in AY installation so far.
     # However, it might be needed to add a special handling for multiple
-    # poducts in the future
+    # poducts in the future. At least we can filter out products which are
+    # not base products.
     #
     # @param [Hash] AY profile
     # @return [String] product name
     def base_product_name(profile)
       software = profile.fetch("software", {})
-      software.fetch("products", {})["product"]
+      software.fetch("products", []).first
     end
 
     # Tries to identify a base product according to the condition in block

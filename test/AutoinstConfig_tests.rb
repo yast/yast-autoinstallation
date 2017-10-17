@@ -139,7 +139,7 @@ describe "Yast::AutoinstConfig" do
     it "returns proper base product when explicitly selected in the profile and such base product exists on media" do
       allow(Yast::Profile)
         .to receive(:current)
-        .and_return("software" => { "products" => { "product" => selected_name } })
+        .and_return("software" => { "products" => [selected_name] })
 
       expect(subject.selected_product.short_name).to eql selected_name
     end
