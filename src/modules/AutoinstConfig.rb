@@ -527,7 +527,7 @@ module Yast
       main_help
     end
 
-    # Tryes to finds a base product if could be identified from the AY profile
+    # Tries to find a base product if could be identified from the AY profile
     #
     # There are several ways how can base product be defined in the profile
     # 1) explicitly
@@ -538,15 +538,11 @@ module Yast
     def selected_product
       return @selected_product if @selected_product
 
-      # magic for selecting base product according to the profile
-      # check if base product is defined explicitly in the profile
-
-      # trying heuristics to identify a base product
       profile = Profile.current
       product = identify_product_by_selection(profile)
 
       # user asked for a product which is not available -> exit, not found
-      return nil if product.nil? && product_name(profile)
+      return nil if product.nil? && base_product_name(profile)
 
       @selected_product = if product
         log.info("selected_product - found explicitly defined base product: #{product.inspect}")
@@ -625,14 +621,16 @@ module Yast
 
     private
 
-    # Reads first product name from the profile
+    # Reads base product name from the profile
     #
     # FIXME: Currently it returns first found product name. It should be no
     # problem since this section was unused in AY installation so far.
+    # However, it might be needed to add a special handling for multiple
+    # poducts in the future
     #
     # @param [Hash] AY profile
     # @return [String] product name
-    def product_name(profile)
+    def base_product_name(profile)
       software = profile.fetch("software", {})
       software.fetch("products", {})["product"]
     end
@@ -655,6 +653,10 @@ module Yast
     # Try to find base product according to patterns in profile
     #
     # searching for patterns like "sles-base-32bit"
+    #
+    # @param [Hash] profile - a hash representation of AY profile
+    # @return [Y2Packager::Product] a product if exactly one product matches
+    # the criteria, nil otherwise
     def identify_product_by_patterns(profile)
       software = profile.fetch("software", {})
 
@@ -666,6 +668,10 @@ module Yast
     # Try to find base product according to packages selection in profile
     #
     # searching for packages like "sles-release"
+    #
+    # @param [Hash] profile - a hash representation of AY profile
+    # @return [Y2Packager::Product] a product if exactly one product matches
+    # the criteria, nil otherwise
     def identify_product_by_packages(profile)
       software = profile.fetch("software", {})
 
@@ -675,9 +681,13 @@ module Yast
     end
 
     # Try to identify base product using user's selection in profile
+    #
+    # @param [Hash] profile - a hash representation of AY profile
+    # @return [Y2Packager::Product] a product if exactly one product matches
+    # the criteria, nil otherwise
     def identify_product_by_selection(profile)
       identify_product do |product|
-        product.short_name == product_name(profile)
+        product.short_name == base_product_name(profile)
       end
     end
   end
