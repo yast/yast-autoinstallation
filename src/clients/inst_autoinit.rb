@@ -107,6 +107,11 @@ module Yast
         WFM.CallFunction("fcoe-client_auto", ["Write"])
       end
 
+      if !AutoinstConfig.selected_product
+        Report.Error(_("No base product selected"))
+
+        return :abort
+      end
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 

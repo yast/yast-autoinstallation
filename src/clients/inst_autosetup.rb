@@ -334,8 +334,8 @@ module Yast
           "scc_auto",
           ["Write"]
         )
-	# failed relnotes download is not fatal, ignore ret code
-	WFM.CallFunction("inst_download_release_notes")
+        # failed relnotes download is not fatal, ignore ret code
+        WFM.CallFunction("inst_download_release_notes")
       elsif general_section["semi-automatic"] &&
           general_section["semi-automatic"].include?("scc")
 
@@ -447,10 +447,8 @@ module Yast
 
       Progress.Finish
 
-      @ret = ProductControl.RunFrom(
-        Ops.add(ProductControl.CurrentStep, 1),
-        true
-      )
+      @ret = ProductControl.RunFrom(ProductControl.CurrentStep + 1, true)
+
       return :finish if @ret == :next
       @ret
     end

@@ -9,6 +9,7 @@
 #
 require "yast"
 require "y2storage"
+require "y2packager/product"
 
 module Yast
   class AutoinstSoftwareClass < Module
@@ -34,6 +35,7 @@ module Yast
       Yast.import "Y2ModuleConfig"
       Yast.import "PackageSystem"
       Yast.import "ProductFeatures"
+      Yast.import "WorkflowManager"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -88,7 +90,6 @@ module Yast
       @modified
     end
 
-
     # Import data
     # @param [Hash] settings settings to be imported
     # @return true on success
@@ -99,10 +100,6 @@ module Yast
       @instsource = settings.fetch("instsource","")
 
       notFound = ""
-
-      # what is this good for? disturbs the main-repo selection
-      # Packages::Init(true);
-      # Packages::InitializeAddOnProducts();
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
       @patternsAvailable = []
@@ -853,6 +850,9 @@ module Yast
       sw_settings = Profile.current.fetch("software",{})
       Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
+
+      merge_product(AutoinstConfig.selected_product)
+
       failed = []
 
       # Add storage-related software packages (filesystem tools etc.) to the
@@ -1153,6 +1153,18 @@ module Yast
     publish :function => :addPostPackages, :type => "void (list <string>)"
     publish :function => :ReadHelper, :type => "map <string, any> ()"
     publish :function => :Read, :type => "boolean ()"
+
+  private
+
+    # Selects given product (see Y2Packager::Product) and merges its workflow
+    def merge_product(product)
+      raise ArgumentError, "Base product expected" if !product
+
+      log.info("AutoinstSoftware::merge_product - using product: #{product.name}")
+      product.select
+
+      WorkflowManager.merge_product_workflow(product)
+    end
   end
 
   AutoinstSoftware = AutoinstSoftwareClass.new
