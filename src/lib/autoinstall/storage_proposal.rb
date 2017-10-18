@@ -1,3 +1,24 @@
+# encoding: utf-8
+
+# Copyright (c) [2017] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "y2storage"
 
 module Y2Autoinstallation
@@ -13,13 +34,17 @@ module Y2Autoinstallation
     # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Y2Storage proposal instance
     attr_reader :proposal
 
+    # @return [Y2Storage::AutoinstIssues::List] Problems list
+    attr_reader :issues_list
+
     # Constructor
     #
     # @param partitioning [Array<Hash>] Partitioning section from the AutoYaST profile
     #
     # @see https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Partitioning
     def initialize(partitioning)
-      @proposal = build_proposal(partitioning)
+      @issues_list = Y2Storage::AutoinstIssues::List.new
+      build_proposal(partitioning)
     end
 
     # Set the proposal on the StorageManager
@@ -35,6 +60,31 @@ module Y2Autoinstallation
       proposal.failed?
     end
 
+    # Determine if any issue was found while creating the proposal
+    #
+    # @return [Boolean] true if some problem was found; false otherwise
+    def issues?
+      !issues_list.empty?
+    end
+
+    # Determine whether the proposal is valid for installation
+    #
+    # There a chance that the user forgets about specifying the root partition.
+    # In such case, the proposal can succeed but it is not possible to install
+    # a system on it.
+    #
+    # @return [Boolean] true if some problem was found; false otherwise
+    def valid?
+      return @valid unless @valid.nil?
+      return false if failed?
+
+      if !proposal.planned_devices.any? { |d| d.respond_to?(:mount_point) && d.mount_point == "/" }
+        issues_list.add(:missing_root)
+      end
+
+      @valid = !issues?
+    end
+
   private
 
     # Initialize the partition proposal
@@ -44,13 +94,16 @@ module Y2Autoinstallation
     # * {Y2Storage::GuidedProposal} if {partitioning} is nil or empty;
     # * {Y2Storage::AutoinstProposal} in any other case.
     #
-    # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Proposal instance
+    # @return [Y2Storage::GuidedPropoal,Y2Storage::AutoinstProposal] Proposal instance
     def build_proposal(partitioning)
       if partitioning.nil? || partitioning.empty?
-        guided_proposal
+        @proposal = guided_proposal
       else
-        autoinst_proposal(partitioning)
+        @proposal = autoinst_proposal(partitioning)
+        @proposal.propose
       end
+    rescue Y2Storage::Error => e
+      handle_exception(e)
     end
 
     # Return an AutoinstProposal according to the AutoYaST profile
@@ -61,12 +114,7 @@ module Y2Autoinstallation
     # @return [Y2Storage::AutoinstProposal]
     def autoinst_proposal(partitioning)
       log.info "Creating an autoinstall proposal"
-      proposal = Y2Storage::AutoinstProposal.new(partitioning:  partitioning)
-      proposal.propose
-      proposal
-    rescue Y2Storage::Error => e
-      log.warn "Autoinstall proposal failed: #{e.inspect}"
-      proposal
+      Y2Storage::AutoinstProposal.new(partitioning: partitioning, issues_list: issues_list)
     end
 
     # Return a GuidedProposal according to product's proposal setting
@@ -81,5 +129,23 @@ module Y2Autoinstallation
       log.info "Creating a guided proposal"
       Y2Storage::GuidedProposal.initial
     end
+
+    # Handle Y2Storage exceptions
+    #
+    # Some of the exceptions can be handled as an AutoYaST problem in order to offer further
+    # information to the user. For the rest of cases, the exception is catched and displayed
+    # in a reasonable way (no translation, for instance).
+    def handle_exception(error)
+      log.warn "Autoinstall proposal failed: #{error.inspect}"
+      case error
+      when Y2Storage::NoDiskSpaceError
+        issues_list.add(:no_disk_space)
+      when Y2Storage::Error
+        issues_list.add(:unknown, error)
+      else
+        raise error
+      end
+    end
+
   end
 end

@@ -138,15 +138,75 @@ module Yast
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
       proposal = Y2Autoinstallation::StorageProposal.new(settings)
-
-      if proposal.failed?
-        log.warn "Failed proposal: #{proposal.inspect}"
-        false
-      else
+      if valid_proposal?(proposal)
         log.info "Saving successful proposal: #{proposal.inspect}"
         proposal.save
         true
+      else # not needed
+        log.warn "Failed proposal: #{proposal.inspect}"
+        false
       end
+
+    end
+
+    # Determines whether the proposal is valid and inform the user if not valid
+    #
+    # When proposal is not valid:
+    #
+    # * If it only contain warnings: asks the user for confirmation.
+    # * If it contains some important problem, inform the user.
+    #
+    # @return [Boolean] True if the proposal is valid or the user accepted an invalid one.
+    def valid_proposal?(proposal)
+      return true if proposal.valid?
+
+      message = proposal_problems_message(proposal.problems_list)
+
+      if proposal.problems_list.fatal?
+        Popup.LongError(message)
+        false
+      else
+        Report.ErrorAnyQuestion(
+          _("Profile problems"),
+          message,
+          Label.ContinueButton,
+          Label.AbortButton,
+          :yes
+        )
+      end
+    end
+
+    def proposal_problems_message(problems_list)
+      fatal, non_fatal = problems_list.partition(&:fatal?)
+
+      parts = []
+      parts << proposal_warnings_message(non_fatal) unless non_fatal.empty?
+
+      if fatal.empty?
+        parts << _("Do you want to continue?")
+      else
+        parts << proposal_errors_message(fatal)
+        parts << _("Please, correct these problems and try again.")
+      end
+
+      parts.join("\n\n")
+    end
+
+    def proposal_warnings_message(problems)
+      _("Some minor problems where detected while creating the partitioning plan:") +
+        problems_list_to_message(problems)
+    end
+
+    def proposal_errors_message(problems)
+      _("Some minor problems where detected while creating the partitioning plan:") +
+        problems_list_to_message(problems)
+    end
+
+    def problems_list_to_message(problems)
+      lines = problems.map do |p|
+        "* #{p.message}"
+      end
+      lines.join("\n")
     end
 
     # Import settings from the general/storage section
