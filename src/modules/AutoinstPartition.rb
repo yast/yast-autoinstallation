@@ -294,7 +294,7 @@ module Yast
         newPart["subvolumes"] = part["subvolumes"].reject do |subvolume|
           subvolume["path"].start_with?(".snapshots")
         end
-      else
+      elsif newPart["filesystem"] != :btrfs
         newPart = Builtins.remove(newPart, "subvolumes")
       end
       if !Builtins.isempty(Ops.get_string(part, "used_pool", ""))
