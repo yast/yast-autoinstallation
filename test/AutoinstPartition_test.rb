@@ -22,7 +22,6 @@ describe "Yast::AutoinstPartition" do
 
     it "filters out snapper snapshots" do
       parsed = subject.parsePartition(partition)
-
       expect(parsed["subvolumes"]).to eq(
         [{ "path" => "var/lib/machines" }]
       )
@@ -33,7 +32,6 @@ describe "Yast::AutoinstPartition" do
 
       it "exports them as an empty array" do
         parsed = subject.parsePartition(partition)
-
         expect(parsed["subvolumes"]).to eq([])
       end
 
@@ -42,7 +40,6 @@ describe "Yast::AutoinstPartition" do
 
         it "does not export the subvolumes list" do
           parsed = subject.parsePartition(partition)
-
           expect(parsed).to_not have_key("subvolumes")
         end
       end
