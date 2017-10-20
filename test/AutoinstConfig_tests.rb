@@ -2,8 +2,6 @@
 
 require_relative "test_helper"
 
-require "y2packager/product"
-
 Yast.import "AutoinstConfig"
 Yast.import "Profile"
 

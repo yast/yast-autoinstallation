@@ -7,6 +7,7 @@
 #
 # $Id$
 require "yast"
+require "y2packager/product"
 
 module Yast
   import "ServicesManagerTarget"
