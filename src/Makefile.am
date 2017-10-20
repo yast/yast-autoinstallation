@@ -74,6 +74,10 @@ ylib_DATA = \
   lib/autoinstall/pkg_gpg_check_handler.rb \
   lib/autoinstall/storage_proposal.rb
 
+ydialogsdir = @ylibdir@/autoinstall/dialogs
+ydialogs_DATA = \
+  lib/autoinstall/dialogs/question.rb
+
 scrconf_DATA = \
   scrconf/cfg_autoinstall.scr \
   scrconf/autoinstall.scr
@@ -104,6 +108,6 @@ desktop_DATA = \
 fillup_DATA = \
   fillup/sysconfig.autoinstall
 
-EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(scrconf_DATA) $(schemafiles_DATA) $(ybin_SCRIPTS) $(desktop_DATA) $(fillup_DATA) $(ylib_DATA)
+EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(scrconf_DATA) $(schemafiles_DATA) $(ybin_SCRIPTS) $(desktop_DATA) $(fillup_DATA) $(ylib_DATA) $(ydialogs_DATA)
 
 include $(top_srcdir)/Makefile.am.common
