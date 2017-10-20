@@ -34,7 +34,7 @@ module Y2Autoinstallation
     # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Y2Storage proposal instance
     attr_reader :proposal
 
-    # @return [Y2Storage::AutoinstIssues::List] Problems list
+    # @return [Y2Storage::AutoinstIssues::List] Storage proposal issues list
     attr_reader :issues_list
 
     # Constructor
@@ -94,7 +94,7 @@ module Y2Autoinstallation
     # * {Y2Storage::GuidedProposal} if {partitioning} is nil or empty;
     # * {Y2Storage::AutoinstProposal} in any other case.
     #
-    # @return [Y2Storage::GuidedPropoal,Y2Storage::AutoinstProposal] Proposal instance
+    # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Proposal instance
     def build_proposal(partitioning)
       if partitioning.nil? || partitioning.empty?
         @proposal = guided_proposal
