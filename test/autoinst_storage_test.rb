@@ -9,17 +9,28 @@ describe Yast::AutoinstStorage do
   describe "#Import" do
     let(:storage_proposal) do
       instance_double(
-        Y2Autoinstallation::StorageProposal, valid?: valid?, problems_list: problems_list
+        Y2Autoinstallation::StorageProposal, valid?: valid?, issues_list: issues_list
       )
     end
-
-    let(:problems_list) { Y2Storage::AutoinstProblems::List.new }
+    let(:issues_dialog) { instance_double(Y2Autoinstallation::Dialogs::Question, run: :abort) }
+    let(:issues_list) { Y2Storage::AutoinstIssues::List.new }
     let(:valid?) { true }
+    let(:errors_settings) { { "show" => false, "timeout" => 10 } }
+    let(:warnings_settings) { { "show" => true, "timeout" => 5 } }
 
     before do
       allow(Y2Autoinstallation::StorageProposal).to receive(:new)
         .and_return(storage_proposal)
+      allow(Y2Autoinstallation::Dialogs::Question).to receive(:new)
+        .and_return(issues_dialog)
       allow(storage_proposal).to receive(:save)
+    end
+
+    around do |example|
+      old_settings = Yast::Report.Export
+      Yast::Report.Import({"warnings" => warnings_settings, "errors" => errors_settings})
+      example.run
+      Yast::Report.Import(old_settings)
     end
 
     it "creates a proposal" do
@@ -40,65 +51,115 @@ describe Yast::AutoinstStorage do
       end
     end
 
-    context "when the proposal is not valid" do
+    context "when the proposal contains fatal issues" do
+      let(:valid?) { false }
+
+      before do
+        issues_list.add(:missing_root)
+        allow(subject.log).to receive(:error).and_call_original
+      end
+
+      it "shows errors to the user with not timeout" do
+        expect(Y2Autoinstallation::Dialogs::Question).to receive(:new)
+          .with(/Some important problems/, timeout: 0, buttons_set: :abort)
+          .and_return(issues_dialog)
+        expect(issues_dialog).to receive(:run)
+        subject.Import({})
+      end
+
+      it "returns false" do
+        allow(issues_dialog).to receive(:run).and_return(:abort)
+        expect(subject.Import({})).to eq(false)
+      end
+
+      context "and errors logging is enabled" do
+        let(:errors_settings) { { "log" => true } }
+
+        it "logs the error" do
+          expect(subject.log).to receive(:error)
+            .with(/Some important problems/)
+          subject.Import({})
+        end
+      end
+
+      context "and errors logging is disabled" do
+        let(:errors_settings) { { "log" => false } }
+
+        it "does not log the error" do
+          expect(subject.log).to_not receive(:error)
+            .with(/Some important problems/)
+          subject.Import({})
+        end
+      end
+    end
+
+    context "when the proposal contains non fatal issues" do
       let(:valid?) { false }
       let(:continue) { true }
 
       before do
-        allow(Yast::Report).to receive(:ErrorAnyQuestion)
-          .and_return(continue)
+        issues_list.add(:invalid_value, "/", :size, "auto")
+        allow(subject.log).to receive(:warn).and_call_original
       end
 
-      context "and there are no fatal errors" do
-        it "asks the user to continue" do
-          expect(Yast::Report).to receive(:ErrorAnyQuestion)
+      context "and warnings reporting is enabled" do
+        it "asks the user for confirmation" do
+          expect(Y2Autoinstallation::Dialogs::Question).to receive(:new)
+            .with(/Some minor problems/, timeout: 5, buttons_set: :question)
+            .and_return(issues_dialog)
+          expect(issues_dialog).to receive(:run)
           subject.Import({})
         end
 
-        context "and the user decides to continue" do
+        context "and the user confirms the proposal" do
+          before do
+            allow(issues_dialog).to receive(:run).and_return(:ok)
+          end
+
           it "returns true" do
             expect(subject.Import({})).to eq(true)
           end
-
-          it "saves the proposal" do
-            expect(storage_proposal).to receive(:save)
-            subject.Import({})
-          end
         end
 
-        context "and the user decides to abort" do
-          let(:continue) { false }
+        context "and the user dismisses the proposal" do
+          before do
+            allow(issues_dialog).to receive(:run).and_return(:abort)
+          end
 
           it "returns false" do
             expect(subject.Import({})).to eq(false)
           end
-
-          it "does not save the proposal" do
-            expect(storage_proposal).to_not receive(:save)
-            subject.Import({})
-          end
         end
       end
 
-      context "and there are fatal errors" do
-        before do
-          problems_list.add(:missing_root)
-        end
+      context "and warnings reporting is disabled" do
+        let(:warnings_settings) { { "show" => false } }
 
-        it "returns false" do
-          expect(subject.Import({})).to eq(false)
+        it "returns true" do
+          expect(subject.Import({})).to eq(true)
         end
+      end
 
-        it "notifies the user" do
-          expect(Yast::Popup).to receive(:LongError)
-            .with(/No root partition/)
+      context "and warnings logging is enabled" do
+        let(:warnings_settings) { { "log" => true } }
+
+        it "logs the warning" do
+          expect(subject.log).to receive(:warn)
+            .with(/Some minor problems/)
           subject.Import({})
         end
+      end
 
-        it "does not save the proposal" do
-          expect(storage_proposal).to_not receive(:save)
+      context "and warnings logging is disabled" do
+        let(:warnings_settings) { { "log" => false } }
+
+        it "does not log the warning" do
+          expect(subject.log).to_not receive(:warn)
+            .with(/Some minor problems/)
+          subject.Import({})
         end
       end
+
     end
   end
 

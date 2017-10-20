@@ -8,6 +8,8 @@
 # $Id$
 require "yast"
 require "autoinstall/storage_proposal"
+require "autoinstall/dialogs/question"
+require "autoinstall/storage_proposal_issues_presenter"
 
 module Yast
   class AutoinstStorageClass < Module
@@ -147,66 +149,6 @@ module Yast
         false
       end
 
-    end
-
-    # Determines whether the proposal is valid and inform the user if not valid
-    #
-    # When proposal is not valid:
-    #
-    # * If it only contain warnings: asks the user for confirmation.
-    # * If it contains some important problem, inform the user.
-    #
-    # @return [Boolean] True if the proposal is valid or the user accepted an invalid one.
-    def valid_proposal?(proposal)
-      return true if proposal.valid?
-
-      message = proposal_problems_message(proposal.problems_list)
-
-      if proposal.problems_list.fatal?
-        Popup.LongError(message)
-        false
-      else
-        Report.ErrorAnyQuestion(
-          _("Profile problems"),
-          message,
-          Label.ContinueButton,
-          Label.AbortButton,
-          :yes
-        )
-      end
-    end
-
-    def proposal_problems_message(problems_list)
-      fatal, non_fatal = problems_list.partition(&:fatal?)
-
-      parts = []
-      parts << proposal_warnings_message(non_fatal) unless non_fatal.empty?
-
-      if fatal.empty?
-        parts << _("Do you want to continue?")
-      else
-        parts << proposal_errors_message(fatal)
-        parts << _("Please, correct these problems and try again.")
-      end
-
-      parts.join("\n\n")
-    end
-
-    def proposal_warnings_message(problems)
-      _("Some minor problems where detected while creating the partitioning plan:") +
-        problems_list_to_message(problems)
-    end
-
-    def proposal_errors_message(problems)
-      _("Some minor problems where detected while creating the partitioning plan:") +
-        problems_list_to_message(problems)
-    end
-
-    def problems_list_to_message(problems)
-      lines = problems.map do |p|
-        "* #{p.message}"
-      end
-      lines.join("\n")
     end
 
     # Import settings from the general/storage section
@@ -451,6 +393,58 @@ module Yast
     publish :function => :Write, :type => "boolean ()"
 
   private
+
+    # Determine whether the proposal is valid and inform the user if not valid
+    #
+    # When proposal is not valid:
+    #
+    # * If it only contain warnings: asks the user for confirmation.
+    # * If it contains some important problem, inform the user.
+    #
+    # @param [StorageProposal] Storage proposal to check
+    # @return [Boolean] True if the proposal is valid or the user accepted an invalid one.
+    def valid_proposal?(proposal)
+      return true if proposal.valid?
+
+      report_settings = Report.Export
+      if proposal.issues_list.fatal?
+        # On fatal errors, the message should be displayed and without timeout
+        level = :error
+        buttons_set = :abort
+        display_message = true
+        log_message = report_settings["errors"]["log"]
+        timeout = 0
+      else
+        # On non-fatal issues, obey report settings for warnings
+        level = :warn
+        buttons_set = :question
+        display_message = report_settings["warnings"]["show"]
+        log_message = report_settings["warnings"]["log"]
+        timeout = report_settings["warnings"]["timeout"]
+      end
+
+      presenter = Y2Autoinstallation::StorageProposalIssuesPresenter.new(proposal.issues_list)
+      log_proposal_issues(level, presenter.to_plain) if log_message
+      return true unless display_message
+
+      dialog = Y2Autoinstallation::Dialogs::Question.new(
+        presenter.to_html,
+        timeout: timeout,
+        buttons_set: buttons_set
+      )
+      dialog.run == :ok
+    end
+
+
+    # Log proposal issues message
+    #
+    # @param level   [Symbol] Message level (:error, :warn)
+    # @param content [String] Text to log
+    def log_proposal_issues(level, content)
+      settings_name = level == :error ? :error : :warning
+      log.send(level, content)
+    end
+
 
     attr_accessor :general_settings
   end
