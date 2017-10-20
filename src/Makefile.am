@@ -72,7 +72,8 @@ ylibdir = @ylibdir@/autoinstall
 ylib_DATA = \
   lib/autoinstall/module_config_builder.rb \
   lib/autoinstall/pkg_gpg_check_handler.rb \
-  lib/autoinstall/storage_proposal.rb
+  lib/autoinstall/storage_proposal.rb \
+  lib/autoinstall/storage_proposal_issues_presenter.rb
 
 ydialogsdir = @ylibdir@/autoinstall/dialogs
 ydialogs_DATA = \
