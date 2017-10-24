@@ -275,6 +275,8 @@ module Yast
         write_storage = AutoinstStorage.Import(Profile.current["partitioning"])
       end
 
+      return :abort unless write_storage
+
       semiauto_partitions = general_section["semi-automatic"] &&
         general_section["semi-automatic"].include?("partitioning")
 
