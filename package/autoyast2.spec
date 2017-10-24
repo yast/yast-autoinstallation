@@ -41,8 +41,8 @@ BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
-# Y2Storage::AutoinstProposal.new with proper default parameters
-BuildRequires:  yast2-storage-ng >= 0.1.28
+# Y2Storage::AutoinstIssues API
+BuildRequires:  yast2-storage-ng >= 4.0.6
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
@@ -61,8 +61,8 @@ Requires:       yast2-network >= 3.1.145
 Requires:       yast2-schema
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
-# Y2Storage::AutoinstProposal.new with proper default parameters
-Requires:       yast2-storage-ng >= 0.1.28
+# Y2Storage::AutoinstIssues API
+Requires:       yast2-storage-ng >= 4.0.6
 Conflicts:      yast2-installation < 3.1.166
 
 Provides:       yast2-config-autoinst
@@ -114,7 +114,8 @@ Requires:       yast2-update >= 3.3.0
 Requires:       yast2-xml
 # pkgGpgCheck callback
 Requires:       yast2-pkg-bindings >= 3.1.31
-Requires:       yast2-storage-ng >= 0.1.20
+# Y2Storage::AutoinstIssues API
+BuildRequires:  yast2-storage-ng >= 4.0.6
 Provides:       yast2-trans-autoinst
 Obsoletes:      yast2-trans-autoinst
 
