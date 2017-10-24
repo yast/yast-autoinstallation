@@ -9,7 +9,6 @@ TESTS = \
     AutoinstConfig_tests.rb \
     AutoinstFunctions_test.rb \
     AutoinstGeneral_test.rb \
-    AutoinstPartition_test.rb \
     AutoinstPartPlan_test.rb \
     AutoinstSoftware_test.rb \
     autoinst_storage_test.rb \
