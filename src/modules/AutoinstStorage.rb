@@ -441,7 +441,7 @@ module Yast
     # @param level   [Symbol] Message level (:error, :warn)
     # @param content [String] Text to log
     def log_proposal_issues(level, content)
-      settings_name = level == :error ? :error : :warning
+      settings_name = (level == :error) ? :error : :warning
       log.send(level, content)
     end
 

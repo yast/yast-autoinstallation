@@ -21,7 +21,6 @@
 
 require "ui/dialog"
 
-Yast.import "HTML"
 Yast.import "Label"
 Yast.import "UI"
 
@@ -130,7 +129,7 @@ module Y2Autoinstallation
       # @return [Array<Yast::Term>]
       def question_buttons
         set = [
-          PushButton(Id(:ok), Opt(:okButton, :key_F9, :default), Yast::Label.ContinueButton),
+          PushButton(Id(:ok), Opt(:okButton, :key_F10, :default), Yast::Label.ContinueButton),
           abort_button
         ]
 
@@ -154,7 +153,7 @@ module Y2Autoinstallation
       #
       # @return Yast::Term
       def abort_button
-        PushButton(Id(:abort), Opt(:cancel_button, :key_F10), Yast::Label.AbortButton)
+        PushButton(Id(:abort), Opt(:cancel_button, :key_F9), Yast::Label.AbortButton)
       end
 
       # Timeout counter

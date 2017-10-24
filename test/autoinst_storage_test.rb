@@ -58,7 +58,7 @@ describe Yast::AutoinstStorage do
         issues_list.add(:missing_root)
       end
 
-      it "shows errors to the user with not timeout" do
+      it "shows errors to the user without timeout" do
         expect(Y2Autoinstallation::Dialogs::Question).to receive(:new)
           .with(/Some important problems/, timeout: 0, buttons_set: :abort)
           .and_return(issues_dialog)
