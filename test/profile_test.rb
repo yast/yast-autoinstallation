@@ -2,19 +2,12 @@
 
 require_relative "test_helper"
 
-# storage-ng
-=begin
 Yast.import "Profile"
 Yast.import "Y2ModuleConfig"
 Yast.import "AutoinstClone"
-=end
 
-describe "Yast::Profile" do
-  # storage-ng
-  before :all do
-    skip("pending of storage-ng")
-  end
-  
+describe Yast::Profile do
+
   CUSTOM_MODULE = {
     "Name" => "Custom module",
     "X-SuSE-YaST-AutoInst" => "configure",

@@ -2,12 +2,12 @@
 
 require_relative "test_helper"
 
-# storage-ng
 Yast.import "AutoinstSoftware"
 Yast.import "AutoinstData"
 Yast.import "Profile"
 
-describe "Yast::AutoinstSoftware" do
+describe Yast::AutoinstSoftware do
+
   subject { Yast::AutoinstSoftware }
 
   let(:profile) { FIXTURES_PATH.join("profiles", "software.xml").to_s }
