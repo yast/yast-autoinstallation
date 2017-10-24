@@ -56,7 +56,6 @@ describe Yast::AutoinstStorage do
 
       before do
         issues_list.add(:missing_root)
-        allow(subject.log).to receive(:error).and_call_original
       end
 
       it "shows errors to the user with not timeout" do

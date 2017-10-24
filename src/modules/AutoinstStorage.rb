@@ -398,7 +398,7 @@ module Yast
     #
     # When proposal is not valid:
     #
-    # * If it only contain warnings: asks the user for confirmation.
+    # * If it only contains warnings: asks the user for confirmation.
     # * If it contains some important problem, inform the user.
     #
     # @param [StorageProposal] Storage proposal to check

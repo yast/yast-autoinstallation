@@ -118,7 +118,7 @@ describe Y2Autoinstallation::Dialogs::Question do
       end
     end
 
-    context "when user input times-out" do
+    context "when user input times out" do
       let(:timeout) { 1 }
 
       it "returns :ok" do

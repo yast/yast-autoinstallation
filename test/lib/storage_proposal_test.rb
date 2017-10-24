@@ -116,8 +116,8 @@ describe Y2Autoinstallation::StorageProposal do
         end
 
         it "registers the error" do
-          storage_proposal.valid?
-          expect(storage_proposal.issues?).to eq(true)
+          expect { storage_proposal.valid? }.to change { storage_proposal.issues? }
+            .from(false).to(true)
         end
       end
     end

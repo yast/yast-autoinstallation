@@ -35,7 +35,7 @@ module Y2Autoinstallation
     # * Display a message and only offer an 'Abort' button.
     #
     # In order to integrate nicely with AutoYaST, a timeout can be set.
-    # Bear in mind that the timeout will not be respected when a showing only
+    # Bear in mind that the timeout will not be respected when showing only
     # the 'Abort' button.
     #
     # This dialog could be extended in the future in order to support other
