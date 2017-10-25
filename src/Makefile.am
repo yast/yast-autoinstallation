@@ -57,7 +57,6 @@ ynclude_DATA = \
   include/autoinstall/StorageDialog.rb \
   include/autoinstall/tree.rb \
   include/autoinstall/common.rb \
-  include/autoinstall/autopart.rb \
   include/autoinstall/dialogs.rb \
   include/autoinstall/AdvancedPartitionDialog.rb \
   include/autoinstall/ask.rb \
