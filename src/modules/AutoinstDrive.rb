@@ -324,88 +324,6 @@ module Yast
       nil
     end
 
-    # Import a generic drive map and create DriveT from it. Called by
-    # AutoinstPartPlan::Import().
-    #
-    # @param [Hash] drive A map containing the drive information.
-    #
-    # @return DriveT containing the same info.
-
-    def parseDrive(drive)
-      drive = deep_copy(drive)
-      # If it is a root nfs partition we do not need any additional
-      # conversation. (bnc#986124)
-      return drive if drive["type"] == :CT_NFS
-
-      newDrive = new("auto", Ops.get_symbol(drive, "type", :CT_DISK))
-      newDrive = set(
-        newDrive,
-        "device",
-        Ops.get_string(drive, "device", "auto")
-      )
-      newDrive = set(
-        newDrive,
-        "initialize",
-        Ops.get_boolean(drive, "initialize", true)
-      )
-      newDrive = set(
-        newDrive,
-        "use",
-        string2symbol(Ops.get_string(drive, "use", "all"))
-      )
-      newDrive = set(newDrive, "pesize", Ops.get_string(drive, "pesize", ""))
-      Builtins.foreach(Ops.get_list(drive, "partitions", [])) do |part|
-        newPart = AutoinstPartition.parsePartition(part)
-        if AutoinstPartition.isPartition(newPart)
-          newDrive = addPartition(newDrive, newPart)
-        else
-          Builtins.y2error("Couldn't construct PartitionT from '%1'", part)
-        end
-      end
-
-      if newDrive["type"] != :CT_TMPFS
-        if Mode.config && SCR.Execute(path(".target.bash"), "/usr/bin/snapper list") > 0
-          # Snapper returns an error if no snapshot has been defined.
-          newDrive["enable_snapshots"] = false
-        else
-          newDrive["enable_snapshots"] = true # enable snapshot (default)
-        end
-        newDrive["disklabel"] = drive["disklabel"] if drive.has_key?("disklabel")
-      else
-        newDrive.delete("disklabel")
-      end
-
-      deep_copy(newDrive)
-    end
-
-    # Export the DriveT to the generic map representation used by
-    # autoyast. Filters out our surrogate id.
-    #
-    # @param [Hash{String => Object}] drive Drive to export
-    #
-    # @return Exported generic map representation of DriveT.
-
-    def Export(drive)
-      drive = deep_copy(drive)
-      # get rid of id
-      exportDrive = Builtins.remove(drive, "_id")
-      # translate e.g. `all to "all"
-      Ops.set(
-        exportDrive,
-        "use",
-        symbol2string(Ops.get_symbol(exportDrive, "use", :Empty))
-      ) if exportDrive.fetch("use", :Empty).is_a?( Symbol )
-      # let AutoinstPartition do it's own filtering
-      Ops.set(
-        exportDrive,
-        "partitions",
-        Builtins.maplist(Ops.get_list(exportDrive, "partitions", [])) do |part|
-          AutoinstPartition.exportPartition(part)
-        end
-      )
-      deep_copy(exportDrive)
-    end
-
     publish :function => :set, :type => "map <string, any> (map <string, any>, string, any)"
     publish :function => :new, :type => "map <string, any> (string, symbol)"
     publish :function => :isDrive, :type => "boolean (map <string, any>)"
@@ -421,8 +339,6 @@ module Yast
     publish :function => :addPartition, :type => "map <string, any> (map <string, any>, map <string, any>)"
     publish :function => :updatePartition, :type => "map <string, any> (map <string, any>, integer, map <string, any>)"
     publish :function => :removePartition, :type => "map <string, any> (map <string, any>, integer)"
-    publish :function => :parseDrive, :type => "map <string, any> (map)"
-    publish :function => :Export, :type => "map (map <string, any>)"
   end
 
   AutoinstDrive = AutoinstDriveClass.new

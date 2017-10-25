@@ -11,6 +11,8 @@ require "y2storage"
 
 module Yast
   class AutoinstPartPlanClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -391,46 +393,8 @@ module Yast
     # @param [Array<Hash>] settings a list	[...]
     # @return	[Boolean] success
     def Import(settings)
-      settings = deep_copy(settings)
-      Builtins.y2milestone("entering Import with %1", settings)
-
-      # Filter out all tmpfs that have not been defined by the user.
-      # User created entries are defined in the fstab only.
-      tmpfs_devices = settings.select { |device| device["type"] == :CT_TMPFS }
-      tmpfs_devices.each do |device|
-        if device["partitions"]
-          device["partitions"].delete_if { |partition| partition["ignore_fstab"] }
-        end
-      end
-
-      # It makes no sense to have tmpfs dummy containers which have no partitions.
-      # E.g. the partitions have been filtered because they have not been defined
-      # by the user.
-      # (bnc#887318)
-      settings.delete_if { |device|
-        device["type"] == :CT_TMPFS && (!device["partitions"] || device["partitions"].empty? )
-      }
-
-      @AutoPartPlan = []
-      _IgnoreTypes = [:CT_BTRFS]
-      Builtins.foreach(settings) do |drive|
-        if !Builtins.contains(
-            _IgnoreTypes,
-            Ops.get_symbol(drive, "type", :CT_DISK)
-          )
-          newDrive = AutoinstDrive.parseDrive(drive)
-          if AutoinstDrive.isDrive(newDrive)
-            @AutoPartPlan = internalAddDrive(@AutoPartPlan, newDrive)
-          else
-            Builtins.y2error("Couldn't construct DriveT from '%1'", drive)
-          end
-        else
-          Builtins.y2milestone(
-            "Ignoring Container type '%1'",
-            Ops.get_symbol(drive, "type", :CT_DISK)
-          )
-        end
-      end
+      log.info("entering Import with #{settings.inspect}")
+      @AutoPartPlan = settings
       true
     end
 
@@ -441,28 +405,8 @@ module Yast
     # Dump the settings to a map, for autoinstallation use.
     # @return [Array]
     def Export
-      Builtins.y2milestone("entering Export")
-      drives = Builtins.maplist(@AutoPartPlan) do |drive|
-        AutoinstDrive.Export(drive)
-      end
-
-      clean_drives = Builtins.maplist(drives) do |d|
-        p = Builtins.maplist(Ops.get_list(d, "partitions", [])) do |part|
-          part = Builtins.remove(part, "fsid") if Builtins.haskey(part, "fsid")
-          if Builtins.haskey(part, "used_fs")
-            part = Builtins.remove(part, "used_fs")
-          end
-          deep_copy(part)
-        end
-        Ops.set(d, "partitions", p)
-        # this is to delete the dummy "auto" filled in by UI
-        if Builtins.haskey(d, "device") &&
-            Ops.get_string(d, "device", "") == "auto"
-          d = Builtins.remove(d, "device")
-          Builtins.y2milestone("device 'auto' dropped")
-        end
-        deep_copy(d)
-      end
+      log.info("entering Export with #{@AutoPartPlan.inspect}")
+      drives = deep_copy(@AutoPartPlan)
 
       # Adding skipped devices to partitioning section.
       # These devices will not be taken in the AutoYaSt configuration file
@@ -474,10 +418,10 @@ module Yast
         skip_device["skip_list"] = @skipped_devices.collect do |dev|
           {"skip_key" => "device", "skip_value" => dev}
         end
-        clean_drives << skip_device
+        drives << skip_device
       end
 
-      deep_copy(clean_drives)
+      drives
     end
 
     def Reset
