@@ -3,18 +3,11 @@
 require_relative "test_helper"
 require "yaml"
 
-# storage-ng
-=begin
 Yast.import "Y2ModuleConfig"
 Yast.import "Desktop"
 Yast.import "Profile"
-=end
 
-describe "Yast::Y2ModuleConfig" do
-  # storage-ng
-  before :all do
-    skip("pending of storage-ng")
-  end
+describe Yast::Y2ModuleConfig do
 
   DESKTOP_DATA = YAML::load_file(FIXTURES_PATH.join("desktop_files", "desktops.yml"))
 

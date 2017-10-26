@@ -4,19 +4,11 @@ require_relative "../test_helper"
 
 require "yast"
 
-# storage-ng
-=begin
 Yast.import "Profile"
 Yast.import "Stage"
 Yast.import "UI"
-=end
 
 describe "Yast::AutoinstallAskInclude" do
-  # storage-ng
-  before :all do
-    skip("pending of storage-ng")
-  end
-
   module DummyYast
     class AutoinstallAskClient < Yast::Client
       def main

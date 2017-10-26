@@ -2,19 +2,12 @@
 
 require_relative "test_helper"
 
-# storage-ng
-=begin
 Yast.import "AutoinstFunctions"
 Yast.import "Stage"
 Yast.import "Mode"
 Yast.import "AutoinstConfig"
-=end
 
-describe "Yast::AutoinstFunctions" do
-  # storage-ng
-  before :all do
-    skip("pending of storage-ng")
-  end
+describe Yast::AutoinstFunctions do
 
   subject { Yast::AutoinstFunctions }
 

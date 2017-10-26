@@ -234,7 +234,6 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %dir %{yast_moduledir}
 %{yast_moduledir}/AutoinstClone.rb
 %dir %{yast_yncludedir}/autoinstall
-%{yast_yncludedir}/autoinstall/autopart.rb
 %{yast_yncludedir}/autoinstall/io.rb
 %{yast_yncludedir}/autoinstall/autoinst_dialogs.rb
 %{yast_yncludedir}/autoinstall/AdvancedPartitionDialog.rb

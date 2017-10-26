@@ -2,19 +2,12 @@
 
 require_relative "test_helper"
 
-# storage-ng
-=begin
 Yast.import "Profile"
 Yast.import "Y2ModuleConfig"
 Yast.import "AutoinstClone"
-=end
 
-describe "Yast::Profile" do
-  # storage-ng
-  before :all do
-    skip("pending of storage-ng")
-  end
-  
+describe Yast::Profile do
+
   CUSTOM_MODULE = {
     "Name" => "Custom module",
     "X-SuSE-YaST-AutoInst" => "configure",
@@ -375,15 +368,6 @@ describe "Yast::Profile" do
         expect(subject.current).to include("alternative")
         expect(subject.current).to_not include("custom")
       end
-    end
-  end
-
-  describe "#Export" do
-    it "puts product definition into the exported profile" do
-      profile = subject.Export
-
-      expect(profile).to have_key("software")
-      expect(profile["software"]["product"]).to eql "LeanOS"
     end
   end
 end
