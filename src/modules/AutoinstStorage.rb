@@ -58,7 +58,6 @@ module Yast
       # general/storage settings
       self.general_settings = {}
 
-      Yast.include self, "autoinstall/autopart.rb"
       Yast.include self, "autoinstall/autoinst_dialogs.rb"
     end
 
