@@ -1,6 +1,8 @@
 #!/usr/bin/env rspec
 
 require_relative "test_helper"
+require "y2storage"
+
 Yast.import "AutoinstStorage"
 
 describe Yast::AutoinstStorage do
@@ -14,6 +16,7 @@ describe Yast::AutoinstStorage do
     end
     let(:issues_dialog) { instance_double(Y2Autoinstallation::Dialogs::Question, run: :abort) }
     let(:issues_list) { Y2Storage::AutoinstIssues::List.new }
+    let(:profile_section) { Y2Storage::AutoinstProfile::PartitionSection.new_from_hashes({}) }
     let(:valid?) { true }
     let(:errors_settings) { { "show" => false, "timeout" => 10 } }
     let(:warnings_settings) { { "show" => true, "timeout" => 5 } }
@@ -60,7 +63,7 @@ describe Yast::AutoinstStorage do
 
       it "shows errors to the user without timeout" do
         expect(Y2Autoinstallation::Dialogs::Question).to receive(:new)
-          .with(/Some important problems/, timeout: 0, buttons_set: :abort)
+          .with(/Important issues/, timeout: 0, buttons_set: :abort)
           .and_return(issues_dialog)
         expect(issues_dialog).to receive(:run)
         subject.Import({})
@@ -76,7 +79,7 @@ describe Yast::AutoinstStorage do
 
         it "logs the error" do
           expect(subject.log).to receive(:error)
-            .with(/Some important problems/)
+            .with(/Important issues/)
           subject.Import({})
         end
       end
@@ -86,7 +89,7 @@ describe Yast::AutoinstStorage do
 
         it "does not log the error" do
           expect(subject.log).to_not receive(:error)
-            .with(/Some important problems/)
+            .with(/Important issues/)
           subject.Import({})
         end
       end
@@ -97,14 +100,14 @@ describe Yast::AutoinstStorage do
       let(:continue) { true }
 
       before do
-        issues_list.add(:invalid_value, "/", :size, "auto")
+        issues_list.add(:invalid_value, profile_section, :size, "auto")
         allow(subject.log).to receive(:warn).and_call_original
       end
 
       context "and warnings reporting is enabled" do
         it "asks the user for confirmation" do
           expect(Y2Autoinstallation::Dialogs::Question).to receive(:new)
-            .with(/Some minor problems/, timeout: 5, buttons_set: :question)
+            .with(/Minor issues/, timeout: 5, buttons_set: :question)
             .and_return(issues_dialog)
           expect(issues_dialog).to receive(:run)
           subject.Import({})
@@ -144,7 +147,7 @@ describe Yast::AutoinstStorage do
 
         it "logs the warning" do
           expect(subject.log).to receive(:warn)
-            .with(/Some minor problems/)
+            .with(/Minor issues/)
           subject.Import({})
         end
       end
