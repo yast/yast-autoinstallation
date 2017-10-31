@@ -75,14 +75,7 @@ module Y2Autoinstallation
     #
     # @return [Boolean] true if some problem was found; false otherwise
     def valid?
-      return @valid unless @valid.nil?
-      return false if failed?
-
-      if !proposal.planned_devices.any? { |d| d.respond_to?(:mount_point) && d.mount_point == "/" }
-        issues_list.add(:missing_root)
-      end
-
-      @valid = !issues?
+      !(failed? || issues?)
     end
 
   private

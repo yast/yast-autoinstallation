@@ -57,6 +57,7 @@ module Y2Autoinstallation
       parts = []
       parts << error_text(fatal) unless fatal.empty?
       parts << warning_text(non_fatal) unless non_fatal.empty?
+      parts << Yast::HTML.Newline
 
       parts <<
       if fatal.empty?
@@ -74,8 +75,8 @@ module Y2Autoinstallation
     # @return [String] Message
     def warning_text(issues)
       Yast::HTML.Para(
-        _("Some minor problems were detected while creating the partitioning plan:")
-      ) + issues_list_text(issues)
+        _("Minor issues were detected while creating the partitioning plan:")
+      ) + issues_list_content(issues)
     end
 
     # Return error message with a list of issues
@@ -84,13 +85,70 @@ module Y2Autoinstallation
     # @return [String] Message
     def error_text(issues)
       Yast::HTML.Para(
-        _("Some important problems were detected while creating the partitioning plan:")
-      ) + issues_list_text(issues)
+        _("Important issues were detected while creating the partitioning plan:")
+      ) + issues_list_content(issues)
     end
 
     # Return an HTML representation for a list of issues
-    def issues_list_text(issues)
-      Yast::HTML.List(issues.map(&:message))
+    #
+    # The issues are grouped by the section of the profile where they were detected.
+    # General issues (with no section) are listed first.
+    #
+    # @return [String] Issues list content
+    #
+    # @see issues_by_section
+    def issues_list_content(issues)
+      all_issues = []
+      issues_map = issues_by_section(issues)
+
+      if issues_map[:nosection]
+        all_issues += issues_map[:nosection].map(&:message)
+        issues_map.delete(:nosection)
+      end
+
+      issues_map.each do |section, items|
+        messages = Yast::HTML.List(items.map(&:message))
+        all_issues << "#{location(section)}:#{messages}"
+      end
+
+      Yast::HTML.List(all_issues)
+    end
+
+    # Return issues grouped by section where they were found
+    #
+    # @return [Hash<(#parent,#section_name),Y2Storage::AutoinstIssues::Issue>]
+    #         Issues grouped by AutoYaST profile section
+    def issues_by_section(issues)
+      issues.each_with_object({}) do |issue, all|
+        section = issue.section || :nosection
+        all[section] ||= []
+        all[section] << issue
+      end
+    end
+
+    # Return a human string identifying in which section was detected
+    #
+    # For instance: "drive[0] > partitions[2] > raid_options"
+    #
+    # @param section [#parent,#section_name] Section where the problem was detected
+    # @return [String]
+    #
+    # @see Y2Storage::AutoinstProfile
+    def location(section)
+      return "" if section.parent.nil?
+
+      value = section.parent.send(section.section_name)
+      text =
+        if value.is_a?(Array)
+          index = value.index(section)
+          "#{section.section_name}[#{index}]"
+        else
+          section.section_name
+        end
+
+      prefix = location(section.parent)
+      prefix << " > " unless prefix.empty?
+      prefix + text
     end
   end
 end

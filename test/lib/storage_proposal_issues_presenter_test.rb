@@ -21,74 +21,129 @@
 # find current contact information at www.suse.com.
 
 require_relative "../test_helper"
+require "y2storage"
 require "y2storage/autoinst_issues"
+require "y2storage/autoinst_profile"
 require "autoinstall/storage_proposal_issues_presenter"
 
 describe Y2Autoinstallation::StorageProposalIssuesPresenter do
   subject(:presenter) { described_class.new(list) }
+  let(:partitioning) do
+    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(partitioning_array)
+  end
+
+  let(:partitioning_array) do
+    [
+      {
+        "device" => "/dev/sda", "use" => "all",
+        "partitions" => [
+          { "mount" => "/" },
+          { "mount" => "/home", "raid_options" => { "raid_type" => "unknown" } }
+        ]
+      }
+    ]
+  end
+
+  let(:raid_options_section) do
+    partitioning.drives.first.partitions.last.raid_options
+  end
+
+  let(:part_section) do
+    partitioning.drives.first.partitions.first
+  end
 
   let(:list) { Y2Storage::AutoinstIssues::List.new }
 
   describe "#to_html" do
-    context "when some fatal issue was found" do
+    context "when a fatal issue was found" do
       before do
         list.add(:missing_root)
       end
 
       it "includes issues messages" do
-        issue = list.to_a.first
+        issue = list.first
         expect(presenter.to_html.to_s).to include "<li>#{issue.message}</li>"
       end
 
       it "includes an introduction to fatal issues list" do
-        expect(presenter.to_html.to_s).to include "<p>Some important problems"
+        expect(presenter.to_html.to_s).to include "<p>Important issues"
       end
     end
 
-    context "when some non fatal issue was found" do
+    context "when a non fatal issue was found" do
       before do
-        list.add(:invalid_value, "/", :size, "auto")
+        list.add(:invalid_value, raid_options_section, :raid_type)
       end
 
       it "includes issues messages" do
-        issue = list.to_a.first
+        issue = list.first
         expect(presenter.to_html.to_s).to include "<li>#{issue.message}</li>"
       end
 
-      it "includes an introduction to fatal issues list" do
-        expect(presenter.to_html.to_s).to include "<p>Some minor problems"
+      it "includes an introduction to non fatal issues list" do
+        expect(presenter.to_html.to_s).to include "<p>Minor issues"
+      end
+
+      it "includes the location information" do
+        expect(presenter.to_html).to include "<li>drives[0] > partitions[1] > raid_options:<ul>"
+      end
+    end
+
+    context "when a non located issue was found" do
+      before do
+        list.add(:missing_root)
+      end
+
+      it "includes issues messages" do
+        issue = list.first
+        expect(presenter.to_html.to_s).to include "<li>#{issue.message}</li>"
       end
     end
   end
 
   describe "#to_plain" do
-    context "when some fatal issue was found" do
+    context "when a fatal issue was found" do
       before do
         list.add(:missing_root)
       end
 
       it "includes issues messages" do
-        issue = list.to_a.first
-        expect(presenter.to_plain.to_s).to include "* #{issue.message}\n"
+        issue = list.first
+        expect(presenter.to_plain.to_s).to include "* #{issue.message}"
       end
 
       it "includes an introduction to fatal issues list" do
-        expect(presenter.to_plain.to_s).to include "Some important problems"
+        expect(presenter.to_plain.to_s).to include "Important issues"
       end
     end
 
-    context "when some non fatal issue was found" do
+    context "when a non fatal issue was found" do
       before do
-        list.add(:invalid_value, "/", :size, "auto")
+        list.add(:invalid_value, raid_options_section, :raid_type)
       end
 
       it "includes issues messages" do
-        issue = list.to_a.first
-        expect(presenter.to_plain.to_s).to include "* #{issue.message}\n"
+        issue = list.first
+        expect(presenter.to_plain.to_s).to include "* #{issue.message}"
       end
 
-      it "includes an introduction to fatal issues list" do
-        expect(presenter.to_plain.to_s).to include "Some minor problems"
+      it "includes an introduction to non fatal issues list" do
+        expect(presenter.to_plain.to_s).to include "Minor issues"
+      end
+
+      it "includes the location information" do
+        expect(presenter.to_plain).to include "* drives[0] > partitions[1] > raid_options:"
+      end
+    end
+
+    context "when a non located issue was found" do
+      before do
+        list.add(:missing_root)
+      end
+
+      it "includes issues messages" do
+        issue = list.first
+        expect(presenter.to_plain.to_s).to include "* #{issue.message}"
       end
     end
   end
