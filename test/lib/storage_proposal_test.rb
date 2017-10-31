@@ -90,6 +90,7 @@ describe Y2Autoinstallation::StorageProposal do
     let(:failed?) { false }
     let(:partition) { Y2Storage::Planned::Partition.new("/", nil) }
     let(:planned_devices) { [partition] }
+    let(:issues_list) { Y2Storage::AutoinstIssues::List.new }
 
     let(:proposal) do
       instance_double(
@@ -103,21 +104,18 @@ describe Y2Autoinstallation::StorageProposal do
       allow(proposal).to receive(:planned_devices).and_return(planned_devices)
     end
 
-    context "when the proposal was successful" do
+    context "when the proposal did not fail" do
       it "returns true" do
         expect(storage_proposal).to be_valid
       end
 
-      context "when no root partition is found in the proposal" do
-        let(:partition) { Y2Storage::Planned::Partition.new("/home", nil) }
-
-        it "returns false" do
-          expect(storage_proposal).to_not be_valid
+      context "but an issue was detected" do
+        before do
+          issues_list.add(:missing_root)
         end
 
-        it "registers the error" do
-          expect { storage_proposal.valid? }.to change { storage_proposal.issues? }
-            .from(false).to(true)
+        it "returns false" do
+          expect(storage_proposal).to be_valid
         end
       end
     end
