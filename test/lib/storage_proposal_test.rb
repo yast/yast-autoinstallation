@@ -90,7 +90,6 @@ describe Y2Autoinstallation::StorageProposal do
     let(:failed?) { false }
     let(:partition) { Y2Storage::Planned::Partition.new("/", nil) }
     let(:planned_devices) { [partition] }
-    let(:issues_list) { Y2Storage::AutoinstIssues::List.new }
 
     let(:proposal) do
       instance_double(
@@ -111,11 +110,11 @@ describe Y2Autoinstallation::StorageProposal do
 
       context "but an issue was detected" do
         before do
-          issues_list.add(:missing_root)
+          storage_proposal.issues_list.add(:missing_root)
         end
 
         it "returns false" do
-          expect(storage_proposal).to be_valid
+          expect(storage_proposal).to_not be_valid
         end
       end
     end

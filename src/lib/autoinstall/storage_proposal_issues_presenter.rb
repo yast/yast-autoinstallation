@@ -91,7 +91,7 @@ module Y2Autoinstallation
 
     # Return an HTML representation for a list of issues
     #
-    # The issues are grouped by the section of the profile were they were detected.
+    # The issues are grouped by the section of the profile where they were detected.
     # General issues (with no section) are listed first.
     #
     # @return [String] Issues list content
@@ -106,7 +106,7 @@ module Y2Autoinstallation
         issues_map.delete(:nosection)
       end
 
-      issues_map.each_with_object(all_issues) do |(section, items), text|
+      issues_map.each do |section, items|
         messages = Yast::HTML.List(items.map(&:message))
         all_issues << "#{location(section)}:#{messages}"
       end
