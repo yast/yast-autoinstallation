@@ -19,17 +19,18 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
+Yast.import "UI"
+Yast.import "Stage"
+Yast.import "AutoInstallRules"
+Yast.import "Label"
+
 module Y2Autoinstall
   module Clients
     class AyastProbe
       include Yast::UIShortcuts
 
       def main
-        Yast.import "UI"
-        Yast.import "Stage"
         Yast::Stage.Set("initial")
-        Yast.import "AutoInstallRules"
-        Yast.import "Label"
         Yast::AutoInstallRules.ProbeRules
 
         @attrs =
