@@ -26,9 +26,23 @@ require "autoinstall/clients/ayast_probe"
 describe Y2Autoinstall::Clients::AyastProbe do
   subject(:client) { described_class.new }
 
+  let(:devicegraph) { instance_double(Y2Storage::Devicegraph, disk_devices: disk_devices) }
+  let(:disk_devices) { [disk] }
+  let(:disk) { instance_double(Y2Storage::Disk, name: "/dev/sda") }
+  let(:skip_list_value) do
+    instance_double(
+      Y2Storage::AutoinstProfile::SkipListValue,
+      to_hash: { device: "/dev/sda" }
+    )
+  end
+
   before do
     allow(Yast::UI).to receive(:OpenDialog).and_return(true)
     allow(Yast::UI).to receive(:CloseDialog).and_return(true)
+    allow(Y2Storage::StorageManager.instance).to receive(:probed)
+      .and_return(devicegraph)
+    allow(Y2Storage::AutoinstProfile::SkipListValue).to receive(:new).with(disk)
+      .and_return(skip_list_value)
   end
 
   describe "#main" do
@@ -41,7 +55,13 @@ describe Y2Autoinstall::Clients::AyastProbe do
 
     it "includes autoinstall rules information" do
       expect(client).to receive(:RichText)
-        .with(/Keys for rules.*<td>installed_product<\/td><td> = <\/td><td>openSUSE Tumbleweed<br><\/td>/)
+        .with(/Keys for rules.*<td>installed_product<\/td><td> = <\/td><td>openSUSE Tumbleweed<br><\/td>/m)
+      client.main
+    end
+
+    it "includes storage data" do
+      expect(client).to receive(:RichText)
+        .with(/Storage Data.*<h2>\/dev\/sda<\/h2>.*<td>device<\/td><td> = <\/td><td>\/dev\/sda<br><\/td>/m)
       client.main
     end
   end

@@ -23,62 +23,116 @@ Yast.import "UI"
 Yast.import "Stage"
 Yast.import "AutoInstallRules"
 Yast.import "Label"
+require "y2storage"
 
 module Y2Autoinstall
   module Clients
     class AyastProbe
       include Yast::UIShortcuts
 
+      # Client entry point
       def main
         Yast::Stage.Set("initial")
         Yast::AutoInstallRules.ProbeRules
 
-        @attrs =
-          #                             "NonLinuxPartitions":Yast::AutoInstallRules::NonLinuxPartitions,
-          #                             "LinuxPartitions":Yast::AutoInstallRules::LinuxPartitions,
-          #                             "disksize":Yast::AutoInstallRules::disksize
-          {
-            "installed_product"         => Yast::AutoInstallRules.installed_product,
-            "installed_product_version" => Yast::AutoInstallRules.installed_product_version(
-            ),
-            "hostname"                  => Yast::AutoInstallRules.hostname,
-            "hostaddress"               => Yast::AutoInstallRules.hostaddress,
-            "network"                   => Yast::AutoInstallRules.network,
-            "domain"                    => Yast::AutoInstallRules.domain,
-            "arch"                      => Yast::AutoInstallRules.arch,
-            "karch"                     => Yast::AutoInstallRules.karch,
-            "product"                   => Yast::AutoInstallRules.product,
-            "product_vendor"            => Yast::AutoInstallRules.product_vendor,
-            "board_vendor"              => Yast::AutoInstallRules.board_vendor,
-            "board"                     => Yast::AutoInstallRules.board,
-            "memsize"                   => Yast::AutoInstallRules.memsize,
-            "totaldisk"                 => Yast::AutoInstallRules.totaldisk,
-            "hostid"                    => Yast::AutoInstallRules.hostid,
-            "mac"                       => Yast::AutoInstallRules.mac,
-            "linux"                     => Yast::AutoInstallRules.linux,
-            "others"                    => Yast::AutoInstallRules.others,
-            "xserver"                   => Yast::AutoInstallRules.xserver
-          }
-        @text = "<h3>Keys for rules</h3><table>"
-        Yast::Builtins.foreach(@attrs) do |k, v|
-          @text = Yast::Ops.add(
-            @text,
-            Yast::Builtins.sformat(
-              "<tr><td>%1</td><td> = </td><td>%2<br></td></tr>",
-              k,
-              v
-            )
-          )
-        end
-
         Yast::UI.OpenDialog(
           Opt(:defaultsize),
-          VBox(RichText(@text), PushButton(Opt(:default), Yast::Label.OKButton))
+          VBox(RichText(content), PushButton(Opt(:default), Yast::Label.OKButton))
         )
         Yast::UI.UserInput
         Yast::UI.CloseDialog
 
         nil
+      end
+
+      # Content
+      #
+      # @return [String] Dialog's content
+      def content
+        text = autoinstall_rules_content
+        text << "<br>"
+        text << storage_data_content
+      end
+
+    private
+
+      # Builds a HTML table for a given hash
+      #
+      # Keys will be sorted in alphabetical order.
+      #
+      # @param rows [Hash<String,String>] Keys/values to show in the table
+      # @return [String] HTML representation
+      def table(rows)
+        content = rows.keys.sort.map do |key|
+          "<tr><td>#{key}</td><td> = </td><td>#{rows[key]}<br></td></tr>"
+        end
+        content.join("\n")
+      end
+
+      # @return [Array<Symbol>] AutoInstallRules to shown
+      RULES = [
+        :installed_product,
+        :installed_product_version,
+        :hostname,
+        :hostaddress,
+        :network,
+        :domain,
+        :arch,
+        :karch,
+        :product,
+        :product_vendor,
+        :board,
+        :memsize,
+        :totaldisk,
+        :hostid,
+        :mac,
+        :linux,
+        :others,
+        :xserver
+      ].freeze
+
+      # Retrieves AutoinstallRules data
+      #
+      # @return [Hash<String,String>]
+      def autoinstall_rules_data
+        RULES.each_with_object({}) do |rule, hsh|
+          value = Yast::AutoInstallRules.public_send(rule)
+          hsh[rule] = value
+        end
+      end
+
+      # Returns content for autoinstall rules section
+      #
+      # @return [String] Section content
+      def autoinstall_rules_content
+        "<h1>Keys for rules</h1>#{table(autoinstall_rules_data)}"
+      end
+
+      # Retrieves storage data
+      #
+      # Only disk devices are considered.
+      #
+      # @return [Hash<String,Hash>] Storage data indexed by device kernel name
+      def storage_data
+        return @storage_data if @storage_data
+        devicegraph = Y2Storage::StorageManager.instance.probed
+
+        @storage_data = devicegraph.disk_devices.each_with_object({}) do |device, data|
+          hsh = Y2Storage::AutoinstProfile::SkipListValue.new(device).to_hash
+          data[hsh[:device]] = hsh
+        end
+      end
+
+      # Returns content for storage data section
+      #
+      # @return [String] Section content
+      def storage_data_content
+        text = "<h1>Storage Data</h1>"
+        storage_data.keys.sort.each do |name|
+          text << "<h2>#{name}</h2>"
+          text << table(storage_data[name])
+        end
+        text
       end
     end
   end
