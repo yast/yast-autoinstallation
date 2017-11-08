@@ -4,6 +4,7 @@ require_relative "test_helper"
 require "y2storage"
 
 Yast.import "AutoinstStorage"
+Yast.import "Profile"
 
 describe Yast::AutoinstStorage do
   subject { Yast::AutoinstStorage }
@@ -39,6 +40,19 @@ describe Yast::AutoinstStorage do
     it "creates a proposal" do
       expect(Y2Autoinstallation::StorageProposal).to receive(:new)
       subject.Import({})
+    end
+
+    context "when subvolumes are defined" do
+      let(:partition_profile) { File.join(FIXTURES_PATH, 'profiles', 'subvolumes_partitions.xml') }
+
+      it "filtering out @ subvolumes" do
+        Yast::Profile.ReadXML(partition_profile)
+        device = Marshal.load(Marshal.dump(Yast::Profile.current["partitioning"]))
+        device.first["partitions"].first["subvolumes"].delete_if{|s| s=="@"}
+        expect(Y2Autoinstallation::StorageProposal).to receive(:new)
+          .with(device)
+        subject.Import(Yast::Profile.current["partitioning"])
+      end
     end
 
     context "when the proposal is valid" do
