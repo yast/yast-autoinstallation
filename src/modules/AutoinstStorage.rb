@@ -138,6 +138,17 @@ module Yast
     # @return	[Boolean] success
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
+
+      # Deleting "@" subvolumes entries which have been generated
+      # in older distributions. These entries will be generated
+      # by storage-ng automatically (bnc#1061253).
+      settings.each do |device|
+        if device["partitions"]
+          device["partitions"].each do |partition|
+            partition["subvolumes"].delete_if{ |s| s=="@" } if partition["subvolumes"]
+          end
+        end
+      end
       proposal = Y2Autoinstallation::StorageProposal.new(settings)
       if valid_proposal?(proposal)
         log.info "Saving successful proposal: #{proposal.inspect}"
