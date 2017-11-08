@@ -291,6 +291,9 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %dir %{yast_libdir}/autoinstall/dialogs
 %{yast_libdir}/autoinstall/dialogs/*.rb
 
+%dir %{yast_libdir}/autoinstall/clients
+%{yast_libdir}/autoinstall/clients/*.rb
+
 # scripts
 %{_prefix}/lib/YaST2/bin/fetch_image.sh
 %{_prefix}/lib/YaST2/bin/autoyast-initscripts.sh
