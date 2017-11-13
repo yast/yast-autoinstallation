@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        4.0.5
+Version:        4.0.6
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -41,8 +41,8 @@ BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
-# Y2Storage::AutoinstIssues containing section information
-BuildRequires:  yast2-storage-ng >= 4.0.15
+# Y2Storage::AutoinstProfile::SkipListValue#to_hash
+BuildRequires:  yast2-storage-ng >= 4.0.23
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
@@ -61,8 +61,8 @@ Requires:       yast2-network >= 3.1.145
 Requires:       yast2-schema
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
-# Y2Storage::AutoinstIssues containing section information
-Requires:       yast2-storage-ng >= 4.0.15
+# Y2Storage::AutoinstProfile::SkipListValue#to_hash
+Requires:       yast2-storage-ng >= 4.0.23
 Conflicts:      yast2-installation < 3.1.166
 
 Provides:       yast2-config-autoinst
@@ -290,6 +290,9 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 
 %dir %{yast_libdir}/autoinstall/dialogs
 %{yast_libdir}/autoinstall/dialogs/*.rb
+
+%dir %{yast_libdir}/autoinstall/clients
+%{yast_libdir}/autoinstall/clients/*.rb
 
 # scripts
 %{_prefix}/lib/YaST2/bin/fetch_image.sh

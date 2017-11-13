@@ -50,6 +50,18 @@ describe Y2Autoinstallation::StorageProposal do
         expect(storage_proposal.proposal).to be(autoinst_proposal)
       end
     end
+
+    context "when the proposal raises and exception" do
+      before do
+        allow(autoinst_proposal).to receive(:propose).and_raise(Y2Storage::Error)
+      end
+
+      it "registers an issue" do
+        issues_list = storage_proposal.issues_list
+        issue = issues_list.find { |i| i.is_a?(Y2Storage::AutoinstIssues::Exception) }
+        expect(issue).to_not be_nil
+      end
+    end
   end
 
   describe "#save" do

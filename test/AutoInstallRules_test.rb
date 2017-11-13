@@ -10,6 +10,8 @@ describe "Yast::AutoInstallRules" do
   let(:root_path) { File.expand_path('../..', __FILE__) }
 
   describe "#ProbeRules" do
+    before { subject.main }
+
     it "detect system properties" do
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.bios")).and_return([])
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.memory")).and_return([])
