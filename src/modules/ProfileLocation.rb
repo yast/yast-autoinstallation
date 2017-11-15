@@ -16,19 +16,11 @@ module Yast
 
       Yast.import "AutoinstConfig"
       Yast.import "AutoInstallRules"
-
-# storage-ng
-=begin
-      Yast.import "StorageDevices"
-      Yast.import "StorageControllers"
-=end
-
       Yast.import "Mode"
       Yast.import "Installation"
       Yast.import "Report"
       Yast.import "Label"
       Yast.import "URL"
-
 
       Yast.include self, "autoinstall/autoinst_dialogs.rb"
       Yast.include self, "autoinstall/io.rb"

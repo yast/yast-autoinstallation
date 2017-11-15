@@ -28,11 +28,6 @@ module Yast
       Yast.import "Profile"
       Yast.import "ProductFeatures"
 
-# storage-ng
-=begin
-      Yast.import "Storage"
-=end
-
       Yast.import "SignatureCheckCallbacks"
       Yast.import "Report"
       Yast.import "Arch"

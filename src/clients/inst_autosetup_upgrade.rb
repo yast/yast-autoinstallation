@@ -7,6 +7,8 @@
 #          Uwe Gansert <ug@suse.de>
 #
 # $Id: inst_autosetup.ycp 61521 2010-03-29 09:10:07Z ug $
+require "y2storage"
+
 module Yast
   class InstAutosetupUpgradeClient < Client
     include Yast::Logger
@@ -202,9 +204,8 @@ module Yast
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
         # reread only if target system is not yet initialized (bnc#673033)
-        log.error("FIXME : Missing storage call")
-# storage-ng
-#       Storage.ReReadTargetMap
+        Y2Storage::StorageManager.instance.probe
+
         if :abort == WFM.CallFunction("inst_update_partition_auto", [])
           return :abort
         end
