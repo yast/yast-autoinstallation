@@ -41,6 +41,7 @@ describe Y2Autoinstall::Clients::AyastProbe do
     allow(Yast::UI).to receive(:CloseDialog).and_return(true)
     allow(Y2Storage::StorageManager.instance).to receive(:probed)
       .and_return(devicegraph)
+    allow(Yast::AutoInstallRules).to receive(:ProbeRules)
     allow(Y2Storage::AutoinstProfile::SkipListValue).to receive(:new).with(disk)
       .and_return(skip_list_value)
   end
