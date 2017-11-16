@@ -73,10 +73,9 @@ module Yast
     end
 
     def AutoinstPartition
-      # storage-ng
-      # GetAllFileSystems returns a hash with all kind of information (even
-      # widgets!). Even more, every entry is a mashup of information related to
-      # filesystems types and partition ids (both are often not clearly
+      # The GetAllFileSystems of the old libstorag returns a hash with all kind of
+      # information (even widgets!). Even more, every entry is a mashup of information
+      # related to filesystems types and partition ids (both are often not clearly
       # distinguised in the old libstorage).
       #
       # This is a simplyfication with just some values.
@@ -86,12 +85,9 @@ module Yast
       @allfs = Y2Storage::Filesystems::Type.all.each_with_object({}) do |type, hash|
         hash[type.to_sym] = {name: type.to_human_string, fsid: type.to_i}
       end
-=begin
-      @allfs = FileSystems.GetAllFileSystems(true, true, "")
-=end
-
       nil
     end
+
     # Convenience wrappers for more general object predicates
     def isPartition(partition)
       partition = deep_copy(partition)
