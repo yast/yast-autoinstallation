@@ -70,11 +70,8 @@ module Yast
         "import_gpg_key"               => true,
         "accept_non_trusted_gpg_key"   => true
       }
-# storage-ng
-      log.error("FIXME : Missing storage call")
       general["storage"] = {
-        "start_multipath" => multipath_in_use?,
-        "partition_alignment" => "" # Storage.GetPartitionAlignment
+        "start_multipath" => multipath_in_use?
       }
 
       Mode.SetMode("autoinst_config")
