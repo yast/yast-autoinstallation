@@ -42,6 +42,7 @@ BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
 BuildRequires:  yast2-country
+BuildRequires:  libstorage-ng
 # Y2Storage::AutoinstProfile::SkipListValue#to_hash
 BuildRequires:  yast2-storage-ng >= 4.0.23
 
