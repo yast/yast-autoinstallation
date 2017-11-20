@@ -71,17 +71,17 @@ describe "Yast::AutoinstPartPlan" do
 
     it "includes found subvolumes" do
       expect(subvolumes).to eq([
-        {"path"=>"home", "copy_on_write"=>true},
-        {"path"=>"log", "copy_on_write"=>true},
-        {"path"=>"opt", "copy_on_write"=>true},
-        {"path"=>"srv", "copy_on_write"=>true},
-        {"path"=>"tmp", "copy_on_write"=>true},
-        {"path"=>"usr/local", "copy_on_write"=>true},
-        {"path"=>"var/cache", "copy_on_write"=>true},
-        {"path"=>"var/crash", "copy_on_write"=>true},
-        {"path"=>"var/lib/mariadb", "copy_on_write"=>false},
-        {"path"=>"var/lib/mysql", "copy_on_write"=>false},
-        {"path"=>"var/lib/pgsql", "copy_on_write"=>false}
+        { "path"=>"home", "copy_on_write"=>true },
+        { "path"=>"log", "copy_on_write"=>true },
+        { "path"=>"opt", "copy_on_write"=>true },
+        { "path"=>"srv", "copy_on_write"=>true },
+        { "path"=>"tmp", "copy_on_write"=>true },
+        { "path"=>"usr/local", "copy_on_write"=>true },
+        { "path"=>"var/cache", "copy_on_write"=>true },
+        { "path"=>"var/crash", "copy_on_write"=>true },
+        { "path"=>"var/lib/mariadb", "copy_on_write"=>false },
+        { "path"=>"var/lib/mysql", "copy_on_write"=>false },
+        { "path"=>"var/lib/pgsql", "copy_on_write"=>false }
       ])
     end
 
