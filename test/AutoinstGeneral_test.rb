@@ -78,14 +78,6 @@ describe "Yast::AutoinstGeneral" do
     context "when btrfs default subvolume name is not set" do
       it "uses the default name"
     end
-
-    context "when partitiong alignment is defined" do
-      let(:profile) do
-        { "storage" => { "partition_alignment" => "align_optimal" } }
-      end
-
-      it "sets partitiong alignment"
-    end
   end
 
   describe "#Export" do

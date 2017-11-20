@@ -8,6 +8,8 @@
 #
 # $Id$
 require "autoinstall/module_config_builder"
+require "y2storage"
+
 module Yast
   import "AutoinstConfig"
 
@@ -265,9 +267,7 @@ module Yast
       Progress.NextStage
       # if one modifies the partition table in a pre script, we will
       # recognize this now
-      # storage-ng
-      log.error("FIXME : Missing storage call")
-      # Storage.ReReadTargetMap
+      Y2Storage::StorageManager.instance.probe
 
       if Profile.current["partitioning_advanced"] && !Profile.current["partitioning_advanced"].empty?
         write_storage = AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])

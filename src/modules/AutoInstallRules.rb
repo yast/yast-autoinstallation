@@ -7,6 +7,7 @@
 #
 # $Id$
 require "yast"
+require "y2storage"
 
 module Yast
   class AutoInstallRulesClass < Module
@@ -22,11 +23,6 @@ module Yast
       Yast.import "Installation"
       Yast.import "AutoinstConfig"
       Yast.import "XML"
-      # storage-ng
-=begin
-      # Yast.import "Storage"
-      # Yast.import "StorageControllers"
-=end
       Yast.import "Kernel"
       Yast.import "Mode"
       Yast.import "Profile"
@@ -276,21 +272,14 @@ module Yast
       #
       # Disk sizes
       #
-
-      # storage-ng
-=begin
-      StorageControllers.Initialize  # ugly hack, Storage.GetTargetMap should simply work without it
-      storage = Storage.GetTargetMap
-      _PhysicalTargetMap = Builtins.filter(storage) do |k, v|
-        Storage.IsRealDisk(v)
-      end
       @totaldisk = 0
-      @disksize = Builtins.maplist(_PhysicalTargetMap) do |k, v|
-        size_in_mb = Ops.divide(Ops.get_integer(v, "size_k", 0), 1024)
-        @totaldisk = Ops.add(@totaldisk, size_in_mb)
-        { "device" => k, "size" => size_in_mb }
+      @disksize = []
+      one_mega = Y2Storage::DiskSize.MiB(1)
+      Y2Storage::StorageManager.instance.probed.disks.each do |disk|
+        size = disk.size.ceil(one_mega).to_i / one_mega.to_i
+        @totaldisk += size
+        @disksize << { "device" => disk.name, "size" => size }
       end
-=end
       Builtins.y2milestone("disksize: %1", @disksize)
       Ops.set(@ATTR, "totaldisk", @totaldisk)
       #
@@ -316,20 +305,12 @@ module Yast
       @xserver = Convert.to_string(SCR.Read(path(".etc.install_inf.XServer")))
       Ops.set(@ATTR, "xserver", @xserver)
 
-      # storage-ng
-=begin
-      @NonLinuxPartitions = Storage.GetForeignPrimary
-=end
-      @others = Builtins.size(@NonLinuxPartitions)
-
+      probed_disks = Y2Storage::StorageManager.instance.probed_disk_analyzer
+      @NonLinuxPartitions = probed_disks.windows_partitions()
+      @others = @NonLinuxPartitions.size
       Builtins.y2milestone("Other primaries: %1", @NonLinuxPartitions)
-
-      # storage-ng
-=begin
-      @LinuxPartitions = Storage.GetOtherLinuxPartitions
-=end
-      @linux = Builtins.size(@LinuxPartitions)
-
+      @LinuxPartitions = probed_disks.linux_partitions()
+      @linux = @LinuxPartitions.size
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
       @installed_product = Yast::OSRelease.ReleaseInformation

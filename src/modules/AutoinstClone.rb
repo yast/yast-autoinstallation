@@ -16,6 +16,7 @@
 #
 #
 require "yast"
+require "y2storage"
 
 module Yast
   class AutoinstCloneClass < Module
@@ -48,10 +49,7 @@ module Yast
     # Detects whether the current system uses multipath
     # @return [Boolean] if in use
     def multipath_in_use?
- # storage-ng
-      log.error("FIXME : Missing storage call")
-      # Storage.GetTargetMap.detect{|k,e| e.fetch("type",:X)==:CT_DMMULTIPATH} ? true:false
-      false
+      !Y2Storage::StorageManager.instance.probed.multipaths.empty?
     end
 
     # General options
@@ -72,11 +70,8 @@ module Yast
         "import_gpg_key"               => true,
         "accept_non_trusted_gpg_key"   => true
       }
-# storage-ng
-      log.error("FIXME : Missing storage call")
       general["storage"] = {
-        "start_multipath" => multipath_in_use?,
-        "partition_alignment" => "" # Storage.GetPartitionAlignment
+        "start_multipath" => multipath_in_use?
       }
 
       Mode.SetMode("autoinst_config")

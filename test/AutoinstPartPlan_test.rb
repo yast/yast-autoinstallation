@@ -2,19 +2,21 @@
 
 require_relative "test_helper"
 require "yaml"
+require "y2storage"
 
-# storage-ng
-=begin
 Yast.import "Profile"
 Yast.import "ProductFeatures"
-Yast.import "Storage"
-=end
+
+def devicegraph_from(file_name)
+  storage = Y2Storage::StorageManager.instance.storage
+  st_graph = Storage::Devicegraph.new(storage)
+  graph = Y2Storage::Devicegraph.new(st_graph)
+  yaml_file = File.join(FIXTURES_PATH, "storage", file_name)
+  Y2Storage::FakeDeviceFactory.load_yaml_file(graph, yaml_file)
+  graph
+end
 
 describe "Yast::AutoinstPartPlan" do
-  # storage-ng
-  before :all do
-    skip("pending on storage-ng")
-  end
 
   subject do
     # Postpone AutoinstPartPlan.main until it is needed.
@@ -22,8 +24,7 @@ describe "Yast::AutoinstPartPlan" do
     Yast::AutoinstPartPlan
   end
 
-  let(:target_map_path) { File.join(FIXTURES_PATH, "storage", "nfs_root.yml") }
-  let(:target_map_clone) { File.join(FIXTURES_PATH, "storage", "target_clone.yml") }
+  let(:devicegraph)  {devicegraph_from("autoyast_drive_examples.yml")}
   let(:default_subvol) { "@" }
   let(:filesystems) do
     double("filesystems",
@@ -35,13 +36,16 @@ describe "Yast::AutoinstPartPlan" do
     allow(Yast).to receive(:import).with("FileSystems").and_return(nil)
     allow(Yast).to receive(:import).and_call_original
     stub_const("Yast::FileSystems", filesystems)
+    allow(Y2Storage::StorageManager.instance).to receive(:probed)
+      .and_return(devicegraph)
   end
 
   describe "#read partition target" do
-    it "exporting nfs root partition" do
-      target_map = YAML.load_file(target_map_path)
+    before :all do
+      skip("pending on nfs definition in yml files")
+    end
 
-      expect(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
+    it "exporting nfs root partition" do
       expect(subject.Read).to eq(true)
       expect(subject.Export).to eq(
          [{"type"=>:CT_NFS,
@@ -53,44 +57,35 @@ describe "Yast::AutoinstPartPlan" do
          ]
         )
     end
-
-    it "ignoring not needed devices" do
-      target_map = YAML.load_file(target_map_clone)
-
-      expect(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
-      expect(subject.Read).to eq(true)
-      export = subject.Export.select { |d| d.key?("skip_list") }
-
-      expect(export[0]).to include("initialize" => true)
-      skip_list = export[0]["skip_list"]
-      expect(skip_list).to all(include("skip_key" => "device"))
-      expect(skip_list).to all(include("skip_value" => /\/dev\//))
-    end
   end
 
   describe "#Export" do
-    let(:target_map) { YAML.load_file(File.join(FIXTURES_PATH, "storage", "subvolumes.yml")) }
+
+    let(:exported) { subject.Export }
+    let(:sub_partitions) { exported.detect {|d| d["device"] == "/dev/sdd"}["partitions"] }
+    let(:subvolumes) { sub_partitions.first["subvolumes"].sort_by { |s| s["path"] } }
 
     before do
-      allow(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
       subject.Read
     end
 
     it "includes found subvolumes" do
-      exported = subject.Export
-      subvolumes = exported.first["partitions"].first["subvolumes"]
       expect(subvolumes).to eq([
-        { "path" => "@", "copy_on_write" => true},
-        { "path" => "home", "copy_on_write" => true },
-        { "path" => "var/log", "copy_on_write" => true },
-        { "path" => "var/lib/pgsql", "copy_on_write" => true },
-        { "path" => "myvol", "copy_on_write" => false },
+        { "path"=>"home", "copy_on_write"=>true },
+        { "path"=>"log", "copy_on_write"=>true },
+        { "path"=>"opt", "copy_on_write"=>true },
+        { "path"=>"srv", "copy_on_write"=>true },
+        { "path"=>"tmp", "copy_on_write"=>true },
+        { "path"=>"usr/local", "copy_on_write"=>true },
+        { "path"=>"var/cache", "copy_on_write"=>true },
+        { "path"=>"var/crash", "copy_on_write"=>true },
+        { "path"=>"var/lib/mariadb", "copy_on_write"=>false },
+        { "path"=>"var/lib/mysql", "copy_on_write"=>false },
+        { "path"=>"var/lib/pgsql", "copy_on_write"=>false }
       ])
     end
 
     it "does not include snapshots" do
-      exported = subject.Export
-      subvolumes = exported.first["partitions"].first["subvolumes"]
       snapshots = subvolumes.select { |s| s.include?("snapshot") }
       expect(snapshots).to be_empty
     end

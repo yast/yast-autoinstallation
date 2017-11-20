@@ -11,11 +11,23 @@ describe "Yast::AutoInstallRules" do
 
   describe "#ProbeRules" do
     before { subject.main }
+    let(:devicegraph) { instance_double(Y2Storage::Devicegraph, disk_devices: disk_devices) }
+    let(:disk_devices) { [disk] }
+    let(:disk) {
+      instance_double(Y2Storage::Disk, name: "/dev/sda", size: Y2Storage::DiskSize.MiB(1)) }
 
     it "detect system properties" do
+      allow(Y2Storage::StorageManager.instance).to receive(:probed)
+        .and_return(devicegraph)
+      allow(Y2Storage::StorageManager.instance.probed).to receive(:disks)
+        .and_return([disk])
+      allow_any_instance_of(Y2Storage::DiskAnalyzer).to receive(:linux_partitions)
+        .and_return([])
+      expect_any_instance_of(Y2Storage::DiskAnalyzer).to receive(:windows_partitions)
+        .and_return([])
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.bios")).and_return([])
       expect(Yast::SCR).to receive(:Read).with(Yast::Path.new(".probe.memory")).and_return([])
-      expect(Yast::Arch).to receive(:architecture).and_return("x86_64")
+      allow(Yast::Arch).to receive(:architecture).and_return("x86_64")
       expect(Yast::Kernel).to receive(:GetPackages).and_return([])
       expect(subject).to receive(:getNetwork).and_return("192.168.1.0")
       expect(subject).to receive(:getHostname).and_return("myhost")

@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        4.0.6
+Version:        4.0.7
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -41,6 +41,9 @@ BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
+BuildRequires:  yast2-country
+BuildRequires:  yast2-storage-ng
+BuildRequires:  libstorage-ng1
 # Y2Storage::AutoinstProfile::SkipListValue#to_hash
 BuildRequires:  yast2-storage-ng >= 4.0.23
 

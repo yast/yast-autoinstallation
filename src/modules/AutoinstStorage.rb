@@ -33,100 +33,14 @@ module Yast
       # Read existing fstab and format partitions, but dont create anything
       # Use same mountpoints etc.
       @read_fstab = false
-      @ZeroNewPartitions = true
 
       # Fstab options
       @fstab = {}
-
-      # Partition plan as parsed from control file
-      @AutoPartPlan = []
-
-      # Prepared target map from parsed data
-      @AutoTargetMap = {}
-
-      # default value of settings modified
-      @modified = false
-
-      @raid2device = {}
-
-      # some architectures need a boot partition. Do we have one?
-      @planHasBoot = false
-
-      # list of devices to ignore when guessing devices
-      @tabooDevices = []
 
       # general/storage settings
       self.general_settings = {}
 
       Yast.include self, "autoinstall/autoinst_dialogs.rb"
-    end
-
-    # Function sets internal variable, which indicates, that any
-    # settings were modified, to "true"
-    def SetModified
-      Builtins.y2milestone("SetModified")
-      @modified = true
-
-      nil
-    end
-
-    # Functions which returns if the settings were modified
-    # @return [Boolean]  settings were modified
-    def GetModified
-      @modified
-    end
-
-    # Wrapper function for the LibStorage call that can't be used directly
-    # in YCP
-    # @return [Fixnum]
-    #
-    def humanStringToByte(s, b)
-      s = "0b" if Builtins.size(s) == 0
-      s = Ops.add(s, "b") if Builtins.findfirstof(s, "bB") == nil
-# storage-ng
-      log.error("FIXME : Missing storage call")
-      s #Storage.ClassicStringToByte(s)
-    end
-
-    META_TYPES = [ :CT_DMRAID, :CT_MDPART, :CT_DMMULTIPATH ]
-    ALL_TYPES = META_TYPES.dup.push(:CT_DISK)
-
-    def find_next_disk( tm, after, ctype )
-      Builtins.y2milestone("find_next_disk after:\"%1\" ctype:%2", after, ctype);
-      used_disk = ""
-      if after.empty? && !ALL_TYPES.include?(ctype)
-        tm.each do |device, disk|
-          if META_TYPES.include?(disk.fetch("type")) &&
-             !@tabooDevices.include?(device)
-            used_disk = device
-          end
-        end
-      end
-
-      if after.empty? && used_disk.empty?
-        tm.each do |device, disk|
-          if disk["bios_id"]=="0x80" && !@tabooDevices.include?(device)
-            used_disk = device
-          end
-        end
-      end
-
-      # device guessing code enhanced
-      if used_disk.empty?
-        ctype = :CT_DISK  unless ALL_TYPES.include?(ctype)
-        disks = tm.select { |dev,disk| disk["type"]==ctype };
-        found = !disks.keys.include?(after)
-        disks.each do |device, disk|
-          next if !found && device != after 
-          found = true if device == after
-          next if device == after || @tabooDevices.include?(device)
-          used_disk = device
-          break
-        end
-      end
-
-      Builtins.y2milestone("find_next_disk device detection: %1", used_disk)
-      used_disk
     end
 
     # Get all the configuration from a map.
@@ -183,7 +97,7 @@ module Yast
     # @return	[Boolean] true on success
     def ImportAdvanced(settings)
       settings = deep_copy(settings)
-      Builtins.y2milestone("entering ImportAdvanced with %1", settings)
+      log.info "entering ImportAdvanced with #{settings}"
       @fstab = Ops.get_map(settings, "fstab", {})
       @read_fstab = Ops.get_boolean(@fstab, "use_existing_fstab", false)
       true
@@ -195,27 +109,6 @@ module Yast
     def export_general_settings
       # Do not export nil settings
       general_settings.reject { |_key, value| value.nil? }
-    end
-
-    # return Summary of configuration
-    # @return  [String] configuration summary dialog
-    def Summary
-      summary = ""
-      summary = Summary.AddHeader(summary, _("Drives"))
-      num = Builtins.size(@AutoPartPlan)
-      summary = Summary.AddLine(
-        summary,
-        Builtins.sformat(_("Total of %1 drive"), num)
-      )
-      summary = Summary.OpenList(summary)
-      Builtins.foreach(@AutoPartPlan) do |drive|
-        summary = Summary.AddListItem(
-          summary,
-          Ops.get_locale(drive, "device", _("No specific device configured"))
-        )
-      end
-      summary = Summary.CloseList(summary)
-      summary
     end
 
     # Moved here from RootPart module (used just by this module)
@@ -304,7 +197,7 @@ module Yast
     # Handle /etc/fstab usage
     # @return [Boolean]
     def handle_fstab
-      Builtins.y2milestone("entering handle_fstab")
+      log.info "entering handle_fstab"
 
       if !RootPart.didSearchForRootPartitions
         UI.OpenDialog(
@@ -365,30 +258,10 @@ module Yast
       #     Storage.SetMultipathStartup(val)
     end
 
-    # Build the id for a partition entry in the man table.
-    # @parm disk_dev_name name of the devie e.g.: /dev/hda
-    # @parm nr number of the partition e.g.: 1
-    # @return [String] e.g.: 01./dev/hda
-    def build_id(disk_dev_name, nr)
-      nr = deep_copy(nr)
-      Builtins.sformat("%1:%2", disk_dev_name, nr)
-    end
-
     publish :variable => :read_fstab, :type => "boolean"
-    publish :variable => :ZeroNewPartitions, :type => "boolean"
     publish :variable => :fstab, :type => "map"
-    publish :variable => :AutoPartPlan, :type => "list <map>"
-    publish :variable => :AutoTargetMap, :type => "map <string, map>"
-    publish :variable => :modified, :type => "boolean"
-    publish :variable => :planHasBoot, :type => "boolean"
-    publish :variable => :tabooDevices, :type => "list <string>"
-    publish :function => :SetModified, :type => "void ()"
-    publish :function => :GetModified, :type => "boolean ()"
-    publish :function => :humanStringToByte, :type => "integer (string, boolean)"
-    publish :function => :find_next_disk, :type => "string (map,string,symbol)"
     publish :function => :Import, :type => "boolean (list <map>)"
     publish :function => :ImportAdvanced, :type => "boolean (map)"
-    publish :function => :Summary, :type => "string ()"
     publish :function => :Write, :type => "boolean ()"
 
   private

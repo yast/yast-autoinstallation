@@ -193,11 +193,5 @@ describe Yast::AutoinstStorage do
     context "when btrfs default subvolume name is not set" do
       it "uses the default name"
     end
-
-    context "when partitiong alignment is defined" do
-      let(:profile) { { "partition_alignment" => "align_optimal" } }
-
-      it "sets partitiong alignment"
-    end
   end
 end

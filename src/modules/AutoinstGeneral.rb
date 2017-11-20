@@ -28,11 +28,6 @@ module Yast
       Yast.import "Profile"
       Yast.import "ProductFeatures"
 
-# storage-ng
-=begin
-      Yast.import "Storage"
-=end
-
       Yast.import "SignatureCheckCallbacks"
       Yast.import "Report"
       Yast.import "Arch"
@@ -461,15 +456,12 @@ module Yast
       AutoinstConfig.RebootMsg = Ops.get_boolean(@mode, "rebootmsg", false)
       AutoinstConfig.setProposalList(@proposals)
 
-      # see bug #597723. Some machines can't boot with the new alignment that parted uses
-      # `align_cylinder == old behavior
-      # `align_optimal  == new behavior
-      if @storage.has_key?("partition_alignment")
-        val = @storage.fetch("partition_alignment",:align_optimal)
-# storage-ng
-         log.error("FIXME : Missing storage call")
-#        Storage.SetPartitionAlignment(val)
-        Builtins.y2milestone( "alignment set to %1", val )
+      if @storage["partition_alignment"] == :align_cylinder
+        # This option has been set by the user manually in the AY configuration file
+        # (Not via clone_system)
+        # It is not supported anymore with storage-ng. So the user should remove
+        # this option.
+        Popup.Warning(_("The AutoYaST option <partition_alignment> is not supported anymore."))
       end
 
       AutoinstStorage.set_multipathing

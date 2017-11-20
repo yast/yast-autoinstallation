@@ -5,16 +5,9 @@ require_relative "../../src/lib/autoinstall/module_config_builder"
 
 require "yast"
 
-# storage-ng
-=begin
 Yast.import "Y2ModuleConfig"
-=end
 
 describe Yast::ModuleConfigBuilder do
-  # storage-ng
-  before :all do
-    skip("pending of storage-ng")
-  end
 
   describe "#build" do
     let(:profile) do
