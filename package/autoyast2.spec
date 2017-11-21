@@ -34,7 +34,6 @@ BuildRequires:  libxml2-tools
 BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 BuildRequires:  yast2
-BuildRequires:  vim
 # FileSystems.read_default_subvol_from_target
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
@@ -43,8 +42,6 @@ BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
 BuildRequires:  yast2-country
-BuildRequires:  yast2-storage-ng
-BuildRequires:  libstorage-ng1
 # Y2Storage::AutoinstProfile::SkipListValue#to_hash
 BuildRequires:  yast2-storage-ng >= 4.0.23
 
