@@ -17,6 +17,9 @@ def devicegraph_from(file_name)
 end
 
 describe "Yast::AutoinstPartPlan" do
+  before do
+    allow(Yast::Arch).to receive(:architecture).and_return("x86_64")
+  end
 
   subject do
     # Postpone AutoinstPartPlan.main until it is needed.
