@@ -92,11 +92,6 @@ module Y2Autoinstallation
         finish_dialog(:abort)
       end
 
-      # Handler for the `Skip` button
-      def skip_handler
-        finish_dialog(:skip)
-      end
-
     protected
 
       # Returns a list of options containing available disks
@@ -127,7 +122,6 @@ module Y2Autoinstallation
       def buttons
         [
           PushButton(Id(:ok), Opt(:okButton, :key_F10, :default), Yast::Label.ContinueButton),
-          PushButton(Id(:skip), Yast::Label.SkipButton),
           abort_button
         ]
       end

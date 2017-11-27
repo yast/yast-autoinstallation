@@ -49,9 +49,8 @@ describe Y2Autoinstallation::Dialogs::DiskSelector do
       dialog.dialog_content
     end
 
-    it "displays ok, skip and abort buttons" do
+    it "displays ok and abort buttons" do
       expect(dialog).to receive(:PushButton).with(Id(:ok), anything, anything)
-      expect(dialog).to receive(:PushButton).with(Id(:skip), anything)
       expect(dialog).to receive(:PushButton).with(Id(:abort), anything, anything)
       dialog.dialog_content
     end
@@ -76,7 +75,6 @@ describe Y2Autoinstallation::Dialogs::DiskSelector do
 
       it "only shows the abort button" do
         expect(dialog).to_not receive(:PushButton).with(Id(:ok), anything, anything)
-        expect(dialog).to_not receive(:PushButton).with(Id(:skip), anything)
         expect(dialog).to receive(:PushButton).with(Id(:abort), anything, anything)
         dialog.dialog_content
       end
@@ -118,14 +116,6 @@ describe Y2Autoinstallation::Dialogs::DiskSelector do
 
       it "returns :abort" do
         expect(dialog.run).to eq(:abort)
-      end
-    end
-
-    context "when the user presses 'Skip'" do
-      let(:button) { :skip }
-
-      it "returns :skip" do
-        expect(dialog.run).to eq(:skip)
       end
     end
   end
