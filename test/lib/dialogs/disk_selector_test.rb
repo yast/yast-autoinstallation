@@ -94,6 +94,20 @@ describe Y2Autoinstallation::Dialogs::DiskSelector do
         dialog.dialog_content
       end
     end
+
+    it "contains help text" do
+      expect(dialog).to receive(:Label).with(/All hard disks.*the #1 drive/m)
+      dialog.dialog_content
+    end
+
+    context "when a drive index is specified" do
+      subject(:dialog) { described_class.new(devicegraph, drive_index: 2) }
+
+      it "is included in the help text" do
+        expect(dialog).to receive(:Label).with(/All hard disks.*the #2 drive/m)
+        dialog.dialog_content
+      end
+    end
   end
 
   describe "#run" do

@@ -52,9 +52,9 @@ module Y2Autoinstallation
     # @return [Array<Hash>] Drives definition replacing +ask+ for user selected values
     def replace_ask(drives)
       blacklist = []
-      drives.each do |drive|
+      drives.each_with_index do |drive, idx|
         next unless drive["device"] == "ask"
-        selection = select_disk(blacklist)
+        selection = select_disk(idx, blacklist)
         return nil if selection == :abort
         drive["device"] = selection
         blacklist << drive["device"]
@@ -65,8 +65,10 @@ module Y2Autoinstallation
     #
     # @param blacklist [Array<String>] List of device names that were already used
     # @return [String,Symbol] Selected device name
-    def select_disk(blacklist)
-      Y2Autoinstallation::Dialogs::DiskSelector.new(blacklist: blacklist).run
+    def select_disk(drive_index, blacklist)
+      Y2Autoinstallation::Dialogs::DiskSelector.new(
+        drive_index: drive_index, blacklist: blacklist
+      ).run
     end
   end
 end

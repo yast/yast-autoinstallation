@@ -37,6 +37,8 @@ module Y2Autoinstallation
       attr_reader :devicegraph
       # @return [Array<String>] Device names that should be omitted
       attr_reader :blacklist
+      # @return [Integer] Drive section index
+      attr_reader :drive_index
 
       # Constructor
       #
@@ -44,8 +46,9 @@ module Y2Autoinstallation
       #   By default, the probed devicegraph is used.
       # @param blacklist   [Array<String>] Device names that should be omitted.
       #   These disks will be filtered out.
-      def initialize(devicegraph = nil, blacklist: [])
+      def initialize(devicegraph = nil, drive_index: 1, blacklist: [])
         @devicegraph = devicegraph || Y2Storage::StorageManager.instance.probed
+        @drive_index = drive_index
         @blacklist = blacklist
       end
 
@@ -63,11 +66,15 @@ module Y2Autoinstallation
       # @return [Yast::Term] Dialog content
       def disks_content
         VBox(
-          Label(_("Choose a hard disk")),
+          Heading(_("Disk Selection")),
+          VSpacing(1),
+          Label(help_text),
+          VSpacing(1),
           RadioButtonGroup(
             Id(:options),
             VBox(*options)
           ),
+          VSpacing(1),
           ButtonBox(*buttons)
         )
       end
@@ -139,6 +146,14 @@ module Y2Autoinstallation
       # @return [String] Label
       def label(disk)
         "#{disk.basename}, #{disk.hwinfo.model}"
+      end
+
+      # Help text
+      def help_text
+        # TRANSLATORS: %s will be replaced by a number
+        _("All hard disks automatically detected on your system are shown here.\n" \
+          "Please, select a hard disk to be used in the #%s drive section of the\n" \
+          "given AutoYaST profile.") % drive_index
       end
     end
   end
