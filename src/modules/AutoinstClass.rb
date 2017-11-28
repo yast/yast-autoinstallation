@@ -42,7 +42,8 @@ module Yast
     end
 
     # Finds a profile path
-    # @param string profile name
+    # @param name [String] profile name
+    # @param class_ [String] class name
     # @return [String] profile Path
     def findPath(name, class_)
       result = @confs.find { |c| c["name"] == name && c["class"] == class_ }
@@ -77,7 +78,7 @@ module Yast
 
     # Changes the directory and reads the class definitions
     #
-    # @param [String] Path of the new directory
+    # @param newdir [String] Path of the new directory
     # @return nil
     # @see class_dir=
     def classDirChanged(newdir)
@@ -165,7 +166,7 @@ module Yast
 
 
     # Imports configuration
-    # @params [Array<Hash>] settings Configuration
+    # @param [Array<Hash>] settings Configuration
     # @return true
     def Import(settings)
       @profile_conf = deep_copy(settings)

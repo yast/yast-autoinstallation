@@ -145,7 +145,7 @@ module Y2Autoinstallation
 
       # Disk label to show in the list of options
       #
-      # @param [Y2Storage::Device] Disk
+      # @param disk [Y2Storage::Device] Disk
       # @return [String] Label
       def label(disk)
         "#{disk.basename}, #{disk.hwinfo.model}"

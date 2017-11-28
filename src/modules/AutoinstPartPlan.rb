@@ -552,8 +552,7 @@ module Yast
     # Update a drive in the plan. If the drive didn't exist in the
     # first place nothing happens (use add in that case).
     #
-    # @param The drive to update.
-
+    # @param drive [Hash{String => Object}] The drive to be updated.
     def updateDrive(drive)
       drive = deep_copy(drive)
       @AutoPartPlan = internalUpdateDrive(@AutoPartPlan, drive)

@@ -98,8 +98,8 @@ module Yast
 
 
     # Sort tree groups
-    # @param map<string, map> group map
-    # @param list<string> group list
+    # @param _GroupMap [Hash<String => Hash>] group map
+    # @param _GroupList [Array<String>] group list
     # @return [Array]
     def SortGroups(_GroupMap, _GroupList)
       _GroupMap = deep_copy(_GroupMap)
@@ -112,7 +112,7 @@ module Yast
     end
 
     # Create group tree
-    # @param map<string, map> groups
+    # @param _Groups [Hash<String => Hash>] groups
     # @return [void]
     def CreateGroupTree(_Groups)
       _Groups = deep_copy(_Groups)
@@ -191,7 +191,7 @@ module Yast
 
 
     # Get resource name
-    # @param string resource
+    # @param default_resource [String] resource
     # @return [String] resource as defined in desktop file
     def getResource(default_resource)
       ret = Ops.get_string(
@@ -208,7 +208,7 @@ module Yast
 
     # Get resource data
     # @param [Hash] resourceMap Resource Map
-    # @param resrouce the resource
+    # @param resource [String] the resource
     # @return [Object] Resource Data
     def getResourceData(resourceMap, resource)
       resourceMap = deep_copy(resourceMap)
@@ -407,7 +407,7 @@ module Yast
     # Module aliases map
     #
     # @return [Hash] Map of resource aliases where the key is the alias and the
-    #                value is the resource ({alias => resource})
+    #                value is the resource.
     def resource_aliases_map
       ModuleMap().each_with_object({}) do |resource, map|
         name, def_resource = resource

@@ -284,7 +284,7 @@ module Yast
     # * If it only contains warnings: asks the user for confirmation.
     # * If it contains some important problem, inform the user.
     #
-    # @param [StorageProposal] Storage proposal to check
+    # @param proposal [StorageProposal] Storage proposal to check
     # @return [Boolean] True if the proposal is valid or the user accepted an invalid one.
     def valid_proposal?(proposal)
       return true if proposal.valid?

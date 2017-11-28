@@ -316,10 +316,10 @@ module Yast
     # Implement pkgGpgCheck callback
     #
     # @param [Hash] data Output from `pkgGpgCheck` callback.
-    # @options data [String] "CheckPackageResult" Check result code according to libzypp.
-    # @options data [String] "Package" Package's name.
-    # @options data [String] "Localpath" Path to RPM file.
-    # @options data [String] "RepoMediaUrl" Media URL.
+    # @option data [String] "CheckPackageResult" Check result code according to libzypp.
+    # @option data [String] "Package" Package's name.
+    # @option data [String] "Localpath" Path to RPM file.
+    # @option data [String] "RepoMediaUrl" Media URL.
     #   (it should match `media_url` key in AutoYaST profile).
     # @return [String] "I" if the package should be accepted; otherwise
     #   a blank string is returned (so no decision is made).

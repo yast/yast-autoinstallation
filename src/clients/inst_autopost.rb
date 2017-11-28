@@ -233,8 +233,8 @@ module Yast
     end
 
     # Get directory name
-    # @param string path
-    # @return  [String] dirname
+    # @param filePath [Strig] string path
+    # @return [String] dirname
     def dirname(filePath)
       pathComponents = Builtins.splitstring(filePath, "/")
       last = Ops.get_string(

@@ -325,7 +325,7 @@ module Yast
     end
 
     # Updates or extends the profile location according to defaults
-    # @param [String] AutoYast profile location as defined on commandline
+    # @param profile_location [String] AutoYast profile location as defined on commandline
     # @return [String] updated profile location
     def update_profile_location(profile_location)
       if profile_location.nil? || profile_location == ""
@@ -349,7 +349,7 @@ module Yast
     end
 
     # Processes location of the profile given as a parameter.
-    # @param [String] AutoYast profile location as defined on commandline
+    # @param profile_location [String] AutoYast profile location as defined on commandline
     # @example autoyast=http://www.server.com/profiles/
     # Fills internal variables
     def ParseCmdLine(profile_location)
@@ -630,7 +630,7 @@ module Yast
     # poducts in the future. At least we can filter out products which are
     # not base products.
     #
-    # @param [Hash] AY profile
+    # @param profile [Hash] AutoYaST profile
     # @return [String] product name
     def base_product_name(profile)
       software = profile.fetch("software", {})

@@ -38,7 +38,7 @@ module Y2Autoinstallation
     # the 'Abort' button.
     #
     # This dialog could be extended in the future in order to support other
-    # AutoYaST interaction which are not covered in the {Yast::Report} module.
+    # AutoYaST interaction which are not covered in the Yast::Report module.
     class Question < UI::Dialog
 
       # @return [String] Dialog's content
@@ -76,14 +76,14 @@ module Y2Autoinstallation
 
       # 'Continue' button handler
       #
-      # When the 'Continue' button is pressed, the dialog will return the {:ok} value.
+      # When the 'Continue' button is pressed, the dialog will return the :ok value.
       def ok_handler
         finish_dialog(:ok)
       end
 
       # 'Abort' button handler
       #
-      # When the 'Abort' button is pressed, the dialog will return the {:abort} value.
+      # When the 'Abort' button is pressed, the dialog will return the :abort value.
       def abort_handler
         finish_dialog(:abort)
       end

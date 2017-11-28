@@ -290,7 +290,7 @@ module Yast
     end
 
     # Read Profile properties and Version
-    # @param map Profile Properties
+    # @param properties [Hash] Profile Properties
     # @return [void]
     def check_version(properties)
       version = properties["version"]
@@ -443,8 +443,8 @@ module Yast
     end
 
     # Save YCP data into XML
-    # @param  path to file
-    # @return	[Boolean] true on success
+    # @param  file [String] path to file
+    # @return [Boolean] true on success
     def Save(file)
       Prepare()
       ret = false
@@ -544,7 +544,7 @@ module Yast
     end
 
     # Save the current data into a file to be read after a reboot.
-    # @param	-
+    # @param parsedControlFile [Hash] Data from control file
     # @return  true on success
     # @see #Restore()
     def SaveProfileStructure(parsedControlFile)
@@ -553,7 +553,7 @@ module Yast
     end
 
     # Read YCP data as the control file
-    # @param ycp file
+    # @param parsedControlFile [Hash] ycp file
     # @return [Boolean]
     def ReadProfileStructure(parsedControlFile)
       @current = Convert.convert(
@@ -572,7 +572,7 @@ module Yast
 
 
     # General compatibility issues
-    # @param current profile
+    # @param __current [Hash] current profile
     # @return [Hash] converted profile
     def Compat(__current)
       __current = deep_copy(__current)
@@ -689,8 +689,8 @@ module Yast
 
 
     # Read XML into  YCP data
-    # @param  path to file
-    # @return	[Boolean]
+    # @param file [String] path to file
+    # @return [Boolean]
     def ReadXML(file)
       tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
       l = Builtins.splitstring(tmp, "\n")
@@ -868,7 +868,7 @@ module Yast
 
     # Removes the given sections from the profile
     #
-    # @param [String,Array<String>] keys Section names.
+    # @param sections [String,Array<String>] Section names.
     # @return [Hash] The profile without the removed sections.
     def remove_sections(sections)
       keys_to_delete = Array(sections)
@@ -937,7 +937,7 @@ module Yast
     # Y2ModuleConfig and Profile (as the former depends on the latter).
     #
     # @return [Hash] Map of resource aliases where the key is the alias and the
-    #                value is the resource ({alias => resource})
+    #                value is the resource.
     #
     # @see Y2ModuleConfig#resource_aliases_map
     def resource_aliases_map
