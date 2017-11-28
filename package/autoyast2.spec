@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        4.0.7
+Version:        4.0.8
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -58,6 +58,7 @@ Requires:       yast2
 Requires:       yast2 >= 3.1.183
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
+Requires:       yast2-ntp-client >= 4.0.1
 Requires:       yast2-network >= 3.1.145
 Requires:       yast2-schema
 Requires:       yast2-transfer >= 2.21.0
