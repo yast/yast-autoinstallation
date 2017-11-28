@@ -80,8 +80,8 @@ module Yast
 
 
     # Clone a Resource
-    # @param [String] resource
-    # @param [String] resource name
+    # @param resource    [String] resource
+    # @param resourceMap [Hash] resources map
     # @return [Array]
     def CommonClone(resource, resourceMap)
       resourceMap = deep_copy(resourceMap)

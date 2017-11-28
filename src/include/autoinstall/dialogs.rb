@@ -130,8 +130,9 @@ module Yast
 
 
     # Check validity of file name
-    # @param string file name
-    # @return 0 if valid, -1 if not.
+    #
+    # @param name [String] file name
+    # @return [Integer] 0 if valid, -1 if not.
     def checkFileName(name)
       if name !=
           Builtins.filterchars(
@@ -147,8 +148,8 @@ module Yast
 
 
     # Return a message about invalid file names
-    # @param -
-    # @return message
+    #
+    # @return [String] message
     def invalidFileName
       _(
         "Invalid file name.\n" +

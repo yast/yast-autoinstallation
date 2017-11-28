@@ -41,8 +41,8 @@ module Yast
     #
     # The general idea is (like with dispatchMenuEvent()):
     #
-    # When the user clicks on a button (Add {Drive, Partition,
-    # LVM}, Remove):
+    # When the user clicks on a button (Add { Drive, Partition,
+    # LVM }, Remove):
     #
     #	1. the check() function on the currently active dialog is
     #	called. If there were any changes to the settings the user

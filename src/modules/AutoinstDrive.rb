@@ -100,11 +100,10 @@ module Yast
 
     # Construct reference to drive for use in tree. The references
     # are of the form:
-    #	"{drive,volgroup}_<id>",
+    #	"{ drive, volgroup }_<id>",
     #  e.g. "drive_1", or "volgroup_3"
     #
-    # @param [Hash{String => Object}] drive drive to create the reference for.
-    #
+    # @param drive [Hash{String => Object}] drive drive to create the reference for.
     # @return [String] reference
     def getNodeReference(drive)
       drive = deep_copy(drive)
@@ -117,10 +116,10 @@ module Yast
     # Construct node name for display in tree.
     #
     # Constructed names are of the form:
-    #  "<device name> - {drive,volgroup}
+    #  "<device name> - { drive, volgroup }
     #
-    # @param [Hash{String => Object}] drive to create node name for
-    #
+    # @param drive [Hash{String => Object}] drive to create node name for
+    # @param enableHTML [Boolean] Use HTML tags
     # @return the newly created node name
     def getNodeName(drive, enableHTML)
       drive = deep_copy(drive)

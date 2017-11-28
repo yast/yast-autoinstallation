@@ -35,7 +35,7 @@ module Y2Autoinstallation
     #
     # It returns a new object so the original section is not modified.
     #
-    # @param original_drives [Array<Hash>] List of drives according to an AutoYaST
+    # @param drives [Array<Hash>] List of drives according to an AutoYaST
     #   +partitioning+ section.
     def run(drives)
       return if drives.nil?
@@ -48,7 +48,7 @@ module Y2Autoinstallation
     #
     # When +device+ is set to +ask+, ask the user about which device to use.
     #
-    # @param [Array<Hash>]  Drives definition from an AutoYaST profile
+    # @param drives [Array<Hash>] Drives definition from an AutoYaST profile
     # @return [Array<Hash>] Drives definition replacing +ask+ for user selected values
     def replace_ask(drives)
       blacklist = []
