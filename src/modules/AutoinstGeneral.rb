@@ -25,6 +25,7 @@ module Yast
       Yast.import "Language"
       Yast.import "Timezone"
       Yast.import "Misc"
+      Yast.import "NtpClient"
       Yast.import "Profile"
       Yast.import "ProductFeatures"
 
@@ -417,7 +418,7 @@ module Yast
           # TRANSLATORS: %s is the name of the ntp server
           _("Syncing time with %s.") % ntp_server
         )
-        ret = SCR.Execute(path(".target.bash"), "/usr/sbin/ntpdate -b #{ntp_server}")
+        ret = NtpClient.sync_once(ntp_server)
         if ret > 0
           Report.Error(_("Time syncing failed."))
         else
