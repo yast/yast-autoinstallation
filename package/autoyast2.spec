@@ -17,7 +17,7 @@
 
 
 Name:           autoyast2
-Version:        4.0.7
+Version:        4.0.8
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
