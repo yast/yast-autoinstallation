@@ -31,7 +31,7 @@ module Y2Autoinstallation
     #
     # This dialog will be used by the partitioning section preprocessor (see
     # {Y2Autoinstallation::PartitioningPreprocessor}) in order to determine
-    # which device to use for a given <drive> section.
+    # which device to use for a given +<drive/>+ section.
     class DiskSelector < UI::Dialog
       # @return [Y2Storage::Devicegraph] Devicegraph used to find disks
       attr_reader :devicegraph
@@ -44,6 +44,7 @@ module Y2Autoinstallation
       #
       # @param devicegraph [Y2Storage::Devicegraph] Devicegraph used to find disks.
       #   By default, the probed devicegraph is used.
+      # @param drive_index [Integer] Drive section index.
       # @param blacklist   [Array<String>] Device names that should be omitted.
       #   These disks will be filtered out.
       def initialize(devicegraph = nil, drive_index: 1, blacklist: [])
@@ -103,6 +104,8 @@ module Y2Autoinstallation
 
       # Returns a list of options containing available disks
       #
+      # The first disk is preselected.
+      #
       # @return [Array<Yast::Term>] List of options
       def options
         return @options if @options
@@ -158,4 +161,3 @@ module Y2Autoinstallation
     end
   end
 end
-
