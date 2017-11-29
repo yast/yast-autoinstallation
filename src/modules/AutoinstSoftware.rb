@@ -708,9 +708,7 @@ module Yast
       )
       s["install_recommended"] = rec != "no"
 
-      products = Product.FindBaseProducts
-      raise "Found multiple base products" if products.size > 1
-      s["product"] = products.first["short_name"]
+      s["products"] = Product.FindBaseProducts.map{ |x| x["short_name"] }
 
       s
     end
