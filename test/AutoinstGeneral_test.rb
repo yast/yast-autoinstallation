@@ -46,27 +46,10 @@ describe "Yast::AutoinstGeneral" do
           .with(path(".target.bash"), /hwclock/)
         subject.Write()
       end
-
-      it "sets multipath" do
-        expect(Yast::AutoinstStorage).to receive(:set_multipathing)
-        subject.Write
-      end
     end
   end
 
   describe "#Import" do
-    context "when multipath is enabled" do
-      let(:profile) do
-        { "storage" => { "start_multipath" => true } }
-      end
-
-      it "sets multipath"
-    end
-
-    context "when multipath is not enabled" do
-      it "does not set multipath"
-    end
-
     context "when btrfs default subvolume name is set" do
       let(:profile) do
         { "storage" => { "btrfs_set_default_subvolume_name" => "@@" } }

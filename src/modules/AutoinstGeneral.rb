@@ -464,8 +464,6 @@ module Yast
         Popup.Warning(_("The AutoYaST option <partition_alignment> is not supported anymore."))
       end
 
-      AutoinstStorage.set_multipathing
-
       SetSignatureHandling()
 
       NtpSync()

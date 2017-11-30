@@ -85,9 +85,6 @@ module Yast
 
       # Override product settings from control file
       Yast::ProductFeatures.SetOverlay("partitioning" => general_settings)
-
-      # Set multipathing
-      set_multipathing
     end
 
     # Import Fstab data
@@ -241,19 +238,8 @@ module Yast
     # Create partition plan
     # @return [Boolean]
     def Write
-      set_multipathing
       return handle_fstab if @read_fstab
       true
-    end
-
-    # set multipathing
-    # @return [void]
-    def set_multipathing
-      value = general_settings.fetch("start_multipath", false)
-      log.info "set_multipathing to '#{value}'"
-      # storage-ng
-      log.error("FIXME : Missing storage call")
-      #     Storage.SetMultipathStartup(val)
     end
 
     publish :variable => :read_fstab, :type => "boolean"
