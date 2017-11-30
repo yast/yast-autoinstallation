@@ -17,6 +17,9 @@ module Yast
 
     include Yast::Logger
 
+    # @return [Hash] General settings (from +storage/general+ profile section)
+    attr_accessor :general_settings
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -334,8 +337,6 @@ module Yast
       preprocessor = Y2Autoinstallation::PartitioningPreprocessor.new
       preprocessor.run(settings)
     end
-
-    attr_accessor :general_settings
   end
 
   AutoinstStorage = AutoinstStorageClass.new
