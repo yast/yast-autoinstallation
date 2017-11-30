@@ -66,8 +66,8 @@ module Yast
     end
 
     # Checking if the script has the right format
-    # @param [Hash] scripts section of the AutoYast configuration
-    # @param [String] kind of script (pre, post,..)
+    # @param tree [Hash] scripts section of the AutoYast configuration
+    # @param key [String] kind of script (pre, post,..)
     # @return [Array<String>] of scripts
     def valid_scripts_for(tree, key)
       tree.fetch(key, []).select do |h|
@@ -78,7 +78,6 @@ module Yast
     end
 
     # merge all types of scripts into one single list
-    # @param -
     # @return merged list
     def mergeScripts
       result = Builtins.maplist(@pre) do |p|
@@ -313,8 +312,8 @@ module Yast
     # Get all the configuration from a map.
     # When called by autoinst_<module name> (preparing autoinstallation data)
     # the map may be empty.
-    # @param settings	$[...]
-    # @return	success
+    # @param s [Hash] scripts section from an AutoYaST profile
+    # @return [Boolean]
     def Import(s)
       s = deep_copy(s)
       Builtins.y2debug("Calling AutoinstScripts::Import()")
@@ -409,7 +408,7 @@ module Yast
     end
 
     # delete a script from a list
-    # @param script name
+    # @param scriptName [String] script name
     # @return [void]
     def deleteScript(scriptName)
       clean = Builtins.filter(@merged) do |s|
@@ -483,7 +482,7 @@ module Yast
 
 
     # return type of script as formatted string
-    # @param script type
+    # @param type [String] script type
     # @return [String] type as translated string
     def typeString(type)
       if type == "pre-scripts"
@@ -696,8 +695,8 @@ module Yast
 
 
     # Execute pre scripts
-    # @param [String] type of script
-    # @param boolean if script should be executed in chroot env.
+    # @param type [String] type of script
+    # @param special [Boolean] if script should be executed in chroot env.
     # @return [Boolean] true on success
     def Write(type, special)
       return true if !Mode.autoinst && !Mode.autoupgrade

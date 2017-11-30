@@ -143,8 +143,8 @@ module Yast
 
 
     # delete a file from a list
-    # @param file name
-    # @return modified list of files
+    # @param fileName [String] file name
+    # @return [Array<Hash>] modified list of files
     def deleteFile(fileName)
       new = Builtins.filter(AutoinstFile.Files) do |s|
         Ops.get_string(s, "file_path", "") != fileName

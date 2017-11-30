@@ -73,6 +73,7 @@ y2_partition =
   | part_stripesize
   | part_pool
   | part_used_pool
+  | part_subvolumes_prefix
   | device_order
   | subvolumes
 
@@ -87,6 +88,8 @@ part_filesystem =
   element filesystem { SYMBOL }
 part_format =
   element format { BOOLEAN }
+part_subvolumes_prefix =
+  element subvolumes_prefix { text }
 part_fs_options =
   element fs_options {
     opt_blocksize? &

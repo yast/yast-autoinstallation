@@ -10,6 +10,11 @@ require "yast/rspec"
 require "fileutils"
 require "pathname"
 
+RSpec.configure do |config|
+  config.extend Yast::I18n # available in context/describe
+  config.include Yast::I18n # available in it/let/before/around/after
+end
+
 if ENV["COVERAGE"]
   require "simplecov"
   SimpleCov.start do

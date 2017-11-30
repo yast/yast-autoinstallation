@@ -710,14 +710,13 @@ module Yast
 
       products = Product.FindBaseProducts
       raise "Found multiple base products" if products.size > 1
-      s["product"] = products.first["short_name"]
+      s["products"] = products.map{ |x| x["short_name"] }
 
       s
     end
 
     # Add packages needed by modules, i.e. NIS, NFS etc.
-    # @param list of strings packages to add
-    # @return [void]
+    # @param module_packages [Array<String>] list of strings packages to add
     def AddModulePackages(module_packages)
       module_packages = deep_copy(module_packages)
       PackageAI.toinstall = Builtins.toset(
@@ -735,8 +734,7 @@ module Yast
     end
 
     # Remove packages not needed by modules, i.e. NIS, NFS etc.
-    # @param list of packages to remove
-    # @return [void]
+    # @param module_packages [Array<String>] list of strings packages to add
     def RemoveModulePackages(module_packages)
       module_packages = deep_copy(module_packages)
       PackageAI.toinstall = Builtins.filter(PackageAI.toinstall) do |p|
@@ -828,7 +826,7 @@ module Yast
 
 
     # Configure software settings
-    # @param void
+    #
     # @return [Boolean]
     def Write
       if @imaging
@@ -959,8 +957,7 @@ module Yast
 
 
     # Add post packages
-    # @param list calculated post packages
-    # @return [void]
+    # @param calcpost [Array<String>] list calculated post packages
     def addPostPackages(calcpost)
       # filter out already installed packages
       calcpost.reject!{|p| PackageSystem.Installed(p)}

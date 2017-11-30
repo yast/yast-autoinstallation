@@ -141,7 +141,7 @@ module Y2Autoinstallation
       text =
         if value.is_a?(Array)
           index = value.index(section)
-          "#{section.section_name}[#{index}]"
+          "#{section.section_name}[#{index+1}]"
         else
           section.section_name
         end

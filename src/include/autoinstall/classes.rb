@@ -73,8 +73,8 @@ module Yast
 
     # AddEditClasses()
     # Add or Edit a class
-    # @param [Symbol] mode
-    # @param symbol
+    # @param mode [Symbol] mode (:new or :edit)
+    # @param name [String] class name
     def AddEditClasses(mode, name)
       classNames = Builtins.maplist(AutoinstClass.Classes) do |c|
         Ops.get_string(c, "name", "")
@@ -281,7 +281,7 @@ module Yast
 
 
     # GetClassOrder()
-    # @param string class name
+    # @param name [String] class name
     # @return [Fixnum] class order
     def GetClassOrder(name)
       order = 0

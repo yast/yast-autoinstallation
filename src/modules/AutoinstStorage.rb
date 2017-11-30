@@ -10,6 +10,7 @@ require "yast"
 require "autoinstall/storage_proposal"
 require "autoinstall/dialogs/question"
 require "autoinstall/storage_proposal_issues_presenter"
+require "autoinstall/partitioning_preprocessor"
 
 module Yast
   class AutoinstStorageClass < Module
@@ -48,20 +49,14 @@ module Yast
     # When called by inst_auto<module name> (preparing autoinstallation data)
     # the list may be empty.
     #
-    # @param  settings [Hash] Profile settings (list of drives for custom partitioning)
-    # @return	[Boolean] success
+    # @param  settings [Array<Hash>] Profile settings (list of drives for custom partitioning)
+    # @return [Boolean] success
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
-      proposal = Y2Autoinstallation::StorageProposal.new(settings)
-      if valid_proposal?(proposal)
-        log.info "Saving successful proposal: #{proposal.inspect}"
-        proposal.save
-        true
-      else # not needed
-        log.warn "Failed proposal: #{proposal.inspect}"
-        false
-      end
+      partitioning = preprocessed_settings(settings)
+      return false unless partitioning
 
+      build_proposal(partitioning)
     end
 
     # Import settings from the general/storage section
@@ -266,6 +261,22 @@ module Yast
 
   private
 
+    # Build the storage proposal if possible
+    #
+    # @param  partitioning [Array<Hash>] Profile settings (list of drives for custom partitioning)
+    # @return [Boolean] success
+    def build_proposal(partitioning)
+      proposal = Y2Autoinstallation::StorageProposal.new(partitioning)
+      if valid_proposal?(proposal)
+        log.info "Saving successful proposal: #{proposal.inspect}"
+        proposal.save
+        true
+      else # not needed
+        log.warn "Failed proposal: #{proposal.inspect}"
+        false
+      end
+    end
+
     # Determine whether the proposal is valid and inform the user if not valid
     #
     # When proposal is not valid:
@@ -273,7 +284,7 @@ module Yast
     # * If it only contains warnings: asks the user for confirmation.
     # * If it contains some important problem, inform the user.
     #
-    # @param [StorageProposal] Storage proposal to check
+    # @param proposal [StorageProposal] Storage proposal to check
     # @return [Boolean] True if the proposal is valid or the user accepted an invalid one.
     def valid_proposal?(proposal)
       return true if proposal.valid?
@@ -313,10 +324,16 @@ module Yast
     # @param level   [Symbol] Message level (:error, :warn)
     # @param content [String] Text to log
     def log_proposal_issues(level, content)
-      settings_name = (level == :error) ? :error : :warning
       log.send(level, content)
     end
 
+    # Preprocess partitioning settings
+    #
+    # @param settings [Array<Hash>, nil] Profile settings (list of drives for custom partitioning)
+    def preprocessed_settings(settings)
+      preprocessor = Y2Autoinstallation::PartitioningPreprocessor.new
+      preprocessor.run(settings)
+    end
 
     attr_accessor :general_settings
   end
