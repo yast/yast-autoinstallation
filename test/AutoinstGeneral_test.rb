@@ -8,6 +8,16 @@ Yast.import "Profile"
 describe "Yast::AutoinstGeneral" do
   subject { Yast::AutoinstGeneral }
 
+  let(:profile) do
+    {
+      "storage"            => { "start_multipath" => true },
+      "mode"               => { "confirm" => false },
+      "signature-handling" => { "import_gpg_key" => true },
+      "ask-list"           => ["ask1"],
+      "proposals"          => ["proposal1"]
+    }
+  end
+
   before do
     allow(Yast).to receive(:import).and_call_original
     allow(Yast).to receive(:import).with("FileSystems").and_return(nil)
@@ -50,30 +60,58 @@ describe "Yast::AutoinstGeneral" do
   end
 
   describe "#Import" do
-    context "when btrfs default subvolume name is set" do
-      let(:profile) do
-        { "storage" => { "btrfs_set_default_subvolume_name" => "@@" } }
-      end
-
-      it "sets the default subvolume"
+    it "imports storage settings" do
+      expect(Yast::AutoinstStorage).to receive(:import_general_settings)
+        .with(profile["storage"])
+      subject.Import(profile)
     end
 
-    context "when btrfs default subvolume name is not set" do
-      it "uses the default name"
+    it "imports mode settings" do
+      subject.Import(profile)
+      expect(subject.mode).to eq(profile["mode"])
+    end
+
+    it "imports signature_handling settings" do
+      subject.Import(profile)
+      expect(subject.signature_handling).to eq(profile["signature-handling"])
+    end
+
+    it "imports asks list" do
+      subject.Import(profile)
+      expect(subject.askList).to eq(profile["ask-list"])
+    end
+
+    it "imports proposals list" do
+      subject.Import(profile)
+      expect(subject.proposals).to eq(profile["proposals"])
+    end
+
+    describe "missing values" do
+      let(:profile) { {} }
+
+      it "sets mode settings as a empty hash" do
+        subject.Import(profile)
+        expect(subject.mode).to eq({})
+      end
+
+      it "sets signature handling settings as an empty hash" do
+        subject.Import(profile)
+        expect(subject.signature_handling).to eq({})
+      end
+
+      it "sets asks list as an empty array" do
+        subject.Import(profile)
+        expect(subject.askList).to eq([])
+      end
+
+      it "sets proposals as an empty array" do
+        subject.Import(profile)
+        expect(subject.proposals).to eq([])
+      end
     end
   end
 
   describe "#Export" do
-    let(:profile) do
-      {
-        "storage"            => { "start_multipath" => true },
-        "mode"               => { "confirm" => false },
-        "signature-handling" => { "import_gpg_key" => true },
-        "ask-list"           => ["ask1"],
-        "proposals"          => ["proposal1"]
-      }
-    end
-
     before do
       subject.Import(profile)
     end
