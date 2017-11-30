@@ -92,5 +92,15 @@ describe "Yast::AutoinstPartPlan" do
       snapshots = subvolumes.select { |s| s.include?("snapshot") }
       expect(snapshots).to be_empty
     end
+
+    it "does not include subvolumes_prefix tag" do
+      subvolumes_prefix = exported.select do |drive|
+        partitions = drive["partitions"].select do |partition|
+          partition.has_key?("subvolumes_prefix")
+        end
+        !partitions.empty?
+      end
+      expect(subvolumes_prefix).to be_empty
+    end
   end
 end

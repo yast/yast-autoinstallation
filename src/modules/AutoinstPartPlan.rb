@@ -420,6 +420,14 @@ module Yast
         drives << skip_device
       end
 
+      # Remove all subvolumes_prefix entries because they are defined
+      # in the product description files.
+      drives.each do |drive|
+        drive["partitions"].each do |partition|
+          partition.delete("subvolumes_prefix") if partition.has_key?("subvolumes_prefix")
+        end
+      end
+
       drives
     end
 
