@@ -1,5 +1,14 @@
 #!/usr/bin/env rspec
 
+# stub to avoid ntpclient build dependency
+module Yast
+  class NtpClient
+    def self.sync_once(server)
+      0
+    end
+  end
+end
+
 require_relative "test_helper"
 
 Yast.import "AutoinstGeneral"
@@ -36,12 +45,20 @@ describe "Yast::AutoinstGeneral" do
       it "syncs hardware time" do
         subject.Import(profile)
 
-        expect(Yast::SCR).to receive(:Execute).with(
-          path(".target.bash"), "/usr/sbin/ntpdate -b ntp.suse.de"
-        ).and_return(0)
+        expect(Yast::NtpClient).to receive(:sync_once).with("ntp.suse.de").and_return(0)
 
         expect(Yast::SCR).to receive(:Execute).with(path(".target.bash"), "/sbin/hwclock --systohc")
           .and_return(0)
+
+        subject.Write()
+      end
+
+      it "does not sync hardware time if ntp sync failed" do
+        subject.Import(profile)
+
+        expect(Yast::NtpClient).to receive(:sync_once).with("ntp.suse.de").and_return(1)
+
+        expect(Yast::SCR).to_not receive(:Execute).with(path(".target.bash"), "/sbin/hwclock --systohc")
 
         subject.Write()
       end
