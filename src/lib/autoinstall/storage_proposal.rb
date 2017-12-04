@@ -26,8 +26,8 @@ module Y2Autoinstallation
   #
   # This class it is mainly a wrapper around proposal Y2Storage proposal classes.
   # Depending on the profile, it will select the right class: if 'partitioning'
-  # section is missing (or empty), {Y2Storage::GuidedProposal} will be used. Otherwise,
-  # proposal will be handdled by {Y2Storage::AutoinstProposal}.
+  # section is missing (or empty), Y2Storage::GuidedProposal will be used. Otherwise,
+  # proposal will be handdled by Y2Storage::AutoinstProposal.
   class StorageProposal
     include Yast::Logger
 

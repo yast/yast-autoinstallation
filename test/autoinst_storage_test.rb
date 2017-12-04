@@ -20,6 +20,9 @@ describe Yast::AutoinstStorage do
     let(:valid?) { true }
     let(:errors_settings) { { "show" => false, "timeout" => 10 } }
     let(:warnings_settings) { { "show" => true, "timeout" => 5 } }
+    let(:settings) { [{ "device" => "/dev/sda" }] }
+    let(:ask_settings) { [{ "device" => "ask" }] }
+    let(:preprocessor) { instance_double(Y2Autoinstallation::PartitioningPreprocessor, run: settings) }
 
     before do
       allow(Y2Autoinstallation::StorageProposal).to receive(:new)
@@ -27,6 +30,8 @@ describe Yast::AutoinstStorage do
       allow(Y2Autoinstallation::Dialogs::Question).to receive(:new)
         .and_return(issues_dialog)
       allow(storage_proposal).to receive(:save)
+      allow(Y2Autoinstallation::PartitioningPreprocessor).to receive(:new)
+        .and_return(preprocessor)
     end
 
     around do |example|
@@ -39,6 +44,22 @@ describe Yast::AutoinstStorage do
     it "creates a proposal" do
       expect(Y2Autoinstallation::StorageProposal).to receive(:new)
       subject.Import({})
+    end
+
+    it "preprocess given settings" do
+      expect(preprocessor).to receive(:run).with(ask_settings)
+      expect(Y2Autoinstallation::StorageProposal).to receive(:new)
+        .with(settings)
+        .and_return(storage_proposal)
+      subject.Import([{ "device" => "ask" }])
+    end
+
+    context "when settings are not preprocessed successfully" do
+      let(:settings) { nil }
+
+      it "returns false" do
+        expect(subject.Import({})).to eq(false)
+      end
     end
 
     context "when the proposal is valid" do

@@ -16,8 +16,13 @@
 #
 
 
+#Compat macro for new _fillupdir macro introduced in Nov 2017
+%if ! %{defined _fillupdir}
+  %define _fillupdir /var/adm/fillup-templates
+%endif
+
 Name:           autoyast2
-Version:        4.0.8
+Version:        4.0.12
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -213,7 +218,7 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 
 # additional files
 
-/var/adm/fillup-templates/sysconfig.autoinstall
+%{_fillupdir}/sysconfig.autoinstall
 
 %files installation
 %defattr(-,root,root)

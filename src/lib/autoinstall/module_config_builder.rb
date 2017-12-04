@@ -73,7 +73,7 @@ module Yast
     #
     # Default types are defined in DEFAULT_TYPES constant.
     #
-    # @param [String] Type name.
+    # @param type [String] Type name.
     # @return [Hash,Array] It returns the default value for the given type.
     def default_value_for(type)
       if DEFAULT_TYPES[type]

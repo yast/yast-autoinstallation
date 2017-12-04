@@ -495,7 +495,7 @@ module Yast
     end
 
     # Menu interface
-    # @param list menu items
+    #
     # @return [Symbol]
     def MainDialog
       _Icons = {}
