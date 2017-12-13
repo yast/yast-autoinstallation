@@ -28,6 +28,7 @@ Yast.import "Profile"
 
 describe Y2Autoinstallation::AutosetupHelpers do
   class DummyClient < Yast::Client
+    include Yast::Logger
     include Y2Autoinstallation::AutosetupHelpers
   end
 

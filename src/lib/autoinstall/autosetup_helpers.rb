@@ -42,40 +42,26 @@ module Y2Autoinstallation
     # @return [Symbol] :abort if profile could not be read; :found when it was loaded;
     #   :not_found if it does not exist
     def readModified
-      if Yast::Ops.greater_than(
-          Yast::SCR.Read(path(".target.size"), Yast::AutoinstConfig.modified_profile),
-          0
-      )
-        if !Yast::Profile.ReadXML(Yast::AutoinstConfig.modified_profile) ||
-            Yast::Profile.current == {}
-          Yast::Popup.Error(
-            _(
-              "Error while parsing the control file.\n" +
-              "Check the log files for more details or fix the\n" +
-              "control file and try again.\n"
-            )
-          )
-          return :abort
-        end
-        cpcmd = Yast::Builtins.sformat(
-          "mv %1 %2",
-          File.join(Yast::AutoinstConfig.profile_dir, "autoinst.xml"),
-          File.join(Yast::AutoinstConfig.profile_dir, "pre-autoinst.xml")
-        )
-        Yast::Builtins.y2milestone("copy original profile: %1", cpcmd)
-        Yast::SCR.Execute(path(".target.bash"), cpcmd)
-
-        cpcmd = Yast::Builtins.sformat(
-          "mv %1 %2",
-          Yast::AutoinstConfig.modified_profile,
-          File.join(Yast::AutoinstConfig.profile_dir, "autoinst.xml")
-        )
-        Yast::Builtins.y2milestone("moving modified profile: %1", cpcmd)
-        Yast::SCR.Execute(path(".target.bash"), cpcmd)
-        @modified_profile = true
-        return :found
+      if Yast::SCR.Read(path(".target.size"), Yast::AutoinstConfig.modified_profile) <= 0
+        return :not_found
       end
-      :not_found
+
+      if !Yast::Profile.ReadXML(Yast::AutoinstConfig.modified_profile) ||
+          Yast::Profile.current == {}
+        Yast::Popup.Error(
+          _(
+            "Error while parsing the control file.\n" +
+            "Check the log files for more details or fix the\n" +
+            "control file and try again.\n"
+          )
+        )
+        return :abort
+      end
+
+      backup_autoinst
+      update_autoinst
+      @modified_profile = true
+      :found
     end
 
     # Determine whether the profile was modified
@@ -83,6 +69,34 @@ module Y2Autoinstallation
     # @return [Boolean] true if it was modified; false otherwise.
     def modified_profile?
       !!@modified_profile
+    end
+
+  private
+
+    # Backup AutoYaST profile
+    #
+    # Copies autoinst.xml to pre-autoinst.xml.
+    def backup_autoinst
+      cpcmd = format(
+        "mv %s %s",
+        File.join(Yast::AutoinstConfig.profile_dir, "autoinst.xml"),
+        File.join(Yast::AutoinstConfig.profile_dir, "pre-autoinst.xml")
+      )
+      log.info("copy original profile: #{cpcmd}")
+      Yast::SCR.Execute(path(".target.bash"), cpcmd)
+    end
+
+    # Update AutoYaST profile
+    #
+    # Replaces autoinst.xml by modified.xml.
+    def update_autoinst
+      cpcmd = format(
+        "mv %s %s",
+        Yast::AutoinstConfig.modified_profile,
+        File.join(Yast::AutoinstConfig.profile_dir, "autoinst.xml")
+      )
+      log.info("moving modified profile: #{cpcmd}")
+      Yast::SCR.Execute(path(".target.bash"), cpcmd)
     end
   end
 end
