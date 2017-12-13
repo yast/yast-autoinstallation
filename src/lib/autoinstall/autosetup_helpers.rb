@@ -23,8 +23,8 @@ require "y2storage"
 require "autoinstall/activate_callbacks"
 
 module Y2Autoinstallation
-  # This module defines some methods that are used in {InstAutosetupClient}
-  # and {InstAutosetupUpgradeClient} clients. These clients need to be rewritten
+  # This module defines some methods that are used in {Yast::InstAutosetupClient}
+  # and {Yast::InstAutosetupUpgradeClient} clients. These clients need to be rewritten
   # but, for the time being, this is the easiest way to share code between them.
   module AutosetupHelpers
     # Activate and probe storage
