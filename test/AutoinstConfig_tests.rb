@@ -181,4 +181,16 @@ describe "Yast::AutoinstConfig" do
       expect(subject.selected_product.short_name).to eql "SLED15"
     end
   end
+
+  describe "#profile_path" do
+    it "returns '/<profile_path>/autoinst.xml'" do
+      expect(subject.profile_path).to eq("/tmp/profile/autoinst.xml")
+    end
+  end
+
+  describe "#profile_backup_path" do
+    it "returns '/<profile_path>/pre-autoinst.xml'" do
+      expect(subject.profile_backup_path).to eq("/tmp/profile/pre-autoinst.xml")
+    end
+  end
 end

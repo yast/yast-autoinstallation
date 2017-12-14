@@ -73,6 +73,7 @@ ylib_DATA = \
   lib/autoinstall/module_config_builder.rb \
   lib/autoinstall/pkg_gpg_check_handler.rb \
   lib/autoinstall/partitioning_preprocessor.rb \
+  lib/autoinstall/autosetup_helpers.rb \
   lib/autoinstall/storage_proposal.rb \
   lib/autoinstall/storage_proposal_issues_presenter.rb
 

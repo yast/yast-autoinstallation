@@ -7,11 +7,12 @@
 #          Uwe Gansert <ug@suse.de>
 #
 # $Id: inst_autosetup.ycp 61521 2010-03-29 09:10:07Z ug $
-require "y2storage"
+require "autoinstall/autosetup_helpers"
 
 module Yast
   class InstAutosetupUpgradeClient < Client
     include Yast::Logger
+    include Y2Autoinstallation::AutosetupHelpers
 
     def main
       Yast.import "Pkg"
@@ -204,7 +205,7 @@ module Yast
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
         # reread only if target system is not yet initialized (bnc#673033)
-        Y2Storage::StorageManager.instance.probe
+        probe_storage
 
         if :abort == WFM.CallFunction("inst_update_partition_auto", [])
           return :abort
@@ -472,42 +473,6 @@ module Yast
       )
       return :finish if @ret == :next
       @ret
-    end
-
-    def readModified
-      if Ops.greater_than(
-          SCR.Read(path(".target.size"), AutoinstConfig.modified_profile),
-          0
-        )
-        if !Profile.ReadXML(AutoinstConfig.modified_profile) ||
-            Profile.current == {}
-          Popup.Error(
-            _(
-              "Error while parsing the control file.\n" +
-                "Check the log files for more details or fix the\n" +
-                "control file and try again.\n"
-            )
-          )
-          return :abort
-        end
-        cpcmd = Builtins.sformat(
-          "mv %1 %2",
-          "/tmp/profile/autoinst.xml",
-          "/tmp/profile/pre-autoinst.xml"
-        )
-        Builtins.y2milestone("copy original profile: %1", cpcmd)
-        SCR.Execute(path(".target.bash"), cpcmd)
-
-        cpcmd = Builtins.sformat(
-          "mv %1 %2",
-          AutoinstConfig.modified_profile,
-          "/tmp/profile/autoinst.xml"
-        )
-        Builtins.y2milestone("moving modified profile: %1", cpcmd)
-        SCR.Execute(path(".target.bash"), cpcmd)
-        return :found
-      end
-      :not_found
     end
 
     # FIXME FIXME FIXME copy-paste from update_proposal
