@@ -79,8 +79,8 @@ module Y2Autoinstallation
     def backup_autoinst
       cpcmd = format(
         "mv %s %s",
-        File.join(Yast::AutoinstConfig.profile_dir, "autoinst.xml"),
-        File.join(Yast::AutoinstConfig.profile_dir, "pre-autoinst.xml")
+        Yast::AutoinstConfig.profile_path,
+        Yast::AutoinstConfig.profile_backup_path
       )
       log.info("copy original profile: #{cpcmd}")
       Yast::SCR.Execute(path(".target.bash"), cpcmd)
@@ -90,13 +90,13 @@ module Y2Autoinstallation
     #
     # Replaces autoinst.xml by modified.xml.
     def update_autoinst
-      cpcmd = format(
+      mvcmd = format(
         "mv %s %s",
         Yast::AutoinstConfig.modified_profile,
-        File.join(Yast::AutoinstConfig.profile_dir, "autoinst.xml")
+        Yast::AutoinstConfig.profile_path
       )
-      log.info("moving modified profile: #{cpcmd}")
-      Yast::SCR.Execute(path(".target.bash"), cpcmd)
+      log.info("moving modified profile: #{mvcmd}")
+      Yast::SCR.Execute(path(".target.bash"), mvcmd)
     end
   end
 end

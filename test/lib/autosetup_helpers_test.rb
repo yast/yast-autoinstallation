@@ -33,7 +33,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
   end
 
   subject(:client) { DummyClient.new }
-  let(:profile_dir_path) { File.join(TESTS_PATH, 'tmp') }
+  let(:profile_dir_path) { File.join(TESTS_PATH, "tmp") }
 
   describe "#probe_storage" do
     let(:storage_manager) { double(Y2Storage::StorageManager) }
