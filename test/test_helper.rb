@@ -35,7 +35,8 @@ if ENV["COVERAGE"]
   end
 end
 
-FIXTURES_PATH = Pathname.new(File.dirname(__FILE__)).join("fixtures")
+TESTS_PATH = Pathname.new(File.dirname(__FILE__))
+FIXTURES_PATH = TESTS_PATH.join("fixtures")
 
 # mock missing YaST modules, they are needed by an early import call
 module Yast

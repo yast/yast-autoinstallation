@@ -598,6 +598,20 @@ module Yast
       @selected_product
     end
 
+    # Profile path during installation
+    #
+    # @return [String] Path
+    def profile_path
+      File.join(profile_dir, DEFAULT_PROFILE_NAME)
+    end
+
+    # Profile backup path during installation
+    #
+    # @return [String] Path
+    def profile_backup_path
+      File.join(profile_dir, "pre-autoinst.xml")
+    end
+
     publish :variable => :runModule, :type => "string"
     publish :variable => :Repository, :type => "string"
     publish :variable => :ProfileEncrypted, :type => "boolean"
