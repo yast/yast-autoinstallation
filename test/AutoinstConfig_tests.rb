@@ -73,9 +73,9 @@ describe "Yast::AutoinstConfig" do
       end
 
       context "required package are installed" do
-        it "returns an error string" do
+        it "returns an empty error string" do
           allow(Yast::Pkg).to receive(:IsSelected).and_return(true)
-          expect(subject.check_second_stage_environment).to_not be_empty
+          expect(subject.check_second_stage_environment).to be_empty
         end
       end
 
