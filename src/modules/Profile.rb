@@ -875,38 +875,25 @@ module Yast
       @current.delete_if { |k, v| keys_to_delete.include?(k) }
     end
 
-    private
-
-    def add_autoyast_packages
-      if !Builtins.contains(
-          Ops.get_list(@current, ["software", "packages"], []),
-          "autoyast2-installation"
-        )
-        Ops.set(
-          @current,
-          ["software", "packages"],
-          Builtins.add(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2-installation"
-          )
-        )
-      end
+    # Returns a list of packages which have to be installed
+    # in order to run a second stage at all.
+    #
+    # @return [Array<String>] package list
+    def needed_second_stage_packages
+      ret = ["autoyast2-installation"]
 
       # without autoyast2, <files ...> does not work
-      if !(@current.keys & AUTOYAST_CLIENTS).empty? &&
-          !Builtins.contains(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2"
-          )
-        Ops.set(
-          @current,
-          ["software", "packages"],
-          Builtins.add(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2"
-          )
-        )
-      end
+      ret << "autoyast2" if !(@current.keys & AUTOYAST_CLIENTS).empty?
+      ret
+    end
+
+  private
+
+    def add_autoyast_packages
+      @current["software"] ||= {}
+      @current["software"]["packages"] ||= []
+      @current["software"]["packages"] << needed_second_stage_packages
+      @current["software"]["packages"].flatten!.uniq!
     end
 
   protected
@@ -959,6 +946,7 @@ module Yast
     publish :function => :ReadXML, :type => "boolean (string)"
     publish :function => :setElementByList, :type => "map <string, any> (list, any, map <string, any>)"
     publish :function => :checkProfile, :type => "void ()"
+    publish :function => :needed_second_stage_packages, :type => "list <string> ()"
   end
 
   Profile = ProfileClass.new
