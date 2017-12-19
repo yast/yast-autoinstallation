@@ -893,7 +893,7 @@ module Yast
       @current["software"] ||= {}
       @current["software"]["packages"] ||= []
       @current["software"]["packages"] << needed_second_stage_packages
-      @current["software"]["packages"].flatten.uniq
+      @current["software"]["packages"].flatten!.uniq!
     end
 
   protected
