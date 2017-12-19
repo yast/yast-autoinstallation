@@ -85,14 +85,14 @@ describe "Yast::AutoinstConfig" do
         end
 
         context "registration has not been defined in AY configuration file" do
-          it "report error to set registration" do
+          it "reports error to set registration" do
             allow(Yast::Profile).to receive(:current).and_return({})
             expect(subject.check_second_stage_environment).to include("configuring the registration")
           end
         end
 
         context "registration has failed" do
-          it "report error to check registration settings" do
+          it "reports error to check registration settings" do
             allow(Yast::Profile).to receive(:current).and_return(
               {"suse_register" => {"do_registration" => true}})
             expect(subject.check_second_stage_environment).to include("registration has failed")

@@ -231,32 +231,32 @@ module Yast
       nil
     end
 
-    # Checking the environment in the installed
+    # Checking the environment the installed system
     # to run a second stage if it is needed.
     #
     # @return [String] empty String or error messsage about missing packages.
     def check_second_stage_environment
       error = ""
-      if AutoinstFunctions.second_stage_required?
-        missing_packages = Profile.needed_second_stage_packages.select do |p|
-            !Pkg.IsSelected(p)
-        end
-        unless missing_packages.empty?
-          log.warn "Second stage cannot be run due missing packages: #{missing_packages}"
-          # TRANSLATORS: %s will be replaced by a package list
-          error = format(_("AutoYaST cannot run second stage due missing packages \n%s.\n"),
-            missing_packages.join(", "))
-          unless registered?
-            if Profile.current["suse_register"] &&
-              Profile.current["suse_register"]["do_registration"] == true
-              error << _("The registration has failed. ")
-              error << _("Please check your registration settings in the AutoYaST configuration file.")
-              log.warn "Registration has been called but has failed."
-            else
-              error << _("You have not registered your system. ")
-              error << _("Missing packages can be added by configuring the registration in the AutoYaST configuration file.")
-              log.warn "Registration is not configured at all."
-            end
+      return error unless AutoinstFunctions.second_stage_required?
+
+      missing_packages = Profile.needed_second_stage_packages.select do |p|
+        !Pkg.IsSelected(p)
+      end
+      unless missing_packages.empty?
+        log.warn "Second stage cannot be run due missing packages: #{missing_packages}"
+        # TRANSLATORS: %s will be replaced by a package list
+        error = format(_("AutoYaST cannot run second stage due to missing packages \n%s.\n"),
+          missing_packages.join(", "))
+        unless registered?
+          if Profile.current["suse_register"] &&
+            Profile.current["suse_register"]["do_registration"] == true
+            error << _("The registration has failed. " \
+              "Please check your registration settings in the AutoYaST configuration file.")
+            log.warn "Registration has been called but has failed."
+          else
+            error << _("You have not registered your system. " \
+              "Missing packages can be added by configuring the registration in the AutoYaST configuration file.")
+            log.warn "Registration is not configured at all."
           end
         end
       end
