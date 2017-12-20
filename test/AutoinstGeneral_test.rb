@@ -137,16 +137,6 @@ describe "Yast::AutoinstGeneral" do
       expect(subject.Export).to include("storage" => profile["storage"])
     end
 
-    context "when the old 'btrfs_set_default_subvolume_name' is used" do
-      let(:profile) do
-        { "storage" => { "btrfs_set_default_subvolume_name" => "@" } }
-      end
-
-      it "exports that option renamed to 'btrfs_default_subvolume'" do
-        expect(subject.Export).to include("storage" => { "btrfs_default_subvolume" => "@" })
-      end
-    end
-
     it "exports mode settings" do
       expect(subject.Export).to include("mode" => profile["mode"])
     end
@@ -161,10 +151,6 @@ describe "Yast::AutoinstGeneral" do
 
     it "exports proposals settings" do
       expect(subject.Export).to include("proposals" => profile["proposals"])
-    end
-
-    context "when btrfs default subvolume name is different from the default" do
-      it "includes btrfs_set_default_subvolume_name"
     end
   end
 end

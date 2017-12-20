@@ -189,6 +189,10 @@ module Yast
           ["Import", Ops.get_map(Profile.current, "add-on", {})]
         )
         Call.Function("add-on_auto", ["Write"])
+
+        # Recover partitioning settings that were removed by the add-on_auto client (bsc#1073548)
+        Yast::AutoinstStorage.import_general_settings(general_section["storage"])
+
         # The entry "kexec_reboot" in the Product description can be set
         # by the AutoYaST configuration setting (general/forceboot) and should
         # not be reset by any other Product description file.

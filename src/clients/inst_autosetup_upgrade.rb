@@ -128,6 +128,9 @@ module Yast
           ["Import", Ops.get_map(Profile.current, "add-on", {})]
         )
         Call.Function("add-on_auto", ["Write"])
+
+        # Recover partitioning settings that were removed by the add-on_auto client (bsc#1073548)
+        Yast::AutoinstStorage.import_general_settings(general_section["storage"])
       end
 
       @use_utf8 = true # utf8 is default
