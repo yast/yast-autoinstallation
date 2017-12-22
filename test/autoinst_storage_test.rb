@@ -205,14 +205,32 @@ describe Yast::AutoinstStorage do
       it "does not set multipath"
     end
 
-    context "when btrfs default subvolume name is set" do
-      let(:profile) { { "btrfs_set_default_subvolume_name" => "@@" } }
+    context "when btrfs default subvolume name is set to false" do
+      let(:profile) { { "btrfs_set_default_subvolume_name" => false } }
 
-      it "sets the default subvolume"
+      it "disables the btrfs default subvolume" do
+        expect(Yast::ProductFeatures).to receive(:SetOverlay)
+          .with("partitioning" => { "btrfs_default_subvolume" => "" })
+        subject.import_general_settings(profile)
+      end
     end
 
     context "when btrfs default subvolume name is not set" do
-      it "uses the default name"
+      let(:profile) { {} }
+
+      it "uses the default for the product" do
+        expect(Yast::ProductFeatures).to receive(:SetOverlay).with("partitioning" => {})
+        subject.import_general_settings(profile)
+      end
+    end
+
+    context "when btrfs default subvolume name is set to true" do
+      let(:profile) { { "btrfs_set_default_subvolume_name" => true } }
+
+      it "uses the default for the product" do
+        expect(Yast::ProductFeatures).to receive(:SetOverlay).with("partitioning" => {})
+        subject.import_general_settings(profile)
+      end
     end
   end
 end
