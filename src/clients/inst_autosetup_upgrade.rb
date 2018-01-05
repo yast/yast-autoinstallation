@@ -282,21 +282,12 @@ module Yast
         RootPart.previousRootPartition = RootPart.selectedRootPartition
 
         # check whether update is possible
-        # reset deleteOldPackages and onlyUpdateInstalled in respect to the selected system
+        # reset settings in respect to the selected system
         Update.Reset
         if !Update.IsProductSupportedForUpgrade
           Builtins.y2milestone("Upgrade is not supported")
           @update_not_possible = true
         end
-      end
-
-      # this is new - override the default upgrade mode
-      if Ops.get(Profile.current, ["upgrade", "only_installed_packages"]) != nil
-        Update.onlyUpdateInstalled = Ops.get_boolean(
-          Profile.current,
-          ["upgrade", "only_installed_packages"],
-          true
-        )
       end
 
       # connect target with package manager
@@ -309,8 +300,6 @@ module Yast
         # bnc #391785
         # Drops packages after PkgApplReset, not before (that would null that)
         Update.DropObsoletePackages
-
-        Update.SetDesktopPattern if !Update.onlyUpdateInstalled
 
         # make sure the packages needed for accessing the installation repository
         # are installed, e.g. "cifs-mount" for SMB or "nfs-client" for NFS repositories
@@ -403,7 +392,7 @@ module Yast
         Builtins.foreach(@packages) { |p| Pkg.ResolvableInstall(p, :package) }
         Builtins.foreach(@products) { |p| Pkg.ResolvableInstall(p, :product) }
         # old stuff again here
-        if Pkg.PkgSolve(!Update.onlyUpdateInstalled)
+        if Pkg.PkgSolve(false)
           Update.solve_errors = 0
         else
           Update.solve_errors = Pkg.PkgSolveErrors
