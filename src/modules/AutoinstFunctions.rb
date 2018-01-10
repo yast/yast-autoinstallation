@@ -10,6 +10,7 @@ module Yast
       Yast.import "Mode"
       Yast.import "AutoinstConfig"
       Yast.import "ProductControl"
+      Yast.import "Profile"
       Yast.import "Pkg"
     end
 
