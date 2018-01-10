@@ -18,6 +18,7 @@ module Yast
       Yast.import "Installation"
       Yast.import "AutoInstall"
       Yast.import "AutoinstConfig"
+      Yast.import "AutoinstFunctions"
       Yast.import "AutoinstGeneral"
       Yast.import "ProfileLocation"
       Yast.import "AutoInstallRules"
@@ -107,7 +108,7 @@ module Yast
         WFM.CallFunction("fcoe-client_auto", ["Write"])
       end
 
-      if !AutoinstConfig.selected_product
+      if !AutoinstFunctions.selected_product
         Report.Error(_("No base product selected"))
 
         return :abort
