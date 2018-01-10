@@ -28,6 +28,7 @@ module Yast
       Yast.import "Report"
       Yast.import "Kernel"
       Yast.import "AutoinstConfig"
+      Yast.import "AutoinstFunctions"
       Yast.import "ProductControl"
       Yast.import "Mode"
       Yast.import "Misc"
@@ -849,7 +850,7 @@ module Yast
       Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
 
-      merge_product(AutoinstConfig.selected_product)
+      merge_product(AutoinstFunctions.selected_product)
 
       failed = []
 
