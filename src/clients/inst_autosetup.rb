@@ -355,7 +355,7 @@ module Yast
       Progress.NextStage
 
       # Merging selected product
-      AutoinstSoftware.merge_product(AutoinstConfig.selected_product)
+      AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
       # Evaluating package and patterns selection.
       # Selection will stored in PackageAI.
