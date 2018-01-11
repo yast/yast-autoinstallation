@@ -850,8 +850,6 @@ module Yast
       Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
 
-      merge_product(AutoinstFunctions.selected_product)
-
       failed = []
 
       # Add storage-related software packages (filesystem tools etc.) to the
@@ -1121,6 +1119,22 @@ module Yast
       @saved_package_selection
     end
 
+    # Selects given product (see Y2Packager::Product) and merges its workflow
+    def merge_product(product)
+      raise ArgumentError, "Base product expected" if !product
+
+      log.info("AutoinstSoftware::merge_product - using product: #{product.name}")
+      product.select
+
+      WorkflowManager.merge_product_workflow(product)
+
+      # Adding needed autoyast packages if a second stage is needed.
+      # Could have been changed due merging a products
+      log.info("Checking new second stage requirement.")
+      Profile.softwareCompat
+    end
+
+    publish :function => :merge_product, :type => "void (string)"
     publish :variable => :Software, :type => "map"
     publish :variable => :image, :type => "map <string, any>"
     publish :variable => :image_arch, :type => "string"
@@ -1151,18 +1165,6 @@ module Yast
     publish :function => :addPostPackages, :type => "void (list <string>)"
     publish :function => :ReadHelper, :type => "map <string, any> ()"
     publish :function => :Read, :type => "boolean ()"
-
-  private
-
-    # Selects given product (see Y2Packager::Product) and merges its workflow
-    def merge_product(product)
-      raise ArgumentError, "Base product expected" if !product
-
-      log.info("AutoinstSoftware::merge_product - using product: #{product.name}")
-      product.select
-
-      WorkflowManager.merge_product_workflow(product)
-    end
   end
 
   AutoinstSoftware = AutoinstSoftwareClass.new
