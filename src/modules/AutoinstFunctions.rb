@@ -12,6 +12,12 @@ module Yast
       Yast.import "ProductControl"
       Yast.import "Profile"
       Yast.import "Pkg"
+
+      #
+      # LeanOS: a base product explicitly selected by user in the profile
+      #
+      @selected_product = nil
+
     end
 
     # Determines if the second stage should be executed

@@ -209,11 +209,6 @@ module Yast
       @remoteProfile = true
       @Proposals = []
 
-      #
-      # LeanOS: a base product explicitly selected by user in the profile
-      #
-      @selected_product = nil
-
       Yast.include self, "autoinstall/io.rb"
       AutoinstConfig()
     end
