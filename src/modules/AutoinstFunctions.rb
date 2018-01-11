@@ -12,7 +12,6 @@ module Yast
       Yast.import "ProductControl"
       Yast.import "Profile"
       Yast.import "Pkg"
-
     end
 
     # Determines if the second stage should be executed
