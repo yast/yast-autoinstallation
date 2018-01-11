@@ -28,6 +28,7 @@ module Yast
       Yast.import "Report"
       Yast.import "Kernel"
       Yast.import "AutoinstConfig"
+      Yast.import "AutoinstFunctions"
       Yast.import "ProductControl"
       Yast.import "Mode"
       Yast.import "Misc"
