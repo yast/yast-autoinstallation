@@ -115,10 +115,11 @@ module Yast
       #
       # Set workflow variables
       #
-      AutoinstGeneral.Import(Ops.get_map(Profile.current, "general", {}))
+      general_section = Profile.current["general"] || {}
+      AutoinstGeneral.Import(general_section)
       Builtins.y2milestone(
         "general: %1",
-        Ops.get_map(Profile.current, "general", {})
+        general_section
       )
       AutoinstGeneral.Write
 
@@ -221,7 +222,6 @@ module Yast
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
       Progress.NextStage
 
-      general_section = Profile.current["general"] || {}
       if Profile.current["suse_register"]
         return :abort unless WFM.CallFunction(
           "scc_auto",
@@ -308,21 +308,6 @@ module Yast
         end
 
         Packages.SelectProduct
-
-        if !Update.OnlyUpdateInstalled
-          Packages.default_patterns.each do |pattern|
-            result = Pkg.ResolvableInstall(pattern, :pattern)
-            log.info "Pre-select pattern #{pattern}: #{result}"
-          end
-
-          # preselect the default product patterns (FATE#320199)
-          # note: must be called *after* selecting the products
-          require "packager/product_patterns"
-          product_patterns = ProductPatterns.new
-          log.info "Selecting the default product patterns: #{product_patterns.names}"
-          product_patterns.select
-        end
-
 
         # bnc #382208
 
