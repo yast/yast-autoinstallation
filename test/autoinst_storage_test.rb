@@ -190,8 +190,8 @@ describe Yast::AutoinstStorage do
     let(:profile) { { "proposal_lvm" => true } }
 
     it "overrides control file values" do
-      expect(Yast::ProductFeatures).to receive(:SetOverlay)
-        .with("partitioning" => profile)
+      expect(Yast::ProductFeatures).to receive(:SetSection)
+        .with("partitioning", profile)
       subject.import_general_settings(profile)
     end
 
@@ -209,8 +209,8 @@ describe Yast::AutoinstStorage do
       let(:profile) { { "btrfs_set_default_subvolume_name" => false } }
 
       it "disables the btrfs default subvolume" do
-        expect(Yast::ProductFeatures).to receive(:SetOverlay)
-          .with("partitioning" => { "btrfs_default_subvolume" => "" })
+        expect(Yast::ProductFeatures).to receive(:SetSection)
+          .with("partitioning", { "btrfs_default_subvolume" => "" })
         subject.import_general_settings(profile)
       end
     end
@@ -219,7 +219,7 @@ describe Yast::AutoinstStorage do
       let(:profile) { {} }
 
       it "uses the default for the product" do
-        expect(Yast::ProductFeatures).to receive(:SetOverlay).with("partitioning" => {})
+        expect(Yast::ProductFeatures).to receive(:SetSection).with("partitioning", {})
         subject.import_general_settings(profile)
       end
     end
@@ -228,7 +228,7 @@ describe Yast::AutoinstStorage do
       let(:profile) { { "btrfs_set_default_subvolume_name" => true } }
 
       it "uses the default for the product" do
-        expect(Yast::ProductFeatures).to receive(:SetOverlay).with("partitioning" => {})
+        expect(Yast::ProductFeatures).to receive(:SetSection).with("partitioning", {})
         subject.import_general_settings(profile)
       end
     end
