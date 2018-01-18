@@ -190,6 +190,8 @@ describe Yast::AutoinstStorage do
     let(:profile) { { "proposal_lvm" => true } }
 
     it "overrides control file values" do
+      expect(Yast::ProductFeatures).to receive(:SetSection)
+        .with("partitioning", profile)
       subject.import_general_settings(profile)
     end
 
