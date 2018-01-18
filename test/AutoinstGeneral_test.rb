@@ -30,8 +30,6 @@ describe "Yast::AutoinstGeneral" do
   before do
     allow(Yast).to receive(:import).and_call_original
     allow(Yast).to receive(:import).with("FileSystems").and_return(nil)
-    # prevent stacking overlayes used by Storage import
-    Yast::ProductFeatures.ClearOverlay
   end
 
   describe "#Write" do

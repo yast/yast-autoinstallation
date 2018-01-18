@@ -85,7 +85,7 @@ module Yast
       general_settings.delete("btrfs_set_default_subvolume_name")
 
       # Override product settings from control file
-      Yast::ProductFeatures.SetOverlay("partitioning" => general_settings)
+      Yast::ProductFeatures.SetSection("partitioning", general_settings)
     end
 
     # Import Fstab data
