@@ -934,8 +934,10 @@ module Yast
       # Solve dependencies
       #
       if !Pkg.PkgSolve(false)
+        # TRANSLATORS: Error message
         msg = _("The package resolver run failed. Please check your software " \
           "section in the autoyast profile.")
+        # TRANSLATORS: Error message, %s is replaced by "/var/log/YaST2/y2log"
         msg += "\n" + _("Additional details can be found in the %s file.") %
           "/var/log/YaST2/y2log"
 
