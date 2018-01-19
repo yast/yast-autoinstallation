@@ -14,6 +14,11 @@ require "y2packager/product"
 module Yast
   class AutoinstSoftwareClass < Module
     include Yast::Logger
+
+    # This file is created by pkg-bindings when the package solver fails,
+    # it contains some details of the failure
+    BAD_LIST_FILE = "/var/log/YaST2/badlist".freeze
+
     def main
       Yast.import "UI"
       Yast.import "Pkg"
@@ -842,12 +847,12 @@ module Yast
 
       Packages.Init(true)
       # Resetting package selection of previous runs. This is needed
-      # because it could be that additional repositories 
+      # because it could be that additional repositories
       # are available meanwhile. (bnc#979691)
       Pkg.PkgApplReset
 
       sw_settings = Profile.current.fetch("software",{})
-      Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
+      Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal,
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
 
       failed = []
@@ -929,11 +934,18 @@ module Yast
       # Solve dependencies
       #
       if !Pkg.PkgSolve(false)
-        Report.Error(
-          _(
-            "The package resolver run failed. Please check your software section in the autoyast profile."
-          )
-        )
+        msg = _("The package resolver run failed. Please check your software " \
+          "section in the autoyast profile.")
+        msg += "\n" + _("Additional details can be found in the %s file.") %
+          "/var/log/YaST2/y2log"
+
+        # read the details saved by pkg-bindings
+        if File.exist?(BAD_LIST_FILE)
+          msg += "\n\n"
+          msg += File.read(BAD_LIST_FILE)
+        end
+
+        Report.LongError(msg)
       end
 
       SpaceCalculation.ShowPartitionWarning
