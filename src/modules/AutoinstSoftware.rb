@@ -888,6 +888,9 @@ module Yast
         )
       end
 
+      log.info "Selecting product #{AutoinstFunctions.selected_product.inspect} for installation"
+      AutoinstFunctions.selected_product.select
+
       autoinstPacks = autoinstPackages
       # FIXME: optimization for package list evaluation turned off because it optimized it
       #        into an unbootable state (no kernel) bnc#427731
