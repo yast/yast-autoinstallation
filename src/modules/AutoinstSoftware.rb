@@ -888,8 +888,13 @@ module Yast
         )
       end
 
-      log.info "Selecting product #{AutoinstFunctions.selected_product.inspect} for installation"
-      AutoinstFunctions.selected_product.select
+      selected_product = AutoinstFunctions.selected_product
+      if selected_product
+        log.info "Selecting product #{selected_product.inspect} for installation"
+        selected_product.select
+      else
+        log.info "No product has been selected for installation"
+      end
 
       autoinstPacks = autoinstPackages
       # FIXME: optimization for package list evaluation turned off because it optimized it
