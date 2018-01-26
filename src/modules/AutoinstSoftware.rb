@@ -98,8 +98,6 @@ module Yast
       @patterns = settings.fetch("patterns",[])
       @instsource = settings.fetch("instsource","")
 
-      notFound = ""
-
       # what is this good for? disturbs the main-repo selection
       # Packages::Init(true);
       # Packages::InitializeAddOnProducts();
@@ -159,26 +157,6 @@ module Yast
         :from => "list",
         :to   => "list <string>"
       )
-
-      Builtins.foreach(Ops.get_list(settings, "packages", [])) do |pack|
-        if Stage.initial &&  # We are in the first installation stage
-          !Mode.config   &&  # but not cloning system to autoinst.xml (bnc#901747)
-          !Pkg.IsAvailable(pack) # and package is NOT on installation medium
-          notFound = Ops.add(Ops.add(notFound, pack), "\n")
-        end
-      end
-      if Ops.greater_than(Builtins.size(notFound), 0)
-        Builtins.y2error("packages not found: %1", notFound)
-        # warning text during the installation. %1 is a list of package names
-        Report.Error(
-          Builtins.sformat(
-            _(
-              "These packages could not be found in the software repositories:\n%1"
-            ),
-            notFound
-          )
-        )
-      end
 
       PackageAI.toinstall = settings.fetch("packages",[])
       @kernel = settings.fetch("kernel","")
@@ -878,27 +856,13 @@ module Yast
         )
       end
 
-      autoinstPacks = autoinstPackages
-      # FIXME: optimization for package list evaluation turned off because it optimized it
-      #        into an unbootable state (no kernel) bnc#427731
-      #
-      #        list<string> autoinstPacks = PackageAI::toinstall;
-      Builtins.y2milestone(
-        "Packages selected in autoinstall mode: %1",
-        autoinstPacks
-      )
-
-      if Ops.greater_than(Builtins.size(autoinstPacks), 0)
-        Builtins.y2milestone(
-          "Installing individual packages: %1",
-          Pkg.DoProvide(autoinstPacks)
-        )
-      end
-
+      log.info "Individual Packages for installation: #{autoinstPackages}"
+      failed_packages = {}
+      failed_packages = Pkg.DoProvide(autoinstPackages) unless autoinstPackages.empty?
 
       computed_packages = Packages.ComputeSystemPackageList
-      Builtins.y2debug("Computed list of packages: %1", computed_packages)
-      Pkg.DoProvide(computed_packages)
+      log.info "Computed packages for installation: #{computed_packages}"
+      failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages)) unless computed_packages.empty?
 
       Builtins.foreach(computed_packages) do |pack2|
         if Ops.greater_than(Builtins.size(@kernel), 0) && pack2 != @kernel &&
@@ -921,13 +885,21 @@ module Yast
 
         Pkg.DoRemove(PackageAI.toremove)
       end
-      pack = Storage.AddPackageList
-      if Ops.greater_than(Builtins.size(pack), 0)
-        Builtins.y2milestone(
-          "Installing storage packages: %1",
-          Pkg.DoProvide(pack)
-        )
+
+      storage_pack = Storage.AddPackageList
+      log.info "Storage packages for installation: #{storage_pack}"
+      failed_packages = failed_packages.merge(Pkg.DoProvide(storage_pack)) unless storage_pack.empty?
+
+      unless failed_packages.empty?
+        log.error "Cannot select: #{failed_packages}"
+        not_selected = ""
+        failed_packages.each do |name,reason|
+          not_selected << "#{name}: #{reason}\n"
+        end
+        # TRANSLATORS: Warning text during the installation. %s is a list of package
+        Report.Error(_("These packages cannot be found in the software repositories:\n%s") % not_selected)
       end
+
       #
       # Solve dependencies
       #
