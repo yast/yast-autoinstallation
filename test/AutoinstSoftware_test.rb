@@ -29,4 +29,16 @@ describe Yast::AutoinstSoftware do
 
   end
 
+  describe "selecting packages for installation" do
+    it "shows a popup if some packages have not been found" do
+      allow(subject).to receive(:autoinstPackages).and_return(["a1"])
+      expect(Yast::Packages).to receive(:ComputeSystemPackageList).and_return([])
+      expect(Yast::Storage).to receive(:AddPackageList).and_return(["a2","a3"])
+      expect(Yast::Pkg).to receive(:DoProvide).with(["a1"]).and_return({"a1" => "not found"})
+      expect(Yast::Pkg).to receive(:DoProvide).with(["a2","a3"]).and_return({})
+      expect(Yast::Report).to receive(:Error)
+      subject.SelectPackagesForInstallation()
+    end
+  end
+
 end
