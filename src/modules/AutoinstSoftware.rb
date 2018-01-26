@@ -856,14 +856,9 @@ module Yast
         )
       end
 
-      log.info "Individual Packages for installation: #{autoinstPackages}"
-      failed_packages = {}
-      failed_packages = Pkg.DoProvide(autoinstPackages) unless autoinstPackages.empty?
+      SelectPackagesForInstallation()
 
       computed_packages = Packages.ComputeSystemPackageList
-      log.info "Computed packages for installation: #{computed_packages}"
-      failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages)) unless computed_packages.empty?
-
       Builtins.foreach(computed_packages) do |pack2|
         if Ops.greater_than(Builtins.size(@kernel), 0) && pack2 != @kernel &&
             Builtins.search(pack2, "kernel-") == 0
@@ -884,20 +879,6 @@ module Yast
         end
 
         Pkg.DoRemove(PackageAI.toremove)
-      end
-
-      storage_pack = Storage.AddPackageList
-      log.info "Storage packages for installation: #{storage_pack}"
-      failed_packages = failed_packages.merge(Pkg.DoProvide(storage_pack)) unless storage_pack.empty?
-
-      unless failed_packages.empty?
-        log.error "Cannot select: #{failed_packages}"
-        not_selected = ""
-        failed_packages.each do |name,reason|
-          not_selected << "#{name}: #{reason}\n"
-        end
-        # TRANSLATORS: Warning text during the installation. %s is a list of package
-        Report.Error(_("These packages cannot be found in the software repositories:\n%s") % not_selected)
       end
 
       #
@@ -1093,6 +1074,28 @@ module Yast
 
     def SavedPackageSelection
       @saved_package_selection
+    end
+
+    def SelectPackagesForInstallation
+      log.info "Individual Packages for installation: #{autoinstPackages}"
+      failed_packages = {}
+      failed_packages = Pkg.DoProvide(autoinstPackages) unless autoinstPackages.empty?
+      computed_packages = Packages.ComputeSystemPackageList
+      log.info "Computed packages for installation: #{computed_packages}"
+      failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages)) unless computed_packages.empty?
+      storage_pack = Storage.AddPackageList
+      log.info "Storage packages for installation: #{storage_pack}"
+      failed_packages = failed_packages.merge(Pkg.DoProvide(storage_pack)) unless storage_pack.empty?
+
+      unless failed_packages.empty?
+        log.error "Cannot select: #{failed_packages}"
+        not_selected = ""
+        failed_packages.each do |name,reason|
+          not_selected << "#{name}: #{reason}\n"
+        end
+        # TRANSLATORS: Warning text during the installation. %s is a list of package
+        Report.Error(_("These packages cannot be found in the software repositories:\n%s") % not_selected)
+      end
     end
 
     publish :variable => :Software, :type => "map"
