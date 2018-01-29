@@ -1123,9 +1123,6 @@ module Yast
       computed_packages = Packages.ComputeSystemPackageList
       log.info "Computed packages for installation: #{computed_packages}"
       failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages)) unless computed_packages.empty?
-      storage_pack = Storage.AddPackageList
-      log.info "Storage packages for installation: #{storage_pack}"
-      failed_packages = failed_packages.merge(Pkg.DoProvide(storage_pack)) unless storage_pack.empty?
 
       unless failed_packages.empty?
         log.error "Cannot select: #{failed_packages}"
