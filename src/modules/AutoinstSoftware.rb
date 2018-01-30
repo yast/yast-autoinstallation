@@ -952,12 +952,11 @@ module Yast
       nil
     end
 
+    # returns (hard and soft) locked packages
+    # @return [Array<String>] list of package names
     def locked_packages
-      packages = Pkg.ResolvableProperties("", :package, "").select do |package|
-        # hard AND soft locks
-        package["transact_by"] == :user && (package["locked"] || package["status"] == :available)
-      end
-      packages.map! {|p| p["name"] }
+      # hard AND soft locks
+      user_transact_packages(:taboo).concat(user_transact_packages(:available))
     end
 
     def install_packages
@@ -1166,6 +1165,23 @@ module Yast
     publish :function => :addPostPackages, :type => "void (list <string>)"
     publish :function => :ReadHelper, :type => "map <string, any> ()"
     publish :function => :Read, :type => "boolean ()"
+
+  private
+
+    # Get user transacted packages, include only the packages in the requested state
+    # @param status [Symbol] package status (:available, :selected, :installed,
+    # :removed)
+    # @return [Array<String>] package names
+    def user_transact_packages(status)
+      # only package names (without version)
+      names_only = true
+      packages = Pkg.GetPackages(status, names_only)
+
+      # Pkg.ResolvableProperties for each package separately to avoid huge memory consumption
+      packages.select do |package|
+        Pkg.ResolvableProperties(package, :package, "").any? {|p| p["transact_by"] == :user}
+      end
+    end
   end
 
   AutoinstSoftware = AutoinstSoftwareClass.new

@@ -64,4 +64,23 @@ describe Yast::AutoinstSoftware do
     end
   end
 
+  describe "#locked_packages" do
+    before do
+      expect(Yast::Pkg).to receive(:GetPackages).with(:taboo, true).and_return(["foo"])
+      expect(Yast::Pkg).to receive(:GetPackages).with(:available, true).and_return(["bar"])
+    end
+
+    it "returns packages locked by user" do
+      # just mock the only attribute needed
+      allow(Yast::Pkg).to receive(:ResolvableProperties).and_return(["transact_by" => :user])
+      expect(subject.locked_packages).to include("foo").and include("bar")
+    end
+
+    it "ignores packages changed by the solver" do
+      # just mock the only attribute needed
+      allow(Yast::Pkg).to receive(:ResolvableProperties).and_return(["transact_by" => :solver])
+      expect(subject.locked_packages).to be_empty
+    end
+  end
+
 end
