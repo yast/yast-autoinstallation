@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.0.26
+Version:        4.0.27
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -119,8 +119,8 @@ Requires:       yast2-transfer >= 2.21.0
 # storage-ng based version
 Requires:       yast2-update >= 3.3.0
 Requires:       yast2-xml
-# pkgGpgCheck callback
-Requires:       yast2-pkg-bindings >= 3.1.31
+# "transact_by" key in PkgPropertiesAll()
+Requires:       yast2-pkg-bindings >= 4.0.7
 # Y2Storage::AutoinstIssues containing section information
 BuildRequires:  yast2-storage-ng >= 4.0.15
 Provides:       yast2-trans-autoinst
