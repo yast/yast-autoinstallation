@@ -969,7 +969,7 @@ module Yast
 
       # user selected packages which have already been installed
       installed_by_user = Pkg.GetPackages(:installed, true).select{ |pkg_name|
-        Pkg.PkgPropertiesAll(pkg_name).any? { |package| package["on_system_by_user"] }
+        Pkg.PkgPropertiesAll(pkg_name).any? { |p| p["on_system_by_user"] && p["status"] == :installed }
       }
 
       # Filter out kernel and pattern packages
@@ -1177,9 +1177,9 @@ module Yast
       names_only = true
       packages = Pkg.GetPackages(status, names_only)
 
-      # Pkg.ResolvableProperties for each package separately to avoid huge memory consumption
+      # iterate over each package, Pkg.ResolvableProperties("", :package, "") requires a lot of memory
       packages.select do |package|
-        Pkg.ResolvableProperties(package, :package, "").any? {|p| p["transact_by"] == :user}
+        Pkg.PkgPropertiesAll(package).any? { |p| p["transact_by"] == :user && p["status"] == status }
       end
     end
   end
