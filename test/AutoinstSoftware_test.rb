@@ -30,15 +30,38 @@ describe Yast::AutoinstSoftware do
   end
 
   describe "selecting packages for installation" do
-    it "shows a popup if some packages have not been found" do
+
+    before(:each) do
       allow(subject).to receive(:autoinstPackages).and_return(["a1"])
       expect(Yast::Packages).to receive(:ComputeSystemPackageList).and_return([])
-      expect(Yast::Storage).to receive(:AddPackageList).and_return(["a2","a3"])
+      allow(subject).to receive(:autoinstPackages).and_return(["a1"])
       expect(Yast::Pkg).to receive(:DoProvide).with(["a1"]).and_return({"a1" => "not found"})
+    end
+
+    it "shows a popup if some packages have not been found" do
+      expect(Yast::Storage).to receive(:AddPackageList).and_return(["a2","a3"])
       expect(Yast::Pkg).to receive(:DoProvide).with(["a2","a3"]).and_return({})
       expect(Yast::Report).to receive(:Error)
       subject.SelectPackagesForInstallation()
     end
+
+    it "shows a popup for not found packages which have been selected by AY configuration only" do
+      subject.Import(Yast::Profile.current["software"])
+      expect(Yast::Storage).to receive(:AddPackageList).and_return(["a2","a3","a4"])
+      expect(Yast::Pkg).to receive(:DoProvide).with(["a2","a3","a4"]).and_return({"a4" => "not found"})
+      # a4 is not in the software/packages section
+      expect(Yast::Report).to receive(:Error).with("These packages cannot be found in the software repositories:\na1: not found\n")
+      subject.SelectPackagesForInstallation()
+    end
+
+    it "shows no popup if no software section has been defined in the AY configuration" do
+      subject.Import({})
+      expect(Yast::Storage).to receive(:AddPackageList).and_return(["a2","a3","a4"])
+      expect(Yast::Pkg).to receive(:DoProvide).with(["a2","a3","a4"]).and_return({"a4" => "not found"})
+      expect(Yast::Report).to_not receive(:Error)
+      subject.SelectPackagesForInstallation()
+    end
+
   end
 
 end
