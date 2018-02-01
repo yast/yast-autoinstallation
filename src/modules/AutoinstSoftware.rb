@@ -19,6 +19,10 @@ module Yast
     # it contains some details of the failure
     BAD_LIST_FILE = "/var/log/YaST2/badlist".freeze
 
+    # Maximal amount of packages which will be shown
+    # in a popup.
+    MAX_PACKAGE_VIEW = 5
+
     def main
       Yast.import "UI"
       Yast.import "Pkg"
@@ -1123,14 +1127,40 @@ module Yast
       log.info "Computed packages for installation: #{computed_packages}"
       failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages)) unless computed_packages.empty?
 
+      # Blaming only packages which have been selected by the AutoYaST configuration file
+      log.error "Cannot select following packages for installation:" unless failed_packages.empty?
+      failed_packages.reject! do |name,reason|
+        if @Software["packages"] && @Software["packages"].include?(name)
+          log.error("  #{name} : #{reason} (selected by AutoYaST configuration file)")
+          false
+        else
+          log.error("  #{name} : #{reason} (selected by YAST automatically)")
+          true
+        end
+      end
+
       unless failed_packages.empty?
-        log.error "Cannot select: #{failed_packages}"
         not_selected = ""
+        suggest_y2log = false
+        failed_count = failed_packages.size
+        if failed_packages.size > MAX_PACKAGE_VIEW
+          failed_packages = failed_packages.first(MAX_PACKAGE_VIEW).to_h
+          suggest_y2log = true
+        end
         failed_packages.each do |name,reason|
           not_selected << "#{name}: #{reason}\n"
         end
         # TRANSLATORS: Warning text during the installation. %s is a list of package
-        Report.Error(_("These packages cannot be found in the software repositories:\n%s") % not_selected)
+        error_message = _("These packages cannot be found in the software repositories:\n%s") % not_selected
+        if suggest_y2log
+          # TRANSLATORS: Error message, %d is replaced by the amount of failed packages.
+          error_message += _("and %d additional packages") % (failed_count - MAX_PACKAGE_VIEW)
+          # TRANSLATORS: Error message, %s is replaced by "/var/log/YaST2/y2log"
+          error_message += "\n\n" + _("Details can be found in the %s file.") %
+            "/var/log/YaST2/y2log"
+        end
+
+        Report.Error(error_message)
       end
     end
 
