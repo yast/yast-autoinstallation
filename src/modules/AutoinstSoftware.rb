@@ -1093,12 +1093,12 @@ module Yast
       # Blaming only packages which have been selected by the AutoYaST configuration file
       log.error "Cannot select following packages for installation:" unless failed_packages.empty?
       failed_packages.reject! do |name,reason|
-        if @Software["packages"] && !@Software["packages"].include?(name)
-          log.error("  #{name} : #{reason} (selected by YAST automatically)")
-          true
-        else
+        if @Software["packages"] && @Software["packages"].include?(name)
           log.error("  #{name} : #{reason} (selected by AutoYaST configuration file)")
           false
+        else
+          log.error("  #{name} : #{reason} (selected by YAST automatically)")
+          true
         end
       end
 
