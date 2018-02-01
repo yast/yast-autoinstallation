@@ -39,6 +39,15 @@ describe Yast::AutoinstSoftware do
       expect(Yast::Report).to receive(:Error)
       subject.SelectPackagesForInstallation()
     end
+    it "shows a popup for not founded packages which have been selected by AY configuration only" do
+      allow(subject).to receive(:autoinstPackages).and_return(["a1"])
+      expect(Yast::Packages).to receive(:ComputeSystemPackageList).and_return([])
+      expect(Yast::Storage).to receive(:AddPackageList).and_return(["a2","a3"])
+      expect(Yast::Pkg).to receive(:DoProvide).with(["a1"]).and_return({"a1" => "not found"})
+      expect(Yast::Pkg).to receive(:DoProvide).with(["a2","a3"]).and_return({"a2" => "not found"})
+      expect(Yast::Report).to receive(:Error)
+      subject.SelectPackagesForInstallation()
+    end
   end
 
 end
