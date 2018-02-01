@@ -45,7 +45,7 @@ describe Yast::AutoinstSoftware do
       subject.SelectPackagesForInstallation()
     end
 
-    it "shows a popup for not founded packages which have been selected by AY configuration only" do
+    it "shows a popup for not found packages which have been selected by AY configuration only" do
       subject.Import(Yast::Profile.current["software"])
       expect(Yast::Storage).to receive(:AddPackageList).and_return(["a2","a3","a4"])
       expect(Yast::Pkg).to receive(:DoProvide).with(["a2","a3","a4"]).and_return({"a4" => "not found"})

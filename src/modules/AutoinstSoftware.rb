@@ -13,6 +13,8 @@ module Yast
   class AutoinstSoftwareClass < Module
     include Yast::Logger
 
+    # Maximal amount of packages which will be shown
+    # in a popup.
     MAX_PACKAGE_VIEW = 5
 
     def main
