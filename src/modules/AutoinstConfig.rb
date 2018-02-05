@@ -592,8 +592,8 @@ module Yast
 
     # Reads configuration from /etc/sysconfig/autoinstall
     #
-    # @param [String] an option
-    # @param [String] a default value
+    # @param [String] option an option name string as can be found in /etc/sysconfig/autoinstall
+    # @param [String] default a default value for the option
     # @return [String] option value or default
     def sysconfig_autoinstall(option, default = "")
       Misc.SysconfigRead(
