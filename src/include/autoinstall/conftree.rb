@@ -253,6 +253,8 @@ module Yast
         UI.ChangeWidget(Id(:writeNow), :Enabled, false)
       end
 
+      UI.ChangeWidget(Id(:configure), :Enabled, false) if AutoinstConfig.dont_edit.include?(selectedModule)
+
       # set read button status
       resourceMap = Y2ModuleConfig.ModuleMap.fetch(selectedModule, {})
       clonable = resourceMap["X-SuSE-YaST-AutoInstClonable"] == "true"
