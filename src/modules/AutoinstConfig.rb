@@ -13,6 +13,7 @@ module Yast
   import "ServicesManagerTarget"
 
   class AutoinstConfigClass < Module
+    attr_reader(:dont_edit)
 
     module Target
       include ServicesManagerTargetClass::BaseTargets
@@ -179,6 +180,9 @@ module Yast
       #
       #
       @noWriteNow = []
+
+      # Edit button is disabled for these modules
+      @dont_edit = []
 
       #
       # Halt after initial phase
@@ -468,25 +472,14 @@ module Yast
         end
       elsif Mode.config
         # Load configuration data from /etc/sysconfig/autoinstall
-        @Repository = Misc.SysconfigRead(
-          path(".sysconfig.autoinstall.REPOSITORY"),
-          "/var/lib/autoinstall/repository/"
-        )
-        @classDir = Misc.SysconfigRead(
-          path(".sysconfig.autoinstall.CLASS_DIR"),
-          Ops.add(@Repository, "/classes")
-        )
-        tmp_dontmerge = Misc.SysconfigRead(
-          path(".sysconfig.autoinstall.XSLT_DONTMERGE"),
-          "addon,conf"
-        )
-        tmp_no_writenow = Misc.SysconfigRead(
-          path(".sysconfig.autoinstall.FORBID_WRITENOW"),
-          "add-on,suse_register,partitioning,bootloader,general,report"
-        )
+        @Repository = sysconfig_autoinstall("REPOSITORY", "/var/lib/autoinstall/repository/")
+        @classDir = sysconfig_autoinstall("CLASS_DIR", @Repository + "/classes")
+        tmp_dontmerge = sysconfig_autoinstall("XSLT_DONTMERGE", "addon,conf")
+        tmp_no_writenow = sysconfig_autoinstall("FORBID_WRITENOW", "add-on,suse_register,partitioning,bootloader,general,report")
 
         @dontmerge = Builtins.splitstring(tmp_dontmerge, ",")
         @noWriteNow = Builtins.splitstring(tmp_no_writenow, ",")
+        @dont_edit = sysconfig_autoinstall("FORBID_EDIT").split(",")
 
         # Set the defaults, just in case.
         if @Repository == "" || @Repository == nil
@@ -594,6 +587,20 @@ module Yast
     publish :function => :AutoinstConfig, :type => "void ()"
     publish :function => :MainHelp, :type => "string ()"
     publish :function => :check_second_stage_environment, :type => "string ()"
+
+    private
+
+    # Reads configuration from /etc/sysconfig/autoinstall
+    #
+    # @param [String] option an option name string as can be found in /etc/sysconfig/autoinstall
+    # @param [String] default a default value for the option
+    # @return [String] option value or default
+    def sysconfig_autoinstall(option, default = "")
+      Misc.SysconfigRead(
+        path(".sysconfig.autoinstall.#{option}"),
+        default
+      )
+    end
   end
 
   AutoinstConfig = AutoinstConfigClass.new
