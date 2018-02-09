@@ -36,7 +36,9 @@ module Yast
       "restore",
       "sshd",
       # Defined in SUSE Manager but will not be used anymore. (bnc#955878)
-      "cobbler"
+      "cobbler",
+      # FATE#323373 drop xinetd from distro and yast2-inetd
+      "inetd"
     ]
 
     # Sections that are handled by AutoYaST clients included in autoyast2 package.
