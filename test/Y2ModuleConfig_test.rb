@@ -19,6 +19,7 @@ describe Yast::Y2ModuleConfig do
     allow(Yast::WFM).to receive(:ClientExists).with("files_auto").and_return(true)
     allow(Yast::WFM).to receive(:ClientExists).with("firstboot_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("general_auto").and_return(true)
+    allow(Yast::WFM).to receive(:ClientExists).with("inetd_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("language_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("pxe_auto").and_return(false)
     allow(Yast::WFM).to receive(:ClientExists).with("restore_auto").and_return(false)
@@ -42,11 +43,9 @@ describe Yast::Y2ModuleConfig do
       Yast::Y2ModuleConfig.instance_variable_set("@ModuleMap", DESKTOP_DATA)
       Yast::Profile.ReadXML(profile_unhandled)
 
-      expect(Yast::Y2ModuleConfig.unhandled_profile_sections.sort).to eq(
-        [
-          "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "language", "restore",
-          "sshd", "sysconfig", "unknown_profile_item_1", "unknown_profile_item_2"
-        ].sort
+      expect(Yast::Y2ModuleConfig.unhandled_profile_sections).to contain_exactly(
+        "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "inetd", "language", "restore",
+        "sshd", "sysconfig", "unknown_profile_item_1", "unknown_profile_item_2"
       )
     end
   end
@@ -58,8 +57,8 @@ describe Yast::Y2ModuleConfig do
       Yast::Profile.ReadXML(profile_unsupported)
       Yast::Y2ModuleConfig.instance_variable_set("@ModuleMap", DESKTOP_DATA)
 
-      expect(Yast::Y2ModuleConfig.unsupported_profile_sections.sort).to eq(
-        ["autofs", "cobbler", "restore", "sshd"].sort
+      expect(Yast::Y2ModuleConfig.unsupported_profile_sections).to contain_exactly(
+        "autofs", "ca_mgm", "cobbler", "inetd", "restore", "sshd"
       )
     end
   end
