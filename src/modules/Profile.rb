@@ -38,7 +38,9 @@ module Yast
       # Defined in SUSE Manager but will not be used anymore. (bnc#955878)
       "cobbler",
       # FATE#323373 drop xinetd from distro and yast2-inetd
-      "inetd"
+      "inetd",
+      # FATE#319119 drop yast2-ca-manament
+      "ca_mgm"
     ]
 
     # Sections that are handled by AutoYaST clients included in autoyast2 package.
