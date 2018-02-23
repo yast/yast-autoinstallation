@@ -571,10 +571,6 @@ module Yast
               # The settings will be written in a running system.
               # So we are switching to "normal" mode. (bnc#909223)
               Mode.SetMode("normal")
-              # As we are now in "normal" mode and accessing to the target
-              # system we have to set StorageDevices flag disks_valid to true.
-              # So InitLibstorage can scan valid disks. (bnc#1046738)
-              StorageDevices.InitDone
 
               Call.Function(module_auto, ["Write"])
               Mode.SetMode(oldMode)
@@ -755,11 +751,6 @@ module Yast
             oldStage = Stage.stage
             Mode.SetMode("autoinstallation")
             Stage.Set("continue")
-
-            # As we are now in "autoinstallation" mode and accessing to the target
-            # system we have to set StorageDevices flag disks_valid to true.
-            # So InitLibstorage can scan valid disks. (bnc#1047809)
-            StorageDevices.InitDone
 
             WFM.CallFunction("inst_autopost", [])
             AutoinstSoftware.addPostPackages(

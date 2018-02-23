@@ -393,7 +393,8 @@ module Yast
     # @return	[Boolean] success
     def Import(settings)
       log.info("entering Import with #{settings.inspect}")
-      @AutoPartPlan = settings
+      # index settings
+      @AutoPartPlan = settings.map.with_index { |d, i| d.merge("_id" => i) }
       true
     end
 
