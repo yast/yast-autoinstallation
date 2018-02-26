@@ -108,8 +108,10 @@ module Yast
       names = Pkg.GetPackages(status, names_only)
 
       names.select do |name|
-        packages = Pkg.ResolvableProperties(name, :package, "")
-        packages.any?{ |p| p["transact_by"] == :user || p["transact_by"] == :app_high }
+        Pkg.PkgPropertiesAll(name).any? do |p|
+          (p["transact_by"] == :user || p["transact_by"] == :app_high) &&
+            p["status"] == status
+        end
       end
     end
   end
