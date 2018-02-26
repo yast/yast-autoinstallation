@@ -108,8 +108,10 @@ module Yast
       names = Pkg.GetPackages(status, names_only)
 
       names.select do |name|
-        Pkg.PkgPropertiesAll(name).any? { |p| (p["transact_by"] == :user || p["transact_by"] == :app_high) &&
-          p["status"] == status }
+        Pkg.PkgPropertiesAll(name).any? do |p|
+          (p["transact_by"] == :user || p["transact_by"] == :app_high) &&
+            p["status"] == status
+        end
       end
     end
   end
