@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.0.34
+Version:        4.0.35
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build

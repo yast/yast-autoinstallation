@@ -48,6 +48,7 @@ module Y2Autoinstallation
       # @param blacklist   [Array<String>] Device names that should be omitted.
       #   These disks will be filtered out.
       def initialize(devicegraph = nil, drive_index: 1, blacklist: [])
+        textdomain "autoinst"
         @devicegraph = devicegraph || Y2Storage::StorageManager.instance.probed
         @drive_index = drive_index
         @blacklist = blacklist
