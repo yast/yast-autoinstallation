@@ -42,6 +42,7 @@ module Y2Autoinstallation
     # @return [Symbol] :abort if profile could not be read; :found when it was loaded;
     #   :not_found if it does not exist
     def readModified
+      textdomain "autoinst"
       if Yast::SCR.Read(path(".target.size"), Yast::AutoinstConfig.modified_profile) <= 0
         return :not_found
       end
