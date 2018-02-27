@@ -123,7 +123,7 @@ describe "Yast::AutoInstallRules" do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   ||   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress" => subject.hostaddress, "mac"=>""}
+       { "hostaddress" => subject.hostaddress, "mac"=> subject.mac}
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
@@ -143,7 +143,7 @@ describe "Yast::AutoInstallRules" do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress" => subject.hostaddress, "mac"=>""}
+       { "hostaddress" => subject.hostaddress, "mac"=> subject.mac }
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
@@ -162,7 +162,7 @@ describe "Yast::AutoInstallRules" do
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
-       {"hostaddress" => subject.hostaddress, "mac"=>""}
+       { "hostaddress" => subject.hostaddress, "mac"=> subject.mac }
        )
       .and_return({"stdout"=>"", "exit"=>0, "stderr"=>""})
 
