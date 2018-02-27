@@ -25,7 +25,7 @@ Yast.import "AutoinstStorage"
 
 module Y2Autoinstallation
   # Activate callbacks for Y2Storage.
-  class ActivateCallbacks < Storage::ActivateCallbacks
+  class ActivateCallbacks < Y2Storage::Callbacks::Activate
     # Determine whether multipath should be enabled
     #
     # This hook returns true if start_multipath was set to +true+.
