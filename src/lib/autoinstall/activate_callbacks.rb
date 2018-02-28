@@ -31,7 +31,7 @@ module Y2Autoinstallation
     # This hook returns true if start_multipath was set to +true+.
     #
     # @return [Boolean]
-    def multipath
+    def multipath(looks_like_real_multipath)
       Yast::AutoinstStorage.general_settings.fetch("start_multipath", false)
     end
 

@@ -38,7 +38,7 @@ describe Y2Autoinstallation::ActivateCallbacks do
       let(:start_multipath) { true }
 
       it "returns true" do
-        expect(callbacks.multipath).to eq(true)
+        expect(callbacks.multipath(true)).to eq(true)
       end
     end
 
@@ -46,7 +46,7 @@ describe Y2Autoinstallation::ActivateCallbacks do
       let(:start_multipath) { false }
 
       it "returns false" do
-        expect(callbacks.multipath).to eq(false)
+        expect(callbacks.multipath(true)).to eq(false)
       end
     end
 
@@ -54,7 +54,7 @@ describe Y2Autoinstallation::ActivateCallbacks do
       let(:start_multipath) { false }
 
       it "returns false" do
-        expect(callbacks.multipath).to eq(false)
+        expect(callbacks.multipath(true)).to eq(false)
       end
     end
   end

@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.0.35
+Version:        4.0.36
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -47,8 +47,8 @@ BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-slp
 BuildRequires:  yast2-country
-# Y2Storage::AutoinstProfile::SkipListValue#to_hash
-BuildRequires:  yast2-storage-ng >= 4.0.23
+# ActivateCallbacks::multipath signature
+BuildRequires:  yast2-storage-ng >= 4.0.116
 
 # %%{_unitdir} macro definition is in a separate package since 13.1
 %if 0%{?suse_version} >= 1310
