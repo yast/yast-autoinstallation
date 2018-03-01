@@ -52,6 +52,13 @@ anywhere to a specified zone.
 
 #### Assignation of interfaces to zones
 
+The DMZ zone will be mapped to the 'dmz' zone, the EXT zone will be mapped to
+the 'public' zone if FW_MASQUERADE is disabled or to the 'external' if it is
+enabled and finally the INT zone will be mapped to the 'internal' zone if
+FW_PROTECT_FROM_INT is true or to the 'trusted' zone if not.
+
+
+**Default assignation**
 ```xml
 <firewall>
   FW_DEV_DMZ="any eth0"
@@ -70,6 +77,38 @@ anywhere to a specified zone.
     </zone>
     <zone>
       <name>public</name>
+      <interfaces>eth1</interfaces>
+    </zone>
+    <zone>
+      <name>trusted</name>
+      <interfaces>wlan1</interfaces>
+    </zone>
+  </zones>
+
+```
+
+**With masquerading and protecting internal zone**
+
+```xml
+<firewall>
+  FW_DEV_DMZ="any eth0"
+  FW_DEV_EXT="eth1 wlan0"
+  FW_DEV_INT="wlan1"
+  FW_MASQUERADE="yes"
+  FW_PROTECT_FROM_INT="yes"
+</firewall>
+```
+
+```xml
+<firewall>
+  <default_zone>dmz</default_zone>
+  <zones>
+    <zone>
+      <name>dmz</name>
+      <interfaces>eth0</interfaces>
+    </zone>
+    <zone>
+      <name>external</name>
       <interfaces>eth1</interfaces>
     </zone>
     <zone>
