@@ -80,16 +80,23 @@ anywhere to a specified zone.
 
 ```
 
-#### Chrony support in AutoYaST
+#### NTP Configuration
 
-As part of our effort to support Chrony as the default NTP service for (open)SUSE,
-we have revamped how AutoYaST handles the configuration of such a service.
-The first noticeable change is that we have redesigned the schema which, instead
-of containing low level configuration options, is now composed of a set of high
-level ones that are applied on top of the default settings.
+- https://susedoc.github.io/doc-sle/develop/SLES-autoyast/html/configuration.html#Configuration.Network.Ntp
+
+The time server synchronization daemon ntpd has been replaced with the more
+modern daemon Chrony.
+
+This change means that AutoYaST files with an ntp_client section need to be
+updated to a new format for this section.
+
+Instead of containing low level configuration options, is now composed of a set
+of high level ones that are applied on top of the default settings.
 
 And here is how the new (and nicer) configuration looks like:
 
+
+```xml
 <ntp-client>
   <ntp_policy>auto</ntp_policy>
   <ntp_servers config:type="list">
@@ -101,4 +108,4 @@ And here is how the new (and nicer) configuration looks like:
   </ntp_servers>
   <ntp_sync>15</ntp_sync>
 </ntp-client>
-
+```
