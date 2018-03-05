@@ -273,3 +273,25 @@ and `autoyast2`.
 
 
 ## New Storage
+
+
+## Registration
+
+### Module and Extension Dependencies
+
+<!--
+Copied from the latest development online documentation:
+https://susedoc.github.io/doc-sle/develop/SLES-autoyast/single-html/#CreateProfile.Register.Extension
+-->
+
+Since SLES 15 AutoYaST automatically reorders the extensions according to their
+dependencies during registration. That means the order of the extensions in
+the AutoYaST profile is not important.
+
+Also AutoYaST automatically registers the dependent extensions even though they
+are missing in the profile. That means you are not required to fill the
+extensions list completely.
+
+However, if the dependent extension requires a registration key it must be
+specified in the profile, including the registration key. Otherwise the
+registration would fail.
