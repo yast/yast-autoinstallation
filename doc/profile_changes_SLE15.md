@@ -2,7 +2,29 @@
 
 ### Product selection
 
-- https://github.com/SUSE/doc-sle/blob/develop/xml/ay_bigfile.xml#L4521
+Starting with SLE15, all products are distributed using one medium.
+You need to choose which product to install. To do so explicitly, use the
+'product' option.
+
+## Explicit Product Selection
+
+```xml
+<software>
+  <products config:type="list">
+    <product>SLED15</product>
+  </products>
+</software>
+```
+
+ In special cases, the medium might contain only one product. If so, you
+ do not need to select a product explicitly as described above. AutoYaST will
+ select the only available product automatically.
+
+ For backward compatibility with profiles created for pre-SLE 15 products, AutoYaST
+ implements a heuristic that selects products automatically. This heuristic will be
+ used when the profile does not contain a 'product' element. This heuristic is based
+ on the package and pattern selection in the profile. However, whenever possible,
+ avoid using this mechanism and adapt old profiles to use explicit product selection.
 
 ### Firewall configuration
 
@@ -263,7 +285,7 @@ As you probably already know, a regular installation is performed in a single
 stage while an auto-installation needs two stages in most of the cases.
 
 For that reason, AutoYaST will show a warning if the second stage is needed or
-enabled and some mandatory package are missing like `autoyast2-installation` 
+enabled and some mandatory package are missing like `autoyast2-installation`
 and `autoyast2`.
 
 **Further documentation:**
