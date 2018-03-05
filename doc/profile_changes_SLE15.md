@@ -6,7 +6,6 @@
 
 ### Firewall configuration
 
-https://github.com/SUSE/doc-sle/blob/develop/xml/ay_bigfile.xml#L12999
 
 In SLE15, SuSEfirewall2 has been replaced by firewalld as the default firewall.
 
@@ -73,15 +72,21 @@ FW_PROTECT_FROM_INT is true or to the 'trusted' zone if not.
   <zones>
     <zone>
       <name>dmz</name>
-      <interfaces>eth0</interfaces>
+      <interfaces>
+        <interface>eth0</interface>
+      </interfaces>
     </zone>
     <zone>
       <name>public</name>
-      <interfaces>eth1</interfaces>
+      <interfaces>
+        <interface>eth1</interface>
+      </interfaces>
     </zone>
     <zone>
       <name>trusted</name>
-      <interfaces>wlan1</interfaces>
+      <interfaces>
+        <interface>wlan1</interface>
+      </interfaces>
     </zone>
   </zones>
 
@@ -105,21 +110,124 @@ FW_PROTECT_FROM_INT is true or to the 'trusted' zone if not.
   <zones>
     <zone>
       <name>dmz</name>
-      <interfaces>eth0</interfaces>
+      <interfaces>
+        <interface>eth0</interface>
+      </interfaces>
     </zone>
     <zone>
       <name>external</name>
-      <interfaces>eth1</interfaces>
+      <interfaces>
+        <interface>eth1</interface>
+      </interfaces>
     </zone>
     <zone>
       <name>internal</name>
-      <interfaces>wlan1</interfaces>
+      <interfaces>
+        <interface>wlan1</interface>
+      </interfaces>
     </zone>
   </zones>
+</firewall>
+```
+
+#### Open ports
+
+In SuSEFIrewall2 the FW_SERVICES_{DMZ,EXT,INT}_{TCP,UDP,IP,RPC} variables were
+used to open ports in different zones.
+
+In case of **TCP** or **UPD* we were allowed to enter a port number, a port range
+or a `/etc/service` name. It will be mapped to ports in the equivalent firewalld
+zone.
+
+In case of **IP**, the SuSEFirewall2 definition will be mapped to firewalld
+protocols in the equivalent firewalld zone.
+
+Unfortunately for **RPC** we do not have yet a direct mapping into firewalld
+AutoYaST configuration.
+
+```xml
+<firewall>
+  FW_SERVICES_DMZ_TCP="ftp ssh 80 5900:5999"
+  FW_SERVICES_EXT_UDP="1723 ipsec-nat-t"
+  FW_SERVICES_EXT_IP="esp icmp gre"
+  FW_MASQUERADE="yes"
+</firewall>
+```
+
+```xml
+<firewall>
+  <zones>
+    <zone>
+      <name>dmz</name>
+      <ports>
+        <port>ftp/tcp</port>
+        <port>ssh/tcp</port>
+        <port>80/tcp</port>
+        <port>5900-5999/tcp</port>
+      <ports>
+    </zone>
+    <zone>
+      <name>external</name>
+      <ports>
+        <port>1723/udp</port>
+        <port>ipsec-nat-t/udp</port>
+      </ports>
+      <protocols>
+        <protocol>esp</protocol>
+        <protocol>icmp</protocol>
+        </protocol>gre</protocol>
+      </protocols>
+    </zone>
+  </zones>
+</firewall>
 
 ```
 
-#### NTP Configuration
+#### Open firewalld services
+
+For opening a combination or ports and/or protocols SuSEFirewall2 provides the
+FW_CONFIGURATIONS_{EXT, DMZ, INT} variables what is known in firewalld as a
+service.
+
+```xml
+<firewall>
+  <FW_CONFIGURATIONS_EXT>dhcp dhcpv6 samba vnc-server</FW_CONFIGURATIONS_EXT>
+  <FW_CONFIGURATIONS_DMZ>ssh</FW_CONFIGURATIONS_DMZ>
+</firewall>
+```
+
+```xml
+<firewall>
+  <zones config:type="list">
+    <zone>
+      <name>dmz</name>
+      <services config:type="list">
+        <service>ssh</service>
+      </services>
+    </zone>
+    <zone>
+      <name>public</name>
+      <services config:type="list">
+        <service>dhcp</service>
+        <service>dhcpv6</service>
+        <service>samba</service>
+        <service>vnc-server</service>
+      </services>
+    </zone>
+  </zones>
+</firewall>
+```
+
+- https://en.opensuse.org/SuSEfirewall2/Service_Definitions_Added_via_Packages
+- https://en.opensuse.org/Firewalld/RPM_Packaging
+
+#### Further documentation
+
+
+- [AutoYaST doc](https://github.com/SUSE/doc-sle/blob/develop/xml/ay_bigfile.xml#L12999)
+- [Firewalld official doc](http://www.firewalld.org/documentation/)
+
+### NTP Configuration
 
 - https://susedoc.github.io/doc-sle/develop/SLES-autoyast/html/configuration.html#Configuration.Network.Ntp
 
@@ -148,3 +256,20 @@ And here is how the new (and nicer) configuration looks like:
   <ntp_sync>15</ntp_sync>
 </ntp-client>
 ```
+
+### AutoYaST packages are needed for 2nd stage
+
+As you probably already know, a regular installation is performed in a single
+stage while an auto-installation needs two stages in most of the cases.
+
+For that reason, AutoYaST will show a warning if the second stage is needed or
+enabled and some mandatory package are missing like `autoyast2-installation` 
+and `autoyast2`.
+
+**Further documentation:**
+
+- [AutoYaST doc](https://github.com/SUSE/doc-sle/blob/deb9fe3b4bc13a54c12cc34f56d22b7f31a22db9/xml/ay_bigfile.xml#L139)
+
+
+
+## New Storage
