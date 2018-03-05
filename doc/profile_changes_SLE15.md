@@ -311,6 +311,75 @@ and `autoyast2`.
 ## New Storage
 
 
+
+## Software
+
+The SLE15 installation medium contains only a very minimal set of packages
+to install. This minimal set does not include any server applications
+or advanced tools.
+
+If you need to install more packages then you need to use additional software
+repositories:
+
+- A registration server (the SUSE Customer Center or a SMT/RMT proxy)
+- Additional Packages DVD medium with SLE15 modules and extensions. The DVD
+  can be shared on the network via a local installation server.
+
+*Note: Using the registration server will grant the access to the maintenance
+updates. Maintenance updates are not avialable when using the DVD medium
+without registration.*
+
+### Using Modules or Extensions from the Registration Server
+
+If you want to add a module or extension from the registration server
+then add `addons` section to the registration configuration:
+
+```xml
+<suse_register>
+  <addons config:type="list">
+    <addon>
+      <name>sle-module-basesystem</name>
+      <version>15</version>
+      <arch>x86_64</arch>
+    </addon>
+  </addons>
+</suse_register>
+```
+
+For extensions which require a registration code write it into the `<reg_code>`
+tag for the respective extension. See more details in the [Module and Extension
+Dependencies](#module-and-extension-dependencies) section.
+
+### Using the Packages DVD Medium
+
+For using a physical Packages DVD medium use this XML snippet:
+
+```xml
+<add-on>
+  <add_on_products config:type="list">
+    <listentry>
+      <media_url><![CDATA[dvd:///]]></media_url>
+      <product>sle-module-basesystem</product>
+      <product_dir>/Module-Basesystem</product_dir>
+    </listentry>
+  </add_on_products>
+</add-on>
+```
+
+*Note: The `product` name must match the internal product name contained in the
+repository. If the product name does not match at installation AutoYaST
+will report an error.*
+
+If you have multiple physical DVD drives you can select a specific device
+using `devices` parameter in the URL, e.g. `dvd:///?devices=/dev/sr1`.
+
+### Using the Packages Medium from a Local Server
+
+You can share the DVD content on the local network via a NFS, FTP or HTTP server.
+
+In that case use the same XML snippet as above, just edit the `media_url`
+tag so it points to root of the medium on the server.
+
 ## Registration
 
 ### Module and Extension Dependencies
