@@ -6,7 +6,6 @@
 
 ### Firewall configuration
 
-
 In SLE15, SuSEfirewall2 has been replaced by firewalld as the default firewall.
 
 Taking in account that the configuration of both is quite different and that SLE12
@@ -185,9 +184,9 @@ AutoYaST configuration.
 
 #### Open firewalld services
 
-For opening a combination or ports and/or protocols SuSEFirewall2 provides the
-FW_CONFIGURATIONS_{EXT, DMZ, INT} variables what is known in firewalld as a
-service.
+For opening a combination of ports and/or protocols SuSEFirewall2 provides the
+FW_CONFIGURATIONS_{EXT, DMZ, INT} variables what are mapping in firewalld as
+services.
 
 ```xml
 <firewall>
@@ -218,8 +217,23 @@ service.
 </firewall>
 ```
 
+**The services definition can be added via packages in both cases:**
+
 - https://en.opensuse.org/SuSEfirewall2/Service_Definitions_Added_via_Packages
 - https://en.opensuse.org/Firewalld/RPM_Packaging
+
+Take in account that firewalld already provides most of the more important
+services definitions so check the current services before defining a new one.
+
+
+#### What about the rest of SuSEFirewall2 options?
+
+We would like to continue supporting all the options but unfortunatelly some
+of them do not have a equivalent mapping in firewalld or need some configuration
+that is still not supported by AutoYaST or by firewalld.
+
+For the options that are not supported by YaST / AutoYaST but are supported by
+firewalld the use of `post-scripts` is probably the best alternative available.
 
 #### Further documentation
 
