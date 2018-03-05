@@ -344,6 +344,12 @@ On x86_64 systems, GPT is now the preferred partition type. However, if you
 would like to retain the old behaviour, you could explictly indicate this in
 the profile setting the `disklabel` element to `msdos`.
 
+### Reading an existing /etc/fstab filesystem is not supported anymore
+
+For the time being, the ability to read an existing /etc/fstab from a previous
+installation when trying to determine the partitioning layout is not supported
+anymore.
+
 ## Registration
 
 ### Module and Extension Dependencies
