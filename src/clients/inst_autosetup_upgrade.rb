@@ -49,7 +49,8 @@ module Yast
         _("Set up language"),
         _("Registration"),
         _("Configure Software selections"),
-        _("Configure Bootloader")
+        _("Configure Bootloader"),
+        _("Confirm License")
       ]
 
       @progress_descriptions = [
@@ -58,7 +59,8 @@ module Yast
         _("Setting up language..."),
         _("Registering the system..."),
         _("Configuring Software selections..."),
-        _("Configuring Bootloader...")
+        _("Configuring Bootloader..."),
+        _("Confirming License...")
       ]
 
       Progress.New(
@@ -441,6 +443,18 @@ module Yast
         ["backup", "remove_old"],
         false
       )
+
+      #
+      # Checking Base Product licenses
+      #
+      Progress.NextStage
+      if general_section["mode"] && general_section["mode"].fetch( "confirm_base_product_license", false )
+        result = nil
+        while result != :next
+          result = WFM.CallFunction("inst_product_license", [{"enable_back"=>false}])
+          return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
+        end
+      end
 
       Progress.Finish
 
