@@ -11,7 +11,7 @@ You need to choose which product to install. To do so explicitly, use the
 ```xml
 <software>
   <products config:type="list">
-    <product>SLED15</product>
+    <product>SLED</product>
   </products>
 </software>
 ```
