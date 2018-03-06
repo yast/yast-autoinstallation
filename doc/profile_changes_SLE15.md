@@ -49,13 +49,13 @@ This is the list of supported properties:**
 - FW_LOG_DROP_ALL
 - FW_MASQUERADE
 
-The following examples will show with defails the conversion of each property.
+The following examples will show with details the conversion of each property.
 
 #### Whether firewalld should be enabled and running after the installation
 
 ```xml
   <firewall>
-    # These attributes are the only ones that are completely compatible in both schemas
+    # These attributes are the only ones that are completely compatible in both schemes
     <enable_firewall>true</enable_firewall>
     <start_firewall>true</start_firewall>
   </>
@@ -250,7 +250,7 @@ services definitions so check the current services before defining a new one.
 
 #### What about the rest of SuSEFirewall2 options?
 
-We would like to continue supporting all the options but unfortunatelly some
+We would like to continue supporting all the options but unfortunately some
 of them do not have a equivalent mapping in firewalld or need some configuration
 that is still not supported by AutoYaST or by firewalld.
 
@@ -326,7 +326,7 @@ repositories:
   can be shared on the network via a local installation server.
 
 *Note: Using the registration server will grant the access to the maintenance
-updates. Maintenance updates are not avialable when using the DVD medium
+updates. Maintenance updates are not available when using the DVD medium
 without registration.*
 
 ### Using Modules or Extensions from the Registration Server
