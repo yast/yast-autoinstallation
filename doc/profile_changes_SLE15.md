@@ -310,6 +310,45 @@ and `autoyast2`.
 
 ## New Storage
 
+### Setting partition numbers
+
+AutoYaST will not allow the user to force partition numbers anymore, as it might
+not work in some situations. Moreover, GPT is now the preferred partition table
+type, so partition numbers are not that relevant.
+
+However, the `partition_nr` is still available in order to specify a partition
+to be reused.
+
+### A default subvolume name for each Btrfs filesystem
+
+The new storage layer allows the user to set different default subvolumes (or
+none at all) for every Btrfs filesystem. As shown in the example below, a prefix
+name can be specified for each partition using the `subvolumes_prefix`
+attribute:
+
+```xml
+<partition>
+  <mount>/</mount>
+  <filesystem config:type="symbol">btrfs</filesystem>
+  <size>max</size>
+  <subvolumes_prefix>@</subvolumes_prefix>
+</partition>
+```
+
+Given this new approach, the old `btrfs_set_default_subvolume_name` is
+deprecated, although it is still supported for backward compatibility reasons.
+
+### GPT is now the default partition type
+
+On x86_64 systems, GPT is now the preferred partition type. However, if you
+would like to retain the old behaviour, you could explictly indicate this in
+the profile setting the `disklabel` element to `msdos`.
+
+### Reading an existing /etc/fstab filesystem is not supported anymore
+
+For the time being, the ability to read an existing /etc/fstab from a previous
+installation when trying to determine the partitioning layout is not supported
+anymore.
 
 
 ## Software
