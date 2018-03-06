@@ -39,7 +39,6 @@ module Yast
       Yast.import "Keyboard"
       Yast.import "Call"
       Yast.import "ProductControl"
-      Yast.import "ProductLicense"
       Yast.import "Language"
       Yast.import "Console"
       Yast.import "ServicesManager"
@@ -439,19 +438,11 @@ module Yast
       #
       Progress.NextStage
       if general_section["mode"] && general_section["mode"].fetch( "confirm_base_product_license", false )
-        Wizard.EnableAbortButton
-        result = ProductLicense.AskLicenseAgreement(nil,
-          "",
-          ProductLicense.license_patterns,
-          "abort",
-          # back button is disabled
-          false,
-          true,
-          true,
-          # unique id
-          "0"
-        )
-        return :abort if result == :abort
+        result = nil
+        while result != :next
+          result = WFM.CallFunction("inst_product_license", [{"enable_back"=>false}])
+          return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
+        end
       end
 
       Progress.Finish
