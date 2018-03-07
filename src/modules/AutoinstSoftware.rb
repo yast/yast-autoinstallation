@@ -698,7 +698,7 @@ module Yast
 
       products = Product.FindBaseProducts
       raise "Found multiple base products" if products.size > 1
-      s["products"] = products.map{ |x| x["short_name"] }
+      s["products"] = products.map{ |x| x["name"] }
 
       s
     end
