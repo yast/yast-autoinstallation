@@ -32,7 +32,7 @@ describe Yast::AutoinstSoftware do
     it "puts product definition into the exported profile" do
       expect(Yast::Product)
         .to receive(:FindBaseProducts)
-        .and_return([{ "short_name" => "LeanOS" }])
+        .and_return([{ "name" => "LeanOS" }])
 
       profile = subject.Export
 
@@ -45,8 +45,8 @@ describe Yast::AutoinstSoftware do
         .to receive(:FindBaseProducts)
         .and_return(
           [
-            { "short_name" => "LeanOS" },
-            { "short_name" => "AgileOS" }
+            { "name" => "LeanOS" },
+            { "name" => "AgileOS" }
           ]
         )
 
