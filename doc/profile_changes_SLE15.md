@@ -419,6 +419,31 @@ You can share the DVD content on the local network via a NFS, FTP or HTTP server
 In that case use the same XML snippet as above, just edit the `media_url`
 tag so it points to root of the medium on the server.
 
+
+### Renamed Software Patterns
+
+The software patterns have been also changed in SLE15. Some patterns have been
+renamed, a short summary is in the following table.
+
+| Old SLE12 Pattern | New SLE15 Pattern |
+| :---------------- | :---------------- |
+| Basis-Devel       | devel_basis       |
+| gnome-basic       | gnome_basic       |
+| Minimal           | enhanced_base     |
+| printing          | print_server      |
+| SDK-C-C++         | devel_basis       |
+| SDK-Doc           | technical_writing |
+| SDK-YaST          | devel_yast        |
+
+#### Notes
+
+- The pattern renames in the table above are not 1:1 replacements, the content
+  of some patterns has been changed as well, some packages were moved to
+  a different pattern or even removed from SLE15.
+- Check that the required packages are still included in the used patterns,
+  optionally use the `<packages>` tag to specify the required packages.
+- The list might be incomplete, some products have not been released for SLE15 yet.
+
 ## Registration
 
 ### Module and Extension Dependencies
