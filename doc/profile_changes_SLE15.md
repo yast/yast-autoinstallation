@@ -90,7 +90,7 @@ FW_PROTECT_FROM_INT is true or to the 'trusted' zone if not.
 ```xml
 <firewall>
   <default_zone>dmz</default_zone>
-  <zones>
+  <zones config:type="list">
     <zone>
       <name>dmz</name>
       <interfaces>
@@ -110,7 +110,7 @@ FW_PROTECT_FROM_INT is true or to the 'trusted' zone if not.
       </interfaces>
     </zone>
   </zones>
-
+</firewall>
 ```
 
 **With masquerading and protecting internal zone**
@@ -128,22 +128,22 @@ FW_PROTECT_FROM_INT is true or to the 'trusted' zone if not.
 ```xml
 <firewall>
   <default_zone>dmz</default_zone>
-  <zones>
+  <zones config:type="list">
     <zone>
       <name>dmz</name>
-      <interfaces>
+      <interfaces config:type="list">
         <interface>eth0</interface>
       </interfaces>
     </zone>
     <zone>
       <name>external</name>
-      <interfaces>
+      <interfaces config:type="list">
         <interface>eth1</interface>
       </interfaces>
     </zone>
     <zone>
       <name>internal</name>
-      <interfaces>
+      <interfaces config:type="list">
         <interface>wlan1</interface>
       </interfaces>
     </zone>
@@ -177,10 +177,10 @@ AutoYaST configuration.
 
 ```xml
 <firewall>
-  <zones>
+  <zones config:type="list">
     <zone>
       <name>dmz</name>
-      <ports>
+      <ports config:type="list">
         <port>ftp/tcp</port>
         <port>ssh/tcp</port>
         <port>80/tcp</port>
@@ -189,11 +189,11 @@ AutoYaST configuration.
     </zone>
     <zone>
       <name>external</name>
-      <ports>
+      <ports config:type="list">
         <port>1723/udp</port>
         <port>ipsec-nat-t/udp</port>
       </ports>
-      <protocols>
+      <protocols config:type="list">
         <protocol>esp</protocol>
         <protocol>icmp</protocol>
         </protocol>gre</protocol>
@@ -259,7 +259,6 @@ firewalld the use of `post-scripts` is probably the best alternative available.
 
 #### Further documentation
 
-
 - [AutoYaST doc](https://github.com/SUSE/doc-sle/blob/develop/xml/ay_bigfile.xml#L12999)
 - [Firewalld official doc](http://www.firewalld.org/documentation/)
 
@@ -307,6 +306,11 @@ and `autoyast2`.
 - [AutoYaST doc](https://github.com/SUSE/doc-sle/blob/deb9fe3b4bc13a54c12cc34f56d22b7f31a22db9/xml/ay_bigfile.xml#L139)
 
 
+## Ca Management module has been dropped
+
+The module for CA Management (**yast2-ca-management**) has been removed from SLE15,
+and for the time being there is no replacement available. It will affect all the
+profiles that were using the `ca_mgm` section.
 
 ## New Storage
 
