@@ -165,7 +165,7 @@ module Yast
     # the criteria, nil otherwise
     def identify_product_by_selection(profile)
       identify_product do |product|
-        product.short_name == base_product_name(profile)
+        product.name == base_product_name(profile)
       end
     end
 

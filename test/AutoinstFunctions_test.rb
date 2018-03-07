@@ -110,19 +110,19 @@ describe Yast::AutoinstFunctions do
   end
 
   describe "#selected_product" do
-    def base_product(name, short_name)
-      Y2Packager::Product.new(name: name, short_name: short_name)
+    def base_product(name)
+      Y2Packager::Product.new(name: name)
     end
 
-    let(:selected_name) { "SLES15" }
+    let(:selected_name) { "SLES" }
 
     before(:each) do
       allow(Y2Packager::Product)
         .to receive(:available_base_products)
         .and_return(
           [
-            base_product("SLES", selected_name),
-            base_product("SLED", "SLED15")
+            base_product("SLES"),
+            base_product("SLED")
           ]
         )
 
@@ -135,7 +135,7 @@ describe Yast::AutoinstFunctions do
         .to receive(:current)
         .and_return("software" => { "products" => [selected_name] })
 
-      expect(subject.selected_product.short_name).to eql selected_name
+      expect(subject.selected_product.name).to eql selected_name
     end
 
     it "returns nil when product is explicitly selected in the profile and such base product doesn't exist on media" do
@@ -151,7 +151,7 @@ describe Yast::AutoinstFunctions do
         .to receive(:current)
         .and_return("software" => { "patterns" => ["sles-base-32bit"] })
 
-      expect(subject.selected_product.short_name).to eql selected_name
+      expect(subject.selected_product.name).to eql selected_name
     end
 
     it "returns base product identified by packages in the profile if such base product exists on media" do
@@ -159,7 +159,7 @@ describe Yast::AutoinstFunctions do
         .to receive(:current)
         .and_return("software" => { "packages" => ["sles-release"] })
 
-      expect(subject.selected_product.short_name).to eql selected_name
+      expect(subject.selected_product.name).to eql selected_name
     end
 
     it "returns base product if there is just one on media and product cannot be identified from profile" do
@@ -167,14 +167,14 @@ describe Yast::AutoinstFunctions do
         .to receive(:available_base_products)
         .and_return(
           [
-            base_product("SLED", "SLED15")
+            base_product("SLED")
           ]
         )
       allow(Yast::Profile)
         .to receive(:current)
         .and_return("software" => {})
 
-      expect(subject.selected_product.short_name).to eql "SLED15"
+      expect(subject.selected_product.name).to eql "SLED"
     end
   end
 end
