@@ -31,7 +31,8 @@ You need to choose which product to install. To do so explicitly, use the
 In SLE15, SuSEfirewall2 has been replaced by firewalld as the default firewall.
 
 Taking in account that the configuration of both is quite different and that SLE12
-profiles were very bound to the SuSEfirewall2 configuration, a new syntax has been added.
+profiles were closely coupled to the SuSEfirewall2 configuration, a new syntax
+has been added.
 
 Old profiles will continue working although the supported configuration will be very
 limited, for that reason we recommend to check the final configuration in order to
@@ -64,7 +65,7 @@ The following examples will show with details the conversion of each property.
 Both firewalls are zone-based with a different predefined set of rules and level
 of trust for network connections.
 
-Whereas SuSEfIrewall2 has 3 zones by default (DMZ, EXT, INT) firewalld provides
+Whereas SuSEfirewall2 has 3 zones by default (DMZ, EXT, INT) firewalld provides
 a few more (block, dmz, drop, external, home, internal, public, trusted, work).
 In SuSEFirewall2 the default zone is the external one (EXT) but also allows the
 use of the special keyword `any` to assign all the interfaces that are not listed
@@ -163,8 +164,7 @@ zone.
 In case of **IP**, the SuSEFirewall2 definition will be mapped to firewalld
 protocols in the equivalent firewalld zone.
 
-Unfortunately for **RPC** we do not have yet a direct mapping into firewalld
-AutoYaST configuration.
+Unfortunately firewalld does not support **RPC** configuration.
 
 ```xml
 <firewall>
@@ -207,8 +207,8 @@ AutoYaST configuration.
 #### Open firewalld services
 
 For opening a combination of ports and/or protocols SuSEFirewall2 provides the
-FW_CONFIGURATIONS_{EXT, DMZ, INT} variables what are mapping in firewalld as
-services.
+FW_CONFIGURATIONS_{EXT, DMZ, INT} variables which are equivalent to services in
+firewalld.
 
 ```xml
 <firewall>
@@ -314,7 +314,7 @@ and `autoyast2`.
 
 The module for CA Management (**yast2-ca-management**) has been removed from SLE15,
 and for the time being there is no replacement available. It will affect all the
-profiles that were using the `ca_mgm` section.
+profiles that were using the `ca_mgm` section and which do not remove it.
 
 ## New Storage
 
