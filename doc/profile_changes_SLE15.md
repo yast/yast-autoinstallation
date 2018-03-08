@@ -264,7 +264,6 @@ firewalld the use of `post-scripts` is probably the best alternative available.
 
 ### NTP Configuration
 
-- https://susedoc.github.io/doc-sle/develop/SLES-autoyast/html/configuration.html#Configuration.Network.Ntp
 
 The time server synchronization daemon ntpd has been replaced with the more
 modern daemon Chrony.
@@ -291,6 +290,11 @@ And here is how the new (and nicer) configuration looks like:
   <ntp_sync>15</ntp_sync>
 </ntp-client>
 ```
+
+Check out the latest development online documentation for further information
+about each attribute.
+
+- https://susedoc.github.io/doc-sle/develop/SLES-autoyast/html/configuration.html#Configuration.Network.Ntp
 
 ### AutoYaST packages are needed for 2nd stage
 
