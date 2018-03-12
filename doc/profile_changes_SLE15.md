@@ -82,9 +82,9 @@ FW_PROTECT_FROM_INT is true or to the 'trusted' zone if not.
 **Default assignation**
 ```xml
 <firewall>
-  FW_DEV_DMZ="any eth0"
-  FW_DEV_EXT="eth1 wlan0"
-  FW_DEV_INT="wlan1"
+  <FW_DEV_DMZ>any eth0</FW_DEV_DMZ>
+  <FW_DEV_EXT>eth1 wlan0</FW_DEV_EXT>
+  <FW_DEV_INT>wlan1</FW_DEV_INT>
 </firewall>
 ```
 
@@ -118,11 +118,11 @@ FW_PROTECT_FROM_INT is true or to the 'trusted' zone if not.
 
 ```xml
 <firewall>
-  FW_DEV_DMZ="any eth0"
-  FW_DEV_EXT="eth1 wlan0"
-  FW_DEV_INT="wlan1"
-  FW_MASQUERADE="yes"
-  FW_PROTECT_FROM_INT="yes"
+  <FW_DEV_DMZ>any eth0</FW_DEV_DMZ>
+  <FW_DEV_EXT>eth1 wlan0</FW_DEV_EXT>
+  <FW_DEV_INT>wlan1</FW_DEV_INT>
+  <FW_MASQUERADE>yes</FW_MASQUERADE>
+  <FW_PROTECT_FROM_INT>yes</FW_PROTECT_FROM_INT>
 </firewall>
 ```
 
