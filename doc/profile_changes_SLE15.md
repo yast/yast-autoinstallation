@@ -59,7 +59,7 @@ The following examples will show with details the conversion of each property.
     # These attributes are the only ones that are completely compatible in both schemes
     <enable_firewall>true</enable_firewall>
     <start_firewall>true</start_firewall>
-  </>
+  </firewall>
 ```
 
 Both firewalls are zone-based with a different predefined set of rules and level
@@ -196,7 +196,7 @@ Unfortunately firewalld does not support **RPC** configuration.
       <protocols config:type="list">
         <protocol>esp</protocol>
         <protocol>icmp</protocol>
-        </protocol>gre</protocol>
+        <protocol>gre</protocol>
       </protocols>
     </zone>
   </zones>
@@ -287,7 +287,7 @@ And here is how the new (and nicer) configuration looks like:
       <offline config:type="boolean">true</offline>
     </ntp_server>
   </ntp_servers>
-  <ntp_sync>15</ntp_sync>
+  <ntp_sync>systemd</ntp_sync>
 </ntp-client>
 ```
 
@@ -301,9 +301,8 @@ about each attribute.
 As you probably already know, a regular installation is performed in a single
 stage while an auto-installation needs two stages in most of the cases.
 
-For that reason, AutoYaST will show a warning if the second stage is needed or
-enabled and some mandatory package are missing like `autoyast2-installation`
-and `autoyast2`.
+AutoYaST will show a warning if the second stage is needed or enabled and some
+mandatory package are missing like `autoyast2-installation` and `autoyast2`.
 
 **Further documentation:**
 
