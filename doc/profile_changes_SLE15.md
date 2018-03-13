@@ -26,6 +26,9 @@ You need to choose which product to install. To do so explicitly, use the
  on the package and pattern selection in the profile. However, whenever possible,
  avoid using this mechanism and adapt old profiles to use explicit product selection.
 
+ If the product selection fails an error is shown and the installation cannot be
+ continued.
+
 ### Firewall configuration
 
 In SLE15, SuSEfirewall2 has been replaced by firewalld as the default firewall.
