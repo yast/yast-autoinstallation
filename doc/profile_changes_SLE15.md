@@ -309,7 +309,7 @@ mandatory package are missing like `autoyast2-installation` and `autoyast2`.
 - [AutoYaST doc](https://github.com/SUSE/doc-sle/blob/deb9fe3b4bc13a54c12cc34f56d22b7f31a22db9/xml/ay_bigfile.xml#L139)
 
 
-## Ca Management module has been dropped
+## CA Management module has been dropped
 
 The module for CA Management (**yast2-ca-management**) has been removed from SLE15,
 and for the time being there is no replacement available. It will affect all the
@@ -325,6 +325,12 @@ type, so partition numbers are not that relevant.
 
 However, the `partition_nr` is still available in order to specify a partition
 to be reused.
+
+### GPT is now the default partition type
+
+On x86_64 systems, GPT is now the preferred partition type. However, if you
+would like to retain the old behaviour, you could explictly indicate this in
+the profile setting the `disklabel` element to `msdos`.
 
 ### A default subvolume name for each Btrfs filesystem
 
@@ -344,12 +350,6 @@ attribute:
 
 Given this new approach, the old `btrfs_set_default_subvolume_name` is
 deprecated, although it is still supported for backward compatibility reasons.
-
-### GPT is now the default partition type
-
-On x86_64 systems, GPT is now the preferred partition type. However, if you
-would like to retain the old behaviour, you could explictly indicate this in
-the profile setting the `disklabel` element to `msdos`.
 
 ### Reading an existing /etc/fstab filesystem is not supported anymore
 
