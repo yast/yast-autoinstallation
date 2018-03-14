@@ -64,11 +64,10 @@ describe Y2Autoinstallation::ActivateCallbacks do
       { "partitioning" => [ { "device" => "/dev/sda", "partitions" => partitions } ] }
     end
 
-    let(:partitions) { [root, home, srv, opt] }
+    let(:partitions) { [root, home, srv] }
     let(:root) { { "mount" => "/", "crypt_key" => "abcdef", "create" => false } }
     let(:home) { { "mount" => "/home", "crypt_key" => "abcdef", "create" => false } }
     let(:srv) { { "mount" => "/home", "crypt_key" => "123456", "create" => false } }
-    let(:opt) { { "mount" => "/opt", "crypt_key" => "not-reused" } }
 
     before do
       allow(Yast::Profile).to receive(:current).and_return(profile)

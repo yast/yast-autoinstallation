@@ -61,12 +61,16 @@ module Y2Autoinstallation
 
     # Retrieves crypt keys for reused devices from the profile
     #
+    # All encryption keys are considered, no matter if they are associated to
+    # a device that should be reused or not. The reason is that it might happen that a user
+    # wants to reuse a logical volume but forgets setting 'create' to 'false' for the
+    # volume group.
+    #
     # @return [Array<String>] List of crypt keys
     def crypt_keys_from_profile
       profile = Yast::Profile.current.fetch("partitioning", [])
       devices = profile.map { |d| d.fetch("partitions", []) }.flatten
-      crypted_devices = devices.select { |d| d["create"] == false && d.key?("crypt_key") }
-      keys = crypted_devices.map { |p| p["crypt_key"] }
+      keys = devices.map { |p| p["crypt_key"] }
       keys.compact.uniq.sort
     end
   end
