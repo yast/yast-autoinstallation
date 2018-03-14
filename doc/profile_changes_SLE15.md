@@ -445,6 +445,10 @@ renamed, a short summary is in the following table.
 | SDK-Doc           | technical_writing |
 | SDK-YaST          | devel_yast        |
 
+Please, check carefully if all required packages are available in the defined
+patterns and adjust the profiles accordingly. Additionally, the required patterns
+and packages have to be available in the activated extensions or modules.
+
 #### Notes
 
 - The pattern renames in the table above are not 1:1 replacements, the content
@@ -452,7 +456,8 @@ renamed, a short summary is in the following table.
   a different pattern or even removed from SLE15.
 - Check that the required packages are still included in the used patterns,
   optionally use the `<packages>` tag to specify the required packages.
-- The list might be incomplete, some products have not been released for SLE15 yet.
+- The list above might be incomplete, some products have not been released for
+  SLE15 yet.
 
 ## Registration
 
@@ -461,6 +466,8 @@ renamed, a short summary is in the following table.
 <!--
 Copied from the latest development online documentation:
 https://susedoc.github.io/doc-sle/develop/SLES-autoyast/single-html/#CreateProfile.Register.Extension
+
+You can use a link to the official AutoYaST documentation instead of this copy.
 -->
 
 Since SLES 15 AutoYaST automatically reorders the extensions according to their
@@ -474,3 +481,6 @@ extensions list completely.
 However, if the dependent extension requires a registration key it must be
 specified in the profile, including the registration key. Otherwise the
 registration would fail.
+
+You can list the available extensions and modules in a registered system using
+the `SUSEConnect --list-extensions` command.
