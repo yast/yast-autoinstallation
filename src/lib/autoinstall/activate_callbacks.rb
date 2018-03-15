@@ -22,11 +22,12 @@
 require "y2storage"
 
 Yast.import "AutoinstStorage"
+Yast.import "Profile"
 
 module Y2Autoinstallation
-  # Activate callbacks for Y2Storage.
+  # Activation callbacks for Y2Storage.
   class ActivateCallbacks < Y2Storage::Callbacks::Activate
-    # Determine whether multipath should be enabled
+    # Determines whether multipath should be enabled
     #
     # This hook returns true if start_multipath was set to +true+.
     #
@@ -35,16 +36,42 @@ module Y2Autoinstallation
       Yast::AutoinstStorage.general_settings.fetch("start_multipath", false)
     end
 
-    # Determine whether LUKS should be activated
+    # Determines whether LUKS should be activated
     #
-    # For AutoYaST, LUKS is not activated.
+    # At this point, AutoYaST has not parsed the 'partitioning' section from
+    # the profile, so it does not know which crypted devices are going to be
+    # reused. The best option is to check the raw profile (from
+    # {Yast::Profile.current}) and try to unlock devices using all present
+    # keys for reused devices
     #
-    # @param _uuid    [String]  UUID
-    # @param _attempt [Integer] Attempt number
+    # @param uuid    [String]  UUID
+    # @param attempt [Integer] Attempt number
     # @return [Storage::PairBoolString]
     # @see Storage::ActivateCallbacks
-    def luks(_uuid, _attempt)
-      Storage::PairBoolString.new(false, "")
+    def luks(uuid, attempt)
+      key = crypt_keys_from_profile[attempt-1]
+      if key.nil?
+        log.warn "Could not decrypt device '#{uuid}'"
+        return Storage::PairBoolString.new(false, "")
+      end
+      Storage::PairBoolString.new(true, key)
+    end
+
+  protected
+
+    # Retrieves crypt keys for reused devices from the profile
+    #
+    # All encryption keys are considered, no matter if they are associated to
+    # a device that should be reused or not. The reason is that it might happen that a user
+    # wants to reuse a logical volume but forgets setting 'create' to 'false' for the
+    # volume group.
+    #
+    # @return [Array<String>] List of crypt keys
+    def crypt_keys_from_profile
+      profile = Yast::Profile.current.fetch("partitioning", [])
+      devices = profile.map { |d| d.fetch("partitions", []) }.flatten
+      keys = devices.map { |p| p["crypt_key"] }
+      keys.compact.uniq.sort
     end
   end
 end

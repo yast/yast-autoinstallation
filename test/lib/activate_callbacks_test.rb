@@ -60,10 +60,48 @@ describe Y2Autoinstallation::ActivateCallbacks do
   end
 
   describe "#luks" do
-    it "returns (false, '') pair" do
-      ret = callbacks.luks('uuid', 1)
-      expect(ret.first).to eq(false)
-      expect(ret.second).to eq("")
+    let(:profile) do
+      { "partitioning" => [ { "device" => "/dev/sda", "partitions" => partitions } ] }
+    end
+
+    let(:partitions) { [root, home, srv] }
+    let(:root) { { "mount" => "/", "crypt_key" => "abcdef", "create" => false } }
+    let(:home) { { "mount" => "/home", "crypt_key" => "abcdef", "create" => false } }
+    let(:srv) { { "mount" => "/home", "crypt_key" => "123456", "create" => false } }
+
+    before do
+      allow(Yast::Profile).to receive(:current).and_return(profile)
+    end
+
+    context "when the number of attempts is equal to the number of available keys" do
+      let(:attempt) { 3 }
+
+      it "returns (false, '')" do
+        ret = callbacks.luks('uuid', attempt)
+        expect(ret.first).to eq(false)
+        expect(ret.second).to eq("")
+      end
+    end
+
+    context "given an attempt n-th" do
+      let(:attempt) { 2 }
+
+      it "returns (true, n-th key) in alphabetical order" do
+        ret = callbacks.luks('uuid', attempt)
+        expect(ret.first).to eq(true)
+        expect(ret.second).to eq("abcdef")
+      end
+    end
+
+    context "when there are no keys" do
+      let(:partitions) { [{ "mount" => "/" }] }
+      let(:attempt) { 2 }
+
+      it "returns (false, '') pair" do
+        ret = callbacks.luks('uuid', attempt)
+        expect(ret.first).to eq(false)
+        expect(ret.second).to eq("")
+      end
     end
   end
 end
