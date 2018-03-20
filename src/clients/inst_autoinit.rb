@@ -109,7 +109,7 @@ module Yast
       end
 
       if !AutoinstFunctions.selected_product
-        msg = _("None or wrong base product has been defined in the AutoYaST configuration file." \
+        msg = _("None or wrong base product has been defined in the AutoYaST configuration file. " \
          "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
          "Following base products are available:<br>")
         Y2Packager::Product.available_base_products.each do |product|
