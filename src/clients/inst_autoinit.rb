@@ -109,8 +109,13 @@ module Yast
       end
 
       if !AutoinstFunctions.selected_product
-        Report.Error(_("No base product selected"))
-
+        msg = _("No or wrong base product has been defined in the AutoYaST configuration file.")
+        msg += _("Please check the <b>products</b> entry in the <b>software</b> section.<br><br>")
+        msg += _("Following base products are available:<br>")
+        Y2Packager::Product.available_base_products.each do |product|
+          msg += "#{product.name} (#{product.display_name})<br>"
+        end
+        Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
         return :abort
       end
 
