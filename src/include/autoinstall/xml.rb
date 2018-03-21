@@ -102,7 +102,12 @@ module Yast
           "ask-list"                 => "ask",
           "device_order"             => "device",
           "param-list"               => "param",
-          "semi-automatic"           => "module"
+          "semi-automatic"           => "module",
+          "ports"                    => "port",
+          "sources"                  => "source",
+          "zones"                    => "zone",
+          "authorized_keys"          => "authorized_key",
+          "products"                 => "product"
         }
       )
 

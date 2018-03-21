@@ -171,10 +171,10 @@ Unfortunately firewalld does not support **RPC** configuration.
 
 ```xml
 <firewall>
-  FW_SERVICES_DMZ_TCP="ftp ssh 80 5900:5999"
-  FW_SERVICES_EXT_UDP="1723 ipsec-nat-t"
-  FW_SERVICES_EXT_IP="esp icmp gre"
-  FW_MASQUERADE="yes"
+  <FW_SERVICES_DMZ_TCP>ftp ssh 80 5900:5999</FW_SERVICES_DMZ_TCP>
+  <FW_SERVICES_EXT_UDP>1723 ipsec-nat-t</FW_SERVICES_EXT_UDP>
+  <FW_SERVICES_EXT_IP>esp icmp gre</FW_SERVICES_EXT_IP>
+  <FW_MASQUERADE>yes</FW_MASQUERADE>
 </firewall>
 ```
 
