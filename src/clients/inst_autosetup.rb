@@ -187,6 +187,7 @@ module Yast
             "add-on_auto",
             ["Import", Ops.get_map(Profile.current, "add-on", {})]
           )
+
           log.warn("User has aborted the installation.")
           return :abort
         end
