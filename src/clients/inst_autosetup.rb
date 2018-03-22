@@ -183,10 +183,13 @@ module Yast
 
       if Builtins.haskey(Profile.current, "add-on")
 	Progress.Title(_("Handling Add-On Products..."))
-        Call.Function(
-          "add-on_auto",
-          ["Import", Ops.get_map(Profile.current, "add-on", {})]
-        )
+        unless Call.Function(
+            "add-on_auto",
+            ["Import", Ops.get_map(Profile.current, "add-on", {})]
+          )
+          log.warn("User has aborted the installation.")
+          return :abort
+        end
         Call.Function("add-on_auto", ["Write"])
 
         # Recover partitioning settings that were removed by the add-on_auto client (bsc#1073548)
