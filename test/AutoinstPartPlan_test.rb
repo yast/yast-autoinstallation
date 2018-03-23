@@ -92,6 +92,11 @@ describe "Yast::AutoinstPartPlan" do
       snapshots = subvolumes.select { |s| s.include?("snapshot") }
       expect(snapshots).to be_empty
     end
+
+    it "does not include drive indexes" do
+      drives = subject.Export
+      expect(drives.first.keys).to_not include("_id")
+    end
   end
 
   describe "#getDrive" do
