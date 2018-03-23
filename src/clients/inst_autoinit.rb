@@ -87,7 +87,8 @@ module Yast
       Progress.Finish
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
-        WFM.CallFunction("inst_system_analysis", [])
+        @ret = WFM.CallFunction("inst_system_analysis", [])
+        return @ret if @ret == :abort
       end
 
       if Builtins.haskey(Profile.current, "iscsi-client")
