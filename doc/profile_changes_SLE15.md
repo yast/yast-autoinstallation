@@ -484,3 +484,11 @@ registration would fail.
 
 You can list the available extensions and modules in a registered system using
 the `SUSEConnect --list-extensions` command.
+
+## Upgrade
+
+In previous versions, there were two modes of evaluation of the packages
+that need upgrade. This is now gone, packages to upgrade are always evaluated
+by the dependency solver (equivalent of 'zypper dup').
+
+This makes the option 'only_installed_packages' obsolete.
