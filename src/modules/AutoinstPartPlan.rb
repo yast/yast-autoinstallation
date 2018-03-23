@@ -407,6 +407,7 @@ module Yast
     def Export
       log.info("entering Export with #{@AutoPartPlan.inspect}")
       drives = deep_copy(@AutoPartPlan)
+      drives.each { |d| d.delete("_id") }
 
       # Adding skipped devices to partitioning section.
       # These devices will not be taken in the AutoYaSt configuration file
