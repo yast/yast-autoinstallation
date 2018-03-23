@@ -38,7 +38,8 @@ BuildRequires:  libxml2-tools
 # xsltproc for AutoinstClass
 BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
-BuildRequires:  yast2
+# Yast::Popup.ErrorAnyQuestion fixed
+BuildRequires:  yast2 >= 4.0.60
 # FileSystems.read_default_subvol_from_target
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
@@ -59,8 +60,8 @@ BuildRequires:  systemd
 
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
-Requires:       yast2
-Requires:       yast2 >= 3.1.183
+# Yast::Popup.ErrorAnyQuestion fixed
+Requires:       yast2 >= 4.0.60
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 Requires:       yast2-ntp-client >= 4.0.1
