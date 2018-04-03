@@ -37,6 +37,8 @@ describe Y2Autoinstall::Clients::AyastProbe do
   end
 
   before do
+    Y2Storage::StorageManager.create_test_instance
+
     allow(Yast::UI).to receive(:OpenDialog).and_return(true)
     allow(Yast::UI).to receive(:CloseDialog).and_return(true)
     allow(Y2Storage::StorageManager.instance).to receive(:probed)

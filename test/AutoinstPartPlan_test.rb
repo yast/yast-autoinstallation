@@ -18,6 +18,8 @@ end
 
 describe "Yast::AutoinstPartPlan" do
   before do
+    Y2Storage::StorageManager.create_test_instance
+
     allow(Yast::Arch).to receive(:architecture).and_return("x86_64")
   end
 
