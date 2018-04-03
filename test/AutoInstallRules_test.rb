@@ -6,6 +6,7 @@ Yast.import "AutoInstallRules"
 
 describe "Yast::AutoInstallRules" do
   subject { Yast::AutoInstallRules }
+  before { Y2Storage::StorageManager.create_test_instance }
 
   let(:root_path) { File.expand_path('../..', __FILE__) }
 
