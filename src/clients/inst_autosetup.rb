@@ -135,6 +135,9 @@ module Yast
       #
       Progress.NextStage
 
+      # Merging selected product
+      AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
+
       # configure general settings
       AutoinstGeneral.Import(Ops.get_map(Profile.current, "general", {}))
       Builtins.y2milestone(
@@ -356,9 +359,6 @@ module Yast
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
       Progress.NextStage
-
-      # Merging selected product
-      AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
       # Evaluating package and patterns selection.
       # Selection will stored in PackageAI.
