@@ -188,30 +188,33 @@ describe Yast::AutoinstStorage do
 
   describe "#import_general_settings" do
     let(:profile) { { "proposal_lvm" => true } }
+    let(:partitioning_features) { {"btrfs_default_subvolume" => "@" } }
+
+    around do |example|
+      old_partitioning = Yast::ProductFeatures.GetSection("partitioning")
+      Yast::ProductFeatures.SetSection("partitioning", partitioning_features)
+      example.call
+      Yast::ProductFeatures.SetSection("partitioning", old_partitioning)
+    end
 
     it "overrides control file values" do
-      expect(Yast::ProductFeatures).to receive(:SetSection)
-        .with("partitioning", profile)
       subject.import_general_settings(profile)
+      expect(Yast::ProductFeatures.GetSection("partitioning")).to include("proposal_lvm" => true)
     end
 
-    context "when multipath is enabled" do
-      let(:profile) { { "start_multipath" => true } }
-
-      it "sets multipath"
-    end
-
-    context "when multipath is not enabled" do
-      it "does not set multipath"
+    it "keeps not overriden values" do
+      subject.import_general_settings(profile)
+      expect(Yast::ProductFeatures.GetSection("partitioning"))
+        .to include("btrfs_default_subvolume" => "@")
     end
 
     context "when btrfs default subvolume name is set to false" do
       let(:profile) { { "btrfs_set_default_subvolume_name" => false } }
 
       it "disables the btrfs default subvolume" do
-        expect(Yast::ProductFeatures).to receive(:SetSection)
-          .with("partitioning", { "btrfs_default_subvolume" => "" })
         subject.import_general_settings(profile)
+        expect(Yast::ProductFeatures.GetSection("partitioning"))
+          .to include("btrfs_default_subvolume" => "")
       end
     end
 
@@ -219,8 +222,9 @@ describe Yast::AutoinstStorage do
       let(:profile) { {} }
 
       it "uses the default for the product" do
-        expect(Yast::ProductFeatures).to receive(:SetSection).with("partitioning", {})
         subject.import_general_settings(profile)
+        expect(Yast::ProductFeatures.GetSection("partitioning"))
+          .to include("btrfs_default_subvolume" => "@")
       end
     end
 
@@ -228,8 +232,9 @@ describe Yast::AutoinstStorage do
       let(:profile) { { "btrfs_set_default_subvolume_name" => true } }
 
       it "uses the default for the product" do
-        expect(Yast::ProductFeatures).to receive(:SetSection).with("partitioning", {})
         subject.import_general_settings(profile)
+        expect(Yast::ProductFeatures.GetSection("partitioning"))
+          .to include("btrfs_default_subvolume" => "@")
       end
     end
   end
