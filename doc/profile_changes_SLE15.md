@@ -335,6 +335,13 @@ On x86_64 systems, GPT is now the preferred partition type. However, if you
 would like to retain the old behaviour, you could explictly indicate this in
 the profile setting the `disklabel` element to `msdos`.
 
+### Forcing primary partitions
+
+It is still possible to force a partition as *primary* (only on MS-DOS
+partition tables) setting the `primary_type` to `primary`. However, any other
+value, like `logical`, will be ignored by AutoYaST, which will decide on the
+partition type.
+
 ### A default subvolume name for each Btrfs filesystem
 
 The new storage layer allows the user to set different default subvolumes (or
