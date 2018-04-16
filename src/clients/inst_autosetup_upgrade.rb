@@ -300,11 +300,8 @@ module Yast
       if !Update.did_init1
         Update.did_init1 = true
 
-        Pkg.PkgApplReset
-
         # bnc #300540
         # bnc #391785
-        # Drops packages after PkgApplReset, not before (that would null that)
         Update.DropObsoletePackages
 
         # make sure the packages needed for accessing the installation repository
