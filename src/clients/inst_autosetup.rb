@@ -162,7 +162,7 @@ module Yast
         elsif !AutoinstConfig.second_stage()
           # Second stage of installation will not be called but a
           # network configuration is available. So this will be written
-          # while the general inst_finish process at the end of the
+          # during the general inst_finish process at the end of the
           # first stage. But for the installation workflow the linuxrc
           # network settings will be taken. (bnc#944942)
           Builtins.y2milestone(
@@ -361,12 +361,12 @@ module Yast
       Progress.NextStage
 
       # Evaluating package and patterns selection.
-      # Selection will stored in PackageAI.
+      # Selection will be stored in PackageAI.
       AutoinstSoftware.Import(Ops.get_map(Profile.current, "software", {}))
 
       # Add additional packages in order to run YAST modules which
-      # has been defined the AutoYaST configuration file.
-      # Selection will stored in PackageAI.
+      # have been defined in the AutoYaST configuration file.
+      # Selection will be stored in PackageAI.
       add_yast2_dependencies if AutoinstFunctions.second_stage_required?
 
       # Adding selections (defined in PackageAI) to libzypp and solving
