@@ -308,7 +308,7 @@ module Yast
 
       # Bootloader
       # The bootloader has to be called before software selection.
-      # So the software selection can take care about packages
+      # So the software selection is aware and can manage packages
       # needed by the bootloader (bnc#876161)
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
@@ -326,7 +326,7 @@ module Yast
       Progress.NextStage
 
       # The configuration_management has to be called before software selection.
-      # So the software selection can take care about packages
+      # So the software selection is aware and can manage packages
       # needed by the configuration_management.
       if Profile.current["configuration_management"]
         return :abort unless WFM.CallFunction(
