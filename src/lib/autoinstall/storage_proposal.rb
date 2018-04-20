@@ -95,6 +95,7 @@ module Y2Autoinstallation
         @proposal = autoinst_proposal(partitioning)
         @proposal.propose
       end
+      issues_list.add(:no_proposal) unless @proposal.devices
     rescue Y2Storage::Error => e
       handle_exception(e)
     end
