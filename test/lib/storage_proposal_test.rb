@@ -7,8 +7,13 @@ describe Y2Autoinstallation::StorageProposal do
   subject(:storage_proposal) { described_class.new(profile) }
 
   let(:storage_manager) { double(Y2Storage::StorageManager) }
-  let(:guided_proposal) { instance_double(Y2Storage::GuidedProposal, propose: nil, proposed?: true) }
-  let(:autoinst_proposal) { instance_double(Y2Storage::AutoinstProposal, propose: nil, proposed?: true) }
+  let(:devicegraph) { instance_double(Y2Storage::Devicegraph) }
+  let(:guided_proposal) do
+    instance_double(Y2Storage::GuidedProposal, propose: nil, proposed?: true, devices: devicegraph)
+  end
+  let(:autoinst_proposal) do
+    instance_double(Y2Storage::AutoinstProposal, propose: nil, proposed?: true, devices: devicegraph)
+  end
   let(:profile) { [{ "device" => "/dev/sda" }] }
 
   before do
@@ -29,6 +34,7 @@ describe Y2Autoinstallation::StorageProposal do
         expect(Y2Storage::GuidedProposal).to receive(:initial)
         expect(storage_proposal.proposal).to be(guided_proposal)
       end
+
     end
 
     context "when profile contains an empty set of partitions" do
@@ -59,6 +65,20 @@ describe Y2Autoinstallation::StorageProposal do
       it "registers an issue" do
         issues_list = storage_proposal.issues_list
         issue = issues_list.find { |i| i.is_a?(Y2Storage::AutoinstIssues::Exception) }
+        expect(issue).to_not be_nil
+      end
+    end
+
+    context "when no proposal is possible" do
+      let(:devicegraph) { nil }
+
+      before do
+        allow(guided_proposal).to receive(:devices).and_return(nil)
+      end
+
+      it "registers an issue" do
+        issues_list = storage_proposal.issues_list
+        issue = issues_list.find { |i| i.is_a?(Y2Storage::AutoinstIssues::NoProposal) }
         expect(issue).to_not be_nil
       end
     end

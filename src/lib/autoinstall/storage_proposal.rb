@@ -86,8 +86,6 @@ module Y2Autoinstallation
     #
     # * {Y2Storage::GuidedProposal} if {partitioning} is nil or empty;
     # * {Y2Storage::AutoinstProposal} in any other case.
-    #
-    # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Proposal instance
     def build_proposal(partitioning)
       if partitioning.nil? || partitioning.empty?
         @proposal = guided_proposal
@@ -95,6 +93,7 @@ module Y2Autoinstallation
         @proposal = autoinst_proposal(partitioning)
         @proposal.propose
       end
+      issues_list.add(:no_proposal) unless @proposal.devices
     rescue Y2Storage::Error => e
       handle_exception(e)
     end
