@@ -209,6 +209,9 @@ module Yast
         end
       end
 
+      # Checking result of semantic checks of imported values.
+      return :abort unless AutoInstall.valid_imported_values
+
       # Add all found packages
       Progress.NextStep
       Progress.Title(_("Adding found packages..."))

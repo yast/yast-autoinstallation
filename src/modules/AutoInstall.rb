@@ -8,10 +8,15 @@
 # $Id$
 require "yast"
 require "autoinstall/pkg_gpg_check_handler"
+require "autoinstall/autoinst_issues"
+require "autoinstall/autoinst_issues_presenter"
 
 module Yast
   class AutoInstallClass < Module
     include Yast::Logger
+
+    # @return [AutoinstIssues::AutoinstIssues::List] AutoYaST issues list
+    attr_accessor :issues_list
 
     def main
       textdomain "autoinst"
@@ -25,6 +30,8 @@ module Yast
       Yast.import "TFTP"
 
       @autoconf = false
+      @issues_list = Y2Autoinstallation::AutoinstIssues::List.new
+
       AutoInstall()
     end
 
@@ -328,6 +335,43 @@ module Yast
       accept = PkgGpgCheckHandler.new(data, Profile.current).accept?
       log.info("PkgGpgCheckerHandler for #{data["Package"]} returned #{accept}")
       accept ? "I" : ""
+    end
+
+    # Checking for valid imported values and there is an fatal error
+    # we will stop the installation.
+    #
+    # @return [Boolean] True if the proposal is valid or the user accepted an invalid one.
+    def valid_imported_values
+      return true if @issues_list.empty?
+
+      report_settings = Report.Export
+      if @issues_list.fatal?
+        # On fatal errors, the message should be displayed and without timeout
+        level = :error
+        buttons_set = :abort
+        display_message = true
+        log_message = report_settings["errors"]["log"]
+        timeout = 0
+      else
+        # On non-fatal issues, obey report settings for warnings
+        level = :warn
+        buttons_set = :question
+        display_message = report_settings["warnings"]["show"]
+        log_message = report_settings["warnings"]["log"]
+        timeout = report_settings["warnings"]["timeout"]
+      end
+
+      presenter = Y2Autoinstallation::AutoinstIssuesPresenter.new(@issues_list)
+      log.send(level, presenter.to_plain) if log_message
+      return true unless display_message
+
+      dialog = Y2Autoinstallation::Dialogs::Question.new(
+        _("AutoYaST configuration file check"),
+        presenter.to_html,
+        timeout: timeout,
+        buttons_set: buttons_set
+      )
+      dialog.run == :ok
     end
 
     publish :variable => :autoconf, :type => "boolean"

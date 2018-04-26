@@ -46,10 +46,12 @@ module Y2Autoinstallation
 
       # Constructor
       #
+      # @param headline    [String]  Dialog's headline
       # @param content     [String]  Dialog's content
       # @param timeout     [Integer] Countdown (in seconds); 0 means no timeout.
       # @param buttons_set [Symbol]  Buttons set (:abort, :question)
-      def initialize(content, timeout: 10, buttons_set: :question)
+      def initialize(headline, content, timeout: 10, buttons_set: :question)
+        @headline = headline
         @content = content
         @remaining_time = timeout
         @timed = timeout > 0
@@ -65,7 +67,7 @@ module Y2Autoinstallation
           VSpacing(20),
           VBox(
             HSpacing(70),
-            Left(Heading("Partitioning issues")),
+            Left(Heading(@headline)),
             VSpacing(1),
             RichText(content),
             timed? ? ReplacePoint(Id(:counter_replace), counter) : Empty(),
