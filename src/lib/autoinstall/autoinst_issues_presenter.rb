@@ -75,7 +75,7 @@ module Y2Autoinstallation
     # @return [String] Message
     def warning_text(issues)
       Yast::HTML.Para(
-        _("Minor issues have benn detected while reading AutoYaST configuration file:")
+        _("Minor issues have been detected while reading AutoYaST configuration file:")
       ) + issues_list_content(issues)
     end
 
