@@ -457,6 +457,9 @@ module Yast
         end
       end
 
+      # Results of imported values semantic check.
+      return :abort unless AutoInstall.valid_imported_values
+
       Progress.Finish
 
       @ret = ProductControl.RunFrom(
