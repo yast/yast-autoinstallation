@@ -84,7 +84,7 @@ describe Yast::AutoinstStorage do
 
       it "shows errors to the user without timeout" do
         expect(Y2Autoinstallation::Dialogs::Question).to receive(:new)
-          .with(/Important issues/, timeout: 0, buttons_set: :abort)
+          .with("Partitioning issues", /Important issues/, timeout: 0, buttons_set: :abort)
           .and_return(issues_dialog)
         expect(issues_dialog).to receive(:run)
         subject.Import({})
@@ -128,7 +128,7 @@ describe Yast::AutoinstStorage do
       context "and warnings reporting is enabled" do
         it "asks the user for confirmation" do
           expect(Y2Autoinstallation::Dialogs::Question).to receive(:new)
-            .with(/Minor issues/, timeout: 5, buttons_set: :question)
+            .with("Partitioning issues", /Minor issues/, timeout: 5, buttons_set: :question)
             .and_return(issues_dialog)
           expect(issues_dialog).to receive(:run)
           subject.Import({})
