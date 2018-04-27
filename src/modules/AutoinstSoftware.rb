@@ -46,6 +46,7 @@ module Yast
       Yast.import "PackageSystem"
       Yast.import "ProductFeatures"
       Yast.import "WorkflowManager"
+      Yast.import "AutoInstall"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -104,6 +105,8 @@ module Yast
     # @param [Hash] settings settings to be imported
     # @return true on success
     def Import(settings)
+      check_profile_for_errors(settings)
+
       settings = deep_copy(settings)
       @Software = deep_copy(settings)
       @patterns = settings.fetch("patterns",[])
@@ -1197,6 +1200,18 @@ module Yast
     publish :function => :Read, :type => "boolean ()"
 
   private
+
+    # Semantic AutoYaST profile check
+    #
+    # Problems will be stored in AutoInstall.issues_list.
+    # @param settings [Hash] AutoYaST software section
+    def check_profile_for_errors(settings)
+      # Checking if a product has been defined
+      if !settings["products"] || settings["products"].empty?
+        AutoInstall.issues_list.add(:missing_value, "software", "products",
+          _("The installer is trying to evaluate the product."))
+      end
+    end
 
     # Get user transacted packages, include only the packages in the requested state
     # @param status [Symbol] package status (:available, :selected, :installed,

@@ -32,21 +32,25 @@ module Y2Autoinstallation
       # @return [String] Name of the missing attribute
       attr_reader :attr
 
-      # @param section [String] Section where it was detected
-      # @param attr    [String] Name of the missing attribute
-      def initialize(section, attr)
+      # @param section     [String] Section where it was detected
+      # @param attr        [String] Name of the missing attribute
+      # @param description [String] additional explanation; optional
+      # @param severity    [Symbol] :warn, :fatal = abort the installation ; optional
+      def initialize(section, attr, description = "", severity = :warn)
         textdomain "autoinst"
 
         @section = section
         @attr = attr
+        @description = description
+        @severity = severity
       end
 
       # Fatal problem
       #
-      # @return [Symbol] :fatal
+      # @return [Symbol] :fatal, :warn
       # @see Issue#severity
       def severity
-        :fatal
+        @severity
       end
 
       # Return the error message to be displayed
@@ -54,8 +58,11 @@ module Y2Autoinstallation
       # @return [String] Error message
       # @see Issue#message
       def message
-        # TRANSLATORS: AutoYaST element
-        _("Missing element '%{attr}'") % { attr: @attr }
+        # TRANSLATORS:
+        # 'attr' is an AutoYaST element
+        # 'description' has already been translated in other modules.
+        _("Missing element '%{attr}'. %{description}") %
+          { attr: @attr, description: @description }
       end
     end
   end
