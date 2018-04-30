@@ -28,7 +28,7 @@ module Y2Autoinstallation
     # @example Registering some problems
     #   list = List.new
     #   list.add(:invalid_value, "firewall", "interfaces",
-    #     double_entries.join(","),
+    #     "eth0",
     #     _("This interface has been defined for more than one zone."))
     #
     # @example Iterating through the list of problems
