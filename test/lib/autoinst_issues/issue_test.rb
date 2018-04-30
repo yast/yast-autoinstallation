@@ -20,63 +20,63 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../test_helper.rb"
-require "autoinstall/autoinst_issues/missing_value"
+require_relative '../../test_helper.rb'
+require 'autoinstall/autoinst_issues/missing_value'
 
 describe Y2Autoinstallation::AutoinstIssues::Issue do
   subject(:issue) { described_class.new }
 
-  describe "#message" do
-    it "raises a NotImplementedError exception" do
+  describe '#message' do
+    it 'raises a NotImplementedError exception' do
       expect { issue.message }.to raise_error(NotImplementedError)
     end
   end
 
-  describe "#severity" do
-    it "raises a NotImplementedError exception" do
+  describe '#severity' do
+    it 'raises a NotImplementedError exception' do
       expect { issue.severity }.to raise_error(NotImplementedError)
     end
   end
 
-  describe "#warn?" do
+  describe '#warn?' do
     before do
       allow(issue).to receive(:severity).and_return(severity)
     end
 
-    context "when severity is :warn" do
+    context 'when severity is :warn' do
       let(:severity) { :warn }
 
-      it "returns true" do
+      it 'returns true' do
         expect(issue).to be_warn
       end
     end
 
-    context "when severity is not :warn" do
+    context 'when severity is not :warn' do
       let(:severity) { :fatal }
 
-      it "returns false" do
+      it 'returns false' do
         expect(issue).to_not be_warn
       end
     end
   end
 
-  describe "#fatal?" do
+  describe '#fatal?' do
     before do
       allow(issue).to receive(:severity).and_return(severity)
     end
 
-    context "when severity is :fatal" do
+    context 'when severity is :fatal' do
       let(:severity) { :fatal }
 
-      it "returns true" do
+      it 'returns true' do
         expect(issue).to be_fatal
       end
     end
 
-    context "when severity is not :fatal" do
+    context 'when severity is not :fatal' do
       let(:severity) { :warn }
 
-      it "returns false" do
+      it 'returns false' do
         expect(issue).to_not be_fatal
       end
     end

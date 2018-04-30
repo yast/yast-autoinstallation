@@ -20,23 +20,25 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../test_helper.rb"
-require "autoinstall/autoinst_issues/invalid_value"
+require_relative '../../test_helper.rb'
+require 'autoinstall/autoinst_issues/invalid_value'
 
 describe Y2Autoinstallation::AutoinstIssues::InvalidValue do
-  subject(:issue) { described_class.new("firewall", "interfaces", "eth0",
-    "This interface has been defined for more than one zone.", :fatal) }
+  subject(:issue) do
+    described_class.new('firewall', 'interfaces', 'eth0',
+                        'This interface has been defined for more than one zone.', :fatal)
+  end
 
-  describe "#message" do
-    it "includes relevant information" do
+  describe '#message' do
+    it 'includes relevant information' do
       message = issue.message
-      expect(message).to include "interfaces"
-      expect(message).to include "eth0"
+      expect(message).to include 'interfaces'
+      expect(message).to include 'eth0'
     end
   end
 
-  describe "#severity" do
-    it "returns :fatal" do
+  describe '#severity' do
+    it 'returns :fatal' do
       expect(issue.severity).to eq(:fatal)
     end
   end

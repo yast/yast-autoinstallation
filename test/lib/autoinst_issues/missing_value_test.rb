@@ -20,20 +20,20 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../test_helper.rb"
-require "autoinstall/autoinst_issues/missing_value"
+require_relative '../../test_helper.rb'
+require 'autoinstall/autoinst_issues/missing_value'
 
 describe Y2Autoinstallation::AutoinstIssues::MissingValue do
-  subject(:issue) { described_class.new("software", "products") }
+  subject(:issue) { described_class.new('software', 'products') }
 
-  describe "#message" do
-    it "returns a description of the issue" do
+  describe '#message' do
+    it 'returns a description of the issue' do
       expect(issue.message).to match(/Missing element 'products'/)
     end
   end
 
-  describe "#severity" do
-    it "returns :warn as default" do
+  describe '#severity' do
+    it 'returns :warn as default' do
       expect(issue.severity).to eq(:warn)
     end
   end
