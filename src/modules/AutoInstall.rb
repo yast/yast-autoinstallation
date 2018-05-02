@@ -346,12 +346,12 @@ module Yast
 
       report_settings = Report.Export
       if @issues_list.fatal?
-        # On fatal errors, the message should be displayed and without timeout
+        # On fatal errors, the message should be displayed
         level = :error
         buttons_set = :abort
         display_message = true
         log_message = report_settings["errors"]["log"]
-        timeout = 0
+        timeout = report_settings["errors"]["timeout"]
       else
         # On non-fatal issues, obey report settings for warnings
         level = :warn

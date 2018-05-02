@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-# Copyright (c) [2017] SUSE LLC
+# Copyright (c) [2018] SUSE LLC
 #
 # All Rights Reserved.
 #
@@ -26,8 +26,8 @@ module Y2Autoinstallation
   module AutoinstIssues
     # Represents an AutoYaST situation where a mandatory value is missing.
     #
-    # @example Missing value for attribute 'product' in 'software' section.
-    #   problem = MissingValue.new("software","product")
+    # @example Missing value for attribute 'bar' in 'foo' section.
+    #   problem = MissingValue.new("foo","bar")
     class MissingValue < Issue
       # @return [String] Name of the missing attribute
       attr_reader :attr

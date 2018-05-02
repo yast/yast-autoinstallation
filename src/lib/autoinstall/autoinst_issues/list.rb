@@ -49,7 +49,7 @@ module Y2Autoinstallation
       #
       # The type of the problem is identified as a symbol which name is the
       # underscore version of the class which implements it.  For instance,
-      # `MissingRoot` would be referred as `:missing_root`.
+      # `InvalidValue` would be referred as `:invalid_value`.
       #
       # If a given type of problem requires some additional arguments, they
       # should be added when calling this method. See the next example.

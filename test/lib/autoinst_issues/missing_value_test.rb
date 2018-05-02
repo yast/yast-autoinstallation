@@ -24,11 +24,11 @@ require_relative '../../test_helper.rb'
 require 'autoinstall/autoinst_issues/missing_value'
 
 describe Y2Autoinstallation::AutoinstIssues::MissingValue do
-  subject(:issue) { described_class.new('software', 'products') }
+  subject(:issue) { described_class.new('foo', 'var') }
 
   describe '#message' do
     it 'returns a description of the issue' do
-      expect(issue.message).to match(/Missing element 'products'/)
+      expect(issue.message).to match(/Missing element 'bar'/)
     end
   end
 

@@ -30,7 +30,7 @@ describe Y2Autoinstallation::AutoinstIssues::List do
 
   describe '#add' do
     it 'adds a new issue to the list' do
-      list.add(:missing_value, 'software', 'products')
+      list.add(:missing_value, 'foo', 'bar')
       expect(list.to_a).to all(be_an(Y2Autoinstallation::AutoinstIssues::MissingValue))
     end
 
@@ -52,7 +52,7 @@ describe Y2Autoinstallation::AutoinstIssues::List do
 
     context 'when some issue was added' do
       before do
-        2.times { list.add(:missing_value, 'software', 'products') }
+        2.times { list.add(:missing_value, 'foo', 'bar') }
       end
 
       it 'returns an array containing added issues' do
@@ -70,7 +70,7 @@ describe Y2Autoinstallation::AutoinstIssues::List do
     end
 
     context 'when some issue was added' do
-      before { list.add(:missing_value, 'software', 'products') }
+      before { list.add(:missing_value, 'foo', 'bar') }
 
       it 'returns false' do
         expect(list).to_not be_empty
@@ -80,7 +80,7 @@ describe Y2Autoinstallation::AutoinstIssues::List do
 
   describe '#fatal?' do
     context 'when contains some fatal error' do
-      before { list.add(:missing_value, 'software', 'products', 'descritption', :fatal) }
+      before { list.add(:missing_value, 'foo', 'bar', 'descritption', :fatal) }
 
       it 'returns true' do
         expect(list).to be_fatal
@@ -88,7 +88,7 @@ describe Y2Autoinstallation::AutoinstIssues::List do
     end
 
     context 'when contains no fatal error' do
-      before { list.add(:missing_value, 'software', 'products', 'descritption', :warn) }
+      before { list.add(:missing_value, 'foo', 'bar', 'descritption', :warn) }
 
       it 'returns false' do
         expect(list).to_not be_fatal

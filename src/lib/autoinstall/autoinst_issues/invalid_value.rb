@@ -55,7 +55,7 @@ module Y2Autoinstallation
       # @see Issue#message
       def message
         # TRANSLATORS:
-        # 'value' is a generic value (number or string) 'attr' is an AutoYaST element
+        # 'value' is a generic value (number or string) 'attribute' is an AutoYaST element
         # 'description' has already been translated in other modules.
         _("Invalid value '%{value}' for attribute '%{attribute}': %{description}") %
           { value: @value, attribute: @attribute, description: @description }

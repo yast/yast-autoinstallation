@@ -46,7 +46,6 @@ module Yast
       Yast.import "PackageSystem"
       Yast.import "ProductFeatures"
       Yast.import "WorkflowManager"
-      Yast.import "AutoInstall"
 
       Yast.include self, "autoinstall/io.rb"
 
