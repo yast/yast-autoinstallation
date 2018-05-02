@@ -82,16 +82,6 @@ describe Yast::AutoinstSoftware do
       expect(Yast::Report).to_not receive(:Error)
       subject.SelectPackagesForInstallation()
     end
-
-    it "adds a problem to issue_list if products have not been defined" do
-      expect(Yast::AutoInstall.issues_list).to receive(:add)
-        .with(:missing_value, "software", "products",
-        "The installer is trying to evaluate the product.")
-      subject.Import({})
-      expect(Yast::Pkg).to receive(:DoProvide).with(["a2","a3","a4"]).and_return({"a4" => "not found"})
-      expect(Yast::Report).to_not receive(:Error)
-      subject.SelectPackagesForInstallation()
-    end
   end
 
   describe "#locked_packages" do
