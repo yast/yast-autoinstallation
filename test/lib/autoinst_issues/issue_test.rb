@@ -34,7 +34,7 @@ describe Y2Autoinstallation::AutoinstIssues::Issue do
 
   describe '#severity' do
     it 'returns :warn as default value' do
-      expect(issue.serverity).to eq(:warn)
+      expect(issue.severity).to eq(:warn)
     end
   end
 
