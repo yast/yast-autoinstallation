@@ -304,6 +304,7 @@ module Yast
       return true unless display_message
 
       dialog = Y2Autoinstallation::Dialogs::Question.new(
+        _("Partitioning issues"),
         presenter.to_html,
         timeout: timeout,
         buttons_set: buttons_set

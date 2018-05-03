@@ -82,7 +82,6 @@ describe Yast::AutoinstSoftware do
       expect(Yast::Report).to_not receive(:Error)
       subject.SelectPackagesForInstallation()
     end
-
   end
 
   describe "#locked_packages" do

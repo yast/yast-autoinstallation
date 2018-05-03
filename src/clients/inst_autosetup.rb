@@ -424,7 +424,7 @@ module Yast
       Progress.NextStage
       autosetup_users
 
-      # 
+      #
       # Import profile settings for copying SSH keys from a
       # previous installation
       #
@@ -449,6 +449,9 @@ module Yast
           return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
         end
       end
+
+      # Results of imported values semantic check.
+      return :abort unless AutoInstall.valid_imported_values
 
       Progress.Finish
 
