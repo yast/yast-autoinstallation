@@ -25,10 +25,11 @@ require "autoinstall/dialogs/question"
 require "y2storage/autoinst_issues"
 
 describe Y2Autoinstallation::Dialogs::Question do
-  subject(:dialog) { described_class.new(content, timeout: timeout, buttons_set: buttons_set) }
+  subject(:dialog) { described_class.new(headline, content, timeout: timeout, buttons_set: buttons_set) }
 
   let(:timeout) { 0 }
   let(:content) { "some content" }
+  let(:headline) { "some headline" }
   let(:buttons_set) { :abort }
 
   before do
