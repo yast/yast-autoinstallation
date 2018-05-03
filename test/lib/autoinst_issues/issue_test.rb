@@ -33,8 +33,8 @@ describe Y2Autoinstallation::AutoinstIssues::Issue do
   end
 
   describe '#severity' do
-    it 'raises a NotImplementedError exception' do
-      expect { issue.severity }.to raise_error(NotImplementedError)
+    it 'returns :warn as default value' do
+      expect(issue.serverity).to eq(:warn)
     end
   end
 
