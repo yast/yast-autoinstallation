@@ -22,7 +22,15 @@ describe Yast::AutoinstStorage do
     let(:warnings_settings) { { "show" => true, "timeout" => 5 } }
     let(:settings) { [{ "device" => "/dev/sda" }] }
     let(:ask_settings) { [{ "device" => "ask" }] }
-    let(:preprocessor) { instance_double(Y2Autoinstallation::PartitioningPreprocessor, run: settings) }
+    let(:preprocessor) do
+      instance_double(Y2Autoinstallation::PartitioningPreprocessor, run: settings)
+    end
+    let(:probed_devicegraph) do
+      instance_double(Y2Storage::Devicegraph, :empty? => false)
+    end
+    let(:storage_manager) do
+      instance_double(Y2Storage::StorageManager, probed: probed_devicegraph)
+    end
 
     before do
       allow(Y2Autoinstallation::StorageProposal).to receive(:new)
@@ -32,6 +40,7 @@ describe Yast::AutoinstStorage do
       allow(storage_proposal).to receive(:save)
       allow(Y2Autoinstallation::PartitioningPreprocessor).to receive(:new)
         .and_return(preprocessor)
+      allow(Y2Storage::StorageManager).to receive(:instance).and_return(storage_manager)
     end
 
     around do |example|
@@ -183,6 +192,36 @@ describe Yast::AutoinstStorage do
         end
       end
 
+    end
+
+    context "when there are no available storage for installation" do
+      before do
+        allow(probed_devicegraph).to receive(:empty?).and_return(true)
+      end
+
+      it "displays an error" do
+        expect(Yast::Popup).to receive(:Error).with(/No storage devices/)
+        subject.Import({})
+      end
+
+      it "returns false" do
+        expect(subject.Import({})).to eq(false)
+      end
+    end
+
+    context "when the probed devicegraph is nil" do
+      before do
+        allow(storage_manager).to receive(:probed).and_return(nil)
+      end
+
+      it "displays an error" do
+        expect(Yast::Popup).to receive(:Error).with(/No storage devices/)
+        subject.Import({})
+      end
+
+      it "returns false" do
+        expect(subject.Import({})).to eq(false)
+      end
     end
   end
 
