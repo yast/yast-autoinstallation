@@ -23,6 +23,9 @@ Yast.import "HTML"
 Yast.import "RichText"
 
 module Y2Autoinstallation
+
+  # FIXME merge this class with StorageProposalIssuesPresenter class.
+
   # This class converts a list of issues into a message to be shown to users
   #
   # The message will summarize the list of issues, separating them into non-fatal

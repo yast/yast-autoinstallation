@@ -31,6 +31,7 @@ module Y2Autoinstallation
     class MissingValue < Issue
       # @return [String] Name of the missing attribute
       attr_reader :attr
+      attr_reader :description
 
       # @param section     [String] Section where it was detected
       # @param attr        [String] Name of the missing attribute
@@ -45,14 +46,6 @@ module Y2Autoinstallation
         @severity = severity
       end
 
-      # Fatal problem
-      #
-      # @return [Symbol] :fatal, :warn
-      # @see Issue#severity
-      def severity
-        @severity
-      end
-
       # Return the error message to be displayed
       #
       # @return [String] Error message
@@ -62,7 +55,7 @@ module Y2Autoinstallation
         # 'attr' is an AutoYaST element
         # 'description' has already been translated in other modules.
         _("Missing element '%{attr}'. %{description}") %
-          { attr: @attr, description: @description }
+          { attr: attr, description: description }
       end
     end
   end

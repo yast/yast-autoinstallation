@@ -37,7 +37,7 @@ describe Y2Autoinstallation::AutoinstIssues::InvalidValue do
     end
   end
 
-  describe '#severity' do
+  describe '#severity which has been set to :fatal while initialisation' do
     it 'returns :fatal' do
       expect(issue.severity).to eq(:fatal)
     end

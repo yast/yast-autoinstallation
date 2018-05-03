@@ -57,7 +57,7 @@ module Y2Autoinstallation
       # @example Adding a problem with additional arguments
       #   list = List.new
       #   list.add(:invalid_value, "firewall", "FW_DEV_INT", "1",
-      #     _("Is not supported anymore.")
+      #     _("Is not supported anymore."))
       #   list.empty? #=> false
       #
       # @param type       [Symbol] Issue type

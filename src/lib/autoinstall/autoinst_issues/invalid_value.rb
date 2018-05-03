@@ -42,13 +42,6 @@ module Y2Autoinstallation
         @severity = severity
       end
 
-      # Return problem severity
-      #
-      # @return [Symbol] :warn, :fatal
-      def severity
-        @severity
-      end
-
       # Return the error message to be displayed
       #
       # @return [String] Error message

@@ -8,8 +8,11 @@ module Y2Autoinstallation
     class Issue
       include Yast::I18n
 
-      # @return [#parent,#section_name] Section where it was detected
+      # @return [String] Section where it was detected
       attr_reader :section
+
+      # @return [Symbol] :warn, :fatal problem severity
+      attr_reader :severity
 
       # Return problem severity
       #
@@ -19,7 +22,7 @@ module Y2Autoinstallation
       # @return [Symbol] Issue severity (:warn, :fatal)
       # @raise NotImplementedError
       def severity
-        raise NotImplementedError
+        @severity || :warn
       end
 
       # Return the error message to be displayed
