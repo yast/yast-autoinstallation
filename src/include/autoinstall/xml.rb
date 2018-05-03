@@ -107,7 +107,8 @@ module Yast
           "sources"                  => "source",
           "zones"                    => "zone",
           "authorized_keys"          => "authorized_key",
-          "products"                 => "product"
+          "products"                 => "product",
+          "subvolumes"               => "subvolume"
         }
       )
 
@@ -122,7 +123,8 @@ module Yast
           "pxelinux-config",
           "location",
           "script_source",
-          "media_url"
+          "media_url",
+          "subvolumes_prefix"
         ]
       )
       #            doc["systemID"] = "/usr/share/autoinstall/dtd/profile.dtd";
