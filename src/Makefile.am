@@ -75,6 +75,8 @@ ylib_DATA = \
   lib/autoinstall/partitioning_preprocessor.rb \
   lib/autoinstall/autosetup_helpers.rb \
   lib/autoinstall/storage_proposal.rb \
+  lib/autoinstall/autoinst_issues_presenter.rb \
+  lib/autoinstall/autoinst_issues.rb \
   lib/autoinstall/storage_proposal_issues_presenter.rb
 
 ydialogsdir = @ylibdir@/autoinstall/dialogs
@@ -85,6 +87,13 @@ ydialogs_DATA = \
 yclientsdir = @ylibdir@/autoinstall/clients
 yclients_DATA = \
   lib/autoinstall/clients/ayast_probe.rb
+
+yclientsdir = @ylibdir@/autoinstall/autoinst_issues
+yclients_DATA = \
+  lib/autoinstall/autoinst_issues/invalid_value.rb \
+  lib/autoinstall/autoinst_issues/issue.rb \
+  lib/autoinstall/autoinst_issues/list.rb \
+  lib/autoinstall/autoinst_issues/missing_value.rb
 
 scrconf_DATA = \
   scrconf/cfg_autoinstall.scr \
