@@ -80,12 +80,6 @@ module Yast
 
       self.general_settings = settings.clone
 
-      # Backward compatibility
-      if general_settings["btrfs_set_default_subvolume_name"] == false
-        general_settings["btrfs_default_subvolume"] = ""
-      end
-      general_settings.delete("btrfs_set_default_subvolume_name")
-
       # Override product settings from control file
       control_settings = Yast::ProductFeatures.GetSection("partitioning") || {}
       Yast::ProductFeatures.SetSection("partitioning", control_settings.merge(general_settings))
