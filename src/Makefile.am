@@ -88,8 +88,8 @@ yclientsdir = @ylibdir@/autoinstall/clients
 yclients_DATA = \
   lib/autoinstall/clients/ayast_probe.rb
 
-yclientsdir = @ylibdir@/autoinstall/autoinst_issues
-yclients_DATA = \
+ycautoinst_issuesdir = @ylibdir@/autoinstall/autoinst_issues
+ycautoinst_issues_DATA = \
   lib/autoinstall/autoinst_issues/invalid_value.rb \
   lib/autoinstall/autoinst_issues/issue.rb \
   lib/autoinstall/autoinst_issues/list.rb \
