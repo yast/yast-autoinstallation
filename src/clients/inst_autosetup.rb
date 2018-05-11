@@ -258,7 +258,6 @@ module Yast
 
       # moved here from autoinit for fate #301193
       # needs testing
-      dasd_or_zfcp = false
       if Arch.s390
         dasd_or_zfcp = Profile.current.key?("dasd") || Profile.current.key?("zfcp")
         if Builtins.haskey(Profile.current, "dasd")
