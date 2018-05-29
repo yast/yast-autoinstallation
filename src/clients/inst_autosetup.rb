@@ -258,9 +258,8 @@ module Yast
 
       # moved here from autoinit for fate #301193
       # needs testing
-      s390_and_remote_profile = Arch.s390 && AutoinstConfig.remoteProfile == true
-      if s390_and_remote_profile
-        Builtins.y2milestone("arch=s390 and remote_profile=true")
+      if Arch.s390
+        dasd_or_zfcp = Profile.current.key?("dasd") || Profile.current.key?("zfcp")
         if Builtins.haskey(Profile.current, "dasd")
           Builtins.y2milestone("dasd found")
           if Call.Function("dasd_auto", ["Import", Ops.get_map(Profile.current, "dasd", {})])
@@ -275,10 +274,9 @@ module Yast
         end
       end
 
-
       Progress.NextStage
 
-      probe_storage if modified_profile? || s390_and_remote_profile
+      probe_storage if modified_profile? || dasd_or_zfcp
 
       if Profile.current["partitioning_advanced"] && !Profile.current["partitioning_advanced"].empty?
         write_storage = AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
