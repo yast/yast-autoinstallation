@@ -7,9 +7,12 @@
 #
 # $Id$
 require "yast"
+require "y2storage"
 
 module Yast
   class ProfileLocationClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -125,36 +128,23 @@ module Yast
         )
         SCR.Write(path(".etc.install_inf"), nil)
       elsif AutoinstConfig.scheme == "label"
-        Builtins.y2milestone("searching label")
-        Builtins.foreach(Storage.GetTargetMap) do |device, v|
-          Builtins.y2milestone("looking on %1", device)
-          if Ops.get_string(v, "label", "") == AutoinstConfig.host
-            AutoinstConfig.scheme = "device"
-            AutoinstConfig.host = Builtins.substring(device, 5)
-            Builtins.y2milestone("found on %1", AutoinstConfig.host)
-            raise Break
-          end
-          Builtins.foreach(Ops.get_list(v, "partitions", [])) do |p|
-            if Ops.get_string(p, "label", "") == AutoinstConfig.host
-              AutoinstConfig.scheme = "device"
-              AutoinstConfig.host = Builtins.substring(
-                Ops.get_string(p, "device", device),
-                5
-              )
-              Builtins.y2milestone("found on %1", AutoinstConfig.host)
-              raise Break
-            end
-            Builtins.y2milestone(
-              "not found on %1",
-              Ops.get_string(p, "device", "hm?")
-            )
-          end
-          raise Break if AutoinstConfig.scheme == "device"
+        # autoyast=label://my_home//autoinst.xml in linuxrc:
+        # AY is searching for a partition with the label "my_home". This partition
+        # will be mounted and the autoinst.xml will be used for installation.
+        log.info("searching label #{AutoinstConfig.host}")
+        fs = Y2Storage::StorageManager.instance.probed.filesystems.find do |f|
+          f.label == AutoinstConfig.host
         end
-        if AutoinstConfig.scheme == "label"
-          Report.Error(_("label not found while looking for autoyast profile"))
+        if fs
+          AutoinstConfig.scheme = "device"
+          AutoinstConfig.host = fs.blk_devices.first.name
+          AutoinstConfig.host.slice!("/dev/")
+          log.info("found on #{AutoinstConfig.host}")
+        else
+          log.error(_("label not found while looking for autoyast profile"))
         end
       end
+
       filename = basename(AutoinstConfig.filepath)
 
 
