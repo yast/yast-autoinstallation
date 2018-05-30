@@ -137,8 +137,7 @@ module Yast
         end
         if fs
           AutoinstConfig.scheme = "device"
-          AutoinstConfig.host = fs.blk_devices.first.name
-          AutoinstConfig.host.slice!("/dev/")
+          AutoinstConfig.host = fs.blk_devices.first.basename
           log.info("found on #{AutoinstConfig.host}")
         else
           log.error(_("label not found while looking for autoyast profile"))
