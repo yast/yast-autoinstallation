@@ -135,12 +135,12 @@ module Yast
         fs = Y2Storage::StorageManager.instance.probed.filesystems.find do |f|
           f.label == AutoinstConfig.host
         end
-        if fs
+        if fs && fs.blk_devices.first
           AutoinstConfig.scheme = "device"
           AutoinstConfig.host = fs.blk_devices.first.basename
           log.info("found on #{AutoinstConfig.host}")
         else
-          log.error(_("label not found while looking for autoyast profile"))
+          Report.Error(_("label not found while looking for autoyast profile"))
         end
       end
 
