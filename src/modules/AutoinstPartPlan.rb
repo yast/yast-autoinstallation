@@ -395,6 +395,10 @@ module Yast
       log.info("entering Import with #{settings.inspect}")
       # index settings
       @AutoPartPlan = settings.map.with_index { |d, i| d.merge("_id" => i) }
+      # set default value
+      @AutoPartPlan.each do |d|
+        d["initialize"] = false unless d.has_key?("initialize")
+      end
       true
     end
 
