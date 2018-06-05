@@ -109,7 +109,7 @@ module Yast
         drive = AutoinstDrive.set(
           drive,
           "use",
-          UI.QueryWidget(Id(:cb_reuse), :Value)
+          symbol2string(UI.QueryWidget(Id(:cb_reuse), :Value))
         )
       end
       deep_copy(drive)
