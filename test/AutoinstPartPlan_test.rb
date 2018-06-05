@@ -64,6 +64,28 @@ describe "Yast::AutoinstPartPlan" do
     end
   end
 
+  describe "#Import" do
+    let(:sda) { { "device" => "/dev/sda", "initialize" => true } }
+    let(:sdb) { { "device" => "/dev/sdb" } }
+    let(:settings) { [sda, sdb] }
+
+    before { subject.Import(settings) }
+
+    context "\"initialize\" is not given" do
+      it "set default value for \"initialize\" to false" do
+        drive = subject.getDrive(1)
+        expect(drive["initialize"]).to eq(false)
+      end
+    end
+
+    context "\"initialize\" is given" do
+      it "does not overwrite \"initialize\" with default setting" do
+        drive = subject.getDrive(0)
+        expect(drive["initialize"]).to eq(true)
+      end
+    end
+  end
+
   describe "#Export" do
 
     let(:exported) { subject.Export }
