@@ -362,6 +362,10 @@ module Yast
       end
 
       presenter = Y2Autoinstallation::AutoinstIssuesPresenter.new(@issues_list)
+
+      # Showing issues onetime only.
+      @issues_list = Y2Autoinstallation::AutoinstIssues::List.new
+
       log.send(level, presenter.to_plain) if log_message
       return true unless display_message
 
