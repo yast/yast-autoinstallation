@@ -746,13 +746,17 @@ module Yast
       end
 
       xml_error = XML.XMLError
-      if xml_error && xml_error.size > 0
+      if xml_error && !xml_error.empty?
         # autoyast has read the autoyast configuration file but something went wrong
         message = _(
           "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
         )
         message += xml_error
+        save_richtext = Popup.switch_to_richtext
+        # taking care about CR
+        Popup.switch_to_richtext = false
         Popup.Error(message)
+        Popup.switch_to_richtext = save_richtext
         return false
       end
 
