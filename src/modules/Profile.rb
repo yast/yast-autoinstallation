@@ -7,6 +7,7 @@
 #
 # $Id$
 require "yast"
+require "yast2/popup"
 
 module Yast
   class ProfileClass < Module
@@ -752,11 +753,7 @@ module Yast
           "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
         )
         message += xml_error
-        save_richtext = Popup.switch_to_richtext
-        # taking care about CR
-        Popup.switch_to_richtext = false
-        Popup.Error(message)
-        Popup.switch_to_richtext = save_richtext
+        Yast2::Popup.show(message, headline: :error)
         return false
       end
 
