@@ -7,6 +7,7 @@
 #
 # $Id$
 require "yast"
+require "yast2/popup"
 
 module Yast
   class ProfileClass < Module
@@ -745,15 +746,17 @@ module Yast
         @current = XML.XMLToYCPFile(file)
       end
 
-      if @current != {} && Builtins.size(@current) == 0
+      xml_error = XML.XMLError
+      if xml_error && !xml_error.empty?
         # autoyast has read the autoyast configuration file but something went wrong
         message = _(
           "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
         )
-        message = Ops.add(message, XML.XMLError)
-        Popup.Error(message)
+        message += xml_error
+        Yast2::Popup.show(message, headline: :error)
         return false
       end
+
       Import(@current)
       true
     end
