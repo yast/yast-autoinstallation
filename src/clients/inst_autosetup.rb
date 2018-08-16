@@ -336,22 +336,8 @@ module Yast
         Profile.remove_sections("configuration_management")
       end
 
-      if Profile.current["suse_register"]
-        return :abort unless WFM.CallFunction(
-          "scc_auto",
-          ["Import", Profile.current["suse_register"]]
-        )
-        return :abort unless WFM.CallFunction(
-          "scc_auto",
-          ["Write"]
-        )
-        # failed relnotes download is not fatal, ignore ret code
-        WFM.CallFunction("inst_download_release_notes")
-      elsif general_section["semi-automatic"] &&
-          general_section["semi-automatic"].include?("scc")
-
-        Call.Function("inst_scc", ["enable_next" => true])
-      end
+      # Register system
+      return :abort unless suse_register
 
       # Software
 
