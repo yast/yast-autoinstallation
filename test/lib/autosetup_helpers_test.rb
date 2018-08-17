@@ -50,6 +50,84 @@ describe Y2Autoinstallation::AutosetupHelpers do
     end
   end
 
+  describe "#suse_register" do
+    let(:profile_content) { { "general" => {} } }
+    let(:reg_module_available) { true }
+
+    before do
+      allow_any_instance_of(Y2Autoinstallation::AutosetupHelpers).to receive(
+        :registration_module_available?).and_return(reg_module_available)
+      allow(Yast::Profile).to receive(:current).and_return(profile_content)
+    end
+
+    context "yast2-register is not available" do
+      let(:reg_module_available) { false }
+      it "does not call any client and returns true." do
+        # no scc_auto call at all
+        expect(Yast::WFM).not_to receive(:CallFunction)
+        expect(client.suse_register).to eq(true)
+      end
+    end
+
+    context "yast2-register is available" do
+      let(:reg_module_available) { true }
+
+      context "suse_register tag is not defined in AY file" do
+        it "does not call any client and returns true." do
+          # no scc_auto call at all
+          expect(Yast::WFM).not_to receive(:CallFunction)
+          expect(client.suse_register).to eq(true)
+        end
+      end
+
+      context "suse_register tag is defined in AY file" do
+        let(:profile_content) { { "suse_register" => { "reg_code" => "12345" } } }
+
+        before do
+          allow(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes").and_return(true)
+          allow(Yast::WFM).to receive(:CallFunction).with("scc_auto", anything).and_return(true)
+        end
+
+        it "imports the registration settings from the profile" do
+          expect(Yast::WFM).to receive(:CallFunction).with("scc_auto",
+            ["Import", profile_content["suse_register"]]).and_return(true)
+          expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
+            .and_return(true)
+          client.suse_register
+        end
+
+        it "downloads release notes" do
+          expect(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
+          client.suse_register
+        end
+
+        it "returns true" do
+          expect(client.suse_register).to eq(true)
+        end
+
+        context "when something goes wrong" do
+          before do
+            allow(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"]).and_return(false)
+          end
+
+          it "returns false" do
+            expect(client.suse_register).to eq(false)
+          end
+        end
+      end  
+
+      context "semi-automatic is defined in AY file" do
+        let(:profile_content) { { "general" => {"semi-automatic" => ["scc"]} } }
+        it "shows registration screen mask and returns true" do
+          # Showing registration screen mask
+          expect(Yast::WFM).to receive(:CallFunction).with("inst_scc",
+            ["enable_next" => true])
+          expect(client.suse_register).to eq(true)
+        end
+      end
+    end
+  end
+
   describe "#readModified" do
     let(:autoinst_profile_path) { File.join(profile_dir_path, "autoinst.xml") }
     let(:modified_profile_path) { File.join(profile_dir_path, "modified.xml") }

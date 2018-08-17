@@ -22,6 +22,8 @@
 require "y2storage"
 require "autoinstall/activate_callbacks"
 
+Yast.import "Profile"
+
 module Y2Autoinstallation
   # This module defines some methods that are used in {Yast::InstAutosetupClient}
   # and {Yast::InstAutosetupUpgradeClient} clients. These clients need to be rewritten
@@ -72,7 +74,31 @@ module Y2Autoinstallation
       !!@modified_profile
     end
 
-  private
+    # System registration
+    #
+    # @return [Boolean] true if succeeded.
+    def suse_register
+      return true unless registration_module_available? # do nothing
+      general_section = Yast::Profile.current["general"] || {}
+      if Yast::Profile.current["suse_register"]
+        return false unless Yast::WFM.CallFunction(
+          "scc_auto",
+          ["Import", Yast::Profile.current["suse_register"]]
+        )
+        return false unless Yast::WFM.CallFunction(
+          "scc_auto",
+          ["Write"]
+        )
+        # failed relnotes download is not fatal, ignore ret code
+        Yast::WFM.CallFunction("inst_download_release_notes")
+      elsif general_section["semi-automatic"] &&
+          general_section["semi-automatic"].include?("scc")
+        Yast::WFM.CallFunction("inst_scc", ["enable_next" => true])
+      end
+      true
+    end
+
+private
 
     # Backup AutoYaST profile
     #
@@ -99,5 +125,19 @@ module Y2Autoinstallation
       log.info("moving modified profile: #{mvcmd}")
       Yast::SCR.Execute(path(".target.bash"), mvcmd)
     end
+
+    # Checking if the yast2-registration module is available
+    #
+    # @return [Boolean] true if yast2-registration module is available
+    def registration_module_available?
+      begin
+        require "registration/registration"
+      rescue LoadError
+        log.info "yast2-registration is not available"
+        return false
+      end
+      true
+    end
+
   end
 end
