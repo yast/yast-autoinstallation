@@ -55,7 +55,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
     let(:reg_module_available) { true }
 
     before do
-      allow_any_instance_of(Y2Autoinstallation::AutosetupHelpers).to receive(:registration_module_available?).and_return(reg_module_available)
+      allow_any_instance_of(Y2Autoinstallation::AutosetupHelpers).to receive(
+        :registration_module_available?).and_return(reg_module_available)
       allow(Yast::Profile).to receive(:current).and_return(profile_content)
     end
 
@@ -97,7 +98,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
         let(:profile_content) { { "general" => {"semi-automatic" => ["scc"]} } }
         it "returns true" do
           # Showing registration screen mask
-          expect(Yast::WFM).to receive(:CallFunction).with("inst_scc", ["enable_next" => true])
+          expect(Yast::WFM).to receive(:CallFunction).with("inst_scc",
+            ["enable_next" => true])
           expect(client.suse_register).to eq(true)
         end
       end
