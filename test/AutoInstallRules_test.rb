@@ -208,4 +208,75 @@ describe "Yast::AutoInstallRules" do
       end
     end
   end
+
+  describe '#merge_profiles' do
+    let(:base_profile_path) { File.join(FIXTURES_PATH, 'profiles', 'partitions.xml') }
+    let(:tmp_dir) { File.join(root_path, 'tmp') }
+    let(:expected_xml) { File.read(expected_xml_path) }
+    let(:output_path) { File.join(tmp_dir, 'output.xml') }
+    let(:to_merge_path) { File.join(FIXTURES_PATH, 'classes', 'swap', 'largeswap.xml') }
+    let(:output_xml) { File.read(output_path) }
+    let(:dontmerge) { [] }
+    let(:merge_xslt_path) { File.join(root_path, 'xslt', 'merge.xslt') }
+    let(:xsltproc_command) {
+      "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \
+      "--param with \"'#{to_merge_path}'\" "\
+      "--output #{output_path} " \
+      "#{merge_xslt_path} #{base_profile_path}"
+    }
+
+    before(:each) do
+      stub_const("Yast::AutoInstallRulesClass::MERGE_XSLT_PATH", merge_xslt_path)
+    end
+
+    around(:each) do |example|
+      FileUtils.rm_rf(tmp_dir) if Dir.exist?(tmp_dir)
+      FileUtils.mkdir(tmp_dir)
+      example.run
+      FileUtils.rm_rf(tmp_dir)
+    end
+
+    before(:each) do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
+      allow(Yast::AutoinstConfig).to receive(:dontmerge).and_return(dontmerge)
+      subject.Files
+    end
+
+    it 'executes xsltproc and returns a hash with info about the result' do
+      expect(Yast::SCR).to receive(:Execute).
+        with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+      out = subject.merge_profiles(base_profile_path, to_merge_path, output_path)
+      expect(out).to eq({ 'exit' => 0, 'stderr' => '', 'stdout' => '' })
+    end
+
+    context 'when all elements must be merged' do
+      let(:expected_xml_path) { File.join(root_path, 'test', 'fixtures', 'output', 'partitions-merged.xml')  }
+
+      it 'merges elements from the base profile and the rule profile' do
+        expect(Yast::SCR).to receive(:Execute).
+          with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+        out = subject.merge_profiles(base_profile_path, to_merge_path, output_path)
+        expect(output_xml).to eq(expected_xml)
+      end
+    end
+
+    context 'when some elements are not intended to be merged' do
+      let(:expected_xml_path) { File.join(root_path, 'test', 'fixtures', 'output', 'partitions-dontmerge.xml')  }
+      let(:dontmerge) { ['partition'] }
+      let(:xsltproc_command) {
+        "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \
+        "--param dontmerge1 \"'partition'\" " \
+        "--param with \"'#{to_merge_path}'\" "\
+        "--output #{output_path} " \
+        "#{merge_xslt_path} #{base_profile_path}"
+      }
+
+      it 'does not merge those elements' do
+        expect(Yast::SCR).to receive(:Execute).
+          with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
+        out = subject.merge_profiles(base_profile_path, to_merge_path, output_path)
+        expect(output_xml).to eq(expected_xml)
+      end
+    end
+  end
 end
