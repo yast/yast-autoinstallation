@@ -7,6 +7,7 @@
 #
 # $Id$
 require "yast"
+require "yast2/popup"
 require "y2storage"
 
 module Yast
@@ -923,7 +924,8 @@ module Yast
             message = _(
               "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
             )
-            Popup.Error(message + XML.XMLError)
+            message += XML.XMLError
+            Yast2::Popup.show(message, headline: :error)
             error = true
           end
           skip = true
