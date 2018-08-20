@@ -896,12 +896,12 @@ module Yast
       merge_command =
         "#{MERGE_CMD} #{MERGE_DEFAULTS}" \
         "#{dontmerge_str} --param with \"'#{with}'\" " \
-        "--output #{to} " \
+        "--output \"#{to}\" " \
         "#{MERGE_XSLT_PATH} #{base_profile}"
 
       out = SCR.Execute(path(".target.bash_output"), merge_command, {})
-      Builtins.y2milestone("Merge command: #{merge_command}")
-      Builtins.y2milestone("Merge stdout: #{out["stdout"]}, stderr: #{out["stderr"]}")
+      log.info("Merge command: #{merge_command}")
+      log.info("Merge stdout: #{out["stdout"]}, stderr: #{out["stderr"]}")
       out
     end
 
@@ -915,11 +915,11 @@ module Yast
       skip = false
       error = false
       @tomerge.each do |file|
-        Builtins.y2milestone("Working on file: %1", file)
+        log.info("Working on file: %1", file)
         current_profile = File.join(AutoinstConfig.local_rules_location, file)
         if !skip
           if !XML_cleanup(current_profile, base_profile)
-            Builtins.y2error("Error reading XML file")
+            log.error("Error reading XML file")
             message = _(
               "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
             )
@@ -930,16 +930,16 @@ module Yast
         elsif !error
           xsltret = merge_profiles(base_profile, current_profile, merge_profile)
 
-          Builtins.y2milestone("Merge result: %1", xsltret)
+          log.info("Merge result: %1", xsltret)
           if xsltret["exit"] != 0 || xsltret.fetch("stderr", "") != ""
-            Builtins.y2error("Merge Failed")
-            StdErrLog(xsltret["stderr"])
+            log.error("Merge Failed")
+            StdErrLog(xsltret.fetch("stderr", ""))
             ok = false
           end
 
           XML_cleanup(merge_profile, base_profile)
         else
-          Builtins.y2error("Error while merging control files")
+          log.error("Error while merging control files")
         end
       end
 
