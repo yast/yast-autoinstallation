@@ -112,6 +112,9 @@ module Yast
       nil
     end
 
+    MERGE_CMD = "/usr/bin/xsltproc".freeze
+    MERGE_DEFAULTS = "--novalid --maxdepth 10000 --param replace \"'false'\"".freeze
+
     # Merge classes
     #
     def MergeClasses(configuration, base_profile, resultFileName)
@@ -120,7 +123,7 @@ module Yast
         dontmerge_str << " --param dontmerge#{i+1} \"'#{dm}'\" "
       end
       merge_command =
-        "/usr/bin/xsltproc --novalid --param replace \"'false'\" #{dontmerge_str} --param with " \
+        "#{MERGE_CMD} #{MERGE_DEFAULTS} #{dontmerge_str} --param with " \
         "\"'#{findPath(configuration["name"], configuration["class"])}'\"  " \
         "--output #{File.join(AutoinstConfig.tmpDir, resultFileName)}  " \
         "#{MERGE_XSLT_PATH} #{base_profile} "
