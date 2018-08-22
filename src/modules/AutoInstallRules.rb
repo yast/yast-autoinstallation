@@ -7,6 +7,7 @@
 #
 # $Id$
 require "yast"
+require "yast2/popup"
 require "y2storage"
 
 module Yast
@@ -874,94 +875,79 @@ module Yast
       end
     end
 
+    #TODO: Move the responsibility of merging profiles to a specific class
+    # removing also the duplication of code between this module and the
+    # AutoinstClass one.
+
+    MERGE_CMD = "/usr/bin/xsltproc".freeze
+    MERGE_DEFAULTS = "--novalid --maxdepth 10000 --param replace \"'false'\"".freeze
+    MERGE_XSLT_PATH = "/usr/share/autoinstall/xslt/merge.xslt".freeze
+
+    # Merges the given profiles
+    #
+    # @param base_profile [String] the base profile file path
+    # @param with [String] the profile to be merged file path
+    # @param to [String] the resulting control file path
+    # @return [Hash] stdout and stderr output
+    def merge_profiles(base_profile, with, to)
+      dontmerge_str = ""
+      AutoinstConfig.dontmerge.each_with_index do |dm, i|
+        dontmerge_str << " --param dontmerge#{i+1} \"'#{dm}'\""
+      end
+      merge_command =
+        "#{MERGE_CMD} #{MERGE_DEFAULTS}" \
+        "#{dontmerge_str} --param with \"'#{with}'\" " \
+        "--output \"#{to}\" " \
+        "#{MERGE_XSLT_PATH} #{base_profile}"
+
+      out = SCR.Execute(path(".target.bash_output"), merge_command, {})
+      log.info("Merge command: #{merge_command}")
+      log.info("Merge stdout: #{out["stdout"]}, stderr: #{out["stderr"]}")
+      out
+    end
 
     # Merge Rule results
     # @param [String] result_profile the resulting control file path
     # @return [Boolean] true on success
     def Merge(result_profile)
-      tmpdir = AutoinstConfig.tmpDir
+      base_profile = File.join(AutoinstConfig.tmpdir, "base_profile.xml")
+      merge_profile = File.join(AutoinstConfig.tmpdir, "result.xml")
       ok = true
       skip = false
       error = false
-
-      base_profile = Ops.add(tmpdir, "/base_profile.xml")
-
-      Builtins.foreach(@tomerge) do |file|
-        Builtins.y2milestone("Working on file: %1", file)
-        current_profile = Ops.add(
-          Ops.add(AutoinstConfig.local_rules_location, "/"),
-          file
-        )
+      @tomerge.each do |file|
+        log.info("Working on file: %1", file)
+        current_profile = File.join(AutoinstConfig.local_rules_location, file)
         if !skip
-          if !XML_cleanup(current_profile, Ops.add(tmpdir, "/base_profile.xml"))
-            Builtins.y2error("Error reading XML file")
+          if !XML_cleanup(current_profile, base_profile)
+            log.error("Error reading XML file")
             message = _(
               "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
             )
-            message = Ops.add(message, XML.XMLError)
-            Popup.Error(message)
+            message += XML.XMLError
+            Yast2::Popup.show(message, headline: :error)
             error = true
           end
           skip = true
         elsif !error
-          _MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" "
-          dontmerge_str = ""
-          i = 1
-          Builtins.foreach(AutoinstConfig.dontmerge) do |dm|
-            dontmerge_str = Ops.add(
-              dontmerge_str,
-              Builtins.sformat(" --param dontmerge%1 \"'%2'\" ", i, dm)
-            )
-            i = Ops.add(i, 1)
-          end
-          _MergeCommand = Ops.add(_MergeCommand, dontmerge_str)
+          xsltret = merge_profiles(base_profile, current_profile, merge_profile)
 
-          _MergeCommand = Ops.add(_MergeCommand, "--param with ")
-          _MergeCommand = Ops.add(
-            Ops.add(Ops.add(_MergeCommand, "\"'"), current_profile),
-            "'\"  "
-          )
-          _MergeCommand = Ops.add(
-            Ops.add(Ops.add(_MergeCommand, "--output "), tmpdir),
-            "/result.xml"
-          )
-          _MergeCommand = Ops.add(
-            _MergeCommand,
-            " /usr/share/autoinstall/xslt/merge.xslt "
-          )
-          _MergeCommand = Ops.add(Ops.add(_MergeCommand, base_profile), " ")
-
-          Builtins.y2milestone("Merge command: %1", _MergeCommand)
-          xsltret = Convert.to_map(
-            SCR.Execute(path(".target.bash_output"), _MergeCommand)
-          )
-          Builtins.y2milestone("Merge result: %1", xsltret)
-          if Ops.get_integer(xsltret, "exit", -1) != 0 ||
-              Ops.get_string(xsltret, "stderr", "") != ""
-            Builtins.y2error("Merge Failed")
-            StdErrLog(Ops.get_string(xsltret, "stderr", ""))
+          log.info("Merge result: %1", xsltret)
+          if xsltret["exit"] != 0 || xsltret.fetch("stderr", "") != ""
+            log.error("Merge Failed")
+            StdErrLog(xsltret.fetch("stderr", ""))
             ok = false
           end
 
-          XML_cleanup(
-            Ops.add(tmpdir, "/result.xml"),
-            Ops.add(tmpdir, "/base_profile.xml")
-          )
+          XML_cleanup(merge_profile, base_profile)
         else
-          Builtins.y2error("Error while merging control files")
+          log.error("Error while merging control files")
         end
       end
 
       return !error if error
 
-      SCR.Execute(
-        path(".target.bash"),
-        Ops.add(
-          Ops.add(Ops.add("cp ", tmpdir), "/base_profile.xml "),
-          result_profile
-        )
-      )
-
+      SCR.Execute(path(".target.bash"), "cp #{base_profile} #{result_profile}")
       Builtins.y2milestone("Ok=%1", ok)
       @dontmergeIsDefault = true
       AutoinstConfig.dontmerge = deep_copy(@dontmergeBackup)

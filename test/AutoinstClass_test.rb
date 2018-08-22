@@ -222,7 +222,7 @@ describe "Yast::AutoinstClass" do
     let(:merge_xslt_path) { File.join(ROOT_PATH, 'xslt', 'merge.xslt') }
     let(:conf_to_merge) { { "class" => "swap", "name" => "largeswap.xml" } }
     let(:xsltproc_command) {
-      "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
+      "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\"  " \
       "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
       "--output #{File.join(tmp_dir, "output.xml")}  " \
       "#{merge_xslt_path} #{base_profile_path} "
@@ -267,7 +267,7 @@ describe "Yast::AutoinstClass" do
       let(:expected_xml_path) { File.join(ROOT_PATH, 'test', 'fixtures', 'output', 'partitions-dontmerge.xml')  }
       let(:dontmerge) { ['partition'] }
       let(:xsltproc_command) {
-        "/usr/bin/xsltproc --novalid --param replace \"'false'\"  " \
+        "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\"  " \
         "--param dontmerge1 \"'partition'\"  " \
         "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
         "--output #{File.join(tmp_dir, "output.xml")}  " \
