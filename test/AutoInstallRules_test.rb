@@ -299,7 +299,7 @@ describe "Yast::AutoInstallRules" do
       subject.reset
     end
 
-    context 'when none XML profiles are given to merge' do
+    context 'when no XML profile has been given to merge' do
       it 'does not read and merge any XML profile' do
         expect(subject).to_not receive(:merge_profiles)
         expect(subject).not_to receive(:XML_cleanup)
@@ -307,7 +307,7 @@ describe "Yast::AutoInstallRules" do
       end
     end
 
-    context 'when only one XML profiles is given' do
+    context 'when only one XML profile is given' do
       it 'does read but not merge this XML profile' do
         subject.CreateFile("first.xml")
         expect(subject).to_not receive(:merge_profiles)
