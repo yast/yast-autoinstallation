@@ -910,13 +910,13 @@ module Yast
     # @param [String] result_profile the resulting control file path
     # @return [Boolean] true on success
     def Merge(result_profile)
-      base_profile = File.join(AutoinstConfig.tmpdir, "base_profile.xml")
-      merge_profile = File.join(AutoinstConfig.tmpdir, "result.xml")
+      base_profile = File.join(AutoinstConfig.tmpDir, "base_profile.xml")
+      merge_profile = File.join(AutoinstConfig.tmpDir, "result.xml")
       ok = true
       skip = false
       error = false
       @tomerge.each do |file|
-        log.info("Working on file: %1", file)
+        log.info("Working on file: #{file}")
         current_profile = File.join(AutoinstConfig.local_rules_location, file)
         if !skip
           if !XML_cleanup(current_profile, base_profile)
@@ -932,7 +932,7 @@ module Yast
         elsif !error
           xsltret = merge_profiles(base_profile, current_profile, merge_profile)
 
-          log.info("Merge result: %1", xsltret)
+          log.info("Merge result: #{xsltret}")
           if xsltret["exit"] != 0 || xsltret.fetch("stderr", "") != ""
             log.error("Merge Failed")
             StdErrLog(xsltret.fetch("stderr", ""))

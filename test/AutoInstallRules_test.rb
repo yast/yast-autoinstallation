@@ -279,4 +279,52 @@ describe "Yast::AutoInstallRules" do
       end
     end
   end
+
+  describe '#Merge' do
+    let(:tmp_dir) { File.join(root_path, 'tmp') }
+    let(:result_path) { File.join(tmp_dir, 'result.xml') }
+    let(:second_path) { File.join(tmp_dir, 'second.xml') }
+    let(:base_profile_path) { File.join(tmp_dir, 'base_profile.xml') }
+
+    around(:each) do |example|
+      FileUtils.rm_rf(tmp_dir) if Dir.exist?(tmp_dir)
+      FileUtils.mkdir(tmp_dir)
+      example.run
+      FileUtils.rm_rf(tmp_dir)
+    end
+
+    before(:each) do
+      allow(Yast::AutoinstConfig).to receive(:tmpDir).and_return(tmp_dir)
+      allow(Yast::AutoinstConfig).to receive(:local_rules_location).and_return(tmp_dir)
+      subject.reset
+    end
+
+    context 'when none XML profiles are given to merge' do
+      it 'does not read and merge any XML profile' do
+        expect(subject).to_not receive(:merge_profiles)
+        expect(subject).not_to receive(:XML_cleanup)
+        expect(subject.Merge(result_path)).to eq(true)
+      end
+    end
+
+    context 'when only one XML profiles is given' do
+      it 'does read but not merge this XML profile' do
+        subject.CreateFile("first.xml")
+        expect(subject).to_not receive(:merge_profiles)
+        expect(subject).to receive(:XML_cleanup).at_least(:once).and_return(true)
+        expect(subject.Merge(result_path)).to eq(true)
+      end
+    end
+
+    context 'when two XML profiles are given' do
+      it 'merges two XML profiles' do
+        subject.CreateFile("first.xml")
+        subject.CreateFile("second.xml")
+        expect(subject).to receive(:XML_cleanup).at_least(:once).and_return(true)
+        expect(subject).to receive(:merge_profiles).with(base_profile_path,
+          second_path, result_path).and_return({ 'exit' => 0, 'stderr' => '', 'stdout' => '' })
+        expect(subject.Merge(result_path)).to eq(true)
+      end
+    end
+  end
 end
