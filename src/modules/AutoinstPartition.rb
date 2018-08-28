@@ -27,33 +27,34 @@ module Yast
       # defines data structur of a partition
       # provides types for type checking
       @fields = {
-        "crypt"        => "",
-        "crypt_fs"     => false,
-        "crypt_key"    => "",
-        "create"       => true,
-        "mount"        => "/",
-        "fstopt"       => "",
-        "label"        => "",
-        "loop_fs"      => false,
-        "uuid"         => "",
-        "size"         => "10G",
-        "format"       => true,
-        "filesystem"   => Partitions.DefaultFs,
-        "mkfs_options" => "",
-        "partition_nr" => 1,
-        "partition_id" => 131,
-        "mountby"      => :device,
-        "resize"       => false,
-        "lv_name"      => "",
-        "stripes"      => 1,
-        "stripesize"   => 4,
-        "lvm_group"    => "",
-        "raid_name"    => "",
-        "raid_type"    => "",
-        "raid_options" => {},
-        "subvolumes"   => [],
-        "pool"         => false,
-        "used_pool"    => ""
+        "crypt"          => "",
+        "crypt_fs"       => false,
+        "crypt_key"      => "",
+        "create"         => true,
+        "mount"          => "/",
+        "fstopt"         => "",
+        "label"          => "",
+        "loop_fs"        => false,
+        "uuid"           => "",
+        "size"           => "10G",
+        "format"         => true,
+        "filesystem"     => Partitions.DefaultFs,
+        "mkfs_options"   => "",
+        "partition_nr"   => 1,
+        "partition_id"   => 131,
+        "mountby"        => :device,
+        "resize"         => false,
+        "lv_name"        => "",
+        "stripes"        => 1,
+        "stripesize"     => 4,
+        "lvm_group"      => "",
+        "partition_type" => "",
+        "pool"           => false,
+        "raid_name"      => "",
+        "raid_type"      => "",
+        "raid_options"   => {},
+        "subvolumes"     => [],
+        "used_pool"      => ""
       }
 
       @allfs = {}
@@ -293,11 +294,16 @@ module Yast
         newPart = Builtins.remove(newPart, "pool")
       end
       newPart = set(newPart, "loop_fs", Ops.get_boolean(part, "loop_fs", false))
-      if part.has_key?("partition_id")
+      if part.key?("partition_id")
         newPart["partition_id"] = part["partition_id"]
       else
         #removing default entry
         newPart.delete("partition_id")
+      end
+      if part.key?("partition_type")
+        newPart = set(newPart, "partition_type", part["partition_type"].to_s)
+      else
+        newPart.delete("partition_type")
       end
       newPart = set(newPart, "size", Ops.get_string(part, "size", ""))
       newPart = set(newPart, "lv_name", Ops.get_string(part, "lv_name", ""))
