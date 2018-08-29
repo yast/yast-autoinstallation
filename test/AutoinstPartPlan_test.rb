@@ -87,5 +87,23 @@ describe "Yast::AutoinstPartPlan" do
       snapshots = subvolumes.select { |s| s.include?("snapshot") }
       expect(snapshots).to be_empty
     end
+
+    context "when the drive has a msdos partition" do
+      it "includes the partition_type" do
+        exported = subject.Export
+        partition = exported.first["partitions"].first
+        expect(partition).to include("partition_type" => "primary")
+      end
+    end
+
+    context "when the drive has a non-msdos partition" do
+      let(:target_map) { YAML.load_file(File.join(FIXTURES_PATH, "storage", "target_clone.yml")) }
+
+      it "does not include the partition_type" do
+        exported = subject.Export
+        partition = exported.first["partitions"].first
+        expect(partition).to_not have_key("partition_type")
+      end
+    end
   end
 end
