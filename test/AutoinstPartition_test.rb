@@ -44,5 +44,27 @@ describe "Yast::AutoinstPartition" do
         end
       end
     end
+
+    context "when a partition_type is present" do
+      let(:partition) do
+        { "mount" => "/", "partition_type" => "primary" }
+      end
+
+      it "exports the partition type" do
+        parsed = subject.parsePartition(partition)
+        expect(parsed["partition_type"]).to eq("primary")
+      end
+    end
+
+    context "when a partition_type is not present" do
+      let(:partition) do
+        { "mount" => "/" }
+      end
+
+      it "ignores the partition_type" do
+        parsed = subject.parsePartition(partition)
+        expect(parsed).to_not have_key("partition_type")
+      end
+    end
   end
 end

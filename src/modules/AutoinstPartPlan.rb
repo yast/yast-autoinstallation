@@ -426,9 +426,9 @@ module Yast
               Ops.set(new_pe, "create", false)
             end
           end
-          if Builtins.haskey(pe, "type") &&
-              Ops.get_symbol(pe, "type", :x) == :primary
-            Ops.set(new_pe, "partition_type", "primary") # can we always copy that element?
+          # Consider the partition type when dealing with 'msdos' partition tables (bsc#1091415)
+          if Builtins.haskey(pe, "type") && v["label"] == "msdos"
+            Ops.set(new_pe, "partition_type", pe["type"].to_s)
           end
           if Builtins.haskey(pe, "region") &&
               Ops.get_boolean(new_pe, "create", true) == true
