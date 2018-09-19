@@ -247,8 +247,7 @@ module Yast
 
       # moved here from autoinit for fate #301193
       # needs testing
-      if Arch.s390 && AutoinstConfig.remoteProfile == true
-        Builtins.y2milestone("arch=s390 and remote_profile=true")
+      if Arch.s390
         if Builtins.haskey(Profile.current, "dasd")
           Builtins.y2milestone("dasd found")
           if Call.Function("dasd_auto", ["Import", Ops.get_map(Profile.current, "dasd", {})])
@@ -262,7 +261,6 @@ module Yast
           end
         end
       end
-
 
       Progress.NextStage
       # if one modifies the partition table in a pre script, we will
