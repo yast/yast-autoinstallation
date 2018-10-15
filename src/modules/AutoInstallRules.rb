@@ -912,25 +912,26 @@ module Yast
     def Merge(result_profile)
       base_profile = File.join(AutoinstConfig.tmpDir, "base_profile.xml")
       merge_profile = File.join(AutoinstConfig.tmpDir, "result.xml")
+      cleaned_profile = File.join(AutoinstConfig.tmpDir, "current.xml")
       ok = true
-      skip = false
       error = false
-      @tomerge.each do |file|
+      @tomerge.each_with_index do |file, iter|
         log.info("Working on file: #{file}")
         current_profile = File.join(AutoinstConfig.local_rules_location, file)
-        if !skip
-          if !XML_cleanup(current_profile, base_profile)
-            log.error("Error reading XML file")
-            message = _(
-              "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
-            )
-            message += XML.XMLError
-            Yast2::Popup.show(message, headline: :error)
-            error = true
-          end
-          skip = true
-        elsif !error
-          xsltret = merge_profiles(base_profile, current_profile, merge_profile)
+        dest_profile = iter == 0 ? base_profile : cleaned_profile
+        if !XML_cleanup(current_profile, dest_profile)
+          log.error("Error reading XML file")
+          message = _(
+            "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
+          )
+          message += XML.XMLError
+          Yast2::Popup.show(message, headline: :error)
+          error = true
+        end
+
+        unless error
+          next if iter == 0
+          xsltret = merge_profiles(base_profile, cleaned_profile, merge_profile)
 
           log.info("Merge result: #{xsltret}")
           if xsltret["exit"] != 0 || xsltret.fetch("stderr", "") != ""

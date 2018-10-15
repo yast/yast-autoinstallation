@@ -283,8 +283,10 @@ describe "Yast::AutoInstallRules" do
   describe '#Merge' do
     let(:tmp_dir) { File.join(root_path, 'tmp') }
     let(:result_path) { File.join(tmp_dir, 'result.xml') }
+    let(:first_path) { File.join(tmp_dir, 'first.xml') }
     let(:second_path) { File.join(tmp_dir, 'second.xml') }
     let(:base_profile_path) { File.join(tmp_dir, 'base_profile.xml') }
+    let(:cleaned_profile_path) { File.join(tmp_dir, 'current.xml') }
 
     around(:each) do |example|
       FileUtils.rm_rf(tmp_dir) if Dir.exist?(tmp_dir)
@@ -317,12 +319,25 @@ describe "Yast::AutoInstallRules" do
     end
 
     context 'when two XML profiles are given' do
-      it 'merges two XML profiles' do
+      before do
         subject.CreateFile("first.xml")
         subject.CreateFile("second.xml")
-        expect(subject).to receive(:XML_cleanup).at_least(:once).and_return(true)
-        expect(subject).to receive(:merge_profiles).with(base_profile_path,
-          second_path, result_path).and_return({ 'exit' => 0, 'stderr' => '', 'stdout' => '' })
+        allow(subject).to receive(:XML_cleanup).and_return(true)
+      end
+
+      it 'cleans up each profile before merging them' do
+        expect(subject).to receive(:XML_cleanup).with(first_path, base_profile_path)
+          .and_return(true)
+        expect(subject).to receive(:XML_cleanup).with(second_path, cleaned_profile_path)
+          .and_return(true)
+
+        subject.Merge(result_path)
+      end
+
+      it 'merges two XML profiles' do
+        expect(subject).to receive(:merge_profiles)
+          .with(base_profile_path, cleaned_profile_path, result_path)
+          .and_return({ 'exit' => 0, 'stderr' => '', 'stdout' => '' })
         expect(subject.Merge(result_path)).to eq(true)
       end
     end
