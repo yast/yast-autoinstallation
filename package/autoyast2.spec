@@ -309,6 +309,8 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{_prefix}/lib/YaST2/bin/fetch_image.sh
 %{_prefix}/lib/YaST2/bin/autoyast-initscripts.sh
 
+%license COPYING
+
 %dir /var/adm/autoinstall/
 %dir /var/adm/autoinstall/scripts
 %dir /var/adm/autoinstall/init.d
