@@ -20,7 +20,8 @@ drive =
     element disklabel  { text }? &
     element enable_snapshots { BOOLEAN }? &
     skip_list? &
-    partitions?
+    partitions? &
+    raid_options?
   }
 
 skip_list =
@@ -63,9 +64,7 @@ y2_partition =
   | part_partition_id
   | part_partition_nr
   | part_partition_type
-  | part_raid_name
   | part_resize
-  | part_raid_options
   | part_raid_type
   | part_region
   | part_size
@@ -75,6 +74,8 @@ y2_partition =
   | part_used_pool
   | part_subvolumes_prefix
   | device_order
+  | raid_name
+  | raid_options
   | subvolumes
   | create_subvolumes
 
@@ -116,9 +117,9 @@ opt_max_inode_space =
 opt_raid = element opt_raid { option_str, option_value }
 opt_reserved_blocks =
   element opt_reserved_blocks { option_str, option_value }
-part_raid_name = element raid_name { text }
+raid_name = element raid_name { text }
 
-part_raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? & part_raid_name? }
+raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? & raid_name? }
 persistent_superblock = element persistent_superblock { BOOLEAN }
 raid_type = element raid_type { text }
 chunk_size = element chunk_size { text }
