@@ -349,6 +349,9 @@ module Yast
       # Invoke SnapshotsFinish client to perform snapshots (if needed)
       WFM.CallFunction("snapshots_finish", ["Write"])
 
+      # Saving y2logs
+      WFM.CallFunction("save_y2logs")
+
       :next
     end
 
