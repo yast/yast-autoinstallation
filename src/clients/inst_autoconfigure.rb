@@ -28,7 +28,6 @@ module Yast
       Yast.import "Label"
       Yast.import "Mode"
       Yast.import "Report"
-      Yast.import "ProductFeatures"
 
       @current_step = 0 # Required by logStep()
 
@@ -350,10 +349,8 @@ module Yast
       # Invoke SnapshotsFinish client to perform snapshots (if needed)
       WFM.CallFunction("snapshots_finish", ["Write"])
 
-      if ProductFeatures.GetBooleanFeature("globals", "save_y2logs")
-        Yast::SCR.Execute(Yast::Path.new(".target.bash"),
-                          "/usr/sbin/save_y2logs '#{Yast::Directory.logdir}/yast-installation-logs.tar.xz'")
-      end
+      # Saving y2logs
+      WFM.CallFunction("save_y2logs")
 
       :next
     end
