@@ -91,7 +91,7 @@ module Yast
       )
 
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
 
       Progress.NextStage
@@ -106,7 +106,7 @@ module Yast
 
       return :abort if readModified == :abort
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       #
       # Partitioning and Storage
@@ -256,7 +256,7 @@ module Yast
       end
 
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       # moved here from autoinit for fate #301193
       # needs testing
@@ -280,7 +280,7 @@ module Yast
 
       # Importing security settings
       autosetup_security
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       Progress.NextStage
 
@@ -317,7 +317,7 @@ module Yast
       # So the software selection is aware and can manage packages
       # needed by the bootloader (bnc#876161)
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
       Progress.NextStage
 
       return :abort unless WFM.CallFunction(
@@ -328,7 +328,7 @@ module Yast
       # Registration
       # FIXME: There is a lot of duplicate code with inst_autoupgrade.
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
       Progress.NextStage
 
       # The configuration_management has to be called before software selection.
@@ -349,7 +349,7 @@ module Yast
 
       # Software
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       Progress.NextStage
 
