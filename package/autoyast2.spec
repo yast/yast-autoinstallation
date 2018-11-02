@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.0.64
+Version:        4.0.65
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -65,6 +65,8 @@ Requires:       yast2 >= 4.0.60
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 Requires:       yast2-ntp-client >= 4.0.1
+# Moving security module to first installation stage
+Requires:       yast2-security >= 4.0.1
 Requires:       yast2-network >= 3.1.145
 Requires:       yast2-schema
 Requires:       yast2-transfer >= 2.21.0
