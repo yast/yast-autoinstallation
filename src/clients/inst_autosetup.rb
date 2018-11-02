@@ -55,6 +55,7 @@ module Yast
         _("Execute pre-install user scripts"),
         _("Configure General Settings "),
         _("Set up language"),
+        _("Configure security settings"),
         _("Create partition plans"),
         _("Configure Bootloader"),
         _("Registration"),
@@ -69,6 +70,7 @@ module Yast
         _("Executing pre-install user scripts..."),
         _("Configuring general settings..."),
         _("Setting up language..."),
+        _("Configuring security settings"),
         _("Creating partition plans..."),
         _("Configuring Bootloader..."),
         _("Registering the system..."),
@@ -89,7 +91,7 @@ module Yast
       )
 
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
 
       Progress.NextStage
@@ -104,7 +106,7 @@ module Yast
 
       return :abort if readModified == :abort
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       #
       # Partitioning and Storage
@@ -254,7 +256,7 @@ module Yast
       end
 
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       # moved here from autoinit for fate #301193
       # needs testing
@@ -273,6 +275,12 @@ module Yast
           end
         end
       end
+
+      Progress.NextStage
+
+      # Importing security settings
+      autosetup_security
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       Progress.NextStage
 
@@ -309,7 +317,7 @@ module Yast
       # So the software selection is aware and can manage packages
       # needed by the bootloader (bnc#876161)
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
       Progress.NextStage
 
       return :abort unless WFM.CallFunction(
@@ -320,7 +328,7 @@ module Yast
       # Registration
       # FIXME: There is a lot of duplicate code with inst_autoupgrade.
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
       Progress.NextStage
 
       # The configuration_management has to be called before software selection.
@@ -341,7 +349,7 @@ module Yast
 
       # Software
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       Progress.NextStage
 
@@ -451,6 +459,17 @@ module Yast
       if users_config
         Profile.remove_sections(users_config.keys)
         Call.Function("users_auto", ["Import", users_config])
+      end
+    end
+
+    # Import security settings from profile
+    def autosetup_security
+      security_config = Profile.current["security"]
+      if security_config
+        # Do not start it in second installation stage again.
+        # Writing will be called in inst_finish.
+        Profile.remove_sections("security")
+        Call.Function("security_auto", ["Import", security_config])
       end
     end
 
