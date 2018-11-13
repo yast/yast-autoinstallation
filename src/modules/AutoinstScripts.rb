@@ -179,7 +179,6 @@ module Yast
           "feedback_type"  => Ops.get_string(p, "feedback_type", ""),
           "debug"          => Ops.get_boolean(p, "debug", true),
 	  "param-list"    => p.fetch("param-list",[]),
-          "network_needed" => Ops.get_boolean(p, "network_needed", false)
         }
       end
       exchroot = Builtins.maplist(@chroot) do |p|
@@ -436,7 +435,7 @@ module Yast
     # @param [String] interpreter interpreter to be used with script
     # @param [String] type type of script
     # @return [void]
-    def AddEditScript(scriptName, source, interpreter, type, chrooted, debug, feedback, network, feedback_type, location, notification)
+    def AddEditScript(scriptName, source, interpreter, type, chrooted, debug, feedback, feedback_type, location, notification)
       mod = false
       @merged = Builtins.maplist(@merged) do |script|
         # Edit
@@ -449,7 +448,6 @@ module Yast
           oldScript = Builtins.add(oldScript, "chrooted", chrooted)
           oldScript = Builtins.add(oldScript, "debug", debug)
           oldScript = Builtins.add(oldScript, "feedback", feedback)
-          oldScript = Builtins.add(oldScript, "network_needed", network)
           oldScript = Builtins.add(oldScript, "feedback_type", feedback_type)
           oldScript = Builtins.add(oldScript, "location", location)
           oldScript = Builtins.add(oldScript, "notification", notification)
@@ -470,7 +468,6 @@ module Yast
         script = Builtins.add(script, "chrooted", chrooted)
         script = Builtins.add(script, "debug", debug)
         script = Builtins.add(script, "feedback", feedback)
-        script = Builtins.add(script, "network_needed", network)
         script = Builtins.add(script, "feedback_type", feedback_type)
         script = Builtins.add(script, "location", location)
         script = Builtins.add(script, "notification", notification)
@@ -879,11 +876,6 @@ module Yast
             scriptPath = scriptPath[AutoinstConfig.destdir.length..-1] # cut off the e.g. /mnt for later execution
           end
         else
-          # disable all sources and finish target - no clue what this is good for.
-          # triggers an error with post-script network_needed=true
-          #                Pkg::SourceFinishAll();
-          #                Pkg::TargetFinish();
-
           scriptPath = Builtins.sformat(
             "%1/%2",
             AutoinstConfig.scripts_dir,
