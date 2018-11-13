@@ -1,5 +1,4 @@
 FROM yastdevel/ruby:sle15
-
 RUN zypper --gpg-auto-import-keys --non-interactive in --no-recommends \
   trang \
   libxml2-tools \
