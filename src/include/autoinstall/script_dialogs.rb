@@ -132,19 +132,6 @@ module Yast
         help,
         _(
           "\n" +
-            "<H3>Network Access:</H3>\n" +
-            "<P>While executing postinstallation scripts, the network is disabled and\n" +
-            "requires initialization in the scripts to make the network accessible. An\n" +
-            "alternative for postinstallation scripts with network is using init scripts, which\n" +
-            "guarantee a fully configured system when running the scripts. If you did an installation\n" +
-            "over a network, you can use the <b>Network</b> option for the postscript, too.\n" +
-            "</P>\n"
-        )
-      )
-      help = Ops.add(
-        help,
-        _(
-          "\n" +
             "<H3>Feedback and Debug:</H3>\n" +
             "<P>All scripts except the init scripts can show STDOUT+STDERR in a pop-up box as feedback.\n" +
             "If you turn on debugging, you get more output in the feedback dialog that might help\n" +
@@ -230,12 +217,6 @@ module Yast
             Id(:chrooted),
             _("&Chrooted"),
             Ops.get_boolean(script, "chrooted", false)
-          ),
-          # a checkbox where you can choose if you need to have network when the script is running
-          CheckBox(
-            Id(:network),
-            _("&Network"),
-            Ops.get_boolean(script, "network_needed", false)
           )
         ),
         HBox(
@@ -307,14 +288,10 @@ module Yast
       type = Convert.to_string(UI.QueryWidget(Id(:type), :Value))
       if type == "pre-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-        UI.ChangeWidget(Id(:network), :Enabled, false)
-      elsif type == "chroot-scripts"
-        UI.ChangeWidget(Id(:network), :Enabled, false)
       elsif type == "post-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
       elsif type == "init-scripts"
         UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-        UI.ChangeWidget(Id(:network), :Enabled, false)
         UI.ChangeWidget(Id(:feedback), :Enabled, false)
         UI.ChangeWidget(Id(:notification), :Enabled, false)
       end
@@ -361,7 +338,6 @@ module Yast
           )
           debug = Convert.to_boolean(UI.QueryWidget(Id(:debug), :Value))
           chrooted = Convert.to_boolean(UI.QueryWidget(Id(:chrooted), :Value))
-          network = Convert.to_boolean(UI.QueryWidget(Id(:network), :Value))
           location = Convert.to_string(UI.QueryWidget(Id(:location), :Value))
           notification = Convert.to_string(
             UI.QueryWidget(Id(:notification), :Value)
@@ -384,7 +360,6 @@ module Yast
               chrooted,
               debug,
               feedback,
-              network,
               feedback_type,
               location,
               notification
@@ -408,30 +383,23 @@ module Yast
           if type2 == "init-scripts"
             UI.ChangeWidget(Id(:feedback), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
-            UI.ChangeWidget(Id(:network), :Enabled, false)
             UI.ChangeWidget(Id(:feedback), :Value, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
-            UI.ChangeWidget(Id(:network), :Value, false)
             UI.ChangeWidget(Id(:notification), :Enabled, false)
           elsif type2 == "chroot-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, true)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
-            UI.ChangeWidget(Id(:network), :Enabled, false)
-            UI.ChangeWidget(Id(:network), :Value, false)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
           elsif type2 == "post-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
-            UI.ChangeWidget(Id(:network), :Enabled, true)
           elsif type2 == "pre-scripts"
             UI.ChangeWidget(Id(:chrooted), :Enabled, false)
             UI.ChangeWidget(Id(:chrooted), :Value, false)
             UI.ChangeWidget(Id(:feedback), :Enabled, true)
-            UI.ChangeWidget(Id(:network), :Value, false)
             UI.ChangeWidget(Id(:notification), :Enabled, true)
-            UI.ChangeWidget(Id(:network), :Enabled, false)
           end
         elsif ret == :feedback
           UI.ChangeWidget(
