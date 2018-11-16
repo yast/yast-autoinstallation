@@ -232,8 +232,10 @@ module Yast
         Installation.encoding = "UTF-8"
       end
 
-      UI.SetLanguage(Language.language, Installation.encoding)
-      WFM.SetLanguage(Language.language, "UTF-8")
+      unless Language.SwitchToEnglishIfNeeded(true)
+        UI.SetLanguage(Language.language, Installation.encoding)
+        WFM.SetLanguage(Language.language, "UTF-8")
+      end
 
       if Builtins.haskey(Profile.current, "timezone")
         Timezone.Import(Ops.get_map(Profile.current, "timezone", {}))
