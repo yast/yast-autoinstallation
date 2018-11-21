@@ -295,8 +295,6 @@ module Yast
           Pkg::ResolvableInstall(package, :package)
         end
 
-        Packages.SelectProduct
-
         # bnc #382208
 
         # bnc#582702 - do not select kernel on update, leave that on dependencies like 'zypper dup'
