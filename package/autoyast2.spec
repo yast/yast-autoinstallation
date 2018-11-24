@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.0.69
+Version:        4.0.70
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -218,6 +218,8 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 
 %dir %{yast_moduledir}
 %{yast_moduledir}/AutoinstClass.rb
+
+%{_datadir}/icons/*
 
 # additional files
 
