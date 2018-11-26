@@ -92,10 +92,11 @@ module Yast
           # list of unknown sections of the profile
           # Do not translate words in brackets
           _(
-            "These sections of AutoYaST profile cannot be processed on this " \
+            "These sections of the AutoYaST profile cannot be processed on this " \
             "system:<br><br>%s<br><br>" \
             "Maybe they were misspelled or your profile does not contain " \
-            "all the needed YaST packages in &lt;software/&gt; section."
+            "all the needed YaST packages in the &lt;software/&gt; section " \
+            "as required for functionality provided by additional modules."
           ) %
             unknown_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>")
         )
