@@ -15,6 +15,7 @@ module Yast
     RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
     RESOURCE_ALIASES_NAME_KEY = "X-SuSE-YaST-AutoInstResourceAliases"
     MODES = %w(all configure write)
+    YAST_SCHEMA_DIR ="/usr/share/YaST2/schema/autoyast/rng/*.rng"
 
     include Yast::Logger
 
@@ -28,6 +29,7 @@ module Yast
       Yast.import "Desktop"
       Yast.import "Wizard"
       Yast.import "Directory"
+      Yast.import "PackageSystem"
 
       # include "autoinstall/io.ycp";
 
@@ -67,7 +69,6 @@ module Yast
       Desktop.Read(_Values)
       configurations = deep_copy(Desktop.Modules)
 
-      #y2debug("%1", configurations );
       groups = deep_copy(Desktop.Groups)
 
       confs = {}
@@ -116,7 +117,6 @@ module Yast
     # @return [void]
     def CreateGroupTree(_Groups)
       _Groups = deep_copy(_Groups)
-      #y2debug("Groups: %1", Groups);
 
       grouplist = []
       grouplist = SortGroups(_Groups, Builtins.maplist(_Groups) do |rawname, group|
@@ -128,8 +128,6 @@ module Yast
         _MeunTreeEntry = { "entry" => name, "title" => title }
         @MenuTreeData = Builtins.add(@MenuTreeData, _MeunTreeEntry)
       end
-
-      #y2debug("data: %1", MenuTreeData);
       nil
     end
 
@@ -158,8 +156,6 @@ module Yast
           @MenuTreeData = Builtins.add(@MenuTreeData, menu_entry)
         end
       end 
-      # y2debug("MenuTreeData: %1", MenuTreeData );
-
       nil
     end
 
@@ -418,6 +414,47 @@ module Yast
       end
     end
 
+    # Returns required package names for the given AutoYaST sections.
+    #
+    # @param [Array<String>] Section names
+    # @return [Hash{String => Array}] Required packages of a section.
+    def required_packages(sections)
+      package_names = {}
+      log.info "Evaluating needed packages for handling AY-sections #{sections}"
+      if PackageSystem.Installed("yast2-schema") &&
+         PackageSystem.Installed("xmlstarlet")
+        sections.each do |section|
+          # Evaluate which *rng file belongs to the given section
+          package_names[section] = []
+          ret = SCR.Execute(path(".target.bash_output"),
+            "/usr/bin/xml sel -t -m \"//*[@name='#{section}']\" " \
+            "-f -n #{YAST_SCHEMA_DIR}")
+          if ret["exit"] == 0
+            ret["stdout"].split.uniq.each do |rng_file|
+              # Evaluate according rnc file
+              rnc_file = rng_file.gsub("rng","rnc")
+              # Evalute package name to which this rnc file belongs to.
+              ret = SCR.Execute(path(".target.bash_output"),
+                "/bin/rpm -qf #{rnc_file} --qf \"%{NAME}\\n\"")
+              if ret["exit"] == 0
+                ret["stdout"].split.uniq.each do |package|
+                  package_names[section] << package unless PackageSystem.Installed(package)
+                end
+              else
+                log.info("No package belongs to #{rnc_file}.")
+              end
+            end
+          else
+            log.info("Cannot evaluate needed packages for AY section: #{section}")
+          end
+        end
+      else
+        log.info("Cannot evaluate needed packages for installation " \
+          "due missing environment.")
+      end
+      return package_names
+    end
+
     publish :variable => :GroupMap, :type => "map <string, map>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
     publish :variable => :MenuTreeData, :type => "list <map>"
@@ -426,6 +463,7 @@ module Yast
     publish :function => :getResourceData, :type => "any (map, string)"
     publish :function => :Deps, :type => "list <map> ()"
     publish :function => :SetDesktopIcon, :type => "boolean (string)"
+    publish :function => :required_packages, :type => "map <string, list> (list <string>)"
     publish :function => :unhandled_profile_sections, :type => "list <string> ()"
     publish :function => :unsupported_profile_sections, :type => "list <string> ()"
   end
