@@ -15,7 +15,8 @@ module Yast
     RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
     RESOURCE_ALIASES_NAME_KEY = "X-SuSE-YaST-AutoInstResourceAliases"
     MODES = %w(all configure write)
-    YAST_SCHEMA_DIR ="/usr/share/YaST2/schema/autoyast/rng/*.rng"
+    YAST_SCHEMA_DIR = "/usr/share/YaST2/schema/autoyast/rng/*.rng"
+    SCHEMA_PACKAGE_FILE = "/usr/share/YaST2/schema/autoyast/rnc/includes.rnc"
 
     include Yast::Logger
 
@@ -431,17 +432,12 @@ module Yast
             "-f -n #{YAST_SCHEMA_DIR}")
           if ret["exit"] == 0
             ret["stdout"].split.uniq.each do |rng_file|
-              # Evaluate according rnc file
-              rnc_file = rng_file.gsub("rng","rnc")
-              # Evalute package name to which this rnc file belongs to.
-              ret = SCR.Execute(path(".target.bash_output"),
-                "/bin/rpm -qf #{rnc_file} --qf \"%{NAME}\\n\"")
-              if ret["exit"] == 0
-                ret["stdout"].split.uniq.each do |package|
-                  package_names[section] << package unless PackageSystem.Installed(package)
-                end
+              # Evalute package name to which this rng file belongs to.
+              package = package_name_of_schema(File.basename(rng_file, ".rng"))
+              if package
+                package_names[section] << package unless PackageSystem.Installed(package)
               else
-                log.info("No package belongs to #{rnc_file}.")
+                log.info("No package belongs to #{rng_file}.")
               end
             end
           else
@@ -466,6 +462,26 @@ module Yast
     publish :function => :required_packages, :type => "map <string, list> (list <string>)"
     publish :function => :unhandled_profile_sections, :type => "list <string> ()"
     publish :function => :unsupported_profile_sections, :type => "list <string> ()"
+
+  private
+
+    # Returns package name of a given schema.
+    # This information is stored in /usr/share/YaST2/schema/autoyast/rnc/includes.rnc
+    # which will be provided by the yast2-schema package.
+    #
+    # @param schema <String> schema name like firewall, firstboot, ...
+    # @return <String> package name or nil
+    def package_name_of_schema(schema)
+      unless @schema_package
+        @schema_package = {}
+        File::readlines(SCHEMA_PACKAGE_FILE).each do |line|
+          line_split = line.split
+          next if line.split.size < 4 # Old version of yast2-schema
+          @schema_package[File.basename(line_split[1].delete("\'"), ".rnc")] = line.split.last
+        end
+      end
+      @schema_package[schema]
+    end
   end
 
   Y2ModuleConfig = Y2ModuleConfigClass.new

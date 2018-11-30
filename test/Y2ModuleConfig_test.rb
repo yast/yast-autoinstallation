@@ -162,24 +162,25 @@ describe Yast::Y2ModuleConfig do
       context "rng file found for the given AY section" do
         before do
           allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-            "/usr/bin/xml sel -t -m \"//*[@name='firstboot']\" -f -n /usr/share/YaST2/schema/autoyast/rng/*.rng").              and_return ( {"exit"=>0, "stderr"=>"",
+            "/usr/bin/xml sel -t -m \"//*[@name='firstboot']\" -f -n /usr/share/YaST2/schema/autoyast/rng/*.rng").
+            and_return ( {"exit"=>0, "stderr"=>"",
             "stdout"=>"/usr/share/YaST2/schema/autoyast/rng/firstboot.rng\n"} )
+          allow(File).to receive(:readlines).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc").
+            and_return(["include 'firstboot.rnc' # yast2-firstboot\n", "include 'pxe.rnc' # autoyast2\n"])
         end
 
         context "regarding rnc files does not belong to any package" do
           it "returns a hash with an empty package array" do
             expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-              "/bin/rpm -qf /usr/share/YaST2/schema/autoyast/rnc/firstboot.rnc --qf \"%{NAME}\\n\"").
-              and_return({"exit"=>1, "stderr"=>"", "stdout"=>""})
-            expect(subject.required_packages(["firstboot"])).to eq({"firstboot"=>[]})
+              "/usr/bin/xml sel -t -m \"//*[@name='fake']\" -f -n /usr/share/YaST2/schema/autoyast/rng/*.rng").
+              and_return ( {"exit"=>0, "stderr"=>"",
+              "stdout"=>"/usr/share/YaST2/schema/autoyast/rng/fake.rng\n"} )
+            expect(subject.required_packages(["fake"])).to eq({"fake"=>[]})
           end
         end
 
         context "regarding rnc files belongs to a package" do
           it "returns a hash with needed package list" do
-            expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-              "/bin/rpm -qf /usr/share/YaST2/schema/autoyast/rnc/firstboot.rnc --qf \"%{NAME}\\n\"").
-              and_return({"exit"=>0, "stderr"=>"", "stdout"=>"yast2-firstboot\n"})
             expect(Yast::PackageSystem).to receive(:Installed).with("yast2-firstboot").and_return false
             expect(subject.required_packages(["firstboot"])).to eq({"firstboot"=>["yast2-firstboot"]})
           end
