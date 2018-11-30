@@ -416,7 +416,7 @@ module Yast
 
     # Returns required package names for the given AutoYaST sections.
     #
-    # @param [Array<String>] Section names
+    # @param sections [Array<String>] Section names
     # @return [Hash<String, Array<String>>] Required packages of a section.
     def required_packages(sections)
       package_names = {}
