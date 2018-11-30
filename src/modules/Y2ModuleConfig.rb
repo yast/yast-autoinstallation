@@ -423,13 +423,12 @@ module Yast
       package_names = {}
       log.info "Evaluating needed packages for handling AY-sections #{sections}"
       if PackageSystem.Installed("yast2-schema") &&
-         PackageSystem.Installed("xmlstarlet")
+         PackageSystem.Installed("grep")
         sections.each do |section|
           # Evaluate which *rng file belongs to the given section
           package_names[section] = []
           ret = SCR.Execute(path(".target.bash_output"),
-            "/usr/bin/xml sel -t -m \"//*[@name='#{section}']\" " \
-            "-f -n #{YAST_SCHEMA_DIR}")
+            "/usr/bin/grep -l \"<define name=\\\"#{section}\\\">\" #{YAST_SCHEMA_DIR}")
           if ret["exit"] == 0
             ret["stdout"].split.uniq.each do |rng_file|
               # Evalute package name to which this rng file belongs to.

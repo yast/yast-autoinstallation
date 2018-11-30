@@ -147,13 +147,13 @@ describe Yast::Y2ModuleConfig do
     context "all packages needed for the check are installed" do
       before do
         allow(Yast::PackageSystem).to receive(:Installed).with("yast2-schema").and_return true
-        allow(Yast::PackageSystem).to receive(:Installed).with("xmlstarlet").and_return true
+        allow(Yast::PackageSystem).to receive(:Installed).with("grep").and_return true
       end
 
       context "no rng file found for the given AY section" do
         it "returns a hash with an empty package array" do
           expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-            "/usr/bin/xml sel -t -m \"//*[@name='not-found']\" -f -n /usr/share/YaST2/schema/autoyast/rng/*.rng").
+            "/usr/bin/grep -l \"<define name=\\\"not-found\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
             and_return({"exit"=>1, "stderr"=>"", "stdout"=>""})
           expect(subject.required_packages(["not-found"])).to eq({"not-found"=>[]})
         end
@@ -162,7 +162,7 @@ describe Yast::Y2ModuleConfig do
       context "rng file found for the given AY section" do
         before do
           allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-            "/usr/bin/xml sel -t -m \"//*[@name='firstboot']\" -f -n /usr/share/YaST2/schema/autoyast/rng/*.rng").
+            "/usr/bin/grep -l \"<define name=\\\"firstboot\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
             and_return ( {"exit"=>0, "stderr"=>"",
             "stdout"=>"/usr/share/YaST2/schema/autoyast/rng/firstboot.rng\n"} )
           allow(File).to receive(:readlines).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc").
@@ -172,7 +172,7 @@ describe Yast::Y2ModuleConfig do
         context "regarding rnc files does not belong to any package" do
           it "returns a hash with an empty package array" do
             expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-              "/usr/bin/xml sel -t -m \"//*[@name='fake']\" -f -n /usr/share/YaST2/schema/autoyast/rng/*.rng").
+              "/usr/bin/grep -l \"<define name=\\\"fake\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
               and_return ( {"exit"=>0, "stderr"=>"",
               "stdout"=>"/usr/share/YaST2/schema/autoyast/rng/fake.rng\n"} )
             expect(subject.required_packages(["fake"])).to eq({"fake"=>[]})
