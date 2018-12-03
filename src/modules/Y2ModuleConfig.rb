@@ -471,7 +471,7 @@ module Yast
     # @param schema <String> schema name like firewall, firstboot, ...
     # @return <String> package name or nil
     def package_name_of_schema(schema)
-      unless @schema_package
+      if !@schema_package
         @schema_package = {}
         File::readlines(SCHEMA_PACKAGE_FILE).each do |line|
           line_split = line.split
