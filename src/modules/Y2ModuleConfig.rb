@@ -15,6 +15,8 @@ module Yast
     RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
     RESOURCE_ALIASES_NAME_KEY = "X-SuSE-YaST-AutoInstResourceAliases"
     MODES = %w(all configure write)
+    YAST_SCHEMA_DIR = "/usr/share/YaST2/schema/autoyast/rng/*.rng"
+    SCHEMA_PACKAGE_FILE = "/usr/share/YaST2/schema/autoyast/rnc/includes.rnc"
 
     include Yast::Logger
 
@@ -28,6 +30,7 @@ module Yast
       Yast.import "Desktop"
       Yast.import "Wizard"
       Yast.import "Directory"
+      Yast.import "PackageSystem"
 
       # include "autoinstall/io.ycp";
 
@@ -67,7 +70,6 @@ module Yast
       Desktop.Read(_Values)
       configurations = deep_copy(Desktop.Modules)
 
-      #y2debug("%1", configurations );
       groups = deep_copy(Desktop.Groups)
 
       confs = {}
@@ -116,7 +118,6 @@ module Yast
     # @return [void]
     def CreateGroupTree(_Groups)
       _Groups = deep_copy(_Groups)
-      #y2debug("Groups: %1", Groups);
 
       grouplist = []
       grouplist = SortGroups(_Groups, Builtins.maplist(_Groups) do |rawname, group|
@@ -128,8 +129,6 @@ module Yast
         _MeunTreeEntry = { "entry" => name, "title" => title }
         @MenuTreeData = Builtins.add(@MenuTreeData, _MeunTreeEntry)
       end
-
-      #y2debug("data: %1", MenuTreeData);
       nil
     end
 
@@ -158,8 +157,6 @@ module Yast
           @MenuTreeData = Builtins.add(@MenuTreeData, menu_entry)
         end
       end 
-      # y2debug("MenuTreeData: %1", MenuTreeData );
-
       nil
     end
 
@@ -418,6 +415,41 @@ module Yast
       end
     end
 
+    # Returns required package names for the given AutoYaST sections.
+    #
+    # @param sections [Array<String>] Section names
+    # @return [Hash<String, Array<String>>] Required packages of a section.
+    def required_packages(sections)
+      package_names = {}
+      log.info "Evaluating needed packages for handling AY-sections #{sections}"
+      if PackageSystem.Installed("yast2-schema") &&
+         PackageSystem.Installed("grep")
+        sections.each do |section|
+          # Evaluate which *rng file belongs to the given section
+          package_names[section] = []
+          ret = SCR.Execute(path(".target.bash_output"),
+            "/usr/bin/grep -l \"<define name=\\\"#{section}\\\">\" #{YAST_SCHEMA_DIR}")
+          if ret["exit"] == 0
+            ret["stdout"].split.uniq.each do |rng_file|
+              # Evalute package name to which this rng file belongs to.
+              package = package_name_of_schema(File.basename(rng_file, ".rng"))
+              if package
+                package_names[section] << package unless PackageSystem.Installed(package)
+              else
+                log.info("No package belongs to #{rng_file}.")
+              end
+            end
+          else
+            log.info("Cannot evaluate needed packages for AY section: #{section}")
+          end
+        end
+      else
+        log.info("Cannot evaluate needed packages for installation " \
+          "due missing environment.")
+      end
+      return package_names
+    end
+
     publish :variable => :GroupMap, :type => "map <string, map>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
     publish :variable => :MenuTreeData, :type => "list <map>"
@@ -426,8 +458,29 @@ module Yast
     publish :function => :getResourceData, :type => "any (map, string)"
     publish :function => :Deps, :type => "list <map> ()"
     publish :function => :SetDesktopIcon, :type => "boolean (string)"
+    publish :function => :required_packages, :type => "map <string, list> (list <string>)"
     publish :function => :unhandled_profile_sections, :type => "list <string> ()"
     publish :function => :unsupported_profile_sections, :type => "list <string> ()"
+
+  private
+
+    # Returns package name of a given schema.
+    # This information is stored in /usr/share/YaST2/schema/autoyast/rnc/includes.rnc
+    # which will be provided by the yast2-schema package.
+    #
+    # @param schema <String> schema name like firewall, firstboot, ...
+    # @return <String> package name or nil
+    def package_name_of_schema(schema)
+      if !@schema_package
+        @schema_package = {}
+        File::readlines(SCHEMA_PACKAGE_FILE).each do |line|
+          line_split = line.split
+          next if line.split.size < 4 # Old version of yast2-schema
+          @schema_package[File.basename(line_split[1].delete("\'"), ".rnc")] = line.split.last
+        end
+      end
+      @schema_package[schema]
+    end
   end
 
   Y2ModuleConfig = Y2ModuleConfigClass.new

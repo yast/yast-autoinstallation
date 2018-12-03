@@ -135,4 +135,57 @@ describe Yast::Y2ModuleConfig do
       end
     end
   end
+
+  describe "#required_packages" do
+    context "packages needed for the check are not installed" do
+      it "returns an empty hash" do
+        allow(Yast::PackageSystem).to receive(:Installed).with("yast2-schema").and_return false
+        expect(subject.required_packages([])).to eq({})
+      end
+    end
+
+    context "all packages needed for the check are installed" do
+      before do
+        allow(Yast::PackageSystem).to receive(:Installed).with("yast2-schema").and_return true
+        allow(Yast::PackageSystem).to receive(:Installed).with("grep").and_return true
+      end
+
+      context "no rng file found for the given AY section" do
+        it "returns a hash with an empty package array" do
+          expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
+            "/usr/bin/grep -l \"<define name=\\\"not-found\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
+            and_return({"exit"=>1, "stderr"=>"", "stdout"=>""})
+          expect(subject.required_packages(["not-found"])).to eq({"not-found"=>[]})
+        end
+      end
+
+      context "rng file found for the given AY section" do
+        before do
+          allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
+            "/usr/bin/grep -l \"<define name=\\\"firstboot\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
+            and_return ( {"exit"=>0, "stderr"=>"",
+            "stdout"=>"/usr/share/YaST2/schema/autoyast/rng/firstboot.rng\n"} )
+          allow(File).to receive(:readlines).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc").
+            and_return(["include 'firstboot.rnc' # yast2-firstboot\n", "include 'pxe.rnc' # autoyast2\n"])
+        end
+
+        context "regarding rnc files does not belong to any package" do
+          it "returns a hash with an empty package array" do
+            expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
+              "/usr/bin/grep -l \"<define name=\\\"fake\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
+              and_return ( {"exit"=>0, "stderr"=>"",
+              "stdout"=>"/usr/share/YaST2/schema/autoyast/rng/fake.rng\n"} )
+            expect(subject.required_packages(["fake"])).to eq({"fake"=>[]})
+          end
+        end
+
+        context "regarding rnc files belongs to a package" do
+          it "returns a hash with needed package list" do
+            expect(Yast::PackageSystem).to receive(:Installed).with("yast2-firstboot").and_return false
+            expect(subject.required_packages(["firstboot"])).to eq({"firstboot"=>["yast2-firstboot"]})
+          end
+        end
+      end
+    end
+  end
 end

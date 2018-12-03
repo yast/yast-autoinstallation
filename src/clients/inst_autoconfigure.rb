@@ -87,6 +87,26 @@ module Yast
       unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections
       if unknown_sections.any?
         log.error "Could not process these unknown profile sections: #{unknown_sections}"
+        needed_packages = Y2ModuleConfig.required_packages(unknown_sections)
+        unless needed_packages.empty?
+          schema_package_list = needed_packages.map do |section, packages|
+            case packages.size
+            when 0
+              package_description = _("No needed package found.")
+            when 1
+              # TRANSLATOR: %s is the package name
+              package_description = _("Needed package: %s") % packages.first
+            else
+              # TRANSLATOR: %s is the list of package names
+              package_description = _("Needed packages: %s") % packages.join(",")
+            end
+
+            "&lt;#{section}/&gt; - #{package_description}"
+          end
+        else
+          schema_package_list = unknown_sections.map{|section| "&lt;#{section}/&gt;"}
+        end
+
         Report.LongWarning(
           # TRANSLATORS: Error message, %s is replaced by newline-separated
           # list of unknown sections of the profile
@@ -98,7 +118,7 @@ module Yast
             "all the needed YaST packages in the &lt;software/&gt; section " \
             "as required for functionality provided by additional modules."
           ) %
-            unknown_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>")
+            schema_package_list.join("<br>")
         )
       end
 

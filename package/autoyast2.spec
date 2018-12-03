@@ -68,7 +68,7 @@ Requires:       yast2-ntp-client >= 4.0.1
 # Moving security module to first installation stage
 Requires:       yast2-security >= 4.1.1
 Requires:       yast2-network >= 3.1.145
-Requires:       yast2-schema
+Requires:       yast2-schema >= 4.0.6
 Requires:       yast2-transfer >= 2.21.0
 Requires:       yast2-xml
 # AutoinstIssues::NoProposal
