@@ -81,8 +81,6 @@ Obsoletes:      yast2-config-autoinst
 Obsoletes:      yast2-module-autoinst
 Provides:       yast2-lib-autoinst
 Obsoletes:      yast2-lib-autoinst
-# Checking required packages for each section.
-Recommends:     xmlstarlet
 
 BuildArch:      noarch
 
