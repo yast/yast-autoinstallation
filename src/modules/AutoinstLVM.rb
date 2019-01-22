@@ -419,7 +419,8 @@ module Yast
         partitions = []
         Builtins.foreach(Ops.get_list(volume_group, "partitions", [])) do |lv|
           size_k = lv.fetch("size_k", 0)
-          if (size_k > freeSpace)
+          # With RAID systems freeSpace is 0. So a resize is not needed/possible here.
+          if (freeSpace > 0 && size_k > freeSpace)
             lv["size_k"] = freeSpace
             Builtins.y2milestone("Requested partition size of %s on \"%s\" will be reduced to "\
                 "%s in order to fit on disk." %
