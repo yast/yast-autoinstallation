@@ -105,7 +105,7 @@
 
     global list<string> tomerge = [];
 
-
+    map<integer,string> element2file = $[];
 
     /**
      * Cleanup XML file from namespaces put by xslt
@@ -596,10 +596,12 @@
                     }
                     else if ( rule == "result" )
                     {
+                        string profile_name = ruledef["profile"]:"";
+                        profile_name = SubVars(profile_name);
+			if( haskey( ruleset, "dialog" ) )
+                            element2file[ ruleset["dialog","element"]:0 ] = profile_name;
                         if ( verifyrules() == 0 )
                         {
-                            string profile_name = ruledef["profile"]:"";
-                            profile_name = SubVars(profile_name);
                             y2milestone("Final Profile name: %1", profile_name
                                     );
                             if (ruledef["match_with_base"]:true)
@@ -629,6 +631,120 @@
                 });
             }
         });
+
+        list<integer> dialogOrder = [];
+        y2milestone("element2file=%1", element2file);
+        foreach( map<string, map> rule, rulelist, ``{
+            if( haskey(rule, "dialog") && ! contains( dialogOrder, rule["dialog","dialog_nr"]:0 ) )
+                dialogOrder = add( dialogOrder, rule["dialog","dialog_nr"]:0 );
+        });
+        dialogOrder = sort( dialogOrder );
+
+        integer dialogIndex = 0;
+        while( dialogIndex <= size(dialogOrder)-1 ) {
+            integer dialogNr = dialogOrder[dialogIndex]:0;
+            term dialog_term = `VBox();
+            integer element_nr = 0;
+            integer timeout = 0;
+            string title = "Choose XML snippets to merge";
+            map<integer,integer> conflictsCounter = $[];
+            foreach ( map<string, map> rule, rulelist, ``{
+                if( haskey( rule, "dialog" ) ) {
+                    element_nr = rule["dialog","element"]:element_nr;
+                    string file = element2file[element_nr]:"";
+                    element_nr = element_nr + 1;
+                    if( contains(tomerge, file) ) {
+                        foreach( integer c, rule["dialog","conflicts"]:[], ``{
+                            conflictsCounter[c] = conflictsCounter[c]:0 + 1;
+                        });
+                    }
+                }
+            });
+
+            foreach ( map<string, map> rule, rulelist, ``{
+                if( haskey( rule, "dialog" ) && rule["dialog","dialog_nr"]:0 == dialogNr ) {
+                    element_nr = rule["dialog","element"]:element_nr;
+                    title      = rule["dialog","title"]:title;
+                    string file = element2file[element_nr]:"";
+                    boolean on = ( contains(tomerge, file) ? true : false );
+                    term button = `Left( `CheckBox(`id(element_nr), `opt(`notify), rule["dialog","question"]:file, on ) );
+                    if( haskey( rule["dialog"]:$[], "timeout" ) )
+                        timeout = rule["dialog","timeout"]:0;
+                    dialog_term = add( dialog_term, button );
+                    element_nr = element_nr + 1;
+                }
+            });
+
+            if( element_nr > 0 ) {
+                UI::OpenDialog( `opt( `decorated ),
+                                `VBox(
+                                    `Label( title ),
+                                    `VSpacing(1),
+                                    dialog_term,
+                                    `VSpacing(1),
+                                    `HBox(
+                                      `HStretch(),
+                                      `PushButton(`id(`back),  "Back" ),
+                                      `PushButton(`id(`ok),  "Okay" )
+                                    )
+                                 )
+                );
+                if( dialogIndex == 0 )
+                    UI::ChangeWidget(`id(`back) , `Enabled, false);
+                foreach( integer c, integer n, conflictsCounter, ``{
+                    UI::ChangeWidget(`id(c) , `Enabled, n>0 ? false : true );
+                    UI::ChangeWidget(`id(c) , `Value,   n>0 ? false : true );
+                });
+                while (true) {
+                    any ret = nil;
+                    if( timeout == 0 )
+                        ret = UI::UserInput();
+                    else
+                        ret = UI::TimeoutUserInput( timeout * 1000 );
+                    timeout = 0;
+                    element_nr = 0;
+                    if( ret == `ok || ret == `timeout || ret == `back ) {
+                        if( ret == `back )
+                            dialogIndex = dialogIndex - 2;
+                        break;
+                    } else {
+                        if( (boolean)(UI::QueryWidget(`id(ret),  `Value)) ) {
+                            tomerge = add( tomerge, element2file[tointeger(ret)]:"" );
+                        } else {
+                            string file = element2file[tointeger(ret)]:"";
+                            tomerge = filter (string f , tomerge, { return file != f; });
+                        }
+                        list<integer> conflicts = [];
+                        foreach( map r, rulelist, {
+                            if( r["dialog","element"]:-1 == tointeger(ret) ) {
+                                conflicts = r["dialog","conflicts"]:[];
+                                break;
+                            }
+                        });
+                        foreach( integer element, conflicts, ``{
+                            if( (boolean)(UI::QueryWidget(`id(ret),  `Value)) )
+                                conflictsCounter[element] = conflictsCounter[element]:0 + 1;
+                            else if( conflictsCounter[element]:0 > 0 )
+                                conflictsCounter[element] = conflictsCounter[element]:0 - 1;
+                        });
+                        foreach( integer e, integer v, conflictsCounter, ``{
+                            if( v > 0 ) {
+                                UI::ChangeWidget(`id(e) , `Enabled, false);
+                                UI::ChangeWidget(`id(e) , `Value, false );
+                            } else {
+                                UI::ChangeWidget(`id(e) , `Enabled, true);
+                            }
+                        });
+                    }
+                    y2milestone("tomerge is now = %1", tomerge);
+                    y2milestone("conflictsCounter is now = %1", conflictsCounter);
+                }
+                UI::CloseDialog();
+                dialogIndex = dialogIndex + 1;
+            }
+            y2milestone("changing rules to merge to %1 because of user selection", tomerge);
+        }
+
         return;
     }
 
