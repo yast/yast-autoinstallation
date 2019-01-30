@@ -655,7 +655,7 @@
                     element_nr = element_nr + 1;
                     if( contains(tomerge, file) ) {
                         foreach( integer c, rule["dialog","conflicts"]:[], ``{
-                            conflictsCounter[c] = conflictsCounter[c]:0 + 1;
+                            conflictsCounter[c] = 0;
                         });
                     }
                 }
@@ -691,10 +691,14 @@
                 );
                 if( dialogIndex == 0 )
                     UI::ChangeWidget(`id(`back) , `Enabled, false);
+
+                // If there are conflicting items set them all to enabled/not_selected
+                // in order to let the user decide at first.
                 foreach( integer c, integer n, conflictsCounter, ``{
-                    UI::ChangeWidget(`id(c) , `Enabled, n>0 ? false : true );
-                    UI::ChangeWidget(`id(c) , `Value,   n>0 ? false : true );
+                   UI::ChangeWidget(`id(c) , `Enabled, true );
+                   UI::ChangeWidget(`id(c) , `Value,   false );
                 });
+
                 while (true) {
                     any ret = nil;
                     if( timeout == 0 )
