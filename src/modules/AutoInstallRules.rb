@@ -680,11 +680,7 @@ module Yast
             element_nr = Ops.add(element_nr, 1)
             if Builtins.contains(@tomerge, file)
               Builtins.foreach(Ops.get_list(rule, ["dialog", "conflicts"], [])) do |c|
-                Ops.set(
-                  conflictsCounter,
-                  c,
-                  Ops.add(Ops.get(conflictsCounter, c, 0), 1)
-                )
+                conflictsCounter[c] = 0
               end
             end
           end
@@ -733,18 +729,14 @@ module Yast
             )
           )
           UI.ChangeWidget(Id(:back), :Enabled, false) if dialogIndex == 0
-          Builtins.foreach(conflictsCounter) do |c, n|
-            UI.ChangeWidget(
-              Id(c),
-              :Enabled,
-              Ops.greater_than(n, 0) ? false : true
-            )
-            UI.ChangeWidget(
-              Id(c),
-              :Value,
-              Ops.greater_than(n, 0) ? false : true
-            )
+
+          # If there are conflicting items set them all to enabled/not_selected
+          # in order to let the user decide at first.
+          conflictsCounter.each do |c, n|
+            UI.ChangeWidget(Id(c), :Enabled, true)
+            UI.ChangeWidget(Id(c), :Value, false)
           end
+
           while true
             ret = nil
             if timeout == 0
