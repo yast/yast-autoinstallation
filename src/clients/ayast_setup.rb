@@ -99,6 +99,7 @@ module Yast
 
       # IPv6 settings will be written despite the have been
       # changed or not. So we have to read them at first.
+      # FIXME: Move it to Lan.rb and remove the Lan import dependency.
       Lan.ipv6 = Lan.readIPv6
 
       WFM.CallFunction("inst_autopost", [])
