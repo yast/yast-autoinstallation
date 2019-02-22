@@ -180,10 +180,15 @@ module Yast
     # @param profile [Hash] AutoYaST profile
     # @return [String] product name
     def base_product_name(profile)
-      software = profile["software"] || {}
-      products = software["products"] || []
+      software = profile["software"]
 
-      products.first
+      if software.nil?
+        log.info("Error: given profile has not a valid software section")
+
+        return nil
+      end
+
+      software.fetch("products", []).first
     end
   end
 
