@@ -136,7 +136,7 @@ module Yast
     # @return [Y2Packager::Product] a product if exactly one product matches
     # the criteria, nil otherwise
     def identify_product_by_patterns(profile)
-      software = profile.fetch("software", {})
+      software = profile["software"] || {}
 
       identify_product do |product|
         software.fetch("patterns", []).any? { |p| p =~ /#{product.name.downcase}-.*/ }
@@ -151,7 +151,7 @@ module Yast
     # @return [Y2Packager::Product] a product if exactly one product matches
     # the criteria, nil otherwise
     def identify_product_by_packages(profile)
-      software = profile.fetch("software", {})
+      software = profile["software"] || {}
 
       identify_product do |product|
         software.fetch("packages", []).any? { |p| p =~ /#{product.name.downcase}-release/ }
@@ -180,8 +180,10 @@ module Yast
     # @param profile [Hash] AutoYaST profile
     # @return [String] product name
     def base_product_name(profile)
-      software = profile.fetch("software", {})
-      software.fetch("products", []).first
+      software = profile["software"] || {}
+      products = software["products"] || []
+
+      products.first
     end
   end
 

@@ -177,4 +177,12 @@ describe Yast::AutoinstFunctions do
       expect(subject.selected_product.name).to eql "SLED"
     end
   end
+
+  it "does not crash when there is not a software section" do
+      allow(Yast::Profile)
+        .to receive(:current)
+        .and_return("software" => nil)
+
+      expect(subject.selected_product).to be_nil
+  end
 end
