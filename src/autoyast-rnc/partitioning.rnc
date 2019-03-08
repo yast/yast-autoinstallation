@@ -21,7 +21,8 @@ drive =
     element enable_snapshots { BOOLEAN }? &
     skip_list? &
     partitions? &
-    raid_options?
+    raid_options? &
+    bcache_options?
   }
 
 skip_list =
@@ -78,6 +79,8 @@ y2_partition =
   | raid_options
   | subvolumes
   | create_subvolumes
+  | bcache_backing_for
+  | bcache_caching_for
 
 partition = element partition { y2_partition* }
 part_create =
@@ -128,6 +131,9 @@ device_order = element device_order {
     LIST,
     element device { text }*
 }
+
+cache_mode = element cache_mode { text }
+bcache_options = element bcache_options { cache_mode? }
 
 subvolumes = element subvolumes {
     LIST,
@@ -184,4 +190,8 @@ part_size = element size { text }
 part_lv_name = element lv_name { text }
 part_lvm_group = element lvm_group { text }
 part_resize = element resize { BOOLEAN }
-
+bcache_backing_for = element bcache_backing_for { text }
+bcache_caching_for = element bcache_caching_for {
+  LIST,
+  element listentry { text }*
+}
