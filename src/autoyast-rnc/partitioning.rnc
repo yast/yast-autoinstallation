@@ -132,7 +132,7 @@ device_order = element device_order {
     element device { text }*
 }
 
-cache_mode = element cache_mode { text }
+cache_mode = element cache_mode { "writethrough" | "writeback" | "writearound" | "none" }
 bcache_options = element bcache_options { cache_mode? }
 
 subvolumes = element subvolumes {
