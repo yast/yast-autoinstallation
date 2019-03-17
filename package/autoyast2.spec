@@ -85,6 +85,7 @@ Obsoletes:      yast2-lib-autoinst
 BuildArch:      noarch
 
 Requires:       yast2-ruby-bindings >= 1.0.0
+Requires(post): %fillup_prereq
 
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -144,36 +145,36 @@ generated with the autoyast2 package.
 
 # Do not *blindly* remove the suse_update_desktop_file calls here. It is
 # different from the code in the yast_install macro.
-for d in $RPM_BUILD_ROOT/usr/share/autoinstall/modules/*.desktop ; do
+for d in %{buildroot}/usr/share/autoinstall/modules/*.desktop ; do
     %suse_update_desktop_file $d
 done
 
 # Class conf
-install -d -m 700 $RPM_BUILD_ROOT/etc/autoinstall
+install -d -m 700 %{buildroot}/etc/autoinstall
 # Installation files
-install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/scripts
-install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/init.d
-install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/logs
-install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/files
-install -d -m 700 $RPM_BUILD_ROOT/var/adm/autoinstall/cache
+install -d -m 700 %{buildroot}/var/adm/autoinstall/scripts
+install -d -m 700 %{buildroot}/var/adm/autoinstall/init.d
+install -d -m 700 %{buildroot}/var/adm/autoinstall/logs
+install -d -m 700 %{buildroot}/var/adm/autoinstall/files
+install -d -m 700 %{buildroot}/var/adm/autoinstall/cache
 
 # Repository
-install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository
-install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/templates
-install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/rules
-install -d $RPM_BUILD_ROOT/var/lib/autoinstall/repository/classes
-install -d $RPM_BUILD_ROOT/var/lib/autoinstall/autoconf
-install -d $RPM_BUILD_ROOT/var/lib/autoinstall/tmp
+install -d %{buildroot}/var/lib/autoinstall/repository
+install -d %{buildroot}/var/lib/autoinstall/repository/templates
+install -d %{buildroot}/var/lib/autoinstall/repository/rules
+install -d %{buildroot}/var/lib/autoinstall/repository/classes
+install -d %{buildroot}/var/lib/autoinstall/autoconf
+install -d %{buildroot}/var/lib/autoinstall/tmp
 
 # Systemd Stuff
-mkdir -p $RPM_BUILD_ROOT/%{_unitdir}/
-install -m 644 scripts/autoyast-initscripts.service $RPM_BUILD_ROOT/%{_unitdir}/
+mkdir -p %{buildroot}/%{_unitdir}/
+install -m 644 scripts/autoyast-initscripts.service %{buildroot}/%{_unitdir}/
 
 # Documentation
-install -d -m 755 $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html
-tar xvpfC %{SOURCE1} $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html
-mv $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast/* $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/
-rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
+install -d -m 755 %{buildroot}/%{_prefix}/share/doc/packages/autoyast2/html
+tar -xvpf %{SOURCE1} -C %{buildroot}/%{_prefix}/share/doc/packages/autoyast2/html
+mv %{buildroot}/%{_prefix}/share/doc/packages/autoyast2/html/autoyast/* %{buildroot}/%{_prefix}/share/doc/packages/autoyast2/html/
+rmdir %{buildroot}/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 
 %post
 %{fillup_only -n autoinstall}
