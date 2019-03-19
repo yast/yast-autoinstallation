@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.1.3
+Version:        4.1.4
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -113,8 +113,8 @@ Requires:       yast2-bootloader
 Requires:       yast2-core
 Requires:       yast2-country
 Requires:       yast2-ncurses
-# Packages.default_patterns
-Requires:       yast2-packager >= 3.1.10
+# Disabling local repos in second stage only.
+Requires:       yast2-packager >= 4.1.33
 # ServicesManagerTargetClass::BaseTargets
 Requires:       yast2-services-manager >= 3.1.10
 Requires:       yast2-slp
