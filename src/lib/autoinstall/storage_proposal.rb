@@ -119,6 +119,7 @@ module Y2Autoinstallation
     # @return [Y2Storage::GuidedProposal]
     def guided_proposal
       log.info "Creating a guided proposal"
+      # TODO: add specific issue when proposal fails because there are no devices
       Y2Storage::GuidedProposal.initial
     end
 

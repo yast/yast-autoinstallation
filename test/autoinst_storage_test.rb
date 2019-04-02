@@ -191,37 +191,6 @@ describe Yast::AutoinstStorage do
           subject.Import({})
         end
       end
-
-    end
-
-    context "when there are no available storage for installation" do
-      before do
-        allow(probed_devicegraph).to receive(:empty?).and_return(true)
-      end
-
-      it "displays an error" do
-        expect(Yast::Popup).to receive(:Error).with(/No storage devices/)
-        subject.Import({})
-      end
-
-      it "returns false" do
-        expect(subject.Import({})).to eq(false)
-      end
-    end
-
-    context "when the probed devicegraph is nil" do
-      before do
-        allow(storage_manager).to receive(:probed).and_return(nil)
-      end
-
-      it "displays an error" do
-        expect(Yast::Popup).to receive(:Error).with(/No storage devices/)
-        subject.Import({})
-      end
-
-      it "returns false" do
-        expect(subject.Import({})).to eq(false)
-      end
     end
   end
 
