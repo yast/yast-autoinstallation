@@ -57,7 +57,7 @@ module Yast
     # @return [Boolean] success
     def Import(settings)
       log.info "entering Import with #{settings.inspect}"
-      return false unless available_storage?
+
       partitioning = preprocessed_settings(settings)
       return false unless partitioning
 
@@ -322,20 +322,6 @@ module Yast
       preprocessor = Y2Autoinstallation::PartitioningPreprocessor.new
       preprocessor.run(settings)
     end
-
-    # Determine (and warn the user) no storage is available for installation
-    #
-    # @return [Boolean] true if there are devices for installation; false otherwise.
-    def available_storage?
-      probed = Y2Storage::StorageManager.instance.probed
-      return true if probed && !probed.empty?
-      Yast::Popup.Error(
-        _("No storage devices were found for the installation.\n" \
-          "Please, check your hardware or your AutoYaST profile.")
-      )
-      false
-    end
-
   end
 
   AutoinstStorage = AutoinstStorageClass.new
