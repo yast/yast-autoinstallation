@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.1.5
+Version:        4.2.0
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -60,8 +60,8 @@ BuildRequires:  systemd
 
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
-# Yast::Popup.ErrorAnyQuestion fixed
-Requires:       yast2 >= 4.0.60
+# Y2Packager::ProductUpgrade.remove_obsolete_upgrades
+Requires:       yast2 >= 4.2.1
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 Requires:       yast2-ntp-client >= 4.0.1
