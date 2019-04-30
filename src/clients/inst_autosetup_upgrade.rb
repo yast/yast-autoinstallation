@@ -9,6 +9,8 @@
 # $Id: inst_autosetup.ycp 61521 2010-03-29 09:10:07Z ug $
 require "autoinstall/autosetup_helpers"
 
+require "y2packager/product_upgrade"
+
 module Yast
   class InstAutosetupUpgradeClient < Client
     include Yast::Logger
@@ -359,6 +361,10 @@ module Yast
         Builtins.foreach(@remove_products) do |p|
           Pkg.ResolvableRemove(p, :product)
         end
+
+        # deselect the upgraded obsolete products (bsc#1133215)
+        Y2Packager::ProductUpgrade.remove_obsolete_upgrades
+
         Builtins.foreach(@patterns) { |p| Pkg.ResolvableInstall(p, :pattern) }
         Builtins.foreach(@packages) { |p| Pkg.ResolvableInstall(p, :package) }
         Builtins.foreach(@products) { |p| Pkg.ResolvableInstall(p, :product) }
