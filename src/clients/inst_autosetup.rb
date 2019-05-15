@@ -287,7 +287,8 @@ module Yast
         Builtins.y2milestone("Partitioning manual setup")
         # Yes, do not set Storage testsuite here as we want really GUI with proposal
         Call.Function("inst_disk_proposal", ["enable_next" => true])
-        write_storage = true
+        # Do not call AutoinstStorage.Write because the settings
+        # have already been written by the proposal.
       end
 
 
