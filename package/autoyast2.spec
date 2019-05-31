@@ -142,6 +142,7 @@ generated with the autoyast2 package.
 
 %install
 %yast_install
+%yast_metainfo
 
 # Do not *blindly* remove the suse_update_desktop_file calls here. It is
 # different from the code in the yast_install macro.
@@ -189,9 +190,8 @@ rmdir %{buildroot}%{yast_docdir}/html/autoyast
 %dir %{_localstatedir}/lib/autoinstall/tmp
 %doc %{yast_docdir}
 
-%dir %yast_desktopdir
-%{yast_desktopdir}/autoyast.desktop
-%{yast_desktopdir}/clone_system.desktop
+%{yast_desktopdir}
+%{yast_metainfodir}
 %{_datadir}/autoinstall/modules/*.desktop
 %dir %{yast_yncludedir}
 %{yast_yncludedir}/autoinstall/classes.rb
