@@ -79,7 +79,7 @@ module Yast
       # Change configuration (run AutoSequence)
       elsif @func == "Change"
         Wizard.CreateDialog
-        Wizard.SetDesktopIcon("autoyast2")
+        Wizard.SetDesktopIcon("org.openSUSE.YaST.AutoYaST")
         @ret = CustomFileDialog()
         Wizard.CloseDialog
       elsif @func == "Packages"
