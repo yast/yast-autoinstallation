@@ -27,7 +27,7 @@ module Yast
     # @return [Symbol]
     def Settings
       Wizard.CreateDialog
-      Wizard.SetDesktopIcon("org.openSUSE.YaST.AutoYaST")
+      Wizard.SetDesktopIcon("org.opensuse.yast.AutoYaST")
       contents = HVSquash(
         VBox(
           VSquash(
@@ -215,7 +215,7 @@ module Yast
 
 
       Wizard.CreateDialog
-      Wizard.SetDesktopIcon("org.openSUSE.YaST.CloneSystem")
+      Wizard.SetDesktopIcon("org.opensuse.yast.CloneSystem")
 
 
       # title

@@ -119,8 +119,8 @@ ybin_SCRIPTS = \
   bin/fetch_image.sh
 
 desktop_DATA = \
-  desktop/org.openSUSE.YaST.AutoYaST.desktop \
-  desktop/org.openSUSE.YaST.CloneSystem.desktop
+  desktop/org.opensuse.yast.AutoYaST.desktop \
+  desktop/org.opensuse.yast.CloneSystem.desktop
 
 fillup_DATA = \
   fillup/sysconfig.autoinstall
