@@ -33,7 +33,7 @@ Source0:        autoyast2-%{version}.tar.bz2
 Source1:        autoyast_en_html.tar.bz2
 
 BuildRequires:  update-desktop-files
-BuildRequires:  yast2-devtools >= 3.1.15
+BuildRequires:  yast2-devtools >= 4.2.2
 # control.rng
 BuildRequires:  yast2-installation-control
 # xmllint
