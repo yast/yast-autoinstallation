@@ -22,7 +22,8 @@ drive =
     skip_list? &
     partitions? &
     raid_options? &
-    bcache_options?
+    bcache_options? &
+    btrfs_options?
   }
 
 skip_list =
@@ -30,7 +31,7 @@ skip_list =
     LIST,
     skip_entry*
   }
-skip_entry = 
+skip_entry =
   element listentry {
     element skip_key	{ text } &
     element skip_value	{ text } &
@@ -81,6 +82,7 @@ y2_partition =
   | create_subvolumes
   | bcache_backing_for
   | bcache_caching_for
+  | btrfs_name
 
 partition = element partition { y2_partition* }
 part_create =
@@ -134,6 +136,12 @@ device_order = element device_order {
 
 cache_mode = element cache_mode { "writethrough" | "writeback" | "writearound" | "none" }
 bcache_options = element bcache_options { cache_mode? }
+
+btrfs_name = element btrfs_name { text }
+
+btrfs_options = element btrfs_options { data_raid_level? & metadata_raid_level? }
+data_raid_level = element data_raid_level { text }
+metadata_raid_level = element metadata_raid_level { text }
 
 subvolumes = element subvolumes {
     LIST,
