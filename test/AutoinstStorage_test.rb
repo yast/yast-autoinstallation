@@ -39,69 +39,135 @@ describe "Yast::AutoinstStorage" do
       let(:partitions) { [partition2, partition3] }
 
       it "returns nil" do
-        puts "aaa"
         expect(subject.find_root_btrfs(partitions)).to be_nil
+      end
+    end
+
+    context "when there is a root partition" do
+      let(:partitions) { [partition1, partition2, partition3] }
+
+      context "but the filesystem is not Btrfs" do
+        let(:root_fs) { :xfs }
+
+        it "returns nil" do
+          expect(subject.find_root_btrfs(partitions)).to be_nil
+        end
+      end
+
+      context "and the filesystem is Btrfs" do
+        let(:root_fs) { :btrfs }
+
+        it "returns the root partition" do
+          expect(subject.find_root_btrfs(partitions)).to eq(partition1)
+        end
       end
     end
   end
 
-  describe "#parsePartition" do
-    let(:filesystem) { :btrfs }
-    let(:subvolumes) do
-      [
-        { "path" => ".snapshots/1" },
-        { "path" => "var/lib/machines" }
-      ]
+  describe "#root_btrfs?" do
+    context "when the partition is not mounted" do
+      let(:partition) { { "mount" => nil } }
+
+      it "returns false" do
+        expect(subject.root_btrfs?(partition)).to eq(false)
+      end
     end
 
-    let(:partition) do
-      { "filesystem" => filesystem, "subvolumes" => subvolumes }
+    context "when the partition is not mounted at root" do
+      let(:partition) { partition2 }
+
+      it "returns false" do
+        expect(subject.root_btrfs?(partition)).to eq(false)
+      end
     end
 
-    it "filters out snapper snapshots" do
-      parsed = subject.parsePartition(partition)
-      expect(parsed["subvolumes"]).to eq(
-        [{ "path" => "var/lib/machines" }]
-      )
-    end
+    context "when the partition is mounted at root" do
+      let(:partition) { partition1 }
 
-    context "when there are no Btrfs subvolumes" do
-      let(:subvolumes) { [] }
+      context "but the filesystem is not Btrfs" do
+        let(:root_fs) { :xfs }
 
-      it "exports them as an empty array" do
-        parsed = subject.parsePartition(partition)
-        expect(parsed["subvolumes"]).to eq([])
+        it "returns false" do
+          expect(subject.root_btrfs?(partition)).to eq(false)
+        end
       end
 
-      context "and filesystem is not Btrfs" do
-        let(:filesystem) { :ext4 }
+      context "and the filesystem is Btrfs" do
+        let(:root_fs) { :btrfs }
 
-        it "does not export the subvolumes list" do
-          parsed = subject.parsePartition(partition)
-          expect(parsed).to_not have_key("subvolumes")
+        it "returns true" do
+          expect(subject.root_btrfs?(partition)).to eq(true)
         end
       end
     end
+  end
 
-    context "when a partition_type is present" do
-      let(:partition) do
-        { "mount" => "/", "partition_type" => "primary" }
-      end
+  describe "#configure_root_btrfs" do
+    let(:partition) { { "mount" => "/", "used_fs" => :btrfs, "subvol" => subvolumes } }
 
-      it "exports the partition type" do
-        parsed = subject.parsePartition(partition)
-        expect(parsed["partition_type"]).to eq("primary")
+    let(:subvolumes) { nil }
+
+    let(:device) { "/dev/sda" }
+
+    let(:data) { {} }
+
+    context "when the 'enable_snapshots' option is set" do
+      let(:data) { { "enable_snapshots" => true } }
+
+      it "configures the partition to enable snapshots" do
+        subject.configure_root_btrfs(partition, device: device, data: data)
+
+        expect(partition["userdata"]["/"]).to eq("snapshots")
       end
     end
 
-    context "when a partition_type is not present" do
-      let(:partition) do
-        { "mount" => "/" }
+    context "when the 'enable_snapshots' option is not set" do
+      let(:data) { { "enable_snapshots" => false } }
+
+      it "does not configure the partition to enable snapshots" do
+        subject.configure_root_btrfs(partition, device: device, data: data)
+
+        expect(partition["userdata"]).to be_nil
+      end
+    end
+
+    context "when the partition contains subvolumes" do
+      let(:subvolumes) { [:subvolume1, :subvolume2] }
+
+      it "does not modify the list of subvolumes" do
+        subject.configure_root_btrfs(partition, device: device, data: data)
+
+        expect(partition["subvol"]).to eq(subvolumes)
+      end
+    end
+
+    context "when the partition does not contain subvolumes" do
+      let(:subvolumes) { nil }
+
+      before do
+        subject.instance_variable_set(:@AutoPartPlan, control_file)
       end
 
-      it "ignores the partition_type" do
-        parsed = subject.parsePartition(partition)
-        expect(parsed).to_not have_key("partition_type")
+      let(:control_file) { [ { "device" => "/dev/sda", "partitions" => partitions } ] }
+
+      context "and the control file does not contain a root Btrfs for the device" do
+        let(:partitions) { [] }
+
+        it "sets the list of subvolumes" do
+          subject.configure_root_btrfs(partition, device: device, data: data)
+
+          expect(partition["subvol"]).to_not be_empty
+        end
+      end
+
+      context "and the control file contains a root Btrfs for the device" do
+        let(:partitions) { [partition1, partition2] }
+
+        it "does not set the list of subvolumes" do
+          subject.configure_root_btrfs(partition, device: device, data: data)
+
+          expect(partition["subvol"]).to be_nil
+        end
       end
     end
   end
