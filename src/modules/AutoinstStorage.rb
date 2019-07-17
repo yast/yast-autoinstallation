@@ -116,7 +116,7 @@ module Yast
         disks = tm.select { |dev,disk| disk["type"]==ctype };
         found = !disks.keys.include?(after)
         disks.each do |device, disk|
-          next if !found && device != after 
+          next if !found && device != after
           found = true if device == after
           next if device == after || @tabooDevices.include?(device)
           used_disk = device
@@ -287,7 +287,7 @@ module Yast
       #raid2device = $[];
       tm.each do |k, d2|
         if [:CT_DISK,:CT_DMMULTIPATH].include?(d2["type"])
-          tmp = d2.fetch("partitions",[]).select do |p| 
+          tmp = d2.fetch("partitions",[]).select do |p|
             !p.fetch("raid_name","").empty?
           end
           devMd = tmp.map { |p| p["raid_name"] }
@@ -509,7 +509,7 @@ module Yast
                     Builtins.y2milestone("shrinking to %1", s)
                     if (pe["size"] - s) > REPORT_DISK_SHRINKING_LIMIT
                       Report.Warning(_("Requested partition size of %s on \"%s\" will be reduced to "\
-                        "%s in order to fit on disk.") % 
+                        "%s in order to fit on disk.") %
                           [Storage.ByteToHumanString(pe["size"]), pe["mount"], Storage.ByteToHumanString(s)])
                     end
                     Ops.set(pe, "size", s)
@@ -717,7 +717,7 @@ module Yast
             x.fetch("partition_nr",99)<=>y.fetch("partition_nr",99)
           end
           # snapshots are default
-          d["enable_snapshots"] = true unless d.has_key?("enable_snapshots") 
+          d["enable_snapshots"] = true unless d.has_key?("enable_snapshots")
           deep_copy(d)
         end
 
@@ -1143,40 +1143,17 @@ module Yast
 
           Builtins.y2milestone("solutions: %1", sol)
           Builtins.y2milestone("disk: %1", tm[device])
-	  tm[device] = process_partition_data(device, sol)
+          tm[device] = process_partition_data(device, sol)
 
-          root_partition = tm[device]["partitions"].find{|p| p["mount"] == "/" && p["used_fs"] == :btrfs}
-          if root_partition
-            if data["enable_snapshots"] && tm[device].has_key?("partitions")
-              log.debug("Enabling snapshots for \"/\"; device #{data['device']}")
-              root_partition["userdata"] = { "/" => "snapshots" }
-            end
-            if root_partition["subvol"].nil?
-              # Add default subvolumes if the user has NOT explicit defined
-              # a root partition with btrfs in the AY configuration
-              # file for that device which does not have an subvolumes entry.
-              # (bsc#1012328, bnc1059617)
-              ay_config_root_partition = @AutoPartPlan.find do |d|
-                d["device"] == device &&
-                  d["partitions"] &&
-                  d["partitions"].any? { |p| p["mount"] = "/" && p["filesystem"] == :btrfs }
-              end
-              unless ay_config_root_partition
-                log.info "Adding default subvolumes to #{root_partition["device"]}"
-                root_index = tm[device]["partitions"].index(root_partition)
-                tm[device]["partitions"][root_index] = Storage.AddSubvolRoot(root_partition)
-              else
-                log.info "User has defined root partition (btrfs) with no subvolumes" \
-                  " for device #{root_partition["device"]}"
-              end
-            end
-          end
+          root_btrfs = find_root_btrfs(tm[device]["partitions"])
+          configure_root_btrfs(root_btrfs, device: device, data: data) if root_btrfs
 
-	  changed = true
+          changed = true
           SearchRaids(tm)
           Builtins.y2milestone("disk: %1", tm[device])
         end
       end
+
       Storage.SetTargetMap(tm) if changed
 
       changed = false
@@ -1218,6 +1195,93 @@ module Yast
       result
     end
 
+    # Finds a root partition with Btrfs format
+    #
+    # @param partitions [Array<Hash>] each hash corresponds to a partition (as they are
+    #   represented in the target map).
+    #
+    # @return [Hash, nil]
+    def find_root_btrfs(partitions)
+      partitions.find { |part| root_btrfs?(part) }
+    end
+
+    # Whether the partition is mounted at root and formatted with Btrfs
+    #
+    # @param partition [Hash] partition as represented in the target map
+    def root_btrfs?(partition)
+      return false unless partition["mount"] == "/"
+
+      partition["used_fs"] == :btrfs || partition["filesystem"] == :btrfs
+    end
+
+    # Configures a root Btrfs partition
+    #
+    # Snapshots are enabled if needed and subvolumes are added.
+    #
+    # The `partition` parameter is modified.
+    #
+    # @param partition [Hash] partition as represented in the target map
+    # @param device [String] device that contains the partition
+    # @param data [Hash] data of the device that contains the partition
+    def configure_root_btrfs(partition, device: "", data: {})
+      log.info("Configuring root Btrfs #{device}: #{partition}")
+
+      enable_snapshots(partition, data)
+
+      add_subvolumes(partition, device, data)
+    end
+
+    # Enables snapshots if needed
+    #
+    # The `partition` parameter is modified.
+    #
+    # @param partition [Hash] partition as represented in the target map
+    # @param data [Hash] data of the device that contains the partition
+    def enable_snapshots(partition, data)
+      return unless data["enable_snapshots"]
+
+      log.info("Enabling snapshots for device #{partition["device"]}")
+
+      partition["userdata"] = { "/" => "snapshots" }
+    end
+
+    # Adds subvolumes if needed
+    #
+    # The `partition` parameter is modified.
+    #
+    # @param partition [Hash] partition as represented in the target map
+    # @param device [String] device that contains the partition
+    # @param data [Hash] data of the device that contains the partition
+    def add_subvolumes(partition, device, data)
+      return if partition["subvol"]
+
+      # Add default subvolumes if the user has NOT explicit defined
+      # a root partition with btrfs in the AY configuration
+      # file for that device which does not have a subvolumes entry.
+      # (bsc#1012328, bnc1059617)
+      if !profile_with_root_btrfs?(device)
+        log.info("Adding default subvolumes to #{data["device"]}")
+
+        partition.merge!(Storage.AddSubvolRoot(partition))
+      else
+        log.info(
+          "User has defined root partition (btrfs) with no subvolumes for device #{data["device"]}"
+        )
+      end
+    end
+
+    # Whether the AutoYaST profile specifies a root Btrfs partition in some device
+    #
+    # @param device [String] a device name
+    # @return [Boolean]
+    def profile_with_root_btrfs?(device)
+      data = @AutoPartPlan.find { |d| d["device"] == device }
+
+      return false unless data
+
+      partitions = data["partitions"] || []
+      partitions.any? { |part| root_btrfs?(part) }
+    end
 
     # Build the id for a partition entry in the man table.
     # @parm disk_dev_name name of the devie e.g.: /dev/hda
