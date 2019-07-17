@@ -220,10 +220,16 @@ module Yast
             []
           )
         )
+
+        if AutoinstStorage.root_btrfs?(md)
+          AutoinstStorage.configure_root_btrfs(md, device: "/dev/md", data: @raid["/dev/md"])
+        end
+
         Builtins.union(md, options)
       end
 
       allraid = []
+
       if Ops.greater_than(
           Builtins.size(
             Ops.get_list(@ExistingRAID, ["/dev/md", "partitions"], [])
@@ -237,6 +243,7 @@ module Yast
       else
         allraid = deep_copy(_RaidList)
       end
+
       Builtins.y2milestone("All RAID: %1", allraid)
 
 
