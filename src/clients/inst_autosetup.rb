@@ -480,7 +480,7 @@ module Yast
     # Import Users configuration from profile
     def autosetup_users
       users_config = ModuleConfigBuilder.build(
-        Y2ModuleConfig.getModuleConfig("org.opensuse.yast.Users"), Profile.current)
+        Y2ModuleConfig.getModuleConfig("users"), Profile.current)
       if users_config
         Profile.remove_sections(users_config.keys)
         Call.Function("users_auto", ["Import", users_config])
