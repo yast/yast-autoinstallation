@@ -89,6 +89,8 @@ Obsoletes:      yast2-lib-autoinst
 
 BuildArch:      noarch
 
+Requires(post): %fillup_prereq
+
 %description
 This package is intended for management of the control files and the
 AutoYaST2 configurations. This system should only be used by
@@ -173,7 +175,7 @@ install -m 644 scripts/autoyast-initscripts.service %{buildroot}%{_unitdir}/
 
 # Documentation
 install -d -m 755 %{buildroot}%{yast_docdir}/html
-tar xvpfC %{SOURCE1} %{buildroot}%{yast_docdir}/html
+tar -xvpf %{SOURCE1} -C %{buildroot}%{yast_docdir}/html
 mv %{buildroot}%{yast_docdir}/html/autoyast/* %{buildroot}%{yast_docdir}/html/
 rmdir %{buildroot}%{yast_docdir}/html/autoyast
 
