@@ -376,6 +376,20 @@ module Yast
       @user     = parsed_url["user"]   || ""
       @pass     = parsed_url["pass"]   || ""
 
+      if @filepath.empty? && !@host.empty? &&
+         ( @scheme == "relurl" || @scheme == "file" )
+
+          # "relurl": No host information has been given here. So the path has been stored
+          # in the host variable while parsing. This will be reverted.
+          #
+          # "file": Normally the file is defined with 3 slashes like file:///autoinst.xml
+          # in order to define an empty host entry. But that will be often overseen
+          # by the user. So we will support file://autoinst.xml too:
+          log.info "correcting #{@scheme}://#{@host} to #{@scheme}:///#{@host}"
+          @filepath = @host
+          @host = ""
+      end
+
       @remoteProfile = !["default", "file", "floppy", "usb", "device"].include?(@scheme)
 
       log.info "urltok = #{URL.HidePassword(profile_location)}"
