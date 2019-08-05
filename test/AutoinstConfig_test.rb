@@ -110,6 +110,70 @@ describe "Yast::AutoinstConfig" do
         expect(subject.pass).to eq("woo")
       end
     end
+
+    context "when \"relurl\" is the protocol" do
+      let(:autoyast_profile_url) { "relurl://auto-installation.xml" }
+      it "sets host and filename correctly" do
+        expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
+        expect(subject.host).to eq("")
+        expect(subject.scheme).to eq("relurl")
+        expect(subject.filepath).to eq("auto-installation.xml")
+      end
+    end
+
+    context "when \"relurl\" is the protocol and sub-pathes are defined" do
+      let(:autoyast_profile_url) { "relurl://sub_path/auto-installation.xml" }
+      it "sets host and filename correctly" do
+        expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
+        expect(subject.host).to eq("")
+        expect(subject.scheme).to eq("relurl")
+        expect(subject.filepath).to eq("sub_path/auto-installation.xml")
+      end
+    end
+
+    context "when \"file:\/\/\" is given" do
+      context "when no sub path is defined" do
+        let(:autoyast_profile_url) { "file://auto-installation.xml" }
+        it "sets host and filename correctly" do
+          expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
+          expect(subject.host).to eq("")
+          expect(subject.scheme).to eq("file")
+          expect(subject.filepath).to eq("auto-installation.xml")
+        end
+      end
+
+      context "when sub path is defined" do
+        let(:autoyast_profile_url) { "file://sub-path/auto-installation.xml" }
+        it "sets host and filename correctly" do
+          expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
+          expect(subject.host).to eq("")
+          expect(subject.scheme).to eq("file")
+          expect(subject.filepath).to eq("sub-path/auto-installation.xml")
+        end
+      end
+    end
+
+    context "when \"file:///\" is given (old format)" do
+      context "when no sub path is defined" do
+        let(:autoyast_profile_url) { "file:///auto-installation.xml" }
+        it "sets host and filename correctly" do
+          expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
+          expect(subject.host).to eq("")
+          expect(subject.scheme).to eq("file")
+          expect(subject.filepath).to eq("/auto-installation.xml")
+        end
+      end
+
+      context "when sub path is defined" do
+        let(:autoyast_profile_url) { "file:///sub-path/auto-installation.xml" }
+        it "sets host and filename correctly" do
+          expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
+          expect(subject.host).to eq("")
+          expect(subject.scheme).to eq("file")
+          expect(subject.filepath).to eq("/sub-path/auto-installation.xml")
+        end
+      end
+    end
   end
 
   describe "#profile_path" do
