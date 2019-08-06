@@ -11,6 +11,7 @@ TESTS = \
     AutoinstGeneral_test.rb \
     AutoinstPartPlan_test.rb \
     AutoinstSoftware_test.rb \
+    ProfileLocation_test.rb  \
     autoinst_storage_test.rb \
     profile_test.rb \
     Y2ModuleConfig_test.rb \
