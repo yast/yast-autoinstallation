@@ -377,13 +377,14 @@ module Yast
       @pass     = parsed_url["pass"]   || ""
 
       if @scheme == "relurl" || @scheme == "file"
-        # "relurl": No host information has been given here. So part of path or the
-        # complete path has been stored in the host variable while parsing. This will be reverted.
+        # "relurl": No host information has been given here. So a part of the path or the
+        # complete path has been stored in the host variable while parsing it.
+        # This will be reverted.
         #
         # "file": Normally the file is defined with 3 slashes like file:///autoinst.xml
         # in order to define an empty host entry. But that will be often overseen
         # by the user. So we will support file://autoinst.xml too:
-        log.info "correcting #{@scheme}://#{@host}/#{@filepath} to empty host"
+        log.info "correcting #{@scheme}://#{@host}/#{@filepath} to empty host entry"
         if !@host.empty? && !@filepath.empty?
           @filepath = File.join( @host, @filepath)
         else

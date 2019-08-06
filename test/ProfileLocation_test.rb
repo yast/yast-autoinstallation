@@ -19,7 +19,7 @@ describe "Yast::ProfileLocation" do
           "http://download.opensuse.org/distribution/leap/15.1/repo/oss/")
       end
 
-      it "downloads AutoYaST configuration file with absolute paht" do
+      it "downloads AutoYaST configuration file with absolute path" do
         expect(subject).to receive(:Get).with("http",
           "download.opensuse.org",
           "/distribution/leap/15.1/repo/oss/autoinst.xml",

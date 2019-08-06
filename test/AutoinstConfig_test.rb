@@ -111,7 +111,7 @@ describe "Yast::AutoinstConfig" do
       end
     end
 
-    context "when \"relurl\" is the protocol" do
+    context "when \"relurl\" is defined" do
       let(:autoyast_profile_url) { "relurl://auto-installation.xml" }
       it "sets host and filename correctly" do
         expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
@@ -121,7 +121,7 @@ describe "Yast::AutoinstConfig" do
       end
     end
 
-    context "when \"relurl\" is the protocol and sub-pathes are defined" do
+    context "when \"relurl\" is defined and sub-pathes are defined" do
       let(:autoyast_profile_url) { "relurl://sub_path/auto-installation.xml" }
       it "sets host and filename correctly" do
         expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
@@ -131,7 +131,7 @@ describe "Yast::AutoinstConfig" do
       end
     end
 
-    context "when \"file:\/\/\" is given" do
+    context "when \"file:\/\/\" is defined" do
       context "when no sub path is defined" do
         let(:autoyast_profile_url) { "file://auto-installation.xml" }
         it "sets host and filename correctly" do
@@ -153,7 +153,7 @@ describe "Yast::AutoinstConfig" do
       end
     end
 
-    context "when \"file:///\" is given (old format)" do
+    context "when \"file:///\" is defined (old format)" do
       context "when no sub path is defined" do
         let(:autoyast_profile_url) { "file:///auto-installation.xml" }
         it "sets host and filename correctly" do
