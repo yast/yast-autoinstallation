@@ -833,7 +833,7 @@ module Yast
       # are available meanwhile. (bnc#979691)
       Pkg.PkgApplReset
 
-      # Select base product again which has been reset by the privious call.
+      # Select base product again which has been reset by the previous call.
       # (bsc#1143106)
       selected_base_products.each { |name| Pkg.ResolvableInstall(name, :product) }
 
