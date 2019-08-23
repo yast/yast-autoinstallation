@@ -2,7 +2,7 @@
 
 Starting on 3.3.x version, AutoYaST relies on the storage-ng library. That
 means AutoYaST itself does not contain the logic to process the `<partitioning>`
-section of the profile. See the [storage-ng.md](storage-md.md) file for more
+section of the profile. See the [storage-ng.md](storage-ng.md) file for more
 information about how it.
 
 But prior to that version (that is, in the SLE-12 family and before), AutoYaST
