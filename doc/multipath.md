@@ -81,6 +81,6 @@ following bug reports:
 - [bsc#1130988](https://bugzilla.suse.com/show_bug.cgi?id=1130988)
 - [bsc#1135735](https://bugzilla.suse.com/show_bug.cgi?id=1135735)
 
-[This gist](https://gist.github.com/ancorgs/a91f840bb7a2896b6500134982bbca27)
+[This wiki page](https://github.com/yast/yast-autoinstallation/wiki/Experiments-with-AutoYaST-and-Multipath)
 summarizes the results of those manual tests (including more details in some
 cases) and served as the main source of information for writing this document.
