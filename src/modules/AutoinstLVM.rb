@@ -418,20 +418,7 @@ module Yast
         )
         partitions = []
         Builtins.foreach(Ops.get_list(volume_group, "partitions", [])) do |lv|
-          size_k = lv.fetch("size_k", 0)
-          # With RAID systems freeSpace is 0. So a resize is not needed/possible here.
-          if (freeSpace > 0 && size_k > freeSpace)
-            lv["size_k"] = freeSpace
-            Builtins.y2milestone("Requested partition size of %s on \"%s\" will be reduced to "\
-                "%s in order to fit on disk." %
-                [size_k, lv["mount"], freeSpace])
-            if (size_k - freeSpace) > REPORT_DISK_SHRINKING_LIMIT
-              Report.Warning(_("Requested partition size of %s on \"%s\" will be reduced to "\
-                "%s in order to fit on disk.") %
-                [Storage.KByteToHumanString(size_k), lv["mount"], Storage.KByteToHumanString(freeSpace)])
-            end
-          end
-          freeSpace = Ops.subtract(freeSpace, Ops.get_integer(lv, "size_k", 0))
+          freeSpace = substract_lv_size(freeSpace, lv)
           Builtins.y2milestone("freeSpace = %1", freeSpace)
           partitions << lv
         end
@@ -609,6 +596,43 @@ module Yast
     publish :function => :Init, :type => "boolean ()"
     publish :function => :get_existing_pvs, :type => "list <map> (string)"
     publish :function => :Write, :type => "boolean ()"
+
+    private
+
+    # Substracts from the existing space the amount needed to accommodate the
+    # given logical volume, reducing the size of that LV if it doesn't fit into
+    # the initial space.
+    #
+    # @note This method can modify the second passed argument, unless the
+    #   logical volume fits on the space or it's a thin volume.
+    #
+    # @param freeSpace [Integer] space available originally
+    # @param lv [Hash] logical volume, the field 'size_k' of this argument will
+    #   be modified if needed
+    # @return [Integer] resulting available space
+    def substract_lv_size(freeSpace, lv)
+      # See bug#1148918
+      if lv["used_pool"] && !lv["used_pool"].empty?
+        log.info "Size of thin logical volume on #{lv['mount']} will be ignored."
+        return freeSpace
+      end
+
+      size_k = lv.fetch("size_k", 0)
+      # With RAID systems freeSpace is 0. So a resize is not needed/possible here.
+      if (freeSpace > 0 && size_k > freeSpace)
+        lv["size_k"] = freeSpace
+        Builtins.y2milestone("Requested partition size of %s on \"%s\" will be reduced to "\
+          "%s in order to fit on disk." % [size_k, lv["mount"], freeSpace])
+
+        if (size_k - freeSpace) > REPORT_DISK_SHRINKING_LIMIT
+          Report.Warning(_("Requested partition size of %s on \"%s\" will be reduced to "\
+            "%s in order to fit on disk.") %
+            [Storage.KByteToHumanString(size_k), lv["mount"], Storage.KByteToHumanString(freeSpace)])
+        end
+      end
+
+      Ops.subtract(freeSpace, Ops.get_integer(lv, "size_k", 0))
+    end
   end
 
   AutoinstLVM = AutoinstLVMClass.new
