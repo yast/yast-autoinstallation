@@ -371,6 +371,14 @@ module Yast
       # Register system
       return :abort unless suse_register
 
+      # SLES only. Have to be run before software to add required packages to enable kdump
+      if Builtins.haskey(Profile.current, "kdump")
+        Call.Function(
+          "kdump_auto",
+          ["Import", Ops.get_map(Profile.current, "kdump", {})]
+        )
+      end
+
       # Software
 
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
@@ -406,14 +414,6 @@ module Yast
       )
       Call.Function("deploy_image_auto", ["Write"])
 
-
-      # SLES only
-      if Builtins.haskey(Profile.current, "kdump")
-        Call.Function(
-          "kdump_auto",
-          ["Import", Ops.get_map(Profile.current, "kdump", {})]
-        )
-      end
 
       Progress.NextStage
 
