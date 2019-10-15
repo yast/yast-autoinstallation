@@ -66,7 +66,6 @@ Requires:       libxslt
 Requires:       yast2 >= 4.2.1
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
-Requires:       yast2-ntp-client >= 4.0.1
 # Moving security module to first installation stage
 Requires:       yast2-security >= 4.1.1
 Requires:       yast2-network >= 3.1.145
@@ -120,6 +119,8 @@ Requires:       yast2-ncurses
 Requires:       yast2-packager >= 4.1.33
 # ServicesManagerTargetClass::BaseTargets
 Requires:       yast2-services-manager >= 3.1.10
+# Required for one time sync before installation
+Requires:       yast2-ntp-client >= 4.0.1
 Requires:       yast2-slp
 Requires:       yast2-transfer >= 2.21.0
 # storage-ng based version
