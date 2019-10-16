@@ -103,7 +103,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
         end
 
         # bsc#1153293
-        it "removes the registration section to not run in again in the 2nd stage" do
+        it "removes the registration section to not run it again in the 2nd stage" do
           expect(Yast::Profile).to receive(:remove_sections).with("suse_register")
           client.suse_register
         end
