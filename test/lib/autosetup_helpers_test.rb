@@ -58,6 +58,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
       allow_any_instance_of(Y2Autoinstallation::AutosetupHelpers).to receive(
         :registration_module_available?).and_return(reg_module_available)
       allow(Yast::Profile).to receive(:current).and_return(profile_content)
+      allow(Yast::Profile).to receive(:remove_sections).with("suse_register")
     end
 
     context "yast2-register is not available" do
@@ -98,6 +99,12 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
         it "downloads release notes" do
           expect(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
+          client.suse_register
+        end
+
+        # bsc#1153293
+        it "removes the registration section to not run in again in the 2nd stage" do
+          expect(Yast::Profile).to receive(:remove_sections).with("suse_register")
           client.suse_register
         end
 
