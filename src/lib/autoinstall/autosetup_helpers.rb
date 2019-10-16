@@ -29,6 +29,10 @@ module Y2Autoinstallation
   # and {Yast::InstAutosetupUpgradeClient} clients. These clients need to be rewritten
   # but, for the time being, this is the easiest way to share code between them.
   module AutosetupHelpers
+
+    # name of the registration section in the profile
+    REGISTER_SECTION = "suse_register"
+
     # Activate and probe storage
     def probe_storage
       Y2Storage::StorageManager.instance.activate(Y2Autoinstallation::ActivateCallbacks.new)
@@ -80,15 +84,19 @@ module Y2Autoinstallation
     def suse_register
       return true unless registration_module_available? # do nothing
       general_section = Yast::Profile.current["general"] || {}
-      if Yast::Profile.current["suse_register"]
+      if Yast::Profile.current[REGISTER_SECTION]
         return false unless Yast::WFM.CallFunction(
           "scc_auto",
-          ["Import", Yast::Profile.current["suse_register"]]
+          ["Import", Yast::Profile.current[REGISTER_SECTION]]
         )
         return false unless Yast::WFM.CallFunction(
           "scc_auto",
           ["Write"]
         )
+
+        # remove the registration section to not run it again in the 2nd stage
+        Yast::Profile.remove_sections(REGISTER_SECTION)
+
         # failed relnotes download is not fatal, ignore ret code
         Yast::WFM.CallFunction("inst_download_release_notes")
       elsif general_section["semi-automatic"] &&
