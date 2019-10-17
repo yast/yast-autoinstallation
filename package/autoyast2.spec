@@ -59,6 +59,7 @@ BuildRequires:  systemd-rpm-macros
 %else
 BuildRequires:  systemd
 %endif
+BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
@@ -140,8 +141,10 @@ generated with the autoyast2 package.
 %prep
 %setup -q
 
+%check
+%yast_check
+
 %build
-%yast_build
 
 %install
 %yast_install
@@ -169,16 +172,6 @@ install -d %{buildroot}%{_localstatedir}/lib/autoinstall/repository/rules
 install -d %{buildroot}%{_localstatedir}/lib/autoinstall/repository/classes
 install -d %{buildroot}%{_localstatedir}/lib/autoinstall/autoconf
 install -d %{buildroot}%{_localstatedir}/lib/autoinstall/tmp
-
-# Systemd Stuff
-mkdir -p %{buildroot}%{_unitdir}/
-install -m 644 scripts/autoyast-initscripts.service %{buildroot}%{_unitdir}/
-
-# Documentation
-install -d -m 755 %{buildroot}%{yast_docdir}/html
-tar -xvpf %{SOURCE1} -C %{buildroot}%{yast_docdir}/html
-mv %{buildroot}%{yast_docdir}/html/autoyast/* %{buildroot}%{yast_docdir}/html/
-rmdir %{buildroot}%{yast_docdir}/html/autoyast
 
 %post
 %{fillup_only -n autoinstall}
@@ -232,11 +225,9 @@ rmdir %{buildroot}%{yast_docdir}/html/autoyast
 %dir %{yast_scrconfdir}
 %{yast_scrconfdir}/autoinstall.scr
 %{yast_scrconfdir}/cfg_autoinstall.scr
-# DTD files
+# autoinstall modules
 %dir %{_datadir}/autoinstall
-#%dir %{_datadir}/autoinstall/dtd
 %dir %{_datadir}/autoinstall/modules
-#%{_datadir}/autoinstall/dtd/*
 
 # systemd service file
 %{_unitdir}/autoyast-initscripts.service
