@@ -156,23 +156,6 @@ for d in %{buildroot}%{_datadir}/autoinstall/modules/*.desktop ; do
     %suse_update_desktop_file $d
 done
 
-# Class conf
-install -d -m 700 %{buildroot}%{_sysconfdir}/autoinstall
-# Installation files
-install -d -m 700 %{buildroot}%{_localstatedir}/adm/autoinstall/scripts
-install -d -m 700 %{buildroot}%{_localstatedir}/adm/autoinstall/init.d
-install -d -m 700 %{buildroot}%{_localstatedir}/adm/autoinstall/logs
-install -d -m 700 %{buildroot}%{_localstatedir}/adm/autoinstall/files
-install -d -m 700 %{buildroot}%{_localstatedir}/adm/autoinstall/cache
-
-# Repository
-install -d %{buildroot}%{_localstatedir}/lib/autoinstall/repository
-install -d %{buildroot}%{_localstatedir}/lib/autoinstall/repository/templates
-install -d %{buildroot}%{_localstatedir}/lib/autoinstall/repository/rules
-install -d %{buildroot}%{_localstatedir}/lib/autoinstall/repository/classes
-install -d %{buildroot}%{_localstatedir}/lib/autoinstall/autoconf
-install -d %{buildroot}%{_localstatedir}/lib/autoinstall/tmp
-
 %post
 %{fillup_only -n autoinstall}
 
