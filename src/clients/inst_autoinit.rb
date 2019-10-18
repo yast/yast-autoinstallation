@@ -7,9 +7,15 @@
 #
 # $Id$
 #
+
+require "autoinstall/autosetup_helpers"
+require "y2packager/medium_type"
+
 module Yast
   class InstAutoinitClient < Client
+    include Y2Autoinstallation::AutosetupHelpers
     include Yast::Logger
+
     def main
       Yast.import "UI"
 
@@ -85,6 +91,14 @@ module Yast
       end
 
       Progress.Finish
+
+      # when installing from the online installation medium we need to
+      # register the system earlier because the medium does not contain any
+      # repositories, we need the repositories from the registration server
+      # TODO: maybe we will need it also in the autoupgrade case...
+      if Y2Packager::MediumType.online? && !Mode.autoupgrade
+        suse_register
+      end
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
         @ret = WFM.CallFunction("inst_system_analysis", [])

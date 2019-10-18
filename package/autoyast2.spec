@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.2.11
+Version:        4.2.12
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -116,8 +116,8 @@ Requires:       yast2-bootloader
 Requires:       yast2-core
 Requires:       yast2-country
 Requires:       yast2-ncurses
-# Disabling local repos in second stage only.
-Requires:       yast2-packager >= 4.1.33
+# Y2Packager::MediumType
+Requires:       yast2-packager >= 4.2.25
 # ServicesManagerTargetClass::BaseTargets
 Requires:       yast2-services-manager >= 3.1.10
 # Required for one time sync before installation
