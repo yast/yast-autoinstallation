@@ -7,9 +7,12 @@
 #
 # $Id: AutoinstPartition.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
+require "y2storage"
 
 module Yast
   class AutoinstPartitionClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
 
@@ -18,9 +21,6 @@ module Yast
       Yast.include self, "autoinstall/tree.rb"
 
       Yast.import "AutoinstCommon"
-      Yast.import "Partitions"
-      Yast.import "FileSystems"
-      Yast.import "Storage"
 
       textdomain "autoinst"
 
@@ -38,7 +38,7 @@ module Yast
         "uuid"         => "",
         "size"         => "10G",
         "format"       => true,
-        "filesystem"   => Partitions.DefaultFs,
+        "filesystem"   => default_root_fs_type.to_sym,
         "mkfs_options" => "",
         "partition_nr" => 1,
         "partition_id" => 131,
@@ -73,10 +73,21 @@ module Yast
     end
 
     def AutoinstPartition
-      @allfs = FileSystems.GetAllFileSystems(true, true, "")
-
+      # The GetAllFileSystems of the old libstorag returns a hash with all kind of
+      # information (even widgets!). Even more, every entry is a mashup of information
+      # related to filesystems types and partition ids (both are often not clearly
+      # distinguised in the old libstorage).
+      #
+      # This is a simplyfication with just some values.
+      #
+      # Moreover, this offers all the known filesystems, not necessarily the
+      # supported ones.
+      @allfs = Y2Storage::Filesystems::Type.all.each_with_object({}) do |type, hash|
+        hash[type.to_sym] = {name: type.to_human_string, fsid: type.to_i}
+      end
       nil
     end
+
     # Convenience wrappers for more general object predicates
     def isPartition(partition)
       partition = deep_copy(partition)
@@ -139,7 +150,7 @@ module Yast
       end
       if Ops.get_boolean(p, "create", false)
         if p["size"] &&  !p["size"].empty?
-          part_desc += " with #{Storage.ByteToHumanString(p["size"].to_i)}"
+          part_desc += " with #{Y2Storage::DiskSize.new(p["size"].to_i).to_human_string}"
         end
       else
         if Ops.get_boolean(p, "resize", false)
@@ -147,7 +158,7 @@ module Yast
             "%1 resize part.%2 to %3",
             part_desc,
             Ops.get_integer(p, "partition_nr", 999),
-            Storage.ByteToHumanString(p["size"].to_i)
+            Y2Storage::DiskSize.new(p["size"].to_i).to_human_string
           )
         else
           part_desc = Builtins.sformat(
@@ -160,7 +171,7 @@ module Yast
       part_desc = Builtins.sformat(
         "%1,%2",
         part_desc,
-        Partitions.FsIdToString(Ops.get_integer(p, "partition_id", 131))
+        Y2Storage::PartitionId.new_from_legacy(p.fetch("partition_id", 131)).to_s
       )
 
       fs = Ops.get(@allfs, Ops.get_symbol(p, "filesystem", :nothing), {})
@@ -231,159 +242,6 @@ module Yast
       Ops.get_symbol(part, "filesystem", :Empty)
     end
 
-    def parsePartition(part)
-      part = deep_copy(part)
-      newPart = new(Ops.get_string(part, "mount", ""))
-      newPart = set(
-        newPart,
-        "mountby",
-        Ops.get_symbol(part, "mountby", :device)
-      )
-      if Builtins.haskey(part, "label")
-        newPart = set(newPart, "label", Ops.get_string(part, "label", ""))
-      end
-      newPart = set(newPart, "create", Ops.get_boolean(part, "create", true))
-      newPart = set(newPart, "crypt", Ops.get_string(part, "crypt", ""))
-      newPart = set(
-        newPart,
-        "crypt_fs",
-        Ops.get_boolean(part, "crypt_fs", false)
-      )
-      newPart = set(newPart, "crypt_key", Ops.get_string(part, "crypt_key", ""))
-      newPart = set(newPart, "format", Ops.get_boolean(part, "format", true))
-      if Builtins.haskey(part, "filesystem")
-        newPart = set(
-          newPart,
-          "filesystem",
-          Ops.get_symbol(part, "filesystem", :Empty)
-        )
-        newPart = set(newPart, "format", true)
-      elsif Mode.config
-        # We are in the autoyast configuration mode. So if the parsed
-        # system partitions do not have a filesystem entry (E.G. Raids)
-        # we are not using the default entry (Partitions.DefaultFs).
-        newPart["filesystem"] = :Empty
-      end
-      if Ops.get_boolean(newPart, "format", false) &&
-          !Builtins.isempty(Ops.get_string(part, "mkfs_options", ""))
-        Ops.set(
-          newPart,
-          "mkfs_options",
-          Ops.get_string(part, "mkfs_options", "")
-        )
-      else
-        newPart = Builtins.remove(newPart, "mkfs_options")
-      end
-      if !Builtins.isempty(Ops.get_list(part, "subvolumes", []))
-        #Filtering out all snapper subvolumes
-        newPart["subvolumes"] = part["subvolumes"].reject { |s| s.start_with?(".snapshots") }
-      else
-        newPart = Builtins.remove(newPart, "subvolumes")
-      end
-      if !Builtins.isempty(Ops.get_string(part, "used_pool", ""))
-        Ops.set(newPart, "used_pool", Ops.get_string(part, "used_pool", ""))
-      else
-        newPart = Builtins.remove(newPart, "used_pool")
-      end
-      if Ops.get_boolean(part, "pool", false)
-        Ops.set(newPart, "pool", true)
-      else
-        newPart = Builtins.remove(newPart, "pool")
-      end
-      newPart = set(newPart, "loop_fs", Ops.get_boolean(part, "loop_fs", false))
-      if part.has_key?("partition_id")
-        newPart["partition_id"] = part["partition_id"]
-      else
-        #removing default entry
-        newPart.delete("partition_id")
-      end
-      newPart = set(newPart, "size", Ops.get_string(part, "size", ""))
-      newPart = set(newPart, "lv_name", Ops.get_string(part, "lv_name", ""))
-      newPart = set(newPart, "lvm_group", Ops.get_string(part, "lvm_group", ""))
-      newPart = set(newPart, "stripes", Ops.get_integer(part, "stripes", 1))
-      # Set partition_nr too (if available) bnc#886808
-      newPart["partition_nr"] = part["partition_nr"] if part["partition_nr"]
-      newPart = set(
-        newPart,
-        "stripesize",
-        Ops.get_integer(part, "stripesize", 4)
-      )
-      if Builtins.haskey(part, "fstopt")
-        newPart = set(
-          newPart,
-          "fstopt",
-          Ops.get_string(part, "fstopt", "defaults")
-        )
-      end
-      if Ops.get_integer(part, "stripes", 1) == 1
-        newPart = Builtins.remove(newPart, "stripes")
-        newPart = Builtins.remove(newPart, "stripesize")
-      end
-      # partition_id enforcement
-      if Builtins.haskey(part, "lvm_group")
-        newPart = set(newPart, "partition_id", 142)
-      elsif "swap" == Ops.get_string(newPart, "mount", "")
-        newPart = set(newPart, "partition_id", 130)
-      end
-      if Builtins.haskey(part, "raid_name")
-        newPart = set(
-          newPart,
-          "raid_name",
-          Ops.get_string(part, "raid_name", "")
-        )
-      end
-      if Builtins.haskey(part, "raid_options")
-        newPart = set(
-          newPart,
-          "raid_options",
-          Ops.get_map(part, "raid_options", {})
-        )
-      else
-        newPart = Builtins.remove(newPart, "raid_options")
-      end
-
-      if part["partition_id"] == Partitions.fsid_bios_grub
-        # GRUB_BIOS partitions must not be formated
-        # with default filesystem btrfs. (bnc#876411)
-        # The other deleted entries would be useless in that case.
-        newPart.delete("filesystem")
-        newPart.delete("format")
-        newPart.delete("crypt_fs")
-        newPart.delete("loop_fs")
-        newPart.delete("mountby")
-      end
-
-      if part["filesystem"] == :tmpfs
-        # remove not needed entries for TMPFS
-        newPart.delete("partition_nr")
-        newPart.delete("resize")
-        newPart.delete("crypt_fs")
-        newPart.delete("loop_fs")
-      end
-
-      deep_copy(newPart)
-    end
-
-    # Export filtering
-
-    def exportPartition(part)
-      part = deep_copy(part)
-      # filter out empty string attributes
-      result = {}
-      result = Builtins.filter(part) do |key, value|
-        if Ops.is_string?(value) && "" == value
-          # false gets filtered out
-          next false
-        elsif Ops.is_symbol?(value) && :Empty == value
-          next false
-        else
-          next true
-        end
-      end
-      deep_copy(result)
-    end
-
-
     def checkSanity(part)
       part = deep_copy(part)
       result = ""
@@ -439,14 +297,29 @@ module Yast
     publish :function => :getFormat, :type => "boolean (map <string, any>)"
     publish :function => :isPartOfVolgroup, :type => "boolean (map <string, any>)"
     publish :function => :getFileSystem, :type => "symbol (map <string, any>)"
-    publish :function => :parsePartition, :type => "map <string, any> (map)"
-    publish :function => :exportPartition, :type => "map <string, any> (map <string, any>)"
     publish :function => :checkSanity, :type => "string (map <string, any>)"
     publish :function => :getAllUnits, :type => "list <string> ()"
     publish :function => :getAllFileSystemTypes, :type => "map <symbol, map> ()"
     publish :function => :getDefaultMountPoints, :type => "list <string> ()"
     publish :function => :getMaxPartitionNumber, :type => "integer ()"
     publish :function => :getLVNameFor, :type => "string (string)"
+
+  protected
+
+    # Default filesystem for root ("/")
+    #
+    # @note Although this can be considered somehow generic enough to live in
+    # Y2Storage::Filesystems::Type, it would first need several improvements.
+    # First of all, it's not configurable by product (Btrfs doesn't have to
+    # always be the default for "/") and it should accept any mount point (not
+    # necessarily "/") as argument, which would introduce more problems (the
+    # type for some mount points are debatable or product-based).
+    #
+    # @return [Y2Storage::Filesystems::Type]
+    def default_root_fs_type
+      # FIXME: see note in method description
+      Y2Storage::Filesystems::Type::BTRFS
+    end
   end
 
   AutoinstPartition = AutoinstPartitionClass.new

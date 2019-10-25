@@ -10,6 +10,16 @@ require "yast"
 
 module Yast
   class Y2ModuleConfigClass < Module
+    # Key for AutoYaST client name in desktop file
+    RESOURCE_NAME_KEY = "X-SuSE-YaST-AutoInstResource"
+    RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
+    RESOURCE_ALIASES_NAME_KEY = "X-SuSE-YaST-AutoInstResourceAliases"
+    MODES = %w(all configure write)
+    YAST_SCHEMA_DIR = "/usr/share/YaST2/schema/autoyast/rng/*.rng"
+    SCHEMA_PACKAGE_FILE = "/usr/share/YaST2/schema/autoyast/rnc/includes.rnc"
+
+    include Yast::Logger
+
     def main
       textdomain "autoinst"
 
@@ -20,6 +30,7 @@ module Yast
       Yast.import "Desktop"
       Yast.import "Wizard"
       Yast.import "Directory"
+      Yast.import "PackageSystem"
 
       # include "autoinstall/io.ycp";
 
@@ -44,10 +55,11 @@ module Yast
         "Icon",
         "Hidden",
         "X-SuSE-YaST-AutoInst",
-        "X-SuSE-YaST-AutoInstResource",
+        RESOURCE_NAME_KEY,
+        RESOURCE_ALIASES_NAME_KEY,
         "X-SuSE-YaST-AutoInstClient",
         "X-SuSE-YaST-Group",
-        "X-SuSE-YaST-AutoInstMerge",
+        RESOURCE_NAME_MERGE_KEYS,
         "X-SuSE-YaST-AutoInstMergeTypes",
         "X-SuSE-YaST-AutoInstDataType",
         "X-SuSE-YaST-AutoInstClonable",
@@ -58,7 +70,6 @@ module Yast
       Desktop.Read(_Values)
       configurations = deep_copy(Desktop.Modules)
 
-      #y2debug("%1", configurations );
       groups = deep_copy(Desktop.Groups)
 
       confs = {}
@@ -89,8 +100,8 @@ module Yast
 
 
     # Sort tree groups
-    # @param map<string, map> group map
-    # @param list<string> group list
+    # @param _GroupMap [Hash<String => Hash>] group map
+    # @param _GroupList [Array<String>] group list
     # @return [Array]
     def SortGroups(_GroupMap, _GroupList)
       _GroupMap = deep_copy(_GroupMap)
@@ -103,11 +114,10 @@ module Yast
     end
 
     # Create group tree
-    # @param map<string, map> groups
+    # @param _Groups [Hash<String => Hash>] groups
     # @return [void]
     def CreateGroupTree(_Groups)
       _Groups = deep_copy(_Groups)
-      #y2debug("Groups: %1", Groups);
 
       grouplist = []
       grouplist = SortGroups(_Groups, Builtins.maplist(_Groups) do |rawname, group|
@@ -119,8 +129,6 @@ module Yast
         _MeunTreeEntry = { "entry" => name, "title" => title }
         @MenuTreeData = Builtins.add(@MenuTreeData, _MeunTreeEntry)
       end
-
-      #y2debug("data: %1", MenuTreeData);
       nil
     end
 
@@ -149,8 +157,6 @@ module Yast
           @MenuTreeData = Builtins.add(@MenuTreeData, menu_entry)
         end
       end 
-      # y2debug("MenuTreeData: %1", MenuTreeData );
-
       nil
     end
 
@@ -182,12 +188,12 @@ module Yast
 
 
     # Get resource name
-    # @param string resource
+    # @param default_resource [String] resource
     # @return [String] resource as defined in desktop file
     def getResource(default_resource)
       ret = Ops.get_string(
         @ModuleMap,
-        [default_resource, "X-SuSE-YaST-AutoInstResource"],
+        [default_resource, RESOURCE_NAME_KEY],
         ""
       )
       if ret == ""
@@ -199,13 +205,13 @@ module Yast
 
     # Get resource data
     # @param [Hash] resourceMap Resource Map
-    # @param resrouce the resource
+    # @param resource [String] the resource
     # @return [Object] Resource Data
     def getResourceData(resourceMap, resource)
       resourceMap = deep_copy(resourceMap)
       tmp_resource = Ops.get_string(
         resourceMap,
-        "X-SuSE-YaST-AutoInstResource",
+        RESOURCE_NAME_KEY,
         ""
       )
       resource = tmp_resource if tmp_resource != ""
@@ -215,7 +221,7 @@ module Yast
         "X-SuSE-YaST-AutoInstDataType",
         "map"
       )
-      tomerge = Ops.get_string(resourceMap, "X-SuSE-YaST-AutoInstMerge", "")
+      tomerge = Ops.get_string(resourceMap, RESOURCE_NAME_MERGE_KEYS, "")
       tomergetypes = Ops.get_string(
         resourceMap,
         "X-SuSE-YaST-AutoInstMergeTypes",
@@ -335,6 +341,115 @@ module Yast
       true
     end
 
+    # Returns list of all profile sections from the current profile, including
+    # unsupported ones, that do not have any handler (AutoYaST client) assigned
+    # at the current system and are not handled by AutoYaST itself.
+    #
+    # @return [Array<String>] of unknown profile sections
+    def unhandled_profile_sections
+      profile_sections = Profile.current.keys
+
+      profile_handlers = @ModuleMap.map do |name, desc|
+        if desc[RESOURCE_NAME_MERGE_KEYS]
+          # The YAST module has diffent AutoYaST sections (resources).
+          # e.g. Users has: users,groups,user_defaults,login_settings
+          desc[RESOURCE_NAME_MERGE_KEYS].split(",")
+        else
+          # Taking the resource name or the plain module name.
+          desc[RESOURCE_NAME_KEY] || name
+        end
+      end
+      profile_handlers.flatten!
+
+      profile_sections.reject! do |section|
+        profile_handlers.include?(section)
+      end
+
+      # Sections which are not handled in any desktop file but the
+      # corresponding clients/*_auto.rb file is available.
+      # e.g. user_defaults, report, general, files, scripts
+      profile_sections.reject! do |section|
+        WFM.ClientExists("#{section}_auto")
+      end
+
+      # Generic sections are handled by AutoYast itself and not mentioned
+      # in any desktop or clients/*_auto.rb file.
+      profile_sections - Yast::ProfileClass::GENERIC_PROFILE_SECTIONS
+    end
+
+    # Returns list of all profile sections from the current profile that are
+    # obsolete, e.g., we do not support them anymore.
+    #
+    # @return [Array<String>] of unsupported profile sections
+    def unsupported_profile_sections
+      unhandled_profile_sections & Yast::ProfileClass::OBSOLETE_PROFILE_SECTIONS
+    end
+
+    # Returns configuration for a given module
+    #
+    # @param [String] name Module name.
+    # @return [Hash] Module configuration using the same structure as
+    #                #Deps method (with "res" and "data" keys).
+    # @see #ReadMenuEntries
+    def getModuleConfig(name)
+      entries = ReadMenuEntries(MODES).first # entries, groups
+      entry = entries.find { |k, v| k == name } # name, entry
+      if entry
+        { "res" => name, "data" => entry.last }
+      else
+        nil
+      end
+    end
+
+    # Module aliases map
+    #
+    # @return [Hash] Map of resource aliases where the key is the alias and the
+    #                value is the resource.
+    def resource_aliases_map
+      ModuleMap().each_with_object({}) do |resource, map|
+        name, def_resource = resource
+        next if def_resource[RESOURCE_ALIASES_NAME_KEY].nil?
+        resource_name = def_resource[RESOURCE_NAME_KEY] || name
+        aliases = def_resource[RESOURCE_ALIASES_NAME_KEY].split(",").map(&:strip)
+        aliases.each { |a| map[a] = resource_name }
+      end
+    end
+
+    # Returns required package names for the given AutoYaST sections.
+    #
+    # @param sections [Array<String>] Section names
+    # @return [Hash<String, Array<String>>] Required packages of a section.
+    def required_packages(sections)
+      package_names = {}
+      log.info "Evaluating needed packages for handling AY-sections #{sections}"
+      if PackageSystem.Installed("yast2-schema") &&
+         PackageSystem.Installed("grep")
+        sections.each do |section|
+          # Evaluate which *rng file belongs to the given section
+          package_names[section] = []
+          ret = SCR.Execute(path(".target.bash_output"),
+            "/usr/bin/grep -l \"<define name=\\\"#{section}\\\">\" #{YAST_SCHEMA_DIR}")
+          if ret["exit"] == 0
+            ret["stdout"].split.uniq.each do |rng_file|
+              # Evalute package name to which this rng file belongs to.
+              package = package_name_of_schema(File.basename(rng_file, ".rng"))
+              if package
+                package_names[section] << package unless PackageSystem.Installed(package)
+              else
+                log.info("No package belongs to #{rng_file}.")
+              end
+            end
+          else
+            log.info("Cannot evaluate needed packages for AY section: #{section}")
+          end
+        end
+      else
+        log.info("Cannot evaluate needed packages for installation " \
+          "due missing environment.")
+      end
+      return package_names
+    end
+
     publish :variable => :GroupMap, :type => "map <string, map>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
     publish :variable => :MenuTreeData, :type => "list <map>"
@@ -343,6 +458,29 @@ module Yast
     publish :function => :getResourceData, :type => "any (map, string)"
     publish :function => :Deps, :type => "list <map> ()"
     publish :function => :SetDesktopIcon, :type => "boolean (string)"
+    publish :function => :required_packages, :type => "map <string, list> (list <string>)"
+    publish :function => :unhandled_profile_sections, :type => "list <string> ()"
+    publish :function => :unsupported_profile_sections, :type => "list <string> ()"
+
+  private
+
+    # Returns package name of a given schema.
+    # This information is stored in /usr/share/YaST2/schema/autoyast/rnc/includes.rnc
+    # which will be provided by the yast2-schema package.
+    #
+    # @param schema <String> schema name like firewall, firstboot, ...
+    # @return <String> package name or nil
+    def package_name_of_schema(schema)
+      if !@schema_package
+        @schema_package = {}
+        File::readlines(SCHEMA_PACKAGE_FILE).each do |line|
+          line_split = line.split
+          next if line.split.size < 4 # Old version of yast2-schema
+          @schema_package[File.basename(line_split[1].delete("\'"), ".rnc")] = line.split.last
+        end
+      end
+      @schema_package[schema]
+    end
   end
 
   Y2ModuleConfig = Y2ModuleConfigClass.new

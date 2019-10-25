@@ -7,9 +7,12 @@
 #
 # $Id: AutoinstPartPlan.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
+require "y2storage"
 
 module Yast
   class AutoinstPartPlanClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -24,10 +27,6 @@ module Yast
       Yast.import "Summary"
       Yast.import "Popup"
       Yast.import "Mode"
-      Yast.import "StorageDevices"
-      Yast.import "Storage"
-      Yast.import "Partitions"
-      Yast.import "FileSystems"
       Yast.import "Arch"
 
       # The general idea with this moduls is that it manages a single
@@ -46,6 +45,13 @@ module Yast
 
       # default value of settings modified
       @modified = false
+
+      # Devices which do not have any mount point, lvm_group or raid_name
+      # These devices will not be taken in the AutoYaSt configuration file
+      # but will be added to the skip_list in order not regarding it while
+      # next installation. (bnc#989392)
+      @skipped_devices = []
+
     end
 
     # Function sets internal variable, which indicates, that any
@@ -335,339 +341,9 @@ module Yast
     # Create a partition plan for the calling client
     # @return [Array] partition plan
     def ReadHelper
-      Mode.SetMode("normal")
-      StorageDevices.InitDone
-      _StorageMap = Builtins.eval(Storage.GetTargetMap)
-
-      _StorageMap = _StorageMap.select do |d, p|
-        ok = d != "/dev/evms" && d != "/dev/nfs"
-	if( ok && p.fetch("partitions", []).size==0 )
-	  ok = p.fetch("used_by_type",:UB_NONE)==:UB_LVM
-	end
-	ok
-      end
-      Builtins.y2milestone("Storagemap %1", _StorageMap)
-      #        list evms_vgs = [];
-
-      drives = Builtins.maplist(_StorageMap) do |k, v|
-        partitions = []
-        winp = []
-        no_format_list = [65, 6, 222]
-        no_create_list = [222]
-        usepartitions = []
-        cyl_size = Ops.get_integer(v, "cyl_size", 0)
-        no_create = false
-        Builtins.foreach(Ops.get_list(v, "partitions", [])) do |pe|
-          next if Ops.get_symbol(pe, "type", :x) == :extended
-          new_pe = {}
-          Ops.set(new_pe, "create", true)
-          new_pe["ignore_fstab"] = pe["ignore_fstab"] if pe.has_key?("ignore_fstab")
-          skipwin = false
-          if Builtins.haskey(pe, "enc_type")
-            Ops.set(
-              new_pe,
-              "enc_type",
-              Ops.get_symbol(pe, "enc_type", :twofish)
-            )
-            Ops.set(new_pe, "crypt_key", "ENTER KEY HERE")
-            Ops.set(new_pe, "loop_fs", true)
-            Ops.set(new_pe, "crypt_fs", true)
-          end
-          if Builtins.haskey(pe, "fsid")
-            fsid = Ops.get_integer(pe, "fsid", 131)
-            wintypes = Builtins.union(
-              Partitions.fsid_wintypes,
-              Partitions.fsid_dostypes
-            )
-            allwin = Builtins.union(wintypes, Partitions.fsid_ntfstypes)
-            if Builtins.contains(allwin, fsid) &&
-                !Builtins.issubstring(Ops.get_string(pe, "mount", ""), "/boot") &&
-                  !Ops.get_boolean(pe, "boot", false)
-              #                    if (contains(allwin, fsid) && ! issubstring(pe["mount"]:"", "/boot") )
-              Builtins.y2debug("Windows partitions found: %1", fsid)
-              winp = Builtins.add(winp, Ops.get_integer(pe, "nr", 0))
-              skipwin = true
-              no_create = true if Ops.greater_than(Builtins.size(partitions), 0)
-            end
-            if Builtins.contains(allwin, fsid) &&
-                Builtins.issubstring(Ops.get_string(pe, "mount", ""), "/boot")
-              Ops.set(new_pe, "partition_id", 259)
-            else
-              Ops.set(new_pe, "partition_id", Ops.get_integer(pe, "fsid", 131))
-            end
-            if Builtins.contains(no_format_list, Ops.get_integer(pe, "fsid", 0))
-              Ops.set(new_pe, "format", false)
-            end
-            if Builtins.contains(no_create_list, Ops.get_integer(pe, "fsid", 0))
-              Ops.set(new_pe, "create", false)
-            end
-          end
-          if Builtins.haskey(pe, "type") &&
-              Ops.get_symbol(pe, "type", :x) == :primary
-            Ops.set(new_pe, "partition_type", "primary") # can we always copy that element?
-          end
-          if Builtins.haskey(pe, "region") &&
-              Ops.get_boolean(new_pe, "create", true) == true
-            # don't clone the exact region.
-            # I don't see any benefit in cloning that strict.
-            #new_pe["region"] = pe["region"]:[];
-            #                    new_pe["size"] = sformat("%1", pe["size_k"]:0*1024);
-            if Ops.less_than(
-                Ops.subtract(
-                  Ops.multiply(Ops.get_integer(pe, "size_k", 0), 1024),
-                  cyl_size
-                ),
-                cyl_size
-              ) # bnc#415005
-              Ops.set(new_pe, "size", Builtins.sformat("%1", cyl_size))
-            else
-              Ops.set(
-                new_pe,
-                "size",
-                Builtins.sformat(
-                  "%1",
-                  Ops.subtract(
-                    Ops.multiply(Ops.get_integer(pe, "size_k", 0), 1024),
-                    cyl_size
-                  )
-                )
-              )
-            end # one cylinder buffer for #262535
-          end
-          if Builtins.haskey(pe, "label")
-            Ops.set(new_pe, "label", Ops.get_string(pe, "label", ""))
-          end
-          if Builtins.haskey(pe, "mountby")
-            Ops.set(new_pe, "mountby", Ops.get_symbol(pe, "mountby", :nomb))
-          end
-          if Builtins.haskey(pe, "fstopt")
-            Ops.set(new_pe, "fstopt", Ops.get_string(pe, "fstopt", "defaults"))
-          end
-          # LVM Group
-          if Builtins.haskey(pe, "used_by_type") &&
-              Ops.get_symbol(pe, "used_by_type", :nothing) == :UB_LVM
-            Ops.set(
-              new_pe,
-              "lvm_group",
-              Builtins.substring(Ops.get_string(pe, "used_by_device", ""), 5)
-            )
-          end
-          # LV
-          if Ops.get_symbol(pe, "type", :unknown) == :lvm
-            Ops.set(new_pe, "lv_name", Ops.get_string(pe, "name", ""))
-            Ops.set(
-              new_pe,
-              "size",
-              Builtins.sformat(
-                "%1",
-                Ops.multiply(Ops.get_integer(pe, "size_k", 0), 1024)
-              )
-            )
-            if Builtins.haskey(pe, "stripes")
-              Ops.set(new_pe, "stripes", Ops.get_integer(pe, "stripes", 0))
-              Ops.set(
-                new_pe,
-                "stripesize",
-                Ops.get_integer(pe, "stripesize", 4)
-              )
-            end
-          end
-          if Builtins.haskey(pe, "used_by_type") &&
-              Ops.get_symbol(pe, "used_by_type", :nothing) == :UB_MD
-            Ops.set(
-              new_pe,
-              "raid_name",
-              Ops.get_string(pe, "used_by_device", "")
-            )
-          end
-          # Used Filesystem
-          # Raid devices get the filesystem lying on them as
-          # detected_fs!
-          if Builtins.haskey(pe, "used_fs") &&
-              Ops.get_integer(pe, "fsid", 0) != 253
-            Ops.set(new_pe, "filesystem", Ops.get_symbol(pe, "used_fs") do
-              Partitions.DefaultFs
-            end)
-            Ops.set(
-              new_pe,
-              "format",
-              Ops.get_boolean(
-                new_pe,
-                "format",
-                Ops.get_boolean(pe, "format", true)
-              )
-            )
-          end
-          if Ops.get_boolean(new_pe, "format", false) &&
-              !Builtins.isempty(Ops.get_string(pe, "mkfs_options", ""))
-            Ops.set(
-              new_pe,
-              "mkfs_options",
-              Ops.get_string(pe, "mkfs_options", "")
-            )
-          end
-          # Subvolumes
-          # Save possibly existing subvolumes
-          if !Builtins.isempty(Ops.get_list(pe, "subvol", []))
-            defsub = ""
-            if !Builtins.isempty(FileSystems.default_subvol)
-              defsub = Ops.add(FileSystems.default_subvol, "/")
-            end
-            Ops.set(
-              new_pe,
-              "subvolumes",
-              Builtins.maplist(Ops.get_list(pe, "subvol", [])) do |p|
-                if Ops.greater_than(Builtins.size(defsub), 0) &&
-                    Builtins.substring(
-                      Ops.get_string(p, "name", ""),
-                      0,
-                      Builtins.size(defsub)
-                    ) == defsub
-                  next Builtins.substring(
-                    Ops.get_string(p, "name", ""),
-                    Builtins.size(defsub)
-                  )
-                else
-                  next Ops.get_string(p, "name", "")
-                end
-              end
-            )
-            Ops.set(
-              new_pe,
-              "subvolumes",
-              Builtins.filter(Ops.get_list(new_pe, "subvolumes", [])) do |s|
-                !Builtins.isempty(s)
-              end
-            )
-          end
-          # Handle thin stuff
-          Ops.set(new_pe, "pool", true) if Ops.get_boolean(pe, "pool", false)
-          if !Builtins.isempty(Ops.get_string(pe, "used_pool", ""))
-            Ops.set(new_pe, "used_pool", Ops.get_string(pe, "used_pool", ""))
-          end
-          # if the filesystem is unknown, we have detected_fs and no longer used_fs
-          # don't know why yast2-storage is having two keys for that.
-          # maybe it would be even okay to look only for "detected_fs" to set format to false
-          # bnc#542331 (L3: AutoYaST clone module fails to set format option for non-formatted logical volumes)
-          if Ops.get_symbol(pe, "detected_fs", :known) == :unknown
-            Ops.set(new_pe, "format", false)
-          end
-          if Builtins.haskey(pe, "nr") &&
-              Ops.get_symbol(pe, "type", :unknown) != :lvm
-            if !skipwin
-              Builtins.y2debug(
-                "Adding partition to be used: %1",
-                Ops.get_integer(pe, "nr", 0)
-              )
-              usepartitions = Builtins.add(
-                usepartitions,
-                Ops.get_integer(pe, "nr", 0)
-              )
-            end
-            Ops.set(new_pe, "partition_nr", Ops.get_integer(pe, "nr", 0))
-          end
-          if Ops.get_string(pe, "mount", "") != ""
-            Ops.set(new_pe, "mount", Ops.get_string(pe, "mount", ""))
-          end
-          if k == "/dev/md"
-            raid_options = {}
-            raid_options["persistent_superblock"] = pe.fetch("persistent_superblock",false)
-            raid_options["raid_type"] = pe.fetch("raid_type", "raid0")
-            raid_options["device_order"] = pe.fetch("devices",[])
-	    if pe["device"].start_with?("/dev/md/")
-	      raid_options["raid_name"] = pe["device"]
-	    end
-            new_pe["raid_options"]=raid_options
-          end
-          if !skipwin && Ops.get_integer(new_pe, "partition_id", 0) != 15
-            partitions = Builtins.add(partitions, new_pe)
-          end
-        end
-        # don't create partitions that are between windows partitions
-        # they must exist
-        drive = {}
-        Ops.set(drive, "type", Ops.get_symbol(v, "type", :CT_DISK))
-        Ops.set(drive, "disklabel", Ops.get_string(v, "label", "msdos"))
-        if no_create
-          partitions = Builtins.maplist(
-            Convert.convert(partitions, :from => "list", :to => "list <map>")
-          ) do |m|
-            Ops.set(m, "create", false)
-            deep_copy(m)
-          end
-        end
-	if( v.fetch("used_by_type",:UB_NONE)==:UB_LVM && partitions.empty? )
-	  partitions = [{ "partition_nr" => 0, "create" => false,
-	                  "lvm_group" => v.fetch("used_by_device", "")[5..-1],
-			  "size" => "max" }]
-	  Builtins.y2milestone( "lvm full disk v:%1", v )
-	  Builtins.y2milestone( "lvm full disk p:%1", partitions )
-	end
-        Ops.set(drive, "partitions", partitions)
-        if Arch.s390 && Ops.get_symbol(v, "type", :CT_DISK) == :CT_DISK
-          Ops.set(
-            drive,
-            "device",
-            Ops.add("/dev/disk/by-path/", Ops.get_string(v, "udev_path", k))
-          )
-          Builtins.y2milestone(
-            "s390 found. Setting device to by-path: %1",
-            Ops.get_string(drive, "device", "")
-          )
-        else
-          Ops.set(drive, "device", k)
-        end
-        if Ops.get_symbol(v, "type", :CT_UNKNOWN) == :CT_LVM
-          Ops.set(
-            drive,
-            "pesize",
-            Builtins.sformat(
-              "%1M",
-              Ops.divide(Ops.get_integer(v, "pesize", 1), 1024 * 1024)
-            )
-          )
-          Ops.set(drive, "type", :CT_LVM)
-        end
-        if Builtins.haskey(v, "lvm2") && Ops.get_boolean(v, "lvm2", false)
-          Ops.set(drive, "lvm2", true)
-        end
-        if Ops.greater_than(Builtins.size(partitions), 0)
-          if Builtins.size(winp) == 0
-            Ops.set(drive, "use", "all")
-          else
-            up = []
-            Builtins.foreach(usepartitions) do |i|
-              up = Builtins.add(up, Builtins.sformat("%1", i))
-            end
-            Ops.set(drive, "use", Builtins.mergestring(up, ","))
-          end
-        end
-        deep_copy(drive)
-      end
-      #        drives = filter( map v, (list<map>)drives, ``{
-      #            if( ! (contains( evms_vgs, v["device"]:"") && v["type"]:`x == `CT_LVM ) )
-      #                return true;
-      #            y2milestone("kicking LVM %1 out of the profile because an EVMS with that name exists",v);
-      #            return false;
-      #        });
-      # remove drives with no mountpoint
-      drives = Builtins.filter(
-        Convert.convert(drives, :from => "list", :to => "list <map>")
-      ) do |v|
-        keep = false
-        Builtins.foreach(Ops.get_list(v, "partitions", [])) do |p|
-          if Ops.get_string(p, "mount", "") != "" ||
-              Builtins.haskey(p, "lvm_group") ||
-              Builtins.haskey(p, "raid_name")
-            keep = true
-            raise Break
-          end
-        end
-        keep
-      end
-
-      Mode.SetMode("autoinst_config")
-      deep_copy(drives)
+      devicegraph = Y2Storage::StorageManager.instance.probed
+      profile = Y2Storage::AutoinstProfile::PartitioningSection.new_from_storage(devicegraph)
+      profile.to_hashes
     end
 
 
@@ -716,82 +392,41 @@ module Yast
     # @param [Array<Hash>] settings a list	[...]
     # @return	[Boolean] success
     def Import(settings)
-      settings = deep_copy(settings)
-      Builtins.y2milestone("entering Import with %1", settings)
-
-      # Filter out all tmpfs that have not been defined by the user.
-      # User created entries are defined in the fstab only.
-      tmpfs_devices = settings.select { |device| device["type"] == :CT_TMPFS }
-      tmpfs_devices.each do |device|
-        if device["partitions"]
-          device["partitions"].delete_if { |partition| partition["ignore_fstab"] }
-        end
-      end
-
-      # It makes no sense to have tmpfs dummy containers which have no partitions.
-      # E.g. the partitions have been filtered because they have not been defined
-      # by the user.
-      # (bnc#887318)
-      settings.delete_if { |device|
-        device["type"] == :CT_TMPFS && (!device["partitions"] || device["partitions"].empty? )
-      }
-
-      @AutoPartPlan = []
-      _IgnoreTypes = [:CT_BTRFS]
-      Builtins.foreach(settings) do |drive|
-        if !Builtins.contains(
-            _IgnoreTypes,
-            Ops.get_symbol(drive, "type", :CT_DISK)
-          )
-          newDrive = AutoinstDrive.parseDrive(drive)
-          if AutoinstDrive.isDrive(newDrive)
-            @AutoPartPlan = internalAddDrive(@AutoPartPlan, newDrive)
-          else
-            Builtins.y2error("Couldn't construct DriveT from '%1'", drive)
-          end
-        else
-          Builtins.y2milestone(
-            "Ignoring Container type '%1'",
-            Ops.get_symbol(drive, "type", :CT_DISK)
-          )
-        end
+      log.info("entering Import with #{settings.inspect}")
+      # index settings
+      @AutoPartPlan = settings.map.with_index { |d, i| d.merge("_id" => i) }
+      # set default value
+      @AutoPartPlan.each do |d|
+        d["initialize"] = false unless d.has_key?("initialize")
       end
       true
     end
 
     def Read
-      Import(
-        Convert.convert(ReadHelper(), :from => "list", :to => "list <map>")
-      )
+      Import(ReadHelper())
     end
 
     # Dump the settings to a map, for autoinstallation use.
     # @return [Array]
     def Export
-      Builtins.y2milestone("entering Export")
-      drives = Builtins.maplist(@AutoPartPlan) do |drive|
-        AutoinstDrive.Export(drive)
+      log.info("entering Export with #{@AutoPartPlan.inspect}")
+      drives = deep_copy(@AutoPartPlan)
+      drives.each { |d| d.delete("_id") }
+
+      # Adding skipped devices to partitioning section.
+      # These devices will not be taken in the AutoYaSt configuration file
+      # but will be added to the skip_list in order not regarding it while
+      # next installation. (bnc#989392)
+      unless @skipped_devices.empty?
+        skip_device = {}
+        skip_device["initialize"] = true
+        skip_device["skip_list"] = @skipped_devices.collect do |dev|
+          {"skip_key" => "device", "skip_value" => dev}
+        end
+        drives << skip_device
       end
 
-      clean_drives = Builtins.maplist(drives) do |d|
-        p = Builtins.maplist(Ops.get_list(d, "partitions", [])) do |part|
-          part = Builtins.remove(part, "fsid") if Builtins.haskey(part, "fsid")
-          if Builtins.haskey(part, "used_fs")
-            part = Builtins.remove(part, "used_fs")
-          end
-          deep_copy(part)
-        end
-        Ops.set(d, "partitions", p)
-        # this is to delete the dummy "auto" filled in by UI
-        if Builtins.haskey(d, "device") &&
-            Ops.get_string(d, "device", "") == "auto"
-          d = Builtins.remove(d, "device")
-          Builtins.y2milestone("device 'auto' dropped")
-        end
-        deep_copy(d)
-      end
-
-      deep_copy(clean_drives)
+      drives
     end
 
     def Reset
@@ -923,8 +558,7 @@ module Yast
     # Update a drive in the plan. If the drive didn't exist in the
     # first place nothing happens (use add in that case).
     #
-    # @param The drive to update.
-
+    # @param drive [Hash{String => Object}] The drive to be updated.
     def updateDrive(drive)
       drive = deep_copy(drive)
       @AutoPartPlan = internalUpdateDrive(@AutoPartPlan, drive)

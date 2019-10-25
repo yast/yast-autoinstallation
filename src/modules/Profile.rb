@@ -7,9 +7,57 @@
 #
 # $Id$
 require "yast"
+require "yast2/popup"
 
 module Yast
   class ProfileClass < Module
+    # All these sections are handled by AutoYaST (or Installer) itself,
+    # it doesn't use any external AutoYaST client for them
+    GENERIC_PROFILE_SECTIONS = [
+      # AutoYaST has its own partitioning
+      "partitioning",
+      "partitioning_advanced",
+      # AutoYaST has its Preboot Execution Environment configuration
+      "pxe",
+      # Flags for setting the solver while the upgrade process with AutoYaST
+      "upgrade",
+      # Flags for controlling the update backups (see Installation module)
+      "backup",
+      # init section used by Kickstart and to pass additional arguments
+      # to Linuxrc (bsc#962526)
+      "init"
+    ]
+
+    # Dropped YaST modules that used to provide AutoYaST functionality
+    # bsc#925381
+    OBSOLETE_PROFILE_SECTIONS = [
+      # FATE#316185: Drop YaST AutoFS module
+      "autofs",
+      # FATE#308682: Drop yast2-backup and yast2-restore modules
+      "restore",
+      "sshd",
+      # Defined in SUSE Manager but will not be used anymore. (bnc#955878)
+      "cobbler",
+      # FATE#323373 drop xinetd from distro and yast2-inetd
+      "inetd",
+      # FATE#319119 drop yast2-ca-manament
+      "ca_mgm"
+    ]
+
+    # Sections that are handled by AutoYaST clients included in autoyast2 package.
+    AUTOYAST_CLIENTS = [
+      "files",
+      "general",
+      # FIXME: Partitioning should probably not be here. There is no
+      # partitioning_auto client. Moreover, it looks pointless to enforce the
+      # installation of autoyast2 only because the <partitioning> section
+      # is in the profile. It will happen on 1st stage anyways.
+      "partitioning",
+      "report",
+      "scripts",
+      "software"
+    ]
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -24,6 +72,7 @@ module Yast
       Yast.import "Directory"
       Yast.import "FileUtils"
       Yast.import "PackageSystem"
+      Yast.import "AutoinstFunctions"
 
       Yast.include self, "autoinstall/xml.rb"
 
@@ -105,34 +154,15 @@ module Yast
 
     def softwareCompat
       Ops.set(@current, "software", Ops.get_map(@current, "software", {}))
-      if !Builtins.contains(
-          Ops.get_list(@current, ["software", "packages"], []),
-          "autoyast2-installation"
-        )
-        Ops.set(
-          @current,
-          ["software", "packages"],
-          Builtins.add(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2-installation"
-          )
-        )
-      end
 
-      # without autoyast2, <files ...> does not work
-      if Builtins.haskey(@current, "files") &&
-          !Builtins.contains(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2"
-          )
-        Ops.set(
-          @current,
-          ["software", "packages"],
-          Builtins.add(
-            Ops.get_list(@current, ["software", "packages"], []),
-            "autoyast2"
-          )
-        )
+      # We need to check if second stage was disabled in the profile itself
+      # because AutoinstConfig is not initialized at this point
+      # and InstFuntions#second_stage_required? depends on that module
+      # to check if 2nd stage is required (chicken-and-egg problem).
+      mode = @current.fetch("general", {}).fetch("mode", {})
+      second_stage_enabled = mode.has_key?("second_stage") ? mode["second_stage"] : true
+      if AutoinstFunctions.second_stage_required? && second_stage_enabled
+        add_autoyast_packages
       end
 
       # workaround for missing "REQUIRES" in content file to stay backward compatible
@@ -192,7 +222,7 @@ module Yast
         if Ops.get_boolean(@current, ["general", "mode", "final_halt"], false)
           script = {
             "filename" => "zzz_halt",
-            "source"   => "chkconfig autoyast off\nshutdown -h now"
+            "source"   => "shutdown -h now"
           }
           if !Builtins.haskey(@current, "scripts")
             Ops.set(@current, "scripts", {})
@@ -215,7 +245,7 @@ module Yast
         if Ops.get_boolean(@current, ["general", "mode", "final_reboot"], false)
           script = {
             "filename" => "zzz_reboot",
-            "source"   => "chkconfig autoyast off\nshutdown -r now"
+            "source"   => "shutdown -r now"
           }
           if !Builtins.haskey(@current, "scripts")
             Ops.set(@current, "scripts", {})
@@ -265,7 +295,7 @@ module Yast
     end
 
     # Read Profile properties and Version
-    # @param map Profile Properties
+    # @param properties [Hash] Profile Properties
     # @return [void]
     def check_version(properties)
       version = properties["version"]
@@ -275,8 +305,6 @@ module Yast
         Builtins.y2milestone("AutoYaST Profile Version  %1 Detected.", version)
       end
     end
-
-
 
     # Import Profile
     # @param [Hash{String => Object}] profile
@@ -320,6 +348,7 @@ module Yast
         Ops.set(@current, ["networking", "start_immediately"], true)
         Builtins.y2milestone("start_immediately set to true")
       end
+      merge_resource_aliases!
       storageLibCompat # compatibility to new storage library (SL 10.0)
       generalCompat # compatibility to new language,keyboard and timezone (SL10.1)
       softwareCompat
@@ -342,9 +371,6 @@ module Yast
       e = []
 
       Builtins.foreach(@ModuleMap) do |p, d|
-        # bnc#887115 Hidden modules cannot be cloned
-        next if d["Hidden"] == "true"
-
         #
         # Set resource name, if not using default value
         #
@@ -422,8 +448,8 @@ module Yast
     end
 
     # Save YCP data into XML
-    # @param  path to file
-    # @return	[Boolean] true on success
+    # @param  file [String] path to file
+    # @return [Boolean] true on success
     def Save(file)
       Prepare()
       ret = false
@@ -523,7 +549,7 @@ module Yast
     end
 
     # Save the current data into a file to be read after a reboot.
-    # @param	-
+    # @param parsedControlFile [Hash] Data from control file
     # @return  true on success
     # @see #Restore()
     def SaveProfileStructure(parsedControlFile)
@@ -532,7 +558,7 @@ module Yast
     end
 
     # Read YCP data as the control file
-    # @param ycp file
+    # @param parsedControlFile [Hash] ycp file
     # @return [Boolean]
     def ReadProfileStructure(parsedControlFile)
       @current = Convert.convert(
@@ -551,7 +577,7 @@ module Yast
 
 
     # General compatibility issues
-    # @param current profile
+    # @param __current [Hash] current profile
     # @return [Hash] converted profile
     def Compat(__current)
       __current = deep_copy(__current)
@@ -668,8 +694,8 @@ module Yast
 
 
     # Read XML into  YCP data
-    # @param  path to file
-    # @return	[Boolean]
+    # @param file [String] path to file
+    # @return [Boolean]
     def ReadXML(file)
       tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
       l = Builtins.splitstring(tmp, "\n")
@@ -720,15 +746,17 @@ module Yast
         @current = XML.XMLToYCPFile(file)
       end
 
-      if @current != {} && Builtins.size(@current) == 0
+      xml_error = XML.XMLError
+      if xml_error && !xml_error.empty?
         # autoyast has read the autoyast configuration file but something went wrong
         message = _(
           "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
         )
-        message = Ops.add(message, XML.XMLError)
-        Popup.Error(message)
+        message += xml_error
+        Yast2::Popup.show(message, headline: :error)
         return false
       end
+
       Import(@current)
       true
     end
@@ -845,6 +873,72 @@ module Yast
       nil
     end
 
+    # Removes the given sections from the profile
+    #
+    # @param sections [String,Array<String>] Section names.
+    # @return [Hash] The profile without the removed sections.
+    def remove_sections(sections)
+      keys_to_delete = Array(sections)
+      @current.delete_if { |k, v| keys_to_delete.include?(k) }
+    end
+
+    # Returns a list of packages which have to be installed
+    # in order to run a second stage at all.
+    #
+    # @return [Array<String>] package list
+    def needed_second_stage_packages
+      ret = ["autoyast2-installation"]
+
+      # without autoyast2, <files ...> does not work
+      ret << "autoyast2" if !(@current.keys & AUTOYAST_CLIENTS).empty?
+      ret
+    end
+
+  private
+
+    def add_autoyast_packages
+      @current["software"] ||= {}
+      @current["software"]["packages"] ||= []
+      @current["software"]["packages"] << needed_second_stage_packages
+      @current["software"]["packages"].flatten!.uniq!
+    end
+
+  protected
+
+    # Merge resource aliases in the profile
+    #
+    # When a resource is aliased, the configuration with the aliased name will
+    # be renamed to the new name. For example, if we have a
+    # services-manager.desktop file containing
+    # X-SuSE-YaST-AutoInstResourceAliases=runlevel, if a "runlevel" key is found
+    # in the profile, it will be renamed to "services-manager".
+    #
+    # The rename won't take place if a "services-manager" resource already exists.
+    #
+    # @see merge_aliases_map
+    def merge_resource_aliases!
+      resource_aliases_map.each do |alias_name, resource_name|
+        aliased_config = current.delete(alias_name)
+        next if aliased_config.nil? || current.has_key?(resource_name)
+        current[resource_name] = aliased_config
+      end
+    end
+
+    # Module aliases map
+    #
+    # This method delegates on Y2ModuleConfig#resource_aliases_map
+    # and exists just to avoid a circular dependency between
+    # Y2ModuleConfig and Profile (as the former depends on the latter).
+    #
+    # @return [Hash] Map of resource aliases where the key is the alias and the
+    #                value is the resource.
+    #
+    # @see Y2ModuleConfig#resource_aliases_map
+    def resource_aliases_map
+      Yast.import "Y2ModuleConfig"
+      Y2ModuleConfig.resource_aliases_map
+    end
+
     publish :variable => :current, :type => "map <string, any>"
     publish :variable => :ModuleMap, :type => "map <string, map>"
     publish :variable => :changed, :type => "boolean"
@@ -859,6 +953,7 @@ module Yast
     publish :function => :ReadXML, :type => "boolean (string)"
     publish :function => :setElementByList, :type => "map <string, any> (list, any, map <string, any>)"
     publish :function => :checkProfile, :type => "void ()"
+    publish :function => :needed_second_stage_packages, :type => "list <string> ()"
   end
 
   Profile = ProfileClass.new

@@ -7,8 +7,15 @@
 #
 # $Id$
 #
+
+require "autoinstall/autosetup_helpers"
+require "y2packager/medium_type"
+
 module Yast
   class InstAutoinitClient < Client
+    include Y2Autoinstallation::AutosetupHelpers
+    include Yast::Logger
+
     def main
       Yast.import "UI"
 
@@ -17,16 +24,17 @@ module Yast
       Yast.import "Installation"
       Yast.import "AutoInstall"
       Yast.import "AutoinstConfig"
+      Yast.import "AutoinstFunctions"
       Yast.import "AutoinstGeneral"
       Yast.import "ProfileLocation"
       Yast.import "AutoInstallRules"
       Yast.import "Progress"
       Yast.import "Report"
       Yast.import "Profile"
-      #    import "Arch";
       Yast.import "Call"
       Yast.import "Console"
       Yast.import "Mode"
+      Yast.import "Y2ModuleConfig"
 
       Yast.import "Popup"
 
@@ -57,28 +65,6 @@ module Yast
       Progress.Title(_("Preprobing stage"))
       Builtins.y2milestone("pre probing")
 
-      # // moved to autoset to fulfill fate #301193
-      #    // the DASD section in an autoyast profile can't be changed via pre-script
-      #    //
-      #     if( Arch::s390 () && AutoinstConfig::remoteProfile == true ) {
-      #         y2milestone("arch=s390 and remote_profile=true");
-      #         symbol ret = processProfile();
-      #         if( ret != `ok ) {
-      #             return ret;
-      #         }
-      #         y2milestone("processProfile=ok");
-      #         profileFetched = true;
-      #
-      #         // FIXME: the hardcoded stuff should be in the control.xml later
-      #         if( haskey(Profile::current, "dasd") ) {
-      #             y2milestone("dasd found");
-      #             Call::Function("dasd_auto", ["Import", Profile::current["dasd"]:$[] ]);
-      #         }
-      #         if( haskey(Profile::current, "zfcp") ) {
-      #             y2milestone("zfcp found");
-      #             Call::Function("zfcp_auto", ["Import", Profile::current["zfcp"]:$[] ]);
-      #         }
-      #     }
       @tmp = Convert.to_string(
         SCR.Read(path(".target.string"), "/etc/install.inf")
       )
@@ -104,11 +90,32 @@ module Yast
         return @ret if @ret != :ok
       end
 
-      Builtins.sleep(1000)
       Progress.Finish
 
+      # when installing from the online installation medium we need to
+      # register the system earlier because the medium does not contain any
+      # repositories, we need the repositories from the registration server
+      # TODO: maybe we will need it also in the autoupgrade case...
+      if Y2Packager::MediumType.online?
+        # check that the registration section is defined and registration is enabled
+        reg_section = Yast::Profile.current.fetch(REGISTER_SECTION, {})
+        reg_enabled = reg_section["do_registration"]
+
+        if !reg_enabled
+          msg = _("Registration is mandatory when using the online " \
+            "installation medium. Enable registration in " \
+            "the AutoYaST profile.")
+          Popup.LongError(msg)  # No timeout because we are stopping the installation/upgrade.
+
+          return :abort
+        end
+
+        suse_register if !Mode.autoupgrade
+      end
+
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
-        WFM.CallFunction("inst_system_analysis", [])
+        @ret = WFM.CallFunction("inst_system_analysis", [])
+        return @ret if @ret == :abort
       end
 
       if Builtins.haskey(Profile.current, "iscsi-client")
@@ -129,12 +136,42 @@ module Yast
         WFM.CallFunction("fcoe-client_auto", ["Write"])
       end
 
+      if !AutoinstFunctions.selected_product
+        msg = _("None or wrong base product has been defined in the AutoYaST configuration file. " \
+         "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
+         "Following base products are available:<br>")
+        Y2Packager::Product.available_base_products.each do |product|
+          msg += "#{product.name} (#{product.display_name})<br>"
+        end
+        Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
+        return :abort
+      end
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
-      # AutoInstall::ProcessSpecialResources();
-
       :next
+    end
+
+  private
+
+    # Checking profile for unsupported sections.
+    def check_unsupported_profile_sections
+      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
+      if unsupported_sections.any?
+        log.error "Could not process these unsupported profile " \
+          "sections: #{unsupported_sections}"
+        Report.LongWarning(
+          # TRANSLATORS: Error message, %s is replaced by newline-separated
+          # list of unsupported sections of the profile
+          # Do not translate words in brackets
+          _(
+            "These sections of AutoYaST profile are not supported " \
+            "anymore:<br><br>%s<br><br>" \
+            "Please, use, e.g., &lt;scripts/&gt; or &lt;files/&gt;" \
+            " to change the configuration."
+          ) % unsupported_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>")
+        )
+      end
     end
 
     def processProfile
@@ -152,21 +189,19 @@ module Yast
           if newURI == ""
             return :abort
           else
+            # Updating new URI in /etc/install.inf (bnc#963487)
+            # SCR.Write does not work in inst-sys here.
+            WFM.Execute(
+              path(".local.bash"),
+              "sed -i \'/AutoYaST:/c\AutoYaST: #{newURI}\' /etc/install.inf"
+            )
+
             AutoinstConfig.ParseCmdLine(newURI)
             AutoinstConfig.SetProtocolMessage
             next
           end
         end
       end
-
-      # if (!ProfileLocation::Process())
-      # {
-      # 	y2error("Aborting...");
-      # 	return `abort;
-      # }
-
-      Builtins.sleep(1000)
-
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
 
@@ -196,21 +231,14 @@ module Yast
 
       Builtins.y2debug("Autoinstall control file %1", Profile.current)
 
+      # Checking profile for unsupported sections.
+      check_unsupported_profile_sections
 
       Progress.NextStage
       Progress.Title(_("Initial Configuration"))
       Builtins.y2milestone("Initial Configuration")
-      report = Profile.current["report"]
-      if report && !report.has_key?( "yesno_messages" )
-        # Set "yesno_messages", but do not reset the other settings
-        # (bnc#887397)
-        report = Report.Export # getting all values
-        report["yesno_messages"] = report.fetch("errors",{})
-      end
-      Report.Import(report) # setting all values
+      Report.Import(Profile.current.fetch("report",{}))
       AutoinstGeneral.Import(Profile.current.fetch("general",{}))
-      AutoinstGeneral.SetSignatureHandling
-      AutoinstGeneral.SetMultipathing
 
       #
       # Copy the control file for easy access by user to  a pre-defined

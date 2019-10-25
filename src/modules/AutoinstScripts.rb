@@ -10,6 +10,9 @@ require "yast"
 
 module Yast
   class AutoinstScriptsClass < Module
+
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -62,9 +65,19 @@ module Yast
       @modified
     end
 
+    # Checking if the script has the right format
+    # @param tree [Hash] scripts section of the AutoYast configuration
+    # @param key [String] kind of script (pre, post,..)
+    # @return [Array<String>] of scripts
+    def valid_scripts_for(tree, key)
+      tree.fetch(key, []).select do |h|
+        next true if h.is_a?(Hash)
+        log.warn "Cannot evaluate #{key}: #{h.inspect}"
+        false
+      end
+    end
 
     # merge all types of scripts into one single list
-    # @param -
     # @return merged list
     def mergeScripts
       result = Builtins.maplist(@pre) do |p|
@@ -165,7 +178,6 @@ module Yast
           "feedback_type"  => Ops.get_string(p, "feedback_type", ""),
           "debug"          => Ops.get_boolean(p, "debug", true),
 	  "param-list"    => p.fetch("param-list",[]),
-          "network_needed" => Ops.get_boolean(p, "network_needed", false)
         }
       end
       exchroot = Builtins.maplist(@chroot) do |p|
@@ -227,7 +239,7 @@ module Yast
     def Resolve_ws(script)
       script = deep_copy(script)
       if !Builtins.isempty(Ops.get_string(script, "location", ""))
-        l = CutWhitespace(Ops.get_string(script, "location", ""))
+        l = Ops.get_string(script, "location", "").strip
         if l != Ops.get_string(script, "location", "")
           Builtins.y2milestone(
             "changed script location to \"%1\" from \"%2\"",
@@ -299,16 +311,17 @@ module Yast
     # Get all the configuration from a map.
     # When called by autoinst_<module name> (preparing autoinstallation data)
     # the map may be empty.
-    # @param settings	$[...]
-    # @return	success
+    # @param s [Hash] scripts section from an AutoYaST profile
+    # @return [Boolean]
     def Import(s)
       s = deep_copy(s)
       Builtins.y2debug("Calling AutoinstScripts::Import()")
-      @pre = Ops.get_list(s, "pre-scripts", [])
-      @init = Ops.get_list(s, "init-scripts", [])
-      @post = Ops.get_list(s, "post-scripts", [])
-      @chroot = Ops.get_list(s, "chroot-scripts", [])
-      @postpart = Ops.get_list(s, "postpartitioning-scripts", [])
+      # take only hash entries (bnc#986049)
+      @pre = valid_scripts_for(s, "pre-scripts")
+      @init = valid_scripts_for(s, "init-scripts")
+      @post = valid_scripts_for(s, "post-scripts")
+      @chroot = valid_scripts_for(s, "chroot-scripts")
+      @postpart = valid_scripts_for(s, "postpartitioning-scripts")
 
       @pre = Resolve_location(@pre)
       @init = Resolve_location(@init)
@@ -394,7 +407,7 @@ module Yast
     end
 
     # delete a script from a list
-    # @param script name
+    # @param scriptName [String] script name
     # @return [void]
     def deleteScript(scriptName)
       clean = Builtins.filter(@merged) do |s|
@@ -421,7 +434,7 @@ module Yast
     # @param [String] interpreter interpreter to be used with script
     # @param [String] type type of script
     # @return [void]
-    def AddEditScript(scriptName, source, interpreter, type, chrooted, debug, feedback, network, feedback_type, location, notification)
+    def AddEditScript(scriptName, source, interpreter, type, chrooted, debug, feedback, feedback_type, location, notification)
       mod = false
       @merged = Builtins.maplist(@merged) do |script|
         # Edit
@@ -434,7 +447,6 @@ module Yast
           oldScript = Builtins.add(oldScript, "chrooted", chrooted)
           oldScript = Builtins.add(oldScript, "debug", debug)
           oldScript = Builtins.add(oldScript, "feedback", feedback)
-          oldScript = Builtins.add(oldScript, "network_needed", network)
           oldScript = Builtins.add(oldScript, "feedback_type", feedback_type)
           oldScript = Builtins.add(oldScript, "location", location)
           oldScript = Builtins.add(oldScript, "notification", notification)
@@ -455,7 +467,6 @@ module Yast
         script = Builtins.add(script, "chrooted", chrooted)
         script = Builtins.add(script, "debug", debug)
         script = Builtins.add(script, "feedback", feedback)
-        script = Builtins.add(script, "network_needed", network)
         script = Builtins.add(script, "feedback_type", feedback_type)
         script = Builtins.add(script, "location", location)
         script = Builtins.add(script, "notification", notification)
@@ -468,7 +479,7 @@ module Yast
 
 
     # return type of script as formatted string
-    # @param script type
+    # @param type [String] script type
     # @return [String] type as translated string
     def typeString(type)
       if type == "pre-scripts"
@@ -681,8 +692,8 @@ module Yast
 
 
     # Execute pre scripts
-    # @param [String] type of script
-    # @param boolean if script should be executed in chroot env.
+    # @param type [String] type of script
+    # @param special [Boolean] if script should be executed in chroot env.
     # @return [Boolean] true on success
     def Write(type, special)
       return true if !Mode.autoinst && !Mode.autoupgrade
@@ -700,21 +711,14 @@ module Yast
         scripts = Builtins.filter(@chroot) do |s|
           Ops.get_boolean(s, "chrooted", false)
         end
-      elsif type == "post-scripts" && !special
-        scripts = Builtins.filter(@post) do |s|
-          !Ops.get_boolean(s, "network_needed", false)
-        end
-      elsif type == "post-scripts" && special
-        scripts = Builtins.filter(@post) do |s|
-          Ops.get_boolean(s, "network_needed", false)
-        end
+      elsif type == "post-scripts"
+        scripts = deep_copy(@post)
       elsif type == "postpartitioning-scripts"
         scripts = deep_copy(@postpart)
       else
         Builtins.y2error("Unsupported script type")
         return false
       end
-
 
       tmpdirString = ""
       current_logdir = ""
@@ -796,8 +800,8 @@ module Yast
             AutoinstConfig.initscripts_dir,
             scriptName
           )
-          Builtins.y2milestone("Writing init script into %1", scriptPath)
           if Ops.get_string(s, "location", "") != ""
+            scriptPath = AutoinstConfig.destdir + scriptPath #bnc961320
             Builtins.y2debug(
               "getting script: %1",
               Ops.get_string(s, "location", "")
@@ -814,7 +818,8 @@ module Yast
               scriptPath,
               Ops.get_string(s, "source", "echo Empty script!")
             )
-          end 
+          end
+          Builtins.y2milestone("Writing init script into %1", scriptPath)
           # moved to 1st stage because of systemd
           #Service::Enable("autoyast");
         elsif type == "chroot-scripts"
@@ -870,25 +875,27 @@ module Yast
             scriptPath = scriptPath[AutoinstConfig.destdir.length..-1] # cut off the e.g. /mnt for later execution
           end
         else
-          # disable all sources and finish target - no clue what this is good for.
-          # triggers an error with post-script network_needed=true
-          #                Pkg::SourceFinishAll();
-          #                Pkg::TargetFinish();
-
           scriptPath = Builtins.sformat(
             "%1/%2",
             AutoinstConfig.scripts_dir,
             scriptName
           )
-          Builtins.y2milestone("Writing  script into %1", scriptPath)
           if Ops.get_string(s, "location", "") != ""
-            if !GetURL(Ops.get_string(s, "location", ""), scriptPath)
-              Builtins.y2error(
-                "script %1 could not be retrieved",
-                Ops.get_string(s, "location", "")
-              )
+            if special # downloading scripts for post-installation
+              scriptPath = AutoinstConfig.destdir + scriptPath
+              if !GetURL(Ops.get_string(s, "location", ""), scriptPath)
+                Builtins.y2error(
+                  "script %1 could not be retrieved",
+                  Ops.get_string(s, "location", "")
+                )
+              else
+                log.info("Script downlaoded to #{scriptPath}")
+              end
+            else
+              log.info("Using already downlaoded script #{scriptPath}")
             end
           else
+            log.info("Writing script into #{scriptPath}")
             SCR.Write(
               path(".target.string"),
               scriptPath,
@@ -896,7 +903,9 @@ module Yast
             )
           end
         end
-        if type != "init-scripts"
+        if type != "init-scripts" &&
+          !(type == "post-scripts" && special) # We are not in the first installation stage
+                                               # where post-scripts have been downloaded only.
           # string message =  sformat(_("Executing user supplied script: %1"), scriptName);
           executionString = ""
           showFeedback = Ops.get_boolean(s, "feedback", false)

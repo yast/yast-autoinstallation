@@ -7,23 +7,24 @@
 #
 # $Id$
 require "yast"
+require "y2storage"
 
 module Yast
   class ProfileLocationClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
 
       Yast.import "AutoinstConfig"
       Yast.import "AutoInstallRules"
-      Yast.import "StorageDevices"
-      Yast.import "StorageControllers"
       Yast.import "Mode"
       Yast.import "Installation"
-      Yast.import "Popup"
+      Yast.import "Report"
       Yast.import "Label"
       Yast.import "URL"
-
+      Yast.import "InstURL"
 
       Yast.include self, "autoinstall/autoinst_dialogs.rb"
       Yast.include self, "autoinstall/io.rb"
@@ -48,114 +49,52 @@ module Yast
         AutoinstConfig.filepath
       )
 
+      # Due to self-update this process could be called twice.
+      # So we have to initialize the stack again. (bnc#1051483)
+      AutoInstallRules.reset
+
       localfile = AutoinstConfig.xml_tmpfile
 
       is_directory = false
 
       if AutoinstConfig.scheme == "relurl"
-        # FIXME:
-        # file                  # local file
+        url_str = InstURL.installInf2Url("")
+        log.info( "installation path from install.inf: #{url_str}" )
 
-        AutoinstConfig.scheme = Convert.to_string(
-          SCR.Read(path(".etc.install_inf.InstMode"))
-        )
-        if AutoinstConfig.scheme == "hd" || AutoinstConfig.scheme == "harddisk" ||
-            AutoinstConfig.scheme == "disk"
-          part = Convert.to_string(SCR.Read(path(".etc.install_inf.Partition")))
-          AutoinstConfig.scheme = "device"
-          AutoinstConfig.host = part
-          AutoinstConfig.filepath = Ops.add(
-            Ops.add(
-              Convert.to_string(SCR.Read(path(".etc.install_inf.Serverdir"))),
-              "/"
-            ),
-            AutoinstConfig.filepath
-          )
-        else
-          if AutoinstConfig.scheme == "cd" || AutoinstConfig.scheme == "cdrom"
+        if !url_str.empty?
+          url = URL.Parse(url_str)
+          AutoinstConfig.scheme = url["scheme"]
+          AutoinstConfig.host = url["host"]
+          AutoinstConfig.filepath = File.join( url["path"], AutoinstConfig.filepath)
+
+          if ["cd", "cdrom"].include? AutoinstConfig.scheme
             AutoinstConfig.scheme = "file"
           end
-          if Ops.greater_than(Builtins.size(AutoinstConfig.filepath), 0)
-            AutoinstConfig.filepath = Ops.add(
-              Ops.add(
-                Ops.add(
-                  Ops.add(
-                    Convert.to_string(
-                      SCR.Read(path(".etc.install_inf.Serverdir"))
-                    ),
-                    "/"
-                  ),
-                  AutoinstConfig.host
-                ),
-                "/"
-              ),
-              AutoinstConfig.filepath
-            )
-          else
-            AutoinstConfig.filepath = Ops.add(
-              Ops.add(
-                Convert.to_string(SCR.Read(path(".etc.install_inf.Serverdir"))),
-                "/"
-              ),
-              AutoinstConfig.host
-            )
-          end
-          if Convert.to_string(SCR.Read(path(".etc.install_inf.Server"))) != nil
-            AutoinstConfig.host = Convert.to_string(
-              SCR.Read(path(".etc.install_inf.Server"))
-            )
-          end
-        end
 
-        Builtins.y2milestone(
-          "relurl for profile changed to: %1://%2%3",
-          AutoinstConfig.scheme,
-          AutoinstConfig.host,
-          AutoinstConfig.filepath
-        )
-        SCR.Write(
-          path(".etc.install_inf.ayrelurl"),
-          Builtins.sformat(
-            "%1://%2/%3",
-            AutoinstConfig.scheme,
-            AutoinstConfig.host,
-            AutoinstConfig.filepath
-          )
-        )
-        SCR.Write(path(".etc.install_inf"), nil)
-      elsif AutoinstConfig.scheme == "label"
-        Builtins.y2milestone("searching label")
-        # need to call this to force Storage stuff to initialize just now
-        StorageControllers.Initialize()
-        Builtins.foreach(Storage.GetTargetMap) do |device, v|
-          Builtins.y2milestone("looking on %1", device)
-          if Ops.get_string(v, "label", "") == AutoinstConfig.host
-            AutoinstConfig.scheme = "device"
-            AutoinstConfig.host = Builtins.substring(device, 5)
-            Builtins.y2milestone("found on %1", AutoinstConfig.host)
-            raise Break
-          end
-          Builtins.foreach(Ops.get_list(v, "partitions", [])) do |p|
-            if Ops.get_string(p, "label", "") == AutoinstConfig.host
-              AutoinstConfig.scheme = "device"
-              AutoinstConfig.host = Builtins.substring(
-                Ops.get_string(p, "device", device),
-                5
-              )
-              Builtins.y2milestone("found on %1", AutoinstConfig.host)
-              raise Break
-            end
-            Builtins.y2milestone(
-              "not found on %1",
-              Ops.get_string(p, "device", "hm?")
-            )
-          end
-          raise Break if AutoinstConfig.scheme == "device"
+          ayrelurl = "#{AutoinstConfig.scheme}://#{AutoinstConfig.host}/#{AutoinstConfig.filepath}"
+          log.info( "relurl for profile changed to: #{ayrelurl}" )
+          SCR.Write( path(".etc.install_inf.ayrelurl"), ayrelurl )
+          SCR.Write(path(".etc.install_inf"), nil)
+        else
+          log.warn( "Cannot evaluate ZyppRepoURL from /etc/install.inf" )
         end
-        if AutoinstConfig.scheme == "label"
-          Popup.Error(_("label not found while looking for autoyast profile"))
+      elsif AutoinstConfig.scheme == "label"
+        # autoyast=label://my_home//autoinst.xml in linuxrc:
+        # AY is searching for a partition with the label "my_home". This partition
+        # will be mounted and the autoinst.xml will be used for installation.
+        log.info("searching label #{AutoinstConfig.host}")
+        fs = Y2Storage::StorageManager.instance.probed.filesystems.find do |f|
+          f.label == AutoinstConfig.host
+        end
+        if fs && fs.blk_devices.first
+          AutoinstConfig.scheme = "device"
+          AutoinstConfig.host = fs.blk_devices.first.basename
+          log.info("found on #{AutoinstConfig.host}")
+        else
+          Report.Error(_("label not found while looking for autoyast profile"))
         end
       end
+
       filename = basename(AutoinstConfig.filepath)
 
 
@@ -177,7 +116,7 @@ module Yast
         if !ret
           # autoyast hit an error while fetching it's config file
           error = _("An error occurred while fetching the profile:\n")
-          Popup.Error(Ops.add(error, @GET_error))
+          Report.Error(Ops.add(error, @GET_error))
           return false
         end
         tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))

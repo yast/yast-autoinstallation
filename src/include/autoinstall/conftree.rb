@@ -253,6 +253,8 @@ module Yast
         UI.ChangeWidget(Id(:writeNow), :Enabled, false)
       end
 
+      UI.ChangeWidget(Id(:configure), :Enabled, false) if AutoinstConfig.dont_edit.include?(selectedModule)
+
       # set read button status
       resourceMap = Y2ModuleConfig.ModuleMap.fetch(selectedModule, {})
       clonable = resourceMap["X-SuSE-YaST-AutoInstClonable"] == "true"
@@ -391,13 +393,6 @@ module Yast
         _("Save &As"),
         "menu_saveas"
       )
-      _Menu = Wizard.AddSubMenu(_Menu, "file-menu", _("Im&port"), "file-import")
-      _Menu = Wizard.AddMenuEntry(
-        _Menu,
-        "file-import",
-        _("Import &Kickstart File"),
-        "menu_kickstart"
-      )
       _Menu = Wizard.AddMenuEntry(
         _Menu,
         "file-menu",
@@ -502,7 +497,7 @@ module Yast
     end
 
     # Menu interface
-    # @param list menu items
+    #
     # @return [Symbol]
     def MainDialog
       _Icons = {}
@@ -576,6 +571,7 @@ module Yast
               # The settings will be written in a running system.
               # So we are switching to "normal" mode. (bnc#909223)
               Mode.SetMode("normal")
+
               Call.Function(module_auto, ["Write"])
               Mode.SetMode(oldMode)
             end
@@ -755,6 +751,7 @@ module Yast
             oldStage = Stage.stage
             Mode.SetMode("autoinstallation")
             Stage.Set("continue")
+
             WFM.CallFunction("inst_autopost", [])
             AutoinstSoftware.addPostPackages(
               Ops.get_list(Profile.current, ["software", "post-packages"], [])

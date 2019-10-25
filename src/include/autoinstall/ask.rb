@@ -9,7 +9,11 @@
 # $Id$
 module Yast
   module AutoinstallAskInclude
+    include Yast::Logger
+
     def initialize_autoinstall_ask(include_target)
+      textdomain "autoinst"
+
       Yast.import "Profile"
       Yast.import "UI"
       Yast.import "Label"
@@ -35,6 +39,44 @@ module Yast
       ret = Left(widget)
 
       deep_copy(ret)
+    end
+
+    # Function handles any user input in askDialog or timeouts if user did not
+    # give any input during the countdown
+    #
+    # @param [Integer] timeout in seconds
+    # @return [Symbol] any user input or :timeout in case of timeout
+    def user_input_with_countdown(timeout)
+      ret = nil
+
+      if timeout == 0
+        log.info "Waiting for user to enter their data"
+        ret = UI.UserInput
+      else
+        log.info "Waiting #{timeout} sec for the user to enter their data"
+        sec_till_timeout = timeout
+
+        while (sec_till_timeout > 0)
+          UI.ReplaceWidget(:stop_button, PushButton(Id(:stop_timeout), "#{Label.StopButton} (#{sec_till_timeout})"))
+          sec_till_timeout -= 1
+          ret = UI.TimeoutUserInput(1000)
+
+          # User has done something in UI - stop the timeout
+          if ret != :timeout
+            log.info "Countdown stopped by user"
+
+            if ret == :stop_timeout
+              UI.ChangeWidget(Id(:stop_timeout), :Enabled, false)
+              UI.SetFocus(:ok)
+            end
+
+            # leave the timeout-loop now
+            break
+          end
+        end
+      end
+
+      ret
     end
 
     def askDialog
@@ -144,6 +186,10 @@ module Yast
           if Ops.greater_than(Ops.get_integer(ask, "height", 0), min_height)
             min_height = Ops.get_integer(ask, "height", 0)
           end
+
+          #
+          # Script to calculate the default value (optional)
+          #
           if Builtins.haskey(ask, "default_value_script")
             interpreter = Ops.get_string(
               ask,
@@ -192,6 +238,10 @@ module Yast
               Ops.get_string(out, "stderr", "")
             )
           end
+
+          #
+          # Start to handle questions: widgets creation (checkbox, combobox)
+          #
           dlg = Dummy()
           if type == "boolean"
             on = Ops.get(ask, "default") == "true" ? true : false
@@ -211,22 +261,22 @@ module Yast
                 )
               )
             end
-            widget = ComboBox(Id(entry_id), Opt(:notify), question, dummy)
+            widget = ComboBox(Id(entry_id), Opt(:notify, :immediate), question, dummy)
             dlg = createWidget(widget, frametitle)
           elsif type == "static_text"
             widget = Label(Id(entry_id), Ops.get_string(ask, "default", ""))
             dlg = createWidget(widget, frametitle)
-          else
+          else # integer or string
             if Ops.get_boolean(ask, "password", false) == true
               widget1 = Password(
                 Id(entry_id),
-                Opt(:notify),
+                Opt(:notify, :notifyContextMenu),
                 question,
                 Ops.get_string(ask, "default", "")
               )
               widget2 = Password(
-                Id(:pass2),
-                Opt(:notify),
+                Id("#{entry_id}_pass2"),
+                Opt(:notify, :notifyContextMenu),
                 "",
                 Ops.get_string(ask, "default", "")
               )
@@ -251,9 +301,9 @@ module Yast
                 widget = ComboBox(Id(entry_id), Opt(:notify), question, dummy)
                 dlg = createWidget(widget, frametitle)
               else
-                widget = TextEntry(
+                widget = InputField(
                   Id(entry_id),
-                  Opt(:notify),
+                  Opt(:hstretch, :notify, :notifyContextMenu),
                   question,
                   Ops.get_string(ask, "default", "")
                 )
@@ -261,35 +311,47 @@ module Yast
               end
             end
           end
-          if frametitle != ""
-            if frameBuffer == nil
-              frameBufferVBox = VBox(dlg)
-            else
-              if frametitle == frameBufferTitle
-                frameBufferVBox = Builtins.add(frameBufferVBox, dlg)
-              else
-                dialog_term = Builtins.add(dialog_term, frameBuffer)
+          #
+          # At this time, widgets are created.
+          #
+
+          #
+          # Add the widget to the correct frame (using the frametitle).
+          #
+          if frametitle != "" # some frametitle is set
+            if frameBuffer == nil # and no frameBuffer exists
+              frameBufferVBox = VBox(dlg) # create a new frameBuffer
+            else # a frameBuffer exists
+              if frametitle == frameBufferTitle # with same title
+                frameBufferVBox = Builtins.add(frameBufferVBox, dlg) # add current to frameBuffer
+              else # with different title
+                dialog_term = Builtins.add(dialog_term, frameBuffer) # add frameBuffer to dialog
                 dialog_term = Builtins.add(dialog_term, VSpacing(1))
-                frameBufferVBox = VBox(dlg)
+                frameBufferVBox = VBox(dlg) # populate the frameBuffer with the new frame
               end
             end
-            frameBuffer = Frame(frametitle, frameBufferVBox)
+            frameBuffer = Frame(frametitle, frameBufferVBox) # set frameBuffer values for the next iteration
             frameBufferTitle = frametitle
-          else
-            if frameBuffer != nil
-              dialog_term = Builtins.add(dialog_term, frameBuffer)
+          else # frametitle is in blank
+            if frameBuffer != nil # a previous frameBuffer exists
+              dialog_term = Builtins.add(dialog_term, frameBuffer) # add frameBuffer to dialog
               dialog_term = Builtins.add(dialog_term, VSpacing(1))
               frameBuffer = nil
               frameBufferVBox = nil
             end
-            dialog_term = Builtins.add(dialog_term, dlg)
+            dialog_term = Builtins.add(dialog_term, dlg) # add new element (with no frame) to dialog
             dialog_term = Builtins.add(dialog_term, VSpacing(1))
           end
         end
+
+        # If some frameBuffer left after iterations, it's added to the dialog.
         if frameBuffer != nil
           dialog_term = Builtins.add(dialog_term, frameBuffer)
         end
 
+        #
+        # Let's build the dialog
+        #
         help_term = HWeight(30, RichText(helptext)) if helptext != ""
         title_term = Heading(title) if title != ""
         backButton = PushButton(Id(:back), back_label)
@@ -305,7 +367,12 @@ module Yast
               dialog_term,
               VSpacing(1),
               VStretch(),
-              HBox(HStretch(), backButton, PushButton(Id(:ok), ok_label))
+              HBox(
+                HStretch(),
+                backButton,
+                ReplacePoint(Id(:stop_button), Empty()),
+                PushButton(Id(:ok), ok_label)
+              )
             )
           ),
           HSpacing(1)
@@ -316,21 +383,24 @@ module Yast
         if Ops.less_than(Builtins.size(history), 2)
           UI.ChangeWidget(Id(:back), :Enabled, false)
         end
+
+        #
+        # Wait for user input
+        #
         while true
           ret = nil
-          if timeout == 0
-            ret = UI.UserInput
-          else
-            ret = UI.TimeoutUserInput(Ops.multiply(timeout, 1000))
-          end
-          timeout = 0
-          if ret == :ok || ret == :timeout
+
+          ret = user_input_with_countdown(timeout)
+          # Any user action stops the timeout
+          timeout = 0 if ret != :timeout
+
+          if ret == :ok || ret == :timeout # Process users' input and save asks into dialogs hash.
             runAgain = 0
             element_cnt2 = 0
             Ops.set(
               dialogs,
               dialog_nr,
-              Builtins.maplist(
+              Builtins.maplist( # Iterate through widgets building a list of asks (containing responses)
                 Convert.convert(
                   Ops.get(dialogs, dialog_nr, []),
                   :from => "list",
@@ -350,10 +420,10 @@ module Yast
                   val = Builtins.tointeger(Convert.to_string(val))
                 end
                 if Ops.get_boolean(ask, "password", false) == true
-                  pass2 = Convert.to_string(UI.QueryWidget(Id(:pass2), :Value))
+                  pass2 = Convert.to_string(UI.QueryWidget(Id("#{entry_id}_pass2"), :Value))
                   if pass2 != Convert.to_string(val)
                     Popup.Error("The two passwords mismatch.")
-                    runAgain = 1
+                    runAgain = 1 # Run the same dialog again.
                   end
                 end
                 Builtins.y2debug(
@@ -361,9 +431,11 @@ module Yast
                   Ops.get_string(ask, "question", ""),
                   val
                 )
+
+                # Save the value in the profile (and also as default value)
                 Ops.set(ask, "default", val)
                 pos = path2pos(Ops.get_string(ask, "path", ""))
-                if Ops.get_string(ask, "path", "") != ""
+                if Ops.get_string(ask, "path", "") != "" # Set value in the profile
                   Profile.current = Profile.setElementByList(
                     pos,
                     val,
@@ -378,6 +450,8 @@ module Yast
                     Profile.current
                   )
                 end
+
+                # Save the value into a file (if 'file' property was set)
                 if file != ""
                   if Ops.get_string(ask, "type", "string") == "boolean"
                     if !SCR.Write(
@@ -400,6 +474,8 @@ module Yast
                     end
                   end
                 end
+
+                # If ask must run an script, let's run it
                 if script != {}
                   scriptName = Ops.get_string(
                     script,
@@ -426,7 +502,7 @@ module Yast
                     SCR.Execute(path(".target.mkdir"), current_logdir)
                   end
                   executionString = ""
-                  if Ops.get_boolean(script, "environment", false)
+                  if Ops.get_boolean(script, "environment", false) # FIXME: why not pass the variable always?
                     if Ops.get_string(ask, "type", "string") == "boolean"
                       val = Builtins.sformat(
                         "%1",
@@ -461,15 +537,19 @@ module Yast
                       executionString
                     )
                   end
-                  runAgain = Ops.add(
-                    runAgain,
-                    Convert.to_integer(
-                      SCR.Execute(path(".target.bash"), executionString)
+                  Popup.Feedback("", _("A user defined script is running. This may take a while.")) do
+                    runAgain = Ops.add(
+                      runAgain,
+                      Convert.to_integer(
+                        SCR.Execute(path(".target.bash"), executionString)
+                      )
                     )
-                  )
+                  end
                   if Ops.get_boolean(script, "rerun_on_error", false) == false
                     runAgain = 0
                   end
+
+                  # Show feedback in a dialog
                   showFeedback = Ops.get_boolean(script, "feedback", false)
                   feedback = ""
                   if showFeedback
@@ -487,10 +567,12 @@ module Yast
                     Popup.LongText(
                       "",
                       RichText(Opt(:plainText), feedback),
-                      40,
+                      70,
                       15
                     )
                   end
+
+                  # Save the next_dialog
                   if Ops.greater_than(
                       SCR.Read(path(".target.size"), "/tmp/next_dialog"),
                       0
@@ -511,7 +593,7 @@ module Yast
               end
             )
             break if runAgain == 0
-          elsif ret == :back
+          elsif ret == :back # back button pressed: one step back on history.
             jumpToDialog = Ops.get(
               history,
               Ops.subtract(Builtins.size(history), 2),
@@ -526,10 +608,14 @@ module Yast
               Ops.subtract(Builtins.size(history), 1)
             )
             break
+          else
+            log.info "User ret ignored: #{ret}"
           end
         end
+
         UI.CloseDialog
-        if jumpToDialog != -2
+
+        if jumpToDialog != -2 # If we must jump to another dialog (as read on /tmp/next_dialog)
           dialog_nr = jumpToDialog
           jumpToDialog = -2
           i = 0
@@ -540,7 +626,7 @@ module Yast
             end
             i = Ops.add(i, 1)
           end
-        else
+        else # Next dialog
           dialogCounter = Ops.add(dialogCounter, 1)
           dialog_nr = Ops.get(keys, dialogCounter, -1)
         end

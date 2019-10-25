@@ -7,9 +7,14 @@
 #          Uwe Gansert <ug@suse.de>
 #
 # $Id: inst_autosetup.ycp 61521 2010-03-29 09:10:07Z ug $
+require "autoinstall/autosetup_helpers"
+
+require "y2packager/product_upgrade"
+
 module Yast
   class InstAutosetupUpgradeClient < Client
     include Yast::Logger
+    include Y2Autoinstallation::AutosetupHelpers
 
     def main
       Yast.import "Pkg"
@@ -26,22 +31,15 @@ module Yast
       Yast.import "AutoinstScripts"
       Yast.import "AutoinstGeneral"
       Yast.import "AutoinstSoftware"
-      Yast.import "Bootloader"
-      Yast.import "BootCommon"
       Yast.import "Popup"
       Yast.import "Arch"
-      Yast.import "AutoinstLVM"
-      Yast.import "AutoinstRAID"
-      Yast.import "Storage"
       Yast.import "Timezone"
       Yast.import "Keyboard"
       Yast.import "Call"
       Yast.import "ProductControl"
-      Yast.import "LanUdevAuto"
       Yast.import "Language"
       Yast.import "Console"
 
-      Yast.include self, "bootloader/routines/autoinstall.rb"
       Yast.include self, "autoinstall/ask.rb"
 
       @help_text = _(
@@ -53,7 +51,8 @@ module Yast
         _("Set up language"),
         _("Registration"),
         _("Configure Software selections"),
-        _("Configure Bootloader")
+        _("Configure Bootloader"),
+        _("Confirm License")
       ]
 
       @progress_descriptions = [
@@ -62,7 +61,8 @@ module Yast
         _("Setting up language..."),
         _("Registering the system..."),
         _("Configuring Software selections..."),
-        _("Configuring Bootloader...")
+        _("Configuring Bootloader..."),
+        _("Confirming License...")
       ]
 
       Progress.New(
@@ -119,19 +119,27 @@ module Yast
       #
       # Set workflow variables
       #
-      AutoinstGeneral.Import(Ops.get_map(Profile.current, "general", {}))
+      general_section = Profile.current["general"] || {}
+      AutoinstGeneral.Import(general_section)
       Builtins.y2milestone(
         "general: %1",
-        Ops.get_map(Profile.current, "general", {})
+        general_section
       )
       AutoinstGeneral.Write
 
       if Builtins.haskey(Profile.current, "add-on")
-        Call.Function(
-          "add-on_auto",
-          ["Import", Ops.get_map(Profile.current, "add-on", {})]
-        )
+        unless Call.Function(
+            "add-on_auto",
+            ["Import", Ops.get_map(Profile.current, "add-on", {})]
+          )
+
+          log.warn("User has aborted the installation.")
+          return :abort
+        end
         Call.Function("add-on_auto", ["Write"])
+
+        # Recover partitioning settings that were removed by the add-on_auto client (bsc#1073548)
+        Yast::AutoinstStorage.import_general_settings(general_section["storage"])
       end
 
       @use_utf8 = true # utf8 is default
@@ -158,8 +166,10 @@ module Yast
         Installation.encoding = "UTF-8"
       end
 
-      UI.SetLanguage(Language.language, Installation.encoding)
-      WFM.SetLanguage(Language.language, "UTF-8")
+      unless Language.SwitchToEnglishIfNeeded(true)
+        UI.SetLanguage(Language.language, Installation.encoding)
+        WFM.SetLanguage(Language.language, "UTF-8")
+      end
 
       if Builtins.haskey(Profile.current, "timezone")
         Timezone.Import(Ops.get_map(Profile.current, "timezone", {}))
@@ -209,35 +219,18 @@ module Yast
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
         # reread only if target system is not yet initialized (bnc#673033)
-        Storage.ReReadTargetMap
+        probe_storage
+
         if :abort == WFM.CallFunction("inst_update_partition_auto", [])
           return :abort
         end
       end
 
       # Registration
-      # FIXME: There is a lot of duplicate code with inst_autosetup.
 
       return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
       Progress.NextStage
-
-      general_section = Profile.current["general"] || {}
-      if Profile.current["suse_register"]
-        return :abort unless WFM.CallFunction(
-          "scc_auto",
-          ["Import", Profile.current["suse_register"]]
-        )
-        return :abort unless WFM.CallFunction(
-          "scc_auto",
-          ["Write"]
-        )
-	# failed relnotes download is not fatal, ignore ret code
-	WFM.CallFunction("inst_download_release_notes")
-      elsif general_section["semi-automatic"] &&
-          general_section["semi-automatic"].include?("scc")
-
-        Call.Function("inst_scc", ["enable_next" => true])
-      end
+      return :abort unless suse_register
 
       # Software
 
@@ -282,7 +275,7 @@ module Yast
         RootPart.previousRootPartition = RootPart.selectedRootPartition
 
         # check whether update is possible
-        # reset deleteOldPackages and onlyUpdateInstalled in respect to the selected system
+        # reset settings in respect to the selected system
         Update.Reset
         if !Update.IsProductSupportedForUpgrade
           Builtins.y2milestone("Upgrade is not supported")
@@ -290,43 +283,19 @@ module Yast
         end
       end
 
-      # this is new - override the default upgrade mode
-      if Ops.get(Profile.current, ["upgrade", "only_installed_packages"]) != nil
-        Update.onlyUpdateInstalled = Ops.get_boolean(
-          Profile.current,
-          ["upgrade", "only_installed_packages"],
-          true
-        )
-      end
-
       # connect target with package manager
       if !Update.did_init1
         Update.did_init1 = true
 
-        @restore = []
-        @selected = Pkg.ResolvableProperties("", :product, "")
-        Builtins.foreach(@selected) do |s|
-          @restore = Builtins.add(@restore, Ops.get_string(s, "name", ""))
-        end
-
-        Pkg.PkgApplReset
-
         # bnc #300540
         # bnc #391785
-        # Drops packages after PkgApplReset, not before (that would null that)
         Update.DropObsoletePackages
 
-        Builtins.foreach(@restore) { |res| Pkg.ResolvableInstall(res, :product) }
-        Update.SetDesktopPattern if !Update.onlyUpdateInstalled
-
-        if !Update.OnlyUpdateInstalled
-          Packages.default_patterns.each do |pattern|
-            result = Pkg.ResolvableInstall(pattern, :pattern)
-            log.info "Pre-select pattern #{pattern}: #{result}"
-          end
+        # make sure the packages needed for accessing the installation repository
+        # are installed, e.g. "cifs-mount" for SMB or "nfs-client" for NFS repositories
+        Packages.sourceAccessPackages.each do |package|
+          Pkg::ResolvableInstall(package, :package)
         end
-
-        Packages.SelectProduct
 
         # bnc #382208
 
@@ -392,11 +361,15 @@ module Yast
         Builtins.foreach(@remove_products) do |p|
           Pkg.ResolvableRemove(p, :product)
         end
+
+        # deselect the upgraded obsolete products (bsc#1133215)
+        Y2Packager::ProductUpgrade.remove_obsolete_upgrades
+
         Builtins.foreach(@patterns) { |p| Pkg.ResolvableInstall(p, :pattern) }
         Builtins.foreach(@packages) { |p| Pkg.ResolvableInstall(p, :package) }
         Builtins.foreach(@products) { |p| Pkg.ResolvableInstall(p, :product) }
         # old stuff again here
-        if Pkg.PkgSolve(!Update.onlyUpdateInstalled)
+        if Pkg.PkgSolve(false)
           Update.solve_errors = 0
         else
           Update.solve_errors = Pkg.PkgSolveErrors
@@ -426,8 +399,6 @@ module Yast
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
       Progress.NextStage
 
-      # SCR not initialized on target prevents reading from system
-      BootCommon.getLoaderType(true)
       return :abort unless WFM.CallFunction(
         "bootloader_auto",
         ["Import", Ops.get_map(Profile.current, "bootloader", {})]
@@ -463,6 +434,21 @@ module Yast
         false
       )
 
+      #
+      # Checking Base Product licenses
+      #
+      Progress.NextStage
+      if general_section["mode"] && general_section["mode"].fetch( "confirm_base_product_license", false )
+        result = nil
+        while result != :next
+          result = WFM.CallFunction("inst_product_license", [{"enable_back"=>false}])
+          return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
+        end
+      end
+
+      # Results of imported values semantic check.
+      return :abort unless AutoInstall.valid_imported_values
+
       Progress.Finish
 
       @ret = ProductControl.RunFrom(
@@ -471,42 +457,6 @@ module Yast
       )
       return :finish if @ret == :next
       @ret
-    end
-
-    def readModified
-      if Ops.greater_than(
-          SCR.Read(path(".target.size"), AutoinstConfig.modified_profile),
-          0
-        )
-        if !Profile.ReadXML(AutoinstConfig.modified_profile) ||
-            Profile.current == {}
-          Popup.Error(
-            _(
-              "Error while parsing the control file.\n" +
-                "Check the log files for more details or fix the\n" +
-                "control file and try again.\n"
-            )
-          )
-          return :abort
-        end
-        cpcmd = Builtins.sformat(
-          "mv %1 %2",
-          "/tmp/profile/autoinst.xml",
-          "/tmp/profile/pre-autoinst.xml"
-        )
-        Builtins.y2milestone("copy original profile: %1", cpcmd)
-        SCR.Execute(path(".target.bash"), cpcmd)
-
-        cpcmd = Builtins.sformat(
-          "mv %1 %2",
-          AutoinstConfig.modified_profile,
-          "/tmp/profile/autoinst.xml"
-        )
-        Builtins.y2milestone("moving modified profile: %1", cpcmd)
-        SCR.Execute(path(".target.bash"), cpcmd)
-        return :found
-      end
-      :not_found
     end
 
     # FIXME FIXME FIXME copy-paste from update_proposal

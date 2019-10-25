@@ -19,7 +19,10 @@ module Yast
   class AutoinstClassClass < Module
     include Yast::Logger
 
+    MERGE_XSLT_PATH = "/usr/share/autoinstall/xslt/merge.xslt"
+
     def main
+
       Yast.import "AutoinstConfig"
       Yast.import "XML"
       Yast.import "Summary"
@@ -38,21 +41,22 @@ module Yast
       AutoinstClass()
     end
 
-    # find a profile path
-    # @param string profile name
+    # Finds a profile path
+    # @param name [String] profile name
+    # @param class_ [String] class name
     # @return [String] profile Path
     def findPath(name, class_)
-      result = @confs.find { |c| c['name'] == name && c['class'] == class_ }
-      result ||= { 'class' => '', 'name' => 'default' }
-      File.join(@classDir, result['class'], result['name'])
+      result = @confs.find { |c| c["name"] == name && c["class"] == class_ }
+      result ||= { "class" => "", "name" => "default" }
+      File.join(@classDir, result["class"], result["name"])
     end
 
-    # Read classes
+    # Reads classes
     def Read
       if SCR.Read(path(".target.size"), @classPath) != -1
         # TODO: use XML module
         classes_map = Convert.to_map(SCR.Read(path(".xml"), @classPath))
-        @Classes = (classes_map && classes_map['classes']) || []
+        @Classes = (classes_map && classes_map["classes"]) || []
       else
         @Classes = []
       end
@@ -64,17 +68,17 @@ module Yast
     #     classes.xml files, one for each repository
     def Compat
       if !class_file_exists? && compat_class_file_exists?
-        log.info "Compat: #{@classPath} no found but #{compat_class_file} exists"
-        new_classes_map = { 'classes' => read_old_classes }
+        log.info "Compat: #{@classPath} not found but #{compat_class_file} exists"
+        new_classes_map = { "classes" => read_old_classes }
         log.info "creating #{new_classes_map}"
         XML.YCPToXMLFile(:class, new_classes_map, @classPath)
       end
       nil
     end
 
-    # Change the directory and read the class definitions
+    # Changes the directory and reads the class definitions
     #
-    # @param [String] Path of the new directory
+    # @param newdir [String] Path of the new directory
     # @return nil
     # @see class_dir=
     def classDirChanged(newdir)
@@ -84,7 +88,7 @@ module Yast
       nil
     end
 
-    # Change the directory of classes definitions.
+    # Changes the directory of classes definitions.
     #
     # AutoinstConfig#classDir= is called to set the new value
     # in the configuration. It does not check if the directory
@@ -108,76 +112,42 @@ module Yast
       nil
     end
 
-    # Merge Classes
+    MERGE_CMD = "/usr/bin/xsltproc".freeze
+    MERGE_DEFAULTS = "--novalid --maxdepth 10000 --param replace \"'false'\"".freeze
+
+    # Merge classes
     #
     def MergeClasses(configuration, base_profile, resultFileName)
-      configuration = deep_copy(configuration)
       dontmerge_str = ""
-      i = 1
-      Builtins.foreach(AutoinstConfig.dontmerge) do |dm|
-        dontmerge_str = Ops.add(
-          dontmerge_str,
-          Builtins.sformat(" --param dontmerge%1 \"'%2'\" ", i, dm)
-        )
-        i = Ops.add(i, 1)
+      AutoinstConfig.dontmerge.each_with_index do |dm, i|
+        dontmerge_str << " --param dontmerge#{i+1} \"'#{dm}'\" "
       end
-      tmpdir = AutoinstConfig.tmpDir
-      _MergeCommand = Builtins.sformat(
-        "/usr/bin/xsltproc --novalid --param replace \"'false'\" %1 --param with ",
-        dontmerge_str
-      )
+      merge_command =
+        "#{MERGE_CMD} #{MERGE_DEFAULTS} #{dontmerge_str} --param with " \
+        "\"'#{findPath(configuration["name"], configuration["class"])}'\"  " \
+        "--output #{File.join(AutoinstConfig.tmpDir, resultFileName)}  " \
+        "#{MERGE_XSLT_PATH} #{base_profile} "
 
-      _MergeCommand = Ops.add(
-        Ops.add(
-          Ops.add(_MergeCommand, "\"'"),
-          findPath(
-            Ops.get_string(configuration, "name", ""),
-            Ops.get_string(configuration, "class", "")
-          )
-        ),
-        "'\"  "
-      )
-      _MergeCommand = Ops.add(
-        Ops.add(
-          Ops.add(Ops.add(Ops.add(_MergeCommand, "--output "), tmpdir), "/"),
-          resultFileName
-        ),
-        " "
-      )
-      _MergeCommand = Ops.add(
-        _MergeCommand,
-        " /usr/share/autoinstall/xslt/merge.xslt "
-      )
-      _MergeCommand = Ops.add(Ops.add(_MergeCommand, base_profile), " ")
-
-
-      Builtins.y2milestone("Merge command: %1", _MergeCommand)
-
-      out = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), _MergeCommand, {})
-      )
-      Builtins.y2milestone(
-        "Merge stdout: %1, stderr: %2",
-        Ops.get_string(out, "stdout", ""),
-        Ops.get_string(out, "stderr", "")
-      )
-      deep_copy(out)
+      out = SCR.Execute(path(".target.bash_output"), merge_command, {})
+      log.info "Merge command: #{merge_command}"
+      log.info "Merge stdout: #{out["stdout"]}, stderr: #{out["stderr"]}"
+      out
     end
 
-    # Read files from class directories
+    # Reads files from class directories
     # @return [void]
     def Files
       @confs = []
       @Classes.each do |class_|
-        class_name_ = class_['name'] || 'xxx'
+        class_name_ = class_["name"] || "xxx"
         files_path = File.join(@classDir, class_name_)
-        files = Convert.convert(SCR.Read(path('.target.dir'), files_path),
+        files = Convert.convert(SCR.Read(path(".target.dir"), files_path),
           :from => "any", :to   => "list <string>")
 
         next if files.nil?
 
         log.info "Files in class #{class_name_}: #{files}"
-        new_confs = files.map { |f| { 'class' => class_name_, 'name' => f  }  }
+        new_confs = files.map { |f| { "class" => class_name_, "name" => f  }  }
         log.info "Configurations: #{new_confs}"
         @confs.concat(new_confs)
       end
@@ -185,15 +155,11 @@ module Yast
       nil
     end
 
-    # Save Class definitions
+    # Saves classes definitions
     def Save
-      Builtins.foreach(@deletedClasses) do |c|
-        toDel = Builtins.sformat(
-          "/bin/rm -rf %1/%2",
-          AutoinstConfig.classDir,
-          c
-        )
-        SCR.Execute(path(".target.bash"), toDel)
+      @deletedClasses.each do |c|
+        to_del = "/bin/rm -rf #{File.join(AutoinstConfig.classDir, c)}"
+        SCR.Execute(path(".target.bash"), to_del)
       end
       @deletedClasses = []
       tmp = { "classes" => @Classes }
@@ -202,34 +168,29 @@ module Yast
     end
 
 
-    # Import configuration
+    # Imports configuration
+    # @param [Array<Hash>] settings Configuration
+    # @return true
     def Import(settings)
-      settings = deep_copy(settings)
       @profile_conf = deep_copy(settings)
       true
     end
 
-    # Export configuration
+    # Exports configuration
+    # @return [Array<Hash>] Copy of the configuration
     def Export
       deep_copy(@profile_conf)
     end
 
-    # Configuration Summary
+    # Builds the configuration summary
+    # @return [String] Configuration summary
     def Summary
       summary = ""
-
-      Builtins.foreach(@profile_conf) do |c|
-        summary = Summary.AddHeader(
-          summary,
-          Ops.get_string(c, "class_name", "None")
-        )
-        summary = Summary.AddLine(
-          summary,
-          Ops.get_string(c, "configuration", "None")
-        )
+      @profile_conf.each do |conf|
+        summary = Summary.AddHeader(summary, conf["class_name"] || "None")
+        summary = Summary.AddLine(summary, conf["configuration"] || "None")
       end
-      return Summary.NotConfigured if Builtins.size(summary) == 0
-      summary
+      summary.empty? ? Summary.NotConfigured : summary
     end
 
     publish :variable => :classDir, :type => "string"
@@ -276,10 +237,10 @@ module Yast
     # Builds a map of classes to import from /etc/autoinstall/classes.xml
     # @return [Array<Hash>] Classes defined in the file.
     def read_old_classes
-      old_classes_map = Convert.to_map(SCR.Read(path('.xml'), compat_class_file))
-      old_classes = old_classes_map['classes'] || []
+      old_classes_map = Convert.to_map(SCR.Read(path(".xml"), compat_class_file))
+      old_classes = (old_classes_map && old_classes_map["classes"]) || []
       old_classes.each_with_object([]) do |class_, new_classes|
-        class_path_ = File.join(@classDir, class_['name'] || '')
+        class_path_ = File.join(@classDir, class_["name"] || "")
         log.info "looking for #{class_path_}"
         new_classes << class_ unless SCR.Read(path(".target.dir"), class_path_).nil?
       end

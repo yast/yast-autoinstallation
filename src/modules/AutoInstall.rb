@@ -7,9 +7,17 @@
 #
 # $Id$
 require "yast"
+require "autoinstall/pkg_gpg_check_handler"
+require "autoinstall/autoinst_issues"
+require "autoinstall/autoinst_issues_presenter"
 
 module Yast
   class AutoInstallClass < Module
+    include Yast::Logger
+
+    # @return [AutoinstIssues::AutoinstIssues::List] AutoYaST issues list
+    attr_accessor :issues_list
+
     def main
       textdomain "autoinst"
 
@@ -22,6 +30,8 @@ module Yast
       Yast.import "TFTP"
 
       @autoconf = false
+      @issues_list = Y2Autoinstallation::AutoinstIssues::List.new
+
       AutoInstall()
     end
 
@@ -224,6 +234,15 @@ module Yast
         )
       end
 
+      # copying ask-scripts and corresponding log files
+      # to /var/adm/autoinstall
+      SCR.Execute( path(".target.bash"),
+       "/bin/cp #{AutoinstConfig.tmpDir}/ask_scripts_log/*"\
+       " #{destdir}#{AutoinstConfig.logs_dir}" )
+      SCR.Execute( path(".target.bash"),
+       "/bin/cp #{AutoinstConfig.tmpDir}/*.sh"\
+       " #{destdir}#{AutoinstConfig.scripts_dir}" )
+
       SCR.Execute(
         path(".target.bash"),
         Builtins.sformat(
@@ -301,6 +320,64 @@ module Yast
       true
     end
 
+    # Implement pkgGpgCheck callback
+    #
+    # @param [Hash] data Output from `pkgGpgCheck` callback.
+    # @option data [String] "CheckPackageResult" Check result code according to libzypp.
+    # @option data [String] "Package" Package's name.
+    # @option data [String] "Localpath" Path to RPM file.
+    # @option data [String] "RepoMediaUrl" Media URL.
+    #   (it should match `media_url` key in AutoYaST profile).
+    # @return [String] "I" if the package should be accepted; otherwise
+    #   a blank string is returned (so no decision is made).
+    def pkg_gpg_check(data)
+      log.debug("pkgGpgCheck data: #{data}")
+      accept = PkgGpgCheckHandler.new(data, Profile.current).accept?
+      log.info("PkgGpgCheckerHandler for #{data["Package"]} returned #{accept}")
+      accept ? "I" : ""
+    end
+
+    # Checking for valid imported values and there is an fatal error
+    # we will stop the installation.
+    #
+    # @return [Boolean] True if the proposal is valid or the user accepted an invalid one.
+    def valid_imported_values
+      return true if @issues_list.empty?
+
+      report_settings = Report.Export
+      if @issues_list.fatal?
+        # On fatal errors, the message should be displayed
+        level = :error
+        buttons_set = :abort
+        display_message = true
+        log_message = report_settings["errors"]["log"]
+        timeout = report_settings["errors"]["timeout"]
+      else
+        # On non-fatal issues, obey report settings for warnings
+        level = :warn
+        buttons_set = :question
+        display_message = report_settings["warnings"]["show"]
+        log_message = report_settings["warnings"]["log"]
+        timeout = report_settings["warnings"]["timeout"]
+      end
+
+      presenter = Y2Autoinstallation::AutoinstIssuesPresenter.new(@issues_list)
+
+      # Showing issues onetime only.
+      @issues_list = Y2Autoinstallation::AutoinstIssues::List.new
+
+      log.send(level, presenter.to_plain) if log_message
+      return true unless display_message
+
+      dialog = Y2Autoinstallation::Dialogs::Question.new(
+        _("AutoYaST configuration file check"),
+        presenter.to_html,
+        timeout: timeout,
+        buttons_set: buttons_set
+      )
+      dialog.run == :ok
+    end
+
     publish :variable => :autoconf, :type => "boolean"
     publish :function => :callbackTrue_boolean_string, :type => "boolean (string)"
     publish :function => :callbackFalse_boolean_string, :type => "boolean (string)"
@@ -324,6 +401,8 @@ module Yast
     publish :function => :Save, :type => "boolean ()"
     publish :function => :Finish, :type => "void (string)"
     publish :function => :PXELocalBoot, :type => "boolean ()"
+    publish :function => :pkg_gpg_check, :type => "string (map)"
+
   end
 
   AutoInstall = AutoInstallClass.new

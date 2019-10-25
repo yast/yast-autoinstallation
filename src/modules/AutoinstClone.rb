@@ -16,6 +16,7 @@
 #
 #
 require "yast"
+require "y2storage"
 
 module Yast
   class AutoinstCloneClass < Module
@@ -29,7 +30,6 @@ module Yast
       Yast.import "Profile"
       Yast.import "Y2ModuleConfig"
       Yast.import "Misc"
-      Yast.import "Storage"
       Yast.import "AutoinstConfig"
       Yast.import "Report"
 
@@ -49,7 +49,7 @@ module Yast
     # Detects whether the current system uses multipath
     # @return [Boolean] if in use
     def multipath_in_use?
-      Storage.GetTargetMap.detect{|k,e| e.fetch("type",:X)==:CT_DMMULTIPATH} ? true:false
+      !Y2Storage::StorageManager.instance.probed.multipaths.empty?
     end
 
     # General options
@@ -70,10 +70,8 @@ module Yast
         "import_gpg_key"               => true,
         "accept_non_trusted_gpg_key"   => true
       }
-
       general["storage"] = {
-        "start_multipath" => multipath_in_use?,
-        "partition_alignment" => Storage.GetPartitionAlignment,
+        "start_multipath" => multipath_in_use?
       }
 
       Mode.SetMode("autoinst_config")
@@ -82,8 +80,8 @@ module Yast
 
 
     # Clone a Resource
-    # @param [String] resource
-    # @param [String] resource name
+    # @param resource    [String] resource
+    # @param resourceMap [Hash] resources map
     # @return [Array]
     def CommonClone(resource, resourceMap)
       resourceMap = deep_copy(resourceMap)
