@@ -26,7 +26,6 @@ module Yast
   class AyastSetupClient < Client
     include Yast::Logger
     include Y2Autoinstall::Clients::AyastSetup
-
     def main
       textdomain "autoinst"
 
@@ -81,7 +80,6 @@ module Yast
       CommandLine.Error(_("Empty parameter list"))
       :dummy
     end
-
   end
 end
 

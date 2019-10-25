@@ -209,18 +209,14 @@ module Yast
         end
       end
 
+      # Checking result of semantic checks of imported values.
+      return :abort unless AutoInstall.valid_imported_values
+
       # Add all found packages
       Progress.NextStep
       Progress.Title(_("Adding found packages..."))
       @packages = Builtins.filter(@packages) { |p| !PackageSystem.Installed(p) }
       AutoinstSoftware.addPostPackages(@packages)
-
-      # Run early network scripts
-      Progress.NextStep
-      Progress.Title(_("Running scripts..."))
-      AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
-      AutoinstScripts.Write("post-scripts", true)
-
 
       # Finish
       Progress.NextStage
@@ -240,8 +236,8 @@ module Yast
     end
 
     # Get directory name
-    # @param string path
-    # @return  [String] dirname
+    # @param filePath [Strig] string path
+    # @return [String] dirname
     def dirname(filePath)
       pathComponents = Builtins.splitstring(filePath, "/")
       last = Ops.get_string(

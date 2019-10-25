@@ -13,6 +13,7 @@ software =
     remove-patterns? &
     products? &
     remove-products? &
+    image? &
     element do_online_update { BOOLEAN }? &
     element install_recommended { BOOLEAN }? &
     element instsource {text}?
@@ -20,41 +21,55 @@ software =
 patterns =
   element patterns {
     LIST,
-    element pattern { text }+
+    element (pattern | listentry) { text }+
   }
 kernel = element kernel { text }
 post-packages =
   element post-packages {
     LIST,
-    element package {text}+
+    element (package | listentry) {text}+
   }
 post-patterns =
   element post-patterns {
     LIST,
-    element pattern {text}+
+    element (pattern | listentry) {text}+
   }
 packages =
   element packages {
     LIST,
-    element package {text}+
+    element (package | listentry) {text}+
   }
 remove-packages =
   element remove-packages {
     LIST,
-    element package {text}+
+    element (package | listentry) {text}+
   }
 remove-patterns =
   element remove-patterns {
     LIST,
-    element pattern {text}+
+    element (pattern | listentry) {text}+
   }
 products =
   element products {
     LIST,
-    element product {text}+
+    element (product | listentry) {text}+
   }
 remove-products =
   element remove-products {
     LIST,
-    element product {text}+
+    element (product | listentry) {text}+
+  }
+script_params =
+  element script_params {
+      LIST,
+      element listentry { text }
+  }
+
+image =
+  element image {
+    element image_location  { text }? &
+    element image_name      { text }? &
+    element script_location { text }? &
+    script_params? &
+    element run_kickoff     { BOOLEAN }?
   }

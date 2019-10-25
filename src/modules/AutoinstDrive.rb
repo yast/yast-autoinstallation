@@ -19,6 +19,7 @@ module Yast
 
       Yast.import "AutoinstCommon"
       Yast.import "AutoinstPartition"
+      Yast.import "Mode"
 
       textdomain "autoinst"
 
@@ -99,11 +100,10 @@ module Yast
 
     # Construct reference to drive for use in tree. The references
     # are of the form:
-    #	"{drive,volgroup}_<id>",
+    #	"{ drive, volgroup }_<id>",
     #  e.g. "drive_1", or "volgroup_3"
     #
-    # @param [Hash{String => Object}] drive drive to create the reference for.
-    #
+    # @param drive [Hash{String => Object}] drive drive to create the reference for.
     # @return [String] reference
     def getNodeReference(drive)
       drive = deep_copy(drive)
@@ -116,10 +116,10 @@ module Yast
     # Construct node name for display in tree.
     #
     # Constructed names are of the form:
-    #  "<device name> - {drive,volgroup}
+    #  "<device name> - { drive, volgroup }
     #
-    # @param [Hash{String => Object}] drive to create node name for
-    #
+    # @param drive [Hash{String => Object}] drive to create node name for
+    # @param enableHTML [Boolean] Use HTML tags
     # @return the newly created node name
     def getNodeName(drive, enableHTML)
       drive = deep_copy(drive)
@@ -323,79 +323,6 @@ module Yast
       nil
     end
 
-    # Import a generic drive map and create DriveT from it. Called by
-    # AutoinstPartPlan::Import().
-    #
-    # @param [Hash] drive A map containing the drive information.
-    #
-    # @return DriveT containing the same info.
-
-    def parseDrive(drive)
-      drive = deep_copy(drive)
-      newDrive = new("auto", Ops.get_symbol(drive, "type", :CT_DISK))
-      newDrive = set(
-        newDrive,
-        "device",
-        Ops.get_string(drive, "device", "auto")
-      )
-      newDrive = set(
-        newDrive,
-        "initialize",
-        Ops.get_boolean(drive, "initialize", true)
-      )
-      newDrive = set(
-        newDrive,
-        "use",
-        string2symbol(Ops.get_string(drive, "use", "all"))
-      )
-      newDrive = set(newDrive, "pesize", Ops.get_string(drive, "pesize", ""))
-      Builtins.foreach(Ops.get_list(drive, "partitions", [])) do |part|
-        newPart = AutoinstPartition.parsePartition(part)
-        if AutoinstPartition.isPartition(newPart)
-          newDrive = addPartition(newDrive, newPart)
-        else
-          Builtins.y2error("Couldn't construct PartitionT from '%1'", part)
-        end
-      end
-
-      if newDrive["type"] != :CT_TMPFS
-        newDrive["enable_snapshots"] = true # enable snapshot (default)
-        newDrive["disklabel"] = drive["disklabel"] if drive.has_key?("disklabel")
-      else
-        newDrive.delete("disklabel")
-      end
-
-      deep_copy(newDrive)
-    end
-
-    # Export the DriveT to the generic map representation used by
-    # autoyast. Filters out our surrogate id.
-    #
-    # @param [Hash{String => Object}] drive Drive to export
-    #
-    # @return Exported generic map representation of DriveT.
-
-    def Export(drive)
-      drive = deep_copy(drive)
-      # get rid of id
-      exportDrive = Builtins.remove(drive, "_id")
-      # translate e.g. `all to "all"
-      Ops.set(
-        exportDrive,
-        "use",
-        symbol2string(Ops.get_symbol(exportDrive, "use", :Empty))
-      )
-      # let AutoinstPartition do it's own filtering
-      Ops.set(
-        exportDrive,
-        "partitions",
-        Builtins.maplist(Ops.get_list(exportDrive, "partitions", [])) do |part|
-          AutoinstPartition.exportPartition(part)
-        end
-      )
-      deep_copy(exportDrive)
-    end
-
     publish :function => :set, :type => "map <string, any> (map <string, any>, string, any)"
     publish :function => :new, :type => "map <string, any> (string, symbol)"
     publish :function => :isDrive, :type => "boolean (map <string, any>)"
@@ -411,8 +338,6 @@ module Yast
     publish :function => :addPartition, :type => "map <string, any> (map <string, any>, map <string, any>)"
     publish :function => :updatePartition, :type => "map <string, any> (map <string, any>, integer, map <string, any>)"
     publish :function => :removePartition, :type => "map <string, any> (map <string, any>, integer)"
-    publish :function => :parseDrive, :type => "map <string, any> (map)"
-    publish :function => :Export, :type => "map (map <string, any>)"
   end
 
   AutoinstDrive = AutoinstDriveClass.new

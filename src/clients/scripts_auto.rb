@@ -52,7 +52,7 @@ module Yast
         AutoinstScripts.SetModified
       elsif @func == "Change"
         Wizard.CreateDialog
-        Wizard.SetDesktopIcon("autoyast")
+        Wizard.SetDesktopIcon("org.opensuse.yast.AutoYaST")
         @ret = ScriptsDialog()
         Wizard.CloseDialog
       elsif @func == "Export"

@@ -10,6 +10,8 @@ general = element general {
       element final_halt    { BOOLEAN }? &
       element final_reboot  { BOOLEAN }? &
       element forceboot     { BOOLEAN }? &
+      element confirm_base_product_license { BOOLEAN }? &
+      element ntp_sync_time_before_installation { text }? &
       element max_systemd_wait { INTEGER }?
     }? &
     mouse? & 
@@ -17,13 +19,14 @@ general = element general {
     semi-automatic? &
     minimal-configuration? &
     signature-handling? &
+    element self_update { BOOLEAN }? &
+    element self_update_url { text }? &
     element proposals {
         LIST,
         element proposal { text }*
     }? &
     element storage {
-        element partition_alignment { SYMBOL }? &
-        element start_multipath { BOOLEAN }? 
+        element start_multipath { BOOLEAN }?
     }? &
     element wait {
         element pre-modules {
@@ -54,10 +57,11 @@ general = element general {
                 }
             }*
         }?
-    }?
+    }? &
+    cio_ignore?
 }
 ask-list = element ask-list { LIST, ask* }
-ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path? & ask_pathlist? & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_frametitle? & ask_script? & ask_timeout? }
+ask = element ask { ask_question? & ask_default? & ask_help? & ask_title? & ask_type? & ask_password? & ask_path? & ask_pathlist? & ask_stage? & ask_selection? & ask_file? & ask_dialog? & ask_element? & ask_width? & ask_height? & ask_frametitle? & ask_script? & ask_timeout? & ask_ok_label? & ask_back_label? & ask_default_value_script? }
 ask_question = element question { text }
 ask_default = element default { text }
 ask_help = element help { text }
@@ -71,14 +75,18 @@ ask_selection_entry = element entry { ask_entry_value & ask_entry_label }
 ask_file = element file { text }
 ask_entry_value = element value { text }
 ask_entry_label = element label { text }
-ask_dialog = element dialog { text }
-ask_element = element element { text }
+ask_dialog = element dialog { INTEGER }
+ask_element = element element { INTEGER }
+ask_width = element width { INTEGER }
+ask_height = element height { INTEGER }
 ask_frametitle = element frametitle { text }
 ask_timeout = element timeout { INTEGER }
 ask_pathlist =  element pathlist {
     LIST,
     ask_path*
 }
+ask_ok_label = element ok_label { text }
+ask_back_label = element back_label { text }
 
 semi-automatic = element semi-automatic { LIST, semi-automatic-modules* }
 semi-automatic-modules = element module { "networking" | "partitioning" | "scc" }
@@ -101,6 +109,10 @@ ask_script = element script {
     element environment { BOOLEAN }? &
     element rerun_on_error { BOOLEAN }?
 }
+ask_default_value_script = element default_value_script {
+    element source { text } &
+    element interpreter { text }?
+}
 
 confirm =
   element confirm { BOOLEAN }
@@ -110,6 +122,8 @@ final_reboot =
   element final_reboot { BOOLEAN }
 forceboot =
   element forceboot { BOOLEAN }
+ntp_sync_time_before_installation =
+  element ntp_sync_time_before_installation {text}
 halt =
   element halt { BOOLEAN }
 second_stage =
@@ -117,3 +131,6 @@ second_stage =
 mouse = element mouse { 
     element id { text }
     }
+
+cio_ignore =
+  element cio_ignore { BOOLEAN }

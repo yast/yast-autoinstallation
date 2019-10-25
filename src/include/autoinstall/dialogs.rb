@@ -27,7 +27,7 @@ module Yast
     # @return [Symbol]
     def Settings
       Wizard.CreateDialog
-      Wizard.SetDesktopIcon("autoyast")
+      Wizard.SetDesktopIcon("org.opensuse.yast.AutoYaST")
       contents = HVSquash(
         VBox(
           VSquash(
@@ -130,8 +130,9 @@ module Yast
 
 
     # Check validity of file name
-    # @param string file name
-    # @return 0 if valid, -1 if not.
+    #
+    # @param name [String] file name
+    # @return [Integer] 0 if valid, -1 if not.
     def checkFileName(name)
       if name !=
           Builtins.filterchars(
@@ -147,8 +148,8 @@ module Yast
 
 
     # Return a message about invalid file names
-    # @param -
-    # @return message
+    #
+    # @return [String] message
     def invalidFileName
       _(
         "Invalid file name.\n" +
@@ -214,7 +215,7 @@ module Yast
 
 
       Wizard.CreateDialog
-      Wizard.SetDesktopIcon("groups")
+      Wizard.SetDesktopIcon("org.opensuse.yast.CloneSystem")
 
 
       # title
@@ -254,106 +255,6 @@ module Yast
       end until ret == :next || ret == :back
       Wizard.CloseDialog
       ret
-    end
-
-
-
-    def kickstartDialog
-      Yast.import "Progress"
-      Yast.import "Kickstart"
-      Yast.import "Report"
-
-
-      caption = _("Importing Kickstart file...")
-      Builtins.y2debug("Importing Kickstart data")
-      Wizard.CreateDialog
-      contents = Label(_("Initializing ..."))
-      Wizard.SetContents(
-        caption,
-        contents,
-        Ops.get_string(@HELPS, "kickstart", ""),
-        false,
-        false
-      )
-      steps = 2
-      sl = 500
-
-      # We do not set help text here, because it was set outside
-      Progress.New(
-        caption,
-        "",
-        steps,
-        [
-          # progress stage
-          _("Read Kickstart file"),
-          _("Import data")
-        ],
-        [
-          _("Reading Kickstart file..."),
-          # progress step
-          _("Importing data..."),
-          # progress step
-          _("Finished")
-        ],
-        ""
-      )
-
-
-      Progress.NextStage
-      filename = nil
-      filename = UI.AskForExistingFile(
-        AutoinstConfig.Repository,
-        "*",
-        _("Select a kickstart file.")
-      )
-      if filename == nil || filename == ""
-        Wizard.CloseDialog
-        return :abort
-      end
-
-      Kickstart.ksfile = Convert.to_string(filename)
-      Kickstart.Read
-
-      Progress.NextStage
-      ksay = Kickstart.KS2AY
-      Progress.Finish
-
-
-      if ksay == {}
-        Report.Error(
-          _(
-            "Error while loading Kickstart file. Verify the syntax of\nfile and try again."
-          )
-        )
-      else
-        Profile.Import(ksay)
-
-        Popup.ShowFeedback(
-          _("Reading configuration data"),
-          _("This may take a while")
-        )
-        Builtins.foreach(Profile.ModuleMap) do |p, d|
-          # Set resource name, if not using default value
-          resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
-          resource = p if resource == ""
-          Builtins.y2debug("resource: %1", resource)
-          tomerge = Ops.get_string(d, "X-SuSE-YaST-AutoInstMerge", "")
-          module_auto = Ops.get_string(d, "X-SuSE-YaST-AutoInstClient", "none")
-          rd = Y2ModuleConfig.getResourceData(d, resource)
-          WFM.CallFunction(module_auto, ["Import", rd]) if rd != nil
-        end
-        Popup.ClearFeedback
-
-        Report.Message(
-          _(
-            "Kickstart file was imported.\n" +
-              "Check the imported syntax and make sure the package selection and partitioning\n" +
-              "were imported correctly."
-          )
-        )
-      end
-      Wizard.CloseDialog
-      :next
     end
 
 

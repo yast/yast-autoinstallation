@@ -10,6 +10,8 @@ require "yast"
 
 module Yast
   class AutoinstGeneralClass < Module
+    include Yast::Logger
+
     def main
       Yast.import "Pkg"
       textdomain "autoinst"
@@ -17,15 +19,19 @@ module Yast
       Yast.import "Stage"
       Yast.import "AutoInstall"
       Yast.import "AutoinstConfig"
+      Yast.import "AutoinstStorage"
       Yast.import "Summary"
       Yast.import "Keyboard"
       Yast.import "Language"
       Yast.import "Timezone"
       Yast.import "Misc"
+      Yast.import "NtpClient"
       Yast.import "Profile"
       Yast.import "ProductFeatures"
-      Yast.import "Storage"
+
       Yast.import "SignatureCheckCallbacks"
+      Yast.import "Report"
+      Yast.import "Arch"
 
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
@@ -53,6 +59,9 @@ module Yast
       @proposals = []
 
       @storage = {}
+
+      # S390
+      @cio_ignore = true
 
       # default value of settings modified
       @modified = false
@@ -173,11 +182,14 @@ module Yast
       settings = deep_copy(settings)
       SetModified()
       Builtins.y2milestone("General import: %1", settings)
-      @mode = Ops.get_map(settings, "mode", {})
-      @signature_handling = Ops.get_map(settings, "signature-handling", {})
-      @askList = Ops.get_list(settings, "ask-list", [])
-      @proposals = Ops.get_list(settings, "proposals", [])
-      @storage = Ops.get_map(settings, "storage", {})
+      @mode = settings.fetch("mode", {})
+      @cio_ignore = settings.fetch("cio_ignore", true)
+      @signature_handling = settings.fetch("signature-handling", {})
+      @askList = settings.fetch("ask-list", [])
+      @proposals = settings.fetch("proposals", [])
+      AutoinstStorage.import_general_settings(settings["storage"])
+
+      SetSignatureHandling()
 
       true
     end
@@ -186,13 +198,29 @@ module Yast
     # Export Configuration
     # @return [Hash]
     def Export
-      general = {}
+      general = {
+        "mode" => @mode,
+        "signature-handling" => @signature_handling,
+        "ask-list" => @askList,
+        "proposals" => @proposals,
+        "storage" => AutoinstStorage.export_general_settings
+      }
 
-      Ops.set(general, "mode", @mode)
-      Ops.set(general, "signature-handling", @signature_handling)
-      Ops.set(general, "ask-list", @askList)
-      Ops.set(general, "proposals", @proposals)
-      Ops.set(general, "storage", @storage)
+      if Yast::Arch.s390
+        if Yast::Mode.installation
+          # Taking the selected value (selected by user or AutoYaST)
+          general["cio_ignore"] = @cio_ignore
+        else
+          # Trying to evalute the state from the installed system.
+          # Disabled if there are no active devices defined. (Call
+          # "cio_ignore -L", stored in /boot/zipl/active_devices.txt)
+          active_device_file = File.join(Yast::Installation.destdir,
+            "/boot/zipl/active_devices.txt")
+          general["cio_ignore"] = File.exist?(active_device_file) &&
+            File.stat(active_device_file).size > 0
+        end
+      end
+
       deep_copy(general)
     end
 
@@ -255,6 +283,11 @@ module Yast
           "void (map <string, any>)"
         )
       )
+
+      Pkg.CallbackPkgGpgCheck(
+        fun_ref(AutoInstall.method(:pkg_gpg_check),
+        "string (map)"
+      ))
 
       if Builtins.haskey(@signature_handling, "accept_unsigned_file")
         Pkg.CallbackAcceptUnsignedFile(
@@ -375,19 +408,35 @@ module Yast
       nil
     end
 
-    # set multipathing
-    # @return [void]
-    def SetMultipathing
-      val = @storage.fetch("start_multipath",false)
-      Builtins.y2milestone("SetMultipathing val:%1", val)
-      Storage.SetMultipathStartup(val)
+    # NTP syncing
+    def NtpSync
+      ntp_server = @mode["ntp_sync_time_before_installation"]
+      if ntp_server
+        Builtins.y2milestone("NTP syncing with #{ntp_server}")
+        Popup.ShowFeedback(
+          _("Syncing time..."),
+          # TRANSLATORS: %s is the name of the ntp server
+          _("Syncing time with %s.") % ntp_server
+        )
+        ret = NtpClient.sync_once(ntp_server)
+        if ret > 0
+          Report.Error(_("Time syncing failed."))
+        else
+          ret = SCR.Execute(path(".target.bash"), "/sbin/hwclock --systohc")
+          if ret > 0
+            Report.Error(_("Cannot update system time."))
+          end
+        end
+        Popup.ClearFeedback
+      end
     end
 
-    # Write General  Configuration
-    # @return [Boolean] true on success
-    def Write
-      AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
-      AutoinstConfig.second_stage = @mode["second_stage"] if @mode.has_key?("second_stage")
+    # Set the "kexec_reboot" flag in the product
+    # description in order to force a reboot with
+    # kexec at the end of the first installation
+    # stage.
+    # @return [void]
+    def SetRebootAfterFirstStage
       if Builtins.haskey(@mode, "forceboot")
         ProductFeatures.SetBooleanFeature(
           "globals",
@@ -395,22 +444,30 @@ module Yast
           !Ops.get_boolean(@mode, "forceboot", false)
         )
       end
+    end
+
+    # Write General  Configuration
+    # @return [Boolean] true on success
+    def Write
+      AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
+      AutoinstConfig.cio_ignore = @cio_ignore
+      AutoinstConfig.second_stage = @mode["second_stage"] if @mode.has_key?("second_stage")
+      SetRebootAfterFirstStage()
       AutoinstConfig.Halt = Ops.get_boolean(@mode, "halt", false)
       AutoinstConfig.RebootMsg = Ops.get_boolean(@mode, "rebootmsg", false)
       AutoinstConfig.setProposalList(@proposals)
 
-      # see bug #597723. Some machines can't boot with the new alignment that parted uses
-      # `align_cylinder == old behavior
-      # `align_optimal  == new behavior
-      if @storage.has_key?("partition_alignment")
-        val = @storage.fetch("partition_alignment",:align_optimal)
-        Storage.SetPartitionAlignment(val)
-        Builtins.y2milestone( "alignment set to %1", val )
+      if @storage["partition_alignment"] == :align_cylinder
+        # This option has been set by the user manually in the AY configuration file
+        # (Not via clone_system)
+        # It is not supported anymore with storage-ng. So the user should remove
+        # this option.
+        Popup.Warning(_("The AutoYaST option <partition_alignment> is not supported anymore."))
       end
 
-      SetMultipathing()
-
       SetSignatureHandling()
+
+      NtpSync()
 
       nil
     end
@@ -440,9 +497,10 @@ module Yast
     publish :function => :Import, :type => "boolean (map)"
     publish :function => :Export, :type => "map ()"
     publish :function => :SetSignatureHandling, :type => "void ()"
-    publish :function => :SetMultipathing, :type => "void ()"
+    publish :function => :SetRebootAfterFirstStage, :type => "void ()"
     publish :function => :Write, :type => "boolean ()"
     publish :function => :AutoinstGeneral, :type => "void ()"
+
   end
 
   AutoinstGeneral = AutoinstGeneralClass.new

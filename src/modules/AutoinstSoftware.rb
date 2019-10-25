@@ -8,10 +8,21 @@
 # $Id$
 #
 require "yast"
+require "y2storage"
+require "y2packager/product"
 
 module Yast
   class AutoinstSoftwareClass < Module
     include Yast::Logger
+
+    # This file is created by pkg-bindings when the package solver fails,
+    # it contains some details of the failure
+    BAD_LIST_FILE = "/var/log/YaST2/badlist".freeze
+
+    # Maximal amount of packages which will be shown
+    # in a popup.
+    MAX_PACKAGE_VIEW = 5
+
     def main
       Yast.import "UI"
       Yast.import "Pkg"
@@ -26,12 +37,15 @@ module Yast
       Yast.import "Report"
       Yast.import "Kernel"
       Yast.import "AutoinstConfig"
+      Yast.import "AutoinstFunctions"
       Yast.import "ProductControl"
-      Yast.import "Storage"
       Yast.import "Mode"
       Yast.import "Misc"
       Yast.import "Directory"
       Yast.import "Y2ModuleConfig"
+      Yast.import "PackageSystem"
+      Yast.import "ProductFeatures"
+      Yast.import "WorkflowManager"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -86,7 +100,6 @@ module Yast
       @modified
     end
 
-
     # Import data
     # @param [Hash] settings settings to be imported
     # @return true on success
@@ -95,12 +108,6 @@ module Yast
       @Software = deep_copy(settings)
       @patterns = settings.fetch("patterns",[])
       @instsource = settings.fetch("instsource","")
-
-      notFound = ""
-
-      # what is this good for? disturbs the main-repo selection
-      # Packages::Init(true);
-      # Packages::InitializeAddOnProducts();
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
       @patternsAvailable = []
@@ -158,27 +165,10 @@ module Yast
         :to   => "list <string>"
       )
 
-      Builtins.foreach(Ops.get_list(settings, "packages", [])) do |pack|
-        if !Pkg.IsAvailable(pack) && Stage.initial
-          notFound = Ops.add(Ops.add(notFound, pack), "\n")
-        end
-      end
-      if Ops.greater_than(Builtins.size(notFound), 0)
-        Builtins.y2error("packages not found: %1", notFound)
-        # warning text during the installation. %1 is a list of package names
-        Report.Error(
-          Builtins.sformat(
-            _(
-              "These packages could not be found in the software repositories:\n%1"
-            ),
-            notFound
-          )
-        )
-      end
-
       PackageAI.toinstall = settings.fetch("packages",[])
       @kernel = settings.fetch("kernel","")
-      AutoinstData.post_packages = settings.fetch("post-packages", [])
+
+      addPostPackages(settings.fetch("post-packages", []))
       AutoinstData.post_patterns = settings.fetch("post-patterns", [])
       PackageAI.toremove = settings.fetch("remove-packages", [])
 
@@ -680,31 +670,41 @@ module Yast
     # @return dumped settings (later acceptable by Import())
     def Export
       s = {}
-      Ops.set(s, "kernel", @kernel) if @kernel != ""
+      s["kernel"] = @kernel if !@kernel.empty?
+      s["patterns"] = @patterns if !@patterns.empty?
 
-      Ops.set(s, "patterns", @patterns) if @patterns != []
+      pkg_toinstall = PackageAI.toinstall
+      s["packages"] = pkg_toinstall if !pkg_toinstall.empty?
 
-      Ops.set(s, "packages", PackageAI.toinstall) if PackageAI.toinstall != []
+      pkg_post = AutoinstData.post_packages
+      s["post-packages"] = pkg_post if !pkg_post.empty?
 
-      if AutoinstData.post_packages != []
-        Ops.set(s, "post-packages", AutoinstData.post_packages)
-      end
+      pkg_toremove = PackageAI.toremove
+      s["remove-packages"] = PackageAI.toremove if !pkg_toremove.empty?
 
-      if PackageAI.toremove != []
-        Ops.set(s, "remove-packages", PackageAI.toremove)
-      end
+      s["instsource"] = @instsource
+      s["image"] = @image
 
-      Ops.set(s, "instsource", @instsource)
+      # In the installed system the flag solver.onlyRequires in zypp.conf is
+      # set to true. This differs from the installation process. So we have
+      # to set "install_recommended" to true in order to reflect the
+      # installation process and cannot use the package bindings. (bnc#990494)
+      # OR: Each product (e.g. CASP) can set it in the control.xml file.
+      rec = ProductFeatures.GetStringFeature(
+        "software",
+        "clone_install_recommended_default"
+      )
+      s["install_recommended"] = rec != "no"
 
-      Ops.set(s, "image", @image)
+      products = Product.FindBaseProducts
+      raise "Found multiple base products" if products.size > 1
+      s["products"] = products.map{ |x| x["name"] }
 
-      deep_copy(s)
+      s
     end
 
-
     # Add packages needed by modules, i.e. NIS, NFS etc.
-    # @param list of strings packages to add
-    # @return [void]
+    # @param module_packages [Array<String>] list of strings packages to add
     def AddModulePackages(module_packages)
       module_packages = deep_copy(module_packages)
       PackageAI.toinstall = Builtins.toset(
@@ -722,8 +722,7 @@ module Yast
     end
 
     # Remove packages not needed by modules, i.e. NIS, NFS etc.
-    # @param list of packages to remove
-    # @return [void]
+    # @param module_packages [Array<String>] list of strings packages to add
     def RemoveModulePackages(module_packages)
       module_packages = deep_copy(module_packages)
       PackageAI.toinstall = Builtins.filter(PackageAI.toinstall) do |p|
@@ -815,7 +814,7 @@ module Yast
 
 
     # Configure software settings
-    # @param void
+    #
     # @return [Boolean]
     def Write
       if @imaging
@@ -829,10 +828,22 @@ module Yast
       ok = true
 
       Packages.Init(true)
+      # Resetting package selection of previous runs. This is needed
+      # because it could be that additional repositories
+      # are available meanwhile. (bnc#979691)
+      Pkg.PkgApplReset
+
       sw_settings = Profile.current.fetch("software",{})
-      Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal, 
+      Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal,
                            "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
+
       failed = []
+
+      # Add storage-related software packages (filesystem tools etc.) to the
+      # set of packages to be installed.
+      pkg_handler = Y2Storage::PackageHandler.new
+      pkg_handler.add_feature_packages(Y2Storage::StorageManager.instance.staging)
+      pkg_handler.set_proposal_packages
 
       # switch for recommended patterns installation (workaround for our very weird pattern design)
       if sw_settings.fetch("install_recommended",false) == false
@@ -859,28 +870,17 @@ module Yast
         )
       end
 
-      autoinstPacks = autoinstPackages
-      # FIXME: optimization for package list evaluation turned off because it optimized it
-      #        into an unbootable state (no kernel) bnc#427731
-      #
-      #        list<string> autoinstPacks = PackageAI::toinstall;
-      Builtins.y2milestone(
-        "Packages selected in autoinstall mode: %1",
-        autoinstPacks
-      )
-
-      if Ops.greater_than(Builtins.size(autoinstPacks), 0)
-        Builtins.y2milestone(
-          "Installing individual packages: %1",
-          Pkg.DoProvide(autoinstPacks)
-        )
+      selected_product = AutoinstFunctions.selected_product
+      if selected_product
+        log.info "Selecting product #{selected_product.inspect} for installation"
+        selected_product.select
+      else
+        log.info "No product has been selected for installation"
       end
 
+      SelectPackagesForInstallation()
 
       computed_packages = Packages.ComputeSystemPackageList
-      Builtins.y2debug("Computed list of packages: %1", computed_packages)
-      Pkg.DoProvide(computed_packages)
-
       Builtins.foreach(computed_packages) do |pack2|
         if Ops.greater_than(Builtins.size(@kernel), 0) && pack2 != @kernel &&
             Builtins.search(pack2, "kernel-") == 0
@@ -888,7 +888,6 @@ module Yast
           PackageAI.toremove = Builtins.add(PackageAI.toremove, pack2)
         end
       end
-
 
       #
       # Now remove all packages listed in remove-packages
@@ -902,22 +901,25 @@ module Yast
 
         Pkg.DoRemove(PackageAI.toremove)
       end
-      pack = Storage.AddPackageList
-      if Ops.greater_than(Builtins.size(pack), 0)
-        Builtins.y2milestone(
-          "Installing storage packages: %1",
-          Pkg.DoProvide(pack)
-        )
-      end
+
       #
       # Solve dependencies
       #
       if !Pkg.PkgSolve(false)
-        Report.Error(
-          _(
-            "The package resolver run failed. Please check your software section in the autoyast profile."
-          )
-        )
+        # TRANSLATORS: Error message
+        msg = _("The package resolver run failed. Please check your software " \
+          "section in the autoyast profile.")
+        # TRANSLATORS: Error message, %s is replaced by "/var/log/YaST2/y2log"
+        msg += "\n" + _("Additional details can be found in the %s file.") %
+          "/var/log/YaST2/y2log"
+
+        # read the details saved by pkg-bindings
+        if File.exist?(BAD_LIST_FILE)
+          msg += "\n\n"
+          msg += File.read(BAD_LIST_FILE)
+        end
+
+        Report.LongError(msg)
       end
 
       SpaceCalculation.ShowPartitionWarning
@@ -940,9 +942,11 @@ module Yast
 
 
     # Add post packages
-    # @param list calculated post packages
-    # @return [void]
+    # @param calcpost [Array<String>] list calculated post packages
     def addPostPackages(calcpost)
+      # filter out already installed packages
+      calcpost.reject!{|p| PackageSystem.Installed(p)}
+
       calcpost = deep_copy(calcpost)
       AutoinstData.post_packages = Convert.convert(
         Builtins.toset(Builtins.union(calcpost, AutoinstData.post_packages)),
@@ -952,12 +956,11 @@ module Yast
       nil
     end
 
+    # returns (hard and soft) locked packages
+    # @return [Array<String>] list of package names
     def locked_packages
-      packages = Pkg.ResolvableProperties("", :package, "").select do |package|
-        # hard AND soft locks
-        package["transact_by"] == :user && (package["locked"] || package["status"] == :available)
-      end
-      packages.map! {|p| p["name"] }
+      # hard AND soft locks
+      user_transact_packages(:taboo).concat(user_transact_packages(:available))
     end
 
     def install_packages
@@ -970,7 +973,7 @@ module Yast
 
       # user selected packages which have already been installed
       installed_by_user = Pkg.GetPackages(:installed, true).select{ |pkg_name|
-        Pkg.PkgPropertiesAll(pkg_name).any? { |package| package["on_system_by_user"] }
+        Pkg.PkgPropertiesAll(pkg_name).any? { |p| p["on_system_by_user"] && p["status"] == :installed }
       }
 
       # Filter out kernel and pattern packages
@@ -1093,6 +1096,75 @@ module Yast
       Import((Stage.initial ? read_initial_stage() : ReadHelper()))
     end
 
+    def SavePackageSelection
+      @saved_package_selection = Read()
+    end
+
+    def SavedPackageSelection
+      @saved_package_selection
+    end
+
+    # Selects given product (see Y2Packager::Product) and merges its workflow
+    def merge_product(product)
+      raise ArgumentError, "Base product expected" if !product
+
+      log.info("AutoinstSoftware::merge_product - using product: #{product.name}")
+      product.select
+
+      WorkflowManager.merge_product_workflow(product)
+
+      # Adding needed autoyast packages if a second stage is needed.
+      # Could have been changed due merging a products
+      log.info("Checking new second stage requirement.")
+      Profile.softwareCompat
+    end
+
+    def SelectPackagesForInstallation
+      log.info "Individual Packages for installation: #{autoinstPackages}"
+      failed_packages = {}
+      failed_packages = Pkg.DoProvide(autoinstPackages) unless autoinstPackages.empty?
+      computed_packages = Packages.ComputeSystemPackageList
+      log.info "Computed packages for installation: #{computed_packages}"
+      failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages)) unless computed_packages.empty?
+
+      # Blaming only packages which have been selected by the AutoYaST configuration file
+      log.error "Cannot select following packages for installation:" unless failed_packages.empty?
+      failed_packages.reject! do |name,reason|
+        if @Software["packages"] && @Software["packages"].include?(name)
+          log.error("  #{name} : #{reason} (selected by AutoYaST configuration file)")
+          false
+        else
+          log.error("  #{name} : #{reason} (selected by YAST automatically)")
+          true
+        end
+      end
+
+      unless failed_packages.empty?
+        not_selected = ""
+        suggest_y2log = false
+        failed_count = failed_packages.size
+        if failed_packages.size > MAX_PACKAGE_VIEW
+          failed_packages = failed_packages.first(MAX_PACKAGE_VIEW).to_h
+          suggest_y2log = true
+        end
+        failed_packages.each do |name,reason|
+          not_selected << "#{name}: #{reason}\n"
+        end
+        # TRANSLATORS: Warning text during the installation. %s is a list of package
+        error_message = _("These packages cannot be found in the software repositories:\n%s") % not_selected
+        if suggest_y2log
+          # TRANSLATORS: Error message, %d is replaced by the amount of failed packages.
+          error_message += _("and %d additional packages") % (failed_count - MAX_PACKAGE_VIEW)
+          # TRANSLATORS: Error message, %s is replaced by "/var/log/YaST2/y2log"
+          error_message += "\n\n" + _("Details can be found in the %s file.") %
+            "/var/log/YaST2/y2log"
+        end
+
+        Report.Error(error_message)
+      end
+    end
+
+    publish :function => :merge_product, :type => "void (string)"
     publish :variable => :Software, :type => "map"
     publish :variable => :image, :type => "map <string, any>"
     publish :variable => :image_arch, :type => "string"
@@ -1123,6 +1195,23 @@ module Yast
     publish :function => :addPostPackages, :type => "void (list <string>)"
     publish :function => :ReadHelper, :type => "map <string, any> ()"
     publish :function => :Read, :type => "boolean ()"
+
+  private
+
+    # Get user transacted packages, include only the packages in the requested state
+    # @param status [Symbol] package status (:available, :selected, :installed,
+    # :removed)
+    # @return [Array<String>] package names
+    def user_transact_packages(status)
+      # only package names (without version)
+      names_only = true
+      packages = Pkg.GetPackages(status, names_only)
+
+      # iterate over each package, Pkg.ResolvableProperties("", :package, "") requires a lot of memory
+      packages.select do |package|
+        Pkg.PkgPropertiesAll(package).any? { |p| p["transact_by"] == :user && p["status"] == status }
+      end
+    end
   end
 
   AutoinstSoftware = AutoinstSoftwareClass.new

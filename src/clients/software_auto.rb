@@ -52,7 +52,8 @@ module Yast
       elsif @func == "Import"
         @ret = AutoinstSoftware.Import(@param)
       elsif @func == "Read"
-        @ret = AutoinstSoftware.Read
+        # use the previously saved software selection if defined (bsc#956325)
+        @ret = AutoinstSoftware.SavedPackageSelection || AutoinstSoftware.Read
       elsif @func == "Reset"
         AutoinstSoftware.Import({})
         @ret = {}
@@ -132,7 +133,7 @@ module Yast
             )
           )
         ),
-        HBox(PushButton(Id(:ok), "&OK"), PushButton(Id(:abort), "&Abort"))
+        HBox(PushButton(Id(:ok), Label.OKButton), PushButton(Id(:abort), Label.AbortButton))
       )
       UI.OpenDialog(Opt(:decorated), contents)
       UI.ChangeWidget(Id(:location), :Enabled, mainRepo != "")

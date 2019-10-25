@@ -7,6 +7,8 @@
 #
 # $Id$
 require "yast"
+require "yast2/popup"
+require "y2storage"
 
 module Yast
   class AutoInstallRulesClass < Module
@@ -22,8 +24,6 @@ module Yast
       Yast.import "Installation"
       Yast.import "AutoinstConfig"
       Yast.import "XML"
-      Yast.import "Storage"
-      Yast.import "StorageControllers"
       Yast.import "Kernel"
       Yast.import "Mode"
       Yast.import "Profile"
@@ -33,9 +33,20 @@ module Yast
       Yast.import "URL"
       Yast.import "IP"
       Yast.import "Product"
+      Yast.import "Hostname"
+      Yast.import "OSRelease"
 
       Yast.include self, "autoinstall/io.rb"
 
+      reset
+    end
+
+    # Reset the module's state
+    #
+    # @return nil
+    #
+    # @see #AutoInstallRules
+    def reset
       @userrules = false
       @dontmergeIsDefault = true
       @dontmergeBackup = []
@@ -50,19 +61,12 @@ module Yast
       @ATTR = {}
 
       @installed_product = ""
-
       @installed_product_version = ""
-
       @hostname = ""
-
-      @hostaddress = ""
-
+      @hostaddress = nil
       @network = ""
-
       @domain = ""
-
       @arch = ""
-
       @karch = ""
 
       # Taken from smbios
@@ -78,31 +82,18 @@ module Yast
       @board = ""
 
       @memsize = 0
-
       @disksize = []
-
       @totaldisk = 0
-
       @hostid = ""
-
       @mac = ""
-
       @linux = 0
-
       @others = 0
-
       @xserver = ""
 
-      @haspcmcia = "0"
-
       #///////////////////////////////////////////
       #///////////////////////////////////////////
-
       @NonLinuxPartitions = []
-
       @LinuxPartitions = []
-
-
       @UserRules = {}
 
       # Local Variables
@@ -110,7 +101,6 @@ module Yast
       @env = {}
 
       @tomerge = []
-
       @element2file = {}
       AutoInstallRules()
     end
@@ -156,8 +146,8 @@ module Yast
       if Stage.initial
         cmd = 'ip link show | grep link/ether | head -1 | sed -e "s:^.*link/ether.::" -e "s: .*::"'
         ret = SCR.Execute(path(".target.bash_output"), cmd )
-	Builtins.y2milestone("mac Addr ret:%1", ret)
-	tmpmac = ret.fetch("stdout","")
+      Builtins.y2milestone("mac Addr ret:%1", ret)
+      tmpmac = ret.fetch("stdout","")
       end
       Builtins.y2milestone("mac Addr tmp:%1", tmpmac)
       cleanmac = Builtins.deletechars(tmpmac != nil ? tmpmac : "", ":\n")
@@ -165,17 +155,32 @@ module Yast
       cleanmac
     end
 
+    # Return the network part of the hostaddress
+    #
+    # @example
+    #   AutoInstallRules.getNetwork #=> "192.168.122.0"
+    #
+    # @return [String] Network part of the hostaddress
+    #
+    # @see hostaddress
+    def getNetwork
+      ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
 
-    # Return host id (hex ip )
+      # Regexp to fetch match the network address.
+      regexp = /([\h:\.]+)\/\d+ .+src #{hostaddress}/
+      if ret = ip_route["stdout"][regexp, 1]
+        ret
+      else
+        log.warn "Cannot find network address through 'ip': #{ip_route}"
+        nil
+      end
+    end
+
+    # Return host id (hex ip)
+    #
     # @return [String] host ID
     def getHostid
-      if Stage.initial
-        @hostaddress = Convert.to_string(SCR.Read(path(".etc.install_inf.IP")))
-      else
-        @hostaddress = "192.168.1.1" # FIXME
-      end
-      hex = IP.ToHex(@hostaddress)
-      hex
+      IP.ToHex(hostaddress)
     end
 
     # Return host name
@@ -268,17 +273,13 @@ module Yast
       #
       # Disk sizes
       #
-
-      StorageControllers.Initialize  # ugly hack, Storage.GetTargetMap should simply work without it
-      storage = Storage.GetTargetMap
-      _PhysicalTargetMap = Builtins.filter(storage) do |k, v|
-        Storage.IsRealDisk(v)
-      end
       @totaldisk = 0
-      @disksize = Builtins.maplist(_PhysicalTargetMap) do |k, v|
-        size_in_mb = Ops.divide(Ops.get_integer(v, "size_k", 0), 1024)
-        @totaldisk = Ops.add(@totaldisk, size_in_mb)
-        { "device" => k, "size" => size_in_mb }
+      @disksize = []
+      one_mega = Y2Storage::DiskSize.MiB(1)
+      Y2Storage::StorageManager.instance.probed.disks.each do |disk|
+        size = disk.size.ceil(one_mega).to_i / one_mega.to_i
+        @totaldisk += size
+        @disksize << { "device" => disk.name, "size" => size }
       end
       Builtins.y2milestone("disksize: %1", @disksize)
       Ops.set(@ATTR, "totaldisk", @totaldisk)
@@ -290,7 +291,7 @@ module Yast
       #
       # Network
       #
-      Ops.set(@ATTR, "hostaddress", @hostaddress)
+      Ops.set(@ATTR, "hostaddress", hostaddress)
 
       #
       # Hostid (i.e. a8c00101);
@@ -298,40 +299,28 @@ module Yast
       Ops.set(@ATTR, "hostid", @hostid)
 
       Ops.set(@ATTR, "hostname", getHostname)
-      @domain = Convert.to_string(SCR.Read(path(".etc.install_inf.Domain")))
+      @domain = Hostname.CurrentDomain
       Ops.set(@ATTR, "domain", @domain)
-      @network = Convert.to_string(SCR.Read(path(".etc.install_inf.Network")))
+      @network = getNetwork
       Ops.set(@ATTR, "network", @network)
-      @haspcmcia = Convert.to_string(
-        SCR.Read(path(".etc.install_inf.HasPCMCIA"))
-      )
-      Ops.set(@ATTR, "haspcmcia", @haspcmcia)
       @xserver = Convert.to_string(SCR.Read(path(".etc.install_inf.XServer")))
       Ops.set(@ATTR, "xserver", @xserver)
 
-      @NonLinuxPartitions = Storage.GetForeignPrimary
-      @others = Builtins.size(@NonLinuxPartitions)
-
+      probed_disks = Y2Storage::StorageManager.instance.probed_disk_analyzer
+      @NonLinuxPartitions = probed_disks.windows_partitions()
+      @others = @NonLinuxPartitions.size
       Builtins.y2milestone("Other primaries: %1", @NonLinuxPartitions)
-
-      @LinuxPartitions = Storage.GetOtherLinuxPartitions
-      @linux = Builtins.size(@LinuxPartitions)
-
+      @LinuxPartitions = probed_disks.linux_partitions()
+      @linux = @LinuxPartitions.size
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
-      distro_str = SCR.Read(path(".content.DISTRO"))
-      log.info "DISTRO: #{distro_str}"
-
-      distro = distro_map(distro_str)
-      cpe = distro ? cpeid_map(distro["cpeid"]) : {}
-
-      @installed_product = distro["name"] || ""
-      @installed_product_version = cpe["version"] || ""
+      @installed_product = Yast::OSRelease.ReleaseInformation
+      @installed_product_version = Yast::OSRelease.ReleaseVersion
       Ops.set(@ATTR, "installed_product", @installed_product)
       Ops.set(@ATTR, "installed_product_version", @installed_product_version)
 
-      log.info "Installing #{@installed_product.inspect}, " \
-        "version: #{@installed_product_version.inspect}"
+      log.info "Installing #{@installed_product}, " \
+        "version: #{@installed_product_version}"
       log.info "ATTR=#{@ATTR}"
 
       nil
@@ -466,18 +455,19 @@ module Yast
       AutoInstallRules.ProbeRules if !rulelist.empty?
       Builtins.foreach(rulelist) do |ruleset|
         Builtins.y2milestone("Ruleset: %1", ruleset)
-	rls = ruleset.keys
-	if( rls.include?("result"))
-	  rls.reject! {|r| r=="result"}
-	  rls.push("result")
-	end
-	Builtins.y2milestone("Orderes Rules: %1", rls)
+        rls = ruleset.keys
+        if rls.include?("result")
+          rls.reject! {|r| r=="result"}
+          rls.push("result")
+        end
+        op = Ops.get_string(ruleset, "operator", "and")
+        rls.reject! {|r| r=="op"}
+        Builtins.y2milestone("Orderes Rules: %1", rls)
         Builtins.foreach(rls) do |rule|
-	  ruledef = ruleset.fetch( rule, {} )
+          ruledef = ruleset.fetch( rule, {} )
           Builtins.y2milestone("Rule: %1", rule)
           Builtins.y2milestone("Ruledef: %1", ruledef)
           match = Ops.get_string(ruledef, "match", "undefined")
-          op = Ops.get_string(ruledef, "operator", "and")
           matchtype = Ops.get_string(ruledef, "match_type", "exact")
           easy_rules = [
             "hostname",
@@ -546,10 +536,6 @@ module Yast
             shellseg(ismatch, rule, match, op, matchtype)
             ismatch = true
             Ops.set(@env, rule, @totaldisk)
-          elsif rule == "haspcmcia"
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@env, rule, @haspcmcia)
           elsif rule == "disksize"
             Builtins.y2debug("creating rule check for disksize")
             disk = Builtins.splitstring(match, " ")
@@ -694,11 +680,7 @@ module Yast
             element_nr = Ops.add(element_nr, 1)
             if Builtins.contains(@tomerge, file)
               Builtins.foreach(Ops.get_list(rule, ["dialog", "conflicts"], [])) do |c|
-                Ops.set(
-                  conflictsCounter,
-                  c,
-                  Ops.add(Ops.get(conflictsCounter, c, 0), 1)
-                )
+                conflictsCounter[c] = 0
               end
             end
           end
@@ -741,24 +723,20 @@ module Yast
               VSpacing(1),
               HBox(
                 HStretch(),
-                PushButton(Id(:back), "Back"),
-                PushButton(Id(:ok), "Okay")
+                PushButton(Id(:back), Label.BackButton),
+                PushButton(Id(:ok), Label.OKButton)
               )
             )
           )
           UI.ChangeWidget(Id(:back), :Enabled, false) if dialogIndex == 0
-          Builtins.foreach(conflictsCounter) do |c, n|
-            UI.ChangeWidget(
-              Id(c),
-              :Enabled,
-              Ops.greater_than(n, 0) ? false : true
-            )
-            UI.ChangeWidget(
-              Id(c),
-              :Value,
-              Ops.greater_than(n, 0) ? false : true
-            )
+
+          # If there are conflicting items set them all to enabled/not_selected
+          # in order to let the user decide at first.
+          conflictsCounter.each do |c, n|
+            UI.ChangeWidget(Id(c), :Enabled, true)
+            UI.ChangeWidget(Id(c), :Value, false)
           end
+
           while true
             ret = nil
             if timeout == 0
@@ -827,7 +805,6 @@ module Yast
           @tomerge
         )
       end
-
       nil
     end
 
@@ -890,94 +867,80 @@ module Yast
       end
     end
 
+    #TODO: Move the responsibility of merging profiles to a specific class
+    # removing also the duplication of code between this module and the
+    # AutoinstClass one.
+
+    MERGE_CMD = "/usr/bin/xsltproc".freeze
+    MERGE_DEFAULTS = "--novalid --maxdepth 10000 --param replace \"'false'\"".freeze
+    MERGE_XSLT_PATH = "/usr/share/autoinstall/xslt/merge.xslt".freeze
+
+    # Merges the given profiles
+    #
+    # @param base_profile [String] the base profile file path
+    # @param with [String] the profile to be merged file path
+    # @param to [String] the resulting control file path
+    # @return [Hash] stdout and stderr output
+    def merge_profiles(base_profile, with, to)
+      dontmerge_str = ""
+      AutoinstConfig.dontmerge.each_with_index do |dm, i|
+        dontmerge_str << " --param dontmerge#{i+1} \"'#{dm}'\""
+      end
+      merge_command =
+        "#{MERGE_CMD} #{MERGE_DEFAULTS}" \
+        "#{dontmerge_str} --param with \"'#{with}'\" " \
+        "--output \"#{to}\" " \
+        "#{MERGE_XSLT_PATH} #{base_profile}"
+
+      out = SCR.Execute(path(".target.bash_output"), merge_command, {})
+      log.info("Merge command: #{merge_command}")
+      log.info("Merge stdout: #{out["stdout"]}, stderr: #{out["stderr"]}")
+      out
+    end
 
     # Merge Rule results
     # @param [String] result_profile the resulting control file path
     # @return [Boolean] true on success
     def Merge(result_profile)
-      tmpdir = AutoinstConfig.tmpDir
+      base_profile = File.join(AutoinstConfig.tmpDir, "base_profile.xml")
+      merge_profile = File.join(AutoinstConfig.tmpDir, "result.xml")
+      cleaned_profile = File.join(AutoinstConfig.tmpDir, "current.xml")
       ok = true
-      skip = false
       error = false
-
-      base_profile = Ops.add(tmpdir, "/base_profile.xml")
-
-      Builtins.foreach(@tomerge) do |file|
-        Builtins.y2milestone("Working on file: %1", file)
-        current_profile = Ops.add(
-          Ops.add(AutoinstConfig.local_rules_location, "/"),
-          file
-        )
-        if !skip
-          if !XML_cleanup(current_profile, Ops.add(tmpdir, "/base_profile.xml"))
-            Builtins.y2error("Error reading XML file")
-            message = _(
-              "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
-            )
-            message = Ops.add(message, XML.XMLError)
-            Popup.Error(message)
-            error = true
-          end
-          skip = true
-        elsif !error
-          _MergeCommand = "/usr/bin/xsltproc --novalid --param replace \"'false'\" "
-          dontmerge_str = ""
-          i = 1
-          Builtins.foreach(AutoinstConfig.dontmerge) do |dm|
-            dontmerge_str = Ops.add(
-              dontmerge_str,
-              Builtins.sformat(" --param dontmerge%1 \"'%2'\" ", i, dm)
-            )
-            i = Ops.add(i, 1)
-          end
-          _MergeCommand = Ops.add(_MergeCommand, dontmerge_str)
-
-          _MergeCommand = Ops.add(_MergeCommand, "--param with ")
-          _MergeCommand = Ops.add(
-            Ops.add(Ops.add(_MergeCommand, "\"'"), current_profile),
-            "'\"  "
+      @tomerge.each_with_index do |file, iter|
+        log.info("Working on file: #{file}")
+        current_profile = File.join(AutoinstConfig.local_rules_location, file)
+        dest_profile = iter == 0 ? base_profile : cleaned_profile
+        if !XML_cleanup(current_profile, dest_profile)
+          log.error("Error reading XML file")
+          message = _(
+            "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
           )
-          _MergeCommand = Ops.add(
-            Ops.add(Ops.add(_MergeCommand, "--output "), tmpdir),
-            "/result.xml"
-          )
-          _MergeCommand = Ops.add(
-            _MergeCommand,
-            " /usr/share/autoinstall/xslt/merge.xslt "
-          )
-          _MergeCommand = Ops.add(Ops.add(_MergeCommand, base_profile), " ")
+          message += XML.XMLError
+          Yast2::Popup.show(message, headline: :error)
+          error = true
+        end
 
-          Builtins.y2milestone("Merge command: %1", _MergeCommand)
-          xsltret = Convert.to_map(
-            SCR.Execute(path(".target.bash_output"), _MergeCommand)
-          )
-          Builtins.y2milestone("Merge result: %1", xsltret)
-          if Ops.get_integer(xsltret, "exit", -1) != 0 ||
-              Ops.get_string(xsltret, "stderr", "") != ""
-            Builtins.y2error("Merge Failed")
-            StdErrLog(Ops.get_string(xsltret, "stderr", ""))
+        unless error
+          next if iter == 0
+          xsltret = merge_profiles(base_profile, cleaned_profile, merge_profile)
+
+          log.info("Merge result: #{xsltret}")
+          if xsltret["exit"] != 0 || xsltret.fetch("stderr", "") != ""
+            log.error("Merge Failed")
+            StdErrLog(xsltret.fetch("stderr", ""))
             ok = false
           end
 
-          XML_cleanup(
-            Ops.add(tmpdir, "/result.xml"),
-            Ops.add(tmpdir, "/base_profile.xml")
-          )
+          XML_cleanup(merge_profile, base_profile)
         else
-          Builtins.y2error("Error while merging control files")
+          log.error("Error while merging control files")
         end
       end
 
       return !error if error
 
-      SCR.Execute(
-        path(".target.bash"),
-        Ops.add(
-          Ops.add(Ops.add("cp ", tmpdir), "/base_profile.xml "),
-          result_profile
-        )
-      )
-
+      SCR.Execute(path(".target.bash"), "cp #{base_profile} #{result_profile}")
       Builtins.y2milestone("Ok=%1", ok)
       @dontmergeIsDefault = true
       AutoinstConfig.dontmerge = deep_copy(@dontmergeBackup)
@@ -1120,6 +1083,23 @@ module Yast
       nil
     end
 
+    # Regexp to extract the IP from the routes table
+    HOSTADDRESS_REGEXP = /src ([\w.]+) /.freeze
+
+    # Return the IP through iproute2 tools
+    #
+    # @return [String] IP address
+    def hostaddress
+      return @hostaddress unless @hostaddress.nil?
+      ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
+      if ret = ip_route["stdout"][HOSTADDRESS_REGEXP, 1]
+        log.info "Found IP address: #{ret}"
+        ret
+      else
+        log.warn "Cannot evaluate IP address: #{ip_route}"
+        nil
+      end
+    end
 
     publish :variable => :userrules, :type => "boolean"
     publish :variable => :dontmergeIsDefault, :type => "boolean"
@@ -1128,7 +1108,6 @@ module Yast
     publish :variable => :installed_product, :type => "string"
     publish :variable => :installed_product_version, :type => "string"
     publish :variable => :hostname, :type => "string"
-    publish :variable => :hostaddress, :type => "string"
     publish :variable => :network, :type => "string"
     publish :variable => :domain, :type => "string"
     publish :variable => :arch, :type => "string"
@@ -1145,11 +1124,11 @@ module Yast
     publish :variable => :linux, :type => "integer"
     publish :variable => :others, :type => "integer"
     publish :variable => :xserver, :type => "string"
-    publish :variable => :haspcmcia, :type => "string"
     publish :variable => :NonLinuxPartitions, :type => "list"
     publish :variable => :LinuxPartitions, :type => "list"
     publish :variable => :UserRules, :type => "map <string, any>"
     publish :variable => :tomerge, :type => "list <string>"
+    publish :function => :hostaddress, :type => "string ()"
     publish :function => :XML_cleanup, :type => "boolean (string, string)"
     publish :function => :StdErrLog, :type => "void (string)"
     publish :function => :getMAC, :type => "string ()"
@@ -1164,56 +1143,6 @@ module Yast
     publish :function => :CreateDefault, :type => "void ()"
     publish :function => :CreateFile, :type => "void (string)"
     publish :function => :AutoInstallRules, :type => "void ()"
-
-    private
-
-    # TODO FIXME: share these functions (move to yast2?)
-
-    # Split CPE ID and distro label (separated by comma)
-    # @param distro [String] "DISTRO" value from content file
-    # @return [Hash<String,String>,nil] parsed value, map:
-    #    {"name" => <string>, "cpeid" => <string> }
-    #    or nil if the input value is invalid
-    def distro_map(distro)
-      if !distro
-        log.warn "Received nil distro value"
-        return nil
-      end
-
-      # split at the first comma, resulting in 2 parts at max.
-      cpeid, name = distro.split(",", 2)
-
-      if !name
-        log.warn "Cannot parse DISTRO value: #{distro}"
-        return nil
-      end
-
-      {"cpeid" => cpeid, "name" => name}
-    end
-
-    # parse CPE ID in URI syntax
-    # @see http://csrc.nist.gov/publications/nistir/ir7695/NISTIR-7695-CPE-Naming.pdf
-    # @param cpeid [String] e.g. "cpe:/o:suse:sles:12"
-    # @return [Hash<String,String>] parsed values, the keys are "part", "vendor", "product",
-    #   "version", "update", "edition", "lang", nil is returned for missing values
-    def cpeid_map(cpeid)
-      return nil unless cpeid && cpeid.start_with?("cpe:/")
-
-      # remove the "cpe:/" prefix
-      raw_cpe = cpeid.sub(/^cpe:\//, "")
-
-      parts = raw_cpe.split(":")
-
-      {
-        "part"    => parts[0],
-        "vendor"  => parts[1],
-        "product" => parts[2],
-        "version" => parts[3],
-        "update"  => parts[4],
-        "edition" => parts[5],
-        "lang"    => parts[6]
-      }
-    end
   end
 
   AutoInstallRules = AutoInstallRulesClass.new

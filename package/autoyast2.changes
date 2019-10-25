@@ -1,4 +1,1562 @@
 -------------------------------------------------------------------
+Fri Oct 25 11:55:01 UTC 2019 - Ladislav Slezák <lslezak@suse.cz>
+
+- Do not crash when using the online medium without the
+  registration section in the AY XML profile, display an error
+  message with some hints (bsc#1154988)
+- 4.2.13
+
+-------------------------------------------------------------------
+Fri Oct 18 14:03:27 UTC 2019 - Ladislav Slezák <lslezak@suse.cz>
+
+- AutoYaST support for the OnlineOnly installation medium
+  (jsc#SLE-7214)
+- 4.2.12
+
+-------------------------------------------------------------------
+Wed Oct 16 11:36:17 UTC 2019 - Ladislav Slezák <lslezak@suse.cz>
+
+- Do not run the registration step again in the installed system
+  (in the 2nd stage after reboot) (bsc#1153293)
+- 4.2.11
+
+-------------------------------------------------------------------
+Tue Oct 15 11:37:54 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
+
+- Fix dependency for autoyast2-installation (bsc#1131235)
+- 4.2.10
+
+-------------------------------------------------------------------
+Thu Sep 26 12:12:57 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
+
+- Move kdump import before software import to allow kdump to
+  specify packages it needs in first stage (bsc#1149208)
+- 4.2.9
+
+-------------------------------------------------------------------
+Wed Aug 28 11:01:24 CEST 2019 - schubi@suse.de
+
+- Set X-SuSE-YaST-AutoInstResource in desktop file (bsc#144894).
+- 4.2.8
+
+-------------------------------------------------------------------
+Fri Aug  6 15:58:25 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Add missing 'uuid' element to the partition sections
+  (boo#1144007).
+- 4.2.7
+
+-------------------------------------------------------------------
+Mon Aug  5 15:38:18 CEST 2019 - schubi@suse.de
+
+- Fixed downloading of AutoYaST configuration file with "relurl"
+  (bsc#1138117).
+- 4.2.6
+
+-------------------------------------------------------------------
+Thu Jul 18 15:05:10 UTC 2019 - Jan Engelhardt <jengelh@inai.de>
+
+- Use modern tar syntax
+- Require fillup because it's executed in %post
+
+-------------------------------------------------------------------
+Thu Jul 18 14:49:00 UTC 2019 - Martin Vidner <mvidner@suse.com>
+
+- Fixed an Internal Error when AutoYaST is importing users and
+  groups configuration (bsc#1140339).
+- 4.2.5
+
+-------------------------------------------------------------------
+Wed Jul  3 09:55:40 CEST 2019 - schubi@suse.de
+
+- Fixed new desktop file name (bsc#1138144).
+- 4.2.4
+
+-------------------------------------------------------------------
+Mon Jun 17 13:33:11 UTC 2019 - José Iván López González <jlopez@suse.com>
+
+- Always perform a storage re-probe after executing pre-scripts.
+- Related to bsc#1133045
+- 4.2.3
+
+-------------------------------------------------------------------
+Mon Jun 10 14:11:02 UTC 2019 - José Iván López González <jlopez@suse.com>
+
+- Add multi-device Btrfs related elements to the partitioning
+  schema (part of jsc#SLE-3877).
+- 4.2.2
+
+-------------------------------------------------------------------
+Fri May 31 12:26:24 UTC 2019 - Stasiek Michalski <hellcp@mailbox.org>
+
+- Add metainfo (fate#319035)
+- Revamp spec
+- Replace GenericName with Comment
+- 4.2.1
+
+-------------------------------------------------------------------
+Mon Apr 29 11:34:37 UTC 2019 - Ladislav Slezák <lslezak@suse.cz>
+
+- Uninstall the "SUSE-Manager-Proxy" product when upgrading from
+  SLES12 + SUMA Proxy + SUMA Branch Server (bsc#1133215)
+- 4.2.0
+
+-------------------------------------------------------------------
+Tue Apr  2 10:32:53 UTC 2019 - José Iván López González <jlopez@suse.com>
+
+- Removed check for available devices. When there are no devices,
+  the proposal issues will be shown (needed for bsc#1130256).
+- 4.1.5
+
+-------------------------------------------------------------------
+Fri Mar 15 15:54:52 CET 2019 - schubi@suse.de
+
+- Postpone disabling local repositories if the second stage is
+  required (bsc#1127818).
+- 4.1.4
+
+-------------------------------------------------------------------
+Fri Mar  8 12:59:05 UTC 2019 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Add Bcache related elements to the partitioning schema
+  (fate#325346).
+- 4.1.3
+
+-------------------------------------------------------------------
+Fri Feb 22 16:40:30 UTC 2019 - dgonzalez@suse.com
+
+- Avoid to crash when the profile has a not valid sofware section
+  (bsc#1125959).
+- 4.1.2
+
+-------------------------------------------------------------------
+Tue Feb 12 13:50:19 CET 2019 - schubi@suse.de
+
+- Reading IPv6 setting in order to initialize it correctly.
+  (bsc#1122660)
+- 4.1.1
+
+-------------------------------------------------------------------
+Wed Jan 30 15:14:25 CET 2019 - schubi@suse.de
+
+- Fixed conflicting items in rule dialogs (bsc#1123091).
+- 4.1.0
+
+-------------------------------------------------------------------
+Sat Nov 24 00:10:55 UTC 2018 - Stasiek Michalski <hellcp@mailbox.org>
+
+- Provide icon with module (boo#1109310)
+- 4.0.70
+
+-------------------------------------------------------------------
+Tue Nov 20 11:34:17 CET 2018 - schubi@suse.de
+
+- Function SelectProduct removed in order NOT to select All
+  available products (bsc#1116332).
+- 4.0.69
+
+-------------------------------------------------------------------
+Thu Nov 15 15:11:47 UTC 2018 - igonzalezsosa@suse.com
+
+- Fallback to English when using fbiterm on those languages
+  which are not properly supported (fate#325746).
+- 4.0.68
+
+-------------------------------------------------------------------
+Tue Nov 13 11:53:55 CET 2018 - schubi@suse.de
+
+- Removed unneeded flag network_needed in script section.
+  (bsc#1094822)
+- 4.0.67
+
+-------------------------------------------------------------------
+Fri Nov  2 12:57:05 CET 2018 - schubi@suse.de
+
+- Writing security settings in first AY installation stage.
+  So other modules (e.g. users) can rely on these settings now.
+  (bnc#1112769)
+- 4.0.66
+
+-------------------------------------------------------------------
+Thu Oct 25 13:35:34 CEST 2018 - schubi@suse.de
+
+- Saving y2logs after the installation has been finished.
+  (fate#325737)
+- 4.0.65
+
+-------------------------------------------------------------------
+Mon Oct 22 08:25:08 WEST 2018 - igonzalezsosa@suse.com
+
+- Adapt schema to support the new way of defining a software
+  RAID (fate#326573).
+- 4.0.64
+
+-------------------------------------------------------------------
+Tue Oct 16 16:39:52 CEST 2018 - schubi@suse.de
+
+- Added license file to spec.
+
+-------------------------------------------------------------------
+Thu Oct 11 18:08:56 UTC 2018 - knut.anderssen@suse.com
+
+- AutoInstallRules:  Do a cleanup of the profile being merged with
+  (bsc#1108933).
+- 4.0.63
+
+-------------------------------------------------------------------
+Fri Sep 28 07:20:35 UTC 2018 - knut.anderssen@suse.com
+
+- AutoYaST configuration module: Enable edit action for firewall
+  module (fate#324662).
+- 4.0.62
+
+-------------------------------------------------------------------
+Thu Aug 23 14:25:55 CEST 2018 - schubi@suse.de
+
+- AutoInstallRules: Fixed crash while merging profiles.
+  (bsc#1105711)
+- 4.0.61
+
+-------------------------------------------------------------------
+Tue Aug 21 08:01:33 UTC 2018 - knut.anderssen@suse.com
+
+- AutoInstallRules: increased default maxdepth for not crashing
+  with a big software package list (bsc#1104655)
+- 4.0.60
+
+-------------------------------------------------------------------
+Mon Aug 20 15:15:39 CEST 2018 - schubi@suse.de
+
+- Switched license in spec file from SPDX2 to SPDX3 format.
+
+-------------------------------------------------------------------
+Fri Aug 17 09:46:05 CEST 2018 - schubi@suse.de
+
+- Installation/Update: Do not call registration if module
+  yast2-registraion is not available in inst-sys (bsc#1098794).
+- 4.0.59
+
+-------------------------------------------------------------------
+Tue Aug 14 09:47:25 CEST 2018 - schubi@suse.de
+
+- AY configuration module: Report XML errors while reading an
+  AY configuration file (bsc#1098794)
+- 4.0.58
+
+-------------------------------------------------------------------
+Thu Jun 28 14:29:25 CEST 2018 - schubi@suse.de
+
+- Added additional searchkeys to desktop file (fate#321043).
+- 4.0.57 
+
+-------------------------------------------------------------------
+Tue Jun 12 15:16:20 CEST 2018 - schubi@suse.de
+
+- Showing AutoYaST configuration file errors onetime only.
+  (needed for bnc#1095113)
+- 4.0.56
+
+-------------------------------------------------------------------
+Tue Jun  5 10:15:02 CEST 2018 - schubi@suse.de
+
+- Partition configuration: Do not ask for saving values if they have
+  not been changed at all. (bnc#1082556)
+- 4.0.55
+
+-------------------------------------------------------------------
+Tue May 29 13:20:54 CEST 2018 - schubi@suse.de
+
+- Using new libstorage-ng in order to handle "label" tag in URL.
+  E.G.: autoyast=label://my_home//autoinst.xml (bnc#1094533)
+- 4.0.54
+
+-------------------------------------------------------------------
+Fri May 11 08:11:09 UTC 2018 - igonzalezsosa@suse.com
+
+- Handle DASD or zFCP devices even when the profile is not in a
+  remote location (bsc#1089554).
+- 4.0.53
+
+-------------------------------------------------------------------
+Fri May  4 10:58:42 UTC 2018 - igonzalezsosa@suse.com
+
+- Allow 'subvolumes' and 'subvolumes_prefix' elements to be empty
+  (bsc#1076337, bsc#1090095 and bsc#1091669).
+- Drop 'btrfs_set_default_subvolume_name' element.
+- 4.0.52
+
+-------------------------------------------------------------------
+Fri Apr 28 16:24:37 CEST 2018 - schubi@suse.de
+
+- Added general API for reporting errors while parsing the AutoYaST
+  configuration file (part of bnc#1089855).
+- 4.0.51
+
+-------------------------------------------------------------------
+Fri Apr 27 15:43:05 UTC 2018 - igonzalezsosa@suse.com
+
+- Display an error and abort the installation when no storage
+  devices are available for installation (bsc#1091033).
+- 4.0.50
+
+-------------------------------------------------------------------
+Fri Apr 20 20:58:54 UTC 2018 - igonzalezsosa@suse.com
+
+- AutoYaST: properly handle empty proposals (bsc#1090390).
+- 4.0.49
+
+-------------------------------------------------------------------
+Mon Apr 16 11:45:45 UTC 2018 - igonzalezsosa@suse.com
+
+- Probe storage devices again after initializing DASD or zFCP
+  devices (bsc#1089326 and bsc#1089554).
+- 4.0.48
+
+-------------------------------------------------------------------
+Mon Apr 16 07:53:36 UTC 2018 - lslezak@suse.cz
+
+- Install the module products also in AutoYaST autoupgrade
+  (related to bsc#1086818 and bsc#1087206)
+- 4.0.47
+
+-------------------------------------------------------------------
+Fri Apr 13 13:47:51 UTC 2018 - igonzalezsosa@suse.com
+
+- Honor partitioning settings from product (bsc#1085755).
+- 4.0.46
+
+-------------------------------------------------------------------
+Tue Apr  3 10:43:16 UTC 2018 - jlopez@suse.com
+
+- Fix tests to use correct storage instance (part of fate#318196).
+- 4.0.45
+
+-------------------------------------------------------------------
+Fri Mar 23 11:58:50 UTC 2018 - jlopez@suse.com
+
+- Properly abort when probing devices fails (part of bsc#1083672).
+- 4.0.44
+
+-------------------------------------------------------------------
+Fri Mar 23 11:39:33 UTC 2018 - igonzalezsosa@suse.com
+
+- Do not export an <id/> element in the partitioning section
+  (bsc#1013047)
+
+-------------------------------------------------------------------
+Thu Mar 22 13:37:23 CET 2018 - schubi@suse.de
+
+- Add-On-Products: Handling error popup for wrong settings.
+  (bnc#1084596)
+- 4.0.43
+
+-------------------------------------------------------------------
+Thu Mar 22 08:03:28 UTC 2018 - knut.anderssen@suse.com
+
+- Permitted the use of 'listentry' element in all the software
+  AutoYaST schema list entries (bsc#1013047)
+- 4.0.42
+
+-------------------------------------------------------------------
+Wed Mar 21 15:55:03 UTC 2018 - knut.anderssen@suse.com
+
+- Added more entries to be used instead of the listentry tag when
+  cloning the system (bsc#1013047)
+- 4.0.41
+
+-------------------------------------------------------------------
+Tue Mar 20 15:24:43 CET 2018 - schubi@suse.de
+
+- Improved error message if the base product cannot be found.
+  (follow up of bnc#1084820)
+- 4.0.40
+
+-------------------------------------------------------------------
+Thu Mar 15 09:47:33 UTC 2018 - igonzalezsosa@suse.com
+
+- Reuse encrypted devices when required (bsc#1085439).
+- 4.0.39
+
+-------------------------------------------------------------------
+Wed Mar  7 08:06:05 UTC 2018 - lslezak@suse.cz
+
+- Fixed cloning of the base product name (bsc#1084259)
+- 4.0.38
+
+-------------------------------------------------------------------
+Mon Mar  5 16:13:36 CET 2018 - schubi@suse.de
+
+- Fix in showing/accepting base licenses: Using
+  inst_product_license module instead of
+  ProductLicense.AskLicenseAgreement (bnc#1073324)
+- 4.0.37
+
+-------------------------------------------------------------------
+Wed Feb 28 14:34:54 CET 2018 - aschnell@suse.com
+
+- adapted to new activate callbacks in libstorage-ng (see
+  bsc#1082542)
+- 4.0.36
+
+-------------------------------------------------------------------
+Tue Feb 27 12:36:59 UTC 2018 - jreidinger@suse.com
+
+- Add missing textdomains to create proper potfiles (bsc#1083015)
+- 4.0.35
+
+-------------------------------------------------------------------
+Tue Feb 27 11:35:37 UTC 2018 - ancor@suse.com
+
+- Manage errors during hardware activation in the same way than
+  normal installation - asking the user and trying to continue if
+  the question times out (related to bsc#1079061).
+- 4.0.34
+
+-------------------------------------------------------------------
+Mon Feb 26 16:11:01 CET 2018 - schubi@suse.de
+
+- Upgrade: Speedup PKG call (bnc#1074082)
+- 4.0.33
+
+-------------------------------------------------------------------
+Fri Feb 23 13:15:50 UTC 2018 - igonzalezsosa@suse.com
+
+- Remove calls to the old yast2-storage layer (bsc#1071978)
+- Fix AutoYaST UI to to show partitions properly
+- 4.0.32
+
+-------------------------------------------------------------------
+Mon Feb 12 11:29:24 UTC 2018 - jreidinger@suse.com
+
+- fate#319119
+  - yast2-ca-management is dropped
+- 4.0.31
+
+-------------------------------------------------------------------
+Fri Feb  9 07:55:00 UTC 2018 - jreidinger@suse.com
+
+- fate#323373
+  - Xinetd and yast2-inetd are not supported. Marking respective
+    autoyast section as obsolete.
+- 4.0.30
+
+-------------------------------------------------------------------
+Mon Feb  5 09:22:20 UTC 2018 - mfilka@suse.com
+
+- fate#323460
+  - support for disabling edit action per module. Currently used
+    mainly by the new firewall module
+- 4.0.29
+
+-------------------------------------------------------------------
+Thu Feb  1 12:59:08 CET 2018 - schubi@suse.de
+
+- Report packages which cannot be select for installation
+  (except those packages not included in the AutoYaST profile)
+  (bnc#1077292)
+- 4.0.28
+
+-------------------------------------------------------------------
+Wed Jan 31 13:04:57 UTC 2018 - lslezak@suse.cz
+
+- Speed optimization for the previous fix, the "clone_system"
+  client spent several minutes processing the packages
+  (related to bsc#1077882)
+- 4.0.27
+
+-------------------------------------------------------------------
+Mon Jan 29 14:58:35 UTC 2018 - lslezak@suse.cz
+
+- Avoid using Pkg.ResolvableProperties("", :package, "") calls
+  which require too much memory (bsc#1077882)
+- 4.0.26
+
+-------------------------------------------------------------------
+Fri Jan 26 12:58:17 CET 2018 - schubi@suse.de
+
+- Reporting packages which cannot be selected for installation.
+  (bnc#1077292)
+- 4.0.25
+
+-------------------------------------------------------------------
+Wed Jan 24 16:20:01 CET 2018 - schubi@suse.de
+
+- Selecting evaluated/given product for installation.
+  fate#323450
+- 4.0.24
+
+-------------------------------------------------------------------
+Fri Jan 19 14:02:32 UTC 2018 - lslezak@suse.cz
+
+- Display more details when the package solver fails
+
+-------------------------------------------------------------------
+Thu Jan 18 14:37:15 CET 2018 - schubi@suse.de
+
+- Using ProductFeatures.SetSection instead of
+  ProductFeatures.SetOverlay in order to set product features.
+  This is a follow up of bsc#1070726.
+- 4.0.23
+
+-------------------------------------------------------------------
+Wed Jan 17 14:04:18 UTC 2018 - jreidinger@suse.com
+
+- adapt to yast2 changes in overlays (related to bsc#1070726)
+- 4.0.22
+
+-------------------------------------------------------------------
+Tue Jan 16 09:23:20 CET 2018 - schubi@suse.de
+
+- Upgrade: Adapting to new product handling.
+  (bnc#1075744)
+- 4.0.21
+
+-------------------------------------------------------------------
+Thu Jan 11 11:58:23 CET 2018 - schubi@suse.de
+
+- Fixed merging issues due to bnc#1075182 and bsc#1075334.
+- 4.0.20
+
+-------------------------------------------------------------------
+Wed Jan 10 17:20:25 UTC 2018 - schubi@suse.de
+
+- Merging products before package evaluation starts.
+  (bnc#1075182)
+- 4.0.19
+
+-------------------------------------------------------------------
+Wed Jan 10 14:23:07 UTC 2018 - igonzalezsosa@suse.com
+
+- Fix initialization to copy the profile to /tmp/profile again
+  (bsc#1075334)
+- 4.0.18
+
+-------------------------------------------------------------------
+Fri Jan  5 07:36:01 UTC 2018 - jsrain@suse.cz
+
+- always upgrade system via equivalent of 'zypper dup', removing
+  respective control from the profile (bsc#1071708)
+- 4.0.17
+
+-------------------------------------------------------------------
+Wed Dec 20 15:57:48 UTC 2017 - igonzalezsosa@suse.com
+
+- AutoYaST: fix btrfs_set_default_subvolume_name handling
+  (bsc#1073548)
+- 4.0.16
+
+-------------------------------------------------------------------
+Mon Dec 14 13:43:12 CET 2017 - schubi@suse.de
+
+- Warn the user if the infrastructure is not available for running
+  the second stage (bnc#1061754)
+- 4.0.15
+
+-------------------------------------------------------------------
+Wed Dec 13 12:55:04 UTC 2017 - igonzalezsosa@suse.com
+
+- Reinitialize the storage manager when the profile is modified
+  by a pre-script (bsc#1071739)
+- 4.0.14
+
+-------------------------------------------------------------------
+Mon Dec 11 14:04:21 UTC 2017 - jreidinger@suse.com
+
+- adapt to new schema of ntp-client (FATE#323432)
+- 4.0.13
+
+-------------------------------------------------------------------
+Thu Nov 30 19:06:30 UTC 2017 - jreidinger@suse.com
+
+- Drop using ntpdate and instead use NtpClient module for one time
+  sync (FATE#323432)
+- 4.0.12
+
+-------------------------------------------------------------------
+Thu Nov 30 14:11:19 UTC 2017 - igonzalezsosa@suse.com
+
+- Do not ignore start_multipath setting (bsc#1070343).
+- 4.0.11
+
+-------------------------------------------------------------------
+Thu Nov 30 06:38:15 UTC 2017 - rbrown@suse.com
+
+- Replace references to /var/adm/fillup-templates with new
+  %_fillupdir macro (boo#1069468).
+- 4.0.10
+
+-------------------------------------------------------------------
+Wed Nov 29 15:45:54 CET 2017 - schubi@suse.de
+
+- Added subvolumes_prefix to schema definition file.
+  (bsc#1013047)
+- Exporting base products in list format. (fate323450)
+- 4.0.9
+
+-------------------------------------------------------------------
+Mon Nov 27 15:58:38 UTC 2017 - igonzalezsosa@suse.com
+
+- Bring back handling of device=ask (bsc#1069965)
+- Use a 1-based index when showing partitioning issues
+- 4.0.8
+
+-------------------------------------------------------------------
+Tue Nov 21 12:35:40 CET 2017 - schubi@suse.de
+
+- Cleanup spec file.
+
+-------------------------------------------------------------------
+Tue Nov 14 13:38:44 CET 2017 - schubi@suse.de
+
+- Code cleanup (removing old libstorage code).
+- Adapting rules to storage-ng.
+- partition_alignment removed because it is not needed
+  anymore by storage-ng.
+- 4.0.7
+
+-------------------------------------------------------------------
+Tue Nov  7 15:01:35 UTC 2017 - igonzalezsosa@suse.com
+
+- Add storage data to ayast_probe client (bsc#1065668)
+- Handle storage proposal exceptions in a proper way
+- 4.0.6
+
+-------------------------------------------------------------------
+Tue Oct 31 14:13:40 UTC 2017 - igonzalezsosa@suse.com
+
+- When reporting issues with the partition plan, add in which
+  section of the profile were they found (related to bsc#1060637).
+- 4.0.5
+
+-------------------------------------------------------------------
+Tue Oct 24 16:24:36 UTC 2017 - igonzalezsosa@suse.com
+
+- Do not mangle partitioning information coming from
+  yast2-storage-ng when cloning a system (related to bsc#1064875).
+- 4.0.4
+
+-------------------------------------------------------------------
+Fri Oct 20 11:17:48 UTC 2017 - igonzalezsosa@suse.com
+
+- Add basic support for error handling when creating the
+  partition plan (fate#318196).
+- 4.0.3
+
+-------------------------------------------------------------------
+Fri Oct 20 11:11:17 UTC 2017 - igonzalezsosa@suse.com
+
+- Add missing require of Y2Package::Product class (bsc#1064396)
+
+-------------------------------------------------------------------
+Mon Oct 16 08:33:35 UTC 2017 - mfilka@suse.com
+
+- fate#323450 
+  - implemented product selection
+- 4.0.2
+
+-------------------------------------------------------------------
+Fri Oct 13 09:05:10 UTC 2017 - mvidner@suse.com
+
+- Removed the remains of Kickstart import (bsc#1061620).
+- 4.0.1
+
+-------------------------------------------------------------------
+Wed Oct  4 06:23:23 UTC 2017 - knut.anderssen@suse.com
+
+- AutoinstConfig: added network_before_proposal flag that will be
+  enable if the network is configured during the first stage.
+  (bsc#1054400)
+- 4.0.0
+
+-------------------------------------------------------------------
+Tue Sep 19 16:54:00 CEST 2017 - schubi@suse.de
+
+- ayast_setup: Restarting autoyast-initscripts.service in order
+  to run init-scripts too. (bnc#1057597)
+- 3.3.9
+
+-------------------------------------------------------------------
+Mon Sep 11 14:42:14 CEST 2017 - schubi@suse.de
+
+- Rename "y2storage_probed" to "probed". (bnc#1056656)
+- 3.3.8
+
+-------------------------------------------------------------------
+Wed Sep  6 09:09:56 UTC 2017 - mfilka@suse.com
+
+- fate323450
+  - export product name when cloning a profile
+- 3.3.7 
+
+-------------------------------------------------------------------
+Wed Aug 23 15:16:46 UTC 2017 - igonzalezsosa@suse.com
+
+- Handle packages that are missing a PGP signature although
+  digests are valid (bsc#1054969)
+- 3.3.6
+
+-------------------------------------------------------------------
+Tue Aug 15 14:01:25 CEST 2017 - schubi@suse.de
+
+- AY runs in installed system: Writing init scripts again
+  to /var/adm/autoinstall/init.d in order to initilaize init
+  scripts correctly. This is needed for AY runs which do not
+  have an first installation stage (e.g. AY run in KIWI,
+  ayast_setup). (bnc#1052145)
+- 3.3.5
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - ancor@suse.com
+
+- Merged storage-ng branch (fate#318196).
+- Note: all changes below with this date belong to the merge.
+- 3.3.4
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - jlopez@suse.com
+
+- storage-ng: refac class StorageProposal and create a new guided
+  proposal by changing settings if it is necessary.
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - ancor@suse.com
+
+- Use the new storage-ng layer to export the current system to the
+  corresponding <partitioning> section of the AutoYaST profile
+  (fate#318196).
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - igonzalezsosa@suse.com
+
+- Add basic support for customized partitioning using the new
+  storage-ng layer. Currently, only plain partitions are supported
+  (bsc#1044697).
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - igonzalezsosa@suse.com
+
+- Allow overriding of product's storage partitioning options
+  (bsc#1039481)
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - ancor@suse.com
+
+- storage-ng: commented several Yast.import for the old storage
+  lib. Affected modules not adapted to storage-ng so far.
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - schubi@suse.de
+
+- storage-ng: Enable storage-ng proposal for AutoYaST installation.
+
+-------------------------------------------------------------------
+Mon Aug 14 08:55:29 UTC 2017 - jlopez@suse.com
+
+- storage-ng: fix AutoInstallRules to not use old storage lib.
+  Tests are commented. Removed dependency from (old) yast2-storage,
+  even if it breaks some functionality.
+- Removed yast2-update as build dependency and added before
+  version (2.18.3) as install dependency. It is only needed for
+  file_from_url.
+
+-------------------------------------------------------------------
+Tue Aug  8 11:25:47 CEST 2017 - schubi@suse.de
+
+- Classes/rules will be ignored: Due to self-update, the evaluation
+  of classes/rules will be called twice. So we have to initialize
+  the stack for each run again. (bnc#1051483)
+- 3.3.3
+
+-------------------------------------------------------------------
+Tue Aug  1 16:18:01 CEST 2017 - schubi@suse.de
+
+- Saving ask-scripts and corresponding log files
+  to /var/adm/autoinstall. (bnc#1049473)
+- 3.3.2
+
+-------------------------------------------------------------------
+Thu Jul 13 14:49:31 CEST 2017 - schubi@suse.de
+
+- Crash while writing settings via the menue "File/Apply Profile
+  to this System" in AutoYaST configuration module:
+  As we are switching to "autoinstallation" mode and accessing to
+  the target system we have to set StorageDevices flag disks_valid
+  to true.  So InitLibstorage can scan valid target disks.
+  (bnc#1047809)
+- 3.3.1
+
+-------------------------------------------------------------------
+Thu Jul  6 14:31:28 CEST 2017 - schubi@suse.de
+
+- AutoYaST configuration module; Crash while writing settings to
+  the system:
+  As we are switching to "normal" mode and accessing to the target
+  system we have to set StorageDevices flag disks_valid to true.
+  So InitLibstorage can scan valid target disks. (bnc#1046738)
+- 3.3.0
+
+-------------------------------------------------------------------
+Fri Jun  9 09:08:50 CEST 2017 - schubi@suse.de
+
+- Report shrinked partitions if there is not enough space.
+  (bnc#1039528)
+- 3.2.16
+
+-------------------------------------------------------------------
+Thu May 18 10:46:35 CEST 2017 - schubi@suse.de
+
+- clone system: Checking if snapshots have been enabled.
+  (bnc#1039268)
+- 3.2.15
+
+-------------------------------------------------------------------
+Thu Apr 13 14:02:34 CEST 2017 - schubi@suse.de
+
+- Moved configuration management before software selection in
+  order to select packages which are needed for CM. (FATE#319830)
+- 3.2.14
+
+-------------------------------------------------------------------
+Thu Apr  6 11:27:01 UTC 2017 - igonzalezsosa@suse.com
+
+- Fix subvolumes schema definition (bsc#1013047)
+- 3.2.13
+
+-------------------------------------------------------------------
+Thu Apr  6 09:39:06 UTC 2017 - mfilka@suse.com
+
+- bnc#1026027
+  - removed dependency on insserv
+- 3.2.12
+
+-------------------------------------------------------------------
+Wed Apr  5 10:34:17 CEST 2017 - schubi@suse.de
+
+- Added configuration-management to first installation step.
+  (FATE#319830)
+- 3.2.11
+
+-------------------------------------------------------------------
+Tue Mar  7 09:39:12 CET 2017 - schubi@suse.de
+
+- Update: Product selection will be done by Packages.SelectProduct
+  now (bnc#1014861).
+- 3.2.10
+
+-------------------------------------------------------------------
+Wed Feb 15 16:27:53 CET 2017 - schubi@suse.de
+
+- Moved services-manager to first installation stage (FATE#321738).
+- 3.2.9
+
+-------------------------------------------------------------------
+Wed Jan 25 11:42:05 UTC 2017 - igonzalezsosa@suse.com
+
+- Add an option to disable the self-update feature through the
+  AutoYaST profile (FATE#319716)
+- 3.2.8
+
+-------------------------------------------------------------------
+Mon Jan 16 09:49:13 UTC 2017 -  schubi@suse.de
+
+- Cloning Software: install_recommended can be set by the
+  control.xml file (clone_install_recommended_default)
+  Default is true. (Fate#321764)
+- 3.2.7
+
+-------------------------------------------------------------------
+Thu Jan  5 13:56:23 UTC 2017 - lslezak@suse.cz
+
+- Fixed tests to pass with the latest yast2-core and
+  yast2-ruby-bindings packages (related to the bsc#932331 fix)
+- 3.2.6
+
+-------------------------------------------------------------------
+Wed Dec 14 15:32:06 CET 2016 - schubi@suse.de
+
+- Moved post-scripts download from second-stage to first-stage.
+  (bnc#1014859)
+- 3.2.5
+
+-------------------------------------------------------------------
+Wed Nov 30 09:30:26 UTC 2016 - igonzalezsosa@suse.com
+
+- If Btrfs subvolumes are not specified, the default set
+  is created (bsc#1012328)
+
+-------------------------------------------------------------------
+Tue Nov 22 15:23:44 UTC 2016 - igonzalezsosa@suse.com
+
+- Fix building on s390x (bsc#1011489)
+- 3.2.4
+
+-------------------------------------------------------------------
+Fri Nov 18 10:00:25 UTC 2016 - igonzalezsosa@suse.com
+
+- Do not crash when services manager configuration is missing
+  (related to bsc#887115)
+- 3.2.3
+
+-------------------------------------------------------------------
+Wed Nov 16 14:45:24 UTC 2016 - igonzalezsosa@suse.com
+
+- Hiding a module in its .desktop file (Hidden=true) won't prevent
+  it from being cloned anymore (bsc#1008301)
+- Add support to specify resource aliases using the key
+  X-SuSE-YaST-AutoInstResourceAliases in desktop files (related
+  to bsc#887115)
+- 3.2.2
+
+-------------------------------------------------------------------
+Wed Nov 16 15:12:43 CET 2016 - schubi@suse.de
+
+- Do not check certificate for images which have been created by
+  the user/customer. Found while testing bnc#1009023.
+- 3.2.1
+
+-------------------------------------------------------------------
+Mon Oct 24 09:04:25 UTC 2016 - igonzalezsosa@suse.com
+
+- Add support to enable copy-on-write for Btrfs subvolumes
+  (FATE#320342)
+- Add support to omit the Btrfs default subvolume name
+  (FATE#317775)
+- 3.2.0
+
+-------------------------------------------------------------------
+Fri Sep 30 10:21:45 CEST 2016 - schubi@suse.de
+
+- Adding missed desktop file for "clone_system" in order to show
+  it in the control center and command line calls.
+  (bnc#985621)
+- 3.1.152
+
+-------------------------------------------------------------------
+Wed Sep 14 17:19:01 CEST 2016 - schubi@suse.de
+
+- Adding an missing PREP partition for PPC, BUT not for
+  Power8 system (powerNV). PowerNV do not have PREP partitions
+  and do not need any because they do not call grub2-install
+  (bnc#989392).
+- 3.1.151
+
+-------------------------------------------------------------------
+Wed Sep  7 07:27:53 UTC 2016 - igonzalezsosa@suse.com
+
+- Fix IP detection in AutoYaST installation rules
+  in order to find the correct profile when "ip route"
+  mentions "metric" (bnc#997548).
+- 3.1.150
+
+-------------------------------------------------------------------
+Fri Aug 26 09:39:55 UTC 2016 - kanderssen@suse.com
+
+- Profile Location: Use Report instead of Popup to not block
+  AutoYast if not configured to. (bnc#988949)
+- 3.1.149
+
+-------------------------------------------------------------------
+Thu Aug 25 14:10:57 CEST 2016 - schubi@suse.de
+
+- Fixed: Setting timeout for error popups has not been possible.
+  (bnc#988949)
+- 3.1.148
+
+-------------------------------------------------------------------
+Wed Aug 17 09:56:28 CEST 2016 - schubi@suse.de
+
+- Improved logging for broken script descriptions.
+  Still a part of bnc#986049.
+- 3.1.147
+
+-------------------------------------------------------------------
+Mon Aug 12 10:48:18 CEST 2016 - schubi@suse.de
+
+- Cloning devices: Devices which are not needed for the
+  installation will be ignored explicitly in the "skip_list".
+  (bnc#989392)
+- 3.1.146
+
+-------------------------------------------------------------------
+Thu Aug 11 15:45:01 CEST 2016 - schubi@suse.de
+
+- Added "confirm_base_product_license" to rnc file.
+  (bnc#992535)
+- 3.1.145
+
+-------------------------------------------------------------------
+Fri Aug  5 15:37:30 CEST 2016 - locilka@suse.com
+
+- Reintroduced autoyast=usb as a valid URL to AutoYaST profile
+  (bsc#987858)
+- 3.1.144
+
+-------------------------------------------------------------------
+Tue Aug  2 12:28:29 CEST 2016 - schubi@suse.de
+
+- Added missed flag "install_recommended" in software section.
+  (bnc#990494)
+- 3.1.143
+
+-------------------------------------------------------------------
+Fri Jul 29 16:12:42 CEST 2016 - locilka@suse.com
+
+- Added new [Stop] button for <ask> dialogs with timeout. The
+  button shows the current time in seconds till the automatic
+  timeout (bsc#990114).
+- More possible user actions can now stop the execution to prevent
+  from timeout (bsc#990114).
+- 3.1.142
+
+-------------------------------------------------------------------
+Mon Jul 25 12:50:20 CEST 2016 - schubi@suse.de
+
+- Check if AutoYaST "script" elements are hashes.
+  Other entries will be ignored. (bnc#986049)
+- 3.1.141
+
+-------------------------------------------------------------------
+Tue Jul  14 15:01:29 CEST 2016 - schubi@suse.de
+
+- Exporting NFS root partition correctly. (bnc#986124)
+- 3.1.140
+
+-------------------------------------------------------------------
+Wed Jul 13 09:15:05 CEST 2016 - schubi@suse.de
+
+- Moved ssh_import AutoYaST schema file to yast2-installation
+  package.
+  This is a part of Fate#319624.
+- 3.1.139
+
+-------------------------------------------------------------------
+Mon Jul 11 14:21:48 CEST 2016 - schubi@suse.de
+
+- Adapt docu to new AutoYaST developer docu.
+- 3.1.138
+
+-------------------------------------------------------------------
+Wed Jul  6 17:56:38 CEST 2016 - schubi@suse.de
+
+- The entry "kexec_reboot" in the Product description can be set
+  by the AutoYaST configuration setting (general/forceboot) and should
+  not be reset by any other Product description file.
+  Fix: Set it again after reading a new Product description.
+  (bnc#981434)
+- 3.1.137
+
+-------------------------------------------------------------------
+Wed Jul  6 16:56:38 CEST 2016 - schubi@suse.de
+
+- While AutoYaST installation the user can change the path of the
+  AutoYaST configuration file. Fix: This path will be updated in
+  /etc/install.inf too.
+  (bnc#963487)
+- 3.1.136
+
+-------------------------------------------------------------------
+Tue Jul  5 16:01:19 CEST 2016 - schubi@suse.de
+
+- System shutdown: Removed "autoyast" service shutdown.
+  It does not exist anymore. (bnc#986798)
+- 3.1.135
+
+-------------------------------------------------------------------
+Tue Jun 28 10:29:38 UTC 2016 - jreidinger@suse.com
+
+- Speed up installation (bnc#986649)
+- 3.1.134
+
+-------------------------------------------------------------------
+Tue Jun 21 06:16:12 UTC 2016 - igonzalezsosa@suse.com
+
+- Consider AutoYaST keep_install_network as set to 'true'
+  if it's not specified (bsc#984146)
+- Restore the keep_install_network default behavior present
+  in SLE 12 SP1 and openSUSE Leap 42.1
+- 3.1.133
+
+-------------------------------------------------------------------
+Mon Jun 20 15:31:07 CEST 2016 - schubi@suse.de
+
+- Fixing typo while reporting not supported modules.
+  (part of bnc#955878)
+- 3.1.132
+
+-------------------------------------------------------------------
+Mon Jun  6 10:34:08 UTC 2016 - igonzalezsosa@suse.com
+
+- Rename schema definition regarding SSH keys/configuration
+  so yast2-schema can find it correctly (fate#319624)
+- 3.1.131
+
+-------------------------------------------------------------------
+Fri Jun  3 15:22:02 UTC 2016 - igonzalezsosa@suse.com
+
+- Fix AutoYaST2 schema regarding SSH keys/configuration import
+  feature (fate#319624)
+- Stop generating autodocs (fate#320356)
+- 3.1.130
+
+-------------------------------------------------------------------
+Wed May 25 13:50:40 CEST 2016 - schubi@suse.de
+
+- AutoYaST support for ssh_import module.
+  Fate#319624
+- 3.1.129
+
+-------------------------------------------------------------------
+Thu May 19 14:46:11 CEST 2016 - schubi@suse.de
+
+- Unsupported sections will be now reported in first installation
+  stage. Reducing log level to warning.
+  (Additional patch for bnc#955878)
+- 3.1.128
+
+-------------------------------------------------------------------
+Wed May 18 12:35:45 CEST 2016 - schubi@suse.de
+
+- Resetting package selection of previous runs. This is needed
+  because it could be that additional repositories are available
+  meanwhile. (bnc#979691)
+- 3.1.127
+
+-------------------------------------------------------------------
+Mon May  2 15:43:36 CEST 2016 - schubi@suse.de
+
+- Media-based AutoUpgrade case for feature: No Recommends in
+  *-release RPMs (FATE#320199)
+- 3.1.126
+
+-------------------------------------------------------------------
+Wed Apr 20 09:45:04 CEST 2016 - schubi@suse.de
+
+- Upgrade: Removed obsolete bootloader stuff.
+  (bnc#976312)
+- 3.1.125
+
+-------------------------------------------------------------------
+Tue Apr 19 16:43:33 CEST 2016 - schubi@suse.de
+
+- Removed obsolete bootloader stuff.
+  (related to FATE#317701)
+- 3.1.124
+
+-------------------------------------------------------------------
+Fri Apr 15 13:52:47 UTC 2016 - lslezak@suse.cz
+
+- Updated schema - added optional URL for the installer
+  self update repository ("general" -> "self_update_url" node)
+  (FATE#319716)
+- 3.1.123
+
+-------------------------------------------------------------------
+Wed Apr 13 14:13:51 CEST 2016 - schubi@suse.de
+
+- Remove unused import of dropped BootCommon package.
+  (related to FATE#317701)
+- 3.1.122
+
+-------------------------------------------------------------------
+Wed Apr  6 15:44:56 UTC 2016 - mfilka@suse.com
+
+- Removed calls of dropped LanUdevAuto module (yast2-network)
+  (bnc#955217, bnc#956605)
+- 3.1.121
+
+-------------------------------------------------------------------
+Fri Apr  1 14:34:14 CEST 2016 - schubi@suse.de
+
+- Moved call "uptime" to yast2 package. Cleanup for bnc#956730.
+- 3.1.120
+
+-------------------------------------------------------------------
+Thu Mar 10 08:33:33 UTC 2016 - igonzalezsosa@suse.com
+
+- Evaluate the correct domain, network, product and product version
+  when applying rules (bnc#963137).
+- 3.1.119
+
+-------------------------------------------------------------------
+Wed Mar  9 08:39:49 UTC 2016 - igonzalezsosa@suse.com
+
+- Check uptime instead of system time while waiting for systemd
+  services to be restarted (bsc#956730)
+- 3.1.118
+
+-------------------------------------------------------------------
+Thu Feb 25 15:11:38 CET 2016 - schubi@suse.de
+
+- Fixed crash if the general/mode section has not been defined.
+  (bnc#968080)
+- 3.1.117
+
+-------------------------------------------------------------------
+Tue Feb 23 17:01:09 CET 2016 - schubi@suse.de
+
+- As network configuration will be moved to first installation
+  stage and wickedd should not be restarted in the second stage,
+  all wickedd and network services will not be restarted at all
+  by AutoYaST.
+  (bnc#944349,  bnc#955260)
+- 3.1.116
+
+-------------------------------------------------------------------
+Wed Feb 17 10:01:02 UTC 2016 - mvidner@suse.com
+
+- Moved the body of AutoinstallIoInclude#Get to yast2-update
+  (FATE#316796).
+- 3.1.115
+
+-------------------------------------------------------------------
+Thu Feb 11 15:30:55 CET 2016 - schubi@suse.de
+
+- Confirming base product license. This can be defined by the flag
+  <confirm_base_product_license> in the general/mode section.
+  Confirming licenses of add-on products can be defined for each
+  product by the flag <confirm_license> in the add-on product
+  description.
+  (Fate#318945)
+- 3.1.114
+
+-------------------------------------------------------------------
+Fri Jan 29 09:04:47 UTC 2016 - igonzalezsosa@suse.com
+
+- "haspcmcia" method is removed from the AutoInstallRules API
+  (bnc#964151)
+
+-------------------------------------------------------------------
+Wed Jan 20 16:31:03 CET 2016 - schubi@suse.de
+
+- LVM: taking care about "auto" option --> switching to "max".
+  (bnc#962034)
+- 3.1.113
+
+-------------------------------------------------------------------
+Tue Jan 19 15:19:04 CET 2016 - schubi@suse.de
+
+- Fixed rules.xml : OR operator is interpreted as AND.
+  (bnc#961941)
+- 3.1.112
+
+-------------------------------------------------------------------
+Tue Jan 19 11:40:38 UTC 2016 - igonzalezsosa@suse.com
+
+- Fix wrong warning message about the 'init' section
+  not being processed (bsc#962526)
+
+-------------------------------------------------------------------
+Fri Jan 15 10:30:58 CET 2016 - schubi@suse.de
+
+- Installation with "autoyast=default". Fixed nil exception error.
+  (bnc#959723)
+- 3.1.111
+
+-------------------------------------------------------------------
+Thu Jan 14 10:22:53 CET 2016 - schubi@suse.de
+
+- Fixed init scripts which have been defined inside an
+  AutoYaST configuration file. (bnc#961320)
+- 3.1.110
+
+-------------------------------------------------------------------
+
+Wed Jan 13 11:40:25 UTC 2016 - igonzalezsosa@suse.com
+
+- Fix validation of AutoYaST profiles (bsc#954412)
+- 3.1.109
+
+-------------------------------------------------------------------
+Tue Jan 12 15:25:18 CET 2016 - schubi@suse.de
+
+- Downloading init scripts to /mnt during first installation stage.
+  (bnc#960907,bnc#961320)
+- 3.1.108
+
+-------------------------------------------------------------------
+Thu Dec 17 16:00:43 CET 2015 - schubi@suse.de
+
+- Network services can be restarted again, because they do not
+  depend on YaST2-Second-Stage.service anymore. (bnc#954908)
+- 3.1.107
+
+-------------------------------------------------------------------
+Fri Nov 27 16:32:46 CET 2015 - schubi@suse.de
+
+- Added "cobbler" to the obsolete profile section.
+  Defined in SUSE Manager but will not be used anymore. (bnc#955878)
+- 3.1.106
+
+-------------------------------------------------------------------
+Wed Nov 25 15:43:56 CET 2015 - schubi@suse.de
+
+- Do not restart NetworkManager* services while restarting all
+  services in the second installation stage. (bnc#955260)
+- 3.1.105
+
+-------------------------------------------------------------------
+Wed Nov 25 13:22:56 UTC 2015 - lslezak@suse.cz
+
+- Export the already saved software selection when present,
+  fixes exporting wrong package selection caused by deployment of
+  the installation images (bsc#956325, bsc#910728)
+
+-------------------------------------------------------------------
+
+Fri Nov 20 11:44:16 CET 2015 - schubi@suse.de
+
+- Evaluating needed YAST packages which are defined in the
+  AutoYaST configuration file and selecting these packages for
+  installation. (bnc#955657)
+- 3.1.104
+
+-------------------------------------------------------------------
+Thu Nov 12 17:12:50 CET 2015 - schubi@suse.de
+
+- Updating AutoYaST documentation
+- 3.1.103
+
+-------------------------------------------------------------------
+Fri Nov  6 14:22:24 CET 2015 - schubi@suse.de
+
+- Installation workflow: Using ntpdate instead of sntp for time
+  syncing (bnc#953781)
+- 3.1.102
+
+-------------------------------------------------------------------
+Tue Nov  3 10:11:10 UTC 2015 - igonzalezsosa@suse.com
+
+- Add dependency on yast2-pkg-bindings 3.1.31 (or newer)
+  (bsc#953162)
+- 3.1.101
+
+-------------------------------------------------------------------
+Thu Oct 22 17:00:02 CEST 2015 - schubi@suse.de
+
+- Ingore restarting of all wickedd* services while finishing the
+  second installation stage. (bnc#944349)
+- 3.1.100
+
+-------------------------------------------------------------------
+Wed Oct 21 09:54:14 CEST 2015 - schubi@suse.de
+
+- Cloning system while an installation without AutoYaST: Do not
+  blame if packages are not available anymore because the
+  medium has already been unmounted (e.g. USB device)
+  (bnc#901747)
+- 3.1.99
+
+-------------------------------------------------------------------
+Thu Oct 15 11:56:52 UTC 2015 - ancor@suse.com
+
+- Using "backup" or "partitioning_advanced" sections in the profile
+  does not produce an error message anymore (bsc#950294)
+- 3.1.98
+
+-------------------------------------------------------------------
+Fri Oct  9 15:03:43 UTC 2015 - igonzalezsosa@suse.com
+
+- Move lib/ directory to autoyast2-installation package
+  (bsc#949776)
+- 3.1.97
+
+-------------------------------------------------------------------
+Thu Oct  8 21:39:50 UTC 2015 - igonzalezsosa@suse.com
+
+- Handle pkgGpgCheck callback introduced in libzypp 14.39.0
+  (bsc#948608)
+- 3.1.96
+
+-------------------------------------------------------------------
+Thu Oct  8 14:26:05 UTC 2015 - ancor@suse.com
+
+- Enabled translation of some buttons (bsc#948834)
+- 3.1.95
+
+-------------------------------------------------------------------
+Fri Sep 18 10:50:53 CEST 2015 - schubi@suse.de
+
+- Writing network settings in first installation stage if the
+  second installation stage has been disabled ("second_stage")
+  in the general/mode section but a "networking" section has
+  also been defined. (bnc#944942)
+- 3.1.94
+
+-------------------------------------------------------------------
+Mon Sep  7 22:32:50 UTC 2015 - igonzalezsosa@suse.com
+
+- Fix premature loading of AutoInstall which prevented running
+  configuration clients during 2nd stage (bsc#944770)
+- 3.1.93
+
+-------------------------------------------------------------------
+Tue Sep  1 15:25:44 UTC 2015 - igonzalezsosa@suse.com
+
+- Move users creation to the first stage, so it is not needed
+  to run the 2nd stage to have a minimal system.
+- Do no add AutoYaST packages if the second stage won't be
+  executed.
+- Fixes bnc#892091
+- 3.1.92
+
+-------------------------------------------------------------------
+Tue Aug 25 14:49:13 CEST 2015 - schubi@suse.de
+
+- Do not restart dbus service after installation. Otherwise some
+  other services will hang. (bnc#937900)
+- 3.1.91
+
+-------------------------------------------------------------------
+Thu Aug 13 13:19:27 CEST 2015 - schubi@suse.de
+
+- S390: handling cio_ignore
+  Entry <general><cio_ignore> in order to set it
+  (values: true/false). If it is not set cio_ignore is true.
+  So it is backward compatible. (bnc#941406)
+- 3.1.90
+
+-------------------------------------------------------------------
+Tue Aug 11 09:33:05 CEST 2015 - schubi@suse.de
+
+- Fixed typo in partitioning section
+  (bnc#941096)
+- 3.1.89
+
+-------------------------------------------------------------------
+Fri Aug  7 15:20:58 CEST 2015 - schubi@suse.de
+
+- Writing init scipts to installed system in the first installation
+  stage now. The init scrpits will be called while starting
+  the autoyast-initscripts service. So, these scripts will be called
+  while a system upgrade too. (bnc#940823)
+- 3.1.88
+
+-------------------------------------------------------------------
+Fri Jul 31 13:55:34 CEST 2015 - schubi@suse.de
+
+- <software><post-packages>: Must not reinstall already installed
+  packages. (fate#319086)
+- 3.1.87
+
+-------------------------------------------------------------------
+Thu Jul 16 17:47:27 UTC 2015 - lslezak@suse.cz
+
+- Fixed a syntax error in the schema definition (bsc#938459)
+- 3.1.86
+
+-------------------------------------------------------------------
+Fri Jul 10 14:51:44 CEST 2015 - schubi@suse.de
+
+- Syncing hardware time before starting installation via ntp.
+  This is configurable via the flag
+  <general><mode><ntp_sync_time_before_installation> with which
+  the name of the ntp server will be defined. If it is not set
+  no synchronisation will be done. So it is backward compatible.
+  (bnc#935066)
+- 3.1.85
+
+-------------------------------------------------------------------
+Wed Jul  1 14:54:51 CEST 2015 - schubi@suse.de
+
+- Added "upgrade" section to generic list. (bnc#935915)
+- 3.1.84
+
+-------------------------------------------------------------------
+Fri Jun 26 11:49:48 CEST 2015 - aschnell@suse.de
+
+- implemented activation of snapper for btrfs on LVM (bsc#935858)
+- 3.1.83
+
+-------------------------------------------------------------------
+Tue Jun  2 10:51:56 UTC 2015 - igonzalezsosa@suse.com
+
+- Enabled snapshots creation after auto-installation/upgrade
+  (fate#317973)
+- 3.1.82
+
+-------------------------------------------------------------------
+Tue May 12 11:28:00 CEST 2015 - schubi@suse.de
+
+- Regarding some corner cases of bsc#925381.
+  -- Checking for availability of clients/<module>_auto module before
+     reporting an error.
+  -- Checking if a module supports more than one autoyast configuration
+     section.
+- 3.1.81
+
+-------------------------------------------------------------------
+Fri May 11 14:39:27 CEST 2015 - dvaleev@suse.com
+
+- Don't try to format PReP partitions (bsc#927748)
+
+-------------------------------------------------------------------
+Mon May 11 14:20:03 CEST 2015 - aschnell@suse.de
+
+- fixed size parameter "auto" for PReP partitions (bsc#928768)
+- 3.1.80
+
+-------------------------------------------------------------------
+Fri May  8 09:45:27 CEST 2015 - schubi@suse.de
+
+- Added new section "restricts" for ntp configuration
+  (bnc#928987)
+- 3.1.79
+
+-------------------------------------------------------------------
+Wed May  6 11:48:40 CEST 2015 - locilka@suse.com
+
+- Added 'bootloader' and 'report' into list of supported profile
+  sections (bsc#925381)
+- 3.1.78
+
+-------------------------------------------------------------------
+Wed May  6 10:46:37 CEST 2015 - locilka@suse.com
+
+- Added libxslt into BuildRequires - needed for running test-cases
+  (bsc#929832)
+- 3.1.77
+
+-------------------------------------------------------------------
+Tue May  5 15:05:18 CEST 2015 - locilka@suse.com
+
+- Reporting unknown and unsupported profile sections (bnc#925381)
+- 3.1.76
+
+-------------------------------------------------------------------
+Mon May  4 12:49:40 CEST 2015 - schubi@suse.de
+
+- Evaluate the correct host IP in order to read the proper
+  autoyast.xml file (bnc#928303, bnc#908356, bnc#916628)
+- 3.1.75
+
+-------------------------------------------------------------------
+Fri Apr 10 10:48:04 CEST 2015 - schubi@suse.de
+
+- New autoinst flag in general/mode section:
+  activate_systemd_default_target.
+  The default target of systemd will be activated in the second
+  stage of autoyast installation.
+  The default is "true" which is a backward compatible value.
+  (bnc#923992)
+- 3.1.74
+
+-------------------------------------------------------------------
+Tue Apr  7 15:26:44 UTC 2015 - igonzalezsosa@suse.com
+
+- Avoid ayast_probe module crashing when called from an installed
+  system.
+  (bnc#926241)
+- 3.1.73
+
+-------------------------------------------------------------------
+Thu Mar 26 17:00:32 CET 2015 - schubi@suse.de
+
+- New autoinst flag in general/mode section: final_restart_services.
+  Restarting all services after finishing the installation.
+  The default is "true" which is a backward compatible value.
+  (bnc#923992)
+
+-------------------------------------------------------------------
 Fri Jan 30 07:43:13 UTC 2015 - jsrain@suse.cz
 
 - load release notes of extensions also during AutoYaST

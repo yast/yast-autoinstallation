@@ -17,8 +17,29 @@ drive =
     element type       { SYMBOL }? &
     element use        { text }? &
     element imsmdriver { SYMBOL }? &
-    partitions?
+    element disklabel  { text }? &
+    element enable_snapshots { BOOLEAN }? &
+    skip_list? &
+    partitions? &
+    raid_options? &
+    bcache_options? &
+    btrfs_options?
   }
+
+skip_list =
+  element skip_list {
+    LIST,
+    skip_entry*
+  }
+skip_entry =
+  element listentry {
+    element skip_key	{ text } &
+    element skip_value	{ text } &
+    ( element skip_if_less_than { BOOLEAN }
+      | element skip_if_more_than { BOOLEAN } )? &
+    element skip_if_equal { BOOLEAN }?
+  }
+
 prefer_remove =
   element prefer_remove { BOOLEAN }
 partitions =
@@ -36,6 +57,7 @@ y2_partition =
   | part_fs_options
   | part_fstopt
   | part_label
+  | part_uuid
   | part_loop_fs
   | part_lv_name
   | part_lvm_group
@@ -45,9 +67,7 @@ y2_partition =
   | part_partition_id
   | part_partition_nr
   | part_partition_type
-  | part_raid_name
   | part_resize
-  | part_raid_options
   | part_raid_type
   | part_region
   | part_size
@@ -55,8 +75,15 @@ y2_partition =
   | part_stripesize
   | part_pool
   | part_used_pool
+  | part_subvolumes_prefix
   | device_order
+  | raid_name
+  | raid_options
   | subvolumes
+  | create_subvolumes
+  | bcache_backing_for
+  | bcache_caching_for
+  | btrfs_name
 
 partition = element partition { y2_partition* }
 part_create =
@@ -69,6 +96,8 @@ part_filesystem =
   element filesystem { SYMBOL }
 part_format =
   element format { BOOLEAN }
+part_subvolumes_prefix =
+  element subvolumes_prefix { text }
 part_fs_options =
   element fs_options {
     opt_blocksize? &
@@ -94,9 +123,9 @@ opt_max_inode_space =
 opt_raid = element opt_raid { option_str, option_value }
 opt_reserved_blocks =
   element opt_reserved_blocks { option_str, option_value }
-part_raid_name = element raid_name { text }
+raid_name = element raid_name { text }
 
-part_raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? & part_raid_name? }
+raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? & raid_name? }
 persistent_superblock = element persistent_superblock { BOOLEAN }
 raid_type = element raid_type { text }
 chunk_size = element chunk_size { text }
@@ -106,13 +135,37 @@ device_order = element device_order {
     element device { text }*
 }
 
+cache_mode = element cache_mode { "writethrough" | "writeback" | "writearound" | "none" }
+bcache_options = element bcache_options { cache_mode? }
+
+btrfs_name = element btrfs_name { text }
+
+btrfs_options = element btrfs_options { data_raid_level? & metadata_raid_level? }
+data_raid_level = element data_raid_level { text }
+metadata_raid_level = element metadata_raid_level { text }
+
 subvolumes = element subvolumes {
     LIST,
-    element listentry { text }*
+    subvolume*
 }
+
+# by default, AutoYaST exports list entries as 'listentry'
+subvolume =
+  element (subvolume | listentry ) { text } | subvolume_full
+
+subvolume_full =
+  element (subvolume | listentry) {
+    element path { text } &
+    # FATE#320342: add support to enable copy-on-write for Btrfs subvolumes
+    element copy_on_write { BOOLEAN }?
+  }
+
+create_subvolumes =
+  element create_subvolumes { BOOLEAN }
 
 part_fstopt = element fstopt { text }
 part_label = element label { text }
+part_uuid = element uuid { text }
 part_loop_fs =
   element loop_fs { BOOLEAN }
 part_mount = element mount { text }
@@ -147,4 +200,8 @@ part_size = element size { text }
 part_lv_name = element lv_name { text }
 part_lvm_group = element lvm_group { text }
 part_resize = element resize { BOOLEAN }
-
+bcache_backing_for = element bcache_backing_for { text }
+bcache_caching_for = element bcache_caching_for {
+  LIST,
+  element listentry { text }*
+}

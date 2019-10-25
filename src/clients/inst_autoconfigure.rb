@@ -7,8 +7,13 @@
 #		the system as described in the profile file.
 #
 # $Id$
+
+require "yast2/system_time"
+
 module Yast
   class InstAutoconfigureClient < Client
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       textdomain "autoinst"
@@ -22,6 +27,7 @@ module Yast
       Yast.import "Y2ModuleConfig"
       Yast.import "Label"
       Yast.import "Mode"
+      Yast.import "Report"
 
       @current_step = 0 # Required by logStep()
 
@@ -39,9 +45,13 @@ module Yast
         "Profile general,mode:%1",
         Ops.get_map(Profile.current, ["general", "mode"], {})
       )
-      @need_systemd_isolate = true
-      @max_steps = Ops.add(Builtins.size(Y2ModuleConfig.ModuleMap), 4)
+      @need_systemd_isolate = Ops.get_boolean(
+        Profile.current,["general", "mode", "activate_systemd_default_target"], true)
+      final_restart_services = Ops.get_boolean(
+        Profile.current,["general", "mode", "final_restart_services"], true)
+      @max_steps = Y2ModuleConfig.ModuleMap.size + 3 # additional for scripting and finished message
       @max_steps = Ops.add(@max_steps, 1) if @need_systemd_isolate
+      @max_steps += 1 if final_restart_services
       Builtins.y2milestone(
         "max steps: %1 need_isolate:%2",
         @max_steps,
@@ -68,11 +78,49 @@ module Yast
 
       Wizard.DisableAbortButton
 
-
-
       Builtins.y2debug("Module map: %1", Y2ModuleConfig.ModuleMap)
       Builtins.y2debug("Current profile: %1", Profile.current)
 
+      # Report only those that are 'not unsupported', these were already reported
+      # Unsupported sections have already been reported in the first stage
+      unsupported_sections = Y2ModuleConfig.unsupported_profile_sections
+      unknown_sections = Y2ModuleConfig.unhandled_profile_sections - unsupported_sections
+      if unknown_sections.any?
+        log.error "Could not process these unknown profile sections: #{unknown_sections}"
+        needed_packages = Y2ModuleConfig.required_packages(unknown_sections)
+        unless needed_packages.empty?
+          schema_package_list = needed_packages.map do |section, packages|
+            case packages.size
+            when 0
+              package_description = _("No needed package found.")
+            when 1
+              # TRANSLATOR: %s is the package name
+              package_description = _("Needed package: %s") % packages.first
+            else
+              # TRANSLATOR: %s is the list of package names
+              package_description = _("Needed packages: %s") % packages.join(",")
+            end
+
+            "&lt;#{section}/&gt; - #{package_description}"
+          end
+        else
+          schema_package_list = unknown_sections.map{|section| "&lt;#{section}/&gt;"}
+        end
+
+        Report.LongWarning(
+          # TRANSLATORS: Error message, %s is replaced by newline-separated
+          # list of unknown sections of the profile
+          # Do not translate words in brackets
+          _(
+            "These sections of the AutoYaST profile cannot be processed on this " \
+            "system:<br><br>%s<br><br>" \
+            "Maybe they were misspelled or your profile does not contain " \
+            "all the needed YaST packages in the &lt;software/&gt; section " \
+            "as required for functionality provided by additional modules."
+          ) %
+            schema_package_list.join("<br>")
+        )
+      end
 
       @deps = Y2ModuleConfig.Deps
 
@@ -87,7 +135,7 @@ module Yast
         elsif Ops.get_boolean(
             Profile.current,
             ["networking", "keep_install_network"],
-            false
+            true
           ) == false
           removeNetwork(
             Ops.get_list(Profile.current, ["networking", "interfaces"], [])
@@ -100,11 +148,11 @@ module Yast
         d = Ops.get_map(r, "data", {})
         if Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "all" ||
             Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "write"
-          if Builtins.haskey(d, "X-SuSE-YaST-AutoInstResource") &&
-              Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "") != ""
+          if Builtins.haskey(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY) &&
+              Ops.get_string(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY, "") != ""
             @resource = Ops.get_string(
               d,
-              "X-SuSE-YaST-AutoInstResource",
+              Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY,
               "unknown"
             )
           else
@@ -230,6 +278,9 @@ module Yast
         end
       end
 
+      # Initialize scripts stack
+      AutoinstScripts.Import(Profile.current.fetch("scripts", {}))
+
       # online update
       if Ops.get_boolean(
           Profile.current,
@@ -244,7 +295,7 @@ module Yast
         if @online_update_ret == :reboot
           @script = {
             "filename" => "zzz_reboot",
-            "source"   => "chkconfig autoyast off\nshutdown -r now"
+            "source"   => "shutdown -r now"
           }
           AutoinstScripts.init = Builtins.add(AutoinstScripts.init, @script)
         end
@@ -253,6 +304,7 @@ module Yast
       logStep(_("Executing Post-Scripts"))
       AutoinstScripts.Write("post-scripts", false)
 
+      logStep(_("Writing Init-Scripts"))
       AutoinstScripts.Write("init-scripts", false)
 
       @max_wait = Ops.get_integer(
@@ -260,30 +312,43 @@ module Yast
         ["general", "mode", "max_systemd_wait"],
         30
       )
+
       @ser_ignore = [
         "YaST2-Second-Stage.service",
-        "autoyast-initscripts.service"
+        "autoyast-initscripts.service",
+        # Do not restart dbus. Otherwise some services will hang.
+        # bnc#937900
+        "dbus.service",
+        # Do not restart wickedd* services
+        # bnc#944349
+        "^wickedd",
+        # Do not restart NetworkManager* services
+        # bnc#955260
+        "^NetworkManager"
       ]
 
-      logStep(_("Restarting all running services"))
-      @cmd = "systemctl --type=service list-units | grep \" running \" | sed s/[[:space:]].*//"
-      @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
-      @sl = Builtins.filter(
-        Builtins.splitstring(Ops.get_string(@out, "stdout", ""), "\n")
-      ) { |s| Ops.greater_than(Builtins.size(s), 0) }
-      Builtins.y2milestone("running services \"%1\"", @sl)
-      @sl = Builtins.filter(@sl) do |s|
-        !Builtins.contains(@ser_ignore, s)
+      if final_restart_services
+        logStep(_("Restarting all running services"))
+        @cmd = "systemctl --type=service list-units | grep \" running \""
+        @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
+        @sl = Ops.get_string(@out, "stdout", "").split("\n").collect { |c| c.split(" ").first }
+        Builtins.y2milestone("running services \"%1\"", @sl)
+
+        # Filtering out all services which must not to be restarted
+        @sl.select! {|s| !@ser_ignore.any?{|i| s.match(/#{i}/)}}
+
+        Builtins.y2milestone("restarting services \"%1\"", @sl)
+        @cmd = Ops.add(
+          "systemctl --no-block restart ",
+          Builtins.mergestring(@sl, " ")
+        )
+        Builtins.y2milestone("before calling \"%1\"", @cmd)
+        @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
+        Builtins.y2milestone("after  calling \"%1\"", @cmd)
+        wait_systemd_finished(@max_wait, @ser_ignore)
+      else
+        Builtins.y2milestone("Do not restart all services (defined in autoyast.xml)")
       end
-      Builtins.y2milestone("restarting services \"%1\"", @sl)
-      @cmd = Ops.add(
-        "systemctl --no-block restart ",
-        Builtins.mergestring(@sl, " ")
-      )
-      Builtins.y2milestone("before calling \"%1\"", @cmd)
-      @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
-      Builtins.y2milestone("after  calling \"%1\"", @cmd)
-      wait_systemd_finished(@max_wait, @ser_ignore)
       if @need_systemd_isolate
         logStep(_("Activating systemd default target"))
         #string cmd = "systemctl disable YaST2-Second-Stage.service; systemctl --ignore-dependencies isolate default.target";
@@ -293,12 +358,23 @@ module Yast
         Builtins.y2milestone("after  calling \"%1\"", @cmd)
         Builtins.y2milestone("ret=%1", @out)
         wait_systemd_finished(@max_wait, @ser_ignore)
+      else
+        Builtins.y2milestone("Do not activate systemd default target (defined in autoyast.xml)")
       end
 
       # Just in case, remove this file to avoid reconfiguring...
       SCR.Execute(path(".target.remove"), "/var/lib/YaST2/runme_at_boot")
 
       logStep(_("Finishing Configuration"))
+
+      # Invoke SnapshotsFinish client to perform snapshots (if needed)
+      WFM.CallFunction("snapshots_finish", ["Write"])
+
+      # Disabling all local repos
+      WFM.CallFunction("pkg_finish", ["Write"])
+
+      # Saving y2logs
+      WFM.CallFunction("save_y2logs")
 
       :next
     end
@@ -449,7 +525,7 @@ module Yast
         max_wait,
         ser_ignore
       )
-      st_time = Builtins.time
+      st_time = Yast2::SystemTime.uptime
       cur_time = st_time
       last_busy = st_time
       cmd = "systemctl --full list-jobs"
@@ -475,7 +551,7 @@ module Yast
         Builtins.y2milestone("size ll=%1 ll:%2", cnt, ll)
         last_busy = cur_time if Ops.greater_than(cnt, 0)
         Builtins.sleep(500)
-        cur_time = Builtins.time
+        cur_time = Yast2::SystemTime.uptime
         Builtins.y2milestone(
           "wait_systemd_finished time:%1 idle:%2",
           Ops.subtract(cur_time, st_time),
@@ -489,6 +565,7 @@ module Yast
 
       nil
     end
+
   end
 end
 
