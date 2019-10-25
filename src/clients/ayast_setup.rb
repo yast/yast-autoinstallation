@@ -20,32 +20,23 @@
 #    configure your system like in the profile.
 #    Only stage2 configuration can be done.
 #    yast2 ./ayast_setup.rb setup filename=/tmp/my.xml
+
+require "autoinstall/clients/ayast_setup"
 module Yast
   class AyastSetupClient < Client
     include Yast::Logger
+    include Y2Autoinstall::Clients::AyastSetup
 
     def main
-      Yast.import "Pkg"
       textdomain "autoinst"
 
-      Builtins.y2milestone("----------------------------------------")
-      Builtins.y2milestone("ayast_setup started")
+      log.info("----------------------------------------")
+      log.info("ayast_setup started")
 
-      Yast.import "Profile"
-      Yast.import "Popup"
-      Yast.import "Wizard"
-      Yast.import "Mode"
       Yast.import "CommandLine"
-      Yast.import "Stage"
-      Yast.import "AutoInstall"
-      Yast.import "AutoinstSoftware"
-      Yast.import "PackageSystem"
-      Yast.import "AutoinstData"
-      Yast.import "Lan"
+      Yast.import "Mode"
 
       @dopackages = true
-
-
       @cmdline = {
         "id"         => "ayast_setup",
         "help"       => _(
@@ -78,9 +69,9 @@ module Yast
 
       @ret = CommandLine.Run(@cmdline)
 
-      Builtins.y2debug("ret = %1", @ret)
-      Builtins.y2milestone("----------------------------------------")
-      Builtins.y2milestone("ayast_setup finished")
+      log.debug("ret = #{@ret}")
+      log.info("----------------------------------------")
+      log.info("ayast_setup finished")
 
       nil
     end
@@ -91,86 +82,6 @@ module Yast
       :dummy
     end
 
-    def Setup
-      AutoInstall.Save
-      Wizard.CreateDialog
-      Mode.SetMode("autoinstallation")
-      Stage.Set("continue")
-
-      # IPv6 settings will be written despite the have been
-      # changed or not. So we have to read them at first.
-      # FIXME: Move it to Lan.rb and remove the Lan import dependency.
-      Lan.ipv6 = Lan.readIPv6
-
-      WFM.CallFunction("inst_autopost", [])
-      postPackages = Ops.get_list(
-        Profile.current,
-        ["software", "post-packages"],
-        []
-      )
-      postPackages = Builtins.filter(postPackages) do |p|
-        !PackageSystem.Installed(p)
-      end
-      AutoinstSoftware.addPostPackages(postPackages)
-
-      AutoinstData.post_patterns = Ops.get_list(
-        Profile.current,
-        ["software", "post-patterns"],
-        []
-      )
-
-      # the following is needed since 10.3
-      # otherwise the already configured network gets removed
-      if !Builtins.haskey(Profile.current, "networking")
-        Profile.current = Builtins.add(
-          Profile.current,
-          "networking",
-          { "keep_install_network" => true }
-        )
-      end
-
-      if @dopackages
-        Pkg.TargetInit("/", false)
-        WFM.CallFunction("inst_rpmcopy", [])
-      end
-      WFM.CallFunction("inst_autoconfigure", [])
-
-      # Restarting autoyast-initscripts.service in order to run
-      # init-scripts in the installed system.
-      cmd = "systemctl restart autoyast-initscripts.service"
-      ret = SCR.Execute(path(".target.bash_output"), cmd)
-      log.info "command \"#{cmd}\" returned #{ret}"
-      nil
-    end
-
-    def openFile(options)
-      options = deep_copy(options)
-      if Ops.get(options, "filename") == nil
-        CommandLine.Error(_("Path to AutoYaST profile must be set."))
-        return false
-      end
-      if Ops.get_string(options, "dopackages", "yes") == "no"
-        @dopackages = false
-      end
-      if SCR.Read(
-          path(".target.lstat"),
-          Ops.get_string(options, "filename", "")
-        ) == {} ||
-          !Profile.ReadXML(Ops.get_string(options, "filename", ""))
-        Mode.SetUI("commandline")
-        CommandLine.Print(
-          _(
-            "Error while parsing the control file.\n" +
-              "Check the log files for more details or fix the\n" +
-              "control file and try again.\n"
-          )
-        )
-        return false
-      end
-
-      Setup()
-      true
-    end
   end
 end
 
