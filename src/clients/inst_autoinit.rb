@@ -96,8 +96,21 @@ module Yast
       # register the system earlier because the medium does not contain any
       # repositories, we need the repositories from the registration server
       # TODO: maybe we will need it also in the autoupgrade case...
-      if Y2Packager::MediumType.online? && !Mode.autoupgrade
-        suse_register
+      if Y2Packager::MediumType.online?
+        # check that the registration section is defined and registration is enabled
+        reg_section = Yast::Profile.current.fetch(REGISTER_SECTION, {})
+        reg_enabled = reg_section["do_registration"]
+
+        if !reg_enabled
+          msg = _("Registration is mandatory when using the online " \
+            "installation medium. Enable registration in " \
+            "the AutoYaST profile.")
+          Popup.LongError(msg)  # No timeout because we are stopping the installation/upgrade.
+
+          return :abort
+        end
+
+        suse_register if !Mode.autoupgrade
       end
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
