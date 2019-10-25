@@ -36,7 +36,6 @@ Yast.import "Pkg"
 module Y2Autoinstall
   module Clients
     module AyastSetup
-      textdomain "autoinst"
       include Yast::Logger    
       Ops = Yast::Ops
       SCR = Yast::SCR
@@ -44,6 +43,7 @@ module Y2Autoinstall
       Profile  = Yast::Profile
       Builtins = Yast::Builtins
       def Setup
+         textdomain "autoinst"
          Yast::AutoInstall.Save
          Yast::Wizard.CreateDialog
          Yast::Mode.SetMode("autoinstallation")
@@ -96,6 +96,7 @@ module Y2Autoinstall
       end
       
       def openFile(options)
+         textdomain "autoinst"
          options = deep_copy(options)
          if Ops.get(options, "filename") == nil
            Yast::CommandLine.Error(_("Path to AutoYaST profile must be set."))
