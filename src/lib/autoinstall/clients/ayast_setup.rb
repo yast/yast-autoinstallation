@@ -36,6 +36,7 @@ Yast.import "Pkg"
 module Y2Autoinstall
   module Clients
     module AyastSetup
+      textdomain "autoinst"
       include Yast::Logger    
       Ops = Yast::Ops
       SCR = Yast::SCR
