@@ -201,7 +201,22 @@ module Yast
           (entry["X-SuSE-YaST-AutoInstMerge"] && entry["X-SuSE-YaST-AutoInstMerge"].split(",").include?(e))
         end
         yast_module ||= e # if needed taking default because no entry has been defined in the *.desktop file
-        provide = "application(YaST2/#{yast_module}.desktop)"
+        # FIXME
+        #
+        # This does currently not work at all as the packages provide this
+        # with the module name camel-cased; e.g.:
+        #
+        #   application(YaST2/org.opensuse.yast.Kdump.desktop)
+        #
+        # As there's no way to predict which letters are upper-cased this cannot work at all.
+        #
+        # The fallback method via #required_packages relies on a
+        # pre-calculated data set which may or may not reflect the
+        # dependencies of the packages in the repo.
+        #
+        # This area should be re-thought entirely.
+        #
+        provide = "application(YaST2/org.opensuse.yast.#{yast_module}.desktop)"
 
         packages = Pkg.PkgQueryProvides( provide )
         unless packages.empty?
@@ -209,9 +224,16 @@ module Yast
           log.info "AddYdepsFromProfile add package #{name} for entry #{e}"
           pkglist.push(name) if !pkglist.include?(name)
         else
-          log.info "No package provides: #{provide}"
+          packs = Y2ModuleConfig.required_packages([e])[e]
+          if packs.empty?
+            log.info "No package provides: #{provide}"
+          else
+            log.info "AddYdepsFromProfile add packages #{packs} for entry #{e}"
+            pkglist += packs
+          end
         end
       end
+      pkglist.uniq!
       Builtins.y2milestone("AddYdepsFromProfile pkglist %1", pkglist)
       pkglist.each do |p|
         if( !PackageAI.toinstall.include?(p) && @packagesAvailable.include?(p) )
