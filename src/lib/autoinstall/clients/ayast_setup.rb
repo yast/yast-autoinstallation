@@ -29,7 +29,6 @@ Yast.import "AutoInstall"
 Yast.import "AutoinstSoftware"
 Yast.import "PackageSystem"
 Yast.import "AutoinstData"
-Yast.import "Lan"
 Yast.import "Pkg"
 
 
@@ -48,11 +47,6 @@ module Y2Autoinstall
          Yast::Wizard.CreateDialog
          Yast::Mode.SetMode("autoinstallation")
          Yast::Stage.Set("continue")
-      
-         # IPv6 settings will be written despite the have been
-         # changed or not. So we have to read them at first.
-         # FIXME: Move it to Lan.rb and remove the Lan import dependency.
-         Yast::Lan.ipv6 = Yast::Lan.readIPv6
       
          WFM.CallFunction("inst_autopost", [])
          postPackages = Ops.get_list(
