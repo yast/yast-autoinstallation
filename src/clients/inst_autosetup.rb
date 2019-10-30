@@ -377,6 +377,8 @@ module Yast
           "kdump_auto",
           ["Import", Ops.get_map(Profile.current, "kdump", {})]
         )
+        # Don't run it again in 2nd installation stage
+        Profile.remove_sections("kdump")
       end
 
       # Software
@@ -500,10 +502,7 @@ module Yast
 
     # Add YaST2 packages dependencies
     def add_yast2_dependencies
-      keys = Profile.current.keys.select do |k|
-        Profile.current[k].is_a?(Array)||Profile.current[k].is_a?(Hash)
-      end
-      AutoinstSoftware.AddYdepsFromProfile(keys)
+      AutoinstSoftware.AddYdepsFromProfile(Profile.current.keys)
     end
   end
 end

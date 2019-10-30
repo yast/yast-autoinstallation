@@ -422,8 +422,7 @@ module Yast
     def required_packages(sections)
       package_names = {}
       log.info "Evaluating needed packages for handling AY-sections #{sections}"
-      if PackageSystem.Installed("yast2-schema") &&
-         PackageSystem.Installed("grep")
+      if File.exist?(SCHEMA_PACKAGE_FILE)
         sections.each do |section|
           # Evaluate which *rng file belongs to the given section
           package_names[section] = []
