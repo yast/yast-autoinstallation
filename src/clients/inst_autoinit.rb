@@ -140,6 +140,7 @@ module Yast
         # initialize addons and the workflow manager
         Yast::AddOnProduct.SetBaseProductURL(base_url)
         Yast::WorkflowManager.SetBaseWorkflow(false)
+        Yast::AutoinstFunctions.reset_product
       end
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
