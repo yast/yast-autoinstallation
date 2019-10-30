@@ -49,6 +49,7 @@ BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
+BuildRequires:  yast2-network >= 3.1.145
 BuildRequires:  yast2-slp
 BuildRequires:  yast2-country
 # AutoinstIssues::NoProposal
