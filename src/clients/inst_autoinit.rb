@@ -21,22 +21,23 @@ module Yast
 
       textdomain "autoinst"
 
-      Yast.import "Installation"
       Yast.import "AutoInstall"
+      Yast.import "AutoInstallRules"
       Yast.import "AutoinstConfig"
       Yast.import "AutoinstFunctions"
       Yast.import "AutoinstGeneral"
-      Yast.import "ProfileLocation"
-      Yast.import "AutoInstallRules"
-      Yast.import "Progress"
-      Yast.import "Report"
-      Yast.import "Profile"
       Yast.import "Call"
       Yast.import "Console"
+      Yast.import "InstURL"
+      Yast.import "Installation"
       Yast.import "Mode"
-      Yast.import "Y2ModuleConfig"
-
       Yast.import "Popup"
+      Yast.import "Profile"
+      Yast.import "ProfileLocation"
+      Yast.import "Progress"
+      Yast.import "Report"
+      Yast.import "URL"
+      Yast.import "Y2ModuleConfig"
 
       Yast.include self, "autoinstall/autoinst_dialogs.rb"
 
@@ -111,6 +112,33 @@ module Yast
         end
 
         suse_register if !Mode.autoupgrade
+      # offline registration need here to init software management according to picked product
+      elsif Y2Packager::MediumType.offline?
+        product = AutoinstFunctions.selected_product
+
+        # duplicite code, but for offline medium we need to do it before system is initialized as
+        # we get need product for initialize libzypp, but for others we need first init libzypp
+        # to get available products.
+        if !product
+          msg = _("None or wrong base product has been defined in the AutoYaST configuration file. " \
+          "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
+          "Following base products are available:<br>")
+          AutoinstFunctions.available_base_products.each do |product|
+            msg += "#{product.name} (#{product.display_name})<br>"
+          end
+          Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
+          return :abort
+        end
+
+        show_popup = true
+        base_url = Yast::InstURL.installInf2Url("")
+        log_url = Yast::URL.HidePassword(base_url)
+        Yast::Packages.Initialize_StageInitial(show_popup, base_url, log_url, @product.dir)
+        # select the product to install
+        Yast::Pkg.ResolvableInstall(@product.details && @product.details.product, :product, "")
+        # initialize addons and the workflow manager
+        Yast::AddOnProduct.SetBaseProductURL(base_url)
+        Yast::WorkflowManager.SetBaseWorkflow(false)
       end
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
@@ -136,11 +164,11 @@ module Yast
         WFM.CallFunction("fcoe-client_auto", ["Write"])
       end
 
-      if !AutoinstFunctions.selected_product
+      if !Y2Packager::MediumType.offline? && !AutoinstFunctions.selected_product
         msg = _("None or wrong base product has been defined in the AutoYaST configuration file. " \
          "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
          "Following base products are available:<br>")
-        Y2Packager::Product.available_base_products.each do |product|
+        AutoinstFunctions.available_base_products.each do |product|
           msg += "#{product.name} (#{product.display_name})<br>"
         end
         Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.

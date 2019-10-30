@@ -1,3 +1,7 @@
+require "y2packager/product"
+require "y2packager/product_location"
+require "y2packager/medium_type"
+
 module Yast
   # Helper methods to be used on autoinstallation.
   class AutoinstFunctionsClass < Module
@@ -9,6 +13,7 @@ module Yast
       Yast.import "Stage"
       Yast.import "Mode"
       Yast.import "AutoinstConfig"
+      Yast.import "InstURL"
       Yast.import "ProductControl"
       Yast.import "Profile"
       Yast.import "Pkg"
@@ -101,6 +106,18 @@ module Yast
       @selected_product
     end
 
+    def available_base_products
+      @base_products ||= if Y2Packager::MediumType.offline?
+      url = InstURL.installInf2Url("")
+        Y2Packager::ProductLocation
+          .scan(url)
+          .select { |p| p.details && p.details.base }
+          .sort(&::Y2Packager::PRODUCT_SORTER)
+      else
+        Y2Packager::Product.available_base_products
+      end
+    end
+
   private
 
     # Determine whether the system is registered
@@ -118,9 +135,9 @@ module Yast
     # @return [Y2Packager::Product] a product if exactly one product matches
     # the criteria, nil otherwise
     def identify_product
-      base_products = Y2Packager::Product.available_base_products
+      log.info "Found base products : #{available_base_products.inspect}"
 
-      products = base_products.select do |product|
+      products = available_base_products.select do |product|
         yield(product)
       end
 
