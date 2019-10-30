@@ -137,17 +137,16 @@ describe Yast::Y2ModuleConfig do
   end
 
   describe "#required_packages" do
-    context "packages needed for the check are not installed" do
+    context "files needed for the check are not installed" do
       it "returns an empty hash" do
-        allow(Yast::PackageSystem).to receive(:Installed).with("yast2-schema").and_return false
+        allow(File).to receive(:exist?).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc").and_return false
         expect(subject.required_packages([])).to eq({})
       end
     end
 
-    context "all packages needed for the check are installed" do
+    context "all files needed for the check are installed" do
       before do
-        allow(Yast::PackageSystem).to receive(:Installed).with("yast2-schema").and_return true
-        allow(Yast::PackageSystem).to receive(:Installed).with("grep").and_return true
+        allow(File).to receive(:exist?).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc").and_return true
       end
 
       context "no rng file found for the given AY section" do
