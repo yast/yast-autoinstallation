@@ -73,3 +73,15 @@ module Yast
   end
   Timezone = TimezoneClass.new
 end
+
+require "y2packager/medium_type"
+
+RSpec.configure do |c|
+  c.mock_with :rspec do |mocks|
+    mocks.verify_partial_doubles = true
+  end
+
+  c.before do
+    allow(Y2Packager::MediumType).to receive(:detect_medium_type).and_return(:standard)
+  end
+end

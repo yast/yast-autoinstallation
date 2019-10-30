@@ -189,6 +189,7 @@ describe Yast::AutoinstFunctions do
       end
 
       it "logs a message" do
+        allow(subject.log).to receive(:info).and_call_original
         expect(subject.log).to receive(:info).at_least(1).with(/not a valid software section/)
 
         subject.selected_product
