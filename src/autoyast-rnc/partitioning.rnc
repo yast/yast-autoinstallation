@@ -51,6 +51,7 @@ y2_partition =
   part_create
   | part_crypt
   | part_crypt_fs
+  | part_crypt_method
   | part_crypt_key
   | part_filesystem
   | part_format
@@ -91,6 +92,8 @@ part_create =
 part_crypt = element crypt { text }
 part_crypt_fs =
   element crypt_fs { BOOLEAN }
+part_crypt_method =
+  element crypt_method { SYMBOL }
 part_crypt_key = element crypt_key { text }
 part_filesystem =
   element filesystem { SYMBOL }
