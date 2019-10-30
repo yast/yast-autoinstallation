@@ -124,7 +124,8 @@ module Yast
           "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
           "Following base products are available:<br>")
           AutoinstFunctions.available_base_products.each do |product|
-            msg += "#{product.name} (#{product.display_name})<br>"
+            # FIXME: here we abuse knowledge that base product is ProductLocation and not Product
+            msg += "#{product.details.product} (#{product.details.summary})<br>"
           end
           Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort
@@ -133,9 +134,9 @@ module Yast
         show_popup = true
         base_url = Yast::InstURL.installInf2Url("")
         log_url = Yast::URL.HidePassword(base_url)
-        Yast::Packages.Initialize_StageInitial(show_popup, base_url, log_url, @product.dir)
+        Yast::Packages.Initialize_StageInitial(show_popup, base_url, log_url, product.dir)
         # select the product to install
-        Yast::Pkg.ResolvableInstall(@product.details && @product.details.product, :product, "")
+        Yast::Pkg.ResolvableInstall(product.details.product, :product, "")
         # initialize addons and the workflow manager
         Yast::AddOnProduct.SetBaseProductURL(base_url)
         Yast::WorkflowManager.SetBaseWorkflow(false)

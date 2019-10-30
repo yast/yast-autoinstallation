@@ -138,7 +138,11 @@ module Yast
       log.info "Found base products : #{available_base_products.inspect}"
 
       products = available_base_products.select do |product|
-        yield(product)
+        if product.is_a?(Y2Packager::ProductLocation)
+          yield(product.details.product)
+        else
+          yield(product.name)
+        end
       end
 
       return products.first if products.size == 1
@@ -155,8 +159,8 @@ module Yast
     def identify_product_by_patterns(profile)
       software = profile["software"] || {}
 
-      identify_product do |product|
-        software.fetch("patterns", []).any? { |p| p =~ /#{product.name.downcase}-.*/ }
+      identify_product do |name|
+        software.fetch("patterns", []).any? { |p| p =~ /#{name.downcase}-.*/ }
       end
     end
 
@@ -170,8 +174,8 @@ module Yast
     def identify_product_by_packages(profile)
       software = profile["software"] || {}
 
-      identify_product do |product|
-        software.fetch("packages", []).any? { |p| p =~ /#{product.name.downcase}-release/ }
+      identify_product do |name|
+        software.fetch("packages", []).any? { |p| p =~ /#{name.downcase}-release/ }
       end
     end
 
@@ -181,8 +185,8 @@ module Yast
     # @return [Y2Packager::Product] a product if exactly one product matches
     # the criteria, nil otherwise
     def identify_product_by_selection(profile)
-      identify_product do |product|
-        product.name == base_product_name(profile)
+      identify_product do |name|
+        name == base_product_name(profile)
       end
     end
 
