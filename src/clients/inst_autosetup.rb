@@ -377,6 +377,8 @@ module Yast
           "kdump_auto",
           ["Import", Ops.get_map(Profile.current, "kdump", {})]
         )
+        # Don't run it again in 2nd installation stage
+        Profile.remove_sections("kdump")
       end
 
       # Software
