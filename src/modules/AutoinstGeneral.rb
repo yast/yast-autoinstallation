@@ -125,47 +125,52 @@ module Yast
       summary = Summary.AddHeader(summary, _("Signature Handling"))
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@signature_handling, "accept_unsigned_file", false) ?
-          _("Accepting unsigned files") :
+        if Ops.get_boolean(@signature_handling, "accept_unsigned_file", false)
+          _("Accepting unsigned files")
+        else
           _("Not accepting unsigned files")
+        end
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(
+        if Ops.get_boolean(
           @signature_handling,
           "accept_file_without_checksum",
           false
-        ) ?
-          _("Accepting files without a checksum") :
+        )
+          _("Accepting files without a checksum")
+        else
           _("Not accepting files without a checksum")
+        end
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(
+        if Ops.get_boolean(
           @signature_handling,
           "accept_verification_failed",
           false
-        ) ?
-          _("Accepting failed verifications") :
+        )
+          _("Accepting failed verifications")
+        else
           _("Not accepting failed verifications")
+        end
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false) ?
-          _("Accepting unknown GPG keys") :
+        if Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false)
+          _("Accepting unknown GPG keys")
+        else
           _("Not accepting unknown GPG Keys")
+        end
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@signature_handling, "import_gpg_key", false) ?
-          _("Importing new GPG keys") :
+        if Ops.get_boolean(@signature_handling, "import_gpg_key", false)
+          _("Importing new GPG keys")
+        else
           _("Not importing new GPG Keys")
+        end
       )
-
-      #  summary = Summary::AddHeader(summary, _("Proposals"));
-      #        foreach(string p, proposals, ``{
-      #    summary = Summary::AddLine(summary, p);
-      #  });
 
       summary
     end
@@ -285,49 +290,55 @@ module Yast
 
       if Builtins.haskey(@signature_handling, "accept_unsigned_file")
         Pkg.CallbackAcceptUnsignedFile(
-          Ops.get_boolean(@signature_handling, "accept_unsigned_file", false) ?
+          if Ops.get_boolean(@signature_handling, "accept_unsigned_file", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_integer),
               "boolean (string, integer)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_integer),
               "boolean (string, integer)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "accept_file_without_checksum")
         Pkg.CallbackAcceptFileWithoutChecksum(
-          Ops.get_boolean(
+          if Ops.get_boolean(
             @signature_handling,
             "accept_file_without_checksum",
             false
-          ) ?
+          )
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string),
               "boolean (string)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string),
               "boolean (string)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "accept_verification_failed")
         Pkg.CallbackAcceptVerificationFailed(
-          Ops.get_boolean(
+          if Ops.get_boolean(
             @signature_handling,
             "accept_verification_failed",
             false
-          ) ?
+          )
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_map_integer),
               "boolean (string, map <string, any>, integer)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_map_integer),
               "boolean (string, map <string, any>, integer)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "trusted_key_added")
@@ -348,54 +359,62 @@ module Yast
       end
       if Builtins.haskey(@signature_handling, "accept_unknown_gpg_key")
         Pkg.CallbackAcceptUnknownGpgKey(
-          Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false) ?
+          if Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_integer),
               "boolean (string, string, integer)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_string_integer),
               "boolean (string, string, integer)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "import_gpg_key")
         Pkg.CallbackImportGpgKey(
-          Ops.get_boolean(@signature_handling, "import_gpg_key", false) ?
+          if Ops.get_boolean(@signature_handling, "import_gpg_key", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_map_integer),
               "boolean (map <string, any>, integer)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_map_integer),
               "boolean (map <string, any>, integer)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "accept_wrong_digest")
         Pkg.CallbackAcceptWrongDigest(
-          Ops.get_boolean(@signature_handling, "accept_wrong_digest", false) ?
+          if Ops.get_boolean(@signature_handling, "accept_wrong_digest", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_string),
               "boolean (string, string, string)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_string_string),
               "boolean (string, string, string)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "accept_unknown_digest")
         Pkg.CallbackAcceptWrongDigest(
-          Ops.get_boolean(@signature_handling, "accept_unknown_digest", false) ?
+          if Ops.get_boolean(@signature_handling, "accept_unknown_digest", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_string),
               "boolean (string, string, string)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_string_string),
               "boolean (string, string, string)"
             )
+          end
         )
       end
 

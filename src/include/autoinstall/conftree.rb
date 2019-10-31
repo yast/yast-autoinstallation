@@ -396,9 +396,7 @@ module Yast
       _Menu = Wizard.AddMenuEntry(
         _Menu,
         "file-menu",
-        AutoinstConfig.ProfileEncrypted ?
-          _("Change to Decrypted") :
-          _("Change to Encrypted"),
+        AutoinstConfig.ProfileEncrypted ? _("Change to Decrypted") : _("Change to Encrypted"),
         "change_encryption"
       )
       _Menu = Wizard.AddMenuEntry(

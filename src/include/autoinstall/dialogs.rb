@@ -319,12 +319,16 @@ module Yast
           Builtins.y2debug("validation output: %1", o)
           summary = Ops.add(
             summary,
-            (Ops.get_integer(o, "exit", 1) != 0 ||
+            if Ops.get_integer(o, "exit", 1) != 0 ||
               Ops.get_string(i, 2, "") == "jing sucks" &&
                 Ops.greater_than(
                   Builtins.size(Ops.get_string(o, "stderr", "")),
                   0
-                )) ? html_ko : html_ok
+                )
+              html_ko
+            else
+              html_ok
+            end
           )
           UpdateValidDialog(summary, Ops.get_string(o, "stderr", ""))
         end
@@ -358,8 +362,12 @@ module Yast
         Builtins.y2debug("validation output: %1", o)
         summary = Ops.add(
           summary,
-          (Ops.get_integer(o, "exit", 1) != 0 ||
-            Ops.greater_than(Builtins.size(Ops.get_string(o, "stderr", "")), 0)) ? html_ko : html_ok
+          if Ops.get_integer(o, "exit", 1) != 0 ||
+            Ops.greater_than(Builtins.size(Ops.get_string(o, "stderr", "")), 0)
+            html_ko
+          else
+            html_ok
+          end
         )
         UpdateValidDialog(summary, Ops.get_string(o, "stderr", ""))
       end
