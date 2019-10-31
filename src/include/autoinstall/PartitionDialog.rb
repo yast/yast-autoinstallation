@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_storage.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	Storage
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_storage.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  Storage
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -17,7 +17,6 @@ module Yast
       Yast.import "AutoinstDrive"
       Yast.import "AutoinstPartition"
 
-
       @currentPartition = {}
       @parentDrive = {}
       @driveId = 0
@@ -26,13 +25,13 @@ module Yast
 
       @partitionType = "part"
       @partitionDialog = {
-        :type         => @partitionType,
-        :display      => lambda { PartitionDisplay() },
-        :eventHandler => lambda { PartitionEventHandler() },
-        :store        => lambda { PartitionStore() },
-        :new          => lambda { PartitionNew() },
-        :delete       => lambda { PartitionDelete() },
-        :check        => lambda { PartitionCheck() }
+        type:         @partitionType,
+        display:      -> { PartitionDisplay() },
+        eventHandler: -> { PartitionEventHandler() },
+        store:        -> { PartitionStore() },
+        new:          -> { PartitionNew() },
+        delete:       -> { PartitionDelete() },
+        check:        -> { PartitionCheck() }
       }
       Builtins.y2milestone("adding partition dialog to dialog list.")
       @dialogs = Builtins.add(@dialogs, @partitionType, @partitionDialog)
@@ -42,7 +41,6 @@ module Yast
       # TODO: implement filtering out already used mp's
       AutoinstPartPlan.getAvailableMountPoints
     end
-
 
     def getValidUnitsForMountPoint(mountPoint)
       unit = AutoinstPartition.getAllUnits
@@ -54,9 +52,8 @@ module Yast
       toItemList(unit)
     end
 
-
     def getFileSystemTypes
-      #return toItemList( AutoinstPartition::getAllFileSystemTypes() );
+      # return toItemList( AutoinstPartition::getAllFileSystemTypes() );
       allFs = AutoinstPartition.getAllFileSystemTypes
       result = []
       Builtins.foreach(allFs) do |fsType, fsMap|
@@ -68,11 +65,9 @@ module Yast
       Builtins.add(result, Item(Id(:keep), "<keep>"))
     end
 
-
     def getFormatStatus
       AutoinstPartition.getFormat(@currentPartition)
     end
-
 
     def getMaxPartitionNumber
       AutoinstPartition.getMaxPartitionNumber
@@ -94,6 +89,7 @@ module Yast
         Item(Id(:none), _("<none>"))
       )
     end
+
     def enableMount
       UI.ChangeWidget(Id(:cbMountPoint), :Enabled, true)
       UI.ChangeWidget(Id(:cbFileSystem), :Enabled, true)
@@ -101,6 +97,7 @@ module Yast
 
       nil
     end
+
     def disableMount
       UI.ChangeWidget(Id(:cbMountPoint), :Enabled, false)
       UI.ChangeWidget(Id(:cbFileSystem), :Value, :keep)
@@ -168,12 +165,12 @@ module Yast
       if unit != "max" && unit != "auto"
         sizeVal = Convert.to_string(UI.QueryWidget(Id(:size), :Value))
         if unit != "%"
-          if unit == "Byte"
+          unit = if unit == "Byte"
             # don't save any unit for byte sizes
-            unit = ""
+            ""
           else
             # MB, GB -> M, B
-            unit = Builtins.regexpsub(unit, "(.*)B", "\\1")
+            Builtins.regexpsub(unit, "(.*)B", "\\1")
           end
         end
       end
@@ -241,9 +238,9 @@ module Yast
             Ops.get_integer(@currentPartition, "stripes", 1)
           )
           if Ops.greater_than(
-              Ops.get_integer(@currentPartition, "stripes", 1),
-              1
-            )
+            Ops.get_integer(@currentPartition, "stripes", 1),
+            1
+          )
             UI.ChangeWidget(Id(:striping), :Enabled, true)
             UI.ChangeWidget(Id(:striping), :Value, true)
             UI.ChangeWidget(Id(:numberStripes), :Enabled, true)
@@ -262,9 +259,7 @@ module Yast
         end
         UI.ChangeWidget(Id(:cbMountPoint), :Value, mountPoint)
       end
-      if 0 == Builtins.size(getVolgroups)
-        UI.ChangeWidget(Id(:rbLVM), :Enabled, false)
-      end
+      UI.ChangeWidget(Id(:rbLVM), :Enabled, false) if 0 == Builtins.size(getVolgroups)
       # The size string can be either an absolute numerical like
       # 500M or 10G, the string 'max' or a relative percentage
       # like '10%'.
@@ -275,12 +270,12 @@ module Yast
         partSize = AutoinstPartition.getSize(@currentPartition)
         UI.ChangeWidget(Id(:size), :Value, Builtins.tostring(partSize))
         if unit != "%"
-          if unit == ""
+          unit = if unit == ""
             # size strings with no unit are bytes
-            unit = "Byte"
+            "Byte"
           else
             # M, G -> MB, GB
-            unit = Ops.add(unit, "B")
+            Ops.add(unit, "B")
           end
         end
       end
@@ -355,8 +350,8 @@ module Yast
     def PartitionStore
       @currentPartition = updatePartitionDialogData(@currentPartition)
       Builtins.y2milestone(
-        "PartitionStore():\n" +
-          "current partiton: '%1'\n" +
+        "PartitionStore():\n" \
+          "current partiton: '%1'\n" \
           "(driveId:partitionIdx): ('%2':'%3')",
         @currentPartition,
         @driveId,
@@ -380,8 +375,8 @@ module Yast
       unchangedPartition = @currentPartition
       @currentPartition = updatePartitionDialogData(@currentPartition)
       Builtins.y2milestone(
-        "PartitionCheck():\n" +
-          "current partiton: '%1'\n" +
+        "PartitionCheck():\n" \
+          "current partiton: '%1'\n" \
           "(driveId:partitionIdx): ('%2':'%3')",
         @currentPartition,
         @driveId,
@@ -419,9 +414,7 @@ module Yast
         _("Volgroup"),
         getVolgroups
       )
-      if isOnVolgroup
-        lvmSettings = InputField(Id(:lvName), _("Logical volume name"))
-      end
+      lvmSettings = InputField(Id(:lvName), _("Logical volume name")) if isOnVolgroup
       contents = VBox(
         Heading(_("Edit partition")),
         VSpacing(1),
@@ -451,7 +444,7 @@ module Yast
               VSpacing(1),
               HBox(
                 Left(InputField(Id(:size), _("&Size"))),
-                #`TextEntry(`id(`size), _("&Size")),
+                # `TextEntry(`id(`size), _("&Size")),
                 Left(
                   ComboBox(
                     Id(:unit),
@@ -648,10 +641,10 @@ module Yast
         elsif :cbMountPoint == event
           mp = UI.QueryWidget(Id(:cbMountPoint), :Value)
           mountPoint = ""
-          if Ops.is_symbol?(mountPoint)
-            mountPoint = symbol2string(Convert.to_symbol(mp))
+          mountPoint = if Ops.is_symbol?(mountPoint)
+            symbol2string(Convert.to_symbol(mp))
           else
-            mountPoint = Convert.to_string(mp)
+            Convert.to_string(mp)
           end
           prevUnit = Convert.to_symbol(UI.QueryWidget(Id(:unit), :Value))
           # rebuild unit list

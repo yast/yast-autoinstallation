@@ -30,7 +30,7 @@ describe Y2Autoinstall::Clients::AyastSetup do
 
   describe "#main" do
     it "Start the ayast_setup client" do
-	    expect(client.Setup).to eq(:true)
+      expect(client.Setup).to eq(:true)
     end
   end
 end

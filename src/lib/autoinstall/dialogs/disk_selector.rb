@@ -110,6 +110,7 @@ module Y2Autoinstallation
       # @return [Array<Yast::Term>] List of options
       def options
         return @options if @options
+
         first_disk = disks.first
         @options = disks.each_with_index.map do |disk, idx|
           Left(RadioButton(Id(disk.name), "#{idx + 1}: #{label(disk)}", first_disk == disk))

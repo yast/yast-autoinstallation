@@ -53,7 +53,7 @@ describe "Yast::AutoInstall" do
     context "when an issue has been found" do
       it "shows a popup" do
         subject.issues_list.add(:invalid_value, "firewall", "FW_DEV_INT", "1",
-                                _("Is not supported anymore."))
+          _("Is not supported anymore."))
         expect_any_instance_of(Y2Autoinstallation::Dialogs::Question).to receive(:run).and_return(:ok)
         expect(subject.valid_imported_values).to eq(true)
       end

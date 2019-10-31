@@ -43,8 +43,8 @@ describe "Yast::AutoinstConfig" do
 
       let(:slp_server_reply) {
         [
-          {"srvurl" => "service:autoyast:#{service_url_1}" },
-          {"srvurl" => "service:autoyast:#{service_url_2}" }
+          { "srvurl" => "service:autoyast:#{service_url_1}" },
+          { "srvurl" => "service:autoyast:#{service_url_2}" }
         ]
       }
 

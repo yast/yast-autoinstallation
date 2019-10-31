@@ -9,11 +9,11 @@ Yast.import "AutoinstClone"
 describe Yast::Profile do
 
   CUSTOM_MODULE = {
-    "Name" => "Custom module",
-    "X-SuSE-YaST-AutoInst" => "configure",
-    "X-SuSE-YaST-Group" => "System",
+    "Name"                       => "Custom module",
+    "X-SuSE-YaST-AutoInst"       => "configure",
+    "X-SuSE-YaST-Group"          => "System",
     "X-SuSE-YaST-AutoInstClient" => "custom_auto"
-  }
+  }.freeze
 
   subject { Yast::Profile }
 
@@ -58,7 +58,7 @@ describe Yast::Profile do
 
       context "and second stage is disabled on the profile itself" do
         let(:profile) do
-          { "general" => { "mode" => { "second_stage" => false } },
+          { "general"  => { "mode" => { "second_stage" => false } },
             "software" => { "packages" => [] } }
         end
 
@@ -91,7 +91,7 @@ describe Yast::Profile do
       context "and second stage is disabled on the profile itself" do
         let(:profile) do
           { "general" => { "mode" => { "second_stage" => false } },
-            "files" => [] }
+            "files"   => [] }
         end
 
         it "does not add 'autoyast2' to packages list" do
@@ -146,8 +146,8 @@ describe Yast::Profile do
 
       context "when both keys are present" do
         let(:profile) do
-          { "configure" =>  { "section2" => ["val2"] },
-            "install" =>    { "section1" => ["val1"] } }
+          { "configure" => { "section2" => ["val2"] },
+            "install"   => { "section1" => ["val1"] } }
         end
 
         it "merge them into the root of the profile" do
@@ -161,8 +161,8 @@ describe Yast::Profile do
 
       context "when both keys are present and some section is duplicated" do
         let(:profile) do
-          { "configure" =>  { "section1" => "val3", "section2" => ["val2"] },
-            "install" =>    { "section1" => ["val1"] } }
+          { "configure" => { "section1" => "val3", "section2" => ["val2"] },
+            "install"   => { "section1" => ["val1"] } }
         end
 
         it "merges them into the root of the profile giving precedence to 'installation' section" do
@@ -236,7 +236,7 @@ describe Yast::Profile do
         let(:profile) { { "old_custom" => { "dummy" => true } } }
         let(:custom_module) do
           CUSTOM_MODULE.merge(
-            "X-SuSE-YaST-AutoInstResource" => "new_custom",
+            "X-SuSE-YaST-AutoInstResource"        => "new_custom",
             "X-SuSE-YaST-AutoInstResourceAliases" => "old_custom"
           )
         end
@@ -252,7 +252,7 @@ describe Yast::Profile do
         let(:custom_module) do
           CUSTOM_MODULE.merge(
             "X-SuSE-YaST-AutoInstResourceAliases" => "other_alias,old_custom"
-            )
+          )
         end
 
         it "takes into account all aliases" do
@@ -278,7 +278,7 @@ describe Yast::Profile do
 
     context "when multiple sections are given" do
       it "removes every given section" do
-        Yast::Profile.remove_sections(%w(section1 section2))
+        Yast::Profile.remove_sections(%w[section1 section2])
         expect(Yast::Profile.current.keys).to_not include("section1")
         expect(Yast::Profile.current.keys).to_not include("section2")
       end
@@ -289,10 +289,10 @@ describe Yast::Profile do
     let(:prepare) { true }
     let(:general_module) do
       {
-        "Name"=>"General Options",
-        "X-SuSE-YaST-AutoInst"=>"configure",
-        "X-SuSE-YaST-Group"=>"System",
-        "X-SuSE-YaST-AutoInstClient"=>"general_auto"
+        "Name"                       => "General Options",
+        "X-SuSE-YaST-AutoInst"       => "configure",
+        "X-SuSE-YaST-Group"          => "System",
+        "X-SuSE-YaST-AutoInstClient" => "general_auto"
       }
     end
     let(:custom_module) { CUSTOM_MODULE }
@@ -308,7 +308,7 @@ describe Yast::Profile do
       allow(Yast::WFM).to receive(:CallFunction)
         .with("custom_auto", ["Export"]).and_return(custom_export)
       allow(Yast::AutoinstClone).to receive(:General)
-        .and_return("mode" => { "confirm" => false})
+        .and_return("mode" => { "confirm" => false })
 
       Yast::Y2ModuleConfig.main
       Yast.import "AutoinstClone"
@@ -345,8 +345,8 @@ describe Yast::Profile do
     context "when a module has elements to merge" do
       let(:custom_module) do
         CUSTOM_MODULE.merge(
-          "X-SuSE-YaST-AutoInstClient" => "custom_auto",
-          "X-SuSE-YaST-AutoInstMerge" => "users,defaults",
+          "X-SuSE-YaST-AutoInstClient"     => "custom_auto",
+          "X-SuSE-YaST-AutoInstMerge"      => "users,defaults",
           "X-SuSE-YaST-AutoInstMergeTypes" => "list,map"
         )
       end

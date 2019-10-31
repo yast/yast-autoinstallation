@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_linuxrc.ycp
-# Package:	Autoinstallation Configuration System
-# Summary: 	Linuxrc Settings
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_linuxrc.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:   Linuxrc Settings
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -20,7 +20,6 @@ module Yast
 
       Yast.include self, "autoinstall/dialogs.rb"
       Yast.include self, "autoinstall/classes.rb"
-
 
       @ret = nil
       @func = ""
@@ -40,9 +39,9 @@ module Yast
 
       if @func == "Import"
         @ret = AutoinstClass.Import(
-          Convert.convert(@param, :from => "list", :to => "list <map>")
+          Convert.convert(@param, from: "list", to: "list <map>")
         )
-        if @ret == nil
+        if @ret.nil?
           Builtins.y2error(
             "Parameter to 'Import' is probably wrong, should be list of maps"
           )
@@ -71,7 +70,7 @@ module Yast
       Builtins.y2milestone("General auto finished")
       Builtins.y2milestone("----------------------------------------")
 
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # EOF
     end

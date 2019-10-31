@@ -139,6 +139,5 @@ module Y2Autoinstallation
         raise error
       end
     end
-
   end
 end

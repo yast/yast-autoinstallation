@@ -1,15 +1,14 @@
 # encoding: utf-8
 
-# File:	clients/inst_autoimage.ycp
-# Package:	Auto-installation
+# File:  clients/inst_autoimage.ycp
+# Package:  Auto-installation
 # Author:      Anas Nashif <nashif@suse.de>
-# Summary:	Imaging
+# Summary:  Imaging
 #
 # $Id$
 module Yast
   class InstAutoimageClient < Client
     def main
-
       textdomain "autoinst"
 
       Yast.import "Installation"
@@ -25,8 +24,6 @@ module Yast
       AutoinstScripts.Write("postpartitioning-scripts", false)
 
       return :auto if !AutoinstSoftware.imaging
-
-
 
       @help_text = _("<p>\nPlease wait while the image is retrieved.</p>\n")
       @progress_stages = [_("Retrieve Image File"), _("Install image file")]
@@ -47,13 +44,13 @@ module Yast
 
       Progress.NextStage
 
-      #if (!AutoinstImage::Get(AutoinstSoftware::ft_module, Installation::destdir ))
-      #{
+      # if (!AutoinstImage::Get(AutoinstSoftware::ft_module, Installation::destdir ))
+      # {
       #    Report::Error(_("Error while retrieving image."));
       #    return `abort;
-      #}
+      # }
 
-      while !AutoinstImage.getScript
+      until AutoinstImage.getScript
         Report.Error(
           Builtins.sformat(_("fetching image-script failed:\n%1"), @GET_error)
         )

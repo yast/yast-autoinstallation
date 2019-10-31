@@ -14,7 +14,6 @@
 module Yast
   class AutoinstScripts2FinishClient < Client
     def main
-
       textdomain "autoinst"
 
       Yast.import "AutoinstScripts"
@@ -61,7 +60,7 @@ module Yast
         Builtins.y2milestone("executing:%1", @cmd)
         @ret2 = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
         Builtins.y2milestone("calling ret:%1", @ret2)
-        #Service::Enable("autoyast");
+        # Service::Enable("autoyast");
         AutoInstall.PXELocalBoot
       else
         Builtins.y2error("unknown function: %1", @func)

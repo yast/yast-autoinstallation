@@ -32,7 +32,7 @@ module Y2Autoinstallation
     # This hook returns true if start_multipath was set to +true+.
     #
     # @return [Boolean]
-    def multipath(looks_like_real_multipath)
+    def multipath(_looks_like_real_multipath)
       Yast::AutoinstStorage.general_settings.fetch("start_multipath", false)
     end
 
@@ -49,7 +49,7 @@ module Y2Autoinstallation
     # @return [Storage::PairBoolString]
     # @see Storage::ActivateCallbacks
     def luks(uuid, attempt)
-      key = crypt_keys_from_profile[attempt-1]
+      key = crypt_keys_from_profile[attempt - 1]
       if key.nil?
         log.warn "Could not decrypt device '#{uuid}'"
         return Storage::PairBoolString.new(false, "")

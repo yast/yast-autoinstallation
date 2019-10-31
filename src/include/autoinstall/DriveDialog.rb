@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_storage.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	Storage
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_storage.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  Storage
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -41,13 +41,13 @@ module Yast
       # INITIALIZE DIALOG
       @driveType = "drive"
       @driveDialog = {
-        :type         => @driveType,
-        :display      => lambda { DriveDisplay() },
-        :eventHandler => lambda { DriveEventHandler() },
-        :store        => lambda { DriveStore() },
-        :new          => lambda { DriveNew() },
-        :delete       => lambda { DriveDelete() },
-        :check        => lambda { DriveCheck() }
+        type:         @driveType,
+        display:      -> { DriveDisplay() },
+        eventHandler: -> { DriveEventHandler() },
+        store:        -> { DriveStore() },
+        new:          -> { DriveNew() },
+        delete:       -> { DriveDelete() },
+        check:        -> { DriveCheck() }
       }
       Builtins.y2milestone("adding drive dialog to dialog list.")
       @dialogs = Builtins.add(@dialogs, @driveType, @driveDialog)
@@ -55,9 +55,7 @@ module Yast
 
     def enableReuse(selected)
       selected = deep_copy(selected)
-      if selected != nil && Ops.is_symbol?(selected)
-        UI.ChangeWidget(Id(:cb_reuse), :Value, selected)
-      end
+      UI.ChangeWidget(Id(:cb_reuse), :Value, selected) if !selected.nil? && Ops.is_symbol?(selected)
       UI.ChangeWidget(Id(:cb_reuse), :Enabled, true)
       if UI.QueryWidget(Id(:rbg), :CurrentButton) != :rb_reuse
         UI.ChangeWidget(Id(:rbg), :CurrentButton, :rb_reuse)

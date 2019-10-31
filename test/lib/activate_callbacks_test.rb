@@ -61,7 +61,7 @@ describe Y2Autoinstallation::ActivateCallbacks do
 
   describe "#luks" do
     let(:profile) do
-      { "partitioning" => [ { "device" => "/dev/sda", "partitions" => partitions } ] }
+      { "partitioning" => [{ "device" => "/dev/sda", "partitions" => partitions }] }
     end
 
     let(:partitions) { [root, home, srv] }
@@ -77,7 +77,7 @@ describe Y2Autoinstallation::ActivateCallbacks do
       let(:attempt) { 3 }
 
       it "returns (false, '')" do
-        ret = callbacks.luks('uuid', attempt)
+        ret = callbacks.luks("uuid", attempt)
         expect(ret.first).to eq(false)
         expect(ret.second).to eq("")
       end
@@ -87,7 +87,7 @@ describe Y2Autoinstallation::ActivateCallbacks do
       let(:attempt) { 2 }
 
       it "returns (true, n-th key) in alphabetical order" do
-        ret = callbacks.luks('uuid', attempt)
+        ret = callbacks.luks("uuid", attempt)
         expect(ret.first).to eq(true)
         expect(ret.second).to eq("abcdef")
       end
@@ -98,7 +98,7 @@ describe Y2Autoinstallation::ActivateCallbacks do
       let(:attempt) { 2 }
 
       it "returns (false, '') pair" do
-        ret = callbacks.luks('uuid', attempt)
+        ret = callbacks.luks("uuid", attempt)
         expect(ret.first).to eq(false)
         expect(ret.second).to eq("")
       end

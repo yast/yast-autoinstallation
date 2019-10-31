@@ -12,26 +12,27 @@ describe Yast::ModuleConfigBuilder do
   describe "#build" do
     let(:profile) do
       {
-        "users" => [ {"username" => "root", "uid" => 0}, {"username" => "test", "uid" => 1000} ],
-        "user_defaults" => {"group" => "1000"}
+        "users"         => [{ "username" => "root", "uid" => 0 }, { "username" => "test", "uid" => 1000 }],
+        "user_defaults" => { "group" => "1000" }
       }
     end
 
     let(:modspec) do
       {
-        "res" => "users",
+        "res"  => "users",
         "data" => {
-          "Name"=>"User and Group Management",
-          "GenericName"=>"Add, Edit, Delete Users or User Groups",
-          "Icon"=>"yast-users",
-          "X-SuSE-YaST-AutoInst"=>"all",
-          "X-SuSE-YaST-Group"=>"Security",
-          "X-SuSE-YaST-AutoInstMerge"=>"users,groups,user_defaults,login_settings",
-          "X-SuSE-YaST-AutoInstMergeTypes"=>"list,list,map,map",
-          "X-SuSE-YaST-AutoInstClonable"=>"true",
-          "X-SuSE-YaST-AutoInstRequires"=>"security",
-          "X-SuSE-DocTeamID"=>"ycc_users",
-          "X-SuSE-YaST-AutoInstClient"=>"users_auto"}
+          "Name"                           => "User and Group Management",
+          "GenericName"                    => "Add, Edit, Delete Users or User Groups",
+          "Icon"                           => "yast-users",
+          "X-SuSE-YaST-AutoInst"           => "all",
+          "X-SuSE-YaST-Group"              => "Security",
+          "X-SuSE-YaST-AutoInstMerge"      => "users,groups,user_defaults,login_settings",
+          "X-SuSE-YaST-AutoInstMergeTypes" => "list,list,map,map",
+          "X-SuSE-YaST-AutoInstClonable"   => "true",
+          "X-SuSE-YaST-AutoInstRequires"   => "security",
+          "X-SuSE-DocTeamID"               => "ycc_users",
+          "X-SuSE-YaST-AutoInstClient"     => "users_auto"
+        }
       }
     end
 
@@ -53,7 +54,7 @@ describe Yast::ModuleConfigBuilder do
       let(:profile) { {} }
 
       it "returns false" do
-        expect(subject.build(modspec,profile)).to eq(false)
+        expect(subject.build(modspec, profile)).to eq(false)
       end
     end
   end

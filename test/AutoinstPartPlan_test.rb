@@ -29,7 +29,7 @@ describe "Yast::AutoinstPartPlan" do
     Yast::AutoinstPartPlan
   end
 
-  let(:devicegraph)  {devicegraph_from("autoyast_drive_examples.yml")}
+  let(:devicegraph) { devicegraph_from("autoyast_drive_examples.yml") }
   let(:default_subvol) { "@" }
   let(:filesystems) do
     double("filesystems",
@@ -53,14 +53,13 @@ describe "Yast::AutoinstPartPlan" do
     it "exporting nfs root partition" do
       expect(subject.Read).to eq(true)
       expect(subject.Export).to eq(
-         [{"type"=>:CT_NFS,
-            "partitions"=>[{"type"=>:nfs,
-              "device"=>"192.168.4.1:/srv/nfsroot/sles12sp1",
-              "mount"=>"/",
-              "fstopt"=>"minorversion=1"}],
-            "device"=>"/dev/nfs", "use"=>"all"}
-         ]
-        )
+        [{ "type" => :CT_NFS,
+           "partitions" => [{ "type"   => :nfs,
+                              "device" => "192.168.4.1:/srv/nfsroot/sles12sp1",
+                              "mount"  => "/",
+                              "fstopt" => "minorversion=1" }],
+           "device" => "/dev/nfs", "use" => "all" }]
+      )
     end
   end
 
@@ -89,7 +88,7 @@ describe "Yast::AutoinstPartPlan" do
   describe "#Export" do
 
     let(:exported) { subject.Export }
-    let(:sub_partitions) { exported.detect {|d| d["device"] == "/dev/sdd"}["partitions"] }
+    let(:sub_partitions) { exported.detect { |d| d["device"] == "/dev/sdd" }["partitions"] }
     let(:subvolumes) { sub_partitions.first["subvolumes"].sort_by { |s| s["path"] } }
 
     before do
@@ -98,18 +97,18 @@ describe "Yast::AutoinstPartPlan" do
 
     it "includes found subvolumes" do
       expect(subvolumes).to eq([
-        { "path"=>"home", "copy_on_write"=>true },
-        { "path"=>"log", "copy_on_write"=>true },
-        { "path"=>"opt", "copy_on_write"=>true },
-        { "path"=>"srv", "copy_on_write"=>true },
-        { "path"=>"tmp", "copy_on_write"=>true },
-        { "path"=>"usr/local", "copy_on_write"=>true },
-        { "path"=>"var/cache", "copy_on_write"=>true },
-        { "path"=>"var/crash", "copy_on_write"=>true },
-        { "path"=>"var/lib/mariadb", "copy_on_write"=>false },
-        { "path"=>"var/lib/mysql", "copy_on_write"=>false },
-        { "path"=>"var/lib/pgsql", "copy_on_write"=>false }
-      ])
+                                 { "path" => "home", "copy_on_write" => true },
+                                 { "path" => "log", "copy_on_write" => true },
+                                 { "path" => "opt", "copy_on_write" => true },
+                                 { "path" => "srv", "copy_on_write" => true },
+                                 { "path" => "tmp", "copy_on_write" => true },
+                                 { "path" => "usr/local", "copy_on_write" => true },
+                                 { "path" => "var/cache", "copy_on_write" => true },
+                                 { "path" => "var/crash", "copy_on_write" => true },
+                                 { "path" => "var/lib/mariadb", "copy_on_write" => false },
+                                 { "path" => "var/lib/mysql", "copy_on_write" => false },
+                                 { "path" => "var/lib/pgsql", "copy_on_write" => false }
+                               ])
     end
 
     it "does not include snapshots" do

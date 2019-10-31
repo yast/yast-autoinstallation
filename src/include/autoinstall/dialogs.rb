@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	include/autoinstall/dialogs.ycp
-# Module:	Auto-Installation Configuration System
-# Summary:	This module handles the configuration for auto-installation
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  include/autoinstall/dialogs.ycp
+# Module:  Auto-Installation Configuration System
+# Summary:  This module handles the configuration for auto-installation
+# Authors:  Anas Nashif <nashif@suse.de>
 # $Id$
 module Yast
   module AutoinstallDialogsInclude
@@ -59,18 +59,17 @@ module Yast
         )
       )
 
-
       help = _(
-        "<P>\n" +
-          "Enter the directory where all <em>control files</em> should be stored in\n" +
+        "<P>\n" \
+          "Enter the directory where all <em>control files</em> should be stored in\n" \
           "the <b>Repository</b> field.</P>"
       )
 
       help = Ops.add(
         help,
         _(
-          "<P>If you are using the classes feature\n" +
-            "of Autoyast, also enter the class directory. This is where\n" +
+          "<P>If you are using the classes feature\n" \
+            "of Autoyast, also enter the class directory. This is where\n" \
             "all class files are stored.</p>\n"
         )
       )
@@ -100,9 +99,7 @@ module Yast
             AutoinstConfig.classDir,
             _("Select Directory")
           )
-          if new_classdir != ""
-            UI.ChangeWidget(Id(:classdir), :Value, new_classdir)
-          end
+          UI.ChangeWidget(Id(:classdir), :Value, new_classdir) if new_classdir != ""
           next
         elsif ret == :next
           if AutoinstConfig.Repository != new_rep
@@ -111,7 +108,7 @@ module Yast
           end
           if AutoinstConfig.classDir != new_classdir
             changed = true
-            #AutoinstConfig::classDir = new_classdir;
+            # AutoinstConfig::classDir = new_classdir;
             AutoinstClass.classDirChanged(new_classdir)
           end
         end
@@ -125,9 +122,6 @@ module Yast
       Wizard.CloseDialog
       ret
     end
-
-
-
 
     # Check validity of file name
     #
@@ -146,19 +140,17 @@ module Yast
       0
     end
 
-
     # Return a message about invalid file names
     #
     # @return [String] message
     def invalidFileName
       _(
-        "Invalid file name.\n" +
-          "Names can only contain letters, numbers, and underscore,\n" +
-          "must begin with letter, and must be\n" +
+        "Invalid file name.\n" \
+          "Names can only contain letters, numbers, and underscore,\n" \
+          "must begin with letter, and must be\n" \
           "127 characters long or less.\n"
       )
     end
-
 
     # Popup for a new file name
     # @param [String] caption
@@ -188,7 +180,7 @@ module Yast
       UI.SetFocus(Id(:newname))
       f = ""
       ret = nil
-      while true
+      loop do
         ret = UI.UserInput
         if ret == :cancel
           break
@@ -204,7 +196,7 @@ module Yast
 
       UI.CloseDialog
 
-      ret == :ok ? f : ""
+      (ret == :ok) ? f : ""
     end
 
     # Clone running system
@@ -213,10 +205,8 @@ module Yast
       Yast.import "AutoinstClone"
       Yast.import "Profile"
 
-
       Wizard.CreateDialog
       Wizard.SetDesktopIcon("org.opensuse.yast.CloneSystem")
-
 
       # title
       title = _("Create a Reference Control File")
@@ -241,8 +231,8 @@ module Yast
         if ret == :next
           AutoinstClone.additional = Convert.convert(
             UI.QueryWidget(Id(:res), :SelectedItems),
-            :from => "any",
-            :to   => "list <string>"
+            from: "any",
+            to:   "list <string>"
           )
           Popup.ShowFeedback(
             _("Collecting system data..."),
@@ -256,7 +246,6 @@ module Yast
       Wizard.CloseDialog
       ret
     end
-
 
     def UpdateValidDialog(summary, log)
       UI.ChangeWidget(Id(:richtext), :Value, summary)
@@ -287,8 +276,6 @@ module Yast
       Wizard.HideBackButton
       UI.ChangeWidget(Id(:next), :Label, Label.FinishButton)
 
-
-
       sectionFiles = Profile.SaveSingleSections(AutoinstConfig.tmpDir)
       Builtins.y2debug("Got section map: %1", sectionFiles)
 
@@ -300,13 +287,13 @@ module Yast
       # some of these can be commented out for the release
       validators = [
         #     [
-        # 	_("Checking XML without validation..."),
-        # 	"/usr/bin/xmllint --noout",
-        # 	],
-        # 	    [
-        # 		_("Checking XML with DTD validation..."),
-        # 		"/usr/bin/xmllint --noout --valid"
-        # 		],
+        #   _("Checking XML without validation..."),
+        #   "/usr/bin/xmllint --noout",
+        #   ],
+        #       [
+        #     _("Checking XML with DTD validation..."),
+        #     "/usr/bin/xmllint --noout --valid"
+        #     ],
         [
           _("Checking XML with RNG validation..."),
           Ops.add(
@@ -337,12 +324,12 @@ module Yast
           Builtins.y2debug("validation output: %1", o)
           summary = Ops.add(
             summary,
-            Ops.get_integer(o, "exit", 1) != 0 ||
+            (Ops.get_integer(o, "exit", 1) != 0 ||
               Ops.get_string(i, 2, "") == "jing sucks" &&
                 Ops.greater_than(
                   Builtins.size(Ops.get_string(o, "stderr", "")),
                   0
-                ) ? html_ko : html_ok
+                )) ? html_ko : html_ok
           )
           UpdateValidDialog(summary, Ops.get_string(o, "stderr", ""))
         end
@@ -376,8 +363,8 @@ module Yast
         Builtins.y2debug("validation output: %1", o)
         summary = Ops.add(
           summary,
-          Ops.get_integer(o, "exit", 1) != 0 ||
-            Ops.greater_than(Builtins.size(Ops.get_string(o, "stderr", "")), 0) ? html_ko : html_ok
+          (Ops.get_integer(o, "exit", 1) != 0 ||
+            Ops.greater_than(Builtins.size(Ops.get_string(o, "stderr", "")), 0)) ? html_ko : html_ok
         )
         UpdateValidDialog(summary, Ops.get_string(o, "stderr", ""))
       end
@@ -409,7 +396,7 @@ module Yast
       UpdateValidDialog(summary, "")
 
       ret = nil
-      while true
+      loop do
         ret = UI.UserInput
         if ret == :next || ret == :back
           break

@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_storage.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	Storage
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_storage.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  Storage
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -23,7 +23,7 @@ module Yast
       Yast.include include_target, "autoinstall/PartitionDialog.rb"
     end
 
-    #Storage::GetTargetMap(); // initialize libstorage
+    # Storage::GetTargetMap(); // initialize libstorage
 
     def startsWith(haystack, needle)
       Builtins.substring(haystack, 0, Builtins.size(needle)) == needle
@@ -44,14 +44,14 @@ module Yast
     # When the user clicks on a button (Add { Drive, Partition,
     # LVM }, Remove):
     #
-    #	1. the check() function on the currently active dialog is
-    #	called. If there were any changes to the settings the user
-    #	is asked if these should be saved (this does not happen for
-    #	delete events).
+    #  1. the check() function on the currently active dialog is
+    #  called. If there were any changes to the settings the user
+    #  is asked if these should be saved (this does not happen for
+    #  delete events).
     #
-    #	2. for the 'add'-type button events the according new() dialog
-    #	function is called; for delete events the according delete()
-    #	function is called.
+    #  2. for the 'add'-type button events the according new() dialog
+    #  function is called; for delete events the according delete()
+    #  function is called.
     def StorageEventHandler
       Builtins.y2milestone(
         "DriveEventHandler(): current event: '%1'",
@@ -211,7 +211,6 @@ module Yast
       UI.OpenDialog(Opt(:defaultsize), contents)
       AutoinstPartPlan.updateTree
 
-
       # if there is no drive in partition plan, the user surely
       # wants to create one
       updateCurrentDialog("drive")
@@ -223,7 +222,7 @@ module Yast
         callDialogFunction(@currentDialog, :display)
       end
 
-      while true
+      loop do
         event = UI.WaitForEvent
         item = currentTreeItem
 
@@ -241,9 +240,7 @@ module Yast
         #
         # This architecture avoids long if-elseif-cascades.
         event_id = :Empty
-        if Ops.is_symbol?(Ops.get(event, "ID"))
-          event_id = Ops.get_symbol(event, "ID", :Empty)
-        end
+        event_id = Ops.get_symbol(event, "ID", :Empty) if Ops.is_symbol?(Ops.get(event, "ID"))
         if event_id == :abort || event_id == :back || event_id == :cancel
           return event_id
         elsif event_id == :next || event_id == :finish

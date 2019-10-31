@@ -56,7 +56,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
     before do
       allow_any_instance_of(Y2Autoinstallation::AutosetupHelpers).to receive(
-        :registration_module_available?).and_return(reg_module_available)
+        :registration_module_available?
+      ).and_return(reg_module_available)
       allow(Yast::Profile).to receive(:current).and_return(profile_content)
       allow(Yast::Profile).to receive(:remove_sections).with("suse_register")
     end
@@ -121,10 +122,10 @@ describe Y2Autoinstallation::AutosetupHelpers do
             expect(client.suse_register).to eq(false)
           end
         end
-      end  
+      end
 
       context "semi-automatic is defined in AY file" do
-        let(:profile_content) { { "general" => {"semi-automatic" => ["scc"]} } }
+        let(:profile_content) { { "general" => { "semi-automatic" => ["scc"] } } }
         it "shows registration screen mask and returns true" do
           # Showing registration screen mask
           expect(Yast::WFM).to receive(:CallFunction).with("inst_scc",

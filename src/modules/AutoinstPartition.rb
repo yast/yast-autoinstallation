@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	modules/AutoinstCommon.ycp
-# Package:	Auto-installation/Partition
-# Summary:	Partition related functions module
-# Author:	Sven Schober (sschober@suse.de)
+# File:  modules/AutoinstCommon.ycp
+# Package:  Auto-installation/Partition
+# Summary:  Partition related functions module
+# Author:  Sven Schober (sschober@suse.de)
 #
 # $Id: AutoinstPartition.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
@@ -83,7 +83,7 @@ module Yast
       # Moreover, this offers all the known filesystems, not necessarily the
       # supported ones.
       @allfs = Y2Storage::Filesystems::Type.all.each_with_object({}) do |type, hash|
-        hash[type.to_sym] = {name: type.to_human_string, fsid: type.to_i}
+        hash[type.to_sym] = { name: type.to_human_string, fsid: type.to_i }
       end
       nil
     end
@@ -93,13 +93,16 @@ module Yast
       partition = deep_copy(partition)
       AutoinstCommon.isValidObject(@fields, partition)
     end
+
     def isField(field)
       AutoinstCommon.isValidField(@fields, field)
     end
+
     def hasValidType(field, value)
       value = deep_copy(value)
       AutoinstCommon.hasValidType(@fields, field, value)
     end
+
     def areEqual(p1, p2)
       p1 = deep_copy(p1)
       p2 = deep_copy(p2)
@@ -112,7 +115,6 @@ module Yast
       value = deep_copy(value)
       AutoinstCommon.set(@fields, partition, field, value)
     end
-
 
     # Constructor
     def new(mp)
@@ -135,33 +137,31 @@ module Yast
       if "" == part_desc
         if p["lvm_group"] && !p["lvm_group"].empty?
           part_desc = p["lvm_group"]
-          if enableHTML
-            part_desc = "Physical volume for volume group &lt;<b>#{part_desc}</b>&gt;"
+          part_desc = if enableHTML
+            "Physical volume for volume group &lt;<b>#{part_desc}</b>&gt;"
           else
-            part_desc = "<#{part_desc}>"
+            "<#{part_desc}>"
           end
         else
           part_desc = "Physical volume"
         end
       else
-        if enableHTML
-          part_desc = Builtins.sformat("<b>%1</b> partition", part_desc)
-        end
+        part_desc = Builtins.sformat("<b>%1</b> partition", part_desc) if enableHTML
       end
       if Ops.get_boolean(p, "create", false)
         if p["size"] &&  !p["size"].empty?
           part_desc += " with #{Y2Storage::DiskSize.new(p["size"].to_i).to_human_string}"
         end
       else
-        if Ops.get_boolean(p, "resize", false)
-          part_desc = Builtins.sformat(
+        part_desc = if Ops.get_boolean(p, "resize", false)
+          Builtins.sformat(
             "%1 resize part.%2 to %3",
             part_desc,
             Ops.get_integer(p, "partition_nr", 999),
             Y2Storage::DiskSize.new(p["size"].to_i).to_human_string
           )
         else
-          part_desc = Builtins.sformat(
+          Builtins.sformat(
             "%1 reuse part. %2",
             part_desc,
             Ops.get_integer(p, "partition_nr", 999)
@@ -189,13 +189,11 @@ module Yast
       part_desc
     end
 
-
     def createTree(p, parentRef, idx)
       p = deep_copy(p)
       part_desc = getPartitionDescription(p, false)
       createTreeNode(getNodeReference(parentRef, idx), part_desc, [])
     end
-
 
     def getTokenizedSize(part)
       part = deep_copy(part)
@@ -205,15 +203,12 @@ module Yast
       Builtins.regexptokenize(encodedSize, "([0-9]*)s*([A-Za-z%]*)")
     end
 
-
     def getSize(part)
       part = deep_copy(part)
       tokenizedSize = getTokenizedSize(part)
       sizeString = Ops.get(tokenizedSize, 0, "0")
       unitString = Ops.get(tokenizedSize, 1, "")
-      if "auto" == unitString || "max" == unitString || "" == sizeString
-        sizeString = "0"
-      end
+      sizeString = "0" if "auto" == unitString || "max" == unitString || "" == sizeString
       Builtins.tointeger(sizeString)
     end
 
@@ -275,34 +270,33 @@ module Yast
       @maxPartitionNumber
     end
 
-
     def getLVNameFor(mountPoint)
       result = removePrefix(mountPoint, "/")
       result = "root" if "" == result
       result
     end
 
-    publish :function => :AutoinstPartition, :type => "void ()"
-    publish :function => :isPartition, :type => "boolean (map <string, any>)"
-    publish :function => :isField, :type => "boolean (string)"
-    publish :function => :hasValidType, :type => "boolean (string, any)"
-    publish :function => :areEqual, :type => "boolean (map <string, any>, map <string, any>)"
-    publish :function => :set, :type => "map <string, any> (map <string, any>, string, any)"
-    publish :function => :new, :type => "map <string, any> (string)"
-    publish :function => :getNodeReference, :type => "string (string, integer)"
-    publish :function => :getPartitionDescription, :type => "string (map <string, any>, boolean)"
-    publish :function => :createTree, :type => "term (map <string, any>, string, integer)"
-    publish :function => :getSize, :type => "integer (map <string, any>)"
-    publish :function => :getUnit, :type => "string (map <string, any>)"
-    publish :function => :getFormat, :type => "boolean (map <string, any>)"
-    publish :function => :isPartOfVolgroup, :type => "boolean (map <string, any>)"
-    publish :function => :getFileSystem, :type => "symbol (map <string, any>)"
-    publish :function => :checkSanity, :type => "string (map <string, any>)"
-    publish :function => :getAllUnits, :type => "list <string> ()"
-    publish :function => :getAllFileSystemTypes, :type => "map <symbol, map> ()"
-    publish :function => :getDefaultMountPoints, :type => "list <string> ()"
-    publish :function => :getMaxPartitionNumber, :type => "integer ()"
-    publish :function => :getLVNameFor, :type => "string (string)"
+    publish function: :AutoinstPartition, type: "void ()"
+    publish function: :isPartition, type: "boolean (map <string, any>)"
+    publish function: :isField, type: "boolean (string)"
+    publish function: :hasValidType, type: "boolean (string, any)"
+    publish function: :areEqual, type: "boolean (map <string, any>, map <string, any>)"
+    publish function: :set, type: "map <string, any> (map <string, any>, string, any)"
+    publish function: :new, type: "map <string, any> (string)"
+    publish function: :getNodeReference, type: "string (string, integer)"
+    publish function: :getPartitionDescription, type: "string (map <string, any>, boolean)"
+    publish function: :createTree, type: "term (map <string, any>, string, integer)"
+    publish function: :getSize, type: "integer (map <string, any>)"
+    publish function: :getUnit, type: "string (map <string, any>)"
+    publish function: :getFormat, type: "boolean (map <string, any>)"
+    publish function: :isPartOfVolgroup, type: "boolean (map <string, any>)"
+    publish function: :getFileSystem, type: "symbol (map <string, any>)"
+    publish function: :checkSanity, type: "string (map <string, any>)"
+    publish function: :getAllUnits, type: "list <string> ()"
+    publish function: :getAllFileSystemTypes, type: "map <symbol, map> ()"
+    publish function: :getDefaultMountPoints, type: "list <string> ()"
+    publish function: :getMaxPartitionNumber, type: "integer ()"
+    publish function: :getLVNameFor, type: "string (string)"
 
   protected
 

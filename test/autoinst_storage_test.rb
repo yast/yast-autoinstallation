@@ -26,7 +26,7 @@ describe Yast::AutoinstStorage do
       instance_double(Y2Autoinstallation::PartitioningPreprocessor, run: settings)
     end
     let(:probed_devicegraph) do
-      instance_double(Y2Storage::Devicegraph, :empty? => false)
+      instance_double(Y2Storage::Devicegraph, empty?: false)
     end
     let(:storage_manager) do
       instance_double(Y2Storage::StorageManager, probed: probed_devicegraph)
@@ -45,7 +45,7 @@ describe Yast::AutoinstStorage do
 
     around do |example|
       old_settings = Yast::Report.Export
-      Yast::Report.Import({"warnings" => warnings_settings, "errors" => errors_settings})
+      Yast::Report.Import("warnings" => warnings_settings, "errors" => errors_settings)
       example.run
       Yast::Report.Import(old_settings)
     end
@@ -196,7 +196,7 @@ describe Yast::AutoinstStorage do
 
   describe "#import_general_settings" do
     let(:profile) { { "proposal_lvm" => true } }
-    let(:partitioning_features) { {"foo" => "bar" } }
+    let(:partitioning_features) { { "foo" => "bar" } }
 
     around do |example|
       old_partitioning = Yast::ProductFeatures.GetSection("partitioning")

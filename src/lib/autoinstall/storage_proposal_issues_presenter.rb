@@ -60,11 +60,11 @@ module Y2Autoinstallation
       parts << Yast::HTML.Newline
 
       parts <<
-      if fatal.empty?
-        _("Do you want to continue?")
-      else
-        _("Please, correct these problems and try again.")
-      end
+        if fatal.empty?
+          _("Do you want to continue?")
+        else
+          _("Please, correct these problems and try again.")
+        end
 
       parts.join
     end
@@ -141,7 +141,7 @@ module Y2Autoinstallation
       text =
         if value.is_a?(Array)
           index = value.index(section)
-          "#{section.section_name}[#{index+1}]"
+          "#{section.section_name}[#{index + 1}]"
         else
           section.section_name
         end

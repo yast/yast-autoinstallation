@@ -1,10 +1,10 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_post.ycp
-# Package:	Auto-installation
+# File:  clients/autoinst_post.ycp
+# Package:  Auto-installation
 # Author:      Anas Nashif <nashif@suse.de>
-# Summary:	This module finishes auto-installation and configures
-#		the system as described in the profile file.
+# Summary:  This module finishes auto-installation and configures
+#    the system as described in the profile file.
 #
 # $Id$
 module Yast
@@ -30,7 +30,7 @@ module Yast
 
       @autoinstall = SCR.Read(path(".etc.install_inf.AutoYaST"))
       Builtins.y2milestone("cmd line=%1", @autoinstall)
-      if @autoinstall != nil && Ops.is_string?(@autoinstall)
+      if !@autoinstall.nil? && Ops.is_string?(@autoinstall)
         AutoinstConfig.ParseCmdLine(Convert.to_string(@autoinstall))
         AutoinstConfig.directory = dirname(AutoinstConfig.filepath)
         Builtins.y2milestone("dir = %1", AutoinstConfig.directory)
@@ -43,7 +43,6 @@ module Yast
       if Ops.get_map(Profile.current, "report", {}) != {}
         Report.Import(Ops.get_map(Profile.current, "report", {}))
       end
-
 
       @help_text = _(
         "<p>\nPlease wait while the system is prepared for autoinstallation.</p>\n"
@@ -58,7 +57,6 @@ module Yast
             Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", p)
           )
       end)
-
 
       @steps = Ops.add(@steps, 3)
 
@@ -84,28 +82,28 @@ module Yast
       Builtins.foreach(Y2ModuleConfig.ModuleMap) do |p, d|
         if Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "all" ||
             Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "write"
-          if Builtins.haskey(d, "X-SuSE-YaST-AutoInstResource") &&
+          @resource = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstResource") &&
               Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "") != ""
-            @resource = Ops.get_string(
+            Ops.get_string(
               d,
               "X-SuSE-YaST-AutoInstResource",
               "unknown"
             )
           else
-            @resource = p
+            p
           end
 
           Builtins.y2milestone("current resource: %1", @resource)
 
           # determine name of client, if not use default name
-          if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
-            @module_auto = Ops.get_string(
+          @module_auto = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
+            Ops.get_string(
               d,
               "X-SuSE-YaST-AutoInstClient",
               "none"
             )
           else
-            @module_auto = Builtins.sformat("%1_auto", p)
+            Builtins.sformat("%1_auto", p)
           end
 
           result = {}
@@ -145,8 +143,8 @@ module Yast
                 out = Convert.to_map(Call.Function(@module_auto, ["Packages"]))
                 @packages = Convert.convert(
                   Builtins.union(@packages, Ops.get_list(out, "install", [])),
-                  :from => "list",
-                  :to   => "list <string>"
+                  from: "list",
+                  to:   "list <string>"
                 )
               end
             elsif Ops.get_string(d, "X-SuSE-YaST-AutoInstDataType", "map") == "map"
@@ -166,9 +164,9 @@ module Yast
                 )
               end
               if Ops.greater_than(
-                  Builtins.size(Ops.get_map(Profile.current, @resource, {})),
-                  0
-                )
+                Builtins.size(Ops.get_map(Profile.current, @resource, {})),
+                0
+              )
                 Step(p)
                 Call.Function(
                   @module_auto,
@@ -180,15 +178,15 @@ module Yast
                 out = Convert.to_map(Call.Function(@module_auto, ["Packages"]))
                 @packages = Convert.convert(
                   Builtins.union(@packages, Ops.get_list(out, "install", [])),
-                  :from => "list",
-                  :to   => "list <string>"
+                  from: "list",
+                  to:   "list <string>"
                 )
               end
             else
               if Ops.greater_than(
-                  Builtins.size(Ops.get_list(Profile.current, @resource, [])),
-                  0
-                )
+                Builtins.size(Ops.get_list(Profile.current, @resource, [])),
+                0
+              )
                 Step(p)
                 Call.Function(
                   @module_auto,
@@ -200,8 +198,8 @@ module Yast
                 out = Convert.to_map(Call.Function(@module_auto, ["Packages"]))
                 @packages = Convert.convert(
                   Builtins.union(@packages, Ops.get_list(out, "install", [])),
-                  :from => "list",
-                  :to   => "list <string>"
+                  from: "list",
+                  to:   "list <string>"
                 )
               end
             end

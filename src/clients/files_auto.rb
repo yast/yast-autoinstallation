@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_files.ycp
-# Package:	Configuration of XXpkgXX
-# Summary:	Client for autoinstallation
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  clients/autoinst_files.ycp
+# Package:  Configuration of XXpkgXX
+# Summary:  Client for autoinstallation
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 #
@@ -31,7 +31,6 @@ module Yast
       Yast.import "Popup"
       Yast.import "Label"
 
-
       @ret = nil
       @func = ""
       @param = []
@@ -46,18 +45,15 @@ module Yast
         end
       end
 
-
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
-
-
 
       # Import Data
       if @func == "Import"
         @ret = AutoinstFile.Import(
-          Convert.convert(@param, :from => "list", :to => "list <map>")
+          Convert.convert(@param, from: "list", to: "list <map>")
         )
-        if @ret == nil
+        if @ret.nil?
           Builtins.y2error(
             "Parameter to 'Import' is probably wrong, should be list of maps"
           )
@@ -66,7 +62,7 @@ module Yast
       # Create a  summary
       elsif @func == "Summary"
         @ret = AutoinstFile.Summary
-        if @ret == nil
+        if @ret.nil?
           Builtins.y2error(
             "Parameter to 'Import' is probably wrong, should be list of maps"
           )
@@ -103,7 +99,7 @@ module Yast
       Builtins.y2milestone("Files auto finished")
       Builtins.y2milestone("----------------------------------------")
 
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # EOF
     end
@@ -140,8 +136,6 @@ module Yast
       nil
     end
 
-
-
     # delete a file from a list
     # @param fileName [String] file name
     # @return [Array<Hash>] modified list of files
@@ -151,7 +145,6 @@ module Yast
       end
       deep_copy(new)
     end
-
 
     # Dialog for adding a file
     #
@@ -175,9 +168,9 @@ module Yast
       help = Ops.add(
         help,
         _(
-          "<p>To protect copied files, set the owner and the permissions of the files.\n" +
-            "Set the owner using the syntax <i>userid:groupid</i>.  Permissions can be a symbolic\n" +
-            "representation of changes to make or an octal  number  representing  the bit pattern for the\n" +
+          "<p>To protect copied files, set the owner and the permissions of the files.\n" \
+            "Set the owner using the syntax <i>userid:groupid</i>.  Permissions can be a symbolic\n" \
+            "representation of changes to make or an octal  number  representing  the bit pattern for the\n" \
             "new permissions.</p>"
         )
       )
@@ -226,16 +219,15 @@ module Yast
         HBox(PushButton(Id(:loadsource), _("&Load new contents")))
       )
 
-
       Wizard.SetContents(title, contents, help, true, true)
 
       Wizard.SetNextButton(:next, Label.SaveButton)
 
       # why?
-      # 		if (mode == `edit)
-      # 		{
-      # 			UI::ChangeWidget(`id(`filename), `Enabled, false);
-      # 		}
+      #     if (mode == `edit)
+      #     {
+      #       UI::ChangeWidget(`id(`filename), `Enabled, false);
+      #     }
 
       ret = nil
       begin
@@ -284,9 +276,6 @@ module Yast
       Convert.to_symbol(ret)
     end
 
-
-
-
     # Summary of configuration
     def dialog_contents
       allfiles = Builtins.maplist(AutoinstFile.Files) do |s|
@@ -314,14 +303,13 @@ module Yast
       deep_copy(contents)
     end
 
-
     def CustomFileDialog
       title = _("Add Complete Configuration Files")
 
       help = _(
-        "<p>For many applications and services, you might have prepared\n" +
-          "a configuration file that should be copied in a complete form to a location in the\n" +
-          "installed system. For example, this is the case if you are installing a web server\n" +
+        "<p>For many applications and services, you might have prepared\n" \
+          "a configuration file that should be copied in a complete form to a location in the\n" \
+          "installed system. For example, this is the case if you are installing a web server\n" \
           "and have an httpd.conf configuration file prepared.</p>"
       )
 
@@ -338,7 +326,7 @@ module Yast
           addFileDialog(Convert.to_symbol(ret), "")
         elsif ret == :edit
           name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
-          if name != nil
+          if !name.nil?
             addFileDialog(Convert.to_symbol(ret), name)
           else
             Popup.Message(select_msg)
@@ -346,7 +334,7 @@ module Yast
           end
         elsif ret == :delete
           name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
-          if name != nil
+          if !name.nil?
             AutoinstFile.Files = deleteFile(name)
           else
             Popup.Message(select_msg)

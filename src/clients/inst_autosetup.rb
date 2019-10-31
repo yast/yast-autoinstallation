@@ -109,9 +109,7 @@ module Yast
         @help_text
       )
 
-
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
-
 
       Progress.NextStage
 
@@ -129,7 +127,7 @@ module Yast
 
       #
       # Partitioning and Storage
-      #//////////////////////////////////////////////////////////////////////
+      # //////////////////////////////////////////////////////////////////////
 
       @modified = true
       begin
@@ -139,15 +137,15 @@ module Yast
         AutoinstScripts.Write("pre-scripts", false)
         @ret2 = readModified
         return :abort if @ret2 == :abort
+
         @modified = false if @ret2 == :not_found
         if Ops.greater_or_equal(
-            SCR.Read(path(".target.size"), "/var/lib/YaST2/restart_yast"),
-            0
-          )
+          SCR.Read(path(".target.size"), "/var/lib/YaST2/restart_yast"),
+          0
+        )
           return :restart_yast
         end
       end while @modified == true
-
 
       # reimport scripts, for the case <ask> has changed them
       AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
@@ -169,28 +167,29 @@ module Yast
 
       AutoinstConfig.network_before_proposal = false
       general_section = Profile.current["general"] || {}
-      semiauto_network = general_section["semi-automatic"] &&
-        general_section["semi-automatic"].include?("networking")
+      semiauto_network = general_section["semi-automatic"]&.include?("networking")
 
       if Profile.current["networking"] &&
-          ( Profile.current["networking"]["setup_before_proposal"] ||
+          (Profile.current["networking"]["setup_before_proposal"] ||
             semiauto_network ||
-            !AutoinstConfig.second_stage()
-            )
+            !AutoinstConfig.second_stage
+          )
         if Profile.current["networking"]["setup_before_proposal"]
           Builtins.y2milestone("Networking setup before the proposal")
           AutoinstConfig.network_before_proposal = true
-        elsif !AutoinstConfig.second_stage()
+        elsif !AutoinstConfig.second_stage
           # Second stage of installation will not be called but a
           # network configuration is available. So this will be written
           # during the general inst_finish process at the end of the
           # first stage. But for the installation workflow the linuxrc
           # network settings will be taken. (bnc#944942)
           Builtins.y2milestone(
-            "Networking setup at the end of first installation stage")
+            "Networking setup at the end of first installation stage"
+          )
         end
         Builtins.y2milestone(
-          "Importing Network settings from configuration file")
+          "Importing Network settings from configuration file"
+        )
         Call.Function(
           "lan_auto",
           ["Import", Ops.get_map(Profile.current, "networking", {})]
@@ -206,11 +205,11 @@ module Yast
       Call.Function("lan_auto", ["Write"]) if AutoinstConfig.network_before_proposal
 
       if Builtins.haskey(Profile.current, "add-on")
-	Progress.Title(_("Handling Add-On Products..."))
+        Progress.Title(_("Handling Add-On Products..."))
         unless Call.Function(
-            "add-on_auto",
-            ["Import", Ops.get_map(Profile.current, "add-on", {})]
-          )
+          "add-on_auto",
+          ["Import", Ops.get_map(Profile.current, "add-on", {})]
+        )
 
           log.warn("User has aborted the installation.")
           return :abort
@@ -247,9 +246,7 @@ module Yast
       #
       Installation.encoding = Console.SelectFont(Language.language)
 
-      if Ops.get_boolean(@displayinfo, "HasFullUtf8Support", true)
-        Installation.encoding = "UTF-8"
-      end
+      Installation.encoding = "UTF-8" if Ops.get_boolean(@displayinfo, "HasFullUtf8Support", true)
 
       unless Language.SwitchToEnglishIfNeeded(true)
         UI.SetLanguage(Language.language, Installation.encoding)
@@ -260,9 +257,9 @@ module Yast
         Timezone.Import(Ops.get_map(Profile.current, "timezone", {}))
       end
       # bnc#891808: infer keyboard from language if needed
-      if Profile.current.has_key?("keyboard")
+      if Profile.current.key?("keyboard")
         Keyboard.Import(Profile.current["keyboard"] || {}, :keyboard)
-      elsif Profile.current.has_key?("language")
+      elsif Profile.current.key?("language")
         Keyboard.Import(Profile.current["language"] || {}, :language)
       end
 
@@ -270,12 +267,11 @@ module Yast
       @tmp = Convert.to_string(
         SCR.Read(path(".target.string"), "/proc/cmdline")
       )
-      if @tmp != nil &&
+      if !@tmp.nil? &&
           Builtins.contains(Builtins.splitstring(@tmp, " \n"), "y2confirm")
         AutoinstConfig.Confirm = true
         Builtins.y2milestone("y2confirm found and confirm turned on")
       end
-
 
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
@@ -285,13 +281,13 @@ module Yast
         if Builtins.haskey(Profile.current, "dasd")
           Builtins.y2milestone("dasd found")
           if Call.Function("dasd_auto", ["Import", Ops.get_map(Profile.current, "dasd", {})])
-            Call.Function("dasd_auto", [ "Write" ])
+            Call.Function("dasd_auto", ["Write"])
           end
         end
         if Builtins.haskey(Profile.current, "zfcp")
           Builtins.y2milestone("zfcp found")
           if Call.Function("zfcp_auto", ["Import", Ops.get_map(Profile.current, "zfcp", {})])
-            Call.Function("zfcp_auto", [ "Write" ])
+            Call.Function("zfcp_auto", ["Write"])
           end
         end
       end
@@ -318,8 +314,7 @@ module Yast
 
       return :abort unless write_storage
 
-      semiauto_partitions = general_section["semi-automatic"] &&
-        general_section["semi-automatic"].include?("partitioning")
+      semiauto_partitions = general_section["semi-automatic"]&.include?("partitioning")
 
       if semiauto_partitions
         Builtins.y2milestone("Partitioning manual setup")
@@ -327,7 +322,6 @@ module Yast
         Call.Function("inst_disk_proposal", ["enable_next" => true])
         write_storage = true
       end
-
 
       if write_storage &&
           !AutoinstStorage.Write
@@ -342,6 +336,7 @@ module Yast
       # needed by the bootloader (bnc#876161)
 
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
       Progress.NextStage
 
       return :abort unless WFM.CallFunction(
@@ -353,6 +348,7 @@ module Yast
       # FIXME: There is a lot of duplicate code with inst_autoupgrade.
 
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
       Progress.NextStage
 
       # The configuration_management has to be called before software selection.
@@ -363,6 +359,7 @@ module Yast
           "configuration_management_auto",
           ["Import", Profile.current["configuration_management"]]
         )
+
         # Do not start it in second installation stage again.
         # Provisioning will already be called in the first stage.
         Profile.remove_sections("configuration_management")
@@ -416,17 +413,16 @@ module Yast
       )
       Call.Function("deploy_image_auto", ["Write"])
 
-
       Progress.NextStage
 
-      if Profile.current.has_key? ('runlevel')
+      if Profile.current.key? "runlevel"
         # still supporting old format "runlevel"
-        ServicesManager.import(Profile.current['runlevel'])
+        ServicesManager.import(Profile.current["runlevel"])
         # Do not start it in second installation stage again.
         # Writing will be called in inst_finish.
         Profile.remove_sections("runlevel")
-      elsif Profile.current.has_key? ('services-manager')
-        ServicesManager.import(Profile.current['services-manager'])
+      elsif Profile.current.key? "services-manager"
+        ServicesManager.import(Profile.current["services-manager"])
         # Do not start it in second installation stage again.
         # Writing will be called in inst_finish.
         Profile.remove_sections("services-manager")
@@ -460,10 +456,10 @@ module Yast
       # Checking Base Product licenses
       #
       Progress.NextStage
-      if general_section["mode"] && general_section["mode"].fetch( "confirm_base_product_license", false )
+      if general_section["mode"]&.fetch("confirm_base_product_license", false)
         result = nil
         while result != :next
-          result = WFM.CallFunction("inst_product_license", [{"enable_back"=>false}])
+          result = WFM.CallFunction("inst_product_license", [{ "enable_back"=>false }])
           return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
         end
       end
@@ -476,13 +472,15 @@ module Yast
       @ret = ProductControl.RunFrom(ProductControl.CurrentStep + 1, true)
 
       return :finish if @ret == :next
+
       @ret
     end
 
     # Import Users configuration from profile
     def autosetup_users
       users_config = ModuleConfigBuilder.build(
-        Y2ModuleConfig.getModuleConfig("users"), Profile.current)
+        Y2ModuleConfig.getModuleConfig("users"), Profile.current
+      )
       if users_config
         Profile.remove_sections(users_config.keys)
         Call.Function("users_auto", ["Import", users_config])

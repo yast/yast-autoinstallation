@@ -6,9 +6,9 @@ module Yast
   #
   # @see #build
   class ModuleConfigBuilder
-    MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
-    MERGE_TYPES = "X-SuSE-YaST-AutoInstMergeTypes"
-    DEFAULT_TYPES = { "map" => {}, "list" => [] }
+    MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge".freeze
+    MERGE_TYPES = "X-SuSE-YaST-AutoInstMergeTypes".freeze
+    DEFAULT_TYPES = { "map" => {}, "list" => [] }.freeze
 
     # Builds a module configuration
     #
@@ -29,6 +29,7 @@ module Yast
     # @return [Hash] Module configuration.
     def build(modspec, profile)
       return false if profile[resource_name(modspec)].nil?
+
       types_map(modspec).each_with_object({}) do |section, hsh|
         key, type = section
         hsh[key] = profile[key] || default_value_for(type)
@@ -52,7 +53,7 @@ module Yast
       end
     end
 
-    private
+  private
 
     # Builds a map containing keys to merge and its corresponding types.
     #

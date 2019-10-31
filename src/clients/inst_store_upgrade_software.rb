@@ -33,10 +33,11 @@ module Yast
             Ops.get_string(p, "name", "")
           )
         end
+
         nil
       end
       @patterns_to_install = Builtins.filter(@patterns_to_install) do |p|
-        p != nil
+        !p.nil?
       end
       Builtins.y2milestone("Patterns to install: %1", @patterns_to_install)
       Builtins.y2milestone("Patterns to remove: %1", @patterns_to_remove)
@@ -70,10 +71,11 @@ module Yast
             Ops.get_string(p, "name", "")
           )
         end
+
         nil
       end
       @products_to_install = Builtins.filter(@products_to_install) do |p|
-        p != nil
+        !p.nil?
       end
       Builtins.y2milestone("Products to install: %1", @products_to_install)
       Builtins.y2milestone("Products to remove: %1", @products_to_remove)
@@ -90,7 +92,6 @@ module Yast
       Ops.set(Profile.current, "software", @software)
       # /root exists during upgrade
       Profile.Save(Ops.add(Installation.destdir, "/root/autoupg_updated.xml"))
-
 
       :auto
     end

@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	clients/inst_autoinit.ycp
-# Package:	Auto-installation
-# Summary:	Parses XML Profile for automatic installation
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  clients/inst_autoinit.ycp
+# Package:  Auto-installation
+# Summary:  Parses XML Profile for automatic installation
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 #
@@ -50,7 +50,7 @@ module Yast
         _("Probe hardware"),
         _("Retrieve & Read Control File"),
         _("Parse control file"),
-        _("Initial Configuration"),
+        _("Initial Configuration")
       ]
       @profileFetched = false
 
@@ -69,7 +69,7 @@ module Yast
       @tmp = Convert.to_string(
         SCR.Read(path(".target.string"), "/etc/install.inf")
       )
-      if @tmp != nil && Builtins.issubstring(Builtins.tolower(@tmp), "iscsi: 1")
+      if !@tmp.nil? && Builtins.issubstring(Builtins.tolower(@tmp), "iscsi: 1")
         WFM.CallFunction("inst_iscsi-client", [])
       end
 
@@ -81,7 +81,7 @@ module Yast
         # if profile is defined, first read it, then probe hardware
         @autoinstall = SCR.Read(path(".etc.install_inf.AutoYaST"))
         if Mode.autoupgrade &&
-            !(@autoinstall != nil && Ops.is_string?(@autoinstall) &&
+            !(!@autoinstall.nil? && Ops.is_string?(@autoinstall) &&
               Convert.to_string(@autoinstall) != "")
           AutoinstConfig.ParseCmdLine("file:///mnt/root/autoupg.xml")
           AutoinstConfig.ProfileInRootPart = true
@@ -106,7 +106,7 @@ module Yast
           msg = _("Registration is mandatory when using the online " \
             "installation medium. Enable registration in " \
             "the AutoYaST profile.")
-          Popup.LongError(msg)  # No timeout because we are stopping the installation/upgrade.
+          Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
 
           return :abort
         end
@@ -177,7 +177,7 @@ module Yast
         return :abort
       end
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       :next
     end
@@ -199,18 +199,18 @@ module Yast
             "anymore:<br><br>%s<br><br>" \
             "Please, use, e.g., &lt;scripts/&gt; or &lt;files/&gt;" \
             " to change the configuration."
-          ) % unsupported_sections.map{|section| "&lt;#{section}/&gt;"}.join("<br>")
+          ) % unsupported_sections.map { |section| "&lt;#{section}/&gt;" }.join("<br>")
         )
       end
     end
 
     def processProfile
       Progress.NextStage
-      Builtins.y2milestone("Starting processProfile msg:%1",AutoinstConfig.message)
+      Builtins.y2milestone("Starting processProfile msg:%1", AutoinstConfig.message)
       Progress.Title(AutoinstConfig.message)
       ret = false
       Progress.NextStep
-      while true
+      loop do
         r = ProfileLocation.Process
         if r
           break
@@ -233,7 +233,7 @@ module Yast
         end
       end
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       #
       # Set reporting behaviour to default, changed later if required
@@ -242,17 +242,17 @@ module Yast
       Report.LogErrors(true)
       Report.LogWarnings(true)
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       Progress.NextStage
       Progress.Title(_("Parsing control file"))
       Builtins.y2milestone("Parsing control file")
       if !Profile.ReadXML(AutoinstConfig.xml_tmpfile) || Profile.current == {} ||
-          Profile.current == nil
+          Profile.current.nil?
         Popup.Error(
           _(
-            "Error while parsing the control file.\n" +
-              "Check the log files for more details or fix the\n" +
+            "Error while parsing the control file.\n" \
+              "Check the log files for more details or fix the\n" \
               "control file and try again.\n"
           )
         )
@@ -267,8 +267,8 @@ module Yast
       Progress.NextStage
       Progress.Title(_("Initial Configuration"))
       Builtins.y2milestone("Initial Configuration")
-      Report.Import(Profile.current.fetch("report",{}))
-      AutoinstGeneral.Import(Profile.current.fetch("general",{}))
+      Report.Import(Profile.current.fetch("report", {}))
+      AutoinstGeneral.Import(Profile.current.fetch("general", {}))
 
       #
       # Copy the control file for easy access by user to  a pre-defined

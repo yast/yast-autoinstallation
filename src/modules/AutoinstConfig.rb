@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	modules/AutoinstConfig.ycp
-# Module:	Auto-Installation
-# Summary:	This module handles the configuration for auto-installation
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  modules/AutoinstConfig.ycp
+# Module:  Auto-Installation
+# Summary:  This module handles the configuration for auto-installation
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
@@ -37,8 +37,6 @@ module Yast
       Yast.import "Report"
 
       Yast.include self, "autoinstall/xml.rb"
-
-
 
       @runModule = ""
 
@@ -83,7 +81,6 @@ module Yast
       #
       @destdir = Installation.destdir
 
-
       #
       # Cache directory
       #
@@ -98,7 +95,6 @@ module Yast
       # Final location for retrieved system profile
       #
       @xml_file = Ops.add(@cache, "/installedSystem.xml")
-
 
       #
       # Direcotry for runtime operation data
@@ -120,14 +116,12 @@ module Yast
       #
       @modified_profile = Ops.add(@profile_dir, "/modified.xml")
 
-
       @autoconf_file = Ops.add(@runtime_dir, "/autoconf/autoconf.xml")
 
       #
       # Parsed data from XML control in YCP format
       #
       @parsedControlFile = Ops.add(@cache, "/autoinst.ycp")
-
 
       @remote_rules_location = "rules/rules.xml"
       @local_rules_location = Ops.add(@tmpDir, "/rules")
@@ -144,12 +138,10 @@ module Yast
       @user = ""
       @pass = ""
 
-
       #
       # Default systemd target
       #
       @default_target = Target::GRAPHICAL
-
 
       #
       # Confirm installation
@@ -204,7 +196,6 @@ module Yast
       #
       @ProfileInRootPart = false
 
-
       #
       # remote profile (invented for pre-probing of s390)
       # in case of a remote profile, the profile can be fetched
@@ -220,6 +211,7 @@ module Yast
     def getProposalList
       deep_copy(@Proposals)
     end
+
     def setProposalList(l)
       l = deep_copy(l)
       @Proposals = deep_copy(l)
@@ -264,18 +256,18 @@ module Yast
             startComment = Builtins.findfirstof(comment, "=")
             endComment = Builtins.findlastof(comment, ")")
 
-            if startComment != nil && endComment != nil &&
-              Ops.greater_than(
-                Ops.subtract(Ops.subtract(endComment, startComment), 1),
-                0
-              )
-              comment = Builtins.substring(
+            comment = if !startComment.nil? && !endComment.nil? &&
+                Ops.greater_than(
+                  Ops.subtract(Ops.subtract(endComment, startComment), 1),
+                  0
+                )
+              Builtins.substring(
                 comment,
                 Ops.add(startComment, 1),
                 Ops.subtract(Ops.subtract(endComment, startComment), 1)
               )
             else
-              comment = ""
+              ""
             end
 
             if Ops.less_than(Builtins.size(comment), 1)
@@ -352,7 +344,6 @@ module Yast
     # @example autoyast=http://www.server.com/profiles/
     # Fills internal variables
     def ParseCmdLine(profile_location)
-
       log.info "AutoYast profile location #{profile_location}"
 
       profile_location = update_profile_location(profile_location)
@@ -362,7 +353,7 @@ module Yast
       parsed_url = URL.Parse(profile_location)
 
       if parsed_url["scheme"].nil? || parsed_url["scheme"] == ""
-        Report.Error(_("Invalid AutoYaST profile URL\n%{url}") % {:url => profile_location})
+        Report.Error(format(_("Invalid AutoYaST profile URL\n%{url}"), url: profile_location))
         return false
       end
 
@@ -386,7 +377,7 @@ module Yast
         # by the user. So we will support file://autoinst.xml too:
         log.info "correcting #{@scheme}://#{@host}/#{@filepath} to empty host entry"
         if !@host.empty? && !@filepath.empty?
-          @filepath = File.join( @host, @filepath)
+          @filepath = File.join(@host, @filepath)
         else
           @filepath = @host unless @host.empty?
         end
@@ -399,59 +390,56 @@ module Yast
       true
     end
 
-
-
     # SetProtocolMessage ()
     # @return [void]
 
     def SetProtocolMessage
-      if @scheme == "floppy"
-        @message = _("Retrieving control file from floppy.")
+      @message = if @scheme == "floppy"
+        _("Retrieving control file from floppy.")
       elsif @scheme == "tftp"
-        @message = Builtins.sformat(
+        Builtins.sformat(
           _("Retrieving control file (%1) from TFTP server: %2."),
           @filepath,
           @host
         )
       elsif @scheme == "nfs"
-        @message = Builtins.sformat(
+        Builtins.sformat(
           _("Retrieving control file (%1) from NFS server: %2."),
           @filepath,
           @host
         )
       elsif @scheme == "http"
-        @message = Builtins.sformat(
+        Builtins.sformat(
           _("Retrieving control file (%1) from HTTP server: %2."),
           @filepath,
           @host
         )
       elsif @scheme == "ftp"
-        @message = Builtins.sformat(
+        Builtins.sformat(
           _("Retrieving control file (%1) from FTP server: %2."),
           @filepath,
           @host
         )
       elsif @scheme == "file"
-        @message = Builtins.sformat(
+        Builtins.sformat(
           _("Copying control file from file: %1."),
           @filepath
         )
       elsif @scheme == "device"
-        @message = Builtins.sformat(
+        Builtins.sformat(
           _("Copying control file from device: /dev/%1."),
           @filepath
         )
       elsif @scheme == "default"
-        @message = _("Copying control file from default location.")
+        _("Copying control file from default location.")
       else
-        @message = _("Source unknown.")
+        _("Source unknown.")
       end
       nil
     end
 
-
     # Save Configuration global settings
-    # @return	[void]
+    # @return  [void]
     def Save
       # Write sysconfig variables.
       Builtins.y2milestone("Saving configuration data")
@@ -482,7 +470,7 @@ module Yast
     def AutoinstConfig
       if (Mode.autoinst || Mode.autoupgrade) && Stage.initial
         autoinstall = SCR.Read(path(".etc.install_inf.AutoYaST"))
-        if autoinstall != nil && Ops.is_string?(autoinstall)
+        if !autoinstall.nil? && Ops.is_string?(autoinstall)
           ParseCmdLine(Convert.to_string(autoinstall))
           Builtins.y2milestone("cmd line=%1", autoinstall)
           SetProtocolMessage()
@@ -499,12 +487,10 @@ module Yast
         @dont_edit = sysconfig_autoinstall("FORBID_EDIT").split(",")
 
         # Set the defaults, just in case.
-        if @Repository == "" || @Repository == nil
-          @Repository = "/var/lib/autoinstall/repository"
-        end
+        @Repository = "/var/lib/autoinstall/repository" if @Repository == "" || @Repository.nil?
       end
-      #This probably gets never executed and it only breaks the commandline iface
-      #by Mode::test() call which instantiates UI
+      # This probably gets never executed and it only breaks the commandline iface
+      # by Mode::test() call which instantiates UI
       # else if (Mode::test () && Mode::normal ())
       # {
       #     local_rules_file = (string)WFM::Args(1);
@@ -514,20 +500,20 @@ module Yast
 
     def MainHelp
       main_help = _(
-        "<h3>AutoYaST Configuration Management System</h3>\n" +
-          "<p>Almost all resources of the control file can be\n" +
+        "<h3>AutoYaST Configuration Management System</h3>\n" \
+          "<p>Almost all resources of the control file can be\n" \
           "configured using the configuration management system.</p>\n"
       ) +
         _(
-          "<p>Most of the modules used to create the configuration are identical to those available\n" +
-            "through the YaST Control Center. Instead of configuring this system, the data\n" +
-            "entered is collected and exported to the control file that can be used to\n" +
-            "install another system using AutoYaST.\n" +
+          "<p>Most of the modules used to create the configuration are identical to those available\n" \
+            "through the YaST Control Center. Instead of configuring this system, the data\n" \
+            "entered is collected and exported to the control file that can be used to\n" \
+            "install another system using AutoYaST.\n" \
             "</p>\n"
         ) +
         _(
-          "<p>In addition to the existing and familiar modules,\n" +
-            "new interfaces were created for special and complex configurations, including\n" +
+          "<p>In addition to the existing and familiar modules,\n" \
+            "new interfaces were created for special and complex configurations, including\n" \
             "partitioning, general options, and software.</p>\n"
         )
       main_help
@@ -547,65 +533,65 @@ module Yast
       File.join(profile_dir, "pre-autoinst.xml")
     end
 
-    publish :variable => :runModule, :type => "string"
-    publish :variable => :Repository, :type => "string"
-    publish :variable => :ProfileEncrypted, :type => "boolean"
-    publish :variable => :ProfilePassword, :type => "string"
-    publish :variable => :PackageRepository, :type => "string"
-    publish :variable => :classDir, :type => "string"
-    publish :variable => :currentFile, :type => "string"
-    publish :variable => :tmpDir, :type => "string"
-    publish :variable => :var_dir, :type => "string"
-    publish :variable => :scripts_dir, :type => "string"
-    publish :variable => :initscripts_dir, :type => "string"
-    publish :variable => :logs_dir, :type => "string"
-    publish :variable => :destdir, :type => "string"
-    publish :variable => :cache, :type => "string"
-    publish :variable => :xml_tmpfile, :type => "string"
-    publish :variable => :xml_file, :type => "string"
-    publish :variable => :runtime_dir, :type => "string"
-    publish :variable => :files_dir, :type => "string"
-    publish :variable => :profile_dir, :type => "string"
-    publish :variable => :modified_profile, :type => "string"
-    publish :variable => :autoconf_file, :type => "string"
-    publish :variable => :parsedControlFile, :type => "string"
-    publish :variable => :remote_rules_location, :type => "string"
-    publish :variable => :local_rules_location, :type => "string"
-    publish :variable => :local_rules_file, :type => "string"
-    publish :variable => :urltok, :type => "map"
-    publish :variable => :scheme, :type => "string"
-    publish :variable => :host, :type => "string"
-    publish :variable => :filepath, :type => "string"
-    publish :variable => :directory, :type => "string"
-    publish :variable => :port, :type => "string"
-    publish :variable => :user, :type => "string"
-    publish :variable => :pass, :type => "string"
-    publish :variable => :default_target, :type => "string"
-    publish :variable => :Confirm, :type => "boolean"
-    publish :variable => :cio_ignore, :type => "boolean"
-    publish :variable => :second_stage, :type => "boolean"
-    publish :variable => :network_before_proposal, :type => "boolean"
-    publish :variable => :OriginalURI, :type => "string"
-    publish :variable => :message, :type => "string"
-    publish :variable => :dontmerge, :type => "list <string>"
-    publish :variable => :noWriteNow, :type => "list <string>"
-    publish :variable => :Halt, :type => "boolean"
-    publish :variable => :ForceBoot, :type => "boolean"
-    publish :variable => :RebootMsg, :type => "boolean"
-    publish :variable => :ProfileInRootPart, :type => "boolean"
-    publish :variable => :remoteProfile, :type => "boolean"
-    publish :variable => :Proposals, :type => "list <string>"
-    publish :function => :getProposalList, :type => "list <string> ()"
-    publish :function => :setProposalList, :type => "void (list <string>)"
-    publish :function => :ParseCmdLine, :type => "boolean (string)"
-    publish :function => :SetProtocolMessage, :type => "void ()"
-    publish :function => :Save, :type => "void ()"
-    publish :function => :ShellEscape, :type => "string (string)"
-    publish :function => :AutoinstConfig, :type => "void ()"
-    publish :function => :MainHelp, :type => "string ()"
-    publish :function => :check_second_stage_environment, :type => "string ()"
+    publish variable: :runModule, type: "string"
+    publish variable: :Repository, type: "string"
+    publish variable: :ProfileEncrypted, type: "boolean"
+    publish variable: :ProfilePassword, type: "string"
+    publish variable: :PackageRepository, type: "string"
+    publish variable: :classDir, type: "string"
+    publish variable: :currentFile, type: "string"
+    publish variable: :tmpDir, type: "string"
+    publish variable: :var_dir, type: "string"
+    publish variable: :scripts_dir, type: "string"
+    publish variable: :initscripts_dir, type: "string"
+    publish variable: :logs_dir, type: "string"
+    publish variable: :destdir, type: "string"
+    publish variable: :cache, type: "string"
+    publish variable: :xml_tmpfile, type: "string"
+    publish variable: :xml_file, type: "string"
+    publish variable: :runtime_dir, type: "string"
+    publish variable: :files_dir, type: "string"
+    publish variable: :profile_dir, type: "string"
+    publish variable: :modified_profile, type: "string"
+    publish variable: :autoconf_file, type: "string"
+    publish variable: :parsedControlFile, type: "string"
+    publish variable: :remote_rules_location, type: "string"
+    publish variable: :local_rules_location, type: "string"
+    publish variable: :local_rules_file, type: "string"
+    publish variable: :urltok, type: "map"
+    publish variable: :scheme, type: "string"
+    publish variable: :host, type: "string"
+    publish variable: :filepath, type: "string"
+    publish variable: :directory, type: "string"
+    publish variable: :port, type: "string"
+    publish variable: :user, type: "string"
+    publish variable: :pass, type: "string"
+    publish variable: :default_target, type: "string"
+    publish variable: :Confirm, type: "boolean"
+    publish variable: :cio_ignore, type: "boolean"
+    publish variable: :second_stage, type: "boolean"
+    publish variable: :network_before_proposal, type: "boolean"
+    publish variable: :OriginalURI, type: "string"
+    publish variable: :message, type: "string"
+    publish variable: :dontmerge, type: "list <string>"
+    publish variable: :noWriteNow, type: "list <string>"
+    publish variable: :Halt, type: "boolean"
+    publish variable: :ForceBoot, type: "boolean"
+    publish variable: :RebootMsg, type: "boolean"
+    publish variable: :ProfileInRootPart, type: "boolean"
+    publish variable: :remoteProfile, type: "boolean"
+    publish variable: :Proposals, type: "list <string>"
+    publish function: :getProposalList, type: "list <string> ()"
+    publish function: :setProposalList, type: "void (list <string>)"
+    publish function: :ParseCmdLine, type: "boolean (string)"
+    publish function: :SetProtocolMessage, type: "void ()"
+    publish function: :Save, type: "void ()"
+    publish function: :ShellEscape, type: "string (string)"
+    publish function: :AutoinstConfig, type: "void ()"
+    publish function: :MainHelp, type: "string ()"
+    publish function: :check_second_stage_environment, type: "string ()"
 
-    private
+  private
 
     # Reads configuration from /etc/sysconfig/autoinstall
     #

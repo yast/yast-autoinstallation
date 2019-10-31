@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	modules/AutoinstCommon.ycp
-# Package:	Auto-installation/Partition
-# Summary:	Drive related functions module
-# Author:	Sven Schober (sschober@suse.de)
+# File:  modules/AutoinstCommon.ycp
+# Package:  Auto-installation/Partition
+# Summary:  Drive related functions module
+# Author:  Sven Schober (sschober@suse.de)
 #
 # $Id: AutoinstDrive.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
@@ -22,7 +22,6 @@ module Yast
       Yast.import "Mode"
 
       textdomain "autoinst"
-
 
       # Structure of a drive, or volume group.
       @fields = {
@@ -85,13 +84,16 @@ module Yast
       drive = deep_copy(drive)
       AutoinstCommon.isValidObject(@fields, drive)
     end
+
     def isField(field)
       AutoinstCommon.isValidField(@fields, field)
     end
+
     def hasValidType(field, value)
       value = deep_copy(value)
       AutoinstCommon.hasValidType(@fields, field, value)
     end
+
     def areEqual(d1, d2)
       d1 = deep_copy(d1)
       d2 = deep_copy(d2)
@@ -100,7 +102,7 @@ module Yast
 
     # Construct reference to drive for use in tree. The references
     # are of the form:
-    #	"{ drive, volgroup }_<id>",
+    #  "{ drive, volgroup }_<id>",
     #  e.g. "drive_1", or "volgroup_3"
     #
     # @param drive [Hash{String => Object}] drive drive to create the reference for.
@@ -137,14 +139,14 @@ module Yast
       else
         # physical drive
         useTypeDesc = Ops.get_boolean(drive, "initialize", true) ? "initialize" : "reuse"
-        if enableHTML
-          description = Builtins.sformat(
+        description = if enableHTML
+          Builtins.sformat(
             "%1 to be %2d",
             description,
             useTypeDesc
           )
         else
-          description = Builtins.sformat("%1 , %2", description, useTypeDesc)
+          Builtins.sformat("%1 , %2", description, useTypeDesc)
         end
       end
       Ops.add(nodeName, description)
@@ -323,21 +325,21 @@ module Yast
       nil
     end
 
-    publish :function => :set, :type => "map <string, any> (map <string, any>, string, any)"
-    publish :function => :new, :type => "map <string, any> (string, symbol)"
-    publish :function => :isDrive, :type => "boolean (map <string, any>)"
-    publish :function => :isField, :type => "boolean (string)"
-    publish :function => :hasValidType, :type => "boolean (string, any)"
-    publish :function => :areEqual, :type => "boolean (map <string, any>, map <string, any>)"
-    publish :function => :getNodeReference, :type => "string (map <string, any>)"
-    publish :function => :getNodeName, :type => "string (map <string, any>, boolean)"
-    publish :function => :createTree, :type => "term (map <string, any>)"
-    publish :function => :getPartition, :type => "map <string, any> (map <string, any>, integer)"
-    publish :function => :getPartitionCount, :type => "integer (map <string, any>)"
-    publish :function => :getNextAvailablePartitionNumber, :type => "integer (map <string, any>)"
-    publish :function => :addPartition, :type => "map <string, any> (map <string, any>, map <string, any>)"
-    publish :function => :updatePartition, :type => "map <string, any> (map <string, any>, integer, map <string, any>)"
-    publish :function => :removePartition, :type => "map <string, any> (map <string, any>, integer)"
+    publish function: :set, type: "map <string, any> (map <string, any>, string, any)"
+    publish function: :new, type: "map <string, any> (string, symbol)"
+    publish function: :isDrive, type: "boolean (map <string, any>)"
+    publish function: :isField, type: "boolean (string)"
+    publish function: :hasValidType, type: "boolean (string, any)"
+    publish function: :areEqual, type: "boolean (map <string, any>, map <string, any>)"
+    publish function: :getNodeReference, type: "string (map <string, any>)"
+    publish function: :getNodeName, type: "string (map <string, any>, boolean)"
+    publish function: :createTree, type: "term (map <string, any>)"
+    publish function: :getPartition, type: "map <string, any> (map <string, any>, integer)"
+    publish function: :getPartitionCount, type: "integer (map <string, any>)"
+    publish function: :getNextAvailablePartitionNumber, type: "integer (map <string, any>)"
+    publish function: :addPartition, type: "map <string, any> (map <string, any>, map <string, any>)"
+    publish function: :updatePartition, type: "map <string, any> (map <string, any>, integer, map <string, any>)"
+    publish function: :removePartition, type: "map <string, any> (map <string, any>, integer)"
   end
 
   AutoinstDrive = AutoinstDriveClass.new

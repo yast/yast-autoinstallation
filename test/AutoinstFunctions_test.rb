@@ -101,7 +101,8 @@ describe Yast::AutoinstFunctions do
         context "registration has failed" do
           it "reports error to check registration settings" do
             allow(Yast::Profile).to receive(:current).and_return(
-              {"suse_register" => {"do_registration" => true}})
+              "suse_register" => { "do_registration" => true }
+            )
             expect(subject.check_second_stage_environment).to include("registration has failed")
           end
         end
@@ -126,8 +127,8 @@ describe Yast::AutoinstFunctions do
           ]
         )
 
-        # reset cache between tests
-        subject.instance_variable_set(:@selected_product, nil)
+      # reset cache between tests
+      subject.instance_variable_set(:@selected_product, nil)
     end
 
     it "returns proper base product when explicitly selected in the profile and such base product exists on media" do

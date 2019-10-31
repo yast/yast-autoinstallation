@@ -3,7 +3,7 @@
 # stub to avoid ntpclient build dependency
 module Yast
   class NtpClient
-    def self.sync_once(server)
+    def self.sync_once(_server)
       0
     end
   end

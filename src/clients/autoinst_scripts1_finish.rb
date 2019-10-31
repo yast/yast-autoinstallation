@@ -14,13 +14,11 @@
 module Yast
   class AutoinstScripts1FinishClient < Client
     def main
-
       textdomain "autoinst"
 
       Yast.import "AutoinstScripts"
       Yast.import "AutoInstall"
       Yast.import "Installation"
-
 
       @ret = nil
       @func = ""

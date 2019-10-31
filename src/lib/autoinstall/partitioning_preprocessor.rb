@@ -39,6 +39,7 @@ module Y2Autoinstallation
     #   +partitioning+ section.
     def run(drives)
       return if drives.nil?
+
       replace_ask(deep_copy(drives))
     end
 
@@ -54,8 +55,10 @@ module Y2Autoinstallation
       blacklist = []
       drives.each_with_index do |drive, idx|
         next unless drive["device"] == "ask"
+
         selection = select_disk(idx, blacklist)
         return nil if selection == :abort
+
         drive["device"] = selection
         blacklist << drive["device"]
       end

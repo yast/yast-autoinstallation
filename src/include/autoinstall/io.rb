@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	include/autoinstall/io.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	I/O
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  include/autoinstall/io.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  I/O
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 

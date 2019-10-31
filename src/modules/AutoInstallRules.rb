@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	modules/AutoInstallRules.ycp
-# Package:	Auto-installation
-# Summary:	Process Auto-Installation Rules
-# Author:	Anas Nashif <nashif@suse.de>
+# File:  modules/AutoInstallRules.ycp
+# Package:  Auto-installation
+# Summary:  Process Auto-Installation Rules
+# Author:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
@@ -17,7 +17,6 @@ module Yast
     def main
       Yast.import "UI"
       textdomain "autoinst"
-
 
       Yast.import "Arch"
       Yast.import "Stage"
@@ -53,9 +52,9 @@ module Yast
 
       @Behaviour = :many
 
-      #///////////////////////////////////////////
+      # ///////////////////////////////////////////
       # Pre-defined Rules
-      #///////////////////////////////////////////
+      # ///////////////////////////////////////////
 
       # All system attributes;
       @ATTR = {}
@@ -90,8 +89,8 @@ module Yast
       @others = 0
       @xserver = ""
 
-      #///////////////////////////////////////////
-      #///////////////////////////////////////////
+      # ///////////////////////////////////////////
+      # ///////////////////////////////////////////
       @NonLinuxPartitions = []
       @LinuxPartitions = []
       @UserRules = {}
@@ -111,7 +110,6 @@ module Yast
       Builtins.y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin)
       XML.YCPToXMLFile(:profile, ycpin, out)
     end
-
 
     # StdErrLog()
     # Dialog for error messages
@@ -138,6 +136,7 @@ module Yast
 
       nil
     end
+
     # getMAC()
     # Return MAC address of active device
     # @return [String] mac address
@@ -145,12 +144,12 @@ module Yast
       tmpmac = ""
       if Stage.initial
         cmd = 'ip link show | grep link/ether | head -1 | sed -e "s:^.*link/ether.::" -e "s: .*::"'
-        ret = SCR.Execute(path(".target.bash_output"), cmd )
-      Builtins.y2milestone("mac Addr ret:%1", ret)
-      tmpmac = ret.fetch("stdout","")
+        ret = SCR.Execute(path(".target.bash_output"), cmd)
+        Builtins.y2milestone("mac Addr ret:%1", ret)
+        tmpmac = ret.fetch("stdout", "")
       end
       Builtins.y2milestone("mac Addr tmp:%1", tmpmac)
-      cleanmac = Builtins.deletechars(tmpmac != nil ? tmpmac : "", ":\n")
+      cleanmac = Builtins.deletechars(tmpmac || "", ":\n")
       Builtins.y2milestone("mac Addr mac:%1", cleanmac)
       cleanmac
     end
@@ -205,11 +204,11 @@ module Yast
       name
     end
 
-
     # Probe all system data to build  a set of rules
     # @return [void]
     def ProbeRules
-      return if @ATTR.size>0
+      return if !@ATTR.empty?
+
       # SMBIOS Data
       bios = Convert.to_list(SCR.Read(path(".probe.bios")))
 
@@ -307,10 +306,10 @@ module Yast
       Ops.set(@ATTR, "xserver", @xserver)
 
       probed_disks = Y2Storage::StorageManager.instance.probed_disk_analyzer
-      @NonLinuxPartitions = probed_disks.windows_partitions()
+      @NonLinuxPartitions = probed_disks.windows_partitions
       @others = @NonLinuxPartitions.size
       Builtins.y2milestone("Other primaries: %1", @NonLinuxPartitions)
-      @LinuxPartitions = probed_disks.linux_partitions()
+      @LinuxPartitions = probed_disks.linux_partitions
       @linux = @LinuxPartitions.size
       Builtins.y2milestone("Other linux parts: %1", @LinuxPartitions)
 
@@ -325,9 +324,6 @@ module Yast
 
       nil
     end
-
-
-
 
     # Create shell command for rule verification
     # @param [Boolean] match
@@ -383,17 +379,16 @@ module Yast
         )
       end
 
-      if match
-        @shell = Ops.add(@shell, Builtins.sformat(" %1 %2] )", op, tmpshell))
+      @shell = if match
+        Ops.add(@shell, Builtins.sformat(" %1 %2] )", op, tmpshell))
       else
-        @shell = Ops.add(tmpshell, "] ) ")
+        Ops.add(tmpshell, "] ) ")
       end
 
       Builtins.y2milestone("var: %1, val: %2", var, val)
       Builtins.y2milestone("shell: %1", @shell)
       nil
     end
-
 
     # Verify rules using the shell
     # @return [Fixnum]
@@ -413,12 +408,10 @@ module Yast
       var = ""
       first = Builtins.findfirstof(file, "@")
       last = Builtins.findlastof(file, "@")
-      if first != nil && last != nil
+      if !first.nil? && !last.nil?
         ffirst = Ops.add(Convert.to_integer(first), 1)
         llast = Convert.to_integer(last)
-        if first != last
-          var = Builtins.substring(file, ffirst, Ops.subtract(llast, ffirst))
-        end
+        var = Builtins.substring(file, ffirst, Ops.subtract(llast, ffirst)) if first != last
       end
       Builtins.y2milestone("var: %1", var)
       if var != ""
@@ -433,19 +426,20 @@ module Yast
       Builtins.y2milestone("val: %1", file)
       file
     end
+
     # Read rules file
     # @return [void]
     def Read
       @UserRules = XML.XMLToYCPFile(AutoinstConfig.local_rules_file)
 
-      if @UserRules == nil
+      if @UserRules.nil?
         message = _("Parsing the rules file failed. XML parser reports:\n")
         Popup.Error(Ops.add(message, XML.XMLError))
       end
       Builtins.y2milestone("Rules: %1", @UserRules)
 
       rulelist = Ops.get_list(@UserRules, "rules", [])
-      if rulelist == nil # check result of implicit type conversion
+      if rulelist.nil? # check result of implicit type conversion
         Builtins.y2error("Key 'rules' has wrong type")
         rulelist = []
       end
@@ -457,189 +451,189 @@ module Yast
         Builtins.y2milestone("Ruleset: %1", ruleset)
         rls = ruleset.keys
         if rls.include?("result")
-          rls.reject! {|r| r=="result"}
+          rls.reject! { |r| r == "result" }
           rls.push("result")
         end
         op = Ops.get_string(ruleset, "operator", "and")
-        rls.reject! {|r| r=="op"}
+        rls.reject! { |r| r == "op" }
         Builtins.y2milestone("Orderes Rules: %1", rls)
-        Builtins.foreach(rls) do |rule|
-          ruledef = ruleset.fetch( rule, {} )
-          Builtins.y2milestone("Rule: %1", rule)
-          Builtins.y2milestone("Ruledef: %1", ruledef)
-          match = Ops.get_string(ruledef, "match", "undefined")
-          matchtype = Ops.get_string(ruledef, "match_type", "exact")
-          easy_rules = [
-            "hostname",
-            "hostaddress",
-            "installed_product_version",
-            "installed_product",
-            "domain",
-            "network",
-            "mac",
-            "karch",
-            "hostid",
-            "arch",
-            "board",
-            "board_vendor",
-            "product_vendor",
-            "product"
-          ]
-          if Builtins.contains(easy_rules, rule)
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@env, rule, Ops.get_string(@ATTR, rule, ""))
-          elsif rule == "custom1" || rule == "custom2" || rule == "custom3" ||
-              rule == "custom4" ||
-              rule == "custom5"
-            script = Ops.get_string(ruledef, "script", "exit -1")
-            tmpdir = AutoinstConfig.tmpDir
+        if go_on
+          Builtins.foreach(rls) do |rule|
+            ruledef = ruleset.fetch(rule, {})
+            Builtins.y2milestone("Rule: %1", rule)
+            Builtins.y2milestone("Ruledef: %1", ruledef)
+            match = Ops.get_string(ruledef, "match", "undefined")
+            matchtype = Ops.get_string(ruledef, "match_type", "exact")
+            easy_rules = [
+              "hostname",
+              "hostaddress",
+              "installed_product_version",
+              "installed_product",
+              "domain",
+              "network",
+              "mac",
+              "karch",
+              "hostid",
+              "arch",
+              "board",
+              "board_vendor",
+              "product_vendor",
+              "product"
+            ]
+            if Builtins.contains(easy_rules, rule)
+              shellseg(ismatch, rule, match, op, matchtype)
+              ismatch = true
+              Ops.set(@env, rule, Ops.get_string(@ATTR, rule, ""))
+            elsif rule == "custom1" || rule == "custom2" || rule == "custom3" ||
+                rule == "custom4" ||
+                rule == "custom5"
+              script = Ops.get_string(ruledef, "script", "exit -1")
+              tmpdir = AutoinstConfig.tmpDir
 
-            scriptPath = Builtins.sformat(
-              "%1/%2",
-              tmpdir,
-              Ops.add("rule_", rule)
-            )
+              scriptPath = Builtins.sformat(
+                "%1/%2",
+                tmpdir,
+                Ops.add("rule_", rule)
+              )
 
-            Builtins.y2milestone("Writing rule script into %1", scriptPath)
-            SCR.Write(path(".target.string"), scriptPath, script)
+              Builtins.y2milestone("Writing rule script into %1", scriptPath)
+              SCR.Write(path(".target.string"), scriptPath, script)
 
-            out = Convert.to_map(
-              SCR.Execute(
-                path(".target.bash_output"),
-                Ops.add("/bin/sh ", scriptPath),
-                {}
-              )
-            )
-            script_result = Ops.get_string(out, "stdout", "")
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@ATTR, rule, script_result)
-            Ops.set(@env, rule, script_result)
-          elsif rule == "linux"
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@env, rule, @linux)
-          elsif rule == "others"
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@env, rule, @others)
-          elsif rule == "xserver"
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@env, rule, @xserver)
-          elsif rule == "memsize"
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@env, rule, @memsize)
-          elsif rule == "totaldisk"
-            shellseg(ismatch, rule, match, op, matchtype)
-            ismatch = true
-            Ops.set(@env, rule, @totaldisk)
-          elsif rule == "disksize"
-            Builtins.y2debug("creating rule check for disksize")
-            disk = Builtins.splitstring(match, " ")
-            i = 0
-            t = ""
-            if @shell != ""
-              t = Ops.add(
-                @shell,
-                Builtins.sformat(" %1 ( ", op == "and" ? "&&" : "||")
-              )
-            else
-              t = Ops.add(@shell, Builtins.sformat(" ( "))
-            end
-            Builtins.foreach(@disksize) do |dev|
-              var1 = Builtins.sformat("disksize_size%1", i)
-              var2 = Builtins.sformat("disksize_device%1", i)
-              if matchtype == "exact"
-                t = Ops.add(
-                  t,
-                  Builtins.sformat(
-                    " [ \"$%1\" = \"%2\" -a \"$%3\" = \"%4\" ] ",
-                    var1,
-                    Ops.get(disk, 1, ""),
-                    var2,
-                    Ops.get(disk, 0, "")
-                  )
+              out = Convert.to_map(
+                SCR.Execute(
+                  path(".target.bash_output"),
+                  Ops.add("/bin/sh ", scriptPath),
+                  {}
                 )
-              elsif matchtype == "greater"
-                t = Ops.add(
-                  t,
-                  Builtins.sformat(
-                    " [ \"$%1\" -gt \"%2\"  -a \"$%3\" = \"%4\" ] ",
-                    var1,
-                    Ops.get(disk, 1, ""),
-                    var2,
-                    Ops.get(disk, 0, "")
-                  )
-                )
-              elsif matchtype == "lower"
-                t = Ops.add(
-                  t,
-                  Builtins.sformat(
-                    " [ \"$%1\" -lt \"%2\" -a \"$%3\" = \"%4\" ] ",
-                    var1,
-                    Ops.get(disk, 1, ""),
-                    var2,
-                    Ops.get(disk, 0, "")
-                  )
-                )
-              end
-              Ops.set(@env, var1, Ops.get_integer(dev, "size", -1))
-              Ops.set(@env, var2, Ops.get_string(dev, "device", ""))
-              i = Ops.add(i, 1)
-              if Ops.greater_than(Builtins.size(@disksize), i)
-                t = Ops.add(t, " || ")
-              end
-            end
-            t = Ops.add(t, " ) ")
-            @shell = t
-            Builtins.y2debug("shell: %1", @shell)
-            ismatch = true
-          elsif rule == "result"
-            profile_name = Ops.get_string(ruledef, "profile", "")
-            profile_name = SubVars(profile_name)
-            if Builtins.haskey(ruleset, "dialog")
-              Ops.set(
-                @element2file,
-                Ops.get_integer(ruleset, ["dialog", "element"], 0),
-                profile_name
               )
-            end
-            if verifyrules == 0
-              Builtins.y2milestone("Final Profile name: %1", profile_name)
-              if Ops.get_boolean(ruledef, "match_with_base", true)
-                @tomerge = Builtins.add(@tomerge, profile_name)
+              script_result = Ops.get_string(out, "stdout", "")
+              shellseg(ismatch, rule, match, op, matchtype)
+              ismatch = true
+              Ops.set(@ATTR, rule, script_result)
+              Ops.set(@env, rule, script_result)
+            elsif rule == "linux"
+              shellseg(ismatch, rule, match, op, matchtype)
+              ismatch = true
+              Ops.set(@env, rule, @linux)
+            elsif rule == "others"
+              shellseg(ismatch, rule, match, op, matchtype)
+              ismatch = true
+              Ops.set(@env, rule, @others)
+            elsif rule == "xserver"
+              shellseg(ismatch, rule, match, op, matchtype)
+              ismatch = true
+              Ops.set(@env, rule, @xserver)
+            elsif rule == "memsize"
+              shellseg(ismatch, rule, match, op, matchtype)
+              ismatch = true
+              Ops.set(@env, rule, @memsize)
+            elsif rule == "totaldisk"
+              shellseg(ismatch, rule, match, op, matchtype)
+              ismatch = true
+              Ops.set(@env, rule, @totaldisk)
+            elsif rule == "disksize"
+              Builtins.y2debug("creating rule check for disksize")
+              disk = Builtins.splitstring(match, " ")
+              i = 0
+              t = ""
+              t = if @shell != ""
+                Ops.add(
+                  @shell,
+                  Builtins.sformat(" %1 ( ", (op == "and") ? "&&" : "||")
+                )
+              else
+                Ops.add(@shell, Builtins.sformat(" ( "))
               end
-              # backdoor for merging problems.
-              if Builtins.haskey(ruledef, "dont_merge")
-                if @dontmergeIsDefault
-                  @dontmergeBackup = deep_copy(AutoinstConfig.dontmerge)
-                  AutoinstConfig.dontmerge = []
+              Builtins.foreach(@disksize) do |dev|
+                var1 = Builtins.sformat("disksize_size%1", i)
+                var2 = Builtins.sformat("disksize_device%1", i)
+                if matchtype == "exact"
+                  t = Ops.add(
+                    t,
+                    Builtins.sformat(
+                      " [ \"$%1\" = \"%2\" -a \"$%3\" = \"%4\" ] ",
+                      var1,
+                      Ops.get(disk, 1, ""),
+                      var2,
+                      Ops.get(disk, 0, "")
+                    )
+                  )
+                elsif matchtype == "greater"
+                  t = Ops.add(
+                    t,
+                    Builtins.sformat(
+                      " [ \"$%1\" -gt \"%2\"  -a \"$%3\" = \"%4\" ] ",
+                      var1,
+                      Ops.get(disk, 1, ""),
+                      var2,
+                      Ops.get(disk, 0, "")
+                    )
+                  )
+                elsif matchtype == "lower"
+                  t = Ops.add(
+                    t,
+                    Builtins.sformat(
+                      " [ \"$%1\" -lt \"%2\" -a \"$%3\" = \"%4\" ] ",
+                      var1,
+                      Ops.get(disk, 1, ""),
+                      var2,
+                      Ops.get(disk, 0, "")
+                    )
+                  )
                 end
-                AutoinstConfig.dontmerge = Convert.convert(
-                  Builtins.union(
-                    AutoinstConfig.dontmerge,
-                    Ops.get_list(ruledef, "dont_merge", [])
-                  ),
-                  :from => "list",
-                  :to   => "list <string>"
-                )
-                @dontmergeIsDefault = false
-                Builtins.y2milestone(
-                  "user defined dont_merge for rules found. dontmerge is %1",
-                  AutoinstConfig.dontmerge
+                Ops.set(@env, var1, Ops.get_integer(dev, "size", -1))
+                Ops.set(@env, var2, Ops.get_string(dev, "device", ""))
+                i = Ops.add(i, 1)
+                t = Ops.add(t, " || ") if Ops.greater_than(Builtins.size(@disksize), i)
+              end
+              t = Ops.add(t, " ) ")
+              @shell = t
+              Builtins.y2debug("shell: %1", @shell)
+              ismatch = true
+            elsif rule == "result"
+              profile_name = Ops.get_string(ruledef, "profile", "")
+              profile_name = SubVars(profile_name)
+              if Builtins.haskey(ruleset, "dialog")
+                Ops.set(
+                  @element2file,
+                  Ops.get_integer(ruleset, ["dialog", "element"], 0),
+                  profile_name
                 )
               end
-              go_on = Ops.get_boolean(ruledef, "continue", false)
-            else
-              go_on = true
+              if verifyrules == 0
+                Builtins.y2milestone("Final Profile name: %1", profile_name)
+                if Ops.get_boolean(ruledef, "match_with_base", true)
+                  @tomerge = Builtins.add(@tomerge, profile_name)
+                end
+                # backdoor for merging problems.
+                if Builtins.haskey(ruledef, "dont_merge")
+                  if @dontmergeIsDefault
+                    @dontmergeBackup = deep_copy(AutoinstConfig.dontmerge)
+                    AutoinstConfig.dontmerge = []
+                  end
+                  AutoinstConfig.dontmerge = Convert.convert(
+                    Builtins.union(
+                      AutoinstConfig.dontmerge,
+                      Ops.get_list(ruledef, "dont_merge", [])
+                    ),
+                    from: "list",
+                    to:   "list <string>"
+                  )
+                  @dontmergeIsDefault = false
+                  Builtins.y2milestone(
+                    "user defined dont_merge for rules found. dontmerge is %1",
+                    AutoinstConfig.dontmerge
+                  )
+                end
+                go_on = Ops.get_boolean(ruledef, "continue", false)
+              else
+                go_on = true
+              end
+              @shell = ""
+              ismatch = false
             end
-            @shell = ""
-            ismatch = false
           end
-        end if go_on
+        end
       end
 
       dialogOrder = []
@@ -660,9 +654,9 @@ module Yast
 
       dialogIndex = 0
       while Ops.less_or_equal(
-          dialogIndex,
-          Ops.subtract(Builtins.size(dialogOrder), 1)
-        )
+        dialogIndex,
+        Ops.subtract(Builtins.size(dialogOrder), 1)
+      )
         dialogNr = Ops.get(dialogOrder, dialogIndex, 0)
         dialog_term = VBox()
         element_nr = 0
@@ -732,17 +726,17 @@ module Yast
 
           # If there are conflicting items set them all to enabled/not_selected
           # in order to let the user decide at first.
-          conflictsCounter.each do |c, n|
+          conflictsCounter.each do |c, _n|
             UI.ChangeWidget(Id(c), :Enabled, true)
             UI.ChangeWidget(Id(c), :Value, false)
           end
 
-          while true
+          loop do
             ret = nil
-            if timeout == 0
-              ret = UI.UserInput
+            ret = if timeout == 0
+              UI.UserInput
             else
-              ret = UI.TimeoutUserInput(Ops.multiply(timeout, 1000))
+              UI.TimeoutUserInput(Ops.multiply(timeout, 1000))
             end
             timeout = 0
             element_nr = 0
@@ -808,8 +802,6 @@ module Yast
       nil
     end
 
-
-
     # Return list of file to merge (Order matters)
     # @return [Array] list of files
     def Files
@@ -843,11 +835,11 @@ module Yast
             file
           )
           if !Get(
-              scheme,
-              host,
-              Ops.add(Ops.add(directory, "/"), file),
-              localfile
-            )
+            scheme,
+            host,
+            Ops.add(Ops.add(directory, "/"), file),
+            localfile
+          )
             Builtins.y2error(
               "Error while fetching file:  %1",
               Ops.add(Ops.add(directory, "/"), file)
@@ -867,7 +859,7 @@ module Yast
       end
     end
 
-    #TODO: Move the responsibility of merging profiles to a specific class
+    # TODO: Move the responsibility of merging profiles to a specific class
     # removing also the duplication of code between this module and the
     # AutoinstClass one.
 
@@ -884,7 +876,7 @@ module Yast
     def merge_profiles(base_profile, with, to)
       dontmerge_str = ""
       AutoinstConfig.dontmerge.each_with_index do |dm, i|
-        dontmerge_str << " --param dontmerge#{i+1} \"'#{dm}'\""
+        dontmerge_str << " --param dontmerge#{i + 1} \"'#{dm}'\""
       end
       merge_command =
         "#{MERGE_CMD} #{MERGE_DEFAULTS}" \
@@ -910,7 +902,7 @@ module Yast
       @tomerge.each_with_index do |file, iter|
         log.info("Working on file: #{file}")
         current_profile = File.join(AutoinstConfig.local_rules_location, file)
-        dest_profile = iter == 0 ? base_profile : cleaned_profile
+        dest_profile = (iter == 0) ? base_profile : cleaned_profile
         if !XML_cleanup(current_profile, dest_profile)
           log.error("Error reading XML file")
           message = _(
@@ -921,8 +913,11 @@ module Yast
           error = true
         end
 
-        unless error
+        if error
+          log.error("Error while merging control files")
+        else
           next if iter == 0
+
           xsltret = merge_profiles(base_profile, cleaned_profile, merge_profile)
 
           log.info("Merge result: #{xsltret}")
@@ -933,8 +928,6 @@ module Yast
           end
 
           XML_cleanup(merge_profile, base_profile)
-        else
-          log.error("Error while merging control files")
         end
       end
 
@@ -946,7 +939,6 @@ module Yast
       AutoinstConfig.dontmerge = deep_copy(@dontmergeBackup)
       ok
     end
-
 
     # Process Rules
     # @param [String] result_profile
@@ -962,13 +954,12 @@ module Yast
 
       @tomerge = []
 
-
       # Now check if there any classes defined in theis pre final control file
       if !Profile.ReadXML(prefinal)
         Popup.Error(
           _(
-            "Error while parsing the control file.\n" +
-              "Check the log files for more details or fix the\n" +
+            "Error while parsing the control file.\n" \
+              "Check the log files for more details or fix the\n" \
               "control file and try again.\n"
           )
         )
@@ -987,8 +978,8 @@ module Yast
                 AutoinstConfig.dontmerge,
                 Ops.get_list(_class, "dont_merge", [])
               ),
-              :from => "list",
-              :to   => "list <string>"
+              from: "list",
+              to:   "list <string>"
             )
             @dontmergeIsDefault = false
             Builtins.y2milestone(
@@ -1020,10 +1011,10 @@ module Yast
         else
           Report.Error(
             _(
-              "\n" +
-                "User-defined classes could not be retrieved.  Make sure all classes \n" +
-                "are defined correctly and available for this system via the network\n" +
-                "or locally. The system cannot be installed with the original control \n" +
+              "\n" \
+                "User-defined classes could not be retrieved.  Make sure all classes \n" \
+                "are defined correctly and available for this system via the network\n" \
+                "or locally. The system cannot be installed with the original control \n" \
                 "file without using classes.\n"
             )
           )
@@ -1043,7 +1034,6 @@ module Yast
       Builtins.y2milestone("returns=%1", ok)
       ok
     end
-
 
     # Create default rule in case no rules file is available
     # This adds a list of file starting from full hex ip representation to
@@ -1074,6 +1064,7 @@ module Yast
       Builtins.y2milestone("Created default rules: %1", @tomerge)
       nil
     end
+
     # Constructor
     #
     def AutoInstallRules
@@ -1091,6 +1082,7 @@ module Yast
     # @return [String] IP address
     def hostaddress
       return @hostaddress unless @hostaddress.nil?
+
       ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
       if ret = ip_route["stdout"][HOSTADDRESS_REGEXP, 1]
         log.info "Found IP address: #{ret}"
@@ -1101,48 +1093,48 @@ module Yast
       end
     end
 
-    publish :variable => :userrules, :type => "boolean"
-    publish :variable => :dontmergeIsDefault, :type => "boolean"
-    publish :variable => :dontmergeBackup, :type => "list <string>"
-    publish :variable => :Behaviour, :type => "symbol"
-    publish :variable => :installed_product, :type => "string"
-    publish :variable => :installed_product_version, :type => "string"
-    publish :variable => :hostname, :type => "string"
-    publish :variable => :network, :type => "string"
-    publish :variable => :domain, :type => "string"
-    publish :variable => :arch, :type => "string"
-    publish :variable => :karch, :type => "string"
-    publish :variable => :product, :type => "string"
-    publish :variable => :product_vendor, :type => "string"
-    publish :variable => :board_vendor, :type => "string"
-    publish :variable => :board, :type => "string"
-    publish :variable => :memsize, :type => "integer"
-    publish :variable => :disksize, :type => "list <map <string, any>>"
-    publish :variable => :totaldisk, :type => "integer"
-    publish :variable => :hostid, :type => "string"
-    publish :variable => :mac, :type => "string"
-    publish :variable => :linux, :type => "integer"
-    publish :variable => :others, :type => "integer"
-    publish :variable => :xserver, :type => "string"
-    publish :variable => :NonLinuxPartitions, :type => "list"
-    publish :variable => :LinuxPartitions, :type => "list"
-    publish :variable => :UserRules, :type => "map <string, any>"
-    publish :variable => :tomerge, :type => "list <string>"
-    publish :function => :hostaddress, :type => "string ()"
-    publish :function => :XML_cleanup, :type => "boolean (string, string)"
-    publish :function => :StdErrLog, :type => "void (string)"
-    publish :function => :getMAC, :type => "string ()"
-    publish :function => :getHostid, :type => "string ()"
-    publish :function => :getHostname, :type => "string ()"
-    publish :function => :ProbeRules, :type => "void ()"
-    publish :function => :Read, :type => "void ()"
-    publish :function => :Files, :type => "list <string> ()"
-    publish :function => :GetRules, :type => "boolean ()"
-    publish :function => :Merge, :type => "boolean (string)"
-    publish :function => :Process, :type => "boolean (string)"
-    publish :function => :CreateDefault, :type => "void ()"
-    publish :function => :CreateFile, :type => "void (string)"
-    publish :function => :AutoInstallRules, :type => "void ()"
+    publish variable: :userrules, type: "boolean"
+    publish variable: :dontmergeIsDefault, type: "boolean"
+    publish variable: :dontmergeBackup, type: "list <string>"
+    publish variable: :Behaviour, type: "symbol"
+    publish variable: :installed_product, type: "string"
+    publish variable: :installed_product_version, type: "string"
+    publish variable: :hostname, type: "string"
+    publish variable: :network, type: "string"
+    publish variable: :domain, type: "string"
+    publish variable: :arch, type: "string"
+    publish variable: :karch, type: "string"
+    publish variable: :product, type: "string"
+    publish variable: :product_vendor, type: "string"
+    publish variable: :board_vendor, type: "string"
+    publish variable: :board, type: "string"
+    publish variable: :memsize, type: "integer"
+    publish variable: :disksize, type: "list <map <string, any>>"
+    publish variable: :totaldisk, type: "integer"
+    publish variable: :hostid, type: "string"
+    publish variable: :mac, type: "string"
+    publish variable: :linux, type: "integer"
+    publish variable: :others, type: "integer"
+    publish variable: :xserver, type: "string"
+    publish variable: :NonLinuxPartitions, type: "list"
+    publish variable: :LinuxPartitions, type: "list"
+    publish variable: :UserRules, type: "map <string, any>"
+    publish variable: :tomerge, type: "list <string>"
+    publish function: :hostaddress, type: "string ()"
+    publish function: :XML_cleanup, type: "boolean (string, string)"
+    publish function: :StdErrLog, type: "void (string)"
+    publish function: :getMAC, type: "string ()"
+    publish function: :getHostid, type: "string ()"
+    publish function: :getHostname, type: "string ()"
+    publish function: :ProbeRules, type: "void ()"
+    publish function: :Read, type: "void ()"
+    publish function: :Files, type: "list <string> ()"
+    publish function: :GetRules, type: "boolean ()"
+    publish function: :Merge, type: "boolean (string)"
+    publish function: :Process, type: "boolean (string)"
+    publish function: :CreateDefault, type: "void ()"
+    publish function: :CreateFile, type: "void (string)"
+    publish function: :AutoInstallRules, type: "void ()"
   end
 
   AutoInstallRules = AutoInstallRulesClass.new

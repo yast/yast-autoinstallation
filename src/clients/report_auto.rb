@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_report.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	Report
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_report.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  Report
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -36,8 +36,6 @@ module Yast
       end
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
-
-
 
       # Create a summary
       # return string
@@ -77,7 +75,7 @@ module Yast
       Builtins.y2milestone("Report auto finished")
       Builtins.y2milestone("----------------------------------------")
 
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # EOF
     end
@@ -88,7 +86,6 @@ module Yast
       msg = deep_copy(Report.message_settings)
       err = deep_copy(Report.error_settings)
       war = deep_copy(Report.warning_settings)
-
 
       contents = Top(
         VBox(
@@ -283,12 +280,10 @@ module Yast
       end until ret == :cancel || ret == :next || ret == :back
 
       Report.Import(
-        {
-          "messages"       => msg,
-          "errors"         => err,
-          "warnings"       => war,
-          "yesno_messages" => err
-        }
+        "messages"       => msg,
+        "errors"         => err,
+        "warnings"       => war,
+        "yesno_messages" => err
       )
       ret
     end

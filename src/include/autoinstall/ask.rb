@@ -1,17 +1,17 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_post.ycp
-# Package:	Auto-installation
+# File:  clients/autoinst_post.ycp
+# Package:  Auto-installation
 # Author:      Anas Nashif <nashif@suse.de>
-# Summary:	This module finishes auto-installation and configures
-#		the system as described in the profile file.
+# Summary:  This module finishes auto-installation and configures
+#    the system as described in the profile file.
 #
 # $Id$
 module Yast
   module AutoinstallAskInclude
     include Yast::Logger
 
-    def initialize_autoinstall_ask(include_target)
+    def initialize_autoinstall_ask(_include_target)
       textdomain "autoinst"
 
       Yast.import "Profile"
@@ -34,7 +34,7 @@ module Yast
       deep_copy(pos)
     end
 
-    def createWidget(widget, frametitle)
+    def createWidget(widget, _frametitle)
       widget = deep_copy(widget)
       ret = Left(widget)
 
@@ -56,23 +56,23 @@ module Yast
         log.info "Waiting #{timeout} sec for the user to enter their data"
         sec_till_timeout = timeout
 
-        while (sec_till_timeout > 0)
+        while sec_till_timeout > 0
           UI.ReplaceWidget(:stop_button, PushButton(Id(:stop_timeout), "#{Label.StopButton} (#{sec_till_timeout})"))
           sec_till_timeout -= 1
           ret = UI.TimeoutUserInput(1000)
 
           # User has done something in UI - stop the timeout
-          if ret != :timeout
-            log.info "Countdown stopped by user"
+          next unless ret != :timeout
 
-            if ret == :stop_timeout
-              UI.ChangeWidget(Id(:stop_timeout), :Enabled, false)
-              UI.SetFocus(:ok)
-            end
+          log.info "Countdown stopped by user"
 
-            # leave the timeout-loop now
-            break
+          if ret == :stop_timeout
+            UI.ChangeWidget(Id(:stop_timeout), :Enabled, false)
+            UI.SetFocus(:ok)
           end
+
+          # leave the timeout-loop now
+          break
         end
       end
 
@@ -108,9 +108,9 @@ module Yast
             )
           )
           if !Builtins.contains(
-              keys,
-              Ops.get_integer(ask, "dialog", dialog_cnt)
-            )
+            keys,
+            Ops.get_integer(ask, "dialog", dialog_cnt)
+          )
             keys = Builtins.add(
               keys,
               Ops.get_integer(ask, "dialog", dialog_cnt)
@@ -159,8 +159,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             Ops.get(dialogs, dialog_nr, []),
-            :from => "list",
-            :to   => "list <map>"
+            from: "list",
+            to:   "list <map>"
           )
         ) do |ask|
           pathStr = Ops.get_string(ask, "path", "")
@@ -244,14 +244,14 @@ module Yast
           #
           dlg = Dummy()
           if type == "boolean"
-            on = Ops.get(ask, "default") == "true" ? true : false
+            on = Ops.get(ask, "default") == "true"
             widget = CheckBox(Id(entry_id), Opt(:notify), question, on)
             dlg = createWidget(widget, frametitle)
           elsif type == "symbol"
             dummy = []
             Builtins.foreach(s) do |e|
               on = Ops.get_symbol(e, "value", :edge_of_dawn) ==
-                Ops.get(ask, "default") ? true : false
+                Ops.get(ask, "default")
               dummy = Builtins.add(
                 dummy,
                 Item(
@@ -288,7 +288,7 @@ module Yast
               if Builtins.haskey(ask, "selection")
                 dummy = []
                 Builtins.foreach(s) do |e|
-                  on = Ops.get_string(e, "value", "") == Ops.get(ask, "default") ? true : false
+                  on = Ops.get_string(e, "value", "") == Ops.get(ask, "default")
                   dummy = Builtins.add(
                     dummy,
                     Item(
@@ -319,7 +319,7 @@ module Yast
           # Add the widget to the correct frame (using the frametitle).
           #
           if frametitle != "" # some frametitle is set
-            if frameBuffer == nil # and no frameBuffer exists
+            if frameBuffer.nil? # and no frameBuffer exists
               frameBufferVBox = VBox(dlg) # create a new frameBuffer
             else # a frameBuffer exists
               if frametitle == frameBufferTitle # with same title
@@ -333,7 +333,7 @@ module Yast
             frameBuffer = Frame(frametitle, frameBufferVBox) # set frameBuffer values for the next iteration
             frameBufferTitle = frametitle
           else # frametitle is in blank
-            if frameBuffer != nil # a previous frameBuffer exists
+            if !frameBuffer.nil? # a previous frameBuffer exists
               dialog_term = Builtins.add(dialog_term, frameBuffer) # add frameBuffer to dialog
               dialog_term = Builtins.add(dialog_term, VSpacing(1))
               frameBuffer = nil
@@ -345,9 +345,7 @@ module Yast
         end
 
         # If some frameBuffer left after iterations, it's added to the dialog.
-        if frameBuffer != nil
-          dialog_term = Builtins.add(dialog_term, frameBuffer)
-        end
+        dialog_term = Builtins.add(dialog_term, frameBuffer) if !frameBuffer.nil?
 
         #
         # Let's build the dialog
@@ -380,14 +378,12 @@ module Yast
         box = MinWidth(min_width, box) if Ops.greater_than(min_width, 0)
         box = MinHeight(min_height, box) if Ops.greater_than(min_height, 0)
         UI.OpenDialog(Opt(:decorated), box)
-        if Ops.less_than(Builtins.size(history), 2)
-          UI.ChangeWidget(Id(:back), :Enabled, false)
-        end
+        UI.ChangeWidget(Id(:back), :Enabled, false) if Ops.less_than(Builtins.size(history), 2)
 
         #
         # Wait for user input
         #
-        while true
+        loop do
           ret = nil
 
           ret = user_input_with_countdown(timeout)
@@ -403,8 +399,8 @@ module Yast
               Builtins.maplist( # Iterate through widgets building a list of asks (containing responses)
                 Convert.convert(
                   Ops.get(dialogs, dialog_nr, []),
-                  :from => "list",
-                  :to   => "list <map>"
+                  from: "list",
+                  to:   "list <map>"
                 )
               ) do |ask|
                 file = Ops.get_string(ask, "file", "")
@@ -455,21 +451,21 @@ module Yast
                 if file != ""
                   if Ops.get_string(ask, "type", "string") == "boolean"
                     if !SCR.Write(
-                        path(".target.string"),
-                        file,
-                        Builtins.sformat(
-                          "%1",
-                          Convert.to_boolean(val) ? "true" : "false"
-                        )
+                      path(".target.string"),
+                      file,
+                      Builtins.sformat(
+                        "%1",
+                        Convert.to_boolean(val) ? "true" : "false"
                       )
+                    )
                       Builtins.y2milestone("writing answer to %1 failed", file)
                     end
                   else
                     if !SCR.Write(
-                        path(".target.string"),
-                        file,
-                        Builtins.sformat("%1", val)
-                      )
+                      path(".target.string"),
+                      file,
+                      Builtins.sformat("%1", val)
+                    )
                       Builtins.y2milestone("writing answer to %1 failed", file)
                     end
                   end
@@ -545,9 +541,7 @@ module Yast
                       )
                     )
                   end
-                  if Ops.get_boolean(script, "rerun_on_error", false) == false
-                    runAgain = 0
-                  end
+                  runAgain = 0 if Ops.get_boolean(script, "rerun_on_error", false) == false
 
                   # Show feedback in a dialog
                   showFeedback = Ops.get_boolean(script, "feedback", false)
@@ -574,9 +568,9 @@ module Yast
 
                   # Save the next_dialog
                   if Ops.greater_than(
-                      SCR.Read(path(".target.size"), "/tmp/next_dialog"),
-                      0
-                    )
+                    SCR.Read(path(".target.size"), "/tmp/next_dialog"),
+                    0
+                  )
                     s = Convert.to_string(
                       SCR.Read(path(".target.string"), "/tmp/next_dialog")
                     )

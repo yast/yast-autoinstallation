@@ -32,97 +32,94 @@ Yast.import "AutoinstData"
 Yast.import "Lan"
 Yast.import "Pkg"
 
-
 module Y2Autoinstall
   module Clients
     module AyastSetup
-      include Yast::Logger    
+      include Yast::Logger
       Ops = Yast::Ops
       SCR = Yast::SCR
       WFM = Yast::WFM
       Profile  = Yast::Profile
       Builtins = Yast::Builtins
       def Setup
-         textdomain "autoinst"
-         Yast::AutoInstall.Save
-         Yast::Wizard.CreateDialog
-         Yast::Mode.SetMode("autoinstallation")
-         Yast::Stage.Set("continue")
-      
-         # IPv6 settings will be written despite the have been
-         # changed or not. So we have to read them at first.
-         # FIXME: Move it to Lan.rb and remove the Lan import dependency.
-         Yast::Lan.ipv6 = Yast::Lan.readIPv6
-      
-         WFM.CallFunction("inst_autopost", [])
-         postPackages = Ops.get_list(
-           Profile.current,
-           ["software", "post-packages"],
-           []
-         )
-         postPackages = Builtins.filter(postPackages) do |p|
-           !Yast::PackageSystem.Installed(p)
-         end
-         Yast::AutoinstSoftware.addPostPackages(postPackages)
-      
-         Yast::AutoinstData.post_patterns = Ops.get_list(
-           Profile.current,
-           ["software", "post-patterns"],
-           []
-         )
-      
-         # the following is needed since 10.3
-         # otherwise the already configured network gets removed
-         if !Builtins.haskey(Profile.current, "networking")
-           Profile.current = Builtins.add(
-             Profile.current,
-             "networking",
-             { "keep_install_network" => true }
-           )
-         end
-      
-         if @dopackages
-           Yast::Pkg.TargetInit("/", false)
-           WFM.CallFunction("inst_rpmcopy", [])
-         end
-         WFM.CallFunction("inst_autoconfigure", [])
-      
-         # Restarting autoyast-initscripts.service in order to run
-         # init-scripts in the installed system.
-         cmd = "systemctl restart autoyast-initscripts.service"
-         ret = SCR.Execute(path(".target.bash_output"), cmd)
-         log.info "command \"#{cmd}\" returned #{ret}"
-         nil
+        textdomain "autoinst"
+        Yast::AutoInstall.Save
+        Yast::Wizard.CreateDialog
+        Yast::Mode.SetMode("autoinstallation")
+        Yast::Stage.Set("continue")
+
+        # IPv6 settings will be written despite the have been
+        # changed or not. So we have to read them at first.
+        # FIXME: Move it to Lan.rb and remove the Lan import dependency.
+        Yast::Lan.ipv6 = Yast::Lan.readIPv6
+
+        WFM.CallFunction("inst_autopost", [])
+        postPackages = Ops.get_list(
+          Profile.current,
+          ["software", "post-packages"],
+          []
+        )
+        postPackages = Builtins.filter(postPackages) do |p|
+          !Yast::PackageSystem.Installed(p)
+        end
+        Yast::AutoinstSoftware.addPostPackages(postPackages)
+
+        Yast::AutoinstData.post_patterns = Ops.get_list(
+          Profile.current,
+          ["software", "post-patterns"],
+          []
+        )
+
+        # the following is needed since 10.3
+        # otherwise the already configured network gets removed
+        if !Builtins.haskey(Profile.current, "networking")
+          Profile.current = Builtins.add(
+            Profile.current,
+            "networking",
+            "keep_install_network" => true
+          )
+        end
+
+        if @dopackages
+          Yast::Pkg.TargetInit("/", false)
+          WFM.CallFunction("inst_rpmcopy", [])
+        end
+        WFM.CallFunction("inst_autoconfigure", [])
+
+        # Restarting autoyast-initscripts.service in order to run
+        # init-scripts in the installed system.
+        cmd = "systemctl restart autoyast-initscripts.service"
+        ret = SCR.Execute(path(".target.bash_output"), cmd)
+        log.info "command \"#{cmd}\" returned #{ret}"
+        nil
       end
-      
+
       def openFile(options)
-         textdomain "autoinst"
-         options = deep_copy(options)
-         if Ops.get(options, "filename") == nil
-           Yast::CommandLine.Error(_("Path to AutoYaST profile must be set."))
-           return false
-         end
-         if Ops.get_string(options, "dopackages", "yes") == "no"
-           @dopackages = false
-         end
-         if SCR.Read(
-             path(".target.lstat"),
-             Ops.get_string(options, "filename", "")
-           ) == {} ||
-             !Profile.ReadXML(Ops.get_string(options, "filename", ""))
-           Yast::Mode.SetUI("commandline")
-           Yast::CommandLine.Print(
-             _(
-               "Error while parsing the control file.\n" +
-                 "Check the log files for more details or fix the\n" +
-                 "control file and try again.\n"
-             )
-           )
-           return false
-         end
-      
-         Setup()
-         true
+        textdomain "autoinst"
+        options = deep_copy(options)
+        if Ops.get(options, "filename").nil?
+          Yast::CommandLine.Error(_("Path to AutoYaST profile must be set."))
+          return false
+        end
+        @dopackages = false if Ops.get_string(options, "dopackages", "yes") == "no"
+        if SCR.Read(
+          path(".target.lstat"),
+          Ops.get_string(options, "filename", "")
+        ) == {} ||
+            !Profile.ReadXML(Ops.get_string(options, "filename", ""))
+          Yast::Mode.SetUI("commandline")
+          Yast::CommandLine.Print(
+            _(
+              "Error while parsing the control file.\n" \
+                "Check the log files for more details or fix the\n" \
+                "control file and try again.\n"
+            )
+          )
+          return false
+        end
+
+        Setup()
+        true
       end
     end
   end

@@ -1,14 +1,14 @@
 # encoding: utf-8
 
-# File:	clients/autoinst_linuxrc.ycp
-# Package:	Autoinstallation Configuration System
-# Summary: 	Linuxrc Settings
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_linuxrc.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:   Linuxrc Settings
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
   module AutoinstallClassesInclude
-    def initialize_autoinstall_classes(include_target)
+    def initialize_autoinstall_classes(_include_target)
       textdomain "autoinst"
       Yast.import "Label"
       Yast.import "Popup"
@@ -23,7 +23,6 @@ module Yast
       Builtins.y2debug("Writing clean XML file to  %1, YCP is (%2)", out, ycpin)
       XML.YCPToXMLFile(:profile, ycpin, out)
     end
-
 
     # class_dialog_contents()
     # @return [Yast::Term]
@@ -68,8 +67,6 @@ module Yast
       )
       deep_copy(contents)
     end
-
-
 
     # AddEditClasses()
     # Add or Edit a class
@@ -188,9 +185,6 @@ module Yast
       ret
     end
 
-
-
-
     # Manage Classes
     #
     def ManageClasses
@@ -211,12 +205,11 @@ module Yast
       help = Ops.add(
         help,
         _(
-          "<p>The order (priority) defines the hierarchy of a class\n" +
-            "and when it is merged when creating a control file.\n" +
+          "<p>The order (priority) defines the hierarchy of a class\n" \
+            "and when it is merged when creating a control file.\n" \
             "</p>\n"
         )
       )
-
 
       Wizard.SetContents(title, class_dialog_contents, help, true, true)
 
@@ -236,7 +229,7 @@ module Yast
           Ops.get_string(c, "name", "") == _class
         end
         selected_class = Ops.get_map(cl, 0, {})
-        if _class != nil
+        if !_class.nil?
           UI.ChangeWidget(
             Id(:description),
             :Value,
@@ -251,14 +244,14 @@ module Yast
 
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
         elsif ret == :edit
-          if _class == nil
+          if _class.nil?
             Popup.Message(_("Select at least one class\nto edit.\n"))
             next
           end
           defret = AddEditClasses(Convert.to_symbol(ret), _class)
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
         elsif ret == :delete
-          if _class == nil
+          if _class.nil?
             Popup.Message(_("Select at least one class\nto delete.\n"))
             next
           end
@@ -279,22 +272,16 @@ module Yast
       Convert.to_symbol(ret)
     end
 
-
     # GetClassOrder()
     # @param name [String] class name
     # @return [Fixnum] class order
     def GetClassOrder(name)
       order = 0
       Builtins.foreach(AutoinstClass.Classes) do |_class|
-        if Ops.get_string(_class, "name", "") == name
-          order = Ops.get_integer(_class, "order", 0)
-        end
+        order = Ops.get_integer(_class, "order", 0) if Ops.get_string(_class, "name", "") == name
       end
       order
     end
-
-
-
 
     # The merge operation
     def MergeAll(selected_profiles, base)
@@ -303,7 +290,6 @@ module Yast
       SCR.Execute(path(".target.mkdir"), tmpdir)
 
       Profile.Save(Ops.add(tmpdir, "/base_profile.xml")) if base == :current
-
 
       error = false
       skip = false
@@ -385,7 +371,6 @@ module Yast
         end
       end
 
-
       if error
         Popup.ClearFeedback
         return false
@@ -410,7 +395,6 @@ module Yast
       true
     end
 
-
     # Merge Dialog
     # @return [Symbol]
     def MergeDialog
@@ -423,9 +407,7 @@ module Yast
       Builtins.foreach(AutoinstClass.confs) do |prof|
         _class = Ops.get_string(prof, "class", "Default")
         ui_list = Ops.get(profiles, _class, [])
-        if Builtins.size(ui_list) == 0
-          ui_list = Builtins.add(ui_list, Item(Id("none"), _("None")))
-        end
+        ui_list = Builtins.add(ui_list, Item(Id("none"), _("None"))) if Builtins.size(ui_list) == 0
         ui_list = Builtins.add(
           ui_list,
           Item(
@@ -435,7 +417,6 @@ module Yast
         )
         Ops.set(profiles, _class, ui_list)
       end
-
 
       if Ops.greater_than(Builtins.size(profiles), 0)
         Builtins.foreach(profiles) do |k, v|
@@ -453,7 +434,6 @@ module Yast
       else
         _Combo = Left(Label(Id(:emptyclasses), _("No control files defined")))
       end
-
 
       contents = Top(
         Left(
@@ -483,12 +463,11 @@ module Yast
         )
       )
 
-
       help = _(
-        "<p>If you have defined and created <b>\n" +
-          "classes</b>, you will be able to merge them using this interface to create\n" +
-          "a new <i>Profile</i>, which will contain information from every class\n" +
-          "depending on the priority (order) set when\n" +
+        "<p>If you have defined and created <b>\n" \
+          "classes</b>, you will be able to merge them using this interface to create\n" \
+          "a new <i>Profile</i>, which will contain information from every class\n" \
+          "depending on the priority (order) set when\n" \
           "creating the classes.</P>\n"
       )
 
@@ -517,15 +496,13 @@ module Yast
               Id(Ops.get_string(prof, "class", "")),
               :Value
             )
-            if selected != nil
+            if !selected.nil?
               n = Ops.add(n, 1) if selected != "none"
               selected_profiles = Builtins.add(
                 selected_profiles,
-                {
-                  "order"   => GetClassOrder(Ops.get_string(prof, "class", "")),
-                  "class"   => Ops.get_string(prof, "class", "none"),
-                  "profile" => selected
-                }
+                "order"   => GetClassOrder(Ops.get_string(prof, "class", "")),
+                "class"   => Ops.get_string(prof, "class", "none"),
+                "profile" => selected
               )
             end
           end
@@ -573,8 +550,6 @@ module Yast
       Convert.to_symbol(ret)
     end
 
-
-
     def classConfiguration
       title = _("Class Configuration")
       help = _(
@@ -588,9 +563,7 @@ module Yast
       Builtins.foreach(AutoinstClass.confs) do |prof|
         _class = Ops.get_string(prof, "class", "default")
         ui_list = Ops.get(profiles, _class, [])
-        if Builtins.size(ui_list) == 0
-          ui_list = Builtins.add(ui_list, Item(Id("none"), _("None")))
-        end
+        ui_list = Builtins.add(ui_list, Item(Id("none"), _("None"))) if Builtins.size(ui_list) == 0
         ui_list = Builtins.add(
           ui_list,
           Item(
@@ -616,12 +589,10 @@ module Yast
 
       contents = Top(Left(VBox(_Combo)))
 
-
       Wizard.SetContents(title, contents, help, true, true)
 
       Wizard.HideAbortButton
       Wizard.SetNextButton(:next, Label.FinishButton)
-
 
       ret = nil
       _next = nil
@@ -635,14 +606,12 @@ module Yast
               Id(Ops.get_string(prof, "class", "")),
               :Value
             )
-            if selected != nil
+            if !selected.nil?
               n = Ops.add(n, 1) if selected != "none"
               selected_profiles = Builtins.add(
                 selected_profiles,
-                {
-                  "class_name"    => Ops.get_string(prof, "class", "none"),
-                  "configuration" => selected
-                }
+                "class_name"    => Ops.get_string(prof, "class", "none"),
+                "configuration" => selected
               )
             end
           end

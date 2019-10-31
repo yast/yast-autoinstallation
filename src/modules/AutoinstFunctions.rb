@@ -31,6 +31,7 @@ module Yast
     # @return [Boolean] 'true' if it's needed; 'false' otherwise.
     def second_stage_required?
       return false unless Stage.initial
+
       if (Mode.autoinst || Mode.autoupgrade) && !AutoinstConfig.second_stage
         Builtins.y2milestone("Autoyast: second stage is disabled")
         false
@@ -47,8 +48,8 @@ module Yast
       error = ""
       return error unless second_stage_required?
 
-      missing_packages = Profile.needed_second_stage_packages.select do |p|
-        !Pkg.IsSelected(p)
+      missing_packages = Profile.needed_second_stage_packages.reject do |p|
+        Pkg.IsSelected(p)
       end
       unless missing_packages.empty?
         log.warn "Second stage cannot be run due missing packages: #{missing_packages}"
@@ -57,7 +58,7 @@ module Yast
           missing_packages.join(", "))
         unless registered?
           if Profile.current["suse_register"] &&
-            Profile.current["suse_register"]["do_registration"] == true
+              Profile.current["suse_register"]["do_registration"] == true
             error << _("The registration has failed. " \
               "Please check your registration settings in the AutoYaST configuration file.")
             log.warn "Registration has been called but has failed."
@@ -111,7 +112,7 @@ module Yast
         url = InstURL.installInf2Url("")
         Y2Packager::ProductLocation
           .scan(url)
-          .select { |p| p.details && p.details.base }
+          .select { |p| p.details&.base }
           .sort(&::Y2Packager::PRODUCT_SORTER)
       else
         Y2Packager::Product.available_base_products
@@ -153,6 +154,7 @@ module Yast
       end
 
       return products.first if products.size == 1
+
       nil
     end
 

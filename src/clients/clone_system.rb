@@ -11,7 +11,7 @@
 module Yast
   class CloneSystemClient < Client
     # FIXME: unify with conftree.rb
-    ALWAYS_CLONABLE_MODULES ||= ["software", "partitioning", "bootloader"]
+    ALWAYS_CLONABLE_MODULES ||= ["software", "partitioning", "bootloader"].freeze
 
     def main
       Yast.import "AutoinstClone"
@@ -120,13 +120,13 @@ module Yast
         _("The resulting autoyast profile can be found in %s.") % target_path
       )
 
-      if Ops.get_string(options, "clone", "") != ""
-        AutoinstClone.additional = Builtins.splitstring(
+      AutoinstClone.additional = if Ops.get_string(options, "clone", "") != ""
+        Builtins.splitstring(
           Ops.get_string(options, "clone", ""),
           ","
         )
       else
-        AutoinstClone.additional = deep_copy(ProductControl.clone_modules)
+        deep_copy(ProductControl.clone_modules)
       end
       AutoinstClone.Process
       XML.YCPToXMLFile(:profile, Profile.current, target_path)
