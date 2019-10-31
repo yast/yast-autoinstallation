@@ -241,8 +241,8 @@ module Yast
         Builtins.foreach(slpData) do |m|
           attrList = SLP.FindAttrs(Ops.get_string(m, "srvurl", ""))
 
+          url = Builtins.substring(Ops.get_string(m, "srvurl", ""), url_starts_at)
           if Ops.greater_than(Builtins.size(attrList), 0)
-            url = Builtins.substring(Ops.get_string(m, "srvurl", ""), url_starts_at)
             # FIXME: that's really lazy coding here but I allow only one attribute currently anyway
             #        so it's lazy but okay. No reason to be too strict here with the checks
             #        As soon as more than one attr is possible, I need to iterate over the attr list
@@ -278,7 +278,6 @@ module Yast
             dummy = Builtins.add(dummy, Item(comment, false))
             Ops.set(comment2url, comment, url)
           else
-            url = Builtins.substring(Ops.get_string(m, "srvurl", ""), url_starts_at)
             dummy = Builtins.add(dummy, Item(url, false))
             Ops.set(comment2url, url, url)
           end

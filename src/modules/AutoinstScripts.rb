@@ -714,14 +714,13 @@ module Yast
             AutoinstConfig.destdir,
             AutoinstConfig.logs_dir
           )
-          SCR.Execute(path(".target.mkdir"), current_logdir)
         else
           tmpdirString = Builtins.sformat("%1", AutoinstConfig.scripts_dir)
           SCR.Execute(path(".target.mkdir"), tmpdirString)
 
           current_logdir = Builtins.sformat("%1", AutoinstConfig.logs_dir)
-          SCR.Execute(path(".target.mkdir"), current_logdir)
         end
+        SCR.Execute(path(".target.mkdir"), current_logdir)
       else
         current_logdir = AutoinstConfig.logs_dir
       end

@@ -236,16 +236,15 @@ module Yast
             :Value,
             Ops.get_integer(@currentPartition, "stripes", 1)
           )
+          UI.ChangeWidget(Id(:striping), :Enabled, true)
           if Ops.greater_than(
             Ops.get_integer(@currentPartition, "stripes", 1),
             1
           )
-            UI.ChangeWidget(Id(:striping), :Enabled, true)
             UI.ChangeWidget(Id(:striping), :Value, true)
             UI.ChangeWidget(Id(:numberStripes), :Enabled, true)
             UI.ChangeWidget(Id(:stripesize), :Enabled, true)
           else
-            UI.ChangeWidget(Id(:striping), :Enabled, true)
             UI.ChangeWidget(Id(:striping), :Value, false)
             UI.ChangeWidget(Id(:numberStripes), :Enabled, false)
             UI.ChangeWidget(Id(:stripesize), :Enabled, false)

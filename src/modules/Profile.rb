@@ -379,19 +379,14 @@ module Yast
               _MergeTypes = Builtins.splitstring(tomergetypes, ",")
 
               Builtins.foreach(Builtins.splitstring(tomerge, ",")) do |res|
+                rd = Convert.convert(
+                  resource_data,
+                  from: "any",
+                  to:   "map <string, any>"
+                )
                 if Ops.get_string(_MergeTypes, i, "map") == "map"
-                  rd = Convert.convert(
-                    resource_data,
-                    from: "any",
-                    to:   "map <string, any>"
-                  )
                   Ops.set(@current, res, Ops.get_map(rd, res, {}))
                 else
-                  rd = Convert.convert(
-                    resource_data,
-                    from: "any",
-                    to:   "map <string, any>"
-                  )
                   Ops.set(@current, res, Ops.get_list(rd, res, []))
                 end
                 i = Ops.add(i, 1)

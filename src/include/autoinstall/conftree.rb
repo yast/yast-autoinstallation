@@ -499,12 +499,11 @@ module Yast
         if AutoinstConfig.runModule != ""
           ret = :configure
           setModule(AutoinstConfig.runModule)
-          AutoinstConfig.runModule = ""
         else
           event = UI.WaitForEvent
           ret = Ops.get(event, "ID")
-          AutoinstConfig.runModule = ""
         end
+        AutoinstConfig.runModule = ""
         if ret == :groups
           updateModules
         elsif ret == :modules

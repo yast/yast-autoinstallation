@@ -293,8 +293,8 @@ module Yast
               Ops.get_string(c, "class", "xxx")
         end
         profile = Ops.get_map(pl, 0, {})
+        Builtins.y2milestone("Working on profile: %1", profile)
         if base == :empty && !skip
-          Builtins.y2milestone("Working on profile: %1", profile)
           SCR.Execute(
             path(".target.bash"),
             Ops.add(
@@ -319,7 +319,6 @@ module Yast
           )
           skip = true
         else
-          Builtins.y2milestone("Working on profile: %1", profile)
           base_text = "empty control file"
           base_text = "current control file" if base != :empty
 

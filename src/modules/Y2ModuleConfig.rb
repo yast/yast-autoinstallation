@@ -142,10 +142,8 @@ module Yast
               children = Ops.get_list(k, "children", [])
               children = Builtins.add(children, menu_entry)
               Ops.set(k, "children", children)
-              next deep_copy(k)
-            else
-              next deep_copy(k)
             end
+            next deep_copy(k)
           end
         else
           @MenuTreeData = Builtins.add(@MenuTreeData, menu_entry)
@@ -292,12 +290,9 @@ module Yast
                 done = Builtins.add(done, r)
               end
             end
-            m = Builtins.add(m, "res" => p, "data" => d)
-            done = Builtins.add(done, p)
-          else
-            m = Builtins.add(m, "res" => p, "data" => d)
-            done = Builtins.add(done, p)
           end
+          m = Builtins.add(m, "res" => p, "data" => d)
+          done = Builtins.add(done, p)
         end
       end
 
