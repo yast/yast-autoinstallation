@@ -69,13 +69,14 @@ module Yast
     # AddEditClasses()
     # Add or Edit a class
     # @param mode [Symbol] mode (:new or :edit)
-    # @param name [String] class name
-    def AddEditClasses(mode, _name)
+    # @param name [String] class name.
+    def AddEditClasses(mode, name)
       classNames = Builtins.maplist(AutoinstClass.Classes) do |c|
         Ops.get_string(c, "name", "")
       end
 
-      _class = {}
+      _class = (AutoinstClass.Classes || []).find { |c| c["name"] == name }
+      _class ||= {}
 
       tmp = Builtins.sformat(
         "%1",
@@ -101,7 +102,7 @@ module Yast
                 _("Or&der:"),
                 1,
                 10,
-                Ops.get_integer(_class, "order", order)
+                order
               )
             ),
             MultiLineEdit(
