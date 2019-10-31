@@ -108,7 +108,7 @@ module Yast
 
     def available_base_products
       @base_products ||= if Y2Packager::MediumType.offline? && !@force_libzypp
-      url = InstURL.installInf2Url("")
+        url = InstURL.installInf2Url("")
         Y2Packager::ProductLocation
           .scan(url)
           .select { |p| p.details && p.details.base }
