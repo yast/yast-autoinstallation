@@ -995,17 +995,17 @@ module Yast
       end
 
       # Filter out kernel and pattern packages
-      kernel_packages = Pkg.PkgQueryProvides("kernel").collect { |package|
+      kernel_packages = Pkg.PkgQueryProvides("kernel").collect do |package|
         package[0]
-      }.compact.uniq
-      pattern_packages = Pkg.PkgQueryProvides("pattern()").collect { |package|
+      end.compact.uniq
+      pattern_packages = Pkg.PkgQueryProvides("pattern()").collect do |package|
         package[0]
-      }.compact.uniq
+      end.compact.uniq
 
-      (packages + installed_by_user).uniq.select { |pkg_name|
+      (packages + installed_by_user).uniq.select do |pkg_name|
         !kernel_packages.include?(pkg_name) &&
           !pattern_packages.include?(pkg_name)
-      }
+      end
     end
 
     # Return list of software packages of calling client

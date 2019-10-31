@@ -224,12 +224,12 @@ describe "Yast::AutoinstClass" do
     let(:dontmerge) { [] }
     let(:merge_xslt_path) { File.join(ROOT_PATH, "xslt", "merge.xslt") }
     let(:conf_to_merge) { { "class" => "swap", "name" => "largeswap.xml" } }
-    let(:xsltproc_command) {
+    let(:xsltproc_command) do
       "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\"  " \
       "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
       "--output #{File.join(tmp_dir, "output.xml")}  " \
       "#{merge_xslt_path} #{base_profile_path} "
-    }
+    end
 
     before(:each) do
       stub_const("Yast::AutoinstClassClass::MERGE_XSLT_PATH", merge_xslt_path)
@@ -273,13 +273,13 @@ describe "Yast::AutoinstClass" do
         File.join(ROOT_PATH, "test", "fixtures", "output", "partitions-dontmerge.xml")
       end
       let(:dontmerge) { ["partition"] }
-      let(:xsltproc_command) {
+      let(:xsltproc_command) do
         "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\"  " \
         "--param dontmerge1 \"'partition'\"  " \
         "--param with \"'#{subject.findPath("largeswap.xml", "swap")}'\"  "\
         "--output #{File.join(tmp_dir, "output.xml")}  " \
         "#{merge_xslt_path} #{base_profile_path} "
-      }
+      end
 
       it "does not merge those elements" do
         expect(Yast::SCR).to receive(:Execute)

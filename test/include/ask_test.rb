@@ -101,9 +101,9 @@ describe "Yast::AutoinstallAskInclude" do
 
       context "when ask-list contains a question with type 'selection'" do
         let(:ask) { BASE_ASK.merge("selection" => items, "default" => "desktop") }
-        let(:items) {
+        let(:items) do
           %w[desktop server].map { |i| { "value" => i, "label" => i.capitalize } }
-        }
+        end
 
         it "creates a ComboBox widget" do
           expect(Yast::UI).to receive(:OpenDialog)
@@ -146,12 +146,12 @@ describe "Yast::AutoinstallAskInclude" do
       end
 
       context "when ask-list contains question with type 'symbol'" do
-        let(:ask) {
+        let(:ask) do
           BASE_ASK.merge("type" => "symbol", "default" => :desktop, "selection" => items)
-        }
-        let(:items) {
+        end
+        let(:items) do
           %w[desktop server].map { |i| { "value" => i.to_sym, "label" => i.capitalize } }
-        }
+        end
 
         it "creates a ComboBox widget" do
           expect(Yast::UI).to receive(:OpenDialog)

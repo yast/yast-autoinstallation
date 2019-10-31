@@ -14,9 +14,9 @@ describe "Yast::AutoInstallRules" do
     before { subject.main }
     let(:devicegraph) { instance_double(Y2Storage::Devicegraph, disk_devices: disk_devices) }
     let(:disk_devices) { [disk] }
-    let(:disk) {
+    let(:disk) do
       instance_double(Y2Storage::Disk, name: "/dev/sda", size: Y2Storage::DiskSize.MiB(1))
-    }
+    end
 
     it "detect system properties" do
       allow(Y2Storage::StorageManager.instance).to receive(:probed)
@@ -219,12 +219,12 @@ describe "Yast::AutoInstallRules" do
     let(:output_xml) { File.read(output_path) }
     let(:dontmerge) { [] }
     let(:merge_xslt_path) { File.join(root_path, "xslt", "merge.xslt") }
-    let(:xsltproc_command) {
+    let(:xsltproc_command) do
       "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \
       "--param with \"'#{to_merge_path}'\" "\
       "--output \"#{output_path}\" " \
       "#{merge_xslt_path} #{base_profile_path}"
-    }
+    end
 
     before(:each) do
       stub_const("Yast::AutoInstallRulesClass::MERGE_XSLT_PATH", merge_xslt_path)
@@ -268,13 +268,13 @@ describe "Yast::AutoInstallRules" do
         File.join(root_path, "test", "fixtures", "output", "partitions-dontmerge.xml")
       end
       let(:dontmerge) { ["partition"] }
-      let(:xsltproc_command) {
+      let(:xsltproc_command) do
         "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \
         "--param dontmerge1 \"'partition'\" " \
         "--param with \"'#{to_merge_path}'\" "\
         "--output \"#{output_path}\" " \
         "#{merge_xslt_path} #{base_profile_path}"
-      }
+      end
 
       it "does not merge those elements" do
         expect(Yast::SCR).to receive(:Execute)
