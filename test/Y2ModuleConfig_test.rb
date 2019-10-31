@@ -167,8 +167,8 @@ describe Yast::Y2ModuleConfig do
           allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
             "/usr/bin/grep -l \"<define name=\\\"firstboot\\\">\" " \
               "/usr/share/YaST2/schema/autoyast/rng/*.rng")
-            .and_return ( { "exit" => 0, "stderr" => "",
-            "stdout" => "/usr/share/YaST2/schema/autoyast/rng/firstboot.rng\n" })
+            .and_return("exit" => 0, "stderr" => "",
+            "stdout" => "/usr/share/YaST2/schema/autoyast/rng/firstboot.rng\n")
           allow(File).to receive(:readlines)
             .with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc")
             .and_return(["include 'firstboot.rnc' # yast2-firstboot\n",
@@ -180,8 +180,8 @@ describe Yast::Y2ModuleConfig do
             expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
               "/usr/bin/grep -l \"<define name=\\\"fake\\\">\" " \
                 "/usr/share/YaST2/schema/autoyast/rng/*.rng")
-              .and_return ( { "exit" => 0, "stderr" => "",
-              "stdout" => "/usr/share/YaST2/schema/autoyast/rng/fake.rng\n" })
+              .and_return("exit" => 0, "stderr" => "",
+              "stdout" => "/usr/share/YaST2/schema/autoyast/rng/fake.rng\n")
             expect(subject.required_packages(["fake"])).to eq("fake"=>[])
           end
         end
