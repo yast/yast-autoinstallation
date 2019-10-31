@@ -602,7 +602,6 @@ module Yast
         elsif :advanced == event
           # if this partition is part of a volume group,
           # we call it a PV (physical volume).
-          isPV = false
           isPV = UI.WidgetExists(Id(:cbVolgroup)) &&
             :none != Convert.to_symbol(UI.QueryWidget(Id(:cbVolgroup), :Value))
           @currentPartition = AdvancedPartitionDisplay(@currentPartition, isPV)

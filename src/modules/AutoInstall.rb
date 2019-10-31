@@ -51,38 +51,31 @@ module Yast
       false
     end
 
-    def callback_void_map(dummy_map)
-      dummy_map = deep_copy(dummy_map)
+    def callback_void_map(_dummy_map)
       nil
     end
 
-    def callbackTrue_boolean_map(dummy_map)
-      dummy_map = deep_copy(dummy_map)
+    def callbackTrue_boolean_map(_dummy_map)
       true
     end
 
-    def callbackFalse_boolean_map(dummy_map)
-      dummy_map = deep_copy(dummy_map)
+    def callbackFalse_boolean_map(_dummy_map)
       false
     end
 
-    def callbackTrue_boolean_map_integer(dummy_map, _dummy)
-      dummy_map = deep_copy(dummy_map)
+    def callbackTrue_boolean_map_integer(_dummy_map, _dummy)
       true
     end
 
-    def callbackFalse_boolean_map_integer(dummy_map, _dummy)
-      dummy_map = deep_copy(dummy_map)
+    def callbackFalse_boolean_map_integer(_dummy_map, _dummy)
       false
     end
 
-    def callbackTrue_boolean_string_map_integer(_dummy, dummy_map, _dummy_int)
-      dummy_map = deep_copy(dummy_map)
+    def callbackTrue_boolean_string_map_integer(_dummy, _dummy_map, _dummy_int)
       true
     end
 
-    def callbackFalse_boolean_string_map_integer(_dummy, dummy_map, _dummy_int)
-      dummy_map = deep_copy(dummy_map)
+    def callbackFalse_boolean_string_map_integer(_dummy, _dummy_map, _dummy_int)
       false
     end
 

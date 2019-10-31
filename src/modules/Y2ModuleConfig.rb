@@ -79,7 +79,6 @@ module Yast
           modes,
           Ops.get_string(values, "X-SuSE-YaST-AutoInst", "")
         )
-          module_auto = ""
           # determine name of client, if not default name
           if !Builtins.haskey(values, "X-SuSE-YaST-AutoInstClient") ||
               Ops.get_string(values, "X-SuSE-YaST-AutoInstClient", "") == ""
@@ -118,7 +117,6 @@ module Yast
     def CreateGroupTree(_Groups)
       _Groups = deep_copy(_Groups)
 
-      grouplist = []
       grouplist = SortGroups(_Groups, Builtins.maplist(_Groups) do |rawname, _group|
         rawname
       end)
@@ -139,7 +137,6 @@ module Yast
       Builtins.foreach(@ModuleMap) do |m, v|
         name = Ops.get_string(v, "Name", "")
         menu_entry = { "entry" => m, "title" => name }
-        menu_list = []
         if Builtins.haskey(v, "X-SuSE-YaST-Group")
           parent = Ops.get_string(v, "X-SuSE-YaST-Group", "")
           @MenuTreeData = Builtins.maplist(@MenuTreeData) do |k|

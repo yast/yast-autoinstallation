@@ -112,7 +112,7 @@ module Yast
       @packagesAvailable = Pkg.GetPackages(:available, true)
       @patternsAvailable = []
       allPatterns = Pkg.ResolvableDependencies("", :pattern, "")
-      allPatterns = Builtins.filter(allPatterns) do |m|
+      Builtins.filter(allPatterns) do |m|
         @patternsAvailable.push(m.fetch("name", "")) if m.fetch("user_visible", false)
         m.fetch("user_visible", false)
       end
@@ -580,7 +580,6 @@ module Yast
       SCR.Execute(path(".target.bash"), Builtins.sformat("rm -rf %1", isodir))
       SCR.Execute(path(".target.mkdir"), isodir)
       outputRedirect = " 2>&1 >> /tmp/ay_image.log"
-      returnCode = 0
       createImage(isodir)
 
       Popup.ShowFeedback(_("Preparing ISO Filestructure ..."), "")
@@ -985,12 +984,14 @@ module Yast
 
     def install_packages
       # user selected packages which have not been already installed
+      # rubocop:disable Lint/UselessAssignment
       packages = Pkg.FilterPackages(
         solver_selected = false,
         app_selected = true,
         user_selected = true,
         name_only = true
       )
+      # rubocop:enable Lint/UselessAssignment
 
       # user selected packages which have already been installed
       installed_by_user = Pkg.GetPackages(:installed, true).select do |pkg_name|
@@ -1030,7 +1031,8 @@ module Yast
       to_install_packages = install_packages
       patterns = []
 
-      patternsFullData = Builtins.filter(all_patterns) do |p|
+      # FIXME: filter method but it use only side effect of filling patterns
+      Builtins.filter(all_patterns) do |p|
         ret2 = false
         if Ops.get_symbol(p, "status", :none) == :installed &&
             !Builtins.contains(patterns, Ops.get_string(p, "name", "no name"))
@@ -1052,7 +1054,6 @@ module Yast
       Pkg.SourceStartManager(true)
       Pkg.TargetFinish
 
-      patternPackages = []
       new_p = []
       Builtins.foreach(patterns) do |tmp_pattern|
         xpattern = Builtins.filter(@all_xpatterns) do |p|

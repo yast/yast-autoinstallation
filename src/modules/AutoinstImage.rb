@@ -24,8 +24,6 @@ module Yast
     def getScript
       ret = false
       if Ops.get_string(AutoinstSoftware.image, "script_location", "") != ""
-        urltok = {}
-
         urltok = URL.Parse(
           Ops.get_string(AutoinstSoftware.image, "script_location", "")
         )

@@ -32,8 +32,7 @@ module Yast
       Ops.get_boolean(part, "crypt_fs", false)
     end
 
-    def fstabOptionsEnabled(part)
-      part = deep_copy(part)
+    def fstabOptionsEnabled(_part)
       false
     end
 
@@ -55,27 +54,6 @@ module Yast
       part = deep_copy(part)
       # is result copy of part?
       result = deep_copy(part)
-      helpText = _(
-        "<p><b>Mount in /etc/fstab By:</b>\n" \
-          "\tNormally, a file system to mount is identified in /etc/fstab\n" \
-          "\tby the device name. This identification can be changed so the file system to mount\n" \
-          "\tis found by searching for a UUID or a volume label. Not all file systems can be\n" \
-          "\tmounted by UUID or a volume label. If an option is disabled, it is not possible.\n" \
-          "\t"
-      )
-
-      # help text, richtext format
-      helpText = Ops.add(
-        helpText,
-        _(
-          "<p><b>Volume Label:</b>\n" \
-            "\t  The name entered in this field is used as the volume label. " \
-            "This usually makes sense only \n" \
-            "\t  when you activate the option for mounting by volume label.\n" \
-            "\t  A volume label cannot contain the / character or spaces.\n" \
-            "\t  "
-        )
-      )
 
       cryptFrame = CheckBoxFrame(
         Id(:cbfCrypt),
@@ -94,7 +72,6 @@ module Yast
         )
       end
       contents = HBox(
-        # `HWeight(30, `RichText(`opt(`hstretch),helpText)),
         HSpacing(1),
         HWeight(
           70,
@@ -171,7 +148,6 @@ module Yast
           UI.ChangeWidget(Id(widget), :Enabled, false)
         end
       end
-      widgetID = nil
       widgetID = Convert.to_symbol(UI.UserInput)
 
       while widgetID != :pbCancel && widgetID != :pbOK

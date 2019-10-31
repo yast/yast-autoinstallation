@@ -180,7 +180,6 @@ module Yast
       begin
         ret = UI.UserInput
         if ret == :next
-          m = {}
           confirm = Convert.to_boolean(UI.QueryWidget(Id(:confirm), :Value))
           second_stage = Convert.to_boolean(
             UI.QueryWidget(Id(:second_stage), :Value)
@@ -373,7 +372,6 @@ module Yast
           )
         )
       )
-      help_text = _("<P></P>")
       UI.OpenDialog(Opt(:decorated), contents)
       UI.ChangeWidget(Id(:selLabel), :Enabled, false)
       UI.ChangeWidget(Id(:selValue), :Enabled, false)

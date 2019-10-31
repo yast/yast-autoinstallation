@@ -86,7 +86,6 @@ module Yast
     # otherwise
     def selectTreeItem(newItem)
       item = string2symbol(newItem)
-      allItems = []
       allItems = Convert.convert(
         UI.QueryWidget(@iTree, :Items),
         from: "any",
@@ -108,7 +107,6 @@ module Yast
     # @param [Array<Yast::Term>] children list of child nodes
     def createTreeNode(reference, name, children)
       children = deep_copy(children)
-      result = Empty()
       result = if 0 == Builtins.size(children)
         Item(Id(string2symbol(reference)), name)
       else

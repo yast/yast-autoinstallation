@@ -81,19 +81,8 @@ module Yast
     # @param resource    [String] resource
     # @param resourceMap [Hash] resources map
     # @return [Array]
-    def CommonClone(resource, resourceMap)
-      resourceMap = deep_copy(resourceMap)
-      data_type = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstDataType",
-        "map"
-      )
+    def CommonClone(_resource, resourceMap)
       auto = Ops.get_string(resourceMap, "X-SuSE-YaST-AutoInstClient", "")
-      resource = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstResource",
-        resource
-      )
 
       # Do not read settings from system in first stage, autoyast profile
       # should contain only proposed and user modified values.
@@ -190,7 +179,7 @@ module Yast
         if @additional.include?(resource)
           log.info "Now cloning: #{resource}"
           time_start = Time.now
-          ret = CommonClone(def_resource, resourceMap)
+          CommonClone(def_resource, resourceMap)
           log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
         end
       end

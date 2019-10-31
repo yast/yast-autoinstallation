@@ -386,8 +386,6 @@ module Yast
         # Wait for user input
         #
         loop do
-          ret = nil
-
           ret = user_input_with_countdown(timeout)
           # Any user action stops the timeout
           timeout = 0 if ret != :timeout

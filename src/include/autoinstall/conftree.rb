@@ -43,14 +43,7 @@ module Yast
               AutoinstConfig.currentFile
             )
           )
-          #                Profile::checkProfile();
           Profile.changed = false
-          pathComponents = Builtins.splitstring(
-            Convert.to_string(filename),
-            "/"
-          )
-          s = Ops.subtract(Builtins.size(pathComponents), 1)
-          base = Ops.get_string(pathComponents, s, "default")
         else
           Popup.Warning(_("An error occurred while saving the file."))
         end
@@ -319,7 +312,6 @@ module Yast
       if Builtins.haskey(Profile.current, resource)
         Profile.current = Builtins.remove(Profile.current, resource)
       end
-      profile_resource = Y2ModuleConfig.getResource(resource)
       WFM.CallFunction(module_auto, ["Reset"])
 
       :next
@@ -503,7 +495,6 @@ module Yast
     def MainDialog
       _Icons = {}
       Ops.set(_Icons, "Net_advanced", "network_advanced")
-      func_ret = ""
       ret = nil
       currentGroup = "System"
       currentModule = "general"
@@ -605,13 +596,6 @@ module Yast
           if filename != "" && !filename.nil?
             AutoinstConfig.currentFile = Convert.to_string(filename)
 
-            pathComponents = Builtins.splitstring(
-              Convert.to_string(filename),
-              "/"
-            )
-
-            s = Ops.subtract(Builtins.size(pathComponents), 1)
-            base = Ops.get_string(pathComponents, s, "default")
             readOkay = Profile.ReadXML(Convert.to_string(filename))
             Builtins.y2debug("Profile::ReadXML returned %1", readOkay)
             if readOkay
@@ -624,7 +608,6 @@ module Yast
                 resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
                 resource = p if resource == ""
                 Builtins.y2debug("resource: %1", resource)
-                tomerge = Ops.get_string(d, "X-SuSE-YaST-AutoInstMerge", "")
                 module_auto = Ops.get_string(
                   d,
                   "X-SuSE-YaST-AutoInstClient",
@@ -649,8 +632,6 @@ module Yast
           else
             group = getGroup
             modulename = getModule
-
-            contents = Empty()
 
             if group != ""
               contents = layout(group, modulename)
@@ -778,7 +759,6 @@ module Yast
         elsif ret == "menu_exit" || :cancel == ret # EXIT
           ret = :menu_exit
           if Profile.changed
-            current = ""
             current = if AutoinstConfig.currentFile == ""
               "Untitled"
             else

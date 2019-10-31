@@ -123,7 +123,6 @@ module Yast
         resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
         resource = p if resource == ""
         Builtins.y2debug("resource: %1", resource)
-        tomerge = Ops.get_string(d, "X-SuSE-YaST-AutoInstMerge", "")
         module_auto = Ops.get_string(d, "X-SuSE-YaST-AutoInstClient", "none")
         rd = Y2ModuleConfig.getResourceData(d, resource)
         WFM.CallFunction(module_auto, ["Import", rd]) if !rd.nil?

@@ -115,10 +115,7 @@ module Yast
       end until ret == :back || ret == :next
 
       Wizard.RestoreScreenShotName
-      if changed
-        AutoinstConfig.Save
-        changed = false
-      end
+      AutoinstConfig.Save if changed
       Wizard.CloseDialog
       ret
     end

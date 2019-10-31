@@ -534,7 +534,7 @@ module Yast
             end
             if ok_button == true
               UI.ChangeWidget(Id(:ok), :Enabled, true)
-              ret = UI.UserInput
+              UI.UserInput
               if widget == "radiobutton"
                 val = UI.QueryWidget(Id(:rb), :CurrentButton)
                 SCR.Execute(
@@ -696,7 +696,6 @@ module Yast
         return false
       end
 
-      tmpdirString = ""
       current_logdir = ""
 
       if type == "pre-scripts" || type == "postpartitioning-scripts"

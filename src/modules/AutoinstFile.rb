@@ -85,7 +85,6 @@ module Yast
           AutoinstConfig.files_dir,
           counter
         )
-        alter_file = Builtins.sformat("file_%1", counter)
         if Ops.subtract(
           Builtins.size(Ops.get_string(file, "file_path", "dummy")),
           1
@@ -101,12 +100,6 @@ module Yast
             "AutoInstall: Copying file %1",
             Ops.get_string(file, "file_path", alternate_location)
           )
-          t = Builtins.splitstring(
-            Ops.get_string(file, "file_path", alternate_location),
-            "/"
-          )
-          pos = Ops.subtract(Builtins.size(t), 1)
-
           SCR.Write(
             path(".target.string"),
             Ops.get_string(file, "file_path", alternate_location),

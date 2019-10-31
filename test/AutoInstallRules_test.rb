@@ -258,7 +258,7 @@ describe "Yast::AutoInstallRules" do
       it "merges elements from the base profile and the rule profile" do
         expect(Yast::SCR).to receive(:Execute)
           .with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
-        out = subject.merge_profiles(base_profile_path, to_merge_path, output_path)
+        subject.merge_profiles(base_profile_path, to_merge_path, output_path)
         expect(output_xml).to eq(expected_xml)
       end
     end
@@ -279,7 +279,7 @@ describe "Yast::AutoInstallRules" do
       it "does not merge those elements" do
         expect(Yast::SCR).to receive(:Execute)
           .with(Yast::Path.new(".target.bash_output"), xsltproc_command, {}).and_call_original
-        out = subject.merge_profiles(base_profile_path, to_merge_path, output_path)
+        subject.merge_profiles(base_profile_path, to_merge_path, output_path)
         expect(output_xml).to eq(expected_xml)
       end
     end

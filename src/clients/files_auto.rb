@@ -106,7 +106,6 @@ module Yast
 
     # Add or edit a file
     def AddEditFile(fileName, source, permissions, owner, location)
-      newFiles = []
       modified = false
       AutoinstFile.Files = Builtins.maplist(AutoinstFile.Files) do |file|
         # Edit

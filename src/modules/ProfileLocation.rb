@@ -40,9 +40,6 @@ module Yast
     # Initiate retrieving of control files and Rules.
     # @return [Boolean]
     def Process
-      ok = false
-      ret = false
-
       Builtins.y2milestone(
         "Path to remote control file: %1",
         AutoinstConfig.filepath

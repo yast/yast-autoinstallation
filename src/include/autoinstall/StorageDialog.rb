@@ -126,8 +126,7 @@ module Yast
     # events might be superflous and could be genralized.
 
     # Generic tree event dispatching
-    def dispatchMenuEvent(event)
-      event = deep_copy(event)
+    def dispatchMenuEvent(_event)
       item = currentTreeItem
       if "" == item
         # User deselected current tree item. Happens when she clicks on empty line.

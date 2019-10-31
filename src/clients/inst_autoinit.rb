@@ -209,7 +209,6 @@ module Yast
       Progress.NextStage
       Builtins.y2milestone("Starting processProfile msg:%1", AutoinstConfig.message)
       Progress.Title(AutoinstConfig.message)
-      ret = false
       Progress.NextStep
       loop do
         r = ProfileLocation.Process

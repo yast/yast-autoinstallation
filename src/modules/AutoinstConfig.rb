@@ -326,14 +326,14 @@ module Yast
         # There must be a floppy with an 'autoinst.xml' in order
         # to be able to reach this point, so we set floppy with
         # autoinst.xml as the control file.
-        profile_location = "floppy:///#{DEFAULT_PROFILE_NAME}"
+        "floppy:///#{DEFAULT_PROFILE_NAME}"
       elsif profile_location == "default"
-        profile_location = "file:///#{DEFAULT_PROFILE_NAME}"
+        "file:///#{DEFAULT_PROFILE_NAME}"
       # bsc#987858: autoyast=usb checks for the default profile
       elsif profile_location == "usb"
-        profile_location = "usb:///#{DEFAULT_PROFILE_NAME}"
+        "usb:///#{DEFAULT_PROFILE_NAME}"
       elsif profile_location == "slp"
-        profile_location = find_slp_autoyast
+        find_slp_autoyast
       else
         profile_location
       end

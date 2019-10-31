@@ -120,7 +120,6 @@ module Yast
 
     # TODO: might be optimized by not using a regex here
     def removePrefix(s, prefix)
-      result = ""
       result = Builtins.regexpsub(s, Ops.add(prefix, "(.*)"), "\\1")
       return s if nil == result
 

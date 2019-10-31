@@ -162,7 +162,6 @@ module Yast
 
     def internalRemoveDrive(plan, which)
       plan = deep_copy(plan)
-      result = []
       drive = internalGetDrive(plan, which)
       result = Builtins.filter(plan) do |curDrive|
         Ops.get_integer(drive, "_id", 100) !=
@@ -202,9 +201,7 @@ module Yast
     #
     # @return Partition plan containing only volgroups.
 
-    def internalGetAvailableVolgroups(plan)
-      plan = deep_copy(plan)
-      result = []
+    def internalGetAvailableVolgroups(_plan)
       result = Builtins.filter(@AutoPartPlan) do |curDrive|
         Ops.get_symbol(curDrive, "type", :CT_DISK) != :CT_DISK
       end
@@ -217,9 +214,7 @@ module Yast
     #
     # @return Partition plan containing only physical drives.
 
-    def internalGetAvailablePhysicalDrives(plan)
-      plan = deep_copy(plan)
-      result = []
+    def internalGetAvailablePhysicalDrives(_plan)
       result = Builtins.filter(@AutoPartPlan) do |curDrive|
         Ops.get_symbol(curDrive, "type", :CT_LVM) == :CT_DISK
       end
@@ -302,13 +297,8 @@ module Yast
     # @param [Array<Hash{String => Object>}] plan The partition plan
     #
     # @return true if plan is sane, false otherwise.
-
     def internalCheckSanity(plan)
-      plan = deep_copy(plan)
-      sane = true
-      sane = internalCheckVolgroups(plan)
-      # ...
-      sane
+      internalCheckVolgroups(plan)
     end
 
     # Create tree structure from AutoPartPlan
@@ -442,7 +432,6 @@ module Yast
 
     def getAvailableMountPoints
       usedMountPoints = internalGetUsedMountPoints(@AutoPartPlan)
-      availableMountPoints = []
       availableMountPoints = Builtins.filter(
         AutoinstPartition.getDefaultMountPoints
       ) { |mp| !Builtins.contains(usedMountPoints, mp) }
@@ -526,7 +515,6 @@ module Yast
       removalDriveIdx = internalGetListIndex(@AutoPartPlan, which)
       oldDriveCount = getDriveCount
       @AutoPartPlan = internalRemoveDrive(@AutoPartPlan, which)
-      drive = {}
       drive = if Ops.greater_than(oldDriveCount, 1) &&
           removalDriveIdx == Ops.subtract(oldDriveCount, 1)
         # lowest drive in tree was deleted, select predecessor

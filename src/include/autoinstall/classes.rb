@@ -72,18 +72,12 @@ module Yast
     # Add or Edit a class
     # @param mode [Symbol] mode (:new or :edit)
     # @param name [String] class name
-    def AddEditClasses(mode, name)
+    def AddEditClasses(mode, _name)
       classNames = Builtins.maplist(AutoinstClass.Classes) do |c|
         Ops.get_string(c, "name", "")
       end
 
       _class = {}
-      if mode == :edit
-        cl = Builtins.filter(AutoinstClass.Classes) do |c|
-          Ops.get_string(c, "name", "") == name
-        end
-        class2 = Ops.get_map(cl, 0, {})
-      end
 
       tmp = Builtins.sformat(
         "%1",
@@ -241,7 +235,7 @@ module Yast
         ret = Convert.to_symbol(UI.UserInput)
 
         if ret == :new
-          defret = AddEditClasses(Convert.to_symbol(ret), "")
+          AddEditClasses(ret, "")
 
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
         elsif ret == :edit
@@ -249,7 +243,7 @@ module Yast
             Popup.Message(_("Select at least one class\nto edit.\n"))
             next
           end
-          defret = AddEditClasses(Convert.to_symbol(ret), _class)
+          AddEditClasses(ret, _class)
           Wizard.SetContents(title, class_dialog_contents, help, true, true)
         elsif ret == :delete
           if _class.nil?
@@ -480,7 +474,6 @@ module Yast
       Wizard.SetContents(title, contents, help, true, true)
 
       Wizard.HideAbortButton
-      widgets = [:merge, :empty, :current]
 
       Wizard.SetNextButton(:next, Label.FinishButton)
       Wizard.DisableNextButton

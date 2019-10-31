@@ -82,8 +82,6 @@ module Yast
     # Select packages
     # @return [Symbol]
     def packageSelector
-      language = UI.GetLanguage(true)
-
       title = _("Software Selection")
       helptext = _(
         "<p>\n" \
@@ -106,10 +104,7 @@ module Yast
       )
 
       tmpdir = Convert.to_string(SCR.Read(path(".target.tmpdir")))
-      # AutoinstSoftware::pmInit();
 
-      # string mainRepo = "http://10.10.0.162/SLES11/DVD1/";
-      # string mainRepo = "ftp://10.10.0.100/install/SLP/openSUSE-11.2/x86_64/DVD1/";
       mainRepo = AutoinstSoftware.instsource
       contents = VBox(
         HBox(
@@ -192,9 +187,6 @@ module Yast
       )
       patterns = Pkg.ResolvableProperties("", :pattern, "")
       Builtins.y2milestone("available patterns %1", patterns)
-      # Construct a box with radiobuttons for each software base configuration
-      baseconfs_box = VBox()
-
       # sort available_base_selections by order
       # $[ "order" : [ "name", "summary" ], .... ]
 
@@ -236,8 +228,6 @@ module Yast
         Builtins.size(allpacs)
       )
 
-      seladd = []
-      selbase = []
       patadd = []
       if @ret != :back
         Builtins.y2milestone(

@@ -257,7 +257,6 @@ module Yast
       # Memory
       #
 
-      memory = 0
       memories = Convert.to_list(SCR.Read(path(".probe.memory")))
       memory = Ops.get_integer(
         memories,
@@ -813,7 +812,6 @@ module Yast
 
       scheme = AutoinstConfig.scheme
       host = AutoinstConfig.host
-      filepath = AutoinstConfig.filepath
       directory = AutoinstConfig.directory
 
       valid = []
@@ -944,7 +942,6 @@ module Yast
     # @return [Boolean]
     def Process(result_profile)
       ok = true
-      tmpdir = AutoinstConfig.tmpDir
       prefinal = Ops.add(
         AutoinstConfig.local_rules_location,
         "/prefinal_autoinst.xml"
