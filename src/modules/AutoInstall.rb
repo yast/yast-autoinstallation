@@ -117,7 +117,6 @@ module Yast
       # First check if there are some other control files availabe
       # i.e. for post-installation only
       #
-      ret = false
       if SCR.Read(path(".target.size"), AutoinstConfig.autoconf_file) != -1
         Builtins.y2milestone(
           "XML Post installation data found: %1",
@@ -132,20 +131,18 @@ module Yast
             AutoinstConfig.cache
           )
         )
-        return ret
+        ret
       else
         ret = Profile.ReadProfileStructure(AutoinstConfig.parsedControlFile)
         if Profile.current == {} || !ret
           Builtins.y2milestone("No saved autoinstall data found")
-          return false
+          false
         else
           Builtins.y2milestone("Found and read saved autoinst data")
           SCR.Execute(path(".target.remove"), AutoinstConfig.parsedControlFile)
-          return true
+          true
         end
       end
-
-      false
     end
 
     # Constructer
