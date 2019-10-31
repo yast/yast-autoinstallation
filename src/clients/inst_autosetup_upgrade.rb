@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:    clients/inst_autosetup.ycp
 # Package: Auto-installation
 # Summary: Setup and prepare system for auto-installation

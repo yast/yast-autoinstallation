@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/AutoInstall.ycp
 # Package:  Auto-installation
 # Summary:  Auto-installation related functions module

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  include/autoinstall/io.ycp
 # Package:  Autoinstallation Configuration System
 # Summary:  I/O

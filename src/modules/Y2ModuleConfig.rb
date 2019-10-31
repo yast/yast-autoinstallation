@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/Y2ModuleConfig.ycp
 # Package:  Auto-installation
 # Summary:  Read data from desktop files

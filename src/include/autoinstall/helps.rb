@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  include/autoinstall/helps.ycp
 # Package:  Configuration of autoinstall
 # Summary:  Help texts of all the dialogs

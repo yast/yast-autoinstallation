@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  clients/autoinst_software.ycp
 # Package:  Autoinstallation Configuration System
 # Authors:  Anas Nashif (nashif@suse.de)

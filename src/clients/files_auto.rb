@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  clients/autoinst_files.ycp
 # Package:  Configuration of XXpkgXX
 # Summary:  Client for autoinstallation

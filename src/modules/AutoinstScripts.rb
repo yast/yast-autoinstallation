@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/AutoinstScripts.ycp
 # Module:  Auto-Installation
 # Summary:  Custom scripts

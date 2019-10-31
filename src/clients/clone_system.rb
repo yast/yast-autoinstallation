@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:        clients/clone_system.ycp
 # Package:     Auto-installation
 # Author:      Uwe Gansert <ug@suse.de>

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/Profile.ycp
 # Module:  Auto-Installation
 # Summary:  Profile handling

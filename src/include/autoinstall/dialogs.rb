@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  include/autoinstall/dialogs.ycp
 # Module:  Auto-Installation Configuration System
 # Summary:  This module handles the configuration for auto-installation

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/AutoinstFile.ycp
 # Package:  AutoYaST
 # Authors:  Anas Nashif (nashif@suse.de)

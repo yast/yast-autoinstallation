@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  clients/autoyast.ycp
 # Summary:  Main file for client call
 # Authors:  Anas Nashif <nashif@suse.de>

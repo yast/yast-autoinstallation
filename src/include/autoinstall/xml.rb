@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  include/autoinstall/xml.ycp
 # Package:  Autoinstallation Configuration System
 # Summary:  XML handling

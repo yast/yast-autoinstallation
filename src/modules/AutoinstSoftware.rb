@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/AutoinstSoftware.ycp
 # Package:  Autoyast
 # Summary:  Software

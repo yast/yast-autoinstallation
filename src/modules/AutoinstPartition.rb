@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/AutoinstCommon.ycp
 # Package:  Auto-installation/Partition
 # Summary:  Partition related functions module

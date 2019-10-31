@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  include/tree.ycp
 # Package:  Auto-installation/Partition
 # Summary:     helper functions for dealing with tree widget

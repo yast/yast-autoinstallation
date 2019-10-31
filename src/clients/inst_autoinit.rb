@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  clients/inst_autoinit.ycp
 # Package:  Auto-installation
 # Summary:  Parses XML Profile for automatic installation

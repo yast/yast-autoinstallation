@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 module Yast
   class InstStoreUpgradeSoftwareClient < Client
     def main

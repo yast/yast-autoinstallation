@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:
 #  autoinst_scripts1_finish.ycp
 #

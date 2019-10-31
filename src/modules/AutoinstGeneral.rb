@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/AutoinstGeneral.ycp
 # Package:  Autoyast
 # Summary:  Configuration of general settings for autoyast

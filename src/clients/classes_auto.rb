@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  clients/autoinst_linuxrc.ycp
 # Package:  Autoinstallation Configuration System
 # Summary:   Linuxrc Settings

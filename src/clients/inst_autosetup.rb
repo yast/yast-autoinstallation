@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) [2013-2019] SUSE LLC
 #
 # All Rights Reserved.

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  modules/ProfileLocation.ycp
 # Package:  Auto-installation
 # Summary:  Process Auto-Installation Location

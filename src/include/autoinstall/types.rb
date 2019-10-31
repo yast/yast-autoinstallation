@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  include/common.ycp
 # Package:  Auto-installation/Partition
 # Summary:  common type definitions for partitioning

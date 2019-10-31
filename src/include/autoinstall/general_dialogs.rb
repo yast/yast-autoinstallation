@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  clients/autoinst_general.ycp
 # Package:  Autoinstallation Configuration System
 # Summary:  General Settings

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:  clients/inst_autoimage.ycp
 # Package:  Auto-installation
 # Author:      Anas Nashif <nashif@suse.de>
