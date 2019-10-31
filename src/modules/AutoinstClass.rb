@@ -98,7 +98,6 @@ module Yast
       AutoinstConfig.classDir = newdir
       @classDir = newdir
       @classPath = File.join(@classDir, @class_file)
-      newdir
     end
 
     # Constructor
