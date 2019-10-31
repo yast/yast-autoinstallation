@@ -138,8 +138,6 @@ module Yast
       false
     end
 
-  private
-
     # Return add-on signature-handling settings
     #
     # If the add-on has its own specific configuration, those settings
