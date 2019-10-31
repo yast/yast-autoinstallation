@@ -195,7 +195,8 @@ module Yast
 
     # Get a list of all drives, that are of a volgroup type.
     #
-    # @param [Array<Hash{String => Object>}] plan The partition plan.
+    # @param [Array<Hash{String => Object>}] _plan The partition plan. Not used as it touch
+    #        `@AutoPartPlan` directly.
     #
     # @return Partition plan containing only volgroups.
 
@@ -208,10 +209,10 @@ module Yast
 
     # Get a list of all physical (not volgroup) drives.
     #
-    # @param [Array<Hash{String => Object>}] plan The partition plan.
+    # @param [Array<Hash{String => Object>}] _plan The partition plan. Not used as it touch
+    #        `@AutoPartPlan` directly.
     #
     # @return Partition plan containing only physical drives.
-
     def internalGetAvailablePhysicalDrives(_plan)
       result = Builtins.filter(@AutoPartPlan) do |curDrive|
         Ops.get_symbol(curDrive, "type", :CT_LVM) == :CT_DISK

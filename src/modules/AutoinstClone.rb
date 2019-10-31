@@ -76,7 +76,7 @@ module Yast
     end
 
     # Clone a Resource
-    # @param resource    [String] resource
+    # @param _resource    [String] resource. Not used.
     # @param resourceMap [Hash] resources map
     # @return [Array]
     def CommonClone(_resource, resourceMap)
