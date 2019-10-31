@@ -1,3 +1,7 @@
+require "y2packager/product"
+require "y2packager/product_location"
+require "y2packager/medium_type"
+
 module Yast
   # Helper methods to be used on autoinstallation.
   class AutoinstFunctionsClass < Module
@@ -9,6 +13,7 @@ module Yast
       Yast.import "Stage"
       Yast.import "Mode"
       Yast.import "AutoinstConfig"
+      Yast.import "InstURL"
       Yast.import "ProductControl"
       Yast.import "Profile"
       Yast.import "Pkg"
@@ -101,6 +106,25 @@ module Yast
       @selected_product
     end
 
+    def available_base_products
+      @base_products ||= if Y2Packager::MediumType.offline? && !@force_libzypp
+        url = InstURL.installInf2Url("")
+        Y2Packager::ProductLocation
+          .scan(url)
+          .select { |p| p.details && p.details.base }
+          .sort(&::Y2Packager::PRODUCT_SORTER)
+      else
+        Y2Packager::Product.available_base_products
+      end
+    end
+
+    # force selected product to be read from libzypp and not from product location
+    def reset_product
+      @selected_product = nil
+      @base_products = nil
+      @force_libzypp = true
+    end
+
   private
 
     # Determine whether the system is registered
@@ -118,10 +142,14 @@ module Yast
     # @return [Y2Packager::Product] a product if exactly one product matches
     # the criteria, nil otherwise
     def identify_product
-      base_products = Y2Packager::Product.available_base_products
+      log.info "Found base products : #{available_base_products.inspect}"
 
-      products = base_products.select do |product|
-        yield(product)
+      products = available_base_products.select do |product|
+        if product.is_a?(Y2Packager::ProductLocation)
+          yield(product.details.product)
+        else
+          yield(product.name)
+        end
       end
 
       return products.first if products.size == 1
@@ -138,8 +166,8 @@ module Yast
     def identify_product_by_patterns(profile)
       software = profile["software"] || {}
 
-      identify_product do |product|
-        software.fetch("patterns", []).any? { |p| p =~ /#{product.name.downcase}-.*/ }
+      identify_product do |name|
+        software.fetch("patterns", []).any? { |p| p =~ /#{name.downcase}-.*/ }
       end
     end
 
@@ -153,8 +181,8 @@ module Yast
     def identify_product_by_packages(profile)
       software = profile["software"] || {}
 
-      identify_product do |product|
-        software.fetch("packages", []).any? { |p| p =~ /#{product.name.downcase}-release/ }
+      identify_product do |name|
+        software.fetch("packages", []).any? { |p| p =~ /#{name.downcase}-release/ }
       end
     end
 
@@ -164,8 +192,8 @@ module Yast
     # @return [Y2Packager::Product] a product if exactly one product matches
     # the criteria, nil otherwise
     def identify_product_by_selection(profile)
-      identify_product do |product|
-        product.name == base_product_name(profile)
+      identify_product do |name|
+        name == base_product_name(profile)
       end
     end
 

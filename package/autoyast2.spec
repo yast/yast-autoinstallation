@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.2.15
+Version:        4.2.16
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -49,6 +49,7 @@ BuildRequires:  yast2-transfer
 BuildRequires:  yast2-services-manager
 BuildRequires:  yast2-packager
 BuildRequires:  yast2-update >= 3.3.0
+BuildRequires:  yast2-network >= 3.1.145
 BuildRequires:  yast2-slp
 BuildRequires:  yast2-country
 # AutoinstIssues::NoProposal
