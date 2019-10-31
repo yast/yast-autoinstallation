@@ -180,26 +180,24 @@ module Yast
                   to:   "list <string>"
                 )
               end
-            else
-              if Ops.greater_than(
-                Builtins.size(Ops.get_list(Profile.current, @resource, [])),
-                0
+            elsif Ops.greater_than(
+              Builtins.size(Ops.get_list(Profile.current, @resource, [])),
+              0
+            )
+              Step(p)
+              Call.Function(
+                @module_auto,
+                [
+                  "Import",
+                  Builtins.eval(Ops.get_list(Profile.current, @resource, []))
+                ]
               )
-                Step(p)
-                Call.Function(
-                  @module_auto,
-                  [
-                    "Import",
-                    Builtins.eval(Ops.get_list(Profile.current, @resource, []))
-                  ]
-                )
-                out = Convert.to_map(Call.Function(@module_auto, ["Packages"]))
-                @packages = Convert.convert(
-                  Builtins.union(@packages, Ops.get_list(out, "install", [])),
-                  from: "list",
-                  to:   "list <string>"
-                )
-              end
+              out = Convert.to_map(Call.Function(@module_auto, ["Packages"]))
+              @packages = Convert.convert(
+                Builtins.union(@packages, Ops.get_list(out, "install", [])),
+                from: "list",
+                to:   "list <string>"
+              )
             end
           end
         end

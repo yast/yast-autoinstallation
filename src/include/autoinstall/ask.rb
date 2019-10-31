@@ -265,50 +265,46 @@ module Yast
           elsif type == "static_text"
             widget = Label(Id(entry_id), Ops.get_string(ask, "default", ""))
             dlg = createWidget(widget, frametitle)
-          else # integer or string
-            if Ops.get_boolean(ask, "password", false) == true
-              widget1 = Password(
-                Id(entry_id),
-                Opt(:notify, :notifyContextMenu),
-                question,
-                Ops.get_string(ask, "default", "")
-              )
-              widget2 = Password(
-                Id("#{entry_id}_pass2"),
-                Opt(:notify, :notifyContextMenu),
-                "",
-                Ops.get_string(ask, "default", "")
-              )
-              dlg = createWidget(
-                VBox(MinWidth(40, widget1), MinWidth(40, widget2)),
-                frametitle
-              )
-            else
-              if Builtins.haskey(ask, "selection")
-                dummy = []
-                Builtins.foreach(s) do |e|
-                  on = Ops.get_string(e, "value", "") == Ops.get(ask, "default")
-                  dummy = Builtins.add(
-                    dummy,
-                    Item(
-                      Id(Ops.get_string(e, "value", "")),
-                      Ops.get_string(e, "label", ""),
-                      on
-                    )
-                  )
-                end
-                widget = ComboBox(Id(entry_id), Opt(:notify), question, dummy)
-                dlg = createWidget(widget, frametitle)
-              else
-                widget = InputField(
-                  Id(entry_id),
-                  Opt(:hstretch, :notify, :notifyContextMenu),
-                  question,
-                  Ops.get_string(ask, "default", "")
+          elsif Ops.get_boolean(ask, "password", false) == true
+            widget1 = Password(
+              Id(entry_id),
+              Opt(:notify, :notifyContextMenu),
+              question,
+              Ops.get_string(ask, "default", "")
+            )
+            widget2 = Password(
+              Id("#{entry_id}_pass2"),
+              Opt(:notify, :notifyContextMenu),
+              "",
+              Ops.get_string(ask, "default", "")
+            )
+            dlg = createWidget(
+              VBox(MinWidth(40, widget1), MinWidth(40, widget2)),
+              frametitle
+            )
+          elsif Builtins.haskey(ask, "selection")
+            dummy = []
+            Builtins.foreach(s) do |e|
+              on = Ops.get_string(e, "value", "") == Ops.get(ask, "default")
+              dummy = Builtins.add(
+                dummy,
+                Item(
+                  Id(Ops.get_string(e, "value", "")),
+                  Ops.get_string(e, "label", ""),
+                  on
                 )
-                dlg = createWidget(widget, frametitle)
-              end
+              )
             end
+            widget = ComboBox(Id(entry_id), Opt(:notify), question, dummy)
+            dlg = createWidget(widget, frametitle)
+          else
+            widget = InputField(
+              Id(entry_id),
+              Opt(:hstretch, :notify, :notifyContextMenu),
+              question,
+              Ops.get_string(ask, "default", "")
+            )
+            dlg = createWidget(widget, frametitle)
           end
           #
           # At this time, widgets are created.
@@ -320,14 +316,13 @@ module Yast
           if frametitle != "" # some frametitle is set
             if frameBuffer.nil? # and no frameBuffer exists
               frameBufferVBox = VBox(dlg) # create a new frameBuffer
-            else # a frameBuffer exists
-              if frametitle == frameBufferTitle # with same title
-                frameBufferVBox = Builtins.add(frameBufferVBox, dlg) # add current to frameBuffer
-              else # with different title
-                dialog_term = Builtins.add(dialog_term, frameBuffer) # add frameBuffer to dialog
-                dialog_term = Builtins.add(dialog_term, VSpacing(1))
-                frameBufferVBox = VBox(dlg) # populate the frameBuffer with the new frame
-              end
+            # a frameBuffer exists
+            elsif frametitle == frameBufferTitle # with same title
+              frameBufferVBox = Builtins.add(frameBufferVBox, dlg) # add current to frameBuffer
+            else # with different title
+              dialog_term = Builtins.add(dialog_term, frameBuffer) # add frameBuffer to dialog
+              dialog_term = Builtins.add(dialog_term, VSpacing(1))
+              frameBufferVBox = VBox(dlg) # populate the frameBuffer with the new frame
             end
             # set frameBuffer values for the next iteration
             frameBuffer = Frame(frametitle, frameBufferVBox)
@@ -459,14 +454,12 @@ module Yast
                     )
                       Builtins.y2milestone("writing answer to %1 failed", file)
                     end
-                  else
-                    if !SCR.Write(
-                      path(".target.string"),
-                      file,
-                      Builtins.sformat("%1", val)
-                    )
-                      Builtins.y2milestone("writing answer to %1 failed", file)
-                    end
+                  elsif !SCR.Write(
+                    path(".target.string"),
+                    file,
+                    Builtins.sformat("%1", val)
+                  )
+                    Builtins.y2milestone("writing answer to %1 failed", file)
                   end
                 end
 

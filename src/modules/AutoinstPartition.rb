@@ -143,8 +143,8 @@ module Yast
         else
           part_desc = "Physical volume"
         end
-      else
-        part_desc = Builtins.sformat("<b>%1</b> partition", part_desc) if enableHTML
+      elsif enableHTML
+        part_desc = Builtins.sformat("<b>%1</b> partition", part_desc)
       end
       if Ops.get_boolean(p, "create", false)
         if p["size"] &&  !p["size"].empty?

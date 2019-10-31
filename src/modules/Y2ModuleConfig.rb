@@ -246,20 +246,16 @@ module Yast
         else
           return deep_copy(mergedResource)
         end
-      else
-        if data_type == "map"
-          if Ops.get_map(Profile.current, resource, {}) == {}
-            return nil
-          else
-            return Builtins.eval(Ops.get_map(Profile.current, resource, {}))
-          end
+      elsif data_type == "map"
+        if Ops.get_map(Profile.current, resource, {}) == {}
+          return nil
         else
-          if Ops.get_list(Profile.current, resource, []) == []
-            return nil
-          else
-            return Builtins.eval(Ops.get_list(Profile.current, resource, []))
-          end
+          return Builtins.eval(Ops.get_map(Profile.current, resource, {}))
         end
+      elsif Ops.get_list(Profile.current, resource, []) == []
+        return nil
+      else
+        return Builtins.eval(Ops.get_list(Profile.current, resource, []))
       end
     end
 

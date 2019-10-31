@@ -621,40 +621,38 @@ module Yast
             end
             widget = "radiobutton"
             ok_button = true
-          else
-            if widget == "progressbar"
-              UI.ChangeWidget(
-                Id(:pr),
-                :Value,
-                Builtins.tointeger(Ops.get_string(data, "stdout", "0"))
+          elsif widget == "progressbar"
+            UI.ChangeWidget(
+              Id(:pr),
+              :Value,
+              Builtins.tointeger(Ops.get_string(data, "stdout", "0"))
+            )
+          elsif widget == "text"
+            UI.ChangeWidget(
+              Id(:mle),
+              :Value,
+              Ops.add(
+                Convert.to_string(UI.QueryWidget(Id(:mle), :Value)),
+                Ops.get_string(data, "stdout", "")
               )
-            elsif widget == "text"
-              UI.ChangeWidget(
-                Id(:mle),
-                :Value,
-                Ops.add(
-                  Convert.to_string(UI.QueryWidget(Id(:mle), :Value)),
-                  Ops.get_string(data, "stdout", "")
-                )
-              )
-            elsif widget == "radiobutton"
-              if Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 10) == "__BUTTON__"
-                params = splitParams(Ops.get_string(data, "stdout", ""))
-                vbox = Builtins.add(
-                  vbox,
-                  Left(
-                    RadioButton(
-                      Id(Ops.get(params, "val", "")),
-                      Ops.get(params, "label", "")
-                    )
+            )
+          elsif widget == "radiobutton"
+            if Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 10) == "__BUTTON__"
+              params = splitParams(Ops.get_string(data, "stdout", ""))
+              vbox = Builtins.add(
+                vbox,
+                Left(
+                  RadioButton(
+                    Id(Ops.get(params, "val", "")),
+                    Ops.get(params, "label", "")
                   )
                 )
-              else
-                Builtins.y2milestone(
-                  "*urgs* received '%1' instead of '__BUTTON__' during RADIOBUTTON creation",
-                  Ops.get_string(data, "stdout", "")
-                )
-              end
+              )
+            else
+              Builtins.y2milestone(
+                "*urgs* received '%1' instead of '__BUTTON__' during RADIOBUTTON creation",
+                Ops.get_string(data, "stdout", "")
+              )
             end
           end
         end

@@ -542,21 +542,19 @@ module Yast
             end
             raise Break if !ret
           end
-        else
-          # copy a file
-          if !GetURL(
-            Ops.add(Ops.add(@instsource, "/"), source),
-            Ops.add(Ops.add(target, "/"), source)
-          )
-            Popup.Error(
-              Builtins.sformat(
-                _("can not read '%1'. ISO creation failed"),
-                Ops.add(Ops.add(@instsource, "/"), source)
-              )
+        # copy a file
+        elsif !GetURL(
+          Ops.add(Ops.add(@instsource, "/"), source),
+          Ops.add(Ops.add(target, "/"), source)
+        )
+          Popup.Error(
+            Builtins.sformat(
+              _("can not read '%1'. ISO creation failed"),
+              Ops.add(Ops.add(@instsource, "/"), source)
             )
-            ret = false
-            raise Break
-          end
+          )
+          ret = false
+          raise Break
         end
       end
       # lets always copy an optional(!) driverupdate file.
@@ -812,21 +810,19 @@ module Yast
           from: "list",
           to:   "list <string>"
         )
-      else
-        if Pkg.IsAvailable(@kernel)
-          allpackages = Builtins.add(allpackages, @kernel)
-          kernel_nongpl = Ops.add(@kernel, "-nongpl")
+      elsif Pkg.IsAvailable(@kernel)
+        allpackages = Builtins.add(allpackages, @kernel)
+        kernel_nongpl = Ops.add(@kernel, "-nongpl")
 
-          allpackages = Builtins.add(allpackages, kernel_nongpl) if Pkg.IsAvailable(kernel_nongpl)
-        else
-          Builtins.y2warning("%1 not available, using kernel-default", @kernel)
-          kernel_pkgs = Kernel.ComputePackages
-          allpackages = Convert.convert(
-            Builtins.union(allpackages, kernel_pkgs),
-            from: "list",
-            to:   "list <string>"
-          )
-        end
+        allpackages = Builtins.add(allpackages, kernel_nongpl) if Pkg.IsAvailable(kernel_nongpl)
+      else
+        Builtins.y2warning("%1 not available, using kernel-default", @kernel)
+        kernel_pkgs = Kernel.ComputePackages
+        allpackages = Convert.convert(
+          Builtins.union(allpackages, kernel_pkgs),
+          from: "list",
+          to:   "list <string>"
+        )
       end
 
       deep_copy(allpackages)
