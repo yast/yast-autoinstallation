@@ -214,7 +214,8 @@ module Yast
       elsif rp == ""
         Popup.Message(
           _(
-            "Multiple root partitions found, but you did not configure\nwhich root partition should be used.  Automatic installation not possible.\n"
+            "Multiple root partitions found, but you did not configure\n" \
+            "which root partition should be used.  Automatic installation not possible.\n"
           )
         )
         return false

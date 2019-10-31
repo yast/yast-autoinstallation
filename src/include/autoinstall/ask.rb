@@ -57,7 +57,8 @@ module Yast
         sec_till_timeout = timeout
 
         while sec_till_timeout > 0
-          UI.ReplaceWidget(:stop_button, PushButton(Id(:stop_timeout), "#{Label.StopButton} (#{sec_till_timeout})"))
+          UI.ReplaceWidget(:stop_button, PushButton(Id(:stop_timeout),
+            "#{Label.StopButton} (#{sec_till_timeout})"))
           sec_till_timeout -= 1
           ret = UI.TimeoutUserInput(1000)
 
@@ -330,7 +331,8 @@ module Yast
                 frameBufferVBox = VBox(dlg) # populate the frameBuffer with the new frame
               end
             end
-            frameBuffer = Frame(frametitle, frameBufferVBox) # set frameBuffer values for the next iteration
+            # set frameBuffer values for the next iteration
+            frameBuffer = Frame(frametitle, frameBufferVBox)
             frameBufferTitle = frametitle
           else # frametitle is in blank
             if !frameBuffer.nil? # a previous frameBuffer exists
@@ -396,7 +398,8 @@ module Yast
             Ops.set(
               dialogs,
               dialog_nr,
-              Builtins.maplist( # Iterate through widgets building a list of asks (containing responses)
+              # Iterate through widgets building a list of asks (containing responses)
+              Builtins.maplist(
                 Convert.convert(
                   Ops.get(dialogs, dialog_nr, []),
                   from: "list",
@@ -498,7 +501,8 @@ module Yast
                     SCR.Execute(path(".target.mkdir"), current_logdir)
                   end
                   executionString = ""
-                  if Ops.get_boolean(script, "environment", false) # FIXME: why not pass the variable always?
+                  # FIXME: why not pass the variable always?
+                  if Ops.get_boolean(script, "environment", false)
                     if Ops.get_string(ask, "type", "string") == "boolean"
                       val = Builtins.sformat(
                         "%1",
@@ -533,7 +537,8 @@ module Yast
                       executionString
                     )
                   end
-                  Popup.Feedback("", _("A user defined script is running. This may take a while.")) do
+                  Popup.Feedback("",
+                    _("A user defined script is running. This may take a while.")) do
                     runAgain = Ops.add(
                       runAgain,
                       Convert.to_integer(

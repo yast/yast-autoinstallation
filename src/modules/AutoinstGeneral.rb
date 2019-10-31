@@ -55,7 +55,6 @@ module Yast
 
       @askList = []
 
-      #    global list<string> proposals = ["bootloader_proposal", "software_proposal", "country_simple_proposal", "timezone_proposal", "users_proposal", "runlevel_proposal", "hwinfo_proposal", "deploying_proposal"];
       @proposals = []
 
       @storage = {}

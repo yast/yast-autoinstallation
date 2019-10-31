@@ -32,7 +32,8 @@ describe "Yast::AutoinstClass" do
 
     context "when classes definition file does not exist" do
       before(:each) do
-        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".target.size"), CLASS_PATH).and_return(-1)
+        allow(Yast::SCR).to receive(:Read).with(Yast::Path.new(".target.size"), CLASS_PATH)
+          .and_return(-1)
       end
 
       it "sets Classes to []" do
@@ -70,10 +71,12 @@ describe "Yast::AutoinstClass" do
     context "when some class definition exists" do
       it "sets confs to an array containing classes configurations" do
         subject.Files
-        expect(subject.confs).to match_array([
-                                               { "class" => "swap", "name" => "largeswap.xml" },
-                                               { "class" => "swap", "name" => "largeswap_noroot.xml" }
-                                             ])
+        expect(subject.confs).to match_array(
+          [
+            { "class" => "swap", "name" => "largeswap.xml" },
+            { "class" => "swap", "name" => "largeswap_noroot.xml" }
+          ]
+        )
       end
     end
 
@@ -253,7 +256,9 @@ describe "Yast::AutoinstClass" do
     end
 
     context "when all elements must be merged" do
-      let(:expected_xml_path) { File.join(ROOT_PATH, "test", "fixtures", "output", "partitions-merged.xml") }
+      let(:expected_xml_path) do
+        File.join(ROOT_PATH, "test", "fixtures", "output", "partitions-merged.xml")
+      end
 
       it "merges elements from profile and configuration" do
         expect(Yast::SCR).to receive(:Execute)
@@ -264,7 +269,9 @@ describe "Yast::AutoinstClass" do
     end
 
     context "when some elements are not intended to be merged" do
-      let(:expected_xml_path) { File.join(ROOT_PATH, "test", "fixtures", "output", "partitions-dontmerge.xml") }
+      let(:expected_xml_path) do
+        File.join(ROOT_PATH, "test", "fixtures", "output", "partitions-dontmerge.xml")
+      end
       let(:dontmerge) { ["partition"] }
       let(:xsltproc_command) {
         "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\"  " \

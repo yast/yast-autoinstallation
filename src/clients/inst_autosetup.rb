@@ -300,16 +300,17 @@ module Yast
 
       Progress.NextStage
 
-      # Pre-scripts can modify the AutoYaST profile. Even more, a pre-script could change the initial
-      # disks layout/configuration (e.g., by creating a new partition). It is difficult to evaluate
-      # whether a pre-script has modified something related to storage devices, so a re-probing is always
-      # performed here (related to bsc#1133045).
+      # Pre-scripts can modify the AutoYaST profile. Even more, a pre-script could change
+      # the initial disks layout/configuration (e.g., by creating a new partition).
+      # It is difficult to evaluate whether a pre-script has modified something related
+      # to storage devices, so a re-probing is always performed here (related to bsc#1133045).
       probe_storage
 
-      if Profile.current["partitioning_advanced"] && !Profile.current["partitioning_advanced"].empty?
-        write_storage = AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
+      write_storage = if Profile.current["partitioning_advanced"] &&
+          !Profile.current["partitioning_advanced"].empty?
+        AutoinstStorage.ImportAdvanced(Profile.current["partitioning_advanced"])
       else
-        write_storage = AutoinstStorage.Import(Profile.current["partitioning"])
+        AutoinstStorage.Import(Profile.current["partitioning"])
       end
 
       return :abort unless write_storage

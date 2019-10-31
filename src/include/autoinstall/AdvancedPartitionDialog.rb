@@ -69,7 +69,8 @@ module Yast
         helpText,
         _(
           "<p><b>Volume Label:</b>\n" \
-            "\t  The name entered in this field is used as the volume label. This usually makes sense only \n" \
+            "\t  The name entered in this field is used as the volume label. " \
+            "This usually makes sense only \n" \
             "\t  when you activate the option for mounting by volume label.\n" \
             "\t  A volume label cannot contain the / character or spaces.\n" \
             "\t  "
@@ -157,7 +158,8 @@ module Yast
       UI.ChangeWidget(
         Id(:crypt_key),
         :ValidChars,
-        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|?{[()]}@^\\<>"
+        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+          "#* ,.;:._-+!$%&/|?{[()]}@^\\<>"
       )
 
       # Disable all mount options if partition is a

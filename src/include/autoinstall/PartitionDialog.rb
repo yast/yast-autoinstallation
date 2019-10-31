@@ -192,7 +192,8 @@ module Yast
         if !reUse && lvmGroup == ""
           Popup.Warning(
             _(
-              "You selected to create the partition, but you did not select a valid file\nsystem. Select a valid filesystem to continue.\n"
+              "You selected to create the partition, but you did not select a valid file\n" \
+                "system. Select a valid filesystem to continue.\n"
             )
           )
         end

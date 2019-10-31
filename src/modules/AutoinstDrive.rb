@@ -337,8 +337,10 @@ module Yast
     publish function: :getPartition, type: "map <string, any> (map <string, any>, integer)"
     publish function: :getPartitionCount, type: "integer (map <string, any>)"
     publish function: :getNextAvailablePartitionNumber, type: "integer (map <string, any>)"
-    publish function: :addPartition, type: "map <string, any> (map <string, any>, map <string, any>)"
-    publish function: :updatePartition, type: "map <string, any> (map <string, any>, integer, map <string, any>)"
+    publish function: :addPartition, type: "map <string, any> " \
+      "(map <string, any>, map <string, any>)"
+    publish function: :updatePartition, type: "map <string, any> " \
+      "(map <string, any>, integer, map <string, any>)"
     publish function: :removePartition, type: "map <string, any> (map <string, any>, integer)"
   end
 

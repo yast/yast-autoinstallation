@@ -253,7 +253,9 @@ module Yast
         UI.ChangeWidget(Id(:writeNow), :Enabled, false)
       end
 
-      UI.ChangeWidget(Id(:configure), :Enabled, false) if AutoinstConfig.dont_edit.include?(selectedModule)
+      if AutoinstConfig.dont_edit.include?(selectedModule)
+        UI.ChangeWidget(Id(:configure), :Enabled, false)
+      end
 
       # set read button status
       resourceMap = Y2ModuleConfig.ModuleMap.fetch(selectedModule, {})
@@ -561,7 +563,8 @@ module Yast
             if Popup.YesNo(
               Builtins.sformat(
                 _(
-                  "Do you really want to apply the settings of the module '%1' to your current system?"
+                  "Do you really want to apply the settings of the module '%1' " \
+                    "to your current system?"
                 ),
                 modulename
               )

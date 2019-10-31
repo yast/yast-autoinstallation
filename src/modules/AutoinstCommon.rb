@@ -31,8 +31,7 @@ module Yast
 
     # Predicates
     def isValidField(objectDefinition, field)
-      objectDefinition = deep_copy(objectDefinition)
-      Ops.get(objectDefinition, field) != nil
+      !Ops.get(objectDefinition, field).nil?
     end
 
     def isValidObject(objectDefinition, obj)
@@ -106,7 +105,8 @@ module Yast
     publish function: :isValidObject, type: "boolean (map <string, any>, map <string, any>)"
     publish function: :hasValidType, type: "boolean (map <string, any>, string, any)"
     publish function: :areEqual, type: "boolean (map <string, any>, map <string, any>)"
-    publish function: :set, type: "map <string, any> (map <string, any>, map <string, any>, string, any)"
+    publish function: :set, type: "map <string, any> " \
+      "(map <string, any>, map <string, any>, string, any)"
   end
 
   AutoinstCommon = AutoinstCommonClass.new

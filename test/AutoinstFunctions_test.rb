@@ -94,7 +94,9 @@ describe Yast::AutoinstFunctions do
         context "registration has not been defined in AY configuration file" do
           it "reports error to set registration" do
             allow(Yast::Profile).to receive(:current).and_return({})
-            expect(subject.check_second_stage_environment).to include("configuring the registration")
+            expect(subject.check_second_stage_environment).to(
+              include("configuring the registration")
+            )
           end
         end
 
@@ -131,7 +133,8 @@ describe Yast::AutoinstFunctions do
       subject.instance_variable_set(:@selected_product, nil)
     end
 
-    it "returns proper base product when explicitly selected in the profile and such base product exists on media" do
+    it "returns proper base product when explicitly selected in the profile " \
+        "and such base product exists on media" do
       allow(Yast::Profile)
         .to receive(:current)
         .and_return("software" => { "products" => [selected_name] })
@@ -139,7 +142,8 @@ describe Yast::AutoinstFunctions do
       expect(subject.selected_product.name).to eql selected_name
     end
 
-    it "returns nil when product is explicitly selected in the profile and such base product doesn't exist on media" do
+    it "returns nil when product is explicitly selected in the profile and " \
+        "such base product doesn't exist on media" do
       allow(Yast::Profile)
         .to receive(:current)
         .and_return("software" => { "products" => { "product" => "Fedora" } })
@@ -147,7 +151,8 @@ describe Yast::AutoinstFunctions do
       expect(subject.selected_product).to be nil
     end
 
-    it "returns base product identified by patterns in the profile if such base product exists on media" do
+    it "returns base product identified by patterns in the profile " \
+        "if such base product exists on media" do
       allow(Yast::Profile)
         .to receive(:current)
         .and_return("software" => { "patterns" => ["sles-base-32bit"] })
@@ -155,7 +160,8 @@ describe Yast::AutoinstFunctions do
       expect(subject.selected_product.name).to eql selected_name
     end
 
-    it "returns base product identified by packages in the profile if such base product exists on media" do
+    it "returns base product identified by packages in the profile " \
+        "if such base product exists on media" do
       allow(Yast::Profile)
         .to receive(:current)
         .and_return("software" => { "packages" => ["sles-release"] })
@@ -163,7 +169,8 @@ describe Yast::AutoinstFunctions do
       expect(subject.selected_product.name).to eql selected_name
     end
 
-    it "returns base product if there is just one on media and product cannot be identified from profile" do
+    it "returns base product if there is just one on media and " \
+        "product cannot be identified from profile" do
       allow(Y2Packager::Product)
         .to receive(:available_base_products)
         .and_return(

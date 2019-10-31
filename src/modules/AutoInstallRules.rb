@@ -906,7 +906,8 @@ module Yast
         if !XML_cleanup(current_profile, dest_profile)
           log.error("Error reading XML file")
           message = _(
-            "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
+            "The XML parser reported an error while parsing the autoyast profile. " \
+              "The error message is:\n"
           )
           message += XML.XMLError
           Yast2::Popup.show(message, headline: :error)
@@ -1056,7 +1057,8 @@ module Yast
       nil
     end
 
-    # Create default rule in case no rules file is available (Only one file which is given by the user)
+    # Create default rule in case no rules file is available
+    # (Only one file which is given by the user)
     # @param [String] filename file name
     # @return [void]
     def CreateFile(filename)

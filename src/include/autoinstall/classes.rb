@@ -198,7 +198,8 @@ module Yast
       help = Ops.add(
         help,
         _(
-          "<p>For example, you can define a class of configurations for\na specific  department, group, or site in your company environment.</p>\n"
+          "<p>For example, you can define a class of configurations for\n" \
+            "a specific  department, group, or site in your company environment.</p>\n"
         )
       )
 
@@ -553,7 +554,8 @@ module Yast
     def classConfiguration
       title = _("Class Configuration")
       help = _(
-        "<p>Choose one or more of the listed classes to which the current control\nfile should belong.</p>\n"
+        "<p>Choose one or more of the listed classes to which the current control\n" \
+          "file should belong.</p>\n"
       )
 
       AutoinstClass.Files

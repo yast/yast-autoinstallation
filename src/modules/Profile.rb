@@ -723,7 +723,8 @@ module Yast
       if xml_error && !xml_error.empty?
         # autoyast has read the autoyast configuration file but something went wrong
         message = _(
-          "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
+          "The XML parser reported an error while parsing the autoyast profile. " \
+            "The error message is:\n"
         )
         message += xml_error
         Yast2::Popup.show(message, headline: :error)

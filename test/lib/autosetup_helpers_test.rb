@@ -86,7 +86,8 @@ describe Y2Autoinstallation::AutosetupHelpers do
         let(:profile_content) { { "suse_register" => { "reg_code" => "12345" } } }
 
         before do
-          allow(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes").and_return(true)
+          allow(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
+            .and_return(true)
           allow(Yast::WFM).to receive(:CallFunction).with("scc_auto", anything).and_return(true)
         end
 

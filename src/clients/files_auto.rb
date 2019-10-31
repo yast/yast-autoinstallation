@@ -161,7 +161,8 @@ module Yast
 
       # help 1/2
       help = _(
-        "<p>Using this dialog, copy the contents of the file and specify the final\npath on the installed system. YaST will copy this file to the specified location.</p>"
+        "<p>Using this dialog, copy the contents of the file and specify the final\n" \
+          "path on the installed system. YaST will copy this file to the specified location.</p>"
       )
 
       # help 2/2
@@ -169,8 +170,10 @@ module Yast
         help,
         _(
           "<p>To protect copied files, set the owner and the permissions of the files.\n" \
-            "Set the owner using the syntax <i>userid:groupid</i>.  Permissions can be a symbolic\n" \
-            "representation of changes to make or an octal  number  representing  the bit pattern for the\n" \
+            "Set the owner using the syntax <i>userid:groupid</i>. "\
+            "Permissions can be a symbolic\n" \
+            "representation of changes to make or an octal number " \
+            "representing the bit pattern for the\n" \
             "new permissions.</p>"
         )
       )

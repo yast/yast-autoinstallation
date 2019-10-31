@@ -132,8 +132,10 @@ module Yast
         _(
           "\n" \
             "<H3>Feedback and Debug:</H3>\n" \
-            "<P>All scripts except the init scripts can show STDOUT+STDERR in a pop-up box as feedback.\n" \
-            "If you turn on debugging, you get more output in the feedback dialog that might help\n" \
+            "<P>All scripts except the init scripts can show STDOUT+STDERR " \
+            "in a pop-up box as feedback.\n" \
+            "If you turn on debugging, you get more output in the " \
+            "feedback dialog that might help\n" \
             "you to debug your script.</P>\n"
         )
       )

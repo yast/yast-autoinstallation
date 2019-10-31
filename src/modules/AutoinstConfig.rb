@@ -480,7 +480,8 @@ module Yast
         @Repository = sysconfig_autoinstall("REPOSITORY", "/var/lib/autoinstall/repository/")
         @classDir = sysconfig_autoinstall("CLASS_DIR", @Repository + "/classes")
         tmp_dontmerge = sysconfig_autoinstall("XSLT_DONTMERGE", "addon,conf")
-        tmp_no_writenow = sysconfig_autoinstall("FORBID_WRITENOW", "add-on,suse_register,partitioning,bootloader,general,report")
+        tmp_no_writenow = sysconfig_autoinstall("FORBID_WRITENOW",
+          "add-on,suse_register,partitioning,bootloader,general,report")
 
         @dontmerge = Builtins.splitstring(tmp_dontmerge, ",")
         @noWriteNow = Builtins.splitstring(tmp_no_writenow, ",")
@@ -505,7 +506,8 @@ module Yast
           "configured using the configuration management system.</p>\n"
       ) +
         _(
-          "<p>Most of the modules used to create the configuration are identical to those available\n" \
+          "<p>Most of the modules used to create the configuration are identical " \
+            "to those available\n" \
             "through the YaST Control Center. Instead of configuring this system, the data\n" \
             "entered is collected and exported to the control file that can be used to\n" \
             "install another system using AutoYaST.\n" \

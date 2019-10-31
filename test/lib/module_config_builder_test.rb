@@ -12,7 +12,8 @@ describe Yast::ModuleConfigBuilder do
   describe "#build" do
     let(:profile) do
       {
-        "users"         => [{ "username" => "root", "uid" => 0 }, { "username" => "test", "uid" => 1000 }],
+        "users"         => [{ "username" => "root", "uid" => 0 },
+                            { "username" => "test", "uid" => 1000 }],
         "user_defaults" => { "group" => "1000" }
       }
     end

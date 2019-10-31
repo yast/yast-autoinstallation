@@ -120,9 +120,10 @@ module Yast
         # we get need product for initialize libzypp, but for others we need first init libzypp
         # to get available products.
         if !product
-          msg = _("None or wrong base product has been defined in the AutoYaST configuration file. " \
-          "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
-          "Following base products are available:<br>")
+          msg = _("None or wrong base product has been defined " \
+            "in the AutoYaST configuration file. " \
+            "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
+            "Following base products are available:<br>")
           AutoinstFunctions.available_base_products.each do |product|
             # FIXME: here we abuse knowledge that base product is ProductLocation and not Product
             msg += "#{product.details.product} (#{product.details.summary})<br>"

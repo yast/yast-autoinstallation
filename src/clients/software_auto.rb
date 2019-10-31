@@ -192,7 +192,6 @@ module Yast
       )
       patterns = Pkg.ResolvableProperties("", :pattern, "")
       Builtins.y2milestone("available patterns %1", patterns)
-      #        Pkg::TargetInit("/tmp", false); // don't copy the list of really installed packages (#231687)
       # Construct a box with radiobuttons for each software base configuration
       baseconfs_box = VBox()
 

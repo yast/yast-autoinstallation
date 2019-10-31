@@ -412,7 +412,8 @@ module Yast
     # @param [String] interpreter interpreter to be used with script
     # @param [String] type type of script
     # @return [void]
-    def AddEditScript(scriptName, source, interpreter, type, chrooted, debug, feedback, feedback_type, location, notification)
+    def AddEditScript(scriptName, source, interpreter, type, chrooted, debug,
+      feedback, feedback_type, location, notification)
       mod = false
       @merged = Builtins.maplist(@merged) do |script|
         # Edit
@@ -741,8 +742,6 @@ module Yast
         end
         scriptPath = ""
         if type == "pre-scripts" || type == "postpartitioning-scripts"
-          #        y2milestone("doing /sbin/udevcontrol stop_exec_queue now to prevent trouble if one is doing partitioning in a pre-script");
-          #        SCR::Execute( .target.bash, "/sbin/udevcontrol stop_exec_queue" );
           scriptPath = Builtins.sformat(
             "%1/%2/%3",
             AutoinstConfig.tmpDir,
@@ -797,8 +796,6 @@ module Yast
           # moved to 1st stage because of systemd
           # Service::Enable("autoyast");
         elsif type == "chroot-scripts"
-          # scriptPath = sformat("%1%2/%3", (special) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
-
           toks = URL.Parse(Ops.get_string(s, "location", ""))
           # special == true ---> The script has to be installed into /mnt
           # because it will be called in a chroot environment.
@@ -844,8 +841,8 @@ module Yast
           # FIXME: That's duplicate code
           if (special && s["location"] && !s["location"].empty?) ||
               toks["scheme"] == "nfs"
-
-            scriptPath = scriptPath[AutoinstConfig.destdir.length..-1] # cut off the e.g. /mnt for later execution
+            # cut off the e.g. /mnt for later execution
+            scriptPath = scriptPath[AutoinstConfig.destdir.length..-1]
           end
         else
           scriptPath = Builtins.sformat(
@@ -1040,7 +1037,9 @@ module Yast
     publish function: :Import, type: "boolean (map)"
     publish function: :Summary, type: "string ()"
     publish function: :deleteScript, type: "void (string)"
-    publish function: :AddEditScript, type: "void (string, string, string, string, boolean, boolean, boolean, boolean, string, string, string)"
+    publish function: :AddEditScript,
+            type:     "void (string, string, string, string, boolean, boolean, " \
+      "boolean, boolean, string, string, string)"
     publish function: :typeString, type: "string (string)"
     publish function: :Write, type: "boolean (string, boolean)"
   end

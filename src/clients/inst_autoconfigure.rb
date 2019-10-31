@@ -353,7 +353,6 @@ module Yast
       end
       if @need_systemd_isolate
         logStep(_("Activating systemd default target"))
-        # string cmd = "systemctl disable YaST2-Second-Stage.service; systemctl --ignore-dependencies isolate default.target";
         @cmd = "systemctl --no-block --ignore-dependencies isolate default.target"
         Builtins.y2milestone("before calling \"%1\"", @cmd)
         @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))

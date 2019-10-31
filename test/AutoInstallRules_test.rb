@@ -124,7 +124,8 @@ describe "Yast::AutoInstallRules" do
         }]
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   ||   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   ||   " \
+          "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
         "hostaddress" => subject.hostaddress, "mac" => subject.mac)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
@@ -143,7 +144,8 @@ describe "Yast::AutoInstallRules" do
         }]
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   " \
+          "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
         "hostaddress" => subject.hostaddress, "mac" => subject.mac)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
@@ -161,7 +163,8 @@ describe "Yast::AutoInstallRules" do
         }]
       )
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   ( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
+        "if  ( [ \"$hostaddress\" = \"10.69.57.43\" ] )   &&   " \
+          "( [ \"$mac\" = \"000c2903d288\" ] ); then exit 0; else exit 1; fi",
         "hostaddress" => subject.hostaddress, "mac" => subject.mac)
         .and_return("stdout" => "", "exit" => 0, "stderr" => "")
 
@@ -248,7 +251,9 @@ describe "Yast::AutoInstallRules" do
     end
 
     context "when all elements must be merged" do
-      let(:expected_xml_path) { File.join(root_path, "test", "fixtures", "output", "partitions-merged.xml") }
+      let(:expected_xml_path) do
+        File.join(root_path, "test", "fixtures", "output", "partitions-merged.xml")
+      end
 
       it "merges elements from the base profile and the rule profile" do
         expect(Yast::SCR).to receive(:Execute)
@@ -259,7 +264,9 @@ describe "Yast::AutoInstallRules" do
     end
 
     context "when some elements are not intended to be merged" do
-      let(:expected_xml_path) { File.join(root_path, "test", "fixtures", "output", "partitions-dontmerge.xml") }
+      let(:expected_xml_path) do
+        File.join(root_path, "test", "fixtures", "output", "partitions-dontmerge.xml")
+      end
       let(:dontmerge) { ["partition"] }
       let(:xsltproc_command) {
         "/usr/bin/xsltproc --novalid --maxdepth 10000 --param replace \"'false'\" " \

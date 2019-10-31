@@ -56,7 +56,8 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates a TextEntry widget" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:InputField)
-            .with(Id("0_0"), Opt(:hstretch, :notify, :notifyContextMenu), ask["question"], ask["default"])
+            .with(Id("0_0"), Opt(:hstretch, :notify, :notifyContextMenu),
+              ask["question"], ask["default"])
             .and_call_original
           client.askDialog
         end
@@ -79,7 +80,8 @@ describe "Yast::AutoinstallAskInclude" do
         context "when user does not do anything" do
           it "waits for user input with timeout and then time-outs" do
             expect(Yast::UI).to receive(:OpenDialog)
-            expect(Yast::UI).to receive(:TimeoutUserInput).exactly(timeout_in_sec).times.and_return :timeout
+            expect(Yast::UI).to receive(:TimeoutUserInput).exactly(timeout_in_sec).times
+              .and_return(:timeout)
             client.askDialog
           end
         end
@@ -88,7 +90,8 @@ describe "Yast::AutoinstallAskInclude" do
           it "waits for user input with timeout and then stops and waits for user infinitely" do
             expect(Yast::UI).to receive(:OpenDialog)
             # user does some change in the third second
-            expect(Yast::UI).to receive(:TimeoutUserInput).exactly(3).times.and_return(:timeout, :timeout, :user_action)
+            expect(Yast::UI).to receive(:TimeoutUserInput).exactly(3).times
+              .and_return(:timeout, :timeout, :user_action)
             # execution stops and wait for user to finish
             expect(Yast::UI).to receive(:UserInput)
             client.askDialog
@@ -187,7 +190,8 @@ describe "Yast::AutoinstallAskInclude" do
         it "creates one widget for each one of them" do
           expect(Yast::UI).to receive(:OpenDialog)
           expect(client).to receive(:InputField)
-            .with(Id("0_0"), Opt(:hstretch, :notify, :notifyContextMenu), string_ask["question"], string_ask["default"])
+            .with(Id("0_0"), Opt(:hstretch, :notify, :notifyContextMenu),
+              string_ask["question"], string_ask["default"])
             .and_call_original
           expect(client).to receive(:CheckBox)
             .with(Id("0_1"), Opt(:notify), boolean_ask["question"], true)
@@ -312,8 +316,11 @@ describe "Yast::AutoinstallAskInclude" do
 
             it "runs the script passing the ask response" do
               expect(Yast::SCR).to receive(:Execute)
-                .with(Yast::Path.new(".target.bash"),
-                  "VAL=\"some-user-response\" /bin/sh -x /tmp/test.sh 2&> /tmp/ask_scripts_log/test.sh.log ")
+                .with(
+                  Yast::Path.new(".target.bash"),
+                  "VAL=\"some-user-response\" /bin/sh -x /tmp/test.sh " \
+                    "2&> /tmp/ask_scripts_log/test.sh.log "
+                )
               client.askDialog
             end
           end
@@ -346,7 +353,9 @@ describe "Yast::AutoinstallAskInclude" do
         end
 
         context "when a value for 'next dialog' is set" do
-          let(:ask_list) { [BASE_ASK, BASE_ASK.merge("dialog" => 1), BASE_ASK.merge("dialog" => 2)] }
+          let(:ask_list) do
+            [BASE_ASK, BASE_ASK.merge("dialog" => 1), BASE_ASK.merge("dialog" => 2)]
+          end
 
           before do
             expect(Yast::SCR).to receive(:Read)

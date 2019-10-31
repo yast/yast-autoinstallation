@@ -107,7 +107,6 @@ module Yast
           )
           pos = Ops.subtract(Builtins.size(t), 1)
 
-          # SCR::Write (.target.string, AutoInstall::var_dir + "/files" + t[pos]:alter_file, file["file_contents"]:"");
           SCR.Write(
             path(".target.string"),
             Ops.get_string(file, "file_path", alternate_location),

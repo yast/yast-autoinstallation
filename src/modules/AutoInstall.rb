@@ -384,16 +384,24 @@ module Yast
     publish function: :callback_void_map, type: "void (map <string, any>)"
     publish function: :callbackTrue_boolean_map, type: "boolean (map <string, any>)"
     publish function: :callbackFalse_boolean_map, type: "boolean (map <string, any>)"
-    publish function: :callbackTrue_boolean_map_integer, type: "boolean (map <string, any>, integer)"
-    publish function: :callbackFalse_boolean_map_integer, type: "boolean (map <string, any>, integer)"
-    publish function: :callbackTrue_boolean_string_map_integer, type: "boolean (string, map <string, any>, integer)"
-    publish function: :callbackFalse_boolean_string_map_integer, type: "boolean (string, map <string, any>, integer)"
+    publish function: :callbackTrue_boolean_map_integer,
+            type:     "boolean (map <string, any>, integer)"
+    publish function: :callbackFalse_boolean_map_integer,
+            type:     "boolean (map <string, any>, integer)"
+    publish function: :callbackTrue_boolean_string_map_integer,
+            type:     "boolean (string, map <string, any>, integer)"
+    publish function: :callbackFalse_boolean_string_map_integer,
+            type:     "boolean (string, map <string, any>, integer)"
     publish function: :callbackTrue_boolean_string_string, type: "boolean (string, string)"
     publish function: :callbackFalse_boolean_string_string, type: "boolean (string, string)"
-    publish function: :callbackTrue_boolean_string_string_integer, type: "boolean (string, string, integer)"
-    publish function: :callbackFalse_boolean_string_string_integer, type: "boolean (string, string, integer)"
-    publish function: :callbackTrue_boolean_string_string_string, type: "boolean (string, string, string)"
-    publish function: :callbackFalse_boolean_string_string_string, type: "boolean (string, string, string)"
+    publish function: :callbackTrue_boolean_string_string_integer,
+            type:     "boolean (string, string, integer)"
+    publish function: :callbackFalse_boolean_string_string_integer,
+            type:     "boolean (string, string, integer)"
+    publish function: :callbackTrue_boolean_string_string_string,
+            type:     "boolean (string, string, string)"
+    publish function: :callbackFalse_boolean_string_string_string,
+            type:     "boolean (string, string, string)"
     publish function: :Continue, type: "boolean ()"
     publish function: :AutoInstall, type: "void ()"
     publish function: :Save, type: "boolean ()"

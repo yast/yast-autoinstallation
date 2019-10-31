@@ -12,17 +12,21 @@ Yast::Tasks.configuration do |conf|
   conf.install_locations["control/*.xml"] = Packaging::Configuration::YAST_DIR + "/control/"
 end
 
+def make_dir(dir)
+  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/#{dir}"
+end
+
 # define additional creation of directories during installation
 task :install do
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/etc/autoinstall"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/adm/autoinstall/scripts"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/adm/autoinstall/init.d"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/adm/autoinstall/logs"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/adm/autoinstall/files"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/adm/autoinstall/cache"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/lib/autoinstall/repository/templates"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/lib/autoinstall/repository/rules"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/lib/autoinstall/repository/classes"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/lib/autoinstall/autoconf"
-  sh "/usr/bin/install -d -m 700 #{Packaging::Configuration::DESTDIR}/var/lib/autoinstall/tmp"
+  make_dir "/etc/autoinstall"
+  make_dir "/var/adm/autoinstall/scripts"
+  make_dir "/var/adm/autoinstall/init.d"
+  make_dir "/var/adm/autoinstall/logs"
+  make_dir "/var/adm/autoinstall/files"
+  make_dir "/var/adm/autoinstall/cache"
+  make_dir "/var/lib/autoinstall/repository/templates"
+  make_dir "/var/lib/autoinstall/repository/rules"
+  make_dir "/var/lib/autoinstall/repository/classes"
+  make_dir "/var/lib/autoinstall/autoconf"
+  make_dir "/var/lib/autoinstall/tmp"
 end

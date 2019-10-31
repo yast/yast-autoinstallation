@@ -265,17 +265,19 @@ describe Yast::PkgGpgCheckHandler do
       let(:result) { Yast::PkgGpgCheckHandler::CHK_NOTFOUND }
 
       let(:profile) do
-        { "general" =>
-                       { "signature-handling" =>
-                                                 { "accept_unsigned_file"   => true,
-                                                   "accept_unknown_gpg_key" => true } },
-          "add-on"  =>
-                       { "add_on_products" =>
-                                              [
-                                                { "media_url"          => "http://dl.opensuse.org/repos/YaST:/Head",
-                                                  "name"               => "yast_head",
-                                                  "signature-handling" => { "accept_unsigned_file" => false } }
-                                              ] } }
+        { "general" => {
+          "signature-handling" => {
+            "accept_unsigned_file"   => true,
+            "accept_unknown_gpg_key" => true
+          }
+        },
+          "add-on"  => {
+            "add_on_products" => [
+              { "media_url"          => "http://dl.opensuse.org/repos/YaST:/Head",
+                "name"               => "yast_head",
+                "signature-handling" => { "accept_unsigned_file" => false } }
+            ]
+          } }
       end
 
       it "honors the add-on settings" do

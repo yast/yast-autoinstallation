@@ -198,8 +198,9 @@ module Yast
             entry["X-SuSE-YaST-AutoInstResource"] == e ||
             (entry["X-SuSE-YaST-AutoInstMerge"]&.split(",")&.include?(e))
         end
-        yast_module ||= e # if needed taking default because no entry has been defined in the *.desktop file
-        # FIXME
+        # if needed taking default because no entry has been defined in the *.desktop file
+        yast_module ||= e
+        # FIXME: Does not work see below
         #
         # This does currently not work at all as the packages provide this
         # with the module name camel-cased; e.g.:
@@ -319,9 +320,11 @@ module Yast
       )
 
       # Add Source:
-      # zypper --root /space/tmp/tmproot/ ar ftp://10.10.0.100/install/SLP/openSUSE-11.2/i386/DVD1/ main
+      # zypper --root /space/tmp/tmproot/ ar \
+      #   ftp://10.10.0.100/install/SLP/openSUSE-11.2/i386/DVD1/ main
       zypperCall = Builtins.sformat(
-        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive ar %2 main-source %3",
+        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys " \
+          "--non-interactive ar %2 main-source %3",
         rootdir,
         @instsource,
         outputRedirect
@@ -340,7 +343,8 @@ module Yast
       addOns = Ops.get_list(addOnExport, "add_on_products", [])
       Builtins.foreach(addOns) do |addOn|
         zypperCall = Builtins.sformat(
-          "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive ar %2 %3 %4",
+          "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys " \
+            "--non-interactive ar %2 %3 %4",
           rootdir,
           Ops.get_string(addOn, "media_url", ""),
           Ops.get_string(addOn, "product", ""),
@@ -361,7 +365,8 @@ module Yast
 
       # Install
       zypperCall = Builtins.sformat(
-        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive install --auto-agree-with-licenses ",
+        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys " \
+          "--non-interactive install --auto-agree-with-licenses ",
         rootdir
       )
 
@@ -407,10 +412,7 @@ module Yast
 
       @image_arch = GetArchOfELF(Builtins.sformat("%1/bin/bash", rootdir))
       Builtins.y2milestone("Image architecture = %1", @image_arch)
-      if targetdir == ""
-        #            Popup::Message( _("in the next file dialog you have to choose the target directory to save the image") );
-        targetdir = UI.AskForExistingDirectory("/", _("Store image to ..."))
-      end
+      targetdir = UI.AskForExistingDirectory("/", _("Store image to ...")) if targetdir == ""
 
       # umount devices
       returnCode = Convert.to_integer(
@@ -439,7 +441,9 @@ module Yast
       Popup.Message(
         Builtins.sformat(
           _(
-            "You can do changes to the image now in %1/\nIf you press the ok-button, the image will be compressed and can't be changed anymore."
+            "You can do changes to the image now in %1/\n" \
+              "If you press the ok-button, the image will be compressed and " \
+              "can't be changed anymore."
           ),
           rootdir
         )
@@ -496,7 +500,8 @@ module Yast
             Popup.Error(
               Builtins.sformat(
                 _(
-                  "can not get the directory.yast file at `%1`.\nYou can create that file with 'ls -F > directory.yast' if it's missing."
+                  "can not get the directory.yast file at `%1`.\n" \
+                    "You can create that file with 'ls -F > directory.yast' if it's missing."
                 ),
                 Ops.add(Ops.add(@instsource, "/"), source)
               )
@@ -556,7 +561,8 @@ module Yast
           end
         end
       end
-      # lets always copy an optional(!) driverupdate file. It's very unlikely that it's in directory.yast
+      # lets always copy an optional(!) driverupdate file.
+      # It's very unlikely that it's in directory.yast
       GetURL(
         Ops.add(@instsource, "/driverupdate"),
         Ops.add(target, "/driverupdate")
@@ -632,7 +638,9 @@ module Yast
           Label(
             Builtins.sformat(
               _(
-                "You can do changes to the ISO now in %1, like adding a complete different AutoYaST XML file.\nIf you press the ok-button, the iso will be created."
+                "You can do changes to the ISO now in %1, like adding a " \
+                  "complete different AutoYaST XML file.\n" \
+                  "If you press the ok-button, the iso will be created."
               ),
               isodir
             )
@@ -649,11 +657,11 @@ module Yast
       )
 
       # create the actual ISO file
-      #        Popup::Message( _("Please choose a place where you want to save the ISO file in the next dialog") );
       targetdir = UI.AskForExistingDirectory("/", _("Store ISO image to ..."))
       Popup.ShowFeedback(_("Creating ISO File ..."), "")
       cmd = Builtins.sformat(
-        "mkisofs -o %1/%2.iso -R -b boot/%3/loader/isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table %4",
+        "mkisofs -o %1/%2.iso -R -b boot/%3/loader/isolinux.bin -c boot.cat " \
+          "-no-emul-boot -boot-load-size 4 -boot-info-table %4",
         targetdir,
         Ops.get_string(@image, "image_name", ""),
         @image_arch,
@@ -846,8 +854,10 @@ module Yast
       Pkg.PkgApplReset
 
       sw_settings = Profile.current.fetch("software", {})
-      Pkg.SetSolverFlags("ignoreAlreadyRecommended" => Mode.normal,
-                         "onlyRequires"             => !sw_settings.fetch("install_recommended", true))
+      Pkg.SetSolverFlags(
+        "ignoreAlreadyRecommended" => Mode.normal,
+        "onlyRequires"             => !sw_settings.fetch("install_recommended", true)
+      )
 
       failed = []
 
@@ -983,9 +993,11 @@ module Yast
       )
 
       # user selected packages which have already been installed
-      installed_by_user = Pkg.GetPackages(:installed, true).select { |pkg_name|
-        Pkg.PkgPropertiesAll(pkg_name).any? { |p| p["on_system_by_user"] && p["status"] == :installed }
-      }
+      installed_by_user = Pkg.GetPackages(:installed, true).select do |pkg_name|
+        Pkg.PkgPropertiesAll(pkg_name).any? do |p|
+          p["on_system_by_user"] && p["status"] == :installed
+        end
+      end
 
       # Filter out kernel and pattern packages
       kernel_packages = Pkg.PkgQueryProvides("kernel").collect { |package|
@@ -1136,7 +1148,9 @@ module Yast
       failed_packages = Pkg.DoProvide(autoinstPackages) unless autoinstPackages.empty?
       computed_packages = Packages.ComputeSystemPackageList
       log.info "Computed packages for installation: #{computed_packages}"
-      failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages)) unless computed_packages.empty?
+      if !computed_packages.empty?
+        failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages))
+      end
 
       # Blaming only packages which have been selected by the AutoYaST configuration file
       log.error "Cannot select following packages for installation:" unless failed_packages.empty?
@@ -1162,7 +1176,8 @@ module Yast
           not_selected << "#{name}: #{reason}\n"
         end
         # TRANSLATORS: Warning text during the installation. %s is a list of package
-        error_message = _("These packages cannot be found in the software repositories:\n%s") % not_selected
+        error_message = _("These packages cannot be found in the software repositories:\n%s") %
+          not_selected
         if suggest_y2log
           # TRANSLATORS: Error message, %d is replaced by the amount of failed packages.
           error_message += _("and %d additional packages") % (failed_count - MAX_PACKAGE_VIEW)
@@ -1218,9 +1233,12 @@ module Yast
       names_only = true
       packages = Pkg.GetPackages(status, names_only)
 
-      # iterate over each package, Pkg.ResolvableProperties("", :package, "") requires a lot of memory
+      # iterate over each package, Pkg.ResolvableProperties("", :package, "") requires a lot of
+      # memory
       packages.select do |package|
-        Pkg.PkgPropertiesAll(package).any? { |p| p["transact_by"] == :user && p["status"] == status }
+        Pkg.PkgPropertiesAll(package).any? do |p|
+          p["transact_by"] == :user && p["status"] == status
+        end
       end
     end
   end

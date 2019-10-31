@@ -50,19 +50,26 @@ module Yast
               "created automatically:"
           ) +
           _(
-            " <tt>/boot</tt>, <tt>swap</tt>, and a root partition <tt>/</tt>.\nSizes are calculated automatically.\n"
+            " <tt>/boot</tt>, <tt>swap</tt>, and a root partition <tt>/</tt>.\n" \
+              "Sizes are calculated automatically.\n"
           ) +
           _("<p><b>Advanced Options</b></p>") +
           _(
-            "By default, AutoYaST will create an extended partition and adds all new partitions as logical devices. It is possible, however, to instruct AutoYaST to create a certain partition as a primary partition or as extended partition. Additionally, it is possible to specify the size of a partition using sectors rather than size in MBytes."
+            "By default, AutoYaST will create an extended partition and adds all new " \
+              "partitions as logical devices. It is possible, however, to instruct AutoYaST " \
+              "to create a certain partition as a primary partition or as extended partition. " \
+              "Additionally, it is possible to specify the size of a partition using " \
+              "sectors rather than size in MBytes."
           ) +
           _(
-            "These options and other advanced options cannot be configured using this\ninterface.  Instead, add them manually to the control file.\n"
+            "These options and other advanced options cannot be configured using this\n" \
+              "interface.  Instead, add them manually to the control file.\n"
           ) +
           _(
             "<p>\n" \
               "For LVM and RAID setup, consult the documentation and add the configuration\n" \
-              "to an existing control file. You can only create unformatted LVM and RAID partitions as\n" \
+              "to an existing control file. You can only create unformatted LVM " \
+              "and RAID partitions as\n" \
               "a preparation.\n" \
               "</p>\n"
           )

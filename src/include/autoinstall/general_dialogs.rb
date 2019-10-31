@@ -146,7 +146,8 @@ module Yast
             "The installation confirmation option is selected by default\n" \
             "to avoid unwanted installation. It stops the system\n" \
             "during installation and shows a summary of requested operations in the\n" \
-            "usual proposal screen.  Uncheck this option to install automatically without interruption.\n" \
+            "usual proposal screen.  Uncheck this option to install " \
+            "automatically without interruption.\n" \
             "</P>\n"
         )
       )
@@ -154,7 +155,8 @@ module Yast
         help_text,
         _(
           "<P>\n" \
-            "If you turn off the second stage of AutoYaST, the installation continues in manual mode\n" \
+            "If you turn off the second stage of AutoYaST, the " \
+            "installation continues in manual mode\n" \
             "after the first reboot (after package installation).\n" \
             "</P>\n"
         )
