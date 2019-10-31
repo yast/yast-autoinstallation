@@ -239,13 +239,11 @@ module Yast
       Packages.Init(true)
 
       # initialize target
-      if true
-        PackageCallbacks.SetConvertDBCallbacks
+      PackageCallbacks.SetConvertDBCallbacks
 
-        Pkg.TargetInit(Installation.destdir, false)
+      Pkg.TargetInit(Installation.destdir, false)
 
-        Update.GetProductName
-      end
+      Update.GetProductName
 
       # FATE #301990, Bugzilla #238488
       # Set initial update-related (packages/patches) values from control file
