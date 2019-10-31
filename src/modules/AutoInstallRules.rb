@@ -167,12 +167,10 @@ module Yast
 
       # Regexp to fetch match the network address.
       regexp = /([\h:\.]+)\/\d+ .+src #{hostaddress}/
-      if ret = ip_route["stdout"][regexp, 1]
-        ret
-      else
-        log.warn "Cannot find network address through 'ip': #{ip_route}"
-        nil
-      end
+      ret = ip_route["stdout"][regexp, 1]
+      log.warn "Cannot find network address through 'ip': #{ip_route}" unless ret
+
+      ret
     end
 
     # Return host id (hex ip)
@@ -1086,13 +1084,14 @@ module Yast
       return @hostaddress unless @hostaddress.nil?
 
       ip_route = SCR.Execute(path(".target.bash_output"), "/usr/sbin/ip route")
-      if ret = ip_route["stdout"][HOSTADDRESS_REGEXP, 1]
+      ret = ip_route["stdout"][HOSTADDRESS_REGEXP, 1]
+      if ret
         log.info "Found IP address: #{ret}"
-        ret
       else
         log.warn "Cannot evaluate IP address: #{ip_route}"
-        nil
       end
+
+      ret
     end
 
     publish variable: :userrules, type: "boolean"
