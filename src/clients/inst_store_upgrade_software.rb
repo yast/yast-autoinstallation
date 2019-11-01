@@ -10,8 +10,8 @@ module Yast
       return :auto if GetInstArgs.going_back
 
       # find out status of patterns
-      @patterns = Pkg.ResolvableProperties("", :pattern, "")
-      @patterns = Builtins.filter(@patterns) do |p|
+      @patterns = Pkg.ResolvableProperties("", :pattern, "") || []
+      @patterns.select! do |p|
         Ops.get(p, "transact_by") == :user ||
           Ops.get(p, "transact_by") == :app_high
       end
@@ -20,7 +20,7 @@ module Yast
       # state is the same; similar for uninstallation (valid for all packages, patterns
       # and products
       @patterns_to_remove = []
-      @patterns_to_install = Builtins.maplist(@patterns) do |p|
+      @patterns_to_install = @patterns.map do |p|
         if Ops.get(p, "status") == :selected ||
             Ops.get(p, "status") == :installed
           next Ops.get_string(p, "name", "")
@@ -34,9 +34,7 @@ module Yast
 
         nil
       end
-      @patterns_to_install = Builtins.filter(@patterns_to_install) do |p|
-        !p.nil?
-      end
+      @patterns_to_install.compact!
       Builtins.y2milestone("Patterns to install: %1", @patterns_to_install)
       Builtins.y2milestone("Patterns to remove: %1", @patterns_to_remove)
 
@@ -51,14 +49,14 @@ module Yast
       Builtins.y2milestone("Packages to remove: %1", @packages_to_remove)
 
       # find out status of products
-      @products = Pkg.ResolvableProperties("", :product, "")
-      @products = Builtins.filter(@products) do |p|
+      @products = Pkg.ResolvableProperties("", :product, "") || []
+      @products.select! do |p|
         Ops.get(p, "transact_by") == :user ||
           Ops.get(p, "transact_by") == :app_high
       end
 
       @products_to_remove = []
-      @products_to_install = Builtins.maplist(@products) do |p|
+      @products_to_install = @products.map do |p|
         if Ops.get(p, "status") == :selected ||
             Ops.get(p, "status") == :installed
           next Ops.get_string(p, "name", "")
@@ -72,9 +70,7 @@ module Yast
 
         nil
       end
-      @products_to_install = Builtins.filter(@products_to_install) do |p|
-        !p.nil?
-      end
+      @products_to_install.compact!
       Builtins.y2milestone("Products to install: %1", @products_to_install)
       Builtins.y2milestone("Products to remove: %1", @products_to_remove)
 

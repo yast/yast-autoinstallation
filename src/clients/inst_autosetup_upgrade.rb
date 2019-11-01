@@ -447,15 +447,10 @@ module Yast
       @ret
     end
 
-    # FIXME: FIXME FIXME copy-paste from update_proposal
+    # FIXME: copy-paste from update_proposal
     def GetUpdateConf
       # 'nil' values are skipped, in that case, ZYPP uses own default values
       ret = {}
-
-      # not supported by libzypp anymore
-      #      if (Update::deleteOldPackages != nil) {
-      #          ret["delete_unmaintained"] = Update::deleteOldPackages;
-      #      }
 
       if !Update.silentlyDowngradePackages.nil?
         Ops.set(ret, "silent_downgrades", Update.silentlyDowngradePackages)

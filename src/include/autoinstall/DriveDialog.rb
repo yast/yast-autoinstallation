@@ -52,8 +52,7 @@ module Yast
     end
 
     def enableReuse(selected)
-      selected = deep_copy(selected)
-      UI.ChangeWidget(Id(:cb_reuse), :Value, selected) if !selected.nil? && Ops.is_symbol?(selected)
+      UI.ChangeWidget(Id(:cb_reuse), :Value, selected) if selected.is_a?(Symbol)
       UI.ChangeWidget(Id(:cb_reuse), :Enabled, true)
       if UI.QueryWidget(Id(:rbg), :CurrentButton) != :rb_reuse
         UI.ChangeWidget(Id(:rbg), :CurrentButton, :rb_reuse)

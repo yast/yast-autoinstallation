@@ -414,7 +414,7 @@ module Yast
 
       Progress.NextStage
 
-      if Profile.current.key? "runlevel"
+      if Profile.current.key?("runlevel")
         # still supporting old format "runlevel"
         ServicesManager.import(Profile.current["runlevel"])
         # Do not start it in second installation stage again.

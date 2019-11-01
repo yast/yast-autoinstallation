@@ -326,7 +326,7 @@ module Yast
           addFileDialog(Convert.to_symbol(ret), "")
         elsif ret == :edit
           name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
-          if !name.nil?
+          if name
             addFileDialog(Convert.to_symbol(ret), name)
           else
             Popup.Message(select_msg)
@@ -334,7 +334,7 @@ module Yast
           end
         elsif ret == :delete
           name = Convert.to_string(UI.QueryWidget(Id(:table), :CurrentItem))
-          if !name.nil?
+          if name
             AutoinstFile.Files = deleteFile(name)
           else
             Popup.Message(select_msg)

@@ -411,7 +411,7 @@ module Yast
         ls = Builtins.filter(Builtins.splitstring(Ops.get(ls, 0, ""), " \t")) do |s|
           !Builtins.isempty(s)
         end
-        ret = Ops.get(ls, 0, "") if !Builtins.isempty(ls)
+        ret = Ops.get(ls, 0, "") unless Builtins.isempty(ls)
       end
       Builtins.y2milestone("MatchInterface id:%1 ret:%2", id, ret)
       ret
