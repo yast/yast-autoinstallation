@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	include/tree.ycp
-# Package:	Auto-installation/Partition
+# File:  include/tree.ycp
+# Package:  Auto-installation/Partition
 # Summary:     helper functions for dealing with tree widget
-# Author:	Sven Schober (sschober@suse.de)
+# Author:  Sven Schober (sschober@suse.de)
 #
 # $Id: tree.ycp 2805 2008-05-27 15:12:42Z sschober $
 module Yast
@@ -46,6 +44,7 @@ module Yast
       t = deep_copy(t)
       # if term itself is named like s -> yes, contains
       return true if s == Builtins.symbolof(t)
+
       # other wise inspect arguments
       args = Builtins.argsof(t)
       found = false
@@ -56,7 +55,7 @@ module Yast
         elsif Ops.is(e, "list <term>")
           found = isContainedInTree(
             s,
-            Convert.convert(e, :from => "any", :to => "list <term>")
+            Convert.convert(e, from: "any", to: "list <term>")
           )
           raise Break if found
         elsif Ops.is_symbol?(e) && s == Convert.to_symbol(e)
@@ -66,6 +65,7 @@ module Yast
       end
       found
     end
+
     def isContainedInTree(s, tree)
       tree = deep_copy(tree)
       found = false
@@ -84,11 +84,10 @@ module Yast
     # otherwise
     def selectTreeItem(newItem)
       item = string2symbol(newItem)
-      allItems = []
       allItems = Convert.convert(
         UI.QueryWidget(@iTree, :Items),
-        :from => "any",
-        :to   => "list <term>"
+        from: "any",
+        to:   "list <term>"
       )
       if isContainedInTree(item, allItems)
         UI.ChangeWidget(@iTree, :CurrentItem, item)
@@ -106,11 +105,10 @@ module Yast
     # @param [Array<Yast::Term>] children list of child nodes
     def createTreeNode(reference, name, children)
       children = deep_copy(children)
-      result = Empty()
-      if 0 == Builtins.size(children)
-        result = Item(Id(string2symbol(reference)), name)
+      result = if 0 == Builtins.size(children)
+        Item(Id(string2symbol(reference)), name)
       else
-        result = Item(Id(string2symbol(reference)), name, true, children)
+        Item(Id(string2symbol(reference)), name, true, children)
       end
       Builtins.y2milestone("new node: '%1'", result)
       deep_copy(result)

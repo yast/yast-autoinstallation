@@ -1,8 +1,6 @@
-# encoding: utf-8
-
-# File:	clients/autoyast.ycp
-# Summary:	Main file for client call
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  clients/autoyast.ycp
+# Summary:  Main file for client call
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -28,7 +26,6 @@ module Yast
       Yast.include self, "autoinstall/dialogs.rb"
       Yast.include self, "autoinstall/conftree.rb"
       Yast.include self, "autoinstall/wizards.rb"
-
 
       if Builtins.size(Y2ModuleConfig.GroupMap) == 0
         Wizard.CreateDialog
@@ -62,7 +59,6 @@ module Yast
         )
       )
 
-
       @cmdline = {
         "id"         => "autoyast2",
         "help"       => _("AutoYaST"),
@@ -90,7 +86,6 @@ module Yast
         "mappings"   => { "file" => ["filename"], "module" => ["modname"] }
       }
 
-
       # command line options
       # Init variables
       @command = ""
@@ -102,7 +97,6 @@ module Yast
       @ret = nil
       @ret = CommandLine.Run(@cmdline)
 
-
       AddOnProduct.CleanModeConfigSources
       :exit
     end
@@ -112,8 +106,8 @@ module Yast
       if !Profile.ReadXML(Ops.get(options, "filename", ""))
         Popup.Error(
           _(
-            "Error while parsing the control file.\n" +
-              "Check the log files for more details or fix the\n" +
+            "Error while parsing the control file.\n" \
+              "Check the log files for more details or fix the\n" \
               "control file and try again.\n"
           )
         )
@@ -127,10 +121,9 @@ module Yast
         resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
         resource = p if resource == ""
         Builtins.y2debug("resource: %1", resource)
-        tomerge = Ops.get_string(d, "X-SuSE-YaST-AutoInstMerge", "")
         module_auto = Ops.get_string(d, "X-SuSE-YaST-AutoInstClient", "none")
         rd = Y2ModuleConfig.getResourceData(d, resource)
-        WFM.CallFunction(module_auto, ["Import", rd]) if rd != nil
+        WFM.CallFunction(module_auto, ["Import", rd]) if !rd.nil?
       end
       Popup.ClearFeedback
       AutoSequence()

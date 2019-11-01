@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	clients/autoinst_general.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	General Settings
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_general.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  General Settings
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -63,7 +61,7 @@ module Yast
       Builtins.y2milestone("General auto finished")
       Builtins.y2milestone("----------------------------------------")
 
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # EOF
     end

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) [2018] SUSE LLC
 #
 # All Rights Reserved.
@@ -23,8 +21,7 @@ Yast.import "HTML"
 Yast.import "RichText"
 
 module Y2Autoinstallation
-
-  # FIXME merge this class with StorageProposalIssuesPresenter class.
+  # FIXME: merge this class with StorageProposalIssuesPresenter class.
 
   # This class converts a list of issues into a message to be shown to users
   #
@@ -63,11 +60,11 @@ module Y2Autoinstallation
       parts << Yast::HTML.Newline
 
       parts <<
-      if fatal.empty?
-        _("Do you want to continue?")
-      else
-        _("Please, correct these problems and try again.")
-      end
+        if fatal.empty?
+          _("Do you want to continue?")
+        else
+          _("Please, correct these problems and try again.")
+        end
 
       parts.join
     end
@@ -128,6 +125,5 @@ module Y2Autoinstallation
         all[section] << issue
       end
     end
-
   end
 end

@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/AutoinstSoftware.ycp
-# Package:	Autoyast
-# Summary:	Software
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  modules/AutoinstSoftware.ycp
+# Package:  Autoyast
+# Summary:  Software
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 #
@@ -106,17 +104,15 @@ module Yast
     def Import(settings)
       settings = deep_copy(settings)
       @Software = deep_copy(settings)
-      @patterns = settings.fetch("patterns",[])
-      @instsource = settings.fetch("instsource","")
+      @patterns = settings.fetch("patterns", [])
+      @instsource = settings.fetch("instsource", "")
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
       @patternsAvailable = []
       allPatterns = Pkg.ResolvableDependencies("", :pattern, "")
-      allPatterns = Builtins.filter(allPatterns) do |m|
-        if m.fetch("user_visible",false)
-          @patternsAvailable.push( m.fetch("name","") )
-        end
-        m.fetch("user_visible",false)
+      Builtins.filter(allPatterns) do |m|
+        @patternsAvailable.push(m.fetch("name", "")) if m.fetch("user_visible", false)
+        m.fetch("user_visible", false)
       end
 
       regexFound = []
@@ -125,6 +121,7 @@ module Yast
         "packages",
         Builtins.filter(Ops.get_list(settings, "packages", [])) do |want_pack|
           next true if !Builtins.issubstring(want_pack, "/")
+
           want_pack = Builtins.deletechars(want_pack, "/")
           Builtins.foreach(@packagesAvailable) do |pack|
             Builtins.y2milestone("matching %1 against %2", pack, want_pack)
@@ -141,14 +138,15 @@ module Yast
         "packages",
         Convert.convert(
           Builtins.union(Ops.get_list(settings, "packages", []), regexFound),
-          :from => "list",
-          :to   => "list <string>"
+          from: "list",
+          to:   "list <string>"
         )
       )
 
       regexFound = []
       @patterns = Builtins.filter(@patterns) do |want_patt|
         next true if !Builtins.issubstring(want_patt, "/")
+
         want_patt = Builtins.deletechars(want_patt, "/")
         Builtins.foreach(patternsAvailable) do |patt|
           Builtins.y2milestone("matching %1 against %2", patt, want_patt)
@@ -161,12 +159,12 @@ module Yast
       end
       @patterns = Convert.convert(
         Builtins.union(@patterns, regexFound),
-        :from => "list",
-        :to   => "list <string>"
+        from: "list",
+        to:   "list <string>"
       )
 
-      PackageAI.toinstall = settings.fetch("packages",[])
-      @kernel = settings.fetch("kernel","")
+      PackageAI.toinstall = settings.fetch("packages", [])
+      @kernel = settings.fetch("kernel", "")
 
       addPostPackages(settings.fetch("post-packages", []))
       AutoinstData.post_patterns = settings.fetch("post-patterns", [])
@@ -180,28 +178,27 @@ module Yast
       #     modified = false;
       # else
       #     modified = true;
-      @image = settings.fetch("image",{})
+      @image = settings.fetch("image", {})
 
       # image_location and image_name are not mandatory for
       # extracting an image because it can be defined in the
       # script too. So it will not be checked here.
-      if @image["script_location"] && !@image["script_location"].empty?
-        @imaging = true
-      end
+      @imaging = true if @image["script_location"] && !@image["script_location"].empty?
       true
     end
 
-    def AddYdepsFromProfile( entries )
+    def AddYdepsFromProfile(entries)
       Builtins.y2milestone("AddYdepsFromProfile entries %1", entries)
       pkglist = []
       entries.each do |e|
         yast_module, _entry = Y2ModuleConfig.ModuleMap.find do |module_name, entry|
           module_name == e ||
-          entry["X-SuSE-YaST-AutoInstResource"] == e ||
-          (entry["X-SuSE-YaST-AutoInstMerge"] && entry["X-SuSE-YaST-AutoInstMerge"].split(",").include?(e))
+            entry["X-SuSE-YaST-AutoInstResource"] == e ||
+            (entry["X-SuSE-YaST-AutoInstMerge"]&.split(",")&.include?(e))
         end
-        yast_module ||= e # if needed taking default because no entry has been defined in the *.desktop file
-        # FIXME
+        # if needed taking default because no entry has been defined in the *.desktop file
+        yast_module ||= e
+        # FIXME: Does not work see below
         #
         # This does currently not work at all as the packages provide this
         # with the module name camel-cased; e.g.:
@@ -218,12 +215,8 @@ module Yast
         #
         provide = "application(YaST2/org.opensuse.yast.#{yast_module}.desktop)"
 
-        packages = Pkg.PkgQueryProvides( provide )
-        unless packages.empty?
-          name = packages[0][0]
-          log.info "AddYdepsFromProfile add package #{name} for entry #{e}"
-          pkglist.push(name) if !pkglist.include?(name)
-        else
+        packages = Pkg.PkgQueryProvides(provide)
+        if packages.empty?
           packs = Y2ModuleConfig.required_packages([e])[e]
           if packs.empty?
             log.info "No package provides: #{provide}"
@@ -231,12 +224,16 @@ module Yast
             log.info "AddYdepsFromProfile add packages #{packs} for entry #{e}"
             pkglist += packs
           end
+        else
+          name = packages[0][0]
+          log.info "AddYdepsFromProfile add package #{name} for entry #{e}"
+          pkglist.push(name) if !pkglist.include?(name)
         end
       end
       pkglist.uniq!
       Builtins.y2milestone("AddYdepsFromProfile pkglist %1", pkglist)
       pkglist.each do |p|
-        if( !PackageAI.toinstall.include?(p) && @packagesAvailable.include?(p) )
+        if !PackageAI.toinstall.include?(p) && @packagesAvailable.include?(p)
           PackageAI.toinstall.push(p)
         end
       end
@@ -259,9 +256,9 @@ module Yast
         )
       )
       return "unknown" if Ops.get_integer(bash_out, "exit", 1) != 0
+
       Builtins.deletechars(Ops.get_string(bash_out, "stdout", "unknown"), "\n")
     end
-
 
     def createImage(targetdir)
       rootdir = Convert.to_string(SCR.Read(path(".target.tmpdir")))
@@ -292,8 +289,8 @@ module Yast
               )
             ]
           end,
-          :from => "any",
-          :to   => "list <string>"
+          from: "any",
+          to:   "list <string>"
         )
       )
 
@@ -321,9 +318,11 @@ module Yast
       )
 
       # Add Source:
-      # zypper --root /space/tmp/tmproot/ ar ftp://10.10.0.100/install/SLP/openSUSE-11.2/i386/DVD1/ main
+      # zypper --root /space/tmp/tmproot/ ar \
+      #   ftp://10.10.0.100/install/SLP/openSUSE-11.2/i386/DVD1/ main
       zypperCall = Builtins.sformat(
-        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive ar %2 main-source %3",
+        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys " \
+          "--non-interactive ar %2 main-source %3",
         rootdir,
         @instsource,
         outputRedirect
@@ -342,7 +341,8 @@ module Yast
       addOns = Ops.get_list(addOnExport, "add_on_products", [])
       Builtins.foreach(addOns) do |addOn|
         zypperCall = Builtins.sformat(
-          "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive ar %2 %3 %4",
+          "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys " \
+            "--non-interactive ar %2 %3 %4",
           rootdir,
           Ops.get_string(addOn, "media_url", ""),
           Ops.get_string(addOn, "product", ""),
@@ -363,7 +363,8 @@ module Yast
 
       # Install
       zypperCall = Builtins.sformat(
-        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive install --auto-agree-with-licenses ",
+        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys " \
+          "--non-interactive install --auto-agree-with-licenses ",
         rootdir
       )
 
@@ -409,10 +410,7 @@ module Yast
 
       @image_arch = GetArchOfELF(Builtins.sformat("%1/bin/bash", rootdir))
       Builtins.y2milestone("Image architecture = %1", @image_arch)
-      if targetdir == ""
-        #            Popup::Message( _("in the next file dialog you have to choose the target directory to save the image") );
-        targetdir = UI.AskForExistingDirectory("/", _("Store image to ..."))
-      end
+      targetdir = UI.AskForExistingDirectory("/", _("Store image to ...")) if targetdir == ""
 
       # umount devices
       returnCode = Convert.to_integer(
@@ -441,7 +439,9 @@ module Yast
       Popup.Message(
         Builtins.sformat(
           _(
-            "You can do changes to the image now in %1/\nIf you press the ok-button, the image will be compressed and can't be changed anymore."
+            "You can do changes to the image now in %1/\n" \
+              "If you press the ok-button, the image will be compressed and " \
+              "can't be changed anymore."
           ),
           rootdir
         )
@@ -489,16 +489,17 @@ module Yast
             Ops.add(Ops.add(target, "/"), source)
           )
           if !GetURL(
-              Ops.add(
-                Ops.add(Ops.add(@instsource, "/"), source),
-                "directory.yast"
-              ),
-              "/tmp/directory.yast"
-            )
+            Ops.add(
+              Ops.add(Ops.add(@instsource, "/"), source),
+              "directory.yast"
+            ),
+            "/tmp/directory.yast"
+          )
             Popup.Error(
               Builtins.sformat(
                 _(
-                  "can not get the directory.yast file at `%1`.\nYou can create that file with 'ls -F > directory.yast' if it's missing."
+                  "can not get the directory.yast file at `%1`.\n" \
+                    "You can create that file with 'ls -F > directory.yast' if it's missing."
                 ),
                 Ops.add(Ops.add(@instsource, "/"), source)
               )
@@ -529,36 +530,35 @@ module Yast
                       file
                     )
                   )
-                if !Popup.YesNo(
-                    Builtins.sformat(
-                      _("can not read '%1'. Try again?"),
-                      Ops.add(Ops.add(Ops.add(@instsource, "/"), source), file)
-                    )
+                next if Popup.YesNo(
+                  Builtins.sformat(
+                    _("can not read '%1'. Try again?"),
+                    Ops.add(Ops.add(Ops.add(@instsource, "/"), source), file)
                   )
-                  ret = false
-                end
+                )
+
+                ret = false
               end
             end
             raise Break if !ret
           end
-        else
-          # copy a file
-          if !GetURL(
-              Ops.add(Ops.add(@instsource, "/"), source),
-              Ops.add(Ops.add(target, "/"), source)
+        # copy a file
+        elsif !GetURL(
+          Ops.add(Ops.add(@instsource, "/"), source),
+          Ops.add(Ops.add(target, "/"), source)
+        )
+          Popup.Error(
+            Builtins.sformat(
+              _("can not read '%1'. ISO creation failed"),
+              Ops.add(Ops.add(@instsource, "/"), source)
             )
-            Popup.Error(
-              Builtins.sformat(
-                _("can not read '%1'. ISO creation failed"),
-                Ops.add(Ops.add(@instsource, "/"), source)
-              )
-            )
-            ret = false
-            raise Break
-          end
+          )
+          ret = false
+          raise Break
         end
       end
-      # lets always copy an optional(!) driverupdate file. It's very unlikely that it's in directory.yast
+      # lets always copy an optional(!) driverupdate file.
+      # It's very unlikely that it's in directory.yast
       GetURL(
         Ops.add(@instsource, "/driverupdate"),
         Ops.add(target, "/driverupdate")
@@ -576,7 +576,6 @@ module Yast
       SCR.Execute(path(".target.bash"), Builtins.sformat("rm -rf %1", isodir))
       SCR.Execute(path(".target.mkdir"), isodir)
       outputRedirect = " 2>&1 >> /tmp/ay_image.log"
-      returnCode = 0
       createImage(isodir)
 
       Popup.ShowFeedback(_("Preparing ISO Filestructure ..."), "")
@@ -614,9 +613,7 @@ module Yast
       )
       lines = Builtins.splitstring(@isolinuxcfg, "\n")
       lines = Builtins.maplist(lines) do |l|
-        if Builtins.issubstring(l, " append ")
-          l = Ops.add(l, " autoyast=file:///autoinst.xml")
-        end
+        l = Ops.add(l, " autoyast=file:///autoinst.xml") if Builtins.issubstring(l, " append ")
         l
       end
       @isolinuxcfg = Builtins.mergestring(lines, "\n")
@@ -636,7 +633,9 @@ module Yast
           Label(
             Builtins.sformat(
               _(
-                "You can do changes to the ISO now in %1, like adding a complete different AutoYaST XML file.\nIf you press the ok-button, the iso will be created."
+                "You can do changes to the ISO now in %1, like adding a " \
+                  "complete different AutoYaST XML file.\n" \
+                  "If you press the ok-button, the iso will be created."
               ),
               isodir
             )
@@ -653,11 +652,11 @@ module Yast
       )
 
       # create the actual ISO file
-      #        Popup::Message( _("Please choose a place where you want to save the ISO file in the next dialog") );
       targetdir = UI.AskForExistingDirectory("/", _("Store ISO image to ..."))
       Popup.ShowFeedback(_("Creating ISO File ..."), "")
       cmd = Builtins.sformat(
-        "mkisofs -o %1/%2.iso -R -b boot/%3/loader/isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table %4",
+        "mkisofs -o %1/%2.iso -R -b boot/%3/loader/isolinux.bin -c boot.cat " \
+          "-no-emul-boot -boot-load-size 4 -boot-info-table %4",
         targetdir,
         Ops.get_string(@image, "image_name", ""),
         @image_arch,
@@ -720,7 +719,8 @@ module Yast
 
       products = Product.FindBaseProducts
       raise "Found multiple base products" if products.size > 1
-      s["products"] = products.map{ |x| x["name"] }
+
+      s["products"] = products.map { |x| x["name"] }
 
       s
     end
@@ -732,8 +732,8 @@ module Yast
       PackageAI.toinstall = Builtins.toset(
         Convert.convert(
           Builtins.union(PackageAI.toinstall, module_packages),
-          :from => "list",
-          :to   => "list <string>"
+          from: "list",
+          to:   "list <string>"
         )
       )
       #
@@ -753,8 +753,6 @@ module Yast
       Ops.set(Profile.current, "software", Export())
       nil
     end
-
-
 
     # Summary
     # @return Html formatted configuration summary
@@ -789,6 +787,7 @@ module Yast
       end
       summary
     end
+
     # Compute list of packages selected by user and other packages needed for important
     # configuration modules.
     # @return [Array] of strings list of packages needed for autoinstallation
@@ -798,8 +797,8 @@ module Yast
       # the primary list of packages
       allpackages = Convert.convert(
         Builtins.union(allpackages, PackageAI.toinstall),
-        :from => "list",
-        :to   => "list <string>"
+        from: "list",
+        to:   "list <string>"
       )
 
       # In autoinst mode, a kernel should not be  available
@@ -808,41 +807,33 @@ module Yast
         kernel_pkgs = Kernel.ComputePackages
         allpackages = Convert.convert(
           Builtins.union(allpackages, kernel_pkgs),
-          :from => "list",
-          :to   => "list <string>"
+          from: "list",
+          to:   "list <string>"
         )
-      else
-        if Pkg.IsAvailable(@kernel)
-          allpackages = Builtins.add(allpackages, @kernel)
-          kernel_nongpl = Ops.add(@kernel, "-nongpl")
+      elsif Pkg.IsAvailable(@kernel)
+        allpackages = Builtins.add(allpackages, @kernel)
+        kernel_nongpl = Ops.add(@kernel, "-nongpl")
 
-          if Pkg.IsAvailable(kernel_nongpl)
-            allpackages = Builtins.add(allpackages, kernel_nongpl)
-          end
-        else
-          Builtins.y2warning("%1 not available, using kernel-default", @kernel)
-          kernel_pkgs = Kernel.ComputePackages
-          allpackages = Convert.convert(
-            Builtins.union(allpackages, kernel_pkgs),
-            :from => "list",
-            :to   => "list <string>"
-          )
-        end
+        allpackages = Builtins.add(allpackages, kernel_nongpl) if Pkg.IsAvailable(kernel_nongpl)
+      else
+        Builtins.y2warning("%1 not available, using kernel-default", @kernel)
+        kernel_pkgs = Kernel.ComputePackages
+        allpackages = Convert.convert(
+          Builtins.union(allpackages, kernel_pkgs),
+          from: "list",
+          to:   "list <string>"
+        )
       end
 
       deep_copy(allpackages)
     end
-
-
 
     # Configure software settings
     #
     # @return [Boolean]
     def Write
       if @imaging
-        if !Ops.get_boolean(@image, "run_kickoff", false)
-          ProductControl.DisableModule("kickoff")
-        end
+        ProductControl.DisableModule("kickoff") if !Ops.get_boolean(@image, "run_kickoff", false)
         ProductControl.DisableModule("rpmcopy")
         return true
       end
@@ -855,9 +846,11 @@ module Yast
       # are available meanwhile. (bnc#979691)
       Pkg.PkgApplReset
 
-      sw_settings = Profile.current.fetch("software",{})
-      Pkg.SetSolverFlags({ "ignoreAlreadyRecommended" => Mode.normal,
-                           "onlyRequires" => !sw_settings.fetch("install_recommended",true) })
+      sw_settings = Profile.current.fetch("software", {})
+      Pkg.SetSolverFlags(
+        "ignoreAlreadyRecommended" => Mode.normal,
+        "onlyRequires"             => !sw_settings.fetch("install_recommended", true)
+      )
 
       failed = []
 
@@ -868,7 +861,7 @@ module Yast
       pkg_handler.set_proposal_packages
 
       # switch for recommended patterns installation (workaround for our very weird pattern design)
-      if sw_settings.fetch("install_recommended",false) == false
+      if sw_settings.fetch("install_recommended", false) == false
         # set SoftLock to avoid the installation of recommended patterns (#159466)
         Builtins.foreach(Pkg.ResolvableProperties("", :pattern, "")) do |p|
           Pkg.ResolvableSetSoftLock(Ops.get_string(p, "name", ""), :pattern)
@@ -917,7 +910,7 @@ module Yast
       Builtins.y2milestone("Packages to be removed: %1", PackageAI.toremove)
       if Ops.greater_than(Builtins.size(PackageAI.toremove), 0)
         Builtins.foreach(PackageAI.toremove) do |rp|
-          #Pkg::ResolvableSetSoftLock( rp, `package ); // FIXME: maybe better Pkg::PkgTaboo(rp) ?
+          # Pkg::ResolvableSetSoftLock( rp, `package ); // FIXME: maybe better Pkg::PkgTaboo(rp) ?
           Pkg.PkgTaboo(rp)
         end
 
@@ -949,7 +942,6 @@ module Yast
       ok
     end
 
-
     # Initialize temporary target
     def pmInit
       #        string tmproot = AutoinstConfig::tmpDir;
@@ -962,18 +954,17 @@ module Yast
       nil
     end
 
-
     # Add post packages
     # @param calcpost [Array<String>] list calculated post packages
     def addPostPackages(calcpost)
       # filter out already installed packages
-      calcpost.reject!{|p| PackageSystem.Installed(p)}
+      calcpost.reject! { |p| PackageSystem.Installed(p) }
 
       calcpost = deep_copy(calcpost)
       AutoinstData.post_packages = Convert.convert(
         Builtins.toset(Builtins.union(calcpost, AutoinstData.post_packages)),
-        :from => "list",
-        :to   => "list <string>"
+        from: "list",
+        to:   "list <string>"
       )
       nil
     end
@@ -987,36 +978,41 @@ module Yast
 
     def install_packages
       # user selected packages which have not been already installed
+      # rubocop:disable Lint/UselessAssignment
       packages = Pkg.FilterPackages(
         solver_selected = false,
         app_selected = true,
         user_selected = true,
-        name_only = true)
+        name_only = true
+      )
+      # rubocop:enable Lint/UselessAssignment
 
       # user selected packages which have already been installed
-      installed_by_user = Pkg.GetPackages(:installed, true).select{ |pkg_name|
-        Pkg.PkgPropertiesAll(pkg_name).any? { |p| p["on_system_by_user"] && p["status"] == :installed }
-      }
+      installed_by_user = Pkg.GetPackages(:installed, true).select do |pkg_name|
+        Pkg.PkgPropertiesAll(pkg_name).any? do |p|
+          p["on_system_by_user"] && p["status"] == :installed
+        end
+      end
 
       # Filter out kernel and pattern packages
-      kernel_packages = Pkg.PkgQueryProvides("kernel").collect { |package|
+      kernel_packages = Pkg.PkgQueryProvides("kernel").collect do |package|
         package[0]
-      }.compact.uniq
-      pattern_packages = Pkg.PkgQueryProvides("pattern()").collect { |package|
+      end.compact.uniq
+      pattern_packages = Pkg.PkgQueryProvides("pattern()").collect do |package|
         package[0]
-      }.compact.uniq
+      end.compact.uniq
 
-      (packages + installed_by_user).uniq.select{ |pkg_name|
+      (packages + installed_by_user).uniq.select do |pkg_name|
         !kernel_packages.include?(pkg_name) &&
-        !pattern_packages.include?(pkg_name)
-      }
+          !pattern_packages.include?(pkg_name)
+      end
     end
 
     # Return list of software packages of calling client
     # in the installed environment
     # @return [Hash] map of installed software package
-    #		"patterns" -> list<string> addon selections
-    #		"packages" -> list<string> user selected packages
+    #    "patterns" -> list<string> addon selections
+    #    "packages" -> list<string> user selected packages
     #      "remove-packages" -> list<string> packages to remove
     def ReadHelper
       Pkg.TargetInit("/", false)
@@ -1029,7 +1025,8 @@ module Yast
       to_install_packages = install_packages
       patterns = []
 
-      patternsFullData = Builtins.filter(all_patterns) do |p|
+      # FIXME: filter method but it use only side effect of filling patterns
+      Builtins.filter(all_patterns) do |p|
         ret2 = false
         if Ops.get_symbol(p, "status", :none) == :installed &&
             !Builtins.contains(patterns, Ops.get_string(p, "name", "no name"))
@@ -1051,7 +1048,6 @@ module Yast
       Pkg.SourceStartManager(true)
       Pkg.TargetFinish
 
-      patternPackages = []
       new_p = []
       Builtins.foreach(patterns) do |tmp_pattern|
         xpattern = Builtins.filter(@all_xpatterns) do |p|
@@ -1092,8 +1088,8 @@ module Yast
     # by the user and have to be installed or removed.
     # The evaluation will be called while the yast installation workflow.
     # @return [Hash] map of to be installed/removed packages/patterns
-    #		"patterns" -> list<string> of selected patterns
-    #		"packages" -> list<string> user selected packages
+    #    "patterns" -> list<string> of selected patterns
+    #    "packages" -> list<string> user selected packages
     #           "remove-packages" -> list<string> packages to remove
     def read_initial_stage
       install_patterns = Pkg.ResolvableProperties("", :pattern, "").collect do |pattern|
@@ -1101,7 +1097,7 @@ module Yast
         # definition, cause we need a base selection here for the future
         # autoyast installation. (bnc#882886)
         if pattern["user_visible"] &&
-          (pattern["status"] == :selected || pattern["status"] == :installed)
+            (pattern["status"] == :selected || pattern["status"] == :installed)
           pattern["name"]
         end
       end
@@ -1115,7 +1111,7 @@ module Yast
     end
 
     def Read
-      Import((Stage.initial ? read_initial_stage() : ReadHelper()))
+      Import((Stage.initial ? read_initial_stage : ReadHelper()))
     end
 
     def SavePackageSelection
@@ -1147,12 +1143,14 @@ module Yast
       failed_packages = Pkg.DoProvide(autoinstPackages) unless autoinstPackages.empty?
       computed_packages = Packages.ComputeSystemPackageList
       log.info "Computed packages for installation: #{computed_packages}"
-      failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages)) unless computed_packages.empty?
+      if !computed_packages.empty?
+        failed_packages = failed_packages.merge(Pkg.DoProvide(computed_packages))
+      end
 
       # Blaming only packages which have been selected by the AutoYaST configuration file
       log.error "Cannot select following packages for installation:" unless failed_packages.empty?
-      failed_packages.reject! do |name,reason|
-        if @Software["packages"] && @Software["packages"].include?(name)
+      failed_packages.reject! do |name, reason|
+        if @Software["packages"]&.include?(name)
           log.error("  #{name} : #{reason} (selected by AutoYaST configuration file)")
           false
         else
@@ -1169,11 +1167,12 @@ module Yast
           failed_packages = failed_packages.first(MAX_PACKAGE_VIEW).to_h
           suggest_y2log = true
         end
-        failed_packages.each do |name,reason|
+        failed_packages.each do |name, reason|
           not_selected << "#{name}: #{reason}\n"
         end
         # TRANSLATORS: Warning text during the installation. %s is a list of package
-        error_message = _("These packages cannot be found in the software repositories:\n%s") % not_selected
+        error_message = _("These packages cannot be found in the software repositories:\n%s") %
+          not_selected
         if suggest_y2log
           # TRANSLATORS: Error message, %d is replaced by the amount of failed packages.
           error_message += _("and %d additional packages") % (failed_count - MAX_PACKAGE_VIEW)
@@ -1186,37 +1185,37 @@ module Yast
       end
     end
 
-    publish :function => :merge_product, :type => "void (string)"
-    publish :variable => :Software, :type => "map"
-    publish :variable => :image, :type => "map <string, any>"
-    publish :variable => :image_arch, :type => "string"
-    publish :variable => :patterns, :type => "list <string>"
-    publish :variable => :kernel, :type => "string"
-    publish :variable => :ft_module, :type => "string"
-    publish :variable => :imaging, :type => "boolean"
-    publish :variable => :modified, :type => "boolean"
-    publish :variable => :inst, :type => "list <string>"
-    publish :variable => :all_xpatterns, :type => "list <map <string, any>>"
-    publish :variable => :instsource, :type => "string"
-    publish :variable => :isolinuxcfg, :type => "string"
-    publish :function => :SetModified, :type => "void ()"
-    publish :function => :GetModified, :type => "boolean ()"
-    publish :function => :Import, :type => "boolean (map)"
-    publish :function => :AutoinstSoftware, :type => "void ()"
-    publish :function => :createImage, :type => "void (string)"
-    publish :function => :copyFiles4ISO, :type => "boolean (string)"
-    publish :function => :createISO, :type => "void ()"
-    publish :function => :Export, :type => "map ()"
-    publish :function => :AddModulePackages, :type => "void (list <string>)"
-    publish :function => :AddYdepsFromProfile, :type => "void (list <string>)"
-    publish :function => :RemoveModulePackages, :type => "void (list <string>)"
-    publish :function => :Summary, :type => "string ()"
-    publish :function => :autoinstPackages, :type => "list <string> ()"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :pmInit, :type => "void ()"
-    publish :function => :addPostPackages, :type => "void (list <string>)"
-    publish :function => :ReadHelper, :type => "map <string, any> ()"
-    publish :function => :Read, :type => "boolean ()"
+    publish function: :merge_product, type: "void (string)"
+    publish variable: :Software, type: "map"
+    publish variable: :image, type: "map <string, any>"
+    publish variable: :image_arch, type: "string"
+    publish variable: :patterns, type: "list <string>"
+    publish variable: :kernel, type: "string"
+    publish variable: :ft_module, type: "string"
+    publish variable: :imaging, type: "boolean"
+    publish variable: :modified, type: "boolean"
+    publish variable: :inst, type: "list <string>"
+    publish variable: :all_xpatterns, type: "list <map <string, any>>"
+    publish variable: :instsource, type: "string"
+    publish variable: :isolinuxcfg, type: "string"
+    publish function: :SetModified, type: "void ()"
+    publish function: :GetModified, type: "boolean ()"
+    publish function: :Import, type: "boolean (map)"
+    publish function: :AutoinstSoftware, type: "void ()"
+    publish function: :createImage, type: "void (string)"
+    publish function: :copyFiles4ISO, type: "boolean (string)"
+    publish function: :createISO, type: "void ()"
+    publish function: :Export, type: "map ()"
+    publish function: :AddModulePackages, type: "void (list <string>)"
+    publish function: :AddYdepsFromProfile, type: "void (list <string>)"
+    publish function: :RemoveModulePackages, type: "void (list <string>)"
+    publish function: :Summary, type: "string ()"
+    publish function: :autoinstPackages, type: "list <string> ()"
+    publish function: :Write, type: "boolean ()"
+    publish function: :pmInit, type: "void ()"
+    publish function: :addPostPackages, type: "void (list <string>)"
+    publish function: :ReadHelper, type: "map <string, any> ()"
+    publish function: :Read, type: "boolean ()"
 
   private
 
@@ -1229,9 +1228,12 @@ module Yast
       names_only = true
       packages = Pkg.GetPackages(status, names_only)
 
-      # iterate over each package, Pkg.ResolvableProperties("", :package, "") requires a lot of memory
+      # iterate over each package, Pkg.ResolvableProperties("", :package, "") requires a lot of
+      # memory
       packages.select do |package|
-        Pkg.PkgPropertiesAll(package).any? { |p| p["transact_by"] == :user && p["status"] == status }
+        Pkg.PkgPropertiesAll(package).any? do |p|
+          p["transact_by"] == :user && p["status"] == status
+        end
       end
     end
   end

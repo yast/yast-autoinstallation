@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/Y2ModuleConfig.ycp
-# Package:	Auto-installation
-# Summary:	Read data from desktop files
-# Author:	Anas Nashif <nashif@suse.de>
+# File:  modules/Y2ModuleConfig.ycp
+# Package:  Auto-installation
+# Summary:  Read data from desktop files
+# Author:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
@@ -11,12 +9,12 @@ require "yast"
 module Yast
   class Y2ModuleConfigClass < Module
     # Key for AutoYaST client name in desktop file
-    RESOURCE_NAME_KEY = "X-SuSE-YaST-AutoInstResource"
-    RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge"
-    RESOURCE_ALIASES_NAME_KEY = "X-SuSE-YaST-AutoInstResourceAliases"
-    MODES = %w(all configure write)
-    YAST_SCHEMA_DIR = "/usr/share/YaST2/schema/autoyast/rng/*.rng"
-    SCHEMA_PACKAGE_FILE = "/usr/share/YaST2/schema/autoyast/rnc/includes.rnc"
+    RESOURCE_NAME_KEY = "X-SuSE-YaST-AutoInstResource".freeze
+    RESOURCE_NAME_MERGE_KEYS = "X-SuSE-YaST-AutoInstMerge".freeze
+    RESOURCE_ALIASES_NAME_KEY = "X-SuSE-YaST-AutoInstResourceAliases".freeze
+    MODES = %w[all configure write].freeze
+    YAST_SCHEMA_DIR = "/usr/share/YaST2/schema/autoyast/rng/*.rng".freeze
+    SCHEMA_PACKAGE_FILE = "/usr/share/YaST2/schema/autoyast/rnc/includes.rnc".freeze
 
     include Yast::Logger
 
@@ -76,10 +74,9 @@ module Yast
 
       Builtins.foreach(configurations) do |name, values|
         if Builtins.contains(
-            modes,
-            Ops.get_string(values, "X-SuSE-YaST-AutoInst", "")
-          )
-          module_auto = ""
+          modes,
+          Ops.get_string(values, "X-SuSE-YaST-AutoInst", "")
+        )
           # determine name of client, if not default name
           if !Builtins.haskey(values, "X-SuSE-YaST-AutoInstClient") ||
               Ops.get_string(values, "X-SuSE-YaST-AutoInstClient", "") == ""
@@ -97,7 +94,6 @@ module Yast
       end
       [confs, groups]
     end
-
 
     # Sort tree groups
     # @param _GroupMap [Hash<String => Hash>] group map
@@ -119,8 +115,7 @@ module Yast
     def CreateGroupTree(_Groups)
       _Groups = deep_copy(_Groups)
 
-      grouplist = []
-      grouplist = SortGroups(_Groups, Builtins.maplist(_Groups) do |rawname, group|
+      grouplist = SortGroups(_Groups, Builtins.maplist(_Groups) do |rawname, _group|
         rawname
       end)
 
@@ -140,7 +135,6 @@ module Yast
       Builtins.foreach(@ModuleMap) do |m, v|
         name = Ops.get_string(v, "Name", "")
         menu_entry = { "entry" => m, "title" => name }
-        menu_list = []
         if Builtins.haskey(v, "X-SuSE-YaST-Group")
           parent = Ops.get_string(v, "X-SuSE-YaST-Group", "")
           @MenuTreeData = Builtins.maplist(@MenuTreeData) do |k|
@@ -148,28 +142,25 @@ module Yast
               children = Ops.get_list(k, "children", [])
               children = Builtins.add(children, menu_entry)
               Ops.set(k, "children", children)
-              next deep_copy(k)
-            else
-              next deep_copy(k)
             end
+            next deep_copy(k)
           end
         else
           @MenuTreeData = Builtins.add(@MenuTreeData, menu_entry)
         end
-      end 
+      end
       nil
     end
-
 
     # Y2ModuleConfig ()
     # Constructor
     def Y2ModuleConfig
       # Read module configuration data (desktop files)
       _MenuEntries = []
-      if Mode.autoinst
-        _MenuEntries = ReadMenuEntries(["all", "write"])
+      _MenuEntries = if Mode.autoinst
+        ReadMenuEntries(["all", "write"])
       else
-        _MenuEntries = ReadMenuEntries(["all", "configure"])
+        ReadMenuEntries(["all", "configure"])
       end
 
       @ModuleMap = Ops.get_map(_MenuEntries, 0, {})
@@ -185,7 +176,6 @@ module Yast
 
       nil
     end
-
 
     # Get resource name
     # @param default_resource [String] resource
@@ -254,20 +244,16 @@ module Yast
         else
           return deep_copy(mergedResource)
         end
-      else
-        if data_type == "map"
-          if Ops.get_map(Profile.current, resource, {}) == {}
-            return nil
-          else
-            return Builtins.eval(Ops.get_map(Profile.current, resource, {}))
-          end
+      elsif data_type == "map"
+        if Ops.get_map(Profile.current, resource, {}) == {}
+          return nil
         else
-          if Ops.get_list(Profile.current, resource, []) == []
-            return nil
-          else
-            return Builtins.eval(Ops.get_list(Profile.current, resource, []))
-          end
+          return Builtins.eval(Ops.get_map(Profile.current, resource, {}))
         end
+      elsif Ops.get_list(Profile.current, resource, []) == []
+        return nil
+      else
+        return Builtins.eval(Ops.get_list(Profile.current, resource, []))
       end
     end
 
@@ -299,17 +285,14 @@ module Yast
               if !Builtins.contains(done, r)
                 m = Builtins.add(
                   m,
-                  { "res" => r, "data" => Ops.get(@ModuleMap, r, {}) }
+                  "res" => r, "data" => Ops.get(@ModuleMap, r, {})
                 )
                 done = Builtins.add(done, r)
               end
             end
-            m = Builtins.add(m, { "res" => p, "data" => d })
-            done = Builtins.add(done, p)
-          else
-            m = Builtins.add(m, { "res" => p, "data" => d })
-            done = Builtins.add(done, p)
           end
+          m = Builtins.add(m, "res" => p, "data" => d)
+          done = Builtins.add(done, p)
         end
       end
 
@@ -335,7 +318,7 @@ module Yast
       icon = Convert.to_string(SCR.Read(filepath))
       Builtins.y2debug("icon: %1 (%2)", icon, filepath)
 
-      return false if icon == nil
+      return false if icon.nil?
 
       Wizard.SetTitleIcon(icon)
       true
@@ -393,12 +376,8 @@ module Yast
     # @see #ReadMenuEntries
     def getModuleConfig(name)
       entries = ReadMenuEntries(MODES).first # entries, groups
-      entry = entries.find { |k, v| k == name } # name, entry
-      if entry
-        { "res" => name, "data" => entry.last }
-      else
-        nil
-      end
+      entry = entries.find { |k, _v| k == name } # name, entry
+      { "res" => name, "data" => entry.last } if entry
     end
 
     # Module aliases map
@@ -409,6 +388,7 @@ module Yast
       ModuleMap().each_with_object({}) do |resource, map|
         name, def_resource = resource
         next if def_resource[RESOURCE_ALIASES_NAME_KEY].nil?
+
         resource_name = def_resource[RESOURCE_NAME_KEY] || name
         aliases = def_resource[RESOURCE_ALIASES_NAME_KEY].split(",").map(&:strip)
         aliases.each { |a| map[a] = resource_name }
@@ -446,20 +426,20 @@ module Yast
         log.info("Cannot evaluate needed packages for installation " \
           "due missing environment.")
       end
-      return package_names
+      package_names
     end
 
-    publish :variable => :GroupMap, :type => "map <string, map>"
-    publish :variable => :ModuleMap, :type => "map <string, map>"
-    publish :variable => :MenuTreeData, :type => "list <map>"
-    publish :function => :Y2ModuleConfig, :type => "void ()"
-    publish :function => :getResource, :type => "string (string)"
-    publish :function => :getResourceData, :type => "any (map, string)"
-    publish :function => :Deps, :type => "list <map> ()"
-    publish :function => :SetDesktopIcon, :type => "boolean (string)"
-    publish :function => :required_packages, :type => "map <string, list> (list <string>)"
-    publish :function => :unhandled_profile_sections, :type => "list <string> ()"
-    publish :function => :unsupported_profile_sections, :type => "list <string> ()"
+    publish variable: :GroupMap, type: "map <string, map>"
+    publish variable: :ModuleMap, type: "map <string, map>"
+    publish variable: :MenuTreeData, type: "list <map>"
+    publish function: :Y2ModuleConfig, type: "void ()"
+    publish function: :getResource, type: "string (string)"
+    publish function: :getResourceData, type: "any (map, string)"
+    publish function: :Deps, type: "list <map> ()"
+    publish function: :SetDesktopIcon, type: "boolean (string)"
+    publish function: :required_packages, type: "map <string, list> (list <string>)"
+    publish function: :unhandled_profile_sections, type: "list <string> ()"
+    publish function: :unsupported_profile_sections, type: "list <string> ()"
 
   private
 
@@ -472,9 +452,10 @@ module Yast
     def package_name_of_schema(schema)
       if !@schema_package
         @schema_package = {}
-        File::readlines(SCHEMA_PACKAGE_FILE).each do |line|
+        File.readlines(SCHEMA_PACKAGE_FILE).each do |line|
           line_split = line.split
           next if line.split.size < 4 # Old version of yast2-schema
+
           @schema_package[File.basename(line_split[1].delete("\'"), ".rnc")] = line.split.last
         end
       end

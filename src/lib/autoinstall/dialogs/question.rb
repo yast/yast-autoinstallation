@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) [2017] SUSE LLC
 #
 # All Rights Reserved.
@@ -40,7 +38,6 @@ module Y2Autoinstallation
     # This dialog could be extended in the future in order to support other
     # AutoYaST interaction which are not covered in the Yast::Report module.
     class Question < UI::Dialog
-
       # @return [String] Dialog's content
       attr_reader :content
 
@@ -100,11 +97,13 @@ module Y2Autoinstallation
 
       def timeout_handler
         return finish_dialog(:ok) if @remaining_time.zero?
+
         @remaining_time -= 1
         Yast::UI.ReplaceWidget(Id(:counter_replace), counter)
       end
 
     private
+
       # @return [Integer] Timeout
       attr_reader :timeout
 
@@ -137,7 +136,7 @@ module Y2Autoinstallation
 
         if timed?
           set.unshift(
-            PushButton(Id(:stop), Opt(:customButton), Yast::Label.StopButton),
+            PushButton(Id(:stop), Opt(:customButton), Yast::Label.StopButton)
           )
         end
 

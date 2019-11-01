@@ -1,6 +1,4 @@
 #!/usr/bin/env rspec
-# encoding: utf-8
-
 # Copyright (c) [2017] SUSE LLC
 #
 # All Rights Reserved.
@@ -58,13 +56,24 @@ describe Y2Autoinstall::Clients::AyastProbe do
 
     it "includes autoinstall rules information" do
       expect(client).to receive(:RichText)
-        .with(/Keys for rules.*<td>installed_product<\/td><td> = <\/td><td>openSUSE Tumbleweed<br><\/td>/m)
+        .with(
+          /Keys\ for\ rules.*
+          <td>installed_product<\/td>
+          <td>\ =\ <\/td>
+          <td>openSUSE\ Tumbleweed<br><\/td>/mx
+        )
       client.main
     end
 
     it "includes storage data" do
       expect(client).to receive(:RichText)
-        .with(/Storage Data.*<h2>\/dev\/sda<\/h2>.*<td>device<\/td><td> = <\/td><td>\/dev\/sda<br><\/td>/m)
+        .with(
+          /Storage\ Data.*
+          <h2>\/dev\/sda<\/h2>.*
+          <td>device<\/td>
+          <td>\ =\ <\/td>
+          <td>\/dev\/sda<br><\/td>/mx
+        )
       client.main
     end
   end

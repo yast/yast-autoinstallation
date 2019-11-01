@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	clients/autoinst_software.ycp
-# Package:	Autoinstallation Configuration System
-# Authors:	Anas Nashif (nashif@suse.de)
-# Summary:	Handle Package selections and packages
+# File:  clients/autoinst_software.ycp
+# Package:  Autoinstallation Configuration System
+# Authors:  Anas Nashif (nashif@suse.de)
+# Summary:  Handle Package selections and packages
 #
 # $Id$
 module Yast
@@ -44,7 +42,6 @@ module Yast
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
 
-
       # create a  summary
 
       if @func == "Summary"
@@ -75,7 +72,7 @@ module Yast
       Builtins.y2milestone("Software auto finished")
       Builtins.y2milestone("----------------------------------------")
 
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # Finish
     end
@@ -83,16 +80,14 @@ module Yast
     # Select packages
     # @return [Symbol]
     def packageSelector
-      language = UI.GetLanguage(true)
-
       title = _("Software Selection")
       helptext = _(
-        "<p>\n" +
-          "Select one of the following <b>base</b> selections and click <i>Detailed<i> to add\n" +
-          "more <b>add-on</b> selections and packages.\n" +
+        "<p>\n" \
+          "Select one of the following <b>base</b> selections and click <i>Detailed<i> to add\n" \
+          "more <b>add-on</b> selections and packages.\n" \
           "</p>\n"
       )
-      #Pkg::TargetFinish ();
+      # Pkg::TargetFinish ();
       Pkg.CallbackAcceptFileWithoutChecksum(
         fun_ref(
           AutoInstall.method(:callbackTrue_boolean_string),
@@ -107,10 +102,7 @@ module Yast
       )
 
       tmpdir = Convert.to_string(SCR.Read(path(".target.tmpdir")))
-      # AutoinstSoftware::pmInit();
 
-      #string mainRepo = "http://10.10.0.162/SLES11/DVD1/";
-      #string mainRepo = "ftp://10.10.0.100/install/SLP/openSUSE-11.2/x86_64/DVD1/";
       mainRepo = AutoinstSoftware.instsource
       contents = VBox(
         HBox(
@@ -141,11 +133,11 @@ module Yast
       begin
         ret = nil
         if Ops.greater_than(
-            Builtins.size(
-              Convert.to_string(UI.QueryWidget(Id(:location), :Value))
-            ),
-            0
-          )
+          Builtins.size(
+            Convert.to_string(UI.QueryWidget(Id(:location), :Value))
+          ),
+          0
+        )
           UI.ChangeWidget(Id(:localSource), :Enabled, false)
         else
           UI.ChangeWidget(Id(:localSource), :Enabled, true)
@@ -179,7 +171,6 @@ module Yast
       UI.CloseDialog
       AutoinstSoftware.instsource = mainRepo
 
-
       Pkg.SourceStartManager(true)
 
       Wizard.CreateDialog
@@ -194,10 +185,6 @@ module Yast
       )
       patterns = Pkg.ResolvableProperties("", :pattern, "")
       Builtins.y2milestone("available patterns %1", patterns)
-      #        Pkg::TargetInit("/tmp", false); // don't copy the list of really installed packages (#231687)
-      # Construct a box with radiobuttons for each software base configuration
-      baseconfs_box = VBox()
-
       # sort available_base_selections by order
       # $[ "order" : [ "name", "summary" ], .... ]
 
@@ -227,7 +214,7 @@ module Yast
           end
         end
         while @ret == :again
-          @ret = PackagesUI.RunPackageSelector({ "mode" => :searchMode })
+          @ret = PackagesUI.RunPackageSelector("mode" => :searchMode)
 
           @ret = :next if @ret == :accept
         end
@@ -239,8 +226,6 @@ module Yast
         Builtins.size(allpacs)
       )
 
-      seladd = []
-      selbase = []
       patadd = []
       if @ret != :back
         Builtins.y2milestone(
@@ -256,14 +241,12 @@ module Yast
         patadd = deep_copy(AutoinstSoftware.patterns)
       end
 
-
-
       PackageAI.toinstall = Pkg.FilterPackages(false, true, true, true)
       PackageAI.toremove = Pkg.GetPackages(:taboo, true)
       AutoinstSoftware.patterns = Convert.convert(
         Builtins.union(patadd, patadd),
-        :from => "list",
-        :to   => "list <string>"
+        from: "list",
+        to:   "list <string>"
       ) # FIXME: why are there double entries sometimes?
 
       Wizard.CloseDialog

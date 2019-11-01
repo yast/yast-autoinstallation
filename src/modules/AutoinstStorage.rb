@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/AutoinstStorage.ycp
-# Module:	Auto-Installation
-# Summary:	Storage
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  modules/AutoinstStorage.ycp
+# Module:  Auto-Installation
+# Summary:  Storage
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
@@ -15,7 +13,6 @@ require "autoinstall/partitioning_preprocessor"
 
 module Yast
   class AutoinstStorageClass < Module
-
     include Yast::Logger
 
     # @return [Hash] General settings (from +storage/general+ profile section)
@@ -87,7 +84,7 @@ module Yast
 
     # Import Fstab data
     # @param [Hash] settings Settings Map
-    # @return	[Boolean] true on success
+    # @return  [Boolean] true on success
     def ImportAdvanced(settings)
       settings = deep_copy(settings)
       log.info "entering ImportAdvanced with #{settings}"
@@ -105,85 +102,83 @@ module Yast
     end
 
     # Moved here from RootPart module (used just by this module)
-    def SetFormatPartitions(fstabpart)
-# storage-ng
-=begin
-      fstabpart = deep_copy(fstabpart)
-      # All storage devices
-      target_map = Storage.GetTargetMap
-
-      # all activated
-      tmp = Builtins.filter(RootPart.GetActivated) do |e|
-        Ops.get_string(e, :type, "") == "mount" ||
-          Ops.get_string(e, :type, "") == "swap"
-      end
-
-      Builtins.foreach(tmp) do |e|
-        mntpt = Ops.get_string(e, :type, "") == "swap" ?
-          "swap" :
-          Ops.get_string(e, :mntpt, "")
-        part = Ops.get_string(e, :device, "")
-        p = {}
-        Builtins.foreach(fstabpart) do |pp|
-          # mountpoint matches
-          if Ops.get_string(pp, "mount", "") == mntpt
-            p = deep_copy(pp)
-            raise Break
-          end
-        end
-        mount_options = ""
-        Builtins.foreach(Storage.ReadFstab(Installation.destdir)) do |entry|
-          if Ops.get_string(entry, "file", "") == mntpt
-            mount_options = Ops.get_string(entry, "mntops", "")
-            raise Break
-          end
-        end
-        target_map = Storage.SetPartitionData(target_map, part, "mount", mntpt)
-        target_map = Storage.SetPartitionData(
-          target_map,
-          part,
-          "format",
-          Ops.get_boolean(p, "format", false)
-        )
-        target_map = Storage.SetPartitionData(target_map, part, "delete", false)
-        target_map = Storage.SetPartitionData(target_map, part, "create", false)
-        if Builtins.haskey(p, "filesystem")
-          target_map = Storage.SetPartitionData(
-            target_map,
-            part,
-            "filesystem",
-            Ops.get_symbol(p, "filesystem", :ext4)
-          )
-        end
-        if Ops.greater_than(Builtins.size(mount_options), 0) &&
-            !Builtins.haskey(p, "fstopt")
-          target_map = Storage.SetPartitionData(
-            target_map,
-            part,
-            "fstopt",
-            mount_options
-          )
-        end
-        if Builtins.haskey(p, "fstopt")
-          target_map = Storage.SetPartitionData(
-            target_map,
-            part,
-            "fstopt",
-            Ops.get_string(p, "fstopt", "")
-          )
-        end
-        if Builtins.haskey(p, "mountby")
-          target_map = Storage.SetPartitionData(
-            target_map,
-            part,
-            "mountby",
-            Ops.get_symbol(p, "mountby", :device)
-          )
-        end
-      end
-
-      Storage.SetTargetMap(target_map)
-=end
+    def SetFormatPartitions(_fstabpart)
+      # storage-ng
+      #       fstabpart = deep_copy(fstabpart)
+      #       # All storage devices
+      #       target_map = Storage.GetTargetMap
+      #
+      #       # all activated
+      #       tmp = Builtins.filter(RootPart.GetActivated) do |e|
+      #         Ops.get_string(e, :type, "") == "mount" ||
+      #           Ops.get_string(e, :type, "") == "swap"
+      #       end
+      #
+      #       Builtins.foreach(tmp) do |e|
+      #         mntpt = Ops.get_string(e, :type, "") == "swap" ?
+      #           "swap" :
+      #           Ops.get_string(e, :mntpt, "")
+      #         part = Ops.get_string(e, :device, "")
+      #         p = {}
+      #         Builtins.foreach(fstabpart) do |pp|
+      #           # mountpoint matches
+      #           if Ops.get_string(pp, "mount", "") == mntpt
+      #             p = deep_copy(pp)
+      #             raise Break
+      #           end
+      #         end
+      #         mount_options = ""
+      #         Builtins.foreach(Storage.ReadFstab(Installation.destdir)) do |entry|
+      #           if Ops.get_string(entry, "file", "") == mntpt
+      #             mount_options = Ops.get_string(entry, "mntops", "")
+      #             raise Break
+      #           end
+      #         end
+      #         target_map = Storage.SetPartitionData(target_map, part, "mount", mntpt)
+      #         target_map = Storage.SetPartitionData(
+      #           target_map,
+      #           part,
+      #           "format",
+      #           Ops.get_boolean(p, "format", false)
+      #         )
+      #         target_map = Storage.SetPartitionData(target_map, part, "delete", false)
+      #         target_map = Storage.SetPartitionData(target_map, part, "create", false)
+      #         if Builtins.haskey(p, "filesystem")
+      #           target_map = Storage.SetPartitionData(
+      #             target_map,
+      #             part,
+      #             "filesystem",
+      #             Ops.get_symbol(p, "filesystem", :ext4)
+      #           )
+      #         end
+      #         if Ops.greater_than(Builtins.size(mount_options), 0) &&
+      #             !Builtins.haskey(p, "fstopt")
+      #           target_map = Storage.SetPartitionData(
+      #             target_map,
+      #             part,
+      #             "fstopt",
+      #             mount_options
+      #           )
+      #         end
+      #         if Builtins.haskey(p, "fstopt")
+      #           target_map = Storage.SetPartitionData(
+      #             target_map,
+      #             part,
+      #             "fstopt",
+      #             Ops.get_string(p, "fstopt", "")
+      #           )
+      #         end
+      #         if Builtins.haskey(p, "mountby")
+      #           target_map = Storage.SetPartitionData(
+      #             target_map,
+      #             part,
+      #             "mountby",
+      #             Ops.get_symbol(p, "mountby", :device)
+      #           )
+      #         end
+      #       end
+      #
+      #       Storage.SetTargetMap(target_map)
       true
     end
 
@@ -209,7 +204,7 @@ module Yast
 
       # We must only change RootPart::selectedRootPartition if booting
       # is inevitable.
-       rp = Ops.get_string(@fstab, "root_partition", "")
+      rp = Ops.get_string(@fstab, "root_partition", "")
       fstab_partitions = Ops.get_list(@fstab, "partitions", [])
 
       if RootPart.numberOfValidRootPartitions == 1
@@ -217,7 +212,8 @@ module Yast
       elsif rp == ""
         Popup.Message(
           _(
-            "Multiple root partitions found, but you did not configure\nwhich root partition should be used.  Automatic installation not possible.\n"
+            "Multiple root partitions found, but you did not configure\n" \
+            "which root partition should be used.  Automatic installation not possible.\n"
           )
         )
         return false
@@ -232,19 +228,19 @@ module Yast
       true
     end
 
-
     # Create partition plan
     # @return [Boolean]
     def Write
       return handle_fstab if @read_fstab
+
       true
     end
 
-    publish :variable => :read_fstab, :type => "boolean"
-    publish :variable => :fstab, :type => "map"
-    publish :function => :Import, :type => "boolean (list <map>)"
-    publish :function => :ImportAdvanced, :type => "boolean (map)"
-    publish :function => :Write, :type => "boolean ()"
+    publish variable: :read_fstab, type: "boolean"
+    publish variable: :fstab, type: "map"
+    publish function: :Import, type: "boolean (list <map>)"
+    publish function: :ImportAdvanced, type: "boolean (map)"
+    publish function: :Write, type: "boolean ()"
 
   private
 
@@ -300,12 +296,11 @@ module Yast
       dialog = Y2Autoinstallation::Dialogs::Question.new(
         _("Partitioning issues"),
         presenter.to_html,
-        timeout: timeout,
+        timeout:     timeout,
         buttons_set: buttons_set
       )
       dialog.run == :ok
     end
-
 
     # Log proposal issues message
     #

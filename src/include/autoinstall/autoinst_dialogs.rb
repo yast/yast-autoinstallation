@@ -1,14 +1,12 @@
-# encoding: utf-8
-
-# File:	modules/ProfileLocation.ycp
-# Package:	Auto-installation
-# Summary:	Process Auto-Installation Location
-# Author:	Anas Nashif <nashif@suse.de>
+# File:  modules/ProfileLocation.ycp
+# Package:  Auto-installation
+# Summary:  Process Auto-Installation Location
+# Author:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 module Yast
   module AutoinstallAutoinstDialogsInclude
-    def initialize_autoinstall_autoinst_dialogs(include_target)
+    def initialize_autoinstall_autoinst_dialogs(_include_target)
       textdomain "autoinst"
       Yast.import "Label"
       Yast.import "Popup"
@@ -19,12 +17,12 @@ module Yast
     # @return [String] new value
     def ProfileSourceDialog(original)
       helptext = _(
-        "<p>\n" +
-          "A profile for this machine could not be found or retrieved.\n" +
-          "Check that you entered the correct location\n" +
-          "on the command line and try again. Because of this error, you\n" +
-          "can only enter a URL to a profile and not to a directory. If you\n" +
-          "are using rules or host name-based control files, restart the\n" +
+        "<p>\n" \
+          "A profile for this machine could not be found or retrieved.\n" \
+          "Check that you entered the correct location\n" \
+          "on the command line and try again. Because of this error, you\n" \
+          "can only enter a URL to a profile and not to a directory. If you\n" \
+          "are using rules or host name-based control files, restart the\n" \
           "installation process and make sure the control files are accessible.</p>\n"
       )
       title = _("System Profile Location")
@@ -42,8 +40,7 @@ module Yast
               VSpacing(1),
               VStretch(),
               MinWidth(60,
-                Left(TextEntry(Id(:uri), _("&Profile Location:"), original))
-              ),
+                Left(TextEntry(Id(:uri), _("&Profile Location:"), original))),
               VSpacing(1),
               VStretch(),
               HBox(
@@ -56,7 +53,7 @@ module Yast
       )
 
       uri = ""
-      while true
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
 
         if ret == :abort && Popup.ConfirmAbort(:painless)
@@ -74,6 +71,5 @@ module Yast
       UI.CloseDialog
       uri
     end
-
   end
 end

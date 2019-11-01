@@ -10,10 +10,9 @@ describe Yast::PkgGpgCheckHandler do
 
   let(:data) do
     { "CheckPackageResult" => result,
-      "Package" => "dummy-package",
-      "Localpath" => "/path/to/dummy-package.rpm",
-      "RepoMediaUrl" => "http://dl.opensuse.org/repos/YaST:/Head"
-    }
+      "Package"            => "dummy-package",
+      "Localpath"          => "/path/to/dummy-package.rpm",
+      "RepoMediaUrl"       => "http://dl.opensuse.org/repos/YaST:/Head" }
   end
   let(:result) { Yast::PkgGpgCheckHandler::CHK_OK }
   let(:profile) { { "general" => { "signature-handling" => signature_handling } } }
@@ -108,7 +107,7 @@ describe Yast::PkgGpgCheckHandler do
       let(:result) { Yast::PkgGpgCheckHandler::CHK_NOKEY }
       let(:key_id) { "9b7d32f2d40582e2" }
       let(:rpm_output) do
-        { "exit" => 0,
+        { "exit"   => 0,
           "stdout" => "DSA/SHA1, Mon 05 Oct 2015 04:24:50 PM WEST, Key ID #{key_id}" }
       end
 
@@ -144,8 +143,8 @@ describe Yast::PkgGpgCheckHandler do
       context "and this specific key ID is allowed" do
         let(:signature_handling) do
           { "accept_unknown_gpg_key" =>
-            { "all" => false,
-              "keys" => [key_id] } }
+                                        { "all"  => false,
+                                          "keys" => [key_id] } }
         end
 
         it "returns true" do
@@ -156,8 +155,8 @@ describe Yast::PkgGpgCheckHandler do
       context "and this specific key ID is not allowed" do
         let(:signature_handling) do
           { "accept_unknown_gpg_key" =>
-            { "all" => false,
-              "keys" => ["0000000000000000"] } }
+                                        { "all"  => false,
+                                          "keys" => ["0000000000000000"] } }
         end
 
         it "returns false" do
@@ -169,8 +168,8 @@ describe Yast::PkgGpgCheckHandler do
         let(:rpm_output) { { "exit" => 1, "stdout" => "" } }
         let(:signature_handling) do
           { "accept_unknown_gpg_key" =>
-            { "all" => false,
-              "keys" => [key_id] } }
+                                        { "all"  => false,
+                                          "keys" => [key_id] } }
         end
 
         it "returns false" do
@@ -183,7 +182,7 @@ describe Yast::PkgGpgCheckHandler do
       let(:result) { Yast::PkgGpgCheckHandler::CHK_NOTTRUSTED }
       let(:key_id) { "9b7d32f2d40582e2" }
       let(:rpm_output) do
-        { "exit" => 0,
+        { "exit"   => 0,
           "stdout" => "DSA/SHA1, Mon 05 Oct 2015 04:24:50 PM WEST, Key ID #{key_id}" }
       end
 
@@ -219,8 +218,8 @@ describe Yast::PkgGpgCheckHandler do
       context "and this specific key ID is allowed" do
         let(:signature_handling) do
           { "accept_non_trusted_gpg_key" =>
-            { "all" => false,
-              "keys" => [key_id] } }
+                                            { "all"  => false,
+                                              "keys" => [key_id] } }
         end
 
         it "returns true" do
@@ -231,8 +230,8 @@ describe Yast::PkgGpgCheckHandler do
       context "and this specific key ID is not allowed" do
         let(:signature_handling) do
           { "accept_non_trusted_gpg_key" =>
-            { "all" => false,
-              "keys" => ["0000000000000000"] } }
+                                            { "all"  => false,
+                                              "keys" => ["0000000000000000"] } }
         end
 
         it "returns false" do
@@ -243,8 +242,8 @@ describe Yast::PkgGpgCheckHandler do
       context "and key ID could not be read" do
         let(:signature_handling) do
           { "accept_non_trusted_gpg_key" =>
-            { "all" => false,
-              "keys" => [key_id] } }
+                                            { "all"  => false,
+                                              "keys" => [key_id] } }
         end
         let(:rpm_output) { { "exit" => 1, "stdout" => "" } }
 
@@ -266,19 +265,19 @@ describe Yast::PkgGpgCheckHandler do
       let(:result) { Yast::PkgGpgCheckHandler::CHK_NOTFOUND }
 
       let(:profile) do
-        { "general" =>
-          { "signature-handling" =>
-            { "accept_unsigned_file" => true,
-              "accept_unknown_gpg_key" => true } },
-          "add-on" =>
-            { "add_on_products" =>
-              [
-                { "media_url" => "http://dl.opensuse.org/repos/YaST:/Head",
-                  "name" => "yast_head",
-                  "signature-handling" => { "accept_unsigned_file" => false } }
-              ]
-            }
-        }
+        { "general" => {
+          "signature-handling" => {
+            "accept_unsigned_file"   => true,
+            "accept_unknown_gpg_key" => true
+          }
+        },
+          "add-on"  => {
+            "add_on_products" => [
+              { "media_url"          => "http://dl.opensuse.org/repos/YaST:/Head",
+                "name"               => "yast_head",
+                "signature-handling" => { "accept_unsigned_file" => false } }
+            ]
+          } }
       end
 
       it "honors the add-on settings" do
@@ -287,7 +286,8 @@ describe Yast::PkgGpgCheckHandler do
 
       it "honors general settings which are not overridden" do
         gpg_handler = Yast::PkgGpgCheckHandler.new(
-          data.merge("CheckPackageResult" => Yast::PkgGpgCheckHandler::CHK_NOKEY), profile)
+          data.merge("CheckPackageResult" => Yast::PkgGpgCheckHandler::CHK_NOKEY), profile
+        )
         expect(gpg_handler.accept?).to eq(true)
       end
     end

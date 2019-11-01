@@ -1,16 +1,13 @@
-# encoding: utf-8
-
-# File:	modules/AutoinstScripts.ycp
-# Module:	Auto-Installation
-# Summary:	Custom scripts
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  modules/AutoinstScripts.ycp
+# Module:  Auto-Installation
+# Summary:  Custom scripts
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
 
 module Yast
   class AutoinstScriptsClass < Module
-
     include Yast::Logger
 
     def main
@@ -42,7 +39,6 @@ module Yast
       # postpart scripts
       @postpart = []
 
-
       # Merged scripts
       @merged = []
 
@@ -72,6 +68,7 @@ module Yast
     def valid_scripts_for(tree, key)
       tree.fetch(key, []).select do |h|
         next true if h.is_a?(Hash)
+
         log.warn "Cannot evaluate #{key}: #{h.inspect}"
         false
       end
@@ -89,36 +86,35 @@ module Yast
           p = Builtins.add(p, "type", "post-scripts")
           deep_copy(p)
         end),
-        :from => "list",
-        :to   => "list <map>"
+        from: "list",
+        to:   "list <map>"
       )
       result = Convert.convert(
         Builtins.union(result, Builtins.maplist(@chroot) do |p|
           p = Builtins.add(p, "type", "chroot-scripts")
           deep_copy(p)
         end),
-        :from => "list",
-        :to   => "list <map>"
+        from: "list",
+        to:   "list <map>"
       )
       result = Convert.convert(
         Builtins.union(result, Builtins.maplist(@init) do |p|
           p = Builtins.add(p, "type", "init-scripts")
           deep_copy(p)
         end),
-        :from => "list",
-        :to   => "list <map>"
+        from: "list",
+        to:   "list <map>"
       )
       result = Convert.convert(
         Builtins.union(result, Builtins.maplist(@postpart) do |p|
           p = Builtins.add(p, "type", "postpartitioning-scripts")
           deep_copy(p)
         end),
-        :from => "list",
-        :to   => "list <map>"
+        from: "list",
+        to:   "list <map>"
       )
       deep_copy(result)
     end
-
 
     # Constructor
     def AutoinstScripts
@@ -126,7 +122,6 @@ module Yast
 
       nil
     end
-
 
     # Dump the settings to a map, for autoinstallation use.
     # @return [Hash]
@@ -163,21 +158,21 @@ module Yast
           "location"      => Ops.get_string(p, "location", ""),
           "feedback"      => Ops.get_boolean(p, "feedback", false),
           "feedback_type" => Ops.get_string(p, "feedback_type", ""),
-	  "param-list"    => p.fetch("param-list",[]),
+          "param-list"    => p.fetch("param-list", []),
           "debug"         => Ops.get_boolean(p, "debug", true)
         }
       end
       expost = Builtins.maplist(@post) do |p|
         {
-          "filename"       => Ops.get_string(p, "filename", ""),
-          "interpreter"    => Ops.get_string(p, "interpreter", ""),
-          "source"         => Ops.get_string(p, "source", ""),
-          "location"       => Ops.get_string(p, "location", ""),
-          "notification"   => Ops.get_string(p, "notification", ""),
-          "feedback"       => Ops.get_boolean(p, "feedback", false),
-          "feedback_type"  => Ops.get_string(p, "feedback_type", ""),
-          "debug"          => Ops.get_boolean(p, "debug", true),
-	  "param-list"    => p.fetch("param-list",[]),
+          "filename"      => Ops.get_string(p, "filename", ""),
+          "interpreter"   => Ops.get_string(p, "interpreter", ""),
+          "source"        => Ops.get_string(p, "source", ""),
+          "location"      => Ops.get_string(p, "location", ""),
+          "notification"  => Ops.get_string(p, "notification", ""),
+          "feedback"      => Ops.get_boolean(p, "feedback", false),
+          "feedback_type" => Ops.get_string(p, "feedback_type", ""),
+          "debug"         => Ops.get_boolean(p, "debug", true),
+          "param-list"    => p.fetch("param-list", [])
         }
       end
       exchroot = Builtins.maplist(@chroot) do |p|
@@ -190,7 +185,7 @@ module Yast
           "location"      => Ops.get_string(p, "location", ""),
           "feedback"      => Ops.get_boolean(p, "feedback", false),
           "feedback_type" => Ops.get_string(p, "feedback_type", ""),
-	  "param-list"    => p.fetch("param-list",[]),
+          "param-list"    => p.fetch("param-list", []),
           "debug"         => Ops.get_boolean(p, "debug", true)
         }
       end
@@ -211,24 +206,16 @@ module Yast
           "notification"  => Ops.get_string(p, "notification", ""),
           "feedback"      => Ops.get_boolean(p, "feedback", false),
           "feedback_type" => Ops.get_string(p, "feedback_type", ""),
-	  "param-list"    => p.fetch("param-list",[]),
+          "param-list"    => p.fetch("param-list", []),
           "debug"         => Ops.get_boolean(p, "debug", true)
         }
       end
 
       result = {}
-      if Ops.greater_than(Builtins.size(expre), 0)
-        Ops.set(result, "pre-scripts", expre)
-      end
-      if Ops.greater_than(Builtins.size(expost), 0)
-        Ops.set(result, "post-scripts", expost)
-      end
-      if Ops.greater_than(Builtins.size(exchroot), 0)
-        Ops.set(result, "chroot-scripts", exchroot)
-      end
-      if Ops.greater_than(Builtins.size(exinit), 0)
-        Ops.set(result, "init-scripts", exinit)
-      end
+      Ops.set(result, "pre-scripts", expre) if Ops.greater_than(Builtins.size(expre), 0)
+      Ops.set(result, "post-scripts", expost) if Ops.greater_than(Builtins.size(expost), 0)
+      Ops.set(result, "chroot-scripts", exchroot) if Ops.greater_than(Builtins.size(exchroot), 0)
+      Ops.set(result, "init-scripts", exinit) if Ops.greater_than(Builtins.size(exinit), 0)
       if Ops.greater_than(Builtins.size(expostpart), 0)
         Ops.set(result, "postpartitioning-scripts", expostpart)
       end
@@ -255,9 +242,9 @@ module Yast
     def Resolve_relurl(script)
       script = deep_copy(script)
       if Builtins.issubstring(
-          Ops.get_string(script, "location", ""),
-          "relurl://"
-        )
+        Ops.get_string(script, "location", ""),
+        "relurl://"
+      )
         l = Ops.get_string(script, "location", "")
         l = Builtins.substring(l, 9)
         newloc = ""
@@ -417,24 +404,14 @@ module Yast
       nil
     end
 
-
-
-
-
-
-
-
-
-
-
-
     # Add or edit a script
     # @param [String] scriptName script name
     # @param [String] source source of script
     # @param [String] interpreter interpreter to be used with script
     # @param [String] type type of script
     # @return [void]
-    def AddEditScript(scriptName, source, interpreter, type, chrooted, debug, feedback, feedback_type, location, notification)
+    def AddEditScript(scriptName, source, interpreter, type, chrooted, debug,
+      feedback, feedback_type, location, notification)
       mod = false
       @merged = Builtins.maplist(@merged) do |script|
         # Edit
@@ -477,7 +454,6 @@ module Yast
       nil
     end
 
-
     # return type of script as formatted string
     # @param type [String] script type
     # @return [String] type as translated string
@@ -493,9 +469,9 @@ module Yast
       elsif type == "postpartitioning-scripts"
         return _("Postpartitioning")
       end
+
       _("Unknown")
     end
-
 
     # bidirectional feedback during script execution
     # Experimental
@@ -523,7 +499,7 @@ module Yast
         shell,
         debug,
         scriptPath,
-	params,
+        params,
         current_logdir,
         scriptName
       )
@@ -546,6 +522,7 @@ module Yast
           line = Ops.get(buffer, 0, "")
           buffer = Builtins.remove(buffer, 0)
           next if Builtins.size(line) == 0
+
           Ops.set(data, "stdout", line)
           Builtins.y2milestone("working on line %1", line)
           if Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 8) == "__EXIT__"
@@ -555,7 +532,7 @@ module Yast
             end
             if ok_button == true
               UI.ChangeWidget(Id(:ok), :Enabled, true)
-              ret = UI.UserInput
+              UI.UserInput
               if widget == "radiobutton"
                 val = UI.QueryWidget(Id(:rb), :CurrentButton)
                 SCR.Execute(
@@ -608,9 +585,7 @@ module Yast
               HSpacing(hspace),
               HBox(VSpacing(vspace), RichText(Id(:mle), ""))
             )
-            if ok_button == true
-              vbox = Builtins.add(vbox, PushButton(Id(:ok), Label.OKButton))
-            end
+            vbox = Builtins.add(vbox, PushButton(Id(:ok), Label.OKButton)) if ok_button == true
             UI.OpenDialog(vbox)
             UI.ChangeWidget(Id(:ok), :Enabled, false) if ok_button == true
             widget = "text"
@@ -646,40 +621,38 @@ module Yast
             end
             widget = "radiobutton"
             ok_button = true
-          else
-            if widget == "progressbar"
-              UI.ChangeWidget(
-                Id(:pr),
-                :Value,
-                Builtins.tointeger(Ops.get_string(data, "stdout", "0"))
+          elsif widget == "progressbar"
+            UI.ChangeWidget(
+              Id(:pr),
+              :Value,
+              Builtins.tointeger(Ops.get_string(data, "stdout", "0"))
+            )
+          elsif widget == "text"
+            UI.ChangeWidget(
+              Id(:mle),
+              :Value,
+              Ops.add(
+                Convert.to_string(UI.QueryWidget(Id(:mle), :Value)),
+                Ops.get_string(data, "stdout", "")
               )
-            elsif widget == "text"
-              UI.ChangeWidget(
-                Id(:mle),
-                :Value,
-                Ops.add(
-                  Convert.to_string(UI.QueryWidget(Id(:mle), :Value)),
-                  Ops.get_string(data, "stdout", "")
-                )
-              )
-            elsif widget == "radiobutton"
-              if Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 10) == "__BUTTON__"
-                params = splitParams(Ops.get_string(data, "stdout", ""))
-                vbox = Builtins.add(
-                  vbox,
-                  Left(
-                    RadioButton(
-                      Id(Ops.get(params, "val", "")),
-                      Ops.get(params, "label", "")
-                    )
+            )
+          elsif widget == "radiobutton"
+            if Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 10) == "__BUTTON__"
+              params = splitParams(Ops.get_string(data, "stdout", ""))
+              vbox = Builtins.add(
+                vbox,
+                Left(
+                  RadioButton(
+                    Id(Ops.get(params, "val", "")),
+                    Ops.get(params, "label", "")
                   )
                 )
-              else
-                Builtins.y2milestone(
-                  "*urgs* received '%1' instead of '__BUTTON__' during RADIOBUTTON creation",
-                  Ops.get_string(data, "stdout", "")
-                )
-              end
+              )
+            else
+              Builtins.y2milestone(
+                "*urgs* received '%1' instead of '__BUTTON__' during RADIOBUTTON creation",
+                Ops.get_string(data, "stdout", "")
+              )
             end
           end
         end
@@ -689,7 +662,6 @@ module Yast
 
       nil
     end
-
 
     # Execute pre scripts
     # @param type [String] type of script
@@ -720,7 +692,6 @@ module Yast
         return false
       end
 
-      tmpdirString = ""
       current_logdir = ""
 
       if type == "pre-scripts" || type == "postpartitioning-scripts"
@@ -743,22 +714,20 @@ module Yast
             AutoinstConfig.destdir,
             AutoinstConfig.logs_dir
           )
-          SCR.Execute(path(".target.mkdir"), current_logdir)
         else
           tmpdirString = Builtins.sformat("%1", AutoinstConfig.scripts_dir)
           SCR.Execute(path(".target.mkdir"), tmpdirString)
 
           current_logdir = Builtins.sformat("%1", AutoinstConfig.logs_dir)
-          SCR.Execute(path(".target.mkdir"), current_logdir)
         end
+        SCR.Execute(path(".target.mkdir"), current_logdir)
       else
         current_logdir = AutoinstConfig.logs_dir
       end
 
-
       Builtins.foreach(scripts) do |s|
         scriptInterpreter = Ops.get_string(s, "interpreter", "shell")
-	params = s.fetch("param-list",[]).join(" ")
+        params = s.fetch("param-list", []).join(" ")
         scriptName = Ops.get_string(s, "filename", "")
         if scriptName == ""
           t = URL.Parse(Ops.get_string(s, "location", ""))
@@ -767,8 +736,6 @@ module Yast
         end
         scriptPath = ""
         if type == "pre-scripts" || type == "postpartitioning-scripts"
-          #        y2milestone("doing /sbin/udevcontrol stop_exec_queue now to prevent trouble if one is doing partitioning in a pre-script");
-          #        SCR::Execute( .target.bash, "/sbin/udevcontrol stop_exec_queue" );
           scriptPath = Builtins.sformat(
             "%1/%2/%3",
             AutoinstConfig.tmpDir,
@@ -801,7 +768,7 @@ module Yast
             scriptName
           )
           if Ops.get_string(s, "location", "") != ""
-            scriptPath = AutoinstConfig.destdir + scriptPath #bnc961320
+            scriptPath = AutoinstConfig.destdir + scriptPath # bnc961320
             Builtins.y2debug(
               "getting script: %1",
               Ops.get_string(s, "location", "")
@@ -821,10 +788,8 @@ module Yast
           end
           Builtins.y2milestone("Writing init script into %1", scriptPath)
           # moved to 1st stage because of systemd
-          #Service::Enable("autoyast");
+          # Service::Enable("autoyast");
         elsif type == "chroot-scripts"
-          #scriptPath = sformat("%1%2/%3", (special) ? "" : AutoinstConfig::destdir,  AutoinstConfig::scripts_dir,  scriptName);
-
           toks = URL.Parse(Ops.get_string(s, "location", ""))
           # special == true ---> The script has to be installed into /mnt
           # because it will be called in a chroot environment.
@@ -835,23 +800,22 @@ module Yast
           #
           # FIXME: Find out why "nfs" has a special behavior.
           #        Take another name for "s"
-          if (special && s["location"] && !s["location"].empty?) ||
-            toks["scheme"] == "nfs"
+          scriptPath = if (special && s["location"] && !s["location"].empty?) ||
+              toks["scheme"] == "nfs"
 
-            scriptPath = Builtins.sformat(
+            Builtins.sformat(
               "%1%2/%3",
               AutoinstConfig.destdir,
               AutoinstConfig.scripts_dir,
               scriptName
             )
           else
-            scriptPath = Builtins.sformat(
+            Builtins.sformat(
               "%1/%2",
               AutoinstConfig.scripts_dir,
               scriptName
             )
           end
-
 
           Builtins.y2milestone("Writing chroot script into %1", scriptPath)
           if Ops.get_string(s, "location", "") != ""
@@ -870,9 +834,9 @@ module Yast
           end
           # FIXME: That's duplicate code
           if (special && s["location"] && !s["location"].empty?) ||
-            toks["scheme"] == "nfs"
-
-            scriptPath = scriptPath[AutoinstConfig.destdir.length..-1] # cut off the e.g. /mnt for later execution
+              toks["scheme"] == "nfs"
+            # cut off the e.g. /mnt for later execution
+            scriptPath = scriptPath[AutoinstConfig.destdir.length..-1]
           end
         else
           scriptPath = Builtins.sformat(
@@ -904,8 +868,8 @@ module Yast
           end
         end
         if type != "init-scripts" &&
-          !(type == "post-scripts" && special) # We are not in the first installation stage
-                                               # where post-scripts have been downloaded only.
+            !(type == "post-scripts" && special) # We are not in the first installation stage
+          # where post-scripts have been downloaded only.
           # string message =  sformat(_("Executing user supplied script: %1"), scriptName);
           executionString = ""
           showFeedback = Ops.get_boolean(s, "feedback", false)
@@ -923,7 +887,7 @@ module Yast
                   "/bin/sh",
                   debug,
                   scriptPath,
-		  params,
+                  params,
                   current_logdir,
                   scriptName
                 )
@@ -932,7 +896,7 @@ module Yast
                   "/bin/sh %1 %2 %3 &> %4/%5.log ",
                   debug,
                   scriptPath,
-		  params,
+                  params,
                   current_logdir,
                   scriptName
                 )
@@ -944,7 +908,7 @@ module Yast
                 SCR.Execute(
                   path(".target.bash"),
                   "/bin/touch $FILE",
-                  { "FILE" => Ops.add(scriptPath, "-run") }
+                  "FILE" => Ops.add(scriptPath, "-run")
                 )
               end
             end
@@ -957,7 +921,7 @@ module Yast
                   "/usr/bin/perl",
                   debug,
                   scriptPath,
-		  params,
+                  params,
                   current_logdir,
                   scriptName
                 )
@@ -966,7 +930,7 @@ module Yast
                   "/usr/bin/perl %1 %2 %3 &> %4/%5.log ",
                   debug,
                   scriptPath,
-		  params,
+                  params,
                   current_logdir,
                   scriptName
                 )
@@ -978,7 +942,7 @@ module Yast
                 SCR.Execute(
                   path(".target.bash"),
                   "/bin/touch $FILE",
-                  { "FILE" => Ops.add(scriptPath, "-run") }
+                  "FILE" => Ops.add(scriptPath, "-run")
                 )
               end
             end
@@ -990,7 +954,7 @@ module Yast
                   "/usr/bin/python",
                   "",
                   scriptPath,
-		  params,
+                  params,
                   current_logdir,
                   scriptName
                 )
@@ -998,7 +962,7 @@ module Yast
                 executionString = Builtins.sformat(
                   "/usr/bin/python %1 %2 &> %3/%4.log ",
                   scriptPath,
-		  params,
+                  params,
                   current_logdir,
                   scriptName
                 )
@@ -1010,7 +974,7 @@ module Yast
                 SCR.Execute(
                   path(".target.bash"),
                   "/bin/touch $FILE",
-                  { "FILE" => Ops.add(scriptPath, "-run") }
+                  "FILE" => Ops.add(scriptPath, "-run")
                 )
               end
             end
@@ -1051,25 +1015,27 @@ module Yast
       true
     end
 
-    publish :variable => :pre, :type => "list <map>"
-    publish :variable => :post, :type => "list <map>"
-    publish :variable => :chroot, :type => "list <map>"
-    publish :variable => :init, :type => "list <map>"
-    publish :variable => :postpart, :type => "list <map>"
-    publish :variable => :merged, :type => "list <map>"
-    publish :variable => :modified, :type => "boolean"
-    publish :function => :SetModified, :type => "void ()"
-    publish :function => :GetModified, :type => "boolean ()"
-    publish :function => :Export, :type => "map <string, list> ()"
-    publish :function => :Resolve_ws, :type => "map (map)"
-    publish :function => :Resolve_relurl, :type => "map (map)"
-    publish :function => :Resolve_location, :type => "list <map> (list <map>)"
-    publish :function => :Import, :type => "boolean (map)"
-    publish :function => :Summary, :type => "string ()"
-    publish :function => :deleteScript, :type => "void (string)"
-    publish :function => :AddEditScript, :type => "void (string, string, string, string, boolean, boolean, boolean, boolean, string, string, string)"
-    publish :function => :typeString, :type => "string (string)"
-    publish :function => :Write, :type => "boolean (string, boolean)"
+    publish variable: :pre, type: "list <map>"
+    publish variable: :post, type: "list <map>"
+    publish variable: :chroot, type: "list <map>"
+    publish variable: :init, type: "list <map>"
+    publish variable: :postpart, type: "list <map>"
+    publish variable: :merged, type: "list <map>"
+    publish variable: :modified, type: "boolean"
+    publish function: :SetModified, type: "void ()"
+    publish function: :GetModified, type: "boolean ()"
+    publish function: :Export, type: "map <string, list> ()"
+    publish function: :Resolve_ws, type: "map (map)"
+    publish function: :Resolve_relurl, type: "map (map)"
+    publish function: :Resolve_location, type: "list <map> (list <map>)"
+    publish function: :Import, type: "boolean (map)"
+    publish function: :Summary, type: "string ()"
+    publish function: :deleteScript, type: "void (string)"
+    publish function: :AddEditScript,
+            type:     "void (string, string, string, string, boolean, boolean, " \
+      "boolean, boolean, string, string, string)"
+    publish function: :typeString, type: "string (string)"
+    publish function: :Write, type: "boolean (string, boolean)"
   end
 
   AutoinstScripts = AutoinstScriptsClass.new

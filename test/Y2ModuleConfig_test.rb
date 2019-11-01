@@ -9,7 +9,7 @@ Yast.import "Profile"
 
 describe Yast::Y2ModuleConfig do
 
-  DESKTOP_DATA = YAML::load_file(FIXTURES_PATH.join("desktop_files", "desktops.yml"))
+  DESKTOP_DATA = YAML.load_file(FIXTURES_PATH.join("desktop_files", "desktops.yml"))
 
   before do
     allow(Yast::WFM).to receive(:ClientExists).with("audit-laf_auto").and_return(false)
@@ -37,7 +37,7 @@ describe Yast::Y2ModuleConfig do
   end
 
   describe "#unhandled_profile_sections" do
-    let(:profile_unhandled) { File.join(FIXTURES_PATH, 'profiles', 'unhandled_and_obsolete.xml') }
+    let(:profile_unhandled) { File.join(FIXTURES_PATH, "profiles", "unhandled_and_obsolete.xml") }
 
     it "returns all unsupported and unknown profile sections" do
       Yast::Y2ModuleConfig.instance_variable_set("@ModuleMap", DESKTOP_DATA)
@@ -51,7 +51,7 @@ describe Yast::Y2ModuleConfig do
   end
 
   describe "#unsupported_profile_sections" do
-    let(:profile_unsupported) { File.join(FIXTURES_PATH, 'profiles', 'unhandled_and_obsolete.xml') }
+    let(:profile_unsupported) { File.join(FIXTURES_PATH, "profiles", "unhandled_and_obsolete.xml") }
 
     it "returns all unsupported profile sections" do
       Yast::Profile.ReadXML(profile_unsupported)
@@ -75,14 +75,15 @@ describe Yast::Y2ModuleConfig do
     end
 
     before do
-      allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries).with(%w(all configure write))
+      allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries).with(%w[all configure write])
         .and_return(modules)
     end
 
     context "if the module is defined" do
       it "returns module config" do
         expect(Yast::Y2ModuleConfig.getModuleConfig("bootloader")).to eq(
-          "res" => "bootloader", "data" => { "Name" => "Boot Loader" })
+          "res" => "bootloader", "data" => { "Name" => "Boot Loader" }
+        )
       end
     end
 
@@ -102,26 +103,26 @@ describe Yast::Y2ModuleConfig do
 
     context "when some module is aliased" do
       let(:custom_module) do
-        { "Name" => "Custom module",
+        { "Name"                                => "Custom module",
           "X-SuSE-YaST-AutoInstResourceAliases" => "alias1,alias2" }
       end
 
       it "maps aliases to the resource" do
         expect(subject.resource_aliases_map)
-          .to eq({ "alias1" => "custom", "alias2" => "custom" })
+          .to eq("alias1" => "custom", "alias2" => "custom")
       end
     end
 
     context "when some module is aliased and an alternative name was specified" do
       let(:custom_module) do
-        { "Name" => "Custom module",
-          "X-SuSE-YaST-AutoInstResource" => "custom-resource",
+        { "Name"                                => "Custom module",
+          "X-SuSE-YaST-AutoInstResource"        => "custom-resource",
           "X-SuSE-YaST-AutoInstResourceAliases" => "alias1,alias2" }
       end
 
       it "maps aliases to the alternative resource name" do
         expect(subject.resource_aliases_map)
-          .to eq({ "alias1" => "custom-resource", "alias2" => "custom-resource" })
+          .to eq("alias1" => "custom-resource", "alias2" => "custom-resource")
       end
     end
 
@@ -139,49 +140,57 @@ describe Yast::Y2ModuleConfig do
   describe "#required_packages" do
     context "files needed for the check are not installed" do
       it "returns an empty hash" do
-        allow(File).to receive(:exist?).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc").and_return false
+        allow(File).to receive(:exist?).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc")
+          .and_return(false)
         expect(subject.required_packages([])).to eq({})
       end
     end
 
     context "all files needed for the check are installed" do
       before do
-        allow(File).to receive(:exist?).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc").and_return true
+        allow(File).to receive(:exist?).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc")
+          .and_return(true)
       end
 
       context "no rng file found for the given AY section" do
         it "returns a hash with an empty package array" do
           expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-            "/usr/bin/grep -l \"<define name=\\\"not-found\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
-            and_return({"exit"=>1, "stderr"=>"", "stdout"=>""})
-          expect(subject.required_packages(["not-found"])).to eq({"not-found"=>[]})
+            "/usr/bin/grep -l \"<define name=\\\"not-found\\\">\" " \
+              "/usr/share/YaST2/schema/autoyast/rng/*.rng")
+            .and_return("exit" => 1, "stderr" => "", "stdout" => "")
+          expect(subject.required_packages(["not-found"])).to eq("not-found"=>[])
         end
       end
 
       context "rng file found for the given AY section" do
         before do
           allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-            "/usr/bin/grep -l \"<define name=\\\"firstboot\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
-            and_return ( {"exit"=>0, "stderr"=>"",
-            "stdout"=>"/usr/share/YaST2/schema/autoyast/rng/firstboot.rng\n"} )
-          allow(File).to receive(:readlines).with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc").
-            and_return(["include 'firstboot.rnc' # yast2-firstboot\n", "include 'pxe.rnc' # autoyast2\n"])
+            "/usr/bin/grep -l \"<define name=\\\"firstboot\\\">\" " \
+              "/usr/share/YaST2/schema/autoyast/rng/*.rng")
+            .and_return("exit" => 0, "stderr" => "",
+            "stdout" => "/usr/share/YaST2/schema/autoyast/rng/firstboot.rng\n")
+          allow(File).to receive(:readlines)
+            .with("/usr/share/YaST2/schema/autoyast/rnc/includes.rnc")
+            .and_return(["include 'firstboot.rnc' # yast2-firstboot\n",
+                         "include 'pxe.rnc' # autoyast2\n"])
         end
 
         context "regarding rnc files does not belong to any package" do
           it "returns a hash with an empty package array" do
             expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"),
-              "/usr/bin/grep -l \"<define name=\\\"fake\\\">\" /usr/share/YaST2/schema/autoyast/rng/*.rng").
-              and_return ( {"exit"=>0, "stderr"=>"",
-              "stdout"=>"/usr/share/YaST2/schema/autoyast/rng/fake.rng\n"} )
-            expect(subject.required_packages(["fake"])).to eq({"fake"=>[]})
+              "/usr/bin/grep -l \"<define name=\\\"fake\\\">\" " \
+                "/usr/share/YaST2/schema/autoyast/rng/*.rng")
+              .and_return("exit" => 0, "stderr" => "",
+              "stdout" => "/usr/share/YaST2/schema/autoyast/rng/fake.rng\n")
+            expect(subject.required_packages(["fake"])).to eq("fake"=>[])
           end
         end
 
         context "regarding rnc files belongs to a package" do
           it "returns a hash with needed package list" do
-            expect(Yast::PackageSystem).to receive(:Installed).with("yast2-firstboot").and_return false
-            expect(subject.required_packages(["firstboot"])).to eq({"firstboot"=>["yast2-firstboot"]})
+            expect(Yast::PackageSystem).to receive(:Installed).with("yast2-firstboot")
+              .and_return(false)
+            expect(subject.required_packages(["firstboot"])).to eq("firstboot"=>["yast2-firstboot"])
           end
         end
       end

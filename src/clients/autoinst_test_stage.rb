@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # This client starts a custom  autoinstallation workflow using
 # a stripped down control file and an autoyast profile.
 # first argument is the autoyast profile, second is the workflow

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:
 #   modules/AutoinstClone.ycp
 #
@@ -37,7 +35,6 @@ module Yast
 
       @Profile = {}
       @bytes_per_unit = 0
-
 
       # spceial treatment for base resources
       @base = []
@@ -78,24 +75,12 @@ module Yast
       general
     end
 
-
     # Clone a Resource
-    # @param resource    [String] resource
+    # @param _resource    [String] resource. Not used.
     # @param resourceMap [Hash] resources map
     # @return [Array]
-    def CommonClone(resource, resourceMap)
-      resourceMap = deep_copy(resourceMap)
-      data_type = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstDataType",
-        "map"
-      )
+    def CommonClone(_resource, resourceMap)
       auto = Ops.get_string(resourceMap, "X-SuSE-YaST-AutoInstClient", "")
-      resource = Ops.get_string(
-        resourceMap,
-        "X-SuSE-YaST-AutoInstResource",
-        resource
-      )
 
       # Do not read settings from system in first stage, autoyast profile
       # should contain only proposed and user modified values.
@@ -103,7 +88,7 @@ module Yast
       #            defined in autoyast itself.
       #            So, these modules have to be called.
       if !Stage.initial ||
-        ["software_auto", "storage_auto"].include?(auto)
+          ["software_auto", "storage_auto"].include?(auto)
         Call.Function(auto, ["Read"])
       end
       # Flagging YAST module for export
@@ -111,8 +96,6 @@ module Yast
 
       true
     end
-
-
 
     # Create a list of clonable resources
     # @return [Array] list to be used in widgets
@@ -158,16 +141,16 @@ module Yast
             ""
           )
           resource = def_resource if resource == ""
-          if resource != ""
-            items = Builtins.add(items, Item(Id(resource), name))
+          items = if resource != ""
+            Builtins.add(items, Item(Id(resource), name))
           else
-            items = Builtins.add(items, Item(Id(def_resource), name))
+            Builtins.add(items, Item(Id(def_resource), name))
           end
         end
       end
       # sort items for nicer display
       items = Builtins.sort(
-        Convert.convert(items, :from => "list", :to => "list <term>")
+        Convert.convert(items, from: "list", to: "list <term>")
       ) do |x, y|
         Ops.less_than(Ops.get_string(x, 1, "x"), Ops.get_string(y, 1, "y"))
       end
@@ -194,7 +177,7 @@ module Yast
         if @additional.include?(resource)
           log.info "Now cloning: #{resource}"
           time_start = Time.now
-          ret = CommonClone(def_resource, resourceMap)
+          CommonClone(def_resource, resourceMap)
           log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
         end
       end
@@ -218,7 +201,6 @@ module Yast
       ret
     end
 
-
     # Export profile, Used only from within autoyast2
     # @return [void]
     def Export
@@ -228,14 +210,14 @@ module Yast
       nil
     end
 
-    publish :variable => :Profile, :type => "map"
-    publish :variable => :base, :type => "list <string>"
-    publish :variable => :additional, :type => "list <string>"
-    publish :function => :General, :type => "map ()"
-    publish :function => :createClonableList, :type => "list ()"
-    publish :function => :Process, :type => "void ()"
-    publish :function => :Write, :type => "boolean (string)"
-    publish :function => :Export, :type => "void ()"
+    publish variable: :Profile, type: "map"
+    publish variable: :base, type: "list <string>"
+    publish variable: :additional, type: "list <string>"
+    publish function: :General, type: "map ()"
+    publish function: :createClonableList, type: "list ()"
+    publish function: :Process, type: "void ()"
+    publish function: :Write, type: "boolean (string)"
+    publish function: :Export, type: "void ()"
   end
 
   AutoinstClone = AutoinstCloneClass.new

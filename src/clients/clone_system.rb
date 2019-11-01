@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:        clients/clone_system.ycp
 # Package:     Auto-installation
 # Author:      Uwe Gansert <ug@suse.de>
@@ -11,7 +9,7 @@
 module Yast
   class CloneSystemClient < Client
     # FIXME: unify with conftree.rb
-    ALWAYS_CLONABLE_MODULES ||= ["software", "partitioning", "bootloader"]
+    ALWAYS_CLONABLE_MODULES ||= ["software", "partitioning", "bootloader"].freeze
 
     def main
       Yast.import "AutoinstClone"
@@ -110,8 +108,9 @@ module Yast
       # needed in the installation workflow where it will be checked by the file selection box
       # directly. (bnc#888546)
       if Mode.normal && FileUtils.Exists(target_path)
-        # TRANSLATORS: Warning that an already existing autoyast configuration file will be overwritten.
-        return false unless Popup.ContinueCancel(_("File %s exists! Really overwrite?") % target_path)
+        # TRANSLATORS: Warning that an already existing autoyast configuration file
+        #              will be overwritten.
+        return false if !Popup.ContinueCancel(_("File %s exists! Really overwrite?") % target_path)
       end
 
       Popup.ShowFeedback(
@@ -120,13 +119,13 @@ module Yast
         _("The resulting autoyast profile can be found in %s.") % target_path
       )
 
-      if Ops.get_string(options, "clone", "") != ""
-        AutoinstClone.additional = Builtins.splitstring(
+      AutoinstClone.additional = if Ops.get_string(options, "clone", "") != ""
+        Builtins.splitstring(
           Ops.get_string(options, "clone", ""),
           ","
         )
       else
-        AutoinstClone.additional = deep_copy(ProductControl.clone_modules)
+        deep_copy(ProductControl.clone_modules)
       end
       AutoinstClone.Process
       XML.YCPToXMLFile(:profile, Profile.current, target_path)

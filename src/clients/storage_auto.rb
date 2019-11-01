@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	clients/autoinst_storage.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	Storage
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_storage.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  Storage
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -14,7 +12,6 @@ module Yast
       Yast.import "UI"
       textdomain "autoinst"
 
-
       Builtins.y2milestone("----------------------------------------")
       Builtins.y2milestone("Storage auto started")
 
@@ -23,8 +20,6 @@ module Yast
 
       Yast.import "Label"
       Yast.include self, "autoinstall/StorageDialog.rb"
-
-
 
       @ret = nil
       @func = ""
@@ -42,14 +37,12 @@ module Yast
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
 
-
-
       # Import Data
       if @func == "Import"
         @ret = AutoinstPartPlan.Import(
-          Convert.convert(@param, :from => "list", :to => "list <map>")
+          Convert.convert(@param, from: "list", to: "list <map>")
         )
-        if @ret == nil
+        if @ret.nil?
           Builtins.y2error(
             "Parameter to 'Import' is probably wrong, should be list of maps"
           )
@@ -86,7 +79,7 @@ module Yast
       Builtins.y2milestone("Storage auto finished")
       Builtins.y2milestone("----------------------------------------")
 
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # EOF
     end

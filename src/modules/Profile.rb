@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/Profile.ycp
-# Module:	Auto-Installation
-# Summary:	Profile handling
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  modules/Profile.ycp
+# Module:  Auto-Installation
+# Summary:  Profile handling
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
@@ -26,7 +24,7 @@ module Yast
       # init section used by Kickstart and to pass additional arguments
       # to Linuxrc (bsc#962526)
       "init"
-    ]
+    ].freeze
 
     # Dropped YaST modules that used to provide AutoYaST functionality
     # bsc#925381
@@ -42,7 +40,7 @@ module Yast
       "inetd",
       # FATE#319119 drop yast2-ca-manament
       "ca_mgm"
-    ]
+    ].freeze
 
     # Sections that are handled by AutoYaST clients included in autoyast2 package.
     AUTOYAST_CLIENTS = [
@@ -56,7 +54,7 @@ module Yast
       "report",
       "scripts",
       "software"
-    ]
+    ].freeze
 
     def main
       Yast.import "UI"
@@ -76,13 +74,11 @@ module Yast
 
       Yast.include self, "autoinstall/xml.rb"
 
-
       # The Complete current Profile
       @current = {}
 
       # defined in Y2ModuleConfig
       @ModuleMap = {}
-
 
       @changed = false
 
@@ -97,12 +93,9 @@ module Yast
       # setup profile XML parameters for writing
       #
       profileSetup
-      if Stage.initial
-        SCR.Execute(path(".target.mkdir"), AutoinstConfig.profile_dir)
-      end
+      SCR.Execute(path(".target.mkdir"), AutoinstConfig.profile_dir) if Stage.initial
       nil
     end
-
 
     # compatibility to new storage lib in 10.0
     def storageLibCompat
@@ -160,10 +153,8 @@ module Yast
       # and InstFuntions#second_stage_required? depends on that module
       # to check if 2nd stage is required (chicken-and-egg problem).
       mode = @current.fetch("general", {}).fetch("mode", {})
-      second_stage_enabled = mode.has_key?("second_stage") ? mode["second_stage"] : true
-      if AutoinstFunctions.second_stage_required? && second_stage_enabled
-        add_autoyast_packages
-      end
+      second_stage_enabled = mode.key?("second_stage") ? mode["second_stage"] : true
+      add_autoyast_packages if AutoinstFunctions.second_stage_required? && second_stage_enabled
 
       # workaround for missing "REQUIRES" in content file to stay backward compatible
       # FIXME: needs a more sophisticated or compatibility breaking solution after SLES11
@@ -193,13 +184,11 @@ module Yast
           Ops.set(
             @current,
             "language",
-            {
-              "language" => Ops.get_string(
-                @current,
-                ["general", "language"],
-                ""
-              )
-            }
+            "language" => Ops.get_string(
+              @current,
+              ["general", "language"],
+              ""
+            )
           )
           Ops.set(
             @current,
@@ -224,13 +213,11 @@ module Yast
             "filename" => "zzz_halt",
             "source"   => "shutdown -h now"
           }
-          if !Builtins.haskey(@current, "scripts")
-            Ops.set(@current, "scripts", {})
-          end
+          Ops.set(@current, "scripts", {}) if !Builtins.haskey(@current, "scripts")
           if !Builtins.haskey(
-              Ops.get_map(@current, "scripts", {}),
-              "init-scripts"
-            )
+            Ops.get_map(@current, "scripts", {}),
+            "init-scripts"
+          )
             Ops.set(@current, ["scripts", "init-scripts"], [])
           end
           Ops.set(
@@ -247,13 +234,11 @@ module Yast
             "filename" => "zzz_reboot",
             "source"   => "shutdown -r now"
           }
-          if !Builtins.haskey(@current, "scripts")
-            Ops.set(@current, "scripts", {})
-          end
+          Ops.set(@current, "scripts", {}) if !Builtins.haskey(@current, "scripts")
           if !Builtins.haskey(
-              Ops.get_map(@current, "scripts", {}),
-              "init-scripts"
-            )
+            Ops.get_map(@current, "scripts", {}),
+            "init-scripts"
+          )
             Ops.set(@current, ["scripts", "init-scripts"], [])
           end
           Ops.set(
@@ -266,12 +251,10 @@ module Yast
           )
         end
         if Builtins.haskey(
-            Ops.get_map(@current, "software", {}),
-            "additional_locales"
-          )
-          if !Builtins.haskey(@current, "language")
-            Ops.set(@current, "language", {})
-          end
+          Ops.get_map(@current, "software", {}),
+          "additional_locales"
+        )
+          Ops.set(@current, "language", {}) if !Builtins.haskey(@current, "language")
           Ops.set(
             @current,
             ["language", "languages"],
@@ -321,21 +304,17 @@ module Yast
           Builtins.haskey(profile, "install")
         __configure = Ops.get_map(profile, "configure", {})
         __install = Ops.get_map(profile, "install", {})
-        if Builtins.haskey(profile, "configure")
-          @current = Builtins.remove(@current, "configure")
-        end
-        if Builtins.haskey(profile, "install")
-          @current = Builtins.remove(@current, "install")
-        end
+        @current = Builtins.remove(@current, "configure") if Builtins.haskey(profile, "configure")
+        @current = Builtins.remove(@current, "install") if Builtins.haskey(profile, "install")
         tmp = Convert.convert(
           Builtins.union(__configure, __install),
-          :from => "map",
-          :to   => "map <string, any>"
+          from: "map",
+          to:   "map <string, any>"
         )
         @current = Convert.convert(
           Builtins.union(tmp, @current),
-          :from => "map",
-          :to   => "map <string, any>"
+          from: "map",
+          to:   "map <string, any>"
         )
       end
 
@@ -356,7 +335,6 @@ module Yast
       Builtins.y2debug("Current Profile=%1", @current)
       nil
     end
-
 
     # Prepare Profile for saving and remove empty data structs
     # @return [void]
@@ -383,10 +361,10 @@ module Yast
 
           s = 0
           if tomerge == ""
-            if Ops.get_string(d, "X-SuSE-YaST-AutoInstDataType", "map") == "map"
-              s = Builtins.size(Convert.to_map(resource_data))
+            s = if Ops.get_string(d, "X-SuSE-YaST-AutoInstDataType", "map") == "map"
+              Builtins.size(Convert.to_map(resource_data))
             else
-              s = Builtins.size(Convert.to_list(resource_data))
+              Builtins.size(Convert.to_list(resource_data))
             end
           end
 
@@ -401,19 +379,14 @@ module Yast
               _MergeTypes = Builtins.splitstring(tomergetypes, ",")
 
               Builtins.foreach(Builtins.splitstring(tomerge, ",")) do |res|
+                rd = Convert.convert(
+                  resource_data,
+                  from: "any",
+                  to:   "map <string, any>"
+                )
                 if Ops.get_string(_MergeTypes, i, "map") == "map"
-                  rd = Convert.convert(
-                    resource_data,
-                    :from => "any",
-                    :to   => "map <string, any>"
-                  )
                   Ops.set(@current, res, Ops.get_map(rd, res, {}))
                 else
-                  rd = Convert.convert(
-                    resource_data,
-                    :from => "any",
-                    :to   => "map <string, any>"
-                  )
                   Ops.set(@current, res, Ops.get_list(rd, res, []))
                 end
                 i = Ops.add(i, 1)
@@ -427,11 +400,8 @@ module Yast
         end
       end
 
-
       Builtins.foreach(@current) do |k, v|
-        if !Builtins.haskey(@current, k) && !Builtins.contains(e, k)
-          Ops.set(@current, k, v)
-        end
+        Ops.set(@current, k, v) if !Builtins.haskey(@current, k) && !Builtins.contains(e, k)
       end
 
       Popup.ClearFeedback
@@ -489,12 +459,12 @@ module Yast
           )
           SCR.Execute(path(".target.bash_input"), command, xml)
           if Ops.greater_than(
-              SCR.Read(
-                path(".target.size"),
-                Ops.add(dir, "/encrypted_autoyast.xml")
-              ),
-              0
-            )
+            SCR.Read(
+              path(".target.size"),
+              Ops.add(dir, "/encrypted_autoyast.xml")
+            ),
+            0
+          )
             command = Builtins.sformat(
               "mv %1/encrypted_autoyast.xml %2",
               dir,
@@ -513,7 +483,7 @@ module Yast
     # Save sections of current profile to separate files
     #
     # @param [String] dir - directory to store section xml files in
-    # @return	  - list of filenames
+    # @return    - list of filenames
     def SaveSingleSections(dir)
       Prepare()
       Builtins.y2milestone("Saving data (%1) to XML single files", @current)
@@ -563,8 +533,8 @@ module Yast
     def ReadProfileStructure(parsedControlFile)
       @current = Convert.convert(
         SCR.Read(path(".target.ycp"), [parsedControlFile, {}]),
-        :from => "any",
-        :to   => "map <string, any>"
+        from: "any",
+        to:   "map <string, any>"
       )
       if @current == {}
         return false
@@ -574,7 +544,6 @@ module Yast
 
       true
     end
-
 
     # General compatibility issues
     # @param __current [Hash] current profile
@@ -602,7 +571,6 @@ module Yast
 
       # general
       old = false
-
 
       general_options = Ops.get_map(__current, "general", {})
       security = Ops.get_map(__current, "security", {})
@@ -662,7 +630,6 @@ module Yast
         end
         Ops.set(new_general, "mode", mode)
 
-
         if Builtins.haskey(general_options, "encryption_method")
           Ops.set(
             security,
@@ -692,14 +659,13 @@ module Yast
       deep_copy(__current)
     end
 
-
     # Read XML into  YCP data
     # @param file [String] path to file
     # @return [Boolean]
     def ReadXML(file)
       tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
       l = Builtins.splitstring(tmp, "\n")
-      if tmp != nil && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
+      if !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
         out = {}
         while Ops.get_string(out, "stdout", "") == ""
           UI.OpenDialog(
@@ -725,8 +691,8 @@ module Yast
           )
           out = Convert.convert(
             SCR.Execute(path(".target.bash_output"), command, {}),
-            :from => "any",
-            :to   => "map <string, any>"
+            from: "any",
+            to:   "map <string, any>"
           )
         end
         @current = XML.XMLToYCPString(Ops.get_string(out, "stdout", ""))
@@ -750,7 +716,8 @@ module Yast
       if xml_error && !xml_error.empty?
         # autoyast has read the autoyast configuration file but something went wrong
         message = _(
-          "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
+          "The XML parser reported an error while parsing the autoyast profile. " \
+            "The error message is:\n"
         )
         message += xml_error
         Yast2::Popup.show(message, headline: :error)
@@ -760,6 +727,7 @@ module Yast
       Import(@current)
       true
     end
+
     def setMValue(l, v, m)
       l = deep_copy(l)
       v = deep_copy(v)
@@ -778,6 +746,7 @@ module Yast
       end
       deep_copy(m)
     end
+
     def setLValue(l, v, m)
       l = deep_copy(l)
       v = deep_copy(v)
@@ -812,8 +781,8 @@ module Yast
     def checkProfile
       file = Ops.add(Ops.add(AutoinstConfig.tmpDir, "/"), "valid.xml")
       Save(file)
-      summary = "Some schema check failed!\n" +
-        "Please attach your logfile to bug id 211014\n" +
+      summary = "Some schema check failed!\n" \
+        "Please attach your logfile to bug id 211014\n" \
         "\n"
       valid = true
 
@@ -855,10 +824,10 @@ module Yast
         summary = Ops.add(summary, "\n")
         if Ops.get_integer(o, "exit", 1) != 0 ||
             Ops.get_string(i, 2, "") == "jing_sucks" &&
-              Ops.greater_than(
-                Builtins.size(Ops.get_string(o, "stderr", "")),
-                0
-              )
+                Ops.greater_than(
+                  Builtins.size(Ops.get_string(o, "stderr", "")),
+                  0
+                )
           valid = false
         end
       end
@@ -879,7 +848,7 @@ module Yast
     # @return [Hash] The profile without the removed sections.
     def remove_sections(sections)
       keys_to_delete = Array(sections)
-      @current.delete_if { |k, v| keys_to_delete.include?(k) }
+      @current.delete_if { |k, _v| keys_to_delete.include?(k) }
     end
 
     # Returns a list of packages which have to be installed
@@ -919,7 +888,8 @@ module Yast
     def merge_resource_aliases!
       resource_aliases_map.each do |alias_name, resource_name|
         aliased_config = current.delete(alias_name)
-        next if aliased_config.nil? || current.has_key?(resource_name)
+        next if aliased_config.nil? || current.key?(resource_name)
+
         current[resource_name] = aliased_config
       end
     end
@@ -939,21 +909,21 @@ module Yast
       Y2ModuleConfig.resource_aliases_map
     end
 
-    publish :variable => :current, :type => "map <string, any>"
-    publish :variable => :ModuleMap, :type => "map <string, map>"
-    publish :variable => :changed, :type => "boolean"
-    publish :variable => :prepare, :type => "boolean"
-    publish :function => :Import, :type => "void (map <string, any>)"
-    publish :function => :Prepare, :type => "void ()"
-    publish :function => :Reset, :type => "void ()"
-    publish :function => :Save, :type => "boolean (string)"
-    publish :function => :SaveSingleSections, :type => "map <string, string> (string)"
-    publish :function => :SaveProfileStructure, :type => "boolean (string)"
-    publish :function => :ReadProfileStructure, :type => "boolean (string)"
-    publish :function => :ReadXML, :type => "boolean (string)"
-    publish :function => :setElementByList, :type => "map <string, any> (list, any, map <string, any>)"
-    publish :function => :checkProfile, :type => "void ()"
-    publish :function => :needed_second_stage_packages, :type => "list <string> ()"
+    publish variable: :current, type: "map <string, any>"
+    publish variable: :ModuleMap, type: "map <string, map>"
+    publish variable: :changed, type: "boolean"
+    publish variable: :prepare, type: "boolean"
+    publish function: :Import, type: "void (map <string, any>)"
+    publish function: :Prepare, type: "void ()"
+    publish function: :Reset, type: "void ()"
+    publish function: :Save, type: "boolean (string)"
+    publish function: :SaveSingleSections, type: "map <string, string> (string)"
+    publish function: :SaveProfileStructure, type: "boolean (string)"
+    publish function: :ReadProfileStructure, type: "boolean (string)"
+    publish function: :ReadXML, type: "boolean (string)"
+    publish function: :setElementByList, type: "map <string, any> (list, any, map <string, any>)"
+    publish function: :checkProfile, type: "void ()"
+    publish function: :needed_second_stage_packages, type: "list <string> ()"
   end
 
   Profile = ProfileClass.new

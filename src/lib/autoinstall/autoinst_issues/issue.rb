@@ -11,9 +11,6 @@ module Y2Autoinstallation
       # @return [String] Section where it was detected
       attr_reader :section
 
-      # @return [Symbol] :warn, :fatal problem severity
-      attr_reader :severity
-
       # Return problem severity
       #
       # * :fatal: abort the installation.

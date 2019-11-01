@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/AutoinstCommon.ycp
-# Package:	Auto-installation/Partition
-# Summary:	Module representing a partitioning plan
-# Author:	Sven Schober (sschober@suse.de)
+# File:  modules/AutoinstCommon.ycp
+# Package:  Auto-installation/Partition
+# Summary:  Module representing a partitioning plan
+# Author:  Sven Schober (sschober@suse.de)
 #
 # $Id: AutoinstPartPlan.ycp 2813 2008-06-12 13:52:30Z sschober $
 require "yast"
@@ -51,7 +49,6 @@ module Yast
       # but will be added to the skip_list in order not regarding it while
       # next installation. (bnc#989392)
       @skipped_devices = []
-
     end
 
     # Function sets internal variable, which indicates, that any
@@ -125,6 +122,7 @@ module Yast
         index = Ops.add(index, 1)
       end
       return index if found
+
       -1
     end
 
@@ -162,7 +160,6 @@ module Yast
 
     def internalRemoveDrive(plan, which)
       plan = deep_copy(plan)
-      result = []
       drive = internalGetDrive(plan, which)
       result = Builtins.filter(plan) do |curDrive|
         Ops.get_integer(drive, "_id", 100) !=
@@ -198,13 +195,12 @@ module Yast
 
     # Get a list of all drives, that are of a volgroup type.
     #
-    # @param [Array<Hash{String => Object>}] plan The partition plan.
+    # @param [Array<Hash{String => Object>}] _plan The partition plan. Not used as it touch
+    #        `@AutoPartPlan` directly.
     #
     # @return Partition plan containing only volgroups.
 
-    def internalGetAvailableVolgroups(plan)
-      plan = deep_copy(plan)
-      result = []
+    def internalGetAvailableVolgroups(_plan)
       result = Builtins.filter(@AutoPartPlan) do |curDrive|
         Ops.get_symbol(curDrive, "type", :CT_DISK) != :CT_DISK
       end
@@ -213,13 +209,11 @@ module Yast
 
     # Get a list of all physical (not volgroup) drives.
     #
-    # @param [Array<Hash{String => Object>}] plan The partition plan.
+    # @param [Array<Hash{String => Object>}] _plan The partition plan. Not used as it touch
+    #        `@AutoPartPlan` directly.
     #
     # @return Partition plan containing only physical drives.
-
-    def internalGetAvailablePhysicalDrives(plan)
-      plan = deep_copy(plan)
-      result = []
+    def internalGetAvailablePhysicalDrives(_plan)
       result = Builtins.filter(@AutoPartPlan) do |curDrive|
         Ops.get_symbol(curDrive, "type", :CT_LVM) == :CT_DISK
       end
@@ -246,7 +240,7 @@ module Yast
     end
 
     # Volume group checks:
-    #	- check that each VG has at least one PV
+    #  - check that each VG has at least one PV
     #   - <others to be implemented>
     #
     # @param [Array<Hash{String => Object>}] plan The partition plan
@@ -302,13 +296,8 @@ module Yast
     # @param [Array<Hash{String => Object>}] plan The partition plan
     #
     # @return true if plan is sane, false otherwise.
-
     def internalCheckSanity(plan)
-      plan = deep_copy(plan)
-      sane = true
-      sane = internalCheckVolgroups(plan)
-      # ...
-      sane
+      internalCheckVolgroups(plan)
     end
 
     # Create tree structure from AutoPartPlan
@@ -337,7 +326,6 @@ module Yast
       nil
     end
 
-
     # Create a partition plan for the calling client
     # @return [Array] partition plan
     def ReadHelper
@@ -345,7 +333,6 @@ module Yast
       profile = Y2Storage::AutoinstProfile::PartitioningSection.new_from_storage(devicegraph)
       profile.to_hashes
     end
-
 
     # PUBLIC INTERFACE
 
@@ -356,9 +343,12 @@ module Yast
     def Summary
       summary = ""
       summary = Summary.AddHeader(summary, _("Drives"))
-      unless @AutoPartPlan.empty?
+      if @AutoPartPlan.empty?
+        summary = Summary.AddLine(summary,
+          _("Not yet cloned."))
+      else
         # We are counting harddisks only (type CT_DISK)
-        num = @AutoPartPlan.count{|drive| drive["type"] == :CT_DISK }
+        num = @AutoPartPlan.count { |drive| drive["type"] == :CT_DISK }
         summary = Summary.AddLine(
           summary,
           (n_("%s drive in total", "%s drives in total", num) % num)
@@ -378,10 +368,6 @@ module Yast
           summary = Summary.AddNewLine(summary)
         end
         summary = Summary.CloseList(summary)
-      else
-        summary = Summary.AddLine( summary,
-          _("Not yet cloned.")
-        )
       end
       summary
     end
@@ -389,15 +375,15 @@ module Yast
     # Get all the configuration from a map.
     # When called by inst_auto<module name> (preparing autoinstallation data)
     # the list may be empty.
-    # @param [Array<Hash>] settings a list	[...]
-    # @return	[Boolean] success
+    # @param [Array<Hash>] settings a list  [...]
+    # @return  [Boolean] success
     def Import(settings)
       log.info("entering Import with #{settings.inspect}")
       # index settings
       @AutoPartPlan = settings.map.with_index { |d, i| d.merge("_id" => i) }
       # set default value
       @AutoPartPlan.each do |d|
-        d["initialize"] = false unless d.has_key?("initialize")
+        d["initialize"] = false unless d.key?("initialize")
       end
       true
     end
@@ -421,7 +407,7 @@ module Yast
         skip_device = {}
         skip_device["initialize"] = true
         skip_device["skip_list"] = @skipped_devices.collect do |dev|
-          {"skip_key" => "device", "skip_value" => dev}
+          { "skip_key" => "device", "skip_value" => dev }
         end
         drives << skip_device
       end
@@ -445,7 +431,6 @@ module Yast
 
     def getAvailableMountPoints
       usedMountPoints = internalGetUsedMountPoints(@AutoPartPlan)
-      availableMountPoints = []
       availableMountPoints = Builtins.filter(
         AutoinstPartition.getDefaultMountPoints
       ) { |mp| !Builtins.contains(usedMountPoints, mp) }
@@ -529,14 +514,13 @@ module Yast
       removalDriveIdx = internalGetListIndex(@AutoPartPlan, which)
       oldDriveCount = getDriveCount
       @AutoPartPlan = internalRemoveDrive(@AutoPartPlan, which)
-      drive = {}
-      if Ops.greater_than(oldDriveCount, 1) &&
+      drive = if Ops.greater_than(oldDriveCount, 1) &&
           removalDriveIdx == Ops.subtract(oldDriveCount, 1)
         # lowest drive in tree was deleted, select predecessor
-        drive = getDriveByListIndex(Ops.subtract(removalDriveIdx, 1))
+        getDriveByListIndex(Ops.subtract(removalDriveIdx, 1))
       else
         # a top or middle one was deleted, select successor
-        drive = getDriveByListIndex(removalDriveIdx)
+        getDriveByListIndex(removalDriveIdx)
       end
       selectTreeItem(AutoinstDrive.getNodeReference(drive))
       updateTree
@@ -566,7 +550,6 @@ module Yast
 
       nil
     end
-
 
     # ======================
     #  PARTITION OPERATIONS
@@ -703,28 +686,28 @@ module Yast
       end
     end
 
-    publish :function => :SetModified, :type => "void ()"
-    publish :function => :GetModified, :type => "boolean ()"
-    publish :function => :updateTree, :type => "void ()"
-    publish :function => :Summary, :type => "string ()"
-    publish :function => :Import, :type => "boolean (list <map>)"
-    publish :function => :Read, :type => "boolean ()"
-    publish :function => :Export, :type => "list <map> ()"
-    publish :function => :Reset, :type => "void ()"
-    publish :function => :getAvailableMountPoints, :type => "list <string> ()"
-    publish :function => :getNextAvailableMountPoint, :type => "string ()"
-    publish :function => :getAvailableVolgroups, :type => "list <string> ()"
-    publish :function => :checkSanity, :type => "boolean ()"
-    publish :function => :getDrive, :type => "map <string, any> (integer)"
-    publish :function => :getDriveByListIndex, :type => "map <string, any> (integer)"
-    publish :function => :getDriveCount, :type => "integer ()"
-    publish :function => :removeDrive, :type => "void (integer)"
-    publish :function => :addDrive, :type => "map <string, any> (map <string, any>)"
-    publish :function => :updateDrive, :type => "void (map <string, any>)"
-    publish :function => :getPartition, :type => "map <string, any> (integer, integer)"
-    publish :function => :updatePartition, :type => "boolean (integer, integer, map <string, any>)"
-    publish :function => :newPartition, :type => "integer (integer)"
-    publish :function => :deletePartition, :type => "boolean (integer, integer)"
+    publish function: :SetModified, type: "void ()"
+    publish function: :GetModified, type: "boolean ()"
+    publish function: :updateTree, type: "void ()"
+    publish function: :Summary, type: "string ()"
+    publish function: :Import, type: "boolean (list <map>)"
+    publish function: :Read, type: "boolean ()"
+    publish function: :Export, type: "list <map> ()"
+    publish function: :Reset, type: "void ()"
+    publish function: :getAvailableMountPoints, type: "list <string> ()"
+    publish function: :getNextAvailableMountPoint, type: "string ()"
+    publish function: :getAvailableVolgroups, type: "list <string> ()"
+    publish function: :checkSanity, type: "boolean ()"
+    publish function: :getDrive, type: "map <string, any> (integer)"
+    publish function: :getDriveByListIndex, type: "map <string, any> (integer)"
+    publish function: :getDriveCount, type: "integer ()"
+    publish function: :removeDrive, type: "void (integer)"
+    publish function: :addDrive, type: "map <string, any> (map <string, any>)"
+    publish function: :updateDrive, type: "void (map <string, any>)"
+    publish function: :getPartition, type: "map <string, any> (integer, integer)"
+    publish function: :updatePartition, type: "boolean (integer, integer, map <string, any>)"
+    publish function: :newPartition, type: "integer (integer)"
+    publish function: :deletePartition, type: "boolean (integer, integer)"
   end
 
   AutoinstPartPlan = AutoinstPartPlanClass.new

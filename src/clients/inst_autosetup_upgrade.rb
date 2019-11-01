@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:    clients/inst_autosetup.ycp
 # Package: Auto-installation
 # Summary: Setup and prepare system for auto-installation
@@ -74,18 +72,13 @@ module Yast
         @help_text
       )
 
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
       Progress.NextStage
-
 
       # configure general settings
 
-
-
-
-
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       Progress.NextStage
 
@@ -101,7 +94,7 @@ module Yast
 
       #
       # Partitioning and Storage
-      #//////////////////////////////////////////////////////////////////////
+      # //////////////////////////////////////////////////////////////////////
 
       @modified = true
       begin
@@ -111,6 +104,7 @@ module Yast
         AutoinstScripts.Write("pre-scripts", false)
         @ret2 = readModified
         return :abort if @ret2 == :abort
+
         @modified = false if @ret2 == :not_found
       end while @modified == true
 
@@ -129,9 +123,9 @@ module Yast
 
       if Builtins.haskey(Profile.current, "add-on")
         unless Call.Function(
-            "add-on_auto",
-            ["Import", Ops.get_map(Profile.current, "add-on", {})]
-          )
+          "add-on_auto",
+          ["Import", Ops.get_map(Profile.current, "add-on", {})]
+        )
 
           log.warn("User has aborted the installation.")
           return :abort
@@ -149,7 +143,6 @@ module Yast
         @use_utf8 = false # fallback to ascii
       end
 
-
       #
       # Set it in the Language module.
       #
@@ -162,9 +155,7 @@ module Yast
       #
       Installation.encoding = Console.SelectFont(Language.language)
 
-      if Ops.get_boolean(@displayinfo, "HasFullUtf8Support", true)
-        Installation.encoding = "UTF-8"
-      end
+      Installation.encoding = "UTF-8" if Ops.get_boolean(@displayinfo, "HasFullUtf8Support", true)
 
       unless Language.SwitchToEnglishIfNeeded(true)
         UI.SetLanguage(Language.language, Installation.encoding)
@@ -175,25 +166,23 @@ module Yast
         Timezone.Import(Ops.get_map(Profile.current, "timezone", {}))
       end
       # bnc#891808: infer keyboard from language if needed
-      if Profile.current.has_key?("keyboard")
+      if Profile.current.key?("keyboard")
         Keyboard.Import(Profile.current["keyboard"] || {}, :keyboard)
-      elsif Profile.current.has_key?("language")
+      elsif Profile.current.key?("language")
         Keyboard.Import(Profile.current["language"] || {}, :language)
       end
-
 
       # one can override the <confirm> option by the commandline parameter y2confirm
       @tmp = Convert.to_string(
         SCR.Read(path(".target.string"), "/proc/cmdline")
       )
-      if @tmp != nil &&
+      if !@tmp.nil? &&
           Builtins.contains(Builtins.splitstring(@tmp, " \n"), "y2confirm")
         AutoinstConfig.Confirm = true
         Builtins.y2milestone("y2confirm found and confirm turned on")
       end
 
-
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       # moved here from autoinit for fate #301193
       # needs testing
@@ -202,15 +191,15 @@ module Yast
         if Builtins.haskey(Profile.current, "dasd")
           Builtins.y2milestone("dasd found")
           if Call.Function("dasd_auto", ["Import", Ops.get_map(Profile.current, "dasd", {})])
-            #Activate imported disk bnc#883747
-            Call.Function("dasd_auto", [ "Write" ])
+            # Activate imported disk bnc#883747
+            Call.Function("dasd_auto", ["Write"])
           end
         end
         if Builtins.haskey(Profile.current, "zfcp")
           Builtins.y2milestone("zfcp found")
           if Call.Function("zfcp_auto", ["Import", Ops.get_map(Profile.current, "zfcp", {})])
-            #Activate imported disk bnc#883747
-            Call.Function("zfcp_auto", [ "Write" ])
+            # Activate imported disk bnc#883747
+            Call.Function("zfcp_auto", ["Write"])
           end
         end
       end
@@ -221,20 +210,19 @@ module Yast
         # reread only if target system is not yet initialized (bnc#673033)
         probe_storage
 
-        if :abort == WFM.CallFunction("inst_update_partition_auto", [])
-          return :abort
-        end
+        return :abort if :abort == WFM.CallFunction("inst_update_partition_auto", [])
       end
 
       # Registration
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
       Progress.NextStage
       return :abort unless suse_register
 
       # Software
 
-      return :abort if Popup.ConfirmAbort(:painless) if UI.PollInput == :abort
+      return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
 
       Progress.NextStage
 
@@ -249,13 +237,11 @@ module Yast
       Packages.Init(true)
 
       # initialize target
-      if true
-        PackageCallbacks.SetConvertDBCallbacks
+      PackageCallbacks.SetConvertDBCallbacks
 
-        Pkg.TargetInit(Installation.destdir, false)
+      Pkg.TargetInit(Installation.destdir, false)
 
-        Update.GetProductName
-      end
+      Update.GetProductName
 
       # FATE #301990, Bugzilla #238488
       # Set initial update-related (packages/patches) values from control file
@@ -374,10 +360,10 @@ module Yast
         else
           Update.solve_errors = Pkg.PkgSolveErrors
           if Ops.get_boolean(
-              Profile.current,
-              ["upgrade", "stop_on_solver_conflict"],
-              true
-            )
+            Profile.current,
+            ["upgrade", "stop_on_solver_conflict"],
+            true
+          )
             AutoinstConfig.Confirm = true
           end
         end
@@ -397,6 +383,7 @@ module Yast
       # https://bugzilla.novell.com/show_bug.cgi?id=885634#c3
 
       return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
+
       Progress.NextStage
 
       return :abort unless WFM.CallFunction(
@@ -438,10 +425,10 @@ module Yast
       # Checking Base Product licenses
       #
       Progress.NextStage
-      if general_section["mode"] && general_section["mode"].fetch( "confirm_base_product_license", false )
+      if general_section["mode"]&.fetch("confirm_base_product_license", false)
         result = nil
         while result != :next
-          result = WFM.CallFunction("inst_product_license", [{"enable_back"=>false}])
+          result = WFM.CallFunction("inst_product_license", [{ "enable_back"=>false }])
           return :abort if result == :abort && Yast::Popup.ConfirmAbort(:painless)
         end
       end
@@ -456,20 +443,16 @@ module Yast
         true
       )
       return :finish if @ret == :next
+
       @ret
     end
 
-    # FIXME FIXME FIXME copy-paste from update_proposal
+    # FIXME: copy-paste from update_proposal
     def GetUpdateConf
       # 'nil' values are skipped, in that case, ZYPP uses own default values
       ret = {}
 
-      # not supported by libzypp anymore
-      #      if (Update::deleteOldPackages != nil) {
-      #          ret["delete_unmaintained"] = Update::deleteOldPackages;
-      #      }
-
-      if Update.silentlyDowngradePackages != nil
+      if !Update.silentlyDowngradePackages.nil?
         Ops.set(ret, "silent_downgrades", Update.silentlyDowngradePackages)
       end
 

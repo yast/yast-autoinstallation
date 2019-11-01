@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # File:
 #  autoinst_scripts1_finish.ycp
 #
@@ -14,13 +12,11 @@
 module Yast
   class AutoinstScripts1FinishClient < Client
     def main
-
       textdomain "autoinst"
 
       Yast.import "AutoinstScripts"
       Yast.import "AutoInstall"
       Yast.import "Installation"
-
 
       @ret = nil
       @func = ""

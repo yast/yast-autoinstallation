@@ -1,14 +1,12 @@
-# encoding: utf-8
-
-# File:	clients/autoinst_general.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	General Settings
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_general.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  General Settings
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
   module AutoinstallGeneralDialogsInclude
-    def initialize_autoinstall_general_dialogs(include_target)
+    def initialize_autoinstall_general_dialogs(_include_target)
       textdomain "autoinst"
       Yast.import "GetInstArgs"
       Yast.import "Label"
@@ -134,28 +132,30 @@ module Yast
       )
 
       help_text = _(
-        "<P>\n" +
-          "The options in this dialog control the behavior of the AutoYaST during\n" +
-          "automatic installation.\n" +
+        "<P>\n" \
+          "The options in this dialog control the behavior of the AutoYaST during\n" \
+          "automatic installation.\n" \
           "</P>\n"
       )
       help_text = Ops.add(
         help_text,
         _(
-          "<P>\n" +
-            "The installation confirmation option is selected by default\n" +
-            "to avoid unwanted installation. It stops the system\n" +
-            "during installation and shows a summary of requested operations in the\n" +
-            "usual proposal screen.  Uncheck this option to install automatically without interruption.\n" +
+          "<P>\n" \
+            "The installation confirmation option is selected by default\n" \
+            "to avoid unwanted installation. It stops the system\n" \
+            "during installation and shows a summary of requested operations in the\n" \
+            "usual proposal screen.  Uncheck this option to install " \
+            "automatically without interruption.\n" \
             "</P>\n"
         )
       )
       help_text = Ops.add(
         help_text,
         _(
-          "<P>\n" +
-            "If you turn off the second stage of AutoYaST, the installation continues in manual mode\n" +
-            "after the first reboot (after package installation).\n" +
+          "<P>\n" \
+            "If you turn off the second stage of AutoYaST, the " \
+            "installation continues in manual mode\n" \
+            "after the first reboot (after package installation).\n" \
             "</P>\n"
         )
       )
@@ -163,8 +163,8 @@ module Yast
       help_text = Ops.add(
         help_text,
         _(
-          "<P>\n" +
-            "For signature handling, read the AutoYaST documentation.\n" +
+          "<P>\n" \
+            "For signature handling, read the AutoYaST documentation.\n" \
             "</P>\n"
         )
       )
@@ -178,7 +178,6 @@ module Yast
       begin
         ret = UI.UserInput
         if ret == :next
-          m = {}
           confirm = Convert.to_boolean(UI.QueryWidget(Id(:confirm), :Value))
           second_stage = Convert.to_boolean(
             UI.QueryWidget(Id(:second_stage), :Value)
@@ -251,9 +250,9 @@ module Yast
       selection = []
       selId = 0
       if Ops.greater_than(
-          Builtins.size(Ops.get_list(defaultValues, "selection", [])),
-          0
-        )
+        Builtins.size(Ops.get_list(defaultValues, "selection", [])),
+        0
+      )
         Builtins.foreach(Ops.get_list(defaultValues, "selection", [])) do |m|
           selection = Builtins.add(
             selection,
@@ -300,25 +299,25 @@ module Yast
                   Id(:t_text),
                   Opt(:notify, :immediate),
                   "Text",
-                  Ops.get_string(defaultValues, "type", "text") == "text" ? true : false
+                  Ops.get_string(defaultValues, "type", "text") == "text"
                 ),
                 RadioButton(
                   Id(:t_symbol),
                   Opt(:notify, :immediate),
                   "Symbol",
-                  Ops.get_string(defaultValues, "type", "text") == "symbol" ? true : false
+                  Ops.get_string(defaultValues, "type", "text") == "symbol"
                 ),
                 RadioButton(
                   Id(:t_boolean),
                   Opt(:notify, :immediate),
                   "Boolean",
-                  Ops.get_string(defaultValues, "type", "text") == "boolean" ? true : false
+                  Ops.get_string(defaultValues, "type", "text") == "boolean"
                 ),
                 RadioButton(
                   Id(:t_integer),
                   Opt(:notify, :immediate),
                   "Integer",
-                  Ops.get_string(defaultValues, "type", "text") == "integer" ? true : false
+                  Ops.get_string(defaultValues, "type", "text") == "integer"
                 ),
                 CheckBox(
                   Id(:password),
@@ -371,7 +370,6 @@ module Yast
           )
         )
       )
-      help_text = _("<P></P>")
       UI.OpenDialog(Opt(:decorated), contents)
       UI.ChangeWidget(Id(:selLabel), :Enabled, false)
       UI.ChangeWidget(Id(:selValue), :Enabled, false)
@@ -387,15 +385,15 @@ module Yast
       end
       begin
         if Builtins.size(
-            Convert.to_list(UI.QueryWidget(Id(:selection), :Items))
-          ) == 0
+          Convert.to_list(UI.QueryWidget(Id(:selection), :Items))
+        ) == 0
           UI.ChangeWidget(Id(:delSelection), :Enabled, false)
         else
           UI.ChangeWidget(Id(:delSelection), :Enabled, true)
         end
         if Builtins.size(
-            Convert.to_string(UI.QueryWidget(Id(:selLabel), :Value))
-          ) == 0 ||
+          Convert.to_string(UI.QueryWidget(Id(:selLabel), :Value))
+        ) == 0 ||
             Builtins.size(
               Convert.to_string(UI.QueryWidget(Id(:selValue), :Value))
             ) == 0
@@ -508,22 +506,20 @@ module Yast
               l = Builtins.argsof(t)
               r = Builtins.add(
                 r,
-                {
-                  "label" => Ops.get_string(l, 1, ""),
-                  "value" => Ops.get_string(l, 2, "")
-                }
+                "label" => Ops.get_string(l, 1, ""),
+                "value" => Ops.get_string(l, 2, "")
               )
             end
             Ops.set(newVal, "selection", r)
           end
-          if Builtins.size(defaultValues) == 0
-            askList = Builtins.add(askList, newVal)
+          askList = if Builtins.size(defaultValues) == 0
+            Builtins.add(askList, newVal)
           else
-            askList = Builtins.maplist(askList) do |d|
+            Builtins.maplist(askList) do |d|
               if Ops.get_string(d, "stage", "initial") == stage &&
                   Ops.get_integer(d, "dialog", -1) == dialog &&
                   Ops.get_integer(d, "element", -1) ==
-                    Ops.get_integer(defaultValues, "element", -1)
+                      Ops.get_integer(defaultValues, "element", -1)
                 d = deep_copy(newVal)
               end
               deep_copy(d)
@@ -539,8 +535,8 @@ module Yast
     def askDialog
       askList = Convert.convert(
         AutoinstGeneral.askList,
-        :from => "list",
-        :to   => "list <map>"
+        from: "list",
+        to:   "list <map>"
       )
       title = ""
       help = ""
@@ -552,9 +548,7 @@ module Yast
       askList = Builtins.maplist(askList) do |dialog|
         id_counter = Ops.get_integer(dialog, "dialog", id_counter)
         Ops.set(dialog, "dialog", id_counter)
-        if !Builtins.haskey(elementCount, id_counter)
-          Ops.set(elementCount, id_counter, 0)
-        end
+        Ops.set(elementCount, id_counter, 0) if !Builtins.haskey(elementCount, id_counter)
         Ops.set(
           dialog,
           "element",
@@ -731,11 +725,11 @@ module Yast
           UI.ChangeWidget(Id(:deleteDialog), :Enabled, true)
         end
         if Ops.greater_than(
-            Builtins.size(
-              Convert.to_list(UI.QueryWidget(Id(:questions), :Items))
-            ),
-            1
-          )
+          Builtins.size(
+            Convert.to_list(UI.QueryWidget(Id(:questions), :Items))
+          ),
+          1
+        )
           UI.ChangeWidget(Id(:questionUp), :Enabled, true)
           UI.ChangeWidget(Id(:questionDown), :Enabled, true)
           UI.ChangeWidget(Id(:deleteQuestion), :Enabled, true)
@@ -745,9 +739,9 @@ module Yast
           UI.ChangeWidget(Id(:deleteQuestion), :Enabled, false)
         end
         if Ops.greater_than(
-            Builtins.size(Convert.to_list(UI.QueryWidget(Id(:dialogs), :Items))),
-            1
-          )
+          Builtins.size(Convert.to_list(UI.QueryWidget(Id(:dialogs), :Items))),
+          1
+        )
           UI.ChangeWidget(Id(:dialogUp), :Enabled, true)
           UI.ChangeWidget(Id(:dialogDown), :Enabled, true)
         else
@@ -793,9 +787,9 @@ module Yast
             if Ops.get_integer(dummy, "dialog", -1) ==
                 Convert.to_integer(UI.QueryWidget(Id(:dialogs), :CurrentItem)) &&
                 Ops.get_integer(dummy, "element", -2) ==
-                  Convert.to_integer(
-                    UI.QueryWidget(Id(:questions), :CurrentItem)
-                  )
+                    Convert.to_integer(
+                      UI.QueryWidget(Id(:questions), :CurrentItem)
+                    )
               m = deep_copy(dummy)
             end
           end
@@ -860,6 +854,7 @@ module Yast
                 Ops.get_string(dialog, "stage", "initial") == stage
               raise Break
             end
+
             if Ops.get_string(dialog, "stage", "initial") == stage
               upperDialog = Ops.get_integer(dialog, "dialog", -2)
             end
@@ -976,16 +971,14 @@ module Yast
           max = Ops.add(max, 1)
           askList = Builtins.add(
             askList,
-            {
-              "dialog"   => max,
-              "title"    => Convert.to_string(
-                UI.QueryWidget(Id(:dialogTitle), :Value)
-              ),
-              "help"     => Convert.to_string(UI.QueryWidget(Id(:hlp), :Value)),
-              "question" => _("Edit Question"),
-              "element"  => 0,
-              "stage"    => stage
-            }
+            "dialog"   => max,
+            "title"    => Convert.to_string(
+              UI.QueryWidget(Id(:dialogTitle), :Value)
+            ),
+            "help"     => Convert.to_string(UI.QueryWidget(Id(:hlp), :Value)),
+            "question" => _("Edit Question"),
+            "element"  => 0,
+            "stage"    => stage
           )
         end
         questions = []
@@ -1029,7 +1022,7 @@ module Yast
           UI.QueryWidget(Id(:dialogs), :CurrentItem)
         )
         UI.ChangeWidget(Id(:dialogs), :Items, dialogs)
-        if ret == :stage_cont || ret == :stage_initial || dialog_id == nil
+        if ret == :stage_cont || ret == :stage_initial || dialog_id.nil?
           UI.ChangeWidget(Id(:dialogs), :CurrentItem, 0)
         else
           UI.ChangeWidget(Id(:dialogs), :CurrentItem, dialog_id)
@@ -1070,8 +1063,6 @@ module Yast
       Convert.to_symbol(ret)
     end
 
-
-
     # Dialog for General Settings
     # @return [Symbol]
     def generalSequence
@@ -1079,15 +1070,15 @@ module Yast
         "mode" => lambda do
           ModeDialog()
         end,
-        "ask" => lambda do
+        "ask"  => lambda do
           askDialog
         end
       }
 
       sequence = {
         "ws_start" => "mode",
-        "mode"     => { :next => "ask", :abort => :abort },
-        "ask"      => { :next => :finish }
+        "mode"     => { next: "ask", abort: :abort },
+        "ask"      => { next: :finish }
       }
       # Translators: dialog caption
       caption = _("General Settings")
@@ -1095,7 +1086,6 @@ module Yast
 
       Wizard.CreateDialog
       Wizard.SetContents(caption, contents, "", true, true)
-
 
       ret = Sequencer.Run(dialogs, sequence)
 

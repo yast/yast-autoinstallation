@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/AutoinstCommon.ycp
-# Package:	Auto-installation/Partition
-# Summary:	Common partitioning functions module
-# Author:	Sven Schober (sschober@suse.de)
+# File:  modules/AutoinstCommon.ycp
+# Package:  Auto-installation/Partition
+# Summary:  Common partitioning functions module
+# Author:  Sven Schober (sschober@suse.de)
 #
 # $Id: AutoinstCommon.ycp 2788 2008-05-13 10:00:17Z sschober $
 require "yast"
@@ -25,20 +23,20 @@ module Yast
       elsif Ops.is_boolean?(o)
         return :boolean
       end
+
       nil
     end
 
     # Predicates
     def isValidField(objectDefinition, field)
-      objectDefinition = deep_copy(objectDefinition)
-      Ops.get(objectDefinition, field) != nil
+      !Ops.get(objectDefinition, field).nil?
     end
 
     def isValidObject(objectDefinition, obj)
       objectDefinition = deep_copy(objectDefinition)
       obj = deep_copy(obj)
       result = true
-      Builtins.foreach(obj) do |field, value|
+      Builtins.foreach(obj) do |field, _value|
         result = isValidField(objectDefinition, field)
       end
       result
@@ -50,6 +48,7 @@ module Yast
       if isValidField(objectDefinition, field)
         return typeof(Ops.get(objectDefinition, field)) == typeof(value)
       end
+
       # if field doesn't exit in the first place, all types are correct
       true
     end
@@ -74,7 +73,6 @@ module Yast
     end
 
     # Setter
-
 
     def set(objectDefinition, obj, field, value)
       objectDefinition = deep_copy(objectDefinition)
@@ -101,11 +99,12 @@ module Yast
       deep_copy(obj)
     end
 
-    publish :function => :isValidField, :type => "boolean (map <string, any>, string)"
-    publish :function => :isValidObject, :type => "boolean (map <string, any>, map <string, any>)"
-    publish :function => :hasValidType, :type => "boolean (map <string, any>, string, any)"
-    publish :function => :areEqual, :type => "boolean (map <string, any>, map <string, any>)"
-    publish :function => :set, :type => "map <string, any> (map <string, any>, map <string, any>, string, any)"
+    publish function: :isValidField, type: "boolean (map <string, any>, string)"
+    publish function: :isValidObject, type: "boolean (map <string, any>, map <string, any>)"
+    publish function: :hasValidType, type: "boolean (map <string, any>, string, any)"
+    publish function: :areEqual, type: "boolean (map <string, any>, map <string, any>)"
+    publish function: :set, type: "map <string, any> " \
+      "(map <string, any>, map <string, any>, string, any)"
   end
 
   AutoinstCommon = AutoinstCommonClass.new

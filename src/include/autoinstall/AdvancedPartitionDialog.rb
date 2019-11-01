@@ -1,16 +1,14 @@
-# encoding: utf-8
-
 # File:
-#	AdvancedPartitionDialog.ycp
+#  AdvancedPartitionDialog.ycp
 #
 # Module:
-#	Partitioning
+#  Partitioning
 #
 # Summary:
-#	Display and handle advanced partition dialog.
+#  Display and handle advanced partition dialog.
 #
 # Authors:
-#	Sven Schober (sschober@suse.de)
+#  Sven Schober (sschober@suse.de)
 #
 # $Id: AdvancedPartitionDialog.ycp 2788 2008-05-13 10:00:17Z sschober $
 module Yast
@@ -32,8 +30,7 @@ module Yast
       Ops.get_boolean(part, "crypt_fs", false)
     end
 
-    def fstabOptionsEnabled(part)
-      part = deep_copy(part)
+    def fstabOptionsEnabled(_part)
       false
     end
 
@@ -41,7 +38,7 @@ module Yast
       part = deep_copy(part)
       # Constructs buttons like this
       #
-      #	`Left(`RadioButton(`id(`rbMB_name),_("Device name"))),
+      #  `Left(`RadioButton(`id(`rbMB_name),_("Device name"))),
       Left(
         RadioButton(
           Id(name),
@@ -55,26 +52,6 @@ module Yast
       part = deep_copy(part)
       # is result copy of part?
       result = deep_copy(part)
-      helpText = _(
-        "<p><b>Mount in /etc/fstab By:</b>\n" +
-          "\tNormally, a file system to mount is identified in /etc/fstab\n" +
-          "\tby the device name. This identification can be changed so the file system to mount\n" +
-          "\tis found by searching for a UUID or a volume label. Not all file systems can be\n" +
-          "\tmounted by UUID or a volume label. If an option is disabled, it is not possible.\n" +
-          "\t"
-      )
-
-      # help text, richtext format
-      helpText = Ops.add(
-        helpText,
-        _(
-          "<p><b>Volume Label:</b>\n" +
-            "\t  The name entered in this field is used as the volume label. This usually makes sense only \n" +
-            "\t  when you activate the option for mounting by volume label.\n" +
-            "\t  A volume label cannot contain the / character or spaces.\n" +
-            "\t  "
-        )
-      )
 
       cryptFrame = CheckBoxFrame(
         Id(:cbfCrypt),
@@ -93,7 +70,6 @@ module Yast
         )
       end
       contents = HBox(
-        #`HWeight(30, `RichText(`opt(`hstretch),helpText)),
         HSpacing(1),
         HWeight(
           70,
@@ -157,25 +133,25 @@ module Yast
       UI.ChangeWidget(
         Id(:crypt_key),
         :ValidChars,
-        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#* ,.;:._-+!$%&/|?{[()]}@^\\<>"
+        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+          "#* ,.;:._-+!$%&/|?{[()]}@^\\<>"
       )
 
       # Disable all mount options if partition is a
       # physical volumen
       if isPV
-        #TODO: disabling cbfCrypt doesn't work
+        # TODO: disabling cbfCrypt doesn't work
         widgets = [:device, :id, :label, :path, :uuid]
         Builtins.foreach(widgets) do |widget|
           UI.ChangeWidget(Id(widget), :Enabled, false)
         end
       end
-      widgetID = nil
       widgetID = Convert.to_symbol(UI.UserInput)
 
       while widgetID != :pbCancel && widgetID != :pbOK
         if :pbFsOpts == widgetID
           # segfaults
-          #FstabOptions( part, result );
+          # FstabOptions( part, result );
           # so for the time being
           Ops.set(result, "fstopt", UI.QueryWidget(Id(:fsOpts), :Value))
           UI.ChangeWidget(

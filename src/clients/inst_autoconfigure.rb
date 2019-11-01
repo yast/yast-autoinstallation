@@ -1,10 +1,8 @@
-# encoding: utf-8
-
-# File:	clients/inst_autoconfigure.ycp
-# Package:	Auto-installation
+# File:  clients/inst_autoconfigure.ycp
+# Package:  Auto-installation
 # Author:      Anas Nashif <nashif@suse.de>
-# Summary:	This module finishes auto-installation and configures
-#		the system as described in the profile file.
+# Summary:  This module finishes auto-installation and configures
+#    the system as described in the profile file.
 #
 # $Id$
 
@@ -36,8 +34,8 @@ module Yast
 
       # Help text for last dialog of base installation
       @help_text = _(
-        "<p>\n" +
-          "Please wait while the system is being configured.\n" +
+        "<p>\n" \
+          "Please wait while the system is being configured.\n" \
           "</p>"
       )
 
@@ -46,9 +44,11 @@ module Yast
         Ops.get_map(Profile.current, ["general", "mode"], {})
       )
       @need_systemd_isolate = Ops.get_boolean(
-        Profile.current,["general", "mode", "activate_systemd_default_target"], true)
+        Profile.current, ["general", "mode", "activate_systemd_default_target"], true
+      )
       final_restart_services = Ops.get_boolean(
-        Profile.current,["general", "mode", "final_restart_services"], true)
+        Profile.current, ["general", "mode", "final_restart_services"], true
+      )
       @max_steps = Y2ModuleConfig.ModuleMap.size + 3 # additional for scripting and finished message
       @max_steps = Ops.add(@max_steps, 1) if @need_systemd_isolate
       @max_steps += 1 if final_restart_services
@@ -88,23 +88,23 @@ module Yast
       if unknown_sections.any?
         log.error "Could not process these unknown profile sections: #{unknown_sections}"
         needed_packages = Y2ModuleConfig.required_packages(unknown_sections)
-        unless needed_packages.empty?
-          schema_package_list = needed_packages.map do |section, packages|
-            case packages.size
+        schema_package_list = if needed_packages.empty?
+          unknown_sections.map { |section| "&lt;#{section}/&gt;" }
+        else
+          needed_packages.map do |section, packages|
+            package_description = case packages.size
             when 0
-              package_description = _("No needed package found.")
+              _("No needed package found.")
             when 1
               # TRANSLATOR: %s is the package name
-              package_description = _("Needed package: %s") % packages.first
+              _("Needed package: %s") % packages.first
             else
               # TRANSLATOR: %s is the list of package names
-              package_description = _("Needed packages: %s") % packages.join(",")
+              _("Needed packages: %s") % packages.join(",")
             end
 
             "&lt;#{section}/&gt; - #{package_description}"
           end
-        else
-          schema_package_list = unknown_sections.map{|section| "&lt;#{section}/&gt;"}
         end
 
         Report.LongWarning(
@@ -133,10 +133,10 @@ module Yast
         if !Builtins.haskey(Profile.current, "networking")
           removeNetwork([]) # no networking section -> no network
         elsif Ops.get_boolean(
-            Profile.current,
-            ["networking", "keep_install_network"],
-            true
-          ) == false
+          Profile.current,
+          ["networking", "keep_install_network"],
+          true
+        ) == false
           removeNetwork(
             Ops.get_list(Profile.current, ["networking", "interfaces"], [])
           ) # networking section without keeping the install network
@@ -148,27 +148,27 @@ module Yast
         d = Ops.get_map(r, "data", {})
         if Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "all" ||
             Ops.get_string(d, "X-SuSE-YaST-AutoInst", "") == "write"
-          if Builtins.haskey(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY) &&
+          @resource = if Builtins.haskey(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY) &&
               Ops.get_string(d, Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY, "") != ""
-            @resource = Ops.get_string(
+            Ops.get_string(
               d,
               Yast::Y2ModuleConfigClass::RESOURCE_NAME_KEY,
               "unknown"
             )
           else
-            @resource = p
+            p
           end
           Builtins.y2milestone("current resource: %1", @resource)
 
           # determine name of client, if not use default name
-          if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
-            @module_auto = Ops.get_string(
+          @module_auto = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
+            Ops.get_string(
               d,
               "X-SuSE-YaST-AutoInstClient",
               "none"
             )
           else
-            @module_auto = Builtins.sformat("%1_auto", p)
+            Builtins.sformat("%1_auto", p)
           end
 
           result = {}
@@ -228,22 +228,22 @@ module Yast
                 )
               end
               if Ops.greater_than(
-                  Builtins.size(Ops.get_map(Profile.current, @resource, {})),
-                  0
-                )
+                Builtins.size(Ops.get_map(Profile.current, @resource, {})),
+                0
+              )
                 logStep(Builtins.sformat(_("Configuring %1"), p))
               else
                 logStep(Builtins.sformat(_("Not Configuring %1"), p))
               end
-              #Call::Function(module_auto, ["Import", eval(Profile::current[resource]:$[])   ]);
+              # Call::Function(module_auto, ["Import", eval(Profile::current[resource]:$[])   ]);
               processWait(@resource, "pre-modules")
               Call.Function(@module_auto, ["Write"])
               processWait(@resource, "post-modules")
             else
               if Ops.greater_than(
-                  Builtins.size(Ops.get_list(Profile.current, @resource, [])),
-                  0
-                )
+                Builtins.size(Ops.get_list(Profile.current, @resource, [])),
+                0
+              )
                 logStep(Builtins.sformat(_("Configuring %1"), p))
               else
                 logStep(Builtins.sformat(_("Not Configuring %1"), p))
@@ -263,7 +263,7 @@ module Yast
                   Builtins.eval(Ops.get_list(Profile.current, @resource, []))
                 )
               end
-              #Call::Function(module_auto, ["Import",  eval(Profile::current[resource]:[]) ]);
+              # Call::Function(module_auto, ["Import",  eval(Profile::current[resource]:[]) ]);
               processWait(@resource, "pre-modules")
               Call.Function(@module_auto, ["Write"])
               processWait(@resource, "post-modules")
@@ -283,10 +283,10 @@ module Yast
 
       # online update
       if Ops.get_boolean(
-          Profile.current,
-          ["software", "do_online_update"],
-          false
-        ) == true
+        Profile.current,
+        ["software", "do_online_update"],
+        false
+      ) == true
         processWait("do_online_update", "pre-modules")
         @online_update_ret = Convert.to_symbol(
           Call.Function("do_online_update_auto", ["Write"])
@@ -335,7 +335,7 @@ module Yast
         Builtins.y2milestone("running services \"%1\"", @sl)
 
         # Filtering out all services which must not to be restarted
-        @sl.select! {|s| !@ser_ignore.any?{|i| s.match(/#{i}/)}}
+        @sl.reject! { |s| @ser_ignore.any? { |i| s.match(/#{i}/) } }
 
         Builtins.y2milestone("restarting services \"%1\"", @sl)
         @cmd = Ops.add(
@@ -351,7 +351,6 @@ module Yast
       end
       if @need_systemd_isolate
         logStep(_("Activating systemd default target"))
-        #string cmd = "systemctl disable YaST2-Second-Stage.service; systemctl --ignore-dependencies isolate default.target";
         @cmd = "systemctl --no-block --ignore-dependencies isolate default.target"
         Builtins.y2milestone("before calling \"%1\"", @cmd)
         @out = Convert.to_map(SCR.Execute(path(".target.bash_output"), @cmd))
@@ -412,9 +411,7 @@ module Yast
         ls = Builtins.filter(Builtins.splitstring(Ops.get(ls, 0, ""), " \t")) do |s|
           !Builtins.isempty(s)
         end
-        if !Builtins.isempty(ls)
-          ret = Ops.get(ls, 0, "")
-        end
+        ret = Ops.get(ls, 0, "") unless Builtins.isempty(ls)
       end
       Builtins.y2milestone("MatchInterface id:%1 ret:%2", id, ret)
       ret
@@ -435,7 +432,7 @@ module Yast
       netlist = []
       Builtins.y2milestone("removeNetwork list:%1", l)
       Builtins.foreach(
-        Convert.convert(l, :from => "any", :to => "list <string>")
+        Convert.convert(l, from: "any", to: "list <string>")
       ) do |s|
         if Builtins.issubstring(s, "ifcfg-") &&
             !Builtins.issubstring(s, "ifcfg-lo")
@@ -462,8 +459,8 @@ module Yast
       end
       Builtins.y2milestone("removeNetwork netlist:%1", netlist)
       if !Builtins.isempty(netlist)
-        NetworkInterfaces.Commit 
-        #NetworkInterfaces::Write( ".*" );
+        NetworkInterfaces.Commit
+        # NetworkInterfaces::Write( ".*" );
       end
       nil
     end
@@ -483,9 +480,7 @@ module Yast
             Builtins.sleep(
               Ops.multiply(1000, Ops.get_integer(process, ["sleep", "time"], 0))
             )
-            if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
-              Popup.ClearFeedback
-            end
+            Popup.ClearFeedback if Ops.get_boolean(process, ["sleep", "feedback"], false) == true
           end
           if Builtins.haskey(process, "script")
             debug = Ops.get_boolean(process, ["script", "debug"], true) ? "-x" : ""
@@ -565,7 +560,6 @@ module Yast
 
       nil
     end
-
   end
 end
 

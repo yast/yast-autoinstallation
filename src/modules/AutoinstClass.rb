@@ -1,16 +1,14 @@
-# encoding: utf-8
-
 # File:
-#	modules/AutoinstClass.ycp
+#  modules/AutoinstClass.ycp
 #
 # Module:
-#	AutoinstClass
+#  AutoinstClass
 #
 # Summary:
-#	This module handles the configuration for auto-installation
+#  This module handles the configuration for auto-installation
 #
 # Authors:
-#	Anas Nashif <nashif@suse.de>
+#  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
@@ -19,10 +17,9 @@ module Yast
   class AutoinstClassClass < Module
     include Yast::Logger
 
-    MERGE_XSLT_PATH = "/usr/share/autoinstall/xslt/merge.xslt"
+    MERGE_XSLT_PATH = "/usr/share/autoinstall/xslt/merge.xslt".freeze
 
     def main
-
       Yast.import "AutoinstConfig"
       Yast.import "XML"
       Yast.import "Summary"
@@ -99,7 +96,6 @@ module Yast
       AutoinstConfig.classDir = newdir
       @classDir = newdir
       @classPath = File.join(@classDir, @class_file)
-      newdir
     end
 
     # Constructor
@@ -120,7 +116,7 @@ module Yast
     def MergeClasses(configuration, base_profile, resultFileName)
       dontmerge_str = ""
       AutoinstConfig.dontmerge.each_with_index do |dm, i|
-        dontmerge_str << " --param dontmerge#{i+1} \"'#{dm}'\" "
+        dontmerge_str << " --param dontmerge#{i + 1} \"'#{dm}'\" "
       end
       merge_command =
         "#{MERGE_CMD} #{MERGE_DEFAULTS} #{dontmerge_str} --param with " \
@@ -142,12 +138,12 @@ module Yast
         class_name_ = class_["name"] || "xxx"
         files_path = File.join(@classDir, class_name_)
         files = Convert.convert(SCR.Read(path(".target.dir"), files_path),
-          :from => "any", :to   => "list <string>")
+          from: "any", to: "list <string>")
 
         next if files.nil?
 
         log.info "Files in class #{class_name_}: #{files}"
-        new_confs = files.map { |f| { "class" => class_name_, "name" => f  }  }
+        new_confs = files.map { |f| { "class" => class_name_, "name" => f } }
         log.info "Configurations: #{new_confs}"
         @confs.concat(new_confs)
       end
@@ -166,7 +162,6 @@ module Yast
       log.debug "saving classes: #{@classPath}"
       XML.YCPToXMLFile(:class, tmp, @classPath)
     end
-
 
     # Imports configuration
     # @param [Array<Hash>] settings Configuration
@@ -193,26 +188,26 @@ module Yast
       summary.empty? ? Summary.NotConfigured : summary
     end
 
-    publish :variable => :classDir, :type => "string"
-    publish :variable => :ClassConf, :type => "string"
-    publish :variable => :profile_conf, :type => "list <map>"
-    publish :variable => :Profiles, :type => "list"
-    publish :variable => :Classes, :type => "list <map>"
-    publish :variable => :deletedClasses, :type => "list <string>"
-    publish :variable => :confs, :type => "list <map>"
-    publish :function => :findPath, :type => "string (string, string)"
-    publish :function => :Read, :type => "void ()"
-    publish :function => :Compat, :type => "void ()"
-    publish :function => :classDirChanged, :type => "void (string)"
-    publish :function => :AutoinstClass, :type => "void ()"
-    publish :function => :MergeClasses, :type => "map (map, string, string)"
-    publish :function => :Files, :type => "void ()"
-    publish :function => :Save, :type => "boolean ()"
-    publish :function => :Import, :type => "boolean (list <map>)"
-    publish :function => :Export, :type => "list <map> ()"
-    publish :function => :Summary, :type => "string ()"
+    publish variable: :classDir, type: "string"
+    publish variable: :ClassConf, type: "string"
+    publish variable: :profile_conf, type: "list <map>"
+    publish variable: :Profiles, type: "list"
+    publish variable: :Classes, type: "list <map>"
+    publish variable: :deletedClasses, type: "list <string>"
+    publish variable: :confs, type: "list <map>"
+    publish function: :findPath, type: "string (string, string)"
+    publish function: :Read, type: "void ()"
+    publish function: :Compat, type: "void ()"
+    publish function: :classDirChanged, type: "void (string)"
+    publish function: :AutoinstClass, type: "void ()"
+    publish function: :MergeClasses, type: "map (map, string, string)"
+    publish function: :Files, type: "void ()"
+    publish function: :Save, type: "boolean ()"
+    publish function: :Import, type: "boolean (list <map>)"
+    publish function: :Export, type: "list <map> ()"
+    publish function: :Summary, type: "string ()"
 
-    private
+  private
 
     # Checks if a classes.xml exists
     # @return [true,false] Returns true when present (false otherwise).

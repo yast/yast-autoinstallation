@@ -1,6 +1,4 @@
 #!/usr/bin/env rspec
-# encoding: utf-8
-
 # Copyright (c) [2017] SUSE LLC
 #
 # All Rights Reserved.
@@ -25,12 +23,12 @@ require "autoinstall/clients/ayast_setup"
 
 describe Y2Autoinstall::Clients::AyastSetup do
   let(:client) do
-    instance_double(Y2Autoinstall::Clients::AyastSetup, Setup: :true)
+    instance_double(Y2Autoinstall::Clients::AyastSetup, Setup: true)
   end
 
   describe "#main" do
     it "Start the ayast_setup client" do
-	    expect(client.Setup).to eq(:true)
+      expect(client.Setup).to eq true
     end
   end
 end

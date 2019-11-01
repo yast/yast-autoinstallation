@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/AutoinstGeneral.ycp
-# Package:	Autoyast
-# Summary:	Configuration of general settings for autoyast
-# Authors:	Anas Nashif (nashif@suse.de)
+# File:  modules/AutoinstGeneral.ycp
+# Package:  Autoyast
+# Summary:  Configuration of general settings for autoyast
+# Authors:  Anas Nashif (nashif@suse.de)
 #
 # $Id$
 require "yast"
@@ -55,7 +53,6 @@ module Yast
 
       @askList = []
 
-      #    global list<string> proposals = ["bootloader_proposal", "software_proposal", "country_simple_proposal", "timezone_proposal", "users_proposal", "runlevel_proposal", "hwinfo_proposal", "deploying_proposal"];
       @proposals = []
 
       @storage = {}
@@ -85,9 +82,8 @@ module Yast
     # Summary of configuration
     # @return [String] Formatted summary
     def Summary
-      #string language_name		= "";
-      #string keyboard_name		= "";
-
+      # string language_name    = "";
+      # string keyboard_name    = "";
 
       summary = ""
 
@@ -126,51 +122,55 @@ module Yast
         summary = Summary.AddLine(summary, _("Yes"))
       end
 
-
       summary = Summary.AddHeader(summary, _("Signature Handling"))
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@signature_handling, "accept_unsigned_file", false) ?
-          _("Accepting unsigned files") :
+        if Ops.get_boolean(@signature_handling, "accept_unsigned_file", false)
+          _("Accepting unsigned files")
+        else
           _("Not accepting unsigned files")
+        end
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(
+        if Ops.get_boolean(
           @signature_handling,
           "accept_file_without_checksum",
           false
-        ) ?
-          _("Accepting files without a checksum") :
+        )
+          _("Accepting files without a checksum")
+        else
           _("Not accepting files without a checksum")
+        end
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(
+        if Ops.get_boolean(
           @signature_handling,
           "accept_verification_failed",
           false
-        ) ?
-          _("Accepting failed verifications") :
+        )
+          _("Accepting failed verifications")
+        else
           _("Not accepting failed verifications")
+        end
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false) ?
-          _("Accepting unknown GPG keys") :
+        if Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false)
+          _("Accepting unknown GPG keys")
+        else
           _("Not accepting unknown GPG Keys")
+        end
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@signature_handling, "import_gpg_key", false) ?
-          _("Importing new GPG keys") :
+        if Ops.get_boolean(@signature_handling, "import_gpg_key", false)
+          _("Importing new GPG keys")
+        else
           _("Not importing new GPG Keys")
+        end
       )
-
-      #	summary = Summary::AddHeader(summary, _("Proposals"));
-      #        foreach(string p, proposals, ``{
-      #		summary = Summary::AddLine(summary, p);
-      #	});
 
       summary
     end
@@ -194,16 +194,15 @@ module Yast
       true
     end
 
-
     # Export Configuration
     # @return [Hash]
     def Export
       general = {
-        "mode" => @mode,
+        "mode"               => @mode,
         "signature-handling" => @signature_handling,
-        "ask-list" => @askList,
-        "proposals" => @proposals,
-        "storage" => AutoinstStorage.export_general_settings
+        "ask-list"           => @askList,
+        "proposals"          => @proposals,
+        "storage"            => AutoinstStorage.export_general_settings
       }
 
       if Yast::Arch.s390
@@ -286,54 +285,60 @@ module Yast
 
       Pkg.CallbackPkgGpgCheck(
         fun_ref(AutoInstall.method(:pkg_gpg_check),
-        "string (map)"
-      ))
+          "string (map)")
+      )
 
       if Builtins.haskey(@signature_handling, "accept_unsigned_file")
         Pkg.CallbackAcceptUnsignedFile(
-          Ops.get_boolean(@signature_handling, "accept_unsigned_file", false) ?
+          if Ops.get_boolean(@signature_handling, "accept_unsigned_file", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_integer),
               "boolean (string, integer)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_integer),
               "boolean (string, integer)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "accept_file_without_checksum")
         Pkg.CallbackAcceptFileWithoutChecksum(
-          Ops.get_boolean(
+          if Ops.get_boolean(
             @signature_handling,
             "accept_file_without_checksum",
             false
-          ) ?
+          )
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string),
               "boolean (string)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string),
               "boolean (string)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "accept_verification_failed")
         Pkg.CallbackAcceptVerificationFailed(
-          Ops.get_boolean(
+          if Ops.get_boolean(
             @signature_handling,
             "accept_verification_failed",
             false
-          ) ?
+          )
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_map_integer),
               "boolean (string, map <string, any>, integer)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_map_integer),
               "boolean (string, map <string, any>, integer)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "trusted_key_added")
@@ -354,54 +359,62 @@ module Yast
       end
       if Builtins.haskey(@signature_handling, "accept_unknown_gpg_key")
         Pkg.CallbackAcceptUnknownGpgKey(
-          Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false) ?
+          if Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_integer),
               "boolean (string, string, integer)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_string_integer),
               "boolean (string, string, integer)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "import_gpg_key")
         Pkg.CallbackImportGpgKey(
-          Ops.get_boolean(@signature_handling, "import_gpg_key", false) ?
+          if Ops.get_boolean(@signature_handling, "import_gpg_key", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_map_integer),
               "boolean (map <string, any>, integer)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_map_integer),
               "boolean (map <string, any>, integer)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "accept_wrong_digest")
         Pkg.CallbackAcceptWrongDigest(
-          Ops.get_boolean(@signature_handling, "accept_wrong_digest", false) ?
+          if Ops.get_boolean(@signature_handling, "accept_wrong_digest", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_string),
               "boolean (string, string, string)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_string_string),
               "boolean (string, string, string)"
             )
+          end
         )
       end
       if Builtins.haskey(@signature_handling, "accept_unknown_digest")
         Pkg.CallbackAcceptWrongDigest(
-          Ops.get_boolean(@signature_handling, "accept_unknown_digest", false) ?
+          if Ops.get_boolean(@signature_handling, "accept_unknown_digest", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_string),
               "boolean (string, string, string)"
-            ) :
+            )
+          else
             fun_ref(
               AutoInstall.method(:callbackFalse_boolean_string_string_string),
               "boolean (string, string, string)"
             )
+          end
         )
       end
 
@@ -423,9 +436,7 @@ module Yast
           Report.Error(_("Time syncing failed."))
         else
           ret = SCR.Execute(path(".target.bash"), "/sbin/hwclock --systohc")
-          if ret > 0
-            Report.Error(_("Cannot update system time."))
-          end
+          Report.Error(_("Cannot update system time.")) if ret > 0
         end
         Popup.ClearFeedback
       end
@@ -451,7 +462,7 @@ module Yast
     def Write
       AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
       AutoinstConfig.cio_ignore = @cio_ignore
-      AutoinstConfig.second_stage = @mode["second_stage"] if @mode.has_key?("second_stage")
+      AutoinstConfig.second_stage = @mode["second_stage"] if @mode.key?("second_stage")
       SetRebootAfterFirstStage()
       AutoinstConfig.Halt = Ops.get_boolean(@mode, "halt", false)
       AutoinstConfig.RebootMsg = Ops.get_boolean(@mode, "rebootmsg", false)
@@ -484,23 +495,22 @@ module Yast
       nil
     end
 
-    publish :variable => :Confirm, :type => "boolean"
-    publish :variable => :second_stage, :type => "boolean"
-    publish :variable => :mode, :type => "map"
-    publish :variable => :signature_handling, :type => "map"
-    publish :variable => :askList, :type => "list"
-    publish :variable => :proposals, :type => "list <string>"
-    publish :variable => :modified, :type => "boolean"
-    publish :function => :SetModified, :type => "void ()"
-    publish :function => :GetModified, :type => "boolean ()"
-    publish :function => :Summary, :type => "string ()"
-    publish :function => :Import, :type => "boolean (map)"
-    publish :function => :Export, :type => "map ()"
-    publish :function => :SetSignatureHandling, :type => "void ()"
-    publish :function => :SetRebootAfterFirstStage, :type => "void ()"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :AutoinstGeneral, :type => "void ()"
-
+    publish variable: :Confirm, type: "boolean"
+    publish variable: :second_stage, type: "boolean"
+    publish variable: :mode, type: "map"
+    publish variable: :signature_handling, type: "map"
+    publish variable: :askList, type: "list"
+    publish variable: :proposals, type: "list <string>"
+    publish variable: :modified, type: "boolean"
+    publish function: :SetModified, type: "void ()"
+    publish function: :GetModified, type: "boolean ()"
+    publish function: :Summary, type: "string ()"
+    publish function: :Import, type: "boolean (map)"
+    publish function: :Export, type: "map ()"
+    publish function: :SetSignatureHandling, type: "void ()"
+    publish function: :SetRebootAfterFirstStage, type: "void ()"
+    publish function: :Write, type: "boolean ()"
+    publish function: :AutoinstGeneral, type: "void ()"
   end
 
   AutoinstGeneral = AutoinstGeneralClass.new

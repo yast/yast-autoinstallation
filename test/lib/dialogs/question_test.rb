@@ -1,6 +1,4 @@
 #!/usr/bin/env rspec
-# encoding: utf-8
-
 # Copyright (c) [2017] SUSE LLC
 #
 # All Rights Reserved.
@@ -25,7 +23,9 @@ require "autoinstall/dialogs/question"
 require "y2storage/autoinst_issues"
 
 describe Y2Autoinstallation::Dialogs::Question do
-  subject(:dialog) { described_class.new(headline, content, timeout: timeout, buttons_set: buttons_set) }
+  subject(:dialog) do
+    described_class.new(headline, content, timeout: timeout, buttons_set: buttons_set)
+  end
 
   let(:timeout) { 0 }
   let(:content) { "some content" }
@@ -52,7 +52,8 @@ describe Y2Autoinstallation::Dialogs::Question do
 
       context "and a timeout was given" do
         it "ignores the timeout" do
-          expect(dialog).to receive(:PushButton).with(Yast::Term.new(:id, :abort), anything, anything)
+          expect(dialog).to receive(:PushButton)
+            .with(Yast::Term.new(:id, :abort), anything, anything)
           expect(dialog).to_not receive(:Id).with(:counter)
           allow(dialog).to receive(:Id).and_call_original
           dialog.dialog_content
@@ -73,7 +74,8 @@ describe Y2Autoinstallation::Dialogs::Question do
         let(:timeout) { 10 }
 
         it "shows the 'Stop' button" do
-          expect(dialog).to receive(:PushButton).with(Yast::Term.new(:id, :stop), anything, anything)
+          expect(dialog).to receive(:PushButton)
+            .with(Yast::Term.new(:id, :stop), anything, anything)
           allow(dialog).to receive(:PushButton).and_call_original
           dialog.dialog_content
         end

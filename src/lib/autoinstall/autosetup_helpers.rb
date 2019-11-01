@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) [2017] SUSE LLC
 #
 # All Rights Reserved.
@@ -29,9 +27,8 @@ module Y2Autoinstallation
   # and {Yast::InstAutosetupUpgradeClient} clients. These clients need to be rewritten
   # but, for the time being, this is the easiest way to share code between them.
   module AutosetupHelpers
-
     # name of the registration section in the profile
-    REGISTER_SECTION = "suse_register"
+    REGISTER_SECTION = "suse_register".freeze
 
     # Activate and probe storage
     def probe_storage
@@ -57,8 +54,8 @@ module Y2Autoinstallation
           Yast::Profile.current == {}
         Yast::Popup.Error(
           _(
-            "Error while parsing the control file.\n" +
-            "Check the log files for more details or fix the\n" +
+            "Error while parsing the control file.\n" \
+            "Check the log files for more details or fix the\n" \
             "control file and try again.\n"
           )
         )
@@ -83,6 +80,7 @@ module Y2Autoinstallation
     # @return [Boolean] true if succeeded.
     def suse_register
       return true unless registration_module_available? # do nothing
+
       general_section = Yast::Profile.current["general"] || {}
       if Yast::Profile.current[REGISTER_SECTION]
         return false unless Yast::WFM.CallFunction(
@@ -99,14 +97,13 @@ module Y2Autoinstallation
 
         # failed relnotes download is not fatal, ignore ret code
         Yast::WFM.CallFunction("inst_download_release_notes")
-      elsif general_section["semi-automatic"] &&
-          general_section["semi-automatic"].include?("scc")
+      elsif general_section["semi-automatic"]&.include?("scc")
         Yast::WFM.CallFunction("inst_scc", ["enable_next" => true])
       end
       true
     end
 
-private
+  private
 
     # Backup AutoYaST profile
     #
@@ -146,6 +143,5 @@ private
       end
       true
     end
-
   end
 end

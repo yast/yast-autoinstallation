@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	clients/autoinst_storage.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	Storage
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_storage.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  Storage
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast
@@ -35,13 +33,13 @@ module Yast
       # INITIALIZE DIALOG
       @volgroupType = "volgroup"
       @volgroupDialog = {
-        :type         => @volgroupType,
-        :display      => lambda { VolgroupDisplay() },
-        :eventHandler => lambda { VolgroupEventHandler() },
-        :store        => lambda { VolgroupStore() },
-        :new          => lambda { VolgroupNew() },
-        :delete       => lambda { VolgroupDelete() },
-        :check        => lambda { VolgroupCheck() }
+        type:         @volgroupType,
+        display:      -> { VolgroupDisplay() },
+        eventHandler: -> { VolgroupEventHandler() },
+        store:        -> { VolgroupStore() },
+        new:          -> { VolgroupNew() },
+        delete:       -> { VolgroupDelete() },
+        check:        -> { VolgroupCheck() }
       }
       Builtins.y2milestone("adding volgroup dialog to dialog list.")
       addDialog(@volgroupType, @volgroupDialog)
@@ -52,10 +50,12 @@ module Yast
     def VolgroupAddTypePrefix(s)
       string2symbol(addPrefix(symbol2string(s), @volgroupTypePrefix))
     end
+
     def VolgroupRemoveTypePrefix(s)
       string2symbol(removePrefix(symbol2string(s), @volgroupTypePrefix))
     end
-    def VolgroupUpdateGUI(d)
+
+    def VolgroupUpdateGUI(_d)
       UI.ChangeWidget(
         Id(:vgDevice),
         :Value,
@@ -63,7 +63,7 @@ module Yast
           Ops.get_string(@currentVolgroup, "device", "<not-set>"),
           @volgroupPrefix
         )
-      ) 
+      )
       #    symbol vgType = VolgroupRemoveTypePrefix( currentVolgroup["type"]:`CT_LVM );
       #    UI::ChangeWidget( `id(`vgType), `Value, vgType);
 
@@ -134,7 +134,7 @@ module Yast
           HVSquash(
             VBox(
               TextEntry(Id(:vgDevice), _("Volgroup device name")),
-              #`ComboBox( `id(`vgType), _("Type"), toItemList(volgroupTypes)),
+              # `ComboBox( `id(`vgType), _("Type"), toItemList(volgroupTypes)),
               VSpacing(2),
               PushButton(Id(:apply), _("Apply"))
             )

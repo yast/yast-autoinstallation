@@ -19,7 +19,7 @@ module Yast
     # DSA/SHA1, Mon 05 Oct 2015 04:24:50 PM WEST, Key ID 9b7d32f2d50582e6
     FIND_KEY_ID_CMD = "rpm --query --info --queryformat "\
       "\"%%|DSAHEADER?{%%{DSAHEADER:pgpsig}}:{%%|RSAHEADER?{%%{RSAHEADER:pgpsig}}:{(none}|}|\" "\
-      " --package %s"
+      " --package %s".freeze
 
     attr_reader :result, :package, :path, :config
 
@@ -66,7 +66,7 @@ module Yast
       end
     end
 
-    private
+  private
 
     # Handle CHK_OK result
     #
@@ -105,7 +105,7 @@ module Yast
     def handle_unknown
       section = config.fetch("accept_unknown_gpg_key", {})
 
-      if section.kind_of?(Hash)
+      if section.is_a?(Hash)
         section.fetch("all", false) == true ||
           section.fetch("keys", []).map(&:downcase).include?(find_key_id(path))
       else
@@ -123,7 +123,7 @@ module Yast
     def handle_nontrusted
       section = config.fetch("accept_non_trusted_gpg_key", {})
 
-      if section.kind_of?(Hash)
+      if section.is_a?(Hash)
         section.fetch("all", false) == true ||
           section.fetch("keys", []).map(&:downcase).include?(find_key_id(path))
       else
@@ -137,8 +137,6 @@ module Yast
     def handle_error
       false
     end
-
-    private
 
     # Return add-on signature-handling settings
     #
@@ -176,7 +174,7 @@ module Yast
       out = SCR.Execute(Yast::Path.new(".target.bash_output"), format(FIND_KEY_ID_CMD, path))
       key_id =
         if out["exit"].zero?
-          out["stdout"].split("\n").last =~ /Key ID (\w+)/ ? Regexp.last_match(1).downcase : nil
+          (out["stdout"].split("\n").last =~ /Key ID (\w+)/) ? Regexp.last_match(1).downcase : nil
         end
       log.debug("Key ID for #{package} (#{path}) is '#{key_id}'")
       key_id

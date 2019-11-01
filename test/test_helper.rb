@@ -1,5 +1,4 @@
-root_location = File.expand_path("../../", __FILE__)
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
+ENV["Y2DIR"] = File.expand_path("../src", __dir__)
 
 # make sure we run the tests in English locale
 # (some tests check the output which is marked for translation)
@@ -21,7 +20,7 @@ if ENV["COVERAGE"]
     add_filter "/test/"
   end
 
-  src_location = File.expand_path("../../src", __FILE__)
+  src_location = File.expand_path("../src", __dir__)
   # track all ruby files under src
   SimpleCov.track_files("#{src_location}/**/*.rb")
 

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) [2018] SUSE LLC
 #
 # All Rights Reserved.
@@ -18,7 +16,6 @@
 #
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
-
 
 require "autoinstall/autoinst_issues/issue"
 
@@ -54,8 +51,7 @@ module Y2Autoinstallation
         # TRANSLATORS:
         # 'attr' is an AutoYaST element
         # 'description' has already been translated in other modules.
-        _("Missing element '%{attr}'. %{description}") %
-          { attr: attr, description: description }
+        format(_("Missing element '%{attr}'. %{description}"), attr: attr, description: description)
       end
     end
   end

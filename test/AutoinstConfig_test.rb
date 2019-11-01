@@ -41,12 +41,12 @@ describe "Yast::AutoinstConfig" do
       let(:service_url_1) { "https://192.168.0.1/autoinst.xml" }
       let(:service_url_2) { "https://192.168.0.2/autoinst.xml" }
 
-      let(:slp_server_reply) {
+      let(:slp_server_reply) do
         [
-          {"srvurl" => "service:autoyast:#{service_url_1}" },
-          {"srvurl" => "service:autoyast:#{service_url_2}" }
+          { "srvurl" => "service:autoyast:#{service_url_1}" },
+          { "srvurl" => "service:autoyast:#{service_url_2}" }
         ]
-      }
+      end
 
       context "when no additional SLP attributes are found" do
         it "asks user to choose one URL and returns the selected one" do
@@ -99,7 +99,8 @@ describe "Yast::AutoinstConfig" do
     context "when the autoyast profile url is valid" do
       let(:autoyast_profile_url) { "https://moo:woo@192.168.0.1:8080/path/auto-installation.xml" }
 
-      it "parses the given profile location and fill internal structures and returns boolean whether it succeded" do
+      it "parses the given profile location and fill internal structures " \
+          "and returns boolean whether it succeded" do
         expect(subject.ParseCmdLine(autoyast_profile_url)).to eq(true)
 
         expect(subject.scheme).to eq("https")

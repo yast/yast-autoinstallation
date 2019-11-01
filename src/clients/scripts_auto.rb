@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	clients/autoinst_scripts.ycp
-# Package:	Autoinstallation Configuration System
-# Summary:	Scripts
-# Authors:	Anas Nashif<nashif@suse.de>
+# File:  clients/autoinst_scripts.ycp
+# Package:  Autoinstallation Configuration System
+# Summary:  Scripts
+# Authors:  Anas Nashif<nashif@suse.de>
 #
 # $Id$
 module Yast

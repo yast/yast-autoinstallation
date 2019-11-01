@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/AutoinstFile.ycp
-# Package:	AutoYaST
-# Authors:	Anas Nashif (nashif@suse.de)
-# Summary:	Handle complete configuration file dumps
+# File:  modules/AutoinstFile.ycp
+# Package:  AutoYaST
+# Authors:  Anas Nashif (nashif@suse.de)
+# Summary:  Handle complete configuration file dumps
 #
 # $Id$
 require "yast"
@@ -39,7 +37,6 @@ module Yast
       @modified
     end
 
-
     # Settings Summary
     def Summary
       summary = ""
@@ -58,7 +55,6 @@ module Yast
       end
       summary
     end
-
 
     # Import Settings
     def Import(settings)
@@ -87,11 +83,10 @@ module Yast
           AutoinstConfig.files_dir,
           counter
         )
-        alter_file = Builtins.sformat("file_%1", counter)
         if Ops.subtract(
-            Builtins.size(Ops.get_string(file, "file_path", "dummy")),
-            1
-          ) ==
+          Builtins.size(Ops.get_string(file, "file_path", "dummy")),
+          1
+        ) ==
             Builtins.findlastof(Ops.get_string(file, "file_path", ""), "/")
           # directory
           SCR.Execute(
@@ -103,13 +98,6 @@ module Yast
             "AutoInstall: Copying file %1",
             Ops.get_string(file, "file_path", alternate_location)
           )
-          t = Builtins.splitstring(
-            Ops.get_string(file, "file_path", alternate_location),
-            "/"
-          )
-          pos = Ops.subtract(Builtins.size(t), 1)
-
-          # SCR::Write (.target.string, AutoInstall::var_dir + "/files" + t[pos]:alter_file, file["file_contents"]:"");
           SCR.Write(
             path(".target.string"),
             Ops.get_string(file, "file_path", alternate_location),
@@ -117,9 +105,9 @@ module Yast
           )
         elsif Ops.get_string(file, "file_location", "") != ""
           if Builtins.issubstring(
-              Ops.get_string(file, "file_location", ""),
-              "relurl://"
-            )
+            Ops.get_string(file, "file_location", ""),
+            "relurl://"
+          )
             l = Ops.get_string(file, "file_location", "")
             l = Builtins.substring(l, 9)
             newloc = ""
@@ -167,9 +155,9 @@ module Yast
             Ops.get_string(file, "file_path", alternate_location)
           )
           if !GetURL(
-              Ops.get_string(file, "file_location", ""),
-              Ops.get_string(file, "file_path", alternate_location)
-            )
+            Ops.get_string(file, "file_location", ""),
+            Ops.get_string(file, "file_path", alternate_location)
+          )
             Builtins.y2error("file could not be retrieved")
           else
             Builtins.y2milestone("file was retrieved")
@@ -283,14 +271,14 @@ module Yast
       success
     end
 
-    publish :variable => :modified, :type => "boolean"
-    publish :function => :SetModified, :type => "void ()"
-    publish :function => :GetModified, :type => "boolean ()"
-    publish :variable => :Files, :type => "list <map>"
-    publish :function => :Summary, :type => "string ()"
-    publish :function => :Import, :type => "boolean (list <map>)"
-    publish :function => :Export, :type => "list <map> ()"
-    publish :function => :Write, :type => "boolean ()"
+    publish variable: :modified, type: "boolean"
+    publish function: :SetModified, type: "void ()"
+    publish function: :GetModified, type: "boolean ()"
+    publish variable: :Files, type: "list <map>"
+    publish function: :Summary, type: "string ()"
+    publish function: :Import, type: "boolean (list <map>)"
+    publish function: :Export, type: "list <map> ()"
+    publish function: :Write, type: "boolean ()"
   end
 
   AutoinstFile = AutoinstFileClass.new

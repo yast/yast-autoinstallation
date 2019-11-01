@@ -1,13 +1,11 @@
-# encoding: utf-8
-
-# File:	clients/autoyast.ycp
-# Summary:	Main file for client call
-# Authors:	Anas Nashif <nashif@suse.de>
+# File:  clients/autoyast.ycp
+# Summary:  Main file for client call
+# Authors:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 module Yast
   module AutoinstallConftreeInclude
-    def initialize_autoinstall_conftree(include_target)
+    def initialize_autoinstall_conftree(_include_target)
       textdomain "autoinst"
       Yast.import "HTML"
       Yast.import "XML"
@@ -34,7 +32,7 @@ module Yast
         "*",
         _("Save as...")
       )
-      if filename != nil && Convert.to_string(filename) != ""
+      if !filename.nil? && Convert.to_string(filename) != ""
         AutoinstConfig.currentFile = Convert.to_string(filename)
         if Profile.Save(AutoinstConfig.currentFile)
           Popup.Message(
@@ -43,14 +41,7 @@ module Yast
               AutoinstConfig.currentFile
             )
           )
-          #                Profile::checkProfile();
           Profile.changed = false
-          pathComponents = Builtins.splitstring(
-            Convert.to_string(filename),
-            "/"
-          )
-          s = Ops.subtract(Builtins.size(pathComponents), 1)
-          base = Ops.get_string(pathComponents, s, "default")
         else
           Popup.Warning(_("An error occurred while saving the file."))
         end
@@ -64,7 +55,7 @@ module Yast
     # @return The newly created `SelectionBox widget.
     def groups(selectedGroup)
       itemList = []
-      sortedGroups = Builtins.maplist(Y2ModuleConfig.GroupMap) { |k, v| k } # keys()
+      sortedGroups = Builtins.maplist(Y2ModuleConfig.GroupMap) { |k, _v| k } # keys()
       sortedGroups = Builtins.sort(sortedGroups) do |a, b|
         aa = Builtins.tointeger(
           Ops.get_string(Y2ModuleConfig.GroupMap, [a, "SortKey"], "500")
@@ -72,7 +63,7 @@ module Yast
         bb = Builtins.tointeger(
           Ops.get_string(Y2ModuleConfig.GroupMap, [b, "SortKey"], "500")
         )
-        aa != bb ? Ops.less_than(aa, bb) : Ops.less_than(a, b) # by "SortKey" or alphabetical
+        (aa != bb) ? Ops.less_than(aa, bb) : Ops.less_than(a, b) # by "SortKey" or alphabetical
       end
 
       Builtins.foreach(sortedGroups) do |k|
@@ -197,9 +188,9 @@ module Yast
 
     # Sets the high level layout to 3 columns:
     #
-    #	- left:	  the YaST groups are displayed in a selection box
-    #	- middle: the modules of the selected group are displayed in a selection box
-    #	- right:  the summary of the selected module is displayed, action buttons below
+    #  - left:    the YaST groups are displayed in a selection box
+    #  - middle: the modules of the selected group are displayed in a selection box
+    #  - right:  the summary of the selected module is displayed, action buttons below
     #
     # @param [String] preselectedGroup The YaST group to preselect
     # @param [String] preselectedModule The module to preselect
@@ -241,7 +232,7 @@ module Yast
       Convert.to_string(UI.QueryWidget(Id(:modules), :CurrentItem))
     end
 
-    ALWAYS_CLONABLE_MODULES = ["software", "partitioning", "bootloader"]
+    ALWAYS_CLONABLE_MODULES = ["software", "partitioning", "bootloader"].freeze
 
     # Updates the action button activation status. (Some modules are not
     # clonable, some are not writeable).
@@ -253,7 +244,9 @@ module Yast
         UI.ChangeWidget(Id(:writeNow), :Enabled, false)
       end
 
-      UI.ChangeWidget(Id(:configure), :Enabled, false) if AutoinstConfig.dont_edit.include?(selectedModule)
+      if AutoinstConfig.dont_edit.include?(selectedModule)
+        UI.ChangeWidget(Id(:configure), :Enabled, false)
+      end
 
       # set read button status
       resourceMap = Y2ModuleConfig.ModuleMap.fetch(selectedModule, {})
@@ -280,6 +273,7 @@ module Yast
 
       nil
     end
+
     def updateModules
       selectedGroup = getGroup
       Builtins.y2milestone("group: %1", selectedGroup)
@@ -289,6 +283,7 @@ module Yast
 
       nil
     end
+
     def updateDetails
       selectedModule = Convert.to_string(
         UI.QueryWidget(Id(:modules), :CurrentItem)
@@ -315,7 +310,6 @@ module Yast
       if Builtins.haskey(Profile.current, resource)
         Profile.current = Builtins.remove(Profile.current, resource)
       end
-      profile_resource = Y2ModuleConfig.getResource(resource)
       WFM.CallFunction(module_auto, ["Reset"])
 
       :next
@@ -333,6 +327,7 @@ module Yast
       Profile.changed = true
       true
     end
+
     # Configure module
     # @param [String] resource Module/Resource to configure
     # @return [Object]
@@ -354,7 +349,7 @@ module Yast
       Builtins.y2milestone("Change response: %1", seq)
       if seq == :accept || seq == :next || seq == :finish
         new_settings = WFM.CallFunction(module_auto, ["Export"])
-        if new_settings == nil
+        if new_settings.nil?
           Builtins.y2milestone("Importing original settings.")
           Popup.Error(_("The module returned invalid data."))
           WFM.CallFunction(module_auto, ["Import", original_settings])
@@ -373,7 +368,6 @@ module Yast
       end
       deep_copy(seq)
     end
-
 
     # Sets the menus in the wizard.
     # @return [void]
@@ -402,9 +396,7 @@ module Yast
       _Menu = Wizard.AddMenuEntry(
         _Menu,
         "file-menu",
-        AutoinstConfig.ProfileEncrypted ?
-          _("Change to Decrypted") :
-          _("Change to Encrypted"),
+        AutoinstConfig.ProfileEncrypted ? _("Change to Decrypted") : _("Change to Encrypted"),
         "change_encryption"
       )
       _Menu = Wizard.AddMenuEntry(
@@ -414,15 +406,15 @@ module Yast
         "write_to_system"
       )
       _Menu = Wizard.AddMenuEntry(_Menu, "file-menu", _("E&xit"), "menu_exit")
-      if @show_source == true
-        _Menu = Wizard.AddMenuEntry(
+      _Menu = if @show_source == true
+        Wizard.AddMenuEntry(
           _Menu,
           "view-menu",
           _("Configu&ration Tree"),
           "menu_tree"
         )
       else
-        _Menu = Wizard.AddMenuEntry(
+        Wizard.AddMenuEntry(
           _Menu,
           "view-menu",
           _("So&urce"),
@@ -476,9 +468,6 @@ module Yast
       nil
     end
 
-
-
-
     # Show Source
     def ShowSource
       Profile.Prepare
@@ -502,21 +491,19 @@ module Yast
     def MainDialog
       _Icons = {}
       Ops.set(_Icons, "Net_advanced", "network_advanced")
-      func_ret = ""
       ret = nil
       currentGroup = "System"
       currentModule = "general"
 
-      while true
+      loop do
         if AutoinstConfig.runModule != ""
           ret = :configure
           setModule(AutoinstConfig.runModule)
-          AutoinstConfig.runModule = ""
         else
           event = UI.WaitForEvent
           ret = Ops.get(event, "ID")
-          AutoinstConfig.runModule = ""
         end
+        AutoinstConfig.runModule = ""
         if ret == :groups
           updateModules
         elsif ret == :modules
@@ -550,23 +537,24 @@ module Yast
           if modulename != ""
             d = Ops.get(Y2ModuleConfig.ModuleMap, modulename, {})
             module_auto = ""
-            if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
-              module_auto = Ops.get_string(
+            module_auto = if Builtins.haskey(d, "X-SuSE-YaST-AutoInstClient")
+              Ops.get_string(
                 d,
                 "X-SuSE-YaST-AutoInstClient",
                 "none"
               )
             else
-              module_auto = Builtins.sformat("%1_auto", modulename)
+              Builtins.sformat("%1_auto", modulename)
             end
             if Popup.YesNo(
-                Builtins.sformat(
-                  _(
-                    "Do you really want to apply the settings of the module '%1' to your current system?"
-                  ),
-                  modulename
-                )
+              Builtins.sformat(
+                _(
+                  "Do you really want to apply the settings of the module '%1' " \
+                    "to your current system?"
+                ),
+                modulename
               )
+            )
               oldMode = Mode.mode
               # The settings will be written in a running system.
               # So we are switching to "normal" mode. (bnc#909223)
@@ -600,16 +588,9 @@ module Yast
             "*",
             _("Select a file to load.")
           )
-          if filename != "" && filename != nil
+          if filename != "" && !filename.nil?
             AutoinstConfig.currentFile = Convert.to_string(filename)
 
-            pathComponents = Builtins.splitstring(
-              Convert.to_string(filename),
-              "/"
-            )
-
-            s = Ops.subtract(Builtins.size(pathComponents), 1)
-            base = Ops.get_string(pathComponents, s, "default")
             readOkay = Profile.ReadXML(Convert.to_string(filename))
             Builtins.y2debug("Profile::ReadXML returned %1", readOkay)
             if readOkay
@@ -622,14 +603,13 @@ module Yast
                 resource = Ops.get_string(d, "X-SuSE-YaST-AutoInstResource", "")
                 resource = p if resource == ""
                 Builtins.y2debug("resource: %1", resource)
-                tomerge = Ops.get_string(d, "X-SuSE-YaST-AutoInstMerge", "")
                 module_auto = Ops.get_string(
                   d,
                   "X-SuSE-YaST-AutoInstClient",
                   "none"
                 )
                 rd = Y2ModuleConfig.getResourceData(d, resource)
-                WFM.CallFunction(module_auto, ["Import", rd]) if rd != nil
+                WFM.CallFunction(module_auto, ["Import", rd]) if !rd.nil?
               end
               Popup.ClearFeedback
               Wizard.DeleteMenus # FIXME: sucks sucks sucks sucks sucks
@@ -647,8 +627,6 @@ module Yast
           else
             group = getGroup
             modulename = getModule
-
-            contents = Empty()
 
             if group != ""
               contents = layout(group, modulename)
@@ -692,7 +670,7 @@ module Yast
               "*",
               _("Save as...")
             )
-            if filename != nil
+            if !filename.nil?
               AutoinstConfig.currentFile = Convert.to_string(filename)
             else
               next
@@ -706,7 +684,7 @@ module Yast
                 AutoinstConfig.currentFile
               )
             )
-            #Profile::checkProfile();
+            # Profile::checkProfile();
             Profile.changed = false
           else
             Popup.Warning(_("An error occurred while saving the file."))
@@ -742,10 +720,10 @@ module Yast
           menus
         elsif ret == "write_to_system"
           if Popup.YesNo(
-              _(
-                "Do you really want to apply the settings of the profile to your current system?"
-              )
+            _(
+              "Do you really want to apply the settings of the profile to your current system?"
             )
+          )
             Profile.Prepare
             oldMode = Mode.mode
             oldStage = Stage.stage
@@ -763,7 +741,7 @@ module Yast
               Profile.current = Builtins.add(
                 Profile.current,
                 "networking",
-                { "keep_install_network" => true }
+                "keep_install_network" => true
               )
             end
 
@@ -776,11 +754,10 @@ module Yast
         elsif ret == "menu_exit" || :cancel == ret # EXIT
           ret = :menu_exit
           if Profile.changed
-            current = ""
-            if AutoinstConfig.currentFile == ""
-              current = "Untitled"
+            current = if AutoinstConfig.currentFile == ""
+              "Untitled"
             else
-              current = AutoinstConfig.currentFile
+              AutoinstConfig.currentFile
             end
 
             answer = Popup.AnyQuestion(

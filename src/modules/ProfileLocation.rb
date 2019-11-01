@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/ProfileLocation.ycp
-# Package:	Auto-installation
-# Summary:	Process Auto-Installation Location
-# Author:	Anas Nashif <nashif@suse.de>
+# File:  modules/ProfileLocation.ycp
+# Package:  Auto-installation
+# Summary:  Process Auto-Installation Location
+# Author:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
@@ -37,13 +35,9 @@ module Yast
       nil
     end
 
-
     # Initiate retrieving of control files and Rules.
     # @return [Boolean]
     def Process
-      ok = false
-      ret = false
-
       Builtins.y2milestone(
         "Path to remote control file: %1",
         AutoinstConfig.filepath
@@ -59,24 +53,22 @@ module Yast
 
       if AutoinstConfig.scheme == "relurl"
         url_str = InstURL.installInf2Url("")
-        log.info( "installation path from install.inf: #{url_str}" )
+        log.info("installation path from install.inf: #{url_str}")
 
         if !url_str.empty?
           url = URL.Parse(url_str)
           AutoinstConfig.scheme = url["scheme"]
           AutoinstConfig.host = url["host"]
-          AutoinstConfig.filepath = File.join( url["path"], AutoinstConfig.filepath)
+          AutoinstConfig.filepath = File.join(url["path"], AutoinstConfig.filepath)
 
-          if ["cd", "cdrom"].include? AutoinstConfig.scheme
-            AutoinstConfig.scheme = "file"
-          end
+          AutoinstConfig.scheme = "file" if ["cd", "cdrom"].include? AutoinstConfig.scheme
 
           ayrelurl = "#{AutoinstConfig.scheme}://#{AutoinstConfig.host}/#{AutoinstConfig.filepath}"
-          log.info( "relurl for profile changed to: #{ayrelurl}" )
-          SCR.Write( path(".etc.install_inf.ayrelurl"), ayrelurl )
+          log.info("relurl for profile changed to: #{ayrelurl}")
+          SCR.Write(path(".etc.install_inf.ayrelurl"), ayrelurl)
           SCR.Write(path(".etc.install_inf"), nil)
         else
-          log.warn( "Cannot evaluate ZyppRepoURL from /etc/install.inf" )
+          log.warn("Cannot evaluate ZyppRepoURL from /etc/install.inf")
         end
       elsif AutoinstConfig.scheme == "label"
         # autoyast=label://my_home//autoinst.xml in linuxrc:
@@ -86,7 +78,7 @@ module Yast
         fs = Y2Storage::StorageManager.instance.probed.filesystems.find do |f|
           f.label == AutoinstConfig.host
         end
-        if fs && fs.blk_devices.first
+        if fs&.blk_devices&.first
           AutoinstConfig.scheme = "device"
           AutoinstConfig.host = fs.blk_devices.first.basename
           log.info("found on #{AutoinstConfig.host}")
@@ -96,7 +88,6 @@ module Yast
       end
 
       filename = basename(AutoinstConfig.filepath)
-
 
       if filename != ""
         Builtins.y2milestone("File=%1", filename)
@@ -121,7 +112,7 @@ module Yast
         end
         tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
         l = Builtins.splitstring(tmp, "\n")
-        while tmp != nil && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
+        while !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
           Builtins.y2milestone("encrypted profile found")
           UI.OpenDialog(
             VBox(
@@ -147,21 +138,21 @@ module Yast
               localfile
             )
           )
-          if Ops.greater_than(
-              SCR.Read(path(".target.size"), "/tmp/decrypt.xml"),
-              0
-            )
-            SCR.Execute(
-              path(".target.bash"),
-              Builtins.sformat("mv /tmp/decrypt.xml %1", localfile)
-            )
-            Builtins.y2milestone(
-              "decrypted. Moving now /tmp/decrypt.xml to %1",
-              localfile
-            )
-            tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
-            l = Builtins.splitstring(tmp, "\n")
-          end
+          next unless Ops.greater_than(
+            SCR.Read(path(".target.size"), "/tmp/decrypt.xml"),
+            0
+          )
+
+          SCR.Execute(
+            path(".target.bash"),
+            Builtins.sformat("mv /tmp/decrypt.xml %1", localfile)
+          )
+          Builtins.y2milestone(
+            "decrypted. Moving now /tmp/decrypt.xml to %1",
+            localfile
+          )
+          tmp = Convert.to_string(SCR.Read(path(".target.string"), localfile))
+          l = Builtins.splitstring(tmp, "\n")
         end
       else
         is_directory = true
@@ -184,8 +175,8 @@ module Yast
         )
       end
 
-      if is_directory
-        ret = Get(
+      ret = if is_directory
+        Get(
           AutoinstConfig.scheme,
           AutoinstConfig.host,
           Ops.add(
@@ -195,7 +186,7 @@ module Yast
           AutoinstConfig.local_rules_file
         )
       else
-        ret = false
+        false
       end
 
       if ret
@@ -241,8 +232,8 @@ module Yast
       true
     end
 
-    publish :function => :ProfileLocation, :type => "void ()"
-    publish :function => :Process, :type => "boolean ()"
+    publish function: :ProfileLocation, type: "void ()"
+    publish function: :Process, type: "boolean ()"
   end
 
   ProfileLocation = ProfileLocationClass.new

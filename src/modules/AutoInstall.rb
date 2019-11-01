@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/AutoInstall.ycp
-# Package:	Auto-installation
-# Summary:	Auto-installation related functions module
-# Author:	Anas Nashif <nashif@suse.de>
+# File:  modules/AutoInstall.ycp
+# Package:  Auto-installation
+# Summary:  Auto-installation related functions module
+# Author:  Anas Nashif <nashif@suse.de>
 #
 # $Id$
 require "yast"
@@ -35,78 +33,71 @@ module Yast
       AutoInstall()
     end
 
-    def callbackTrue_boolean_string(dummy)
+    def callbackTrue_boolean_string(_dummy)
       true
     end
 
-    def callbackFalse_boolean_string(dummy)
+    def callbackFalse_boolean_string(_dummy)
       false
     end
 
-    def callbackTrue_boolean_string_integer(dummy, dummy2)
+    def callbackTrue_boolean_string_integer(_dummy, _dummy2)
       true
     end
 
-    def callbackFalse_boolean_string_integer(dummy, dummy2)
+    def callbackFalse_boolean_string_integer(_dummy, _dummy2)
       false
     end
 
-    def callback_void_map(dummy_map)
-      dummy_map = deep_copy(dummy_map)
+    def callback_void_map(_dummy_map)
       nil
     end
 
-    def callbackTrue_boolean_map(dummy_map)
-      dummy_map = deep_copy(dummy_map)
+    def callbackTrue_boolean_map(_dummy_map)
       true
     end
 
-    def callbackFalse_boolean_map(dummy_map)
-      dummy_map = deep_copy(dummy_map)
+    def callbackFalse_boolean_map(_dummy_map)
       false
     end
 
-    def callbackTrue_boolean_map_integer(dummy_map, dummy)
-      dummy_map = deep_copy(dummy_map)
+    def callbackTrue_boolean_map_integer(_dummy_map, _dummy)
       true
     end
 
-    def callbackFalse_boolean_map_integer(dummy_map, dummy)
-      dummy_map = deep_copy(dummy_map)
+    def callbackFalse_boolean_map_integer(_dummy_map, _dummy)
       false
     end
 
-    def callbackTrue_boolean_string_map_integer(dummy, dummy_map, dummy_int)
-      dummy_map = deep_copy(dummy_map)
+    def callbackTrue_boolean_string_map_integer(_dummy, _dummy_map, _dummy_int)
       true
     end
 
-    def callbackFalse_boolean_string_map_integer(dummy, dummy_map, dummy_int)
-      dummy_map = deep_copy(dummy_map)
+    def callbackFalse_boolean_string_map_integer(_dummy, _dummy_map, _dummy_int)
       false
     end
 
-    def callbackTrue_boolean_string_string(dummy1, dummy2)
+    def callbackTrue_boolean_string_string(_dummy1, _dummy2)
       true
     end
 
-    def callbackFalse_boolean_string_string(dummy1, dummy2)
+    def callbackFalse_boolean_string_string(_dummy1, _dummy2)
       false
     end
 
-    def callbackTrue_boolean_string_string_integer(dummy1, dummy2, dummy3)
+    def callbackTrue_boolean_string_string_integer(_dummy1, _dummy2, _dummy3)
       true
     end
 
-    def callbackFalse_boolean_string_string_integer(dummy1, dummy2, dummy3)
+    def callbackFalse_boolean_string_string_integer(_dummy1, _dummy2, _dummy3)
       false
     end
 
-    def callbackTrue_boolean_string_string_string(dummy1, dummy2, dummy3)
+    def callbackTrue_boolean_string_string_string(_dummy1, _dummy2, _dummy3)
       true
     end
 
-    def callbackFalse_boolean_string_string_string(dummy1, dummy2, dummy3)
+    def callbackFalse_boolean_string_string_string(_dummy1, _dummy2, _dummy3)
       false
     end
 
@@ -117,7 +108,6 @@ module Yast
       # First check if there are some other control files availabe
       # i.e. for post-installation only
       #
-      ret = false
       if SCR.Read(path(".target.size"), AutoinstConfig.autoconf_file) != -1
         Builtins.y2milestone(
           "XML Post installation data found: %1",
@@ -132,20 +122,18 @@ module Yast
             AutoinstConfig.cache
           )
         )
-        return ret
+        ret
       else
         ret = Profile.ReadProfileStructure(AutoinstConfig.parsedControlFile)
         if Profile.current == {} || !ret
           Builtins.y2milestone("No saved autoinstall data found")
-          return false
+          false
         else
           Builtins.y2milestone("Found and read saved autoinst data")
           SCR.Execute(path(".target.remove"), AutoinstConfig.parsedControlFile)
-          return true
+          true
         end
       end
-
-      false
     end
 
     # Constructer
@@ -184,14 +172,13 @@ module Yast
       nil
     end
 
-
     # Save configuration
     # @return [Boolean] true on success
     def Save
       if Mode.autoinst || Mode.autoupgrade
-        return Profile.SaveProfileStructure(AutoinstConfig.parsedControlFile)
+        Profile.SaveProfileStructure(AutoinstConfig.parsedControlFile)
       else
-        return true
+        true
       end
     end
 
@@ -236,12 +223,12 @@ module Yast
 
       # copying ask-scripts and corresponding log files
       # to /var/adm/autoinstall
-      SCR.Execute( path(".target.bash"),
-       "/bin/cp #{AutoinstConfig.tmpDir}/ask_scripts_log/*"\
-       " #{destdir}#{AutoinstConfig.logs_dir}" )
-      SCR.Execute( path(".target.bash"),
-       "/bin/cp #{AutoinstConfig.tmpDir}/*.sh"\
-       " #{destdir}#{AutoinstConfig.scripts_dir}" )
+      SCR.Execute(path(".target.bash"),
+        "/bin/cp #{AutoinstConfig.tmpDir}/ask_scripts_log/*"\
+        " #{destdir}#{AutoinstConfig.logs_dir}")
+      SCR.Execute(path(".target.bash"),
+        "/bin/cp #{AutoinstConfig.tmpDir}/*.sh"\
+        " #{destdir}#{AutoinstConfig.scripts_dir}")
 
       SCR.Execute(
         path(".target.bash"),
@@ -281,7 +268,6 @@ module Yast
 
       nil
     end
-
 
     # Put PXE file on the boot server using tftp
     # @return true on success
@@ -372,37 +358,44 @@ module Yast
       dialog = Y2Autoinstallation::Dialogs::Question.new(
         _("AutoYaST configuration file check"),
         presenter.to_html,
-        timeout: timeout,
+        timeout:     timeout,
         buttons_set: buttons_set
       )
       dialog.run == :ok
     end
 
-    publish :variable => :autoconf, :type => "boolean"
-    publish :function => :callbackTrue_boolean_string, :type => "boolean (string)"
-    publish :function => :callbackFalse_boolean_string, :type => "boolean (string)"
-    publish :function => :callbackTrue_boolean_string_integer, :type => "boolean (string, integer)"
-    publish :function => :callbackFalse_boolean_string_integer, :type => "boolean (string, integer)"
-    publish :function => :callback_void_map, :type => "void (map <string, any>)"
-    publish :function => :callbackTrue_boolean_map, :type => "boolean (map <string, any>)"
-    publish :function => :callbackFalse_boolean_map, :type => "boolean (map <string, any>)"
-    publish :function => :callbackTrue_boolean_map_integer, :type => "boolean (map <string, any>, integer)"
-    publish :function => :callbackFalse_boolean_map_integer, :type => "boolean (map <string, any>, integer)"
-    publish :function => :callbackTrue_boolean_string_map_integer, :type => "boolean (string, map <string, any>, integer)"
-    publish :function => :callbackFalse_boolean_string_map_integer, :type => "boolean (string, map <string, any>, integer)"
-    publish :function => :callbackTrue_boolean_string_string, :type => "boolean (string, string)"
-    publish :function => :callbackFalse_boolean_string_string, :type => "boolean (string, string)"
-    publish :function => :callbackTrue_boolean_string_string_integer, :type => "boolean (string, string, integer)"
-    publish :function => :callbackFalse_boolean_string_string_integer, :type => "boolean (string, string, integer)"
-    publish :function => :callbackTrue_boolean_string_string_string, :type => "boolean (string, string, string)"
-    publish :function => :callbackFalse_boolean_string_string_string, :type => "boolean (string, string, string)"
-    publish :function => :Continue, :type => "boolean ()"
-    publish :function => :AutoInstall, :type => "void ()"
-    publish :function => :Save, :type => "boolean ()"
-    publish :function => :Finish, :type => "void (string)"
-    publish :function => :PXELocalBoot, :type => "boolean ()"
-    publish :function => :pkg_gpg_check, :type => "string (map)"
-
+    publish variable: :autoconf, type: "boolean"
+    publish function: :callbackTrue_boolean_string, type: "boolean (string)"
+    publish function: :callbackFalse_boolean_string, type: "boolean (string)"
+    publish function: :callbackTrue_boolean_string_integer, type: "boolean (string, integer)"
+    publish function: :callbackFalse_boolean_string_integer, type: "boolean (string, integer)"
+    publish function: :callback_void_map, type: "void (map <string, any>)"
+    publish function: :callbackTrue_boolean_map, type: "boolean (map <string, any>)"
+    publish function: :callbackFalse_boolean_map, type: "boolean (map <string, any>)"
+    publish function: :callbackTrue_boolean_map_integer,
+            type:     "boolean (map <string, any>, integer)"
+    publish function: :callbackFalse_boolean_map_integer,
+            type:     "boolean (map <string, any>, integer)"
+    publish function: :callbackTrue_boolean_string_map_integer,
+            type:     "boolean (string, map <string, any>, integer)"
+    publish function: :callbackFalse_boolean_string_map_integer,
+            type:     "boolean (string, map <string, any>, integer)"
+    publish function: :callbackTrue_boolean_string_string, type: "boolean (string, string)"
+    publish function: :callbackFalse_boolean_string_string, type: "boolean (string, string)"
+    publish function: :callbackTrue_boolean_string_string_integer,
+            type:     "boolean (string, string, integer)"
+    publish function: :callbackFalse_boolean_string_string_integer,
+            type:     "boolean (string, string, integer)"
+    publish function: :callbackTrue_boolean_string_string_string,
+            type:     "boolean (string, string, string)"
+    publish function: :callbackFalse_boolean_string_string_string,
+            type:     "boolean (string, string, string)"
+    publish function: :Continue, type: "boolean ()"
+    publish function: :AutoInstall, type: "void ()"
+    publish function: :Save, type: "boolean ()"
+    publish function: :Finish, type: "void (string)"
+    publish function: :PXELocalBoot, type: "boolean ()"
+    publish function: :pkg_gpg_check, type: "string (map)"
   end
 
   AutoInstall = AutoInstallClass.new

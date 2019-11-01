@@ -1,9 +1,7 @@
-# encoding: utf-8
-
-# File:	modules/AutoinstImage.ycp
-# Package:	Auto-installation
-# Summary:	Process Auto-Installation Images
-# Author:	Uwe Gansert <uwe.gansert@suse.de>
+# File:  modules/AutoinstImage.ycp
+# Package:  Auto-installation
+# Summary:  Process Auto-Installation Images
+# Author:  Uwe Gansert <uwe.gansert@suse.de>
 #
 # $Id$
 require "yast"
@@ -24,8 +22,6 @@ module Yast
     def getScript
       ret = false
       if Ops.get_string(AutoinstSoftware.image, "script_location", "") != ""
-        urltok = {}
-
         urltok = URL.Parse(
           Ops.get_string(AutoinstSoftware.image, "script_location", "")
         )
@@ -60,8 +56,8 @@ module Yast
       )
     end
 
-    publish :function => :getScript, :type => "boolean ()"
-    publish :function => :runScript, :type => "integer ()"
+    publish function: :getScript, type: "boolean ()"
+    publish function: :runScript, type: "integer ()"
   end
 
   AutoinstImage = AutoinstImageClass.new

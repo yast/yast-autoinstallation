@@ -12,7 +12,8 @@ describe Y2Autoinstallation::StorageProposal do
     instance_double(Y2Storage::GuidedProposal, propose: nil, proposed?: true, devices: devicegraph)
   end
   let(:autoinst_proposal) do
-    instance_double(Y2Storage::AutoinstProposal, propose: nil, proposed?: true, devices: devicegraph)
+    instance_double(Y2Storage::AutoinstProposal, propose: nil, proposed?: true,
+      devices: devicegraph)
   end
   let(:profile) { [{ "device" => "/dev/sda" }] }
 

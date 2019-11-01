@@ -3,7 +3,7 @@
 # stub to avoid ntpclient build dependency
 module Yast
   class NtpClient
-    def self.sync_once(server)
+    def self.sync_once(_server)
       0
     end
   end
@@ -58,7 +58,8 @@ describe "Yast::AutoinstGeneral" do
 
         expect(Yast::NtpClient).to receive(:sync_once).with("ntp.suse.de").and_return(1)
 
-        expect(Yast::SCR).to_not receive(:Execute).with(path(".target.bash"), "/sbin/hwclock --systohc")
+        expect(Yast::SCR).to_not receive(:Execute)
+          .with(path(".target.bash"), "/sbin/hwclock --systohc")
 
         subject.Write()
       end

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) [2017] SUSE LLC
 #
 # All Rights Reserved.
@@ -115,6 +113,7 @@ module Y2Autoinstall
       # @return [Hash<String,Hash>] Storage data indexed by device kernel name
       def storage_data
         return @storage_data if @storage_data
+
         devicegraph = Y2Storage::StorageManager.instance.probed
 
         @storage_data = devicegraph.disk_devices.each_with_object({}) do |device, data|
