@@ -1,4 +1,5 @@
 require "y2packager/product"
+require "y2packager/product_reader"
 require "y2packager/product_location"
 require "y2packager/medium_type"
 
@@ -101,7 +102,7 @@ module Yast
         product
       else
         # last instance
-        base_products = Y2Packager::Product.available_base_products
+        base_products = available_base_products
         base_products.first if base_products.size == 1
       end
 
@@ -116,7 +117,7 @@ module Yast
           .select { |p| p.details&.base }
           .sort(&::Y2Packager::PRODUCT_SORTER)
       else
-        Y2Packager::Product.available_base_products
+        Y2Packager::ProductReader.new.available_base_products(force_repos: @force_libzypp)
       end
     end
 

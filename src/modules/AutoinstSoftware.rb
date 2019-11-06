@@ -218,7 +218,7 @@ module Yast
         packages = Pkg.PkgQueryProvides(provide)
         if packages.empty?
           packs = Y2ModuleConfig.required_packages([e])[e]
-          if packs.empty?
+          if packs.nil? || packs.empty?
             log.info "No package provides: #{provide}"
           else
             log.info "AddYdepsFromProfile add packages #{packs} for entry #{e}"
