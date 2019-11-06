@@ -112,7 +112,7 @@ describe Yast::AutoinstFunctions do
     end
   end
 
-  xdescribe "#selected_product" do
+  describe "#selected_product" do
     def base_product(name)
       Y2Packager::Product.new(name: name)
     end
@@ -122,7 +122,7 @@ describe Yast::AutoinstFunctions do
     before(:each) do
       allow(Y2Packager::ProductReader)
         .to receive(:new)
-        .and_return(double(available_base_products: [base_product("SLED"), base_product("SLED")]))
+        .and_return(double(available_base_products: [base_product("SLES"), base_product("SLED")]))
 
       # reset cache between tests
       subject.reset_product
