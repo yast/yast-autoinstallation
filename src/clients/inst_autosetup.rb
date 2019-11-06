@@ -152,6 +152,8 @@ module Yast
       #
       Progress.NextStage
 
+      # Ensure that we clean product cache to avoid product from control (bsc#1156058)
+      AutoinstFunctions.reset_product
       # Merging selected product
       AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
