@@ -63,7 +63,7 @@ matching by position and type.
   - Moreover, drives that were assigned to such disks will be ignored later.
   - **Pitfall:** a disk with `bios_id=0x80` can match a `CT_DMMULTIPATH` drive.
     That messes everything up.
-  
+
 - Without `start_multipath`:
   - Only `CT_DISK` drives should be used, there are no multipath devices in the
     system.
