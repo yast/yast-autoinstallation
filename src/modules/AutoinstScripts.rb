@@ -727,6 +727,11 @@ module Yast
 
       Builtins.foreach(scripts) do |s|
         scriptInterpreter = Ops.get_string(s, "interpreter", "shell")
+        params = s.fetch("param-list", [])
+        if !params.is_a?(::Array)
+          Report.Error("Element param-list does not have config-type list specified. Skipping it.")
+          params = []
+        end
         params = s.fetch("param-list", []).join(" ")
         scriptName = Ops.get_string(s, "filename", "")
         if scriptName == ""
