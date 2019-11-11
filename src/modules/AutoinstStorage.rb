@@ -1135,7 +1135,7 @@ module Yast
             )
           else
             Report.Error(
-              Builtins.sformat(_("No device found by storage backend"))
+              Builtins.sformat(_("No suitable device has been found by storage backend"))
             )
           end
           Builtins.y2milestone("device %1 not found in TargetMap", device)
