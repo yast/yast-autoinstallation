@@ -21,6 +21,7 @@ module Yast
 
       Yast.import "AutoinstConfig"
       Yast.import "AutoInstall"
+      Yast.import "AddOnProduct"
       Yast.import "Installation"
       Yast.import "Profile"
       Yast.import "Progress"
@@ -295,6 +296,12 @@ module Yast
         Builtins.y2milestone("Update summary: %1", @update_sum)
         Update.unknown_packages = Ops.get(@update_sum, :ProblemListSze, 0)
 
+        # deselect the upgraded obsolete products (bsc#1133215)
+        Y2Packager::ProductUpgrade.remove_obsolete_upgrades
+        # and select its replacement at first, so later it can be explicitelly removed by user
+        # profile
+        AddOnProduct.missing_upgrades.each { |p| Pkg.ResolvableInstall(p, :product) }
+
         @sys_patterns = Packages.ComputeSystemPatternList
         Builtins.foreach(@sys_patterns) do |pat|
           Pkg.ResolvableInstall(pat, :pattern)
@@ -347,9 +354,6 @@ module Yast
         Builtins.foreach(@remove_products) do |p|
           Pkg.ResolvableRemove(p, :product)
         end
-
-        # deselect the upgraded obsolete products (bsc#1133215)
-        Y2Packager::ProductUpgrade.remove_obsolete_upgrades
 
         Builtins.foreach(@patterns) { |p| Pkg.ResolvableInstall(p, :pattern) }
         Builtins.foreach(@packages) { |p| Pkg.ResolvableInstall(p, :package) }
