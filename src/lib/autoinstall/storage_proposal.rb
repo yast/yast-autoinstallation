@@ -38,11 +38,12 @@ module Y2Autoinstallation
     # Constructor
     #
     # @param partitioning [Array<Hash>] Partitioning section from the AutoYaST profile
+    # @param proposal_settings [Y2Storage::ProposalSettings] Guided proposal settings
     #
     # @see https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Partitioning
-    def initialize(partitioning)
+    def initialize(partitioning, proposal_settings)
       @issues_list = Y2Storage::AutoinstIssues::List.new
-      build_proposal(partitioning)
+      build_proposal(partitioning, proposal_settings)
     end
 
     # Set the proposal on the StorageManager
@@ -84,11 +85,14 @@ module Y2Autoinstallation
     #
     # * {Y2Storage::GuidedProposal} if {partitioning} is nil or empty;
     # * {Y2Storage::AutoinstProposal} in any other case.
-    def build_proposal(partitioning)
+    #
+    # @param partitioning [Array<Hash>] Partitioning section from the AutoYaST profile
+    # @param proposal_settings [Y2Storage::ProposalSettings] Guided proposal settings
+    def build_proposal(partitioning, proposal_settings)
       if partitioning.nil? || partitioning.empty?
-        @proposal = guided_proposal
+        @proposal = guided_proposal(proposal_settings)
       else
-        @proposal = autoinst_proposal(partitioning)
+        @proposal = autoinst_proposal(partitioning, proposal_settings)
         @proposal.propose
       end
       issues_list.add(:no_proposal) unless @proposal.devices
@@ -101,10 +105,13 @@ module Y2Autoinstallation
     # @note A proposal is returned even when it is a failed one
     #
     # @param partitioning [Array<Hash>] Partitioning specification from AutoYaST profile
+    # @param proposal_settings [Y2Storage::ProposalSettings] Guided proposal settings
     # @return [Y2Storage::AutoinstProposal]
-    def autoinst_proposal(partitioning)
+    def autoinst_proposal(partitioning, proposal_settings)
       log.info "Creating an autoinstall proposal"
-      Y2Storage::AutoinstProposal.new(partitioning: partitioning, issues_list: issues_list)
+      Y2Storage::AutoinstProposal.new(
+        partitioning: partitioning, proposal_settings: proposal_settings, issues_list: issues_list
+      )
     end
 
     # Return a GuidedProposal according to product's proposal setting
@@ -114,11 +121,13 @@ module Y2Autoinstallation
     #
     # @see Y2Storage::GuidedProposal.initial
     #
+    #
+    # @param proposal_settings [Y2Storage::ProposalSettings] Guided proposal settings
     # @return [Y2Storage::GuidedProposal]
-    def guided_proposal
+    def guided_proposal(proposal_settings)
       log.info "Creating a guided proposal"
       # TODO: add specific issue when proposal fails because there are no devices
-      Y2Storage::GuidedProposal.initial
+      Y2Storage::GuidedProposal.initial(settings: proposal_settings)
     end
 
     # Handle Y2Storage exceptions

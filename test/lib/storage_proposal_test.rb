@@ -4,7 +4,7 @@ require_relative "../test_helper"
 require "autoinstall/storage_proposal"
 
 describe Y2Autoinstallation::StorageProposal do
-  subject(:storage_proposal) { described_class.new(profile) }
+  subject(:storage_proposal) { described_class.new(profile, proposal_settings) }
 
   let(:storage_manager) { double(Y2Storage::StorageManager) }
   let(:devicegraph) { instance_double(Y2Storage::Devicegraph) }
@@ -16,6 +16,7 @@ describe Y2Autoinstallation::StorageProposal do
       devices: devicegraph)
   end
   let(:profile) { [{ "device" => "/dev/sda" }] }
+  let(:proposal_settings) { Y2Storage::ProposalSettings.new }
 
   before do
     allow(Y2Storage::StorageManager).to receive(:instance)
@@ -35,7 +36,6 @@ describe Y2Autoinstallation::StorageProposal do
         expect(Y2Storage::GuidedProposal).to receive(:initial)
         expect(storage_proposal.proposal).to be(guided_proposal)
       end
-
     end
 
     context "when profile contains an empty set of partitions" do
@@ -52,7 +52,8 @@ describe Y2Autoinstallation::StorageProposal do
 
       it "creates an autoinstall proposal" do
         expect(Y2Storage::AutoinstProposal).to receive(:new)
-          .with(partitioning: profile, issues_list: anything).and_return(autoinst_proposal)
+          .with(partitioning: profile, proposal_settings: proposal_settings, issues_list: anything)
+          .and_return(autoinst_proposal)
         expect(autoinst_proposal).to receive(:propose)
         expect(storage_proposal.proposal).to be(autoinst_proposal)
       end

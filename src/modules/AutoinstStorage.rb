@@ -17,6 +17,8 @@ module Yast
 
     # @return [Hash] General settings (from +storage/general+ profile section)
     attr_accessor :general_settings
+    # @return [Y2Storage::ProposalSettings] settings from +storage/general/proposal+
+    attr_reader :proposal_settings
 
     def main
       Yast.import "UI"
@@ -78,8 +80,7 @@ module Yast
       self.general_settings = settings.clone
 
       # Override product settings from control file
-      control_settings = Yast::ProductFeatures.GetSection("partitioning") || {}
-      Yast::ProductFeatures.SetSection("partitioning", control_settings.merge(general_settings))
+      @proposal_settings = proposal_settings_from_profile(settings["proposal"])
     end
 
     # Import Fstab data
@@ -249,7 +250,7 @@ module Yast
     # @param  partitioning [Array<Hash>] Profile settings (list of drives for custom partitioning)
     # @return [Boolean] success
     def build_proposal(partitioning)
-      proposal = Y2Autoinstallation::StorageProposal.new(partitioning)
+      proposal = Y2Autoinstallation::StorageProposal.new(partitioning, proposal_settings)
       if valid_proposal?(proposal)
         log.info "Saving successful proposal: #{proposal.inspect}"
         proposal.save
@@ -316,6 +317,43 @@ module Yast
     def preprocessed_settings(settings)
       preprocessor = Y2Autoinstallation::PartitioningPreprocessor.new
       preprocessor.run(settings)
+    end
+
+    ALLOWED_OVERRIDES = [:lvm, :encryption_password].freeze
+    private_constant :ALLOWED_OVERRIDES
+    DELETE_RESIZE_OVERRIDES = [
+      :windows_delete_mode, :linux_delete_mode, :other_delete_mode, :resize_windows
+    ].freeze
+    private_constant :DELETE_RESIZE_OVERRIDES
+    # Returns the ProposalSettings having into account the values from the profile
+    #
+    # @param profile [Hash,nil] +general/storage/proposal+ section from the profile
+    # @return [Y2Storage::ProposalSettings]
+    def proposal_settings_from_profile(profile)
+      profile ||= {}
+      settings = Y2Storage::ProposalSettings.new_for_current_product
+
+      allowed_overrides = ALLOWED_OVERRIDES
+      allowed_overrides += DELETE_RESIZE_OVERRIDES if settings.delete_resize_configurable
+
+      ignored = []
+      profile.each do |key, value|
+        meth = "#{key}="
+        if settings.respond_to?(meth) && allowed_overrides.include?(key.to_sym)
+          settings.public_send(meth, value)
+        else
+          ignored << key
+        end
+      end
+
+      unless ignored.empty?
+        log.warn(
+          "Ignoring these elements from the general/storage/proposal " \
+            "profile section: #{ignored.join(", ")}"
+        )
+      end
+
+      settings
     end
   end
 

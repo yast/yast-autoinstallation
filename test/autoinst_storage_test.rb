@@ -58,7 +58,7 @@ describe Yast::AutoinstStorage do
     it "preprocess given settings" do
       expect(preprocessor).to receive(:run).with(ask_settings)
       expect(Y2Autoinstallation::StorageProposal).to receive(:new)
-        .with(settings)
+        .with(settings, anything)
         .and_return(storage_proposal)
       subject.Import([{ "device" => "ask" }])
     end
@@ -195,24 +195,92 @@ describe Yast::AutoinstStorage do
   end
 
   describe "#import_general_settings" do
-    let(:profile) { { "proposal_lvm" => true } }
-    let(:partitioning_features) { { "foo" => "bar" } }
-
-    around do |example|
-      old_partitioning = Yast::ProductFeatures.GetSection("partitioning")
-      Yast::ProductFeatures.SetSection("partitioning", partitioning_features)
-      example.call
-      Yast::ProductFeatures.SetSection("partitioning", old_partitioning)
+    let(:profile) do
+      { "proposal" => proposal }
+    end
+    let(:proposal) do
+      { "lvm"                 => true,
+        "windows_delete_mode" => :all,
+        "linux_delete_mode"   => :all,
+        "other_delete_mode"   => :all,
+        "resize_windows"      => true,
+        "encryption_password" => "12345678" }
+    end
+    let(:delete_resize_configurable) { true }
+    let(:proposal_settings) do
+      Y2Storage::ProposalSettings.new.tap do |settings|
+        settings.windows_delete_mode = :ondemand
+        settings.delete_resize_configurable = delete_resize_configurable
+      end
     end
 
-    it "overrides control file values" do
-      subject.import_general_settings(profile)
-      expect(Yast::ProductFeatures.GetSection("partitioning")).to include("proposal_lvm" => true)
+    before do
+      allow(Y2Storage::ProposalSettings).to receive(:new_for_current_product)
+        .and_return(proposal_settings)
     end
 
-    it "keeps not overriden values" do
+    it "imports proposal settings from the profile" do
       subject.import_general_settings(profile)
-      expect(Yast::ProductFeatures.GetSection("partitioning")).to include("foo" => "bar")
+      expect(subject.proposal_settings.lvm).to eq(true)
+    end
+
+    it "does not log any warning" do
+      expect(subject.log).to_not receive(:warn)
+      subject.import_general_settings(profile)
+    end
+
+    context "when a value is not set in the profile" do
+      let(:proposal) do
+        { "lvm" => true }
+      end
+
+      it "keeps the product default" do
+        subject.import_general_settings(profile)
+        expect(subject.proposal_settings.windows_delete_mode).to eq(:ondemand)
+      end
+    end
+
+    context "when no value is set in the profile" do
+      let(:proposal) { nil }
+
+      it "keeps the product defaults" do
+        subject.import_general_settings(profile)
+        expect(subject.proposal_settings.windows_delete_mode).to eq(:ondemand)
+      end
+    end
+
+    context "when unknown proposal settings are specified" do
+      let(:proposal) { { "foo" => "bar" } }
+
+      it "logs a warning" do
+        expect(subject.log).to receive(:warn).with(/Ignoring.*foo/)
+        subject.import_general_settings(profile)
+      end
+    end
+
+    context "when the product does not allow to configure resizing or delete modes" do
+      let(:delete_resize_configurable) { false }
+      let(:proposal) do
+        {
+          "windows_delete_mode" => :all,
+          "linux_delete_mode"   => :all,
+          "other_delete_mode"   => :all,
+          "resize_windows"      => true
+        }
+      end
+
+      it "ignores related options" do
+        subject.import_general_settings(profile)
+        expect(subject.proposal_settings.windows_delete_mode).to eq(:ondemand)
+        expect(subject.proposal_settings.linux_delete_mode).to be_nil
+        expect(subject.proposal_settings.other_delete_mode).to be_nil
+        expect(subject.proposal_settings.resize_windows).to be_nil
+      end
+
+      it "logs a warning" do
+        expect(subject.log).to receive(:warn).with(/Ignoring.*windows_delete_mode/)
+        subject.import_general_settings(profile)
+      end
     end
   end
 end
