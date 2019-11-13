@@ -27,7 +27,16 @@ require "y2packager/resolvable"
 describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
   let(:profile) do
     {
-      "general" => {}
+      "general" => {},
+      "software" => {
+        "products" => ["sled"],
+        "patterns" => ["yast-devel"],
+        "packages" => ["vim"],
+        "remove-packages" => ["emacs"],
+        "remove-patterns" => ["test"],
+        "remove-products" => ["sle-desktop"]
+      },
+      "upgrade" => { "stop_on_solver_conflict" => true }
     }
   end
 
@@ -39,6 +48,9 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     # mock other clients call
     allow(Yast::WFM).to receive(:CallFunction).and_return(:next)
     Yast::Update.did_init1 = false
+    allow(Yast::Pkg).to receive(:ResolvableInstall)
+    allow(Yast::Pkg).to receive(:ResolvableRemove)
+    allow(Yast::Pkg).to receive(:PkgSolve).and_return(true)
   end
 
   describe "#main" do
@@ -49,6 +61,8 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     end
 
     it "checks if upgrade is supported" do
+      Yast::RootPart.previousRootPartition = ""
+      Yast::RootPart.selectedRootPartition = "/dev/sda1"
       expect(Yast::Update).to receive(:IsProductSupportedForUpgrade)
 
       subject.main
@@ -61,7 +75,7 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     end
 
     it "install all needed packages for accessing installation repositories" do
-      allow(Yast::Packages).to receive(:sourceAccessPackages).and_return("cifs-mount")
+      allow(Yast::Packages).to receive(:sourceAccessPackages).and_return(["cifs-mount"])
       expect(Yast::Pkg).to receive(:ResolvableInstall).with("cifs-mount", :package)
 
       subject.main
@@ -72,6 +86,29 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
       expect(Yast::Pkg).to receive(:ResolvableInstall).with("sle-development-tools", :product)
 
       subject.main
+    end
+
+    it "install/removes patterns, products anad packages according to profile" do
+      expect(Yast::Pkg).to receive(:ResolvableInstall).with("sled", :product)
+      expect(Yast::Pkg).to receive(:ResolvableInstall).with("yast-devel", :pattern)
+      expect(Yast::Pkg).to receive(:ResolvableInstall).with("vim", :package)
+      expect(Yast::Pkg).to receive(:ResolvableRemove).with("emacs", :package)
+      expect(Yast::Pkg).to receive(:ResolvableRemove).with("test", :pattern)
+      expect(Yast::Pkg).to receive(:ResolvableRemove).with("sle-desktop", :product)
+
+      subject.main
+    end
+
+    it "tries to solve upgrade path do" do
+      expect(Yast::Pkg).to receive(:PkgSolve).and_return(true)
+
+      subject.main
+    end
+
+    it "stop for confirmation if solve failing and user require it" do
+      subject.main
+
+      expect(Yast::AutoinstConfig.Confirm).to eq true
     end
   end
 end

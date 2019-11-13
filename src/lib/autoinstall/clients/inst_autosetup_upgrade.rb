@@ -396,62 +396,32 @@ private
           # deselect the upgraded obsolete products (bsc#1133215)
           Y2Packager::ProductUpgrade.remove_obsolete_upgrades
 
-          @sys_patterns = Packages.ComputeSystemPatternList
-          Builtins.foreach(@sys_patterns) do |pat|
+          sys_patterns = Packages.ComputeSystemPatternList
+          Builtins.foreach(sys_patterns) do |pat|
             Pkg.ResolvableInstall(pat, :pattern)
           end
           # this is new, (de)select stuff from the profile
-          @packages = Ops.get_list(Profile.current, ["software", "packages"], [])
-          @patterns = Ops.get_list(Profile.current, ["software", "patterns"], [])
-          @products = Ops.get_list(Profile.current, ["software", "products"], [])
-          @remove_packages = Ops.get_list(
-            Profile.current,
-            ["software", "remove-packages"],
-            []
-          )
-          @remove_patterns = Ops.get_list(
-            Profile.current,
-            ["software", "remove-patterns"],
-            []
-          )
-          @remove_products = Ops.get_list(
-            Profile.current,
-            ["software", "remove-products"],
-            []
-          )
+          packages = Profile.current["software"]&.public_send(:[], "packages") || []
+          patterns = Profile.current["software"]&.public_send(:[], "patterns") || []
+          products = Profile.current["software"]&.public_send(:[], "products") || []
+          remove_packages = Profile.current["software"]&.public_send(:[], "remove-packages") || []
+          remove_patterns = Profile.current["software"]&.public_send(:[], "remove-patterns") || []
+          remove_products = Profile.current["software"]&.public_send(:[], "remove-products") || []
           # neutralize first, otherwise the change may have no effect
-          Builtins.foreach(@remove_patterns) do |p|
-            Pkg.ResolvableNeutral(p, :pattern, true)
-          end
-          Builtins.foreach(@remove_packages) do |p|
-            Pkg.ResolvableNeutral(p, :package, true)
-          end
-          Builtins.foreach(@remove_products) do |p|
-            Pkg.ResolvableNeutral(p, :product, true)
-          end
-          Builtins.foreach(@patterns) do |p|
-            Pkg.ResolvableNeutral(p, :pattern, true)
-          end
-          Builtins.foreach(@packages) do |p|
-            Pkg.ResolvableNeutral(p, :package, true)
-          end
-          Builtins.foreach(@products) do |p|
-            Pkg.ResolvableNeutral(p, :product, true)
-          end
+          remove_patterns.each { |p| Pkg.ResolvableNeutral(p, :pattern, true) }
+          remove_packages.each { |p| Pkg.ResolvableNeutral(p, :package, true) }
+          remove_products.each { |p| Pkg.ResolvableNeutral(p, :product, true) }
+          patterns.each { |p| Pkg.ResolvableNeutral(p, :pattern, true) }
+          packages.each { |p| Pkg.ResolvableNeutral(p, :package, true) }
+          products.each { |p| Pkg.ResolvableNeutral(p, :product, true) }
           # now set the final status
-          Builtins.foreach(@remove_patterns) do |p|
-            Pkg.ResolvableRemove(p, :pattern)
-          end
-          Builtins.foreach(@remove_packages) do |p|
-            Pkg.ResolvableRemove(p, :package)
-          end
-          Builtins.foreach(@remove_products) do |p|
-            Pkg.ResolvableRemove(p, :product)
-          end
+          remove_patterns.each { |p| Pkg.ResolvableRemove(p, :pattern) }
+          remove_packages.each { |p| Pkg.ResolvableRemove(p, :package) }
+          remove_products.each { |p| Pkg.ResolvableRemove(p, :product) }
+          patterns.each { |p| Pkg.ResolvableInstall(p, :pattern) }
+          packages.each { |p| Pkg.ResolvableInstall(p, :package) }
+          products.each { |p| Pkg.ResolvableInstall(p, :product) }
 
-          Builtins.foreach(@patterns) { |p| Pkg.ResolvableInstall(p, :pattern) }
-          Builtins.foreach(@packages) { |p| Pkg.ResolvableInstall(p, :package) }
-          Builtins.foreach(@products) { |p| Pkg.ResolvableInstall(p, :product) }
           # old stuff again here
           if Pkg.PkgSolve(false)
             Update.solve_errors = 0
