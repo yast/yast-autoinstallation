@@ -37,36 +37,13 @@ module Y2Autoinstallation
 
         Yast.include self, "autoinstall/ask.rb"
 
-        @help_text = _(
-          "<P>Please wait while the system is prepared for autoinstallation.</P>"
-        )
-        @progress_stages = [
-          _("Configure General Settings "),
-          _("Execute pre-install user scripts"),
-          _("Set up language"),
-          _("Registration"),
-          _("Configure Software selections"),
-          _("Configure Bootloader"),
-          _("Confirm License")
-        ]
-
-        @progress_descriptions = [
-          _("Configuring general settings..."),
-          _("Executing pre-install user scripts..."),
-          _("Setting up language..."),
-          _("Registering the system..."),
-          _("Configuring Software selections..."),
-          _("Configuring Bootloader..."),
-          _("Confirming License...")
-        ]
-
         Progress.New(
           _("Preparing System for Automated Installation"),
           "", # progress_title
-          Builtins.size(@progress_stages), # progress bar length
-          @progress_stages,
-          @progress_descriptions,
-          @help_text
+          progress_stages.size, # progress bar length
+          progress_stages,
+          progress_descriptions,
+          help_text
         )
 
         return :abort if UI.PollInput == :abort && Popup.ConfirmAbort(:painless)
@@ -447,6 +424,8 @@ module Y2Autoinstallation
         @ret
       end
 
+private
+
       # FIXME: copy-paste from update_proposal
       def GetUpdateConf
         # 'nil' values are skipped, in that case, ZYPP uses own default values
@@ -459,6 +438,36 @@ module Y2Autoinstallation
         Builtins.y2milestone("Using update configuration: %1", ret)
 
         deep_copy(ret)
+      end
+
+      def help_text
+        _(
+          "<P>Please wait while the system is prepared for autoinstallation.</P>"
+        )
+      end
+
+      def progress_stages
+        [
+          _("Configure General Settings "),
+          _("Execute pre-install user scripts"),
+          _("Set up language"),
+          _("Registration"),
+          _("Configure Software selections"),
+          _("Configure Bootloader"),
+          _("Confirm License")
+        ]
+      end
+
+      def progress_descriptions
+        [
+          _("Configuring general settings..."),
+          _("Executing pre-install user scripts..."),
+          _("Setting up language..."),
+          _("Registering the system..."),
+          _("Configuring Software selections..."),
+          _("Configuring Bootloader..."),
+          _("Confirming License...")
+        ]
       end
     end
   end
