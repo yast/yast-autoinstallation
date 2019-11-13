@@ -52,6 +52,8 @@ BuildRequires:  yast2-update >= 3.3.0
 BuildRequires:  yast2-network >= 3.1.145
 BuildRequires:  yast2-slp
 BuildRequires:  yast2-country
+# Required for test suite testing one time sync
+BuildRequires:       yast2-ntp-client >= 4.0.1
 # AutoinstIssues::NoProposal
 BuildRequires:  yast2-storage-ng >= 4.0.160
 # %%{_unitdir} macro definition is in a separate package since 13.1
