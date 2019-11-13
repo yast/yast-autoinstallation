@@ -24,8 +24,8 @@ Yast.import "Profile"
 
 module Y2Autoinstallation
   # This module defines some methods that are used in {Yast::InstAutosetupClient}
-  # and {Yast::InstAutosetupUpgradeClient} clients. These clients need to be rewritten
-  # but, for the time being, this is the easiest way to share code between them.
+  # and {Y2Autoinstallation::Clients::InstAutosetupUpgrade} clients. These clients need to be
+  # rewritten but, for the time being, this is the easiest way to share code between them.
   module AutosetupHelpers
     # name of the registration section in the profile
     REGISTER_SECTION = "suse_register".freeze
