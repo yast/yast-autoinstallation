@@ -287,20 +287,6 @@ module Y2Autoinstallation
 
 private
 
-      # FIXME: copy-paste from update_proposal
-      def GetUpdateConf
-        # 'nil' values are skipped, in that case, ZYPP uses own default values
-        ret = {}
-
-        if !Update.silentlyDowngradePackages.nil?
-          Ops.set(ret, "silent_downgrades", Update.silentlyDowngradePackages)
-        end
-
-        Builtins.y2milestone("Using update configuration: %1", ret)
-
-        deep_copy(ret)
-      end
-
       def help_text
         _(
           "<P>Please wait while the system is prepared for autoinstallation.</P>"
@@ -386,9 +372,8 @@ private
 
           # FATE #301990, Bugzilla #238488
           # Control the upgrade process better
-          update_sum = Pkg.PkgUpdateAll(GetUpdateConf())
-          Builtins.y2milestone("Update summary: %1", update_sum)
-          Update.unknown_packages = Ops.get(update_sum, :ProblemListSze, 0)
+          # param is now obsolete https://github.com/yast/yast-pkg-bindings/commit/714aef89f9d8e9b188f278ae3ee0981b998a9b33#diff-1b3650bcdce18023a6b6d681d00996e6R1550
+          Pkg.PkgUpdateAll({})
 
           # select add-ons replacement at first, so later it can be explicitelly removed by user
           # profile or by obsolete upgrades
