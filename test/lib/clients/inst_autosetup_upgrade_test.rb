@@ -38,6 +38,7 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
     allow(Yast::Profile).to receive(:current).and_return(profile)
     # mock other clients call
     allow(Yast::WFM).to receive(:CallFunction).and_return(:next)
+    Yast::Update.did_init1 = false
   end
 
   describe "#main" do
@@ -46,6 +47,31 @@ describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
 
       subject.main
     end
+
+    it "checks if upgrade is supported" do
+      expect(Yast::Update).to receive(:IsProductSupportedForUpgrade)
+
+      subject.main
+    end
+
+    it "drop obsolete packages" do
+      expect(Yast::Update).to receive(:DropObsoletePackages)
+
+      subject.main
+    end
+
+    it "install all needed packages for accessing installation repositories" do
+      allow(Yast::Packages).to receive(:sourceAccessPackages).and_return("cifs-mount")
+      expect(Yast::Pkg).to receive(:ResolvableInstall).with("cifs-mount", :package)
+
+      subject.main
+    end
+
+    it "select for installation all product renames" do
+      allow(Yast::AddOnProduct).to receive(:missing_upgrades).and_return(["sle-development-tools"])
+      expect(Yast::Pkg).to receive(:ResolvableInstall).with("sle-development-tools", :product)
+
+      subject.main
+    end
   end
 end
-
