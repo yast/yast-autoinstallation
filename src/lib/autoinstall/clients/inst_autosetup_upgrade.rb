@@ -346,76 +346,72 @@ module Y2Autoinstallation
           Builtins.y2milestone("Upgrade is not supported") if !Update.IsProductSupportedForUpgrade
         end
 
+        return if Update.did_init1
+
         # connect target with package manager
-        if !Update.did_init1
-          Update.did_init1 = true
+        Update.did_init1 = true
 
-          # bnc #300540
-          # bnc #391785
-          Update.DropObsoletePackages
+        # bnc #300540
+        # bnc #391785
+        Update.DropObsoletePackages
 
-          # make sure the packages needed for accessing the installation repository
-          # are installed, e.g. "cifs-mount" for SMB or "nfs-client" for NFS repositories
-          Packages.sourceAccessPackages.each do |package|
-            Pkg::ResolvableInstall(package, :package)
-          end
+        # make sure the packages needed for accessing the installation repository
+        # are installed, e.g. "cifs-mount" for SMB or "nfs-client" for NFS repositories
+        Packages.sourceAccessPackages.each do |package|
+          Pkg::ResolvableInstall(package, :package)
+        end
 
-          # bnc #382208
+        # bnc #382208
 
-          # bnc#582702 - do not select kernel on update, leave that on dependencies like
-          # 'zypper dup' therefore commented line below out
-          #          Packages::SelectKernelPackages ();
+        # bnc#582702 - do not select kernel on update, leave that on dependencies like
+        # 'zypper dup' therefore commented line below out
+        #          Packages::SelectKernelPackages ();
 
-          # FATE #301990, Bugzilla #238488
-          # Control the upgrade process better
-          # param is now obsolete https://github.com/yast/yast-pkg-bindings/commit/714aef89f9d8e9b188f278ae3ee0981b998a9b33#diff-1b3650bcdce18023a6b6d681d00996e6R1550
-          Pkg.PkgUpdateAll({})
+        # FATE #301990, Bugzilla #238488
+        # Control the upgrade process better
+        # param is now obsolete https://github.com/yast/yast-pkg-bindings/commit/714aef89f9d8e9b188f278ae3ee0981b998a9b33#diff-1b3650bcdce18023a6b6d681d00996e6R1550
+        Pkg.PkgUpdateAll({})
 
-          # select add-ons replacement at first, so later it can be explicitelly removed by user
-          # profile or by obsolete upgrades
-          AddOnProduct.missing_upgrades.each { |p| Pkg.ResolvableInstall(p, :product) }
-          # deselect the upgraded obsolete products (bsc#1133215)
-          Y2Packager::ProductUpgrade.remove_obsolete_upgrades
+        # select add-ons replacement at first, so later it can be explicitelly removed by user
+        # profile or by obsolete upgrades
+        AddOnProduct.missing_upgrades.each { |p| Pkg.ResolvableInstall(p, :product) }
+        # deselect the upgraded obsolete products (bsc#1133215)
+        Y2Packager::ProductUpgrade.remove_obsolete_upgrades
 
-          sys_patterns = Packages.ComputeSystemPatternList
-          Builtins.foreach(sys_patterns) do |pat|
-            Pkg.ResolvableInstall(pat, :pattern)
-          end
-          # this is new, (de)select stuff from the profile
-          packages = Profile.current["software"]&.public_send(:[], "packages") || []
-          patterns = Profile.current["software"]&.public_send(:[], "patterns") || []
-          products = Profile.current["software"]&.public_send(:[], "products") || []
-          remove_packages = Profile.current["software"]&.public_send(:[], "remove-packages") || []
-          remove_patterns = Profile.current["software"]&.public_send(:[], "remove-patterns") || []
-          remove_products = Profile.current["software"]&.public_send(:[], "remove-products") || []
-          # neutralize first, otherwise the change may have no effect
-          remove_patterns.each { |p| Pkg.ResolvableNeutral(p, :pattern, true) }
-          remove_packages.each { |p| Pkg.ResolvableNeutral(p, :package, true) }
-          remove_products.each { |p| Pkg.ResolvableNeutral(p, :product, true) }
-          patterns.each { |p| Pkg.ResolvableNeutral(p, :pattern, true) }
-          packages.each { |p| Pkg.ResolvableNeutral(p, :package, true) }
-          products.each { |p| Pkg.ResolvableNeutral(p, :product, true) }
-          # now set the final status
-          remove_patterns.each { |p| Pkg.ResolvableRemove(p, :pattern) }
-          remove_packages.each { |p| Pkg.ResolvableRemove(p, :package) }
-          remove_products.each { |p| Pkg.ResolvableRemove(p, :product) }
-          patterns.each { |p| Pkg.ResolvableInstall(p, :pattern) }
-          packages.each { |p| Pkg.ResolvableInstall(p, :package) }
-          products.each { |p| Pkg.ResolvableInstall(p, :product) }
+        sys_patterns = Packages.ComputeSystemPatternList
+        Builtins.foreach(sys_patterns) do |pat|
+          Pkg.ResolvableInstall(pat, :pattern)
+        end
+        # this is new, (de)select stuff from the profile
+        packages = Profile.current["software"]&.public_send(:[], "packages") || []
+        patterns = Profile.current["software"]&.public_send(:[], "patterns") || []
+        products = Profile.current["software"]&.public_send(:[], "products") || []
+        remove_packages = Profile.current["software"]&.public_send(:[], "remove-packages") || []
+        remove_patterns = Profile.current["software"]&.public_send(:[], "remove-patterns") || []
+        remove_products = Profile.current["software"]&.public_send(:[], "remove-products") || []
+        # neutralize first, otherwise the change may have no effect
+        remove_patterns.each { |p| Pkg.ResolvableNeutral(p, :pattern, true) }
+        remove_packages.each { |p| Pkg.ResolvableNeutral(p, :package, true) }
+        remove_products.each { |p| Pkg.ResolvableNeutral(p, :product, true) }
+        patterns.each { |p| Pkg.ResolvableNeutral(p, :pattern, true) }
+        packages.each { |p| Pkg.ResolvableNeutral(p, :package, true) }
+        products.each { |p| Pkg.ResolvableNeutral(p, :product, true) }
+        # now set the final status
+        remove_patterns.each { |p| Pkg.ResolvableRemove(p, :pattern) }
+        remove_packages.each { |p| Pkg.ResolvableRemove(p, :package) }
+        remove_products.each { |p| Pkg.ResolvableRemove(p, :product) }
+        patterns.each { |p| Pkg.ResolvableInstall(p, :pattern) }
+        packages.each { |p| Pkg.ResolvableInstall(p, :package) }
+        products.each { |p| Pkg.ResolvableInstall(p, :product) }
 
-          # old stuff again here
-          if Pkg.PkgSolve(false)
-            Update.solve_errors = 0
-          else
-            Update.solve_errors = Pkg.PkgSolveErrors
-            if Ops.get_boolean(
-              Profile.current,
-              ["upgrade", "stop_on_solver_conflict"],
-              true
-            )
-              AutoinstConfig.Confirm = true
-            end
-          end
+        # old stuff again here
+        if Pkg.PkgSolve(false)
+          Update.solve_errors = 0
+        else
+          Update.solve_errors = Pkg.PkgSolveErrors
+          stop = Profile.current["upgrade"].public_send(:[], "stop_on_solver_conflict")
+          # default behavior is to stop, so nil is as true
+          AutoinstConfig.Confirm = true if stop || stop.nil?
         end
       end
     end
