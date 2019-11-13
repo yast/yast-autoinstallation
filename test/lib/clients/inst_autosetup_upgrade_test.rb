@@ -27,16 +27,16 @@ require "y2packager/resolvable"
 describe Y2Autoinstallation::Clients::InstAutosetupUpgrade do
   let(:profile) do
     {
-      "general" => {},
+      "general"  => {},
       "software" => {
-        "products" => ["sled"],
-        "patterns" => ["yast-devel"],
-        "packages" => ["vim"],
+        "products"        => ["sled"],
+        "patterns"        => ["yast-devel"],
+        "packages"        => ["vim"],
         "remove-packages" => ["emacs"],
         "remove-patterns" => ["test"],
         "remove-products" => ["sle-desktop"]
       },
-      "upgrade" => { "stop_on_solver_conflict" => true }
+      "upgrade"  => { "stop_on_solver_conflict" => true }
     }
   end
 

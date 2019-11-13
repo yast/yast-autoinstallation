@@ -76,17 +76,16 @@ module Y2Autoinstallation
         # Partitioning and Storage
         # //////////////////////////////////////////////////////////////////////
 
-        @modified = true
-        begin
+        loop do
           askDialog
           # Pre-Scripts
           AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
           AutoinstScripts.Write("pre-scripts", false)
-          @ret2 = readModified
-          return :abort if @ret2 == :abort
+          ret2 = readModified
+          return :abort if ret2 == :abort
 
-          @modified = false if @ret2 == :not_found
-        end while @modified == true
+          break if ret2 == :not_found
+        end
 
         # reimport scripts, for the case <ask> has changed them
         AutoinstScripts.Import(Ops.get_map(Profile.current, "scripts", {}))
@@ -206,7 +205,6 @@ module Y2Autoinstallation
 
         Progress.NextStage
 
-
         # Bootloader
         # FIXME: De-duplicate with inst_autosetup
         # Bootloader import / proposal is necessary to match changes done for manual
@@ -285,7 +283,7 @@ module Y2Autoinstallation
         @ret
       end
 
-private
+    private
 
       def help_text
         _(
@@ -345,9 +343,7 @@ private
           # check whether update is possible
           # reset settings in respect to the selected system
           Update.Reset
-          if !Update.IsProductSupportedForUpgrade
-            Builtins.y2milestone("Upgrade is not supported")
-          end
+          Builtins.y2milestone("Upgrade is not supported") if !Update.IsProductSupportedForUpgrade
         end
 
         # connect target with package manager
@@ -366,8 +362,8 @@ private
 
           # bnc #382208
 
-          # bnc#582702 - do not select kernel on update, leave that on dependencies like 'zypper dup'
-          # therefore commented line below out
+          # bnc#582702 - do not select kernel on update, leave that on dependencies like
+          # 'zypper dup' therefore commented line below out
           #          Packages::SelectKernelPackages ();
 
           # FATE #301990, Bugzilla #238488
