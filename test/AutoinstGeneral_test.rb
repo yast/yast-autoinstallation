@@ -1,14 +1,5 @@
 #!/usr/bin/env rspec
 
-# stub to avoid ntpclient build dependency
-module Yast
-  class NtpClient
-    def self.sync_once(_server)
-      0
-    end
-  end
-end
-
 require_relative "test_helper"
 
 Yast.import "AutoinstGeneral"
