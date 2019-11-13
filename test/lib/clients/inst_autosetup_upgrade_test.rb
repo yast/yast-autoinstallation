@@ -1,5 +1,5 @@
 #!/usr/bin/env rspec
-# Copyright (c) [2017] SUSE LLC
+# Copyright (c) [2019] SUSE LLC
 #
 # All Rights Reserved.
 #
