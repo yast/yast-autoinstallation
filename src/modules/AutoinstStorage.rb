@@ -129,7 +129,7 @@ module Yast
     end
 
     # Pre-process partition plan and prepare for creating partitions.
-    # @return [void]
+    # @return [Hash] Auto TargetMap
     def set_devices(storage_config)
       storage_config = deep_copy(storage_config)
       Builtins.y2milestone("entering set_devices with %1", storage_config)
