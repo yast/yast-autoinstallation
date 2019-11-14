@@ -129,7 +129,7 @@ module Yast
     end
 
     # Pre-process partition plan and prepare for creating partitions.
-    # @return [void]
+    # @return [Hash] Auto TargetMap
     def set_devices(storage_config)
       storage_config = deep_copy(storage_config)
       Builtins.y2milestone("entering set_devices with %1", storage_config)
@@ -165,6 +165,7 @@ module Yast
 
           next { dev => drive }
         end
+        {}
       end
 
       return nil if failed
@@ -1125,12 +1126,18 @@ module Yast
       changed = false
       Builtins.foreach(@AutoTargetMap) do |device, data|
         if !tm.has_key?(device) && data.fetch("type",:CT_DISK)==:CT_DISK
-          Report.Error(
-            Builtins.sformat(
-              _("device '%1' not found by storage backend"),
-              device
+          if device && !device.empty?
+            Report.Error(
+              Builtins.sformat(
+                _("device '%1' not found by storage backend"),
+                device
+              )
             )
-          )
+          else
+            Report.Error(
+              Builtins.sformat(_("No suitable device has been found by storage backend"))
+            )
+          end
           Builtins.y2milestone("device %1 not found in TargetMap", device)
         end
         if Storage.IsPartitionable(data)
