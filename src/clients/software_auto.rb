@@ -4,6 +4,9 @@
 # Summary:  Handle Package selections and packages
 #
 # $Id$
+
+require "y2packager/resolvable"
+
 module Yast
   class SoftwareAutoClient < Client
     def main
@@ -183,7 +186,7 @@ module Yast
         false,
         true
       )
-      patterns = Pkg.ResolvableProperties("", :pattern, "")
+      patterns = Y2Packager::Resolvable.find(kind: :pattern)
       Builtins.y2milestone("available patterns %1", patterns)
       # sort available_base_selections by order
       # $[ "order" : [ "name", "summary" ], .... ]
@@ -228,15 +231,12 @@ module Yast
 
       patadd = []
       if @ret != :back
+        all_patterns = Y2Packager::Resolvable.find(kind: :pattern,
+          status: :selected)
         Builtins.y2milestone(
-          "available patterns %1",
-          Pkg.ResolvableProperties("", :pattern, "")
+          "available patterns %1", all_patterns
         )
-        Builtins.foreach(Pkg.ResolvableProperties("", :pattern, "")) do |p|
-          if Ops.get_symbol(p, "status", :nothing) == :selected
-            patadd = Builtins.add(patadd, Ops.get_string(p, "name", ""))
-          end
-        end
+        patadd = all_patterns.map { |p| p.name }
       else
         patadd = deep_copy(AutoinstSoftware.patterns)
       end

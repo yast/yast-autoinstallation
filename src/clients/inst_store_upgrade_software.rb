@@ -1,3 +1,5 @@
+require "y2packager/resolvable"
+
 module Yast
   class InstStoreUpgradeSoftwareClient < Client
     def main
@@ -10,10 +12,10 @@ module Yast
       return :auto if GetInstArgs.going_back
 
       # find out status of patterns
-      @patterns = Pkg.ResolvableProperties("", :pattern, "") || []
+      @patterns = Y2Packager::Resolvable.find(kind: :pattern) || []
       @patterns.select! do |p|
-        Ops.get(p, "transact_by") == :user ||
-          Ops.get(p, "transact_by") == :app_high
+        p.transact_by == :user ||
+        p.transact_by == :app_high
       end
 
       # note: does not matter if it is installed or to be installed, the resulting
@@ -21,15 +23,12 @@ module Yast
       # and products
       @patterns_to_remove = []
       @patterns_to_install = @patterns.map do |p|
-        if Ops.get(p, "status") == :selected ||
-            Ops.get(p, "status") == :installed
-          next Ops.get_string(p, "name", "")
-        elsif Ops.get(p, "status") == :removed ||
-            Ops.get(p, "status") == :available
-          @patterns_to_remove = Builtins.add(
-            @patterns_to_remove,
-            Ops.get_string(p, "name", "")
-          )
+        if p.status == :selected ||
+           p.status == :installed
+          next p.name
+        elsif p.status == :removed ||
+          p.status == :available
+          @patterns_to_remove << p.name
         end
 
         nil
@@ -49,23 +48,20 @@ module Yast
       Builtins.y2milestone("Packages to remove: %1", @packages_to_remove)
 
       # find out status of products
-      @products = Pkg.ResolvableProperties("", :product, "") || []
+      @products = Y2Packager::Resolvable.find(kind: :product) || []
       @products.select! do |p|
-        Ops.get(p, "transact_by") == :user ||
-          Ops.get(p, "transact_by") == :app_high
+        p.transact_by == :user ||
+        p.transact_by == :app_high
       end
 
       @products_to_remove = []
       @products_to_install = @products.map do |p|
-        if Ops.get(p, "status") == :selected ||
-            Ops.get(p, "status") == :installed
-          next Ops.get_string(p, "name", "")
-        elsif Ops.get(p, "status") == :removed ||
-            Ops.get(p, "status") == :available
-          @products_to_remove = Builtins.add(
-            @products_to_remove,
-            Ops.get_string(p, "name", "")
-          )
+        if p.status == :selected ||
+           p.status == :installed
+          next p.name
+        elsif p.status == :removed ||
+              p.status == :available
+          @products_to_remove = << p.name
         end
 
         nil
