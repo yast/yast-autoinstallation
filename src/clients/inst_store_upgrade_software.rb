@@ -61,7 +61,7 @@ module Yast
           next p.name
         elsif p.status == :removed ||
               p.status == :available
-          @products_to_remove = << p.name
+          @products_to_remove << p.name
         end
 
         nil
