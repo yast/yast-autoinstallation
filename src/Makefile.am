@@ -87,6 +87,7 @@ ydialogs_DATA = \
 yclientsdir = @ylibdir@/autoinstall/clients
 yclients_DATA = \
   lib/autoinstall/clients/ayast_probe.rb
+  lib/autoinstall/clients/ayast_setup.rb
 
 ycautoinst_issuesdir = @ylibdir@/autoinstall/autoinst_issues
 ycautoinst_issues_DATA = \
