@@ -15,7 +15,7 @@ module Yast
       @patterns = Y2Packager::Resolvable.find(kind: :pattern) || []
       @patterns.select! do |p|
         p.transact_by == :user ||
-        p.transact_by == :app_high
+          p.transact_by == :app_high
       end
 
       # note: does not matter if it is installed or to be installed, the resulting
@@ -24,10 +24,10 @@ module Yast
       @patterns_to_remove = []
       @patterns_to_install = @patterns.map do |p|
         if p.status == :selected ||
-           p.status == :installed
+            p.status == :installed
           next p.name
         elsif p.status == :removed ||
-          p.status == :available
+            p.status == :available
           @patterns_to_remove << p.name
         end
 
@@ -51,16 +51,16 @@ module Yast
       @products = Y2Packager::Resolvable.find(kind: :product) || []
       @products.select! do |p|
         p.transact_by == :user ||
-        p.transact_by == :app_high
+          p.transact_by == :app_high
       end
 
       @products_to_remove = []
       @products_to_install = @products.map do |p|
         if p.status == :selected ||
-           p.status == :installed
+            p.status == :installed
           next p.name
         elsif p.status == :removed ||
-              p.status == :available
+            p.status == :available
           @products_to_remove << p.name
         end
 

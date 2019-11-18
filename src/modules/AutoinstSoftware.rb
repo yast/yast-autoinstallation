@@ -110,8 +110,8 @@ module Yast
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
       @patternsAvailable = []
-      allPatterns = Y2Packager::Resolvable.find(kind: :pattern,
-        user_visible: false).map { |p| p.name }
+      allPatterns = Y2Packager::Resolvable.find(kind:         :pattern,
+                                                user_visible: false).map(&:name)
 
       regexFound = []
       Ops.set(
