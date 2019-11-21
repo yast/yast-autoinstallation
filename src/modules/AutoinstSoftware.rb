@@ -109,8 +109,8 @@ module Yast
       @instsource = settings.fetch("instsource", "")
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
-      @patternsAvailable = Y2Packager::Resolvable.find(kind:         :pattern,
-                                                       user_visible: false).map(&:name)
+      @patternsAvailable = Y2Packager::Resolvable.find(kind: :pattern,
+        user_visible: true).map(&:name)
 
       regexFound = []
       Ops.set(
@@ -860,7 +860,7 @@ module Yast
       # switch for recommended patterns installation (workaround for our very weird pattern design)
       if sw_settings.fetch("install_recommended", false) == false
         # set SoftLock to avoid the installation of recommended patterns (#159466)
-        Y2Packager::Resolvable.find(kind: :pattern) do |p|
+        Y2Packager::Resolvable.find(kind: :pattern).each do |p|
           Pkg.ResolvableSetSoftLock(p.name, :pattern)
         end
       end
@@ -1025,11 +1025,11 @@ module Yast
       # FIXME: filter method but it use only side effect of filling patterns
       Builtins.filter(all_patterns) do |p|
         ret2 = false
-        if (p.status || :none) == :installed &&
+        if p.status == :installed &&
             !Builtins.contains(patterns, (p.name || "no name"))
           patterns = Builtins.add(
             patterns,
-            (p.name || "no name")
+            p.name.empty? ?  "no name" : p.name
           )
           ret2 = true
         end
@@ -1048,7 +1048,7 @@ module Yast
       new_p = []
       Builtins.foreach(patterns) do |tmp_pattern|
         xpattern = Builtins.filter(@all_xpatterns) do |p|
-          (p.name || "") == tmp_pattern
+          p.name == tmp_pattern
         end
         found = Ops.get(xpattern, 0, {})
         req = false
