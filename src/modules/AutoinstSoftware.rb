@@ -109,8 +109,8 @@ module Yast
       @instsource = settings.fetch("instsource", "")
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
-      @patternsAvailable = Y2Packager::Resolvable.find(kind: :pattern,
-        user_visible: true).map(&:name)
+      @patternsAvailable = Y2Packager::Resolvable.find(kind:         :pattern,
+                                                       user_visible: true).map(&:name)
 
       regexFound = []
       Ops.set(
@@ -1029,7 +1029,7 @@ module Yast
             !Builtins.contains(patterns, (p.name || "no name"))
           patterns = Builtins.add(
             patterns,
-            p.name.empty? ?  "no name" : p.name
+            p.name.empty? ? "no name" : p.name
           )
           ret2 = true
         end
