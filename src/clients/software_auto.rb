@@ -234,7 +234,7 @@ module Yast
         all_patterns = Y2Packager::Resolvable.find(
           kind:   :pattern, status: :selected).map(&:name)
         Builtins.y2milestone(
-          "available patterns %1", all_patterns)
+          "available patterns %1", all_patterns
         )
         patadd = all_patterns
       else
