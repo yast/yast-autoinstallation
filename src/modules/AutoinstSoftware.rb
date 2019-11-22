@@ -1017,23 +1017,15 @@ module Yast
       Pkg.SourceStartManager(true)
       Pkg.PkgSolve(false)
 
-      all_patterns = Y2Packager::Resolvable.find(kind: :pattern)
       @all_xpatterns = Y2Packager::Resolvable.find(kind: :pattern)
       to_install_packages = install_packages
       patterns = []
 
-      # FIXME: filter method but it use only side effect of filling patterns
-      Builtins.filter(all_patterns) do |p|
-        ret2 = false
+      @all_xpatterns.each do |p|
         if p.status == :installed &&
-            !Builtins.contains(patterns, (p.name || "no name"))
-          patterns = Builtins.add(
-            patterns,
-            p.name.empty? ? "no name" : p.name
-          )
-          ret2 = true
+           !patterns.include?(p.name)
+            patterns << p.name.empty? ? "no name" : p.name
         end
-        ret2
       end
       Pkg.TargetFinish
 
@@ -1089,12 +1081,11 @@ module Yast
     #    "packages" -> list<string> user selected packages
     #           "remove-packages" -> list<string> packages to remove
     def read_initial_stage
-      install_patterns = Y2Packager::Resolvable.find(kind: :pattern).collect do |pattern|
+      install_patterns = Y2Packager::Resolvable.find(kind: :pattern, user_visible: true).collect do |pattern|
         # Do not take care about if the pattern has been selected by the user or the product
         # definition, cause we need a base selection here for the future
         # autoyast installation. (bnc#882886)
-        if pattern.user_visible &&
-            (pattern.status == :selected || pattern.status == :installed)
+        if pattern.status == :selected || pattern.status == :installed
           pattern.name
         end
       end
