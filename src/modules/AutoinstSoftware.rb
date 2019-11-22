@@ -1023,8 +1023,8 @@ module Yast
 
       @all_xpatterns.each do |p|
         if p.status == :installed &&
-           !patterns.include?(p.name)
-            patterns << p.name.empty? ? "no name" : p.name
+            !patterns.include?(p.name)
+          (patterns << p.name.empty?) ? "no name" : p.name
         end
       end
       Pkg.TargetFinish
@@ -1081,14 +1081,13 @@ module Yast
     #    "packages" -> list<string> user selected packages
     #           "remove-packages" -> list<string> packages to remove
     def read_initial_stage
-      install_patterns = Y2Packager::Resolvable.find(kind: :pattern, user_visible: true).collect do |pattern|
-        # Do not take care about if the pattern has been selected by the user or the product
-        # definition, cause we need a base selection here for the future
-        # autoyast installation. (bnc#882886)
-        if pattern.status == :selected || pattern.status == :installed
-          pattern.name
+      install_patterns =
+        Y2Packager::Resolvable.find(kind: :pattern, user_visible: true).collect do |pattern|
+          # Do not take care about if the pattern has been selected by the user or the product
+          # definition, cause we need a base selection here for the future
+          # autoyast installation. (bnc#882886)
+          pattern.name if pattern.status == :selected || pattern.status == :installed
         end
-      end
 
       software = {}
       software["packages"] = install_packages
