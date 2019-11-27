@@ -1527,16 +1527,14 @@ module Yast
 
       new_ps = ps.count { |p| p.fetch("create", true) }
       reuse_ps = ps.count { |p| p.fetch("partition_nr",0)==p.fetch("usepart",-1) }
-      free_pnr = g.fetch("free_pnr",[]).size
-      if g.fetch("extended_possible",false)
-        free_pnr -= 1
-        free_pnr += g.fetch("ext_pnr",[]).size
-      end
+      sum_free_parts = g.fetch("free_pnr",[]).size + g.fetch("ext_pnr", []).size
+      sum_free_parts -= 1 if g.fetch("extended_possible",false)
+
       Builtins.y2milestone(
         "get_perfect_list: size(ps):%1 new_ps:%2 reuse_ps:%3 sum_free:%4",
-        ps.size, new_ps, reuse_ps, free_pnr
+        ps.size, new_ps, reuse_ps, sum_free_parts
       )
-      if (new_ps>0||reuse_ps>0) && g.fetch("gap", []).size>0 && new_ps<=free_pnr 
+      if (new_ps>0||reuse_ps>0) && g.fetch("gap", []).size>0 && new_ps<=sum_free_parts
         lg = Builtins.eval(g)
 
         # prepare local gap var
