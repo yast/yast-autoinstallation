@@ -8,6 +8,7 @@
 require "yast"
 require "y2storage"
 require "y2packager/product"
+require "y2packager/resolvable"
 
 module Yast
   class AutoinstSoftwareClass < Module
@@ -108,12 +109,10 @@ module Yast
       @instsource = settings.fetch("instsource", "")
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
-      @patternsAvailable = []
-      allPatterns = Pkg.ResolvableDependencies("", :pattern, "")
-      Builtins.filter(allPatterns) do |m|
-        @patternsAvailable.push(m.fetch("name", "")) if m.fetch("user_visible", false)
-        m.fetch("user_visible", false)
-      end
+      @patternsAvailable = Y2Packager::Resolvable.find(
+        kind:         :pattern,
+        user_visible: true
+      ).map(&:name)
 
       regexFound = []
       Ops.set(
@@ -863,8 +862,8 @@ module Yast
       # switch for recommended patterns installation (workaround for our very weird pattern design)
       if sw_settings.fetch("install_recommended", false) == false
         # set SoftLock to avoid the installation of recommended patterns (#159466)
-        Builtins.foreach(Pkg.ResolvableProperties("", :pattern, "")) do |p|
-          Pkg.ResolvableSetSoftLock(Ops.get_string(p, "name", ""), :pattern)
+        Y2Packager::Resolvable.find(kind: :pattern).each do |p|
+          Pkg.ResolvableSetSoftLock(p.name, :pattern)
         end
       end
 
@@ -1020,23 +1019,15 @@ module Yast
       Pkg.SourceStartManager(true)
       Pkg.PkgSolve(false)
 
-      all_patterns = Pkg.ResolvableProperties("", :pattern, "")
-      @all_xpatterns = Pkg.ResolvableDependencies("", :pattern, "")
+      @all_xpatterns = Y2Packager::Resolvable.find(kind: :pattern)
       to_install_packages = install_packages
       patterns = []
 
-      # FIXME: filter method but it use only side effect of filling patterns
-      Builtins.filter(all_patterns) do |p|
-        ret2 = false
-        if Ops.get_symbol(p, "status", :none) == :installed &&
-            !Builtins.contains(patterns, Ops.get_string(p, "name", "no name"))
-          patterns = Builtins.add(
-            patterns,
-            Ops.get_string(p, "name", "no name")
-          )
-          ret2 = true
+      @all_xpatterns.each do |p|
+        if p.status == :installed &&
+            !patterns.include?(p.name)
+          (patterns << p.name.empty?) ? "no name" : p.name
         end
-        ret2
       end
       Pkg.TargetFinish
 
@@ -1051,7 +1042,7 @@ module Yast
       new_p = []
       Builtins.foreach(patterns) do |tmp_pattern|
         xpattern = Builtins.filter(@all_xpatterns) do |p|
-          Ops.get_string(p, "name", "") == tmp_pattern
+          p.name == tmp_pattern
         end
         found = Ops.get(xpattern, 0, {})
         req = false
@@ -1092,15 +1083,13 @@ module Yast
     #    "packages" -> list<string> user selected packages
     #           "remove-packages" -> list<string> packages to remove
     def read_initial_stage
-      install_patterns = Pkg.ResolvableProperties("", :pattern, "").collect do |pattern|
-        # Do not take care about if the pattern has been selected by the user or the product
-        # definition, cause we need a base selection here for the future
-        # autoyast installation. (bnc#882886)
-        if pattern["user_visible"] &&
-            (pattern["status"] == :selected || pattern["status"] == :installed)
-          pattern["name"]
+      install_patterns =
+        Y2Packager::Resolvable.find(kind: :pattern, user_visible: true).map do |pattern|
+          # Do not take care about if the pattern has been selected by the user or the product
+          # definition, cause we need a base selection here for the future
+          # autoyast installation. (bnc#882886)
+          pattern.name if pattern.status == :selected || pattern.status == :installed
         end
-      end
 
       software = {}
       software["packages"] = install_packages
