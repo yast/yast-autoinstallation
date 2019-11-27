@@ -109,8 +109,10 @@ module Yast
       @instsource = settings.fetch("instsource", "")
 
       @packagesAvailable = Pkg.GetPackages(:available, true)
-      @patternsAvailable = Y2Packager::Resolvable.find(kind:         :pattern,
-                                                       user_visible: true).map(&:name)
+      @patternsAvailable = Y2Packager::Resolvable.find(
+        kind:         :pattern,
+        user_visible: true
+      ).map(&:name)
 
       regexFound = []
       Ops.set(
@@ -1082,7 +1084,7 @@ module Yast
     #           "remove-packages" -> list<string> packages to remove
     def read_initial_stage
       install_patterns =
-        Y2Packager::Resolvable.find(kind: :pattern, user_visible: true).collect do |pattern|
+        Y2Packager::Resolvable.find(kind: :pattern, user_visible: true).map do |pattern|
           # Do not take care about if the pattern has been selected by the user or the product
           # definition, cause we need a base selection here for the future
           # autoyast installation. (bnc#882886)
