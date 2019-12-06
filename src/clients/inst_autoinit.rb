@@ -101,9 +101,16 @@ module Yast
         reg_enabled = reg_section["do_registration"]
 
         if !reg_enabled
-          msg = _("Registration is mandatory when using the online " \
-            "installation medium. Enable registration in " \
-            "the AutoYaST profile.")
+          if Yast::Mode.autoupgrade
+            msg = _("Registration is mandatory when using the online " \
+              "installation medium. Ensure that system is registered before running upgrade and " \
+              "enable registration in the AutoYaST profile or use full " \
+              "installation medium if system is not registered.")
+          else
+            msg = _("Registration is mandatory when using the online " \
+              "installation medium. Enable registration in " \
+              "the AutoYaST profile or use full installation medium.")
+          end
           Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
 
           return :abort
