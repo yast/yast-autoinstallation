@@ -103,7 +103,7 @@ module Yast
         if !reg_enabled
           if Yast::Mode.autoupgrade
             msg = _("Registration is mandatory when using the online " \
-              "installation medium. Ensure that system is registered and " \
+              "installation medium. Ensure that system is registered before running upgrade and " \
               "enable registration in the AutoYaST profile or use full " \
               "installation medium if system is not registered.")
           else
