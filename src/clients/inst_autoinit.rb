@@ -110,7 +110,7 @@ module Yast
 
         suse_register if !Mode.autoupgrade
       # offline registration need here to init software management according to picked product
-      elsif Y2Packager::MediumType.offline?
+      elsif Y2Packager::MediumType.offline? && !Yast::Mode.autoupgrade
         product = AutoinstFunctions.selected_product
 
         # duplicite code, but for offline medium we need to do it before system is initialized as
@@ -164,7 +164,7 @@ module Yast
         WFM.CallFunction("fcoe-client_auto", ["Write"])
       end
 
-      if !Y2Packager::MediumType.offline? && !AutoinstFunctions.selected_product
+      if !Y2Packager::MediumType.offline? && !AutoinstFunctions.selected_product && !Yast::Mode.autoupgrade
         msg = _("None or wrong base product has been defined in the AutoYaST configuration file. " \
          "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
          "Following base products are available:<br>")
