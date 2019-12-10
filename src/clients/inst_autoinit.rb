@@ -164,7 +164,8 @@ module Yast
         WFM.CallFunction("fcoe-client_auto", ["Write"])
       end
 
-      if !Y2Packager::MediumType.offline? && !AutoinstFunctions.selected_product && !Yast::Mode.autoupgrade
+      if !Y2Packager::MediumType.offline? && !AutoinstFunctions.selected_product &&
+          !Yast::Mode.autoupgrade
         msg = _("None or wrong base product has been defined in the AutoYaST configuration file. " \
          "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
          "Following base products are available:<br>")
