@@ -84,7 +84,7 @@ module Y2Autoinstallation
       general_section = Yast::Profile.current["general"] || {}
       # autoupgrade detects itself if system is registered and if needed do migration via scc
       if Yast::Profile.current[REGISTER_SECTION] || Yast::Mode.autoupgrade
-        return false unless Yast::WFM.CallFunction(
+        Yast::WFM.CallFunction(
           "scc_auto",
           ["Import", Yast::Profile.current[REGISTER_SECTION]]
         )
