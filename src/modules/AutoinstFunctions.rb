@@ -130,8 +130,8 @@ module Yast
 
     # Determines if old system is registered. Works without switched SCR.
     def old_system_registered?
-      require "yast/connect"
-      Yast.import "Instalation"
+      require "yast/suse_connect"
+      Yast.import "Installation"
       res = ::File.exist?(::File.join(
         Yast::Installation.destdir,
         SUSE::Connect::YaST::GLOBAL_CREDENTIALS_FILE
