@@ -128,6 +128,19 @@ module Yast
       @force_libzypp = true
     end
 
+    # Determines if old system is registered. Works without switched SCR.
+    def old_system_registered?
+      require "yast/connect"
+      Yast.import "Instalation"
+      ::File.exist?(::File.join(
+        Yast::Installation.destdir,
+        SUSE::Connect::YaST::GLOBAL_CREDENTIALS_FILE
+      ))
+    # openSUSE case
+    rescue LoadError
+      false
+    end
+
   private
 
     # Determine whether the system is registered

@@ -110,7 +110,9 @@ module Yast
 
         suse_register if !Mode.autoupgrade
       # offline registration need here to init software management according to picked product
-      elsif Y2Packager::MediumType.offline?
+      # or autoupgrade without scc
+      elsif Y2Packager::MediumType.offline? &&
+          (!Yast::Mode.autoupgrade || !AutoinstFunctions.old_system_registered?)
         product = AutoinstFunctions.selected_product
 
         # duplicite code, but for offline medium we need to do it before system is initialized as
