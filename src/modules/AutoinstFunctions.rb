@@ -132,12 +132,15 @@ module Yast
     def old_system_registered?
       require "yast/connect"
       Yast.import "Instalation"
-      ::File.exist?(::File.join(
+      res = ::File.exist?(::File.join(
         Yast::Installation.destdir,
         SUSE::Connect::YaST::GLOBAL_CREDENTIALS_FILE
       ))
+      log.info "old system registered? #{res}"
+      res
     # openSUSE case
-    rescue LoadError
+    rescue LoadError => e
+      log.info "connect failed to load. #{e.inspect}"
       false
     end
 
