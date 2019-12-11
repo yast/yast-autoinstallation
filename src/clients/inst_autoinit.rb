@@ -110,12 +110,14 @@ module Yast
 
         suse_register if !Mode.autoupgrade
       # offline registration need here to init software management according to picked product
-      elsif Y2Packager::MediumType.offline? && !Yast::Mode.autoupgrade
+      elsif Y2Packager::MediumType.offline?
         product = AutoinstFunctions.selected_product
 
         # duplicite code, but for offline medium we need to do it before system is initialized as
         # we get need product for initialize libzypp, but for others we need first init libzypp
         # to get available products.
+        # TODO: autoupgrade for registered system on full medium should act like online and
+        #       do not need to have product specified.
         if !product
           msg = _("None or wrong base product has been defined " \
             "in the AutoYaST configuration file. " \
