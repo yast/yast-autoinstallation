@@ -226,7 +226,6 @@ done
 %{yast_moduledir}/AutoinstClone.rb
 %dir %{yast_yncludedir}/autoinstall
 %{yast_yncludedir}/autoinstall/io.rb
-%{yast_yncludedir}/autoinstall/autoinst_dialogs.rb
 %{yast_yncludedir}/autoinstall/AdvancedPartitionDialog.rb
 %{yast_yncludedir}/autoinstall/DriveDialog.rb
 %{yast_yncludedir}/autoinstall/PartitionDialog.rb

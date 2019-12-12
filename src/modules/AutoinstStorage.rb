@@ -43,8 +43,6 @@ module Yast
 
       # general/storage settings
       self.general_settings = {}
-
-      Yast.include self, "autoinstall/autoinst_dialogs.rb"
     end
 
     # Get all the configuration from a map.
