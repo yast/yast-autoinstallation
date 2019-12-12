@@ -111,20 +111,45 @@ module Yast
         suse_register if !Mode.autoupgrade
       # offline registration need here to init software management according to picked product
       # or autoupgrade without scc
-      elsif Y2Packager::MediumType.offline? &&
-          (!Yast::Mode.autoupgrade || !AutoinstFunctions.old_system_registered?)
+      elsif Y2Packager::MediumType.offline?
         product = AutoinstFunctions.selected_product
+
+        # if addons contain relurl. If so, then product have to defined, otherwise relurl
+        # cannot be expanded in autoupgrade
+        addon_profile = (Profile.current["add-on"] || {})
+        addons = (addon_profile["add_on_products"] || []) + (addon_profile["add_on_others"] || [])
+        addons_relurl = addons.find { |a| (a["relurl"] || "") =~ /relurl:\/\// }
 
         # duplicite code, but for offline medium we need to do it before system is initialized as
         # we get need product for initialize libzypp, but for others we need first init libzypp
         # to get available products.
-        # TODO: autoupgrade for registered system on full medium should act like online and
-        #       do not need to have product specified.
-        if !product
-          msg = _("None or wrong base product has been defined " \
-            "in the AutoYaST configuration file. " \
-            "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
-            "Following base products are available:<br>")
+        if product
+          show_popup = true
+          base_url = Yast::InstURL.installInf2Url("")
+          log_url = Yast::URL.HidePassword(base_url)
+          Yast::Packages.Initialize_StageInitial(show_popup, base_url, log_url, product.dir)
+          # select the product to install
+          Yast::Pkg.ResolvableInstall(product.details.product, :product, "")
+          # initialize addons and the workflow manager
+          Yast::AddOnProduct.SetBaseProductURL(base_url)
+          Yast::WorkflowManager.SetBaseWorkflow(false)
+          Yast::AutoinstFunctions.reset_product
+        # report error only for installation or if autoupgrade contain addon with relative url.
+        # This way autoupgrade for Full medium on registered system
+        # can autoupgrade with empty profile.
+        elsif !Mode.autoupgrade || addons_relurl
+          if Mode.autoupgrade && addons_relurl
+            msg = _("None or wrong base product has been defined " \
+              "in the AutoYaST configuration file. " \
+              "It needs to be specified as base for addons that use relurl scheme." \
+              "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
+              "Following base products are available:<br>")
+          else
+            msg = _("None or wrong base product has been defined " \
+              "in the AutoYaST configuration file. " \
+              "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
+              "Following base products are available:<br>")
+          end
           AutoinstFunctions.available_base_products.each do |product|
             # FIXME: here we abuse knowledge that base product is ProductLocation and not Product
             msg += "#{product.details.product} (#{product.details.summary})<br>"
@@ -133,16 +158,7 @@ module Yast
           return :abort
         end
 
-        show_popup = true
-        base_url = Yast::InstURL.installInf2Url("")
-        log_url = Yast::URL.HidePassword(base_url)
-        Yast::Packages.Initialize_StageInitial(show_popup, base_url, log_url, product.dir)
-        # select the product to install
-        Yast::Pkg.ResolvableInstall(product.details.product, :product, "")
-        # initialize addons and the workflow manager
-        Yast::AddOnProduct.SetBaseProductURL(base_url)
-        Yast::WorkflowManager.SetBaseWorkflow(false)
-        Yast::AutoinstFunctions.reset_product
+
       end
 
       if !(Mode.autoupgrade && AutoinstConfig.ProfileInRootPart)
