@@ -351,14 +351,14 @@ module Y2Autoinstallation
         # This way autoupgrade for Full medium on registered system
         # can autoupgrade with empty profile.
         elsif !Yast::Mode.autoupgrade || addons_relurl
-          if Yast::Mode.autoupgrade && addons_relurl
-            msg = _("None or wrong base product has been defined " \
+          msg = if Yast::Mode.autoupgrade && addons_relurl
+            _("None or wrong base product has been defined " \
               "in the AutoYaST configuration file. " \
               "It needs to be specified as base for addons that use relurl scheme." \
               "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
               "Following base products are available:<br>")
           else
-            msg = _("None or wrong base product has been defined " \
+            _("None or wrong base product has been defined " \
               "in the AutoYaST configuration file. " \
               "Please check the <b>products</b> entry in the <b>software</b> section.<br><br>" \
               "Following base products are available:<br>")
