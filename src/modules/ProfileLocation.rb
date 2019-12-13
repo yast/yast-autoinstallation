@@ -24,7 +24,6 @@ module Yast
       Yast.import "URL"
       Yast.import "InstURL"
 
-      Yast.include self, "autoinstall/autoinst_dialogs.rb"
       Yast.include self, "autoinstall/io.rb"
       ProfileLocation()
     end

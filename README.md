@@ -61,6 +61,60 @@ or faster without rebooting but with possible side-effects:
   ```
 
 
+Auto Upgrade
+=============
+
+Beside unattended installation this module provide also ability to do unattended upgrade.
+
+### Features
+
+- Semi automatic mode
+- Without autoyast profile on the boot command line it reads the profile from `/root/autoupg.xml` file
+- When using the Online installation medium the AutoYaST XML profile can be empty
+
+### Testing
+
+To test autoupgrade run upgrade with parameters `autoupgrade=1` and profile e.g.
+`autoyast=ftp://example.com/ay_upgrade.xml`. Following example profiles used
+for testing online and full media.
+
+Online on registered system:
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+</profile>
+```
+
+Full on system without registration:
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <upgrade>
+    <stop_on_solver_conflict config:type="boolean">true</stop_on_solver_conflict>
+  </upgrade>
+
+  <software>
+    <products config:type="list">
+      <listentry>SLES</listentry>
+    </products>
+  </software>
+
+  <add-on>
+    <add_on_products config:type="list">
+      <listentry>
+        <name>Basesystem</name>
+        <product>Basesystem</product>
+        <product_dir>/Module-Basesystem</product_dir>
+        <media_url>relurl://</media_url>
+        <ask_on_error config:type="boolean">false</ask_on_error>
+      </listentry>
+    </add_on_products>
+  </add-on>
+</profile>
+```
+
 Contact
 =======
 
