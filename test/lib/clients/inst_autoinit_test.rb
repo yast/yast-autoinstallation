@@ -112,7 +112,6 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
       expect(Yast::WFM).to receive(:CallFunction)
         .with("scc_auto", ["Import", map["suse_register"]])
       expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
-      expect(Yast::Popup).to_not receive(:LongError)
       # fake that registration is available to avoid build requires
       allow(subject).to receive(:registration_module_available?).and_return(true)
       allow(Yast::Profile).to receive(:remove_sections)

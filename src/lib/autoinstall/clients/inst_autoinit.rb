@@ -321,9 +321,12 @@ module Y2Autoinstallation
         end
 
         suse_register
+
+        nil
       end
 
       # sets product and initialize it for offline installation
+      # @return nil if all is fine or :abort if unrecoverable error found
       def offline_product
         product = Yast::AutoinstFunctions.selected_product
 
@@ -371,6 +374,8 @@ module Y2Autoinstallation
           Yast::Popup.LongError(msg) # No timeout because we are stopping the installation/upgrade.
           return :abort
         end
+
+        nil
       end
     end
   end
