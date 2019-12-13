@@ -68,18 +68,18 @@ Beside unattended installation this module provide also ability to do unattended
 
 ### Features
 
-- semi automatic mode
-- without autoyast profile on cmd line, then read profile from /root/autoupg.xml
-- with empty profile for online medium
+- Semi automatic mode
+- Without autoyast profile on the boot command line it reads the profile from `/root/autoupg.xml` file
+- When using the Online installation medium the AutoYaST XML profile can be empty
 
 ### Testing
 
 To test autoupgrade run upgrade with parameters `autoupgrade=1` and profile e.g.
-`autoyast=ftp://neser-vr.suse.cz/ay_upgrade.xml`. Following example profiles used
+`autoyast=ftp://example.com/ay_upgrade.xml`. Following example profiles used
 for testing online and full media.
 
 Online on registered system:
-```
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE profile>
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
@@ -87,7 +87,7 @@ Online on registered system:
 ```
 
 Full on system without registration:
-```
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE profile>
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
