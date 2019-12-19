@@ -24,6 +24,7 @@ module Yast
   class AyastSetupClient < Client
     include Yast::Logger
     include Y2Autoinstall::Clients::AyastSetup
+
     def main
       textdomain "autoinst"
 
