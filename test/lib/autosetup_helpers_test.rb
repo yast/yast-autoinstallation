@@ -87,6 +87,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
           allow(Yast::WFM).to receive(:CallFunction).with("inst_download_release_notes")
             .and_return(true)
           allow(Yast::WFM).to receive(:CallFunction).with("scc_auto", anything).and_return(true)
+          Yast::Profile.Import(profile_content)
         end
 
         it "imports the registration settings from the profile" do

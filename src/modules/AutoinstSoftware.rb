@@ -45,6 +45,7 @@ module Yast
       Yast.import "PackageSystem"
       Yast.import "ProductFeatures"
       Yast.import "WorkflowManager"
+      Yast.import "Product"
 
       Yast.include self, "autoinstall/io.rb"
 
@@ -840,10 +841,15 @@ module Yast
       ok = true
 
       Packages.Init(true)
+      selected_base_products = Product.FindBaseProducts.map { |p| p["name"] }
       # Resetting package selection of previous runs. This is needed
       # because it could be that additional repositories
       # are available meanwhile. (bnc#979691)
       Pkg.PkgApplReset
+
+      # Select base product again which has been reset by the previous call.
+      # (bsc#1143106)
+      selected_base_products.each { |name| Pkg.ResolvableInstall(name, :product) }
 
       sw_settings = Profile.current.fetch("software", {})
       Pkg.SetSolverFlags(
