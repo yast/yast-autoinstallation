@@ -91,6 +91,9 @@ module Y2Autoinstallation
         )
         # failed relnotes download is not fatal, ignore ret code
         Yast::WFM.CallFunction("inst_download_release_notes")
+        # Do not start it in second installation stage again.
+        # Registration will already be called in the first stage.
+        Yast::Profile.remove_sections("suse_register")
       elsif general_section["semi-automatic"] &&
           general_section["semi-automatic"].include?("scc")
         Yast::WFM.CallFunction("inst_scc", ["enable_next" => true])
