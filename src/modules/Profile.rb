@@ -741,7 +741,8 @@ module Yast
         @current = XML.XMLToYCPFile(file)
       end
 
-      if @current != {} && Builtins.size(@current) == 0
+      xml_error = XML.XMLError
+      if xml_error && !xml_error.empty?
         # autoyast has read the autoyast configuration file but something went wrong
         message = _(
           "The XML parser reported an error while parsing the autoyast profile. The error message is:\n"
