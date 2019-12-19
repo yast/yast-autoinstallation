@@ -370,4 +370,80 @@ describe Yast::Profile do
       end
     end
   end
+
+  describe "#ReadXML" do
+    let(:path) { File.join(FIXTURES_PATH, "profiles", xml_file) }
+
+    before do
+      subject.main
+    end
+
+    context "when the file is valid" do
+      let(:xml_file) { "partitions.xml" }
+
+      it "returns true" do
+        expect(subject.ReadXML(path)).to eq(true)
+      end
+
+      it "imports the file content" do
+        expect(subject).to receive(:Import).with(Hash)
+        subject.ReadXML(path)
+      end
+    end
+
+    context "when the file content is invalid" do
+      let(:xml_file) { "invalid.xml" }
+
+      before do
+        allow(Yast2::Popup).to receive(:show)
+      end
+
+      it "returns false" do
+        expect(subject.ReadXML(path)).to eq(false)
+      end
+
+      it "displays an error message" do
+        expect(Yast2::Popup).to receive(:show)
+        subject.ReadXML(path)
+      end
+
+      it "does not import the file content" do
+        expect(subject).to_not receive(:Import)
+        subject.ReadXML(path)
+      end
+    end
+
+    context "when the content is encrypted" do
+      let(:xml_file) { "profile.xml.asc" }
+
+      before do
+        allow(Yast::UI).to receive(:UserInput).and_return(:ok)
+        allow(Yast::UI).to receive(:QueryWidget).with(Id(:password), :Value)
+          .and_return("nots3cr3t")
+        allow(Yast::UI).to receive(:OpenDialog)
+      end
+
+      around do |example|
+        FileUtils.cp(File.join(FIXTURES_PATH, "profiles", "minimal.xml.asc"), path)
+        example.run
+        FileUtils.rm(path)
+      end
+
+      it "decrypts and imports the file content" do
+        expect(subject).to receive(:Import).with(Hash)
+        subject.ReadXML(path)
+      end
+
+      context "during the first stage" do
+        before do
+          allow(Yast::Stage).to receive(:initial).and_return(true)
+        end
+
+        it "saves the unencrypted content" do
+          subject.ReadXML(path)
+          expect(File.read(path)).to_not include("BEGIN PGP MESSAGE")
+        end
+      end
+    end
+  end
 end
