@@ -19,7 +19,7 @@ element chroot-scripts {
 post-scripts =
 element post-scripts {
     LIST,
-    autoinstall-post-script+
+    autoinstall-script+
 }
 pre-scripts =
 element pre-scripts {
@@ -46,20 +46,13 @@ autoinstall-script = element script {
   source? &
   debug? &
   feedback? &
-  element notification { text }?
-}
-
-autoinstall-post-script = element script {
-  filename? &
-  interpreter? & 
-  element location { text }? &
-  source? &
-  debug? &
-  feedback? &
+  feedback_type? &
+  param-list? &
   element notification { text }?
 }
 
 autoinstall-init-script = element script {
+  debug? &
   filename? &
   element location { text }? &
   source?
