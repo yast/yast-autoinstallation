@@ -1025,20 +1025,22 @@ module Yast
       Pkg.SourceStartManager(true)
       Pkg.PkgSolve(false)
 
-      @all_xpatterns = Y2Packager::Resolvable.find(kind: :pattern)
+      @all_xpatterns = Y2Packager::Resolvable.find(
+        { kind: :pattern, status: :installed },
+        [:dependencies]
+      )
       to_install_packages = install_packages
       patterns = []
 
       @all_xpatterns.each do |p|
-        if p.status == :installed &&
-            !patterns.include?(p.name)
-          (patterns << p.name.empty?) ? "no name" : p.name
+        if !patterns.include?(p.name)
+          patterns << (p.name.empty? ? "no name" : p.name)
         end
       end
       Pkg.TargetFinish
 
       tmproot = AutoinstConfig.tmpDir
-      SCR.Execute(path(".target.mkdir"), Ops.add(tmproot, "/rootclone"))
+      SCR.Execute(path(".target.mkdir"), ::File.join(tmproot, "rootclone"))
       Pkg.TargetInit(Ops.add(tmproot, "/rootclone"), true)
       Builtins.y2debug("SourceStartCache: %1", Pkg.SourceStartCache(false))
 
@@ -1047,38 +1049,36 @@ module Yast
 
       new_p = []
       Builtins.foreach(patterns) do |tmp_pattern|
-        xpattern = Builtins.filter(@all_xpatterns) do |p|
-          p.name == tmp_pattern
-        end
-        found = Ops.get(xpattern, 0, {})
+        found = @all_xpatterns.find { |p| p.name == tmp_pattern }
+        log.info "xpattern #{found} for pattern #{tmp_pattern}"
+        next unless found
+
         req = false
         # kick out hollow patterns (always fullfilled patterns)
-        Builtins.foreach(Ops.get_list(found, "dependencies", [])) do |d|
-          if Ops.get_string(d, "res_kind", "") == "package" &&
-              (Ops.get_string(d, "dep_kind", "") == "requires" ||
-                Ops.get_string(d, "dep_kind", "") == "recommends")
-            req = true
-          end
+        (found.dependencies || []).each do |d|
+          next unless Ops.get_string(d, "res_kind", "") == "package" &&
+            (Ops.get_string(d, "dep_kind", "") == "requires" ||
+              Ops.get_string(d, "dep_kind", "") == "recommends")
+
+          req = true
         end
         # workaround for our pattern design
         # a pattern with no requires at all is always fullfilled of course
         # you can fullfill the games pattern with no games installed at all
-        new_p = Builtins.add(new_p, tmp_pattern) if req == true
+        new_p << tmp_pattern if req
       end
-      patterns = deep_copy(new_p)
+      patterns = new_p
+      log.info "found patterns #{patterns}"
 
-      software = {}
-
-      Ops.set(software, "patterns", Builtins.sort(patterns))
-      # Currently we do not have any information about user deleted packages in
-      # the installed system.
-      # In order to prevent a reinstallation we can take the locked packages at least.
-      # (bnc#888296)
-      software["remove-packages"] = locked_packages
-
-      software["packages"] = to_install_packages
-
-      deep_copy(software)
+      {
+        "patterns"        => patterns.sort,
+        # Currently we do not have any information about user deleted packages in
+        # the installed system.
+        # In order to prevent a reinstallation we can take the locked packages at least.
+        # (bnc#888296)
+        "remove-packages" => locked_packages,
+        "packages"        => to_install_packages
+      }
     end
 
     # Return list of software packages, patterns which have been selected
