@@ -117,7 +117,7 @@ module Yast
           Left(
             CheckBox(
               Id(:accept_non_trusted_gpg_key),
-              _("Accept Non Trusted GPG Keys"),
+              _("Accept Untrusted GPG Keys"),
               accept_non_trusted_gpg_key
             )
           ),
@@ -271,7 +271,7 @@ module Yast
         VBox(
           TextEntry(
             Id(:frametitle),
-            _("Frametitle"),
+            _("Frame Title"),
             Ops.get_string(defaultValues, "frametitle", "")
           ),
           TextEntry(
