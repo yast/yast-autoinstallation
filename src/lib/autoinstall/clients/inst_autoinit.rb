@@ -278,7 +278,7 @@ module Y2Autoinstallation
           if ret == :abort && Yast::Popup.ConfirmAbort(:painless)
             break
           elsif ret == :retry
-            uri = Yast::Convert.to_string(UI.QueryWidget(Id(:uri), :Value))
+            uri = Yast::Convert.to_string(Yast::UI.QueryWidget(Id(:uri), :Value))
             if uri == ""
               next
             else
