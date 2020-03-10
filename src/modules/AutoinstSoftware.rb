@@ -302,7 +302,8 @@ module Yast
       # Add Source:
       # zypper --root /space/tmp/tmproot/ ar ftp://10.10.0.100/install/SLP/openSUSE-11.2/i386/DVD1/ main
       zypperCall = Builtins.sformat(
-        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive ar %2 main-source %3",
+        "ZYPP_READONLY_HACK=1 zypper --root %1 " \
+          "--non-interactive ar %2 main-source %3",
         rootdir,
         @instsource,
         outputRedirect
@@ -321,7 +322,8 @@ module Yast
       addOns = Ops.get_list(addOnExport, "add_on_products", [])
       Builtins.foreach(addOns) do |addOn|
         zypperCall = Builtins.sformat(
-          "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive ar %2 %3 %4",
+          "ZYPP_READONLY_HACK=1 zypper --root %1 " \
+            "--non-interactive ar %2 %3 %4",
           rootdir,
           Ops.get_string(addOn, "media_url", ""),
           Ops.get_string(addOn, "product", ""),
@@ -342,7 +344,8 @@ module Yast
 
       # Install
       zypperCall = Builtins.sformat(
-        "ZYPP_READONLY_HACK=1 zypper --root %1 --gpg-auto-import-keys --non-interactive install --auto-agree-with-licenses ",
+        "ZYPP_READONLY_HACK=1 zypper --root %1 " \
+          "--non-interactive install --auto-agree-with-licenses ",
         rootdir
       )
 
