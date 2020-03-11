@@ -861,8 +861,8 @@ module Yast
 
       # Add storage-related software packages (filesystem tools etc.) to the
       # set of packages to be installed.
-      pkg_handler = Y2Storage::PackageHandler.new
-      pkg_handler.add_feature_packages(Y2Storage::StorageManager.instance.staging)
+      storage_features = Y2Storage::StorageManager.instance.staging.used_features
+      pkg_handler = Y2Storage::PackageHandler.new(storage_features.pkg_list)
       pkg_handler.set_proposal_packages
 
       # switch for recommended patterns installation (workaround for our very weird pattern design)
