@@ -48,12 +48,6 @@ module Yast
       # default value of settings modified
       @modified = false
 
-      # Devices which do not have any mount point, lvm_group or raid_name
-      # These devices will not be taken in the AutoYaSt configuration file
-      # but will be added to the skip_list in order not regarding it while
-      # next installation. (bnc#989392)
-      @skipped_devices = []
-
     end
 
     # Function sets internal variable, which indicates, that any
@@ -653,8 +647,6 @@ module Yast
         deep_copy(drive)
       end
 
-      @skipped_devices = []
-
       drives = Builtins.filter(
         Convert.convert(drives, :from => "list", :to => "list <map>")
       ) do |v|
@@ -667,10 +659,8 @@ module Yast
             raise Break
           end
         end
-        @skipped_devices << v["device"] unless keep
         keep
       end
-      Builtins.y2milestone("Skipped devices: #{@skipped_devices}")
 
       Mode.SetMode("autoinst_config")
       deep_copy(drives)
@@ -795,19 +785,6 @@ module Yast
           Builtins.y2milestone("device 'auto' dropped")
         end
         deep_copy(d)
-      end
-
-      # Adding skipped devices to partitioning section.
-      # These devices will not be taken in the AutoYaSt configuration file
-      # but will be added to the skip_list in order not regarding it while
-      # next installation. (bnc#989392)
-      unless @skipped_devices.empty?
-        skip_device = {}
-        skip_device["initialize"] = true
-        skip_device["skip_list"] = @skipped_devices.collect do |dev|
-          {"skip_key" => "device", "skip_value" => dev}
-        end
-        clean_drives << skip_device
       end
 
       deep_copy(clean_drives)
