@@ -15,7 +15,6 @@ describe "Yast::AutoinstPartPlan" do
   end
 
   let(:target_map_path) { File.join(FIXTURES_PATH, "storage", "nfs_root.yml") }
-  let(:target_map_clone) { File.join(FIXTURES_PATH, "storage", "target_clone.yml") }
   let(:default_subvol) { "@" }
   let(:filesystems) do
     double("filesystems",
@@ -45,19 +44,6 @@ describe "Yast::AutoinstPartPlan" do
             "device"=>"/dev/nfs", "use"=>"all"}
          ]
         )
-    end
-
-    it "ignoring not needed devices" do
-      target_map = YAML.load_file(target_map_clone)
-
-      expect(Yast::Storage).to receive(:GetTargetMap).and_return(target_map)
-      expect(subject.Read).to eq(true)
-      export = subject.Export.select { |d| d.key?("skip_list") }
-
-      expect(export[0]).to include("initialize" => true)
-      skip_list = export[0]["skip_list"]
-      expect(skip_list).to all(include("skip_key" => "device"))
-      expect(skip_list).to all(include("skip_value" => /\/dev\//))
     end
   end
 
