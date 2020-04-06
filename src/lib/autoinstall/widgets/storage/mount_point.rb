@@ -30,6 +30,7 @@ module Y2Autoinstallation
       # @param initial [String,nil] Initial value
       class MountPoint < CWM::ComboBox
         def initialize(initial: nil)
+          textdomain "autoinst"
           @initial = initial
           super()
         end
@@ -54,6 +55,7 @@ module Y2Autoinstallation
 
         def items
           return @items if @items
+
           known_items = ITEMS.dup
           known_items.unshift(@initial) if @initial && !ITEMS.include?(@initial)
           @items = known_items.map { |i| [i, i] }
