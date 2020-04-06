@@ -2,8 +2,11 @@
 # Package:  Autoinstallation Configuration System
 # Summary:  Storage
 # Authors:  Anas Nashif<nashif@suse.de>
-#
-# $Id$
+
+require "autoinstall/dialogs/storage"
+require "y2storage/storage_manager"
+require "y2storage/autoinst_profile/partitioning_section"
+
 module Yast
   class StorageAutoClient < Client
     include Yast::Logger
@@ -60,8 +63,7 @@ module Yast
         @ret = []
       # Change configuration (run AutoSequence)
       elsif @func == "Change"
-        @ret = StorageDialog()
-        UI.CloseDialog
+        @ret = storage_dialog.run
       # Return actual state
       elsif @func == "Export"
         @ret = AutoinstPartPlan.Export
@@ -82,6 +84,25 @@ module Yast
       deep_copy(@ret)
 
       # EOF
+    end
+
+  private
+
+    # Returns the storage dialog
+    #
+    # It uses the probed storage version is available
+    #
+    # @return [Y2Storage::Dialogs::Storage] Storage dialog
+    def storage_dialog
+      manager = Y2Storage::StorageManager.instance
+      partitioning =
+        if manager.probed?
+          Y2Storage::AutoinstProfile::PartitioningSection
+            .new_from_storage(manager.probed)
+        else
+          Y2Storage::AutoinstProfile::PartitioningSection.new
+        end
+      Y2Autoinstallation::Dialogs::Storage.new(partitioning)
     end
   end
 end
