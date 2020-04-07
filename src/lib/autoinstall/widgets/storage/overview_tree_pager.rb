@@ -76,10 +76,12 @@ module Y2Autoinstallation
         #   to a disk
         def disk_item(section)
           children = section.partitions.map do |part|
-            part_page = Y2Autoinstallation::Widgets::Storage::PartitionPage.new(part)
+            part_page = Y2Autoinstallation::Widgets::Storage::PartitionPage.new(
+              controller, section, part
+            )
             CWM::PagerTreeItem.new(part_page)
           end
-          page = Y2Autoinstallation::Widgets::Storage::DiskPage.new(section)
+          page = Y2Autoinstallation::Widgets::Storage::DiskPage.new(controller, section)
           CWM::PagerTreeItem.new(page, children: children)
         end
       end

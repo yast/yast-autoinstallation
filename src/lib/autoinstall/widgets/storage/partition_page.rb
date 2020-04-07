@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/page"
+require "autoinstall/widgets/storage/add_children_button"
 require "autoinstall/widgets/storage/mount_point"
 
 module Y2Autoinstallation
@@ -29,16 +30,18 @@ module Y2Autoinstallation
       # Depending on its usage (file system, LVM PV, RAID member, etc.) it may
       # display a different set of widgets.
       class PartitionPage < ::CWM::Page
-        # @return [Y2Storage::AutoinstProfile::PartitionSection] Partition section
-        attr_reader :section
-
         # Constructor
         #
+        # @param controller [Y2Autoinstallation::StorageController] UI controller
+        # @param drive [Y2Storage::AutoinstProfile::DriveSection] Drive section
+        #   of the profile
         # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
         #   of the profile
-        def initialize(section)
+        def initialize(controller, drive, section)
           textdomain "autoinst"
+          @controller = controller
           @section = section
+          @drive = drive
           super()
           self.widget_id = "partition_page:#{object_id}"
         end
@@ -56,7 +59,12 @@ module Y2Autoinstallation
         def contents
           VBox(
             Left(Heading(label)),
-            mount_point_widget
+            mount_point_widget,
+            VStretch(),
+            HBox(
+              HStretch(),
+              AddChildrenButton.new(controller, drive)
+            )
           )
         end
 
@@ -66,6 +74,15 @@ module Y2Autoinstallation
         end
 
       private
+
+        # @return [Y2Autoinstallation::StorageController]
+        attr_reader :controller
+
+        # @return [Y2Storage::AutoinstProfile::DriveSection]
+        attr_reader :drive
+
+        # @return [Y2Storage::AutoinstProfile::PartitionSection]
+        attr_reader :section
 
         # Mount point widget
         #

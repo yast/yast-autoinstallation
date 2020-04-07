@@ -18,53 +18,42 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "cwm/page"
-require "autoinstall/widgets/storage/disk_device"
-require "autoinstall/widgets/storage/add_children_button"
+require "cwm/common_widgets"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # This page allows to edit usage information for a disk
-      class DiskPage < ::CWM::Page
+      # This class provides a button to add 'partition' sections
+      #
+      # In an AutoYaST profile, a 'partition' section is used to define a
+      # partition, a logical volume, a RAID member, etc.
+      class AddChildrenButton < CWM::PushButton
+        extend Yast::I18n
+
         # Constructor
         #
         # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param section [Y2Storage::AutoinstProfile::DriveSection] Drive section corresponding
-        #   to a disk
+        # @param section [Y2Storage::AutoinstProfile::DriveSection] Drive section of the profile
         def initialize(controller, section)
           textdomain "autoinst"
           @controller = controller
           @section = section
-          super()
-          self.widget_id = "disk_page:#{object_id}"
         end
 
-        # @macro seeAbstractWidget
+        TYPE_LABELS = {
+          CT_DISK: N_("Partition")
+        }.freeze
+
         def label
-          if section.device && !section.device.empty?
-            format(_("Disk %{device}"), device: section.device)
-          else
-            format(_("Disk"))
-          end
-        end
-
-        # @macro seeCustomWidget
-        def contents
-          VBox(
-            Left(Heading(label)),
-            disk_device_widget,
-            VStretch(),
-            HBox(
-              HStretch(),
-              AddChildrenButton.new(controller, section)
-            )
-          )
+          type_label = _(TYPE_LABELS[section.type])
+          format(_("Add %{type_label}"), type_label: type_label)
         end
 
         # @macro seeAbstractWidget
-        def store
-          section.device = disk_device_widget.value
+        def handle
+          # FIXME: the controller could keep track of the current section
+          controller.add_partition(section)
+          :redraw
         end
 
       private
@@ -74,13 +63,6 @@ module Y2Autoinstallation
 
         # @return [Y2Storage::AutoinstProfile::DriveSection]
         attr_reader :section
-
-        # Disk device selector
-        #
-        # @return [DiskDevice]
-        def disk_device_widget
-          DiskDevice.new(initial: section.device)
-        end
       end
     end
   end
