@@ -19,13 +19,20 @@
 
 require_relative "../../../test_helper"
 require "autoinstall/widgets/storage/disk_page"
-require "y2storage"
+require "autoinstall/storage_controller"
+require "y2storage/autoinst_profile"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::DiskPage do
-  subject { described_class.new(drive) }
+  subject { described_class.new(controller, drive) }
 
-  let(:drive) { Y2Storage::AutoinstProfile::DriveSection.new_from_hashes({}) }
+  let(:partitioning) do
+    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+      [{ "type" => :CT_DISK }]
+    )
+  end
+  let(:drive) { partitioning.drives.first }
+  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
 
   include_examples "CWM::Page"
 
