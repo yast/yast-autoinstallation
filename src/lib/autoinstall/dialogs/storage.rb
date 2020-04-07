@@ -20,6 +20,7 @@
 require "cwm"
 require "cwm/dialog"
 require "autoinstall/widgets/storage/overview_tree_pager"
+require "autoinstall/storage_controller"
 
 Yast.import "Label"
 
@@ -42,7 +43,7 @@ module Y2Autoinstallation
       #   Partitioning section of the profile
       def initialize(partitioning)
         textdomain "autoinst"
-        @partitioning = partitioning
+        @controller = Y2Autoinstallation::StorageController.new(partitioning)
       end
 
       # @macro seeDialog
@@ -50,9 +51,7 @@ module Y2Autoinstallation
         MarginBox(
           0.5,
           0.5,
-          Y2Autoinstallation::Widgets::Storage::OverviewTreePager.new(
-            partitioning
-          )
+          Y2Autoinstallation::Widgets::Storage::OverviewTreePager.new(controller)
         )
       end
 
@@ -73,7 +72,26 @@ module Y2Autoinstallation
 
       # @macro seeDialog
       def next_handler
-        partitioning
+        controller.partitioning
+      end
+
+      def should_open_dialog?
+        true
+      end
+
+    private
+
+      attr_reader :controller
+
+      # CWM show loop
+      #
+      # This method is redefined to keep the dialog in a loop if a
+      # `redraw` is needed.
+      def cwm_show
+        loop do
+          result = super
+          return result unless result == :redraw
+        end
       end
     end
   end

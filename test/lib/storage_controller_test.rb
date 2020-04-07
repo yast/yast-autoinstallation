@@ -17,26 +17,22 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/overview_tree_pager"
+require_relative "../test_helper"
 require "autoinstall/storage_controller"
-require "cwm/rspec"
+require "y2storage/autoinst_profile/partitioning_section"
 
-describe Y2Autoinstallation::Widgets::Storage::OverviewTreePager do
-  subject { described_class.new(controller) }
+describe Y2Autoinstallation::StorageController do
+  subject { described_class.new(partitioning) }
 
   let(:partitioning) do
-    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "mount" => "/dev/sda" }]
-    )
+    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes([])
   end
 
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
-
-  describe "#items" do
-    it "returns one item for each drive" do
-      items = subject.items
-      expect(items.size).to eq(1)
+  describe "#add" do
+    it "adds a new section with the given type" do
+      subject.add_drive(:disk)
+      new_drive = partitioning.drives.first
+      expect(new_drive.type).to eq(:CT_DISK)
     end
   end
 end

@@ -43,7 +43,7 @@ module Y2Autoinstallation
           self.widget_id = "partition_page:#{object_id}"
         end
 
-        # @macro abstractWidget
+        # @macro seeAbstractWidget
         def label
           if section.mount && !section.mount.empty?
             format(_("Partition at %{mount_point}"), mount_point: section.mount)
@@ -52,12 +52,17 @@ module Y2Autoinstallation
           end
         end
 
-        # @macro customWidget
+        # @macro seeCustomWidget
         def contents
           VBox(
             Left(Heading(label)),
             mount_point_widget
           )
+        end
+
+        # @macro seeAbstractWidget
+        def store
+          section.mount = mount_point_widget.value
         end
 
       private
@@ -66,8 +71,7 @@ module Y2Autoinstallation
         #
         # @return [MountPoint]
         def mount_point_widget
-          return @mount_point_widget if @mount_point_widget
-          @mount_point_widget = MountPoint.new(initial: section.mount)
+          MountPoint.new(initial: section.mount)
         end
       end
     end

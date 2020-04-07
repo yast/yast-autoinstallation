@@ -18,25 +18,26 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/overview_tree_pager"
-require "autoinstall/storage_controller"
-require "cwm/rspec"
+require "autoinstall/widgets/storage/add_drive_button"
 
-describe Y2Autoinstallation::Widgets::Storage::OverviewTreePager do
+describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
   subject { described_class.new(controller) }
 
+  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
   let(:partitioning) do
-    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "mount" => "/dev/sda" }]
-    )
+    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes([])
   end
 
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
+  describe "#handle" do
+    let(:event) do
+      { "ID" => :add_disk }
+    end
 
-  describe "#items" do
-    it "returns one item for each drive" do
-      items = subject.items
-      expect(items.size).to eq(1)
+    context "adding a disk" do
+      it "adds a disk" do
+        expect(controller).to receive(:add_drive).with(:disk)
+        subject.handle(event)
+      end
     end
   end
 end
