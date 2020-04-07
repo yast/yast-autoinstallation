@@ -281,6 +281,10 @@ done
 %dir %{yast_libdir}/autoinstall/dialogs
 %{yast_libdir}/autoinstall/dialogs/*.rb
 
+%dir %{yast_libdir}/autoinstall/widgets
+%dir %{yast_libdir}/autoinstall/widgets/storage
+%{yast_libdir}/autoinstall/widgets/storage/*.rb
+
 %dir %{yast_libdir}/autoinstall/clients
 %{yast_libdir}/autoinstall/clients/*.rb
 
