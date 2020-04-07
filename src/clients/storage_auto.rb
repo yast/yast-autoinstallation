@@ -100,7 +100,7 @@ module Yast
           Y2Storage::AutoinstProfile::PartitioningSection
             .new_from_storage(manager.probed)
         else
-          Y2Storage::AutoinstProfile::PartitioningSection.new
+          Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes([{ disk: :CT_DISK }])
         end
       Y2Autoinstallation::Dialogs::Storage.new(partitioning)
     end

@@ -22,34 +22,44 @@ require "cwm/tree_pager"
 require "autoinstall/widgets/storage/overview_tree"
 require "autoinstall/widgets/storage/disk_page"
 require "autoinstall/widgets/storage/partition_page"
+require "autoinstall/widgets/storage/add_drive_button"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
       class OverviewTreePager < CWM::TreePager
-        # @return [Y2Storage::AutoinstProfile::PartitioningSection]
-        #   Partitioning section of the profile
-        attr_reader :partitioning
-
-        # @constructor
+        # Constructor
         #
-        # @param partitioning [Y2Storage::AutoinstProfile::PartitioningSection]
-        #   Partitioning section to edit
-        def initialize(partitioning)
+        # @param controller [Y2Autoinstallation::StorgeController] UI controller
+        def initialize(controller)
           textdomain("autoinst")
-          @partitioning = partitioning
+          @controller = controller
 
-          super(OverviewTree.new(items))
+          super(tree)
+        end
+
+        def contents
+          VBox(
+            super,
+            Left(AddDriveButton.new(controller))
+          )
         end
 
         # @return [Array<CWM::PagerTreeItem>] List of tree items
         def items
-          @items ||= partitioning.drives.each_with_object([]) do |drive, all|
+          controller.partitioning.drives.each_with_object([]) do |drive, all|
             all << drive_item(drive)
           end
         end
 
       private
+
+        # @return [Y2Autoinstallation::StorageController]
+        attr_reader :controller
+
+        def tree
+          @tree ||= OverviewTree.new(items)
+        end
 
         # Returns the drive item for the given section
         #
