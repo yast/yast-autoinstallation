@@ -50,5 +50,12 @@ module Y2Autoinstallation
       partitioning.drives << section
       section
     end
+
+    # Adds a new partition section under the given section
+    #
+    # @param parent [Y2Storage::AutoinstProfile::DriveSection] Parent section
+    def add_partition(parent)
+      parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new
+    end
   end
 end
