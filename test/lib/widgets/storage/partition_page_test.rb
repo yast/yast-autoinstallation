@@ -47,4 +47,23 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
       end
     end
   end
+
+  describe "#store" do
+    let(:mount_point_widget) do
+      instance_double(
+        Y2Autoinstallation::Widgets::Storage::MountPoint,
+        value: "/boot"
+      )
+    end
+
+    before do
+      allow(Y2Autoinstallation::Widgets::Storage::MountPoint)
+        .to receive(:new).and_return(mount_point_widget)
+    end
+
+    it "sets the section values" do
+      subject.store
+      expect(partition.mount).to eq("/boot")
+    end
+  end
 end

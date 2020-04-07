@@ -52,11 +52,15 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          return @contents if @contents
-          @contents = VBox(
+          VBox(
             Left(Heading(label)),
             disk_device_widget,
           )
+        end
+
+        # @macro seeAbstractWidget
+        def store
+          section.device = disk_device_widget.value
         end
 
       private
@@ -65,7 +69,7 @@ module Y2Autoinstallation
         #
         # @return [DiskDevice]
         def disk_device_widget
-          @disk_device_widget ||= DiskDevice.new(initial: section.device)
+          DiskDevice.new(initial: section.device)
         end
       end
     end

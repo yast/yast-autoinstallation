@@ -24,6 +24,7 @@ require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::DiskPage do
   subject { described_class.new(drive) }
+
   let(:drive) { Y2Storage::AutoinstProfile::DriveSection.new_from_hashes({}) }
 
   include_examples "CWM::Page"
@@ -45,6 +46,25 @@ describe Y2Autoinstallation::Widgets::Storage::DiskPage do
       it "does not include the device" do
         expect(subject.label).to eq("Disk")
       end
+    end
+  end
+
+  describe "#store" do
+    let(:disk_device_widget) do
+      instance_double(
+        Y2Autoinstallation::Widgets::Storage::DiskDevice,
+        value: "/dev/sdb"
+      )
+    end
+
+    before do
+      allow(Y2Autoinstallation::Widgets::Storage::DiskDevice)
+        .to receive(:new).and_return(disk_device_widget)
+    end
+
+    it "sets the section values" do
+      subject.store
+      expect(drive.device).to eq("/dev/sdb")
     end
   end
 end
