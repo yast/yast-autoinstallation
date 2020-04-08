@@ -24,3 +24,5 @@
 #   @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FCustomWidget:${0}
 # @!macro [new] seeDialog
 #   @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FDialog:${0}
+# @!macro [new] seeComboBox
+#   @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FComboBox:${0}

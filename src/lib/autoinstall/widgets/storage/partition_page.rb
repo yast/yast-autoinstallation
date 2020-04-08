@@ -69,6 +69,11 @@ module Y2Autoinstallation
         end
 
         # @macro seeAbstractWidget
+        def init
+          mount_point_widget.value = section.mount
+        end
+
+        # @macro seeAbstractWidget
         def store
           section.mount = mount_point_widget.value
         end
@@ -88,7 +93,7 @@ module Y2Autoinstallation
         #
         # @return [MountPoint]
         def mount_point_widget
-          MountPoint.new(initial: section.mount)
+          @mount_point_widget ||= MountPoint.new
         end
       end
     end
