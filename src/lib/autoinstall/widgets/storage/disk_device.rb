@@ -24,18 +24,15 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # Widget to select a block device for a partition section
+      #
+      # It corresponds to the `device` element in the profile.
       class DiskDevice < CWM::ComboBox
         # Constructor
         #
         # @param initial [String,nil] Initial value
-        def initialize(initial: nil)
+        def initialize
           textdomain "autoinst"
-          @initial = initial
-        end
-
-        # @macro seeAbstractWidget
-        def init
-          self.value = initial if initial
+          super
         end
 
         # @macro seeAbstractWidget
@@ -45,7 +42,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def opt
-          [:editable, :hstretch]
+          [:editable]
         end
 
         DISKS = [
@@ -53,21 +50,26 @@ module Y2Autoinstallation
         ].freeze
         private_constant :DISKS
 
-        # Returns the list of possible values
+        # Returns the list of items
         #
+        # @macro seeComboBox
         # @return [Array<Array<String, String>>] List of possible values
         def items
-          return @items if @items
-
-          known_disks = DISKS.dup
-          known_disks.unshift(initial) if initial && !known_disks.include?(initial)
-          @items = [["", "auto"]] + known_disks.map { |i| [i, i] }
+          @items ||= [["", "auto"]] + DISKS.map { |i| [i, i] }
         end
 
-      private
+        # Changes the list of items
+        #
+        # @see seeComboBox
+        def change_items(new_items)
+          @items = new_items
+          super(new_items)
+        end
 
-        # @return [String,nil] Initial value
-        attr_reader :initial
+        def value=(val)
+          change_items(items + [[val, val]]) if val && !items.map(&:first).include?(val)
+          super(val)
+        end
       end
     end
   end

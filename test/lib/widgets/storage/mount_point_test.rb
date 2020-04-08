@@ -22,34 +22,26 @@ require "autoinstall/widgets/storage/mount_point"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::MountPoint do
-  subject { described_class.new(initial: initial) }
-  let(:initial) { "/" }
+  subject { described_class.new }
 
   include_examples "CWM::ComboBox"
 
-  describe "#init" do
-    context "when an initial value is given" do
-      it "initializes the value" do
-        expect(subject).to receive(:value=).with(initial)
-        subject.init
+  describe "#value=" do
+    let(:unknown) { "/opt" }
+
+    context "when an unknown value is given" do
+      it "adds the value to the list of items" do
+        subject.value = unknown
+        expect(subject.items.map(&:first)).to include(unknown)
       end
-    end
 
-    context "when no initial value was given" do
-      subject { described_class.new }
-
-      it "does not initialize the value" do
-        expect(subject).to_not receive(:value=)
-        subject.init
+      it "sets the current value" do
+        allow(Yast::UI).to receive(:ChangeWidget)
+          .with(anything, :Items, anything)
+        expect(Yast::UI).to receive(:ChangeWidget)
+          .with(anything, :Value, unknown)
+        subject.value = unknown
       end
-    end
-  end
-
-  describe "#items" do
-    let(:initial) { "/opt" }
-
-    it "includes the initial value" do
-      expect(subject.items).to include([initial, initial])
     end
   end
 end

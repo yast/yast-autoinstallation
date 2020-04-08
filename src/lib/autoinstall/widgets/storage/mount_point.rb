@@ -29,18 +29,18 @@ module Y2Autoinstallation
       #
       # @param initial [String,nil] Initial value
       class MountPoint < CWM::ComboBox
-        def initialize(initial: nil)
+        def initialize
           textdomain "autoinst"
-          @initial = initial
-          super()
+          super
         end
 
+        def label
+          _("Mount point")
+        end
+
+        # @macro seeAbstractWidget
         def opt
-          [:editable, :hstretch]
-        end
-
-        def init
-          self.value = @initial
+          [:editable]
         end
 
         ITEMS = [
@@ -53,22 +53,22 @@ module Y2Autoinstallation
         ].freeze
         private_constant :ITEMS
 
+        # @macro seeComboBox
         def items
-          return @items if @items
-
-          known_items = ITEMS.dup
-          known_items.unshift(@initial) if @initial && !ITEMS.include?(@initial)
-          @items = known_items.map { |i| [i, i] }
+          @items ||= ITEMS.map { |i| [i, i] }
         end
 
-        def label
-          _("Mount point")
+        # @see seeComboBox
+        def change_items(new_items)
+          @items = new_items
+          super(new_items)
         end
 
-      private
-
-        # @return [String,nil] Initial value
-        attr_reader :initial
+        # @see seeAbstractWidget
+        def value=(val)
+          change_items(items + [[val, val]]) if val && !items.map(&:first).include?(val)
+          super(val)
+        end
       end
     end
   end

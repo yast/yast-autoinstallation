@@ -63,6 +63,11 @@ module Y2Autoinstallation
         end
 
         # @macro seeAbstractWidget
+        def init
+          disk_device_widget.value = section.device
+        end
+
+        # @macro seeAbstractWidget
         def store
           section.device = disk_device_widget.value
         end
@@ -79,7 +84,8 @@ module Y2Autoinstallation
         #
         # @return [DiskDevice]
         def disk_device_widget
-          DiskDevice.new(initial: section.device)
+          @disk_device_widget ||= DiskDevice.new
+          end
         end
       end
     end
