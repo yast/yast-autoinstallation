@@ -31,8 +31,6 @@ module Y2Autoinstallation
         include EditableComboBox
 
         # Constructor
-        #
-        # @param initial [String,nil] Initial value
         def initialize
           textdomain "autoinst"
           super
