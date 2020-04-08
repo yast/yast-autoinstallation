@@ -34,6 +34,45 @@ describe Y2Autoinstallation::Widgets::Storage::DiskPage do
   let(:drive) { partitioning.drives.first }
   let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
 
+  let(:disk_device_widget) do
+    instance_double(
+      Y2Autoinstallation::Widgets::Storage::DiskDevice,
+      value: "/dev/sdb"
+    )
+  end
+
+  let(:init_drive_widget) do
+    instance_double(
+      Y2Autoinstallation::Widgets::Storage::InitDrive,
+      widget_id: "init_drive", value: false
+    )
+  end
+
+  let(:disk_usage_widget) do
+    instance_double(
+      Y2Autoinstallation::Widgets::Storage::DiskUsage,
+      value: "all"
+    )
+  end
+
+  let(:partition_table_widget) do
+    instance_double(
+      Y2Autoinstallation::Widgets::Storage::DiskUsage,
+      value: "gpt"
+    )
+  end
+
+  before do
+    allow(Y2Autoinstallation::Widgets::Storage::DiskDevice)
+      .to receive(:new).and_return(disk_device_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::InitDrive)
+      .to receive(:new).and_return(init_drive_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::DiskUsage)
+      .to receive(:new).and_return(disk_usage_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::PartitionTable)
+      .to receive(:new).and_return(partition_table_widget)
+  end
+
   include_examples "CWM::Page"
 
   describe "#label" do
@@ -57,21 +96,36 @@ describe Y2Autoinstallation::Widgets::Storage::DiskPage do
   end
 
   describe "#store" do
-    let(:disk_device_widget) do
-      instance_double(
-        Y2Autoinstallation::Widgets::Storage::DiskDevice,
-        value: "/dev/sdb"
-      )
-    end
-
-    before do
-      allow(Y2Autoinstallation::Widgets::Storage::DiskDevice)
-        .to receive(:new).and_return(disk_device_widget)
-    end
-
     it "sets the section values" do
       subject.store
       expect(drive.device).to eq("/dev/sdb")
+      expect(drive.initialize_attr).to eq(false)
+      expect(drive.use).to eq("all")
+      expect(drive.disklabel).to eq("gpt")
+    end
+  end
+
+  describe "#handle" do
+    before do
+      allow(init_drive_widget).to receive(:value).and_return(init_disk)
+    end
+
+    context "when the drive must be initialized" do
+      let(:init_disk) { true }
+
+      it "disables the disk usage widget" do
+        expect(disk_usage_widget).to receive(:disable)
+        subject.handle("ID" => init_drive_widget.widget_id)
+      end
+    end
+
+    context "when the drive should not be initialized" do
+      let(:init_disk) { false }
+
+      it "enables the disk usage widget" do
+        expect(disk_usage_widget).to receive(:enable)
+        subject.handle("ID" => init_drive_widget.widget_id)
+      end
     end
   end
 end
