@@ -23,6 +23,7 @@ require "autoinstall/widgets/storage/overview_tree"
 require "autoinstall/widgets/storage/disk_page"
 require "autoinstall/widgets/storage/partition_page"
 require "autoinstall/widgets/storage/add_drive_button"
+require "autoinstall/ui_state"
 
 module Y2Autoinstallation
   module Widgets
@@ -50,6 +51,24 @@ module Y2Autoinstallation
           controller.partitioning.drives.each_with_object([]) do |drive, all|
             all << drive_item(drive)
           end
+        end
+
+        # Switch to the given page
+        #
+        # It redefines the original implementation to save the current
+        # page and refresh the tree.
+        #
+        # @param page [CWM::Page] Page to change to
+        def switch_page(page)
+          UIState.instance.go_to_tree_node(page)
+          tree.change_items(items)
+          super
+        end
+
+        # Ensures the tree is properly initialized according to the UI state after
+        # a redraw
+        def initial_page
+          UIState.instance.find_tree_node(@pages) || super
         end
 
       private

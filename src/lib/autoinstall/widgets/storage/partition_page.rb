@@ -43,7 +43,7 @@ module Y2Autoinstallation
           @section = section
           @drive = drive
           super()
-          self.widget_id = "partition_page:#{object_id}"
+          self.widget_id = "partition_page:#{section.object_id}"
         end
 
         # @macro seeAbstractWidget
