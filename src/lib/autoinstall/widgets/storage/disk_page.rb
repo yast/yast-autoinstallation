@@ -19,8 +19,11 @@
 
 require "yast"
 require "cwm/page"
-require "autoinstall/widgets/storage/disk_device"
 require "autoinstall/widgets/storage/add_children_button"
+require "autoinstall/widgets/storage/disk_device"
+require "autoinstall/widgets/storage/init_drive"
+require "autoinstall/widgets/storage/disk_usage"
+require "autoinstall/widgets/storage/partition_table"
 
 module Y2Autoinstallation
   module Widgets
@@ -38,6 +41,7 @@ module Y2Autoinstallation
           @section = section
           super()
           self.widget_id = "disk_page:#{section.object_id}"
+          self.handle_all_events = true
         end
 
         # @macro seeAbstractWidget
@@ -52,9 +56,14 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            Left(Heading(label)),
-            disk_device_widget,
-            VStretch(),
+            Left(Heading(_("Disk"))),
+            VBox(
+              Left(disk_device_widget),
+              Left(init_drive_widget),
+              Left(disk_usage_widget),
+              Left(partition_table_widget),
+              VStretch()
+            ),
             HBox(
               HStretch(),
               AddChildrenButton.new(controller, section)
@@ -65,11 +74,26 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           disk_device_widget.value = section.device
+          init_drive_widget.value = !!section.initialize_attr
+          disk_usage_widget.value = section.use
+          partition_table_widget.value = section.disklabel
+          set_disk_usage_status
         end
 
         # @macro seeAbstractWidget
         def store
           section.device = disk_device_widget.value
+          section.initialize_attr = init_drive_widget.value
+          section.use = disk_usage_widget.value
+          section.disklabel = partition_table_widget.value
+        end
+
+        # @macro seeAbstractWidget
+        def handle(event)
+          if event["ID"] == init_drive_widget.widget_id
+            set_disk_usage_status
+          end
+          nil
         end
 
       private
@@ -85,6 +109,34 @@ module Y2Autoinstallation
         # @return [DiskDevice]
         def disk_device_widget
           @disk_device_widget ||= DiskDevice.new
+        end
+
+        # Disk usage selector
+        #
+        # @return [DiskUsage]
+        def disk_usage_widget
+          @disk_usage_widget ||= DiskUsage.new
+        end
+
+        # Partition table selector
+        #
+        # @return [PartitionTable]
+        def partition_table_widget
+          @partition_table_widget ||= PartitionTable.new
+        end
+
+        # Initialize drive widget
+        #
+        # @param [InitDrive]
+        def init_drive_widget
+          @init_drive_widget ||= InitDrive.new
+        end
+
+        def set_disk_usage_status
+          if init_drive_widget.value
+            disk_usage_widget.disable
+          else
+            disk_usage_widget.enable
           end
         end
       end
