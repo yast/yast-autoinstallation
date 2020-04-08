@@ -70,7 +70,9 @@ module Yast
         @ret = []
       # Change configuration (run AutoSequence)
       elsif @func == "Change"
+        storage_dialog = build_storage_dialog
         @ret = storage_dialog.run
+        AutoinstPartPlan.Import(storage_dialog.partitioning.to_hashes) if @ret == :next
       # Return actual state
       elsif @func == "Export"
         @ret = AutoinstPartPlan.Export
@@ -95,20 +97,16 @@ module Yast
 
   private
 
-    # Returns the storage dialog
+    # Returns a dialog to edit the storage
     #
     # It uses the probed storage version is available
     #
     # @return [Y2Storage::Dialogs::Storage] Storage dialog
-    def storage_dialog
-      manager = Y2Storage::StorageManager.instance
-      partitioning =
-        if manager.probed?
-          Y2Storage::AutoinstProfile::PartitioningSection
-            .new_from_storage(manager.probed)
-        else
-          Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes([{ disk: :CT_DISK }])
-        end
+    def build_storage_dialog
+      part_plan = AutoinstPartPlan.Export
+      # FIXME: workaround to avoid crashing the dialog
+      part_plan = [{ "type" => :CT_DISK }] if part_plan.empty?
+      partitioning = Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(part_plan)
       Y2Autoinstallation::Dialogs::Storage.new(partitioning)
     end
   end
