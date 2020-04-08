@@ -304,6 +304,7 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %{yast_libdir}/autoinstall/dialogs/*.rb
 
 %dir %{yast_libdir}/autoinstall/widgets
+%{yast_libdir}/autoinstall/widgets/*.rb
 %dir %{yast_libdir}/autoinstall/widgets/storage
 %{yast_libdir}/autoinstall/widgets/storage/*.rb
 
