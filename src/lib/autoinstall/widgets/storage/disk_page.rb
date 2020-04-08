@@ -90,9 +90,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def handle(event)
-          if event["ID"] == init_drive_widget.widget_id
-            set_disk_usage_status
-          end
+          set_disk_usage_status if event["ID"] == init_drive_widget.widget_id
           nil
         end
 
