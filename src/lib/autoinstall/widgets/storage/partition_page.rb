@@ -58,9 +58,13 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            Left(Heading(label)),
-            mount_point_widget,
-            VStretch(),
+            Left(Heading(_("Partition"))),
+            Left(
+              VBox(
+                mount_point_widget,
+                VStretch()
+              )
+            ),
             HBox(
               HStretch(),
               AddChildrenButton.new(controller, drive)
