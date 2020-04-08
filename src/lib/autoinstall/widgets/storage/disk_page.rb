@@ -37,7 +37,7 @@ module Y2Autoinstallation
           @controller = controller
           @section = section
           super()
-          self.widget_id = "disk_page:#{object_id}"
+          self.widget_id = "disk_page:#{section.object_id}"
         end
 
         # @macro seeAbstractWidget
