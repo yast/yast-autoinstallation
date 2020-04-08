@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/common_widgets"
+require "autoinstall/widgets/editable_combo_box"
 
 module Y2Autoinstallation
   module Widgets
@@ -27,6 +28,8 @@ module Y2Autoinstallation
       #
       # It corresponds to the `device` element in the profile.
       class DiskDevice < CWM::ComboBox
+        include EditableComboBox
+
         # Constructor
         #
         # @param initial [String,nil] Initial value
@@ -56,19 +59,6 @@ module Y2Autoinstallation
         # @return [Array<Array<String, String>>] List of possible values
         def items
           @items ||= [["", "auto"]] + DISKS.map { |i| [i, i] }
-        end
-
-        # Changes the list of items
-        #
-        # @see seeComboBox
-        def change_items(new_items)
-          @items = new_items
-          super(new_items)
-        end
-
-        def value=(val)
-          change_items(items + [[val, val]]) if val && !items.map(&:first).include?(val)
-          super(val)
         end
       end
     end
