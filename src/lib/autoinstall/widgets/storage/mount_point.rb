@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/common_widgets"
+require "autoinstall/widgets/editable_combo_box"
 
 module Y2Autoinstallation
   module Widgets
@@ -29,6 +30,8 @@ module Y2Autoinstallation
       #
       # @param initial [String,nil] Initial value
       class MountPoint < CWM::ComboBox
+        include EditableComboBox
+
         def initialize
           textdomain "autoinst"
           super
@@ -56,18 +59,6 @@ module Y2Autoinstallation
         # @macro seeComboBox
         def items
           @items ||= ITEMS.map { |i| [i, i] }
-        end
-
-        # @see seeComboBox
-        def change_items(new_items)
-          @items = new_items
-          super(new_items)
-        end
-
-        # @see seeAbstractWidget
-        def value=(val)
-          change_items(items + [[val, val]]) if val && !items.map(&:first).include?(val)
-          super(val)
         end
       end
     end

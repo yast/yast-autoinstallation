@@ -17,14 +17,23 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/mount_point"
-require "cwm/rspec"
-require_relative TESTS_PATH.join("support", "editable_combo_box_examples").to_s
+RSpec.shared_examples "EditableComboBox" do
+  describe "#value=" do
+    let(:unknown) { "unknown" }
 
-describe Y2Autoinstallation::Widgets::Storage::MountPoint do
-  subject { described_class.new }
+    context "when an unknown value is given" do
+      it "adds the value to the list of items" do
+        subject.value = unknown
+        expect(subject.items.map(&:first)).to include(unknown)
+      end
 
-  include_examples "CWM::ComboBox"
-  include_examples "EditableComboBox"
+      it "sets the current value" do
+        allow(Yast::UI).to receive(:ChangeWidget)
+          .with(anything, :Items, anything)
+        expect(Yast::UI).to receive(:ChangeWidget)
+          .with(anything, :Value, unknown)
+        subject.value = unknown
+      end
+    end
+  end
 end
