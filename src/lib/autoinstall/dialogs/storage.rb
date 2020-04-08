@@ -23,6 +23,7 @@ require "autoinstall/widgets/storage/overview_tree_pager"
 require "autoinstall/storage_controller"
 
 Yast.import "Label"
+Yast.import "Popup"
 
 module Y2Autoinstallation
   module Dialogs
@@ -66,13 +67,19 @@ module Y2Autoinstallation
       end
 
       # @macro seeDialog
-      def cancel_button
-        ""
+      def back_button
+        Yast::Label.CancelButton
       end
 
       # @macro seeDialog
       def next_handler
-        controller.partitioning
+        @partitioning = controller.partitioning
+        true
+      end
+
+      # @macro seeDialog
+      def back_handler
+        Yast::Popup.ReallyAbort(controller.modified?)
       end
 
       def should_open_dialog?

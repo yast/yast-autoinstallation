@@ -36,6 +36,7 @@ module Y2Autoinstallation
     #   Partitioning section of the profile
     def initialize(partitioning)
       @partitioning = partitioning
+      @modified = false
     end
 
     TYPES_MAP = {
@@ -56,6 +57,14 @@ module Y2Autoinstallation
     # @param parent [Y2Storage::AutoinstProfile::DriveSection] Parent section
     def add_partition(parent)
       parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new
+    end
+
+    # It determines whether the profile was modified
+    #
+    # @todo Implement logic to detect whether the partitioning
+    #   was modified or not.
+    def modified?
+      true
     end
   end
 end
