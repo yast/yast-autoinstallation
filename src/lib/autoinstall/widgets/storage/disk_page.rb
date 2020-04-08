@@ -125,7 +125,7 @@ module Y2Autoinstallation
 
         # Initialize drive widget
         #
-        # @param [InitDrive]
+        # @return [InitDrive]
         def init_drive_widget
           @init_drive_widget ||= InitDrive.new
         end

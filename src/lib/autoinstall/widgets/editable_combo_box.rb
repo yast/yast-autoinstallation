@@ -22,7 +22,7 @@ module Y2Autoinstallation
     # Mixin to extend the #value= method for editable ComboBox widgets
     #
     # Ideally, this behaviour might be implemented in the original
-    # {CWM::ComboBox}.
+    # CWM ComboBox class.
     #
     # @example Define an editable combo box
     #  class MyComboBox < CWM::ComboBox
@@ -34,11 +34,11 @@ module Y2Autoinstallation
     #  end
     #
     # As you can see in the example, you need to define the
-    # {#opt} method to include the `:editable` option.
+    # `#opt` method to include the `:editable` option.
     module EditableComboBox
       # Changes the list of items
       #
-      # @see seeComboBox
+      # @macro seeComboBox
       def change_items(new_items)
         @items = new_items
         super(new_items)
