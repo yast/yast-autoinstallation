@@ -20,11 +20,9 @@
 require_relative "../../../test_helper"
 require "autoinstall/widgets/storage/disk_device"
 require "cwm/rspec"
-require_relative TESTS_PATH.join("support", "editable_combo_box_examples").to_s
 
 describe Y2Autoinstallation::Widgets::Storage::DiskDevice do
   subject { described_class.new }
 
   include_examples "CWM::ComboBox"
-  include_examples "EditableComboBox"
 end
