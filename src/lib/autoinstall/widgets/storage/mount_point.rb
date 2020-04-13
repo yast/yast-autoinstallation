@@ -47,6 +47,7 @@ module Y2Autoinstallation
         end
 
         ITEMS = [
+          "",
           "/",
           "/boot",
           "/srv",
