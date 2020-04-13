@@ -19,7 +19,6 @@
 
 require "yast"
 require "cwm/common_widgets"
-require "autoinstall/widgets/editable_combo_box"
 
 module Y2Autoinstallation
   module Widgets
@@ -29,7 +28,6 @@ module Y2Autoinstallation
       # It corresponds to the `use` element in the profile.
       class DiskUsage < CWM::ComboBox
         extend Yast::I18n
-        include EditableComboBox
 
         def initialize
           textdomain "autoinst"

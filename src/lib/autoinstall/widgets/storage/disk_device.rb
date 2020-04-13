@@ -19,7 +19,6 @@
 
 require "yast"
 require "cwm/common_widgets"
-require "autoinstall/widgets/editable_combo_box"
 
 module Y2Autoinstallation
   module Widgets
@@ -28,8 +27,6 @@ module Y2Autoinstallation
       #
       # It corresponds to the `device` element in the profile.
       class DiskDevice < CWM::ComboBox
-        include EditableComboBox
-
         # Constructor
         def initialize
           textdomain "autoinst"
