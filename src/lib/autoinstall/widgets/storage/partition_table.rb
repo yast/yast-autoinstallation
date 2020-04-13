@@ -27,8 +27,6 @@ module Y2Autoinstallation
       #
       # It corresponds to the `disklabel` element in the profile.
       class PartitionTable < CWM::ComboBox
-        extend Yast::I18n
-
         # Constructor
         def initialize
           textdomain "autoinst"
