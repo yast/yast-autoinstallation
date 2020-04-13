@@ -37,7 +37,6 @@ module Y2Autoinstallation
           textdomain "autoinst"
           super()
           @controller = controller
-          self.handle_all_events = true
         end
 
         # @macro seeAbstractWidget

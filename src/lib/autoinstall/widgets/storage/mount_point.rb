@@ -19,7 +19,6 @@
 
 require "yast"
 require "cwm/common_widgets"
-require "autoinstall/widgets/editable_combo_box"
 
 module Y2Autoinstallation
   module Widgets
@@ -30,8 +29,6 @@ module Y2Autoinstallation
       #
       # @param initial [String,nil] Initial value
       class MountPoint < CWM::ComboBox
-        include EditableComboBox
-
         def initialize
           textdomain "autoinst"
           super
