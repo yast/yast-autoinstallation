@@ -21,7 +21,7 @@ require "yast"
 require "y2storage"
 
 module Y2Autoinstallation
-  # Controller for the edition of the partitioning section of a profile
+  # Controller for the editing the partitioning section of a profile
   #
   # It is supposed to be used internally by
   # {Y2Autoinstallation::Dialogs::Storage}.
@@ -49,7 +49,6 @@ module Y2Autoinstallation
     def add_drive(type)
       section = Y2Storage::AutoinstProfile::DriveSection.new_from_hashes(type: TYPES_MAP[type])
       partitioning.drives << section
-      section
     end
 
     # Adds a new partition section under the given section

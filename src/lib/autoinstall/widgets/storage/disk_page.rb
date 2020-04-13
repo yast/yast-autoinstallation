@@ -47,6 +47,7 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def label
           if section.device && !section.device.empty?
+            # TRANSLATORS: disk device name used in a `drive` section of an AutoYaST profile
             format(_("Disk %{device}"), device: section.device)
           else
             format(_("Disk"))

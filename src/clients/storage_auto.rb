@@ -72,6 +72,8 @@ module Yast
       elsif @func == "Change"
         storage_dialog = build_storage_dialog
         @ret = storage_dialog.run
+        # After succesfully editing the storage settings, import the result as
+        # the new partition plan.
         AutoinstPartPlan.Import(storage_dialog.partitioning.to_hashes) if @ret == :next
       # Return actual state
       elsif @func == "Export"
@@ -99,7 +101,7 @@ module Yast
 
     # Returns a dialog to edit the storage
     #
-    # It uses the probed storage version is available
+    # It uses the current partition plan.
     #
     # @return [Y2Storage::Dialogs::Storage] Storage dialog
     def build_storage_dialog
