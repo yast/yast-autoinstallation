@@ -40,19 +40,22 @@ module Y2Autoinstallation
           _("Partition table")
         end
 
-        ITEMS = [:msdos, :gpt, :none].freeze
-        ITEMS_LABELS = {
-          msdos: N_("MSDOS"),
-          gpt:   N_("GPT"),
-          none:  N_("None")
-        }.freeze
-        private_constant :ITEMS, :ITEMS_LABELS
+        TYPES = [
+          Y2Storage::PartitionTables::Type::GPT,
+          Y2Storage::PartitionTables::Type::MSDOS,
+          Y2Storage::PartitionTables::Type::DASD
+        ].freeze
+        private_constant :TYPES
 
         # @return [Array<Array<String,String>>] List of possible values
         def items
-          ITEMS.map do |opt|
-            [opt.to_s, _(ITEMS_LABELS[opt])]
+          return @items if @items
+
+          @items = TYPES.map do |type|
+            [type.to_s, type.to_human_string]
           end
+          @items << ["none", _("None")]
+          @items
         end
       end
     end
