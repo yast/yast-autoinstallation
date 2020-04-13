@@ -32,7 +32,10 @@ module Y2Autoinstallation
     # @example Edit a partitioning section
     #   devicegraph = devicegraph = Y2Storage::StorageManager.instance.probed
     #   partitioning = Y2Storage::Autoinst::PartitioningSection.new_from_storage(devicegraph)
-    #   result = Y2Autoinstallation::Dialogs::Storage.new(partitioning).run
+    #   result = Y2Autoinstallation::Dialogs::Storage.new.run
+    #
+    # @example Start with an empty section
+    #   result = Y2Autoinstallation::Dialogs::Storage.new
     class Storage < CWM::Dialog
       # @return [Y2Storage::AutoinstProfile::PartitioningSection]
       #   Partitioning section of the profile
@@ -42,7 +45,7 @@ module Y2Autoinstallation
       #
       # @param partitioning [Y2Storage::AutoinstProfile::PartitioningSection]
       #   Partitioning section of the profile
-      def initialize(partitioning)
+      def initialize(partitioning = Y2Storage::AutoinstProfile::PartitioningSection.new)
         textdomain "autoinst"
         @controller = Y2Autoinstallation::StorageController.new(partitioning)
       end
@@ -97,7 +100,7 @@ module Y2Autoinstallation
       def cwm_show
         loop do
           result = super
-          return result unless result == :redraw
+          return result if result != :redraw
         end
       end
     end

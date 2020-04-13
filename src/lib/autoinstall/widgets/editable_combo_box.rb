@@ -46,7 +46,7 @@ module Y2Autoinstallation
 
       # @macro seeAbstractWidget
       def value=(val)
-        change_items(items + [[val, val]]) if val && !items.map(&:first).include?(val)
+        change_items([[val, val]] + items) if val && !items.map(&:first).include?(val)
         super(val)
       end
     end
