@@ -128,10 +128,20 @@ fillup_DATA = \
 
 symbolicdir = @icondir@/hicolor/symbolic/apps
 symbolic_DATA = \
-  icons/hicolor/symbolic/apps/yast-autoyast-symbolic.svg
+  icons/hicolor/symbolic/apps/yast-autoyast-symbolic.svg \
+  icons/hicolor/symbolic/apps/yast-files-symbolic.svg \
+  icons/hicolor/symbolic/apps/yast-general-symbolic.svg \
+  icons/hicolor/symbolic/apps/yast-report-symbolic.svg \
+  icons/hicolor/symbolic/apps/yast-scripts-symbolic.svg
+
 scalabledir = @icondir@/hicolor/scalable/apps
 scalable_DATA = \
-  icons/hicolor/scalable/apps/yast-autoyast.svg
+  icons/hicolor/scalable/apps/yast-autoyast.svg \
+  icons/hicolor/scalable/apps/yast-files.svg \
+  icons/hicolor/scalable/apps/yast-general.svg \
+  icons/hicolor/scalable/apps/yast-report.svg \
+  icons/hicolor/scalable/apps/yast-scripts.svg
+
 
 EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(scrconf_DATA) $(schemafiles_DATA) $(ybin_SCRIPTS) $(desktop_DATA) $(fillup_DATA) $(ylib_DATA) $(ydialogs_DATA) $(yclients_DATA) $(symbolic_DATA) $(scalable_DATA)
 
