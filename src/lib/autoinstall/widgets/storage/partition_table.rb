@@ -38,6 +38,8 @@ module Y2Autoinstallation
           _("Partition table")
         end
 
+        # We are only interested in these types.
+        # @see https://github.com/openSUSE/libstorage-ng/blob/efcbcdaa830822c5fc7545147958696efbfed514/storage/Devices/PartitionTable.h#L43
         TYPES = [
           Y2Storage::PartitionTables::Type::GPT,
           Y2Storage::PartitionTables::Type::MSDOS,
