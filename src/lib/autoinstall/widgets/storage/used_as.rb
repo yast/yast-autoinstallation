@@ -29,7 +29,7 @@ module Y2Autoinstallation
         # Constructor
         def initialize
           textdomain "autoinst"
-          super
+          super()
           self.widget_id = "used_as"
         end
 

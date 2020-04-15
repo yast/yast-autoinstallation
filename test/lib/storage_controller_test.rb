@@ -20,6 +20,7 @@
 require_relative "../test_helper"
 require "autoinstall/storage_controller"
 require "y2storage/autoinst_profile/partitioning_section"
+require "y2storage/autoinst_profile/partition_section"
 
 describe Y2Autoinstallation::StorageController do
   subject { described_class.new(partitioning) }
@@ -39,11 +40,9 @@ describe Y2Autoinstallation::StorageController do
   describe "#update_partition" do
     let(:section) do
       Y2Storage::AutoinstProfile::PartitionSection.new_from_hashes(
-        {
-          filesystem: :btrfs,
-          mount: "/",
-          raid_name: "/dev/md0",
-        }
+        filesystem: :btrfs,
+        mount:      "/",
+        raid_name:  "/dev/md0"
       )
     end
 
@@ -78,6 +77,28 @@ describe Y2Autoinstallation::StorageController do
         subject.update_partition(section, values)
         expect(section.filesystem).to be_nil
         expect(section.mount).to be_nil
+      end
+    end
+  end
+
+  describe "#partition_usage" do
+    let(:section) do
+      Y2Storage::AutoinstProfile::PartitionSection.new_from_hashes(attrs)
+    end
+
+    context "when the section refers to a file system" do
+      let(:attrs) { { filesystem: :ext4 } }
+
+      it "returns :filesystem" do
+        expect(subject.partition_usage(section)).to eq(:filesystem)
+      end
+    end
+
+    context "when the section referes to a RAID member" do
+      let(:attrs) { { raid_name: "/dev/md0" } }
+
+      it "returns :raid" do
+        expect(subject.partition_usage(section)).to eq(:raid)
       end
     end
   end

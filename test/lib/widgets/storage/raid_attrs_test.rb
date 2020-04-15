@@ -18,9 +18,21 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/used_as"
+require "y2storage"
+require "autoinstall/storage_controller"
+require "autoinstall/widgets/storage/raid_attrs"
 require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::UsedAs do
-  include_examples "CWM::ComboBox"
+describe Y2Autoinstallation::Widgets::Storage::RaidAttrs do
+  subject { described_class.new(controller, section) }
+
+  let(:controller) do
+    instance_double(Y2Autoinstallation::StorageController)
+  end
+
+  let(:section) do
+    Y2Storage::AutoinstProfile::PartitionSection.new
+  end
+
+  include_examples "CWM::CustomWidget"
 end
