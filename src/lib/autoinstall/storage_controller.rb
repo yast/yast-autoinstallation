@@ -77,6 +77,22 @@ module Y2Autoinstallation
       end
     end
 
+    # Determines the partition usage
+    #
+    # NOTE: perhaps this logic should live in the PartitionSection class.
+    #
+    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
+    # @return [Symbol]
+    def partition_usage(section)
+      use =
+        if section.mount
+          :filesystem
+        elsif section.raid_name
+          :raid
+        end
+      use || :filesystem
+    end
+
     # It determines whether the profile was modified
     #
     # @todo Implement logic to detect whether the partitioning

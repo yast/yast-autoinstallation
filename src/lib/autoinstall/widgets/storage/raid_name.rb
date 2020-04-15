@@ -17,10 +17,27 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/used_as"
-require "cwm/rspec"
+require "yast"
+require "cwm/common_widgets"
 
-describe Y2Autoinstallation::Widgets::Storage::UsedAs do
-  include_examples "CWM::ComboBox"
+module Y2Autoinstallation
+  module Widgets
+    module Storage
+      # Determines a RAID name
+      #
+      # NOTE: perhaps this widget should be an editable combo box
+      #   containing the names of the already defined RAIDs.
+      class RaidName < CWM::InputField
+        def initalize
+          textdomain "autoinst"
+          super
+        end
+
+        # @macro seeAbstractWidget
+        def label
+          _("RAID name")
+        end
+      end
+    end
+  end
 end
