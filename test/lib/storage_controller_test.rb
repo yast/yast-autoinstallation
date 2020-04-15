@@ -35,4 +35,50 @@ describe Y2Autoinstallation::StorageController do
       expect(new_drive.type).to eq(:CT_DISK)
     end
   end
+
+  describe "#update_partition" do
+    let(:section) do
+      Y2Storage::AutoinstProfile::PartitionSection.new_from_hashes(
+        {
+          filesystem: :btrfs,
+          mount: "/",
+          raid_name: "/dev/md0",
+        }
+      )
+    end
+
+    context "when file system attributes are given" do
+      let(:values) do
+        { filesystem: :ext4, mount: "/home" }
+      end
+
+      it "sets the file system attributes" do
+        subject.update_partition(section, values)
+        expect(section.filesystem).to eq(:ext4)
+        expect(section.mount).to eq("/home")
+      end
+
+      it "clears non filesystem specific attributes" do
+        subject.update_partition(section, values)
+        expect(section.raid_name).to be_nil
+      end
+    end
+
+    context "when RAID attributes are given" do
+      let(:values) do
+        { raid_name: "/dev/md1" }
+      end
+
+      it "sets the RAID attributes" do
+        subject.update_partition(section, values)
+        expect(section.raid_name).to eq("/dev/md1")
+      end
+
+      it "clears non RAID specific attributes" do
+        subject.update_partition(section, values)
+        expect(section.filesystem).to be_nil
+        expect(section.mount).to be_nil
+      end
+    end
+  end
 end
