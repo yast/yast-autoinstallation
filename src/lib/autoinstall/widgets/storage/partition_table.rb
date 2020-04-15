@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/common_widgets"
+require "y2storage"
 
 module Y2Autoinstallation
   module Widgets
