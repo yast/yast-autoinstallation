@@ -58,6 +58,25 @@ module Y2Autoinstallation
       parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new
     end
 
+    EXCLUSIVE_PARTITION_ATTRS = [:filesystem, :mount, :raid_name].freeze
+    private_constant :EXCLUSIVE_PARTITION_ATTRS
+
+    # Updates a partition section
+    #
+    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
+    # @param values [Hash] Values to update
+    def update_partition(section, values)
+      EXCLUSIVE_PARTITION_ATTRS.each { |a| section.public_send("#{a}=", nil) }
+
+      if values[:filesystem] || values[:mount]
+        section.filesystem = values[:filesystem]
+        section.mount = values[:mount]
+        section.format = values[:format]
+      elsif values[:raid_name]
+        section.raid_name = values[:raid_name]
+      end
+    end
+
     # It determines whether the profile was modified
     #
     # @todo Implement logic to detect whether the partitioning
