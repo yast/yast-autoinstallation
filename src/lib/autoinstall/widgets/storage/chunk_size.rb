@@ -48,6 +48,7 @@ module Y2Autoinstallation
         # @macro seeComboBox
         def items
           return @items if @items
+
           sizes = []
           size = MIN_SIZE
           while size <= MAX_SIZE

@@ -80,12 +80,21 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def store
-          section.device = raid_name_widget.value
-          section.raid_options ||= Y2Storage::AutoinstProfile::RaidOptionsSection.new
-          raid_options = section.raid_options
-          raid_options.raid_type = md_level_widget.value
-          raid_options.parity_algorithm = parity_algorithm_widget.value
-          raid_options.chunk_size = chunk_size_widget.value
+          controller.update_drive(section, values)
+        end
+
+        # Returns the widgets values
+        #
+        # @return [Hash<String,Object>]
+        def values
+          {
+            "device"       => raid_name_widget.value,
+            "raid_options" => {
+              "raid_type"        => md_level_widget.value,
+              "parity_algorithm" => parity_algorithm_widget.value,
+              "chunk_size"       => chunk_size_widget.value
+            }
+          }
         end
 
       private
