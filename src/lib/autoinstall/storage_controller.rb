@@ -56,26 +56,16 @@ module Y2Autoinstallation
     #
     # @param parent [Y2Storage::AutoinstProfile::DriveSection] Parent section
     def add_partition(parent)
-      parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new
+      parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new(parent)
     end
-
-    EXCLUSIVE_PARTITION_ATTRS = [:filesystem, :mount, :raid_name].freeze
-    private_constant :EXCLUSIVE_PARTITION_ATTRS
 
     # Updates a partition section
     #
     # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
     # @param values [Hash] Values to update
     def update_partition(section, values)
-      EXCLUSIVE_PARTITION_ATTRS.each { |a| section.public_send("#{a}=", nil) }
-
-      if values[:filesystem] || values[:mount]
-        section.filesystem = values[:filesystem]
-        section.mount = values[:mount]
-        section.format = values[:format]
-      elsif values[:raid_name]
-        section.raid_name = values[:raid_name]
-      end
+      clean_section(section)
+      section.init_from_hashes(values)
     end
 
     # Determines the partition usage
@@ -100,6 +90,18 @@ module Y2Autoinstallation
     #   was modified or not.
     def modified?
       true
+    end
+
+  private
+
+    # Cleans a profile section
+    #
+    # Resets all known attributes
+    # @param [Y2Storage::AutoinstProfile::SectionWithAttributes]
+    def clean_section(section)
+      section.class.attributes.each do |attr|
+        section.public_send("#{attr[:name]}=", nil)
+      end
     end
   end
 end
