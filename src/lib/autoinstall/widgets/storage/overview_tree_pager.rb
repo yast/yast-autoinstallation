@@ -102,7 +102,7 @@ module Y2Autoinstallation
 
         # Returns the pages for a given list of partition sections
         #
-        # @param partitions [Array<Y2Storage::AutoinstProfile::PartitionSection>]
+        # @param drive [Y2Storage::AutoinstProfile::DriveSection]
         #   List of partition partition sections
         def partition_items(drive)
           drive.partitions.map do |part|
