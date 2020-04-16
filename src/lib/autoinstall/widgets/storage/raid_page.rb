@@ -21,7 +21,9 @@ require "yast"
 require "cwm/page"
 require "autoinstall/widgets/storage/add_children_button"
 require "autoinstall/widgets/storage/raid_name"
-# require "autoinstall/widgets/storage/raid_options"
+require "autoinstall/widgets/storage/md_level"
+require "autoinstall/widgets/storage/chunk_size"
+require "autoinstall/widgets/storage/parity_algorithm"
 
 module Y2Autoinstallation
   module Widgets
@@ -53,6 +55,9 @@ module Y2Autoinstallation
             Left(Heading(_("RAID"))),
             VBox(
               Left(raid_name_widget),
+              Left(md_level_widget),
+              Left(parity_algorithm_widget),
+              Left(chunk_size_widget),
               VStretch()
             ),
             HBox(
@@ -65,11 +70,22 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           raid_name_widget.value = section.device
+          raid_options = section.raid_options
+          if raid_options
+            md_level_widget.value = raid_options.raid_type.to_s
+            parity_algorithm_widget.value = raid_options.parity_algorithm
+            chunk_size_widget.value = raid_options.chunk_size
+          end
         end
 
         # @macro seeAbstractWidget
         def store
           section.device = raid_name_widget.value
+          section.raid_options ||= Y2Storage::AutoinstProfile::RaidOptionsSection.new
+          raid_options = section.raid_options
+          raid_options.raid_type = md_level_widget.value
+          raid_options.parity_algorithm = parity_algorithm_widget.value
+          raid_options.chunk_size = chunk_size_widget.value
         end
 
       private
@@ -84,7 +100,28 @@ module Y2Autoinstallation
         #
         # @return [RaidName]
         def raid_name_widget
-          Y2Autoinstallation::Widgets::Storage::RaidName.new
+          @raid_name_widget ||= RaidName.new
+        end
+
+        # RAID level widget
+        #
+        # @return [MdLevel]
+        def md_level_widget
+          @md_level_widget ||= MdLevel.new
+        end
+
+        # Parity algorithm
+        #
+        # @return [ParityAlgorithm]
+        def parity_algorithm_widget
+          @parity_algorithm_widget ||= ParityAlgorithm.new
+        end
+
+        # Chunk size
+        #
+        # @return [ChunkSize]
+        def chunk_size_widget
+          @chunk_size_widget ||= ChunkSize.new
         end
       end
     end
