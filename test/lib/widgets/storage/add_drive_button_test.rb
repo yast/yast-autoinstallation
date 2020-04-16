@@ -19,6 +19,7 @@
 
 require_relative "../../../test_helper"
 require "autoinstall/widgets/storage/add_drive_button"
+require "autoinstall/storage_controller"
 
 describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
   subject { described_class.new(controller) }
@@ -29,13 +30,24 @@ describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
   end
 
   describe "#handle" do
-    let(:event) do
-      { "ID" => :add_disk }
+    context "adding a disk" do
+      let(:event) do
+        { "ID" => :add_disk }
+      end
+
+      it "adds a disk" do
+        expect(controller).to receive(:add_drive).with(:disk)
+        subject.handle(event)
+      end
     end
 
     context "adding a disk" do
+      let(:event) do
+        { "ID" => :add_raid }
+      end
+
       it "adds a disk" do
-        expect(controller).to receive(:add_drive).with(:disk)
+        expect(controller).to receive(:add_drive).with(:raid)
         subject.handle(event)
       end
     end

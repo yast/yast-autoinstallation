@@ -50,7 +50,8 @@ module Y2Autoinstallation
         # @return [Array<Symbol,String>]
         def items
           [
-            [:add_disk, _("Disk")]
+            [:add_disk, _("Disk")],
+            [:add_raid, _("RAID")]
           ]
         end
 
@@ -58,11 +59,12 @@ module Y2Autoinstallation
         #
         # @param event [Hash] Event to handle
         def handle(event)
-          case event["ID"]
-          when :add_disk
-            controller.add_drive(:disk)
-            :redraw
-          end
+          event_id = event["ID"].to_s
+          return unless event_id.start_with?("add_")
+
+          type = event_id.split("_", 2).last
+          controller.add_drive(type.to_sym)
+          :redraw
         end
 
       private
