@@ -106,7 +106,7 @@ module Y2Autoinstallation
     # Cleans a profile section
     #
     # Resets all known attributes
-    # @param [Y2Storage::AutoinstProfile::SectionWithAttributes]
+    # @param section [Y2Storage::AutoinstProfile::SectionWithAttributes]
     def clean_section(section)
       section.class.attributes.each do |attr|
         section.public_send("#{attr[:name]}=", nil)

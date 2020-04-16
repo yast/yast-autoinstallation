@@ -32,7 +32,7 @@ module Y2Autoinstallation
           super
         end
 
-        # @macro
+        # @macro seeAbstractWidget
         def label
           _("Format")
         end
