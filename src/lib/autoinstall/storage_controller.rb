@@ -59,6 +59,15 @@ module Y2Autoinstallation
       parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new(parent)
     end
 
+    # Updates a drive section
+    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
+    # @param values [Hash] Values to update
+    def update_drive(section, values)
+      partitions = section.partitions
+      section.init_from_hashes(values.merge("type" => section.type))
+      section.partitions = partitions
+    end
+
     # Updates a partition section
     #
     # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section

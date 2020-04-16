@@ -48,7 +48,7 @@ module Y2Autoinstallation
           Y2Storage::MdLevel::RAID4,
           Y2Storage::MdLevel::RAID5,
           Y2Storage::MdLevel::RAID6,
-          Y2Storage::MdLevel::RAID10,
+          Y2Storage::MdLevel::RAID10
         ].freeze
         private_constant :ITEMS
 
