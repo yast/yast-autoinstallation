@@ -41,7 +41,8 @@ module Y2Autoinstallation
         end
 
         TYPE_LABELS = {
-          CT_DISK: N_("Partition")
+          CT_DISK: N_("Partition"),
+          CT_RAID: N_("Partition")
         }.freeze
 
         def label
