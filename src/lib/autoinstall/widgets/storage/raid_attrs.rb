@@ -59,9 +59,9 @@ module Y2Autoinstallation
 
         # Returns the widgets values
         #
-        # @return [Hash<Symbol,Object>]
+        # @return [Hash<String,Object>]
         def values
-          { raid_name: raid_name_widget.value }
+          { "raid_name" => raid_name_widget.value }
         end
 
       private
