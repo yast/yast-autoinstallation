@@ -117,8 +117,6 @@ module Y2Autoinstallation
         end
 
         # Updates the replace point with the content corresponding to the UsedAs widget value
-        #
-        # @param used_as [Symbol] :filesystem, :raid
         def update_replace_point
           replace_point.replace(selected_widget)
         end
