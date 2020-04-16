@@ -40,7 +40,8 @@ module Y2Autoinstallation
     end
 
     TYPES_MAP = {
-      disk: :CT_DISK
+      disk: :CT_DISK,
+      raid: :CT_RAID
     }.freeze
 
     # Adds a new drive section of the given type

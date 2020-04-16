@@ -41,7 +41,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
   describe "#label" do
     context "when the partition is used as a filesystem" do
       context "when the partition mount point is defined" do
-        let(:partition_hash) { { "mount" => "/opt"} }
+        let(:partition_hash) { { "mount" => "/opt" } }
 
         it "includes the mount point" do
           expect(subject.label).to include("/opt")
