@@ -40,7 +40,8 @@ module Y2Autoinstallation
     end
 
     TYPES_MAP = {
-      disk: :CT_DISK
+      disk: :CT_DISK,
+      raid: :CT_RAID
     }.freeze
 
     # Adds a new drive section of the given type
@@ -55,7 +56,41 @@ module Y2Autoinstallation
     #
     # @param parent [Y2Storage::AutoinstProfile::DriveSection] Parent section
     def add_partition(parent)
-      parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new
+      parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new(parent)
+    end
+
+    # Updates a drive section
+    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
+    # @param values [Hash] Values to update
+    def update_drive(section, values)
+      partitions = section.partitions
+      section.init_from_hashes(values.merge("type" => section.type))
+      section.partitions = partitions
+    end
+
+    # Updates a partition section
+    #
+    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
+    # @param values [Hash] Values to update
+    def update_partition(section, values)
+      clean_section(section)
+      section.init_from_hashes(values)
+    end
+
+    # Determines the partition usage
+    #
+    # NOTE: perhaps this logic should live in the PartitionSection class.
+    #
+    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
+    # @return [Symbol]
+    def partition_usage(section)
+      use =
+        if section.mount
+          :filesystem
+        elsif section.raid_name
+          :raid
+        end
+      use || :filesystem
     end
 
     # It determines whether the profile was modified
@@ -64,6 +99,18 @@ module Y2Autoinstallation
     #   was modified or not.
     def modified?
       true
+    end
+
+  private
+
+    # Cleans a profile section
+    #
+    # Resets all known attributes
+    # @param section [Y2Storage::AutoinstProfile::SectionWithAttributes]
+    def clean_section(section)
+      section.class.attributes.each do |attr|
+        section.public_send("#{attr[:name]}=", nil)
+      end
     end
   end
 end

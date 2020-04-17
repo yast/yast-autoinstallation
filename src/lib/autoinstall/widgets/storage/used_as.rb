@@ -19,58 +19,42 @@
 
 require "yast"
 require "cwm/common_widgets"
+require "cwm/custom_widget"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Button to add new drive sections
-      #
-      # This button allows to add new drive sections of different types
-      # (`CT_DISK`, `CT_LVM`, `CT_RAID`, etc.).
-      class AddDriveButton < CWM::MenuButton
-        include Yast::Logger
-
+      # Determines how a partition will be used
+      class UsedAs < CWM::ComboBox
         # Constructor
-        #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
-        def initialize(controller)
+        def initialize
           textdomain "autoinst"
           super()
-          @controller = controller
-          self.handle_all_events = true
+          self.widget_id = "used_as"
+        end
+
+        # @macro seeAbstractWidget
+        def opt
+          [:notify]
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Add")
+          _("Used as")
         end
 
-        # Returns the list of possible actions
-        #
-        # @return [Array<Symbol,String>]
+        # @macro seeComboBox
         def items
+          # FIXME: uncomment when support for each time is added
           [
-            [:add_disk, _("Disk")],
-            [:add_raid, _("RAID")]
+            ["filesystem", _("File system")],
+            ["raid", _("RAID member")]
+            # ["lvm_pv", _("LVM physical volume")],
+            # ["bcache_caching", _("Bcache caching device")],
+            # ["bcache_backing", _("Bcache backing device")],
+            # ["btrfs_member", _("Btrfs multi-device member")]
           ]
         end
-
-        # Handles the events
-        #
-        # @param event [Hash] Event to handle
-        def handle(event)
-          event_id = event["ID"].to_s
-          return unless event_id.start_with?("add_")
-
-          type = event_id.split("_", 2).last
-          controller.add_drive(type.to_sym)
-          :redraw
-        end
-
-      private
-
-        # @return [Y2Autoinstallation::StorageController]
-        attr_reader :controller
       end
     end
   end

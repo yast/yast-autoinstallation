@@ -19,8 +19,11 @@
 
 require "yast"
 require "cwm/page"
+require "cwm/replace_point"
 require "autoinstall/widgets/storage/add_children_button"
-require "autoinstall/widgets/storage/mount_point"
+require "autoinstall/widgets/storage/filesystem_attrs"
+require "autoinstall/widgets/storage/raid_attrs"
+require "autoinstall/widgets/storage/used_as"
 
 module Y2Autoinstallation
   module Widgets
@@ -44,26 +47,22 @@ module Y2Autoinstallation
           @drive = drive
           super()
           self.widget_id = "partition_page:#{section.object_id}"
+          self.handle_all_events = true
         end
 
         # @macro seeAbstractWidget
         def label
-          if section.mount && !section.mount.empty?
-            format(_("Partition at %{mount_point}"), mount_point: section.mount)
-          else
-            _("Partition")
-          end
+          send("label_as_#{controller.partition_usage(section)}")
         end
 
         # @macro seeCustomWidget
         def contents
           VBox(
             Left(Heading(_("Partition"))),
-            Left(
-              VBox(
-                mount_point_widget,
-                VStretch()
-              )
+            VBox(
+              Left(used_as_widget),
+              Left(replace_point),
+              VStretch()
             ),
             HBox(
               HStretch(),
@@ -74,12 +73,20 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
-          mount_point_widget.value = section.mount
+          used_as_widget.value = controller.partition_usage(section).to_s
+          update_replace_point
+        end
+
+        # @macro seeAbstractWidget
+        def handle(event)
+          update_replace_point if event["ID"] == "used_as"
+          nil
         end
 
         # @macro seeAbstractWidget
         def store
-          section.mount = mount_point_widget.value
+          controller.update_partition(section, selected_widget.values)
+          nil
         end
 
       private
@@ -93,11 +100,50 @@ module Y2Autoinstallation
         # @return [Y2Storage::AutoinstProfile::PartitionSection]
         attr_reader :section
 
-        # Mount point widget
+        def used_as_widget
+          @used_as_widget ||= UsedAs.new
+        end
+
+        def filesystem_widget
+          @filesystem_widget ||= FilesystemAttrs.new(controller, section)
+        end
+
+        def raid_widget
+          @raid_widget ||= RaidAttrs.new(controller, section)
+        end
+
+        def replace_point
+          @replace_point ||= CWM::ReplacePoint.new(id: "attrs", widget: filesystem_widget)
+        end
+
+        # Updates the replace point with the content corresponding to the UsedAs widget value
+        def update_replace_point
+          replace_point.replace(selected_widget)
+        end
+
+        # Returns the selected widget according to the UsedAs widget
         #
-        # @return [MountPoint]
-        def mount_point_widget
-          @mount_point_widget ||= MountPoint.new
+        # @return [CWM::AbstractWidget]
+        def selected_widget
+          send("#{used_as_widget.value}_widget")
+        end
+
+        # Returns the label when the partition is used as file system
+        #
+        # @return [String]
+        def label_as_filesystem
+          if section.mount && !section.mount.empty?
+            format(_("Partition at %{mount_point}"), mount_point: section.mount)
+          else
+            _("Partition")
+          end
+        end
+
+        # Returns the label when the partition is used as RAID member
+        #
+        # @return [String]
+        def label_as_raid
+          format(_("Part of %{device}"), device: section.raid_name)
         end
       end
     end

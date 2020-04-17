@@ -24,39 +24,37 @@ require "y2storage"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Widget to set the type of partition table to use
+      # Widget to select the MD Level
       #
-      # It corresponds to the `disklabel` element in the profile.
-      class PartitionTable < CWM::ComboBox
+      # It corresponds to the `raid_level` element within the `raid_options`
+      # of an AutoYaST profile.
+      class MdLevel < CWM::ComboBox
         # Constructor
         def initialize
           textdomain "autoinst"
-          super
+          super()
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Partition table")
+          _("RAID Level")
         end
 
-        # We are only interested in these types.
-        # @see https://github.com/openSUSE/libstorage-ng/blob/efcbcdaa830822c5fc7545147958696efbfed514/storage/Devices/PartitionTable.h#L43
-        TYPES = [
-          Y2Storage::PartitionTables::Type::GPT,
-          Y2Storage::PartitionTables::Type::MSDOS,
-          Y2Storage::PartitionTables::Type::DASD
+        # We are only interested in these levels.
+        # @see https://github.com/openSUSE/libstorage-ng/blob/ffdd9abc800f8db14523979d5e8f2a237e97aeb6/storage/Devices/Md.h#L41-L44
+        ITEMS = [
+          Y2Storage::MdLevel::RAID0,
+          Y2Storage::MdLevel::RAID1,
+          Y2Storage::MdLevel::RAID4,
+          Y2Storage::MdLevel::RAID5,
+          Y2Storage::MdLevel::RAID6,
+          Y2Storage::MdLevel::RAID10
         ].freeze
-        private_constant :TYPES
+        private_constant :ITEMS
 
-        # @return [Array<Array<String,String>>] List of possible values
+        # @macro seeComboBox
         def items
-          return @items if @items
-
-          @items = TYPES.map do |type|
-            [type.to_s, type.to_human_string]
-          end
-          @items << ["none", _("None")]
-          @items
+          ITEMS.map { |i| [i.to_s, i.to_human_string] }
         end
       end
     end

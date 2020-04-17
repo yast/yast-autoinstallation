@@ -21,6 +21,7 @@ require "cwm"
 require "cwm/tree_pager"
 require "autoinstall/widgets/storage/overview_tree"
 require "autoinstall/widgets/storage/disk_page"
+require "autoinstall/widgets/storage/raid_page"
 require "autoinstall/widgets/storage/partition_page"
 require "autoinstall/widgets/storage/add_drive_button"
 require "autoinstall/ui_state"
@@ -85,23 +86,31 @@ module Y2Autoinstallation
         # @param section [Y2Storage::AutoinstProfile::DriveSection] Drive section
         # @return [CWM::PagerTreeItem] Tree item
         def drive_item(section)
-          case section.type
-          when :CT_DISK
-            disk_item(section)
-          end
+          page_klass = page_klass_for(section.type)
+          page = page_klass.new(controller, section)
+          CWM::PagerTreeItem.new(page, children: partition_items(section))
         end
 
-        # @param section [Y2Storage::AutoinstProfile::DriveSection] Drive section corresponding
-        #   to a disk
-        def disk_item(section)
-          children = section.partitions.map do |part|
+        # Determines the widget class for the given type
+        def page_klass_for(type)
+          type ||= :CT_DISK
+          name = type.to_s.split("_", 2).last.downcase
+          Y2Autoinstallation::Widgets::Storage.const_get("#{name.capitalize}Page")
+        rescue NameError
+          Y2Autoinstallation::Widgets::Storage::DiskPage
+        end
+
+        # Returns the pages for a given list of partition sections
+        #
+        # @param drive [Y2Storage::AutoinstProfile::DriveSection]
+        #   List of partition partition sections
+        def partition_items(drive)
+          drive.partitions.map do |part|
             part_page = Y2Autoinstallation::Widgets::Storage::PartitionPage.new(
-              controller, section, part
+              controller, drive, part
             )
             CWM::PagerTreeItem.new(part_page)
           end
-          page = Y2Autoinstallation::Widgets::Storage::DiskPage.new(controller, section)
-          CWM::PagerTreeItem.new(page, children: children)
         end
       end
     end

@@ -25,18 +25,32 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::OverviewTreePager do
   subject { described_class.new(controller) }
 
-  let(:partitioning) do
-    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "mount" => "/dev/sda" }]
-    )
+  let(:partitioning) { Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(attrs) }
+  let(:attrs) do
+    [{ "device" => "/dev/sda", "partitions" => [{ "mount" => "/" }] },
+     { "type" => :CT_RAID }]
   end
 
   let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
 
   describe "#items" do
     it "returns one item for each drive" do
-      items = subject.items
-      expect(items.size).to eq(1)
+      expect(subject.items.map(&:page)).to contain_exactly(
+        an_instance_of(Y2Autoinstallation::Widgets::Storage::DiskPage),
+        an_instance_of(Y2Autoinstallation::Widgets::Storage::RaidPage)
+      )
+    end
+
+    context "when the type is unknown" do
+      let(:attrs) do
+        [{ "type" => :CT_UNKNOWN }]
+      end
+
+      it "uses considers that the section corresponds to a disk" do
+        expect(subject.items.map(&:page)).to contain_exactly(
+          an_instance_of(Y2Autoinstallation::Widgets::Storage::DiskPage)
+        )
+      end
     end
   end
 end

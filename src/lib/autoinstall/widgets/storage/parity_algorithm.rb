@@ -24,39 +24,25 @@ require "y2storage"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Widget to set the type of partition table to use
+      # Widget to select the parity algorithm for a RAID
       #
-      # It corresponds to the `disklabel` element in the profile.
-      class PartitionTable < CWM::ComboBox
+      # It corresponds to the `parity_algorithm` element within a `raid_options` section
+      # of an AutoYaST profile.
+      class ParityAlgorithm < CWM::ComboBox
         # Constructor
         def initialize
           textdomain "autoinst"
-          super
+          super()
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Partition table")
+          _("Parity Algorithm")
         end
 
-        # We are only interested in these types.
-        # @see https://github.com/openSUSE/libstorage-ng/blob/efcbcdaa830822c5fc7545147958696efbfed514/storage/Devices/PartitionTable.h#L43
-        TYPES = [
-          Y2Storage::PartitionTables::Type::GPT,
-          Y2Storage::PartitionTables::Type::MSDOS,
-          Y2Storage::PartitionTables::Type::DASD
-        ].freeze
-        private_constant :TYPES
-
-        # @return [Array<Array<String,String>>] List of possible values
+        # @macro seeComboBox
         def items
-          return @items if @items
-
-          @items = TYPES.map do |type|
-            [type.to_s, type.to_human_string]
-          end
-          @items << ["none", _("None")]
-          @items
+          Y2Storage::MdParity.all.map { |p| [p.to_s, p.to_human_string] }
         end
       end
     end

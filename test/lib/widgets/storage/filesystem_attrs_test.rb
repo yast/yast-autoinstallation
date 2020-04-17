@@ -18,38 +18,21 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/add_drive_button"
+require "y2storage"
 require "autoinstall/storage_controller"
+require "autoinstall/widgets/storage/filesystem_attrs"
+require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
-  subject { described_class.new(controller) }
+describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
+  subject { described_class.new(controller, section) }
 
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
-  let(:partitioning) do
-    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes([])
+  let(:controller) do
+    instance_double(Y2Autoinstallation::StorageController)
   end
 
-  describe "#handle" do
-    context "adding a disk" do
-      let(:event) do
-        { "ID" => :add_disk }
-      end
-
-      it "adds a disk" do
-        expect(controller).to receive(:add_drive).with(:disk)
-        subject.handle(event)
-      end
-    end
-
-    context "adding a disk" do
-      let(:event) do
-        { "ID" => :add_raid }
-      end
-
-      it "adds a disk" do
-        expect(controller).to receive(:add_drive).with(:raid)
-        subject.handle(event)
-      end
-    end
+  let(:section) do
+    Y2Storage::AutoinstProfile::PartitionSection.new
   end
+
+  include_examples "CWM::CustomWidget"
 end

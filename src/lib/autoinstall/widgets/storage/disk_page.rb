@@ -83,10 +83,19 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def store
-          section.device = disk_device_widget.value
-          section.initialize_attr = init_drive_widget.value
-          section.use = disk_usage_widget.value
-          section.disklabel = partition_table_widget.value
+          controller.update_drive(section, values)
+        end
+
+        # Returns widget values
+        #
+        # @return [Hash<String,Object>]
+        def values
+          {
+            "device"     => disk_device_widget.value,
+            "initialize" => init_drive_widget.value,
+            "use"        => disk_usage_widget.value,
+            "disklabel"  => partition_table_widget.value
+          }
         end
 
         # @macro seeAbstractWidget

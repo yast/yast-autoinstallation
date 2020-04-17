@@ -19,16 +19,14 @@
 
 require "yast"
 require "cwm/common_widgets"
-require "y2storage"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Widget to set the type of partition table to use
+      # Determines whether the file system should be formatted or not
       #
-      # It corresponds to the `disklabel` element in the profile.
-      class PartitionTable < CWM::ComboBox
-        # Constructor
+      # It corresponds to the `format` element in a `partition` section of the profile.
+      class FormatFilesystem < CWM::CheckBox
         def initialize
           textdomain "autoinst"
           super
@@ -36,27 +34,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Partition table")
-        end
-
-        # We are only interested in these types.
-        # @see https://github.com/openSUSE/libstorage-ng/blob/efcbcdaa830822c5fc7545147958696efbfed514/storage/Devices/PartitionTable.h#L43
-        TYPES = [
-          Y2Storage::PartitionTables::Type::GPT,
-          Y2Storage::PartitionTables::Type::MSDOS,
-          Y2Storage::PartitionTables::Type::DASD
-        ].freeze
-        private_constant :TYPES
-
-        # @return [Array<Array<String,String>>] List of possible values
-        def items
-          return @items if @items
-
-          @items = TYPES.map do |type|
-            [type.to_s, type.to_human_string]
-          end
-          @items << ["none", _("None")]
-          @items
+          _("Format")
         end
       end
     end
