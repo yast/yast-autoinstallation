@@ -41,7 +41,8 @@ module Y2Autoinstallation
 
     TYPES_MAP = {
       disk: :CT_DISK,
-      raid: :CT_RAID
+      raid: :CT_RAID,
+      lvm:  :CT_LVM
     }.freeze
 
     # Adds a new drive section of the given type
@@ -89,8 +90,17 @@ module Y2Autoinstallation
           :filesystem
         elsif section.raid_name
           :raid
+        elsif section.lvm_group
+          :lvm_pv
         end
       use || :filesystem
+    end
+
+    # Returns a collection of LVM devices based on LVM group names
+    #
+    # @return [Array<String>]
+    def lvm_devices
+      partitions.select(&:lvm_group).map { |p| "/dev/#{p.lvm_group}" }
     end
 
     # It determines whether the profile was modified
@@ -111,6 +121,13 @@ module Y2Autoinstallation
       section.class.attributes.each do |attr|
         section.public_send("#{attr[:name]}=", nil)
       end
+    end
+
+    # Returns partition sections
+    #
+    # @return [Array<Y2Storage::AutoinstProfile::PartitionSection>] partition sections
+    def partitions
+      partitioning.drives.map(&:partitions).flatten
     end
   end
 end

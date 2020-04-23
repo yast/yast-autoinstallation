@@ -23,6 +23,7 @@ require "cwm/replace_point"
 require "autoinstall/widgets/storage/add_children_button"
 require "autoinstall/widgets/storage/filesystem_attrs"
 require "autoinstall/widgets/storage/raid_attrs"
+require "autoinstall/widgets/storage/lvm_pv_attrs"
 require "autoinstall/widgets/storage/used_as"
 
 module Y2Autoinstallation
@@ -112,6 +113,10 @@ module Y2Autoinstallation
           @raid_widget ||= RaidAttrs.new(controller, section)
         end
 
+        def lvm_pv_widget
+          @lvm_pv_widget ||= LvmPvAttrs.new(controller, section)
+        end
+
         def replace_point
           @replace_point ||= CWM::ReplacePoint.new(id: "attrs", widget: filesystem_widget)
         end
@@ -144,6 +149,13 @@ module Y2Autoinstallation
         # @return [String]
         def label_as_raid
           format(_("Part of %{device}"), device: section.raid_name)
+        end
+
+        # Returns the label when the partition is used as LVM PV
+        #
+        # @return [String]
+        def label_as_lvm_pv
+          format(_("Partition for PV %{lvm_group}"), lvm_group: section.lvm_group)
         end
       end
     end
