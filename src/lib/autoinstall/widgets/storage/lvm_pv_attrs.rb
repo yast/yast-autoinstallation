@@ -18,60 +18,66 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "cwm/common_widgets"
+require "cwm/custom_widget"
+require "autoinstall/widgets/storage/lvm_group"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Button to add new drive sections
+      # LVM Physical Volumne attributes widget
       #
-      # This button allows to add new drive sections of different types
-      # (`CT_DISK`, `CT_LVM`, `CT_RAID`, etc.).
-      class AddDriveButton < CWM::MenuButton
-        include Yast::Logger
-
+      # This is a custom widget that groups those that are LVM specific.
+      class LvmPvAttrs < CWM::CustomWidget
         # Constructor
         #
         # @param controller [Y2Autoinstallation::StorageController] UI controller
-        def initialize(controller)
+        # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
+        #   of the profile
+        def initialize(controller, section)
           textdomain "autoinst"
           super()
           @controller = controller
-          self.handle_all_events = true
+          @section = section
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Add")
+          ""
         end
 
-        # Returns the list of possible actions
-        #
-        # @return [Array<Symbol,String>]
-        def items
-          [
-            [:add_disk, _("Disk")],
-            [:add_raid, _("RAID")],
-            [:add_lvm, _("LVM")]
-          ]
+        # @macro seeCustomWidget
+        def contents
+          VBox(
+            Left(lvm_group_widget)
+          )
         end
 
-        # Handles the events
-        #
-        # @param event [Hash] Event to handle
-        def handle(event)
-          event_id = event["ID"].to_s
-          return unless event_id.start_with?("add_")
+        # @macro seeAbstractWidget
+        def init
+          lvm_group_widget.value = section.lvm_group
+        end
 
-          type = event_id.split("_", 2).last
-          controller.add_drive(type.to_sym)
-          :redraw
+        # Returns the widgets values
+        #
+        # @return [Hash<String,Object>]
+        def values
+          { "lvm_group" => lvm_group_widget.value }
         end
 
       private
 
         # @return [Y2Autoinstallation::StorageController]
         attr_reader :controller
+
+        # @return [Y2Storage::AutoinstProfile::PartitionSection]
+        attr_reader :section
+
+        # LVM Group widget
+        #
+        # @return [VgName]
+        def lvm_group_widget
+          @lvm_group_widget ||= LvmGroup.new
+        end
       end
     end
   end
