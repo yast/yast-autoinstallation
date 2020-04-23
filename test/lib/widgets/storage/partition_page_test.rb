@@ -64,6 +64,14 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
         expect(subject.label).to eq("Part of /dev/md0")
       end
     end
+
+    context "when the partition will be used as LVM PV" do
+      let(:partition_hash) { { "lvm_group" => "/dev/system" } }
+
+      it "returns a description" do
+        expect(subject.label).to eq("Partition for PV /dev/system")
+      end
+    end
   end
 
   describe "#store" do

@@ -51,5 +51,16 @@ describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
         subject.handle(event)
       end
     end
+
+    context "adding an LVM" do
+      let(:event) do
+        { "ID" => :add_lvm }
+      end
+
+      it "adds a disk" do
+        expect(controller).to receive(:add_drive).with(:lvm)
+        subject.handle(event)
+      end
+    end
   end
 end
