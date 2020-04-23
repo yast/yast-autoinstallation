@@ -26,6 +26,8 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
   subject { described_class.new(controller, drive, partition) }
 
+  include_examples "CWM::Page"
+
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
       [{ "type" => :CT_DISK, "partitions" => [partition_hash] }]
@@ -35,8 +37,6 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
   let(:partition) { drive.partitions.first }
   let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
   let(:partition_hash) { {} }
-
-  include_examples "CWM::Page"
 
   describe "#label" do
     context "when the partition is used as a filesystem" do

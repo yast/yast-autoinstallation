@@ -25,6 +25,8 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::OverviewTreePager do
   subject { described_class.new(controller) }
 
+  include_examples "CWM::Pager"
+
   let(:partitioning) { Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(attrs) }
   let(:attrs) do
     [{ "device" => "/dev/sda", "partitions" => [{ "mount" => "/" }] },

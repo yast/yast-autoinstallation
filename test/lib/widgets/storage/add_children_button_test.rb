@@ -18,38 +18,31 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/add_drive_button"
+require "autoinstall/widgets/storage/add_children_button"
 require "autoinstall/storage_controller"
+require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
-  subject { described_class.new(controller) }
+describe Y2Autoinstallation::Widgets::Storage::AddChildrenButton do
+  subject(:widget) { described_class.new(controller, section) }
+
+  include_examples "CWM::PushButton"
 
   let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes([])
   end
+  let(:section) do
+    Y2Storage::AutoinstProfile::DriveSection.new_from_hashes(
+      type:       :CT_DISK,
+      filesystem: :btrfs,
+      mount:      "/home"
+    )
+  end
 
   describe "#handle" do
-    context "adding a disk" do
-      let(:event) do
-        { "ID" => :add_disk }
-      end
-
-      it "adds a disk" do
-        expect(controller).to receive(:add_drive).with(:disk)
-        subject.handle(event)
-      end
-    end
-
-    context "adding a RAID" do
-      let(:event) do
-        { "ID" => :add_raid }
-      end
-
-      it "adds a disk" do
-        expect(controller).to receive(:add_drive).with(:raid)
-        subject.handle(event)
-      end
+    it "add new partition section" do
+      expect(controller).to receive(:add_partition).with(section)
+      widget.handle
     end
   end
 end
