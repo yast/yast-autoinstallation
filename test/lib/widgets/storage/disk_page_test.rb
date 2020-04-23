@@ -26,6 +26,8 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::DiskPage do
   subject { described_class.new(controller, drive) }
 
+  include_examples "CWM::Page"
+
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
       [{ "type" => :CT_DISK }]
