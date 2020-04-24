@@ -30,9 +30,10 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
 
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "type" => :CT_DISK, "partitions" => [partition_hash] }]
+      [{ "type" => type, "partitions" => [partition_hash] }]
     )
   end
+  let(:type) { :CT_DISK }
   let(:drive) { partitioning.drives.first }
   let(:partition) { drive.partitions.first }
   let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
@@ -70,6 +71,20 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
 
       it "returns a description" do
         expect(subject.label).to eq("Partition for PV /dev/system")
+      end
+    end
+  end
+
+  describe "#contents" do
+    context "when the partition belongs to an LVM" do
+      let(:type) { :CT_LVM }
+
+      it "includes LVM partition attributes" do
+        widget = subject.contents.nested_find do |w|
+          w.is_a?(Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs)
+        end
+
+        expect(widget).to_not be_nil
       end
     end
   end
