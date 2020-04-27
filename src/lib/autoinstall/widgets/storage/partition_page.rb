@@ -25,6 +25,7 @@ require "autoinstall/widgets/storage/add_children_button"
 require "autoinstall/widgets/storage/filesystem_attrs"
 require "autoinstall/widgets/storage/raid_attrs"
 require "autoinstall/widgets/storage/lvm_pv_attrs"
+require "autoinstall/widgets/storage/size"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
 require "autoinstall/widgets/storage/used_as"
 
@@ -63,6 +64,10 @@ module Y2Autoinstallation
           VBox(
             Left(Heading(_("Partition"))),
             VBox(
+              HBox(
+                HWeight(1, size_widget),
+                HWeight(2, HStretch())
+              ),
               Left(drive_dependent_attrs_widget),
               Left(used_as_widget),
               Left(replace_point),
@@ -77,6 +82,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
+          size_widget.value = section.size
           used_as_widget.value = controller.partition_usage(section).to_s
           update_replace_point
         end
@@ -90,6 +96,7 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def store
           values = selected_widget.values
+          values["size"] = size_widget.value
 
           if drive_dependent_attrs_widget.respond_to?(:values)
             values.merge!(drive_dependent_attrs_widget.values)
@@ -109,6 +116,10 @@ module Y2Autoinstallation
 
         # @return [Y2Storage::AutoinstProfile::PartitionSection]
         attr_reader :section
+
+        def size_widget
+          @size_widget ||= Size.new
+        end
 
         def used_as_widget
           @used_as_widget ||= UsedAs.new
