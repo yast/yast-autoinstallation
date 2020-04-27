@@ -76,10 +76,18 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
   end
 
   describe "#contents" do
+    it "constains a widget to fill the size" do
+      widget = subject.contents.nested_find do |w|
+        w.is_a?(Y2Autoinstallation::Widgets::Storage::Size)
+      end
+
+      expect(widget).to_not be_nil
+    end
+
     context "when the partition belongs to an LVM" do
       let(:type) { :CT_LVM }
 
-      it "includes LVM partition attributes" do
+      it "contains LVM partition attributes" do
         widget = subject.contents.nested_find do |w|
           w.is_a?(Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs)
         end
