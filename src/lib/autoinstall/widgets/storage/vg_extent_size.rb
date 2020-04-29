@@ -26,6 +26,12 @@ module Y2Autoinstallation
     module Storage
       # Widget for the LVM VG extent size
       class VgExtentSize < SizeSelector
+        # Constructor
+        def initialize
+          textdomain "autoinst"
+          super
+        end
+
         # @macro seeAbstractWidget
         def label
           # TRANSLATORS: field to enter the extent size of a new volume group
