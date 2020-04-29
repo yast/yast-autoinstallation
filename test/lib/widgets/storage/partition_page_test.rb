@@ -78,7 +78,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
   describe "#contents" do
     it "constains a widget to fill the size" do
       widget = subject.contents.nested_find do |w|
-        w.is_a?(Y2Autoinstallation::Widgets::Storage::Size)
+        w.is_a?(Y2Autoinstallation::Widgets::Storage::SizeSelector)
       end
 
       expect(widget).to_not be_nil
