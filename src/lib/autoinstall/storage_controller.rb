@@ -100,7 +100,7 @@ module Y2Autoinstallation
     #
     # @return [Array<String>]
     def lvm_devices
-      partitions.select(&:lvm_group).map { |p| "/dev/#{p.lvm_group}" }
+      drives(type: :lvm).map { |d| d.device.delete_prefix("/dev/") }
     end
 
     # It determines whether the profile was modified
@@ -123,11 +123,14 @@ module Y2Autoinstallation
       end
     end
 
-    # Returns partition sections
+    # Returns drive sections
     #
-    # @return [Array<Y2Storage::AutoinstProfile::PartitionSection>] partition sections
-    def partitions
-      partitioning.drives.map(&:partitions).flatten
+    # @param type [Symbol] an specific drive type, such as :lvm, :disk, :raid
+    # @return [Array<Y2Storage::AutoinstProfile::DriveSection>] drive sections
+    def drives(type: nil)
+      return partitioning.drives unless type
+
+      partitioning.drives.select { |d| d.type == TYPES_MAP[type] }
     end
   end
 end

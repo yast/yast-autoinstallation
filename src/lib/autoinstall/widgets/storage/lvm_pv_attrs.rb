@@ -54,6 +54,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
+          lvm_group_widget.items = controller.lvm_devices
           lvm_group_widget.value = section.lvm_group
         end
 
