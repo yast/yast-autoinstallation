@@ -35,7 +35,7 @@ describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
         { "ID" => :add_disk }
       end
 
-      it "adds a disk" do
+      it "adds a disk drive section" do
         expect(controller).to receive(:add_drive).with(:disk)
         subject.handle(event)
       end
@@ -46,7 +46,7 @@ describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
         { "ID" => :add_raid }
       end
 
-      it "adds a disk" do
+      it "adds a RAID drive section" do
         expect(controller).to receive(:add_drive).with(:raid)
         subject.handle(event)
       end
@@ -57,7 +57,7 @@ describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
         { "ID" => :add_lvm }
       end
 
-      it "adds a disk" do
+      it "adds an LVM drive section" do
         expect(controller).to receive(:add_drive).with(:lvm)
         subject.handle(event)
       end
