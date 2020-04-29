@@ -25,7 +25,7 @@ require "autoinstall/widgets/storage/add_children_button"
 require "autoinstall/widgets/storage/filesystem_attrs"
 require "autoinstall/widgets/storage/raid_attrs"
 require "autoinstall/widgets/storage/lvm_pv_attrs"
-require "autoinstall/widgets/storage/size"
+require "autoinstall/widgets/storage/size_selector"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
 require "autoinstall/widgets/storage/used_as"
 
@@ -118,7 +118,7 @@ module Y2Autoinstallation
         attr_reader :section
 
         def size_widget
-          @size_widget ||= Size.new
+          @size_widget ||= SizeSelector.new
         end
 
         def used_as_widget

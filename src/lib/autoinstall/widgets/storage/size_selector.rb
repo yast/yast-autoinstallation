@@ -25,14 +25,7 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # Determines the size of a section
-      class Size < CWM::ComboBox
-        ITEMS = [
-          "",
-          "auto",
-          "max"
-        ].freeze
-        private_constant :ITEMS
-
+      class SizeSelector < CWM::ComboBox
         # Constructor
         def initialize
           textdomain "autoinst"
@@ -46,7 +39,15 @@ module Y2Autoinstallation
 
         # @macro seeComboBox
         def items
-          @items ||= ITEMS.map { |i| [i, i] }
+          return @items if @items
+
+          items = []
+          items << "" if include_blank?
+          items << "auto" if include_auto?
+          items << "max" if include_max?
+          items += sizes
+
+          @items ||= items.map { |i| [i, i] }
         end
 
         # Returns selected size
@@ -61,6 +62,43 @@ module Y2Autoinstallation
           super(formatted_size(size))
         end
 
+        # Returns available sizes
+        #
+        # @return [Array<String>] available size options
+        def sizes
+          []
+        end
+
+        # Whether items should include a blank option
+        #
+        # @return [Boolean]
+        def include_blank?
+          true
+        end
+
+        # Whether items should include the "auto" option
+        #
+        # @return [Boolean]
+        def include_auto?
+          true
+        end
+
+        # Whether items should include the "max" option
+        #
+        # @return [Boolean]
+        def include_max?
+          true
+        end
+
+        # Whether the size units should be considered as base 2 units
+        #
+        # @see {Y2Storage::DiskSize#parse}
+        #
+        # @return [Boolean]
+        def legacy_units?
+          true
+        end
+
         # @macro seeAbstractWidget
         def opt
           [:editable]
@@ -72,7 +110,7 @@ module Y2Autoinstallation
         #
         # @return [String] a human readable disk size or given value when cannot perform the format
         def formatted_size(size)
-          Y2Storage::DiskSize.from_s(size.to_s).to_human_string
+          Y2Storage::DiskSize.from_s(size.to_s, legacy_units: legacy_units?).to_human_string
         rescue TypeError
           size
         end
