@@ -26,7 +26,7 @@ module Y2Autoinstallation
       # Widget to select the physical volume for a volume group
       #
       # It corresponds to the `device` element in the profile.
-      class VgDevice < CWM::ComboBox
+      class VgDevice < CWM::InputField
         def initialize
           textdomain "autoinst"
           super
@@ -37,13 +37,22 @@ module Y2Autoinstallation
           _("Device")
         end
 
-        # @macro seeAbstractWidget
-        def opt
-          [:editable]
+        def value
+          prefix(super)
         end
 
-        def items=(devices)
-          change_items(devices.map { |i| [i, i] })
+        def value=(device)
+          super(prefix(device))
+        end
+
+      private
+
+        # Ensure that device starts with /dev/
+        #
+        # @param device [String] device name to check
+        # @return [String] the device name properly prefixed
+        def prefix(device)
+          device.start_with?("/dev/") ? device : "/dev/#{device}"
         end
       end
     end

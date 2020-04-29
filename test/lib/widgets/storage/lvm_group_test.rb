@@ -17,34 +17,28 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "cwm/common_widgets"
+require_relative "../../../test_helper"
+require "autoinstall/widgets/storage/lvm_group"
+require "cwm/rspec"
 
-module Y2Autoinstallation
-  module Widgets
-    module Storage
-      # Determines an LVM group name
-      class LvmGroup < CWM::ComboBox
-        def initalize
-          textdomain "autoinst"
-          super
-        end
+describe Y2Autoinstallation::Widgets::Storage::LvmGroup do
+  subject(:widget) { described_class.new }
 
-        # @macro seeAbstractWidget
-        def label
-          _("LVM group")
-        end
+  include_examples "CWM::ComboBox"
 
-        # @macro seeAbstractWidget
-        def opt
-          [:editable]
-        end
+  describe "#items=" do
+    let(:devices)   { ["vg-system", "vg-home"] }
 
-        def items=(devices)
-          values = [["", ""]] + devices.map { |i| [i, i] }
-          change_items(values)
-        end
-      end
+    it "updates the widget with given devices including an empty option" do
+      expect(widget).to receive(:change_items).with(
+        [
+          ["", ""],
+          ["vg-system", "vg-system"],
+          ["vg-home", "vg-home"]
+        ]
+      )
+
+      widget.items = devices
     end
   end
 end
