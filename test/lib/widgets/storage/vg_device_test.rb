@@ -24,22 +24,53 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::VgDevice do
   subject(:widget) { described_class.new }
 
-  include_examples "CWM::ComboBox"
+  include_examples "CWM::InputField"
 
-  describe "#items=" do
-    let(:vg_system) { "/dev/vg-system" }
-    let(:vg_home) { "/dev/vg-home" }
-    let(:devices) { [vg_system, vg_home] }
+  describe "value" do
+    before do
+      allow(Yast::UI).to receive(:QueryWidget)
+        .with(Id(widget.widget_id), :Value)
+        .and_return(value)
+    end
 
-    it "updates the widget with given items" do
-      expect(widget).to receive(:change_items).with(
-        [
-          [vg_system, vg_system],
-          [vg_home, vg_home]
-        ]
-      )
+    context "when current value already contains the /dev/ prefix" do
+      let(:value) { "/dev/system" }
 
-      widget.items = devices
+      it "returns the value as it is" do
+        expect(widget.value).to eq("/dev/system")
+      end
+    end
+
+    context "when current value does not contain the /dev/ prefix" do
+      let(:value) { "system" }
+
+      it "returns the value properly prefixed" do
+        expect(widget.value).to eq("/dev/system")
+      end
+    end
+  end
+
+  describe "value=" do
+    context "when given value already contains the /dev/ prefix" do
+      let(:value) { "/dev/system" }
+
+      it "updates the widget with the value as it is" do
+        expect(Yast::UI).to receive(:ChangeWidget)
+          .with(Id(widget.widget_id), :Value, value)
+
+        widget.value = value
+      end
+    end
+
+    context "when given value does not contain the /dev/ prefix" do
+      let(:value) { "system" }
+
+      it "updates the widget with the value properly prefixed" do
+        expect(Yast::UI).to receive(:ChangeWidget)
+          .with(Id(widget.widget_id), :Value, "/dev/system")
+
+        widget.value = value
+      end
     end
   end
 end

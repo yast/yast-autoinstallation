@@ -69,7 +69,6 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
-          vg_device_widget.items = controller.lvm_devices
           vg_device_widget.value = section.device
           vg_pesize_widget.value = section.pesize
         end

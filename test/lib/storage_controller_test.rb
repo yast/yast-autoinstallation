@@ -112,29 +112,26 @@ describe Y2Autoinstallation::StorageController do
   end
 
   describe "#lvm_devices" do
-    before do
-      subject.add_drive(:CT_DISK)
-
-      drive = subject.partitioning.drives.first
-      subject.add_partition(drive)
-
-      partition = drive.partitions.first
-      subject.update_partition(partition, attrs)
-    end
-
-    context "when there are no LVM PV sections" do
-      let(:attrs) { { raid_name: "/dev/md0" } }
-
+    context "when there are no LVM drive sections" do
       it "returns an empty collection" do
         expect(subject.lvm_devices).to eq([])
       end
     end
 
-    context "when there are LVM PV sections" do
-      let(:attrs) { { lvm_group: "system" } }
+    context "when there are LVM drive section" do
+      before do
+        subject.add_drive(:lvm)
+        subject.add_drive(:lvm)
 
-      it "returns a collection of LVM devices" do
-        expect(subject.lvm_devices).to eq(["/dev/system"])
+        vg0 = subject.partitioning.drives[0]
+        vg1 = subject.partitioning.drives[1]
+
+        subject.update_drive(vg0, device: "/dev/vg-0")
+        subject.update_drive(vg1, device: "/dev/vg-1")
+      end
+
+      it "returns a collection of LVM drive sections device" do
+        expect(subject.lvm_devices).to eq(["vg-0", "vg-1"])
       end
     end
   end
