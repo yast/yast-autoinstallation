@@ -40,7 +40,7 @@ describe Y2Autoinstallation::Widgets::Storage::AddChildrenButton do
   end
 
   describe "#handle" do
-    it "add new partition section" do
+    it "adds new partition section" do
       expect(controller).to receive(:add_partition).with(section)
       widget.handle
     end
