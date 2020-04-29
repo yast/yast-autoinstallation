@@ -94,7 +94,7 @@ describe Y2Autoinstallation::StorageController do
       end
     end
 
-    context "when the section referes to a RAID member" do
+    context "when the section refers to a RAID member" do
       let(:attrs) { { raid_name: "/dev/md0" } }
 
       it "returns :raid" do
@@ -102,7 +102,7 @@ describe Y2Autoinstallation::StorageController do
       end
     end
 
-    context "when the section referes to a LVM PV" do
+    context "when the section refers to an LVM PV" do
       let(:attrs) { { lvm_group: "system" } }
 
       it "returns :lvm_pv" do
@@ -122,7 +122,7 @@ describe Y2Autoinstallation::StorageController do
       subject.update_partition(partition, attrs)
     end
 
-    context "when there are not LVM PV sections" do
+    context "when there are no LVM PV sections" do
       let(:attrs) { { raid_name: "/dev/md0" } }
 
       it "returns an empty collection" do

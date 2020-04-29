@@ -92,7 +92,7 @@ module Y2Autoinstallation
 
         # Whether the size units should be considered as base 2 units
         #
-        # @see {Y2Storage::DiskSize#parse}
+        # @see Y2Storage::DiskSize#parse
         #
         # @return [Boolean]
         def legacy_units?
