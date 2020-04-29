@@ -48,7 +48,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          format(_("Drive: LVM %{device}"), device: section.device)
+          format(_("LVM %{device}"), device: section.device)
         end
 
         # @macro seeCustomWidget
