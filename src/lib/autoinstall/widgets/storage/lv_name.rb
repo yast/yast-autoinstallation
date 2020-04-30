@@ -19,41 +19,20 @@
 
 require "yast"
 require "cwm/common_widgets"
-require "cwm/custom_widget"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Determines how a partition will be used
-      class UsedAs < CWM::ComboBox
-        # Constructor
-        def initialize
+      # Determines the LVM LV name
+      class LvName < CWM::InputField
+        def initalize
           textdomain "autoinst"
-          super()
-          self.widget_id = "used_as"
-        end
-
-        # @macro seeAbstractWidget
-        def opt
-          [:notify]
+          super
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Used as")
-        end
-
-        # @macro seeComboBox
-        def items
-          # FIXME: uncomment when support for each time is added
-          [
-            ["filesystem", _("File system")],
-            ["raid", _("RAID member")],
-            ["lvm_pv", _("LVM physical volume")]
-            # ["bcache_caching", _("Bcache caching device")],
-            # ["bcache_backing", _("Bcache backing device")],
-            # ["btrfs_member", _("Btrfs multi-device member")]
-          ]
+          _("LV name")
         end
       end
     end

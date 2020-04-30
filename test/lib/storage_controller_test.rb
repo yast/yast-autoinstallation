@@ -94,11 +94,44 @@ describe Y2Autoinstallation::StorageController do
       end
     end
 
-    context "when the section referes to a RAID member" do
+    context "when the section refers to a RAID member" do
       let(:attrs) { { raid_name: "/dev/md0" } }
 
       it "returns :raid" do
         expect(subject.partition_usage(section)).to eq(:raid)
+      end
+    end
+
+    context "when the section refers to an LVM PV" do
+      let(:attrs) { { lvm_group: "system" } }
+
+      it "returns :lvm_pv" do
+        expect(subject.partition_usage(section)).to eq(:lvm_pv)
+      end
+    end
+  end
+
+  describe "#lvm_devices" do
+    context "when there are no LVM drive sections" do
+      it "returns an empty collection" do
+        expect(subject.lvm_devices).to eq([])
+      end
+    end
+
+    context "when there are LVM drive section" do
+      before do
+        subject.add_drive(:lvm)
+        subject.add_drive(:lvm)
+
+        vg0 = subject.partitioning.drives[0]
+        vg1 = subject.partitioning.drives[1]
+
+        subject.update_drive(vg0, device: "/dev/vg-0")
+        subject.update_drive(vg1, device: "/dev/vg-1")
+      end
+
+      it "returns a collection of LVM drive sections device" do
+        expect(subject.lvm_devices).to eq(["vg-0", "vg-1"])
       end
     end
   end

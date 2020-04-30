@@ -18,39 +18,45 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/raid_page"
+require "autoinstall/widgets/storage/lvm_page"
 require "autoinstall/storage_controller"
 require "y2storage/autoinst_profile"
 require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::RaidPage do
+describe Y2Autoinstallation::Widgets::Storage::LvmPage do
   subject { described_class.new(controller, drive) }
 
   include_examples "CWM::Page"
 
-  let(:partitioning) do
-    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "device" => "/dev/md0", "type" => :CT_RAID }]
-    )
-  end
   let(:drive) { partitioning.drives.first }
   let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
 
-  let(:raid_name_widget) do
-    instance_double(
-      Y2Autoinstallation::Widgets::Storage::RaidName,
-      value: "/dev/md1"
+  let(:partitioning) do
+    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+      [{ "device" => "/dev/system", "type" => :CT_LVM, "pesize" => "64" }]
     )
+  end
+  let(:vg_device_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::VgDevice)
+  end
+
+  let(:vg_pesize_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::VgExtentSize)
   end
 
   before do
-    allow(Y2Autoinstallation::Widgets::Storage::RaidName)
-      .to receive(:new).and_return(raid_name_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::VgDevice)
+      .to receive(:new).and_return(vg_device_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::VgExtentSize)
+      .to receive(:new).and_return(vg_pesize_widget)
+
+    allow(vg_device_widget).to receive(:value=)
+    allow(vg_pesize_widget).to receive(:value=)
   end
 
   describe "#init" do
-    it "sets the widget initial values" do
-      expect(raid_name_widget).to receive(:value=).with("/dev/md0")
+    it "sets the vg physical extent size" do
+      expect(vg_pesize_widget).to receive(:value=)
       subject.init
     end
   end

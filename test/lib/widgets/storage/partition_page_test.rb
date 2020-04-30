@@ -26,17 +26,18 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
   subject { described_class.new(controller, drive, partition) }
 
+  include_examples "CWM::Page"
+
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "type" => :CT_DISK, "partitions" => [partition_hash] }]
+      [{ "type" => type, "partitions" => [partition_hash] }]
     )
   end
+  let(:type) { :CT_DISK }
   let(:drive) { partitioning.drives.first }
   let(:partition) { drive.partitions.first }
   let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
   let(:partition_hash) { {} }
-
-  include_examples "CWM::Page"
 
   describe "#label" do
     context "when the partition is used as a filesystem" do
@@ -62,6 +63,36 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
 
       it "returns a description" do
         expect(subject.label).to eq("Part of /dev/md0")
+      end
+    end
+
+    context "when the partition will be used as LVM PV" do
+      let(:partition_hash) { { "lvm_group" => "/dev/system" } }
+
+      it "returns a description" do
+        expect(subject.label).to eq("Partition for PV /dev/system")
+      end
+    end
+  end
+
+  describe "#contents" do
+    it "constains a widget to fill the size" do
+      widget = subject.contents.nested_find do |w|
+        w.is_a?(Y2Autoinstallation::Widgets::Storage::SizeSelector)
+      end
+
+      expect(widget).to_not be_nil
+    end
+
+    context "when the partition belongs to an LVM" do
+      let(:type) { :CT_LVM }
+
+      it "contains LVM partition attributes" do
+        widget = subject.contents.nested_find do |w|
+          w.is_a?(Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs)
+        end
+
+        expect(widget).to_not be_nil
       end
     end
   end
