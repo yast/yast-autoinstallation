@@ -49,10 +49,20 @@ module Y2Autoinstallation
 
         # Ensure that device starts with /dev/
         #
-        # @param device [String] device name to check
+        # @param device [String, nil] device name to check
         # @return [String] the device name properly prefixed
         def prefix(device)
+          return "" if blank?(device)
+
           device.start_with?("/dev/") ? device : "/dev/#{device}"
+        end
+
+        # Checks whether the given value is blank
+        #
+        # @param val [String, nil] value to check
+        # @return [Boolean]
+        def blank?(val)
+          val.nil? || val.empty?
         end
       end
     end
