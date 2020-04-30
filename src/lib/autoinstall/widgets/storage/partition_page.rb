@@ -21,7 +21,6 @@ require "yast"
 require "cwm/page"
 require "cwm/replace_point"
 require "cwm/common_widgets"
-require "autoinstall/widgets/storage/add_children_button"
 require "autoinstall/widgets/storage/filesystem_attrs"
 require "autoinstall/widgets/storage/raid_attrs"
 require "autoinstall/widgets/storage/lvm_pv_attrs"
@@ -40,50 +39,40 @@ module Y2Autoinstallation
         # Constructor
         #
         # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param drive [Y2Storage::AutoinstProfile::DriveSection] Drive section
-        #   of the profile
-        # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
-        #   of the profile
-        def initialize(controller, drive, section)
+        # @param partition [Presenters::Partition] presenter for a partition section of the profile
+        def initialize(controller, partition)
           textdomain "autoinst"
           @controller = controller
-          @section = section
-          @drive = drive
+          @partition = partition
           super()
-          self.widget_id = "partition_page:#{section.object_id}"
+          self.widget_id = "partition_page:#{partition.section_id}"
           self.handle_all_events = true
         end
 
         # @macro seeAbstractWidget
         def label
-          send("label_as_#{controller.partition_usage(section)}")
+          partition.ui_label
         end
 
         # @macro seeCustomWidget
         def contents
           VBox(
             Left(Heading(_("Partition"))),
-            VBox(
-              HBox(
-                HWeight(1, size_widget),
-                HWeight(2, HStretch())
-              ),
-              Left(drive_dependent_attrs_widget),
-              Left(used_as_widget),
-              Left(replace_point),
-              VStretch()
-            ),
             HBox(
-              HStretch(),
-              AddChildrenButton.new(controller, drive)
-            )
+              HWeight(1, size_widget),
+              HWeight(2, HStretch())
+            ),
+            Left(drive_dependent_attrs_widget),
+            Left(used_as_widget),
+            Left(replace_point),
+            VStretch()
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          size_widget.value = section.size
-          used_as_widget.value = controller.partition_usage(section).to_s
+          size_widget.value = partition.size
+          used_as_widget.value = partition.usage.to_s
           update_replace_point
         end
 
@@ -102,8 +91,12 @@ module Y2Autoinstallation
             values.merge!(drive_dependent_attrs_widget.values)
           end
 
-          controller.update_partition(section, values)
+          partition.update(values)
           nil
+        end
+
+        def section
+          partition.section
         end
 
       private
@@ -111,11 +104,7 @@ module Y2Autoinstallation
         # @return [Y2Autoinstallation::StorageController]
         attr_reader :controller
 
-        # @return [Y2Storage::AutoinstProfile::DriveSection]
-        attr_reader :drive
-
-        # @return [Y2Storage::AutoinstProfile::PartitionSection]
-        attr_reader :section
+        attr_reader :partition
 
         def size_widget
           @size_widget ||= SizeSelector.new
@@ -126,23 +115,23 @@ module Y2Autoinstallation
         end
 
         def filesystem_widget
-          @filesystem_widget ||= FilesystemAttrs.new(controller, section)
+          @filesystem_widget ||= FilesystemAttrs.new(controller, partition)
         end
 
         def raid_widget
-          @raid_widget ||= RaidAttrs.new(controller, section)
+          @raid_widget ||= RaidAttrs.new(controller, partition)
         end
 
         def lvm_pv_widget
-          @lvm_pv_widget ||= LvmPvAttrs.new(controller, section)
+          @lvm_pv_widget ||= LvmPvAttrs.new(controller, partition)
         end
 
         def drive_dependent_attrs_widget
           @drive_dependent_attrs_widget ||=
             begin
-              drive_type = drive.type.to_s.delete_prefix("CT_")
+              drive_type = partition.drive_type.to_s
               widget = "#{drive_type.capitalize}PartitionAttrs"
-              Y2Autoinstallation::Widgets::Storage.const_get(widget).new(controller, section)
+              Y2Autoinstallation::Widgets::Storage.const_get(widget).new(controller, partition)
             rescue NameError
               CWM::Empty.new("drive_dependent_attrs")
             end
@@ -162,31 +151,6 @@ module Y2Autoinstallation
         # @return [CWM::AbstractWidget]
         def selected_widget
           send("#{used_as_widget.value}_widget")
-        end
-
-        # Returns the label when the partition is used as file system
-        #
-        # @return [String]
-        def label_as_filesystem
-          if section.mount && !section.mount.empty?
-            format(_("Partition at %{mount_point}"), mount_point: section.mount)
-          else
-            _("Partition")
-          end
-        end
-
-        # Returns the label when the partition is used as RAID member
-        #
-        # @return [String]
-        def label_as_raid
-          format(_("Part of %{device}"), device: section.raid_name)
-        end
-
-        # Returns the label when the partition is used as LVM PV
-        #
-        # @return [String]
-        def label_as_lvm_pv
-          format(_("Partition for PV %{lvm_group}"), lvm_group: section.lvm_group)
         end
       end
     end
