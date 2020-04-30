@@ -25,6 +25,7 @@ require "autoinstall/widgets/storage/raid_page"
 require "autoinstall/widgets/storage/lvm_page"
 require "autoinstall/widgets/storage/partition_page"
 require "autoinstall/widgets/storage/add_drive_button"
+require "autoinstall/widgets/storage/add_partition_button"
 require "autoinstall/ui_state"
 
 module Y2Autoinstallation
@@ -44,13 +45,18 @@ module Y2Autoinstallation
         def contents
           VBox(
             super,
-            Left(AddDriveButton.new(controller))
+            Left(
+              HBox(
+                AddDriveButton.new(controller),
+                AddPartitionButton.new(controller)
+              )
+            )
           )
         end
 
         # @return [Array<CWM::PagerTreeItem>] List of tree items
         def items
-          controller.partitioning.drives.each_with_object([]) do |drive, all|
+          controller.drive_presenters.each_with_object([]) do |drive, all|
             all << drive_item(drive)
           end
         end
@@ -63,6 +69,7 @@ module Y2Autoinstallation
         # @param page [CWM::Page] Page to change to
         def switch_page(page)
           UIState.instance.go_to_tree_node(page)
+          controller.section = page.section
           tree.change_items(items)
           super
         end
@@ -70,7 +77,7 @@ module Y2Autoinstallation
         # Ensures the tree is properly initialized according to the UI state after
         # a redraw
         def initial_page
-          UIState.instance.find_tree_node(@pages) || super
+          controller_page || UIState.instance.find_tree_node(@pages) || super
         end
 
       private
@@ -80,6 +87,12 @@ module Y2Autoinstallation
 
         def tree
           @tree ||= OverviewTree.new(items)
+        end
+
+        def controller_page
+          return nil unless controller.section
+
+          @pages.find { |page| page.section == controller.section }
         end
 
         # Returns the drive item for the given section
@@ -94,22 +107,18 @@ module Y2Autoinstallation
 
         # Determines the widget class for the given type
         def page_klass_for(type)
-          type ||= :CT_DISK
-          name = type.to_s.split("_", 2).last.downcase
-          Y2Autoinstallation::Widgets::Storage.const_get("#{name.capitalize}Page")
+          Y2Autoinstallation::Widgets::Storage.const_get("#{type.to_s.capitalize}Page")
         rescue NameError
           Y2Autoinstallation::Widgets::Storage::DiskPage
         end
 
         # Returns the pages for a given list of partition sections
         #
-        # @param drive [Y2Storage::AutoinstProfile::DriveSection]
+        # @param drive [Presenters::Drive]
         #   List of partition partition sections
         def partition_items(drive)
           drive.partitions.map do |part|
-            part_page = Y2Autoinstallation::Widgets::Storage::PartitionPage.new(
-              controller, drive, part
-            )
+            part_page = Y2Autoinstallation::Widgets::Storage::PartitionPage.new(controller, part)
             CWM::PagerTreeItem.new(part_page)
           end
         end

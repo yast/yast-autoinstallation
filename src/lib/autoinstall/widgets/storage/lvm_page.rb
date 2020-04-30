@@ -19,8 +19,7 @@
 
 require "yast"
 require "y2storage"
-require "cwm/page"
-require "autoinstall/widgets/storage/add_children_button"
+require "autoinstall/widgets/storage/drive_page"
 require "autoinstall/widgets/storage/vg_device"
 require "autoinstall/widgets/storage/vg_extent_size"
 require "autoinstall/widgets/storage/md_level"
@@ -31,51 +30,21 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # This page allows to edit a `drive` section representing an LVM
-      class LvmPage < ::CWM::Page
-        # Constructor
-        #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param section [Y2Storage::AutoinstProfile::DriveSection] Drive section corresponding
-        #   to a RAID
-        def initialize(controller, section)
-          textdomain "autoinst"
-          @controller = controller
-          @section = section
-          super()
-          self.widget_id = "raid_page:#{section.object_id}"
-          self.handle_all_events = true
-        end
-
-        # @macro seeAbstractWidget
-        def label
-          format(_("LVM %{device}"), device: section.device)
-        end
-
+      class LvmPage < DrivePage
         # @macro seeCustomWidget
         def contents
           VBox(
             Left(Heading(_("LVM"))),
-            VBox(
-              Left(vg_device_widget),
-              Left(vg_pesize_widget),
-              VStretch()
-            ),
-            HBox(
-              HStretch(),
-              AddChildrenButton.new(controller, section)
-            )
+            Left(vg_device_widget),
+            Left(vg_pesize_widget),
+            VStretch()
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          vg_device_widget.value = section.device
-          vg_pesize_widget.value = section.pesize
-        end
-
-        # @macro seeAbstractWidget
-        def store
-          controller.update_drive(section, values)
+          vg_device_widget.value = drive.device
+          vg_pesize_widget.value = drive.pesize
         end
 
         # Returns the widgets values
@@ -89,12 +58,6 @@ module Y2Autoinstallation
         end
 
       private
-
-        # @return [Y2Autoinstallation::StorageController]
-        attr_reader :controller
-
-        # @return [Y2Storage::AutoinstProfile::DriveSection]
-        attr_reader :section
 
         # LVM VG name input field
         #

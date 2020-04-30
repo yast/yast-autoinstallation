@@ -18,59 +18,51 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "cwm/common_widgets"
-require "autoinstall/presenters"
+require "y2storage"
+require "cwm/page"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Button to add new drive sections
-      #
-      # This button allows to add new drive sections of different types
-      # (`CT_DISK`, `CT_LVM`, `CT_RAID`, etc.).
-      class AddDriveButton < CWM::MenuButton
-        include Yast::Logger
-
+      # Base class for all the pages allowing to edit a <drive> section
+      class DrivePage < ::CWM::Page
         # Constructor
         #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
-        def initialize(controller)
+        # @param controller [StorageController] UI controller
+        # @param drive [Presenters::Drive] presenter for the drive section of the profile
+        def initialize(controller, drive)
           textdomain "autoinst"
-          super()
           @controller = controller
+          @drive = drive
+          super()
+          self.widget_id = "drive_page:#{drive.section_id}"
           self.handle_all_events = true
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Add Drive")
+          drive.ui_label
         end
 
-        # Returns the list of possible actions
-        #
-        # @return [Array<Symbol,String>]
-        def items
-          Presenters::DriveType.all.map do |type|
-            [:"add_#{type.to_sym}", type.label]
-          end
+        # @macro seeAbstractWidget
+        def store
+          drive.update(values)
         end
 
-        # Handles the events
+        # Drive section that is being edited
         #
-        # @param event [Hash] Event to handle
-        def handle(event)
-          event_id = event["ID"].to_s
-          return unless event_id.start_with?("add_")
-
-          type = event_id.split("_", 2).last
-          controller.add_drive(Presenters::DriveType.find(type))
-          :redraw
+        # @return [Y2Storage::AutoinstProfile::DriveSection]
+        def section
+          drive.section
         end
 
       private
 
-        # @return [Y2Autoinstallation::StorageController]
+        # @return [StorageController]
         attr_reader :controller
+
+        # @return [Presenters::Drive]
+        attr_reader :drive
       end
     end
   end
