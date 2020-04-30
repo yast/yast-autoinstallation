@@ -18,8 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "cwm/page"
-require "autoinstall/widgets/storage/add_children_button"
+require "autoinstall/widgets/storage/drive_page"
 require "autoinstall/widgets/storage/disk_device"
 require "autoinstall/widgets/storage/init_drive"
 require "autoinstall/widgets/storage/disk_usage"
@@ -29,61 +28,26 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # This page allows to edit usage information for a disk
-      class DiskPage < ::CWM::Page
-        # Constructor
-        #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param section [Y2Storage::AutoinstProfile::DriveSection] Drive section corresponding
-        #   to a disk
-        def initialize(controller, section)
-          textdomain "autoinst"
-          @controller = controller
-          @section = section
-          super()
-          self.widget_id = "disk_page:#{section.object_id}"
-          self.handle_all_events = true
-        end
-
-        # @macro seeAbstractWidget
-        def label
-          if section.device && !section.device.empty?
-            # TRANSLATORS: disk device name used in a `drive` section of an AutoYaST profile
-            format(_("Disk %{device}"), device: section.device)
-          else
-            format(_("Disk"))
-          end
-        end
-
+      class DiskPage < DrivePage
         # @macro seeCustomWidget
         def contents
           VBox(
             Left(Heading(_("Disk"))),
-            VBox(
-              Left(disk_device_widget),
-              Left(init_drive_widget),
-              Left(disk_usage_widget),
-              Left(partition_table_widget),
-              VStretch()
-            ),
-            HBox(
-              HStretch(),
-              AddChildrenButton.new(controller, section)
-            )
+            Left(disk_device_widget),
+            Left(init_drive_widget),
+            Left(disk_usage_widget),
+            Left(partition_table_widget),
+            VStretch()
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          disk_device_widget.value = section.device
-          init_drive_widget.value = !!section.initialize_attr
-          disk_usage_widget.value = section.use
-          partition_table_widget.value = section.disklabel
+          disk_device_widget.value = drive.device
+          init_drive_widget.value = !!drive.initialize_attr
+          disk_usage_widget.value = drive.use
+          partition_table_widget.value = drive.disklabel
           set_disk_usage_status
-        end
-
-        # @macro seeAbstractWidget
-        def store
-          controller.update_drive(section, values)
         end
 
         # Returns widget values
@@ -105,12 +69,6 @@ module Y2Autoinstallation
         end
 
       private
-
-        # @return [Y2Autoinstallation::StorageController]
-        attr_reader :controller
-
-        # @return [Y2Storage::AutoinstProfile::DriveSection]
-        attr_reader :section
 
         # Disk device selector
         #

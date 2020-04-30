@@ -18,8 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "cwm/page"
-require "autoinstall/widgets/storage/add_children_button"
+require "autoinstall/widgets/storage/drive_page"
 require "autoinstall/widgets/storage/raid_name"
 require "autoinstall/widgets/storage/md_level"
 require "autoinstall/widgets/storage/chunk_size"
@@ -29,58 +28,28 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # This page allows to edit a `drive` section representing a RAID device
-      class RaidPage < ::CWM::Page
-        # Constructor
-        #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param section [Y2Storage::AutoinstProfile::DriveSection] Drive section corresponding
-        #   to a RAID
-        def initialize(controller, section)
-          textdomain "autoinst"
-          @controller = controller
-          @section = section
-          super()
-          self.widget_id = "raid_page:#{section.object_id}"
-          self.handle_all_events = true
-        end
-
-        # @macro seeAbstractWidget
-        def label
-          format(_("RAID %{device}"), device: section.device)
-        end
-
+      class RaidPage < DrivePage
         # @macro seeCustomWidget
         def contents
           VBox(
             Left(Heading(_("RAID"))),
-            VBox(
-              Left(raid_name_widget),
-              Left(md_level_widget),
-              Left(parity_algorithm_widget),
-              Left(chunk_size_widget),
-              VStretch()
-            ),
-            HBox(
-              HStretch(),
-              AddChildrenButton.new(controller, section)
-            )
+            Left(raid_name_widget),
+            Left(md_level_widget),
+            Left(parity_algorithm_widget),
+            Left(chunk_size_widget),
+            VStretch()
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          raid_name_widget.value = section.device
-          raid_options = section.raid_options
+          raid_name_widget.value = drive.device
+          raid_options = drive.raid_options
           if raid_options
             md_level_widget.value = raid_options.raid_type.to_s
             parity_algorithm_widget.value = raid_options.parity_algorithm
             chunk_size_widget.value = raid_options.chunk_size
           end
-        end
-
-        # @macro seeAbstractWidget
-        def store
-          controller.update_drive(section, values)
         end
 
         # Returns the widgets values
@@ -98,12 +67,6 @@ module Y2Autoinstallation
         end
 
       private
-
-        # @return [Y2Autoinstallation::StorageController]
-        attr_reader :controller
-
-        # @return [Y2Storage::AutoinstProfile::DriveSection]
-        attr_reader :section
 
         # RAID name input field
         #
