@@ -202,7 +202,10 @@ module Yast
         AutoinstConfig.network_before_proposal = true
       end
 
-      Call.Function("lan_auto", ["Write"]) if AutoinstConfig.network_before_proposal
+      if AutoinstConfig.network_before_proposal
+        Call.Function("lan_auto", ["Write"])
+        Profile.remove_sections("networking") if Profile.current["networking"]
+      end
 
       if Builtins.haskey(Profile.current, "add-on")
         Progress.Title(_("Handling Add-On Products..."))
