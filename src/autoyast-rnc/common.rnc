@@ -14,6 +14,14 @@ INTEGER =
     xsd:integer
   )
 
+STRING_ATTR = attribute config:type { "string" }?
+
+STRING =
+  (
+    STRING_ATTR,
+    text
+  )
+
 SYMBOL =
   (
     attribute config:type { "symbol" },
@@ -22,6 +30,9 @@ SYMBOL =
 
 LIST =
   attribute config:type { "list" }
+
+MAP =
+  attribute config:type { "map" }?
 
 # this is useful for testing
 Anything =

@@ -14,17 +14,20 @@ element classes {
 
 class =
 element class {
-    class_name &
-    configuration &
-    element dont_merge {
-        LIST,
-        element element { text }*
-    }?
+    MAP,
+    (
+      class_name &
+      configuration &
+      element dont_merge {
+          LIST,
+          element element { STRING }*
+      }?
+    )
 }
 
 class_name =
-element class_name { text }
+element class_name { STRING }
 configuration =
-element configuration { text }
+element configuration { STRING }
 
 
