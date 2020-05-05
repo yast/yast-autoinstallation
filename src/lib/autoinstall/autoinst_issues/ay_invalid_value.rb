@@ -17,28 +17,28 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "autoinstall/autoinst_issues/issue"
+require "installation/autoinst_issues/issue"
 
-module Y2Autoinstallation
+module Installation
   module AutoinstIssues
-    # Represents an AutoYaST situation where a mandatory value is missing.
+    # Represents an AutoYaST situation where an invalid value was given.
     #
-    # @example Missing value for attribute 'bar' in 'foo' section.
-    #   problem = MissingValue.new("foo","bar")
-    class MissingValue < Issue
-      # @return [String] Name of the missing attribute
-      attr_reader :attr
-      attr_reader :description
+    class AyInvalidValue < ::Installation::AutoinstIssues::Issue
+      include Yast::Logger
 
-      # @param section     [String] Section where it was detected
-      # @param attr        [String] Name of the missing attribute
-      # @param description [String] additional explanation; optional
-      # @param severity    [Symbol] :warn, :fatal = abort the installation ; optional
-      def initialize(section, attr, description = "", severity = :warn)
+      attr_reader :section, :attribute , :value,
+                  :description, :severity
+
+      # @param section     [String] main section name in the AutoYaST configuration file
+      # @param attribute   [String] wrong attribute
+      # @param value       [String] wrong attribute value
+      # @param description [String] additional explanation
+      # @param severity    [Symbol] :warn, :fatal = abort the installation
+      def initialize(section, attribute, value, description, severity = :warn)
         textdomain "autoinst"
-
         @section = section
-        @attr = attr
+        @attribute = attribute
+        @value = value
         @description = description
         @severity = severity
       end
@@ -49,9 +49,10 @@ module Y2Autoinstallation
       # @see Issue#message
       def message
         # TRANSLATORS:
-        # 'attr' is an AutoYaST element
+        # 'value' is a generic value (number or string) 'attribute' is an AutoYaST element
         # 'description' has already been translated in other modules.
-        format(_("Missing element '%{attr}'. %{description}"), attr: attr, description: description)
+        format(_("Invalid value '%{value}' for attribute '%{attribute}': %{description}"),
+          value: @value, attribute: @attribute, description: @description)
       end
     end
   end

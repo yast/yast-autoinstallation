@@ -27,12 +27,12 @@ module Y2Autoinstallation
   # find out more details about the kind of problems.
   #
   # About registering errors, an instance of the
-  # {Y2Autoinstallation::AutoinstIssues::List} will be used.
+  # {Installation::AutoinstIssues::List} will be used.
   module AutoinstIssues
   end
 end
 
-require "autoinstall/autoinst_issues/list"
-require "autoinstall/autoinst_issues/issue"
-require "autoinstall/autoinst_issues/invalid_value"
-require "autoinstall/autoinst_issues/missing_value"
+require "installation/autoinst_issues/list"
+require "installation/autoinst_issues/issue"
+require "autoinstall/autoinst_issues/ay_invalid_value"
+require "autoinstall/autoinst_issues/ay_missing_value"
