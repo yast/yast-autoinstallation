@@ -34,6 +34,8 @@ module Y2Autoinstall
   module Clients
     module AyastSetup
       include Yast::Logger
+      include Yast::I18n
+
       Ops = Yast::Ops
       SCR = Yast::SCR
       WFM = Yast::WFM
@@ -57,6 +59,7 @@ module Y2Autoinstall
           ["software", "post-packages"],
           []
         )
+
         postPackages = Builtins.filter(postPackages) do |p|
           !Yast::PackageSystem.Installed(p)
         end
@@ -68,27 +71,13 @@ module Y2Autoinstall
           []
         )
 
-        # the following is needed since 10.3
-        # otherwise the already configured network gets removed
-        if !Builtins.haskey(Profile.current, "networking")
-          Profile.current = Builtins.add(
-            Profile.current,
-            "networking",
-            "keep_install_network" => true
-          )
-        end
-
         if @dopackages
           Yast::Pkg.TargetInit("/", false)
           WFM.CallFunction("inst_rpmcopy", [])
         end
         WFM.CallFunction("inst_autoconfigure", [])
 
-        # Restarting autoyast-initscripts.service in order to run
-        # init-scripts in the installed system.
-        cmd = "systemctl restart autoyast-initscripts.service"
-        ret = SCR.Execute(path(".target.bash_output"), cmd)
-        log.info "command \"#{cmd}\" returned #{ret}"
+        restart_initscripts
         nil
       end
 
@@ -118,6 +107,16 @@ module Y2Autoinstall
 
         Setup()
         true
+      end
+
+    private
+
+      def restart_initscripts
+        # Restarting autoyast-initscripts.service in order to run
+        # init-scripts in the installed system.
+        cmd = "systemctl restart autoyast-initscripts.service"
+        ret = SCR.Execute(path(".target.bash_output"), cmd)
+        log.info "command \"#{cmd}\" returned #{ret}"
       end
     end
   end
