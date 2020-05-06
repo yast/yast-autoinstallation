@@ -72,10 +72,10 @@ module Yast
     # Clone a Resource
     #
     # @param _resource    [String] resource. Not used.
-    # @param resourceMap [Hash] resources map
+    # @param resource_map [Hash] resources map
     # @return [Array]
-    def CommonClone(_resource, resourceMap)
-      auto = Ops.get_string(resourceMap, "X-SuSE-YaST-AutoInstClient", "")
+    def CommonClone(_resource, resource_map)
+      auto = Ops.get_string(resource_map, "X-SuSE-YaST-AutoInstClient", "")
 
       # Do not read settings from system in first stage, autoyast profile
       # should contain only proposed and user modified values.
@@ -92,91 +92,53 @@ module Yast
       true
     end
 
+    # Resources that do not have a corresponding .desktop file (is this still true?)
+    NO_DESKTOP_FILE_RESOURCES = ["partitioning", "software", "bootloader"].freeze
+
     # Create a list of clonable resources
     #
     # @return [Array<Yast::Term>] list to be used in widgets
     def createClonableList
-      items = []
-      Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
-        Builtins.y2debug(
-          "r: %1 => %2",
-          def_resource,
-          Ops.get_string(resourceMap, "X-SuSE-YaST-AutoInstClonable", "false")
-        )
-        clonable = Ops.get_string(
-          resourceMap,
-          "X-SuSE-YaST-AutoInstClonable",
-          "false"
-        ) == "true"
-        if clonable || "partitioning" == def_resource ||
-            "software" == def_resource || # has no desktop file
-            "bootloader" == def_resource # has no desktop file
-          desktop_file = Builtins.substring(
-            Ops.get_string(resourceMap, "X-SuSE-DocTeamID", ""),
-            4
-          )
-          name = Builtins.dpgettext(
-            "desktop_translations",
-            "/usr/share/locale/",
-            Ops.add(
-              Ops.add(Ops.add("Name(", desktop_file), ".desktop): "),
-              Ops.get_string(resourceMap, "Name", "")
-            )
-          )
-          if name ==
-              Ops.add(
-                Ops.add(Ops.add("Name(", desktop_file), ".desktop): "),
-                Ops.get_string(resourceMap, "Name", "")
-              )
-            name = Ops.get_string(resourceMap, "Name", "")
-          end
-          # Set resource name, if not using default value
-          resource = Ops.get_string(
-            resourceMap,
-            "X-SuSE-YaST-AutoInstResource",
-            ""
-          )
-          resource = def_resource if resource == ""
-          items = if resource != ""
-            Builtins.add(items, Item(Id(resource), name))
-          else
-            Builtins.add(items, Item(Id(def_resource), name))
-          end
-        end
+      module_map = Y2ModuleConfig.ModuleMap
+      clonable_items = module_map.each_with_object([]) do |(def_resource, resource_map), items|
+        log.debug "r: #{def_resource} => #{resource_map["X-SuSE-YaST-AutoInstClonable"]}"
+        clonable = resource_map["X-SuSE-YaST-AutoInstClonable"] == "true"
+        next unless clonable || NO_DESKTOP_FILE_RESOURCES.include?(def_resource)
+
+        desktop_file = resource_map.fetch("X-SuSE-DocTeamID", "")[4..]
+        translation_key = "Name(#{desktop_file}.desktop): #{resource_map["Name"]}"
+        name = Builtins.dpgettext("desktop_translations", "/usr/share/locale/", translation_key)
+        name = resource_map.fetch("Name", "") if name == translation_key
+        # Set resource name, if not using default value
+        resource_name = resource_map.fetch("X-SuSE-YaST-AutoInstResource", "")
+        resource_name = def_resource if resource_name.empty?
+        items << Item(Id(resource_name), name)
       end
-      # sort items for nicer display
-      items = Builtins.sort(
-        Convert.convert(items, from: "list", to: "list <term>")
-      ) do |x, y|
-        Ops.less_than(Ops.get_string(x, 1, "x"), Ops.get_string(y, 1, "y"))
-      end
-      deep_copy(items)
+
+      clonable_items.sort_by { |i| i[1] }
     end
 
-    # Build the profile
+    # Builds the profile
     #
     # @return [nil]
+    # @see Profile.Prepare
     def Process
       log.info "Additional resources: #{@additional}"
       Profile.Reset
       Profile.prepare = true
       Mode.SetMode("autoinst_config")
 
-      Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
+      Y2ModuleConfig.ModuleMap.each do |def_resource, resource_map|
         # Set resource name, if not using default value
-        resource = Ops.get_string(
-          resourceMap,
-          "X-SuSE-YaST-AutoInstResource",
-          ""
-        )
-        resource = def_resource if resource == ""
+        resource = resource_map.fetch("X-SuSE-YaST-AutoInstResource", "")
+        resource = def_resource if resource.empty?
 
-        if @additional.include?(resource)
-          log.info "Now cloning: #{resource}"
-          time_start = Time.now
-          CommonClone(def_resource, resourceMap)
-          log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
-        end
+        next unless @additional.include?(resource)
+
+        log.info "Now cloning: #{resource}"
+        time_start = Time.now
+        CommonClone(def_resource, resource_map)
+        log.info "Cloning #{resource} took: #{(Time.now - time_start).round} sec"
       end
 
       Call.Function("general_auto", ["Import", General()])
