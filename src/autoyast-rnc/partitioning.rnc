@@ -164,8 +164,7 @@ subvolumes = element subvolumes {
     subvolume*
 }
 
-# by default, AutoYaST exports list entries as 'listentry'
-# TODO: it can be configured to export it as subvolume, maybe do it?
+# keep backward compatibility with listentry when subvolumes use generic list items
 subvolume =
   element (subvolume | listentry ) { STRING } | subvolume_full
 
