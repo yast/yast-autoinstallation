@@ -17,6 +17,7 @@ require "yast"
 require "y2storage"
 
 module Yast
+  # This module drives the AutoYaST cloning process
   class AutoinstCloneClass < Module
     include Yast::Logger
 
@@ -50,6 +51,7 @@ module Yast
     end
 
     # General options
+    #
     # @return [Hash] general options
     def General
       Yast.import "Mode"
@@ -59,6 +61,8 @@ module Yast
 
       general["mode"] = { "confirm" => false }
 
+      # Signature handling is less restrictive in a cloned profile.
+      # https://bugzilla.suse.com/show_bug.cgi?id=248303
       general["signature-handling"] = {
         "accept_unsigned_file"         => true,
         "accept_file_without_checksum" => true,
@@ -75,6 +79,7 @@ module Yast
     end
 
     # Clone a Resource
+    #
     # @param _resource    [String] resource. Not used.
     # @param resourceMap [Hash] resources map
     # @return [Array]
@@ -97,7 +102,8 @@ module Yast
     end
 
     # Create a list of clonable resources
-    # @return [Array] list to be used in widgets
+    #
+    # @return [Array<Yast::Term>] list to be used in widgets
     def createClonableList
       items = []
       Builtins.foreach(Y2ModuleConfig.ModuleMap) do |def_resource, resourceMap|
@@ -157,7 +163,8 @@ module Yast
     end
 
     # Build the profile
-    # @return [void]
+    #
+    # @return [nil]
     def Process
       log.info "Base resources: #{@base} additional: #{@additional}"
       Profile.Reset
