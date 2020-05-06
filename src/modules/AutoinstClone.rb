@@ -23,22 +23,13 @@ module Yast
 
     def main
       Yast.import "Mode"
-
-      Yast.import "XML"
       Yast.import "Call"
       Yast.import "Profile"
       Yast.import "Y2ModuleConfig"
-      Yast.import "Misc"
       Yast.import "AutoinstConfig"
       Yast.import "Report"
 
       Yast.include self, "autoinstall/xml.rb"
-
-      @Profile = {}
-      @bytes_per_unit = 0
-
-      # spceial treatment for base resources
-      @base = []
 
       # aditional configuration resources o be cloned
       @additional = []
@@ -166,7 +157,7 @@ module Yast
     #
     # @return [nil]
     def Process
-      log.info "Base resources: #{@base} additional: #{@additional}"
+      log.info "Additional resources: #{@additional}"
       Profile.Reset
       Profile.prepare = true
       Mode.SetMode("autoinst_config")
@@ -198,32 +189,12 @@ module Yast
       nil
     end
 
-    # Write the profile to a defined path
-    # @param [String] outputFile Output file path
-    # @return [Boolean] true on success
-    def Write(outputFile)
-      Process()
-      ret = Profile.Save(outputFile)
-      ret
-    end
-
-    # Export profile, Used only from within autoyast2
-    # @return [void]
-    def Export
-      Yast.import "Profile"
-      Profile.Reset
-      Process()
-      nil
-    end
-
     publish variable: :Profile, type: "map"
     publish variable: :base, type: "list <string>"
     publish variable: :additional, type: "list <string>"
     publish function: :General, type: "map ()"
     publish function: :createClonableList, type: "list ()"
     publish function: :Process, type: "void ()"
-    publish function: :Write, type: "boolean (string)"
-    publish function: :Export, type: "void ()"
   end
 
   AutoinstClone = AutoinstCloneClass.new
