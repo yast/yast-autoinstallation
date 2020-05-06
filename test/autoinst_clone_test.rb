@@ -65,9 +65,15 @@ describe Yast::AutoinstClone do
     }
   end
 
+  let(:probed_devicegraph) do
+    instance_double(Y2Storage::Devicegraph, multipaths: multipaths)
+  end
+
+  let(:multipaths) { [] }
+
   before do
     allow(Yast::Y2ModuleConfig).to receive(:ModuleMap).and_return(module_map)
-    allow(subject).to receive(:multipath_in_use?).and_return(false)
+    allow(Y2Storage::StorageManager.instance).to receive(:probed).and_return(probed_devicegraph)
     subject.additional = ["add-on"]
     Yast::Mode.SetMode("normal")
   end
@@ -172,8 +178,18 @@ describe Yast::AutoinstClone do
       expect(subject.General).to include("signature-handling" => Hash)
     end
 
-    it "includes whether multipath is enabled or not" do
-      expect(subject.General).to include("storage" => { "start_multipath" => false })
+    context "when multipath is not enabled" do
+      it "does not include the 'start_multipath' setting" do
+        expect(subject.General).to_not have_key("storage")
+      end
+    end
+
+    context "when multipath is enabled" do
+      let(:multipaths) { [double("multipath")] }
+
+      it "includes the 'start_multipath' setting" do
+        expect(subject.General).to include("storage" => { "start_multipath" => true })
+      end
     end
   end
 

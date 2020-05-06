@@ -67,9 +67,8 @@ module Yast
         "import_gpg_key"               => true,
         "accept_non_trusted_gpg_key"   => true
       }
-      general["storage"] = {
-        "start_multipath" => multipath_in_use?
-      }
+
+      general["storage"] = { "start_multipath" => true } if multipath_in_use?
 
       Mode.SetMode("autoinst_config")
       general
