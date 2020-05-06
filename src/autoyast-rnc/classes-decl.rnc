@@ -8,7 +8,7 @@ namespace config = "http://www.suse.com/1.0/configns"
 
 include "common.rnc"
 
-autoinstall = element autoinstall { classes }
+autoinstall = element autoinstall { MAP, classes }
 classes =
   element classes {
     LIST,
@@ -20,8 +20,8 @@ class =
     name&
     order
   }
-description = element description { text }
-name = element name { text }
+description = element description { STRING }
+name = element name { STRING }
 order = element order { INTEGER }
 
 start = autoinstall

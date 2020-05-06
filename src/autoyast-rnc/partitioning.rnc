@@ -9,21 +9,24 @@ partitioning =
   }
 drive =
   element drive {
-    element device     { text }? &
-    element initialize { BOOLEAN }? &
-    element is_lvm_vg  { BOOLEAN }? &
-    element lvm2       { BOOLEAN }? &
-    element pesize     { text }? &
-    element type       { SYMBOL }? &
-    element use        { text }? &
-    element imsmdriver { SYMBOL }? &
-    element disklabel  { text }? &
-    element enable_snapshots { BOOLEAN }? &
-    skip_list? &
-    partitions? &
-    raid_options? &
-    bcache_options? &
-    btrfs_options?
+    MAP,
+    (
+      element device     { STRING }? &
+      element initialize { BOOLEAN }? &
+      element is_lvm_vg  { BOOLEAN }? &
+      element lvm2       { BOOLEAN }? &
+      element pesize     { STRING }? &
+      element type       { SYMBOL }? &
+      element use        { STRING }? &
+      element imsmdriver { SYMBOL }? &
+      element disklabel  { STRING }? &
+      element enable_snapshots { BOOLEAN }? &
+      skip_list? &
+      partitions? &
+      raid_options? &
+      bcache_options? &
+      btrfs_options?
+    )
   }
 
 skip_list =
@@ -33,11 +36,14 @@ skip_list =
   }
 skip_entry =
   element listentry {
-    element skip_key	{ text } &
-    element skip_value	{ text } &
-    ( element skip_if_less_than { BOOLEAN }
-      | element skip_if_more_than { BOOLEAN } )? &
-    element skip_if_equal { BOOLEAN }?
+    MAP,
+    (
+      element skip_key	{ STRING } &
+      element skip_value	{ STRING } &
+      ( element skip_if_less_than { BOOLEAN }
+        | element skip_if_more_than { BOOLEAN } )? &
+      element skip_if_equal { BOOLEAN }?
+    )
   }
 
 prefer_remove =
@@ -89,99 +95,108 @@ y2_partition =
 partition = element partition { y2_partition* }
 part_create =
   element create { BOOLEAN }
-part_crypt = element crypt { text }
+part_crypt = element crypt { STRING }
 part_crypt_fs =
   element crypt_fs { BOOLEAN }
 part_crypt_method =
   element crypt_method { SYMBOL }
-part_crypt_key = element crypt_key { text }
+part_crypt_key = element crypt_key { STRING }
 part_filesystem =
   element filesystem { SYMBOL }
 part_format =
   element format { BOOLEAN }
 part_subvolumes_prefix =
-  element subvolumes_prefix { text }
+  element subvolumes_prefix { STRING }
 part_fs_options =
   element fs_options {
-    opt_blocksize? &
-    opt_block_size? &
-    opt_bytes_per_inode? &
-    opt_format? &
-    opt_hash? &
-    opt_inode_align? &
-    opt_max_inode_space? &
-    opt_raid? &
-    opt_reserved_blocks?
+    MAP,
+    (
+      opt_blocksize? &
+      opt_block_size? &
+      opt_bytes_per_inode? &
+      opt_format? &
+      opt_hash? &
+      opt_inode_align? &
+      opt_max_inode_space? &
+      opt_raid? &
+      opt_reserved_blocks?
+    )
   }
-opt_block_size = element opt_block_size { option_str, option_value }
-opt_blocksize = element opt_blocksize { option_str, option_value }
-opt_bytes_per_inode =
-  element opt_bytes_per_inode { option_str, option_value }
-opt_format =
-  element opt_format { option_blank, option_str, option_value }
-opt_hash = element opt_hash { option_blank, option_str, option_value }
-opt_inode_align = element opt_inode_align { option_str, option_value }
-opt_max_inode_space =
-  element opt_max_inode_space { option_str, option_value }
-opt_raid = element opt_raid { option_str, option_value }
-opt_reserved_blocks =
-  element opt_reserved_blocks { option_str, option_value }
-raid_name = element raid_name { text }
 
-raid_options = element raid_options { persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? & raid_name? }
+option = MAP, (option_str, option_value )
+blank_option = MAP, (option_blank, option_str, option_value )
+opt_block_size = element opt_block_size { option }
+opt_blocksize = element opt_blocksize { option }
+opt_bytes_per_inode =
+  element opt_bytes_per_inode { option }
+opt_format =
+  element opt_format { blank_option }
+opt_hash = element opt_hash { blank_option }
+opt_inode_align = element opt_inode_align { option }
+opt_max_inode_space =
+  element opt_max_inode_space { option }
+opt_raid = element opt_raid { option }
+opt_reserved_blocks =
+  element opt_reserved_blocks { option }
+raid_name = element raid_name { STRING }
+
+raid_options = element raid_options { MAP, (persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? & raid_name?) }
 persistent_superblock = element persistent_superblock { BOOLEAN }
-raid_type = element raid_type { text }
-chunk_size = element chunk_size { text }
-parity_algorithm = element parity_algorithm { text }
+raid_type = element raid_type { STRING }
+chunk_size = element chunk_size { STRING }
+parity_algorithm = element parity_algorithm { STRING }
 device_order = element device_order {
     LIST,
-    element device { text }*
+    element device { STRING }*
 }
 
-cache_mode = element cache_mode { "writethrough" | "writeback" | "writearound" | "none" }
+cache_mode = element cache_mode { STRING_ATTR, ("writethrough" | "writeback" | "writearound" | "none") }
 bcache_options = element bcache_options { cache_mode? }
 
-btrfs_name = element btrfs_name { text }
+btrfs_name = element btrfs_name { STRING }
 
-btrfs_options = element btrfs_options { data_raid_level? & metadata_raid_level? }
-data_raid_level = element data_raid_level { text }
-metadata_raid_level = element metadata_raid_level { text }
+btrfs_options = element btrfs_options { MAP, (data_raid_level? & metadata_raid_level?) }
+data_raid_level = element data_raid_level { STRING }
+metadata_raid_level = element metadata_raid_level { STRING }
 
 subvolumes = element subvolumes {
     LIST,
     subvolume*
 }
 
-# by default, AutoYaST exports list entries as 'listentry'
+# keep backward compatibility with listentry when subvolumes use generic list items
 subvolume =
-  element (subvolume | listentry ) { text } | subvolume_full
+  element (subvolume | listentry ) { STRING } | subvolume_full
 
 subvolume_full =
   element (subvolume | listentry) {
-    element path { text } &
-    # FATE#320342: add support to enable copy-on-write for Btrfs subvolumes
-    element copy_on_write { BOOLEAN }?
+    MAP,
+    (
+      element path { STRING } &
+      # FATE#320342: add support to enable copy-on-write for Btrfs subvolumes
+      element copy_on_write { BOOLEAN }?
+    )
   }
 
 create_subvolumes =
   element create_subvolumes { BOOLEAN }
 
-part_fstopt = element fstopt { text }
-part_label = element label { text }
-part_uuid = element uuid { text }
+part_fstopt = element fstopt { STRING }
+part_label = element label { STRING }
+part_uuid = element uuid { STRING }
 part_loop_fs =
   element loop_fs { BOOLEAN }
-part_mount = element mount { text }
+part_mount = element mount { STRING }
 part_mountby =
   element mountby { SYMBOL }
 option_blank =
   element option_blank { BOOLEAN }
-option_str = element option_str { text }
-option_value = element option_value { text }
-part_raid_type = element raid_type { text }
+option_str = element option_str { STRING }
+option_value = element option_value { STRING }
+part_raid_type = element raid_type { STRING }
 part_partition_nr =
   element partition_nr { INTEGER }
-part_partition_type = element partition_type { "primary" }
+part_partition_type = element partition_type { STRING_ATTR, "primary" }
 part_partition_id =
   element partition_id { INTEGER }
 part_filesystem_id =
@@ -191,7 +206,7 @@ part_stripes =
 part_stripesize =
   element stripesize { INTEGER }
 part_pool = element pool { BOOLEAN }
-part_used_pool = element used_pool { text }
+part_used_pool = element used_pool { STRING }
 part_region =
   element region {
     LIST,
@@ -199,12 +214,12 @@ part_region =
   }
 region_entry =
   element region_entry { INTEGER }
-part_size = element size { text }
-part_lv_name = element lv_name { text }
-part_lvm_group = element lvm_group { text }
+part_size = element size { STRING }
+part_lv_name = element lv_name { STRING }
+part_lvm_group = element lvm_group { STRING }
 part_resize = element resize { BOOLEAN }
-bcache_backing_for = element bcache_backing_for { text }
+bcache_backing_for = element bcache_backing_for { STRING }
 bcache_caching_for = element bcache_caching_for {
   LIST,
-  element listentry { text }*
+  element listentry { STRING }*
 }
