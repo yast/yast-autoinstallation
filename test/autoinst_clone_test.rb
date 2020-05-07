@@ -66,17 +66,19 @@ describe Yast::AutoinstClone do
     }
   end
 
-  let(:probed_devicegraph) do
-    instance_double(Y2Storage::Devicegraph, multipaths: multipaths)
-  end
-
-  let(:multipaths) { [] }
+  let(:storage_scenario) { "autoyast_drive_examples.yml" }
 
   before do
     allow(Yast::Y2ModuleConfig).to receive(:ModuleMap).and_return(module_map)
-    allow(Y2Storage::StorageManager.instance).to receive(:probed).and_return(probed_devicegraph)
+    fake_storage_scenario(storage_scenario)
     subject.additional = ["add-on"]
+  end
+
+  around do |example|
+    orig_mode = Yast::Mode.mode
     Yast::Mode.SetMode("normal")
+    example.call
+    Yast::Mode.SetMode(orig_mode)
   end
 
   describe "#Process" do
@@ -186,7 +188,7 @@ describe Yast::AutoinstClone do
     end
 
     context "when multipath is enabled" do
-      let(:multipaths) { [double("multipath")] }
+      let(:storage_scenario) { "multipath.xml" }
 
       it "includes the 'start_multipath' setting" do
         expect(subject.General).to include("storage" => { "start_multipath" => true })

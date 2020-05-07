@@ -94,7 +94,7 @@ module Yast
 
     # Create a list of clonable resources
     #
-    # @return [Array<Yast::Term>] list to be used in widgets
+    # @return [Array<Yast::Term>] list to be used in widgets (sorted by its label)
     def createClonableList
       module_map = Y2ModuleConfig.ModuleMap
       clonable_items = module_map.each_with_object([]) do |(def_resource, resource_map), items|
@@ -117,7 +117,7 @@ module Yast
 
     # Builds the profile
     #
-    # @return [nil]
+    # @return [void]
     # @see Profile.Prepare
     def Process
       log.info "Additional resources: #{@additional}"

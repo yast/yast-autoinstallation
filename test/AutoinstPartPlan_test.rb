@@ -7,18 +7,9 @@ require "y2storage"
 Yast.import "Profile"
 Yast.import "ProductFeatures"
 
-def devicegraph_from(file_name)
-  storage = Y2Storage::StorageManager.instance.storage
-  st_graph = Storage::Devicegraph.new(storage)
-  graph = Y2Storage::Devicegraph.new(st_graph)
-  yaml_file = File.join(FIXTURES_PATH, "storage", file_name)
-  Y2Storage::FakeDeviceFactory.load_yaml_file(graph, yaml_file)
-  graph
-end
-
 describe "Yast::AutoinstPartPlan" do
   before do
-    Y2Storage::StorageManager.create_test_instance
+    fake_storage_scenario("autoyast_drive_examples.yml")
 
     allow(Yast::Arch).to receive(:architecture).and_return("x86_64")
   end
@@ -29,7 +20,6 @@ describe "Yast::AutoinstPartPlan" do
     Yast::AutoinstPartPlan
   end
 
-  let(:devicegraph) { devicegraph_from("autoyast_drive_examples.yml") }
   let(:default_subvol) { "@" }
   let(:filesystems) do
     double("filesystems",
@@ -41,8 +31,6 @@ describe "Yast::AutoinstPartPlan" do
     allow(Yast).to receive(:import).with("FileSystems").and_return(nil)
     allow(Yast).to receive(:import).and_call_original
     stub_const("Yast::FileSystems", filesystems)
-    allow(Y2Storage::StorageManager.instance).to receive(:probed)
-      .and_return(devicegraph)
   end
 
   describe "#read partition target" do
