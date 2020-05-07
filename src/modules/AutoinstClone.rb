@@ -92,9 +92,6 @@ module Yast
       true
     end
 
-    # Resources that do not have a corresponding .desktop file (is this still true?)
-    NO_DESKTOP_FILE_RESOURCES = ["partitioning", "software", "bootloader"].freeze
-
     # Create a list of clonable resources
     #
     # @return [Array<Yast::Term>] list to be used in widgets
@@ -103,7 +100,7 @@ module Yast
       clonable_items = module_map.each_with_object([]) do |(def_resource, resource_map), items|
         log.debug "r: #{def_resource} => #{resource_map["X-SuSE-YaST-AutoInstClonable"]}"
         clonable = resource_map["X-SuSE-YaST-AutoInstClonable"] == "true"
-        next unless clonable || NO_DESKTOP_FILE_RESOURCES.include?(def_resource)
+        next unless clonable
 
         desktop_file = resource_map.fetch("X-SuSE-DocTeamID", "")[4..]
         translation_key = "Name(#{desktop_file}.desktop): #{resource_map["Name"]}"

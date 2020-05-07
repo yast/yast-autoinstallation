@@ -32,8 +32,8 @@ describe Yast::AutoinstClone do
         "Icon"                         => "yast-addon",
         "X-SuSE-YaST-AutoInst"         => "configure",
         "X-SuSE-YaST-AutoInstResource" => "add-on",
-        "X-SuSE-YaST-Group"            => "Software",
         "X-SuSE-YaST-AutoInstClonable" => "true",
+        "X-SuSE-YaST-Group"            => "Software",
         "X-SuSE-DocTeamID"             => "ycc_org.opensuse.yast.AddOn",
         "X-SuSE-YaST-AutoInstClient"   => "add-on_auto"
       },
@@ -58,6 +58,7 @@ describe Yast::AutoinstClone do
         "Icon"                         => "yast-bootloader",
         "X-SuSE-YaST-AutoInst"         => "configure",
         "X-SuSE-YaST-AutoInstResource" => "bootloader",
+        "X-SuSE-YaST-AutoInstClonable" => "true",
         "X-SuSE-YaST-Group"            => "System",
         "X-SuSE-DocTeamID"             => "ycc_org.opensuse.yast.Bootloader",
         "X-SuSE-YaST-AutoInstClient"   => "bootloader_auto"
