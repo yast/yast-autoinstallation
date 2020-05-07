@@ -41,8 +41,8 @@ BuildRequires:  libxml2-tools
 # xsltproc for AutoinstClass
 BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
-# Yast::Popup.ErrorAnyQuestion fixed
-BuildRequires:  yast2 >= 4.0.60
+# AutoYaST issue handling
+BuildRequires:  yast2 >= 4.2.84
 # FileSystems.read_default_subvol_from_target
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
@@ -66,8 +66,8 @@ BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
-# Y2Packager::ProductUpgrade.remove_obsolete_upgrades
-Requires:       yast2 >= 4.2.1
+# AutoYaST issue handling
+Requires:       yast2 >= 4.2.84
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 # Moving security module to first installation stage
