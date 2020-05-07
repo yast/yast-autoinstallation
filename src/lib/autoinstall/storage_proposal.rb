@@ -32,7 +32,7 @@ module Y2Autoinstallation
     # @return [Y2Storage::GuidedProposal,Y2Storage::AutoinstProposal] Y2Storage proposal instance
     attr_reader :proposal
 
-    # @return [Y2Storage::AutoinstIssues::List] Storage proposal issues list
+    # @return [Installation::AutoinstIssues::List] Storage proposal issues list
     attr_reader :issues_list
 
     # Constructor
@@ -42,7 +42,7 @@ module Y2Autoinstallation
     #
     # @see https://www.suse.com/documentation/sles-12/singlehtml/book_autoyast/book_autoyast.html#CreateProfile.Partitioning
     def initialize(partitioning, proposal_settings)
-      @issues_list = Y2Storage::AutoinstIssues::List.new
+      @issues_list = ::Installation::AutoinstIssues::List.new
       build_proposal(partitioning, proposal_settings)
     end
 
