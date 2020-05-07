@@ -32,13 +32,10 @@ module Y2Autoinstallation
       class FilesystemAttrs < CWM::CustomWidget
         # Constructor
         #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
-        #   of the profile
-        def initialize(controller, section)
+        # @param section [Presenters::Partition] presenter for the partition section
+        def initialize(section)
           super()
           textdomain "autoinst"
-          @controller = controller
           @section = section
         end
 
@@ -82,7 +79,8 @@ module Y2Autoinstallation
 
       private
 
-        attr_reader :controller, :section
+        # @return [Presenters::Partition] presenter for the partition section
+        attr_reader :section
 
         # Mount point widget
         #

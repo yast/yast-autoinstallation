@@ -38,11 +38,9 @@ module Y2Autoinstallation
       class PartitionPage < ::CWM::Page
         # Constructor
         #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
         # @param partition [Presenters::Partition] presenter for a partition section of the profile
-        def initialize(controller, partition)
+        def initialize(partition)
           textdomain "autoinst"
-          @controller = controller
           @partition = partition
           super()
           self.widget_id = "partition_page:#{partition.section_id}"
@@ -101,9 +99,7 @@ module Y2Autoinstallation
 
       private
 
-        # @return [Y2Autoinstallation::StorageController]
-        attr_reader :controller
-
+        # @return [Presenters::Partition] presenter for the partition section
         attr_reader :partition
 
         def size_widget
@@ -115,15 +111,15 @@ module Y2Autoinstallation
         end
 
         def filesystem_widget
-          @filesystem_widget ||= FilesystemAttrs.new(controller, partition)
+          @filesystem_widget ||= FilesystemAttrs.new(partition)
         end
 
         def raid_widget
-          @raid_widget ||= RaidAttrs.new(controller, partition)
+          @raid_widget ||= RaidAttrs.new(partition)
         end
 
         def lvm_pv_widget
-          @lvm_pv_widget ||= LvmPvAttrs.new(controller, partition)
+          @lvm_pv_widget ||= LvmPvAttrs.new(partition)
         end
 
         def drive_dependent_attrs_widget
@@ -131,7 +127,7 @@ module Y2Autoinstallation
             begin
               drive_type = partition.drive_type.to_s
               widget = "#{drive_type.capitalize}PartitionAttrs"
-              Y2Autoinstallation::Widgets::Storage.const_get(widget).new(controller, partition)
+              Y2Autoinstallation::Widgets::Storage.const_get(widget).new(partition)
             rescue NameError
               CWM::Empty.new("drive_dependent_attrs")
             end

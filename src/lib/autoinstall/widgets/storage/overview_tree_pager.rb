@@ -101,7 +101,7 @@ module Y2Autoinstallation
         # @return [CWM::PagerTreeItem] Tree item
         def drive_item(section)
           page_klass = page_klass_for(section.type)
-          page = page_klass.new(controller, section)
+          page = page_klass.new(section)
           CWM::PagerTreeItem.new(page, children: partition_items(section))
         end
 
@@ -118,7 +118,7 @@ module Y2Autoinstallation
         #   List of partition partition sections
         def partition_items(drive)
           drive.partitions.map do |part|
-            part_page = Y2Autoinstallation::Widgets::Storage::PartitionPage.new(controller, part)
+            part_page = Y2Autoinstallation::Widgets::Storage::PartitionPage.new(part)
             CWM::PagerTreeItem.new(part_page)
           end
         end
