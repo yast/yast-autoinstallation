@@ -35,7 +35,7 @@ module Y2Autoinstall
       end
 
       def input_file_for(name, suffix: "yml")
-        path = File.join(FIXTURES_PATH, "storage", "#{name}")
+        path = File.join(FIXTURES_PATH, "storage", name)
         path << ".#{suffix}" if File.extname(path).empty?
         path
       end
