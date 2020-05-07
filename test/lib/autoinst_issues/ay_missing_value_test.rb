@@ -19,25 +19,20 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../test_helper.rb"
-require "autoinstall/autoinst_issues/invalid_value"
+require "autoinstall/autoinst_issues/ay_missing_value"
 
-describe Y2Autoinstallation::AutoinstIssues::InvalidValue do
-  subject(:issue) do
-    described_class.new("firewall", "interfaces", "eth0",
-      "This interface has been defined for more than one zone.", :fatal)
-  end
+describe Y2Autoinstallation::AutoinstIssues::AyMissingValue do
+  subject(:issue) { described_class.new("foo", "bar") }
 
   describe "#message" do
-    it "includes relevant information" do
-      message = issue.message
-      expect(message).to include "interfaces"
-      expect(message).to include "eth0"
+    it "returns a description of the issue" do
+      expect(issue.message).to match(/Missing element 'bar'/)
     end
   end
 
-  describe "#severity which has been set to :fatal while initialization" do
-    it "returns :fatal" do
-      expect(issue.severity).to eq(:fatal)
+  describe "#severity" do
+    it "returns :warn as default" do
+      expect(issue.severity).to eq(:warn)
     end
   end
 end
