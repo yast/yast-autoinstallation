@@ -25,7 +25,6 @@ module Y2Autoinstallation
     module Storage
       # Button to add a new <partition> section to the current drive
       class AddPartitionButton < CWM::PushButton
-
         # Constructor
         #
         # @param controller [Y2Autoinstallation::StorageController] UI controller

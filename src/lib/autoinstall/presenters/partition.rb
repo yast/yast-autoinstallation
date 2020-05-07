@@ -61,12 +61,12 @@ module Y2Autoinstallation
           # TRANSLATORS: this is how a <Partition> section of the AutoYaST profile is represented
           # in the UI. All words are placeholders and should NOT be translated, use this string
           # only to adapt the layout of the information.
-          "%{device_type}: %{name}, %{usage}" % parts
+          Kernel.format("%{device_type}: %{name}, %{usage}", parts)
         else
           # TRANSLATORS: this is how a <Partition> section of the AutoYaST profile is represented
           # in the UI. %{device_type} and %{usage} are placeholders and should NOT be translated,
           # use this string only to adapt the layout of the information.
-          "%{device_type}: %{usage}" % parts
+          Kernel.format("%{device_type}: %{usage}", parts)
         end
       end
 
@@ -81,7 +81,7 @@ module Y2Autoinstallation
       #
       # @return [Array<String>]
       def available_lvm_groups
-        vgs = drive.parent.drives.select {|d| d.type == :CT_LVM }
+        vgs = drive.parent.drives.select { |d| d.type == :CT_LVM }
         names = vgs.map(&:device).compact
         names.map { |n| n.delete_prefix("/dev/") }
       end
@@ -100,9 +100,9 @@ module Y2Autoinstallation
 
       # @return [String, nil]
       def device_name
-        if device_type == :lv && lv_name && !lv_name.empty?
-          lv_name
-        end
+        return nil unless device_type == :lv && lv_name && !lv_name.empty?
+
+        lv_name
       end
 
       # @see #ui_label
@@ -140,10 +140,10 @@ module Y2Autoinstallation
           end
         when :raid
           # TRANSLATORS: %s is a placeholder for the name of a RAID
-          _("Part of %s") % raid_name
+          Kernel.format(_("Part of %s"), raid_name)
         when :lvm_pv
           # TRANSLATORS: %s is a placeholder for the name of a RAID
-          _("Part of %s") % lvm_group
+          Kernel.format(_("Part of %s"), lvm_group)
         end
       end
 
@@ -153,11 +153,9 @@ module Y2Autoinstallation
       def device_type
         return :lv if drive.type == :CT_LVM
 
-        if drive.unwanted_partitions?
-          return drive.master_partition == section ? :drive : :none
-        end
+        return :partition unless drive.unwanted_partitions?
 
-        :partition
+        (drive.master_partition == section) ? :drive : :none
       end
     end
   end
