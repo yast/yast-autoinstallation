@@ -29,6 +29,12 @@ module Y2Autoinstallation
     module Storage
       # This page allows to edit a `drive` section representing a RAID device
       class RaidPage < DrivePage
+        # @see DrivePage#initialize
+        def initialize(*args)
+          textdomain "autoinst"
+          super
+        end
+
         # @macro seeCustomWidget
         def contents
           VBox(
