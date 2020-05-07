@@ -31,6 +31,12 @@ module Y2Autoinstallation
     module Storage
       # This page allows to edit a `drive` section representing an LVM
       class LvmPage < DrivePage
+        # @see DrivePage#initialize
+        def initialize(*args)
+          textdomain "autoinst"
+          super
+        end
+
         # @macro seeCustomWidget
         def contents
           VBox(

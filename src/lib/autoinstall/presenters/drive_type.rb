@@ -32,6 +32,8 @@ module Y2Autoinstallation
       # @param id [Symbol] raw value of the field, like :CT_DISK, CT_LVM, etc.
       # @param label [String]
       def initialize(id, label)
+        textdomain "autoinst"
+
         @symbol = id
         @label = label
       end
