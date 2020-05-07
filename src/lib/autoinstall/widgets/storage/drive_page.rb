@@ -28,11 +28,9 @@ module Y2Autoinstallation
       class DrivePage < ::CWM::Page
         # Constructor
         #
-        # @param controller [StorageController] UI controller
         # @param drive [Presenters::Drive] presenter for the drive section of the profile
-        def initialize(controller, drive)
+        def initialize(drive)
           textdomain "autoinst"
-          @controller = controller
           @drive = drive
           super()
           self.widget_id = "drive_page:#{drive.section_id}"
@@ -57,9 +55,6 @@ module Y2Autoinstallation
         end
 
       private
-
-        # @return [StorageController]
-        attr_reader :controller
 
         # @return [Presenters::Drive]
         attr_reader :drive

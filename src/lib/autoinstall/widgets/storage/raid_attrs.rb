@@ -30,13 +30,10 @@ module Y2Autoinstallation
       class RaidAttrs < CWM::CustomWidget
         # Constructor
         #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
-        #   of the profile
-        def initialize(controller, section)
+        # @param section [Presenters::Partition] presenter for the partition section
+        def initialize(section)
           textdomain "autoinst"
           super()
-          @controller = controller
           @section = section
         end
 
@@ -65,9 +62,6 @@ module Y2Autoinstallation
         end
 
       private
-
-        # @return [Y2Autoinstallation::StorageController]
-        attr_reader :controller
 
         # @return [Y2Storage::AutoinstProfile::PartitionSection]
         attr_reader :section
