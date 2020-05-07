@@ -33,7 +33,7 @@ module Y2Autoinstallation
 
     # Sub-section of {#partitioning} that is currently selected to be modified
     #
-    # @return [Y2Storage::AutoinstProfile::DriveSection, Y2Storage::AutoinstProfile::PartitionSection, nil]
+    # @return [Y2Storage::AutoinstProfile::SectionWithAttributes, nil]
     attr_accessor :section
 
     # Constructor
@@ -96,7 +96,7 @@ module Y2Autoinstallation
     def drive
       return nil unless section
 
-      section.section_name == "partitions" ? section.parent : section
+      (section.section_name == "partitions") ? section.parent : section
     end
   end
 end
