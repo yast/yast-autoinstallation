@@ -136,7 +136,7 @@ module Y2Autoinstallation
           if mount && !mount.empty?
             mount
           else
-            _("Not mounted")
+            _("Not Mounted")
           end
         when :raid
           # TRANSLATORS: %s is a placeholder for the name of a RAID
