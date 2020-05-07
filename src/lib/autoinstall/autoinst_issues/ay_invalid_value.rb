@@ -26,8 +26,8 @@ module Installation
     class AyInvalidValue < ::Installation::AutoinstIssues::Issue
       include Yast::Logger
 
-      attr_reader :section, :attribute , :value,
-                  :description, :severity
+      attr_reader :section, :attribute, :value,
+        :description, :severity
 
       # @param section     [String] main section name in the AutoYaST configuration file
       # @param attribute   [String] wrong attribute
