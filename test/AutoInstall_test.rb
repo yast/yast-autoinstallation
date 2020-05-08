@@ -2,7 +2,8 @@
 
 require_relative "test_helper"
 require "autoinstall/autoinst_issues"
-require "autoinstall/autoinst_issues_presenter"
+require "installation/autoinst_issues/issues_presenter"
+require "installation/autoinst_issues/list"
 require "autoinstall/dialogs/question"
 
 Yast.import "AutoInstall"
@@ -41,7 +42,7 @@ describe "Yast::AutoInstall" do
 
   describe "#valid_imported_values" do
     before(:each) do
-      subject.issues_list = Y2Autoinstallation::AutoinstIssues::List.new
+      subject.issues_list = ::Installation::AutoinstIssues::List.new
     end
 
     context "when no issue has been found" do

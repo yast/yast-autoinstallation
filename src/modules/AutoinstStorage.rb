@@ -8,7 +8,7 @@ require "yast"
 require "y2storage"
 require "autoinstall/storage_proposal"
 require "autoinstall/dialogs/question"
-require "installation/issues_presenter"
+require "installation/autoinst_issues/issues_presenter"
 require "autoinstall/partitioning_preprocessor"
 
 module Yast
