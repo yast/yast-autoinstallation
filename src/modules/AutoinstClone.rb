@@ -102,7 +102,7 @@ module Yast
         clonable = resource_map["X-SuSE-YaST-AutoInstClonable"] == "true"
         next unless clonable
 
-        desktop_file = resource_map.fetch("X-SuSE-DocTeamID", "")[4..]
+        desktop_file = resource_map.fetch("X-SuSE-DocTeamID", "").slice(4..-1)
         translation_key = "Name(#{desktop_file}.desktop): #{resource_map["Name"]}"
         name = Builtins.dpgettext("desktop_translations", "/usr/share/locale/", translation_key)
         name = resource_map.fetch("Name", "") if name == translation_key
