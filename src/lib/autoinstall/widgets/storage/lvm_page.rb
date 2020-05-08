@@ -22,9 +22,6 @@ require "y2storage"
 require "autoinstall/widgets/storage/drive_page"
 require "autoinstall/widgets/storage/vg_device"
 require "autoinstall/widgets/storage/vg_extent_size"
-require "autoinstall/widgets/storage/md_level"
-require "autoinstall/widgets/storage/chunk_size"
-require "autoinstall/widgets/storage/parity_algorithm"
 
 module Y2Autoinstallation
   module Widgets
