@@ -18,13 +18,13 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
+require "autoinstall/presenters"
 require "autoinstall/widgets/storage/raid_page"
-require "autoinstall/storage_controller"
 require "y2storage/autoinst_profile"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::RaidPage do
-  subject { described_class.new(controller, drive) }
+  subject { described_class.new(drive) }
 
   include_examples "CWM::Page"
 
@@ -33,8 +33,7 @@ describe Y2Autoinstallation::Widgets::Storage::RaidPage do
       [{ "device" => "/dev/md0", "type" => :CT_RAID }]
     )
   end
-  let(:drive) { partitioning.drives.first }
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
+  let(:drive) { Y2Autoinstallation::Presenters::Drive.new(partitioning.drives.first) }
 
   let(:raid_name_widget) do
     instance_double(

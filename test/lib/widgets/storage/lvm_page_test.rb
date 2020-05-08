@@ -19,17 +19,16 @@
 
 require_relative "../../../test_helper"
 require "autoinstall/widgets/storage/lvm_page"
-require "autoinstall/storage_controller"
+require "autoinstall/presenters"
 require "y2storage/autoinst_profile"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::LvmPage do
-  subject { described_class.new(controller, drive) }
+  subject { described_class.new(drive) }
 
   include_examples "CWM::Page"
 
-  let(:drive) { partitioning.drives.first }
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
+  let(:drive) { Y2Autoinstallation::Presenters::Drive.new(partitioning.drives.first) }
 
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
