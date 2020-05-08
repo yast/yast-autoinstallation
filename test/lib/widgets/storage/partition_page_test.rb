@@ -19,12 +19,12 @@
 
 require_relative "../../../test_helper"
 require "autoinstall/widgets/storage/partition_page"
-require "autoinstall/storage_controller"
+require "autoinstall/presenters"
 require "y2storage/autoinst_profile"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
-  subject { described_class.new(controller, drive, partition) }
+  subject { described_class.new(partition) }
 
   include_examples "CWM::Page"
 
@@ -34,9 +34,8 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
     )
   end
   let(:type) { :CT_DISK }
-  let(:drive) { partitioning.drives.first }
+  let(:drive) { Y2Autoinstallation::Presenters::Drive.new(partitioning.drives.first) }
   let(:partition) { drive.partitions.first }
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
   let(:partition_hash) { {} }
 
   describe "#label" do
@@ -53,7 +52,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
         let(:partition_hash) { { "filesystem" => :ext4 } }
 
         it "does not include the mount point" do
-          expect(subject.label).to eq("Partition")
+          expect(subject.label).to eq("Partition: Not Mounted")
         end
       end
     end
@@ -62,7 +61,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
       let(:partition_hash) { { "raid_name" => "/dev/md0" } }
 
       it "returns a description" do
-        expect(subject.label).to eq("Part of /dev/md0")
+        expect(subject.label).to eq("Partition: Part of /dev/md0")
       end
     end
 
@@ -70,7 +69,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
       let(:partition_hash) { { "lvm_group" => "/dev/system" } }
 
       it "returns a description" do
-        expect(subject.label).to eq("Partition for PV /dev/system")
+        expect(subject.label).to eq("Partition: Part of /dev/system")
       end
     end
   end
@@ -108,7 +107,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
     end
 
     it "sets the partition section attributes" do
-      expect(controller).to receive(:update_partition).with(partition, anything)
+      expect(partition).to receive(:update)
       subject.store
     end
   end

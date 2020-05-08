@@ -48,7 +48,7 @@ describe Y2Autoinstallation::Widgets::Storage::OverviewTreePager do
         [{ "type" => :CT_UNKNOWN }]
       end
 
-      it "uses considers that the section corresponds to a disk" do
+      it "considers that the section corresponds to a disk" do
         expect(subject.items.map(&:page)).to contain_exactly(
           an_instance_of(Y2Autoinstallation::Widgets::Storage::DiskPage)
         )
