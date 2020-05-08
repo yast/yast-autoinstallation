@@ -165,47 +165,7 @@ module Yast
       )
       AutoinstGeneral.Write
 
-      AutoinstConfig.network_before_proposal = false
-      general_section = Profile.current["general"] || {}
-      semiauto_network = general_section["semi-automatic"]&.include?("networking")
-
-      if Profile.current["networking"] &&
-          (Profile.current["networking"]["setup_before_proposal"] ||
-            semiauto_network ||
-            !AutoinstConfig.second_stage
-          )
-        if Profile.current["networking"]["setup_before_proposal"]
-          Builtins.y2milestone("Networking setup before the proposal")
-          AutoinstConfig.network_before_proposal = true
-        elsif !AutoinstConfig.second_stage
-          # Second stage of installation will not be called but a
-          # network configuration is available. So this will be written
-          # during the general inst_finish process at the end of the
-          # first stage. But for the installation workflow the linuxrc
-          # network settings will be taken. (bnc#944942)
-          Builtins.y2milestone(
-            "Networking setup at the end of first installation stage"
-          )
-        end
-        Builtins.y2milestone(
-          "Importing Network settings from configuration file"
-        )
-        Call.Function(
-          "lan_auto",
-          ["Import", Ops.get_map(Profile.current, "networking", {})]
-        )
-      end
-
-      if semiauto_network
-        Builtins.y2milestone("Networking manual setup before proposal")
-        Call.Function("inst_lan", ["enable_next" => true])
-        AutoinstConfig.network_before_proposal = true
-      end
-
-      if AutoinstConfig.network_before_proposal
-        Call.Function("lan_auto", ["Write"])
-        Profile.remove_sections("networking") if Profile.current["networking"]
-      end
+      autosetup_network
 
       if Builtins.haskey(Profile.current, "add-on")
         Progress.Title(_("Handling Add-On Products..."))
@@ -505,6 +465,47 @@ module Yast
     # Add YaST2 packages dependencies
     def add_yast2_dependencies
       AutoinstSoftware.AddYdepsFromProfile(Profile.current.keys)
+    end
+
+    def general_section
+      Profile.current["general"] || {}
+    end
+
+    # Autosetup the network
+    def autosetup_network
+      AutoinstConfig.network_before_proposal = false
+      semiauto_network = general_section["semi-automatic"]&.include?("networking")
+
+      if Profile.current["networking"]
+        if Profile.current["networking"]["setup_before_proposal"]
+          log.info("Networking setup before the proposal")
+          AutoinstConfig.network_before_proposal = true
+        else
+          log.info("Networking setup at the end of first installation stage")
+        end
+
+        log.info("Importing Network settings from configuration file")
+        Call.Function(
+          "lan_auto",
+          ["Import", Ops.get_map(Profile.current, "networking", {})]
+        )
+        Profile.remove_sections("networking")
+
+        # Import also the host section in order to resolve hosts only available
+        # with the network configuration and the host entry
+        if Profile.current["host"] && AutoinstConfig.network_before_proposal
+          Call.Function("host_auto", ["Import", Profile.current["host"] || {}])
+          Profile.remove_sections("host")
+        end
+      end
+
+      if semiauto_network
+        Builtins.y2milestone("Networking manual setup before proposal")
+        Call.Function("inst_lan", ["enable_next" => true])
+        AutoinstConfig.network_before_proposal = true
+      end
+
+      Call.Function("lan_auto", ["Write"]) if AutoinstConfig.network_before_proposal
     end
   end
 end
