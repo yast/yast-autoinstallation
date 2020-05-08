@@ -19,21 +19,24 @@
 
 require_relative "../../../test_helper"
 require "y2storage"
-require "autoinstall/storage_controller"
+require "autoinstall/presenters"
 require "autoinstall/widgets/storage/lvm_pv_attrs"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::LvmPvAttrs do
-  subject(:widget) { described_class.new(controller, section) }
+  subject(:widget) { described_class.new(section) }
 
   include_examples "CWM::CustomWidget"
 
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
-  let(:section) { Y2Storage::AutoinstProfile::PartitionSection.new }
+  let(:drive) { Y2Autoinstallation::Presenters::Drive.new(partitioning.drives.first) }
+  let(:section) { drive.partitions.first }
 
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "device" => "/dev/system", "type" => :CT_LVM, "pesize" => "64" }]
+      [
+        { "type" => :CT_DISK, "partitions" => [{}] },
+        { "device" => "/dev/system", "type" => :CT_LVM, "pesize" => "64" }
+      ]
     )
   end
 
