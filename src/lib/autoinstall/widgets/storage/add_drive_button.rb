@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/common_widgets"
+require "autoinstall/presenters"
 
 module Y2Autoinstallation
   module Widgets
@@ -42,18 +43,16 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Add")
+          _("Add Drive")
         end
 
         # Returns the list of possible actions
         #
         # @return [Array<Symbol,String>]
         def items
-          [
-            [:add_disk, _("Disk")],
-            [:add_raid, _("RAID")],
-            [:add_lvm, _("LVM")]
-          ]
+          Presenters::DriveType.all.map do |type|
+            [:"add_#{type.to_sym}", type.label]
+          end
         end
 
         # Handles the events
@@ -64,7 +63,7 @@ module Y2Autoinstallation
           return unless event_id.start_with?("add_")
 
           type = event_id.split("_", 2).last
-          controller.add_drive(type.to_sym)
+          controller.add_drive(Presenters::DriveType.find(type))
           :redraw
         end
 

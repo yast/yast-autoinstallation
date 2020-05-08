@@ -23,38 +23,24 @@ require "cwm/common_widgets"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # This class provides a button to add 'partition' sections
-      #
-      # In an AutoYaST profile, a 'partition' section is used to define a
-      # partition, a logical volume, a RAID member, etc.
-      class AddChildrenButton < CWM::PushButton
-        extend Yast::I18n
-
+      # Button to add a new <partition> section to the current drive
+      class AddPartitionButton < CWM::PushButton
         # Constructor
         #
         # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param section [Y2Storage::AutoinstProfile::DriveSection] Drive section of the profile
-        def initialize(controller, section)
+        def initialize(controller)
           textdomain "autoinst"
           @controller = controller
-          @section = section
         end
 
-        TYPE_LABELS = {
-          CT_DISK: N_("Partition"),
-          CT_RAID: N_("Partition"),
-          CT_LVM:  N_("Partition")
-        }.freeze
-
+        # @macro seeAbstractWidget
         def label
-          type_label = _(TYPE_LABELS[section.type])
-          format(_("Add %{type_label}"), type_label: type_label)
+          _("Add Partition")
         end
 
         # @macro seeAbstractWidget
         def handle
-          # FIXME: the controller could keep track of the current section
-          controller.add_partition(section)
+          controller.add_partition
           :redraw
         end
 
@@ -62,9 +48,6 @@ module Y2Autoinstallation
 
         # @return [Y2Autoinstallation::StorageController]
         attr_reader :controller
-
-        # @return [Y2Storage::AutoinstProfile::DriveSection]
-        attr_reader :section
       end
     end
   end

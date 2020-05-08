@@ -17,27 +17,16 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/add_partition_button"
-require "autoinstall/storage_controller"
-require "cwm/rspec"
-
-describe Y2Autoinstallation::Widgets::Storage::AddPartitionButton do
-  subject(:widget) { described_class.new(controller) }
-
-  include_examples "CWM::PushButton"
-
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
-  let(:partitioning) do
-    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ type: :CT_DISK, device: "/dev/sda" }]
-    )
-  end
-
-  describe "#handle" do
-    it "adds new partition section" do
-      expect(controller).to receive(:add_partition)
-      widget.handle
-    end
+module Y2Autoinstallation
+  # Namespace for all the classes used to implement the Presentation Model pattern
+  # See https://martinfowler.com/eaaDev/PresentationModel.html
+  #
+  # Also inspired by the Presenter pattern used in Ruby on Rails
+  # See http://blog.jayfields.com/2007/03/rails-presenter-pattern.html
+  module Presenters
   end
 end
+
+require "autoinstall/presenters/drive_type"
+require "autoinstall/presenters/drive"
+require "autoinstall/presenters/partition"

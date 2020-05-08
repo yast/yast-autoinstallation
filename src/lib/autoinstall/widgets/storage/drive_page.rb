@@ -18,60 +18,46 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "cwm/custom_widget"
-require "autoinstall/widgets/storage/raid_name"
+require "y2storage"
+require "cwm/page"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # File system specific widgets
-      #
-      # This is a custom widget that groups those that are RAID specific.
-      class RaidAttrs < CWM::CustomWidget
+      # Base class for all the pages allowing to edit a <drive> section
+      class DrivePage < ::CWM::Page
         # Constructor
         #
-        # @param section [Presenters::Partition] presenter for the partition section
-        def initialize(section)
+        # @param drive [Presenters::Drive] presenter for the drive section of the profile
+        def initialize(drive)
           textdomain "autoinst"
+          @drive = drive
           super()
-          @section = section
+          self.widget_id = "drive_page:#{drive.section_id}"
+          self.handle_all_events = true
         end
 
         # @macro seeAbstractWidget
         def label
-          ""
-        end
-
-        # @macro seeCustomWidget
-        def contents
-          VBox(
-            Left(raid_name_widget)
-          )
+          drive.ui_label
         end
 
         # @macro seeAbstractWidget
-        def init
-          raid_name_widget.value = section.raid_name
+        def store
+          drive.update(values)
         end
 
-        # Returns the widgets values
+        # Drive section that is being edited
         #
-        # @return [Hash<String,Object>]
-        def values
-          { "raid_name" => raid_name_widget.value }
+        # @return [Y2Storage::AutoinstProfile::DriveSection]
+        def section
+          drive.section
         end
 
       private
 
-        # @return [Y2Storage::AutoinstProfile::PartitionSection]
-        attr_reader :section
-
-        # RAID name widget
-        #
-        # @return [RaidName]
-        def raid_name_widget
-          @raid_name_widget ||= RaidName.new
-        end
+        # @return [Presenters::Drive]
+        attr_reader :drive
       end
     end
   end

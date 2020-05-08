@@ -19,16 +19,22 @@
 
 require "yast"
 require "y2storage"
+require "autoinstall/presenters"
 
 module Y2Autoinstallation
-  # Controller for the editing the partitioning section of a profile
+  # Controller for editing the <partitioning> section of a profile
   #
-  # It is supposed to be used internally by
-  # {Y2Autoinstallation::Dialogs::Storage}.
+  # It is intended to be used internally by {Dialogs::Storage}.
   class StorageController
+    # Partitioning section that is being edited
+    #
     # @return [Y2Storage::AutoinstProfile::PartitioningSection]
-    #   Partition section
     attr_reader :partitioning
+
+    # Sub-section of {#partitioning} that is currently selected to be modified
+    #
+    # @return [Y2Storage::AutoinstProfile::SectionWithAttributes, nil]
+    attr_accessor :section
 
     # Constructor
     #
@@ -36,71 +42,27 @@ module Y2Autoinstallation
     #   Partitioning section of the profile
     def initialize(partitioning)
       @partitioning = partitioning
+      @section = partitioning.drives.first
       @modified = false
     end
 
-    TYPES_MAP = {
-      disk: :CT_DISK,
-      raid: :CT_RAID,
-      lvm:  :CT_LVM
-    }.freeze
-
     # Adds a new drive section of the given type
     #
-    # @param type [Symbol]
+    # @param type [Presenters::DriveType]
     def add_drive(type)
-      section = Y2Storage::AutoinstProfile::DriveSection.new_from_hashes(type: TYPES_MAP[type])
+      self.section = Y2Storage::AutoinstProfile::DriveSection.new_from_hashes(
+        { type: type.to_sym },
+        partitioning
+      )
       partitioning.drives << section
     end
 
-    # Adds a new partition section under the given section
-    #
-    # @param parent [Y2Storage::AutoinstProfile::DriveSection] Parent section
-    def add_partition(parent)
-      parent.partitions << Y2Storage::AutoinstProfile::PartitionSection.new(parent)
-    end
+    # Adds a new partition section to the current drive section
+    def add_partition
+      return unless drive
 
-    # Updates a drive section
-    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
-    # @param values [Hash] Values to update
-    def update_drive(section, values)
-      partitions = section.partitions
-      section.init_from_hashes(values.merge("type" => section.type))
-      section.partitions = partitions
-    end
-
-    # Updates a partition section
-    #
-    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
-    # @param values [Hash] Values to update
-    def update_partition(section, values)
-      clean_section(section)
-      section.init_from_hashes(values)
-    end
-
-    # Determines the partition usage
-    #
-    # NOTE: perhaps this logic should live in the PartitionSection class.
-    #
-    # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
-    # @return [Symbol]
-    def partition_usage(section)
-      use =
-        if section.mount
-          :filesystem
-        elsif section.raid_name
-          :raid
-        elsif section.lvm_group
-          :lvm_pv
-        end
-      use || :filesystem
-    end
-
-    # Returns a collection of LVM devices based on LVM group names
-    #
-    # @return [Array<String>]
-    def lvm_devices
-      drives(type: :lvm).map { |d| d.device.delete_prefix("/dev/") }
+      drive.partitions << Y2Storage::AutoinstProfile::PartitionSection.new(drive)
+      self.section = drive.partitions.last
     end
 
     # It determines whether the profile was modified
@@ -111,26 +73,30 @@ module Y2Autoinstallation
       true
     end
 
-  private
-
-    # Cleans a profile section
+    # Presenters for all the drive sections
     #
-    # Resets all known attributes
-    # @param section [Y2Storage::AutoinstProfile::SectionWithAttributes]
-    def clean_section(section)
-      section.class.attributes.each do |attr|
-        section.public_send("#{attr[:name]}=", nil)
-      end
+    # @return [Array<Presenters::Drive>]
+    def drive_presenters
+      drives.map { |d| Presenters::Drive.new(d) }
     end
 
-    # Returns drive sections
-    #
-    # @param type [Symbol] an specific drive type, such as :lvm, :disk, :raid
-    # @return [Array<Y2Storage::AutoinstProfile::DriveSection>] drive sections
-    def drives(type: nil)
-      return partitioning.drives unless type
+  private
 
-      partitioning.drives.select { |d| d.type == TYPES_MAP[type] }
+    # Drive sections inside the partitioning one
+    #
+    # @return [Array<Y2Storage::AutoinstProfile::DriveSection>]
+    def drives
+      partitioning.drives
+    end
+
+    # Drive section that is currently selected directly or indirectly (ie.
+    # because one of its partition sections is selected)
+    #
+    # @return [Y2Storage::AutoinstProfile::DriveSection]
+    def drive
+      return nil unless section
+
+      (section.section_name == "partitions") ? section.parent : section
     end
   end
 end

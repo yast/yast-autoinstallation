@@ -19,16 +19,11 @@
 
 require_relative "../../../test_helper"
 require "y2storage"
-require "autoinstall/storage_controller"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs do
-  subject(:widget) { described_class.new(controller, section) }
-
-  let(:controller) do
-    instance_double(Y2Autoinstallation::StorageController)
-  end
+  subject(:widget) { described_class.new(section) }
 
   let(:section) do
     Y2Storage::AutoinstProfile::PartitionSection.new

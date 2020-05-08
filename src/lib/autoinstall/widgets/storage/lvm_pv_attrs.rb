@@ -30,13 +30,10 @@ module Y2Autoinstallation
       class LvmPvAttrs < CWM::CustomWidget
         # Constructor
         #
-        # @param controller [Y2Autoinstallation::StorageController] UI controller
-        # @param section [Y2Storage::AutoinstProfile::PartitionSection] Partition section
-        #   of the profile
-        def initialize(controller, section)
+        # @param section [Presenters::Partition] presenter for the partition section
+        def initialize(section)
           textdomain "autoinst"
           super()
-          @controller = controller
           @section = section
         end
 
@@ -54,7 +51,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
-          lvm_group_widget.items = controller.lvm_devices
+          lvm_group_widget.items = section.available_lvm_groups
           lvm_group_widget.value = section.lvm_group
         end
 
@@ -67,10 +64,7 @@ module Y2Autoinstallation
 
       private
 
-        # @return [Y2Autoinstallation::StorageController]
-        attr_reader :controller
-
-        # @return [Y2Storage::AutoinstProfile::PartitionSection]
+        # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
 
         # LVM Group widget

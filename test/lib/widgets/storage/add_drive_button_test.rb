@@ -30,35 +30,33 @@ describe Y2Autoinstallation::Widgets::Storage::AddDriveButton do
   end
 
   describe "#handle" do
+    let(:event) do
+      { "ID" => :"add_#{type.to_sym}" }
+    end
+
     context "adding a disk" do
-      let(:event) do
-        { "ID" => :add_disk }
-      end
+      let(:type) { Y2Autoinstallation::Presenters::DriveType::DISK }
 
       it "adds a disk drive section" do
-        expect(controller).to receive(:add_drive).with(:disk)
+        expect(controller).to receive(:add_drive).with(type)
         subject.handle(event)
       end
     end
 
     context "adding a RAID" do
-      let(:event) do
-        { "ID" => :add_raid }
-      end
+      let(:type) { Y2Autoinstallation::Presenters::DriveType::RAID }
 
       it "adds a RAID drive section" do
-        expect(controller).to receive(:add_drive).with(:raid)
+        expect(controller).to receive(:add_drive).with(type)
         subject.handle(event)
       end
     end
 
     context "adding an LVM" do
-      let(:event) do
-        { "ID" => :add_lvm }
-      end
+      let(:type) { Y2Autoinstallation::Presenters::DriveType::LVM }
 
       it "adds an LVM drive section" do
-        expect(controller).to receive(:add_drive).with(:lvm)
+        expect(controller).to receive(:add_drive).with(type)
         subject.handle(event)
       end
     end

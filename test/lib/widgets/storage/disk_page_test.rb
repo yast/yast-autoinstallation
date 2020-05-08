@@ -19,12 +19,12 @@
 
 require_relative "../../../test_helper"
 require "autoinstall/widgets/storage/disk_page"
-require "autoinstall/storage_controller"
+require "autoinstall/presenters"
 require "y2storage/autoinst_profile"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::DiskPage do
-  subject { described_class.new(controller, drive) }
+  subject { described_class.new(drive) }
 
   include_examples "CWM::Page"
 
@@ -33,8 +33,7 @@ describe Y2Autoinstallation::Widgets::Storage::DiskPage do
       [{ "type" => :CT_DISK }]
     )
   end
-  let(:drive) { partitioning.drives.first }
-  let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
+  let(:drive) { Y2Autoinstallation::Presenters::Drive.new(partitioning.drives.first) }
 
   let(:disk_device_widget) do
     instance_double(
@@ -92,7 +91,7 @@ describe Y2Autoinstallation::Widgets::Storage::DiskPage do
       let(:device) { "" }
 
       it "does not include the device" do
-        expect(subject.label).to eq("Disk")
+        expect(subject.label).to eq("Drive (Disk)")
       end
     end
   end
