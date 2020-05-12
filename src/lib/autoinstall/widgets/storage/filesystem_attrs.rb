@@ -20,8 +20,8 @@
 require "yast"
 require "cwm/custom_widget"
 require "autoinstall/widgets/storage/filesystem"
-require "autoinstall/widgets/storage/mount_point"
 require "autoinstall/widgets/storage/label"
+require "autoinstall/widgets/storage/mount"
 
 module Y2Autoinstallation
   module Widgets
@@ -92,11 +92,9 @@ module Y2Autoinstallation
           @label_widget ||= Label.new
         end
 
-        # Mount point widget
-        #
-        # @return [MountPoint]
+        # Widget for selecting the partition mount point
         def mount_point_widget
-          @mount_point_widget ||= MountPoint.new
+          @mount_point_widget ||= Mount.new
         end
       end
     end

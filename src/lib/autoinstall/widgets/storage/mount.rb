@@ -24,11 +24,8 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # Widget to select the mount point for a file system
-
-      # Constructor
-      #
-      # @param initial [String,nil] Initial value
-      class MountPoint < CWM::ComboBox
+      class Mount < CWM::ComboBox
+        # Constructor
         def initialize
           textdomain "autoinst"
           super
