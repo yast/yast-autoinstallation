@@ -22,6 +22,7 @@ require "cwm/custom_widget"
 require "autoinstall/widgets/storage/create"
 require "autoinstall/widgets/storage/resize"
 require "autoinstall/widgets/storage/size_selector"
+require "autoinstall/widgets/storage/partition_nr"
 
 module Y2Autoinstallation
   module Widgets
@@ -49,15 +50,20 @@ module Y2Autoinstallation
               HWeight(1, create_widget),
               HWeight(1, resize_widget),
               HWeight(1, size_widget)
+            ),
+            HBox(
+              HWeight(1, partition_nr_widget),
+              HWeight(2, Empty())
             )
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          create_widget.value = section.create
-          resize_widget.value = section.resize
-          size_widget.value = section.size
+          create_widget.value       = section.create
+          resize_widget.value       = section.resize
+          size_widget.value         = section.size
+          partition_nr_widget.value = section.partition_nr
         end
 
         # Returns all widgets values
@@ -65,9 +71,10 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "create" => create_widget.value,
-            "resize" => resize_widget.value,
-            "size"   => size_widget.value
+            "create"       => create_widget.value,
+            "resize"       => resize_widget.value,
+            "size"         => size_widget.value,
+            "partition_nr" => partition_nr_widget.value
           }
         end
 
@@ -95,6 +102,13 @@ module Y2Autoinstallation
         # @return [SizeSelector]
         def size_widget
           @size_widget ||= SizeSelector.new
+        end
+
+        # Widget to set the partition_nr
+        #
+        # @return [PartitionNr]
+        def partition_nr_widget
+          @partition_nr_widget ||= PartitionNr.new
         end
       end
     end

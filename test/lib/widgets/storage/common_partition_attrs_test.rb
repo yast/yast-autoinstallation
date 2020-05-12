@@ -66,15 +66,25 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
 
       expect(widget).to_not be_nil
     end
+
+    it "constains a widget to set the partition number" do
+      widget = subject.contents.nested_find do |w|
+        w.is_a?(Y2Autoinstallation::Widgets::Storage::PartitionNr)
+      end
+
+      expect(widget).to_not be_nil
+    end
   end
 
   describe "#values" do
     let(:create_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Create, value: "false")
     end
-
     let(:resize_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Resize, value: "true")
+    end
+    let(:partition_nr_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::PartitionNr, value: 131)
     end
 
     before do
@@ -82,6 +92,8 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
         .and_return(create_widget)
       allow(Y2Autoinstallation::Widgets::Storage::Resize).to receive(:new)
         .and_return(resize_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::PartitionNr).to receive(:new)
+        .and_return(partition_nr_widget)
     end
 
     it "includes create" do
@@ -90,6 +102,10 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
 
     it "includes resize" do
       expect(subject.values).to include("resize" => "true")
+    end
+
+    it "includes partition_nr" do
+      expect(subject.values).to include("partition_nr" => 131)
     end
   end
 end
