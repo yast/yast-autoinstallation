@@ -71,7 +71,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def store
-          partition.update(values, attrs: filesystem_widget.values.keys)
+          partition.update(values)
           nil
         end
 
