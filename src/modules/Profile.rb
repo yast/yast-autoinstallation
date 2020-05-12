@@ -926,7 +926,6 @@ module Yast
       Yast.import "Y2ModuleConfig"
       Y2ModuleConfig.resource_aliases_map
     end
-
   end
 
   Profile = ProfileClass.new
