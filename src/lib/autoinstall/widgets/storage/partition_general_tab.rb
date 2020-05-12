@@ -21,9 +21,8 @@ require "yast"
 require "cwm/tabs"
 require "cwm/replace_point"
 require "cwm/common_widgets"
+require "autoinstall/widgets/storage/common_partition_attrs"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
-require "autoinstall/widgets/storage/create"
-require "autoinstall/widgets/storage/size_selector"
 
 module Y2Autoinstallation
   module Widgets
@@ -47,24 +46,15 @@ module Y2Autoinstallation
 
         def contents
           VBox(
-            HBox(
-              HWeight(1, size_widget),
-              HWeight(2, HStretch())
-            ),
-            Left(create_widget),
+            Left(common_partition_attrs),
             Left(section_related_attrs),
             VStretch()
           )
         end
 
         # @macro seeAbstractWidget
-        def init
-          size_widget.value = partition.size
-        end
-
-        # @macro seeAbstractWidget
         def values
-          [lvm_partition_attrs].reduce({}) do |hsh, widget|
+          [common_partition_attrs, lvm_partition_attrs].reduce({}) do |hsh, widget|
             hsh.merge(widget.values)
           end
         end
@@ -80,25 +70,18 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :partition
 
-        # Widget to set the partition size
-        #
-        # @return [SizeSelector]
-        def size_widget
-          @size_widget ||= SizeSelector.new
-        end
-
-        # Widget to set if the partition should be created or not
-        #
-        # @return [Create]
-        def create_widget
-          @create_widget ||= Create.new
-        end
-
         # Convenience method to call proper widget depending on the drive type
         def section_related_attrs
           method_name = "#{partition.drive_type}_partition_attrs".downcase
 
           send(method_name)
+        end
+
+        # Options for a all partitions
+        #
+        # @return [CommonPartitionAttrs]
+        def common_partition_attrs
+          @common_partition_attrs ||= CommonPartitionAttrs.new(partition)
         end
 
         # Options for a partition related to an LVM drive section
