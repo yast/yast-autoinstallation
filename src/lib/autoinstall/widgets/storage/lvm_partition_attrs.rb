@@ -45,7 +45,10 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            Left(lv_name_widget)
+            HBox(
+              HWeight(1, lv_name_widget),
+              HWeight(2, Empty())
+            )
           )
         end
 
