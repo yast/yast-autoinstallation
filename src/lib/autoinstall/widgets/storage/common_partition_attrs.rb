@@ -23,6 +23,7 @@ require "autoinstall/widgets/storage/create"
 require "autoinstall/widgets/storage/resize"
 require "autoinstall/widgets/storage/size_selector"
 require "autoinstall/widgets/storage/partition_nr"
+require "autoinstall/widgets/storage/uuid"
 
 module Y2Autoinstallation
   module Widgets
@@ -53,7 +54,8 @@ module Y2Autoinstallation
             ),
             HBox(
               HWeight(1, partition_nr_widget),
-              HWeight(2, Empty())
+              HWeight(1, uuid_widget),
+              HWeight(1, Empty())
             )
           )
         end
@@ -64,6 +66,7 @@ module Y2Autoinstallation
           resize_widget.value       = section.resize
           size_widget.value         = section.size
           partition_nr_widget.value = section.partition_nr
+          uuid_widget.value         = section.uuid
         end
 
         # Returns all widgets values
@@ -74,7 +77,8 @@ module Y2Autoinstallation
             "create"       => create_widget.value,
             "resize"       => resize_widget.value,
             "size"         => size_widget.value,
-            "partition_nr" => partition_nr_widget.value
+            "partition_nr" => partition_nr_widget.value,
+            "uuid"         => uuid_widget.value
           }
         end
 
@@ -109,6 +113,13 @@ module Y2Autoinstallation
         # @return [PartitionNr]
         def partition_nr_widget
           @partition_nr_widget ||= PartitionNr.new
+        end
+
+        # Widget to set the partition uuid
+        #
+        # @return [Uuid]
+        def uuid_widget
+          @uuid_widget ||= Uuid.new
         end
       end
     end
