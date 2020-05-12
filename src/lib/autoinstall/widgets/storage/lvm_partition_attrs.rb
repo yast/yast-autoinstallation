@@ -22,6 +22,7 @@ require "cwm/custom_widget"
 require "autoinstall/widgets/storage/lv_name"
 require "autoinstall/widgets/storage/pool"
 require "autoinstall/widgets/storage/used_pool"
+require "autoinstall/widgets/storage/stripes"
 
 module Y2Autoinstallation
   module Widgets
@@ -55,6 +56,10 @@ module Y2Autoinstallation
               HWeight(1, pool_widget),
               HWeight(1, used_pool_widget),
               HWeight(1, Empty())
+            ),
+            HBox(
+              HWeight(1, stripes_widget),
+              HWeight(2, Empty())
             )
           )
         end
@@ -64,6 +69,7 @@ module Y2Autoinstallation
           lv_name_widget.value   = section.lv_name
           pool_widget.value      = section.pool
           used_pool_widget.value = section.used_pool
+          stripes_widget.value   = section.stripes
         end
 
         # Returns the widgets values
@@ -73,7 +79,8 @@ module Y2Autoinstallation
           {
             "lv_name"   => lv_name_widget.value,
             "pool"      => pool_widget.value,
-            "used_pool" => used_pool_widget.value
+            "used_pool" => used_pool_widget.value,
+            "stripes"   => stripes_widget.value
           }
         end
 
@@ -101,6 +108,13 @@ module Y2Autoinstallation
         # @return [UsedPool]
         def used_pool_widget
           @used_pool_widget ||= UsedPool.new
+        end
+
+        # Widget for configuring the LVM stripping
+        #
+        # @return [Stripes]
+        def stripes_widget
+          @stripes_widget ||= Stripes.new
         end
       end
     end
