@@ -59,6 +59,14 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
       expect(widget).to_not be_nil
     end
 
+    it "constains a widget to set the format option" do
+      widget = subject.contents.nested_find do |w|
+        w.is_a?(Y2Autoinstallation::Widgets::Storage::Format)
+      end
+
+      expect(widget).to_not be_nil
+    end
+
     it "constains a widget to fill the size" do
       widget = subject.contents.nested_find do |w|
         w.is_a?(Y2Autoinstallation::Widgets::Storage::SizeSelector)
@@ -90,6 +98,9 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
     let(:create_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Create, value: "false")
     end
+    let(:format_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::Format, value: "true")
+    end
     let(:resize_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Resize, value: "true")
     end
@@ -103,6 +114,8 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
     before do
       allow(Y2Autoinstallation::Widgets::Storage::Create).to receive(:new)
         .and_return(create_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::Format).to receive(:new)
+        .and_return(format_widget)
       allow(Y2Autoinstallation::Widgets::Storage::Resize).to receive(:new)
         .and_return(resize_widget)
       allow(Y2Autoinstallation::Widgets::Storage::PartitionNr).to receive(:new)
@@ -113,6 +126,10 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
 
     it "includes create" do
       expect(subject.values).to include("create" => "false")
+    end
+
+    it "includes format" do
+      expect(subject.values).to include("format" => "true")
     end
 
     it "includes resize" do
