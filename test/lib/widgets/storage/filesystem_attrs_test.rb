@@ -35,14 +35,23 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
     let(:label_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Label, value: "mydata")
     end
+    let(:mount_point_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::Mount, value: "swap")
+    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::Label).to receive(:new)
         .and_return(label_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::Mount).to receive(:new)
+        .and_return(mount_point_widget)
     end
 
     it "includes label" do
       expect(widget.values).to include("label" => "mydata")
+    end
+
+    it "includes mount" do
+      expect(widget.values).to include("mount" => "swap")
     end
   end
 end

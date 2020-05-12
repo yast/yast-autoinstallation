@@ -18,10 +18,10 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/mount_point"
+require "autoinstall/widgets/storage/mount"
 require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::MountPoint do
+describe Y2Autoinstallation::Widgets::Storage::Mount do
   subject { described_class.new }
 
   include_examples "CWM::ComboBox"
