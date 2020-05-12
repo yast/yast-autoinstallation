@@ -17,12 +17,26 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/format_filesystem"
-require "cwm/rspec"
+require "yast"
+require "autoinstall/widgets/storage/boolean_selector"
 
-describe Y2Autoinstallation::Widgets::Storage::FormatFilesystem do
-  subject { described_class.new }
+module Y2Autoinstallation
+  module Widgets
+    module Storage
+      # Determines whether the file system should be formatted or not
+      #
+      # It corresponds to the `format` element in a `partition` section of the profile.
+      class Format < BooleanSelector
+        def initialize
+          textdomain "autoinst"
+          super
+        end
 
-  include_examples "CWM::CheckBox"
+        # @macro seeAbstractWidget
+        def label
+          _("Format")
+        end
+      end
+    end
+  end
 end
