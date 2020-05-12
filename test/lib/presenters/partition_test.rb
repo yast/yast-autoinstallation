@@ -44,38 +44,17 @@ describe Y2Autoinstallation::Presenters::Partition do
   subject { drive.partitions.first }
 
   describe "#update" do
-    context "when file system attributes are given" do
-      let(:values) do
-        { filesystem: :ext4, mount: "/home" }
-      end
+    it "clears and sets given attributes" do
+      expect(section).to receive(:size=).with(nil)
+      expect(section).to receive(:size=).with(:whatever)
 
-      it "sets the file system attributes" do
-        subject.update(values)
-        expect(subject.section.filesystem).to eq(:ext4)
-        expect(subject.section.mount).to eq("/home")
-      end
-
-      it "clears non filesystem specific attributes" do
-        subject.update(values)
-        expect(subject.section.raid_name).to be_nil
-      end
+      subject.update("size" => :whatever)
     end
 
-    context "when RAID attributes are given" do
-      let(:values) do
-        { raid_name: "/dev/md1" }
-      end
+    it "does not clear omitted attributes" do
+      expect(section).to_not receive(:size=)
 
-      it "sets the RAID attributes" do
-        subject.update(values)
-        expect(section.raid_name).to eq("/dev/md1")
-      end
-
-      it "clears non RAID specific attributes" do
-        subject.update(values)
-        expect(section.filesystem).to be_nil
-        expect(section.mount).to be_nil
-      end
+      subject.update("filesystem" => :btrfs)
     end
   end
 
