@@ -22,6 +22,7 @@ require "cwm/custom_widget"
 require "autoinstall/widgets/storage/filesystem"
 require "autoinstall/widgets/storage/label"
 require "autoinstall/widgets/storage/mount"
+require "autoinstall/widgets/storage/mountby"
 
 module Y2Autoinstallation
   module Widgets
@@ -54,7 +55,8 @@ module Y2Autoinstallation
             ),
             HBox(
               HWeight(1, mount_point_widget),
-              HWeight(2, Empty())
+              HWeight(1, mountby_widget),
+              HWeight(1, Empty())
             )
           )
         end
@@ -62,8 +64,9 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           filesystem_widget.value  = section.filesystem.to_s if section.filesystem
-          mount_point_widget.value = section.mount
           label_widget.value       = section.label
+          mount_point_widget.value = section.mount
+          mountby_widget.value     = section.mountby
         end
 
         # Returns the widgets values
@@ -73,7 +76,8 @@ module Y2Autoinstallation
           {
             "filesystem" => filesystem_widget.value&.to_sym,
             "label"      => label_widget.value,
-            "mount"      => mount_point_widget.value
+            "mount"      => mount_point_widget.value,
+            "mountby"    => mountby_widget.value&.to_sym
           }
         end
 
@@ -95,6 +99,11 @@ module Y2Autoinstallation
         # Widget for selecting the partition mount point
         def mount_point_widget
           @mount_point_widget ||= Mount.new
+        end
+
+        # Widget for selecting the partition mount type
+        def mountby_widget
+          @mountby_widget ||= Mountby.new
         end
       end
     end
