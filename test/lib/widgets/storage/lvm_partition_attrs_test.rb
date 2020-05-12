@@ -25,26 +25,33 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs do
   subject(:widget) { described_class.new(section) }
 
+  include_examples "CWM::CustomWidget"
+
   let(:section) do
     Y2Storage::AutoinstProfile::PartitionSection.new
   end
 
-  let(:lv_name_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::LvName, value: lv_name)
-  end
-
-  include_examples "CWM::CustomWidget"
-
   describe "#values" do
-    let(:lv_name) { "lv-home" }
+    let(:lv_name_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::LvName, value: "lv-home")
+    end
+    let(:pool_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::Pool, value: false)
+    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::LvName).to receive(:new)
         .and_return(lv_name_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::Pool).to receive(:new)
+        .and_return(pool_widget)
     end
 
     it "includes lv_name" do
       expect(widget.values).to include("lv_name" => "lv-home")
+    end
+
+    it "includes pool" do
+      expect(widget.values).to include("pool" => false)
     end
   end
 end
