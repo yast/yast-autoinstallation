@@ -19,9 +19,9 @@
 
 require_relative "../../../test_helper"
 require_relative "./shared_examples"
-require "autoinstall/widgets/storage/vg_extent_size"
+require "autoinstall/widgets/storage/size"
 
-describe Y2Autoinstallation::Widgets::Storage::VgExtentSize do
+describe Y2Autoinstallation::Widgets::Storage::Size do
   subject(:widget) { described_class.new }
 
   include_examples "Y2Autoinstallation::Widgets::Storage::SizeSelector"
@@ -33,14 +33,14 @@ describe Y2Autoinstallation::Widgets::Storage::VgExtentSize do
   end
 
   describe "#include_auto?" do
-    it "returns false" do
-      expect(subject.include_auto?).to eq(false)
+    it "returns true" do
+      expect(subject.include_auto?).to eq(true)
     end
   end
 
   describe "#include_max?" do
-    it "returns false" do
-      expect(subject.include_max?).to eq(false)
+    it "returns true" do
+      expect(subject.include_max?).to eq(true)
     end
   end
 end
