@@ -75,40 +75,14 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionPage do
   end
 
   describe "#contents" do
-    it "constains a widget to fill the size" do
-      widget = subject.contents.nested_find do |w|
-        w.is_a?(Y2Autoinstallation::Widgets::Storage::SizeSelector)
-      end
-
-      expect(widget).to_not be_nil
+    it "shows a tab for common options" do
+      expect(Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab).to receive(:new)
+      subject.contents
     end
 
-    context "when the partition belongs to an LVM" do
-      let(:type) { :CT_LVM }
-
-      it "contains LVM partition attributes" do
-        widget = subject.contents.nested_find do |w|
-          w.is_a?(Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs)
-        end
-
-        expect(widget).to_not be_nil
-      end
-    end
-  end
-
-  describe "#store" do
-    let(:used_as_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::UsedAs, value: "filesystem")
-    end
-
-    before do
-      allow(Y2Autoinstallation::Widgets::Storage::UsedAs).to receive(:new)
-        .and_return(used_as_widget)
-    end
-
-    it "sets the partition section attributes" do
-      expect(partition).to receive(:update)
-      subject.store
+    it "shows a tab for options related to partition usage" do
+      expect(Y2Autoinstallation::Widgets::Storage::PartitionUsageTab).to receive(:new)
+      subject.contents
     end
   end
 end
