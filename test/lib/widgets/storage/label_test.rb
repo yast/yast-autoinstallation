@@ -18,31 +18,11 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "y2storage"
-require "autoinstall/widgets/storage/filesystem_attrs"
+require "autoinstall/widgets/storage/label"
 require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
-  subject(:widget) { described_class.new(section) }
+describe Y2Autoinstallation::Widgets::Storage::Label do
+  subject(:widget) { described_class.new }
 
-  let(:section) do
-    Y2Storage::AutoinstProfile::PartitionSection.new
-  end
-
-  include_examples "CWM::CustomWidget"
-
-  describe "#values" do
-    let(:label_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Label, value: "mydata")
-    end
-
-    before do
-      allow(Y2Autoinstallation::Widgets::Storage::Label).to receive(:new)
-        .and_return(label_widget)
-    end
-
-    it "includes label" do
-      expect(widget.values).to include("label" => "mydata")
-    end
-  end
+  include_examples "CWM::InputField"
 end

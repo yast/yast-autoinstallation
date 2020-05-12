@@ -17,32 +17,24 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require "y2storage"
-require "autoinstall/widgets/storage/filesystem_attrs"
-require "cwm/rspec"
+require "yast"
+require "cwm/common_widgets"
 
-describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
-  subject(:widget) { described_class.new(section) }
+module Y2Autoinstallation
+  module Widgets
+    module Storage
+      # Widget to specify a partition label
+      class Label < CWM::InputField
+        def initalize
+          textdomain "autoinst"
+          super
+        end
 
-  let(:section) do
-    Y2Storage::AutoinstProfile::PartitionSection.new
-  end
-
-  include_examples "CWM::CustomWidget"
-
-  describe "#values" do
-    let(:label_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Label, value: "mydata")
-    end
-
-    before do
-      allow(Y2Autoinstallation::Widgets::Storage::Label).to receive(:new)
-        .and_return(label_widget)
-    end
-
-    it "includes label" do
-      expect(widget.values).to include("label" => "mydata")
+        # @macro seeAbstractWidget
+        def label
+          _("Label")
+        end
+      end
     end
   end
 end
