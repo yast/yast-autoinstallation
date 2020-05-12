@@ -21,6 +21,7 @@ require "yast"
 require "cwm/custom_widget"
 require "autoinstall/widgets/storage/filesystem"
 require "autoinstall/widgets/storage/mount_point"
+require "autoinstall/widgets/storage/label"
 
 module Y2Autoinstallation
   module Widgets
@@ -46,15 +47,23 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            Left(filesystem_widget),
-            Left(mount_point_widget)
+            HBox(
+              HWeight(1, filesystem_widget),
+              HWeight(1, label_widget),
+              HWeight(1, Empty())
+            ),
+            HBox(
+              HWeight(1, mount_point_widget),
+              HWeight(2, Empty())
+            )
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          filesystem_widget.value = section.filesystem.to_s if section.filesystem
+          filesystem_widget.value  = section.filesystem.to_s if section.filesystem
           mount_point_widget.value = section.mount
+          label_widget.value       = section.label
         end
 
         # Returns the widgets values
@@ -62,8 +71,9 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "mount"      => mount_point_widget.value,
-            "filesystem" => filesystem_widget.value&.to_sym
+            "filesystem" => filesystem_widget.value&.to_sym,
+            "label"      => label_widget.value,
+            "mount"      => mount_point_widget.value
           }
         end
 
@@ -72,16 +82,21 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
 
+        # Filesystem type widget
+        def filesystem_widget
+          @filesystem_widget ||= Filesystem.new
+        end
+
+        # Widget for setting the partition label
+        def label_widget
+          @label_widget ||= Label.new
+        end
+
         # Mount point widget
         #
         # @return [MountPoint]
         def mount_point_widget
           @mount_point_widget ||= MountPoint.new
-        end
-
-        # Filesystem type widget
-        def filesystem_widget
-          @filesystem_widget ||= Filesystem.new
         end
       end
     end
