@@ -118,7 +118,7 @@ module Yast
     # Builds the profile
     #
     # @return [void]
-    # @see Profile.Prepare
+    # @see ProfileClass.Prepare
     def Process
       log.info "Additional resources: #{@additional}"
       Profile.Reset
