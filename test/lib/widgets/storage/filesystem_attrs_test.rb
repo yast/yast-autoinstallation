@@ -41,6 +41,9 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
     let(:mountby_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Mount, value: :label)
     end
+    let(:mkfs_options_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::MkfsOptions, value: "-I 128")
+    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::Label).to receive(:new)
@@ -49,6 +52,8 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
         .and_return(mount_point_widget)
       allow(Y2Autoinstallation::Widgets::Storage::Mountby).to receive(:new)
         .and_return(mountby_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::MkfsOptions).to receive(:new)
+        .and_return(mkfs_options_widget)
     end
 
     it "includes label" do
@@ -61,6 +66,10 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
 
     it "includes mountby" do
       expect(widget.values).to include("mountby" => :label)
+    end
+
+    it "includes mkfs_options" do
+      expect(widget.values).to include("mkfs_options" => "-I 128")
     end
   end
 end
