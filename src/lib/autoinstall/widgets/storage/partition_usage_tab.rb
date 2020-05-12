@@ -25,6 +25,7 @@ require "autoinstall/widgets/storage/filesystem_attrs"
 require "autoinstall/widgets/storage/raid_attrs"
 require "autoinstall/widgets/storage/lvm_pv_attrs"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
+require "autoinstall/widgets/storage/encryption_attrs"
 require "autoinstall/widgets/storage/size_selector"
 require "autoinstall/widgets/storage/used_as"
 
@@ -53,7 +54,8 @@ module Y2Autoinstallation
         def contents
           VBox(
             Left(used_as_widget),
-            replace_point
+            replace_point,
+            encryption_widget
           )
         end
 
@@ -71,7 +73,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def values
-          [filesystem_widget, raid_widget, lvm_pv_widget].reduce({}) do |hsh, widget|
+          relevant_widgets.reduce({}) do |hsh, widget|
             hsh.merge(widget.values)
           end
         end
@@ -87,8 +89,16 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :partition
 
-        def used_as_widget
-          @used_as_widget ||= UsedAs.new
+        # Convenience method to retrieve all widgets holding profile attributes
+        #
+        # @return [Array<CWW::CustomWidget>]
+        def relevant_widgets
+          [
+            filesystem_widget,
+            raid_widget,
+            lvm_pv_widget,
+            encryption_widget
+          ]
         end
 
         def filesystem_widget
@@ -101,6 +111,15 @@ module Y2Autoinstallation
 
         def lvm_pv_widget
           @lvm_pv_widget ||= LvmPvAttrs.new(partition)
+        end
+
+        # Widget for setting encryption related attributes
+        def encryption_widget
+          @encryption_widget ||= EncryptionAttrs.new(partition)
+        end
+
+        def used_as_widget
+          @used_as_widget ||= UsedAs.new
         end
 
         def replace_point
