@@ -59,11 +59,4 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
       end
     end
   end
-
-  describe "#store" do
-    it "sets the partition section attributes" do
-      expect(partition).to receive(:update)
-      subject.store
-    end
-  end
 end
