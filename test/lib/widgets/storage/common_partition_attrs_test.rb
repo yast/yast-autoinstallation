@@ -73,13 +73,23 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
       instance_double(Y2Autoinstallation::Widgets::Storage::Create, value: "false")
     end
 
+    let(:resize_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::Resize, value: "true")
+    end
+
     before do
       allow(Y2Autoinstallation::Widgets::Storage::Create).to receive(:new)
         .and_return(create_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::Resize).to receive(:new)
+        .and_return(resize_widget)
     end
 
     it "includes create" do
       expect(subject.values).to include("create" => "false")
+    end
+
+    it "includes resize" do
+      expect(subject.values).to include("resize" => "true")
     end
   end
 end
