@@ -22,7 +22,7 @@ require "cwm/custom_widget"
 require "autoinstall/widgets/storage/create"
 require "autoinstall/widgets/storage/format"
 require "autoinstall/widgets/storage/resize"
-require "autoinstall/widgets/storage/size_selector"
+require "autoinstall/widgets/storage/size"
 require "autoinstall/widgets/storage/partition_nr"
 require "autoinstall/widgets/storage/uuid"
 
@@ -118,9 +118,9 @@ module Y2Autoinstallation
 
         # Widget to set the partition size
         #
-        # @return [SizeSelector]
+        # @return [Size]
         def size_widget
-          @size_widget ||= SizeSelector.new
+          @size_widget ||= Size.new
         end
 
         # Widget to set the partition_nr

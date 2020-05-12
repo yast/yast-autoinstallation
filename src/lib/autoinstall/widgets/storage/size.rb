@@ -17,30 +17,25 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require_relative "./shared_examples"
-require "autoinstall/widgets/storage/vg_extent_size"
+require "yast"
+require "autoinstall/widgets/storage/size_selector"
 
-describe Y2Autoinstallation::Widgets::Storage::VgExtentSize do
-  subject(:widget) { described_class.new }
+module Y2Autoinstallation
+  module Widgets
+    module Storage
+      # Widget to specify the partition section size
+      class Size < SizeSelector
+        # Constructor
+        def initialize
+          textdomain "autoinst"
+          super
+        end
 
-  include_examples "Y2Autoinstallation::Widgets::Storage::SizeSelector"
-
-  describe "#include_blank?" do
-    it "returns true" do
-      expect(subject.include_blank?).to eq(true)
-    end
-  end
-
-  describe "#include_auto?" do
-    it "returns false" do
-      expect(subject.include_auto?).to eq(false)
-    end
-  end
-
-  describe "#include_max?" do
-    it "returns false" do
-      expect(subject.include_max?).to eq(false)
+        # @macro seeAbstractWidget
+        def label
+          _("Size")
+        end
+      end
     end
   end
 end
