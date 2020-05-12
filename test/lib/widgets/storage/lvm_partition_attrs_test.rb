@@ -38,12 +38,17 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs do
     let(:pool_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Pool, value: false)
     end
+    let(:used_pool_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::UsedPool, value: "my_thin_pool")
+    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::LvName).to receive(:new)
         .and_return(lv_name_widget)
       allow(Y2Autoinstallation::Widgets::Storage::Pool).to receive(:new)
         .and_return(pool_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::UsedPool).to receive(:new)
+        .and_return(used_pool_widget)
     end
 
     it "includes lv_name" do
@@ -52,6 +57,10 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs do
 
     it "includes pool" do
       expect(widget.values).to include("pool" => false)
+    end
+
+    it "includes used_pool" do
+      expect(widget.values).to include("used_pool" => "my_thin_pool")
     end
   end
 end
