@@ -44,6 +44,9 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs do
     let(:stripes_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Stripes, value: 2)
     end
+    let(:stripesize_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::Stripesize, value: 4)
+    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::LvName).to receive(:new)
@@ -54,6 +57,8 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs do
         .and_return(used_pool_widget)
       allow(Y2Autoinstallation::Widgets::Storage::Stripes).to receive(:new)
         .and_return(stripes_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::Stripesize).to receive(:new)
+        .and_return(stripesize_widget)
     end
 
     it "includes lv_name" do
@@ -70,6 +75,10 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs do
 
     it "includes stripes" do
       expect(widget.values).to include("stripes" => 2)
+    end
+
+    it "includes stripe_size" do
+      expect(widget.values).to include("stripe_size" => 4)
     end
   end
 end
