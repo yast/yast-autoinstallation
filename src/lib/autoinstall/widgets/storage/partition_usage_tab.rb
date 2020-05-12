@@ -70,14 +70,16 @@ module Y2Autoinstallation
         end
 
         # @macro seeAbstractWidget
-        def store
-          partition.update(values)
-          nil
+        def values
+          [filesystem_widget, raid_widget, lvm_pv_widget].reduce({}) do |hsh, widget|
+            hsh.merge(widget.values)
+          end
         end
 
         # @macro seeAbstractWidget
-        def values
-          selected_widget.values
+        def store
+          partition.update(values)
+          nil
         end
 
       private
@@ -120,4 +122,3 @@ module Y2Autoinstallation
     end
   end
 end
-

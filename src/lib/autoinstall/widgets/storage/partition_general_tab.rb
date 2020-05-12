@@ -61,11 +61,14 @@ module Y2Autoinstallation
         end
 
         # @macro seeAbstractWidget
-        def store
-          values = {}
-          values["size"] = size_widget.value
-          values.merge(lvm_partition_attrs.values)
+        def values
+          [lvm_partition_attrs].reduce({}) do |hsh, widget|
+            hsh.merge(widget.values)
+          end
+        end
 
+        # @macro seeAbstractWidget
+        def store
           partition.update(values)
           nil
         end
