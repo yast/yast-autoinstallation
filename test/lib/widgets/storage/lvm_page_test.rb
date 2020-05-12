@@ -39,23 +39,23 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
     instance_double(Y2Autoinstallation::Widgets::Storage::VgDevice)
   end
 
-  let(:vg_pesize_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::VgExtentSize)
+  let(:pesize_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::Pesize)
   end
 
   before do
     allow(Y2Autoinstallation::Widgets::Storage::VgDevice)
       .to receive(:new).and_return(vg_device_widget)
-    allow(Y2Autoinstallation::Widgets::Storage::VgExtentSize)
-      .to receive(:new).and_return(vg_pesize_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::Pesize)
+      .to receive(:new).and_return(pesize_widget)
 
     allow(vg_device_widget).to receive(:value=)
-    allow(vg_pesize_widget).to receive(:value=)
+    allow(pesize_widget).to receive(:value=)
   end
 
   describe "#init" do
     it "sets the vg physical extent size" do
-      expect(vg_pesize_widget).to receive(:value=)
+      expect(pesize_widget).to receive(:value=)
       subject.init
     end
   end
