@@ -39,9 +39,9 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
   let(:partition_hash) { {} }
 
   describe "#contents" do
-    it "constains a widget to fill the size" do
+    it "contains common partition attributes" do
       widget = subject.contents.nested_find do |w|
-        w.is_a?(Y2Autoinstallation::Widgets::Storage::SizeSelector)
+        w.is_a?(Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs)
       end
 
       expect(widget).to_not be_nil
