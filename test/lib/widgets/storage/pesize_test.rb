@@ -17,39 +17,30 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require "yast"
-require "y2storage"
-require "autoinstall/widgets/storage/size_selector"
+require_relative "../../../test_helper"
+require_relative "./shared_examples"
+require "autoinstall/widgets/storage/pesize"
 
-module Y2Autoinstallation
-  module Widgets
-    module Storage
-      # Widget for the LVM VG extent size
-      class VgExtentSize < SizeSelector
-        # Constructor
-        def initialize
-          textdomain "autoinst"
-          super
-        end
+describe Y2Autoinstallation::Widgets::Storage::Pesize do
+  subject(:widget) { described_class.new }
 
-        # @macro seeAbstractWidget
-        def label
-          # TRANSLATORS: field to enter the extent size of a new volume group
-          _("Physical Extent Size")
-        end
+  include_examples "Y2Autoinstallation::Widgets::Storage::SizeSelector"
 
-        def sizes
-          ["1 MiB", "2 MiB", "4 MiB", "8 MiB", "16 MiB", "32 MiB", "64 MiB"]
-        end
+  describe "#include_blank?" do
+    it "returns true" do
+      expect(subject.include_blank?).to eq(true)
+    end
+  end
 
-        def include_max?
-          false
-        end
+  describe "#include_auto?" do
+    it "returns false" do
+      expect(subject.include_auto?).to eq(false)
+    end
+  end
 
-        def include_auto?
-          false
-        end
-      end
+  describe "#include_max?" do
+    it "returns false" do
+      expect(subject.include_max?).to eq(false)
     end
   end
 end
