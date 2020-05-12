@@ -65,16 +65,11 @@ module Y2Autoinstallation
         #
         # @return [Hash<String,Object>]
         def values
-          widget_values = {
-            "format" => format_filesystem_widget.value,
-            "mount"  => mount_point_widget.value
+          {
+            "format"     => format_filesystem_widget.value,
+            "mount"      => mount_point_widget.value,
+            "filesystem" => filesystem_widget.value&.to_sym
           }
-
-          if widget_values["format"] && filesystem_widget.value
-            widget_values["filesystem"] = filesystem_widget.value.to_sym
-          end
-
-          widget_values
         end
 
       private
