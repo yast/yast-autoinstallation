@@ -21,6 +21,7 @@ require "yast"
 require "cwm/custom_widget"
 require "autoinstall/widgets/storage/lv_name"
 require "autoinstall/widgets/storage/pool"
+require "autoinstall/widgets/storage/used_pool"
 
 module Y2Autoinstallation
   module Widgets
@@ -52,15 +53,17 @@ module Y2Autoinstallation
             ),
             HBox(
               HWeight(1, pool_widget),
-              HWeight(2, Empty())
+              HWeight(1, used_pool_widget),
+              HWeight(1, Empty())
             )
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          lv_name_widget.value = section.lv_name
-          pool_widget.value    = section.pool
+          lv_name_widget.value   = section.lv_name
+          pool_widget.value      = section.pool
+          used_pool_widget.value = section.used_pool
         end
 
         # Returns the widgets values
@@ -68,8 +71,9 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "lv_name" => lv_name_widget.value,
-            "pool"    => pool_widget.value
+            "lv_name"   => lv_name_widget.value,
+            "pool"      => pool_widget.value,
+            "used_pool" => used_pool_widget.value
           }
         end
 
@@ -90,6 +94,13 @@ module Y2Autoinstallation
         # @return [Pool]
         def pool_widget
           @pool_widget ||= Pool.new
+        end
+
+        # Widget for setting the name of the LVM thin pool used as data store
+        #
+        # @return [UsedPool]
+        def used_pool_widget
+          @used_pool_widget ||= UsedPool.new
         end
       end
     end
