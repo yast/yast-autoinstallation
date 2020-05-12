@@ -20,6 +20,7 @@
 require "yast"
 require "cwm/custom_widget"
 require "autoinstall/widgets/storage/create"
+require "autoinstall/widgets/storage/resize"
 require "autoinstall/widgets/storage/size_selector"
 
 module Y2Autoinstallation
@@ -46,6 +47,7 @@ module Y2Autoinstallation
           VBox(
             HBox(
               HWeight(1, create_widget),
+              HWeight(1, resize_widget),
               HWeight(1, size_widget)
             )
           )
@@ -54,6 +56,7 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           create_widget.value = section.create
+          resize_widget.value = section.resize
           size_widget.value = section.size
         end
 
@@ -63,6 +66,7 @@ module Y2Autoinstallation
         def values
           {
             "create" => create_widget.value,
+            "resize" => resize_widget.value,
             "size"   => size_widget.value
           }
         end
@@ -72,11 +76,18 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
 
-        # Widget to set if the partition should be created or not
+        # Widget to set if the partition should be created
         #
         # @return [Create]
         def create_widget
           @create_widget ||= Create.new
+        end
+
+        # Widget to set if the partition should be resized
+        #
+        # @return [Resize]
+        def resize_widget
+          @resize_widget ||= Resize.new
         end
 
         # Widget to set the partition size
