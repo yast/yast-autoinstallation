@@ -22,6 +22,7 @@ require "cwm/tabs"
 require "cwm/replace_point"
 require "cwm/common_widgets"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
+require "autoinstall/widgets/storage/create"
 require "autoinstall/widgets/storage/size_selector"
 
 module Y2Autoinstallation
@@ -50,6 +51,7 @@ module Y2Autoinstallation
               HWeight(1, size_widget),
               HWeight(2, HStretch())
             ),
+            Left(create_widget),
             Left(section_related_attrs),
             VStretch()
           )
@@ -83,6 +85,13 @@ module Y2Autoinstallation
         # @return [SizeSelector]
         def size_widget
           @size_widget ||= SizeSelector.new
+        end
+
+        # Widget to set if the partition should be created or not
+        #
+        # @return [Create]
+        def create_widget
+          @create_widget ||= Create.new
         end
 
         # Convenience method to call proper widget depending on the drive type
