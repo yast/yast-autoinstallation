@@ -23,6 +23,7 @@ require "autoinstall/widgets/storage/filesystem"
 require "autoinstall/widgets/storage/label"
 require "autoinstall/widgets/storage/mount"
 require "autoinstall/widgets/storage/mountby"
+require "autoinstall/widgets/storage/mkfs_options"
 
 module Y2Autoinstallation
   module Widgets
@@ -57,16 +58,21 @@ module Y2Autoinstallation
               HWeight(1, mount_point_widget),
               HWeight(1, mountby_widget),
               HWeight(1, Empty())
+            ),
+            HBox(
+              HWeight(1, mkfs_options_widget),
+              HWeight(2, Empty())
             )
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          filesystem_widget.value  = section.filesystem.to_s if section.filesystem
-          label_widget.value       = section.label
-          mount_point_widget.value = section.mount
-          mountby_widget.value     = section.mountby
+          filesystem_widget.value   = section.filesystem.to_s if section.filesystem
+          label_widget.value        = section.label
+          mount_point_widget.value  = section.mount
+          mountby_widget.value      = section.mountby
+          mkfs_options_widget.value = section.mkfs_options
         end
 
         # Returns the widgets values
@@ -74,10 +80,11 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "filesystem" => filesystem_widget.value&.to_sym,
-            "label"      => label_widget.value,
-            "mount"      => mount_point_widget.value,
-            "mountby"    => mountby_widget.value&.to_sym
+            "filesystem"   => filesystem_widget.value&.to_sym,
+            "label"        => label_widget.value,
+            "mount"        => mount_point_widget.value,
+            "mountby"      => mountby_widget.value&.to_sym,
+            "mkfs_options" => mkfs_options_widget.value
           }
         end
 
@@ -104,6 +111,11 @@ module Y2Autoinstallation
         # Widget for selecting the partition mount type
         def mountby_widget
           @mountby_widget ||= Mountby.new
+        end
+
+        # Widget for specifying mkfs command options
+        def mkfs_options_widget
+          @mkfs_options_widget ||= MkfsOptions.new
         end
       end
     end
