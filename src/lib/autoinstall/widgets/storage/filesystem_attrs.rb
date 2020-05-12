@@ -21,7 +21,6 @@ require "yast"
 require "cwm/custom_widget"
 require "autoinstall/widgets/storage/filesystem"
 require "autoinstall/widgets/storage/mount_point"
-require "autoinstall/widgets/storage/format_filesystem"
 
 module Y2Autoinstallation
   module Widgets
@@ -48,15 +47,12 @@ module Y2Autoinstallation
         def contents
           VBox(
             Left(filesystem_widget),
-            Left(mount_point_widget),
-            Left(format_filesystem_widget)
+            Left(mount_point_widget)
           )
         end
 
         # @macro seeAbstractWidget
         def init
-          format_filesystem_widget.value = !!section.format
-          # FIXME: Disable the filesystem if format is set to false
           filesystem_widget.value = section.filesystem.to_s if section.filesystem
           mount_point_widget.value = section.mount
         end
@@ -66,7 +62,6 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "format"     => format_filesystem_widget.value,
             "mount"      => mount_point_widget.value,
             "filesystem" => filesystem_widget.value&.to_sym
           }
@@ -87,11 +82,6 @@ module Y2Autoinstallation
         # Filesystem type widget
         def filesystem_widget
           @filesystem_widget ||= Filesystem.new
-        end
-
-        # Format filesystem widget
-        def format_filesystem_widget
-          @format_filesystem_widget ||= FormatFilesystem.new
         end
       end
     end

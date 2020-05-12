@@ -20,6 +20,7 @@
 require "yast"
 require "cwm/custom_widget"
 require "autoinstall/widgets/storage/create"
+require "autoinstall/widgets/storage/format"
 require "autoinstall/widgets/storage/resize"
 require "autoinstall/widgets/storage/size_selector"
 require "autoinstall/widgets/storage/partition_nr"
@@ -49,8 +50,13 @@ module Y2Autoinstallation
           VBox(
             HBox(
               HWeight(1, create_widget),
+              HWeight(1, format_widget),
+              HWeight(1, Empty())
+            ),
+            HBox(
               HWeight(1, resize_widget),
-              HWeight(1, size_widget)
+              HWeight(1, size_widget),
+              HWeight(1, Empty())
             ),
             HBox(
               HWeight(1, partition_nr_widget),
@@ -63,6 +69,7 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           create_widget.value       = section.create
+          format_widget.value       = section.format
           resize_widget.value       = section.resize
           size_widget.value         = section.size
           partition_nr_widget.value = section.partition_nr
@@ -75,6 +82,7 @@ module Y2Autoinstallation
         def values
           {
             "create"       => create_widget.value,
+            "format"       => format_widget.value,
             "resize"       => resize_widget.value,
             "size"         => size_widget.value,
             "partition_nr" => partition_nr_widget.value,
@@ -92,6 +100,13 @@ module Y2Autoinstallation
         # @return [Create]
         def create_widget
           @create_widget ||= Create.new
+        end
+
+        # Widget to set if the partition should be formatted
+        #
+        # @return [Format]
+        def format_widget
+          @format_widget ||= Format.new
         end
 
         # Widget to set if the partition should be resized
