@@ -87,14 +87,29 @@ module Y2Autoinstallation
 
     private
 
-      # Resets all known attributes in the section
+      # Resets known attributes in the section
+      #
+      # By default, all known section attributes are going to be reset, but this behavior can be
+      # restricted using the :only named param
       #
       # FIXME: ideally we wouldn't need to implement this kind of things in
       # the presenter
-      def clean_section
-        section.class.attributes.each do |attr|
-          section.public_send("#{attr[:name]}=", nil)
+      #
+      # @param only [Array<String>] a collection of attributes to restrict the clean up
+      def clean_section(only: [])
+        attrs = section_attrs
+        attrs &= only unless only.empty?
+
+        attrs.each do |attr|
+          section.public_send("#{attr}=", nil)
         end
+      end
+
+      # Returns all know section attributes names
+      #
+      # @return [Array<String>]
+      def section_attrs
+        section.class.attributes.map { |attr| attr[:name].to_s }
       end
 
       # See {#to_s} and {#inspect}
