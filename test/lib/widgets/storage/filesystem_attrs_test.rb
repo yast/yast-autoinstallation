@@ -44,6 +44,9 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
     let(:mkfs_options_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::MkfsOptions, value: "-I 128")
     end
+    let(:fstopt_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::Fstopt, value: "ro,noatime,user")
+    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::Label).to receive(:new)
@@ -54,6 +57,8 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
         .and_return(mountby_widget)
       allow(Y2Autoinstallation::Widgets::Storage::MkfsOptions).to receive(:new)
         .and_return(mkfs_options_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::Fstopt).to receive(:new)
+        .and_return(fstopt_widget)
     end
 
     it "includes label" do
@@ -70,6 +75,10 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
 
     it "includes mkfs_options" do
       expect(widget.values).to include("mkfs_options" => "-I 128")
+    end
+
+    it "includes fstopt" do
+      expect(widget.values).to include("fstab_options" => "ro,noatime,user")
     end
   end
 end
