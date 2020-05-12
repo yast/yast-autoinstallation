@@ -20,6 +20,7 @@
 require "yast"
 require "cwm/custom_widget"
 require "autoinstall/widgets/storage/lv_name"
+require "autoinstall/widgets/storage/pool"
 
 module Y2Autoinstallation
   module Widgets
@@ -48,6 +49,10 @@ module Y2Autoinstallation
             HBox(
               HWeight(1, lv_name_widget),
               HWeight(2, Empty())
+            ),
+            HBox(
+              HWeight(1, pool_widget),
+              HWeight(2, Empty())
             )
           )
         end
@@ -55,13 +60,17 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           lv_name_widget.value = section.lv_name
+          pool_widget.value    = section.pool
         end
 
         # Returns the widgets values
         #
         # @return [Hash<String,Object>]
         def values
-          { "lv_name" => lv_name_widget.value }
+          {
+            "lv_name" => lv_name_widget.value,
+            "pool"    => pool_widget.value
+          }
         end
 
       private
@@ -69,11 +78,18 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
 
-        # LVM LV name widget
+        # Widget for setting the LV name
         #
-        # @return [RaidName]
+        # @return [LvName]
         def lv_name_widget
           @lv_name_widget ||= LvName.new
+        end
+
+        # Widget for setting if LV should be an LVM thin pool
+        #
+        # @return [Pool]
+        def pool_widget
+          @pool_widget ||= Pool.new
         end
       end
     end
