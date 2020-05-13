@@ -223,6 +223,18 @@ RSpec.shared_examples "Y2Autoinstallation::Widgets::Storage::BooleanSelector" do
       end
     end
 
+    context "when there is no value (maybe widget is not visible)" do
+      let(:selected) { nil }
+
+      it "does not crash" do
+        expect { subject.value }.to_not raise_error
+      end
+
+      it "returns nil" do
+        expect(subject.value).to be_nil
+      end
+    end
+
     context "when 'Yes' has been selected" do
       let(:selected) { "true" }
 
