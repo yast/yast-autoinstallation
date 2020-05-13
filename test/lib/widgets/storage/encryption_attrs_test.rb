@@ -35,14 +35,23 @@ describe Y2Autoinstallation::Widgets::Storage::EncryptionAttrs do
     let(:crypt_fs_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::CryptFs, value: true)
     end
+    let(:crypt_key_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::CryptKey, value: "xxxxx")
+    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::CryptFs).to receive(:new)
         .and_return(crypt_fs_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::CryptKey).to receive(:new)
+        .and_return(crypt_key_widget)
     end
 
     it "includes crypt_fs" do
       expect(widget.values).to include("crypt_fs" => true)
+    end
+
+    it "includes crypt_key" do
+      expect(widget.values).to include("crypt_key" => "xxxxx")
     end
   end
 end
