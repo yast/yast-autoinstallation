@@ -20,7 +20,6 @@
 require "yast"
 require "y2storage"
 require "autoinstall/widgets/storage/drive_page"
-require "autoinstall/widgets/storage/is_lvm_vg"
 require "autoinstall/widgets/storage/vg_device"
 require "autoinstall/widgets/storage/pesize"
 require "autoinstall/widgets/storage/keep_unknown_lv"
@@ -42,9 +41,8 @@ module Y2Autoinstallation
             VBox(
               Left(Heading(_("LVM"))),
               HBox(
-                HWeight(1, lvm_vg_widget),
                 HWeight(1, vg_device_widget),
-                HWeight(1, Empty())
+                HWeight(2, Empty())
               ),
               HBox(
                 HWeight(1, pesize_widget),
@@ -61,7 +59,6 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           vg_device_widget.value       = drive.device
-          lvm_vg_widget.value          = drive.is_lvm_vg
           pesize_widget.value          = drive.pesize
           keep_unknown_lv_widget.value = drive.keep_unknown_lv
         end
@@ -72,7 +69,6 @@ module Y2Autoinstallation
         def values
           {
             "device"          => vg_device_widget.value,
-            "is_lvm_vg"       => lvm_vg_widget.value,
             "pesize"          => pesize_widget.value,
             "keep_unknown_lv" => keep_unknown_lv_widget.value
           }
@@ -85,11 +81,6 @@ module Y2Autoinstallation
         # @return [VgName]
         def vg_device_widget
           @vg_device_widget ||= VgDevice.new
-        end
-
-        # Widget for setting if will be an LVM VG
-        def lvm_vg_widget
-          @lvm_vg_widget ||= IsLvmVg.new
         end
 
         # Widget for LVM VG Physical Extent Size (pesize)

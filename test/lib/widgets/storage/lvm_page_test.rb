@@ -40,22 +40,17 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
     {
       "type"            => :CT_LVM,
       "device"          => device,
-      "is_lvm_vg"       => is_lvm_vg,
       "pesize"          => pesize,
       "keep_unknown_lv" => keep_unknown_lv
     }
   end
 
   let(:device) { "/dev/system" }
-  let(:is_lvm_vg) { true }
   let(:pesize) { 64 }
   let(:keep_unknown_lv) { false }
 
   let(:vg_device_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::VgDevice, value: device)
-  end
-  let(:is_lvm_vg_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::IsLvmVg, value: is_lvm_vg)
   end
   let(:pesize_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::Pesize, value: pesize)
@@ -67,8 +62,6 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
   before do
     allow(Y2Autoinstallation::Widgets::Storage::VgDevice)
       .to receive(:new).and_return(vg_device_widget)
-    allow(Y2Autoinstallation::Widgets::Storage::IsLvmVg)
-      .to receive(:new).and_return(is_lvm_vg_widget)
     allow(Y2Autoinstallation::Widgets::Storage::Pesize)
       .to receive(:new).and_return(pesize_widget)
     allow(Y2Autoinstallation::Widgets::Storage::KeepUnknownLv)
@@ -76,7 +69,6 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
 
     allow(vg_device_widget).to receive(:value=)
     allow(vg_device_widget).to receive(:value=)
-    allow(is_lvm_vg_widget).to receive(:value=)
     allow(pesize_widget).to receive(:value=)
     allow(keep_unknown_lv_widget).to receive(:value=)
   end
@@ -84,11 +76,6 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
   describe "#init" do
     it "sets vg_device" do
       expect(vg_device_widget).to receive(:value=).with(device)
-      lvm_page.init
-    end
-
-    it "sets is_lvm_vg" do
-      expect(is_lvm_vg_widget).to receive(:value=).with(is_lvm_vg)
       lvm_page.init
     end
 
@@ -106,10 +93,6 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
   describe "#values" do
     it "includes device" do
       expect(lvm_page.values).to include("device" => device)
-    end
-
-    it "includes is_lvm_vg" do
-      expect(lvm_page.values).to include("is_lvm_vg" => is_lvm_vg)
     end
 
     it "includes pesize" do
