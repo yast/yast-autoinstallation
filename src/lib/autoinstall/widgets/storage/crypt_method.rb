@@ -34,24 +34,15 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Encription Method")
+          _("Encryption Method")
         end
 
         # @macro seeComboBox
         def items
           @items ||= [
-            ["", ""],
-            *Y2Storage::EncryptionMethod.all.map { |e| [e.to_sym.to_s, e.to_human_string] }
+            [nil, ""],
+            *Y2Storage::EncryptionMethod.all.map { |e| [e.to_sym, e.to_sym.to_s] }
           ]
-        end
-
-        # Returns selected encryption method
-        #
-        # @return [String, nil] selected encryption method; nil if none
-        def value
-          result = super
-
-          result.to_s.empty? ? nil : result
         end
       end
     end

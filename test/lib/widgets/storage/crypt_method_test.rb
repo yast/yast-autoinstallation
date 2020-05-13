@@ -24,33 +24,33 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::CryptMethod do
   subject(:widget) { described_class.new }
 
-  include_examples "CWM::ComboBox"
-
-  let(:items) { widget.items.map { |i| i[0] } }
+  include_examples "CWM::AbstractWidget"
 
   describe "#items" do
+    let(:items) { widget.items.map { |i| i[0] } }
+
     it "includes an empty option" do
-      expect(items).to include("")
+      expect(items).to include(nil)
     end
 
-    it "includes 'luks1'" do
-      expect(items).to include("luks1")
+    it "includes :luks1" do
+      expect(items).to include(:luks1)
     end
 
-    it "includes 'pervasive_luks2'" do
-      expect(items).to include("pervasive_luks2")
+    it "includes :pervasive_luks2" do
+      expect(items).to include(:pervasive_luks2)
     end
 
-    it "includes 'protected_swap'" do
-      expect(items).to include("protected_swap")
+    it "includes :protected_swap" do
+      expect(items).to include(:protected_swap)
     end
 
-    it "includes 'secure_swap'" do
-      expect(items).to include("secure_swap")
+    it "includes :secure_swap" do
+      expect(items).to include(:secure_swap)
     end
 
-    it "includes 'random_swap'" do
-      expect(items).to include("random_swap")
+    it "includes :random_swap" do
+      expect(items).to include(:random_swap)
     end
   end
 
@@ -61,7 +61,7 @@ describe Y2Autoinstallation::Widgets::Storage::CryptMethod do
     end
 
     describe "when none is selected" do
-      let(:selected_value) { "" }
+      let(:selected_value) { nil }
 
       it "returns nil" do
         expect(widget.value).to be_nil
@@ -69,7 +69,7 @@ describe Y2Autoinstallation::Widgets::Storage::CryptMethod do
     end
 
     describe "when any is selected" do
-      let(:selected_value) { "random_swap" }
+      let(:selected_value) { :random_swap }
 
       it "returns selected value" do
         expect(widget.value).to eq(selected_value)
