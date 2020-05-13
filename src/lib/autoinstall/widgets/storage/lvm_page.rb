@@ -20,6 +20,7 @@
 require "yast"
 require "y2storage"
 require "autoinstall/widgets/storage/drive_page"
+require "autoinstall/widgets/storage/is_lvm_vg"
 require "autoinstall/widgets/storage/vg_device"
 require "autoinstall/widgets/storage/pesize"
 
@@ -36,18 +37,27 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          VBox(
-            Left(Heading(_("LVM"))),
-            Left(vg_device_widget),
-            Left(pesize_widget),
-            VStretch()
+          Top(
+            VBox(
+              Left(Heading(_("LVM"))),
+              HBox(
+                HWeight(1, lvm_vg_widget),
+                HWeight(1, vg_device_widget),
+                HWeight(1, Empty())
+              ),
+              HBox(
+                HWeight(1, pesize_widget),
+                HWeight(2, Empty())
+              )
+            )
           )
         end
 
         # @macro seeAbstractWidget
         def init
           vg_device_widget.value = drive.device
-          pesize_widget.value = drive.pesize
+          lvm_vg_widget.value    = drive.is_lvm_vg
+          pesize_widget.value    = drive.pesize
         end
 
         # Returns the widgets values
@@ -55,8 +65,9 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "device" => vg_device_widget.value,
-            "pesize" => pesize_widget.value
+            "device"    => lvm_vg_widget.value,
+            "is_lvm_vg" => vg_device_widget.value,
+            "pesize"    => pesize_widget.value
           }
         end
 
@@ -67,6 +78,11 @@ module Y2Autoinstallation
         # @return [VgName]
         def vg_device_widget
           @vg_device_widget ||= VgDevice.new
+        end
+
+        # Widget for setting if will be an LVM VG
+        def lvm_vg_widget
+          @lvm_vg_widget ||= IsLvmVg.new
         end
 
         # Widget for LVM VG Physical Extent Size (pesize)
