@@ -54,7 +54,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def values
-          [common_partition_attrs, lvm_partition_attrs].reduce({}) do |hsh, widget|
+          relevant_widgets.reduce({}) do |hsh, widget|
             hsh.merge(widget.values)
           end
         end
@@ -70,11 +70,23 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :partition
 
+        # Convenience method to retrieve all widgets holding profile attributes
+        #
+        # @return [Array<CWW::CustomWidget>]
+        def relevant_widgets
+          [
+            common_partition_attrs,
+            lvm_partition_attrs
+          ]
+        end
+
         # Convenience method to call proper widget depending on the drive type
         def section_related_attrs
           method_name = "#{partition.drive_type}_partition_attrs".downcase
 
           send(method_name)
+        rescue NoMethodError
+          Empty()
         end
 
         # Options for a all partitions
@@ -89,22 +101,6 @@ module Y2Autoinstallation
         # @return [LvmPartitionAttrs]
         def lvm_partition_attrs
           @lvm_partition_attrs ||= LvmPartitionAttrs.new(partition)
-        end
-
-        # FIXME
-        def disk_partition_attrs
-          @disk_partition_attrs ||= NoDependentAttrs.new
-        end
-
-        # FIXME
-        class NoDependentAttrs < CWM::CustomWidget
-          def label
-            ""
-          end
-
-          def contents
-            Empty()
-          end
         end
       end
     end
