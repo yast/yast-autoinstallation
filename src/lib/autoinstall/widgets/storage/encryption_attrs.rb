@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/custom_widget"
+require "autoinstall/widgets/storage/crypt_method"
 
 module Y2Autoinstallation
   module Widgets
@@ -42,20 +43,36 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
+            HBox(
+              HWeight(1, crypt_method_widget),
+              HWeight(2, Empty())
+            )
           )
+        end
+
+        # @macro seeAbstractWidget
+        def init
+          crypt_method_widget.value = section.crypt_method
         end
 
         # Returns the widgets values
         #
         # @return [Hash<String,Object>]
         def values
-          {}
+          {
+            "crypt_method" => crypt_method_widget.value
+          }
         end
 
       private
 
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
+
+        # Widget for setting the encryption method to be used
+        def crypt_method_widget
+          @crypt_method_widget ||= CryptMethod.new
+        end
       end
     end
   end

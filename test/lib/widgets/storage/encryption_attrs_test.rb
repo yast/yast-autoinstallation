@@ -30,4 +30,19 @@ describe Y2Autoinstallation::Widgets::Storage::EncryptionAttrs do
   end
 
   include_examples "CWM::CustomWidget"
+
+  describe "#values" do
+    let(:crypt_method_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::CryptMethod, value: :luks1)
+    end
+
+    before do
+      allow(Y2Autoinstallation::Widgets::Storage::CryptMethod).to receive(:new)
+        .and_return(crypt_method_widget)
+    end
+
+    it "includes crypt_method" do
+      expect(widget.values).to include("crypt_method" => :luks1)
+    end
+  end
 end
