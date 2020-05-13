@@ -51,7 +51,7 @@ module Y2Autoinstallation
         def value
           result = super
 
-          if result.empty?
+          if result.to_s.empty?
             nil
           else
             result == "true"
