@@ -53,21 +53,25 @@ module Y2Autoinstallation
 
         def contents
           VBox(
-            Left(used_as_widget),
+            HBox(
+              HWeight(1, used_as_widget),
+              HWeight(2, empty_widget)
+            ),
             replace_point,
-            encryption_widget
+            encryption_replace_point
           )
         end
 
         # @macro seeAbstractWidget
         def init
           used_as_widget.value = partition.usage.to_s
-          update_replace_point
+          refresh
         end
 
         # @macro seeAbstractWidget
         def handle(event)
-          update_replace_point if event["ID"] == "used_as"
+          refresh if event["ID"] == "used_as"
+
           nil
         end
 
@@ -126,7 +130,19 @@ module Y2Autoinstallation
           @replace_point ||= CWM::ReplacePoint.new(id: "attrs", widget: filesystem_widget)
         end
 
-        # Updates the replace point with the content corresponding widget for selected type
+        def encryption_replace_point
+          @encryption_replace_point ||= CWM::ReplacePoint.new(
+            id:     "encryption_attrs",
+            widget: empty_widget
+          )
+        end
+
+        def refresh
+          update_replace_point
+          update_encryption_replace_point
+        end
+
+        # Updates replace point with the content corresponding widget for selected type
         def update_replace_point
           replace_point.replace(selected_widget)
         end
@@ -136,6 +152,20 @@ module Y2Autoinstallation
         # @return [CWM::AbstractWidget]
         def selected_widget
           send("#{used_as_widget.value}_widget")
+        end
+
+        # Displays or hides encryption attrs depending on the selected partition usage
+        def update_encryption_replace_point
+          if used_as_widget.value == "raid"
+            encryption_replace_point.replace(empty_widget)
+          else
+            encryption_replace_point.replace(encryption_widget)
+          end
+        end
+
+        # Empty widget
+        def empty_widget
+          @empty_widget ||= CWM::Empty.new("empty")
         end
       end
     end

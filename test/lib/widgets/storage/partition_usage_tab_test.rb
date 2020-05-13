@@ -30,28 +30,76 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
 
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "type" => type, "partitions" => [{}] }]
+      [{ "type" => type, "partitions" => [partition_hash] }]
     )
   end
 
   let(:type) { :CT_DISK }
   let(:drive) { Y2Autoinstallation::Presenters::Drive.new(partitioning.drives.first) }
   let(:partition) { drive.partitions.first }
+  let(:partition_hash) { {} }
 
   let(:used_as_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::UsedAs, value: "filesystem")
   end
+  let(:filesystem_attrs_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs, values: {})
+  end
+  let(:encryption_attrs_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs, values: {})
+  end
 
-  let(:filesystem_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::Filesystem, value: "ext2")
+  describe "#init" do
+    before do
+      allow(Y2Autoinstallation::Widgets::Storage::UsedAs).to receive(:new)
+        .and_return(used_as_widget)
+      allow(used_as_widget).to receive(:value=)
+      allow(partition).to receive(:usage).and_return(usage)
+    end
+
+    let(:usage) { :raid }
+
+    it "updates the UsedAs value" do
+      expect(used_as_widget).to receive(:value=).with(usage.to_s)
+
+      subject.init
+    end
+
+    it "updates the UI" do
+      expect(subject).to receive(:refresh)
+
+      subject.init
+    end
+  end
+
+  describe "#handle" do
+    context "when handling an 'UsedAs' event" do
+      let(:event) { { "ID" => "used_as" } }
+
+      it "updates the UI" do
+        expect(subject).to receive(:refresh)
+
+        subject.handle(event)
+      end
+    end
+
+    context "when not handling an 'UsedAs' event" do
+      let(:event) { { "ID" => "whatever" } }
+
+      it "does not update the UI" do
+        expect(subject).to_not receive(:refresh)
+
+        subject.handle(event)
+      end
+    end
   end
 
   describe "#store" do
     before do
-      allow(Y2Autoinstallation::Widgets::Storage::UsedAs).to receive(:new)
-        .and_return(used_as_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::Filesystem).to receive(:new)
-        .and_return(filesystem_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs).to receive(:new)
+        .and_return(filesystem_attrs_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs).to receive(:new)
+        .and_return(encryption_attrs_widget)
     end
 
     it "sets the partition section attributes" do
