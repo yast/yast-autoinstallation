@@ -87,11 +87,27 @@ describe Y2Autoinstallation::Presenters::Partition do
       end
     end
 
-    context "when the section has no information about its usage" do
+    context "when the section does not refer an specific usage" do
       let(:attrs) { {} }
 
       it "returns :none" do
         expect(subject.usage).to eq(:none)
+      end
+
+      context "and it has an empty mount point" do
+        let(:attrs) { { mount: "" } }
+
+        it "returns :none" do
+          expect(subject.usage).to eq(:none)
+        end
+      end
+
+      context "but it has a not empty mount point" do
+        let(:attrs) { { mount: "/home" } }
+
+        it "returns :filesystem" do
+          expect(subject.usage).to eq(:filesystem)
+        end
       end
     end
   end

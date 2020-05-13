@@ -73,7 +73,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
-          filesystem_widget.value    = section.filesystem.to_s if section.filesystem
+          filesystem_widget.value    = section.filesystem
           label_widget.value         = section.label
           mount_point_widget.value   = section.mount
           mountby_widget.value       = section.mountby
@@ -86,7 +86,7 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "filesystem"    => filesystem_widget.value&.to_sym,
+            "filesystem"    => filesystem_widget.value,
             "label"         => label_widget.value,
             "mount"         => mount_point_widget.value,
             "mountby"       => mountby_widget.value&.to_sym,
