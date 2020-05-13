@@ -20,6 +20,7 @@
 require "yast"
 require "cwm/custom_widget"
 require "autoinstall/widgets/storage/crypt_method"
+require "autoinstall/widgets/storage/crypt_key"
 
 module Y2Autoinstallation
   module Widgets
@@ -45,7 +46,7 @@ module Y2Autoinstallation
           VBox(
             HBox(
               HWeight(1, crypt_method_widget),
-              HWeight(2, Empty())
+              HWeight(2, crypt_key_widget)
             )
           )
         end
@@ -53,6 +54,7 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           crypt_method_widget.value = section.crypt_method
+          crypt_key_widget.value    = section.crypt_key
         end
 
         # Returns the widgets values
@@ -60,7 +62,8 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "crypt_method" => crypt_method_widget.value
+            "crypt_method" => crypt_method_widget.value,
+            "crypt_key"    => crypt_key_widget.value
           }
         end
 
@@ -72,6 +75,11 @@ module Y2Autoinstallation
         # Widget for setting the encryption method to be used
         def crypt_method_widget
           @crypt_method_widget ||= CryptMethod.new
+        end
+
+        # Widget for settings the encryption key
+        def crypt_key_widget
+          @crypt_key_widget ||= CryptKey.new
         end
       end
     end
