@@ -86,6 +86,14 @@ describe Y2Autoinstallation::Presenters::Partition do
         expect(subject.usage).to eq(:lvm_pv)
       end
     end
+
+    context "when the section has no information about its usage" do
+      let(:attrs) { {} }
+
+      it "returns :none" do
+        expect(subject.usage).to eq(:none)
+      end
+    end
   end
 
   describe "#available_lvm_groups" do
