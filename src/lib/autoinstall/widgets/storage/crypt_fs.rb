@@ -17,32 +17,25 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/encryption_attrs"
-require "y2storage"
-require "cwm/rspec"
+require "yast"
+require "autoinstall/widgets/storage/boolean_selector"
 
-describe Y2Autoinstallation::Widgets::Storage::EncryptionAttrs do
-  subject(:widget) { described_class.new(section) }
+module Y2Autoinstallation
+  module Widgets
+    module Storage
+      # Selector widget to set if the partition will be encrypted
+      class CryptFs < BooleanSelector
+        # Constructor
+        def initialize
+          textdomain "autoinst"
+          super
+        end
 
-  let(:section) do
-    Y2Storage::AutoinstProfile::PartitionSection.new
-  end
-
-  include_examples "CWM::CustomWidget"
-
-  describe "#values" do
-    let(:crypt_fs_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::CryptFs, value: true)
-    end
-
-    before do
-      allow(Y2Autoinstallation::Widgets::Storage::CryptFs).to receive(:new)
-        .and_return(crypt_fs_widget)
-    end
-
-    it "includes crypt_fs" do
-      expect(widget.values).to include("crypt_fs" => true)
+        # @macro seeAbstractWidget
+        def label
+          _("Encrypt")
+        end
+      end
     end
   end
 end

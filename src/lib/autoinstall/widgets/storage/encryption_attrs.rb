@@ -19,6 +19,7 @@
 
 require "yast"
 require "cwm/custom_widget"
+require "autoinstall/widgets/storage/crypt_fs"
 
 module Y2Autoinstallation
   module Widgets
@@ -42,20 +43,36 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
+            HBox(
+              HWeight(1, crypt_fs_widget),
+              HWeight(2, Empty())
+            )
           )
+        end
+
+        # @macro seeAbstractWidget
+        def init
+          crypt_fs_widget.value = section.crypt_fs
         end
 
         # Returns the widgets values
         #
         # @return [Hash<String,Object>]
         def values
-          {}
+          {
+            "crypt_fs" => crypt_fs_widget.value
+          }
         end
 
       private
 
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
+
+        # Widget for setting if the partition will be encrypted
+        def crypt_fs_widget
+          @crypt_fs_widget ||= CryptFs.new
+        end
       end
     end
   end
