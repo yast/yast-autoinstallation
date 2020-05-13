@@ -35,10 +35,13 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
       [{ "device" => "/dev/system", "type" => :CT_LVM, "pesize" => "64" }]
     )
   end
+
   let(:vg_device_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::VgDevice)
   end
-
+  let(:is_lvm_vg_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::IsLvmVg)
+  end
   let(:pesize_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::Pesize)
   end
@@ -46,14 +49,21 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
   before do
     allow(Y2Autoinstallation::Widgets::Storage::VgDevice)
       .to receive(:new).and_return(vg_device_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::IsLvmVg)
+      .to receive(:new).and_return(is_lvm_vg_widget)
     allow(Y2Autoinstallation::Widgets::Storage::Pesize)
       .to receive(:new).and_return(pesize_widget)
 
     allow(vg_device_widget).to receive(:value=)
+    allow(is_lvm_vg_widget).to receive(:value=)
     allow(pesize_widget).to receive(:value=)
   end
 
   describe "#init" do
+    it "sets is_lvm_vg" do
+      expect(is_lvm_vg_widget).to receive(:value=)
+      subject.init
+    end
     it "sets the vg physical extent size" do
       expect(pesize_widget).to receive(:value=)
       subject.init
