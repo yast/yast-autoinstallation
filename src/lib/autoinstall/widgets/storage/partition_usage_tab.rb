@@ -64,7 +64,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
-          used_as_widget.value = partition.usage.to_s
+          used_as_widget.value = partition.usage
           refresh
         end
 
@@ -105,14 +105,17 @@ module Y2Autoinstallation
           ]
         end
 
+        # Widget grouping related file system attributes
         def filesystem_widget
           @filesystem_widget ||= FilesystemAttrs.new(partition)
         end
 
+        # Widget grouping related RAID attributes
         def raid_widget
           @raid_widget ||= RaidAttrs.new(partition)
         end
 
+        # Widget grouping related LVM PV attributes
         def lvm_pv_widget
           @lvm_pv_widget ||= LvmPvAttrs.new(partition)
         end
@@ -122,12 +125,13 @@ module Y2Autoinstallation
           @encryption_widget ||= EncryptionAttrs.new(partition)
         end
 
+        # Widget for choosing the partition usage
         def used_as_widget
           @used_as_widget ||= UsedAs.new
         end
 
         def replace_point
-          @replace_point ||= CWM::ReplacePoint.new(id: "attrs", widget: filesystem_widget)
+          @replace_point ||= CWM::ReplacePoint.new(id: "attrs", widget: empty_widget)
         end
 
         def encryption_replace_point
@@ -135,6 +139,13 @@ module Y2Autoinstallation
             id:     "encryption_attrs",
             widget: empty_widget
           )
+        end
+
+        # Whether the encryption options should be displayed
+        #
+        # @return [String, Symbol] selected partition usage
+        def used_as
+          used_as_widget.value
         end
 
         def refresh
@@ -151,12 +162,14 @@ module Y2Autoinstallation
         #
         # @return [CWM::AbstractWidget]
         def selected_widget
-          send("#{used_as_widget.value}_widget")
+          return empty_widget if used_as == :none
+
+          send("#{used_as}_widget")
         end
 
         # Displays or hides encryption attrs depending on the selected partition usage
         def update_encryption_replace_point
-          if used_as_widget.value == "raid"
+          if [:none, :raid].include?(used_as)
             encryption_replace_point.replace(empty_widget)
           else
             encryption_replace_point.replace(encryption_widget)

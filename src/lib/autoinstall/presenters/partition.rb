@@ -47,8 +47,10 @@ module Y2Autoinstallation
           :raid
         elsif lvm_group
           :lvm_pv
-        else
+        elsif filesystem
           :filesystem
+        else
+          :none
         end
       end
 
@@ -157,6 +159,8 @@ module Y2Autoinstallation
         when :lvm_pv
           # TRANSLATORS: %s is a placeholder for the name of a RAID
           Kernel.format(_("Part of %s"), lvm_group)
+        when :none
+          _("Not used")
         end
       end
 
