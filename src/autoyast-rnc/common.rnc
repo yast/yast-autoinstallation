@@ -8,7 +8,7 @@ datatypes xsd = "http://www.w3.org/2001/XMLSchema-datatypes"
 
 ## Defined data-types
 
-BOOLEAN =
+BOOLEAN |=
   (
     ## Historically we used config:type
     ## but it is unnecessarily long to type and read.
@@ -17,35 +17,35 @@ BOOLEAN =
     ( "true" | "false" )
   )
 
-INTEGER =
+INTEGER |=
   (
     attribute ( t | type | config:type ) { "integer" },
     xsd:integer
   )
 
 # Usage: foo = element foo { STRING_ATTR, ( "bar" | "baz") }
-STRING_ATTR = attribute ( t | type | config:type ) { "string" }?
+STRING_ATTR |= attribute ( t | type | config:type ) { "string" }?
 
-STRING =
+STRING |=
   (
     STRING_ATTR,
     text
   )
 
-SYMBOL =
+SYMBOL |=
   (
     attribute ( t | type | config:type ) { "symbol" },
     text
   )
 
-LIST =
+LIST |=
   attribute ( t | type | config:type ) { "list" }
 
-MAP =
+MAP |=
   attribute ( t | type | config:type ) { "map" }?
 
 # this is useful for testing
-Anything =
+Anything |=
   (
     attribute * { text }
   | text

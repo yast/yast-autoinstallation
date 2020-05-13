@@ -863,6 +863,24 @@ module Yast
       ret
     end
 
+    # @!attribute current
+    #   @return [Hash<String, Object>] current working profile
+    publish variable: :current, type: "map <string, any>"
+    publish variable: :ModuleMap, type: "map <string, map>"
+    publish variable: :changed, type: "boolean"
+    publish variable: :prepare, type: "boolean"
+    publish function: :Import, type: "void (map <string, any>)"
+    publish function: :Prepare, type: "void ()"
+    publish function: :Reset, type: "void ()"
+    publish function: :Save, type: "boolean (string)"
+    publish function: :SaveSingleSections, type: "map <string, string> (string)"
+    publish function: :SaveProfileStructure, type: "boolean (string)"
+    publish function: :ReadProfileStructure, type: "boolean (string)"
+    publish function: :ReadXML, type: "boolean (string)"
+    publish function: :setElementByList, type: "map <string, any> (list, any, map <string, any>)"
+    publish function: :checkProfile, type: "void ()"
+    publish function: :needed_second_stage_packages, type: "list <string> ()"
+
   private
 
     def add_autoyast_packages
@@ -903,27 +921,11 @@ module Yast
     # @return [Hash] Map of resource aliases where the key is the alias and the
     #                value is the resource.
     #
-    # @see Y2ModuleConfig#resource_aliases_map
+    # @see Y2ModuleConfigClass#resource_aliases_map
     def resource_aliases_map
       Yast.import "Y2ModuleConfig"
       Y2ModuleConfig.resource_aliases_map
     end
-
-    publish variable: :current, type: "map <string, any>"
-    publish variable: :ModuleMap, type: "map <string, map>"
-    publish variable: :changed, type: "boolean"
-    publish variable: :prepare, type: "boolean"
-    publish function: :Import, type: "void (map <string, any>)"
-    publish function: :Prepare, type: "void ()"
-    publish function: :Reset, type: "void ()"
-    publish function: :Save, type: "boolean (string)"
-    publish function: :SaveSingleSections, type: "map <string, string> (string)"
-    publish function: :SaveProfileStructure, type: "boolean (string)"
-    publish function: :ReadProfileStructure, type: "boolean (string)"
-    publish function: :ReadXML, type: "boolean (string)"
-    publish function: :setElementByList, type: "map <string, any> (list, any, map <string, any>)"
-    publish function: :checkProfile, type: "void ()"
-    publish function: :needed_second_stage_packages, type: "list <string> ()"
   end
 
   Profile = ProfileClass.new

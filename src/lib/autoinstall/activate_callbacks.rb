@@ -39,7 +39,7 @@ module Y2Autoinstallation
     # At this point, AutoYaST has not parsed the 'partitioning' section from
     # the profile, so it does not know which crypted devices are going to be
     # reused. The best option is to check the raw profile (from
-    # {Yast::Profile.current}) and try to unlock devices using all present
+    # {Yast::ProfileClass#current}) and try to unlock devices using all present
     # keys for reused devices
     #
     # @param uuid    [String]  UUID
