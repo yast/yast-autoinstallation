@@ -40,7 +40,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
   let(:partition_hash) { {} }
 
   let(:used_as_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::UsedAs, value: "filesystem")
+    instance_double(Y2Autoinstallation::Widgets::Storage::UsedAs, value: :filesystem)
   end
   let(:filesystem_attrs_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs, values: {})
@@ -59,8 +59,8 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
 
     let(:usage) { :raid }
 
-    it "updates the UsedAs value" do
-      expect(used_as_widget).to receive(:value=).with(usage.to_s)
+    it "updates the used_as value" do
+      expect(used_as_widget).to receive(:value=).with(usage)
 
       subject.init
     end
@@ -73,7 +73,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
   end
 
   describe "#handle" do
-    context "when handling an 'UsedAs' event" do
+    context "when handling an 'used_as' event" do
       let(:event) { { "ID" => "used_as" } }
 
       it "updates the UI" do
@@ -83,7 +83,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
       end
     end
 
-    context "when not handling an 'UsedAs' event" do
+    context "when not handling an 'used_as' event" do
       let(:event) { { "ID" => "whatever" } }
 
       it "does not update the UI" do
