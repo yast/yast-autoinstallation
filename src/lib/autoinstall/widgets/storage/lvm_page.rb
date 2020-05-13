@@ -65,8 +65,8 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "device"    => lvm_vg_widget.value,
-            "is_lvm_vg" => vg_device_widget.value,
+            "device"    => vg_device_widget.value,
+            "is_lvm_vg" => lvm_vg_widget.value,
             "pesize"    => pesize_widget.value
           }
         end

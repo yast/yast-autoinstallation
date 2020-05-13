@@ -24,7 +24,7 @@ require "y2storage/autoinst_profile"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::LvmPage do
-  subject { described_class.new(drive) }
+  subject(:lvm_page) { described_class.new(drive) }
 
   include_examples "CWM::Page"
 
@@ -32,18 +32,31 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
 
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
-      [{ "device" => "/dev/system", "type" => :CT_LVM, "pesize" => "64" }]
+      [partition_hash]
     )
   end
 
+  let(:partition_hash) do
+    {
+      "type"      => :CT_LVM,
+      "device"    => device,
+      "is_lvm_vg" => is_lvm_vg,
+      "pesize"    => pesize
+    }
+  end
+
+  let(:device) { "/dev/system" }
+  let(:is_lvm_vg) { true }
+  let(:pesize) { 64 }
+
   let(:vg_device_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::VgDevice)
+    instance_double(Y2Autoinstallation::Widgets::Storage::VgDevice, value: device)
   end
   let(:is_lvm_vg_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::IsLvmVg)
+    instance_double(Y2Autoinstallation::Widgets::Storage::IsLvmVg, value: is_lvm_vg)
   end
   let(:pesize_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::Pesize)
+    instance_double(Y2Autoinstallation::Widgets::Storage::Pesize, value: pesize)
   end
 
   before do
@@ -55,18 +68,39 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
       .to receive(:new).and_return(pesize_widget)
 
     allow(vg_device_widget).to receive(:value=)
+    allow(vg_device_widget).to receive(:value=)
     allow(is_lvm_vg_widget).to receive(:value=)
     allow(pesize_widget).to receive(:value=)
   end
 
   describe "#init" do
-    it "sets is_lvm_vg" do
-      expect(is_lvm_vg_widget).to receive(:value=)
-      subject.init
+    it "sets vg_device" do
+      expect(vg_device_widget).to receive(:value=).with(device)
+      lvm_page.init
     end
+
+    it "sets is_lvm_vg" do
+      expect(is_lvm_vg_widget).to receive(:value=).with(is_lvm_vg)
+      lvm_page.init
+    end
+
     it "sets the vg physical extent size" do
-      expect(pesize_widget).to receive(:value=)
-      subject.init
+      expect(pesize_widget).to receive(:value=).with(pesize)
+      lvm_page.init
+    end
+  end
+
+  describe "#values" do
+    it "includes device" do
+      expect(lvm_page.values).to include("device" => device)
+    end
+
+    it "includes is_lvm_vg" do
+      expect(lvm_page.values).to include("is_lvm_vg" => is_lvm_vg)
+    end
+
+    it "includes pesize" do
+      expect(lvm_page.values).to include("pesize" => pesize)
     end
   end
 end
