@@ -40,7 +40,10 @@ module Y2Autoinstallation
 
         # @macro seeComboBox
         def items
-          Y2Partitioner::Filesystems.all.map { |f| [f.to_s, f.to_human_string] }
+          @items ||= [
+            [nil, ""],
+            *Y2Partitioner::Filesystems.all.map { |f| [f.to_sym, f.to_human_string] }
+          ]
         end
       end
     end

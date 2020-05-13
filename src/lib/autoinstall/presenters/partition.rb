@@ -47,7 +47,7 @@ module Y2Autoinstallation
           :raid
         elsif lvm_group
           :lvm_pv
-        elsif filesystem
+        elsif filesystem || mounted?
           :filesystem
         else
           :none
@@ -120,6 +120,13 @@ module Y2Autoinstallation
         lv_name
       end
 
+      # Whether the partition has a mount point
+      #
+      # @return [Boolean] true when there is a not empty mount point; false otherwise
+      def mounted?
+        mount && !mount.empty?
+      end
+
       # @see #ui_label
       #
       # @return [String]
@@ -148,7 +155,7 @@ module Y2Autoinstallation
       def usage_label
         case usage
         when :filesystem
-          if mount && !mount.empty?
+          if mounted?
             mount
           else
             _("Not Mounted")
