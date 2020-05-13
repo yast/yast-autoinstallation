@@ -38,16 +38,18 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
 
   let(:partition_hash) do
     {
-      "type"      => :CT_LVM,
-      "device"    => device,
-      "is_lvm_vg" => is_lvm_vg,
-      "pesize"    => pesize
+      "type"            => :CT_LVM,
+      "device"          => device,
+      "is_lvm_vg"       => is_lvm_vg,
+      "pesize"          => pesize,
+      "keep_unknown_lv" => keep_unknown_lv
     }
   end
 
   let(:device) { "/dev/system" }
   let(:is_lvm_vg) { true }
   let(:pesize) { 64 }
+  let(:keep_unknown_lv) { false }
 
   let(:vg_device_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::VgDevice, value: device)
@@ -58,6 +60,9 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
   let(:pesize_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::Pesize, value: pesize)
   end
+  let(:keep_unknown_lv_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::KeepUnknownLv, value: keep_unknown_lv)
+  end
 
   before do
     allow(Y2Autoinstallation::Widgets::Storage::VgDevice)
@@ -66,11 +71,14 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
       .to receive(:new).and_return(is_lvm_vg_widget)
     allow(Y2Autoinstallation::Widgets::Storage::Pesize)
       .to receive(:new).and_return(pesize_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::KeepUnknownLv)
+      .to receive(:new).and_return(keep_unknown_lv_widget)
 
     allow(vg_device_widget).to receive(:value=)
     allow(vg_device_widget).to receive(:value=)
     allow(is_lvm_vg_widget).to receive(:value=)
     allow(pesize_widget).to receive(:value=)
+    allow(keep_unknown_lv_widget).to receive(:value=)
   end
 
   describe "#init" do
@@ -88,6 +96,11 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
       expect(pesize_widget).to receive(:value=).with(pesize)
       lvm_page.init
     end
+
+    it "sets keep_unknown_lv" do
+      expect(keep_unknown_lv_widget).to receive(:value=).with(keep_unknown_lv)
+      lvm_page.init
+    end
   end
 
   describe "#values" do
@@ -101,6 +114,10 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
 
     it "includes pesize" do
       expect(lvm_page.values).to include("pesize" => pesize)
+    end
+
+    it "includes keep_unknown_lv" do
+      expect(lvm_page.values).to include("keep_unknown_lv" => keep_unknown_lv)
     end
   end
 end

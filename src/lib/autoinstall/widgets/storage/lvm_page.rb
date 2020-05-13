@@ -23,6 +23,7 @@ require "autoinstall/widgets/storage/drive_page"
 require "autoinstall/widgets/storage/is_lvm_vg"
 require "autoinstall/widgets/storage/vg_device"
 require "autoinstall/widgets/storage/pesize"
+require "autoinstall/widgets/storage/keep_unknown_lv"
 
 module Y2Autoinstallation
   module Widgets
@@ -48,6 +49,10 @@ module Y2Autoinstallation
               HBox(
                 HWeight(1, pesize_widget),
                 HWeight(2, Empty())
+              ),
+              HBox(
+                HWeight(1, keep_unknown_lv_widget),
+                HWeight(2, Empty())
               )
             )
           )
@@ -55,9 +60,10 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
-          vg_device_widget.value = drive.device
-          lvm_vg_widget.value    = drive.is_lvm_vg
-          pesize_widget.value    = drive.pesize
+          vg_device_widget.value       = drive.device
+          lvm_vg_widget.value          = drive.is_lvm_vg
+          pesize_widget.value          = drive.pesize
+          keep_unknown_lv_widget.value = drive.keep_unknown_lv
         end
 
         # Returns the widgets values
@@ -65,9 +71,10 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "device"    => vg_device_widget.value,
-            "is_lvm_vg" => lvm_vg_widget.value,
-            "pesize"    => pesize_widget.value
+            "device"          => vg_device_widget.value,
+            "is_lvm_vg"       => lvm_vg_widget.value,
+            "pesize"          => pesize_widget.value,
+            "keep_unknown_lv" => keep_unknown_lv_widget.value
           }
         end
 
@@ -90,6 +97,11 @@ module Y2Autoinstallation
         # @return [Pesize]
         def pesize_widget
           @pesize_widget ||= Pesize.new
+        end
+
+        # Widget for setting if an unknown LV must be kept
+        def keep_unknown_lv_widget
+          @keep_unknown_lv_widget ||= KeepUnknownLv.new
         end
       end
     end
