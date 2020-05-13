@@ -40,18 +40,9 @@ module Y2Autoinstallation
         # @macro seeComboBox
         def items
           @items ||= [
-            ["", ""],
-            *Y2Storage::Filesystems::MountByType.all.map { |i| [i.to_s, i.to_human_string] }
+            [nil, ""],
+            *Y2Storage::Filesystems::MountByType.all.map { |i| [i.to_sym, i.to_human_string] }
           ]
-        end
-
-        # Returns selected type
-        #
-        # @return [String, nil] selected type; nil if none
-        def value
-          result = super
-
-          result.to_s.empty? ? nil : result
         end
       end
     end

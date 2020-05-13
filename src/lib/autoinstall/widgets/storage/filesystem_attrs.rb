@@ -89,7 +89,7 @@ module Y2Autoinstallation
             "filesystem"    => filesystem_widget.value,
             "label"         => label_widget.value,
             "mount"         => mount_point_widget.value,
-            "mountby"       => mountby_widget.value&.to_sym,
+            "mountby"       => mountby_widget.value,
             "fstab_options" => fstab_options_widget.value,
             "mkfs_options"  => mkfs_options_widget.value
           }

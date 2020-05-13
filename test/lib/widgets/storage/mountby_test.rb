@@ -24,33 +24,33 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::Mountby do
   subject(:widget) { described_class.new }
 
-  include_examples "CWM::ComboBox"
-
-  let(:items) { widget.items.map { |i| i[0] } }
+  include_examples "CWM::AbstractWidget"
 
   describe "#items" do
+    let(:items) { widget.items.map { |i| i[0] } }
+
     it "includes an empty option" do
-      expect(items).to include("")
+      expect(items).to include(nil)
     end
 
-    it "includes 'device'" do
-      expect(items).to include("device")
+    it "includes :device" do
+      expect(items).to include(:device)
     end
 
-    it "includes 'label'" do
-      expect(items).to include("label")
+    it "includes :label" do
+      expect(items).to include(:label)
     end
 
-    it "includes 'uuid'" do
-      expect(items).to include("uuid")
+    it "includes :uuid" do
+      expect(items).to include(:uuid)
     end
 
-    it "includes 'path'" do
-      expect(items).to include("path")
+    it "includes :path" do
+      expect(items).to include(:path)
     end
 
-    it "includes 'id'" do
-      expect(items).to include("id")
+    it "includes :id" do
+      expect(items).to include(:id)
     end
   end
 
@@ -61,7 +61,7 @@ describe Y2Autoinstallation::Widgets::Storage::Mountby do
     end
 
     describe "when none is selected" do
-      let(:selected_value) { "" }
+      let(:selected_value) { nil }
 
       it "returns nil" do
         expect(widget.value).to be_nil
@@ -69,7 +69,7 @@ describe Y2Autoinstallation::Widgets::Storage::Mountby do
     end
 
     describe "when any is selected" do
-      let(:selected_value) { "path" }
+      let(:selected_value) { :path }
 
       it "returns selected value" do
         expect(widget.value).to eq(selected_value)
