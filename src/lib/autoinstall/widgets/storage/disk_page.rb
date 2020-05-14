@@ -38,7 +38,6 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            Left(Heading(_("Disk"))),
             Left(disk_device_widget),
             Left(init_drive_widget),
             Left(disk_usage_widget),
