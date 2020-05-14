@@ -48,7 +48,6 @@ module Y2Autoinstallation
         def contents
           Top(
             VBox(
-              Left(Heading(_("Partition"))),
               Left(tabs)
             )
           )

@@ -38,7 +38,6 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            Left(Heading(_("RAID"))),
             Left(raid_name_widget),
             Left(md_level_widget),
             Left(parity_algorithm_widget),
