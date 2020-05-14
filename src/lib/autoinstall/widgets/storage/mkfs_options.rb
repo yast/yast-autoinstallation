@@ -32,7 +32,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Mkfs options")
+          _("Mkfs Options")
         end
       end
     end

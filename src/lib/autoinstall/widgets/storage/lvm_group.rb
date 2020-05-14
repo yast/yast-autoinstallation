@@ -32,7 +32,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("LVM group")
+          _("LVM Group")
         end
 
         # @macro seeAbstractWidget
