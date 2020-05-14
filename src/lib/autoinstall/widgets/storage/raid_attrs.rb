@@ -44,9 +44,7 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          VBox(
-            Left(raid_name_widget)
-          )
+          Left(HSquash(raid_name_widget))
         end
 
         # @macro seeAbstractWidget

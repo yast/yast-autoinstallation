@@ -48,20 +48,28 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            HBox(
-              HWeight(1, create_widget),
-              HWeight(1, format_widget),
-              HWeight(1, Empty())
+            Left(
+              HBox(
+                create_widget,
+                HSpacing(2),
+                format_widget
+              )
             ),
-            HBox(
-              HWeight(1, resize_widget),
-              HWeight(1, size_widget),
-              HWeight(1, Empty())
+            VSpacing(0.5),
+            Left(
+              HBox(
+                resize_widget,
+                HSpacing(2),
+                HSquash(MinWidth(15, size_widget))
+              )
             ),
-            HBox(
-              HWeight(1, partition_nr_widget),
-              HWeight(1, uuid_widget),
-              HWeight(1, Empty())
+            VSpacing(0.5),
+            Left(
+              HBox(
+                HSquash(MinWidth(15, partition_nr_widget)),
+                HSpacing(2),
+                HSquash(MinWidth(15, uuid_widget))
+              )
             )
           )
         end

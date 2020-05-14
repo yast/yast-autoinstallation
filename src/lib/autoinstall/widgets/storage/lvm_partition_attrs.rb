@@ -49,19 +49,22 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            HBox(
-              HWeight(1, lv_name_widget),
-              HWeight(2, Empty())
+            Left(
+              HBox(
+                HSquash(lv_name_widget),
+                HSpacing(2),
+                HSquash(stripes_widget),
+                HSpacing(2),
+                HSquash(stripesize_widget)
+              )
             ),
-            HBox(
-              HWeight(1, pool_widget),
-              HWeight(1, used_pool_widget),
-              HWeight(1, Empty())
-            ),
-            HBox(
-              HWeight(1, stripes_widget),
-              HWeight(1, stripesize_widget),
-              HWeight(1, Empty())
+            VSpacing(0.5),
+            Left(
+              HBox(
+                pool_widget,
+                HSpacing(2),
+                HSquash(used_pool_widget)
+              )
             )
           )
         end

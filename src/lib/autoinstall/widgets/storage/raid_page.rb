@@ -37,12 +37,19 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          VBox(
-            Left(raid_name_widget),
-            Left(md_level_widget),
-            Left(parity_algorithm_widget),
-            Left(chunk_size_widget),
-            VStretch()
+          MarginBox(
+            0.5,
+            0,
+            VBox(
+              Left(HSquash(raid_name_widget)),
+              VSpacing(0.5),
+              Left(md_level_widget),
+              VSpacing(0.5),
+              Left(parity_algorithm_widget),
+              VSpacing(0.5),
+              Left(chunk_size_widget),
+              VStretch()
+            )
           )
         end
 
