@@ -67,10 +67,10 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "device"     => disk_device_widget.value,
-            "initialize" => init_drive_widget.value,
-            "use"        => disk_usage_widget.value,
-            "disklabel"  => partition_table_widget.value
+            "device"          => disk_device_widget.value,
+            "initialize_attr" => init_drive_widget.value,
+            "use"             => disk_usage_widget.value,
+            "disklabel"       => partition_table_widget.value
           }
         end
 
