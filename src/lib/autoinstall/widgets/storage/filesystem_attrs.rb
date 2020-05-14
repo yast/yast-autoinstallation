@@ -50,23 +50,26 @@ module Y2Autoinstallation
         # @macro seeCustomWidget
         def contents
           VBox(
-            HBox(
-              HWeight(1, filesystem_widget),
-              HWeight(1, label_widget),
-              HWeight(1, Empty())
+            Left(
+              HBox(
+                filesystem_widget,
+                HSpacing(2),
+                HSquash(MinWidth(15, label_widget))
+              )
             ),
-            HBox(
-              HWeight(1, mount_point_widget),
-              HWeight(1, mountby_widget),
-              HWeight(1, Empty())
+            VSpacing(0.5),
+            Left(
+              HBox(
+                HSquash(MinWidth(15, mount_point_widget)),
+                HSpacing(2),
+                mountby_widget,
+                HSpacing(2),
+                HSquash(fstab_options_widget)
+              )
             ),
-            HBox(
-              HWeight(2, fstab_options_widget),
-              HWeight(1, Empty())
-            ),
-            HBox(
-              HWeight(1, mkfs_options_widget),
-              HWeight(2, Empty())
+            VSpacing(0.5),
+            Left(
+              HSquash(MinWidth(35, mkfs_options_widget))
             )
           )
         end

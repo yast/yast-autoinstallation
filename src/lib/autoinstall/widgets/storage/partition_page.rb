@@ -46,11 +46,7 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          Top(
-            VBox(
-              Left(tabs)
-            )
-          )
+          Left(tabs)
         end
 
         def section

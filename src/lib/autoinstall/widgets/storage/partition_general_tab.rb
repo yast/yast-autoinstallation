@@ -45,10 +45,15 @@ module Y2Autoinstallation
         end
 
         def contents
-          VBox(
-            Left(common_partition_attrs),
-            Left(section_related_attrs),
-            VStretch()
+          MarginBox(
+            0.4,
+            0.4,
+            VBox(
+              common_partition_attrs,
+              VSpacing(0.5),
+              section_related_attrs,
+              VStretch()
+            )
           )
         end
 

@@ -44,9 +44,7 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          VBox(
-            Left(lvm_group_widget)
-          )
+          Left(HSquash(MinWidth(15, lvm_group_widget)))
         end
 
         # @macro seeAbstractWidget

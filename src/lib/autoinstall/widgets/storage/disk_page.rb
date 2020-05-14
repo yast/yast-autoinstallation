@@ -37,12 +37,19 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          VBox(
-            Left(disk_device_widget),
-            Left(init_drive_widget),
-            Left(disk_usage_widget),
-            Left(partition_table_widget),
-            VStretch()
+          MarginBox(
+            0.5,
+            0,
+            VBox(
+              Left(HSquash(MinWidth(15, disk_device_widget))),
+              VSpacing(0.5),
+              Left(init_drive_widget),
+              VSpacing(0.5),
+              Left(disk_usage_widget),
+              VSpacing(0.5),
+              Left(partition_table_widget),
+              VStretch()
+            )
           )
         end
 

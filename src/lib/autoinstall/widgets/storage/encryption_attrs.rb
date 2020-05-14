@@ -43,10 +43,11 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          VBox(
+          Left(
             HBox(
-              HWeight(1, crypt_method_widget),
-              HWeight(2, crypt_key_widget)
+              crypt_method_widget,
+              HSpacing(2),
+              HSquash(crypt_key_widget)
             )
           )
         end
