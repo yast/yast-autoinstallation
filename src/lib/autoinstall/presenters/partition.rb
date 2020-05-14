@@ -88,19 +88,6 @@ module Y2Autoinstallation
         names.map { |n| n.delete_prefix("/dev/") }
       end
 
-      # Updates the Autoinst partition section
-      #
-      # Redefines the Section#update method for restricting the section cleanup to given attributes.
-      #
-      # @param values [Hash] Values to update
-      def update(values)
-        # FIXME: this cleanup should be implemented by the section class,
-        # directly in #init_from_hashes or in any similar method
-        clean_section(only: values.keys)
-        # FIXME: actually the cleanup is being performed twice
-        section.init_from_hashes(values)
-      end
-
     private
 
       # @return [Drive] presenter of the parent drive section

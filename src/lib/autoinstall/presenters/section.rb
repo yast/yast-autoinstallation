@@ -79,9 +79,13 @@ module Y2Autoinstallation
       #
       # @param values [Hash] Values to update
       def update(values)
-        # FIXME: this cleanup should be implemented by the section class,
-        # directly in #init_from_hashes or in any similar method
-        clean_section
+        # Before updating, performs a cleanup of received values setting all of them to nil. This is
+        # necessary because Y2Storage::AutoinstProfile::SectionWithAttributes#init_from_hashes will
+        # ignore blank values, leaving them with their previous values (is any).
+        #
+        # FIXME: this cleanup should be implemented by the section class, directly in
+        # #init_from_hashes or in any similar method
+        clean_section(values.keys)
         section.init_from_hashes(values)
       end
 
@@ -89,27 +93,12 @@ module Y2Autoinstallation
 
       # Resets known attributes in the section
       #
-      # By default, all known section attributes are going to be reset, but this behavior can be
-      # restricted using the :only named param
-      #
       # FIXME: ideally we wouldn't need to implement this kind of things in
       # the presenter
       #
-      # @param only [Array<String>] a collection of attributes to restrict the clean up
-      def clean_section(only: [])
-        attrs = section_attrs
-        attrs &= only unless only.empty?
-
-        attrs.each do |attr|
-          section.public_send("#{attr}=", nil)
-        end
-      end
-
-      # Returns all know section attributes names
-      #
-      # @return [Array<String>]
-      def section_attrs
-        section.class.attributes.map { |attr| attr[:name].to_s }
+      # @param attrs [Array<String>] a collection of attributes to restrict the clean up
+      def clean_section(attrs)
+        attrs.each { |attr| section.public_send("#{attr}=", nil) }
       end
 
       # See {#to_s} and {#inspect}
