@@ -32,7 +32,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Fstab options")
+          _("Mount Options")
         end
       end
     end

@@ -32,7 +32,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Encryption key")
+          _("Encryption Key")
         end
       end
     end

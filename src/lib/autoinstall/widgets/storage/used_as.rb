@@ -40,7 +40,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Used as")
+          _("Used As")
         end
 
         # @macro seeComboBox

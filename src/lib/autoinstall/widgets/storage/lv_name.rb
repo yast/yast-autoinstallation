@@ -32,7 +32,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("LV name")
+          _("LV Name")
         end
       end
     end

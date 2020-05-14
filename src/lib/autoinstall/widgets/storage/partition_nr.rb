@@ -34,7 +34,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Partition number")
+          _("Partition Number")
         end
       end
     end
