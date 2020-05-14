@@ -52,13 +52,17 @@ module Y2Autoinstallation
         end
 
         def contents
-          VBox(
-            HBox(
-              HWeight(1, used_as_widget),
-              HWeight(2, empty_widget)
-            ),
-            replace_point,
-            encryption_replace_point
+          MarginBox(
+            0.4,
+            0.4,
+            VBox(
+              Left(used_as_widget),
+              VSpacing(0.5),
+              replace_point,
+              VSpacing(0.5),
+              encryption_replace_point,
+              VStretch()
+            )
           )
         end
 

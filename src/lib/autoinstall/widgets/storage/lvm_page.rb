@@ -37,20 +37,16 @@ module Y2Autoinstallation
 
         # @macro seeCustomWidget
         def contents
-          Top(
+          MarginBox(
+            0.5,
+            0,
             VBox(
-              HBox(
-                HWeight(1, vg_device_widget),
-                HWeight(2, Empty())
-              ),
-              HBox(
-                HWeight(1, pesize_widget),
-                HWeight(2, Empty())
-              ),
-              HBox(
-                HWeight(1, keep_unknown_lv_widget),
-                HWeight(2, Empty())
-              )
+              Left(HSquash(MinWidth(15, vg_device_widget))),
+              VSpacing(0.5),
+              Left(HSquash(MinWidth(15, pesize_widget))),
+              VSpacing(0.5),
+              Left(keep_unknown_lv_widget),
+              VStretch()
             )
           )
         end
