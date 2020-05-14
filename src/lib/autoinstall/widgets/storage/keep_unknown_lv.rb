@@ -33,7 +33,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Keep unknonw LVs")
+          _("Keep Unknown LVs")
         end
       end
     end

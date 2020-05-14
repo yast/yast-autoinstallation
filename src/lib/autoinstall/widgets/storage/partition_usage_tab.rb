@@ -48,7 +48,7 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def label
           # TRANSLATORS: name of the tab to display the partition section options based on its usage
-          _("Used as")
+          _("Used As")
         end
 
         def contents

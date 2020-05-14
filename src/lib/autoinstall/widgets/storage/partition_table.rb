@@ -36,7 +36,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Partition table")
+          _("Partition Table")
         end
 
         # We are only interested in these types.

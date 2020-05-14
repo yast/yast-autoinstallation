@@ -33,7 +33,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("LVM thin pool")
+          _("LVM Thin Pool")
         end
       end
     end

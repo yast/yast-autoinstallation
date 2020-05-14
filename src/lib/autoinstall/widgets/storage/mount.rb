@@ -32,7 +32,7 @@ module Y2Autoinstallation
         end
 
         def label
-          _("Mount point")
+          _("Mount Point")
         end
 
         # @macro seeAbstractWidget
