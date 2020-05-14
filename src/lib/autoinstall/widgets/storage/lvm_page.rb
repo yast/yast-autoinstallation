@@ -39,7 +39,6 @@ module Y2Autoinstallation
         def contents
           Top(
             VBox(
-              Left(Heading(_("LVM"))),
               HBox(
                 HWeight(1, vg_device_widget),
                 HWeight(2, Empty())
