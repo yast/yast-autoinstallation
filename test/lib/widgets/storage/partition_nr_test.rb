@@ -24,5 +24,5 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::PartitionNr do
   subject(:widget) { described_class.new }
 
-  include_examples "CWM::IntField"
+  include_examples "CWM::InputField"
 end

@@ -25,7 +25,7 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # Widget to configure LVM striping
-      class Stripes < CWM::IntField
+      class Stripes < CWM::InputField
         # Constructor
         def initialize
           textdomain "autoinst"
