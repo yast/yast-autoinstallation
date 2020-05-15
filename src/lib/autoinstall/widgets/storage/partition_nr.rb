@@ -24,8 +24,8 @@ require "cwm/common_widgets"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # The widget to manage the partition number of a partition section
-      class PartitionNr < CWM::IntField
+      # Widget to manage the partition number of a partition section
+      class PartitionNr < CWM::InputField
         # Constructor
         def initialize
           textdomain "autoinst"

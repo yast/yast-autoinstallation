@@ -25,7 +25,7 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # Widget to specify the granularity of the stripes
-      class Stripesize < CWM::IntField
+      class Stripesize < CWM::InputField
         # Constructor
         def initialize
           textdomain "autoinst"
