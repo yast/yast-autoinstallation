@@ -36,7 +36,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Reuse")
+          _("Use")
         end
 
         # @macro seeAbstractWidget
