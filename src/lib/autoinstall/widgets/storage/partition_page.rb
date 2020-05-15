@@ -65,9 +65,9 @@ module Y2Autoinstallation
 
         # Tabs to display the partition section data
         #
-        # First tab contains common options for a partition section (including those that actually
-        # depends on the parent section type). The second one allows to choose the partition usage
-        # and its related options.
+        # First tab contains common options for a partition section (including those that depend on
+        # the parent section type). The second one allows to choose the partition usage and its
+        # related options.
         #
         # @return [CWM::Tabs]
         def tabs
