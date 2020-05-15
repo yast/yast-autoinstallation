@@ -32,7 +32,7 @@ require "autoinstall/widgets/storage/used_as"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Tab to manage the partition section options that depends on its usage (file system, LVM PV,
+      # Tab to manage the partition section options that depend on its usage (file system, LVM PV,
       # RAID member, etc).
       class PartitionUsageTab < ::CWM::Tab
         # Constructor
