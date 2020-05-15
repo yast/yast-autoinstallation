@@ -49,6 +49,11 @@ module Y2Autoinstallation
           Left(tabs)
         end
 
+        # Returns the partition section
+        #
+        # Needed by {OverviewTreePager#initial_page }
+        #
+        # @return [Y2Storage::AutoinstProfile::PartitionSection] the partition section
         def section
           partition.section
         end
@@ -60,9 +65,9 @@ module Y2Autoinstallation
 
         # Tabs to display the partition section data
         #
-        # First tab will contain the common options for the partition section (including those that
-        # actually depends on the parent section type). The second tab allows to choose the
-        # partition usage and its related options.
+        # First tab contains common options for a partition section (including those that actually
+        # depends on the parent section type). The second one allows to choose the partition usage
+        # and its related options.
         #
         # @return [CWM::Tabs]
         def tabs
@@ -73,15 +78,11 @@ module Y2Autoinstallation
         end
 
         # Tab to display common options for all partition sections
-        #
-        # @return [PartitionGeneralTab]
         def general_tab
           @general_tab ||= PartitionGeneralTab.new(partition)
         end
 
         # Tab to display options related to the partition section usage
-        #
-        # @return [PartitionUsageTab]
         def usage_tab
           @usage_tab ||= PartitionUsageTab.new(partition)
         end

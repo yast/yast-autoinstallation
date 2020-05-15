@@ -26,6 +26,8 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # Custom widget grouping encryption related attributes
+      #
+      # @see PartitionUsageTab
       class EncryptionAttrs < CWM::CustomWidget
         # Constructor
         #

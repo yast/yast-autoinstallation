@@ -30,6 +30,10 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # Common partition section options
+      #
+      # It holds widgets managing common partition attributes, no matter the parent drive section.
+      #
+      # @see PartitionGeneralTab
       class CommonPartitionAttrs < CWM::CustomWidget
         # Constructor
         #
@@ -103,44 +107,32 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
 
-        # Widget to set if the partition should be created
-        #
-        # @return [Create]
+        # Widget for setting if partition should be created
         def create_widget
           @create_widget ||= Create.new
         end
 
-        # Widget to set if the partition should be formatted
-        #
-        # @return [Format]
+        # Widget for setting if partition should be formatted
         def format_widget
           @format_widget ||= Format.new
         end
 
-        # Widget to set if the partition should be resized
-        #
-        # @return [Resize]
+        # Widget for setting if partition should be resized
         def resize_widget
           @resize_widget ||= Resize.new
         end
 
-        # Widget to set the partition size
-        #
-        # @return [Size]
+        # Widget for setting the partition size
         def size_widget
           @size_widget ||= Size.new
         end
 
-        # Widget to set the partition_nr
-        #
-        # @return [PartitionNr]
+        # Widget for setting the partition_nr
         def partition_nr_widget
           @partition_nr_widget ||= PartitionNr.new
         end
 
-        # Widget to set the partition uuid
-        #
-        # @return [Uuid]
+        # Widget for setting the partition uuid
         def uuid_widget
           @uuid_widget ||= Uuid.new
         end

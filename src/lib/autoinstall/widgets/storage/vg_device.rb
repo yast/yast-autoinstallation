@@ -37,10 +37,12 @@ module Y2Autoinstallation
           _("Device")
         end
 
+        # @macro seeAbstractWidget
         def value
           prefix(super)
         end
 
+        # @macro seeAbstractWidget
         def value=(device)
           super(prefix(device))
         end

@@ -24,7 +24,7 @@ require "cwm/common_widgets"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # The widget to manage the partition number of a partition section
+      # The widget to manage the partition UUID of a partition section
       class Uuid < CWM::InputField
         # Constructor
         def initialize

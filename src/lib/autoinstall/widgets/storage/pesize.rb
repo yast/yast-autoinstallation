@@ -34,7 +34,6 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          # TRANSLATORS: field to enter the extent size of a new volume group
           _("Physical Extent Size")
         end
 
