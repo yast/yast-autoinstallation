@@ -82,34 +82,27 @@ module Y2Autoinstallation
 
       private
 
-        # Disk device selector
-        #
-        # @return [DiskDevice]
+        # Widget for setting the device name
         def disk_device_widget
           @disk_device_widget ||= DiskDevice.new
         end
 
-        # Disk usage selector
-        #
-        # @return [DiskUsage]
+        # Widget for setting the disk use
         def disk_usage_widget
           @disk_usage_widget ||= DiskUsage.new
         end
 
-        # Partition table selector
-        #
-        # @return [PartitionTable]
+        # Widget for setting the disk partition table
         def partition_table_widget
           @partition_table_widget ||= PartitionTable.new
         end
 
-        # Initialize drive widget
-        #
-        # @return [InitDrive]
+        # Widget for settings if disk should be initialize
         def init_drive_widget
           @init_drive_widget ||= InitDrive.new
         end
 
+        # Update the disk use status according to the value of #init_drive_widget
         def set_disk_usage_status
           if init_drive_widget.value
             disk_usage_widget.disable

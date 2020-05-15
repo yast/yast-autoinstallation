@@ -24,9 +24,11 @@ require "autoinstall/widgets/storage/raid_name"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # File system specific widgets
+      # RAID member attributes widget
       #
-      # This is a custom widget that groups those that are RAID specific.
+      # It groups those attributes that are specific for a partition being used as a RAID member.
+      #
+      # @see PartitionUsageTab
       class RaidAttrs < CWM::CustomWidget
         # Constructor
         #
@@ -64,9 +66,7 @@ module Y2Autoinstallation
         # @return [Y2Storage::AutoinstProfile::PartitionSection]
         attr_reader :section
 
-        # RAID name widget
-        #
-        # @return [RaidName]
+        # Widget for setting the RAID name
         def raid_name_widget
           @raid_name_widget ||= RaidName.new
         end

@@ -80,30 +80,22 @@ module Y2Autoinstallation
 
       private
 
-        # RAID name input field
-        #
-        # @return [RaidName]
+        # Widget for setting the RAID name
         def raid_name_widget
           @raid_name_widget ||= RaidName.new
         end
 
-        # RAID level widget
-        #
-        # @return [MdLevel]
+        # Widget for choosing the RAID level
         def md_level_widget
           @md_level_widget ||= MdLevel.new
         end
 
-        # Parity algorithm
-        #
-        # @return [ParityAlgorithm]
+        # Widget for choosing the RAID Parity algorithm
         def parity_algorithm_widget
           @parity_algorithm_widget ||= ParityAlgorithm.new
         end
 
-        # Chunk size
-        #
-        # @return [ChunkSize]
+        # Widget for setting the chunk size
         def chunk_size_widget
           @chunk_size_widget ||= ChunkSize.new
         end

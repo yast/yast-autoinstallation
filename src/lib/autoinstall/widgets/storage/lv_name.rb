@@ -23,7 +23,7 @@ require "cwm/common_widgets"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Determines the LVM LV name
+      # Widget to determines the LVM LV name
       class LvName < CWM::InputField
         def initalize
           textdomain "autoinst"

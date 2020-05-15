@@ -26,7 +26,9 @@ module Y2Autoinstallation
     module Storage
       # LVM Physical Volumne attributes widget
       #
-      # This is a custom widget that groups those that are LVM specific.
+      # It groups those attributes that are specific for a partition being used as LVM PV.
+      #
+      # @see PartitionUsageTab
       class LvmPvAttrs < CWM::CustomWidget
         # Constructor
         #
@@ -65,9 +67,7 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
 
-        # LVM Group widget
-        #
-        # @return [VgName]
+        # Widget for setting the LVM Group
         def lvm_group_widget
           @lvm_group_widget ||= LvmGroup.new
         end
