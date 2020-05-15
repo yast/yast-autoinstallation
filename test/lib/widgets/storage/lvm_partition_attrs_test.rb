@@ -27,40 +27,50 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs do
 
   include_examples "CWM::CustomWidget"
 
-  let(:section) do
-    Y2Storage::AutoinstProfile::PartitionSection.new
+  let(:section) { Y2Storage::AutoinstProfile::PartitionSection.new }
+
+  let(:lv_name_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::LvName, value: "lv-home")
+  end
+  let(:pool_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::Pool, value: false)
+  end
+  let(:used_pool_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::UsedPool, value: "my_thin_pool")
+  end
+  let(:stripes_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::Stripes, value: 2)
+  end
+  let(:stripesize_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::Stripesize, value: 4)
+  end
+
+  before do
+    allow(Y2Autoinstallation::Widgets::Storage::LvName).to receive(:new)
+      .and_return(lv_name_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::Pool).to receive(:new)
+      .and_return(pool_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::UsedPool).to receive(:new)
+      .and_return(used_pool_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::Stripes).to receive(:new)
+      .and_return(stripes_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::Stripesize).to receive(:new)
+      .and_return(stripesize_widget)
+  end
+
+  describe "#init" do
+    it "sets initial values" do
+      expect(lv_name_widget).to receive(:value=)
+      expect(pool_widget).to receive(:value=)
+      expect(used_pool_widget).to receive(:value=)
+      expect(stripes_widget).to receive(:value=)
+      expect(stripesize_widget).to receive(:value=)
+
+      widget.init
+    end
   end
 
   describe "#values" do
-    let(:lv_name_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::LvName, value: "lv-home")
-    end
-    let(:pool_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Pool, value: false)
-    end
-    let(:used_pool_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::UsedPool, value: "my_thin_pool")
-    end
-    let(:stripes_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Stripes, value: 2)
-    end
-    let(:stripesize_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Stripesize, value: 4)
-    end
-
-    before do
-      allow(Y2Autoinstallation::Widgets::Storage::LvName).to receive(:new)
-        .and_return(lv_name_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::Pool).to receive(:new)
-        .and_return(pool_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::UsedPool).to receive(:new)
-        .and_return(used_pool_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::Stripes).to receive(:new)
-        .and_return(stripes_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::Stripesize).to receive(:new)
-        .and_return(stripesize_widget)
-    end
-
     it "includes lv_name" do
       expect(widget.values).to include("lv_name" => "lv-home")
     end
