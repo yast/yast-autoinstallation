@@ -18,16 +18,36 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "y2storage"
 require "autoinstall/widgets/storage/raid_attrs"
+require "y2storage"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::RaidAttrs do
-  subject { described_class.new(section) }
+  subject(:widget) { described_class.new(section) }
 
-  let(:section) do
-    Y2Storage::AutoinstProfile::PartitionSection.new
-  end
+  let(:section) { Y2Storage::AutoinstProfile::PartitionSection.new }
 
   include_examples "CWM::CustomWidget"
+
+  let(:raid_name_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::RaidName, value: "/dev/md/1")
+  end
+
+  before do
+    allow(Y2Autoinstallation::Widgets::Storage::RaidName).to receive(:new)
+      .and_return(raid_name_widget)
+  end
+
+  describe "#init" do
+    it "sets initial values" do
+      expect(raid_name_widget).to receive(:value=)
+      widget.init
+    end
+  end
+
+  describe "#values" do
+    it "includes raid_name" do
+      expect(widget.values).to include("raid_name" => "/dev/md/1")
+    end
+  end
 end

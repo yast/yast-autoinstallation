@@ -35,7 +35,8 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPvAttrs do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
       [
         { "type" => :CT_DISK, "partitions" => [{}] },
-        { "device" => "/dev/system", "type" => :CT_LVM, "pesize" => "64" }
+        { "type" => :CT_LVM, "device" => "/dev/system" },
+        { "type" => :CT_LVM, "device" => "/dev/data" }
       ]
     )
   end
@@ -55,7 +56,7 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPvAttrs do
 
   describe "#init" do
     it "sets the available lvm groups" do
-      expect(lvm_group_widget).to receive(:items=).with(["system"])
+      expect(lvm_group_widget).to receive(:items=).with(["system", "data"])
       widget.init
     end
 
@@ -67,7 +68,7 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPvAttrs do
 
   describe "#values" do
     it "includes `lvm_group`" do
-      expect(widget.values).to match(a_hash_including("lvm_group" => anything))
+      expect(widget.values).to include("lvm_group" => anything)
     end
   end
 end

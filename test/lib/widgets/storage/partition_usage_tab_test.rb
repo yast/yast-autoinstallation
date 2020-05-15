@@ -39,20 +39,16 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
   let(:partition) { drive.partitions.first }
   let(:partition_hash) { {} }
 
+  let(:used_as) { :none }
   let(:used_as_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::UsedAs, value: :filesystem)
-  end
-  let(:filesystem_attrs_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs, values: {})
-  end
-  let(:encryption_attrs_widget) do
-    instance_double(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs, values: {})
+    instance_double(Y2Autoinstallation::Widgets::Storage::UsedAs)
   end
 
   describe "#init" do
     before do
       allow(Y2Autoinstallation::Widgets::Storage::UsedAs).to receive(:new)
         .and_return(used_as_widget)
+      allow(used_as_widget).to receive(:value).and_return(used_as)
       allow(used_as_widget).to receive(:value=)
       allow(partition).to receive(:usage).and_return(usage)
     end
@@ -64,22 +60,97 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
 
       subject.init
     end
-
-    it "updates the UI" do
-      expect(subject).to receive(:refresh)
-
-      subject.init
-    end
   end
 
   describe "#handle" do
+    let(:attrs_replace_point) do
+      instance_double(CWM::ReplacePoint)
+    end
+    let(:encryption_replace_point) do
+      instance_double(CWM::ReplacePoint)
+    end
+    let(:empty_widget) do
+      instance_double(CWM::Empty)
+    end
+    let(:encryption_attrs_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs)
+    end
+    let(:filesystem_attrs_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs)
+    end
+    let(:raid_attrs_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::RaidAttrs)
+    end
+    let(:lvm_pv_attrs_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::LvmPvAttrs)
+    end
+
     context "when handling an 'used_as' event" do
       let(:event) { { "ID" => "used_as" } }
 
-      it "updates the UI" do
-        expect(subject).to receive(:refresh)
+      before do
+        allow(used_as_widget).to receive(:value).and_return(used_as)
+        allow(attrs_replace_point).to receive(:replace)
+        allow(encryption_replace_point).to receive(:replace)
 
-        subject.handle(event)
+        allow(Y2Autoinstallation::Widgets::Storage::UsedAs).to receive(:new)
+          .and_return(used_as_widget)
+        allow(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs).to receive(:new)
+          .and_return(encryption_attrs_widget)
+        allow(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs).to receive(:new)
+          .and_return(filesystem_attrs_widget)
+        allow(Y2Autoinstallation::Widgets::Storage::RaidAttrs).to receive(:new)
+          .and_return(raid_attrs_widget)
+        allow(Y2Autoinstallation::Widgets::Storage::LvmPvAttrs).to receive(:new)
+          .and_return(lvm_pv_attrs_widget)
+        allow(CWM::ReplacePoint).to receive(:new).with(id: "encryption_attrs", widget: anything)
+          .and_return(encryption_replace_point)
+        allow(CWM::ReplacePoint).to receive(:new).with(id: "attrs", widget: anything)
+          .and_return(attrs_replace_point)
+        allow(CWM::Empty).to receive(:new)
+          .and_return(empty_widget)
+      end
+
+      context "and :filesystem has been selected" do
+        let(:used_as) { :filesystem }
+
+        it "shows attributes related to filesystem usage" do
+          expect(attrs_replace_point).to receive(:replace).with(filesystem_attrs_widget)
+          subject.handle(event)
+        end
+
+        it "shows encryption attributes" do
+          expect(encryption_replace_point).to receive(:replace).with(encryption_attrs_widget)
+          subject.handle(event)
+        end
+      end
+
+      context "and :raid has been selected" do
+        let(:used_as) { :raid }
+
+        it "shows attributes related to RAID usage" do
+          expect(attrs_replace_point).to receive(:replace).with(raid_attrs_widget)
+          subject.handle(event)
+        end
+
+        it "does not show encryption attributes" do
+          expect(encryption_replace_point).to receive(:replace).with(empty_widget)
+          subject.handle(event)
+        end
+      end
+
+      context "and :lvm_pv has been selected" do
+        let(:used_as) { :lvm_pv }
+
+        it "shows attributes related to LVM PV usage" do
+          expect(attrs_replace_point).to receive(:replace).with(lvm_pv_attrs_widget)
+          subject.handle(event)
+        end
+
+        it "shows encryption attributes" do
+          expect(encryption_replace_point).to receive(:replace).with(encryption_attrs_widget)
+          subject.handle(event)
+        end
       end
     end
 
@@ -95,6 +166,36 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
   end
 
   describe "#store" do
+    let(:filesystem_attrs) do
+      {
+        "filesystem"    => :ext3,
+        "label"         => "mydata",
+        "mount"         => "swap",
+        "mountby"       => :label,
+        "fstab_options" => "ro,noatime,user",
+        "mkfs_options"  => "-I 128"
+      }
+    end
+    let(:encryption_attrs) do
+      {
+        "crypt_method" => :luks1,
+        "crypt_key"    => "xxxxx"
+      }
+    end
+
+    let(:filesystem_attrs_widget) do
+      instance_double(
+        Y2Autoinstallation::Widgets::Storage::FilesystemAttrs,
+        values: filesystem_attrs
+      )
+    end
+    let(:encryption_attrs_widget) do
+      instance_double(
+        Y2Autoinstallation::Widgets::Storage::EncryptionAttrs,
+        values: encryption_attrs
+      )
+    end
+
     before do
       allow(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs).to receive(:new)
         .and_return(filesystem_attrs_widget)
@@ -102,9 +203,18 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
         .and_return(encryption_attrs_widget)
     end
 
-    it "sets the partition section attributes" do
-      expect(partition).to receive(:update)
+    it "sets section attributes related to its usage" do
       subject.store
+
+      expect(partition.filesystem).to eq(:ext3)
+      expect(partition.label).to eq("mydata")
+      expect(partition.mount).to eq("swap")
+      expect(partition.mountby).to eq(:label)
+      expect(partition.fstab_options).to eq("ro,noatime,user")
+      expect(partition.mkfs_options).to eq("-I 128")
+
+      expect(partition.crypt_method).to eq(:luks1)
+      expect(partition.crypt_key).to eq("xxxxx")
     end
   end
 end
