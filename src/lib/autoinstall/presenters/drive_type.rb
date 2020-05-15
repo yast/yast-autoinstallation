@@ -44,9 +44,11 @@ module Y2Autoinstallation
       LVM = new(:CT_LVM, N_("LVM")).freeze
       # DriveType for CT_RAID
       RAID = new(:CT_RAID, N_("RAID")).freeze
+      # DriveType for CT_BCACHE
+      BCACHE = new(:CT_BCACHE, N_("bcache")).freeze
 
       # All drive types
-      ALL = [DISK, RAID, LVM].freeze
+      ALL = [DISK, RAID, LVM, BCACHE].freeze
 
       # All possible types
       #
