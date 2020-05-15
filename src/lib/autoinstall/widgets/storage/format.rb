@@ -25,7 +25,7 @@ module Y2Autoinstallation
     module Storage
       # Determines whether the file system should be formatted or not
       #
-      # It corresponds to the `format` element in a `partition` section of the profile.
+      # It corresponds to the format attribute in a partition section of the profile.
       class Format < BooleanSelector
         def initialize
           textdomain "autoinst"

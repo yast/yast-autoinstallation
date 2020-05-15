@@ -31,7 +31,9 @@ module Y2Autoinstallation
     module Storage
       # File system specific widgets
       #
-      # This is a custom widget that groups those that are file system specific.
+      # It groups those attributes that are specific for a partition being used as file system.
+      #
+      # @see PartitionUsageTab
       class FilesystemAttrs < CWM::CustomWidget
         # Constructor
         #
@@ -103,7 +105,7 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
 
-        # Filesystem type widget
+        # Widget for settings the filesystem type
         def filesystem_widget
           @filesystem_widget ||= Filesystem.new
         end

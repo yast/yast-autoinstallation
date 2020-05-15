@@ -30,7 +30,9 @@ module Y2Autoinstallation
     module Storage
       # LVM partitions specific widgets
       #
-      # This is a custom widget holding those that are specific for a partition of an CT_LVM drive
+      # It holds widgets managing specific attributes for a partition of an CT_LVM drive.
+      #
+      # @see PartitionGeneralTab
       class LvmPartitionAttrs < CWM::CustomWidget
         # Constructor
         #
@@ -97,36 +99,26 @@ module Y2Autoinstallation
         attr_reader :section
 
         # Widget for setting the LV name
-        #
-        # @return [LvName]
         def lv_name_widget
           @lv_name_widget ||= LvName.new
         end
 
         # Widget for setting if LV should be an LVM thin pool
-        #
-        # @return [Pool]
         def pool_widget
           @pool_widget ||= Pool.new
         end
 
         # Widget for setting the name of the LVM thin pool used as data store
-        #
-        # @return [UsedPool]
         def used_pool_widget
           @used_pool_widget ||= UsedPool.new
         end
 
         # Widget for configuring the LVM stripping
-        #
-        # @return [Stripes]
         def stripes_widget
           @stripes_widget ||= Stripes.new
         end
 
         # Widget for specifying each stripe block size
-        #
-        # @return [Stripesize]
         def stripesize_widget
           @stripesize_widget ||= Stripesize.new
         end

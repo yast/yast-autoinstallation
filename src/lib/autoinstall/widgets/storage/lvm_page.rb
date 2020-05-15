@@ -71,16 +71,12 @@ module Y2Autoinstallation
 
       private
 
-        # LVM VG name input field
-        #
-        # @return [VgName]
+        # Widget for setting the LVM VG name
         def vg_device_widget
           @vg_device_widget ||= VgDevice.new
         end
 
-        # Widget for LVM VG Physical Extent Size (pesize)
-        #
-        # @return [Pesize]
+        # Widget for setting the LVM VG Physical Extent Size (pesize)
         def pesize_widget
           @pesize_widget ||= Pesize.new
         end
