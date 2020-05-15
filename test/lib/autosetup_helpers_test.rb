@@ -218,5 +218,128 @@ describe Y2Autoinstallation::AutosetupHelpers do
         expect(client.modified_profile?).to eq(false)
       end
     end
+
+  end
+
+  describe "#network_autosetup" do
+    let(:profile) { networking_section }
+    let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }
+    let(:host_section) { { "host" => { "hosts" => [] } } }
+
+    before do
+      Yast::Profile.current = profile
+      Yast::AutoinstConfig.main
+      allow(Yast::WFM).to receive(:CallFunction).with("lan_auto", anything)
+      allow(Yast::WFM).to receive(:CallFunction).with("inst_lan", anything)
+      allow(Yast::WFM).to receive(:CallFunction).with("host_auto", anything)
+    end
+
+    context "when a networking section is defined in the profile" do
+      it "imports the networking config" do
+        expect(Yast::WFM)
+          .to receive(:CallFunction)
+          .with("lan_auto", ["Import", profile["networking"]])
+
+        client.autosetup_network
+      end
+
+      it "removes the networking section from the profile" do
+        client.autosetup_network
+        expect(Yast::Profile.current.keys).to_not include("networking")
+      end
+
+      context "and the setup is defined to be run before the proposal" do
+        let(:profile) { networking_section.merge(host_section) }
+        let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }
+
+        it "sets the network config to be written before the proposal" do
+          expect { client.autosetup_network }
+            .to change { Yast::AutoinstConfig.network_before_proposal }
+            .from(false).to(true)
+        end
+
+        context "and a host section is defined" do
+          it "imports the /etc/hosts config from the profile" do
+            expect(Yast::WFM)
+              .to receive(:CallFunction)
+              .with("host_auto", ["Import", profile["host"]])
+
+            client.autosetup_network
+          end
+
+          it "removes the host section from the profile" do
+            client.autosetup_network
+            expect(Yast::Profile.current.keys).to_not include("host")
+          end
+        end
+      end
+    end
+
+    context "when the network configuration is semiautomatic" do
+      let(:networking_section) { { "general" => { "semi-automatic" => ["networking"] } } }
+
+      it "runs the network configuration client" do
+        expect(Yast::WFM).to receive(:CallFunction).with("inst_lan", anything)
+
+        client.autosetup_network
+      end
+
+      it "sets the network config to be written before the proposal" do
+        expect { client.autosetup_network }
+          .to change { Yast::AutoinstConfig.network_before_proposal }
+          .from(false).to(true)
+      end
+    end
+
+    context "in case it was definitely se to be configured before the proposal" do
+      it "writes the network configuration calling the auto client" do
+        Yast::AutoinstConfig.network_before_proposal = true
+        expect(Yast::WFM).to receive(:CallFunction).with("lan_auto", ["Write"])
+
+        client.autosetup_network
+      end
+    end
+  end
+
+  describe "#general_section" do
+    let(:profile) { general_section }
+    let(:general_section) { { "general" => { "semi-automatic" => ["networking"] } } }
+    let(:register_section) { { "suse_register" => { "reg_code" => "12345" } } }
+
+    before do
+      Yast::Profile.current = profile
+    end
+
+    context "when the profile contains the general section" do
+      it "returns it" do
+        expect(client.general_section).to eql(general_section["general"])
+      end
+    end
+
+    context "when the profile does not contain the general section" do
+      let(:profile) { register_section }
+      it "returns and empty hash" do
+        expect(client.general_section).to eql({})
+      end
+    end
+  end
+
+  describe "#semi_auto?" do
+    let(:profile) { general_section }
+    let(:general_section) { { "general" => { "semi-automatic" => ["networking"] } } }
+
+    before do
+      Yast::Profile.current = profile
+    end
+
+    context "given a module name" do
+      it "returns true if the module is part ot the profile semi-automatic list" do
+        expect(client.semi_auto?("networking")).to eql(true)
+      end
+
+      it "returns false otherwise" do
+        expect(client.semi_auto?("partitioning")).to eql(false)
+      end
+    end
   end
 end
