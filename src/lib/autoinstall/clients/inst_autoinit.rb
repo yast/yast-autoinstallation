@@ -76,6 +76,11 @@ module Y2Autoinstallation
 
         Yast::Progress.Finish
 
+        # TODO: In case that a specific network configuration is needed and
+        # defined in the profile, with the online media, this configuration
+        # will not be available. Maybe we should configure the network at this
+        # point
+
         # when installing from the online installation medium we need to
         # register the system earlier because the medium does not contain any
         # repositories, we need the repositories from the registration server
