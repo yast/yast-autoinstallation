@@ -90,17 +90,13 @@ describe Y2Autoinstallation::Widgets::Storage::LvmPage do
     end
   end
 
-  describe "#values" do
-    it "includes device" do
-      expect(lvm_page.values).to include("device" => device)
-    end
+  describe "#store" do
+    it "sets the section values" do
+      subject.store
 
-    it "includes pesize" do
-      expect(lvm_page.values).to include("pesize" => pesize)
-    end
-
-    it "includes keep_unknown_lv" do
-      expect(lvm_page.values).to include("keep_unknown_lv" => keep_unknown_lv)
+      expect(drive.device).to eq(device)
+      expect(drive.pesize).to eq(pesize)
+      expect(drive.keep_unknown_lv).to eq(keep_unknown_lv)
     end
   end
 end

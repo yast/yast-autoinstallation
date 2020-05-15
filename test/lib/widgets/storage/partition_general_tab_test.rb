@@ -47,6 +47,18 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
       expect(widget).to_not be_nil
     end
 
+    context "when the partition belongs to a disk" do
+      let(:type) { :CT_DISK }
+
+      it "does not contain LVM partition attributes" do
+        widget = subject.contents.nested_find do |w|
+          w.is_a?(Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs)
+        end
+
+        expect(widget).to be_nil
+      end
+    end
+
     context "when the partition belongs to an LVM" do
       let(:type) { :CT_LVM }
 
@@ -57,6 +69,66 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
 
         expect(widget).to_not be_nil
       end
+    end
+  end
+
+  describe "#store" do
+    let(:common_attributes) do
+      {
+        "create"       => true,
+        "format"       => true,
+        "resize"       => false,
+        "size"         => "10G",
+        "partition_nr" => 2,
+        "uuid"         => "partition-uuid"
+      }
+    end
+
+    let(:lv_attributes) do
+      {
+        "lv_name"     => "lv-home",
+        "pool"        => false,
+        "used_pool"   => "my_thin_pool",
+        "stripes"     => 2,
+        "stripe_size" => 4
+      }
+    end
+
+    let(:common_attrs_widget) do
+      instance_double(
+        Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs,
+        values: common_attributes
+      )
+    end
+    let(:lvm_attrs_widget) do
+      instance_double(
+        Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs,
+        values: lv_attributes
+      )
+    end
+
+    before do
+      allow(Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs).to receive(:new)
+        .and_return(common_attrs_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs).to receive(:new)
+        .and_return(lvm_attrs_widget)
+    end
+
+    it "sets section attributes not related to its usage" do
+      subject.store
+
+      expect(partition.create).to eq(true)
+      expect(partition.format).to eq(true)
+      expect(partition.resize).to eq(false)
+      expect(partition.size).to eq("10G")
+      expect(partition.partition_nr).to eq(2)
+      expect(partition.uuid).to eq("partition-uuid")
+
+      expect(partition.lv_name).to eq("lv-home")
+      expect(partition.pool).to eq(false)
+      expect(partition.used_pool).to eq("my_thin_pool")
+      expect(partition.stripes).to eq(2)
+      expect(partition.stripe_size).to eq(4)
     end
   end
 end

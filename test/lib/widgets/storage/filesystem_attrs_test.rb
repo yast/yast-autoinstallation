@@ -31,36 +31,48 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
 
   include_examples "CWM::CustomWidget"
 
+  let(:label_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::Label, value: "mydata")
+  end
+  let(:mount_point_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::Mount, value: "swap")
+  end
+  let(:mountby_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::Mount, value: :label)
+  end
+  let(:mkfs_options_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::MkfsOptions, value: "-I 128")
+  end
+  let(:fstopt_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::Fstopt, value: "ro,noatime,user")
+  end
+
+  before do
+    allow(Y2Autoinstallation::Widgets::Storage::Label).to receive(:new)
+      .and_return(label_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::Mount).to receive(:new)
+      .and_return(mount_point_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::Mountby).to receive(:new)
+      .and_return(mountby_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::MkfsOptions).to receive(:new)
+      .and_return(mkfs_options_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::Fstopt).to receive(:new)
+      .and_return(fstopt_widget)
+  end
+
+  describe "#init" do
+    it "sets initial values" do
+      expect(label_widget).to receive(:value=)
+      expect(mount_point_widget).to receive(:value=)
+      expect(mountby_widget).to receive(:value=)
+      expect(mkfs_options_widget).to receive(:value=)
+      expect(fstopt_widget).to receive(:value=)
+
+      widget.init
+    end
+  end
+
   describe "#values" do
-    let(:label_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Label, value: "mydata")
-    end
-    let(:mount_point_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Mount, value: "swap")
-    end
-    let(:mountby_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Mount, value: :label)
-    end
-    let(:mkfs_options_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::MkfsOptions, value: "-I 128")
-    end
-    let(:fstopt_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Fstopt, value: "ro,noatime,user")
-    end
-
-    before do
-      allow(Y2Autoinstallation::Widgets::Storage::Label).to receive(:new)
-        .and_return(label_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::Mount).to receive(:new)
-        .and_return(mount_point_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::Mountby).to receive(:new)
-        .and_return(mountby_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::MkfsOptions).to receive(:new)
-        .and_return(mkfs_options_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::Fstopt).to receive(:new)
-        .and_return(fstopt_widget)
-    end
-
     it "includes label" do
       expect(widget.values).to include("label" => "mydata")
     end
@@ -77,7 +89,7 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
       expect(widget.values).to include("mkfs_options" => "-I 128")
     end
 
-    it "includes fstopt" do
+    it "includes fstab options" do
       expect(widget.values).to include("fstab_options" => "ro,noatime,user")
     end
   end

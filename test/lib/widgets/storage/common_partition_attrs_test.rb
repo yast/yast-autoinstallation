@@ -19,36 +19,15 @@
 
 require_relative "../../../test_helper"
 require "autoinstall/widgets/storage/common_partition_attrs"
-require "autoinstall/presenters"
 require "y2storage/autoinst_profile"
 require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
+  subject { described_class.new(section) }
+
   include_examples "CWM::CustomWidget"
 
-  let(:partitioning) do
-    Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(part_hashes)
-  end
-
-  let(:part_hashes) do
-    [{ "type" => :CT_DISK }]
-  end
-
   let(:section) { Y2Storage::AutoinstProfile::PartitionSection.new }
-
-  let(:drive_section) do
-    sect = partitioning.drives.first
-    sect.partitions << section
-    sect
-  end
-
-  let(:drive) { Y2Autoinstallation::Presenters::Drive.new(drive_section) }
-
-  subject { described_class.new(drive.partitions.first) }
-
-  let(:section) do
-    Y2Storage::AutoinstProfile::PartitionSection.new
-  end
 
   describe "#contents" do
     it "constains a widget to set the create option" do
@@ -92,9 +71,7 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
     end
   end
 
-  describe "#values" do
-    let(:partition_uuid) { "6dab21de-f0e1-4cab-8b60-0332f06f4f28" }
-
+  shared_context "mock widgets" do
     let(:create_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Create, value: "false")
     end
@@ -104,11 +81,14 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
     let(:resize_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::Resize, value: "true")
     end
+    let(:size_widget) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::Size, value: "1TB")
+    end
     let(:partition_nr_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::PartitionNr, value: 131)
     end
     let(:uuid_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::Uuid, value: partition_uuid)
+      instance_double(Y2Autoinstallation::Widgets::Storage::Uuid, value: "partition-uuid")
     end
 
     before do
@@ -118,11 +98,32 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
         .and_return(format_widget)
       allow(Y2Autoinstallation::Widgets::Storage::Resize).to receive(:new)
         .and_return(resize_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::Size).to receive(:new)
+        .and_return(size_widget)
       allow(Y2Autoinstallation::Widgets::Storage::PartitionNr).to receive(:new)
         .and_return(partition_nr_widget)
       allow(Y2Autoinstallation::Widgets::Storage::Uuid).to receive(:new)
         .and_return(uuid_widget)
     end
+  end
+
+  describe "#init" do
+    include_context "mock widgets"
+
+    it "sets initial values" do
+      expect(create_widget).to receive(:value=)
+      expect(format_widget).to receive(:value=)
+      expect(resize_widget).to receive(:value=)
+      expect(size_widget).to receive(:value=)
+      expect(partition_nr_widget).to receive(:value=)
+      expect(uuid_widget).to receive(:value=)
+
+      subject.init
+    end
+  end
+
+  describe "#values" do
+    include_context "mock widgets"
 
     it "includes create" do
       expect(subject.values).to include("create" => "false")
@@ -136,12 +137,16 @@ describe Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs do
       expect(subject.values).to include("resize" => "true")
     end
 
+    it "includes size" do
+      expect(subject.values).to include("size" => "1TB")
+    end
+
     it "includes partition_nr" do
       expect(subject.values).to include("partition_nr" => 131)
     end
 
     it "includes uuid" do
-      expect(subject.values).to include("uuid" => partition_uuid)
+      expect(subject.values).to include("uuid" => "partition-uuid")
     end
   end
 end
