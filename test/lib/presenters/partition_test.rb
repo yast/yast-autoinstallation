@@ -159,8 +159,31 @@ describe Y2Autoinstallation::Presenters::Partition do
         ]
       end
 
-      it "returns a collection of bcache drive sections device" do
+      it "returns a collection of bcache drive section devices" do
         expect(subject.available_bcaches).to eq(["/dev/bcache0", "/dev/bcache1"])
+      end
+    end
+  end
+
+  describe "#available_btrfs" do
+    context "when there are no Btrfs drive sections" do
+      it "returns an empty collection" do
+        expect(subject.available_bcaches).to eq([])
+      end
+    end
+
+    context "when there are Btrfs drive sections" do
+      let(:part_hashes) do
+        [
+          { "type" => :CT_DISK },
+          { "type" => :CT_LVM, "device" => "/dev/vg-0" },
+          { "type" => :CT_BCACHE, "device" => "/dev/bcache0" },
+          { "type" => :CT_BTRFS, "device" => "root_fs" }
+        ]
+      end
+
+      it "returns a collection of Btrfs drive section devices" do
+        expect(subject.available_btrfs).to eq(["root_fs"])
       end
     end
   end
