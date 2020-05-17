@@ -27,7 +27,6 @@ require "autoinstall/widgets/storage/lvm_pv_attrs"
 require "autoinstall/widgets/storage/bcache_backing_attrs"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
 require "autoinstall/widgets/storage/encryption_attrs"
-require "autoinstall/widgets/storage/size_selector"
 require "autoinstall/widgets/storage/used_as"
 
 module Y2Autoinstallation
