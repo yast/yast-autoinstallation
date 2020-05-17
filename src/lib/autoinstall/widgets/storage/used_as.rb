@@ -54,9 +54,10 @@ module Y2Autoinstallation
             # TRANSLATORS: option for setting the partition as a RAID member
             [:raid, _("RAID member")],
             # TRANSLATORS: option for setting the partition as an LVM physical volume
-            [:lvm_pv, _("LVM physical volume")]
+            [:lvm_pv, _("LVM physical volume")],
+            # TRANSLATORS: option for setting the partition as a bcache backing device
+            [:bcache_backing, _("Bcache backing device")]
             # ["bcache_caching", _("Bcache caching device")],
-            # ["bcache_backing", _("Bcache backing device")],
             # ["btrfs_member", _("Btrfs multi-device member")]
           ]
         end

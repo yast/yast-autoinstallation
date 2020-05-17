@@ -49,6 +49,8 @@ module Y2Autoinstallation
           :lvm_pv
         elsif filesystem || mounted?
           :filesystem
+        elsif bcache_backing_for
+          :bcache_backing
         else
           :none
         end
@@ -161,6 +163,9 @@ module Y2Autoinstallation
         when :lvm_pv
           # TRANSLATORS: %s is a placeholder for the name of a RAID
           Kernel.format(_("Part of %s"), lvm_group)
+        when :bcache_backing
+          # TRANSLATORS: %s is a placeholder for the name of a bcache device
+          Kernel.format(_("Backing for %s"), bcache_backing_for)
         when :none
           _("Not used")
         end
