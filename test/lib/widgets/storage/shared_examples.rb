@@ -292,3 +292,55 @@ RSpec.shared_examples "Y2Autoinstallation::Widgets::Storage::BooleanSelector" do
     end
   end
 end
+
+RSpec.shared_examples "Y2Autoinstallation::Widgets::Storage::BtrfsRaidLevel" do
+  include_examples "CWM::AbstractWidget"
+
+  describe "#items" do
+    let(:items) { widget.items.map { |i| i[0] } }
+
+    it "includes :unknown" do
+      expect(items).to include(:unknown)
+    end
+
+    it "includes :default" do
+      expect(items).to include(:default)
+    end
+
+    it "includes :single" do
+      expect(items).to include(:single)
+    end
+
+    it "includes :dup" do
+      expect(items).to include(:dup)
+    end
+
+    it "includes :raid0" do
+      expect(items).to include(:raid0)
+    end
+
+    it "includes :raid1" do
+      expect(items).to include(:raid1)
+    end
+
+    it "includes :raid1c3" do
+      expect(items).to include(:raid1c3)
+    end
+
+    it "includes :raid1c4" do
+      expect(items).to include(:raid1c4)
+    end
+
+    it "includes :raid5" do
+      expect(items).to include(:raid5)
+    end
+
+    it "includes :raid6" do
+      expect(items).to include(:raid6)
+    end
+
+    it "includes :raid10" do
+      expect(items).to include(:raid10)
+    end
+  end
+end
