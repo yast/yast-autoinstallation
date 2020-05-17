@@ -44,5 +44,9 @@ describe Y2Autoinstallation::Widgets::Storage::UsedAs do
     it "includes :lvm_pv" do
       expect(items).to include(:lvm_pv)
     end
+
+    it "includes :bcache_backing" do
+      expect(items).to include(:bcache_backing)
+    end
   end
 end

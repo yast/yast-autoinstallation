@@ -87,6 +87,14 @@ describe Y2Autoinstallation::Presenters::Partition do
       end
     end
 
+    context "when the section refers to a bcache backing device" do
+      let(:attrs) { { bcache_backing_for: "/dev/bcache0" } }
+
+      it "returns :bcache_backing" do
+        expect(subject.usage).to eq(:bcache_backing)
+      end
+    end
+
     context "when the section does not refer an specific usage" do
       let(:attrs) { {} }
 
