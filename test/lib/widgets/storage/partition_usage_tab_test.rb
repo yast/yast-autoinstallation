@@ -178,7 +178,8 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
         "mount",
         "mountby",
         "raid_name",
-        "bcache_backing_for"
+        "bcache_backing_for",
+        "btrfs_name"
       )
     end
   end

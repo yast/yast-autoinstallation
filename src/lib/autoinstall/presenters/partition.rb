@@ -51,6 +51,8 @@ module Y2Autoinstallation
           :filesystem
         elsif bcache_backing_for
           :bcache_backing
+        elsif btrfs_name
+          :btrfs_member
         else
           :none
         end
@@ -179,6 +181,9 @@ module Y2Autoinstallation
         when :bcache_backing
           # TRANSLATORS: %s is a placeholder for the name of a bcache device
           Kernel.format(_("Backing for %s"), bcache_backing_for)
+        when :btrfs_member
+          # TRANSLATORS: %s is a placeholder for the name of a Btrfs filesystem
+          Kernel.format(_("Part of %s"), btrfs_name)
         when :none
           _("Not used")
         end
