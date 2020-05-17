@@ -79,6 +79,14 @@ module Y2Autoinstallation
         drive_presenter.type
       end
 
+      # Values to suggest for bcache devices fields
+      #
+      # @return [Array<String>]
+      def available_bcaches
+        drives = drive.parent.drives.select { |d| d.type == :CT_BCACHE }
+        drives.map(&:device).compact
+      end
+
       # Values to suggest for the lvm_group field
       #
       # @return [Array<String>]
