@@ -9,6 +9,8 @@ require "yast2/popup"
 
 module Yast
   class ProfileClass < Module
+    include Yast::Logger
+
     # All these sections are handled by AutoYaST (or Installer) itself,
     # it doesn't use any external AutoYaST client for them
     GENERIC_PROFILE_SECTIONS = [
@@ -712,20 +714,18 @@ module Yast
         @current = XML.XMLToYCPFile(file)
       end
 
-      xml_error = XML.XMLError
-      if xml_error && !xml_error.empty?
-        # autoyast has read the autoyast configuration file but something went wrong
-        message = _(
-          "The XML parser reported an error while parsing the autoyast profile. " \
-            "The error message is:\n"
-        )
-        message += xml_error
-        Yast2::Popup.show(message, headline: :error)
-        return false
-      end
-
       Import(@current)
       true
+    rescue Yast::XMLDeserializationError => e
+      # autoyast has read the autoyast configuration file but something went wrong
+      message = _(
+        "The XML parser reported an error while parsing the autoyast profile. " \
+          "The error message is:\n"
+      )
+      message += e.message
+      log.info "xml parsing error #{e.inspect}"
+      Yast2::Popup.show(message, headline: :error)
+      false
     end
 
     def setMValue(l, v, m)
