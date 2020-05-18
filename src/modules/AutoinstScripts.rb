@@ -7,6 +7,37 @@
 require "yast"
 
 module Yast
+  # Module responsible for autoyast scripts support.
+  # See Autoyast Guide Scripts section for user documentation and some parameters explanation.
+  # https://doc.opensuse.org/projects/autoyast/#createprofile-scripts
+  #
+  # ### Scripts WorkFlow
+  # Each script type is executed from different place. Below is described each one. Execution is
+  # done by calling {Yast::AutoinstScriptsClass#Write} unless mentioned differently.
+  #
+  # #### Pre Scripts
+  # Runs before any other actions in autoyast and is executed from inst_autosetup client
+  # {Yast::InstAutosetupClient}
+  #
+  # #### Chroot Scripts
+  # Runs before installation chroot or after chroot depending on chrooted parameter.
+  # The first non-chrooted variant is called from {Yast::AutoinstScripts1FinishClient}.
+  # The second chrooted variant is called from {Yast::AutoinstScripts2FinishClient}.
+  #
+  # #### Post Scripts
+  # Runs after finish of second stage. It is downloaded from {Yast::AutoinstScripts2FinishClient}.
+  # Then it is executed by {Yast::InstAutoconfigureClient}.
+  #
+  # #### Init Scripts
+  # Runs after finish of second stage. It is created at {Yast::AutoinstScripts2FinishClient} and
+  # also during second stage at {Yast::InstAutoconfigureClient}. TODO: why twice?
+  # Then it is executed from systemd service autoyast-initscripts.service which lives in scripts
+  # directory.
+  #
+  # #### Post Partitioning Scripts
+  # Runs after partitioning from {Yast::InstAutoimageClient} unconditionaly even when images is
+  # not used.
+  #
   class AutoinstScriptsClass < Module
     include Yast::Logger
 
