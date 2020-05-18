@@ -32,7 +32,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Device")
+          _("Bcache Device")
         end
 
         # @macro seeAbstractWidget
