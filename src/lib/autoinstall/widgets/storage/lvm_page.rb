@@ -35,33 +35,24 @@ module Y2Autoinstallation
           super
         end
 
-        # @macro seeCustomWidget
-        def contents
-          MarginBox(
-            0.5,
-            0,
-            VBox(
-              Left(HSquash(MinWidth(15, vg_device_widget))),
-              VSpacing(0.5),
-              Left(HSquash(MinWidth(15, pesize_widget))),
-              VSpacing(0.5),
-              Left(keep_unknown_lv_widget),
-              VStretch()
-            )
-          )
+        # @see DrivePage#widgets
+        def widgets
+          [
+            HSquash(MinWidth(15, vg_device_widget)),
+            HSquash(MinWidth(15, pesize_widget)),
+            keep_unknown_lv_widget
+          ]
         end
 
-        # @macro seeAbstractWidget
-        def init
+        # @see DrivePage#init_widgets_values
+        def init_widgets_values
           vg_device_widget.value       = drive.device
           pesize_widget.value          = drive.pesize
           keep_unknown_lv_widget.value = drive.keep_unknown_lv
         end
 
-        # Returns the widgets values
-        #
-        # @return [Hash<String,Object>]
-        def values
+        # @see DrivePage#widgets_values
+        def widgets_values
           {
             "device"          => vg_device_widget.value,
             "pesize"          => pesize_widget.value,

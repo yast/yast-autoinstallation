@@ -18,6 +18,7 @@
 # find current contact information at www.suse.com.
 
 require "yast"
+require "autoinstall/widgets/storage/enable_snapshots"
 require "y2storage"
 require "cwm/page"
 
@@ -42,9 +43,61 @@ module Y2Autoinstallation
           drive.ui_label
         end
 
+        # @macro seeCustomWidget
+        def contents
+          MarginBox(
+            0.5,
+            0,
+            VBox(
+              # Specific page content
+              *widgets.flat_map { |widget| [Left(widget), VSpacing(0.5)] },
+              # Common content
+              Left(enable_snapshots_widget),
+              VStretch()
+            )
+          )
+        end
+
+        # @macro seeAbstractWidget
+        def init
+          enable_snapshots_widget.value = drive.enable_snapshots
+          init_widgets_values
+        end
+
         # @macro seeAbstractWidget
         def store
           drive.update(values)
+        end
+
+        def values
+          widgets_values.merge(
+            "enable_snapshots" => enable_snapshots_widget.value
+          )
+        end
+
+        # Specific page widgets
+        #
+        # This method must be defined by derived pages
+        #
+        # @return [Array<Yast::Term, CWM::AbstractWidget]
+        def widgets
+          []
+        end
+
+        # Returns the widgets values
+        #
+        # This method must be defined by derived pages
+        #
+        # @return [Hash<String,Object>]
+        def widgets_values
+          {}
+        end
+
+        # Initialize the widgets values
+        #
+        # This method must be defined by derived pages
+        def init_widgets_values
+          nil
         end
 
         # Drive section that is being edited
@@ -58,6 +111,10 @@ module Y2Autoinstallation
 
         # @return [Presenters::Drive]
         attr_reader :drive
+
+        def enable_snapshots_widget
+          @enable_snapshots_widget ||= EnableSnapshots.new
+        end
       end
     end
   end
