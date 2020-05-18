@@ -665,69 +665,67 @@ module Yast
     # @param file [String] path to file
     # @return [Boolean]
     def ReadXML(file)
-      begin
-        tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
-        l = Builtins.splitstring(tmp, "\n")
-        if !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
-          out = {}
-          while Ops.get_string(out, "stdout", "") == ""
-            UI.OpenDialog(
-              VBox(
-                Label(
-                  _("Encrypted AutoYaST profile. Enter the correct password.")
-                ),
-                Password(Id(:password), ""),
-                PushButton(Id(:ok), Label.OKButton)
-              )
+      tmp = Convert.to_string(SCR.Read(path(".target.string"), file))
+      l = Builtins.splitstring(tmp, "\n")
+      if !tmp.nil? && Ops.get(l, 0, "") == "-----BEGIN PGP MESSAGE-----"
+        out = {}
+        while Ops.get_string(out, "stdout", "") == ""
+          UI.OpenDialog(
+            VBox(
+              Label(
+                _("Encrypted AutoYaST profile. Enter the correct password.")
+              ),
+              Password(Id(:password), ""),
+              PushButton(Id(:ok), Label.OKButton)
             )
-            p = ""
-            button = nil
-            begin
-              button = UI.UserInput
-              p = Convert.to_string(UI.QueryWidget(Id(:password), :Value))
-            end until button == :ok
-            UI.CloseDialog
-            command = Builtins.sformat(
-              "gpg2 -d --batch --passphrase \"%1\" %2",
-              p,
-              file
-            )
-            out = Convert.convert(
-              SCR.Execute(path(".target.bash_output"), command, {}),
-              from: "any",
-              to:   "map <string, any>"
-            )
-          end
-          @current = XML.XMLToYCPString(Ops.get_string(out, "stdout", ""))
-          AutoinstConfig.ProfileEncrypted = true
-
-          # FIXME: rethink and check for sanity of that!
-          # save decrypted profile for modifying pre-scripts
-          if Stage.initial
-            SCR.Write(
-              path(".target.string"),
-              file,
-              Ops.get_string(out, "stdout", "")
-            )
-          end
-        else
-          Builtins.y2debug("Reading %1", file)
-          @current = XML.XMLToYCPFile(file)
+          )
+          p = ""
+          button = nil
+          begin
+            button = UI.UserInput
+            p = Convert.to_string(UI.QueryWidget(Id(:password), :Value))
+          end until button == :ok
+          UI.CloseDialog
+          command = Builtins.sformat(
+            "gpg2 -d --batch --passphrase \"%1\" %2",
+            p,
+            file
+          )
+          out = Convert.convert(
+            SCR.Execute(path(".target.bash_output"), command, {}),
+            from: "any",
+            to:   "map <string, any>"
+          )
         end
-      rescue Yast::XMLDeserializationError => e
-        # autoyast has read the autoyast configuration file but something went wrong
-        message = _(
-          "The XML parser reported an error while parsing the autoyast profile. " \
-            "The error message is:\n"
-        )
-        message += e.message
-        log.info "xml parsing error #{e.inspect}"
-        Yast2::Popup.show(message, headline: :error)
-        return false
+        @current = XML.XMLToYCPString(Ops.get_string(out, "stdout", ""))
+        AutoinstConfig.ProfileEncrypted = true
+
+        # FIXME: rethink and check for sanity of that!
+        # save decrypted profile for modifying pre-scripts
+        if Stage.initial
+          SCR.Write(
+            path(".target.string"),
+            file,
+            Ops.get_string(out, "stdout", "")
+          )
+        end
+      else
+        Builtins.y2debug("Reading %1", file)
+        @current = XML.XMLToYCPFile(file)
       end
 
       Import(@current)
       true
+    rescue Yast::XMLDeserializationError => e
+      # autoyast has read the autoyast configuration file but something went wrong
+      message = _(
+        "The XML parser reported an error while parsing the autoyast profile. " \
+          "The error message is:\n"
+      )
+      message += e.message
+      log.info "xml parsing error #{e.inspect}"
+      Yast2::Popup.show(message, headline: :error)
+      false
     end
 
     def setMValue(l, v, m)

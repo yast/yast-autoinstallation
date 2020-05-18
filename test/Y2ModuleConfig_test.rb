@@ -11,7 +11,7 @@ describe Yast::Y2ModuleConfig do
 
   DESKTOP_DATA = YAML.load_file(FIXTURES_PATH.join("desktop_files", "desktops.yml"))
   AVAILABLE_CLIENTS = ["deploy_image_auto", "files_auto", "general_auto", "scripts_auto",
-    "software_auto", "services-manager_auto"]
+                       "software_auto", "services-manager_auto"].freeze
 
   before do
     allow(Yast::WFM).to receive(:ClientExists) { |c| AVAILABLE_CLIENTS.include?(c) }
