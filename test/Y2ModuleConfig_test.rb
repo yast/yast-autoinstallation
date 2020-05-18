@@ -10,30 +10,11 @@ Yast.import "Profile"
 describe Yast::Y2ModuleConfig do
 
   DESKTOP_DATA = YAML.load_file(FIXTURES_PATH.join("desktop_files", "desktops.yml"))
+  AVAILABLE_CLIENTS = ["deploy_image_auto", "files_auto", "general_auto", "scripts_auto",
+    "software_auto", "services-manager_auto"]
 
   before do
-    allow(Yast::WFM).to receive(:ClientExists).with("audit-laf_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("autofs_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("ca_mgm_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("deploy_image_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("files_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("firstboot_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("general_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("inetd_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("language_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("pxe_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("restore_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("runlevel_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("scripts_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("software_auto").and_return(true)
-    allow(Yast::WFM).to receive(:ClientExists).with("sshd_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("sysconfig_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("unknown_profile_item_1_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("unknown_profile_item_2_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("partitioning_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("upgrade_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("cobbler_auto").and_return(false)
-    allow(Yast::WFM).to receive(:ClientExists).with("services-manager_auto").and_return(true)
+    allow(Yast::WFM).to receive(:ClientExists) { |c| AVAILABLE_CLIENTS.include?(c) }
   end
 
   describe "#unhandled_profile_sections" do
@@ -44,8 +25,8 @@ describe Yast::Y2ModuleConfig do
       Yast::Profile.ReadXML(profile_unhandled)
 
       expect(Yast::Y2ModuleConfig.unhandled_profile_sections).to contain_exactly(
-        "audit-laf", "autofs", "ca_mgm", "cobbler", "firstboot", "inetd", "language", "restore",
-        "sshd", "sysconfig", "unknown_profile_item_1", "unknown_profile_item_2"
+        "audit-laf", "autofs", "bootloader", "ca_mgm", "cobbler", "firstboot", "inetd", "language",
+        "report", "restore", "sshd", "sysconfig", "unknown_profile_item_1", "unknown_profile_item_2"
       )
     end
   end
