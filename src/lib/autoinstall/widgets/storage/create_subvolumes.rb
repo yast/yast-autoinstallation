@@ -18,38 +18,22 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2partitioner/filesystems"
-require "cwm/common_widgets"
+require "autoinstall/widgets/storage/boolean_selector"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # File system type for a given drive/partition
-      #
-      # It corresponds to the `filesystem` element in the profile.
-      class Filesystem < CWM::ComboBox
+      # Widget to set whether Btrfs subvolumes should be created or not.
+      class CreateSubvolumes < BooleanSelector
         # Constructor
         def initialize
           textdomain "autoinst"
-          self.widget_id = "filesystem_attr"
+          super
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Filesystem")
-        end
-
-        # @macro seeAbstractWidget
-        def opt
-          [:notify]
-        end
-
-        # @macro seeComboBox
-        def items
-          @items ||= [
-            [nil, ""],
-            *Y2Partitioner::Filesystems.all.map { |f| [f.to_sym, f.to_human_string] }
-          ]
+          _("Create Subvolumes")
         end
       end
     end

@@ -25,6 +25,7 @@ require "autoinstall/widgets/storage/mount"
 require "autoinstall/widgets/storage/mountby"
 require "autoinstall/widgets/storage/mkfs_options"
 require "autoinstall/widgets/storage/fstopt"
+require "autoinstall/widgets/storage/create_subvolumes"
 
 module Y2Autoinstallation
   module Widgets
@@ -39,9 +40,10 @@ module Y2Autoinstallation
         #
         # @param section [Presenters::Partition] presenter for the partition section
         def initialize(section)
-          super()
           textdomain "autoinst"
+          super()
           @section = section
+          self.handle_all_events = true
         end
 
         # @macro seeAbstractWidget
@@ -59,6 +61,8 @@ module Y2Autoinstallation
                 HSquash(MinWidth(15, label_widget))
               )
             ),
+            VSpacing(0.5),
+            Left(create_subvolumes_widget),
             VSpacing(0.5),
             Left(
               HBox(
@@ -78,12 +82,15 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
-          filesystem_widget.value    = section.filesystem
-          label_widget.value         = section.label
-          mount_point_widget.value   = section.mount
-          mountby_widget.value       = section.mountby
-          fstab_options_widget.value = section.fstab_options
-          mkfs_options_widget.value  = section.mkfs_options
+          filesystem_widget.value        = section.filesystem
+          label_widget.value             = section.label
+          mount_point_widget.value       = section.mount
+          mountby_widget.value           = section.mountby
+          fstab_options_widget.value     = section.fstab_options
+          mkfs_options_widget.value      = section.mkfs_options
+          create_subvolumes_widget.value = section.create_subvolumes
+
+          set_btrfs_attrs_status
         end
 
         # Returns the widgets values
@@ -91,19 +98,43 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "filesystem"    => filesystem_widget.value,
-            "label"         => label_widget.value,
-            "mount"         => mount_point_widget.value,
-            "mountby"       => mountby_widget.value,
-            "fstab_options" => fstab_options_widget.value,
-            "mkfs_options"  => mkfs_options_widget.value
+            "filesystem"        => filesystem_widget.value,
+            "label"             => label_widget.value,
+            "mount"             => mount_point_widget.value,
+            "mountby"           => mountby_widget.value,
+            "fstab_options"     => fstab_options_widget.value,
+            "mkfs_options"      => mkfs_options_widget.value,
+            "create_subvolumes" => btrfs? ? create_subvolumes_widget.value : nil
           }
+        end
+
+        # @macro seeAbstractWidget
+        def handle(event)
+          set_btrfs_attrs_status if event["ID"] == filesystem_widget.widget_id
+
+          nil
         end
 
       private
 
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
+
+        # Whether selected files ystem is Btrfs
+        #
+        # @return [Boolean] true if selected file system is Btrfs; false otherwise
+        def btrfs?
+          filesystem_widget.value == :btrfs
+        end
+
+        # Update the Btrfs attrs status according to the value of #filesystem_widget
+        def set_btrfs_attrs_status
+          if btrfs?
+            create_subvolumes_widget.enable
+          else
+            create_subvolumes_widget.disable
+          end
+        end
 
         # Widget for settings the filesystem type
         def filesystem_widget
@@ -133,6 +164,11 @@ module Y2Autoinstallation
         # Widget for specifying mkfs command options
         def mkfs_options_widget
           @mkfs_options_widget ||= MkfsOptions.new
+        end
+
+        # Widget for setting if Btrfs subvolumes should be created or not
+        def create_subvolumes_widget
+          @create_subvolumes_widget ||= CreateSubvolumes.new
         end
       end
     end

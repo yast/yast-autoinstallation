@@ -31,6 +31,13 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
 
   include_examples "CWM::CustomWidget"
 
+  let(:filesystem_widget) do
+    instance_double(
+      Y2Autoinstallation::Widgets::Storage::Filesystem,
+      widget_id: "filesystem_widget",
+      value:     :ext3
+    )
+  end
   let(:label_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::Label, value: "mydata")
   end
@@ -46,8 +53,13 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
   let(:fstopt_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::Fstopt, value: "ro,noatime,user")
   end
+  let(:create_subvolumes_widget) do
+    instance_double(Y2Autoinstallation::Widgets::Storage::CreateSubvolumes, value: false)
+  end
 
   before do
+    allow(Y2Autoinstallation::Widgets::Storage::Filesystem).to receive(:new)
+      .and_return(filesystem_widget)
     allow(Y2Autoinstallation::Widgets::Storage::Label).to receive(:new)
       .and_return(label_widget)
     allow(Y2Autoinstallation::Widgets::Storage::Mount).to receive(:new)
@@ -58,17 +70,51 @@ describe Y2Autoinstallation::Widgets::Storage::FilesystemAttrs do
       .and_return(mkfs_options_widget)
     allow(Y2Autoinstallation::Widgets::Storage::Fstopt).to receive(:new)
       .and_return(fstopt_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::CreateSubvolumes).to receive(:new)
+      .and_return(create_subvolumes_widget)
+    allow(create_subvolumes_widget).to receive(:enable)
+    allow(create_subvolumes_widget).to receive(:disable)
   end
 
   describe "#init" do
     it "sets initial values" do
+      expect(filesystem_widget).to receive(:value=)
       expect(label_widget).to receive(:value=)
       expect(mount_point_widget).to receive(:value=)
       expect(mountby_widget).to receive(:value=)
       expect(mkfs_options_widget).to receive(:value=)
       expect(fstopt_widget).to receive(:value=)
+      expect(create_subvolumes_widget).to receive(:value=)
 
       widget.init
+    end
+  end
+
+  describe "#handle" do
+    let(:event) { { "ID" => filesystem_widget.widget_id } }
+
+    before do
+      allow(filesystem_widget).to receive(:value).and_return(filesystem)
+    end
+
+    context "when file system is Btrfs" do
+      let(:filesystem) { :btrfs }
+
+      it "enables create_subvolumes attribute" do
+        expect(create_subvolumes_widget).to receive(:enable)
+
+        widget.handle(event)
+      end
+    end
+
+    context "when file system is not Btrfs" do
+      let(:filesystem) { :ext3 }
+
+      it "disables create_subvolumes attribute" do
+        expect(create_subvolumes_widget).to receive(:disable)
+
+        widget.handle(event)
+      end
     end
   end
 
