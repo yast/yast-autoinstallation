@@ -21,7 +21,7 @@
 require_relative "../../test_helper.rb"
 require "autoinstall/autoinst_issues/ay_invalid_value"
 
-describe Y2Autoinstallation::AutoinstIssues::AyInvalidValue do
+describe Installation::AutoinstIssues::AyInvalidValue do
   subject(:issue) do
     described_class.new("firewall", "interfaces", "eth0",
       "This interface has been defined for more than one zone.", :fatal)
