@@ -2,13 +2,18 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace config = "http://www.suse.com/1.0/configns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
+include "common.rnc"
+
 scripts =
 element scripts { 
-  chroot-scripts? &
-  post-scripts? &
-  pre-scripts? &
-  init-scripts? &
-  postpartitioning-scripts?
+  MAP,
+  (
+    chroot-scripts? &
+    post-scripts? &
+    pre-scripts? &
+    init-scripts? &
+    postpartitioning-scripts?
+  )
 }
 
 chroot-scripts =
@@ -40,46 +45,55 @@ element postpartitioning-scripts {
 
 # script is overloaded
 autoinstall-script = element script {
-  filename? &
-  interpreter? & 
-  element location { text }? &
-  source? &
-  debug? &
-  feedback? &
-  feedback_type? &
-  param-list? &
-  element notification { text }?
+  MAP,
+  (
+    filename? &
+    interpreter? & 
+    element location { STRING }? &
+    source? &
+    debug? &
+    feedback? &
+    feedback_type? &
+    param-list? &
+    element notification { STRING }?
+  )
 }
 
 autoinstall-init-script = element script {
-  debug? &
-  filename? &
-  element location { text }? &
-  source?
+  MAP,
+  (
+    debug? &
+    filename? &
+    element location { STRING }? &
+    source?
+  )
 }
 
 autoinstall-chroot-script = element script {
-  chrooted? &
-  filename? &
-  interpreter? &
-  element location { text }? &
-  source? &
-  debug? &
-  feedback? &
-  feedback_type? &
-  param-list? &
-  element notification { text }?
+  MAP,
+  (
+    chrooted? &
+    filename? &
+    interpreter? &
+    element location { STRING }? &
+    source? &
+    debug? &
+    feedback? &
+    feedback_type? &
+    param-list? &
+    element notification { STRING }?
+  )
 }
 
 param-list = element param-list {
   LIST,
-  element param { text }*
+  element param { STRING }*
   }
 
 chrooted = element chrooted { BOOLEAN }
 debug = element debug { BOOLEAN }
 feedback = element feedback { BOOLEAN }
-feedback_type = element feedback_type { text }
-filename = element filename { text }
-interpreter = element interpreter { text }
-source = element source { text }
+feedback_type = element feedback_type { STRING }
+filename = element filename { STRING }
+interpreter = element interpreter { STRING }
+source = element source { STRING }

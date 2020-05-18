@@ -74,8 +74,11 @@ module Yast
 end
 
 require "y2packager/medium_type"
+require_relative "support/storage_helpers"
 
 RSpec.configure do |c|
+  c.include Y2Autoinstall::RSpec::StorageHelpers
+
   c.mock_with :rspec do |mocks|
     mocks.verify_partial_doubles = true
   end

@@ -2,6 +2,8 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 namespace config = "http://www.suse.com/1.0/configns"
 
+include "common.rnc"
+
 optiontags =
   job-sheets
   | enable
@@ -30,26 +32,27 @@ options =
     attribute config:type { text }?,
     (text | optiontags)*
   }
-user = element user { (text | usertags)* }
-lvm_group = element lvm_group { (text | lvmtags)* }
-group = element group { (text | grouptags)* }
+user = element user { (STRING | usertags)* }
+lvm_group = element lvm_group { (STRING | lvmtags)* }
+group = element group { (STRING | grouptags)* }
 
 tftp-server = element tftp-server { start_tftpd, tftp_directory }
 start_tftpd =
   element start_tftpd { BOOLEAN }
-tftp_directory = element tftp_directory { text }
+tftp_directory = element tftp_directory { STRING }
 
 proxy =
   element proxy {
-    enabled, ftp_proxy, http_proxy, no_proxy, proxy_password, proxy_user
+    MAP,
+    (enabled, ftp_proxy, http_proxy, no_proxy, proxy_password, proxy_user)
   }
 enabled =
   element enabled { BOOLEAN }
-ftp_proxy = element ftp_proxy { text }
-http_proxy = element http_proxy { text }
-no_proxy = element no_proxy { text }
-proxy_password = element proxy_password { text }
-proxy_user = element proxy_user { text }
+ftp_proxy = element ftp_proxy { STRING }
+http_proxy = element http_proxy { STRING }
+no_proxy = element no_proxy { STRING }
+proxy_password = element proxy_password { STRING }
+proxy_user = element proxy_user { STRING }
 
 lvm2 |= notAllowed
 nisplus |= notAllowed

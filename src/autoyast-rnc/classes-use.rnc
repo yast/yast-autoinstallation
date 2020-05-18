@@ -6,6 +6,8 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 namespace config = "http://www.suse.com/1.0/configns"
 
+include "common.rnc"
+
 classes =
 element classes {
     LIST,
@@ -14,17 +16,20 @@ element classes {
 
 class =
 element class {
-    class_name &
-    configuration &
-    element dont_merge {
-        LIST,
-        element element { text }*
-    }?
+    MAP,
+    (
+      class_name &
+      configuration &
+      element dont_merge {
+          LIST,
+          element element { STRING }*
+      }?
+    )
 }
 
 class_name =
-element class_name { text }
+element class_name { STRING }
 configuration =
-element configuration { text }
+element configuration { STRING }
 
 

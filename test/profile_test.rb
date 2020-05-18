@@ -288,17 +288,9 @@ describe Yast::Profile do
 
   describe "#Prepare" do
     let(:prepare) { true }
-    let(:general_module) do
-      {
-        "Name"                       => "General Options",
-        "X-SuSE-YaST-AutoInst"       => "configure",
-        "X-SuSE-YaST-Group"          => "System",
-        "X-SuSE-YaST-AutoInstClient" => "general_auto"
-      }
-    end
     let(:custom_module) { CUSTOM_MODULE }
     let(:custom_export) { { "key1" => "val1" } }
-    let(:module_map) { { "general" => general_module, "custom" => custom_module } }
+    let(:module_map) { { "custom" => custom_module } }
 
     before do
       allow(Yast::Y2ModuleConfig).to receive(:ReadMenuEntries)
@@ -312,15 +304,12 @@ describe Yast::Profile do
         .and_return("mode" => { "confirm" => false })
 
       Yast::Y2ModuleConfig.main
-      Yast.import "AutoinstClone"
-      Yast::AutoinstClone.Process
-
+      subject.Reset
       subject.prepare = prepare
     end
 
     it "exports modules data into the current profile" do
       subject.Prepare
-      expect(subject.current["general"]).to be_kind_of(Hash)
       expect(subject.current["custom"]).to be_kind_of(Hash)
     end
 
@@ -328,7 +317,6 @@ describe Yast::Profile do
       let(:prepare) { false }
 
       it "does not set the current profile" do
-        subject.Reset
         subject.Prepare
         expect(subject.current).to be_empty
       end
@@ -340,6 +328,18 @@ describe Yast::Profile do
       it "includes that module" do
         subject.Prepare
         expect(subject.current.keys).to include("custom")
+      end
+    end
+
+    context "when a module has not changed" do
+      before do
+        allow(Yast::WFM).to receive(:CallFunction)
+          .with("custom_auto", ["GetModified"]).and_return(false)
+      end
+
+      it "does not include that module" do
+        subject.Prepare
+        expect(subject.current).to_not have_key("custom")
       end
     end
 
