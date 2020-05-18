@@ -37,8 +37,21 @@ module Y2Autoinstallation
           ""
         end
 
+        # We are only interested in these levels.
+        # @see https://github.com/yast/yast-storage-ng/blob/317eeb49d90d896eed95d9a0cf0bd9981e6430df/src/lib/y2partitioner/actions/controllers/btrfs_devices.rb
+        BTRFS_RAID_LEVELS = [
+          Y2Storage::BtrfsRaidLevel::DEFAULT,
+          Y2Storage::BtrfsRaidLevel::SINGLE,
+          Y2Storage::BtrfsRaidLevel::DUP,
+          Y2Storage::BtrfsRaidLevel::RAID0,
+          Y2Storage::BtrfsRaidLevel::RAID1,
+          Y2Storage::BtrfsRaidLevel::RAID10
+        ].freeze
+        private_constant :BTRFS_RAID_LEVELS
+
+        # @macro seeComboBox
         def items
-          Y2Storage::BtrfsRaidLevel.all.map { |i| [i.to_sym, i.to_human_string] }
+          BTRFS_RAID_LEVELS.map { |i| [i.to_sym, i.to_human_string] }
         end
       end
     end
