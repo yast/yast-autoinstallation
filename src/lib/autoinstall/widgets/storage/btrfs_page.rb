@@ -34,33 +34,24 @@ module Y2Autoinstallation
           super
         end
 
-        # @macro seeCustomWidget
-        def contents
-          MarginBox(
-            0.5,
-            0,
-            VBox(
-              Left(HSquash(MinWidth(15, device_widget))),
-              VSpacing(0.5),
-              Left(data_raid_level_widget),
-              VSpacing(0.5),
-              Left(metadata_raid_level_widget),
-              VStretch()
-            )
-          )
+        # @see DrivePage#widgets
+        def widgets
+          [
+            HSquash(MinWidth(15, device_widget)),
+            data_raid_level_widget,
+            metadata_raid_level_widget
+          ]
         end
 
-        # @macro seeAbstractWidget
-        def init
+        # @see DrivePage#init_widgets_values
+        def init_widgets_values
           device_widget.value = section.device
           data_raid_level_widget.value = section.btrfs_options&.data_raid_level
           metadata_raid_level_widget.value = section.btrfs_options&.metadata_raid_level
         end
 
-        # Returns the widgets values
-        #
-        # @return [Hash<String,Object>]
-        def values
+        # @see DrivePage#widgets_values
+        def widgets_values
           {
             "device"        => device_widget.value,
             "btrfs_options" => {
