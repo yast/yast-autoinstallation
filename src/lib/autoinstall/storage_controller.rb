@@ -65,6 +65,19 @@ module Y2Autoinstallation
       self.section = drive.partitions.last
     end
 
+    # Removes currently selected section
+    def delete_section
+      return unless section
+
+      if section.section_name == "drives"
+        drives.delete(section)
+        self.section = drives.first
+      else
+        section.parent.partitions.delete(section)
+        self.section = section.parent
+      end
+    end
+
     # It determines whether the profile was modified
     #
     # @todo Implement logic to detect whether the partitioning
@@ -80,14 +93,14 @@ module Y2Autoinstallation
       drives.map { |d| Presenters::Drive.new(d) }
     end
 
-  private
-
     # Drive sections inside the partitioning one
     #
     # @return [Array<Y2Storage::AutoinstProfile::DriveSection>]
     def drives
       partitioning.drives
     end
+
+  private
 
     # Drive section that is currently selected directly or indirectly (ie.
     # because one of its partition sections is selected)

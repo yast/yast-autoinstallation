@@ -61,4 +61,58 @@ describe Y2Autoinstallation::Widgets::Storage::OverviewTreePager do
       end
     end
   end
+
+  describe "#handle" do
+    let(:delete_button) do
+      instance_double(Y2Autoinstallation::Widgets::Storage::DeleteSectionButton)
+    end
+
+    let(:event) { { "ID" => :whatever } }
+    let(:drive) { partitioning.drives.first }
+
+    before do
+      allow(Y2Autoinstallation::Widgets::Storage::DeleteSectionButton).to receive(:new)
+        .and_return(delete_button)
+    end
+
+    context "when there are more than one drive section" do
+      it "enables the deletion button" do
+        expect(delete_button).to receive(:enable)
+
+        subject.handle(event)
+      end
+    end
+
+    context "when there is only one drive" do
+      let(:attrs) do
+        [
+          { "type" => :CT_DISK, "device" => "/dev/sda", "partitions" => [{ "mount" => "/" }] }
+        ]
+      end
+
+      context "and it is selected" do
+        before do
+          controller.section = drive
+        end
+
+        it "disables the deletion button" do
+          expect(delete_button).to receive(:disable)
+
+          subject.handle(event)
+        end
+      end
+
+      context "but a partition is selected" do
+        before do
+          controller.section = drive.partitions.first
+        end
+
+        it "enables the deletion button" do
+          expect(delete_button).to receive(:enable)
+
+          subject.handle(event)
+        end
+      end
+    end
+  end
 end

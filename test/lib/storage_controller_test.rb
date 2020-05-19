@@ -37,4 +37,54 @@ describe Y2Autoinstallation::StorageController do
       expect(new_drive.type).to eq(:CT_DISK)
     end
   end
+
+  describe "#delete_section" do
+    let(:partitioning) do
+      Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
+        [
+          { "type" => :CT_DISK, "partitions" => [{ "create" => true }] },
+          { "type" => :CT_DISK, "partitions" => [{ "create" => false, "size" => "1 TiB" }] },
+          { "type" => :CT_RAID, "partitions" => [{ "create" => true }, { "create" => false }] },
+          { "type" => :CT_DISK, "partitions" => [{ "create" => true }] }
+        ]
+      )
+    end
+    let(:part_hash) do
+    end
+
+    let(:drive) { partitioning.drives[2] }
+    let(:first_partition) { drive.partitions.first }
+
+    context "when deleting a partition section" do
+      it "removes selected section" do
+        subject.section = first_partition
+        subject.delete_section
+
+        expect(drive.partitions).to_not include(first_partition)
+      end
+
+      it "sets its parent drive section as selected" do
+        subject.section = first_partition
+        subject.delete_section
+
+        expect(subject.section).to eq(drive)
+      end
+    end
+
+    context "when deleting a drive section" do
+      it "removes selected section" do
+        subject.section = drive
+        subject.delete_section
+
+        expect(subject.drives).to_not include(drive)
+      end
+
+      it "sets the first drive section as selected" do
+        subject.section = drive
+        subject.delete_section
+
+        expect(subject.section).to eq(subject.drives.first)
+      end
+    end
+  end
 end
