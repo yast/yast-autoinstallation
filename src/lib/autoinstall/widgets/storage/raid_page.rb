@@ -35,26 +35,18 @@ module Y2Autoinstallation
           super
         end
 
-        # @macro seeCustomWidget
-        def contents
-          MarginBox(
-            0.5,
-            0,
-            VBox(
-              Left(HSquash(raid_name_widget)),
-              VSpacing(0.5),
-              Left(md_level_widget),
-              VSpacing(0.5),
-              Left(parity_algorithm_widget),
-              VSpacing(0.5),
-              Left(chunk_size_widget),
-              VStretch()
-            )
-          )
+        # @see DrivePage#widgets
+        def widgets
+          [
+            HSquash(raid_name_widget),
+            md_level_widget,
+            parity_algorithm_widget,
+            chunk_size_widget
+          ]
         end
 
-        # @macro seeAbstractWidget
-        def init
+        # @see DrivePage#init_widgets_values
+        def init_widgets_values
           raid_name_widget.value = drive.device
           raid_options = drive.raid_options
           if raid_options
@@ -64,10 +56,8 @@ module Y2Autoinstallation
           end
         end
 
-        # Returns the widgets values
-        #
-        # @return [Hash<String,Object>]
-        def values
+        # @see DrivePage#widgets_values
+        def widgets_values
           {
             "device"       => raid_name_widget.value,
             "raid_options" => {

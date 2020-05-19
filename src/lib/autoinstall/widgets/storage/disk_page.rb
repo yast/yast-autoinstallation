@@ -35,26 +35,18 @@ module Y2Autoinstallation
           super
         end
 
-        # @macro seeCustomWidget
-        def contents
-          MarginBox(
-            0.5,
-            0,
-            VBox(
-              Left(HSquash(MinWidth(15, disk_device_widget))),
-              VSpacing(0.5),
-              Left(init_drive_widget),
-              VSpacing(0.5),
-              Left(disk_usage_widget),
-              VSpacing(0.5),
-              Left(partition_table_widget),
-              VStretch()
-            )
-          )
+        # @see DrivePage#widgets
+        def widgets
+          [
+            HSquash(MinWidth(15, disk_device_widget)),
+            init_drive_widget,
+            disk_usage_widget,
+            partition_table_widget
+          ]
         end
 
-        # @macro seeAbstractWidget
-        def init
+        # @see DrivePage#init_widgets_values
+        def init_widgets_values
           disk_device_widget.value = drive.device
           init_drive_widget.value = !!drive.initialize_attr
           disk_usage_widget.value = drive.use
@@ -62,10 +54,8 @@ module Y2Autoinstallation
           set_disk_usage_status
         end
 
-        # Returns widget values
-        #
-        # @return [Hash<String,Object>]
-        def values
+        # @see DrivePage#widgets_values
+        def widgets_values
           {
             "device"          => disk_device_widget.value,
             "initialize_attr" => init_drive_widget.value,

@@ -18,39 +18,11 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/used_as"
-require "cwm/rspec"
+require_relative "./shared_examples"
+require "autoinstall/widgets/storage/btrfs_raid_level"
 
-describe Y2Autoinstallation::Widgets::Storage::UsedAs do
+describe Y2Autoinstallation::Widgets::Storage::BtrfsRaidLevel do
   subject(:widget) { described_class.new }
 
-  include_examples "CWM::AbstractWidget"
-
-  describe "#items" do
-    let(:items) { widget.items.map { |i| i[0] } }
-
-    it "includes :none" do
-      expect(items).to include(:none)
-    end
-
-    it "includes :filesystem" do
-      expect(items).to include(:filesystem)
-    end
-
-    it "includes :raid" do
-      expect(items).to include(:raid)
-    end
-
-    it "includes :lvm_pv" do
-      expect(items).to include(:lvm_pv)
-    end
-
-    it "includes :bcache_backing" do
-      expect(items).to include(:bcache_backing)
-    end
-
-    it "includes :btrfs_member" do
-      expect(items).to include(:btrfs_member)
-    end
-  end
+  include_examples "Y2Autoinstallation::Widgets::Storage::BtrfsRaidLevel"
 end

@@ -18,38 +18,25 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2partitioner/filesystems"
-require "cwm/common_widgets"
+require "autoinstall/widgets/storage/btrfs_raid_level"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # File system type for a given drive/partition
+      # Widget to select the Btrfs metadata RAID level
       #
-      # It corresponds to the `filesystem` element in the profile.
-      class Filesystem < CWM::ComboBox
+      # It corresponds to the `metadata_raid_level` element within the `btrfs_options`
+      # of an AutoYaST profile.
+      class MetadataRaidLevel < BtrfsRaidLevel
         # Constructor
         def initialize
           textdomain "autoinst"
-          self.widget_id = "filesystem_attr"
+          super()
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Filesystem")
-        end
-
-        # @macro seeAbstractWidget
-        def opt
-          [:notify]
-        end
-
-        # @macro seeComboBox
-        def items
-          @items ||= [
-            [nil, ""],
-            *Y2Partitioner::Filesystems.all.map { |f| [f.to_sym, f.to_human_string] }
-          ]
+          _("Metadata RAID Level")
         end
       end
     end

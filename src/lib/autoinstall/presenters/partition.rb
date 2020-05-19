@@ -51,6 +51,8 @@ module Y2Autoinstallation
           :filesystem
         elsif bcache_backing_for
           :bcache_backing
+        elsif btrfs_name
+          :btrfs_member
         else
           :none
         end
@@ -85,17 +87,21 @@ module Y2Autoinstallation
       #
       # @return [Array<String>]
       def available_bcaches
-        drives = drive.parent.drives.select { |d| d.type == :CT_BCACHE }
-        drives.map(&:device).compact
+        devices_for(type: :CT_BCACHE)
+      end
+
+      # Values to suggest for Btrfs devices fields
+      #
+      # @return [Array<String>]
+      def available_btrfs
+        devices_for(type: :CT_BTRFS)
       end
 
       # Values to suggest for the lvm_group field
       #
       # @return [Array<String>]
       def available_lvm_groups
-        vgs = drive.parent.drives.select { |d| d.type == :CT_LVM }
-        names = vgs.map(&:device).compact
-        names.map { |n| n.delete_prefix("/dev/") }
+        devices_for(type: :CT_LVM).map { |n| n.delete_prefix("/dev/") }
       end
 
     private
@@ -115,6 +121,15 @@ module Y2Autoinstallation
         return nil unless device_type == :lv && lv_name && !lv_name.empty?
 
         lv_name
+      end
+
+      # Return available devices names of given type
+      #
+      # @param type [Symbol] the drive type to look for
+      # @return [Array<String>] available devices names
+      def devices_for(type:)
+        drives = drive.parent.drives.select { |d| d.type == type }
+        drives.map(&:device).compact
       end
 
       # Whether the partition has a mount point
@@ -166,6 +181,9 @@ module Y2Autoinstallation
         when :bcache_backing
           # TRANSLATORS: %s is a placeholder for the name of a bcache device
           Kernel.format(_("Backing for %s"), bcache_backing_for)
+        when :btrfs_member
+          # TRANSLATORS: %s is a placeholder for the name of a Btrfs filesystem
+          Kernel.format(_("Part of %s"), btrfs_name)
         when :none
           _("Not used")
         end

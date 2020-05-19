@@ -18,38 +18,21 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "y2partitioner/filesystems"
 require "cwm/common_widgets"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # File system type for a given drive/partition
-      #
-      # It corresponds to the `filesystem` element in the profile.
-      class Filesystem < CWM::ComboBox
-        # Constructor
-        def initialize
+      # Determines a Btrfs device
+      class BtrfsDevice < CWM::InputField
+        def initalize
           textdomain "autoinst"
-          self.widget_id = "filesystem_attr"
+          super
         end
 
         # @macro seeAbstractWidget
         def label
-          _("Filesystem")
-        end
-
-        # @macro seeAbstractWidget
-        def opt
-          [:notify]
-        end
-
-        # @macro seeComboBox
-        def items
-          @items ||= [
-            [nil, ""],
-            *Y2Partitioner::Filesystems.all.map { |f| [f.to_sym, f.to_human_string] }
-          ]
+          _("Device")
         end
       end
     end

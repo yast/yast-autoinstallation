@@ -33,30 +33,22 @@ module Y2Autoinstallation
           super
         end
 
-        # @macro seeCustomWidget
-        def contents
-          MarginBox(
-            0.5,
-            0,
-            VBox(
-              Left(HSquash(MinWidth(15, device_widget))),
-              VSpacing(0.5),
-              Left(cache_mode_widget),
-              VStretch()
-            )
-          )
+        # @see DrivePage#widgets
+        def widgets
+          [
+            HSquash(MinWidth(15, device_widget)),
+            cache_mode_widget
+          ]
         end
 
-        # @macro seeAbstractWidget
-        def init
+        # @see DrivePage#init_widget_values
+        def init_widgets_values
           device_widget.value = section.device
           cache_mode_widget.value = section.bcache_options&.cache_mode
         end
 
-        # Returns the widgets values
-        #
-        # @return [Hash<String,Object>]
-        def values
+        # @see DrivePage#widgets_values
+        def widgets_values
           {
             "device"         => device_widget.value,
             "bcache_options" => {

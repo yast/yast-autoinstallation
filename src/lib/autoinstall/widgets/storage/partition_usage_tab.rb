@@ -25,9 +25,8 @@ require "autoinstall/widgets/storage/filesystem_attrs"
 require "autoinstall/widgets/storage/raid_attrs"
 require "autoinstall/widgets/storage/lvm_pv_attrs"
 require "autoinstall/widgets/storage/bcache_backing_attrs"
-require "autoinstall/widgets/storage/lvm_partition_attrs"
+require "autoinstall/widgets/storage/btrfs_member_attrs"
 require "autoinstall/widgets/storage/encryption_attrs"
-require "autoinstall/widgets/storage/size_selector"
 require "autoinstall/widgets/storage/used_as"
 
 module Y2Autoinstallation
@@ -107,6 +106,7 @@ module Y2Autoinstallation
             raid_widget,
             lvm_pv_widget,
             bcache_backing_widget,
+            btrfs_member_widget,
             encryption_widget
           ]
         end
@@ -129,6 +129,11 @@ module Y2Autoinstallation
         # Widget grouping attributes related to a bcache backing device
         def bcache_backing_widget
           @bcache_backing_widget ||= BcacheBackingAttrs.new(partition)
+        end
+
+        # Widget grouping attributes related to a Btrfs member
+        def btrfs_member_widget
+          @btrfs_member_widget ||= BtrfsMemberAttrs.new(partition)
         end
 
         # Widget for setting encryption related attributes
