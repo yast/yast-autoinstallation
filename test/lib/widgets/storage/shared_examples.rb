@@ -344,3 +344,19 @@ RSpec.shared_examples "Y2Autoinstallation::Widgets::Storage::BtrfsRaidLevel" do
     end
   end
 end
+
+RSpec.shared_examples "Y2Autoinstallation::Widgets::Storage::PartitionTab" do
+  include_examples "CWM::Page"
+
+  describe "#widgets" do
+    it "returns an array" do
+      expect(subject.widgets).to be_a(Array)
+    end
+  end
+
+  describe "#visible_widgets" do
+    it "returns an array" do
+      expect(subject.visible_widgets).to be_a(Array)
+    end
+  end
+end

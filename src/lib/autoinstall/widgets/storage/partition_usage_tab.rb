@@ -21,6 +21,7 @@ require "yast"
 require "cwm/tabs"
 require "cwm/replace_point"
 require "cwm/common_widgets"
+require "autoinstall/widgets/storage/partition_tab"
 require "autoinstall/widgets/storage/filesystem_attrs"
 require "autoinstall/widgets/storage/raid_attrs"
 require "autoinstall/widgets/storage/lvm_pv_attrs"
@@ -33,14 +34,12 @@ module Y2Autoinstallation
     module Storage
       # Tab to manage the partition section options that depend on its usage (file system, LVM PV,
       # RAID member, etc).
-      class PartitionUsageTab < ::CWM::Tab
+      class PartitionUsageTab < PartitionTab
         # Constructor
         #
         # @param partition [Presenters::Partition] presenter for a partition section of the profile
         def initialize(partition)
-          textdomain "autoinst"
-
-          @partition = partition
+          super
           self.handle_all_events = true
         end
 
@@ -48,19 +47,6 @@ module Y2Autoinstallation
         def label
           # TRANSLATORS: name of the tab to display the partition section options based on its usage
           _("Used As")
-        end
-
-        def contents
-          MarginBox(
-            0.4,
-            0.4,
-            VBox(
-              Left(used_as_widget),
-              VSpacing(0.5),
-              replace_point,
-              VStretch()
-            )
-          )
         end
 
         # @macro seeAbstractWidget
@@ -76,28 +62,16 @@ module Y2Autoinstallation
           nil
         end
 
-        # @macro seeAbstractWidget
-        def values
-          relevant_widgets.reduce({}) do |hsh, widget|
-            hsh.merge(widget.values)
-          end
+        # @see PartitionTab#visible_widgets
+        def visible_widgets
+          [
+            Left(used_as_widget),
+            replace_point
+          ]
         end
 
-        # @macro seeAbstractWidget
-        def store
-          partition.update(values)
-          nil
-        end
-
-      private
-
-        # @return [Presenters::Partition] presenter for the partition section
-        attr_reader :partition
-
-        # Convenience method to retrieve all widgets holding profile attributes
-        #
-        # @return [Array<CWW::CustomWidget>]
-        def relevant_widgets
+        # @see PartitionTab#widgets
+        def widgets
           [
             filesystem_widget,
             raid_widget,
@@ -106,6 +80,8 @@ module Y2Autoinstallation
             btrfs_member_widget
           ]
         end
+
+      private
 
         # Widget grouping related file system attributes
         def filesystem_widget
