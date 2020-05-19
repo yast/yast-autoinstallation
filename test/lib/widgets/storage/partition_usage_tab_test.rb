@@ -165,6 +165,24 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
     end
   end
 
+  describe "#values" do
+    it "contains all section attributes related to its usage" do
+      expect(subject.values.keys).to contain_exactly(
+        "crypt_key",
+        "crypt_method",
+        "filesystem",
+        "fstab_options",
+        "label",
+        "lvm_group",
+        "mkfs_options",
+        "mount",
+        "mountby",
+        "raid_name",
+        "bcache_backing_for"
+      )
+    end
+  end
+
   describe "#store" do
     let(:filesystem_attrs) do
       {

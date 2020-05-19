@@ -87,6 +87,14 @@ describe Y2Autoinstallation::Presenters::Partition do
       end
     end
 
+    context "when the section refers to a bcache backing device" do
+      let(:attrs) { { bcache_backing_for: "/dev/bcache0" } }
+
+      it "returns :bcache_backing" do
+        expect(subject.usage).to eq(:bcache_backing)
+      end
+    end
+
     context "when the section does not refer an specific usage" do
       let(:attrs) { {} }
 
@@ -130,6 +138,29 @@ describe Y2Autoinstallation::Presenters::Partition do
 
       it "returns a collection of LVM drive sections device" do
         expect(subject.available_lvm_groups).to eq(["vg-0", "vg-1"])
+      end
+    end
+  end
+
+  describe "#available_bcaches" do
+    context "when there are no bcache drive sections" do
+      it "returns an empty collection" do
+        expect(subject.available_bcaches).to eq([])
+      end
+    end
+
+    context "when there are bcache drive sections" do
+      let(:part_hashes) do
+        [
+          { "type" => :CT_DISK },
+          { "type" => :CT_LVM, "device" => "/dev/vg-0" },
+          { "type" => :CT_BCACHE, "device" => "/dev/bcache0" },
+          { "type" => :CT_BCACHE, "device" => "/dev/bcache1" }
+        ]
+      end
+
+      it "returns a collection of bcache drive sections device" do
+        expect(subject.available_bcaches).to eq(["/dev/bcache0", "/dev/bcache1"])
       end
     end
   end

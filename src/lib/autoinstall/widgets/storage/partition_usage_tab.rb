@@ -24,6 +24,7 @@ require "cwm/common_widgets"
 require "autoinstall/widgets/storage/filesystem_attrs"
 require "autoinstall/widgets/storage/raid_attrs"
 require "autoinstall/widgets/storage/lvm_pv_attrs"
+require "autoinstall/widgets/storage/bcache_backing_attrs"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
 require "autoinstall/widgets/storage/encryption_attrs"
 require "autoinstall/widgets/storage/size_selector"
@@ -105,6 +106,7 @@ module Y2Autoinstallation
             filesystem_widget,
             raid_widget,
             lvm_pv_widget,
+            bcache_backing_widget,
             encryption_widget
           ]
         end
@@ -122,6 +124,11 @@ module Y2Autoinstallation
         # Widget grouping related LVM PV attributes
         def lvm_pv_widget
           @lvm_pv_widget ||= LvmPvAttrs.new(partition)
+        end
+
+        # Widget grouping attributes related to a bcache backing device
+        def bcache_backing_widget
+          @bcache_backing_widget ||= BcacheBackingAttrs.new(partition)
         end
 
         # Widget for setting encryption related attributes

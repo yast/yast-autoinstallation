@@ -18,35 +18,11 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/used_as"
+require "autoinstall/widgets/storage/bcache_device"
 require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::UsedAs do
+describe Y2Autoinstallation::Widgets::Storage::BcacheDevice do
   subject(:widget) { described_class.new }
 
-  include_examples "CWM::AbstractWidget"
-
-  describe "#items" do
-    let(:items) { widget.items.map { |i| i[0] } }
-
-    it "includes :none" do
-      expect(items).to include(:none)
-    end
-
-    it "includes :filesystem" do
-      expect(items).to include(:filesystem)
-    end
-
-    it "includes :raid" do
-      expect(items).to include(:raid)
-    end
-
-    it "includes :lvm_pv" do
-      expect(items).to include(:lvm_pv)
-    end
-
-    it "includes :bcache_backing" do
-      expect(items).to include(:bcache_backing)
-    end
-  end
+  include_examples "CWM::InputField"
 end

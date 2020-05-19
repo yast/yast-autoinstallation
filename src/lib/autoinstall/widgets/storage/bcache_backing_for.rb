@@ -17,36 +17,34 @@
 # To contact SUSE LLC about this file by physical or electronic mail, you may
 # find current contact information at www.suse.com.
 
-require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/used_as"
-require "cwm/rspec"
+require "yast"
+require "cwm/common_widgets"
 
-describe Y2Autoinstallation::Widgets::Storage::UsedAs do
-  subject(:widget) { described_class.new }
+module Y2Autoinstallation
+  module Widgets
+    module Storage
+      # Widget to specify the bcache device which is going to be backed
+      class BcacheBackingFor < CWM::ComboBox
+        def initalize
+          textdomain "autoinst"
+          super
+        end
 
-  include_examples "CWM::AbstractWidget"
+        # @macro seeAbstractWidget
+        def label
+          _("Bcache Device")
+        end
 
-  describe "#items" do
-    let(:items) { widget.items.map { |i| i[0] } }
+        # @macro seeAbstractWidget
+        def opt
+          [:editable]
+        end
 
-    it "includes :none" do
-      expect(items).to include(:none)
-    end
-
-    it "includes :filesystem" do
-      expect(items).to include(:filesystem)
-    end
-
-    it "includes :raid" do
-      expect(items).to include(:raid)
-    end
-
-    it "includes :lvm_pv" do
-      expect(items).to include(:lvm_pv)
-    end
-
-    it "includes :bcache_backing" do
-      expect(items).to include(:bcache_backing)
+        def items=(devices)
+          values = [["", ""]] + devices.map { |i| [i, i] }
+          change_items(values)
+        end
+      end
     end
   end
 end

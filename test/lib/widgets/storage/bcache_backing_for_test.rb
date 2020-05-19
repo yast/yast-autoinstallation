@@ -18,35 +18,27 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/used_as"
+require "autoinstall/widgets/storage/bcache_backing_for"
 require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::UsedAs do
+describe Y2Autoinstallation::Widgets::Storage::BcacheBackingFor do
   subject(:widget) { described_class.new }
 
-  include_examples "CWM::AbstractWidget"
+  include_examples "CWM::ComboBox"
 
-  describe "#items" do
-    let(:items) { widget.items.map { |i| i[0] } }
+  describe "#items=" do
+    let(:devices)   { ["/dev/bcache0", "/dev/bcache1"] }
 
-    it "includes :none" do
-      expect(items).to include(:none)
-    end
+    it "updates the widget with given devices including an empty option" do
+      expect(widget).to receive(:change_items).with(
+        [
+          ["", ""],
+          ["/dev/bcache0", "/dev/bcache0"],
+          ["/dev/bcache1", "/dev/bcache1"]
+        ]
+      )
 
-    it "includes :filesystem" do
-      expect(items).to include(:filesystem)
-    end
-
-    it "includes :raid" do
-      expect(items).to include(:raid)
-    end
-
-    it "includes :lvm_pv" do
-      expect(items).to include(:lvm_pv)
-    end
-
-    it "includes :bcache_backing" do
-      expect(items).to include(:bcache_backing)
+      widget.items = devices
     end
   end
 end

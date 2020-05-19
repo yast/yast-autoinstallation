@@ -29,8 +29,12 @@ describe Y2Autoinstallation::Widgets::Storage::OverviewTreePager do
 
   let(:partitioning) { Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(attrs) }
   let(:attrs) do
-    [{ "device" => "/dev/sda", "partitions" => [{ "mount" => "/" }] },
-     { "type" => :CT_RAID }]
+    [
+      { "device" => "/dev/sda", "partitions" => [{ "mount" => "/" }] },
+      { "type" => :CT_RAID },
+      { "type" => :CT_LVM },
+      { "type" => :CT_BCACHE }
+    ]
   end
 
   let(:controller) { Y2Autoinstallation::StorageController.new(partitioning) }
@@ -39,7 +43,9 @@ describe Y2Autoinstallation::Widgets::Storage::OverviewTreePager do
     it "returns one item for each drive" do
       expect(subject.items.map(&:page)).to contain_exactly(
         an_instance_of(Y2Autoinstallation::Widgets::Storage::DiskPage),
-        an_instance_of(Y2Autoinstallation::Widgets::Storage::RaidPage)
+        an_instance_of(Y2Autoinstallation::Widgets::Storage::RaidPage),
+        an_instance_of(Y2Autoinstallation::Widgets::Storage::LvmPage),
+        an_instance_of(Y2Autoinstallation::Widgets::Storage::BcachePage)
       )
     end
 
