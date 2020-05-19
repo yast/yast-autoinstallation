@@ -23,6 +23,7 @@ require "cwm/replace_point"
 require "cwm/common_widgets"
 require "autoinstall/widgets/storage/common_partition_attrs"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
+require "autoinstall/widgets/storage/encryption_attrs"
 
 module Y2Autoinstallation
   module Widgets
@@ -52,6 +53,8 @@ module Y2Autoinstallation
               common_partition_attrs,
               VSpacing(0.5),
               section_related_attrs,
+              VSpacing(0.5),
+              encryption_attrs,
               VStretch()
             )
           )
@@ -81,11 +84,12 @@ module Y2Autoinstallation
         def relevant_widgets
           [
             common_partition_attrs,
-            lvm_partition_attrs
+            lvm_partition_attrs,
+            encryption_attrs
           ]
         end
 
-        # Convenience method to call proper widget depending on the drive type
+        # Convenience method to display attributes related to the drive type
         def section_related_attrs
           method_name = "#{partition.drive_type}_partition_attrs".downcase
 
@@ -106,6 +110,11 @@ module Y2Autoinstallation
         # @return [LvmPartitionAttrs]
         def lvm_partition_attrs
           @lvm_partition_attrs ||= LvmPartitionAttrs.new(partition)
+        end
+
+        # Options for setting attributes related to encryption
+        def encryption_attrs
+          @encryption_attrs ||= EncryptionAttrs.new(partition)
         end
       end
     end

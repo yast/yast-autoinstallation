@@ -72,9 +72,6 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
     let(:empty_widget) do
       instance_double(CWM::Empty)
     end
-    let(:encryption_attrs_widget) do
-      instance_double(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs)
-    end
     let(:filesystem_attrs_widget) do
       instance_double(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs)
     end
@@ -95,20 +92,26 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
 
         allow(Y2Autoinstallation::Widgets::Storage::UsedAs).to receive(:new)
           .and_return(used_as_widget)
-        allow(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs).to receive(:new)
-          .and_return(encryption_attrs_widget)
         allow(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs).to receive(:new)
           .and_return(filesystem_attrs_widget)
         allow(Y2Autoinstallation::Widgets::Storage::RaidAttrs).to receive(:new)
           .and_return(raid_attrs_widget)
         allow(Y2Autoinstallation::Widgets::Storage::LvmPvAttrs).to receive(:new)
           .and_return(lvm_pv_attrs_widget)
-        allow(CWM::ReplacePoint).to receive(:new).with(id: "encryption_attrs", widget: anything)
-          .and_return(encryption_replace_point)
         allow(CWM::ReplacePoint).to receive(:new).with(id: "attrs", widget: anything)
           .and_return(attrs_replace_point)
         allow(CWM::Empty).to receive(:new)
           .and_return(empty_widget)
+      end
+
+      context "and :none has been selected" do
+        let(:used_as) { :none }
+
+        it "shows none attributes" do
+          expect(attrs_replace_point).to receive(:replace).with(empty_widget)
+
+          subject.handle(event)
+        end
       end
 
       context "and :filesystem has been selected" do
@@ -116,11 +119,6 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
 
         it "shows attributes related to filesystem usage" do
           expect(attrs_replace_point).to receive(:replace).with(filesystem_attrs_widget)
-          subject.handle(event)
-        end
-
-        it "shows encryption attributes" do
-          expect(encryption_replace_point).to receive(:replace).with(encryption_attrs_widget)
           subject.handle(event)
         end
       end
@@ -132,11 +130,6 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
           expect(attrs_replace_point).to receive(:replace).with(raid_attrs_widget)
           subject.handle(event)
         end
-
-        it "does not show encryption attributes" do
-          expect(encryption_replace_point).to receive(:replace).with(empty_widget)
-          subject.handle(event)
-        end
       end
 
       context "and :lvm_pv has been selected" do
@@ -146,21 +139,6 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
           expect(attrs_replace_point).to receive(:replace).with(lvm_pv_attrs_widget)
           subject.handle(event)
         end
-
-        it "shows encryption attributes" do
-          expect(encryption_replace_point).to receive(:replace).with(encryption_attrs_widget)
-          subject.handle(event)
-        end
-      end
-    end
-
-    context "when not handling an 'used_as' event" do
-      let(:event) { { "ID" => "whatever" } }
-
-      it "does not update the UI" do
-        expect(subject).to_not receive(:refresh)
-
-        subject.handle(event)
       end
     end
   end
@@ -168,8 +146,6 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
   describe "#values" do
     it "contains all section attributes related to its usage" do
       expect(subject.values.keys).to contain_exactly(
-        "crypt_key",
-        "crypt_method",
         "filesystem",
         "fstab_options",
         "label",
@@ -196,12 +172,6 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
         "mkfs_options"  => "-I 128"
       }
     end
-    let(:encryption_attrs) do
-      {
-        "crypt_method" => :luks1,
-        "crypt_key"    => "xxxxx"
-      }
-    end
 
     let(:filesystem_attrs_widget) do
       instance_double(
@@ -209,18 +179,10 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
         values: filesystem_attrs
       )
     end
-    let(:encryption_attrs_widget) do
-      instance_double(
-        Y2Autoinstallation::Widgets::Storage::EncryptionAttrs,
-        values: encryption_attrs
-      )
-    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs).to receive(:new)
         .and_return(filesystem_attrs_widget)
-      allow(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs).to receive(:new)
-        .and_return(encryption_attrs_widget)
     end
 
     it "sets section attributes related to its usage" do
@@ -232,9 +194,6 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
       expect(partition.mountby).to eq(:label)
       expect(partition.fstab_options).to eq("ro,noatime,user")
       expect(partition.mkfs_options).to eq("-I 128")
-
-      expect(partition.crypt_method).to eq(:luks1)
-      expect(partition.crypt_key).to eq("xxxxx")
     end
   end
 end

@@ -38,10 +38,45 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
   let(:partition) { drive.partitions.first }
   let(:partition_hash) { {} }
 
+  let(:common_attributes) do
+    {
+      "create"       => true,
+      "format"       => true,
+      "resize"       => false,
+      "size"         => "10G",
+      "partition_nr" => 2,
+      "uuid"         => "partition-uuid"
+    }
+  end
+
+  let(:lv_attributes) do
+    {
+      "lv_name"     => "lv-home",
+      "pool"        => false,
+      "used_pool"   => "my_thin_pool",
+      "stripes"     => 2,
+      "stripe_size" => 4
+    }
+  end
+  let(:encryption_attributes) do
+    {
+      "crypt_method" => :luks1,
+      "crypt_key"    => "xxxxx"
+    }
+  end
+
   describe "#contents" do
     it "contains common partition attributes" do
       widget = subject.contents.nested_find do |w|
         w.is_a?(Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs)
+      end
+
+      expect(widget).to_not be_nil
+    end
+
+    it "contains encryption attributes" do
+      widget = subject.contents.nested_find do |w|
+        w.is_a?(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs)
       end
 
       expect(widget).to_not be_nil
@@ -72,28 +107,19 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
     end
   end
 
+  describe "#values" do
+    let(:type) { :CT_DISK }
+
+    it "contains attributes not related to its usage" do
+      values = subject.values
+
+      expect(values.keys).to include(*common_attributes.keys)
+      expect(values.keys).to include(*lv_attributes.keys)
+      expect(values.keys).to include(*encryption_attributes.keys)
+    end
+  end
+
   describe "#store" do
-    let(:common_attributes) do
-      {
-        "create"       => true,
-        "format"       => true,
-        "resize"       => false,
-        "size"         => "10G",
-        "partition_nr" => 2,
-        "uuid"         => "partition-uuid"
-      }
-    end
-
-    let(:lv_attributes) do
-      {
-        "lv_name"     => "lv-home",
-        "pool"        => false,
-        "used_pool"   => "my_thin_pool",
-        "stripes"     => 2,
-        "stripe_size" => 4
-      }
-    end
-
     let(:common_attrs_widget) do
       instance_double(
         Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs,
@@ -106,12 +132,20 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
         values: lv_attributes
       )
     end
+    let(:encryption_attrs_widget) do
+      instance_double(
+        Y2Autoinstallation::Widgets::Storage::EncryptionAttrs,
+        values: encryption_attributes
+      )
+    end
 
     before do
       allow(Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs).to receive(:new)
         .and_return(common_attrs_widget)
       allow(Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs).to receive(:new)
         .and_return(lvm_attrs_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs).to receive(:new)
+        .and_return(encryption_attrs_widget)
     end
 
     it "sets section attributes not related to its usage" do
@@ -129,6 +163,9 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
       expect(partition.used_pool).to eq("my_thin_pool")
       expect(partition.stripes).to eq(2)
       expect(partition.stripe_size).to eq(4)
+
+      expect(partition.crypt_method).to eq(:luks1)
+      expect(partition.crypt_key).to eq("xxxxx")
     end
   end
 end
