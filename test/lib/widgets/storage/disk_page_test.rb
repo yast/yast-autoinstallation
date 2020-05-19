@@ -56,7 +56,7 @@ describe Y2Autoinstallation::Widgets::Storage::DiskPage do
     )
   end
 
-  let(:partition_table_widget) do
+  let(:disklabel_widget) do
     instance_double(
       Y2Autoinstallation::Widgets::Storage::DiskUsage,
       value: "gpt"
@@ -70,8 +70,8 @@ describe Y2Autoinstallation::Widgets::Storage::DiskPage do
       .to receive(:new).and_return(init_drive_widget)
     allow(Y2Autoinstallation::Widgets::Storage::DiskUsage)
       .to receive(:new).and_return(disk_usage_widget)
-    allow(Y2Autoinstallation::Widgets::Storage::PartitionTable)
-      .to receive(:new).and_return(partition_table_widget)
+    allow(Y2Autoinstallation::Widgets::Storage::Disklabel)
+      .to receive(:new).and_return(disklabel_widget)
   end
 
   include_examples "CWM::Page"
