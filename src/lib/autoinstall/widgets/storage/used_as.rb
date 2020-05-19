@@ -48,17 +48,17 @@ module Y2Autoinstallation
           # FIXME: uncomment when support for each type is added
           [
             # TRANSLATORS: option for setting to not use the partition
-            [:none, _("Do not use")],
+            [:none, _("Do Not Use")],
             # TRANSLATORS: option for setting the partition to hold a file system
-            [:filesystem, _("File system")],
+            [:filesystem, _("File System")],
             # TRANSLATORS: option for setting the partition as a RAID member
-            [:raid, _("RAID member")],
+            [:raid, _("RAID Member")],
             # TRANSLATORS: option for setting the partition as an LVM physical volume
-            [:lvm_pv, _("LVM physical volume")],
+            [:lvm_pv, _("LVM Physical Volume")],
             # TRANSLATORS: option for setting the partition as a bcache backing device
-            [:bcache_backing, _("Bcache backing device")]
-            # ["bcache_caching", _("Bcache caching device")],
-            # ["btrfs_member", _("Btrfs multi-device member")]
+            [:bcache_backing, _("Bcache Backing Device")]
+            # ["bcache_caching", _("Bcache Caching Device")],
+            # ["btrfs_member", _("Btrfs Multi-device Member")]
           ]
         end
       end
