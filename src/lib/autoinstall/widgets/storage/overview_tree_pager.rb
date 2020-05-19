@@ -28,6 +28,7 @@ require "autoinstall/widgets/storage/btrfs_page"
 require "autoinstall/widgets/storage/partition_page"
 require "autoinstall/widgets/storage/add_drive_button"
 require "autoinstall/widgets/storage/add_partition_button"
+require "autoinstall/widgets/storage/delete_section_button"
 require "autoinstall/ui_state"
 
 module Y2Autoinstallation
@@ -50,7 +51,8 @@ module Y2Autoinstallation
             Left(
               HBox(
                 AddDriveButton.new(controller),
-                AddPartitionButton.new(controller)
+                AddPartitionButton.new(controller),
+                delete_button
               )
             )
           )
@@ -61,6 +63,13 @@ module Y2Autoinstallation
           controller.drive_presenters.each_with_object([]) do |drive, all|
             all << drive_item(drive)
           end
+        end
+
+        # Extends the events management to control the DeleteSectionButton status
+        def handle(event)
+          super
+          set_delete_button_status
+          nil
         end
 
         # Switch to the given page
@@ -89,6 +98,27 @@ module Y2Autoinstallation
 
         def tree
           @tree ||= OverviewTree.new(items)
+        end
+
+        # Widget for removing currently selected section
+        #
+        # @return [DeleteSectionButton]
+        def delete_button
+          @delete_button ||= DeleteSectionButton.new(controller)
+        end
+
+        # Changes the #delete_button status according to selected section
+        def set_delete_button_status
+          if drive_selected? && controller.drives.size == 1
+            delete_button.disable
+          else
+            delete_button.enable
+          end
+        end
+
+        # Whether selected section is a Y2Storage::AutoinstProfileDriveSection
+        def drive_selected?
+          controller.section.is_a?(Y2Storage::AutoinstProfile::DriveSection)
         end
 
         def controller_page
