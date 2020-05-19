@@ -40,6 +40,7 @@ module Y2Autoinstallation
         #
         # @param partition [Presenters::Partition] presenter for a partition section of the profile
         def initialize(partition)
+          textdomain "autoinst"
           super
           self.handle_all_events = true
         end

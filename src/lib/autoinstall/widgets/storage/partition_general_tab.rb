@@ -32,6 +32,14 @@ module Y2Autoinstallation
     module Storage
       # The tab used to present the general and common options for a partition section
       class PartitionGeneralTab < PartitionTab
+        # Constructor
+        #
+        # @param partition [Presenters::Partition] presenter for a partition section of the profile
+        def initialize(partition)
+          textdomain "autoinst"
+          super
+        end
+
         # @macro seeAbstractWidget
         def label
           # TRANSLATORS: name of the tab to display common options
