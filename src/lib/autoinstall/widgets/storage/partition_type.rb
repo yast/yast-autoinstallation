@@ -45,11 +45,6 @@ module Y2Autoinstallation
             ["logical", "logical"]
           ]
         end
-
-        # @macro seeAbstractWidget
-        def opt
-          [:editable]
-        end
       end
     end
   end

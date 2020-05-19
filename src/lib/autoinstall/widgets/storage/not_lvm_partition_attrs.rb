@@ -52,7 +52,7 @@ module Y2Autoinstallation
               HBox(
                 HSquash(MinWidth(15, partition_id_widget)),
                 HSpacing(2),
-                HSquash(MinWidth(15, partition_type_widget))
+                partition_type_widget
               )
             )
           )
