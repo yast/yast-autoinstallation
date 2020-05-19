@@ -23,6 +23,7 @@ require "cwm/replace_point"
 require "cwm/common_widgets"
 require "autoinstall/widgets/storage/common_partition_attrs"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
+require "autoinstall/widgets/storage/not_lvm_partition_attrs"
 require "autoinstall/widgets/storage/encryption_attrs"
 
 module Y2Autoinstallation
@@ -85,17 +86,18 @@ module Y2Autoinstallation
           [
             common_partition_attrs,
             lvm_partition_attrs,
+            not_lvm_partition_attrs,
             encryption_attrs
           ]
         end
 
         # Convenience method to display attributes related to the drive type
         def section_related_attrs
-          method_name = "#{partition.drive_type}_partition_attrs".downcase
-
-          send(method_name)
-        rescue NoMethodError
-          Empty()
+          if partition.logical_volume?
+            lvm_partition_attrs
+          else
+            not_lvm_partition_attrs
+          end
         end
 
         # Options for a all partitions
@@ -110,6 +112,13 @@ module Y2Autoinstallation
         # @return [LvmPartitionAttrs]
         def lvm_partition_attrs
           @lvm_partition_attrs ||= LvmPartitionAttrs.new(partition)
+        end
+
+        # Options for a partition not related to an LVM drive section
+        #
+        # @return [LvmPartitionAttrs]
+        def not_lvm_partition_attrs
+          @not_lvm_partition_attrs ||= NotLvmPartitionAttrs.new(partition)
         end
 
         # Options for setting attributes related to encryption

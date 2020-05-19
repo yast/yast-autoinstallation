@@ -49,6 +49,13 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
     }
   end
 
+  let(:not_lv_attributes) do
+    {
+      "partition_id"   => 131,
+      "partition_type" => "primary"
+    }
+  end
+
   let(:lv_attributes) do
     {
       "lv_name"     => "lv-home",
@@ -58,6 +65,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
       "stripe_size" => 4
     }
   end
+
   let(:encryption_attributes) do
     {
       "crypt_fs"  => :luks1,
@@ -84,6 +92,14 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
 
     context "when the partition belongs to a disk" do
       let(:type) { :CT_DISK }
+
+      it "contains not LVM attributes" do
+        widget = subject.contents.nested_find do |w|
+          w.is_a?(Y2Autoinstallation::Widgets::Storage::NotLvmPartitionAttrs)
+        end
+
+        expect(widget).to_not be_nil
+      end
 
       it "does not contain LVM partition attributes" do
         widget = subject.contents.nested_find do |w|
@@ -114,6 +130,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
       values = subject.values
 
       expect(values.keys).to include(*common_attributes.keys)
+      expect(values.keys).to include(*not_lv_attributes.keys)
       expect(values.keys).to include(*lv_attributes.keys)
       expect(values.keys).to include(*encryption_attributes.keys)
     end
@@ -124,6 +141,12 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
       instance_double(
         Y2Autoinstallation::Widgets::Storage::CommonPartitionAttrs,
         values: common_attributes
+      )
+    end
+    let(:not_lvm_attrs_widget) do
+      instance_double(
+        Y2Autoinstallation::Widgets::Storage::NotLvmPartitionAttrs,
+        values: not_lv_attributes
       )
     end
     let(:lvm_attrs_widget) do
@@ -144,6 +167,8 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
         .and_return(common_attrs_widget)
       allow(Y2Autoinstallation::Widgets::Storage::LvmPartitionAttrs).to receive(:new)
         .and_return(lvm_attrs_widget)
+      allow(Y2Autoinstallation::Widgets::Storage::NotLvmPartitionAttrs).to receive(:new)
+        .and_return(not_lvm_attrs_widget)
       allow(Y2Autoinstallation::Widgets::Storage::EncryptionAttrs).to receive(:new)
         .and_return(encryption_attrs_widget)
     end
@@ -157,6 +182,9 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
       expect(partition.size).to eq("10G")
       expect(partition.partition_nr).to eq(2)
       expect(partition.uuid).to eq("partition-uuid")
+
+      expect(partition.partition_id).to eq(131)
+      expect(partition.partition_type).to eq("primary")
 
       expect(partition.lv_name).to eq("lv-home")
       expect(partition.pool).to eq(false)

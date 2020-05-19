@@ -81,6 +81,13 @@ module Y2Autoinstallation
         drive_presenter.type
       end
 
+      # Whether the section is an LVM Logical Volume
+      #
+      # @return [Boolean] true when belongs to an LVM drive; false otherwise
+      def logical_volume?
+        drive_type.to_sym == :CT_LVM
+      end
+
       # Values to suggest for bcache devices fields
       #
       # @return [Array<String>]
