@@ -21,6 +21,7 @@ require "yast"
 require "cwm/tabs"
 require "cwm/replace_point"
 require "cwm/common_widgets"
+require "autoinstall/widgets/storage/partition_tab"
 require "autoinstall/widgets/storage/common_partition_attrs"
 require "autoinstall/widgets/storage/lvm_partition_attrs"
 require "autoinstall/widgets/storage/not_lvm_partition_attrs"
@@ -30,59 +31,24 @@ module Y2Autoinstallation
   module Widgets
     module Storage
       # The tab used to present the general and common options for a partition section
-      class PartitionGeneralTab < ::CWM::Tab
-        # Constructor
-        #
-        # @param partition [Presenters::Partition] presenter for a partition section of the profile
-        def initialize(partition)
-          textdomain "autoinst"
-
-          @partition = partition
-        end
-
+      class PartitionGeneralTab < PartitionTab
         # @macro seeAbstractWidget
         def label
           # TRANSLATORS: name of the tab to display common options
           _("General")
         end
 
-        def contents
-          MarginBox(
-            0.4,
-            0.4,
-            VBox(
-              common_partition_attrs,
-              VSpacing(0.5),
-              section_related_attrs,
-              VSpacing(0.5),
-              encryption_attrs,
-              VStretch()
-            )
-          )
+        # @see PartitionTab#visible_widgets
+        def visible_widgets
+          [
+            common_partition_attrs,
+            section_related_attrs,
+            encryption_attrs
+          ]
         end
 
-        # @macro seeAbstractWidget
-        def values
-          relevant_widgets.reduce({}) do |hsh, widget|
-            hsh.merge(widget.values)
-          end
-        end
-
-        # @macro seeAbstractWidget
-        def store
-          partition.update(values)
-          nil
-        end
-
-      private
-
-        # @return [Presenters::Partition] presenter for the partition section
-        attr_reader :partition
-
-        # Convenience method to retrieve all widgets holding profile attributes
-        #
-        # @return [Array<CWW::CustomWidget>]
-        def relevant_widgets
+        # @see PartitionTab#widgets
+        def widgets
           [
             common_partition_attrs,
             lvm_partition_attrs,
@@ -90,6 +56,8 @@ module Y2Autoinstallation
             encryption_attrs
           ]
         end
+
+      private
 
         # Convenience method to display attributes related to the drive type
         def section_related_attrs

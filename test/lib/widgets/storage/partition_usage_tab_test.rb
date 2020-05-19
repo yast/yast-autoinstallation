@@ -18,15 +18,13 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
+require_relative "./shared_examples"
 require "autoinstall/widgets/storage/partition_usage_tab"
 require "autoinstall/presenters"
 require "y2storage/autoinst_profile"
-require "cwm/rspec"
 
 describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
   subject { described_class.new(partition) }
-
-  include_examples "CWM::Page"
 
   let(:partitioning) do
     Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(
@@ -43,6 +41,8 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
   let(:used_as_widget) do
     instance_double(Y2Autoinstallation::Widgets::Storage::UsedAs)
   end
+
+  include_examples "Y2Autoinstallation::Widgets::Storage::PartitionTab"
 
   describe "#init" do
     before do
@@ -143,56 +143,24 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
     end
   end
 
-  describe "#values" do
-    it "contains all section attributes related to its usage" do
-      expect(subject.values.keys).to contain_exactly(
-        "filesystem",
-        "fstab_options",
-        "label",
-        "lvm_group",
-        "mkfs_options",
-        "mount",
-        "mountby",
-        "raid_name",
-        "bcache_backing_for",
-        "create_subvolumes"
-      )
-    end
-  end
-
   describe "#store" do
-    let(:filesystem_attrs) do
-      {
-        "filesystem"    => :ext3,
-        "label"         => "mydata",
-        "mount"         => "swap",
-        "mountby"       => :label,
-        "fstab_options" => "ro,noatime,user",
-        "mkfs_options"  => "-I 128"
-      }
-    end
-
-    let(:filesystem_attrs_widget) do
-      instance_double(
-        Y2Autoinstallation::Widgets::Storage::FilesystemAttrs,
-        values: filesystem_attrs
-      )
-    end
-
-    before do
-      allow(Y2Autoinstallation::Widgets::Storage::FilesystemAttrs).to receive(:new)
-        .and_return(filesystem_attrs_widget)
-    end
-
     it "sets section attributes related to its usage" do
-      subject.store
+      expect(partition).to receive(:update).with(
+        hash_including(
+          "filesystem",
+          "label",
+          "mount",
+          "mountby",
+          "fstab_options",
+          "mkfs_options",
+          "raid_name",
+          "lvm_group",
+          "bcache_backing_for",
+          "create_subvolumes"
+        )
+      )
 
-      expect(partition.filesystem).to eq(:ext3)
-      expect(partition.label).to eq("mydata")
-      expect(partition.mount).to eq("swap")
-      expect(partition.mountby).to eq(:label)
-      expect(partition.fstab_options).to eq("ro,noatime,user")
-      expect(partition.mkfs_options).to eq("-I 128")
+      subject.store
     end
   end
 end
