@@ -27,7 +27,7 @@ module Y2Autoinstallation
       # Widget to set the type of partition table to use
       #
       # It corresponds to the `disklabel` element in the profile.
-      class PartitionTable < CWM::ComboBox
+      class Disklabel < CWM::ComboBox
         # Constructor
         def initialize
           textdomain "autoinst"
@@ -36,7 +36,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Partition Table")
+          _("Disklabel")
         end
 
         # We are only interested in these types.

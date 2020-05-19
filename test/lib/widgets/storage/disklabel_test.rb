@@ -18,11 +18,31 @@
 # find current contact information at www.suse.com.
 
 require_relative "../../../test_helper"
-require "autoinstall/widgets/storage/partition_table"
+require "autoinstall/widgets/storage/disklabel"
 require "cwm/rspec"
 
-describe Y2Autoinstallation::Widgets::Storage::PartitionTable do
-  subject { described_class.new }
+describe Y2Autoinstallation::Widgets::Storage::Disklabel do
+  subject(:disklabel_widget) { described_class.new }
 
   include_examples "CWM::ComboBox"
+
+  describe "#items" do
+    let(:items) { disklabel_widget.items.map { |i| i[0] } }
+
+    it "includes 'none'" do
+      expect(items).to include("none")
+    end
+
+    it "includes 'msdos'" do
+      expect(items).to include("msdos")
+    end
+
+    it "includes 'gpt'" do
+      expect(items).to include("gpt")
+    end
+
+    it "includes 'dasd'" do
+      expect(items).to include("dasd")
+    end
+  end
 end
