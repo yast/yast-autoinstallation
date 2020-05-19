@@ -45,7 +45,8 @@ module Y2Autoinstallation
             ["131", "131"], # Linux
             ["142", "142"], # LVM
             ["253", "253"], # MD RAID
-            ["259", "259"]  # EFI Partition
+            ["259", "259"], # EFI Partition
+            ["263", "263"]  # Bios Boot
           ]
         end
 

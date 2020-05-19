@@ -26,6 +26,34 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionId do
 
   include_examples "CWM::ComboBox"
 
+  describe "#items" do
+    let(:partition_ids) { widget.items.map { |i| i[0].to_i } }
+
+    it "includes the swap partition id (130)" do
+      expect(partition_ids).to include(130)
+    end
+
+    it "includes the Linux partition id (131)" do
+      expect(partition_ids).to include(131)
+    end
+
+    it "includes the LVM partition id (142)" do
+      expect(partition_ids).to include(142)
+    end
+
+    it "includes the MD RAID partition id (253)" do
+      expect(partition_ids).to include(142)
+    end
+
+    it "includes the EFI partition id (259)" do
+      expect(partition_ids).to include(142)
+    end
+
+    it "includes the BIOS_BOOT partition id (263)" do
+      expect(partition_ids).to include(142)
+    end
+  end
+
   describe "#value" do
     before do
       allow(Yast::UI).to receive(:QueryWidget).with(Id(widget.widget_id), :Value)
