@@ -128,6 +128,24 @@ describe Y2Autoinstallation::Presenters::Partition do
     end
   end
 
+  describe "#logical_volume?" do
+    context "when the partition belongs to a :CT_LVM drive section" do
+      let(:part_hashes) { [{ "type" => :CT_LVM }] }
+
+      it "returns true" do
+        expect(subject.logical_volume?).to eq(true)
+      end
+    end
+
+    context "when the partition does not belong to a :CT_LVM drive section" do
+      let(:part_hashes) { [{ "type" => :CT_BCACHE }] }
+
+      it "returns false" do
+        expect(subject.logical_volume?).to eq(false)
+      end
+    end
+  end
+
   describe "#available_lvm_groups" do
     context "when there are no LVM drive sections" do
       it "returns an empty collection" do
