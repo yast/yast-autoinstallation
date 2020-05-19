@@ -59,8 +59,6 @@ module Y2Autoinstallation
               Left(used_as_widget),
               VSpacing(0.5),
               replace_point,
-              VSpacing(0.5),
-              encryption_replace_point,
               VStretch()
             )
           )
@@ -69,12 +67,12 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def init
           used_as_widget.value = partition.usage
-          refresh
+          update_replace_point
         end
 
         # @macro seeAbstractWidget
         def handle(event)
-          refresh if event["ID"] == "used_as"
+          update_replace_point if event["ID"] == "used_as"
 
           nil
         end
@@ -144,25 +142,6 @@ module Y2Autoinstallation
           @replace_point ||= CWM::ReplacePoint.new(id: "attrs", widget: empty_widget)
         end
 
-        def encryption_replace_point
-          @encryption_replace_point ||= CWM::ReplacePoint.new(
-            id:     "encryption_attrs",
-            widget: empty_widget
-          )
-        end
-
-        # Whether the encryption options should be displayed
-        #
-        # @return [String, Symbol] selected partition usage
-        def used_as
-          used_as_widget.value
-        end
-
-        def refresh
-          update_replace_point
-          update_encryption_replace_point
-        end
-
         # Updates replace point with the content corresponding widget for selected type
         def update_replace_point
           replace_point.replace(selected_widget)
@@ -172,18 +151,11 @@ module Y2Autoinstallation
         #
         # @return [CWM::AbstractWidget]
         def selected_widget
+          used_as = used_as_widget.value
+
           return empty_widget if used_as == :none
 
           send("#{used_as}_widget")
-        end
-
-        # Displays or hides encryption attrs depending on the selected partition usage
-        def update_encryption_replace_point
-          if [:none, :raid].include?(used_as)
-            encryption_replace_point.replace(empty_widget)
-          else
-            encryption_replace_point.replace(encryption_widget)
-          end
         end
 
         # Empty widget
