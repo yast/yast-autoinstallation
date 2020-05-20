@@ -122,10 +122,12 @@ module Y2Autoinstallation
 
     # Autosetup the network
     def autosetup_network
+      @network_before_proposal = false
+
       if Yast::Profile.current["networking"]
         if Yast::Profile.current["networking"]["setup_before_proposal"]
           log.info("Networking setup before the proposal")
-          Yast::AutoinstConfig.network_before_proposal = true
+          @network_before_proposal = true
         else
           log.info("Networking setup at the end of first installation stage")
         end
@@ -136,7 +138,7 @@ module Y2Autoinstallation
 
         # Import also the host section in order to resolve hosts only available
         # with the network configuration and the host entry
-        if Yast::Profile.current["host"] && Yast::AutoinstConfig.network_before_proposal
+        if Yast::Profile.current["host"] && network_before_proposal?
           Yast::WFM.CallFunction("host_auto", ["Import", Yast::Profile.current["host"]])
           Yast::Profile.remove_sections("host")
         end
@@ -145,10 +147,19 @@ module Y2Autoinstallation
       if semi_auto?("networking")
         log.info("Networking manual setup before proposal")
         Yast::WFM.CallFunction("inst_lan", ["enable_next" => true])
-        Yast::AutoinstConfig.network_before_proposal = true
+        @network_before_proposal = true
       end
 
-      Yast::WFM.CallFunction("lan_auto", ["Write"]) if Yast::AutoinstConfig.network_before_proposal
+      Yast::WFM.CallFunction("lan_auto", ["Write"]) if network_before_proposal?
+    end
+
+    # Convenience method to check whether the network configuration should be
+    # written before the proposal
+    #
+    # @return [Boolean] true when network config should be written before the
+    #   proposal; false when not
+    def network_before_proposal?
+      !!@network_before_proposal
     end
 
   private

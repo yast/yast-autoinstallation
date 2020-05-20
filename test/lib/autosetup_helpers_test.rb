@@ -254,7 +254,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
         it "sets the network config to be written before the proposal" do
           expect { client.autosetup_network }
-            .to change { Yast::AutoinstConfig.network_before_proposal }
+            .to change { client.network_before_proposal? }
             .from(false).to(true)
         end
 
@@ -286,14 +286,16 @@ describe Y2Autoinstallation::AutosetupHelpers do
 
       it "sets the network config to be written before the proposal" do
         expect { client.autosetup_network }
-          .to change { Yast::AutoinstConfig.network_before_proposal }
+          .to change { client.network_before_proposal? }
           .from(false).to(true)
       end
     end
 
     context "in case it was definitely se to be configured before the proposal" do
+      before do
+        allow(client).to receive(:network_before_proposal?).and_return(true)
+      end
       it "writes the network configuration calling the auto client" do
-        Yast::AutoinstConfig.network_before_proposal = true
         expect(Yast::WFM).to receive(:CallFunction).with("lan_auto", ["Write"])
 
         client.autosetup_network
