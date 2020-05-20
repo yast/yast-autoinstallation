@@ -47,20 +47,15 @@ client_DATA = \
 
 yncludedir = @yncludedir@/autoinstall
 ynclude_DATA = \
-  include/autoinstall/DriveDialog.rb \
   include/autoinstall/io.rb \
   include/autoinstall/wizards.rb \
   include/autoinstall/autoinst_dialogs.rb \
   include/autoinstall/classes.rb \
   include/autoinstall/types.rb \
-  include/autoinstall/PartitionDialog.rb \
-  include/autoinstall/StorageDialog.rb \
   include/autoinstall/tree.rb \
   include/autoinstall/common.rb \
   include/autoinstall/dialogs.rb \
-  include/autoinstall/AdvancedPartitionDialog.rb \
   include/autoinstall/ask.rb \
-  include/autoinstall/VolgroupDialog.rb \
   include/autoinstall/xml.rb \
   include/autoinstall/script_dialogs.rb \
   include/autoinstall/conftree.rb \

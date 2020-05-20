@@ -248,11 +248,6 @@ rmdir $RPM_BUILD_ROOT/%{_prefix}/share/doc/packages/autoyast2/html/autoyast
 %dir %{yast_yncludedir}/autoinstall
 %{yast_yncludedir}/autoinstall/io.rb
 %{yast_yncludedir}/autoinstall/autoinst_dialogs.rb
-%{yast_yncludedir}/autoinstall/AdvancedPartitionDialog.rb
-%{yast_yncludedir}/autoinstall/DriveDialog.rb
-%{yast_yncludedir}/autoinstall/PartitionDialog.rb
-%{yast_yncludedir}/autoinstall/StorageDialog.rb
-%{yast_yncludedir}/autoinstall/VolgroupDialog.rb
 %{yast_yncludedir}/autoinstall/common.rb
 %{yast_yncludedir}/autoinstall/tree.rb
 %{yast_yncludedir}/autoinstall/types.rb

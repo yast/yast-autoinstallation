@@ -25,9 +25,6 @@ module Yast
       Yast.import "AutoinstPartPlan"
 
       Yast.import "Label"
-      Yast.include self, "autoinstall/StorageDialog.rb"
-
-
 
       @ret = nil
       @func = ""
