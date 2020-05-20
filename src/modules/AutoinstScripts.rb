@@ -603,101 +603,68 @@ module Yast
             debug = Ops.get_boolean(s, "debug", true) ? "-x" : ""
             if SCR.Read(path(".target.size"), Ops.add(scriptPath, "-run")) == -1 ||
                 Ops.get_boolean(s, "rerun", false) == true
-              if Ops.get_boolean(s, "interactive", false) == true
-                interactiveScript(
-                  "/bin/sh",
-                  debug,
-                  scriptPath,
-                  params,
-                  current_logdir,
-                  scriptName
-                )
-              else
-                executionString = Builtins.sformat(
-                  "/bin/sh %1 %2 %3 &> %4/%5.log ",
-                  debug,
-                  scriptPath,
-                  params,
-                  current_logdir,
-                  scriptName
-                )
-                Builtins.y2milestone(
-                  "Script Execution command: %1",
-                  executionString
-                )
-                SCR.Execute(path(".target.bash"), executionString)
-                SCR.Execute(
-                  path(".target.bash"),
-                  "/bin/touch $FILE",
-                  "FILE" => Ops.add(scriptPath, "-run")
-                )
-              end
+              executionString = Builtins.sformat(
+                "/bin/sh %1 %2 %3 &> %4/%5.log ",
+                debug,
+                scriptPath,
+                params,
+                current_logdir,
+                scriptName
+              )
+              Builtins.y2milestone(
+                "Script Execution command: %1",
+                executionString
+              )
+              SCR.Execute(path(".target.bash"), executionString)
+              SCR.Execute(
+                path(".target.bash"),
+                "/bin/touch $FILE",
+                "FILE" => Ops.add(scriptPath, "-run")
+              )
             end
           elsif scriptInterpreter == "perl"
             debug = Ops.get_boolean(s, "debug", true) ? "-w" : ""
             if SCR.Read(path(".target.size"), Ops.add(scriptPath, "-run")) == -1 ||
                 Ops.get_boolean(s, "rerun", false) == true
-              if Ops.get_boolean(s, "interactive", false) == true
-                interactiveScript(
-                  "/usr/bin/perl",
-                  debug,
-                  scriptPath,
-                  params,
-                  current_logdir,
-                  scriptName
-                )
-              else
-                executionString = Builtins.sformat(
-                  "/usr/bin/perl %1 %2 %3 &> %4/%5.log ",
-                  debug,
-                  scriptPath,
-                  params,
-                  current_logdir,
-                  scriptName
-                )
-                Builtins.y2milestone(
-                  "Script Execution command: %1",
-                  executionString
-                )
-                SCR.Execute(path(".target.bash"), executionString)
-                SCR.Execute(
-                  path(".target.bash"),
-                  "/bin/touch $FILE",
-                  "FILE" => Ops.add(scriptPath, "-run")
-                )
-              end
+              executionString = Builtins.sformat(
+                "/usr/bin/perl %1 %2 %3 &> %4/%5.log ",
+                debug,
+                scriptPath,
+                params,
+                current_logdir,
+                scriptName
+              )
+              Builtins.y2milestone(
+                "Script Execution command: %1",
+                executionString
+              )
+              SCR.Execute(path(".target.bash"), executionString)
+              SCR.Execute(
+                path(".target.bash"),
+                "/bin/touch $FILE",
+                "FILE" => Ops.add(scriptPath, "-run")
+              )
             end
           elsif scriptInterpreter == "python"
             if SCR.Read(path(".target.size"), Ops.add(scriptPath, "-run")) == -1 ||
                 Ops.get_boolean(s, "rerun", false) == true
-              if Ops.get_boolean(s, "interactive", false) == true
-                interactiveScript(
-                  "/usr/bin/python",
-                  "",
-                  scriptPath,
-                  params,
-                  current_logdir,
-                  scriptName
-                )
-              else
-                executionString = Builtins.sformat(
-                  "/usr/bin/python %1 %2 &> %3/%4.log ",
-                  scriptPath,
-                  params,
-                  current_logdir,
-                  scriptName
-                )
-                Builtins.y2milestone(
-                  "Script Execution command: %1",
-                  executionString
-                )
-                SCR.Execute(path(".target.bash"), executionString)
-                SCR.Execute(
-                  path(".target.bash"),
-                  "/bin/touch $FILE",
-                  "FILE" => Ops.add(scriptPath, "-run")
-                )
-              end
+              executionString = Builtins.sformat(
+                "/usr/bin/python %1 %2 &> %3/%4.log ",
+                scriptPath,
+                params,
+                current_logdir,
+                scriptName
+              )
+              Builtins.y2milestone(
+                "Script Execution command: %1",
+                executionString
+              )
+              SCR.Execute(path(".target.bash"), executionString)
+              SCR.Execute(
+                path(".target.bash"),
+                "/bin/touch $FILE",
+                "FILE" => Ops.add(scriptPath, "-run")
+              )
             end
           else
             Builtins.y2error("Unknown interpreter: %1", scriptInterpreter)
@@ -893,184 +860,6 @@ module Yast
         Ops.set(ret, Ops.get(p, 0, ""), Ops.get(p, 1, ""))
       end
       deep_copy(ret)
-    end
-
-    # bidirectional feedback during script execution
-    # Experimental
-    def interactiveScript(shell, debug, scriptPath, params, current_logdir, scriptName)
-      data = {}
-      widget = ""
-      SCR.Execute(path(".target.remove"), "/tmp/ay_opipe")
-      SCR.Execute(path(".target.remove"), "/tmp/ay_ipipe")
-      SCR.Execute(path(".target.bash"), "mkfifo -m 660 /tmp/ay_opipe", {})
-      SCR.Execute(path(".target.bash"), "mkfifo -m 660 /tmp/ay_ipipe", {})
-      execute = Builtins.sformat(
-        "%1 %2 %3 %4 2> %5/%6.log ",
-        shell,
-        debug,
-        scriptPath,
-        params,
-        current_logdir,
-        scriptName
-      )
-      SCR.Execute(
-        path(".target.bash_background"),
-        Ops.add("OPIPE=/tmp/ay_opipe IPIPE=/tmp/ay_ipipe ", execute),
-        {}
-      )
-      run = true
-      ok_button = false
-      vbox = VBox()
-
-      buffer = []
-      while SCR.Read(path(".target.lstat"), "/tmp/ay_opipe") != {} && run
-        data = Convert.to_map(
-          SCR.Execute(path(".target.bash_output"), "cat /tmp/ay_opipe", {})
-        )
-        buffer = Builtins.splitstring(Ops.get_string(data, "stdout", ""), "\n")
-        while buffer != []
-          line = Ops.get(buffer, 0, "")
-          buffer = Builtins.remove(buffer, 0)
-          next if Builtins.size(line) == 0
-
-          Ops.set(data, "stdout", line)
-          Builtins.y2milestone("working on line %1", line)
-          if Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 8) == "__EXIT__"
-            if widget == "radiobutton"
-              vbox = Builtins.add(vbox, PushButton(Id(:ok), Label.OKButton))
-              UI.OpenDialog(RadioButtonGroup(Id(:rb), vbox))
-            end
-            if ok_button == true
-              UI.ChangeWidget(Id(:ok), :Enabled, true)
-              UI.UserInput
-              if widget == "radiobutton"
-                val = UI.QueryWidget(Id(:rb), :CurrentButton)
-                SCR.Execute(
-                  path(".target.bash"),
-                  Builtins.sformat(
-                    "echo \"%1\" > /tmp/ay_ipipe",
-                    AutoinstConfig.ShellEscape(Convert.to_string(val))
-                  ),
-                  {}
-                )
-              elsif widget == "entry"
-                val = UI.QueryWidget(Id(:ay_entry), :Value)
-                SCR.Execute(
-                  path(".target.bash"),
-                  Builtins.sformat(
-                    "echo \"%1\" > /tmp/ay_ipipe",
-                    AutoinstConfig.ShellEscape(Convert.to_string(val))
-                  ),
-                  {}
-                )
-              end
-              ok_button = false
-            end
-            vbox = VBox()
-            if widget == ""
-              run = false
-            else
-              UI.CloseDialog
-            end
-            widget = ""
-          elsif Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 12) == "__PROGRESS__"
-            params = splitParams(Ops.get_string(data, "stdout", ""))
-            UI.OpenDialog(
-              VBox(
-                ProgressBar(
-                  Id(:pr),
-                  Ops.get(params, "label", ""),
-                  Builtins.tointeger(Ops.get(params, "max", "100")),
-                  0
-                )
-              )
-            )
-            widget = "progressbar"
-          elsif Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 8) == "__TEXT__"
-            params = splitParams(Ops.get_string(data, "stdout", ""))
-            hspace = Builtins.tointeger(Ops.get(params, "width", "10"))
-            vspace = Builtins.tointeger(Ops.get(params, "height", "20"))
-            ok_button = Builtins.haskey(params, "okbutton") ? true : false
-            vbox = VBox(
-              HSpacing(hspace),
-              HBox(VSpacing(vspace), RichText(Id(:mle), ""))
-            )
-            vbox = Builtins.add(vbox, PushButton(Id(:ok), Label.OKButton)) if ok_button == true
-            UI.OpenDialog(vbox)
-            UI.ChangeWidget(Id(:ok), :Enabled, false) if ok_button == true
-            widget = "text"
-          elsif Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 9) == "__ENTRY__"
-            params = splitParams(Ops.get_string(data, "stdout", ""))
-            if Builtins.haskey(params, "description")
-              vbox = Builtins.add(vbox, HSpacing(40))
-              vbox = Builtins.add(
-                vbox,
-                RichText(Ops.get(params, "description", ""))
-              )
-            end
-            vbox = Builtins.add(
-              vbox,
-              TextEntry(
-                Id(:ay_entry),
-                Ops.get(params, "label", ""),
-                Ops.get(params, "default", "")
-              )
-            )
-            vbox = Builtins.add(vbox, PushButton(Id(:ok), Label.OKButton))
-            UI.OpenDialog(vbox)
-            widget = "entry"
-            ok_button = true
-          elsif Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 15) == "__RADIOBUTTON__"
-            params = splitParams(Ops.get_string(data, "stdout", ""))
-            if Builtins.haskey(params, "description")
-              vbox = Builtins.add(vbox, HSpacing(60))
-              vbox = Builtins.add(
-                vbox,
-                RichText(Ops.get(params, "description", ""))
-              )
-            end
-            widget = "radiobutton"
-            ok_button = true
-          elsif widget == "progressbar"
-            UI.ChangeWidget(
-              Id(:pr),
-              :Value,
-              Builtins.tointeger(Ops.get_string(data, "stdout", "0"))
-            )
-          elsif widget == "text"
-            UI.ChangeWidget(
-              Id(:mle),
-              :Value,
-              Ops.add(
-                Convert.to_string(UI.QueryWidget(Id(:mle), :Value)),
-                Ops.get_string(data, "stdout", "")
-              )
-            )
-          elsif widget == "radiobutton"
-            if Builtins.substring(Ops.get_string(data, "stdout", ""), 0, 10) == "__BUTTON__"
-              params = splitParams(Ops.get_string(data, "stdout", ""))
-              vbox = Builtins.add(
-                vbox,
-                Left(
-                  RadioButton(
-                    Id(Ops.get(params, "val", "")),
-                    Ops.get(params, "label", "")
-                  )
-                )
-              )
-            else
-              Builtins.y2milestone(
-                "*urgs* received '%1' instead of '__BUTTON__' during RADIOBUTTON creation",
-                Ops.get_string(data, "stdout", "")
-              )
-            end
-          end
-        end
-      end
-      SCR.Execute(path(".target.remove"), "/tmp/ay_opipe")
-      SCR.Execute(path(".target.remove"), "/tmp/ay_ipipe")
-
-      nil
     end
   end
 

@@ -369,24 +369,10 @@ describe "Yast::AutoinstScripts" do
       end
     end
 
-    it "runs in background if interactive flag is set" do
+    it "executes script" do
       data = {
         "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
-        "interpreter" => "shell", "interactive" => true, "rerun" => true }]
-      }
-
-      allow(Yast::SCR).to receive(:Read)
-      allow(Yast::SCR).to receive(:Read).with(path(".target.lstat"), "/tmp/ay_opipe").and_return({})
-      expect(Yast::SCR).to receive(:Execute).with(path(".target.bash_background"), anything, {})
-
-      subject.Import(data)
-      subject.Write("pre-scripts", true)
-    end
-
-    it "executes script if interactive flag is not set" do
-      data = {
-        "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1",
-        "interpreter" => "shell", "interactive" => false, "rerun" => true }]
+        "interpreter" => "shell", "rerun" => true }]
       }
 
       expect(Yast::SCR).to receive(:Execute).with(path(".target.bash"), /\/bin\/sh/)
