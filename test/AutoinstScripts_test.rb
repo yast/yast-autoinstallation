@@ -39,12 +39,12 @@ describe "Yast::AutoinstScripts" do
           { "location" => "\n\t  https://test.com/script2" }
         ] }
         expected = [
-          { "location" => "https://test.com/script" },
-          { "location" => "https://test.com/script2" }
+          "https://test.com/script",
+          "https://test.com/script2"
         ]
 
         subject.Import(data)
-        expect(subject.public_send(type)).to eq expected
+        expect(subject.public_send(type).map(&:location)).to eq expected
       end
 
       context "autoyast profile url is not relurl schema" do
@@ -58,12 +58,12 @@ describe "Yast::AutoinstScripts" do
             { "location" => "relurl://script2" }
           ] }
           expected = [
-            { "location" => "https://test.com/script" },
-            { "location" => "https://example.com/script2" }
+            "https://test.com/script",
+            "https://example.com/script2"
           ]
 
           subject.Import(data)
-          expect(subject.public_send(type)).to eq expected
+          expect(subject.public_send(type).map(&:location)).to eq expected
         end
       end
 
@@ -79,62 +79,42 @@ describe "Yast::AutoinstScripts" do
             { "location" => "https://test.com/script" },
             { "location" => "relurl://script2" }
           ] }
-          expected = [
-            { "location" => "https://test.com/script" },
-            # TODO: is double slash problem here?
-            { "location" => "https://example2.com//ay/script2" }
-          ]
+          expected = [ "https://test.com/script", "https://example2.com/ay/script2"]
 
           subject.Import(data)
-          expect(subject.public_send(type)).to eq expected
+          expect(subject.public_send(type).map(&:location)).to eq expected
         end
       end
     end
 
     context "pre-scripts" do
-      let(:type) { :pre }
+      let(:type) { :pre_scripts }
       let(:key) { "pre-scripts" }
       include_examples "resolve location"
     end
 
     context "init-scripts" do
-      let(:type) { :init }
+      let(:type) { :init_scripts }
       let(:key) { "init-scripts" }
       include_examples "resolve location"
     end
 
     context "post-scripts" do
-      let(:type) { :post }
+      let(:type) { :post_scripts }
       let(:key) { "post-scripts" }
       include_examples "resolve location"
     end
 
     context "chroot-scripts" do
-      let(:type) { :chroot }
+      let(:type) { :chroot_scripts }
       let(:key) { "chroot-scripts" }
       include_examples "resolve location"
     end
 
     context "postpartitioning-scripts" do
-      let(:type) { :postpart }
+      let(:type) { :postpart_scripts }
       let(:key) { "postpartitioning-scripts" }
       include_examples "resolve location"
-    end
-
-    it "sets into merged all scripts type" do
-      data = {
-        "pre-scripts"  => [{ "location" => "http://test.com/script" }],
-        "post-scripts" => [{ "location" => "http://test.com/script2" },
-                           { "location" => "http://test.com/script3" }]
-      }
-      expected = [
-        { "type" => "pre-scripts", "location" => "http://test.com/script" },
-        { "type" => "post-scripts", "location" => "http://test.com/script2" },
-        { "type" => "post-scripts", "location" => "http://test.com/script3" }
-      ]
-
-      subject.Import(data)
-      expect(subject.merged).to contain_exactly(*expected)
     end
   end
 
@@ -142,7 +122,7 @@ describe "Yast::AutoinstScripts" do
     it "returns hash with defined scripts" do
       data = {
         "pre-scripts" => [{ "location" => "http://test.com/new_script", "param-list" => [],
-            "filename" => "script4", "source" => "", "interpreter" => "perl",
+            "filename" => "script4", "source" => "", "interpreter" => "perl", "rerun" => false,
             "debug" => false, "feedback" => false, "feedback_type" => "", "notification" => "" }]
       }
 
@@ -179,18 +159,21 @@ describe "Yast::AutoinstScripts" do
           { "type" => "pre-scripts", "location" => "http://test.com/script",
             "filename" => "script1" },
           { "type" => "post-scripts", "location" => "http://test.com/new_script",
-            "filename" => "script4", "source" => "", "interpreter" => "perl", "chrooted" => false,
+            "filename" => "script2", "source" => "", "interpreter" => "perl", "chrooted" => false,
             "debug" => false, "feedback" => false, "feedback_type" => "", "notification" => "" },
-          { "type" => "post-scripts", "location" => "http://test.com/script2",
-            "filename" => "script2" },
           { "type" => "post-scripts", "location" => "http://test.com/script3",
             "filename" => "script3" }
         ]
 
-        subject.AddEditScript("script4", "", "perl", "post-scripts", false, false, false,
-          "", "http://test.com/new_script", "")
+        subject.AddEditScript("script2", "", "perl", "post-scripts", false, false, false, "",
+          "http://test.com/new_script", "")
 
-        expect(subject.merged).to contain_exactly(*expected)
+        expect(subject.scripts.size).to eq 3
+        new_script = subject.scripts.find { |s| s.filename == "script2" }
+        expect(new_script.interpreter).to eq "perl"
+        expect(new_script.source).to eq ""
+        expect(new_script.location).to eq "http://test.com/new_script"
+        expect(new_script).to be_a(Y2Autoinstallation::PostScript)
       end
     end
 
@@ -204,20 +187,15 @@ describe "Yast::AutoinstScripts" do
 
         subject.Import(data)
 
-        expected = [
-          { "type" => "pre-scripts", "location" => "http://test.com/script",
-            "filename" => "script1" },
-          { "type" => "post-scripts", "location" => "http://test.com/new_script",
-            "filename" => "script2", "source" => "", "interpreter" => "perl", "chrooted" => false,
-            "debug" => false, "feedback" => false, "feedback_type" => "", "notification" => "" },
-          { "type" => "post-scripts", "location" => "http://test.com/script3",
-            "filename" => "script3" }
-        ]
+        subject.AddEditScript("script4", "", "perl", "post-scripts", false, false, false,
+          "", "http://test.com/new_script", "")
 
-        subject.AddEditScript("script2", "", "perl", "post-scripts", false, false, false, "",
-          "http://test.com/new_script", "")
-
-        expect(subject.merged).to contain_exactly(*expected)
+        expect(subject.scripts.size).to eq 4
+        new_script = subject.scripts.find { |s| s.filename == "script4" }
+        expect(new_script.interpreter).to eq "perl"
+        expect(new_script.source).to eq ""
+        expect(new_script.location).to eq "http://test.com/new_script"
+        expect(new_script).to be_a(Y2Autoinstallation::PostScript)
       end
     end
   end
@@ -232,16 +210,7 @@ describe "Yast::AutoinstScripts" do
 
       subject.Import(data)
 
-      expected = [
-        { "type" => "pre-scripts", "location" => "http://test.com/script",
-          "filename" => "script1" },
-        { "type" => "post-scripts", "location" => "http://test.com/script3",
-          "filename" => "script3" }
-      ]
-
-      subject.deleteScript("script2")
-
-      expect(subject.merged).to contain_exactly(*expected)
+      expect{subject.deleteScript("script2")}.to change{subject.scripts.size}.from(3).to(2)
     end
   end
 
@@ -274,7 +243,7 @@ describe "Yast::AutoinstScripts" do
           "pre-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1" }]
         }
 
-        expect(subject).to receive(:get_file_from_url) do |map|
+        expect_any_instance_of(Yast::Transfer::FileFromUrl).to receive(:get_file_from_url) do |_klass, map|
           expect(map[:scheme]).to eq "http"
           expect(map[:host]).to eq "test.com"
           expect(map[:urlpath]).to eq "/script"
@@ -308,7 +277,7 @@ describe "Yast::AutoinstScripts" do
                                            "filename" => "script1" }]
         }
 
-        expect(subject).to receive(:get_file_from_url) do |map|
+        expect_any_instance_of(Yast::Transfer::FileFromUrl).to receive(:get_file_from_url) do |_klass, map|
           expect(map[:scheme]).to eq "http"
           expect(map[:host]).to eq "test.com"
           expect(map[:urlpath]).to eq "/script"
@@ -341,12 +310,11 @@ describe "Yast::AutoinstScripts" do
           "init-scripts" => [{ "location" => "http://test.com/script", "filename" => "script1" }]
         }
 
-        expect(subject).to receive(:get_file_from_url) do |map|
+        expect_any_instance_of(Yast::Transfer::FileFromUrl).to receive(:get_file_from_url) do |_klass, map|
           expect(map[:scheme]).to eq "http"
           expect(map[:host]).to eq "test.com"
           expect(map[:urlpath]).to eq "/script"
-          # double slash due to prefixing target dir
-          expect(map[:localfile]).to eq "//var/adm/autoinstall/init.d/script1"
+          expect(map[:localfile]).to eq "/var/adm/autoinstall/init.d/script1"
 
           true
         end

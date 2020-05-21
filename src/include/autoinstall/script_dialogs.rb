@@ -16,12 +16,12 @@ module Yast
     # Script Configuration
     # @return  script configuration dialog
     def script_dialog_contents
-      allscripts = Builtins.maplist(AutoinstScripts.merged) do |s|
+      allscripts = AutoinstScripts.scripts do |s|
         Item(
-          Id(Ops.get_string(s, "filename", "Unknown")),
-          Ops.get_string(s, "filename", "Unknown"),
-          AutoinstScripts.typeString(Ops.get_string(s, "type", "")),
-          Ops.get_string(s, "interpreter", "Unknown")
+          Id(s.filename),
+          s.filename,
+          AutoinstScripts.typeString(s.class.type),
+          s.interpreter
         )
       end
       contents = VBox(
@@ -49,7 +49,7 @@ module Yast
     def ScriptDialog(mode, name)
       script = {}
       if mode == :edit
-        filtered_scripts = Builtins.filter(AutoinstScripts.merged) do |s|
+        filtered_scripts = Builtins.filter(AutoinstScripts.scripts) do |s|
           Ops.get_string(s, "filename", "") == name
         end
         if Ops.greater_than(Builtins.size(filtered_scripts), 0)
