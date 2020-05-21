@@ -33,7 +33,7 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Enable Snapshots for root filesystem")
+          _("Enable Snapshots for Root Filesystem")
         end
       end
     end

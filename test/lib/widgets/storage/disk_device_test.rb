@@ -24,5 +24,5 @@ require "cwm/rspec"
 describe Y2Autoinstallation::Widgets::Storage::DiskDevice do
   subject { described_class.new }
 
-  include_examples "CWM::ComboBox"
+  include_examples "CWM::InputField"
 end

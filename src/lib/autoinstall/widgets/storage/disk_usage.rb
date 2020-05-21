@@ -46,9 +46,9 @@ module Y2Autoinstallation
 
         ITEMS = [:all, :free, :linux].freeze
         ITEMS_LABELS = {
-          all:   N_("All partitions"),
-          linux: N_("Linux partitions"),
-          free:  N_("Only free space")
+          all:   N_("All Partitions"),
+          linux: N_("Linux Partitions"),
+          free:  N_("Only Free Space")
         }.freeze
         private_constant :ITEMS, :ITEMS_LABELS
 

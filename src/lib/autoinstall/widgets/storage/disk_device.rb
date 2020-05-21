@@ -23,10 +23,10 @@ require "cwm/common_widgets"
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Widget to select a block device for a partition section
+      # Determines a disk device
       #
       # It corresponds to the `device` element in the profile.
-      class DiskDevice < CWM::ComboBox
+      class DiskDevice < CWM::InputField
         # Constructor
         def initialize
           textdomain "autoinst"
@@ -36,24 +36,6 @@ module Y2Autoinstallation
         # @macro seeAbstractWidget
         def label
           _("Device")
-        end
-
-        # @macro seeAbstractWidget
-        def opt
-          [:editable]
-        end
-
-        DISKS = [
-          "/dev/sda", "/dev/sdb", "/dev/vda", "/dev/vdb", "/dev/hda", "/dev/hdb"
-        ].freeze
-        private_constant :DISKS
-
-        # Returns the list of items
-        #
-        # @macro seeComboBox
-        # @return [Array<Array<String, String>>] List of possible values
-        def items
-          @items ||= [["", "auto"]] + DISKS.map { |i| [i, i] }
         end
       end
     end

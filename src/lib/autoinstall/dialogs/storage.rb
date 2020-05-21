@@ -30,9 +30,9 @@ module Y2Autoinstallation
     # Dialog to set up the partition plan
     #
     # @example Edit a partitioning section
-    #   devicegraph = devicegraph = Y2Storage::StorageManager.instance.probed
+    #   devicegraph = Y2Storage::StorageManager.instance.probed
     #   partitioning = Y2Storage::Autoinst::PartitioningSection.new_from_storage(devicegraph)
-    #   result = Y2Autoinstallation::Dialogs::Storage.new.run
+    #   result = Y2Autoinstallation::Dialogs::Storage.new(partitioning).run
     #
     # @example Start with an empty section
     #   result = Y2Autoinstallation::Dialogs::Storage.new

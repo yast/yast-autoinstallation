@@ -18,6 +18,8 @@
 # find current contact information at www.suse.com.
 
 # Work around YARD inability to link across repos/gems:
+# (declaring macros here works because YARD sorts by filename size(!))
+
 # @!macro [new] seeAbstractWidget
 #   @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FAbstractWidget:${0}
 # @!macro [new] seeCustomWidget

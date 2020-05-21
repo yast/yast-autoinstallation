@@ -24,8 +24,9 @@ module Y2Autoinstallation
   module Presenters
     # Presenter for Y2Storage::AutoinstProfile::PartitionSection
     #
-    # In an AutoYaST profile, a <partition> section is used to define a partition,
-    # a logical volume, a RAID member, etc.
+    # In an AutoYaST profile, a <partition> section is used to define a partition or a logical
+    # volume. In addition, for <drive> sections with disklabel=none, a <partition> section is used
+    # to define how to use the device indicated by the <drive> section.
     class Partition < Section
       include Yast::I18n
 
@@ -168,7 +169,7 @@ module Y2Autoinstallation
           # TRANSLATORS: %s is a placeholder for the name of a RAID
           Kernel.format(_("Part of %s"), raid_name)
         when :lvm_pv
-          # TRANSLATORS: %s is a placeholder for the name of a RAID
+          # TRANSLATORS: %s is a placeholder for the name of an LVM volume group
           Kernel.format(_("Part of %s"), lvm_group)
         when :bcache_backing
           # TRANSLATORS: %s is a placeholder for the name of a bcache device
