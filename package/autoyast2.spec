@@ -226,7 +226,6 @@ done
 %{yast_moduledir}/AutoinstClone.rb
 %dir %{yast_yncludedir}/autoinstall
 %{yast_yncludedir}/autoinstall/io.rb
-%{yast_yncludedir}/autoinstall/autoinst_dialogs.rb
 %{yast_yncludedir}/autoinstall/common.rb
 %{yast_yncludedir}/autoinstall/tree.rb
 %{yast_yncludedir}/autoinstall/types.rb
