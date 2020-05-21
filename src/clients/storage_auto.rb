@@ -2,8 +2,11 @@
 # Package:  Autoinstallation Configuration System
 # Summary:  Storage
 # Authors:  Anas Nashif<nashif@suse.de>
-#
-# $Id$
+
+require "autoinstall/dialogs/storage"
+require "y2storage/storage_manager"
+require "y2storage/autoinst_profile/partitioning_section"
+
 module Yast
   class StorageAutoClient < Client
     include Yast::Logger
@@ -19,7 +22,6 @@ module Yast
       Yast.import "AutoinstPartPlan"
 
       Yast.import "Label"
-      Yast.include self, "autoinstall/StorageDialog.rb"
 
       @ret = nil
       @func = ""
@@ -60,8 +62,11 @@ module Yast
         @ret = []
       # Change configuration (run AutoSequence)
       elsif @func == "Change"
-        @ret = StorageDialog()
-        UI.CloseDialog
+        storage_dialog = build_storage_dialog
+        @ret = storage_dialog.run
+        # After succesfully editing the storage settings, import the result as
+        # the new partition plan.
+        AutoinstPartPlan.Import(storage_dialog.partitioning.to_hashes) if @ret == :next
       # Return actual state
       elsif @func == "Export"
         @ret = AutoinstPartPlan.Export
@@ -82,6 +87,21 @@ module Yast
       deep_copy(@ret)
 
       # EOF
+    end
+
+  private
+
+    # Returns a dialog to edit the storage
+    #
+    # It uses the current partition plan.
+    #
+    # @return [Y2Storage::Dialogs::Storage] Storage dialog
+    def build_storage_dialog
+      part_plan = AutoinstPartPlan.Export
+      # FIXME: workaround to avoid crashing the dialog
+      part_plan = [{ "type" => :CT_DISK }] if part_plan.empty?
+      partitioning = Y2Storage::AutoinstProfile::PartitioningSection.new_from_hashes(part_plan)
+      Y2Autoinstallation::Dialogs::Storage.new(partitioning)
     end
   end
 end
