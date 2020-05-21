@@ -47,20 +47,15 @@ client_DATA = \
 
 yncludedir = @yncludedir@/autoinstall
 ynclude_DATA = \
-  include/autoinstall/DriveDialog.rb \
   include/autoinstall/io.rb \
   include/autoinstall/wizards.rb \
   include/autoinstall/autoinst_dialogs.rb \
   include/autoinstall/classes.rb \
   include/autoinstall/types.rb \
-  include/autoinstall/PartitionDialog.rb \
-  include/autoinstall/StorageDialog.rb \
   include/autoinstall/tree.rb \
   include/autoinstall/common.rb \
   include/autoinstall/dialogs.rb \
-  include/autoinstall/AdvancedPartitionDialog.rb \
   include/autoinstall/ask.rb \
-  include/autoinstall/VolgroupDialog.rb \
   include/autoinstall/xml.rb \
   include/autoinstall/script_dialogs.rb \
   include/autoinstall/conftree.rb \
@@ -77,12 +72,89 @@ ylib_DATA = \
   lib/autoinstall/storage_proposal.rb \
   lib/autoinstall/autoinst_issues_presenter.rb \
   lib/autoinstall/autoinst_issues.rb \
-  lib/autoinstall/storage_proposal_issues_presenter.rb
+  lib/autoinstall/storage_proposal_issues_presenter.rb \
+  lib/autoinstall/ui_state.rb \
+  lib/autoinstall/storage_controller.rb \
+  lib/autoinstall/presenters.rb
 
 ydialogsdir = @ylibdir@/autoinstall/dialogs
 ydialogs_DATA = \
   lib/autoinstall/dialogs/disk_selector.rb \
-  lib/autoinstall/dialogs/question.rb
+  lib/autoinstall/dialogs/question.rb \
+  lib/autoinstall/dialogs/storage.rb
+
+ypresentersdir = @ylibdir@/autoinstall/presenters
+ypresenters_DATA = \
+  lib/autoinstall/presenters/drive.rb \
+  lib/autoinstall/presenters/drive_type.rb \
+  lib/autoinstall/presenters/partition.rb \
+  lib/autoinstall/presenters/section.rb
+
+ystorage_widgetsdir = @ylibdir@/autoinstall/widgets/storage
+ystorage_widgets_DATA = \
+  lib/autoinstall/widgets/storage/add_drive_button.rb \
+  lib/autoinstall/widgets/storage/add_partition_button.rb \
+  lib/autoinstall/widgets/storage/bcache_backing_attrs.rb \
+  lib/autoinstall/widgets/storage/bcache_backing_for.rb \
+  lib/autoinstall/widgets/storage/bcache_device.rb \
+  lib/autoinstall/widgets/storage/bcache_page.rb \
+  lib/autoinstall/widgets/storage/boolean_selector.rb \
+  lib/autoinstall/widgets/storage/cache_mode.rb \
+  lib/autoinstall/widgets/storage/chunk_size.rb \
+  lib/autoinstall/widgets/storage/common_partition_attrs.rb \
+  lib/autoinstall/widgets/storage/create.rb \
+  lib/autoinstall/widgets/storage/create_subvolumes.rb \
+  lib/autoinstall/widgets/storage/crypt_fs.rb \
+  lib/autoinstall/widgets/storage/crypt_key.rb \
+  lib/autoinstall/widgets/storage/delete_section_button.rb \
+  lib/autoinstall/widgets/storage/disk_device.rb \
+  lib/autoinstall/widgets/storage/disklabel.rb \
+  lib/autoinstall/widgets/storage/disk_page.rb \
+  lib/autoinstall/widgets/storage/disk_usage.rb \
+  lib/autoinstall/widgets/storage/drive_page.rb \
+  lib/autoinstall/widgets/storage/enable_snapshots.rb \
+  lib/autoinstall/widgets/storage/encryption_attrs.rb \
+  lib/autoinstall/widgets/storage/filesystem_attrs.rb \
+  lib/autoinstall/widgets/storage/filesystem.rb \
+  lib/autoinstall/widgets/storage/format.rb \
+  lib/autoinstall/widgets/storage/fstopt.rb \
+  lib/autoinstall/widgets/storage/init_drive.rb \
+  lib/autoinstall/widgets/storage/keep_unknown_lv.rb \
+  lib/autoinstall/widgets/storage/label.rb \
+  lib/autoinstall/widgets/storage/lvm_group.rb \
+  lib/autoinstall/widgets/storage/lvm_page.rb \
+  lib/autoinstall/widgets/storage/lvm_partition_attrs.rb \
+  lib/autoinstall/widgets/storage/lvm_pv_attrs.rb \
+  lib/autoinstall/widgets/storage/lv_name.rb \
+  lib/autoinstall/widgets/storage/md_level.rb \
+  lib/autoinstall/widgets/storage/mkfs_options.rb \
+  lib/autoinstall/widgets/storage/mountby.rb \
+  lib/autoinstall/widgets/storage/mount.rb \
+  lib/autoinstall/widgets/storage/not_lvm_partition_attrs.rb \
+  lib/autoinstall/widgets/storage/overview_tree_pager.rb \
+  lib/autoinstall/widgets/storage/overview_tree.rb \
+  lib/autoinstall/widgets/storage/parity_algorithm.rb \
+  lib/autoinstall/widgets/storage/partition_general_tab.rb \
+  lib/autoinstall/widgets/storage/partition_id.rb \
+  lib/autoinstall/widgets/storage/partition_nr.rb \
+  lib/autoinstall/widgets/storage/partition_page.rb \
+  lib/autoinstall/widgets/storage/partition_tab.rb \
+  lib/autoinstall/widgets/storage/partition_type.rb \
+  lib/autoinstall/widgets/storage/partition_usage_tab.rb \
+  lib/autoinstall/widgets/storage/pesize.rb \
+  lib/autoinstall/widgets/storage/pool.rb \
+  lib/autoinstall/widgets/storage/raid_attrs.rb \
+  lib/autoinstall/widgets/storage/raid_name.rb \
+  lib/autoinstall/widgets/storage/raid_page.rb \
+  lib/autoinstall/widgets/storage/resize.rb \
+  lib/autoinstall/widgets/storage/size.rb \
+  lib/autoinstall/widgets/storage/size_selector.rb \
+  lib/autoinstall/widgets/storage/stripesize.rb \
+  lib/autoinstall/widgets/storage/stripes.rb \
+  lib/autoinstall/widgets/storage/used_as.rb \
+  lib/autoinstall/widgets/storage/used_pool.rb \
+  lib/autoinstall/widgets/storage/uuid.rb \
+  lib/autoinstall/widgets/storage/vg_device.rb
 
 yclientsdir = @ylibdir@/autoinstall/clients
 yclients_DATA = \
