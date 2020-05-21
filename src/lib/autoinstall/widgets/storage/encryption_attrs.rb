@@ -19,7 +19,7 @@
 
 require "yast"
 require "cwm/custom_widget"
-require "autoinstall/widgets/storage/crypt_fs"
+require "autoinstall/widgets/storage/crypt_method"
 require "autoinstall/widgets/storage/crypt_key"
 
 module Y2Autoinstallation
@@ -47,7 +47,7 @@ module Y2Autoinstallation
         def contents
           Left(
             HBox(
-              crypt_fs_widget,
+              crypt_method_widget,
               HSpacing(2),
               HSquash(crypt_key_widget)
             )
@@ -56,8 +56,8 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def init
-          crypt_fs_widget.value  = section.crypt_fs
-          crypt_key_widget.value = section.crypt_key
+          crypt_method_widget.value = section.crypt_method
+          crypt_key_widget.value    = section.crypt_key
         end
 
         # Returns the widgets values
@@ -65,8 +65,8 @@ module Y2Autoinstallation
         # @return [Hash<String,Object>]
         def values
           {
-            "crypt_fs"  => crypt_fs_widget.value,
-            "crypt_key" => crypt_key_widget.value
+            "crypt_method" => crypt_method_widget.value,
+            "crypt_key"    => crypt_key_widget.value
           }
         end
 
@@ -75,9 +75,9 @@ module Y2Autoinstallation
         # @return [Presenters::Partition] presenter for the partition section
         attr_reader :section
 
-        # Widget for setting if the partition will be encrypted
-        def crypt_fs_widget
-          @crypt_fs_widget ||= CryptFs.new
+        # Widget for setting the encryption method to be used
+        def crypt_method_widget
+          @crypt_method_widget ||= CryptMethod.new
         end
 
         # Widget for settings the encryption key

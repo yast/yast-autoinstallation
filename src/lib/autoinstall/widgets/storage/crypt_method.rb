@@ -18,13 +18,14 @@
 # find current contact information at www.suse.com.
 
 require "yast"
-require "autoinstall/widgets/storage/boolean_selector"
+require "y2storage"
+require "cwm/common_widgets"
 
 module Y2Autoinstallation
   module Widgets
     module Storage
-      # Selector widget to set if the partition will be encrypted
-      class CryptFs < BooleanSelector
+      # Selector widget to set the encryption method to use
+      class CryptMethod < CWM::ComboBox
         # Constructor
         def initialize
           textdomain "autoinst"
@@ -33,7 +34,15 @@ module Y2Autoinstallation
 
         # @macro seeAbstractWidget
         def label
-          _("Encrypt")
+          _("Encryption Method")
+        end
+
+        # @macro seeComboBox
+        def items
+          @items ||= [
+            [nil, ""],
+            *Y2Storage::EncryptionMethod.all.map { |e| [e.to_sym, e.to_sym.to_s] }
+          ]
         end
       end
     end

@@ -105,7 +105,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionGeneralTab do
           "used_pool",
           "stripes",
           "stripe_size",
-          "crypt_fs",
+          "crypt_method",
           "crypt_key"
         )
       )
