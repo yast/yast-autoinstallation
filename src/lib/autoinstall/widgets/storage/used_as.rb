@@ -56,9 +56,10 @@ module Y2Autoinstallation
             # TRANSLATORS: option for setting the partition as an LVM physical volume
             [:lvm_pv, _("LVM Physical Volume")],
             # TRANSLATORS: option for setting the partition as a bcache backing device
-            [:bcache_backing, _("Bcache Backing Device")]
+            [:bcache_backing, _("Bcache Backing Device")],
             # ["bcache_caching", _("Bcache Caching Device")],
-            # ["btrfs_member", _("Btrfs Multi-device Member")]
+            # TRANSLATORS: option for setting the partition as a Btrfs member
+            [:btrfs_member, _("Btrfs Multi-device Member")]
           ]
         end
       end

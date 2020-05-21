@@ -156,6 +156,7 @@ describe Y2Autoinstallation::Widgets::Storage::PartitionUsageTab do
           "raid_name",
           "lvm_group",
           "bcache_backing_for",
+          "btrfs_name",
           "create_subvolumes"
         )
       )

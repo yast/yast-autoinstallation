@@ -95,6 +95,14 @@ describe Y2Autoinstallation::Presenters::Partition do
       end
     end
 
+    context "when the section refers to a Btrfs member" do
+      let(:attrs) { { btrfs_name: "root_fs" } }
+
+      it "returns :btrfs_member" do
+        expect(subject.usage).to eq(:btrfs_member)
+      end
+    end
+
     context "when the section does not refer an specific usage" do
       let(:attrs) { {} }
 
