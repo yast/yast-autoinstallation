@@ -308,3 +308,55 @@ RSpec.shared_examples "Y2Autoinstallation::Widgets::Storage::PartitionTab" do
     end
   end
 end
+
+RSpec.shared_examples "Y2Autoinstallation::Widgets::Storage::BtrfsRaidLevel" do
+  include_examples "CWM::AbstractWidget"
+
+  describe "#items" do
+    let(:items) { widget.items.map { |i| i[0] } }
+
+    it "includes :default" do
+      expect(items).to include(:default)
+    end
+
+    it "includes :single" do
+      expect(items).to include(:single)
+    end
+
+    it "includes :dup" do
+      expect(items).to include(:dup)
+    end
+
+    it "includes :raid0" do
+      expect(items).to include(:raid0)
+    end
+
+    it "includes :raid1" do
+      expect(items).to include(:raid1)
+    end
+
+    it "includes :raid10" do
+      expect(items).to include(:raid10)
+    end
+
+    it "does not include :unknown" do
+      expect(items).to_not include(:unknown)
+    end
+
+    it "does not include :raid1c3" do
+      expect(items).to_not include(:raid1c3)
+    end
+
+    it "does not include :raid1c4" do
+      expect(items).to_not include(:raid1c4)
+    end
+
+    it "does not include :raid5" do
+      expect(items).to_not include(:raid5)
+    end
+
+    it "does not include :raid6" do
+      expect(items).to_not include(:raid6)
+    end
+  end
+end
