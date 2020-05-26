@@ -252,12 +252,6 @@ describe Y2Autoinstallation::AutosetupHelpers do
         let(:profile) { networking_section.merge(host_section) }
         let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }
 
-        it "sets the network config to be written before the proposal" do
-          expect { client.autosetup_network }
-            .to change { client.network_before_proposal? }
-            .from(false).to(true)
-        end
-
         context "and a host section is defined" do
           it "imports the /etc/hosts config from the profile" do
             expect(Yast::WFM)

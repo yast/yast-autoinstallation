@@ -103,14 +103,6 @@ module Y2Autoinstallation
       true
     end
 
-    # Convenience method to fetch the general profile section
-    #
-    # @return [Hash] the general section from the current profile when present;
-    #   an empty hash when not
-    def general_section
-      Yast::Profile.current["general"] || {}
-    end
-
     # Convenienve method to check whether a particular client should be run to
     # be configured manually during the autoinstallation according to the
     # semi-automatic section
@@ -122,12 +114,12 @@ module Y2Autoinstallation
 
     # Autosetup the network
     def autosetup_network
-      @network_before_proposal = false
+      # Prevent to be called twice in case of already configured
+      return if @network_configured
 
       if Yast::Profile.current["networking"]
-        if Yast::Profile.current["networking"]["setup_before_proposal"]
+        if network_before_proposal?
           log.info("Networking setup before the proposal")
-          @network_before_proposal = true
         else
           log.info("Networking setup at the end of first installation stage")
         end
@@ -151,6 +143,7 @@ module Y2Autoinstallation
       end
 
       Yast::WFM.CallFunction("lan_auto", ["Write"]) if network_before_proposal?
+      @network_configured = true
     end
 
     # Convenience method to check whether the network configuration should be
@@ -159,7 +152,22 @@ module Y2Autoinstallation
     # @return [Boolean] true when network config should be written before the
     #   proposal; false when not
     def network_before_proposal?
-      !!@network_before_proposal
+      return @network_before_proposal unless @network_before_proposal.nil?
+
+      @network_before_proposal = networking_section.fetch("setup_before_proposal", false)
+    end
+
+    # Defines convenience methods to check the existence and the content of
+    # the {Yast::Profile.current} sections
+    def method_missing(method, *arguments, &block)
+      case method.to_s
+      when /(.+)_section$/
+        Yast::Profile.current[Regexp.last_match(1)] || {}
+      when /(.+)_section\?$/
+        Yast::Profile.current.keys.include?(Regexp.last_match(1))
+      else
+        super
+      end
     end
 
   private
