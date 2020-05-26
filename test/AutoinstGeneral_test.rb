@@ -145,4 +145,87 @@ describe "Yast::AutoinstGeneral" do
       expect(subject.Export).to include("proposals" => profile["proposals"])
     end
   end
+
+  RSpec.shared_examples "sets callback" do |option, cb_map = {}|
+    let(:signature_handling) { {} }
+
+    default_cb = option.split("_").map(&:capitalize).join # e.g., "AcceptUnsignedFile"
+    cb = "Callback#{default_cb}" # e.g., "CallbackAcceptUnsignedFile"
+
+    before do
+      subject.Import("signature-handling" => signature_handling)
+    end
+
+    context cb do
+      context "when '#{option}' is not set" do
+        it "sets '#{default_cb}' as the default handler" do
+          expect(Yast::Pkg).to receive(cb) do |ref|
+            expect(ref.remote_method)
+              .to eq(Yast::SignatureCheckCallbacks.method(default_cb))
+          end
+          subject.SetSignatureHandling
+        end
+      end
+
+      cb_map.each do |cb_name, value|
+        context "when '#{option}' is set to '#{value}'" do
+          let(:signature_handling) do
+            { option => value }
+          end
+
+          it "sets the '#{cb_name}' callback" do
+            expect(Yast::Pkg).to receive(cb).ordered.with(any_args)
+            expect(Yast::Pkg).to receive(cb).ordered do |ref|
+              expect(ref.remote_method).to eq(Yast::AutoInstall.method(cb_name))
+            end
+            subject.SetSignatureHandling
+          end
+        end
+      end
+    end
+  end
+
+  describe "#SetSignatureHandling" do
+    before do
+      subject.Import("signature-handling" => signature_handling)
+    end
+
+    include_examples "sets callback", "accept_unsigned_file",
+      callbackTrue_boolean_string_integer:  true,
+      callbackFalse_boolean_string_integer: false
+
+    include_examples "sets callback", "accept_file_without_checksum",
+      callbackTrue_boolean_string:  true,
+      callbackFalse_boolean_string: false
+
+    include_examples "sets callback", "accept_verification_failed",
+      callbackTrue_boolean_string_map_integer:  true,
+      callbackFalse_boolean_string_map_integer: false
+
+    include_examples "sets callback", "accept_verification_failed",
+      callbackTrue_boolean_string_map_integer:  true,
+      callbackFalse_boolean_string_map_integer: false
+
+    include_examples "sets callback", "accept_unknown_gpg_key",
+      callbackTrue_boolean_string_string_integer:  true,
+      callbackFalse_boolean_string_string_integer: false
+
+    include_examples "sets callback", "accept_wrong_digest",
+      callbackTrue_boolean_string_string_string:  true,
+      callbackFalse_boolean_string_string_string: false
+
+    include_examples "sets callback", "accept_unknown_digest",
+      callbackTrue_boolean_string_string_string:  true,
+      callbackFalse_boolean_string_string_string: false
+
+    include_examples "sets callback", "import_gpg_key",
+      callbackTrue_boolean_map_integer:  true,
+      callbackFalse_boolean_map_integer: false
+
+    include_examples "sets callback", "trusted_key_added",
+      callback_void_map: ["key"]
+
+    include_examples "sets callback", "trusted_key_removed",
+      callback_void_map: ["key"]
+  end
 end
