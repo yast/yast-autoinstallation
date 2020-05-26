@@ -220,7 +220,7 @@ module Yast
       return true if !Mode.autoinst && !Mode.autoupgrade
 
       target_scripts = @scripts.select { |s| s.class.type == type }
-      target.scripts.select! { |s| s.chrooted == special } if type == "chroot_scripts"
+      target_scripts.select! { |s| s.chrooted == special } if type == "chroot-scripts"
 
       target_scripts.each(&:create_script_file)
 

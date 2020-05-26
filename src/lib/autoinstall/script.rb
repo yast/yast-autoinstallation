@@ -66,7 +66,7 @@ module Y2Autoinstallation
       }
     end
 
-    def log_dir
+    def logs_dir
       Yast::AutoinstConfig.logs_dir
     end
 
@@ -91,6 +91,9 @@ module Y2Autoinstallation
 
     # Downloads or writes down script file
     def create_script_file
+      # ensure path are available
+      Yast::SCR.Execute(Yast::Path.new(".target.mkdir"), File.dirname(script_path))
+      Yast::SCR.Execute(Yast::Path.new(".target.mkdir"), logs_dir)
       if !location.empty?
         url = Yast::URL.Parse(location)
         res = get_file_from_url(
@@ -304,7 +307,7 @@ module Y2Autoinstallation
       if chrooted
         super
       else
-        File.join(Yast::AutoinstConfig.destdir, Yast::AutoinstConfig.logsdir)
+        File.join(Yast::AutoinstConfig.destdir, Yast::AutoinstConfig.logs_dir)
       end
     end
 
