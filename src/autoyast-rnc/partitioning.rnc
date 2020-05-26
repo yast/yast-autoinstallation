@@ -125,21 +125,21 @@ part_fs_options =
     )
   }
 
-option = MAP, (option_str, option_value )
+fs_option = MAP, (option_str, option_value )
 blank_option = MAP, (option_blank, option_str, option_value )
-opt_block_size = element opt_block_size { option }
-opt_blocksize = element opt_blocksize { option }
+opt_block_size = element opt_block_size { fs_option }
+opt_blocksize = element opt_blocksize { fs_option }
 opt_bytes_per_inode =
-  element opt_bytes_per_inode { option }
+  element opt_bytes_per_inode { fs_option }
 opt_format =
   element opt_format { blank_option }
 opt_hash = element opt_hash { blank_option }
-opt_inode_align = element opt_inode_align { option }
+opt_inode_align = element opt_inode_align { fs_option }
 opt_max_inode_space =
-  element opt_max_inode_space { option }
-opt_raid = element opt_raid { option }
+  element opt_max_inode_space { fs_option }
+opt_raid = element opt_raid { fs_option }
 opt_reserved_blocks =
-  element opt_reserved_blocks { option }
+  element opt_reserved_blocks { fs_option }
 raid_name = element raid_name { STRING }
 
 raid_options = element raid_options { MAP, (persistent_superblock? & chunk_size? & parity_algorithm? & raid_type? & device_order? & raid_name?) }
