@@ -228,4 +228,12 @@ describe "Yast::AutoinstGeneral" do
     include_examples "sets callback", "trusted_key_removed",
       callback_void_map: ["key"]
   end
+
+  describe "#Summary" do
+    it "includes information about installation confirmation and signature handling" do
+      summary = subject.Summary
+      expect(summary).to include("Confirm installation?")
+      expect(summary).to include("Signature Handling")
+    end
+  end
 end
