@@ -490,7 +490,6 @@ module Yast
         if Ops.get_map(Profile.current, "general", {}) != {}
           Import(Ops.get_map(Profile.current, "general", {}))
         end
-        SetSignatureHandling()
       end
       nil
     end
