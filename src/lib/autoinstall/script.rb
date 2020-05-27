@@ -20,6 +20,7 @@
 require "yast"
 
 require "shellwords"
+require "fileutils"
 
 require "transfer/file_from_url"
 
@@ -307,7 +308,15 @@ module Y2Autoinstallation
       if chrooted
         super
       else
-        File.join(Yast::AutoinstConfig.destdir, Yast::AutoinstConfig.logs_dir)
+        File.join(Yast::AutoinstConfig.destdir, super)
+      end
+    end
+
+    def script_path
+      if chrooted
+        super
+      else
+        File.join(Yast::AutoinstConfig.destdir, super)
       end
     end
 
@@ -315,7 +324,8 @@ module Y2Autoinstallation
 
     def localfile
       if chrooted
-        File.join(Yast::AutoinstConfig.destdir, script_path)
+        # SCR switched, so workaround is needed
+        File.join(Yast::AutoinstConfig.destdir, super)
       else
         super
       end
@@ -328,12 +338,14 @@ module Y2Autoinstallation
       "postpartitioning-scripts"
     end
 
+    # Logs into target dir
     def logs_dir
-      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, "logs")
+      File.join(Yast::AutoinstConfig.destdir, super)
     end
 
+    # Also place script to target, but it runs in local context as SCR is not yet switched
     def script_path
-      File.join(Yast::AutoinstConfig.tmpDir, self.class.type, script_name)
+      File.join(Yast::AutoinstConfig.destdir, super)
     end
   end
 

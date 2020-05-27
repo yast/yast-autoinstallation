@@ -281,7 +281,7 @@ describe "Yast::AutoinstScripts" do
           expect(map[:scheme]).to eq "http"
           expect(map[:host]).to eq "test.com"
           expect(map[:urlpath]).to eq "/script"
-          expect(map[:localfile]).to match(/postpartitioning-scripts\/script1$/)
+          expect(map[:localfile]).to match(/script1$/)
 
           true
         end
@@ -297,7 +297,7 @@ describe "Yast::AutoinstScripts" do
         }
 
         expect(Yast::SCR).to receive(:Write).with(path(".target.string"),
-          /postpartitioning-scripts\/script1$/, "echo krucifix > /home/dabel/body")
+          /script1$/, "echo krucifix > /home/dabel/body")
 
         subject.Import(data)
         subject.Write("postpartitioning-scripts", true)
