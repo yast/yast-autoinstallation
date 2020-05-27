@@ -175,7 +175,7 @@ describe Yast::AutoinstClone do
     end
 
     it "includes signature handling settings" do
-      expect(subject.General).to include("signature-handling" => Hash)
+      expect(subject.General).to_not include("signature-handling" => Hash)
     end
 
     context "when multipath is not enabled" do
