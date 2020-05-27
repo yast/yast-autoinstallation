@@ -158,7 +158,7 @@ module Y2Autoinstallation
     end
 
     # Defines convenience methods to check the existence and the content of
-    # the {Yast::Profile.current} sections
+    # the current {Yast::Profile} sections
     #
     # @example networking section methods
     #
