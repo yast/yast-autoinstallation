@@ -90,13 +90,13 @@ module Yast
       summary = Summary.AddHeader(summary, _("Confirm installation?"))
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@mode, "confirm", true) ? _("Yes") : _("No")
+        mode.fetch("confirm", true) ? _("Yes") : _("No")
       )
 
       summary = Summary.AddHeader(summary, _("Second Stage of AutoYaST"))
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@mode, "second_stage", true) ? _("Yes") : _("No")
+        mode.fetch("second_stage", true) ? _("Yes") : _("No")
       )
 
       summary = Summary.AddHeader(
@@ -105,16 +105,16 @@ module Yast
       )
       summary = Summary.AddLine(
         summary,
-        Ops.get_boolean(@mode, "halt", false) ? _("Yes") : _("No")
+        mode["halt"] ? _("Yes") : _("No")
       )
-      if Ops.get_boolean(@mode, "final_halt", false) == true
+      if mode["final_halt"]
         summary = Summary.AddHeader(
           summary,
           _("Halting the machine after stage two")
         )
         summary = Summary.AddLine(summary, _("Yes"))
       end
-      if Ops.get_boolean(@mode, "final_reboot", false) == true
+      if mode["final_reboot"]
         summary = Summary.AddHeader(
           summary,
           _("Reboot the machine after stage two")
@@ -125,7 +125,7 @@ module Yast
       summary = Summary.AddHeader(summary, _("Signature Handling"))
       summary = Summary.AddLine(
         summary,
-        if Ops.get_boolean(@signature_handling, "accept_unsigned_file", false)
+        if signature_handling["accept_unsigned_file"]
           _("Accepting unsigned files")
         else
           _("Not accepting unsigned files")
@@ -133,11 +133,7 @@ module Yast
       )
       summary = Summary.AddLine(
         summary,
-        if Ops.get_boolean(
-          @signature_handling,
-          "accept_file_without_checksum",
-          false
-        )
+        if signature_handling["accept_file_without_checksum"]
           _("Accepting files without a checksum")
         else
           _("Not accepting files without a checksum")
@@ -145,11 +141,7 @@ module Yast
       )
       summary = Summary.AddLine(
         summary,
-        if Ops.get_boolean(
-          @signature_handling,
-          "accept_verification_failed",
-          false
-        )
+        if signature_handling["accept_verification_failed"]
           _("Accepting failed verifications")
         else
           _("Not accepting failed verifications")
@@ -157,7 +149,7 @@ module Yast
       )
       summary = Summary.AddLine(
         summary,
-        if Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false)
+        if signature_handling["accept_unknown_gpg_key"]
           _("Accepting unknown GPG keys")
         else
           _("Not accepting unknown GPG Keys")
@@ -165,7 +157,7 @@ module Yast
       )
       summary = Summary.AddLine(
         summary,
-        if Ops.get_boolean(@signature_handling, "import_gpg_key", false)
+        if signature_handling["import_gpg_key"]
           _("Importing new GPG keys")
         else
           _("Not importing new GPG Keys")
@@ -181,7 +173,7 @@ module Yast
     def Import(settings)
       settings = deep_copy(settings)
       SetModified()
-      Builtins.y2milestone("General import: %1", settings)
+      log.info "General import: #{settings.inspect}"
       @mode = settings.fetch("mode", {})
       @cio_ignore = settings.fetch("cio_ignore", true)
       @signature_handling = settings.fetch("signature-handling", {})
@@ -198,17 +190,17 @@ module Yast
     # @return [Hash]
     def Export
       general = {
-        "mode"               => @mode,
-        "signature-handling" => @signature_handling,
-        "ask-list"           => @askList,
-        "proposals"          => @proposals,
+        "mode"               => mode,
+        "signature-handling" => signature_handling,
+        "ask-list"           => askList,
+        "proposals"          => proposals,
         "storage"            => AutoinstStorage.export_general_settings
       }
 
       if Yast::Arch.s390
         if Yast::Mode.installation
           # Taking the selected value (selected by user or AutoYaST)
-          general["cio_ignore"] = @cio_ignore
+          general["cio_ignore"] = cio_ignore
         else
           # Trying to evalute the state from the installed system.
           # Disabled if there are no active devices defined. (Call
@@ -288,9 +280,9 @@ module Yast
           "string (map)")
       )
 
-      if Builtins.haskey(@signature_handling, "accept_unsigned_file")
+      if signature_handling.key?("accept_unsigned_file")
         Pkg.CallbackAcceptUnsignedFile(
-          if Ops.get_boolean(@signature_handling, "accept_unsigned_file", false)
+          if signature_handling["accept_unsigned_file"]
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_integer),
               "boolean (string, integer)"
@@ -303,13 +295,10 @@ module Yast
           end
         )
       end
-      if Builtins.haskey(@signature_handling, "accept_file_without_checksum")
+
+      if signature_handling.key?("accept_file_without_checksum")
         Pkg.CallbackAcceptFileWithoutChecksum(
-          if Ops.get_boolean(
-            @signature_handling,
-            "accept_file_without_checksum",
-            false
-          )
+          if signature_handling["accept_file_without_checksum"]
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string),
               "boolean (string)"
@@ -322,13 +311,9 @@ module Yast
           end
         )
       end
-      if Builtins.haskey(@signature_handling, "accept_verification_failed")
+      if signature_handling.key?("accept_verification_failed")
         Pkg.CallbackAcceptVerificationFailed(
-          if Ops.get_boolean(
-            @signature_handling,
-            "accept_verification_failed",
-            false
-          )
+          if signature_handling["accept_verification_failed"]
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_map_integer),
               "boolean (string, map <string, any>, integer)"
@@ -341,7 +326,7 @@ module Yast
           end
         )
       end
-      if Builtins.haskey(@signature_handling, "trusted_key_added")
+      if signature_handling.key?("trusted_key_added")
         Pkg.CallbackTrustedKeyAdded(
           fun_ref(
             AutoInstall.method(:callback_void_map),
@@ -349,7 +334,7 @@ module Yast
           )
         )
       end
-      if Builtins.haskey(@signature_handling, "trusted_key_removed")
+      if signature_handling.key?("trusted_key_removed")
         Pkg.CallbackTrustedKeyRemoved(
           fun_ref(
             AutoInstall.method(:callback_void_map),
@@ -357,9 +342,9 @@ module Yast
           )
         )
       end
-      if Builtins.haskey(@signature_handling, "accept_unknown_gpg_key")
+      if signature_handling.key?("accept_unknown_gpg_key")
         Pkg.CallbackAcceptUnknownGpgKey(
-          if Ops.get_boolean(@signature_handling, "accept_unknown_gpg_key", false)
+          if signature_handling["accept_unknown_gpg_key"]
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_integer),
               "boolean (string, string, integer)"
@@ -372,9 +357,9 @@ module Yast
           end
         )
       end
-      if Builtins.haskey(@signature_handling, "import_gpg_key")
+      if signature_handling.key?("import_gpg_key")
         Pkg.CallbackImportGpgKey(
-          if Ops.get_boolean(@signature_handling, "import_gpg_key", false)
+          if signature_handling["import_gpg_key"]
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_map_integer),
               "boolean (map <string, any>, integer)"
@@ -387,9 +372,9 @@ module Yast
           end
         )
       end
-      if Builtins.haskey(@signature_handling, "accept_wrong_digest")
+      if signature_handling.key?("accept_wrong_digest")
         Pkg.CallbackAcceptWrongDigest(
-          if Ops.get_boolean(@signature_handling, "accept_wrong_digest", false)
+          if signature_handling["accept_wrong_digest"]
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_string),
               "boolean (string, string, string)"
@@ -402,9 +387,9 @@ module Yast
           end
         )
       end
-      if Builtins.haskey(@signature_handling, "accept_unknown_digest")
+      if signature_handling.key?("accept_unknown_digest")
         Pkg.CallbackAcceptUnknownDigest(
-          if Ops.get_boolean(@signature_handling, "accept_unknown_digest", false)
+          if signature_handling["accept_unknown_digest"]
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_string),
               "boolean (string, string, string)"
@@ -423,9 +408,9 @@ module Yast
 
     # NTP syncing
     def NtpSync
-      ntp_server = @mode["ntp_sync_time_before_installation"]
+      ntp_server = mode["ntp_sync_time_before_installation"]
       if ntp_server
-        Builtins.y2milestone("NTP syncing with #{ntp_server}")
+        log.info "NTP syncing with #{ntp_server}"
         Popup.ShowFeedback(
           _("Syncing time..."),
           # TRANSLATORS: %s is the name of the ntp server
@@ -442,31 +427,16 @@ module Yast
       end
     end
 
-    # Set the "kexec_reboot" flag in the product
-    # description in order to force a reboot with
-    # kexec at the end of the first installation
-    # stage.
-    # @return [void]
-    def SetRebootAfterFirstStage
-      if Builtins.haskey(@mode, "forceboot")
-        ProductFeatures.SetBooleanFeature(
-          "globals",
-          "kexec_reboot",
-          !Ops.get_boolean(@mode, "forceboot", false)
-        )
-      end
-    end
-
     # Write General  Configuration
     # @return [Boolean] true on success
     def Write
-      AutoinstConfig.Confirm = Ops.get_boolean(@mode, "confirm", true)
-      AutoinstConfig.cio_ignore = @cio_ignore
-      AutoinstConfig.second_stage = @mode["second_stage"] if @mode.key?("second_stage")
+      AutoinstConfig.Confirm = mode.fetch("confirm", true)
+      AutoinstConfig.cio_ignore = cio_ignore
+      AutoinstConfig.second_stage = mode["second_stage"] if mode.key?("second_stage")
       SetRebootAfterFirstStage()
-      AutoinstConfig.Halt = Ops.get_boolean(@mode, "halt", false)
-      AutoinstConfig.RebootMsg = Ops.get_boolean(@mode, "rebootmsg", false)
-      AutoinstConfig.setProposalList(@proposals)
+      AutoinstConfig.Halt = !!mode["halt"]
+      AutoinstConfig.RebootMsg = !!mode["rebootmsg"]
+      AutoinstConfig.setProposalList(proposals)
 
       if @storage["partition_alignment"] == :align_cylinder
         # This option has been set by the user manually in the AY configuration file
@@ -485,12 +455,12 @@ module Yast
 
     # Constructor
     def AutoinstGeneral
-      if Stage.cont
-        # FIXME: wrong position for this
-        if Ops.get_map(Profile.current, "general", {}) != {}
-          Import(Ops.get_map(Profile.current, "general", {}))
-        end
-      end
+      return unless Stage.cont
+
+      # FIXME: wrong place for this
+      general_settings = Profile.current.fetch("general", {})
+      Import(general_settings) unless general_settings.empty?
+
       nil
     end
 
@@ -510,6 +480,25 @@ module Yast
     publish function: :SetRebootAfterFirstStage, type: "void ()"
     publish function: :Write, type: "boolean ()"
     publish function: :AutoinstGeneral, type: "void ()"
+
+  private
+
+    attr_reader :cio_ignore
+
+    # Set the "kexec_reboot" flag in the product
+    # description in order to force a reboot with
+    # kexec at the end of the first installation
+    # stage.
+    # @return [void]
+    def SetRebootAfterFirstStage
+      return unless mode.key?("forceboot")
+
+      ProductFeatures.SetBooleanFeature(
+        "globals",
+        "kexec_reboot",
+        !mode["forceboot"]
+      )
+    end
   end
 
   AutoinstGeneral = AutoinstGeneralClass.new
