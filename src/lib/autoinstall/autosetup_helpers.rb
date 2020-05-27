@@ -159,6 +159,15 @@ module Y2Autoinstallation
 
     # Defines convenience methods to check the existence and the content of
     # the {Yast::Profile.current} sections
+    #
+    # @example networking section methods
+    #
+    #   profile = { "networking" => { "setup_before_proposal" => true } }
+    #   Yast::Profile.current = profile
+    #
+    #   client.networking_section? #=> true
+    #   client.networking_section["setup_before_proposal"] #=> true
+    #   client.not_present_section? #=> false
     def method_missing(method, *arguments, &block)
       case method.to_s
       when /(.+)_section$/
@@ -167,6 +176,15 @@ module Y2Autoinstallation
         Yast::Profile.current.keys.include?(Regexp.last_match(1))
       else
         super
+      end
+    end
+
+    def respond_to_missing?(method, _include_private = false)
+      case method.to_s
+      when /(.+)_section$/, /(.+)_section\?$/
+        true
+      else
+        false
       end
     end
 
