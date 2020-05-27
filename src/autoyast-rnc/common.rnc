@@ -13,18 +13,28 @@ BOOLEAN |=
     ## Historically we used config:type
     ## but it is unnecessarily long to type and read.
     ## Shorter variants are allowed.
-    attribute ( t | type | config:type ) { "boolean" },
+    # This could be expressed also as
+    # 'attribute ( t | type | config:type ) { "boolean" }'
+    # but libxml2-2.9.7 xmllint considers it incorrect schema :-(
+    ( attribute t           { "boolean" } |
+      attribute type        { "boolean" } |
+      attribute config:type { "boolean" } ),
     ( "true" | "false" )
   )
 
 INTEGER |=
   (
-    attribute ( t | type | config:type ) { "integer" },
+    ( attribute t           { "integer" } |
+      attribute type        { "integer" } |
+      attribute config:type { "integer" } ),
     xsd:integer
   )
 
 # Usage: foo = element foo { STRING_ATTR, ( "bar" | "baz") }
-STRING_ATTR |= attribute ( t | type | config:type ) { "string" }?
+STRING_ATTR |=
+    ( attribute t           { "string" } |
+      attribute type        { "string" } |
+      attribute config:type { "string" } ) ?
 
 STRING |=
   (
@@ -34,15 +44,26 @@ STRING |=
 
 SYMBOL |=
   (
-    attribute ( t | type | config:type ) { "symbol" },
+    (
+      attribute t           { "symbol" } |
+      attribute type        { "symbol" } |
+      attribute config:type { "symbol" } ),
     text
   )
 
 LIST |=
-  attribute ( t | type | config:type ) { "list" }
+  (
+      attribute t           { "list" } |
+      attribute type        { "list" } |
+      attribute config:type { "list" }
+  )
 
 MAP |=
-  attribute ( t | type | config:type ) { "map" }?
+  (
+      attribute t           { "map" } |
+      attribute type        { "map" } |
+      attribute config:type { "map" }
+  ) ?
 
 # this is useful for testing
 Anything |=
