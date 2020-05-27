@@ -403,7 +403,7 @@ module Yast
         )
       end
       if Builtins.haskey(@signature_handling, "accept_unknown_digest")
-        Pkg.CallbackAcceptWrongDigest(
+        Pkg.CallbackAcceptUnknownDigest(
           if Ops.get_boolean(@signature_handling, "accept_unknown_digest", false)
             fun_ref(
               AutoInstall.method(:callbackTrue_boolean_string_string_string),
