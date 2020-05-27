@@ -297,7 +297,7 @@ describe Y2Autoinstallation::AutosetupHelpers do
     end
   end
 
-  describe "#method_missing" do
+  describe "#profile_section" do
     let(:profile) { general_section }
     let(:general_section) { { "general" => { "semi-automatic" => ["networking"] } } }
     let(:register_section) { { "suse_register" => { "reg_code" => "12345" } } }
@@ -306,82 +306,38 @@ describe Y2Autoinstallation::AutosetupHelpers do
       Yast::Profile.current = profile
     end
 
-    context "when the method name matchs /(?<section_name>.*)_section/'" do
-      it "returns the profile section with the matched :section_name when present" do
-        expect(client.general_section).to eql(general_section["general"])
-      end
-
-      it "returns an empty hash when the section with the matched :section_name is not present" do
-        expect(client.networking_section).to eql({})
-      end
-    end
-
-    context "when the method name matchs /(?<section_name>.*)_section?/'" do
-      it "returns true if the profile section with the matched name is defined" do
-        expect(client.general_section?).to eql(true)
-      end
-
-      it "returns false if the matched section name is not defined in the profile" do
-        expect(client.suse_register_section?).to eql(false)
-      end
-    end
-  end
-
-  describe "#respond_to_missing?" do
-    it "returns true if the method name matchs /(?<section_name>.*)_section/'" do
-      expect(client.respond_to?("general_section")).to eql(true)
-    end
-
-    it "returns true if the method name matchs /(?<section_name>.*)_section?/'" do
-      expect(client.respond_to?("suse_register_section")).to eql(true)
-    end
-
-    it "returns false otherwise" do
-      expect(client.respond_to?("wrong_section_method_name")).to eql(false)
-    end
-  end
-
-  describe "#general_section" do
-    let(:profile) { general_section }
-    let(:general_section) { { "general" => { "semi-automatic" => ["networking"] } } }
-    let(:register_section) { { "suse_register" => { "reg_code" => "12345" } } }
-
-    before do
-      Yast::Profile.current = profile
-    end
-
-    context "when the profile contains the general section" do
+    context "when the profile contains the given section" do
       it "returns it" do
-        expect(client.general_section).to eql(general_section["general"])
+        expect(client.profile_section("general")).to eql(general_section["general"])
       end
     end
 
-    context "when the profile does not contain the general section" do
+    context "when the profile does not contain the given section" do
       let(:profile) { register_section }
       it "returns and empty hash" do
-        expect(client.general_section).to eql({})
+        expect(client.profile_section("general")).to eql({})
       end
     end
   end
 
-  describe "#general_section?" do
+  describe "#profile_section?" do
     let(:profile) { { "general" => { "semi-automatic" => ["networking"] } } }
 
     before do
       Yast::Profile.current = profile
     end
 
-    context "when the profile contains the section" do
+    context "when the profile contains the given section" do
       it "returns true" do
-        expect(client.general_section?).to eql(true)
+        expect(client.profile_section?("general")).to eql(true)
       end
     end
 
-    context "when the profile does not contain the section" do
+    context "when the profile does not contain the given section" do
       let(:profile) { { "suse_register" => { "reg_code" => "12345" } } }
 
       it "returns false" do
-        expect(client.general_section?).to eql(false)
+        expect(client.profile_section?("general")).to eql(false)
       end
     end
   end

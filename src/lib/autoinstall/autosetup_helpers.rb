@@ -109,7 +109,7 @@ module Y2Autoinstallation
     #
     # @return [Boolean]
     def semi_auto?(name)
-      !!general_section["semi-automatic"]&.include?(name)
+      !!profile_section("general")["semi-automatic"]&.include?(name)
     end
 
     # Autosetup the network
@@ -154,38 +154,26 @@ module Y2Autoinstallation
     def network_before_proposal?
       return @network_before_proposal unless @network_before_proposal.nil?
 
-      @network_before_proposal = networking_section.fetch("setup_before_proposal", false)
+      @network_before_proposal = profile_section("networking").fetch("setup_before_proposal", false)
     end
 
-    # Defines convenience methods to check the existence and the content of
-    # the current {Yast::Profile} sections
+    # Convenience method to fetch the content of the given section name from
+    # the current {Yast::Profile}
     #
-    # @example networking section methods
-    #
-    #   profile = { "networking" => { "setup_before_proposal" => true } }
-    #   Yast::Profile.current = profile
-    #
-    #   client.networking_section? #=> true
-    #   client.networking_section["setup_before_proposal"] #=> true
-    #   client.not_present_section? #=> false
-    def method_missing(method, *arguments, &block)
-      case method.to_s
-      when /(.+)_section$/
-        Yast::Profile.current[Regexp.last_match(1)] || {}
-      when /(.+)_section\?$/
-        Yast::Profile.current.keys.include?(Regexp.last_match(1))
-      else
-        super
-      end
+    # @param name [String] section name to be fetched from the profile
+    # @return [Hash] the profile section with the given name when present;
+    #   an empty hash when not
+    def profile_section(name)
+      Yast::Profile.current[name] || {}
     end
 
-    def respond_to_missing?(method, _include_private = false)
-      case method.to_s
-      when /(.+)_section$/, /(.+)_section\?$/
-        true
-      else
-        false
-      end
+    # Convenience method to check whether the current {Yast::Profile} contains
+    # a specific section
+    #
+    # @param name [String] profile section name
+    # @return [Boolean] true when the section is present; false when not
+    def profile_section?(name)
+      Yast::Profile.current.key?(name)
     end
 
   private

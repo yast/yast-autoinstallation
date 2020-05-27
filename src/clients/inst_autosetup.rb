@@ -158,11 +158,9 @@ module Yast
       AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
       # configure general settings
-      AutoinstGeneral.Import(Ops.get_map(Profile.current, "general", {}))
-      Builtins.y2milestone(
-        "general: %1",
-        Ops.get_map(Profile.current, "general", {})
-      )
+      general_section = profile_section("general")
+      AutoinstGeneral.Import(general_section)
+      log.info("general: #{general_section}")
       AutoinstGeneral.Write
 
       autosetup_network
