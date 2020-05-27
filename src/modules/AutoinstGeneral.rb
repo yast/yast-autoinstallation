@@ -34,13 +34,6 @@ module Yast
       # All shared data are in yast2.rpm to break cyclic dependencies
       Yast.import "AutoinstData"
 
-      #
-      # Show proposal and ask user for confirmation to go on with auto-installation
-      # Similar to interactive mode, without letting use change settings
-      # Interactive mode implies confirmation as well..
-      #
-      @Confirm = true
-
       # Running autoyast second_stage
       @second_stage = true
 
@@ -464,7 +457,6 @@ module Yast
       nil
     end
 
-    publish variable: :Confirm, type: "boolean"
     publish variable: :second_stage, type: "boolean"
     publish variable: :mode, type: "map"
     publish variable: :signature_handling, type: "map"
