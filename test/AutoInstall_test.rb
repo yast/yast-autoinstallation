@@ -1,9 +1,7 @@
 #!/usr/bin/env rspec
 
 require_relative "test_helper"
-require "autoinstall/autoinst_issues"
-require "installation/autoinst_issues/issues_presenter"
-require "installation/autoinst_issues/list"
+require "installation/autoinst_issues"
 require "autoinstall/dialogs/question"
 
 Yast.import "AutoInstall"

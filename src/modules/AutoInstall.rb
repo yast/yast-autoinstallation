@@ -6,8 +6,7 @@
 # $Id$
 require "yast"
 require "autoinstall/pkg_gpg_check_handler"
-require "autoinstall/autoinst_issues"
-require "installation/autoinst_issues/issues_presenter"
+require "installation/autoinst_issues"
 
 module Yast
   class AutoInstallClass < Module
