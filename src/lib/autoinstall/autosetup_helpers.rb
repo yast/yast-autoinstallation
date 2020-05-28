@@ -160,6 +160,9 @@ module Y2Autoinstallation
     # Convenience method to fetch the content of the given section name from
     # the current {Yast::Profile}
     #
+    # @note not all the sections are expected to return a hash like the
+    #   partitioning one; in these cases please avoid to use it
+    #
     # @param name [String] section name to be fetched from the profile
     # @return [Hash] the profile section with the given name when present;
     #   an empty hash when not
