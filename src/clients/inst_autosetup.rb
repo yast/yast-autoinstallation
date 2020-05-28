@@ -158,7 +158,7 @@ module Yast
       AutoinstSoftware.merge_product(AutoinstFunctions.selected_product)
 
       # configure general settings
-      general_section = profile_section("general")
+      general_section = Profile.current["general"] || {}
       AutoinstGeneral.Import(general_section)
       log.info("general: #{general_section}")
       AutoinstGeneral.Write

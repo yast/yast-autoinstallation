@@ -297,51 +297,6 @@ describe Y2Autoinstallation::AutosetupHelpers do
     end
   end
 
-  describe "#profile_section" do
-    let(:profile) { general_section }
-    let(:general_section) { { "general" => { "semi-automatic" => ["networking"] } } }
-    let(:register_section) { { "suse_register" => { "reg_code" => "12345" } } }
-
-    before do
-      Yast::Profile.current = profile
-    end
-
-    context "when the profile contains the given section" do
-      it "returns it" do
-        expect(client.profile_section("general")).to eql(general_section["general"])
-      end
-    end
-
-    context "when the profile does not contain the given section" do
-      let(:profile) { register_section }
-      it "returns and empty hash" do
-        expect(client.profile_section("general")).to eql({})
-      end
-    end
-  end
-
-  describe "#profile_section?" do
-    let(:profile) { { "general" => { "semi-automatic" => ["networking"] } } }
-
-    before do
-      Yast::Profile.current = profile
-    end
-
-    context "when the profile contains the given section" do
-      it "returns true" do
-        expect(client.profile_section?("general")).to eql(true)
-      end
-    end
-
-    context "when the profile does not contain the given section" do
-      let(:profile) { { "suse_register" => { "reg_code" => "12345" } } }
-
-      it "returns false" do
-        expect(client.profile_section?("general")).to eql(false)
-      end
-    end
-  end
-
   describe "#semi_auto?" do
     let(:profile) { general_section }
     let(:general_section) { { "general" => { "semi-automatic" => ["networking"] } } }

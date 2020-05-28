@@ -109,7 +109,8 @@ module Y2Autoinstallation
     #
     # @return [Boolean]
     def semi_auto?(name)
-      !!profile_section("general")["semi-automatic"]&.include?(name)
+      general_section = Yast::Profile.current["general"] || {}
+      !!general_section["semi-automatic"]&.include?(name)
     end
 
     # Autosetup the network
@@ -154,29 +155,9 @@ module Y2Autoinstallation
     def network_before_proposal?
       return @network_before_proposal unless @network_before_proposal.nil?
 
-      @network_before_proposal = profile_section("networking").fetch("setup_before_proposal", false)
-    end
+      networking_section = Yast::Profile.current["networking"] || {}
 
-    # Convenience method to fetch the content of the given section name from
-    # the current {Yast::Profile}
-    #
-    # @note not all the sections are expected to return a hash like the
-    #   partitioning one; in these cases please avoid to use it
-    #
-    # @param name [String] section name to be fetched from the profile
-    # @return [Hash] the profile section with the given name when present;
-    #   an empty hash when not
-    def profile_section(name)
-      Yast::Profile.current[name] || {}
-    end
-
-    # Convenience method to check whether the current {Yast::Profile} contains
-    # a specific section
-    #
-    # @param name [String] profile section name
-    # @return [Boolean] true when the section is present; false when not
-    def profile_section?(name)
-      Yast::Profile.current.key?(name)
+      @network_before_proposal = networking_section.fetch("setup_before_proposal", false)
     end
 
   private
