@@ -159,7 +159,7 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
       context "and the registration is enabled according to the profile" do
         let(:do_registration) { true }
 
-        it "registers system" do
+        it "registers the system" do
           expect(Yast::WFM).to receive(:CallFunction)
             .with("scc_auto", ["Import", profile["suse_register"]])
           expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
