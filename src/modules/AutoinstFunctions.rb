@@ -148,11 +148,15 @@ module Yast
       log.info "Found base products : #{available_base_products.inspect}"
 
       products = available_base_products.select do |product|
-        if product.is_a?(Y2Packager::ProductLocation)
-          yield(product.details.product)
+        product_name = if product.is_a?(Y2Packager::ProductLocation)
+          product.details.product
         else
-          yield(product.name)
+          product.name
         end
+
+        found = yield(product_name)
+        log.info("Match for product #{product_name}: #{found}")
+        found
       end
 
       return products.first if products.size == 1
@@ -169,9 +173,11 @@ module Yast
     # the criteria, nil otherwise
     def identify_product_by_patterns(profile)
       software = profile["software"] || {}
+      patterns = software.fetch("patterns", [])
+      log.info("Requested patterns in the profile: #{patterns}")
 
       identify_product do |name|
-        software.fetch("patterns", []).any? { |p| p =~ /#{name.downcase}-.*/ }
+        patterns.any? { |p| p =~ /#{name.downcase}-.*/ }
       end
     end
 
@@ -184,9 +190,11 @@ module Yast
     # the criteria, nil otherwise
     def identify_product_by_packages(profile)
       software = profile["software"] || {}
+      packages = software.fetch("packages", [])
+      log.info("Requested packages in the profile: #{packages}")
 
       identify_product do |name|
-        software.fetch("packages", []).any? { |p| p =~ /#{name.downcase}-release/ }
+        packages.any? { |p| p =~ /#{name.downcase}-release/ }
       end
     end
 
@@ -206,7 +214,7 @@ module Yast
     # FIXME: Currently it returns first found product name. It should be no
     # problem since this section was unused in AY installation so far.
     # However, it might be needed to add a special handling for multiple
-    # poducts in the future. At least we can filter out products which are
+    # products in the future. At least we can filter out products which are
     # not base products.
     #
     # @param profile [Hash] AutoYaST profile
@@ -220,7 +228,9 @@ module Yast
         return nil
       end
 
-      software.fetch("products", []).first
+      base_product = software.fetch("products", []).first
+      log.info("Base product in the profile: #{base_product.inspect}")
+      base_product
     end
   end
 
