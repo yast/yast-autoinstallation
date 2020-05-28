@@ -22,7 +22,7 @@
 %endif
 
 Name:           autoyast2
-Version:        4.3.3
+Version:        4.3.7
 Release:        0
 Summary:        YaST2 - Automated Installation
 License:        GPL-2.0-only
@@ -226,11 +226,6 @@ done
 %{yast_moduledir}/AutoinstClone.rb
 %dir %{yast_yncludedir}/autoinstall
 %{yast_yncludedir}/autoinstall/io.rb
-%{yast_yncludedir}/autoinstall/AdvancedPartitionDialog.rb
-%{yast_yncludedir}/autoinstall/DriveDialog.rb
-%{yast_yncludedir}/autoinstall/PartitionDialog.rb
-%{yast_yncludedir}/autoinstall/StorageDialog.rb
-%{yast_yncludedir}/autoinstall/VolgroupDialog.rb
 %{yast_yncludedir}/autoinstall/common.rb
 %{yast_yncludedir}/autoinstall/tree.rb
 %{yast_yncludedir}/autoinstall/types.rb
@@ -280,6 +275,9 @@ done
 
 %dir %{yast_libdir}/autoinstall/dialogs
 %{yast_libdir}/autoinstall/dialogs/*.rb
+
+%{yast_libdir}/autoinstall/widgets
+%{yast_libdir}/autoinstall/presenters
 
 %dir %{yast_libdir}/autoinstall/clients
 %{yast_libdir}/autoinstall/clients/*.rb
