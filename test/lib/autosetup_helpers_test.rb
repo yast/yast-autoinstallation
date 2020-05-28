@@ -252,12 +252,6 @@ describe Y2Autoinstallation::AutosetupHelpers do
         let(:profile) { networking_section.merge(host_section) }
         let(:networking_section) { { "networking" => { "setup_before_proposal" => true } } }
 
-        it "sets the network config to be written before the proposal" do
-          expect { client.autosetup_network }
-            .to change { client.network_before_proposal? }
-            .from(false).to(true)
-        end
-
         context "and a host section is defined" do
           it "imports the /etc/hosts config from the profile" do
             expect(Yast::WFM)
@@ -299,29 +293,6 @@ describe Y2Autoinstallation::AutosetupHelpers do
         expect(Yast::WFM).to receive(:CallFunction).with("lan_auto", ["Write"])
 
         client.autosetup_network
-      end
-    end
-  end
-
-  describe "#general_section" do
-    let(:profile) { general_section }
-    let(:general_section) { { "general" => { "semi-automatic" => ["networking"] } } }
-    let(:register_section) { { "suse_register" => { "reg_code" => "12345" } } }
-
-    before do
-      Yast::Profile.current = profile
-    end
-
-    context "when the profile contains the general section" do
-      it "returns it" do
-        expect(client.general_section).to eql(general_section["general"])
-      end
-    end
-
-    context "when the profile does not contain the general section" do
-      let(:profile) { register_section }
-      it "returns and empty hash" do
-        expect(client.general_section).to eql({})
       end
     end
   end

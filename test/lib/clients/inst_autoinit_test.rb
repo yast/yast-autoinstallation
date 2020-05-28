@@ -36,7 +36,6 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
     allow(Yast::AutoinstFunctions).to receive(:available_base_products).and_return([])
     allow(Y2Packager::MediumType).to receive(:online?).and_return(true)
     Yast::AutoinstConfig.ProfileInRootPart = false
-
   end
 
   describe "#run" do
@@ -95,40 +94,82 @@ describe Y2Autoinstallation::Clients::InstAutoinit do
       subject.run
     end
 
-    it "reports error for installation with full medium without specified product" do
-      allow(Y2Packager::MediumType).to receive(:online?).and_return(false)
-      allow(Y2Packager::MediumType).to receive(:offline?).and_return(true)
-      allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
+    context "when using the Full medium" do
+      it "reports an error when the product is not specified" do
+        allow(Y2Packager::MediumType).to receive(:online?).and_return(false)
+        allow(Y2Packager::MediumType).to receive(:offline?).and_return(true)
+        allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
 
-      expect(Yast::Popup).to receive(:LongError)
+        expect(Yast::Popup).to receive(:LongError)
 
-      expect(subject.run).to eq :abort
+        expect(subject.run).to eq :abort
+      end
     end
 
-    it "registers system for installation with online medium" do
-      map = { "suse_register" => { "do_registration" => true } }
-      allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
-      allow(Yast::Profile).to receive(:current).and_return(map)
-      expect(Yast::WFM).to receive(:CallFunction)
-        .with("scc_auto", ["Import", map["suse_register"]])
-      expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
-      # fake that registration is available to avoid build requires
-      allow(subject).to receive(:registration_module_available?).and_return(true)
-      allow(Yast::Profile).to receive(:remove_sections)
+    context "when using the Online medium for an installation" do
+      let(:do_registration) { false }
+      let(:setup_before_proposal) { false }
+      let(:profile) do
+        {
+          "suse_register" => { "do_registration" => do_registration },
+          "networking"    => { "setup_before_proposal" => setup_before_proposal }
+        }
+      end
 
-      subject.run
-    end
+      before do
+        allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
+        allow(Yast::Profile).to receive(:current).and_return(profile)
+      end
 
-    it "reports error for installation with online medium without register section" do
-      map = { "suse_register" => { "do_registration" => false } }
-      allow(Yast::Mode).to receive(:autoupgrade).and_return(false)
-      allow(Yast::Profile).to receive(:current).and_return(map)
-      expect(Yast::WFM).to_not receive(:CallFunction)
-        .with("scc_auto", ["Import", map["suse_register"]])
-      expect(Yast::WFM).to_not receive(:CallFunction).with("scc_auto", ["Write"])
-      expect(Yast::Popup).to receive(:LongError)
+      context "and the network is requested to be configured before the proposal" do
+        let(:setup_before_proposal) { true }
 
-      expect(subject.run).to eq :abort
+        it "configures the network" do
+          expect(subject).to receive(:autosetup_network)
+
+          subject.run
+        end
+      end
+
+      context "and the registration is disabled or not present in the profile" do
+        let(:do_registration) { false }
+
+        it "does not try to register the system" do
+          expect(Yast::WFM).to_not receive(:CallFunction)
+            .with("scc_auto", ["Import", profile["suse_register"]])
+          expect(Yast::WFM).to_not receive(:CallFunction).with("scc_auto", ["Write"])
+
+          subject.run
+        end
+
+        it "reports an error" do
+          expect(Yast::WFM).to_not receive(:CallFunction)
+            .with("scc_auto", ["Import", profile["suse_register"]])
+          expect(Yast::WFM).to_not receive(:CallFunction).with("scc_auto", ["Write"])
+          expect(Yast::Popup).to receive(:LongError)
+
+          subject.run
+        end
+
+        it "returns :abort" do
+          expect(subject.run).to eq :abort
+        end
+      end
+
+      context "and the registration is enabled according to the profile" do
+        let(:do_registration) { true }
+
+        it "registers the system" do
+          expect(Yast::WFM).to receive(:CallFunction)
+            .with("scc_auto", ["Import", profile["suse_register"]])
+          expect(Yast::WFM).to receive(:CallFunction).with("scc_auto", ["Write"])
+          # fake that registration is available to avoid build requires
+          allow(subject).to receive(:registration_module_available?).and_return(true)
+          allow(Yast::Profile).to receive(:remove_sections)
+
+          subject.run
+        end
+      end
     end
 
     #  TODO: more test for profile processing
