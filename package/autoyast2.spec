@@ -42,7 +42,7 @@ BuildRequires:  libxml2-tools
 BuildRequires:  libxslt
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
 # AutoYaST issue handling
-BuildRequires:  yast2 >= 4.2.84
+BuildRequires:  yast2 >= 4.3.2
 # FileSystems.read_default_subvol_from_target
 BuildRequires:  yast2-xml
 BuildRequires:  yast2-transfer
@@ -67,7 +67,7 @@ BuildRequires:  rubygem(%rb_default_ruby_abi:yast-rake)
 Requires:       autoyast2-installation = %{version}
 Requires:       libxslt
 # AutoYaST issue handling
-Requires:       yast2 >= 4.2.84
+Requires:       yast2 >= 4.3.2
 Requires:       yast2-core
 Requires:       yast2-country >= 3.1.13
 # Moving security module to first installation stage
