@@ -164,7 +164,7 @@ describe Y2Autoinstallation::StorageProposal do
   end
 
   describe "#issues?" do
-    let(:issues_list) { Y2Storage::AutoinstIssues::List.new }
+    let(:issues_list) { ::Installation::AutoinstIssues::List.new }
 
     before do
       allow(storage_proposal).to receive(:issues_list).and_return(issues_list)
