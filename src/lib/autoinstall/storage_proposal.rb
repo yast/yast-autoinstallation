@@ -141,7 +141,7 @@ module Y2Autoinstallation
       when Y2Storage::NoDiskSpaceError
         issues_list.add(Y2Storage::AutoinstIssues::NoDiskSpace)
       when Y2Storage::Error
-        issues_list.add(Y2Storage::AutoinstIssues:::Exception, error)
+        issues_list.add(Y2Storage::AutoinstIssues::Exception, error)
       else
         raise error
       end
